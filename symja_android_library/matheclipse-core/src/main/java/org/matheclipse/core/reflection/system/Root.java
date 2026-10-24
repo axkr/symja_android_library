@@ -184,6 +184,10 @@ public class Root extends AbstractFunctionEvaluator {
       if (radical.isPresent()) {
         return radical;
       }
+      IExpr repeated = rootOfRepeatedFactor(ast, engine);
+      if (repeated.isPresent()) {
+        return repeated;
+      }
       // In numeric mode (e.g. inside N[...]) there is no reason to insist on a closed form: return
       // the k-th root of the polynomial as a number. This is the only option for polynomials which
       // are not solvable in radicals at all (e.g. the quintic 1 + 2*#1 + #1^5).
@@ -541,6 +545,107 @@ public class Root extends AbstractFunctionEvaluator {
       roots[index++] = F.complexNum(re, root.getImaginary());
     }
     return roots;
+  }
+
+  /**
+   * The {@code k}-th root of a polynomial with a repeated factor, as the root of its square free
+   * part it is: {@code Root[(#-2)^2*(#+1)&, 3]} is {@code Root[-2+#&, 1]}, which is {@code 2}. The
+   * roots are counted with their multiplicities, in the order of the {@code Root} index, and the
+   * root is named by the square free factor it belongs to and its index among that factor's roots.
+   *
+   * @return {@link F#NIL} if {@code f} has no rational coefficients, is square free, or the roots
+   *         of different factors cannot be told apart numerically
+   */
+  private static IExpr rootOfRepeatedFactor(final IAST ast, EvalEngine engine) {
+    IExpr function = ast.arg1();
+    if (!function.isFunction() || !function.first().isFree(x -> x.isInexactNumber(), false)) {
+      return F.NIL;
+    }
+    final int k = ast.arg2().toIntDefault();
+    if (k < 1) {
+      return F.NIL;
+    }
+    IExpr body = function.first();
+    IExpr[] coefficients = polynomialCoefficients(body);
+    if (coefficients == null) {
+      // a power of a sum, which is only a polynomial once it is expanded
+      coefficients = polynomialCoefficients(engine.evaluate(F.Expand(body)));
+      if (coefficients == null) {
+        return F.NIL;
+      }
+    }
+    for (IExpr coefficient : coefficients) {
+      if (!coefficient.isRational()) {
+        return F.NIL;
+      }
+    }
+    if (k > coefficients.length - 1) {
+      return F.NIL;
+    }
+    ISymbol x = F.Dummy("x");
+    IExpr list = engine.evalQuiet(F.FactorSquareFreeList(F.subst(body, F.Slot1, x)));
+    if (!list.isList()) {
+      return F.NIL;
+    }
+    java.util.List<IExpr> factors = new java.util.ArrayList<IExpr>();
+    java.util.List<IExpr> values = new java.util.ArrayList<IExpr>();
+    java.util.List<int[]> owners = new java.util.ArrayList<int[]>();
+    boolean repeated = false;
+    for (IExpr entry : (IAST) list) {
+      if (!entry.isList2() || entry.first().isFree(x)) {
+        continue;
+      }
+      int multiplicity = entry.second().toIntDefault();
+      if (multiplicity < 1) {
+        return F.NIL;
+      }
+      repeated |= multiplicity > 1;
+      IExpr factorBody = F.subst(entry.first(), x, F.Slot1);
+      IExpr[] factorCoefficients = polynomialCoefficients(factorBody);
+      if (factorCoefficients == null) {
+        return F.NIL;
+      }
+      IExpr[] roots = orderedNumericRoots(factorCoefficients);
+      if (roots == null) {
+        return F.NIL;
+      }
+      int factorIndex = factors.size();
+      factors.add(factorBody);
+      for (int m = 0; m < multiplicity; m++) {
+        for (int j = 0; j < roots.length; j++) {
+          values.add(roots[j]);
+          owners.add(new int[] {factorIndex, j + 1});
+        }
+      }
+    }
+    if (!repeated || values.size() != coefficients.length - 1) {
+      return F.NIL;
+    }
+    // the square free factors are coprime, so roots of different factors which agree numerically
+    // are too close to be ordered
+    final int n = values.size();
+    org.hipparchus.complex.Complex[] complex = new org.hipparchus.complex.Complex[n];
+    for (int i = 0; i < n; i++) {
+      complex[i] = values.get(i).evalfc();
+    }
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        if (owners.get(i)[0] != owners.get(j)[0]
+            && complex[i].subtract(complex[j]).norm() < 1.0e-10) {
+          return F.NIL;
+        }
+      }
+    }
+    IExpr[] sorted = ToRadicals.sortRootsByMmaOrder(values.toArray(new IExpr[n]));
+    IExpr selected = sorted[k - 1];
+    // the same value object is shared by every copy of a multiple root
+    for (int i = 0; i < n; i++) {
+      if (values.get(i) == selected) {
+        int[] owner = owners.get(i);
+        return F.binaryAST2(S.Root, F.Function(factors.get(owner[0])), F.ZZ(owner[1]));
+      }
+    }
+    return F.NIL;
   }
 
   /**

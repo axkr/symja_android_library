@@ -516,7 +516,7 @@ public class EvalEngine implements Serializable {
 
   private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
       final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules, final int[] outerMarks,
-      final EvalEngine engine) {
+      final boolean[] unprotected, final EvalEngine engine) {
     ISymbol variableSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
@@ -550,6 +550,13 @@ public class EvalEngine implements Serializable {
     for (int i = 1; i < variablesList.size(); i++) {
       if (symbolList[i] != null) {
         outerMarks[i] = symbolList[i].beginLocalScope();
+        if (symbolList[i].isBuiltInSymbol() && symbolList[i].isConstantAttribute()) {
+          // a built-in constant is an ordinary variable inside the block
+          if (engine.fBlockUnprotected == null) {
+            engine.fBlockUnprotected = new java.util.HashSet<ISymbol>();
+          }
+          unprotected[i] = engine.fBlockUnprotected.add(symbolList[i]);
+        }
       }
     }
 
@@ -968,6 +975,22 @@ public class EvalEngine implements Serializable {
    * {@link #deferValueFunction(Runnable)}.
    */
   private transient int fValueFunctionDeferral = 0;
+
+  /**
+   * The built-in constants which are variables of a running <code>Block</code> of this engine:
+   * their protection is lifted there, and only for this engine.
+   */
+  private transient java.util.Set<ISymbol> fBlockUnprotected = null;
+
+  /**
+   * Is the built-in constant <code>symbol</code> a variable of a running <code>Block</code> of the
+   * current thread's engine, so that it may be assigned?
+   */
+  public static boolean isBlockUnprotected(ISymbol symbol) {
+    EvalEngine engine = INSTANCE.get();
+    return engine != null && engine.fBlockUnprotected != null
+        && engine.fBlockUnprotected.contains(symbol);
+  }
 
   /** The value function calls queued by {@link #deferValueFunction(Runnable)}, or null. */
   private transient List<Runnable> fDeferredValueFunctions = null;
@@ -2566,9 +2589,12 @@ public class EvalEngine implements Serializable {
     return evalBlock(() -> evaluate(expr), localVariablesList);
   }
 
-  /** A Block variable <code>x</code> or <code>x = value</code> whose old value is put back. */
+  /**
+   * A Block variable <code>x</code> or <code>x = value</code> whose old value is put back; a
+   * built-in constant like <code>Pi</code> is one too.
+   */
   private static boolean isRestoredBlockVariable(IExpr variable) {
-    return variable.isVariable() || (variable.isAST(S.Set, 3) && variable.first().isVariable());
+    return variable.isSymbol() || (variable.isAST(S.Set, 3) && variable.first().isSymbol());
   }
 
   /**
@@ -2584,6 +2610,8 @@ public class EvalEngine implements Serializable {
     IExpr[] oldAssignedValues = new IExpr[localVariablesList.size()];
     RulesData[] oldAssignedRulesData = new RulesData[localVariablesList.size()];
     int[] outerMarks = new int[localVariablesList.size()];
+    // the protection of built-in constants, which a block lifts for its own scope
+    boolean[] unprotected = new boolean[localVariablesList.size()];
     final int oldIterationLimit = fIterationLimit;
     final int oldRecursionLimit = fRecursionLimit;
     boolean completed = false;
@@ -2593,7 +2621,7 @@ public class EvalEngine implements Serializable {
       RuntimeException failure;
       try {
         rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
-            oldAssignedRulesData, outerMarks, this);
+            oldAssignedRulesData, outerMarks, unprotected, this);
       } finally {
         failure = callDeferredValueFunctions();
       }
@@ -2622,6 +2650,9 @@ public class EvalEngine implements Serializable {
               restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
               variableSymbol.setRulesData(oldAssignedRulesData[i]);
               variableSymbol.endLocalScope(outerMarks[i]);
+              if (unprotected[i]) {
+                fBlockUnprotected.remove(variableSymbol);
+              }
             }
           }
         } finally {

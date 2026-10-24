@@ -4362,9 +4362,17 @@ public class StatisticsFunctions {
             ISymbol head = (ISymbol) dist.head();
             if (head instanceof IBuiltInSymbol) {
               IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+              IRandomVariate variate = null;
               if (evaluator instanceof IRandomVariate) {
+                variate = (IRandomVariate) evaluator;
+              } else if (evaluator instanceof ICDF) {
+                variate = inverseTransform((ICDF) evaluator, dist, engine);
+                if (variate == null) {
+                  return F.NIL;
+                }
+              }
+              if (variate != null) {
                 Random random = engine.getRandom();
-                IRandomVariate variate = (IRandomVariate) evaluator;
                 if (ast.size() == 3) {
                   IExpr arg2 = ast.arg2();
                   if (arg2.isList()) {
@@ -4390,8 +4398,9 @@ public class StatisticsFunctions {
                     int sampleSize = dimension[dimension.length - 1];
                     System.arraycopy(dimension, 0, dimension, 1, dimension.length - 1);
                     IASTAppendable list = F.ListAlloc(dimension[0]);
+                    final IRandomVariate sampler = variate;
                     return createTensorRecursive(dimension, 1, list,
-                        () -> variate.randomVariate(random, dist, sampleSize));
+                        () -> sampler.randomVariate(random, dist, sampleSize));
                   } else {
                     int n = arg2.toMachineInt();
                     if (n >= 0) {
@@ -4409,6 +4418,9 @@ public class StatisticsFunctions {
                 // empty specification therefore drops the outermost axis of a 1 element sample:
                 // a univariate distribution returns a number and a multivariate one a vector.
                 IExpr sample = variate.randomVariate(random, dist, 1);
+                if (sample.isNIL()) {
+                  return F.NIL;
+                }
                 return sample.isList1() ? sample.first() : sample;
               } else if (!(evaluator instanceof IDistribution)) {
                 return printMessageUdist(head, ast, dist, engine);
@@ -4416,6 +4428,8 @@ public class StatisticsFunctions {
             } else {
               return printMessageUdist(head, ast, dist, engine);
             }
+          } catch (NoSampleException nse) {
+            return F.NIL;
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.RandomVariate, rex, engine);
@@ -4426,6 +4440,89 @@ public class StatisticsFunctions {
         return Errors.printMessage(ast.topHead(), "unsdst", F.list(ast.arg1()), engine);
       }
       return F.NIL;
+    }
+
+    /** Thrown by {@link #inverseTransform} if a quantile is not a real number. */
+    private static final class NoSampleException extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+
+      NoSampleException() {
+        super(null, null, false, false);
+      }
+    }
+
+    /**
+     * Inverse transform sampling for a distribution without a sampler of its own: the quantile of
+     * a uniformly distributed probability is a sample of the distribution, an integer for a
+     * discrete one.
+     *
+     * @return <code>null</code> if the quantile of the distribution is not a real number for a
+     *         probability in <code>(0, 1)</code>, e.g. for symbolic parameters
+     */
+    private static IRandomVariate inverseTransform(ICDF evaluator, IAST dist, EvalEngine engine) {
+      // the quantile as an expression of the probability, built once for all samples; a
+      // distribution whose quantile is only computed for a number is asked for every sample
+      final ISymbol probability = F.Dummy("u");
+      IExpr quantileFunction = F.NIL;
+      try {
+        quantileFunction = evaluator.inverseCDF(dist, probability, engine);
+        if (quantileFunction.isPresent()) {
+          quantileFunction = engine.evaluate(quantileFunction);
+          if (!quantileFunction.isFree(x -> x.isAST(S.InverseCDF) || x.isAST(S.Quantile),
+              true)) {
+            quantileFunction = F.NIL;
+          }
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        quantileFunction = F.NIL;
+      }
+      final IExpr quantile = quantileFunction;
+      IRandomVariate variate = (random, distribution, size) -> {
+        IASTAppendable result = F.ListAlloc(size);
+        for (int i = 0; i < size; i++) {
+          result.append(
+              inverseTransformSample(evaluator, distribution, quantile, probability, random, engine));
+        }
+        return result;
+      };
+      // a sample at the median decides if the quantile can be computed at all
+      if (!quantileSample(evaluator, dist, F.num(0.5), engine).isPresent()) {
+        return null;
+      }
+      return variate;
+    }
+
+    private static IExpr inverseTransformSample(ICDF evaluator, IAST dist, IExpr quantile,
+        ISymbol probability, Random random, EvalEngine engine) {
+      // a probability of exactly 0 may map to the infinite end of the support: draw again
+      for (int attempt = 0; attempt < 8; attempt++) {
+        IExpr u = F.num(random.nextDouble());
+        IExpr sample = quantile.isPresent()
+            ? realSample(engine.evaluate(F.subst(quantile, probability, u)), engine)
+            : quantileSample(evaluator, dist, u, engine);
+        if (sample.isPresent()) {
+          return sample;
+        }
+      }
+      throw new NoSampleException();
+    }
+
+    /** The quantile for the probability <code>u</code> or {@link F#NIL} if it isn't real. */
+    private static IExpr quantileSample(ICDF evaluator, IAST dist, IExpr u, EvalEngine engine) {
+      IExpr quantile = evaluator.inverseCDF(dist, u, engine);
+      if (quantile.isNIL()) {
+        return F.NIL;
+      }
+      return realSample(engine.evaluate(quantile), engine);
+    }
+
+    /** The sample as a real number, or {@link F#NIL} if it isn't one. */
+    private static IExpr realSample(IExpr sample, EvalEngine engine) {
+      if (!sample.isReal() && sample.isNumericFunction(true)) {
+        sample = engine.evalN(sample);
+      }
+      return sample.isReal() ? sample : F.NIL;
     }
 
     /**

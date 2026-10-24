@@ -697,6 +697,23 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   /**
+   * Does an argument of the left-hand side have an explicit default value, as in
+   * <code>f[n_:12]</code>? Such an argument may be left out, so the rule is placed by
+   * {@link RuleGenerality} like a rule with a run of arguments. The built-in defaults
+   * <code>x_.</code> keep their placement by priority.
+   */
+  public boolean isOptionalArgumentRule() {
+    IExpr lhs = fLhsPatternExpr;
+    while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2)) {
+      lhs = ((IAST) lhs).arg1();
+    }
+    if (!lhs.isAST()) {
+      return false;
+    }
+    return ((IAST) lhs).exists(x -> x.isAST(S.Optional, 2) || x.isAST(S.Optional, 3));
+  }
+
+  /**
    * Is <code>argument</code> a sequence pattern, possibly named, tested, conditioned, optional or
    * one of several alternatives?
    */

@@ -285,6 +285,10 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     private final double yMin;
     private final double yMax;
 
+    /** The grid points along each axis, or <code>null</code> if they aren't known. */
+    private double[] xs = null;
+    private double[] ys = null;
+
     public GridFunctionExpr(final org.hipparchus.analysis.BivariateFunction function,
         double xMin, double xMax, double yMin, double yMax) {
       super(function, xMin, xMax);
@@ -301,7 +305,10 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
 
     @Override
     public IExpr copy() {
-      return new GridFunctionExpr(toData(), min, max, yMin, yMax);
+      GridFunctionExpr function = new GridFunctionExpr(toData(), min, max, yMin, yMax);
+      function.xs = xs;
+      function.ys = ys;
+      return function;
     }
 
     @Override
@@ -339,7 +346,11 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       function = new org.hipparchus.analysis.interpolation.BilinearInterpolator().interpolate(xs,
           ys, values);
     }
-    return new GridFunctionExpr(function, xs[0], xs[xs.length - 1], ys[0], ys[ys.length - 1]);
+    GridFunctionExpr result =
+        new GridFunctionExpr(function, xs[0], xs[xs.length - 1], ys[0], ys[ys.length - 1]);
+    result.xs = xs;
+    result.ys = ys;
+    return result;
   }
 
   /** */
@@ -562,10 +573,22 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
           }
           return F.list(F.list(F.num(function.min), F.num(function.max)));
         }
+        if (property.equals("Coordinates") && function instanceof GridFunctionExpr) {
+          // the grid points along each axis
+          GridFunctionExpr grid = (GridFunctionExpr) function;
+          if (grid.xs != null && grid.ys != null) {
+            return F.list(F.List(grid.xs), F.List(grid.ys));
+          }
+        }
         if (property.equals("InterpolationOrder") && function instanceof ASTFunctionExpr) {
           return F.list(F.ZZ(function.order));
         }
         return F.NIL;
+      }
+      if (arg1.isList() && ast.head() instanceof ODEFunctionExpr) {
+        // the solution at each point of a list
+        final IExpr head = ast.head();
+        return F.mapList((IAST) arg1, (IExpr point) -> F.unaryAST1(head, point));
       }
       if (arg1.isComplex() || arg1.isComplexNumeric()) {
         return F.NIL;

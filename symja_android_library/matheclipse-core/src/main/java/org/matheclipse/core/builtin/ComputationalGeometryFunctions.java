@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.eval.Errors;
@@ -3001,7 +3003,7 @@ public class ComputationalGeometryFunctions {
      * reports them. The switch below reads from this array, so the two cannot drift apart; a
      * property which is not here is not a question this function understands.
      */
-    private static final String[] PROPERTIES = {"Circumradius", "EdgeCount", "FaceCount",
+    private static final String[] PROPERTIES = {"Circumradius", "EdgeCount", "Edges", "FaceCount",
         "FaceCountRules", "FaceIndices", "Faces", "VertexCoordinates", "VertexCount", "Volume"};
 
     @Override
@@ -3058,6 +3060,8 @@ public class ComputationalGeometryFunctions {
           return F.ZZ(faces.size());
         case "EdgeCount":
           return F.ZZ(edges(vertices).size());
+        case "Edges":
+          return edgeIndices(faces);
         case "FaceIndices":
           return faceIndices(faces);
         case "FaceCountRules":
@@ -3333,6 +3337,25 @@ public class ComputationalGeometryFunctions {
           indices.append(F.ZZ(index + 1));
         }
         result.append(indices);
+      }
+      return result;
+    }
+
+    /**
+     * The edges as pairs of vertex indices, the smaller index first, in the order they are met
+     * going round the faces one after the other.
+     */
+    private static IAST edgeIndices(List<int[]> faces) {
+      Set<Long> seen = new HashSet<Long>();
+      IASTAppendable result = F.ListAlloc();
+      for (int[] face : faces) {
+        for (int i = 0; i < face.length; i++) {
+          int from = Math.min(face[i], face[(i + 1) % face.length]);
+          int to = Math.max(face[i], face[(i + 1) % face.length]);
+          if (seen.add(Long.valueOf(((long) from << 32) | to))) {
+            result.append(F.List(F.ZZ(from + 1), F.ZZ(to + 1)));
+          }
+        }
       }
       return result;
     }

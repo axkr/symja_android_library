@@ -11,6 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICDF;
 import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
@@ -1121,7 +1122,8 @@ public class StatisticsDerivedDistributions {
       IExpr min = values[0];
       IExpr max = values[values.length - 1];
       if (width.isNIL()) {
-        width = F.num(niceWidth(numeric));
+        width = F.num(org.matheclipse.core.builtin.graphics.Histogram.binWidth(numeric,
+            numeric[0], numeric[numeric.length - 1]));
       }
       IExpr origin = origin(min, width);
       if (origin.isInexactNumber() && !width.isInexactNumber()) {
@@ -1174,23 +1176,6 @@ public class StatisticsDerivedDistributions {
         return engine.evaluate(F.N(F.Subtract(min, F.Divide(width, F.C2))));
       }
       return candidate;
-    }
-
-    /** Sturges' rule, rounded up to a "nice" bin width of the form 1, 2, 2.5 or 5 times 10^k. */
-    private static double niceWidth(double[] sorted) {
-      double range = sorted[sorted.length - 1] - sorted[0];
-      if (range <= 0.0) {
-        return 1.0;
-      }
-      int bins = (int) Math.ceil(Math.log(sorted.length) / Math.log(2.0)) + 1;
-      double raw = range / bins;
-      double magnitude = Math.pow(10.0, Math.floor(Math.log10(raw)));
-      for (double factor : new double[] {1.0, 2.0, 2.5, 5.0, 10.0}) {
-        if (factor * magnitude >= raw) {
-          return factor * magnitude;
-        }
-      }
-      return 10.0 * magnitude;
     }
 
     @Override
@@ -1364,8 +1349,15 @@ public class StatisticsDerivedDistributions {
 
     /** The smallest value whose cumulative probability reaches <code>q</code>. */
     private static IExpr quantile(IAST dist, IExpr q, EvalEngine engine) {
+      if (q.isNIL()) {
+        return F.NIL;
+      }
+      IAST[] h = histogram(dist);
+      if (h != null) {
+        return histogramQuantile(h[0], h[1], q, engine);
+      }
       IAST[] e = empirical(dist);
-      if (e == null || q.isNIL()) {
+      if (e == null) {
         return F.NIL;
       }
       IAST probabilities = e[0];
@@ -1384,8 +1376,57 @@ public class StatisticsDerivedDistributions {
       return values.get(values.argSize());
     }
 
+    /**
+     * The inverse of the piecewise linear CDF of a histogram: the point of the first bin with
+     * positive mass at which the accumulated mass reaches <code>q</code>.
+     */
+    private static IExpr histogramQuantile(IAST densities, IAST bins, IExpr q,
+        EvalEngine engine) {
+      if (!q.isReal()) {
+        return F.NIL;
+      }
+      if (((IReal) q).isLT(F.C0) || ((IReal) q).isGT(F.C1)) {
+        return S.Undefined;
+      }
+      IExpr cumulative = F.C0;
+      for (int i = 1; i < densities.size(); i++) {
+        IExpr density = densities.get(i);
+        IExpr left = bins.get(i);
+        IExpr mass = engine.evaluate(F.Times(density, F.Subtract(bins.get(i + 1), left)));
+        if (!mass.isReal()) {
+          return F.NIL;
+        }
+        if (!((IReal) mass).isPositive()) {
+          continue;
+        }
+        IExpr next = engine.evaluate(F.Plus(cumulative, mass));
+        if (!next.isReal()) {
+          return F.NIL;
+        }
+        if (!((IReal) next).isLT((IReal) q)) {
+          // left + (q - cumulative)/density
+          return engine.evaluate(F.Plus(left, F.Divide(F.Subtract(q, cumulative), density)));
+        }
+        cumulative = next;
+      }
+      return bins.last();
+    }
+
     @Override
     public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+      IAST[] h = histogram(dist);
+      if (h != null) {
+        EvalEngine engine = EvalEngine.get();
+        IASTAppendable result = F.ListAlloc(size);
+        for (int s = 0; s < size; s++) {
+          IExpr sample = histogramQuantile(h[0], h[1], F.num(random.nextDouble()), engine);
+          if (!sample.isReal()) {
+            return F.NIL;
+          }
+          result.append(sample);
+        }
+        return result;
+      }
       IAST[] e = empirical(dist);
       if (e == null) {
         return F.NIL;

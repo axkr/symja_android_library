@@ -51,6 +51,58 @@ final class DSolveUtil {
   }
 
   /**
+   * Moves an arbitrary constant which is a term of an exponent out of it as a factor:
+   * <code>E^(f + C(k))</code> becomes <code>C(k)*E^f</code>, for a solution of the form
+   * <code>E^(...)</code> or a product with one such factor. A rational multiple of the constant is
+   * moved out too, <code>E^(f - 2*C(k))</code> becomes <code>C(k)*E^f</code>, since the constant
+   * ranges over all values either way. Nothing is done when the constant occurs anywhere else in
+   * the solution.
+   */
+  static IExpr constantOutOfExponent(IExpr expr, EvalEngine engine) {
+    if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      for (int i = 1; i <= times.argSize(); i++) {
+        IExpr factor = times.get(i);
+        IExpr[] split = splitExponentConstant(factor);
+        if (split != null && times.removeAtCopy(i).isFree(split[0], true)) {
+          return engine.evaluate(F.Times(split[0], times.setAtCopy(i, split[1])));
+        }
+      }
+      return expr;
+    }
+    IExpr[] split = splitExponentConstant(expr);
+    if (split != null) {
+      return engine.evaluate(F.Times(split[0], split[1]));
+    }
+    return expr;
+  }
+
+  /**
+   * <code>{C(k), E^f}</code> for <code>E^(f + c*C(k))</code> with a rational <code>c</code> and
+   * <code>f</code> free of <code>C(k)</code>, or <code>null</code>.
+   */
+  private static IExpr[] splitExponentConstant(IExpr expr) {
+    if (!expr.isPower() || !expr.base().isE() || !expr.exponent().isPlus()) {
+      return null;
+    }
+    IAST exponent = (IAST) expr.exponent();
+    for (int i = 1; i <= exponent.argSize(); i++) {
+      IExpr term = exponent.get(i);
+      IExpr constant = term;
+      if (term.isTimes() && term.argSize() == 2 && term.first().isRational()) {
+        constant = term.second();
+      }
+      if (constant.isAST(S.C, 2) && constant.first().isInteger()) {
+        IExpr rest = exponent.removeAtCopy(i).oneIdentity0();
+        if (rest.isFree(constant, true)) {
+          return new IExpr[] {constant, F.Power(S.E, rest)};
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Recursively scans an expression to extract all integration constants C(1), C(2), etc. This
    * guarantees constants are found even if standard symbol extractors miss them.
    */

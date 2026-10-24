@@ -1237,7 +1237,8 @@ public final class RulesData implements Serializable {
     final List<IPatternMatcher> rules = new ArrayList<IPatternMatcher>(fPatternDownRules);
     final int lhsPriority = newPatternMatcher.getLHSPriority();
     final boolean positional = isPositional(newPatternMatcher.getLHS());
-    final boolean newIsRun = positional && newPatternMatcher.isArgumentRunRule();
+    final boolean newIsRun = positional && (newPatternMatcher.isArgumentRunRule()
+        || newPatternMatcher.isOptionalArgumentRule());
     final int patternHash = newPatternMatcher.getPatternHash();
     IPatternMap pmSlotValuesMap = null;
     IExpr pmRHS = null;
@@ -1263,7 +1264,8 @@ public final class RulesData implements Serializable {
       }
       if (insertPosition < 0) {
         final boolean byGenerality = newIsRun || (positional && matcher instanceof PatternMatcher
-            && ((PatternMatcher) matcher).isArgumentRunRule());
+            && (((PatternMatcher) matcher).isArgumentRunRule()
+                || ((PatternMatcher) matcher).isOptionalArgumentRule()));
         if (byGenerality ? RuleGenerality.covers(matcher.getLHS(), newPatternMatcher.getLHS())
             : lhsPriority < priority && (!positional
                 || RuleGenerality.mayOverlap(matcher.getLHS(), newPatternMatcher.getLHS()))) {

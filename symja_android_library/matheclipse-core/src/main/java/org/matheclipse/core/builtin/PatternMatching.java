@@ -37,6 +37,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -1745,6 +1746,13 @@ public final class PatternMatching {
       if (arg1.isSymbol()) {
         options = EvalAttributes.copySort(
             org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, false));
+      } else if (arg1 instanceof IDataExpr) {
+        // an image carries its options inside; a name is looked up among all of them, so that
+        // one left at its default is reported too
+        options = ((IDataExpr<?>) arg1).options(ast.isAST2());
+        if (options.isNIL()) {
+          return F.NIL;
+        }
       } else if (arg1.isAST() && !arg1.isList()) {
         // the rules at the end of an expression, as the options of Graphics(prims, opts)
         IAST expr = (IAST) arg1;

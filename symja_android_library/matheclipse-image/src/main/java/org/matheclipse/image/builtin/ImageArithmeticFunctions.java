@@ -184,6 +184,89 @@ public class ImageArithmeticFunctions {
     }
   }
 
+  /**
+   * <code>Plus</code>, <code>Times</code> and <code>Power</code> of images: a sum or product of
+   * images of one size and real numbers, and an image raised to a real power, are computed sample
+   * by sample, the alpha channel carried through. An image of one channel combines with every
+   * channel of a colour image.
+   *
+   * <p>
+   * The result is an image of reals whose samples are not clipped: <code>"Real32"</code> for a sum
+   * or a product unless one of the images is <code>"Real64"</code>, and <code>"Real64"</code> for a
+   * power.
+   *
+   * @param ast <code>Plus(...)</code>, <code>Times(...)</code> or <code>Power(image, x)</code>
+   * @return {@link F#NIL} if an operand is neither an image nor a real number, or if two images
+   *         differ in size
+   */
+  public static IExpr arithmetic(IAST ast) {
+    DoubleBinaryOperator operator;
+    if (ast.isPlus()) {
+      operator = (a, b) -> a + b;
+    } else if (ast.isTimes()) {
+      operator = (a, b) -> a * b;
+    } else if (ast.isPower()) {
+      if (!(ast.base() instanceof ImageExpr) || !ast.exponent().isReal()) {
+        return F.NIL;
+      }
+      Raster base = ((ImageExpr) ast.base()).raster();
+      if (base == null) {
+        return F.NIL;
+      }
+      final double exponent = ast.exponent().evalfNaN();
+      ImageExpr result = ImageExpr.fromRaster(
+          base.mapColor(sample -> Math.pow(sample, exponent)),
+          ((ImageExpr) ast.base()).getOptions(), Pixels.REAL64);
+      return result == null ? F.NIL : result;
+    } else {
+      return F.NIL;
+    }
+    // the image with the most channels decides the shape of the result; the other operands are
+    // spread over its channels
+    ImageExpr first = null;
+    int firstIndex = 0;
+    Raster firstRaster = null;
+    boolean real64 = false;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg instanceof ImageExpr) {
+        ImageExpr image = (ImageExpr) arg;
+        Raster raster = image.raster();
+        if (raster == null) {
+          return F.NIL;
+        }
+        if (firstRaster != null
+            && (raster.width != firstRaster.width || raster.height != firstRaster.height)) {
+          return F.NIL;
+        }
+        if (firstRaster == null || raster.channels > firstRaster.channels) {
+          first = image;
+          firstIndex = i;
+          firstRaster = raster;
+        }
+        real64 |= Pixels.REAL64.equals(image.sampleType());
+      } else if (!arg.isReal()) {
+        return F.NIL;
+      }
+    }
+    if (first == null) {
+      return F.NIL;
+    }
+    Raster result = firstRaster;
+    for (int i = 1; i < ast.size(); i++) {
+      if (i == firstIndex) {
+        continue;
+      }
+      result = combine(result, ast.get(i), operator);
+      if (result == null) {
+        return F.NIL;
+      }
+    }
+    ImageExpr combined = ImageExpr.fromRaster(result, first.getOptions(),
+        real64 ? Pixels.REAL64 : Pixels.REAL32);
+    return combined == null ? F.NIL : combined;
+  }
+
   // -------------------------------------------------------------------- internals
 
   /**

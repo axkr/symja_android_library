@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.ThrowException;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.ODEUtils;
@@ -164,6 +165,36 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       rules.append(F.Rule(timeVar, F.num(t)));
       return rules;
     }
+
+    /**
+     * The rules of {@link #substitutions(double, double[])}, together with one for the highest
+     * derivative of every function, <code>x'(t)</code> of a first order equation, which is not a
+     * component of the state but its derivative.
+     *
+     * @param t the time to substitute
+     * @param state the state vector to substitute
+     * @param stateDot the derivative of the state vector at <code>t</code>
+     */
+    IAST substitutions(double t, double[] state, double[] stateDot) {
+      IASTAppendable rules = F.ListAlloc(dimension() + functions.length + 1);
+      for (int j = 0; j < functions.length; j++) {
+        int blockEnd = (j + 1 < functions.length ? offset[j + 1] : dimension()) - 1;
+        rules.append(F.Rule(ODEUtils.derivative(functions[j], blockEnd - offset[j] + 1, timeVar),
+            F.num(stateDot[blockEnd])));
+      }
+      rules.appendArgs(substitutions(t, state));
+      return rules;
+    }
+
+    /** The index of the state component <code>expr</code>, e.g. <code>y'(t)</code>, or -1. */
+    int componentIndex(IExpr expr) {
+      for (int i = 0; i < stateExpressions.length; i++) {
+        if (stateExpressions[i].equals(expr)) {
+          return i;
+        }
+      }
+      return -1;
+    }
   }
 
   private static class FirstODE implements OrdinaryDifferentialEquation {
@@ -189,6 +220,23 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         stateDot[i] = fEngine.evalN(F.subst(fSystem.derivatives[i], rules)).evalfNaN();
       }
       return stateDot;
+    }
+  }
+
+  /**
+   * <code>WhenEvent(cond, action)</code> stays as it is: it only has a meaning among the equations
+   * of {@link NDSolve}, which reads it. Its arguments are held, so that the action runs at an event
+   * rather than when the equations are evaluated.
+   */
+  public static final class WhenEvent extends AbstractEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
 
@@ -237,7 +285,65 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     return dependentVariables.equals(head) || dependentVariables.head().equals(head);
   }
 
-  static IExpr solve(final IAST ast, final IExpr[] options, EvalEngine engine, boolean ruleForm) {
+  /** A partial differential equation, the time range given third and the space range fourth. */
+  private static IExpr solvePDE(IAST ast, EvalEngine engine, boolean ruleForm) {
+    IExpr solution = NDSolvePDE.solve(ast, engine, ruleForm);
+    if (solution.isPresent()) {
+      return solution;
+    }
+    // a system, the unknowns written u(x, t), or ends with a flux
+    return NDSolvePDESystem.solve(ast, engine, ruleForm);
+  }
+
+  /**
+   * Take the <code>WhenEvent(cond, action)</code> entries out of the equations, and thread an
+   * equation between two lists, <code>{x(0), y(0)} == {0, 1}</code>, into the equations of their
+   * elements.
+   *
+   * @param ast the whole <code>NDSolve(...)</code> expression
+   * @param whenEvents receives the <code>WhenEvent</code> entries
+   * @return <code>ast</code> with the remaining equations, or <code>ast</code> itself if there was
+   *         nothing to take out or to thread
+   */
+  private static IAST separateEquations(IAST ast, java.util.List<IAST> whenEvents) {
+    IExpr equations = ast.arg1();
+    if (!(equations.isList() || equations.isAnd() || equations.isAST(S.WhenEvent, 3)
+        || equations.isEqual())) {
+      return ast;
+    }
+    IASTAppendable result = F.ListAlloc();
+    boolean[] changed = new boolean[1];
+    separateEquations(equations, result, whenEvents, changed);
+    return changed[0] ? ast.setAtCopy(1, result) : ast;
+  }
+
+  private static void separateEquations(IExpr expr, IASTAppendable result,
+      java.util.List<IAST> whenEvents, boolean[] changed) {
+    if (expr.isList() || expr.isAnd()) {
+      for (IExpr arg : (IAST) expr) {
+        separateEquations(arg, result, whenEvents, changed);
+      }
+      return;
+    }
+    if (expr.isAST(S.WhenEvent, 3)) {
+      whenEvents.add((IAST) expr);
+      changed[0] = true;
+      return;
+    }
+    if (expr.isEqual() && expr.first().isList() && expr.second().isList()
+        && expr.first().argSize() == expr.second().argSize()) {
+      IAST lhs = (IAST) expr.first();
+      IAST rhs = (IAST) expr.second();
+      for (int i = 1; i < lhs.size(); i++) {
+        separateEquations(F.Equal(lhs.get(i), rhs.get(i)), result, whenEvents, changed);
+      }
+      changed[0] = true;
+      return;
+    }
+    result.append(expr);
+  }
+
+  static IExpr solve(IAST ast, final IExpr[] options, EvalEngine engine, boolean ruleForm) {
     if (!ast.arg3().isList()) {
       return F.NIL;
     }
@@ -245,14 +351,18 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       // solved for the functions, whose derivatives are asked for; not tried a second time
       return solveForDerivatives(ast, options, engine, ruleForm);
     }
+    java.util.List<IAST> whenEvents = new java.util.ArrayList<IAST>();
+    ast = separateEquations(ast, whenEvents);
     if (ast.argSize() >= 4 && ast.arg4().isList3()) {
       // a second range: a partial differential equation in one space variable
-      IExpr solution = NDSolvePDE.solve(ast, engine, ruleForm);
-      if (solution.isPresent()) {
-        return solution;
+      IExpr solution = solvePDE(ast, engine, ruleForm);
+      if (solution.isNIL() && ast.arg3().isList3()) {
+        // the ranges may be given space first: {x, x0, x1}, {t, t0, t1}
+        IASTAppendable swapped = ast.copyAppendable();
+        swapped.set(3, ast.arg4());
+        swapped.set(4, ast.arg3());
+        solution = solvePDE(swapped, engine, ruleForm);
       }
-      // a system, the unknowns written u(x, t), or ends with a flux
-      solution = NDSolvePDESystem.solve(ast, engine, ruleForm);
       if (solution.isPresent()) {
         return solution;
       }
@@ -304,6 +414,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (method == null) {
         return F.NIL;
       }
+      method.whenEvents = whenEvents;
       return integrate(ast.topHead(), system, tMin, tMax, method, engine, ruleForm);
     } catch (LimitException le) {
       throw le;
@@ -478,6 +589,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     }
 
     // --- the conditions: the value of a component of the state at a point ---
+    initialConditions = decoupleConditions(initialConditions, functions, engine);
     final int conditionCount = initialConditions.argSize();
     double[] points = new double[conditionCount];
     int[] components = new int[conditionCount];
@@ -787,6 +899,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
    */
   private static double reachedEnd(DenseOutputModel model, double requested) {
     double actual = model.getFinalTime();
+    if (Double.isInfinite(requested)) {
+      // a range like {t, 0, Infinity} ends where an event stopped it or the stepping gave up
+      return actual;
+    }
     double slack = 1.0e-9 * Math.max(1.0, Math.abs(requested));
     return (Math.abs(actual - requested) <= slack) ? requested : actual;
   }
@@ -915,10 +1031,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     integrator.addStepHandler(model);
     LastStepRecorder recorder = new LastStepRecorder();
     integrator.addStepHandler(recorder);
-    method.addEventDetectors(integrator, system, engine);
+    method.addEventDetectors(integrator, system, target >= system.t0, engine);
+    ODEStateAndDerivative last;
     try {
       // clone, so that the two directions both start from the initial conditions
-      integrator.integrate(new FirstODE(engine, system),
+      last = integrator.integrate(new FirstODE(engine, system),
           new ODEState(system.t0, system.initialState.clone()), target);
     } catch (MathRuntimeException mre) {
       // The stepping gave up before the requested time was reached - the step size collapsed at a
@@ -941,7 +1058,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
           F.list(system.timeVar, F.num(recorder.lastState.getTime())), engine);
       return model;
     }
-    if (end != null && recorder.lastState != null) {
+    if (end != null && recorder.lastState != null
+        && Math.abs(last.getTime() - target) <= 1.0e-9 * Math.max(1.0, Math.abs(target))) {
+      // an event which stopped the integration before the target ends the solution there
       end[0] = recorder.lastState.getPrimaryState().clone();
     }
     return model;
@@ -1009,6 +1128,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
 
     /** The <code>"MaxIterations"</code> sub-option of the event location method. */
     int eventMaxIterations = 100;
+
+    /** The <code>WhenEvent(cond, action)</code> entries of the equations. */
+    java.util.List<IAST> whenEvents = java.util.Collections.emptyList();
 
     /**
      * Read the options.
@@ -1194,9 +1316,25 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    /** Register one detector per <code>"Event"</code> expression. */
+    /**
+     * Register one detector per <code>"Event"</code> expression, and the detectors of the
+     * <code>WhenEvent</code> entries.
+     *
+     * @param forward <code>true</code> if the integration runs towards larger times
+     */
     void addEventDetectors(AbstractIntegrator integrator, FirstOrderSystem system,
-        EvalEngine engine) {
+        boolean forward, EvalEngine engine) {
+      for (IAST whenEvent : whenEvents) {
+        // the condition is evaluated, which expands a form like Or @@ (x(t) > # &) /@ {1, 2};
+        // the action stays held until an event
+        IExpr condition = engine.evaluate(whenEvent.arg1());
+        java.util.List<WhenEventDetector> detectors = new java.util.ArrayList<WhenEventDetector>();
+        WhenEventDetector.collect(condition, F.NIL, whenEvent.arg2(), system, engine, forward,
+            this, detectors);
+        for (WhenEventDetector detector : detectors) {
+          integrator.addEventDetector(detector);
+        }
+      }
       for (int i = 0; i < events.length; i++) {
         ODEEventDetector detector = new EventLocator(system, engine, events[i], eventCondition,
             eventAction, createSolver(), maxStep, eventMaxIterations);
@@ -1292,6 +1430,279 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * One detector of a <code>WhenEvent(cond, action)</code> entry of the equations.
+   *
+   * <p>
+   * The condition is turned into a continuous function which crosses zero where the event is:
+   * <code>f - g</code> for an equation <code>f == g</code>, which triggers in either direction, and
+   * for an inequality <code>f &gt; g</code> the same difference, which triggers only when it
+   * becomes positive, that is when the inequality becomes true. <code>Or</code> and
+   * <code>And</code> of inequalities are the maximum and the minimum of the differences. An
+   * <code>Or</code> of anything else is one detector per alternative, an <code>And</code> with
+   * equations one detector per equation which acts only if the rest of the condition holds there.
+   *
+   * <p>
+   * The action may be the string <code>"StopIntegration"</code>, <code>"RemoveEvent"</code>, rules
+   * <code>y'(t) -&gt; -0.9*y'(t)</code> which restart the integration from the event with a new
+   * state, or any other expression - <code>Sow(t)</code>, <code>tm = t</code> - which is evaluated
+   * with the time and the state at the event substituted. <code>CompoundExpression</code> and lists
+   * combine them.
+   */
+  private static final class WhenEventDetector implements ODEEventDetector {
+    /**
+     * Two events of one detector closer than this, relative to the time, are one: after a reset
+     * the state starts on the far side of the zero it was found at, and the function can cross
+     * back over it at once.
+     */
+    private static final double SAME_EVENT = 1.0e-10;
+
+    private final FirstOrderSystem fSystem;
+    private final EvalEngine fEngine;
+    /** The function whose zero is the event. */
+    private final IExpr fFunction;
+    /** <code>true</code> if the event is only the zero where the function becomes positive. */
+    private final boolean fBecomesTrue;
+    /** The part of the condition which has to hold at the event, or {@link F#NIL}. */
+    private final IExpr fGuard;
+    private final IExpr fAction;
+    private final boolean fForward;
+    private final MethodSettings fSettings;
+    private final BracketedUnivariateSolver<UnivariateFunction> fSolver;
+
+    /** The time of the last event this detector acted on. */
+    private double fLastEvent = Double.NaN;
+    /** Set by the action <code>"RemoveEvent"</code>. */
+    private boolean fRemoved = false;
+    /** The state the integration restarts from after a reset. */
+    private double[] fResetState = null;
+
+    private WhenEventDetector(FirstOrderSystem system, EvalEngine engine, IExpr function,
+        boolean becomesTrue, IExpr guard, IExpr action, boolean forward,
+        MethodSettings settings) {
+      this.fSystem = system;
+      this.fEngine = engine;
+      this.fFunction = function;
+      this.fBecomesTrue = becomesTrue;
+      this.fGuard = guard;
+      this.fAction = action;
+      this.fForward = forward;
+      this.fSettings = settings;
+      this.fSolver = settings.createSolver();
+    }
+
+    /**
+     * Create the detectors of the condition <code>condition</code>.
+     *
+     * @param guard what else has to hold at the event, or {@link F#NIL}
+     * @param detectors receives the detectors
+     */
+    static void collect(IExpr condition, IExpr guard, IExpr action, FirstOrderSystem system,
+        EvalEngine engine, boolean forward, MethodSettings settings,
+        java.util.List<WhenEventDetector> detectors) {
+      if (condition.isEqual() && condition.argSize() == 2) {
+        detectors.add(new WhenEventDetector(system, engine,
+            F.Subtract(condition.first(), condition.second()), false, guard, action, forward,
+            settings));
+        return;
+      }
+      IExpr function = inequalityFunction(condition);
+      if (function.isPresent()) {
+        detectors.add(new WhenEventDetector(system, engine, function, true, guard, action, forward,
+            settings));
+        return;
+      }
+      if (condition.isOr()) {
+        for (IExpr alternative : (IAST) condition) {
+          collect(alternative, guard, action, system, engine, forward, settings, detectors);
+        }
+        return;
+      }
+      if (condition.isAnd() && ((IAST) condition).exists(IExpr::isEqual)) {
+        IAST and = (IAST) condition;
+        for (int i = 1; i < and.size(); i++) {
+          if (and.get(i).isEqual()) {
+            IAST rest = and.removeAtCopy(i);
+            IExpr restGuard = guard.isPresent() ? F.And(guard, rest) : rest;
+            collect(and.get(i), restGuard, action, system, engine, forward, settings, detectors);
+          }
+        }
+        return;
+      }
+      // any other condition: the event is where its truth value turns from false to true
+      detectors.add(new WhenEventDetector(system, engine, F.If(condition, F.C1, F.CN1), true,
+          guard, action, forward, settings));
+    }
+
+    /**
+     * A function which is positive exactly where the inequalities <code>condition</code> combines
+     * hold, or {@link F#NIL} if it isn't made of inequalities.
+     */
+    private static IExpr inequalityFunction(IExpr condition) {
+      if (condition.isAST() && condition.argSize() >= 2
+          && (condition.isAST(S.Greater) || condition.isAST(S.GreaterEqual)
+              || condition.isAST(S.Less) || condition.isAST(S.LessEqual))) {
+        // a > b > c holds where both a - b and b - c are positive
+        IAST inequality = (IAST) condition;
+        boolean greater = condition.isAST(S.Greater) || condition.isAST(S.GreaterEqual);
+        IASTAppendable min = F.ast(S.Min, inequality.argSize() - 1);
+        for (int i = 1; i < inequality.argSize(); i++) {
+          IExpr a = inequality.get(i);
+          IExpr b = inequality.get(i + 1);
+          min.append(greater ? F.Subtract(a, b) : F.Subtract(b, a));
+        }
+        return min.argSize() == 1 ? min.arg1() : min;
+      }
+      if (condition.isNot()) {
+        IExpr function = inequalityFunction(condition.first());
+        return function.isPresent() ? F.Negate(function) : F.NIL;
+      }
+      if (condition.isOr() || condition.isAnd()) {
+        IAST ast = (IAST) condition;
+        IASTAppendable result = F.ast(condition.isOr() ? S.Max : S.Min, ast.argSize());
+        for (IExpr arg : ast) {
+          IExpr function = inequalityFunction(arg);
+          if (function.isNIL()) {
+            return F.NIL;
+          }
+          result.append(function);
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    private IAST substitutions(ODEStateAndDerivative state) {
+      return fSystem.substitutions(state.getTime(), state.getPrimaryState(),
+          state.getPrimaryDerivative());
+    }
+
+    @Override
+    public double g(ODEStateAndDerivative state) {
+      return fEngine.evalN(F.subst(fFunction, substitutions(state))).evalfNaN();
+    }
+
+    @Override
+    public AdaptableInterval getMaxCheckInterval() {
+      return AdaptableInterval.of(fSettings.maxStep);
+    }
+
+    @Override
+    public int getMaxIterationCount() {
+      return fSettings.eventMaxIterations;
+    }
+
+    @Override
+    public BracketedUnivariateSolver<UnivariateFunction> getSolver() {
+      return fSolver;
+    }
+
+    @Override
+    public ODEEventHandler getHandler() {
+      return new ODEEventHandler() {
+        @Override
+        public Action eventOccurred(ODEStateAndDerivative state, ODEEventDetector detector,
+            boolean increasing) {
+          return act(state, increasing);
+        }
+
+        @Override
+        public ODEState resetState(ODEEventDetector detector, ODEStateAndDerivative oldState) {
+          return new ODEState(oldState.getTime(), fResetState);
+        }
+      };
+    }
+
+    /**
+     * Run the action at an event.
+     *
+     * @param increasing <code>true</code> if the function increases at the event
+     */
+    private Action act(ODEStateAndDerivative state, boolean increasing) {
+      final double t = state.getTime();
+      if (fRemoved || (fBecomesTrue && increasing != fForward)
+          || Math.abs(t - fLastEvent) <= SAME_EVENT * Math.max(1.0, Math.abs(t))) {
+        return Action.CONTINUE;
+      }
+      IAST rules = substitutions(state);
+      if (fGuard.isPresent() && !fEngine.evaluate(F.subst(fGuard, rules)).isTrue()) {
+        return Action.CONTINUE;
+      }
+      fLastEvent = t;
+      double[] newState = state.getPrimaryState().clone();
+      boolean[] stop = new boolean[1];
+      boolean reset = run(fAction, rules, state.getPrimaryState(), newState, stop);
+      if (stop[0]) {
+        return Action.STOP;
+      }
+      if (reset) {
+        fResetState = newState;
+        return Action.RESET_STATE;
+      }
+      return Action.CONTINUE;
+    }
+
+    /**
+     * Run one part of an action.
+     *
+     * @param rules the time and the state at the event
+     * @param state the state at the event, which the new values of a reset are computed from
+     * @param newState receives the new values of a reset
+     * @param stop receives <code>true</code> at index 0 if the integration should stop
+     * @return <code>true</code> if <code>newState</code> was changed
+     */
+    private boolean run(IExpr action, IAST rules, double[] state, double[] newState,
+        boolean[] stop) {
+      if (action.isList() || action.isAST(S.CompoundExpression)) {
+        boolean reset = false;
+        for (IExpr part : (IAST) action) {
+          reset |= run(part, rules, state, newState, stop);
+        }
+        return reset;
+      }
+      if (action.isString()) {
+        String name = action.toString();
+        if (STOP_INTEGRATION.equals(name)) {
+          stop[0] = true;
+        } else if ("RemoveEvent".equals(name)) {
+          fRemoved = true;
+        }
+        return false;
+      }
+      if (action.isRuleAST()) {
+        IExpr lhs = action.first();
+        IExpr rhs = action.second();
+        if (lhs.isList() && rhs.isList() && lhs.argSize() == rhs.argSize()) {
+          boolean reset = false;
+          for (int i = 1; i < lhs.size(); i++) {
+            reset |= run(F.Rule(((IAST) lhs).get(i), ((IAST) rhs).get(i)), rules, state, newState,
+                stop);
+          }
+          return reset;
+        }
+        int component = fSystem.componentIndex(lhs);
+        if (component >= 0) {
+          double value = fEngine.evalN(F.subst(rhs, rules)).evalfNaN();
+          if (!Double.isNaN(value)) {
+            newState[component] = value;
+            return true;
+          }
+        }
+        return false;
+      }
+      try {
+        fEngine.evaluate(F.subst(action, rules));
+      } catch (ThrowException tex) {
+        if (F.$str(STOP_INTEGRATION).equals(tex.getTag())) {
+          stop[0] = true;
+        } else {
+          throw tex;
+        }
+      }
+      return false;
+    }
+  }
+
+  /**
    * <code>true</code> if <code>rhs</code> is an explicit expression for a highest derivative, that
    * is if the solver returned something which no longer mentions any of the unknowns.
    */
@@ -1332,6 +1743,73 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
     }
     return found;
+  }
+
+  /**
+   * Conditions which refer to more than one value, <code>PD(0) == 1 - PB(0)</code>, are solved
+   * together with the others as one algebraic system for all the values they mention, and are
+   * replaced by one condition per value.
+   *
+   * @param conditions the conditions, as expressions which should be zero
+   * @param functions the dependent function symbols
+   * @return <code>conditions</code> itself if every condition names a single value or the system
+   *         has no numeric solution
+   */
+  private static IASTAppendable decoupleConditions(IASTAppendable conditions, ISymbol[] functions,
+      EvalEngine engine) {
+    java.util.Set<IExpr> applications = new java.util.LinkedHashSet<IExpr>();
+    boolean coupled = false;
+    for (IExpr condition : conditions) {
+      java.util.Set<IExpr> found = new java.util.LinkedHashSet<IExpr>();
+      collectApplications(condition, functions, found);
+      coupled |= found.size() > 1;
+      applications.addAll(found);
+    }
+    if (!coupled) {
+      return conditions;
+    }
+    IASTAppendable unknowns = F.ListAlloc(applications.size());
+    IASTAppendable toUnknowns = F.ListAlloc(applications.size());
+    for (IExpr application : applications) {
+      // distinct names: the solver tells the unknowns apart by them
+      ISymbol unknown = F.Dummy("NDSolve$value" + unknowns.size());
+      unknowns.append(unknown);
+      toUnknowns.append(F.Rule(application, unknown));
+    }
+    IASTAppendable system = F.ListAlloc(conditions.argSize());
+    for (IExpr condition : conditions) {
+      system.append(F.Equal(F.subst(condition, toUnknowns), F.C0));
+    }
+    IAST rules = SolveUtils.firstSolutionRules(engine.evaluate(F.Solve(system, unknowns)));
+    if (rules.isNIL()) {
+      return conditions;
+    }
+    IASTAppendable result = F.ListAlloc(applications.size());
+    int i = 1;
+    for (IExpr application : applications) {
+      IExpr value = engine.evalN(F.subst(unknowns.get(i++), rules));
+      if (!value.isReal()) {
+        // not determined by the conditions
+        return conditions;
+      }
+      result.append(F.Subtract(application, value));
+    }
+    return result;
+  }
+
+  /** Collect the distinct applications of the dependent functions in <code>expr</code>. */
+  private static void collectApplications(IExpr expr, ISymbol[] functions,
+      java.util.Set<IExpr> applications) {
+    if (!expr.isAST()) {
+      return;
+    }
+    if (applicationIndex(expr, functions, new int[1]) >= 0) {
+      applications.add(expr);
+      return;
+    }
+    for (IExpr arg : (IAST) expr) {
+      collectApplications(arg, functions, applications);
+    }
   }
 
   /**

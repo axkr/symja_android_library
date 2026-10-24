@@ -3391,10 +3391,15 @@ public final class LinearAlgebra {
         if (dim != null && dim[0] > 0 && dim[1] > 0) {
           if (dim[0] != dim[1]) {
             // Argument `1` at position `2` is not a non-empty square matrix.
-            return Errors.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
+            return Errors.printMessage(ast.topHead(), "matsq", F.list(arg1, F.C1), engine);
           }
           matrix = arg1.toRealMatrix();
           if (matrix != null) {
+            if (arg1.isFree(x -> x.isInexactNumber(), false)) {
+              // the decomposition is only computed in machine precision
+              // `1` has received a matrix with infinite precision.
+              return Errors.printMessage(ast.topHead(), "schurf", F.list(ast.topHead()), engine);
+            }
             HessenbergTransformer hessenbergTransformer = new HessenbergTransformer(matrix);
             final RealMatrix pMatrix = hessenbergTransformer.getP();
             final RealMatrix tMatrix = hessenbergTransformer.getH();

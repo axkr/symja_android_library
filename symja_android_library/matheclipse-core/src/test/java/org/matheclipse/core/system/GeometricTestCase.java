@@ -1622,7 +1622,16 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("PolyhedronData()", //
         "{Icosahedron,Icosidodecahedron,RhombicTriacontahedron,TruncatedIcosahedron}");
     check("PolyhedronData(\"Properties\")", //
-        "{Circumradius,EdgeCount,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,EdgeCount,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+    // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
+    check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
+        + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "
+        + "Union(Length /@ PolyhedronData(\"TruncatedIcosahedron\", \"Edges\"))}", //
+        "{90,90,{2}}");
+    check("Take(PolyhedronData(\"Icosahedron\", \"Edges\"), 3)", //
+        "{{1,2},{2,3},{1,3}}");
+    check("Union(Flatten(PolyhedronData(\"Icosahedron\", \"Edges\"))) == Range(12)", //
+        "True");
     // a question this function does not understand is a message, not missing data
     check("PolyhedronData(\"Icosahedron\", \"Nonsense\")", //
         "PolyhedronData(Icosahedron,Nonsense)");
@@ -1725,7 +1734,16 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), {\"VertexCount\",\"EdgeCount\"})", //
         "{12,30}");
     check("EntityValue(\"Polyhedron\", \"Properties\")", //
-        "{Circumradius,EdgeCount,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,EdgeCount,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+    // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
+    check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
+        + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "
+        + "Union(Length /@ PolyhedronData(\"TruncatedIcosahedron\", \"Edges\"))}", //
+        "{90,90,{2}}");
+    check("Take(PolyhedronData(\"Icosahedron\", \"Edges\"), 3)", //
+        "{{1,2},{2,3},{1,3}}");
+    check("Union(Flatten(PolyhedronData(\"Icosahedron\", \"Edges\"))) == Range(12)", //
+        "True");
     check("EntityList(\"Polyhedron\")", //
         "{Entity(Polyhedron,Icosahedron),Entity(Polyhedron,Icosidodecahedron),Entity(Polyhedron,"
             + "RhombicTriacontahedron),Entity(Polyhedron,TruncatedIcosahedron)}");

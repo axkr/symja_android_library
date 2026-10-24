@@ -141,10 +141,9 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
         + "a*Exp(-k*t), {a, k}, t)", //
         "{a->14.38886,k->0.198208}");
 
-    // initial guess [0, 0, 0] doesn't work
+    // initial guess [0, 0, 0] doesn't work; the held arguments stay as they were written
     check("FindFit(Table(Prime(x), {x, 20}), a*x*Log(b + c*x), {{a,0},{b,0},{c,0}}, x)", //
-        "FindFit({2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71},a*x*Log(b+c*x),{{a,\n"
-            + "0},{b,0},{c,0}},x)");
+        "FindFit(Table(Prime(x),{x,20}),a*x*Log(b+c*x),{{a,0},{b,0},{c,0}},x)");
   }
 
   @Test

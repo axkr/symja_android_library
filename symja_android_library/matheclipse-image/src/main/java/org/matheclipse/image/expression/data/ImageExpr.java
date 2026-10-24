@@ -104,20 +104,99 @@ final public class ImageExpr extends DataExpr<byte[]> {
     this.options = options;
   }
 
+  /**
+   * Two images are equal when they have the same type and the same samples. The picture they are
+   * shown from is not compared, since samples which differ by less than an 8 bit step draw the same
+   * picture, and neither are the options: how an image is displayed, or which layout its data was
+   * written in, does not make it another image.
+   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
     if (obj instanceof ImageExpr) {
-      return java.util.Arrays.equals(fData, ((ImageExpr) obj).fData);
+      return compareImage((ImageExpr) obj) == 0;
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return (fData == null) ? 3761 : 3761 + java.util.Arrays.hashCode(fData);
+    Raster raster = raster();
+    if (raster == null) {
+      return (fData == null) ? 3761 : 3761 + java.util.Arrays.hashCode(fData);
+    }
+    return 3761 + 31 * sampleType().hashCode() + raster.samplesHashCode();
+  }
+
+  /**
+   * Images are ordered by their size and channels, then sample by sample and last by their type, so
+   * that <code>Union</code> and <code>Sort</code> keep two different images apart and agree with
+   * {@link #equals(Object)}.
+   */
+  @Override
+  public int compareTo(IExpr expr) {
+    if (expr instanceof ImageExpr) {
+      return compareImage((ImageExpr) expr);
+    }
+    return super.compareTo(expr);
+  }
+
+  private int compareImage(ImageExpr other) {
+    if (this == other) {
+      return 0;
+    }
+    Raster raster = raster();
+    Raster otherRaster = other.raster();
+    if (raster == null || otherRaster == null) {
+      if (raster != otherRaster) {
+        return raster == null ? -1 : 1;
+      }
+      return java.util.Arrays.compare(fData, other.fData);
+    }
+    int cmp = raster.compareTo(otherRaster);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return sampleType().compareTo(other.sampleType());
+  }
+
+  /**
+   * <code>Interleaving -&gt; None</code> for an image of one channel, else whether the image is
+   * written pixel by pixel; and <code>ColorSpace</code>. Asked for by name, every option of the
+   * image is there to be picked, at its default where nothing else was given.
+   */
+  @Override
+  public IAST options(boolean all) {
+    Raster raster = raster();
+    IExpr interleaving = raster != null && raster.channels == 1 ? S.None
+        : F.booleSymbol(options.interleaved());
+    if (all) {
+      return options.toRules().map(rule -> rule.first() == S.Interleaving //
+          ? F.Rule(S.Interleaving, interleaving)
+          : rule);
+    }
+    org.matheclipse.core.interfaces.IASTAppendable result = F.ListAlloc(4);
+    result.append(F.Rule(S.ColorSpace, options.colorSpace()));
+    result.append(F.Rule(S.Interleaving, interleaving));
+    if (!options.imageSize().isAutomatic()) {
+      result.append(F.Rule(S.ImageSize, options.imageSize()));
+    }
+    if (!options.magnification().isAutomatic()) {
+      result.append(F.Rule(S.Magnification, options.magnification()));
+    }
+    return result;
+  }
+
+  /**
+   * <code>image1 + image2 + x</code>, <code>x * image</code>, <code>image ^ x</code>: sample by
+   * sample arithmetic of images of one size and real numbers - see
+   * {@link org.matheclipse.image.builtin.ImageArithmeticFunctions#arithmetic(IAST)}.
+   */
+  @Override
+  public IExpr arithmetic(IAST ast, org.matheclipse.core.eval.EvalEngine engine) {
+    return org.matheclipse.image.builtin.ImageArithmeticFunctions.arithmetic(ast);
   }
 
   public IAST getMatrix() {

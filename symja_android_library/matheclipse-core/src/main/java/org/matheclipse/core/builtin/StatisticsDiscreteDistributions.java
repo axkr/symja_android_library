@@ -1704,6 +1704,8 @@ public class StatisticsDiscreteDistributions {
       S.MultivariatePoissonDistribution
           .setEvaluator(new StatisticsDiscreteDistributions.MultivariatePoissonDistribution());
       S.BenfordDistribution.setEvaluator(new StatisticsDiscreteDistributions.BenfordDistribution());
+      S.CategoricalDistribution
+          .setEvaluator(new StatisticsDiscreteDistributions.CategoricalDistribution());
       S.BetaBinomialDistribution
           .setEvaluator(new StatisticsDiscreteDistributions.BetaBinomialDistribution());
       S.BorelTannerDistribution
@@ -2137,6 +2139,150 @@ public class StatisticsDiscreteDistributions {
    * <code>BenfordDistribution(b)</code> - Benford's law for the leading digit in base
    * <code>b</code>.
    */
+  /**
+   * <code>CategoricalDistribution({c1, c2, ...})</code> or
+   * <code>CategoricalDistribution({c1, c2, ...}, {w1, w2, ...})</code> - the distribution which
+   * draws the category <code>ci</code> with the probability <code>wi/Total(w)</code>; without
+   * weights every category is equally likely. The categories are arbitrary expressions.
+   */
+  private static final class CategoricalDistribution extends AbstractEvaluator
+      implements IPDF, IRandomVariate {
+
+    /** @return the categories or <code>null</code> if the arguments don't match */
+    private static IAST categories(IAST dist) {
+      if ((dist.isAST1() || dist.isAST2()) && dist.arg1().isList() && dist.arg1().argSize() > 0) {
+        IAST categories = (IAST) dist.arg1();
+        if (dist.isAST1() || (dist.arg2().isList() && dist.arg2().size() == categories.size())) {
+          return categories;
+        }
+      }
+      return null;
+    }
+
+    /** The probabilities of the categories, the weights divided by their total. */
+    private static IAST probabilities(IAST dist, IAST categories, EvalEngine engine) {
+      int n = categories.argSize();
+      if (dist.isAST1()) {
+        return F.constantArray(F.QQ(1, n), n);
+      }
+      IAST weights = (IAST) dist.arg2();
+      IExpr total = engine.evaluate(F.Total(weights));
+      return weights.map(w -> engine.evaluate(F.Divide(w, total)), 1);
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      IAST categories = categories(dist);
+      if (categories != null && categories.forAll(IExpr::isNumber)) {
+        IAST p = probabilities(dist, categories, EvalEngine.get());
+        // Sum(p_i*c_i)
+        IASTAppendable sum = F.PlusAlloc(categories.argSize());
+        for (int i = 1; i < categories.size(); i++) {
+          sum.append(F.Times(p.get(i), categories.get(i)));
+        }
+        return sum;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    /**
+     * The probability of a category; <code>0</code> for an expression which is unequal to all
+     * categories and a <code>Piecewise</code> of the equations otherwise.
+     */
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      IAST categories = categories(dist);
+      if (categories == null || k.isNIL()) {
+        return F.NIL;
+      }
+      if (k.isList() && !categories.exists(x -> x.isList())) {
+        // a list of values, not a category
+        return ((IAST) k).map(x -> pdf(dist, x, engine), 1);
+      }
+      IAST p = probabilities(dist, categories, engine);
+      // the sum over all categories which equal k
+      IASTAppendable sum = F.PlusAlloc(categories.argSize());
+      boolean decided = true;
+      for (int i = 1; i < categories.size(); i++) {
+        if (categories.get(i).equals(k)) {
+          sum.append(p.get(i));
+        } else {
+          IExpr equal = engine.evaluate(F.Equal(k, categories.get(i)));
+          if (equal.isTrue()) {
+            sum.append(p.get(i));
+          } else if (!equal.isFalse()) {
+            decided = false;
+          }
+        }
+      }
+      if (decided) {
+        return sum.oneIdentity0();
+      }
+      IASTAppendable pieces = F.ListAlloc(categories.argSize());
+      for (int i = 1; i < categories.size(); i++) {
+        pieces.append(F.list(p.get(i), F.Equal(k, categories.get(i))));
+      }
+      return F.Piecewise(pieces, F.C0);
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      IAST categories = categories(dist);
+      if (categories == null) {
+        return F.NIL;
+      }
+      int n = categories.argSize();
+      double[] cumulative = new double[n];
+      double total = 0.0;
+      for (int i = 0; i < n; i++) {
+        double w = dist.isAST1() ? 1.0 : dist.arg2().getAt(i + 1).evalfNaN();
+        if (Double.isNaN(w) || w < 0.0 || Double.isInfinite(w)) {
+          return F.NIL;
+        }
+        total += w;
+        cumulative[i] = total;
+      }
+      if (!(total > 0.0)) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(size);
+      for (int s = 0; s < size; s++) {
+        double u = random.nextDouble() * total;
+        int index = n - 1;
+        for (int i = 0; i < n; i++) {
+          if (u < cumulative[i]) {
+            index = i;
+            break;
+          }
+        }
+        // skip trailing categories of weight 0 which a rounding u == total would pick
+        while (index > 0 && cumulative[index] == cumulative[index - 1]) {
+          index--;
+        }
+        result.append(categories.get(index + 1));
+      }
+      return result;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   private static final class BenfordDistribution extends AbstractEvaluator
       implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
 

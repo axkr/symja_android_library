@@ -46,6 +46,36 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
   }
 
   /**
+   * The variables of a held call with {@link #localIterators()} which are cleared while its
+   * arguments are evaluated and the call is run: by default the first elements of the iterators
+   * <code>{x, xmin, xmax}</code> behind the first argument.
+   *
+   * @param held the call as it was written
+   * @return the list of the local variables
+   */
+  protected IAST localVariables(IAST held) {
+    IASTAppendable variables = F.ListAlloc();
+    for (int i = 2; i < held.size(); i++) {
+      IExpr arg = held.get(i);
+      if (arg.isList() && arg.argSize() >= 2 && arg.argSize() <= 4) {
+        appendLocalVariable(arg.first(), variables);
+      }
+    }
+    return variables;
+  }
+
+  /**
+   * Append <code>variable</code> to the local <code>variables</code>, if it is a symbol which is
+   * not protected and not already in the list.
+   */
+  protected static void appendLocalVariable(IExpr variable, IASTAppendable variables) {
+    if (variable.isSymbol() && !((ISymbol) variable).hasProtectedAttribute()
+        && !variables.contains(variable)) {
+      variables.append(variable);
+    }
+  }
+
+  /**
    * Evaluates the arguments of a held call with the variables of its iterators cleared, and runs
    * <code>body</code> on the evaluated call while they still are.
    *
@@ -54,14 +84,7 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
    * @see #localIterators()
    */
   public final IExpr evaluateLocal(IAST held, EvalEngine engine, Function<IAST, IExpr> body) {
-    IASTAppendable variables = F.ListAlloc();
-    for (int i = 2; i < held.size(); i++) {
-      IExpr arg = held.get(i);
-      if (arg.isList() && arg.argSize() >= 2 && arg.argSize() <= 4 && arg.first().isSymbol()
-          && !((ISymbol) arg.first()).hasProtectedAttribute()) {
-        variables.append(arg.first());
-      }
-    }
+    IAST variables = localVariables(held);
     return engine.evalBlock(() -> {
       // as one list, so that a Sequence of options is spliced in and Evaluate is released; a new
       // list, because a copy of the held call would also copy the mark that it is evaluated

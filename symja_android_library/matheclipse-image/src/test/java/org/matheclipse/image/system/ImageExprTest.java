@@ -66,4 +66,32 @@ public class ImageExprTest extends AbstractTestCase {
         + "ImageDimensions(ImageResize(Graphics(Disk()), 16))}", //
         "{Image,Image,{16,16}}");
   }
+
+  /** Images are told apart by their samples, so that Union, Sort and Tally keep them apart. */
+  @Test
+  public void imagesAreOrderedByTheirSamples() {
+    check("{Length(Union({Image({{0.3, 0.6}}), Image({{0.3, 0.7}})})), "
+        + "Length(Union({Image({{0.3, 0.6}}), Image({{0.3, 0.6}})})), "
+        + "Length(Tally({Image({{0.4}}), Image({{0.6}}), Image({{0.4}})})), "
+        + "Length(DeleteDuplicates({Image({{0.4}}), Image({{0.6}})}))}", //
+        "{2,1,2,2}");
+    check("{Image({{0.4}}) === Image({{0.4}}), Image({{0.4}}) === Image({{0.40001}}), "
+        + "Image({{0.4}}) === Image({{0.4}}, \"Real64\")}", //
+        "{True,False,False}");
+    check("Flatten(ImageData /@ Sort({Image({{0.7}}), Image({{0.1}}), Image({{0.4}})}))", //
+        "{0.1,0.4,0.7}");
+  }
+
+  /** The options of an image, and a single one of them at its default. */
+  @Test
+  public void optionsOfAnImage() {
+    check("Options(Image({{0.3, 0.6}}))", //
+        "{ColorSpace->Automatic,Interleaving->None}");
+    check("Options(Image({{{0.1, 0.2, 0.3}}}, ColorSpace -> \"RGB\"))", //
+        "{ColorSpace->RGB,Interleaving->True}");
+    check("Options(Image({{0.3, 0.6}}), {ImageSize, ColorSpace})", //
+        "{ColorSpace->Automatic,ImageSize->Automatic}");
+    check("Options(Image({{0.3, 0.6}}, ImageSize -> 40), ImageSize)", //
+        "{ImageSize->40}");
+  }
 }

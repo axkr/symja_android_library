@@ -88,6 +88,19 @@ import org.matheclipse.parser.client.ParserConfig;
  */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
+  /**
+   * A built-in constant like <code>Pi</code> is not protected inside a <code>Block</code> which
+   * has it as a variable.
+   */
+  @Override
+  public boolean hasProtectedAttribute() {
+    final int attributes = getAttributes();
+    if ((attributes & PROTECTED) != PROTECTED) {
+      return false;
+    }
+    return (attributes & CONSTANT) != CONSTANT || !EvalEngine.isBlockUnprotected(this);
+  }
+
 
   private static class DummyEvaluator extends AbstractSymbolEvaluator implements ISymbolEvaluator {
 

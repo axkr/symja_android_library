@@ -266,6 +266,21 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The point of a result <code>{value, {x -> x0, y -> y0, ...}}</code> as the list
+   * <code>{x0, y0, ...}</code> of its coordinates, for <code>FindArgMin</code> and
+   * <code>FindArgMax</code>.
+   *
+   * @return {@link F#NIL} if <code>result</code> has not this form
+   */
+  protected static IExpr argumentPart(IExpr result) {
+    if (result.isList2() && result.second().isListOfRules()) {
+      IAST rules = (IAST) result.second();
+      return F.mapRange(1, rules.size(), i -> rules.get(i).second());
+    }
+    return F.NIL;
+  }
+
+  /**
    * The direction of the search; {@link FindMaximum} overrides this method.
    */
   protected GoalType goalType() {
@@ -292,7 +307,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
   protected static IExpr findExtremum(IAST ast, GoalType goalType, EvalEngine engine,
       IExpr[] options) {
-    final ISymbol head = goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum;
+    // FindMinimum, FindMaximum, FindArgMin or FindArgMax
+    final ISymbol head = ast.topHead();
     IAST relationList = ast.arg1().makeList();
     if (relationList.argSize() == 0) {
       return F.NIL;

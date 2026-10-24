@@ -33,6 +33,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -996,6 +997,34 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     ComplexUnivariateIntegrator integrator = new ComplexUnivariateIntegrator(
         new IterativeLegendreGaussIntegrator(maxPoints, 1.0e-12, 1.0e-12));
     return integrator.integrate(maxEval, function, min, max);
+  }
+
+  /**
+   * The integration variables are local: <code>x = 0.3; NIntegrate(x^2, {x, 0, 1})</code>
+   * integrates over <code>x</code> and not over the value of <code>x</code>.
+   */
+  @Override
+  public boolean localIterators() {
+    return true;
+  }
+
+  /** The integrand stays held, as an inner <code>NIntegrate()</code> is only sampled. */
+  @Override
+  protected boolean samplesFirstArgument() {
+    return true;
+  }
+
+  /** The variables of all ranges, also of the path <code>{x, x0, x1, ..., xn}</code>. */
+  @Override
+  protected IAST localVariables(IAST held) {
+    IASTAppendable variables = F.ListAlloc();
+    for (int i = 2; i < held.size(); i++) {
+      IExpr arg = held.get(i);
+      if (arg.isList() && arg.argSize() >= 2) {
+        appendLocalVariable(arg.first(), variables);
+      }
+    }
+    return variables;
   }
 
   @Override

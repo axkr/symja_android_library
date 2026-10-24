@@ -811,7 +811,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
                 }
               }
             }
-            return F.NIL;
+            return solvePowerTimesExponential(ast, exprWithoutVariable, variable, multipleValues,
+                engine);
           }
           IExpr value = engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
           return extractVariableRecursive(timesWithVariable.oneIdentity1(), value, predicate,
@@ -1300,7 +1301,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
   }
 
   /**
-   * Solve <code>a*x^n + b*m^x == 0</code> as <code>x == -n*ProductLog(k, z)/Log(m)</code>. From
+   * Solve <code>a*x^n + b*m^x == 0</code> as <code>x == -n*ProductLog(k, z)/Log(m)</code>, and
+   * <code>a*x^n + b*m^(k*x) == 0</code> the same way with <code>m^k</code> for <code>m</code>. From
    * <code>x^n == c*m^x</code> with <code>c = -b/a</code> follows <code>x == r*m^(x/n)</code> for
    * an <code>n</code>-th root <code>r</code> of <code>c</code>, and <code>z = -r*Log(m)/n</code>.
    * The principal root is used, for an even <code>n</code> its negative too, and for an odd
@@ -1327,15 +1329,22 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
     // a*x^n
     IExpr a = t1[0];
     IExpr n = t1[1].exponent();
-    // b*m^x
+    // b*m^(k*x)
     IExpr b = t2[0];
     IExpr m = t2[1].base();
-    if (!t1[1].base().equals(variable) || !n.isFree(variable) //
-        || !t2[1].exponent().equals(variable) || !m.isFree(variable)) {
+    if (!t1[1].base().equals(variable) || !n.isFree(variable) || !m.isFree(variable)) {
       return F.NIL;
     }
+    IExpr k = F.C1;
+    if (!t2[1].exponent().equals(variable)) {
+      k = engine.evaluate(F.Divide(t2[1].exponent(), variable));
+      if (!k.isFree(variable) || k.isZero()) {
+        return F.NIL;
+      }
+    }
     IExpr c = engine.evaluate(F.Times(F.CN1, b, F.Power(a, F.CN1)));
-    IExpr logM = F.Log(m);
+    // m^(k*x) is (m^k)^x
+    IExpr logM = k.isOne() ? F.Log(m) : engine.evaluate(F.Times(k, F.Log(m)));
     boolean evenExponent = n.isInteger() && ((IInteger) n).isEven();
     IExpr z = F.Times(F.Power(c, F.Power(n, F.CN1)), logM, F.Power(n, F.CN1));
     IASTAppendable arguments = F.ListAlloc(2);
@@ -1417,6 +1426,47 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
       }
     }
     return engine.evaluate(condition);
+  }
+
+  /**
+   * Solve <code>x^n*m^(k*x) == z</code> for a nonzero <code>z</code> as
+   * <code>x^n - z*m^(-k*x) == 0</code>, which {@link #solvePowerExponential} answers with every
+   * root of <code>z</code> it knows: <code>x^2*E^x == 1</code> is <code>x*E^(x/2) == 1</code> or
+   * <code>x*E^(x/2) == -1</code>.
+   *
+   * @return {@link F#NIL} if the product is not of this form
+   */
+  private static IExpr solvePowerTimesExponential(IAST times, IExpr exprWithoutVariable,
+      IExpr variable, boolean multipleValues, EvalEngine engine) {
+    if (times.argSize() != 2 || exprWithoutVariable.isZero()
+        || !exprWithoutVariable.isFree(variable)) {
+      return F.NIL;
+    }
+    IExpr power = times.arg1();
+    IExpr exponential = times.arg2();
+    if (!power.isPower() || !power.base().equals(variable)) {
+      power = times.arg2();
+      exponential = times.arg1();
+    }
+    if (!power.isPower() || !power.base().equals(variable) || power.exponent().toIntDefault() < 2
+        || !exponential.isPower() || !exponential.base().isFree(variable)
+        || exponential.exponent().isFree(variable)) {
+      return F.NIL;
+    }
+    IExpr sum = engine.evaluate(F.Subtract(power, F.Times(exprWithoutVariable,
+        F.Power(exponential.base(), F.Negate(exponential.exponent())))));
+    if (!sum.isPlus()) {
+      return F.NIL;
+    }
+    IExpr result = solvePowerExponential((IAST) sum, F.C0, variable, multipleValues, engine);
+    if (result.isList() && result.argSize() >= 2 && power.exponent().isEvenResult()) {
+      // the solution through the negative root of z first
+      IASTAppendable reordered = ((IAST) result).copyAppendable();
+      reordered.set(1, result.second());
+      reordered.set(2, result.first());
+      return reordered;
+    }
+    return result;
   }
 
   /**

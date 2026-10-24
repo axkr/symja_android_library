@@ -939,9 +939,30 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       return true;
     }
     if (obj instanceof GraphExpr) {
-      return fData.equals(((GraphExpr) obj).fData);
+      return isSameGraph((GraphExpr<?>) obj);
     }
     return false;
+  }
+
+  /**
+   * Two graphs are the same only with the same vertices and edges in the same order, the same edge
+   * weights and the same options. A graph with its edges listed in another order is a different
+   * graph, for <code>SameQ</code> as for <code>Equal</code>.
+   */
+  private boolean isSameGraph(GraphExpr<?> other) {
+    return fData.equals(other.fData)
+        && fullForm((AbstractBaseGraph<IExpr, ?>) fData, false)
+            .equals(fullForm((AbstractBaseGraph<IExpr, ?>) other.fData, false))
+        && options.equals(other.options);
+  }
+
+  /** Two graphs are equal only if they are the same graph, see {@link #equals(Object)}. */
+  @Override
+  public IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
+    if (that instanceof GraphExpr) {
+      return equals(that) ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+    }
+    return super.equalTernary(that, engine);
   }
 
   /**

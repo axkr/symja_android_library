@@ -134,12 +134,8 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    if (graphicsList.argSize() == 0) {
-      if (!PlotShapeProbe.isNoCurve(ast.arg1())) {
-        return F.NIL;
-      }
-      // every curve was empty: an empty picture, not a call that could not be read
-    }
+    // every curve was empty, or no sample had a numeric value - pos(t) of an undefined pos: an
+    // empty picture, not a call that could not be read, the way Plot3D answers for f(x, y)
     return Plot3DTools.graphics3D(graphicsList, originalAST, argSize,
         new IExpr[] {F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
             F.Rule(S.BoxRatios,

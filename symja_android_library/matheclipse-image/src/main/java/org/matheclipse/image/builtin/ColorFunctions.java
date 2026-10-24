@@ -36,7 +36,8 @@ import org.matheclipse.image.expression.data.ImageOptions;
  * The other colour spaces are reachable one channel at a time, where there is no ambiguity:
  * <code>ColorSeparate(image, "HSB")</code> gives three greyscale planes and
  * <code>ColorCombine({h, s, b}, "HSB")</code> puts them back together. A colour <em>directive</em>
- * has no such problem and converts to <code>"HSB"</code> and <code>"CMYK"</code> directly.
+ * has no such problem and converts to <code>"HSB"</code>, <code>"CMYK"</code> and <code>"XYZ"</code>
+ * directly, and a list of directives converts directive by directive.
  */
 public class ColorFunctions {
 
@@ -152,9 +153,8 @@ public class ColorFunctions {
       if (!ast.arg2().isString()) {
         return F.NIL;
       }
-      String space = ast.arg2().toString();
-      if (ast.arg1() instanceof ImageExpr
-          && ("Grayscale".equalsIgnoreCase(space) || "Gray".equalsIgnoreCase(space))) {
+      String space = canonicalSpace(ast.arg2().toString());
+      if (ast.arg1() instanceof ImageExpr && GRAYSCALE.equals(space)) {
         IExpr gray = realGrayscale((ImageExpr) ast.arg1(), engine);
         if (gray.isPresent()) {
           return gray;
@@ -164,8 +164,58 @@ public class ColorFunctions {
       if (image != null) {
         return convertImage(image, space);
       }
-      float[] rgba = Colors.toRgba(ast.arg1());
-      return rgba == null ? F.NIL : convertColor(rgba, space);
+      if (ast.arg1().isList() && ast.arg1().argSize() > 0
+          && ((IAST) ast.arg1()).forAll(ColorConvert::isColorDirective)) {
+        // a list of colours converts colour by colour
+        IASTAppendable result = F.ListAlloc(ast.arg1().argSize());
+        for (IExpr color : (IAST) ast.arg1()) {
+          IExpr converted = convertColor(color, space);
+          if (converted.isNIL()) {
+            return F.NIL;
+          }
+          result.append(converted);
+        }
+        return result;
+      }
+      return convertColor(ast.arg1(), space);
+    }
+
+    private static final String GRAYSCALE = "Grayscale";
+    private static final String RGB = "RGB";
+    private static final String HSB = "HSB";
+    private static final String CMYK = "CMYK";
+    private static final String XYZ = "XYZ";
+
+    /**
+     * The colour space a name stands for: a space may be named as the directive whose colours are
+     * in it, <code>"GrayLevel"</code> for <code>"Grayscale"</code> or <code>"RGBColor"</code> for
+     * <code>"RGB"</code>. A name which is no space handled here comes back as it is.
+     */
+    private static String canonicalSpace(String space) {
+      if ("Grayscale".equalsIgnoreCase(space) || "Gray".equalsIgnoreCase(space)
+          || "GrayLevel".equalsIgnoreCase(space)) {
+        return GRAYSCALE;
+      }
+      if ("RGB".equalsIgnoreCase(space) || "RGBColor".equalsIgnoreCase(space)) {
+        return RGB;
+      }
+      if ("HSB".equalsIgnoreCase(space) || "HSV".equalsIgnoreCase(space)
+          || "Hue".equalsIgnoreCase(space)) {
+        return HSB;
+      }
+      if ("CMYK".equalsIgnoreCase(space) || "CMYKColor".equalsIgnoreCase(space)) {
+        return CMYK;
+      }
+      if ("XYZ".equalsIgnoreCase(space) || "XYZColor".equalsIgnoreCase(space)) {
+        return XYZ;
+      }
+      return space;
+    }
+
+    /** A colour directive, as opposed to a list of channel values which is a colour as well. */
+    private static boolean isColorDirective(IExpr expr) {
+      return expr.isAST(S.RGBColor) || expr.isAST(S.GrayLevel) || expr.isAST(S.Hue)
+          || expr.isAST(S.CMYKColor);
     }
 
     /**
@@ -200,11 +250,11 @@ public class ColorFunctions {
       int channels = Boof.channels(image);
       int width = image.getWidth();
       int height = image.getHeight();
-      if ("Grayscale".equalsIgnoreCase(space) || "Gray".equalsIgnoreCase(space)) {
+      if (GRAYSCALE.equals(space)) {
         return new ImageExpr(Pixels.fromPixels(width, height, 1,
             (x, y) -> new float[] {Boof.intensity(image, x, y)}), null);
       }
-      if ("RGB".equalsIgnoreCase(space)) {
+      if (RGB.equals(space)) {
         return new ImageExpr(Pixels.fromPixels(width, height, 3, (x, y) -> {
           float[] values = Pixels.pixel(image, x, y, channels);
           return channels == 1 //
@@ -217,19 +267,50 @@ public class ColorFunctions {
       return F.NIL;
     }
 
-    private static IExpr convertColor(float[] rgba, String space) {
-      if ("Grayscale".equalsIgnoreCase(space) || "Gray".equalsIgnoreCase(space)) {
-        float gray = 0.299f * rgba[0] + 0.587f * rgba[1] + 0.114f * rgba[2];
-        return F.GrayLevel(F.num(gray));
+    /**
+     * One colour directive in another space. The grey level, the RGB channels and the XYZ
+     * coordinates are computed from the channels in machine doubles, so
+     * <code>RGBColor(1, 0, 0)</code> has the grey level <code>0.299</code> exactly.
+     *
+     * @return {@link F#NIL} if <code>color</code> is no colour or <code>space</code> is no space
+     *         handled here
+     */
+    private static IExpr convertColor(IExpr color, String space) {
+      double[] rgbaDouble = Colors.toRgbaDouble(color);
+      if (rgbaDouble == null) {
+        return F.NIL;
       }
-      if ("RGB".equalsIgnoreCase(space)) {
-        return Colors.toRGBColor(rgba);
+      double alpha = rgbaDouble[3];
+      if (GRAYSCALE.equals(space)) {
+        IExpr gray = F.num(Colors.grayLevel(rgbaDouble[0], rgbaDouble[1], rgbaDouble[2]));
+        return alpha < 1.0 ? F.binaryAST2(S.GrayLevel, gray, F.num(alpha)) : F.GrayLevel(gray);
       }
-      if ("HSB".equalsIgnoreCase(space) || "HSV".equalsIgnoreCase(space)) {
+      if (RGB.equals(space)) {
+        IExpr r = F.num(rgbaDouble[0]);
+        IExpr g = F.num(rgbaDouble[1]);
+        IExpr b = F.num(rgbaDouble[2]);
+        return alpha < 1.0 ? F.RGBColor(r, g, b, F.num(alpha)) : F.RGBColor(r, g, b);
+      }
+      if (XYZ.equals(space)) {
+        double[] xyz = Colors.rgbToXyz(rgbaDouble[0], rgbaDouble[1], rgbaDouble[2]);
+        IASTAppendable result = F.ast(S.XYZColor, 4);
+        for (double coordinate : xyz) {
+          result.append(F.num(coordinate));
+        }
+        if (alpha < 1.0) {
+          result.append(F.num(alpha));
+        }
+        return result;
+      }
+      float[] rgba = Colors.toRgba(color);
+      if (rgba == null) {
+        return F.NIL;
+      }
+      if (HSB.equals(space)) {
         float[] hsb = Colors.rgbToHsb(rgba);
         return F.Hue(F.num(hsb[0]), F.num(hsb[1]), F.num(hsb[2]));
       }
-      if ("CMYK".equalsIgnoreCase(space)) {
+      if (CMYK.equals(space)) {
         float[] cmyk = Colors.rgbToCmyk(rgba);
         return F.quaternary(S.CMYKColor, F.num(cmyk[0]), F.num(cmyk[1]), F.num(cmyk[2]),
             F.num(cmyk[3]));

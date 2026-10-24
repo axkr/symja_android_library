@@ -194,6 +194,37 @@ public final class Raster {
     return result;
   }
 
+  /**
+   * Order two rasters by their shape - width, height, channels - and then sample by sample, row by
+   * row from the top.
+   */
+  public int compareTo(Raster other) {
+    int cmp = Integer.compare(width, other.width);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(height, other.height);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(channels, other.channels);
+    if (cmp != 0) {
+      return cmp;
+    }
+    for (int i = 0; i < samples.length; i++) {
+      cmp = Double.compare(samples[i], other.samples[i]);
+      if (cmp != 0) {
+        return cmp;
+      }
+    }
+    return 0;
+  }
+
+  /** A hash of the shape and the samples, equal for two rasters {@link #compareTo} finds equal. */
+  public int samplesHashCode() {
+    return 31 * (31 * (31 * width + height) + channels) + java.util.Arrays.hashCode(samples);
+  }
+
   /** The smallest and the largest colour sample. */
   public double[] colorRange() {
     double min = Double.POSITIVE_INFINITY;

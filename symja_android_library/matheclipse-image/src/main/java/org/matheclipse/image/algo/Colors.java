@@ -14,7 +14,8 @@ import boofcv.alg.color.ColorLab;
  * The colour space conversions here all round trip through RGB, because that is the only thing an
  * <code>ImageExpr</code> can store. <code>"LAB"</code>, <code>"XYZ"</code> and <code>"LUV"</code>
  * have channels that do not fit in <code>0.0 ... 1.0</code>, so they appear here only as a
- * measurement - {@link #distance} - and not as a colour space an image can be converted into.
+ * measurement - {@link #distance} - and as the space a single colour directive is converted into
+ * ({@link #rgbToXyz}), not as a colour space an image can be converted into.
  */
 public final class Colors {
 
@@ -77,6 +78,88 @@ public final class Colors {
       return null;
     }
     return new float[] {(float) gray, (float) gray, (float) gray, 1.0f};
+  }
+
+  /**
+   * The colour <code>expr</code> denotes, in machine doubles: an <code>RGBColor</code> or a
+   * <code>GrayLevel</code> keeps the digits it was written with, where {@link #toRgba(IExpr)}
+   * rounds them to floats. The other directives are converted through {@link #toRgba(IExpr)}.
+   *
+   * @return <code>{r, g, b, a}</code>, or <code>null</code> if <code>expr</code> is not a colour
+   */
+  public static double[] toRgbaDouble(IExpr expr) {
+    if (expr.isAST(S.RGBColor) || expr.isAST(S.GrayLevel)) {
+      IAST ast = (IAST) expr;
+      boolean gray = ast.isAST(S.GrayLevel);
+      int count = gray ? 1 : 3;
+      if (ast.argSize() < count) {
+        return null;
+      }
+      double[] result = new double[] {0.0, 0.0, 0.0, 1.0};
+      for (int i = 0; i < count; i++) {
+        result[i] = ast.get(i + 1).evalfNaN();
+        if (Double.isNaN(result[i])) {
+          return null;
+        }
+      }
+      if (gray) {
+        result[1] = result[0];
+        result[2] = result[0];
+      }
+      if (ast.argSize() > count) {
+        double alpha = ast.get(count + 1).evalfNaN();
+        if (!Double.isNaN(alpha)) {
+          result[3] = alpha;
+        }
+      }
+      return result;
+    }
+    float[] rgba = toRgba(expr);
+    if (rgba == null) {
+      return null;
+    }
+    return new double[] {rgba[0], rgba[1], rgba[2], rgba[3]};
+  }
+
+  /**
+   * The grey level of an RGB colour, weighting the channels by how bright they look:
+   * <code>0.299 r + 0.587 g + 0.114 b</code>.
+   */
+  public static double grayLevel(double r, double g, double b) {
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+  }
+
+  /**
+   * sRGB to CIE XYZ, relative to the D50 white point: the channels are linearised by the sRGB
+   * transfer function and then multiplied by the sRGB primaries adapted from D65 to D50 with the
+   * Bradford transform. Pure red, green and blue give the three columns of the matrix.
+   */
+  public static double[] rgbToXyz(double r, double g, double b) {
+    double lr = linearSRGB(r);
+    double lg = linearSRGB(g);
+    double lb = linearSRGB(b);
+    return new double[] {//
+        SRGB_TO_XYZ_D50[0][0] * lr + SRGB_TO_XYZ_D50[0][1] * lg + SRGB_TO_XYZ_D50[0][2] * lb,
+        SRGB_TO_XYZ_D50[1][0] * lr + SRGB_TO_XYZ_D50[1][1] * lg + SRGB_TO_XYZ_D50[1][2] * lb,
+        SRGB_TO_XYZ_D50[2][0] * lr + SRGB_TO_XYZ_D50[2][1] * lg + SRGB_TO_XYZ_D50[2][2] * lb};
+  }
+
+  /**
+   * The sRGB primaries in CIE XYZ, adapted to D50 with the Bradford transform from the white
+   * points <code>x = 0.31271, y = 0.32902</code> (D65) and <code>x = 0.34567, y = 0.35850</code>
+   * (D50). One column per primary.
+   */
+  private static final double[][] SRGB_TO_XYZ_D50 = {//
+      {0.43602191242669813, 0.38510884137388846, 0.14308124062061284}, //
+      {0.22247517260243593, 0.7169066111623497, 0.06061821623521407}, //
+      {0.013928134067434789, 0.09710156693979348, 0.7141585835116004}};
+
+  /** The sRGB transfer function undone: a channel value in proportion to the light it stands for. */
+  private static double linearSRGB(double c) {
+    if (c <= 0.04045) {
+      return c / 12.92;
+    }
+    return Math.pow((c + 0.055) / 1.055, 2.4);
   }
 
   /** An <code>RGBColor</code> expression, with the alpha argument only when it is not opaque. */

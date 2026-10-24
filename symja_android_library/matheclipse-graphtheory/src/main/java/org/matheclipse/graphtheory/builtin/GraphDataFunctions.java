@@ -3,7 +3,11 @@ package org.matheclipse.graphtheory.builtin;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.jgrapht.Graph;
@@ -742,52 +746,145 @@ public class GraphDataFunctions {
     }
   }
 
-  private static class RandomGraph extends AbstractEvaluator {
+  /**
+   * <code>RandomGraph({n, m})</code> or <code>RandomGraph(dist)</code> - a random graph with
+   * <code>n</code> vertices and <code>m</code> edges or one drawn from the graph distribution
+   * <code>dist</code>; <code>RandomGraph(spec, k)</code> is a list of <code>k</code> such graphs.
+   * The distributions are <code>UniformGraphDistribution(n, m)</code>,
+   * <code>BarabasiAlbertGraphDistribution(n, k)</code> and
+   * <code>WattsStrogatzGraphDistribution(n, p)</code> or
+   * <code>WattsStrogatzGraphDistribution(n, p, k)</code>. The graphs are drawn with the random
+   * generator of the engine, so <code>SeedRandom</code> makes them reproducible.
+   */
+  private static class RandomGraph extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList2()) {
-        int vertices = ast.arg1().first().toMachineInt();
-        if (vertices <= 0) {
-          // Positive machine-sized integer expected at position `2` in `1`
-          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast.arg1(), F.C1), engine);
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      try {
+        Supplier<Graph<IExpr, ExprEdge>> generator = generator(ast, engine);
+        if (generator == null) {
+          return F.NIL;
         }
-        if (vertices > Config.MAX_GRAPH_VERTICES_SIZE) {
-          ASTElementLimitExceeded.throwIt(vertices);
+        // the options are only attached to the graphs if some are given
+        IAST optionsList =
+            argSize < ast.argSize() ? GraphGraphics.createOptionsList(options) : null;
+        if (argSize == 2) {
+          int k = ast.arg2().toMachineInt();
+          if (k <= 0) {
+            // Positive machine-sized integer expected at position `2` in `1`
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+          }
+          if (k > Config.MAX_AST_SIZE) {
+            ASTElementLimitExceeded.throwIt(k);
+          }
+          return F.mapRange(0, k, i -> newGraph(generator.get(), optionsList));
         }
+        return newGraph(generator.get(), optionsList);
+      } catch (IllegalArgumentException iae) {
+        // more edges than a simple graph with these vertices can have
+        return Errors.printMessage(ast.topHead(), iae, engine);
+      }
+    }
 
-        int edges = ast.arg1().second().toMachineInt();
-        if (edges <= 0) {
+    private static IExpr newGraph(Graph<IExpr, ExprEdge> graph, IAST optionsList) {
+      return optionsList == null ? GraphExpr.newInstance(graph)
+          : GraphExpr.newInstance(graph, optionsList.copyAppendable());
+    }
+
+    /**
+     * The generator of the graphs of the specification in the first argument of
+     * <code>ast</code>.
+     *
+     * @return <code>null</code> if the specification is invalid
+     */
+    private static Supplier<Graph<IExpr, ExprEdge>> generator(final IAST ast,
+        EvalEngine engine) {
+      IExpr spec = ast.arg1();
+      Random random = engine.getRandom();
+      if (spec.isList2() || spec.isAST(S.UniformGraphDistribution, 3)) {
+        int vertices = vertexCount(spec, ast, engine);
+        if (vertices <= 0) {
+          return null;
+        }
+        int edges = spec.second().toMachineInt();
+        if (edges < 0 || (edges == 0 && spec.isList())) {
           // Positive machine-sized integer expected at position `2` in `1`
-          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast.arg1(), F.C2), engine);
+          Errors.printMessage(ast.topHead(), "intpm", F.list(spec, F.C2), engine);
+          return null;
         }
         if (edges > Config.MAX_AST_SIZE) {
           ASTElementLimitExceeded.throwIt(edges);
         }
-
-        return randomGraph(vertices, edges, ast, engine);
+        return () -> uniformGraph(vertices, edges, random);
       }
-      return F.NIL;
-    }
-
-    private static IExpr randomGraph(int vertices, int edges, final IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        int k = ast.arg2().toMachineInt();
+      if (spec.isAST(S.BarabasiAlbertGraphDistribution, 3)) {
+        int vertices = vertexCount(spec, ast, engine);
+        if (vertices <= 0) {
+          return null;
+        }
+        int k = spec.second().toMachineInt();
         if (k <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
-          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+          Errors.printMessage(ast.topHead(), "intpm", F.list(spec, F.C2), engine);
+          return null;
         }
-        if (k > Config.MAX_AST_SIZE) {
-          ASTElementLimitExceeded.throwIt(k);
-        }
-        return F.mapRange(0, k, i -> randomGraph(vertices, edges));
+        return () -> barabasiAlbertGraph(vertices, k, random);
       }
-      return randomGraph(vertices, edges);
+      if (spec.isAST(S.WattsStrogatzGraphDistribution, 3, 4)) {
+        int vertices = vertexCount(spec, ast, engine);
+        if (vertices <= 0) {
+          return null;
+        }
+        double p = spec.second().evalfNaN();
+        if (!(p >= 0.0 && p <= 1.0)) {
+          return null;
+        }
+        int k = 2;
+        if (spec.argSize() == 3) {
+          k = spec.getAt(3).toMachineInt();
+          if (k <= 0) {
+            // Positive machine-sized integer expected at position `2` in `1`
+            Errors.printMessage(ast.topHead(), "intpm", F.list(spec, F.C3), engine);
+            return null;
+          }
+        }
+        final int neighbours = k;
+        return () -> wattsStrogatzGraph(vertices, p, neighbours, random);
+      }
+      return null;
     }
 
-    private static IExpr randomGraph(int vertices, int edges) {
+    /** The positive number of vertices in the first argument of <code>spec</code> or -1. */
+    private static int vertexCount(IExpr spec, IAST ast, EvalEngine engine) {
+      int vertices = spec.first().toMachineInt();
+      if (vertices <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`
+        Errors.printMessage(ast.topHead(), "intpm", F.list(spec, F.C1), engine);
+        return -1;
+      }
+      if (vertices > Config.MAX_GRAPH_VERTICES_SIZE) {
+        ASTElementLimitExceeded.throwIt(vertices);
+      }
+      return vertices;
+    }
+
+    /** The vertices <code>1, 2, ..., n</code> of a simple undirected graph without edges. */
+    private static Graph<IExpr, ExprEdge> simpleGraph(int n) {
+      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
+          .buildGraph();
+      for (int i = 1; i <= n; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+      return target;
+    }
+
+    /** A graph drawn uniformly from the simple graphs with the given numbers of vertices and edges. */
+    private static Graph<IExpr, ExprEdge> uniformGraph(int vertices, int edges, Random random) {
       GnmRandomGraphGenerator<IExpr, ExprEdge> gen =
-          new GnmRandomGraphGenerator<IExpr, ExprEdge>(vertices, edges);
+          new GnmRandomGraphGenerator<IExpr, ExprEdge>(vertices, edges, random, false, false);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .undirected() //
           .allowingMultipleEdges(false) //
@@ -795,7 +892,95 @@ public class GraphDataFunctions {
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
           .buildGraph();
       gen.generateGraph(target);
-      return GraphExpr.newInstance(target);
+      return target;
+    }
+
+    /**
+     * Preferential attachment: the first <code>k + 1</code> vertices form a complete graph, every
+     * further vertex is joined to <code>k</code> distinct earlier vertices, each chosen with a
+     * probability proportional to its degree. The graph has
+     * <code>k*(k + 1)/2 + (n - k - 1)*k</code> edges.
+     */
+    private static Graph<IExpr, ExprEdge> barabasiAlbertGraph(int n, int k, Random random) {
+      Graph<IExpr, ExprEdge> target = simpleGraph(n);
+      int seed = Math.min(n, k + 1);
+      // every vertex appears once for each of its edges, so a uniform pick from this list is a
+      // pick proportional to the degree
+      List<Integer> endpoints = new ArrayList<Integer>();
+      for (int i = 1; i <= seed; i++) {
+        for (int j = i + 1; j <= seed; j++) {
+          target.addEdge(F.ZZ(i), F.ZZ(j));
+          endpoints.add(i);
+          endpoints.add(j);
+        }
+      }
+      for (int v = seed + 1; v <= n; v++) {
+        Set<Integer> chosen = new LinkedHashSet<Integer>();
+        while (chosen.size() < k) {
+          chosen.add(endpoints.get(random.nextInt(endpoints.size())));
+        }
+        for (int t : chosen) {
+          target.addEdge(F.ZZ(t), F.ZZ(v));
+          endpoints.add(t);
+          endpoints.add(v);
+        }
+      }
+      return target;
+    }
+
+    /**
+     * The small world graph: a ring of <code>n</code> vertices, each joined to its
+     * <code>k</code> nearest neighbours on either side, whose edges are rewired with the
+     * probability <code>p</code>. A rewired edge keeps its first vertex and its place in the edge
+     * list and gets a new second vertex, chosen uniformly from the vertices it isn't joined to
+     * yet, so the graph stays simple and keeps all its edges.
+     */
+    private static Graph<IExpr, ExprEdge> wattsStrogatzGraph(int n, double p, int k,
+        Random random) {
+      List<Set<Integer>> adjacent = new ArrayList<Set<Integer>>(n + 1);
+      for (int i = 0; i <= n; i++) {
+        adjacent.add(new HashSet<Integer>());
+      }
+      List<Integer> sources = new ArrayList<Integer>();
+      List<Integer> targets = new ArrayList<Integer>();
+      // the edges i<->i+1 of all vertices first, then i<->i+2 and so on
+      for (int j = 1; j <= k; j++) {
+        for (int i = 1; i <= n; i++) {
+          int t = (i + j - 1) % n + 1;
+          if (t != i && adjacent.get(i).add(t)) {
+            adjacent.get(t).add(i);
+            sources.add(i);
+            targets.add(t);
+          }
+        }
+      }
+      if (p > 0.0) {
+        for (int e = 0; e < sources.size(); e++) {
+          if (random.nextDouble() < p) {
+            int s = sources.get(e);
+            Set<Integer> neighbours = adjacent.get(s);
+            if (neighbours.size() >= n - 1) {
+              // no vertex left to rewire to
+              continue;
+            }
+            int w;
+            do {
+              w = random.nextInt(n) + 1;
+            } while (w == s || neighbours.contains(w));
+            int old = targets.get(e);
+            neighbours.remove(old);
+            adjacent.get(old).remove(s);
+            neighbours.add(w);
+            adjacent.get(w).add(s);
+            targets.set(e, w);
+          }
+        }
+      }
+      Graph<IExpr, ExprEdge> target = simpleGraph(n);
+      for (int e = 0; e < sources.size(); e++) {
+        target.addEdge(F.ZZ(sources.get(e)), F.ZZ(targets.get(e)));
+      }
+      return target;
     }
 
     @Override
@@ -806,6 +991,12 @@ public class GraphDataFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
+          GraphGraphics.defaultGraphOptionValues());
     }
   }
 

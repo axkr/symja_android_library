@@ -147,7 +147,7 @@ public class SympyPortBuiltinsTest extends ExprEvaluatorTestCase {
     check("RecurrenceTable({a(n)==a(n-1)+a(n-2), a(1)==1, a(2)==1}, a(n), {n, 5, 8})", //
         "{5,8,13,21}");
     check("RecurrenceTable({a(n+1)==n*a(n), a(1)==1}, a, {n, 1, 5})", //
-        "RecurrenceTable({a(1+n)==n*a(n),a(1)==1},a,{n,1,5})");
+        "{1,1,2,6,24}");
     check("RecurrenceTable({a(n+1)==n*a(n), a(1)==1}, a(n), {n, 6})", //
         "{1,1,2,6,24,120}");
   }

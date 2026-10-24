@@ -58,7 +58,9 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    */
   static IExpr solveNumeric(SolveOptions options, IAST ast, long precision, EvalEngine engine) {
     if (precision == SolveUtils.MACHINE_PRECISION_REQUESTED) {
-      return distinctSolutions(new SolveData(options).of(ast, true, true, engine),
+      IExpr result = Solve.withRationalizedSolutions(ast,
+          new SolveData(options).of(ast, true, true, engine), true, false, engine);
+      return distinctSolutions(result,
           ast.argSize() >= 2 ? ast.arg2().makeList() : F.CEmptyList);
     }
     IExpr result = new SolveData(options).of(ast, false, true, engine);
@@ -93,7 +95,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
   }
 
   /** The rules of the solution in the order of the variables they are for. */
-  private static IAST inVariableOrder(IAST solution, IAST variables) {
+  static IAST inVariableOrder(IAST solution, IAST variables) {
     if (variables.argSize() != solution.argSize()) {
       return solution;
     }
@@ -115,7 +117,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
   }
 
   /** The solution with real values, if all its imaginary parts are rounding noise. */
-  private static IAST withoutImaginaryNoise(IAST solution) {
+  static IAST withoutImaginaryNoise(IAST solution) {
     IASTMutable real = solution.copy();
     for (int i = 1; i < solution.size(); i++) {
       IExpr rule = solution.get(i);

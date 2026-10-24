@@ -598,6 +598,7 @@ public class Errors {
       "rubiendless",
       "Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.", //
       "sandbox", "The operation `1` is not allowed in sandbox mode.", //
+      "schurf", "`1` has received a matrix with infinite precision.", //
       "sclr", "The scalar expression `1` does not have a `2`.", //
       "sdatc", "Coefficient specification `1` in `2` is not a list.", //
       "sdatd",

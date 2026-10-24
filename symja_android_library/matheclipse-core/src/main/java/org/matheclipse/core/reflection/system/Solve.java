@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
@@ -24,6 +25,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
@@ -3100,6 +3102,200 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
 
+  /** The most variables of a system which {@link #withRationalizedSolutions} solves exactly. */
+  private static final int MAX_RATIONALIZED_VARIABLES = 3;
+
+  /**
+   * The largest product of the total degrees of the equations - the bound of the number of their
+   * isolated solutions - which {@link #withRationalizedSolutions} solves exactly.
+   */
+  private static final long MAX_RATIONALIZED_BEZOUT_BOUND = 16L;
+
+  /** The time the exact solution of {@link #withRationalizedSolutions} may take, in milliseconds. */
+  private static final long RATIONALIZED_SOLVE_MILLIS = 1000L;
+
+  /** The relative distance below which a solution of the exact system is a numerical one. */
+  private static final double RATIONALIZED_SAME = 1.0e-8;
+
+  /**
+   * The numerical solutions of a small system of polynomial or rational equations with machine
+   * number coefficients, completed by the solutions of the system with the rationalized
+   * coefficients: elimination with machine numbers loses a solution whenever a factor of an
+   * equation only vanishes up to rounding, as <code>(x2/(2*(1+x2))-0.25)*x1</code> does for
+   * <code>x1 == 0</code>. The numerators of the rationalized equations are solved exactly, the
+   * solutions at a pole are dropped, and the others are numericized and appended unless they are
+   * among the numerical ones already.
+   *
+   * <p>
+   * Only coefficients which rationalize to small fractions are taken, and only systems of a few
+   * variables with few solutions, under a time limit. Without <code>exactFirst</code> nothing is
+   * solved again when the numerical solutions are as many as the system can have.
+   *
+   * @param ast the <code>Solve(eqns, vars)</code> or <code>NSolve(eqns, vars)</code> call
+   * @param result the numerical solutions, or {@link F#NIL} if the numerical solver failed
+   * @param bareExpressionsAreEquations whether a term which isn't a relation is an equation
+   *        <code>expr == 0</code>
+   * @param exactFirst whether the solutions of the exact system come first, in their order, as
+   *        <code>Solve</code> gives them; otherwise they are appended to the numerical ones, as
+   *        <code>NSolve</code> gives them
+   * @return the completed solutions, or <code>result</code> if the system isn't of this kind or
+   *         the exact solution doesn't succeed
+   */
+  static IExpr withRationalizedSolutions(IAST ast, IExpr result,
+      boolean bareExpressionsAreEquations, boolean exactFirst, EvalEngine engine) {
+    if (ast.argSize() < 2 || ast.argSize() > 3 || !ast.arg2().isList()
+        || engine.isArbitraryMode()) {
+      return result;
+    }
+    if (result.isPresent() && !result.isEmptyList() && !result.isListOfLists()) {
+      return result;
+    }
+    final IAST variables = (IAST) ast.arg2();
+    final int n = variables.argSize();
+    ISymbol domain = S.Complexes;
+    if (ast.isAST3()) {
+      if (ast.arg3() != S.Reals && ast.arg3() != S.Complexes) {
+        return result;
+      }
+      domain = (ISymbol) ast.arg3();
+    }
+    if (n < 2 || n > MAX_RATIONALIZED_VARIABLES || !variables.forAll(x -> x.isSymbol())) {
+      return result;
+    }
+    try {
+      IAST terms =
+          Validate.checkEquationsAndInequations(ast, 1, bareExpressionsAreEquations);
+      if (terms.argSize() < 2 || terms.exists(x -> !x.isEqual() || !x.second().isZero())) {
+        return result;
+      }
+      IExpr rationalized = engine.evalQuiet(F.Rationalize(terms.map(x -> x.first())));
+      if (!rationalized.isList() || !rationalized.isFree(x -> x.isInexactNumber(), false)) {
+        return result;
+      }
+      // the total degree of a polynomial is its degree in t, with t*v for every variable v
+      final ISymbol t = F.Dummy("t");
+      IASTAppendable scaling = F.ListAlloc(n);
+      for (IExpr v : variables) {
+        scaling.append(F.Rule(v, F.Times(t, v)));
+      }
+      long bezoutBound = 1L;
+      IASTAppendable numerators = F.ListAlloc(rationalized.argSize());
+      IASTAppendable denominators = F.ListAlloc(rationalized.argSize());
+      for (IExpr term : (IAST) rationalized) {
+        IExpr together = S.Together.of(engine, term);
+        IExpr numerator = S.Numerator.of(engine, together);
+        if (!numerator.isPolynomial(variables)
+            || !VariablesSet.getVariables(together).forAll(x -> variables.contains(x))) {
+          return result;
+        }
+        int degree = engine
+            .evaluate(F.Exponent(numerator.replaceAll(scaling).orElse(numerator), t))
+            .toIntDefault();
+        if (degree < 1) {
+          return result;
+        }
+        bezoutBound *= degree;
+        if (bezoutBound > MAX_RATIONALIZED_BEZOUT_BOUND) {
+          return result;
+        }
+        numerators.append(F.Equal(numerator, F.C0));
+        IExpr denominator = S.Denominator.of(engine, together);
+        if (!denominator.isFree(x -> variables.contains(x), true)) {
+          denominators.append(denominator);
+        }
+      }
+      if (!exactFirst && result.isListOfLists() && result.argSize() >= bezoutBound) {
+        // as many solutions as the system can have
+        return result;
+      }
+      IAST solve = domain == S.Reals ? F.Solve(numerators, variables, S.Reals)
+          : F.Solve(numerators, variables);
+      IExpr exact = TimeLimits.call(engine, () -> engine.evalQuiet(solve),
+          MachineProfile.millis(RATIONALIZED_SOLVE_MILLIS), () -> F.NIL);
+      if (!exact.isList() || !(exact.isEmptyList() || exact.isListOfLists())) {
+        return result;
+      }
+      IASTAppendable completed = F.ListAlloc(exact.argSize() + result.argSize());
+      if (!exactFirst && result.isListOfLists()) {
+        completed.appendArgs((IAST) result);
+      }
+      for (IExpr solution : (IAST) exact) {
+        if (solution.argSize() != n) {
+          return result;
+        }
+        IAST ordered = NSolve.inVariableOrder((IAST) solution, variables);
+        boolean pole = false;
+        for (IExpr denominator : denominators) {
+          IExpr value = denominator.replaceAll(ordered).orElse(denominator);
+          if (engine.evalQuiet(F.PossibleZeroQ(value)).isTrue()) {
+            pole = true;
+            break;
+          }
+        }
+        if (pole) {
+          continue;
+        }
+        IASTAppendable numeric = F.ListAlloc(n);
+        for (int i = 1; i <= n; i++) {
+          IExpr rule = ordered.get(i);
+          if (!rule.isRuleAST() || !rule.first().equals(variables.get(i))) {
+            return result;
+          }
+          IExpr value = engine.evalN(rule.second());
+          if (!value.isNumber()) {
+            return result;
+          }
+          numeric.append(F.Rule(rule.first(), value));
+        }
+        IAST candidate = NSolve.withoutImaginaryNoise(numeric);
+        if (!completed.exists(other -> isSameNumericSolution((IAST) other, candidate))) {
+          completed.append(candidate);
+        }
+      }
+      if (exactFirst && result.isListOfLists()) {
+        for (IExpr solution : (IAST) result) {
+          if (!completed.exists(other -> isSameNumericSolution((IAST) other, (IAST) solution))) {
+            completed.append(solution);
+          }
+        }
+      }
+      return completed;
+    } catch (LimitException le) {
+      throw le;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return result;
+    }
+  }
+
+  /**
+   * Whether the numerical solution <code>a</code> has the values of <code>b</code> up to
+   * {@link #RATIONALIZED_SAME}.
+   */
+  private static boolean isSameNumericSolution(IAST a, IAST b) {
+    for (IExpr rule : b) {
+      IExpr other = F.NIL;
+      for (IExpr r : a) {
+        if (r.isRuleAST() && r.first().equals(rule.first())) {
+          other = r.second();
+          break;
+        }
+      }
+      if (!other.isNumber() || !rule.second().isNumber()) {
+        return false;
+      }
+      INumber x = (INumber) other;
+      INumber y = (INumber) rule.second();
+      double distance = Math.hypot(x.reDoubleValue() - y.reDoubleValue(),
+          x.imDoubleValue() - y.imDoubleValue());
+      double size = Math.max(1.0, Math.hypot(y.reDoubleValue(), y.imDoubleValue()));
+      if (!(distance <= RATIONALIZED_SAME * size)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /**
    * The largest distance between a numerically determined root and a rational number which still
    * lets the root be tested as a member of the {@link S#Rationals} domain.
@@ -3543,7 +3739,25 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       ast = withoutIdentities;
     }
     IExpr result = dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
+    if (isNumericArgument) {
+      result = inVariableOrder(withRationalizedSolutions(ast, result, false, true, engine), ast);
+    }
     return dropIndeterminateSolutions(ast.arg1(), result, engine);
+  }
+
+  /**
+   * The solutions with their rules in the order of the variables of <code>Solve(eqns, vars)</code>,
+   * which the numerical elimination does not keep.
+   */
+  private static IExpr inVariableOrder(IExpr result, IAST ast) {
+    if (!result.isListOfLists() || ast.argSize() < 2 || !ast.arg2().isList()) {
+      return result;
+    }
+    IAST variables = (IAST) ast.arg2();
+    if (variables.argSize() < 2) {
+      return result;
+    }
+    return ((IAST) result).map(solution -> NSolve.inVariableOrder((IAST) solution, variables));
   }
 
   /**

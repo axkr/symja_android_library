@@ -110,6 +110,8 @@ public final class FunctionDefinitions {
       S.ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
       S.Extract.setEvaluator(new org.matheclipse.core.reflection.system.Extract());
       S.FactorList.setEvaluator(new org.matheclipse.core.reflection.system.FactorList());
+      S.FindArgMax.setEvaluator(new org.matheclipse.core.reflection.system.FindArgMax());
+      S.FindArgMin.setEvaluator(new org.matheclipse.core.reflection.system.FindArgMin());
       S.FindFormula.setEvaluator(new org.matheclipse.core.reflection.system.FindFormula());
       S.FindGeneratingFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.FindGeneratingFunction());
@@ -221,6 +223,7 @@ public final class FunctionDefinitions {
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       S.NDSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.NDSolveValue());
+      S.WhenEvent.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve.WhenEvent());
       S.NFourierTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
       S.NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());

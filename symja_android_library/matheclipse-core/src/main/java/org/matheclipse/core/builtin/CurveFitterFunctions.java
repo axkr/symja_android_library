@@ -8,6 +8,7 @@ import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.fitting.WeightedObservedPoints;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
+import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
@@ -16,6 +17,11 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.linear.SingularValueDecomposition;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -269,21 +275,100 @@ public class CurveFitterFunctions {
       return fitter.fit(obs.toList());
     }
 
+    /**
+     * The model variables <code>x</code> or <code>{x, y, ...}</code> as a list.
+     *
+     * @return {@link F#NIL} if <code>arg</code> is no variable and no list of variables
+     */
+    protected static IAST fitVariables(IExpr arg) {
+      if (arg.isVariable()) {
+        return F.list(arg);
+      }
+      if (arg.isList() && arg.argSize() > 0 && ((IAST) arg).forAll(x -> x.isVariable())) {
+        return (IAST) arg;
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Fit <code>function</code> of several <code>variables</code> to the rows <code>{x, y, ...,
+     * f}</code> of the data by Levenberg-Marquardt, starting from <code>initialGuess</code>.
+     *
+     * @return the fitted parameter values, in the order of <code>symbols</code>, or
+     *         <code>null</code> when the function has no gradient or the data are not numeric rows
+     *         with one more element than there are variables
+     */
+    private static double[] fitMultivariate(IAST data, IExpr function, IAST symbols,
+        IAST variables, double[] initialGuess, EvalEngine engine) {
+      final int n = variables.argSize();
+      int[] dim = data.isMatrix();
+      if (dim == null || dim[1] != n + 1) {
+        return null;
+      }
+      final double[][] rows = data.toDoubleMatrix(true);
+      if (rows == null) {
+        return null;
+      }
+      final IExpr fitFunction = F.substAbs(function);
+      IExpr gradientList = S.Grad.of(engine, fitFunction, symbols);
+      if (!gradientList.isList()) {
+        return null;
+      }
+      final IAST gradient = (IAST) gradientList;
+      final int parameters = symbols.argSize();
+      // the rules variable -> value and parameter -> value, whose values are set for each row
+      final IASTAppendable rules = F.ListAlloc(n + parameters);
+      variables.forEach(v -> rules.append(F.Rule(v, S.Null)));
+      symbols.forEach(p -> rules.append(F.Rule(p, S.Null)));
+      final double[] target = new double[rows.length];
+      for (int i = 0; i < rows.length; i++) {
+        target[i] = rows[i][n];
+      }
+      MultivariateJacobianFunction model = point -> {
+        for (int j = 0; j < parameters; j++) {
+          ((IASTMutable) rules.get(n + j + 1)).set(2, F.num(point.getEntry(j)));
+        }
+        double[] values = new double[rows.length];
+        double[][] jacobian = new double[rows.length][parameters];
+        for (int i = 0; i < rows.length; i++) {
+          for (int k = 0; k < n; k++) {
+            ((IASTMutable) rules.get(k + 1)).set(2, F.num(rows[i][k]));
+          }
+          values[i] = engine.evalDouble(F.subst(fitFunction, rules));
+          for (int j = 0; j < parameters; j++) {
+            jacobian[i][j] = F.subst(gradient.get(j + 1), rules).evalfNaN();
+          }
+        }
+        return new Pair<>(new ArrayRealVector(values, false),
+            new Array2DRowRealMatrix(jacobian, false));
+      };
+      LeastSquaresProblem problem = new LeastSquaresBuilder() //
+          .maxEvaluations(Integer.MAX_VALUE) //
+          .maxIterations(Integer.MAX_VALUE) //
+          .start(initialGuess) //
+          .target(target) //
+          .model(model) //
+          .build();
+      return new LevenbergMarquardtOptimizer().optimize(problem).getPoint().toArray();
+    }
+
     public IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr workingPrecision = options[0];
-      if (ast.arg1().isList() && ast.arg3().isList() && ast.arg4().isVariable()) {
+      final IAST variables = fitVariables(ast.arg4());
+      if (ast.arg1().isList() && ast.arg3().isList() && variables.isPresent()) {
         IAST data = (IAST) ast.arg1();
         IExpr function = ast.arg2();
         IAST listOfSymbols = (IAST) ast.arg3();
-        IExpr x = ast.arg4();
 
         double[] initialGuess = new double[listOfSymbols.argSize()];
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
         if (listOfSymbols.isPresent()) {
           try {
             final IAST symbols = listOfSymbols;
-            double[] values = fit(data, function, symbols, x, initialGuess, null, engine);
+            double[] values = variables.argSize() == 1
+                ? fit(data, function, symbols, variables.arg1(), initialGuess, null, engine)
+                : fitMultivariate(data, function, symbols, variables, initialGuess, engine);
             if (values != null) {
               return F.mapList(symbols, (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
             }
@@ -296,6 +381,31 @@ public class CurveFitterFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The parameters and the variables are local: <code>x = 0.3; FindFit(data, a*x, {a}, x)</code>
+     * fits <code>a*x</code> and not <code>0.3*a</code>.
+     */
+    @Override
+    public boolean localIterators() {
+      return true;
+    }
+
+    /** The parameters <code>a</code> or <code>{a, a0}</code> and the variables. */
+    @Override
+    protected IAST localVariables(IAST held) {
+      IASTAppendable variables = F.ListAlloc();
+      if (held.argSize() >= 4) {
+        for (IExpr parameter : held.arg3().makeList()) {
+          appendLocalVariable(parameter.isList() && parameter.argSize() > 0 ? parameter.first()
+              : parameter, variables);
+        }
+        for (IExpr variable : held.arg4().makeList()) {
+          appendLocalVariable(variable, variables);
+        }
+      }
+      return variables;
     }
 
     @Override
@@ -393,21 +503,22 @@ public class CurveFitterFunctions {
         return F.NIL;
       }
 
-      if (argSize == 3 && ast.arg1().isList() && ast.arg3().isVariable()) {
+      final IAST variables = argSize == 3 ? fitVariables(ast.arg3()) : F.NIL;
+      if (variables.isPresent() && ast.arg1().isList()) {
         IAST termList = ast.arg2().makeList();
         IAST data = (IAST) ast.arg1();
 
         // exact (Infinity) or Apfloat (n digits) arbitrary precision linear least squares
         if (precision != DOUBLE_PRECISION) {
-          return symbolicFit(data, termList, ast.arg3(), precision, engine);
+          return symbolicFit(data, termList, variables, precision, engine);
         }
 
-        WeightedObservedPoints obs = new WeightedObservedPoints();
-        IAST dataMatrix = buildDataMatrix(data);
-        if (dataMatrix.isPresent() && addWeightedObservedPoints(data, obs)) {
+        IAST dataMatrix = buildDataMatrix(data, variables.argSize());
+        final double[][] points = dataMatrix.isPresent() ? dataMatrix.toDoubleMatrix(false) : null;
+        if (points != null) {
           try {
             double[] coefficients =
-                linearLeastSquares(dataMatrix, obs.toList(), termList, ast.arg3(), engine);
+                linearLeastSquares(dataMatrix, points, termList, variables, engine);
             return F.mapRange(S.Plus, 0, coefficients.length, i -> {
               if (coefficients[i] != 0.0) {
                 return F.Times(F.num(coefficients[i]), termList.get(i + 1));
@@ -442,25 +553,27 @@ public class CurveFitterFunctions {
      * solution with the smallest coefficients. A function which is zero at every point gets the
      * coefficient 0. An iteration from a first guess ran away with such functions.
      *
-     * @param dataMatrix the data as <code>{x, y}</code> rows; the basis functions are evaluated
-     *        at these <code>x</code>, so that <code>Sin(2*x)</code> is zero at <code>Pi</code>
+     * @param dataMatrix the data as <code>{x, y, ..., f}</code> rows; the basis functions are
+     *        evaluated at these <code>x, y, ...</code>, so that <code>Sin(2*x)</code> is zero at
+     *        <code>Pi</code>
      * @param points the same data as machine numbers
-     * @param termList the basis functions in the given <code>variable</code>
-     * @param variable the model variable
+     * @param termList the basis functions in the given <code>variables</code>
+     * @param variables the model variables
      * @param engine the evaluation engine
      */
-    private static double[] linearLeastSquares(IAST dataMatrix, List<WeightedObservedPoint> points,
-        IAST termList, IExpr variable, EvalEngine engine) {
-      final int rows = points.size();
+    private static double[] linearLeastSquares(IAST dataMatrix, double[][] points,
+        IAST termList, IAST variables, EvalEngine engine) {
+      final int rows = points.length;
       final int columns = termList.argSize();
+      final int n = variables.argSize();
       final double[][] design = new double[rows][columns];
       final double[] response = new double[rows];
       for (int i = 0; i < rows; i++) {
-        response[i] = points.get(i).getY();
-        final IAST rule = F.Rule(variable, dataMatrix.get(i + 1).first());
+        response[i] = points[i][n];
+        final IAST rules = pointRules(variables, (IAST) dataMatrix.get(i + 1));
         for (int j = 0; j < columns; j++) {
           // the exact value first: Sin(2*x) is 0 at Pi, and not the sine of 6.283185307179586
-          design[i][j] = engine.evalDouble(engine.evaluate(F.subst(termList.get(j + 1), rule)));
+          design[i][j] = engine.evalDouble(engine.evaluate(F.subst(termList.get(j + 1), rules)));
         }
       }
       // the columns which are not zero, and their lengths
@@ -511,6 +624,11 @@ public class CurveFitterFunctions {
       return coefficients;
     }
 
+    /** The rules <code>{x -> x1, y -> y1, ...}</code> for the data row <code>{x1, y1, ...}</code>. */
+    private static IAST pointRules(IAST variables, IAST row) {
+      return F.mapRange(1, variables.size(), k -> F.Rule(variables.get(k), row.get(k)));
+    }
+
     /**
      * Solve the linear least squares problem with exact (<code>Infinity</code>) or
      * <code>Apfloat</code> (<code>precision</code> digits) arithmetic.
@@ -521,19 +639,19 @@ public class CurveFitterFunctions {
      * <code>Apfloat</code>) entries and avoids the square roots introduced by a QR decomposition,
      * so e.g. an exact fit reduces to a simplified expression.
      *
-     * @param data the list of data points (a matrix of <code>{x, y}</code> pairs or a vector of
-     *        y-values)
-     * @param termList the basis functions in the given <code>variable</code>
-     * @param variable the model variable
+     * @param data the list of data points (a matrix of <code>{x, ..., f}</code> rows or a vector of
+     *        f-values)
+     * @param termList the basis functions in the given <code>variables</code>
+     * @param variables the model variables
      * @param precision {@link #EXACT_PRECISION} for exact arithmetic or the number of
      *        <code>Apfloat</code> digits
      * @param engine the evaluation engine
      * @return the best fit expression or {@link F#NIL}
      */
-    private static IExpr symbolicFit(IAST data, IAST termList, IExpr variable, int precision,
+    private static IExpr symbolicFit(IAST data, IAST termList, IAST variables, int precision,
         EvalEngine engine) {
       try {
-        IAST dataMatrix = buildDataMatrix(data);
+        IAST dataMatrix = buildDataMatrix(data, variables.argSize());
         if (dataMatrix.isPresent()) {
           final int numberOfPoints = dataMatrix.argSize();
           final int numberOfTerms = termList.argSize();
@@ -546,12 +664,11 @@ public class CurveFitterFunctions {
           IASTAppendable responseVector = F.ListAlloc(numberOfPoints);
           for (int i = 1; i <= numberOfPoints; i++) {
             IAST row = (IAST) dataMatrix.get(i);
-            IExpr xValue = row.arg1();
-            responseVector.append(toPrecision(row.arg2(), precision, engine));
+            IAST rules = pointRules(variables, row);
+            responseVector.append(toPrecision(row.last(), precision, engine));
             IASTAppendable designRow = F.ListAlloc(numberOfTerms);
             for (int j = 1; j <= numberOfTerms; j++) {
-              IExpr basisValue =
-                  engine.evaluate(F.subst(termList.get(j), F.Rule(variable, xValue)));
+              IExpr basisValue = engine.evaluate(F.subst(termList.get(j), rules));
               designRow.append(toPrecision(basisValue, precision, engine));
             }
             designMatrix.append(designRow);
@@ -579,21 +696,24 @@ public class CurveFitterFunctions {
     }
 
     /**
-     * Build a matrix of exact <code>{x, y}</code> rows from the data.
+     * Build a matrix of exact <code>{x, ..., f}</code> rows from the data.
      *
-     * @param data the list of data points (a matrix of <code>{x, y}</code> pairs or a vector of
-     *        y-values)
+     * @param data the list of data points (a matrix of <code>{x, ..., f}</code> rows or, for one
+     *        variable, a vector of f-values)
+     * @param numberOfVariables the number of the model variables
      * @return the matrix as a nested list or {@link F#NIL} if the data couldn't be interpreted
      */
-    private static IAST buildDataMatrix(IAST data) {
+    private static IAST buildDataMatrix(IAST data, int numberOfVariables) {
       int[] isMatrix = data.isMatrix();
-      if (isMatrix != null && isMatrix[1] == 2) {
+      if (isMatrix != null && isMatrix[1] == numberOfVariables + 1) {
         IASTAppendable result = F.ListAlloc(data.size());
         for (int i = 1; i < data.size(); i++) {
-          IAST row = (IAST) data.get(i);
-          result.append(F.List(row.arg1(), row.arg2()));
+          result.append(data.get(i));
         }
         return result;
+      }
+      if (numberOfVariables != 1) {
+        return F.NIL;
       }
       int rowSize = data.isVector();
       if (rowSize < 0) {
@@ -647,6 +767,12 @@ public class CurveFitterFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+
+    /** The variables of a linear fit are not localized. */
+    @Override
+    public boolean localIterators() {
+      return false;
     }
   }
 

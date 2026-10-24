@@ -3083,6 +3083,23 @@ public final class Arithmetic {
 
 
   /**
+   * A sum or product evaluated by the first data object among its arguments which knows how to
+   * combine with the others - see {@link IDataExpr#arithmetic(IAST, EvalEngine)}.
+   */
+  private static IExpr dataArithmetic(IAST ast, EvalEngine engine) {
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg instanceof IDataExpr) {
+        IExpr result = ((IDataExpr<?>) arg).arithmetic(ast, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    *
    *
    * <pre>
@@ -3295,6 +3312,10 @@ public final class Arithmetic {
             }
           }
           if (ast.exists(x -> x instanceof IDataExpr)) {
+            IExpr dataResult = dataArithmetic(ast, engine);
+            if (dataResult.isPresent()) {
+              return dataResult;
+            }
             // DateObject(...) + Quantity(1, "Day") and friends
             IExpr dateResult = DateTimeFunctions.plusDateObject(ast);
             if (dateResult.isPresent()) {
@@ -3688,6 +3709,13 @@ public final class Arithmetic {
             return aroundResult;
           }
         }
+        if (base instanceof IDataExpr) {
+          IExpr dataResult =
+              ((IDataExpr<?>) base).arithmetic(F.Power(base, exponent), EvalEngine.get());
+          if (dataResult.isPresent()) {
+            return dataResult;
+          }
+        }
         if (base.isQuantity()) {
           return QuantityOps.power((IAST) base, exponent, EvalEngine.get());
         } else if (base.isAST()) {
@@ -3848,7 +3876,11 @@ public final class Arithmetic {
 
         if (exponent.isReal()) {
           if (exponent.isZero()) {
-            return (base.isInfinity() || base.isNegativeInfinity()) ? S.Indeterminate : F.C1;
+            if (base.isInfinity() || base.isNegativeInfinity()) {
+              return S.Indeterminate;
+            }
+            // x^0. is the inexact one of the exponent's precision
+            return exponent.isInexactNumber() ? exponent.plus(F.C1) : F.C1;
           }
           if (exponent.isOne()) {
             return base;
@@ -7587,12 +7619,18 @@ public final class Arithmetic {
           return vectorResult;
         }
       }
-      if (size == 3 && ast.exists(x -> x instanceof IDataExpr)) {
-        // in relaxed syntax mode DateObject(...)("Day") parses as an implicit multiplication;
-        // a date or time object multiplied by a string can only be meant as a property access
-        IExpr dateResult = DateTimeFunctions.timesDateObject(ast);
-        if (dateResult.isPresent()) {
-          return dateResult;
+      if (ast.exists(x -> x instanceof IDataExpr)) {
+        IExpr dataResult = dataArithmetic(ast, engine);
+        if (dataResult.isPresent()) {
+          return dataResult;
+        }
+        if (size == 3) {
+          // in relaxed syntax mode DateObject(...)("Day") parses as an implicit multiplication;
+          // a date or time object multiplied by a string can only be meant as a property access
+          IExpr dateResult = DateTimeFunctions.timesDateObject(ast);
+          if (dateResult.isPresent()) {
+            return dateResult;
+          }
         }
       }
       if (ast.isUniform(UniformFlags.REAL)) {

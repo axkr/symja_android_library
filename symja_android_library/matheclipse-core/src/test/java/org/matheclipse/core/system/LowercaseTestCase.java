@@ -10283,11 +10283,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.9439351756744827E-4");
     // Message FindRoot: interval does not bracket a root: f(NaN) = NaN, f(NaN) = NaN.
     checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->8)", //
-        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->8)");
+        "10-x/.FindRoot(-x+Sin(-10+x)+10,{x,0},AccuracyGoal->8)");
     // Message FindRoot: Value of option AccuracyGoal->test is not Automatic or a machine-sized
     // integer.
     checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->test)", //
-        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->test)");
+        "10-x/.FindRoot(-x+Sin(-10+x)+10,{x,0},AccuracyGoal->test)");
 
     // univariate cases
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
@@ -10309,13 +10309,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // Message FindRoot: Method->brent is only applicable for univariate real functions and requires
     // two real starting values that bracket the root.
     check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->brent)", //
-        "FindRoot(2+Cos(x),{x,0,5},Method->brent)");
+        "FindRoot(Cos(x)+2,{x,0,5},Method->brent)");
     // FindRoot: Method->bisection is only applicable for univariate real functions and requires two
     // real starting values that bracket the root.
     check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->bisection)", //
-        "FindRoot(2+Cos(x),{x,0,5},Method->bisection)");
+        "FindRoot(Cos(x)+2,{x,0,5},Method->bisection)");
     check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->newton)", //
-        "FindRoot(2+Cos(x),{x,0,5},Method->newton)");
+        "FindRoot(Cos(x)+2,{x,0,5},Method->newton)");
 
     // github issue #43
     check("findroot(abs(x-1)-2x-3==0, {x, -10, 10})", //
@@ -10417,7 +10417,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x->0.75,y->0.25}");
     // Message FindRoot: Search specification {x,1,2,3} should be a list with 1 to 3 elements.
     check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x,1,2,3}, {y,1})", //
-        "FindRoot({x+y==1,x-y==0.5},{x,1,2,3},{y,1})");
+        "FindRoot({-1+x+y==0,-0.5+x-y==0},{x,1,2,3},{y,1})");
 
     // A function which is only defined for numeric arguments has no derivative to differentiate
     // either, so Newton's method cannot run at all on it - it would spend its whole budget on a
@@ -12937,7 +12937,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Abs((t /. FindRoot(Cos(t) - 1/2, {t, 0.2, 0.95, 2.2})) - Pi/3) < 10^-8", //
         "True");
     check("FindRoot(x^2 + 1, {x, 1, 0, 2})", //
-        "FindRoot(1+x^2,{x,1,0,2})");
+        "FindRoot(x^2+1,{x,1,0,2})");
   }
 
   @Test
@@ -14501,6 +14501,390 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(x==1&&y==-3)||(x==1&&y==3)");
     check("Reduce(x^2 + y^2 == 3 && x > 0, {x, y}, Integers)", //
         "False");
+  }
+
+  @Test
+  public void testBlockBuiltinConstants() {
+    // a built-in constant is an ordinary variable inside Block and gets its value back afterwards
+    check("Block({Pi = 5}, Pi + 2)", //
+        "7");
+    check("Block({E}, E = 3; E^2)", //
+        "9");
+    check("Block({E = 4}, E); E", //
+        "E");
+    check("{Block({Pi = 2}, Pi), Pi}", //
+        "{2,Pi}");
+  }
+
+  @Test
+  public void testRuleOrderOptionalDefault() {
+    // a rule with a default argument goes after the more specific rule, in either order
+    check("g1(k_Integer) := {k}; g1(k_:7) := g1(k); {g1(), g1(5)}", //
+        "{{7},{5}}");
+    check("g2(k_:7) := g2(k); g2(k_Integer) := {k}; {g2(), g2(5)}", //
+        "{{7},{5}}");
+    check("h3(x_, y_:3) := {x, y}; h3(x_Integer, y_Integer) := both; {h3(2), h3(2, 5), h3(c)}", //
+        "{{2,3},both,{c,3}}");
+  }
+
+  @Test
+  public void testPowerZeroInexact() {
+    check("{y^0.0, (a+b)^0.0, Head(z^0.0), y^0}", //
+        "{1.0,1.0,Real,1}");
+  }
+
+  @Test
+  public void testDerivativeNamedFunction() {
+    // the named parameters of a function are kept
+    check("Derivative(1)[Function({s}, s^3)]", //
+        "Function({s},3*s^2)");
+    check("Derivative(0,2)[Function({a,b}, a*b^3)]", //
+        "Function({a,b},6*a*b)");
+    check("Derivative(1)[Function(s, Sin(s))][t]", //
+        "Cos(t)");
+    // a global value of a parameter's symbol doesn't reach the local parameter
+    check("s = 2; Derivative(1)[Function({s}, s^3)]", //
+        "Function({s},3*s^2)");
+  }
+
+  @Test
+  public void testPartAssignMachineIndex() {
+    check("u = {7, 8, 9}; u[[3.0]] = 1; u", //
+        "{7,8,1}");
+    check("m = {{1,2},{3,4}}; m[[1.0, 2.0]] = 0; m", //
+        "{{1,0},{3,4}}");
+    check("u = {7, 8, 9, 10}; u[[2.0 ;; 3.0]] = 0; u", //
+        "{7,0,0,10}");
+  }
+
+  @Test
+  public void testNDSolveWhenEvent() {
+    // outside NDSolve the arguments stay held
+    check("ClearAll(a);{WhenEvent(z>1, a=1),a}", //
+        "{WhenEvent(z>1,a=1),a}");
+    // an inequality stops the integration when it becomes true; the domain ends there
+    check(
+        "ClearAll(y,tm,s);s=NDSolve({y'(t)==-y(t),y(0)==1,WhenEvent(y(t)<0.25,tm=t;\"StopIntegration\")},y,{t,0,5});"
+            + "{Chop(tm-Log(4),10^-8),Chop((y(\"Domain\")/.s[[1]])-{{0,Log(4)}},10^-8)}", //
+        "{0,{{0,0}}}");
+    // a stopping event makes an infinite range possible
+    check(
+        "ClearAll(x,te,s);s=NDSolve({x'(t)==x(t),x(0)==1,WhenEvent(x(t)==10,te=t;\"StopIntegration\")},x,{t,0,Infinity});"
+            + "{Chop(te-Log(10),10^-8),Chop((x(\"Domain\")/.s[[1]])-{{0,Log(10)}},10^-8)}", //
+        "{0,{{0,0}}}");
+    // an event on the highest derivative of a first order equation
+    check(
+        "ClearAll(x);Chop(First(Reap(NDSolve({x'(t)==Sin(t),x(0)==0,WhenEvent(x'(t)==0,Sow(t))},x,{t,0,7}))[[2]])-{Pi,2*Pi},10^-8)", //
+        "{0,0}");
+    // Or of inequalities: whichever becomes true first
+    check(
+        "ClearAll(x,tm);NDSolve({x'(t)==2,x(0)==0,WhenEvent(x(t)>3||t>0.25,tm={t,x(t)};\"StopIntegration\")},x,{t,0,3});Chop(tm-{0.25,0.5},10^-8)", //
+        "{0,0}");
+    // an equation together with a condition which has to hold at the crossing
+    check(
+        "ClearAll(y);Chop(First(Reap(NDSolve({y'(t)==Cos(t),y(0)==0,WhenEvent(y(t)==1/2&&y'(t)<0,Sow(t))},y,{t,0,10}))[[2]])-{5*Pi/6,17*Pi/6},10^-8)", //
+        "{0,0}");
+    // "RemoveEvent" acts once
+    check(
+        "ClearAll(y);Chop(Reap(NDSolve({y'(t)==1,y(0)==0,WhenEvent(Sin(Pi*y(t))==0,{Sow(t),\"RemoveEvent\"})},y,{t,0,3.5}))[[2]]-{{1}},10^-8)", //
+        "{{0}}");
+    // a reset of the state restarts the integration: a bouncing ball, losing a fifth of its
+    // speed at each bounce
+    check(
+        "ClearAll(y,f,n);n=0;f=NDSolveValue({y''(t)==-10,y(0)==5,y'(0)==0,WhenEvent(y(t)==0,{y'(t)->-0.8*y'(t),n=n+1})},y,{t,0,3});"
+            + "{n,Chop(f({0.5,1.5,3})-{3.75,2.75,1.76},10^-6)}", //
+        "{2,{0,0,0}}");
+  }
+
+  @Test
+  public void testNDSolveVectorEquations() {
+    // equations between lists are threaded
+    check(
+        "ClearAll(x,y,s);s=NDSolve({{x'(t),y'(t)}=={y(t),-x(t)},{x(0),y(0)}=={1,0}},{x,y},{t,0,2});Chop(({x(2),y(2)}/.s[[1]])-{Cos(2),-Sin(2)},10^-8)", //
+        "{0,0}");
+    // initial values which refer to each other are solved as a system
+    check(
+        "ClearAll(u,v,s);s=NDSolve({u'(t)==-u(t),v'(t)==-3*v(t),u(0)==2*v(0),v(0)+u(0)==3},{u,v},{t,0,1});Chop(({u(1),v(1)}/.s[[1]])-{2*Exp(-1),Exp(-3)},10^-8)", //
+        "{0,0}");
+    // the solution of an ordinary differential equation maps over a list of points
+    check(
+        "ClearAll(y,f);f=NDSolveValue({y'(t)==2*t,y(0)==0},y,{t,0,2});Chop(f({0.5,{1,2}})-{0.25,{1,4}},10^-8)", //
+        "{0,{0,0}}");
+    // a heat equation with the space range given first
+    check(
+        "ClearAll(w,s);s=NDSolve({D(w(x,t),t)==D(w(x,t),x,x),w(x,0)==Sin(Pi*x),w(0,t)==0,w(1,t)==0},w,{x,0,1},{t,0,1/2});"
+            + "{Last(Last(w(\"Coordinates\")/.s[[1]])),Chop((w(1/2,1/2)/.s[[1]])-Exp(-Pi^2/2),10^-3)}", //
+        "{0.5,0}");
+  }
+
+  /** A plot of functions without a numeric value draws nothing, but is still a picture. */
+  @Test
+  public void testParametricPlotUndefinedFunction() {
+    check("{Head(ParametricPlot({uf1(s), uf2(s)}, {s, -1, 2})), "
+        + "Head(ParametricPlot3D(uf3(s), {s, 1, 3})), "
+        + "Head(ParametricPlot3D({uf1(s), s, uf2(s)}, {s, 0, 2})), "
+        + "Head(ParametricPlot3D(uf3(s, w), {s, 0, 1}, {w, 0, 1}))}", //
+        "{Graphics,Graphics3D,Graphics3D,Graphics3D}");
+    // nothing is drawn
+    check("{Count(ParametricPlot({uf1(s), uf2(s)}, {s, -1, 2}), _Line, Infinity), "
+        + "Count(ParametricPlot3D(uf3(s), {s, 1, 3}), _Line, Infinity)}", //
+        "{0,0}");
+  }
+
+  @Test
+  public void testHeldNumericVariables() {
+    // the variable is local to the call, its global value only shows in the left side of a rule
+    check("u = 2; NIntegrate(u^3, {u, 0, 2})", //
+        "4.0");
+    check("u = 2; FindRoot(u^2 - 3, {u, 1})", //
+        "{2->1.73205}");
+    check("u = 2; {FindRoot(u^3 - 8, {u, 1}), u}", //
+        "{{2->2.0},2}");
+    check("u = 2; FindMinimum((u - 3)^2, {u, 0})", //
+        "{0.0,{2->3.0}}");
+    check("u = 2; FindFit({{1, 3.2}, {2, 5.9}, {3, 9.1}}, c*u, {c}, u)", //
+        "{c->3.02143}");
+    check("ClearAll(u)", //
+        "");
+    // an inner NIntegrate is only sampled
+    check("NIntegrate(NIntegrate(x + y, {y, 0, x}), {x, 0, 1})", //
+        "0.5");
+    check("Attributes({NIntegrate, FindRoot, FindFit, Fit})", //
+        "{{HoldAll,Protected},{HoldAll,Protected},{HoldAll,Protected},{Protected}}");
+  }
+
+  @Test
+  public void testFindRootSecantBounds() {
+    check("Chop((x /. FindRoot(x^3 - 3, {x, 1, 1.5, 0, 2})) - 3^(1/3), 10^-10)", //
+        "0");
+    // the root 2.302585 is outside of the bounds
+    check("Quiet(FindRoot(Exp(x) - 10, {x, 1, 1.5, 0, 2}))", //
+        "FindRoot(-10+E^x,{x,1,1.5,0,2})");
+    check("Chop(({x, y} /. FindRoot({x + y == 3, x - y == 1}, {{x, 0, 1, -5, 5}, {y, 0, 1, -5, "
+        + "5}})) - {2, 1}, 10^-10)", //
+        "{0,0}");
+    // equations in nested lists
+    check("Chop((x /. FindRoot({{x^3}} == 27, {x, 2})) - 3, 10^-10)", //
+        "0");
+    check("Chop(({x, y} /. FindRoot({{x + y}, {x - y}} == {{4}, {2}}, {{x, 0}, {y, 0}})) - {3, 1},"
+        + " 10^-10)", //
+        "{0,0}");
+  }
+
+  @Test
+  public void testFitVariableLists() {
+    check("Chop((k /. FindFit({{1, 3.2}, {2, 5.9}, {3, 9.1}}, k*x, {k}, {x})) - 423/140, 10^-10)", //
+        "0");
+    check("Chop(({p, q} /. FindFit({{1, 0, 2.1}, {0, 1, 2.9}, {1, 1, 5.2}, {2, 1, 6.8}}, "
+        + "p*x + q*y, {p, q}, {x, y})) - {2, 89/30}, 10^-10)", //
+        "{0,0}");
+    check("Chop(Expand(Fit({{1, 3}, {2, 5}, {3, 6}}, {1, x}, {x}) - (5/3 + 3/2*x)), 10^-10)", //
+        "0");
+    check("Chop(Expand(Fit({{0, 0, 1}, {1, 0, 3}, {0, 1, 4}, {1, 1, 6}}, {1, x, y}, {x, y}) "
+        + "- (1 + 2*x + 3*y)), 10^-10)", //
+        "0");
+    check("Fit({{0, 0, 1}, {1, 0, 3}, {0, 1, 4}, {1, 1, 6}}, {1, x, y}, {x, y}, "
+        + "WorkingPrecision -> Infinity)", //
+        "1+2*x+3*y");
+    // three columns for one variable
+    check("Fit({{1, 2, 3}, {2, 3, 4}}, {1, x}, {x})", //
+        "Fit(\n{{1,2,3},\n {2,3,4}},{1,x},{x})");
+  }
+
+  @Test
+  public void testFindArgMinMax() {
+    check("Chop(FindArgMin(x^2 - 6*x, {x, 0}) - {3}, 10^-10)", //
+        "{0}");
+    check("Chop(FindArgMax(6*x - x^2, {x, 0}) - {3}, 10^-10)", //
+        "{0}");
+    check("Chop(FindArgMin((x - 3)^2 + (y + 1)^2, {{x, 0}, {y, 0}}) - {3, -1}, 10^-6)", //
+        "{0,0}");
+    // constraints
+    check("FindArgMin({x^2, x >= 2}, {x, 5})", //
+        "{2.0}");
+    check("FindArgMax({-x^2, x <= -1}, {x, -3})", //
+        "{-1.0}");
+    check("FindArgMin(x^2, {2, 1})", //
+        "FindArgMin(x^2,{2,1})");
+  }
+
+  @Test
+  public void testHessenbergExactInput() {
+    // HessenbergDecomposition has received a matrix with infinite precision.
+    check("HessenbergDecomposition({{3, 1}, {1, 5}})", //
+        "HessenbergDecomposition(\n{{3,1},\n {1,5}})");
+    check("HessenbergDecomposition({{3, 2/3}, {1, 5}})", //
+        "HessenbergDecomposition(\n{{3,2/3},\n {1,5}})");
+    check("HessenbergDecomposition({{3.0, 1}, {1, 5}})", //
+        "{\n{{1.0,0.0},\n {0.0,1.0}},\n{{3.0,1.0},\n {1.0,5.0}}}");
+  }
+
+  @Test
+  public void testDistributionQuantiles() {
+    // triangular: the left piece holds the probability (c-a)/(b-a)
+    check("Quantile(TriangularDistribution({0,4},1), {0.2, 1/8, 1/4, 0.9})", //
+        "{0.894427,1/Sqrt(2),1,2.90455}");
+    check("Quantile(TriangularDistribution({-1,1}), {0.75, 1/2, 0, 1})", //
+        "{0.292893,0,-1,1}");
+    check("CDF(TriangularDistribution({0,4},1), Quantile(TriangularDistribution({0,4},1), 0.9))", //
+        "0.9");
+    check("InverseCDF(TriangularDistribution({a,b},c), q)", //
+        "ConditionalExpression(Piecewise({{a+Sqrt((-a+b)*(-a+c)*q),q<=(-a+c)/(-a+b)}},b-Sqrt((-a+b)*(b-c)*(\n1-q))),0<=q<=1)");
+    // Kumaraswamy
+    check("Quantile(KumaraswamyDistribution(3,2), 0.6)", //
+        "0.716314");
+    check("Quantile(KumaraswamyDistribution(2,1), 1/4)", //
+        "1/2");
+    check("Quantile(KumaraswamyDistribution(a,b), q)", //
+        "ConditionalExpression((1-(1-q)^(1/b))^(1/a),0<=q<=1)");
+    check("CDF(KumaraswamyDistribution(3,2), x)", //
+        "Piecewise({{1-(1-x^3)^2,0<x<1},{1,x>=1}},0)");
+    check("PDF(KumaraswamyDistribution(3,2), x)", //
+        "Piecewise({{6*x^2*(1-x^3),0<x<1}},0)");
+    check("{Mean(KumaraswamyDistribution(1,2)), Variance(KumaraswamyDistribution(1,1)), "
+        + "Median(KumaraswamyDistribution(1,1))}", //
+        "{1/3,1/12,1/2}");
+    check("Mean(KumaraswamyDistribution(a,b))", //
+        "(b*Gamma(1+1/a)*Gamma(b))/Gamma(1+1/a+b)");
+    check("N(Mean(KumaraswamyDistribution(3,2))) - "
+        + "NIntegrate(x*PDF(KumaraswamyDistribution(3,2), x), {x,0,1}) // Chop", //
+        "0");
+    // log-logistic
+    check("Quantile(LogLogisticDistribution(4,3), {0.8, 4/5, 1/2, 0, 1})", //
+        "{4.24264,3*Sqrt(2),3,0,Infinity}");
+    // Wigner semicircle: the exact ends and center, a numeric root of the CDF otherwise
+    check("Quantile(WignerSemicircleDistribution(3,2), {0, 1/2, 1, 0.75})", //
+        "{1,3,5,3.80795}");
+    check("CDF(WignerSemicircleDistribution(3,2), Quantile(WignerSemicircleDistribution(3,2), 0.1))", //
+        "0.1");
+    check("Quantile(WignerSemicircleDistribution(2), 0.6)", //
+        "0.315472");
+    check("Quantile(WignerSemicircleDistribution(2), 3/5)", //
+        "InverseCDF(WignerSemicircleDistribution(2),3/5)");
+    // histogram: bins of a round width by the Freedman-Diaconis rule
+    check("HistogramDistribution({0.5, 1.2, 1.9, 2.4, 3.3})", //
+        "DataDistribution(Histogram,{{0.2,0.4,0.2,0.2},{0.0,1.0,2.0,3.0,4.0}},1,5)");
+    check("Quantile(HistogramDistribution({0.5, 1.2, 1.9, 2.4, 3.3}), {0, 0.25, 0.5, 1})", //
+        "{0.0,1.125,1.75,4.0}");
+    check("Quantile(HistogramDistribution({2, 4, 4, 6, 6, 6, 8}), 0.9)", //
+        "7.6");
+  }
+
+  @Test
+  public void testCategoricalDistribution() {
+    check("PDF(CategoricalDistribution({u,v,w}, {2,3,5}), {v, w, z})", //
+        "{3/10,1/2,Piecewise({{1/5,z==u},{3/10,z==v},{1/2,z==w}},0)}");
+    check("PDF(CategoricalDistribution({u,v}), u)", //
+        "1/2");
+    check("PDF(CategoricalDistribution({10,20,30}, {1,1,2}), {30, 40})", //
+        "{1/2,0}");
+    check("PDF(CategoricalDistribution({u,v}, {1,4}), t)", //
+        "Piecewise({{1/5,t==u},{4/5,t==v}},0)");
+    check("Mean(CategoricalDistribution({10,20,30}, {1,1,2}))", //
+        "45/2");
+    check("Union(RandomVariate(CategoricalDistribution({u,v,w}, {0.2,0.5,0.3}), 300))", //
+        "{u,v,w}");
+    check("Union(RandomVariate(CategoricalDistribution({u,v,w}, {1,0,1}), 300))", //
+        "{u,w}");
+    check("MemberQ({p,q,r}, RandomVariate(CategoricalDistribution({p,q,r})))", //
+        "True");
+    check("SeedRandom(17); s1=RandomVariate(CategoricalDistribution({u,v,w}, {1,2,3}), 20);"
+        + "SeedRandom(17); s1===RandomVariate(CategoricalDistribution({u,v,w}, {1,2,3}), 20)", //
+        "True");
+  }
+
+  @Test
+  public void testRandomVariateByQuantile() {
+    // distributions without a sampler of their own are sampled by their quantile
+    check("Map((s=RandomVariate(#,150); {Length(s), VectorQ(s,NumericQ)})&, "
+        + "{LaplaceDistribution(1,2), TriangularDistribution({0,2},1.5), "
+        + "KumaraswamyDistribution(2,5), LogLogisticDistribution(3,1), "
+        + "WignerSemicircleDistribution(4,3), ErlangDistribution(3,0.5)})", //
+        "{{150,True},{150,True},{150,True},{150,True},{150,True},{150,True}}");
+    check("s=RandomVariate(KumaraswamyDistribution(2,5), 200); 0<Min(s)&&Max(s)<1", //
+        "True");
+    check("s=RandomVariate(WignerSemicircleDistribution(4,3), 200); 1<=Min(s)&&Max(s)<=7", //
+        "True");
+    check("Dimensions(RandomVariate(TriangularDistribution({0,2},1.5), {3,4}))", //
+        "{3,4}");
+    check("SeedRandom(5); r=RandomVariate(LaplaceDistribution(1,2), 4);"
+        + "SeedRandom(5); r===RandomVariate(LaplaceDistribution(1,2), 4)", //
+        "True");
+    // symbolic parameters
+    check("RandomVariate(KumaraswamyDistribution(a,5), 3)", //
+        "RandomVariate(KumaraswamyDistribution(a,5),3)");
+    // a histogram distribution samples its bins
+    check("s=RandomVariate(HistogramDistribution({1,2,2,3,3,3}), 100);"
+        + "{Length(s), 0.5<=Min(s), Max(s)<=3.5}", //
+        "{100,True,True}");
+    // a discrete distribution samples integers
+    check("s=RandomVariate(TruncatedDistribution({1,6}, PoissonDistribution(3)), 100);"
+        + "{VectorQ(s, IntegerQ), Min(s)>=1, Max(s)<=6}", //
+        "{True,True,True}");
+  }
+
+  @Test
+  public void testSolveInexactExact() {
+    // a factor which only vanishes up to rounding: the solution a == 0 is found through the
+    // rationalized system
+    check("NSolve({(0.25*b/(2+b)-0.125)*a==0, (4-b)-a*b/(2+b)==0}, {a,b})", //
+        "{{a->4.0,b->2.0},{a->0.0,b->4.0}}");
+    check("Solve({(0.25*b/(2+b)-0.125)*a==0, (4-b)-a*b/(2+b)==0}, {a,b})", //
+        "{{a->0.0,b->4.0},{a->4.0,b->2.0}}");
+    // the rules in the order of the variables
+    check("Solve({x*y==2.5, x+y==3.5}, {x,y})", //
+        "{{x->1.0,y->2.5},{x->2.5,y->1.0}}");
+    check("NSolve({u*v==3, u+v==4.5}, {v,u})", //
+        "{{v->3.68614,u->0.813859},{v->0.813859,u->3.68614}}");
+    check("Solve({x+y==2.5, x-y==0.5}, {y,x})", //
+        "{{y->1.0,x->1.5}}");
+  }
+
+  @Test
+  public void testSolvePowerTimesExponential() {
+    // x^2*E^(3*x) == 9 is x*E^(3*x/2) == 3 or x*E^(3*x/2) == -3
+    check("Solve(x^2*E^(3*x)==9, x)", //
+        "{{x->2/3*ProductLog(-9/2)},{x->2/3*ProductLog(9/2)}}");
+    check("Solve(x^4*E^x==1/16, x)", //
+        "{{x->4*ProductLog(-1/8)},{x->4*ProductLog(1/8)},{x->4*ProductLog(-1,-1/8)}}");
+    check("Solve(4*x^2*E^x==1, x)", //
+        "{{x->2*ProductLog(-1/4)},{x->2*ProductLog(1/4)},{x->2*ProductLog(-1,-1/4)}}");
+  }
+
+  @Test
+  public void testRootRepeatedFactor() {
+    check("{Root((#-4)^2*(#+3)&, 1), Root((#-4)^2*(#+3)&, 2), Root((#-4)^2*(#+3)&, 3)}", //
+        "{-3,4,4}");
+    check("Table(Root((#^2-3)^2*(#-1)&, k), {k, 5})", //
+        "{-Sqrt(3),-Sqrt(3),1,Sqrt(3),Sqrt(3)}");
+    check("Root((#-1)^2*(#^2+4)&, 3)", //
+        "-I*2");
+    check("Root((#^5-#-3)^2&, 2)", //
+        "Root(-3-#1+#1^5&,1,0)");
+    check("N(Root((#-5)^2*(#+1)&, 3))", //
+        "5.0");
+  }
+
+  @Test
+  public void testRecurrenceTableHead() {
+    check("RecurrenceTable({c(m+1)==2*c(m)+1, c(1)==0}, c, {m, 1, 4})", //
+        "{0,1,3,7}");
+    check("RecurrenceTable({c(m+1)==c(m)/3, c(1)==9}, c, {m, 4})", //
+        "{9,3,1,1/3}");
+    check("RecurrenceTable({c(m+1)==0.25*c(m), c(1)==2}, c, {m, 1, 3})", //
+        "{2.0,0.5,0.125}");
+    check("RecurrenceTable({d(j+2)==d(j+1)+2*d(j), d(1)==1, d(2)==1}, d, {j, 1, 5})", //
+        "{1,1,3,5,11}");
+  }
+
+  @Test
+  public void testDSolveExponentialConstant() {
+    check("DSolve(w'(s)/w(s)==3*s^2, w(s), s)", //
+        "{{w(s)->E^s^3*C(1)}}");
+    check("DSolve({w'(s)/w(s)==3*s^2, w(0)==2}, w(s), s)", //
+        "{{w(s)->2*E^s^3}}");
+    check("DSolve(w'(s)/w(s)==Cos(s), w, s)", //
+        "{{w->Function({s},E^Sin(s)*C(1))}}");
   }
 
   @Test

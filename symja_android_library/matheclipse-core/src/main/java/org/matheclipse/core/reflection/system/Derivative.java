@@ -328,6 +328,12 @@ public class Derivative extends AbstractFunctionEvaluator {
 
   private static IExpr evaluateDIfPossible(IAST head, IAST headDerivative, IAST fullDerivative,
       EvalEngine engine) {
+    if (fullDerivative == null) {
+      IExpr named = namedFunctionDerivative(head, headDerivative.arg1(), engine);
+      if (named.isPresent()) {
+        return named;
+      }
+    }
     IASTAppendable newFunction = F.ast(headDerivative.arg1());
     IASTAppendable list = F.ListAlloc(headDerivative.size());
     IASTAppendable dExpr;
@@ -410,6 +416,50 @@ public class Derivative extends AbstractFunctionEvaluator {
       dExpr.append(temp);
       dExpr.appendArgs(list); // w.r.t these symbols
       return F.Function(engine.evaluate(dExpr));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * <code>Derivative(n1, n2, ...)[Function({x1, x2, ...}, body)]</code> keeps the named
+   * parameters: <code>Derivative(1)[Function({q}, q^2)]</code> is <code>Function({q}, 2*q)</code>.
+   *
+   * @return {@link F#NIL} if <code>function</code> is no function with as many named parameters as
+   *         there are orders, or an order is no non-negative integer
+   */
+  private static IExpr namedFunctionDerivative(IAST orders, IExpr function, EvalEngine engine) {
+    if (!function.isFunction() || function.argSize() != 2) {
+      return F.NIL;
+    }
+    IAST parameters = function.first().makeList();
+    if (parameters.argSize() != orders.argSize() || !parameters.forAll(x -> x.isSymbol())) {
+      return F.NIL;
+    }
+    // the parameters are local: they are differentiated as slots, so a global value of a
+    // parameter's symbol doesn't replace it
+    java.util.Map<IExpr, IExpr> toSlots = new java.util.HashMap<IExpr, IExpr>();
+    java.util.Map<IExpr, IExpr> toParameters = new java.util.HashMap<IExpr, IExpr>();
+    for (int i = 1; i < parameters.size(); i++) {
+      toSlots.put(parameters.get(i), F.Slot(i));
+      toParameters.put(F.Slot(i), parameters.get(i));
+    }
+    IASTAppendable d = F.ast(S.D, orders.argSize() + 1);
+    d.append(F.subst(function.second(), toSlots));
+    for (int i = 1; i < orders.size(); i++) {
+      int n = orders.get(i).toIntDefault();
+      if (n < 0) {
+        return F.NIL;
+      }
+      if (n > 0) {
+        d.append(F.list(F.Slot(i), F.ZZ(n)));
+      }
+    }
+    if (d.argSize() == 1) {
+      return function;
+    }
+    IExpr body = engine.evaluate(d);
+    if (body.isFree(x -> x.isAST(S.D), true)) {
+      return F.Function(function.first(), F.subst(body, toParameters));
     }
     return F.NIL;
   }

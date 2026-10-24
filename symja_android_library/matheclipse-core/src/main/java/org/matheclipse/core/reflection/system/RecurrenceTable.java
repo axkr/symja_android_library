@@ -83,14 +83,26 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
       equations = F.List(arg1);
     }
     IExpr function = ast.arg2();
-    if (!function.isAST1() || !function.head().isSymbol() || !ast.arg3().isList()) {
+    if (!ast.arg3().isList()) {
       return F.NIL;
     }
-    final IExpr head = function.head();
-    final IExpr n = function.first();
     IAST iterator = (IAST) ast.arg3();
-    if (iterator.argSize() < 2 || iterator.argSize() > 3 || !iterator.arg1().equals(n)
-        || !n.isSymbol()) {
+    if (iterator.argSize() < 2 || iterator.argSize() > 3) {
+      return F.NIL;
+    }
+    final IExpr head;
+    final IExpr n;
+    if (function.isSymbol()) {
+      // a bare head a stands for the values a(n) of the iterator variable n
+      head = function;
+      n = iterator.arg1();
+    } else if (function.isAST1() && function.head().isSymbol()) {
+      head = function.head();
+      n = function.first();
+    } else {
+      return F.NIL;
+    }
+    if (!iterator.arg1().equals(n) || !n.isSymbol()) {
       return F.NIL;
     }
     final int nMin = iterator.isAST2() ? 1 : engine.evaluate(iterator.arg2()).toIntDefault();
@@ -194,6 +206,10 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
           return F.NIL;
         }
         result.append(value);
+      }
+      if (!arg1.isFree(x -> x.isInexactNumber(), false)) {
+        // inexact coefficients or initial values give inexact table entries
+        return engine.evalN(result);
       }
       return result;
     } catch (RuntimeException rex) {

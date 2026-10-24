@@ -1128,6 +1128,61 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  public void testRandomGraphDistribution() {
+    check("g=RandomGraph(UniformGraphDistribution(9,12));{VertexCount(g),EdgeCount(g),SimpleGraphQ(g)}", //
+        "{9,12,True}");
+    check("g=RandomGraph(UniformGraphDistribution(5,0));{VertexCount(g),EdgeCount(g)}", //
+        "{5,0}");
+    // a complete graph of k+1 vertices, then k edges for each further vertex
+    check("Table(g=RandomGraph(BarabasiAlbertGraphDistribution(12,k));"
+        + "{VertexCount(g),EdgeCount(g),SimpleGraphQ(g),ConnectedGraphQ(g)},{k,4})", //
+        "{{12,11,True,True},{12,21,True,True},{12,30,True,True},{12,38,True,True}}");
+    // the ring lattice: first all edges to the next vertex, then to the second next, ...
+    check("List @@@ EdgeList(RandomGraph(WattsStrogatzGraphDistribution(5,0,1)))", //
+        "{{1,2},{2,3},{3,4},{4,5},{5,1}}");
+    check("List @@@ EdgeList(RandomGraph(WattsStrogatzGraphDistribution(7,0.0,3)))", //
+        "{{1,2},{2,3},{3,4},{4,5},{5,6},{6,7},{7,1},{1,3},{2,4},{3,5},{4,6},{5,7},{6,1},{\n"
+            + "7,2},{1,4},{2,5},{3,6},{4,7},{5,1},{6,2},{7,3}}");
+    check("Table(g=RandomGraph(WattsStrogatzGraphDistribution(n,1)); "
+        + "{EdgeCount(g),SimpleGraphQ(g)},{n,6,9})", //
+        "{{12,True},{14,True},{16,True},{18,True}}");
+    check("g=RandomGraph(WattsStrogatzGraphDistribution(11,0.3,4));{EdgeCount(g),SimpleGraphQ(g)}", //
+        "{44,True}");
+    check("SeedRandom(11);e1=EdgeList(RandomGraph(WattsStrogatzGraphDistribution(9,0.4)));"
+        + "SeedRandom(11);e1===EdgeList(RandomGraph(WattsStrogatzGraphDistribution(9,0.4)))", //
+        "True");
+    check("SeedRandom(3);e1=EdgeList(RandomGraph(BarabasiAlbertGraphDistribution(15,2)));"
+        + "SeedRandom(3);e1===EdgeList(RandomGraph(BarabasiAlbertGraphDistribution(15,2)))", //
+        "True");
+    check("gs=RandomGraph(UniformGraphDistribution(6,5),4,VertexLabels->\"Name\");"
+        + "{Length(gs),Union(Head/@gs),Union(EdgeCount/@gs)}", //
+        "{4,{Graph},{5}}");
+    check("gs=RandomGraph(WattsStrogatzGraphDistribution(8,0.5),2,GraphLayout->\"CircularEmbedding\");"
+        + "{Length(gs),Union(Head/@gs)}", //
+        "{2,{Graph}}");
+    check("RandomGraph(UniformGraphDistribution(4,7))", //
+        "RandomGraph(UniformGraphDistribution(4,7))");
+  }
+
+  @Test
+  public void testGraphEqual() {
+    // graphs are equal if they are the same, with the edges in the same order
+    check("{Graph({a<->b,b<->c})==Graph({b<->c,a<->b}),Graph({a<->b})==Graph({a->b}),"
+        + "Graph({x->y,y->z})==Graph({x->y,y->z}),Graph({x->y})!=Graph({y->x}),"
+        + "Graph({x->y})!=Graph({x->y})}", //
+        "{False,False,True,True,False}");
+    check("Graph({1<->2,2<->3})==Graph({1<->2,2<->3})==Graph({1<->2,2<->3})", //
+        "True");
+    check("Graph({1<->2,2<->3})==Graph({1<->2,2<->3})==Graph({1<->2,3<->2})", //
+        "False");
+    check("Graph({1->2})==x", //
+        "Graph({1,2},{1->2})==x");
+    // SameQ agrees with Equal
+    check("{Graph({a<->b,b<->c})===Graph({b<->c,a<->b}),Graph({a<->b,b<->c})===Graph({a<->b,b<->c})}", //
+        "{False,True}");
+  }
+
+  @Test
   public void testStarGraph() {
     check("StarGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},{1,0,0,0},{1,0,0,0},{1,0,0,0}}");

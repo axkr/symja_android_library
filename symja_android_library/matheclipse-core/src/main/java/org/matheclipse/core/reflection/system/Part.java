@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -248,7 +249,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       return Errors.printMessage(S.Part, "partd", F.list(part), engine);
     }
     final IAST ast = (IAST) expr;
-    final IExpr spec = engine.evaluate(part.get(partPosition));
+    final IExpr spec = integralPositions(engine.evaluate(part.get(partPosition)));
     if (ast.isAssociation() && (spec.isKey() || spec.isString())) {
       return assignAssociationKey((IAssociation) ast, spec, part, partPosition + 1, rhs, engine);
     }
@@ -277,6 +278,26 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       setElement(result, position, temp);
     }
     return result;
+  }
+
+  /**
+   * A machine real with an integral value stands for that position in an assignment:
+   * <code>v[[2.]] = 5</code> assigns the second element, <code>v[[2. ;; 3.]] = 0</code> the second
+   * and the third.
+   */
+  private static IExpr integralPositions(IExpr spec) {
+    if (spec instanceof INum) {
+      double value = ((INum) spec).doubleValue();
+      if (value == Math.rint(value) && Math.abs(value) < Integer.MAX_VALUE) {
+        return F.ZZ((int) value);
+      }
+      return spec;
+    }
+    if ((spec.isList() || spec.isAST(S.Span)) && ((IAST) spec).exists(x -> x instanceof INum)) {
+      // a list of positions, or the bounds and the step of a Span
+      return ((IAST) spec).map(Part::integralPositions);
+    }
+    return spec;
   }
 
   /**

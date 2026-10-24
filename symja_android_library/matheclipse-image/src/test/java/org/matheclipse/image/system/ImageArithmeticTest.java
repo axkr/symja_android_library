@@ -88,4 +88,46 @@ public class ImageArithmeticTest extends AbstractTestCase {
     check("ImageType(ImageMultiply(Image({{10, 200}}, \"Byte\"), 0.5))", //
         "Byte");
   }
+
+  /** Plus, Times and Power of images and numbers work sample by sample, without clipping. */
+  @Test
+  public void plusTimesAndPowerActOnTheSamples() {
+    check("ImageData(Image({{0.25, 0.75}}) + Image({{0.5, 0.5}}))", //
+        "{{0.75,1.25}}");
+    check("ImageData(Image({{0.25, 0.75}}) + 0.5)", //
+        "{{0.75,1.25}}");
+    check("ImageData(4*Image({{0.25, 0.75}}))", //
+        "{{1.0,3.0}}");
+    check("ImageData(Image({{0.25, 0.75}})*Image({{2, 0}}))", //
+        "{{0.5,0.0}}");
+    check("ImageData(Image({{0.25, 0.75}}) - Image({{0.25, 0.25}}))", //
+        "{{0.0,0.5}}");
+    check("ImageData(Image({{0.5, 0.25}})^2)", //
+        "{{0.25,0.0625}}");
+    // a grey image combines with every channel of a colour image
+    check("ImageData(Image({{{0.25, 0.5, 0.75}}}) + Image({{0.25}}))", //
+        "{{{0.5,0.75,1.0}}}");
+  }
+
+  /** A sum or product of images is Real32, a power Real64. */
+  @Test
+  public void plusTimesAndPowerGiveImagesOfReals() {
+    check("{ImageType(Image({{0.5}}) + 2), ImageType(3*Image({{0.5}})), ImageType(Image({{0.5}})^3)}", //
+        "{Real32,Real32,Real64}");
+    check("ImageType(Image({{0.5}}, \"Real64\") + Image({{0.25}}))", //
+        "Real64");
+    check("ImageType(Image({{1, 0}}, \"Bit\") + 0.25)", //
+        "Real32");
+  }
+
+  /** Images of different sizes, or a symbolic operand, leave the sum as it is. */
+  @Test
+  public void plusOfMismatchedOperandsStaysUnevaluated() {
+    check("Head(Image({{0.5}}) + Image({{0.5, 0.25}}))", //
+        "Plus");
+    check("Head(Image({{0.5}})*y)", //
+        "Times");
+    check("Head(Image({{0.5}})^n)", //
+        "Power");
+  }
 }

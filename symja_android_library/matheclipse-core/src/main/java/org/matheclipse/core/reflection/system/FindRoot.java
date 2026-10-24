@@ -421,6 +421,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
     ast = threadVectorEquations(ast);
+    ast = flattenNestedEquations(ast);
     ast = unwrapSingleResidual(ast);
     IExpr result = machineRoot(ast, options, engine);
     int precision = workingPrecision(options.length > 3 ? options[3] : S.MachinePrecision);
@@ -471,6 +472,68 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
     return threaded.isPresent() ? ast.setAtCopy(1, threaded) : ast;
+  }
+
+  /**
+   * Equations and residuals in nested lists are the flat list of them, and an equation between a
+   * nested list and a scalar is the list of the equations of its elements:
+   * <code>FindRoot({{x^2}} == 4, {x, 1})</code> solves <code>x^2 == 4</code>. A call without
+   * nested lists is returned unchanged.
+   */
+  private static IAST flattenNestedEquations(IAST ast) {
+    if (ast.argSize() < 2 || !hasNestedList(ast.arg1())) {
+      return ast;
+    }
+    IASTAppendable flat = F.ListAlloc();
+    flattenEquations(ast.arg1(), flat);
+    return ast.setAtCopy(1, flat.argSize() == 1 ? flat.arg1() : flat);
+  }
+
+  /**
+   * <code>true</code> if a list in <code>equations</code> has a list or an equation of lists as an
+   * element.
+   */
+  private static boolean hasNestedList(IExpr equations) {
+    if (equations.isEqual()) {
+      return hasNestedList(equations.first()) || hasNestedList(equations.second());
+    }
+    if (equations.isList()) {
+      return ((IAST) equations).exists(x -> x.isList()
+          || (x.isEqual() && (x.first().isList() || x.second().isList())));
+    }
+    return false;
+  }
+
+  private static void flattenEquations(IExpr equations, IASTAppendable flat) {
+    if (equations.isList()) {
+      for (IExpr equation : (IAST) equations) {
+        flattenEquations(equation, flat);
+      }
+      return;
+    }
+    if (equations.isEqual()) {
+      IExpr lhs = equations.first();
+      IExpr rhs = equations.second();
+      if (lhs.isList() && rhs.isList() && lhs.argSize() == rhs.argSize()) {
+        for (int i = 1; i <= lhs.argSize(); i++) {
+          flattenEquations(F.Equal(lhs.getAt(i), rhs.getAt(i)), flat);
+        }
+        return;
+      }
+      if (lhs.isList() && !rhs.isList()) {
+        for (IExpr element : (IAST) lhs) {
+          flattenEquations(F.Equal(element, rhs), flat);
+        }
+        return;
+      }
+      if (rhs.isList() && !lhs.isList()) {
+        for (IExpr element : (IAST) rhs) {
+          flattenEquations(F.Equal(lhs, element), flat);
+        }
+        return;
+      }
+    }
+    flat.append(equations);
   }
 
   /**
@@ -654,7 +717,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     } else if (arg2.isList1() && (arg2.first().isList2() || arg2.first().isList3())) {
       return univariateFindRoot(ast.arg1(), (IAST) arg2.first(), method, maxIterations,
           accuracyGoal, engine);
-    } else if (arg2.isList1() && arg2.first().isAST(S.List, 5)) {
+    } else if (arg2.isList1()
+        && (arg2.first().isAST(S.List, 5) || arg2.first().isAST(S.List, 6))) {
+      // {x, x0, xmin, xmax} or {x, x0, x1, xmin, xmax}
       return boundedFindRoot(ast.arg1(), (IAST) arg2.first(), method, maxIterations, accuracyGoal,
           engine);
     }
@@ -662,22 +727,27 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * <code>FindRoot(f, {x, x0, xmin, xmax})</code>: the search starts at <code>x0</code> and stays
-   * in <code>[xmin, xmax]</code>. A root the search from <code>x0</code> finds outside the region is
-   * not taken; the region is then searched as a bracket if <code>f</code> changes its sign on it.
+   * <code>FindRoot(f, {x, x0, xmin, xmax})</code> and <code>FindRoot(f, {x, x0, x1, xmin,
+   * xmax})</code>: the search starts at <code>x0</code> (with the secant through <code>x0</code>
+   * and <code>x1</code>) and stays in <code>[xmin, xmax]</code>. A root the search from the start
+   * finds outside the region is not taken; the region is then searched as a bracket if
+   * <code>f</code> changes its sign on it.
    */
   private static IExpr boundedFindRoot(IExpr equations, IAST spec, String method,
       int maxIterations, int accuracyGoal, EvalEngine engine) {
     IExpr variable = spec.arg1();
-    double xmin = spec.arg3().evalfNaN();
-    double xmax = spec.get(4).evalfNaN();
+    final int boundsPosition = spec.argSize() - 1;
+    IExpr lower = spec.get(boundsPosition);
+    IExpr upper = spec.get(boundsPosition + 1);
+    double xmin = lower.evalfNaN();
+    double xmax = upper.evalfNaN();
     if (!variable.isSymbol() || Double.isNaN(xmin) || Double.isNaN(xmax) || xmin > xmax) {
       return F.NIL;
     }
     boolean quiet = engine.isQuietMode();
     try {
       engine.setQuietMode(true);
-      IExpr fromStart = univariateFindRoot(equations, F.list(variable, spec.arg2()), method,
+      IExpr fromStart = univariateFindRoot(equations, spec.copyUntil(boundsPosition), method,
           maxIterations, accuracyGoal, engine);
       if (fromStart.isList1() && fromStart.first().isRuleAST()) {
         double root = fromStart.first().second().evalfNaN();
@@ -685,7 +755,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           return fromStart;
         }
       }
-      IExpr bracketed = univariateFindRoot(equations, F.list(variable, spec.arg3(), spec.get(4)),
+      IExpr bracketed = univariateFindRoot(equations, F.list(variable, lower, upper),
           "Brent", maxIterations, accuracyGoal, engine);
       if (bracketed.isList1() && bracketed.first().isRuleAST()
           && bracketed.first().second().isNumber()) {
@@ -697,7 +767,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     // The point `1` is at the edge of the search region `2` in coordinate `3` and the computed
     // search direction points outside the region.
     Errors.printMessage(S.FindRoot, "reged",
-        F.list(F.List(spec.arg2()), F.List(F.List(spec.arg3(), spec.get(4))), F.C1), engine);
+        F.list(F.List(spec.arg2()), F.List(F.List(lower, upper)), F.C1), engine);
     return F.NIL;
   }
 
@@ -836,9 +906,11 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     boolean allStartValuesAreReal = true;
     for (int i = 1; i < matrixOfVarValuePairs.size(); i++) {
       IExpr variableInitialGuessPair = matrixOfVarValuePairs.get(i);
-      if (variableInitialGuessPair.isAST(S.List, 5)) {
-        double min = variableInitialGuessPair.getAt(3).evalfNaN();
-        double max = variableInitialGuessPair.getAt(4).evalfNaN();
+      if (variableInitialGuessPair.isAST(S.List, 5) || variableInitialGuessPair.isAST(S.List, 6)) {
+        // {x, x0, xmin, xmax} or {x, x0, x1, xmin, xmax}
+        final int boundsPosition = variableInitialGuessPair.argSize() - 1;
+        double min = variableInitialGuessPair.getAt(boundsPosition).evalfNaN();
+        double max = variableInitialGuessPair.getAt(boundsPosition + 1).evalfNaN();
         if (Double.isNaN(min) || Double.isNaN(max) || min > max) {
           // Search specification `1` should be a list with 1 to 3 elements.
           return Errors.printMessage(S.FindRoot, "fdss", F.List(variableInitialGuessPair),
@@ -846,8 +918,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         }
         lower[i - 1] = min;
         upper[i - 1] = max;
-        variableInitialGuessPair = F.list(variableInitialGuessPair.first(),
-            variableInitialGuessPair.second());
+        variableInitialGuessPair = ((IAST) variableInitialGuessPair).copyUntil(boundsPosition);
       }
       if (variableInitialGuessPair.isList2() || variableInitialGuessPair.isList3()) {
         IExpr variable = variableInitialGuessPair.first();
@@ -1391,9 +1462,39 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
+  /**
+   * The variables of the search specifications are local: <code>x = 0.3; FindRoot(x^2 - 2, {x,
+   * 1})</code> searches for the root in <code>x</code> and not in the value of <code>x</code>.
+   */
+  @Override
+  public boolean localIterators() {
+    return true;
+  }
+
+  /** The variables of <code>{x, x0, ...}</code> and of <code>{{x, x0, ...}, {y, y0, ...}}</code>. */
+  @Override
+  protected IAST localVariables(IAST held) {
+    IASTAppendable variables = F.ListAlloc();
+    for (int i = 2; i < held.size(); i++) {
+      IExpr arg = held.get(i);
+      if (!arg.isList() || arg.argSize() == 0) {
+        break;
+      }
+      if (arg.first().isList()) {
+        for (IExpr spec : (IAST) arg) {
+          if (spec.isList() && spec.argSize() > 0) {
+            appendLocalVariable(spec.first(), variables);
+          }
+        }
+      } else {
+        appendLocalVariable(arg.first(), variables);
+      }
+    }
+    return variables;
+  }
+
   @Override
   public void setUp(final ISymbol newSymbol) {
-    // newSymbol.setAttributes(Attribute.HOLDALL);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
             S.MaxIterations, S.Method, S.AccuracyGoal, S.WorkingPrecision}, //

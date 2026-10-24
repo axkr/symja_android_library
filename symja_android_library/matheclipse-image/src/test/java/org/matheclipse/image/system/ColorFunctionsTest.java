@@ -30,6 +30,27 @@ public class ColorFunctionsTest extends AbstractTestCase {
     check("ColorConvert(CMYKColor(0.0,1.0,1.0,0.0),\"RGB\")", "RGBColor(1.0,0.0,0.0)");
   }
 
+  /**
+   * A space may be named by its directive, a list of colours converts colour by colour, and the
+   * grey level and XYZ coordinates are computed in machine doubles.
+   */
+  @Test
+  public void testColorConvertSpaces() {
+    check("InputForm({ColorConvert({Cyan, Magenta}, \"GrayLevel\"), "
+        + "ColorConvert(RGBColor(0.5, 0.25, 1), \"Grayscale\")})", //
+        "{{GrayLevel(0.701`),GrayLevel(0.413`)},GrayLevel(0.41025`)}");
+    check("InputForm(ColorConvert(RGBColor(0, 0, 1), \"XYZColor\"))", //
+        "XYZColor(0.14308124062061284`,0.06061821623521407`,0.7141585835116004`)");
+    // the three primaries add up to the white point
+    check("Chop(Total(List @@@ ColorConvert({Red, Green, Blue}, \"XYZ\")) - "
+        + "List @@ ColorConvert(White, \"XYZColor\"), 10^-15)", //
+        "{0,0,0}");
+    check("ColorConvert({GrayLevel(0.25), RGBColor(0.5, 0.25, 0.125, 0.5)}, \"RGBColor\")", //
+        "{RGBColor(0.25,0.25,0.25),RGBColor(0.5,0.25,0.125,0.5)}");
+    check("ImageColorSpace(ColorConvert(Image({{0.25, 0.5}}), \"RGBColor\"))", //
+        "RGB");
+  }
+
   @Test
   public void colorConvertOfAnImage() {
     check("ImageChannels(ColorConvert(Image({{{1.0,0.0,0.0}}}),\"Grayscale\"))", "1");

@@ -101,10 +101,11 @@ public class ParametricPlot extends Plot {
         if (listOfLines.isNIL()) {
           return F.NIL;
         }
-        if (listOfLines.argSize() == 0 && PlotShapeProbe.isNoCurve(function)) {
-          // every curve was empty - ParametricPlot({{}}, ...), or a condition that chose no curve
-          // at all. That is an empty picture, not a call that could not be read, which is what
-          // Plot answers for the same data.
+        if (listOfLines.argSize() == 0) {
+          // every curve was empty - ParametricPlot({{}}, ...), a condition that chose no curve at
+          // all, or functions without a numeric value anywhere in the range, as {g(t), h(t)} of
+          // undefined g and h. That is an empty picture, not a call that could not be read, which
+          // is what Plot answers for the same data.
           return createGraphicsFunction(F.CEmptyList, graphicsOptions.copy(), ast);
         }
 

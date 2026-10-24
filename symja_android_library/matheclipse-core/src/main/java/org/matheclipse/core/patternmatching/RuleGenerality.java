@@ -229,6 +229,14 @@ final class RuleGenerality {
     if (argument instanceof IPatternSequence) {
       return null;
     }
+    if (argument.isAST(S.Optional, 2) || argument.isAST(S.Optional, 3)) {
+      // n_:12 takes no argument or one which n_ matches
+      IExpr inner = ((IAST) argument).arg1();
+      if (inner instanceof Blank && !(inner instanceof WildPattern) && !inner.isPatternDefault()) {
+        return new Arity(0, true, ((Blank) inner).getHeadTest(), true);
+      }
+      return null;
+    }
     if (argument.isPatternDefault()) {
       if (argument instanceof Blank && !(argument instanceof WildPattern)) {
         return new Arity(0, true, ((Blank) argument).getHeadTest(), true);

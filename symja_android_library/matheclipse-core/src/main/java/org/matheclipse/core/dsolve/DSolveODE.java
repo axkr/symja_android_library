@@ -3941,6 +3941,7 @@ final class DSolveODE {
     for (int r = 1; r <= roots.argSize(); r++) {
       IExpr root = roots.get(r);
       root = DSolveUtil.stripConditionalExpression(root);
+      root = DSolveUtil.constantOutOfExponent(root, engine);
       root = DSolveUtil.absorbConstants(root, F.list(c_n), false, engine);
       // absorbing the constants expands, which distributes a numerator over its denominator
       root = DSolveUtil.overCommonDenominator(root, engine);
