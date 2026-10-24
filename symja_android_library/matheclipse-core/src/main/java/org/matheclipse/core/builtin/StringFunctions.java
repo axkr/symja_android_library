@@ -1678,8 +1678,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps},
-          new IExpr[] {S.False, S.False});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps, S.MetaCharacters},
+          new IExpr[] {S.False, S.False, S.Automatic});
     }
   }
 
@@ -1743,7 +1743,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 
@@ -1813,8 +1814,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps},
-          new IExpr[] {S.False, S.False});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps, S.MetaCharacters},
+          new IExpr[] {S.False, S.False, S.Automatic});
     }
   }
 
@@ -2046,7 +2047,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 
@@ -2569,7 +2571,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 
@@ -2731,8 +2734,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps},
-          new IExpr[] {S.False, S.True});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps, S.MetaCharacters},
+          new IExpr[] {S.False, S.True, S.Automatic});
     }
   }
 
@@ -2863,7 +2866,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 
@@ -2982,7 +2986,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 
@@ -3065,7 +3070,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 
@@ -3644,7 +3650,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 
@@ -3685,7 +3692,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase}, new IExpr[] {S.False});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.MetaCharacters},
+          new IExpr[] {S.False, S.Automatic});
     }
   }
 

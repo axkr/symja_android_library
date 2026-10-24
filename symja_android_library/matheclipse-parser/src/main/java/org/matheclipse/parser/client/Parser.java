@@ -1420,6 +1420,17 @@ public class Parser extends Scanner {
           lhs = climbOperators(lhs, precedence, true);
           continue;
         }
+        if ("Put".equals(infixOperator.getFunctionName())
+            || "PutAppend".equals(infixOperator.getFunctionName())) {
+          // >> and >>> are followed by a file name, as << is
+          String fileName = scanPutFileName();
+          if (fileName != null) {
+            getNextToken();
+            lhs = infixOperator.createFunction(fFactory, lhs,
+                fFactory.createString(new StringBuilder(fileName)));
+            continue;
+          }
+        }
         getNextToken();
         if (infixOperator.isOperator(";") && compoundExpressionEndsHere()) {
           // the `;` has Null on its right; the loop goes round again so the operator standing
@@ -1503,6 +1514,12 @@ public class Parser extends Scanner {
         if (";".equals(infixOperatorString)) {
           if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
               || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
+            ((FunctionNode) lhs).add(fFactory.createSymbol(IConstantOperators.Null));
+            break;
+          }
+          if (compoundExpressionEndsHere()) {
+            // (a; b; -> c): the operator after the last `;` applies to the whole
+            // CompoundExpression, which ends in Null
             ((FunctionNode) lhs).add(fFactory.createSymbol(IConstantOperators.Null));
             break;
           }

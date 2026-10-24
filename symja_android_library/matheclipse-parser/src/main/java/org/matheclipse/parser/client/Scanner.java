@@ -552,7 +552,8 @@ public abstract class Scanner {
    * <code>&lt;&lt;CoffeeLiqueur`CUSockets`</code> loads a context and
    * <code>&lt;&lt;dir/file.wl</code> a file; neither is an expression - the backticks would be read
    * as contexts of nothing and the slashes as division. Reads everything up to the first space as
-   * the name.
+   * the name; balanced brackets belong to it, so <code>&lt;&lt;f[x]</code> reads the file
+   * <code>f[x]</code>.
    *
    * @return the name, or <code>null</code> when what follows is not one (a quoted string, which is
    *         read as the expression it is)
@@ -567,8 +568,24 @@ public abstract class Scanner {
       return null;
     }
     int start = position;
-    while (position < fInputString.length && isFileNameCharacter(fInputString[position])) {
+    int brackets = 0;
+    while (position < fInputString.length) {
+      char ch = fInputString[position];
+      if (ch == '[') {
+        brackets++;
+      } else if (ch == ']') {
+        if (brackets == 0) {
+          break;
+        }
+        brackets--;
+      } else if (!isFileNameCharacter(ch)) {
+        break;
+      }
       position++;
+    }
+    if (brackets != 0) {
+      // an unclosed bracket: not a name
+      return null;
     }
     if (position == start) {
       return null;
@@ -577,6 +594,45 @@ public abstract class Scanner {
     fCurrentPosition = position;
     fCurrentChar = ' ';
     return name;
+  }
+
+  /**
+   * The name after <code>&gt;&gt;</code> or <code>&gt;&gt;&gt;</code>, read like the name after
+   * <code>&lt;&lt;</code> when the expression ends after it: <code>x &gt;&gt; f[1]</code> writes the
+   * file <code>f[1]</code>, while in <code>x &gt;&gt; y + 1</code> the name is followed by more of
+   * the expression, which is then the second argument of <code>Put</code>.
+   *
+   * @return the name, or <code>null</code> (and nothing is read) when the expression goes on
+   */
+  protected String scanPutFileName() {
+    final int position = fCurrentPosition;
+    final char ch = fCurrentChar;
+    String name = scanFileName();
+    if (name == null) {
+      return null;
+    }
+    int next = fCurrentPosition;
+    while (next < fInputString.length
+        && (fInputString[next] == ' ' || fInputString[next] == '\t')) {
+      next++;
+    }
+    if (next >= fInputString.length) {
+      return name;
+    }
+    switch (fInputString[next]) {
+      case ';':
+      case ',':
+      case ')':
+      case ']':
+      case '}':
+      case '\n':
+      case '\r':
+        return name;
+      default:
+        fCurrentPosition = position;
+        fCurrentChar = ch;
+        return null;
+    }
   }
 
   /**

@@ -74,10 +74,39 @@ public class FileSystemFunctions {
 
   /** The path a user-supplied name denotes, or <code>null</code> when the sandbox refuses it. */
   private static Path path(ISymbol symbol, IExpr name, EvalEngine engine) {
+    String fileName = fileName(name, engine);
+    if (fileName == null) {
+      return null;
+    }
+    return FileSandbox.resolveReadPath(symbol, fileName, engine);
+  }
+
+  /**
+   * The file name of a string or a <code>File("name")</code>. Outside a sandbox a leading
+   * <code>~</code> stands for the home directory; a sandbox refuses it as it refuses every name
+   * outside its directory.
+   *
+   * @return <code>null</code> if <code>name</code> is neither
+   */
+  private static String fileName(IExpr name, EvalEngine engine) {
+    if (name instanceof FileExpr) {
+      name = F.stringx(((FileExpr) name).toData().getPath());
+    } else if (name.isAST(S.File, 2)) {
+      name = name.first();
+    }
     if (!(name instanceof IStringX)) {
       return null;
     }
-    return FileSandbox.resolveReadPath(symbol, name.toString(), engine);
+    String fileName = name.toString();
+    if (engine.getFileSandboxRoot() == null && fileName.startsWith("~")
+        && (fileName.length() == 1 || fileName.charAt(1) == '/'
+            || fileName.charAt(1) == java.io.File.separatorChar)) {
+      String home = System.getProperty("user.home");
+      if (home != null) {
+        return home + fileName.substring(1);
+      }
+    }
+    return fileName;
   }
 
   /**
@@ -110,10 +139,11 @@ public class FileSystemFunctions {
 
   /** Like {@link #path}, for a name that is about to be written to. */
   private static Path writePath(ISymbol symbol, IExpr name, EvalEngine engine) {
-    if (!(name instanceof IStringX)) {
+    String fileName = fileName(name, engine);
+    if (fileName == null) {
       return null;
     }
-    return FileSandbox.resolveWritePath(symbol, name.toString(), engine);
+    return FileSandbox.resolveWritePath(symbol, fileName, engine);
   }
 
   private static class AbsoluteFileName extends AbstractEvaluator {

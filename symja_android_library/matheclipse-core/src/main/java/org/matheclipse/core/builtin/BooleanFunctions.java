@@ -71,6 +71,9 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.parser.trie.TrieNode;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 import org.matheclipse.external.fastutil.objects.Object2IntArrayMap;
@@ -3213,6 +3216,12 @@ public final class BooleanFunctions {
       boolean evaled = false;
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
+        if (arg.isSparseArray()) {
+          // the stored values, and the background where an element isn't stored
+          appendSparseArrayValues((ISparseArray) arg, result);
+          evaled = true;
+          continue;
+        }
         int dim = arg.isVector();
         if (dim >= 0) {
           IExpr normal = arg.normal(false);
@@ -3229,6 +3238,25 @@ public final class BooleanFunctions {
         result.append(arg);
       }
       return evaled;
+    }
+
+    private static void appendSparseArrayValues(ISparseArray sparseArray,
+        IASTAppendable result) {
+      final IExpr background = sparseArray.getDefaultValue();
+      int stored = 0;
+      for (TrieNode<int[], IExpr> entry : ((SparseArrayExpr) sparseArray).toData().nodeSet()) {
+        if (!entry.getValue().equals(background)) {
+          result.append(entry.getValue());
+          stored++;
+        }
+      }
+      double size = 1.0;
+      for (int d : sparseArray.getDimension()) {
+        size *= d;
+      }
+      if (stored < size) {
+        result.append(background);
+      }
     }
 
     /**
@@ -3351,7 +3379,8 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
-        if (arg1.isList() || arg1.isAssociation() || arg1.isInterval() || arg1.isIntervalData()) {
+        if (arg1.isList() || arg1.isAssociation() || arg1.isSparseArray() || arg1.isInterval()
+            || arg1.isIntervalData()) {
           if ((arg1.isInterval() || arg1.isIntervalData()) && !isRealValuedInterval(arg1)) {
             // symbolic interval endpoints are not orderable -> leave MinMax unevaluated
             return F.NIL;
@@ -3360,7 +3389,8 @@ public final class BooleanFunctions {
         }
       } else if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
-        if (arg1.isList() || arg1.isAssociation() || arg1.isInterval() || arg1.isIntervalData()) {
+        if (arg1.isList() || arg1.isAssociation() || arg1.isSparseArray() || arg1.isInterval()
+            || arg1.isIntervalData()) {
           if ((arg1.isInterval() || arg1.isIntervalData()) && !isRealValuedInterval(arg1)) {
             return F.NIL;
           }

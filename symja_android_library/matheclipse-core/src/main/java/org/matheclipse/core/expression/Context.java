@@ -158,20 +158,21 @@ public class Context implements Serializable {
    */
   public boolean remove(ISymbol symbol) {
     if (this == SYSTEM) {
-      systemChanges++;
+      SYSTEM_CHANGES.incrementAndGet();
     }
     return symbolTable.values().remove(symbol);
   }
 
   public ISymbol put(String key, ISymbol value) {
     if (this == SYSTEM) {
-      systemChanges++;
+      SYSTEM_CHANGES.incrementAndGet();
     }
     return symbolTable.put(key, value);
   }
 
   /** Counts how often a name of the {@link #SYSTEM} context was removed or set again. */
-  private static volatile int systemChanges;
+  private static final java.util.concurrent.atomic.AtomicInteger SYSTEM_CHANGES =
+      new java.util.concurrent.atomic.AtomicInteger();
 
   /**
    * A number which changes whenever a name of the {@link #SYSTEM} context may stand for another
@@ -179,7 +180,7 @@ public class Context implements Serializable {
    * name has to remember this number with it.
    */
   public static int systemChanges() {
-    return systemChanges;
+    return SYSTEM_CHANGES.get();
   }
 
   public synchronized ISymbol computeIfAbsent(String key,
@@ -204,7 +205,7 @@ public class Context implements Serializable {
 
   public ISymbol remove(String key) {
     if (this == SYSTEM) {
-      systemChanges++;
+      SYSTEM_CHANGES.incrementAndGet();
     }
     return symbolTable.remove(key);
   }

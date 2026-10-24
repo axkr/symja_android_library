@@ -5279,6 +5279,24 @@ public final class LinearAlgebra {
             return Errors.printMessage(S.Norm, "ptype", F.List(arg2));
           }
         }
+        if ((matrixNorm == F.C1 || matrixNorm == F.CInfinity) && !engine.isNumericMode()
+            && arg1.isFree(x -> x.isInexactNumber(), false)) {
+          // exact or symbolic entries: the largest column sum (1-norm) or row sum (infinity-norm)
+          // of the absolute values
+          IAST m = (IAST) arg1.normal(false);
+          boolean columns = matrixNorm == F.C1;
+          int outer = columns ? dims[1] : dims[0];
+          int inner = columns ? dims[0] : dims[1];
+          IASTAppendable max = F.ast(S.Max, outer);
+          for (int k = 1; k <= outer; k++) {
+            IASTAppendable sum = F.PlusAlloc(inner);
+            for (int l = 1; l <= inner; l++) {
+              sum.append(F.Abs(columns ? m.getPart(l, k) : m.getPart(k, l)));
+            }
+            max.append(sum.oneIdentity0());
+          }
+          return max;
+        }
         RealMatrix matrix;
         try {
           matrix = arg1.toRealMatrix();

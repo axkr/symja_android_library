@@ -202,6 +202,10 @@ public final class ContextPath implements Iterable<Context> {
     aliases.put("Experimental`ValueFunction", S.ValueFunction);
     aliases.put("Developer`RawCompress", S.RawCompress);
     aliases.put("Developer`RawUncompress", S.RawUncompress);
+    // packed arrays: a vector or matrix of machine reals is kept in a double[] storage
+    aliases.put("Developer`PackedArrayQ", F.localFunction("PackedArrayQ", packing(0)));
+    aliases.put("Developer`ToPackedArray", F.localFunction("ToPackedArray", packing(1)));
+    aliases.put("Developer`FromPackedArray", F.localFunction("FromPackedArray", packing(2)));
     // the domain {{min, max}, ...} of an InterpolatingFunction, from the package which defines it
     aliases.put("DifferentialEquations`InterpolatingFunctionAnatomy`InterpolatingFunctionDomain",
         F.localFunction("InterpolatingFunctionDomain", x -> {
@@ -231,6 +235,71 @@ public final class ContextPath implements Iterable<Context> {
               }
             }));
     return aliases;
+  }
+
+  /**
+   * The evaluators of <code>PackedArrayQ(expr, ...)</code> (<code>kind == 0</code>),
+   * <code>ToPackedArray(expr, ...)</code> (<code>1</code>) and <code>FromPackedArray(expr)</code>
+   * (<code>2</code>). Only a vector or matrix of machine reals has a packed storage
+   * ({@link ASTRealVector}, {@link ASTRealMatrix}); <code>ToPackedArray</code> gives any other
+   * expression back as it is.
+   */
+  private static org.matheclipse.core.eval.interfaces.IFunctionEvaluator packing(int kind) {
+    // a core evaluator, because a built-in without a symbol ID is only dispatched to one
+    return new org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator() {
+      @Override
+      public org.matheclipse.core.interfaces.IExpr evaluate(IAST ast, EvalEngine engine) {
+        if (ast.argSize() < 1 || ast.argSize() > (kind == 2 ? 1 : 3)) {
+          return F.NIL;
+        }
+        org.matheclipse.core.interfaces.IExpr arg1 = engine.evaluate(ast.arg1());
+        boolean packed = arg1 instanceof ASTRealVector || arg1 instanceof ASTRealMatrix;
+        switch (kind) {
+          case 0:
+            if (packed && ast.argSize() >= 2) {
+              // PackedArrayQ(expr, type) and PackedArrayQ(expr, type, rank): the packed storage
+              // holds machine reals only
+              org.matheclipse.core.interfaces.IExpr type = engine.evaluate(ast.arg2());
+              if (type != S.Real) {
+                return S.False;
+              }
+              if (ast.argSize() == 3) {
+                int rank = arg1 instanceof ASTRealVector ? 1 : 2;
+                return F.booleSymbol(engine.evaluate(ast.arg3()).toIntDefault() == rank);
+              }
+            }
+            return F.booleSymbol(packed);
+          case 1:
+            if (packed) {
+              return arg1;
+            }
+            if (arg1.isList() && ((IAST) arg1).argSize() > 0) {
+              IAST list = (IAST) arg1;
+              if (list.forAll(x -> x instanceof Num)) {
+                return new ASTRealVector(list.toDoubleVector(), false);
+              }
+              int[] dims = list.isMatrix(false);
+              if (dims != null && dims[1] > 0
+                  && list.forAll(row -> ((IAST) row).forAll(x -> x instanceof Num))) {
+                return new ASTRealMatrix(list.toDoubleMatrix(), false);
+              }
+            }
+            return arg1;
+          default:
+            if (arg1 instanceof ASTRealVector) {
+              return F.mapRange(1, ((IAST) arg1).size(), i -> ((IAST) arg1).get(i));
+            }
+            if (arg1 instanceof ASTRealMatrix) {
+              IAST matrix = (IAST) arg1;
+              return F.mapRange(1, matrix.size(), i -> {
+                IAST row = (IAST) matrix.get(i);
+                return F.mapRange(1, row.size(), j -> row.get(j));
+              });
+            }
+            return arg1;
+        }
+      }
+    };
   }
 
   private static org.matheclipse.core.interfaces.IExpr distributedTermsList(IAST ast,

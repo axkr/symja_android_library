@@ -1466,7 +1466,7 @@ public final class ResidueIntegration {
     IASTAppendable product = F.TimesAlloc(2 * m + 4);
     product.append(F.Power(F.C2, F.ZZ(n - 1)));
     product.append(F.Power(F.Times(b, F.Factorial(F.ZZ(n - 1))), F.CN1));
-    if (n % 2 == 1) {
+    if (n % 2 != 0) {
       // Gamma(m+1/2+v)*Gamma(m+1/2-v) == Product((j+1/2)^2-v^2, {j,0,m-1})*Pi*Sec(Pi*v)
       for (int j = 0; j < m; j++) {
         product.append(F.Subtract(F.Sqr(F.QQ(2 * j + 1, 2)), F.Sqr(v)));

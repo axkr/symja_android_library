@@ -183,7 +183,10 @@ public final class TricomiU {
     // the maximum of the integrand over the nodes of the first level fixes the scale
     double maxLog = Double.NEGATIVE_INFINITY;
     double maxScale = 0.0;
-    for (double t = -T_MAX; t <= T_MAX; t += FIRST_STEP / 8.0) {
+    final double scanStep = FIRST_STEP / 8.0;
+    final int scanNodes = (int) Math.round(2.0 * T_MAX / scanStep);
+    for (int i = 0; i <= scanNodes; i++) {
+      double t = -T_MAX + i * scanStep;
       double v = logG.applyAsDouble(t);
       if (v > maxLog) {
         maxLog = v;
@@ -194,8 +197,9 @@ public final class TricomiU {
     }
     double h = FIRST_STEP;
     double sum = 0.0;
-    for (double t = -T_MAX; t <= T_MAX + 1.0e-12; t += h) {
-      sum += Math.exp(logG.applyAsDouble(t) - maxLog);
+    final int firstNodes = (int) Math.round(2.0 * T_MAX / h);
+    for (int i = 0; i <= firstNodes; i++) {
+      sum += Math.exp(logG.applyAsDouble(-T_MAX + i * h) - maxLog);
     }
     double previous = sum * h;
     double estimate = previous;
@@ -203,7 +207,9 @@ public final class TricomiU {
     for (int level = 1; level <= MAX_LEVELS; level++) {
       h /= 2.0;
       // the new nodes lie between the old ones
-      for (double t = -T_MAX + h; t < T_MAX; t += 2.0 * h) {
+      final int newNodes = (int) Math.round(T_MAX / h);
+      for (int i = 0; i < newNodes; i++) {
+        double t = -T_MAX + (2 * i + 1) * h;
         double v = logG.applyAsDouble(t);
         double w = Math.exp(v - maxLog);
         sum += w;

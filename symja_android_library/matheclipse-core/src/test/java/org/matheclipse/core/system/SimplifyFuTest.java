@@ -466,6 +466,28 @@ public class SimplifyFuTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTrigSimplifyTR10iSymbolicAngles() {
+    // a sum of products of Sin and Cos of two symbols combines into Cos and Sin of their sum
+    IExpr tr10i = TrigSimplifyFu
+        .tr10i(F.Subtract(F.Times(F.Cos(F.x), F.Cos(F.y)), F.Times(F.Sin(F.x), F.Sin(F.y))));
+    assertEquals("Cos(x+y)", tr10i.toString());
+
+    tr10i = TrigSimplifyFu
+        .tr10i(F.Plus(F.Times(F.Sin(F.x), F.Cos(F.y)), F.Times(F.Cos(F.x), F.Sin(F.y))));
+    assertEquals("Sin(x+y)", tr10i.toString());
+
+    tr10i = TrigSimplifyFu.tr10i(F.Plus(F.Times(F.C2, F.Cos(F.x), F.Cos(F.y)),
+        F.Times(F.CN2, F.Sin(F.x), F.Sin(F.y)), F.Times(F.C3, F.Sin(F.x), F.Cos(F.y)),
+        F.Times(F.C3, F.Cos(F.x), F.Sin(F.y))));
+    assertEquals("2*Cos(x+y)+3*Sin(x+y)", tr10i.toString());
+
+    // a third angle: the terms don't belong to one sum of angles
+    tr10i = TrigSimplifyFu
+        .tr10i(F.Subtract(F.Times(F.Cos(F.x), F.Cos(F.y)), F.Times(F.Sin(F.x), F.Sin(F.z))));
+    assertEquals("Cos(x)*Cos(y)-Sin(x)*Sin(z)", tr10i.toString());
+  }
+
+  @Test
   public void testTrigSimplifyTR10i() {
     IExpr tr10i = TrigSimplifyFu
         .tr10i(F.Plus(F.Times(F.Cos(F.C1), F.Cos(F.C3)), F.Times(F.Sin(F.C1), F.Sin(F.C3))));

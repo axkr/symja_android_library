@@ -21,6 +21,7 @@ import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.expression.data.InputStreamExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 
@@ -186,10 +187,41 @@ public class Hash extends AbstractFunctionEvaluator {
 
   /** Distribute the 32 bits of a hash code over 64 bits (the finalizer of SplitMix64). */
   private static long spread(int hashCode) {
-    long z = (hashCode & 0xFFFFFFFFL) + 0x9E3779B97F4A7C15L;
+    return mix64((hashCode & 0xFFFFFFFFL) + 0x9E3779B97F4A7C15L);
+  }
+
+  /** The finalizer of SplitMix64. */
+  private static long mix64(long z) {
     z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
     z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
     return z ^ (z >>> 31);
+  }
+
+  /**
+   * A 64-bit hash of the whole structure of <code>expr</code>: the head and every argument, and for
+   * an association every key and value. {@link Object#hashCode()} of a large expression looks at
+   * part of it only, which is right for hash tables but makes two lists which differ in a late
+   * element hash alike - and a program which keys a cache on the hash of a list then mistakes one
+   * for the other.
+   */
+  public static long expressionHash(IExpr expr) {
+    if (expr.isAssociation()) {
+      IAssociation association = (IAssociation) expr;
+      long h = 0x243F6A8885A308D3L;
+      for (int i = 1; i < association.size(); i++) {
+        h = mix64(h * 0x100000001B3L ^ expressionHash(association.getRule(i)));
+      }
+      return h;
+    }
+    if (expr instanceof IAST) {
+      IAST ast = (IAST) expr;
+      long h = mix64(0x13198A2E03707344L ^ expressionHash(ast.head()));
+      for (int i = 1; i < ast.size(); i++) {
+        h = mix64(h * 0x100000001B3L ^ expressionHash(ast.get(i)));
+      }
+      return mix64(h ^ ast.argSize());
+    }
+    return spread(expr.hashCode());
   }
 
   @Override
@@ -222,7 +254,7 @@ public class Hash extends AbstractFunctionEvaluator {
     }
     if (algorithm.equals("Expression")) {
       // a non-negative 64-bit value, so that the string formats have a fixed width
-      long h = spread(arg1.hashCode());
+      long h = expressionHash(arg1);
       byte[] bytes = new byte[8];
       for (int i = 7; i >= 0; i--) {
         bytes[i] = (byte) h;

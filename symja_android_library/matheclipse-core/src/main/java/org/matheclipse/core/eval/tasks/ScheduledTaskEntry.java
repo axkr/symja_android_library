@@ -17,8 +17,8 @@ public final class ScheduledTaskEntry {
   private final String uuid;
   private final IExpr heldExpression;
   private final long periodNanos;
-  private long dueAt;
-  private int remainingRuns;
+  private volatile long dueAt;
+  private final java.util.concurrent.atomic.AtomicInteger remainingRuns;
   private volatile boolean cancelled;
 
   /**
@@ -31,7 +31,7 @@ public final class ScheduledTaskEntry {
     this.heldExpression = heldExpression;
     this.periodNanos = periodNanos;
     this.dueAt = System.nanoTime() + delayNanos;
-    this.remainingRuns = remainingRuns;
+    this.remainingRuns = new java.util.concurrent.atomic.AtomicInteger(remainingRuns);
   }
 
   public String uuid() {
@@ -60,9 +60,8 @@ public final class ScheduledTaskEntry {
     if (cancelled) {
       return;
     }
-    if (remainingRuns > 0) {
-      remainingRuns--;
-    }
+    // -1 stands for no limit and stays
+    remainingRuns.updateAndGet(n -> n > 0 ? n - 1 : n);
     engine.evaluate(F.ReleaseHold(heldExpression));
   }
 
@@ -72,7 +71,7 @@ public final class ScheduledTaskEntry {
    * @return <code>true</code> if it is still scheduled
    */
   public boolean reschedule() {
-    if (cancelled || periodNanos <= 0 || remainingRuns == 0) {
+    if (cancelled || periodNanos <= 0 || remainingRuns.get() == 0) {
       return false;
     }
     dueAt = System.nanoTime() + periodNanos;

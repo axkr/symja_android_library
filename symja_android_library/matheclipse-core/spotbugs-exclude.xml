@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SpotBugs patterns which are intended in matheclipse-core. Every entry says why. -->
+<FindBugsFilter xmlns="https://github.com/spotbugs/filter/3.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+	<!-- The generators are seeded on purpose, so that a computation or a test is reproducible,
+	and each one is used in a loop: the detector sees one call site, not one call. -->
+	<Match>
+		<Bug pattern="DMI_RANDOM_USED_ONLY_ONCE" />
+	</Match>
+
+	<!-- The evaluation flags and the hash value of an AST are caches written without a lock,
+	like String.hash: a thread which doesn't see the latest value computes it again. They are read
+	on every evaluation step, so volatile or atomic fields would slow down every expression. -->
+	<Match>
+		<Class name="org.matheclipse.core.expression.AbstractAST" />
+		<Or>
+			<Field name="fEvalFlags" />
+			<Field name="hashValue" />
+		</Or>
+	</Match>
+
+	<!-- Synchronizing on an object or a class which other code can see (a synchronized method, a
+	public lock field) lets that code block it. Symja's locks are only taken by Symja itself, and
+	moving every synchronized method to a private lock object would be a redesign without a
+	defect behind it. -->
+	<Match>
+		<Bug code="USO" />
+	</Match>
+
+	<!-- Debug statistics of the rule index and the substitution plans: the first mismatch is kept
+	for a report; if two threads race, either one of them is fine. -->
+	<Match>
+		<Bug pattern="LI_LAZY_INIT_UPDATE_STATIC" />
+		<Or>
+			<Class name="org.matheclipse.core.patternmatching.ruleindex.OrderlessIndexValidation" />
+			<Class name="org.matheclipse.core.patternmatching.ruleindex.RuleIndexValidation" />
+			<Class name="org.matheclipse.core.patternmatching.ruleindex.SubstitutionPlanStats" />
+		</Or>
+	</Match>
+
+	<!-- The position of a list iterator; an iterator is used by one thread. -->
+	<Match>
+		<Class name="~org\.matheclipse\.core\.tensor\.ext\.IntList\$.*" />
+		<Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" />
+	</Match>
+
+	<!-- The relations of the quadratic sieve are added by the collecting thread only; the sieving
+	threads hand their relations over through a queue. -->
+	<Match>
+		<Class name="org.matheclipse.core.numbertheory.Siqs" />
+		<Or>
+			<Field name="cycles" />
+			<Field name="vertices" />
+		</Or>
+	</Match>
+</FindBugsFilter>

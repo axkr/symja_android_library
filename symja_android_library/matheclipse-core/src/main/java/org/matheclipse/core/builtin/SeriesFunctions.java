@@ -1661,7 +1661,7 @@ public class SeriesFunctions {
 
     /** <code>(-1)^(k+1)*BernoulliB(k+1,a)/(k*(k+1))</code> */
     private static IExpr stirlingCoefficient(IRational a, int k) {
-      return F.Times(F.ZZ(k % 2 == 1 ? 1 : -1), F.BernoulliB(F.ZZ(k + 1), a),
+      return F.Times(F.ZZ(k % 2 != 0 ? 1 : -1), F.BernoulliB(F.ZZ(k + 1), a),
           F.QQ(1, (long) k * (k + 1)));
     }
 

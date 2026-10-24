@@ -322,7 +322,7 @@ public class FilterFunctions {
     final int width = 2 * radius + 1;
     double[] axis = new double[radius + 1];
     for (int k = 1; k <= radius; k++) {
-      axis[k] = (k % 2 == 1 ? 2.0 : -2.0) / (k * k);
+      axis[k] = (k % 2 != 0 ? 2.0 : -2.0) / (k * k);
     }
     final double centre = -2.0 * Math.PI * Math.PI / 3.0;
     double coreSum = centre;

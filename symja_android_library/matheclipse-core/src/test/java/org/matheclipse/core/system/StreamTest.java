@@ -260,6 +260,13 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "True");
     check("Hash({3,4})==Hash({4,3})", //
         "False");
+    // every element counts, also the late ones of a long list, and the keys of an association
+    check("Hash(Append(Range(25), \"u\"))==Hash(Append(Range(25), \"v\"))", //
+        "False");
+    check("Hash(Append(Range(25), {x}))==Hash(Append(Range(25), {x}))", //
+        "True");
+    check("Hash(<|a->1, b->2|>)==Hash(<|a->1, c->2|>)", //
+        "False");
     // messages invhash and uform
     check("Hash(7,11)", //
         "Hash(7,11)");
@@ -290,6 +297,14 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "");
     check("FilePrint(f)", //
         "");
+  }
+
+  /** Write puts its expressions one after the other on a line of their own. */
+  @Test
+  public void testWriteLines() {
+    call("wf = FileNameJoin({$TemporaryDirectory, \"symja_write_lines.txt\"})");
+    check("s = OpenWrite(wf); Write(s, p + q); Write(s, r, t); Close(s); InputForm(ReadString(wf))", //
+        "\"p + q\\nrt\\n\"");
   }
 
   @Test

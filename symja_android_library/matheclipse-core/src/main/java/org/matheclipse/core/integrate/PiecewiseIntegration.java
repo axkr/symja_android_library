@@ -581,7 +581,7 @@ public final class PiecewiseIntegration {
       }
       return true;
     }
-    if (ast.isAST(S.Inequality) && ast.argSize() >= 3 && ast.argSize() % 2 == 1) {
+    if (ast.isAST(S.Inequality) && ast.argSize() >= 3 && ast.argSize() % 2 != 0) {
       // Inequality(a, Less, b, LessEqual, c,...)
       for (int i = 1; i + 2 < ast.size(); i += 2) {
         if (!addZerosAndPoles(F.Subtract(ast.get(i), ast.get(i + 2)), x, lower, upper, low, up,

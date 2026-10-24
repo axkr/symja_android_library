@@ -2257,6 +2257,153 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return new SparseArrayExpr(trie, newDimension, fDefaultValue.orElse(F.C0), false);
   }
 
+  /**
+   * The names <code>s("Properties")</code> answers. <code>"Background"</code>,
+   * <code>"NonzeroPositions"</code> and <code>"NonzeroValues"</code> are older names of
+   * <code>"ImplicitValue"</code>, <code>"ExplicitPositions"</code> and
+   * <code>"ExplicitValues"</code>.
+   */
+  private static final String[] PROPERTIES = {"AdjacencyLists", "BandWidth", "ColumnIndices",
+      "Density", "ExplicitLength", "ExplicitPositions", "ExplicitValues", "ImplicitValue",
+      "RowPointers"};
+
+  /**
+   * <code>s("name")</code> for a property <code>name</code> of this sparse array: the positions and
+   * values of the explicitly stored elements, the background value, the density and the parts of
+   * the compressed sparse row form.
+   */
+  @Override
+  public IExpr evaluateHead(IAST ast, EvalEngine engine) {
+    if (!ast.isAST1() || !ast.arg1().isString()) {
+      return F.NIL;
+    }
+    final String name = ast.arg1().toString();
+    switch (name) {
+      case "Background":
+      case "ImplicitValue":
+        return fDefaultValue;
+      case "Properties":
+        return F.mapRange(0, PROPERTIES.length, i -> F.stringx(PROPERTIES[i]));
+      default:
+        break;
+    }
+    final int[][] positions = nonzeroPositions();
+    switch (name) {
+      case "ExplicitLength":
+        return F.ZZ(positions.length);
+      case "NonzeroPositions":
+      case "ExplicitPositions":
+        return F.mapRange(0, positions.length, i -> F.ast(S.List, positions[i]));
+      case "NonzeroValues":
+      case "ExplicitValues":
+        return F.mapRange(0, positions.length, i -> getIndex(positions[i]));
+      case "Density": {
+        double size = 1.0;
+        for (int d : fDimension) {
+          size *= d;
+        }
+        return F.num(size == 0.0 ? 0.0 : positions.length / size);
+      }
+      case "RowPointers": {
+        // the offsets of the rows into the column indices; a vector is a single row
+        final int rows = fDimension.length > 1 ? fDimension[0] : 1;
+        IASTAppendable rowPointers = F.ListAlloc(rows + 1);
+        int k = 0;
+        rowPointers.append(F.C0);
+        for (int row = 1; row <= rows; row++) {
+          while (k < positions.length && (fDimension.length == 1 || positions[k][0] == row)) {
+            k++;
+          }
+          rowPointers.append(F.ZZ(k));
+        }
+        return rowPointers;
+      }
+      case "ColumnIndices":
+        return F.mapRange(0, positions.length, i -> F.ast(S.List,
+            fDimension.length > 1 ? Arrays.copyOfRange(positions[i], 1, positions[i].length)
+                : positions[i]));
+      case "BandWidth":
+        if (fDimension.length == 2) {
+          // the largest distance of a stored element below and above the diagonal
+          int lower = 0;
+          int upper = 0;
+          for (int[] position : positions) {
+            lower = Math.max(lower, position[0] - position[1]);
+            upper = Math.max(upper, position[1] - position[0]);
+          }
+          return F.list(F.ZZ(lower), F.ZZ(upper));
+        }
+        break;
+      case "AdjacencyLists":
+        if (fDimension.length == 1) {
+          return F.mapRange(0, positions.length, i -> F.ZZ(positions[i][0]));
+        }
+        if (fDimension.length == 2) {
+          IASTAppendable lists = F.ListAlloc(fDimension[0]);
+          int k = 0;
+          for (int row = 1; row <= fDimension[0]; row++) {
+            IASTAppendable columns = F.ListAlloc();
+            while (k < positions.length && positions[k][0] == row) {
+              columns.append(F.ZZ(positions[k++][1]));
+            }
+            lists.append(columns);
+          }
+          return lists;
+        }
+        break;
+      default:
+        break;
+    }
+    // There is no method `1` for `2` objects.
+    return Errors.printMessage(S.SparseArray, "nomthd", F.list(ast.arg1(), S.SparseArray),
+        engine);
+  }
+
+  /**
+   * For a built-in function which has no sparse implementation: evaluate <code>ast</code> with its
+   * sparse array arguments replaced by their nested lists.
+   *
+   * @param ast a call with sparse array arguments
+   * @param keepSparse if <code>true</code> and the first argument is a sparse array, an array
+   *        result becomes a sparse array with its background
+   * @return {@link F#NIL} if no argument is a sparse array or the call doesn't evaluate
+   */
+  public static IExpr evalNormal(IAST ast, boolean keepSparse, EvalEngine engine) {
+    if (!ast.exists(x -> x instanceof ISparseArray)) {
+      return F.NIL;
+    }
+    IExpr call = ast.map(x -> x instanceof ISparseArray ? ((ISparseArray) x).normal(false) : F.NIL,
+        1);
+    IExpr result = engine.evaluate(call);
+    if (result.equals(call)) {
+      return F.NIL;
+    }
+    if (keepSparse && result.isList() && ast.arg1() instanceof ISparseArray) {
+      SparseArrayExpr sparseArray =
+          newDenseList((IAST) result, ((ISparseArray) ast.arg1()).getDefaultValue());
+      if (sparseArray != null) {
+        return sparseArray;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The positions of the stored elements which differ from the background value, in lexicographic
+   * order.
+   */
+  private int[][] nonzeroPositions() {
+    java.util.List<int[]> list = new java.util.ArrayList<int[]>(fData.size());
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      if (!entry.getValue().equals(fDefaultValue)) {
+        list.add(entry.getKey());
+      }
+    }
+    int[][] positions = list.toArray(new int[list.size()][]);
+    Arrays.sort(positions, Arrays::compare);
+    return positions;
+  }
+
   @Override
   public IExpr getDefaultValue() {
     return fDefaultValue;

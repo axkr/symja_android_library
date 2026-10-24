@@ -227,6 +227,11 @@ public final class RulesData implements Serializable {
    */
   private static volatile boolean UP_RULES_DEFINED = false;
 
+  /** Some rules data has up-rules from now on; the flag is never reset. */
+  private static void markUpRulesDefined() {
+    UP_RULES_DEFINED = true;
+  }
+
   /**
    * Test if any up-value was installed since this JVM started.
    *
@@ -417,6 +422,28 @@ public final class RulesData implements Serializable {
       return F.binaryAST2(S.N, leftHandSide.first(), F.list(leftHandSide.second(), S.Infinity));
     }
     return leftHandSide;
+  }
+
+  /**
+   * Are there down-values for calls of <code>head</code>? The options of a symbol are stored as
+   * the down-value <code>Options(head) = {...}</code>, which doesn't count.
+   *
+   * @param head the symbol these rules belong to
+   */
+  public boolean hasDownRulesFor(ISymbol head) {
+    final List<IPatternMatcher> patternRules = fPatternDownRules;
+    if (patternRules != null && !patternRules.isEmpty()) {
+      return true;
+    }
+    final Map<IExpr, PatternMatcherEquals> equalRules = fEqualDownRules;
+    if (equalRules != null) {
+      for (IExpr lhs : equalRules.keySet()) {
+        if (lhs.head() == head) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /** Test if one of the up-values may be an N-value. */
@@ -1314,7 +1341,17 @@ public final class RulesData implements Serializable {
       IExpr oldSlotValuesRHS = oldMap.substituteSymbols(rhs.second(), F.NIL);
       return newSlotValuesRHS.second().equals(oldSlotValuesRHS);
     }
-    return !(rhs.isCondition() || newSlotValuesRHS.isCondition());
+    // a Module, With or Block body ending in a condition is a conditional rule too: it only
+    // replaces a rule with the same right-hand side
+    final boolean oldConditional = rhs.isCondition() || rhs.isBlockModuleOrWithCondition();
+    final boolean newConditional =
+        newSlotValuesRHS.isCondition() || newSlotValuesRHS.isBlockModuleOrWithCondition();
+    if (oldConditional && newConditional) {
+      oldMap = oldMap.copy();
+      oldMap.initSlotValues();
+      return newSlotValuesRHS.equals(oldMap.substituteSymbols(rhs, F.NIL));
+    }
+    return !(oldConditional || newConditional);
   }
 
   public void putDefaultValues(int pos, IExpr expr) {
@@ -1327,7 +1364,7 @@ public final class RulesData implements Serializable {
   public synchronized IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
       final IAST leftHandSide, final IExpr rightHandSide) {
     // the only place where fEqualUpRules / fSimplePatternUpRules become non-null
-    UP_RULES_DEFINED = true;
+    markUpRulesDefined();
     if (isNValue(leftHandSide)) {
       fNValues = true;
     }

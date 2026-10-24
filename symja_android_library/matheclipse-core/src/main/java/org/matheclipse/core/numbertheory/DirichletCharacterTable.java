@@ -419,7 +419,11 @@ public final class DirichletCharacterTable {
     }
     DirichletCharacterTable table = build(k, j);
     if (table != null && table.conductor <= CACHE_FMAX && CACHE.size() < CACHE_SLOTS) {
-      CACHE.putIfAbsent(key, table);
+      DirichletCharacterTable previous = CACHE.putIfAbsent(key, table);
+      if (previous != null) {
+        // another thread built it first: answer the cached one
+        return previous;
+      }
     }
     return table;
   }

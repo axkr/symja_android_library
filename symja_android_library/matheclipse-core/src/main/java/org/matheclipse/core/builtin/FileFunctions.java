@@ -1111,6 +1111,12 @@ public class FileFunctions {
      * @return
      */
     protected IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
+      if (ast.isAST1()) {
+        OutputStreamExpr standard = standardStream(ast.arg1(), engine);
+        if (standard != null) {
+          return standard;
+        }
+      }
       IExpr method = streamMethod(ast);
       if (method.isPresent()) {
         // a stream of a kind somebody defined: where its bytes go is that definition's business,
@@ -2760,10 +2766,13 @@ public class FileFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      OutputStreamExpr standard = standardStream(ast.arg1(), engine);
+      if (standard != null) {
+        return writeToStream(standard, writeLine(ast), engine);
+      }
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IExpr arg1 = ast.arg1();
-          IExpr arg2 = ast.arg2();
 
           Writer writer = null;
           if (arg1 instanceof FileExpr) {
@@ -2775,8 +2784,7 @@ public class FileFunctions {
             writer = ((OutputStreamExpr) arg1).getWriter();;
           }
           if (writer != null) {
-            String arg2String = IStringX.inputForm(arg2);
-            writer.write(arg2String);
+            writer.write(writeLine(ast));
             writer.flush();
             return S.Null;
           }
@@ -2792,12 +2800,40 @@ public class FileFunctions {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
+    /**
+     * The expressions after the stream, each in input form, one after the other on a line of their
+     * own.
+     */
+    private static String writeLine(IAST ast) {
+      StringBuilder line = new StringBuilder();
+      for (int i = 2; i < ast.size(); i++) {
+        line.append(IStringX.inputForm(ast.get(i)));
+      }
+      return line.append('\n').toString();
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
   }
 
+
+  /**
+   * The stream for the names <code>"stdout"</code> and <code>"stderr"</code>: the output and the
+   * message stream of the evaluation, never a file of that name.
+   *
+   * @return <code>null</code> for any other expression
+   */
+  private static OutputStreamExpr standardStream(IExpr name, EvalEngine engine) {
+    if (name.isString("stdout")) {
+      return OutputStreamExpr.printStream(engine.getOutPrintStream(), "stdout");
+    }
+    if (name.isString("stderr")) {
+      return OutputStreamExpr.printStream(engine.getErrorPrintStream(), "stderr");
+    }
+    return null;
+  }
 
   /** Put one string into an open stream, and answer Null the way <code>WriteString</code> does. */
   private static IExpr writeToStream(OutputStreamExpr stream, String text, EvalEngine engine) {
@@ -2835,6 +2871,14 @@ public class FileFunctions {
         // writing to a socket is not a file operation, so it is not behind the file switch
         return SocketFunctions.write(socket, ast.arg2().toString().getBytes(StandardCharsets.UTF_8),
             S.WriteString, engine);
+      }
+      OutputStreamExpr standard = standardStream(ast.arg1(), engine);
+      if (standard != null) {
+        if (!ast.arg2().isString()) {
+          // String expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "string", F.list(F.C2, ast), engine);
+        }
+        return writeToStream(standard, ast.arg2().toString(), engine);
       }
       if (ast.arg1() instanceof OutputStreamExpr) {
         // a stream which is already open is written to as it stands - opening it was the step

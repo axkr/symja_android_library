@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.matheclipse.core.basic.Config;
@@ -26,7 +27,13 @@ import org.matheclipse.parser.client.SyntaxError;
  * Every one of these was found by loading the packages of a real application - the WLJS Notebook -
  * and is here so that it stays fixed. They have nothing else in common, which is why they are
  * together rather than spread through the suites of the functions they belong to.
+ *
+ * <p>
+ * The tag keeps the class out of the shared test JVM even when a run names it with
+ * <code>-Dtest</code>, which overrides the excludes but not the excluded groups: in that JVM it
+ * would switch every later class to Wolfram Language syntax.
  */
+@Tag("wolfram-language-syntax")
 public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
@@ -2145,5 +2152,216 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("wd::assert = \"Assertion failed ``. Actions were applied\"; "
         + "{wd::assert, StringTemplate[wd::assert][\"GridBox\"], Head[wd::other]}", //
         "{Assertion failed ``. Actions were applied,Assertion failed GridBox. Actions were applied,MessageName}");
+  }
+
+  /**
+   * A <code>Throw</code> or <code>Abort</code> in a test, key or ordering function reaches the
+   * enclosing <code>Catch</code> or <code>CheckAbort</code> instead of being reported as an error of
+   * the built-in which called the function.
+   */
+  @Test
+  public void testThrowAndAbortLeaveCallbacks() {
+    check("Catch[Sort[{5, 7, 6}, If[#1 == 7 || #2 == 7, Throw[s1], #1 < #2] &]]", //
+        "s1");
+    check("Catch[SortBy[{9, 4, 8}, If[# == 8, Throw[s2], -#] &]]", //
+        "s2");
+    check("Catch[Select[{4, 5, 6}, If[# == 6, Throw[s3], OddQ[#]] &]]", //
+        "s3");
+    check("Catch[Cases[{4, 5, 6}, _?(If[# == 5, Throw[s4], True] &)]]", //
+        "s4");
+    check("Catch[Cases[{4, 5, 6}, y_ /; (If[y == 6, Throw[s5]]; True)]]", //
+        "s5");
+    check("CheckAbort[Cases[{4, 5, 6}, y_ /; (If[y == 5, Abort[]]; True)], gotAbort]", //
+        "gotAbort");
+    check("CheckAbort[Pick[{4, 5, 6}, {4, 5, 6}, _?(If[# == 5, Abort[], True] &)], gotAbort]", //
+        "gotAbort");
+    // the internal signals of Cases and Pick still work
+    check("Cases[{4, 5, 6, 7}, _Integer, {1}, 3]", //
+        "{4,5,6}");
+    check("Catch[Do[If[k == 3, Throw[10 k]], {k, 5}]]", //
+        "30");
+  }
+
+  /** An abort inside <code>AbortProtect</code> takes effect when the protected evaluation ends. */
+  @Test
+  public void testAbortProtect() {
+    check("CheckAbort[AbortProtect[Abort[]; done = 1; 2], wasAborted]", //
+        "wasAborted");
+    check("done", //
+        "1");
+    check("CheckAbort[AbortProtect[q = Abort[]; {q}], wasAborted]; {q}", //
+        "{Null}");
+    check("CheckAbort[AbortProtect[3 + 4], wasAborted]", //
+        "7");
+    check("CheckAbort[AbortProtect[AbortProtect[Abort[]; in = 1]; out = 2], wasAborted]", //
+        "wasAborted");
+    check("{in, out}", //
+        "{1,2}");
+    // a Throw which leaves the protected region doesn't lose the abort
+    check("CheckAbort[Catch[AbortProtect[Abort[]; Throw[8]]], wasAborted]", //
+        "wasAborted");
+    check("1 + 2", //
+        "3");
+    // a CheckAbort inside the region takes the abort, at once or when it starts
+    check("AbortProtect[CheckAbort[Abort[]; seen = 1, caughtInside]]", //
+        "caughtInside");
+    check("AbortProtect[c1 = CheckAbort[Abort[]; 6, caughtInside]; {c1, 7}]", //
+        "{caughtInside,7}");
+    check("CheckAbort[AbortProtect[CheckAbort[Abort[], caughtInside]; 8], wasAborted]", //
+        "8");
+    check("CheckAbort[AbortProtect[Abort[]; CheckAbort[9, caughtInside]], wasAborted]", //
+        "caughtInside");
+    // a Throw in a pattern test leaves the rule usable
+    check("tf[k_?(If[# == 2, Throw[two], True] &)] := k; {Catch[tf[2]], tf[3], Catch[tf[2]], tf[4]}", //
+        "{two,3,two,4}");
+  }
+
+  /**
+   * A rule whose right-hand side is a <code>Module</code> or <code>With</code> ending in a condition
+   * is a conditional rule: a later rule with the same left-hand side is added after it.
+   */
+  @Test
+  public void testConditionalModuleRules() {
+    check("cm[k_] := Module[{u = 3 k}, u /; u > 10]; cm[k_] := low; {cm[2], cm[4]}", //
+        "{low,12}");
+    check("Length[DownValues[cm]]", //
+        "2");
+    check("cw[k_] := With[{u = k + 1}, u /; u > 2]; cw[k_] := none; {cw[1], cw[5]}", //
+        "{none,6}");
+    // the same conditional rule again replaces it
+    check("cw[k_] := With[{u = k + 1}, u /; u > 2]; Length[DownValues[cw]]", //
+        "2");
+    check("cw[k_] := With[{u = k - 1}, u /; u > 2]; Length[DownValues[cw]]", //
+        "3");
+  }
+
+  /** <code>Total</code> only adds up the elements of nested lists. */
+  @Test
+  public void testTotalOfNestedLists() {
+    check("Total[{w^3, 2}, Infinity]", //
+        "2+w^3");
+    check("Total[{{p, {q}}, r}, -1]", //
+        "p+q+r");
+    check("Total[{g[3, 4], 5}, Infinity]", //
+        "5+g[3,4]");
+    check("Total[{g[3, 4], 5}, 2]", //
+        "5+g[3,4]");
+    check("Total[{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}}, 2]", //
+        "{16,20}");
+    check("Total[{{2, 3}, {4, 5}}, 2]", //
+        "14");
+    check("Total[{{2, 3}, {4, 5}}]", //
+        "{6,8}");
+    // the values of associations are totaled too
+    check("Total[{<|k -> 2|>, <|k -> 5|>}, 2]", //
+        "7");
+    check("Total[{<|k -> 1, m -> 4|>, <|k -> 2, m -> 8|>}, Infinity]", //
+        "15");
+    check("Total[<|k -> {1, 6}, m -> {2, 3}|>, 2]", //
+        "12");
+  }
+
+  /** The 1-norm and the infinity-norm of an exact or symbolic matrix. */
+  @Test
+  public void testMatrixNormOneAndInfinity() {
+    check("Norm[{{p, 0}, {0, q}}, 1]", //
+        "Max[Abs[p],Abs[q]]");
+    check("Norm[{{p, r}, {s, q}}, Infinity]", //
+        "Max[Abs[p]+Abs[r],Abs[q]+Abs[s]]");
+    check("Norm[{{2, -5}, {-1, 3}}, 1]", //
+        "8");
+    check("Norm[{{2, -5, 1}, {-1, 3, 0}}, Infinity]", //
+        "8");
+    check("Norm[{{2., -5}, {-1, 3}}, 1]", //
+        "8.0");
+  }
+
+  /** The output streams "stdout" and "stderr" are never files of that name. */
+  @Test
+  public void testStandardStreamNames() {
+    check("{WriteString[\"stdout\", \"\"]}", //
+        "{Null}");
+    check("{Write[\"stderr\", 1 + v]}", //
+        "{Null}");
+    check("s = OpenWrite[\"stdout\"]; WriteString[s, \"\"]; Close[s]", //
+        "stdout");
+  }
+
+  /**
+   * The string pattern functions take the option <code>MetaCharacters</code>; a package loader
+   * which passes <code>MetaCharacters -&gt; Automatic</code> must get its replaced string back.
+   */
+  @Test
+  public void testMetaCharactersOption() {
+    check("StringReplace[\"pqr\", {\"q\" -> \"z\"}, MetaCharacters -> Automatic]", //
+        "pzr");
+    check("StringCases[\"p7q88\", DigitCharacter .., MetaCharacters -> Automatic]", //
+        "{7,88}");
+    check("{StringMatchQ[\"pqr\", \"p\" ~~ __, MetaCharacters -> None], "
+        + "StringCount[\"pZqZ\", \"Z\", MetaCharacters -> Automatic]}", //
+        "{True,2}");
+    check("MetaCharacters /. Options[StringReplace]", //
+        "Automatic");
+  }
+
+  /**
+   * A definition for an unprotected built-in comes before the built-in, also for built-ins which
+   * evaluate their arguments themselves; its patterns see the evaluated arguments, and the
+   * arguments are evaluated once.
+   */
+  @Test
+  public void testDownValuesOfCoreBuiltins() {
+    check("Unprotect[StringReplace]; "
+        + "StringReplace[s_String, r_, x_Rule /; First[x] === tag] := {\"mine\", s}; "
+        + "Protect[StringReplace]; w = \"pq\"; "
+        + "{StringReplace[w, \"q\" -> \"z\", tag -> 1], StringReplace[w, \"q\" -> \"z\"]}", //
+        "{{mine,pq},pz}");
+    check("Unprotect[Append]; Append[bag[l_], x_] := bag[Join[l, {x}]]; Protect[Append]; "
+        + "k = 0; {Append[bag[{7}], 8], Append[{k++}, 9], k}", //
+        "{bag[{7,8}],{0,9},1}");
+  }
+
+  /** <code>Developer`</code> packing functions: only machine reals have a packed storage. */
+  @Test
+  public void testPackedArrays() {
+    check("Developer`PackedArrayQ[{2, 3}]", //
+        "False");
+    check("Developer`PackedArrayQ[Developer`ToPackedArray[{2.5, 3.5}]]", //
+        "True");
+    check("Developer`PackedArrayQ[Developer`ToPackedArray[{{2.5, 3.}, {1., 0.5}}]]", //
+        "True");
+    check("Developer`PackedArrayQ[Developer`ToPackedArray[{2.5, y}]]", //
+        "False");
+    check("Developer`FromPackedArray[Developer`ToPackedArray[{2.5, 3.5}]]", //
+        "{2.5,3.5}");
+    check("Developer`PackedArrayQ[Developer`FromPackedArray[Developer`ToPackedArray[{2.5}]]]", //
+        "False");
+    // the type and rank arguments
+    check("p = Developer`ToPackedArray[{{2.5, 3.}, {1., 0.5}}]; "
+        + "{Developer`PackedArrayQ[p, Real], Developer`PackedArrayQ[p, Integer], "
+        + "Developer`PackedArrayQ[p, Real, 2], Developer`PackedArrayQ[p, Real, 1]}", //
+        "{True,False,True,False}");
+  }
+
+  /**
+   * <code>&gt;&gt;</code> and <code>&gt;&gt;&gt;</code> read a file name as <code>&lt;&lt;</code>
+   * does, and an operator after the last <code>;</code> of a compound expression applies to all of
+   * it.
+   */
+  @Test
+  public void testFileNameTokensAndCompoundExpressionEnd() {
+    check("FullForm[Hold[r >> out[2].txt]]", //
+        "Hold[Put[r, \"out[2].txt\"]]");
+    check("FullForm[Hold[r >>> log[1]]]", //
+        "Hold[PutAppend[r, \"log[1]\"]]");
+    // the name has to end the expression; otherwise what follows is the file argument
+    check("FullForm[Hold[r >> p + 2]]", //
+        "Hold[Put[r, Plus[p, 2]]]");
+    check("FullForm[Hold[{r >> out.txt, 2}]]", //
+        "Hold[List[Put[r, \"out.txt\"], 2]]");
+    check("FullForm[Hold[(p; q; -> r)]]", //
+        "Hold[Rule[CompoundExpression[p, q, Null], r]]");
+    check("FullForm[Hold[(p; q; r)]]", //
+        "Hold[CompoundExpression[p, q, r]]");
   }
 }

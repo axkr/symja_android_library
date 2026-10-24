@@ -328,7 +328,7 @@ public class DistributionFitTest extends AbstractFunctionEvaluator {
     double p = 0.0;
     for (int k = 1; k <= 100; k++) {
       double term = Math.exp(-2.0 * k * k * Math.PI * Math.PI * modified);
-      p += (k % 2 == 1) ? term : -term;
+      p += (k % 2 != 0) ? term : -term;
       if (term < 1e-17) {
         break;
       }

@@ -3127,21 +3127,22 @@ final class DSolveODE {
   }
 
   /**
-   * Whether <code>expr</code> is numerically zero at <code>xVar == point</code>: {@link Boolean#TRUE}
-   * or {@link Boolean#FALSE}, and <code>null</code> where the value is no number because a parameter
-   * or an unknown function of the equation is left in it.
+   * Is <code>expr</code> numerically not zero at <code>xVar == point</code>? <code>false</code> also
+   * where the value is no number because a parameter or an unknown function of the equation is left
+   * in it.
    */
-  private static Boolean vanishesAt(IExpr expr, IExpr xVar, IExpr point, EvalEngine engine) {
+  private static boolean nonzeroAt(IExpr expr, IExpr xVar, IExpr point, EvalEngine engine) {
     try {
       IExpr value = engine.evalN(F.subst(expr, xVar, point));
       if (!value.isNumber()) {
-        return null;
+        return false;
       }
-      return ((org.matheclipse.core.interfaces.INumber) value).abs()
-          .evalf() < RICCATI_NUMERIC_TOLERANCE;
+      // not below the tolerance, NaN included
+      return !(((org.matheclipse.core.interfaces.INumber) value).abs()
+          .evalf() < RICCATI_NUMERIC_TOLERANCE);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      return Boolean.FALSE;
+      return true;
     }
   }
 
@@ -3211,8 +3212,8 @@ final class DSolveODE {
         // wrong one does not vanish is where the time goes: Simplify on a rational function with
         // an irrational k in it can run for minutes. A candidate which is not zero at two points
         // is not zero, and only one which is gets the symbolic check.
-        if (Boolean.FALSE.equals(vanishesAt(fitted, xVar, F.QQ(13, 10), engine))
-            || Boolean.FALSE.equals(vanishesAt(fitted, xVar, F.QQ(23, 10), engine))) {
+        if (nonzeroAt(fitted, xVar, F.QQ(13, 10), engine)
+            || nonzeroAt(fitted, xVar, F.QQ(23, 10), engine)) {
           continue;
         }
         if (isVanishing(fitted, engine)) {

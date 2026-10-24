@@ -221,9 +221,29 @@
 							<excludes>
 								<exclude>**/WljsRegressionTest.java</exclude>
 							</excludes>
+							<!-- -Dtest overrides <excludes> but not the excluded groups: the tag keeps
+							WljsRegressionTest out of this JVM in a targeted run too -->
+							<excludedGroups>wolfram-language-syntax,${symja.test.excludedGroups}</excludedGroups>
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<!-- static analysis on demand, not bound to a phase:
+				mvn -o test-compile spotbugs:check -pl matheclipse-parser,matheclipse-core
+				The rank limit and the confidence match the "Scary" and "Troubling" bugs of the IDE
+				plugin; spotbugs-exclude.xml lists the patterns which are intended, with the reason. -->
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.10.5.0</version>
+				<configuration>
+					<threshold>Normal</threshold>
+					<effort>Default</effort>
+					<maxRank>14</maxRank>
+					<includeTests>true</includeTests>
+					<xmlOutput>true</xmlOutput>
+					<excludeFilterFile>${project.basedir}/spotbugs-exclude.xml</excludeFilterFile>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

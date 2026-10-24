@@ -1729,6 +1729,11 @@ public class ExprParser extends Scanner {
     return fToken == TT_OPERATOR && determinePrefixOperator() == null;
   }
 
+  /** <code>Put</code> (<code>&gt;&gt;</code>) or <code>PutAppend</code> (<code>&gt;&gt;&gt;</code>). */
+  private static boolean isPutOperator(String functionName) {
+    return "Put".equals(functionName) || "PutAppend".equals(functionName);
+  }
+
   private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr lhs) {
     if (infixOperator.headSymbol() == S.CompoundExpression) {
       if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
@@ -2074,6 +2079,15 @@ public class ExprParser extends Scanner {
           lhs = climbOperators(lhs, precedence, true);
           continue;
         }
+        if (isPutOperator(infixOperator.getFunctionName())) {
+          // >> and >>> are followed by a file name, as << is
+          String fileName = scanPutFileName();
+          if (fileName != null) {
+            getNextToken();
+            lhs = createInfixFunction(infixOperator, lhs, F.stringx(fileName));
+            continue;
+          }
+        }
         getNextToken();
         if (infixOperator.getOperatorString().equals(";") && compoundExpressionEndsHere()) {
           // the `;` has Null on its right; the loop goes round again so the operator standing
@@ -2163,6 +2177,12 @@ public class ExprParser extends Scanner {
             // the `;` which ends a line ends the expression, the same way it does for the first
             // one in {@link #parseCompoundExpressionNull}. This is the second and later `;` of a
             // line such as `a = 1; b = 2;`, which this loop collects into one flat node.
+            ast.append(S.Null);
+            break;
+          }
+          if (compoundExpressionEndsHere()) {
+            // (a; b; -> c): the operator after the last `;` applies to the whole
+            // CompoundExpression, which ends in Null
             ast.append(S.Null);
             break;
           }

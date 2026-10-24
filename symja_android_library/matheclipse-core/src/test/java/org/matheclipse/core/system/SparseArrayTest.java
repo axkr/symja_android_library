@@ -1001,6 +1001,71 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{{0,0,0},{0,1,2}}");
   }
 
+  /** <code>s("name")</code> gives the properties of a sparse array. */
+  @Test
+  public void testSparseArrayProperties() {
+    call("s = SparseArray({{1, 2} -> 3, {3, 1} -> -4, {2, 2} -> 6}, {3, 3})");
+    check("s(\"ExplicitPositions\")", //
+        "{{1,2},{2,2},{3,1}}");
+    check("s(\"ExplicitValues\")", //
+        "{3,6,-4}");
+    check("{s(\"ImplicitValue\"), s(\"ExplicitLength\"), s(\"Density\")}", //
+        "{0,3,0.333333}");
+    check("{s(\"RowPointers\"), s(\"ColumnIndices\"), s(\"AdjacencyLists\")}", //
+        "{{0,1,2,3},{{2},{2},{1}},{{2},{2},{1}}}");
+    check("s(\"BandWidth\")", //
+        "{2,1}");
+    check("s(\"Properties\")", //
+        "{AdjacencyLists,BandWidth,ColumnIndices,Density,ExplicitLength,ExplicitPositions,ExplicitValues,ImplicitValue,RowPointers}");
+    check("{s(\"NonzeroPositions\"), s(\"NonzeroValues\"), s(\"Background\")}", //
+        "{{{1,2},{2,2},{3,1}},{3,6,-4},0}");
+    check("v = SparseArray({2 -> 5, 4 -> -1}, {5}); {v(\"RowPointers\"), v(\"AdjacencyLists\")}", //
+        "{{0,2},{2,4}}");
+    // an empty last row and a symbolic background
+    check("t = SparseArray({{1, 1} -> a}, {3, 2}, b); {t(\"RowPointers\"), t(\"ImplicitValue\")}", //
+        "{{0,1,1,1},b}");
+    check("s(\"Foo\")", //
+        "SparseArray(Number of elements: 3 Dimensions: {3,3} Default value: 0)[Foo]");
+  }
+
+  /** Built-in functions which answer for a sparse array as for its nested lists. */
+  @Test
+  public void testSparseArrayArgument() {
+    call("s = SparseArray({{1, 2} -> 3, {3, 1} -> -4, {2, 2} -> 6}, {3, 3})");
+    call("v = SparseArray({2 -> 5, 4 -> -1}, {5})");
+    check("{Max(s), Min(s), MinMax(s), MinMax(v)}", //
+        "{6,-4,{-4,6},{-1,5}}");
+    // no element is the background
+    check("MinMax(SparseArray({1 -> 2, 2 -> 3}, {2}))", //
+        "{2,3}");
+    check("Max(SparseArray({{1, 1} -> 2}, {2, 2}, x))", //
+        "Max(2,x)");
+    // Apply takes the rows of a matrix
+    check("Apply(Plus, s) // Normal", //
+        "{-4,9,0}");
+    check("Head(Apply(Plus, s))", //
+        "SparseArray");
+    check("Apply(f, v)", //
+        "f(0,5,0,-1,0)");
+    check("Apply(Plus, s, {1})", //
+        "{3,6,-4}");
+    check("{Head(Reverse(v)), Normal(Reverse(v)), Normal(Reverse(s))}", //
+        "{SparseArray,{0,-1,0,5,0},{{-4,0,0},{0,6,0},{0,3,0}}}");
+    check("Accumulate(v)", //
+        "{0,5,5,4,4}");
+    check("{Head(RotateLeft(v)), Normal(RotateLeft(v)), Normal(RotateRight(v, 2))}", //
+        "{SparseArray,{5,0,-1,0,0},{-1,0,0,5,0}}");
+    check("{Head(PadRight(v, 7)), Normal(PadRight(v, 7)), Normal(PadLeft(v, 6))}", //
+        "{SparseArray,{0,5,0,-1,0,0,0},{0,0,5,0,-1,0}}");
+    check("{Head(Partition(v, 2)), Normal(Partition(v, 2))}", //
+        "{SparseArray,{{0,5},{0,-1}}}");
+    check("k = KroneckerProduct(SparseArray({{1, 1} -> 1, {2, 2} -> 1}, {2, 2}), {{1, 2}}); "
+        + "{Head(k), Normal(k)}", //
+        "{SparseArray,{{1,2,0,0},{0,0,1,2}}}");
+    check("Head(KroneckerProduct({{1, 2}}, s))", //
+        "List");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

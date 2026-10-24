@@ -40,6 +40,8 @@ import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
+import org.matheclipse.core.eval.exception.ExitException;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
@@ -738,6 +740,20 @@ public class EvalEngine implements Serializable {
    * loop throws {@link AbortException} and clears it.
    */
   private transient volatile boolean fAbortRequested = false;
+
+  /**
+   * The nesting depth of <code>AbortProtect[]</code> regions. While it is greater than zero an
+   * abort only sets {@link #fAbortRequested}, and the evaluation goes on until the outermost region
+   * ends.
+   */
+  private transient int fAbortProtectDepth = 0;
+
+  /**
+   * The number of <code>CheckAbort[]</code> evaluations which were entered inside the innermost
+   * <code>AbortProtect[]</code> region and are still running. An abort inside one of them is
+   * delivered to it at once.
+   */
+  private transient int fProtectedCheckAborts = 0;
 
   /**
    * The earliest deadline of the time limits of this engine, in milliseconds of
@@ -3401,7 +3417,7 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
-    if (fAbortRequested) {
+    if (fAbortRequested && (fAbortProtectDepth == 0 || fProtectedCheckAborts > 0)) {
       // somebody else asked this evaluation to stop: the kernel on the other end of a link
       // sending an interrupt, which is what an abort does to a notebook's evaluation. The test
       // stands before every other one, because the paths below it - an atom, the fast evaluator,
@@ -4690,7 +4706,9 @@ public class EvalEngine implements Serializable {
   /**
    * If <code>expr</code> can be evaluated to {@link S#True} or {@link S#False} return the java
    * <code>true</code> or <code>false</code> values respectively. If a {@link MathException} occurs
-   * during evaluation, return <code>false</code>.
+   * during evaluation, return <code>false</code> - except for a <code>Throw</code> or an
+   * <code>Abort</code>, which leave the test as they leave any other evaluation: a test is a callback
+   * of <code>Select</code>, <code>Cases</code> or a pattern, and its <code>Catch</code> is outside.
    *
    * @param expr the expression which should be evaluated
    * @return <code>true</code> if the expression could be evaluated to symbol {@link S#True} and
@@ -4711,6 +4729,8 @@ public class EvalEngine implements Serializable {
     fEvalLHSMode = false;
     try {
       return evaluate(expr).isTrue();
+    } catch (ThrowException | AbortException flow) {
+      throw flow;
     } catch (MathException rex) {
       return false;
     } finally {
@@ -6071,6 +6091,8 @@ public class EvalEngine implements Serializable {
    */
   private void reset() {
     initInstance();
+    fAbortProtectDepth = 0;
+    fProtectedCheckAborts = 0;
 
     if (fOnOffMode && fOnOffUnique) {
       fOnOffUniqueMap = new HashMap<IExpr, IExpr>();
@@ -6459,6 +6481,87 @@ public class EvalEngine implements Serializable {
    */
   public boolean isStopRequested() {
     return fAbortRequested;
+  }
+
+  /**
+   * Abort the evaluation: throw {@link AbortException}, or inside an <code>AbortProtect[]</code>
+   * region remember the abort until the outermost region ends or a <code>CheckAbort[]</code> inside
+   * the region takes it.
+   *
+   * @return <code>true</code> if the abort is pending in a protected region (no exception was
+   *         thrown)
+   */
+  public boolean abort() {
+    if (fAbortProtectDepth > 0 && fProtectedCheckAborts == 0) {
+      fAbortRequested = true;
+      return true;
+    }
+    throw AbortException.ABORTED;
+  }
+
+  /**
+   * Evaluate <code>expr</code> so that an abort doesn't interrupt it. An abort that was requested
+   * meanwhile is thrown when the outermost protected region ends.
+   *
+   * @param expr
+   * @return the evaluated <code>expr</code>
+   */
+  public IExpr evalAbortProtected(final IExpr expr) {
+    boolean exiting = false;
+    // restored rather than decremented: an engine reset during the evaluation sets it to 0
+    final int depth = fAbortProtectDepth;
+    final int checkAborts = fProtectedCheckAborts;
+    fAbortProtectDepth = depth + 1;
+    // a CheckAbort around this region doesn't take the aborts inside it
+    fProtectedCheckAborts = 0;
+    try {
+      return evaluate(expr);
+    } catch (ExitException exit) {
+      // Exit[] ends the process; a pending abort doesn't replace it
+      exiting = true;
+      throw exit;
+    } finally {
+      fAbortProtectDepth = depth;
+      fProtectedCheckAborts = checkAborts;
+      if (!exiting && fAbortProtectDepth == 0 && fAbortRequested) {
+        // also when a Throw or another exception leaves the region: the abort takes precedence
+        fAbortRequested = false;
+        throw AbortException.ABORTED;
+      }
+    }
+  }
+
+  /**
+   * <code>CheckAbort(body, failExpr)</code>: evaluate <code>body</code> and answer
+   * <code>failExpr</code> if it is aborted. Inside an <code>AbortProtect[]</code> region it also
+   * takes an abort which is pending there, and an abort in <code>body</code> reaches it at once.
+   *
+   * @param body the expression to evaluate
+   * @param failExpr the result for an abort
+   */
+  public IExpr evalCheckAbort(final IExpr body, final IExpr failExpr) {
+    if (fAbortProtectDepth == 0) {
+      try {
+        return evaluate(body);
+      } catch (AbortException aex) {
+        return failExpr;
+      }
+    }
+    if (fAbortRequested) {
+      // the abort which waited in the protected region
+      fAbortRequested = false;
+      return failExpr;
+    }
+    final int checkAborts = fProtectedCheckAborts;
+    fProtectedCheckAborts = checkAborts + 1;
+    try {
+      return evaluate(body);
+    } catch (AbortException aex) {
+      fAbortRequested = false;
+      return failExpr;
+    } finally {
+      fProtectedCheckAborts = checkAborts;
+    }
   }
 
   /** Forget an abort which was asked for but never reached an evaluation. */

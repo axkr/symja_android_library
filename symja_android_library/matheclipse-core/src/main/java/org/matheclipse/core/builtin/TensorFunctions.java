@@ -719,6 +719,10 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IBuiltInSymbol headSymbol = S.KroneckerProduct;
       int argSize = ast.argSize();
+      if (ast.exists(x -> x.isSparseArray())) {
+        // sparse when the first factor is sparse
+        return org.matheclipse.core.expression.data.SparseArrayExpr.evalNormal(ast, true, engine);
+      }
       // expectedArgSize() is >= 2
       if (ast.arg1().isList() && ast.arg2().isList()) {
         try {

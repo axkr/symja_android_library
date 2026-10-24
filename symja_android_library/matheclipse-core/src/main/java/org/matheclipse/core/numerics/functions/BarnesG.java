@@ -161,11 +161,14 @@ public final class BarnesG {
     // terms of about the size of its value, and lose the digits of a small log G.
     double w = x;
     double shift = 0.0;
-    while (w > 1.5) {
+    // the number of unit steps down to (0.5, 1.5], resp. up to [0.5, 1.5)
+    final int down = w > 1.5 ? (int) Math.ceil(w - 1.5) : 0;
+    for (int i = 0; i < down; i++) {
       w -= 1.0;
       shift += Gamma.logGamma(w);
     }
-    while (w < 0.5) {
+    final int up = w < 0.5 ? (int) Math.ceil(0.5 - w) : 0;
+    for (int i = 0; i < up; i++) {
       shift -= Gamma.logGamma(w);
       w += 1.0;
     }

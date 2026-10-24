@@ -204,6 +204,22 @@ public class StructureFunctions {
       // Apply replaces the head of its argument, which a Dataset has no way to do: setAtCopy threw
       // and the evaluation aborted. Its rows are what a head can be applied to.
       IExpr arg2 = IASTDataset.normalizeDataset(evaledAST.arg2());
+      if (arg2.isSparseArray()) {
+        ISparseArray sparseArray = (ISparseArray) arg2;
+        if (lastIndex == 3) {
+          // a level specification reaches below the rows
+          arg2 = sparseArray.normal(false);
+        } else {
+          // the parts at level 1 are the rows of a matrix (sparse arrays themselves) or the
+          // elements of a vector
+          int n = sparseArray.getDimension()[0];
+          IASTAppendable result = F.ast(arg1, n);
+          for (int i = 1; i <= n; i++) {
+            result.append(sparseArray.get(i));
+          }
+          return result;
+        }
+      }
       IExpr level = F.C0;
       if (lastIndex == 3) {
         level = evaledAST.get(3);

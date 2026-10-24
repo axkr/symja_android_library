@@ -100,6 +100,38 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
     return STANDARD_OUTPUT;
   }
 
+  /**
+   * A stream named <code>streamName</code> which writes to <code>printStream</code>. Closing it
+   * only flushes, because the print stream belongs to somebody else.
+   *
+   * @param printStream for example the output or the message stream of an evaluation engine
+   * @param streamName <code>"stdout"</code> or <code>"stderr"</code>
+   */
+  public static OutputStreamExpr printStream(final java.io.PrintStream printStream,
+      String streamName) {
+    return new OutputStreamExpr(new OutputStream() {
+      @Override
+      public void write(int b) throws IOException {
+        printStream.write(b);
+      }
+
+      @Override
+      public void write(byte[] b, int off, int len) throws IOException {
+        printStream.write(b, off, len);
+      }
+
+      @Override
+      public void flush() throws IOException {
+        printStream.flush();
+      }
+
+      @Override
+      public void close() throws IOException {
+        printStream.flush();
+      }
+    }, streamName);
+  }
+
   private static final OutputStreamExpr STANDARD_OUTPUT =
       new OutputStreamExpr(new OutputStream() {
         @Override

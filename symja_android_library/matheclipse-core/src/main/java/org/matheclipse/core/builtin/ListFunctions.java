@@ -63,6 +63,7 @@ import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr.RangeException;
 import org.matheclipse.core.expression.data.NumericArrayExpr.TypeException;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Comparators.SameTestComparator;
 import org.matheclipse.core.generic.Functors;
@@ -95,6 +96,17 @@ import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 
 public final class ListFunctions {
+
+  /**
+   * Internal signal which ends a traversal early (enough results in <code>Cases</code>, mismatched
+   * shapes in <code>Pick</code>). It is distinct from {@link AbortException}, so that an
+   * <code>Abort[]</code> evaluated in a user test or rule reaches the caller.
+   */
+  private static final class StopVisit extends FlowControlException {
+    private static final long serialVersionUID = 4312218935227347071L;
+
+    static final StopVisit STOP = new StopVisit();
+  }
 
   /**
    * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after
@@ -591,6 +603,10 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isSparseArray()) {
+        // the running sums of a sparse array are dense
+        return SparseArrayExpr.evalNormal(ast, false, engine);
+      }
       if (arg1.isASTOrAssociation()) {
         IAST list = (IAST) arg1;
         int size = list.size();
@@ -1377,7 +1393,7 @@ public final class ListFunctions {
           if (maximumResults >= 0) {
             resultsCounter++;
             if (resultsCounter >= maximumResults) {
-              throw AbortException.ABORTED;
+              throw StopVisit.STOP;
             }
           }
         }
@@ -1411,7 +1427,7 @@ public final class ListFunctions {
           if (maximumResults >= 0) {
             resultsCounter++;
             if (resultsCounter >= maximumResults) {
-              throw AbortException.ABORTED;
+              throw StopVisit.STOP;
             }
           }
         }
@@ -1476,7 +1492,7 @@ public final class ListFunctions {
                   VisitorLevelSpecification level =
                       new VisitorLevelSpecification(crf, arg3, includeHeads, engine);
                   arg1.accept(level);
-                } catch (AbortException aex) {
+                } catch (StopVisit stop) {
                   // reached maximum number of results
                 }
                 return result;
@@ -1489,7 +1505,7 @@ public final class ListFunctions {
                 VisitorLevelSpecification level =
                     new VisitorLevelSpecification(cpmf, arg3, includeHeads, engine);
                 arg1.accept(level);
-              } catch (AbortException aex) {
+              } catch (StopVisit stop) {
                 // reached maximum number of results
               }
               return result;
@@ -5166,7 +5182,7 @@ public final class ListFunctions {
           IASTAppendable result = arg1AST.copyHead();
           IExpr temp = pickRecursive(arg1AST, arg2AST, matcher, result);
           return temp;
-        } catch (AbortException aex) {
+        } catch (StopVisit stop) {
           // Expressions `1` and `2` have incompatible shapes.
           return Errors.printMessage(ast.topHead(), "incomp", F.list(list, selection), engine);
         }
@@ -5196,7 +5212,7 @@ public final class ListFunctions {
           result.append(arg1);
         } else if (arg1.isASTOrAssociation() && arg2.isASTOrAssociation()) {
           if (arg1.size() != arg2.size()) {
-            throw AbortException.ABORTED;
+            throw StopVisit.STOP;
           }
           IASTAppendable appendable = ((IAST) arg1).copyHead();
           IExpr temp = pickRecursive((IAST) arg1, (IAST) arg2, matcher, appendable);
@@ -6541,6 +6557,10 @@ public final class ListFunctions {
         return onRows;
       }
       IExpr arg1 = ast.arg1();
+      if (arg1.isSparseArray()) {
+        // reverse the array and keep it sparse, with the same background
+        return SparseArrayExpr.evalNormal(ast, true, engine);
+      }
       if (!arg1.isASTOrAssociation()) {
         // Nonatomic expression expected at position `1` in `2`.
         return Errors.printMessage(S.Reverse, "normal", F.list(F.C1, ast), engine);
@@ -6843,6 +6863,9 @@ public final class ListFunctions {
   private static IExpr evalRotate(final IAST ast, boolean left, EvalEngine engine) {
     final ISymbol head = left ? S.RotateLeft : S.RotateRight;
     IExpr arg1 = ast.arg1();
+    if (arg1.isSparseArray()) {
+      return SparseArrayExpr.evalNormal(ast, true, engine);
+    }
     if (arg1.isASTOrAssociation()) {
       if (arg1.argSize() == 0) {
         return arg1;
@@ -8612,6 +8635,17 @@ public final class ListFunctions {
       // the rows of a Dataset are what there is to total; the level visitor below cannot walk the
       // dataset itself - see IASTDataset#normalizeDataset
       arg1 = IASTDataset.normalizeDataset(arg1);
+      if ((arg1.isList() || arg1.isAssociation()) && ast.isAST2()) {
+        // Total over the levels 1..n only adds up the elements of nested lists and the values of
+        // associations: f(1,2) or z^2 at a deeper level are elements, not collections to total
+        IExpr arg2 = ast.arg2();
+        int n = arg2.isInfinity() || arg2.isMinusOne() ? Integer.MAX_VALUE : arg2.toIntDefault();
+        if (n >= 2) {
+          IASTAppendable sum = F.PlusAlloc(16);
+          totalElements(arg1, n, sum);
+          return engine.evaluate(sum);
+        }
+      }
       if (arg1 instanceof ASTSeriesData) {
         // A series answers a size of seven and serves every position, so the level visitor below
         // reads its variable, expansion point, coefficient list, exponents and denominator as if
@@ -8645,6 +8679,22 @@ public final class ListFunctions {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * Append the elements of <code>expr</code> down to level <code>depth</code> to
+     * <code>sum</code>, going through lists and the values of associations only.
+     */
+    private static void totalElements(IExpr expr, int depth, IASTAppendable sum) {
+      if (depth > 0 && (expr.isList() || expr.isAssociation())) {
+        IAST collection = (IAST) expr;
+        for (int i = 1; i < collection.size(); i++) {
+          // the value of a rule of an association
+          totalElements(collection.get(i), depth - 1, sum);
+        }
+        return;
+      }
+      sum.append(expr);
     }
 
     @Override
@@ -8971,6 +9021,9 @@ public final class ListFunctions {
 
   private static IExpr padEvaluate(final IAST ast, EvalEngine engine, boolean isLeft) {
     IExpr list = ast.arg1();
+    if (list.isSparseArray()) {
+      return SparseArrayExpr.evalNormal(ast, true, engine);
+    }
     if (!list.isAST()) {
       return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
     }

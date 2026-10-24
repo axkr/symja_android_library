@@ -332,7 +332,7 @@ public final class PolynomialBox {
   private static double[] power(double low, double high, int e) {
     double a = Math.pow(low, e);
     double b = Math.pow(high, e);
-    if (e % 2 == 1) {
+    if (e % 2 != 0) {
       return new double[] {a, b};
     }
     if (low >= 0.0) {
@@ -380,7 +380,7 @@ public final class PolynomialBox {
       double[] upper) {
     double newLower = lower[j];
     double newUpper = upper[j];
-    if (e % 2 == 1) {
+    if (e % 2 != 0) {
       newLower = Math.max(newLower, root(low, e, true));
       newUpper = Math.min(newUpper, root(high, e, false));
     } else {

@@ -1764,17 +1764,19 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       if (!(f1.isAST(S.Sin) || f1.isAST(S.Cos)) || !(f2.isAST(S.Sin) || f2.isAST(S.Cos))) {
         return F.NIL;
       }
-      if (!(f1.first().isSymbol() || f2.first().isSymbol())) {
+      if (!(f1.first().isSymbol() && f2.first().isSymbol())) {
         return F.NIL;
       }
 
       ISymbol aCand = (ISymbol) ((IAST) f1).arg1();
       ISymbol bCand = (ISymbol) ((IAST) f2).arg1();
 
-      if (symA != null && symB != null) {
+      if (symA == null) {
+        // the first term names the two angles
         symA = aCand;
         symB = bCand;
-      } else {
+      } else if (!(aCand.equals(symA) && bCand.equals(symB))
+          && !(aCand.equals(symB) && bCand.equals(symA))) {
         return F.NIL;
       }
 
@@ -1808,12 +1810,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
     }
 
-    if (sc.equals(cs) && ss.equals(cc.negate())) {
+    if (symA != null && sc.equals(cs) && ss.equals(cc.negate())) {
+      // alpha*(Cos(a)*Cos(b)-Sin(a)*Sin(b)) + beta*(Sin(a)*Cos(b)+Cos(a)*Sin(b))
       IExpr alpha = cc;
       IExpr beta = cs;
-      ISymbol a = symA;
-      ISymbol b = symB;
-      return F.Plus(F.Times(alpha, F.Cos(F.Plus(a, b))), F.Times(beta, F.Sin(F.Plus(a, b))));
+      IExpr sum = F.Plus(symA, symB);
+      return F.eval(F.Plus(F.Times(alpha, F.Cos(sum)), F.Times(beta, F.Sin(sum))));
     }
 
     return F.NIL;

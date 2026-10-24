@@ -139,7 +139,10 @@ public final class ParserGolden {
   /** Write one line per list entry, LF-terminated, UTF-8, creating parent directories. */
   public static void writeLines(Path file, List<String> lines) {
     try {
-      Files.createDirectories(file.getParent());
+      Path parent = file.toAbsolutePath().getParent();
+      if (parent != null) {
+        Files.createDirectories(parent);
+      }
       StringBuilder buf = new StringBuilder(lines.size() * 80);
       for (String line : lines) {
         buf.append(line).append('\n');

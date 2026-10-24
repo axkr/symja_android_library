@@ -693,8 +693,8 @@ final class IntegerSplitter {
         } catch (Throwable t) {
           failure.compareAndSet(null, t);
         } finally {
-          running.decrementAndGet();
           synchronized (signal) {
+            running.decrementAndGet();
             signal.notifyAll();
           }
         }

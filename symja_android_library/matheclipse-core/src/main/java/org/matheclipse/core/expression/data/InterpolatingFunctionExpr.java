@@ -219,7 +219,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof ODEFunctionExpr)) {
+      if (obj == null || obj.getClass() != getClass()) {
         return false;
       }
       ODEFunctionExpr other = (ODEFunctionExpr) obj;
@@ -489,10 +489,12 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     if (this == obj) {
       return true;
     }
+    if (obj instanceof ODEFunctionExpr || obj instanceof GridInterpolatingFunctionExpr) {
+      // they compare more than the model, so they only equal their own kind
+      return false;
+    }
     if (obj instanceof InterpolatingFunctionExpr) {
       return fData.equals(((InterpolatingFunctionExpr) obj).fData);
-    } else if (obj instanceof ASTFunctionExpr) {
-      return fData.equals(((ASTFunctionExpr) obj).fData);
     }
     return false;
   }

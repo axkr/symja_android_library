@@ -13,7 +13,9 @@ import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ExitException;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -440,6 +442,7 @@ public class Errors {
       "nonegs", "Surd is not defined for even roots of negative values.", //
       "nolast", "`1` has zero length and no last element.", //
       "nomost", "Cannot take Most of expression `1` with length zero.", //
+      "nomthd", "There is no method `1` for `2` objects.", //
       "nojoin", "The datasets have no column in common to join on.", //
       "nonn1",
       "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
@@ -761,6 +764,7 @@ public class Errors {
    */
   public static IExpr printMessage(@NonNull ISymbol symbol, final MathException mex,
       EvalEngine engine) {
+    rethrowThrowOrAbort(mex);
     if (Config.SHOW_STACKTRACE) {
       mex.printStackTrace();
     }
@@ -788,6 +792,7 @@ public class Errors {
    * @return
    */
   public static IAST printMessage(ISymbol symbol, final Throwable exception, EvalEngine engine) {
+    rethrowThrowOrAbort(exception);
     if (Config.SHOW_STACKTRACE) {
       exception.printStackTrace();
     }
@@ -1419,6 +1424,23 @@ public class Errors {
     return templateStr;
   }
 
+
+  /**
+   * A <code>Throw[]</code> or <code>Abort[]</code> which was evaluated inside a built-in function
+   * (for example in a user supplied test or ordering function) must reach the enclosing
+   * <code>Catch[]</code> or <code>CheckAbort[]</code> and is never reported as an error of that
+   * built-in function.
+   *
+   * @param exception
+   */
+  private static void rethrowThrowOrAbort(Throwable exception) {
+    if (exception instanceof ThrowException) {
+      throw (ThrowException) exception;
+    }
+    if (exception instanceof AbortException) {
+      throw (AbortException) exception;
+    }
+  }
 
   public static void rethrowsInterruptException(Exception e) {
     if (e instanceof ApfloatInterruptedException || e instanceof PreemptingException

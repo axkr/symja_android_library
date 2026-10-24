@@ -240,11 +240,11 @@ public class GridInterpolatingFunctionExpr
     if (this == obj) {
       return true;
     }
-    if (obj instanceof GridInterpolatingFunctionExpr) {
-      GridInterpolatingFunctionExpr other = (GridInterpolatingFunctionExpr) obj;
-      return fData == other.fData && Arrays.equals(derivativeOrders, other.derivativeOrders);
+    if (obj == null || obj.getClass() != getClass()) {
+      return false;
     }
-    return false;
+    GridInterpolatingFunctionExpr other = (GridInterpolatingFunctionExpr) obj;
+    return fData == other.fData && Arrays.equals(derivativeOrders, other.derivativeOrders);
   }
 
   @Override

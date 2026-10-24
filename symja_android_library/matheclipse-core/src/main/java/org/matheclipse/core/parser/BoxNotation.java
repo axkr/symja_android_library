@@ -1320,7 +1320,7 @@ public final class BoxNotation {
             && piece.charAt(piece.length() - 1 - semicolons) == ';') {
           semicolons++;
         }
-        piece = semicolons % 2 == 1 ? "(" + piece.substring(0, piece.length() - 1) + ");"
+        piece = semicolons % 2 != 0 ? "(" + piece.substring(0, piece.length() - 1) + ");"
             : "(" + piece + ")";
       }
       juxtapose(result, piece);

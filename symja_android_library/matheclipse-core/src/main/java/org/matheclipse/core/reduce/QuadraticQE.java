@@ -782,7 +782,7 @@ public final class QuadraticQE {
         if (factor.isZero()) {
           throw new Declined();
         }
-        negative ^= factor.isNegative() && (exponent % 2 == 1);
+        negative ^= factor.isNegative() && (exponent % 2 != 0);
         continue;
       }
       IExpr polynomial = polynomial(factor);

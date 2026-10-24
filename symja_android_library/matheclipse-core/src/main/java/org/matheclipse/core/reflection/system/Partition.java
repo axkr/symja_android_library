@@ -18,6 +18,9 @@ public class Partition extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     // Arguments: list, n, d, {kL, kR}, pad
     IExpr listExpr = ast.arg1();
+    if (listExpr.isSparseArray()) {
+      return org.matheclipse.core.expression.data.SparseArrayExpr.evalNormal(ast, true, engine);
+    }
     // Use isAST() to allow f(x), not just List
     if (!listExpr.isAST()) {
       return F.NIL;

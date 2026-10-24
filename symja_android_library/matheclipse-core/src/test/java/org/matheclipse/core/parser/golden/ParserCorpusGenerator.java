@@ -274,7 +274,12 @@ public final class ParserCorpusGenerator {
     }
     Set<String> inputs = new TreeSet<>();
     try (Stream<Path> files = Files.list(docDir)) {
-      List<Path> markdown = files.filter(p -> p.getFileName().toString().endsWith(".md")).sorted()
+      List<Path> markdown = files
+          .filter(p -> {
+            Path name = p.getFileName();
+            return name != null && name.toString().endsWith(".md");
+          })
+          .sorted()
           .collect(Collectors.toList());
       for (Path file : markdown) {
         for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {

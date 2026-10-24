@@ -466,7 +466,9 @@ public class GammaJS extends JS {
       result = -Math.PI / Math.tan(Math.PI * reduced);
       x = 1.0 - x;
     }
-    while (x < 12.0) {
+    // the number of unit steps up to [12, 13)
+    final int steps = x < 12.0 ? (int) Math.ceil(12.0 - x) : 0;
+    for (int i = 0; i < steps; i++) {
       result -= 1.0 / x;
       x += 1.0;
     }

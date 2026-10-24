@@ -2348,6 +2348,22 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               return upValue;
             }
           }
+          // A definition the user made for the built-in, as in Unprotect(StringReplace);
+          // StringReplace(s_, r_, x_Rule) := ..., comes before it too. Its patterns are written for
+          // the evaluated arguments, which a core evaluator otherwise evaluates itself: evaluate
+          // them here, try the rules, and else go on with the evaluated call.
+          final RulesData rulesData = symbol.getRulesData();
+          if (rulesData != null && !engine.isEvalLHSMode() && rulesData.hasDownRulesFor(symbol)) {
+            final IAST evaledArgs = engine.evalArgs(this, symbol.getAttributes(), false);
+            final IAST evaled = evaledArgs.isPresent() ? evaledArgs : this;
+            final IExpr downValue = symbol.evalDownRule(engine, evaled);
+            if (downValue.isPresent()) {
+              return downValue;
+            }
+            if (evaled != this) {
+              return evaled;
+            }
+          }
           try {
             ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
             EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);

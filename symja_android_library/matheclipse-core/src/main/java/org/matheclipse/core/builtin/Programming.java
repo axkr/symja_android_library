@@ -81,6 +81,7 @@ public final class Programming {
       S.Block.setEvaluator(new Block());
       S.Catch.setEvaluator(new Catch());
       S.Check.setEvaluator(new Check());
+      S.AbortProtect.setEvaluator(new AbortProtect());
       S.CheckAbort.setEvaluator(new CheckAbort());
       S.CompoundExpression.setEvaluator(new CompoundExpression());
       S.Condition.setEvaluator(new Condition());
@@ -181,7 +182,9 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        throw AbortException.ABORTED;
+        // inside AbortProtect the abort waits for the end of the protected region
+        engine.abort();
+        return S.Null;
       }
       return engine.checkBuiltinArgsSize(ast, this);
     }
@@ -495,6 +498,40 @@ public final class Programming {
    *
    *
    * <pre>
+   * <code>AbortProtect(expr)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * evaluates <code>expr</code> without interruption by an abort. An abort which happens meanwhile
+   * takes effect when the evaluation of <code>expr</code> is finished.
+   * </p>
+   */
+  private static final class AbortProtect extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        return engine.evalAbortProtected(ast.arg1());
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
    * <code>CheckAbort(expr, failure-expr)
    * </code>
    * </pre>
@@ -520,11 +557,7 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        try {
-          return engine.evaluate(ast.arg1());
-        } catch (AbortException aex) {
-          return ast.arg2();
-        }
+        return engine.evalCheckAbort(ast.arg1(), ast.arg2());
       }
       return engine.checkBuiltinArgsSize(ast, this);
     }

@@ -1044,7 +1044,8 @@ public class ConstantDefinitions {
           Path parent = location.getParent();
           if (parent != null) {
             // <install>/lib/symjascript.jar - the installation is one level above the jar
-            if (parent.getFileName() != null && "lib".equals(parent.getFileName().toString())
+            Path parentName = parent.getFileName();
+            if (parentName != null && "lib".equals(parentName.toString())
                 && parent.getParent() != null) {
               return parent.getParent();
             }

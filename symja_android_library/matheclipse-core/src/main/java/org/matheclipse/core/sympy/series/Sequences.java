@@ -580,9 +580,9 @@ public class Sequences {
       if (other instanceof SeqFormula) {
         SeqFormula otherFormula = (SeqFormula) other;
         IExpr form1 = formula();
-        IExpr v1 = variables.first();
+        IExpr v1 = variables().first();
         IExpr form2 = otherFormula.formula();
-        IExpr v2 = otherFormula.variables.first();
+        IExpr v2 = otherFormula.variables().first();
         IExpr formula = form1.times(form2.subs(v2, v1));
         IExpr[] interval = _intersect_interval(other);
         start = interval[0];
