@@ -1144,7 +1144,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     // github #117
     check("Solve({x+y^2==9.1, y==2*x+2}, {x,y})", //
-        "{{y->-3.43787,x->-2.71893},{y->2.93787,x->0.468934}}");
+        "{{x->-2.71893,y->-3.43787},{x->0.468934,y->2.93787}}");
 
     check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
         "{{x->10}}");
@@ -2056,8 +2056,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // The equation which is asked, 10*y - Log(3/2+y) == 4*x, is solved through u == 3/2+y.
     check("Solve(E^(10*y)/(3/2 + y) == E^(4*x), y)", //
         "{{y->1/10*(-15-ProductLog(-10/E^(15+4*x)))}}");
-    check("Chop((E^(10*y)/(3/2 + y) - E^(4*x)) /. Solve(E^(10*y)/(3/2 + y) == E^(4*x), y)[[1]] "
-        + "/. x -> -7/2 // N)", //
+    check(
+        "Chop((E^(10*y)/(3/2 + y) - E^(4*x)) /. Solve(E^(10*y)/(3/2 + y) == E^(4*x), y)[[1]] "
+            + "/. x -> -7/2 // N)", //
         "0");
     // and with the right hand side zero, which is the case that always worked, the answer stands
     check("Solve(E^(10*y)/y == 1, y)", //
@@ -3730,8 +3731,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{v->7-u-w}}");
     check("Solve({C(1)+C(2)+C(3)==4, C(1)+C(2)+C(3)==4, C(1)-C(3)==0},{C(1),C(2),C(3)})", //
         "{{C(2)->2*(2-C(1)),C(3)->C(1)}}");
-    check("Solve({C(1)+C(2)+C(3)==4, 2*C(1)+2*C(2)+2*C(3)==8, 3*C(1)+3*C(2)+3*C(3)==12},"
-        + "{C(1),C(2),C(3)})", //
+    check(
+        "Solve({C(1)+C(2)+C(3)==4, 2*C(1)+2*C(2)+2*C(3)==8, 3*C(1)+3*C(2)+3*C(3)==12},"
+            + "{C(1),C(2),C(3)})", //
         "{{C(3)->4-C(1)-C(2)}}");
     // a determinant of zero and no solution
     check("Solve({C(1)+3*C(2)==5, C(1)+3*C(2)==6},{C(1),C(2)})", //
@@ -3785,8 +3787,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(t - z/Sqrt(4+z^2) == p, z)", //
         "{{z->(-I*2*(-p+t))/Sqrt(-1+(-p+t)^2)},{z->(I*2*(-p+t))/Sqrt(-1+(-p+t)^2)}}");
     // one of the two is the root, the other the one squaring brought in
-    check("Sort(Chop(N((z/Sqrt(4+z^2) - p - q) /. Solve(z/Sqrt(4+z^2) == p+q, z) "
-        + "/. {p -> 1/5, q -> 3/10})))", //
+    check(
+        "Sort(Chop(N((z/Sqrt(4+z^2) - p - q) /. Solve(z/Sqrt(4+z^2) == p+q, z) "
+            + "/. {p -> 1/5, q -> 3/10})))", //
         "{-1.0,0}");
   }
 
@@ -3800,8 +3803,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{z->1/20*(-35-4*ProductLog(-5/(4*E^(43/4+t))))}}");
     check("Chop(N((z + 3*Log(2 + z) - t) /. Solve(z + 3*Log(2 + z) == t, z)[[1]] /. t -> 5/2))", //
         "0");
-    check("Chop(N((5*z - Log(4*z + 7) - t - 2) /. Solve(5*z - Log(4*z + 7) == t + 2, z)[[1]] "
-        + "/. t -> 3/2))", //
+    check(
+        "Chop(N((5*z - Log(4*z + 7) - t - 2) /. Solve(5*z - Log(4*z + 7) == t + 2, z)[[1]] "
+            + "/. t -> 3/2))", //
         "0");
     // the logarithm of a multiple of the variable, as before
     check("Solve(z + 3*Log(z) == t, z)", //
@@ -3810,6 +3814,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(z + Log(1 + z) + Log(2 + z) == t, z)", //
         "Solve(z+Log(1+z)+Log(2+z)==t,z)");
   }
+
   /**
    * The three real roots of a cubic are sums of cube roots of complex numbers, which are not
    * recognized as real: over the reals all of them were dropped, and with an inequality the
@@ -3856,8 +3861,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   /**
    * The roots of a binomial <code>a*t^n+b</code> with numbers <code>a, b</code> are taken of the
    * one number <code>-b/a</code>: the kernel polynomial <code>-2*I-2*I*t^6</code> of
-   * <code>Cot(x)==Tan(2*x)</code> gave roots like <code>(I*2)^(1/6)/(-I*2)^(1/6)</code>, which
-   * were never reduced to <code>(-1)^(1/6)</code>.
+   * <code>Cot(x)==Tan(2*x)</code> gave roots like <code>(I*2)^(1/6)/(-I*2)^(1/6)</code>, which were
+   * never reduced to <code>(-1)^(1/6)</code>.
    */
   @Test
   public void testSolveIssue1556() {
@@ -3881,9 +3886,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The ProductLog rules of Eliminate give the principal branch only; for a number
-   * -1/E < z < 0 ProductLog(-1, z) is a second real solution. A system solves every branch of the
-   * eliminated variable on its own.
+   * The ProductLog rules of Eliminate give the principal branch only; for a number -1/E < z < 0
+   * ProductLog(-1, z) is a second real solution. A system solves every branch of the eliminated
+   * variable on its own.
    */
   @Test
   public void testSolveIssue1563() {
