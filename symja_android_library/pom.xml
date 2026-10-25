@@ -126,22 +126,32 @@
 		<guava.minimal.version>32.0</guava.minimal.version>
 		<cdk.version>2.13</cdk.version>
 
-		<!-- Test tiers. The default run is the "fast" tier: everything not tagged.
+		<!-- Test tiers. The default run is the "fast" tier: everything not
+		tagged.
 		     @Tag("slow")   heavy symbolic tests, see TestTags.SLOW
-		     @Tag("corpus") scoreboard corpora whose failures are expected, see TestTags.CORPUS
+		     @Tag("corpus") scoreboard corpora whose failures are expected, see
+		TestTags.CORPUS
 		     Run the other tiers with -Pslow-tests, -Pall-tests or -Prubi-corpus. -->
 		<symja.test.excludedGroups>slow,corpus</symja.test.excludedGroups>
 		<symja.test.groups></symja.test.groups>
-		<!-- The wall-clock budgets of a test JVM are scaled for the machine it runs on, see
-		     org.matheclipse.core.basic.MachineProfile: "auto" measures the machine once per JVM.
-		     The budgets were tuned on a fast machine; with the unscaled budgets a slower one gets
-		     weaker answers and failing tests. Override with -Dsymja.machineProfile=slow|normal|fast
+		<!-- The wall-clock budgets of a test JVM are scaled for the machine it
+		runs on, see
+		     org.matheclipse.core.basic.MachineProfile: "auto" measures the machine once per
+		JVM.
+		     The budgets were tuned on a fast machine; with the unscaled budgets a slower
+		one gets
+		     weaker answers and failing tests. Override with
+		-Dsymja.machineProfile=slow|normal|fast
 		     or -Dsymja.timeScale=<factor>. -->
 		<symja.machineProfile>auto</symja.machineProfile>
-		<!-- Fork timeout of the fast tier, in seconds: a test which loops without a checkpoint
-		     fails the run instead of holding it (JUnit's @Timeout only interrupts the thread).
-		     The slow tiers are budget-bound and MachineProfile stretches their budgets on a slow
-		     machine, so the profiles below raise it. A property, so -Dsurefire.timeout=... still
+		<!-- Fork timeout of the fast tier, in seconds: a test which loops
+		without a checkpoint
+		     fails the run instead of holding it (JUnit's @Timeout only interrupts the
+		thread).
+		     The slow tiers are budget-bound and MachineProfile stretches their budgets on a
+		slow
+		     machine, so the profiles below raise it. A property, so -Dsurefire.timeout=...
+		still
 		     wins. -->
 		<surefire.timeout>1800</surefire.timeout>
 	</properties>
@@ -190,7 +200,8 @@
 			<dependency>
 				<groupId>io.github.classgraph</groupId>
 				<artifactId>classgraph</artifactId>
-				<!-- 6.x is compiled for Java 25 (class file version 69); 4.8 runs on Java 8 -->
+				<!-- 6.x is compiled for Java 25 (class file version 69); 4.8
+				runs on Java 8 -->
 				<version>4.8.197</version>
 			</dependency>
 			<dependency>
@@ -565,8 +576,10 @@
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
-		<!-- Everything in this block is inherited by every module. archunit is deliberately not
-		here: matheclipse-io is the only module with architecture rules, and it declares the
+		<!-- Everything in this block is inherited by every module. archunit is
+		deliberately not
+		here: matheclipse-io is the only module with architecture rules, and it
+		declares the
 		dependency itself. -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -688,7 +701,8 @@
 							<!-- TODO: fix those tests and enable them too
 							<include>**/*Tests.java</include>	-->
 							<include>**/*TestCase.java</include>
-							<!-- The Rubi corpus classes are named after the integral family they
+							<!-- The Rubi corpus classes are named after the
+							integral family they
 							cover, not after any test convention. They are kept out of a normal
 							build by @Tag("corpus"), not by their file name. -->
 							<include>**/org/matheclipse/core/rubi/**/*.java</include>
@@ -696,7 +710,8 @@
 						<!-- Test tiers, see the symja.test.* properties. -->
 						<groups>${symja.test.groups}</groups>
 						<excludedGroups>${symja.test.excludedGroups}</excludedGroups>
-						<!-- a property of the pom reaches the test JVM only through this -->
+						<!-- a property of the pom reaches the test JVM only
+						through this -->
 						<systemPropertyVariables>
 							<symja.machineProfile>${symja.machineProfile}</symja.machineProfile>
 						</systemPropertyVariables>
@@ -725,6 +740,28 @@
 						<deploymentName>MathEclipse-${project.version}</deploymentName>
 						<publishingServerId>central-portal</publishingServerId>
 						<waitUntil>validated</waitUntil>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-pmd-plugin</artifactId>
+					<version>3.21.2</version>
+					<configuration>
+						<!-- Output format: xml, txt, or csv. XML is structured
+						and ideal for Claude -->
+						<format>xml</format>
+
+						<!-- The minimum number of duplicated tokens to be
+						reported (default is 100) -->
+						<minimumTokens>100</minimumTokens>
+
+						<!-- Optional: Ignore literal value differences (e.g.,
+						foo=42 vs foo=43) -->
+						<ignoreLiterals>true</ignoreLiterals>
+
+						<!-- Optional: Ignore differences in identifiers like
+						variable and method names -->
+						<ignoreIdentifiers>true</ignoreIdentifiers>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -845,7 +882,8 @@
 		</plugins>
 	</build>
 	<profiles>
-		<!-- Test tiers. The default build runs the "fast" tier only: every test that is
+		<!-- Test tiers. The default build runs the "fast" tier only: every test
+		that is
 		neither @Tag("slow") nor @Tag("corpus"). See TestTags and CONTRIBUTING.md. -->
 		<profile>
 			<!-- ONLY the slow tier. -->
@@ -857,7 +895,8 @@
 			</properties>
 		</profile>
 		<profile>
-			<!-- Fast + slow. Run this before pushing. On a slow machine the core module alone takes
+			<!-- Fast + slow. Run this before pushing. On a slow machine the
+			core module alone takes
 			well over the fast tier's 30 minute fork timeout, so it is 2 hours here. -->
 			<id>all-tests</id>
 			<properties>
@@ -866,9 +905,11 @@
 			</properties>
 		</profile>
 		<profile>
-			<!-- The Rubi scoring corpus in matheclipse-io. This is a scoreboard, not a
+			<!-- The Rubi scoring corpus in matheclipse-io. This is a
+			scoreboard, not a
 			gate: failures are expected, so testFailureIgnore keeps the build green and
-			the per-class pass counts are the result. Takes roughly half an hour, so the fork
+			the per-class pass counts are the result. Takes roughly half an hour, so the
+			fork
 			timeout is 90 minutes here.
 
 			reuseForks=false is required, not an optimisation: AbstractRubiTestCase sets
@@ -942,7 +983,7 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-					</plugin> 
+					</plugin>
 
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
