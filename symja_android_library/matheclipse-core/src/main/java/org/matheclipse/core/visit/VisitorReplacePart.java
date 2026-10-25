@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -21,6 +22,13 @@ public class VisitorReplacePart extends AbstractVisitor {
    * {@link IAST} structure.
    */
   private IPatternMatcher[] patternMatcherList;
+
+  /**
+   * <code>true</code> at index <code>j</code> if the matcher <code>patternMatcherList[j]</code> has
+   * a pattern for a complete position list, like <code>{i_, j_} /; i &lt; j</code>; it is matched
+   * against <code>{i1, i2, ...}</code> for every position of the expression.
+   */
+  private boolean[] positionListPattern;
 
   private int listLength;
   /**
@@ -50,6 +58,7 @@ public class VisitorReplacePart extends AbstractVisitor {
     if (rule.isListOfRules()) {
       IAST list = rule;
       this.patternMatcherList = new IPatternMatcher[list.argSize()];
+      this.positionListPattern = new boolean[list.argSize()];
 
       for (int i = 1; i < list.size(); i++) {
         rule = (IAST) list.get(i);
@@ -71,6 +80,7 @@ public class VisitorReplacePart extends AbstractVisitor {
     } else {
       this.patternMatcherList = new IPatternMatcher[1];
     }
+    this.positionListPattern = new boolean[patternMatcherList.length];
     startOffset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
     initPatternMatcher(lhs, rhs, heads);
     if (heads == COMPARE_TERNARY.FALSE) {
@@ -91,6 +101,11 @@ public class VisitorReplacePart extends AbstractVisitor {
    */
   private void initPatternMatcher(IExpr lhs, IExpr rhs, IExpr.COMPARE_TERNARY heads) {
     IExpr fromPositions = lhs;
+    if (isPositionListPattern(lhs)) {
+      positionListPattern[listLength] = true;
+      this.patternMatcherList[listLength++] = engine.evalPatternMatcher(lhs, rhs);
+      return;
+    }
     try {
       // try extracting an int[] array of expressions
       if (fromPositions.isList()) {
@@ -154,6 +169,21 @@ public class VisitorReplacePart extends AbstractVisitor {
     }
   }
 
+  /**
+   * Test if <code>lhs</code> is a pattern for a complete position list, which is not a list itself:
+   * <code>{i_, j_} /; i &lt; j</code>, <code>{__}?test</code> or <code>p : {_, _}</code>.
+   */
+  private static boolean isPositionListPattern(IExpr lhs) {
+    if (lhs.isCondition() || lhs.isAST(S.PatternTest, 3)) {
+      return lhs.first().isList() || isPositionListPattern(lhs.first());
+    }
+    if (lhs instanceof PatternNested) {
+      IExpr patternExpr = ((PatternNested) lhs).getPatternExpr();
+      return patternExpr.isList() || isPositionListPattern(patternExpr);
+    }
+    return false;
+  }
+
   private IExpr visitPatternIndexList(IAST ast, IASTAppendable positions) {
     IASTAppendable result = F.NIL;
     for (int i = startOffset; i < ast.size(); i++) {
@@ -167,31 +197,35 @@ public class VisitorReplacePart extends AbstractVisitor {
         // 1. try to match the (positive) integer position
         IASTAppendable positionsToMatch = positions.copyAppendable();
         positionsToMatch.append(position);
-        IASTAppendable temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
+        IASTAppendable temp = patternIndexRecursive(matcher, positionListPattern[j], ast,
+            positionsToMatch, i, result);
         if (temp.isPresent()) {
           result = temp;
           break;
         }
 
-        // 2. try to match the negative integer position
-        IInteger negativePart = F.ZZUniqueReference(i - ast.size());
-        positionsToMatch = positions.copyAppendable();
-        positionsToMatch.append(negativePart);
-        temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
-        if (temp.isPresent()) {
-          IExpr ex = temp.replaceAll(x -> {
-            if (x == negativePart) {
-              // compare unique reference from F.ZZUniqueReference(); don't use equals() method!
-              return position;
+        // 2. try to match the negative integer position; a pattern for the position list only
+        // sees the positive positions
+        if (!positionListPattern[j]) {
+          IInteger negativePart = F.ZZUniqueReference(i - ast.size());
+          positionsToMatch = positions.copyAppendable();
+          positionsToMatch.append(negativePart);
+          temp = patternIndexRecursive(matcher, false, ast, positionsToMatch, i, result);
+          if (temp.isPresent()) {
+            IExpr ex = temp.replaceAll(x -> {
+              if (x == negativePart) {
+                // compare unique reference from F.ZZUniqueReference(); don't use equals() method!
+                return position;
+              }
+              return F.NIL;
+            });
+            if (ex.isPresent() && (ex instanceof IASTAppendable)) {
+              result = (IASTAppendable) ex;
+            } else {
+              result = temp;
             }
-            return F.NIL;
-          });
-          if (ex.isPresent() && (ex instanceof IASTAppendable)) {
-            result = (IASTAppendable) ex;
-          } else {
-            result = temp;
+            break;
           }
-          break;
         }
 
         if (ast.isAssociation() && i > 0) {
@@ -203,7 +237,8 @@ public class VisitorReplacePart extends AbstractVisitor {
           // 3a. try to match the `Key(...)` wrapped key
           positionsToMatch = positions.copyAppendable();
           positionsToMatch.append(F.Key(key));
-          temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
+          temp = patternIndexRecursive(matcher, positionListPattern[j], ast, positionsToMatch, i,
+              result);
           if (temp.isPresent()) {
             result = temp;
             break;
@@ -212,7 +247,8 @@ public class VisitorReplacePart extends AbstractVisitor {
           // 3b. try to match the bare key
           positionsToMatch = positions.copyAppendable();
           positionsToMatch.append(key);
-          temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
+          temp = patternIndexRecursive(matcher, positionListPattern[j], ast, positionsToMatch, i,
+              result);
           if (temp.isPresent()) {
             result = temp;
             break;
@@ -227,16 +263,19 @@ public class VisitorReplacePart extends AbstractVisitor {
 
   /**
    * @param matcher
+   * @param positionList if <code>true</code> the matcher is matched against the list
+   *        <code>{i1, i2, ...}</code> of the positions
    * @param ast
    * @param positionsToMatch the list of positions which should be matched
    * @param position
    * @param result
    * @return {@link F#NIL} if no match was found
    */
-  private IASTAppendable patternIndexRecursive(IPatternMatcher matcher, IAST ast,
-      IASTAppendable positionsToMatch, int position, IASTAppendable result) {
-    if (matcher.getLHS().isSequence()) {
-      IExpr temp = matcher.eval(positionsToMatch, engine);
+  private IASTAppendable patternIndexRecursive(IPatternMatcher matcher, boolean positionList,
+      IAST ast, IASTAppendable positionsToMatch, int position, IASTAppendable result) {
+    if (positionList || matcher.getLHS().isSequence()) {
+      IExpr temp = positionList ? matcher.eval(positionsToMatch.setAtCopy(0, S.List), engine)
+          : matcher.eval(positionsToMatch, engine);
       if (temp.isPresent()) {
         if (position == 0 && ast.isAssociation()) {
           result = ((IAssociation) ast).copyAST();

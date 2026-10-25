@@ -38,6 +38,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.visit.IVisitor;
+import org.matheclipse.parser.client.Characters;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
@@ -918,7 +919,8 @@ public class Symbol implements ISymbol, Serializable {
     try {
       StringBuilder sb = new StringBuilder();
       OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
-      return sb.toString();
+      // a letter beyond ASCII is written as named character: \[Alpha]
+      return Characters.toASCIIEscapes(sb.toString());
     } catch (Exception e1) {
       Errors.rethrowsInterruptException(e1);
       return fSymbolName;

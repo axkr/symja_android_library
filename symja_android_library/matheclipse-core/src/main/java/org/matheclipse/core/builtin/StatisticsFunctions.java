@@ -49,6 +49,7 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -114,6 +115,8 @@ public class StatisticsFunctions {
       S.HarmonicMean.setEvaluator(new HarmonicMean());
       S.InterquartileRange.setEvaluator(new InterquartileRange());
       S.InverseCDF.setEvaluator(new InverseCDF());
+      S.KendallTau.setEvaluator(new KendallTau());
+      S.KendallTauTest.setEvaluator(new KendallTauTest());
       S.KolmogorovSmirnovTest.setEvaluator(new KolmogorovSmirnovTest());
       S.Kurtosis.setEvaluator(new Kurtosis());
       S.Mean.setEvaluator(new Mean());
@@ -3972,6 +3975,272 @@ public class StatisticsFunctions {
     }
   }
 
+
+  /**
+   * The pair counts of Kendall's rank correlation of two samples of the same length
+   * <code>n</code>.
+   */
+  private static final class KendallCounts {
+    /** the number of observations */
+    final long n;
+    /** the number of concordant minus the number of discordant pairs */
+    long s;
+    /** the number of pairs which are tied in the first sample */
+    long tiedX;
+    /** the number of pairs which are tied in the second sample */
+    long tiedY;
+    /**
+     * the sums <code>t*(t-1)*(2*t+5)</code>, <code>t*(t-1)</code> and <code>t*(t-1)*(t-2)</code>
+     * over the groups of <code>t</code> equal values of the first sample
+     */
+    final double[] tiesX;
+    /** the same sums for the second sample */
+    final double[] tiesY;
+
+    /**
+     * @param x the first sample
+     * @param y the second sample of the same length
+     * @param comparator compares two elements of one sample
+     */
+    <T> KendallCounts(T[] x, T[] y, Comparator<T> comparator) {
+      n = x.length;
+      for (int i = 0; i < x.length; i++) {
+        for (int j = i + 1; j < x.length; j++) {
+          int cx = Integer.signum(comparator.compare(x[i], x[j]));
+          int cy = Integer.signum(comparator.compare(y[i], y[j]));
+          if (cx == 0) {
+            tiedX++;
+          }
+          if (cy == 0) {
+            tiedY++;
+          }
+          s += cx * cy;
+        }
+      }
+      tiesX = tieSums(x, comparator);
+      tiesY = tieSums(y, comparator);
+    }
+
+    /**
+     * The sums <code>t*(t-1)*(2*t+5)</code>, <code>t*(t-1)</code> and <code>t*(t-1)*(t-2)</code>
+     * over the groups of <code>t</code> equal values of <code>sample</code>.
+     */
+    private static <T> double[] tieSums(T[] sample, Comparator<T> comparator) {
+      T[] sorted = sample.clone();
+      Arrays.sort(sorted, comparator);
+      double[] sums = new double[3];
+      int start = 0;
+      for (int i = 1; i <= sorted.length; i++) {
+        if (i == sorted.length || comparator.compare(sorted[start], sorted[i]) != 0) {
+          double t = i - start;
+          sums[0] += t * (t - 1.0) * (2.0 * t + 5.0);
+          sums[1] += t * (t - 1.0);
+          sums[2] += t * (t - 1.0) * (t - 2.0);
+          start = i;
+        }
+      }
+      return sums;
+    }
+
+    /** The number of pairs <code>n*(n-1)/2</code>. */
+    long pairs() {
+      return n * (n - 1) / 2;
+    }
+
+    /** The variance of <code>s</code> for independent samples, with the correction for ties. */
+    double variance() {
+      double nd = n;
+      double v = (nd * (nd - 1.0) * (2.0 * nd + 5.0) - tiesX[0] - tiesY[0]) / 18.0
+          + tiesX[1] * tiesY[1] / (2.0 * nd * (nd - 1.0));
+      if (n > 2) {
+        v += tiesX[2] * tiesY[2] / (9.0 * nd * (nd - 1.0) * (nd - 2.0));
+      }
+      return v;
+    }
+
+    /** <code>true</code> if all elements of the vector <code>v</code> are rational numbers. */
+    static boolean isRationalVector(IAST v) {
+      return v.forAll(IExpr::isRational);
+    }
+
+    /**
+     * The counts of two vectors of real numbers of the same length, compared exactly if all of
+     * their elements are rational.
+     *
+     * @return <code>null</code> if the arguments are not two such vectors of at least two elements
+     */
+    static KendallCounts of(IExpr arg1, IExpr arg2) {
+      int n = arg1.isVector();
+      if (n < 2 || n != arg2.isVector()) {
+        return null;
+      }
+      IAST v1 = (IAST) arg1.normal(false);
+      IAST v2 = (IAST) arg2.normal(false);
+      if (isRationalVector(v1) && isRationalVector(v2)) {
+        IRational[] x = new IRational[n];
+        IRational[] y = new IRational[n];
+        for (int i = 0; i < n; i++) {
+          x[i] = (IRational) v1.get(i + 1);
+          y[i] = (IRational) v2.get(i + 1);
+        }
+        return new KendallCounts(x, y, (a, b) -> a.compareTo(b));
+      }
+      double[] dx = v1.toDoubleVector();
+      double[] dy = v2.toDoubleVector();
+      if (dx == null || dy == null) {
+        return null;
+      }
+      Double[] x = new Double[n];
+      Double[] y = new Double[n];
+      for (int i = 0; i < n; i++) {
+        if (Double.isNaN(dx[i]) || Double.isNaN(dy[i])) {
+          return null;
+        }
+        x[i] = dx[i];
+        y[i] = dy[i];
+      }
+      return new KendallCounts(x, y, Double::compare);
+    }
+  }
+
+  /**
+   * <pre>
+   * <code>KendallTau(v1, v2)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * Kendall's rank correlation coefficient tau-b of the vectors <code>v1</code> and
+   * <code>v2</code>: the number of concordant minus the number of discordant pairs, divided by
+   * <code>Sqrt((n0-n1)*(n0-n2))</code>, where <code>n0 == n*(n-1)/2</code> and <code>n1</code>,
+   * <code>n2</code> are the numbers of pairs which are tied in <code>v1</code> and in
+   * <code>v2</code>. Exact for rational elements. <code>KendallTau(m)</code> is the matrix of the
+   * coefficients of the columns of the matrix <code>m</code>.
+   * </p>
+   */
+  private static final class KendallTau extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        int[] dim = ast.arg1().isMatrix(false);
+        if (dim == null || dim[0] < 2) {
+          return F.NIL;
+        }
+        IExpr transposed = engine.evaluate(F.Transpose(ast.arg1()));
+        if (!transposed.isList()) {
+          return F.NIL;
+        }
+        IAST columns = (IAST) transposed;
+        IASTAppendable result = F.ListAlloc(dim[1]);
+        for (int i = 1; i <= dim[1]; i++) {
+          IASTAppendable row = F.ListAlloc(dim[1]);
+          for (int j = 1; j <= dim[1]; j++) {
+            IExpr tau = tau(columns.get(i), columns.get(j), engine);
+            if (tau.isNIL()) {
+              return F.NIL;
+            }
+            row.append(tau);
+          }
+          result.append(row);
+        }
+        return result;
+      }
+      return tau(ast.arg1(), ast.arg2(), engine);
+    }
+
+    private static IExpr tau(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      KendallCounts counts = KendallCounts.of(arg1, arg2);
+      if (counts == null) {
+        return F.NIL;
+      }
+      long n0 = counts.pairs();
+      long a = n0 - counts.tiedX;
+      long b = n0 - counts.tiedY;
+      if (a == 0 || b == 0) {
+        return S.Indeterminate;
+      }
+      if (KendallCounts.isRationalVector((IAST) arg1.normal(false))
+          && KendallCounts.isRationalVector((IAST) arg2.normal(false))) {
+        return engine.evaluate(
+            F.Times(F.ZZ(counts.s), F.Power(F.Times(F.ZZ(a), F.ZZ(b)), F.CN1D2)));
+      }
+      return F.num(counts.s / Math.sqrt((double) a * (double) b));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <pre>
+   * <code>KendallTauTest(v1, v2)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * the two sided p-value of the test of the independence of <code>v1</code> and
+   * <code>v2</code> by Kendall's tau: with the number <code>s</code> of concordant minus
+   * discordant pairs, <code>Erfc(Abs(s)/Sqrt(2*var))</code> for the variance <code>var</code> of
+   * <code>s</code> under independence, corrected for ties.
+   * <code>KendallTauTest(v1, v2, "TestStatistic")</code> is tau-b and
+   * <code>KendallTauTest(v1, v2, "TestData")</code> is <code>{tau-b, p-value}</code>.
+   * </p>
+   */
+  private static final class KendallTauTest extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      String property = "PValue";
+      if (ast.isAST3()) {
+        // a property given as a string or as a symbol of the same name
+        if (ast.arg3().isString()) {
+          property = ast.arg3().toString();
+        } else if (ast.arg3().isSymbol()) {
+          property = ((ISymbol) ast.arg3()).getSymbolName();
+        } else {
+          return F.NIL;
+        }
+        if (!property.equals("PValue") && !property.equals("TestStatistic")
+            && !property.equals("TestData")) {
+          return F.NIL;
+        }
+      }
+      KendallCounts counts = KendallCounts.of(ast.arg1(), ast.arg2());
+      if (counts == null) {
+        return F.NIL;
+      }
+      long a = counts.pairs() - counts.tiedX;
+      long b = counts.pairs() - counts.tiedY;
+      double variance = counts.variance();
+      if (a == 0 || b == 0 || !(variance > 0.0)) {
+        return F.NIL;
+      }
+      final double tau = counts.s / Math.sqrt((double) a * (double) b);
+      final double z = Math.abs(counts.s) / Math.sqrt(variance);
+      final double pValue = org.hipparchus.special.Erf.erfc(z / Math.sqrt(2.0));
+      switch (property) {
+        case "TestStatistic":
+          return F.num(tau);
+        case "TestData":
+          return F.list(F.num(tau), F.num(pValue));
+        default:
+          return F.num(pValue);
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
 
   private static final class PearsonCorrelationTest extends AbstractEvaluator {
 

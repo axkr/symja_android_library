@@ -193,4 +193,40 @@ public class ImageFilterTest extends AbstractTestCase {
     check("ImageData(ColorConvert(Image({{{255, 0, 0}}}, \"Byte\"), \"Grayscale\"), \"Byte\")", //
         "{{76}}");
   }
+
+  @Test
+  public void testGeometricMeanFilter() {
+    // a list is filtered by the list filter, on the part of the window inside the list
+    check("GeometricMeanFilter({1, 4, 16, 2}, 1)", //
+        "{2,4,4*2^(1/3),4*Sqrt(2)}");
+    check("GeometricMeanFilter({{1., 4.}, {2., 8.}}, 1)", //
+        "{{2.82843,2.82843},{2.82843,2.82843}}");
+    // the geometric mean of the part of the 3 x 3 block inside the image
+    check("Max(Abs(ImageData(GeometricMeanFilter(Image({{0.2, 0.8, 0.4}, {0.1, 0.5, 0.25}}), 1)) "
+        + "- {{(0.2*0.8*0.1*0.5)^(1/4), (0.2*0.8*0.4*0.1*0.5*0.25)^(1/6), (0.8*0.4*0.5*0.25)^(1/4)}, "
+        + "{(0.2*0.8*0.1*0.5)^(1/4), (0.2*0.8*0.4*0.1*0.5*0.25)^(1/6), (0.8*0.4*0.5*0.25)^(1/4)}})) "
+        + "< 10^-7", //
+        "True");
+    check("ImageType(GeometricMeanFilter(Image({{0.2, 0.8}, {0.1, 0.5}}), 1))", //
+        "Real32");
+  }
+
+  @Test
+  public void testInpaintDiffusion() {
+    // a single hole becomes the mean of its eight neighbours
+    check("img = Image({{0.2, 0.4, 0.6}, {0.8, 0., 1.}, {0.1, 0.3, 0.5}}); "
+        + "m = Image({{0, 0, 0}, {0, 1, 0}, {0, 0, 0}}); "
+        + "ImageData(Inpaint(img, m, Method -> \"Diffusion\"))[[2, 2]]", //
+        "0.4875");
+    // the filled pixels are harmonic: each is the mean of its neighbours, filled ones included
+    check("img = Image(Table(N(i*j/25), {i, 5}, {j, 5})); "
+        + "m = Table(Boole(2 <= i <= 4 && 2 <= j <= 3), {i, 5}, {j, 5}); "
+        + "d = ImageData(Inpaint(img, m, Method -> \"Diffusion\")); "
+        + "Max(Table(Abs(d[[i, j]] - (Total(Flatten(d[[i - 1 ;; i + 1, j - 1 ;; j + 1]])) - d[[i, j]])/8), "
+        + "{i, 2, 4}, {j, 2, 3})) < 10^-9", //
+        "True");
+    // the known pixels stay
+    check("ImageData(Inpaint(img, m, Method -> \"Diffusion\"))[[1]] == ImageData(img)[[1]]", //
+        "True");
+  }
 }

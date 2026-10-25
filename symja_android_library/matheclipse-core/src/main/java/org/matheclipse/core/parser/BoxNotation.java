@@ -249,6 +249,63 @@ public final class BoxNotation {
     return buf == null ? text : buf.toString();
   }
 
+  /**
+   * The text of a string as a quoted string literal in ASCII characters: <code>"</code>,
+   * <code>\</code>, newline, tab and the other control characters are escaped, a character beyond
+   * ASCII is written as named character <code>\[Name]</code>, as <code>\:xxxx</code> or as
+   * <code>\|xxxxxx</code>. A string with box escapes keeps its backslashes, see
+   * {@link #writeEscapes(String)}.
+   */
+  public static String writeStringLiteral(String text) {
+    StringBuilder buf = new StringBuilder(text.length() + 2);
+    buf.append('"');
+    String boxText = writeEscapes(text);
+    if (boxText != text) {
+      buf.append(Characters.toASCIIEscapes(boxText));
+      return buf.append('"').toString();
+    }
+    for (int i = 0; i < text.length();) {
+      final int codePoint = text.codePointAt(i);
+      i += Character.charCount(codePoint);
+      switch (codePoint) {
+        case '"':
+          buf.append("\\\"");
+          break;
+        case '\\':
+          buf.append("\\\\");
+          break;
+        case '\n':
+          buf.append("\\n");
+          break;
+        case '\t':
+          buf.append("\\t");
+          break;
+        case '\r':
+          buf.append("\\r");
+          break;
+        case '\b':
+          buf.append("\\b");
+          break;
+        case '\f':
+          buf.append("\\f");
+          break;
+        default:
+          if (codePoint < 0x20 || codePoint == 0x7F) {
+            buf.append("\\.");
+            if (codePoint < 0x10) {
+              buf.append('0');
+            }
+            buf.append(Integer.toHexString(codePoint));
+          } else if (codePoint >= 0x80) {
+            Characters.appendASCIIEscape(buf, codePoint);
+          } else {
+            buf.append((char) codePoint);
+          }
+      }
+    }
+    return buf.append('"').toString();
+  }
+
   /** Whether <code>expr</code> is built from a box - and isn't an expression to evaluate. */
   public static boolean isBox(IExpr expr) {
     String head = headName(expr);

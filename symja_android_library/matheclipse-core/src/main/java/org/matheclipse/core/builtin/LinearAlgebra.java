@@ -1728,6 +1728,40 @@ public final class LinearAlgebra {
       return Convert.checkNonEmptySquareMatrix(S.Eigenvalues, arg1);
     }
 
+    /**
+     * The generalized eigenvalues of the matrix pencil <code>Eigenvalues({a, b})</code>: the roots
+     * <code>λ</code> of <code>Det(a - λ*b) == 0</code>. For an invertible <code>b</code> they are
+     * the eigenvalues of <code>Inverse(b) . a</code>, sorted the same way and selected by the same
+     * second argument.
+     *
+     * @return {@link F#NIL} if the first argument is no pair of square matrices of the same
+     *         dimension or if <code>b</code> is singular
+     */
+    private static IExpr generalizedEigenvalues(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isList2()) {
+        return F.NIL;
+      }
+      IExpr a = arg1.first();
+      IExpr b = arg1.second();
+      int[] dimA = a.isMatrix(false);
+      int[] dimB = b.isMatrix(false);
+      if (dimA == null || dimB == null || dimA[0] != dimA[1] || dimB[0] != dimB[1]
+          || dimA[0] != dimB[0]) {
+        return F.NIL;
+      }
+      IExpr det = engine.evaluate(F.Det(b));
+      if (!det.isNumber() || det.isZero() || (det.isInexactNumber()
+          && F.isZero(engine.evalDouble(F.Abs(det)), Config.DEFAULT_ROOTS_CHOP_DELTA))) {
+        return F.NIL;
+      }
+      IExpr product = engine.evaluate(F.Dot(F.Inverse(b), a));
+      if (product.isMatrix(false) == null) {
+        return F.NIL;
+      }
+      return engine.evaluate(ast.setAtCopy(1, product));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
@@ -1740,6 +1774,10 @@ public final class LinearAlgebra {
           return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
         }
         maxValues = n;
+      }
+      IExpr pencil = generalizedEigenvalues(ast, engine);
+      if (pencil.isPresent()) {
+        return pencil;
       }
       if (ast.isAST1()) {
         IAST zero = zeroMatrixEigensystem(ast.arg1());
@@ -6628,10 +6666,46 @@ public final class LinearAlgebra {
       if (matrix != null) {
         final org.hipparchus.linear.SingularValueDecomposition svd =
             new org.hipparchus.linear.SingularValueDecomposition(matrix);
-        return F.list(new ASTRealMatrix(svd.getU(), false), new ASTRealMatrix(svd.getS(), false),
-            new ASTRealMatrix(svd.getV(), false));
+        final int m = matrix.getRowDimension();
+        final int n = matrix.getColumnDimension();
+        // the thin decomposition has p = Min(m, n) columns in u and v; extend it to the full form
+        // with an m x m matrix u, an m x n matrix s and an n x n matrix v
+        RealMatrix u = completeOrthonormalColumns(svd.getU(), m);
+        RealMatrix v = completeOrthonormalColumns(svd.getV(), n);
+        double[] singularValues = svd.getSingularValues();
+        RealMatrix s = MatrixUtils.createRealMatrix(m, n);
+        for (int i = 0; i < singularValues.length && i < m && i < n; i++) {
+          s.setEntry(i, i, singularValues[i]);
+        }
+        return F.list(new ASTRealMatrix(u, false), new ASTRealMatrix(s, false),
+            new ASTRealMatrix(v, false));
       }
       return F.NIL;
+    }
+
+    /**
+     * Extend the orthonormal columns of <code>q</code> to an orthonormal basis of
+     * <code>R^dimension</code>.
+     *
+     * @param q a <code>dimension x p</code> matrix with orthonormal columns
+     * @param dimension the number of rows of <code>q</code>
+     * @return a <code>dimension x dimension</code> orthogonal matrix whose first <code>p</code>
+     *         columns are the columns of <code>q</code>
+     */
+    private static RealMatrix completeOrthonormalColumns(RealMatrix q, int dimension) {
+      final int p = q.getColumnDimension();
+      if (p >= dimension) {
+        return q;
+      }
+      // the trailing columns of the full Q factor of q span the orthogonal complement of q's
+      // columns
+      RealMatrix fullQ = new org.hipparchus.linear.QRDecomposition(q).getQ();
+      RealMatrix result = MatrixUtils.createRealMatrix(dimension, dimension);
+      result.setSubMatrix(q.getData(), 0, 0);
+      for (int j = p; j < dimension; j++) {
+        result.setColumn(j, fullQ.getColumn(j));
+      }
+      return result;
     }
   }
 

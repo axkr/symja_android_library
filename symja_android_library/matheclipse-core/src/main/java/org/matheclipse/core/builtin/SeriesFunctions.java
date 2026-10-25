@@ -1341,6 +1341,11 @@ public class SeriesFunctions {
               currentExpr = polyGamma;
               continue;
             }
+            IExpr erfc = erfcSeries(currentExpr, x, n, engine);
+            if (erfc.isPresent()) {
+              currentExpr = erfc;
+              continue;
+            }
             IExpr asymptotic = asymptoticAtInfinity(currentExpr, x, n, engine);
             if (asymptotic.isPresent()) {
               currentExpr = asymptotic;
@@ -1576,6 +1581,40 @@ public class SeriesFunctions {
       ASTSeriesData exponent =
           new ASTSeriesData(x, F.CInfinity, F.list(xTimesLogPart), -1, n + 1, 1);
       return F.Times(F.Power(S.E, exponent), series);
+    }
+
+    /**
+     * The asymptotic series of <code>Erfc(x)</code> and <code>Erf(x)</code> at <code>x ==
+     * Infinity</code>: <code>Erfc(x) == E^(-x^2)*Sum((-1)^k*(2*k-1)!!/(2^k*Sqrt(Pi))*(1/x)^(2*k+1))</code>
+     * (DLMF 7.12.1) and <code>Erf(x) == 1 - Erfc(x)</code>. The factor <code>E^(-x^2)</code> stays
+     * outside of the series.
+     *
+     * @return {@link F#NIL} if <code>expr</code> isn't one of these functions of <code>x</code>
+     */
+    private static IExpr erfcSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+      if (n < 0 || !(expr.isAST(S.Erfc, 2) || expr.isAST(S.Erf, 2)) || !expr.first().equals(x)) {
+        return F.NIL;
+      }
+      IASTAppendable coefficients = F.ListAlloc(n + 1);
+      // (2*k-1)!!/2^k with alternating sign
+      IRational factor = F.C1;
+      for (int j = 1; j <= n; j++) {
+        if ((j & 1) == 1) {
+          coefficients.append(F.Times(factor, F.Power(S.Pi, F.CN1D2)));
+          int k = (j + 1) / 2;
+          factor = factor.multiply(F.QQ(-(2 * k - 1), 2));
+        } else {
+          coefficients.append(F.C0);
+        }
+      }
+      IExpr series = new ASTSeriesData(x, F.CInfinity, (IAST) engine.evaluate(coefficients), 1,
+          n + 1, 1);
+      IExpr erfc = F.Times(F.Power(S.E, F.Negate(F.Sqr(x))), series);
+      if (expr.isAST(S.Erfc, 2)) {
+        return erfc;
+      }
+      ASTSeriesData one = new ASTSeriesData(x, F.CInfinity, F.list(F.C1), 0, n + 1, 1);
+      return F.Subtract(one, erfc);
     }
 
     /**

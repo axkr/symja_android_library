@@ -432,6 +432,8 @@ public final class FunctionDefinitions {
       S.LogLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.LogLogPlot());
       S.MatrixPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.MatrixPlot());
       S.ParametricPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ParametricPlot());
+      S.VectorDensityPlot
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.VectorDensityPlot());
       S.VectorPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.VectorPlot(2));
       S.VectorPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics.VectorPlot(3));
       S.ListVectorPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListVectorPlot(2));

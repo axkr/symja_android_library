@@ -244,7 +244,7 @@ public class SparseArrayFunctions {
         dimension = new int[] {defaultDimension};
       }
       if (arg1.isListOfRules()) {
-        if (arg1.argSize() < 1) { //
+        if (arg1.argSize() < 1 && dimension == null) { //
           // The dimensions cannot be determined from the position `1`.
           return Errors.printMessage(ast.topHead(), "exdims", F.list(arg1), engine);
         }

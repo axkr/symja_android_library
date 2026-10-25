@@ -82,4 +82,16 @@ public class ImageAdjustTest extends AbstractTestCase {
         + "{ImageType(h), Flatten(ImageData(h, \"Byte\"))}", //
         "{Byte,{32,128,128,224}}");
   }
+
+  @Test
+  public void imageAdjustInputAndOutputRanges() {
+    // the samples of {imin, imax} are rescaled to 0 ... 1 before the adjustment
+    check("Max(Abs(ImageData(ImageAdjust(Image({{0.1, 0.3}, {0.5, 0.7}}), {0, 0}, {0.1, 0.5})) "
+        + "- {{0., 0.5}, {1., 1.5}})) < 10^-7", //
+        "True");
+    // and from 0 ... 1 to {omin, omax} after it
+    check("Max(Abs(ImageData(ImageAdjust(Image({{0.1, 0.3}, {0.5, 0.7}}), {0, 0}, {0.1, 0.5}, "
+        + "{0.2, 0.6})) - {{0.2, 0.4}, {0.6, 0.8}})) < 10^-7", //
+        "True");
+  }
 }

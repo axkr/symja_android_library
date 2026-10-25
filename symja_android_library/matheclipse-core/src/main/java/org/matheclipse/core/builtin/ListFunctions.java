@@ -56,6 +56,7 @@ import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
@@ -6316,6 +6317,18 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       IExpr result = ast.arg1();
+      if (result.isSparseArray() && argSize == 2) {
+        // replace the parts of the dense array and keep the result sparse with the same background
+        ISparseArray sparseArray = (ISparseArray) result;
+        IExpr normal = sparseArray.normal(false);
+        if (normal.isList()) {
+          IExpr replaced = engine.evaluate(ast.setAtCopy(1, normal));
+          if (replaced.isList()) {
+            return SparseArrayExpr.newDenseList((IAST) replaced, sparseArray.getDefaultValue());
+          }
+        }
+        return F.NIL;
+      }
       COMPARE_TERNARY heads = COMPARE_TERNARY.UNDECIDABLE;
       IExpr headsOption = option[0];
       if (headsOption.isTrue()) {
@@ -8635,6 +8648,12 @@ public final class ListFunctions {
       // the rows of a Dataset are what there is to total; the level visitor below cannot walk the
       // dataset itself - see IASTDataset#normalizeDataset
       arg1 = IASTDataset.normalizeDataset(arg1);
+      if (arg1.isList() && (ast.isAST1() || ast.arg2().isOne())) {
+        IExpr machineSum = compensatedSum((IAST) arg1);
+        if (machineSum.isPresent()) {
+          return machineSum;
+        }
+      }
       if ((arg1.isList() || arg1.isAssociation()) && ast.isAST2()) {
         // Total over the levels 1..n only adds up the elements of nested lists and the values of
         // associations: f(1,2) or z^2 at a deeper level are elements, not collections to total
@@ -8679,6 +8698,42 @@ public final class ListFunctions {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * The sum of a list of real machine numbers with Neumaier's compensated summation, which
+     * carries the rounding error of every addition along: <code>Total(Table(0.1, 10))</code> is
+     * <code>1.0</code>, where adding the elements one after the other gives
+     * <code>0.9999999999999999</code>.
+     *
+     * @return {@link F#NIL} if the list has less than two elements or one which is not a real
+     *         machine number
+     */
+    private static IExpr compensatedSum(IAST list) {
+      final int size = list.argSize();
+      if (size < 2) {
+        return F.NIL;
+      }
+      for (int i = 1; i <= size; i++) {
+        IExpr element = list.get(i);
+        if (!(element instanceof Num) || !element.isMachineNumber()) {
+          return F.NIL;
+        }
+      }
+      double sum = 0.0;
+      double compensation = 0.0;
+      for (int i = 1; i <= size; i++) {
+        final double value = ((Num) list.get(i)).doubleValue();
+        final double t = sum + value;
+        compensation += Math.abs(sum) >= Math.abs(value) ? (sum - t) + value : (value - t) + sum;
+        sum = t;
+      }
+      sum += compensation;
+      if (!Double.isFinite(sum)) {
+        // overflow, or infinite and NaN elements: the plain sum knows what to do with them
+        return F.NIL;
+      }
+      return F.num(sum);
     }
 
     /**

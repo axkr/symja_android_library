@@ -110,6 +110,12 @@ import com.google.common.collect.ImmutableMap;
  * If <code>MaxIterations</code> is used up before the search converges, <code>FindRoot</code>
  * reports it and returns the best point it reached.
  * </p>
+ *
+ * <p>
+ * <code>StepMonitor :&gt; expr</code> evaluates <code>expr</code> after every step the search
+ * accepts, with the variables set to the point the step reached; its last evaluation sees the
+ * root which is returned.
+ * </p>
  * 
  * <p>
  * See
@@ -254,6 +260,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     final String method;
     final double accuracy;
     final EvalEngine engine;
+    /** the monitor of the accepted steps, or <code>null</code> */
+    final StepMonitor monitor;
 
     /**
      * 
@@ -266,10 +274,12 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
      * @param maxIterations
      * @param method
      * @param accuracyGoal TODO
+     * @param monitor the monitor of the accepted steps, or <code>null</code>
      * @param engine
      */
     public UnivariateSolverSupplier(IExpr function, IAST variableList, IReal min, IReal max,
-        int maxIterations, String method, int accuracyGoal, EvalEngine engine) {
+        int maxIterations, String method, int accuracyGoal, StepMonitor monitor,
+        EvalEngine engine) {
       this.originalFunction = function;
       this.variableList = variableList;
       this.min = min;
@@ -277,6 +287,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       this.maxIterations = maxIterations;
       this.method = method;
       this.accuracy = accuracy(accuracyGoal);
+      this.monitor = monitor;
       this.engine = engine;
     }
 
@@ -353,13 +364,14 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
             double[] root = new BroydenSolver(F.list(function), F.list(xVar), //
                 new double[] {startValue}, //
                 new double[] {stepWidth > 1e-14 ? stepWidth : 0.0}, //
-                accuracy, maxIterations, engine).solve();
+                accuracy, maxIterations, monitor, engine).solve();
             if (root != null) {
               return F.num(root[0]);
             }
           }
           // try {
-          NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
+          NewtonRaphsonSolver nrs = monitor == null ? new NewtonRaphsonSolver(accuracy)
+              : new MonitoredNewtonSolver(accuracy, x -> monitor.step(F.list(xVar), new double[] {x}));
           if (maxMaybeNull == null) {
             return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
           }
@@ -404,6 +416,91 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
   }
 
+  /**
+   * The expression of the option <code>StepMonitor :> expr</code>. It is evaluated after every step
+   * the search accepts, with the variables set to the point the step reached, as the body of a
+   * <code>Block</code> which sets them. The last evaluation sees the root which is reported: a
+   * root which is changed after the last step - by the final polishing steps, by a higher
+   * <code>WorkingPrecision</code>, or by a method which does not show its steps - is shown once
+   * more.
+   */
+  private static final class StepMonitor {
+    private final IExpr expr;
+    private final EvalEngine engine;
+    /** the values of the variables at the last evaluation, or {@link F#NIL} */
+    private IAST lastValues = F.NIL;
+
+    StepMonitor(IExpr expr, EvalEngine engine) {
+      this.expr = expr;
+      this.engine = engine;
+    }
+
+    /** Evaluate the monitor with the <code>variables</code> set to <code>values</code>. */
+    void step(IAST variables, IAST values) {
+      lastValues = values;
+      IASTAppendable block = F.ListAlloc(variables.argSize());
+      for (int i = 1; i < variables.size() && i < values.size(); i++) {
+        if (variables.get(i).isSymbol()) {
+          block.append(F.Set(variables.get(i), values.get(i)));
+        }
+      }
+      engine.evalBlock(expr, block);
+    }
+
+    void step(IAST variables, double[] point) {
+      step(variables, F.mapRange(0, point.length, i -> F.num(point[i])));
+    }
+
+    /**
+     * Evaluate the monitor at the reported root <code>result</code>, if the last step did not
+     * reach exactly that point.
+     *
+     * @param result the list of rules <code>{x -> x0, ...}</code> which is reported
+     * @return <code>result</code>
+     */
+    IExpr finish(IExpr result) {
+      if (result.isListOfRules()) {
+        IAST rules = (IAST) result;
+        IAST variables = F.mapRange(1, rules.size(), i -> rules.get(i).first());
+        IAST values = F.mapRange(1, rules.size(), i -> rules.get(i).second());
+        if (!values.equals(lastValues)) {
+          step(variables, values);
+        }
+      }
+      return result;
+    }
+  }
+
+  /**
+   * Newton's iteration of {@link NewtonRaphsonSolver}, which tells <code>stepConsumer</code> every
+   * point it steps to.
+   */
+  private static final class MonitoredNewtonSolver extends NewtonRaphsonSolver {
+    private final java.util.function.DoubleConsumer stepConsumer;
+
+    MonitoredNewtonSolver(double absoluteAccuracy,
+        java.util.function.DoubleConsumer stepConsumer) {
+      super(absoluteAccuracy);
+      this.stepConsumer = stepConsumer;
+    }
+
+    @Override
+    protected double doSolve() throws MathIllegalStateException {
+      final double absoluteAccuracy = getAbsoluteAccuracy();
+      double x0 = getStartValue();
+      while (true) {
+        final org.hipparchus.analysis.differentiation.UnivariateDerivative1 y0 =
+            computeObjectiveValueAndDerivative(x0);
+        final double x1 = x0 - (y0.getValue() / y0.getPartialDerivative(1));
+        stepConsumer.accept(x1);
+        if (Math.abs(x1 - x0) <= absoluteAccuracy) {
+          return x1;
+        }
+        x0 = x1;
+      }
+    }
+  }
+
   /** The number of iterations a search takes when <code>MaxIterations</code> is not given. */
   private static final int DEFAULT_MAX_ITERATIONS = 100;
 
@@ -423,7 +520,13 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     ast = threadVectorEquations(ast);
     ast = flattenNestedEquations(ast);
     ast = unwrapSingleResidual(ast);
-    IExpr result = machineRoot(ast, options, engine);
+    StepMonitor monitor = options.length > 4 && options[4] != S.None //
+        ? new StepMonitor(options[4], engine) //
+        : null;
+    IExpr result = machineRoot(ast, options, monitor, engine);
+    if (monitor != null) {
+      result = monitor.finish(result);
+    }
     int precision = workingPrecision(options.length > 3 ? options[3] : S.MachinePrecision);
     if (precision > 0 && result.isListOfRules()) {
       // WorkingPrecision -> p: the machine root is the start of a Newton iteration with p digits
@@ -436,7 +539,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
       IExpr refined = refine(functions, (IAST) result, precision, engine);
       if (refined.isPresent()) {
-        return refined;
+        return monitor == null ? refined : monitor.finish(refined);
       }
     }
     return result;
@@ -652,7 +755,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
   }
 
   /** The root in machine precision. */
-  private IExpr machineRoot(IAST ast, final IExpr[] options, final EvalEngine engine) {
+  private IExpr machineRoot(IAST ast, final IExpr[] options, StepMonitor monitor,
+      final EvalEngine engine) {
     // default: BracketingNthOrderBrentSolver
     String method = "Newton";
     int accuracyGoal = 6;
@@ -711,17 +815,19 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if ((needsComplexComputation || l2 > 1) && l1 == l2 && listOfEquations.isList()
         && arg2.isList()) {
       double accuracy = accuracy(accuracyGoal);
-      return multivariateFindRoot(listOfEquations, arg2, accuracy, maxIterations, engine);
+      return multivariateFindRoot(listOfEquations, arg2, accuracy, maxIterations, monitor,
+          engine);
     } else if ((arg2.isList2() || arg2.isList3()) && !arg2.isListOfLists()) {
-      return univariateFindRoot(ast.arg1(), arg2, method, maxIterations, accuracyGoal, engine);
+      return univariateFindRoot(ast.arg1(), arg2, method, maxIterations, accuracyGoal, monitor,
+          engine);
     } else if (arg2.isList1() && (arg2.first().isList2() || arg2.first().isList3())) {
       return univariateFindRoot(ast.arg1(), (IAST) arg2.first(), method, maxIterations,
-          accuracyGoal, engine);
+          accuracyGoal, monitor, engine);
     } else if (arg2.isList1()
         && (arg2.first().isAST(S.List, 5) || arg2.first().isAST(S.List, 6))) {
       // {x, x0, xmin, xmax} or {x, x0, x1, xmin, xmax}
       return boundedFindRoot(ast.arg1(), (IAST) arg2.first(), method, maxIterations, accuracyGoal,
-          engine);
+          monitor, engine);
     }
     return F.NIL;
   }
@@ -734,7 +840,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * <code>f</code> changes its sign on it.
    */
   private static IExpr boundedFindRoot(IExpr equations, IAST spec, String method,
-      int maxIterations, int accuracyGoal, EvalEngine engine) {
+      int maxIterations, int accuracyGoal, StepMonitor monitor, EvalEngine engine) {
     IExpr variable = spec.arg1();
     final int boundsPosition = spec.argSize() - 1;
     IExpr lower = spec.get(boundsPosition);
@@ -748,7 +854,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     try {
       engine.setQuietMode(true);
       IExpr fromStart = univariateFindRoot(equations, spec.copyUntil(boundsPosition), method,
-          maxIterations, accuracyGoal, engine);
+          maxIterations, accuracyGoal, monitor, engine);
       if (fromStart.isList1() && fromStart.first().isRuleAST()) {
         double root = fromStart.first().second().evalfNaN();
         if (root >= xmin && root <= xmax) {
@@ -756,7 +862,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         }
       }
       IExpr bracketed = univariateFindRoot(equations, F.list(variable, lower, upper),
-          "Brent", maxIterations, accuracyGoal, engine);
+          "Brent", maxIterations, accuracyGoal, monitor, engine);
       if (bracketed.isList1() && bracketed.first().isRuleAST()
           && bracketed.first().second().isNumber()) {
         return bracketed;
@@ -826,7 +932,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr univariateFindRoot(IExpr listOfEquations, IAST varValuePairs, String method,
-      int maxIterations, int accuracyGoal, final EvalEngine engine) {
+      int maxIterations, int accuracyGoal, StepMonitor monitor, final EvalEngine engine) {
     IAST list = varValuePairs;
     if (list.size() >= 2 && list.arg1().isSymbol()) {
       IReal min = F.CD1;
@@ -840,7 +946,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         }
         try {
           UnivariateSolverSupplier optimizeSupplier = new UnivariateSolverSupplier(listOfEquations,
-              list, min, max, maxIterations, method, accuracyGoal, engine);
+              list, min, max, maxIterations, method, accuracyGoal, monitor, engine);
           IExpr result = optimizeSupplier.get();
           // engine.evalBlock(optimizeSupplier, list);
           return F.list(F.Rule(list.arg1(), result));
@@ -884,11 +990,12 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * @param matrixOfVarValuePairs a matrix of variables and their initial values
    * @param tolerance the tolerance where the iteration should stop
    * @param maxIterations maximum iterations
+   * @param monitor the monitor of the accepted steps, or <code>null</code>
    * @param engine
    * @return
    */
   private static IExpr multivariateFindRoot(IAST listOfEquations, IAST matrixOfVarValuePairs,
-      double tolerance, int maxIterations, EvalEngine engine) {
+      double tolerance, int maxIterations, StepMonitor monitor, EvalEngine engine) {
     // convert parameters from FindRoot to be suitable for Newtons method
     final int numberOfVariables = matrixOfVarValuePairs.argSize();
     IASTAppendable vectorValuedFunction = F.ListAlloc(numberOfVariables);
@@ -971,7 +1078,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
 
     IExpr result = multivariateNewton(vectorValuedFunction, vectorOfVariables, initialGuess,
-        tolerance, maxIterations, engine);
+        tolerance, maxIterations, monitor, engine);
     if (result.isNIL() && allStartValuesAreReal) {
       // The jacobian matrix could not be determined symbolically, or could not be evaluated to
       // numbers - a function which is only defined for numeric arguments has no derivative to
@@ -979,7 +1086,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       // with Broyden's rank one updates, which costs one function evaluation per step where a
       // fresh finite difference matrix would cost one per entry.
       result = new BroydenSolver(vectorValuedFunction, vectorOfVariables, realInitialGuess,
-          initialStepWidths, tolerance, maxIterations, engine).get();
+          initialStepWidths, tolerance, maxIterations, monitor, engine).get();
     }
     if (result.isListOfRules()) {
       for (int i = 1; i < result.size(); i++) {
@@ -1010,11 +1117,13 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * @param initialGuessVector
    * @param tolerance
    * @param maxIterations maximum iterations
+   * @param monitor the monitor of the accepted steps, or <code>null</code>
    * @param engine
    * @return
    */
   private static IExpr multivariateNewton(IAST vectorValuedFunction, IAST vectorOfVariables,
-      IAST initialGuessVector, double tolerance, int maxIterations, EvalEngine engine) {
+      IAST initialGuessVector, double tolerance, int maxIterations, StepMonitor monitor,
+      EvalEngine engine) {
 
     IExpr jacobianMatrix = S.Grad.ofNIL(engine, vectorValuedFunction, vectorOfVariables);
     if (jacobianMatrix.isMatrix(false) == null) {
@@ -1051,6 +1160,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         break;
       }
       IAST xNext = (IAST) temp;
+      if (monitor != null) {
+        monitor.step(vectorOfVariables, xNext);
+      }
       double norm = engine.evalDouble(F.Norm(y));
       if (norm < tolerance) {
         // convert result vector to list of rules
@@ -1141,17 +1253,21 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     final double[] initialStepWidths;
     final double tolerance;
     final int maxIterations;
+    /** the monitor of the accepted steps, or <code>null</code> */
+    final StepMonitor monitor;
     final EvalEngine engine;
     final int argSize;
 
     BroydenSolver(IAST vectorValuedFunction, IAST vectorOfVariables, double[] initialGuess,
-        double[] initialStepWidths, double tolerance, int maxIterations, EvalEngine engine) {
+        double[] initialStepWidths, double tolerance, int maxIterations, StepMonitor monitor,
+        EvalEngine engine) {
       this.vectorValuedFunction = vectorValuedFunction;
       this.vectorOfVariables = vectorOfVariables;
       this.initialGuess = initialGuess;
       this.initialStepWidths = initialStepWidths;
       this.tolerance = tolerance;
       this.maxIterations = maxIterations;
+      this.monitor = monitor;
       this.engine = engine;
       this.argSize = vectorOfVariables.argSize();
     }
@@ -1236,6 +1352,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         broydenUpdate(jacobian, step, f, fNext);
         x = xNext;
         f = fNext;
+        if (monitor != null) {
+          monitor.step(vectorOfVariables, x);
+        }
         double residual = maxAbs(f);
         if (residual < bestResidual) {
           bestResidual = residual;
@@ -1497,8 +1616,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
-            S.MaxIterations, S.Method, S.AccuracyGoal, S.WorkingPrecision}, //
+            S.MaxIterations, S.Method, S.AccuracyGoal, S.WorkingPrecision, S.StepMonitor}, //
         new IExpr[] {//
-            F.C100, S.Automatic, S.Automatic, S.MachinePrecision});
+            F.C100, S.Automatic, S.Automatic, S.MachinePrecision, S.None});
   }
 }

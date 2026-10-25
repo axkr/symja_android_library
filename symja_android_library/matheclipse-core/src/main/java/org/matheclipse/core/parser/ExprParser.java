@@ -30,6 +30,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Characters;
@@ -1226,20 +1227,19 @@ public class ExprParser extends Scanner {
           temp = ((NumStr) temp).promoted();
         }
       } else {
-        if (exponentStr == null || exponentStr.equals("1")) {
+        if (exponentStr == null) {
           temp = F.ZZ(numberStr, numFormat);
         } else {
           if (numFormat == 10) {
             try {
+              // n*^e is the exact number n*10^e: 2*^2 is 200 and 6*^-1 is 3/5
               int exponent = Integer.parseInt(exponentStr, numFormat);
+              IInteger mantissa = F.ZZ(numberStr, numFormat);
+              IInteger powerOf10 = F.ZZ(createPowersOf10(Math.abs(exponent)).toString(), numFormat);
               if (exponent < 0) {
-                exponent = -exponent;
-                StringBuilder buf = createPowersOf10(exponent);
-                temp = F.Times(F.ZZ(numberStr, numFormat),
-                    F.Power(F.ZZ(buf.toString(), numFormat), F.CN1));
+                temp = F.QQ(mantissa, powerOf10).normalize();
               } else {
-                StringBuilder buf = createPowersOf10(exponent);
-                temp = F.Times(F.ZZ(numberStr, numFormat), F.ZZ(buf.toString(), numFormat));
+                temp = mantissa.multiply(powerOf10);
               }
 
             } catch (final NumberFormatException e) {

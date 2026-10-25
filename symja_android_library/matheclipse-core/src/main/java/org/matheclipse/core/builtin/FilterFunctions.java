@@ -24,6 +24,7 @@ public class FilterFunctions {
     private static void init() {
       S.GaussianFilter.setEvaluator(new GaussianFilter());
       S.GaussianMatrix.setEvaluator(new GaussianMatrix());
+      S.GeometricMeanFilter.setEvaluator(new GeometricMeanFilter());
       S.LaplacianFilter.setEvaluator(new LaplacianFilter());
       S.MaxFilter.setEvaluator(new MaxFilter());
       S.MeanFilter.setEvaluator(new MeanFilter());
@@ -200,11 +201,64 @@ public class FilterFunctions {
    * standard deviation <code>r/2</code>; <code>GaussianMatrix({r, sigma})</code> states the
    * standard deviation.
    * </p>
+   *
+   * <p>
+   * <code>GaussianMatrix({{r1, r2, ...}})</code> and <code>GaussianMatrix({{r1, r2, ...},
+   * sigma})</code> return the array of the dimensions <code>2*r1+1, 2*r2+1, ...</code> which is
+   * the product of the one dimensional kernels of the radii; <code>GaussianMatrix({{r}})</code> is
+   * the vector of the one dimensional kernel. The standard deviation is a number for all
+   * dimensions, a list of one for each, or <code>ri/2</code> by default.
+   * </p>
    */
   private static class GaussianMatrix extends AbstractEvaluator {
 
+    /**
+     * The kernel array of <code>{{r1, r2, ...}}</code> or <code>{{r1, r2, ...}, sigma}</code>.
+     *
+     * @return {@link F#NIL} if the specification is not valid
+     */
+    private static IExpr productKernel(IExpr spec, EvalEngine engine) {
+      IAST radii = (IAST) spec.first();
+      final int n = radii.argSize();
+      if (n == 0) {
+        return F.NIL;
+      }
+      IExpr sigmas = spec.isList2() ? spec.second() : F.NIL;
+      if (sigmas.isList() && sigmas.argSize() != n) {
+        return F.NIL;
+      }
+      final double[][] kernels = new double[n][];
+      for (int i = 0; i < n; i++) {
+        int radius = radii.get(i + 1).toIntDefault();
+        if (radius < 0) {
+          return F.NIL;
+        }
+        double sigma = sigmas.isNIL() ? radius / 2.0
+            : (sigmas.isList() ? sigmas.getAt(i + 1) : sigmas).evalfNaN();
+        if (Double.isNaN(sigma) || sigma < 0.0) {
+          return F.NIL;
+        }
+        kernels[i] = gaussianKernel(radius, sigma, engine);
+      }
+      return productArray(kernels, 0, 1.0);
+    }
+
+    /** The nested list of the products <code>factor * kernels[d][i_d] * ...</code>. */
+    private static IExpr productArray(double[][] kernels, int dimension, double factor) {
+      final double[] kernel = kernels[dimension];
+      if (dimension == kernels.length - 1) {
+        return F.mapRange(0, kernel.length, i -> F.num(factor * kernel[i]));
+      }
+      return F.mapRange(0, kernel.length,
+          i -> productArray(kernels, dimension + 1, factor * kernel[i]));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList() && (arg1.isList1() || arg1.isList2()) && arg1.first().isList()) {
+        return productKernel(arg1, engine);
+      }
       double[] spec = radiusAndSigma(ast.arg1());
       if (spec == null) {
         return F.NIL;
@@ -418,6 +472,17 @@ public class FilterFunctions {
     @Override
     protected IExpr filterHead() {
       return S.Mean;
+    }
+  }
+
+  /**
+   * <code>GeometricMeanFilter(list, r)</code> - the geometric mean of the elements up to
+   * <code>r</code> places away, of those which are in the list.
+   */
+  private static class GeometricMeanFilter extends MinFilter {
+    @Override
+    protected IExpr filterHead() {
+      return S.GeometricMean;
     }
   }
 

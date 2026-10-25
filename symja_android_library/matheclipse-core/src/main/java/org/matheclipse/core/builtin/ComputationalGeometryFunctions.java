@@ -2995,8 +2995,27 @@ public class ComputationalGeometryFunctions {
      * is what lets {@link org.matheclipse.core.reflection.system.EntityValue} tell an unknown solid
      * from an unknown property.
      */
-    private static final String[] SOLIDS =
-        {"Icosahedron", "Icosidodecahedron", "RhombicTriacontahedron", "TruncatedIcosahedron"};
+    private static final String[] SOLIDS = {"Cube", "Cuboctahedron", "Dodecahedron",
+        "Icosahedron", "Icosidodecahedron", "Octahedron", "RhombicDodecahedron",
+        "RhombicTriacontahedron", "SquarePyramid", "Tetrahedron", "TruncatedIcosahedron"};
+
+    /** The five regular convex solids: <code>PolyhedronData("Platonic")</code>. */
+    private static final String[] PLATONIC =
+        {"Cube", "Dodecahedron", "Icosahedron", "Octahedron", "Tetrahedron"};
+
+    /**
+     * The convex solids of {@link #SOLIDS} whose vertices are known here:
+     * <code>PolyhedronData("Convex")</code>.
+     */
+    private static final String[] CONVEX = {"Cube", "Cuboctahedron", "Dodecahedron",
+        "Icosahedron", "Icosidodecahedron", "Octahedron", "RhombicDodecahedron", "SquarePyramid",
+        "Tetrahedron", "TruncatedIcosahedron"};
+
+    /** The families <code>{"Antiprism", n}</code>, ... of solids with unit edges. */
+    private static final String ANTIPRISM = "Antiprism";
+    private static final String PRISM = "Prism";
+    private static final String PYRAMID = "Pyramid";
+    private static final String DIPYRAMID = "Dipyramid";
 
     /**
      * The properties one solid answers for, in the order <code>PolyhedronData("Properties")</code>
@@ -3008,19 +3027,36 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST0()) {
+      if (ast.isAST0() || (ast.isAST1() && ast.arg1() == S.All)) {
         return names(SOLIDS);
+      }
+      if (ast.arg1().isList2() && ast.arg1().first().isString()
+          && ast.arg1().second().isInteger()) {
+        return family(ast, ast.arg1().first().toString(), ast.arg1().second().toIntDefault(),
+            engine);
       }
       IExpr arg1 = Entities.nameOf(ast.arg1(), POLYHEDRON);
       if (!arg1.isString()) {
         return F.NIL;
       }
       String name = arg1.toString();
-      if (ast.isAST1() && "Properties".equals(name)) {
-        return names(PROPERTIES);
+      if (ast.isAST1()) {
+        switch (name) {
+          case "Properties":
+            return names(PROPERTIES);
+          case "Platonic":
+            return names(PLATONIC);
+          case "Convex":
+            return names(CONVEX);
+          default:
+            break;
+        }
       }
       if (!isKnown(name)) {
         return F.NIL;
+      }
+      if ("SquarePyramid".equals(name)) {
+        return family(ast, PYRAMID, 4, engine);
       }
       if (ast.isAST1()) {
         return graphics(name);
@@ -3051,15 +3087,27 @@ public class ComputationalGeometryFunctions {
       if (faces == null) {
         return F.Missing(S.NotAvailable);
       }
+      return combinatorialProperty(property, exactVertices(name), vertices, faces);
+    }
+
+    /**
+     * A property of a solid which follows from its vertices and its faces.
+     *
+     * @param exact the exact vertex coordinates
+     * @param vertices the same coordinates as machine numbers
+     * @param faces the faces as 0-based vertex index cycles
+     */
+    private static IExpr combinatorialProperty(String property, IExpr exact, double[][] vertices,
+        List<int[]> faces) {
       switch (property) {
         case "VertexCount":
           return F.ZZ(vertices.length);
         case "VertexCoordinates":
-          return exactVertices(name);
+          return exact;
         case "FaceCount":
           return F.ZZ(faces.size());
         case "EdgeCount":
-          return F.ZZ(edges(vertices).size());
+          return F.ZZ(edgeIndices(faces).argSize());
         case "Edges":
           return edgeIndices(faces);
         case "FaceIndices":
@@ -3067,10 +3115,156 @@ public class ComputationalGeometryFunctions {
         case "FaceCountRules":
           return faceCountRules(faces);
         case "Faces":
-          return facesComplex(name, faces);
+          return facesComplex(exact, faces);
         default:
           return F.Missing(S.NotAvailable);
       }
+    }
+
+    /**
+     * <code>PolyhedronData({family, n})</code> and <code>PolyhedronData({family, n}, property)</code>
+     * for the solids with unit edges around a regular <code>n</code>-gon: the
+     * <code>"Prism"</code> and the <code>"Antiprism"</code> with the two <code>n</code>-gons at
+     * <code>z = -h/2</code> and <code>z = h/2</code>, the <code>"Pyramid"</code> with its apex
+     * (vertex 1) above the <code>n</code>-gon in the plane <code>z = 0</code>, and the
+     * <code>"Dipyramid"</code> with the apexes below and above (vertices 1 and 2) the
+     * <code>n</code>-gon in the plane <code>z = 0</code>. Pyramids and dipyramids with unit edges
+     * exist for <code>n = 3, 4, 5</code> only; other families stay unevaluated.
+     */
+    private static IExpr family(final IAST ast, String kind, int n, EvalEngine engine) {
+      boolean cone = PYRAMID.equals(kind) || DIPYRAMID.equals(kind);
+      if (!(ANTIPRISM.equals(kind) || PRISM.equals(kind) || cone) || n < 3 || n > 1000
+          || (cone && n > 5)) {
+        return F.NIL;
+      }
+      String property = null;
+      if (ast.argSize() >= 2) {
+        IExpr propertySpec = Entities.propertyOf(ast.arg2(), POLYHEDRON);
+        if (!propertySpec.isString()) {
+          return F.NIL;
+        }
+        property = propertySpec.toString();
+        if (!isProperty(property)) {
+          // `1` is not a known property or size specification for `2`.
+          return Errors.printMessage(S.PolyhedronData, "notprop",
+              F.List(propertySpec, S.PolyhedronData), engine);
+        }
+      }
+      final IExpr piOverN = F.Divide(S.Pi, F.ZZ(n));
+      // the circumradius of the n-gon with unit sides
+      final IExpr radius = F.Divide(F.C1, F.Times(F.C2, F.Sin(piOverN)));
+      // the area of the n-gon
+      final IExpr area = F.Divide(F.ZZ(n), F.Times(F.C4, F.Tan(piOverN)));
+      IASTAppendable exact = F.ListAlloc();
+      List<int[]> faces = new ArrayList<int[]>();
+      IExpr volume;
+      switch (kind) {
+        case ANTIPRISM: {
+          // a lateral edge from (R, 0, -h/2) to (R Cos(Pi/n), R Sin(Pi/n), h/2) has length 1
+          IExpr height = F.Sqrt(F.Subtract(F.C1,
+              F.Divide(F.C1, F.Times(F.C2, F.Plus(F.C1, F.Cos(piOverN))))));
+          ring(exact, n, radius, 0, F.Times(F.CN1D2, height));
+          ring(exact, n, radius, 1, F.Times(F.C1D2, height));
+          faces.add(reversedRing(0, n));
+          faces.add(ring(n, n));
+          for (int k = 0; k < n; k++) {
+            int next = (k + 1) % n;
+            faces.add(new int[] {k, next, n + k});
+            faces.add(new int[] {n + k, next, n + next});
+          }
+          // the prismatoid formula; the middle section is the regular 2n-gon through the
+          // midpoints of the lateral edges
+          IExpr middle = F.Times(F.ZZ(n), F.Sqr(radius),
+              F.Sqr(F.Cos(F.Divide(S.Pi, F.ZZ(2 * n)))), F.Sin(piOverN));
+          volume = F.Times(F.Divide(height, F.C6),
+              F.Plus(F.Times(F.C2, area), F.Times(F.C4, middle)));
+          break;
+        }
+        case PRISM: {
+          ring(exact, n, radius, 0, F.CN1D2);
+          ring(exact, n, radius, 0, F.C1D2);
+          faces.add(reversedRing(0, n));
+          faces.add(ring(n, n));
+          for (int k = 0; k < n; k++) {
+            int next = (k + 1) % n;
+            faces.add(new int[] {k, next, n + next, n + k});
+          }
+          volume = area;
+          break;
+        }
+        default: {
+          // the lateral edges from the apexes at the height h to the n-gon have length 1
+          IExpr height = F.Sqrt(F.Subtract(F.C1, F.Sqr(radius)));
+          boolean pyramid = PYRAMID.equals(kind);
+          int apexes = pyramid ? 1 : 2;
+          if (!pyramid) {
+            exact.append(F.List(F.C0, F.C0, F.Negate(height)));
+          }
+          exact.append(F.List(F.C0, F.C0, height));
+          ring(exact, n, radius, 1, F.C0);
+          if (pyramid) {
+            faces.add(reversedRing(apexes, n));
+          }
+          int top = apexes - 1;
+          for (int k = 0; k < n; k++) {
+            int next = (k + 1) % n;
+            faces.add(new int[] {apexes + k, apexes + next, top});
+            if (!pyramid) {
+              faces.add(new int[] {apexes + next, apexes + k, 0});
+            }
+          }
+          volume = F.Times(F.ZZ(apexes), F.C1D3, area, height);
+          break;
+        }
+      }
+      IExpr coordinates = engine.evaluate(exact);
+      if (property == null) {
+        return F.Graphics3D(facesComplex(coordinates, faces));
+      }
+      switch (property) {
+        case "Volume":
+          return engine.evaluate(F.FullSimplify(volume));
+        case "Circumradius":
+          return F.Missing(S.NotAvailable);
+        default:
+          break;
+      }
+      double[][] vertices = engine.evalN(coordinates).toDoubleMatrix();
+      if (vertices == null) {
+        return F.NIL;
+      }
+      return combinatorialProperty(property, coordinates, vertices, faces);
+    }
+
+    /**
+     * Append the <code>n</code> vertices of the regular <code>n</code>-gon with circumradius
+     * <code>radius</code> in the plane at the height <code>z</code>, at the angles
+     * <code>(2 k + offset) Pi / n</code>.
+     */
+    private static void ring(IASTAppendable vertices, int n, IExpr radius, int offset, IExpr z) {
+      for (int k = 0; k < n; k++) {
+        IExpr angle = F.Times(F.QQ(2 * k + offset, n), S.Pi);
+        vertices.append(
+            F.List(F.Times(radius, F.Cos(angle)), F.Times(radius, F.Sin(angle)), z));
+      }
+    }
+
+    /** The face <code>first, ..., first + n - 1</code>, counterclockwise seen from above. */
+    private static int[] ring(int first, int n) {
+      int[] face = new int[n];
+      for (int k = 0; k < n; k++) {
+        face[k] = first + k;
+      }
+      return face;
+    }
+
+    /** The face <code>first, ..., first + n - 1</code>, counterclockwise seen from below. */
+    private static int[] reversedRing(int first, int n) {
+      int[] face = new int[n];
+      for (int k = 0; k < n; k++) {
+        face[k] = first + n - 1 - k;
+      }
+      return face;
     }
 
     private static boolean isKnown(String name) {
@@ -3103,8 +3297,8 @@ public class ComputationalGeometryFunctions {
      * The coordinates are the exact ones, so that <code>Normal</code> of this reports a solid in
      * exact coordinates rather than in the machine numbers the combinatorics are derived from.
      */
-    private static IExpr facesComplex(String name, List<int[]> faces) {
-      return F.binaryAST2(S.GraphicsComplex, exactVertices(name),
+    private static IExpr facesComplex(IExpr exactVertices, List<int[]> faces) {
+      return F.binaryAST2(S.GraphicsComplex, exactVertices,
           F.unaryAST1(S.Polygon, faceIndices(faces)));
     }
 
@@ -3115,7 +3309,8 @@ public class ComputationalGeometryFunctions {
     private static IExpr graphics(String name) {
       double[][] vertices = vertices(name);
       List<int[]> faces = vertices == null ? null : faces(name, vertices);
-      return faces == null ? F.Missing(S.NotAvailable) : F.Graphics3D(facesComplex(name, faces));
+      return faces == null ? F.Missing(S.NotAvailable)
+          : F.Graphics3D(facesComplex(exactVertices(name), faces));
     }
 
     private static IExpr volume(String name) {
@@ -3123,6 +3318,23 @@ public class ComputationalGeometryFunctions {
         case "Icosidodecahedron":
           // (45 + 17*Sqrt(5))/6
           return F.Divide(F.Plus(F.ZZ(45), F.Times(F.ZZ(17), F.Sqrt(F.C5))), F.C6);
+        case "Cube":
+          return F.C1;
+        case "Tetrahedron":
+          // Sqrt(2)/12
+          return F.Times(F.QQ(1, 12), F.Sqrt(F.C2));
+        case "Octahedron":
+          // Sqrt(2)/3
+          return F.Times(F.C1D3, F.Sqrt(F.C2));
+        case "Dodecahedron":
+          // (15 + 7*Sqrt(5))/4
+          return F.Divide(F.Plus(F.ZZ(15), F.Times(F.ZZ(7), F.Sqrt(F.C5))), F.C4);
+        case "Cuboctahedron":
+          // 5*Sqrt(2)/3
+          return F.Times(F.QQ(5, 3), F.Sqrt(F.C2));
+        case "RhombicDodecahedron":
+          // 16*Sqrt(3)/9
+          return F.Times(F.QQ(16, 9), F.Sqrt(F.C3));
         default:
           return F.Missing(S.NotAvailable);
       }
@@ -3146,7 +3358,8 @@ public class ComputationalGeometryFunctions {
         case "TruncatedIcosahedron":
           return truncatedIcosahedron();
         default:
-          return null;
+          IExpr exact = exactVertices(name);
+          return exact.isList() ? EvalEngine.get().evalN(exact).toDoubleMatrix() : null;
       }
     }
 
@@ -3228,7 +3441,64 @@ public class ComputationalGeometryFunctions {
         }
         return result;
       }
-      return null;
+      return convexFaces(vertices);
+    }
+
+    /**
+     * The faces of the convex hull of vertices which all are corners of it: the planes through
+     * three vertices with every vertex on the inner side, each with the vertices in it ordered
+     * counterclockwise seen from outside.
+     */
+    private static List<int[]> convexFaces(double[][] vertices) {
+      final int count = vertices.length;
+      double[] centre = new double[3];
+      for (double[] vertex : vertices) {
+        for (int c = 0; c < 3; c++) {
+          centre[c] += vertex[c] / count;
+        }
+      }
+      List<int[]> result = new ArrayList<int[]>();
+      Set<List<Integer>> seen = new HashSet<List<Integer>>();
+      for (int i = 0; i < count; i++) {
+        for (int j = i + 1; j < count; j++) {
+          for (int k = j + 1; k < count; k++) {
+            double[] normal = cross(subtract(vertices[j], vertices[i]),
+                subtract(vertices[k], vertices[i]));
+            double length = Math.sqrt(dotProduct(normal, normal));
+            if (length < TOLERANCE) {
+              continue;
+            }
+            for (int c = 0; c < 3; c++) {
+              normal[c] /= length;
+            }
+            double offset = dotProduct(normal, vertices[i]);
+            if (dotProduct(normal, centre) > offset) {
+              for (int c = 0; c < 3; c++) {
+                normal[c] = -normal[c];
+              }
+              offset = -offset;
+            }
+            List<Integer> face = new ArrayList<Integer>();
+            boolean supporting = true;
+            for (int v = 0; v < count && supporting; v++) {
+              double distance = dotProduct(normal, vertices[v]) - offset;
+              if (distance > TOLERANCE) {
+                supporting = false;
+              } else if (distance > -TOLERANCE) {
+                face.add(Integer.valueOf(v));
+              }
+            }
+            if (supporting && seen.add(face)) {
+              int[] indices = new int[face.size()];
+              for (int v = 0; v < indices.length; v++) {
+                indices[v] = face.get(v).intValue();
+              }
+              result.add(sortAround(vertices, indices, centroid(vertices, indices), normal));
+            }
+          }
+        }
+      }
+      return result;
     }
 
     /** For a deltahedron: every mutually adjacent triple of vertices is a face. */
@@ -3270,7 +3540,15 @@ public class ComputationalGeometryFunctions {
      * rather than an arbitrary set.
      */
     private static int[] sortAroundCentre(double[][] vertices, int[] face, double[] centre) {
-      double[] normal = centre.clone();
+      return sortAround(vertices, face, centre, centre.clone());
+    }
+
+    /**
+     * Order a face's vertices by their angle around <code>centre</code>, counterclockwise seen
+     * from the side <code>normal</code> points to.
+     */
+    private static int[] sortAround(double[][] vertices, int[] face, double[] centre,
+        double[] normal) {
       double[] first = subtract(vertices[face[0]], centre);
       double[] axis2 = cross(normal, first);
       Integer[] boxed = new Integer[face.length];
@@ -3390,9 +3668,90 @@ public class ComputationalGeometryFunctions {
           return F.eval(exactIcosahedron());
         case "TruncatedIcosahedron":
           return F.eval(exactTruncatedIcosahedron());
+        case "Cube": {
+          // {+-1/2, +-1/2, +-1/2}
+          IASTAppendable result = F.ListAlloc(8);
+          signs(result, F.List(F.C1D2, F.C1D2, F.C1D2));
+          return result;
+        }
+        case "Tetrahedron": {
+          // the corners {x, y, z} of the cube {+-1, +-1, +-1} with x y z = 1, scaled by
+          // 1/(2 Sqrt(2))
+          IExpr a = F.eval(F.Divide(F.C1, F.Times(F.C2, F.Sqrt(F.C2))));
+          IExpr b = F.eval(F.Negate(a));
+          return F.List(F.List(a, a, a), F.List(a, b, b), F.List(b, a, b), F.List(b, b, a));
+        }
+        case "Octahedron": {
+          // the cyclic permutations of {+-1/Sqrt(2), 0, 0}
+          IExpr a = F.eval(F.Divide(F.C1, F.Sqrt(F.C2)));
+          IASTAppendable result = F.ListAlloc(6);
+          cyclic(result, F.List(a, F.C0, F.C0));
+          return result;
+        }
+        case "Dodecahedron": {
+          // {+-GoldenRatio/2, +-GoldenRatio/2, +-GoldenRatio/2} and the cyclic permutations of
+          // {0, +-1/2, +-GoldenRatio^2/2}
+          IExpr half = F.eval(F.Times(F.C1D2, S.GoldenRatio));
+          IASTAppendable result = F.ListAlloc(20);
+          signs(result, F.List(half, half, half));
+          cyclic(result,
+              F.List(F.C0, F.C1D2, F.eval(F.Times(F.C1D2, F.Plus(F.C1, S.GoldenRatio)))));
+          return result;
+        }
+        case "Cuboctahedron": {
+          // the cyclic permutations of {+-1/Sqrt(2), +-1/Sqrt(2), 0}
+          IExpr a = F.eval(F.Divide(F.C1, F.Sqrt(F.C2)));
+          IASTAppendable result = F.ListAlloc(12);
+          cyclic(result, F.List(a, a, F.C0));
+          return result;
+        }
+        case "Icosidodecahedron": {
+          // the cyclic permutations of {0, 0, +-GoldenRatio} and of
+          // {+-1/2, +-GoldenRatio/2, +-GoldenRatio^2/2}
+          IASTAppendable result = F.ListAlloc(30);
+          cyclic(result, F.List(F.C0, F.C0, S.GoldenRatio));
+          cyclic(result, F.List(F.C1D2, F.eval(F.Times(F.C1D2, S.GoldenRatio)),
+              F.eval(F.Times(F.C1D2, F.Plus(F.C1, S.GoldenRatio)))));
+          return result;
+        }
+        case "RhombicDodecahedron": {
+          // {+-1, +-1, +-1}/Sqrt(3) and the cyclic permutations of {+-2/Sqrt(3), 0, 0}
+          IExpr a = F.eval(F.Divide(F.C1, F.Sqrt(F.C3)));
+          IASTAppendable result = F.ListAlloc(14);
+          signs(result, F.List(a, a, a));
+          cyclic(result, F.List(F.eval(F.Times(F.C2, a)), F.C0, F.C0));
+          return result;
+        }
         default:
           return F.Missing(S.NotAvailable);
       }
+    }
+
+    /** Append the points <code>point</code> with every sign of the coordinates which aren't 0. */
+    private static void signs(IASTAppendable result, IAST point) {
+      signs(result, point, 1);
+    }
+
+    private static void signs(IASTAppendable result, IAST point, int position) {
+      if (position > 3) {
+        result.append(point);
+        return;
+      }
+      signs(result, point, position + 1);
+      if (!point.get(position).isZero()) {
+        signs(result, point.setAtCopy(position, F.eval(F.Negate(point.get(position)))),
+            position + 1);
+      }
+    }
+
+    /**
+     * Append the points of {@link #signs(IASTAppendable, IAST)} for <code>point</code> and for its
+     * two other cyclic permutations.
+     */
+    private static void cyclic(IASTAppendable result, IAST point) {
+      signs(result, point);
+      signs(result, F.List(point.arg3(), point.arg1(), point.arg2()));
+      signs(result, F.List(point.arg2(), point.arg3(), point.arg1()));
     }
 
     /** The cyclic permutations of {@code (0, +-1, +-GoldenRatio)}, as {@link #icosahedron()}. */

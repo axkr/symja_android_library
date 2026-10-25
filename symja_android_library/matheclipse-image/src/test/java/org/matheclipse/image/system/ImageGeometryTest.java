@@ -173,4 +173,12 @@ public class ImageGeometryTest extends AbstractTestCase {
         + "{{1,0,0},{0,1,0},{0,0,1}}))", //
         "{4,4}");
   }
+
+  @Test
+  public void imageComposeRasterizesGraphics() {
+    check("Head(ImageCompose(Graphics(Rectangle()), {Graphics(Disk()), 0.25}))", //
+        "Image");
+    check("Head(ImageCompose(Image(ConstantArray(0.5, {20, 20})), Graphics(Circle())))", //
+        "Image");
+  }
 }

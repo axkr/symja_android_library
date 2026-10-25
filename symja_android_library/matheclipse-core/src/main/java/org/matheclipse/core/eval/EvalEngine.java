@@ -5979,9 +5979,11 @@ public class EvalEngine implements Serializable {
     fOptionsStack.pop();
   }
 
-  private IExpr preevalForwardBackward(final IAST arg1) {
-    VariablesSet variablesSet = new VariablesSet(0, arg1);
-    IAST moduleVariablesList = variablesSet.getVarList();
+  private IExpr preevalForwardBackward(final IAST arg1, final IAST iteratorVariables) {
+    // only the iterator variables are local, if they are given; all other symbols keep their
+    // values, so that in Sum((g /. x -> k/n), {k, 0, n}) the value of g is substituted
+    IAST moduleVariablesList =
+        iteratorVariables != null ? iteratorVariables : new VariablesSet(0, arg1).getVarList();
 
     java.util.List<IExpr> reapList = getReapList();
     boolean quietMode = isQuietMode();
@@ -6022,11 +6024,42 @@ public class EvalEngine implements Serializable {
    * @param offset number of the argument, there the pre-evaluation should start
    */
   public IAST preevalForwardBackwardAST(final IAST ast, int offset) {
+    return preevalForwardBackwardAST(ast, offset, false);
+  }
+
+  /**
+   * Pre-evaluate each argument of the <code>ast</code>, see
+   * {@link #preevalForwardBackwardAST(IAST, int)}.
+   *
+   * @param ast the abstract syntax tree (AST) for which the pre-evaluation should be done
+   * @param offset number of the argument, there the pre-evaluation should start
+   * @param iteratorVariablesOnly if <code>true</code> only the variables of the iterators
+   *        <code>ast.get(2), ast.get(3),...</code> are substituted with dummy variables, and the
+   *        arguments are evaluated completely - the summand of a symbolic sum is evaluated with the
+   *        values of the other symbols
+   */
+  public IAST preevalForwardBackwardAST(final IAST ast, int offset,
+      boolean iteratorVariablesOnly) {
     IASTMutable preevaled = F.NIL;
+    IASTAppendable iteratorVariables = null;
+    if (iteratorVariablesOnly) {
+      iteratorVariables = org.matheclipse.core.eval.util.Iterator
+          .iteratorVariables(ast, ast.size()).copyAppendable();
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr spec = ast.get(i);
+        if (spec.isList() && spec.argSize() >= 1) {
+          spec = spec.first();
+        }
+        if (spec.isVariable() && !iteratorVariables.contains(spec)) {
+          // the indefinite form Sum(f, k), or a list iterator {k, {k1, k2, ...}}
+          iteratorVariables.append(spec);
+        }
+      }
+    }
     for (int i = offset; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
       if (arg.isAST()) {
-        arg = preevalForwardBackward((IAST) arg);
+        arg = preevalForwardBackward((IAST) arg, iteratorVariables);
         if (arg.isPresent() && i > 2 && arg.isList()
             && org.matheclipse.core.eval.util.Iterator.losesVariable(ast.get(i), arg,
                 org.matheclipse.core.eval.util.Iterator.iteratorVariables(ast, i))) {

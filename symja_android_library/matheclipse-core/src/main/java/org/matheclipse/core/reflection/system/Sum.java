@@ -311,17 +311,22 @@ public class Sum extends ListFunctions.Table implements SumRules {
         return enumerated;
       }
     }
+    // the summand of a sum with numeric bounds is evaluated term by term - a Throw or Sow in it
+    // happens for each term - a symbolic sum evaluates it once with symbolic iterator variables
+    IAST preevaledSum =
+        engine.preevalForwardBackwardAST(ast, 1, !hasNumericIterators(ast));
+    if (forcedMethod == null && preevaledSum != ast && !preevaledSum.equals(ast)) {
+      // continue with the evaluated arguments, so that a sum which can't be computed is returned
+      // with them: Sum(1/(i+1),{i,1,Infinity}) gives Sum(1/(1+i),{i,1,Infinity}); the summand is
+      // split into its terms only after it is evaluated, Sum(a(k)+a(k),{k,1,n}) is
+      // Sum(2*a(k),{k,1,n})
+      return preevaledSum;
+    }
     if (arg1.isAST()) {
       arg1 = F.expand(arg1, false, false, false);
     }
     if (arg1.isPlus()) {
       return arg1.mapThread(ast, 1);
-    }
-    IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
-    if (forcedMethod == null && preevaledSum != ast && !preevaledSum.equals(ast)) {
-      // continue with the evaluated arguments, so that a sum which can't be computed is returned
-      // with them: Sum(1/(i+1),{i,1,Infinity}) gives Sum(1/(1+i),{i,1,Infinity})
-      return preevaledSum;
     }
     if (forcedMethod == null && preevaledSum.isAST2()) {
       IExpr byFactorial = sumGammaAsFactorial(preevaledSum, engine);
@@ -330,6 +335,43 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
     }
     return evaluateSum(preevaledSum, forcedMethod, engine);
+  }
+
+  /**
+   * Test if all iterators of <code>Sum(f, iter1, iter2, ...)</code> run over a finite list of
+   * numbers: <code>{i, imax}</code>, <code>{i, imin, imax}</code>, <code>{i, imin, imax, di}</code>
+   * with real bounds, or <code>{i, {i1, i2, ...}}</code>. The bounds of an inner iterator may
+   * depend on the variables of the outer iterators: <code>Sum(f(i,j), {i,1,3}, {j,1,i})</code>.
+   */
+  private static boolean hasNumericIterators(IAST ast) {
+    final IASTAppendable outerVariables = F.ListAlloc(ast.argSize());
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr iterator = ast.get(i);
+      if (!iterator.isList() || iterator.argSize() < 2 || iterator.argSize() > 4) {
+        return false;
+      }
+      IAST list = (IAST) iterator;
+      if (list.isAST2() && list.arg2().isList()) {
+        outerVariables.append(list.arg1());
+        continue;
+      }
+      for (int j = 2; j < list.size(); j++) {
+        // the bound is not evaluated here - it is evaluated once by the summation itself: it is
+        // numeric if it has no symbol without a value other than the outer iterator variables
+        IExpr bound = list.get(j);
+        if (bound.isReal()) {
+          continue;
+        }
+        if (!bound.isFree(x -> x == S.Infinity || x == S.ComplexInfinity
+            || x.isAST(S.DirectedInfinity) || (x.isSymbol() && x.isVariable() && !outerVariables.contains(x)
+                && !((ISymbol) x).hasAssignedSymbolValue()),
+            true)) {
+          return false;
+        }
+      }
+      outerVariables.append(list.arg1());
+    }
+    return true;
   }
 
   /**
@@ -521,7 +563,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         IExpr arg1 = preevaledSum.arg1();
         if (arg1.isTimes()) {
           if (variablesSet.size() > 0) {
-            temp = collectConstantFactors(preevaledSum, (IAST) arg1, variablesSet);
+            temp = collectConstantFactors(preevaledSum, (IAST) arg1, variablesSet, engine);
             if (temp.isPresent()) {
               return temp;
             }
@@ -657,14 +699,25 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
+  /**
+   * Pull the factors which are free of the iterator variables out of the sum, if the remaining sum
+   * can be evaluated. A sum which stays unevaluated keeps its factors:
+   * <code>Sum(2*a(k), {k,1,n})</code> is returned as it is.
+   *
+   * @return {@link F#NIL} if there is no constant factor or the reduced sum doesn't evaluate
+   */
   private static IExpr collectConstantFactors(final IAST ast, IAST prod,
-      VariablesSet variablesSet) {
+      VariablesSet variablesSet, EvalEngine engine) {
     IASTAppendable filterAST = F.TimesAlloc(16);
     IASTAppendable restAST = F.TimesAlloc(16);
     prod.filter(filterAST, restAST, VariablesSet.isFree(variablesSet));
     if (filterAST.size() > 1) {
       IASTMutable reducedSum = ast.setAtCopy(1, restAST.oneIdentity1());
-      return F.Times(filterAST.oneIdentity0(), reducedSum);
+      IExpr reducedResult = engine.evalQuiet(reducedSum);
+      if (reducedResult.equals(reducedSum)) {
+        return F.NIL;
+      }
+      return F.Times(filterAST.oneIdentity0(), reducedResult);
     }
     return F.NIL;
   }

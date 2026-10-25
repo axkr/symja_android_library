@@ -175,6 +175,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     private boolean preferLastVariables = true;
 
     /**
+     * Whether the last result of {@link #of(IAST, boolean, boolean, EvalEngine)} has all the
+     * solutions of a system with finitely many solutions, so that they need not be completed.
+     */
+    private boolean completeSolutions = false;
+
+    /**
      * An internal solving step which doesn't come from a user written option, for example a step of
      * {@link S#Eliminate}.
      */
@@ -190,6 +196,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       this.options = options;
       this.intervalDataMap = new HashMap<IExpr, IAST>();
       this.intervalInequations = F.ListAlloc();
+    }
+
+    /**
+     * Whether the last result of {@link #of(IAST, boolean, boolean, EvalEngine)} has all the
+     * solutions of a system with finitely many solutions.
+     */
+    public boolean isCompleteSolutions() {
+      return completeSolutions;
     }
 
     /** Get the value for the option {@link S#GenerateConditions}. */
@@ -2263,6 +2277,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         EvalEngine engine) {
       ast = withDomainOnly(ast);
       preferLastVariables = !numeric;
+      completeSolutions = false;
       if (!bareExpressionsAreEquations && !isQuantifiedSystem(ast.arg1())) {
         // `1` is not a quantified system of equations and inequalities.
         return Errors.printMessage(ast.topHead(), "naqs", F.List(ast.arg1()), engine);
@@ -2429,6 +2444,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 solveNumericPolynomial(termsEqualZeroList, variables, domain, maxRoots, engine);
             if (numericResult.isPresent()) {
               return numericResult;
+            }
+            if (numeric) {
+              numericResult = solveNumericPolynomialSystem(termsEqualZeroList, variables, domain,
+                  maxRoots, engine);
+              if (numericResult.isPresent()) {
+                completeSolutions = true;
+                return numericResult;
+              }
             }
           }
 
@@ -3383,6 +3406,335 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
     }
     return result;
+  }
+
+  /** The most variables of a system which {@link #solveNumericPolynomialSystem} solves. */
+  private static final int MAX_POLYNOMIAL_SYSTEM_VARIABLES = 6;
+
+  /** The highest degree of a univariate polynomial in {@link #solveNumericPolynomialSystem}. */
+  private static final int MAX_POLYNOMIAL_SYSTEM_DEGREE = 64;
+
+  /** The time the lexicographic Groebner basis of {@link #solveNumericPolynomialSystem} may take. */
+  private static final long POLYNOMIAL_SYSTEM_GROEBNER_MILLIS = 2000L;
+
+  /**
+   * The relative size below which a coefficient or the value of a polynomial is rounding noise in
+   * {@link #solveNumericPolynomialSystem}.
+   */
+  private static final double POLYNOMIAL_SYSTEM_NOISE = 1.0e-7;
+
+  /**
+   * The relative value of a polynomial at a numerical root of another one below which the root is
+   * one of both in {@link #solveNumericPolynomialSystem}.
+   */
+  private static final double POLYNOMIAL_SYSTEM_RESIDUAL = 1.0e-6;
+
+  /**
+   * Solve a system of polynomial equations with rational coefficients numerically, which has
+   * finitely many solutions.
+   *
+   * <p>
+   * The lexicographic Groebner basis, with the first variable smallest, is triangular: its
+   * polynomials in the first <code>k</code> variables only generate all polynomials of the
+   * equations in these variables. The roots of the polynomials in the first variable are
+   * determined numerically, and every partial solution is extended by the roots of the polynomials
+   * of the next variable, once the values found so far are put in. Of these polynomials the one of
+   * the lowest degree is solved, whose leading coefficient doesn't vanish at the partial solution,
+   * and the other ones decide which of its roots extend it. Each solution of the system is found
+   * this way, also the complex ones, which the elimination of a variable by an inverse function
+   * doesn't give: <code>x^3-y == 1/5</code> has three values of <code>x</code> for each value of
+   * <code>y</code>.
+   *
+   * <p>
+   * A term with machine number coefficients is taken if they rationalize to small fractions.
+   *
+   * @param termsEqualZeroList the equations, as expressions which have to become <code>0</code>
+   * @param variables the variables to solve for
+   * @param domain {@link S#Complexes} or {@link S#Reals}
+   * @param maxRoots the maximum number of solutions to return
+   * @param engine the evaluation engine
+   * @return the list of solution lists or {@link F#NIL} if this isn't a system of polynomial
+   *         equations with rational coefficients and finitely many solutions
+   */
+  private static IExpr solveNumericPolynomialSystem(IAST termsEqualZeroList, IAST variables,
+      ISymbol domain, int maxRoots, EvalEngine engine) {
+    final int n = variables.argSize();
+    if (n < 2 || n > MAX_POLYNOMIAL_SYSTEM_VARIABLES || termsEqualZeroList.argSize() < n
+        || !variables.forAll(x -> x.isSymbol())) {
+      return F.NIL;
+    }
+    if ((domain != S.Complexes && domain != S.Reals) || engine.isArbitraryMode()) {
+      return F.NIL;
+    }
+    IASTAppendable numerators = F.ListAlloc(termsEqualZeroList.argSize());
+    IASTAppendable denominators = F.ListAlloc();
+    for (IExpr term : termsEqualZeroList) {
+      if (term.has(x -> x.isInexactNumber(), false)) {
+        term = engine.evalQuiet(F.Rationalize(term));
+        if (term.has(x -> x.isInexactNumber(), false)) {
+          return F.NIL;
+        }
+      }
+      IExpr together = S.Together.of(engine, term);
+      IExpr numerator = S.Numerator.of(engine, together);
+      if (!isRationalPolynomial(numerator, variables)) {
+        return F.NIL;
+      }
+      if (!numerator.isZero()) {
+        numerators.append(numerator);
+      }
+      IExpr denominator = S.Denominator.of(engine, together);
+      if (!isRationalPolynomial(denominator, variables)) {
+        return F.NIL;
+      }
+      if (!denominator.isFree(x -> variables.contains(x), true)) {
+        denominators.append(denominator);
+      }
+    }
+    if (numerators.argSize() < n) {
+      return F.NIL;
+    }
+    // lexicographic with the first variable smallest: its polynomials come first
+    final IAST order = F.mapRange(1, n + 1, i -> variables.get(n + 1 - i));
+    IExpr basis = TimeLimits.call(engine,
+        () -> engine.evalQuiet(F.GroebnerBasis(numerators, order)),
+        MachineProfile.millis(POLYNOMIAL_SYSTEM_GROEBNER_MILLIS), () -> F.NIL);
+    if (!basis.isList()) {
+      return F.NIL;
+    }
+    IAST groebnerBasis = (IAST) basis;
+    if (groebnerBasis.exists(p -> p.isNumber() && !p.isZero())) {
+      // the equations contradict each other
+      return F.CEmptyList;
+    }
+    // the coefficient lists of the polynomials of the basis in the last of the variables they
+    // contain, by that variable
+    java.util.List<java.util.List<IAST>> levels = new ArrayList<>(n);
+    for (int k = 0; k < n; k++) {
+      levels.add(new ArrayList<>());
+    }
+    for (IExpr p : groebnerBasis) {
+      if (!isRationalPolynomial(p, variables)) {
+        return F.NIL;
+      }
+      int level = -1;
+      for (int k = n; k >= 1; k--) {
+        if (!p.isFree(variables.get(k))) {
+          level = k - 1;
+          break;
+        }
+      }
+      if (level >= 0) {
+        IExpr coefficientList = engine.evaluate(F.CoefficientList(p, variables.get(level + 1)));
+        if (!coefficientList.isList()) {
+          return F.NIL;
+        }
+        levels.get(level).add(((IAST) coefficientList).map(c -> F.evalExpandAll(c)));
+      }
+    }
+    for (java.util.List<IAST> level : levels) {
+      if (level.isEmpty()) {
+        // a variable is free: the solutions aren't finitely many
+        return F.NIL;
+      }
+    }
+    java.util.List<IASTAppendable> partials = new ArrayList<>();
+    partials.add(F.ListAlloc(n));
+    for (int k = 1; k <= n; k++) {
+      final ISymbol variable = (ISymbol) variables.get(k);
+      java.util.List<IASTAppendable> extended = new ArrayList<>();
+      for (IASTAppendable partial : partials) {
+        java.util.List<org.hipparchus.complex.Complex[]> univariates = new ArrayList<>();
+        for (IAST coefficientList : levels.get(k - 1)) {
+          org.hipparchus.complex.Complex[] coefficients =
+              numericCoefficients(coefficientList, partial, engine);
+          if (coefficients == null) {
+            return F.NIL;
+          }
+          if (coefficients.length > 0) {
+            univariates.add(coefficients);
+          }
+        }
+        if (univariates.isEmpty()) {
+          // every polynomial vanishes: the variable is free at this partial solution
+          return F.NIL;
+        }
+        org.hipparchus.complex.Complex[] lowest = null;
+        for (org.hipparchus.complex.Complex[] coefficients : univariates) {
+          if (lowest == null || coefficients.length < lowest.length) {
+            lowest = coefficients;
+          }
+        }
+        if (lowest.length == 1) {
+          // a nonzero constant: the partial solution doesn't extend
+          continue;
+        }
+        if (lowest.length - 1 > MAX_POLYNOMIAL_SYSTEM_DEGREE) {
+          return F.NIL;
+        }
+        IASTAppendable polynomial = F.PlusAlloc(lowest.length);
+        for (int i = 0; i < lowest.length; i++) {
+          IExpr c = lowest[i].getImaginary() == 0.0 ? F.num(lowest[i].getReal())
+              : F.complexNum(lowest[i]);
+          polynomial.append(F.Times(c, F.Power(variable, F.ZZ(i))));
+        }
+        IAST roots = RootsFunctions.allNumericRoots(polynomial, variable, engine);
+        if (roots.isNIL()) {
+          return F.NIL;
+        }
+        for (IExpr root : roots) {
+          if (!root.isNumber()) {
+            return F.NIL;
+          }
+          org.hipparchus.complex.Complex z = complexValue((INumber) root);
+          boolean isExtension = true;
+          for (org.hipparchus.complex.Complex[] coefficients : univariates) {
+            if (coefficients != lowest && !isNumericRoot(coefficients, z)) {
+              isExtension = false;
+              break;
+            }
+          }
+          if (isExtension) {
+            IASTAppendable next = partial.copyAppendable();
+            next.append(F.Rule(variable, root));
+            extended.add(next);
+          }
+        }
+      }
+      partials = extended;
+      if (partials.isEmpty()) {
+        // a consistent system has a complex solution: the numbers were not accurate enough
+        return F.NIL;
+      }
+    }
+    IASTAppendable result = F.ListAlloc(partials.size());
+    for (IASTAppendable solution : partials) {
+      boolean pole = false;
+      for (IExpr denominator : denominators) {
+        if (isPole(denominator, solution, engine)) {
+          pole = true;
+          break;
+        }
+      }
+      if (pole) {
+        continue;
+      }
+      IAST cleaned = NSolve.withoutImaginaryNoise(solution);
+      if (domain == S.Reals && cleaned.exists(rule -> !rule.second().isReal())) {
+        continue;
+      }
+      result.append(cleaned);
+      if (result.argSize() >= maxRoots) {
+        break;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Whether <code>expr</code> is a polynomial in <code>variables</code> with rational coefficients.
+   */
+  private static boolean isRationalPolynomial(IExpr expr, IAST variables) {
+    if (!expr.isPolynomial(variables)) {
+      return false;
+    }
+    // no irrational constant like Sqrt(2), Pi or I and no other symbol
+    return expr.isFree(x -> {
+      if (x.isNumber()) {
+        return !x.isRational();
+      }
+      if (x.isPower()) {
+        return !x.exponent().isInteger();
+      }
+      return x.isAtom() && !variables.contains(x);
+    }, false);
+  }
+
+  /**
+   * The machine number coefficients of a polynomial in one variable, once the values of the
+   * <code>partial</code> solution are put into its <code>coefficientList</code>. A coefficient is
+   * <code>0</code> if its value is only the rounding noise of the sizes of its terms; the leading
+   * ones of these are left out.
+   *
+   * @param coefficientList the expanded coefficients in the earlier variables
+   * @param partial the rules of the values of the earlier variables
+   * @return <code>null</code> if a coefficient has no numeric value, and an empty array if every
+   *         coefficient is <code>0</code>
+   */
+  private static org.hipparchus.complex.Complex[] numericCoefficients(IAST coefficientList,
+      IAST partial, EvalEngine engine) {
+    org.hipparchus.complex.Complex[] coefficients =
+        new org.hipparchus.complex.Complex[coefficientList.argSize()];
+    int length = 0;
+    for (int i = 0; i < coefficients.length; i++) {
+      IExpr coefficient = coefficientList.get(i + 1);
+      IAST terms = coefficient.isPlus() ? (IAST) coefficient : F.list(coefficient);
+      org.hipparchus.complex.Complex value = org.hipparchus.complex.Complex.ZERO;
+      double scale = 0.0;
+      for (int j = 1; j < terms.size(); j++) {
+        IExpr term = terms.get(j);
+        IExpr number = engine.evalN(partial.argSize() == 0 ? term : F.subst(term, partial));
+        if (!number.isNumber()) {
+          return null;
+        }
+        org.hipparchus.complex.Complex z = complexValue((INumber) number);
+        value = value.add(z);
+        scale += z.norm();
+      }
+      if (value.norm() <= POLYNOMIAL_SYSTEM_NOISE * scale) {
+        value = org.hipparchus.complex.Complex.ZERO;
+      } else {
+        length = i + 1;
+      }
+      coefficients[i] = value;
+    }
+    return java.util.Arrays.copyOf(coefficients, length);
+  }
+
+  /**
+   * Whether the <code>denominator</code> vanishes at the <code>solution</code>, up to the rounding
+   * noise of the sizes of its terms: a small denominator of small coefficients is no pole.
+   */
+  private static boolean isPole(IExpr denominator, IAST solution, EvalEngine engine) {
+    IExpr expanded = engine.evaluate(F.Expand(denominator));
+    IAST terms = expanded.isPlus() ? (IAST) expanded : F.list(expanded);
+    org.hipparchus.complex.Complex value = org.hipparchus.complex.Complex.ZERO;
+    double scale = 0.0;
+    for (int j = 1; j < terms.size(); j++) {
+      IExpr number = engine.evalN(F.subst(terms.get(j), solution));
+      if (!number.isNumber()) {
+        return true;
+      }
+      org.hipparchus.complex.Complex z = complexValue((INumber) number);
+      value = value.add(z);
+      scale += z.norm();
+    }
+    return value.norm() <= POLYNOMIAL_SYSTEM_NOISE * scale;
+  }
+
+  /** The value of a number as a complex machine number. */
+  private static org.hipparchus.complex.Complex complexValue(INumber number) {
+    return new org.hipparchus.complex.Complex(number.reDoubleValue(), number.imDoubleValue());
+  }
+
+  /**
+   * Whether <code>z</code> is a root of the polynomial with the <code>coefficients</code>, up to
+   * the rounding noise of the sizes of its terms.
+   */
+  private static boolean isNumericRoot(org.hipparchus.complex.Complex[] coefficients,
+      org.hipparchus.complex.Complex z) {
+    org.hipparchus.complex.Complex value = org.hipparchus.complex.Complex.ZERO;
+    double scale = 0.0;
+    double power = 1.0;
+    double absZ = z.norm();
+    for (int i = coefficients.length - 1; i >= 0; i--) {
+      value = value.multiply(z).add(coefficients[i]);
+    }
+    for (int i = 0; i < coefficients.length; i++) {
+      scale += coefficients[i].norm() * power;
+      power *= absZ;
+    }
+    return value.norm() <= POLYNOMIAL_SYSTEM_RESIDUAL * scale;
   }
 
   /**

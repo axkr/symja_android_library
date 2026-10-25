@@ -234,7 +234,10 @@ public class ImageAdjustFunctions {
    * <p>
    * <code>ImageAdjust(image, {c, b})</code> and <code>ImageAdjust(image, {c, b, g})</code> apply
    * contrast <code>c</code>, brightness <code>b</code> and gamma <code>g</code> instead, as
-   * <code>x -&gt; ((x - 1/2) 10^c + 1/2 + b)^(1/g)</code>.
+   * <code>x -&gt; ((x - 1/2) 10^c + 1/2 + b)^(1/g)</code>. A third argument
+   * <code>{imin, imax}</code> first rescales the samples from that range to <code>0 ... 1</code>,
+   * and a fourth <code>{omin, omax}</code> rescales the adjusted samples from <code>0 ... 1</code>
+   * to that range.
    */
   private static class ImageAdjust extends AbstractEvaluator {
 
@@ -280,21 +283,56 @@ public class ImageAdjustFunctions {
           || gamma == 0.0) {
         return F.NIL;
       }
+      double[] inputRange = {0.0, 1.0};
+      double[] outputRange = {0.0, 1.0};
+      if (ast.argSize() >= 3 && !range(ast.arg3(), inputRange)) {
+        return F.NIL;
+      }
+      if (ast.argSize() >= 4 && !range(ast.arg4(), outputRange)) {
+        return F.NIL;
+      }
+      if (inputRange[1] == inputRange[0]) {
+        return F.NIL;
+      }
       final double slope = Math.pow(10.0, contrast);
       final double offset = brightness;
       final double exponent = 1.0 / gamma;
+      final double inputMin = inputRange[0];
+      final double inputWidth = inputRange[1] - inputRange[0];
+      final double outputMin = outputRange[0];
+      final double outputWidth = outputRange[1] - outputRange[0];
       return imageOf(raster.mapColor(value -> {
-        double adjusted = (value - 0.5) * slope + 0.5 + offset;
+        double scaled = (value - inputMin) / inputWidth;
+        double adjusted = (scaled - 0.5) * slope + 0.5 + offset;
         if (adjusted < 0.0) {
           adjusted = 0.0;
         }
-        return Math.pow(adjusted, exponent);
+        return outputMin + outputWidth * Math.pow(adjusted, exponent);
       }), image);
+    }
+
+    /**
+     * Reads <code>{min, max}</code> into <code>range</code>.
+     *
+     * @return <code>false</code> if <code>spec</code> is no pair of real numbers
+     */
+    private static boolean range(IExpr spec, double[] range) {
+      if (!spec.isList2()) {
+        return false;
+      }
+      double min = spec.first().evalfNaN();
+      double max = spec.second().evalfNaN();
+      if (Double.isNaN(min) || Double.isNaN(max)) {
+        return false;
+      }
+      range[0] = min;
+      range[1] = max;
+      return true;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_4;
     }
 
     @Override

@@ -17,9 +17,14 @@ import org.hipparchus.ode.events.FilterType;
 import org.hipparchus.ode.events.ODEEventDetector;
 import org.hipparchus.ode.events.ODEEventHandler;
 import org.hipparchus.ode.nonstiff.AdamsMoultonIntegrator;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.nonstiff.EulerIntegrator;
 import org.hipparchus.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.hipparchus.ode.nonstiff.LutherIntegrator;
+import org.hipparchus.ode.nonstiff.MidpointIntegrator;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.matheclipse.core.basic.Config;
@@ -85,6 +90,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   /** The accuracy an event time is located to, once its step has been bracketed. */
   private static final double EVENT_THRESHOLD = 1.0e-14;
 
+  /**
+   * An <code>"Event"</code> function this close to zero where the integration starts, relative to
+   * the size of the initial state, starts at zero: it has to move away from it before reaching
+   * zero is an event.
+   */
+  private static final double START_ZERO_TOLERANCE = 1.0e-8;
+
   /** The <code>Throw</code> tag which stops the integration at an event. */
   private static final String STOP_INTEGRATION = "StopIntegration";
 
@@ -139,6 +151,38 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       this.derivatives = derivatives;
       this.t0 = t0;
       this.initialState = initialState;
+    }
+
+    /**
+     * The factored constant matrix <code>M</code> of equations <code>M.h == f</code> which are
+     * linear in the highest derivatives <code>h</code>, or <code>null</code> if the highest
+     * derivatives are given explicitly. Row <code>j</code> belongs to equation <code>j</code>,
+     * column <code>k</code> to function <code>k</code>. When it is set, the right hand side at the
+     * highest derivative of function <code>j</code> holds <code>f</code> of equation
+     * <code>j</code>, and the derivatives are found by solving with the matrix.
+     */
+    org.hipparchus.linear.DecompositionSolver massMatrix = null;
+
+    /** The state component of the highest derivative of every function. */
+    int[] highestComponents = null;
+
+    /**
+     * The curve which algebraic equations leave, when the derivatives follow its tangent rather
+     * than the right hand sides, or <code>null</code>.
+     */
+    ImplicitCurve curve = null;
+
+    /**
+     * This system started at <code>start</code> from <code>state</code>, with the right hand
+     * sides <code>derivatives</code>.
+     */
+    FirstOrderSystem restart(IExpr[] derivatives, double start, double[] state) {
+      FirstOrderSystem system = new FirstOrderSystem(timeVar, functions, appliedForm, offset,
+          stateExpressions, derivatives, start, state);
+      system.massMatrix = massMatrix;
+      system.highestComponents = highestComponents;
+      system.curve = curve;
+      return system;
     }
 
     int dimension() {
@@ -201,9 +245,16 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     private final EvalEngine fEngine;
     private final FirstOrderSystem fSystem;
 
+    /**
+     * The speed along the tangent of {@link FirstOrderSystem#curve} at the last evaluation, where
+     * the search for the next one starts.
+     */
+    private double fSpeed;
+
     public FirstODE(EvalEngine engine, FirstOrderSystem system) {
       this.fEngine = engine;
       this.fSystem = system;
+      this.fSpeed = system.curve != null ? system.curve.initialSpeed : 0.0;
     }
 
     @Override
@@ -213,11 +264,29 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
 
     @Override
     public double[] computeDerivatives(double t, double[] state) {
+      if (fSystem.curve != null) {
+        double[] speed = {fSpeed};
+        double[] stateDot = fSystem.curve.derivatives(t, state, speed, fEngine);
+        fSpeed = speed[0];
+        return stateDot;
+      }
       final int dimension = fSystem.dimension();
       IAST rules = fSystem.substitutions(t, state);
       double[] stateDot = new double[dimension];
       for (int i = 0; i < dimension; i++) {
         stateDot[i] = fEngine.evalN(F.subst(fSystem.derivatives[i], rules)).evalfNaN();
+      }
+      if (fSystem.massMatrix != null) {
+        final int[] highest = fSystem.highestComponents;
+        double[] force = new double[highest.length];
+        for (int j = 0; j < highest.length; j++) {
+          force[j] = stateDot[highest[j]];
+        }
+        double[] solved = fSystem.massMatrix
+            .solve(new org.hipparchus.linear.ArrayRealVector(force, false)).toArray();
+        for (int j = 0; j < highest.length; j++) {
+          stateDot[highest[j]] = solved[j];
+        }
       }
       return stateDot;
     }
@@ -347,6 +416,20 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     if (!ast.arg3().isList()) {
       return F.NIL;
     }
+    IAST indexed = indexedFunctions(ast);
+    if (indexed.argSize() > 0) {
+      // functions written a(1), u(i): solved for symbols in their place
+      IASTAppendable toSymbols = F.ListAlloc(indexed.argSize());
+      IASTAppendable fromSymbols = F.ListAlloc(indexed.argSize());
+      for (int i = 1; i < indexed.size(); i++) {
+        // distinct names, which the solver tells the unknowns apart by
+        ISymbol dummy = F.Dummy("NDSolve$f" + i);
+        toSymbols.append(F.Rule(indexed.get(i), dummy));
+        fromSymbols.append(F.Rule(dummy, indexed.get(i)));
+      }
+      IExpr solution = solve((IAST) F.subst(ast, toSymbols), options, engine, ruleForm);
+      return solution.isPresent() ? F.subst(solution, fromSymbols) : F.NIL;
+    }
     if (ast.arg2().makeList().exists(NDSolve::isDerivativeCall)) {
       // solved for the functions, whose derivatives are asked for; not tried a second time
       return solveForDerivatives(ast, options, engine, ruleForm);
@@ -458,6 +541,39 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     return values.argSize() == 1 ? values.arg1() : values;
   }
 
+  /**
+   * The functions to solve for which are not symbols but indexed, like <code>a(1)</code> given as
+   * <code>a(1)</code>, <code>a(1)(t)</code> or <code>a(1)'(t)</code>.
+   *
+   * @return the distinct indexed functions, possibly none
+   */
+  private static IAST indexedFunctions(IAST ast) {
+    IAST range = (IAST) ast.arg3();
+    if (range.argSize() < 1) {
+      return F.CEmptyList;
+    }
+    IExpr timeVar = range.arg1();
+    IASTAppendable result = F.ListAlloc();
+    for (IExpr variable : ast.arg2().makeList()) {
+      IExpr function = variable;
+      if (variable.isAST1() && variable.head().isAST1()
+          && variable.head().head().isAST(S.Derivative, 2)) {
+        // a(1)'(t)
+        function = variable.head().first();
+      } else if (variable.isAST1() && variable.head().isAST()
+          && variable.first().equals(timeVar)) {
+        // a(1)(t)
+        function = variable.head();
+      }
+      if (function.isAST() && !function.isList() && function.head().isSymbol()
+          && !function.isAST(S.Derivative) && function.isFree(timeVar)
+          && !function.isNumericFunction(true) && !result.contains(function)) {
+        result.append(function);
+      }
+    }
+    return result;
+  }
+
   /** <code>Derivative(k)[y][t]</code> */
   private static boolean isDerivativeCall(IExpr variable) {
     return variable.isAST1() && variable.head().isAST1()
@@ -561,39 +677,99 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       highest[j] = F.Dummy("NDSolve$" + functions[j].getSymbolName() + "$" + order[j]);
       highestRules.append(F.Rule(ODEUtils.derivative(functions[j], order[j], timeVar), highest[j]));
     }
-    IASTAppendable solveEquations = F.ListAlloc(numberOfFunctions);
-    for (int j = 1; j < equations.size(); j++) {
-      solveEquations.append(F.Equal(F.subst(equations.get(j), highestRules), F.C0));
-    }
-    IExpr solution = engine.evaluate(F.Solve(solveEquations, F.List(highest)));
-    IAST solutionRules = SolveUtils.firstSolutionRules(solution);
-    if (solutionRules.isNIL()) {
-      // The system is underdetermined.
-      Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
-      return null;
+    IExpr[] reduced = new IExpr[numberOfFunctions];
+    int algebraic = 0;
+    boolean firstOrder = true;
+    for (int j = 0; j < numberOfFunctions; j++) {
+      reduced[j] = F.subst(equations.get(j + 1), highestRules);
+      if (isExplicit(reduced[j], highest)) {
+        // an algebraic equation: free of every highest derivative
+        algebraic++;
+      }
+      firstOrder &= order[j] == 1;
     }
 
     IExpr[] derivatives = new IExpr[dimension];
-    for (int j = 0; j < numberOfFunctions; j++) {
-      IExpr rhs = F.subst(highest[j], solutionRules);
-      if (!isExplicit(rhs, highest)) {
-        // the equations could not be solved for this highest derivative
+    org.hipparchus.linear.DecompositionSolver massMatrix = null;
+    ImplicitCurve curve = null;
+    if (algebraic > 0) {
+      // Algebraic equations which leave a curve, and one differential equation which says how fast
+      // it is followed - a unit speed x'(t)^2+y'(t)^2==1 on the circle x(t)^2+y(t)^2==1, say.
+      if (firstOrder && algebraic == numberOfFunctions - 1) {
+        curve = ImplicitCurve.create(reduced, functions, highest, timeVar, engine);
+      }
+      if (curve == null) {
+        // The system is underdetermined.
         Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
         return null;
       }
-      // y^(k)' is the next component of the state vector, for every k below the highest order
-      for (int k = 0; k < order[j] - 1; k++) {
-        derivatives[offset[j] + k] = stateExpressions[offset[j] + k + 1];
+      java.util.Arrays.fill(derivatives, F.C0);
+    } else {
+      IExpr[] rhs = new IExpr[numberOfFunctions];
+      IExpr[][] coefficients = linearCoefficients(reduced, highest, engine);
+      int[] pivots = coefficients == null ? null : pivots(coefficients);
+      if (pivots != null) {
+        // every equation names one highest derivative, linearly with a constant coefficient: it
+        // is isolated directly
+        for (int j = 0; j < numberOfFunctions; j++) {
+          IExpr force = engine.evaluate(F.subst(reduced[j], zeroRules(highest)));
+          rhs[pivots[j]] =
+              engine.evaluate(F.Divide(F.Negate(force), coefficients[j][pivots[j]]));
+        }
+      } else {
+        IAST solutionRules = F.NIL;
+        if (coefficients == null || numberOfFunctions <= MAX_SOLVED_MASS_MATRIX) {
+          IASTAppendable solveEquations = F.ListAlloc(numberOfFunctions);
+          for (int j = 0; j < numberOfFunctions; j++) {
+            solveEquations.append(F.Equal(reduced[j], F.C0));
+          }
+          IExpr solution = engine.evaluate(F.Solve(solveEquations, F.List(highest)));
+          solutionRules = SolveUtils.firstSolutionRules(solution);
+        }
+        if (solutionRules.isPresent()) {
+          for (int j = 0; j < numberOfFunctions; j++) {
+            rhs[j] = F.subst(highest[j], solutionRules);
+          }
+        } else if (coefficients != null) {
+          // M.h == f with a constant matrix M: factored once, and solved with at every step
+          massMatrix = factorMassMatrix(coefficients);
+          if (massMatrix != null) {
+            for (int j = 0; j < numberOfFunctions; j++) {
+              rhs[j] = engine.evaluate(F.Negate(F.subst(reduced[j], zeroRules(highest))));
+            }
+          }
+        }
+        if (solutionRules.isNIL() && massMatrix == null) {
+          // The system is underdetermined.
+          Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+          return null;
+        }
       }
-      derivatives[offset[j] + order[j] - 1] = rhs;
+      for (int j = 0; j < numberOfFunctions; j++) {
+        if (!isExplicit(rhs[j], highest)) {
+          // the equations could not be solved for this highest derivative
+          Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+          return null;
+        }
+        // y^(k)' is the next component of the state vector, for every k below the highest order
+        for (int k = 0; k < order[j] - 1; k++) {
+          derivatives[offset[j] + k] = stateExpressions[offset[j] + k + 1];
+        }
+        derivatives[offset[j] + order[j] - 1] = rhs[j];
+      }
     }
 
     // --- the conditions: the value of a component of the state at a point ---
     initialConditions = decoupleConditions(initialConditions, functions, engine);
-    final int conditionCount = initialConditions.argSize();
+    int conditionCount = initialConditions.argSize();
     double[] points = new double[conditionCount];
     int[] components = new int[conditionCount];
     double[] values = new double[conditionCount];
+    // the derivatives a curve is started with, at their points: they choose its direction
+    double[] curvePoints = new double[numberOfFunctions];
+    double[] curveDerivatives = new double[numberOfFunctions];
+    java.util.Arrays.fill(curveDerivatives, Double.NaN);
+    int skipped = 0;
     for (int j = 1; j < initialConditions.size(); j++) {
       IExpr condition = initialConditions.get(j);
       IExpr application = findApplication(condition, functions);
@@ -604,6 +780,17 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
       int[] derivativeOrder = new int[1];
       int index = applicationIndex(application, functions, derivativeOrder);
+      if (curve != null && derivativeOrder[0] == 1) {
+        double point = ((IAST) application).arg1().evalfNaN();
+        double value = conditionValue(condition, application, engine);
+        if (Double.isNaN(point) || Double.isNaN(value)) {
+          return null;
+        }
+        curvePoints[index] = point;
+        curveDerivatives[index] = value;
+        skipped++;
+        continue;
+      }
       if (derivativeOrder[0] >= order[index]) {
         // a condition on a derivative the reduced system does not carry, e.g. y''(0) for a first
         // order equation
@@ -618,9 +805,15 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (Double.isNaN(value)) {
         return null;
       }
-      points[j - 1] = point;
-      components[j - 1] = offset[index] + derivativeOrder[0];
-      values[j - 1] = value;
+      points[j - 1 - skipped] = point;
+      components[j - 1 - skipped] = offset[index] + derivativeOrder[0];
+      values[j - 1 - skipped] = value;
+    }
+    if (skipped > 0) {
+      conditionCount -= skipped;
+      points = java.util.Arrays.copyOf(points, conditionCount);
+      components = java.util.Arrays.copyOf(components, conditionCount);
+      values = java.util.Arrays.copyOf(values, conditionCount);
     }
 
     // --- the initial state at the point with the most conditions ---
@@ -664,6 +857,27 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     }
     FirstOrderSystem system = new FirstOrderSystem(timeVar, functions, appliedForm, offset,
         stateExpressions, derivatives, t0, initialState);
+    if (massMatrix != null) {
+      system.massMatrix = massMatrix;
+      system.highestComponents = new int[numberOfFunctions];
+      for (int j = 0; j < numberOfFunctions; j++) {
+        system.highestComponents[j] = offset[j] + order[j] - 1;
+      }
+    }
+    if (curve != null) {
+      for (int j = 0; j < numberOfFunctions; j++) {
+        if (curvePoints[j] != t0) {
+          // only a derivative where the curve starts tells which way it is followed
+          curveDerivatives[j] = Double.NaN;
+        }
+      }
+      if (boundaryConditions > 0 || !curve.start(t0, initialState, curveDerivatives, engine)) {
+        // The system is underdetermined.
+        Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+        return null;
+      }
+      system.curve = curve;
+    }
     if (boundaryConditions > 0 && !shoot(system, isGiven, points, components, values, engine)) {
       // The boundary value problem could not be solved by shooting from `1`.
       Errors.printMessage(S.NDSolve, "bvnc", F.list(F.num(t0)), engine);
@@ -945,8 +1159,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       for (int i = 0; i < derivatives.length; i++) {
         derivatives[i] = F.subst(system.derivatives[i], frozen);
       }
-      FirstOrderSystem stretch = new FirstOrderSystem(system.timeVar, system.functions,
-          system.appliedForm, system.offset, system.stateExpressions, derivatives, from, state);
+      FirstOrderSystem stretch = system.restart(derivatives, from, state);
       double[][] end = new double[1][];
       DenseOutputModel model = propagateSmooth(head, stretch, to, method, engine, end);
       if (whole == null) {
@@ -1026,7 +1239,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   private static DenseOutputModel propagateSmooth(ISymbol head, FirstOrderSystem system,
       double target, MethodSettings method, EvalEngine engine, double[][] end) {
     AbstractIntegrator integrator = method.createIntegrator();
-    integrator.setMaxEvaluations(MAX_EVALUATIONS);
+    integrator.setMaxEvaluations(method.maxEvaluations);
     DenseOutputModel model = new DenseOutputModel();
     integrator.addStepHandler(model);
     LastStepRecorder recorder = new LastStepRecorder();
@@ -1108,6 +1321,27 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     /** The largest step the integrator may take, and the interval events are checked over. */
     double maxStep = 100.0;
 
+    /**
+     * <code>MaxStepSize</code>, or {@link Double#NaN} for the default, a tenth of the requested
+     * range.
+     */
+    double maxStepSize = Double.NaN;
+
+    /**
+     * <code>StartingStepSize</code>, or {@link Double#NaN} to let the integrator choose. For a fixed
+     * step method it is the step.
+     */
+    double startingStepSize = Double.NaN;
+
+    /** The most right hand side evaluations, from <code>MaxSteps</code>. */
+    int maxEvaluations = MAX_EVALUATIONS;
+
+    /** <code>true</code> if the steps have a fixed size, the <code>"FixedStep"</code> controller. */
+    boolean fixedStep = false;
+
+    /** The <code>"DifferenceOrder"</code> of a Runge-Kutta method, or 0 for the default. */
+    int differenceOrder = 0;
+
     /** One entry per <code>"Event"</code> expression; empty when no events were asked for. */
     IExpr[] events = new IExpr[0];
 
@@ -1144,6 +1378,21 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     static MethodSettings parse(IExpr[] options, IAST ast, double range, EvalEngine engine) {
       MethodSettings settings = new MethodSettings();
       if (options != null && options.length > PRECISION_GOAL) {
+        options = options.clone();
+        for (int i = 4; i < ast.size(); i++) {
+          // an option given before one of the step options, which the generic option reading
+          // stops at
+          IExpr entry = ast.get(i);
+          if (entry.isRuleAST()) {
+            if (entry.first() == S.Method) {
+              options[METHOD] = entry.second();
+            } else if (entry.first() == S.AccuracyGoal) {
+              options[ACCURACY_GOAL] = entry.second();
+            } else if (entry.first() == S.PrecisionGoal) {
+              options[PRECISION_GOAL] = entry.second();
+            }
+          }
+        }
         // AccuracyGoal is the absolute local error, PrecisionGoal the relative one, both given as
         // a number of digits. Automatic keeps the default, which is tighter than the roughly eight
         // digits which are used at machine precision, because the accuracy of a located event is
@@ -1160,10 +1409,50 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
           return null;
         }
       }
-      if (range > 0.0) {
+      settings.parseStepOptions(ast);
+      if (!Double.isNaN(settings.maxStepSize)) {
+        settings.maxStep = settings.maxStepSize;
+      } else if (range > 0.0) {
         settings.maxStep = Math.min(settings.maxStep, range / 10.0);
       }
       return settings;
+    }
+
+    /**
+     * Read the options <code>StartingStepSize</code>, <code>MaxStepSize</code> and
+     * <code>MaxSteps</code> from the trailing rules of the call. They are recognized by name, so
+     * that they are read however the symbols were entered.
+     */
+    private void parseStepOptions(IAST ast) {
+      for (int i = 4; i < ast.size(); i++) {
+        IExpr entry = ast.get(i);
+        if (!entry.isRuleAST() || !entry.first().isSymbol()) {
+          continue;
+        }
+        String name = ((ISymbol) entry.first()).getSymbolName();
+        IExpr value = entry.second();
+        if ("StartingStepSize".equalsIgnoreCase(name)) {
+          double step = value.evalfNaN();
+          if (step > 0.0 && Double.isFinite(step)) {
+            startingStepSize = step;
+          }
+        } else if ("MaxStepSize".equalsIgnoreCase(name)) {
+          double step = value.evalfNaN();
+          if (step > 0.0 && !Double.isNaN(step)) {
+            maxStepSize = Double.isInfinite(step) ? Double.MAX_VALUE : step;
+          }
+        } else if ("MaxSteps".equalsIgnoreCase(name)) {
+          if (value.isInfinity()) {
+            maxEvaluations = Integer.MAX_VALUE;
+          } else {
+            int steps = value.toIntDefault();
+            if (steps > 0) {
+              // a step of the eighth order method takes a dozen evaluations, and some are rejected
+              maxEvaluations = steps > Integer.MAX_VALUE / 16 ? Integer.MAX_VALUE : 16 * steps;
+            }
+          }
+        }
+      }
     }
 
     /** Turn a number of digits into a tolerance, e.g. <code>8</code> into <code>10^-8</code>. */
@@ -1193,7 +1482,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         IExpr entry = list.get(i);
         if (entry.isString()) {
           // the leading name of a method or of a controller such as "EventLocator"
-          if (!"EventLocator".equals(entry.toString())
+          if ("FixedStep".equals(entry.toString())) {
+            // a controller: the method of its "Method" sub-option takes the fixed steps
+            fixedStep = true;
+          } else if (!"EventLocator".equals(entry.toString())
               && !setTimeIntegration(entry.toString(), ast, engine)) {
             return false;
           }
@@ -1232,6 +1524,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
             break;
           case "EventLocationMethod":
             if (!setEventLocationMethod(rhs, ast, engine)) {
+              return false;
+            }
+            break;
+          case "DifferenceOrder":
+            differenceOrder = rhs.isAutomatic() ? 0 : rhs.toIntDefault();
+            if (differenceOrder < 0) {
+              Errors.printMessage(ast.topHead(), "optx", F.List(entry, ast), engine);
               return false;
             }
             break;
@@ -1286,8 +1585,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         case "ExplicitRungeKutta":
         case "Adams":
         case "Extrapolation":
-        case "FixedStep":
           timeIntegration = name;
+          return true;
+        case "FixedStep":
+          fixedStep = true;
           return true;
         default:
           // The stiff solvers - "BDF", "StiffnessSwitching", "IDA", "ImplicitRungeKutta" and the
@@ -1301,19 +1602,44 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
 
     /** Build the integrator the time integration method asks for. */
     AbstractIntegrator createIntegrator() {
+      if (fixedStep) {
+        double step = Double.isNaN(startingStepSize) ? maxStep / 100.0 : startingStepSize;
+        // the Runge-Kutta formula of the requested order; the classical one of order four is the
+        // default, and stands in for the orders which have no formula of their own
+        switch (differenceOrder) {
+          case 1:
+            return new EulerIntegrator(step);
+          case 2:
+            return new MidpointIntegrator(step);
+          case 6:
+          case 7:
+          case 8:
+            return new LutherIntegrator(step);
+          default:
+            return new ClassicalRungeKuttaIntegrator(step);
+        }
+      }
+      AdaptiveStepsizeIntegrator integrator;
       switch (timeIntegration) {
         case "Adams":
-          return new AdamsMoultonIntegrator(4, MIN_STEP, maxStep, absoluteTolerance,
+          integrator = new AdamsMoultonIntegrator(4, MIN_STEP, maxStep, absoluteTolerance,
               relativeTolerance);
+          break;
         case "Extrapolation":
-          return new GraggBulirschStoerIntegrator(MIN_STEP, maxStep, absoluteTolerance,
+          integrator = new GraggBulirschStoerIntegrator(MIN_STEP, maxStep, absoluteTolerance,
               relativeTolerance);
-        case "FixedStep":
-          return new ClassicalRungeKuttaIntegrator(maxStep / 100.0);
+          break;
         default:
-          return new DormandPrince853Integrator(MIN_STEP, maxStep, absoluteTolerance,
-              relativeTolerance);
+          integrator = differenceOrder > 0 && differenceOrder <= 5
+              ? new DormandPrince54Integrator(MIN_STEP, maxStep, absoluteTolerance,
+                  relativeTolerance)
+              : new DormandPrince853Integrator(MIN_STEP, maxStep, absoluteTolerance,
+                  relativeTolerance);
       }
+      if (!Double.isNaN(startingStepSize)) {
+        integrator.setInitialStepSize(Math.min(startingStepSize, maxStep));
+      }
+      return integrator;
     }
 
     /**
@@ -1369,6 +1695,20 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     private final double fMaxCheck;
     private final int fMaxIterations;
 
+    /**
+     * The values of the event function closer to zero than this count as zero where the
+     * integration starts: relative to the size of the initial state, the precision a value
+     * computed from it has.
+     */
+    private final double fZeroThreshold;
+
+    /**
+     * The smallest distance from the start at which the event function was seen away from zero.
+     * An event closer to the start than that is the function leaving the zero it started at,
+     * rather than reaching one, and does not count.
+     */
+    private double fAwayFromZero = Double.POSITIVE_INFINITY;
+
     EventLocator(FirstOrderSystem system, EvalEngine engine, IExpr event, IExpr condition,
         IExpr action, BracketedUnivariateSolver<UnivariateFunction> solver, double maxCheck,
         int maxIterations) {
@@ -1380,11 +1720,20 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       this.fSolver = solver;
       this.fMaxCheck = maxCheck;
       this.fMaxIterations = maxIterations;
+      double scale = 1.0;
+      for (double value : system.initialState) {
+        scale = Math.max(scale, Math.abs(value));
+      }
+      this.fZeroThreshold = START_ZERO_TOLERANCE * scale;
     }
 
     @Override
     public double g(ODEStateAndDerivative state) {
-      return substituted(fEvent, state).evalfNaN();
+      double value = substituted(fEvent, state).evalfNaN();
+      if (Math.abs(value) > fZeroThreshold) {
+        fAwayFromZero = Math.min(fAwayFromZero, Math.abs(state.getTime() - fSystem.t0));
+      }
+      return value;
     }
 
     @Override
@@ -1405,6 +1754,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     @Override
     public ODEEventHandler getHandler() {
       return (state, detector, increasing) -> {
+        if (!(fAwayFromZero < Math.abs(state.getTime() - fSystem.t0))) {
+          // the function started at zero and has not moved away from it yet
+          return Action.CONTINUE;
+        }
         if (fCondition.isPresent() && !substituted(fCondition, state).isTrue()) {
           return Action.CONTINUE;
         }
@@ -1713,6 +2066,360 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
     }
     return true;
+  }
+
+  /**
+   * The largest number of equations, linear in the highest derivatives with a constant matrix,
+   * which are still solved symbolically. The solution of a larger system grows with the square of
+   * its size, so it is solved numerically with the factored matrix instead.
+   */
+  private static final int MAX_SOLVED_MASS_MATRIX = 4;
+
+  /**
+   * The constant coefficients <code>M(j,k)</code> of the highest derivative <code>k</code> in
+   * equation <code>j</code>, if every equation is linear in the highest derivatives.
+   *
+   * @param reduced the equations, as expressions which should be zero, with the highest derivatives
+   *        replaced by the symbols <code>highest</code>
+   * @return <code>null</code> if an equation isn't linear in them, or a coefficient isn't a
+   *         constant
+   */
+  private static IExpr[][] linearCoefficients(IExpr[] reduced, ISymbol[] highest,
+      EvalEngine engine) {
+    final int n = highest.length;
+    IExpr[][] coefficients = new IExpr[n][n];
+    for (int j = 0; j < n; j++) {
+      for (int k = 0; k < n; k++) {
+        if (reduced[j].isFree(highest[k])) {
+          coefficients[j][k] = F.C0;
+          continue;
+        }
+        IExpr coefficient = engine.evaluate(F.D(reduced[j], highest[k]));
+        if (!coefficient.isNumericFunction(true)) {
+          return null;
+        }
+        coefficients[j][k] = coefficient;
+      }
+    }
+    return coefficients;
+  }
+
+  /**
+   * The highest derivative each equation names, if every equation names exactly one and no two
+   * the same one.
+   *
+   * @return the column of the non-zero coefficient of every row, or <code>null</code>
+   */
+  private static int[] pivots(IExpr[][] coefficients) {
+    final int n = coefficients.length;
+    int[] pivots = new int[n];
+    boolean[] used = new boolean[n];
+    for (int j = 0; j < n; j++) {
+      pivots[j] = -1;
+      for (int k = 0; k < n; k++) {
+        if (!coefficients[j][k].isZero()) {
+          if (pivots[j] >= 0 || used[k]) {
+            return null;
+          }
+          pivots[j] = k;
+        }
+      }
+      if (pivots[j] < 0) {
+        return null;
+      }
+      used[pivots[j]] = true;
+    }
+    return pivots;
+  }
+
+  /** The rules which replace every one of <code>symbols</code> by zero. */
+  private static IAST zeroRules(ISymbol[] symbols) {
+    return F.mapRange(0, symbols.length, i -> F.Rule(symbols[i], F.C0));
+  }
+
+  /**
+   * The LU decomposition of the matrix of numbers <code>coefficients</code>.
+   *
+   * @return <code>null</code> if it is singular, or not a matrix of real numbers
+   */
+  private static org.hipparchus.linear.DecompositionSolver factorMassMatrix(
+      IExpr[][] coefficients) {
+    final int n = coefficients.length;
+    double[][] matrix = new double[n][n];
+    for (int j = 0; j < n; j++) {
+      for (int k = 0; k < n; k++) {
+        matrix[j][k] = coefficients[j][k].evalfNaN();
+        if (!Double.isFinite(matrix[j][k])) {
+          return null;
+        }
+      }
+    }
+    org.hipparchus.linear.DecompositionSolver solver = new org.hipparchus.linear.LUDecomposition(
+        new org.hipparchus.linear.Array2DRowRealMatrix(matrix, false)).getSolver();
+    return solver.isNonSingular() ? solver : null;
+  }
+
+  /**
+   * A curve which <code>n-1</code> algebraic equations <code>g(x)==0</code> leave in the space of
+   * the <code>n</code> unknown functions <code>x</code>, together with one differential equation
+   * <code>F(x, x')==0</code> which says how fast it is followed.
+   *
+   * <p>
+   * The derivative is a multiple of the tangent <code>T(x)</code> of the curve, the generalized
+   * cross product of the gradients of the algebraic equations, whose component <code>i</code> is
+   * the determinant of the Jacobian of <code>g</code> with the unit row <code>e_i</code> appended.
+   * Unlike a null space vector picked by a decomposition it is a smooth function of the point, so
+   * that following <code>s*T(x)</code> with a fixed sign <code>s</code> never turns back. The sign
+   * is the one of the derivatives the curve is started with, and the multiple is the root of the
+   * differential equation along the tangent closest to the one at the last evaluation.
+   */
+  private static final class ImplicitCurve {
+    /** The independent variable. */
+    private final ISymbol fTimeVar;
+    /** The symbols which stand for the values of the functions. */
+    private final ISymbol[] fValues;
+    /** The symbols which stand for the derivatives of the functions. */
+    private final ISymbol[] fDerivatives;
+    /** The algebraic equations, as expressions in {@link #fValues} which should be zero. */
+    private final IExpr[] fConstraints;
+    /** The partial derivatives of the constraints by the values. */
+    private final IExpr[][] fGradients;
+    /** The differential equation, as an expression which should be zero. */
+    private final IExpr fSpeedEquation;
+
+    /** The direction the tangent is followed in, <code>1</code> or <code>-1</code>. */
+    private double fSign = 1.0;
+    /** The multiple of the tangent at the start, where each integration begins its search. */
+    double initialSpeed = 0.0;
+
+    private ImplicitCurve(ISymbol timeVar, ISymbol[] values, ISymbol[] derivatives,
+        IExpr[] constraints, IExpr[][] gradients, IExpr speedEquation) {
+      this.fTimeVar = timeVar;
+      this.fValues = values;
+      this.fDerivatives = derivatives;
+      this.fConstraints = constraints;
+      this.fGradients = gradients;
+      this.fSpeedEquation = speedEquation;
+    }
+
+    /**
+     * @param reduced the first order equations, with the derivatives replaced by the symbols
+     *        <code>highest</code>; all but one are algebraic
+     * @return <code>null</code> if the algebraic equations depend on the independent variable
+     */
+    static ImplicitCurve create(IExpr[] reduced, ISymbol[] functions, ISymbol[] highest,
+        ISymbol timeVar, EvalEngine engine) {
+      final int n = functions.length;
+      ISymbol[] values = new ISymbol[n];
+      IASTAppendable valueRules = F.ListAlloc(n);
+      for (int j = 0; j < n; j++) {
+        values[j] = F.Dummy("NDSolve$" + functions[j].getSymbolName() + "$0");
+        valueRules.append(F.Rule(F.unaryAST1(functions[j], timeVar), values[j]));
+      }
+      IExpr[] constraints = new IExpr[n - 1];
+      IExpr speedEquation = F.NIL;
+      int i = 0;
+      for (IExpr equation : reduced) {
+        IExpr expr = F.subst(equation, valueRules);
+        if (isExplicit(expr, highest)) {
+          if (!expr.isFree(timeVar)) {
+            // a moving curve: its tangent alone doesn't give the derivative
+            return null;
+          }
+          constraints[i++] = expr;
+        } else {
+          speedEquation = expr;
+        }
+      }
+      for (IExpr expr : constraints) {
+        for (ISymbol function : functions) {
+          if (!expr.isFree(function)) {
+            // a function which isn't evaluated at the independent variable
+            return null;
+          }
+        }
+      }
+      IExpr[][] gradients = new IExpr[n - 1][n];
+      for (int k = 0; k < n - 1; k++) {
+        for (int j = 0; j < n; j++) {
+          gradients[k][j] = engine.evaluate(F.D(constraints[k], values[j]));
+        }
+      }
+      return new ImplicitCurve(timeVar, values, highest, constraints, gradients, speedEquation);
+    }
+
+    /**
+     * Prepare the curve to be followed from <code>state</code>, which is moved onto it if it is
+     * slightly off.
+     *
+     * @param derivatives the derivatives the curve starts with, {@link Double#NaN} where they are
+     *        not given
+     * @return <code>false</code> if the curve has no tangent at the start, or the differential
+     *         equation no root along it
+     */
+    boolean start(double t, double[] state, double[] derivatives, EvalEngine engine) {
+      if (!project(state, engine)) {
+        return false;
+      }
+      double[] tangent = tangent(t, state, engine);
+      double along = 0.0;
+      double norm = 0.0;
+      double givenNorm = 0.0;
+      for (int j = 0; j < tangent.length; j++) {
+        norm += tangent[j] * tangent[j];
+        if (!Double.isNaN(derivatives[j])) {
+          along += derivatives[j] * tangent[j];
+          givenNorm += tangent[j] * tangent[j];
+        }
+      }
+      if (!(norm > 0.0)) {
+        return false;
+      }
+      fSign = along < 0.0 ? -1.0 : 1.0;
+      double guess = (along != 0.0 && givenNorm > 0.0) ? Math.abs(along) / givenNorm
+          : 1.0 / Math.sqrt(norm);
+      try {
+        initialSpeed = speed(t, state, tangent, guess, engine);
+      } catch (MathRuntimeException mre) {
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * The derivative of the state at <code>t</code>.
+     *
+     * @param speed the multiple of the tangent at the last evaluation, where the search starts;
+     *        receives the new one
+     */
+    double[] derivatives(double t, double[] state, double[] speed, EvalEngine engine) {
+      double[] tangent = tangent(t, state, engine);
+      speed[0] = speed(t, state, tangent, speed[0], engine);
+      double[] result = new double[tangent.length];
+      for (int j = 0; j < result.length; j++) {
+        result[j] = speed[0] * fSign * tangent[j];
+      }
+      return result;
+    }
+
+    private IASTAppendable valueRules(double t, double[] state) {
+      IASTAppendable rules = F.ListAlloc(2 * state.length + 1);
+      for (int j = 0; j < state.length; j++) {
+        rules.append(F.Rule(fValues[j], F.num(state[j])));
+      }
+      rules.append(F.Rule(fTimeVar, F.num(t)));
+      return rules;
+    }
+
+    private double[][] jacobian(IAST rules, EvalEngine engine) {
+      final int n = fValues.length;
+      double[][] jacobian = new double[n - 1][n];
+      for (int k = 0; k < n - 1; k++) {
+        for (int j = 0; j < n; j++) {
+          jacobian[k][j] = engine.evalN(F.subst(fGradients[k][j], rules)).evalfNaN();
+        }
+      }
+      return jacobian;
+    }
+
+    /** The generalized cross product of the gradients of the constraints. */
+    private double[] tangent(double t, double[] state, EvalEngine engine) {
+      final int n = fValues.length;
+      double[][] jacobian = jacobian(valueRules(t, state), engine);
+      double[] tangent = new double[n];
+      double[][] square = new double[n][];
+      for (int k = 0; k < n - 1; k++) {
+        square[k] = jacobian[k];
+      }
+      for (int i = 0; i < n; i++) {
+        double[] unit = new double[n];
+        unit[i] = 1.0;
+        square[n - 1] = unit;
+        tangent[i] = new org.hipparchus.linear.LUDecomposition(
+            new org.hipparchus.linear.Array2DRowRealMatrix(square, true)).getDeterminant();
+      }
+      return tangent;
+    }
+
+    /**
+     * The root <code>c</code> of the differential equation with the derivatives
+     * <code>c*sign*tangent</code> closest to <code>guess</code>, by Newton's method.
+     */
+    private double speed(double t, double[] state, double[] tangent, double guess,
+        EvalEngine engine) {
+      double c = guess;
+      double residual = speedResidual(t, state, tangent, c, engine);
+      for (int iteration = 0; iteration < 50; iteration++) {
+        if (residual == 0.0) {
+          return c;
+        }
+        final double h = 1.0e-7 * Math.max(1.0, Math.abs(c));
+        final double slope = (speedResidual(t, state, tangent, c + h, engine) - residual) / h;
+        final double step = residual / slope;
+        if (!Double.isFinite(step)) {
+          break;
+        }
+        c -= step;
+        residual = speedResidual(t, state, tangent, c, engine);
+        if (Math.abs(step) <= 1.0e-14 * Math.max(1.0, Math.abs(c))) {
+          return c;
+        }
+      }
+      throw new org.hipparchus.exception.MathIllegalStateException(
+          org.hipparchus.exception.LocalizedCoreFormats.CONVERGENCE_FAILED);
+    }
+
+    private double speedResidual(double t, double[] state, double[] tangent, double c,
+        EvalEngine engine) {
+      IASTAppendable rules = valueRules(t, state);
+      for (int j = 0; j < tangent.length; j++) {
+        rules.append(F.Rule(fDerivatives[j], F.num(c * fSign * tangent[j])));
+      }
+      return engine.evalN(F.subst(fSpeedEquation, rules)).evalfNaN();
+    }
+
+    /**
+     * Move <code>state</code> onto the curve by Gauss-Newton steps, the shortest steps which make
+     * the linearized constraints hold.
+     *
+     * @return <code>false</code> if it could not be moved onto it
+     */
+    private boolean project(double[] state, EvalEngine engine) {
+      final int m = fConstraints.length;
+      double scale = 1.0;
+      for (double value : state) {
+        scale = Math.max(scale, Math.abs(value));
+      }
+      for (int iteration = 0; iteration < 20; iteration++) {
+        IAST rules = valueRules(0.0, state);
+        double[] residual = new double[m];
+        double norm = 0.0;
+        for (int k = 0; k < m; k++) {
+          residual[k] = engine.evalN(F.subst(fConstraints[k], rules)).evalfNaN();
+          norm = Math.max(norm, Math.abs(residual[k]));
+        }
+        if (!Double.isFinite(norm)) {
+          return false;
+        }
+        if (norm <= 1.0e-14 * scale) {
+          return true;
+        }
+        org.hipparchus.linear.RealMatrix jacobian =
+            new org.hipparchus.linear.Array2DRowRealMatrix(jacobian(rules, engine), false);
+        try {
+          double[] multipliers = new org.hipparchus.linear.LUDecomposition(
+              jacobian.multiplyTransposed(jacobian)).getSolver()
+                  .solve(new org.hipparchus.linear.ArrayRealVector(residual, false)).toArray();
+          double[] step = jacobian.transpose().operate(multipliers);
+          for (int j = 0; j < state.length; j++) {
+            state[j] -= step[j];
+          }
+        } catch (MathRuntimeException mre) {
+          return false;
+        }
+      }
+      return false;
+    }
   }
 
   /**

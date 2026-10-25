@@ -13,7 +13,9 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.RulesData;
 
 /**
  *
@@ -78,6 +80,14 @@ public class InverseFunction extends AbstractFunctionEvaluator {
           }
         }
       }
+    } else if (arg1.isSymbol() && ast.isAST1()) {
+      IExpr function = oneRuleFunction((ISymbol) arg1);
+      if (function.isPresent()) {
+        IExpr inverse = engine.evaluate(F.InverseFunction(function));
+        if (inverse.isFunction()) {
+          return inverse;
+        }
+      }
     } else if (arg1.isAST(S.TransformationFunction, 2)) {
       if (ast.isAST1()) {
         // the inverse transformation is defined by the inverse of the transformation matrix
@@ -94,6 +104,43 @@ public class InverseFunction extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The pure function of a symbol which is defined by exactly one rule <code>f(x_) := rhs</code>
+   * with a single blank pattern: <code>g(x_) := 3*x+1</code> gives <code>3*#1+1 &amp;</code>.
+   *
+   * @return {@link F#NIL} if the symbol has no such definition
+   */
+  private static IExpr oneRuleFunction(ISymbol symbol) {
+    if (symbol.isBuiltInSymbol() || symbol.hasAssignedSymbolValue()) {
+      return F.NIL;
+    }
+    RulesData rulesData = symbol.getRulesData();
+    if (rulesData == null) {
+      return F.NIL;
+    }
+    IAST downValues = rulesData.downValues();
+    if (!downValues.isList1() || !downValues.arg1().isRuleDelayed()) {
+      return F.NIL;
+    }
+    IExpr lhs = downValues.arg1().first();
+    if (lhs.isAST(S.HoldPattern, 2)) {
+      lhs = lhs.first();
+    }
+    if (!lhs.isAST(symbol, 2) || !lhs.first().isPattern()) {
+      return F.NIL;
+    }
+    IPatternObject pattern = (IPatternObject) lhs.first();
+    ISymbol variable = pattern.getSymbol();
+    if (variable == null || pattern.getHeadTest() != null || lhs.first().isPatternDefault()) {
+      return F.NIL;
+    }
+    IExpr rhs = downValues.arg1().second();
+    if (rhs.isCondition() || !rhs.isFree(x -> x.isSlot() || x.isSlotSequence(), true)) {
+      return F.NIL;
+    }
+    return F.Function(F.subst(rhs, variable, F.Slot1));
   }
 
   @Override

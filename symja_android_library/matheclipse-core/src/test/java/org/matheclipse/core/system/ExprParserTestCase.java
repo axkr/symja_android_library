@@ -217,7 +217,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals("Part[Part[t, i][\"pos\"], 2]", scriptExpressions("t[[i]][\"pos\"][[2]]"));
 
     // a string may begin with a newline - a usage message or a template body is written that way
-    assertEquals("Set[MessageName[f, usage], \"\na\"]", scriptExpressions("f::usage = \"\na\""));
+    assertEquals("Set[MessageName[f, usage], \"\\na\"]", scriptExpressions("f::usage = \"\na\""));
   }
 
   /** A derivative followed by a juxtaposed factor is a product, in the relaxed syntax as well. */

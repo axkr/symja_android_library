@@ -2566,7 +2566,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       return series;
     }
-    if (!isAnalyticTerm(b)) {
+    if (!isAnalyticTerm(b) || hasExponentialOfPolynomialAtInfinity(b)) {
       return null;
     }
     ASTSeriesData bSeries = expansionPoint.isDirectedInfinity() //
@@ -2624,6 +2624,18 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * @param b a summand or factor which depends on the expansion variable
    * @return {@code false} if {@code b} selects a branch and must not be expanded
    */
+  /**
+   * <code>true</code> for a series at an infinite point and an expression with a factor
+   * <code>E^p(x)</code> for a non-constant polynomial <code>p</code>: it has an essential
+   * singularity at infinity and no power series there, so it stays outside of the series, as in
+   * <code>E^(-x^2)*SeriesData(...)</code>.
+   */
+  private boolean hasExponentialOfPolynomialAtInfinity(IExpr b) {
+    return expansionPoint.isDirectedInfinity()
+        && b.has(e -> e.isPower() && e.base().isE() && !e.exponent().isFree(expansionVariable)
+            && e.exponent().isPolynomial(expansionVariable), true);
+  }
+
   private static boolean isAnalyticTerm(IExpr b) {
     return b.isFreeAST(head -> head == S.Floor //
         || head == S.Ceiling //
@@ -3309,7 +3321,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (isScalarTimesFactor(b)) {
       return times(b);
     }
-    if (!isAnalyticTerm(b)) {
+    if (!isAnalyticTerm(b) || hasExponentialOfPolynomialAtInfinity(b)) {
       return null;
     }
     ASTSeriesData bSeries = expansionPoint.isDirectedInfinity() //

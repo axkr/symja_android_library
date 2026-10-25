@@ -334,7 +334,7 @@ public class StringX implements IStringX {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    return "\"" + BoxNotation.writeEscapes(fString) + "\"";
+    return BoxNotation.writeStringLiteral(fString);
   }
 
   /** @return */

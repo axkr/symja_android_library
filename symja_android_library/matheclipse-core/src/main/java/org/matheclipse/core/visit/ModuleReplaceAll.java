@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -29,9 +30,42 @@ public class ModuleReplaceAll extends VisitorExpr {
    */
   private final boolean renameFunctionParameters;
 
+  /**
+   * Whether the variables of a nested scoping construct are renamed by appending <code>$</code>
+   * when a substituted variable reaches inside it, as <code>Module</code> and <code>With</code> do:
+   * the parameters of a <code>Function</code> and the pattern variables of a rule or an assignment
+   * <code>lhs = rhs</code>, <code>lhs := rhs</code>, <code>lhs -&gt; rhs</code>,
+   * <code>lhs :&gt; rhs</code>. <code>With({a = 1}, Hold(f(t_) := t + a))</code> is
+   * <code>Hold(f(t$_) := t$ + 1)</code>.
+   */
+  private final boolean renameReachedScopes;
+
+  /**
+   * The renamed variables <code>name$</code> of the nested scopes, shared by all visitors of one
+   * <code>Module</code> or <code>With</code> evaluation: two rules in its body which bind the same
+   * name get the same <code>name$</code>.
+   */
+  private final Map<String, IExpr> reachedScopeNames;
+
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter) {
     this(moduleVariables, engine, moduleCounter, 0);
+  }
+
+  /**
+   * The visitor which substitutes the variables of a <code>Module</code> or <code>With</code> in
+   * its body, renaming the variables of the nested scoping constructs which the substitution
+   * reaches into.
+   *
+   * @param moduleVariables the local variables and their substitutes
+   * @param engine the evaluation engine
+   * @param moduleCounter the suffix for renamed locals of a nested <code>Module</code> or
+   *        <code>With</code> which collide with a substituted variable
+   */
+  public static ModuleReplaceAll scopingConstruct(Map<ISymbol, ? extends IExpr> moduleVariables,
+      EvalEngine engine, String moduleCounter) {
+    return new ModuleReplaceAll(moduleVariables, engine, moduleCounter, 0, true, true,
+        new java.util.HashMap<String, IExpr>());
   }
 
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
@@ -45,11 +79,19 @@ public class ModuleReplaceAll extends VisitorExpr {
    */
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter, int offset, boolean renameFunctionParameters) {
+    this(moduleVariables, engine, moduleCounter, offset, renameFunctionParameters, false, null);
+  }
+
+  private ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
+      String moduleCounter, int offset, boolean renameFunctionParameters,
+      boolean renameReachedScopes, Map<String, IExpr> reachedScopeNames) {
     this.fModuleVariables = moduleVariables;
     this.fOffset = offset;
     this.fEngine = engine;
     this.moduleCounter = moduleCounter;
     this.renameFunctionParameters = renameFunctionParameters;
+    this.renameReachedScopes = renameReachedScopes;
+    this.reachedScopeNames = reachedScopeNames;
   }
 
   private IExpr apply(final ISymbol arg) {
@@ -129,8 +171,78 @@ public class ModuleReplaceAll extends VisitorExpr {
       return visitNestedScope(ast, false).orElse(ast);
     } else if (ast.isModule()) {
       return visitNestedScope(ast, false).orElse(ast);
+    } else if (renameReachedScopes && ast.size() == 3 && (ast.isAST(S.Set)
+        || ast.isAST(S.SetDelayed) || ast.isAST(S.Rule) || ast.isAST(S.RuleDelayed))) {
+      return visitRuleScope(ast);
     }
     return visitAST(ast, this, fOffset);
+  }
+
+  /**
+   * A rule or an assignment binds the pattern variables of its left-hand side. They are renamed to
+   * <code>name$</code> if a substituted variable occurs in the rule; a pattern variable which is a
+   * substituted variable itself is left as it is.
+   */
+  private IAST visitRuleScope(IAST ast) {
+    java.util.Set<ISymbol> patternSymbols =
+        java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
+    collectPatternSymbols(ast.arg1(), patternSymbols);
+    patternSymbols.removeIf(symbol -> fModuleVariables.containsKey(symbol));
+    if (patternSymbols.isEmpty() || !isReachedBySubstitution(ast, patternSymbols)) {
+      return visitAST(ast, this, fOffset);
+    }
+    IdentityHashMap<ISymbol, IExpr> variables = new IdentityHashMap<>(fModuleVariables);
+    for (ISymbol symbol : patternSymbols) {
+      variables.put(symbol, reachedScopeName(symbol));
+    }
+    return visitAST(ast, new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
+        renameFunctionParameters, true, reachedScopeNames), fOffset);
+  }
+
+  /** The renamed variable <code>name$</code> of a nested scope, the same one for the same name. */
+  private IExpr reachedScopeName(ISymbol symbol) {
+    String name = symbol.toString() + "$";
+    if (reachedScopeNames == null) {
+      return F.Dummy(name);
+    }
+    return reachedScopeNames.computeIfAbsent(name, F::Dummy);
+  }
+
+  /** Collect the names of the patterns <code>x_, x__, x : p, ...</code> in <code>expr</code>. */
+  private static void collectPatternSymbols(IExpr expr, java.util.Set<ISymbol> symbols) {
+    if (expr instanceof IPattern) {
+      ISymbol symbol = ((IPattern) expr).getSymbol();
+      if (symbol != null) {
+        symbols.add(symbol);
+      }
+      if (expr instanceof PatternNested) {
+        collectPatternSymbols(((PatternNested) expr).getPatternExpr(), symbols);
+      }
+    } else if (expr instanceof IPatternSequence) {
+      ISymbol symbol = ((IPatternSequence) expr).getSymbol();
+      if (symbol != null) {
+        symbols.add(symbol);
+      }
+    } else if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      for (int i = 0; i < ast.size(); i++) {
+        collectPatternSymbols(ast.get(i), symbols);
+      }
+    }
+  }
+
+  /**
+   * Test if a variable which is substituted by this visitor - other than the bound
+   * <code>locals</code> - occurs in <code>expr</code>.
+   */
+  private boolean isReachedBySubstitution(IExpr expr, java.util.Set<? extends IExpr> locals) {
+    return !expr.isFree(x -> {
+      if (x.isSymbol() && !locals.contains(x)) {
+        IExpr value = fModuleVariables.get(x);
+        return value != null && value.isPresent();
+      }
+      return false;
+    }, true);
   }
 
   /**
@@ -163,13 +275,47 @@ public class ModuleReplaceAll extends VisitorExpr {
     }
     ModuleReplaceAll visitor = this;
     if (localVariablesList.isPresent()) {
-      IdentityHashMap<ISymbol, IExpr> variables = renamedVariables(localVariablesList, isFunction);
+      IdentityHashMap<ISymbol, IExpr> variables;
+      if (isFunction && renameReachedScopes) {
+        variables = renamedFunctionParameters(ast, localVariablesList);
+      } else {
+        variables = renamedVariables(localVariablesList, isFunction);
+      }
       if (variables != null) {
         visitor = new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
-            renameFunctionParameters);
+            renameFunctionParameters, renameReachedScopes, reachedScopeNames);
       }
     }
     return visitAST(ast, visitor, fOffset);
+  }
+
+  /**
+   * The parameters of <code>Function(params, body)</code> are renamed to <code>name$</code> if a
+   * substituted variable occurs in the body - <code>With({a = 1}, Hold(Function(x, a*x)))</code> is
+   * <code>Hold(Function(x$, 1*x$))</code> - or if they are substituted variables themselves.
+   *
+   * @return <code>null</code> if no parameter is renamed
+   */
+  private IdentityHashMap<ISymbol, IExpr> renamedFunctionParameters(IAST function,
+      IAST parameters) {
+    java.util.Set<ISymbol> parameterSymbols =
+        java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
+    for (int i = 1; i < parameters.size(); i++) {
+      if (parameters.get(i).isSymbol()) {
+        parameterSymbols.add((ISymbol) parameters.get(i));
+      }
+    }
+    boolean reached = isReachedBySubstitution(function.arg2(), parameterSymbols);
+    IdentityHashMap<ISymbol, IExpr> variables = null;
+    for (ISymbol symbol : parameterSymbols) {
+      if (reached || fModuleVariables.containsKey(symbol)) {
+        if (variables == null) {
+          variables = new IdentityHashMap<>(fModuleVariables);
+        }
+        variables.put(symbol, reachedScopeName(symbol));
+      }
+    }
+    return variables;
   }
 
   /**

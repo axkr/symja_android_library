@@ -14828,14 +14828,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a factor which only vanishes up to rounding: the solution a == 0 is found through the
     // rationalized system
     check("NSolve({(0.25*b/(2+b)-0.125)*a==0, (4-b)-a*b/(2+b)==0}, {a,b})", //
-        "{{a->4.0,b->2.0},{a->0.0,b->4.0}}");
+        "{{a->0.0,b->4.0},{a->4.0,b->2.0}}");
     check("Solve({(0.25*b/(2+b)-0.125)*a==0, (4-b)-a*b/(2+b)==0}, {a,b})", //
         "{{a->0.0,b->4.0},{a->4.0,b->2.0}}");
     // the rules in the order of the variables
     check("Solve({x*y==2.5, x+y==3.5}, {x,y})", //
         "{{x->1.0,y->2.5},{x->2.5,y->1.0}}");
     check("NSolve({u*v==3, u+v==4.5}, {v,u})", //
-        "{{v->3.68614,u->0.813859},{v->0.813859,u->3.68614}}");
+        "{{v->0.813859,u->3.68614},{v->3.68614,u->0.813859}}");
     check("Solve({x+y==2.5, x-y==0.5}, {y,x})", //
         "{{y->1.0,x->1.5}}");
   }
@@ -14885,6 +14885,482 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{w(s)->2*E^s^3}}");
     check("DSolve(w'(s)/w(s)==Cos(s), w, s)", //
         "{{w->Function({s},E^Sin(s)*C(1))}}");
+  }
+
+  @Test
+  public void testNDSolveEventLocatorStartAtZero() {
+    // within rounding of zero at the start: leaving zero is not an event
+    check(
+        "ClearAll(w);w(\"Domain\") /. First(NDSolve({w'(t) == 2.0, w(0) == -1.0*10^-9}, w, {t, 0, 3}, "
+            + "Method -> {\"EventLocator\", \"Event\" :> w(t)}))", //
+        "{{0.0,3.0}}");
+    check(
+        "ClearAll(w);w(\"Domain\") /. First(NDSolve({w'(t) == 2.0, w(0) == -0.001}, w, {t, 0, 3}, "
+            + "Method -> {\"EventLocator\", \"Event\" :> w(t)}))", //
+        "{{0.0,0.0005}}");
+    // a function which starts at zero, moves away and comes back
+    check(
+        "ClearAll(w);Chop((w(\"Domain\") /. First(NDSolve({w'(t) == Cos(t), w(0) == 0}, w, {t, 0, 5}, "
+            + "Method -> {\"EventLocator\", \"Event\" :> w(t)}))) - {{0, Pi}}, 10^-8)", //
+        "{{0,0}}");
+  }
+
+  @Test
+  public void testNDSolveIndexedDerivativeUnknowns() {
+    check(
+        "ClearAll(c,s);s = NDSolve({c(1)'[t] == c(2)[t], c(2)'[t] == -c(1)[t], c(1)[0] == 0, "
+            + "c(2)[0] == 1}, {c(1)'[t], c(2)'[t]}, {t, 0, 1});Length(s[[1]])", //
+        "2");
+    check("Chop(({c(1)'[t], c(2)'[t]} /. s[[1]] /. t -> 0.5) - {Cos(0.5), -Sin(0.5)}, 10^-8)", //
+        "{0,0}");
+    check(
+        "ClearAll(c,s);s = NDSolve({c(1)'[t] == c(2)[t], c(2)'[t] == -c(1)[t], c(1)[0] == 0, "
+            + "c(2)[0] == 1}, {c(1), c(2)}, {t, 0, 1});Chop(({c(1)[1], c(2)[1]} /. s[[1]]) - "
+            + "{Sin(1), Cos(1)}, 10^-8)", //
+        "{0,0}");
+  }
+
+  @Test
+  public void testNDSolveImplicitCurve() {
+    // an ellipse followed at unit speed, past the points where a coordinate turns, both ways
+    check(
+        "ClearAll(p,q,s);s = NDSolve({p(t)^2 + 4*q(t)^2 == 4, p'(t)^2 + q'(t)^2 == 1, p(0) == 2, "
+            + "q(0) == 0, p'(0) == 0, q'(0) == 1}, {p, q}, {t, -2, 3});"
+            + "Chop(({p(t)^2 + 4*q(t)^2, p'(t)^2 + q'(t)^2} /. s[[1]] /. t -> {-1.5, 2.5}) - {4, 1}, "
+            + "10^-8)", //
+        "{{0,0},{0,0}}");
+    // a circle of radius 2 at unit speed, followed clockwise
+    check(
+        "ClearAll(p,q,s);s = NDSolve({p(t)^2 + q(t)^2 == 4, p'(t)^2 + q'(t)^2 == 1, p(0) == 2, "
+            + "q(0) == 0, p'(0) == 0, q'(0) == -1}, {p, q}, {t, 0, 4});"
+            + "Chop(({p(4), q(4)} /. s[[1]]) - {2*Cos(2), -2*Sin(2)}, 10^-8)", //
+        "{0,0}");
+    // a line, three unknowns
+    check(
+        "ClearAll(p,q,r,s);s = NDSolve({p(t) + q(t) == 2, r(t) == p(t) - q(t), p'(t)^2 + q'(t)^2 "
+            + "+ r'(t)^2 == 6, p(0) == 0, q(0) == 2, r(0) == -2, p'(0) == 1}, {p, q, r}, {t, 0, 1});"
+            + "Chop(({p(1), q(1), r(1)} /. s[[1]]) - {1, 1, 0}, 10^-8)", //
+        "{0,0,0}");
+  }
+
+  @Test
+  public void testNDSolveMassMatrix() {
+    // a cyclic coupling of the derivatives, solved with the factored matrix
+    check(
+        "ClearAll(g,s,m,mat,e);m = 7;"
+            + "s = NDSolve(Join(Table(3*g(k)'[t] - g(Mod(k, m) + 1)'[t] == Cos(t) - g(k)[t], {k, m}), "
+            + "Table(g(k)[0] == k/10, {k, m})), Table(g(k), {k, m}), {t, 0, 2});"
+            + "mat = Table(3*KroneckerDelta(i, j) - KroneckerDelta(Mod(i, m) + 1, j), {i, m}, {j, m});"
+            + "e = NDSolve(Join(Thread(Table(g(k)'[t], {k, m}) == "
+            + "Inverse(mat) . Table(Cos(t) - g(k)[t], {k, m})), Table(g(k)[0] == k/10, {k, m})), "
+            + "Table(g(k), {k, m}), {t, 0, 2});"
+            + "Chop((Table(g(k)[2], {k, m}) /. s[[1]]) - (Table(g(k)[2], {k, m}) /. e[[1]]), 10^-8)", //
+        "{0,0,0,0,0,0,0}");
+  }
+
+  @Test
+  public void testNDSolveStepSizeOptions() {
+    // the Euler, midpoint and classical Runge-Kutta formulas with ten steps of 1/10
+    check(
+        "ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
+            + "Method -> {\"FixedStep\", Method -> {\"ExplicitRungeKutta\", \"DifferenceOrder\" -> 1}}, "
+            + "StartingStepSize -> 1/10))) - 0.9^10, 10^-12)", //
+        "0");
+    check(
+        "ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
+            + "StartingStepSize -> 1/10, "
+            + "Method -> {\"FixedStep\", Method -> {\"ExplicitRungeKutta\", \"DifferenceOrder\" -> 2}}))"
+            + ") - 0.905^10, 10^-12)", //
+        "0");
+    check(
+        "ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
+            + "Method -> \"FixedStep\", StartingStepSize -> 1/10))) - (1 - 1/10 + 1/200 - 1/6000 + "
+            + "1/240000)^10.0, 10^-12)", //
+        "0");
+    check(
+        "ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
+            + "MaxStepSize -> 0.01, StartingStepSize -> 0.001))) - Exp(-1), 10^-10)", //
+        "0");
+  }
+
+  @Test
+  public void testSingularValueDecompositionFull() {
+    // the full form: u is m x m, s is m x n and v is n x n
+    check("m = {{2., 1., 0.}, {0., 1., 3.}}; {u, s, v} = SingularValueDecomposition(m); "
+        + "{Dimensions /@ {u, s, v}, Chop(u . s . Transpose(v) - m), "
+        + "Chop(Transpose(u) . u - IdentityMatrix(2)), Chop(Transpose(v) . v - IdentityMatrix(3))}", //
+        "{{{2,2},{2,3},{3,3}},{{0,0,0},{0,0,0}},{{0,0},{0,0}},{{0,0,0},{0,0,0},{0,0,0}}}");
+    check("m = {{1., 2.}, {0., 1.}, {4., 1.}}; {u, s, v} = SingularValueDecomposition(m); "
+        + "{Dimensions /@ {u, s, v}, Chop(u . s . Transpose(v) - m), "
+        + "Chop(Transpose(u) . u - IdentityMatrix(3)), Chop(s - {{SingularValueList(m)[[1]], 0}, "
+        + "{0, SingularValueList(m)[[2]]}, {0, 0}})}", //
+        "{{{3,3},{3,2},{2,2}},{{0,0},{0,0},{0,0}},{{0,0,0},{0,0,0},{0,0,0}},{{0,0},{0,0},{\n0,0}}}");
+  }
+
+  @Test
+  public void testFindRootStepMonitor() {
+    // the monitor runs after every accepted step; the last run sees the reported root
+    check("r = Reap(FindRoot(x^2 - 5, {x, 2}, StepMonitor :> Sow(x))); "
+        + "{Length(r[[2, 1]]), Last(r[[2, 1]]) == (x /. r[[1]])}", //
+        "{4,True}");
+    check("w = {p, q}; r = Reap(FindRoot({p^2 + q^2 == 4, p == q^2}, Transpose({w, {1.0, 1.0}}), "
+        + "StepMonitor :> Sow(w))); {Length(r[[2, 1]]) > 2, Last(r[[2, 1]]) == (w /. r[[1]])}", //
+        "{True,True}");
+    check("Options(FindRoot, StepMonitor)", //
+        "{StepMonitor->None}");
+  }
+
+  @Test
+  public void testFindFitCurriedModel() {
+    // a model which is only defined for numeric arguments is differentiated numerically
+    check("pts = Table({t, 2.5*Exp(-0.7*t)}, {t, 0, 4, 0.5}); "
+        + "g(a_?NumericQ, b_?NumericQ)[t_?NumericQ] := a*Exp(-b*t); "
+        + "Chop({a, b} - {2.5, 0.7} /. FindFit(pts, g(a, b)[t], {{a, 1.0, 2.0}, {b, 0.4, 1.0}}, t), "
+        + "10^-6)", //
+        "{0,0}");
+  }
+
+  @Test
+  public void testEigenvaluesPencil() {
+    // the generalized eigenvalues of Det(a - l*b) == 0
+    check("Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}})", //
+        "{3,-1}");
+    check("{Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}}, 1), "
+        + "Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}}, -1)}", //
+        "{{3},{-1}}");
+    check("Chop(Eigenvalues({{{4., 5.}, {5., 4.}}, {{2., 1.}, {1., 2.}}}) - {3., -1.})", //
+        "{0,0}");
+    // a singular b stays unevaluated
+    check("Head(Eigenvalues({{{4, 5}, {5, 4}}, {{1, 1}, {1, 1}}}))", //
+        "Eigenvalues");
+  }
+
+  @Test
+  public void testGaussianMatrix1D() {
+    check("GaussianMatrix({{1}, 0.8})", //
+        "{0.18931,0.62138,0.18931}");
+    check("{Length(GaussianMatrix({{3}})), Total(GaussianMatrix({{3}})), "
+        + "GaussianMatrix({{3}}) == Reverse(GaussianMatrix({{3}}))}", //
+        "{7,1.0,True}");
+    // the product of the kernels of the radii
+    check("{Dimensions(GaussianMatrix({{1, 2}})), "
+        + "Chop(GaussianMatrix({{1, 2}}) - Outer(Times, GaussianMatrix({{1}}), GaussianMatrix({{2}}))), "
+        + "GaussianMatrix({{2, 2}}) == GaussianMatrix(2)}", //
+        "{{3,5},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},True}");
+  }
+
+  @Test
+  public void testSeriesErfcInfinity() {
+    check("Series(Erfc(x), {x, Infinity, 7})", //
+        "(1/(Sqrt(Pi)*x)-1/(2*Sqrt(Pi)*x^3)+3/(4*Sqrt(Pi)*x^5)-15/(8*Sqrt(Pi)*x^7)+O(1/x)^\n8)/E^x^2");
+    check("Normal(Series(Erfc(x), {x, Infinity, 3}))", //
+        "(-1/(2*Sqrt(Pi)*x^3)+1/(Sqrt(Pi)*x))/E^x^2");
+    check("Normal(Series(Erf(x), {x, Infinity, 3}))", //
+        "1+(1/(2*Sqrt(Pi)*x^3)-1/(Sqrt(Pi)*x))/E^x^2");
+  }
+
+  @Test
+  public void testTotalCompensated() {
+    // compensated summation of machine numbers; Dot adds them up one after the other
+    check("{Total(Table(0.2, 15)), Table(0.2, 15) . Table(1.0, 15), Total({0.3, 0.2, 0.1})} // InputForm", //
+        "{3.0`,3.0000000000000004`,0.6`}");
+    check("{Total({1.0, 1.0*^100, 1.0, -1.0*^100}), Total({1, 0.5}), Total({x, 0.5, 0.25})}", //
+        "{2.0,1.5,0.75+x}");
+  }
+
+  @Test
+  public void testKendallTauTest() {
+    check("{KendallTau({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}), "
+        + "KendallTau({4., 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6})}", //
+        "{1/3,0.333333}");
+    check("{KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}), "
+        + "KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}, \"TestStatistic\"), "
+        + "KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}, \"TestData\")}", //
+        "{0.347558,0.333333,{0.333333,0.347558}}");
+    // ties: tau-b
+    check("{KendallTau({1, 1, 2, 3}, {2, 1, 3, 3}), KendallTau({{1, 2}, {1, 1}, {2, 3}, {3, 3}})}", //
+        "{4/5,{{1,4/5},{4/5,1}}}");
+  }
+
+  @Test
+  public void testNSolvePolynomialSystemAllRoots() {
+    // a cubic and a circle meet in 6 points, 4 of them complex
+    check("Length(NSolve({x^2+y^2==4, x^3-y==1/3}, {x,y}))", //
+        "6");
+    check("s=NSolve({x^2+y^2==4, x^3-y==1/3}, {x,y});"
+        + "Max(Abs(Flatten({x^2+y^2-4, x^3-y-1/3} /. s))) < 10^-10", //
+        "True");
+    check("NSolve({x^2+y^2==2, x^3-y==1/5},{x,y},Reals)", //
+        "{{x->-0.947292,y->-1.05007},{x->1.04767,y->0.94994}}");
+    // machine number coefficients which are small fractions
+    check("NSolve({x^2+y^2==2, x^3-y==0.25},{x,y},Reals)", //
+        "{{x->-0.933177,y->-1.06263},{x->1.05892,y->0.937383}}");
+    // an eliminant of degree 5, which has no radical roots
+    check("Length(NSolve({x^5-2*x+1/3==0, y==x^3-1/5},{x,y}))", //
+        "5");
+    // two values of y for some of the values of x
+    check("Length(NSolve({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} == 0, {x, y}))", //
+        "9");
+    check("s=NSolve({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} == 0, {x, y});"
+        + "Max(Abs(Flatten({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} /. s))) < 10^-10", //
+        "True");
+    check("NSolve({x^2+y^2==1, x^2+y^2==3},{x,y})", //
+        "{}");
+    check("NSolve({x*y==2, x+y==3, z==x-y},{x,y,z})", //
+        "{{x->1.0,y->2.0,z->-1.0},{x->2.0,y->1.0,z->1.0}}");
+  }
+
+  @Test
+  public void testReduceIntegersFreeSymbols() {
+    // the domain restricts the parameters too, and their values come first
+    check("Reduce(x^2+y^2==9, x, Integers)", //
+        "(y==-3&&x==0)||(y==0&&x==-3)||(y==0&&x==3)||(y==3&&x==0)");
+    check("Length(Reduce(x^2+y^2+z^2==3, {x,y}, Integers))", //
+        "8");
+    check("Reduce(a*x==2, x, Integers)", //
+        "(a==-2&&x==-1)||(a==-1&&x==-2)||(a==1&&x==2)||(a==2&&x==1)");
+    check("Reduce(x+b==2 && b>=0 && x>=0, x, Integers)", //
+        "(b==0&&x==2)||(b==1&&x==1)||(b==2&&x==0)");
+  }
+
+  @org.junit.jupiter.api.Disabled("ToRules is not yet a built-in symbol")
+  @Test
+  public void testToRules() {
+    check("{ToRules(x==2&&y==5 || x==-1&&y==0)}", //
+        "{{x->2,y->5},{x->-1,y->0}}");
+    check("ToRules(a==3&&b==4)", //
+        "{a->3,b->4}");
+    check("{ToRules(x==2||x==7)}", //
+        "{{x->2},{x->7}}");
+    // relations which are no equations are left out
+    check("ToRules(z==1&&w>0)", //
+        "{z->1}");
+    check("{ToRules((u==1||u==2)&&v==3)}", //
+        "{{u->1,v->3},{u->2,v->3}}");
+    check("{ToRules(False)}", //
+        "{}");
+    check("{ToRules(Reduce(x^2==9, x))}", //
+        "{{x->-3},{x->3}}");
+  }
+
+  @Test
+  public void testCellularAutomatonFunctionRuleBackground() {
+    // a background block of one cell {b} is the background b
+    check("CellularAutomaton({Mod(Total(#), 2) &, {}, 1}, {{1, 0, 1}, {0}}, 2)", //
+        "{{0,0,1,0,1,0,0},{0,1,1,0,1,1,0},{1,0,0,0,0,0,1}}");
+    check("CellularAutomaton({Max(#) &, {}, 1}, {{1, 1}, {0}}, 3) === "
+        + "CellularAutomaton({Max(#) &, {}, 1}, {{1, 1}, 0}, 3)", //
+        "True");
+    // {f, {}, {ry, rx}} on an array with a background {{b}}: f gets the 3 x 3 block
+    check("CellularAutomaton({Mod(Total(Flatten(#)), 2) &, {}, {1, 1}}, {{{1}}, {{0}}}, {{{1}}})", //
+        "{{1,1,1},{1,1,1},{1,1,1}}");
+    check("CellularAutomaton({Max(Flatten(#)) &, {}, {1, 1}}, {{{0, 1}}, {{0}}}, 1)", //
+        "{{{0,0,0},{0,1,0},{0,0,0}},{{1,1,1},{1,1,1},{1,1,1}}}");
+  }
+
+  @Test
+  public void testRevolutionAxis() {
+    // about the x axis the profile {t, 0, f} keeps its x coordinate and turns at the radius f
+    check("pts = First(RevolutionPlot3D(3, {t, 0, 2}, RevolutionAxis -> {1, 0, 0}))[[1]]; "
+        + "{Round(MinMax(pts[[All, 1]]), 0.01), Round(Max(pts[[All, 2]]), 0.01), "
+        + "Round(Max(pts[[All, 3]]), 0.01)}", //
+        "{{0.0,2.0},3.0,3.0}");
+    // a pair {fx, fz} is the profile point {fx, 0, fz}
+    check("pts = First(RevolutionPlot3D({1, t}, {t, 0, 2}, RevolutionAxis -> {1, 0, 0}))[[1]]; "
+        + "{Union(Round(pts[[All, 1]], 0.01)), Round(Max(Sqrt(pts[[All, 2]]^2 + pts[[All, 3]]^2)), 0.01)}", //
+        "{{1.0},2.0}");
+    // the z axis is the default
+    check("First(RevolutionPlot3D(t^2, {t, 0, 1}, RevolutionAxis -> {0, 0, 1})) === "
+        + "First(RevolutionPlot3D(t^2, {t, 0, 1}))", //
+        "True");
+  }
+
+  @Test
+  public void testVectorDensityPlot() {
+    check("g = VectorDensityPlot({x, y^2}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 3, PlotPoints -> 5); "
+        + "{Head(g), Length(Cases(g, _Raster, Infinity)), Length(Cases(g, _Arrow, Infinity))}", //
+        "{Graphics,1,8}");
+  }
+
+  @Test
+  public void testBSplineFunctionSurface() {
+    // the dimension argument 2 reads a matrix of numbers as a surface of numbers
+    check("BSplineFunction({{0, 2, 4}, {1, 3, 5}}, 2, SplineDegree -> 1)[0.5, 0.25]", //
+        "1.5");
+    // a closed linear spline runs once around the control points
+    check("BSplineFunction({{0, 0}, {2, 0}, {2, 2}, {0, 2}}, SplineDegree -> 1, "
+        + "SplineClosed -> True)[5/8]", //
+        "{1.0,2.0}");
+    check("BSplineFunction({{0, 2, 4}, {1, 3, 5}}, 2, SplineDegree -> 1, "
+        + "SplineClosed -> {True, False})[0.75, 0.5]", //
+        "2.5");
+    // a closed cubic spline weights the nearest control points 1/6, 2/3, 1/6
+    check("BSplineFunction({0, 6, 12, 6}, SplineClosed -> True)[0.25]", //
+        "6.0");
+    // a parameter beyond 0 ... 1 is clamped only when asked for
+    check("BSplineFunction({1, 2, 5}, SplineDegree -> 1, "
+        + "Method -> {\"Extrapolation\" -> \"Clamp\"})[-0.5]", //
+        "1.0");
+    check("BSplineFunction({1, 2, 5}, SplineDegree -> 1)[-0.5]", //
+        "BSplineFunction({1,2,5},SplineDegree->1)[-0.5]");
+  }
+
+  @Test
+  public void testPolyhedronFamilies() {
+    check("Table({PolyhedronData({\"Prism\", n}, \"VertexCount\"), "
+        + "PolyhedronData({\"Prism\", n}, \"EdgeCount\"), "
+        + "PolyhedronData({\"Prism\", n}, \"FaceCountRules\")}, {n, 4, 5})", //
+        "{{8,12,{4->6}},{10,15,{4->5,5->2}}}");
+    check("{PolyhedronData({\"Prism\", 4}, \"Volume\"), PolyhedronData({\"Pyramid\", 3}, \"Volume\"), "
+        + "PolyhedronData({\"Dipyramid\", 4}, \"Volume\")}", //
+        "{1,1/(6*Sqrt(2)),Sqrt(2)/3}");
+    // every edge of an antiprism has the length 1
+    check("v = PolyhedronData({\"Antiprism\", 6}, \"VertexCoordinates\"); "
+        + "Union(Round(Map(Norm(v[[#[[1]]]] - v[[#[[2]]]]) &, "
+        + "PolyhedronData({\"Antiprism\", 6}, \"Edges\")), 10^-9))", //
+        "{1}");
+    check("PolyhedronData({\"Dipyramid\", 4}, \"VertexCoordinates\")", //
+        "{{0,0,-1/Sqrt(2)},{0,0,1/Sqrt(2)},{1/2,1/2,0},{-1/2,1/2,0},{-1/2,-1/2,0},{1/2,-1/\n" //
+            + "2,0}}");
+    // a pyramid with unit edges exists up to the pentagon
+    check("PolyhedronData({\"Pyramid\", 6}, \"Volume\")", //
+        "PolyhedronData({Pyramid,6},Volume)");
+    check("PolyhedronData(\"SquarePyramid\", \"FaceCountRules\")", //
+        "{3->4,4->1}");
+    check("PolyhedronData(\"Platonic\")", //
+        "{Cube,Dodecahedron,Icosahedron,Octahedron,Tetrahedron}");
+    check("Table({s, PolyhedronData(s, \"FaceCountRules\"), PolyhedronData(s, \"Volume\")}, "
+        + "{s, {\"Cube\", \"Octahedron\", \"Dodecahedron\", \"Cuboctahedron\", \"RhombicDodecahedron\"}})", //
+        "{{Cube,{4->6},1},{Octahedron,{3->8},Sqrt(2)/3},{Dodecahedron,{5->12},1/4*(15+7*Sqrt(\n" //
+            + "5))},{Cuboctahedron,{3->8,4->6},5/3*Sqrt(2)},{RhombicDodecahedron,{4->12},16/(3*Sqrt(\n" //
+            + "3))}}");
+    // Euler's formula for every convex solid of the table
+    check("Union(Table(PolyhedronData(s, \"VertexCount\") - PolyhedronData(s, \"EdgeCount\") "
+        + "+ PolyhedronData(s, \"FaceCount\"), {s, PolyhedronData(\"Convex\")}))", //
+        "{2}");
+  }
+
+  @Test
+  public void testSumUnevaluatedSummand() {
+    // the summand of a sum without closed form is evaluated, the value of hs is used
+    check("hs = Sin(Pi*y); Sum((hs /. y -> j/m)*Binomial(m, j)*y^j, {j, 0, m}) /. {y -> 1/3, m -> 3}", //
+        "1/(2*Sqrt(3))+Sqrt(3)/2");
+    check("Hold(Evaluate(Sum((hs /. y -> j/m)*f(j), {j, 0, m})))", //
+        "Hold(Sum(f(j)*Sin((j*Pi)/m),{j,0,m}))");
+    // constant factors stay in a sum which can't be evaluated
+    check("Sum(b(j)+b(j)+b(j), {j, 1, m})", //
+        "Sum(3*b(j),{j,1,m})");
+    check("Sum(c*b(j), {j, 1, m})", //
+        "Sum(c*b(j),{j,1,m})");
+    // and are pulled out if the remaining sum can be evaluated
+    check("Sum(c*j^2, {j, 1, m})", //
+        "c*(m/6+m^2/2+m^3/3)");
+    check("ClearAll(hs)", //
+        "");
+    // a bound with a value makes a numeric sum
+    check("m = 3; Sum(i^2, {i, 1, m})", //
+        "14");
+  }
+
+  @Test
+  public void testCurriedConditionCases() {
+    // more subsets than the iteration limit
+    check("Length(Subsets(Range(60), {2}))", //
+        "1770");
+    check("vals = Range(48); near(l_)[p_, q_] := Abs(l[[p]] - l[[q]]) == 1; "
+        + "Length(Cases(Subsets(Range(48), {2}), {p_, q_} /; near(vals)[p, q]))", //
+        "47");
+    check("ClearAll(vals, near)", //
+        "");
+  }
+
+  @Test
+  public void testNumberFormDigitsDecimals() {
+    check("ToString(NumberForm(7654321.25, {Infinity, 3}))", //
+        "7654321.250");
+    check("ToString(NumberForm(7654321.25, {Infinity, 3}, DigitBlock -> 3))", //
+        "7,654,321.250");
+    check("ToString(NumberForm(7654321.25, {9, 2}))", //
+        "7654321.25");
+    check("ToString(NumberForm(45, {Infinity, 2}))", //
+        "45");
+    check("ToString(NumberForm(-0.875, {Infinity, 2}))", //
+        "-0.88");
+    check("ToString(NumberForm(4321.25, {Infinity, 1}))", //
+        "4321.2");
+    // the binary value is rounded: 2.675 is a little below 2.675
+    check("ToString(NumberForm(2.675, {Infinity, 2}))", //
+        "2.67");
+    check("ToString(NumberForm(4321.75, {6, 3}))", //
+        "4321.750");
+  }
+
+  @Test
+  public void testNestedScopeRenaming() {
+    // the pattern variables of a rule and the parameters of a function are renamed, if a
+    // substituted variable reaches into them
+    check("With({k = 5}, Hold(r(u_) := u^k))", //
+        "Hold(r(u$_):=u$^5)");
+    check("With({k = 5}, Hold({u_ :> u + k, v_ -> v}))", //
+        "Hold({u$_:>u$+5,v_->v})");
+    check("With({k = 5}, Hold(Function(y, k*y)))", //
+        "Hold(Function(y$,5*y$))");
+    check("With({k = 5}, Hold(Function(y, y^2)))", //
+        "Hold(Function(y,y^2))");
+    check("Module({k}, Hold(r(u_) := u^2))", //
+        "Hold(r(u_):=u^2)");
+    check("Block({u = 2.0}, Module({k = 4}, r(u_) = D(k*u^2, u); r(5)))", //
+        "40");
+    check("ClearAll(r)", //
+        "");
+    // two rules of one body which bind the same name get the same renamed variable
+    check("SameQ @@ Cases(Module({a = 2}, Hold({f(x_) := a*x, g(x_) := a+x})), "
+        + "HoldPattern(Pattern(v_, _)) :> v, Infinity, Heads -> True)", //
+        "True");
+  }
+
+  @Test
+  public void testInverseFunctionOneRule() {
+    check("w(z_) := 5*z - 2; InverseFunction(w)", //
+        "1/5*(2+#1)&");
+    check("q(z_) := 7/4 - z/3; Simplify(q(InverseFunction(q)[s]))", //
+        "s");
+    // only a symbol with one rule f(x_) := rhs
+    check("u(z_) := z; u(z_, y_) := y; InverseFunction(u)", //
+        "InverseFunction(u)");
+    check("v(z_Integer) := 2*z; InverseFunction(v)", //
+        "InverseFunction(v)");
+    check("ClearAll(w, q, u, v)", //
+        "");
+  }
+
+  @Test
+  public void testReplacePartPositionPatterns() {
+    check("ReplacePart({{a, b}, {c, d}}, {r_, s_} /; r > s :> 10*r + s)", //
+        "{{a,b},{21,d}}");
+    check("ReplacePart({{a, b, c}, {d, e, f}}, {r_, s_} /; s == 3 -> z)", //
+        "{{a,b,z},{d,e,z}}");
+    check("ReplacePart({{a, b}, {c, d}}, {r_} /; r == 1 -> z)", //
+        "{z,{c,d}}");
+    check("ReplacePart({{a, b}, {c, d}}, {k__} /; Length({k}) == 2 && Last({k}) == 1 -> z)", //
+        "{{z,b},{z,d}}");
+    check("ReplacePart({a, b, c, d}, (p : {_?OddQ}) :> First(p))", //
+        "{1,b,3,d}");
+    check("Normal(SparseArray({}, {2, 2}))", //
+        "{{0,0},{0,0}}");
+    check("Normal(ReplacePart(SparseArray({}, {2, 4}), {r_, s_} /; s - r == 1 -> 7))", //
+        "{{0,7,0,0},{0,0,7,0}}");
+  }
+
+  @Test
+  public void testFullFormStringLiterals() {
+    check("FullForm({\"p\\\"q\", \"r\\\\s\", \"t\\nu\"})", //
+        "List(\"p\\\"q\", \"r\\\\s\", \"t\\nu\")");
+    check("FullForm({FromCharacterCode(946), FromCharacterCode(26085), FromCharacterCode(128513), "
+        + "FromCharacterCode(252), FromCharacterCode(7)})", //
+        "List(\"\\[Beta]\", \"\\:65e5\", \"\\|01f601\", \"\\[UDoubleDot]\", \"\\.07\")");
+    check("FullForm(Hold(\\[Gamma] + 5*^3))", //
+        "Hold(Plus(\\[Gamma], 5000))");
   }
 
   @Test
@@ -20952,7 +21428,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{Module({x}, x), Module({x}, x)}", //
         "{x$1,x$2}");
     check("Module({e = Expand((1 + x)^5)}, Function(x, e))", //
-        "Function(x$3,e$3)");
+        "Function(x$,e$3)");
     EvalEngine.resetModuleCounter4JUnit();
     check("Module({a,b}, Block({c}, c+a))", //
         "a$1+c");
@@ -20979,7 +21455,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     EvalEngine.resetModuleCounter4JUnit();
     check("Module({x},Function(y,x+y))", //
-        "Function(y$1,x$1+y$1)");
+        "Function(y$,x$1+y$)");
     // check("Module({y},Function(y,x+y))",//
     // "x$22$23+y");
 

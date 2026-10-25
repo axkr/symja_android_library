@@ -53,7 +53,7 @@ public class PowerRange extends AbstractFunctionEvaluator {
       if (start.abs().lessEqual(absLimit).isTrue()) {
         return F.List(start);
       }
-      return F.List();
+      return F.CEmptyList;
     }
 
     // Ratio 0 (Sequence: start, 0, 0...)

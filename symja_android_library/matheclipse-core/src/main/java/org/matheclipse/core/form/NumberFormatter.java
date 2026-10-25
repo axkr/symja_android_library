@@ -237,8 +237,12 @@ public class NumberFormatter {
     if (Double.isNaN(value) || Double.isInfinite(value)) {
       return null;
     }
-    return format(new BigDecimal(Double.toString(value)), significantDigits(significantFigures, -1),
-        true);
+    // with a number of fraction digits the binary value itself is rounded: 2.675 is
+    // 2.67499999999999982236431605997495353221893310546875 and NumberForm(2.675, {Infinity, 2}) is
+    // 2.67; otherwise the shortest decimal which gives back the double is formatted
+    BigDecimal decimal =
+        fractionDigits >= 0 ? new BigDecimal(value) : new BigDecimal(Double.toString(value));
+    return format(decimal, significantDigits(significantFigures, -1), true);
   }
 
   /**
@@ -321,13 +325,14 @@ public class NumberFormatter {
     int shift = exponent == null ? 0 : exponent.intValue();
 
     BigDecimal mantissa = shift == 0 ? abs : abs.movePointLeft(shift);
-    if (fractionDigits >= 0) {
-      mantissa = mantissa.setScale(fractionDigits, RoundingMode.HALF_UP);
+    if (fractionDigits >= 0 && approximate) {
+      // a decimal tie goes to the even digit: NumberForm(98765.25, {Infinity, 1}) is 98765.2
+      mantissa = mantissa.setScale(fractionDigits, RoundingMode.HALF_EVEN);
       if (kind == FormKind.ACCOUNTING) {
         // an accounting column shows no trailing zeros - it fills the field behind the number
         mantissa = stripTrailingZeros(mantissa);
       }
-    } else if (significantFigures > 0) {
+    } else if (fractionDigits < 0 && significantFigures > 0) {
       mantissa = mantissa.round(new MathContext(significantFigures, RoundingMode.HALF_UP));
       mantissa = stripTrailingZeros(mantissa);
     }
@@ -337,7 +342,8 @@ public class NumberFormatter {
     String integerPart = pointIndex < 0 ? plain : plain.substring(0, pointIndex);
     String fractionPart = pointIndex < 0 ? "" : plain.substring(pointIndex + 1);
 
-    if (fractionDigits >= 0 && kind != FormKind.ACCOUNTING) {
+    if (fractionDigits >= 0 && approximate && kind != FormKind.ACCOUNTING) {
+      // an exact integer is printed without a fraction: NumberForm(12, {Infinity, 2}) is 12
       fractionPart = fitFraction(fractionPart, fractionDigits);
     }
 
@@ -403,6 +409,12 @@ public class NumberFormatter {
     switch (kind) {
       case NUMBER:
         if (scientificExponent >= -5 && scientificExponent <= 5) {
+          return null;
+        }
+        if (fractionDigits >= 0 && scientificExponent > 5
+            && (totalDigits <= 0 || scientificExponent < totalDigits)) {
+          // NumberForm(x, {n, f}) writes all integer digits of x if there are at most n of them,
+          // NumberForm(1234567.5, {Infinity, 2}) is 1234567.50
           return null;
         }
         break;

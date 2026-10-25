@@ -1027,6 +1027,8 @@ public abstract class Scanner {
       if ((fCurrentChar != '\t') //
           && (fCurrentChar != '\r') //
           && (fCurrentChar != ' ')//
+          && (fCurrentChar != '\u000B') // vertical tab
+          && (fCurrentChar != '\f') //
           && (fCurrentChar != '\uF360') // \[InvisibleSpace]
           && (fCurrentChar < 128 || !Character.isSpaceChar(fCurrentChar)) // \[LineSeparator], ...
       ) {
@@ -1313,7 +1315,8 @@ public abstract class Scanner {
    *
    */
   protected void scanNumber() {
-    fNumberExponent = "1";
+    // null: no exponent n*^e follows the digits
+    fNumberExponent = null;
     int numFormat = 10;
     int startPosition = fCurrentPosition - 1;
     final char firstCh = fCurrentChar;

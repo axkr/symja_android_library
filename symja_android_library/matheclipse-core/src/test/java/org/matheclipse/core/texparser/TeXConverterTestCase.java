@@ -422,10 +422,10 @@ public class TeXConverterTestCase  {
   public void testTeXElementOf() {
     checkFullForm(//
         "\\beta \\in \\reals", //
-        "Element(β, Reals)");
+        "Element(\\[Beta], Reals)");
     checkFullForm(//
         "\\beta \\in \\Reals", //
-        "Element(β, Reals)");
+        "Element(\\[Beta], Reals)");
   }
 
   @Test

@@ -4161,7 +4161,8 @@ public final class Programming {
     final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
         new IdentityHashMap<ISymbol, IExpr>();
     if (rememberModuleVariables(intializerList, varAppend, moduleVariables, engine)) {
-      IExpr result = moduleBlock.accept(new ModuleReplaceAll(moduleVariables, engine, varAppend));
+      IExpr result =
+          moduleBlock.accept(ModuleReplaceAll.scopingConstruct(moduleVariables, engine, varAppend));
       return result.orElse(moduleBlock);
     }
     return F.NIL;
@@ -4211,8 +4212,8 @@ public final class Programming {
     final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
         new IdentityHashMap<ISymbol, IExpr>();
     if (rememberWithVariables(intializerList, moduleVariables, engine)) {
-      IExpr result = withBlock
-          .accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
+      IExpr result = withBlock.accept(
+          ModuleReplaceAll.scopingConstruct(moduleVariables, engine, EvalEngine.uniqueName("$")));
       return result.orElse(withBlock);
     }
     return F.NIL;

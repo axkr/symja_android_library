@@ -162,16 +162,10 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
       if (curve == null) {
         continue;
       }
-      double radius = curve[0];
-      double height = curve[1];
+      double radius = radiusOf(curve, axis);
       for (int j = 0; j < nTheta; j++) {
         double angle = theta[0] + j * thetaStep;
-        double cos = Math.cos(angle);
-        double sin = Math.sin(angle);
-        double[] point = new double[3];
-        for (int c = 0; c < 3; c++) {
-          point[c] = radius * (cos * u[c] + sin * w[c]) + height * axis[c];
-        }
+        double[] point = revolve(curve, axis, u, w, angle);
         if (region != null) {
           unmasked[i][j] = point;
           insideGrid[i][j] =
@@ -198,7 +192,7 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     for (double[][] row : grid) {
       for (double[] p : row) {
         if (p != null) {
-          double r = Math.hypot(p[0], p[1]);
+          double r = distanceFromAxis(p, axis);
           rMin = Math.min(rMin, r);
           rMax = Math.max(rMax, r);
         }
@@ -219,7 +213,7 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
           }
           // every coordinate is handed over in the same units, which they were not before
           colors[i][j] = colorMap.color(p[0], p[1], p[2], t[0] + i * tStep,
-              theta[0] + j * thetaStep, Math.hypot(p[0], p[1]));
+              theta[0] + j * thetaStep, distanceFromAxis(p, axis));
         }
       }
     }
@@ -241,19 +235,14 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
             if (curve == null) {
               return null;
             }
-            double[] at = new double[3];
-            for (int c = 0; c < 3; c++) {
-              at[c] = curve[0] * (Math.cos(angle) * frameU[c] + Math.sin(angle) * frameW[c])
-                  + curve[1] * axis[c];
-            }
-            return at;
+            return revolve(curve, axis, frameU, frameW, angle);
           }
 
           @Override
           public boolean inside(double[] at, double tValue, double angle) {
             double[] curve = evaluateCurve(func, tVar, tValue, engine, F.NIL);
             return curve != null
-                && region.accepts(at[0], at[1], at[2], tValue, angle, curve[0]);
+                && region.accepts(at[0], at[1], at[2], tValue, angle, radiusOf(curve, axis));
           }
         }, t[0], tStep, theta[0], thetaStep);
     Plot3DTools.addSurface(builder, grid, false, wrapTheta, colors, true,
@@ -263,12 +252,66 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     return Plot3DTools.withBoundary(builder, grid, options[Plot3DTools.X_BOUNDARY_STYLE], false);
   }
 
+  /** {@code true} if the axis of revolution is the z axis. */
+  private static boolean isZAxis(double[] axis) {
+    return axis[0] == 0.0 && axis[1] == 0.0 && axis[2] > 0.0;
+  }
+
+  /** The distance of the point {@code p} from the line through the origin along {@code axis}. */
+  private static double distanceFromAxis(double[] p, double[] axis) {
+    double h = p[0] * axis[0] + p[1] * axis[1] + p[2] * axis[2];
+    double x = p[0] - h * axis[0];
+    double y = p[1] - h * axis[1];
+    double z = p[2] - h * axis[2];
+    return Math.sqrt(x * x + y * y + z * z);
+  }
+
   /**
-   * The curve point as {@code {radius, height}} in the rotation plane.
+   * The radius of revolution of the curve point {@code {x, y, z}}. About the z axis a point of the
+   * profile plane keeps the sign of its x coordinate, as the radius of the swept circle.
+   */
+  private static double radiusOf(double[] curve, double[] axis) {
+    if (isZAxis(axis)) {
+      return curve[1] == 0.0 ? curve[0] : Math.hypot(curve[0], curve[1]);
+    }
+    return distanceFromAxis(curve, axis);
+  }
+
+  /**
+   * The curve point {@code {x, y, z}} turned by {@code angle} about {@code axis}. About the z axis
+   * the circles start in the direction {@code u} of the given frame; about any other axis the curve
+   * point itself is the start of its circle.
+   */
+  private static double[] revolve(double[] curve, double[] axis, double[] u, double[] w,
+      double angle) {
+    double cos = Math.cos(angle);
+    double sin = Math.sin(angle);
+    double[] point = new double[3];
+    if (isZAxis(axis)) {
+      double radius = radiusOf(curve, axis);
+      for (int c = 0; c < 3; c++) {
+        point[c] = radius * (cos * u[c] + sin * w[c]) + curve[2] * axis[c];
+      }
+      return point;
+    }
+    double h = curve[0] * axis[0] + curve[1] * axis[1] + curve[2] * axis[2];
+    double[] radial = new double[3];
+    for (int c = 0; c < 3; c++) {
+      radial[c] = curve[c] - h * axis[c];
+    }
+    double[] turned = cross(axis, radial);
+    for (int c = 0; c < 3; c++) {
+      point[c] = h * axis[c] + cos * radial[c] + sin * turned[c];
+    }
+    return point;
+  }
+
+  /**
+   * The curve point as {@code {x, y, z}} in space, before it is turned about the axis.
    *
    * <p>
-   * A bare {@code fz} is a height at radius {@code t}; a pair is {@code {radius, height}}; a triple
-   * is a space curve, whose distance from the axis becomes the radius.
+   * A bare {@code fz} is the point {@code {t, 0, fz}}; a pair {@code {fx, fz}} is the point
+   * {@code {fx, 0, fz}}; a triple is a space curve.
    */
   private static double[] evaluateCurve(IExpr func, IExpr tVar, double t, EvalEngine engine,
       IExpr monitor) {
@@ -280,21 +323,21 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
         if (list.argSize() == 2) {
           double r = list.arg1().evalfNaN();
           double z = list.arg2().evalfNaN();
-          return Double.isFinite(r) && Double.isFinite(z) ? new double[] {r, z} : null;
+          return Double.isFinite(r) && Double.isFinite(z) ? new double[] {r, 0.0, z} : null;
         }
         if (list.argSize() >= 3) {
           double x = list.arg1().evalfNaN();
           double y = list.arg2().evalfNaN();
           double z = list.arg3().evalfNaN();
           if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
-            return new double[] {Math.hypot(x, y), z};
+            return new double[] {x, y, z};
           }
           return null;
         }
         return null;
       }
       double z = value.evalfNaN();
-      return Double.isFinite(z) ? new double[] {t, z} : null;
+      return Double.isFinite(z) ? new double[] {t, 0.0, z} : null;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return null;

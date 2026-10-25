@@ -584,19 +584,36 @@ class ParserTestCase {
   @Test
   void testParser68() {
     ASTNode obj = PARSE_UNRELAXED.parse("8 + 1*^-28");
-    assertEquals("Plus(8, Times(1, Power(10000000000000000000000000000, -1)))", obj.toString());
+    assertEquals("Plus(8, 1/10000000000000000000000000000)", obj.toString());
 
-    // 6
     obj = PARSE_UNRELAXED.parse("6*^0");
-    assertEquals("Times(6, 1)", obj.toString());
+    assertEquals("6", obj.toString());
 
-    // 3/5
     obj = PARSE_UNRELAXED.parse("6*^-1");
-    assertEquals("Times(6, Power(10, -1))", obj.toString());
+    assertEquals("3/5", obj.toString());
 
-    // 6000
     obj = PARSE_UNRELAXED.parse("6*^3");
-    assertEquals("Times(6, 1000)", obj.toString());
+    assertEquals("6000", obj.toString());
+  }
+
+  @Test
+  void testIntegerTimesPowerOf10() {
+    // n*^e is one exact number, not the product n*10^e
+    ASTNode obj = PARSE_UNRELAXED.parse("{7*^4, -4*^2, 25*^-2, 40*^-1, 3*^+2}");
+    assertEquals("List(70000, -400, 1/4, 4, 300)", obj.toString());
+    obj = PARSE_UNRELAXED.parse("f[9*^1, x]");
+    assertEquals("f(90, x)", obj.toString());
+  }
+
+  @Test
+  void testControlCharacterLetters() {
+    // a C0 control character which is neither white space nor the bell character is a letter
+    ASTNode obj = PARSE_UNRELAXED.parse("{u -> 5" + (char) 30 + "}");
+    assertEquals("List(Rule(u, Times(5, " + (char) 30 + ")))", obj.toString());
+    obj = PARSE_UNRELAXED.parse("a" + (char) 2 + "b");
+    assertEquals("a" + (char) 2 + "b", obj.toString());
+    obj = PARSE_UNRELAXED.parse("a" + (char) 12 + "b");
+    assertEquals("Times(a, b)", obj.toString());
   }
 
   @Test

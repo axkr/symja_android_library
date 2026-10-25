@@ -4075,7 +4075,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       if (domain == S.Integers || domain == S.Primes || domain == S.Rationals) {
         // stays unevaluated (F.NIL) if no integer/rational method applies
-        return reduceIntegers(arg1, vars, domain, engine);
+        return reduceIntegers(arg1, withDiscreteParameters(arg1, vars, domain), domain, engine);
       }
 
       // from here on the domain is `Reals` or `Complexes`
@@ -4879,6 +4879,32 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
     }
     return reduceIntegerSystem(expr, vars, domain, engine);
+  }
+
+  /**
+   * The variables of a reduction over {@link S#Integers} or {@link S#Primes}, with the parameters
+   * of the condition in front of them: the domain restricts the parameters too, so
+   * <code>x^2+y^2==4</code> for <code>x</code> has the integer solutions
+   * <code>y==0&amp;&amp;x==2</code> and three others, with the value of the parameter first.
+   *
+   * @param condition the condition of the reduction
+   * @param vars the variables to reduce
+   * @param domain the domain of the reduction
+   * @return <code>vars</code> if the condition has no parameters, which are symbols
+   */
+  private static IAST withDiscreteParameters(IExpr condition, IAST vars, ISymbol domain) {
+    if (domain != S.Integers && domain != S.Primes) {
+      return vars;
+    }
+    IAST conditionVariables = new VariablesSet(condition).getVarList();
+    IAST parameters = conditionVariables.select(v -> !vars.contains(v));
+    if (parameters.argSize() == 0 || !parameters.forAll(v -> v.isSymbol())) {
+      return vars;
+    }
+    IASTAppendable all = F.ListAlloc(parameters.argSize() + vars.argSize());
+    all.appendArgs(parameters);
+    all.appendArgs(vars);
+    return all;
   }
 
   /**

@@ -714,6 +714,22 @@ public class ImageGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 1, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
+      if (ast.argSize() >= 2 && ast.arg2().isList2() && ast.arg2().first().isAST(S.Graphics)) {
+        // {graphic, alpha}: the overlay is the image the graphic is drawn to
+        IExpr image = engine.evaluate(F.unaryAST1(S.Rasterize, ast.arg2().first()));
+        if (!(image instanceof ImageExpr)) {
+          return F.NIL;
+        }
+        return engine.evaluate(ast.setAtCopy(2, ((IAST) ast.arg2()).setAtCopy(1, image)));
+      }
+      rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 2, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
       BufferedImage background = ImagePropertyFunctions.bufferedImage(ast.arg1());
       if (background == null) {
         return F.NIL;

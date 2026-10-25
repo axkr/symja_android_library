@@ -4,7 +4,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IntRangeSpec;
 import org.matheclipse.core.expression.F;
@@ -116,15 +115,13 @@ public class Subsets extends AbstractFunctionEvaluator {
       }
 
       IASTAppendable result = F.ast(S.List, (int) expectedSize + 1);
-      int iterationLimit = engine.getIterationLimit();
-      long iterationCounter = 0;
 
       // Lazy Generation: Compute and unrank ONLY the required indices
+      // The number of subsets is bounded by Config.MAX_AST_SIZE above; the iteration limit counts
+      // evaluation steps and does not apply to the length of the result list:
+      // Subsets(Range(50), {2}) has 1225 elements.
       for (long i = 0; i < expectedSize; i++) {
-        if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-          IterationLimitExceeded.throwIt((int) iterationCounter, ast);
-        }
-
+        engine.checkTimeLimit();
         long currentGlobalIndex = start + i * sliceStep;
         result.append(getSubsetByRank(f, n, min, max, step, currentGlobalIndex));
       }

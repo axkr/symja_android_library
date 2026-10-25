@@ -121,7 +121,7 @@ public class Ratios extends AbstractFunctionEvaluator {
       int size = currentList.argSize();
 
       if (size < 2) {
-        return F.List();
+        return F.CEmptyList;
       }
 
       IASTAppendable nextList = F.ListAlloc(size - 1);

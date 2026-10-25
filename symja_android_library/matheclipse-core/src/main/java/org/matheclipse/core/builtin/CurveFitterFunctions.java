@@ -145,8 +145,26 @@ public class CurveFitterFunctions {
       public double[] gradient(double t, double... parameters) {
         createSubstitutionRules(t, parameters);
         final double[] gradient = new double[parameters.length];
+        boolean numeric = true;
         for (int i = 0; i < parameters.length; i++) {
           gradient[i] = F.subst(gradientList.get(i + 1), listOfRules).evalfNaN();
+          numeric &= Double.isFinite(gradient[i]);
+        }
+        if (!numeric) {
+          // a model which is only defined for numeric arguments, f(a_?NumericQ)(t_?NumericQ),
+          // has no derivative which can be evaluated: use central differences instead
+          for (int i = 0; i < parameters.length; i++) {
+            if (!Double.isFinite(gradient[i])) {
+              final double[] shifted = parameters.clone();
+              final double h = differenceStep(parameters[i]);
+              shifted[i] = parameters[i] + h;
+              final double upper = value(t, shifted);
+              shifted[i] = parameters[i] - h;
+              final double lower = value(t, shifted);
+              gradient[i] = (upper - lower) / (2.0 * h);
+            }
+          }
+          createSubstitutionRules(t, parameters);
         }
         return gradient;
       }
@@ -158,6 +176,14 @@ public class CurveFitterFunctions {
         createSubstitutionRules(t, parameters);
         return engine.evalDouble(F.subst(function, listOfRules));
       }
+    }
+
+    /**
+     * The width of the central difference for a parameter with the value <code>p</code>: the cube
+     * root of the machine epsilon, relative to the size of <code>p</code>.
+     */
+    static double differenceStep(double p) {
+      return 6.0e-6 * Math.max(1.0, Math.abs(p));
     }
 
     /**
@@ -216,7 +242,8 @@ public class CurveFitterFunctions {
         if (temp.isVariable()) {
           initialGuess[i - 1] = 1.0;
           return temp;
-        } else if (temp.isList2() && temp.first().isSymbol()) {
+        } else if ((temp.isList2() || temp.isList3()) && temp.first().isSymbol()) {
+          // {a, a0} or {a, a0, a1}: the search starts at a0
           final IReal realNumber = temp.second().evalReal();
           if (realNumber != null) {
             initialGuess[i - 1] = realNumber.doubleValue();
@@ -337,6 +364,20 @@ public class CurveFitterFunctions {
           values[i] = engine.evalDouble(F.subst(fitFunction, rules));
           for (int j = 0; j < parameters; j++) {
             jacobian[i][j] = F.subst(gradient.get(j + 1), rules).evalfNaN();
+          }
+          for (int j = 0; j < parameters; j++) {
+            if (!Double.isFinite(jacobian[i][j])) {
+              // no derivative which can be evaluated: a central difference
+              final IASTMutable rule = (IASTMutable) rules.get(n + j + 1);
+              final double p = point.getEntry(j);
+              final double h = differenceStep(p);
+              rule.set(2, F.num(p + h));
+              final double upper = engine.evalDouble(F.subst(fitFunction, rules));
+              rule.set(2, F.num(p - h));
+              final double lower = engine.evalDouble(F.subst(fitFunction, rules));
+              rule.set(2, F.num(p));
+              jacobian[i][j] = (upper - lower) / (2.0 * h);
+            }
           }
         }
         return new Pair<>(new ArrayRealVector(values, false),

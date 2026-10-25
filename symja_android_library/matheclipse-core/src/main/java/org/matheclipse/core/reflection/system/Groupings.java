@@ -40,7 +40,7 @@ public class Groupings extends AbstractFunctionEvaluator {
       if (n < 0)
         return F.NIL;
       if (n == 0)
-        return F.List();
+        return F.CEmptyList;
       leafList = F.ListAlloc(n);
       for (int i = 1; i <= n; i++) {
         leafList.append(F.ZZ(i));
@@ -55,7 +55,7 @@ public class Groupings extends AbstractFunctionEvaluator {
 
     // Condition: (n - 1) must be divisible by (k - 1)
     if (n > 1 && (n - 1) % (k - 1) != 0) {
-      return F.List();
+      return F.CEmptyList;
     }
 
     return generateGroupings(leafList, k, head);

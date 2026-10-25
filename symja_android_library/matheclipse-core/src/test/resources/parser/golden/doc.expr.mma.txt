@@ -1721,7 +1721,7 @@ FromContinuedFraction({3, 7, 15, 1, 292, 1, 1, 1, 2, 1})	Times(FromContinuedFrac
 FromDMS("52 31 12 S")	Times(FromDMS, "52 31 12 S")
 FromDMS("52d31m12s")	Times(FromDMS, "52d31m12s")
 FromDMS({52, 31, 12})	Times(FromDMS, List(52, 31, 12))
-FromDataset(SemanticImportString("a,b\\n1,2\\n3,4"))	Times(FromDataset, Times(SemanticImportString, "a,b\n1,2\n3,4"))
+FromDataset(SemanticImportString("a,b\\n1,2\\n3,4"))	Times(FromDataset, Times(SemanticImportString, "a,b\\n1,2\\n3,4"))
 FromDataset(ToDataset({{"a","b"},{1,2},{3,4}}))	Times(FromDataset, Times(ToDataset, List(List("a", "b"), List(1, 2), List(3, 4))))
 FromDateString("2026")	Times(FromDateString, "2026")
 FromDateString("2026-07-15 14:30:00")	Times(FromDateString, "2026-07-15 14:30:00")
@@ -3590,7 +3590,7 @@ ReactionBalancedQ({Molecule("[H][H]"), Molecule("O=O")}, {Molecule("O")})	!synta
 Read(str, Number)	!syntax@9: ')' expected.
 Read(str, {Word, Number})	!syntax@9: ')' expected.
 ReadByteArray(x)	Times(ReadByteArray, x)
-ReadList(StringToStream("(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}"))	Times(ReadList, Times(StringToStream, "(**)\n\n\n{0, x, 1, 0}\n{1, x, 1, x}"))
+ReadList(StringToStream("(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}"))	Times(ReadList, Times(StringToStream, "(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}"))
 ReadList(StringToStream("(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}"), Expression)	!syntax@64: ')' expected.
 ReadList(StringToStream("(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}"), Expression, 2)	!syntax@64: ')' expected.
 ReadList(StringToStream("(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}"), String) // InputForm	!syntax@64: ')' expected.
@@ -3728,7 +3728,7 @@ ReleaseHold(y)	Times(ReleaseHold, y)
 ReliefPlot(x)	Times(ReliefPlot, x)
 RemoveAlphaChannel(x)	Times(RemoveAlphaChannel, x)
 RemoveBackground(x)	Times(RemoveBackground, x)
-RemoveDiacritics("éèáàâ")	Times(RemoveDiacritics, "éèáàâ")
+RemoveDiacritics("éèáàâ")	Times(RemoveDiacritics, "\\[EAcute]\\[EGrave]\\[AAcute]\\[AGrave]\\[AHat]")
 RenameDirectory(x)	Times(RenameDirectory, x)
 RenameFile(x)	Times(RenameFile, x)
 RenkoChart(x)	Times(RenkoChart, x)
@@ -4424,7 +4424,7 @@ TransformedRegion(x)	Times(TransformedRegion, x)
 Translate(x)	Times(Translate, x)
 TranslationTransform({1, -1}).RotationTransform(Pi)	Times(TranslationTransform, Dot(List(1, -1), RotationTransform), Pi)
 TranslationTransform({1, 2})	Times(TranslationTransform, List(1, 2))
-Transliterate("Горбачёв, Михаил Сергеевич")	Times(Transliterate, "Горбачёв, Михаил Сергеевич")
+Transliterate("Горбачёв, Михаил Сергеевич")	Times(Transliterate, "\\:0413\\:043e\\:0440\\:0431\\:0430\\:0447\\:0451\\:0432, \\:041c\\:0438\\:0445\\:0430\\:0438\\:043b \\:0421\\:0435\\:0440\\:0433\\:0435\\:0435\\:0432\\:0438\\:0447")
 Transpose(SymbolicZerosArray({m, n}))	Times(Transpose, Times(SymbolicZerosArray, List(m, n)))
 Transpose(x)	Times(Transpose, x)
 Transpose({{1, 2, 3}, {4, 5, 6}})	Times(Transpose, List(List(1, 2, 3), List(4, 5, 6)))
@@ -4808,8 +4808,8 @@ collatz(x_) := 3*x + 1;	CompoundExpression(SetDelayed(Times(collatz, Pattern(x, 
 complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)	!syntax@28: ')' expected.
 conn=Jsoup`connect["https://jsoup.org/"]	Set(conn, Jsoup`connect("https://jsoup.org/"))
 d	d
-data = SemanticImportString("a,b\\n1,2\\n3,4\\n5,6\\n");	CompoundExpression(Set(data, Times(SemanticImportString, "a,b\n1,2\n3,4\n5,6\n")), Null)
-data = SemanticImportString("city,sales\\nBoston,100\\nBerlin,200\\nBoston,50\\n");	CompoundExpression(Set(data, Times(SemanticImportString, "city,sales\nBoston,100\nBerlin,200\nBoston,50\n")), Null)
+data = SemanticImportString("a,b\\n1,2\\n3,4\\n5,6\\n");	CompoundExpression(Set(data, Times(SemanticImportString, "a,b\\n1,2\\n3,4\\n5,6\\n")), Null)
+data = SemanticImportString("city,sales\\nBoston,100\\nBerlin,200\\nBoston,50\\n");	CompoundExpression(Set(data, Times(SemanticImportString, "city,sales\\nBoston,100\\nBerlin,200\\nBoston,50\\n")), Null)
 data = {{0, 1}, {1, 3}, {2, 4}, {3, 7}}; basis = {1, x}; m = DesignMatrix(data, basis, x); v = data[[All, 2]]; LinearModelFit({m, v})	!syntax@79: ')' expected.
 dm = JavaNew["java.text.DecimalFormat", "#.00", ds]	Set(dm, JavaNew("java.text.DecimalFormat", "#.00", ds))
 dm@format[0.815] // InputForm	InputForm(dm(Format(0.815`)))
@@ -4935,7 +4935,7 @@ ipf=InterpolatingFunction({{0, 17}, {1, 3}, {2, 5}, {3, 4}, {4, 3}, {5, 0}, {6,2
 ipf=Interpolation(Table({x, Exp(4/(1+x^2))}, {x, 0, 3, 0.5})); ipf(2.5)	!syntax@44: ')' expected.
 k = 0; ParallelMap((k++; #)&, {1, 2, 3}); k	!syntax@29: ')' expected.
 k = 2; PaneSelector({1 -> "first", 2 -> "second", 3 -> "third"}, Dynamic(k))	!syntax@64: ')' expected.
-left = SemanticImportString("id,city\\n1,Boston\\n2,Berlin\\n");	CompoundExpression(Set(Left, Times(SemanticImportString, "id,city\n1,Boston\n2,Berlin\n")), Null)
+left = SemanticImportString("id,city\\n1,Boston\\n2,Berlin\\n");	CompoundExpression(Set(Left, Times(SemanticImportString, "id,city\\n1,Boston\\n2,Berlin\\n")), Null)
 len = Compile({{seg, _Real, 2}}, Length(seg), RuntimeAttributes -> {Listable});	!syntax@32: ')' expected.
 len({{1., 1.}, {2., 2.}})	Times(len, List(List(1.0`, 1.0`), List(2.0`, 2.0`)))
 len({{{1., 1.}, {2., 2.}}, {{3., 3.}, {4., 4.}}, {{5., 5.}, {6., 6.}}})	Times(len, List(List(List(1.0`, 1.0`), List(2.0`, 2.0`)), List(List(3.0`, 3.0`), List(4.0`, 4.0`)), List(List(5.0`, 5.0`), List(6.0`, 6.0`))))
@@ -4985,7 +4985,7 @@ pts = {{0.2, 0.2}, {0.8, 0.2}, {0.5, 0.9}}; LocatorPane(Dynamic(pts), Dynamic(Gr
 r	r
 r = {beta -> 4, alpha -> 2, x -> 4, z -> 2, w -> 0.8};	CompoundExpression(Set(r, List(Rule(Beta, 4), Rule(Alpha, 2), Rule(x, 4), Rule(z, 2), Rule(w, 0.8`))), Null)
 reg = BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}}, {Line({{1,2},{2,3},{3,4},{4,1}})});	!syntax@51: ')' expected.
-right = SemanticImportString("id,owner\\n1,ann\\n2,bob\\n");	CompoundExpression(Set(Right, Times(SemanticImportString, "id,owner\n1,ann\n2,bob\n")), Null)
+right = SemanticImportString("id,owner\\n1,ann\\n2,bob\\n");	CompoundExpression(Set(Right, Times(SemanticImportString, "id,owner\\n1,ann\\n2,bob\\n")), Null)
 rul=Dispatch({\\"a\\" -> 1, \\"b\\" -> 2, \\"c\\" -> 3})	!syntax@16: unexpected (named unicode) character: '\\[RawDoubleQuote]'
 s	s
 s = NDSolve({y''(x) + y(x) == 0, y(0) == 1, y'(0) == 0}, y, {x, 0, 4}); g = y /. Part(s, 1); g(N(Pi))	!syntax@56: ')' expected.
@@ -5086,7 +5086,7 @@ z == ProductLog(z) * E ^ ProductLog(z)	Equal(z, Times(ProductLog, z, Power(E, Pr
 {Positive(0), NonNegative(0)}	List(Times(Positive, 0), Times(NonNegative, 0))
 {Unequal(), Unequal(x), Unequal(1)}	!syntax@10: Too much closing ) in factor.
 {VertexCount(ButterflyGraph(3)), EdgeCount(ButterflyGraph(3))}	List(Times(VertexCount, Times(ButterflyGraph, 3)), Times(EdgeCount, Times(ButterflyGraph, 3)))
-{\\[Eta], \\[CapitalGamma]\\[Beta], Z\\[Infinity], \\[Angle]XYZ, \\[FilledSquare]r, i\\[Ellipsis]j}	List(η, Γβ, Times(Z, Infinity), ∠XYZ, ■r, i…j)
+{\\[Eta], \\[CapitalGamma]\\[Beta], Z\\[Infinity], \\[Angle]XYZ, \\[FilledSquare]r, i\\[Ellipsis]j}	List(\\[Eta], \\[CapitalGamma]\\[Beta], Times(Z, Infinity), \\[Angle]XYZ, \\[FilledSquare]r, i\\[Ellipsis]j)
 {a*b == b*a, a ** b == b ** a}	List(Equal(Times(a, b), Times(b, a)), Equal(NonCommutativeMultiply(a, b), NonCommutativeMultiply(b, a)))
 {a, Nothing, Nothing, d}	List(a, Nothing, Nothing, d)
 {a, b, c, d}[[{1, 3, 3}]]	Part(List(a, b, c, d), List(1, 3, 3))

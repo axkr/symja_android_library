@@ -382,6 +382,66 @@ public class Characters {
   }
 
   /**
+   * Append the ASCII form of a code point which is not an ASCII character: the named character
+   * <code>\[Name]</code> if there is a name for it, otherwise <code>\:xxxx</code> for a character
+   * of the basic multilingual plane and <code>\|xxxxxx</code> beyond it.
+   *
+   * @param buf the buffer to append to
+   * @param codePoint a code point <code>&gt;= 0x80</code>
+   */
+  public static void appendASCIIEscape(StringBuilder buf, int codePoint) {
+    String name = unicodePoint(codePoint);
+    if (name != null) {
+      buf.append("\\[").append(name).append(']');
+      return;
+    }
+    String hex = Integer.toHexString(codePoint);
+    if (codePoint <= 0xFFFF) {
+      buf.append("\\:");
+      for (int i = hex.length(); i < 4; i++) {
+        buf.append('0');
+      }
+    } else {
+      buf.append("\\|");
+      for (int i = hex.length(); i < 6; i++) {
+        buf.append('0');
+      }
+    }
+    buf.append(hex);
+  }
+
+  /**
+   * Replace every character of <code>text</code> which is not an ASCII character by its escape
+   * sequence, see {@link #appendASCIIEscape(StringBuilder, int)}, and a control character other
+   * than <code>\t, \n, \r</code> by <code>\.xx</code>.
+   *
+   * @return <code>text</code> itself if it contains only printable ASCII characters
+   */
+  public static String toASCIIEscapes(String text) {
+    StringBuilder buf = null;
+    for (int i = 0; i < text.length();) {
+      final int codePoint = text.codePointAt(i);
+      final int charCount = Character.charCount(codePoint);
+      final boolean control = codePoint < 0x20 && codePoint != '\t' && codePoint != '\n'
+          && codePoint != '\r';
+      if ((codePoint >= 0x80 || control) && buf == null) {
+        buf = new StringBuilder(text.length() + 16).append(text, 0, i);
+      }
+      if (buf != null) {
+        if (codePoint >= 0x80) {
+          appendASCIIEscape(buf, codePoint);
+        } else if (control) {
+          buf.append(codePoint < 0x10 ? "\\.0" : "\\.").append(Integer.toHexString(codePoint));
+        } else {
+          buf.append((char) codePoint);
+        }
+      }
+      i += charCount;
+    }
+    return buf == null ? text : buf.toString();
+  }
+
+  /**
    * Substitute all named (unicode-) characters in a string with their unicode value For example
    * <code>\[Alpha], \[Phi], \[Pi]</code> will be replaced with unicode characters:
    *
@@ -500,7 +560,20 @@ public class Characters {
     for (char ch = 0; ch < 128; ch++) {
       ASCII_IDENTIFIER_START[ch] = Character.isJavaIdentifierStart(ch) && (ch != '_');
       ASCII_IDENTIFIER_PART[ch] = (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`');
+      if (isControlLetter(ch)) {
+        ASCII_IDENTIFIER_START[ch] = true;
+        ASCII_IDENTIFIER_PART[ch] = true;
+      }
     }
+  }
+
+  /**
+   * A C0 control character which is neither white space (<code>\t, \n, \u000B, \f, \r</code>),
+   * the bell character <code>\u0007</code> nor <code>\0</code> is read as a letter. The scanner
+   * returns <code>\0</code> at the end of its input, so it must never be part of a name.
+   */
+  private static boolean isControlLetter(char ch) {
+    return ch > 0x00 && ch < 0x20 && ch != 0x07 && (ch < 0x09 || ch > 0x0D);
   }
 
   /**

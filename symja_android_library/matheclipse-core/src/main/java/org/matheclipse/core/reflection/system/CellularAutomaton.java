@@ -350,9 +350,21 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           // Fallback to General CA (Explicit rules, functions, or symbolic states)
           if (!result.isPresent()) {
             if (!is2D && rule.isList() && rule.argSize() >= 3 && !rule.first().isInteger()
-                && offsetNeighbourhood2D(rule.getAt(3)) != null && isGrid2D((IAST) init)) {
-              // {f, {}, {{dy1, dx1}, ...}}: a neighbourhood of offsets in the plane
-              is2D = true;
+                && isGrid2D((IAST) init)) {
+              IExpr rspec = rule.getAt(3);
+              if (offsetNeighbourhood2D(rspec) != null) {
+                // {f, {}, {{dy1, dx1}, ...}}: a neighbourhood of offsets in the plane
+                is2D = true;
+              } else if (rspec.isList2() && rspec.first().isInteger()
+                  && rspec.second().isInteger()) {
+                // {f, {}, {ry, rx}}: the (2 ry + 1) x (2 rx + 1) block around a cell
+                rY = rspec.first().toIntDefault();
+                rX = rspec.second().toIntDefault();
+                if (rY < 0 || rX < 0 || rY > 1000 || rX > 1000) {
+                  return F.NIL;
+                }
+                is2D = true;
+              }
             }
             if (is2D) {
               result = evaluateGeneral2D(rule, (IAST) init, stepsToGenerate, tStart, tEnd, dt,
@@ -419,10 +431,24 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
    * <code>{array, background}</code>.
    */
   private static boolean isGrid2D(IAST init) {
-    IExpr grid = init.argSize() == 2 && init.arg2().isInteger() && init.arg1().isList()
-        ? init.arg1()
-        : init;
+    IExpr grid = init.argSize() == 2 && init.arg1().isList()
+        && (init.arg2().isInteger() || background2D(init.arg2()).isPresent()) ? init.arg1() : init;
     return grid.isList() && grid.argSize() > 0 && grid.first().isList();
+  }
+
+  /**
+   * The value <code>b</code> of a one-cell background <code>{b}</code>, or {@link F#NIL}.
+   */
+  private static IExpr background1D(IExpr background) {
+    return background.isList1() && !background.first().isList() ? background.first() : F.NIL;
+  }
+
+  /**
+   * The value <code>b</code> of a one-cell plane background <code>{{b}}</code>, or {@link F#NIL}.
+   */
+  private static IExpr background2D(IExpr background) {
+    return background.isList1() && background.first().isList1()
+        && !background.first().first().isList() ? background.first().first() : F.NIL;
   }
 
   /**
@@ -1225,6 +1251,8 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         aspec[i] = aspecAST.get(i + 1);
       }
       bg = init.get(2);
+      // a background block {b} of one cell is the background b
+      bg = background1D(bg).orElse(bg);
       isCyclic = false;
     } else if (init.isList()) {
       aspec = new IExpr[init.argSize()];
@@ -1420,14 +1448,16 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     boolean isCyclic = true;
     List<IAST> initStates = new ArrayList<>();
 
-    if (init.argSize() == 2 && init.get(2).isInteger() && init.get(1).isList()) {
+    IExpr planeBackground = init.argSize() == 2 && init.get(1).isList() ? //
+        (init.get(2).isInteger() ? init.get(2) : background2D(init.get(2))) : F.NIL;
+    if (planeBackground.isPresent()) {
+      // {array, b} or {array, {{b}}}: the array on a background of b
       IAST aspecList = (IAST) init.get(1);
-      int bg = init.get(2).toIntDefault(0);
       isCyclic = false;
 
       IASTAppendable paddedStep = F.ListAlloc(2);
       paddedStep.append(aspecList);
-      paddedStep.append(F.ZZ(bg));
+      paddedStep.append(planeBackground);
       initStates.add(paddedStep);
     } else {
       isCyclic = true;

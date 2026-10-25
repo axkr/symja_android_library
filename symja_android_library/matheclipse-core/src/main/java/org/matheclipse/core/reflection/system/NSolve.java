@@ -58,8 +58,11 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    */
   static IExpr solveNumeric(SolveOptions options, IAST ast, long precision, EvalEngine engine) {
     if (precision == SolveUtils.MACHINE_PRECISION_REQUESTED) {
-      IExpr result = Solve.withRationalizedSolutions(ast,
-          new SolveData(options).of(ast, true, true, engine), true, false, engine);
+      SolveData solveData = new SolveData(options);
+      IExpr result = solveData.of(ast, true, true, engine);
+      if (!solveData.isCompleteSolutions()) {
+        result = Solve.withRationalizedSolutions(ast, result, true, false, engine);
+      }
       return distinctSolutions(result,
           ast.argSize() >= 2 ? ast.arg2().makeList() : F.CEmptyList);
     }

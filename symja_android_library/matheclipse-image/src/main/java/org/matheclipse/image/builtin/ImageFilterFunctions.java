@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -28,7 +29,8 @@ import org.matheclipse.image.expression.data.ImageOptions;
  * <ul>
  * <li>linear: <code>GaussianFilter</code>, <code>ImageConvolve</code>, <code>ImageCorrelate</code>,
  * <code>DerivativeFilter</code>, <code>GradientFilter</code>,
- * <li>of the block around a pixel: <code>MeanFilter</code>, <code>MedianFilter</code>,
+ * <li>of the block around a pixel: <code>MeanFilter</code>, <code>GeometricMeanFilter</code>,
+ * <code>MedianFilter</code>,
  * <code>MinFilter</code>, <code>MaxFilter</code>,
  * <li>morphological: <code>Dilation</code>, <code>Erosion</code>, <code>Opening</code>,
  * <code>Closing</code>, <code>MorphologicalComponents</code>, <code>DistanceTransform</code>.
@@ -54,6 +56,7 @@ public class ImageFilterFunctions {
       install(S.GaussianFilter, new GaussianFilter());
       install(S.LaplacianFilter, new LaplacianFilter());
       install(S.MeanFilter, new MeanFilter());
+      install(S.GeometricMeanFilter, new GeometricMeanFilter());
       install(S.MedianFilter, new RankFilter(RankFilter.MEDIAN));
       install(S.MinFilter, new RankFilter(RankFilter.MIN));
       install(S.MaxFilter, new RankFilter(RankFilter.MAX));
@@ -67,6 +70,7 @@ public class ImageFilterFunctions {
       S.Closing.setEvaluator(new Morphology(true, true));
       S.MorphologicalComponents.setEvaluator(new MorphologicalComponents());
       S.DistanceTransform.setEvaluator(new DistanceTransform());
+      S.Inpaint.setEvaluator(new Inpaint());
       S.ImageEffect.setEvaluator(new ImageEffect());
     }
 
@@ -448,6 +452,46 @@ public class ImageFilterFunctions {
     double[][][] filter3D(double[][][] volume, IAST ast, EvalEngine engine) {
       int radius = ast.arg2().toIntDefault();
       return radius < 0 ? null : Volumes.block(volume, radius, Volumes.MEAN);
+    }
+
+    @Override
+    boolean keepsType() {
+      return true;
+    }
+  }
+
+  /**
+   * <code>GeometricMeanFilter(image, r)</code>: the geometric mean of the
+   * <code>(2r+1) x (2r+1)</code> block, of the part of it which lies inside of the image. A block
+   * with a sample of 0 has the mean 0.
+   */
+  private static class GeometricMeanFilter extends ImageFilter {
+
+    @Override
+    double[][] filter(double[][] channel, IAST ast, EvalEngine engine) {
+      int radius = ast.arg2().toIntDefault();
+      if (radius < 0) {
+        return null;
+      }
+      final int height = channel.length;
+      final int width = channel[0].length;
+      double[][] result = new double[height][width];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          double logSum = 0.0;
+          int count = 0;
+          for (int row = Math.max(0, y - radius); row <= Math.min(height - 1, y + radius); row++) {
+            for (int column = Math.max(0, x - radius); column <= Math.min(width - 1,
+                x + radius); column++) {
+              logSum += Math.log(channel[row][column]);
+              count++;
+            }
+          }
+          // a sample of 0 makes the sum -Infinity and the mean 0
+          result[y][x] = Math.exp(logSum / count);
+        }
+      }
+      return result;
     }
 
     @Override
@@ -1062,6 +1106,124 @@ public class ImageFilterFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <code>Inpaint(image, mask, Method -> "Diffusion")</code> - the pixels where the mask (an image
+   * or a matrix of the same size) is not 0 filled in from the rest of the image.
+   *
+   * <p>
+   * Every filled pixel is the mean of its eight neighbours inside the image, the filled ones among
+   * them included: the discrete harmonic interpolation of the known pixels, solved by Gauss-Seidel
+   * sweeps until the samples no longer change. Every channel is filled on its own, and the image
+   * keeps its type. Other methods stay unevaluated.
+   */
+  private static class Inpaint extends AbstractEvaluator {
+
+    /** The change of a sample in a sweep below which the samples have settled. */
+    private static final double TOLERANCE = 1.0e-12;
+
+    /** The most sweeps over the filled pixels. */
+    private static final int MAX_SWEEPS = 100000;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() < 3 || !(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+      IExpr method = options.getOption(S.Method);
+      if (!method.isString("Diffusion")) {
+        return F.NIL;
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      double[][][] channels = channels(image, engine);
+      double[][][] maskChannels = ast.arg2() instanceof ImageExpr
+          ? channels((ImageExpr) ast.arg2(), engine)
+          : channels(ast.arg2());
+      if (channels == null || maskChannels == null) {
+        return F.NIL;
+      }
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      if (maskChannels[0].length != height || maskChannels[0][0].length != width) {
+        return F.NIL;
+      }
+      IntArrayList holes = new IntArrayList();
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          for (double[][] maskChannel : maskChannels) {
+            if (maskChannel[y][x] != 0.0) {
+              holes.add(y * width + x);
+              break;
+            }
+          }
+        }
+      }
+      if (holes.isEmpty() || holes.size() == width * height) {
+        // nothing to fill, or nothing to fill it from
+        return ast.arg1();
+      }
+      for (double[][] channel : channels) {
+        fill(channel, holes, width, height);
+      }
+      return toImage(channels, image.getOptions(), image.sampleType());
+    }
+
+    private static void fill(double[][] channel, IntArrayList holes, int width, int height) {
+      // the filled pixels start at the mean of the known ones
+      boolean[] hole = new boolean[width * height];
+      for (int i = 0; i < holes.size(); i++) {
+        hole[holes.getInt(i)] = true;
+      }
+      double known = 0.0;
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          if (!hole[y * width + x]) {
+            known += channel[y][x];
+          }
+        }
+      }
+      known /= width * height - holes.size();
+      for (int i = 0; i < holes.size(); i++) {
+        int index = holes.getInt(i);
+        channel[index / width][index % width] = known;
+      }
+      for (int sweep = 0; sweep < MAX_SWEEPS; sweep++) {
+        double change = 0.0;
+        for (int i = 0; i < holes.size(); i++) {
+          int index = holes.getInt(i);
+          int y = index / width;
+          int x = index % width;
+          double sum = 0.0;
+          int count = 0;
+          for (int row = Math.max(0, y - 1); row <= Math.min(height - 1, y + 1); row++) {
+            for (int column = Math.max(0, x - 1); column <= Math.min(width - 1, x + 1); column++) {
+              if (row != y || column != x) {
+                sum += channel[row][column];
+                count++;
+              }
+            }
+          }
+          double value = sum / count;
+          change = Math.max(change, Math.abs(value - channel[y][x]));
+          channel[y][x] = value;
+        }
+        if (change <= TOLERANCE) {
+          return;
+        }
+      }
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
     }
   }
 

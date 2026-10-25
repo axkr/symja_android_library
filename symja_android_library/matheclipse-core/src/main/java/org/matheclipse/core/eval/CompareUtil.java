@@ -590,6 +590,16 @@ public class CompareUtil {
   }
 
   /**
+   * Whether the only "variables" of a numeric expression are the slots of the pure functions of
+   * <code>Root</code> objects in it: <code>-2+Root(#1^5-2&amp;,1)^5</code> is a number, and
+   * sampling the slot <code>#1</code> as a variable says nothing about its value.
+   */
+  private static boolean isNumericWithSlotsOnly(IAST function, VariablesSet varSet) {
+    IAST variables = varSet.getVarList();
+    return variables.forAll(v -> v.isSlot()) && function.isNumericFunction(true);
+  }
+
+  /**
    * Checks if the given function is a possible zero function, i.e. it returns <code>true</code>
    * 
    * @param function
@@ -612,7 +622,7 @@ public class CompareUtil {
     }
     try {
       VariablesSet varSet = new VariablesSet(function);
-      if (varSet.isEmpty()) {
+      if (varSet.isEmpty() || isNumericWithSlotsOnly(function, varSet)) {
         INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
         if (num instanceof ApfloatNum && num.reDoubleValue() == 0.0
             && ((ApfloatNum) num).apfloatValue().signum() != 0) {

@@ -1620,7 +1620,9 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("Head(PolyhedronData(\"Icosahedron\"))", //
         "Graphics3D");
     check("PolyhedronData()", //
-        "{Icosahedron,Icosidodecahedron,RhombicTriacontahedron,TruncatedIcosahedron}");
+        "{Cube,Cuboctahedron,Dodecahedron,Icosahedron,Icosidodecahedron,Octahedron,"
+            + "RhombicDodecahedron,RhombicTriacontahedron,SquarePyramid,Tetrahedron,"
+            + "TruncatedIcosahedron}");
     check("PolyhedronData(\"Properties\")", //
         "{Circumradius,EdgeCount,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
@@ -1745,8 +1747,11 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("Union(Flatten(PolyhedronData(\"Icosahedron\", \"Edges\"))) == Range(12)", //
         "True");
     check("EntityList(\"Polyhedron\")", //
-        "{Entity(Polyhedron,Icosahedron),Entity(Polyhedron,Icosidodecahedron),Entity(Polyhedron,"
-            + "RhombicTriacontahedron),Entity(Polyhedron,TruncatedIcosahedron)}");
+        "{Entity(Polyhedron,Cube),Entity(Polyhedron,Cuboctahedron),Entity(Polyhedron,Dodecahedron),"
+            + "Entity(Polyhedron,Icosahedron),Entity(Polyhedron,Icosidodecahedron),"
+            + "Entity(Polyhedron,Octahedron),Entity(Polyhedron,RhombicDodecahedron),"
+            + "Entity(Polyhedron,RhombicTriacontahedron),Entity(Polyhedron,SquarePyramid),"
+            + "Entity(Polyhedron,Tetrahedron),Entity(Polyhedron,TruncatedIcosahedron)}");
     // which half of the question was not understood
     check("EntityValue(Entity(\"Polyhedron\", \"Nonesuch\"), \"FaceCount\")", //
         "Missing(UnknownEntity,{Polyhedron,Nonesuch})");

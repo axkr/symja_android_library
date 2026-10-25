@@ -160,10 +160,10 @@ a;	CompoundExpression(a, Null)
 ""	""
 "a"	"a"
 "a b"	"a b"
-"a\\"b"	"a"b"
-"a\\nb"	"a\nb"
-"a\\\\b"	"a\\b"
-"\\[Alpha]"	"α"
+"a\\"b"	"a\\"b"
+"a\\nb"	"a\\nb"
+"a\\\\b"	"a\\\\b"
+"\\[Alpha]"	"\\[Alpha]"
 "a"<>"b"	StringJoin("a", "b")
 (* c *)1+1	Plus(1, 1)
 1+(* c *)1	Plus(1, 1)
@@ -173,10 +173,10 @@ a;	CompoundExpression(a, Null)
 a~f~b	f(a, b)
 a~f~b~g~c	g(f(a, b), c)
 a~f~b+c	Plus(f(a, b), c)
-\\[Alpha]	α
-\\[Alpha]+\\[Beta]	Plus(α, β)
-α	α
-α+β	Plus(α, β)
+\\[Alpha]	\\[Alpha]
+\\[Alpha]+\\[Beta]	Plus(\\[Alpha], \\[Beta])
+α	\\[Alpha]
+α+β	Plus(\\[Alpha], \\[Beta])
 Pi	Pi
 ∀(a)	ForAll(a)
 ∃(a)	Exists(a)
@@ -199,7 +199,7 @@ n[#] = a[#]; &	Function(CompoundExpression(Set(n(Slot(1)), a(Slot(1))), Null))
 Map[a; &, {1}]	Map(Function(CompoundExpression(a, Null)), List(1))
 a ;/ b	Times(Power(b, -1), CompoundExpression(a, Null))
 t[[i]]["pos"][[2]]	Part(Part(t, i)["pos"], 2)
-f::usage = "\na"	Set(MessageName(f, usage), "\na")
+f::usage = "\na"	Set(MessageName(f, usage), "\\na")
 $a	$a
 $Assumptions	$Assumptions
 a$b	a$b
@@ -315,11 +315,11 @@ _?NumberQ?Positive&	Function(PatternTest(PatternTest(Blank(), NumberQ), Positive
 \\)	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
 \\!	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
 \\*	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
-\\[EmptySet]	∅
-f[x, \\[EmptySmallCircle]]	f(x, ◦)
-x\\[EmptySet]	x∅
-\\[DoubleStruckCapitalR]x = 3	Set(x, 3)
-\\[GothicCapitalA] \\[Mho]	Times(, ℧)
+\\[EmptySet]	\\[EmptySet]
+f[x, \\[EmptySmallCircle]]	f(x, \\[EmptySmallCircle])
+x\\[EmptySet]	x\\[EmptySet]
+\\[DoubleStruckCapitalR]x = 3	Set(\\[DoubleStruckCapitalR]x, 3)
+\\[GothicCapitalA] \\[Mho]	Times(\\[GothicCapitalA], \\[Mho])
 \\[Degree]	Degree
 \\[DiscreteRatio] x	DiscreteRatio(x)
 \\[Fake]	!syntax@2: Unknown unicode longname Fake.

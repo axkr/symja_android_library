@@ -932,24 +932,28 @@ public class Parser extends Scanner {
         }
         temp = fFactory.createDouble(numberStr);
       } else {
-        if (exponentStr == null || exponentStr.equals("1")) {
+        if (exponentStr == null) {
           temp = fFactory.createInteger(numberStr, numFormat);
         } else {
           if (numFormat == 10) {
             try {
+              // n*^e is the exact number n*10^e: 2*^2 is 200 and 6*^-1 is 3/5
               int exponent = Integer.parseInt(exponentStr, 10);
+              java.math.BigInteger mantissa = new java.math.BigInteger(numberStr, 10);
+              java.math.BigInteger powerOf10 =
+                  new java.math.BigInteger(createPowersOf10(Math.abs(exponent)).toString(), 10);
               if (exponent < 0) {
-                exponent = -exponent;
-                StringBuilder buf = createPowersOf10(exponent);
-                temp = fFactory.createFunction(new SymbolNode("Times"),
-                    fFactory.createInteger(numberStr, numFormat),
-                    fFactory.createFunction(new SymbolNode("Power"),
-                        fFactory.createInteger(buf.toString(), numFormat), IntegerNode.CN1));
+                java.math.BigInteger gcd = mantissa.gcd(powerOf10);
+                java.math.BigInteger numerator = mantissa.divide(gcd);
+                java.math.BigInteger denominator = powerOf10.divide(gcd);
+                if (denominator.equals(java.math.BigInteger.ONE)) {
+                  temp = fFactory.createInteger(numerator.toString(), 10);
+                } else {
+                  temp = fFactory.createFraction(fFactory.createInteger(numerator.toString(), 10),
+                      fFactory.createInteger(denominator.toString(), 10));
+                }
               } else {
-                StringBuilder buf = createPowersOf10(exponent);
-                temp = fFactory.createFunction(new SymbolNode("Times"),
-                    fFactory.createInteger(numberStr, numFormat),
-                    fFactory.createInteger(buf.toString(), numFormat));
+                temp = fFactory.createInteger(mantissa.multiply(powerOf10).toString(), 10);
               }
 
             } catch (final NumberFormatException e) {
