@@ -491,7 +491,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       double x0 = getStartValue();
       while (true) {
         final org.hipparchus.analysis.differentiation.UnivariateDerivative1 y0 =
-            computeObjectiveValueAndDerivative(x0);
+            computeObjectiveValueAndDerivative1(x0);
         final double x1 = x0 - (y0.getValue() / y0.getPartialDerivative(1));
         stepConsumer.accept(x1);
         if (Math.abs(x1 - x0) <= absoluteAccuracy) {
