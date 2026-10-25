@@ -38,10 +38,10 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.visit.IVisitor;
-import org.matheclipse.parser.client.Characters;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
 
 
@@ -248,9 +248,9 @@ public class Symbol implements ISymbol, Serializable {
    * <p>
    * Two symbols are two variables however they are called: a {@link F#Dummy(String)} made by a
    * solver beside the user's symbol of the same name, or a formal symbol beside the built-in one.
-   * Read as equal in the order, <code>a*b</code> and <code>b*a</code> for such a pair sorted
-   * either way and <code>a*b - b*a</code> did not cancel. The context comes first, then the order
-   * in which the symbols were made.
+   * Read as equal in the order, <code>a*b</code> and <code>b*a</code> for such a pair sorted either
+   * way and <code>a*b - b*a</code> did not cancel. The context comes first, then the order in which
+   * the symbols were made.
    */
   static int compareSameName(ISymbol a, ISymbol b) {
     int cp = a.getContext().completeContextName().compareTo(b.getContext().completeContextName());
@@ -428,10 +428,10 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   /**
-   * Evaluate <code>f(this, value)</code> for a new value or <code>f(this)</code> for a cleared
-   * one, at once or, while a <code>Block</code> localizes or restores its variables, when all of
-   * them are done. The value is stored already, so an exception of <code>f</code> leaves a
-   * consistent symbol behind.
+   * Evaluate <code>f(this, value)</code> for a new value or <code>f(this)</code> for a cleared one,
+   * at once or, while a <code>Block</code> localizes or restores its variables, when all of them
+   * are done. The value is stored already, so an exception of <code>f</code> leaves a consistent
+   * symbol behind.
    *
    * @param value the new value or <code>null</code> if the value was cleared
    */
@@ -782,13 +782,11 @@ public class Symbol implements ISymbol, Serializable {
       // A formal symbol shares its name and the System` context with a built-in of the same letter,
       // e.g. the formal C and the built-in C, and is a different symbol all the same.
       if (obj instanceof ISymbol && fContext != Context.DUMMY && !(this instanceof FormalSymbol)
-          && !(obj instanceof FormalSymbol)
-          && fSymbolName.equals(((ISymbol) obj).getSymbolName())
+          && !(obj instanceof FormalSymbol) && fSymbolName.equals(((ISymbol) obj).getSymbolName())
           && fContext.equals(((ISymbol) obj).getContext()) && this != obj) {
         // named rather than thrown bare: a report of this reads "Message: null" otherwise, and the
         // expression it names is only whatever was being evaluated when the two were compared
-        throw new IllegalStateException(
-            "duplicate symbol instance " + fContext + fSymbolName);
+        throw new IllegalStateException("duplicate symbol instance " + fContext + fSymbolName);
       }
     }
     return this == obj;
@@ -877,12 +875,11 @@ public class Symbol implements ISymbol, Serializable {
       return F.NIL;
     }
     if (rightHandSide != null) {
-      return ISymbol.evalAssignedValue(rightHandSide,
-          isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE), engine);
+      return ISymbol.evalAssignedValue(rightHandSide, isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE),
+          engine);
     }
     IExpr result = evalDownRule(engine, this);
-    if (result.isNIL() && engine.isNumericMode() && fRulesData != null
-        && fRulesData.hasNValues()) {
+    if (result.isNIL() && engine.isNumericMode() && fRulesData != null && fRulesData.hasNValues()) {
       // N(x) = value: the numerical value of x, used wherever x is evaluated numerically
       return fRulesData.evalUpRule(engine.nValueLHS(this), engine);
     }
@@ -1190,8 +1187,8 @@ public class Symbol implements ISymbol, Serializable {
    * is answered rather than followed. Identity based, because two symbols of the same name in
    * different contexts are different symbols.
    */
-  private static final ThreadLocal<Set<ISymbol>> NUMERIC_FUNCTION_GUARD =
-      ThreadLocal.withInitial(() -> Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>()));
+  private static final ThreadLocal<Set<ISymbol>> NUMERIC_FUNCTION_GUARD = ThreadLocal
+      .withInitial(() -> Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>()));
 
   /** {@inheritDoc} */
   @Override
@@ -1522,8 +1519,7 @@ public class Symbol implements ISymbol, Serializable {
         // a value function may keep the association it is told about
         final boolean handedOut = fValueFunction != null;
         assignValue(calculatedResult, false);
-        if (association && calculatedResult == value && fValue == calculatedResult
-            && !handedOut) {
+        if (association && calculatedResult == value && fValue == calculatedResult && !handedOut) {
           // Changed in place, and from here on nobody but this symbol has it: the next call may
           // change it again without a copy. That is why the caller gets a copy of its own - the
           // result of AssociateTo can be kept, and must not follow the variable afterwards.
@@ -1628,8 +1624,8 @@ public class Symbol implements ISymbol, Serializable {
     ensureRulesLoaded();
     // a Block variable without rules is saved and restored as null, or as rules data which holds
     // only messages: no definition changed, the fixed points stay valid
-    final boolean definitionsChanged = fRulesData != rd
-        && ((fRulesData != null && fRulesData.isDefinitionsPresent())
+    final boolean definitionsChanged =
+        fRulesData != rd && ((fRulesData != null && fRulesData.isDefinitionsPresent())
             || (rd != null && rd.isDefinitionsPresent()));
     final boolean upRules = usedByOtherExpressions(fRulesData) || usedByOtherExpressions(rd);
     fRulesData = rd;
