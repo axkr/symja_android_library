@@ -1365,7 +1365,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     // the rules follow the order of the variables
     check("Chop(NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{y,x}))", //
-        "{{y->5.0,x->3.0},{y->1.75806+I*(-2.7734),x->6.34781+I*(-1.02885)},{y->1.75806+I*2.7734,x->6.34781+I*1.02885},{y->1.48389,x->4.30438}}");
+        "{{y->1.48389,x->4.30438},{y->1.75806+I*(-2.7734),x->6.34781+I*(-1.02885)},{y->1.75806+I*2.7734,x->6.34781+I*1.02885},{y->5.0,x->3.0}}");
 
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     checkNumeric("NSolve(0.00004244131815783 == x^5 , x)", //

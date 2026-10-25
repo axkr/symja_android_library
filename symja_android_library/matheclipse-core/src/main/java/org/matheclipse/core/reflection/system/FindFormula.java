@@ -275,8 +275,7 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
         takeBestN = Math.min(3, tempLibrary.size());
       }
       findFormulaParallelOptimized(dataList, matrix, var, tempLibrary, engine);
-      tempLibrary.sort((a, b) -> a.aic > b.aic ? 1 : a.aic < b.aic ? -1 : 0);
-      tempLibrary = tempLibrary.subList(0, takeBestN);
+      tempLibrary = bestDistinctModels(tempLibrary, takeBestN);
       modelLibrary.addAll(tempLibrary);
     }
     if (modelLibrary.size() > 0) {
@@ -284,6 +283,41 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
       return modelLibrary.get(0).fittedExpression;
     }
     return F.NIL;
+  }
+
+  /**
+   * The difference of the information criteria below which two fitted models fit the data the same
+   * way.
+   */
+  private static final double SAME_FIT_TOLERANCE = 1.0e-6;
+
+  /**
+   * Select the <code>n</code> fitted models with the smallest information criterion. A model which
+   * fits the data the same way as a model already selected is left out, so that it doesn't take the
+   * place of a different model to build upon: <code>#1*Abs(x)</code> and <code>#1*x</code> for data
+   * with <code>x &gt;= 0</code>, or the sum and the product of a single term.
+   *
+   * @param models the models, the unfitted ones included
+   * @param n the maximum number of models to select
+   * @return the selected models, the best first
+   */
+  private static List<ModelTemplate> bestDistinctModels(List<ModelTemplate> models, int n) {
+    models.sort(ModelTemplate::compareTo);
+    List<ModelTemplate> best = new ArrayList<>(n);
+    for (ModelTemplate model : models) {
+      if (best.size() >= n) {
+        break;
+      }
+      if (model.fittedExpression == null) {
+        continue;
+      }
+      if (!best.isEmpty()
+          && Math.abs(model.aic - best.get(best.size() - 1).aic) <= SAME_FIT_TOLERANCE) {
+        continue;
+      }
+      best.add(model);
+    }
+    return best;
   }
 
   private static FittedResult findFormulaParallelOptimized(IAST dataList, double[][] matrix,
