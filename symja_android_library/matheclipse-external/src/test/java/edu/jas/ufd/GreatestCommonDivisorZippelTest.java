@@ -10,6 +10,7 @@ import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
+import edu.jas.kern.JASConfig;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
