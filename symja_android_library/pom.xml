@@ -138,6 +138,12 @@
 		     weaker answers and failing tests. Override with -Dsymja.machineProfile=slow|normal|fast
 		     or -Dsymja.timeScale=<factor>. -->
 		<symja.machineProfile>auto</symja.machineProfile>
+		<!-- Fork timeout of the fast tier, in seconds: a test which loops without a checkpoint
+		     fails the run instead of holding it (JUnit's @Timeout only interrupts the thread).
+		     The slow tiers are budget-bound and MachineProfile stretches their budgets on a slow
+		     machine, so the profiles below raise it. A property, so -Dsurefire.timeout=... still
+		     wins. -->
+		<surefire.timeout>1800</surefire.timeout>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -847,20 +853,23 @@
 			<properties>
 				<symja.test.excludedGroups></symja.test.excludedGroups>
 				<symja.test.groups>slow</symja.test.groups>
+				<surefire.timeout>7200</surefire.timeout>
 			</properties>
 		</profile>
 		<profile>
-			<!-- Fast + slow. Run this before pushing. -->
+			<!-- Fast + slow. Run this before pushing. On a slow machine the core module alone takes
+			well over the fast tier's 30 minute fork timeout, so it is 2 hours here. -->
 			<id>all-tests</id>
 			<properties>
 				<symja.test.excludedGroups>corpus</symja.test.excludedGroups>
+				<surefire.timeout>7200</surefire.timeout>
 			</properties>
 		</profile>
 		<profile>
 			<!-- The Rubi scoring corpus in matheclipse-io. This is a scoreboard, not a
 			gate: failures are expected, so testFailureIgnore keeps the build green and
-			the per-class pass counts are the result. Takes roughly half an hour; pass
-			-Dsurefire.timeout=5400 as well.
+			the per-class pass counts are the result. Takes roughly half an hour, so the fork
+			timeout is 90 minutes here.
 
 			reuseForks=false is required, not an optimisation: AbstractRubiTestCase sets
 			the global ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS, so sharing one JVM
@@ -870,6 +879,7 @@
 			<properties>
 				<symja.test.excludedGroups></symja.test.excludedGroups>
 				<symja.test.groups>corpus</symja.test.groups>
+				<surefire.timeout>5400</surefire.timeout>
 			</properties>
 			<build>
 				<plugins>

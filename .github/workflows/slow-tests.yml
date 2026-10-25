@@ -6,7 +6,7 @@
 #
 # The Rubi corpus is deliberately not here - it is a scoreboard whose failures are
 # expected, and it takes about half an hour. Run it locally:
-#   mvn -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400
+#   mvn -pl matheclipse-io test -Prubi-corpus
 
 name: Slow tests (manual)
 
@@ -19,7 +19,9 @@ env:
 jobs:
   slow-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # Just above the 2 hour Surefire fork timeout of -Pall-tests: on a hang Surefire fires
+    # first and names the crashed test class, instead of the runner cancelling the job.
+    timeout-minutes: 130
 
     steps:
     - uses: actions/checkout@v7

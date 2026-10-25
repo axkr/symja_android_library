@@ -63,7 +63,11 @@ A test belongs to a tier through a JUnit 5 `@Tag`; the tag names are constants i
 | fast | `mvn verify` | everything untagged - about a minute. This is what CI runs. |
 | slow | `mvn test -Pslow-tests -pl matheclipse-core` | only `@Tag("slow")`, about five minutes |
 | fast + slow | `mvn verify -Pall-tests` | **run this before pushing** |
-| corpus | `mvn -pl matheclipse-io test -Prubi-corpus -Dsurefire.timeout=5400` | the Rubi scoring corpus, about half an hour |
+| corpus | `mvn -pl matheclipse-io test -Prubi-corpus` | the Rubi scoring corpus, about half an hour |
+
+Each tier has a Surefire fork timeout, so a test which loops without a checkpoint fails the
+run instead of holding it: 30 minutes for the fast tier, 2 hours for `-Pslow-tests` and
+`-Pall-tests`, 90 minutes for the corpus. `-Dsurefire.timeout=<seconds>` overrides it.
 
 **When you add a test: if a single test method takes more than a second, tag it
 `@Tag(TestTags.SLOW)`.** This is not just a convention - the pull-request build runs

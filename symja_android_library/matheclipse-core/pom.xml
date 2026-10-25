@@ -10,11 +10,6 @@
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Symja Java Symbolic Math core library.</description>
-	<properties>
-		<!-- a test which loops without a checkpoint fails the run instead of holding it: JUnit's
-		@Timeout only interrupts the thread. As a property, -Dsurefire.timeout=... still wins. -->
-		<surefire.timeout>1800</surefire.timeout>
-	</properties>
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
