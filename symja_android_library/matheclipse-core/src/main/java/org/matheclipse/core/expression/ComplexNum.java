@@ -1949,10 +1949,17 @@ public class ComplexNum implements IComplexNum {
     }
     if (that instanceof ApcomplexNum) {
       ApcomplexNum acn = (ApcomplexNum) that;
+      if (acn.isSignificanceTracked()) {
+        // a machine number adds no error
+        return acn.plus(this);
+      }
       return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn);
     }
     if (that instanceof ApfloatNum) {
       ApfloatNum afn = (ApfloatNum) that;
+      if (afn.isSignificanceTracked()) {
+        return afn.plus(this);
+      }
       return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart())
           .add(ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
     }
@@ -2303,9 +2310,16 @@ public class ComplexNum implements IComplexNum {
       return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
     }
     if (that instanceof ApcomplexNum) {
+      if (((ApcomplexNum) that).isSignificanceTracked()) {
+        // a machine number adds no error
+        return ((ApcomplexNum) that).times(this);
+      }
       return apcomplexNumValue().multiply((ApcomplexNum) that);
     }
     if (that instanceof ApfloatNum) {
+      if (((ApfloatNum) that).isSignificanceTracked()) {
+        return ((ApfloatNum) that).times(this);
+      }
       return F.complexNum(apcomplexValue().multiply(((ApfloatNum) that).apcomplexValue()));
     }
     throw new java.lang.ArithmeticException();

@@ -1812,6 +1812,10 @@ public abstract class AbstractFractionSym implements IFraction {
       if (F.isExactZero(that)) {
         return this;
       }
+      if (((ApcomplexNum) that).isSignificanceTracked()) {
+        // the error of the number carries on
+        return ((ApcomplexNum) that).plus(this);
+      }
       return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
@@ -1990,6 +1994,10 @@ public abstract class AbstractFractionSym implements IFraction {
       return F.complexNum(evalfc().multiply(that.evalfc()));
     }
     if (that instanceof ApcomplexNum) {
+      if (((ApcomplexNum) that).isSignificanceTracked()) {
+        // the error of the number carries on
+        return ((ApcomplexNum) that).times(this);
+      }
       return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();

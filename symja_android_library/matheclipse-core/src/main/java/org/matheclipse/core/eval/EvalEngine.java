@@ -2338,6 +2338,13 @@ public class EvalEngine implements Serializable {
               }
               return result;
             }
+            if (newAST.isAST1() && newAST.arg1() instanceof ApfloatNum) {
+              // a zero of a given accuracy has no digits to calculate with
+              result = SignificanceArithmetic.unevaluatedAtZero(symbol, newAST);
+              if (result.isPresent()) {
+                return result;
+              }
+            }
           }
         }
       } catch (ValidateException ve) {
@@ -5830,7 +5837,13 @@ public class EvalEngine implements Serializable {
         }
       }
       // the precision of the value from the precision of the arguments
-      return result.isPresent() ? SignificanceArithmetic.conditioned(symbol, ast, result) : result;
+      if (result.isNIL()) {
+        // a zero of a given accuracy has no digits to calculate with
+        return ast.isAST1() && ast.arg1() instanceof ApfloatNum
+            ? SignificanceArithmetic.unevaluatedAtZero(symbol, ast)
+            : result;
+      }
+      return SignificanceArithmetic.conditioned(symbol, ast, result);
     } catch (ValidateException ve) {
       ve.printStackTrace();
       return Errors.printMessage(ast.topHead(), ve, this);

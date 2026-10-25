@@ -1,10 +1,13 @@
 package org.matheclipse.core.eval;
 
+import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -53,13 +56,22 @@ public final class SignificanceArithmetic {
     }
     final int argSize = ast.argSize();
     final boolean sqrt = ((IBuiltInSymbol) head).ordinal() == ID.Sqrt;
+    if (function == Function.LOG_BASE) {
+      final IExpr special = logSpecialPoint(ast.arg1(), ast.arg2());
+      if (special.isPresent()) {
+        return special;
+      }
+    }
     if (ast.arg1() instanceof ApfloatNum
         && !Double.isNaN(((ApfloatNum) ast.arg1()).zeroAccuracy10())) {
       final double zeroAccuracy = ((ApfloatNum) ast.arg1()).zeroAccuracy10();
       if (function == Function.POWER) {
         return powerOfZero(zeroAccuracy, sqrt ? F.C1D2 : ast.arg2(), result);
       }
-      return argSize == 1 ? ofZeroArgument(function, zeroAccuracy, result) : result;
+      return argSize == 1 ? ofZeroArgument(head, function, zeroAccuracy, result) : result;
+    }
+    if (result instanceof ApcomplexNum) {
+      return complexValueAtReal(function, ast, sqrt, (ApcomplexNum) result);
     }
     if (!(result instanceof ApfloatNum)) {
       return result;
@@ -103,7 +115,14 @@ public final class SignificanceArithmetic {
         : ApfloatSignificance.conditionNumbers(function, args, value.apfloatValue());
     if (conditionNumbers == null) {
       // a zero value, or the end of the domain: how much the function changes within the error
-      if (argSize != 1 || precisions[0] < 1.0) {
+      if (args.length > 1) {
+        if (!value.isZero()) {
+          return result;
+        }
+        final Apfloat error = changeWithinArguments(function, args, precisions);
+        return error == null ? result : valueWithError(function, Apfloat.ZERO, error);
+      }
+      if (precisions[0] < 1.0) {
         return result;
       }
       final Apfloat x = args[0];
@@ -147,18 +166,201 @@ public final class SignificanceArithmetic {
   }
 
   /**
+   * A complex value of a function at real arguments, one of them of a precision of its own, as
+   * <code>ArcSin(2.`20)</code>, <code>Log(-1.`20)</code> or <code>(-8.`20)^(1/3)</code>: its error
+   * is how much the function changes within the error of that argument.
+   */
+  private static IExpr complexValueAtReal(final Function function, final IAST ast,
+      final boolean sqrt, final ApcomplexNum result) {
+    final int argSize = ast.argSize();
+    final Apfloat[] args = new Apfloat[sqrt ? 2 : argSize];
+    int position = -1;
+    for (int i = 1; i <= argSize; i++) {
+      final IExpr arg = ast.get(i);
+      if (arg instanceof ApfloatNum && ((ApfloatNum) arg).isSignificanceTracked()) {
+        if (position >= 0 || arg.isZero()) {
+          // two arguments with errors, or an inexact zero
+          return result;
+        }
+        position = i - 1;
+        args[i - 1] = ((ApfloatNum) arg).extendedValue();
+      } else if (arg.isRational()
+          || (arg instanceof ApfloatNum && ((ApfloatNum) arg).isExactValue())) {
+        args[i - 1] = ((IReal) arg).apfloatValue();
+      } else {
+        return result;
+      }
+    }
+    if (position < 0) {
+      return result;
+    }
+    if (sqrt) {
+      args[1] = new Apfloat("0.5");
+    }
+    final double precision = ((ApfloatNum) ast.get(position + 1)).precision10();
+    if (precision < 1.0) {
+      return result;
+    }
+    final int k = position;
+    final ApfloatSignificance.ArgumentFunction f = (t, digits) -> {
+      final Apfloat[] values = args.clone();
+      values[k] = t;
+      return ApfloatSignificance.evaluateComplex(function, values, digits);
+    };
+    final Apfloat x = args[k];
+    final Apfloat delta = ApfloatMath.abs(x)
+        .multiply(ApfloatSignificance.tenToTheMinus(precision, Math.max(x.precision(), 20L)));
+    final Apcomplex[] change = ApfloatSignificance.changeWithin(f, x, delta,
+        precision - ApfloatSignificance.log10Abs(x));
+    if (change == null) {
+      return result;
+    }
+    return ApcomplexNum.valueOf(result.apcomplexValue(),
+        -ApfloatSignificance.log10Abs(change[1].real()));
+  }
+
+  /**
+   * How much a function of several arguments changes within the errors of its arguments: the
+   * change within the error of each argument of a precision of its own, the other arguments held
+   * fixed, added up. <code>Log(2, 1.`20)</code> is <code>0``19.84</code>, since <code>Log(2, x)</code>
+   * changes by <code>10^-20/Log(2)</code> at <code>x=1</code>, and <code>Log(b, 1)</code> not at all.
+   *
+   * @return <code>null</code> if no argument changes the function
+   */
+  private static Apfloat changeWithinArguments(final Function function, final Apfloat[] args,
+      final double[] precisions) {
+    Apfloat total = null;
+    for (int k = 0; k < args.length; k++) {
+      if (Double.isInfinite(precisions[k])) {
+        continue;
+      }
+      if (precisions[k] < 1.0 || args[k].signum() == 0) {
+        return null;
+      }
+      final int position = k;
+      final ApfloatSignificance.ArgumentFunction partial = (t, precision) -> {
+        final Apfloat[] values = new Apfloat[args.length];
+        for (int i = 0; i < values.length; i++) {
+          values[i] = i == position ? t : args[i];
+        }
+        return ApfloatSignificance.evaluate(function, values, precision);
+      };
+      final Apfloat x = args[k];
+      final Apfloat delta = ApfloatMath.abs(x).multiply(
+          ApfloatSignificance.tenToTheMinus(precisions[k], Math.max(x.precision(), 20L)));
+      final Apcomplex[] change = ApfloatSignificance.changeWithin(partial, x, delta,
+          precisions[k] - ApfloatSignificance.log10Abs(x));
+      if (change != null) {
+        total = total == null ? change[1].real() : total.add(change[1].real());
+      }
+    }
+    return total == null || total.signum() == 0 ? null : total;
+  }
+
+  /**
+   * The special points of <code>Log(b, x)</code> with an inexact argument: an inexact zero gives
+   * <code>Indeterminate</code>, a base which is <code>1</code> or whose error covers
+   * <code>1</code> gives <code>ComplexInfinity</code>, or <code>Indeterminate</code> if
+   * <code>x</code> is or covers <code>1</code> too, and an exact <code>x=1</code> with any other
+   * base gives the exact <code>0</code>.
+   *
+   * @return {@link F#NIL} if the arguments are no special point, or no argument is an
+   *         arbitrary-precision number
+   */
+  public static IExpr logSpecialPoint(final IExpr base, final IExpr x) {
+    if (!(base instanceof ApfloatNum) && !(x instanceof ApfloatNum)) {
+      return F.NIL;
+    }
+    if (isInexactZero(base) || isInexactZero(x)) {
+      return S.Indeterminate;
+    }
+    if (isOrCoversOne(base)) {
+      return isOrCoversOne(x) ? S.Indeterminate : F.CComplexInfinity;
+    }
+    if (x.isOne() && (x.isExactNumber() || ((ApfloatNum) x).isExactValue())) {
+      return F.C0;
+    }
+    return F.NIL;
+  }
+
+  private static boolean isInexactZero(final IExpr number) {
+    return number instanceof ApfloatNum && number.isZero()
+        && !((ApfloatNum) number).isExactValue();
+  }
+
+  /** Test if <code>number</code> is <code>1</code>, or a number whose error covers <code>1</code>. */
+  private static boolean isOrCoversOne(final IExpr number) {
+    if (number.isOne()) {
+      return true;
+    }
+    if (number instanceof ApfloatNum && ((ApfloatNum) number).isSignificanceTracked()
+        && !number.isZero()) {
+      final ApfloatNum real = (ApfloatNum) number;
+      final Apfloat value = real.extendedValue();
+      final Apfloat distance = ApfloatMath.abs(value.subtract(new Apfloat(1)));
+      if (distance.signum() == 0) {
+        return true;
+      }
+      // the error |x|*10^-p reaches 1
+      return ApfloatSignificance.log10Abs(distance) <= ApfloatSignificance.log10Abs(value)
+          - real.precision10();
+    }
+    return false;
+  }
+
+  /**
    * The value of a function at a zero of the accuracy <code>accuracy</code>, which has no relative
    * error: the error of the value is how much the function changes within the error of the zero.
    */
-  private static IExpr ofZeroArgument(final Function function, final double accuracy,
-      final IExpr result) {
+  private static IExpr ofZeroArgument(final ISymbol head, final Function function,
+      final double accuracy, final IExpr result) {
     if (accuracy < 1.0) {
       return result;
     }
     final Apfloat delta = ApfloatSignificance.tenToTheMinus(accuracy, 20L);
     final Apfloat[] change =
         ApfloatSignificance.changeWithin(function, Apfloat.ZERO, delta, accuracy);
-    return change == null ? result : valueWithError(function, change[0], change[1]);
+    if (change != null) {
+      return valueWithError(function, change[0], change[1]);
+    }
+    // a complex value, as ArcCosh(0``20)
+    final Apcomplex[] complexChange = ApfloatSignificance.changeWithin(
+        (t, digits) -> ApfloatSignificance.evaluateComplex(function, new Apfloat[] {t}, digits),
+        Apfloat.ZERO, delta, accuracy);
+    if (complexChange == null || complexChange[0].imag().signum() == 0) {
+      return result;
+    }
+    // the value on the branch of the function itself: its value at the exact 0
+    final IExpr value = EvalEngine.get().evalN(F.unaryAST1(head, F.C0),
+        (long) Math.ceil(Math.max(accuracy, 1.0)) + 10L);
+    if (!(value instanceof INumber) || value.isReal()) {
+      return result;
+    }
+    return ApcomplexNum.valueOf(((INumber) value).apcomplexValue(),
+        -ApfloatSignificance.log10Abs(complexChange[1].real()));
+  }
+
+  /**
+   * The value of a function at a zero of a given accuracy, which the function itself cannot
+   * calculate, as <code>ArcCosh(0``20)</code>: the zero has no digits to calculate with.
+   *
+   * @param head the head of <code>ast</code>
+   * @param ast the function with its arguments
+   * @return {@link F#NIL} if <code>ast</code> is no such function of such a zero
+   */
+  public static IExpr unevaluatedAtZero(final ISymbol head, final IAST ast) {
+    if (!(head instanceof IBuiltInSymbol) || !ast.isAST1() || !(ast.arg1() instanceof ApfloatNum)) {
+      return F.NIL;
+    }
+    final double zeroAccuracy = ((ApfloatNum) ast.arg1()).zeroAccuracy10();
+    if (Double.isNaN(zeroAccuracy)) {
+      return F.NIL;
+    }
+    final Function function = functionOf(((IBuiltInSymbol) head).ordinal(), 1);
+    if (function == null || function == Function.POWER) {
+      return F.NIL;
+    }
+    return ofZeroArgument(head, function, zeroAccuracy, F.NIL);
   }
 
   /**

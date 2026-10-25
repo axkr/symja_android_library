@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.external.apfloat.ApfloatSignificance;
 import org.matheclipse.parser.client.ParserConfig;
@@ -369,12 +370,10 @@ public class SetPrecision extends AbstractFunctionEvaluator {
       // an exact zero imaginary part leaves a real number
       return re;
     }
-    if (re instanceof ApfloatNum && im instanceof ApfloatNum) {
-      return F.complexNum(
-          new Apcomplex(((ApfloatNum) re).apfloatValue(), ((ApfloatNum) im).apfloatValue()));
-    }
-    if (re.isZero() && re.isExactNumber() && im instanceof ApfloatNum) {
-      return F.complexNum(new Apcomplex(Apfloat.ZERO, ((ApfloatNum) im).apfloatValue()));
+    if ((re instanceof ApfloatNum || (re.isZero() && re.isExactNumber()))
+        && im instanceof ApfloatNum) {
+      // the errors of the parts add in quadrature
+      return ApcomplexNum.valueOf((IReal) re, (IReal) im);
     }
     return F.complexNum(re.evalf(), im.evalf());
   }

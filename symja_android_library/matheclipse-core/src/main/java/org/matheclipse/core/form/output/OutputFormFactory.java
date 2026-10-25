@@ -699,7 +699,7 @@ public class OutputFormFactory {
       return;
     }
     if (dc instanceof ApcomplexNum) {
-      convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence, caller);
+      convertApcomplex(buf, (ApcomplexNum) dc, precedence, caller);
       return;
     }
     if (Precedence.PLUS < precedence) {
@@ -750,7 +750,7 @@ public class OutputFormFactory {
   public void convertDoubleComplexReImI(final Appendable buf, final IComplexNum dc,
       final int precedence, boolean caller) throws IOException {
     if (dc instanceof ApcomplexNum) {
-      convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence, caller);
+      convertApcomplex(buf, (ApcomplexNum) dc, precedence, caller);
       return;
     }
     if (Precedence.PLUS < precedence) {
@@ -804,6 +804,42 @@ public class OutputFormFactory {
 
   public void convertApcomplex(final Appendable buf, final Apcomplex dc, final int precedence,
       boolean caller) throws IOException {
+    convertApcomplex(buf, dc, null, null, precedence, caller);
+  }
+
+  /** An arbitrary-precision complex number, whose parts show the digits they are known to. */
+  public void convertApcomplex(final Appendable buf, final ApcomplexNum dc, final int precedence,
+      boolean caller) throws IOException {
+    final IReal re = dc.isSignificanceTracked() ? dc.re() : null;
+    final IReal im = dc.isSignificanceTracked() ? dc.im() : null;
+    if (fComplexReImI) {
+      convertApcomplexReImI(buf, dc.apcomplexValue(), re, im, precedence, caller);
+      return;
+    }
+    convertApcomplex(buf, dc.apcomplexValue(), re, im, precedence, caller);
+  }
+
+  /**
+   * A part of a complex number: with the precision mark, or the digits shown, of the part with its
+   * error if there is one.
+   */
+  private String partString(final Apfloat part, final IReal known) {
+    if (known instanceof ApfloatNum && ((ApfloatNum) known).isSignificanceTracked()) {
+      final ApfloatNum number = (ApfloatNum) known;
+      return fInputForm ? number.fullFormString()
+          : convertApfloatToFormattedString(number.apfloatValue(),
+              number.apfloatValue().precision());
+    }
+    return fInputForm ? ApfloatNum.fullFormString(part) : convertApfloatToFormattedString(part);
+  }
+
+  /**
+   * @param knownRe the real part with its error, or <code>null</code>: the digits of a complex
+   *        number with an error of its own are the ones its parts are known to
+   * @param knownIm the imaginary part with its error, or <code>null</code>
+   */
+  private void convertApcomplex(final Appendable buf, final Apcomplex dc, final IReal knownRe,
+      final IReal knownIm, final int precedence, boolean caller) throws IOException {
     if (fComplexReImI) {
       convertApcomplexReImI(buf, dc, precedence, caller);
       return;
@@ -823,14 +859,12 @@ public class OutputFormFactory {
       convertDoubleString(buf, "0.0", Precedence.PLUS, false);
     } else {
       if (!realZero) {
-        String str = fInputForm ? ApfloatNum.fullFormString(realPart)
-            : convertApfloatToFormattedString(realPart);
+        String str = partString(realPart, knownRe);
         append(buf, str);
         if (!imaginaryZero) {
           append(buf, "+I*");
           final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-          str = fInputForm ? ApfloatNum.fullFormString(imaginaryPart)
-              : convertApfloatToFormattedString(imaginaryPart);
+          str = partString(imaginaryPart, knownIm);
           convertDoubleString(buf, str, Precedence.TIMES, isNegative);
         }
       } else {
@@ -840,8 +874,7 @@ public class OutputFormFactory {
         }
         append(buf, "I*");
         final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-        String str = fInputForm ? ApfloatNum.fullFormString(imaginaryPart)
-            : convertApfloatToFormattedString(imaginaryPart);
+        String str = partString(imaginaryPart, knownIm);
         convertDoubleString(buf, str, Precedence.TIMES, isNegative);
       }
     }
@@ -852,6 +885,16 @@ public class OutputFormFactory {
 
   public void convertApcomplexReImI(final Appendable buf, final Apcomplex dc, final int precedence,
       boolean caller) throws IOException {
+    convertApcomplexReImI(buf, dc, null, null, precedence, caller);
+  }
+
+  /**
+   * @param knownRe the real part with its error, or <code>null</code>: the digits of a complex
+   *        number with an error of its own are the ones its parts are known to
+   * @param knownIm the imaginary part with its error, or <code>null</code>
+   */
+  private void convertApcomplexReImI(final Appendable buf, final Apcomplex dc, final IReal knownRe,
+      final IReal knownIm, final int precedence, boolean caller) throws IOException {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
         append(buf, fInputForm ? " + " : "+");
@@ -867,16 +910,14 @@ public class OutputFormFactory {
       convertDoubleString(buf, "0.0", Precedence.PLUS, false);
     } else {
       if (!realZero) {
-        String str = fInputForm ? ApfloatNum.fullFormString(realPart)
-            : convertApfloatToFormattedString(realPart);
+        String str = partString(realPart, knownRe);
         append(buf, str);
         if (!imaginaryZero) {
           final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
           if (!isNegative) {
             append(buf, fInputForm ? " + " : "+");
           }
-          str = fInputForm ? ApfloatNum.fullFormString(imaginaryPart)
-              : convertApfloatToFormattedString(imaginaryPart);
+          str = partString(imaginaryPart, knownIm);
           convertDoubleString(buf, str, Precedence.PLUS, isNegative);
           append(buf, "*I");
         }
@@ -886,8 +927,7 @@ public class OutputFormFactory {
           append(buf, fInputForm ? " + " : "+");
           caller = false;
         }
-        String str = fInputForm ? ApfloatNum.fullFormString(imaginaryPart)
-            : convertApfloatToFormattedString(imaginaryPart);
+        String str = partString(imaginaryPart, knownIm);
         convertDoubleString(buf, str, precedence, isNegative);
         append(buf, "*I");
       }

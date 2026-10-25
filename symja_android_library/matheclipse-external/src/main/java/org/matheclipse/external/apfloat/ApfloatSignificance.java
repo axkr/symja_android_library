@@ -1,5 +1,7 @@
 package org.matheclipse.external.apfloat;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -319,10 +321,10 @@ public final class ApfloatSignificance {
    */
   public static Apfloat evaluate(Function function, Apfloat[] args, long precision) {
     try {
-      final Apfloat x = args[0].precision(precision);
+      final Apfloat x = withPrecision(args[0], precision);
       switch (function) {
         case POWER: {
-          final Apfloat e = args[1].precision(precision);
+          final Apfloat e = withPrecision(args[1], precision);
           if (e.isInteger() && e.scale() <= 18) {
             return ApfloatMath.pow(x, e.longValue());
           }
@@ -333,7 +335,7 @@ public final class ApfloatSignificance {
         case LOG:
           return ApfloatMath.log(x);
         case LOG_BASE:
-          return ApfloatMath.log(args[1].precision(precision), x);
+          return ApfloatMath.log(withPrecision(args[1], precision), x);
         case SIN:
           return ApfloatMath.sin(x);
         case COS:
@@ -392,6 +394,65 @@ public final class ApfloatSignificance {
   }
 
   /**
+   * The value of a function at real arguments, which may be complex, as <code>ArcSin(2)</code> or
+   * <code>Log(-1)</code>, calculated with <code>precision</code> digits.
+   *
+   * @return <code>null</code> if it cannot be calculated here
+   */
+  public static Apcomplex evaluateComplex(Function function, Apfloat[] args, long precision) {
+    try {
+      final Apfloat x = withPrecision(args[0], precision);
+      switch (function) {
+        case POWER:
+          return ApcomplexMath.pow(x, withPrecision(args[1], precision));
+        case LOG:
+          return ApcomplexMath.log(x);
+        case LOG_BASE:
+          return ApcomplexMath.log(withPrecision(args[1], precision))
+              .divide(ApcomplexMath.log(x));
+        case ARCSIN:
+          return ApcomplexMath.asin(x);
+        case ARCCOS:
+          return ApcomplexMath.acos(x);
+        case ARCSEC:
+          return ApcomplexMath.acos(ApfloatMath.inverseRoot(x, 1));
+        case ARCCSC:
+          return ApcomplexMath.asin(ApfloatMath.inverseRoot(x, 1));
+        case ARCCOSH:
+          return ApcomplexMath.acosh(x);
+        case ARCTANH:
+          return ApcomplexMath.atanh(x);
+        case ARCCOTH:
+          return ApcomplexMath.atanh(ApfloatMath.inverseRoot(x, 1));
+        case ARCSECH:
+          return ApcomplexMath.acosh(ApfloatMath.inverseRoot(x, 1));
+        default:
+          // real for every real argument
+          return evaluate(function, args, precision);
+      }
+    } catch (ArithmeticException | IllegalArgumentException | ApfloatRuntimeException e) {
+      return null;
+    }
+  }
+
+  /**
+   * A function of one real argument, calculated with a given number of digits, whose value may be
+   * complex.
+   */
+  @FunctionalInterface
+  public interface ArgumentFunction {
+    /**
+     * @param x the argument
+     * @param precision the number of digits of the calculation
+     * @return <code>null</code> if the function has no value at <code>x</code>
+     */
+    Apcomplex value(Apfloat x, long precision);
+  }
+
+  /** The steps of {@link #changeWithin(ArgumentFunction, Apfloat, Apfloat, double)}: 2^-40. */
+  private static final long SHRINK_BITS = 40L;
+
+  /**
    * The value of a function of one real argument <code>x</code>, and how much the function changes
    * within <code>delta</code> of <code>x</code>: the error of the value where the condition number
    * doesn't exist. For a zero argument, which has no relative error, <code>Sin(0``20)</code> is
@@ -401,9 +462,16 @@ public final class ApfloatSignificance {
    * <code>Sqrt(2*10^-20)</code>.
    *
    * <p>
-   * The smaller change of the two sides is taken: where the function is continuous they agree, and
-   * a branch cut jumps on one side only. A side where the function has no real value, as above
-   * <code>1</code> for the arc cosine, is left out.
+   * The change is the leading term <code>c*delta^p</code> of the function at <code>x</code>, also
+   * where <code>delta</code> is not small: <code>Log(1.`3)</code> is <code>0``3</code>, not the
+   * <code>0``3.0002</code> of <code>Log(1.001)</code>. The power <code>p</code> is read off the
+   * changes within two much smaller steps.
+   *
+   * <p>
+   * On each side the smaller change is taken: where the function is continuous they agree, and a
+   * branch cut jumps on one side only. A side where the function has no real value, as above
+   * <code>1</code> for the arc cosine, is left out, unless the value at <code>x</code> is complex
+   * too.
    *
    * @param function a function of one argument
    * @param x the argument
@@ -414,28 +482,101 @@ public final class ApfloatSignificance {
    */
   public static Apfloat[] changeWithin(Function function, Apfloat x, Apfloat delta,
       double digits) {
-    // enough digits for a change of second order
-    final long precision = (long) Math.ceil(2.0 * Math.max(digits, 1.0)) + 20L;
-    final Apfloat argument = x.precision(precision);
-    final Apfloat value = realValue(function, argument, precision);
+    final Apcomplex[] change =
+        changeWithin((t, precision) -> realValue(function, t, precision), x, delta, digits);
+    if (change == null || change[0].imag().signum() != 0) {
+      return null;
+    }
+    return new Apfloat[] {change[0].real(), change[1].real()};
+  }
+
+  /**
+   * The value of a function of one real argument, which may be complex, and how much it changes
+   * within <code>delta</code> of <code>x</code>, see
+   * {@link #changeWithin(Function, Apfloat, Apfloat, double)}. The change of a complex value is
+   * the absolute value of the difference.
+   *
+   * @return <code>{value, change}</code>, or <code>null</code> if the function has no value at
+   *         <code>x</code> or on either side of it
+   */
+  public static Apcomplex[] changeWithin(ArgumentFunction function, Apfloat x, Apfloat delta,
+      double digits) {
+    // enough digits for a change of second order within the small steps
+    final long precision =
+        (long) Math.ceil(2.0 * (Math.max(digits, 1.0) + SHRINK_BITS * Math.log10(2.0))) + 20L;
+    final Apfloat argument = withPrecision(x, precision);
+    Apcomplex value = function.value(argument, precision);
+    if (value == null && argument.signum() == 0) {
+      value = valueNextToZero(function, precision);
+    }
     if (value == null) {
       return null;
     }
-    Apfloat change = null;
-    for (Apfloat side : new Apfloat[] {argument.add(delta.precision(precision)),
-        argument.subtract(delta.precision(precision))}) {
-      final Apfloat other = realValue(function, side, precision);
-      if (other != null) {
-        final Apfloat difference = ApfloatMath.abs(other.subtract(value));
-        if (change == null || difference.compareTo(change) < 0) {
-          change = difference;
-        }
-      }
-    }
-    if (change == null || change.signum() == 0) {
+    final boolean complex = value.imag().signum() != 0;
+    final Apfloat d = delta.precision(precision);
+    final Apfloat whole = change(function, argument, value, d, precision, complex);
+    if (whole == null || whole.signum() == 0) {
       return null;
     }
-    return new Apfloat[] {value, change};
+    final Apfloat two = new Apfloat(2, precision);
+    final Apfloat step = d.multiply(ApfloatMath.pow(two, -SHRINK_BITS));
+    final Apfloat small = change(function, argument, value, step, precision, complex);
+    final Apfloat smaller =
+        change(function, argument, value, step.divide(two), precision, complex);
+    if (small == null || smaller == null || small.signum() == 0 || smaller.signum() == 0) {
+      return new Apcomplex[] {value, whole};
+    }
+    double power = Math.log(small.divide(smaller).doubleValue()) / Math.log(2.0);
+    final double twice = 2.0 * power;
+    if (Math.abs(twice - Math.rint(twice)) < 0.01) {
+      // a power like 1, 2 or 1/2 is taken as exact
+      power = Math.rint(twice) / 2.0;
+    }
+    // the leading term at the size of delta
+    final Apfloat factor = ApfloatMath.pow(two, new Apfloat(SHRINK_BITS * power, precision));
+    return new Apcomplex[] {value, small.multiply(factor)};
+  }
+
+  /**
+   * The value at <code>0</code>, which has infinite precision, to which a transcendental value like
+   * <code>ArcCosh(0)</code> cannot be calculated: the value next to it, far within the digits of
+   * the calculation. A function which is infinite at <code>0</code>, like <code>ArcSech</code>,
+   * changes there by far more than the digits, and has no value.
+   */
+  private static Apcomplex valueNextToZero(ArgumentFunction function, long precision) {
+    final Apfloat next = ApfloatMath.scale(new Apfloat(1L, precision), -2L * precision);
+    final Apcomplex value = function.value(next, precision);
+    final Apcomplex further = function.value(next.multiply(new Apfloat(10L, precision)), precision);
+    if (value == null || further == null) {
+      return null;
+    }
+    final Apfloat change = ApcomplexMath.abs(further.subtract(value));
+    final Apfloat size = ApcomplexMath.abs(value);
+    final double limit =
+        -precision / 2.0 + (size.signum() == 0 ? 0.0 : Math.max(0.0, log10Abs(size)));
+    return change.signum() == 0 || log10Abs(change) <= limit ? value : null;
+  }
+
+  /**
+   * The smaller change of the two sides <code>x+step</code> and <code>x-step</code>, or
+   * <code>null</code> if the function has no value on either side.
+   *
+   * @param complex <code>true</code> if a side with a complex value counts
+   */
+  private static Apfloat change(ArgumentFunction function, Apfloat x, Apcomplex value,
+      Apfloat step, long precision, boolean complex) {
+    Apfloat change = null;
+    for (Apfloat side : new Apfloat[] {x.add(step), x.subtract(step)}) {
+      final Apcomplex other = function.value(side, precision);
+      if (other == null || (!complex && other.imag().signum() != 0)) {
+        continue;
+      }
+      final Apfloat difference = ApcomplexMath.abs(other.subtract(value));
+      if (change == null || difference.compareTo(change) < 0) {
+        change = difference;
+      }
+    }
+    return change;
   }
 
   /**
@@ -444,6 +585,11 @@ public final class ApfloatSignificance {
    */
   private static Apfloat realValue(Function function, Apfloat x, long precision) {
     return evaluate(function, new Apfloat[] {x}, precision);
+  }
+
+  /** <code>x</code> with <code>precision</code> digits; a zero keeps its infinite precision. */
+  private static Apfloat withPrecision(Apfloat x, long precision) {
+    return x.signum() == 0 ? x : x.precision(precision);
   }
 
   /**

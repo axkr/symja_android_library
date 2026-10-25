@@ -42,6 +42,7 @@ import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PrecisionLoss;
+import org.matheclipse.core.eval.SignificanceArithmetic;
 import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -3028,6 +3029,11 @@ public class ExpTrigsFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber base = (IInexactNumber) ast.arg1();
         IInexactNumber num = (IInexactNumber) ast.arg2();
+        // a base which is or covers 1, an inexact zero: without the division by Log(base)
+        final IExpr special = SignificanceArithmetic.logSpecialPoint(base, num);
+        if (special.isPresent()) {
+          return special;
+        }
         if (F.isExactZero(num)) {
           return F.Indeterminate;
         }

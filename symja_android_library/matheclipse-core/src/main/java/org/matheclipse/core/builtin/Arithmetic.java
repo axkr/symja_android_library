@@ -5517,6 +5517,10 @@ public final class Arithmetic {
      * recurses over the whole tree rather than looking only at the head argument.
      */
     private static double accuracy(IExpr expr) {
+      if (expr instanceof ApcomplexNum && ((ApcomplexNum) expr).isSignificanceTracked()) {
+        // the accuracy of the absolute error of the number
+        return ((ApcomplexNum) expr).accuracy10();
+      }
       if (expr instanceof IComplexNum) {
         INumber z = (INumber) expr;
         double re = accuracy(z.re());
@@ -5615,6 +5619,9 @@ public final class Arithmetic {
       }
       if (expr instanceof INum) {
         return ((INum) expr).precision();
+      }
+      if (expr instanceof ApcomplexNum && ((ApcomplexNum) expr).isSignificanceTracked()) {
+        return ((ApcomplexNum) expr).precision10();
       }
       if (expr instanceof IComplexNum) {
         long precision = ((IComplexNum) expr).precision();

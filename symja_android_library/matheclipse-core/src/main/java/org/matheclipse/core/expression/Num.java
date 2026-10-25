@@ -2388,6 +2388,10 @@ public class Num implements INum {
       return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
     }
     if (that instanceof ApcomplexNum) {
+      if (((ApcomplexNum) that).isSignificanceTracked()) {
+        // the error of the number carries on
+        return ((ApcomplexNum) that).plus(this);
+      }
       return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
@@ -2786,6 +2790,10 @@ public class Num implements INum {
       return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
     }
     if (that instanceof ApcomplexNum) {
+      if (((ApcomplexNum) that).isSignificanceTracked()) {
+        // the error of the number carries on
+        return ((ApcomplexNum) that).times(this);
+      }
       return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();

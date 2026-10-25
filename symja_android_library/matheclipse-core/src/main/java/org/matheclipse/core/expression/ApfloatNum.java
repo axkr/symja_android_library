@@ -548,6 +548,14 @@ public class ApfloatNum implements INum {
     return errorPrecision();
   }
 
+  /**
+   * The accuracy of this number as the argument of a calculation: <code>Infinity</code> for the
+   * value of an exact or a machine number, the accuracy of a zero of a given accuracy.
+   */
+  public double significanceAccuracy() {
+    return errorAccuracy();
+  }
+
   /** The precision for the error of a calculation: <code>Infinity</code> for an exact value. */
   private double errorPrecision() {
     switch (fSignificance) {
@@ -928,7 +936,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApcomplexNum apcomplexNumValue() {
-    return ApcomplexNum.valueOf(fApfloat);
+    // with the error of this number
+    return ApcomplexNum.valueOf(this);
   }
 
   // private static Apfloat erf(Apfloat x, FixedPrecisionApfloatHelper h) {
@@ -1441,11 +1450,12 @@ public class ApfloatNum implements INum {
       return divide(((Num) that).getRealPart());
     }
     if (that instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fApfloat).divide((ApcomplexNum) that);
+      return ApcomplexNum.valueOf(this).divide((ApcomplexNum) that);
     }
     if (that instanceof ComplexNum) {
-      return ApcomplexNum.valueOf(fApfloat)
-          .divide(ApcomplexNum.valueOf(((ComplexNum) that).apcomplexValue()));
+      // a machine number adds no error
+      return ApcomplexNum.valueOf(this)
+          .divide(ApcomplexNum.valueOf(((ComplexNum) that).apcomplexValue()).asExact());
     }
     return INum.super.divide(that);
   }
@@ -2576,11 +2586,11 @@ public class ApfloatNum implements INum {
     }
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
-        return ApcomplexNum.valueOf(fApfloat).add((ApcomplexNum) that);
+        return ApcomplexNum.valueOf(this).add((ApcomplexNum) that);
       }
       ComplexNum cn = (ComplexNum) that;
-      return ApcomplexNum.valueOf(fApfloat)
-          .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
+      return ApcomplexNum.valueOf(this)
+          .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()).asExact());
     }
     throw new java.lang.ArithmeticException();
   }
@@ -2596,6 +2606,10 @@ public class ApfloatNum implements INum {
           Double.POSITIVE_INFINITY, fSignificance == MACHINE);
     }
     if (that instanceof ComplexSym) {
+      if (isSignificanceTracked()) {
+        // an exact number adds no error
+        return ApcomplexNum.valueOf(this).plus(that);
+      }
       final Apcomplex complex = that.apcomplexValue();
       return F.complexNum(PrecisionLoss.sum(fApfloat, complex, fApfloat.add(complex)));
     }
@@ -2888,6 +2902,9 @@ public class ApfloatNum implements INum {
       return subtract(((Num) that).getRealPart());
     }
     if (that instanceof ApcomplexNum) {
+      if (isSignificanceTracked() || ((ApcomplexNum) that).isSignificanceTracked()) {
+        return ApcomplexNum.valueOf(this).subtract((ApcomplexNum) that);
+      }
       return F.complexNum(difference(((ApcomplexNum) that).apcomplexValue()));
     }
     if (that instanceof ComplexNum) {
@@ -3031,11 +3048,11 @@ public class ApfloatNum implements INum {
     }
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
-        return ApcomplexNum.valueOf(fApfloat).multiply((ApcomplexNum) that);
+        return ApcomplexNum.valueOf(this).multiply((ApcomplexNum) that);
       }
       ComplexNum cn = (ComplexNum) that;
-      return ApcomplexNum.valueOf(fApfloat)
-          .multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
+      return ApcomplexNum.valueOf(this)
+          .multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()).asExact());
     }
     throw new java.lang.ArithmeticException();
   }
@@ -3049,6 +3066,10 @@ public class ApfloatNum implements INum {
       return productResult(h().multiply(extendedValue(), extendedValue((IReal) that)), that);
     }
     if (that instanceof ComplexSym) {
+      if (isSignificanceTracked()) {
+        // an exact number adds no error
+        return ApcomplexNum.valueOf(this).times(that);
+      }
       return F.complexNum(fApfloat.multiply(that.apcomplexValue()));
     }
     throw new java.lang.ArithmeticException();

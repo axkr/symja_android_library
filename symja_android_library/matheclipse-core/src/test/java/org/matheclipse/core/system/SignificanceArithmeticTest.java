@@ -343,4 +343,72 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
     check("InputForm(-617/500 + N(1.234, 40))", //
         "0``39.9087");
   }
+
+  @Test
+  public void testLogOfZeroValue() {
+    // the error of x divided by Log(3) at x=1; the base doesn't change a zero value
+    check("InputForm(Log(3, 1.0`18))", //
+        "0``18.0408");
+    check("InputForm(Log(5.0`20, 1))", //
+        "0");
+    // a base which is 1, an inexact zero
+    check("InputForm(Log(1.0`20, 1.0`20))", //
+        "Indeterminate");
+    check("Log(1.0`20, 3)", //
+        "ComplexInfinity");
+    check("InputForm(Log(4.0`20, 0``15))", //
+        "Indeterminate");
+  }
+
+  @Test
+  public void testChangeIsTheLeadingTerm() {
+    // also at a low precision the leading term of the change, not the change itself
+    check("Accuracy(Log(1.0`4))", //
+        "4.0");
+    check("Accuracy(Sin(0``2.5))", //
+        "2.5");
+    check("Accuracy(ArcCos(1.0`4))", //
+        "1.84949");
+  }
+
+  @Test
+  public void testComplexNumbersOfParts() {
+    // parts of the same precision: the number has that precision
+    check("Precision(2.25`18.5 + 1.75`18.5*I)", //
+        "18.5");
+    // the less precise part decides the error of the number; no part shows more digits
+    check("Precision(2.25`18.5 + 1.75`12*I)", //
+        "12.21187");
+    check("InputForm(2.25`18.5 + 1.75`12*I)", //
+        "2.25`12.1091+I*1.75`12");
+    check("InputForm(Re(2.25`18.5 + 1.75`12*I))", //
+        "2.25`12.1091");
+  }
+
+  @Test
+  public void testComplexArithmetic() {
+    // the relative errors of a product add
+    check("Precision((2.0`19 + 1.0`23*I)*(1.5`21 - 3.0`17*I))", //
+        "17.04413");
+    check("Precision((1.5`20 + 2.0`20*I)^3)", //
+        "19.52288");
+  }
+
+  @Test
+  public void testComplexValuesAtRealArguments() {
+    check("Precision(ArcSin(3.0`20))", //
+        "20.34753");
+    check("Precision(Log(-2.5`20))", //
+        "20.51488");
+    check("Precision((-27.0`20)^(1/3))", //
+        "20.47712");
+    check("Precision(ArcSec(0.25`20))", //
+        "20.30058");
+    // the square root halves the relative error
+    check("InputForm(Sqrt(-5.0`20))", //
+        "I*2.2360679774997896964`20.301");
+    // a zero of a given accuracy
+    check("InputForm(ArcCosh(0``15))", //
+        "I*1.5707963267949`15.1961");
+  }
 }

@@ -211,7 +211,8 @@ public class ComplexSym implements IComplex {
 
   @Override
   public ApcomplexNum apcomplexNumValue() {
-    return ApcomplexNum.valueOf(apcomplexValue());
+    // the value of an exact number adds no error to a calculation
+    return ApcomplexNum.exact(apcomplexValue());
   }
 
   @Override
@@ -385,7 +386,9 @@ public class ComplexSym implements IComplex {
   public IExpr evaluate(EvalEngine engine) {
     if (engine.isNumericMode()) {
       if (engine.isArbitraryMode()) {
-        return numericNumber();
+        final INumber number = numericNumber();
+        // the value of an exact number adds no error to a calculation
+        return number instanceof ApcomplexNum ? ((ApcomplexNum) number).asExact() : number;
       }
       if (fReal.isZero()) {
         // if possible use predefined constants for imaginary unit
@@ -690,10 +693,17 @@ public class ComplexSym implements IComplex {
       return F.complexNum(evalfc().add(((INum) that).evalfNaN()));
     }
     if (that instanceof ApcomplexNum) {
+      if (((ApcomplexNum) that).isSignificanceTracked()) {
+        // the error of the number carries on
+        return ((ApcomplexNum) that).plus(this);
+      }
       Apcomplex temp = apcomplexValue().add(((ApcomplexNum) that).apcomplexValue());
       return F.complexNum(temp);
     }
     if (that instanceof ApfloatNum) {
+      if (((ApfloatNum) that).isSignificanceTracked()) {
+        return ((ApfloatNum) that).plus(this);
+      }
       Apcomplex temp = apcomplexValue().add(((ApfloatNum) that).apfloatValue());
       return F.complexNum(temp);
     }
@@ -959,10 +969,17 @@ public class ComplexSym implements IComplex {
       return F.complexNum(evalfc().multiply(((INum) that).evalfNaN()));
     }
     if (that instanceof ApcomplexNum) {
+      if (((ApcomplexNum) that).isSignificanceTracked()) {
+        // the error of the number carries on
+        return ((ApcomplexNum) that).times(this);
+      }
       Apcomplex temp = apcomplexValue().multiply(((ApcomplexNum) that).apcomplexValue());
       return F.complexNum(temp);
     }
     if (that instanceof ApfloatNum) {
+      if (((ApfloatNum) that).isSignificanceTracked()) {
+        return ((ApfloatNum) that).times(this);
+      }
       Apcomplex temp = apcomplexValue().multiply(((ApfloatNum) that).apfloatValue());
       return F.complexNum(temp);
     }
