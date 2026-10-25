@@ -375,6 +375,7 @@ public final class FunctionDefinitions {
       S.Symmetrize.setEvaluator(new org.matheclipse.core.reflection.system.Symmetrize());
 
       S.Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
+      S.ToRules.setEvaluator(new org.matheclipse.core.reflection.system.ToRules());
       S.TreeForm.setEvaluator(new org.matheclipse.core.reflection.system.TreeForm());
       S.TriangleCenter.setEvaluator(new org.matheclipse.core.reflection.system.TriangleCenter());
       S.TriangleConstruct

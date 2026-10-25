@@ -15123,7 +15123,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(b==0&&x==2)||(b==1&&x==1)||(b==2&&x==0)");
   }
 
-  @org.junit.jupiter.api.Disabled("ToRules is not yet a built-in symbol")
   @Test
   public void testToRules() {
     check("{ToRules(x==2&&y==5 || x==-1&&y==0)}", //
