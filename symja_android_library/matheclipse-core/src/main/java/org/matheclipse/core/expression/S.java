@@ -24805,6 +24805,15 @@ public class S {
       S.initFinalSymbol("TortoiseShellBracket", ID.TortoiseShellBracket);
 
   /**
+   * ToRules(x) - TODO describe `ToRules`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToRules.md">ToRules
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ToRules = S.initFinalSymbol("ToRules", ID.ToRules);
+
+  /**
    * Torus(x) - TODO describe `Torus`.
    * 
    * @see <a href=

@@ -3126,272 +3126,273 @@ public class ID {
   public final static int TopologicalSort = 3113;
   public final static int ToRadicals = 3114;
   public final static int TortoiseShellBracket = 3115;
-  public final static int Torus = 3116;
-  public final static int TorusGraph = 3117;
-  public final static int ToSphericalCoordinates = 3118;
-  public final static int ToString = 3119;
-  public final static int Total = 3120;
-  public final static int TotalVariationFilter = 3121;
-  public final static int TouchscreenAutoZoom = 3122;
-  public final static int ToUnicode = 3123;
-  public final static int ToUpperCase = 3124;
-  public final static int Tr = 3125;
-  public final static int Trace = 3126;
-  public final static int TraceDialog = 3127;
-  public final static int TraceForm = 3128;
-  public final static int TrackedSymbols = 3129;
-  public final static int TradingChart = 3130;
-  public final static int TraditionalForm = 3131;
-  public final static int TransformationClass = 3132;
-  public final static int TransformationFunction = 3133;
-  public final static int TransformedDistribution = 3134;
-  public final static int TransformedRegion = 3135;
-  public final static int TransitionDuration = 3136;
-  public final static int TransitiveClosure = 3137;
-  public final static int Translate = 3138;
-  public final static int TranslationTransform = 3139;
-  public final static int Transliterate = 3140;
-  public final static int Transparent = 3141;
-  public final static int Transpose = 3142;
-  public final static int TreeForm = 3143;
-  public final static int TreeGraph = 3144;
-  public final static int TreeGraphQ = 3145;
-  public final static int TreePlot = 3146;
-  public final static int Triangle = 3147;
-  public final static int TriangleCenter = 3148;
-  public final static int TriangleConstruct = 3149;
-  public final static int TriangleMeasurement = 3150;
-  public final static int TriangleWave = 3151;
-  public final static int TriangularDistribution = 3152;
-  public final static int TriangulateMesh = 3153;
-  public final static int Trig = 3154;
-  public final static int TrigExpand = 3155;
-  public final static int TrigFactor = 3156;
-  public final static int Trigger = 3157;
-  public final static int TrigReduce = 3158;
-  public final static int TrigSimplifyFu = 3159;
-  public final static int TrigToExp = 3160;
-  public final static int True = 3161;
-  public final static int TrueQ = 3162;
-  public final static int TruncatedDistribution = 3163;
-  public final static int TTest = 3164;
-  public final static int Tube = 3165;
-  public final static int Tuesday = 3166;
-  public final static int TukeyWindow = 3167;
-  public final static int Tuples = 3168;
-  public final static int TuranGraph = 3169;
-  public final static int TwoWayRule = 3170;
-  public final static int UnaryMinusPlus = 3171;
-  public final static int UnaryPlus = 3172;
-  public final static int UnaryPlusMinus = 3173;
-  public final static int Uncompress = 3174;
-  public final static int Undefined = 3175;
-  public final static int Underflow = 3176;
-  public final static int Underlined = 3177;
-  public final static int Underoverscript = 3178;
-  public final static int UnderoverscriptBox = 3179;
-  public final static int Underscript = 3180;
-  public final static int UnderscriptBox = 3181;
-  public final static int UndirectedEdge = 3182;
-  public final static int UndirectedGraph = 3183;
-  public final static int UndirectedGraphQ = 3184;
-  public final static int Unequal = 3185;
-  public final static int UnequalTo = 3186;
-  public final static int Unevaluated = 3187;
-  public final static int UniformDistribution = 3188;
-  public final static int UniformGraphDistribution = 3189;
-  public final static int UniformSumDistribution = 3190;
-  public final static int Union = 3191;
-  public final static int UnionPlus = 3192;
-  public final static int Unique = 3193;
-  public final static int UnitaryMatrixQ = 3194;
-  public final static int UnitBox = 3195;
-  public final static int UnitConvert = 3196;
-  public final static int UnitDimensions = 3197;
-  public final static int Unitize = 3198;
-  public final static int UnitSimplify = 3199;
-  public final static int UnitStep = 3200;
-  public final static int UnitSystem = 3201;
-  public final static int UnitTriangle = 3202;
-  public final static int UnitVector = 3203;
-  public final static int UnityDimensions = 3204;
-  public final static int UniverseAge = 3205;
-  public final static int UnixTime = 3206;
-  public final static int Unknown = 3207;
-  public final static int Unprotect = 3208;
-  public final static int UnsameQ = 3209;
-  public final static int UnsavedVariables = 3210;
-  public final static int Unset = 3211;
-  public final static int UntrackedVariables = 3212;
-  public final static int UpArrow = 3213;
-  public final static int UpArrowBar = 3214;
-  public final static int UpArrowDownArrow = 3215;
-  public final static int Update = 3216;
-  public final static int UpdateInterval = 3217;
-  public final static int UpDownArrow = 3218;
-  public final static int UpEquilibrium = 3219;
-  public final static int UpperCaseQ = 3220;
-  public final static int UpperLeftArrow = 3221;
-  public final static int UpperRightArrow = 3222;
-  public final static int UpperTriangularize = 3223;
-  public final static int UpperTriangularMatrixQ = 3224;
-  public final static int UpSet = 3225;
-  public final static int UpSetDelayed = 3226;
-  public final static int UpTee = 3227;
-  public final static int UpTeeArrow = 3228;
-  public final static int UpTo = 3229;
-  public final static int UpValues = 3230;
-  public final static int URL = 3231;
-  public final static int URLBuild = 3232;
-  public final static int URLDecode = 3233;
-  public final static int URLDownload = 3234;
-  public final static int URLEncode = 3235;
-  public final static int URLFetch = 3236;
-  public final static int URLParse = 3237;
-  public final static int URLRead = 3238;
-  public final static int UseTypeChecking = 3239;
-  public final static int ValenceErrorHandling = 3240;
-  public final static int ValueFunction = 3241;
-  public final static int ValueQ = 3242;
-  public final static int Values = 3243;
-  public final static int VandermondeMatrix = 3244;
-  public final static int Variable = 3245;
-  public final static int Variables = 3246;
-  public final static int Variance = 3247;
-  public final static int VariationalD = 3248;
-  public final static int VectorAngle = 3249;
-  public final static int VectorAround = 3250;
-  public final static int VectorAspectRatio = 3251;
-  public final static int VectorColorFunction = 3252;
-  public final static int VectorColorFunctionScaling = 3253;
-  public final static int VectorDensityPlot = 3254;
-  public final static int VectorGreater = 3255;
-  public final static int VectorGreaterEqual = 3256;
-  public final static int VectorLess = 3257;
-  public final static int VectorLessEqual = 3258;
-  public final static int VectorMarkers = 3259;
-  public final static int VectorPlot = 3260;
-  public final static int VectorPlot3D = 3261;
-  public final static int VectorPoints = 3262;
-  public final static int VectorQ = 3263;
-  public final static int Vectors = 3264;
-  public final static int VectorScale = 3265;
-  public final static int VectorSizes = 3266;
-  public final static int VectorStyle = 3267;
-  public final static int VectorSymbol = 3268;
-  public final static int Vee = 3269;
-  public final static int Verbatim = 3270;
-  public final static int VerificationTest = 3271;
-  public final static int VerifySolutions = 3272;
-  public final static int VertexAdd = 3273;
-  public final static int VertexCapacity = 3274;
-  public final static int VertexChromaticNumber = 3275;
-  public final static int VertexColors = 3276;
-  public final static int VertexComponent = 3277;
-  public final static int VertexConnectivity = 3278;
-  public final static int VertexContract = 3279;
-  public final static int VertexCoordinates = 3280;
-  public final static int VertexCount = 3281;
-  public final static int VertexCoverQ = 3282;
-  public final static int VertexDegree = 3283;
-  public final static int VertexDelete = 3284;
-  public final static int VertexEccentricity = 3285;
-  public final static int VertexInComponent = 3286;
-  public final static int VertexInDegree = 3287;
-  public final static int VertexIndex = 3288;
-  public final static int VertexLabels = 3289;
-  public final static int VertexLabelStyle = 3290;
-  public final static int VertexList = 3291;
-  public final static int VertexNormals = 3292;
-  public final static int VertexOutComponent = 3293;
-  public final static int VertexOutDegree = 3294;
-  public final static int VertexQ = 3295;
-  public final static int VertexReplace = 3296;
-  public final static int VertexShape = 3297;
-  public final static int VertexShapeFunction = 3298;
-  public final static int VertexSize = 3299;
-  public final static int VertexStyle = 3300;
-  public final static int VertexTextureCoordinates = 3301;
-  public final static int VertexWeight = 3302;
-  public final static int VerticalBar = 3303;
-  public final static int VerticalSeparator = 3304;
-  public final static int VerticalSlider = 3305;
-  public final static int VerticalTilde = 3306;
-  public final static int ViewAngle = 3307;
-  public final static int ViewCenter = 3308;
-  public final static int ViewMatrix = 3309;
-  public final static int ViewPoint = 3310;
-  public final static int ViewProjection = 3311;
-  public final static int ViewRange = 3312;
-  public final static int ViewVector = 3313;
-  public final static int ViewVertical = 3314;
-  public final static int Volume = 3315;
-  public final static int VonMisesDistribution = 3316;
-  public final static int VoronoiMesh = 3317;
-  public final static int WaitAll = 3318;
-  public final static int WaringYuleDistribution = 3319;
-  public final static int WatershedComponents = 3320;
-  public final static int WattsStrogatzGraphDistribution = 3321;
-  public final static int WeaklyConnectedComponents = 3322;
-  public final static int WeaklyConnectedGraphQ = 3323;
-  public final static int WeberE = 3324;
-  public final static int WebImageSearch = 3325;
-  public final static int WebSearch = 3326;
-  public final static int Wedge = 3327;
-  public final static int Wednesday = 3328;
-  public final static int Weekend = 3329;
-  public final static int WeibullDistribution = 3330;
-  public final static int WeierstrassHalfPeriods = 3331;
-  public final static int WeierstrassInvariants = 3332;
-  public final static int WeierstrassP = 3333;
-  public final static int WeierstrassPPrime = 3334;
-  public final static int WeierstrassSigma = 3335;
-  public final static int WeierstrassZeta = 3336;
-  public final static int WeightedAdjacencyMatrix = 3337;
-  public final static int WeightedData = 3338;
-  public final static int WeightedGraphQ = 3339;
-  public final static int WheelGraph = 3340;
-  public final static int WhenEvent = 3341;
-  public final static int Which = 3342;
-  public final static int While = 3343;
-  public final static int White = 3344;
-  public final static int WhiteCornerBracket = 3345;
-  public final static int Whitespace = 3346;
-  public final static int WhitespaceCharacter = 3347;
-  public final static int WhittakerM = 3348;
-  public final static int WhittakerW = 3349;
-  public final static int WienerFilter = 3350;
-  public final static int WienerProcess = 3351;
-  public final static int WignerD = 3352;
-  public final static int WignerSemicircleDistribution = 3353;
-  public final static int WindowSize = 3354;
-  public final static int With = 3355;
-  public final static int Word = 3356;
-  public final static int WordBoundary = 3357;
-  public final static int WordCharacter = 3358;
-  public final static int WordCloud = 3359;
-  public final static int WordOrientation = 3360;
-  public final static int WordSelectionFunction = 3361;
-  public final static int WordSeparators = 3362;
-  public final static int WordSpacings = 3363;
-  public final static int WorkingPrecision = 3364;
-  public final static int Write = 3365;
-  public final static int WriteLine = 3366;
-  public final static int WriteString = 3367;
-  public final static int Wronskian = 3368;
-  public final static int Xnor = 3369;
-  public final static int Xor = 3370;
-  public final static int XYZColor = 3371;
-  public final static int Yellow = 3372;
-  public final static int Yesterday = 3373;
-  public final static int YuleDissimilarity = 3374;
-  public final static int ZernikeR = 3375;
-  public final static int ZeroSymmetric = 3376;
-  public final static int ZeroTest = 3377;
-  public final static int Zeta = 3378;
-  public final static int ZetaZero = 3379;
-  public final static int ZipfDistribution = 3380;
-  public final static int ZTransform = 3381;
+  public final static int ToRules = 3116;
+  public final static int Torus = 3117;
+  public final static int TorusGraph = 3118;
+  public final static int ToSphericalCoordinates = 3119;
+  public final static int ToString = 3120;
+  public final static int Total = 3121;
+  public final static int TotalVariationFilter = 3122;
+  public final static int TouchscreenAutoZoom = 3123;
+  public final static int ToUnicode = 3124;
+  public final static int ToUpperCase = 3125;
+  public final static int Tr = 3126;
+  public final static int Trace = 3127;
+  public final static int TraceDialog = 3128;
+  public final static int TraceForm = 3129;
+  public final static int TrackedSymbols = 3130;
+  public final static int TradingChart = 3131;
+  public final static int TraditionalForm = 3132;
+  public final static int TransformationClass = 3133;
+  public final static int TransformationFunction = 3134;
+  public final static int TransformedDistribution = 3135;
+  public final static int TransformedRegion = 3136;
+  public final static int TransitionDuration = 3137;
+  public final static int TransitiveClosure = 3138;
+  public final static int Translate = 3139;
+  public final static int TranslationTransform = 3140;
+  public final static int Transliterate = 3141;
+  public final static int Transparent = 3142;
+  public final static int Transpose = 3143;
+  public final static int TreeForm = 3144;
+  public final static int TreeGraph = 3145;
+  public final static int TreeGraphQ = 3146;
+  public final static int TreePlot = 3147;
+  public final static int Triangle = 3148;
+  public final static int TriangleCenter = 3149;
+  public final static int TriangleConstruct = 3150;
+  public final static int TriangleMeasurement = 3151;
+  public final static int TriangleWave = 3152;
+  public final static int TriangularDistribution = 3153;
+  public final static int TriangulateMesh = 3154;
+  public final static int Trig = 3155;
+  public final static int TrigExpand = 3156;
+  public final static int TrigFactor = 3157;
+  public final static int Trigger = 3158;
+  public final static int TrigReduce = 3159;
+  public final static int TrigSimplifyFu = 3160;
+  public final static int TrigToExp = 3161;
+  public final static int True = 3162;
+  public final static int TrueQ = 3163;
+  public final static int TruncatedDistribution = 3164;
+  public final static int TTest = 3165;
+  public final static int Tube = 3166;
+  public final static int Tuesday = 3167;
+  public final static int TukeyWindow = 3168;
+  public final static int Tuples = 3169;
+  public final static int TuranGraph = 3170;
+  public final static int TwoWayRule = 3171;
+  public final static int UnaryMinusPlus = 3172;
+  public final static int UnaryPlus = 3173;
+  public final static int UnaryPlusMinus = 3174;
+  public final static int Uncompress = 3175;
+  public final static int Undefined = 3176;
+  public final static int Underflow = 3177;
+  public final static int Underlined = 3178;
+  public final static int Underoverscript = 3179;
+  public final static int UnderoverscriptBox = 3180;
+  public final static int Underscript = 3181;
+  public final static int UnderscriptBox = 3182;
+  public final static int UndirectedEdge = 3183;
+  public final static int UndirectedGraph = 3184;
+  public final static int UndirectedGraphQ = 3185;
+  public final static int Unequal = 3186;
+  public final static int UnequalTo = 3187;
+  public final static int Unevaluated = 3188;
+  public final static int UniformDistribution = 3189;
+  public final static int UniformGraphDistribution = 3190;
+  public final static int UniformSumDistribution = 3191;
+  public final static int Union = 3192;
+  public final static int UnionPlus = 3193;
+  public final static int Unique = 3194;
+  public final static int UnitaryMatrixQ = 3195;
+  public final static int UnitBox = 3196;
+  public final static int UnitConvert = 3197;
+  public final static int UnitDimensions = 3198;
+  public final static int Unitize = 3199;
+  public final static int UnitSimplify = 3200;
+  public final static int UnitStep = 3201;
+  public final static int UnitSystem = 3202;
+  public final static int UnitTriangle = 3203;
+  public final static int UnitVector = 3204;
+  public final static int UnityDimensions = 3205;
+  public final static int UniverseAge = 3206;
+  public final static int UnixTime = 3207;
+  public final static int Unknown = 3208;
+  public final static int Unprotect = 3209;
+  public final static int UnsameQ = 3210;
+  public final static int UnsavedVariables = 3211;
+  public final static int Unset = 3212;
+  public final static int UntrackedVariables = 3213;
+  public final static int UpArrow = 3214;
+  public final static int UpArrowBar = 3215;
+  public final static int UpArrowDownArrow = 3216;
+  public final static int Update = 3217;
+  public final static int UpdateInterval = 3218;
+  public final static int UpDownArrow = 3219;
+  public final static int UpEquilibrium = 3220;
+  public final static int UpperCaseQ = 3221;
+  public final static int UpperLeftArrow = 3222;
+  public final static int UpperRightArrow = 3223;
+  public final static int UpperTriangularize = 3224;
+  public final static int UpperTriangularMatrixQ = 3225;
+  public final static int UpSet = 3226;
+  public final static int UpSetDelayed = 3227;
+  public final static int UpTee = 3228;
+  public final static int UpTeeArrow = 3229;
+  public final static int UpTo = 3230;
+  public final static int UpValues = 3231;
+  public final static int URL = 3232;
+  public final static int URLBuild = 3233;
+  public final static int URLDecode = 3234;
+  public final static int URLDownload = 3235;
+  public final static int URLEncode = 3236;
+  public final static int URLFetch = 3237;
+  public final static int URLParse = 3238;
+  public final static int URLRead = 3239;
+  public final static int UseTypeChecking = 3240;
+  public final static int ValenceErrorHandling = 3241;
+  public final static int ValueFunction = 3242;
+  public final static int ValueQ = 3243;
+  public final static int Values = 3244;
+  public final static int VandermondeMatrix = 3245;
+  public final static int Variable = 3246;
+  public final static int Variables = 3247;
+  public final static int Variance = 3248;
+  public final static int VariationalD = 3249;
+  public final static int VectorAngle = 3250;
+  public final static int VectorAround = 3251;
+  public final static int VectorAspectRatio = 3252;
+  public final static int VectorColorFunction = 3253;
+  public final static int VectorColorFunctionScaling = 3254;
+  public final static int VectorDensityPlot = 3255;
+  public final static int VectorGreater = 3256;
+  public final static int VectorGreaterEqual = 3257;
+  public final static int VectorLess = 3258;
+  public final static int VectorLessEqual = 3259;
+  public final static int VectorMarkers = 3260;
+  public final static int VectorPlot = 3261;
+  public final static int VectorPlot3D = 3262;
+  public final static int VectorPoints = 3263;
+  public final static int VectorQ = 3264;
+  public final static int Vectors = 3265;
+  public final static int VectorScale = 3266;
+  public final static int VectorSizes = 3267;
+  public final static int VectorStyle = 3268;
+  public final static int VectorSymbol = 3269;
+  public final static int Vee = 3270;
+  public final static int Verbatim = 3271;
+  public final static int VerificationTest = 3272;
+  public final static int VerifySolutions = 3273;
+  public final static int VertexAdd = 3274;
+  public final static int VertexCapacity = 3275;
+  public final static int VertexChromaticNumber = 3276;
+  public final static int VertexColors = 3277;
+  public final static int VertexComponent = 3278;
+  public final static int VertexConnectivity = 3279;
+  public final static int VertexContract = 3280;
+  public final static int VertexCoordinates = 3281;
+  public final static int VertexCount = 3282;
+  public final static int VertexCoverQ = 3283;
+  public final static int VertexDegree = 3284;
+  public final static int VertexDelete = 3285;
+  public final static int VertexEccentricity = 3286;
+  public final static int VertexInComponent = 3287;
+  public final static int VertexInDegree = 3288;
+  public final static int VertexIndex = 3289;
+  public final static int VertexLabels = 3290;
+  public final static int VertexLabelStyle = 3291;
+  public final static int VertexList = 3292;
+  public final static int VertexNormals = 3293;
+  public final static int VertexOutComponent = 3294;
+  public final static int VertexOutDegree = 3295;
+  public final static int VertexQ = 3296;
+  public final static int VertexReplace = 3297;
+  public final static int VertexShape = 3298;
+  public final static int VertexShapeFunction = 3299;
+  public final static int VertexSize = 3300;
+  public final static int VertexStyle = 3301;
+  public final static int VertexTextureCoordinates = 3302;
+  public final static int VertexWeight = 3303;
+  public final static int VerticalBar = 3304;
+  public final static int VerticalSeparator = 3305;
+  public final static int VerticalSlider = 3306;
+  public final static int VerticalTilde = 3307;
+  public final static int ViewAngle = 3308;
+  public final static int ViewCenter = 3309;
+  public final static int ViewMatrix = 3310;
+  public final static int ViewPoint = 3311;
+  public final static int ViewProjection = 3312;
+  public final static int ViewRange = 3313;
+  public final static int ViewVector = 3314;
+  public final static int ViewVertical = 3315;
+  public final static int Volume = 3316;
+  public final static int VonMisesDistribution = 3317;
+  public final static int VoronoiMesh = 3318;
+  public final static int WaitAll = 3319;
+  public final static int WaringYuleDistribution = 3320;
+  public final static int WatershedComponents = 3321;
+  public final static int WattsStrogatzGraphDistribution = 3322;
+  public final static int WeaklyConnectedComponents = 3323;
+  public final static int WeaklyConnectedGraphQ = 3324;
+  public final static int WeberE = 3325;
+  public final static int WebImageSearch = 3326;
+  public final static int WebSearch = 3327;
+  public final static int Wedge = 3328;
+  public final static int Wednesday = 3329;
+  public final static int Weekend = 3330;
+  public final static int WeibullDistribution = 3331;
+  public final static int WeierstrassHalfPeriods = 3332;
+  public final static int WeierstrassInvariants = 3333;
+  public final static int WeierstrassP = 3334;
+  public final static int WeierstrassPPrime = 3335;
+  public final static int WeierstrassSigma = 3336;
+  public final static int WeierstrassZeta = 3337;
+  public final static int WeightedAdjacencyMatrix = 3338;
+  public final static int WeightedData = 3339;
+  public final static int WeightedGraphQ = 3340;
+  public final static int WheelGraph = 3341;
+  public final static int WhenEvent = 3342;
+  public final static int Which = 3343;
+  public final static int While = 3344;
+  public final static int White = 3345;
+  public final static int WhiteCornerBracket = 3346;
+  public final static int Whitespace = 3347;
+  public final static int WhitespaceCharacter = 3348;
+  public final static int WhittakerM = 3349;
+  public final static int WhittakerW = 3350;
+  public final static int WienerFilter = 3351;
+  public final static int WienerProcess = 3352;
+  public final static int WignerD = 3353;
+  public final static int WignerSemicircleDistribution = 3354;
+  public final static int WindowSize = 3355;
+  public final static int With = 3356;
+  public final static int Word = 3357;
+  public final static int WordBoundary = 3358;
+  public final static int WordCharacter = 3359;
+  public final static int WordCloud = 3360;
+  public final static int WordOrientation = 3361;
+  public final static int WordSelectionFunction = 3362;
+  public final static int WordSeparators = 3363;
+  public final static int WordSpacings = 3364;
+  public final static int WorkingPrecision = 3365;
+  public final static int Write = 3366;
+  public final static int WriteLine = 3367;
+  public final static int WriteString = 3368;
+  public final static int Wronskian = 3369;
+  public final static int Xnor = 3370;
+  public final static int Xor = 3371;
+  public final static int XYZColor = 3372;
+  public final static int Yellow = 3373;
+  public final static int Yesterday = 3374;
+  public final static int YuleDissimilarity = 3375;
+  public final static int ZernikeR = 3376;
+  public final static int ZeroSymmetric = 3377;
+  public final static int ZeroTest = 3378;
+  public final static int Zeta = 3379;
+  public final static int ZetaZero = 3380;
+  public final static int ZipfDistribution = 3381;
+  public final static int ZTransform = 3382;
 
   /**
    * Generated by class: <code>org.matheclipse.core.preprocessor.FunctionIDGenerator
@@ -4177,71 +4178,72 @@ public class ID {
       "ToColor", "ToDataset", "Today", "ToeplitzMatrix", "ToExpression", "ToFileName", //
       "Together", "Toggler", "TogglerBar", "ToIntervalData", "Tolerance", "ToLowerCase", //
       "ToNumberField", "TooLarge", "Tooltip", "Top", "TopHatTransform", "ToPolarCoordinates", //
-      "TopologicalSort", "ToRadicals", "TortoiseShellBracket", "Torus", "TorusGraph",
-      "ToSphericalCoordinates", //
-      "ToString", "Total", "TotalVariationFilter", "TouchscreenAutoZoom", "ToUnicode",
-      "ToUpperCase", //
-      "Tr", "Trace", "TraceDialog", "TraceForm", "TrackedSymbols", "TradingChart", //
-      "TraditionalForm", "TransformationClass", "TransformationFunction", "TransformedDistribution",
-      "TransformedRegion", "TransitionDuration", //
-      "TransitiveClosure", "Translate", "TranslationTransform", "Transliterate", "Transparent",
-      "Transpose", //
-      "TreeForm", "TreeGraph", "TreeGraphQ", "TreePlot", "Triangle", "TriangleCenter", //
-      "TriangleConstruct", "TriangleMeasurement", "TriangleWave", "TriangularDistribution",
-      "TriangulateMesh", "Trig", //
-      "TrigExpand", "TrigFactor", "Trigger", "TrigReduce", "TrigSimplifyFu", "TrigToExp", //
-      "True", "TrueQ", "TruncatedDistribution", "TTest", "Tube", "Tuesday", //
-      "TukeyWindow", "Tuples", "TuranGraph", "TwoWayRule", "UnaryMinusPlus", "UnaryPlus", //
-      "UnaryPlusMinus", "Uncompress", "Undefined", "Underflow", "Underlined", "Underoverscript", //
-      "UnderoverscriptBox", "Underscript", "UnderscriptBox", "UndirectedEdge", "UndirectedGraph",
-      "UndirectedGraphQ", //
-      "Unequal", "UnequalTo", "Unevaluated", "UniformDistribution", "UniformGraphDistribution",
-      "UniformSumDistribution", //
-      "Union", "UnionPlus", "Unique", "UnitaryMatrixQ", "UnitBox", "UnitConvert", //
-      "UnitDimensions", "Unitize", "UnitSimplify", "UnitStep", "UnitSystem", "UnitTriangle", //
-      "UnitVector", "UnityDimensions", "UniverseAge", "UnixTime", "Unknown", "Unprotect", //
-      "UnsameQ", "UnsavedVariables", "Unset", "UntrackedVariables", "UpArrow", "UpArrowBar", //
-      "UpArrowDownArrow", "Update", "UpdateInterval", "UpDownArrow", "UpEquilibrium", "UpperCaseQ", //
-      "UpperLeftArrow", "UpperRightArrow", "UpperTriangularize", "UpperTriangularMatrixQ", "UpSet",
-      "UpSetDelayed", //
-      "UpTee", "UpTeeArrow", "UpTo", "UpValues", "URL", "URLBuild", //
-      "URLDecode", "URLDownload", "URLEncode", "URLFetch", "URLParse", "URLRead", //
-      "UseTypeChecking", "ValenceErrorHandling", "ValueFunction", "ValueQ", "Values",
-      "VandermondeMatrix", //
-      "Variable", "Variables", "Variance", "VariationalD", "VectorAngle", "VectorAround", //
-      "VectorAspectRatio", "VectorColorFunction", "VectorColorFunctionScaling", "VectorDensityPlot",
-      "VectorGreater", "VectorGreaterEqual", //
-      "VectorLess", "VectorLessEqual", "VectorMarkers", "VectorPlot", "VectorPlot3D",
-      "VectorPoints", //
-      "VectorQ", "Vectors", "VectorScale", "VectorSizes", "VectorStyle", "VectorSymbol", //
-      "Vee", "Verbatim", "VerificationTest", "VerifySolutions", "VertexAdd", "VertexCapacity", //
-      "VertexChromaticNumber", "VertexColors", "VertexComponent", "VertexConnectivity",
-      "VertexContract", "VertexCoordinates", //
-      "VertexCount", "VertexCoverQ", "VertexDegree", "VertexDelete", "VertexEccentricity",
-      "VertexInComponent", //
-      "VertexInDegree", "VertexIndex", "VertexLabels", "VertexLabelStyle", "VertexList",
-      "VertexNormals", //
-      "VertexOutComponent", "VertexOutDegree", "VertexQ", "VertexReplace", "VertexShape",
-      "VertexShapeFunction", //
-      "VertexSize", "VertexStyle", "VertexTextureCoordinates", "VertexWeight", "VerticalBar",
-      "VerticalSeparator", //
-      "VerticalSlider", "VerticalTilde", "ViewAngle", "ViewCenter", "ViewMatrix", "ViewPoint", //
-      "ViewProjection", "ViewRange", "ViewVector", "ViewVertical", "Volume", "VonMisesDistribution", //
-      "VoronoiMesh", "WaitAll", "WaringYuleDistribution", "WatershedComponents",
-      "WattsStrogatzGraphDistribution", "WeaklyConnectedComponents", //
-      "WeaklyConnectedGraphQ", "WeberE", "WebImageSearch", "WebSearch", "Wedge", "Wednesday", //
-      "Weekend", "WeibullDistribution", "WeierstrassHalfPeriods", "WeierstrassInvariants",
-      "WeierstrassP", "WeierstrassPPrime", //
-      "WeierstrassSigma", "WeierstrassZeta", "WeightedAdjacencyMatrix", "WeightedData",
-      "WeightedGraphQ", "WheelGraph", //
-      "WhenEvent", "Which", "While", "White", "WhiteCornerBracket", "Whitespace", //
-      "WhitespaceCharacter", "WhittakerM", "WhittakerW", "WienerFilter", "WienerProcess", "WignerD", //
-      "WignerSemicircleDistribution", "WindowSize", "With", "Word", "WordBoundary", "WordCharacter", //
-      "WordCloud", "WordOrientation", "WordSelectionFunction", "WordSeparators", "WordSpacings",
-      "WorkingPrecision", //
-      "Write", "WriteLine", "WriteString", "Wronskian", "Xnor", "Xor", //
-      "XYZColor", "Yellow", "Yesterday", "YuleDissimilarity", "ZernikeR", "ZeroSymmetric", //
-      "ZeroTest", "Zeta", "ZetaZero", "ZipfDistribution", "ZTransform"};
+      "TopologicalSort", "ToRadicals", "TortoiseShellBracket", "ToRules", "Torus", "TorusGraph", //
+      "ToSphericalCoordinates", "ToString", "Total", "TotalVariationFilter", "TouchscreenAutoZoom",
+      "ToUnicode", //
+      "ToUpperCase", "Tr", "Trace", "TraceDialog", "TraceForm", "TrackedSymbols", //
+      "TradingChart", "TraditionalForm", "TransformationClass", "TransformationFunction",
+      "TransformedDistribution", "TransformedRegion", //
+      "TransitionDuration", "TransitiveClosure", "Translate", "TranslationTransform",
+      "Transliterate", "Transparent", //
+      "Transpose", "TreeForm", "TreeGraph", "TreeGraphQ", "TreePlot", "Triangle", //
+      "TriangleCenter", "TriangleConstruct", "TriangleMeasurement", "TriangleWave",
+      "TriangularDistribution", "TriangulateMesh", //
+      "Trig", "TrigExpand", "TrigFactor", "Trigger", "TrigReduce", "TrigSimplifyFu", //
+      "TrigToExp", "True", "TrueQ", "TruncatedDistribution", "TTest", "Tube", //
+      "Tuesday", "TukeyWindow", "Tuples", "TuranGraph", "TwoWayRule", "UnaryMinusPlus", //
+      "UnaryPlus", "UnaryPlusMinus", "Uncompress", "Undefined", "Underflow", "Underlined", //
+      "Underoverscript", "UnderoverscriptBox", "Underscript", "UnderscriptBox", "UndirectedEdge",
+      "UndirectedGraph", //
+      "UndirectedGraphQ", "Unequal", "UnequalTo", "Unevaluated", "UniformDistribution",
+      "UniformGraphDistribution", //
+      "UniformSumDistribution", "Union", "UnionPlus", "Unique", "UnitaryMatrixQ", "UnitBox", //
+      "UnitConvert", "UnitDimensions", "Unitize", "UnitSimplify", "UnitStep", "UnitSystem", //
+      "UnitTriangle", "UnitVector", "UnityDimensions", "UniverseAge", "UnixTime", "Unknown", //
+      "Unprotect", "UnsameQ", "UnsavedVariables", "Unset", "UntrackedVariables", "UpArrow", //
+      "UpArrowBar", "UpArrowDownArrow", "Update", "UpdateInterval", "UpDownArrow", "UpEquilibrium", //
+      "UpperCaseQ", "UpperLeftArrow", "UpperRightArrow", "UpperTriangularize",
+      "UpperTriangularMatrixQ", "UpSet", //
+      "UpSetDelayed", "UpTee", "UpTeeArrow", "UpTo", "UpValues", "URL", //
+      "URLBuild", "URLDecode", "URLDownload", "URLEncode", "URLFetch", "URLParse", //
+      "URLRead", "UseTypeChecking", "ValenceErrorHandling", "ValueFunction", "ValueQ", "Values", //
+      "VandermondeMatrix", "Variable", "Variables", "Variance", "VariationalD", "VectorAngle", //
+      "VectorAround", "VectorAspectRatio", "VectorColorFunction", "VectorColorFunctionScaling",
+      "VectorDensityPlot", "VectorGreater", //
+      "VectorGreaterEqual", "VectorLess", "VectorLessEqual", "VectorMarkers", "VectorPlot",
+      "VectorPlot3D", //
+      "VectorPoints", "VectorQ", "Vectors", "VectorScale", "VectorSizes", "VectorStyle", //
+      "VectorSymbol", "Vee", "Verbatim", "VerificationTest", "VerifySolutions", "VertexAdd", //
+      "VertexCapacity", "VertexChromaticNumber", "VertexColors", "VertexComponent",
+      "VertexConnectivity", "VertexContract", //
+      "VertexCoordinates", "VertexCount", "VertexCoverQ", "VertexDegree", "VertexDelete",
+      "VertexEccentricity", //
+      "VertexInComponent", "VertexInDegree", "VertexIndex", "VertexLabels", "VertexLabelStyle",
+      "VertexList", //
+      "VertexNormals", "VertexOutComponent", "VertexOutDegree", "VertexQ", "VertexReplace",
+      "VertexShape", //
+      "VertexShapeFunction", "VertexSize", "VertexStyle", "VertexTextureCoordinates",
+      "VertexWeight", "VerticalBar", //
+      "VerticalSeparator", "VerticalSlider", "VerticalTilde", "ViewAngle", "ViewCenter",
+      "ViewMatrix", //
+      "ViewPoint", "ViewProjection", "ViewRange", "ViewVector", "ViewVertical", "Volume", //
+      "VonMisesDistribution", "VoronoiMesh", "WaitAll", "WaringYuleDistribution",
+      "WatershedComponents", "WattsStrogatzGraphDistribution", //
+      "WeaklyConnectedComponents", "WeaklyConnectedGraphQ", "WeberE", "WebImageSearch", "WebSearch",
+      "Wedge", //
+      "Wednesday", "Weekend", "WeibullDistribution", "WeierstrassHalfPeriods",
+      "WeierstrassInvariants", "WeierstrassP", //
+      "WeierstrassPPrime", "WeierstrassSigma", "WeierstrassZeta", "WeightedAdjacencyMatrix",
+      "WeightedData", "WeightedGraphQ", //
+      "WheelGraph", "WhenEvent", "Which", "While", "White", "WhiteCornerBracket", //
+      "Whitespace", "WhitespaceCharacter", "WhittakerM", "WhittakerW", "WienerFilter",
+      "WienerProcess", //
+      "WignerD", "WignerSemicircleDistribution", "WindowSize", "With", "Word", "WordBoundary", //
+      "WordCharacter", "WordCloud", "WordOrientation", "WordSelectionFunction", "WordSeparators",
+      "WordSpacings", //
+      "WorkingPrecision", "Write", "WriteLine", "WriteString", "Wronskian", "Xnor", //
+      "Xor", "XYZColor", "Yellow", "Yesterday", "YuleDissimilarity", "ZernikeR", //
+      "ZeroSymmetric", "ZeroTest", "Zeta", "ZetaZero", "ZipfDistribution", "ZTransform"};
 
   /**
    * Generated by class: <code>org.matheclipse.core.preprocessor.FunctionIDGenerator
@@ -4555,7 +4557,7 @@ public class ID {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //
-      0, 0, 0, 0, 0, 0};
+      0, 0, 0, 0, 0, 0, 0};
 
   public final static Map<String, Integer> STRING_TO_ID_MAP = new TreeMap<String, Integer>();
 
