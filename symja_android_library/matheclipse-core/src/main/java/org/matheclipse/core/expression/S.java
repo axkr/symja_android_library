@@ -11415,6 +11415,16 @@ public class S {
   public final static IBuiltInSymbol Image3D = S.initFinalSymbol("Image3D", ID.Image3D);
 
   /**
+   * Image3DSlices(x) - TODO describe `Image3DSlices`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Image3DSlices.md">Image3DSlices
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Image3DSlices =
+      S.initFinalSymbol("Image3DSlices", ID.Image3DSlices);
+
+  /**
    * ImageAdd(x) - TODO describe `ImageAdd`.
    * 
    * @see <a href=
@@ -24690,6 +24700,15 @@ public class S {
    */
   // public final static IBuiltInSymbol TimeSystemConvert =
   // S.initFinalSymbol("TimeSystemConvert", ID.TimeSystemConvert);
+
+  /**
+   * TimeSeries(x) - TODO describe `TimeSeries`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimeSeries.md">TimeSeries
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TimeSeries = S.initFinalSymbol("TimeSeries", ID.TimeSeries);
 
   /**
    * TimeSystem(x) - TODO describe `TimeSystem`.
