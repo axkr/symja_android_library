@@ -139,8 +139,10 @@ final class SubstitutionPlan {
         // this subtree did not change - keep the original child
         continue;
       }
-      if (childIndex[i] > 0 && value.isSequence() && !original.isAssociation()
+      if (childIndex[i] > 0 && child[i] == null && value.isSequence() && !original.isAssociation()
           && (!matchedValue || patternMap.isSequenceSlot(childSlot[i]))) {
+        // a rebuilt subtree - Sequence["-", x] with x replaced - is an expression of the
+        // right-hand side and stays one argument
         // a pattern name standing for several arguments has to be spread into the expression
         // around it, the same as in VisitorReplaceAll: a substitution into a held expression is
         // never evaluated, so nothing else would flatten it. A name which stood for one argument

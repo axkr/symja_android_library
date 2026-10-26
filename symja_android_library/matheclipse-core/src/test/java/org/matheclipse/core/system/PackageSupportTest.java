@@ -504,7 +504,8 @@ public class PackageSupportTest extends ExprEvaluatorTestCase {
         + "(f(a) /. psftli(z, ___) -> h(x, dim)) /; (psftcnt++; !FreeQ(f(a), psftli(z, ___))); "
         + "psftpc(psftli(a1, d), psftli(b1, d))*psftpc(psftli(a2, d), psftli(b2, d))*"
         + "psftpc(psftli(a3, d), psftli(b3, d))*psftpc(psftli(a4, d), psftli(b4, d)); psftcnt", //
-        "56");
+        // f_(a__) takes one factor, never a group of them
+        "24");
     // the rule still applies where its condition holds
     check("psftpc(psftli(a1, d), psftli(b1, d))*psftpc(psftli(b1, d), psftli(c1, d))", //
         "psftpc(psftli(a1,d),psftli(c1,d))");

@@ -929,10 +929,19 @@ public class PredicateQ {
       final IExpr arg1 = ast.arg1();
       if (arg1.isASTOrAssociation()) {
         final IExpr arg2 = ast.arg2();
-        if (argSize == 2) {
+        if (argSize == 2 && !includeHeads) {
           return F.booleSymbol(arg1.isMember(arg2, includeHeads, null));
         }
-        Predicate<IExpr> predicate = Predicates.toMemberQ(arg2);
+        Predicate<IExpr> memberQ = Predicates.toMemberQ(arg2);
+        // with heads a rational or complex number shows its head at its own level
+        Predicate<IExpr> predicate = includeHeads
+            ? x -> memberQ.test(x) || ((x.isFraction() || x.isComplex()) && memberQ.test(x.head()))
+            : memberQ;
+        if (argSize == 2) {
+          IVisitorBoolean level =
+              new VisitorBooleanLevelSpecification(predicate, F.C1, includeHeads, engine);
+          return F.booleSymbol(arg1.accept(level));
+        }
         IVisitorBoolean level =
             new VisitorBooleanLevelSpecification(predicate, ast.arg3(), includeHeads, engine);
         return F.booleSymbol(arg1.accept(level));

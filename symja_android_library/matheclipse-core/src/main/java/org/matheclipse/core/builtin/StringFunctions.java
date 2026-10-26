@@ -50,6 +50,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.BoxNotation;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -897,6 +898,11 @@ public final class StringFunctions {
         chunk.append('\n');
       }
       chunk.append(line);
+      if (isCommentOnly(chunk, engine)) {
+        // a comment standing on its own lines is a statement of its own
+        result.add(S.Null);
+        chunk.setLength(0);
+      }
     }
     if (chunk.length() > 0) {
       for (ASTNode node : new Parser(engine.isRelaxedSyntax(), true).parseScript(chunk.toString())) {
@@ -904,6 +910,16 @@ public final class StringFunctions {
       }
     }
     return result;
+  }
+
+  /** Is <code>chunk</code> one complete comment, or several, and nothing else? */
+  private static boolean isCommentOnly(CharSequence chunk, EvalEngine engine) {
+    String text = chunk.toString().trim();
+    if (!text.startsWith("(*") || !text.endsWith("*)")) {
+      return false;
+    }
+    List<ASTNode> statements = parseStatements(text, engine);
+    return statements != null && statements.isEmpty();
   }
 
   /** @return <code>null</code> if <code>source</code> is not complete */
@@ -4370,9 +4386,17 @@ public final class StringFunctions {
           Errors.printMessage(S.ToExpression, rex, engine);
           return S.$Failed;
         }
+      } else if (ast.argSize() >= 2) {
+        // The format type `1` is valid only for string input.
+        return Errors.printMessage(ast.topHead(), "notstr", F.list(ast.arg2()), engine);
+      } else if (arg1.isAtom()) {
+        // a number or a symbol is its own value
+        return arg1;
       } else {
-        // `1` is not a string.
-        return Errors.printMessage(ast.topHead(), "nostr", F.list(ast.arg1()), engine);
+        // `1` is not a string or a box. ToExpression can only interpret strings or boxes as
+        // input.
+        Errors.printMessage(ast.topHead(), "notstrbox", F.list(arg1), engine);
+        return S.$Failed;
       }
       return F.NIL;
     }
@@ -4436,9 +4460,21 @@ public final class StringFunctions {
   private static class ToString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 2 && ast.last().isRuleAST()) {
+        // options like CharacterEncoding -> "Unicode" or PageWidth -> Infinity: the string is
+        // written in Unicode on one line anyway
+        int end = ast.size();
+        while (end > 2 && ast.get(end - 1).isRuleAST()) {
+          end--;
+        }
+        ast = ast.subList(1, end);
+      }
       if (ast.isAST2()) {
         return toStringForm(ast.arg1(), ast.arg2(), engine);
+      }
+      if (!ast.isAST1()) {
+        return F.NIL;
       }
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
@@ -4453,7 +4489,36 @@ public final class StringFunctions {
       }
       // ToString(expr) is ToString(expr, OutputForm) - the display wrappers Style, Row and
       // Graphics show what they format rather than themselves
-      return F.stringx(outputForm(arg1));
+      return F.stringx(outputForm(formatValues(arg1, engine, 0)));
+    }
+
+    /**
+     * Replace every subexpression for which a <code>Format[...] := ...</code> definition exists by
+     * what the definition gives, outermost first.
+     */
+    private static IExpr formatValues(IExpr expr, EvalEngine engine, int depth) {
+      if (!expr.isAST() || !RulesData.isUpRulesDefined()
+          || depth > engine.getRecursionLimit() && engine.getRecursionLimit() > 0) {
+        return expr;
+      }
+      engine.checkTimeLimit();
+      IAST ast = (IAST) expr;
+      ISymbol head = ast.topHead();
+      IExpr formatted = head.evalUpRules(F.unaryAST1(S.Format, ast), engine);
+      if (formatted.isNIL() && head.isBuiltInSymbol()) {
+        // a definition for pref_. * f[...] is kept with f, the first head which is not protected
+        ISymbol tag = PatternMatching.firstUnprotectedHead(ast);
+        if (tag != null && tag != head) {
+          formatted = tag.evalUpRules(F.unaryAST1(S.Format, ast), engine);
+        }
+      }
+      if (formatted.isPresent() && !formatted.equals(ast)) {
+        return formatValues(formatted, engine, depth + 1);
+      }
+      return ast.map(x -> {
+        IExpr arg = formatValues(x, engine, depth + 1);
+        return arg == x ? F.NIL : arg;
+      }).orElse(ast);
     }
 
     /** Print <code>expr</code> the way the console shows it. */
@@ -4496,7 +4561,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_INFINITY;
     }
   }
 

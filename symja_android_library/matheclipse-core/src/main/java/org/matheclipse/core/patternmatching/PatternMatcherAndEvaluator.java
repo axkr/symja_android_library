@@ -322,7 +322,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       engine.setEvalRHSMode(true);
     }
     try {
-      engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+      engine.setOptionsPattern(optionsHead(), patternMap);
       // substituted once the options of this rule are on the stack: the OptionValue(name) calls
       // in the right-hand side are resolved while substituting, and read the innermost frame
       IExpr rhs = substituteRightHandSide(patternMap, F.CEmptySequence);
@@ -475,7 +475,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     try {
       engine.setEvalRHSMode(true);
       if (fLhsPatternExpr != null) {
-        engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+        engine.setOptionsPattern(optionsHead(), patternMap);
       }
       if (fRightHandSide == DUMMY_SUBSET_CASES) {
         fSubstitutedMatch = patternMap.substitutePatterns(fLhsPatternExpr, F.CEmptySequence);

@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -119,6 +120,13 @@ public class BoxesFunctions {
       }
       ISymbol head = expr.topHead();
       IExpr boxes = head.evalUpRules(F.binaryAST2(S.MakeBoxes, expr, form), engine);
+      if (boxes.isNIL() && head.isBuiltInSymbol() && expr.isAST()) {
+        // a definition for pref_. * f[...] is kept with f, the first head which is not protected
+        ISymbol tag = PatternMatching.firstUnprotectedHead(expr);
+        if (tag != null && tag != head) {
+          boxes = tag.evalUpRules(F.binaryAST2(S.MakeBoxes, expr, form), engine);
+        }
+      }
       if (boxes.isNIL() && expr instanceof IDataExpr) {
         // a rule written for the form of the object - Image[data, type, ...] -
         // is tried on that form: an image object has no parts for Image[_, type_, ___] to match
@@ -130,11 +138,32 @@ public class BoxesFunctions {
       return boxes;
     }
 
+    /**
+     * Boxes which a definition gave for an expression carry no operator precedence. In a product,
+     * a <code>Dot</code> or a power they are put in parentheses when they are a row of several
+     * boxes, and as the base of a power also when they are a superscript.
+     */
+    private static IExpr parenthesizeDefinedBoxes(IExpr boxes, int precedence) {
+      IExpr core = boxes;
+      while ((core.isAST(S.FormBox) || core.isAST(S.TagBox) || core.isAST(S.StyleBox))
+          && core.argSize() >= 1) {
+        core = core.first();
+      }
+      boolean row = core.isAST(S.RowBox, 2) && core.first().isList()
+          && ((IAST) core.first()).argSize() > 1;
+      boolean superscript = core.isAST(S.SuperscriptBox) || core.isAST(S.SubsuperscriptBox);
+      if ((row && precedence >= Precedence.TIMES)
+          || (superscript && precedence >= Precedence.POWER)) {
+        return F.RowBox(F.list(F.$str("("), boxes, F.$str(")")));
+      }
+      return boxes;
+    }
+
     private static IExpr standardFormRecursive(final IExpr expr, final int precedence,
         final IExpr form, final EvalEngine engine) {
       IExpr boxes = upValueBoxes(expr, form, engine);
       if (boxes.isPresent()) {
-        return boxes;
+        return parenthesizeDefinedBoxes(boxes, precedence);
       }
       if (expr.isAST(S.Texture, 2)) {
         // a texture is shown as its image.
@@ -167,6 +196,10 @@ public class BoxesFunctions {
       }
       if (expr.isString()) {
         return F.$str(quotedString(expr.toString()));
+      }
+      if (form == S.TraditionalForm && expr.isImaginaryUnit()) {
+        // \[ImaginaryI]
+        return F.$str("");
       }
       IExpr special = specialSymbolBox(expr);
       if (special.isPresent()) {
@@ -439,6 +472,25 @@ public class BoxesFunctions {
               F.$str(template));
         }
         return F.NIL;
+      }
+      if (ast.isAST(S.Style) && ast.argSize() >= 2) {
+        // Style(expr, styles...): the boxes of expr with the styles
+        IASTAppendable styleBox = F.ast(S.StyleBox, ast.size() + 1);
+        styleBox.append(standardFormRecursive(ast.arg1(), 0, form, engine));
+        for (int i = 2; i < ast.size(); i++) {
+          styleBox.append(ast.get(i));
+        }
+        styleBox.append(F.Rule(F.symbol("StripOnInput"), S.False));
+        return styleBox;
+      }
+      if (ast.isAST(S.Row, 2) && ast.arg1().isList()) {
+        // Row({e1, e2, ...}): the boxes of the elements side by side
+        IAST elements = (IAST) ast.arg1();
+        IASTAppendable boxes = F.ListAlloc(elements.argSize());
+        for (int i = 1; i < elements.size(); i++) {
+          boxes.append(standardFormRecursive(elements.get(i), 0, form, engine));
+        }
+        return F.binaryAST2(S.TemplateBox, boxes, F.$str("RowDefault"));
       }
       if (ast.isAST(S.TableForm, 2) || ast.isAST(S.Grid, 2)) {
         IExpr table = ast.arg1();
@@ -739,8 +791,17 @@ public class BoxesFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2() && ast.arg2() != S.StandardForm && ast.arg2() != S.TraditionalForm) {
+        // `1` is not a box formatting type.
+        return Errors.printMessage(S.ToBoxes, "boxfmt", F.list(ast.arg2()), engine);
+      }
       // the arguments are first evaluated in ToBoxes
-      return super.evaluate(ast, engine);
+      IExpr boxes = super.evaluate(ast, engine);
+      if (ast.isAST2() && ast.arg2() == S.TraditionalForm && boxes.isPresent()) {
+        // the boxes of a form other than StandardForm say which form they are written in
+        return F.binaryAST2(S.FormBox, boxes, S.TraditionalForm);
+      }
+      return boxes;
     }
 
     @Override

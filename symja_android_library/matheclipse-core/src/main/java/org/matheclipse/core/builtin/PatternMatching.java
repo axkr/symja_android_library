@@ -1330,7 +1330,8 @@ public final class PatternMatching {
       if (ast.isAST1()) {
         return ast.arg1();
       }
-      Errors.printMessage(S.General, "argx", F.List(S.Identity, F.ZZ(ast.argSize())), engine);
+      // `1` called with `2` arguments; 1 argument is expected.
+      Errors.printMessage(S.Identity, "argx", F.List(S.Identity, F.ZZ(ast.argSize())), engine);
       return F.NIL;
     }
 
@@ -2995,22 +2996,61 @@ public final class PatternMatching {
     return firstUnprotectedHead(lhs.first());
   }
 
-  private static ISymbol firstUnprotectedHead(IExpr expr) {
-    while (expr.isCondition() || expr.isAST(S.HoldPattern, 2) || expr.isAST(S.Verbatim, 2)) {
+  /**
+   * The first head of <code>expr</code> which may carry a definition: a symbol of the user (or a
+   * package) before a built-in one, so <code>pref_. * f[...]</code> is kept with <code>f</code>,
+   * not with <code>Times</code>. Pattern names are no heads.
+   *
+   * @return <code>null</code> if there is no such head
+   */
+  public static ISymbol firstUnprotectedHead(IExpr expr) {
+    ISymbol tag = firstHead(expr, true);
+    return tag != null ? tag : firstHead(expr, false);
+  }
+
+  private static boolean isTagCandidate(IExpr expr, boolean userOnly) {
+    return expr.isSymbol() && !((ISymbol) expr).hasProtectedAttribute()
+        && !(userOnly && expr.isBuiltInSymbol());
+  }
+
+  private static ISymbol firstHead(IExpr expr, boolean userOnly) {
+    while (expr.isCondition() || expr.isAST(S.HoldPattern, 2) || expr.isAST(S.Verbatim, 2)
+        || expr.isAST(S.Optional) || expr.isAST(S.PatternTest, 3)) {
       expr = expr.first();
     }
+    if (expr.isAST(S.Pattern, 3)) {
+      // the name of a pattern is no head: x : f[...] is looked up by f
+      expr = expr.second();
+      while (expr.isCondition() || expr.isAST(S.HoldPattern, 2)) {
+        expr = expr.first();
+      }
+    }
+    if (expr instanceof org.matheclipse.core.expression.PatternNested) {
+      // y : f[...] is looked up by f
+      return firstHead(((org.matheclipse.core.expression.PatternNested) expr).getPatternExpr(),
+          userOnly);
+    }
+    if (expr instanceof IPatternObject) {
+      // x_f stands for an f[...] expression
+      IExpr headTest = ((IPatternObject) expr).getHeadTest();
+      return headTest != null && isTagCandidate(headTest, userOnly) ? (ISymbol) headTest : null;
+    }
+    if (expr.isAST(S.Blank) || expr.isAST(S.BlankSequence) || expr.isAST(S.BlankNullSequence)) {
+      return expr.isAST1() && isTagCandidate(expr.first(), userOnly) ? (ISymbol) expr.first()
+          : null;
+    }
     if (expr.isSymbol()) {
-      return ((ISymbol) expr).hasProtectedAttribute() ? null : (ISymbol) expr;
+      return isTagCandidate(expr, userOnly) ? (ISymbol) expr : null;
     }
     if (!expr.isAST()) {
       return null;
     }
     ISymbol head = expr.topHead();
-    if (head != null && !head.hasProtectedAttribute()) {
+    if (head != null && isTagCandidate(head, userOnly)) {
       return head;
     }
     for (IExpr arg : (IAST) expr) {
-      ISymbol tag = firstUnprotectedHead(arg);
+      ISymbol tag = firstHead(arg, userOnly);
       if (tag != null) {
         return tag;
       }

@@ -2913,6 +2913,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCheck() {
+    // running out of space aborts: CheckAbort gives the fail expression
+    check("{CheckAbort(Tuples({0, 1}, 40), toobig), 5}", //
+        "{toobig,5}");
+    // an indexed iterator variable is bound in each step, also where it is used indirectly, and
+    // keeps its old value afterwards
+    check("idx(1) = 9; idv := {idx(1), idx(2)}; acc = {}; "
+        + "Do(AppendTo(acc, idv), {idx(1), 1, 2}, {idx(2), 0, idx(1) - 1}); {acc, idx(1)}", //
+        "{{{1,0},{2,0},{2,1}},9}");
+    check("Table(idx(3)^2, {idx(3), 3})", //
+        "{1,4,9}");
+    // a built-in function in a bound is no unknown: the sum is enumerated
+    check("idl = {{2, u}, {3, v}}; Sum(idl[[k]][[1]], {k, 1, Length(idl)})", //
+        "5");
+    // exceeding the recursion limit terminates the evaluation, unless Check names its message:
+    // then Check gives the fail expression and the rest goes on
+    check("chkRec(n_) := chkRec(n + 1); {Check(chkRec(1), caught, {$RecursionLimit::reclim}), 5}",
+        "{caught,5}");
+    check("Map(Check(If(# == 2, chkRec(1), #), failed, {$RecursionLimit::reclim}) &, {1, 2, 3})",
+        "{1,failed,3}");
     // 1/0 issues Power::infy
     check("{Check(2/0; 3, 4, Power::infy), Quiet(Check(2/0; 3, 4, Power::infy))}", //
         "{4,4}");
@@ -6023,6 +6042,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDerivative() {
+    // a compound head is a function of its arguments; a head which depends on x is differentiated
+    // too
+    check("{D(q(c)[t], t), D(q(t)[t], t)}", //
+        "{q(c)'[t],q(t)'[t]+q'(t)[t]}");
+    check("D(q(t)[t, s], t)", //
+        "Derivative(1,0)[q(t)][t,s]+q'(t)[t,s]");
+    // a held expression is not a function of its contents
+    check("D(Hold(t), t)", //
+        "D(Hold(t),t)");
     check("Derivative(2,3)[StruveH]", //
         "Derivative(2,3)[StruveH]");
     check("Derivative(1,0)[StruveH][#1,#2]", //
@@ -7361,6 +7389,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDownValues() {
+    // rules of which neither is more general keep the order of their definition
+    check("dvo(z_Rational) := rat; dvo(z_ /; z < 1) := low; dvo(z_) := any; dvo(z_?OddQ) := odd",
+        "");
+    check("DownValues(dvo)", //
+        "{HoldPattern(dvo(z_Rational)):>rat,HoldPattern(dvo(z_/;z<1)):>low,HoldPattern(dvo(z_?OddQ)):>odd,HoldPattern(dvo(z_)):>any}");
+    check("{dvo(1/3), dvo(-4), dvo(7), dvo(8)}", //
+        "{rat,low,odd,any}");
     check("f(1)=3", //
         "3");
     check("f(x_):=x^3", //
@@ -8950,6 +8985,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testFactor() {
+    // the unit of the content leaves the leading coefficient positive
+    check("Factor((5+5*I)*z^2 - (5+5*I))", //
+        "(5+I*5)*(-1+z)*(1+z)");
+    // a symbolic exponent n+k*t is b^n*(b^t)^k
+    check("{Variables(z^(2 + s) + z^(3 + s)), Variables(w^(m + 3*j) + w^m), Variables(w^s)}", //
+        "{{z,z^s},{w^j,w^m},{w^s}}");
+    check("FactorList((u + v)^(-2 + 2*s))", //
+        "{{1,1},{(u+v)^s,2},{u+v,-2}}");
+    // a Gaussian integer content is taken out
+    check("{Factor((1+I)*u + 2*v), Factor(-I*u + I*v), Factor((2+I)*u + (1+3*I)*v)}", //
+        "{(1+I)*(u+(1-I)*v),-I*(u-v),(2+I)*(u+(1+I)*v)}");
     // TODO
     // check("Factor(3*Tan(3*x)-Tan(x)+2,Trig->True)", //
     // "((Cos(2*x)+I*Sin(2*x))*(-2+4*Cos(2*x)+4*Sin(2*x)))/(1-Cos(2*x)+Cos(4*x)-I*Sin(2*x)+I*Sin(\n"
@@ -21649,6 +21695,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMemberQ() {
+    // with heads a rational or complex number shows its head at its own level
+    check("MemberQ({3/7, w}, Rational, Heads -> True)", //
+        "True");
+    check("MemberQ({w, 2 - 5*I}, Complex, {0, Infinity}, Heads -> True)", //
+        "True");
+    check("MemberQ({3/7}, Rational)", //
+        "False");
+    check("MemberQ({h(w)}, h, Heads -> True)", //
+        "False");
+    check("MemberQ({w}, List, Heads -> True)", //
+        "True");
+    check("Position({3/7}, Rational, Heads -> True)", //
+        "{}");
     check("MemberQ(b)[{a, b, c}]", //
         "True");
 
@@ -22563,6 +22622,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNValues() {
+    // N(f(x_), p_) := ... takes the precision as the second argument
+    check("N(nvq(x_), p_) := {x, p}; N(nvq(3))", //
+        "{3.0,{MachinePrecision,MachinePrecision}}");
     // N(x) = value gives x a numerical value, used wherever x is evaluated numerically
     check("N(nva) = 1.0; {NValues(nva), N(nva), N(nva + 1), N(2*nva), UpValues(nva)}", //
         "{{HoldPattern(N(nva,{MachinePrecision,MachinePrecision})):>1.0},1.0,2.0,2.0,{}}");
@@ -34238,6 +34300,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimes() {
+    // positive numeric bases with opposite symbolic exponents merge
+    check("{7^(-s)*11^s, 2^s*5^(-s)*3^s, 3.^s*7^(-s), u^s*5^(-s)}", //
+        "{(11/7)^s,(6/5)^s,0.428571^s,u^s/5^s}");
+    check("(3/5)^s*(25/9)^t", //
+        "(3/5)^(s-2*t)");
+    // a unit fraction base is a negative power of the denominator
+    check("{(1/7)^s, (u/3)^s*v}", //
+        "{7^(-s),(u^s*v)/3^s}");
+    // an all-numeric product base splits only where a factor combines with another power
+    check("{E^(2*s)*(3*E)^(-s), (3*E)^s*v}", //
+        "{(E/3)^s,(3*E)^s*v}");
     // the Pythagorean quotient family of the Times hash matcher, both directions each. The
     // denominators of the reversed quotients arrive canonicalized as reciprocal functions
     // (1/Sin(x)^2 == Csc(x)^2, 1/Cos(2*x) == Sec(2*x)), which is what the rules match.
@@ -34940,6 +35013,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToExpression() {
+    // a blank line inside a comment does not end a statement; a comment on its own lines is one
+    check("ToExpression(\"(*u\\n\\nv*)\\nw\", InputForm, Hold)", //
+        "Hold(Null,w)");
+    check("ToExpression(\"p\\n\\n(*q\\n\\nr*)\\ns\", InputForm, Hold)", //
+        "Hold(p,Null,Null,s)");
+    check("SyntaxQ(\"(*\\nab\")", //
+        "False");
+    // a number or a symbol is its own value, another expression is no input
+    check("{ToExpression(7), ToExpression(zq), ToExpression(3/4)}", //
+        "{7,zq,3/4}");
+    check("ToExpression(g(zq))", //
+        "$Failed");
+    check("ToExpression(g(zq), InputForm)", //
+        "ToExpression(g(zq),InputForm)");
+    // a sum reads by its first term, a complex number by its imaginary part
+    check("Internal`SyntacticNegativeQ /@ {-u - v, -2 + u, 3 - u, Complex(-2, 5), Complex(2, -5), -7}",
+        "{True,True,False,False,True,True}");
     // with a head, the statements on separate lines are its arguments
     check("FullForm(ToExpression(\"u = 7\\n v = u + 2\", InputForm, Hold))", //
         "Hold(Set(u, 7), Set(v, Plus(u, 2)))");
@@ -34989,6 +35079,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToString() {
+    // a Format definition is applied, outermost first
+    check("tsf /: Format(tsf(n_)) := shown(n+1)", //
+        "");
+    check("{ToString(tsf(4)), ToString(g(tsf(tsf(0)), 5))}", //
+        "{shown(5),g(shown(1+shown(1)),5)}");
+    // options like CharacterEncoding are accepted
+    check("ToString(u^2 + 1, InputForm, CharacterEncoding -> \"Unicode\")", //
+        "1 + u^2");
+    check("ToString(\"ψ\", InputForm, CharacterEncoding -> \"Unicode\", PageWidth -> Infinity)",
+        "\"ψ\"");
     check("Csch(ArcTanh(x))", //
         "Sqrt(1-x^2)/x");
     check("ToString(Sqrt(1-1/x^2))", //

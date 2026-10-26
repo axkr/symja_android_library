@@ -132,6 +132,11 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testExpand() {
+    // the distinct exponent orderings of a power of many terms
+    check("Length(Expand(Sum(u(k), {k, 40})^3))", //
+        "11480");
+    check("Expand((p + q + 3*r)^2)", //
+        "p^2+2*p*q+q^2+6*p*r+6*q*r+9*r^2");
     check("Expand((x + 1)*(x + 2))", //
         "2+3*x+x^2");
     check("Expand((x + 1)^2)", //

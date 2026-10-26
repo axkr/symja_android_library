@@ -140,9 +140,9 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(1/2,1,1,z_):=1/Sqrt(1-z)
     ISetDelayed(Hypergeometric2F1(C1D2,C1,C1,z_),
       Power(Subtract(C1,z),CN1D2)),
-    // Hypergeometric2F1(1/2,1,3/2,z_?RealValuedNumericQ):=ArcTanh(z)/z
+    // Hypergeometric2F1(1/2,1,3/2,z_?RealValuedNumericQ):=ArcTanh(Sqrt(z))/Sqrt(z)
     ISetDelayed(Hypergeometric2F1(C1D2,C1,QQ(3L,2L),PatternTest(z_,RealValuedNumericQ)),
-      Times(Power(z,CN1),ArcTanh(z))),
+      Times(Power(z,CN1D2),ArcTanh(Sqrt(z)))),
     // Hypergeometric2F1(1/2,1,3/2,a_.*z_^n_.):=(1/Sqrt(a)*ArcTanh(Sqrt(a)*z^(n/2)))/z^(n/2)
     ISetDelayed(Hypergeometric2F1(C1D2,C1,QQ(3L,2L),Times(a_DEFAULT,Power(z_,n_DEFAULT))),
       Times(Power(z,Times(CN1,C1D2,n)),Power(a,CN1D2),ArcTanh(Times(Sqrt(a),Power(z,Times(C1D2,n)))))),

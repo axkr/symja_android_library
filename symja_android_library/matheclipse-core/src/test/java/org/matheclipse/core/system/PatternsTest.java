@@ -301,6 +301,70 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testOptionValueEvaluatesTheName() {
+    // an alias s2 = s1 names the option s1, also in the condition of a definition
+    check("optAlias = optName; OptionValue({optName -> 5}, optAlias)", //
+        "5");
+    check("ov1(z_, opts : OptionsPattern()) := {z} /; !OptionValue({opts}, optAlias); "
+        + "{ov1(1, optName -> False), ov1(1, optName -> True)}", //
+        "{{1},ov1(1,optname->True)}");
+  }
+
+  @Test
+  public void testTestedSequenceBeforeOtherArguments() {
+    // x__?test in front of other arguments takes as many elements as pass the test
+    check("pq7(3, 4, {u}, {v}) /. pq7(n__?IntegerQ, s_List, t_List) :> {{n}, s, t}", //
+        "{{3,4},{u},{v}}");
+    check("pq7(3, w, {u}, {v}) /. pq7(n__?IntegerQ, s_List, t_List) :> {{n}, s, t}", //
+        "pq7(3,w,{u},{v})");
+    check("pq7(1, 2, z, 5) /. pq7(n__?IntegerQ, s_Symbol, r___) :> {{n}, s, {r}}", //
+        "{{1,2},z,{5}}");
+  }
+
+  @Test
+  public void testSequenceInAPatternIsSpliced() {
+    // the pattern of MatchQ is evaluated: a Sequence in it is spliced
+    check("seqOrd = {u^2, v^2}; MatchQ({s, u^2, v^2, w}, {___, Sequence @@ seqOrd, ___})", //
+        "True");
+    check("MatchQ({s, u, v}, {___, Sequence(u, v)})", //
+        "True");
+  }
+
+  @Test
+  public void testOptionValueWithAConditionOnTheLeftHandSide() {
+    // OptionValue(name) reads the options of the head of lhs /; test
+    check("Options(ovc) = {ovo -> True}; "
+        + "ovc(z_List, OptionsPattern()) /; Length(z) > 0 := ovr(z) /; OptionValue(ovo); "
+        + "{ovc({1}), ovc({1}, ovo -> False), ovc({})}", //
+        "{ovr({1}),ovc({1},ovo->False),ovc({})}");
+  }
+
+  @Test
+  public void testPatternHeadTakesOneOperand() {
+    // g_[y__] in a Flat head takes exactly one operand, never a group wrapped in the head
+    check("SetAttributes(flo2, {Flat, Orderless}); "
+        + "ReplaceList(flo2(u(1), v(2), w(3)), flo2(g_[y__], w(3)) :> g)", //
+        "{}");
+    check("ReplaceList(flo2(u(1), w(3)), flo2(g_[y__], w(3)) :> {g, y})", //
+        "{{u,1}}");
+    check("ReplaceList(u(1)*v(2)*w(3), g_[y__]*w(3) :> g)", //
+        "{}");
+    // a named pattern still takes a group
+    check("ReplaceList(flo2(u(1), v(2), w(3)), flo2(x_, w(3)) :> x)", //
+        "{flo2(u(1),v(2))}");
+  }
+
+  @Test
+  public void testSequenceOfTheRightHandSideStaysOneArgument() {
+    // a Sequence written in the right-hand side keeps its place when a pattern inside it is
+    // replaced
+    check("seqRhs(x_) := Hold(Unevaluated(Sequence(\"+\", x))); FullForm(seqRhs(7))", //
+        "Hold(Unevaluated(Sequence(\"+\", 7)))");
+    check("seqRhs2(x_) := If(True, Unevaluated(Sequence(\"+\", x + x))); {0, seqRhs2(k), 1}", //
+        "{0,+,2*k,1}");
+  }
+
+  @Test
   public void testOptionValue() {
 
     check("gg(x_, OptionsPattern({n->2})) := x ^ OptionValue(n)", //

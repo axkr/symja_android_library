@@ -362,8 +362,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
         if (bound.isReal()) {
           continue;
         }
+        // a built-in function like Length in {i, 1, Length(list)} is no unknown
         if (!bound.isFree(x -> x == S.Infinity || x == S.ComplexInfinity
-            || x.isAST(S.DirectedInfinity) || (x.isSymbol() && x.isVariable() && !outerVariables.contains(x)
+            || x.isAST(S.DirectedInfinity) || (x.isSymbol() && !x.isBuiltInSymbol()
+                && x.isVariable() && !outerVariables.contains(x)
                 && !((ISymbol) x).hasAssignedSymbolValue()),
             true)) {
           return false;

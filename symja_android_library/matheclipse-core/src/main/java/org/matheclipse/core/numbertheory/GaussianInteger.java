@@ -343,8 +343,14 @@ public final class GaussianInteger {
       return new IInteger[] {F.C1, F.C0};
     }
 
-    dividendRe = dividendRe.isNegative() ? dividendRe.negate() : dividendRe;
-    dividendIm = dividendIm.isNegative() ? dividendIm.negate() : dividendIm;
+    // the associate in the first quadrant (real part > 0, imaginary part >= 0): multiply by -I
+    // until it lies there. Taking the absolute values of the parts gave a number which is no
+    // associate at all - 3+2*I for 3-2*I.
+    for (int i = 0; i < 3 && !(dividendRe.isPositive() && !dividendIm.isNegative()); i++) {
+      IInteger re = dividendIm;
+      dividendIm = dividendRe.negate();
+      dividendRe = re;
+    }
     return new IInteger[] {dividendRe, dividendIm};
   }
 

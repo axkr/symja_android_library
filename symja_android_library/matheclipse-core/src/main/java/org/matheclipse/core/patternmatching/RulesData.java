@@ -1314,7 +1314,8 @@ public final class RulesData implements Serializable {
                 || ((PatternMatcher) matcher).isOptionalArgumentRule()));
         if (byGenerality ? RuleGenerality.covers(matcher.getLHS(), newPatternMatcher.getLHS())
             : lhsPriority < priority && (!positional
-                || RuleGenerality.mayOverlap(matcher.getLHS(), newPatternMatcher.getLHS()))) {
+                || (RuleGenerality.mayOverlap(matcher.getLHS(), newPatternMatcher.getLHS())
+                    && comparable(matcher.getLHS(), newPatternMatcher.getLHS())))) {
           insertPosition = i;
         }
       }
@@ -1326,6 +1327,24 @@ public final class RulesData implements Serializable {
     fPriorityDownRules.add(insertPosition, lhsPriority);
     publishPatternDownRules(rules);
     return newPatternMatcher;
+  }
+
+  /**
+   * Is one of the two left-hand sides known to be more general than the other one (see
+   * {@link RuleGenerality#precedes(IExpr, IExpr)})? Rules of which neither is more general, as
+   * <code>f[x_Integer]</code> and <code>f[x_ /; x > 0]</code>, keep the order in which they were
+   * defined. The rules of a built-in function are ordered by their priority alone: its rule files
+   * are written that way.
+   */
+  private static boolean comparable(IExpr lhs1, IExpr lhs2) {
+    IExpr lhs = lhs1;
+    while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2)) {
+      lhs = lhs.first();
+    }
+    if (lhs.topHead().isBuiltInSymbol()) {
+      return true;
+    }
+    return RuleGenerality.precedes(lhs2, lhs1) || RuleGenerality.precedes(lhs1, lhs2);
   }
 
   /**

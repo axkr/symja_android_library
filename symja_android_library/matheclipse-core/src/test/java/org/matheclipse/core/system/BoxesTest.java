@@ -156,6 +156,46 @@ public class BoxesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBoxesOfADefinition() {
+    // a definition for c_. * w[...] is kept with w, not with Times or the pattern name c
+    check("MakeBoxes[c_. wq[a__], TraditionalForm] := RowBox[{\"W\", ToBoxes[c]}]", //
+        "");
+    check("{MakeBoxes[wq[1], TraditionalForm], MakeBoxes[5 wq[1], TraditionalForm]} // InputForm",
+        "{RowBox({\"W\",\"1\"}),RowBox({\"W\",\"5\"})}");
+    check("Length /@ {UpValues[wq], UpValues[c]}", //
+        "{1,0}");
+    check("MakeBoxes[v_wr, TraditionalForm] := \"WR\"; MakeBoxes[u : ws[_], TraditionalForm] := \"WS\";"
+        + " {MakeBoxes[wr[2], TraditionalForm], MakeBoxes[ws[2], TraditionalForm]}", //
+        "{WR,WS}");
+    // boxes of a definition are a row of several boxes: parenthesized in a product or a power
+    check("wt /: MakeBoxes[wt[a_, b_], TraditionalForm] := RowBox[{ToBoxes[a], \"*\", ToBoxes[b]}]",
+        "");
+    check("ToBoxes[k wt[1, 2], TraditionalForm] // InputForm", //
+        "FormBox(RowBox({\"k\",\" \",RowBox({\"(\",RowBox({\"1\",\"*\",\"2\"}),\")\"})}),TraditionalForm)");
+    check("ToBoxes[k + wt[1, 2], TraditionalForm] // InputForm", //
+        "FormBox(RowBox({\"k\",\"+\",RowBox({\"1\",\"*\",\"2\"})}),TraditionalForm)");
+  }
+
+  @Test
+  public void testTraditionalFormBoxes() {
+    // only StandardForm and TraditionalForm are box formatting types
+    check("ToBoxes[z, OutputForm]", //
+        "ToBoxes(z,OutputForm)");
+    // ToBoxes in TraditionalForm says which form its boxes are written in
+    check("ToBoxes[z, TraditionalForm] // InputForm", //
+        "FormBox(\"z\",TraditionalForm)");
+    check("ToBoxes[z] // InputForm", //
+        "\"z\"");
+    check("MakeBoxes[Row[{\"(\", z, \")\"}], TraditionalForm] // InputForm", //
+        "TemplateBox({\"\\\"(\\\"\",\"z\",\"\\\")\\\"\"},\"RowDefault\")");
+    check("MakeBoxes[Style[z, Bold], TraditionalForm] // InputForm", //
+        "StyleBox(\"z\",Bold,striponinput->False)");
+    // the imaginary unit is written \[ImaginaryI]
+    check("ToString[MakeBoxes[I, TraditionalForm], InputForm, CharacterEncoding -> \"Unicode\"]",
+        "\"\"");
+  }
+
+  @Test
   public void testToBoxes001() {
     check("Map[ToBoxes, {123, 1/23, 1.23, 1 + 23 I}] // InputForm", //
         "{\"123\",FractionBox(\"1\",\"23\"),\"1.23`\",RowBox({\"1\",\"+\",RowBox({\"23\",\" \",\"I\"})})}");

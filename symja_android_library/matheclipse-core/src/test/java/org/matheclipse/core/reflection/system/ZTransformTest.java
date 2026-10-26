@@ -218,7 +218,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
         "2^n");
     // (1/3)^n == 3^(-n)
     check("InverseZTransform((3*z)/(-1 + 3*z), z, n)", //
-        "(1/3)^n");
+        "3^(-n)");
     // Sign-wrapped spelling of the same transform
     check("InverseZTransform(-(z/(a - z)), z, n)", //
         "a^n");

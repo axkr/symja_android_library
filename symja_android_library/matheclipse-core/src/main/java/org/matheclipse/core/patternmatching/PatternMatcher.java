@@ -1079,6 +1079,18 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   /**
+   * The head whose options <code>OptionValue(name)</code> reads in a definition: the head of the
+   * left-hand side, also when it is written <code>lhs /; test</code>.
+   */
+  protected ISymbol optionsHead() {
+    IExpr lhs = fLhsPatternExpr;
+    while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2)) {
+      lhs = lhs.first();
+    }
+    return lhs.topHead();
+  }
+
+  /**
    * Does the pattern <code>expr</code> stand for a sequence of arguments: a pattern sequence like
    * <code>x__</code> or <code>p..</code>, or a name for one, <code>x : p..</code>?
    */
@@ -1149,6 +1161,19 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         IASTMutable withoutCondition = lhsPatternAST.setAtCopy(conditionIndex, condition.first());
         withoutCondition.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
         return matchPatternSequenceArgs(withoutCondition, lhsEvalAST, engine, stackMatcher);
+      }
+      int testIndex = lhsPatternAST.indexOf(x -> x.isAST(S.PatternTest, 3)
+          && x.first().isPatternSequence(false) && ((IPatternSequence) x.first()).getSymbol() != null);
+      if (testIndex > 0 && testIndex < lhsPatternAST.argSize()) {
+        // f(x__?test, y_): the sequence is matched like x__, and every element of it is tested on
+        // the stack once x is bound; the trailing x__?test is the special case below
+        IExpr patternTest = lhsPatternAST.get(testIndex);
+        ISymbol name = ((IPatternSequence) patternTest.first()).getSymbol();
+        stackMatcher
+            .push(new Entry(F.binaryAST2(S.AllTrue, F.list(name), patternTest.second())));
+        IASTMutable withoutTest = lhsPatternAST.setAtCopy(testIndex, patternTest.first());
+        withoutTest.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
+        return matchPatternSequenceArgs(withoutTest, lhsEvalAST, engine, stackMatcher);
       }
 
       // consume the leading arguments which are neither a pattern sequence nor the trailing
@@ -2518,6 +2543,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       fPatternMap.resetPattern(patternValues);
       return false;
+    }
+    if (lhsPatternArg.isAST() && lhsPatternArg.head() instanceof IPatternObject) {
+      // g_[y__] or _[x_] takes exactly one operand, never a group wrapped in the Flat head
+      return lhsEval.argSize() == 1 && matchExpr(lhsPatternArg, lhsEval.arg1(), engine, stackMatcher);
     }
     return matchExpr(lhsPatternArg, lhsEval, engine, stackMatcher);
   }

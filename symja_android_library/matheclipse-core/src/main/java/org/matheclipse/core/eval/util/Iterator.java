@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -1672,6 +1673,7 @@ public class Iterator {
   public static IExpr evaluateWithLocalizedVariables(final IAST ast, EvalEngine engine) {
     boolean formalSymbol = false;
     java.util.Map<IExpr, IExpr> forward = null;
+    java.util.List<IExpr> indexed = null;
     for (int i = 2; i < ast.size(); i++) {
       IExpr iterator = ast.get(i);
       // {i, imax}, {i, imin, imax}, ... - in {imax} the first element is a count, not a variable
@@ -1685,6 +1687,18 @@ public class Iterator {
             forward = new java.util.HashMap<IExpr, IExpr>();
           }
           forward.put(variable, F.Dummy("Subscript" + EvalEngine.uniqueName("$")));
+        } else if (variable.isAST() && variable.head().isSymbol()
+            && !variable.head().isBuiltInSymbol() && variable.isFreeOfPatterns()) {
+          // an indexed variable ll[1] stands for itself in the body, like a symbol
+          if (forward == null) {
+            forward = new java.util.HashMap<IExpr, IExpr>();
+          }
+          forward.put(variable,
+              F.Dummy(((ISymbol) variable.head()).getSymbolName() + EvalEngine.uniqueName("$")));
+          if (indexed == null) {
+            indexed = new java.util.ArrayList<IExpr>();
+          }
+          indexed.add(variable);
         } else if (variable instanceof FormalSymbol) {
           if (forward == null) {
             forward = new java.util.HashMap<IExpr, IExpr>();
@@ -1697,8 +1711,50 @@ public class Iterator {
     if (forward == null) {
       return null;
     }
+    if (indexed != null && (ast.isAST(S.Do) || ast.isAST(S.Table))) {
+      return evaluateWithIndexedVariables(ast, forward, indexed, engine);
+    }
     IExpr result = evaluateRenamed(ast, forward, engine);
     return result.isPresent() || formalSymbol ? result : null;
+  }
+
+  /**
+   * <code>Do</code> or <code>Table</code> with an iterator variable like <code>ll[1]</code>: the
+   * variable is renamed in the call, and the body assigns it each value first, so that an
+   * expression which refers to it only through another value sees it too. The definitions of the
+   * heads of the variables are restored afterwards.
+   */
+  private static IExpr evaluateWithIndexedVariables(final IAST ast,
+      java.util.Map<IExpr, IExpr> forward, java.util.List<IExpr> indexed, EvalEngine engine) {
+    IASTMutable renamed = (IASTMutable) F.subst(ast, forward);
+    IASTAppendable body = F.ast(S.CompoundExpression, indexed.size() + 1);
+    java.util.Map<ISymbol, IExpr> savedDownValues = new java.util.LinkedHashMap<ISymbol, IExpr>();
+    for (IExpr variable : indexed) {
+      body.append(F.Set(variable, forward.get(variable)));
+      ISymbol head = (ISymbol) variable.head();
+      if (!savedDownValues.containsKey(head)) {
+        savedDownValues.put(head, engine.evaluate(F.DownValues(head)));
+      }
+    }
+    body.append(renamed.arg1());
+    renamed.set(1, body);
+    IExpr result;
+    try {
+      for (IExpr variable : indexed) {
+        // a value it has already would hide the one of each step
+        engine.evalQuiet(F.Unset(variable));
+      }
+      result = engine.evaluate(renamed);
+    } finally {
+      for (java.util.Map.Entry<ISymbol, IExpr> entry : savedDownValues.entrySet()) {
+        engine.evaluate(F.Set(F.DownValues(entry.getKey()), entry.getValue()));
+      }
+    }
+    java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+    for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
+      back.put(entry.getValue(), entry.getKey());
+    }
+    return F.subst(result, back);
   }
 
   /**

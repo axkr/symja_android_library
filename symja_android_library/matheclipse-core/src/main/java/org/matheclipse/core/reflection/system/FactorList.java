@@ -75,7 +75,49 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    return factorListFromFactored(factored);
+    return splitSymbolicExponents(factorListFromFactored(factored), engine);
+  }
+
+  /**
+   * A factor with a symbolic exponent <code>b^(n+k*t)</code> is the factor <code>b^t</code> with
+   * exponent <code>k</code> and the factor <code>b</code> with exponent <code>n</code>:
+   * <code>(x+y)^(-3+3*e)</code> gives <code>{(x+y)^e, 3}</code> and <code>{x+y, -3}</code>.
+   */
+  private static IExpr splitSymbolicExponents(IExpr factorList, EvalEngine engine) {
+    if (!factorList.isList() || !((IAST) factorList)
+        .exists(x -> x.isList2() && !x.second().isNumber() && (x.second().isPlus() || x.second().isTimes()))) {
+      return factorList;
+    }
+    IAST list = (IAST) factorList;
+    IASTAppendable result = F.ListAlloc(list.size() + 2);
+    for (IExpr pair : list) {
+      if (!pair.isList2() || pair.second().isNumber()) {
+        result.append(pair);
+        continue;
+      }
+      IExpr base = pair.first();
+      IExpr exponent = pair.second();
+      IAST terms = exponent.isPlus() ? (IAST) exponent : F.list(exponent);
+      if (!terms.forAll(t -> t.isInteger() || (t.isTimes() && t.first().isInteger()) || !t.isNumber())) {
+        result.append(pair);
+        continue;
+      }
+      IExpr integerPart = F.C0;
+      for (IExpr term : terms) {
+        if (term.isInteger()) {
+          integerPart = term;
+        } else if (term.isTimes() && term.first().isInteger()) {
+          result.append(F.list(engine.evaluate(F.Power(base, term.rest().oneIdentity1())),
+              term.first()));
+        } else {
+          result.append(F.list(engine.evaluate(F.Power(base, term)), F.C1));
+        }
+      }
+      if (!integerPart.isZero()) {
+        result.append(F.list(base, integerPart));
+      }
+    }
+    return result;
   }
 
   @Override

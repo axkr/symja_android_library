@@ -111,7 +111,7 @@ public final class PatternMatcherList extends PatternMatcherAndEvaluator {
           engine.pushOptionsStack();
           try {
             engine.setEvalRHSMode(true);
-            engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+            engine.setOptionsPattern(optionsHead(), patternMap);
             result = result.eval(engine);
           } catch (final ConditionException e) {
             return false;

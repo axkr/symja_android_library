@@ -1340,7 +1340,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   public void testShiftedPoles() {
     // 1/(2-x) expanded around x=0
     check("SeriesCoefficient(1/(2-x), {x, 0, n})", //
-        "Piecewise({{(1/2)^(1+n),n>=0}},0)");
+        "Piecewise({{2^(-1-n),n>=0}},0)");
 
     // 1/(2-x) at n = 3
     check("SeriesCoefficient(1/(2-x), {x, 0, 3})", //
@@ -1352,7 +1352,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // Apart[x/((x-1)(x-2))] = 2/(x-2) - 1/(x-1) = 1/(1-x) - 1/(1-x/2)
     // General coefficient: 1 - (1/2)^n
     check("SeriesCoefficient(x/((x-1)*(x-2)), {x, 0, n}) ", //
-        "Piecewise({{1-(1/2)^n,n>=0}},0)");
+        "Piecewise({{1-1/2^n,n>=0}},0)");
 
     // Evaluate directly for n = 5 -> 1 - (1/2)^5 = 31/32
     check("SeriesCoefficient(x/((x-1)*(x-2)), {x, 0, 5})", //
@@ -1894,7 +1894,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // 5. Rational Function expanded around a point x0 != 0
     // 1/(2-x) = 1/2 * 1/(1 - x/2) = Sum (1/2)^(n+1) * x^n
     check("SeriesCoefficient(1/(2-x), {x, 0, n})", //
-        "Piecewise({{(1/2)^(1+n),n>=0}},0)");
+        "Piecewise({{2^(-1-n),n>=0}},0)");
   }
 
   // ==========================================================

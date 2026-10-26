@@ -465,6 +465,9 @@ public class Errors {
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nosol", "Linear equation encountered that has no solution.", //
       "nostr", "`1` is not a string.", //
+      "notstr", "The format type `1` is valid only for string input.", //
+      "notstrbox",
+      "`1` is not a string or a box. ToExpression can only interpret strings or boxes as input.", //
       "nosym", "`1` does not contain a symbol to attach a rule to.", //
       "notdata",
       "The first argument is not a vector or matrix or a list containing a design matrix and response vector.", //

@@ -435,7 +435,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "2*x-Log(1+E^(4*x))/2");
     // two different frequencies keep the hypergeometric answer
     check("Integrate(E^(-I*a*x)*Sec(b*x), x)", //
-        "(I*2*E^((-I*a+I*b)*x)*Hypergeometric2F1(1,1/2*(1-a/b),1/2*(3-a/b),-E^(I*2*b*x)))/(a-b)");
+        "(I*2*Hypergeometric2F1(1,1/2*(1-a/b),1/2*(3-a/b),-E^(I*2*b*x)))/((a-b)*E^(I*(a-b)*x))");
   }
 
   @Test

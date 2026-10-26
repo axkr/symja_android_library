@@ -223,7 +223,7 @@ public final class ContextPath implements Iterable<Context> {
     // does the expression print with a leading minus sign? FeynCalc tests it on sums of terms
     aliases.put("Internal`SyntacticNegativeQ",
         F.localFunction("SyntacticNegativeQ", //
-            x -> F.booleSymbol(EvalEngine.get().evaluate(x).isNegativeSigned())));
+            x -> F.booleSymbol(syntacticNegativeQ(EvalEngine.get().evaluate(x)))));
     // {{{exponents, coefficient}, ...}, variables} - FeynCalc reads the Newton polytope of a
     // polynomial from it
     aliases.put("GroebnerBasis`DistributedTermsList",
@@ -235,6 +235,23 @@ public final class ContextPath implements Iterable<Context> {
               }
             }));
     return aliases;
+  }
+
+  /**
+   * Does <code>expr</code> print with a leading minus sign? A sum is read by its first term, a
+   * complex number by its imaginary part (unless that is zero).
+   */
+  private static boolean syntacticNegativeQ(org.matheclipse.core.interfaces.IExpr expr) {
+    if (expr.isPlus()) {
+      return syntacticNegativeQ(expr.first());
+    }
+    if (expr.isNumber() && !expr.isReal()) {
+      org.matheclipse.core.interfaces.IReal im = ((org.matheclipse.core.interfaces.INumber) expr).im();
+      if (!im.isZero()) {
+        return im.isNegative();
+      }
+    }
+    return expr.isNegativeSigned();
   }
 
   /**

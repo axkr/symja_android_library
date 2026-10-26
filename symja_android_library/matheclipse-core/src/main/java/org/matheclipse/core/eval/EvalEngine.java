@@ -4247,6 +4247,11 @@ public class EvalEngine implements Serializable {
    */
   public IExpr evalNValue(RulesData rulesData, IExpr expr) {
     IExpr value = rulesData.evalUpRule(nValueLHS(expr), this);
+    if (value.isNIL() && !isArbitraryMode()) {
+      // a definition N(f(x_), p_) := ... takes the precision as a second argument and gives the
+      // numerical value itself
+      return rulesData.evalUpRule(machineNValueLHS(expr), this);
+    }
     if (value.isPresent() && !value.isInexactNumber()) {
       if (isArbitraryMode()) {
         return F.binaryAST2(S.N, value, F.ZZ(getSignificantFigures()));
@@ -4254,6 +4259,11 @@ public class EvalEngine implements Serializable {
       return F.unaryAST1(S.N, value);
     }
     return value;
+  }
+
+  /** <code>N(expr, {MachinePrecision, MachinePrecision})</code>, the form N-values are stored in. */
+  public IAST machineNValueLHS(IExpr expr) {
+    return F.binaryAST2(S.N, expr, F.list(S.MachinePrecision, S.MachinePrecision));
   }
 
   /**
@@ -4459,6 +4469,23 @@ public class EvalEngine implements Serializable {
               level + 1).orElse(temp);
         }
         return temp;
+      }
+    }
+    if (!Attribute.SEQUENCEHOLD.isSetIn(attributes)
+        && !Attribute.HOLDALLCOMPLETE.isSetIn(attributes)) {
+      // {___, Sequence @@ {b, c}, ___} is the pattern {___, b, c, ___}
+      IAST current = resultList.orElse(ast);
+      if (current.exists(x -> x.isSequence(), 1)) {
+        IASTAppendable spliced = F.ast(current.head(), current.argSize() + 4);
+        for (int i = 1; i < current.size(); i++) {
+          IExpr argument = current.get(i);
+          if (argument.isSequence()) {
+            spliced.appendArgs((IAST) argument);
+          } else {
+            spliced.append(argument);
+          }
+        }
+        resultList = spliced;
       }
     }
     if (!Attribute.HOLDALL.isSetIn(attributes)) {
@@ -6647,6 +6674,10 @@ public class EvalEngine implements Serializable {
         return evaluate(body);
       } catch (AbortException aex) {
         return failExpr;
+      } catch (ASTElementLimitExceeded lex) {
+        // running out of space aborts the evaluation
+        Errors.printMessage(S.CheckAbort, lex, this);
+        return failExpr;
       }
     }
     if (fAbortRequested) {
@@ -6660,6 +6691,9 @@ public class EvalEngine implements Serializable {
       return evaluate(body);
     } catch (AbortException aex) {
       fAbortRequested = false;
+      return failExpr;
+    } catch (ASTElementLimitExceeded lex) {
+      Errors.printMessage(S.CheckAbort, lex, this);
       return failExpr;
     } finally {
       fProtectedCheckAborts = checkAborts;

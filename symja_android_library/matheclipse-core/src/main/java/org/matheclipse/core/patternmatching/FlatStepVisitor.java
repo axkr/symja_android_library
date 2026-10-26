@@ -83,7 +83,9 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
         final int n = result[j].length;
         final IExpr lhsPatternExpr = fLhsPatternAST.get(j + 1);
         final boolean sequence = PatternMatcher.standsForSequence(lhsPatternExpr);
-        if (n > 1 && fOnlySequencesTakeSeveral && !sequence) {
+        if (n > 1 && ((fOnlySequencesTakeSeveral && !sequence)
+            // g_[y__] or _[x_] takes exactly one operand, never a group wrapped in the Flat head
+            || (lhsPatternExpr.isAST() && lhsPatternExpr.head() instanceof IPatternObject))) {
           matched = false;
           return false;
         }

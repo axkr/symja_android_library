@@ -3427,7 +3427,14 @@ public interface IPatternMap {
     return result;
   }
 
-  static IExpr optionValueReplace(final IAST ast, boolean quiet, EvalEngine engine) {
+  static IExpr optionValueReplace(IAST ast, boolean quiet, EvalEngine engine) {
+    if (ast.argSize() >= 2 && (ast.last().isSymbol() || ast.last().isList())) {
+      // the name is evaluated: an alias s2 = s1 names the option s1
+      IExpr name = engine.evaluate(ast.last());
+      if (name != ast.last()) {
+        ast = ast.setAtCopy(ast.argSize(), name);
+      }
+    }
     IASTAppendable optionsPattern = null;
     IExpr arg1 = engine.evaluate(ast.arg1());
     IExpr rhsRuleValue = F.NIL;

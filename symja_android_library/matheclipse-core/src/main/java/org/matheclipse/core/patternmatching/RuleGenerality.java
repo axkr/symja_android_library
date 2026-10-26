@@ -43,7 +43,19 @@ final class RuleGenerality {
       // f[x_, x_] needs equal arguments, so it matches less than its shape says
       return false;
     }
-    return coversExpr(general, specific);
+    return coversExpr(general, specific, false);
+  }
+
+  /**
+   * Is <code>general</code> to be tried after <code>specific</code>? As {@link #covers(IExpr,
+   * IExpr)}, but a pattern with a test or a condition also counts as more general than a literal
+   * argument it has the shape of: <code>f[k_?Positive]</code> is tried after <code>f[1]</code>.
+   */
+  static boolean precedes(IExpr specific, IExpr general) {
+    if (hasRepeatedPatternName(general, new HashSet<ISymbol>())) {
+      return false;
+    }
+    return coversExpr(general, specific, true);
   }
 
   /**
@@ -105,31 +117,36 @@ final class RuleGenerality {
   }
 
   /** Does the single-expression pattern <code>general</code> cover <code>specific</code>? */
-  private static boolean coversExpr(IExpr general, IExpr specific) {
+  private static boolean coversExpr(IExpr general, IExpr specific, boolean literals) {
     if (general.equals(specific)) {
       return true;
     }
     if (general.isAST(S.HoldPattern, 2)) {
-      return coversExpr(((IAST) general).arg1(), specific);
+      return coversExpr(((IAST) general).arg1(), specific, literals);
     }
     if (specific.isAST(S.HoldPattern, 2)) {
-      return coversExpr(general, ((IAST) specific).arg1());
+      return coversExpr(general, ((IAST) specific).arg1(), literals);
     }
     // the specific side only gets narrower by a condition, a test or a name
     if (specific.isCondition() || specific.isAST(S.PatternTest, 3)) {
-      return coversExpr(general, ((IAST) specific).arg1());
+      return coversExpr(general, ((IAST) specific).arg1(), literals);
     }
     if (specific instanceof PatternNested) {
-      return coversExpr(general, ((PatternNested) specific).getPatternExpr());
+      return coversExpr(general, ((PatternNested) specific).getPatternExpr(), literals);
+    }
+    if (literals && (general.isCondition() || general.isAST(S.PatternTest, 3))
+        && specific.isFreeOfPatterns()) {
+      // a literal argument is more specific than a pattern with a test or a condition
+      return coversExpr(((IAST) general).arg1(), specific, literals);
     }
     if (specific.isAST(S.Alternatives)) {
-      return ((IAST) specific).forAll(x -> coversExpr(general, x));
+      return ((IAST) specific).forAll(x -> coversExpr(general, x, literals));
     }
     if (general instanceof PatternNested) {
-      return coversExpr(((PatternNested) general).getPatternExpr(), specific);
+      return coversExpr(((PatternNested) general).getPatternExpr(), specific, literals);
     }
     if (general.isAST(S.Alternatives)) {
-      return ((IAST) general).exists(x -> coversExpr(x, specific));
+      return ((IAST) general).exists(x -> coversExpr(x, specific, literals));
     }
     if (general instanceof IPatternSequence || specific instanceof IPatternSequence) {
       // runs of arguments are compared in coversArguments()
@@ -156,7 +173,8 @@ final class RuleGenerality {
         || ((ISymbol) head).hasOrderlessAttribute() || ((ISymbol) head).hasOneIdentityAttribute())) {
       return false;
     }
-    return coversExpr(head, specificAST.head()) && coversArguments(generalAST, specificAST);
+    return coversExpr(head, specificAST.head(), literals)
+        && coversArguments(generalAST, specificAST, literals);
   }
 
   /**
@@ -285,7 +303,7 @@ final class RuleGenerality {
    * of <code>general</code> takes a run of consecutive arguments of <code>specific</code>, each of
    * which must have its head, and at least as many as the run needs.
    */
-  private static boolean coversArguments(IAST general, IAST specific) {
+  private static boolean coversArguments(IAST general, IAST specific, boolean literals) {
     final int gSize = general.argSize();
     final int sSize = specific.argSize();
     Arity[] g = new Arity[gSize];
@@ -309,7 +327,7 @@ final class RuleGenerality {
           continue;
         }
         if (!g[i].isRun) {
-          if (j < sSize && !s[j].isRun && coversExpr(g[i].element, s[j].element)) {
+          if (j < sSize && !s[j].isRun && coversExpr(g[i].element, s[j].element, literals)) {
             covered[i + 1][j + 1] = true;
           }
           continue;

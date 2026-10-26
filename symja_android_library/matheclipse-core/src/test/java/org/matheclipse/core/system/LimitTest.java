@@ -1580,7 +1580,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "0");
     // a Bessel function as a factor: its leading term
     check("Limit(BesselJ(b,t)/t^b, t->0, Direction->\"FromAbove\", Assumptions->b>0)", //
-        "(1/2)^b/Gamma(1+b)");
+        "1/(2^b*Gamma(1+b))");
     check("Limit(BesselY(b,t)*t^b, t->0, Direction->\"FromAbove\", Assumptions->b>0)", //
         "(-2^b*Gamma(b))/Pi");
     check("Limit(BesselY(3,t)*t^3, t->0, Direction->\"FromAbove\")", //
@@ -1622,7 +1622,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Piecewise({{-1,k<0}},0)");
     // the generic order
     check("Limit(BesselJ(b,t)/t^b, t->0)", //
-        "(1/2)^b/Gamma(1+b)");
+        "1/(2^b*Gamma(1+b))");
     check("Limit(t*Floor(b/t), t->0, Assumptions->Element(b,Reals))", //
         "b");
     check("Limit(t^b*Log(t), t->0, Direction->\"FromAbove\", Assumptions->b>0)", //

@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -452,6 +453,17 @@ public final class Programming {
         try {
           engine.setQuietMode(false);
           arg1 = engine.evaluate(ast.arg1());
+        } catch (RecursionLimitExceeded | IterationLimitExceeded lex) {
+          // the limit issues a message: $RecursionLimit::reclim or $IterationLimit::itlim
+          if (!limitMessageChecked(lex, messageNames)) {
+            throw lex;
+          }
+          if (!quiet) {
+            Errors.printMessage(
+                lex instanceof RecursionLimitExceeded ? S.$RecursionLimit : S.$IterationLimit, lex,
+                engine);
+          }
+          return engine.evaluate(ast.arg2());
         } finally {
           engine.setQuietMode(quiet);
           Errors.exitCheck(scope);
@@ -462,6 +474,20 @@ public final class Programming {
         return arg1;
       }
       return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    /**
+     * Does a <code>Check</code> with these message names (<code>null</code> for all messages) see
+     * the message of the exceeded limit?
+     */
+    private static boolean limitMessageChecked(RuntimeException lex, Set<String> messageNames) {
+      if (lex instanceof RecursionLimitExceeded) {
+        // exceeding the recursion limit terminates the whole evaluation, unless the message is
+        // named explicitly
+        return messageNames != null && (messageNames.contains("$RecursionLimit::reclim")
+            || messageNames.contains("$RecursionLimit::reclim2"));
+      }
+      return messageNames == null || messageNames.contains("$IterationLimit::itlim");
     }
 
     /**

@@ -813,6 +813,14 @@ public class D extends AbstractFunctionOptionEvaluator {
         }
       }
 
+      if (head == S.Hold || head == S.HoldForm || head == S.HoldComplete
+          || head == S.HoldPattern) {
+        // a held expression is not a function of its contents
+        return F.NIL;
+      }
+      if (head.isAST() && !head.head().isAST(S.Derivative) && !head.isFree(x, true)) {
+        return compoundHeadD(function, x, engine);
+      }
       if (function.isAST1() && isFunctionHead(function.head(), x)) {
         return chainRuleArg1(function, x, engine);
       }
@@ -820,6 +828,41 @@ public class D extends AbstractFunctionOptionEvaluator {
       return getDerivativeArgN(x, function, function.head(), engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * The derivative of <code>h(a)(g1, g2, ...)</code> whose head <code>h(a)</code> depends on
+   * <code>x</code>: the chain rule through the arguments, as for an unknown function
+   * <code>h(a)</code>, plus the derivative of the head applied to the arguments.
+   * <code>D(g(x)(x), x) == Derivative(1)[g(x)][x] + Derivative(1)[g][x][x]</code>
+   *
+   * @return {@link F#NIL} if the head cannot be differentiated
+   */
+  private static IExpr compoundHeadD(final IAST function, final IExpr x, EvalEngine engine) {
+    final IExpr head = function.head();
+    IExpr dHead = engine.evaluate(F.D(head, x));
+    if (dHead.isAST(S.D)) {
+      return F.NIL;
+    }
+    IExpr throughArgs;
+    if (function.isAST1()) {
+      throughArgs = chainRuleArg1(function, x, engine);
+      if (throughArgs.isNIL()) {
+        return F.NIL;
+      }
+    } else {
+      IASTAppendable plus = F.PlusAlloc(function.size());
+      function.forEach(function.size(), (arg, i) -> {
+        if (!arg.isFree(x)) {
+          plus.append(F.Times(F.D(arg, x), createDerivative(i, head, function)));
+        }
+      });
+      throughArgs = plus.oneIdentity0();
+    }
+    if (dHead.isZero()) {
+      return throughArgs;
+    }
+    return F.Plus(throughArgs, function.setAtCopy(0, dHead));
   }
 
   /**

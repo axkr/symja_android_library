@@ -3698,6 +3698,12 @@ public final class Arithmetic {
           }
         }
 
+        if (base.isFraction() && ((IFraction) base).numerator().isOne() && !exponent.isNumber()
+            && exponent.isFree(x -> x.isInterval() || x.isIntervalData() || x.isDirectedInfinity(),
+                true)) {
+          // (1/2)^b is 2^(-b)
+          return F.Power(((IFraction) base).denominator(), F.Negate(exponent));
+        }
         if (F.isExactZero(base)) {
           if (exponent.isInterval()) {
             return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
@@ -8319,6 +8325,26 @@ public final class Arithmetic {
    * @param exponent2
    * @return
    */
+  /**
+   * <code>base^exponent * (c*base)^exponent2</code> with positive numeric factors: the product base
+   * splits off <code>c^exponent2</code> so that the powers of <code>base</code> combine.
+   *
+   * @return {@link F#NIL} if <code>product</code> is no such product
+   */
+  private static IExpr splitNumericProductBase(IExpr base, IExpr exponent, IExpr product,
+      IExpr exponent2) {
+    if (!product.isTimes() || !base.isNumericFunction(true) || !base.isPositiveResult()) {
+      return F.NIL;
+    }
+    IAST factors = (IAST) product;
+    int position = factors.indexOf(base);
+    if (position < 1 || !factors.forAll(x -> x.isNumericFunction(true) && x.isPositiveResult())) {
+      return F.NIL;
+    }
+    return F.Times(F.Power(factors.splice(position).oneIdentity1(), exponent2),
+        F.Power(base, F.Plus(exponent, exponent2)));
+  }
+
   private static IExpr timesPowerPower(IExpr base1, IExpr exponent1, IExpr base2, IExpr exponent2) {
     if (exponent1.isNumber()) {
       if (exponent2.isNumber()) {
@@ -8370,6 +8396,28 @@ public final class Arithmetic {
           }
         }
       }
+    }
+    if (!exponent1.isNumber() && !exponent2.isNumber()) {
+      // an all-numeric product base splits only where a factor combines with the other power:
+      // Pi^(D/2)*(2*Pi)^(-D) is 2^(-D)*Pi^(-D/2), while (2*Pi)^b*y stays
+      IExpr split = splitNumericProductBase(base1, exponent1, base2, exponent2);
+      if (split.isPresent()) {
+        return split;
+      }
+      split = splitNumericProductBase(base2, exponent2, base1, exponent1);
+      if (split.isPresent()) {
+        return split;
+      }
+    }
+    if (!exponent1.isNumber() && exponent2.equals(exponent1.negate())
+        && base1.isNumericFunction(true) && base2.isNumericFunction(true)
+        && base1.isPositiveResult() && base2.isPositiveResult()) {
+      // positive numeric bases with opposite symbolic exponents: a^c*b^(-c) => (a/b)^c, written
+      // with the exponent which has no minus sign: 3^(-a)*5^a is (5/3)^a
+      if (exponent1.isNegativeSigned()) {
+        return F.Power(F.Divide(base2, base1), exponent2);
+      }
+      return F.Power(F.Divide(base1, base2), exponent1);
     }
     if (base1.isRational() && base2.isRational()) {
       IExpr temp = timesPowerPower(((IRational) base1).numerator(),

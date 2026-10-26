@@ -684,6 +684,8 @@ public abstract class Scanner {
   /** Parse a multiline comment <code>(* ... *)</code> */
   private void getComment() {
     int startPosition = fCurrentPosition;
+    int startRow = fRowCounter;
+    int startColumn = fCurrentColumnStartPosition;
     int level = 0;
     fCurrentPosition++;
     try {
@@ -711,7 +713,10 @@ public abstract class Scanner {
         fCurrentPosition++;
       }
     } catch (IndexOutOfBoundsException ioobe) {
+      // the error is reported on the line where the comment starts
       fCurrentPosition = startPosition;
+      fRowCounter = startRow;
+      fCurrentColumnStartPosition = startColumn;
       throwSyntaxError("Comment doesn't end with '*)' (open multiline comment)");
     }
   }

@@ -44,7 +44,7 @@ public class MellinTransformIntegralTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testDampedBesselJ() {
     check("Integrate(x^(s-1)*E^(-a*x)*BesselJ(v,b*x), {x,0,Infinity}, Assumptions->s+v>0&&a>0&&b>0)", //
-        "((1/2)^v*b^v*Gamma(s+v)*Hypergeometric2F1(1/2*(s+v),1/2*(1+s+v),1+v,-b^2/a^2))/(a^(s+v)*Gamma(\n1+v))");
+        "(b^v*Gamma(s+v)*Hypergeometric2F1(1/2*(s+v),1/2*(1+s+v),1+v,-b^2/a^2))/(2^v*a^(s+v)*Gamma(\n1+v))");
     check("N(Integrate(x^(s-1)*E^(-a*x)*BesselJ(v,b*x), {x,0,Infinity}, Assumptions->s+v>0&&a>0&&b>0) /. {s->7/4,v->1/3,a->2,b->3/2})", //
         "0.145963");
     check("NIntegrate(x^(s-1)*E^(-a*x)*BesselJ(v,b*x) /. {s->7/4,v->1/3,a->2,b->3/2}, {x,0,30})", //

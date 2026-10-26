@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import java.util.Arrays;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -54,11 +55,19 @@ public class ExpandMultinomialTheorem {
   }
 
   private void addFactor(int[] j) {
-    final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
+    // the distinct orderings of the exponents, starting with the descending one
+    final int[] indices = j.clone();
+    Arrays.sort(indices);
+    for (int l = 0, r = indices.length - 1; l < r; l++, r--) {
+      int h = indices[l];
+      indices[l] = indices[r];
+      indices[r] = h;
+    }
     IInteger multinomial = AbstractIntegerSym.multinomial(j, n);
     TimesOp timesOp = new TimesOp(32);
-
-    for (int[] indices : perm) {
+    EvalEngine engine = EvalEngine.get();
+    do {
+      engine.checkTimeLimit();
       if (!multinomial.isOne()) {
         timesOp.appendRecursive(multinomial);
       }
@@ -75,7 +84,36 @@ public class ExpandMultinomialTheorem {
       }
       expandedResult.append(timesOp.getProduct());
       timesOp.clear();
+    } while (previousPermutation(indices));
+  }
+
+  /**
+   * Rearrange <code>a</code> into the next smaller permutation of its elements in lexicographic
+   * order; equal elements are not distinguished.
+   *
+   * @return <code>false</code> if <code>a</code> was the smallest permutation
+   */
+  private static boolean previousPermutation(int[] a) {
+    int i = a.length - 2;
+    while (i >= 0 && a[i] <= a[i + 1]) {
+      i--;
     }
+    if (i < 0) {
+      return false;
+    }
+    int k = a.length - 1;
+    while (a[k] >= a[i]) {
+      k--;
+    }
+    int h = a[i];
+    a[i] = a[k];
+    a[k] = h;
+    for (int l = i + 1, r = a.length - 1; l < r; l++, r--) {
+      h = a[l];
+      a[l] = a[r];
+      a[r] = h;
+    }
+    return true;
   }
 
   public void partition() {

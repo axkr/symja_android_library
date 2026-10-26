@@ -70,7 +70,7 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
     check("ComplexExpand((-42.0)^y)", //
         "42.0^y*Cos(Pi*y)+I*42.0^y*Sin(Pi*y)");
     check("ComplexExpand((-1/3)^y)", //
-        "(1/3)^y*Cos(Pi*y)+I*(1/3)^y*Sin(Pi*y)");
+        "Cos(Pi*y)/3^y+(I*Sin(Pi*y))/3^y");
     check("ComplexExpand((a+I*x)^y)", //
         "(a^2+x^2)^(y/2)*Cos(y*Arg(a+I*x))+I*(a^2+x^2)^(y/2)*Sin(y*Arg(a+I*x))");
     check("ComplexExpand((-1)^(1/20))", //

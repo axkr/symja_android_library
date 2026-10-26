@@ -117,7 +117,10 @@ public final class KernelLinkServer {
     }
     if (packet.isAST(S.EnterTextPacket, 2) && packet.first().isString()) {
       IExpr parsed = engine.parse(packet.first().toString());
-      return F.unaryAST1(S.ReturnTextPacket, F.stringx(engine.evaluate(parsed).toString()));
+      IExpr result = engine.evaluate(parsed);
+      // as in a text session, an input whose result is Null shows no output
+      return result == S.Null ? F.NIL
+          : F.unaryAST1(S.ReturnTextPacket, F.stringx(result.toString()));
     }
     if (packet.isAST(S.EnterExpressionPacket, 2)) {
       return F.unaryAST1(S.ReturnExpressionPacket, engine.evaluate(packet.first()));

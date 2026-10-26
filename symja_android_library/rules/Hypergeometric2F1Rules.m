@@ -47,7 +47,7 @@ Hypergeometric2F1(1/2,1,-3/2,z_) := (-3 + 5*(2 - 3*z)*z)/(3*(-1 + z)^3),
 Hypergeometric2F1(1/2,1,-1/2,z_) := (1 - 3*z)/(-1 + z)^2, 
 Hypergeometric2F1(1/2,1,1/2,z_) := 1/(1 - z),
 Hypergeometric2F1(1/2,1,1,z_) := 1/Sqrt(1 - z), 
-Hypergeometric2F1(1/2,1,3/2,z_?RealValuedNumericQ) := ArcTanh(z)/z,
+Hypergeometric2F1(1/2,1,3/2,z_?RealValuedNumericQ) := ArcTanh(Sqrt(z))/Sqrt(z),
 Hypergeometric2F1(1/2,1,3/2,a_.*z_^n_.) := z^(-n/2)*ArcTanh(Sqrt(a)*z^(n/2))/Sqrt(a),
 
 Hypergeometric2F1(1/2,1,2,z_) := (2 - 2*Sqrt(1 - z))/z, 

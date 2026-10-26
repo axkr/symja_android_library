@@ -118,6 +118,16 @@ public class KernelLinkTest {
   }
 
   @Test
+  public void testTextWithANullResultIsNotAnswered() throws Exception {
+    try (Child child = new Child()) {
+      child.link.write(F.unaryAST1(S.EnterTextPacket, F.stringx("kz = 7;")));
+      child.link.write(F.unaryAST1(S.EnterTextPacket, F.stringx("kz * 3")));
+      assertEquals(F.unaryAST1(S.ReturnTextPacket, F.stringx("21")),
+          child.readUntil(S.ReturnTextPacket));
+    }
+  }
+
+  @Test
   public void testPrintingBecomesTextPackets() throws Exception {
     try (Child child = new Child()) {
       child.link.write(F.unaryAST1(S.EvaluatePacket, F.unaryAST1(S.Print, F.stringx("hello"))));

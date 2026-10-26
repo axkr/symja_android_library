@@ -1625,6 +1625,67 @@ public class Algebra {
       return resultList;
     }
 
+    /**
+     * The Gaussian integer content of a sum whose coefficients are Gaussian integers, at least one
+     * of them not real: the greatest common divisor of the coefficients, times the unit which
+     * leaves the first coefficient divided by it with a positive real part and a non-negative
+     * imaginary part.
+     *
+     * @return {@link F#NIL} if <code>expr</code> is no such sum or the content is <code>1</code>
+     */
+    private static IExpr gaussianContent(IExpr expr, EvalEngine engine) {
+      if (!expr.isPlus()) {
+        return F.NIL;
+      }
+      IAST plus = (IAST) expr;
+      IASTAppendable coefficients = F.ListAlloc(plus.argSize());
+      boolean complex = false;
+      for (IExpr term : plus) {
+        IExpr coefficient = F.C1;
+        if (term.isNumber()) {
+          coefficient = term;
+        } else if (term.isTimes() && term.first().isNumber()) {
+          coefficient = term.first();
+        }
+        if (coefficient instanceof IComplex) {
+          IComplex z = (IComplex) coefficient;
+          if (!z.getRealPart().isInteger() || !z.getImaginaryPart().isInteger()) {
+            return F.NIL;
+          }
+          complex = true;
+        } else if (!coefficient.isInteger()) {
+          return F.NIL;
+        }
+        coefficients.append(coefficient);
+      }
+      if (!complex) {
+        return F.NIL;
+      }
+      IExpr gcd = engine.evaluate(coefficients.setAtCopy(0, S.GCD));
+      if (!gcd.isNumber() || gcd.isZero()) {
+        return F.NIL;
+      }
+      // the leading coefficient in the lexicographic order of the variables decides the unit:
+      // (3+3*I)*x^2-(3+3*I) is (3+3*I)*(-1+x)*(1+x)
+      IExpr first = coefficients.arg1();
+      IExpr rules = engine.evaluate(F.CoefficientRules(expr, F.Variables(expr)));
+      if (rules.isList() && rules.argSize() > 0 && rules.first().isRuleAST()) {
+        first = rules.first().second();
+      }
+      for (IExpr unit : new IExpr[] {F.C1, F.CI, F.CN1, F.CNI}) {
+        IExpr content = engine.evaluate(F.Times(gcd, unit));
+        IExpr q = engine.evaluate(F.Times(first, F.Power(content, F.CN1)));
+        if (q.isNumber()) {
+          IExpr re = engine.evaluate(F.Re(q));
+          IExpr im = engine.evaluate(F.Im(q));
+          if (re.isPositive() && !im.isNegative()) {
+            return content.isOne() ? F.NIL : content;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
@@ -1651,6 +1712,27 @@ public class Algebra {
         modulus = F.C0;
       }
       if (modulus.isZero() && extension == S.None && gaussianIntegers.isFalse()) {
+        IExpr content = gaussianContent(arg1, engine);
+        if (content.isPresent()) {
+          // (1+I)*a+2*b is (1+I)*(a+(1-I)*b)
+          IExpr quotient = engine.evaluate(F.Expand(F.Times(F.Power(content, F.CN1), arg1)));
+          IExpr rest = engine.evaluate(F.Factor(quotient));
+          if (rest.isTimes() && rest.first().isNumber()) {
+            IAST factors = (IAST) rest;
+            if (factors.isAST2() && factors.arg2().isPlus()) {
+              // an irreducible content-free sum keeps its coefficients: a+(1-I)*b stays as it is
+              // instead of (1-I)*((1/2+I/2)*a+b)
+              rest = quotient;
+            } else {
+              // the number factored out of the other factors belongs to the content
+              content = engine.evaluate(F.Times(content, factors.first()));
+              rest = factors.rest().oneIdentity1();
+            }
+          }
+          IExpr factorization = F.Times(content, rest);
+          engine.putCache(ast, factorization);
+          return factorization;
+        }
         IExpr factorization = AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
         if (factorization.isPresent()) {
           factorization = AlgebraUtil.factorSigns(factorization, engine);
@@ -4746,7 +4828,33 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return VariablesSet.getAlgebraicVariables(ast.arg1());
+      IAST variables = VariablesSet.getAlgebraicVariables(ast.arg1());
+      if (!variables.exists(x -> x.isPower() && !x.exponent().isNumber())) {
+        return variables;
+      }
+      // b^(n+k*t) is b^n*(b^t)^k: x^(1+e) has the generators x and x^e
+      java.util.TreeSet<IExpr> generators = new java.util.TreeSet<IExpr>();
+      for (IExpr variable : variables) {
+        if (variable.isPower() && !variable.exponent().isNumber()) {
+          IExpr base = variable.base();
+          IExpr exponent = variable.exponent();
+          IAST terms = exponent.isPlus() ? (IAST) exponent : F.list(exponent);
+          for (IExpr term : terms) {
+            if (term.isInteger()) {
+              for (IExpr x : VariablesSet.getAlgebraicVariables(base)) {
+                generators.add(x);
+              }
+            } else if (term.isTimes() && term.first().isInteger()) {
+              generators.add(engine.evaluate(F.Power(base, term.rest().oneIdentity1())));
+            } else {
+              generators.add(engine.evaluate(F.Power(base, term)));
+            }
+          }
+        } else {
+          generators.add(variable);
+        }
+      }
+      return F.List(generators.toArray(new IExpr[0]));
     }
 
     @Override
