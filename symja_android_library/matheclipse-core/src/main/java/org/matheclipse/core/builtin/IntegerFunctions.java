@@ -2941,15 +2941,19 @@ public class IntegerFunctions {
         Aprational aprational = new Aprational(numer, denom);
         RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
         return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
-      } else if (realNumber instanceof Num && F.isNotPresent(length)
-          && Double.isFinite(realNumber.doubleValue())) {
-        // a machine number has 53 binary digits, which are 16 decimal digits
+      } else if (realNumber instanceof Num && Double.isFinite(realNumber.doubleValue())) {
+        // a machine number has 53 binary digits, which are 16 decimal digits; more digits asked for
+        // are Indeterminate
         java.math.BigDecimal exact = new java.math.BigDecimal(realNumber.doubleValue());
         if (radix == 10) {
-          length = 16;
+          if (F.isNotPresent(length)) {
+            length = 16;
+          }
           apfloat = new Apfloat(exact.round(new java.math.MathContext(16)), 16);
         } else {
-          length = Math.round(53.0 * Math.log(2.0) / Math.log(radix));
+          if (F.isNotPresent(length)) {
+            length = Math.round(53.0 * Math.log(2.0) / Math.log(radix));
+          }
           apfloat = new Apfloat(exact, 60);
         }
       } else {

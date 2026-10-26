@@ -3482,6 +3482,19 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
             : F.binaryAST2(S.Reduce, ast.arg1(), symbols);
       }
     }
+    if (ast.argSize() >= 3 && ast.arg3() == S.Reals) {
+      IExpr nonreal = firstNonrealConstant(ast.arg1());
+      if (nonreal.isPresent()) {
+        // The system `1` contains a nonreal constant `2`. With the domain `3` specified, all
+        // constants should be real.
+        return Errors.printMessage(S.Reduce, "nddc", F.list(ast.arg1(), nonreal, S.Reals),
+            engine);
+      }
+    } else if (ast.argSize() <= 2 && hasComplexValuedOrdering(ast.arg1(), engine)) {
+      // E^(I*x) > 0 for a complex x holds where Re(x) is a multiple of 2*Pi: the interval and sign
+      // methods assume real-valued functions and decided it from its value at one point
+      return F.NIL;
+    }
     // `Infinity` is the default of `Reduce`: the exact result is kept
     long precision =
         solveOptions.workingPrecision().isInfinity() ? SolveUtils.MACHINE_PRECISION_REQUESTED
@@ -3520,6 +3533,32 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       result = engine.evaluate(F.N(result, F.ZZ(precision)));
     }
     return result;
+  }
+
+  /** The first complex number of the system, or {@link F#NIL}. */
+  private static IExpr firstNonrealConstant(IExpr system) {
+    IExpr[] found = {F.NIL};
+    system.isFree(x -> {
+      if (x.isComplex() || x.isComplexNumeric()) {
+        found[0] = x;
+        return true;
+      }
+      return false;
+    }, true);
+    return found[0];
+  }
+
+  /** Whether an ordering relation of the condition compares a complex-valued expression. */
+  private static boolean hasComplexValuedOrdering(IExpr condition, EvalEngine engine) {
+    return !condition.isFree(relation -> relation.isAST2()
+        && (relation.isAST(S.Less) || relation.isAST(S.LessEqual) || relation.isAST(S.Greater)
+            || relation.isAST(S.GreaterEqual))
+        && isVisiblyComplex(engine.evaluate(F.Subtract(relation.first(), relation.second()))),
+        true);
+  }
+
+  private static boolean isVisiblyComplex(IExpr expr) {
+    return !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), true);
   }
 
   /** Whether a denominator of the expression has one of the variables. */

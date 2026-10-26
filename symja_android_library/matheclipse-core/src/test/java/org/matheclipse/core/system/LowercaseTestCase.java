@@ -1815,12 +1815,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + " 8.182503991486406, 8.816367093074831, 7.7800933409549735}}}}};", //
         "");
     check("arr2 = ArrayReduce(Total, arr, {2, 4}) ", //
-        "{{{125.488422560388872,139.206403494468824,134.198657185214416,116.250988299877941}," //
-            + "{154.108672107489729,99.8972573437957243,116.385072281223129,123.869244854929674}}," //
-            + "{{136.564528319236235,118.92944834747911,133.372096757702811,112.135631374646407}," //
-            + "{141.195818459714586,133.893258203720399,135.092542184616682,106.474074953409119}}," //
-            + "{{127.680908583400327,119.537285035023473,128.500238042617631,157.187531242983933}," //
-            + "{135.815206303127999,109.390454835518262,124.066719070356473,118.159104086217076}}}");
+        "{{{125.48842256038887,139.206403494468823,134.198657185214415,116.250988299877941}," //
+            + "{154.108672107489728,99.8972573437957241,116.385072281223127,123.869244854929672}}," //
+            + "{{136.564528319236235,118.929448347479109,133.372096757702811,112.135631374646408}," //
+            + "{141.195818459714585,133.8932582037204,135.092542184616683,106.474074953409119}}," //
+            + "{{127.680908583400326,119.537285035023473,128.500238042617631,157.187531242983935}," //
+            + "{135.815206303127997,109.390454835518263,124.066719070356472,118.15910408621708}}}");
     check("arr2 // Dimensions", //
         "{3,2,4}");
     check("ArrayReduce(f, tst, 1)", //
@@ -3058,9 +3058,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Chop({2.0*10^-7, 0.5}, E/10^6)", //
         "{0,0.5}");
     check("-4.898587196589413*^-16*I ", //
-        "I*(-0.0000000000000004898587196589413)");
+        "I*(-4.89859*10^-16)");
     check("Chop(  1. - 4.898587196589413*^-16*I)", //
-        "1");
+        "1.0");
     check(
         "Chop(f( {-1. + 1.2246467991473532*^-16*I, 1. - 2.4492935982947064*^-16*I, -1. + 3.6739403974420594*^-16*I, 1. - 4.898587196589413*^-16*I} ))", //
         "f({-1,1,-1,1})");
@@ -22711,6 +22711,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testN() {
+    // a machine number stays one inside N(expr, p); a longer literal keeps its own digits
+    check("{N(2.25, 30), Precision(N(2.25, 30)), Precision(N(3/7 + 0.5, 30))}", //
+        "{2.25,16,16}");
+    check("Precision(N(2.718281828459045235360, 40))", //
+        "22");
+    // leading zeros and the sign are no digits: 15 digits are a machine number
+    check("Precision(-0.000123456789012345)", //
+        "16");
+    // an exact zero is zero to the accuracy which was reached
+    check("N(E^(I*Pi/3) - (-1)^(1/3), 30)", //
+        "0.0*10^-80");
+    // literals with an exponent: 3.*^1 is 30., rounded once, and inside N with a negative
+    // exponent
+    check("{3.*^1, 7.*^-19 == 7.*10^-19, N(3.*^1, 25), N(4.75*^-6, 25)}", //
+        "{30.0,True,30,0.00000475}");
+    // below the double range a machine literal is 0.0
+    check("{6.*^-500 == 0, Precision(6.*^-500)}", //
+        "{True,16}");
     // issue #1160
     check("N(1/7,15)", //
         "0.142857142857143");
@@ -23831,7 +23849,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check(
         "Normalize({0.9999999999999999, -0.12609662354252538+I*0.3870962681438435, 0.3692814336284687+I*0.0968290630091466})", //
-        "{0.8732080940136610352,-0.110108592305126736+I*0.33801559450568667,0.3224595368133474566+I*0.0845519215553456008}");
+        "{0.87320809401366097,-0.1101085923051267+I*0.33801559450568668,0.32245953681334746+I*0.08455192155534558}");
 
     check("Normalize({0})", //
         "{0}");
@@ -29393,7 +29411,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testRationalizeIssue1417() {
     // issue 1417
     check("Rationalize(0.00000000000000000000000000000091093835611) // InputForm", //
-        "9.1093835611`41*^-31");
+        "91093835611/100000000000000000000000000000000000000000");
     check("Rationalize(0.00000000000000000000000000000091093835611`100) // InputForm", //
         "9.1093835611`100*^-31");
   }
@@ -29406,13 +29424,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     ExprEvaluator exprEvaluator = new ExprEvaluator();
     IExpr result = exprEvaluator
         .eval("((Rationalize(0.000000000008854187817))*(Rationalize(0.00000125663706)))");
-    assertEquals(result.toString(), "1.112650054704269802`21*10^-17");
+    assertEquals(result.toString(), "556325027352134901/50000000000000000000000000000000000");
 
     result = exprEvaluator.eval(F.Sqrt(result));
-    assertEquals(result.toString(), "3.33564094995889778245`21.301*10^-9");
+    assertEquals(result.toString(), "3/100000000000000000*Sqrt(61813891928014989/5)");
 
     result = exprEvaluator.eval(F.Divide(IntegerSym.valueOf(1), (result)));
-    assertEquals(result.toString(), "2.99792458181784263932`21.301*10^8"); // speed of light
+    // the literals are machine numbers, which Rationalize() makes exact
+    assertEquals(result.toString(), "100000000000000000/3*Sqrt(5/61813891928014989)"); // speed of light
   }
 
   /**
@@ -29423,7 +29442,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     ExprEvaluator exprEvaluator = new ExprEvaluator();
     IExpr result = exprEvaluator
         .eval("1/Sqrt((Rationalize(0.000000000008854187817))*(Rationalize(0.00000125663706)))");
-    assertEquals(result.toString(), "2.99792458181784263932`21.301*10^8");
+    assertEquals(result.toString(), "100000000000000000/3*Sqrt(5/61813891928014989)");
   }
 
   /**
@@ -29449,9 +29468,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Rationalize(6.75 + I*0.25)", //
         "27/4+I*1/4");
 
-    // a double is lossy for numbers of higher than machine precision, so they are left untouched
+    // literals of no more digits than a machine number are machine numbers
     check("Rationalize(0.000000000008854187817 + I*0.00000125663706)", //
-        "0.000000000008854187817+I*0.00000125663706");
+        "8854187817/1000000000000000000000+I*62831853/50000000000000");
   }
 
   @Test
@@ -29487,7 +29506,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "245850922/78256779");
 
     check("Rationalize(0.000000000008854187817)", //
-        "0.000000000008854187817");
+        "8854187817/1000000000000000000000");
     check("Rationalize(0.202898)", //
         "101449/500000");
 
@@ -29533,11 +29552,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRationalizeArcTan() {
-    // Rationalize() leaves both arguments inexact - the rational 3/10^20 isn't a good enough
-    // approximation of the double - so the result is the numeric ArcTan(4/3) carrying the 20 digits
-    // of precision of the literals
+    // the literals are machine numbers, which Rationalize() makes 3/10^20 and 4/10^20
     check("ArcTan(Rationalize(0.00000000000000000003),Rationalize(0.00000000000000000004))", //
-        "0.92729521800161223242");
+        "ArcTan(4/3)");
   }
 
   @Test

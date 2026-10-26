@@ -1162,6 +1162,10 @@ public class SpecialFunctions {
         IExpr z1 = ast.arg2();
         if (ast.isAST3()) {
           IExpr z2 = ast.arg3();
+          if (z1.equals(z2) && !z1.isInexactNumber()) {
+            // the integral from z to z
+            return F.C0;
+          }
           return gammaRegularzed3(a, z1, z2, ast, engine);
         }
         return gammaRegularized2(a, z1, ast, engine);

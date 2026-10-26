@@ -1948,6 +1948,10 @@ public final class Arithmetic {
         }
         if (argSize == 3) {
           // see GammaRules.m - Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
+          if (ast.arg2().equals(ast.arg3()) && !ast.arg2().isInexactNumber()) {
+            // the integral from z to z
+            return F.C0;
+          }
         }
       } catch (NumericComputationException | ValidateException e) {
 
@@ -4857,6 +4861,19 @@ public final class Arithmetic {
           // logArgument ^ times.arg1()
           multiplicationFactors.append(F.Power(logArgument, times.arg1()));
           plusClone.remove(i);
+        } else if (arg.isTimes() && !arg.isFree(S.Pi, false)) {
+          IExpr k = S.Times.of(arg, F.CNI, F.Power(S.Pi, F.CN1));
+          if (!k.isNumber() && k.isIntegerResult()) {
+            // E^(y + I*Pi*k) == (-1)^k*E^y for an integer k, and E^y for an even one
+            if (multiplicationFactors.isNIL()) {
+              multiplicationFactors = F.TimesAlloc(8);
+              plusClone = plus.copyAppendable();
+            }
+            if (!S.Times.of(F.C1D2, k).isIntegerResult()) {
+              multiplicationFactors.append(F.Power(F.CN1, k));
+            }
+            plusClone.remove(i);
+          }
         }
       }
       if (multiplicationFactors.isPresent()) {

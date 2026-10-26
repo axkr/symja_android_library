@@ -607,9 +607,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNAtTheLimitOfExtraPrecision() {
-    // 87 more digits would be needed: a message, and the value which 50 more give
+    // 87 more digits would be needed: a message, and zero to the accuracy 30+50
     check("N(Tanh(100)-1,30)", //
-        "0");
+        "0.0*10^-80");
     check("N(Tanh(40)-1,30)", //
         "-3.6097027756908303446242567147*10^-35");
   }

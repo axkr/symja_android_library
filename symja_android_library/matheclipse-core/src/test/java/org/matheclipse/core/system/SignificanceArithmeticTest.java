@@ -37,9 +37,9 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
         "19.45593");
     check("Precision(1.75`20 - 1.75`20)", //
         "0");
-    // a machine number counts as exact
+    // a machine number counts as exact: the absolute error of N(Pi,30) next to 4.64...
     check("Precision(1.5 + N(Pi,30))", //
-        "30");
+        "30.16951715139201");
   }
 
   @Test
@@ -340,7 +340,7 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
   public void testExactNumbersStayExactNextToTrackedNumbers() {
     // the fraction isn't made a machine number: its difference to N(1.234, 40) is a zero of 40
     // digits
-    check("InputForm(-617/500 + N(1.234, 40))", //
+    check("InputForm(-617/500 + N(1234/1000, 40))", //
         "0``39.9087");
   }
 

@@ -2361,6 +2361,13 @@ public final class BooleanFunctions {
             return temp2;
           }
         }
+        if (arg1.isNumber() && arg2.isNumber()) {
+          IExpr nonreal = !arg1.isReal() ? arg1 : !arg2.isReal() ? arg2 : F.NIL;
+          if (nonreal.isPresent()) {
+            // Invalid comparison with `1` attempted.
+            Errors.printMessage(ast.topHead(), "nord", F.list(nonreal), engine);
+          }
+        }
         return F.NIL;
       }
       boolean evaled = false;
@@ -2531,8 +2538,8 @@ public final class BooleanFunctions {
           IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(true), F.C0, F.C1, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return Errors.printMessage(S.General, "nord", F.list(result.arg1()),
-                  EvalEngine.get());
+              // I*x > 0 is no comparison of numbers: it stays as it is
+              return F.NIL;
             }
             if (result.arg1().isNegative()) {
               useOppositeHeader = !useOppositeHeader;
@@ -2545,8 +2552,7 @@ public final class BooleanFunctions {
           IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(true), F.C0, F.C0, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return Errors.printMessage(S.General, "nord", F.list(result.arg1()),
-                  EvalEngine.get());
+              return F.NIL;
             }
             rhs = rhs.subtract(result.arg1());
             return createComparatorResult(result.arg2(), rhs, useOppositeHeader, originalHead,

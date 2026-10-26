@@ -787,6 +787,11 @@ public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGreater() {
+    // a symbolic side with a complex constant is no comparison of numbers
+    check("w - 5*I > 0", //
+        "-I*5+w>0");
+    check("3*I > 1", //
+        "I*3>1");
     // github #200
     check("-I*Sqrt(11)>0", //
         "-I*Sqrt(11)>0");

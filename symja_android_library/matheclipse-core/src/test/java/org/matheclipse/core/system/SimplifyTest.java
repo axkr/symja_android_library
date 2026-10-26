@@ -201,6 +201,13 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSimplify() {
+    // E^(y + I*Pi*k) for an integer k: (-1)^k*E^y, and E^y for an even multiple
+    check("Simplify(E^(6*I*k*Pi + w), Element(k, Integers))", //
+        "E^w");
+    check("Simplify(E^(3*I*k*Pi + w), Element(k, Integers))", //
+        "(-1)^k*E^w");
+    check("Simplify(E^(6*I*k*Pi + w), Element(k, Reals))", //
+        "E^(I*6*k*Pi+w)");
     check("Simplify(1/(Sqrt(2 - x^2)*Sqrt(1 + x^2)))", //
         "1/Sqrt(2+x^2-x^4)");
     check("Simplify((Cos(ArcSin(1-d*x^2)/2)-Sin(ArcSin(1-d*x^2)/2))^2)", //

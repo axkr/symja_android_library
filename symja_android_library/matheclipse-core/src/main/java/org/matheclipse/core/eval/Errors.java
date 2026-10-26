@@ -413,6 +413,8 @@ public class Errors {
       "NIntegrate failed to converge to prescribed accuracy after `1` recursive bisections in `2` "
           + "near `3` = `4`. NIntegrate obtained `5` and `6` for the integral and error estimates.", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
+      "nddc",
+      "The system `1` contains a nonreal constant `2`. With the domain `3` specified, all constants should be real.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
       "ndnum", "Encountered non-numerical value for a derivative at `1` == `2`.", //
       "ndsz",

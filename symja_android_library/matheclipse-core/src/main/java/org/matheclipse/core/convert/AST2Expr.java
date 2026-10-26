@@ -6,7 +6,6 @@ import java.util.TreeMap;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -981,29 +980,32 @@ public class AST2Expr {
       }
       String floatStr = nStr;
       int index = nStr.indexOf("*^");
-      int exponent = 1;
-      if (index > 0) {
+      // 2.*^1 has the exponent 1 too
+      final boolean hasExponent = index > 0;
+      int exponent = 0;
+      if (hasExponent) {
         floatStr = nStr.substring(0, index);
         exponent = Integer.parseInt(nStr.substring(index + 2));
       }
       if (numberPrecision > 0 || (accuracyMark && numberPrecision >= 0)) {
         // the precision (or accuracy) is a real number: 1.5`20.3
-        String numberStr = exponent != 1 ? floatStr + "e" + exponent : floatStr;
+        String numberStr = hasExponent ? floatStr + "e" + exponent : floatStr;
         return accuracyMark ? F.numAccuracy(numberStr, numberPrecision)
             : F.num(numberStr, numberPrecision);
       }
       if (EvalEngine.isApfloat(fPrecision)) {
         Apfloat apfloatValue = new Apfloat(floatStr, fPrecision);
-        if (exponent != 1) {
-          // value * 10 ^ exponent
-          return F.num(apfloatValue.multiply(ApfloatMath.pow(new Apint(10), new Apint(exponent))));
+        if (hasExponent) {
+          // value * 10 ^ exponent; an exact power of 10 with a negative exponent has no finite
+          // precision
+          return F.num(ApfloatMath.scale(apfloatValue, exponent));
         }
         return F.num(apfloatValue);
       }
       double doubleValue = Double.parseDouble(floatStr);
-      if (exponent != 1) {
-        // value * 10 ^ exponent
-        double value = doubleValue * Math.pow(10, exponent);
+      if (hasExponent) {
+        // value * 10 ^ exponent, rounded once: 1.*^-17 is the double nearest to 10^-17
+        double value = Double.parseDouble(floatStr + "e" + exponent);
         if (Double.isInfinite(value) && Double.isFinite(doubleValue)) {
           // 1.*^400 is an arbitrary precision number of machine precision
           return ApfloatNum.promotedLiteral(floatStr, exponent, ParserConfig.MACHINE_PRECISION);
@@ -1054,20 +1056,6 @@ public class AST2Expr {
         case ID.Import:
           if (ast.isAST1() && ast.arg1().isString()) {
             return S.Import.of(ast.arg1());
-          }
-          break;
-        case ID.N:
-          if (ast.isAST2() && ast.arg2().isInteger()) {
-            try {
-              long precision = ast.arg2().toLongDefault();
-              if (EvalEngine.isApfloat(precision)) {
-                fPrecision = precision;
-                ast = ast.setAtCopy(1, convertNode(functionNode.get(1)));
-              }
-              return ast;
-            } catch (ValidateException ve) {
-
-            }
           }
           break;
         case ID.Times:

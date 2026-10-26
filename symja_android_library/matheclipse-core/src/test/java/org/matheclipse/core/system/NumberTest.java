@@ -251,9 +251,10 @@ public class NumberTest extends ExprEvaluatorTestCase {
     boolean oldTruncate = Config.TRUNCATE_PRECISION_IN_N;
     try {
       Config.TRUNCATE_PRECISION_IN_N = true;
-      // the 1001 requested digits are truncated to Config.MAX_PRECISION_APFLOAT == 512
-      check("N(Simplify(-3858/3125+N(1.23456,1001)),1001)", //
-          "0.0*10^-511");
+      // the 1001 requested digits are truncated to Config.MAX_PRECISION_APFLOAT == 512: an exact
+      // zero has the accuracy 512 + $MaxExtraPrecision
+      check("N(Simplify(-3858/3125+N(123456/100000,1001)),1001)", //
+          "0.0*10^-562");
       check("Precision(N(Pi,1001))", //
           "512");
 
@@ -312,11 +313,11 @@ public class NumberTest extends ExprEvaluatorTestCase {
           "50");
       check("N(N(Pi,1001),20)", //
           "3.1415926535897932385");
-      // the argument shape doesn't matter: exact rational, inexact double, complex, AST
+      // the argument shape doesn't matter: exact rational, complex, AST; a machine number stays one
       check("Precision(N(2/3,1001))", //
           "512");
       check("Precision(N(1.23456,1001))", //
-          "512");
+          "16");
       check("Precision(N(Sqrt(-2),1001))", //
           "512");
       check("Precision(N(E^Pi,1001))", //

@@ -1,5 +1,9 @@
 package org.matheclipse.core.numerics.functions;
 
+import java.math.BigDecimal;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+
 /**
  * Machine-precision error functions <code>Erf</code>, <code>Erfc</code> and <code>Erfi</code> of a
  * complex argument, and <code>Erfi</code> of a real one.
@@ -21,7 +25,9 @@ package org.matheclipse.core.numerics.functions;
  * <li><code>X, Y &lt; 4</code>: <code>1 - Exp(-z^2)*w(I*z)</code> with the Faddeeva function
  * <code>w</code> from a table of degree 20 Taylor polynomials on <code>0.5 x 0.5</code> cells;</li>
  * <li>otherwise, for <code>Y &lt;= 26</code>: Salzer's series (Abramowitz &amp; Stegun 7.1.29),
- * exponentially convergent with a relative error of <code>2*Exp(-4*Pi^2)</code>.</li>
+ * exponentially convergent with a relative error of <code>2*Exp(-4*Pi^2)</code>;</li>
+ * <li><code>|z| &gt; 10^150</code>: <code>Erfc(z) = Exp(-z^2)/(z*Sqrt(Pi))</code>, with the phase
+ * <code>2*X*Y</code> reduced exactly (see {@link #erfcHuge(double, double)}).</li>
  * </ul>
  * The squares and products that are exponentiated are formed exactly as double-double values
  * (Dekker's product), because a rounded <code>x^2</code> in <code>Exp(-x^2)</code> alone costs
@@ -791,6 +797,53 @@ public final class ErrorFunctionKernel {
     return null;
   }
 
+  /** Beyond this <code>|z|</code> the square <code>z^2</code> is no double. */
+  private static final double HUGE = 1.0e150;
+
+  private static boolean isHuge(double x, double y) {
+    return Math.abs(x) > HUGE || Math.abs(y) > HUGE;
+  }
+
+  /**
+   * <code>Erfc(x + I*y)</code> for <code>x &gt; 0</code> and <code>|z| &gt; 10^150</code>:
+   * <code>Exp(-z^2)/(z*Sqrt(Pi))</code>, the next term of the asymptotic series is below
+   * <code>10^-300</code>. <code>-z^2 = (y^2 - x^2) - 2*I*x*y</code>: the real part decides the
+   * size, and the phase <code>2*x*y</code>, up to <code>10^616</code>, is reduced modulo
+   * <code>2*Pi</code> from the exact product with as many digits of <code>Pi</code> as it needs.
+   * A double can't hold the phase, and the tiny result lost its imaginary part.
+   *
+   * @return <code>{re, im}</code>, or <code>null</code> if the result under- or overflows or
+   *         <code>x &lt;= 0</code>
+   */
+  private static double[] erfcHuge(double x, double y) {
+    if (!(x > 0.0)) {
+      return null;
+    }
+    final BigDecimal bx = new BigDecimal(x);
+    final BigDecimal by = new BigDecimal(y);
+    final double size = by.multiply(by).subtract(bx.multiply(bx)).doubleValue();
+    if (Math.abs(size) > 745.0) {
+      // Exp(size) is no double (or the result is 0 or 2 next to 1)
+      return null;
+    }
+    final BigDecimal phase = bx.multiply(by).multiply(BigDecimal.valueOf(2));
+    final long digits = phase.precision() - phase.scale() + 40;
+    final Apfloat twoPi = ApfloatMath.pi(Math.max(digits, 40)).multiply(new Apfloat(2));
+    final Apfloat t = new Apfloat(phase, Math.max(digits, 40));
+    final double reduced = t.subtract(twoPi.multiply(t.divide(twoPi).floor())).doubleValue();
+    final double m = Math.exp(size);
+    // Exp(-z^2) = m*(Cos(phase) - I*Sin(phase)), divided by z/s and then by s
+    final double wr = m * Math.cos(reduced);
+    final double wi = -m * Math.sin(reduced);
+    final double s = Math.max(Math.abs(x), Math.abs(y));
+    final double zr = x / s;
+    final double zi = y / s;
+    final double d = zr * zr + zi * zi;
+    final double qr = (wr * zr + wi * zi) / d;
+    final double qi = (wi * zr - wr * zi) / d;
+    return finite(qr / s * SQRTPI_INV, qi / s * SQRTPI_INV);
+  }
+
   /**
    * <code>Erf(x + I*y)</code>.
    *
@@ -799,6 +852,14 @@ public final class ErrorFunctionKernel {
   public static double[] erf(double x, double y) {
     if (!Double.isFinite(x) || !Double.isFinite(y)) {
       return null;
+    }
+    if (isHuge(x, y)) {
+      // Erf(z) = 1 - Erfc(z), and Erf is odd
+      final double[] c = erfcHuge(Math.abs(x), x < 0.0 ? -y : y);
+      if (c == null) {
+        return null;
+      }
+      return x < 0.0 ? finite(c[0] - 1.0, c[1]) : finite(1.0 - c[0], -c[1]);
     }
     final double[] f = new double[3];
     if (!erfQuadrant(Math.abs(x), Math.abs(y), f)) {
@@ -817,6 +878,14 @@ public final class ErrorFunctionKernel {
   public static double[] erfc(double x, double y) {
     if (!Double.isFinite(x) || !Double.isFinite(y)) {
       return null;
+    }
+    if (isHuge(x, y)) {
+      // Erfc(z) = 2 - Erfc(-z)
+      final double[] c = erfcHuge(Math.abs(x), x < 0.0 ? -y : y);
+      if (c == null) {
+        return null;
+      }
+      return x < 0.0 ? finite(2.0 - c[0], -c[1]) : c;
     }
     final double ax = Math.abs(x);
     final double ay = Math.abs(y);

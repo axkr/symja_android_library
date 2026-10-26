@@ -53,11 +53,17 @@ public final class NumStr extends Num {
       this.value = Double.parseDouble(fFloatStr);
     }
 
-    fPrecision = fFloatStr.length();
-    if (fFloatStr.startsWith("0.")) {
-      fPrecision -= 2;
-    } else if (fFloatStr.indexOf(".") > 0) {
-      fPrecision--;
+    // the significant digits: 0.000123 has 3, leading zeros don't count
+    fPrecision = 0;
+    boolean significant = false;
+    for (int i = 0; i < fFloatStr.length(); i++) {
+      final char c = fFloatStr.charAt(i);
+      if (c >= '1' && c <= '9') {
+        significant = true;
+      }
+      if (significant && c >= '0' && c <= '9') {
+        fPrecision++;
+      }
     }
     if (fPrecision < ParserConfig.MACHINE_PRECISION) {
       fPrecision = ParserConfig.MACHINE_PRECISION;
@@ -74,7 +80,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum abs() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().abs();
     }
     return super.abs();
@@ -82,16 +88,30 @@ public final class NumStr extends Num {
 
   @Override
   public IInexactNumber acos() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().acos();
     }
     return super.acos();
   }
 
+  /**
+   * Whether the literal was written with more digits than a machine number has. A literal with no
+   * more digits is a machine number, also inside <code>N(expr, p)</code>: <code>N(1.5, 30)</code>
+   * is the machine number <code>1.5</code>. A longer literal has the precision of its digits.
+   */
+  private boolean hasDigits() {
+    return fPrecision > ParserConfig.MACHINE_PRECISION;
+  }
+
+  /** Arbitrary precision mode and a literal of more digits than a machine number. */
+  private boolean apfloatDigits() {
+    return hasDigits() && EvalEngine.isApfloatMode();
+  }
+
   @Override
   public ApfloatNum apfloatNumValue() {
-    long precision = EvalEngine.getApfloat().precision();
-    precision = (fPrecision > precision) ? fPrecision : precision;
+    // the written digits, with the precision of a machine number for a short literal
+    final long precision = fPrecision;
     if (fExponent == 0) {
       return ApfloatNum.valueOf(fFloatStr, precision);
     }
@@ -111,8 +131,7 @@ public final class NumStr extends Num {
 
   @Override
   public Apfloat apfloatValue() {
-    long precision = EvalEngine.getApfloat().precision();
-    precision = (fPrecision > precision) ? fPrecision : precision;
+    final long precision = fPrecision;
     if (fExponent == 0) {
       return new Apfloat(fFloatStr, precision);
     }
@@ -121,7 +140,7 @@ public final class NumStr extends Num {
 
   @Override
   public IInexactNumber asin() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().asin();
     }
     return super.asin();
@@ -129,7 +148,7 @@ public final class NumStr extends Num {
 
   @Override
   public IInexactNumber atan() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().atan();
     }
     return super.atan();
@@ -137,7 +156,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum cos() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().cos();
     }
     return super.cos();
@@ -145,7 +164,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum cosh() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().cosh();
     }
     return super.cosh();
@@ -159,11 +178,13 @@ public final class NumStr extends Num {
 
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    if (engine.isNumericMode() && engine.isArbitraryMode()) {
+    if (engine.isNumericMode() && engine.isArbitraryMode() && hasDigits()) {
+      // the digits of the literal, no more than the precision asked for
+      final long precision = Math.min(fPrecision, engine.getNumericPrecision());
       if (fExponent == 0) {
-        return ApfloatNum.valueOf(fFloatStr, engine.getNumericPrecision());
+        return ApfloatNum.valueOf(fFloatStr, precision);
       }
-      return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, engine.getNumericPrecision());
+      return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, precision);
       // } else {
       // if (fPrecision > ParserConfig.MACHINE_PRECISION) {
       // if (fExponent == 0) {
@@ -177,9 +198,8 @@ public final class NumStr extends Num {
 
   @Override
   public INumber evaluatePrecision(EvalEngine engine) {
-    if (engine.isArbitraryMode()) {
-      long precision =
-          fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
+    if (engine.isArbitraryMode() && hasDigits()) {
+      final long precision = Math.min(fPrecision, engine.getNumericPrecision());
       // long precision = fPrecision;
       // if (engine.isApfloat()) {
       // precision = fPrecision < engine.getNumericPrecision() ? fPrecision :
@@ -196,7 +216,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum exp() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().exp();
     }
     return super.exp();
@@ -213,7 +233,7 @@ public final class NumStr extends Num {
 
   @Override
   public IInexactNumber log() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       if (isNegative()) {
         return apcomplexNumValue().log();
       }
@@ -232,7 +252,7 @@ public final class NumStr extends Num {
 
   @Override
   public IExpr plus(final IExpr that) {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
         return apfloatNumValue().add(arg2.apfloatNumValue());
@@ -257,7 +277,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum sin() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().sin();
     }
     return super.sin();
@@ -265,7 +285,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum sinh() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().sinh();
     }
     return super.sinh();
@@ -273,7 +293,7 @@ public final class NumStr extends Num {
 
   @Override
   public IExpr sqr() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().sqr();
     }
     return super.sqr();
@@ -281,7 +301,7 @@ public final class NumStr extends Num {
 
   @Override
   public IExpr sqrt() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       if (value < 0.0) {
         return apcomplexNumValue().sqrt();
       }
@@ -292,7 +312,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum tan() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().tan();
     }
     return super.tan();
@@ -300,7 +320,7 @@ public final class NumStr extends Num {
 
   @Override
   public INum tanh() {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       return apfloatNumValue().tanh();
     }
     return super.tanh();
@@ -308,7 +328,7 @@ public final class NumStr extends Num {
 
   @Override
   public IExpr times(final IExpr that) {
-    if (EvalEngine.isApfloatMode()) {
+    if (apfloatDigits()) {
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
         return apfloatNumValue().multiply(arg2.apfloatNumValue());

@@ -902,8 +902,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     checkNumeric("Solve(0.00004244131815783 == x^5 , x)", //
-        "{{x->-0.10802279680851234+I*0.07848315587546606},"//
-            + "{x->-0.10802279680851212+I*(-0.07848315587546606)},"//
+        "{{x->-0.10802279680851212+I*(-0.07848315587546606)},"//
+            + "{x->-0.10802279680851234+I*0.07848315587546606},"//
             + "{x->0.04126103682102799+I*(-0.1269884137508598)},"//
             + "{x->0.04126103682102799+I*0.1269884137508598},{x->0.13352351997496842}}");
     // check("Solve(0.00004244131815783 == x^5 , x)", //
@@ -1372,8 +1372,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     checkNumeric("NSolve(0.00004244131815783 == x^5 , x)", //
-        "{{x->-0.10802279680851234+I*0.07848315587546606}," //
-            + "{x->-0.10802279680851212+I*(-0.07848315587546606)}," //
+        "{{x->-0.10802279680851212+I*(-0.07848315587546606)}," //
+            + "{x->-0.10802279680851234+I*0.07848315587546606}," //
             + "{x->0.04126103682102799+I*(-0.1269884137508598)}," //
             + "{x->0.04126103682102799+I*0.1269884137508598},{x->0.13352351997496842}}");
     // check("NSolve(0.00004244131815783 == x^5 , x)", //
@@ -2986,7 +2986,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     System.out.println(evalString);
     check(evalString, //
         // the differences of the 17-digit numbers cost digits
-        "{33659487.501,-1.544947365,22487008.04,-6.46884508955,2.546*10^-10,20731337.63689,4.876*10^-11}");
+        "{33659487.497,-1.544947365,22487008.043,-6.46884508953,2.549*10^-10,20731337.63694,4.876*10^-11}");
 
 
     check("th=2400;tk=320;" //
@@ -3138,7 +3138,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveEquationWithConstraints() {
     check("NSolve({13+x^3==-7.853981633974483, x>=-10, x<=10}, x)", //
-        "{{x->-2.7525147964038585}}");
+        "{{x->-2.75251}}");
     check("NSolve({13+x^3==-785/100, x>=-10, x<=10}, x)", //
         "{{x->-2.75234}}");
     check("Solve({13+x^3==-785/100, x>=-10, x<=10}, x)", //

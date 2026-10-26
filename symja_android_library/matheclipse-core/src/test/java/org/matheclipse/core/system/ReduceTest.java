@@ -12,6 +12,23 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReduceComplexValuedInequality() {
+    // a nonreal constant with the domain Reals: Reduce::nddc, unevaluated
+    check("Reduce(2*I > 0, y, Reals)", //
+        "Reduce(I*2>0,y,Reals)");
+    check("Reduce(y - 3*I > 0, y, Reals)", //
+        "Reduce(-I*3+y>0,y,Reals)");
+    check("Reduce(E^(2*I*y) > 0, y, Reals)", //
+        "Reduce(E^(I*2*y)>0,y,Reals)");
+    // complex variables: not decided from the value at one point
+    check("Reduce(E^(2*I*y) > 0, y)", //
+        "Reduce(E^(I*2*y)>0,y)");
+    // real relations are unchanged
+    check("Reduce(y^2 < 9, y, Reals)", //
+        "y>-3&&y<3");
+  }
+
+  @Test
   public void testReduceInequalityByExtrema() {
     // globally decided via Minimize/Maximize: min(x^2+1) == 1 > 0
     check("Reduce(x^2 + 1 > 0, x)", //
@@ -993,11 +1010,11 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x==1");
     check("Reduce(Log(x) == 2, x)", //
         "x==E^2");
-    // the root is complex, so it is no solution over the reals
     check("Reduce(Log(x) == 2 + 3*I, x)", //
         "x==E^(2+I*3)");
+    // a nonreal constant with the domain Reals: Reduce::nddc, unevaluated
     check("Reduce(Log(x) == 2 + 3*I, x, Reals)", //
-        "False");
+        "Reduce(Log(x)==2+I*3,x,Reals)");
     // an undecidable range condition stays unevaluated
     check("Reduce(ArcTan(x) == a, x)", //
         "ArcTan(x)==a");

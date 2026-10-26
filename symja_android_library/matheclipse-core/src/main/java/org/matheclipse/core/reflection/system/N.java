@@ -598,6 +598,10 @@ public final class N extends AbstractCoreFunctionEvaluator {
             // Still no digit which is right: what is left of a difference that was zero is the
             // noise of its operands, and the difference is zero as far as can be seen
             result = zero != null && lost >= working - GUARD_DIGITS ? zero : rounded;
+            if (result.isNumber() && result.isZero()) {
+              // zero to the accuracy which was reached: 0.0*10^-90 for 40 digits
+              result = ApfloatNum.zero(maxPrecision);
+            }
           }
         } else {
           result = rounded;
@@ -612,7 +616,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
         if (limit && !PrecisionLoss.isLimitQuiet(engine)) {
           // Internal precision limit `1` reached while evaluating `2`.
           Errors.printMessage(S.N, "meprec",
-              F.list(F.stringx("of " + Config.MAX_EXTRA_PRECISION + " extra digits"), expr),
+              F.list(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."), expr),
               engine);
         }
         return result;
