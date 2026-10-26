@@ -166,7 +166,7 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
   public void testGradPolarVector() {
     check("Grad({f(a,b),g(a,b)},{a,b},\"Polar\")", //
         "{{Derivative(1,0)[f][a,b],(-g(a,b)+Derivative(0,1)[f][a,b])/a},{Derivative(1,0)[g][a,b],(f(a,b)+Derivative(\n" //
-            + "0,1)[f][a,b])/a}}");
+            + "0,1)[g][a,b])/a}}");
   }
 
   @Test

@@ -671,102 +671,38 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(head()) || predicate.test(arg1) || predicate.test(arg2)
-            || predicate.test(arg3);
-      case 1:
-        return predicate.test(arg1) || predicate.test(arg2) || predicate.test(arg3);
-      case 2:
-        return predicate.test(arg2) || predicate.test(arg3);
-      case 3:
-        return predicate.test(arg3);
-    }
-    return false;
+    return FixedArity.exists(predicate, startOffset, head(), arg1, arg2, arg3);
   }
 
   @Override
   public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
-    return stopPredicate.test(arg1, arg2) || stopPredicate.test(arg2, arg3);
+    return FixedArity.existsLeft(stopPredicate, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
       Predicate<? super IExpr> predicate) {
-    if (predicate.test(arg1)) {
-      filterAST.append(arg1);
-    } else {
-      restAST.append(arg1);
-    }
-    if (predicate.test(arg2)) {
-      filterAST.append(arg2);
-    } else {
-      restAST.append(arg2);
-    }
-    if (predicate.test(arg3)) {
-      filterAST.append(arg3);
-    } else {
-      restAST.append(arg3);
-    }
-    return filterAST;
+    return FixedArity.filter(filterAST, restAST, predicate, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
-    if (predicate.test(arg1)) {
-      filterAST.append(arg1);
-    }
-    if (predicate.test(arg2)) {
-      filterAST.append(arg2);
-    }
-    if (predicate.test(arg3)) {
-      filterAST.append(arg3);
-    }
-    return filterAST;
+    return FixedArity.filter(filterAST, predicate, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
       final Function<IExpr, IExpr> function) {
-    IExpr expr = function.apply(arg1);
-    if (expr.isPresent()) {
-      filterAST.append(expr);
-    } else {
-      restAST.append(arg1);
-    }
-    expr = function.apply(arg2);
-    if (expr.isPresent()) {
-      filterAST.append(expr);
-    } else {
-      restAST.append(arg2);
-    }
-    expr = function.apply(arg3);
-    if (expr.isPresent()) {
-      filterAST.append(expr);
-    } else {
-      restAST.append(arg3);
-    }
-    return filterAST;
+    return FixedArity.filterFunction(filterAST, restAST, function, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(head(), 0) && predicate.test(arg1, 1) && predicate.test(arg2, 2)
-            && predicate.test(arg3, 3);
-      case 1:
-        return predicate.test(arg1, 1) && predicate.test(arg2, 2) && predicate.test(arg3, 3);
-      case 2:
-        return predicate.test(arg2, 2) && predicate.test(arg3, 3);
-      case 3:
-        return predicate.test(arg3, 3);
-    }
-    return true;
+    return FixedArity.forAll(predicate, startOffset, head(), arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
@@ -863,45 +799,9 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   @Override
   public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
-    if (start < end) {
-      switch (start) {
-        case 0:
-          action.accept(head(), 0);
-          if (start + 1 < end) {
-            action.accept(arg1, 1);
-            if (start + 2 < end) {
-              action.accept(arg2, 2);
-              if (start + 3 < end) {
-                action.accept(arg3, 3);
-              }
-            }
-          }
-          break;
-        case 1:
-          action.accept(arg1, 1);
-          if (start + 1 < end) {
-            action.accept(arg2, 2);
-            if (start + 2 < end) {
-              action.accept(arg3, 3);
-            }
-          }
-          break;
-        case 2:
-          action.accept(arg2, 2);
-          if (start + 1 < end) {
-            action.accept(arg3, 3);
-          }
-          break;
-        case 3:
-          action.accept(arg3, 3);
-          break;
-        default:
-          throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: 4");
-      }
-    }
+    FixedArity.forEach(start, end, action, head(), arg1, arg2, arg3);
   }
 
   @Override
@@ -920,63 +820,25 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public int indexOf(final IExpr expr) {
-    if (arg1.equals(expr)) {
-      return 1;
-    }
-    if (arg2.equals(expr)) {
-      return 2;
-    }
-    if (arg3.equals(expr)) {
-      return 3;
-    }
-    return -1;
+    return FixedArity.indexOf(expr, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
-    if (fromIndex == 1 && predicate.test(arg1)) {
-      return 1;
-    }
-    if ((fromIndex == 1 || fromIndex == 2) && predicate.test(arg2)) {
-      return 2;
-    }
-    if ((fromIndex == 1 || fromIndex == 2 || fromIndex == 3) && predicate.test(arg3)) {
-      return 3;
-    }
-    return -1;
+    return FixedArity.indexOf(predicate, fromIndex, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public IExpr findFirst(Function<IExpr, IExpr> function) {
-    IExpr temp = function.apply(arg1);
-    if (temp.isPresent()) {
-      return temp;
-    }
-    temp = function.apply(arg2);
-    if (temp.isPresent()) {
-      return temp;
-    }
-    return function.apply(arg3);
+    return FixedArity.findFirst(function, arg1, arg2, arg3);
   }
 
   @Override
   public IExpr get(int location) {
-    switch (location) {
-      case 0:
-        return head();
-      case 1:
-        return arg1;
-      case 2:
-        return arg2;
-      case 3:
-        return arg3;
-      default:
-        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
-    }
+    return FixedArity.get(location, head(), arg1, arg2, arg3);
   }
-  // CPD-ON
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {

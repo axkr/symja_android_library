@@ -19,7 +19,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -715,51 +714,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return this;
   }
 
-  // CPD-OFF same algorithm on int and on BigInteger, kept apart for speed
-  /**
-   * Returns the nth-root of this integer.
-   *
-   * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
-   * @throws IllegalArgumentException if {@code this < 0}
-   * @throws ArithmeticException if this integer is negative and n is even.
-   */
   @Override
-  public IPair nthRoot(int n) throws ArithmeticException {
-    if (n < 0) {
-      throw new IllegalArgumentException("nthRoot(" + n + ") n must be >= 0");
-    }
-    if (n == 2) {
-      IInteger result = valueOf(BigIntegerMath.sqrt(fBigIntValue, RoundingMode.DOWN));
-      boolean exact = result.pow(n).equals(this);
-      return F.pair(result, F.booleSymbol(exact));
-      // return sqrt();
-    }
-    if (complexSign() == 0) {
-      return F.pair(F.C0, S.True);
-    } else if (complexSign() < 0) {
-      if (n % 2 == 0) {
-        // even exponent n
-        throw new ArithmeticException();
-      } else {
-        // odd exponent n
-        IPair p = negate().nthRoot(n);
-        return F.pair(p.first().negate(), p.second());
-      }
-    } else {
-      IInteger result;
-      // start Newton's iteration with 2^ceil(bitLength/n), which is greater or equal than the
-      // root; starting with this needs about log2(this) iterations
-      final int bitLength = (int) bitLength();
-      IInteger temp = AbstractIntegerSym.valueOf(BigInteger.ONE.shiftLeft((bitLength + n - 1) / n));
-      do {
-        result = temp;
-        temp = divideAndRemainder(temp.powerRational(((long) n) - 1))[0]
-            .add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
-            .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
-      } while (temp.compareTo(result) < 0);
-      boolean exact = result.pow(n).equals(this);
-      return F.pair(result, F.booleSymbol(exact));
-    }
+  protected IInteger floorSqrt() {
+    return valueOf(BigIntegerMath.sqrt(fBigIntValue, RoundingMode.DOWN));
   }
 
   /** {@inheritDoc} */
@@ -767,7 +724,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
   public IInteger numerator() {
     return this;
   }
-  // CPD-ON
 
   @Override
   public final INumber numericNumber() {

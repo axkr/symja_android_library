@@ -26,12 +26,11 @@ import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -41,7 +40,6 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import com.google.common.math.BigIntegerMath;
-import com.google.common.math.DoubleMath;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import edu.jas.arith.PrimeInteger;
@@ -1238,6 +1236,58 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public abstract IInteger negate();
+
+  /**
+   * The integer square root, rounded down.
+   *
+   * @throws IllegalArgumentException if this integer is negative
+   */
+  protected abstract IInteger floorSqrt();
+
+  /**
+   * Returns the nth-root of this integer.
+   *
+   * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
+   * @throws IllegalArgumentException if {@code this < 0}
+   * @throws ArithmeticException if this integer is negative and n is even.
+   */
+  @Override
+  public IPair nthRoot(int n) throws ArithmeticException {
+    if (n < 0) {
+      throw new IllegalArgumentException("nthRoot(" + n + ") n must be >= 0");
+    }
+    if (n == 2) {
+      IInteger result = floorSqrt();
+      boolean exact = result.pow(n).equals(this);
+      return F.pair(result, F.booleSymbol(exact));
+    }
+    if (complexSign() == 0) {
+      return F.pair(F.C0, S.True);
+    } else if (complexSign() < 0) {
+      if (n % 2 == 0) {
+        // even exponent n
+        throw new ArithmeticException();
+      } else {
+        // odd exponent n
+        IPair p = negate().nthRoot(n);
+        return F.pair(p.first().negate(), p.second());
+      }
+    } else {
+      IInteger result;
+      // start Newton's iteration with 2^ceil(bitLength/n), which is greater or equal than the
+      // root; starting with this needs about log2(this) iterations
+      final int bitLength = (int) bitLength();
+      IInteger temp = AbstractIntegerSym.valueOf(BigInteger.ONE.shiftLeft((bitLength + n - 1) / n));
+      do {
+        result = temp;
+        temp = divideAndRemainder(temp.powerRational(((long) n) - 1))[0]
+            .add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
+            .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
+      } while (temp.compareTo(result) < 0);
+      boolean exact = result.pow(n).equals(this);
+      return F.pair(result, F.booleSymbol(exact));
+    }
+  }
 
   /**
    * Split this integer into the nth-root (with prime factors less equal 1021) and the

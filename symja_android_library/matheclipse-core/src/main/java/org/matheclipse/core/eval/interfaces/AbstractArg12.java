@@ -8,9 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -19,11 +17,11 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /** Evaluate a function with 1 or 2 arguments. */
-public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
+public abstract class AbstractArg12 extends AbstractFunctionEvaluator
+    implements IBinaryArgumentHooks {
 
   public IExpr unaryOperator(final IExpr arg0) {
     IExpr result = e1ObjArg(arg0);
@@ -111,7 +109,6 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  // CPD-OFF numeric argument dispatch of separate evaluator hierarchies, kept apart for speed
   public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
     IExpr result = e2ObjArg(o0, o1);
     if (result.isPresent()) {
@@ -123,41 +120,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
         EvalEngine engine = EvalEngine.get();
         INumber arg1 = ((INumber) o0).evaluatePrecision(engine);
         INumber arg2 = ((INumber) o1).evaluatePrecision(engine);
-        if (arg1 instanceof ApcomplexNum) {
-          if (arg2.isNumber()) {
-            result = e2ApcomplexArg((ApcomplexNum) arg1, arg2.apcomplexNumValue());
-          }
-        } else if (arg2 instanceof ApcomplexNum) {
-          if (arg1.isNumber()) {
-            result = e2ApcomplexArg(arg1.apcomplexNumValue(), (ApcomplexNum) arg2);
-          }
-        } else if (arg1 instanceof ComplexNum) {
-          if (arg2.isNumber()) {
-            result = e2DblComArg((ComplexNum) arg1, arg2.complexNumValue());
-          }
-        } else if (arg2 instanceof ComplexNum) {
-          if (arg1.isNumber()) {
-            result = e2DblComArg(arg1.complexNumValue(), (ComplexNum) arg2);
-          }
-        }
-
-        if (arg1 instanceof ApfloatNum) {
-          if (arg2.isReal()) {
-            result = e2ApfloatArg((ApfloatNum) arg1, ((IReal) arg2).apfloatNumValue());
-          }
-        } else if (arg2 instanceof ApfloatNum) {
-          if (arg1.isReal()) {
-            result = e2ApfloatArg(((IReal) arg1).apfloatNumValue(), (ApfloatNum) arg2);
-          }
-        } else if (arg1 instanceof Num) {
-          if (arg2.isReal()) {
-            result = e2DblArg((Num) arg1, ((IReal) arg2).numValue());
-          }
-        } else if (arg2 instanceof Num) {
-          if (arg1.isReal()) {
-            result = e2DblArg(((IReal) arg1).numValue(), (Num) arg2);
-          }
-        }
+        result = IBinaryArgumentHooks.inexactDispatch(this, arg1, arg2);
         if (result.isPresent()) {
           return result;
         }
@@ -168,67 +131,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
         return F.NIL;
       }
     }
-
-    if (o0 instanceof IInteger) {
-      if (o1 instanceof IInteger) {
-        return e2IntArg((IInteger) o0, (IInteger) o1);
-      }
-      if (o1 instanceof IFraction) {
-        return e2FraArg(F.fraction((IInteger) o0, F.C1), (IFraction) o1);
-      }
-      if (o1 instanceof IComplex) {
-        return e2ComArg(F.CC((IInteger) o0, F.C0), (IComplex) o1);
-      }
-
-      return F.NIL;
-    }
-
-    if (o0 instanceof IFraction) {
-      if (o1 instanceof IInteger) {
-        return e2FraArg((IFraction) o0, F.fraction((IInteger) o1, F.C1));
-      }
-      if (o1 instanceof IFraction) {
-        return e2FraArg((IFraction) o0, (IFraction) o1);
-      }
-      if (o1 instanceof IComplex) {
-        return e2ComArg(F.complex((IFraction) o0), (IComplex) o1);
-      }
-
-      return F.NIL;
-    }
-
-    if (o0 instanceof IComplex) {
-      if (o1 instanceof IInteger) {
-        return eComIntArg((IComplex) o0, (IInteger) o1);
-      }
-      if (o1 instanceof IFraction) {
-        return eComFraArg((IComplex) o0, (IFraction) o1);
-      }
-      if (o1 instanceof IComplex) {
-        return e2ComArg((IComplex) o0, (IComplex) o1);
-      }
-      return F.NIL;
-    }
-
-    if (o0 instanceof ISymbol) {
-      if (o1 instanceof ISymbol) {
-        return e2SymArg((ISymbol) o0, (ISymbol) o1);
-      }
-      return F.NIL;
-    }
-
-    if (o0 instanceof IAST) {
-      if (o1 instanceof IInteger) {
-        return eFunIntArg((IAST) o0, (IInteger) o1);
-      }
-      if (o1 instanceof IAST) {
-        return e2FunArg((IAST) o0, (IAST) o1);
-      }
-    }
-
-    return F.NIL;
+    return IBinaryArgumentHooks.exactDispatch(this, o0, o1);
   }
-  // CPD-ON
 
   public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
     return F.NIL;

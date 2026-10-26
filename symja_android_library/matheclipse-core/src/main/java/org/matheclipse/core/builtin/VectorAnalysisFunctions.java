@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class VectorAnalysisFunctions {
@@ -241,7 +242,6 @@ public class VectorAnalysisFunctions {
    */
   private static final class Div extends AbstractFunctionEvaluator {
 
-    // CPD-OFF closed-form formulas per coordinate system
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // if (ast.arg1().isListOfLists()) {
@@ -268,10 +268,8 @@ public class VectorAnalysisFunctions {
             if (metricStr.equalsIgnoreCase("polar")) {
               metric = Metric.POLAR;
               if (dimensions.size() == 1) {
-                if (numberOfVars != 2 || dimensions.getInt(0) != 2) {
-                  // `1` does not define a metric in `2` dimensions.
-                  return Errors.printMessage(S.Div, "bdmtrc",
-                      F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+                if (!fitsMetric(S.Div, "Polar", 2, numberOfVars, dimensions, engine)) {
+                  return F.NIL;
                 }
                 IExpr f = list.arg1();
                 IExpr g = list.arg2();
@@ -282,10 +280,8 @@ public class VectorAnalysisFunctions {
                     .evaluate(F.Plus(F.Times(F.Power(x, F.CN1), F.Plus(f, F.D(g, y))), F.D(f, x)));
               }
               if (dimensions.size() == 2) {
-                if (numberOfVars != 2 || dimensions.getInt(0) != 2 || dimensions.getInt(1) != 2) {
-                  // `1` does not define a metric in `2` dimensions.
-                  return Errors.printMessage(S.Div, "bdmtrc",
-                      F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+                if (!fitsMetric(S.Div, "Polar", 2, numberOfVars, dimensions, engine)) {
+                  return F.NIL;
                 }
                 // 2x2 matrix
                 IExpr f = list.getPart(1, 1);
@@ -313,10 +309,8 @@ public class VectorAnalysisFunctions {
 
               if (dimensions.size() == 1) {
                 metric = Metric.CYLINDRICAL;
-                if (numberOfVars != 3 || dimensions.getInt(0) != 3) {
-                  // `1` does not define a metric in `2` dimensions.
-                  return Errors.printMessage(S.Div, "bdmtrc",
-                      F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+                if (!fitsMetric(S.Div, "Cylindrical", 3, numberOfVars, dimensions, engine)) {
+                  return F.NIL;
                 }
                 IExpr f = list.arg1();
                 IExpr g = list.arg2();
@@ -331,10 +325,8 @@ public class VectorAnalysisFunctions {
               }
               if (dimensions.size() == 2) {
                 metric = Metric.CYLINDRICAL;
-                if (numberOfVars != 3 || dimensions.getInt(0) != 3 || dimensions.getInt(1) != 3) {
-                  // `1` does not define a metric in `2` dimensions.
-                  return Errors.printMessage(S.Div, "bdmtrc",
-                      F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+                if (!fitsMetric(S.Div, "Cylindrical", 3, numberOfVars, dimensions, engine)) {
+                  return F.NIL;
                 }
                 // 3x3 matrix
                 IExpr f = list.getPart(1, 1);
@@ -372,10 +364,8 @@ public class VectorAnalysisFunctions {
 
               if (dimensions.size() == 1) {
                 metric = Metric.SPHERICAL;
-                if (numberOfVars != 3 || dimensions.getInt(0) != 3) {
-                  // `1` does not define a metric in `2` dimensions.
-                  return Errors.printMessage(S.Div, "bdmtrc",
-                      F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+                if (!fitsMetric(S.Div, "Spherical", 3, numberOfVars, dimensions, engine)) {
+                  return F.NIL;
                 }
                 IExpr f = list.arg1();
                 IExpr g = list.arg2();
@@ -392,10 +382,8 @@ public class VectorAnalysisFunctions {
               }
               if (dimensions.size() == 2) {
                 metric = Metric.SPHERICAL;
-                if (numberOfVars != 3 || dimensions.getInt(0) != 3 || dimensions.getInt(1) != 3) {
-                  // `1` does not define a metric in `2` dimensions.
-                  return Errors.printMessage(S.Div, "bdmtrc",
-                      F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+                if (!fitsMetric(S.Div, "Spherical", 3, numberOfVars, dimensions, engine)) {
+                  return F.NIL;
                 }
                 // 3x3 matrix
                 IExpr f = list.getPart(1, 1);
@@ -462,7 +450,6 @@ public class VectorAnalysisFunctions {
 
       return F.NIL;
     }
-    // CPD-ON
 
     @Override
     public int status() {
@@ -571,10 +558,8 @@ public class VectorAnalysisFunctions {
       final int numberOfVars = variables.argSize();
       if (metricStr.equalsIgnoreCase("polar")) {
         metric = Metric.POLAR;
-        if (numberOfVars != 2) {
-          // `1` does not define a metric in `2` dimensions.
-          return Errors.printMessage(S.Grad, "bdmtrc",
-              F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+        if (!fitsMetric(S.Grad, "Polar", 2, numberOfVars, null, engine)) {
+          return F.NIL;
         }
         IExpr f = function;
         IExpr x = variables.arg1();
@@ -583,10 +568,8 @@ public class VectorAnalysisFunctions {
         return F.list(F.D(f, x), F.Times(F.Power(x, F.CN1), F.D(f, y)));
       }
       if (metricStr.equalsIgnoreCase("cylindrical")) {
-        if (numberOfVars != 3) {
-          // `1` does not define a metric in `2` dimensions.
-          return Errors.printMessage(S.Div, "bdmtrc",
-              F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+        if (!fitsMetric(S.Grad, "Cylindrical", 3, numberOfVars, null, engine)) {
+          return F.NIL;
         }
         IExpr f = function;
         IExpr x = variables.arg1();
@@ -597,10 +580,8 @@ public class VectorAnalysisFunctions {
         return F.list(F.D(f, x), F.Times(F.Power(x, F.CN1), F.D(f, y)), F.D(f, z));
       }
       if (metricStr.equalsIgnoreCase("spherical")) {
-        if (numberOfVars != 3) {
-          // `1` does not define a metric in `2` dimensions.
-          return Errors.printMessage(S.Div, "bdmtrc",
-              F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+        if (!fitsMetric(S.Grad, "Spherical", 3, numberOfVars, null, engine)) {
+          return F.NIL;
         }
         IExpr f = function;
         IExpr x = variables.arg1();
@@ -614,7 +595,6 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
-    // CPD-OFF closed-form formulas per coordinate system
     private IExpr grad3(IAST list, final String metricStr, IntArrayList dimensions,
         final IAST variables, EvalEngine engine) {
       Metric metric;
@@ -622,26 +602,22 @@ public class VectorAnalysisFunctions {
       if (metricStr.equalsIgnoreCase("polar")) {
         metric = Metric.POLAR;
         if (dimensions.size() == 1) {
-          if (numberOfVars != 2 || dimensions.getInt(0) != 2) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Grad, "bdmtrc",
-                F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Grad, "Polar", 2, numberOfVars, dimensions, engine)) {
+            return F.NIL;
           }
           IExpr f = list.arg1();
           IExpr g = list.arg2();
           IExpr x = variables.arg1();
           IExpr y = variables.arg2();
 
-          // {{D(f,x),(-g+D(f,y))/x},{D(g,x),(f+D(f,y))/x}}
+          // {{D(f,x),(-g+D(f,y))/x},{D(g,x),(f+D(g,y))/x}}
           return F.list(
               F.list(F.D(f, x), F.Times(F.Power(x, F.CN1), F.Plus(F.Negate(g), F.D(f, y)))),
-              F.list(F.D(g, x), F.Times(F.Power(x, F.CN1), F.Plus(f, F.D(f, y)))));
+              F.list(F.D(g, x), F.Times(F.Power(x, F.CN1), F.Plus(f, F.D(g, y)))));
         }
         if (dimensions.size() == 2) {
-          if (numberOfVars != 2 || dimensions.getInt(0) != 2 || dimensions.getInt(1) != 2) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Grad, "bdmtrc",
-                F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Grad, "Polar", 2, numberOfVars, dimensions, engine)) {
+            return F.NIL;
           }
           // 2x2 matrix
           IExpr f = list.getPart(1, 1);
@@ -667,10 +643,8 @@ public class VectorAnalysisFunctions {
 
         if (dimensions.size() == 1) {
           metric = Metric.CYLINDRICAL;
-          if (numberOfVars != 3 || dimensions.getInt(0) != 3) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Div, "bdmtrc",
-                F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Grad, "Cylindrical", 3, numberOfVars, dimensions, engine)) {
+            return F.NIL;
           }
           IExpr f = list.arg1();
           IExpr g = list.arg2();
@@ -689,10 +663,8 @@ public class VectorAnalysisFunctions {
         }
         if (dimensions.size() == 2) {
           metric = Metric.CYLINDRICAL;
-          if (numberOfVars != 3 || dimensions.getInt(0) != 3 || dimensions.getInt(1) != 3) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Div, "bdmtrc",
-                F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Grad, "Cylindrical", 3, numberOfVars, dimensions, engine)) {
+            return F.NIL;
           }
           // 3x3 matrix
           IExpr f = list.getPart(1, 1);
@@ -740,10 +712,8 @@ public class VectorAnalysisFunctions {
 
         if (dimensions.size() == 1) {
           metric = Metric.SPHERICAL;
-          if (numberOfVars != 3 || dimensions.getInt(0) != 3) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Div, "bdmtrc",
-                F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Grad, "Spherical", 3, numberOfVars, dimensions, engine)) {
+            return F.NIL;
           }
           IExpr f = list.arg1();
           IExpr g = list.arg2();
@@ -764,12 +734,11 @@ public class VectorAnalysisFunctions {
                   F.Csc(y), F.Plus(F.Times(F.Cos(y), g), F.Times(f, F.Sin(y)), F.D(h, z)))));
 
         }
+        // CPD-OFF closed-form formulas per coordinate system
         if (dimensions.size() == 2) {
           metric = Metric.SPHERICAL;
-          if (numberOfVars != 3 || dimensions.getInt(0) != 3 || dimensions.getInt(1) != 3) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Div, "bdmtrc",
-                F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Grad, "Spherical", 3, numberOfVars, dimensions, engine)) {
+            return F.NIL;
           }
           // 3x3 matrix
           IExpr f = list.getPart(1, 1);
@@ -833,15 +802,13 @@ public class VectorAnalysisFunctions {
                           F.Times(l, F.Sin(y)), F.D(n, z)))));
 
           return F.list(r1, r2, r3);
-
-
         }
+        // CPD-ON
 
         return F.NIL;
       }
       return F.NIL;
     }
-    // CPD-ON
 
     @Override
     public int status() {
@@ -1438,6 +1405,35 @@ public class VectorAnalysisFunctions {
       return F.Divide(j == (i + 1) % 3 ? F.Subtract(entry, cross) : F.Plus(entry, cross),
           squaredNorm);
     }));
+  }
+
+  /**
+   * Test whether a coordinate system fits the arguments: <code>numberOfVars</code> variables and,
+   * for a vector or tensor field, every dimension of the field equal to <code>expected</code>.
+   * Otherwise print the message "`1` does not define a metric in `2` dimensions." for
+   * <code>head</code>.
+   *
+   * @param head the function the message is printed for
+   * @param coordinates the name of the coordinate system, <code>Polar</code>,
+   *        <code>Cylindrical</code> or <code>Spherical</code>
+   * @param expected the number of variables of the coordinate system
+   * @param dimensions the dimensions of the field, or <code>null</code> to test the variables only
+   * @return <code>true</code> if the coordinate system fits
+   */
+  private static boolean fitsMetric(ISymbol head, String coordinates, int expected,
+      int numberOfVars, IntArrayList dimensions, EvalEngine engine) {
+    boolean fits = numberOfVars == expected;
+    if (dimensions != null) {
+      for (int i = 0; fits && i < dimensions.size(); i++) {
+        fits = dimensions.getInt(i) == expected;
+      }
+    }
+    if (!fits) {
+      // `1` does not define a metric in `2` dimensions.
+      Errors.printMessage(head, "bdmtrc", F.List(F.stringx(coordinates), F.ZZ(numberOfVars)),
+          engine);
+    }
+    return fits;
   }
 
   public static void initialize() {

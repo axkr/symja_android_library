@@ -257,6 +257,8 @@
 						<exclude>**/core/expression/ID.java</exclude>
 						<exclude>**/core/expression/S.java</exclude>
 						<exclude>**/core/expression/J.java</exclude>
+						<exclude>**/core/data/ElementData1.java</exclude>
+						<exclude>**/core/data/ElementData2.java</exclude>
 					</excludes>
 					<maxAllowedViolations>${cpd.maxAllowedViolations}</maxAllowedViolations>
 				</configuration>
