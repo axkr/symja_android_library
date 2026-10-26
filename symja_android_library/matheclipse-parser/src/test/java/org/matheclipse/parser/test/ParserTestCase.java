@@ -302,6 +302,26 @@ class ParserTestCase {
   }
 
   @Test
+  void testSlotSpaceBeforeName() {
+    // a slot number or name follows the # directly; after a space it is a factor
+    ASTNode obj = PARSE_UNRELAXED.parse("# Transpose[m] + #b + ## 4 + #7");
+    assertEquals("Plus(Times(Slot(1), Transpose(m)), Slot(b), Times(SlotSequence(1), 4), Slot(7))",
+        obj.toString());
+  }
+
+  @Test
+  void testNumberAppliedHead() {
+    ASTNode obj = PARSE_UNRELAXED.parse("Head[12[a, b]] + 3 x");
+    assertEquals("Plus(Head(12(a, b)), Times(3, x))", obj.toString());
+  }
+
+  @Test
+  void testEmptyPartBrackets() {
+    ASTNode obj = PARSE_UNRELAXED.parse("m[[]][[3, 1]] + n[[]]");
+    assertEquals("Plus(Part(Part(m), 3, 1), Part(n))", obj.toString());
+  }
+
+  @Test
   void testParser32() {
     ASTNode obj = PARSE_UNRELAXED.parse("(-1)^(a) (b)");
     assertEquals("Times(Power(-1, a), b)", obj.toString());

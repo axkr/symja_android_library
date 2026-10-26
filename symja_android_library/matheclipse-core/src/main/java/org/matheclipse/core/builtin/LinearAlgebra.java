@@ -7878,6 +7878,17 @@ public final class LinearAlgebra {
     if (dimensions != null) {
       IAST matrix = (IAST) arg1.normal(false);
       int n = dimensions[0];
+      if ((n <= RationalEigensystem.MAX_DIMENSION
+          || (maxValues > 0 && n <= RationalEigensystem.MAX_DIMENSION_SELECTED))
+          && matrix.forAll(row -> row.isList() && ((IAST) row).forAll(IExpr::isRational))) {
+        // a matrix of rational numbers: radicals only for factors of degree 1 or 2 of the
+        // characteristic polynomial, Root objects for the others
+        IAST rational =
+            new RationalEigensystem(matrix, n, engine).eigensystem(maxValues, onlyEigenvalues);
+        if (rational.isPresent()) {
+          return rational;
+        }
+      }
 
       // 1. Calculate the Characteristic Polynomial and extract roots
       IExpr characteristicPolynomial = characteristicPolynomial(n, matrix, x);

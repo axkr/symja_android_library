@@ -980,7 +980,62 @@ public class StatisticsFunctions {
       return result;
     }
 
+    /**
+     * <code>BinCounts({x1, x2, ...}, {{b1, b2, ...}})</code> - the counts of the data in the bins
+     * <code>[b1, b2), [b2, b3), ...</code>. Exact edges, which aren't rational numbers, are compared
+     * by their numeric value.
+     */
+    private static IExpr binCountsEdges(IAST vector, IAST edgeList, EvalEngine engine) {
+      int n = edgeList.argSize();
+      if (n < 1) {
+        return F.NIL;
+      }
+      IReal[] edges = new IReal[n];
+      for (int i = 0; i < n; i++) {
+        IExpr edge = edgeList.get(i + 1);
+        if (edge.isInfinity()) {
+          edges[i] = F.num(Double.POSITIVE_INFINITY);
+        } else if (edge.isNegativeInfinity()) {
+          edges[i] = F.num(Double.NEGATIVE_INFINITY);
+        } else if (edge.isReal()) {
+          edges[i] = (IReal) edge;
+        } else {
+          IExpr value = engine.evalN(edge);
+          if (!value.isReal()) {
+            return F.NIL;
+          }
+          edges[i] = (IReal) value;
+        }
+        if (i > 0 && edges[i].isLT(edges[i - 1])) {
+          return F.NIL;
+        }
+      }
+      int[] counts = new int[n - 1];
+      for (int i = 1; i < vector.size(); i++) {
+        IReal x = (IReal) vector.get(i);
+        if (x.isLT(edges[0]) || !x.isLT(edges[n - 1])) {
+          continue;
+        }
+        // binary search for the last edge which is less than or equal to x
+        int lo = 0;
+        int hi = n - 1;
+        while (hi - lo > 1) {
+          int mid = (lo + hi) >>> 1;
+          if (x.isLT(edges[mid])) {
+            hi = mid;
+          } else {
+            lo = mid;
+          }
+        }
+        counts[lo]++;
+      }
+      return F.mapRange(0, counts.length, i -> F.ZZ(counts[i]));
+    }
+
     private static IExpr binCounts(IAST ast, IAST vector, final IExpr arg2, EvalEngine engine) {
+      if (arg2.isList1() && arg2.first().isList()) {
+        return binCountsEdges(vector, (IAST) arg2.first(), engine);
+      }
       INum dxNum = F.CD1;
       int dx = 1;
       int xMin = 0;
@@ -1683,6 +1738,13 @@ public class StatisticsFunctions {
           if (distribution.isAST(S.ProbabilityDistribution)) {
             IExpr result = StatisticsDerivedDistributions.ProbabilityDistribution
                 .expectation((IAST) distribution, xExpr, x, engine);
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+          if (distribution.isAST(S.DataDistribution, 5)) {
+            IExpr result = StatisticsDerivedDistributions.DataDistribution
+                .empiricalExpectation((IAST) distribution, xExpr, x, engine);
             if (result.isPresent()) {
               return result;
             }

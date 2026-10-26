@@ -78,6 +78,14 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       IAST originalAST) {
     ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
     IExpr arg1 = ast.arg1();
+    IAST highlights = F.NIL;
+    if (arg1.isAST(S.Highlighted) && arg1.argSize() >= 1 && arg1.first().isList()) {
+      // one highlighted dataset is plotted as the list of that single dataset, which takes the
+      // wrapper off; the slices it marks are drawn on top
+      highlights = highlightSlices((IAST) arg1);
+      arg1 = F.list(arg1);
+      ast = ast.setAtCopy(1, arg1);
+    }
     if (!checkList(engine, arg1)) {
       return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
     }
@@ -118,10 +126,85 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
+      if (highlights.isPresent() && highlights.argSize() > 0 && graphicsPrimitives.isList()) {
+        IASTAppendable withHighlights = graphicsPrimitives.copyAppendable();
+        withHighlights.append(F.list(F.GrayLevel(0.5), highlights));
+        graphicsPrimitives = withHighlights;
+      }
       graphicsOptions.addPadding();
       return createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
     }
 
+    return F.NIL;
+  }
+
+  /**
+   * The vertical lines of <code>Highlighted(data, Placed("XSlice", {{x1}, {x2}, ...}))</code>: an
+   * <code>InfiniteLine({x, y}, {0, 1})</code> through the point of the data at each <code>x</code>.
+   * The values of the data are kept as they are where <code>x</code> is one of its positions, and
+   * interpolated linearly between them otherwise.
+   */
+  private static IAST highlightSlices(IAST highlighted) {
+    IAST data = (IAST) highlighted.arg1();
+    IASTAppendable lines = F.ListAlloc();
+    for (int i = 2; i < highlighted.size(); i++) {
+      IExpr effect = highlighted.get(i);
+      if (!effect.isAST(S.Placed, 3) || !effect.first().isString("XSlice")) {
+        continue;
+      }
+      IExpr positions = effect.second();
+      IAST positionList = positions.isList() ? (IAST) positions : F.list(positions);
+      for (IExpr position : positionList) {
+        IExpr x = position.isList1() ? position.first() : position;
+        if (!x.isReal()) {
+          continue;
+        }
+        IExpr y = valueAt(data, (IReal) x);
+        if (y.isPresent()) {
+          lines.append(F.binaryAST2(S.InfiniteLine, F.list(x, y), F.list(F.C0, F.C1)));
+        }
+      }
+    }
+    return lines;
+  }
+
+  /**
+   * The value of a list of heights or of points at <code>x</code>.
+   *
+   * @return {@link F#NIL} if <code>x</code> is outside of the data
+   */
+  private static IExpr valueAt(IAST data, IReal x) {
+    final boolean points = data.isListOfPoints(2);
+    final int n = data.argSize();
+    final double xValue = x.doubleValue();
+    double previousX = Double.NaN;
+    double previousY = Double.NaN;
+    for (int i = 1; i <= n; i++) {
+      IExpr pointX;
+      IExpr pointY;
+      if (points) {
+        IExpr point = data.get(i).stripDisplayWrappers();
+        pointX = point.first();
+        pointY = point.second();
+      } else {
+        pointX = F.ZZ(i);
+        pointY = data.get(i).stripDisplayWrappers();
+      }
+      if (!pointX.isReal() || !pointY.isReal()) {
+        return F.NIL;
+      }
+      final double currentX = pointX.evalf();
+      final double currentY = pointY.evalf();
+      if (pointX.equals(x) || currentX == xValue) {
+        return pointY;
+      }
+      if (i > 1 && (previousX - xValue) * (currentX - xValue) < 0.0) {
+        return F.num(
+            previousY + (currentY - previousY) * (xValue - previousX) / (currentX - previousX));
+      }
+      previousX = currentX;
+      previousY = currentY;
+    }
     return F.NIL;
   }
 

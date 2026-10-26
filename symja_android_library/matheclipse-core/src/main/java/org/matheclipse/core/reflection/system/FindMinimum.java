@@ -415,11 +415,14 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     OptimizationData[] optimizationData = new OptimizationData[2];
     IASTAppendable constraints = F.ast(S.And, relationList.argSize());
     for (int i = 2; i < relationList.size(); i++) {
-      IExpr relation = relationList.get(i);
-      if (relation.isAnd()) {
-        constraints.appendArgs((IAST) relation);
-      } else {
-        constraints.append(relation);
+      // the constraints are held: Thread(vars >= 0) is a list of constraints
+      appendConstraints(engine.evaluate(relationList.get(i)), constraints);
+    }
+    if (automaticMethod && !specBounds && constraints.argSize() > 0) {
+      // a linear objective with linear constraints is a linear program
+      IExpr linear = linearProgram(function, constraints, varsList, goalType, engine);
+      if (linear.isPresent()) {
+        return linear;
       }
     }
     if (constraints.argSize() > 0 && !method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
@@ -479,6 +482,93 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     optimizeSupplier.evaluationMonitor = evaluationMonitor;
     optimizeSupplier.stepMonitor = stepMonitor;
     return optimizeSupplier.get();
+  }
+
+  /** Append the conditions of a conjunction or a list of constraints. */
+  private static void appendConstraints(IExpr relation, IASTAppendable constraints) {
+    if (relation.isAnd() || relation.isList()) {
+      for (IExpr arg : (IAST) relation) {
+        appendConstraints(arg, constraints);
+      }
+    } else if (!relation.isTrue()) {
+      constraints.append(relation);
+    }
+  }
+
+  /**
+   * The optimum of a linear objective under linear equations and inequalities, from the simplex
+   * algorithm: its vertex is exact to machine precision, where the constrained local search only
+   * comes close to it.
+   *
+   * @return <code>{value, {x -&gt; x0, ...}}</code> or {@link F#NIL} if the problem isn't linear,
+   *         is unbounded or has no feasible point
+   */
+  private static IExpr linearProgram(IExpr function, IAST constraints, IAST varsList,
+      GoalType goalType, EvalEngine engine) {
+    if (!isLinear(function, varsList, engine)) {
+      return F.NIL;
+    }
+    for (IExpr constraint : constraints) {
+      if (!(constraint.isAST(S.Equal, 3) || constraint.isAST(S.LessEqual, 3)
+          || constraint.isAST(S.GreaterEqual, 3) || constraint.isAST(S.Less, 3)
+          || constraint.isAST(S.Greater, 3))
+          || !isLinear(F.Subtract(constraint.first(), constraint.second()), varsList, engine)) {
+        return F.NIL;
+      }
+    }
+    // a variable like c(1) is a symbol for the conversion to the linear program
+    IASTAppendable symbols = F.ListAlloc(varsList.argSize());
+    java.util.Map<IExpr, IExpr> renamed = new java.util.HashMap<IExpr, IExpr>();
+    for (IExpr variable : varsList) {
+      ISymbol symbol = F.Dummy("x" + (symbols.argSize() + 1));
+      symbols.append(symbol);
+      renamed.put(variable, symbol);
+    }
+    VariablesSet variables = new VariablesSet(symbols);
+    List<IExpr> variableList = variables.getArrayList();
+    if (variableList.size() != varsList.argSize()) {
+      return F.NIL;
+    }
+    try {
+      org.hipparchus.optim.linear.LinearObjectiveFunction objective =
+          new org.matheclipse.core.convert.Expr2LP(F.subst(function, renamed), variables)
+              .expr2ObjectiveFunction();
+      List<org.hipparchus.optim.linear.LinearConstraint> linearConstraints =
+          new ArrayList<org.hipparchus.optim.linear.LinearConstraint>(constraints.argSize());
+      for (IExpr constraint : constraints) {
+        linearConstraints.add(new org.matheclipse.core.convert.Expr2LP(
+            engine.evaluate(F.subst(constraint, renamed)), variables).expr2Constraint());
+      }
+      PointValuePair solution = new org.hipparchus.optim.linear.SimplexSolver().optimize(objective,
+          new org.hipparchus.optim.linear.LinearConstraintSet(linearConstraints), goalType,
+          new org.hipparchus.optim.linear.NonNegativeConstraint(false),
+          org.hipparchus.optim.linear.PivotSelectionRule.BLAND);
+      double[] values = solution.getPointRef();
+      IASTAppendable rules = F.ListAlloc(varsList.argSize());
+      for (int i = 1; i < varsList.size(); i++) {
+        rules.append(
+            F.Rule(varsList.get(i), F.num(values[variableList.indexOf(symbols.get(i))])));
+      }
+      return F.list(F.num(objective.value(values)), rules);
+    } catch (MathRuntimeException | ArithmeticException | ClassCastException
+        | org.matheclipse.core.eval.exception.ArgumentTypeException e) {
+      // unbounded or infeasible: the local search reports it
+      return F.NIL;
+    }
+  }
+
+  /** Whether the expression is a linear polynomial of the variables with real coefficients. */
+  private static boolean isLinear(IExpr expr, IAST varsList, EvalEngine engine) {
+    if (!Solve.isAffine(engine.evaluate(expr), varsList)) {
+      return false;
+    }
+    for (IExpr variable : varsList) {
+      IExpr derivative = engine.evalN(F.D(expr, variable));
+      if (!derivative.isReal()) {
+        return false;
+      }
+    }
+    return engine.evalN(F.subst(expr, F.mapList(varsList, v -> F.Rule(v, F.C0)))).isReal();
   }
 
   /**

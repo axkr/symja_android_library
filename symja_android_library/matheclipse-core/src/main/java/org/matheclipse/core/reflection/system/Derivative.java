@@ -146,7 +146,145 @@ public class Derivative extends AbstractFunctionEvaluator {
     if (extremum.isPresent()) {
       return extremum;
     }
-    return evaluateDIfPossible(derivativeHead, functions, derivativeAST[2], engine);
+    IExpr result = evaluateDIfPossible(derivativeHead, functions, derivativeAST[2], engine);
+    if (result.isNIL() && derivativeAST[2] != null) {
+      return numericDerivative(derivativeHead, functions.arg1(), derivativeAST[2], engine);
+    }
+    return result;
+  }
+
+  /** The largest total order of a derivative which is approximated by finite differences. */
+  private static final int MAX_NUMERIC_ORDER = 4;
+
+  /**
+   * The most evaluations of the function for one finite difference derivative: the extrapolations
+   * of a mixed partial derivative are nested, one for each variable.
+   */
+  private static final int MAX_NUMERIC_EVALUATIONS = 5000;
+
+  /**
+   * <code>Derivative(n1, n2, ...)[f][x1, x2, ...]</code> of a user defined function
+   * <code>f</code> at a point of machine real numbers, if <code>f</code> has no symbolic
+   * derivative - for example because it is only defined for numeric arguments. The derivative is
+   * approximated by central differences, extrapolated to step size zero.
+   *
+   * @return {@link F#NIL} if <code>f</code> isn't a user defined symbol, the point isn't machine
+   *         real or <code>f</code> doesn't give a machine real number near the point
+   */
+  private static IExpr numericDerivative(IAST orders, IExpr function, IAST arguments,
+      EvalEngine engine) {
+    if (!function.isSymbol() || function.isBuiltInSymbol()
+        || orders.argSize() != arguments.argSize()) {
+      return F.NIL;
+    }
+    final int k = arguments.argSize();
+    final double[] point = new double[k];
+    final int[] n = new int[k];
+    int totalOrder = 0;
+    for (int i = 0; i < k; i++) {
+      IExpr arg = arguments.get(i + 1);
+      if (!arg.isReal() || !arg.isInexactNumber()) {
+        return F.NIL;
+      }
+      point[i] = arg.evalf();
+      n[i] = orders.get(i + 1).toIntDefault();
+      if (n[i] < 0) {
+        return F.NIL;
+      }
+      totalOrder += n[i];
+    }
+    if (totalOrder == 0 || totalOrder > MAX_NUMERIC_ORDER) {
+      return F.NIL;
+    }
+    double value =
+        partialDerivative(function, point, n, 0, new int[] {MAX_NUMERIC_EVALUATIONS}, engine);
+    if (Double.isNaN(value) || Double.isInfinite(value)) {
+      return F.NIL;
+    }
+    return F.num(value);
+  }
+
+  /**
+   * The derivative of the orders <code>n[i], n[i+1], ...</code> of <code>function</code> with
+   * respect to the variables <code>i, i+1, ...</code> at <code>point</code>.
+   *
+   * @param budget the number of function evaluations which are left, decremented by each one
+   * @return {@link Double#NaN} if the function doesn't give a machine real number or the budget is
+   *         exhausted
+   */
+  private static double partialDerivative(IExpr function, double[] point, int[] n, int i,
+      int[] budget, EvalEngine engine) {
+    if (i == point.length) {
+      if (--budget[0] < 0) {
+        return Double.NaN;
+      }
+      engine.checkTimeLimit();
+      IASTAppendable call = F.ast(function, point.length);
+      for (double x : point) {
+        call.append(F.num(x));
+      }
+      IExpr value = engine.evaluate(call);
+      if (value.isReal()) {
+        return value.evalf();
+      }
+      return Double.NaN;
+    }
+    if (n[i] == 0) {
+      return partialDerivative(function, point, n, i + 1, budget, engine);
+    }
+    final double x0 = point[i];
+    final int order = n[i];
+    java.util.function.DoubleUnaryOperator centralDifference = h -> {
+      // the central difference of order m with the points x0 + (m/2 - j)*h
+      double sum = 0.0;
+      double binomial = 1.0;
+      for (int j = 0; j <= order; j++) {
+        double[] shifted = point.clone();
+        shifted[i] = x0 + (order / 2.0 - j) * h;
+        double f = partialDerivative(function, shifted, n, i + 1, budget, engine);
+        if (Double.isNaN(f)) {
+          return Double.NaN;
+        }
+        sum += ((j & 1) == 0 ? binomial : -binomial) * f;
+        binomial = binomial * (order - j) / (j + 1);
+      }
+      return sum / Math.pow(h, order);
+    };
+    // Ridders' extrapolation of the central differences to h -> 0; their error is a series in h^2
+    final int ntab = 10;
+    final double con = 1.4;
+    final double con2 = con * con;
+    final double safe = 2.0;
+    double h = 0.1 * Math.max(1.0, Math.abs(x0)) * order;
+    double[][] a = new double[ntab][ntab];
+    a[0][0] = centralDifference.applyAsDouble(h);
+    if (Double.isNaN(a[0][0])) {
+      return Double.NaN;
+    }
+    double result = a[0][0];
+    double err = Double.MAX_VALUE;
+    for (int col = 1; col < ntab; col++) {
+      h /= con;
+      a[0][col] = centralDifference.applyAsDouble(h);
+      if (Double.isNaN(a[0][col])) {
+        return Double.NaN;
+      }
+      double fac = con2;
+      for (int row = 1; row <= col; row++) {
+        a[row][col] = (a[row - 1][col] * fac - a[row - 1][col - 1]) / (fac - 1.0);
+        fac *= con2;
+        double errt = Math.max(Math.abs(a[row][col] - a[row - 1][col]),
+            Math.abs(a[row][col] - a[row - 1][col - 1]));
+        if (errt <= err) {
+          err = errt;
+          result = a[row][col];
+        }
+      }
+      if (Math.abs(a[col][col] - a[col - 1][col - 1]) >= safe * err) {
+        break;
+      }
+    }
+    return result;
   }
 
   /**

@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -110,6 +111,13 @@ public class FindInstance extends Solve {
         }
       }
 
+      if ((domain == S.Reals || domain == S.Complexes) && maxChoices == 1) {
+        // inequalities in one variable, wherever their solution set lies
+        IExpr instance = univariateInequalityInstance(ast.arg1(), vars, engine);
+        if (instance.isPresent()) {
+          return instance;
+        }
+      }
       if (domain == S.Reals) {
         // try to find one feasible instance of a real constrained (inequality) system by
         // delegating to the symbolic optimizers Maximize/Minimize.
@@ -140,6 +148,101 @@ public class FindInstance extends Solve {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_4;
+  }
+
+  /**
+   * One instance of a condition with inequalities in a single variable: the condition is reduced
+   * to intervals and the instance is an integer of the first one, as <code>x &gt; 1000</code> gives
+   * <code>x -&gt; 1001</code>, or its midpoint if it holds no integer. The search box of the
+   * optimizer would miss an interval far from the origin.
+   *
+   * @return <code>{{x -&gt; value}}</code> or {@link F#NIL}
+   */
+  private static IExpr univariateInequalityInstance(IExpr arg1, IAST vars, EvalEngine engine) {
+    if (vars.argSize() != 1 || !vars.arg1().isSymbol()
+        || engine.getOptimizeExpressionDepth() != 0) {
+      return F.NIL;
+    }
+    final IExpr x = vars.arg1();
+    IAST conditions = arg1.isAnd() ? (IAST) arg1 : arg1.makeList();
+    boolean hasInequality = false;
+    for (IExpr condition : conditions) {
+      if (condition.isAST(S.LessEqual) || condition.isAST(S.Less)
+          || condition.isAST(S.GreaterEqual) || condition.isAST(S.Greater)
+          || condition.isAST(S.Inequality)) {
+        hasInequality = true;
+      } else if (!condition.isAST(S.Equal, 3) && !condition.isAST(S.Unequal, 3)) {
+        return F.NIL;
+      }
+      if (!VariablesSet.getVariables(condition).forAll(v -> v.equals(x))) {
+        return F.NIL;
+      }
+    }
+    if (!hasInequality) {
+      return F.NIL;
+    }
+    final IExpr condition = conditions.argSize() == 1 ? conditions.arg1() : conditions.apply(S.And);
+    IExpr reduced = engine.evalQuiet(F.Reduce(condition, x, S.Reals));
+    if (reduced.isFalse()) {
+      return F.CEmptyList;
+    }
+    IAST branches = reduced.isOr() ? (IAST) reduced : F.list(reduced);
+    for (IExpr branch : branches) {
+      for (IExpr candidate : candidates(branch, x)) {
+        IExpr value = engine.evalQuiet(candidate);
+        if (value.isNumber() && value.isReal()
+            && engine.evalTrue(F.subst(condition, x, value))) {
+          return F.list(F.list(F.Rule(x, value)));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /** The values to try for an instance of a reduced condition on <code>x</code>. */
+  private static java.util.List<IExpr> candidates(IExpr branch, IExpr x) {
+    java.util.List<IExpr> candidates = new java.util.ArrayList<IExpr>();
+    if (branch.isAnd()) {
+      // an interval x > a && x < b
+      IExpr lower = F.NIL;
+      IExpr upper = F.NIL;
+      for (IExpr bound : (IAST) branch) {
+        candidates.addAll(candidates(bound, x));
+        if ((bound.isAST(S.Greater, 3) || bound.isAST(S.GreaterEqual, 3))
+            && bound.first().equals(x)) {
+          lower = bound.second();
+        } else if ((bound.isAST(S.Less, 3) || bound.isAST(S.LessEqual, 3))
+            && bound.first().equals(x)) {
+          upper = bound.second();
+        }
+      }
+      if (lower.isPresent() && upper.isPresent()) {
+        candidates.add(F.Floor(F.Times(F.C1D2, F.Plus(lower, upper))));
+        candidates.add(F.Times(F.C1D2, F.Plus(lower, upper)));
+      }
+    } else if (branch.isTrue()) {
+      candidates.add(F.C0);
+    } else if (branch.isAST(S.Equal, 3) && branch.first().equals(x)) {
+      candidates.add(branch.second());
+    } else if (branch.isAST(S.Unequal, 3) && branch.first().equals(x)) {
+      candidates.add(F.Plus(F.Floor(branch.second()), F.C1));
+    } else if (branch.isAST(S.Greater, 3) && branch.first().equals(x)) {
+      candidates.add(F.Plus(F.Floor(branch.second()), F.C1));
+    } else if (branch.isAST(S.GreaterEqual, 3) && branch.first().equals(x)) {
+      candidates.add(F.Ceiling(branch.second()));
+    } else if (branch.isAST(S.Less, 3) && branch.first().equals(x)) {
+      candidates.add(F.Plus(F.Ceiling(branch.second()), F.CN1));
+    } else if (branch.isAST(S.LessEqual, 3) && branch.first().equals(x)) {
+      candidates.add(F.Floor(branch.second()));
+    } else if (branch.isAST(S.Inequality, 6) && ((IAST) branch).arg3().equals(x)) {
+      IAST inequality = (IAST) branch;
+      IExpr lower = inequality.arg1();
+      IExpr upper = inequality.arg5();
+      candidates.add(inequality.arg2() == S.Less ? F.Plus(F.Floor(lower), F.C1) : F.Ceiling(lower));
+      candidates.add(F.Floor(F.Times(F.C1D2, F.Plus(lower, upper))));
+      candidates.add(F.Times(F.C1D2, F.Plus(lower, upper)));
+    }
+    return candidates;
   }
 
   /**

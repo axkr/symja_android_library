@@ -662,8 +662,14 @@ public class ExprParser extends Scanner {
       case TT_BLANK_COLON:
         return getBlanks(temp, min_precedence);
 
-      case TT_DIGIT:
-        return getNumber(false);
+      case TT_DIGIT: {
+        // a number may be applied like a head: 10[2, 5]
+        final IExpr number = getNumber(false);
+        if (fToken == TT_ARGUMENTS_OPEN) {
+          return convert(getFunctionArguments(number));
+        }
+        return number;
+      }
 
       case TT_STRING:
         IStringX str = getString();
@@ -686,8 +692,13 @@ public class ExprParser extends Scanner {
           getNextToken();
         }
         return parseArguments(F.Out(-countPercent));
-      case TT_SLOT:
+      case TT_SLOT: {
+        // a slot number or name must follow the '#' directly
+        final boolean adjacent = isSlotArgumentAdjacent();
         getNextToken();
+        if (!adjacent) {
+          return parseArguments(F.Slot1);
+        }
         if (fToken == TT_DIGIT) {
           int slotNumber = getJavaInt();
           if (slotNumber == 1) {
@@ -705,16 +716,18 @@ public class ExprParser extends Scanner {
           return parseArguments(F.Slot(getString()));
         }
         return parseArguments(F.Slot1);
-
-      case TT_SLOTSEQUENCE:
+      }
+      case TT_SLOTSEQUENCE: {
+        final boolean adjacent = isSlotArgumentAdjacent();
         getNextToken();
         final IASTAppendable slotSequencce = F.ast(S.SlotSequence);
-        if (fToken == TT_DIGIT) {
+        if (adjacent && fToken == TT_DIGIT) {
           slotSequencce.append(getNumber(false));
         } else {
           slotSequencce.append(F.C1);
         }
         return parseArguments(slotSequencce);
+      }
       case TT_ASSOCIATION_OPEN:
         final IASTAppendable function = F.ListAlloc(31);
         fRecursionDepth++;
@@ -1380,7 +1393,7 @@ public class ExprParser extends Scanner {
 
         fRecursionDepth++;
         try {
-          do {
+          partArguments: do {
             getNextToken();
 
             if (fToken == TT_ARGUMENTS_CLOSE) {
@@ -1388,10 +1401,10 @@ public class ExprParser extends Scanner {
               // scanner-step begin: (instead of getNextToken() call):
               if (fInputString.length > fCurrentPosition) {
                 if (fInputString[fCurrentPosition] == ']') {
+                  // empty brackets x[[]]; a part or an application may still follow
                   fCurrentPosition++;
-                  getNextToken();
-                  // fToken = TT_PARTCLOSE;
-                  return function;
+                  fToken = TT_PARTCLOSE;
+                  break partArguments;
                 }
               }
               // scanner-step end

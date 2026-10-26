@@ -66,6 +66,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.expression.data.GridInterpolatingFunctionExpr;
+import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.rules.IntegratePowerTimesFunctionRules;
@@ -373,6 +375,29 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Whether the unevaluated integrand calls an interpolating function, given directly or as the
+   * value of a user symbol.
+   */
+  private static boolean hasInterpolatingFunction(IExpr integrand, EvalEngine engine) {
+    return !integrand.isFree(part -> {
+      if (!part.isAST()) {
+        return false;
+      }
+      IExpr head = part.head();
+      if (head instanceof InterpolatingFunctionExpr
+          || head instanceof GridInterpolatingFunctionExpr) {
+        return true;
+      }
+      if (head.isSymbol() && !head.isBuiltInSymbol() && ((ISymbol) head).hasAssignedSymbolValue()) {
+        IExpr value = ((ISymbol) head).assignedValue();
+        return value instanceof InterpolatingFunctionExpr
+            || value instanceof GridInterpolatingFunctionExpr;
+      }
+      return false;
+    }, true);
+  }
+
+  /**
    * Does <code>expr</code> still carry a symbol which only exists inside the Rubi rule set?
    *
    * <p>
@@ -567,6 +592,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       engine.setNumericMode(false);
 
       final IExpr arg1Holdall = holdallAST.arg1();
+      if (argSize == 2 && hasInterpolatingFunction(arg1Holdall, engine)) {
+        // an interpolating function stands for numeric data, its definite integral is numeric
+        IExpr arg2 = engine.evaluate(holdallAST.arg2());
+        if (arg2.isList3() && arg2.second().isNumericFunction(true)
+            && arg2.getAt(3).isNumericFunction(true)) {
+          IExpr temp = engine.evaluate(F.NIntegrate(arg1Holdall, arg2));
+          if (temp.isFreeAST(S.NIntegrate)) {
+            return temp;
+          }
+        }
+      }
       final IExpr a1 = AbstractFractionSym.rationalize(arg1Holdall, false).orElse(arg1Holdall);
       IExpr arg1 = engine.evaluateNIL(a1);
       if (arg1.isPresent()) {

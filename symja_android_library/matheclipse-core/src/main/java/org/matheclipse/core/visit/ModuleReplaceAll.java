@@ -180,15 +180,23 @@ public class ModuleReplaceAll extends VisitorExpr {
 
   /**
    * A rule or an assignment binds the pattern variables of its left-hand side. They are renamed to
-   * <code>name$</code> if a substituted variable occurs in the rule; a pattern variable which is a
-   * substituted variable itself is left as it is.
+   * <code>name$</code> if a substituted variable occurs in the rule; a substitution of the head of
+   * the left-hand side only - <code>Module({h}, h(y_) = z)</code> - does not rename them. A pattern
+   * variable which is a substituted variable itself, or whose name ends with <code>$</code>
+   * already, is left as it is.
    */
   private IAST visitRuleScope(IAST ast) {
     java.util.Set<ISymbol> patternSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
     collectPatternSymbols(ast.arg1(), patternSymbols);
-    patternSymbols.removeIf(symbol -> fModuleVariables.containsKey(symbol));
-    if (patternSymbols.isEmpty() || !isReachedBySubstitution(ast, patternSymbols)) {
+    // a free symbol of a substituted value - With({a = x}, f(x_) := x + a) - is renamed, the
+    // value would be captured by the pattern otherwise
+    patternSymbols.removeIf(symbol -> {
+      IExpr value = fModuleVariables.get(symbol);
+      return (value != null && value.isPresent()) || isRenamed(symbol);
+    });
+    if (patternSymbols.isEmpty() || !(isReachedBySubstitution(ast.arg2(), patternSymbols)
+        || isLHSReachedBySubstitution(ast.arg1(), patternSymbols))) {
       return visitAST(ast, this, fOffset);
     }
     IdentityHashMap<ISymbol, IExpr> variables = new IdentityHashMap<>(fModuleVariables);
@@ -199,13 +207,42 @@ public class ModuleReplaceAll extends VisitorExpr {
         renameFunctionParameters, true, reachedScopeNames), fOffset);
   }
 
-  /** The renamed variable <code>name$</code> of a nested scope, the same one for the same name. */
-  private IExpr reachedScopeName(ISymbol symbol) {
-    String name = symbol.toString() + "$";
-    if (reachedScopeNames == null) {
-      return F.Dummy(name);
+  /**
+   * Whether a substituted variable occurs in the left-hand side <code>lhs</code> of a rule apart
+   * from its head: in the arguments, as <code>f(x_, a)</code>, or in a condition, as
+   * <code>f(x_) /; x &gt; a</code>.
+   */
+  private boolean isLHSReachedBySubstitution(IExpr lhs,
+      java.util.Set<? extends IExpr> locals) {
+    if (lhs.isCondition()) {
+      return isLHSReachedBySubstitution(lhs.first(), locals)
+          || isReachedBySubstitution(lhs.second(), locals);
     }
-    return reachedScopeNames.computeIfAbsent(name, F::Dummy);
+    if (lhs.isAST()) {
+      return ((IAST) lhs).exists(arg -> isReachedBySubstitution(arg, locals));
+    }
+    return false;
+  }
+
+  /** Whether the name of <code>symbol</code> ends with <code>$</code>, as a renamed variable's. */
+  private static boolean isRenamed(ISymbol symbol) {
+    return symbol.getSymbolName().endsWith("$");
+  }
+
+  /**
+   * The renamed variable <code>name$</code> of a nested scope, the same one for the same name. It
+   * is the symbol <code>name$</code> of the current context, the one an input <code>name$</code>
+   * reads as; a variable of the dummy context is renamed to a dummy symbol.
+   */
+  private IExpr reachedScopeName(ISymbol symbol) {
+    final String name = symbol.getSymbolName() + "$";
+    final boolean dummy = symbol.getContext() == org.matheclipse.core.expression.Context.DUMMY;
+    java.util.function.Function<String, IExpr> create =
+        dummy ? F::Dummy : n -> F.symbol(n, fEngine);
+    if (reachedScopeNames == null) {
+      return create.apply(name);
+    }
+    return reachedScopeNames.computeIfAbsent(name, create);
   }
 
   /** Collect the names of the patterns <code>x_, x__, x : p, ...</code> in <code>expr</code>. */
@@ -301,7 +338,7 @@ public class ModuleReplaceAll extends VisitorExpr {
     java.util.Set<ISymbol> parameterSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
     for (int i = 1; i < parameters.size(); i++) {
-      if (parameters.get(i).isSymbol()) {
+      if (parameters.get(i).isSymbol() && !isRenamed((ISymbol) parameters.get(i))) {
         parameterSymbols.add((ISymbol) parameters.get(i));
       }
     }

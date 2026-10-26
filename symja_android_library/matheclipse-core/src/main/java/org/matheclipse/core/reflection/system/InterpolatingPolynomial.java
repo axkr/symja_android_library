@@ -179,12 +179,15 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
    * @return a fresh copy of the divided difference array.
    * @throws MathIllegalArgumentException if the array lengths are different.
    * @throws MathIllegalArgumentException if the number of points is less than 2.
-   * @throws MathIllegalArgumentException if {@code x} is not sorted in strictly increasing order.
+   * @throws MathIllegalArgumentException if two points of {@code x} are equal.
    */
   protected static IExpr[] computeDividedDifference(final IExpr x[], final IExpr y[],
       EvalEngine engine) {
     // see org.hipparchus.analysis.interpolation.DividedDifferenceInterpolator
-    verifyInterpolationArray(x, y, true);
+    if (x.length < 2) {
+      throw new MathIllegalArgumentException(LocalizedCoreFormats.WRONG_NUMBER_OF_POINTS, 2,
+          x.length, true);
+    }
     final IExpr[] divdiff = y.clone(); // initialization
 
     final int n = x.length;
@@ -192,7 +195,12 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
     a[0] = divdiff[0];
     for (int i = 1; i < n; i++) {
       for (int j = 0; j < n - i; j++) {
+        // the points may come in any order, but no two of them may be equal
         final IExpr denominator = engine.evaluate(F.Subtract(x[j + i], x[j]));
+        if (denominator.isZero()) {
+          throw new MathIllegalArgumentException(
+              LocalizedCoreFormats.DUPLICATED_ABSCISSA_DIVISION_BY_ZERO, x[j]);
+        }
         divdiff[j] = engine.evaluate(F.Divide(F.Subtract(divdiff[j + 1], divdiff[j]), denominator));
       }
       a[i] = divdiff[0];

@@ -335,25 +335,25 @@ public final class RandomFunctions {
             double minIm = min.getImaginary();
             double maxRe = max.getReal();
             double maxIm = max.getImaginary();
-            if (minRe >= maxRe) {
+            // the two corners span a rectangle in the complex plane
+            if (minRe > maxRe) {
               double temp = minRe;
               minRe = maxRe;
               maxRe = temp;
-              if (minRe == maxRe) {
-                // return S.num(min);
-              }
             }
-            if (minIm >= maxIm) {
+            if (minIm > maxIm) {
               double temp = minIm;
               minIm = maxIm;
               maxIm = temp;
-              if (F.isEqual(minIm, maxIm) && F.isEqual(minRe, maxRe)) {
-                return F.complexNum(minRe, minIm);
-              }
+            }
+            if (F.isEqual(minIm, maxIm) && F.isEqual(minRe, maxRe)) {
+              return F.complexNum(minRe, minIm);
             }
             Random tlr = engine.getRandom();
-            return F.complexNum(boundedNextDouble(tlr, minRe, maxRe),
-                boundedNextDouble(tlr, minIm, maxIm));
+            // a degenerate rectangle (a line segment) keeps its fixed coordinate
+            double re = minRe < maxRe ? boundedNextDouble(tlr, minRe, maxRe) : minRe;
+            double im = minIm < maxIm ? boundedNextDouble(tlr, minIm, maxIm) : minIm;
+            return F.complexNum(re, im);
           } else {
             Complex max = engine.evalComplex(ast.arg1());
             Random tlr = engine.getRandom();
@@ -361,8 +361,13 @@ public final class RandomFunctions {
                 boundedNextDouble(tlr, max.getImaginary()));
           }
         } else if (ast.isAST2()) {
-          if (ast.arg2().isList()) {
-            IAST list = (IAST) ast.arg2();
+          IExpr spec = ast.arg2();
+          if (spec.isInteger()) {
+            // RandomComplex(range, n) gives a list of n numbers
+            spec = F.list(spec);
+          }
+          if (spec.isList()) {
+            IAST list = (IAST) spec;
             int[] dimension = Validate.checkListOfInts(ast, list, 1, Integer.MAX_VALUE, engine);
             if (dimension == null) {
               return F.NIL;

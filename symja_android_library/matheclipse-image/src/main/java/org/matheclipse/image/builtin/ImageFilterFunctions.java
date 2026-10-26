@@ -69,6 +69,7 @@ public class ImageFilterFunctions {
       S.Opening.setEvaluator(new Morphology(false, true));
       S.Closing.setEvaluator(new Morphology(true, true));
       S.MorphologicalComponents.setEvaluator(new MorphologicalComponents());
+      S.ComponentMeasurements.setEvaluator(new ComponentMeasurements());
       S.DistanceTransform.setEvaluator(new DistanceTransform());
       S.Inpaint.setEvaluator(new Inpaint());
       S.ImageEffect.setEvaluator(new ImageEffect());
@@ -292,6 +293,11 @@ public class ImageFilterFunctions {
    * the image), as the mean of the pixels of that intensity; a tie keeps the pixel's own intensity
    * when it is one of the most frequent. Without a radius it is <code>Floor(Min(width,
    * height)/64)</code>.
+   * <li><code>{"MotionBlur", r, a}</code>: each pixel is the mean of the <code>2r+1</code> samples
+   * one pixel apart on the line through it in the direction of <code>a</code> degrees from the
+   * horizontal (counterclockwise); the samples are interpolated bilinearly and positions outside of
+   * the image take the nearest border pixel. The defaults are <code>r = 5</code> and <code>a =
+   * 0</code>.
    * </ul>
    */
   private static class ImageEffect extends AbstractEvaluator {
@@ -330,6 +336,16 @@ public class ImageFilterFunctions {
           channels = oilPainting(channels, radius);
           break;
         }
+        case "MotionBlur": {
+          double angle = spec.isList() && spec.argSize() >= 3 ? spec.getAt(3).evalfNaN() : 0.0;
+          double radius = Double.isNaN(parameter) ? 5.0 : Math.rint(parameter);
+          if (!(radius >= 0.0) || Double.isNaN(angle) || Double.isInfinite(angle)
+              || radius > Integer.MAX_VALUE / 4) {
+            return F.NIL;
+          }
+          channels = motionBlur(channels, (int) radius, Math.toRadians(angle));
+          break;
+        }
         default:
           if (OTHER_EFFECTS.contains(name.toString())) {
             // an effect of the reference implementation which is not drawn here
@@ -357,6 +373,46 @@ public class ImageFilterFunctions {
           }
         }
       }
+    }
+
+    private static double[][][] motionBlur(double[][][] channels, int radius, double angle) {
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      // a step along the line; the rows count downwards, so a positive angle steps up
+      // (rounded, so that a multiple of 90 degrees stays on the pixel grid)
+      final double stepX = Math.rint(Math.cos(angle) * 1.0e12) / 1.0e12;
+      final double stepY = -Math.rint(Math.sin(angle) * 1.0e12) / 1.0e12;
+      final int taps = 2 * radius + 1;
+      double[][][] result = new double[channels.length][height][width];
+      for (int c = 0; c < channels.length; c++) {
+        final double[][] channel = channels[c];
+        for (int y = 0; y < height; y++) {
+          for (int x = 0; x < width; x++) {
+            double sum = 0.0;
+            for (int t = -radius; t <= radius; t++) {
+              sum += bilinear(channel, x + t * stepX, y + t * stepY, width, height);
+            }
+            result[c][y][x] = sum / taps;
+          }
+        }
+      }
+      return result;
+    }
+
+    /** The bilinear interpolation at a position, clamped to the pixels of the image. */
+    private static double bilinear(double[][] channel, double x, double y, int width,
+        int height) {
+      x = Math.max(0.0, Math.min(width - 1, x));
+      y = Math.max(0.0, Math.min(height - 1, y));
+      final int x0 = (int) Math.floor(x);
+      final int y0 = (int) Math.floor(y);
+      final int x1 = Math.min(x0 + 1, width - 1);
+      final int y1 = Math.min(y0 + 1, height - 1);
+      final double tx = x - x0;
+      final double ty = y - y0;
+      double top = channel[y0][x0] * (1.0 - tx) + channel[y0][x1] * tx;
+      double bottom = channel[y1][x0] * (1.0 - tx) + channel[y1][x1] * tx;
+      return top * (1.0 - ty) + bottom * ty;
     }
 
     private static double[][][] oilPainting(double[][][] channels, int radius) {
@@ -1059,43 +1115,16 @@ public class ImageFilterFunctions {
           return F.NIL;
         }
       }
+      boolean[][][] volume = foreground3D(ast.arg1(), threshold);
+      if (volume != null) {
+        return toList(labels(volume, cornerNeighbors));
+      }
       boolean[][] foreground = foreground(ast.arg1(), threshold, engine);
       if (foreground == null) {
         return F.NIL;
       }
-      final int height = foreground.length;
-      final int width = foreground[0].length;
-      int[][] label = new int[height][width];
-      int components = 0;
-      ArrayDeque<int[]> queue = new ArrayDeque<int[]>();
-      for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-          if (!foreground[y][x] || label[y][x] != 0) {
-            continue;
-          }
-          label[y][x] = ++components;
-          queue.add(new int[] {y, x});
-          while (!queue.isEmpty()) {
-            int[] pixel = queue.poll();
-            for (int dy = -1; dy <= 1; dy++) {
-              for (int dx = -1; dx <= 1; dx++) {
-                if ((dy == 0 && dx == 0) || (!cornerNeighbors && dy != 0 && dx != 0)) {
-                  continue;
-                }
-                int row = pixel[0] + dy;
-                int column = pixel[1] + dx;
-                if (row >= 0 && row < height && column >= 0 && column < width
-                    && foreground[row][column] && label[row][column] == 0) {
-                  label[row][column] = components;
-                  queue.add(new int[] {row, column});
-                }
-              }
-            }
-          }
-        }
-      }
-      final int[][] labels = label;
-      return F.matrix((i, j) -> F.ZZ(labels[i][j]), height, width);
+      final int[][] labels = labels(new boolean[][][] {foreground}, cornerNeighbors)[0];
+      return F.matrix((i, j) -> F.ZZ(labels[i][j]), foreground.length, foreground[0].length);
     }
 
     @Override
@@ -1106,6 +1135,245 @@ public class ImageFilterFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+  }
+
+  /**
+   * The connected components of a foreground <code>[slice][row][column]</code>, numbered in the
+   * order their first voxel is met slice by slice and row by row. Voxels are connected through
+   * their faces, and also through their edges and corners if <code>cornerNeighbors</code> is set:
+   * 26 neighbours in three and 8 in two dimensions, otherwise 6 and 4.
+   */
+  private static int[][][] labels(boolean[][][] foreground, boolean cornerNeighbors) {
+    final int depth = foreground.length;
+    final int height = foreground[0].length;
+    final int width = foreground[0][0].length;
+    int[][][] label = new int[depth][height][width];
+    int components = 0;
+    ArrayDeque<int[]> queue = new ArrayDeque<int[]>();
+    for (int z = 0; z < depth; z++) {
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          if (!foreground[z][y][x] || label[z][y][x] != 0) {
+            continue;
+          }
+          label[z][y][x] = ++components;
+          queue.add(new int[] {z, y, x});
+          while (!queue.isEmpty()) {
+            int[] voxel = queue.poll();
+            for (int dz = -1; dz <= 1; dz++) {
+              for (int dy = -1; dy <= 1; dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                  int offsets = Math.abs(dz) + Math.abs(dy) + Math.abs(dx);
+                  if (offsets == 0 || (!cornerNeighbors && offsets > 1)) {
+                    continue;
+                  }
+                  int slice = voxel[0] + dz;
+                  int row = voxel[1] + dy;
+                  int column = voxel[2] + dx;
+                  if (slice >= 0 && slice < depth && row >= 0 && row < height && column >= 0
+                      && column < width && foreground[slice][row][column]
+                      && label[slice][row][column] == 0) {
+                    label[slice][row][column] = components;
+                    queue.add(new int[] {slice, row, column});
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return label;
+  }
+
+  /**
+   * The foreground of a 3D image or of an array of rank 3 of real numbers as
+   * <code>[slice][row][column]</code>: the voxels greater than the threshold. A voxel of several
+   * channels counts with its largest sample.
+   *
+   * @return <code>null</code> if <code>arg</code> is neither
+   */
+  private static boolean[][][] foreground3D(IExpr arg, double threshold) {
+    if (arg instanceof Image3DExpr) {
+      double[][][][] samples = ((Image3DExpr) arg).samples();
+      if (samples == null || samples.length == 0 || samples[0].length == 0
+          || samples[0][0].length == 0 || samples[0][0][0].length == 0) {
+        return null;
+      }
+      final int depth = samples[0].length;
+      final int height = samples[0][0].length;
+      final int width = samples[0][0][0].length;
+      boolean[][][] result = new boolean[depth][height][width];
+      for (double[][][] channel : samples) {
+        for (int z = 0; z < depth; z++) {
+          for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+              result[z][y][x] |= channel[z][y][x] > threshold;
+            }
+          }
+        }
+      }
+      return result;
+    }
+    double[][][] volume = realArray3D(arg);
+    if (volume == null) {
+      return null;
+    }
+    boolean[][][] result = new boolean[volume.length][volume[0].length][volume[0][0].length];
+    for (int z = 0; z < volume.length; z++) {
+      for (int y = 0; y < volume[0].length; y++) {
+        for (int x = 0; x < volume[0][0].length; x++) {
+          result[z][y][x] = volume[z][y][x] > threshold;
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * A rectangular array of rank 3 of real numbers as <code>[slice][row][column]</code>.
+   *
+   * @return <code>null</code> if <code>arg</code> is no such array
+   */
+  private static double[][][] realArray3D(IExpr arg) {
+    IntArrayList dims = arg.isList() ? LinearAlgebraUtil.dimensions((IAST) arg) : null;
+    if (dims == null || dims.size() != 3 || dims.getInt(0) == 0 || dims.getInt(1) == 0
+        || dims.getInt(2) == 0) {
+      return null;
+    }
+    final int depth = dims.getInt(0);
+    final int height = dims.getInt(1);
+    final int width = dims.getInt(2);
+    double[][][] result = new double[depth][height][width];
+    for (int z = 0; z < depth; z++) {
+      IExpr slice = arg.getAt(z + 1);
+      for (int y = 0; y < height; y++) {
+        IExpr row = slice.getAt(y + 1);
+        for (int x = 0; x < width; x++) {
+          IExpr value = row.getAt(x + 1);
+          if (!value.isReal()) {
+            return null;
+          }
+          result[z][y][x] = value.evalf();
+        }
+      }
+    }
+    return result;
+  }
+
+  private static IAST toList(int[][][] labels) {
+    IASTAppendable result = F.ListAlloc(labels.length);
+    for (int[][] slice : labels) {
+      final int[][] matrix = slice;
+      result.append(F.matrix((i, j) -> F.ZZ(matrix[i][j]), slice.length, slice[0].length));
+    }
+    return result;
+  }
+
+  /**
+   * <code>ComponentMeasurements(labels, "Count")</code> - the rules <code>k -> n</code> of the
+   * labels <code>k > 0</code> of a label matrix or a label array of rank 3 and the number
+   * <code>n</code> of their elements, ordered by the label. An image (or a 3D image) is labelled
+   * by its components first. A list of properties gives the list of their values in each rule.
+   */
+  private static class ComponentMeasurements extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int[][][] labels = null;
+      if (arg1 instanceof ImageExpr) {
+        boolean[][] foreground = foreground(arg1, 0.0, engine);
+        if (foreground != null) {
+          labels = labels(new boolean[][][] {foreground}, true);
+        }
+      } else if (arg1 instanceof Image3DExpr) {
+        boolean[][][] foreground = foreground3D(arg1, 0.0);
+        if (foreground != null) {
+          labels = labels(foreground, true);
+        }
+      } else {
+        labels = labelArray(arg1);
+      }
+      if (labels == null) {
+        return F.NIL;
+      }
+      IExpr properties = ast.arg2();
+      IAST propertyList = properties.isList() ? (IAST) properties : F.list(properties);
+      for (IExpr property : propertyList) {
+        if (!property.isString("Count")) {
+          return F.NIL;
+        }
+      }
+      java.util.TreeMap<Integer, int[]> counts = new java.util.TreeMap<Integer, int[]>();
+      for (int[][] slice : labels) {
+        for (int[] row : slice) {
+          for (int label : row) {
+            if (label > 0) {
+              counts.computeIfAbsent(label, k -> new int[1])[0]++;
+            }
+          }
+        }
+      }
+      IASTAppendable result = F.ListAlloc(counts.size());
+      for (java.util.Map.Entry<Integer, int[]> entry : counts.entrySet()) {
+        IExpr count = F.ZZ(entry.getValue()[0]);
+        IExpr value = count;
+        if (properties.isList()) {
+          IASTAppendable values = F.ListAlloc(propertyList.argSize());
+          for (int i = 0; i < propertyList.argSize(); i++) {
+            values.append(count);
+          }
+          value = values;
+        }
+        result.append(F.Rule(F.ZZ(entry.getKey()), value));
+      }
+      return result;
+    }
+
+    /**
+     * A label matrix or a label array of rank 3 of integers as
+     * <code>[slice][row][column]</code>.
+     */
+    private static int[][][] labelArray(IExpr arg) {
+      if (!arg.isList()) {
+        return null;
+      }
+      IntArrayList dims = LinearAlgebraUtil.dimensions((IAST) arg);
+      if (dims.size() == 2) {
+        arg = F.list(arg);
+      } else if (dims.size() != 3) {
+        return null;
+      }
+      IAST array = (IAST) arg;
+      int[][][] result = new int[array.argSize()][][];
+      for (int z = 0; z < array.argSize(); z++) {
+        IAST slice = (IAST) array.get(z + 1);
+        result[z] = new int[slice.argSize()][];
+        for (int y = 0; y < slice.argSize(); y++) {
+          IAST row = (IAST) slice.get(y + 1);
+          result[z][y] = new int[row.argSize()];
+          for (int x = 0; x < row.argSize(); x++) {
+            int label = row.get(x + 1).toIntDefault();
+            if (label < 0) {
+              return null;
+            }
+            result[z][y][x] = label;
+          }
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 

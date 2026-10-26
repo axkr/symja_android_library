@@ -549,8 +549,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIntegersUnboundedStaysUnevaluated() {
     check("Solve(x >= 0, x, Integers)", //
         "Solve(x>=0,x,Integers)");
+    // a residue class is the lattice of a congruence
     check("Solve(Mod(x, 3) == 1, x, Integers)", //
-        "Solve(Mod(x,3)==1,x,Integers)");
+        "{{x->ConditionalExpression(1+3*C(1),C(1)∈Integers)}}");
     // finite, but beyond the enumeration budget
     check("Solve(0 <= x <= 1000001, x, Integers)", //
         "Solve(0<=x<=1000001,x,Integers)");
@@ -2274,10 +2275,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // 4^x == (2^x)^2
     // WMA: the families 1+(2*I*Pi*C(1))/Log(2) and (I*Pi)/Log(2)+(2*I*Pi*C(1))/Log(2)
     check("Solve(4^x-2^x-2==0,x)[[All, 1, 2, 1]]", //
-        "{(I*Pi+I*2*Pi*C(1))/Log(2),(I*2*Pi*C(1)+Log(2))/Log(2)}");
+        "{(I*Pi)/Log(2)+(I*2*Pi*C(1))/Log(2),1+(I*2*Pi*C(1))/Log(2)}");
     // the complex families, as WMA gives them for 4^x-2^x-2==0
     check("Solve(9^x-4*3^x+3==0,x)[[All, 1, 2, 1]]", //
-        "{(I*2*Pi*C(1))/Log(3),(I*2*Pi*C(1)+Log(3))/Log(3)}");
+        "{(I*2*Pi*C(1))/Log(3),1+(I*2*Pi*C(1))/Log(3)}");
     // 4^(1+x/2) == 4*2^x
     check("Solve(4^(1+x/2)+2^x==10,x)", //
         "{{x->ConditionalExpression((I*2*Pi*C(1)+Log(2))/Log(2),C(1)∈Integers)}}");

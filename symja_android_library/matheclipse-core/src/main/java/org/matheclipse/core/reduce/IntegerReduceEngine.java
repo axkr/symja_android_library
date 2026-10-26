@@ -289,7 +289,17 @@ public final class IntegerReduceEngine {
       return IntegerSolveResult.notApplicable();
     }
     List<AffineTerm> equations = new ArrayList<AffineTerm>(atoms.size());
+    // a congruence m | t is the equation t - m*k == 0 with one more integer unknown k, which is
+    // projected away from the solution: linear equations and congruences give one lattice
+    List<Variable> auxiliaries = new ArrayList<Variable>();
     for (Atom atom : atoms) {
+      if (atom.isDivides() && !atom.isNegated()) {
+        Variable multiple = Variable.free(F.Dummy("k$" + (auxiliaries.size() + 1)));
+        auxiliaries.add(multiple);
+        equations.add(
+            atom.term().subtract(AffineTerm.variable(multiple).scale(F.ZZ(atom.modulus()))));
+        continue;
+      }
       if (!atom.isRelation() || atom.relation() != Relation.EQUAL) {
         return IntegerSolveResult.notApplicable();
       }
@@ -312,7 +322,18 @@ public final class IntegerReduceEngine {
     if (present.isEmpty()) {
       return IntegerSolveResult.notApplicable();
     }
-    LatticeSolver.Solution solution = LatticeSolver.solve(equations, present);
+    LatticeSolver.Solution solution;
+    if (auxiliaries.isEmpty()) {
+      solution = LatticeSolver.solve(equations, present);
+    } else {
+      List<Variable> unknowns = new ArrayList<Variable>(present.size() + auxiliaries.size());
+      unknowns.addAll(present);
+      unknowns.addAll(auxiliaries);
+      solution = LatticeSolver.solve(equations, unknowns);
+      if (solution != null) {
+        solution = solution.restrict(present.size());
+      }
+    }
     if (solution == null) {
       return IntegerSolveResult.infeasible();
     }

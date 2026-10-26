@@ -1793,7 +1793,21 @@ public final class PrimitiveCollector {
         weights[i] = ColorUtil.dbl(wl.get(i + 1), 1.0);
       }
     }
-    List<double[]> curve = BSpline.evaluate(control, degree, closed, weights);
+    double[] knots = null;
+    IExpr k = optionValue(ast, S.SplineKnots);
+    if (k != null && k.isList()) {
+      // SplineKnots -> {u1, u2, ...}: an explicit non-decreasing knot vector
+      IAST kl = (IAST) k;
+      knots = new double[kl.argSize()];
+      for (int i = 0; i < knots.length; i++) {
+        knots[i] = kl.get(i + 1).evalfNaN();
+        if (Double.isNaN(knots[i]) || (i > 0 && knots[i] < knots[i - 1])) {
+          knots = null;
+          break;
+        }
+      }
+    }
+    List<double[]> curve = BSpline.evaluate(control, degree, closed, weights, knots);
     if (curve.size() >= 2) {
       primitives.add(new Prim2D.BSplinePrim(curve, closed, filled, style.clone()));
     }

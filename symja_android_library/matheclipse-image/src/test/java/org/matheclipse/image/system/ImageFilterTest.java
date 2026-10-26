@@ -181,6 +181,31 @@ public class ImageFilterTest extends AbstractTestCase {
   }
 
   @Test
+  public void testImageResizeFit() {
+    // {{wmax}, {hmax}}: as large as fits inside, with the aspect ratio kept
+    check("ImageDimensions(ImageResize(Image(Table(0.1, {30}, {60})), {{20}, {20}}))", //
+        "{20,10}");
+    check("ImageDimensions(ImageResize(Image(Table(0.1, {30}, {60})), {{200}, {15}}))", //
+        "{30,15}");
+    check("ImageDimensions(ImageResize(Image(Table(0.1, {30}, {60})), {{120}, {120}}))", //
+        "{120,60}");
+  }
+
+  @Test
+  public void testImageEffectMotionBlur() {
+    // the mean along a line through each pixel leaves a constant image as it is
+    check("ImageData(ImageEffect(Image(Table(0.75, {3}, {5})), {\"MotionBlur\", 2, 45})) == "
+        + "Table(0.75, {3}, {5})", //
+        "True");
+    // a vertical line for 90 degrees, the border pixels continue the image
+    check("ImageData(ImageEffect(Image({{0., 0., 0.}, {0., 0.9, 0.}, {0., 0., 0.}}), "
+        + "{\"MotionBlur\", 1, 90}))", //
+        "{{0.0,0.3,0.0},\n {0.0,0.3,0.0},\n {0.0,0.3,0.0}}");
+    check("ImageData(ImageEffect(Image({{0., 0.9, 0.}}), {\"MotionBlur\", 1}))", //
+        "{{0.3,0.3,0.3}}");
+  }
+
+  @Test
   public void testGrayscaleOfRealSamples() {
     // {{0.299, 0.587}, {0.114, 1.}}
     check("rgb = Image({{{1., 0., 0.}, {0., 1., 0.}}, {{0., 0., 1.}, {1., 1., 1.}}}); "

@@ -167,6 +167,19 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{3,True,True}");
   }
 
+  /** GraphPlot3D draws one Line per edge, also for a directed graph, and a Sphere per vertex. */
+  @Test
+  public void testGraphPlot3D() {
+    check("p=GraphPlot3D({a->b,b->c,c->d,d->a,a->c});"
+        + "{Head(p), Length(Cases(p,_Line,Infinity)), Length(Cases(p,_Arrow,Infinity)),"
+        + " Length(Cases(p,_Sphere,Infinity)), MatchQ(Cases(p,_Line,Infinity),{Line({{_,_,_},{_,_,_}})..})}", //
+        "{Graphics3D,5,0,4,True}");
+    check("Length(Cases(GraphPlot3D(Graph({1<->2,2<->3})),_Line,Infinity))", //
+        "2");
+    check("Length(Cases(GraphPlot3D({1->2,2->3}, DirectedEdges->True),_Arrow,Infinity))", //
+        "2");
+  }
+
   @Test
   public void testGraphPlotKeepsItsOptions() {
     check("p=GraphPlot(Graph({1->2,2->3,3->1}),ImageSize->70,AspectRatio->1);" //

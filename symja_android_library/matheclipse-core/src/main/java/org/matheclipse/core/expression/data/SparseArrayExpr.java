@@ -1327,6 +1327,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         depth = 1;
         dimension = new int[depth];
       }
+      if (dimension != null && defaultDimension > 0) {
+        // a scalar dimension n for positions of rank r means the dimensions {n, ..., n}, also if
+        // the rules contain only position patterns
+        Arrays.fill(dimension, defaultDimension);
+      }
     } else {
       // Validate provided dimensions against the first rule
       if (lhs1.isList() && dimension.length != ((IAST) lhs1).argSize()) {
@@ -1592,7 +1597,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           && ((IAST) rule.first()).forAll(p -> p.isList() && ((IAST) p).forAll(IExpr::isInteger));
       boolean valueList = positionList && rule.second().isList()
           && rule.first().argSize() == rule.second().argSize();
-      if (positionList && (valueList || !rule.second().isList())) {
+      if (rule.isRuleAST() && rule.first().isEmptyList()) {
+        // an empty list of positions: no entry, the array keeps its default value
+        if (expanded == null) {
+          expanded = F.ListAlloc(arrayRulesList.argSize());
+          expanded.appendArgs(arrayRulesList, i);
+        }
+      } else if (positionList && (valueList || !rule.second().isList())) {
         if (expanded == null) {
           expanded = F.ListAlloc(arrayRulesList.argSize() + rule.first().argSize());
           expanded.appendArgs(arrayRulesList, i);
@@ -3040,6 +3051,179 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     return new SparseArrayExpr(newTrie, targetDimension, targetDefaultValue, false);
+  }
+
+  /**
+   * <code>Part(sparseArray, spec1, spec2, ...)</code> for specifications which are integers,
+   * <code>All</code>, <code>Span</code>s of integers and lists of integers, on the stored entries
+   * only, so that the array is never expanded to its dense form.
+   *
+   * @return {@link F#NIL} if a specification is of another kind or out of range; the caller then
+   *         answers it from the dense form
+   */
+  public IExpr partOfSpecifications(IAST ast, int startPosition) {
+    final int levels = ast.size() - startPosition;
+    final int rank = fDimension.length;
+    if (levels > rank || levels <= 0) {
+      return F.NIL;
+    }
+    // for each level: a single position (scalar[l] > 0), a range start, step, count, or a list
+    final int[] scalar = new int[rank];
+    final int[] start = new int[rank];
+    final int[] step = new int[rank];
+    final int[] count = new int[rank];
+    final int[][] lists = new int[rank][];
+    int keptLevels = 0;
+    for (int l = 0; l < rank; l++) {
+      final int n = fDimension[l];
+      IExpr spec = l < levels ? ast.get(startPosition + l) : S.All;
+      if (spec == S.All) {
+        start[l] = 1;
+        step[l] = 1;
+        count[l] = n;
+      } else if (spec.isInteger()) {
+        int index = resolvePosition(spec.toIntDefault(Integer.MIN_VALUE), n);
+        if (index < 1) {
+          return F.NIL;
+        }
+        scalar[l] = index;
+        continue;
+      } else if (spec.isAST(S.Span, 3, 4)) {
+        IAST span = (IAST) spec;
+        int first = span.arg1() == S.All ? 1
+            : resolvePosition(span.arg1().toIntDefault(Integer.MIN_VALUE), n);
+        int last = span.argSize() < 2 || span.arg2() == S.All ? n
+            : resolvePosition(span.arg2().toIntDefault(Integer.MIN_VALUE), n);
+        int stepSize = span.argSize() >= 3 ? span.arg3().toIntDefault(0) : 1;
+        if (first < 1 || last < 1 || stepSize == 0 || F.isNotPresent(stepSize)
+            || (stepSize > 0 && last < first) || (stepSize < 0 && last > first)) {
+          return F.NIL;
+        }
+        start[l] = first;
+        step[l] = stepSize;
+        count[l] =
+            stepSize > 0 ? (last - first) / stepSize + 1 : (first - last) / (-stepSize) + 1;
+      } else if (spec.isList()) {
+        // an empty list of positions gives an empty level
+        IAST list = (IAST) spec;
+        int[] indices = new int[list.argSize()];
+        for (int i = 0; i < indices.length; i++) {
+          indices[i] = resolvePosition(list.get(i + 1).toIntDefault(Integer.MIN_VALUE), n);
+          if (indices[i] < 1) {
+            return F.NIL;
+          }
+        }
+        lists[l] = indices;
+        count[l] = indices.length;
+      } else {
+        return F.NIL;
+      }
+      keptLevels++;
+    }
+    if (keptLevels == 0) {
+      return getIndex(scalar);
+    }
+    final int[] newDimension = new int[keptLevels];
+    for (int l = 0, j = 0; l < rank; l++) {
+      if (scalar[l] == 0) {
+        newDimension[j++] = count[l];
+      }
+    }
+    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      int[] key = entry.getKey();
+      // the new positions of each kept level which this entry has
+      int[][] newPositions = new int[keptLevels][];
+      boolean matched = true;
+      for (int l = 0, j = 0; l < rank && matched; l++) {
+        if (scalar[l] > 0) {
+          matched = key[l] == scalar[l];
+        } else if (lists[l] != null) {
+          int found = 0;
+          for (int index : lists[l]) {
+            if (index == key[l]) {
+              found++;
+            }
+          }
+          int[] positions = new int[found];
+          for (int i = 0, f = 0; i < lists[l].length; i++) {
+            if (lists[l][i] == key[l]) {
+              positions[f++] = i + 1;
+            }
+          }
+          matched = found > 0;
+          newPositions[j++] = positions;
+        } else {
+          int distance = step[l] > 0 ? key[l] - start[l] : start[l] - key[l];
+          int absStep = Math.abs(step[l]);
+          matched = distance >= 0 && distance % absStep == 0 && distance / absStep < count[l];
+          newPositions[j++] = new int[] {distance / absStep + 1};
+        }
+      }
+      if (matched) {
+        putProduct(trie, newPositions, new int[keptLevels], 0, entry.getValue());
+      }
+    }
+    return new SparseArrayExpr(trie, newDimension, fDefaultValue, false);
+  }
+
+  /**
+   * The position <code>p</code> in a dimension of the size <code>n</code>, a negative one counted
+   * from the end; <code>-1</code> if there is no such position.
+   */
+  private static int resolvePosition(int p, int n) {
+    if (p == Integer.MIN_VALUE || p == 0 || p > n || p < -n) {
+      return -1;
+    }
+    return p < 0 ? n + 1 + p : p;
+  }
+
+  /** Store <code>value</code> at every combination of the <code>positions</code> of the levels. */
+  private static void putProduct(Trie<int[], IExpr> trie, int[][] positions, int[] key, int level,
+      IExpr value) {
+    if (level == positions.length) {
+      trie.put(key.clone(), value);
+      return;
+    }
+    for (int p : positions[level]) {
+      key[level] = p;
+      putProduct(trie, positions, key, level + 1, value);
+    }
+  }
+
+  /**
+   * The sub array of the positions <code>start[l], start[l] + step[l], ...</code> (<code>count[l]
+   * </code> of them) of each level <code>l</code>; the levels behind <code>start.length</code> are
+   * kept. Only the stored entries are visited, so the array is never expanded to its dense form.
+   *
+   * @param start the first position (1-based) of each selected level
+   * @param step the step of each selected level (negative to count downwards)
+   * @param count the number of positions of each selected level (each greater than 0)
+   */
+  public SparseArrayExpr takeRanges(int[] start, int[] step, int[] count) {
+    final int[] newDimension = fDimension.clone();
+    for (int l = 0; l < start.length; l++) {
+      newDimension[l] = count[l];
+    }
+    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      int[] key = entry.getKey();
+      int[] newKey = key.clone();
+      boolean matched = true;
+      for (int l = 0; l < start.length; l++) {
+        int distance = step[l] > 0 ? key[l] - start[l] : start[l] - key[l];
+        int absStep = Math.abs(step[l]);
+        if (distance < 0 || distance % absStep != 0 || distance / absStep >= count[l]) {
+          matched = false;
+          break;
+        }
+        newKey[l] = distance / absStep + 1;
+      }
+      if (matched) {
+        trie.put(newKey, entry.getValue());
+      }
+    }
+    return new SparseArrayExpr(trie, newDimension, fDefaultValue, false);
   }
 
   public IExpr set(int i, IExpr value) {

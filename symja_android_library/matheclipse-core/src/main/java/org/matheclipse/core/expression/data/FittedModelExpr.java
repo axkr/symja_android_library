@@ -261,7 +261,8 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   private static final String[] PROPERTIES = {"AdjustedRSquared", "ANOVATable",
       "ANOVATableDegreesOfFreedom", "ANOVATableEntries", "ANOVATableFStatistics",
       "ANOVATableMeanSquares", "ANOVATablePValues", "ANOVATableSumsOfSquares", "BestFit",
-      "BestFitParameters", "EstimatedVariance", "FitResiduals", "ParameterConfidenceIntervals",
+      "BestFitParameters", "CookDistances", "EstimatedVariance", "FitResiduals", "HatDiagonal",
+      "ParameterConfidenceIntervals",
       "ParameterErrors", "ParameterPValues", "ParameterTStatistics", "ParameterTable",
       "ParameterTableEntries", "PredictedResponse", "RSquared"};
 
@@ -344,8 +345,12 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
         return normal(false);
       case "BestFitParameters":
         return F.List(regression.estimateRegressionParameters());
+      case "CookDistances":
+        return diagnostics(true);
       case "EstimatedVariance":
         return regression.estimateErrorVariance();
+      case "HatDiagonal":
+        return diagnostics(false);
       case "FitResiduals":
         return F.List(regression.estimateResiduals());
       case "ParameterErrors":
@@ -432,6 +437,75 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     // a value which can't be determined, as after a dependent basis function, is Indeterminate
     result[rows.size() + 1] = new double[] {constant >= 0 ? n - 1 : n, total};
     return result;
+  }
+
+  /**
+   * The diagonal <code>h_i</code> of the hat matrix <code>X.Inverse(Transpose(X).X).Transpose(X)
+   * </code>, or the Cook distances <code>e_i^2/(p*s^2) * h_i/(1-h_i)^2</code> of the points, where
+   * <code>e_i</code> are the residuals, <code>p</code> the number of basis functions and
+   * <code>s^2</code> the estimated variance.
+   *
+   * @param cook <code>true</code> for the Cook distances, <code>false</code> for the hat diagonal
+   */
+  private IExpr diagnostics(boolean cook) {
+    final int n = designMatrix.getRowDimension();
+    final int p = designMatrix.getColumnDimension();
+    double[][] x = new double[n][p];
+    double[] y = new double[n];
+    for (int i = 0; i < n; i++) {
+      y[i] = responseVector.getEntry(i).evalfNaN();
+      for (int j = 0; j < p; j++) {
+        x[i][j] = designMatrix.getEntry(i, j).evalfNaN();
+        if (Double.isNaN(x[i][j])) {
+          return F.NIL;
+        }
+      }
+      if (Double.isNaN(y[i])) {
+        return F.NIL;
+      }
+    }
+    if (n < p) {
+      return F.NIL;
+    }
+    org.hipparchus.linear.RealMatrix matrix = new org.hipparchus.linear.Array2DRowRealMatrix(x);
+    try {
+      org.hipparchus.linear.QRDecomposition qr = new org.hipparchus.linear.QRDecomposition(matrix,
+          1.0e-10 * Math.max(1.0, matrix.getFrobeniusNorm()));
+      org.hipparchus.linear.DecompositionSolver solver = qr.getSolver();
+      if (!solver.isNonSingular()) {
+        return F.NIL;
+      }
+      // the first p columns of Q span the column space of X; the hat matrix is their projection
+      org.hipparchus.linear.RealMatrix q = qr.getQ();
+      double[] hat = new double[n];
+      for (int i = 0; i < n; i++) {
+        double sum = 0.0;
+        for (int j = 0; j < p; j++) {
+          double entry = q.getEntry(i, j);
+          sum += entry * entry;
+        }
+        hat[i] = sum;
+      }
+      if (!cook) {
+        return F.mapRange(0, n, i -> F.num(hat[i]));
+      }
+      if (n == p) {
+        return F.NIL;
+      }
+      org.hipparchus.linear.RealVector response = new org.hipparchus.linear.ArrayRealVector(y);
+      org.hipparchus.linear.RealVector residuals =
+          response.subtract(matrix.operate(solver.solve(response)));
+      final double variance = residuals.dotProduct(residuals) / (n - p);
+      double[] distances = new double[n];
+      for (int i = 0; i < n; i++) {
+        double e = residuals.getEntry(i);
+        double h = hat[i];
+        distances[i] = e * e / (p * variance) * h / ((1.0 - h) * (1.0 - h));
+      }
+      return F.mapRange(0, n, i -> F.num(distances[i]));
+    } catch (org.hipparchus.exception.MathRuntimeException e) {
+      return F.NIL;
+    }
   }
 
   /** The index of the first constant, non-zero column of the design matrix, or <code>-1</code>. */

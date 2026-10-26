@@ -154,6 +154,13 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           // the cells of an explicit neighbourhood {{o1}, {o2}, ...}, or null
           int[] offsets = null;
 
+          if (rule.isList() && rule.argSize() >= 3 && rule.first().isInteger()
+              && rule.getAt(3).isList3() && ((IAST) rule.getAt(3)).forAll(IExpr::isInteger)) {
+            // {n, k, {r1, r2, r3}}: a rule on three-dimensional arrays
+            return evaluateInteger3D((IAST) rule, (IAST) init, stepsToGenerate, tStart, tEnd, dt,
+                returnSingleStep, isOperatorForm);
+          }
+
           if (rule.isInteger()) {
             baseRule = (IInteger) rule;
           } else if (rule.isList()) {
@@ -1149,6 +1156,366 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       return resultList.arg1(); // {{{t}}} tSpec: plain unwrap, no bg wrapper
     }
     return resultList;
+  }
+
+  /**
+   * <code>CellularAutomaton({n, kspec, {r1, r2, r3}}, init, t)</code> and the order
+   * <code>s</code> form <code>{n, kspec, {r1, r2, r3}, s}</code>: a <code>k</code>-colour rule on
+   * three-dimensional arrays, whose new cell depends on the <code>(2 r1 + 1) x (2 r2 + 1) x (2 r3 +
+   * 1)</code> block around it. <code>kspec</code> is <code>k</code> (the block's cells are the
+   * digits of the number of the transition), <code>{k, 1}</code> (the transition is the total of
+   * the block), <code>{k, w}</code> with the same weight <code>w</code> for every cell, or
+   * <code>{k, weights}</code> with an array of the block's weights. The initial condition is a
+   * cyclic array of rank 3, or <code>{array, b}</code> on a background of the value
+   * <code>b</code>, which is returned as the box of all cells which differ from the background.
+   * Each case behaves like the two-dimensional rules, so a radius <code>r1 = 0</code> evolves
+   * every slice of the array on its own.
+   */
+  private IExpr evaluateInteger3D(IAST rule, IAST init, int steps, int tStart, int tEnd, int dt,
+      boolean returnSingleStep, boolean isOperatorForm) {
+    IInteger ruleNum = (IInteger) rule.arg1();
+    if (ruleNum.isNegative()) {
+      // The specified rule number `1` should be non-negative.
+      return Errors.printMessage(S.CellularAutomaton, "rneg", F.List(ruleNum));
+    }
+    IAST rspec = (IAST) rule.arg3();
+    final int[] radius = new int[3];
+    for (int d = 0; d < 3; d++) {
+      radius[d] = rspec.get(d + 1).toIntDefault(-1);
+      if (radius[d] < 0 || radius[d] > 100) {
+        return F.NIL;
+      }
+    }
+    final int[] block = {2 * radius[0] + 1, 2 * radius[1] + 1, 2 * radius[2] + 1};
+    final int blockSize = block[0] * block[1] * block[2];
+    int k = 2;
+    boolean isTotalistic = false;
+    int[] weights = null;
+    IExpr kSpec = rule.arg2();
+    if (kSpec.isInteger()) {
+      k = kSpec.toIntDefault(-1);
+    } else if (kSpec.isList2() && kSpec.first().isInteger()) {
+      k = kSpec.first().toIntDefault(-1);
+      IExpr wspec = kSpec.second();
+      if (wspec.isInteger()) {
+        int w = wspec.toIntDefault(-1);
+        if (w == 1) {
+          isTotalistic = true;
+        } else if (w >= 0) {
+          weights = new int[blockSize];
+          java.util.Arrays.fill(weights, w);
+        } else {
+          return F.NIL;
+        }
+      } else {
+        weights = weights3D(wspec, block);
+        if (weights == null) {
+          return F.NIL;
+        }
+      }
+    } else {
+      return F.NIL;
+    }
+    int s = 1;
+    if (rule.argSize() >= 4) {
+      s = rule.arg4().toIntDefault(-1);
+    }
+    if (k < 2 || s < 1) {
+      return F.NIL;
+    }
+    if (isOperatorForm && s > 1) {
+      tStart = 2 - s;
+      returnSingleStep = false;
+    }
+
+    long numTransitions;
+    if (weights != null) {
+      long weightTotal = 0;
+      for (int w : weights) {
+        weightTotal += w;
+      }
+      numTransitions = weightTotal * (k - 1) * s + 1;
+    } else if (isTotalistic) {
+      numTransitions = (long) s * blockSize * (k - 1) + 1;
+    } else {
+      double count = Math.pow(k, (double) s * blockSize);
+      if (count > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt((long) Math.min(count, Long.MAX_VALUE));
+        return F.NIL;
+      }
+      numTransitions = (long) count;
+    }
+    if (numTransitions > Config.MAX_AST_SIZE) {
+      ASTElementLimitExceeded.throwIt(numTransitions);
+      return F.NIL;
+    }
+    int[] ruleBits = new int[(int) numTransitions];
+    IInteger temp = ruleNum;
+    IInteger ZZk = F.ZZ(k);
+    for (int i = 0; i < numTransitions; i++) {
+      IExpr[] divMod = temp.divideAndRemainder(ZZk);
+      ruleBits[i] = divMod[1].toIntDefault(0);
+      temp = (IInteger) divMod[0];
+    }
+
+    // the initial arrays (s of them for a rule of order s) and their background
+    boolean isCyclic = true;
+    int background = 0;
+    IAST arrays = init;
+    if (init.argSize() == 2 && init.arg2().isInteger() && init.arg1().isList()) {
+      isCyclic = false;
+      background = init.arg2().toIntDefault(0);
+      arrays = (IAST) init.arg1();
+    }
+    List<IAST> initStates = new ArrayList<>();
+    if (s > 1) {
+      if (arrays.argSize() != s) {
+        return F.NIL;
+      }
+      for (int i = 1; i <= s; i++) {
+        if (!arrays.get(i).isList()) {
+          return F.NIL;
+        }
+        initStates.add((IAST) arrays.get(i));
+      }
+    } else {
+      initStates.add(arrays);
+    }
+    // the extent of the initial arrays
+    final int[] size = new int[3];
+    for (IAST array : initStates) {
+      if (!extent3D(array, size)) {
+        return F.NIL;
+      }
+    }
+    if (size[0] == 0 || size[1] == 0 || size[2] == 0) {
+      return F.NIL;
+    }
+    final int[] padding = new int[3];
+    final int[] grid = new int[3];
+    for (int d = 0; d < 3; d++) {
+      padding[d] = isCyclic ? 0 : steps * radius[d];
+      grid[d] = size[d] + 2 * padding[d];
+    }
+    long cellCount = (long) grid[0] * grid[1] * grid[2];
+    if (cellCount * Math.max(1, steps + s) > Config.MAX_AST_SIZE) {
+      ASTElementLimitExceeded.throwIt(cellCount * Math.max(1, steps + s));
+      return F.NIL;
+    }
+    final int cells = (int) cellCount;
+
+    List<int[]> history = new ArrayList<>();
+    List<Integer> bgHistory = new ArrayList<>();
+    for (IAST array : initStates) {
+      int[] state = new int[cells];
+      java.util.Arrays.fill(state, background);
+      for (int z = 1; z <= array.argSize(); z++) {
+        IExpr slice = array.get(z);
+        for (int y = 1; y <= slice.argSize(); y++) {
+          IExpr row = slice.getAt(y);
+          for (int x = 1; x <= row.argSize(); x++) {
+            int value = row.getAt(x).toIntDefault(-1);
+            if (value < 0 || value >= k) {
+              return F.NIL;
+            }
+            state[((padding[0] + z - 1) * grid[1] + padding[1] + y - 1) * grid[2] + padding[2]
+                + x - 1] = value;
+          }
+        }
+      }
+      history.add(state);
+      bgHistory.add(background);
+    }
+
+    for (int t = 0; t < steps; t++) {
+      int[] next = new int[cells];
+      for (int z = 0; z < grid[0]; z++) {
+        for (int y = 0; y < grid[1]; y++) {
+          for (int x = 0; x < grid[2]; x++) {
+            int v = 0;
+            for (int stepIdx = s; stepIdx >= 1; stepIdx--) {
+              int[] state = history.get(history.size() - stepIdx);
+              int bg = bgHistory.get(bgHistory.size() - stepIdx);
+              int w = 0;
+              for (int dz = -radius[0]; dz <= radius[0]; dz++) {
+                for (int dy = -radius[1]; dy <= radius[1]; dy++) {
+                  for (int dx = -radius[2]; dx <= radius[2]; dx++) {
+                    int nz = z + dz;
+                    int ny = y + dy;
+                    int nx = x + dx;
+                    int cell;
+                    if (isCyclic) {
+                      nz = Math.floorMod(nz, grid[0]);
+                      ny = Math.floorMod(ny, grid[1]);
+                      nx = Math.floorMod(nx, grid[2]);
+                      cell = state[(nz * grid[1] + ny) * grid[2] + nx];
+                    } else if (nz < 0 || nz >= grid[0] || ny < 0 || ny >= grid[1] || nx < 0
+                        || nx >= grid[2]) {
+                      cell = bg;
+                    } else {
+                      cell = state[(nz * grid[1] + ny) * grid[2] + nx];
+                    }
+                    if (weights != null) {
+                      v += weights[w] * cell;
+                    } else if (isTotalistic) {
+                      v += cell;
+                    } else {
+                      v = v * k + cell;
+                    }
+                    w++;
+                  }
+                }
+              }
+            }
+            next[(z * grid[1] + y) * grid[2] + x] = ruleBits[v];
+          }
+        }
+      }
+      int nextBg = bgHistory.get(bgHistory.size() - 1);
+      if (!isCyclic) {
+        int v = 0;
+        for (int stepIdx = s; stepIdx >= 1; stepIdx--) {
+          int oldBg = bgHistory.get(bgHistory.size() - stepIdx);
+          for (int w = 0; w < blockSize; w++) {
+            if (weights != null) {
+              v += weights[w] * oldBg;
+            } else if (isTotalistic) {
+              v += oldBg;
+            } else {
+              v = v * k + oldBg;
+            }
+          }
+        }
+        nextBg = ruleBits[v];
+      }
+      history.add(next);
+      bgHistory.add(nextBg);
+    }
+
+    // the box of the cells to return: the initial array, and on a background every cell of the
+    // returned steps which differs from it
+    final boolean wholeGrid = isOperatorForm && !isCyclic;
+    final int[] min = new int[3];
+    final int[] max = new int[3];
+    for (int d = 0; d < 3; d++) {
+      min[d] = wholeGrid ? 0 : padding[d];
+      max[d] = wholeGrid ? grid[d] - 1 : padding[d] + size[d] - 1;
+    }
+    final int localDt = (dt == 0) ? 1 : dt;
+    if (!isCyclic && !isOperatorForm) {
+      for (int tIdx = tStart; (localDt > 0 ? tIdx <= tEnd : tIdx >= tEnd); tIdx += localDt) {
+        int hIdx = s - 1 + tIdx;
+        if (hIdx >= 0 && hIdx < history.size()) {
+          int[] state = history.get(hIdx);
+          int b = bgHistory.get(hIdx);
+          for (int z = 0; z < grid[0]; z++) {
+            for (int y = 0; y < grid[1]; y++) {
+              for (int x = 0; x < grid[2]; x++) {
+                if (state[(z * grid[1] + y) * grid[2] + x] != b) {
+                  min[0] = Math.min(min[0], z);
+                  max[0] = Math.max(max[0], z);
+                  min[1] = Math.min(min[1], y);
+                  max[1] = Math.max(max[1], y);
+                  min[2] = Math.min(min[2], x);
+                  max[2] = Math.max(max[2], x);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    IASTAppendable resultList = F.ListAlloc();
+    for (int tIdx = tStart; (localDt > 0 ? tIdx <= tEnd : tIdx >= tEnd); tIdx += localDt) {
+      int hIdx = s - 1 + tIdx;
+      if (hIdx >= 0 && hIdx < history.size()) {
+        int[] state = history.get(hIdx);
+        IASTAppendable array = F.ListAlloc(max[0] - min[0] + 1);
+        for (int z = min[0]; z <= max[0]; z++) {
+          IASTAppendable matrix = F.ListAlloc(max[1] - min[1] + 1);
+          for (int y = min[1]; y <= max[1]; y++) {
+            IASTAppendable row = F.ListAlloc(max[2] - min[2] + 1);
+            for (int x = min[2]; x <= max[2]; x++) {
+              row.append(F.ZZ(state[(z * grid[1] + y) * grid[2] + x]));
+            }
+            matrix.append(row);
+          }
+          array.append(matrix);
+        }
+        resultList.append(array);
+      }
+    }
+
+    if (isOperatorForm && resultList.argSize() == 1) {
+      if (!isCyclic) {
+        // on a background the operator form gives {array, {{{b}}}}
+        int bg = bgHistory.get(s - 1 + tStart);
+        return F.List(resultList.arg1(), F.List(F.List(F.List(F.ZZ(bg)))));
+      }
+      return resultList.arg1();
+    } else if (returnSingleStep && resultList.argSize() == 1) {
+      return resultList.arg1();
+    }
+    return resultList;
+  }
+
+  /**
+   * The weights of the cells of a <code>block[0] x block[1] x block[2]</code> neighbourhood as a
+   * flat array, or <code>null</code> if <code>wspec</code> isn't an array of that shape of
+   * non-negative integers.
+   */
+  private static int[] weights3D(IExpr wspec, int[] block) {
+    if (!wspec.isList() || wspec.argSize() != block[0]) {
+      return null;
+    }
+    int[] weights = new int[block[0] * block[1] * block[2]];
+    int w = 0;
+    for (int z = 1; z <= block[0]; z++) {
+      IExpr slice = wspec.getAt(z);
+      if (!slice.isList() || slice.argSize() != block[1]) {
+        return null;
+      }
+      for (int y = 1; y <= block[1]; y++) {
+        IExpr row = slice.getAt(y);
+        if (!row.isList() || row.argSize() != block[2]) {
+          return null;
+        }
+        for (int x = 1; x <= block[2]; x++) {
+          int value = row.getAt(x).isInteger() ? row.getAt(x).toIntDefault(-1) : -1;
+          if (value < 0) {
+            return null;
+          }
+          weights[w++] = value;
+        }
+      }
+    }
+    return weights;
+  }
+
+  /**
+   * Widen <code>size</code> to the extent <code>{slices, rows, columns}</code> of an array of
+   * rank 3.
+   *
+   * @return <code>false</code> if <code>array</code> isn't a list of lists of lists
+   */
+  private static boolean extent3D(IAST array, int[] size) {
+    size[0] = Math.max(size[0], array.argSize());
+    for (int z = 1; z <= array.argSize(); z++) {
+      IExpr slice = array.get(z);
+      if (!slice.isList()) {
+        return false;
+      }
+      size[1] = Math.max(size[1], slice.argSize());
+      for (int y = 1; y <= slice.argSize(); y++) {
+        IExpr row = slice.getAt(y);
+        if (!row.isList()) {
+          return false;
+        }
+        size[2] = Math.max(size[2], row.argSize());
+      }
+    }
+    return true;
   }
 
   /**

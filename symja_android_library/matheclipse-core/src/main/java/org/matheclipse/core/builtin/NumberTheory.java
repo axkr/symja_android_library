@@ -1070,6 +1070,29 @@ public final class NumberTheory {
         if (list.exists(x -> x.isList())) {
           return F.NIL;
         }
+        if (list.size() > 1 && list.forAll(x -> x.isInteger())) {
+          // p(k) = a(k)*p(k-1) + p(k-2), q(k) = a(k)*q(k-1) + q(k-2)
+          IASTAppendable resultList = F.ListAlloc(list.size());
+          IInteger pPrevious = F.C1;
+          IInteger qPrevious = F.C0;
+          IInteger p = (IInteger) list.arg1();
+          IInteger q = F.C1;
+          resultList.append(p);
+          for (int i = 2; i < list.size(); i++) {
+            IInteger a = (IInteger) list.get(i);
+            IInteger pNext = a.multiply(p).add(pPrevious);
+            IInteger qNext = a.multiply(q).add(qPrevious);
+            pPrevious = p;
+            qPrevious = q;
+            p = pNext;
+            q = qNext;
+            if (q.isZero()) {
+              return F.NIL;
+            }
+            resultList.append(F.QQ(p, q).normalize());
+          }
+          return resultList;
+        }
         if (list.size() > 1) {
           int size = list.argSize();
           IASTAppendable resultList = F.ListAlloc(list.size());
@@ -1269,6 +1292,40 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST1() && arg1.isAST(S.N, 3) && arg1.second().isInteger()) {
+        // an exact number given to a precision is evaluated with guard digits: the precision,
+        // not the rounding of the last digit, limits the number of terms
+        IExpr exact = engine.evaluate(arg1.first());
+        long digits = arg1.second().toLongDefault();
+        if (exact.isNumericFunction(true) && !exact.isInexactNumber() && !exact.isRational()
+            && digits > org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION
+            && digits < Config.MAX_PRECISION_APFLOAT - 20) {
+          IExpr value = engine.evalN(exact, digits + 20);
+          if (value instanceof ApfloatNum) {
+            return apfloatToContinuedFraction(((ApfloatNum) value).apfloatValue(), digits);
+          }
+        }
+      }
+      IExpr evaluated = engine.evaluate(arg1);
+      if (evaluated.isList()) {
+        // the first argument is held, so it is threaded here when it evaluated to a list
+        final IAST finalAST = ast;
+        return F.mapList((IAST) evaluated, x -> finalAST.setAtCopy(1, x));
+      }
+      if (evaluated.equals(arg1)) {
+        return evaluateArgument(ast, engine);
+      }
+      // an unevaluated result keeps the evaluated argument
+      IAST evaluatedAST = ast.setAtCopy(1, evaluated);
+      return evaluateArgument(evaluatedAST, engine).orElse(evaluatedAST);
+    }
+
+    /**
+     * <code>ContinuedFraction(x)</code> or <code>ContinuedFraction(x, n)</code> for an evaluated
+     * <code>x</code>.
+     */
+    private IExpr evaluateArgument(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       if (arg1.isComplex() || arg1.isComplexNumeric()) {
         // The value `1` is not a real number.
         return Errors.printMessage(S.ContinuedFraction, "realx", F.list(arg1), engine);
@@ -1293,6 +1350,13 @@ public final class NumberTheory {
             (IInteger) list4.arg3(), (IInteger) list4.arg4(), false, maxNTerms, engine);
       }
 
+      if (arg1 instanceof ApfloatNum && maxNTerms == Integer.MAX_VALUE) {
+        Apfloat value = ((ApfloatNum) arg1).apfloatValue();
+        // a number of infinite precision has no interval of uncertainty, it takes the general way
+        if (value.precision() < Integer.MAX_VALUE) {
+          return apfloatToContinuedFraction(value, value.precision());
+        }
+      }
       if (arg1 instanceof INum && maxNTerms == Integer.MAX_VALUE) {
         // arg1 = F.fraction(((INum) arg1).getRealPart());
         return realToContinuedFraction(((INum) arg1), maxNTerms, engine);
@@ -1363,6 +1427,59 @@ public final class NumberTheory {
       return continuedFractionList;
     }
 
+    /**
+     * The terms of the continued fraction which all numbers in the interval of uncertainty of an
+     * arbitrary precision number share: the value <code>x</code> stands for the numbers within
+     * <code>|x|*10^(-precision)</code>, and at least within one unit of its last digit.
+     *
+     * @param value the number, possibly with guard digits beyond <code>precision</code>
+     * @param precision the number of significant decimal digits
+     */
+    private static IAST apfloatToContinuedFraction(Apfloat value, long precision) {
+      boolean isNegative = value.signum() < 0;
+      java.math.BigDecimal x = new java.math.BigDecimal(ApfloatMath.abs(value).toString(true));
+      if (x.signum() == 0) {
+        return F.list(F.C0);
+      }
+      java.math.BigDecimal radius = x.movePointLeft((int) precision);
+      java.math.BigDecimal ulp = x.ulp();
+      if (ulp.compareTo(radius) > 0) {
+        radius = ulp;
+      }
+      BigInteger[] lo = toFraction(x.subtract(radius));
+      BigInteger[] hi = toFraction(x.add(radius));
+      IASTAppendable continuedFractionList = F.ListAlloc(10);
+      while (lo[1].signum() != 0 && hi[1].signum() != 0) {
+        BigInteger[] qrLo = lo[0].divideAndRemainder(lo[1]);
+        BigInteger[] qrHi = hi[0].divideAndRemainder(hi[1]);
+        if (!qrLo[0].equals(qrHi[0])) {
+          break;
+        }
+        continuedFractionList.append(F.ZZ(isNegative ? qrLo[0].negate() : qrLo[0]));
+        if (qrLo[1].signum() == 0 || qrHi[1].signum() == 0) {
+          break;
+        }
+        // the reciprocals of the remainders swap the ends of the interval
+        BigInteger[] nextLo = new BigInteger[] {hi[1], qrHi[1]};
+        hi = new BigInteger[] {lo[1], qrLo[1]};
+        lo = nextLo;
+      }
+      if (continuedFractionList.isEmpty()) {
+        // an interval around an integer
+        BigInteger integer = x.setScale(0, java.math.RoundingMode.HALF_EVEN).toBigInteger();
+        continuedFractionList.append(F.ZZ(isNegative ? integer.negate() : integer));
+      }
+      return continuedFractionList;
+    }
+
+    /** The numerator and denominator of a non-negative decimal number. */
+    private static BigInteger[] toFraction(java.math.BigDecimal decimal) {
+      if (decimal.scale() <= 0) {
+        return new BigInteger[] {decimal.toBigIntegerExact(), BigInteger.ONE};
+      }
+      return new BigInteger[] {decimal.unscaledValue(), BigInteger.TEN.pow(decimal.scale())};
+    }
+
     private static IAST realToContinuedFraction(INum value, int precision, EvalEngine engine) {
       double doubleValue = value.getRealPart();
       if (value.isNumIntValue()) {
@@ -1428,7 +1545,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE);
+      newSymbol.setAttributes(Attribute.HOLDFIRST, Attribute.LISTABLE);
     }
   }
 

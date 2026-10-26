@@ -9,6 +9,8 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
+import java.util.HashMap;
+import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.CompareUtil;
@@ -473,6 +475,10 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
             } else if (y.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)
                 && x.isPositiveResult()) {
               logPart = F.Log(x);
+            } else if (y.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+                && !x.isNumericFunction(true)) {
+              // a real x of unknown sign: Log(Abs(x)) == Log(x^2)/2
+              logPart = fEngine.evaluate(F.Times(F.C1D2, F.Log(F.Sqr(x))));
             } else {
               IExpr logPlusReImSquared =
                   F.PowerExpand(F.Log(F.FactorTerms(F.Plus(F.Sqr(x), F.Sqr(y)))));
@@ -794,6 +800,25 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
       } else {
         arg2 = F.NIL;
       }
+      // calls of undefined functions, like f(t), f'(t) or Subscript(c,1)(t), are taken as real:
+      // they stand in for real variables during the expansion
+      final Map<IExpr, IExpr> dummyToCall = new HashMap<IExpr, IExpr>();
+      final Map<IExpr, IExpr> callToDummy = new HashMap<IExpr, IExpr>();
+      IExpr replaced = arg1.replaceAll(x -> {
+        if (isUndefinedFunctionCall(x, arg2)) {
+          IExpr dummy = callToDummy.get(x);
+          if (dummy == null) {
+            dummy = F.Dummy();
+            callToDummy.put(x, dummy);
+            dummyToCall.put(dummy, x);
+          }
+          return dummy;
+        }
+        return F.NIL;
+      });
+      if (replaced.isPresent()) {
+        arg1 = replaced;
+      }
       // TODO implement for other TargetFunctions than Im,Re
       setAssumptions(arg1, arg2, oldAssumptions, engine);
 
@@ -802,10 +827,50 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
       if (temp.isPresent()) {
         result = engine.evaluate(temp);
       }
+      if (!dummyToCall.isEmpty()) {
+        engine.setAssumptions(oldAssumptions);
+        result = engine.evaluate(F.subst(result, dummyToCall));
+      }
       return result;
     } finally {
       engine.setAssumptions(oldAssumptions);
     }
+  }
+
+  /**
+   * Whether <code>expr</code> is a call of a function, which isn't built in, and which isn't one of
+   * the complex variables <code>arg2</code>: <code>f(t)</code>, a derivative <code>f'(t)</code>
+   * or an indexed function <code>Subscript(c,1)(t)</code>.
+   */
+  private static boolean isUndefinedFunctionCall(IExpr expr, IAST arg2) {
+    if (!expr.isAST() || expr.argSize() == 0) {
+      return false;
+    }
+    IExpr head = expr.head();
+    // the innermost symbol of a head like Derivative(1)(f) or Subscript(c,1)
+    if (head.isAST()) {
+      IAST headAST = (IAST) head;
+      if ((headAST.head().isAST(S.Derivative) && headAST.isAST1())
+          || (headAST.isAST(S.Subscript) && headAST.argSize() >= 1)) {
+        head = headAST.arg1();
+      } else if (headAST.head().isSymbol() && !headAST.head().isBuiltInSymbol()) {
+        head = headAST.head();
+      } else {
+        return false;
+      }
+    }
+    if (!head.isSymbol() || head.isBuiltInSymbol()) {
+      return false;
+    }
+    if (arg2.isPresent()) {
+      // a function of a complex variable, like f(z), isn't real
+      for (int j = 1; j < arg2.size(); j++) {
+        if (head.equals(arg2.get(j)) || !expr.isFree(arg2.get(j), true)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private static void setAssumptions(IExpr arg1, final IAST arg2, IAssumptions oldAssumptions,

@@ -19,6 +19,21 @@ final class BSpline {
    */
   static List<double[]> evaluate(List<double[]> control, int degree, boolean closed,
       double[] weights) {
+    return evaluate(control, degree, closed, weights, null);
+  }
+
+  /**
+   * @param control the control points
+   * @param degree the spline degree, at least 1
+   * @param closed whether the curve wraps around
+   * @param weights per control point weights for a rational spline, or {@code null}
+   * @param splineKnots the non-decreasing knot vector of an open spline, with one knot more than
+   *        the number of control points plus the degree, or {@code null} for the clamped uniform
+   *        knots
+   * @return the curve as a polyline, never {@code null}
+   */
+  static List<double[]> evaluate(List<double[]> control, int degree, boolean closed,
+      double[] weights, double[] splineKnots) {
     List<double[]> points = new ArrayList<>(control);
     double[] w = weights == null ? null : weights.clone();
     if (points.size() < 2) {
@@ -44,7 +59,10 @@ final class BSpline {
     int n = points.size();
     int knotCount = n + d + 1;
     double[] knots = new double[knotCount];
-    if (closed) {
+    if (!closed && splineKnots != null && splineKnots.length == knotCount
+        && d == Math.max(1, degree)) {
+      knots = splineKnots.clone();
+    } else if (closed) {
       for (int i = 0; i < knotCount; i++) {
         knots[i] = i;
       }

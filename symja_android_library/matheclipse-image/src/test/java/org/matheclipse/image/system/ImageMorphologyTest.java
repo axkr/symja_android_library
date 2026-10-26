@@ -83,6 +83,27 @@ public class ImageMorphologyTest extends AbstractTestCase {
   }
 
   @Test
+  public void testMorphologicalComponents3D() {
+    // an array of rank 3 is labelled in three dimensions: 26 neighbours by default
+    check("MorphologicalComponents({{{1, 1}, {0, 0}}, {{0, 0}, {0, 1}}}) == "
+        + "{{{1, 1}, {0, 0}}, {{0, 0}, {0, 1}}}", //
+        "True");
+    // only the 6 face neighbours without corners
+    check("MorphologicalComponents({{{1, 1}, {0, 0}}, {{0, 0}, {0, 1}}}, CornerNeighbors -> False) "
+        + "== {{{1, 1}, {0, 0}}, {{0, 0}, {0, 2}}}", //
+        "True");
+    check("MorphologicalComponents({{{0.2, 0.9}, {0.1, 0.8}}}, 0.5) == {{{0, 1}, {0, 1}}}", //
+        "True");
+    // the number of elements of each label
+    check("ComponentMeasurements({{{1, 1}, {0, 2}}, {{3, 0}, {0, 2}}}, \"Count\")", //
+        "{1->2,2->2,3->1}");
+    check("ComponentMeasurements({{1, 1, 0}, {0, 0, 2}}, {\"Count\", \"Count\"})", //
+        "{1->{2,2},2->{1,1}}");
+    check("ComponentMeasurements(Image({{1., 0., 1.}, {1., 0., 1.}}), \"Count\")", //
+        "{1->2,2->2}");
+  }
+
+  @Test
   public void testDistanceTransform() {
     // the distances are in pixels, not scaled to 0...1
     check("dist = DistanceTransform(Image(ReplacePart(Table(1, {5}, {6}), {1, 1} -> 0))); "

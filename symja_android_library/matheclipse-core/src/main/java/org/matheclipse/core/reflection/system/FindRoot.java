@@ -521,6 +521,23 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     ast = threadVectorEquations(ast);
     ast = flattenNestedEquations(ast);
     ast = unwrapSingleResidual(ast);
+    java.util.Map<IExpr, IExpr> renamed = indexedVariables(ast);
+    if (!renamed.isEmpty()) {
+      // a variable like T(1) or x(1)(0) is searched for as a symbol
+      java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+      for (java.util.Map.Entry<IExpr, IExpr> entry : renamed.entrySet()) {
+        back.put(entry.getValue(), entry.getKey());
+      }
+      IAST withSymbols = (IAST) F.subst(ast, renamed);
+      // the monitors refer to the variables too: StepMonitor :> Sow(T(1))
+      IExpr[] withSymbolsOptions = new IExpr[options.length];
+      for (int i = 0; i < options.length; i++) {
+        withSymbolsOptions[i] = options[i] == null ? null : F.subst(options[i], renamed);
+      }
+      IExpr result =
+          evaluate(withSymbols, withSymbols.argSize(), withSymbolsOptions, engine, originalAST);
+      return result.isPresent() ? F.subst(result, back) : F.NIL;
+    }
     StepMonitor monitor = options.length > 4 && options[4] != S.None //
         ? new StepMonitor(options[4], engine) //
         : null;
@@ -544,6 +561,32 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * The variables of the search specifications which are no symbols, as <code>T(1)</code> or
+   * <code>x(1)(0)</code>, each with a new symbol in its place.
+   */
+  private static java.util.Map<IExpr, IExpr> indexedVariables(IAST ast) {
+    java.util.Map<IExpr, IExpr> renamed = new java.util.HashMap<IExpr, IExpr>();
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr spec = ast.get(i);
+      if (!spec.isList() || spec.argSize() == 0) {
+        break;
+      }
+      IAST specs = spec.first().isList() ? (IAST) spec : F.list(spec);
+      for (IExpr variableSpec : specs) {
+        if (!variableSpec.isList() || variableSpec.argSize() == 0) {
+          continue;
+        }
+        IExpr variable = variableSpec.first();
+        if (variable.isAST() && !variable.isList() && !variable.isNumericFunction(true)
+            && !renamed.containsKey(variable)) {
+          renamed.put(variable, F.Dummy("x" + (renamed.size() + 1)));
+        }
+      }
+    }
+    return renamed;
   }
 
   /**
@@ -815,7 +858,15 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if ((needsComplexComputation || l2 > 1) && l1 == l2 && listOfEquations.isList()
         && arg2.isList()) {
       double accuracy = accuracy(accuracyGoal);
-      return multivariateFindRoot(listOfEquations, arg2, accuracy, maxIterations, monitor, engine);
+      return multivariateFindRoot(listOfEquations, arg2, F.NIL, accuracy, maxIterations, monitor,
+          engine);
+    } else if (l2 > 1 && l1 == 1 && ast.arg1().isAST() && !ast.arg1().isList()
+        && !ast.arg1().isEqual() && arg2.isListOfLists()) {
+      // a vector valued function like g(a_?NumericQ, b_?NumericQ) := {...}, which only gives its
+      // components for numbers
+      double accuracy = accuracy(accuracyGoal);
+      return multivariateFindRoot(listOfEquations, arg2, (IAST) ast.arg1(), accuracy,
+          maxIterations, monitor, engine);
     } else if ((arg2.isList2() || arg2.isList3()) && !arg2.isListOfLists()) {
       return univariateFindRoot(ast.arg1(), arg2, method, maxIterations, accuracyGoal, monitor,
           engine);
@@ -993,7 +1044,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * @return
    */
   private static IExpr multivariateFindRoot(IAST listOfEquations, IAST matrixOfVarValuePairs,
-      double tolerance, int maxIterations, StepMonitor monitor, EvalEngine engine) {
+      IAST vectorFunction, double tolerance, int maxIterations, StepMonitor monitor,
+      EvalEngine engine) {
     // convert parameters from FindRoot to be suitable for Newtons method
     final int numberOfVariables = matrixOfVarValuePairs.argSize();
     IASTAppendable vectorValuedFunction = F.ListAlloc(numberOfVariables);
@@ -1064,6 +1116,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         // Search specification `1` should be a list with 1 to 3 elements.
         return Errors.printMessage(S.FindRoot, "fdss", F.List(variableInitialGuessPair), engine);
       }
+      if (vectorFunction.isPresent()) {
+        continue;
+      }
       IExpr equation = listOfEquations.get(i);
       if (equation.isEqual()) {
         vectorValuedFunction
@@ -1074,16 +1129,25 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    IExpr result = multivariateNewton(vectorValuedFunction, vectorOfVariables, initialGuess,
-        tolerance, maxIterations, monitor, engine);
+    IExpr result = F.NIL;
+    if (vectorFunction.isPresent()) {
+      if (!allStartValuesAreReal) {
+        return F.NIL;
+      }
+      // the function gives the list of the residuals itself
+    } else {
+      result = multivariateNewton(vectorValuedFunction, vectorOfVariables, initialGuess,
+          tolerance, maxIterations, monitor, engine);
+    }
     if (result.isNIL() && allStartValuesAreReal) {
       // The jacobian matrix could not be determined symbolically, or could not be evaluated to
       // numbers - a function which is only defined for numeric arguments has no derivative to
       // differentiate. Determine the jacobian matrix numerically instead and keep it up to date
       // with Broyden's rank one updates, which costs one function evaluation per step where a
       // fresh finite difference matrix would cost one per entry.
-      result = new BroydenSolver(vectorValuedFunction, vectorOfVariables, realInitialGuess,
-          initialStepWidths, tolerance, maxIterations, monitor, engine).get();
+      result = new BroydenSolver(vectorFunction.isPresent() ? vectorFunction : vectorValuedFunction,
+          vectorOfVariables, realInitialGuess, initialStepWidths, tolerance, maxIterations,
+          monitor, engine).get();
     }
     if (result.isListOfRules()) {
       for (int i = 1; i < result.size(); i++) {

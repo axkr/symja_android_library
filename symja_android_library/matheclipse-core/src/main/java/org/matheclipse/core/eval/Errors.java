@@ -414,6 +414,7 @@ public class Errors {
           + "near `3` = `4`. NIntegrate obtained `5` and `6` for the integral and error estimates.", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
+      "ndnum", "Encountered non-numerical value for a derivative at `1` == `2`.", //
       "ndsz",
       "At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.", //
       "nlim", "`1` = `2` is not a valid limit of integration.", //

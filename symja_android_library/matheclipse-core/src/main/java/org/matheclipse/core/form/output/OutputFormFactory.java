@@ -2050,7 +2050,8 @@ public class OutputFormFactory {
               }
               break;
             case ID.Part:
-              if (list.size() >= 3) {
+              // Part[x] without indices prints as x[[]]
+              if (list.size() >= 2) {
                 convertPart(buf, list);
                 return;
               }

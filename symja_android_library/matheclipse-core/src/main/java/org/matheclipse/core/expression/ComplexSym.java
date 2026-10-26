@@ -947,10 +947,11 @@ public class ComplexSym implements IComplex {
     if (that instanceof ComplexSym) {
       return multiply((ComplexSym) that);
     }
-    if (that.isOne()) {
+    // an inexact 1 or -1 gives an inexact product
+    if (that.isOne() && !that.isInexactNumber()) {
       return this;
     }
-    if (that.isMinusOne()) {
+    if (that.isMinusOne() && !that.isInexactNumber()) {
       return negate();
     }
     if (F.isExactZero(that)) {

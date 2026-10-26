@@ -1624,7 +1624,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
             + "RhombicDodecahedron,RhombicTriacontahedron,SquarePyramid,Tetrahedron,"
             + "TruncatedIcosahedron}");
     check("PolyhedronData(\"Properties\")", //
-        "{Circumradius,EdgeCount,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Name,StandardName,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
     check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
         + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "
@@ -1736,7 +1736,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), {\"VertexCount\",\"EdgeCount\"})", //
         "{12,30}");
     check("EntityValue(\"Polyhedron\", \"Properties\")", //
-        "{Circumradius,EdgeCount,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Name,StandardName,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
     check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
         + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "

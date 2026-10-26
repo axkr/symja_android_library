@@ -240,6 +240,7 @@ public class Root extends AbstractFunctionEvaluator {
       // range index stays visible instead of being dressed up as a canonical Root object.
       return F.NIL;
     }
+    primitiveCoefficients(coefficients);
     // Build the polynomial over a dummy variable and evaluate it there: evaluating an expression
     // which contains Slot1 would substitute the slot if this Root object is nested in the body of
     // another pure function.
@@ -254,6 +255,42 @@ public class Root extends AbstractFunctionEvaluator {
     IExpr n = ast.isAST3() ? ast.arg3() : F.C0;
     IAST result = F.ternaryAST3(S.Root, F.Function(body), ast.arg2(), n);
     return result.equals(ast) ? F.NIL : result;
+  }
+
+  /**
+   * Replace rational coefficients by the integer coefficients without a common factor of the
+   * polynomial with the same roots and a positive leading coefficient:
+   * <code>#1^5/2 - #1 - 1</code> becomes <code>-2 - 2*#1 + #1^5</code>.
+   *
+   * @param coefficients the coefficients indexed by their exponent, changed in place; they are
+   *        left unchanged if one of them isn't rational
+   */
+  private static void primitiveCoefficients(IExpr[] coefficients) {
+    java.math.BigInteger lcm = java.math.BigInteger.ONE;
+    for (IExpr coefficient : coefficients) {
+      if (!coefficient.isRational()) {
+        return;
+      }
+      java.math.BigInteger denominator = ((IRational) coefficient).toBigDenominator();
+      lcm = lcm.divide(lcm.gcd(denominator)).multiply(denominator);
+    }
+    java.math.BigInteger[] integers = new java.math.BigInteger[coefficients.length];
+    java.math.BigInteger gcd = java.math.BigInteger.ZERO;
+    for (int i = 0; i < coefficients.length; i++) {
+      IRational coefficient = (IRational) coefficients[i];
+      integers[i] = coefficient.toBigNumerator().multiply(lcm)
+          .divide(coefficient.toBigDenominator());
+      gcd = gcd.gcd(integers[i]);
+    }
+    if (gcd.signum() == 0) {
+      return;
+    }
+    if (integers[integers.length - 1].signum() < 0) {
+      gcd = gcd.negate();
+    }
+    for (int i = 0; i < coefficients.length; i++) {
+      coefficients[i] = F.ZZ(integers[i].divide(gcd));
+    }
   }
 
   @Override

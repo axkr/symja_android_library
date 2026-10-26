@@ -2217,6 +2217,15 @@ public class StatisticsDiscreteDistributions {
       IAST p = probabilities(dist, categories, engine);
       // the sum over all categories which equal k
       IASTAppendable sum = F.PlusAlloc(categories.argSize());
+      if (categories.exists(x -> x.equals(k))) {
+        // the categories are distinct values, so k is just the category it is
+        for (int i = 1; i < categories.size(); i++) {
+          if (categories.get(i).equals(k)) {
+            sum.append(p.get(i));
+          }
+        }
+        return sum.oneIdentity0();
+      }
       boolean decided = true;
       for (int i = 1; i < categories.size(); i++) {
         if (categories.get(i).equals(k)) {
@@ -3293,6 +3302,11 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1() && k.isRational() && !k.isZero() && !k.isOne()) {
+        // the CDF of the unbounded distribution is a ratio with a zeta value, which an exact
+        // probability can't be compared with exactly
+        return F.NIL;
+      }
       return inverseCDFBySurvival(dist, k, () -> survival(dist), this, engine);
     }
 

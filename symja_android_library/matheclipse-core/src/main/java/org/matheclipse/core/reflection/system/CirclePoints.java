@@ -63,6 +63,11 @@ public class CirclePoints extends AbstractFunctionEvaluator {
           }
         }
 
+        IExpr machinePoints = machineCirclePoints(nExpr, n, cx, cy, r, theta);
+        if (machinePoints.isPresent()) {
+          return machinePoints;
+        }
+
         // If the starting angle isn't explicitly provided, use the default: Pi/n - Pi/2
         IExpr startAngle = theta;
         if (!startAngle.isPresent()) {
@@ -93,6 +98,39 @@ public class CirclePoints extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The points of machine numbers if the number of points or the first angle is a machine number
+   * and all arguments are real numbers. The angles are calculated as <code>Pi/n - Pi/2 + j*(2*Pi/n)</code> in machine
+   * arithmetic.
+   *
+   * @param theta the angle of the first point, or {@link F#NIL} for the default
+   *        <code>Pi/n - Pi/2</code>
+   * @return {@link F#NIL} if the angles are exact or an argument isn't a real number
+   */
+  private static IExpr machineCirclePoints(IExpr nExpr, int n, IExpr cx, IExpr cy, IExpr r,
+      IExpr theta) {
+    if (!nExpr.isInexactNumber() && !theta.isInexactNumber()) {
+      // exact angles: their sines and cosines are exact, and a machine radius or center only
+      // scales and moves them
+      return F.NIL;
+    }
+    if (!cx.isReal() || !cy.isReal() || !r.isReal() || (theta.isPresent() && !theta.isReal())) {
+      return F.NIL;
+    }
+    final double nd = n;
+    final double x0 = cx.evalf();
+    final double y0 = cy.evalf();
+    final double radius = r.evalf();
+    final double start = theta.isPresent() ? theta.evalf() : Math.PI / nd - Math.PI / 2.0;
+    final double step = 2.0 * Math.PI / nd;
+    return F.mapRange(0, n, j -> {
+      double angle = start + j * step;
+      // StrictMath: the same last digits on every platform
+      return F.List(F.num(x0 + radius * StrictMath.cos(angle)),
+          F.num(y0 + radius * StrictMath.sin(angle)));
+    });
   }
 
   @Override

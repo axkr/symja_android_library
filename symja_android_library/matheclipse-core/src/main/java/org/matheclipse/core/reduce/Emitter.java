@@ -256,8 +256,10 @@ public final class Emitter {
     IASTAppendable rules = F.ListAlloc(solution.variables().size());
     for (int index = 0; index < solution.variables().size(); index++) {
       IExpr value = latticeValue(solution, index);
+      // a value which doesn't depend on the parameters holds without their condition
       rules.append(F.Rule(solution.variables().get(index).symbol(),
-          condition.isNIL() ? value : F.ConditionalExpression(value, condition)));
+          condition.isNIL() || value.isNumber() ? value
+              : F.ConditionalExpression(value, condition)));
     }
     return F.list(rules);
   }

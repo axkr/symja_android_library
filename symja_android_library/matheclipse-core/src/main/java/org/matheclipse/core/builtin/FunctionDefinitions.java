@@ -60,6 +60,7 @@ public final class FunctionDefinitions {
       S.BellY.setEvaluator(new org.matheclipse.core.reflection.system.BellY());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
       S.BSplineFunction.setEvaluator(new org.matheclipse.core.reflection.system.BSplineFunction());
+      S.BSplineBasis.setEvaluator(new org.matheclipse.core.reflection.system.BSplineBasis());
       S.BinLists.setEvaluator(new org.matheclipse.core.reflection.system.BinLists());
       S.BoundingRegion.setEvaluator(new org.matheclipse.core.reflection.system.BoundingRegion());
       S.BoxMatrix.setEvaluator(new org.matheclipse.core.reflection.system.BoxMatrix());
@@ -98,6 +99,10 @@ public final class FunctionDefinitions {
       S.Casoratian.setEvaluator(new org.matheclipse.core.reflection.system.Casoratian());
       S.GreenFunction.setEvaluator(new org.matheclipse.core.reflection.system.GreenFunction());
       S.Wronskian.setEvaluator(new org.matheclipse.core.reflection.system.Wronskian());
+      S.WaveletPhi
+          .setEvaluator(new org.matheclipse.core.reflection.system.WaveletFunctions.WaveletPhi());
+      S.WaveletPsi
+          .setEvaluator(new org.matheclipse.core.reflection.system.WaveletFunctions.WaveletPsi());
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
       org.matheclipse.core.data.Entities.register("Element", S.ElementData);
@@ -412,6 +417,8 @@ public final class FunctionDefinitions {
       S.ContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ContourPlot());
       S.DensityHistogram.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityHistogram());
       S.DensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityPlot());
+      S.SmoothDensityHistogram
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.SmoothDensityHistogram());
       S.Histogram.setEvaluator(new org.matheclipse.core.builtin.graphics.Histogram());
       S.ListContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListContourPlot());
       S.ListDensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListDensityPlot());

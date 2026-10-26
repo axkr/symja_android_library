@@ -881,7 +881,7 @@ public class Symbol implements ISymbol, Serializable {
     IExpr result = evalDownRule(engine, this);
     if (result.isNIL() && engine.isNumericMode() && fRulesData != null && fRulesData.hasNValues()) {
       // N(x) = value: the numerical value of x, used wherever x is evaluated numerically
-      return fRulesData.evalUpRule(engine.nValueLHS(this), engine);
+      return engine.evalNValue(fRulesData, this);
     }
     return result;
   }

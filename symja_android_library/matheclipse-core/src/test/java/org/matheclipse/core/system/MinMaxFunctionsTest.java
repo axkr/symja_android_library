@@ -580,7 +580,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     check("Solve(t^3 - 4*t + 1 == 0, t, Reals)", //
         "{{t->Root(1-4*#1+#1^3&,1,0)},{t->Root(1-4*#1+#1^3&,2,0)},{t->Root(1-4*#1+#1^3&,3,\n0)}}");
     check("Minimize(t^4 - 8*t^2 + 4*t, t)", //
-        "{4*Root(4-16*#1+4*#1^3&,1,0)-8*Root(4-16*#1+4*#1^3&,1,0)^2+Root(4-16*#1+4*#1^3&,\n1,0)^4,{t->Root(4-16*#1+4*#1^3&,1,0)}}");
+        "{4*Root(1-4*#1+#1^3&,1,0)-8*Root(1-4*#1+#1^3&,1,0)^2+Root(1-4*#1+#1^3&,1,0)^4,{t->Root(\n1-4*#1+#1^3&,1,0)}}");
     check("N(Minimize(t^4 - 8*t^2 + 4*t, t))", //
         "{-24.23606,{t->-2.11491}}");
     check("Abs(First(N(Minimize(t^4 - 8*t^2 + 4*t, t))) - First(NMinimize(t^4 - 8*t^2 + 4*t, t))) < 10^-6", //

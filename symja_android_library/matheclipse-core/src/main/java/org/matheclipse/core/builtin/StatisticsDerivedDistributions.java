@@ -25,8 +25,8 @@ import org.matheclipse.core.interfaces.statistics.IStatistics;
  * Distributions which are derived from other distributions or from an explicit density:
  * {@link S#ProbabilityDistribution}, {@link S#TransformedDistribution},
  * {@link S#MixtureDistribution}, {@link S#ParameterMixtureDistribution},
- * {@link S#ProductDistribution}, {@link S#CensoredDistribution} and
- * {@link S#TruncatedDistribution}.
+ * {@link S#ProductDistribution}, {@link S#CensoredDistribution},
+ * {@link S#TruncatedDistribution} and {@link S#SmoothKernelDistribution}.
  */
 public class StatisticsDerivedDistributions {
 
@@ -43,6 +43,7 @@ public class StatisticsDerivedDistributions {
       S.DataDistribution.setEvaluator(new DataDistribution());
       S.EmpiricalDistribution.setEvaluator(new EmpiricalDistribution());
       S.HistogramDistribution.setEvaluator(new HistogramDistribution());
+      S.SmoothKernelDistribution.setEvaluator(new SmoothKernelDistribution());
     }
   }
 
@@ -51,7 +52,7 @@ public class StatisticsDerivedDistributions {
    * explicit probability density function.
    */
   public static final class ProbabilityDistribution extends AbstractEvaluator
-      implements ICDF, IContinuousDistribution, IPDF, IStatistics {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     /** The iterator specification <code>{x, xmin, xmax}</code> of the (first) variable. */
     private static IAST iterator(IAST dist) {
@@ -59,6 +60,178 @@ public class StatisticsDerivedDistributions {
         return (IAST) dist.arg2();
       }
       return null;
+    }
+
+    /** The number of cells of the table of the numeric cumulative distribution function. */
+    private static final int SAMPLER_CELLS = 8192;
+
+    /**
+     * Samples of a univariate density by inverse transform sampling on a table of its numeric
+     * cumulative distribution function. An infinite range is mapped onto a bounded one with
+     * <code>x = c + s*t/(1-t^2)</code> (or <code>x = c + s*t/(1-t)</code> for a half-infinite
+     * range), centered at the largest value of the density found on a coarse search and scaled by
+     * the width of that peak.
+     */
+    @Override
+    public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+      IAST iterator = iterator(dist);
+      if (iterator == null || !dist.isAST2() || !iterator.arg1().isSymbol()) {
+        return F.NIL;
+      }
+      EvalEngine engine = EvalEngine.get();
+      final ISymbol x = (ISymbol) iterator.arg1();
+      double lo = iterator.arg2().isNegativeInfinity() ? Double.NEGATIVE_INFINITY
+          : iterator.arg2().evalfNaN();
+      double hi = iterator.arg3().isInfinity() ? Double.POSITIVE_INFINITY
+          : iterator.arg3().evalfNaN();
+      if (Double.isNaN(lo) || Double.isNaN(hi) || !(lo < hi)) {
+        return F.NIL;
+      }
+      final org.matheclipse.core.generic.UnaryNumerical pdf;
+      try {
+        pdf = new org.matheclipse.core.generic.UnaryNumerical(dist.arg1(), x, Double.NaN, engine);
+      } catch (RuntimeException rex) {
+        return F.NIL;
+      }
+      java.util.function.DoubleUnaryOperator density = value -> {
+        double d = pdf.value(value);
+        return Double.isFinite(d) && d > 0.0 ? d : 0.0;
+      };
+      // a coarse search for the peak of the density
+      double center = Double.isFinite(lo) ? (Double.isFinite(hi) ? 0.5 * (lo + hi) : lo) : hi;
+      if (!Double.isFinite(center)) {
+        center = 0.0;
+      }
+      double peakX = center;
+      double peak = density.applyAsDouble(center);
+      if (!Double.isFinite(lo) || !Double.isFinite(hi)) {
+        for (int k = -6; k <= 12; k++) {
+          for (double mantissa : new double[] {1.0, 2.0, 5.0}) {
+            double offset = mantissa * Math.pow(10.0, k);
+            for (double candidate : new double[] {center + offset, center - offset}) {
+              if (candidate > lo && candidate < hi) {
+                double d = density.applyAsDouble(candidate);
+                if (d > peak) {
+                  peak = d;
+                  peakX = candidate;
+                }
+              }
+            }
+          }
+        }
+        if (!(peak > 0.0)) {
+          return F.NIL;
+        }
+      }
+      final double c;
+      final double t0;
+      final double t1;
+      final int mapping;
+      // the width of the peak, or its distance from a finite end of the range
+      double width = 1.0 / peak;
+      if (Double.isFinite(lo) != Double.isFinite(hi)) {
+        width = Math.max(width, Math.abs(peakX - center));
+      }
+      final double scale = Double.isFinite(lo) && Double.isFinite(hi) ? 1.0 : width;
+      if (Double.isFinite(lo) && Double.isFinite(hi)) {
+        mapping = 0;
+        c = 0.0;
+        t0 = lo;
+        t1 = hi;
+      } else if (Double.isFinite(lo)) {
+        mapping = 1;
+        c = lo;
+        t0 = 0.0;
+        t1 = 1.0;
+      } else if (Double.isFinite(hi)) {
+        mapping = -1;
+        c = hi;
+        t0 = 0.0;
+        t1 = 1.0;
+      } else {
+        mapping = 2;
+        c = peakX;
+        t0 = -1.0;
+        t1 = 1.0;
+      }
+      final int n = SAMPLER_CELLS;
+      double[] ts = new double[n + 1];
+      double[] xs = new double[n + 1];
+      double[] weights = new double[n + 1];
+      double h = (t1 - t0) / n;
+      for (int i = 0; i <= n; i++) {
+        double t = t0 + i * h;
+        ts[i] = t;
+        double value;
+        double derivative;
+        switch (mapping) {
+          case 1:
+          case -1:
+            if (t >= 1.0) {
+              xs[i] = mapping * Double.POSITIVE_INFINITY;
+              weights[i] = 0.0;
+              continue;
+            }
+            value = c + mapping * scale * t / (1.0 - t);
+            derivative = scale / ((1.0 - t) * (1.0 - t));
+            break;
+          case 2:
+            if (Math.abs(t) >= 1.0) {
+              xs[i] = t * Double.POSITIVE_INFINITY;
+              weights[i] = 0.0;
+              continue;
+            }
+            value = c + scale * t / (1.0 - t * t);
+            derivative = scale * (1.0 + t * t) / ((1.0 - t * t) * (1.0 - t * t));
+            break;
+          default:
+            value = t;
+            derivative = 1.0;
+        }
+        xs[i] = value;
+        weights[i] = density.applyAsDouble(value) * derivative;
+        if (!Double.isFinite(weights[i])) {
+          weights[i] = 0.0;
+        }
+      }
+      // the cumulative probabilities by the trapezoidal rule
+      double[] cdf = new double[n + 1];
+      for (int i = 1; i <= n; i++) {
+        cdf[i] = cdf[i - 1] + 0.5 * h * (weights[i - 1] + weights[i]);
+      }
+      double total = cdf[n];
+      if (!(total > 0.0) || !Double.isFinite(total)) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(size);
+      for (int s = 0; s < size; s++) {
+        double u = random.nextDouble() * total;
+        int index = java.util.Arrays.binarySearch(cdf, u);
+        if (index < 0) {
+          index = -index - 2;
+        }
+        index = Math.max(0, Math.min(n - 1, index));
+        double cell = cdf[index + 1] - cdf[index];
+        double fraction = cell > 0.0 ? (u - cdf[index]) / cell : 0.5;
+        double t = ts[index] + fraction * h;
+        double sample;
+        switch (mapping) {
+          case 1:
+          case -1:
+            sample = c + mapping * scale * t / (1.0 - t);
+            break;
+          case 2:
+            sample = c + scale * t / (1.0 - t * t);
+            break;
+          default:
+            sample = t;
+        }
+        if (!Double.isFinite(sample)) {
+          sample = xs[index];
+        }
+        result.append(F.num(sample));
+      }
+      return result;
     }
 
     @Override
@@ -1043,32 +1216,74 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.isAST1() || !ast.arg1().isList() || ast.arg1().size() < 2) {
+      if (!ast.isAST1()) {
         return F.NIL;
       }
-      IAST data = (IAST) ast.arg1();
-      IExpr[] values = new IExpr[data.argSize()];
+      IAST data;
+      IAST weights = F.NIL;
+      if (ast.arg1().isRuleAST() && ast.arg1().first().isList() && ast.arg1().second().isList()) {
+        // EmpiricalDistribution({w1, w2, ...} -> {x1, x2, ...})
+        weights = (IAST) ast.arg1().first();
+        data = (IAST) ast.arg1().second();
+        if (weights.size() != data.size()) {
+          return F.NIL;
+        }
+        for (int i = 1; i < weights.size(); i++) {
+          if (!weights.get(i).isReal() || weights.get(i).isNegative()) {
+            return F.NIL;
+          }
+        }
+      } else if (ast.arg1().isList()) {
+        data = (IAST) ast.arg1();
+      } else {
+        return F.NIL;
+      }
+      if (data.size() < 2) {
+        return F.NIL;
+      }
+      int n = data.argSize();
+      Integer[] order = new Integer[n];
+      boolean inexact = false;
       for (int i = 1; i < data.size(); i++) {
         if (!data.get(i).isReal()) {
           return F.NIL;
         }
-        values[i - 1] = data.get(i);
+        inexact |= data.get(i).isInexactNumber();
+        if (weights.isPresent()) {
+          inexact |= weights.get(i).isInexactNumber();
+        }
+        order[i - 1] = i;
       }
-      Arrays.sort(values, (a, b) -> a.compareTo(b));
+      final IAST values = data;
+      Arrays.sort(order, (a, b) -> values.get(a).compareTo(values.get(b)));
 
-      IASTAppendable distinct = F.ListAlloc(values.length);
-      IASTAppendable probabilities = F.ListAlloc(values.length);
-      int n = values.length;
+      IASTAppendable distinct = F.ListAlloc(n);
+      IASTAppendable sums = F.ListAlloc(n);
+      IASTAppendable total = F.PlusAlloc(n);
       int i = 0;
       while (i < n) {
-        int count = 1;
-        while (i + count < n && values[i + count].equals(values[i])) {
+        IExpr value = values.get(order[i]);
+        IASTAppendable sum = F.PlusAlloc(4);
+        int count = 0;
+        while (i + count < n && values.get(order[i + count]).equals(value)) {
+          sum.append(weights.isPresent() ? weights.get(order[i + count]) : F.C1);
           count++;
         }
-        distinct.append(values[i]);
-        probabilities.append(F.QQ(count, n));
+        distinct.append(value);
+        sums.append(sum.oneIdentity0());
+        total.append(sum.oneIdentity0());
         i += count;
       }
+      IExpr totalWeight = engine.evaluate(total.oneIdentity0());
+      if (totalWeight.isZero()) {
+        return F.NIL;
+      }
+      // the probabilities are machine numbers for inexact values or weights
+      final boolean numeric = inexact;
+      IASTAppendable probabilities = F.mapRange(1, sums.size(), j -> {
+        IExpr probability = engine.evaluate(F.Divide(sums.get(j), totalWeight));
+        return numeric ? engine.evalN(probability) : probability;
+      });
       return F.quaternary(S.DataDistribution, S.Empirical, F.list(probabilities, distinct, S.False),
           F.C1, F.ZZ(n));
     }
@@ -1204,6 +1419,26 @@ public class StatisticsDerivedDistributions {
         return new IAST[] {(IAST) dist.arg2().first(), (IAST) dist.arg2().second()};
       }
       return null;
+    }
+
+    /**
+     * <code>Expectation(expr, Distributed(x, dist))</code> of an empirical distribution: the sum of
+     * the values of <code>expr</code> at the data values, weighted with their probabilities.
+     *
+     * @return {@link F#NIL} if <code>dist</code> isn't an empirical distribution
+     */
+    public static IExpr empiricalExpectation(IAST dist, IExpr expr, IExpr x, EvalEngine engine) {
+      IAST[] e = empirical(dist);
+      if (e == null || e[0].size() != e[1].size()) {
+        return F.NIL;
+      }
+      IAST probabilities = e[0];
+      IAST values = e[1];
+      IASTAppendable sum = F.PlusAlloc(values.argSize());
+      for (int i = 1; i < values.size(); i++) {
+        sum.append(F.Times(probabilities.get(i), F.subst(expr, x, values.get(i))));
+      }
+      return engine.evaluate(sum);
     }
 
     /** <code>{densities, binBoundaries}</code> of a histogram distribution. */
@@ -1478,6 +1713,414 @@ public class StatisticsDerivedDistributions {
         return engine.evaluate(F.Subtract(histogramMoment(h[0], h[1], 2), F.Sqr(mean)));
       }
       return F.NIL;
+    }
+  }
+
+  /**
+   * <code>SmoothKernelDistribution(data)</code>, <code>SmoothKernelDistribution(data, bw)</code>
+   * or <code>SmoothKernelDistribution(data, bw, kernel)</code> - the kernel density estimate of the
+   * one dimensional <code>data</code>: the mixture with equal weights of the kernel, scaled to the
+   * standard deviation <code>bw</code>, centered at each data point.
+   *
+   * <p>
+   * The kernel is <code>"Gaussian"</code> (default), <code>"Epanechnikov"</code>,
+   * <code>"Biweight"</code>, <code>"Triweight"</code>, <code>"Triangular"</code>,
+   * <code>"Rectangular"</code>, <code>"Cosine"</code> or <code>"SemiCircle"</code>. The bandwidth
+   * <code>Automatic</code> or <code>"Silverman"</code> is Silverman's rule
+   * <code>0.9*Min(sigma, IQR/1.34)*n^(-1/5)</code>, with the sample standard deviation and the
+   * interquartile range of the linearly interpolated quartiles. The distribution functions are
+   * computed numerically.
+   */
+  public static final class SmoothKernelDistribution extends AbstractEvaluator
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
+
+    /** A kernel with variance <code>1</code>. */
+    private enum Kernel {
+      GAUSSIAN(Double.POSITIVE_INFINITY), //
+      EPANECHNIKOV(Math.sqrt(5.0)), //
+      BIWEIGHT(Math.sqrt(7.0)), //
+      TRIWEIGHT(3.0), //
+      TRIANGULAR(Math.sqrt(6.0)), //
+      RECTANGULAR(Math.sqrt(3.0)), //
+      COSINE(1.0 / Math.sqrt(1.0 - 8.0 / (Math.PI * Math.PI))), //
+      SEMICIRCLE(2.0);
+
+      /** the half width <code>a</code> of the support <code>[-a, a]</code> */
+      final double radius;
+
+      Kernel(double radius) {
+        this.radius = radius;
+      }
+
+      /** The density at <code>u</code>. */
+      double pdf(double u) {
+        if (this == GAUSSIAN) {
+          return Math.exp(-0.5 * u * u) / Math.sqrt(2.0 * Math.PI);
+        }
+        double t = u / radius;
+        if (t <= -1.0 || t >= 1.0) {
+          return 0.0;
+        }
+        double s = 1.0 - t * t;
+        double density;
+        switch (this) {
+          case EPANECHNIKOV:
+            density = 0.75 * s;
+            break;
+          case BIWEIGHT:
+            density = 15.0 / 16.0 * s * s;
+            break;
+          case TRIWEIGHT:
+            density = 35.0 / 32.0 * s * s * s;
+            break;
+          case TRIANGULAR:
+            density = 1.0 - Math.abs(t);
+            break;
+          case RECTANGULAR:
+            density = 0.5;
+            break;
+          case COSINE:
+            density = Math.PI / 4.0 * Math.cos(Math.PI * t / 2.0);
+            break;
+          default:
+            // SEMICIRCLE
+            density = 2.0 / Math.PI * Math.sqrt(s);
+            break;
+        }
+        return density / radius;
+      }
+
+      /** The distribution function at <code>u</code>. */
+      double cdf(double u) {
+        if (this == GAUSSIAN) {
+          return 0.5 * org.hipparchus.special.Erf.erfc(-u / Math.sqrt(2.0));
+        }
+        double t = u / radius;
+        if (t <= -1.0) {
+          return 0.0;
+        }
+        if (t >= 1.0) {
+          return 1.0;
+        }
+        double t2 = t * t;
+        switch (this) {
+          case EPANECHNIKOV:
+            return (2.0 + 3.0 * t - t * t2) / 4.0;
+          case BIWEIGHT:
+            return 0.5 + 15.0 / 16.0 * t * (1.0 - 2.0 * t2 / 3.0 + t2 * t2 / 5.0);
+          case TRIWEIGHT:
+            return 0.5 + 35.0 / 32.0 * t * (1.0 - t2 + 3.0 * t2 * t2 / 5.0 - t2 * t2 * t2 / 7.0);
+          case TRIANGULAR:
+            return t < 0.0 ? 0.5 * (1.0 + t) * (1.0 + t) : 1.0 - 0.5 * (1.0 - t) * (1.0 - t);
+          case RECTANGULAR:
+            return 0.5 * (1.0 + t);
+          case COSINE:
+            return 0.5 * (1.0 + Math.sin(Math.PI * t / 2.0));
+          default:
+            // SEMICIRCLE
+            return 0.5 + (t * Math.sqrt(1.0 - t2) + Math.asin(t)) / Math.PI;
+        }
+      }
+
+      /** A sample of the kernel. */
+      double sample(java.util.Random random) {
+        if (this == GAUSSIAN) {
+          return random.nextGaussian();
+        }
+        // invert the distribution function by bisection
+        double p = random.nextDouble();
+        double low = -radius;
+        double high = radius;
+        for (int i = 0; i < 60; i++) {
+          double middle = 0.5 * (low + high);
+          if (cdf(middle) < p) {
+            low = middle;
+          } else {
+            high = middle;
+          }
+        }
+        return 0.5 * (low + high);
+      }
+
+      static Kernel of(IExpr name) {
+        if (!name.isString()) {
+          return null;
+        }
+        for (Kernel kernel : values()) {
+          if (kernel.name().equalsIgnoreCase(name.toString())) {
+            return kernel;
+          }
+        }
+        return null;
+      }
+    }
+
+    /** The data, the bandwidth and the kernel of a smooth kernel distribution. */
+    private static final class Estimate {
+      final double[] data;
+      final double bandwidth;
+      final Kernel kernel;
+
+      Estimate(double[] data, double bandwidth, Kernel kernel) {
+        this.data = data;
+        this.bandwidth = bandwidth;
+        this.kernel = kernel;
+      }
+
+      double pdf(double x) {
+        double sum = 0.0;
+        for (double v : data) {
+          sum += kernel.pdf((x - v) / bandwidth);
+        }
+        return sum / (data.length * bandwidth);
+      }
+
+      double cdf(double x) {
+        double sum = 0.0;
+        for (double v : data) {
+          sum += kernel.cdf((x - v) / bandwidth);
+        }
+        return sum / data.length;
+      }
+
+      double mean() {
+        double sum = 0.0;
+        for (double v : data) {
+          sum += v;
+        }
+        return sum / data.length;
+      }
+
+      /** The central moment of the data points of the given order. */
+      double dataMoment(int order) {
+        double mean = mean();
+        double sum = 0.0;
+        for (double v : data) {
+          sum += Math.pow(v - mean, order);
+        }
+        return sum / data.length;
+      }
+
+      double variance() {
+        // the kernel has the variance bandwidth^2 and is independent of the data point
+        return dataMoment(2) + bandwidth * bandwidth;
+      }
+
+      /** The inverse of the distribution function, by bisection. */
+      double quantile(double q) {
+        double width = kernel == Kernel.GAUSSIAN ? 40.0 : kernel.radius;
+        double low = data[0] - width * bandwidth;
+        double high = data[data.length - 1] + width * bandwidth;
+        for (int i = 0; i < 200; i++) {
+          double middle = 0.5 * (low + high);
+          if (middle <= low || middle >= high) {
+            break;
+          }
+          if (cdf(middle) < q) {
+            low = middle;
+          } else {
+            high = middle;
+          }
+        }
+        return 0.5 * (low + high);
+      }
+    }
+
+    /**
+     * The estimate of a distribution <code>SmoothKernelDistribution(data, bw, kernel)</code>.
+     *
+     * @return <code>null</code> if the arguments are not supported
+     */
+    private static Estimate estimate(IAST dist) {
+      if (dist.argSize() < 1 || dist.argSize() > 3 || !dist.arg1().isList()
+          || dist.arg1().argSize() < 1) {
+        return null;
+      }
+      IAST list = (IAST) dist.arg1();
+      double[] data = new double[list.argSize()];
+      for (int i = 1; i < list.size(); i++) {
+        if (!list.get(i).isReal()) {
+          return null;
+        }
+        data[i - 1] = list.get(i).evalf();
+        if (!Double.isFinite(data[i - 1])) {
+          return null;
+        }
+      }
+      Arrays.sort(data);
+      Kernel kernel = Kernel.GAUSSIAN;
+      if (dist.argSize() == 3) {
+        kernel = Kernel.of(dist.arg3());
+        if (kernel == null) {
+          return null;
+        }
+      }
+      double bandwidth;
+      IExpr bw = dist.argSize() >= 2 ? dist.arg2() : S.Automatic;
+      if (bw == S.Automatic || bw.isString("Silverman")) {
+        bandwidth = silverman(data);
+      } else if (bw.isReal()) {
+        bandwidth = bw.evalf();
+      } else {
+        return null;
+      }
+      if (!(bandwidth > 0.0) || !Double.isFinite(bandwidth)) {
+        return null;
+      }
+      return new Estimate(data, bandwidth, kernel);
+    }
+
+    /**
+     * Silverman's rule <code>0.9*Min(sigma, IQR/1.34)*n^(-1/5)</code> for the sorted
+     * <code>data</code>; a vanishing interquartile range falls back to <code>sigma</code>.
+     */
+    private static double silverman(double[] data) {
+      int n = data.length;
+      if (n < 2) {
+        return Double.NaN;
+      }
+      double mean = 0.0;
+      for (double v : data) {
+        mean += v;
+      }
+      mean /= n;
+      double squares = 0.0;
+      for (double v : data) {
+        squares += (v - mean) * (v - mean);
+      }
+      double sigma = Math.sqrt(squares / (n - 1));
+      double iqr = (quartile(data, 0.75) - quartile(data, 0.25)) / 1.34;
+      double spread = iqr > 0.0 ? Math.min(sigma, iqr) : sigma;
+      return 0.9 * spread * Math.pow(n, -0.2);
+    }
+
+    /** The quantile with linear interpolation between the order statistics of sorted data. */
+    private static double quartile(double[] data, double p) {
+      double position = p * (data.length - 1);
+      int below = (int) Math.floor(position);
+      int above = Math.min(below + 1, data.length - 1);
+      return data[below] + (position - below) * (data[above] - data[below]);
+    }
+
+    /** Apply <code>function</code> to a real number <code>x</code> or to the elements of a list. */
+    private static IExpr map(IExpr x, java.util.function.DoubleUnaryOperator function) {
+      if (x.isList()) {
+        IAST list = (IAST) x;
+        IASTAppendable result = F.ListAlloc(list.argSize());
+        for (int i = 1; i < list.size(); i++) {
+          IExpr value = map(list.get(i), function);
+          if (value.isNIL()) {
+            return F.NIL;
+          }
+          result.append(value);
+        }
+        return result;
+      }
+      if (x.isReal()) {
+        return F.num(function.applyAsDouble(x.evalf()));
+      }
+      if (x.isInfinity()) {
+        return F.num(function.applyAsDouble(Double.POSITIVE_INFINITY));
+      }
+      if (x.isNegativeInfinity()) {
+        return F.num(function.applyAsDouble(Double.NEGATIVE_INFINITY));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+      Estimate estimate = estimate(dist);
+      if (estimate == null || x.isNIL()) {
+        return F.NIL;
+      }
+      return map(x, estimate::cdf);
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
+      Estimate estimate = estimate(dist);
+      if (estimate == null || !q.isReal()) {
+        return F.NIL;
+      }
+      double p = q.evalf();
+      if (p < 0.0 || p > 1.0) {
+        return F.NIL;
+      }
+      if (p == 0.0) {
+        return estimate.kernel == Kernel.GAUSSIAN ? F.CNInfinity
+            : F.num(estimate.data[0] - estimate.kernel.radius * estimate.bandwidth);
+      }
+      if (p == 1.0) {
+        return estimate.kernel == Kernel.GAUSSIAN ? F.CInfinity
+            : F.num(estimate.data[estimate.data.length - 1]
+                + estimate.kernel.radius * estimate.bandwidth);
+      }
+      return F.num(estimate.quantile(p));
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      Estimate estimate = estimate(dist);
+      return estimate == null ? F.NIL : F.num(estimate.mean());
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      Estimate estimate = estimate(dist);
+      return estimate == null ? F.NIL : F.num(estimate.quantile(0.5));
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+      Estimate estimate = estimate(dist);
+      if (estimate == null || x.isNIL()) {
+        return F.NIL;
+      }
+      return map(x, estimate::pdf);
+    }
+
+    @Override
+    public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+      Estimate estimate = estimate(dist);
+      if (estimate == null) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(size);
+      for (int i = 0; i < size; i++) {
+        double center = estimate.data[random.nextInt(estimate.data.length)];
+        result.append(F.num(center + estimate.bandwidth * estimate.kernel.sample(random)));
+      }
+      return result;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      Estimate estimate = estimate(dist);
+      if (estimate == null) {
+        return F.NIL;
+      }
+      // a symmetric kernel adds nothing to the third central moment of the data points
+      return F.num(estimate.dataMoment(3) / Math.pow(estimate.variance(), 1.5));
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      Estimate estimate = estimate(dist);
+      return estimate == null ? F.NIL : F.num(estimate.variance());
     }
   }
 

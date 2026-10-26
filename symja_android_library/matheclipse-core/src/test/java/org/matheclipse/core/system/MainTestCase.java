@@ -377,8 +377,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("(1-x)^4/(-1+x)^8", "1/(1-x)^4");
     check("1+(-1+x)/(1-x)", "1+(-1+x)/(1-x)");
     check("i * ((1 - ((i * 1) / 10)) / (1 - ((i * 1) / 10)))", "i");
+    // the inexact factor 1.0 makes the factor 1/10 inexact
     check("((1 - ((i * 1.0) / 10)) / (1.0 - ((i * 1.0) / 10)))", //
-        "(1-i/10)/(1.0-i/10)");
+        "(1-0.1*i)/(1.0-0.1*i)");
     check("((1 - ((i * 1.0) / 10)) / (1.0 - ((i * 1.0) / 10))) // Simplify", //
         "1");
 

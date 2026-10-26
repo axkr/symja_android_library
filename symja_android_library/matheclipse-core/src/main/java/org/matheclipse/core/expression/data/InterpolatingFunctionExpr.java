@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -106,6 +107,127 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   }
 
   /**
+   * How the components of the solution of an ordinary differential equation lie in the state
+   * vector of numbers the integrator works with, when they are not simply one real number each at
+   * the index of the component: a component may be a vector of numbers, and a complex state holds
+   * the imaginary parts of all its numbers after the real parts.
+   */
+  public static final class StateLayout implements java.io.Serializable {
+    private static final long serialVersionUID = -2405913370123598470L;
+
+    /**
+     * Where the numbers of every component start, and one past the last one, or <code>null</code>
+     * if every component is one number at its own index.
+     */
+    private final int[] start;
+
+    /**
+     * <code>true</code> for a component which is a vector of numbers, or <code>null</code> if none
+     * is.
+     */
+    private final boolean[] vector;
+
+    /** The number of real parts, <code>0</code> if the state is real. */
+    private final int imaginaryOffset;
+
+    /**
+     * @param start where the numbers of every component start, and one past the last one, or
+     *        <code>null</code> if every component is one number
+     * @param vector <code>true</code> for a component which is a vector, or <code>null</code>
+     * @param components the number of components
+     * @param complex <code>true</code> if the numbers are complex
+     */
+    public StateLayout(int[] start, boolean[] vector, int components, boolean complex) {
+      this.start = start;
+      this.vector = vector;
+      this.imaginaryOffset = complex ? (start == null ? components : start[components]) : 0;
+    }
+
+    /** <code>true</code> if the numbers are complex. */
+    public boolean isComplex() {
+      return imaginaryOffset > 0;
+    }
+
+    /** The length of the state vector of <code>components</code> components. */
+    public int length(int components) {
+      int real = start == null ? components : start[components];
+      return isComplex() ? 2 * real : real;
+    }
+
+    private int start(int component) {
+      return start == null ? component : start[component];
+    }
+
+    private boolean isVector(int component) {
+      return vector != null && vector[component];
+    }
+
+    /** The value of component <code>component</code> of <code>state</code>. */
+    public IExpr read(double[] state, int component) {
+      final int first = start(component);
+      if (isVector(component)) {
+        final int width = start(component + 1) - first;
+        IASTAppendable list = F.ListAlloc(width);
+        for (int k = 0; k < width; k++) {
+          list.append(number(state, first + k));
+        }
+        return list;
+      }
+      return number(state, first);
+    }
+
+    private IExpr number(double[] state, int index) {
+      return isComplex() ? F.complexNum(state[index], state[imaginaryOffset + index])
+          : F.num(state[index]);
+    }
+
+    /**
+     * Store the numeric value <code>value</code> as component <code>component</code> of
+     * <code>state</code>.
+     *
+     * @return <code>false</code> if it has not the shape of the component, or isn't numeric; the
+     *         numbers of the component are then {@link Double#NaN}
+     */
+    public boolean write(IExpr value, double[] state, int component) {
+      final int first = start(component);
+      if (isVector(component)) {
+        final int width = start(component + 1) - first;
+        if (value.isSparseArray()) {
+          value = value.normal(false);
+        }
+        boolean numeric = value.isList() && value.argSize() == width;
+        for (int k = 0; k < width; k++) {
+          numeric &= writeNumber(numeric ? value.getAt(k + 1) : F.NIL, state, first + k);
+        }
+        return numeric;
+      }
+      return writeNumber(value, state, first);
+    }
+
+    private boolean writeNumber(IExpr value, double[] state, int index) {
+      double re = Double.NaN;
+      double im = Double.NaN;
+      if (value.isPresent()) {
+        if (value.isReal()) {
+          re = value.evalf();
+          im = 0.0;
+        } else if (isComplex() && value.isNumber()) {
+          org.hipparchus.complex.Complex c = value.evalfc();
+          re = c.getReal();
+          im = c.getImaginary();
+        } else if (!isComplex()) {
+          re = value.evalfNaN();
+        }
+      }
+      state[index] = re;
+      if (isComplex()) {
+        state[imaginaryOffset + index] = im;
+      }
+      return !Double.isNaN(re) && !Double.isNaN(im);
+    }
+  }
+
+  /**
    * Wrapper for the solution of an ordinary differential equation, held as the continuous extension
    * the integrator built while it stepped.
    *
@@ -142,6 +264,12 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
 
     /** The state at <code>t0</code>: the value on a domain of the single point <code>t0</code>. */
     private double[] initialState = null;
+
+    /**
+     * Where the components lie in the state, or <code>null</code> if each is one real number at
+     * its own index.
+     */
+    private StateLayout layout = null;
 
     /**
      * @param forward the model covering <code>[t0, max]</code>, or <code>null</code>
@@ -189,6 +317,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       ODEFunctionExpr function = new ODEFunctionExpr(models[0], models[1], t0, c, blockEnd,
           derivativeOfState, min, max);
       function.initialState = initialState;
+      function.layout = layout;
       return function;
     }
 
@@ -207,10 +336,15 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       }
       if (model == null) {
         // nothing was integrated: the domain is t0 alone
-        return stateDerivative ? F.NIL : F.num(initialState[component]);
+        return stateDerivative ? F.NIL : read(initialState);
       }
-      return F.num(stateDerivative ? model.getInterpolatedState(t).getPrimaryDerivative()[component]
-          : model.getInterpolatedState(t).getPrimaryState()[component]);
+      return read(stateDerivative ? model.getInterpolatedState(t).getPrimaryDerivative()
+          : model.getInterpolatedState(t).getPrimaryState());
+    }
+
+    /** This function's component of the state vector <code>state</code>. */
+    private IExpr read(double[] state) {
+      return layout == null ? F.num(state[component]) : layout.read(state, component);
     }
 
     /** The same solution component of the same integration, or its same derivative. */
@@ -228,7 +362,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       return models[0] == otherModels[0] && models[1] == otherModels[1]
           && component == other.component && stateDerivative == other.stateDerivative
           && t0 == other.t0 && min == other.min && max == other.max
-          && initialState == other.initialState;
+          && initialState == other.initialState && layout == other.layout;
     }
 
     @Override
@@ -244,6 +378,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       ODEFunctionExpr function = new ODEFunctionExpr(models[0], models[1], t0, component,
           blockEnd, stateDerivative, min, max);
       function.initialState = initialState;
+      function.layout = layout;
       return function;
     }
 
@@ -441,6 +576,23 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   }
 
   /**
+   * Create a new instance for component <code>component</code> of the solution of an ODE, whose
+   * derivatives are the components up to <code>blockEnd</code>, and whose components lie in the
+   * state as <code>layout</code> says.
+   *
+   * @param layout where the components lie in the state, or <code>null</code> if each is one real
+   *        number at its own index
+   */
+  public static InterpolatingFunctionExpr newInstance(final DenseOutputModel forward,
+      final DenseOutputModel backward, double t0, int component, int blockEnd, double min,
+      double max, StateLayout layout) {
+    ODEFunctionExpr function =
+        new ODEFunctionExpr(forward, backward, t0, component, blockEnd, false, min, max);
+    function.layout = layout;
+    return function;
+  }
+
+  /**
    * The <code>n</code>-th derivative of this function, or {@link F#NIL} if it isn't known.
    *
    * @param n a positive order
@@ -471,8 +623,21 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
    */
   public static InterpolatingFunctionExpr newInstance(final double[] initialState, double t0,
       int component) {
+    return newInstance(initialState, t0, component, null);
+  }
+
+  /**
+   * Create a new instance for the solution of an ODE on the single point <code>t0</code>, whose
+   * components lie in the state as <code>layout</code> says.
+   *
+   * @param layout where the components lie in the state, or <code>null</code> if each is one real
+   *        number at its own index
+   */
+  public static InterpolatingFunctionExpr newInstance(final double[] initialState, double t0,
+      int component, StateLayout layout) {
     ODEFunctionExpr function = new ODEFunctionExpr(null, null, t0, component, t0, t0);
     function.initialState = initialState;
+    function.layout = layout;
     return function;
   }
 

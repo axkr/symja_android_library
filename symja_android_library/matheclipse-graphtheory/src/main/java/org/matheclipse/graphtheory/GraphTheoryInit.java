@@ -104,6 +104,7 @@ public class GraphTheoryInit {
     S.GlobalClusteringCoefficient
         .setEvaluator(new org.matheclipse.graphtheory.reflection.GlobalClusteringCoefficient());
     S.Graph3D.setEvaluator(new org.matheclipse.graphtheory.graphics.Graph3D());
+    S.GraphPlot3D.setEvaluator(new org.matheclipse.graphtheory.graphics.GraphPlot3D());
     S.GraphDistance.setEvaluator(new org.matheclipse.graphtheory.reflection.GraphDistance());
     S.IncidenceMatrix.setEvaluator(new org.matheclipse.graphtheory.reflection.IncidenceMatrix());
     S.KaryTree.setEvaluator(new org.matheclipse.graphtheory.reflection.KaryTree());

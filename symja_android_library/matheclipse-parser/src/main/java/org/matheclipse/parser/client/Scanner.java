@@ -515,6 +515,21 @@ public abstract class Scanner {
   }
 
   /**
+   * Test if the character following a just scanned <code>#</code> or <code>##</code> can start the
+   * slot's number or name. A slot argument must follow the <code>#</code> directly:
+   * <code># x</code> is the product <code>#1*x</code> and not the named slot <code>#x</code>.
+   *
+   * @return <code>false</code> at the end of the input or if white space follows
+   */
+  protected final boolean isSlotArgumentAdjacent() {
+    if (fInputString.length > fCurrentPosition) {
+      char ch = fInputString[fCurrentPosition];
+      return !Character.isWhitespace(ch);
+    }
+    return false;
+  }
+
+  /**
    * Create a string with first character 1 appending exponent times 0.
    *
    * @param nonNegativeExponent the number of <code>0</code> which should be appended; the number

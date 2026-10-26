@@ -1172,6 +1172,20 @@ public class ImageGeometryFunctions {
       if (list.argSize() != 2) {
         return null;
       }
+      if (list.arg1().isList1() && list.arg2().isList1()) {
+        // {{wmax}, {hmax}} - as large as fits inside the maximum width and height, keeping the
+        // aspect ratio
+        double maxWidth = list.arg1().first().evalfNaN();
+        double maxHeight = list.arg2().first().evalfNaN();
+        if (!(maxWidth >= 1.0) || !(maxHeight >= 1.0) || Double.isInfinite(maxWidth)
+            || Double.isInfinite(maxHeight)) {
+          return null;
+        }
+        double factor = Math.min(maxWidth / width, maxHeight / height);
+        return new int[] {
+            Math.max(1, (int) Math.min(Math.floor(maxWidth), Math.round(width * factor))),
+            Math.max(1, (int) Math.min(Math.floor(maxHeight), Math.round(height * factor)))};
+      }
       int targetWidth = dimension(list.arg1());
       int targetHeight = dimension(list.arg2());
       if (targetWidth == Config.INVALID_INT || targetHeight == Config.INVALID_INT) {

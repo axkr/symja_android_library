@@ -73,7 +73,8 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
     if (result.isNIL()) {
       return result;
     }
-    return Solve.sortNumericSolutions(engine.evaluate(F.N(result, precision)));
+    return Solve.sortNumericSolutions(Solve.withNumericValues(result,
+        value -> engine.evaluate(F.N(value, precision))));
   }
 
   /**

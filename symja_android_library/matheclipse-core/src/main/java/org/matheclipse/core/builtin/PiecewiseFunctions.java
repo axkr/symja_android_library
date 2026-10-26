@@ -673,17 +673,18 @@ public class PiecewiseFunctions {
         final IAST row = matrix.getAST(i);
         condition = row.arg2();
         if (condition.isTrue()) {
+          if (noBoolean) {
+            // the rows before are undecided: the value of the first true condition becomes the
+            // default value
+            piecewiseAST = createPiecewise(piecewiseAST, result);
+            piecewiseAST.append(row.arg1());
+            return piecewiseAST;
+          }
           if (!evaluated && i == matrixSize - 1) {
             if (!row.arg1().isSymbol()) {
               return row.arg1();
             }
             return F.NIL;
-          }
-          if (noBoolean) {
-            // result = appendPiecewise(result, row.arg1(), S.True, matrixSize);
-            piecewiseAST = createPiecewise(piecewiseAST, result);
-            piecewiseAST.append(row.arg1());
-            return piecewiseAST;
           }
           return row.arg1();
         } else if (condition.isFalse()) {

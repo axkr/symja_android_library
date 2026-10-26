@@ -486,8 +486,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Compile");
     check("c[{1, 2, 3, 4}, {10, 20, 30, 40, 50}]", //
         "{11,22,29,44,51}");
+    // an untyped parameter is a real number, as in compiled code
     check("d = Compile[{x}, x^2 + 1]; d[3]", //
-        "10");
+        "10.0");
   }
 
   @Test

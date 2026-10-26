@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.F;
@@ -695,6 +696,37 @@ public final class RulesData implements Serializable {
   }
 
   /**
+   * Whether the right-hand side of a delayed rule without patterns is <code>rhs /; test</code> (or a
+   * <code>Module</code>, <code>With</code>, <code>Block</code> with such a condition): the rule
+   * applies only if the test gives <code>True</code>.
+   */
+  private static boolean isConditionalRHS(PatternMatcherEquals rule) {
+    final IExpr rhs = rule.getRHS();
+    return (rhs.isCondition() || rhs.isBlockModuleOrWithCondition()) && (rule.getFlags()
+        & (IPatternMatcher.SET_DELAYED | IPatternMatcher.UPSET_DELAYED
+            | IPatternMatcher.TAGSET_DELAYED)) != 0;
+  }
+
+  /**
+   * Evaluate the right-hand side <code>rhs /; test</code> of a rule without patterns.
+   *
+   * @return {@link F#NIL} if the test doesn't give <code>True</code>
+   */
+  private static IExpr evalConditionalRHS(PatternMatcherEquals rule, EvalEngine engine) {
+    final boolean evalRHSMode = engine.isEvalRHSMode();
+    try {
+      engine.setEvalRHSMode(true);
+      return engine.evaluate(rule.getRHS());
+    } catch (ConditionException cex) {
+      return F.NIL;
+    } catch (ReturnException rex) {
+      return rex.getValue();
+    } finally {
+      engine.setEvalRHSMode(evalRHSMode);
+    }
+  }
+
+  /**
    * Try matching the <code>expr</code> expression with this pattern-matching rules and if matching
    * rule was found, return the evaluated right-hand-side of that matching rule, otherwise return
    * {@link F#NIL}.
@@ -713,17 +745,25 @@ public final class RulesData implements Serializable {
           // fixed point, not an endless iteration
           return F.NIL;
         }
-        if (res.rhsHasReturn()) {
-          // A definition is where a Return stops - it gives its value for the whole definition -
-          // so a right-hand side which contains one is evaluated here, at the definition's own
-          // boundary, rather than handed back for the evaluation loop to continue with.
-          try {
-            return engine.evaluate(res.getRHS());
-          } catch (ReturnException rex) {
-            return rex.getValue();
+        if (isConditionalRHS(res)) {
+          IExpr value = evalConditionalRHS(res, engine);
+          if (value.isPresent()) {
+            return value;
           }
+          // the test failed: the pattern rules may still apply
+        } else {
+          if (res.rhsHasReturn()) {
+            // A definition is where a Return stops - it gives its value for the whole definition
+            // - so a right-hand side which contains one is evaluated here, at the definition's own
+            // boundary, rather than handed back for the evaluation loop to continue with.
+            try {
+              return engine.evaluate(res.getRHS());
+            } catch (ReturnException rex) {
+              return rex.getValue();
+            }
+          }
+          return res.getRHS();
         }
-        return res.getRHS();
       }
     }
     if (!expr.isASTOrAssociation()) {
@@ -1012,7 +1052,13 @@ public final class RulesData implements Serializable {
           // a rule without a pattern which gives back its own left-hand side is a fixed point
           return F.NIL;
         }
-        return res.getRHS();
+        if (!isConditionalRHS(res)) {
+          return res.getRHS();
+        }
+        IExpr value = evalConditionalRHS(res, engine);
+        if (value.isPresent()) {
+          return value;
+        }
       }
     }
 

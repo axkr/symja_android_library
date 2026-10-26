@@ -543,15 +543,33 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param evaluate
    */
   private IExpr replaceEqualMatch(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
-    if (!evaluate) {
+    // the test of a delayed lhs :> rhs /; test decides also if lhs contains no pattern
+    final boolean conditionalRHS =
+        (fRightHandSide.isCondition() || fRightHandSide.isBlockModuleOrWithCondition())
+            && (getFlags() & (IPatternMatcher.SET_DELAYED | IPatternMatcher.UPSET_DELAYED
+                | IPatternMatcher.TAGSET_DELAYED)) != 0;
+    if (!evaluate && !conditionalRHS) {
       return fRightHandSide;
     }
+    final boolean evalRHSMode = engine.isEvalRHSMode();
     try {
+      if (conditionalRHS) {
+        engine.setEvalRHSMode(true);
+        if (!evaluate) {
+          if (fRightHandSide.isCondition()) {
+            // only the test is evaluated, the body is returned as it is
+            return engine.evalTrue(fRightHandSide.second()) ? fRightHandSide.first() : F.NIL;
+          }
+          return fRightHandSide.eval(engine);
+        }
+      }
       return evalEqualMatch(leftHandSide, fRightHandSide, engine);
     } catch (final ConditionException e) {
       return F.NIL;
     } catch (final ReturnException e) {
       return evalEqualMatch(leftHandSide, e.getValue(), engine);
+    } finally {
+      engine.setEvalRHSMode(evalRHSMode);
     }
   }
 

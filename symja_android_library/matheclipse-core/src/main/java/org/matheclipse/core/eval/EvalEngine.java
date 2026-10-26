@@ -4210,7 +4210,7 @@ public class EvalEngine implements Serializable {
       // N(f(x_)) := value: the numerical value of a call which has no other value
       RulesData rulesData = symbol.getRulesData();
       if (rulesData != null && rulesData.hasNValues()) {
-        temp = rulesData.evalUpRule(nValueLHS(ast), this);
+        temp = evalNValue(rulesData, ast);
         if (temp.isPresent()) {
           return temp;
         }
@@ -4235,6 +4235,25 @@ public class EvalEngine implements Serializable {
       return F.binaryAST2(S.N, expr, F.num(getSignificantFigures()));
     }
     return F.unaryAST1(S.N, expr);
+  }
+
+  /**
+   * The N-value of <code>expr</code> at the current precision, numericized with that precision:
+   * <code>N(f(1)) = {1, 2}</code> gives <code>{1., 2.}</code> for <code>f(1)</code>.
+   *
+   * @param rulesData the rules of the symbol of <code>expr</code>
+   * @param expr a symbol or a call
+   * @return {@link F#NIL} if <code>expr</code> has no N-value at the current precision
+   */
+  public IExpr evalNValue(RulesData rulesData, IExpr expr) {
+    IExpr value = rulesData.evalUpRule(nValueLHS(expr), this);
+    if (value.isPresent() && !value.isInexactNumber()) {
+      if (isArbitraryMode()) {
+        return F.binaryAST2(S.N, value, F.ZZ(getSignificantFigures()));
+      }
+      return F.unaryAST1(S.N, value);
+    }
+    return value;
   }
 
   /**

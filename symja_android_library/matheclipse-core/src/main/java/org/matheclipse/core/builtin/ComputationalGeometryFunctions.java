@@ -3022,8 +3022,16 @@ public class ComputationalGeometryFunctions {
      * reports them. The switch below reads from this array, so the two cannot drift apart; a
      * property which is not here is not a question this function understands.
      */
-    private static final String[] PROPERTIES = {"Circumradius", "EdgeCount", "Edges", "FaceCount",
-        "FaceCountRules", "FaceIndices", "Faces", "VertexCoordinates", "VertexCount", "Volume"};
+    private static final String[] PROPERTIES = {"Circumradius", "EdgeCount", "EdgeIndices",
+        "Edges", "FaceCount", "FaceCountRules", "FaceIndices", "Faces", "Name", "StandardName",
+        "VertexCoordinates", "VertexCount", "Volume"};
+
+    /** The largest <code>n</code> of the prisms and antiprisms <code>{"Prism", n}</code>, ... */
+    private static final int MAX_PRISM_SIDES = 10;
+
+    /** The adjectives of the regular <code>n</code>-gons, <code>n = 3, ..., 10</code>. */
+    private static final String[] POLYGON_ADJECTIVES = {"triangular", "square", "pentagonal",
+        "hexagonal", "heptagonal", "octagonal", "nonagonal", "decagonal"};
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3048,6 +3056,12 @@ public class ComputationalGeometryFunctions {
             return names(PLATONIC);
           case "Convex":
             return names(CONVEX);
+          case PRISM:
+            // {"Prism", 4} is the cube
+            return familyMembers(PRISM, 4, "Cube", true);
+          case ANTIPRISM:
+            // {"Antiprism", 3} is the octahedron
+            return familyMembers(ANTIPRISM, 3, "Octahedron", false);
           default:
             break;
         }
@@ -3076,6 +3090,10 @@ public class ComputationalGeometryFunctions {
           return volume(name);
         case "Circumradius":
           return circumradius(name);
+        case "Name":
+          return F.stringx(displayName(name));
+        case "StandardName":
+          return F.stringx(name);
         default:
           break;
       }
@@ -3109,6 +3127,7 @@ public class ComputationalGeometryFunctions {
         case "EdgeCount":
           return F.ZZ(edgeIndices(faces).argSize());
         case "Edges":
+        case "EdgeIndices":
           return edgeIndices(faces);
         case "FaceIndices":
           return faceIndices(faces);
@@ -3129,13 +3148,26 @@ public class ComputationalGeometryFunctions {
      * (vertex 1) above the <code>n</code>-gon in the plane <code>z = 0</code>, and the
      * <code>"Dipyramid"</code> with the apexes below and above (vertices 1 and 2) the
      * <code>n</code>-gon in the plane <code>z = 0</code>. Pyramids and dipyramids with unit edges
-     * exist for <code>n = 3, 4, 5</code> only; other families stay unevaluated.
+     * exist for <code>n = 3, 4, 5</code> only, prisms and antiprisms are known for <code>n &lt;=
+     * 10</code>; other families stay unevaluated.
+     *
+     * <p>
+     * The prism <code>{"Prism", 4}</code> is the <code>"Cube"</code> and the antiprism
+     * <code>{"Antiprism", 3}</code> the <code>"Octahedron"</code>, which answer for them. The
+     * other prisms and antiprisms have the vertices of the top <code>n</code>-gon at the angles
+     * <code>2 k Pi / n</code> (those of an antiprism's bottom <code>n</code>-gon are turned by
+     * <code>Pi / n</code>) numbered in the canonical order of their coordinates. Their faces are the
+     * bottom and the top <code>n</code>-gon and then the lateral faces.
      */
     private static IExpr family(final IAST ast, String kind, int n, EvalEngine engine) {
       boolean cone = PYRAMID.equals(kind) || DIPYRAMID.equals(kind);
-      if (!(ANTIPRISM.equals(kind) || PRISM.equals(kind) || cone) || n < 3 || n > 1000
-          || (cone && n > 5)) {
+      if (!(ANTIPRISM.equals(kind) || PRISM.equals(kind) || cone) || n < 3
+          || n > MAX_PRISM_SIDES || (cone && n > 5)) {
         return F.NIL;
+      }
+      if ((PRISM.equals(kind) && n == 4) || (ANTIPRISM.equals(kind) && n == 3)) {
+        // the degenerate members are the solids of their own name
+        return engine.evaluate(ast.setAtCopy(1, F.stringx(n == 4 ? "Cube" : "Octahedron")));
       }
       String property = null;
       if (ast.argSize() >= 2) {
@@ -3149,6 +3181,9 @@ public class ComputationalGeometryFunctions {
           return Errors.printMessage(S.PolyhedronData, "notprop",
               F.List(propertySpec, S.PolyhedronData), engine);
         }
+        if ("Name".equals(property) || "StandardName".equals(property)) {
+          return familyName(kind, n, "StandardName".equals(property));
+        }
       }
       final IExpr piOverN = F.Divide(S.Pi, F.ZZ(n));
       // the circumradius of the n-gon with unit sides
@@ -3160,17 +3195,22 @@ public class ComputationalGeometryFunctions {
       IExpr volume;
       switch (kind) {
         case ANTIPRISM: {
-          // a lateral edge from (R, 0, -h/2) to (R Cos(Pi/n), R Sin(Pi/n), h/2) has length 1
+          // a lateral edge from (R, 0, h/2) to (R Cos(Pi/n), R Sin(Pi/n), -h/2) has length 1
           IExpr height = F.Sqrt(F.Subtract(F.C1,
               F.Divide(F.C1, F.Times(F.C2, F.Plus(F.C1, F.Cos(piOverN))))));
-          ring(exact, n, radius, 0, F.Times(F.CN1D2, height));
-          ring(exact, n, radius, 1, F.Times(F.C1D2, height));
+          // the bottom n-gon (vertices 0, ..., n-1) is turned by Pi/n against the top one
+          ring(exact, n, radius, 1, F.Times(F.CN1D2, height));
+          ring(exact, n, radius, 0, F.Times(F.C1D2, height));
           faces.add(reversedRing(0, n));
           faces.add(ring(n, n));
+          // the triangles on an edge of the top and then those on an edge of the bottom n-gon
           for (int k = 0; k < n; k++) {
             int next = (k + 1) % n;
-            faces.add(new int[] {k, next, n + k});
-            faces.add(new int[] {n + k, next, n + next});
+            faces.add(new int[] {k, n + next, n + k});
+          }
+          for (int k = 0; k < n; k++) {
+            int next = (k + 1) % n;
+            faces.add(new int[] {k, next, n + next});
           }
           // the prismatoid formula; the middle section is the regular 2n-gon through the
           // midpoints of the lateral edges
@@ -3218,6 +3258,9 @@ public class ComputationalGeometryFunctions {
         }
       }
       IExpr coordinates = engine.evaluate(exact);
+      if (!cone && coordinates.isList()) {
+        coordinates = canonicalVertexOrder((IAST) coordinates, faces);
+      }
       if (property == null) {
         return F.Graphics3D(facesComplex(coordinates, faces));
       }
@@ -3234,6 +3277,99 @@ public class ComputationalGeometryFunctions {
         return F.NIL;
       }
       return combinatorialProperty(property, coordinates, vertices, faces);
+    }
+
+    /**
+     * The vertices sorted in the canonical order of their coordinates; the faces, 0-based vertex
+     * indices, are renumbered in place.
+     */
+    private static IAST canonicalVertexOrder(IAST coordinates, List<int[]> faces) {
+      final int count = coordinates.argSize();
+      Integer[] order = new Integer[count];
+      for (int i = 0; i < count; i++) {
+        order[i] = i;
+      }
+      java.util.Arrays.sort(order,
+          (a, b) -> coordinates.get(a + 1).compareTo(coordinates.get(b + 1)));
+      int[] newIndex = new int[count];
+      IASTAppendable sorted = F.ListAlloc(count);
+      for (int i = 0; i < count; i++) {
+        newIndex[order[i]] = i;
+        sorted.append(coordinates.get(order[i] + 1));
+      }
+      for (int[] face : faces) {
+        for (int j = 0; j < face.length; j++) {
+          face[j] = newIndex[face[j]];
+        }
+      }
+      return sorted;
+    }
+
+    /**
+     * <code>PolyhedronData("Prism")</code> and <code>PolyhedronData("Antiprism")</code>: the members
+     * <code>{kind, n}</code> for <code>n = 3, ..., 10</code>, the member <code>{kind, degenerate}
+     * </code> by the name of the solid it is, which comes first or last as the names sort.
+     */
+    private static IAST familyMembers(String kind, int degenerate, String solid,
+        boolean solidFirst) {
+      IASTAppendable result = F.ListAlloc(MAX_PRISM_SIDES - 1);
+      if (solidFirst) {
+        result.append(F.stringx(solid));
+      }
+      for (int n = 3; n <= MAX_PRISM_SIDES; n++) {
+        if (n != degenerate) {
+          result.append(F.list(F.stringx(kind), F.ZZ(n)));
+        }
+      }
+      if (!solidFirst) {
+        result.append(F.stringx(solid));
+      }
+      return result;
+    }
+
+    /**
+     * The <code>"Name"</code> (<code>standard == false</code>) or the <code>"StandardName"</code> of
+     * a member <code>{kind, n}</code> of a family: the members which are solids of their own are
+     * named by them, the others by the specification itself.
+     */
+    private static IExpr familyName(String kind, int n, boolean standard) {
+      String solid = null;
+      if (PYRAMID.equals(kind) && n == 3) {
+        solid = "Tetrahedron";
+      } else if (DIPYRAMID.equals(kind) && n == 4) {
+        solid = "Octahedron";
+      }
+      if (solid != null) {
+        return F.stringx(standard ? solid : displayName(solid));
+      }
+      if (standard) {
+        return F.list(F.stringx(kind), F.ZZ(n));
+      }
+      String adjective = POLYGON_ADJECTIVES[n - 3];
+      switch (kind) {
+        case DIPYRAMID:
+          return F.stringx("equilateral " + adjective + " dipyramid");
+        case PYRAMID:
+          return F.stringx(adjective + " pyramid");
+        case ANTIPRISM:
+          return F.stringx(adjective + " antiprism");
+        default:
+          return F.stringx(adjective + " prism");
+      }
+    }
+
+    /** The name of a solid in lowercase words: <code>"TruncatedIcosahedron"</code> is <code>
+     * "truncated icosahedron"</code>. */
+    private static String displayName(String name) {
+      StringBuilder buf = new StringBuilder();
+      for (int i = 0; i < name.length(); i++) {
+        char c = name.charAt(i);
+        if (Character.isUpperCase(c) && i > 0) {
+          buf.append(' ');
+        }
+        buf.append(Character.toLowerCase(c));
+      }
+      return buf.toString();
     }
 
     /**

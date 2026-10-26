@@ -321,8 +321,14 @@ public class Parser extends Scanner {
       case TT_BLANK_OPTIONAL:
       case TT_BLANK_COLON:
         return getBlanks(temp, min_precedence);
-      case TT_DIGIT:
-        return getNumber(false);
+      case TT_DIGIT: {
+        // a number may be applied like a head: 10[2, 5]
+        final ASTNode number = getNumber(false);
+        if (fToken == TT_ARGUMENTS_OPEN) {
+          return getFunctionArguments(number);
+        }
+        return number;
+      }
       case TT_STRING:
         ASTNode str = getString();
         return parseArguments(str);
@@ -360,11 +366,15 @@ public class Parser extends Scanner {
 
         out.add(fFactory.createInteger(-countPercent));
         return parseArguments(out);
-      case TT_SLOT:
+      case TT_SLOT: {
+        // a slot number or name must follow the '#' directly
+        final boolean adjacent = isSlotArgumentAdjacent();
         getNextToken();
         final FunctionNode slot =
             fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Slot));
-        if (fToken == TT_DIGIT) {
+        if (!adjacent) {
+          slot.add(fFactory.createInteger(1));
+        } else if (fToken == TT_DIGIT) {
           slot.add(fFactory.createInteger(getJavaInt()));
         } else if (fToken == TT_IDENTIFIER) {
           slot.add(getSymbol());
@@ -374,16 +384,19 @@ public class Parser extends Scanner {
           slot.add(fFactory.createInteger(1));
         }
         return parseArguments(slot);
-      case TT_SLOTSEQUENCE:
+      }
+      case TT_SLOTSEQUENCE: {
+        final boolean adjacent = isSlotArgumentAdjacent();
         getNextToken();
         final FunctionNode slotSequencce =
             fFactory.createFunction(fFactory.createSymbol(IConstantOperators.SlotSequence));
-        if (fToken == TT_DIGIT) {
+        if (adjacent && fToken == TT_DIGIT) {
           slotSequencce.add(getNumber(false));
         } else {
           slotSequencce.add(fFactory.createInteger(1));
         }
         return parseArguments(slotSequencce);
+      }
       case TT_ASSOCIATION_OPEN:
         final FunctionNode function =
             fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
@@ -1001,7 +1014,7 @@ public class Parser extends Scanner {
 
         fRecursionDepth++;
         try {
-          do {
+          partArguments: do {
             getNextToken();
 
             if (fToken == TT_ARGUMENTS_CLOSE) {
@@ -1009,10 +1022,10 @@ public class Parser extends Scanner {
               // scanner-step begin: (instead of getNextToken() call):
               if (fInputString.length > fCurrentPosition) {
                 if (fInputString[fCurrentPosition] == ']') {
+                  // empty brackets x[[]]; a part or an application may still follow
                   fCurrentPosition++;
-                  getNextToken();
-                  // fToken = TT_PARTCLOSE;
-                  return function;
+                  fToken = TT_PARTCLOSE;
+                  break partArguments;
                 }
               }
               // scanner-step end

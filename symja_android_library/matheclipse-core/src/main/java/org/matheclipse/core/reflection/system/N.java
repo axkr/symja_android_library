@@ -83,7 +83,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
       if (call.isPresent()) {
         IExpr nValue = engine.evalUpRules(call);
         if (nValue.isPresent()) {
-          return nValue;
+          // the value of an N-value is numericized with the same precision: N(f(1)) = {1, 2}
+          // gives {1., 2.}
+          return numericEval(ast.setAtCopy(1, nValue), engine);
         }
       }
     }
@@ -322,6 +324,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
       if (expr.isListOrAssociation() || expr.isRuleAST()) {
         return ((IAST) expr).mapThread(F.N(F.Slot1), 1);
       }
+      if (isGraphicsComplex(expr)) {
+        return ((IAST) expr).setAtCopy(1, evalN1(expr.first(), useExtendedPrecision, engine));
+      }
       if (useExtendedPrecision) {
         engine.setDeterminePrecision(expr, false);
         engine.setNumericMode(true);
@@ -329,8 +334,11 @@ public final class N extends AbstractCoreFunctionEvaluator {
         engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
       }
       if (expr.isAST()) {
-        ISymbol topSymbol = expr.topHead();
-        expr = engine.evalArgs((IAST) expr, topSymbol.getAttributes(), true).orElse(expr);
+        // the attributes of a symbol head; a call like Derivative(2)[f][x] has none, its
+        // arguments become numbers even if Derivative holds its own ones
+        final int attributes =
+            expr.head().isSymbol() ? ((ISymbol) expr.head()).getAttributes() : ISymbol.NOATTRIBUTE;
+        expr = engine.evalArgs((IAST) expr, attributes, true).orElse(expr);
       }
 
       IExpr result = engine.evalWithoutNumericReset(expr);
@@ -352,6 +360,14 @@ public final class N extends AbstractCoreFunctionEvaluator {
       engine.setNumericMode(oldNumericMode);
       engine.setNumericPrecision(oldDigitPrecision);
     }
+  }
+
+  /**
+   * <code>GraphicsComplex(points, primitives)</code>: only the points become numbers, the
+   * primitives refer to them by their integer indices.
+   */
+  private static boolean isGraphicsComplex(IExpr expr) {
+    return expr.isAST(S.GraphicsComplex) && expr.argSize() >= 2 && expr.first().isList();
   }
 
   /**
@@ -408,6 +424,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
     }
     if (expr.isListOrAssociation() || expr.isRuleAST()) {
       return ((IAST) expr).mapThread(x -> evalN2(x, nDigitPrecision, engine));
+    }
+    if (isGraphicsComplex(expr)) {
+      return ((IAST) expr).setAtCopy(1, evalN2(expr.first(), nDigitPrecision, engine));
     }
 
     // after symbolic evaluation do numeric evaluation with n-digit precision

@@ -61,6 +61,24 @@ public final class LatticeSolver {
     }
 
     /**
+     * The solution set of the first <code>count</code> variables alone: the projection of this
+     * lattice coset, in canonical form.
+     *
+     * @param count the number of leading variables which are kept
+     */
+    public Solution restrict(int count) {
+      BigInteger[] projectedOffset = new BigInteger[count];
+      System.arraycopy(offset, 0, projectedOffset, 0, count);
+      BigInteger[][] projectedBasis = new BigInteger[basis.length][count];
+      for (int row = 0; row < basis.length; row++) {
+        System.arraycopy(basis[row], 0, projectedBasis[row], 0, count);
+      }
+      projectedBasis = canonicalize(projectedBasis, projectedOffset);
+      return new Solution(new ArrayList<Variable>(variables.subList(0, count)), projectedOffset,
+          projectedBasis);
+    }
+
+    /**
      * The value of one variable as an affine term in the given parameters.
      *
      * @param index the index into {@link #variables()}

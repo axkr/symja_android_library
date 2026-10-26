@@ -195,8 +195,51 @@ public final class ListFunctions {
       fValue = value;
     }
 
+    /**
+     * The locals of the <code>Module</code>, <code>With</code> and <code>Function</code> constructs
+     * in {@link #fValue}, determined on first use.
+     */
+    private Set<ISymbol> fScopeLocals = null;
+
+    /**
+     * An iterator variable which is also a local of a nested <code>Module</code>,
+     * <code>With</code> or <code>Function</code> must not be replaced inside that construct:
+     * <code>With({i = i}, f(i))</code> takes the current value of <code>i</code>. The iterator
+     * values are then assigned like in a <code>Block</code>.
+     *
+     * @return {@link F#NIL} if no iterator variable is a local of a nested scope
+     */
+    private IExpr evaluateScoped(final ISymbol[] variables, final IExpr[] index) {
+      if (fScopeLocals == null) {
+        fScopeLocals = org.matheclipse.core.patternmatching.CaptureAvoidance.scopeLocals(fValue);
+      }
+      if (fScopeLocals.isEmpty()) {
+        return F.NIL;
+      }
+      IASTAppendable blockVariables = null;
+      for (int i = 0; i < variables.length; i++) {
+        if (variables[i] != null && fScopeLocals.contains(variables[i])) {
+          blockVariables = F.ListAlloc(variables.length);
+          break;
+        }
+      }
+      if (blockVariables == null) {
+        return F.NIL;
+      }
+      for (int i = 0; i < variables.length; i++) {
+        if (variables[i] != null) {
+          blockVariables.append(F.Set(variables[i], index[i]));
+        }
+      }
+      return fEngine.evaluate(F.Block(blockVariables, fValue));
+    }
+
     @Override
     public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
+      IExpr scoped = evaluateScoped(variables, index);
+      if (scoped.isPresent()) {
+        return scoped;
+      }
       if (variables.length == 1) {
         if (variables[0] == null) {
           return fEngine.evaluate(fValue);
@@ -1008,7 +1051,7 @@ public final class ListFunctions {
    * Array(f, 2, b)
    * </pre>
    */
-  private static final class Array extends AbstractCoreFunctionEvaluator {
+  private static final class Array extends AbstractFunctionEvaluator {
 
     private static class ExprArrayIterator implements IIterator<IExpr> {
       private final IExpr fOrigin;
@@ -1172,11 +1215,6 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_4;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -7861,7 +7899,27 @@ public final class ListFunctions {
           return take(arg1, 0, sequ);
         } else if (ast.arg1().isSparseArray()) {
           ISparseArray sparseArray = (ISparseArray) ast.arg1();
-          // TODO create sparse array directly instead of using Normal
+          if (sparseArray instanceof SparseArrayExpr) {
+            int[] invalidLevel = new int[] {-1};
+            SparseArrayExpr sparseTake =
+                takeSparse((SparseArrayExpr) sparseArray, sequ, invalidLevel);
+            if (sparseTake != null) {
+              return sparseTake;
+            }
+            long totalSize = 1L;
+            for (int d : sparseArray.getDimension()) {
+              totalSize *= d;
+            }
+            if (totalSize > Config.MAX_AST_SIZE && invalidLevel[0] >= 0) {
+              ISequence invalid = sequ[invalidLevel[0]];
+              // Cannot take positions `1` through `2` in `3`.
+              return Errors.printMessage(S.Take, "take",
+                  F.List(F.ZZ(invalid.getStartOffset()), F.ZZ(invalid.getEndOffset()),
+                      ast.arg1()),
+                  engine);
+            }
+          }
+          // the invalid specifications give their messages from the dense form
           final IAST normal = sparseArray.normal(false);
           IAST take = take(normal, 0, sequ);
           try {
@@ -7909,6 +7967,55 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_INFINITY;
+    }
+
+    /**
+     * Take the positions of the <code>sequenceSpecifications</code> from the stored entries of a
+     * sparse array, without its dense form.
+     *
+     * @param invalidLevel set to the level of an invalid specification
+     * @return <code>null</code> if a specification is invalid, so that the caller answers its
+     *         message
+     */
+    private static SparseArrayExpr takeSparse(SparseArrayExpr sparseArray,
+        final ISequence[] sequenceSpecifications, int[] invalidLevel) {
+      final int[] dims = sparseArray.getDimension();
+      final int levels = sequenceSpecifications.length;
+      if (levels > dims.length) {
+        return null;
+      }
+      final int[] start = new int[levels];
+      final int[] step = new int[levels];
+      final int[] count = new int[levels];
+      for (int l = 0; l < levels; l++) {
+        ISequence sequ = sequenceSpecifications[l];
+        // the size of a list includes its head
+        final int size = dims[l] + 1;
+        sequ.setListSize(size);
+        int first = sequ.getStart();
+        int end = sequ.getEnd();
+        int stepSize = sequ.getStep();
+        if (stepSize < 0) {
+          end--;
+          if (first < end || end <= 0 || first >= size) {
+            invalidLevel[0] = l;
+            return null;
+          }
+          count[l] = (first - end) / (-stepSize) + 1;
+        } else {
+          final int endOffset = sequ.getEndOffset();
+          if (first <= 0 || stepSize == 0
+              || (endOffset != Integer.MAX_VALUE && endOffset > size - 1)) {
+            invalidLevel[0] = l;
+            return null;
+          }
+          // no position, as Take(s, 0), gives an empty level
+          count[l] = end > first ? (end - first + stepSize - 1) / stepSize : 0;
+        }
+        start[l] = first;
+        step[l] = stepSize;
+      }
+      return sparseArray.takeRanges(start, step, count);
     }
 
     /**

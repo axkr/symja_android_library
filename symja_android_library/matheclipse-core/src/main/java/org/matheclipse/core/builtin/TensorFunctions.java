@@ -1043,6 +1043,246 @@ public class TensorFunctions {
 
 
   /**
+   * The correlation of numeric arrays with direct loops over flat <code>double</code> or
+   * <code>long</code> arrays instead of a <code>Plus</code> of <code>Times</code> terms for every
+   * element of the result. Machine numbers give a machine result; arrays of integers only give
+   * the exact result as long as no <code>long</code> overflows.
+   */
+  private static final class MachineCorrelation {
+    /** The flat row-major entries of a numeric array. */
+    private static final class Flat {
+      double[] doubles;
+      /** <code>null</code> if an entry isn't an integer of the <code>long</code> range */
+      long[] longs;
+      boolean inexact;
+      int count;
+    }
+
+    /**
+     * The correlation of <code>kernel</code> with <code>tensor</code> of the same rank: entry
+     * <code>o</code> of the result is the sum over the kernel indices <code>q</code> of
+     * <code>kernel[[q]] * tensor[[o + q + 1 - left]]</code> (0-based), positions outside of
+     * <code>tensor</code> taken cyclically from it, from the cyclically repeated list
+     * <code>padding</code> or being the scalar <code>padding</code>.
+     *
+     * @param padding <code>null</code> for the cyclic continuation of <code>tensor</code>
+     * @param paddingDim the dimensions of a list <code>padding</code>, otherwise <code>null</code>
+     * @return {@link F#NIL} if an entry isn't a real number, or exact entries aren't all integers
+     */
+    static IExpr correlate(IAST kernel, IAST tensor, IExpr padding, int[] kernelDim,
+        int[] tensorDim, int[] paddingDim, int[] left, int[] outputDim) {
+      final int rank = kernelDim.length;
+      Flat k = flatten(kernel, kernelDim);
+      if (k == null) {
+        return F.NIL;
+      }
+      Flat t = flatten(tensor, tensorDim);
+      if (t == null) {
+        return F.NIL;
+      }
+      Flat p = null;
+      if (padding != null) {
+        if (paddingDim != null) {
+          if (!padding.isList()) {
+            return F.NIL;
+          }
+          p = flatten((IAST) padding, paddingDim);
+        } else {
+          p = flatten(F.list(padding), new int[] {1});
+        }
+        if (p == null) {
+          return F.NIL;
+        }
+      }
+      final boolean inexact = k.inexact || t.inexact || (p != null && p.inexact);
+      if (!inexact && (k.longs == null || t.longs == null || (p != null && p.longs == null))) {
+        return F.NIL;
+      }
+      boolean inside = true;
+      for (int d = 0; d < rank; d++) {
+        // the tensor positions of the first and the last window
+        if (1 - left[d] < 0 || outputDim[d] - left[d] + kernelDim[d] > tensorDim[d]) {
+          inside = false;
+        }
+      }
+      final int[] tensorStride = strides(tensorDim);
+      final int[] kernelOffset = new int[k.count];
+      final int[] kernelIndex = new int[rank];
+      for (int j = 0; j < k.count; j++) {
+        int rest = j;
+        for (int d = rank - 1; d >= 0; d--) {
+          kernelIndex[d] = rest % kernelDim[d];
+          rest /= kernelDim[d];
+          kernelOffset[j] += kernelIndex[d] * tensorStride[d];
+        }
+      }
+      int outputCount = 1;
+      for (int d = 0; d < rank; d++) {
+        outputCount *= outputDim[d];
+      }
+      final double[] doubleResult = inexact ? new double[outputCount] : null;
+      final long[] longResult = inexact ? null : new long[outputCount];
+      final int[] outputIndex = new int[rank];
+      final int[] position = new int[rank];
+      try {
+        for (int o = 0; o < outputCount; o++) {
+          if (inside) {
+            int base = 0;
+            for (int d = 0; d < rank; d++) {
+              base += (outputIndex[d] + 1 - left[d]) * tensorStride[d];
+            }
+            if (inexact) {
+              double sum = 0.0;
+              for (int j = 0; j < k.count; j++) {
+                sum += k.doubles[j] * t.doubles[base + kernelOffset[j]];
+              }
+              doubleResult[o] = sum;
+            } else {
+              long sum = 0L;
+              for (int j = 0; j < k.count; j++) {
+                sum = Math.addExact(sum,
+                    Math.multiplyExact(k.longs[j], t.longs[base + kernelOffset[j]]));
+              }
+              longResult[o] = sum;
+            }
+          } else {
+            double doubleSum = 0.0;
+            long longSum = 0L;
+            for (int j = 0; j < k.count; j++) {
+              int rest = j;
+              for (int d = rank - 1; d >= 0; d--) {
+                kernelIndex[d] = rest % kernelDim[d];
+                rest /= kernelDim[d];
+                position[d] = outputIndex[d] + kernelIndex[d] + 1 - left[d];
+              }
+              int entry = paddedEntry(p, tensorDim, paddingDim, position);
+              Flat source = entry >= 0 ? t : p;
+              int index = entry >= 0 ? entry : -1 - entry;
+              if (inexact) {
+                doubleSum += k.doubles[j] * source.doubles[index];
+              } else {
+                longSum =
+                    Math.addExact(longSum, Math.multiplyExact(k.longs[j], source.longs[index]));
+              }
+            }
+            if (inexact) {
+              doubleResult[o] = doubleSum;
+            } else {
+              longResult[o] = longSum;
+            }
+          }
+          for (int d = rank - 1; d >= 0; d--) {
+            if (++outputIndex[d] < outputDim[d]) {
+              break;
+            }
+            outputIndex[d] = 0;
+          }
+        }
+      } catch (ArithmeticException aex) {
+        // a long overflowed: the exact terms are summed symbolically
+        return F.NIL;
+      }
+      return nested(doubleResult, longResult, outputDim, 0, new int[] {0});
+    }
+
+    /**
+     * The flat index in the tensor of the 0-based <code>position</code>, or <code>-1 - index</code>
+     * of the padding entry for a position outside of the tensor.
+     */
+    private static int paddedEntry(Flat padding, int[] tensorDim, int[] paddingDim,
+        int[] position) {
+      boolean inside = true;
+      for (int d = 0; d < position.length; d++) {
+        if (position[d] < 0 || position[d] >= tensorDim[d]) {
+          inside = false;
+          break;
+        }
+      }
+      if (padding != null && !inside && paddingDim == null) {
+        return -1;
+      }
+      final boolean fromTensor = inside || padding == null;
+      final int[] dims = fromTensor ? tensorDim : paddingDim;
+      int index = 0;
+      for (int d = 0; d < position.length; d++) {
+        index = index * dims[d] + Math.floorMod(position[d], dims[d]);
+      }
+      return fromTensor ? index : -1 - index;
+    }
+
+    private static int[] strides(int[] dims) {
+      int[] stride = new int[dims.length];
+      int s = 1;
+      for (int d = dims.length - 1; d >= 0; d--) {
+        stride[d] = s;
+        s *= dims[d];
+      }
+      return stride;
+    }
+
+    /** @return <code>null</code> if an entry of <code>array</code> isn't a real number */
+    private static Flat flatten(IAST array, int[] dims) {
+      long count = 1L;
+      for (int d : dims) {
+        count *= d;
+      }
+      if (count <= 0 || count > Config.MAX_AST_SIZE) {
+        return null;
+      }
+      Flat flat = new Flat();
+      flat.doubles = new double[(int) count];
+      flat.longs = new long[(int) count];
+      if (!flattenRecursive(array, dims, 0, flat)) {
+        return null;
+      }
+      return flat;
+    }
+
+    private static boolean flattenRecursive(IAST array, int[] dims, int level, Flat flat) {
+      if (array.argSize() != dims[level]) {
+        return false;
+      }
+      for (int i = 1; i <= dims[level]; i++) {
+        IExpr entry = array.get(i);
+        if (level < dims.length - 1) {
+          if (!entry.isList() || !flattenRecursive((IAST) entry, dims, level + 1, flat)) {
+            return false;
+          }
+          continue;
+        }
+        if (!entry.isReal()) {
+          return false;
+        }
+        long value = entry.isInteger() ? entry.toLongDefault(Long.MIN_VALUE) : Long.MIN_VALUE;
+        if (value == Long.MIN_VALUE) {
+          flat.longs = null;
+          if (entry.isInexactNumber()) {
+            flat.inexact = true;
+          }
+        } else if (flat.longs != null) {
+          flat.longs[flat.count] = value;
+        }
+        flat.doubles[flat.count++] = ((IReal) entry).doubleValue();
+      }
+      return true;
+    }
+
+    private static IAST nested(double[] doubles, long[] longs, int[] dims, int level,
+        int[] counter) {
+      IASTAppendable list = F.ListAlloc(dims[level]);
+      for (int i = 0; i < dims[level]; i++) {
+        if (level < dims.length - 1) {
+          list.append(nested(doubles, longs, dims, level + 1, counter));
+        } else {
+          int index = counter[0]++;
+          list.append(doubles != null ? F.num(doubles[index]) : F.ZZ(longs[index]));
+        }
+      }
+      return list;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -1268,6 +1508,13 @@ public class TensorFunctions {
         }
         windowSize *= kernelDim[d];
       }
+      if (rank == tensorDims.size()) {
+        IExpr fast = MachineCorrelation.correlate(kernel, tensor, padding, kernelDim, tensorDim,
+            paddingDim, left, outputDim);
+        if (fast.isPresent()) {
+          return fast;
+        }
+      }
       return alignedLevel(kernel, tensor, padding, kernelDim, tensorDim, paddingDim, left,
           outputDim, new int[rank], 0, windowSize);
     }
@@ -1382,6 +1629,21 @@ public class TensorFunctions {
           return F.NIL;
         }
         windowSize *= kernelDim[i];
+      }
+      if (plusFunction == S.Plus && timesFunction == S.Times
+          && rank == tensorDimension.size()) {
+        int[] tensorDim = new int[rank];
+        int[] left = new int[rank];
+        for (int i = 0; i < rank; i++) {
+          tensorDim[i] = tensorDimension.getInt(i);
+          // the first kernel element is aligned with the first tensor element
+          left[i] = 1;
+        }
+        IExpr fast = MachineCorrelation.correlate(kernel, tensor, null, kernelDim, tensorDim, null,
+            left, outputDim);
+        if (fast.isPresent()) {
+          return fast;
+        }
       }
       return correlateLevel(kernel, tensor, kernelDim, outputDim, new int[rank], 0, windowSize,
           plusFunction, timesFunction);

@@ -138,8 +138,19 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     /** The point at which the initial conditions are given. */
     final double t0;
 
-    /** The state vector at {@link #t0}. */
+    /**
+     * The state vector at {@link #t0}, laid out as {@link #layout} says: one number per component
+     * if it is <code>null</code>.
+     */
     final double[] initialState;
+
+    /**
+     * Where the components lie in the state vector the integrator works with, or
+     * <code>null</code> if every component is one real number at its own index. A function whose
+     * initial value is a list is a vector of numbers, and a complex valued system is integrated as
+     * the real system of the real and imaginary parts.
+     */
+    InterpolatingFunctionExpr.StateLayout layout = null;
 
     FirstOrderSystem(ISymbol timeVar, ISymbol[] functions, boolean[] appliedForm, int[] offset,
         IExpr[] stateExpressions, IExpr[] derivatives, double t0, double[] initialState) {
@@ -182,11 +193,37 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       system.massMatrix = massMatrix;
       system.highestComponents = highestComponents;
       system.curve = curve;
+      system.layout = layout;
       return system;
     }
 
+    /** The number of components, each the value of one of the functions or of a derivative. */
     int dimension() {
       return derivatives.length;
+    }
+
+    /** The length of the state vector of numbers the integrator works with. */
+    int stateDimension() {
+      return layout == null ? dimension() : layout.length(dimension());
+    }
+
+    /** Component <code>i</code> of the state vector <code>state</code>, as an expression. */
+    IExpr value(double[] state, int i) {
+      return layout == null ? F.num(state[i]) : layout.read(state, i);
+    }
+
+    /**
+     * Store the numeric value <code>value</code> as component <code>i</code> of
+     * <code>state</code>.
+     *
+     * @return <code>false</code> if it isn't a value of the component
+     */
+    boolean store(IExpr value, double[] state, int i) {
+      if (layout == null) {
+        state[i] = value.evalfNaN();
+        return !Double.isNaN(state[i]);
+      }
+      return layout.write(value, state, i);
     }
 
     /**
@@ -204,7 +241,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     IAST substitutions(double t, double[] state) {
       IASTAppendable rules = F.ListAlloc(dimension() + 1);
       for (int i = 0; i < dimension(); i++) {
-        rules.append(F.Rule(stateExpressions[i], F.num(state[i])));
+        rules.append(F.Rule(stateExpressions[i], value(state, i)));
       }
       rules.append(F.Rule(timeVar, F.num(t)));
       return rules;
@@ -224,7 +261,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       for (int j = 0; j < functions.length; j++) {
         int blockEnd = (j + 1 < functions.length ? offset[j + 1] : dimension()) - 1;
         rules.append(F.Rule(ODEUtils.derivative(functions[j], blockEnd - offset[j] + 1, timeVar),
-            F.num(stateDot[blockEnd])));
+            value(stateDot, blockEnd)));
       }
       rules.appendArgs(substitutions(t, state));
       return rules;
@@ -259,7 +296,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
 
     @Override
     public int getDimension() {
-      return fSystem.dimension();
+      return fSystem.stateDimension();
     }
 
     @Override
@@ -272,23 +309,54 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
       final int dimension = fSystem.dimension();
       IAST rules = fSystem.substitutions(t, state);
+      if (fSystem.layout == null) {
+        return evaluate(rules);
+      }
+      double[] stateDot = new double[fSystem.stateDimension()];
+      for (int i = 0; i < dimension; i++) {
+        // a vector right hand side is evaluated once, not once per element
+        fSystem.store(fEngine.evalN(F.subst(fSystem.derivatives[i], rules)), stateDot, i);
+      }
+      if (fSystem.massMatrix != null) {
+        // the real and the imaginary parts of the scalar components
+        solveMassMatrix(stateDot, 0);
+        solveMassMatrix(stateDot, dimension);
+      }
+      return stateDot;
+    }
+
+    /**
+     * The derivative of a state of one real number per component, whose numbers the rules
+     * <code>rules</code> substitute.
+     */
+    double[] evaluate(IAST rules) {
+      final int dimension = fSystem.dimension();
       double[] stateDot = new double[dimension];
       for (int i = 0; i < dimension; i++) {
         stateDot[i] = fEngine.evalN(F.subst(fSystem.derivatives[i], rules)).evalfNaN();
       }
+      solveMassMatrix(stateDot, 0);
+      return stateDot;
+    }
+
+    /**
+     * Replace the right hand sides <code>f</code> of the highest derivatives in
+     * <code>stateDot</code>, starting at <code>shift</code>, by the solution <code>h</code> of
+     * <code>M.h == f</code>.
+     */
+    private void solveMassMatrix(double[] stateDot, int shift) {
       if (fSystem.massMatrix != null) {
         final int[] highest = fSystem.highestComponents;
         double[] force = new double[highest.length];
         for (int j = 0; j < highest.length; j++) {
-          force[j] = stateDot[highest[j]];
+          force[j] = stateDot[shift + highest[j]];
         }
         double[] solved = fSystem.massMatrix
             .solve(new org.hipparchus.linear.ArrayRealVector(force, false)).toArray();
         for (int j = 0; j < highest.length; j++) {
-          stateDot[highest[j]] = solved[j];
+          stateDot[shift + highest[j]] = solved[j];
         }
       }
-      return stateDot;
     }
   }
 
@@ -613,6 +681,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
     }
 
+    // --- a function whose initial value is a list of numbers is a vector ---
+    IAST rawEquations = SolveUtils.toEquationList(ast.arg1()).makeList();
+    int[] widths = vectorWidths(rawEquations, functions, timeVar);
+    if (widths != null) {
+      return reduceVectorSystem(rawEquations, functions, appliedForm, widths, timeVar, engine);
+    }
+
     // --- the equations, rewritten as expressions which should be zero ---
     // an `And(...)` of equations is equivalent to a `List(...)` of equations
     IASTAppendable equations =
@@ -764,7 +839,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     int conditionCount = initialConditions.argSize();
     double[] points = new double[conditionCount];
     int[] components = new int[conditionCount];
-    double[] values = new double[conditionCount];
+    IExpr[] values = new IExpr[conditionCount];
     // the derivatives a curve is started with, at their points: they choose its direction
     double[] curvePoints = new double[numberOfFunctions];
     double[] curveDerivatives = new double[numberOfFunctions];
@@ -801,8 +876,8 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (Double.isNaN(point)) {
         return null;
       }
-      double value = conditionValue(condition, application, engine);
-      if (Double.isNaN(value)) {
+      IExpr value = conditionNumber(condition, application, engine);
+      if (value.isNIL()) {
         return null;
       }
       points[j - 1 - skipped] = point;
@@ -833,12 +908,27 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         t0 = points[j];
       }
     }
-    double[] initialState = new double[dimension];
+    // a complex initial value or a complex number in the right hand sides: the system is
+    // integrated as the real system of the real and the imaginary parts
+    boolean complex = false;
+    for (int j = 0; j < conditionCount; j++) {
+      complex |= !values[j].isReal();
+    }
+    for (IExpr derivative : derivatives) {
+      complex |= isComplexValued(derivative);
+    }
+    InterpolatingFunctionExpr.StateLayout layout =
+        complex ? new InterpolatingFunctionExpr.StateLayout(null, null, dimension, true) : null;
+    double[] initialState = new double[complex ? 2 * dimension : dimension];
     boolean[] isGiven = new boolean[dimension];
     int boundaryConditions = 0;
     for (int j = 0; j < conditionCount; j++) {
       if (points[j] == t0) {
-        initialState[components[j]] = values[j];
+        if (layout == null) {
+          initialState[components[j]] = values[j].evalf();
+        } else {
+          layout.write(values[j], initialState, components[j]);
+        }
         isGiven[components[j]] = true;
       } else {
         boundaryConditions++;
@@ -850,13 +940,15 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         unknowns++;
       }
     }
-    if (unknowns != boundaryConditions || Double.isNaN(t0)) {
+    if (unknowns != boundaryConditions || Double.isNaN(t0)
+        || (complex && (boundaryConditions > 0 || curve != null))) {
       // The system is underdetermined.
       Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
       return null;
     }
     FirstOrderSystem system = new FirstOrderSystem(timeVar, functions, appliedForm, offset,
         stateExpressions, derivatives, t0, initialState);
+    system.layout = layout;
     if (massMatrix != null) {
       system.massMatrix = massMatrix;
       system.highestComponents = new int[numberOfFunctions];
@@ -878,12 +970,263 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
       system.curve = curve;
     }
-    if (boundaryConditions > 0 && !shoot(system, isGiven, points, components, values, engine)) {
-      // The boundary value problem could not be solved by shooting from `1`.
-      Errors.printMessage(S.NDSolve, "bvnc", F.list(F.num(t0)), engine);
-      return null;
+    if (boundaryConditions > 0) {
+      double[] numbers = new double[conditionCount];
+      for (int j = 0; j < conditionCount; j++) {
+        numbers[j] = values[j].evalf();
+      }
+      if (!shoot(system, isGiven, points, components, numbers, engine)) {
+        // The boundary value problem could not be solved by shooting from `1`.
+        Errors.printMessage(S.NDSolve, "bvnc", F.list(F.num(t0)), engine);
+        return null;
+      }
+    }
+    if (curve == null && layout == null) {
+      // a right hand side which only has a value as a complex number, Sqrt(y(t)) at a negative
+      // y(t) say, makes the solution complex valued
+      system = complexIfNotReal(system, engine);
     }
     return system;
+  }
+
+  /**
+   * The number of elements of every function which is a vector: one with an initial condition
+   * whose value is a list, like <code>y(0) == {1, 1, 1}</code>, and <code>0</code> for the others.
+   *
+   * @return <code>null</code> if no function is a vector
+   */
+  private static int[] vectorWidths(IAST equations, ISymbol[] functions, ISymbol timeVar) {
+    int[] widths = null;
+    for (IExpr equation : equations) {
+      if (!equation.isEqual() || equation.argSize() != 2 || !equation.isFree(timeVar)) {
+        continue;
+      }
+      for (int side = 1; side <= 2; side++) {
+        int index = applicationIndex(equation.getAt(side), functions, new int[1]);
+        if (index >= 0) {
+          IExpr value = equation.getAt(3 - side);
+          if (value.isSparseArray()) {
+            value = value.normal(false);
+          }
+          if (value.isList() && value.argSize() > 0) {
+            if (widths == null) {
+              widths = new int[functions.length];
+            }
+            widths[index] = value.argSize();
+          }
+          break;
+        }
+      }
+    }
+    return widths;
+  }
+
+  /**
+   * Reduce equations which are solved for the highest derivative of every function, some of the
+   * functions vectors - <code>y'(t) == A.y(t)</code> with <code>y(0) == {1, 1}</code> - to an
+   * explicit first order system. The right hand side of a vector is evaluated as a whole, once for
+   * all its elements, rather than once per element.
+   *
+   * @param widths the number of elements of every function which is a vector, <code>0</code> for
+   *        the others
+   * @return <code>null</code> if the equations could not be reduced, in which case a message has
+   *         been printed
+   */
+  private static FirstOrderSystem reduceVectorSystem(IAST equations, ISymbol[] functions,
+      boolean[] appliedForm, int[] widths, ISymbol timeVar, EvalEngine engine) {
+    final int numberOfFunctions = functions.length;
+    int[] order = new int[numberOfFunctions];
+    IExpr[] rhs = new IExpr[numberOfFunctions];
+    java.util.List<IExpr> conditions = new java.util.ArrayList<IExpr>();
+    for (IExpr equation : equations) {
+      if (!equation.isEqual() || equation.argSize() != 2) {
+        // Equation or list of equations expected instead of `1` in the first argument `2`.
+        Errors.printMessage(S.NDSolve, "deqn", F.List(equation, equations), engine);
+        return null;
+      }
+      if (equation.isFree(timeVar)) {
+        conditions.add(equation);
+        continue;
+      }
+      int[] derivativeOrder = new int[1];
+      IExpr right = equation.second();
+      int index = solvedFunction(equation.first(), functions, timeVar, derivativeOrder);
+      if (index < 0) {
+        index = solvedFunction(equation.second(), functions, timeVar, derivativeOrder);
+        right = equation.first();
+      }
+      if (index < 0 || order[index] != 0) {
+        // The system is underdetermined.
+        Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+        return null;
+      }
+      order[index] = derivativeOrder[0];
+      rhs[index] = right;
+    }
+    // every function has its equation, whose right side is free of the highest derivatives
+    boolean explicit = true;
+    for (int j = 0; j < numberOfFunctions && explicit; j++) {
+      explicit = order[j] > 0;
+    }
+    for (int i = 0; i < numberOfFunctions && explicit; i++) {
+      for (int k = 0; k < numberOfFunctions && explicit; k++) {
+        for (int m = order[k]; m <= MAX_DERIVATIVE_ORDER && explicit; m++) {
+          explicit = rhs[i].isFree(ODEUtils.derivative(functions[k], m, timeVar));
+        }
+      }
+    }
+    if (!explicit) {
+      // The system is underdetermined.
+      Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+      return null;
+    }
+
+    // --- the layout of the state: the components of a vector take one number per element ---
+    int dimension = 0;
+    int[] offset = new int[numberOfFunctions];
+    for (int j = 0; j < numberOfFunctions; j++) {
+      offset[j] = dimension;
+      dimension += order[j];
+    }
+    IExpr[] stateExpressions = new IExpr[dimension];
+    IExpr[] derivatives = new IExpr[dimension];
+    int[] start = new int[dimension + 1];
+    boolean[] vector = new boolean[dimension];
+    int length = 0;
+    for (int j = 0; j < numberOfFunctions; j++) {
+      for (int k = 0; k < order[j]; k++) {
+        final int i = offset[j] + k;
+        stateExpressions[i] = ODEUtils.derivative(functions[j], k, timeVar);
+        start[i] = length;
+        vector[i] = widths[j] > 0;
+        length += Math.max(1, widths[j]);
+      }
+      for (int k = 0; k < order[j] - 1; k++) {
+        derivatives[offset[j] + k] = stateExpressions[offset[j] + k + 1];
+      }
+      derivatives[offset[j] + order[j] - 1] = rhs[j];
+    }
+    start[dimension] = length;
+
+    // --- the conditions, all at one point: the value of every component there ---
+    IExpr[] given = new IExpr[dimension];
+    double t0 = Double.NaN;
+    boolean complex = false;
+    for (IExpr condition : conditions) {
+      int[] derivativeOrder = new int[1];
+      int side = applicationIndex(condition.first(), functions, derivativeOrder) >= 0 ? 1 : 2;
+      IExpr application = condition.getAt(side);
+      int index = applicationIndex(application, functions, derivativeOrder);
+      if (index < 0) {
+        // Equation or list of equations expected instead of `1` in the first argument `2`.
+        Errors.printMessage(S.NDSolve, "deqn", F.List(condition, equations), engine);
+        return null;
+      }
+      double point = application.first().evalfNaN();
+      if (derivativeOrder[0] >= order[index] || Double.isNaN(point)
+          || (!Double.isNaN(t0) && point != t0)) {
+        // a condition at a second point: a boundary value problem, which isn't solved for vectors
+        Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+        return null;
+      }
+      t0 = point;
+      IExpr value = engine.evalN(condition.getAt(3 - side));
+      complex |= isComplexValued(value);
+      given[offset[index] + derivativeOrder[0]] = value;
+    }
+    for (int i = 0; i < dimension; i++) {
+      if (given[i] == null) {
+        // The system is underdetermined.
+        Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+        return null;
+      }
+      complex |= isComplexValued(derivatives[i]);
+    }
+    FirstOrderSystem system = null;
+    for (int attempt = 0; attempt < 2 && system == null; attempt++, complex = true) {
+      InterpolatingFunctionExpr.StateLayout layout =
+          new InterpolatingFunctionExpr.StateLayout(start, vector, dimension, complex);
+      double[] initialState = new double[layout.length(dimension)];
+      boolean numeric = true;
+      for (int i = 0; i < dimension; i++) {
+        numeric &= layout.write(given[i], initialState, i);
+      }
+      if (!numeric) {
+        continue;
+      }
+      FirstOrderSystem candidate = new FirstOrderSystem(timeVar, functions, appliedForm, offset,
+          stateExpressions, derivatives, t0, initialState);
+      candidate.layout = layout;
+      // the right hand sides at the start have the shape of their components
+      IAST rules = candidate.substitutions(t0, initialState);
+      double[] stateDot = new double[initialState.length];
+      for (int i = 0; i < dimension && numeric; i++) {
+        numeric = candidate.store(engine.evalN(F.subst(derivatives[i], rules)), stateDot, i);
+      }
+      if (numeric) {
+        system = candidate;
+      }
+    }
+    if (system == null) {
+      // Encountered non-numerical value for a derivative at `1` == `2`.
+      Errors.printMessage(S.NDSolve, "ndnum", F.list(timeVar, F.num(t0)), engine);
+    }
+    return system;
+  }
+
+  /**
+   * The index of the function whose derivative <code>expr</code> is, like <code>y''(t)</code>.
+   *
+   * @param derivativeOrder receives the order of the derivative
+   * @return <code>-1</code> if it isn't a derivative of one of the functions at
+   *         <code>timeVar</code>
+   */
+  private static int solvedFunction(IExpr expr, ISymbol[] functions, ISymbol timeVar,
+      int[] derivativeOrder) {
+    derivativeOrder[0] = 0;
+    if (!expr.isAST1() || !expr.first().equals(timeVar)) {
+      return -1;
+    }
+    int index = applicationIndex(expr, functions, derivativeOrder);
+    return derivativeOrder[0] > 0 ? index : -1;
+  }
+
+  /** <code>true</code> if <code>expr</code> contains a complex number. */
+  private static boolean isComplexValued(IExpr expr) {
+    return expr.has(x -> x.isComplex() || x.isComplexNumeric(), false);
+  }
+
+  /**
+   * The system <code>system</code> integrated as a complex valued one, if its right hand sides
+   * are not real numbers at the initial state but complex ones.
+   *
+   * @return <code>system</code> itself if they are real
+   */
+  private static FirstOrderSystem complexIfNotReal(FirstOrderSystem system, EvalEngine engine) {
+    final int dimension = system.dimension();
+    IAST rules = system.substitutions(system.t0, system.initialState);
+    boolean real = true;
+    for (int i = 0; i < dimension && real; i++) {
+      real = !Double.isNaN(engine.evalN(F.subst(system.derivatives[i], rules)).evalfNaN());
+    }
+    if (real) {
+      return system;
+    }
+    InterpolatingFunctionExpr.StateLayout layout =
+        new InterpolatingFunctionExpr.StateLayout(null, null, dimension, true);
+    double[] initialState = new double[2 * dimension];
+    System.arraycopy(system.initialState, 0, initialState, 0, dimension);
+    FirstOrderSystem complex = system.restart(system.derivatives, system.t0, initialState);
+    complex.layout = layout;
+    rules = complex.substitutions(complex.t0, initialState);
+    double[] stateDot = new double[2 * dimension];
+    for (int i = 0; i < dimension; i++) {
+      if (!complex.store(engine.evalN(F.subst(complex.derivatives[i], rules)), stateDot, i)) {
+        // not a number either way
+        return system;
+      }
+    }
+    return complex;
   }
 
   /** The most Newton steps of the shooting method. */
@@ -1051,11 +1394,12 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     // The initial conditions are given at t0, which need not be the start of the requested range.
     // An interior t0 is propagated twice, once in each direction, because a dense output model runs
     // in one direction only - DenseOutputModel.append rejects a model of the opposite direction
-    // with a propagation direction mismatch.
-    DenseOutputModel forward =
-        (tMax > system.t0) ? propagate(head, system, tMax, method, engine) : null;
+    // with a propagation direction mismatch. The way back is integrated first, so that the events
+    // on it are acted on first.
     DenseOutputModel backward =
         (tMin < system.t0) ? propagate(head, system, tMin, method, engine) : null;
+    DenseOutputModel forward =
+        (tMax > system.t0) ? propagate(head, system, tMax, method, engine) : null;
     if (forward == null && backward == null && (tMin != system.t0 || tMax != system.t0)) {
       return F.NIL;
     }
@@ -1075,9 +1419,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       int blockEnd =
           (j + 1 < numberOfFunctions ? system.offset[j + 1] : system.dimension()) - 1;
       IExpr interpolation = forward == null && backward == null
-          ? InterpolatingFunctionExpr.newInstance(system.initialState, system.t0, system.offset[j])
+          ? InterpolatingFunctionExpr.newInstance(system.initialState, system.t0, system.offset[j],
+              system.layout)
           : InterpolatingFunctionExpr.newInstance(forward, backward, system.t0, system.offset[j],
-              blockEnd, domainMin, domainMax);
+              blockEnd, domainMin, domainMax, system.layout);
       // y(x) as the second argument asks for the solution in the same applied form
       IExpr solution = system.appliedForm[j] //
           ? F.unaryAST1(interpolation, system.timeVar)
@@ -1238,6 +1583,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
    */
   private static DenseOutputModel propagateSmooth(ISymbol head, FirstOrderSystem system,
       double target, MethodSettings method, EvalEngine engine, double[][] end) {
+    Switching switching = Switching.create(system, target >= system.t0, engine);
+    if (switching != null) {
+      return propagateSwitched(head, switching, target, method, engine, end);
+    }
     AbstractIntegrator integrator = method.createIntegrator();
     integrator.setMaxEvaluations(method.maxEvaluations);
     DenseOutputModel model = new DenseOutputModel();
@@ -1277,6 +1626,554 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       end[0] = recorder.lastState.getPrimaryState().clone();
     }
     return model;
+  }
+
+  /** The most changes of the switching terms in one integration. */
+  private static final int MAX_SWITCHES = 10_000;
+
+  /** The most stretches in a row which don't get on with the integration. */
+  private static final int MAX_STALLED_STRETCHES = 100;
+
+  /**
+   * A value of a switching function closer to zero than this, relative to the size of the state,
+   * is on its switching surface.
+   */
+  private static final double SURFACE_TOLERANCE = 1.0e-9;
+
+  /**
+   * How far, relative to the size of the state, a switching function goes past zero before the
+   * stretch ends. Where a stretch starts the function is zero up to rounding, and often with a zero
+   * slope, so that its rounding errors would cross zero again and again.
+   */
+  private static final double SURFACE_MARGIN = 1.0e-10;
+
+  /**
+   * Integrate a system whose right hand side jumps where a function of the state changes sign, as
+   * a sequence of smooth stretches: inside each one every switching term keeps one value, and the
+   * stretch ends where a switching function reaches zero. There the term takes the value of the
+   * other side, or - if the flows on both sides point to the surface - the solution slides along
+   * it with the value in between which keeps it there. A step size control which stepped across
+   * the jump instead would shrink its steps for ever, and an integration which did not slide would
+   * chatter across the surface.
+   *
+   * @param end receives the state the integration ended in at index 0, or <code>null</code> there
+   *        if it stopped before <code>target</code>; may be <code>null</code>
+   */
+  private static DenseOutputModel propagateSwitched(ISymbol head, Switching switching,
+      double target, MethodSettings method, EvalEngine engine, double[][] end) {
+    final FirstOrderSystem system = switching.fSystem;
+    final java.util.List<ODEEventDetector> userDetectors =
+        method.eventDetectors(system, target >= system.t0, engine);
+    DenseOutputModel whole = null;
+    double from = system.t0;
+    double[] state = system.initialState.clone();
+    switching.choose(from, state, -1, 0.0);
+    int evaluations = 0;
+    // the stretches in a row which made no progress: switching terms which chatter
+    int stalled = 0;
+    final double progress = 1.0e-10 * Math.max(1.0, Math.abs(target - system.t0));
+    for (int switches = 0;; switches++) {
+      engine.checkTimeLimit();
+      AbstractIntegrator integrator = method.createIntegrator();
+      integrator.setMaxEvaluations(Math.max(1, method.maxEvaluations - evaluations));
+      DenseOutputModel model = new DenseOutputModel();
+      integrator.addStepHandler(model);
+      LastStepRecorder recorder = new LastStepRecorder();
+      integrator.addStepHandler(recorder);
+      for (ODEEventDetector detector : userDetectors) {
+        integrator.addEventDetector(detector);
+      }
+      for (ODEEventDetector detector : switching.detectors(state, method)) {
+        integrator.addEventDetector(detector);
+      }
+      switching.fired = -1;
+      ODEStateAndDerivative last = null;
+      try {
+        if (switches >= MAX_SWITCHES || stalled > MAX_STALLED_STRETCHES
+            || evaluations >= method.maxEvaluations) {
+          throw new org.hipparchus.exception.MathIllegalStateException(
+              org.hipparchus.exception.LocalizedCoreFormats.MAX_COUNT_EXCEEDED,
+              method.maxEvaluations);
+        }
+        last = integrator.integrate(new SwitchedODE(switching), new ODEState(from, state), target);
+      } catch (MathRuntimeException mre) {
+        if (recorder.lastState != null) {
+          model.finish(recorder.lastState);
+          if (whole == null) {
+            whole = model;
+          } else {
+            whole.append(model);
+          }
+        }
+        if (whole == null) {
+          // not one step was taken, so there is nothing to hand back
+          throw mre;
+        }
+        // At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.
+        Errors.printMessage(head, "ndsz", F.list(system.timeVar, F.num(whole.getFinalTime())),
+            engine);
+        return whole;
+      } finally {
+        evaluations += integrator.getEvaluations();
+      }
+      if (whole == null) {
+        whole = model;
+      } else {
+        whole.append(model);
+      }
+      final double reached = last.getTime();
+      if (Math.abs(reached - target) <= 1.0e-9 * Math.max(1.0, Math.abs(target))) {
+        if (end != null) {
+          end[0] = last.getPrimaryState().clone();
+        }
+        return whole;
+      }
+      if (switching.fired < 0) {
+        // an event of the equations stopped the integration
+        return whole;
+      }
+      // a switching function reached zero: the integration goes on from there, with the values
+      // the switching terms take on the other side
+      stalled = Math.abs(reached - from) <= progress ? stalled + 1 : 0;
+      from = reached;
+      state = last.getPrimaryState().clone();
+      switching.choose(from, state, switching.firedExit != 0.0 ? switching.fired : -1,
+          switching.firedExit);
+    }
+  }
+
+  /**
+   * The terms <code>Sign(s)</code>, <code>UnitStep(s)</code> and <code>HeavisideTheta(s)</code>
+   * of the right hand sides of a system, whose switching functions <code>s</code> depend on the
+   * state: each is replaced by a symbol <code>sigma</code>, <code>1</code> where <code>s</code> is
+   * positive and <code>-1</code> where it is negative. On the surface <code>s == 0</code> it may
+   * take a value in between: the one which keeps the derivative of <code>s</code> zero, when the
+   * flows on both sides point to the surface and the solution slides along it.
+   */
+  private static final class Switching {
+    /** The system, with the symbols {@link #fSigmas} in place of the switching terms. */
+    final FirstOrderSystem fSystem;
+    private final FirstODE fODE;
+    private final EvalEngine fEngine;
+    /** The symbols in place of the switching terms. */
+    private final ISymbol[] fSigmas;
+    /** The switching functions. */
+    private final IExpr[] fArguments;
+    /** The partial derivatives of the switching functions by the independent variable. */
+    private final IExpr[] fTimeRates;
+    /**
+     * The partial derivatives of the switching functions by the components of the state, or
+     * <code>null</code> where they are zero.
+     */
+    private final IExpr[][] fGradients;
+    /** <code>1</code> if the integration runs towards larger times, <code>-1</code> otherwise. */
+    private final double fDirection;
+
+    /** The value of every symbol in place of a switching term. */
+    final double[] sigma;
+    /** <code>true</code> for a switching term which slides along its surface. */
+    final boolean[] sliding;
+
+    /** The switching term whose detector stopped the integration, or <code>-1</code>. */
+    int fired = -1;
+    /**
+     * The value a sliding term left its surface with, <code>1</code> or <code>-1</code>, or
+     * <code>0</code> if its switching function reached zero.
+     */
+    double firedExit = 0.0;
+
+    private Switching(FirstOrderSystem system, ISymbol[] sigmas, IExpr[] arguments,
+        IExpr[] timeRates, IExpr[][] gradients, boolean forward, EvalEngine engine) {
+      this.fSystem = system;
+      this.fODE = new FirstODE(engine, system);
+      this.fEngine = engine;
+      this.fSigmas = sigmas;
+      this.fArguments = arguments;
+      this.fTimeRates = timeRates;
+      this.fGradients = gradients;
+      this.fDirection = forward ? 1.0 : -1.0;
+      this.sigma = new double[sigmas.length];
+      this.sliding = new boolean[sigmas.length];
+      java.util.Arrays.fill(sigma, 1.0);
+    }
+
+    /**
+     * The switching terms of the right hand sides of <code>system</code>.
+     *
+     * @return <code>null</code> if there are none, or the state is not one real number per
+     *         component
+     */
+    static Switching create(FirstOrderSystem system, boolean forward, EvalEngine engine) {
+      if (system.layout != null || system.curve != null) {
+        return null;
+      }
+      java.util.List<IAST> terms = new java.util.ArrayList<IAST>();
+      for (IExpr derivative : system.derivatives) {
+        collectSwitches(derivative, system, terms);
+      }
+      if (terms.isEmpty()) {
+        return null;
+      }
+      final int n = terms.size();
+      final int dimension = system.dimension();
+      ISymbol[] sigmas = new ISymbol[n];
+      IASTAppendable toSigmas = F.ListAlloc(n);
+      for (int k = 0; k < n; k++) {
+        sigmas[k] = F.Dummy("NDSolve$sigma" + k);
+        IAST term = terms.get(k);
+        // UnitStep(s) and HeavisideTheta(s) are (1 + Sign(s)) / 2 away from s == 0
+        toSigmas.append(F.Rule(term,
+            term.isAST(S.Sign) ? sigmas[k] : F.Times(F.C1D2, F.Plus(F.C1, sigmas[k]))));
+      }
+      IExpr[] derivatives = new IExpr[dimension];
+      for (int i = 0; i < dimension; i++) {
+        derivatives[i] = F.subst(system.derivatives[i], toSigmas);
+      }
+      // the state components as symbols, by which the switching functions are differentiated
+      ISymbol[] values = new ISymbol[dimension];
+      IASTAppendable toValues = F.ListAlloc(dimension);
+      IASTAppendable fromValues = F.ListAlloc(dimension);
+      for (int i = 0; i < dimension; i++) {
+        values[i] = F.Dummy("NDSolve$u" + i);
+        toValues.append(F.Rule(system.stateExpressions[i], values[i]));
+        fromValues.append(F.Rule(values[i], system.stateExpressions[i]));
+      }
+      IExpr[] arguments = new IExpr[n];
+      IExpr[] timeRates = new IExpr[n];
+      IExpr[][] gradients = new IExpr[n][dimension];
+      for (int k = 0; k < n; k++) {
+        arguments[k] = F.subst(terms.get(k).arg1(), toSigmas);
+        IExpr argument = F.subst(arguments[k], toValues);
+        for (ISymbol function : system.functions) {
+          if (!argument.isFree(function)) {
+            // a function at another point than the independent variable, or a derivative the
+            // state does not carry
+            return null;
+          }
+        }
+        timeRates[k] = F.subst(engine.evaluate(F.D(argument, system.timeVar)), fromValues);
+        for (int i = 0; i < dimension; i++) {
+          if (!argument.isFree(values[i])) {
+            gradients[k][i] = F.subst(engine.evaluate(F.D(argument, values[i])), fromValues);
+          }
+        }
+      }
+      FirstOrderSystem switched = system.restart(derivatives, system.t0, system.initialState);
+      return new Switching(switched, sigmas, arguments, timeRates, gradients, forward, engine);
+    }
+
+    /**
+     * Collect the switching terms of <code>expr</code>, those whose switching function depends on
+     * the state or the independent variable.
+     */
+    private static void collectSwitches(IExpr expr, FirstOrderSystem system,
+        java.util.List<IAST> terms) {
+      if (!expr.isAST()) {
+        return;
+      }
+      IAST ast = (IAST) expr;
+      if (ast.isAST(S.Sign, 2) || ast.isAST(S.UnitStep, 2) || ast.isAST(S.HeavisideTheta, 2)) {
+        IExpr argument = ast.arg1();
+        boolean constant = argument.isFree(system.timeVar);
+        for (ISymbol function : system.functions) {
+          constant &= argument.isFree(function);
+        }
+        if (!constant) {
+          if (!terms.contains(ast)) {
+            terms.add(ast);
+          }
+          return;
+        }
+      }
+      for (int i = 0; i < ast.size(); i++) {
+        collectSwitches(ast.get(i), system, terms);
+      }
+    }
+
+    /** The rules of the state, with the values <code>values</code> of the switching terms. */
+    private IAST rules(IAST stateRules, double[] values) {
+      IASTAppendable rules = F.ListAlloc(stateRules.argSize() + values.length);
+      rules.appendArgs(stateRules);
+      for (int k = 0; k < values.length; k++) {
+        rules.append(F.Rule(fSigmas[k], F.num(values[k])));
+      }
+      return rules;
+    }
+
+    /** The value of switching function <code>k</code>. */
+    private double argument(int k, IAST stateRules, double[] values) {
+      return fEngine.evalN(F.subst(fArguments[k], rules(stateRules, values))).evalfNaN();
+    }
+
+    /**
+     * The derivative of switching function <code>k</code> along the integration, where the state
+     * has the derivative <code>stateDot</code>.
+     */
+    private double rate(int k, IAST stateRules, double[] values, double[] stateDot) {
+      IAST rules = rules(stateRules, values);
+      double rate = fEngine.evalN(F.subst(fTimeRates[k], rules)).evalfNaN();
+      for (int i = 0; i < stateDot.length; i++) {
+        if (fGradients[k][i] != null) {
+          rate += fEngine.evalN(F.subst(fGradients[k][i], rules)).evalfNaN() * stateDot[i];
+        }
+      }
+      return fDirection * rate;
+    }
+
+    /** The size of the state, which the tolerances of the switching functions are relative to. */
+    private static double scale(double[] state) {
+      double scale = 1.0;
+      for (double value : state) {
+        scale = Math.max(scale, Math.abs(value));
+      }
+      return scale;
+    }
+
+    /**
+     * The derivative of the state, with the values of the sliding switching terms solved for, by
+     * Newton's method, so that their switching functions don't change.
+     *
+     * @param values the values of the switching terms, where the search for those of the sliding
+     *        ones starts; receives them
+     */
+    double[] derivatives(double t, double[] state, double[] values) {
+      IAST stateRules = fSystem.substitutions(t, state);
+      double[] stateDot = fODE.evaluate(rules(stateRules, values));
+      int m = 0;
+      int[] slide = new int[values.length];
+      for (int k = 0; k < values.length; k++) {
+        if (sliding[k]) {
+          slide[m++] = k;
+        }
+      }
+      if (m == 0) {
+        return stateDot;
+      }
+      final double h = 1.0e-4;
+      for (int iteration = 0; iteration < 10; iteration++) {
+        double[] residual = new double[m];
+        double norm = 0.0;
+        double scale = 1.0;
+        for (int a = 0; a < m; a++) {
+          residual[a] = rate(slide[a], stateRules, values, stateDot);
+          norm = Math.max(norm, Math.abs(residual[a]));
+        }
+        for (double d : stateDot) {
+          scale = Math.max(scale, Math.abs(d));
+        }
+        if (!(norm > 1.0e-15 * scale)) {
+          break;
+        }
+        double[][] jacobian = new double[m][m];
+        for (int b = 0; b < m; b++) {
+          double[] shifted = values.clone();
+          shifted[slide[b]] += h;
+          double[] shiftedDot = fODE.evaluate(rules(stateRules, shifted));
+          for (int a = 0; a < m; a++) {
+            jacobian[a][b] = (rate(slide[a], stateRules, shifted, shiftedDot) - residual[a]) / h;
+          }
+        }
+        double[] step;
+        try {
+          step = new org.hipparchus.linear.LUDecomposition(
+              new org.hipparchus.linear.Array2DRowRealMatrix(jacobian, false)).getSolver()
+                  .solve(new org.hipparchus.linear.ArrayRealVector(residual, false)).toArray();
+        } catch (MathRuntimeException mre) {
+          // the switching terms don't change how the switching functions move
+          break;
+        }
+        for (int a = 0; a < m; a++) {
+          values[slide[a]] -= step[a];
+        }
+        stateDot = fODE.evaluate(rules(stateRules, values));
+        if (maxNorm(step) <= 1.0e-15) {
+          break;
+        }
+      }
+      return stateDot;
+    }
+
+    /**
+     * Choose the values of the switching terms at <code>t</code>: the sign of every switching
+     * function which is away from zero, and for one which is zero the side the flows lead to, or
+     * sliding if they lead to the surface from both sides.
+     *
+     * @param exit the sliding term which left its surface, or <code>-1</code>
+     * @param exitValue the value it left it with
+     */
+    void choose(double t, double[] state, int exit, double exitValue) {
+      IAST stateRules = fSystem.substitutions(t, state);
+      final double scale = scale(state);
+      for (int k = 0; k < sigma.length; k++) {
+        if (k == exit) {
+          sigma[k] = exitValue;
+          sliding[k] = false;
+          continue;
+        }
+        double s = argument(k, stateRules, sigma);
+        if (Math.abs(s) > SURFACE_TOLERANCE * scale) {
+          sigma[k] = s > 0.0 ? 1.0 : -1.0;
+          sliding[k] = false;
+          continue;
+        }
+        if (sliding[k]) {
+          continue;
+        }
+        double[] plus = sigma.clone();
+        plus[k] = 1.0;
+        double[] minus = sigma.clone();
+        minus[k] = -1.0;
+        double ratePlus = rate(k, stateRules, plus, fODE.evaluate(rules(stateRules, plus)));
+        double rateMinus = rate(k, stateRules, minus, fODE.evaluate(rules(stateRules, minus)));
+        // a rate which is zero up to the error of the state is zero: at the edge of a sliding
+        // region the flow on one side runs along the surface
+        final double rateTolerance =
+            SURFACE_TOLERANCE * Math.max(1.0, Math.max(Math.abs(ratePlus), Math.abs(rateMinus)));
+        if (Math.abs(ratePlus) <= rateTolerance) {
+          ratePlus = 0.0;
+        }
+        if (Math.abs(rateMinus) <= rateTolerance) {
+          rateMinus = 0.0;
+        }
+        if (ratePlus > 0.0 && rateMinus >= 0.0) {
+          sigma[k] = 1.0;
+        } else if (rateMinus < 0.0 && ratePlus <= 0.0) {
+          sigma[k] = -1.0;
+        } else if (ratePlus <= 0.0 && rateMinus >= 0.0 && ratePlus != rateMinus) {
+          // both flows lead to the surface; for a rate linear in the term this is the value which
+          // keeps it on it
+          sliding[k] = true;
+          sigma[k] = Math.max(-1.0, Math.min(1.0, (ratePlus + rateMinus) / (rateMinus - ratePlus)));
+        }
+        // flows which lead away on both sides, or along the surface: the value stays
+      }
+    }
+
+    /**
+     * The detectors of the stretch which starts with the current values: where a switching
+     * function reaches zero, or a sliding term reaches <code>1</code> or <code>-1</code>.
+     */
+    java.util.List<ODEEventDetector> detectors(double[] state, MethodSettings method) {
+      final double margin = SURFACE_MARGIN * scale(state);
+      java.util.List<ODEEventDetector> result = new java.util.ArrayList<ODEEventDetector>();
+      for (int k = 0; k < sigma.length; k++) {
+        if (sliding[k]) {
+          result.add(new SwitchDetector(this, k, 1.0, 0.0, method));
+          result.add(new SwitchDetector(this, k, -1.0, 0.0, method));
+        } else {
+          result.add(new SwitchDetector(this, k, 0.0, margin, method));
+        }
+      }
+      // A function which rises through zero is not looked for at all: near the start of a stretch,
+      // or along a sliding region, it may stay within its rounding errors of zero for a while, and
+      // every crossing of them would be located.
+      final FilterType decreasing = fDirection > 0.0 ? FilterType.TRIGGER_ONLY_DECREASING_EVENTS
+          : FilterType.TRIGGER_ONLY_INCREASING_EVENTS;
+      for (int i = 0; i < result.size(); i++) {
+        result.set(i, new EventSlopeFilter<>(result.get(i), decreasing));
+      }
+      return result;
+    }
+
+    /**
+     * The function whose zero ends a stretch: the switching function times the value of its term,
+     * which is positive inside the stretch, or for a sliding term the distance of its value from
+     * <code>exit</code>; both shifted by a margin, so that the rounding errors of a function which
+     * starts at zero don't make it cross zero.
+     *
+     * @param margin the margin of a switching function
+     */
+    double g(int k, double exit, double fixedValue, double margin,
+        ODEStateAndDerivative state) {
+      if (exit != 0.0) {
+        double[] values = sigma.clone();
+        derivatives(state.getTime(), state.getPrimaryState(), values);
+        return 1.0 + SURFACE_MARGIN - exit * values[k];
+      }
+      IAST stateRules = fSystem.substitutions(state.getTime(), state.getPrimaryState());
+      return margin + fixedValue * argument(k, stateRules, sigma);
+    }
+  }
+
+  /** The right hand sides of a system with switching terms, at their current values. */
+  private static final class SwitchedODE implements OrdinaryDifferentialEquation {
+    private final Switching fSwitching;
+
+    SwitchedODE(Switching switching) {
+      this.fSwitching = switching;
+    }
+
+    @Override
+    public int getDimension() {
+      return fSwitching.fSystem.stateDimension();
+    }
+
+    @Override
+    public double[] computeDerivatives(double t, double[] state) {
+      return fSwitching.derivatives(t, state, fSwitching.sigma);
+    }
+  }
+
+  /**
+   * Stops the integration where a switching function reaches zero, or a sliding switching term
+   * leaves the interval from <code>-1</code> to <code>1</code>.
+   */
+  private static final class SwitchDetector implements ODEEventDetector {
+    private final Switching fSwitching;
+    private final int fSwitch;
+    /** The value a sliding term leaves its surface with, or <code>0</code>. */
+    private final double fExit;
+    /** The value of the term inside the stretch. */
+    private final double fValue;
+    /** How far the switching function goes past zero before the stretch ends. */
+    private final double fMargin;
+    private final MethodSettings fSettings;
+    private final BracketedUnivariateSolver<UnivariateFunction> fSolver;
+
+    SwitchDetector(Switching switching, int k, double exit, double margin,
+        MethodSettings settings) {
+      this.fSwitching = switching;
+      this.fSwitch = k;
+      this.fExit = exit;
+      this.fValue = switching.sigma[k];
+      this.fMargin = margin;
+      this.fSettings = settings;
+      this.fSolver = settings.createSolver();
+    }
+
+    @Override
+    public double g(ODEStateAndDerivative state) {
+      return fSwitching.g(fSwitch, fExit, fValue, fMargin, state);
+    }
+
+    @Override
+    public AdaptableInterval getMaxCheckInterval() {
+      return AdaptableInterval.of(fSettings.maxStep);
+    }
+
+    @Override
+    public int getMaxIterationCount() {
+      return fSettings.eventMaxIterations;
+    }
+
+    @Override
+    public BracketedUnivariateSolver<UnivariateFunction> getSolver() {
+      return fSolver;
+    }
+
+    @Override
+    public ODEEventHandler getHandler() {
+      return (state, detector, increasing) -> {
+        // only a function which decreases to zero along the integration leaves the stretch; one
+        // which rises from zero is the start of the stretch
+        if (increasing == (fSwitching.fDirection > 0.0)) {
+          return Action.CONTINUE;
+        }
+        fSwitching.fired = fSwitch;
+        fSwitching.firedExit = fExit;
+        return Action.STOP;
+      };
+    }
   }
 
   /**
@@ -1590,6 +2487,15 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         case "FixedStep":
           fixedStep = true;
           return true;
+        case "ExplicitEuler":
+          // the Runge-Kutta formulas of order one and two, which take steps of a fixed size
+          fixedStep = true;
+          differenceOrder = 1;
+          return true;
+        case "ExplicitMidpoint":
+          fixedStep = true;
+          differenceOrder = 2;
+          return true;
         default:
           // The stiff solvers - "BDF", "StiffnessSwitching", "IDA", "ImplicitRungeKutta" and the
           // "LinearlyImplicit..." submethods - have no counterpart: the integrator library ships
@@ -1650,6 +2556,19 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
      */
     void addEventDetectors(AbstractIntegrator integrator, FirstOrderSystem system,
         boolean forward, EvalEngine engine) {
+      for (ODEEventDetector detector : eventDetectors(system, forward, engine)) {
+        integrator.addEventDetector(detector);
+      }
+    }
+
+    /**
+     * The detectors of {@link #addEventDetectors(AbstractIntegrator, FirstOrderSystem, boolean,
+     * EvalEngine)}. They remember the events they acted on, so an integration which is restarted
+     * keeps adding the same ones.
+     */
+    java.util.List<ODEEventDetector> eventDetectors(FirstOrderSystem system, boolean forward,
+        EvalEngine engine) {
+      java.util.List<ODEEventDetector> result = new java.util.ArrayList<ODEEventDetector>();
       for (IAST whenEvent : whenEvents) {
         // the condition is evaluated, which expands a form like Or @@ (x(t) > # &) /@ {1, 2};
         // the action stays held until an event
@@ -1657,9 +2576,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         java.util.List<WhenEventDetector> detectors = new java.util.ArrayList<WhenEventDetector>();
         WhenEventDetector.collect(condition, F.NIL, whenEvent.arg2(), system, engine, forward,
             this, detectors);
-        for (WhenEventDetector detector : detectors) {
-          integrator.addEventDetector(detector);
-        }
+        result.addAll(detectors);
       }
       for (int i = 0; i < events.length; i++) {
         ODEEventDetector detector = new EventLocator(system, engine, events[i], eventCondition,
@@ -1669,8 +2586,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
               ? FilterType.TRIGGER_ONLY_INCREASING_EVENTS
               : FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
         }
-        integrator.addEventDetector(detector);
+        result.add(detector);
       }
+      return result;
     }
 
     private BracketedUnivariateSolver<UnivariateFunction> createSolver() {
@@ -2034,9 +2952,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         }
         int component = fSystem.componentIndex(lhs);
         if (component >= 0) {
-          double value = fEngine.evalN(F.subst(rhs, rules)).evalfNaN();
-          if (!Double.isNaN(value)) {
-            newState[component] = value;
+          double[] trial = newState.clone();
+          if (fSystem.store(fEngine.evalN(F.subst(rhs, rules)), trial, component)) {
+            System.arraycopy(trial, 0, newState, 0, trial.length);
             return true;
           }
         }
@@ -2568,15 +3486,31 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
    * @return the value, or {@link Double#NaN} if it is not a number
    */
   private static double conditionValue(IExpr condition, IExpr application, EvalEngine engine) {
+    IExpr value = conditionNumber(condition, application, engine);
+    return value.isReal() ? value.evalf() : Double.NaN;
+  }
+
+  /**
+   * The value of {@link #conditionValue(IExpr, IExpr, EvalEngine)}, which may be a complex number.
+   *
+   * @return the numeric value, or {@link F#NIL} if it is not a number
+   */
+  private static IExpr conditionNumber(IExpr condition, IExpr application, EvalEngine engine) {
     ISymbol unknown = F.Dummy("NDSolve$value");
     IExpr solution = engine.evaluate(
         F.Solve(F.List(F.Equal(F.subst(condition, F.List(F.Rule(application, unknown))), F.C0)),
             F.List(unknown)));
     IAST rules = SolveUtils.firstSolutionRules(solution);
     if (rules.isNIL()) {
-      return Double.NaN;
+      return F.NIL;
     }
-    return engine.evalN(F.subst(unknown, rules)).evalfNaN();
+    IExpr value = engine.evalN(F.subst(unknown, rules));
+    if (value.isReal() || value.isNumber()) {
+      double re = value.isReal() ? value.evalf() : value.evalfc().getReal();
+      double im = value.isReal() ? 0.0 : value.evalfc().getImaginary();
+      return Double.isFinite(re) && Double.isFinite(im) ? value : F.NIL;
+    }
+    return F.NIL;
   }
 
   @Override

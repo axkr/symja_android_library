@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -78,7 +79,12 @@ public class CompileFunctions {
           return F.NIL;
         }
         ISymbol local = F.Dummy(parameter.getSymbolName() + EvalEngine.uniqueName("$"));
-        local.assignValue(engine.evaluate(call.get(i)), false);
+        IExpr value = engine.evaluate(call.get(i));
+        if (isInexactParameter(parameters.get(i)) && value.isNumericFunction(true)) {
+          // a real or complex parameter holds a machine number, as in compiled code
+          value = engine.evalN(value);
+        }
+        local.assignValue(value, false);
         variables[i - 1] = local;
         locals.put(parameter, local);
       }
@@ -92,6 +98,21 @@ public class CompileFunctions {
           }
         }
       }
+    }
+
+    /**
+     * Whether a parameter is declared as a real or complex number: <code>x</code> (a real number
+     * by default), <code>{x, _Real}</code>, <code>{x, _Complex}</code> or the same with a rank.
+     */
+    private static boolean isInexactParameter(IExpr declaration) {
+      if (declaration.isSymbol()) {
+        return true;
+      }
+      if (declaration.isList() && declaration.size() > 2 && declaration.second().isBlank()) {
+        IExpr type = ((IPatternObject) declaration.second()).getHeadTest();
+        return type == S.Real || type == S.Complex;
+      }
+      return false;
     }
 
     /**

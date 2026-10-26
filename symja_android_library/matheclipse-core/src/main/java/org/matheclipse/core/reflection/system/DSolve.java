@@ -157,6 +157,10 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
     if (result.isNIL()) {
       return F.NIL;
     }
+    if (!arg1.isFree(x -> x.isInexactNumber(), false)) {
+      // equations with machine numbers have a solution in machine numbers
+      result = engine.evaluate(numericSolution(result));
+    }
     IExpr parameterHead = options[GENERATED_PARAMETERS];
     if (parameterHead.isPresent() && !parameterHead.equals(S.C)) {
       result = engine.evaluate(renameParameters(result, parameterHead));
@@ -438,6 +442,36 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       }
     }
     return engine.evaluate(result);
+  }
+
+  /**
+   * Replace the exact numbers of the right-hand sides of the solution rules by machine numbers.
+   * Integer exponents and the indices of the constants <code>C(n)</code> stay exact, and the
+   * exponential keeps its base <code>E</code>.
+   */
+  private static IExpr numericSolution(IExpr expr) {
+    if (expr.isRuleAST()) {
+      IAST rule = (IAST) expr;
+      return rule.setAtCopy(2, numericNumbers(rule.arg2()));
+    }
+    if (expr.isList()) {
+      return ((IAST) expr).map(x -> numericSolution(x), 1);
+    }
+    return expr;
+  }
+
+  private static IExpr numericNumbers(IExpr expr) {
+    if (expr.isNumber()) {
+      return expr.isInexactNumber() ? expr : EvalEngine.get().evalN(expr);
+    }
+    if (!expr.isAST() || expr.isAST(S.C, 2)) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isPower() && ast.exponent().isInteger()) {
+      return F.Power(numericNumbers(ast.base()), ast.exponent());
+    }
+    return ast.map(x -> numericNumbers(x), 1);
   }
 
   /**

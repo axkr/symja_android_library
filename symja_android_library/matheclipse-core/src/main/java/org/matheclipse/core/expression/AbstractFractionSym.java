@@ -1976,13 +1976,8 @@ public abstract class AbstractFractionSym implements IFraction {
     if (that instanceof ApfloatNum) {
       return ((ApfloatNum) that).times(this);
     }
-    // a machine number, or an arbitrary-precision complex number
-    if (that.isOne()) {
-      return this;
-    }
-    if (that.isMinusOne()) {
-      return negate();
-    }
+    // a machine number, or an arbitrary-precision complex number: an inexact 1 or -1 gives an
+    // inexact product, 1./225 is no exact 1/225
     if (F.isExactZero(that)) {
       // exactly zero: a small machine number is no zero, $MinMachineNumber/2 is not 0
       return F.C0;

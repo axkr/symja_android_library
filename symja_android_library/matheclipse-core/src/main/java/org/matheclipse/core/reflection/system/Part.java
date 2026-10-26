@@ -926,7 +926,21 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x == S.All, 2)) {
       return arg1.getPart(ast, pos);
     }
-    // TODO implement more combinations for SparseArray
+    if (arg1 instanceof SparseArrayExpr) {
+      // spans and lists of positions are taken from the stored entries
+      IExpr sparse = ((SparseArrayExpr) arg1).partOfSpecifications(ast, pos);
+      if (sparse.isPresent()) {
+        return sparse;
+      }
+      long totalSize = 1L;
+      for (int d : arg1.getDimension()) {
+        totalSize *= d;
+      }
+      if (totalSize > Config.MAX_AST_SIZE) {
+        // The expression `1` cannot be used as a part specification.
+        return Errors.printMessage(head, "pkspec1", F.list(ast), engine);
+      }
+    }
 
     IExpr temp = arg1.normal(false);
     if (temp.isList()) {

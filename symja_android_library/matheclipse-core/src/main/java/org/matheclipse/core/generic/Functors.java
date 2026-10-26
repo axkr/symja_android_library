@@ -130,7 +130,7 @@ public class Functors {
       IExpr temp = fEqualRules.get(arg);
       if (temp != null) {
         fResult.append(temp);
-        return temp;
+        return F.list(temp);
       }
       if (fMatchers != null) {
         for (int i = 0; i < fMatchers.size(); i++) {
@@ -138,13 +138,18 @@ public class Functors {
           if (matcher != null) {
             // the matcher instance is shared, so drop the results of a previous expression
             matcher.resetReplaceList();
-            matcher.replaceEvaled(arg, fEngine);
+            temp = matcher.replaceEvaled(arg, fEngine);
             IAST list = matcher.getReplaceList();
             if (list.size() > 1) {
               for (int j = 1; j < list.size(); j++) {
                 fResult.append(list.get(j));
               }
               return list;
+            }
+            if (temp.isPresent() && matcher.isRuleWithoutPatterns()) {
+              // a rule without patterns matches at most once and isn't collected by the matcher
+              fResult.append(temp);
+              return F.list(temp);
             }
           }
         }
@@ -1021,7 +1026,7 @@ public class Functors {
     if (lhs.isFree(PATTERNQ_PREDICATE, true)) {
       IExpr temp = equalRules.get(lhs);
       if (temp == null) {
-        if (lhs.isOrderlessAST() || lhs.isFlatAST()) {
+        if (lhs.isOrderlessAST() || lhs.isFlatAST() || isConditionalRHS(rule)) {
           if (rule.isRuleDelayed()) {
             matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, lhs, rhs));
           } else {
@@ -1042,12 +1047,23 @@ public class Functors {
     }
   }
 
+  /**
+   * A delayed rule <code>lhs :&gt; rhs /; test</code> applies only where <code>test</code> gives
+   * <code>True</code>, also if <code>lhs</code> contains no pattern. Such a rule can't be looked up
+   * by equality and must be applied by a pattern matcher which checks the condition.
+   */
+  private static boolean isConditionalRHS(IAST rule) {
+    final IExpr rhs = rule.arg2();
+    return rule.isRuleDelayed() && (rhs.isCondition() || rhs.isBlockModuleOrWithCondition());
+  }
+
   private static void createPatternMatcherList(Map<IExpr, IExpr> equalRules,
       List<PatternMatcherList> matchers, IAST rule) {
     if (rule.arg1().isFree(PATTERNQ_PREDICATE, true)) {
       IExpr temp = equalRules.get(rule.arg1());
       if (temp == null) {
-        if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
+        if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()
+            || isConditionalRHS(rule)) {
           if (rule.isRuleDelayed()) {
             matchers
                 .add(new PatternMatcherList(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
