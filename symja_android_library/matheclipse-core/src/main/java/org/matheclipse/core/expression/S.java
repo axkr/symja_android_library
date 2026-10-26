@@ -7804,6 +7804,15 @@ public class S {
   public final static IBuiltInSymbol EvenQ = S.initFinalSymbol("EvenQ", ID.EvenQ);
 
   /**
+   * EventSeries(x) - TODO describe `EventSeries`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EventSeries.md">EventSeries
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EventSeries = S.initFinalSymbol("EventSeries", ID.EventSeries);
+
+  /**
    * ExactNumberQ(expr) - returns `True` if `expr` is an exact number, and `False` otherwise.
    * 
    * @see <a href=
@@ -9791,6 +9800,26 @@ public class S {
 
   public final static IBuiltInSymbol GaussianMatrix =
       S.initFinalSymbol("GaussianMatrix", ID.GaussianMatrix);
+
+  /**
+   * GaussianOrthogonalMatrixDistribution(x) - TODO describe `GaussianOrthogonalMatrixDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GaussianOrthogonalMatrixDistribution.md">GaussianOrthogonalMatrixDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GaussianOrthogonalMatrixDistribution =
+      S.initFinalSymbol("GaussianOrthogonalMatrixDistribution", ID.GaussianOrthogonalMatrixDistribution);
+
+  /**
+   * GaussianUnitaryMatrixDistribution(x) - TODO describe `GaussianUnitaryMatrixDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GaussianUnitaryMatrixDistribution.md">GaussianUnitaryMatrixDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GaussianUnitaryMatrixDistribution =
+      S.initFinalSymbol("GaussianUnitaryMatrixDistribution", ID.GaussianUnitaryMatrixDistribution);
 
   public final static IBuiltInSymbol GaussianWindow =
       S.initFinalSymbol("GaussianWindow", ID.GaussianWindow);
@@ -15308,6 +15337,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol MatrixPower = S.initFinalSymbol("MatrixPower", ID.MatrixPower);
+
+  /**
+   * MatrixPropertyDistribution(x) - TODO describe `MatrixPropertyDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixPropertyDistribution.md">MatrixPropertyDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MatrixPropertyDistribution =
+      S.initFinalSymbol("MatrixPropertyDistribution", ID.MatrixPropertyDistribution);
 
   /**
    * MatrixQ(m) - returns `True` if `m` is a list of equal-length lists.
