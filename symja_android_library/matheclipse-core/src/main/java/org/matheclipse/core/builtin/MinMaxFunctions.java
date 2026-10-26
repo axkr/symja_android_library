@@ -2048,13 +2048,15 @@ public class MinMaxFunctions {
       }
       boolean violated = false;
       final IExpr[] starts = {F.C0, F.C1, F.CN1};
+      IASTAppendable lastSpecs = F.NIL;
       for (int i = 0; i < starts.length; i++) {
         IASTAppendable specs = F.ListAlloc(variables.size());
         for (IExpr variable : variables) {
           specs.append(F.list(variable, starts[i]));
         }
-        // the other starts are fallbacks: their failures are quiet, the last one says why
-        IExpr result = localSearch(function, constraints, specs, i < starts.length - 1, engine);
+        lastSpecs = specs;
+        // the failures of the local searches are quiet: there may be no point to find
+        IExpr result = localSearch(function, constraints, specs, true, engine);
         if (result.isPresent()) {
           if (isFeasible(constraints, (IAST) result.second(), engine)) {
             return result;
@@ -2062,10 +2064,81 @@ public class MinMaxFunctions {
           violated = true;
         }
       }
+      if (!violated) {
+        // no local search ended: the constraints may have no point at all
+        violated = hasNoFeasiblePoint(constraints, search);
+        if (!violated) {
+          // the last local search says why it failed
+          localSearch(function, constraints, lastSpecs, false, engine);
+        }
+      }
       if (violated) {
         search.infeasible = true;
       }
       return F.NIL;
+    }
+
+    /**
+     * Test if no point satisfies the conjunction <code>constraints</code>: the least violation of
+     * the constraints, which a population search finds, is not zero.
+     * <code>x^2+y^2<=1 && x+y>=3</code> has no point.
+     *
+     * @return <code>false</code> if a point satisfies the constraints, or if their violation cannot
+     *         be measured
+     */
+    private boolean hasNoFeasiblePoint(IExpr constraints, Search search) {
+      final IExpr violation = violationOf(constraints);
+      if (violation.isNIL()) {
+        return false;
+      }
+      final MultivariateFunction func =
+          new MultiVariateNumerical(violation, search.listOfVariables);
+      final int dimension = search.vars.size();
+      final double[] lower = new double[dimension];
+      final double[] upper = new double[dimension];
+      double least = Double.POSITIVE_INFINITY;
+      for (int k = 0; k < GLOBAL_START_REGIONS.length; k++) {
+        java.util.Arrays.fill(lower, -GLOBAL_START_REGIONS[k]);
+        java.util.Arrays.fill(upper, GLOBAL_START_REGIONS[k]);
+        DifferentialEvolution.Result global = DifferentialEvolution.minimize(func, lower, upper,
+            true, null, populationSize(dimension), GLOBAL_GENERATIONS, GLOBAL_SEED + k);
+        if (global != null) {
+          least = Math.min(least, func.value(global.point));
+        }
+      }
+      // the squares of the violations: a point on the boundary of a feasible set is far below
+      return least > FEASIBILITY_TOLERANCE && !Double.isInfinite(least);
+    }
+
+    /**
+     * The sum of the squares of the amounts by which a point violates the relations of the
+     * conjunction <code>constraints</code>, see {@link #isFeasible(IExpr, IAST, EvalEngine)}.
+     *
+     * @return {@link F#NIL} if a conjunct is no relation which can be measured
+     */
+    private static IExpr violationOf(IExpr constraints) {
+      IAST conjuncts = constraints.isAnd() ? (IAST) constraints : F.And(constraints);
+      IASTAppendable sum = F.PlusAlloc(conjuncts.size());
+      for (int i = 1; i < conjuncts.size(); i++) {
+        IExpr conjunct = conjuncts.get(i);
+        final boolean less = conjunct.isAST(S.Less) || conjunct.isAST(S.LessEqual);
+        final boolean greater = conjunct.isAST(S.Greater) || conjunct.isAST(S.GreaterEqual);
+        final boolean equal = conjunct.isAST(S.Equal);
+        if ((!less && !greater && !equal) || conjunct.argSize() < 2) {
+          return F.NIL;
+        }
+        IAST relation = (IAST) conjunct;
+        for (int j = 2; j < relation.size(); j++) {
+          IExpr difference = F.Subtract(relation.get(j - 1), relation.get(j));
+          if (equal) {
+            sum.append(F.Sqr(difference));
+          } else {
+            // a <= b is violated by Max(0, a-b), a >= b by Max(0, b-a)
+            sum.append(F.Sqr(F.Max(F.C0, less ? difference : F.Negate(difference))));
+          }
+        }
+      }
+      return sum.oneIdentity0();
     }
 
     private IExpr localSearch(IExpr function, IExpr constraints, IAST specs, boolean quiet,
