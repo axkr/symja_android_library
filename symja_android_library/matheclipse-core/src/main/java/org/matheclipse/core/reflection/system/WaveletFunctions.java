@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
@@ -24,8 +25,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * The low pass filter <code>h</code> of length <code>2n</code> (normalized to
  * <code>Total(h) == Sqrt(2)</code>) comes from the spectral factorization of the Daubechies
  * polynomial: the minimum phase factor for Daubechies wavelets, the factor with the most nearly
- * linear phase for symlets. The scaling function solves the refinement equation
- * <code>phi(x) == Sqrt(2)*Sum(h_k*phi(2*x-k))</code> on the support <code>[0, 2n-1]</code>, and
+ * linear phase for symlets, taken in reverse order. The scaling function solves the refinement
+ * equation <code>phi(x) == Sqrt(2)*Sum(h_k*phi(2*x-k))</code> on the support
+ * <code>[0, 2n-1]</code>, and
  * the wavelet is <code>psi(x) == Sqrt(2)*Sum((-1)^k*h_(1-k)*phi(2*x-k))</code> on the support
  * <code>[1-n, n]</code>.
  *
@@ -321,7 +323,9 @@ public class WaveletFunctions {
 
   /**
    * The deviation of the phase of <code>H(w) == Sum(h_k*Exp(-I*k*w))</code> from a linear
-   * function: the sum of the squared residuals of the best affine fit on <code>0 < w < Pi</code>.
+   * function: the sum of the squared residuals of the best fit <code>-tau*w</code> on
+   * <code>0 < w < Pi</code>. The fit goes through the origin, where the phase of
+   * <code>H(0) == Sqrt(2)</code> is <code>0</code>.
    */
   private static double phaseNonlinearity(double[] h) {
     int m = 256;
@@ -350,18 +354,15 @@ public class WaveletFunctions {
       previous = p;
     }
     int count = w.length;
-    double sw = 0.0, sp = 0.0, sww = 0.0, swp = 0.0;
+    double sww = 0.0, swp = 0.0;
     for (int i = 0; i < count; i++) {
-      sw += w[i];
-      sp += phase[i];
       sww += w[i] * w[i];
       swp += w[i] * phase[i];
     }
-    double slope = (count * swp - sw * sp) / (count * sww - sw * sw);
-    double intercept = (sp - slope * sw) / count;
+    double slope = swp / sww;
     double sum = 0.0;
     for (int i = 0; i < count; i++) {
-      double r = phase[i] - slope * w[i] - intercept;
+      double r = phase[i] - slope * w[i];
       sum += r * r;
     }
     return sum;
@@ -397,7 +398,15 @@ public class WaveletFunctions {
           bestFilter = h;
         }
       }
-      return bestFilter == null ? null : new Scaling(bestFilter);
+      if (bestFilter == null) {
+        return null;
+      }
+      // the scaling function of a symlet is built from the filter in reverse order
+      double[] reversed = new double[bestFilter.length];
+      for (int i = 0; i < reversed.length; i++) {
+        reversed[i] = bestFilter[bestFilter.length - 1 - i];
+      }
+      return new Scaling(reversed);
     });
   }
 
@@ -408,15 +417,14 @@ public class WaveletFunctions {
    * @return <code>null</code> if <code>wave</code> is no such wavelet
    */
   private static Scaling scaling(IExpr wave) {
-    if (!wave.isAST() || !wave.head().isSymbol() || wave.argSize() > 1) {
+    if (!wave.isAST() || wave.argSize() > 1) {
       return null;
     }
-    String name = ((ISymbol) wave.head()).getSymbolName();
-    if (name.equalsIgnoreCase("HaarWavelet")) {
+    if (wave.isAST(S.HaarWavelet)) {
       return wave.argSize() == 0 ? daubechies(1) : null;
     }
-    boolean symlet = name.equalsIgnoreCase("SymletWavelet");
-    if (!symlet && !name.equalsIgnoreCase("DaubechiesWavelet")) {
+    boolean symlet = wave.isAST(S.SymletWavelet);
+    if (!symlet && !wave.isAST(S.DaubechiesWavelet)) {
       return null;
     }
     int n = symlet ? 4 : 2;
