@@ -2,7 +2,7 @@ matheclipse-or-tools
 Copyright 2026 the Symja project contributors
 
 This module contains a Java port of parts of Google OR-Tools 10.0 (release
-candidate, commit bfeb616d48; first ported from 9.15)
+candidate, commit ca2ec93777; first ported from 9.15)
 (https://github.com/google/or-tools), Copyright 2010-2025 Google LLC,
 licensed under the Apache License, Version 2.0 (see the LICENSE file).
 

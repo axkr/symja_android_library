@@ -18,7 +18,7 @@ package org.matheclipse.ortools.init;
 
 /**
  * The version of OR-Tools this Java port follows: 10.0, the release candidate of commit
- * <code>bfeb616d48</code>. Without a <code>v10.0</code> tag the OR-Tools build numbers it
+ * <code>ca2ec93777</code>. Without a <code>v10.0</code> tag the OR-Tools build numbers it
  * 10.0.0.
  */
 public class OrToolsVersion {

@@ -745,12 +745,22 @@ public final class GlopParameters {
     return this;
   }
 
-  /** The <code>use_dedicated_dual_feasibility_algorithm</code> field. */
+  /**
+   * The <code>use_dedicated_dual_feasibility_algorithm</code> field.
+   *
+   * @deprecated the field has no effect: the dual phase I always uses the dedicated algorithm
+   */
+  @Deprecated
   public boolean getUseDedicatedDualFeasibilityAlgorithm() {
     return useDedicatedDualFeasibilityAlgorithm;
   }
 
-  /** Sets the <code>use_dedicated_dual_feasibility_algorithm</code> field. */
+  /**
+   * Sets the <code>use_dedicated_dual_feasibility_algorithm</code> field.
+   *
+   * @deprecated the field has no effect: the dual phase I always uses the dedicated algorithm
+   */
+  @Deprecated
   public GlopParameters setUseDedicatedDualFeasibilityAlgorithm(boolean value) {
     this.useDedicatedDualFeasibilityAlgorithm = value;
     return this;

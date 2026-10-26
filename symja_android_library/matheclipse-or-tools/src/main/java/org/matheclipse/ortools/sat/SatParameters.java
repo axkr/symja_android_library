@@ -20,7 +20,7 @@ package org.matheclipse.ortools.sat;
  * Contains the definitions for all the sat algorithm parameters and their
  * default values.
  *
- * NEXT TAG: 374
+ * NEXT TAG: 375
  * </pre>
  *
  * <p>
@@ -1473,6 +1473,8 @@ public class SatParameters implements ProtoMessage {
   boolean hasMipAutomaticallyScaleVariables_;
   boolean mipScaleToMaxBound_ = false;
   boolean hasMipScaleToMaxBound_;
+  boolean mipScaleForPrecision_ = false;
+  boolean hasMipScaleForPrecision_;
   boolean mipPresolveRestrictBounds_ = true;
   boolean hasMipPresolveRestrictBounds_;
   boolean onlySolveIp_ = false;
@@ -6474,6 +6476,23 @@ public class SatParameters implements ProtoMessage {
     return mipScaleToMaxBound_;
   }
 
+  /** Returns true if {@code mip_scale_for_precision} is set. */
+  public boolean hasMipScaleForPrecision() {
+    return hasMipScaleForPrecision_;
+  }
+
+  /**
+   * <pre>
+   * If true, both mip_var_scaling and mip_scale_large_domain are ignored.
+   * Instead, we scale any floating point variable by the largest power of two
+   * that still allows every constraint containing it to satisfy
+   * mip_wanted_precision within mip_max_activity_exponent.
+   * </pre>
+   */
+  public boolean getMipScaleForPrecision() {
+    return mipScaleForPrecision_;
+  }
+
   /** Returns true if {@code mip_presolve_restrict_bounds} is set. */
   public boolean hasMipPresolveRestrictBounds() {
     return hasMipPresolveRestrictBounds_;
@@ -7341,6 +7360,8 @@ public class SatParameters implements ProtoMessage {
     hasMipAutomaticallyScaleVariables_ = src.hasMipAutomaticallyScaleVariables_;
     mipScaleToMaxBound_ = src.mipScaleToMaxBound_;
     hasMipScaleToMaxBound_ = src.hasMipScaleToMaxBound_;
+    mipScaleForPrecision_ = src.mipScaleForPrecision_;
+    hasMipScaleForPrecision_ = src.hasMipScaleForPrecision_;
     mipPresolveRestrictBounds_ = src.mipPresolveRestrictBounds_;
     hasMipPresolveRestrictBounds_ = src.hasMipPresolveRestrictBounds_;
     onlySolveIp_ = src.onlySolveIp_;
@@ -8364,6 +8385,9 @@ public class SatParameters implements ProtoMessage {
     if (hasMipProperRelaxation_) {
       printer.printScalar("mip_proper_relaxation", mipProperRelaxation_);
     }
+    if (hasMipScaleForPrecision_) {
+      printer.printScalar("mip_scale_for_precision", mipScaleForPrecision_);
+    }
     if (hasFeasibilityJumpIgnoreRedundantConstraints_) {
       printer.printScalar("feasibility_jump_ignore_redundant_constraints", feasibilityJumpIgnoreRedundantConstraints_);
     }
@@ -8989,6 +9013,8 @@ public class SatParameters implements ProtoMessage {
         && hasMipAutomaticallyScaleVariables_ == other.hasMipAutomaticallyScaleVariables_
         && mipScaleToMaxBound_ == other.mipScaleToMaxBound_
         && hasMipScaleToMaxBound_ == other.hasMipScaleToMaxBound_
+        && mipScaleForPrecision_ == other.mipScaleForPrecision_
+        && hasMipScaleForPrecision_ == other.hasMipScaleForPrecision_
         && mipPresolveRestrictBounds_ == other.mipPresolveRestrictBounds_
         && hasMipPresolveRestrictBounds_ == other.hasMipPresolveRestrictBounds_
         && onlySolveIp_ == other.onlySolveIp_
@@ -9326,6 +9352,7 @@ public class SatParameters implements ProtoMessage {
     h = 31 * h + Boolean.hashCode(mipScaleLargeDomain_);
     h = 31 * h + Boolean.hashCode(mipAutomaticallyScaleVariables_);
     h = 31 * h + Boolean.hashCode(mipScaleToMaxBound_);
+    h = 31 * h + Boolean.hashCode(mipScaleForPrecision_);
     h = 31 * h + Boolean.hashCode(mipPresolveRestrictBounds_);
     h = 31 * h + Boolean.hashCode(onlySolveIp_);
     h = 31 * h + Double.hashCode(mipWantedPrecision_);
@@ -10306,6 +10333,9 @@ public class SatParameters implements ProtoMessage {
     }
     if (hasMipProperRelaxation_) {
       w.bool(373, mipProperRelaxation_);
+    }
+    if (hasMipScaleForPrecision_) {
+      w.bool(374, mipScaleForPrecision_);
     }
     if (hasFeasibilityJumpIgnoreRedundantConstraints_) {
       w.bool(715, feasibilityJumpIgnoreRedundantConstraints_);
@@ -11305,6 +11335,9 @@ public class SatParameters implements ProtoMessage {
       }
       if (other.hasMipScaleToMaxBound_) {
         setMipScaleToMaxBound(other.mipScaleToMaxBound_);
+      }
+      if (other.hasMipScaleForPrecision_) {
+        setMipScaleForPrecision(other.mipScaleForPrecision_);
       }
       if (other.hasMipPresolveRestrictBounds_) {
         setMipPresolveRestrictBounds(other.mipPresolveRestrictBounds_);
@@ -14844,6 +14877,14 @@ public class SatParameters implements ProtoMessage {
             }
             t.consume(":");
             setMipScaleToMaxBound(t.bool());
+            break;
+          }
+          case "mip_scale_for_precision": {
+            if (strict && hasMipScaleForPrecision_) {
+              throw ProtoWire.duplicate(t, "mip_scale_for_precision");
+            }
+            t.consume(":");
+            setMipScaleForPrecision(t.bool());
             break;
           }
           case "mip_presolve_restrict_bounds": {
@@ -19529,6 +19570,20 @@ public class SatParameters implements ProtoMessage {
     public Builder clearMipScaleToMaxBound() {
       mipScaleToMaxBound_ = false;
       hasMipScaleToMaxBound_ = false;
+      return this;
+    }
+
+    /** Sets {@code mip_scale_for_precision}. */
+    public Builder setMipScaleForPrecision(boolean value) {
+      mipScaleForPrecision_ = value;
+      hasMipScaleForPrecision_ = true;
+      return this;
+    }
+
+    /** Resets {@code mip_scale_for_precision} to its default value. */
+    public Builder clearMipScaleForPrecision() {
+      mipScaleForPrecision_ = false;
+      hasMipScaleForPrecision_ = false;
       return this;
     }
 

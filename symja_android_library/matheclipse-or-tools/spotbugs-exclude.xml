@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SpotBugs patterns which are intended in matheclipse-or-tools. There are none at the module
+level: the few intended cases (exact floating point ties in Glop, the search state of the CP-SAT
+engine next to its shared stop flag, seeded test generators) are marked where they occur with
+@SuppressFBWarnings and a justification, so that the IDE plugin honours them too. -->
+<FindBugsFilter xmlns="https://github.com/spotbugs/filter/3.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+</FindBugsFilter>

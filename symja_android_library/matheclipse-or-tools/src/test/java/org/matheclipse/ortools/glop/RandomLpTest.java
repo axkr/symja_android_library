@@ -260,8 +260,7 @@ public class RandomLpTest {
         new GlopParameters().setUseDualSimplex(true).setUsePreprocessing(false),
         new GlopParameters().setFeasibilityRule(GlopParameters.PricingRule.DANTZIG)
             .setOptimizationRule(GlopParameters.PricingRule.DEVEX),
-        new GlopParameters().setUseDualSimplex(true)
-            .setUseDedicatedDualFeasibilityAlgorithm(false).setPerturbCostsInDualSimplex(true),
+        new GlopParameters().setUseDualSimplex(true).setPerturbCostsInDualSimplex(true),
         new GlopParameters().setInitialBasis(GlopParameters.InitialBasisHeuristic.MAROS),
         new GlopParameters().setInitialBasis(GlopParameters.InitialBasisHeuristic.BIXBY)};
     for (int t = 0; t < count; ++t) {

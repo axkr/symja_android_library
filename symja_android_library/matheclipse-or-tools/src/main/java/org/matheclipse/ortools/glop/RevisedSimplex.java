@@ -64,11 +64,11 @@ import org.matheclipse.ortools.util.TimeLimit;
  * OR-Tools 10.0: the port follows the 10.0 primal simplex (an underflowed zero step to the bound
  * is a degenerate iteration, the phase I ratio test stops when the improvement is below
  * <code>harris_tolerance_ratio * primal_feasibility_tolerance</code>, FREE statuses of columns
- * with a starting value are kept on warm start). Two 10.0 changes are deliberately not ported:
- * the dual phase I calling the primal minimization (upstream commit 7be0b5a936, a regression of
- * the dual phase I), and the Farkas dual ray check that turns PRIMAL_INFEASIBLE into IMPRECISE
- * (upstream commit 2aacd0818a), which would make infeasible answers with residuals between 1e-8
- * and 1e-6 ABNORMAL.
+ * with a starting value are kept on warm start). The dual phase I always minimizes the sum of the
+ * dual infeasibilities with the dual simplex; the variant on an auxiliary problem with changed
+ * bounds is gone, as in 10.0. One 10.0 change is deliberately not ported: the Farkas dual ray
+ * check that turns PRIMAL_INFEASIBLE into IMPRECISE (upstream commit 2aacd0818a), which would make
+ * infeasible answers with residuals between 1e-8 and 1e-6 ABNORMAL.
  */
 public final class RevisedSimplex {
 
@@ -312,63 +312,22 @@ public final class RevisedSimplex {
       if (params.getPerturbCostsInDualSimplex()) {
         reducedCosts.perturbCosts();
       }
-      if (params.getUseDedicatedDualFeasibilityAlgorithm()) {
-        variablesInfo.makeBoxedVariableRelevant(false);
-        status = dualMinimize(phase == Phase.FEASIBILITY, timeLimit);
+      variablesInfo.makeBoxedVariableRelevant(false);
+      status = dualMinimize(phase == Phase.FEASIBILITY, timeLimit);
+      if (!status.ok()) {
+        return status;
+      }
+      if (problemStatus != ProblemStatus.DUAL_INFEASIBLE) {
+        status = basisFactorization.refactorize();
         if (!status.ok()) {
           return status;
         }
-        if (problemStatus != ProblemStatus.DUAL_INFEASIBLE) {
-          status = basisFactorization.refactorize();
-          if (!status.ok()) {
-            return status;
-          }
-          permuteBasis();
-          variablesInfo.makeBoxedVariableRelevant(true);
-          reducedCosts.makeReducedCostsPrecise();
-          makeBoxedVariableDualFeasible(bitSetToList(variablesInfo.getNonBasicBoxedVariables()),
-              false);
-          variableValues.recomputeBasicVariableValues();
-        }
-      } else {
+        permuteBasis();
+        variablesInfo.makeBoxedVariableRelevant(true);
         reducedCosts.makeReducedCostsPrecise();
-        boolean[] refactorize = {reducedCosts.needsBasisRefactorization()};
-        status = refactorizeBasisIfNeeded(refactorize);
-        if (!status.ok()) {
-          return status;
-        }
-        final double initialInfeasibility =
-            reducedCosts.computeMaximumDualInfeasibilityOnNonBoxedVariables();
-        if (initialInfeasibility < reducedCosts.getDualFeasibilityTolerance()) {
-          logger.log("Initial basis is dual feasible.");
-          problemStatus = ProblemStatus.DUAL_FEASIBLE;
-          makeBoxedVariableDualFeasible(bitSetToList(variablesInfo.getNonBasicBoxedVariables()),
-              false);
-          variableValues.recomputeBasicVariableValues();
-        } else {
-          variablesInfo.transformToDualPhaseIProblem(reducedCosts.getDualFeasibilityTolerance(),
-              reducedCosts.getReducedCosts());
-          variableValues.resetAllNonBasicVariableValues(new double[0]);
-          variableValues.recomputeBasicVariableValues();
-          displayErrors();
-          status = dualMinimize(false, timeLimit);
-          if (!status.ok()) {
-            return status;
-          }
-          variablesInfo.endDualPhaseI(reducedCosts.getDualFeasibilityTolerance(),
-              reducedCosts.getFullReducedCosts());
-          variableValues.resetAllNonBasicVariableValues(variableStartingValues);
-          variableValues.recomputeBasicVariableValues();
-          if (problemStatus == ProblemStatus.OPTIMAL) {
-            if (reducedCosts.computeMaximumDualInfeasibility() < reducedCosts
-                .getDualFeasibilityTolerance() + 1e-6) {
-              problemStatus = ProblemStatus.DUAL_FEASIBLE;
-            } else {
-              logger.log("Infeasible after first phase.");
-              problemStatus = ProblemStatus.DUAL_INFEASIBLE;
-            }
-          }
-        }
+        makeBoxedVariableDualFeasible(bitSetToList(variablesInfo.getNonBasicBoxedVariables()),
+            false);
+        variableValues.recomputeBasicVariableValues();
       }
     } else {
       status = primalMinimize(timeLimit);
@@ -2199,11 +2158,7 @@ public final class RevisedSimplex {
         String name;
         double obj;
         if (parameters.get().getUseDualSimplex()) {
-          if (parameters.get().getUseDedicatedDualFeasibilityAlgorithm()) {
-            obj = reducedCosts.computeSumOfDualInfeasibilities();
-          } else {
-            obj = -LpUtils.preciseScalarProduct(objective.get(), variableValues.getDenseRow());
-          }
+          obj = reducedCosts.computeSumOfDualInfeasibilities();
           name = "sum_dual_infeasibilities";
         } else {
           obj = variableValues.computeSumOfPrimalInfeasibilities();

@@ -73,9 +73,10 @@
 	</dependencies>
 
 	<profiles>
-		<!-- SpotBugs check of the main and test classes with the settings of the
-		Eclipse plugin (rank 15 and lower), opt-in:
-		mvn -pl matheclipse-or-tools -am process-test-classes -Pspotbugs -->
+		<!-- SpotBugs check of the main and test classes, opt-in; settings in the parent pom:
+		mvn -Pspotbugs process-test-classes -pl matheclipse-or-tools -am
+		The module is clean up to rank 15 ("Of Concern" in the IDE plugin), so it checks one rank
+		more than the parent, with the maximal effort. -->
 		<profile>
 			<id>spotbugs</id>
 			<build>
@@ -83,16 +84,9 @@
 					<plugin>
 						<groupId>com.github.spotbugs</groupId>
 						<artifactId>spotbugs-maven-plugin</artifactId>
-						<version>4.10.5.0</version>
 						<configuration>
 							<effort>Max</effort>
-							<threshold>Medium</threshold>
 							<maxRank>15</maxRank>
-							<includeTests>true</includeTests>
-							<failOnError>true</failOnError>
-							<!-- the default 512 MB run out of memory in the value number
-							analysis of the large simplex methods -->
-							<maxHeap>4096</maxHeap>
 						</configuration>
 						<executions>
 							<execution>
