@@ -2859,6 +2859,16 @@ public class S {
   public final static IBuiltInSymbol BrownianBridgeProcess =
       S.initFinalSymbol("BrownianBridgeProcess", ID.BrownianBridgeProcess);
 
+  /**
+   * BSplineBasis(x) - TODO describe `BSplineBasis`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BSplineBasis.md">BSplineBasis
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BSplineBasis =
+      S.initFinalSymbol("BSplineBasis", ID.BSplineBasis);
+
   public final static IBuiltInSymbol BSplineCurve =
       S.initFinalSymbol("BSplineCurve", ID.BSplineCurve);
 
@@ -10254,6 +10264,15 @@ public class S {
       S.initFinalSymbol("GraphPeriphery", ID.GraphPeriphery);
 
   public final static IBuiltInSymbol GraphPlot = S.initFinalSymbol("GraphPlot", ID.GraphPlot);
+
+  /**
+   * GraphPlot3D(x) - TODO describe `GraphPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphPlot3D.md">GraphPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphPlot3D = S.initFinalSymbol("GraphPlot3D", ID.GraphPlot3D);
 
   /**
    * GraphPower(graph, n) - the function uses Dijkstra's algorithm (i.e.
@@ -22349,6 +22368,16 @@ public class S {
       S.initFinalSymbol("SmoothHistogram", ID.SmoothHistogram);
 
   /**
+   * SmoothKernelDistribution(x) - TODO describe `SmoothKernelDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SmoothKernelDistribution.md">SmoothKernelDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SmoothKernelDistribution =
+      S.initFinalSymbol("SmoothKernelDistribution", ID.SmoothKernelDistribution);
+
+  /**
    * SocketConnect(x) - TODO describe `SocketConnect`.
    * 
    * @see <a href=
@@ -26375,6 +26404,24 @@ public class S {
    */
   public final static IBuiltInSymbol WattsStrogatzGraphDistribution =
       S.initFinalSymbol("WattsStrogatzGraphDistribution", ID.WattsStrogatzGraphDistribution);
+
+  /**
+   * WaveletPhi(x) - TODO describe `WaveletPhi`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WaveletPhi.md">WaveletPhi
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WaveletPhi = S.initFinalSymbol("WaveletPhi", ID.WaveletPhi);
+
+  /**
+   * WaveletPsi(x) - TODO describe `WaveletPsi`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WaveletPsi.md">WaveletPsi
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WaveletPsi = S.initFinalSymbol("WaveletPsi", ID.WaveletPsi);
 
   /**
    * WeaklyConnectedComponents(x) - TODO describe `WeaklyConnectedComponents`.
