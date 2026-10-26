@@ -190,7 +190,7 @@
 			<dependency>
 				<groupId>com.ibm.icu</groupId>
 				<artifactId>icu4j</artifactId>
-				<version>78.3</version>
+				<version>79.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.univocity</groupId>
@@ -217,7 +217,7 @@
 			<dependency>
 				<groupId>io.undertow</groupId>
 				<artifactId>undertow-servlet</artifactId>
-				<version>2.3.26.Final</version>
+				<version>2.3.27.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>it.unimi.dsi</groupId>
@@ -277,7 +277,7 @@
 			<dependency>
 				<groupId>org.commonmark</groupId>
 				<artifactId>commonmark-ext-gfm-tables</artifactId>
-				<version>0.30.1</version>
+				<version>0.31.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.gavaghan</groupId>
@@ -539,12 +539,12 @@
 			<dependency>
 				<groupId>org.boofcv</groupId>
 				<artifactId>boofcv-ip</artifactId>
-				<version>1.5.0</version>
+				<version>1.6.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.boofcv</groupId>
 				<artifactId>boofcv-feature</artifactId>
-				<version>1.5.0</version>
+				<version>1.6.0</version>
 			</dependency>
 			<!-- TwelveMonkeys plugs extra formats into javax.imageio through
 			the ServiceLoader, so nothing references it at compile time. -->
@@ -716,7 +716,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.1</version>
 					<configuration>
 						<includes>
 							<include>**/Test*.java</include>
