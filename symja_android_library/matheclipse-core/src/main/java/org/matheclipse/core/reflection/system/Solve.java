@@ -491,6 +491,17 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           // For each known root from the previous layer, solve: layerEq == previousRoot
           for (int j = 1; j < roots.size(); j++) {
             IExpr targetValue = roots.get(j);
+            if (targetValue.isNumericFunction(true)
+                && isSquareLayer(layer, x, decomposed.argSize(), i)) {
+              // y^2 == t has the solutions -Sqrt(t), Sqrt(t), so that
+              // Sqrt((5-Sqrt(17))/2) keeps its form
+              IExpr root = engine.evaluate(F.Sqrt(targetValue));
+              nextRoots.append(engine.evaluate(F.Negate(root)));
+              if (!root.isZero()) {
+                nextRoots.append(root);
+              }
+              continue;
+            }
             IExpr subEquation = F.Equal(layerEq, targetValue);
 
             // Invoke the internal solver on the reduced-degree/simplified equation layer
@@ -524,12 +535,20 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         for (int i = 1; i < roots.size(); i++) {
           finalRules.append(F.Rule(x, roots.get(i)));
         }
-
         return QuarticSolver.sortASTArguments(finalRules);
 
       } finally {
         engine.decOptimizeExpressionDepth();
       }
+    }
+
+    /**
+     * Test if the layer at position <code>i</code> of a decomposition into <code>layers</code>
+     * polynomials is the innermost one of two and is <code>x^2</code>.
+     */
+    private static boolean isSquareLayer(IExpr layer, IExpr x, int layers, int i) {
+      return layers == 2 && i == 2 && layer.isPower() && layer.base().equals(x)
+          && layer.exponent().equals(F.C2);
     }
 
     private void appendLinearEquation(ExprAnalyzer exprAnalyzer, IASTAppendable matrix,
@@ -919,6 +938,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, inequationsList,
           numericFlag, variables, true, engine);
       if (temp.isPresent()) {
+        if (!numericFlag) {
+          temp = simplifyRadicands(temp, engine);
+        }
         return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
       }
 
@@ -938,11 +960,44 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
       if (termsEqualZeroList.size() == 2 && variables.size() == 2 && inequationsList.isEmpty()) {
         result = solveTwoVariableSystem(termsEqualZeroList, numericFlag, variables.arg1(), engine);
+        if (!numericFlag && result.isListOfLists()) {
+          IASTMutable simplified = simplifyRadicands((IASTMutable) result, engine);
+          if (simplified != result) {
+            // the negative root -Sqrt(...) before the positive one
+            result = QuarticSolver.sortASTArguments(simplified);
+          }
+        }
       } else if (termsEqualZeroList.size() > 2 && variables.size() >= 3) {
         result = solveMultiVariableSystem(termsEqualZeroList, inequationsList, numericFlag,
             variables, engine);
       }
       return result;
+    }
+
+    /**
+     * The solutions with every square root of a polynomial radicand, whose expanded form is
+     * shorter, written with the expanded radicand as one fraction:
+     * <code>Sqrt(-4+(9-2*x)^2/9+4*x-x^2)</code> is <code>Sqrt(45-5*x^2)/3</code>.
+     */
+    private static IASTMutable simplifyRadicands(IASTMutable solutions, EvalEngine engine) {
+      IExpr result = solutions.replaceAll(x -> {
+        if (x.isPower() && x.exponent().equals(F.C1D2) && x.base().isPlus()
+            && !x.base().isNumericFunction(true)) {
+          IExpr radicand = x.base();
+          IAST variables = new VariablesSet(radicand).getVarList();
+          if (variables.argSize() > 0 && radicand.isPolynomial(variables)) {
+            IExpr expanded = engine.evaluate(F.Together(F.Expand(radicand)));
+            if (expanded.leafCount() < radicand.leafCount()) {
+              return engine.evaluate(F.Sqrt(expanded));
+            }
+          }
+        }
+        return F.NIL;
+      });
+      if (result.isPresent() && result.isList()) {
+        return (IASTMutable) engine.evaluate(result);
+      }
+      return solutions;
     }
 
     /** The largest system in which an equation is also compared as a multiple of another. */

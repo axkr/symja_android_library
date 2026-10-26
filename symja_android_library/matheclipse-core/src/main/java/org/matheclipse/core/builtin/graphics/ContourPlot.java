@@ -826,6 +826,12 @@ public class ContourPlot extends ListPlot {
   }
 
   @Override
+  protected boolean compoundIteratorVariables() {
+    // a plot variable like x(1) is replaced by a unique symbol
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] optionValues = GraphicsOptions.contourPlotDefaultOptionValues(false, false);
     optionValues[GraphicsOptions.X_AXES] = S.False;

@@ -5954,6 +5954,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           blowsUp = blowsUp || duplicatesInertRoot(value, substituted);
           rootValue = substituted;
         }
+        if (domain == S.Complexes) {
+          rootValue = expandedLinearForm(rootValue, engine);
+        }
         IASTAppendable branch = F.ListAlloc(subBranch.argSize() + root.argSize() + 1);
         branch.append(F.Equal(variable, rootValue));
         branch.appendArgs(subBranch);
@@ -5974,6 +5977,32 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * The expanded form of a value which is linear in its variables with rational coefficients:
+   * <code>1/3*(-2+x)</code> becomes <code>-2/3+x/3</code> and <code>10-2*(-1+a)-a</code> becomes
+   * <code>12-3*a</code>; any other value is returned unchanged.
+   */
+  private static IExpr expandedLinearForm(IExpr value, EvalEngine engine) {
+    if (!value.isPlus() && !value.isTimes()) {
+      return value;
+    }
+    IExpr expanded = engine.evaluate(F.Expand(value));
+    IAST terms = expanded.isPlus() ? (IAST) expanded : F.list(expanded);
+    boolean hasVariable = false;
+    for (IExpr term : terms) {
+      if (term.isRational()) {
+        continue;
+      }
+      IExpr variable = term.isTimes() && term.isAST2() && term.first().isRational() ? term.second()
+          : term;
+      if (!variable.isSymbol() || !variable.isVariable()) {
+        return value;
+      }
+      hasVariable = true;
+    }
+    return hasVariable ? expanded : value;
   }
 
   /**

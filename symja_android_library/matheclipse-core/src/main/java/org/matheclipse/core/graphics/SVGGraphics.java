@@ -135,4 +135,41 @@ public class SVGGraphics {
     }
     return svg.endsWith("\n") ? svg : svg + "\n";
   }
+
+  /**
+   * A standalone SVG document showing a raster image pixel for pixel, the way
+   * <code>ExportString[image, "SVG"]</code> writes an <code>Image</code>.
+   *
+   * @param base64Png the base64 encoded PNG file of the picture
+   * @return <code>null</code> if <code>base64Png</code> does not start with a PNG header
+   */
+  public static String imageDocument(String base64Png) {
+    // the signature, the length and the name of the IHDR chunk, then the width and the height
+    if (base64Png.length() < 32) {
+      return null;
+    }
+    byte[] header;
+    try {
+      header = java.util.Base64.getDecoder().decode(base64Png.substring(0, 32));
+    } catch (IllegalArgumentException iae) {
+      return null;
+    }
+    if (header.length < 24 || header[1] != 'P' || header[2] != 'N' || header[3] != 'G'
+        || header[12] != 'I' || header[13] != 'H' || header[14] != 'D' || header[15] != 'R') {
+      return null;
+    }
+    long width = readInt(header, 16);
+    long height = readInt(header, 20);
+    return XML_DECLARATION + "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + width
+        + "\" height=\"" + height + "\" viewBox=\"0 0 " + width + " " + height + "\">"
+        + "<image width=\"" + width + "\" height=\"" + height
+        + "\" image-rendering=\"pixelated\" href=\"data:image/png;base64," + base64Png
+        + "\"/></svg>\n";
+  }
+
+  /** The big-endian unsigned 32 bit integer at <code>offset</code>. */
+  private static long readInt(byte[] bytes, int offset) {
+    return ((bytes[offset] & 0xFFL) << 24) | ((bytes[offset + 1] & 0xFFL) << 16)
+        | ((bytes[offset + 2] & 0xFFL) << 8) | (bytes[offset + 3] & 0xFFL);
+  }
 }

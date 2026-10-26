@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Colors;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.image.expression.data.ImageOptions;
 
@@ -24,20 +25,13 @@ import org.matheclipse.image.expression.data.ImageOptions;
  * <code>ColorDistance</code>, and the three alpha channel functions.
  *
  * <p>
- * <b>An image is always RGB or greyscale here.</b> An <code>ImageExpr</code> stores an sRGB or
- * greyscale bitmap and has nowhere to record a colour space, and <code>Image[data, ColorSpace
- * -&gt; "HSB"]</code> already <em>interprets</em> its data as HSB and stores the RGB result. So
- * <code>ColorConvert</code> of an image accepts only <code>"Grayscale"</code> and
- * <code>"RGB"</code>; handing back an image whose channels are secretly H, S and B would make
- * <code>ImageColorSpace</code> lie and would break the round trip through
- * <code>ColorConvert</code>.
- *
- * <p>
- * The other colour spaces are reachable one channel at a time, where there is no ambiguity:
- * <code>ColorSeparate(image, "HSB")</code> gives three greyscale planes and
- * <code>ColorCombine({h, s, b}, "HSB")</code> puts them back together. A colour <em>directive</em>
- * has no such problem and converts to <code>"HSB"</code>, <code>"CMYK"</code> and <code>"XYZ"</code>
- * directly, and a list of directives converts directive by directive.
+ * An image is in one of the spaces <code>"Grayscale"</code>, <code>"RGB"</code>, <code>"HSB"</code>
+ * and <code>"CMYK"</code>. An HSB or CMYK image keeps its samples in that space and is shown from
+ * the RGB picture they denote, so <code>ColorConvert</code> of an image goes between these four
+ * spaces, and back to RGB decodes the samples again. A colour <em>directive</em> converts to
+ * <code>"XYZ"</code> as well, and a list of directives converts directive by directive.
+ * <code>ColorSeparate(image, space)</code> gives the channels of other spaces as greyscale planes
+ * and <code>ColorCombine({h, s, b}, "HSB")</code> puts them back together.
  */
 public class ColorFunctions {
 
@@ -154,6 +148,12 @@ public class ColorFunctions {
         return F.NIL;
       }
       String space = canonicalSpace(ast.arg2().toString());
+      if (ast.arg1() instanceof ImageExpr) {
+        IExpr converted = convertColorSpace((ImageExpr) ast.arg1(), space);
+        if (converted.isPresent()) {
+          return converted;
+        }
+      }
       if (ast.arg1() instanceof ImageExpr && GRAYSCALE.equals(space)) {
         IExpr gray = realGrayscale((ImageExpr) ast.arg1(), engine);
         if (gray.isPresent()) {
@@ -246,6 +246,135 @@ public class ColorFunctions {
       return ImageFilterFunctions.toImage(new double[][][] {gray}, ImageOptions.DEFAULT);
     }
 
+    /**
+     * An image converted from or into the HSB or CMYK space, computed from its samples in machine
+     * doubles. The result keeps the sample type of the image, except that a bilevel image gives
+     * reals.
+     *
+     * @return {@link F#NIL} if neither the image nor <code>space</code> is HSB or CMYK, if
+     *         <code>space</code> is no image colour space, or if an image with an alpha channel is
+     *         to become HSB or CMYK
+     */
+    private static IExpr convertColorSpace(ImageExpr source, String space) {
+      String from = source.storedColorSpace();
+      boolean toStored = HSB.equals(space) || CMYK.equals(space);
+      if (from == null && !toStored) {
+        return F.NIL;
+      }
+      if (space.equals(from)) {
+        return source;
+      }
+      if (!toStored && !RGB.equals(space) && !GRAYSCALE.equals(space)) {
+        return F.NIL;
+      }
+      Raster raster = source.raster();
+      if (raster == null || (from == null && raster.channels != 1 && raster.channels != 3)) {
+        return F.NIL;
+      }
+      int outChannels = GRAYSCALE.equals(space) ? 1 : CMYK.equals(space) ? 4 : 3;
+      Raster result = new Raster(raster.width, raster.height, outChannels);
+      double[] values = new double[raster.channels];
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          for (int c = 0; c < raster.channels; c++) {
+            values[c] = raster.get(x, y, c);
+          }
+          double[] converted = fromRgb(toRgb(values, from), space);
+          for (int c = 0; c < outChannels; c++) {
+            result.set(x, y, c, converted[c]);
+          }
+        }
+      }
+      ImageOptions options =
+          source.getOptions().withColorSpace(toStored ? F.stringx(space) : S.Automatic);
+      String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
+      ImageExpr image = ImageExpr.fromRaster(result, options, type);
+      return image == null ? F.NIL : image;
+    }
+
+    /** The red, green and blue of the samples of one pixel in the space <code>from</code>. */
+    private static double[] toRgb(double[] values, String from) {
+      if (HSB.equals(from)) {
+        return hsbToRgb(values[0], values[1], values[2]);
+      }
+      if (CMYK.equals(from)) {
+        double scale = 1.0 - values[3];
+        return new double[] {(1.0 - values[0]) * scale, (1.0 - values[1]) * scale,
+            (1.0 - values[2]) * scale};
+      }
+      if (values.length == 1) {
+        return new double[] {values[0], values[0], values[0]};
+      }
+      return new double[] {values[0], values[1], values[2]};
+    }
+
+    /** The samples of red, green and blue in <code>space</code>. */
+    private static double[] fromRgb(double[] rgb, String space) {
+      if (GRAYSCALE.equals(space)) {
+        return new double[] {Colors.grayLevel(rgb[0], rgb[1], rgb[2])};
+      }
+      if (HSB.equals(space)) {
+        return rgbToHsb(rgb[0], rgb[1], rgb[2]);
+      }
+      if (CMYK.equals(space)) {
+        double black = 1.0 - Math.max(rgb[0], Math.max(rgb[1], rgb[2]));
+        if (black >= 1.0) {
+          return new double[] {0.0, 0.0, 0.0, 1.0};
+        }
+        double scale = 1.0 - black;
+        return new double[] {(1.0 - rgb[0] - black) / scale, (1.0 - rgb[1] - black) / scale,
+            (1.0 - rgb[2] - black) / scale, black};
+      }
+      return rgb;
+    }
+
+    /** Hue, saturation and brightness of a colour, each in <code>0.0 ... 1.0</code>. */
+    private static double[] rgbToHsb(double r, double g, double b) {
+      double max = Math.max(r, Math.max(g, b));
+      double min = Math.min(r, Math.min(g, b));
+      double range = max - min;
+      double saturation = max > 0.0 ? range / max : 0.0;
+      double hue = 0.0;
+      if (range > 0.0) {
+        if (r == max) {
+          hue = (g - b) / range;
+        } else if (g == max) {
+          hue = 2.0 + (b - r) / range;
+        } else {
+          hue = 4.0 + (r - g) / range;
+        }
+        hue /= 6.0;
+        if (hue < 0.0) {
+          hue += 1.0;
+        }
+      }
+      return new double[] {hue, saturation, max};
+    }
+
+    /** The red, green and blue of a hue, saturation and brightness. */
+    private static double[] hsbToRgb(double hue, double saturation, double brightness) {
+      double h6 = (hue - Math.floor(hue)) * 6.0;
+      int sector = (int) Math.floor(h6);
+      double f = h6 - sector;
+      double p = brightness * (1.0 - saturation);
+      double q = brightness * (1.0 - saturation * f);
+      double t = brightness * (1.0 - saturation * (1.0 - f));
+      switch (sector % 6) {
+        case 0:
+          return new double[] {brightness, t, p};
+        case 1:
+          return new double[] {q, brightness, p};
+        case 2:
+          return new double[] {p, brightness, t};
+        case 3:
+          return new double[] {p, q, brightness};
+        case 4:
+          return new double[] {t, p, brightness};
+        default:
+          return new double[] {brightness, p, q};
+      }
+    }
+
     private static IExpr convertImage(BufferedImage image, String space) {
       int channels = Boof.channels(image);
       int width = image.getWidth();
@@ -262,8 +391,8 @@ public class ColorFunctions {
               : new float[] {values[0], values[1], values[2]};
         }), null);
       }
-      // HSB, CMYK, LAB and the rest are not colour spaces an ImageExpr can be in - see the class
-      // comment. ColorSeparate(image, space) is the way to reach their channels.
+      // LAB and the rest are not colour spaces an ImageExpr can be in - see the class comment.
+      // ColorSeparate(image, space) is the way to reach their channels.
       return F.NIL;
     }
 

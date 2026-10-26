@@ -474,6 +474,19 @@ class ParserTestCase {
   }
 
   @Test
+  void testParseOnlyOperatorOwnsSpan() {
+    // an operator which binds looser than ;; and is only read, not printed, takes the span as its
+    // right operand like any other
+    assertEquals("VerticalSeparator(u, Span(v, w))",
+        PARSE_UNRELAXED.parse("uv;;w").toString());
+    assertEquals("Conditioned(u, Span(v, 2))", PARSE_UNRELAXED.parse("uv;;2").toString());
+    assertEquals("NotVerticalBar(u, Span(v, w))",
+        PARSE_UNRELAXED.parse("uv;;w").toString());
+    // one which binds tighter than ;; stays inside its first part
+    assertEquals("Span(Conjugate(u), w)", PARSE_UNRELAXED.parse("u;;w").toString());
+  }
+
+  @Test
   void testParser49() {
     ASTNode obj = PARSE_UNRELAXED.parse("FullForm[Hold[abc;;;;; ]]");
     assertEquals("FullForm(Hold(CompoundExpression(Times(Span(abc, All), Span(1, All)), Null)))",

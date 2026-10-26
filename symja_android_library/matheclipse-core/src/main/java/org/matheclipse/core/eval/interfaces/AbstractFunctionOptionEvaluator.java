@@ -84,6 +84,59 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
    * @see #localIterators()
    */
   public final IExpr evaluateLocal(IAST held, EvalEngine engine, Function<IAST, IExpr> body) {
+    if (compoundIteratorVariables()) {
+      IASTAppendable renamed = F.ListAlloc();
+      IAST call = renameCompoundIterators(held, renamed);
+      if (renamed.argSize() > 0) {
+        IExpr result = evaluateLocalVariables(call, engine, body);
+        if (result.isNIL()) {
+          return F.NIL;
+        }
+        // the unique symbols back to the variables they replaced
+        return F.subst(result,
+            F.mapList(renamed, (IExpr rule) -> F.Rule(rule.second(), rule.first())));
+      }
+    }
+    return evaluateLocalVariables(held, engine, body);
+  }
+
+  /**
+   * Whether an iterator <code>{x(1), xmin, xmax}</code> or <code>{Subscript(w, f), xmin,
+   * xmax}</code> of a call with {@link #localIterators()} is allowed: its variable is replaced by a
+   * unique symbol in the whole call.
+   */
+  protected boolean compoundIteratorVariables() {
+    return false;
+  }
+
+  /**
+   * Replace the variables of the iterators <code>{v, ...}</code> behind the first argument which
+   * are no symbols, like <code>x(1)</code>, by unique symbols in the whole call.
+   *
+   * @param held the call as it was written
+   * @param renamed the rules <code>x(1) -> $1</code> are appended to this list
+   * @return the call with the replaced variables
+   */
+  private static IAST renameCompoundIterators(IAST held, IASTAppendable renamed) {
+    IAST call = held;
+    for (int i = 2; i < held.size(); i++) {
+      IExpr arg = held.get(i);
+      if (arg.isList() && arg.argSize() >= 2 && arg.argSize() <= 4) {
+        IExpr variable = arg.first();
+        if (variable.isAST() && !variable.isList() && !variable.isAST(S.Evaluate)
+            && variable.head().isSymbol() && !variable.isNumericFunction(true)
+            && !renamed.exists(rule -> rule.first().equals(variable))) {
+          ISymbol dummy = F.Dummy();
+          renamed.append(F.Rule(variable, dummy));
+          call = (IAST) F.subst(call, F.Rule(variable, dummy));
+        }
+      }
+    }
+    return call;
+  }
+
+  private IExpr evaluateLocalVariables(IAST held, EvalEngine engine,
+      Function<IAST, IExpr> body) {
     IAST variables = localVariables(held);
     return engine.evalBlock(() -> {
       // as one list, so that a Sequence of options is spliced in and Evaluate is released; a new

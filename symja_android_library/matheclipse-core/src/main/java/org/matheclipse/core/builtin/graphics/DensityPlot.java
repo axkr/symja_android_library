@@ -391,6 +391,12 @@ public class DensityPlot extends ListPlot {
   }
 
   @Override
+  protected boolean compoundIteratorVariables() {
+    // a plot variable like x(1) is replaced by a unique symbol
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
     defaults[GraphicsOptions.X_FRAME] = S.True;

@@ -379,6 +379,12 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  protected boolean compoundIteratorVariables() {
+    // a plot variable like x(1) is replaced by a unique symbol
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     GraphicsOptions.OptionSet options = Plot3DTools.frameExtras(Plot3DTools
         .surfaceExtras(Plot3DTools.base3D()).add(F.List(F.C0, F.C0, F.C1), S.RevolutionAxis));

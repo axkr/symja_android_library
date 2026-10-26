@@ -890,6 +890,40 @@ public abstract class Scanner {
   }
 
   /**
+   * Read the exponent <code>*^e</code> which may follow the precision or the accuracy of a number,
+   * as in <code>1.5`20*^3</code> or <code>1.5``20*^-400</code>.
+   *
+   * @param numberStr the digits of the number
+   * @return <code>numberStr</code> with the exponent <code>E...</code> appended, or
+   *         <code>numberStr</code> if no exponent follows; nothing has been read then
+   */
+  protected String withExponent(String numberStr) {
+    if (isValidPosition() && fInputString[fCurrentPosition] == '*'
+        && fCurrentPosition + 1 < fInputString.length
+        && fInputString[fCurrentPosition + 1] == '^') {
+      int beforeExponent = fCurrentPosition;
+      fCurrentPosition += 2;
+      int exponentStart = fCurrentPosition;
+      if (isValidPosition()
+          && (fInputString[fCurrentPosition] == '+' || fInputString[fCurrentPosition] == '-')) {
+        fCurrentPosition++;
+      }
+      int digits = 0;
+      while (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
+        fCurrentPosition++;
+        digits++;
+      }
+      if (digits > 0) {
+        return numberStr + "E"
+            + new String(fInputString, exponentStart, fCurrentPosition - exponentStart);
+      }
+      // a '*' that begins something else, e.g. 1.5`20*x - leave it to the parser
+      fCurrentPosition = beforeExponent;
+    }
+    return numberStr;
+  }
+
+  /**
    * Parse a Java <code>string</code> from the digits <code>0,1,2,3,4,5,6,7,8,9</code>.
    *
    * @return

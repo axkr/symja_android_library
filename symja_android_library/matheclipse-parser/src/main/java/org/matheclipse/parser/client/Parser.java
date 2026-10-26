@@ -27,6 +27,7 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.operator.OperatorTable;
 import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
@@ -884,7 +885,8 @@ public class Parser extends Scanner {
             }
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
-            String precisionStr = getJavaDoubleString();
+            // without the token, so that a *^ exponent following the accuracy can still be seen
+            String precisionStr = getJavaDoubleStringWithoutToken();
             double doublePrecision = 0;
             try {
               doublePrecision = Double.parseDouble(precisionStr);
@@ -892,8 +894,10 @@ public class Parser extends Scanner {
               throwSyntaxError("Number format error (not a double type): " + precisionStr,
                   precisionStr.length());
             }
+            String mantissaStr = withExponent(numberStr);
+            getNextToken();
             // x``a: the accuracy, the number of digits behind the decimal point
-            return fFactory.createDouble(numberStr + "``" + precisionStr);
+            return fFactory.createDouble(mantissaStr + "``" + precisionStr);
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
@@ -910,30 +914,7 @@ public class Parser extends Scanner {
                     precisionStr.length());
               }
               // a precision below the machine precision is kept: 1.5`5.497 has the precision 5.497
-              String mantissaStr = numberStr;
-              if (isValidPosition() && fInputString[fCurrentPosition] == '*'
-                  && fCurrentPosition + 1 < fInputString.length
-                  && fInputString[fCurrentPosition + 1] == '^') {
-                int beforeExponent = fCurrentPosition;
-                fCurrentPosition += 2;
-                int exponentStart = fCurrentPosition;
-                if (isValidPosition() && (fInputString[fCurrentPosition] == '+'
-                    || fInputString[fCurrentPosition] == '-')) {
-                  fCurrentPosition++;
-                }
-                int digits = 0;
-                while (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
-                  fCurrentPosition++;
-                  digits++;
-                }
-                if (digits > 0) {
-                  mantissaStr = numberStr + "E"
-                      + new String(fInputString, exponentStart, fCurrentPosition - exponentStart);
-                } else {
-                  // a '*' that begins something else, e.g. 1.5`20*x - leave it to the parser
-                  fCurrentPosition = beforeExponent;
-                }
-              }
+              String mantissaStr = withExponent(numberStr);
               getNextToken();
               return fFactory.createDouble(mantissaStr + "`" + precisionStr);
             } else {
@@ -1305,8 +1286,12 @@ public class Parser extends Scanner {
       if (function.size() < 3 || !(function.get(0) instanceof SymbolNode)) {
         break;
       }
-      Operator operator = fFactory.get(((SymbolNode) function.get(0)).getString());
-      if (!(operator instanceof InfixOperator) || operator.getPrecedence() >= SPAN_PRECEDENCE) {
+      final String head = ((SymbolNode) function.get(0)).getString();
+      Operator operator = fFactory.get(head);
+      // a parse-only operator, like the one of VerticalSeparator, isn't registered under its head
+      final int precedence = operator == null ? OperatorTable.parseOnlyInfixPrecedence(head)
+          : operator instanceof InfixOperator ? operator.getPrecedence() : -1;
+      if (precedence < 0 || precedence >= SPAN_PRECEDENCE) {
         break;
       }
       owner = function;

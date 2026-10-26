@@ -64,9 +64,9 @@ public class ImageCharacterizationTest extends AbstractTestCase {
   /** What computes new samples reads them in the colour space of the picture, and keeps their precision. */
   @Test
   public void newSamplesKeepColourSpaceAndPrecision() {
-    // a picture read as HSB holds red, green and blue: the yellow of hue 1/6 negates to blue
+    // an HSB image keeps its samples in HSB, and these are what is negated
     check("Flatten(ImageData(ColorNegate(Image({{{1/6, 1.0, 1.0}}}, ColorSpace -> \"HSB\"))))", //
-        "{0.0,0.0,1.0}");
+        "{0.833333,0.0,0.0}");
     // black and white from one half on, whichever way the image keeps its samples
     check("Flatten(ImageData(Image({{0.5, 0.49}}), \"Bit\"))", //
         "{1,0}");
@@ -207,31 +207,33 @@ public class ImageCharacterizationTest extends AbstractTestCase {
   // ------------------------------------------------------------------- ColorSpace
 
   /**
-   * <code>ColorSpace</code> says how the samples are to be <em>read</em>; what is stored is always
-   * an sRGB or greyscale bitmap, so <code>ImageColorSpace</code> answers from the bitmap and never
-   * repeats the option back.
+   * <code>ColorSpace</code> says which space the samples are in. An HSB image keeps them, and only
+   * the picture it is shown from is RGB.
    */
   @Test
-  public void colorSpaceInterpretsTheSamplesAndIsNotRecorded() {
-    check("ImageData(Image({{{0.0,1.0,1.0}}},ColorSpace->\"HSB\"),\"Byte\")=={{{255,0,0}}}", //
+  public void colorSpaceIsRecordedWithTheSamples() {
+    check("ImageData(Image({{{0.0,1.0,1.0}}},ColorSpace->\"HSB\"),\"Byte\")=={{{0,255,255}}}", //
+        "True");
+    check("ImageData(ColorConvert(Image({{{0.0,1.0,1.0}}},ColorSpace->\"HSB\"),\"RGB\"),"
+        + "\"Byte\")=={{{255,0,0}}}", //
         "True");
     check("ImageColorSpace(Image({{{0.0,1.0,1.0}}},ColorSpace->\"HSB\"))", //
-        "RGB");
+        "HSB");
     check("ImageColorSpace(Image({{0.0,1.0}}))", //
         "Grayscale");
     check("ImageColorSpace(Image({{{1.0,0.0,0.0}}}))", //
         "RGB");
   }
 
-  /** <code>"CMYK"</code> reads four samples and stores the three RGB channels they denote. */
+  /** <code>"CMYK"</code> keeps the four samples, which are shown as the RGB colour they denote. */
   @Test
-  public void cmykCollapsesFourChannelsToThree() {
+  public void cmykKeepsItsFourChannels() {
     check(
-        "ImageData(Image({{{0.0,0.0,0.0,0.0}}},ColorSpace->\"CMYK\"),\"Byte\")"
-            + "=={{{255,255,255}}}", //
+        "ImageData(ColorConvert(Image({{{0.0,0.0,0.0,0.0}}},ColorSpace->\"CMYK\"),\"RGB\"),"
+            + "\"Byte\")=={{{255,255,255}}}", //
         "True");
     check("ImageChannels(Image({{{0.0,0.0,0.0,0.0}}},ColorSpace->\"CMYK\"))", //
-        "3");
+        "4");
   }
 
   /** <code>"Grayscale"</code> on colour data weighs the channels into one intensity. */

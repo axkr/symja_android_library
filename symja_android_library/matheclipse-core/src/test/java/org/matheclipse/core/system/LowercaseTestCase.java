@@ -16218,6 +16218,317 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSatisfiabilityInstancesEquationsAndFreeVariables() {
+    check("SatisfiabilityInstances(a && !a, {a}, 2)", //
+        "{}");
+    // an equation between Boolean expressions is an equivalence
+    check("SatisfiabilityInstances(u == !v, {u, v}, All)", //
+        "{{True,False},{False,True}}");
+    // a variable of the list which doesn't occur in the formula takes both values
+    check("SatisfiabilityInstances(u && v, {u, v, w}, All)", //
+        "{{True,True,True},{True,True,False}}");
+    // a variable of the formula which isn't in the list
+    check("SatisfiabilityInstances(u || v, {u}, 3)", //
+        "SatisfiabilityInstances(u||v,{u},3)");
+    check("FindInstance(u || w, u, Booleans, 2)", //
+        "FindInstance(u||w,u,Booleans,2)");
+    check("FindInstance({u == (v || w), w == !u}, {u, v, w}, Booleans, 4)", //
+        "{{u->True,v->True,w->False}}");
+    check("FindInstance({r(1) == !r(2), r(2) == Implies(r(1), r(2))}, {r(1), r(2)}, Booleans, 3)", //
+        "{{r(1)->True,r(2)->False},{r(1)->False,r(2)->True}}");
+  }
+
+  @Test
+  public void testFindInstanceLinearInequalities() {
+    // 0 if the interval contains it, else its midpoint
+    check("FindInstance(x > -2 && x < 5, x)", //
+        "{{x->0}}");
+    check("FindInstance(x > 2 && x < 9, x)", //
+        "{{x->11/2}}");
+    // a closed bound with an inexact value
+    check("FindInstance(x >= 1.5, x)", //
+        "{{x->1.5}}");
+    check("FindInstance({2*x + y == 7, x > 1, y > 1}, {x, y}, Reals)", //
+        "{{x->2,y->3}}");
+    check("FindInstance({x + 2*y == 4, x > 0, y > 0}, {x, y}, Reals, 3)", //
+        "{{x->1,y->3/2},{x->2,y->1},{x->3,y->1/2}}");
+    check("FindInstance({x - y > 3, x - y < 1}, {x, y})", //
+        "{}");
+    check("cs = {0.25*x + y < 2, x > 0.5, y > 0}; s = FindInstance(cs, {x, y}, 2); " //
+        + "{Length(s), And @@ (And @@ cs /. s)}", //
+        "{2,True}");
+    check("cs = {a + b + c == 6, a - c == 1, a > 0, b > 0, c > 0}; " //
+        + "s = FindInstance(cs, {a, b, c}, Reals, 3); {Length(s), And @@ (And @@ cs /. s)}", //
+        "{3,True}");
+  }
+
+  @Test
+  public void testReduceLinearSystemForms() {
+    // the values in expanded form, in terms of the free variables
+    check("Reduce({u + 2*v + w == 8, u - v == 2}, {u, v, w})", //
+        "v==-2+u&&w==12-3*u");
+    check("Reduce(2*u - 5*v == 1, {u, v})", //
+        "v==-1/5+2/5*u");
+    // the cylindrical form: each variable in terms of the previous ones
+    check("Reduce({u + v + 2*w == 3, u - v == 1, u > 0}, {u, v, w}, Reals)", //
+        "u>0&&v==-1+u&&w==1/2*(3-u-v)");
+    check("Reduce({u + v + w == 9, u - v == 1, u > 0, v > 0, w > 0}, {u, v, w}, Reals)", //
+        "1<u<5&&v==-1+u&&w==9-u-v");
+  }
+
+  @Test
+  public void testSqrtRationalTimesNumericSum() {
+    // only the square part of the rational factor is pulled out
+    check("Sqrt(5/8*(1+Sqrt(3)))", //
+        "Sqrt(5/2*(1+Sqrt(3)))/2");
+    check("Sqrt(-5/8*(1+Sqrt(3)))", //
+        "I*1/2*Sqrt(5/2*(1+Sqrt(3)))");
+    check("Sqrt(-2/9*(3+Sqrt(5)))", //
+        "I*1/3*Sqrt(2*(3+Sqrt(5)))");
+    check("(2/27*(1+Sqrt(2)))^(1/3)", //
+        "(2*(1+Sqrt(2)))^(1/3)/3");
+    check("Sqrt(7/12*(1+x))", //
+        "1/2*Sqrt(7/3)*Sqrt(1+x)");
+  }
+
+  @Test
+  public void testSolveBiquadraticAndEllipse() {
+    check("Solve(x^4 - 7*x^2 + 3 == 0, x)", //
+        "{{x->-Sqrt(1/2*(7-Sqrt(37)))},{x->Sqrt(1/2*(7-Sqrt(37)))},{x->-Sqrt(1/2*(7+Sqrt(\n" //
+            + "37)))},{x->Sqrt(1/2*(7+Sqrt(37)))}}");
+    check("Solve(Sqrt((x-3)^2+y^2) + Sqrt((x+3)^2+y^2) == 10, y)", //
+        "{{y->-Sqrt(400-16*x^2)/5},{y->Sqrt(400-16*x^2)/5}}");
+  }
+
+  @Test
+  public void testFindFitCompoundParameters() {
+    // parameters which are no symbols
+    check("FindFit({{1, 3}, {2, 5.2}, {3, 6.8}}, c(1)*x + c(2), {{c(1), 1}, {c(2), 0}}, x)", //
+        "{c(1)->1.9,c(2)->1.2}");
+    check("NonlinearModelFit({{1, 1.1}, {2, 1.9}, {3, 3.2}}, k(1)*x, {k(1)}, x)"
+        + "[\"BestFitParameters\"]", //
+        "{k(1)->1.03571}");
+    // a model {form} without constraints
+    check("FindFit({{0, 2}, {1, 4.1}, {2, 5.9}}, {p*x + q}, {p, q}, x)", //
+        "{p->1.95,q->2.05}");
+    check("NonlinearModelFit({{0, 2}, {1, 4.1}, {2, 5.9}}, {p*x + q}, {p, q}, x)"
+        + "[\"BestFitParameters\"]", //
+        "{p->1.95,q->2.05}");
+  }
+
+  @Test
+  public void testNonlinearModelFitANOVA() {
+    check("fm = NonlinearModelFit({{1, 2.2}, {2, 8.1}, {3, 17.9}, {4, 32.3}}, a*x^b, {a, b}, x);"
+        + "{fm(\"ANOVATableDegreesOfFreedom\"), fm(\"ANOVATableSumsOfSquares\"), "
+        + "fm(\"ANOVATableMeanSquares\")}", //
+        "{{2,2,4,3},{1434.059,0.0907685,1434.15,519.0875},{717.0296,0.0453842}}");
+    check("fm = NonlinearModelFit({{1, 1.1}, {2, 1.9}, {3, 3.2}}, k*x, {k}, x);"
+        + "fm(\"ANOVATableEntries\")", //
+        "{{1,15.01786,15.01786},{2,0.0421429,0.0210714},{3,15.06},{2,2.24667}}");
+  }
+
+  @Test
+  public void testDSolveNestedEquationLists() {
+    check("DSolve({{y'(t) == 2*y(t)}, {y(0) == 3}}, y(t), t)", //
+        "{{y(t)->3*E^(2*t)}}");
+    check("DSolve({{u'(s) == -v(s), v'(s) == u(s)}, {u(0) == 0, v(0) == 1}}, {u(s), v(s)}, s)", //
+        "{{u(s)->-Sin(s),v(s)->Cos(s)}}");
+  }
+
+  @Test
+  public void testPlotCompoundVariable() {
+    check("{Head(Plot(z(2)^3, {z(2), 0, 1})), "
+        + "Head(Plot3D(Subscript(u, 1)*v, {Subscript(u, 1), 0, 1}, {v, 0, 1})), "
+        + "Head(ParametricPlot({Cos(q(0)), Sin(q(0))}, {q(0), 0, Pi}))}", //
+        "{Graphics,Graphics3D,Graphics}");
+    // a value of z(2) doesn't reach the plot
+    check("z(2) = 5; Round(Max(Cases(Plot(3*z(2), {z(2), 0, 2}), Line(p_) :> Max(p[[All, 2]]), "
+        + "Infinity)))", //
+        "6");
+  }
+
+  @Test
+  public void testListPlotDataRangeScalar() {
+    check("ExportString(ListPlot({4, 5, 6}, DataRange -> 3), \"SVG\") === "
+        + "ExportString(ListPlot({4, 5, 6}, DataRange -> {0, 3}), \"SVG\")", //
+        "True");
+  }
+
+  @Test
+  public void testNumberMarkExponent() {
+    check("InputForm({2.25`18*^-350, 2.25``18*^-350, 2.25``18*^2})", //
+        "{2.25`18*^-350,0``18,2.25`20.3522*^2}");
+    // literals beyond the machine range have the machine precision
+    check("{Precision(7.*^450), Precision(1.2345678901234567890*^450)}", //
+        "{15.95459,20}");
+    check("{MachineNumberQ(7.*^450), InputForm(7.*^450)}", //
+        "{False,7`15.954589770191003*^450}");
+    // a literal below the machine range is the machine zero
+    check("{7.*^-450, Precision(7.*^-450), 7.*^-450 == 0}", //
+        "{0.0,16,True}");
+  }
+
+  @Test
+  public void testDistributedInputForm() {
+    check("ToString(Distributed(y, PoissonDistribution(2)), InputForm)", //
+        "Distributed(y,PoissonDistribution(2))");
+    check("Conditioned(a > 1, b)", //
+        "Conditioned(a>1,b)");
+    check("Expectation(y^2, y \\[Distributed] PoissonDistribution(2))", //
+        "6");
+  }
+
+  @Test
+  public void testNDSolveStiffSwitching() {
+    // y' == -k*(y - Sin(t)) relaxes onto k*(k*Sin(t) - Cos(t))/(k^2 + 1) after a transient of
+    // length 1/k: the explicit steps are bounded by stability, the stiff integrator takes over
+    check(
+        "ClearAll(y,f,ex);ex(t_):=2*10^4*(2*10^4*Sin(t)-Cos(t))/(4*10^8+1);"
+            + "f=NDSolveValue({y'(t)==-2*10^4*(y(t)-Sin(t)),y(0)==0},y,{t,0,6});"
+            + "{Abs(f(6)-ex(6.0))<10^-8,Max(Table(Abs(f(t)-ex(t)),{t,0.01,6,0.0731}))<10^-6,"
+            + "Abs(f'(3.3)-ex'(3.3))<10^-4}", //
+        "{True,True,True}");
+    // mildly stiff over a short range: the explicit steps hover around their stability bound
+    check(
+        "ClearAll(y,f,ex);ex(t_):=3000*(3000*Cos(t)+Sin(t))/(9*10^6+1);"
+            + "f=NDSolveValue({y'(t)==-3000*(y(t)-Cos(t)),y(0)==2},y,{t,0,4});"
+            + "{Abs(f(4)-ex(4.0))<10^-8,Abs(f(2.71)-ex(2.71))<10^-7}", //
+        "{True,True}");
+    // a reaction system with a fast intermediate b; the total amount is conserved
+    check(
+        "ClearAll(a,b,c,s);s=NDSolve({a'(t)==-0.05*a(t)+5*10^3*b(t)*c(t),"
+            + "b'(t)==0.05*a(t)-5*10^3*b(t)*c(t)-2*10^7*b(t)^2,c'(t)==2*10^7*b(t)^2,"
+            + "a(0)==1,b(0)==0,c(0)==0},{a,b,c},{t,0,10});"
+            + "{Abs(a(10)/0.775534183268-1)<10^-6,Abs(b(3.3)/(3.49766145443*10^-5)-1)<10^-5,"
+            + "Abs(a(10)+b(10)+c(10)-1)<10^-12}/.First(s)", //
+        "{True,True,True}");
+    // equations which are linear in the derivatives
+    check(
+        "ClearAll(x,y,s);s=NDSolve({x'(t)+y'(t)==-10^5*(x(t)-Cos(t)),x'(t)-y'(t)==-y(t),x(0)==0,y(0)==1},"
+            + "{x,y},{t,0,10});"
+            + "{Abs(x(10)+1.16942622974)<10^-7,Abs(y(10)/33035.0427495-1)<10^-8}/.First(s)", //
+        "{True,True}");
+    // a vector unknown: y1 follows k/(k-1)*(Exp(-t)-Exp(-k*t))
+    check(
+        "ClearAll(y,f);f=NDSolveValue({y'(t)=={{-10^5,10^5},{0,-1}}.y(t),y(0)=={0,1}},y,{t,0,30});"
+            + "{Max(Abs(f(1.234)-{10^5/(10^5-1)*Exp(-1.234),Exp(-1.234)}))<10^-7,"
+            + "Max(Abs(f(3)/(Exp(-3.0)*{10^5/(10^5-1),1})-1))<10^-6}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testNDSolveStiffMethods() {
+    // a stiff method throughout, and stiffness switching asked for by name
+    check(
+        "ClearAll(y,f,ex);ex(t_):=10^6*(10^6*Cos(t)+Sin(t))/(10^12+1);"
+            + "f=NDSolveValue({y'(t)==-10^6*(y(t)-Cos(t)),y(0)==1},y,{t,0,4},Method->\"BDF\");"
+            + "Max(Table(Abs(f(t)-ex(t)),{t,0.01,4,0.0577}))<10^-7", //
+        "True");
+    check(
+        "ClearAll(y,f,ex);ex(t_):=10^6*(10^6*Cos(t)+Sin(t))/(10^12+1);"
+            + "f=NDSolveValue({y'(t)==-10^6*(y(t)-Cos(t)),y(0)==1},y,{t,0,4},Method->\"StiffnessSwitching\");"
+            + "Max(Table(Abs(f(t)-ex(t)),{t,0.01,4,0.0577}))<10^-7", //
+        "True");
+    check(
+        "ClearAll(y,f,ex);ex(t_):=10^6*(10^6*Cos(t)+Sin(t))/(10^12+1);"
+            + "f=NDSolveValue({y'(t)==-10^6*(y(t)-Cos(t)),y(0)==1},y,{t,0,4},"
+            + "Method->{\"StiffnessSwitching\",Method->{\"ExplicitRungeKutta\",Automatic}});"
+            + "Abs(f(4)-ex(4.0))<10^-8", //
+        "True");
+    // an event located on the stiff solution: y reaches zero where Tan(t) == -10^4
+    check(
+        "ClearAll(y);Abs((y(\"Domain\")/.First(NDSolve({y'(t)==-10^4*(y(t)-Cos(t)),y(0)==1},y,{t,0,10},"
+            + "Method->{\"EventLocator\",\"Event\":>y(t)})))[[1,2]]-(Pi/2+ArcTan(1/10^4)))<10^-7", //
+        "True");
+  }
+
+  @Test
+  public void testGaussianMatrixEnsembles() {
+    // a real symmetric and a Hermitian matrix of machine numbers
+    check("With({m=RandomVariate(GaussianOrthogonalMatrixDistribution(7))},"
+        + "{Dimensions(m), m==Transpose(m), MatrixQ(m, MachineNumberQ)})", //
+        "{{7,7},True,True}");
+    check("With({m=RandomVariate(GaussianUnitaryMatrixDistribution(0.5, 3))},"
+        + "{Dimensions(m), m==ConjugateTranspose(m), VectorQ(Eigenvalues(m), Element(#, Reals)&)})", //
+        "{{3,3},True,True}");
+    check("Dimensions(RandomVariate(GaussianOrthogonalMatrixDistribution(2), 6))", //
+        "{6,2,2}");
+    check("Dimensions(RandomVariate(GaussianUnitaryMatrixDistribution(4), {2,3}))", //
+        "{2,3,4,4}");
+    check("Dimensions(RandomVariate(GaussianUnitaryMatrixDistribution(1)))", //
+        "{1,1}");
+    // diagonal entries of variance sigma^2, off-diagonal ones (and their real and imaginary
+    // parts) of variance sigma^2/2
+    check("With({m=RandomVariate(GaussianOrthogonalMatrixDistribution(2, 2), 4000)},"
+        + "{Abs(Variance(m[[All,2,2]])-4)<0.5, Abs(Variance(m[[All,1,2]])-2)<0.25,"
+        + " Abs(Mean(m[[All,2,1]]))<0.12})", //
+        "{True,True,True}");
+    check("With({m=RandomVariate(GaussianUnitaryMatrixDistribution(2, 2), 4000)},"
+        + "{Abs(Variance(m[[All,1,1]])-4)<0.5, Abs(Variance(Re(m[[All,1,2]]))-2)<0.25,"
+        + " Abs(Variance(Im(m[[All,1,2]]))-2)<0.25, m[[All,2,1]]==Conjugate(m[[All,1,2]])})", //
+        "{True,True,True,True}");
+    check("SeedRandom(7); a=RandomVariate(GaussianUnitaryMatrixDistribution(3));"
+        + " SeedRandom(7); a==RandomVariate(GaussianUnitaryMatrixDistribution(3))", //
+        "True");
+    // no sample for a size which is no positive integer or a scale which is not positive
+    check("RandomVariate(GaussianOrthogonalMatrixDistribution(0))", //
+        "RandomVariate(GaussianOrthogonalMatrixDistribution(0))");
+    check("RandomVariate(GaussianOrthogonalMatrixDistribution(2.5))", //
+        "RandomVariate(GaussianOrthogonalMatrixDistribution(2.5))");
+    check("RandomVariate(GaussianUnitaryMatrixDistribution(-1.5, 2))", //
+        "RandomVariate(GaussianUnitaryMatrixDistribution(-1.5,2))");
+    check("RandomVariate(GaussianUnitaryMatrixDistribution(s, 2))", //
+        "RandomVariate(GaussianUnitaryMatrixDistribution(s,2))");
+    check("{DistributionParameterQ(GaussianOrthogonalMatrixDistribution(3)),"
+        + " DistributionParameterQ(GaussianUnitaryMatrixDistribution(0.5, 2)),"
+        + " DistributionParameterQ(GaussianUnitaryMatrixDistribution(-2, 2)),"
+        + " DistributionParameterQ(GaussianOrthogonalMatrixDistribution(1.5))}", //
+        "{True,True,False,False}");
+    check("Mean(GaussianOrthogonalMatrixDistribution(3, 2))", //
+        "{{0,0},{0,0}}");
+  }
+
+  @Test
+  public void testMatrixPropertyDistribution() {
+    check("Attributes(MatrixPropertyDistribution)", //
+        "{HoldAll,Protected}");
+    // the random variable stays a symbol although it has a value
+    check("ClearAll(w);w = 7; Dimensions(RandomVariate(MatrixPropertyDistribution(Eigenvalues(w),"
+        + " Distributed(w, GaussianOrthogonalMatrixDistribution(2))), 5))", //
+        "{5,2}");
+    check("Dimensions(RandomVariate(MatrixPropertyDistribution(Eigenvalues(x),"
+        + " Distributed(x, GaussianOrthogonalMatrixDistribution(4))), 3))", //
+        "{3,4}");
+    check("Dimensions(RandomVariate(MatrixPropertyDistribution(Take(Sort(Eigenvalues(y)), 2),"
+        + " Distributed(y, GaussianUnitaryMatrixDistribution(5))), {2,3}))", //
+        "{2,3,2}");
+    check("Length(RandomVariate(MatrixPropertyDistribution(Eigenvalues(x),"
+        + " Distributed(x, GaussianUnitaryMatrixDistribution(6)))))", //
+        "6");
+    // a scalar property gives a number for a single sample
+    check("MachineNumberQ(RandomVariate(MatrixPropertyDistribution(Tr(x),"
+        + " Distributed(x, GaussianOrthogonalMatrixDistribution(3)))))", //
+        "True");
+    // several random matrices
+    check("Dimensions(RandomVariate(MatrixPropertyDistribution(a.b,"
+        + " {Distributed(a, GaussianOrthogonalMatrixDistribution(2)),"
+        + " Distributed(b, GaussianUnitaryMatrixDistribution(2))}), 4))", //
+        "{4,2,2}");
+    check("RandomVariate(MatrixPropertyDistribution(Tr(x), 7), 3)", //
+        "RandomVariate(MatrixPropertyDistribution(Tr(x),7),3)");
+  }
+
+  @Test
+  public void testEigenvaluesHermitianAreReal() {
+    check("VectorQ(Eigenvalues({{2.0, 1.0+I, 0.0}, {1.0-I, 3.0, 0.5*I}, {0.0, -0.5*I, 1.0}}),"
+        + " Element(#, Reals)&)", //
+        "True");
+    // not Hermitian
+    check("VectorQ(Eigenvalues({{2.0, 1.0+I}, {1.0+I, 3.0}}), Element(#, Reals)&)", //
+        "False");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //
@@ -23704,7 +24015,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Norm({{1,1},{-1,1}})", //
         "Sqrt(2)");
     check("Norm({{2,3/2},{3,5}})", //
-        "Sqrt(161+3*Sqrt(2665))/(2*Sqrt(2))");
+        "Sqrt(1/2*(161+3*Sqrt(2665)))/2");
     check("Sqrt(1/2*(161/4+3/4*Sqrt(2665))) // N", //
         "6.28362");
 

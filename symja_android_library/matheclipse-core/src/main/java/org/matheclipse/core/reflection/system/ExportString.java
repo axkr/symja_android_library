@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IASTDataset;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
@@ -64,6 +66,15 @@ public class ExportString extends AbstractEvaluator {
         return arg1.isString() ? F.stringx(arg1.toString()) : F.stringx(arg1.toString());
       }
 
+      if (format.equals(Extension.SVG) && arg1.head() == S.Image && arg1 instanceof IDataExpr
+          && ((IDataExpr<?>) arg1).toData() instanceof byte[]) {
+        // an image object holds the base64 encoded PNG file of the RGB picture it is shown from
+        String svgString = SVGGraphics.imageDocument(
+            new String((byte[]) ((IDataExpr<?>) arg1).toData(), StandardCharsets.UTF_8));
+        if (svgString != null) {
+          return F.stringx(svgString);
+        }
+      }
       if (format.equals(Extension.SVG)) {
         // a graph is drawn as its picture, not written as one of the graph file formats
         IExpr picture = arg1 instanceof IGraphExpr ? engine.evaluate(F.unaryAST1(S.GraphPlot, arg1))

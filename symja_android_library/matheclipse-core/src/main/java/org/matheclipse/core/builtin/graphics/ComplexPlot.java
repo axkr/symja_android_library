@@ -229,6 +229,12 @@ public class ComplexPlot extends ListPlot {
   }
 
   @Override
+  protected boolean compoundIteratorVariables() {
+    // a plot variable like x(1) is replaced by a unique symbol
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     PlotEndpoints.cornerMessage(newSymbol);
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);

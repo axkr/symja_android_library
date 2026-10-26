@@ -1164,7 +1164,8 @@ public class ExprParser extends Scanner {
             }
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
-            String precisionStr = getJavaDoubleString();
+            // without the token, so that a *^ exponent following the accuracy can still be seen
+            String precisionStr = getJavaDoubleStringWithoutToken();
             double doublePrecision = 0;
             try {
               doublePrecision = Double.parseDouble(precisionStr);
@@ -1172,8 +1173,10 @@ public class ExprParser extends Scanner {
               throwSyntaxError("Number format error (not a double type): " + precisionStr,
                   precisionStr.length());
             }
+            String mantissaStr = withExponent(numberStr);
+            getNextToken();
             // x``a: the accuracy, the number of digits behind the decimal point
-            return F.numAccuracy(numberStr, doublePrecision);
+            return F.numAccuracy(mantissaStr, doublePrecision);
             // long precision = getJavaLong();
             // if (precision < ParserConfig.MACHINE_PRECISION) {
             // precision = ParserConfig.MACHINE_PRECISION;
@@ -1195,30 +1198,7 @@ public class ExprParser extends Scanner {
                     precisionStr.length());
               }
               // a precision below the machine precision is kept: 1.5`5.497 has the precision 5.497
-              String mantissaStr = numberStr;
-              if (isValidPosition() && fInputString[fCurrentPosition] == '*'
-                  && fCurrentPosition + 1 < fInputString.length
-                  && fInputString[fCurrentPosition + 1] == '^') {
-                int beforeExponent = fCurrentPosition;
-                fCurrentPosition += 2;
-                int exponentStart = fCurrentPosition;
-                if (isValidPosition() && (fInputString[fCurrentPosition] == '+'
-                    || fInputString[fCurrentPosition] == '-')) {
-                  fCurrentPosition++;
-                }
-                int digits = 0;
-                while (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
-                  fCurrentPosition++;
-                  digits++;
-                }
-                if (digits > 0) {
-                  mantissaStr = numberStr + "E"
-                      + new String(fInputString, exponentStart, fCurrentPosition - exponentStart);
-                } else {
-                  // a '*' that begins something else, e.g. 1.5`20*x - leave it to the parser
-                  fCurrentPosition = beforeExponent;
-                }
-              }
+              String mantissaStr = withExponent(numberStr);
               getNextToken();
               return F.num(mantissaStr, doublePrecision);
               // long precision = getJavaLong();
@@ -1236,7 +1216,7 @@ public class ExprParser extends Scanner {
         temp = new NumStr(numberStr);
         if (Double.isInfinite(((NumStr) temp).doubleValue())) {
           // a literal beyond the double range, like 1.*^400, is an arbitrary precision number of
-          // machine precision
+          // machine precision; one below it, like 1.*^-400, underflows to the machine zero
           temp = ((NumStr) temp).promoted();
         }
       } else {

@@ -68,7 +68,7 @@ This is what a shooting method needs: it guesses initial values whose trajectory
 2.71828
 ```
 
-`Method` selects the time integration method: `"ExplicitRungeKutta"` (the default), `"Adams"`, `"Extrapolation"` or `"FixedStep"`. The stiff solvers - `"BDF"`, `"StiffnessSwitching"`, `"IDA"`, `"ImplicitRungeKutta"` and the `"LinearlyImplicit..."` submethods - are not available.
+`Method` selects the time integration method: `"ExplicitRungeKutta"`, `"Adams"`, `"Extrapolation"`, `"FixedStep"`, `"StiffnessSwitching"` or `"BDF"`. By default (and with `"StiffnessSwitching"`) an explicit Runge-Kutta method is used until its steps are bounded by stability rather than accuracy - a stiff system - and a linearly implicit Rosenbrock method of order 4 takes over from there; `"BDF"` uses the Rosenbrock method throughout. Without `AccuracyGoal` and `PrecisionGoal` the stiff method works to about 8 digits. A named explicit method never switches. `"IDA"`, `"ImplicitRungeKutta"` and the `"LinearlyImplicit..."` submethods are not available.
 
 ```
 >> f=NDSolveValue({y'(x)==y(x),y(0)==1},y,{x,0,1},Method->"Adams");f(1.0)

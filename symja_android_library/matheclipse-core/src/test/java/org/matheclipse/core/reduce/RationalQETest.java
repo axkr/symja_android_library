@@ -51,7 +51,7 @@ public class RationalQETest {
   public void testTriangle() {
     IExpr reduced = reduce(F.And(F.Less(F.Plus(S.x, S.y), F.C1), F.Greater(S.x, F.C0),
         F.Greater(S.y, F.C0)), S.x, S.y);
-    assertEquals("x>0&&x<1&&y>0&&y<1-x", EvalEngine.get().evaluate(reduced).toString());
+    assertEquals("0<x<1&&0<y<1-x", EvalEngine.get().evaluate(reduced).toString());
   }
 
   @Test

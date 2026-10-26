@@ -1327,7 +1327,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         + "{{5.42,3.26+I*0.643,-0.467+I*(-0.193)}," //
         + " {3.26+I*(-0.643),3.82,1.04+I*(-2.35)}," //
         + " {-0.467+I*0.193,1.04+I*2.35,4.88}})", //
-        "{8.76846+I*4.60561*10^-16,5.16361+I*(-6.96582*10^-17),0.187924+I*(-1.62082*10^-16)}");
+        // a Hermitian matrix has real eigenvalues
+        "{8.76846,5.16361,0.187924}");
 
     // Diagonal complex matrix: eigenvalues are exactly the diagonal entries.
     // Norms: |2-I|=Sqrt(5)~2.236 > |1+I|=Sqrt(2)~1.414 -> sorted descending by norm.

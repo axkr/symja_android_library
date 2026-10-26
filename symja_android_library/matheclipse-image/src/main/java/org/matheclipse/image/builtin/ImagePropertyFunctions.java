@@ -63,6 +63,11 @@ public class ImagePropertyFunctions {
       if (ast.arg1() instanceof Image3DExpr) {
         return F.ZZ(((Image3DExpr) ast.arg1()).channels());
       }
+      if (ast.arg1() instanceof ImageExpr
+          && ((ImageExpr) ast.arg1()).storedColorSpace() != null) {
+        // the samples of an HSB or CMYK image, not the channels of its RGB picture
+        return F.ZZ(((ImageExpr) ast.arg1()).raster().channels);
+      }
       BufferedImage image = bufferedImage(ast.arg1());
       return image == null ? F.NIL : F.ZZ(Boof.channels(image));
     }
@@ -78,7 +83,10 @@ public class ImagePropertyFunctions {
     }
   }
 
-  /** <code>ImageColorSpace(image)</code> - <code>"Grayscale"</code> or <code>"RGB"</code>. */
+  /**
+   * <code>ImageColorSpace(image)</code> - <code>"Grayscale"</code>, <code>"RGB"</code>, or the
+   * <code>"HSB"</code> or <code>"CMYK"</code> space the samples of the image are in.
+   */
   private static class ImageColorSpace extends AbstractEvaluator {
 
     @Override
@@ -87,6 +95,12 @@ public class ImagePropertyFunctions {
         Image3DExpr volume = (Image3DExpr) ast.arg1();
         String stated = volume.getOptions().colorSpaceName();
         return F.stringx(stated != null ? stated : volume.channels() == 1 ? "Grayscale" : "RGB");
+      }
+      if (ast.arg1() instanceof ImageExpr) {
+        String stored = ((ImageExpr) ast.arg1()).storedColorSpace();
+        if (stored != null) {
+          return F.stringx(stored);
+        }
       }
       BufferedImage image = bufferedImage(ast.arg1());
       return image == null ? F.NIL : F.stringx(Pixels.colorSpaceOf(image));

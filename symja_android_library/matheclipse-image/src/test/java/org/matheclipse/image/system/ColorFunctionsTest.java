@@ -58,13 +58,13 @@ public class ColorFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * An image has nowhere to record a colour space, so only the two it can actually be in are
-   * accepted. See the class comment of <code>ColorFunctions</code>.
+   * An image is in one of the spaces Grayscale, RGB, HSB and CMYK, so only these are accepted. See
+   * the class comment of <code>ColorFunctions</code>.
    */
   @Test
   public void anImageCannotBeConvertedIntoASpaceItCannotStore() {
-    check("ColorConvert(Image({{{1.0,0.5,0.25}}}),\"HSB\")", //
-        "ColorConvert(Image(Dimensions: 1,1 Transparency: 1),HSB)");
+    check("ImageColorSpace(ColorConvert(Image({{{1.0,0.5,0.25}}}),\"HSB\"))", //
+        "HSB");
     check("ColorConvert(Image({{{1.0,0.5,0.25}}}),\"LAB\")", //
         "ColorConvert(Image(Dimensions: 1,1 Transparency: 1),LAB)");
   }
@@ -163,5 +163,49 @@ public class ColorFunctionsTest extends AbstractTestCase {
   @Test
   public void removingAlphaFromAnOpaqueImageChangesNothing() {
     check("ImageChannels(RemoveAlphaChannel(Image({{{1.0,0.0,0.0}}})))", "3");
+  }
+
+  /** An HSB or CMYK image keeps its samples in that space, and ColorConvert decodes them again. */
+  @Test
+  public void colorConvertKeepsTheSamplesOfAnHsbOrCmykImage() {
+    check("ImageData(ColorConvert(Image({{{0.25,0.5,0.75}}}),\"HSB\"))", //
+        "{{{0.583333,0.666667,0.75}}}");
+    check("ImageData(ColorConvert(ColorConvert(Image({{{0.25,0.5,0.75}}}),\"HSB\"),\"RGB\"))", //
+        "{{{0.25,0.5,0.75}}}");
+    check("With({c=ColorConvert(Image({{{0.25,0.5,0.75}}}),\"CMYK\")},"
+        + "{ImageColorSpace(c),ImageChannels(c)})", //
+        "{CMYK,4}");
+    check("ImageData(ColorConvert(ColorConvert(Image({{{0.25,0.5,0.75}}}),\"CMYK\"),\"RGB\"))", //
+        "{{{0.25,0.5,0.75}}}");
+    check("ImageData(ColorConvert(ColorConvert(Image({{{0.25,0.5,0.75}}}),\"HSB\"),"
+        + "\"Grayscale\"))==ImageData(ColorConvert(Image({{{0.25,0.5,0.75}}}),\"Grayscale\"))", //
+        "True");
+    // an alpha channel has no place in HSB or CMYK samples
+    check("ColorConvert(Image({{{0.25,0.5,0.75,0.5}}}),\"HSB\")", //
+        "ColorConvert(Image(Dimensions: 1,1 Transparency: 3),HSB)");
+  }
+
+  /** ImageApply works on the samples of the colour space of the image and stays in it. */
+  @Test
+  public void imageApplyStaysInTheColourSpaceOfTheImage() {
+    check("ImageColorSpace(ImageApply(#&,ColorConvert(Image({{{0.25,0.5,0.75}}}),\"HSB\")))", //
+        "HSB");
+    check("ImageData(ColorConvert(ImageApply({#[[1]],#[[2]]/2,#[[3]]}&,"
+        + "ColorConvert(Image({{{0.25,0.5,0.75}}}),\"HSB\")),\"RGB\"))", //
+        "{{{0.5,0.625,0.75}}}");
+    // all four CMYK channels are handed to the function
+    check("ImageColorSpace(ImageApply(Reverse,ColorConvert(Image({{{0.25,0.5,0.75}}}),\"CMYK\")))", //
+        "CMYK");
+  }
+
+  /** An HSB image is shown, and exported, as the RGB picture its samples denote. */
+  @Test
+  public void anHsbImageIsShownInRgb() {
+    check("With({i=Image({{{0.0,0.0,1.0},{0.0,1.0,0.0}},{{1.0,1.0,0.0},{0.5,0.5,0.5}}})},"
+        + "ExportString(ColorConvert(i,\"HSB\"),\"SVG\")===ExportString(i,\"SVG\"))", //
+        "True");
+    check("StringContainsQ(ExportString(Image({{0.0,1.0}}),\"SVG\"),"
+        + "\"<image width=\\\"2\\\" height=\\\"1\\\"\")", //
+        "True");
   }
 }

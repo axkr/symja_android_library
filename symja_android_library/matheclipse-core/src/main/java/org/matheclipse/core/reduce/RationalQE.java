@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.IRational;
  * Dense linear quantifier elimination, plus a cylindrical emitter: every variable is given by
  * bounds in the variables before it, the way Mathematica writes such a solution set, e.g.
  * <code>x+y&lt;1 &amp;&amp; x&gt;0 &amp;&amp; y&gt;0</code> is
- * <code>x&gt;0 &amp;&amp; x&lt;1 &amp;&amp; y&gt;0 &amp;&amp; y&lt;1-x</code>.
+ * <code>0&lt;x&lt;1 &amp;&amp; 0&lt;y&lt;1-x</code>.
  *
  * <p>
  * The emitted form keeps every atom of the input and adds only atoms implied by it, so it is
@@ -425,12 +425,28 @@ public final class RationalQE {
       level = collapseEqualBounds(level, variable);
       List<Variable> isolated = new ArrayList<Variable>(1);
       isolated.add(variable);
+      if (order.size() > 1 && level.size() == 2) {
+        IExpr interval = interval(level.get(0), level.get(1), variable);
+        if (interval.isPresent()) {
+          conjuncts.append(interval);
+          continue;
+        }
+      }
       for (Atom atom : level) {
         if (atom.relation() == Relation.EQUAL && atom.term().coefficients().size() == 1) {
           pinned.add(variable);
           pinnedValues.add(solveFor(atom.term(), variable));
         }
-        conjuncts.append(Emitter.formula(Formula.atom(atom), isolated));
+        IRational coefficient = atom.term().coefficient(variable);
+        if (atom.relation() == Relation.EQUAL && order.size() > 1 && !coefficient.isZero()
+            && !coefficient.abs().isOne()) {
+          // the value of a variable with a non unit coefficient as one fraction:
+          // 3*z+x+2*y==1 is z==(1-x-2*y)/3
+          conjuncts.append(F.Equal(variable.symbol(),
+              F.Together(Emitter.term(solveFor(atom.term(), variable)))));
+        } else {
+          conjuncts.append(Emitter.formula(Formula.atom(atom), isolated));
+        }
       }
     }
     if (rationals) {
@@ -452,6 +468,35 @@ public final class RationalQE {
       return S.True;
     }
     return conjuncts.argSize() == 1 ? conjuncts.arg1() : conjuncts;
+  }
+
+  /**
+   * A lower and an upper bound of the variable as one interval: <code>a&gt;1 &amp;&amp; a&lt;4</code>
+   * is <code>Inequality(1, Less, a, Less, 4)</code>.
+   *
+   * @return {@link F#NIL} if the atoms aren't a lower and an upper bound of the variable
+   */
+  private static IExpr interval(Atom first, Atom second, Variable variable) {
+    if (!isBound(first, variable) || !isBound(second, variable)) {
+      return F.NIL;
+    }
+    boolean firstUpper = isUpperBound(first.relation(), first.term().coefficient(variable));
+    boolean secondUpper = isUpperBound(second.relation(), second.term().coefficient(variable));
+    if (firstUpper == secondUpper) {
+      return F.NIL;
+    }
+    Atom lower = firstUpper ? second : first;
+    Atom upper = firstUpper ? first : second;
+    return F.Inequality(Emitter.term(solveFor(lower.term(), variable)),
+        isStrict(lower.relation()) ? S.Less : S.LessEqual, variable.symbol(),
+        isStrict(upper.relation()) ? S.Less : S.LessEqual,
+        Emitter.term(solveFor(upper.term(), variable)));
+  }
+
+  /** Test if the atom is an ordering relation of the variable. */
+  private static boolean isBound(Atom atom, Variable variable) {
+    return atom.isRelation() && atom.relation() != Relation.EQUAL
+        && atom.relation() != Relation.NOT_EQUAL && !atom.term().coefficient(variable).isZero();
   }
 
   /** The atoms of a conjunction, or <code>null</code> if it isn't one. */

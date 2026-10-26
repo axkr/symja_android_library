@@ -87,6 +87,39 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   /** The smallest step the adaptive integrators may take before they give up. */
   private static final double MIN_STEP = 1.0e-10;
 
+  /**
+   * The largest system whose Jacobian is evaluated from its symbolic derivatives. Each entry is a
+   * symbolic evaluation, so a larger system takes the finite differences of its right-hand sides,
+   * which cost one evaluation of the system per component.
+   */
+  private static final int SYMBOLIC_JACOBIAN_MAX_DIMENSION = 8;
+
+  /**
+   * The smallest step of the stiff integrator, relative to the size of the times. The fast
+   * transients of a stiff system are resolved with steps far below {@link #MIN_STEP}.
+   */
+  private static final double STIFF_MIN_STEP = 1.0e-14;
+
+  /** The tightest default tolerance of the stiff integrator. */
+  private static final double STIFF_TOLERANCE = 1.0e-8;
+
+  /** The number of explicit steps between two checks whether the system has become stiff. */
+  private static final int STIFFNESS_CHECK_STEPS = 500;
+
+  /**
+   * The explicit integration only switches when it would still need more than this many steps of
+   * the current size to reach its target.
+   */
+  private static final double STIFFNESS_REMAINING_STEPS = 500.0;
+
+  /**
+   * The step size times the most negative real part of an eigenvalue of the Jacobian above which a
+   * step is bounded by stability rather than accuracy. An explicit Runge-Kutta method is stable up
+   * to a few units along the negative real axis, while a step of one unit along a component which
+   * has not yet decayed already makes a local error far above the tolerances.
+   */
+  private static final double STIFFNESS_RATIO = 1.0;
+
   /** The accuracy an event time is located to, once its step has been bracketed. */
   private static final double EVENT_THRESHOLD = 1.0e-14;
 
@@ -357,6 +390,140 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
           stateDot[shift + highest[j]] = solved[j];
         }
       }
+    }
+  }
+
+  /**
+   * The partial derivatives of the right hand sides of a {@link FirstOrderSystem}, found
+   * symbolically once and evaluated numerically at every step of the stiff integrator.
+   */
+  private static final class SymbolicJacobian implements RosenbrockIntegrator.Jacobian {
+    private final EvalEngine fEngine;
+    private final FirstOrderSystem fSystem;
+    /** The symbols which stand for the state components in the derivatives. */
+    private final ISymbol[] fVariables;
+    /** <code>df_i/dy_j</code>. */
+    private final IExpr[][] fStateDerivatives;
+    /** <code>df_i/dt</code>. */
+    private final IExpr[] fTimeDerivatives;
+
+    private SymbolicJacobian(EvalEngine engine, FirstOrderSystem system, ISymbol[] variables,
+        IExpr[][] stateDerivatives, IExpr[] timeDerivatives) {
+      fEngine = engine;
+      fSystem = system;
+      fVariables = variables;
+      fStateDerivatives = stateDerivatives;
+      fTimeDerivatives = timeDerivatives;
+    }
+
+    /**
+     * The Jacobian of a system of one real number per component, or <code>null</code> if it can't
+     * be found symbolically or the system is too large for that; the integrator then uses finite
+     * differences.
+     */
+    static SymbolicJacobian create(FirstOrderSystem system, EvalEngine engine) {
+      if (system.layout != null || system.curve != null
+          || system.dimension() > SYMBOLIC_JACOBIAN_MAX_DIMENSION) {
+        return null;
+      }
+      final int n = system.dimension();
+      ISymbol[] variables = new ISymbol[n];
+      IASTAppendable rules = F.ListAlloc(n);
+      for (int i = 0; i < n; i++) {
+        variables[i] = F.Dummy();
+        rules.append(F.Rule(system.stateExpressions[i], variables[i]));
+      }
+      IExpr[][] stateDerivatives = new IExpr[n][n];
+      IExpr[] timeDerivatives = new IExpr[n];
+      try {
+        for (int i = 0; i < n; i++) {
+          IExpr rhs = F.subst(system.derivatives[i], rules);
+          for (int j = 0; j < n; j++) {
+            stateDerivatives[i][j] = differentiate(rhs, variables[j], system, engine);
+            if (stateDerivatives[i][j].isNIL()) {
+              return null;
+            }
+          }
+          timeDerivatives[i] = differentiate(rhs, system.timeVar, system, engine);
+          if (timeDerivatives[i].isNIL()) {
+            return null;
+          }
+        }
+      } catch (LimitException le) {
+        throw le;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return null;
+      }
+      return new SymbolicJacobian(engine, system, variables, stateDerivatives, timeDerivatives);
+    }
+
+    /**
+     * The derivative of <code>rhs</code> with respect to <code>variable</code>, or {@link F#NIL} if
+     * it still holds unevaluated derivatives or the dependent functions.
+     */
+    private static IExpr differentiate(IExpr rhs, ISymbol variable, FirstOrderSystem system,
+        EvalEngine engine) {
+      if (rhs.isFree(variable)) {
+        return F.C0;
+      }
+      IExpr derivative = engine.evaluate(F.D(rhs, variable));
+      if (!derivative.isFree(S.Derivative) || !derivative.isFree(S.D)) {
+        return F.NIL;
+      }
+      for (ISymbol function : system.functions) {
+        if (!derivative.isFree(function)) {
+          return F.NIL;
+        }
+      }
+      return derivative;
+    }
+
+    @Override
+    public boolean compute(double t, double[] y, double[][] dfdy, double[] dfdt) {
+      final int n = fVariables.length;
+      IASTAppendable rules = F.ListAlloc(n + 1);
+      for (int i = 0; i < n; i++) {
+        rules.append(F.Rule(fVariables[i], F.num(y[i])));
+      }
+      rules.append(F.Rule(fSystem.timeVar, F.num(t)));
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          dfdy[i][j] = value(fStateDerivatives[i][j], rules);
+        }
+        dfdt[i] = value(fTimeDerivatives[i], rules);
+      }
+      if (fSystem.massMatrix != null) {
+        // the rows of the highest derivatives hold the derivatives of the right hand sides f of
+        // M.h == f: those of h are found by solving with M, column by column
+        final int[] highest = fSystem.highestComponents;
+        double[] column = new double[highest.length];
+        for (int j = 0; j <= n; j++) {
+          for (int k = 0; k < highest.length; k++) {
+            column[k] = j < n ? dfdy[highest[k]][j] : dfdt[highest[k]];
+          }
+          double[] solved = fSystem.massMatrix
+              .solve(new org.hipparchus.linear.ArrayRealVector(column, false)).toArray();
+          for (int k = 0; k < highest.length; k++) {
+            if (j < n) {
+              dfdy[highest[k]][j] = solved[k];
+            } else {
+              dfdt[highest[k]] = solved[k];
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    private double value(IExpr derivative, IAST rules) {
+      if (derivative.isZero()) {
+        return 0.0;
+      }
+      if (derivative.isNumber()) {
+        return derivative.evalfNaN();
+      }
+      return fEngine.evalN(F.subst(derivative, rules)).evalfNaN();
     }
   }
 
@@ -1578,6 +1745,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Integrate a system whose right hand side is smooth. Unless an explicit method was named, a
+   * {@link StiffnessMonitor} watches the explicit steps, and once they are bounded by stability
+   * rather than accuracy the {@link RosenbrockIntegrator} goes on from the last of them.
+   *
    * @param end receives the state the integration ended in at index 0, or <code>null</code> there
    *        if the stepping gave up before <code>target</code>; may be <code>null</code>
    */
@@ -1587,45 +1758,178 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     if (switching != null) {
       return propagateSwitched(head, switching, target, method, engine, end);
     }
-    AbstractIntegrator integrator = method.createIntegrator();
-    integrator.setMaxEvaluations(method.maxEvaluations);
-    DenseOutputModel model = new DenseOutputModel();
-    integrator.addStepHandler(model);
-    LastStepRecorder recorder = new LastStepRecorder();
-    integrator.addStepHandler(recorder);
-    method.addEventDetectors(integrator, system, target >= system.t0, engine);
-    ODEStateAndDerivative last;
-    try {
-      // clone, so that the two directions both start from the initial conditions
-      last = integrator.integrate(new FirstODE(engine, system),
-          new ODEState(system.t0, system.initialState.clone()), target);
-    } catch (MathRuntimeException mre) {
-      // The stepping gave up before the requested time was reached - the step size collapsed at a
-      // singularity, the state went to NaN, or the evaluation budget ran out. That is the ordinary
-      // outcome of a shooting method whose current guess sends the trajectory to infinity well
-      // short of the endpoint, so the stretch which was integrated is thrown away only if there is
-      // none: `integrate` reads the domain of the solution back off the model rather than from the
-      // requested range, so a model which stops early becomes a solution defined on the shorter
-      // interval instead of no solution at all.
-      if (recorder.lastState == null) {
-        // not one step was taken, so there is nothing to hand back
-        throw mre;
+    final boolean forward = target >= system.t0;
+    final FirstODE ode = new FirstODE(engine, system);
+    // the curve of algebraic equations is followed by its own tangent, which a linearly implicit
+    // method cannot differentiate
+    final boolean stiffCapable = system.curve == null;
+    boolean stiff = stiffCapable && method.stiffMethod && !method.stiffnessSwitching;
+    AbstractIntegrator integrator =
+        stiff ? method.createStiffIntegrator(system, target, engine) : method.createIntegrator();
+    StiffnessMonitor monitor = !stiff && stiffCapable && method.switchesToStiff() //
+        ? new StiffnessMonitor(ode, target)
+        : null;
+    // created once, so that the stiff integrator which takes over goes on with the same events
+    final java.util.List<ODEEventDetector> detectors =
+        method.eventDetectors(system, forward, engine);
+    DenseOutputModel whole = null;
+    // clone, so that the two directions both start from the initial conditions
+    ODEState start = new ODEState(system.t0, system.initialState.clone());
+    int evaluations = 0;
+    while (true) {
+      integrator.setMaxEvaluations(Math.max(1, method.maxEvaluations - evaluations));
+      DenseOutputModel model = new DenseOutputModel();
+      integrator.addStepHandler(model);
+      LastStepRecorder recorder = new LastStepRecorder();
+      integrator.addStepHandler(recorder);
+      if (monitor != null) {
+        integrator.addStepHandler(monitor);
       }
-      // `DenseOutputModel` learns its final time and the index it interpolates from in `finish`,
-      // which only a completed integration calls - `init` left the final time at the target which
-      // was never reached. Close the model here with the last state which was actually stepped to.
-      model.finish(recorder.lastState);
-      // At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.
-      Errors.printMessage(head, "ndsz",
-          F.list(system.timeVar, F.num(recorder.lastState.getTime())), engine);
+      for (ODEEventDetector detector : detectors) {
+        integrator.addEventDetector(detector);
+      }
+      ODEStateAndDerivative last;
+      try {
+        last = integrator.integrate(ode, start, target);
+      } catch (StiffnessDetected sd) {
+        // The explicit steps are bounded by stability rather than accuracy: the stiff integrator
+        // goes on from the end of the last step, which the model already holds.
+        model.finish(recorder.lastState);
+        whole = join(whole, model);
+        evaluations += integrator.getEvaluations();
+        start = new ODEState(recorder.lastState.getTime(),
+            recorder.lastState.getPrimaryState().clone());
+        integrator = method.createStiffIntegrator(system, target, engine);
+        monitor = null;
+        continue;
+      } catch (MathRuntimeException mre) {
+        // The stepping gave up before the requested time was reached - the step size collapsed
+        // at a singularity, the state went to NaN, or the evaluation budget ran out. That is the
+        // ordinary outcome of a shooting method whose current guess sends the trajectory to
+        // infinity well short of the endpoint, so the stretch which was integrated is thrown away
+        // only if there is none: `integrate` reads the domain of the solution back off the model
+        // rather than from the requested range, so a model which stops early becomes a solution
+        // defined on the shorter interval instead of no solution at all.
+        if (recorder.lastState != null) {
+          // `DenseOutputModel` learns its final time and the index it interpolates from in
+          // `finish`, which only a completed integration calls - `init` left the final time at the
+          // target which was never reached. Close the model here with the last state which was
+          // actually stepped to.
+          model.finish(recorder.lastState);
+          whole = join(whole, model);
+        }
+        if (whole == null) {
+          // not one step was taken, so there is nothing to hand back
+          throw mre;
+        }
+        // At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.
+        Errors.printMessage(head, "ndsz", F.list(system.timeVar, F.num(whole.getFinalTime())),
+            engine);
+        return whole;
+      }
+      whole = join(whole, model);
+      if (end != null && recorder.lastState != null
+          && Math.abs(last.getTime() - target) <= 1.0e-9 * Math.max(1.0, Math.abs(target))) {
+        // an event which stopped the integration before the target ends the solution there
+        end[0] = recorder.lastState.getPrimaryState().clone();
+      }
+      return whole;
+    }
+  }
+
+  /** <code>model</code> appended to <code>whole</code>, which may be <code>null</code>. */
+  private static DenseOutputModel join(DenseOutputModel whole, DenseOutputModel model) {
+    if (whole == null) {
       return model;
     }
-    if (end != null && recorder.lastState != null
-        && Math.abs(last.getTime() - target) <= 1.0e-9 * Math.max(1.0, Math.abs(target))) {
-      // an event which stopped the integration before the target ends the solution there
-      end[0] = recorder.lastState.getPrimaryState().clone();
+    whole.append(model);
+    return whole;
+  }
+
+  /** Thrown by a {@link StiffnessMonitor} to stop the explicit integration of a stiff system. */
+  private static final class StiffnessDetected extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
+    StiffnessDetected() {
+      super("stiff system", null, false, false);
     }
-    return model;
+  }
+
+  /**
+   * Watches the steps of an explicit integrator for the sign of a stiff system: steps which are
+   * kept small by the stability of the method along a fast decaying direction rather than by its
+   * accuracy. Every {@link #STIFFNESS_CHECK_STEPS} steps, while the target is still more than
+   * {@link #STIFFNESS_REMAINING_STEPS} steps away, it compares the largest step of the last ones
+   * with the most negative real part of the eigenvalues of the Jacobian, approximated by finite
+   * differences. A stability bounded step size keeps hitting the bound and falling back, so the
+   * largest step rather than the current one estimates it.
+   */
+  private static final class StiffnessMonitor implements ODEStepHandler {
+    private final OrdinaryDifferentialEquation fODE;
+    private final double fTarget;
+    private int fSteps = 0;
+    /** The largest step since the last check. */
+    private double fMaxStep = 0.0;
+
+    StiffnessMonitor(OrdinaryDifferentialEquation ode, double target) {
+      fODE = ode;
+      fTarget = target;
+    }
+
+    @Override
+    public void handleStep(ODEStateInterpolator interpolator) {
+      ODEStateAndDerivative current = interpolator.getCurrentState();
+      fMaxStep = Math.max(fMaxStep,
+          Math.abs(current.getTime() - interpolator.getPreviousState().getTime()));
+      if (++fSteps % STIFFNESS_CHECK_STEPS != 0) {
+        return;
+      }
+      final double step = fMaxStep;
+      fMaxStep = 0.0;
+      if (!(step > 0.0)
+          || Math.abs(fTarget - current.getTime()) < STIFFNESS_REMAINING_STEPS * step) {
+        return;
+      }
+      if (step * decayRate(current, interpolator.isForward()) > STIFFNESS_RATIO) {
+        throw new StiffnessDetected();
+      }
+    }
+
+    /**
+     * The largest <code>-Re(lambda)</code> of the eigenvalues <code>lambda</code> of the Jacobian
+     * at <code>state</code>, or 0 if it can't be determined. Integrating towards smaller times, the
+     * components which decay are those with <code>Re(lambda) &gt; 0</code>.
+     */
+    private double decayRate(ODEStateAndDerivative state, boolean forward) {
+      final double t = state.getTime();
+      final double[] y = state.getPrimaryState();
+      final double[] f0 = state.getPrimaryDerivative();
+      final int n = y.length;
+      final double root = Math.sqrt(Math.ulp(1.0));
+      final double[][] jacobian = new double[n][n];
+      for (int j = 0; j < n; j++) {
+        double[] shifted = y.clone();
+        double delta = root * Math.max(1.0e-5, Math.abs(y[j]));
+        shifted[j] += delta;
+        double[] f = fODE.computeDerivatives(t, shifted);
+        for (int i = 0; i < n; i++) {
+          jacobian[i][j] = (f[i] - f0[i]) / delta;
+          if (!Double.isFinite(jacobian[i][j])) {
+            return 0.0;
+          }
+        }
+      }
+      try {
+        double rate = 0.0;
+        for (org.hipparchus.complex.Complex lambda : new org.hipparchus.linear.EigenDecompositionNonSymmetric(
+            new org.hipparchus.linear.Array2DRowRealMatrix(jacobian, false)).getEigenvalues()) {
+          rate = Math.max(rate, forward ? -lambda.getReal() : lambda.getReal());
+        }
+        return rate;
+      } catch (MathRuntimeException mre) {
+        return 0.0;
+      }
+    }
   }
 
   /** The most changes of the switching terms in one integration. */
@@ -2263,6 +2567,27 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     /** The <code>WhenEvent(cond, action)</code> entries of the equations. */
     java.util.List<IAST> whenEvents = java.util.Collections.emptyList();
 
+    /** <code>true</code> if a time integration method was named, which is then used throughout. */
+    boolean methodNamed = false;
+
+    /** <code>true</code> if <code>"StiffnessSwitching"</code> was asked for. */
+    boolean stiffnessSwitching = false;
+
+    /** <code>true</code> if a stiff method was named: the stiff integrator is used throughout. */
+    boolean stiffMethod = false;
+
+    /** <code>true</code> if <code>AccuracyGoal</code> or <code>PrecisionGoal</code> was given. */
+    boolean goalsGiven = false;
+
+    /**
+     * Whether the explicit integration switches to the stiff integrator once its steps are bounded
+     * by stability rather than by accuracy: the default when no method was named, or when
+     * <code>"StiffnessSwitching"</code> was.
+     */
+    boolean switchesToStiff() {
+      return stiffnessSwitching || (!methodNamed && !stiffMethod);
+    }
+
     /**
      * Read the options.
      *
@@ -2297,10 +2622,12 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         double accuracy = digitsToTolerance(options[ACCURACY_GOAL]);
         if (!Double.isNaN(accuracy)) {
           settings.absoluteTolerance = accuracy;
+          settings.goalsGiven = true;
         }
         double precision = digitsToTolerance(options[PRECISION_GOAL]);
         if (!Double.isNaN(precision)) {
           settings.relativeTolerance = precision;
+          settings.goalsGiven = true;
         }
         if (!settings.parseMethod(options[METHOD], ast, engine)) {
           return null;
@@ -2382,10 +2709,15 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
           if ("FixedStep".equals(entry.toString())) {
             // a controller: the method of its "Method" sub-option takes the fixed steps
             fixedStep = true;
+            methodNamed = true;
           } else if (!"EventLocator".equals(entry.toString())
               && !setTimeIntegration(entry.toString(), ast, engine)) {
             return false;
           }
+          continue;
+        }
+        if (entry.isAutomatic()) {
+          // a submethod left to the default, e.g. {"ExplicitRungeKutta", Automatic}
           continue;
         }
         if (!entry.isRuleAST()) {
@@ -2483,23 +2815,35 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         case "Adams":
         case "Extrapolation":
           timeIntegration = name;
+          methodNamed = true;
           return true;
         case "FixedStep":
           fixedStep = true;
+          methodNamed = true;
           return true;
         case "ExplicitEuler":
           // the Runge-Kutta formulas of order one and two, which take steps of a fixed size
           fixedStep = true;
           differenceOrder = 1;
+          methodNamed = true;
           return true;
         case "ExplicitMidpoint":
           fixedStep = true;
           differenceOrder = 2;
+          methodNamed = true;
+          return true;
+        case "StiffnessSwitching":
+          // explicit steps until they are bounded by stability, then the stiff integrator; the
+          // methods of its "Method" sub-option are read like any other
+          stiffnessSwitching = true;
+          return true;
+        case "BDF":
+          // a stiff method throughout, served by the linearly implicit Rosenbrock integrator
+          stiffMethod = true;
           return true;
         default:
-          // The stiff solvers - "BDF", "StiffnessSwitching", "IDA", "ImplicitRungeKutta" and the
-          // "LinearlyImplicit..." submethods - have no counterpart: the integrator library ships
-          // explicit methods only.
+          // The other stiff solvers - "IDA", "ImplicitRungeKutta" and the "LinearlyImplicit..."
+          // submethods - have no counterpart.
           Errors.printMessage(ast.topHead(), "optx", F.List(F.Rule(S.Method, F.$str(name)), ast),
               engine);
           return false;
@@ -2549,22 +2893,37 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Register one detector per <code>"Event"</code> expression, and the detectors of the
-     * <code>WhenEvent</code> entries.
+     * Build the linearly implicit integrator for a stiff system.
      *
-     * @param forward <code>true</code> if the integration runs towards larger times
+     * <p>
+     * Without <code>AccuracyGoal</code> and <code>PrecisionGoal</code> its tolerances are no tighter
+     * than {@link #STIFF_TOLERANCE}: every step solves linear systems whose condition grows with the
+     * stiffness, so that the tighter default of the explicit methods would only be reached with
+     * steps much smaller than the solution needs.
+     *
+     * @param system the system to integrate
+     * @param target the time to integrate to, which scales the smallest step
+     * @param engine the evaluation engine, whose time limit every step checks
      */
-    void addEventDetectors(AbstractIntegrator integrator, FirstOrderSystem system,
-        boolean forward, EvalEngine engine) {
-      for (ODEEventDetector detector : eventDetectors(system, forward, engine)) {
-        integrator.addEventDetector(detector);
+    RosenbrockIntegrator createStiffIntegrator(FirstOrderSystem system, double target,
+        EvalEngine engine) {
+      double absolute = goalsGiven ? absoluteTolerance : Math.max(absoluteTolerance, STIFF_TOLERANCE);
+      double relative = goalsGiven ? relativeTolerance : Math.max(relativeTolerance, STIFF_TOLERANCE);
+      double minStep = STIFF_MIN_STEP * Math.max(1.0, Math.max(Math.abs(system.t0), Math.abs(target)));
+      RosenbrockIntegrator integrator = new RosenbrockIntegrator(minStep, maxStep, absolute,
+          relative, SymbolicJacobian.create(system, engine), engine::checkTimeLimit);
+      if (!Double.isNaN(startingStepSize)) {
+        integrator.setInitialStepSize(Math.min(startingStepSize, maxStep));
       }
+      return integrator;
     }
 
     /**
-     * The detectors of {@link #addEventDetectors(AbstractIntegrator, FirstOrderSystem, boolean,
-     * EvalEngine)}. They remember the events they acted on, so an integration which is restarted
-     * keeps adding the same ones.
+     * One detector per <code>"Event"</code> expression, and the detectors of the
+     * <code>WhenEvent</code> entries. They remember the events they acted on, so an integration
+     * which is restarted keeps adding the same ones.
+     *
+     * @param forward <code>true</code> if the integration runs towards larger times
      */
     java.util.List<ODEEventDetector> eventDetectors(FirstOrderSystem system, boolean forward,
         EvalEngine engine) {

@@ -1835,7 +1835,36 @@ public final class LinearAlgebra {
       Complex[] complexEigenvalues = ComplexSchurTransformer.getEigenvalues(matrix);
       // sort descending
       Arrays.sort(complexEigenvalues, (a, b) -> Double.compare(b.norm(), a.norm()));
+      if (isHermitian(matrix)) {
+        // the eigenvalues of a Hermitian matrix are real: drop the rounding noise of the
+        // imaginary parts
+        IASTAppendable result = F.ListAlloc(complexEigenvalues.length);
+        for (Complex c : complexEigenvalues) {
+          result.append(F.num(c.getReal()));
+        }
+        return result;
+      }
       return Convert.complexValues2List(complexEigenvalues);
+    }
+
+    /**
+     * Test if the square <code>matrix</code> is equal to its conjugate transpose.
+     */
+    private static boolean isHermitian(FieldMatrix<Complex> matrix) {
+      final int n = matrix.getRowDimension();
+      if (n != matrix.getColumnDimension()) {
+        return false;
+      }
+      for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+          Complex a = matrix.getEntry(i, j);
+          Complex b = matrix.getEntry(j, i);
+          if (a.getReal() != b.getReal() || a.getImaginary() != -b.getImaginary()) {
+            return false;
+          }
+        }
+      }
+      return true;
     }
 
     @Override

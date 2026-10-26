@@ -248,7 +248,9 @@ final public class ImageExpr extends DataExpr<byte[]> {
       // in that space again would convert them twice
       resultOptions = resultOptions.withColorSpace(S.Automatic);
     }
-    if ((Pixels.BYTE.equals(type) || Pixels.BIT.equals(type)) && raster.channels != 2) {
+    boolean rgbSamples = colorSpaceOf(resultOptions, raster.channels) == null;
+    if ((Pixels.BYTE.equals(type) || Pixels.BIT.equals(type)) && raster.channels != 2
+        && rgbSamples) {
       // 8 bits hold these samples exactly, so the picture is written directly, without a matrix
       final double max = Raster.maxOf(type);
       final double toByte = 255.0 / max;
@@ -276,6 +278,31 @@ final public class ImageExpr extends DataExpr<byte[]> {
     }
     // a matrix written without a type is one of reals
     return matrix == null ? Pixels.BYTE : Pixels.REAL32;
+  }
+
+  /**
+   * The colour space other than RGB and greyscale the samples of this image are in:
+   * <code>"HSB"</code> or <code>"CMYK"</code>, or <code>null</code> for an image of red, green and
+   * blue samples or of grey levels. The picture it is shown from is RGB in any case.
+   */
+  public String storedColorSpace() {
+    if (options.colorSpaceName() == null || matrix == null) {
+      return null;
+    }
+    Raster samples = raster();
+    return samples == null ? null : colorSpaceOf(options, samples.channels);
+  }
+
+  /** <code>"HSB"</code> or <code>"CMYK"</code> if the options name it for that many channels. */
+  private static String colorSpaceOf(ImageOptions options, int channels) {
+    String name = options.colorSpaceName();
+    if ("HSB".equalsIgnoreCase(name) && channels == 3) {
+      return "HSB";
+    }
+    if ("CMYK".equalsIgnoreCase(name) && channels == 4) {
+      return "CMYK";
+    }
+    return null;
   }
 
   /** The options this image carries; never <code>null</code>. */
@@ -406,9 +433,10 @@ final public class ImageExpr extends DataExpr<byte[]> {
    *
    * <p>
    * A rasterized graphics object has no pixel matrix to remember, and neither has an image whose
-   * samples had to be interpreted through a colour space, so only a matrix that still describes the
-   * pixels is kept for <code>ImageData</code> to hand back losslessly - see
-   * {@link Pixels#describesPixels(String, int)}.
+   * colour samples were weighed into grey levels, so only a matrix that still describes the pixels
+   * is kept for <code>ImageData</code> to hand back losslessly - see
+   * {@link Pixels#describesPixels(String, int)}. An <code>"HSB"</code> or <code>"CMYK"</code>
+   * image keeps its samples in that space and is shown from their RGB picture.
    *
    * @return <code>null</code> if <code>imageData</code> is neither
    */

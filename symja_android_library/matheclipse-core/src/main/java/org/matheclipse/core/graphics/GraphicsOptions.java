@@ -3148,7 +3148,8 @@ public class GraphicsOptions {
   }
 
   public void setDataRange(IExpr d) {
-    this.dataRange = d;
+    // DataRange -> xmax is DataRange -> {0, xmax}
+    this.dataRange = d.isReal() ? F.list(F.C0, d) : d;
   }
 
   public IExpr dataRange() {

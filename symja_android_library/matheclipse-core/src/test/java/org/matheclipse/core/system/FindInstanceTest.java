@@ -138,6 +138,6 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
 
     // bounded linear polytope with an equality and inequalities -> a feasible vertex
     check("FindInstance({x + y == 10, x >= 0, y >= 0, x <= 7}, {x, y}, Reals)", //
-        "{{x->7,y->3}}");
+        "{{x->0,y->10}}");
   }
 }

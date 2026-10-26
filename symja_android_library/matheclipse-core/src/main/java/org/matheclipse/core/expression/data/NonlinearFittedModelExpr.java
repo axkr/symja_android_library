@@ -31,7 +31,9 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
 
   private static final long serialVersionUID = -5412690383154712077L;
 
-  private static final String[] PROPERTIES = {"AdjustedRSquared", "BestFit", "BestFitParameters",
+  private static final String[] PROPERTIES = {"AdjustedRSquared", "ANOVATable",
+      "ANOVATableDegreesOfFreedom", "ANOVATableEntries", "ANOVATableMeanSquares",
+      "ANOVATableSumsOfSquares", "BestFit", "BestFitParameters",
       "EstimatedVariance", "FitResiduals", "ParameterConfidenceIntervals", "ParameterErrors",
       "ParameterPValues", "ParameterTStatistics", "ParameterTable", "ParameterTableEntries",
       "PredictedResponse", "RSquared"};
@@ -109,6 +111,18 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
   protected IExpr property(String name, EvalEngine engine) {
     Fit fit = toData();
     switch (name) {
+      case "ANOVATable":
+        return anovaTable(engine);
+      case "ANOVATableDegreesOfFreedom":
+        return anovaColumn(engine, 0);
+      case "ANOVATableEntries": {
+        double[][] rows = anovaRows(engine);
+        return F.mapRange(0, rows.length, i -> anovaRow(rows[i]));
+      }
+      case "ANOVATableMeanSquares":
+        return anovaColumn(engine, 2);
+      case "ANOVATableSumsOfSquares":
+        return anovaColumn(engine, 1);
       case "BestFit":
         return normal(false);
       case "BestFitParameters":
@@ -149,6 +163,76 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
       default:
         return F.NIL;
     }
+  }
+
+  /**
+   * The analysis of variance: <code>{DF, SS, MS}</code> of the model and of the error, then
+   * <code>{DF, SS}</code> of the uncorrected total and of the total corrected for the mean. The sum
+   * of squares of the model is the sum of the squared predicted values.
+   */
+  private double[][] anovaRows(EvalEngine engine) {
+    Fit fit = toData();
+    double[] predicted = predicted(engine);
+    int n = fit.y.length;
+    int p = fit.parameters.argSize();
+    double mean = Arrays.stream(fit.y).average().orElse(0.0);
+    double model = 0.0;
+    double error = 0.0;
+    double uncorrected = 0.0;
+    double corrected = 0.0;
+    for (int i = 0; i < n; i++) {
+      model += predicted[i] * predicted[i];
+      error += (fit.y[i] - predicted[i]) * (fit.y[i] - predicted[i]);
+      uncorrected += fit.y[i] * fit.y[i];
+      corrected += (fit.y[i] - mean) * (fit.y[i] - mean);
+    }
+    return new double[][] {{p, model, model / p}, //
+        {n - p, error, n > p ? error / (n - p) : Double.NaN}, //
+        {n, uncorrected}, //
+        {n - 1, corrected}};
+  }
+
+  private static IAST anovaRow(double[] row) {
+    IASTAppendable list = F.ListAlloc(row.length);
+    // the degrees of freedom are whole numbers
+    list.append(F.ZZ((int) row[0]));
+    for (int j = 1; j < row.length; j++) {
+      list.append(Double.isNaN(row[j]) ? S.Indeterminate : F.num(row[j]));
+    }
+    return list;
+  }
+
+  /** One column of the analysis of variance, for each row that has it. */
+  private IExpr anovaColumn(EvalEngine engine, int column) {
+    double[][] rows = anovaRows(engine);
+    IASTAppendable list = F.ListAlloc(rows.length);
+    for (double[] row : rows) {
+      if (column < row.length) {
+        list.append(anovaRow(row).get(column + 1));
+      }
+    }
+    return list;
+  }
+
+  /** The analysis of variance as a table. */
+  private IExpr anovaTable(EvalEngine engine) {
+    double[][] rows = anovaRows(engine);
+    String[] labels = {"Model", "Error", "Uncorrected Total", "Corrected Total"};
+    IASTAppendable grid = F.ListAlloc(rows.length + 1);
+    grid.append(F.List(F.stringx(""), F.stringx("DF"), F.stringx("SS"), F.stringx("MS")));
+    for (int i = 0; i < rows.length; i++) {
+      IASTAppendable row = F.ListAlloc(4);
+      row.append(F.stringx(labels[i]));
+      row.appendArgs(anovaRow(rows[i]));
+      grid.append(row);
+    }
+    IExpr gray = F.GrayLevel(F.num(0.7));
+    return F.binaryAST2(S.Style,
+        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
+            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
+            F.Rule(S.Spacings,
+                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
+        F.stringx("DialogStyle"));
   }
 
   /** The residual degrees of freedom: data points less parameters. */

@@ -532,9 +532,9 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
     // complex numbers: by the real part, then by the size and the sign of the imaginary part
     check("{NumericalSort({1+I,1.,1-I,I,-I}), NumericalOrder(Pi,N(Pi)), NumericalOrder(Pi,3.14), NumericalOrder(I,1)}", //
         "{{-I,I,1.0,1-I,1+I},0,-1,1}");
-    // a literal beyond the double range keeps the digits of its mantissa
+    // a literal beyond the double range has the machine precision, or the digits of its mantissa
     check("{Precision(1.*^400), Precision(1.2345678901234567890*^400)}", //
-        "{16,20}");
+        "{15.95459,20}");
   }
 
   @Test

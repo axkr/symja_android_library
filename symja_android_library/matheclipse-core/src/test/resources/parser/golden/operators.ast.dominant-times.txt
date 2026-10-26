@@ -7420,7 +7420,7 @@ ab∥c	VerticalSeparator(a, DoubleVerticalBar(b, c))
 ab!=c	VerticalSeparator(a, Unequal(b, c))
 abc	VerticalSeparator(a, UndirectedEdge(b, c))
 ab⊎c	VerticalSeparator(a, UnionPlus(b, c))
-ab;;c	Span(VerticalSeparator(a, b), c)
+ab;;c	VerticalSeparator(a, Span(b, c))
 abc	!syntax@4: End-of-file not reached.
 ab∑c	!syntax@4: End-of-file not reached.
 ab⊕c	VerticalSeparator(a, CirclePlus(b, c))

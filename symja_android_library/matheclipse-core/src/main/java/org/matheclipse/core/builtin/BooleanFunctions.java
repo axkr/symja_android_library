@@ -245,6 +245,15 @@ public final class BooleanFunctions {
           } else {
             result[i - 1] = v;
           }
+        } else if (arg.isAST() && !arg.head().isBuiltInSymbol()) {
+          // an indexed variable like q(1), named like the atoms in expr2LogicNGFormula()
+          Variable v = symbol2variableMap.get(arg);
+          if (v == null) {
+            v = factory.variable(arg.fullFormString());
+            symbol2variableMap.put(arg, v);
+            variable2symbolMap.put(v, arg);
+          }
+          result[i - 1] = v;
         } else {
           String str = Errors.getMessage("ivar", F.list(arg), EvalEngine.get());
           throw new ArgumentTypeException(str);
@@ -4069,14 +4078,6 @@ public final class BooleanFunctions {
         }
         if (argSize > 1) {
           userDefinedVariables = ast.arg2().makeList();
-          IExpr complement = S.Complement.of(engine, userDefinedVariables, variablesInFormula);
-          if (complement.size() > 1 && complement.isList()) {
-            IASTAppendable or = F.Or();
-            or.append(arg1);
-            arg1 = or;
-            or.appendArgs((IAST) complement);
-          }
-
           if (argSize > 2) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
             IExpr optionMethod = options.getOption(S.Method);
@@ -4088,6 +4089,11 @@ public final class BooleanFunctions {
       }
       if (userDefinedVariables.isNIL()) {
         userDefinedVariables = variablesInFormula;
+      }
+      // a formula with variables outside of the variable list stays unevaluated
+      arg1 = booleanEquationsToFormula(arg1, userDefinedVariables);
+      if (arg1.isNIL()) {
+        return F.NIL;
       }
       return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
     }
@@ -4619,15 +4625,103 @@ public final class BooleanFunctions {
       if (i >= maxChoices) {
         break;
       }
-      list.append(lf.literals2BooleanList(assignments.get(i).literals(), map));
+      appendModel(list, lf.literals2BooleanList(assignments.get(i).literals(), map), variables,
+          false, maxChoices);
     }
     EvalAttributes.sort(list, Comparators.REVERSE_CANONICAL_COMPARATOR);
     return list;
   }
 
+  /**
+   * Append the model to the list. A variable which doesn't occur in the formula has no value in
+   * the model (<code>Null</code>) and takes both values <code>True</code> and <code>False</code>.
+   *
+   * @param list the models found so far
+   * @param model a list of <code>True, False, Null</code> or of rules <code>variable -&gt; value</code>
+   * @param variables the variables in the order of the model
+   * @param asRules if <code>true</code> the model's entries are rules
+   * @param maxChoices the maximum number of models in the list
+   */
+  private static void appendModel(IASTAppendable list, IAST model, IAST variables,
+      boolean asRules, int maxChoices) {
+    if (list.argSize() >= maxChoices) {
+      return;
+    }
+    int position = model.indexOf(S.Null);
+    if (position <= 0 || position >= variables.size()) {
+      list.append(model);
+      return;
+    }
+    IExpr variable = variables.get(position);
+    appendModel(list, model.setAtCopy(position, asRules ? F.Rule(variable, S.True) : S.True),
+        variables, asRules, maxChoices);
+    appendModel(list, model.setAtCopy(position, asRules ? F.Rule(variable, S.False) : S.False),
+        variables, asRules, maxChoices);
+  }
+
+  /**
+   * Convert a list of conditions or a Boolean expression, which may contain equations between
+   * Boolean expressions, into a Boolean formula: a list becomes a conjunction,
+   * <code>a == b == ...</code> becomes <code>Equivalent(a, b, ...)</code> and
+   * <code>a != b</code> becomes <code>!Equivalent(a, b)</code>. Parts which are no Boolean
+   * expressions are kept as atoms.
+   *
+   * @param expr the conditions
+   * @param variables the variables of the formula
+   * @return {@link F#NIL} if a symbol other than <code>True</code> and <code>False</code> isn't
+   *         one of the <code>variables</code>
+   */
+  public static IExpr booleanEquationsToFormula(IExpr expr, IAST variables) {
+    if (expr.isSymbol()) {
+      if (expr.isTrue() || expr.isFalse() || variables.indexOf(expr) > 0) {
+        return expr;
+      }
+      return F.NIL;
+    }
+    if (!expr.isAST() || expr instanceof BDDExpr || expr.head() instanceof BDDExpr
+        || variables.indexOf(expr) > 0) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isList()) {
+      ast = ast.setAtCopy(0, S.And);
+    } else if (ast.isSameHeadSizeGE(S.Equal, 3)) {
+      ast = ast.setAtCopy(0, S.Equivalent);
+    } else if (ast.isAST(S.Unequal, 3)) {
+      ast = F.Not(F.Equivalent(ast.arg1(), ast.arg2()));
+    } else if (!ast.head().isBooleanFormulaSymbol()) {
+      return expr;
+    }
+    IASTMutable result = ast.copy();
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = booleanEquationsToFormula(ast.get(i), variables);
+      if (arg.isNIL()) {
+        return F.NIL;
+      }
+      result.set(i, arg);
+    }
+    return result;
+  }
+
+  /**
+   * Test if <code>expr</code> is a Boolean formula whose atoms are <code>True</code>,
+   * <code>False</code> or one of the <code>variables</code>.
+   */
+  private static boolean isBooleanFormula(IExpr expr, IAST variables) {
+    if (expr.isTrue() || expr.isFalse() || variables.indexOf(expr) > 0) {
+      return true;
+    }
+    if (expr.isSymbol()) {
+      return expr.isBooleanFormula();
+    }
+    return expr.isAST() && expr.head().isBooleanFormulaSymbol()
+        && ((IAST) expr).forAll(x -> isBooleanFormula(x, variables));
+  }
+
   public static IAST solveInstances(IExpr booleanExpression, IAST variables,
       int maximumNumberOfResults) {
-    if (!booleanExpression.isBooleanFormula()) {
+    booleanExpression = booleanEquationsToFormula(booleanExpression, variables);
+    if (booleanExpression.isNIL() || !isBooleanFormula(booleanExpression, variables)) {
       return F.NIL;
     }
     LogicFormula lf = new LogicFormula();
@@ -4640,7 +4734,8 @@ public final class BooleanFunctions {
       if (i >= maximumNumberOfResults) {
         break;
       }
-      list.append(lf.literals2VariableList(assignments.get(i).literals(), map));
+      appendModel(list, lf.literals2VariableList(assignments.get(i).literals(), map), variables,
+          true, maximumNumberOfResults);
     }
     EvalAttributes.sort(list, Comparators.REVERSE_CANONICAL_COMPARATOR);
     return list;

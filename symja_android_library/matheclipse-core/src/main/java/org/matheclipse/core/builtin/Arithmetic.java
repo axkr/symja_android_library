@@ -5148,12 +5148,31 @@ public final class Arithmetic {
       final boolean phaseInRest = baseTimes.exists(arg -> !arg.isPower() //
           && (arg.isImaginaryUnit() || arg.isNegativeImaginaryUnit() //
               || (arg.isRational() && arg.isNegative())));
+      // a rational factor next to numeric factors only gives up its perfect power part:
+      // Sqrt(3/8*(1+Sqrt(2))) is Sqrt(3/2*(1+Sqrt(2)))/2
+      final boolean numericRest = exponent.numerator().isOne()
+          && baseTimes.forAll(arg -> arg.isRational() || arg.isNumericFunction())
+          && baseTimes.exists(arg -> !arg.isRational() && !arg.isPower());
       for (int j = 1; j < baseTimes.size(); j++) {
         IExpr arg = baseTimes.get(j);
         if (!arg.isPower()) {
           if (arg.isMinusOne() || arg.isImaginaryUnit() || arg.isNegativeImaginaryUnit()) {
             rest.append(arg);
             continue;
+          }
+          if (numericRest && arg.isFraction()) {
+            IRational[] split = perfectPowerPart(((IFraction) arg).abs(), exponent, engine);
+            if (split != null) {
+              result.append(split[0]);
+              if (!split[1].isOne()) {
+                rest.append(split[1]);
+              }
+              if (arg.isNegative()) {
+                rest.append(F.CN1);
+              }
+              evaled = true;
+              continue;
+            }
           }
           if (arg.isRational() && arg.isNegative()) {
             // Only a positive factor can be taken out of a fractional power:
@@ -5235,6 +5254,30 @@ public final class Arithmetic {
         return result;
       }
       return F.NIL;
+    }
+
+    /**
+     * Split the positive rational <code>q</code> into <code>s^n * r</code> for the exponent
+     * <code>1/n</code>, where <code>s</code> is the rational which <code>q^(1/n)</code> pulls out:
+     * <code>3/8</code> is <code>(1/2)^2 * 3/2</code> for <code>1/2</code>.
+     *
+     * @return <code>{s, r}</code> or <code>null</code> if <code>s</code> is <code>1</code>
+     */
+    private static IRational[] perfectPowerPart(IRational q, IFraction exponent,
+        EvalEngine engine) {
+      IExpr power = engine.evaluate(F.Power(q, exponent));
+      IExpr s = F.NIL;
+      if (power.isRational()) {
+        s = power;
+      } else if (power.isTimes() && power.first().isRational()) {
+        s = power.first();
+      }
+      if (s.isNIL() || s.isOne() || !s.isPositive()) {
+        return null;
+      }
+      IRational factor = (IRational) s;
+      IRational r = q.divideBy(factor.powerRational(exponent.denominator().toLong()));
+      return new IRational[] {factor, r};
     }
 
     /**

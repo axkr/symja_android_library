@@ -178,7 +178,8 @@ public final class Pixels {
    *
    * <p>
    * It does when the samples went in untouched. <code>"RGB"</code> and <code>Automatic</code> leave
-   * them alone; <code>"HSB"</code> and <code>"CMYK"</code> mean something else came out.
+   * them alone, and so do <code>"HSB"</code> for three and <code>"CMYK"</code> for four channels:
+   * such an image keeps its samples in that space and only the picture it is shown from is RGB.
    * <code>"Grayscale"</code> is the one that depends on the data: it leaves a single intensity
    * alone but weighs three colour channels into one, and the three channel matrix is then not what
    * the image holds.
@@ -193,6 +194,12 @@ public final class Pixels {
     }
     if ("Grayscale".equalsIgnoreCase(colorSpace) || "Gray".equalsIgnoreCase(colorSpace)) {
       return dataChannels == 1;
+    }
+    if ("HSB".equalsIgnoreCase(colorSpace)) {
+      return dataChannels == 3;
+    }
+    if ("CMYK".equalsIgnoreCase(colorSpace)) {
+      return dataChannels == 4;
     }
     return false;
   }

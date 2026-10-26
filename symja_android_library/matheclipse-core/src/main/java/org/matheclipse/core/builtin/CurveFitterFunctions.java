@@ -257,6 +257,33 @@ public class CurveFitterFunctions {
     }
 
     /**
+     * Replace the parameters which are no symbols, like <code>s(1)</code>, by unique symbols in the
+     * parameter specification <code>a</code> or <code>{a, a0}</code>.
+     *
+     * @param listOfSymbolsOrPairs the parameter specification
+     * @param renamed the rules <code>s(1) -> $1</code> are appended to this list
+     * @return the parameter specification with the replaced parameters
+     */
+    protected static IAST renameParameters(IAST listOfSymbolsOrPairs, IASTAppendable renamed) {
+      return F.mapList(listOfSymbolsOrPairs, (IExpr spec) -> {
+        IExpr parameter = spec.isList() && spec.argSize() > 0 ? spec.first() : spec;
+        if (!parameter.isAST() || parameter.isList()) {
+          return spec;
+        }
+        ISymbol dummy = F.Dummy();
+        renamed.append(F.Rule(parameter, dummy));
+        return spec.isList() ? ((IAST) spec).setAtCopy(1, dummy) : dummy;
+      });
+    }
+
+    /**
+     * The model <code>{form}</code> is the model <code>form</code> without constraints.
+     */
+    protected static IExpr modelForm(IExpr model) {
+      return model.isList1() ? model.first() : model;
+    }
+
+    /**
      * Create the initial guess <code>[1.0, 1.0, 1.0,...]</code>
      *
      * @param length the length of the initial array
@@ -399,19 +426,28 @@ public class CurveFitterFunctions {
       final IAST variables = fitVariables(ast.arg4());
       if (ast.arg1().isList() && ast.arg3().isList() && variables.isPresent()) {
         IAST data = (IAST) ast.arg1();
-        IExpr function = ast.arg2();
-        IAST listOfSymbols = (IAST) ast.arg3();
+        IExpr function = modelForm(ast.arg2());
+        IASTAppendable renamed = F.ListAlloc();
+        IAST listOfSymbols = renameParameters((IAST) ast.arg3(), renamed);
+        if (renamed.argSize() > 0) {
+          function = F.subst(function, renamed);
+        }
 
         double[] initialGuess = new double[listOfSymbols.argSize()];
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
         if (listOfSymbols.isPresent()) {
           try {
             final IAST symbols = listOfSymbols;
+            final IExpr model = function;
             double[] values = variables.argSize() == 1
-                ? fit(data, function, symbols, variables.arg1(), initialGuess, null, engine)
-                : fitMultivariate(data, function, symbols, variables, initialGuess, engine);
+                ? fit(data, model, symbols, variables.arg1(), initialGuess, null, engine)
+                : fitMultivariate(data, model, symbols, variables, initialGuess, engine);
             if (values != null) {
-              return F.mapList(symbols, (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
+              IAST rules =
+                  F.mapList(symbols, (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
+              // the dummy symbols back to the parameters they replaced
+              return renamed.argSize() > 0 ? F.subst(rules, F.mapList(renamed,
+                  (IExpr rule) -> F.Rule(rule.second(), rule.first()))) : rules;
             }
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
@@ -972,10 +1008,15 @@ public class CurveFitterFunctions {
         return F.NIL;
       }
       IAST data = (IAST) ast.arg1();
-      IExpr function = ast.arg2();
+      IExpr function = FindFit.modelForm(ast.arg2());
       IExpr x = ast.arg4();
-      double[] initialGuess = new double[((IAST) ast.arg3()).argSize()];
-      IAST symbols = FindFit.initialGuess((IAST) ast.arg3(), initialGuess);
+      IASTAppendable renamed = F.ListAlloc();
+      IAST spec = FindFit.renameParameters((IAST) ast.arg3(), renamed);
+      if (renamed.argSize() > 0) {
+        function = F.subst(function, renamed);
+      }
+      double[] initialGuess = new double[spec.argSize()];
+      IAST symbols = FindFit.initialGuess(spec, initialGuess);
       if (symbols == null || !symbols.isPresent()) {
         return F.NIL;
       }
@@ -991,6 +1032,12 @@ public class CurveFitterFunctions {
         for (int i = 0; i < xs.length; i++) {
           xs[i] = points.get(i).getX();
           ys[i] = points.get(i).getY();
+        }
+        if (renamed.argSize() > 0) {
+          // the model keeps the parameters as they were given
+          IAST inverse = F.mapList(renamed, (IExpr rule) -> F.Rule(rule.second(), rule.first()));
+          function = F.subst(function, inverse);
+          symbols = (IAST) F.subst(symbols, inverse);
         }
         return new NonlinearFittedModelExpr(
             new NonlinearFittedModelExpr.Fit(function, symbols, x, values, xs, ys));

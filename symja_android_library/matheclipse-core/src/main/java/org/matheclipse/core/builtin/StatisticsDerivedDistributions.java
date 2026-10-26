@@ -1,6 +1,9 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -26,7 +29,8 @@ import org.matheclipse.core.interfaces.statistics.IStatistics;
  * {@link S#ProbabilityDistribution}, {@link S#TransformedDistribution},
  * {@link S#MixtureDistribution}, {@link S#ParameterMixtureDistribution},
  * {@link S#ProductDistribution}, {@link S#CensoredDistribution},
- * {@link S#TruncatedDistribution} and {@link S#SmoothKernelDistribution}.
+ * {@link S#TruncatedDistribution}, {@link S#MatrixPropertyDistribution} and
+ * {@link S#SmoothKernelDistribution}.
  */
 public class StatisticsDerivedDistributions {
 
@@ -34,6 +38,7 @@ public class StatisticsDerivedDistributions {
 
     private static void init() {
       S.CensoredDistribution.setEvaluator(new CensoredDistribution());
+      S.MatrixPropertyDistribution.setEvaluator(new MatrixPropertyDistribution());
       S.MixtureDistribution.setEvaluator(new MixtureDistribution());
       S.ParameterMixtureDistribution.setEvaluator(new ParameterMixtureDistribution());
       S.ProbabilityDistribution.setEvaluator(new ProbabilityDistribution());
@@ -2128,5 +2133,100 @@ public class StatisticsDerivedDistributions {
     Initializer.init();
   }
 
+  /**
+   * <code>MatrixPropertyDistribution(expr, x \[Distributed] mdist)</code> - the distribution of
+   * the property <code>expr</code> of a random matrix <code>x</code> drawn from
+   * <code>mdist</code>, e.g. of <code>Eigenvalues(x)</code>.
+   *
+   * <p>
+   * Several random variables are given as a list of <code>Distributed(x, dist)</code>
+   * specifications. The property is held and evaluated for each sample only, after the random
+   * variables have been replaced by their sampled values.
+   */
+  public static final class MatrixPropertyDistribution extends AbstractEvaluator
+      implements IDistribution, IRandomVariate {
+
+    /**
+     * The <code>Distributed(x, dist)</code> specifications of the distribution, or
+     * <code>null</code> if the second argument isn't one or a list of them with symbols as
+     * random variables.
+     */
+    private static IAST specifications(IAST dist) {
+      if (!dist.isAST2()) {
+        return null;
+      }
+      IExpr arg2 = dist.arg2();
+      IAST specs;
+      if (arg2.isAST(S.Distributed, 3)) {
+        specs = F.list(arg2);
+      } else if (arg2.isList() && arg2.argSize() > 0) {
+        specs = (IAST) arg2;
+      } else {
+        return null;
+      }
+      if (!specs.forAll(spec -> spec.isAST(S.Distributed, 3) && spec.first().isSymbol()
+          && spec.second().isAST())) {
+        return null;
+      }
+      return specs;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      IAST specs = specifications(dist);
+      if (specs == null) {
+        return F.NIL;
+      }
+      EvalEngine engine = EvalEngine.get();
+      // draw all samples of each random variable at once
+      IAST[] samples = new IAST[specs.size()];
+      for (int i = 1; i < specs.size(); i++) {
+        IExpr sample = engine.evaluate(F.RandomVariate(specs.get(i).second(), F.ZZ(size)));
+        if (!sample.isList() || sample.argSize() != size) {
+          return F.NIL;
+        }
+        samples[i] = (IAST) sample;
+      }
+      IExpr property = dist.arg1();
+      IASTAppendable result = F.ListAlloc(size);
+      Map<IExpr, IExpr> values = new HashMap<IExpr, IExpr>();
+      for (int k = 1; k <= size; k++) {
+        for (int i = 1; i < specs.size(); i++) {
+          values.put(specs.get(i).first(), samples[i].get(k));
+        }
+        result.append(engine.evaluate(F.subst(property, values)));
+      }
+      return result;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      // the property is evaluated for the sampled values only, and the random variables stay
+      // symbols even if they have a value
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
   private StatisticsDerivedDistributions() {}
+
 }

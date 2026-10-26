@@ -1087,7 +1087,7 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "{{True,True},{True,False},{False,True}}");
 
     check("SatisfiabilityInstances(a || b, {a, b, c},All)", //
-        "{{True,True,True},{True,True,False},{True,False,True},{True,False,False},{False,True,True},{False,True,False},{False,False,True}}");
+        "{{True,True,True},{True,True,False},{True,False,True},{True,False,False},{False,True,True},{False,True,False}}");
     check("SatisfiabilityInstances((a || b || c) && (! a || ! b || ! c), {a, b, c},2)", //
         "{{False,True,True},{False,True,False}}");
 

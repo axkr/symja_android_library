@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Random;
+import org.matheclipse.core.basic.Config;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.distribution.RealDistribution;
@@ -10,6 +11,7 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.DMath;
@@ -25,6 +27,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICDF;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
 import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
+import org.matheclipse.core.interfaces.statistics.IDistribution;
 import org.matheclipse.core.interfaces.statistics.ICovariance;
 import org.matheclipse.core.interfaces.statistics.IGeneratingFunction;
 import org.matheclipse.core.interfaces.statistics.IPDF;
@@ -2675,6 +2678,8 @@ public class StatisticsContinousDistribution {
       S.RiceDistribution.setEvaluator(new RiceDistribution());
       S.UniformSumDistribution.setEvaluator(new UniformSumDistribution());
       S.HypoexponentialDistribution.setEvaluator(new HypoexponentialDistribution());
+      S.GaussianOrthogonalMatrixDistribution.setEvaluator(new GaussianMatrixEnsemble(false));
+      S.GaussianUnitaryMatrixDistribution.setEvaluator(new GaussianMatrixEnsemble(true));
     }
   }
 
@@ -8688,6 +8693,122 @@ public class StatisticsContinousDistribution {
       // Sum(1/lambda_i^2)
       return rates != null ? rates.map(S.Plus, x -> F.Power(x, F.CN2)) : F.NIL;
     }
+  }
+
+
+  /**
+   * <code>GaussianOrthogonalMatrixDistribution([sigma,] n)</code> and
+   * <code>GaussianUnitaryMatrixDistribution([sigma,] n)</code> - the Gaussian ensembles of
+   * <code>n x n</code> random matrices with the default scale <code>sigma = 1</code>.
+   *
+   * <p>
+   * A sample of the orthogonal ensemble is a real symmetric matrix and a sample of the unitary
+   * ensemble a Hermitian matrix. The diagonal entries are real and normally distributed with
+   * variance <code>sigma^2</code>. The entries above the diagonal have variance
+   * <code>sigma^2/2</code>; for the unitary ensemble the real and the imaginary part each have
+   * variance <code>sigma^2/2</code>.
+   */
+  private static final class GaussianMatrixEnsemble extends AbstractEvaluator
+      implements IDistribution, IRandomVariate {
+
+    /** <code>true</code> for the unitary (Hermitian) ensemble. */
+    private final boolean unitary;
+
+    GaussianMatrixEnsemble(boolean unitary) {
+      this.unitary = unitary;
+    }
+
+    /** The scale parameter <code>sigma</code>, the default <code>1</code> for one argument. */
+    private static IExpr scale(IAST dist) {
+      return dist.isAST2() ? dist.arg1() : F.C1;
+    }
+
+    /** The matrix size <code>n</code> is the last argument. */
+    private static IExpr size(IAST dist) {
+      return dist.isAST2() ? dist.arg2() : dist.arg1();
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      if (dist.isAST1() || dist.isAST2()) {
+        int n = size(dist).toIntDefault();
+        if (n > 0) {
+          return F.constantArray(F.C0, n, n);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr parameterAssumptions(IAST dist) {
+      if (dist.isAST1() || dist.isAST2()) {
+        IExpr n = size(dist);
+        return F.And(F.Greater(scale(dist), F.C0), F.Element(n, S.Integers),
+            F.Greater(n, F.C0));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (!dist.isAST1() && !dist.isAST2()) {
+        return F.NIL;
+      }
+      int n = size(dist).toIntDefault();
+      double sigma = scale(dist).evalfNaN();
+      if (n <= 0 || !(sigma > 0.0) || Double.isInfinite(sigma)) {
+        return F.NIL;
+      }
+      long total = (long) size * n * n;
+      if (total >= Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(total);
+      }
+      // standard deviation of the (real and imaginary parts of the) off-diagonal entries
+      final double offDiagonal = sigma / Math.sqrt(2.0);
+      IASTAppendable result = F.ListAlloc(size);
+      for (int k = 0; k < size; k++) {
+        IExpr[][] matrix = new IExpr[n][n];
+        for (int i = 0; i < n; i++) {
+          matrix[i][i] = F.num(sigma * random.nextGaussian());
+          for (int j = i + 1; j < n; j++) {
+            double re = offDiagonal * random.nextGaussian();
+            if (unitary) {
+              double im = offDiagonal * random.nextGaussian();
+              matrix[i][j] = F.complexNum(re, im);
+              matrix[j][i] = F.complexNum(re, -im);
+            } else {
+              IExpr entry = F.num(re);
+              matrix[i][j] = entry;
+              matrix[j][i] = entry;
+            }
+          }
+        }
+        IASTAppendable rows = F.ListAlloc(n);
+        for (int i = 0; i < n; i++) {
+          rows.append(F.List(matrix[i]));
+        }
+        result.append(rows);
+      }
+      return result;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
 }

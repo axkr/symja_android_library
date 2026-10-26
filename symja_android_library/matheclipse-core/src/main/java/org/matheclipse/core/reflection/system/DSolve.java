@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.dsolve.DSolveEngine;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -135,6 +136,8 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       final EvalEngine engine, IAST originalAST) {
     // an `And(...)` of equations is equivalent to a `List(...)` of equations
     IAST arg1 = SolveUtils.toEquationList(ast.arg1()).makeList();
+    // nested lists, like {{equations}, {initial conditions}}, are one list of equations
+    arg1 = EvalAttributes.flattenDeep(S.List, arg1).orElse(arg1);
 
     // The unknown and the variable it depends on can be read off the equations when they are not
     // given: DSolve(y'(x) == y(x)) asks about y and x, and there is nothing else it could mean.

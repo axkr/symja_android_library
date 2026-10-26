@@ -146,6 +146,29 @@ public final class OperatorTable {
     return characters.contains(ch);
   }
 
+  /** The precedences of the infix operators of the parse-only rows, collected on first use. */
+  private static volatile java.util.Map<String, Integer> parseOnlyInfixPrecedences;
+
+  /**
+   * The precedence of the infix operator a parse-only row reads into <code>head</code>, or
+   * <code>-1</code> if there is none. Such a row isn't registered under its head, so a lookup of
+   * the head in a parser factory doesn't find it; see {@link Row#outputForm}.
+   */
+  public static int parseOnlyInfixPrecedence(String head) {
+    java.util.Map<String, Integer> precedences = parseOnlyInfixPrecedences;
+    if (precedences == null) {
+      precedences = new java.util.HashMap<String, Integer>();
+      for (Row row : ROWS) {
+        if (!row.outputForm && row.affix == Affix.INFIX) {
+          precedences.putIfAbsent(row.head, row.precedence);
+        }
+      }
+      parseOnlyInfixPrecedences = precedences;
+    }
+    Integer precedence = precedences.get(head);
+    return precedence == null ? -1 : precedence;
+  }
+
   private static void addCharacters(java.util.Set<Character> characters, String token) {
     for (int i = 0; i < token.length(); i++) {
       if (token.charAt(i) >= 128) {
@@ -434,8 +457,8 @@ public final class OperatorTable {
       inputOnlyRow("\uf3c8", "Conjugate", Affix.POSTFIX, 670, Grouping.FLAT),
       inputOnlyRow("\uf3c9", "ConjugateTranspose", Affix.POSTFIX, 670, Grouping.FLAT),
       inputOnlyRow("\uf3d1", "NotVerticalBar", Affix.INFIX, 280, Grouping.FLAT),
-      row("\uf3d2", "Distributed", Affix.INFIX, 250, Grouping.FLAT),
-      row("\uf3d3", "Conditioned", Affix.INFIX, 195, Grouping.FLAT),
+      inputOnlyRow("\uf3d2", "Distributed", Affix.INFIX, 250, Grouping.FLAT),
+      inputOnlyRow("\uf3d3", "Conditioned", Affix.INFIX, 195, Grouping.FLAT),
       row("\uf3d4", "UndirectedEdge", Affix.INFIX, 295, Grouping.RIGHT),
       row("\uf3d5", "DirectedEdge", Affix.INFIX, 295, Grouping.RIGHT),
       row("\uf3da", "TensorProduct", Affix.INFIX, 487, Grouping.FLAT),

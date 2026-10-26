@@ -254,7 +254,9 @@ public class ImageOptionsTest {
     assertEquals(reals, ImageExpr.toImageExpr(colour, "RGB").getMatrix());
     assertEquals(reals, ImageExpr.toImageExpr(colour, "Automatic").getMatrix());
     assertNull(ImageExpr.toImageExpr(colour, "Grayscale").getMatrix(), "three channels into one");
-    assertNull(ImageExpr.toImageExpr(colour, "HSB").getMatrix());
+    // an HSB image keeps its samples, which are not those of the RGB picture it is shown from
+    assertEquals(reals, ImageExpr.toImageExpr(colour, "HSB").getMatrix());
+    // three samples are no CMYK colour
     assertNull(ImageExpr.toImageExpr(colour, "CMYK").getMatrix());
 
     // one intensity is left alone by "Grayscale", so that matrix survives

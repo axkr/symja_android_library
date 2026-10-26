@@ -219,7 +219,13 @@ public class ApfloatNum implements INum {
   public static ApfloatNum promotedLiteral(final String mantissa, final long exponent,
       final long precision) {
     Apfloat value = new Apfloat(mantissa, Math.max(precision, ParserConfig.MACHINE_PRECISION));
-    return valueOf(exponent == 0 ? value : ApfloatMath.scale(value, exponent));
+    value = exponent == 0 ? value : ApfloatMath.scale(value, exponent);
+    if (precision <= ParserConfig.MACHINE_PRECISION) {
+      // the digits of a machine number: the precision is the one of a machine number, the real
+      // number log10(2^53)
+      return valueOf(value, ParserConfig.MACHINE_PRECISION_DOUBLE);
+    }
+    return valueOf(value);
   }
 
   public static ApfloatNum valueOf(final BigInteger numerator) {
@@ -1723,6 +1729,10 @@ public class ApfloatNum implements INum {
    * <code>20.3</code> and <code>5.19597</code> with up to 6 digits.
    */
   private static String digitsString(double digits) {
+    if (digits == ParserConfig.MACHINE_PRECISION_DOUBLE) {
+      // the machine precision with all its digits, so that it is read back unchanged
+      return Double.toString(digits);
+    }
     final double rounded = Math.rint(digits);
     if (Math.abs(digits - rounded) < 1.0e-9) {
       return Long.toString((long) rounded);

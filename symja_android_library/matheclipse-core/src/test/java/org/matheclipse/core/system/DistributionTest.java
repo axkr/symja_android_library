@@ -293,7 +293,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "E^E");
     // the true series diverges - the closed form of the sum is not valid here
     check("Expectation(3^x, Distributed(x, GeometricDistribution(1/5)))", //
-        "Expectation(3^x,x\uF3D2GeometricDistribution(1/5))");
+        "Expectation(3^x,Distributed(x,GeometricDistribution(1/5)))");
     // numeric cross checks of the symbolic closed forms
     check("N(Expectation(E^(2*x) + 3, Distributed(x, PoissonDistribution(1/2))))", //
         "27.39866");

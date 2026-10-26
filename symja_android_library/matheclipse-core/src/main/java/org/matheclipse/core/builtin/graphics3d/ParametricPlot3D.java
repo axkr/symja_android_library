@@ -390,6 +390,12 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  protected boolean compoundIteratorVariables() {
+    // a plot variable like x(1) is replaced by a unique symbol
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     GraphicsOptions.OptionSet options = Plot3DTools.surfacePlot();
     setOptions(newSymbol, options.keys(), options.values());

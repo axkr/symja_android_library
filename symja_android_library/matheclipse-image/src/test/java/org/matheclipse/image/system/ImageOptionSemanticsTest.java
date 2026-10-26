@@ -171,15 +171,15 @@ public class ImageOptionSemanticsTest extends AbstractTestCase {
         "4");
   }
 
-  /** The spaces that do work are unchanged: the samples are interpreted, and RGB is stored. */
+  /** An image of a working space keeps its samples, and is decoded by ColorConvert. */
   @Test
-  public void aWorkingColorSpaceStillOnlyInterpretsTheSamples() {
-    check("ImageData(Image({{{0.0,1.0,1.0}}},ColorSpace->\"HSB\"),\"Byte\")=={{{255,0,0}}}", //
+  public void aWorkingColorSpaceKeepsTheSamples() {
+    check("ImageData(Image({{{0.0,1.0,1.0}}},ColorSpace->\"HSB\"),\"Byte\")=={{{0,255,255}}}", //
         "True");
     check("ImageColorSpace(Image({{{0.0,1.0,1.0}}},ColorSpace->\"HSB\"))", //
-        "RGB");
-    check("ImageData(Image({{{0.0,0.0,0.0,0.0}}},ColorSpace->\"CMYK\"),\"Byte\")"
-        + "=={{{255,255,255}}}", //
+        "HSB");
+    check("ImageData(ColorConvert(Image({{{0.0,0.0,0.0,0.0}}},ColorSpace->\"CMYK\"),\"RGB\"),"
+        + "\"Byte\")=={{{255,255,255}}}", //
         "True");
   }
 

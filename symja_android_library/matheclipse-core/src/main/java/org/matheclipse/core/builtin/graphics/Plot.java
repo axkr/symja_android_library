@@ -436,6 +436,12 @@ public class Plot extends ListPlot {
   }
 
   @Override
+  protected boolean compoundIteratorVariables() {
+    // a plot variable like x(1) is replaced by a unique symbol
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
     // Explicitly default AspectRatio to 1/GoldenRatio for Plot (NOT Automatic)

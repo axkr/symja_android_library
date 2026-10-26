@@ -78,7 +78,7 @@ public class ImageStructureFunctions {
       }
       IExpr function = ast.arg1();
       int channels = image.channels;
-      int colorChannels = image.colorChannels();
+      int colorChannels = colorChannels(source, image);
       int width = image.width;
       int height = image.height;
       boolean[][] mask = Masks.of(maskSpec, width, height);
@@ -168,7 +168,7 @@ public class ImageStructureFunctions {
       }
       IExpr function = ast.arg1();
       int channels = image.channels;
-      int colorChannels = image.colorChannels();
+      int colorChannels = colorChannels(source, image);
       int width = image.width;
       int height = image.height;
 
@@ -484,6 +484,14 @@ public class ImageStructureFunctions {
   }
 
   // -------------------------------------------------------------------- internals
+
+  /**
+   * The channels a function is applied to: all four of a CMYK image, otherwise the channels without
+   * the alpha channel.
+   */
+  private static int colorChannels(ImageExpr source, Raster image) {
+    return "CMYK".equals(source.storedColorSpace()) ? image.channels : image.colorChannels();
+  }
 
   /** The samples of one pixel as the argument of the user function. */
   private static IExpr samplesOf(double[] values, int colorChannels) {

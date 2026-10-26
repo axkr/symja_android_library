@@ -1248,18 +1248,18 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     // linear relations which couple the variables are reduced by Fourier-Motzkin elimination, each
     // variable bounded by the ones before it
     check("Reduce(x + y < 1 && x > 0 && y > 0, {x, y}, Reals)", //
-        "x>0&&x<1&&y>0&&y<1-x");
+        "0<x<1&&0<y<1-x");
     check("Reduce(x + y < 1 && x > 0 && y > 0, {x, y})", //
-        "x>0&&x<1&&y>0&&y<1-x");
+        "0<x<1&&0<y<1-x");
     check("Reduce(2*x + 3*y <= 6 && x >= 0 && y >= 0, {x, y}, Reals)", //
-        "x>=0&&x<=3&&y>=0&&y<=2-2/3*x");
+        "0<=x<=3&&0<=y<=2-2/3*x");
     check("Reduce(x + y == 1 && x > 0, {x, y}, Reals)", //
         "x>0&&y==1-x");
     check("Reduce(x != y && x > 0, {x, y}, Reals)", //
         "x>0&&(y>x||y<x)");
     // a parameter is the outermost variable
     check("Reduce(x + y < a && x > 0 && y > 0, {x, y}, Reals)", //
-        "a>0&&x>0&&x<a&&y>0&&y<a-x");
+        "a>0&&0<x<a&&0<y<a-x");
     // a nonlinear coupling, of degree 1 in the second variable
     check("Reduce(x*y > 0, {x, y}, Reals)", //
         "(x<0&&y<0)||(x>0&&y>0)");
