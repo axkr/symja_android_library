@@ -1068,6 +1068,7 @@ public interface IPatternMap {
     }
   }
 
+  // CPD-OFF pattern maps specialized per number of pattern variables
   static final class PatternMap4 implements IPatternMap {
 
     @Override
@@ -2482,6 +2483,7 @@ public interface IPatternMap {
       return buf.toString();
     }
   }
+  // CPD-ON
 
 
   /** A map from a pattern to a possibly found value during pattern-matching. */

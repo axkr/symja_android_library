@@ -108,7 +108,7 @@ class LongIterator implements Iterator<Long> {
      * Set the upper bound for the iterator.
      * @param ub an upper bound for the iterator elements.
      */
-    public void setUpperBound(long ub) {
+    public synchronized void setUpperBound(long ub) {
         upperBound = ub;
     }
 
@@ -117,7 +117,7 @@ class LongIterator implements Iterator<Long> {
      * Get the upper bound for the iterator.
      * @return the upper bound for the iterator elements.
      */
-    public long getUpperBound() {
+    public synchronized long getUpperBound() {
         return upperBound;
     }
 

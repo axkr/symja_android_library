@@ -1303,6 +1303,7 @@ public final class ExprTermOrder implements Serializable {
     return sugar;
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Comparison with any other object.
    *
@@ -1638,6 +1639,7 @@ public final class ExprTermOrder implements Serializable {
     return new ExprTermOrder(DEFAULT_EVORD /* evord */, evord, r + k, k); // don't change to evord,
                                                                           // cause REVITDG
   }
+  // CPD-ON
 
   /**
    * Extend lower variables. Extend ExprTermOrder by k elements. <b>Note:</b> todo distinguish TOP

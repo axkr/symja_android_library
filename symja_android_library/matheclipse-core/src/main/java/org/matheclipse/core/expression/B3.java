@@ -863,6 +863,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   @Override
   public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
     if (start < end) {
@@ -975,6 +976,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
         throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
     }
   }
+  // CPD-ON
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {

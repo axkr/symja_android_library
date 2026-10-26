@@ -143,16 +143,6 @@ public final class ExpVectorShort extends ExpVector
     }
 
 
-    /**
-     * Value of other.
-     * @param e other ExpVector.
-     * @return value in sub class of ExpVector.
-     */
-    //@Override
-    public static ExpVector valueOf(ExpVector e) {
-        return new ExpVectorShort(e.getVal());
-    }
-
 
     /**
      * Clone this.

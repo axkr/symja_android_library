@@ -1078,93 +1078,21 @@ public class OutputFormFactory {
 
   public void convertComplex(final Appendable buf, final IComplex c, final int precedence,
       boolean caller) throws IOException {
-    if (fComplexReImI) {
-      convertComplexReImI(buf, c, precedence, caller);
-      return;
-    }
-    boolean isReZero = c.getRealPart().isZero();
-    final boolean isImOne = c.getImaginaryPart().isOne();
-    final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
-    if (!isReZero && (Precedence.PLUS < precedence)) {
-      if (caller == PLUS_CALL) {
-        append(buf, fInputForm ? " + " : "+");
-        caller = false;
-      }
-      append(buf, "(");
-    }
-    if (!isReZero) {
-      convertFraction(buf, c.getRealPart(), Precedence.PLUS, caller);
-    }
-    if (isImOne) {
-      if (isReZero) {
-        if (caller == PLUS_CALL) {
-          append(buf, fInputForm ? " + " : "+");
-          caller = false;
-        }
-        append(buf, "I");
-        return;
-      } else {
-        append(buf, fInputForm ? " + I" : "+I");
-      }
-    } else if (isImMinusOne) {
-      append(buf, fInputForm ? " - I" : "-I");
-    } else {
-      final IRational im = c.getImaginaryPart();
-      int oldColumnCounter = fColumnCounter;
-      StringBuilder imagBuf = new StringBuilder();
-      try {
-        if (im.isNegative()) {
-          if (isReZero && (Precedence.TIMES < precedence)) {
-            if (caller == PLUS_CALL) {
-              append(buf, fInputForm ? " + " : "+");
-            }
-            append(buf, "(");
-          }
-          append(buf, fInputForm ? " - " : "-");
-          oldColumnCounter = fColumnCounter;
-          fColumnCounter = 0;
-          append(imagBuf, "I*");
-          convertFraction(imagBuf, im.negate(), Precedence.TIMES, NO_PLUS_CALL);
-        } else {
-          if (isReZero) {
-            if (caller == PLUS_CALL) {
-              append(buf, fInputForm ? " + " : "+");
-            }
-            if (Precedence.TIMES < precedence) {
-              append(buf, "(");
-            }
-            oldColumnCounter = fColumnCounter;
-            fColumnCounter = 0;
-            append(imagBuf, "I*");
-          } else {
-            append(buf, fInputForm ? " + " : "+");
-            oldColumnCounter = fColumnCounter;
-            fColumnCounter = 0;
-            append(imagBuf, "I*");
-          }
-          convertFraction(imagBuf, im, Precedence.TIMES, NO_PLUS_CALL);
-        }
-
-      } finally {
-        fColumnCounter = oldColumnCounter;
-      }
-      String str = imagBuf.toString();
-      if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
-        newLine(buf);
-      }
-      append(buf, str);
-      if (isReZero && (Precedence.TIMES < precedence)) {
-        append(buf, ")");
-      }
-    }
-
-    if (!isReZero && (Precedence.PLUS < precedence)) {
-      append(buf, ")");
-    }
+    convertComplex(buf, c, precedence, caller, fComplexReImI);
   }
 
+  /** Print a complex number with the imaginary unit after the imaginary part: <code>b*I</code>. */
   public void convertComplexReImI(final Appendable buf, final IComplex c, final int precedence,
       boolean caller) throws IOException {
+    convertComplex(buf, c, precedence, caller, true);
+  }
+
+  /**
+   * @param imaginaryUnitLast print the imaginary part as <code>b*I</code> instead of
+   *        <code>I*b</code>
+   */
+  private void convertComplex(final Appendable buf, final IComplex c, final int precedence,
+      boolean caller, boolean imaginaryUnitLast) throws IOException {
     boolean isReZero = c.getRealPart().isZero();
     final boolean isImOne = c.getImaginaryPart().isOne();
     final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
@@ -1192,7 +1120,7 @@ public class OutputFormFactory {
     } else if (isImMinusOne) {
       append(buf, fInputForm ? " - I" : "-I");
     } else {
-      final IRational im = c.getImaginaryPart();
+      IRational im = c.getImaginaryPart();
       int oldColumnCounter = fColumnCounter;
       StringBuilder imagBuf = new StringBuilder();
       try {
@@ -1204,28 +1132,26 @@ public class OutputFormFactory {
             append(buf, "(");
           }
           append(buf, fInputForm ? " - " : "-");
-          oldColumnCounter = fColumnCounter;
-          fColumnCounter = 0;
-          convertFraction(imagBuf, im.negate(), Precedence.TIMES, NO_PLUS_CALL);
-        } else {
-          if (isReZero) {
-            if (caller == PLUS_CALL) {
-              append(buf, fInputForm ? " + " : "+");
-            }
-            if (Precedence.TIMES < precedence) {
-              append(buf, "(");
-            }
-            oldColumnCounter = fColumnCounter;
-            fColumnCounter = 0;
-          } else {
+          im = im.negate();
+        } else if (isReZero) {
+          if (caller == PLUS_CALL) {
             append(buf, fInputForm ? " + " : "+");
-            oldColumnCounter = fColumnCounter;
-            fColumnCounter = 0;
           }
-          convertFraction(imagBuf, im, Precedence.TIMES, NO_PLUS_CALL);
+          if (Precedence.TIMES < precedence) {
+            append(buf, "(");
+          }
+        } else {
+          append(buf, fInputForm ? " + " : "+");
         }
-        append(imagBuf, "*I");
-
+        oldColumnCounter = fColumnCounter;
+        fColumnCounter = 0;
+        if (!imaginaryUnitLast) {
+          append(imagBuf, "I*");
+        }
+        convertFraction(imagBuf, im, Precedence.TIMES, NO_PLUS_CALL);
+        if (imaginaryUnitLast) {
+          append(imagBuf, "*I");
+        }
       } finally {
         fColumnCounter = oldColumnCounter;
       }

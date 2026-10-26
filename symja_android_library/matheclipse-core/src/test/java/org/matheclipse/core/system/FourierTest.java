@@ -321,9 +321,8 @@ public class FourierTest extends ExprEvaluatorTestCase {
     check("InverseFourier({1, 0, 0, 0}, {1, 3})", //
         "{0.5,0.5}");
 
-    // Full: InverseFourier({0, 1, 0, 0}) -> {0.5, -0.5I, -0.5, 0.5I}
-    // Explanation: 0.5 * e^(-2pi*i*1*s/4) for s=0..3 (indices 1..4)
-    // s=1 (idx 2): 0.5 * -i = -0.5I
+    // Selected positions use the exponent e^(+2pi*i*r*s/4), unlike the full InverseFourier
+    // s=1 (idx 2): 0.5 * i = 0.5I
     check("InverseFourier({0, 1, 0, 0}, {2})", //
         "{3.06162*10^-17+I*0.5}");
 
@@ -353,11 +352,23 @@ public class FourierTest extends ExprEvaluatorTestCase {
     // Larger list specific positions
     // InverseFourier of {1, 2, 3, 4} (n=4)
     // Scale 0.5. Sum = 10 -> DC = 5.0.
-    // Index 2 (k=1): 0.5 * (1 - 2i - 3 + 4i) = 0.5 * (-2 + 2i) = -1 + I
+    // Index 2 (k=1): 0.5 * (1 + 2i - 3 - 4i) = -1 - I
     // Index 3 (k=2): 0.5 * (1 - 2 + 3 - 4) = -1
-    // Index 4 (k=3): 0.5 * (1 + 2i - 3 - 4i) = -1 - I
+    // Index 4 (k=3): 0.5 * (1 - 2i - 3 + 4i) = -1 + I
     check("InverseFourier({1, 2, 3, 4}, {1, 2, 3, 4})", //
         "{5.0,-1.0+I*(-1.0),-1.0+I*4.89859*10^-16,-1.0+I*1.0}");
+
+    // a length which is no power of 2, and FourierParameters
+    check("InverseFourier({1, 2, 3, 4, 5}, {2, 5})", //
+        "{-1.11803+I*(-1.53884),-1.11803+I*1.53884}");
+    check("InverseFourier({1, 2, 3}, {2}, FourierParameters -> {1, -1})", //
+        "{-0.5+I*0.288675}");
+
+    // a negative position counts from the end
+    check("InverseFourier({1, 2, 3, 4}, {-1})", //
+        "{-1.0+I*1.0}");
+    check("Fourier({1, 2, 3, 4}, {-1})", //
+        "{-1.0+I*1.0}");
   }
 
   @Test

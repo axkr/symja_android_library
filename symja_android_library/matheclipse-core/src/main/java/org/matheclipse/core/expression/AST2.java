@@ -165,6 +165,7 @@ public class AST2 extends AST1 {
     return false;
   }
 
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
@@ -245,6 +246,7 @@ public class AST2 extends AST1 {
     }
     return true;
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override

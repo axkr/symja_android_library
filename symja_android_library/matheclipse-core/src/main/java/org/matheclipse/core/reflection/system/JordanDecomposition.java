@@ -114,36 +114,51 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Computes the Jordan decomposition bottom-up. This algorithm solves B * v_{k+1} = v_k starting
-   * from the null space. It matches similarity matrix S by inheriting standard basis vectors
-   * directly from NullSpace() and LinearSolve().
+   * The eigenvalues of <code>matrix</code> with their algebraic multiplicities.
+   *
+   * @return <code>null</code> if the eigenvalues are not computed
    */
-  private IExpr computeBottomUp(IExpr matrix, int n, EvalEngine engine) {
+  private static Map<IExpr, Integer> eigenvalueCounts(IExpr matrix, EvalEngine engine) {
     IExpr eigenvaluesExpr = engine.evaluate(F.Eigenvalues(matrix));
     if (!eigenvaluesExpr.isList()) {
-      return F.NIL;
+      return null;
     }
-    IAST eigenvaluesList = (IAST) eigenvaluesExpr;
-
     Map<IExpr, Integer> rootCounts = new LinkedHashMap<>();
-    for (int i = 1; i <= eigenvaluesList.argSize(); i++) {
-      IExpr root = eigenvaluesList.get(i);
+    for (IExpr root : (IAST) eigenvaluesExpr) {
       rootCounts.put(root, rootCounts.getOrDefault(root, 0) + 1);
     }
+    return rootCounts;
+  }
 
-    // Sort eigenvalues in canonical order
-    List<IExpr> sortedRoots = new ArrayList<>(rootCounts.keySet());
-    sortedRoots.sort(IExpr::compareTo);
-
-    IASTAppendable sCols = F.ListAlloc(n);
-    IASTAppendable jMatrix = F.ListAlloc(n);
+  /** An <code>n x n</code> matrix of zeros whose rows can be changed. */
+  private static IASTAppendable zeroMatrix(int n) {
+    IASTAppendable matrix = F.ListAlloc(n);
     for (int i = 0; i < n; i++) {
       IASTAppendable row = F.ListAlloc(n);
       for (int j = 0; j < n; j++) {
         row.append(F.C0);
       }
-      jMatrix.append(row);
+      matrix.append(row);
     }
+    return matrix;
+  }
+
+  /**
+   * Computes the Jordan decomposition bottom-up. This algorithm solves B * v_{k+1} = v_k starting
+   * from the null space. It matches similarity matrix S by inheriting standard basis vectors
+   * directly from NullSpace() and LinearSolve().
+   */
+  private IExpr computeBottomUp(IExpr matrix, int n, EvalEngine engine) {
+    Map<IExpr, Integer> rootCounts = eigenvalueCounts(matrix, engine);
+    if (rootCounts == null) {
+      return F.NIL;
+    }
+    // Sort eigenvalues in canonical order
+    List<IExpr> sortedRoots = new ArrayList<>(rootCounts.keySet());
+    sortedRoots.sort(IExpr::compareTo);
+
+    IASTAppendable sCols = F.ListAlloc(n);
+    IASTAppendable jMatrix = zeroMatrix(n);
 
     IExpr identity = engine.evaluate(F.IdentityMatrix(n));
     int currentIndex = 1;
@@ -209,31 +224,16 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
    * bases.
    */
   private IExpr computeTopDown(IExpr matrix, int n, EvalEngine engine) {
-    IExpr eigenvaluesExpr = engine.evaluate(F.Eigenvalues(matrix));
-    if (!eigenvaluesExpr.isList()) {
+    Map<IExpr, Integer> rootCounts = eigenvalueCounts(matrix, engine);
+    if (rootCounts == null) {
       return F.NIL;
     }
-    IAST eigenvaluesList = (IAST) eigenvaluesExpr;
-
-    Map<IExpr, Integer> rootCounts = new LinkedHashMap<>();
-    for (int i = 1; i <= eigenvaluesList.argSize(); i++) {
-      IExpr root = eigenvaluesList.get(i);
-      rootCounts.put(root, rootCounts.getOrDefault(root, 0) + 1);
-    }
-
     // Sort eigenvalues in canonical order
     List<IExpr> sortedRoots = new ArrayList<>(rootCounts.keySet());
     sortedRoots.sort(IExpr::compareTo);
 
     IASTAppendable sCols = F.ListAlloc(n);
-    IASTAppendable jMatrix = F.ListAlloc(n);
-    for (int i = 0; i < n; i++) {
-      IASTAppendable row = F.ListAlloc(n);
-      for (int j = 0; j < n; j++) {
-        row.append(F.C0);
-      }
-      jMatrix.append(row);
-    }
+    IASTAppendable jMatrix = zeroMatrix(n);
 
     IExpr identity = engine.evaluate(F.IdentityMatrix(n));
     int currentIndex = 1;

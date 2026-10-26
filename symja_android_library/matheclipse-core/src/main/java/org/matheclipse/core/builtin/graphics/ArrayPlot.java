@@ -50,19 +50,9 @@ public class ArrayPlot extends ListPlot {
       return F.NIL;
     }
 
-    IExpr dataArg = engine.evaluate(ast.arg1());
-    if (!dataArg.isList()) {
-      // a SparseArray or a packed numeric matrix is not a list until it is expanded into one
-      dataArg = dataArg.normal(false);
-      if (!dataArg.isList()) {
-        return F.NIL;
-      }
-    }
-    // MaxPlotPoints paints a large array from a sample of it rather than from every cell
-    IAST thinned = GraphicsOptions.downsampleMatrix((IAST) dataArg,
-        GraphicsOptions.optionValue(originalAST, S.MaxPlotPoints, S.Automatic).toIntDefault(-1));
-    if (thinned.isPresent()) {
-      dataArg = thinned;
+    IExpr dataArg = GraphicsOptions.matrixPlotData(ast.arg1(), originalAST, engine);
+    if (dataArg.isNIL()) {
+      return F.NIL;
     }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);

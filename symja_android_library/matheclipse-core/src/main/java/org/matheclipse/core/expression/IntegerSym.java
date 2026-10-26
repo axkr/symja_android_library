@@ -795,6 +795,7 @@ public class IntegerSym extends AbstractIntegerSym {
     return this;
   }
 
+  // CPD-OFF same algorithm on int and on BigInteger, kept apart for speed
   /**
    * Returns the nth-root of this integer.
    *
@@ -865,6 +866,7 @@ public class IntegerSym extends AbstractIntegerSym {
     result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
     return result;
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override

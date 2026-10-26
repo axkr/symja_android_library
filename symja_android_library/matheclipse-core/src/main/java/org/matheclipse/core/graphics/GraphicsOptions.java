@@ -2003,6 +2003,27 @@ public class GraphicsOptions {
   }
 
   /**
+   * The data of a plot of a matrix: <code>arg</code> evaluated, a {@code SparseArray} or packed
+   * array expanded into a list, and a matrix thinned to the {@code MaxPlotPoints} option of
+   * <code>originalAST</code> (see {@link #downsampleMatrix(IAST, int)}).
+   *
+   * @return the data list, or {@link F#NIL} if <code>arg</code> is no list
+   */
+  public static IExpr matrixPlotData(IExpr arg, IAST originalAST, EvalEngine engine) {
+    IExpr dataArg = engine.evaluate(arg);
+    if (!dataArg.isList()) {
+      // a SparseArray or a packed numeric matrix is not a list until it is expanded into one
+      dataArg = dataArg.normal(false);
+      if (!dataArg.isList()) {
+        return F.NIL;
+      }
+    }
+    IAST thinned = downsampleMatrix((IAST) dataArg,
+        optionValue(originalAST, S.MaxPlotPoints, S.Automatic).toIntDefault(-1));
+    return thinned.isPresent() ? thinned : dataArg;
+  }
+
+  /**
    * Thin a matrix down to at most {@code maxPoints} rows and columns.
    *
    * <p>

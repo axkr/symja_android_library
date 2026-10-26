@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /** Evaluate a function with 2 arguments. */
 public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 
+  // CPD-OFF numeric argument dispatch of separate evaluator hierarchies, kept apart for speed
   public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1, EvalEngine engine) {
     IExpr result = F.NIL;
     try {
@@ -146,6 +147,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 
     return F.NIL;
   }
+  // CPD-ON
 
   public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
     return F.NIL;

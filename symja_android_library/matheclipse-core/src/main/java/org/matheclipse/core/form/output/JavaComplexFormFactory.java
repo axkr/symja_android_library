@@ -298,31 +298,8 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
           convertInternal(buf, function.first());
           return;
         }
-        if (function.isPower()) {
-          IExpr base = function.base();
-          IExpr exponent = function.exponent();
-          if (exponent.isMinusOne()) {
-            buf.append("1.0/(");
-            convertInternal(buf, base);
-            buf.append(")");
-            return;
-          }
-          if (exponent.isNumEqualRational(F.C1D2)) {
-            buf.append("Math.sqrt(");
-            convertInternal(buf, base);
-            buf.append(")");
-            return;
-          }
-          if (exponent.isNumEqualRational(F.C1D3)) {
-            buf.append("Math.cbrt(");
-            convertInternal(buf, base);
-            buf.append(")");
-            return;
-          }
-          buf.append("Math.pow");
-          convertArgs(buf, head, function, 1);
-          return;
-        } else if (function.isDirectedInfinity()) {
+        // Power never gets here: FUNCTIONS_STR maps it to ".pow", handled above
+        if (function.isDirectedInfinity()) {
           if (function.isInfinity()) {
             buf.append("Complex.INF");
             return;

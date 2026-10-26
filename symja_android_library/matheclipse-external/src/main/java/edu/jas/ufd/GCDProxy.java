@@ -85,7 +85,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
    * 
    * @throws PreemptingException if the current thread has been interrupted.
    */
-  protected static void checkInterrupted() {
+  protected static void checkProxyInterrupted() {
     checkInterrupted("gcd proxy interrupted");
   }
 
@@ -104,7 +104,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
         throw new RuntimeException("this should not happen");
       }
     }
-    checkInterrupted();
+    checkProxyInterrupted();
     if (S == null || S.isZERO()) {
       return P;
     }
@@ -120,7 +120,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e1 " + e1.getClass().getName());
           GenPolynomial<C> g = e1.baseGcd(P, S);
@@ -145,7 +145,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e2 " + e2.getClass().getName());
           GenPolynomial<C> g = e2.baseGcd(P, S);
@@ -194,7 +194,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
         throw new RuntimeException("this should not happen");
       }
     }
-    checkInterrupted();
+    checkProxyInterrupted();
     if (S == null || S.isZERO()) {
       return P;
     }
@@ -211,7 +211,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<GenPolynomial<C>> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           GenPolynomial<GenPolynomial<C>> g = e1.recursiveUnivariateGcd(P, S);
           if (debug) {
@@ -235,7 +235,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<GenPolynomial<C>> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           GenPolynomial<GenPolynomial<C>> g = e2.recursiveUnivariateGcd(P, S);
           if (debug) {
@@ -282,7 +282,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
         throw new RuntimeException("this should not happen");
       }
     }
-    checkInterrupted();
+    checkProxyInterrupted();
     if (S == null || S.isZERO()) {
       return P;
     }
@@ -298,7 +298,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e1 " + e1.getClass().getName());
           GenPolynomial<C> g = e1.gcd(P, S);
@@ -323,7 +323,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e2 " + e2.getClass().getName());
           GenPolynomial<C> g = e2.gcd(P, S);
@@ -371,7 +371,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
         throw new RuntimeException("this should not happen");
       }
     }
-    checkInterrupted();
+    checkProxyInterrupted();
     if (S == null || S.isZERO()) {
       return S;
     }
@@ -387,7 +387,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e1 " + e1.getClass().getName());
           GenPolynomial<C> g = e1.baseResultant(P, S);
@@ -412,7 +412,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e2 " + e2.getClass().getName());
           GenPolynomial<C> g = e2.baseResultant(P, S);
@@ -461,7 +461,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
         throw new RuntimeException("this should not happen");
       }
     }
-    checkInterrupted();
+    checkProxyInterrupted();
     if (S == null || S.isZERO()) {
       return S;
     }
@@ -478,7 +478,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<GenPolynomial<C>> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           GenPolynomial<GenPolynomial<C>> g = e1.recursiveUnivariateResultant(P, S);
           if (debug) {
@@ -502,7 +502,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<GenPolynomial<C>> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           GenPolynomial<GenPolynomial<C>> g = e2.recursiveUnivariateResultant(P, S);
           if (debug) {
@@ -549,7 +549,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
         throw new RuntimeException("this should not happen");
       }
     }
-    checkInterrupted();
+    checkProxyInterrupted();
     if (S == null || S.isZERO()) {
       return S;
     }
@@ -565,7 +565,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e1 " + e1.getClass().getName());
           GenPolynomial<C> g = e1.resultant(P, S);
@@ -590,7 +590,7 @@ public class GCDProxy<C extends GcdRingElem<C>> extends GreatestCommonDivisorAbs
 
 
       public GenPolynomial<C> call() {
-        checkInterrupted();
+        checkProxyInterrupted();
         try {
           // System.out.println("starting e2 " + e2.getClass().getName());
           GenPolynomial<C> g = e2.resultant(P, S);

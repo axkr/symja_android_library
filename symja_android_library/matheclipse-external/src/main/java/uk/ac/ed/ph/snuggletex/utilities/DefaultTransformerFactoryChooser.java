@@ -26,6 +26,9 @@ public final class DefaultTransformerFactoryChooser implements TransformerFactor
     singletonInstance = new DefaultTransformerFactoryChooser();
   }
 
+  private DefaultTransformerFactoryChooser() {
+  }
+
   public static DefaultTransformerFactoryChooser getInstance() {
     return singletonInstance;
   }

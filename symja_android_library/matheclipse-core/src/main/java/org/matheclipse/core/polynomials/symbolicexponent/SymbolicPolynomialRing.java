@@ -433,6 +433,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     return create(exprPoly, false, true, false);
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Create a <code>Polynomial</code> from the given <code>exprPoly</code>.
    *
@@ -666,6 +667,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     }
     return coefficientMap;
   }
+  // CPD-ON
 
   /**
    * Create a <code>Polynomial</code> from the given <code>exprPoly</code>.
@@ -678,6 +680,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     return isPolynomial(expression, false);
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Create a <code>Polynomial</code> from the given <code>exprPoly</code>.
    *
@@ -771,6 +774,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     }
     return false;
   }
+  // CPD-ON
 
   /**
    * Get the String representation.
@@ -895,6 +899,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     return e.toScript();
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Comparison with any other object.
    *
@@ -1011,6 +1016,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
   public SymbolicPolynomial getZero() {
     return ZERO;
   }
+  // CPD-ON
 
   /**
    * Get the one element.

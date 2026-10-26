@@ -1,28 +1,12 @@
 package org.matheclipse.core.form.output;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Optional;
-import org.apfloat.Apcomplex;
-import org.apfloat.Apfloat;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.ASTRealMatrix;
-import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
-import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.FormalSymbol;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.DoubleToMMA;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -36,7 +20,6 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -45,284 +28,10 @@ import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
-public abstract class DoubleFormFactory {
-  /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
-  public static final boolean NO_PLUS_CALL = false;
-
-  /**
-   * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code>
-   * object.
-   */
-  public static final boolean PLUS_CALL = true;
-
-  protected final boolean fRelaxedSyntax;
-  protected final boolean fPlusReversed;
-  // protected boolean fIgnoreNewLine = false;
-  /** If <code>true</code> print leading and trailing quotes in Symja strings */
-  private boolean fQuotes = false;
-
-  private boolean fEmpty = true;
-  // private int fColumnCounter;
-  private int fExponentFigures;
-  private int fSignificantFigures;
-
+public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
   public DoubleFormFactory(final boolean relaxedSyntax, final boolean reversed, int exponentFigures,
       int significantFigures) {
-    fRelaxedSyntax = relaxedSyntax;
-    fPlusReversed = reversed;
-    fExponentFigures = exponentFigures;
-    fSignificantFigures = significantFigures;
-  }
-
-  public void reset() {
-    // fColumnCounter = 0;
-  }
-
-  public void convertDouble(final StringBuilder buf, final INum d, final int precedence,
-      boolean caller) {
-    final double doubleValue = d.doubleValue();
-    convertDouble(buf, doubleValue, d, precedence, caller);
-  }
-
-  private void convertDouble(final StringBuilder buf, final double doubleValue, final INum d,
-      final int precedence, boolean caller) {
-    if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
-      convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
-      return;
-    }
-    final boolean isNegative = d.isNegative();
-    if (!isNegative && caller == PLUS_CALL) {
-      append(buf, "+");
-    }
-    if (d instanceof Num) {
-      convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), precedence, isNegative);
-    } else {
-      convertDoubleString(buf, convertApfloat(d.apfloatValue()), precedence, isNegative);
-    }
-  }
-
-  private void convertDouble(final StringBuilder buf, final double doubleValue) {
-    if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
-      convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.NO_PRECEDENCE,
-          false);
-      return;
-    }
-    // final boolean isNegative = doubleValue < 0.0;
-    // if (!isNegative && caller == PLUS_CALL) {
-    // append(buf, "+");
-    // }
-    convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), Precedence.NO_PRECEDENCE,
-        false);
-  }
-
-  protected String convertDoubleToFormattedString(double dValue) {
-    if (fSignificantFigures > 0) {
-      StringBuilder buf = new StringBuilder();
-      DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures);
-      return buf.toString();
-    }
-    return Double.toString(dValue);
-  }
-
-  protected void convertDoubleString(final StringBuilder buf, final String d, final int precedence,
-      final boolean isNegative) {
-    if (isNegative && (Precedence.PLUS < precedence)) {
-      append(buf, "(");
-    }
-    append(buf, d);
-    if (isNegative && (Precedence.PLUS < precedence)) {
-      append(buf, ")");
-    }
-  }
-
-  public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc,
-      final int precedence, boolean caller) {
-    if (dc instanceof ApcomplexNum) {
-      convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence, caller);
-      return;
-    }
-    if (Precedence.PLUS < precedence) {
-      if (caller == PLUS_CALL) {
-        append(buf, "+");
-        caller = false;
-      }
-      append(buf, "(");
-    }
-    double realPart = dc.getRealPart();
-    double imaginaryPart = dc.getImaginaryPart();
-    // a part is left out if it is zero - as for a real number, not below the machine epsilon
-    boolean realZero = F.isZero(realPart, Config.ZERO_IN_OUTPUT_FORMAT);
-    boolean imaginaryZero = F.isZero(imaginaryPart, Config.ZERO_IN_OUTPUT_FORMAT);
-    if (realZero && imaginaryZero) {
-      convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
-    } else {
-      if (!realZero) {
-        append(buf, convertDoubleToFormattedString(realPart));
-        if (!imaginaryZero) {
-          append(buf, "+I*");
-          final boolean isNegative = imaginaryPart < 0;
-          convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES,
-              isNegative);
-        }
-      } else {
-        if (caller == PLUS_CALL) {
-          append(buf, "+");
-          caller = false;
-        }
-        append(buf, "I*");
-        final boolean isNegative = imaginaryPart < 0;
-        convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES,
-            isNegative);
-      }
-    }
-    if (Precedence.PLUS < precedence) {
-      append(buf, ")");
-    }
-  }
-
-  public void convertApcomplex(final StringBuilder buf, final Apcomplex dc, final int precedence,
-      boolean caller) {
-    if (Precedence.PLUS < precedence) {
-      if (caller == PLUS_CALL) {
-        append(buf, "+");
-        caller = false;
-      }
-      append(buf, "(");
-    }
-    Apfloat realPart = dc.real();
-    Apfloat imaginaryPart = dc.imag();
-    boolean realZero = realPart.equals(Apcomplex.ZERO);
-    boolean imaginaryZero = imaginaryPart.equals(Apcomplex.ZERO);
-    if (realZero && imaginaryZero) {
-      convertDoubleString(buf, "0.0", Precedence.PLUS, false);
-    } else {
-      if (!realZero) {
-        append(buf, convertApfloat(realPart));
-        if (!imaginaryZero) {
-          append(buf, "+I*");
-          final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-          convertDoubleString(buf, convertApfloat(imaginaryPart), Precedence.TIMES, isNegative);
-        }
-      } else {
-        if (caller == PLUS_CALL) {
-          append(buf, "+");
-          caller = false;
-        }
-        append(buf, "I*");
-        final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-        convertDoubleString(buf, convertApfloat(imaginaryPart), Precedence.TIMES, isNegative);
-      }
-    }
-    if (Precedence.PLUS < precedence) {
-      append(buf, ")");
-    }
-  }
-
-  public static String convertApfloat(Apfloat num) {
-    String str = num.toString();
-    int index = str.indexOf('e');
-    if (index > 0) {
-      String exponentStr = str.substring(index + 1);
-      String result = str.substring(0, index);
-      return result + "*10^" + exponentStr;
-    }
-    return str;
-  }
-
-  public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence,
-      boolean caller) {
-    final boolean isNegative = i.isNegative();
-    if (!isNegative && caller == PLUS_CALL) {
-      append(buf, "+");
-    }
-    if (isNegative && (Precedence.PLUS < precedence)) {
-      append(buf, "(");
-    }
-    final String str = i.toBigNumerator().toString();
-    // if ((str.length() + getColumnCounter() > 80)) {
-    // if (getColumnCounter() > 40) {
-    // newLine(buf);
-    // }
-    // final int len = str.length();
-    // for (int j = 0; j < len; j += 79) {
-    // if (j + 79 < len) {
-    // append(buf, str.substring(j, j + 79));
-    // append(buf, '\\');
-    // newLine(buf);
-    // } else {
-    // append(buf, str.substring(j, len));
-    // }
-    // }
-    // } else {
-    append(buf, str);
-    // }
-    if (isNegative && (Precedence.PLUS < precedence)) {
-      append(buf, ")");
-    }
-  }
-
-  public void convertFraction(final StringBuilder buf, final IRational f, final int precedence,
-      boolean caller) {
-    convertFraction(buf, f.toBigNumerator(), f.toBigDenominator(), precedence, caller);
-  }
-
-  public void convertFraction(final StringBuilder buf, final BigInteger numerator,
-      BigInteger denominator, final int precedence, boolean caller) {
-    boolean isInteger = denominator.compareTo(BigInteger.ONE) == 0;
-    final boolean isNegative = numerator.signum() < 0;
-    final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;
-    if (!isNegative) {
-      if (caller == PLUS_CALL) {
-        append(buf, "+");
-      }
-    }
-
-    if (prec < precedence) {
-      append(buf, "(");
-    }
-
-    String str = numerator.toString();
-    // if ((str.length() + getColumnCounter() > 80)) {
-    // if (getColumnCounter() > 40) {
-    // newLine(buf);
-    // }
-    // final int len = str.length();
-    // for (int j = 0; j < len; j += 79) {
-    // if (j + 79 < len) {
-    // append(buf, str.substring(j, j + 79));
-    // append(buf, '\\');
-    // newLine(buf);
-    // } else {
-    // append(buf, str.substring(j, len));
-    // }
-    // }
-    // } else {
-    append(buf, str);
-    // }
-    if (!isInteger) {
-      append(buf, "/");
-      str = denominator.toString();
-      // if ((str.length() + getColumnCounter() > 80)) {
-      // if (getColumnCounter() > 40) {
-      // newLine(buf);
-      // }
-      // final int len = str.length();
-      // for (int j = 0; j < len; j += 79) {
-      // if (j + 79 < len) {
-      // append(buf, str.substring(j, j + 79));
-      // append(buf, '\\');
-      // newLine(buf);
-      // } else {
-      // append(buf, str.substring(j, len));
-      // }
-      // }
-      // } else {
-      append(buf, str);
-      // }
-    }
-    if (prec < precedence) {
-      append(buf, ")");
-    }
+    super(relaxedSyntax, reversed, exponentFigures, significantFigures);
   }
 
   public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence,
@@ -403,70 +112,6 @@ public abstract class DoubleFormFactory {
     if (!isReZero && (Precedence.PLUS < precedence)) {
       append(buf, ")");
     }
-  }
-
-  public void convertString(final StringBuilder buf, final String str) {
-    if (fQuotes) {
-      append(buf, "\"");
-      append(buf, str);
-      append(buf, "\"");
-    } else {
-      append(buf, str);
-    }
-  }
-
-  public void convertSymbol(final StringBuilder buf, final ISymbol symbol) {
-    if (symbol == S.E) {
-      buf.append("Math.E");
-      return;
-    } else if (symbol == S.Pi) {
-      buf.append("Math.PI");
-      return;
-    } else if (symbol.isFalse()) {
-      buf.append("false");
-      return;
-    } else if (symbol.isTrue()) {
-      buf.append("true");
-      return;
-    } else if (symbol == S.Indeterminate) {
-      buf.append("Double.NaN");
-      return;
-    }
-    if (symbol.isConstantAttribute()) {
-      try {
-        double value = EvalEngine.get().evalDouble(symbol);
-        buf.append("(" + value + ")");
-        return;
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        //
-      }
-    }
-    Context context = symbol.getContext();
-    if (context == Context.DUMMY || symbol instanceof FormalSymbol) {
-      append(buf, symbol.getSymbolName());
-      return;
-    }
-    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
-      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
-      if (str != null) {
-        append(buf, str);
-        return;
-      }
-    }
-    if (EvalEngine.get().getContextPath().contains(context)) {
-      append(buf, symbol.getSymbolName());
-    } else {
-      append(buf, context.completeContextName() + symbol.getSymbolName());
-    }
-  }
-
-  public void convertPattern(final StringBuilder buf, final IPatternObject pattern) {
-    append(buf, pattern.toString());
-  }
-
-  public void convertHead(final StringBuilder buf, final IExpr obj) {
-    convertInternal(buf, obj);
   }
 
   private void convertPlusOperator(final StringBuilder buf, final IAST plusAST,
@@ -705,161 +350,6 @@ public abstract class DoubleFormFactory {
   // convertInfixOperator(buf, list, oper, precedence);
   // }
 
-  public void convertPowerOperator(final StringBuilder buf, final IAST list,
-      final InfixOperator oper, final int precedence) {
-    IExpr arg2 = list.arg2();
-    if (arg2.isNumber()) {
-      INumber exp = (INumber) arg2;
-      if (exp.isNumEqualRational(F.C1D2)) {
-        append(buf, "Sqrt");
-        if (fRelaxedSyntax) {
-          append(buf, "(");
-        } else {
-          append(buf, "[");
-        }
-        convertInternal(buf, list.arg1(), Precedence.NO_PRECEDENCE, false, true);
-        if (fRelaxedSyntax) {
-          append(buf, ")");
-        } else {
-          append(buf, "]");
-        }
-        return;
-      }
-      if (exp.complexSign() < 0) {
-        if (Precedence.DIVIDE < precedence) {
-          append(buf, "(");
-        }
-        append(buf, "1/");
-        if (exp.isMinusOne()) {
-          convertInternal(buf, list.arg1(), Precedence.DIVIDE, false, true);
-          if (Precedence.DIVIDE < precedence) {
-            append(buf, ")");
-          }
-          return;
-        }
-        // flip presign of the exponent
-        IAST pow = list.setAtCopy(2, exp.opposite());
-        convertPowerOperator(buf, pow, oper, Precedence.DIVIDE);
-        if (Precedence.DIVIDE < precedence) {
-          append(buf, ")");
-        }
-        return;
-      }
-    }
-    convertInfixOperator(S.Power, buf, list, oper, precedence);
-  }
-
-  public void convertInfixOperator(ISymbol head, final StringBuilder buf, final IAST list,
-      final InfixOperator oper, final int precedence) {
-
-    if (list.isAST2()) {
-      if (oper.getPrecedence() < precedence) {
-        append(buf, "(");
-      }
-      if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
-          && list.arg1().head().equals(list.head())) {
-        append(buf, "(");
-      } else {
-        if (oper.getOperatorString().equals("^")) {
-          final Operator operator = getOperator(list.arg1().topHead());
-          if (operator instanceof PostfixOperator) {
-            append(buf, "(");
-          }
-        }
-      }
-      convertInternal(buf, list.arg1(), oper.getPrecedence(), false, true);
-      if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
-          && list.arg1().head().equals(list.head())) {
-        append(buf, ")");
-      } else {
-        if (oper.getOperatorString().equals("^")) {
-          final Operator operator = getOperator(list.arg1().topHead());
-          if (operator instanceof PostfixOperator) {
-            append(buf, ")");
-          }
-        }
-      }
-
-      append(buf, oper.getOperatorString());
-
-      if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
-          && list.arg2().head().equals(list.head())) {
-        append(buf, "(");
-      }
-      convertInternal(buf, list.arg2(), oper.getPrecedence(), false, true);
-      if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
-          && list.arg2().head().equals(list.head())) {
-        append(buf, ")");
-      }
-
-      if (oper.getPrecedence() < precedence) {
-        append(buf, ")");
-      }
-      return;
-    }
-
-    if (oper.getPrecedence() < precedence) {
-      append(buf, "(");
-    }
-    if (list.size() > 3 && //
-        (head == S.Equal || head == S.Unequal || head == S.Greater
-            || head == S.GreaterEqual || head == S.Less || head == S.LessEqual)) {
-      convertInternal(buf, list.arg1(), oper.getPrecedence(), false, true);
-      for (int i = 2; i < list.size(); i++) {
-        append(buf, oper.getOperatorString());
-        convertInternal(buf, list.get(i), oper.getPrecedence(), false, true);
-
-        if (i < list.argSize()) {
-          buf.append(" && ");
-          convertInternal(buf, list.get(i), oper.getPrecedence(), false, true);
-        }
-      }
-    } else {
-      if (list.size() > 1) {
-        convertInternal(buf, list.arg1(), oper.getPrecedence(), false, true);
-      }
-
-      for (int i = 2; i < list.size(); i++) {
-        append(buf, oper.getOperatorString());
-        convertInternal(buf, list.get(i), oper.getPrecedence(), false, true);
-      }
-    }
-    if (oper.getPrecedence() < precedence) {
-      append(buf, ")");
-    }
-  }
-
-  public void convertPrefixOperator(final StringBuilder buf, final IAST list,
-      final PrefixOperator oper, final int precedence) {
-    if (oper.getPrecedence() <= precedence) {
-      append(buf, "(");
-    }
-    append(buf, oper.getOperatorString());
-    convertInternal(buf, list.arg1(), oper.getPrecedence(), false, true);
-    if (oper.getPrecedence() <= precedence) {
-      append(buf, ")");
-    }
-  }
-
-  public void convertPostfixOperator(final StringBuilder buf, final IAST list,
-      final PostfixOperator oper, final int precedence) {
-    if (oper.getPrecedence() <= precedence) {
-      append(buf, "(");
-    }
-    convertInternal(buf, list.arg1(), oper.getPrecedence(), false, true);
-    append(buf, oper.getOperatorString());
-    if (oper.getPrecedence() <= precedence) {
-      append(buf, ")");
-    }
-  }
-
-  public String toString(final IExpr o) {
-    reset();
-    StringBuilder buf = new StringBuilder();
-    convertInternal(buf, o, Integer.MIN_VALUE, false, true);
-    return buf.toString();
-  }
-
   public void convert(final StringBuilder buf, final IExpr o) {
     convertInternal(buf, o, Integer.MIN_VALUE, false, true);
   }
@@ -868,8 +358,10 @@ public abstract class DoubleFormFactory {
     convertInternal(buf, expr, Integer.MIN_VALUE, false, true);
   }
 
-  protected void convertInternal(final StringBuilder buf, final IExpr o) {
-    convertInternal(buf, o, Integer.MIN_VALUE, false, true);
+  @Override
+  protected void convertInternal(final StringBuilder buf, final IExpr o, final int precedence,
+      boolean isASTHead) {
+    convertInternal(buf, o, precedence, isASTHead, true);
   }
 
   protected void convertNumber(final StringBuilder buf, final INumber o, final int precedence,
@@ -987,135 +479,6 @@ public abstract class DoubleFormFactory {
     return false;
   }
 
-  public Operator getOperator(ISymbol head) {
-    // Operator operator = null;
-    if (head == S.Plus || head == S.Times || head == S.Equal || head == S.Unequal || head == S.Less
-        || head == S.LessEqual || head == S.Greater || head == S.GreaterEqual || head == S.And
-        || head == S.Or || head == S.Not) {
-      return OutputFormFactory.getOperator(head, head == S.Not ? 1 : 2);
-    }
-    return null;
-  }
-
-  public void convertSlot(final StringBuilder buf, final IAST list) {
-    try {
-      final int slot = ((IReal) list.arg1()).toInt();
-      append(buf, "#" + slot);
-    } catch (final ArithmeticException e) {
-      // add message to evaluation problemReporter
-    }
-  }
-
-  public void convertSlotSequence(final StringBuilder buf, final IAST list) {
-    try {
-      final int slotSequenceStartPosition = ((IReal) list.arg1()).toInt();
-      append(buf, "##" + slotSequenceStartPosition);
-    } catch (final ArithmeticException e) {
-      // add message to evaluation problemReporter
-    }
-  }
-
-  public void convertList(final StringBuilder buf, final IAST list) {
-    if (list instanceof ASTRealVector) {
-
-      RealVector vector = ((ASTRealVector) list).getRealVector();
-      buf.append('{');
-      int size = vector.getDimension();
-      for (int i = 0; i < size; i++) {
-        convertDouble(buf, vector.getEntry(i));
-        if (i < size - 1) {
-          buf.append(",");
-        }
-      }
-      buf.append('}');
-
-      return;
-    }
-    if (list instanceof ASTRealMatrix) {
-
-      RealMatrix matrix = ((ASTRealMatrix) list).getRealMatrix();
-      buf.append('{');
-
-      int rows = matrix.getRowDimension();
-      int cols = matrix.getColumnDimension();
-      for (int i = 0; i < rows; i++) {
-        if (i != 0) {
-          buf.append(" ");
-        }
-        buf.append("{");
-        for (int j = 0; j < cols; j++) {
-          convertDouble(buf, matrix.getEntry(i, j));
-          if (j < cols - 1) {
-            buf.append(",");
-          }
-        }
-        buf.append('}');
-        if (i < rows - 1) {
-          buf.append(",");
-          buf.append('\n');
-        }
-      }
-      buf.append('}');
-
-      return;
-    }
-    if (list.hasFlag(Flag.IS_MATRIX)) {
-      if (!fEmpty) {
-        newLine(buf);
-      }
-    }
-    append(buf, "{");
-    final int listSize = list.size();
-    if (listSize > 1) {
-      convertInternal(buf, list.arg1());
-    }
-    for (int i = 2; i < listSize; i++) {
-      append(buf, ",");
-      if (list.hasFlag(Flag.IS_MATRIX)) {
-        newLine(buf);
-        append(buf, ' ');
-      }
-      convertInternal(buf, list.get(i));
-    }
-    append(buf, "}");
-  }
-
-  /**
-   * This method will only be called if <code>list.isAST2()==true</code> and the head equals "Part".
-   *
-   * @param buf
-   * @param list
-   * @throws IOException
-   */
-  public void convertPart(final StringBuilder buf, final IAST list) {
-    IExpr arg1 = list.arg1();
-
-    boolean parentheses = false;
-    if (arg1.isAST()) {
-      final Operator operator = getOperator(arg1.topHead());
-      if (operator != null) {
-        parentheses = true;
-      }
-    } else if (!arg1.isSymbol()) {
-      parentheses = true;
-    }
-    if (parentheses) {
-      append(buf, "(");
-    }
-    convertInternal(buf, arg1);
-    if (parentheses) {
-      append(buf, ")");
-    }
-    append(buf, "[[");
-    for (int i = 2; i < list.size(); i++) {
-      convertInternal(buf, list.get(i));
-      if (i < list.argSize()) {
-        append(buf, ",");
-      }
-    }
-    append(buf, "]]");
-  }
-
   /**
    * Convert a <code>SeriesData(...)</code> expression.
    *
@@ -1229,8 +592,6 @@ public abstract class DoubleFormFactory {
     append(buf, "]");
   }
 
-  public abstract String functionHead(ISymbol symbol);
-
   /**
    * Write a function into the given <code>StringBuilder</code>.
    *
@@ -1297,45 +658,6 @@ public abstract class DoubleFormFactory {
     } else {
       append(buf, "]");
     }
-  }
-
-  /** this resets the columnCounter to offset 0 */
-  private void newLine(StringBuilder buf) {
-    // if (!fIgnoreNewLine) {
-    append(buf, '\n');
-    // }
-    // fColumnCounter = 0;
-    fEmpty = false;
-  }
-
-  private void append(StringBuilder buf, String str) {
-    buf.append(str);
-    // fColumnCounter += str.length();
-    fEmpty = false;
-  }
-
-  private void append(StringBuilder buf, char c) {
-    buf.append(c);
-    // fColumnCounter += 1;
-    fEmpty = false;
-  }
-
-  /** @param ignoreNewLine The ignoreNewLine to set. */
-  // public void setIgnoreNewLine(final boolean ignoreNewLine) {
-  // fIgnoreNewLine = ignoreNewLine;
-  // }
-
-  /**
-   * If <code>true</code> print leading and trailing quotes in Symja strings
-   *
-   * @param quotes
-   */
-  public void setQuotes(final boolean quotes) {
-    fQuotes = quotes;
-  }
-
-  public void setEmpty(final boolean empty) {
-    fEmpty = empty;
   }
 
   /** @return Returns the columnCounter. */

@@ -715,6 +715,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return this;
   }
 
+  // CPD-OFF same algorithm on int and on BigInteger, kept apart for speed
   /**
    * Returns the nth-root of this integer.
    *
@@ -766,6 +767,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   public IInteger numerator() {
     return this;
   }
+  // CPD-ON
 
   @Override
   public final INumber numericNumber() {

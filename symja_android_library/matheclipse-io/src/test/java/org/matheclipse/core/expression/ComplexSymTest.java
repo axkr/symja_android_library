@@ -369,6 +369,7 @@ public class ComplexSymTest {
 
     ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(11), BigInteger.valueOf(3));
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(8));
+    // the gcd is normalized into the first quadrant
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(2), BigInteger.valueOf(1));
 
     GaussianInteger parm1 = c1.gaussianInteger().get();
@@ -377,9 +378,8 @@ public class ComplexSymTest {
 
     GaussianInteger result = parm1.gcd(parm2);
 
-    IInteger expected = parm3.re();
-
-    assertEquals(expected, result.im());
+    assertEquals(parm3.re(), result.re());
+    assertEquals(parm3.im(), result.im());
   }
 
   @Test
@@ -387,16 +387,17 @@ public class ComplexSymTest {
 
     ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-3), BigInteger.valueOf(2));
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(14), BigInteger.valueOf(21));
-    ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-3), BigInteger.valueOf(2));
+    // -3+2*I = I*(2+3*I); the gcd is normalized into the first quadrant
+    ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(2), BigInteger.valueOf(3));
 
     GaussianInteger parm1 = c1.gaussianInteger().get();
     GaussianInteger parm2 = c2.gaussianInteger().get();
     GaussianInteger parm3 = c3.gaussianInteger().get();
 
     GaussianInteger result = parm1.gcd(parm2);
-    IInteger expected = parm3.im();
 
-    assertEquals(expected, result.im());
+    assertEquals(parm3.re(), result.re());
+    assertEquals(parm3.im(), result.im());
   }
 
   @Test
@@ -404,7 +405,8 @@ public class ComplexSymTest {
 
     ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(11), BigInteger.valueOf(16));
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(10), BigInteger.valueOf(11));
-    ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-2), BigInteger.valueOf(3));
+    // -2+3*I = I*(3+2*I); the gcd is normalized into the first quadrant
+    ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(3), BigInteger.valueOf(2));
 
     GaussianInteger parm1 = c1.gaussianInteger().get();
     GaussianInteger parm2 = c2.gaussianInteger().get();
@@ -412,9 +414,8 @@ public class ComplexSymTest {
 
     GaussianInteger result = parm1.gcd(parm2);
 
-    IInteger expected = parm3.im();
-
-    assertEquals(expected, result.im());
+    assertEquals(parm3.re(), result.re());
+    assertEquals(parm3.im(), result.im());
   }
 
   @Test

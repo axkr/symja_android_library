@@ -367,6 +367,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     return create(exprPoly, false, true, false);
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Create a <code>Polynomial</code> from the given <code>exprPoly</code>.
    *
@@ -583,6 +584,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     return addCoefficient(coefficientMap, mainExponent.isNIL() ? F.C0 : mainExponent,
         times.oneIdentity1());
   }
+  // CPD-ON
 
   /**
    * Add a coefficient to the coefficient map.
@@ -618,6 +620,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     return isPolynomial(expression, false);
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Create a <code>Polynomial</code> from the given <code>exprPoly</code>.
    *
@@ -716,6 +719,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     }
     return false;
   }
+  // CPD-ON
 
   /**
    * Get the String representation.
@@ -840,6 +844,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     return e.toScript();
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Comparison with any other object.
    *
@@ -956,6 +961,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
   public ExprPolynomial getZero() {
     return ZERO;
   }
+  // CPD-ON
 
   /**
    * Get the one element.

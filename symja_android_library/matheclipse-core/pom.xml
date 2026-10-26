@@ -19,6 +19,11 @@
 				works</comments>
 		</license>
 	</licenses>
+	<properties>
+		<!-- Duplicate code blocks (CPD, see maven-pmd-plugin below) tolerated in this module.
+		Lower it when duplicates are removed; a build with more duplicates fails. -->
+		<cpd.maxAllowedViolations>0</cpd.maxAllowedViolations>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -162,6 +167,13 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<!-- CPD engine for DuplicateCodeTest; same PMD version as maven-pmd-plugin 3.21.2 -->
+			<groupId>net.sourceforge.pmd</groupId>
+			<artifactId>pmd-java</artifactId>
+			<version>6.55.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -224,22 +236,64 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- static analysis on demand, not bound to a phase:
-				mvn -o test-compile spotbugs:check -pl matheclipse-parser,matheclipse-core
-				The rank limit and the confidence match the "Scary" and "Troubling" bugs of the IDE
-				plugin; spotbugs-exclude.xml lists the patterns which are intended, with the reason. -->
+				<!-- static analysis; settings in the parent pom, spotbugs-exclude.xml lists the
+				patterns which are intended, with the reason. On demand:
+				mvn -o test-compile spotbugs:check -pl matheclipse-core
+				The "spotbugs" profile below binds the check to the build; the PR workflow runs it. -->
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.10.5.0</version>
+			</plugin>
+			<plugin>
+				<!-- Duplicate code check (CPD) in the verify phase; defaults in the parent pom.
+				Generated sources (Rubi IntRules, rules/*Rules, the ID/S/J symbol tables) are excluded;
+				keep this list in sync with DuplicateCodeTest. Deliberate copies are wrapped in // CPD-OFF ... // CPD-ON.
+				Report: target/cpd.xml. Skip with -Dcpd.skip=true -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
 				<configuration>
-					<threshold>Normal</threshold>
-					<effort>Default</effort>
-					<maxRank>14</maxRank>
-					<includeTests>true</includeTests>
-					<xmlOutput>true</xmlOutput>
-					<excludeFilterFile>${project.basedir}/spotbugs-exclude.xml</excludeFilterFile>
+					<excludes>
+						<exclude>**/core/integrate/rubi/**</exclude>
+						<exclude>**/core/reflection/system/rules/**</exclude>
+						<exclude>**/core/expression/ID.java</exclude>
+						<exclude>**/core/expression/S.java</exclude>
+						<exclude>**/core/expression/J.java</exclude>
+					</excludes>
+					<maxAllowedViolations>${cpd.maxAllowedViolations}</maxAllowedViolations>
 				</configuration>
+				<executions>
+					<execution>
+						<id>cpd-check</id>
+						<goals>
+							<goal>cpd-check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<!-- SpotBugs check of the main and test classes, opt-in; settings in the parent pom:
+		mvn -Pspotbugs process-test-classes -pl matheclipse-core -am -->
+		<profile>
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>spotbugs-check</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

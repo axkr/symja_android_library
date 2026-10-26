@@ -440,6 +440,7 @@ final class MontgomeryLimbs {
     }
   }
 
+  // CPD-OFF unrolled limb arithmetic, one copy per limb count
   /** {@link #mul(long[], long[], long[])} unrolled for 3 limbs. */
   private void mul3(long[] a, long[] b, long[] out) {
     final long a0 = a[0];
@@ -953,6 +954,7 @@ final class MontgomeryLimbs {
       out[3] = t3;
     }
   }
+  // CPD-ON
 
   /** {@link #sqr(long[], long[])} unrolled for 2 limbs. */
   private void sqr2(long[] a, long[] out) {
@@ -1061,6 +1063,7 @@ final class MontgomeryLimbs {
     }
   }
 
+  // CPD-OFF unrolled limb arithmetic, one copy per limb count
   /** {@link #sqr(long[], long[])} unrolled for 3 limbs. */
   private void sqr3(long[] a, long[] out) {
     final long a0 = a[0];
@@ -1529,6 +1532,7 @@ final class MontgomeryLimbs {
       out[3] = t7;
     }
   }
+  // CPD-ON
 
   /** {@link #add(long[], long[], long[])} unrolled and without branches for 2 limbs. */
   private void add2(long[] a, long[] b, long[] out) {

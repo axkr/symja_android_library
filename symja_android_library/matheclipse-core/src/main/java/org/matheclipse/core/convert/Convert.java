@@ -621,7 +621,13 @@ public class Convert {
     return null;
   }
 
-  private static IExpr[][] list2Array(final IExpr expr, boolean ifNumericReturnNull)
+  /**
+   * The elements of a matrix, or <code>null</code> if <code>expr</code> is not a non-empty matrix.
+   *
+   * @param ifNumericReturnNull return <code>null</code> if all elements are numeric and one of them
+   *        is inexact, unless the engine is in arbitrary precision mode
+   */
+  static IExpr[][] list2Array(final IExpr expr, boolean ifNumericReturnNull)
       throws ClassCastException, IndexOutOfBoundsException {
     if (expr == null) {
       return null;

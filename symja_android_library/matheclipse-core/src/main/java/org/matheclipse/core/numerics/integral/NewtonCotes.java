@@ -30,6 +30,7 @@ public final class NewtonCotes extends Quadrature {
     return "Newton-Cotes";
   }
 
+  // CPD-OFF port of the original Fortran routine, kept close to it
   private final QuadratureResult dqnc79(final DoubleUnaryOperator fun, final double a,
       final double b) {
     double ae, area, bank, blocal, c, ce, ee, ef, eps, q13, q7, q7l, sq2 = Constants.SQRT2, test,
@@ -249,4 +250,5 @@ public final class NewtonCotes extends Quadrature {
       }
     }
   }
+  // CPD-ON
 }

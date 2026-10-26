@@ -2785,6 +2785,31 @@ public class AlgebraUtil {
   }
 
   /**
+   * Solve <code>numerator/denominator == rhs</code> when numerator and denominator are both linear
+   * in <code>variable</code>: <code>(a0 + a1*x)/(b0 + b1*x) == c</code> gives
+   * <code>x = (b0*c - a0)/(a1 - b1*c)</code>.
+   *
+   * @param numerDenom the numerator and the denominator
+   * @param rhs the right-hand side, free of <code>variable</code>
+   * @param variable the variable to solve for
+   * @return the solution, or {@link F#NIL} if a part is not linear or <code>a1 == b1*c</code>
+   */
+  public static IExpr linearFractionSolve(IExpr[] numerDenom, IExpr rhs, IExpr variable) {
+    IExpr[] numerLinear = numerDenom[0].linear(variable);
+    if (numerLinear != null) {
+      IExpr[] denomLinear = numerDenom[1].linear(variable);
+      if (denomLinear != null) {
+        IExpr temp =
+            EvalEngine.get().evaluate(numerLinear[1].subtract(denomLinear[1].times(rhs)));
+        if (!temp.isZero()) {
+          return numerLinear[0].negate().plus(denomLinear[0].times(rhs)).times(temp.power(-1L));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Split the {@link IAST} expression into numerator and denominator parts, by calling the
    * <code>Numerator(ast)</code> and <code>Denominator(ast)</code> functions and return the result
    * at index <code>0</code> (numerator) and index <code>1</code> (denominator).

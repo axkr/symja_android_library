@@ -70,7 +70,7 @@ public class IndexList implements MonoidElem<IndexList> {
         mono = m;
         if (v == null) {
             if (s != 0) {
-                throw new IllegalArgumentException("inconsistent: s = " + s + ", v = " + v);
+                throw new IllegalArgumentException("inconsistent: s = " + s + ", v = null");
             }
             val = v;
             sign = 0; // only when exception deactivated

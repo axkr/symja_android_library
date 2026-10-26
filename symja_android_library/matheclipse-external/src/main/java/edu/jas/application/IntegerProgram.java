@@ -35,7 +35,7 @@ public class IntegerProgram implements java.io.Serializable {
     private static final Logger logger = LogManager.getLogger(IntegerProgram.class);
 
 
-    private static boolean debug = logger.isDebugEnabled(); //false;
+    private boolean debug = logger.isDebugEnabled(); //false;
 
 
     private boolean negVars;

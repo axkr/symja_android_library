@@ -6,6 +6,7 @@ package edu.jas.vector;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -60,7 +61,8 @@ public class GenVector<C extends RingElem<C>> implements ModulElem<GenVector<C>,
      */
     public GenVector(GenVectorModul<C> m, C[] v) {
         if (m == null || v == null) {
-            throw new IllegalArgumentException("Empty m or v not allowed, m = " + m + ", v = " + v);
+            throw new IllegalArgumentException(
+                            "Empty m or v not allowed, m = " + m + ", v = " + Arrays.toString(v));
         }
         modul = m;
         val = new ArrayList<C>(v.length);

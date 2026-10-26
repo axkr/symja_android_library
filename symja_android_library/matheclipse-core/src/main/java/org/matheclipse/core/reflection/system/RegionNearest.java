@@ -220,29 +220,9 @@ public class RegionNearest extends AbstractFunctionEvaluator {
   }
 
   private IExpr boxNearest(IAST reg, IExpr p, EvalEngine engine) {
-    IExpr head = reg.head();
-    int dim = (head == S.Rectangle) ? 2 : 3;
-    IExpr min = F.NIL;
-    IExpr max = F.NIL;
-
-    if (reg.argSize() == 0) {
-      min = (dim == 2) ? F.List(F.C0, F.C0) : F.List(F.C0, F.C0, F.C0);
-      max = (dim == 2) ? F.List(F.C1, F.C1) : F.List(F.C1, F.C1, F.C1);
-    } else if (reg.argSize() == 1) {
-      IExpr pt = reg.arg1();
-      if (pt.isList()) {
-        min = pt;
-        IAST ptAST = (IAST) pt;
-        IASTAppendable maxList = F.ListAlloc(ptAST.argSize());
-        for (int i = 1; i <= ptAST.argSize(); i++) {
-          maxList.append(engine.evaluate(F.Plus(ptAST.get(i), F.C1)));
-        }
-        max = maxList;
-      }
-    } else if (reg.argSize() >= 2) {
-      min = reg.arg1();
-      max = reg.arg2();
-    }
+    IExpr[] corners = SignedRegionDistance.boxCorners(reg, engine);
+    IExpr min = corners[0];
+    IExpr max = corners[1];
 
     if (min.isList() && max.isList() && p.argSize() == ((IAST) min).argSize()) {
       IAST pL = (IAST) p;

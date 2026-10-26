@@ -241,6 +241,7 @@ public class VectorAnalysisFunctions {
    */
   private static final class Div extends AbstractFunctionEvaluator {
 
+    // CPD-OFF closed-form formulas per coordinate system
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // if (ast.arg1().isListOfLists()) {
@@ -461,6 +462,7 @@ public class VectorAnalysisFunctions {
 
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public int status() {
@@ -612,6 +614,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
+    // CPD-OFF closed-form formulas per coordinate system
     private IExpr grad3(IAST list, final String metricStr, IntArrayList dimensions,
         final IAST variables, EvalEngine engine) {
       Metric metric;
@@ -838,6 +841,7 @@ public class VectorAnalysisFunctions {
       }
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public int status() {

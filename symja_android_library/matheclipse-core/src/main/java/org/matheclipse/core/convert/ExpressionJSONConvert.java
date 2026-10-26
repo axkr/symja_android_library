@@ -26,15 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BigIntegerNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.FloatNode;
-import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.LongNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ShortNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 
@@ -216,28 +210,11 @@ public class ExpressionJSONConvert {
       return list;
     } else if (node instanceof ValueNode) {
       ValueNode valueNode = (ValueNode) node;
-      if (valueNode instanceof NumericNode) {
-        if (valueNode instanceof DoubleNode) {
-          return F.num(valueNode.doubleValue());
-        } else if (valueNode instanceof FloatNode) {
-          return F.num(valueNode.doubleValue());
-        } else if (valueNode instanceof IntNode) {
-          return F.ZZ(valueNode.intValue());
-        } else if (valueNode instanceof LongNode) {
-          return F.ZZ(valueNode.longValue());
-        } else if (valueNode instanceof ShortNode) {
-          return F.ZZ(valueNode.intValue());
-        } else if (valueNode instanceof BigIntegerNode) {
-          return F.ZZ(valueNode.bigIntegerValue());
-        } else if (valueNode instanceof DecimalNode) {
-          return F.num(new Apfloat(valueNode.decimalValue()));
-        }
+      IExpr value = JSONConvert.importJSONValue(valueNode);
+      if (value.isPresent()) {
+        return value;
       }
-      if (valueNode instanceof BooleanNode) {
-        return valueNode.booleanValue() ? S.True : S.False;
-      } else if (valueNode instanceof NullNode) {
-        return S.Null;
-      } else if (valueNode instanceof TextNode) {
+      if (valueNode instanceof TextNode) {
         String symbolName = valueNode.textValue();
         if (symbolName.length() > 1 && symbolName.charAt(0) == '\''
             && symbolName.charAt(symbolName.length() - 1) == '\'') {

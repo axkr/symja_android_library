@@ -1048,18 +1048,12 @@ public class Symbol implements ISymbol, Serializable {
     return internalJavaString(p, depth, x -> null);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<ISymbol, ? extends CharSequence> variables) {
-    CharSequence result = variables.apply(this);
-    if (result != null) {
-      return result;
-    }
+  /**
+   * The Java source code of a symbol which is not written as a factory method call: a predefined
+   * symbol or a single lowercase letter with the factory class prefix, otherwise the plain name.
+   */
+  static CharSequence internalJavaString(String fSymbolName, SourceCodeProperties properties) {
     String prefix = SourceCodeProperties.getPrefixF(properties);
-    if (properties.symbolsAsFactoryMethod) {
-      return new StringBuilder(prefix).append(internalJavaStringAsFactoryMethod());
-    }
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name;
       if (fSymbolName.length() == 1) {
@@ -1082,6 +1076,21 @@ public class Symbol implements ISymbol, Serializable {
     } else {
       return fSymbolName;
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+      Function<ISymbol, ? extends CharSequence> variables) {
+    CharSequence result = variables.apply(this);
+    if (result != null) {
+      return result;
+    }
+    if (properties.symbolsAsFactoryMethod) {
+      return new StringBuilder(SourceCodeProperties.getPrefixF(properties))
+          .append(internalJavaStringAsFactoryMethod());
+    }
+    return Symbol.internalJavaString(fSymbolName, properties);
   }
 
   /**

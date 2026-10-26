@@ -111,6 +111,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  // CPD-OFF numeric argument dispatch of separate evaluator hierarchies, kept apart for speed
   public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
     IExpr result = e2ObjArg(o0, o1);
     if (result.isPresent()) {
@@ -227,6 +228,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 
     return F.NIL;
   }
+  // CPD-ON
 
   public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
     return F.NIL;

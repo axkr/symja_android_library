@@ -68,14 +68,20 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  public static IExpr boxDistance(IAST reg, IExpr p, EvalEngine engine, boolean signed) {
-    IExpr head = reg.head();
-    int dim = (head == S.Rectangle) ? 2 : 3;
+  /**
+   * The lower and upper corner of <code>Rectangle(...)</code> or <code>Cuboid(...)</code>: the unit
+   * box for no arguments, <code>{p, p+1}</code> for one point, and the first two arguments
+   * otherwise.
+   *
+   * @return <code>{min, max}</code>; an entry is <code>F.NIL</code> if it is not given
+   */
+  static IExpr[] boxCorners(IAST reg, EvalEngine engine) {
     IExpr min = F.NIL;
     IExpr max = F.NIL;
     if (reg.argSize() == 0) {
-      min = (dim == 2) ? F.List(F.C0, F.C0) : F.List(F.C0, F.C0, F.C0);
-      max = (dim == 2) ? F.List(F.C1, F.C1) : F.List(F.C1, F.C1, F.C1);
+      boolean rectangle = reg.head() == S.Rectangle;
+      min = rectangle ? F.List(F.C0, F.C0) : F.List(F.C0, F.C0, F.C0);
+      max = rectangle ? F.List(F.C1, F.C1) : F.List(F.C1, F.C1, F.C1);
     } else if (reg.argSize() == 1) {
       IExpr pt = reg.arg1();
       if (pt.isList()) {
@@ -91,6 +97,13 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
       min = reg.arg1();
       max = reg.arg2();
     }
+    return new IExpr[] {min, max};
+  }
+
+  public static IExpr boxDistance(IAST reg, IExpr p, EvalEngine engine, boolean signed) {
+    IExpr[] corners = boxCorners(reg, engine);
+    IExpr min = corners[0];
+    IExpr max = corners[1];
 
     if (min.isList() && max.isList() && p.isList() && p.argSize() == min.argSize()) {
       IExpr center = engine.evaluate(F.Times(F.C1D2, F.Plus(min, max)));

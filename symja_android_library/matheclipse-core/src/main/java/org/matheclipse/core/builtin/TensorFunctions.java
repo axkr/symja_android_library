@@ -810,7 +810,7 @@ public class TensorFunctions {
           for (int j = 0; j < h; j++) {
             dims[j] = Math.multiplyExact(d[j], d[h + j]);
           }
-          if (r % 2 == 1) {
+          if ((r & 1) == 1) {
             dims[h] = d[r - 1];
           }
           long[] rowMajor = new long[dims.length];
@@ -823,7 +823,7 @@ public class TensorFunctions {
             stride[t] = Math.multiplyExact(d[h + t], rowMajor[t]);
             stride[h + t] = rowMajor[t];
           }
-          if (r % 2 == 1) {
+          if ((r & 1) == 1) {
             stride[r - 1] = rowMajor[h];
           }
         }

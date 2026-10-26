@@ -81,7 +81,6 @@ public class ApfloatZetaZeroMath
     public static Apfloat zero(double lower, double upper, long precision)
         throws ArithmeticException, ApfloatRuntimeException
     {
-        FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision);
         Apfloat a = new Apfloat(lower, precision),
                 b = new Apfloat(upper, precision),
                 two = new Apfloat(2, precision);

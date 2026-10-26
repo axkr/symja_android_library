@@ -221,6 +221,7 @@ public final class GaussKronrod extends Quadrature {
     return worst;
   }
 
+  // CPD-OFF port of the original Fortran routine, kept close to it
   private static final void dqagse(final DoubleUnaryOperator f, final double a, final double b,
       final double epsabs, final double epsrel, final int limit, final double[] result,
       final double[] abserr, final int[] neval, final int[] ier, final double[] alist,
@@ -547,6 +548,7 @@ public final class GaussKronrod extends Quadrature {
     }
     neval[0] = 42 * last[0] - 21;
   }
+  // CPD-ON
 
   private static final void dqelg(final int[] n, final double[] epstab, final double[] result,
       final double[] abserr, final double[] res3la, final int[] nres) {
@@ -870,6 +872,7 @@ public final class GaussKronrod extends Quadrature {
     }
   }
 
+  // CPD-OFF port of the original Fortran routine, kept close to it
   private static void dqagie(final DoubleUnaryOperator f, final double bound, final int inf,
       final double epsabs, final double epsrel, final int limit, final double[] result,
       final double[] abserr, final int[] neval, final int[] ier, final double[] alist,
@@ -1237,6 +1240,7 @@ public final class GaussKronrod extends Quadrature {
       --ier[0];
     }
   }
+  // CPD-ON
 
   private static void dqagi1(final DoubleUnaryOperator f, final double boun, final int inf,
       final double epsabs, final double epsrel, final double[] result, final double[] abserr,

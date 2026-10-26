@@ -29,6 +29,7 @@ import java.util.TreeSet;
  */
 public class OpenIntToSet<T> implements Serializable {
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /** Iterator class for the map. */
   public final class Iterator {
 
@@ -293,6 +294,7 @@ public class OpenIntToSet<T> implements Serializable {
   }
 
   private Comparator<T> comparator;
+  // CPD-ON
 
   /** Keys table. */
   private int[] keys;
@@ -497,6 +499,7 @@ public class OpenIntToSet<T> implements Serializable {
     return values;
   }
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /** Grow the tables. */
   private void growTable() {
 
@@ -590,6 +593,7 @@ public class OpenIntToSet<T> implements Serializable {
       ++count;
     }
   }
+  // CPD-ON
 
   /**
    * Read a serialized object.

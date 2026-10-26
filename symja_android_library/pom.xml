@@ -598,6 +598,29 @@
 					<version>7.3.0</version>
 				</plugin>
 				<plugin>
+					<!-- Shared SpotBugs settings. The rank limit and the confidence match the "Scary"
+					and "Troubling" bugs of the IDE plugin. A module opts in with a "spotbugs" profile
+					which binds the check goal to process-test-classes; the CI gate runs
+					mvn -Pspotbugs process-test-classes -pl matheclipse-external,matheclipse-core -am
+					Each module lists the patterns which are intended in its spotbugs-exclude.xml,
+					with the reason. The SARIF output is uploaded by the workflow as PR annotations. -->
+					<groupId>com.github.spotbugs</groupId>
+					<artifactId>spotbugs-maven-plugin</artifactId>
+					<version>4.10.5.0</version>
+					<configuration>
+						<threshold>Normal</threshold>
+						<effort>Default</effort>
+						<maxRank>14</maxRank>
+						<includeTests>true</includeTests>
+						<failOnError>true</failOnError>
+						<xmlOutput>true</xmlOutput>
+						<sarifOutput>true</sarifOutput>
+						<!-- the default 512 MB runs out of memory on matheclipse-core -->
+						<maxHeap>4096</maxHeap>
+						<excludeFilterFile>${project.basedir}/spotbugs-exclude.xml</excludeFilterFile>
+					</configuration>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>3.5.0</version>
@@ -752,16 +775,22 @@
 						<format>xml</format>
 
 						<!-- The minimum number of duplicated tokens to be
-						reported (default is 100) -->
-						<minimumTokens>100</minimumTokens>
+						reported. 100 (the plugin default) reports hundreds of
+						small look-alike methods; 200 keeps real copy-paste. -->
+						<minimumTokens>200</minimumTokens>
 
-						<!-- Optional: Ignore literal value differences (e.g.,
-						foo=42 vs foo=43) -->
-						<ignoreLiterals>true</ignoreLiterals>
+						<!-- Literals and identifiers must match exactly. With
+						ignoreLiterals/ignoreIdentifiers every builtin's
+						evaluate()/setUp() and every string table looks like
+						one duplicate (thousands of reports). -->
+						<ignoreLiterals>false</ignoreLiterals>
+						<ignoreIdentifiers>false</ignoreIdentifiers>
+						<ignoreAnnotations>true</ignoreAnnotations>
 
-						<!-- Optional: Ignore differences in identifiers like
-						variable and method names -->
-						<ignoreIdentifiers>true</ignoreIdentifiers>
+						<!-- List each duplicate in the build log when
+						cpd-check fails. -->
+						<printFailingErrors>true</printFailingErrors>
+						<linkXRef>false</linkXRef>
 					</configuration>
 				</plugin>
 			</plugins>

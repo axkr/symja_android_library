@@ -4302,6 +4302,7 @@ public final class Arithmetic {
       return exponent.equals(F.C1D2) ? 1 : exponent.equals(F.CN1D2) ? -1 : 0;
     }
 
+    // CPD-OFF numeric argument dispatch of separate evaluator hierarchies, kept apart for speed
     private static IExpr e2NumericArg(IAST ast, final IExpr o0, final IExpr o1) {
       // try {
       IExpr result = F.NIL;
@@ -4369,6 +4370,7 @@ public final class Arithmetic {
       //
       // return F.NIL;
     }
+    // CPD-ON
 
     private static IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr exponent) {
       if (base.isAST(S.Surd, 3)) {

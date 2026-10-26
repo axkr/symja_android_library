@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.ValidateException;
 // import org.matheclipse.core.eval.exception.JASConversionException;
@@ -226,64 +225,13 @@ public class JASConvert<C extends RingElem<C>> {
     if (dim == null || dim[0] == 0 || dim[1] == 0) {
       return null;
     }
-    // if (expr.isSparseArray()) {
-    // ISparseArray array = (ISparseArray) expr;
-    // return array.toFieldMatrix(false);
-    // }
-    if (expr.isList()) {
-      IAST list = (IAST) expr;
-      IAST currInRow = (IAST) list.arg1();
-      if (currInRow.isAST0()) {
-        // special case 0-Matrix
-        IExpr[][] array = new IExpr[0][0];
-        GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, 0, 0);
-        return new GenMatrix<IExpr>(ring, array);
-      }
-      final int rowSize = expr.argSize();
-      final int colSize = currInRow.argSize();
-      if (ifNumericReturnNull) {
-        boolean hasInexactNumber = false;
-        boolean isNoNumericFunction = true;
-        for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
-          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-            return null;
-          }
-          for (int j = 1; j < colSize + 1; j++) {
-            final IExpr arg = currInRow.get(j);
-            if (arg.isInexactNumber()) {
-              hasInexactNumber = true;
-            }
-            if (!arg.isNumericFunction()) {
-              isNoNumericFunction = false;
-              break;
-            }
-          }
-          if (!isNoNumericFunction) {
-            break;
-          }
-        }
-        if (hasInexactNumber && isNoNumericFunction) {
-          if (!EvalEngine.get().isArbitraryMode()) {
-            // if all elements are numeric stop conversion
-            return null;
-          }
-        }
-      }
-      final IExpr[][] elements = new IExpr[rowSize][colSize];
-      for (int i = 1; i < rowSize + 1; i++) {
-        currInRow = (IAST) list.get(i);
-        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-          return null;
-        }
-        for (int j = 1; j < colSize + 1; j++) {
-          elements[i - 1][j - 1] = currInRow.get(j);
-        }
-      }
-      GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, rowSize, colSize);
-      return new GenMatrix<IExpr>(ring, elements);
+    final IExpr[][] elements = Convert.list2Array(expr, ifNumericReturnNull);
+    if (elements == null) {
+      return null;
     }
-    return null;
+    GenMatrixRing<IExpr> ring =
+        new GenMatrixRing<IExpr>(ExprRingFactory.CONST, elements.length, elements[0].length);
+    return new GenMatrix<IExpr>(ring, elements);
   }
 
   /**

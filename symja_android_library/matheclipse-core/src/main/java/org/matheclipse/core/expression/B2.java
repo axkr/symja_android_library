@@ -1257,6 +1257,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     return false;
   }
 
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
@@ -1333,6 +1334,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
     return function.apply(arg2);
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override

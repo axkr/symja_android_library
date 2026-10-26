@@ -201,6 +201,53 @@ public final class PatternMatching {
   }
 
   /**
+   * The symbols and string patterns of <code>Clear(...)</code> or <code>ClearAll(...)</code>: all of
+   * them are validated first, and <code>action</code> runs only if none is protected.
+   *
+   * @return <code>Null</code>, or {@link F#NIL} for an argument that is no symbol or string
+   */
+  private static IExpr clearSymbols(final IAST ast, EvalEngine engine,
+      java.util.function.Consumer<ISymbol> action) {
+    java.util.List<ISymbol> toClear = new java.util.ArrayList<>();
+
+    // Pass 1: Validate and collect all symbols
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg instanceof IStringX) {
+        List<ISymbol> matchedSymbols = getMatchedSymbols(arg.toString(), engine);
+        for (int j = 0; j < matchedSymbols.size(); j++) {
+          ISymbol sym = matchedSymbols.get(j);
+          if (sym.hasProtectedAttribute()) {
+            // Symbol `1` is Protected. Interrupt and return.
+            Errors.printMessage(ast.topHead(), "wrsym", F.list(sym), engine);
+            return S.Null;
+          }
+        }
+        toClear.addAll(matchedSymbols);
+      } else {
+        IExpr x = Validate.checkIdentifierHoldPattern(arg, ast, engine);
+        if (x.isNIL()) {
+          return F.NIL;
+        }
+        if (((ISymbol) x).hasProtectedAttribute()) {
+          // Symbol `1` is Protected. Interrupt and return.
+          Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
+          return S.Null;
+        }
+        toClear.add((ISymbol) x);
+      }
+    }
+
+    // Pass 2: Execute the action
+    for (ISymbol x : toClear) {
+      if (!x.hasProtectedAttribute()) {
+        action.accept(x);
+      }
+    }
+    return S.Null;
+  }
+
+  /**
    *
    *
    * <pre>
@@ -236,43 +283,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      java.util.List<ISymbol> toClear = new java.util.ArrayList<>();
-
-      // Pass 1: Validate and collect all symbols
-      for (int i = 1; i < ast.size(); i++) {
-        IExpr arg = ast.get(i);
-        if (arg instanceof IStringX) {
-          List<ISymbol> matchedSymbols = getMatchedSymbols(arg.toString(), engine);
-          for (int j = 0; j < matchedSymbols.size(); j++) {
-            ISymbol sym = matchedSymbols.get(j);
-            if (sym.hasProtectedAttribute()) {
-              // Symbol `1` is Protected. Interrupt and return.
-              Errors.printMessage(ast.topHead(), "wrsym", F.list(sym), engine);
-              return S.Null;
-            }
-          }
-          toClear.addAll(matchedSymbols);
-        } else {
-          IExpr x = Validate.checkIdentifierHoldPattern(arg, ast, engine);
-          if (x.isNIL()) {
-            return F.NIL;
-          }
-          if (((ISymbol) x).hasProtectedAttribute()) {
-            // Symbol `1` is Protected. Interrupt and return.
-            Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
-            return S.Null;
-          }
-          toClear.add((ISymbol) x);
-        }
-      }
-
-      // Pass 2: Execute the clear action
-      for (ISymbol x : toClear) {
-        if (!x.hasProtectedAttribute()) {
-          x.clear(engine);
-        }
-      }
-      return S.Null;
+      return clearSymbols(ast, engine, x -> x.clear(engine));
     }
 
     @Override
@@ -387,43 +398,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      java.util.List<ISymbol> toClear = new java.util.ArrayList<>();
-
-      // Pass 1: Validate and collect all symbols
-      for (int i = 1; i < ast.size(); i++) {
-        IExpr arg = ast.get(i);
-        if (arg instanceof IStringX) {
-          List<ISymbol> matchedSymbols = getMatchedSymbols(arg.toString(), engine);
-          for (int j = 0; j < matchedSymbols.size(); j++) {
-            ISymbol sym = matchedSymbols.get(j);
-            if (sym.hasProtectedAttribute()) {
-              // Symbol `1` is Protected. Interrupt and return.
-              Errors.printMessage(ast.topHead(), "wrsym", F.list(sym), engine);
-              return S.Null;
-            }
-          }
-          toClear.addAll(matchedSymbols);
-        } else {
-          IExpr x = Validate.checkIdentifierHoldPattern(arg, ast, engine);
-          if (x.isNIL()) {
-            return F.NIL;
-          }
-          if (((ISymbol) x).hasProtectedAttribute()) {
-            // Symbol `1` is Protected. Interrupt and return.
-            Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
-            return S.Null;
-          }
-          toClear.add((ISymbol) x);
-        }
-      }
-
-      // Pass 2: Execute the clearAll action
-      for (ISymbol x : toClear) {
-        if (!x.hasProtectedAttribute()) {
-          x.clearAll(engine);
-        }
-      }
-      return S.Null;
+      return clearSymbols(ast, engine, x -> x.clearAll(engine));
     }
 
     @Override

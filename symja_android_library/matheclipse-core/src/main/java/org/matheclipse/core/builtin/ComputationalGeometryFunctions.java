@@ -879,6 +879,30 @@ public class ComputationalGeometryFunctions {
     return result;
   }
 
+  /** <code>p - q</code> evaluated per coordinate; {@link F#NIL} for different dimensions. */
+  private static IAST difference(IAST p, IAST q, EvalEngine engine) {
+    if (p.argSize() != q.argSize()) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc(p.argSize());
+    for (int i = 1; i < p.size(); i++) {
+      result.append(engine.evaluate(F.Subtract(p.get(i), q.get(i))));
+    }
+    return result;
+  }
+
+  /** The evaluated dot product; {@link F#NIL} for a missing vector or different dimensions. */
+  private static IExpr dot(IAST u, IAST v, EvalEngine engine) {
+    if (u.isNIL() || v.isNIL() || u.argSize() != v.argSize()) {
+      return F.NIL;
+    }
+    IASTAppendable sum = F.ast(S.Plus, u.argSize());
+    for (int i = 1; i < u.size(); i++) {
+      sum.append(F.Times(u.get(i), v.get(i)));
+    }
+    return engine.evaluate(sum);
+  }
+
   private static IExpr[] difference(IAST point, IAST origin) {
     return new IExpr[] {F.eval(point.arg1().subtract(origin.arg1())), //
         F.eval(point.arg2().subtract(origin.arg2())), //
@@ -2493,28 +2517,6 @@ public class ComputationalGeometryFunctions {
       return difference((IAST) points.arg2(), (IAST) points.arg1(), engine);
     }
 
-    private static IAST difference(IAST p, IAST q, EvalEngine engine) {
-      if (p.argSize() != q.argSize()) {
-        return F.NIL;
-      }
-      IASTAppendable result = F.ListAlloc(p.argSize());
-      for (int i = 1; i < p.size(); i++) {
-        result.append(engine.evaluate(F.Subtract(p.get(i), q.get(i))));
-      }
-      return result;
-    }
-
-    private static IExpr dot(IAST u, IAST v, EvalEngine engine) {
-      if (u.isNIL() || v.isNIL() || u.argSize() != v.argSize()) {
-        return F.NIL;
-      }
-      IASTAppendable sum = F.ast(S.Plus, u.argSize());
-      for (int i = 1; i < u.size(); i++) {
-        sum.append(F.Times(u.get(i), v.get(i)));
-      }
-      return engine.evaluate(sum);
-    }
-
     /** Squared lengths of the closed edge cycle, so no square roots enter the comparison. */
     private static IAST squaredSides(IAST corners, EvalEngine engine) {
       IASTAppendable result = F.ListAlloc(corners.argSize());
@@ -2755,28 +2757,6 @@ public class ComputationalGeometryFunctions {
           engine.evaluate(F.Subtract(F.Times(u.arg2(), v.arg3()), F.Times(u.arg3(), v.arg2()))), //
           engine.evaluate(F.Subtract(F.Times(u.arg3(), v.arg1()), F.Times(u.arg1(), v.arg3()))), //
           engine.evaluate(F.Subtract(F.Times(u.arg1(), v.arg2()), F.Times(u.arg2(), v.arg1()))));
-    }
-
-    private static IAST difference(IAST p, IAST q, EvalEngine engine) {
-      if (p.argSize() != q.argSize()) {
-        return F.NIL;
-      }
-      IASTAppendable result = F.ListAlloc(p.argSize());
-      for (int i = 1; i < p.size(); i++) {
-        result.append(engine.evaluate(F.Subtract(p.get(i), q.get(i))));
-      }
-      return result;
-    }
-
-    private static IExpr dot(IAST u, IAST v, EvalEngine engine) {
-      if (u.isNIL() || v.isNIL() || u.argSize() != v.argSize()) {
-        return F.NIL;
-      }
-      IASTAppendable sum = F.ast(S.Plus, u.argSize());
-      for (int i = 1; i < u.size(); i++) {
-        sum.append(F.Times(u.get(i), v.get(i)));
-      }
-      return engine.evaluate(sum);
     }
 
     @Override

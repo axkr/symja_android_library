@@ -275,6 +275,37 @@ public final class Combinatoric {
   }
 
   /**
+   * Count the pairs of entries of the two Boolean vectors <code>ast.arg1()</code> and
+   * <code>ast.arg2()</code>, whose entries are 0, 1, <code>False</code> or <code>True</code>.
+   *
+   * @return <code>{n00, n01, n10, n11}</code> where <code>nij</code> is the number of positions with
+   *         <code>i</code> in the first and <code>j</code> in the second vector, or
+   *         <code>null</code> if the arguments are no vectors of the same length or another value
+   *         occurs
+   */
+  private static int[] booleanPairCounts(final IAST ast) {
+    int dim1 = ast.arg1().isVector();
+    int dim2 = ast.arg2().isVector();
+    if (dim1 != dim2 || dim1 <= 0) {
+      return null;
+    }
+    IAST u = (IAST) ast.arg1().normal(false);
+    IAST v = (IAST) ast.arg2().normal(false);
+    int[] counts = new int[4];
+    for (int i = 1; i < u.size(); i++) {
+      IExpr x = u.get(i);
+      IExpr y = v.get(i);
+      boolean x1 = x.isOne() || x.isTrue();
+      boolean y1 = y.isOne() || y.isTrue();
+      if ((!x1 && !x.isZero() && !x.isFalse()) || (!y1 && !y.isZero() && !y.isFalse())) {
+        return null;
+      }
+      counts[(x1 ? 2 : 0) + (y1 ? 1 : 0)]++;
+    }
+    return counts;
+  }
+
+  /**
    *
    *
    * <pre>
@@ -300,41 +331,14 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
-      if (dim1 == dim2 && dim1 > 0) {
-        IAST u = (IAST) ast.arg1().normal(false);
-        IAST v = (IAST) ast.arg2().normal(false);
-        int length = u.size();
-        int n10 = 0;
-        int n01 = 0;
-        int n11 = 0;
-        IExpr x, y;
-        for (int i = 1; i < length; i++) {
-          x = u.get(i);
-          y = v.get(i);
-          if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
-            n10++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
-            n01++;
-            continue;
-          }
-          if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
-            n11++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
-              && (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
-            continue;
-          }
-          return F.NIL;
-        }
-
-        return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ(2L * n11 + n10 + n01));
+      int[] counts = booleanPairCounts(ast);
+      if (counts == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      int n01 = counts[1];
+      int n10 = counts[2];
+      int n11 = counts[3];
+      return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ(2L * n11 + n10 + n01));
     }
 
     @Override
@@ -522,41 +526,14 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
-      if (dim1 == dim2 && dim1 > 0) {
-        IAST u = (IAST) ast.arg1().normal(false);
-        IAST v = (IAST) ast.arg2().normal(false);
-        int length = u.size();
-        int n10 = 0;
-        int n01 = 0;
-        int n11 = 0;
-        IExpr x, y;
-        for (int i = 1; i < length; i++) {
-          x = u.get(i);
-          y = v.get(i);
-          if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
-            n10++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
-            n01++;
-            continue;
-          }
-          if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
-            n11++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
-              && (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
-            continue;
-          }
-          return F.NIL;
-        }
-
-        return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ((long) n11 + (long) n10 + n01));
+      int[] counts = booleanPairCounts(ast);
+      if (counts == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      int n01 = counts[1];
+      int n10 = counts[2];
+      int n11 = counts[3];
+      return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ((long) n11 + (long) n10 + n01));
     }
 
     @Override
@@ -730,36 +707,14 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
-      if (dim1 == dim2 && dim1 > 0) {
-        IAST u = (IAST) ast.arg1().normal(false);
-        IAST v = (IAST) ast.arg2().normal(false);
-        int length = u.size();
-        int n10 = 0;
-        int n01 = 0;
-        IExpr x, y;
-        for (int i = 1; i < length; i++) {
-          x = u.get(i);
-          y = v.get(i);
-          if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
-            n10++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
-            n01++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
-              && (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
-            continue;
-          }
-          return F.NIL;
-        }
-
-        return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ(length - 1));
+      int[] counts = booleanPairCounts(ast);
+      if (counts == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      int n01 = counts[1];
+      int n10 = counts[2];
+      int length = counts[0] + counts[1] + counts[2] + counts[3];
+      return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ(length));
     }
 
     @Override
@@ -1297,50 +1252,19 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
-      if (dim1 == dim2 && dim1 > 0) {
-        IAST u = (IAST) ast.arg1().normal(false);
-        IAST v = (IAST) ast.arg2().normal(false);
-        int length = u.size();
-        int n10 = 0;
-        int n01 = 0;
-        int n00 = 0;
-        int n11 = 0;
-        IExpr x, y;
-        for (int i = 1; i < length; i++) {
-          x = u.get(i);
-          y = v.get(i);
-          if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
-            n10++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
-            n01++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
-            n00++;
-            continue;
-          }
-          if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
-            n11++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
-              && (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
-            continue;
-          }
-          return F.NIL;
-        }
-
-        long r = 2L * ((long) n10 + (long) n01);
-        if (r == 0L) {
-          return F.C0;
-        }
-        return F.Divide(F.ZZ(r), F.ZZ((long) n11 + (long) n00 + r));
+      int[] counts = booleanPairCounts(ast);
+      if (counts == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      int n00 = counts[0];
+      int n01 = counts[1];
+      int n10 = counts[2];
+      int n11 = counts[3];
+      long r = 2L * ((long) n10 + (long) n01);
+      if (r == 0L) {
+        return F.C0;
+      }
+      return F.Divide(F.ZZ(r), F.ZZ((long) n11 + (long) n00 + r));
     }
 
     @Override
@@ -1379,45 +1303,19 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
-      if (dim1 == dim2 && dim1 > 0) {
-        IAST u = (IAST) ast.arg1().normal(false);
-        IAST v = (IAST) ast.arg2().normal(false);
-        int length = u.size();
-        int n10 = 0;
-        int n01 = 0;
-        int n00 = 0;
-        IExpr x, y;
-        for (int i = 1; i < length; i++) {
-          x = u.get(i);
-          y = v.get(i);
-          if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
-            n10++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
-            n01++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
-            n00++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
-              && (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
-            continue;
-          }
-          return F.NIL;
-        }
-
-        long r = (long) n10 + (long) n01 + n00;
-        if (r == 0L) {
-          return F.C0;
-        }
-        return F.Divide(F.ZZ(r), F.ZZ(length - 1));
+      int[] counts = booleanPairCounts(ast);
+      if (counts == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      int n00 = counts[0];
+      int n01 = counts[1];
+      int n10 = counts[2];
+      int length = counts[0] + counts[1] + counts[2] + counts[3];
+      long r = (long) n10 + (long) n01 + n00;
+      if (r == 0L) {
+        return F.C0;
+      }
+      return F.Divide(F.ZZ(r), F.ZZ(length));
     }
 
     @Override
@@ -1524,48 +1422,18 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
-      if (dim1 == dim2 && dim1 > 0) {
-        IAST u = (IAST) ast.arg1().normal(false);
-        IAST v = (IAST) ast.arg2().normal(false);
-        int length = u.size();
-        int n10 = 0;
-        int n01 = 0;
-        int n11 = 0;
-        IExpr x, y;
-        for (int i = 1; i < length; i++) {
-          x = u.get(i);
-          y = v.get(i);
-          if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
-            n10++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
-            n01++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
-            continue;
-          }
-          if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
-            n11++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
-              && (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
-            continue;
-          }
-          return F.NIL;
-        }
-
-        long r = 2L * ((long) n10 + (long) n01);
-        if (r == 0L) {
-          return F.C0;
-        }
-        return F.Divide(F.ZZ(r), F.ZZ(n11 + r));
+      int[] counts = booleanPairCounts(ast);
+      if (counts == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      int n01 = counts[1];
+      int n10 = counts[2];
+      int n11 = counts[3];
+      long r = 2L * ((long) n10 + (long) n01);
+      if (r == 0L) {
+        return F.C0;
+      }
+      return F.Divide(F.ZZ(r), F.ZZ(n11 + r));
     }
 
     @Override
@@ -1791,50 +1659,19 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
-      if (dim1 == dim2 && dim1 > 0) {
-        IAST u = (IAST) ast.arg1().normal(false);
-        IAST v = (IAST) ast.arg2().normal(false);
-        int length = u.size();
-        int n10 = 0;
-        int n01 = 0;
-        int n00 = 0;
-        int n11 = 0;
-        IExpr x, y;
-        for (int i = 1; i < length; i++) {
-          x = u.get(i);
-          y = v.get(i);
-          if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
-            n10++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
-            n01++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
-            n00++;
-            continue;
-          }
-          if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
-            n11++;
-            continue;
-          }
-          if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
-              && (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
-            continue;
-          }
-          return F.NIL;
-        }
-
-        long r = 2L * n10 * n01;
-        if (r == 0L) {
-          return F.C0;
-        }
-        return F.Divide(F.ZZ(r), F.ZZ((long) n11 * (long) n00 + (long) n10 * (long) n01));
+      int[] counts = booleanPairCounts(ast);
+      if (counts == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      int n00 = counts[0];
+      int n01 = counts[1];
+      int n10 = counts[2];
+      int n11 = counts[3];
+      long r = 2L * n10 * n01;
+      if (r == 0L) {
+        return F.C0;
+      }
+      return F.Divide(F.ZZ(r), F.ZZ((long) n11 * (long) n00 + (long) n10 * (long) n01));
     }
 
     @Override

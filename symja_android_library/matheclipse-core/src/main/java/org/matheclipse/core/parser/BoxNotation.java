@@ -260,7 +260,7 @@ public final class BoxNotation {
     StringBuilder buf = new StringBuilder(text.length() + 2);
     buf.append('"');
     String boxText = writeEscapes(text);
-    if (boxText != text) {
+    if (!boxText.equals(text)) {
       buf.append(Characters.toASCIIEscapes(boxText));
       return buf.append('"').toString();
     }

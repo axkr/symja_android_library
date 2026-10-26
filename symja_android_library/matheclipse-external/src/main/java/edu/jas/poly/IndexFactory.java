@@ -586,7 +586,7 @@ public class IndexFactory implements MonoidFactory<IndexList> {
             s = -1;
         }
         int ii = 0;
-        int b = Math.max(Math.min(Math.abs(rnd.nextInt()) % imaxlength, imaxlength - r - 1), 1);
+        int b = Math.max(Math.min(rnd.nextInt(imaxlength), imaxlength - r - 1), 1);
         for (int i = b; i <= imaxlength && ii < r; i++) {
             f = rnd.nextFloat();
             if (f < q) {

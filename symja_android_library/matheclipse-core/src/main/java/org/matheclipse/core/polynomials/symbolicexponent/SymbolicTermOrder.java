@@ -1306,6 +1306,7 @@ public final class SymbolicTermOrder implements Serializable {
     return sugar;
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Comparison with any other object.
    *
@@ -1643,6 +1644,7 @@ public final class SymbolicTermOrder implements Serializable {
                                                                               // evord, cause
     // REVITDG
   }
+  // CPD-ON
 
   /**
    * Extend lower variables. Extend ExprTermOrder by k elements. <b>Note:</b> todo distinguish TOP

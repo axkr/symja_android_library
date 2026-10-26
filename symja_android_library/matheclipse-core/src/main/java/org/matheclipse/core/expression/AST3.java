@@ -373,6 +373,7 @@ public final class AST3 extends AST2 {
     }
   }
 
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   @Override
   public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
     if (start < end) {
@@ -484,6 +485,7 @@ public final class AST3 extends AST2 {
         throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
     }
   }
+  // CPD-ON
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {

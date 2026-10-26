@@ -60,7 +60,7 @@ import edu.jas.ufdroot.FactorRealAlgebraic;
  *      P)
  */
 
-public class FactorFactory extends edu.jas.ufd.FactorFactory {
+public class FactorFactory {
 
 
     private static final Logger logger = LogManager.getLogger(FactorFactory.class);

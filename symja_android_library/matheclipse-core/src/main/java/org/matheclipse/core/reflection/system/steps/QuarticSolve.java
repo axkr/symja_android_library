@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
@@ -82,19 +83,11 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       if (additionalSolution != null) {
         result.append(additionalSolution);
       }
-      // 18*a*b*c*d-4*b^3*d+b^2*c^2-4*a*c^3-27*a^2*d^2
-      IExpr discriminant = F.eval(Plus(Times(ZZ(18L), a, b, c, d), Times(CN4, Power(b, C3), d),
-          Times(Power(b, C2), Power(c, C2)), Times(CN4, a, Power(c, C3)),
-          Times(ZZ(-27L), Power(a, C2), Power(d, C2))));
-      // b^2 - 3*a*c
-      IExpr delta0 = F.eval(Plus(Power(b, C2), Times(CN1, C3, a, c)));
-      // (-2)*b^3 + 9*a*b*c - 27*a^2*d
-      IExpr delta1 = F.eval(Plus(Times(ZZ(-2L), Power(b, C3)), Times(ZZ(9L), a, b, c),
-          Times(CN1, ZZ(27L), Power(a, C2), d)));
-      // (delta1 + Sqrt[delta1^2-4*delta0^3])^(1/3)
-      IExpr argDelta3 =
-          F.eval(Plus(delta1, Sqrt(Plus(Power(delta1, C2), Times(CN1, C4, Power(delta0, C3))))));
-      IExpr delta3 = F.eval(Power(argDelta3, C1D3));
+      IExpr[] invariants = QuarticSolver.cubicInvariants(a, b, c, d);
+      IExpr discriminant = invariants[0];
+      IExpr delta0 = invariants[1];
+      IExpr argDelta3 = invariants[3];
+      IExpr delta3 = invariants[4];
 
       // IExpr C = F.eval(Times(ZZ(-27L), a.power(C2), discriminant));
       if (discriminant.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {

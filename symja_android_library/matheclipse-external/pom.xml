@@ -64,7 +64,39 @@
 					]]></bnd>
 				</configuration>
 			</plugin>
+			<plugin>
+				<!-- static analysis; settings in the parent pom, spotbugs-exclude.xml lists the
+				patterns which are intended, with the reason. On demand:
+				mvn -o test-compile spotbugs:check -pl matheclipse-external -->
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+			</plugin>
 
 		</plugins>
 	</build>
+
+	<profiles>
+		<!-- SpotBugs check of the main and test classes, opt-in; settings in the parent pom:
+		mvn -Pspotbugs process-test-classes -pl matheclipse-external -am -->
+		<profile>
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>spotbugs-check</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

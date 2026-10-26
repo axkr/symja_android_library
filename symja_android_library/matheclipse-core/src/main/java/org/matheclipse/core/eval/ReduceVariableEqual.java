@@ -417,17 +417,10 @@ public class ReduceVariableEqual {
           if (timesWithoutVariable.isAST0()) {
             IExpr[] numerDenom = AlgebraUtil.numeratorDenominator(ast, true, EvalEngine.get());
             if (!numerDenom[1].isOne()) {
-              IExpr[] numerLinear = numerDenom[0].linear(variable);
-              if (numerLinear != null) {
-                IExpr[] denomLinear = numerDenom[1].linear(variable);
-                if (denomLinear != null) {
-                  IExpr temp = EvalEngine.get()
-                      .evaluate(numerLinear[1].subtract(denomLinear[1].times(exprWithoutVariable)));
-                  if (!temp.isZero()) {
-                    return numerLinear[0].negate().plus(denomLinear[0].times(exprWithoutVariable))
-                        .times(temp.power(-1L));
-                  }
-                }
+              IExpr linearSolution =
+                  AlgebraUtil.linearFractionSolve(numerDenom, exprWithoutVariable, variable);
+              if (linearSolution.isPresent()) {
+                return linearSolution;
               }
             }
             // no change for given expression

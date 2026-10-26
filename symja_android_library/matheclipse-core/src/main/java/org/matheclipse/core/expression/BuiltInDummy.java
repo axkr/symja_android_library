@@ -643,32 +643,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     if (result != null) {
       return result;
     }
-    String prefix = SourceCodeProperties.getPrefixF(properties);
     if (properties.symbolsAsFactoryMethod) {
-      return new StringBuilder(prefix).append(internalJavaStringAsFactoryMethod());
+      return new StringBuilder(SourceCodeProperties.getPrefixF(properties))
+          .append(internalJavaStringAsFactoryMethod());
     }
-    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      String name;
-      if (fSymbolName.length() == 1) {
-        name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
-      } else {
-        name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
-      }
-      if (name != null) {
-        return new StringBuilder(prefix).append(name);
-      }
-    } else {
-      String name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
-      if (name != null && name.equals(fSymbolName)) {
-        return new StringBuilder(prefix).append(name);
-      }
-    }
-    char ch = fSymbolName.charAt(0);
-    if (!properties.noSymbolPrefix && fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
-      return new StringBuilder(prefix).append(fSymbolName);
-    } else {
-      return fSymbolName;
-    }
+    return Symbol.internalJavaString(fSymbolName, properties);
   }
 
   /**

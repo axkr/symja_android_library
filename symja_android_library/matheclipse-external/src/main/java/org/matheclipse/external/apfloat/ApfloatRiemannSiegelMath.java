@@ -392,11 +392,12 @@ public class ApfloatRiemannSiegelMath
     private static double logGamma(double x)
     {
         double shift = 0.0;
-        while (x < 10.0)
+        int steps = (x < 10.0 ? (int) Math.ceil(10.0 - x) : 0);
+        for (int i = 0; i < steps; i++)
         {
-            shift += Math.log(x);
-            x += 1.0;
+            shift += Math.log(x + i);
         }
+        x += steps;
         double x2 = x * x;
         return (x - 0.5) * Math.log(x) - x + 0.5 * Math.log(2.0 * Math.PI) + 1.0 / (12.0 * x) - 1.0 / (360.0 * x * x2) + 1.0 / (1260.0 * x2 * x2 * x) - shift;
     }

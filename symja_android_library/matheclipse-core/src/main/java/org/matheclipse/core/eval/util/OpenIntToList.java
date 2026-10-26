@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
  */
 public class OpenIntToList<T> implements Serializable {
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /** Iterator class for the map. */
   public final class Iterator {
 
@@ -291,6 +292,7 @@ public class OpenIntToList<T> implements Serializable {
 
   /** Keys table. */
   private int[] keys;
+  // CPD-ON
 
   /** Values table. */
   private List<T>[] values;
@@ -482,6 +484,7 @@ public class OpenIntToList<T> implements Serializable {
     return null;
   }
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /** Grow the tables. */
   private void growTable() {
 
@@ -575,6 +578,7 @@ public class OpenIntToList<T> implements Serializable {
       ++count;
     }
   }
+  // CPD-ON
 
   /**
    * Read a serialized object.

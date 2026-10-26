@@ -2208,13 +2208,13 @@ public class PolyUtil {
             return A;
         }
         GenPolynomialRing<C> pfac = A.ring;
-        if (pfac.nvar <= 1) {
-            return translationBase(A, H.get(0));
-        }
-        if (H == null || pfac.nvar != H.size()) {
+        if (H == null || (pfac.nvar > 1 && pfac.nvar != H.size())) {
             throw new IllegalArgumentException(
                             "number of translation points do not match number of variables " + pfac.nvar
-                                            + " != " + H.size());
+                                            + " != " + (H == null ? "null" : String.valueOf(H.size())));
+        }
+        if (pfac.nvar <= 1) {
+            return translationBase(A, H.get(0));
         }
         C h = H.get(0);
         List<C> L = H.subList(1, H.size());
@@ -2259,7 +2259,7 @@ public class PolyUtil {
         if (H == null || pfac.nvar - 1 != H.size()) {
             throw new IllegalArgumentException(
                             "number of translation points do not match number of variables " + (pfac.nvar - 1)
-                                            + " != " + H.size());
+                                            + " != " + (H == null ? "null" : String.valueOf(H.size())));
         }
         C h = H.get(0);
         List<C> L = H.subList(1, H.size());

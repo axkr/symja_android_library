@@ -302,32 +302,8 @@ public class ContourPlot extends ListPlot {
         }
 
         IASTAppendable polygons = F.ListAlloc();
-        for (int i = 0; i < gridX; i++) {
-          for (int j = 0; j < gridY; j++) {
-            double x = xRange[0] + i * stepX;
-            double y = yRange[0] + j * stepY;
-            if (cellClip != null && !inside[i][j] && !inside[i + 1][j] && !inside[i + 1][j + 1]
-                && !inside[i][j + 1]) {
-              continue;
-            }
-            double[][] clip = cellClip == null ? null : cellClip[i][j];
-            if (cellClip != null && clip == null && !(inside[i][j] && inside[i + 1][j]
-                && inside[i + 1][j + 1] && inside[i][j + 1])) {
-              // partly inside, but the region crosses the cell more than once: no single line
-              // describes it, so it is left out as it was before there was any clipping at all
-              continue;
-            }
-            final double c00 = zGrid[i][j];
-            final double c10 = zGrid[i + 1][j];
-            final double c11 = zGrid[i + 1][j + 1];
-            final double c01 = zGrid[i][j + 1];
-            final double cx = x;
-            final double cy = y;
-            final double cLevel = level;
-            clipped(polygons, clip, S.Polygon,
-                out -> processCellPolygon(out, cx, cy, stepX, stepY, c00, c10, c11, c01, cLevel));
-          }
-        }
+        marchGrid(polygons, S.Polygon, ContourPlot::processCellPolygon, zGrid, inside, cellClip,
+            xRange[0], yRange[0], stepX, stepY, gridX, gridY, level);
 
         if (polygons.argSize() > 0) {
           IASTAppendable group = F.ListAlloc();
@@ -358,30 +334,8 @@ public class ContourPlot extends ListPlot {
         // Note: If isMulti is true, contourStyle passed here is already the specific color for
         // this equation
 
-        for (int i = 0; i < gridX; i++) {
-          for (int j = 0; j < gridY; j++) {
-            double x = xRange[0] + i * stepX;
-            double y = yRange[0] + j * stepY;
-            if (cellClip != null && !inside[i][j] && !inside[i + 1][j] && !inside[i + 1][j + 1]
-                && !inside[i][j + 1]) {
-              continue;
-            }
-            double[][] clip = cellClip == null ? null : cellClip[i][j];
-            if (cellClip != null && clip == null && !(inside[i][j] && inside[i + 1][j]
-                && inside[i + 1][j + 1] && inside[i][j + 1])) {
-              continue;
-            }
-            final double c00 = zGrid[i][j];
-            final double c10 = zGrid[i + 1][j];
-            final double c11 = zGrid[i + 1][j + 1];
-            final double c01 = zGrid[i][j + 1];
-            final double cx = x;
-            final double cy = y;
-            final double cLevel = level;
-            clipped(lineSegments, clip, S.Line,
-                out -> processCellLine(out, cx, cy, stepX, stepY, c00, c10, c11, c01, cLevel));
-          }
-        }
+        marchGrid(lineSegments, S.Line, ContourPlot::processCellLine, zGrid, inside, cellClip,
+            xRange[0], yRange[0], stepX, stepY, gridX, gridY, level);
 
         if (lineSegments.argSize() > 0) {
           IASTAppendable group = F.ListAlloc();
@@ -587,9 +541,54 @@ public class ContourPlot extends ListPlot {
     return GraphicsOptions.getFieldColor(val);
   }
 
-  // --- Marching Squares: Polygons ---
+  /** One marching squares cell: {@link #processCellPolygon} or {@link #processCellLine}. */
+  @FunctionalInterface
+  interface CellMarcher {
+    void march(IASTAppendable out, double x, double y, double dx, double dy, double v0, double v1,
+        double v2, double v3, double level);
+  }
 
-  private void processCellPolygon(IASTAppendable out, double x, double y, double dx, double dy,
+  /**
+   * Run a marching squares step over every cell of the grid at one level. With a region
+   * (<code>cellClip != null</code>) a cell wholly outside is skipped, a cell the region edge crosses
+   * once is cut along that edge, and a cell it crosses more than once is left out: no single line
+   * describes it, so it stays as it was before there was any clipping at all.
+   *
+   * @param out the primitives
+   * @param head {@code Polygon} or {@code Line}, which is what <code>marcher</code> draws
+   * @param zGrid the values at the grid points
+   * @param inside which grid points lie in the region; only read if <code>cellClip != null</code>
+   * @param cellClip the line the region edge follows through each cell, or <code>null</code>
+   */
+  static void marchGrid(IASTAppendable out, ISymbol head, CellMarcher marcher, double[][] zGrid,
+      boolean[][] inside, double[][][][] cellClip, double xMin, double yMin, double stepX,
+      double stepY, int gridX, int gridY, double level) {
+    for (int i = 0; i < gridX; i++) {
+      for (int j = 0; j < gridY; j++) {
+        if (cellClip != null && !inside[i][j] && !inside[i + 1][j] && !inside[i + 1][j + 1]
+            && !inside[i][j + 1]) {
+          continue;
+        }
+        double[][] clip = cellClip == null ? null : cellClip[i][j];
+        if (cellClip != null && clip == null && !(inside[i][j] && inside[i + 1][j]
+            && inside[i + 1][j + 1] && inside[i][j + 1])) {
+          continue;
+        }
+        final double x = xMin + i * stepX;
+        final double y = yMin + j * stepY;
+        final double c00 = zGrid[i][j];
+        final double c10 = zGrid[i + 1][j];
+        final double c11 = zGrid[i + 1][j + 1];
+        final double c01 = zGrid[i][j + 1];
+        clipped(out, clip, head,
+            o -> marcher.march(o, x, y, stepX, stepY, c00, c10, c11, c01, level));
+      }
+    }
+  }
+
+  // --- Marching Squares: Polygons (shared with ListContourPlot) ---
+
+  static void processCellPolygon(IASTAppendable out, double x, double y, double dx, double dy,
       double v0, double v1, double v2, double v3, double level) {
     if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
         || !Double.isFinite(v3)) {
@@ -720,17 +719,17 @@ public class ContourPlot extends ListPlot {
     }
   }
 
-  private void add(IASTAppendable list, double[] p) {
+  static void add(IASTAppendable list, double[] p) {
     list.append(F.List(F.num(p[0]), F.num(p[1])));
   }
 
-  private void add(IASTAppendable list, double x, double y) {
+  static void add(IASTAppendable list, double x, double y) {
     list.append(F.List(F.num(x), F.num(y)));
   }
 
   // --- Marching Squares: Lines ---
 
-  private void processCellLine(IASTAppendable out, double x, double y, double dx, double dy,
+  static void processCellLine(IASTAppendable out, double x, double y, double dx, double dy,
       double v0, double v1, double v2, double v3, double level) {
     if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
         || !Double.isFinite(v3)) {
@@ -761,13 +760,13 @@ public class ContourPlot extends ListPlot {
     }
   }
 
-  private double[] interp(double x, double y, double dx, double dy, int edge, double v0, double v1,
+  static double[] interp(double x, double y, double dx, double dy, int edge, double v0, double v1,
       double v2, double v3, double level) {
     return interp(x, y, dx, dy, edge, getVal(edge, 0, v0, v1, v2, v3),
         getVal(edge, 1, v0, v1, v2, v3), level);
   }
 
-  private double getVal(int edge, int endpoint, double v0, double v1, double v2, double v3) {
+  static double getVal(int edge, int endpoint, double v0, double v1, double v2, double v3) {
     if (edge == 0)
       return (endpoint == 0) ? v0 : v1;
     if (edge == 1)
@@ -779,7 +778,7 @@ public class ContourPlot extends ListPlot {
     return 0;
   }
 
-  private double[] interp(double x, double y, double dx, double dy, int edge, double valA,
+  static double[] interp(double x, double y, double dx, double dy, int edge, double valA,
       double valB, double level) {
     double mu = (level - valA) / (valB - valA);
     if (edge == 0)
@@ -793,7 +792,7 @@ public class ContourPlot extends ListPlot {
     return new double[] {x, y};
   }
 
-  private static final int[][] ISO_LINES = {{-1, -1, -1, -1}, {3, 0, -1, -1}, {0, 1, -1, -1},
+  static final int[][] ISO_LINES = {{-1, -1, -1, -1}, {3, 0, -1, -1}, {0, 1, -1, -1},
       {3, 1, -1, -1}, {1, 2, -1, -1}, {3, 0, 1, 2}, {0, 2, -1, -1}, {3, 2, -1, -1}, {2, 3, -1, -1},
       {2, 0, -1, -1}, {0, 1, 2, 3}, {2, 1, -1, -1}, {1, 3, -1, -1}, {1, 0, -1, -1}, {0, 3, -1, -1},
       {-1, -1, -1, -1}};

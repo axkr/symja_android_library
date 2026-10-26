@@ -171,18 +171,6 @@ public final class BigQuaternionInteger extends BigQuaternion
 
     
     /**
-     * Quaternion number inverse.
-     * @param A is a non-zero quaternion number.
-     * @return S with S * A = A * S = 1.
-     */
-    public static BigQuaternion QINV(BigQuaternion A) {
-        if (A == null)
-            return null;
-        return A.inverse();
-    }
-
-
-    /**
      * BigQuaternion inverse.
      * @return S with S * this = this * S = 1.
      * @see edu.jas.structure.RingElem#inverse()
@@ -205,19 +193,6 @@ public final class BigQuaternionInteger extends BigQuaternion
     @Override
     public BigQuaternion remainder(BigQuaternion S) {
         return rightRemainder(S);
-    }
-
-
-    /**
-     * Quaternion number quotient.
-     * @param A BigQuaternion.
-     * @param B BigQuaternion.
-     * @return R * B**(-1).
-     */
-    public static BigQuaternion QQ(BigQuaternion A, BigQuaternion B) {
-        if (A == null)
-            return null;
-        return A.divide(B);
     }
 
 

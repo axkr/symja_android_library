@@ -143,16 +143,6 @@ public final class ExpVectorInteger extends ExpVector
     }
 
 
-    /**
-     * Value of other.
-     * @param e other ExpVector.
-     * @return value in sub class of ExpVector.
-     */
-    //@Override
-    public static ExpVector valueOf(ExpVector e) {
-        return new ExpVectorInteger(e.getVal());
-    }
-
 
     /**
      * Clone this.

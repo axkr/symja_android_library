@@ -8235,16 +8235,7 @@ public class StatisticsContinousDistribution {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
-        IExpr z = F.Plus(F.C1, F.Divide(F.Times(g, F.Subtract(a, F.Slot1)), b));
-        IExpr inverseG = F.Power(g, F.CN1);
-        return callFunction(F.Function(F.Piecewise(F.list(//
-            F.list(F.Divide(F.Exp(F.Subtract(F.Negate(F.Exp(F.Divide(F.Subtract(F.Slot1, a), b))),
-                F.Divide(F.Subtract(a, F.Slot1), b))), b), F.Equal(g, F.C0)), //
-            F.list(
-                F.Divide(F.Power(z, F.Subtract(F.CN1, inverseG)),
-                    F.Times(b, F.Exp(F.Power(z, F.Negate(inverseG))))),
-                F.And(F.Unequal(g, F.C0), F.Greater(z, F.C0)))),
-            F.C0)), k);
+        return callFunction(stablePDF(b, g, F.Subtract(a, F.Slot1), F.Subtract(F.Slot1, a)), k);
       }
       return F.NIL;
     }
@@ -8262,20 +8253,48 @@ public class StatisticsContinousDistribution {
       if (dist.isAST3()) {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
-        // Piecewise({{(b^2*Pi^2)/6, g == 0},
-        // {(b^2*(Gamma(1 - 2*g) - Gamma(1 - g)^2))/g^2, g != 0 && 2*g < 1}}, Indeterminate)
-        return F.Piecewise(F.list(//
-            F.list(F.Divide(F.Times(F.Sqr(b), F.Sqr(F.Pi)), F.C6), F.Equal(g, F.C0)), //
-            F.list(
-                F.Divide(F.Times(F.Sqr(b),
-                    F.Subtract(F.Gamma(F.Subtract(F.C1, F.Times(F.C2, g))),
-                        F.Sqr(F.Gamma(F.Subtract(F.C1, g))))),
-                    F.Sqr(g)),
-                F.And(F.Unequal(g, F.C0), F.Less(F.Times(F.C2, g), F.C1)))),
-            S.Indeterminate);
+        return stableVariance(b, g);
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * The density of <code>MinStableDistribution(a, b, g)</code> and
+   * <code>MaxStableDistribution(a, b, g)</code> as a pure function of <code>#1</code>.
+   *
+   * @param d <code>a - #1</code> for the minimum, <code>#1 - a</code> for the maximum
+   * @param negD the negated <code>d</code>
+   */
+  private static IExpr stablePDF(IExpr b, IExpr g, IExpr d, IExpr negD) {
+    IExpr z = F.Plus(F.C1, F.Divide(F.Times(g, d), b));
+    IExpr inverseG = F.Power(g, F.CN1);
+    return F.Function(F.Piecewise(F.list(//
+        F.list(F.Divide(F.Exp(F.Subtract(F.Negate(F.Exp(F.Divide(negD, b))), F.Divide(d, b))), b),
+            F.Equal(g, F.C0)), //
+        F.list(
+            F.Divide(F.Power(z, F.Subtract(F.CN1, inverseG)),
+                F.Times(b, F.Exp(F.Power(z, F.Negate(inverseG))))),
+            F.And(F.Unequal(g, F.C0), F.Greater(z, F.C0)))),
+        F.C0));
+  }
+
+  /**
+   * The variance of <code>MinStableDistribution(a, b, g)</code> and
+   * <code>MaxStableDistribution(a, b, g)</code>:
+   * <code>Piecewise({{(b^2*Pi^2)/6, g == 0}, {(b^2*(Gamma(1 - 2*g) - Gamma(1 - g)^2))/g^2,
+   * g != 0 && 2*g < 1}}, Indeterminate)</code>
+   */
+  private static IExpr stableVariance(IExpr b, IExpr g) {
+    return F.Piecewise(F.list(//
+        F.list(F.Divide(F.Times(F.Sqr(b), F.Sqr(F.Pi)), F.C6), F.Equal(g, F.C0)), //
+        F.list(
+            F.Divide(F.Times(F.Sqr(b),
+                F.Subtract(F.Gamma(F.Subtract(F.C1, F.Times(F.C2, g))),
+                    F.Sqr(F.Gamma(F.Subtract(F.C1, g))))),
+                F.Sqr(g)),
+            F.And(F.Unequal(g, F.C0), F.Less(F.Times(F.C2, g), F.C1)))),
+        S.Indeterminate);
   }
 
   /**
@@ -8358,16 +8377,7 @@ public class StatisticsContinousDistribution {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
-        IExpr z = F.Plus(F.C1, F.Divide(F.Times(g, F.Subtract(F.Slot1, a)), b));
-        IExpr inverseG = F.Power(g, F.CN1);
-        return callFunction(F.Function(F.Piecewise(F.list(//
-            F.list(F.Divide(F.Exp(F.Subtract(F.Negate(F.Exp(F.Divide(F.Subtract(a, F.Slot1), b))),
-                F.Divide(F.Subtract(F.Slot1, a), b))), b), F.Equal(g, F.C0)), //
-            F.list(
-                F.Divide(F.Power(z, F.Subtract(F.CN1, inverseG)),
-                    F.Times(b, F.Exp(F.Power(z, F.Negate(inverseG))))),
-                F.And(F.Unequal(g, F.C0), F.Greater(z, F.C0)))),
-            F.C0)), k);
+        return callFunction(stablePDF(b, g, F.Subtract(F.Slot1, a), F.Subtract(a, F.Slot1)), k);
       }
       return F.NIL;
     }
@@ -8385,15 +8395,7 @@ public class StatisticsContinousDistribution {
       if (dist.isAST3()) {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
-        return F.Piecewise(F.list(//
-            F.list(F.Divide(F.Times(F.Sqr(b), F.Sqr(F.Pi)), F.C6), F.Equal(g, F.C0)), //
-            F.list(
-                F.Divide(F.Times(F.Sqr(b),
-                    F.Subtract(F.Gamma(F.Subtract(F.C1, F.Times(F.C2, g))),
-                        F.Sqr(F.Gamma(F.Subtract(F.C1, g))))),
-                    F.Sqr(g)),
-                F.And(F.Unequal(g, F.C0), F.Less(F.Times(F.C2, g), F.C1)))),
-            S.Indeterminate);
+        return stableVariance(b, g);
       }
       return F.NIL;
     }

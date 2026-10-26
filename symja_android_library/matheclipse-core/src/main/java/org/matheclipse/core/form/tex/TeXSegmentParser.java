@@ -1194,38 +1194,7 @@ class TeXSegmentParser {
   }
 
   private IExpr toExpr(Node node) {
-    int[] position = new int[] {0};
-    String name = node.getNodeName();
-    if (name.equals("mi")) {
-      return mi(node);
-    } else if (name.equals("mo")) {
-      return mo(node);
-    } else if (name.equals("mn")) {
-      return mn(node);
-    } else if (name.equals("math")) {
-      return convert(node.getChildNodes(), position, null, 0);
-    } else if (name.equals("mfrac")) {
-      return mfrac(node.getChildNodes());
-    } else if (name.equals("msqrt")) {
-      return msqrt(node.getChildNodes());
-    } else if (name.equals("mroot")) {
-      return mroot(node.getChildNodes());
-    } else if (name.equals("msub")) {
-      return msub(node.getChildNodes());
-    } else if (name.equals("msup")) {
-      return msup(node.getChildNodes());
-    } else if (name.equals("msubsup")) {
-      return msubsup(node.getChildNodes(), null, position, 0);
-    } else if (name.equals("munderover")) {
-      return munderover(node.getChildNodes(), null, position, 0);
-    } else if (name.equals("mrow")) {
-      return mrow(node);
-    } else if (name.equals("mfenced")) {
-      return convertArgs(node.getChildNodes(), position);
-    }
-    // LOGGER.info(node.getNodeName());
-    NodeList list = node.getChildNodes();
-    return convert(list, position, null, 0);
+    return toHeadExpr(node, null, new int[] {0}, 0);
   }
 
   /**

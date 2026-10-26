@@ -151,6 +151,7 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
   /** Serializable version identifier. */
   private static final long serialVersionUID = -9179080286849120720L;
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /** Load factor for the map. */
   private static final float LOAD_FACTOR = 0.5f;
 
@@ -304,6 +305,7 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
 
   /** Values table. */
   private Object[] values;
+  // CPD-ON
 
   /** States table. */
   private byte[] states;

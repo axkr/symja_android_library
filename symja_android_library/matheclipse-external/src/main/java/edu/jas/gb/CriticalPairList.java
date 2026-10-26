@@ -206,7 +206,7 @@ public class CriticalPairList<C extends RingElem<C>> extends OrderedPairlist<C> 
      * @param p polynomial.
      * @return index of recorded polynomial, or -1 if not added.
      */
-    public int record(CriticalPair<C> pair, GenPolynomial<C> p) { 
+    public synchronized int record(CriticalPair<C> pair, GenPolynomial<C> p) { 
         if ( p == null ) {
             p = ring.getZERO();
         }
@@ -227,7 +227,7 @@ public class CriticalPairList<C extends RingElem<C>> extends OrderedPairlist<C> 
      * @param p polynomial.
      * @return index of recorded polynomial
      */
-    public int update(CriticalPair<C> pair, GenPolynomial<C> p) { 
+    public synchronized int update(CriticalPair<C> pair, GenPolynomial<C> p) { 
         if ( p == null ) {
             p = ring.getZERO();
         }

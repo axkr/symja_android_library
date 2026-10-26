@@ -77,28 +77,11 @@ public class JSONConvert {
       return list;
     } else if (node instanceof ValueNode) {
       ValueNode valueNode = (ValueNode) node;
-      if (valueNode instanceof NumericNode) {
-        if (valueNode instanceof DoubleNode) {
-          return F.num(valueNode.doubleValue());
-        } else if (valueNode instanceof FloatNode) {
-          return F.num(valueNode.doubleValue());
-        } else if (valueNode instanceof IntNode) {
-          return F.ZZ(valueNode.intValue());
-        } else if (valueNode instanceof LongNode) {
-          return F.ZZ(valueNode.longValue());
-        } else if (valueNode instanceof ShortNode) {
-          return F.ZZ(valueNode.intValue());
-        } else if (valueNode instanceof BigIntegerNode) {
-          return F.ZZ(valueNode.bigIntegerValue());
-        } else if (valueNode instanceof DecimalNode) {
-          return F.num(new Apfloat(valueNode.decimalValue()));
-        }
+      IExpr value = importJSONValue(valueNode);
+      if (value.isPresent()) {
+        return value;
       }
-      if (valueNode instanceof BooleanNode) {
-        return valueNode.booleanValue() ? S.True : S.False;
-      } else if (valueNode instanceof NullNode) {
-        return S.Null;
-      } else if (valueNode instanceof TextNode) {
+      if (valueNode instanceof TextNode) {
         return F.$str(valueNode.textValue());
       }
       return F.$str(valueNode.toString());
@@ -235,4 +218,31 @@ public class JSONConvert {
     return importJSONRecursive(node, rawJSON);
   }
 
+  /**
+   * Convert a JSON number, <code>true</code>, <code>false</code> or <code>null</code>.
+   *
+   * @param valueNode the JSON value
+   * @return <code>F.NIL</code> for a text or any other value
+   */
+  static IExpr importJSONValue(ValueNode valueNode) {
+    if (valueNode instanceof NumericNode) {
+      if (valueNode instanceof DoubleNode || valueNode instanceof FloatNode) {
+        return F.num(valueNode.doubleValue());
+      } else if (valueNode instanceof IntNode || valueNode instanceof ShortNode) {
+        return F.ZZ(valueNode.intValue());
+      } else if (valueNode instanceof LongNode) {
+        return F.ZZ(valueNode.longValue());
+      } else if (valueNode instanceof BigIntegerNode) {
+        return F.ZZ(valueNode.bigIntegerValue());
+      } else if (valueNode instanceof DecimalNode) {
+        return F.num(new Apfloat(valueNode.decimalValue()));
+      }
+    }
+    if (valueNode instanceof BooleanNode) {
+      return valueNode.booleanValue() ? S.True : S.False;
+    } else if (valueNode instanceof NullNode) {
+      return S.Null;
+    }
+    return F.NIL;
+  }
 }
