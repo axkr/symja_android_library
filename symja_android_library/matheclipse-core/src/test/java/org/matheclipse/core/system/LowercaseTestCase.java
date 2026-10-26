@@ -15413,9 +15413,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.36603,-0.366025,1.73205}");
     check("N(WaveletPhi(DaubechiesWavelet(2), 1))", //
         "1.36603");
-    // the symlet scaling function is built from the reversed least asymmetric filter
-    check("{WaveletPhi(SymletWavelet(4), 2.625), WaveletPhi(SymletWavelet(4), 4.375)}", //
-        "{0.928477,-0.0240048}");
+    // the least asymmetric filter, with its energy in the first half; of order 2 it is the
+    // Daubechies filter
+    check("{WaveletPhi(SymletWavelet(4), 2.625), WaveletPhi(SymletWavelet(4), 4.375), "
+        + "WaveletPhi(SymletWavelet(2), 2.0)}", //
+        "{0.928477,-0.0240048,-0.366025}");
     check("{WaveletPhi(HaarWavelet(), 2/5), WaveletPsi(HaarWavelet(), 3/5), WaveletPsi(HaarWavelet(), 1), "
         + "WaveletPhi(HaarWavelet(), -0.5), WaveletPsi(DaubechiesWavelet(3), 3.0)}", //
         "{1,-1,0,0.0,0.0}");

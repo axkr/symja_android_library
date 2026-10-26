@@ -25,10 +25,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  * The low pass filter <code>h</code> of length <code>2n</code> (normalized to
  * <code>Total(h) == Sqrt(2)</code>) comes from the spectral factorization of the Daubechies
  * polynomial: the minimum phase factor for Daubechies wavelets, the factor with the most nearly
- * linear phase for symlets, taken in reverse order. The scaling function solves the refinement
- * equation <code>phi(x) == Sqrt(2)*Sum(h_k*phi(2*x-k))</code> on the support
- * <code>[0, 2n-1]</code>, and
- * the wavelet is <code>psi(x) == Sqrt(2)*Sum((-1)^k*h_(1-k)*phi(2*x-k))</code> on the support
+ * linear phase for symlets, oriented so that its energy lies in the first half. The scaling
+ * function solves the refinement equation <code>phi(x) == Sqrt(2)*Sum(h_k*phi(2*x-k))</code> on
+ * the support <code>[0, 2n-1]</code>, and the wavelet is
+ * <code>psi(x) == Sqrt(2)*Sum((-1)^k*h_(1-k)*phi(2*x-k))</code> on the support
  * <code>[1-n, n]</code>.
  *
  * <p>
@@ -401,12 +401,21 @@ public class WaveletFunctions {
       if (bestFilter == null) {
         return null;
       }
-      // the scaling function of a symlet is built from the filter in reverse order
-      double[] reversed = new double[bestFilter.length];
-      for (int i = 0; i < reversed.length; i++) {
-        reversed[i] = bestFilter[bestFilter.length - 1 - i];
+      // of the filter and its mirror image the one whose energy lies in the first half
+      double energy = 0.0;
+      double moment = 0.0;
+      for (int k = 0; k < bestFilter.length; k++) {
+        energy += bestFilter[k] * bestFilter[k];
+        moment += k * bestFilter[k] * bestFilter[k];
       }
-      return new Scaling(reversed);
+      if (moment / energy > (bestFilter.length - 1) / 2.0) {
+        double[] reversed = new double[bestFilter.length];
+        for (int i = 0; i < reversed.length; i++) {
+          reversed[i] = bestFilter[bestFilter.length - 1 - i];
+        }
+        bestFilter = reversed;
+      }
+      return new Scaling(bestFilter);
     });
   }
 
