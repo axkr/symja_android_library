@@ -94,4 +94,46 @@ public class ImageExprTest extends AbstractTestCase {
     check("Options(Image({{0.3, 0.6}}, ImageSize -> 40), ImageSize)", //
         "{ImageSize->40}");
   }
+  @Test
+  public void inputFormWritesTheSamplesAsANumericArray() {
+    // the samples of a Real32 image in single precision
+    check("ToString(InputForm(Image({{0.1, 0.75}}, \"Real32\")))", //
+        "Image(NumericArray({{0.10000000149011612`,0.75`}},\"Real32\"),\"Real32\","
+            + "ColorSpace->Automatic,Interleaving->None)");
+    check("InputForm(Image({{{7, 8, 9}, {250, 251, 252}}}, \"Byte\"))", //
+        "Image(NumericArray({{{7,8,9},{250,251,252}}},\"UnsignedInteger8\"),\"Byte\","
+            + "ColorSpace->Automatic,Interleaving->True)");
+    check("InputForm({Image({{0, 1, 1}}, \"Bit\"), Image({{3, 60000}}, \"Bit16\"), "
+        + "Image({{0.3, 0.6}}, \"Real64\", ColorSpace -> \"Grayscale\")})", //
+        "{Image(NumericArray({{0,1,1}},\"Integer8\"),\"Bit\","
+            + "ColorSpace->Automatic,Interleaving->None),"
+            + "Image(NumericArray({{3,60000}},\"UnsignedInteger16\"),\"Bit16\","
+            + "ColorSpace->Automatic,Interleaving->None),"
+            + "Image(NumericArray({{0.3`,0.6`}},\"Real64\"),\"Real64\","
+            + "ColorSpace->\"Grayscale\",Interleaving->None)}");
+    // planar data stays planar
+    check("InputForm(Image({{{1, 0}}, {{0, 1}}, {{0, 0}}}, \"Byte\", Interleaving -> False))", //
+        "Image(NumericArray({{{1,0}},{{0,1}},{{0,0}}},\"UnsignedInteger8\"),\"Byte\","
+            + "ColorSpace->Automatic,Interleaving->False)");
+    // and every one of them reads back as the same image
+    check("imgs = {Image({{0.1, 0.35}, {0.55, 0.9}}, \"Real32\"), "
+        + "Image({{0.1, 0.35}}, \"Real64\"), Image({{{7, 8, 9}}}, \"Byte\"), "
+        + "Image({{1, 0}}, \"Bit\"), Image({{3, 60000}}, \"Bit16\"), "
+        + "Image({{{0.1, 0.2}}, {{0.3, 0.4}}, {{0.5, 0.6}}}, Interleaving -> False)}; "
+        + "Map(ToExpression(ToString(InputForm(#))) == # &, imgs)", //
+        "{True,True,True,True,True,True}");
+    check("ImageType /@ Map(ToExpression(ToString(InputForm(#))) &, imgs)", //
+        "{Real32,Real64,Byte,Bit,Bit16,Real32}");
+    // the other forms stay the summary
+    check("ToString(Image({{0.1, 0.75}}))", //
+        "Image(Dimensions: 2,1 Transparency: 1)");
+  }
+
+  @Test
+  public void real32ImagesAreComparedInSinglePrecision() {
+    check("{Image({{0.3, 0.7}}) === Image({{0.30000001, 0.7}}), "
+        + "Image({{0.3, 0.7}}) === Image({{0.3001, 0.7}}), "
+        + "Image({{0.3, 0.7}}, \"Real64\") === Image({{0.30000001, 0.7}}, \"Real64\")}", //
+        "{True,False,False}");
+  }
 }

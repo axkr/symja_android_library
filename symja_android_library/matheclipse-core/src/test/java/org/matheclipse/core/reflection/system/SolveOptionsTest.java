@@ -163,9 +163,9 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
   public void inverseFunctionsGatesTheSymbolicInverses() {
     // an equation which needs a lossy inverse is only solved when one may be applied
     check("Solve(Sqrt(x^2) == a, x)", //
-        "{{x->Sqrt(a^2)},{x->-Sqrt(a^2)}}");
+        "{{x->-Sqrt(a^2)},{x->Sqrt(a^2)}}");
     check("Solve(Sqrt(x^2) == a, x, InverseFunctions -> True)", //
-        "{{x->Sqrt(a^2)},{x->-Sqrt(a^2)}}");
+        "{{x->-Sqrt(a^2)},{x->Sqrt(a^2)}}");
     check("Solve(Sqrt(x^2) == a, x, InverseFunctions -> False)", //
         "Solve(Sqrt(x^2)==a,x,InverseFunctions->False)");
     // a purely algebraic equation needs no inverse function at all

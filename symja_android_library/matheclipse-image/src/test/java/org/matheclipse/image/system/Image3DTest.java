@@ -213,4 +213,44 @@ public class Image3DTest extends AbstractTestCase {
         + "ImageData(Image({{0, 255}}, \"Byte\"), \"Real\")}", //
         "{Real64,Real64,{{0.0,1.0}}}");
   }
+  @Test
+  public void testImage3DSlices() {
+    // the data {slice, row, column} is cut across its first axis unless another one is given
+    check("v = Image3D(ConstantArray(0.7, {3, 2, 5})); "
+        + "{Length(Image3DSlices(v)), ImageDimensions(Image3DSlices(v, 3)), "
+        + "ImageDimensions(Image3DSlices(v, 1, 2)), Length(Image3DSlices(v, All, 3)), "
+        + "ImageDimensions(Image3DSlices(v, 4, 3))}", //
+        "{3,{5,2},{5,3},5,{2,3}}");
+    // a slice keeps the type and the colour space of the volume
+    check("w = Image3D({{{11, 12, 13}, {14, 15, 16}}, {{21, 22, 23}, {24, 25, 26}}}, \"Byte\", "
+        + "ColorSpace -> \"Grayscale\"); "
+        + "{ImageType(Image3DSlices(w, 1)), ImageColorSpace(Image3DSlices(w, 1)), "
+        + "ImageData(Image3DSlices(w, -1), \"Byte\") == {{21, 22, 23}, {24, 25, 26}}, "
+        + "ImageData(Image3DSlices(w, 2, 2), \"Byte\") == {{14, 15, 16}, {24, 25, 26}}, "
+        + "ImageData(Image3DSlices(w, 1, 3), \"Byte\") == {{11, 14}, {21, 24}}}", //
+        "{Byte,Grayscale,True,True,True}");
+    // a list of positions, a span, a span running backwards
+    check("Map(ImageData(#, \"Byte\") &, Image3DSlices(w, {3, -3}, 3)) == "
+        + "{{{13, 16}, {23, 26}}, {{11, 14}, {21, 24}}}", //
+        "True");
+    check("Map(ImageData(#, \"Byte\")[[1, 1]] &, Image3DSlices(w, 2 ;; 3, 3))", //
+        "{12,13}");
+    check("Map(ImageData(#, \"Byte\")[[1, 1]] &, Image3DSlices(w, ;; ;; -1, 3))", //
+        "{13,12,11}");
+    // the slices of a volume stack up to the volume again
+    check("Image3D(Image3DSlices(w)) == w", //
+        "True");
+    // the voxels of a colour volume are pixels of colour slices
+    check("c = Image3D({{{{0.1, 0.2, 0.3}}}, {{{0.4, 0.5, 0.6}}}}); "
+        + "{ImageChannels(Image3DSlices(c, 2)), "
+        + "ImageData(Image3DSlices(c, 2)) == {{{0.4, 0.5, 0.6}}}}", //
+        "{3,True}");
+    // no such slice or axis
+    check("Image3DSlices(Image3D({{{0.3}}, {{0.6}}}), 3)", //
+        "Image3DSlices(Image3D(Dimensions: 1,1,2 Channels: 1),3)");
+    check("Image3DSlices(Image3D({{{0.3}}, {{0.6}}}), {1, -3})", //
+        "Image3DSlices(Image3D(Dimensions: 1,1,2 Channels: 1),{1,-3})");
+    check("Image3DSlices(Image3D({{{0.3}}, {{0.6}}}), 1, 0)", //
+        "Image3DSlices(Image3D(Dimensions: 1,1,2 Channels: 1),1,0)");
+  }
 }

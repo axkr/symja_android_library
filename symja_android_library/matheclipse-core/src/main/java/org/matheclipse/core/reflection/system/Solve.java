@@ -962,7 +962,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         result = solveTwoVariableSystem(termsEqualZeroList, numericFlag, variables.arg1(), engine);
         if (!numericFlag && result.isListOfLists()) {
           IASTMutable simplified = simplifyRadicands((IASTMutable) result, engine);
-          if (simplified != result) {
+          if (simplified != result || hasOppositeValues((IAST) result, engine)) {
             // the negative root -Sqrt(...) before the positive one
             result = QuarticSolver.sortASTArguments(simplified);
           }
@@ -972,6 +972,28 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             variables, engine);
       }
       return result;
+    }
+
+    /**
+     * Whether two of the solutions of one variable are the negatives of each other, as
+     * <code>y -> Sqrt(4-x^2)</code> and <code>y -> -Sqrt(4-x^2)</code>.
+     */
+    private static boolean hasOppositeValues(IAST solutions, EvalEngine engine) {
+      for (int i = 1; i < solutions.size(); i++) {
+        IExpr first = solutions.get(i);
+        if (first.argSize() != 1 || !first.first().isRuleAST()) {
+          return false;
+        }
+        for (int j = i + 1; j < solutions.size(); j++) {
+          IExpr second = solutions.get(j);
+          if (second.argSize() == 1 && second.first().isRuleAST()
+              && engine.evaluate(F.Plus(first.first().second(), second.first().second()))
+                  .isZero()) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     /**
@@ -1729,6 +1751,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
 
       // rewrite some special expressions
+      IASTMutable unsquaredTerms = F.NIL;
       for (int i = 1; i < termsEqualZeroList.size(); i++) {
         IExpr equationTerm = termsEqualZeroList.get(i);
         if (equationTerm.isPlus()) {
@@ -1745,6 +1768,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                     S.Expand.of(engine, F.Sqr(F.Subtract(eq.second(), arg1.first())));
                 IExpr subtractFirstAndSqr = S.Subtract.of(engine, squared, //
                     expandFirstAndSqr);
+                if (unsquaredTerms.isNIL()) {
+                  unsquaredTerms = termsEqualZeroList.copy();
+                }
                 termsEqualZeroList.set(i, //
                     subtractFirstAndSqr);
               }
@@ -1756,8 +1782,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       int start = 1;
       ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();
 
-      return solveEquationsMultiple(termsEqualZeroList, start, inequationsList, variables,
-          maximumNumberOfResults, numericFlag, analyzerList, engine);
+      IASTMutable result = solveEquationsMultiple(termsEqualZeroList, start, inequationsList,
+          variables, maximumNumberOfResults, numericFlag, analyzerList, engine);
+      if (unsquaredTerms.isPresent() && result.isListOfLists()) {
+        // squaring Sqrt(a) + Sqrt(b) == c gains the solutions of Sqrt(a) - Sqrt(b) == c and of
+        // -Sqrt(a) + Sqrt(b) == c: only those of the equation as it was given are kept
+        return crossChecking(unsquaredTerms, result.copy(), engine);
+      }
+      return result;
     }
 
     private IASTMutable solveEquationsMultiple(IASTMutable termsEqualZeroList, int start,
@@ -2519,6 +2551,15 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 return numericResult;
               }
             }
+            if (domain == S.Complexes && variables.argSize() >= 2) {
+              // a system with square roots, which the elimination of one variable after the
+              // other squares into equations of a high degree
+              numericResult = RadicalEquations.solve(termsEqualZeroList, variables, true, engine);
+              if (numericResult.isPresent()) {
+                completeSolutions = true;
+                return numericResult;
+              }
+            }
           }
 
           if (!numericFlag && termsEqualZeroList.argSize() == 1 && variables.argSize() == 1
@@ -2571,6 +2612,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               && termsEqualZeroList.argSize() == 1 && variables.argSize() == 1
               && inequationsList.isEmpty() && intervalDataMap.isEmpty()) {
             result = parametricRoots(termsEqualZeroList.arg1(), variables.arg1(), maxRoots, engine);
+          }
+          if (result.isNIL() && domain == S.Complexes && inequationsList.isEmpty()
+              && intervalDataMap.isEmpty()) {
+            // nested square roots, as Sqrt(1 + Sqrt(x)) + Sqrt(x) == 3
+            result = RadicalEquations.solve(termsEqualZeroList, variables, numericFlag,
+                RadicalEquations.FALLBACK_SOLVE_MILLIS, engine);
           }
           if (result.isNIL()) {
             // The system cannot be solved with the methods available to Solve.
@@ -4613,8 +4660,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     IExpr result = dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
     if (isNumericArgument) {
-      result = inVariableOrder(withRationalizedSolutions(ast, result, false, true, engine), ast);
+      result = withRationalizedSolutions(ast, result, false, true, engine);
     }
+    // the rules of every solution in the order of the variables, which the elimination of the
+    // radicals or the numerical methods do not keep
+    result = inVariableOrder(result, ast);
     return dropIndeterminateSolutions(ast.arg1(), result, engine);
   }
 
@@ -4698,8 +4748,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * The solutions with their rules in the order of the variables of <code>Solve(eqns, vars)</code>,
-   * which the numerical elimination does not keep.
+   * The solutions with their rules in the order of the variables of <code>Solve(eqns, vars)</code>.
    */
   private static IExpr inVariableOrder(IExpr result, IAST ast) {
     if (!result.isListOfLists() || ast.argSize() < 2 || !ast.arg2().isList()) {

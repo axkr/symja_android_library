@@ -64,7 +64,7 @@ public class LinearOptimizationTest extends ExprEvaluatorTestCase {
   @Test
   public void testLinearProgramming() {
     check("LinearProgramming({1, 1}, {{1, 2}}, {3})", //
-        "{0.0,1.5}");
+        "{0,3/2}");
 
     check("LinearProgramming({},{{1,2}},{{3,0}})", //
         "LinearProgramming({},{{1,2}},{{3,0}})");
@@ -72,9 +72,9 @@ public class LinearOptimizationTest extends ExprEvaluatorTestCase {
         "LinearProgramming(Indeterminate,{{1,2}},{{3,0}})");
 
     check("LinearProgramming({1, 1}, {{1, 2}}, {{3,0}})", //
-        "{0.0,1.5}");
+        "{0,3/2}");
     check("LinearProgramming({1, 1}, {{1, 2}}, {{3,-1}})", //
-        "{0.0,0.0}");
+        "{0,0}");
     check("LinearProgramming({1., 1.}, {{5., 2.}}, {3.})", //
         "{0.6,0.0}");
   }
@@ -92,7 +92,7 @@ public class LinearOptimizationTest extends ExprEvaluatorTestCase {
     // http://google-opensource.blogspot.com/2009/06/introducing-apache-commons-math.html
     check(
         "LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, {{6,-1},{12,-1},{0,1},{1,0}})",
-        "{4.0,0.0,1.0}");
+        "{4,0,1}");
     // message: LinearProgramming: inconsistent dimensions: 2 != 3.
     check("LinearProgramming({-2, 1, -5}, {{1, 2},{3, 2},{0,1}},{{6,-1},{12,-1},{0,1}})", //
         "LinearProgramming({-2,1,-5},{{1,2},{3,2},{0,1}},{{6,-1},{12,-1},{0,1}})");

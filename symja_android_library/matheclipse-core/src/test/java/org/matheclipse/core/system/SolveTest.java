@@ -658,8 +658,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1/3)}}");
     // solving order must not change the solution set
     check("Solve({3*x^2 - 3*y == 0, 3*y^2 - 3*x == 0}, {y, x})", //
-        "{{x->0,y->0},{x->1,y->1},{x->-(-1)^(1/3),y->(-1)^(2/3)},{x->(-1)^(2/3),y->-(-1)^(\n"
-            + "1/3)}}");
+        "{{y->0,x->0},{y->1,x->1},{y->(-1)^(2/3),x->-(-1)^(1/3)},{y->-(-1)^(1/3),x->(-1)^(\n"
+            + "2/3)}}");
   }
 
   @Test
@@ -2020,8 +2020,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // check("Eliminate(-x-y+x*y==27,x)", //
     // "True");
     check("Solve({-x+x^2-y+y^2==814,-x-y+x*y==27},{x,y})", //
-        "{{y->2,x->29},{y->29,x->2},{y->-14-Sqrt(197),x->-14+Sqrt(197)},{y->-14+Sqrt(197),x->-\n"
-            + "14-Sqrt(197)}}");
+        "{{x->29,y->2},{x->2,y->29},{x->-14+Sqrt(197),y->-14-Sqrt(197)},{x->-14-Sqrt(197),y->-\n"
+            + "14+Sqrt(197)}}");
   }
 
   @Test
@@ -2266,10 +2266,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // is x == -Log(2) == ArcSinh(-3/4), y == Log(3/2) == ArcCosh(13/12); y == -ArcCosh(13/12) is a
     // root of the squared equation only and is dropped by the cross check.
     check("Solve({Cosh(x)-3*Sinh(y)==0,2*Sinh(x)+6*Cosh(y)==5},{x,y})", //
-        "{{y->ConditionalExpression(ArcCosh(13/12)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcSinh(\n" //
-            + "5/2-3*Cosh(ArcCosh(13/12)+I*2*Pi*C(1))),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(ArcSinh(5/2-3*Cosh(ArcCosh(13/12)+I*2*Pi*C(1))),C(1)∈Integers),y->ConditionalExpression(ArcCosh(\n"
+            + "13/12)+I*2*Pi*C(1),C(1)∈Integers)}}");
     check("N(Solve({Cosh(x)-3*Sinh(y)==0,2*Sinh(x)+6*Cosh(y)==5},{x,y}) /. C(1)->0)", //
-        "{{y->0.405465,x->-0.693147}}");
+        "{{x->-0.693147,y->0.405465}}");
   }
 
   @Test
@@ -2928,15 +2928,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Sqrt(59049*Pi^4)", //
         "243*Pi^2");
     check("Solve({9==x/y, x==pi*y^4},{x,y})", //
-        "{{y->(-3)^(2/3)/Pi^(1/3),x->(9*(-3)^(2/3))/Pi^(1/3)},{y->3^(2/3)/Pi^(1/3),x->(9*\n"
-            + "3^(2/3))/Pi^(1/3)},{y->(-(-1)^(1/3)*3^(2/3))/Pi^(1/3),x->(-9*(-1)^(1/3)*3^(2/3))/Pi^(\n"
+        "{{x->(9*(-3)^(2/3))/Pi^(1/3),y->(-3)^(2/3)/Pi^(1/3)},{x->(9*3^(2/3))/Pi^(1/3),y->\n"
+            + "3^(2/3)/Pi^(1/3)},{x->(-9*(-1)^(1/3)*3^(2/3))/Pi^(1/3),y->(-(-1)^(1/3)*3^(2/3))/Pi^(\n"
             + "1/3)}}");
     check("Solve({9==x/y, x==pi*y^4},{x,y}) //N", //
-        "{{y->-0.710124+I*1.22997,x->-6.39112+I*11.06974}," //
-            + "{y->1.42025,x->12.78223}," //
-            + "{y->-0.710124+I*(-1.22997),x->-6.39112+I*(-11.06974)}}");
+        "{{x->-6.39112+I*11.06974,y->-0.710124+I*1.22997},{x->12.78223,y->1.42025},{x->-6.39112+I*(-11.06974),y->-0.710124+I*(-1.22997)}}");
     check("Solve({x==Pi*y^2, 5==x/y}, {x,y})", //
-        "{{y->5/Pi,x->25/Pi}}");
+        "{{x->25/Pi,y->5/Pi}}");
   }
 
   @Test
@@ -3213,7 +3211,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{y->0},{y->(-3)^(2/3)/Pi^(1/3)},{y->3^(2/3)/Pi^(1/3)},{y->(-(-1)^(1/3)*3^(2/3))/Pi^(\n"
             + "1/3)}}");
     check("Solve({x==Pi*y^2,5==x/y},{x,y})", //
-        "{{y->5/Pi,x->25/Pi}}");
+        "{{x->25/Pi,y->5/Pi}}");
   }
 
   @Test
@@ -3281,11 +3279,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "3))/Sqrt(2)},{x->-Sqrt(-1+I*Sqrt(3))/Sqrt(2)}}");
 
     check("Solve(x^8+4*x^7+2*x^6-8*x^5-5*x^4+8*x^3+2*x^2-4*x+8==0, x)", //
-        "{{x->1/4*(-2-Sqrt(20-8*Sqrt(-I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20-8*Sqrt(-I*4)*7^(\n"
-            + "1/4)))},{x->1/4*(-2-Sqrt(20+8*Sqrt(-I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20+8*Sqrt(-\n"
-            + "I*4)*7^(1/4)))},{x->1/4*(-2-Sqrt(20-8*Sqrt(I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20-8*Sqrt(\n"
-            + "I*4)*7^(1/4)))},{x->1/4*(-2-Sqrt(20+8*Sqrt(I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20+8*Sqrt(\n"
-            + "I*4)*7^(1/4)))}}");
+        "{{x->1/2*(-1-Sqrt(5-4*(-7)^(1/4)))},{x->1/2*(-1+Sqrt(5-4*(-7)^(1/4)))},{x->1/2*(-\n"
+            + "1-Sqrt(5+4*(-7)^(1/4)))},{x->1/2*(-1+Sqrt(5+4*(-7)^(1/4)))},{x->1/2*(-1-Sqrt(5-4*(-\n"
+            + "1)^(3/4)*7^(1/4)))},{x->1/2*(-1+Sqrt(5-4*(-1)^(3/4)*7^(1/4)))},{x->1/2*(-1-Sqrt(\n"
+            + "5+4*(-1)^(3/4)*7^(1/4)))},{x->1/2*(-1+Sqrt(5+4*(-1)^(3/4)*7^(1/4)))}}");
   }
 
   @Test
@@ -3901,20 +3898,33 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("N(Solve({E^x==3*y,y==x},{x,y}))", //
         "{{x->0.619061,y->0.619061},{x->1.51213,y->1.51213}}");
     check("Solve({E^x==3*x,y==x+1},{x,y})", //
-        "{{y->1-ProductLog(-1/3),x->-ProductLog(-1/3)},{y->1-ProductLog(-1,-1/3),x->-ProductLog(-\n"
+        "{{x->-ProductLog(-1/3),y->1-ProductLog(-1/3)},{x->-ProductLog(-1,-1/3),y->1-ProductLog(-\n"
             + "1,-1/3)}}");
     check("Solve({E^x==3*x,y==x+1},{x,y},Reals)", //
-        "{{y->1-ProductLog(-1/3),x->-ProductLog(-1/3)},{y->1-ProductLog(-1,-1/3),x->-ProductLog(-\n"
+        "{{x->-ProductLog(-1/3),y->1-ProductLog(-1/3)},{x->-ProductLog(-1,-1/3),y->1-ProductLog(-\n"
             + "1,-1/3)}}");
     check("N(Solve({2^x==4*x,y==x+1},{x,y}))", //
-        "{{y->1.30991,x->0.309907},{y->5.0,x->4.0}}");
+        "{{x->0.309907,y->1.30991},{x->4.0,y->5.0}}");
     check("Solve({E^x==3*x,y^2==x},{x,y}) // N", //
-        "{{y->-0.786804,x->0.619061},{y->0.786804,x->0.619061},"
-            + "{y->-1.22969,x->1.51213},{y->1.22969,x->1.51213}}");
+        "{{x->0.619061,y->-0.786804},{x->0.619061,y->0.786804},{x->1.51213,y->-1.22969},{x->1.51213,y->1.22969}}");
     // the second root of x^2*Log(x) == -1/10 near 0.28
     check("Solve(x^2*Log(x)==-1/10,x) // N", //
         "{{x->0.878459},{x->0.280461}}");
     check("Solve({2^x==x^2,y==x},{x,y}) // N", //
-        "{{y->2.0,x->2.0},{y->-0.766665,x->-0.766665},{y->4.0,x->4.0}}");
+        "{{x->2.0,y->2.0},{x->-0.766665,y->-0.766665},{x->4.0,y->4.0}}");
+  }
+
+  @Test
+  public void testSolveTwoSquareRootsSquaredOnce() {
+    // squaring Sqrt(a) + Sqrt(b) == c gains solutions of the equations with other signs, which
+    // are dropped: a sum of square roots of reals is no negative number
+    check("Solve(Sqrt(z) + Sqrt(z + 3) == -2, z)", //
+        "{}");
+    check("Solve(-Sqrt(z) - Sqrt(z + 4) == 2, z)", //
+        "{}");
+    check("Solve(Sqrt(z) - Sqrt(z + 8) == -2, z)", //
+        "{{z->1}}");
+    check("Solve(Sqrt(z + 5) + Sqrt(z - 7) == 6, z)", //
+        "{{z->11}}");
   }
 }

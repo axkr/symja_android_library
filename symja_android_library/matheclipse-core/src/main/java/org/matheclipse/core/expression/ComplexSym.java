@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Pi;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Optional;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
@@ -38,6 +39,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
+import com.google.common.math.BigIntegerMath;
 import edu.jas.arith.BigComplex;
 
 /** A symbolic complex number implementation */
@@ -907,22 +909,46 @@ public class ComplexSym implements IComplex {
     // this == c + d*I
     IRational c = fReal;
     IRational d = fImaginary;
-    IExpr val1 = c.multiply(c).add(d.multiply(d)).sqrt();
-    if (val1.isRational()) {
-      IExpr a = c.add((IRational) val1).divide(F.C2).sqrt();
-      if (a.isRational()) {
-        IExpr val2 = ((IRational) val1).subtract(c).divide(F.C2).sqrt();
-        if (val2.isRational()) {
-          // Sqrt(c + d*I) -> a + b*I
-          IRational b = ((IRational) val2);
-          return valueOf( //
-              (IRational) a, //
-              (d.complexSign() >= 0) ? b : b.negate() //
-          );
+    IRational modulus = exactRationalSqrt(c.multiply(c).add(d.multiply(d)));
+    if (modulus != null) {
+      IRational a = exactRationalSqrt(c.add(modulus).divideBy(F.C2));
+      if (a != null) {
+        IRational b = exactRationalSqrt(modulus.subtract(c).divideBy(F.C2));
+        if (b != null) {
+          // Sqrt(c + d*I) -> a + b*I, the principal root has a >= 0
+          return valueOf(a, (d.complexSign() >= 0) ? b : b.negate());
         }
       }
     }
     return null;
+  }
+
+  /**
+   * The exact square root of a non-negative rational number.
+   *
+   * @param r the rational number
+   * @return the non-negative rational square root or <code>null</code> if <code>r</code> is
+   *         negative or not the square of a rational number
+   */
+  private static IRational exactRationalSqrt(IRational r) {
+    if (r.isNegative()) {
+      return null;
+    }
+    BigInteger numerator = exactIntegerSqrt(r.toBigNumerator());
+    if (numerator == null) {
+      return null;
+    }
+    BigInteger denominator = exactIntegerSqrt(r.toBigDenominator());
+    if (denominator == null) {
+      return null;
+    }
+    IInteger root = F.ZZ(numerator);
+    return denominator.equals(BigInteger.ONE) ? root : root.divideBy(F.ZZ(denominator));
+  }
+
+  private static BigInteger exactIntegerSqrt(BigInteger n) {
+    BigInteger root = BigIntegerMath.sqrt(n, RoundingMode.FLOOR);
+    return root.multiply(root).equals(n) ? root : null;
   }
 
   public ComplexSym subtract(final ComplexSym that) {

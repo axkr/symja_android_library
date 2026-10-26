@@ -13,10 +13,10 @@ See
 
 ```
 >> LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, {{6,-1},{12,-1},{0,1},{1,0}})
-{4.0,0.0,1.0} 
+{4,0,1} 
 ```
 
-solves the linear problem:
+solves the linear problem exactly, because all its numbers are exact; with machine numbers the result is a list of machine numbers. It solves the linear problem:
 
 ```
 Minimize -2x + y - 5

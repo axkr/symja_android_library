@@ -13976,12 +13976,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,1,0}");
     // the second variable is an integer only
     check("LinearProgramming({1, 1}, {{2, 3}}, {7}, 0, {Reals, Integers})", //
-        "{0.5,2}");
+        "{1/2,2}");
     check("LinearProgramming({1, 1}, {{2, 3}}, {7}, 1)", //
-        "{1.0,1.66667}");
+        "{1,5/3}");
     // an unknown domain is reported and taken as Reals
     check("LinearProgramming({1, 1}, {{2, 3}}, {7}, 0, Rationals)", //
-        "{0.0,2.33333}");
+        "{0,7/3}");
   }
 
   @Test
@@ -14124,7 +14124,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testSolveCurriedVariables() {
     check("{Solve({g(2)[s] + h == 4, g(2)[s] - h == 2}, {g(2)[s], h}), Solve(w(1)[z]^2 == 9, w(1)[z])}", //
-        "{{{h->1,g(2)[s]->3}},{{w(1)[z]->-3},{w(1)[z]->3}}}");
+        "{{{g(2)[s]->3,h->1}},{{w(1)[z]->-3},{w(1)[z]->3}}}");
   }
 
   @Test
@@ -16526,6 +16526,153 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // not Hermitian
     check("VectorQ(Eigenvalues({{2.0, 1.0+I}, {1.0+I, 3.0}}), Element(#, Reals)&)", //
         "False");
+  }
+
+  @Test
+  public void testSolveSquareRootPairNegativeFirst() {
+    check("Solve(a == -Sqrt(9 - b^2), b)", //
+        "{{b->-Sqrt(9-a^2)},{b->Sqrt(9-a^2)}}");
+    check("Solve(c == Sqrt(16 - d^2), d)", //
+        "{{d->-Sqrt(16-c^2)},{d->Sqrt(16-c^2)}}");
+  }
+
+  @Test
+  public void testSolveRadicalSystemVariableOrder() {
+    check("Solve({Sqrt((x-2)^2+y^2)+Sqrt((x+2)^2+y^2)==5, Sqrt(x^2+(y-2)^2)+Sqrt(x^2+(y+2)^2)==5}, {x,y})", //
+        "{{x->-15/(2*Sqrt(34)),y->-15/(2*Sqrt(34))},{x->-15/(2*Sqrt(34)),y->15/(2*Sqrt(34))},{x->\n"
+            + "15/(2*Sqrt(34)),y->-15/(2*Sqrt(34))},{x->15/(2*Sqrt(34)),y->15/(2*Sqrt(34))}}");
+    check("Solve({u+v==3, u-v==1}, {v,u})", //
+        "{{v->1,u->2}}");
+  }
+
+  @Test
+  public void testSolveNestedSquareRoots() {
+    check("Solve(Sqrt(4 + Sqrt(x)) + Sqrt(x) == 8, x)", //
+        "{{x->25}}");
+    // the norm has the roots +/-9/8, which both solve the equation
+    check("Solve(Sqrt(x^2 + (Sqrt(4 - x^2) - 2)^2) + Sqrt(x^2 + (Sqrt(4 - x^2) + 2)^2) == 5, x)", //
+        "{{x->-9/8},{x->9/8}}");
+    // u=Sqrt(x): Sqrt(2+u) == 5-u gives u == (11-Sqrt(29))/2, the other root has 5-u < 0
+    check("Solve(Sqrt(2 + Sqrt(x)) + Sqrt(x) == 5, x)", //
+        "{{x->1/2*(75-11*Sqrt(29))}}");
+    check("NSolve(Sqrt(2 + Sqrt(x)) + Sqrt(x) == 5, x)", //
+        "{{x->7.88159}}");
+  }
+
+  @Test
+  public void testNSolveSquareRootSystem() {
+    // the sums of the distances to two points: two real and two complex solutions
+    check("s = NSolve({Sqrt(x^2+y^2)+Sqrt((x-4)^2+y^2)==6, "
+        + "Sqrt(x^2+(y-1)^2)+Sqrt((x-4)^2+(y+2)^2)==7}, {x,y}); "
+        + "{Length(s), Max(Abs({Sqrt(x^2+y^2)+Sqrt((x-4)^2+y^2)-6, "
+        + "Sqrt(x^2+(y-1)^2)+Sqrt((x-4)^2+(y+2)^2)-7} /. s)) < 10^(-8)}", //
+        "{4,True}");
+    check("s = NSolve({9.25 == Sqrt((x-1.5)^2+y^2)+Sqrt((x+3.)^2+(y-2.)^2), "
+        + "8.5 == Sqrt(x^2+(y+4.)^2)+Sqrt((x-2.)^2+(y-1.)^2)}, {x,y}); "
+        + "Round(Cases({x,y} /. s, {_Real,_Real}), 0.001)", //
+        "{{-2.427,-2.538},{3.541,1.776}}");
+    check("Max(Abs({Sqrt((x-1.5)^2+y^2)+Sqrt((x+3.)^2+(y-2.)^2)-9.25, "
+        + "Sqrt(x^2+(y+4.)^2)+Sqrt((x-2.)^2+(y-1.)^2)-8.5} /. s)) < 10^(-8)", //
+        "True");
+  }
+
+  @Test
+  public void testSqrtGaussianRational() {
+    check("Sqrt((-5 + 12*I)/4)", //
+        "1+I*3/2");
+    check("Sqrt(-15 + 8*I)", //
+        "1+I*4");
+    check("Sqrt(-21 - 20*I)", //
+        "2-I*5");
+    check("Sqrt(7*I)", //
+        "(-1)^(1/4)*Sqrt(7)");
+    check("Sqrt(-5*I/9)", //
+        "-1/3*(-1)^(3/4)*Sqrt(5)");
+    check("Sqrt(8*I/5)", //
+        "(2+I*2)/Sqrt(5)");
+    check("Sqrt(1 + I)", //
+        "Sqrt(1+I)");
+    // only the numerator I of I/18 is taken as a square, not (1+I)/6 whose square is I/18
+    check("{Sqrt(I/18), Sqrt(-I/8)}", //
+        "{(-1)^(1/4)/(3*Sqrt(2)),-(-1)^(3/4)/(2*Sqrt(2))}");
+    check("Chop(N(Sqrt(-5*I/9)) - Sqrt(N(-5*I/9)))", //
+        "0");
+  }
+
+  @Test
+  public void testLinearProgrammingSparseArrayExact() {
+    // minimize 3x+2y with x+3y>=6, 2x+y>=4, x,y>=0: the vertex where both constraints are tight
+    check("LinearProgramming({3, 2}, SparseArray({{1, 3}, {2, 1}}), {{6, 1}, {4, 1}})", //
+        "{6/5,8/5}");
+    check("LinearProgramming({3., 2}, SparseArray({{1, 3}, {2, 1}}), {{6, 1}, {4, 1}})", //
+        "{1.2,1.6}");
+    // x <= 1 is no lower bound for x: unbounded
+    check("LinearProgramming({1, 1}, {{1, 2}}, {{3, 0}}, {{-Infinity, 1}, {0, Infinity}})", //
+        "LinearProgramming({1,1},{{1,2}},{{3,0}},{{-Infinity,1},{0,Infinity}})");
+  }
+
+  @Test
+  public void testLinearOptimizationMatrixForm() {
+    // minimize c.x for free x with a.x + b >= 0
+    check("LinearOptimization({3, 2}, {{{1, 3}, {2, 1}}, {-6, -4}})", //
+        "{6/5,8/5}");
+    check("LinearOptimization({3, 2}, {SparseArray({{1, 3}, {2, 1}}), {-6, -4}})", //
+        "{6/5,8/5}");
+    check("LinearOptimization({3., 2}, {{{1, 3}, {2, 1}}, {-6, -4}})", //
+        "{1.2,1.6}");
+    // and the equations aeq.x + beq == 0
+    check("LinearOptimization({1, 3}, {{{1, 0}, {0, 1}}, {-1, -2}}, {{{1, 1}}, {-5}})", //
+        "{3,2}");
+    // message LinearOptimization: The problem is unbounded.
+    check("LinearOptimization({1, 1}, {{{1, -1}}, {0}})", //
+        "{Indeterminate,Indeterminate}");
+    // message LinearOptimization: There are no points which satisfy the constraints.
+    check("LinearOptimization({1, 1}, {{{1, 0}, {-1, 0}}, {-3, 1}})", //
+        "{Indeterminate,Indeterminate}");
+  }
+
+  @Test
+  public void testNDSolveMachineRightHandSides() {
+    // coefficients beyond the range of machine numbers keep their precision
+    check("s = NDSolve({y'(t) == 2.*^320*y(t)/4.*^320, y(0) == 1}, y, {t, 0, 2});"
+        + " Abs((y(2) /. First(s)) - E) < 10^-6", //
+        "True");
+    // a coefficient of 20 digits is integrated in machine numbers
+    check("s = NDSolve({y'(t) == -0.50000000000000000000*y(t), y(0) == 1}, y, {t, 0, 2});"
+        + " Abs((y(2) /. First(s)) - Exp(-1.0)) < 10^-9", //
+        "True");
+    // a long integration whose right hand sides are evaluated by their machine number operations
+    check("s = NDSolve({x'(t) == y(t), y'(t) == -x(t), x(0) == 1, y(0) == 0}, {x, y}, "
+        + "{t, 0, 4000}); Abs((x(4000) /. First(s)) - Cos(4000.0)) < 10^-6", //
+        "True");
+    // a right hand side which isn't a real number is evaluated symbolically
+    check("s = NDSolve({y'(t) == Sqrt(y(t)-2), y(0) == 1}, y, {t, 0, 1});"
+        + " Chop((y(1) /. First(s)) - (5/4 + I))", //
+        "0");
+  }
+
+  @Test
+  public void testTimeSeries() {
+    // a path needs one time for each of its values
+    check("TemporalData(TimeSeries, {{{7, 8, 9}}, {{{1, 2}}}, 1, {\"Continuous\", 1}, "
+        + "{\"Discrete\", 1}, 1, {}}, False, 15.0)[\"Path\"] // Head", //
+        "TemporalData(TimeSeries,{{{7,8,9}},{{{1,2}}},1,{Continuous,1},{Discrete,1},1,{}},False,15.0)");
+    check("TimeSeries({4, 5, 6}, {0, 4, 2})[\"Path\"]", //
+        "{{0,4},{2,5},{4,6}}");
+    // the path is ordered by the times
+    check("TimeSeries({4, 5, 6}, {{5, 1, 3}})[\"Path\"]", //
+        "{{1,5},{3,6},{5,4}}");
+    check("Normal(TimeSeries({{2, b}, {1, a}}))", //
+        "{{1,a},{2,b}}");
+    check("ts = TimeSeries({4, 5, 6}, {0, 1}); {ts[\"Times\"], ts[\"Values\"], "
+        + "ts[\"FirstTime\"], ts[\"LastTime\"], ts[\"PathLength\"], ts[\"LastValue\"]}", //
+        "{{0,1/2,1},{4,5,6},0,1,3,6}");
+    // the times don't fit the values
+    check("TimeSeries({4, 5}, {0, 4, 2})", //
+        "TimeSeries({4,5},{0,4,2})");
+    check("Normal(TemporalData(TimeSeries, {{{8, 9}}, {{0, 1/2, 1/2}}, 1, {\"Continuous\", 1}, "
+        + "{\"Discrete\", 1}, 1, {}}, False, 15.0))", //
+        "{{0,8},{1/2,9}}");
   }
 
   @Test

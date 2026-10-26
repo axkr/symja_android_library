@@ -220,6 +220,18 @@ public final class Raster {
     return 0;
   }
 
+  /**
+   * The samples rounded to single precision, which is what an image of type <code>"Real32"</code>
+   * holds: two such images whose samples differ by less than that are the same image.
+   */
+  public Raster toSinglePrecision() {
+    double[] rounded = new double[samples.length];
+    for (int i = 0; i < samples.length; i++) {
+      rounded[i] = (float) samples[i];
+    }
+    return new Raster(width, height, channels, rounded);
+  }
+
   /** A hash of the shape and the samples, equal for two rasters {@link #compareTo} finds equal. */
   public int samplesHashCode() {
     return 31 * (31 * (31 * width + height) + channels) + java.util.Arrays.hashCode(samples);

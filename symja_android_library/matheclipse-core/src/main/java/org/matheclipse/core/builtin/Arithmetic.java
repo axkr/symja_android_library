@@ -94,7 +94,6 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumStr;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.interfaces.Attribute;
@@ -4049,26 +4048,15 @@ public final class Arithmetic {
      * @return
      */
     private static IExpr complexFraction(final IComplex base, final IFraction exponent) {
+      if ((exponent.isNumEqualRational(F.C1D2) || exponent.isNumEqualRational(F.CN1D2))
+          && !base.isImaginaryUnit() && !base.isNegativeImaginaryUnit()) {
+        IExpr sqrt = sqrtGaussianRational(base);
+        if (sqrt.isPresent()) {
+          return exponent.isNegative() ? F.Power(sqrt, F.CN1) : sqrt;
+        }
+      }
       if (base.getRealPart().isZero()) {
-        if (exponent.isNumEqualRational(F.C1D2)) {
-          // square root of pure imaginary number
-          IRational im = base.getImaginaryPart();
-          boolean negative = false;
-          im = im.divideBy(F.C2);
-          if (im.isNegative()) {
-            im = im.negate();
-            negative = true;
-          }
-          if (NumberUtil.isPerfectSquare(im)) {
-            IExpr temp = F.Sqrt(im);
-            if (negative) {
-              // Sqrt(im.negate()) - I * Sqrt(im);
-              return F.Plus(temp, F.Times(F.CNI, temp));
-            }
-            // Sqrt(im.negate()) + I * Sqrt(im);
-            return F.Plus(temp, F.Times(F.CI, temp));
-          }
-        } else if (exponent.isNumEqualRational(F.CN1D2) && base.isImaginaryUnit()) {
+        if (exponent.isNumEqualRational(F.CN1D2) && base.isImaginaryUnit()) {
           // I^(-1/2) == -(-1)^(3/4); another imaginary number has another modulus or argument
           return F.Times(F.CN1, F.Power(-1, F.C3D4));
         }
@@ -4089,12 +4077,38 @@ public final class Arithmetic {
           return F.Times(F.CN1, F.Power(F.CNI, div),
               F.Power(-1, F.fraction(denominator.subtract(numerator), denominator)));
         }
-        if (exponent.equals(F.C1D2)) {
-          IComplex sqrt = base.sqrtCC();
-          if (sqrt != null) {
-            return sqrt;
-          }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The principal square root of the Gaussian rational <code>z == p/d</code>, with the Gaussian
+     * integer <code>p</code> and the common denominator <code>d</code>, if it can be written as
+     * <code>Sqrt(p)/Sqrt(d)</code> for a perfect square <code>p</code>, or as
+     * <code>(-1)^(1/4)*Sqrt(r)</code> for a pure imaginary <code>z == r*I</code>. The root of
+     * <code>I/2</code> is <code>(-1)^(1/4)/Sqrt(2)</code> although <code>(1+I)/2</code> squares to
+     * it too: only the numerator is taken as a square.
+     *
+     * @param z a Gaussian rational number with non-zero imaginary part
+     * @return {@link F#NIL} if no such form exists
+     */
+    private static IExpr sqrtGaussianRational(final IComplex z) {
+      IRational re = z.getRealPart();
+      IRational im = z.getImaginaryPart();
+      IInteger denominator = re.denominator().lcm(im.denominator());
+      // Sqrt(p/d) -> Sqrt(p)/Sqrt(d) for a perfect square Gaussian integer p
+      IComplex root = denominator.isOne() ? z.sqrtCC()
+          : F.CC(re.multiply(denominator), im.multiply(denominator)).sqrtCC();
+      if (root != null) {
+        return denominator.isOne() ? root : F.Times(root, F.Power(denominator, F.CN1D2));
+      }
+      if (re.isZero()) {
+        if (im.isPositive()) {
+          // Sqrt(r*I) -> (-1)^(1/4)*Sqrt(r)
+          return F.Times(F.Power(F.CN1, F.C1D4), F.Sqrt(im));
         }
+        // Sqrt(-r*I) -> -(-1)^(3/4)*Sqrt(r)
+        return F.Times(F.CN1, F.Power(F.CN1, F.C3D4), F.Sqrt(im.negate()));
       }
       return F.NIL;
     }

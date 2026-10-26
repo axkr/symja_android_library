@@ -76,13 +76,13 @@ public class OrToolsSymjaTest extends AbstractTestCase {
   public void testLinearProgramming() {
     AtomicInteger calls = countLinear();
     try {
-      // the same as without the option
+      // the same point as without the option, where exact numbers give an exact result
       check("LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, "
           + "{{6,-1},{12,-1},{0,1},{1,0}}, Method->\"ORTools\")", //
           "{4.0,0.0,1.0}");
       check("LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, "
           + "{{6,-1},{12,-1},{0,1},{1,0}})", //
-          "{4.0,0.0,1.0}");
+          "{4,0,1}");
       assertEquals(1, calls.get());
       // maximize x+y over the integer points of 2x+3y<=12, 4x+y<=10, x,y>=0: the optimum 4 is
       // attained at (2,2), (1,3) and (0,4)

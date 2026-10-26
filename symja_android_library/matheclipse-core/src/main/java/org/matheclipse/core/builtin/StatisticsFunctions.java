@@ -100,6 +100,7 @@ public class StatisticsFunctions {
       S.RandomFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.RandomFunction());
       S.TemporalData.setEvaluator(new org.matheclipse.core.reflection.system.TemporalData());
+      S.TimeSeries.setEvaluator(new org.matheclipse.core.reflection.system.TimeSeries());
       S.WienerProcess.setEvaluator(
           new org.matheclipse.core.builtin.StochasticProcesses.WienerProcess());
       S.OrnsteinUhlenbeckProcess.setEvaluator(

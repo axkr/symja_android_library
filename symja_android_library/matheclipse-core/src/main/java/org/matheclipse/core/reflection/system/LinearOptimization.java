@@ -8,6 +8,7 @@ import java.util.Map;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.optim.LocalizedOptimFormats;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
@@ -21,6 +22,7 @@ import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.RationalSimplex;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -28,6 +30,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.optimization.ILinearOptimizer;
 import org.matheclipse.core.optimization.OptimizationMethod;
 
@@ -130,8 +133,17 @@ public class LinearOptimization extends LinearProgramming {
     try {
       if (ast.arg2().isList()) {
         if (ast.arg1().isList()) {
+          IAST matrixForm = denseArguments(ast);
+          if (OptimizationMethod.trailingMethod(matrixForm, 2).isPresent()) {
+            matrixForm = matrixForm.removeAtClone(matrixForm.argSize());
+          }
+          if (isAffineConstraints(matrixForm.arg2())
+              && (matrixForm.argSize() == 2 || isAffineConstraints(matrixForm.arg3()))) {
+            return matrixForm(matrixForm, engine);
+          }
           // fall back to LinearProgramming
-          return ast.arg3().isList() ? super.numericEval(ast, engine) : F.NIL;
+          return ast.argSize() >= 3 && ast.arg3().isList() ? super.numericEval(ast, engine)
+              : F.NIL;
         }
         // LinearOptimization(f, cons, vars, [dom], Method -> "ORTools")
         final IExpr method = OptimizationMethod.trailingMethod(ast, 3);
@@ -282,6 +294,135 @@ public class LinearOptimization extends LinearProgramming {
     return F.NIL;
   }
 
+  /**
+   * Whether <code>constraints</code> is a pair <code>{a, b}</code> of a matrix <code>a</code> and
+   * a vector <code>b</code> with one element for each row of <code>a</code>.
+   */
+  private static boolean isAffineConstraints(IExpr constraints) {
+    if (!constraints.isList2()) {
+      return false;
+    }
+    IExpr a = constraints.first().normal(false);
+    IExpr b = constraints.second().normal(false);
+    int[] dimensions = a.isMatrix(false);
+    return dimensions != null && b.isList() && b.argSize() == dimensions[0]
+        && b.isVector() == dimensions[0];
+  }
+
+  /** The rows <code>{a, b}</code> of the affine constraints, as dense lists. */
+  private static IAST[] affineConstraints(IExpr constraints) {
+    return new IAST[] {(IAST) constraints.first().normal(false),
+        (IAST) constraints.second().normal(false)};
+  }
+
+  /** The vector of <code>n</code> times <code>Indeterminate</code>. */
+  private static IAST indeterminateVector(int n) {
+    return F.constantArray(S.Indeterminate, n);
+  }
+
+  /**
+   * <code>LinearOptimization(c, {a, b})</code> and <code>LinearOptimization(c, {a, b}, {aeq,
+   * beq})</code>: the vector <code>x</code> of free variables which minimizes <code>c.x</code>
+   * subject to <code>a.x + b &gt;= 0</code> and <code>aeq.x + beq == 0</code>. Exact numbers are
+   * solved by the exact simplex method, other numbers by the machine number simplex method.
+   */
+  private static IExpr matrixForm(IAST ast, EvalEngine engine) {
+    IAST[] inequalities = affineConstraints(ast.arg2());
+    IAST[] equations = ast.argSize() == 3 ? affineConstraints(ast.arg3()) : null;
+    BigFraction[] c = rationalVector(ast.arg1());
+    final int n = ast.arg1().argSize();
+    if (n == 0) {
+      return F.NIL;
+    }
+    // the rows of the inequalities, then of the equations
+    List<IAST> rows = new ArrayList<IAST>();
+    List<IExpr> offsets = new ArrayList<IExpr>();
+    List<Integer> relations = new ArrayList<Integer>();
+    for (int k = 0; k < 2; k++) {
+      IAST[] part = k == 0 ? inequalities : equations;
+      if (part == null) {
+        continue;
+      }
+      for (int i = 1; i < part[0].size(); i++) {
+        IExpr row = part[0].get(i);
+        if (row.argSize() != n) {
+          // `1`.
+          return Errors.printMessage(S.LinearOptimization, "error",
+              F.list(F.$str("The constraint matrices must have one column for each variable.")),
+              engine);
+        }
+        rows.add((IAST) row);
+        offsets.add(part[1].get(i));
+        relations.add(k == 0 ? RationalSimplex.GEQ : RationalSimplex.EQ);
+      }
+    }
+    final int m = rows.size();
+    if (c != null) {
+      BigFraction[][] a = new BigFraction[m][];
+      BigFraction[] b = new BigFraction[m];
+      int[] rel = new int[m];
+      boolean exact = true;
+      for (int i = 0; i < m && exact; i++) {
+        a[i] = rationalVector(rows.get(i));
+        exact = a[i] != null && offsets.get(i).isRational();
+        if (exact) {
+          // a.x + b >= 0 is a.x >= -b
+          b[i] = ((IRational) offsets.get(i)).toBigFraction().negate();
+          rel[i] = relations.get(i);
+        }
+      }
+      if (exact) {
+        RationalSimplex.Result result = RationalSimplex.minimize(c, a, rel, b);
+        switch (result.status) {
+          case OPTIMAL:
+            return rationalList(result.point);
+          case INFEASIBLE:
+            // There are no points which satisfy the constraints.
+            Errors.printMessage(S.LinearOptimization, "nsolc", F.CEmptyList, engine);
+            return indeterminateVector(n);
+          case UNBOUNDED:
+            // The problem is unbounded.
+            Errors.printMessage(S.LinearOptimization, "ubnd", F.CEmptyList, engine);
+            return indeterminateVector(n);
+          default:
+            return F.NIL;
+        }
+      }
+    }
+    double[] cD = ast.arg1().toDoubleVector();
+    if (cD == null) {
+      return F.NIL;
+    }
+    Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
+    for (int i = 0; i < m; i++) {
+      double[] row = rows.get(i).toDoubleVector();
+      double offset = offsets.get(i).evalfNaN();
+      if (row == null || Double.isNaN(offset)) {
+        return F.NIL;
+      }
+      constraints.add(new LinearConstraint(row,
+          relations.get(i) == RationalSimplex.EQ ? Relationship.EQ : Relationship.GEQ, -offset));
+    }
+    try {
+      PointValuePair solution = new SimplexSolver().optimize(new LinearObjectiveFunction(cD, 0),
+          new LinearConstraintSet(constraints), GoalType.MINIMIZE,
+          new NonNegativeConstraint(false), PivotSelectionRule.BLAND);
+      return F.List(solution.getPointRef());
+    } catch (MathIllegalStateException mise) {
+      if (mise.getSpecifier() == LocalizedOptimFormats.NO_FEASIBLE_SOLUTION) {
+        // There are no points which satisfy the constraints.
+        Errors.printMessage(S.LinearOptimization, "nsolc", F.CEmptyList, engine);
+        return indeterminateVector(n);
+      }
+      if (mise.getSpecifier() == LocalizedOptimFormats.UNBOUNDED_SOLUTION) {
+        // The problem is unbounded.
+        Errors.printMessage(S.LinearOptimization, "ubnd", F.CEmptyList, engine);
+        return indeterminateVector(n);
+      }
+      throw mise;
+    }
+  }
+
   private boolean createConstraints(IAST constraintsList, IAST variables,
       Map<IExpr, Integer> variablesMap, Collection<LinearConstraint> constraints,
       EvalEngine engine) {
@@ -415,12 +556,16 @@ public class LinearOptimization extends LinearProgramming {
   public int[] expectedArgSize(IAST ast) {
     // LinearOptimization(f, cons, vars, [dom]); a trailing Method -> ... rule is not counted. The
     // matrix form LinearOptimization({c...}, ...) takes no domain argument.
-    final boolean method = OptimizationMethod.trailingMethod(ast, 3).isPresent();
     if (ast.argSize() >= 1 && ast.arg1().isList()) {
-      return method ? IFunctionEvaluator.ARGS_4_4 : IFunctionEvaluator.ARGS_3_3;
+      // LinearOptimization(c, {a, b}, [{aeq, beq}]) or LinearOptimization(c, m, b)
+      return OptimizationMethod.trailingMethod(ast, 2).isPresent() ? ARGS_3_4
+          : IFunctionEvaluator.ARGS_2_3;
     }
+    final boolean method = OptimizationMethod.trailingMethod(ast, 3).isPresent();
     return method ? ARGS_4_5 : IFunctionEvaluator.ARGS_3_4;
   }
 
   private static final int[] ARGS_4_5 = new int[] {4, 5};
+
+  private static final int[] ARGS_3_4 = new int[] {3, 4};
 }

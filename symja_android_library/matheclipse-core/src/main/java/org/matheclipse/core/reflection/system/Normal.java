@@ -62,6 +62,14 @@ public final class Normal extends AbstractFunctionEvaluator {
         return substituted;
       }
     }
+    if (arg1.isAST(S.TemporalData, 5)
+        && (heads.isAST0() || heads.exists(y -> y == S.TemporalData))) {
+      // the path {{t1, x1}, {t2, x2}, ...} of a time series
+      IExpr path = TemporalData.normal(arg1, engine);
+      if (path.isPresent()) {
+        return path;
+      }
+    }
     IExpr normal = F.NIL;
     if (heads.isAST0()) {
       normal = arg1.normal(true);

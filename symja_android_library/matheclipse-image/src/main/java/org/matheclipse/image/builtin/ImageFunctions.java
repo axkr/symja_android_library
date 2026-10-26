@@ -28,6 +28,7 @@ public class ImageFunctions {
       S.ConstantImage.setEvaluator(new ConstantImage());
       S.Image.setEvaluator(new Image());
       S.Image3D.setEvaluator(new Image3D());
+      S.Image3DSlices.setEvaluator(new Image3DSlices());
       S.ImageData.setEvaluator(new ImageData());
       S.ImageDimensions.setEvaluator(new ImageDimensions());
     }
@@ -147,6 +148,180 @@ public class ImageFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   * <code>Image3DSlices(image3d)</code> - the 2D images of the slices of a volume, the top one
+   * first. <code>Image3DSlices(image3d, k)</code> is the <code>k</code>-th slice, counted from the
+   * bottom where <code>k</code> is negative, and <code>Image3DSlices(image3d, spec, axis)</code>
+   * cuts the volume across the axis 1, 2 or 3 of its data <code>{slice, row, column}</code>:
+   * <code>spec</code> is a position, <code>All</code>, a list of positions or a <code>Span</code>.
+   * A slice keeps the type and the colour space of the volume.
+   */
+  private static class Image3DSlices extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof Image3DExpr)) {
+        return F.NIL;
+      }
+      Image3DExpr volume = (Image3DExpr) ast.arg1();
+      int axis = 1;
+      if (ast.argSize() == 3) {
+        axis = ast.arg3().toIntDefault();
+        if (axis < 1 || axis > 3) {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(S.Image3DSlices, "intpm", F.list(ast, F.C3), engine);
+        }
+      }
+      IAST data = volume.toData();
+      int[] dimensions = volume.dimensions();
+      // the number of slices along the axis: the data is {slice, row, column}
+      final int count = dimensions[3 - axis];
+      IExpr spec = ast.argSize() >= 2 ? ast.arg2() : S.All;
+      if (spec.isInteger()) {
+        int k = index(spec, count);
+        if (k == 0) {
+          // Part `1` of `2` does not exist.
+          return Errors.printMessage(S.Image3DSlices, "partw", F.list(spec, volume), engine);
+        }
+        return slice(volume, data, axis, k);
+      }
+      int[] positions = positions(spec, count);
+      if (positions == null) {
+        // Part specification `1` is neither an integer nor a list of integer.
+        return Errors.printMessage(S.Image3DSlices, "pspec", F.list(spec), engine);
+      }
+      IASTAppendable result = F.ListAlloc(positions.length);
+      for (int k : positions) {
+        if (k == 0) {
+          return Errors.printMessage(S.Image3DSlices, "partw", F.list(spec, volume), engine);
+        }
+        IExpr image = slice(volume, data, axis, k);
+        if (image.isNIL()) {
+          return F.NIL;
+        }
+        result.append(image);
+      }
+      return result;
+    }
+
+    /**
+     * The position <code>1 ... count</code> an integer names, a negative one counted from the end,
+     * or <code>0</code> where there is no such slice.
+     */
+    private static int index(IExpr position, int count) {
+      int k = position.toIntDefault(0);
+      if (k < 0) {
+        k += count + 1;
+      }
+      return k >= 1 && k <= count ? k : 0;
+    }
+
+    /**
+     * The positions <code>All</code>, a list of integers or a <code>Span</code> names, with
+     * <code>0</code> for one out of range.
+     *
+     * @return <code>null</code> if <code>spec</code> is none of them
+     */
+    private static int[] positions(IExpr spec, int count) {
+      if (spec == S.All) {
+        return span(1, count, 1, count);
+      }
+      if (spec.isList()) {
+        IAST list = (IAST) spec;
+        int[] result = new int[list.argSize()];
+        for (int i = 1; i < list.size(); i++) {
+          if (!list.get(i).isInteger()) {
+            return null;
+          }
+          result[i - 1] = index(list.get(i), count);
+        }
+        return result;
+      }
+      if (spec.isAST(S.Span, 3, 4)) {
+        IAST span = (IAST) spec;
+        int step = span.argSize() == 3 ? span.arg3().toIntDefault(0) : 1;
+        int start = spanEnd(span.arg1(), 1, count);
+        int end = spanEnd(span.arg2(), count, count);
+        if (step < 0 && span.arg2() == S.All) {
+          // ;; ;; -1 is Span(1, All, -1), which runs from the last slice back to the first, as
+          // it does in Part
+          start = start == 1 ? count : start;
+          end = 1;
+        }
+        if (start == 0 || end == 0 || step == 0) {
+          return null;
+        }
+        return span(start, end, step, count);
+      }
+      return null;
+    }
+
+    /** One end of a span: <code>All</code> is <code>whole</code>, a negative one counts back. */
+    private static int spanEnd(IExpr end, int whole, int count) {
+      if (end == S.All) {
+        return whole;
+      }
+      if (!end.isInteger()) {
+        return 0;
+      }
+      int k = end.toIntDefault(0);
+      return k < 0 ? k + count + 1 : k;
+    }
+
+    private static int[] span(int start, int end, int step, int count) {
+      int length = step > 0 ? (end - start) / step + 1 : (start - end) / -step + 1;
+      if (length <= 0) {
+        return new int[0];
+      }
+      int[] result = new int[length];
+      for (int i = 0; i < length; i++) {
+        int k = start + i * step;
+        result[i] = k >= 1 && k <= count ? k : 0;
+      }
+      return result;
+    }
+
+    /**
+     * The 2D image of the <code>k</code>-th slice across <code>axis</code>: its rows run along the
+     * next axis of the data that is not cut, its columns along the last one.
+     */
+    private static IExpr slice(Image3DExpr volume, IAST data, int axis, int k) {
+      IAST matrix;
+      if (axis == 1) {
+        matrix = (IAST) data.get(k);
+      } else {
+        IASTAppendable rows = F.ListAlloc(data.argSize());
+        for (int z = 1; z < data.size(); z++) {
+          IAST slice = (IAST) data.get(z);
+          if (axis == 2) {
+            rows.append(slice.get(k));
+          } else {
+            IASTAppendable row = F.ListAlloc(slice.argSize());
+            for (int y = 1; y < slice.size(); y++) {
+              row.append(((IAST) slice.get(y)).get(k));
+            }
+            rows.append(row);
+          }
+        }
+        matrix = rows;
+      }
+      // a copy, because the image marks its matrix for the layout ImageData prints
+      ImageExpr image = ImageExpr.toImageExpr(matrix.copy(),
+          volume.getOptions().withInterleaved(true), volume.sampleType());
+      return image == null ? F.NIL : image;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
 
     @Override

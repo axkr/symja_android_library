@@ -398,10 +398,10 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Sqrt(I*2/9)", "1/3+I*1/3");
     check("-I", "-I");
 
-    check("Sqrt(-I*(1/3))", "Sqrt(-I*1/3)");
-    check("Sqrt(I*(1/3))", "Sqrt(I*1/3)");
-    check("Sqrt(-I*(7/3))", "Sqrt(-I*7/3)");
-    check("Sqrt(I*(7/3))", "Sqrt(I*7/3)");
+    check("Sqrt(-I*(1/3))", "-(-1)^(3/4)/Sqrt(3)");
+    check("Sqrt(I*(1/3))", "(-1)^(1/4)/Sqrt(3)");
+    check("Sqrt(-I*(7/3))", "-(-1)^(3/4)*Sqrt(7/3)");
+    check("Sqrt(I*(7/3))", "(-1)^(1/4)*Sqrt(7/3)");
 
     check("(-I*1/16)/E^(I*4*x)+I*1/8/E^(I*2*x)", //
         "(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)");

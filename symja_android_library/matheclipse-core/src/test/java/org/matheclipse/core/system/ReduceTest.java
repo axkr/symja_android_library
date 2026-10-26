@@ -584,7 +584,7 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "{{x->1.5,y->2.5}}");
     // nested lists are split recursively
     check("Solve({{x, y}, {z, w}} == {{1, 2}, {3, 4}}, {x, y, z, w})", //
-        "{{w->4,x->1,y->2,z->3}}");
+        "{{x->1,y->2,z->3,w->4}}");
     check("FindInstance({{x, y}, {z, w}} == {{1, 2}, {3, 4}}, {x, y, z, w})", //
         "{{w->4,x->1,y->2,z->3}}");
     // lists of different lengths aren't componentwise

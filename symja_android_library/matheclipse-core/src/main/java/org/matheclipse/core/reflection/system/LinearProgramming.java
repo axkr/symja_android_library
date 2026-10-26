@@ -2,9 +2,12 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.optim.LocalizedOptimFormats;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
 import org.hipparchus.optim.linear.LinearConstraintSet;
@@ -19,12 +22,15 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.RationalSimplex;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.optimization.ILinearOptimizer;
@@ -61,7 +67,7 @@ import org.matheclipse.core.optimization.OptimizationMethod;
  *
  * <pre>
  * &gt;&gt; LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, {{6,-1},{12,-1},{0,1},{1,0}})
- * {4.0,0.0,1.0}
+ * {4,0,1}
  * </pre>
  *
  * <p>
@@ -107,6 +113,13 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
     }
     final boolean orTools = OptimizationMethod.useORTools(S.LinearProgramming, method,
         ILinearOptimizer.isAvailable(), engine);
+    ast = denseArguments(ast);
+    if (!orTools) {
+      IExpr exact = exactLinearProgramming(ast, engine);
+      if (exact != null) {
+        return exact;
+      }
+    }
     try {
       if (ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
         double[] arg1D = ast.arg1().toDoubleVector();
@@ -210,6 +223,10 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
       if (Config.DEBUG) {
         mise.printStackTrace();
       }
+      if (mise.getSpecifier() == LocalizedOptimFormats.UNBOUNDED_SOLUTION) {
+        // The problem is unbounded.
+        return Errors.printMessage(ast.topHead(), "ubnd", F.CEmptyList, engine);
+      }
       // No solution can be found that satisfies the constraints.
       return Errors.printMessage(ast.topHead(), "lpsnf", F.CEmptyList, engine);
     } catch (MathRuntimeException mre) {
@@ -221,6 +238,186 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 
     }
     return F.NIL;
+  }
+
+  /** The arguments with each <code>SparseArray</code> replaced by its list form. */
+  static IAST denseArguments(IAST ast) {
+    IASTMutable result = null;
+    for (int i = 1; i < ast.size(); i++) {
+      if (ast.get(i).isSparseArray()) {
+        if (result == null) {
+          result = ast.copy();
+        }
+        result.set(i, ast.get(i).normal(false));
+      }
+    }
+    return result == null ? ast : result;
+  }
+
+  /**
+   * The exact values of a list of rational numbers, or <code>null</code> if <code>list</code>
+   * isn't such a list.
+   */
+  static BigFraction[] rationalVector(IExpr list) {
+    if (list.isSparseArray()) {
+      list = list.normal(false);
+    }
+    if (!list.isList()) {
+      return null;
+    }
+    BigFraction[] result = new BigFraction[list.argSize()];
+    for (int i = 0; i < result.length; i++) {
+      IExpr x = list.getAt(i + 1);
+      if (!x.isRational()) {
+        return null;
+      }
+      result[i] = ((IRational) x).toBigFraction();
+    }
+    return result;
+  }
+
+  /** The integer or fraction of the exact <code>value</code>. */
+  static IExpr rational(BigFraction value) {
+    if (value.getDenominator().equals(java.math.BigInteger.ONE)) {
+      return F.ZZ(value.getNumerator());
+    }
+    return F.QQ(value.getNumerator(), value.getDenominator());
+  }
+
+  /** The list of the exact <code>values</code>. */
+  static IAST rationalList(BigFraction[] values) {
+    IASTAppendable result = F.ListAlloc(values.length);
+    for (BigFraction v : values) {
+      result.append(rational(v));
+    }
+    return result;
+  }
+
+  /**
+   * The exact bound of a variable: <code>null</code> for an infinite one, else the rational value.
+   *
+   * @return <code>false</code> in <code>valid[0]</code> if <code>bound</code> is neither rational
+   *         nor infinite in the direction <code>sign</code>
+   */
+  private static BigFraction exactBound(IExpr bound, int sign, boolean[] valid) {
+    if (sign < 0 ? bound.isNegativeInfinity() : bound.isInfinity()) {
+      return null;
+    }
+    if (bound.isRational()) {
+      return ((IRational) bound).toBigFraction();
+    }
+    valid[0] = false;
+    return null;
+  }
+
+  /**
+   * Solve <code>LinearProgramming(c, m, b, [bounds], [domains])</code> exactly over the rationals
+   * if all its numbers are rational.
+   *
+   * @return <code>null</code> if the problem has numbers which aren't rational or a form which the
+   *         numeric solver has to check; else the exact result or {@link F#NIL} after a message
+   */
+  private static IExpr exactLinearProgramming(IAST ast, EvalEngine engine) {
+    if (ast.argSize() < 3 || ast.argSize() > 5 || !ast.arg2().isList() || !ast.arg3().isList()
+        || ast.arg2().argSize() != ast.arg3().argSize()) {
+      return null;
+    }
+    BigFraction[] c = rationalVector(ast.arg1());
+    if (c == null || c.length == 0) {
+      return null;
+    }
+    final int n = c.length;
+    IAST m = (IAST) ast.arg2();
+    IAST b = (IAST) ast.arg3();
+    List<BigFraction[]> rows = new ArrayList<BigFraction[]>();
+    List<Integer> relations = new ArrayList<Integer>();
+    List<BigFraction> rhs = new ArrayList<BigFraction>();
+    for (int i = 1; i < m.size(); i++) {
+      BigFraction[] row = rationalVector(m.get(i));
+      if (row == null || row.length != n) {
+        return null;
+      }
+      IExpr spec = b.get(i);
+      int relation = RationalSimplex.GEQ;
+      if (spec.isList()) {
+        if (spec.argSize() == 2 && spec.second().isRational()) {
+          relation = ((IRational) spec.second()).complexSign();
+        } else if (spec.argSize() != 1) {
+          return null;
+        }
+        spec = spec.first();
+      }
+      if (!spec.isRational()) {
+        return null;
+      }
+      rows.add(row);
+      relations.add(relation);
+      rhs.add(((IRational) spec).toBigFraction());
+    }
+    // the bounds of the variables; by default x >= 0
+    IExpr bounds = ast.argSize() >= 4 ? ast.arg4() : F.C0;
+    for (int j = 0; j < n; j++) {
+      IExpr bound = bounds.isList() ? (bounds.argSize() == n ? bounds.getAt(j + 1) : F.NIL)
+          : bounds;
+      if (bound.isNIL()) {
+        return null;
+      }
+      boolean[] valid = new boolean[] {true};
+      BigFraction lower;
+      BigFraction upper = null;
+      if (bound.isList2()) {
+        lower = exactBound(bound.first(), -1, valid);
+        upper = exactBound(bound.second(), 1, valid);
+      } else {
+        lower = exactBound(bound, -1, valid);
+      }
+      if (!valid[0]) {
+        return null;
+      }
+      BigFraction[] unit = new BigFraction[n];
+      java.util.Arrays.fill(unit, BigFraction.ZERO);
+      unit[j] = BigFraction.ONE;
+      if (lower != null) {
+        rows.add(unit);
+        relations.add(RationalSimplex.GEQ);
+        rhs.add(lower);
+      }
+      if (upper != null) {
+        rows.add(unit);
+        relations.add(RationalSimplex.LEQ);
+        rhs.add(upper);
+      }
+    }
+    boolean[] integer = new boolean[n];
+    if (ast.argSize() == 5 && !integerDomains(ast.arg5(), integer, engine)) {
+      return F.NIL;
+    }
+    boolean anyInteger = false;
+    for (boolean isInteger : integer) {
+      anyInteger |= isInteger;
+    }
+    BigFraction[][] a = rows.toArray(new BigFraction[rows.size()][]);
+    int[] rel = new int[relations.size()];
+    for (int i = 0; i < rel.length; i++) {
+      rel[i] = relations.get(i);
+    }
+    BigFraction[] r = rhs.toArray(new BigFraction[rhs.size()]);
+    RationalSimplex.Result result = anyInteger
+        ? RationalSimplex.minimizeInteger(c, a, rel, r, integer, MAX_NODES)
+        : RationalSimplex.minimize(c, a, rel, r);
+    switch (result.status) {
+      case OPTIMAL:
+        return rationalList(result.point);
+      case INFEASIBLE:
+        // No solution can be found that satisfies the constraints.
+        return Errors.printMessage(ast.topHead(), "lpsnf", F.CEmptyList, engine);
+      case UNBOUNDED:
+        // The problem is unbounded.
+        return Errors.printMessage(ast.topHead(), "ubnd", F.CEmptyList, engine);
+      default:
+        // The search for an integer solution stopped after `1` subproblems.
+        return Errors.printMessage(ast.topHead(), "lpbb", F.list(F.ZZ(MAX_NODES)), engine);
+    }
   }
 
   /**

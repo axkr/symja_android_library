@@ -784,7 +784,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   @Test
   public void testPowerOfImaginaryNumbers() {
     check("{I^(-1/2),(3*I)^(-1/2),(-I)^(-1/2),1/Sqrt(2*I)}", //
-        "{-(-1)^(3/4),1/Sqrt(I*3),1/Sqrt(-I),1/Sqrt(I*2)}");
+        "{-(-1)^(3/4),-(-1)^(3/4)/Sqrt(3),1/Sqrt(-I),1/2-I*1/2}");
     check("N((3*I)^(-1/2),30)", //
         "0.408248290463863016366214012451+I*(-0.408248290463863016366214012451)");
     check("N((-I)^(-1/2),30)", //

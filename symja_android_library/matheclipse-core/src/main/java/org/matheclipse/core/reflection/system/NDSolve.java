@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.MachineExpression;
 import org.matheclipse.core.eval.util.ODEUtils;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
@@ -83,6 +84,14 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
    * otherwise run until the engine's own timeout with nothing to show for it.
    */
   private static final int MAX_EVALUATIONS = 100_000;
+
+  /**
+   * The largest number of right hand side evaluations a single integration may use when all right
+   * hand sides are evaluated by their machine number operations, which take a small fraction of
+   * the time of a symbolic evaluation: the budget is about as long in time as
+   * {@link #MAX_EVALUATIONS} symbolic evaluations.
+   */
+  private static final int MAX_MACHINE_EVALUATIONS = 2_000_000;
 
   /** The smallest step the adaptive integrators may take before they give up. */
   private static final double MIN_STEP = 1.0e-10;
@@ -230,6 +239,21 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       return system;
     }
 
+    /**
+     * The right hand sides translated to machine number operations of the state components and the
+     * time, which are numbers <code>0, ..., dimension()</code> of the point they are evaluated at;
+     * an entry is <code>null</code> where a right hand side couldn't be translated.
+     */
+    MachineExpression[] machineDerivatives(EvalEngine engine) {
+      IExpr[] variables = java.util.Arrays.copyOf(stateExpressions, dimension() + 1);
+      variables[dimension()] = timeVar;
+      MachineExpression[] result = new MachineExpression[dimension()];
+      for (int i = 0; i < result.length; i++) {
+        result[i] = MachineExpression.compile(derivatives[i], variables, engine);
+      }
+      return result;
+    }
+
     /** The number of components, each the value of one of the functions or of a derivative. */
     int dimension() {
       return derivatives.length;
@@ -321,10 +345,20 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
      */
     private double fSpeed;
 
+    /**
+     * The right hand sides translated to machine number operations, a <code>null</code> entry for
+     * one which couldn't be translated; <code>null</code> if the state isn't one real number per
+     * component.
+     */
+    private final MachineExpression[] fMachine;
+
     public FirstODE(EvalEngine engine, FirstOrderSystem system) {
       this.fEngine = engine;
       this.fSystem = system;
       this.fSpeed = system.curve != null ? system.curve.initialSpeed : 0.0;
+      this.fMachine = system.curve == null && system.layout == null //
+          ? system.machineDerivatives(engine)
+          : null;
     }
 
     @Override
@@ -341,6 +375,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         return stateDot;
       }
       final int dimension = fSystem.dimension();
+      if (fMachine != null) {
+        return evaluate(t, state);
+      }
       IAST rules = fSystem.substitutions(t, state);
       if (fSystem.layout == null) {
         return evaluate(rules);
@@ -367,6 +404,47 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       double[] stateDot = new double[dimension];
       for (int i = 0; i < dimension; i++) {
         stateDot[i] = fEngine.evalN(F.subst(fSystem.derivatives[i], rules)).evalfNaN();
+      }
+      solveMassMatrix(stateDot, 0);
+      return stateDot;
+    }
+
+    /** <code>true</code> if every right hand side is evaluated by its machine number operations. */
+    boolean isMachine() {
+      if (fMachine == null) {
+        return false;
+      }
+      for (MachineExpression machine : fMachine) {
+        if (machine == null) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * The derivative of a state of one real number per component at the time <code>t</code>, from
+     * the right hand sides in machine numbers. A right hand side which couldn't be translated, or
+     * whose value isn't a finite real number, is evaluated symbolically.
+     */
+    private double[] evaluate(double t, double[] state) {
+      // the time limit is checked here, because the machine number evaluation doesn't reach the
+      // evaluation engine
+      fEngine.checkTimeLimit();
+      final int dimension = fSystem.dimension();
+      double[] point = java.util.Arrays.copyOf(state, dimension + 1);
+      point[dimension] = t;
+      double[] stateDot = new double[dimension];
+      IAST rules = F.NIL;
+      for (int i = 0; i < dimension; i++) {
+        double value = fMachine[i] != null ? fMachine[i].value(point) : Double.NaN;
+        if (Double.isNaN(value)) {
+          if (rules.isNIL()) {
+            rules = fSystem.substitutions(t, state);
+          }
+          value = fEngine.evalN(F.subst(fSystem.derivatives[i], rules)).evalfNaN();
+        }
+        stateDot[i] = value;
       }
       solveMassMatrix(stateDot, 0);
       return stateDot;
@@ -406,6 +484,12 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     private final IExpr[][] fStateDerivatives;
     /** <code>df_i/dt</code>. */
     private final IExpr[] fTimeDerivatives;
+    /**
+     * The entries translated to machine number operations of the state variables and the time, or
+     * <code>null</code> where they couldn't be translated.
+     */
+    private final MachineExpression[][] fMachineState;
+    private final MachineExpression[] fMachineTime;
 
     private SymbolicJacobian(EvalEngine engine, FirstOrderSystem system, ISymbol[] variables,
         IExpr[][] stateDerivatives, IExpr[] timeDerivatives) {
@@ -414,6 +498,17 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       fVariables = variables;
       fStateDerivatives = stateDerivatives;
       fTimeDerivatives = timeDerivatives;
+      final int n = variables.length;
+      IExpr[] point = java.util.Arrays.copyOf(variables, n + 1, IExpr[].class);
+      point[n] = system.timeVar;
+      fMachineState = new MachineExpression[n][n];
+      fMachineTime = new MachineExpression[n];
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          fMachineState[i][j] = MachineExpression.compile(stateDerivatives[i][j], point, engine);
+        }
+        fMachineTime[i] = MachineExpression.compile(timeDerivatives[i], point, engine);
+      }
     }
 
     /**
@@ -482,16 +577,14 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     @Override
     public boolean compute(double t, double[] y, double[][] dfdy, double[] dfdt) {
       final int n = fVariables.length;
-      IASTAppendable rules = F.ListAlloc(n + 1);
-      for (int i = 0; i < n; i++) {
-        rules.append(F.Rule(fVariables[i], F.num(y[i])));
-      }
-      rules.append(F.Rule(fSystem.timeVar, F.num(t)));
+      double[] point = java.util.Arrays.copyOf(y, n + 1);
+      point[n] = t;
+      IAST[] rules = new IAST[] {F.NIL};
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-          dfdy[i][j] = value(fStateDerivatives[i][j], rules);
+          dfdy[i][j] = value(fMachineState[i][j], fStateDerivatives[i][j], point, rules);
         }
-        dfdt[i] = value(fTimeDerivatives[i], rules);
+        dfdt[i] = value(fMachineTime[i], fTimeDerivatives[i], point, rules);
       }
       if (fSystem.massMatrix != null) {
         // the rows of the highest derivatives hold the derivatives of the right hand sides f of
@@ -516,14 +609,36 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       return true;
     }
 
-    private double value(IExpr derivative, IAST rules) {
+    /**
+     * The value of the entry <code>derivative</code> at <code>point</code>, from its machine number
+     * operations <code>machine</code> if they give a finite real number.
+     *
+     * @param rules holds the substitution rules of the point at index 0 once they were needed
+     */
+    private double value(MachineExpression machine, IExpr derivative, double[] point,
+        IAST[] rules) {
       if (derivative.isZero()) {
         return 0.0;
       }
       if (derivative.isNumber()) {
         return derivative.evalfNaN();
       }
-      return fEngine.evalN(F.subst(derivative, rules)).evalfNaN();
+      if (machine != null) {
+        double value = machine.value(point);
+        if (!Double.isNaN(value)) {
+          return value;
+        }
+      }
+      if (rules[0].isNIL()) {
+        final int n = fVariables.length;
+        IASTAppendable substitutions = F.ListAlloc(n + 1);
+        for (int i = 0; i < n; i++) {
+          substitutions.append(F.Rule(fVariables[i], F.num(point[i])));
+        }
+        substitutions.append(F.Rule(fSystem.timeVar, F.num(point[n])));
+        rules[0] = substitutions;
+      }
+      return fEngine.evalN(F.subst(derivative, rules[0])).evalfNaN();
     }
   }
 
@@ -669,6 +784,12 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       // solved for the functions, whose derivatives are asked for; not tried a second time
       return solveForDerivatives(ast, options, engine, ruleForm);
     }
+    // the equations are integrated in machine numbers: a number of arbitrary precision, like a
+    // literal of 17 or more digits, would only make every evaluation of a right hand side slow
+    IExpr machineEquations = ast.arg1().replaceAll(NDSolve::machineNumber);
+    if (machineEquations.isPresent()) {
+      ast = ast.setAtCopy(1, machineEquations);
+    }
     java.util.List<IAST> whenEvents = new java.util.ArrayList<IAST>();
     ast = separateEquations(ast, whenEvents);
     if (ast.argSize() >= 4 && ast.arg4().isList3()) {
@@ -740,6 +861,28 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(ast.topHead(), rex, engine);
     }
+  }
+
+  /**
+   * The machine number of a number of arbitrary precision, or {@link F#NIL} for any other
+   * expression.
+   */
+  private static IExpr machineNumber(IExpr expr) {
+    if (expr.isInexactNumber() && !expr.isMachineNumber()) {
+      // a number beyond the range of machine numbers, which would overflow or underflow, keeps
+      // its precision
+      final boolean zero = expr.isZero();
+      if (expr.isReal()) {
+        double value = expr.evalf();
+        return Double.isFinite(value) && (value != 0.0 || zero) ? F.num(value) : F.NIL;
+      }
+      org.hipparchus.complex.Complex value = expr.evalfc();
+      return Double.isFinite(value.getReal()) && Double.isFinite(value.getImaginary())
+          && (zero || value.getReal() != 0.0 || value.getImaginary() != 0.0)
+              ? F.complexNum(value)
+              : F.NIL;
+    }
+    return F.NIL;
   }
 
   /**
@@ -1776,8 +1919,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     // clone, so that the two directions both start from the initial conditions
     ODEState start = new ODEState(system.t0, system.initialState.clone());
     int evaluations = 0;
+    final int budget = method.evaluationBudget(ode);
     while (true) {
-      integrator.setMaxEvaluations(Math.max(1, method.maxEvaluations - evaluations));
+      integrator.setMaxEvaluations(Math.max(1, budget - evaluations));
       DenseOutputModel model = new DenseOutputModel();
       integrator.addStepHandler(model);
       LastStepRecorder recorder = new LastStepRecorder();
@@ -2537,6 +2681,18 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     /** The most right hand side evaluations, from <code>MaxSteps</code>. */
     int maxEvaluations = MAX_EVALUATIONS;
 
+    /** <code>true</code> if <code>MaxSteps</code> was given. */
+    boolean maxStepsGiven = false;
+
+    /**
+     * The most right hand side evaluations of an integration: without <code>MaxSteps</code> the
+     * larger budget {@link #MAX_MACHINE_EVALUATIONS} if every right hand side is evaluated in
+     * machine numbers.
+     */
+    int evaluationBudget(FirstODE ode) {
+      return !maxStepsGiven && ode.isMachine() ? MAX_MACHINE_EVALUATIONS : maxEvaluations;
+    }
+
     /** <code>true</code> if the steps have a fixed size, the <code>"FixedStep"</code> controller. */
     boolean fixedStep = false;
 
@@ -2666,6 +2822,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
             maxStepSize = Double.isInfinite(step) ? Double.MAX_VALUE : step;
           }
         } else if ("MaxSteps".equalsIgnoreCase(name)) {
+          maxStepsGiven = true;
           if (value.isInfinity()) {
             maxEvaluations = Integer.MAX_VALUE;
           } else {

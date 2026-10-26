@@ -123,11 +123,21 @@ final public class ImageExpr extends DataExpr<byte[]> {
 
   @Override
   public int hashCode() {
-    Raster raster = raster();
+    Raster raster = comparedRaster();
     if (raster == null) {
       return (fData == null) ? 3761 : 3761 + java.util.Arrays.hashCode(fData);
     }
     return 3761 + 31 * sampleType().hashCode() + raster.samplesHashCode();
+  }
+
+  /**
+   * The samples two images are compared by: those of a <code>"Real32"</code> image in single
+   * precision, so that the image its <code>InputForm</code> reads back as is equal to it.
+   */
+  private Raster comparedRaster() {
+    Raster raster = raster();
+    return raster != null && Pixels.REAL32.equals(sampleType()) ? raster.toSinglePrecision()
+        : raster;
   }
 
   /**
@@ -147,8 +157,8 @@ final public class ImageExpr extends DataExpr<byte[]> {
     if (this == other) {
       return 0;
     }
-    Raster raster = raster();
-    Raster otherRaster = other.raster();
+    Raster raster = comparedRaster();
+    Raster otherRaster = other.comparedRaster();
     if (raster == null || otherRaster == null) {
       if (raster != otherRaster) {
         return raster == null ? -1 : 1;
@@ -397,6 +407,62 @@ final public class ImageExpr extends DataExpr<byte[]> {
       result.append(F.Rule(S.Magnification, options.magnification()));
     }
     return result;
+  }
+
+  /**
+   * <code>Image[NumericArray[data, arrayType], type, ColorSpace -&gt; space,
+   * Interleaving -&gt; ...]</code>: the form <code>InputForm</code> writes an image in, which reads back as an equal image. The
+   * samples are written on the scale of the type, those of a <code>"Real32"</code> image in single
+   * precision, and in the layout the image stores them in; <code>Interleaving -&gt; None</code>
+   * says that an image has one channel.
+   */
+  @Override
+  public IAST fullForm() {
+    Raster raster = raster();
+    if (raster == null) {
+      return F.NIL;
+    }
+    String type = sampleType();
+    IAST data = (Pixels.REAL32.equals(type) ? raster.toSinglePrecision() : raster).toMatrix(type);
+    IExpr interleaving = S.None;
+    if (raster.channels > 1) {
+      interleaving = F.booleSymbol(options.interleaved());
+      if (!options.interleaved()) {
+        data = Pixels.relayout(data, false);
+        if (data == null) {
+          return F.NIL;
+        }
+      }
+    }
+    org.matheclipse.core.interfaces.IASTAppendable result = F.ast(S.Image, 4);
+    result.append(F.binaryAST2(S.NumericArray, data, F.stringx(numericArrayType(type))));
+    result.append(F.stringx(type));
+    result.append(F.Rule(S.ColorSpace, options.colorSpace()));
+    result.append(F.Rule(S.Interleaving, interleaving));
+    return result;
+  }
+
+  /** The element type of the <code>NumericArray</code> that holds the samples of an image type. */
+  private static String numericArrayType(String type) {
+    if (Pixels.BIT.equals(type)) {
+      return "Integer8";
+    }
+    if (Pixels.BYTE.equals(type)) {
+      return "UnsignedInteger8";
+    }
+    if (Pixels.BIT16.equals(type)) {
+      return "UnsignedInteger16";
+    }
+    return Pixels.REAL64.equals(type) ? "Real64" : "Real32";
+  }
+
+  /**
+   * <code>FullForm</code> is not the form {@link #fullForm()} gives, which is written for
+   * <code>InputForm</code> only.
+   */
+  @Override
+  public String fullFormString() {
+    return fHead + "(" + fData + ")";
   }
 
   @Override
