@@ -3832,6 +3832,16 @@ public class S {
   public final static IBuiltInSymbol Cofactor = S.initFinalSymbol("Cofactor", ID.Cofactor);
 
   /**
+   * CoifletWavelet(x) - TODO describe `CoifletWavelet`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoifletWavelet.md">CoifletWavelet
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CoifletWavelet =
+      S.initFinalSymbol("CoifletWavelet", ID.CoifletWavelet);
+
+  /**
    * Collect(expr, variable) - collect subexpressions in `expr` which belong to the same `variable`.
    * 
    * @see <a href=
@@ -5528,6 +5538,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol DateWithinQ = S.initFinalSymbol("DateWithinQ", ID.DateWithinQ);
+
+  /**
+   * DaubechiesWavelet(x) - TODO describe `DaubechiesWavelet`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DaubechiesWavelet.md">DaubechiesWavelet
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DaubechiesWavelet =
+      S.initFinalSymbol("DaubechiesWavelet", ID.DaubechiesWavelet);
 
   public final static IBuiltInSymbol DawsonF = S.initFinalSymbol("DawsonF", ID.DawsonF);
 
@@ -10605,6 +10625,15 @@ public class S {
    */
   public final static IBuiltInSymbol GumbelDistribution =
       S.initFinalSymbol("GumbelDistribution", ID.GumbelDistribution);
+
+  /**
+   * HaarWavelet(x) - TODO describe `HaarWavelet`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HaarWavelet.md">HaarWavelet
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HaarWavelet = S.initFinalSymbol("HaarWavelet", ID.HaarWavelet);
 
   /**
    * HadamardMatrix(x) - TODO describe `HadamardMatrix`.
@@ -23921,6 +23950,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol SymbolQ = S.initFinalSymbol("SymbolQ", ID.SymbolQ);
+
+  /**
+   * SymletWavelet(x) - TODO describe `SymletWavelet`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymletWavelet.md">SymletWavelet
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SymletWavelet =
+      S.initFinalSymbol("SymletWavelet", ID.SymletWavelet);
 
   public final static IBuiltInSymbol Symmetric = S.initFinalSymbol("Symmetric", ID.Symmetric);
 
