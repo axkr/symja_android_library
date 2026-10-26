@@ -1,8 +1,11 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Arrays;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -194,7 +197,30 @@ public class SparseArrayFunctions {
           // automatic detection enabled
         } else if (arg2.isList()) {
           // List of Java int numbers expected in `1`.
-          dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+          dimension = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
+          if (dimension == null) {
+            return F.NIL;
+          }
+          if (Arrays.stream(dimension).anyMatch(d -> d == 0)) {
+            if (!arg1.isEmptyList()) {
+              // no rule fits: List of Java int numbers expected in `1`.
+              Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+              return F.NIL;
+            }
+            // an array without elements has nothing to store, only the nested lists in front of
+            // the empty level
+            long size = 1;
+            for (int d : dimension) {
+              if (d == 0) {
+                break;
+              }
+              size *= d;
+              if (size > Config.MAX_AST_SIZE) {
+                ASTElementLimitExceeded.throwIt(size);
+              }
+            }
+            return emptyArray(dimension, 0);
+          }
         } else {
           defaultDimension = arg2.toMachineInt();
           if (defaultDimension < 0) {
@@ -270,6 +296,19 @@ public class SparseArrayFunctions {
 
       // List expected at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "list", F.list(F.C1, ast), engine);
+    }
+
+    /**
+     * The nested list with the dimensions <code>dimension[level..]</code>, one of which is
+     * <code>0</code>.
+     */
+    private static IAST emptyArray(int[] dimension, int level) {
+      int n = dimension[level];
+      if (n == 0) {
+        return F.CEmptyList;
+      }
+      IAST row = emptyArray(dimension, level + 1);
+      return F.constantArray(row, n);
     }
 
 

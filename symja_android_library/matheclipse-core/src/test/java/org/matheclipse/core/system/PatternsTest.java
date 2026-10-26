@@ -1330,6 +1330,65 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{Optional,Optional,BlankSequence,BlankSequence}");
   }
 
+  @Test
+  public void testConditionEvaluatesItsPattern() {
+    // a symbol with a value in the pattern of a condition stands for its value
+    check("cnd1 = cnd2; {hh(cnd2(7)) /. (hh(cnd1(u_)) /; True) :> {u}, "
+        + "hh(cnd2(7)) /. hh(cnd1(u_)) :> {u}}", //
+        "{{7},{7}}");
+    check("Block({lvl = n}, kk(vec(r, n)) //. {kk(vec(u_, lvl)) /; True :> done})", //
+        "done");
+    check("FullForm(Condition(2 + 3, t))", //
+        "Condition(5, t)");
+    check("Hold(Condition(2 + 3, t))", //
+        "Hold(2+3/;t)");
+    check("cnd1 = cnd2; kk(cnd2(5)) /. {w_. kk(cnd1(u_)) /; u > 3 :> {w, u}}", //
+        "{1,5}");
+    // the condition of a definition still decides
+    check("cnd3(x_) := x^3 /; x > 1; {cnd3(2), cnd3(1)}", //
+        "{8,cnd3(1)}");
+    check("cnd4(x_ /; x < 0) := -x; {cnd4(-4), cnd4(4)}", //
+        "{4,cnd4(4)}");
+    // a definition with a condition made by the right-hand side of another definition
+    check("cnd5(n_) := (cnd6(y_ /; y > n) := y - n; cnd6(10)); {cnd5(3), cnd6(2)}", //
+        "{7,cnd6(2)}");
+  }
+
+  @Test
+  public void testUnevaluatedReplacement() {
+    // an outer Unevaluated of the replacement is removed
+    check("Hold(q) /. q :> Unevaluated(3 + 4)", //
+        "Hold(3+4)");
+    check("Hold(q, r) /. q :> Unevaluated(Sequence(s, t))", //
+        "Hold(s,t,r)");
+    check("Hold(q(5)) /. q(u_) :> Unevaluated(u * u)", //
+        "Hold(5*5)");
+    check("{q^3 /. q :> Unevaluated(Sequence()), g(q) /. q :> Unevaluated(3 + 4)}", //
+        "{3,g(7)}");
+  }
+
+  @Test
+  public void testSequencePatternsInOrderlessHeads() {
+    // a named repeated pattern in a product
+    check("u(1) u(2) v(3) /. (s : u(_) ..) v(_) :> Length({s})", //
+        "2");
+    check("u(1) v(3) /. (s : u(_) ..) v(_) :> Length({s})", //
+        "1");
+    check("u(1) u(2) v(3) /. s__u v(_) :> Length({s})", //
+        "2");
+    check("MatchQ(u(1) u(2) v(3), (s : u(_) ..) v(_))", //
+        "True");
+    check("SetAttributes(ord, Orderless); {ord(u(1), v(3)) /. ord(u(_) .., v(_)) -> yes, "
+        + "ord(v(3), u(1), u(2)) /. ord(s : u(_) .., v(_)) :> Length({s})}", //
+        "{yes,2}");
+    check("SetAttributes(flo, {Flat, Orderless}); "
+        + "flo(u(1), u(2), v(3)) /. flo(s : u(_) .., v(_)) :> Length({s})", //
+        "2");
+    // the condition of the whole left-hand side sees all the pattern variables
+    check("qp(den(a__) f_ /; FreeQ(f, den)) := {{a}, f}; {qp(den(1, 2)*z), qp(den(1)*den(2))}", //
+        "{{{1,2},z},qp(den(1)*den(2))}");
+  }
+
   @Override
   public void setUp() {
     super.setUp();

@@ -374,6 +374,7 @@ public class Errors {
       "listrp", "List or SparseArray or structured array expected at position `1` in `2`.", //
       "locked", "Symbol `1` is locked.", //
       "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
+      "lrank", "Rank `1` is incompatible with group of order `2`.", //
       "lpbb", "The search for an integer solution stopped after `1` subproblems.", //
       "lpdom", "`1` is not a valid domain specification; Reals is used instead.", //
       "lpn", "`1` is not a list of numbers or pairs of numbers.", //

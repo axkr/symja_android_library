@@ -29,6 +29,12 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
    */
   protected final boolean fOneIdentity;
 
+  /**
+   * In an Orderless head which isn't Flat only a pattern sequence may take several arguments; any
+   * other pattern takes exactly one.
+   */
+  protected boolean fOnlySequencesTakeSeveral = false;
+
   public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
       StackMatcher stackMatcher, IPatternMap patternMap) {
     this(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, sym.hasOneIdentityAttribute());
@@ -76,6 +82,11 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
       for (int j = 0; j < result.length; j++) {
         final int n = result[j].length;
         final IExpr lhsPatternExpr = fLhsPatternAST.get(j + 1);
+        final boolean sequence = PatternMatcher.standsForSequence(lhsPatternExpr);
+        if (n > 1 && fOnlySequencesTakeSeveral && !sequence) {
+          matched = false;
+          return false;
+        }
         if (n == 1 && fOneIdentity) {
           // OneIdentity here
           if (!stackMatcher.push(lhsPatternExpr, array[result[j][0]])) {
@@ -83,7 +94,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
             return false;
           }
         } else {
-          final ISymbol head = (lhsPatternExpr.isPatternSequence(false)) ? S.Sequence : fSymbol;
+          final ISymbol head = sequence ? S.Sequence : fSymbol;
           final int row = j;
           if (n == 1 && head == fSymbol) {
             // one argument without OneIdentity: a pattern object gets the argument wrapped in

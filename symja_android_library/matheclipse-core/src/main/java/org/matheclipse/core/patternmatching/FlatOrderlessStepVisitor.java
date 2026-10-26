@@ -78,6 +78,18 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
     }
   }
 
+  /**
+   * A visitor for an Orderless head which isn't Flat: a pattern sequence takes a group of the
+   * arguments as a <code>Sequence</code>, any other pattern exactly one argument.
+   */
+  public static FlatOrderlessStepVisitor orderless(final ISymbol sym, IAST lhsPatternAST,
+      IAST lhsEvalAST, StackMatcher stackMatcher, IPatternMap patternMap) {
+    FlatOrderlessStepVisitor visitor =
+        new FlatOrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, true);
+    visitor.fOnlySequencesTakeSeveral = true;
+    return visitor;
+  }
+
   @Override
   public int[] getMultisetArray() {
     return multiset;

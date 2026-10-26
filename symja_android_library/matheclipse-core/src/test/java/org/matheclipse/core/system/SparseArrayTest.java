@@ -1062,8 +1062,57 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     check("k = KroneckerProduct(SparseArray({{1, 1} -> 1, {2, 2} -> 1}, {2, 2}), {{1, 2}}); "
         + "{Head(k), Normal(k)}", //
         "{SparseArray,{{1,2,0,0},{0,0,1,2}}}");
+    // a sparse factor in any position keeps the product sparse
     check("Head(KroneckerProduct({{1, 2}}, s))", //
-        "List");
+        "SparseArray");
+  }
+
+  @Test
+  public void testSparseArrayListArguments() {
+    call("m = SparseArray({{1, 3} -> 7, {2, 1} -> -2}, {2, 3})");
+    call("w = SparseArray({3 -> 6}, {4})");
+    // the element list of a sparse vector grows or shrinks like a list and stays sparse
+    check("{Head(Append(w, 9)), Normal(Append(w, 9)), Normal(Prepend(w, 9))}", //
+        "{SparseArray,{0,0,6,0,9},{9,0,0,6,0}}");
+    check("Normal(Append(m, {1, 1, 1}))", //
+        "{{0,0,7},{-2,0,0},{1,1,1}}");
+    check("u = w; AppendTo(u, -1); {Head(u), Normal(u)}", //
+        "{SparseArray,{0,0,6,0,-1}}");
+    check("u = w; PrependTo(u, -1); {Head(u), Normal(u)}", //
+        "{SparseArray,{-1,0,0,6,0}}");
+    // the elements of a sparse vector are tested
+    check("{AnyTrue(w, # > 5 &), AllTrue(w, # >= 0 &), NoneTrue(w, # < 0 &)}", //
+        "{True,True,True}");
+    check("AnyTrue(w, # > 6 &)", //
+        "False");
+    check("Thread(g(w, {p, q, r, t}))", //
+        "{g(0,p),g(0,q),g(6,r),g(0,t)}");
+    // a dense array of the same dimensions joins the sparse array
+    check("{Head(m * {{1, 2, 3}, {4, 5, 6}}), Normal(m * {{1, 2, 3}, {4, 5, 6}})}", //
+        "{SparseArray,{{0,0,21},{-8,0,0}}}");
+    check("{Head(w + {1, 2, 3, 4}), Normal(w + {1, 2, 3, 4})}", //
+        "{SparseArray,{1,2,9,4}}");
+    // a list of lower rank is combined with the rows: a dense result
+    check("m + {100, 200}", //
+        "{{100,100,107},{198,200,200}}");
+    check("{100, 200} * m", //
+        "{{0,0,700},{-400,0,0}}");
+    // Clip keeps the array sparse and clips the background too
+    check("{Head(Clip(w - 2, {-1, 3})), Normal(Clip(w - 2, {-1, 3}))}", //
+        "{SparseArray,{-1,-1,3,-1}}");
+    // an iterator runs over the elements or rows
+    check("{Table(i^2, {i, w}), Sum(i, {i, w}), Table(Total(r), {r, m})}", //
+        "{{0,0,36,0},6,{7,-2}}");
+    // an array without elements
+    check("SparseArray({}, {0})", //
+        "{}");
+    check("SparseArray({}, {3, 0})", //
+        "{{},{},{}}");
+    check("SparseArray({}, {2, 0, 4})", //
+        "{{},{}}");
+    // a rule has no place in an empty array
+    check("SparseArray({1 -> 7}, {0})", //
+        "SparseArray({1->7},{0})");
   }
 
   /** The JUnit setup method */

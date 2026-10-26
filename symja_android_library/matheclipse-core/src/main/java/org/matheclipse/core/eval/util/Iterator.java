@@ -24,6 +24,7 @@ import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -336,6 +337,25 @@ public class Iterator {
       }
       EvalEngine.get().setNumericMode(fNumericMode);
     }
+  }
+
+  /**
+   * An iterator <code>{i, s}</code> over a <code>SparseArray</code> runs through its level 1 parts:
+   * the rows of a matrix, which are sparse arrays themselves, or the elements of a vector.
+   *
+   * @return the list of the parts, or <code>expr</code> itself if it is no sparse array
+   */
+  private static IExpr levelOneParts(IExpr expr) {
+    if (!(expr instanceof ISparseArray)) {
+      return expr;
+    }
+    ISparseArray sparseArray = (ISparseArray) expr;
+    int n = sparseArray.getDimension()[0];
+    IASTAppendable parts = F.ListAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      parts.append(sparseArray.get(i));
+    }
+    return parts;
   }
 
   /** Iterate over a list of values. */
@@ -1031,7 +1051,7 @@ public class Iterator {
       switch (list.size()) {
         case 2:
           lowerLimit = F.C1;
-          upperLimit = evalEngine.evalWithoutNumericReset(list.arg1());
+          upperLimit = levelOneParts(evalEngine.evalWithoutNumericReset(list.arg1()));
           step = F.C1;
           variable = null;
           if (upperLimit.isListOrAssociation()) {
@@ -1053,7 +1073,7 @@ public class Iterator {
           break;
         case 3:
           lowerLimit = F.C1;
-          upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
+          upperLimit = levelOneParts(evalEngine.evalWithoutNumericReset(list.arg2()));
           step = F.C1;
 
           if (list.arg1() instanceof ISymbol) {
@@ -1188,7 +1208,7 @@ public class Iterator {
           break;
         case 3:
           lowerLimit = evalEngine.evalWithoutNumericReset(list.arg1());
-          upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
+          upperLimit = levelOneParts(evalEngine.evalWithoutNumericReset(list.arg2()));
           step = F.C1;
           variable = symbol;
           if (upperLimit.isListOrAssociation()) {

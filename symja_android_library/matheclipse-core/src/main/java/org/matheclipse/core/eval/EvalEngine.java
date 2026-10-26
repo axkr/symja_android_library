@@ -54,6 +54,7 @@ import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.util.AwtSupport;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.AbstractAST.NILPointer;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -3355,11 +3356,16 @@ public class EvalEngine implements Serializable {
    */
   public IExpr evalHoldPattern(IAST ast, boolean noEvaluation, boolean evalNumericFunction) {
     boolean evalLHSMode = fEvalLHSMode;
+    // a definition made inside the right-hand side of a rule, as in f(x_) := (g(n_ /; n > 2) := 1;
+    // ...): the condition of its pattern belongs to that pattern, it doesn't decide about the rule
+    boolean evalRHSMode = fEvalRHSMode;
     try {
       fEvalLHSMode = true;
+      fEvalRHSMode = false;
       return evalSetAttributesRecursive(ast, noEvaluation, evalNumericFunction, 0);
     } finally {
       fEvalLHSMode = evalLHSMode;
+      fEvalRHSMode = evalRHSMode;
     }
   }
 
@@ -6780,6 +6786,12 @@ public class EvalEngine implements Serializable {
       ast.addFlag(Flag.IS_LISTABLE_THREADED);
       return F.NIL;
     }
+    if (listableHead == S.List && ast.exists(x -> x instanceof ISparseArray)) {
+      IAST converted = sparseAndListArgs(ast);
+      if (converted.isPresent()) {
+        return converted;
+      }
+    }
 
     if (ast.exists(SymbolicArrayUtil::isArrayValued)) {
       // an argument which stands for a non-scalar quantity - a symbolic vector, matrix or array, or
@@ -6901,6 +6913,58 @@ public class EvalEngine implements Serializable {
     // S.Association and never carries the ISymbol#LISTABLE attribute, so the flag would never be
     // read; and threadList() may return F.NIL, whose eval flags are shared globally.
     return EvalAttributes.threadList(ast, listableHead, ast.head(), refArgSize, refAssociation);
+  }
+
+  /**
+   * A {@link ISymbol#LISTABLE} call with sparse array and list arguments. If all of them have the
+   * same dimensions, the lists are converted to sparse arrays and the elements are combined into a
+   * sparse array. Otherwise the sparse arrays are converted to lists, so a list of lower rank is
+   * combined with the rows of an array.
+   *
+   * @return the call with converted arguments, which has to be evaluated again, or
+   *         {@link F#NIL} if the arguments differ in length
+   */
+  private static IAST sparseAndListArgs(final IAST ast) {
+    int[] dimensions = null;
+    boolean sameDimensions = true;
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr argument = ast.get(i);
+      final int[] argDimensions;
+      if (argument instanceof ISparseArray) {
+        argDimensions = ((ISparseArray) argument).getDimension();
+      } else if (argument.isList()) {
+        argDimensions = LinearAlgebraUtil.dimensions((IAST) argument).toIntArray();
+      } else {
+        continue;
+      }
+      if (dimensions == null) {
+        dimensions = argDimensions;
+      } else if (dimensions.length == 0 || argDimensions.length == 0
+          || dimensions[0] != argDimensions[0]) {
+        // the arguments cannot be combined
+        return F.NIL;
+      } else if (!Arrays.equals(dimensions, argDimensions)) {
+        sameDimensions = false;
+      }
+    }
+    if (sameDimensions) {
+      IASTMutable sparseCall = ast.copy();
+      for (int i = 1; i < ast.size(); i++) {
+        final IExpr argument = ast.get(i);
+        if (argument.isList()) {
+          SparseArrayExpr sparseArray = SparseArrayExpr.newDenseList((IAST) argument, F.C0);
+          if (sparseArray == null) {
+            sparseCall = null;
+            break;
+          }
+          sparseCall.set(i, sparseArray);
+        }
+      }
+      if (sparseCall != null) {
+        return sparseCall;
+      }
+    }
+    return ast.map(x -> x instanceof ISparseArray ? ((ISparseArray) x).normal(false) : F.NIL, 1);
   }
 
   /**

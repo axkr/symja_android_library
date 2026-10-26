@@ -2913,6 +2913,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCheck() {
+    // 1/0 issues Power::infy
+    check("{Check(2/0; 3, 4, Power::infy), Quiet(Check(2/0; 3, 4, Power::infy))}", //
+        "{4,4}");
+    check("Check(2/0; 3, 4, Sqrt::argx)", //
+        "3");
+    check("Quiet(Divide(5, 0), Power::infy)", //
+        "ComplexInfinity");
     check("Check(0^(-42), failure)", //
         "Failure");
 
@@ -3253,8 +3260,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Clip(2-3*I)", //
         "Clip(2-I*3)");
-    check("Clip(SparseArray({1->5,3->-4},{5}))", //
-        "{1,0,-1,0,0}");
+    // a sparse array stays sparse
+    check("{Head(Clip(SparseArray({1->5,3->-4},{5}))), Normal(Clip(SparseArray({1->5,3->-4},{5})))}", //
+        "{SparseArray,{1,0,-1,0,0}}");
   }
 
   @Test
@@ -3882,8 +3890,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testCondition() {
     // https://stackoverflow.com/questions/5866016
+    // outside of a definition the pattern is evaluated, the test is held
     check("Condition(Print(x),False)", //
-        "Print(x)/;False");
+        "Null/;False");
     check("f[x_]:=Condition(Print(x),False); f[a]", //
         "f(a)");
     check("g:=Condition(Print(x),False); g", //
@@ -19615,7 +19624,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testListable() {
-    check("Sin[{x,0,2,1},SparseArray({x,y,v,w})]", //
+    // a list of the same dimensions joins the sparse array
+    check("Sin[{x,0,2,1},SparseArray({x,y,v,w})] // Normal", //
         "{Sin(x,x),Sin(0,y),Sin(2,v),Sin(1,w)}");
     // Thread: Objects of unequal length in Sin({x,0,2,1},SparseArray(Number of elements: 2
     // Dimensions: {2} Default value: 0)) cannot be combined.
@@ -34863,6 +34873,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTuples() {
+    // the tuples of length 2*2 arranged as 2x2 arrays
+    check("Tuples({0, 1}, {2, 2}) // Length", //
+        "16");
+    check("Tuples({0, 1}, {2, 2})[[7]]", //
+        "{{0,1},{1,0}}");
+    check("Tuples({u, v}, {3})", //
+        "{{u,u,u},{u,u,v},{u,v,u},{u,v,v},{v,u,u},{v,u,v},{v,v,u},{v,v,v}}");
+    // too many tuples, or a length beyond the int range
+    check("Tuples({u, v}, {65536, 65536})", //
+        "Tuples({u,v},{65536,65536})");
+    check("Tuples({u, v}, {8, 8})", //
+        "Tuples({u,v},{8,8})");
     check("Tuples(x^2, -10)", //
         "Tuples(x^2,-10)");
     check("Tuples(x^2, 0)", //
@@ -35064,6 +35086,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnitize() {
+    check("{Unitize(ComplexInfinity), Unitize(-Infinity), Unitize(DirectedInfinity(I))}", //
+        "{1,1,1}");
     // Unitize uses PossibleZeroQ
     // checkNumeric(
     // "N((E + Pi)^2 )", //

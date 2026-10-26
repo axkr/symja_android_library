@@ -679,6 +679,9 @@ public final class ListFunctions {
         return IASTDataset
             .restoreDataset(engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
       }
+      if (arg1 instanceof ISparseArray) {
+        return appendSparse(S.Append, arg1, engine.evaluate(ast.arg2()), engine);
+      }
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
       if (arg1AST.isNIL()) {
         return F.NIL;
@@ -707,6 +710,15 @@ public final class ListFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2_1;
     }
+  }
+
+  /**
+   * <code>Append</code> or <code>Prepend</code> of an element to a sparse vector or of a row to a
+   * sparse array: the result is a sparse array with the same background value.
+   */
+  private static IExpr appendSparse(IBuiltInSymbol head, IExpr sparseArray, IExpr value,
+      EvalEngine engine) {
+    return SparseArrayExpr.evalNormal(F.binaryAST2(head, sparseArray, value), true, engine);
   }
 
   /**
@@ -842,6 +854,9 @@ public final class ListFunctions {
             // The argument is not a rule or a list of rules.
             return Errors.printMessage(S.AppendTo, "invdt", F.CEmptyList, EvalEngine.get());
           }
+        }
+        if (symbolValue instanceof ISparseArray) {
+          return appendSparse(S.Append, symbolValue, value, EvalEngine.get());
         }
         if (!symbolValue.isASTOrAssociation()) {
           // Nonatomic expression expected at position `1` in `2`.
@@ -5526,6 +5541,9 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1 instanceof ISparseArray) {
+        return appendSparse(S.Prepend, arg1, engine.evaluate(ast.arg2()), engine);
+      }
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
       if (arg1AST.isNIL()) {
         return F.NIL;
@@ -5654,6 +5672,9 @@ public final class ListFunctions {
             // The argument is not a rule or a list of rules.
             return Errors.printMessage(S.PrependTo, "invdt", F.CEmptyList, EvalEngine.get());
           }
+        }
+        if (symbolValue instanceof ISparseArray) {
+          return appendSparse(S.Prepend, symbolValue, value, EvalEngine.get());
         }
         if (!symbolValue.isASTOrAssociation()) {
           // Nonatomic expression expected at position `1` in `2`.

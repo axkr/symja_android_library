@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KPartitionsIterable;
 import org.matheclipse.core.combinatoric.KPartitionsList;
 import org.matheclipse.core.eval.CombinatoricUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.KPermutationsIterable;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -935,6 +937,21 @@ public final class Combinatoric {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isList() && CombinatoricUtil.isPermutationList((IAST) arg1, true) != null) {
+        // a permutation list is its own permutation list, extended by fixed points to a length
+        if (ast.isAST1()) {
+          return arg1;
+        }
+        int length = ast.arg2().toIntDefault();
+        if (length < arg1.argSize()) {
+          return F.NIL;
+        }
+        IASTAppendable result = ((IAST) arg1).copyAppendable(length - arg1.argSize());
+        for (int i = arg1.argSize() + 1; i <= length; i++) {
+          result.append(F.ZZ(i));
+        }
+        return result;
+      }
       if (arg1.isAST(S.Cycles, 2)) {
         IAST cycles;
         if (arg1.hasFlag(Flag.BUILT_IN_EVALED)) {
@@ -945,7 +962,12 @@ public final class Combinatoric {
         if (cycles.isPresent()) {
           IAST cyclesList = (IAST) cycles.arg1();
           if (cyclesList.isEmptyList()) {
-            return F.CEmptyList;
+            // the identity: only fixed points
+            int length = ast.isAST2() ? ast.arg2().toIntDefault() : 0;
+            if (length < 0) {
+              return F.NIL;
+            }
+            return F.mapRange(1, length + 1, i -> F.ZZ(i));
           }
           int permutationsListLength = CombinatoricUtil.determineLengthFromCycles(cyclesList);
           if (permutationsListLength < 1) {
@@ -1176,12 +1198,22 @@ public final class Combinatoric {
       IExpr arg2 = ast.arg2();
       if (arg1.isAST()) {
         if (arg2.isAST(S.PermutationGroup, 2)) {
-          // the expression permuted by every element of the group
+          // the expression permuted by every element g of the group: the parts taken in the
+          // order of the image list of g
           IExpr elements = engine.evaluate(F.unaryAST1(S.GroupElements, arg2));
-          if (elements.isList()) {
-            return ((IAST) elements).map(x -> engine.evaluate(F.binaryAST2(S.Permute, arg1, x)));
+          if (!elements.isList()) {
+            return F.NIL;
           }
-          return F.NIL;
+          final IInteger n = F.ZZ(arg1.argSize());
+          IASTAppendable result = F.ListAlloc(elements.argSize());
+          for (IExpr g : (IAST) elements) {
+            IExpr images = engine.evaluate(F.binaryAST2(S.PermutationList, g, n));
+            if (!images.isList() || images.argSize() != arg1.argSize()) {
+              return F.NIL;
+            }
+            result.append(engine.evaluate(F.Part(arg1, images)));
+          }
+          return result;
         }
         if (arg2.isList()) {
           return permuteCycles((IAST) arg1, (IAST) arg2, ast);
@@ -1647,6 +1679,41 @@ public final class Combinatoric {
         tuplesOfListsRecursive(list, 1, result, temp, ast, engine);
         return result;
 
+      } else if (ast.isAST2() && arg1.isAST() && ast.arg2().isList()) {
+        // Tuples(list, {n1, n2, ...}): the tuples of length n1*n2*... as arrays of these dimensions
+        IAST dims = (IAST) ast.arg2();
+        long length = 1;
+        for (int i = 1; i < dims.size(); i++) {
+          int n = dims.get(i).toIntDefault();
+          if (n < 0) {
+            return F.NIL;
+          }
+          length *= n;
+          if (length > Config.MAX_AST_SIZE) {
+            ASTElementLimitExceeded.throwIt(length);
+          }
+        }
+        final int k = (int) length;
+        final int base = arg1.argSize();
+        if (base > 1) {
+          // the number of tuples base^k
+          long count = 1;
+          for (int i = 0; i < k; i++) {
+            count *= base;
+            if (count > Config.MAX_AST_SIZE) {
+              ASTElementLimitExceeded.throwIt(count);
+            }
+          }
+        }
+        if (dims.argSize() == 0) {
+          return F.NIL;
+        }
+        IASTAppendable result = F.ListAlloc(16);
+        tuples((IAST) arg1, k, result, F.ast(arg1.head()), ast, engine);
+        if (dims.argSize() == 1) {
+          return result;
+        }
+        return result.map(tuple -> engine.evaluate(F.ArrayReshape(tuple, dims)));
       } else if (ast.isAST2() && arg1.isAST()) {
         int k = ast.arg2().toMachineInt();
         if (k >= 0) {

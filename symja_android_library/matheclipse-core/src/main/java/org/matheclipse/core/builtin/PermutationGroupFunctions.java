@@ -305,8 +305,14 @@ public class PermutationGroupFunctions {
                 IASTAppendable result = F.ListAlloc(list.argSize());
                 for (int i = 1; i < list.size(); i++) {
                   int position = list.get(i).toIntDefault();
+                  if (position < 0) {
+                    // counted from the end
+                    position += elements.size() + 1;
+                  }
                   if (position < 1 || position > elements.size()) {
-                    return F.NIL;
+                    // Rank `1` is incompatible with group of order `2`.
+                    return Errors.printMessage(S.GroupElements, "lrank",
+                        F.list(list.get(i), F.ZZ(elements.size())), engine);
                   }
                   result.append(toCycles(elements.get(position - 1), engine));
                 }

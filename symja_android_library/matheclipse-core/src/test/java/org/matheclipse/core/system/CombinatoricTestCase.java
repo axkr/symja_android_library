@@ -309,6 +309,32 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "PermutationList(Cycles({{1,6,7},{2,3}}),5)");
     check("PermutationList(Cycles({{1, 5}, {2, 9, 3}}))", //
         "{5,9,2,4,1,6,7,8,3}");
+    // the identity has only fixed points
+    check("{PermutationList(Cycles({}), 3), PermutationList(Cycles({}))}", //
+        "{{1,2,3},{}}");
+    // a permutation list is its own permutation list
+    check("PermutationList({2, 4, 1, 3})", //
+        "{2,4,1,3}");
+    check("PermutationList({2, 1}, 4)", //
+        "{2,1,3,4}");
+  }
+
+  @Test
+  public void testPermuteAndGroupElements() {
+    call("grp = PermutationGroup({Cycles({{2, 4, 3}})})");
+    check("GroupElements(grp)", //
+        "{Cycles({}),Cycles({{2,3,4}}),Cycles({{2,4,3}})}");
+    // element g takes the parts in the order of its image list
+    check("Permute({p, q, r, s, t}, grp)", //
+        "{{p,q,r,s,t},{p,r,s,q,t},{p,s,q,r,t}}");
+    check("Permute(h(1, 2, 3, 4), grp)", //
+        "{h(1,2,3,4),h(1,3,4,2),h(1,4,2,3)}");
+    // negative positions count from the end
+    check("GroupElements(grp, {-1, 1})", //
+        "{Cycles({{2,4,3}}),Cycles({})}");
+    // GroupElements: Rank 4 is incompatible with group of order 3.
+    check("GroupElements(grp, {4})", //
+        "GroupElements(PermutationGroup({Cycles({{2,4,3}})}),{4})");
   }
 
   @Test

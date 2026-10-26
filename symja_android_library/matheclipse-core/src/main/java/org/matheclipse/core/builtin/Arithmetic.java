@@ -1615,6 +1615,10 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg2().isZero()) {
+        // Power decides: a nonzero numerator gives ComplexInfinity, 0/0 Indeterminate
+        return F.Times(ast.arg1(), F.Power(ast.arg2(), F.CN1));
+      }
       // rewrite to arg1 * arg2^(-1)
       return F.Divide(ast.arg1(), ast.arg2());
     }
@@ -5822,7 +5826,7 @@ public final class Arithmetic {
               return S.Indeterminate;
             }
             // Infinite expression `1` encountered.
-            Errors.printMessage(S.Divide, "infy", F.List(ast), engine);
+            Errors.printMessage(S.Power, "infy", F.List(ast), engine);
             return F.CComplexInfinity;
           }
           if (numerator.isZero()) {

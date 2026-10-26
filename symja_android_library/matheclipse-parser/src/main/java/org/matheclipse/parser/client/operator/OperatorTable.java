@@ -385,7 +385,7 @@ public final class OperatorTable {
       row("\u2323", "Cup", Affix.INFIX, 340, Grouping.FLAT),
       row("\u25ab", "Square", Affix.PREFIX, 540, Grouping.FLAT, "\uf520"),
       row("\u2758", "VerticalBar", Affix.INFIX, 280, Grouping.FLAT, "\uf3d0"),
-      row("\u27c2", "Perpendicular", Affix.INFIX, 190, Grouping.FLAT),
+      row("\u27c2", "Perpendicular", Affix.INFIX, 190, Grouping.LEFT),
       row("\u27f5", "LongLeftArrow", Affix.INFIX, 580, Grouping.FLAT),
       row("\u27f6", "LongRightArrow", Affix.INFIX, 580, Grouping.FLAT),
       row("\u27f7", "LongLeftRightArrow", Affix.INFIX, 580, Grouping.FLAT),

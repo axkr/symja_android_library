@@ -2723,7 +2723,12 @@ public class StructureFunctions {
         seqSpec = ast.arg3();
       }
 
-      final IAST list = (IAST) ast.arg1();
+      IAST list = (IAST) ast.arg1();
+      if (head == S.List && list.exists(x -> x instanceof ISparseArray)) {
+        // a sparse array is threaded over like its nested list
+        list = list.map(x -> x instanceof ISparseArray ? ((ISparseArray) x).normal(false) : F.NIL,
+            1);
+      }
       if (list.size() > 1) {
         return threadList(list, head, list.head(), seqSpec).orElse(list);
       }

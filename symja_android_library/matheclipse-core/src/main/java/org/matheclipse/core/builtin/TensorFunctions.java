@@ -717,66 +717,221 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IBuiltInSymbol headSymbol = S.KroneckerProduct;
-      int argSize = ast.argSize();
       if (ast.exists(x -> x.isSparseArray())) {
-        // sparse when the first factor is sparse
-        return org.matheclipse.core.expression.data.SparseArrayExpr.evalNormal(ast, true, engine);
+        // sparse when a factor is sparse
+        IExpr dense =
+            org.matheclipse.core.expression.data.SparseArrayExpr.evalNormal(ast, false, engine);
+        if (dense.isList()) {
+          IExpr sparse =
+              org.matheclipse.core.expression.data.SparseArrayExpr.newDenseList((IAST) dense, F.C0);
+          return sparse != null ? sparse : dense;
+        }
+        return dense;
       }
-      // expectedArgSize() is >= 2
-      if (ast.arg1().isList() && ast.arg2().isList()) {
-        try {
-          IAST tensor1 = (IAST) ast.arg1();
-          IntList dim1 = LinearAlgebraUtil.dimensions(tensor1, S.List, Integer.MAX_VALUE, true);
-          if (dim1.size() > 0) {
-            for (int i = 2; i < ast.size(); i++) {
-              IAST tensor2 = (IAST) ast.get(i);
-              IntList dim2 = LinearAlgebraUtil.dimensions(tensor2, S.List, Integer.MAX_VALUE, true);
-              if (dim1.size() == dim2.size()) {
-                IExpr temp = org.matheclipse.core.reflection.system.TensorProduct
-                    .tensorProduct(tensor1, tensor2, dim1.size(), engine);
-                if (temp.isList()) {
-                  int r = 2;
-                  if (dim2.size() > r) {
-                    r = dim2.size();
-                  }
-                  IExpr flattened = S.ArrayFlatten.of(engine, temp, F.ZZ(r)).normal(false);
-                  tensor1 = flattened.isList() ? (IAST) flattened : F.NIL;
-                  if (tensor1.isList()) {
-                    dim1 = LinearAlgebraUtil.dimensions(tensor1, S.List);
-                    if (dim1.size() > 0) {
-                      if (i < argSize) {
-                        if (ast.get(i + 1).isList()) {
-                          continue;
-                        }
-                      } else {
-                        return tensor1;
-                      }
-                    }
-                  }
-                  IASTAppendable result = F.ast(headSymbol, ast.size() - i);
-                  result.append(temp);
-                  result.appendAll(ast, i + 1, ast.size());
-                  return result;
-                }
-              }
-              if (i == 2) {
-                return F.NIL;
-              }
-
-              IASTAppendable result = F.ast(headSymbol, ast.size() - i);
-              result.append(tensor1);
-              result.appendAll(ast, i, ast.size());
-              return result;
-            }
-            return tensor1;
+      // expectedArgSize() is >= 2; validate every factor before computing anything
+      boolean rect = false;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        int rank = arg.isList() ? rank((IAST) arg) : -1;
+        if (rank < 1) {
+          if (arg.isNumber() || arg.isList()) {
+            rect = true;
+            continue;
           }
-        } catch (IllegalArgumentException iae) {
-          // print message: Nonrectangular tensor encountered
-          return Errors.printMessage(ast.topHead(), "rect", F.list(ast), engine);
+          // a symbolic factor
+          return F.NIL;
+        }
+        if (ast.argSize() > 2 && i < ast.argSize() && rank > 2) {
+          // the factors are combined from the left: only the last one may have rank > 2
+          return F.NIL;
         }
       }
-      return F.NIL;
+      if (rect) {
+        // Nonrectangular tensor encountered
+        return Errors.printMessage(S.KroneckerProduct, "rect", F.CEmptyList, engine);
+      }
+      IExpr product = ast.arg1();
+      for (int i = 2; i < ast.size(); i++) {
+        product = kronecker((IAST) product, (IAST) ast.get(i), engine);
+        if (product.isNIL()) {
+          return F.NIL;
+        }
+      }
+      return product;
+    }
+
+    /**
+     * The Kronecker product of two rectangular arrays of ranks <code>ra</code> and
+     * <code>rb</code>, or {@link F#NIL}. It regroups the indices of the tensor product (the
+     * indices of <code>a</code> followed by the indices of <code>b</code>):
+     * <ul>
+     * <li>two vectors, or a vector beside an array of even rank <code>&gt;= 4</code>: the tensor
+     * product itself,
+     * <li>a matrix and a vector: the vector stands for a row,
+     * <li>otherwise with <code>h = (ra + rb) / 2</code> axis <code>j &lt; h</code> of the result
+     * joins the indices <code>j</code> (major part) and <code>h + j</code> (minor part); for an odd
+     * total rank the last index is a final axis of its own. For equal ranks the dimensions
+     * multiply element-wise.
+     * </ul>
+     */
+    private static IExpr kronecker(IAST a, IAST b, EvalEngine engine) {
+      int[] dimsA = LinearAlgebraUtil.dimensions(a, S.List, Integer.MAX_VALUE, true).toIntArray();
+      int[] dimsB = LinearAlgebraUtil.dimensions(b, S.List, Integer.MAX_VALUE, true).toIntArray();
+      final int ra = dimsA.length;
+      final int rb = dimsB.length;
+      final boolean row = ra == 2 && rb == 1;
+      final int r = ra + rb + (row ? 1 : 0);
+      long[] d = new long[r];
+      for (int i = 0; i < ra; i++) {
+        d[i] = dimsA[i];
+      }
+      final int bStart = ra + (row ? 1 : 0);
+      if (row) {
+        d[ra] = 1;
+      }
+      for (int i = 0; i < rb; i++) {
+        d[bStart + i] = dimsB[i];
+      }
+      final boolean outer = (ra == 1 && rb == 1) || (ra == 1 && rb >= 4 && rb % 2 == 0)
+          || (rb == 1 && ra >= 4 && ra % 2 == 0);
+      long[] stride = new long[r];
+      long[] dims;
+      try {
+        if (outer) {
+          dims = d;
+          long s = 1;
+          for (int t = r - 1; t >= 0; t--) {
+            stride[t] = s;
+            s = Math.multiplyExact(s, Math.max(d[t], 1));
+          }
+        } else {
+          final int h = r / 2;
+          dims = new long[r - h];
+          for (int j = 0; j < h; j++) {
+            dims[j] = Math.multiplyExact(d[j], d[h + j]);
+          }
+          if (r % 2 == 1) {
+            dims[h] = d[r - 1];
+          }
+          long[] rowMajor = new long[dims.length];
+          long s = 1;
+          for (int j = dims.length - 1; j >= 0; j--) {
+            rowMajor[j] = s;
+            s = Math.multiplyExact(s, Math.max(dims[j], 1));
+          }
+          for (int t = 0; t < h; t++) {
+            stride[t] = Math.multiplyExact(d[h + t], rowMajor[t]);
+            stride[h + t] = rowMajor[t];
+          }
+          if (r % 2 == 1) {
+            stride[r - 1] = rowMajor[h];
+          }
+        }
+      } catch (ArithmeticException ae) {
+        return F.NIL;
+      }
+      long total = 1;
+      for (long dim : dims) {
+        total *= dim;
+        if (total > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(total);
+        }
+      }
+      IExpr[] leavesA = leaves(a, ra);
+      IExpr[] leavesB = leaves(b, rb);
+      long[] offsetsA = offsets(dimsA, Arrays.copyOfRange(stride, 0, ra));
+      long[] offsetsB = offsets(dimsB, Arrays.copyOfRange(stride, bStart, bStart + rb));
+      IExpr[] flat = new IExpr[(int) total];
+      for (int i = 0; i < leavesA.length; i++) {
+        for (int j = 0; j < leavesB.length; j++) {
+          flat[(int) (offsetsA[i] + offsetsB[j])] =
+              engine.evaluate(F.Times(leavesA[i], leavesB[j]));
+        }
+        engine.checkTimeLimit();
+      }
+      int[] position = new int[1];
+      return nest(flat, dims, 0, position);
+    }
+
+    /** The elements of a rectangular array of the given rank in row-major order. */
+    private static IExpr[] leaves(IAST array, int rank) {
+      IASTAppendable result = F.ListAlloc();
+      appendLeaves(array, rank, result);
+      IExpr[] leaves = new IExpr[result.argSize()];
+      for (int i = 0; i < leaves.length; i++) {
+        leaves[i] = result.get(i + 1);
+      }
+      return leaves;
+    }
+
+    private static void appendLeaves(IExpr expr, int rank, IASTAppendable result) {
+      if (rank == 0) {
+        result.append(expr);
+        return;
+      }
+      if (!expr.isList()) {
+        throw new IllegalArgumentException();
+      }
+      ((IAST) expr).forEach(x -> appendLeaves(x, rank - 1, result));
+    }
+
+    /**
+     * The offset in the result for every element (row-major) of an array with dimensions
+     * <code>dims</code>, when index <code>k</code> moves the offset by <code>stride[k]</code>.
+     */
+    private static long[] offsets(int[] dims, long[] stride) {
+      int n = 1;
+      for (int dim : dims) {
+        n *= dim;
+      }
+      long[] result = new long[n];
+      int[] index = new int[dims.length];
+      long offset = 0;
+      for (int i = 0; i < n; i++) {
+        result[i] = offset;
+        // step the multi-index like an odometer
+        for (int k = dims.length - 1; k >= 0; k--) {
+          index[k]++;
+          offset += stride[k];
+          if (index[k] < dims[k]) {
+            break;
+          }
+          offset -= stride[k] * index[k];
+          index[k] = 0;
+        }
+      }
+      return result;
+    }
+
+    /** The nested list with dimensions <code>dims[level..]</code> over <code>flat</code>. */
+    private static IAST nest(IExpr[] flat, long[] dims, int level, int[] position) {
+      int n = (int) dims[level];
+      IASTAppendable result = F.ListAlloc(n);
+      for (int i = 0; i < n; i++) {
+        if (level == dims.length - 1) {
+          result.append(flat[position[0]++]);
+        } else {
+          result.append(nest(flat, dims, level + 1, position));
+        }
+      }
+      return result;
+    }
+
+    /** The rank of a rectangular array, or <code>-1</code> if it is ragged. */
+    private static int rank(IAST array) {
+      try {
+        IntList dims = LinearAlgebraUtil.dimensions(array, S.List, Integer.MAX_VALUE, true);
+        int rank = dims.size();
+        for (IExpr leaf : leaves(array, rank)) {
+          if (leaf.isList()) {
+            // a list beside a scalar on the same level
+            return -1;
+          }
+        }
+        return rank;
+      } catch (IllegalArgumentException iae) {
+        return -1;
+      }
     }
 
     @Override

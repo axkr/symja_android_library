@@ -39,7 +39,7 @@ public class Functors {
      */
     public SingleRuleFunctor(IAST equalRule) {
       lhs = equalRule.arg1();
-      rhs = equalRule.arg2();
+      rhs = replacement(equalRule.arg2());
     }
 
     @Override
@@ -83,11 +83,19 @@ public class Functors {
       for (int i = 0; i < fMatchers.size(); i++) {
         temp = fMatchers.get(i).replace(arg, fEngine);
         if (temp.isPresent()) {
-          return temp;
+          return replacement(temp);
         }
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * The expression inserted for a matched part: an outer <code>Unevaluated(expr)</code> of the
+   * rule's right-hand-side is removed, so <code>expr</code> is inserted as it is.
+   */
+  private static IExpr replacement(IExpr rhs) {
+    return rhs.isUnevaluated() && rhs.isAST1() ? rhs.first() : rhs;
   }
 
   private static class ListRulesPatternFunctor implements Function<IExpr, IExpr> {
@@ -1022,7 +1030,7 @@ public class Functors {
           }
           return;
         }
-        equalRules.put(lhs, rhs);
+        equalRules.put(lhs, replacement(rhs));
       }
     } else {
       if (rule.isRuleDelayed()) {

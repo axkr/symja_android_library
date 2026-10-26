@@ -682,7 +682,7 @@ public final class Programming {
         IExpr arg2 = ast.arg2();
         return B2.conditionEval(arg1, arg2, engine);
       }
-      return F.NIL;
+      return B2.conditionPattern(ast, engine);
     }
 
     @Override

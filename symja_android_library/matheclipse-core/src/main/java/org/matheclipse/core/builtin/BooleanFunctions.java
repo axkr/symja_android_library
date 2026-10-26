@@ -575,11 +575,20 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * The nested list of a sparse array, whose elements <code>AllTrue</code>, <code>AnyTrue</code>
+   * and <code>NoneTrue</code> test; any other expression is returned unchanged.
+   */
+  private static IExpr normalSparse(IExpr expr) {
+    return expr instanceof ISparseArray ? ((ISparseArray) expr).normal(false) : expr;
+  }
+
   private static class AllTrue extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.arg1().isASTOrAssociation()) {
-        IAST list = (IAST) ast.arg1();
+      IExpr arg1 = normalSparse(ast.arg1());
+      if (arg1.isASTOrAssociation()) {
+        IAST list = (IAST) arg1;
         IExpr head = ast.arg2();
         return allTrue(list, head, engine);
       }
@@ -747,8 +756,9 @@ public final class BooleanFunctions {
   private static class AnyTrue extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        IAST list = (IAST) ast.arg1();
+      IExpr arg1 = normalSparse(ast.arg1());
+      if (arg1.isAST()) {
+        IAST list = (IAST) arg1;
         IExpr head = ast.arg2();
         return anyTrue(list, head, engine);
       }
@@ -3557,8 +3567,9 @@ public final class BooleanFunctions {
   private static class NoneTrue extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        IAST list = (IAST) ast.arg1();
+      IExpr arg1 = normalSparse(ast.arg1());
+      if (arg1.isAST()) {
+        IAST list = (IAST) arg1;
         IExpr head = ast.arg2();
         return noneTrue(list, head, engine);
       }

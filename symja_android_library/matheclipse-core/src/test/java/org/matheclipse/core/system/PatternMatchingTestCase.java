@@ -324,12 +324,11 @@ public class PatternMatchingTestCase {
         "16");
     check("f[x]/.(f[u_]->u^2/; u>3/; u>2)", //
         "x^2/;x>3/;x>2");
-    // TODO 3^2 -> 9 - but why? Condition has attribute HoldAll
+    // Condition is HoldAll, but it evaluates its first argument
     check("f[3]/.(f[u_]->u^2/; u>3/; u>2)", //
-        "3^2/;3>3/;3>2");
-    // TODO 4^2 -> 16 but why? Condition has attribute HoldAll
+        "9/;3>3/;3>2");
     check("f[4]/.(f[u_]->u^2/; u>3/; u>2)", //
-        "4^2/;4>3/;4>2");
+        "16/;4>3/;4>2");
   }
 
   @Test

@@ -4412,7 +4412,7 @@ public class AlgebraUtil {
         }
         return F.C0;
       } else if (exprDenominator.isZero()) {
-        return ArithmeticUtil.printInfy(S.Divide, exprNumerator, exprDenominator);
+        return ArithmeticUtil.printInfy(S.Power, exprNumerator, exprDenominator);
       }
     }
 

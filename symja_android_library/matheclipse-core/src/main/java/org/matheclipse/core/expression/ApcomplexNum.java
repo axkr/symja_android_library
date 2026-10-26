@@ -1132,7 +1132,7 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr divide(final IExpr that) {
     if (that.isZero()) {
       // Infinite expression `1` encountered.
-      Errors.printMessage(S.Divide, "infy", F.list(F.Divide(this, that)), EvalEngine.get());
+      Errors.printMessage(S.Power, "infy", F.list(F.Divide(this, that)), EvalEngine.get());
       return F.CComplexInfinity;
     }
     if (that instanceof IComplexNum || that instanceof INum) {

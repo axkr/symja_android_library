@@ -321,14 +321,11 @@ public class TensorTest extends ExprEvaluatorTestCase {
     check("KroneckerProduct(am,bm)", //
         "{{5,6,10,12},{7,8,14,16},{9,10,18,20},{15,18,20,24},{21,24,28,32},{27,30,36,40}}");
 
-    // TODO improve FlattenArray / message ArrayFlatten: Function (rank != 2) not implemented.
+    // arrays of rank 3: the dimensions multiply level by level, {1,2,2} and {1,3,2} give {1,6,4}
     check("am = {{{1, 2}, {3, 4}}}; bm = {{{5, 6}, {7, 8}, {9, 10}}};", //
         "");
     check("KroneckerProduct(am,bm)", //
-        "KroneckerProduct({{{{{{5,6},{7,8},{9,10}}},{{{10,12},{14,16},{18,20}}}},{{{{15,\n" //
-            + "18},{21,24},{27,30}}},{{{20,24},{28,32},{36,40}}}}}})");
-    // check("KroneckerProduct(am,bm)", //
-    // "{{5,6,10,12},{7,8,14,16},{9,10,18,20},{15,18,20,24},{21,24,28,32},{27,30,36,40}}");
+        "{{{5,6,10,12},{7,8,14,16},{9,10,18,20},{15,18,20,24},{21,24,28,32},{27,30,36,40}}}");
 
     check("ta = {{0, 1}, {-1, 0}}; tb = {{1, 2}, {3, 4}};", //
         "");
@@ -370,6 +367,48 @@ public class TensorTest extends ExprEvaluatorTestCase {
     // unlike TensorProduct, KroneckerProduct is neither Flat nor OneIdentity in WMA
     check("Attributes(KroneckerProduct)", //
         "{NonThreadable,Protected}");
+  }
+
+  @Test
+  public void testKroneckerProductRanks() {
+    // a vector on the left stands for a column, on the right for a row
+    check("KroneckerProduct({x, y}, {{2, 0}, {1, 3}})", //
+        "{{2*x,0},{x,3*x},{2*y,0},{y,3*y}}");
+    check("KroneckerProduct({{2, 0}, {1, 3}}, {x, y})", //
+        "{{2*x,2*y,0,0},{x,y,3*x,3*y}}");
+    // the factors are combined from the left
+    check("KroneckerProduct({1, -1}, {2, 3}, {1, 10})", //
+        "{{2,20,3,30},{-2,-20,-3,-30}}");
+    check("KroneckerProduct({{1, -1, 2}}, {{3}, {5}})", //
+        "{{3,-3,6},{5,-5,10}}");
+    // ranks 3 and 2: the five axes pair up (2 with 7, 3 with 5), the last axis is kept
+    check("Dimensions(KroneckerProduct(Array(p, {2, 3, 7}), Array(q, {5, 4})))", //
+        "{14,15,4}");
+    check("Dimensions(KroneckerProduct(Array(p, {3, 2}), Array(q, {2, 3, 4})))", //
+        "{6,6,4}");
+    // a vector beside an array of rank 3: four axes pair up
+    check("Dimensions(KroneckerProduct(Array(p, {3}), Array(q, {2, 5, 4})))", //
+        "{15,8}");
+    check("Dimensions(KroneckerProduct(Array(p, {2, 5, 4}), Array(q, {3})))", //
+        "{8,15}");
+    // a vector beside an array of rank 4: the tensor product
+    check("Dimensions(KroneckerProduct(Array(p, {3}), Array(q, {2, 1, 2, 1})))", //
+        "{3,2,1,2,1}");
+    // equal ranks multiply the dimensions element-wise
+    check("Dimensions(KroneckerProduct(Array(p, {2, 1, 3}), Array(q, {1, 4, 2})))", //
+        "{2,4,6}");
+    check("KroneckerProduct(Array(p, {2, 3, 2}), Array(q, {2, 2}))[[2, 3, 2]]", //
+        "p(1,2,2)*q(1,2)");
+    check("KroneckerProduct({3, 4}, {})", //
+        "{{},{}}");
+    // a number or a ragged array is not an array
+    check("KroneckerProduct({3, 4}, 5)", //
+        "KroneckerProduct({3,4},5)");
+    check("KroneckerProduct({{3, 4}, 5}, {1, 2})", //
+        "KroneckerProduct({{3,4},5},{1,2})");
+    // a symbolic factor stays silently
+    check("KroneckerProduct({3, 4}, z)", //
+        "KroneckerProduct({3,4},z)");
   }
 
   @Test

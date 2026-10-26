@@ -16,7 +16,9 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -292,7 +294,14 @@ public class PiecewiseFunctions {
 
       IExpr x = ast.arg1();
       if (x.isSparseArray()) {
-        x = x.normal(false);
+        // a sparse array stays sparse, with the clipped background value
+        IExpr background = evaluate(ast.setAtCopy(1, ((ISparseArray) x).getDefaultValue()), engine);
+        IExpr dense = evaluate(ast.setAtCopy(1, x.normal(false)), engine);
+        if (background.isNIL() || !dense.isList()) {
+          return F.NIL;
+        }
+        SparseArrayExpr sparseArray = SparseArrayExpr.newDenseList((IAST) dense, background);
+        return sparseArray != null ? sparseArray : dense;
       }
       if (x.isList()) {
         // Clip maps over a list in its first argument, but only when every element can be
@@ -1082,6 +1091,10 @@ public class PiecewiseFunctions {
     }
 
     private IExpr unitize(IExpr x, EvalEngine engine) {
+      if (x.isComplexInfinity() || x.isDirectedInfinity()) {
+        // an infinite quantity is not zero
+        return F.C1;
+      }
       if (x.isNumber()) {
         // only zero is zero: Unitize(1.*^-20) is 1
         return F.isExactZero(x) ? F.C0 : F.C1;

@@ -1025,7 +1025,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
     // handle pattern sequences (contains Sequence objects); in an Orderless head only a sequence
     // which is an argument itself, not one nested in an argument as in x_*h(p_, d___)
-    if (lhsPatternAST.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)
+    if (lhsPatternAST.isOrderlessAST() && hasSequenceArgument(lhsPatternAST)
+        && matchOrderlessSequence(lhsPatternAST, lhsEvalAST, engine, stackMatcher)) {
+      // the order of the arguments doesn't matter: the in-order match below would pair the
+      // sorted pattern arguments with the sorted arguments only
+      return true;
+    }
+    if ((lhsPatternAST.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE) || hasSequenceArgument(lhsPatternAST))
         && (!lhsPatternAST.isOrderlessAST() || hasSequenceArgument(lhsPatternAST))) {
       return matchPatternSequenceAST(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
     }
@@ -1045,7 +1051,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   private static boolean hasSequenceArgument(IAST lhsPatternAST) {
     for (int i = 1; i < lhsPatternAST.size(); i++) {
       IExpr arg = lhsPatternAST.get(i);
-      if (arg instanceof IPatternSequence) {
+      if (standsForSequence(arg)) {
         return true;
       }
       if (arg.isAST() && ((IAST) arg).hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
@@ -1069,6 +1075,42 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         }
       }
     }
+    return false;
+  }
+
+  /**
+   * Does the pattern <code>expr</code> stand for a sequence of arguments: a pattern sequence like
+   * <code>x__</code> or <code>p..</code>, or a name for one, <code>x : p..</code>?
+   */
+  static boolean standsForSequence(IExpr expr) {
+    if (expr.isPatternSequence(false)) {
+      return true;
+    }
+    return expr instanceof PatternNested
+        && ((PatternNested) expr).getPatternExpr().isPatternSequence(false);
+  }
+
+  /**
+   * Match the arguments of an Orderless head against a pattern with pattern sequences: every
+   * pattern argument takes a group of the arguments, a pattern sequence any number of them, any
+   * other pattern one. (A Flat head with more arguments than the pattern is matched by
+   * matchFlatOrderless(), where a group may also be wrapped in the head.)
+   */
+  private boolean matchOrderlessSequence(IAST lhsPatternAST, IAST lhsEvalAST,
+      final EvalEngine engine, StackMatcher stackMatcher) {
+    if (lhsPatternAST.argSize() < 2 || lhsPatternAST.argSize() > lhsEvalAST.argSize()
+        || !matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
+      return false;
+    }
+    final IExpr[] patternValues = fPatternMap.copyPattern();
+    FlatOrderlessStepVisitor visitor = FlatOrderlessStepVisitor.orderless(
+        lhsPatternAST.topHead(), lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
+    MultisetPartitionsIterator iter =
+        new MultisetPartitionsIterator(visitor, lhsPatternAST.argSize());
+    if (!iter.execute()) {
+      return true;
+    }
+    fPatternMap.resetPattern(patternValues);
     return false;
   }
 
@@ -2462,6 +2504,25 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   /**
+   * The last pattern argument of a Flat and Orderless head against all the remaining arguments: a
+   * pattern sequence takes them as a <code>Sequence</code>, any other pattern the expression.
+   */
+  private boolean matchSingleFlatOrderless(IExpr lhsPatternArg, IAST lhsEval, EvalEngine engine,
+      StackMatcher stackMatcher) {
+    if (standsForSequence(lhsPatternArg) && lhsEval.argSize() > 0) {
+      final IExpr[] patternValues = fPatternMap.copyPattern();
+      IASTAppendable seq = F.Sequence();
+      seq.appendAll(lhsEval, 1, lhsEval.size());
+      if (matchExpr(lhsPatternArg, seq, engine, stackMatcher)) {
+        return true;
+      }
+      fPatternMap.resetPattern(patternValues);
+      return false;
+    }
+    return matchExpr(lhsPatternArg, lhsEval, engine, stackMatcher);
+  }
+
+  /**
    * Match <code>Flat</code> and <code>Orderless</code> LHS pattern expressions. It's assumed that
    * the headers of the expressions already matched.
    *
@@ -2475,7 +2536,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   private boolean matchFlatOrderless(final ISymbol sym, IAST lhsPattern, IAST lhsEval,
       EvalEngine engine, StackMatcher stackMatcher) {
     if (lhsPattern.isAST1()) {
-      return matchExpr(lhsPattern.arg1(), lhsEval, engine, stackMatcher);
+      return matchSingleFlatOrderless(lhsPattern.arg1(), lhsEval, engine, stackMatcher);
     }
 
     IAST lhsPatternAST = lhsPattern;
@@ -2488,7 +2549,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     if (lhsPatternAST.size() <= 2) {
       try {
         if (lhsPatternAST.isAST1()) {
-          matched = matchExpr(lhsPatternAST.arg1(), lhsEvalAST, engine, stackMatcher);
+          matched = matchSingleFlatOrderless(lhsPatternAST.arg1(), lhsEvalAST, engine, stackMatcher);
           return matched;
         }
         if (lhsPatternAST.isEmpty() && lhsEvalAST.size() > 1) {
@@ -2528,7 +2589,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
               if (patternArg.head().equals(evalArg.head())
                   && patternArg.isFree(x -> x.isOrderlessAST(), true)) {
                 evaled = true;
-                matched = matchExpr(patternArg, evalArg, engine, stackMatcher);
+                // through the stack: matchRest() at this point would check a condition of the whole
+                // pattern, as in fad(a__)*f_ /; test(f), before the other arguments are bound
+                matched = stackMatcher.push(patternArg, evalArg);
               }
 
               if (matched) {

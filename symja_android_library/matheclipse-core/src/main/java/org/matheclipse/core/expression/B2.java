@@ -102,7 +102,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       if (engine.isEvalRHSMode()) {
         return B2.conditionEval(arg1, arg2, engine);
       }
-      return F.NIL;
+      return B2.conditionPattern(this, engine);
     }
 
     @Override
@@ -1053,6 +1053,27 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return engine.evaluate(arg1);
     }
     throw ConditionException.CONDITION_NIL;
+  }
+
+  /**
+   * Outside of a rule's right-hand side the pattern <code>condition[[1]]</code> is evaluated (a
+   * symbol with a value in the pattern stands for its value), the test
+   * <code>condition[[2]]</code> stays unevaluated.
+   *
+   * @param condition a <code>Condition(pattern, test)</code> expression
+   * @param engine
+   * @return {@link F#NIL} if the pattern doesn't change
+   */
+  public static IExpr conditionPattern(IAST condition, EvalEngine engine) {
+    if (engine.isEvalLHSMode()) {
+      return F.NIL;
+    }
+    IExpr pattern = condition.arg1();
+    IExpr result = engine.evaluateNIL(pattern);
+    if (result.isPresent() && !result.isSequence()) {
+      return F.Condition(result, condition.arg2());
+    }
+    return F.NIL;
   }
 
   /** The second argument of this function. */

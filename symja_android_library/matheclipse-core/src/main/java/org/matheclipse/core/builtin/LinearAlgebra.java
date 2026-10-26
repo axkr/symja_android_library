@@ -4646,6 +4646,20 @@ public final class LinearAlgebra {
   }
 
 
+  /**
+   * The diagonal offset <code>k</code> of <code>Lower/UpperTriangularize(m, k)</code>. An integer
+   * beyond the int range keeps all or no elements, like the largest offset of its sign.
+   *
+   * @return {@link Config#INVALID_INT} (after a message) if it is no integer
+   */
+  private static int triangularizeOffset(IAST ast, EvalEngine engine) {
+    IExpr arg2 = ast.arg2();
+    if (arg2.isInteger() && arg2.toIntDefault() == Integer.MIN_VALUE) {
+      return arg2.isNegative() ? -Integer.MAX_VALUE + 1 : Integer.MAX_VALUE - 1;
+    }
+    return Validate.checkIntType(ast, 2, Config.INVALID_INT);
+  }
+
   private static class LowerTriangularize extends AbstractFunctionEvaluator {
 
     @Override
@@ -4658,14 +4672,18 @@ public final class LinearAlgebra {
 
       final int k;
       if (ast.size() == 3) {
-        k = Validate.checkIntType(ast, 2, Config.INVALID_INT);
+        k = triangularizeOffset(ast, engine);
+        if (k == Config.INVALID_INT) {
+          return F.NIL;
+        }
       } else {
         k = 0;
       }
       int m = dim[0];
       int n = dim[1];
       FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-      return F.matrix((i, j) -> i >= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+      // in long arithmetic: j - k overflows for an offset near the int range
+      return F.matrix((i, j) -> i >= (long) j - k ? matrix.getEntry(i, j) : F.C0, m, n);
     }
 
     @Override
@@ -7407,14 +7425,18 @@ public final class LinearAlgebra {
       }
       final int k;
       if (ast.size() == 3) {
-        k = Validate.checkIntType(ast, 2, Config.INVALID_INT);
+        k = triangularizeOffset(ast, engine);
+        if (k == Config.INVALID_INT) {
+          return F.NIL;
+        }
       } else {
         k = 0;
       }
       int m = dim[0];
       int n = dim[1];
       FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-      return F.matrix((i, j) -> i <= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+      // in long arithmetic: j - k overflows for an offset near the int range
+      return F.matrix((i, j) -> i <= (long) j - k ? matrix.getEntry(i, j) : F.C0, m, n);
     }
 
     @Override

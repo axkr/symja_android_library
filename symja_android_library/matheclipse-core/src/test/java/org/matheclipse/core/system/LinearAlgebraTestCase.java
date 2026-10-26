@@ -3903,6 +3903,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUpperTriangularize() {
+    // an offset beyond the size keeps all or nothing
+    check("{UpperTriangularize({{5, 6}, {7, 8}}, -2^70), UpperTriangularize({{5, 6}, {7, 8}}, 2^70), "
+        + "LowerTriangularize({{5, 6}, {7, 8}}, 2^70)}", //
+        "{\n{{5,6},\n {7,8}},\n{{0,0},\n {0,0}},\n{{5,6},\n {7,8}}}");
+    // every column, also the ones where j - k leaves the int range
+    check("t3 = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 1, 2, 3}}; "
+        + "{UpperTriangularize(t3, -2^70) == t3, Total(LowerTriangularize(t3, -2^70), 2), "
+        + "UpperTriangularize(t3, -2147483647) == t3, Total(UpperTriangularize(t3, 2147483647), 2)}", //
+        "{True,0,True,0}");
     check("UpperTriangularize(SparseArray({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}))", //
         "{{a,b,c,d},\n" + //
             " {0,e,f,g},\n" + //
