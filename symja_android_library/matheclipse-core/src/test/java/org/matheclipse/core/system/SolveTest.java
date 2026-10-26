@@ -1295,7 +1295,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(Abs(x^2-1) ==0,{x})", //
         "{{x->-1},{x->1}}");
     check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)", //
-        "{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}");
+        "{{a->True,b->False,c->False,d->False},{a->False,b->True,c->False,d->False}}");
+    check("Solve((p || q) && ! (p && q), {p, q}, Booleans)", //
+        "{{p->True,q->False},{p->False,q->True}}");
     check("Solve({x^2-11==y, x+y==-9}, {x,y})", //
         "{{x->-2,y->-7},{x->1,y->-10}}");
 

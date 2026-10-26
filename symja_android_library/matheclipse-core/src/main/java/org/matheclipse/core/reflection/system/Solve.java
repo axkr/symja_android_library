@@ -4605,6 +4605,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     if (!hasDisjunction(system) || !isQuantifiedSystem(system)) {
       return F.NIL;
     }
+    if (withOptions.argSize() >= 3 && withOptions.arg3() == S.Booleans) {
+      // a Boolean system is solved as a whole, in the order of SatisfiabilityInstances
+      return F.NIL;
+    }
     IExpr expanded =
         S.LogicalExpand.of(engine, system.isList() ? ((IAST) system).apply(S.And) : system);
     if (expanded.isFalse()) {
