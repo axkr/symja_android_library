@@ -745,7 +745,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-pmd-plugin</artifactId>
-					<version>3.21.2</version>
+					<version>3.28.0</version>
 					<configuration>
 						<!-- Output format: xml, txt, or csv. XML is structured
 						and ideal for Claude -->
