@@ -101,9 +101,9 @@ public class ICU4JTest extends AbstractTestCase {
     check("IntegerName(0,\"Romanian\")", //
         "zero");
     check("IntegerName(123007,\"Romanian\")", //
-        "una sută douăzeci și trei mii șapte");
+        "o sută douăzeci și trei de mii șapte");
     check("IntegerName(-123007,\"Romanian\")", //
-        "minus una sută douăzeci și trei mii șapte");
+        "minus o sută douăzeci și trei de mii șapte");
 
     check("IntegerName(0,\"Russian\")", //
         "ноль");
