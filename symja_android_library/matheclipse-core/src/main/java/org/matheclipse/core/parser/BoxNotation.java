@@ -306,6 +306,65 @@ public final class BoxNotation {
     return buf.append('"').toString();
   }
 
+  /**
+   * The text of boxes as a string holds it: boxes which are strings, or rows of strings, are their
+   * text <code>a+b</code>; any other boxes are the box escape
+   * <code>\!\(\*SuperscriptBox["x", "2"]\)</code>, with the boxes written in full form except for
+   * a list, which is written <code>{...}</code>. The escape is kept with the characters a string
+   * stores for it, so that the string reads back as the expression.
+   */
+  public static String toBoxString(IExpr boxes) {
+    StringBuilder text = new StringBuilder();
+    if (appendPlainText(boxes, text)) {
+      return text.toString();
+    }
+    StringBuilder buf = new StringBuilder();
+    buf.append(Scanner.BOX_BANG).append(Scanner.BOX_OPEN).append(Scanner.BOX_SEPARATOR);
+    appendBoxSource(boxes, buf);
+    return buf.append(Scanner.BOX_CLOSE).toString();
+  }
+
+  /** Append the text of a string or a row of strings; <code>false</code> for any other box. */
+  private static boolean appendPlainText(IExpr boxes, StringBuilder text) {
+    if (boxes.isString()) {
+      text.append(boxes.toString());
+      return true;
+    }
+    if (boxes.isAST(S.RowBox, 2) && boxes.first().isList()) {
+      IAST row = (IAST) boxes.first();
+      for (int i = 1; i < row.size(); i++) {
+        if (!appendPlainText(row.get(i), text)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /** Append the source of the boxes, as the text of a box escape writes it. */
+  private static void appendBoxSource(IExpr boxes, StringBuilder buf) {
+    if (boxes.isList()) {
+      appendArguments((IAST) boxes, '{', '}', buf);
+    } else if (boxes.isAST()) {
+      appendBoxSource(boxes.head(), buf);
+      appendArguments((IAST) boxes, '[', ']', buf);
+    } else {
+      buf.append(boxes.fullFormString());
+    }
+  }
+
+  private static void appendArguments(IAST ast, char open, char close, StringBuilder buf) {
+    buf.append(open);
+    for (int i = 1; i < ast.size(); i++) {
+      if (i > 1) {
+        buf.append(", ");
+      }
+      appendBoxSource(ast.get(i), buf);
+    }
+    buf.append(close);
+  }
+
   /** Whether <code>expr</code> is built from a box - and isn't an expression to evaluate. */
   public static boolean isBox(IExpr expr) {
     String head = headName(expr);

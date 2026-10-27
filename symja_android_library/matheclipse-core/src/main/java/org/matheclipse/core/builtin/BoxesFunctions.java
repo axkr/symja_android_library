@@ -190,7 +190,8 @@ public class BoxesFunctions {
       }
       if (expr.isAST(S.TraditionalForm, 2)) {
         return F.ternaryAST3(S.TagBox,
-            F.binaryAST2(S.FormBox, standardFormRecursive(expr.first(), 0, form, engine),
+            F.binaryAST2(S.FormBox,
+                standardFormRecursive(expr.first(), 0, S.TraditionalForm, engine),
                 S.TraditionalForm),
             S.TraditionalForm, F.Rule(F.symbol("Editable"), S.True));
       }
@@ -482,6 +483,35 @@ public class BoxesFunctions {
         }
         styleBox.append(F.Rule(F.symbol("StripOnInput"), S.False));
         return styleBox;
+      }
+      if (ast.isAST(S.Subscript) && ast.argSize() >= 2) {
+        // Subscript(x, i, j, ...): the indices as a row with commas below the base
+        IASTAppendable indices = F.ListAlloc(2 * ast.argSize());
+        for (int i = 2; i < ast.size(); i++) {
+          if (i > 2) {
+            indices.append(F.$str(","));
+          }
+          indices.append(standardFormRecursive(ast.get(i), 0, form, engine));
+        }
+        return F.binaryAST2(S.SubscriptBox,
+            standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine),
+            indices.argSize() == 1 ? indices.arg1() : F.RowBox(indices));
+      }
+      if (ast.isAST(S.Superscript, 3)) {
+        return F.binaryAST2(S.SuperscriptBox,
+            standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine),
+            standardFormRecursive(ast.arg2(), 0, form, engine));
+      }
+      if (ast.isAST(S.Subsuperscript, 4)) {
+        IExpr base = standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine);
+        IExpr subscript = standardFormRecursive(ast.arg2(), 0, form, engine);
+        IExpr superscript = standardFormRecursive(ast.arg3(), 0, form, engine);
+        if (form == S.TraditionalForm) {
+          // the template which is written as a SubsuperscriptBox
+          return F.ternaryAST3(S.TemplateBox, F.list(base, subscript, superscript),
+              F.$str("Subsuperscript"), F.Rule(F.symbol("SyntaxForm"), S.SubsuperscriptBox));
+        }
+        return F.ternaryAST3(S.SubsuperscriptBox, base, subscript, superscript);
       }
       if (ast.isAST(S.Row, 2) && ast.arg1().isList()) {
         // Row({e1, e2, ...}): the boxes of the elements side by side

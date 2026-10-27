@@ -177,7 +177,8 @@ public class RegionFunctionTest {
         "the disc in the middle and the corners outside are not drawn");
     // a point in the hole is not covered by any polygon
     IExpr covered = evaluator.eval(
-        "MemberQ(Cases(" + annulus + ",Polygon(l_):>l,Infinity),{___,{x_,y_},___}/;x^2+y^2<1)");
+        "MemberQ(Cases(Normal(" + annulus
+            + "),Polygon(l_):>l,Infinity),{___,{x_,y_},___}/;x^2+y^2<1)");
     assertTrue(covered.isFalse(), "nothing is drawn inside the inner radius");
   }
 
@@ -423,7 +424,7 @@ public class RegionFunctionTest {
     // an annulus with radii Sqrt(2) and 3, sampled every 0.3
     String annulus = "ContourPlot(x^2-y^2,{x,-3,3},{y,-3,3},PlotPoints->20,"
         + "RegionFunction->Function({x,y,z},2<x^2+y^2<9))";
-    String corners = "Norm/@Flatten(Cases(" + annulus + ",Polygon(l_):>l,Infinity),1)";
+    String corners = "Norm/@Flatten(Cases(Normal(" + annulus + "),Polygon(l_):>l,Infinity),1)";
     assertEquals(Math.sqrt(2.0), number("Min(" + corners + ")"), 0.02,
         "the shading reaches the inner edge of the annulus");
     assertEquals(3.0, number("Max(" + corners + ")"), 0.02, "and stops at the outer one");

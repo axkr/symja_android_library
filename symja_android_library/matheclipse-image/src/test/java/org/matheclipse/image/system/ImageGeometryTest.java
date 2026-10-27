@@ -160,6 +160,94 @@ public class ImageGeometryTest extends AbstractTestCase {
         "{{255,255},{128,255}}");
   }
 
+  /**
+   * With a <code>DataRange</code> the image rectangle gets coordinates with y growing upwards, so
+   * mirroring y turns the rows upside down and mirroring x the columns.
+   */
+  @Test
+  public void transformationDataRangeMirrors() {
+    check("ImageData(ImageTransformation(Image({{0.25,0.75},{0.5,1.0}}),{#[[1]],4-#[[2]]}&,"
+        + "DataRange->{{-1,1},{0,4}}))", //
+        "{{0.5,1.0},\n {0.25,0.75}}");
+    check("ImageData(ImageTransformation(Image({{0.25,0.75,0.0},{0.5,1.0,0.125}}),"
+        + "{1-#[[1]],#[[2]]}&,DataRange->{{0,1},{0,1}}))", //
+        "{{0.0,0.75,0.25},\n {0.125,1.0,0.5}}");
+  }
+
+  /**
+   * <code>DataRange -&gt; Full</code> measures in pixels. Between pixel centres the samples are
+   * interpolated, and beyond the outermost centres the padding, 0 by default, is a ring of pixels.
+   */
+  @Test
+  public void transformationDataRangeFullInterpolates() {
+    check("ImageData(ImageTransformation(Image({{0.25,0.75,0.5}}),{#[[1]]-0.5,#[[2]]}&,"
+        + "DataRange->Full))", //
+        "{{0.125,0.5,0.625}}");
+    check("ImageData(ImageTransformation(Image({{0.25,0.75,0.5}}),{#[[1]]+0.5,#[[2]]}&,"
+        + "DataRange->Full))", //
+        "{{0.5,0.625,0.25}}");
+    // two pixels further out only the padding is left
+    check("ImageData(ImageTransformation(Image({{0.25,0.75,0.5}}),{#[[1]]+5,#[[2]]}&,"
+        + "DataRange->Full))", //
+        "{{0.0,0.0,0.0}}");
+  }
+
+  /** A padding colour is converted to the colour space the samples are stored in. */
+  @Test
+  public void transformationPaddingInAStoredColourSpace() {
+    check("ImageData(ImageTransformation(Image({{{0.,0.,0.,0.5}}},ColorSpace->\"CMYK\"),"
+        + "{#[[1]]+1,#[[2]]}&,DataRange->Full,Padding->Blue))", //
+        "{{{1.0,1.0,0.0,0.0}}}");
+    check("ImageData(ImageTransformation(Image({{{0.5,0.5,0.5}}},ColorSpace->\"HSB\"),"
+        + "{#[[1]]+1,#[[2]]}&,DataRange->Full,Padding->Green))", //
+        "{{{0.333333,1.0,1.0}}}");
+    // no colour for five channels
+    check("Head(ImageTransformation(Image(ConstantArray(0.5,{1,1,5})),#&,Padding->Red))", //
+        "ImageTransformation");
+  }
+
+  @Test
+  public void transformationPadding() {
+    check("ImageData(ImageTransformation(Image({{0.25,0.75},{0.5,1.0}}),{#[[1]]-1,#[[2]]}&,"
+        + "DataRange->Full,Padding->0.125))", //
+        "{{0.125,0.25},\n {0.125,0.5}}");
+    // the border repeated
+    check("ImageData(ImageTransformation(Image({{0.25,0.75},{0.5,1.0}}),{#[[1]]+0.5,#[[2]]-2}&,"
+        + "DataRange->Full,Padding->\"Fixed\"))", //
+        "{{0.75,1.0},\n {0.75,1.0}}");
+    // the image repeated
+    check("ImageData(ImageTransformation(Image({{0.25,0.75},{0.5,1.0}}),{#[[1]]+3,#[[2]]}&,"
+        + "DataRange->Full,Padding->\"Periodic\"))", //
+        "{{0.75,0.25},\n {1.0,0.5}}");
+    check("ImageTransformation(Image({{0.5}}),#&,Padding->\"Unknown\")", //
+        "ImageTransformation(Image(Dimensions: 1,1 Transparency: 1),#1&,Padding->Unknown)");
+    // an empty rectangle
+    check("Head(ImageTransformation(Image({{0.5}}),#&,DataRange->{{1,1},{0,1}}))", //
+        "ImageTransformation");
+  }
+
+  /** A colour image is padded with a colour, or with one value per channel. */
+  @Test
+  public void transformationPaddingOfAColourImage() {
+    check("ImageData(ImageTransformation(Image({{{0.25,0.5,0.75},{1.0,0.0,0.5}}}),"
+        + "{#[[1]]-1,#[[2]]}&,DataRange->Full,Padding->Blue))", //
+        "{{{0.0,0.0,1.0},{0.25,0.5,0.75}}}");
+    check("ImageData(ImageTransformation(Image({{{0.25,0.5,0.75},{1.0,0.0,0.5}}}),"
+        + "{#[[1]]+1,#[[2]]}&,DataRange->Full,Padding->{0.125,0.375,0.625}))", //
+        "{{{1.0,0.0,0.5},{0.125,0.375,0.625}}}");
+  }
+
+  /** The size of the result is a third argument also when options follow. */
+  @Test
+  public void transformationSizeAndDataRange() {
+    check("ImageData(ImageTransformation(Image({{0.25,0.75}}),#&,{4,1},DataRange->{{0,1},{0,1}},"
+        + "Padding->\"Fixed\"))", //
+        "{{0.25,0.375,0.625,0.75}}");
+    check("ImageData(ImageTransformation(Image({{0.25,0.75},{0.5,1.0}}),"
+        + "TransformationFunction({{1,0,0},{0,1,1},{0,0,1}}),DataRange->{{0,2},{0,2}}))", //
+        "{{0.0,0.0},\n {0.25,0.75}}");
+  }
+
   /** Running a general function forwards would leave holes, so only a matrix is accepted there. */
   @Test
   public void forwardTransformationRejectsAPlainFunction() {

@@ -1383,6 +1383,12 @@ public class GraphicsFunctions {
       return expr;
     }
     IAST ast = (IAST) expr;
+    if (ast.isAST(S.Polyhedron, 2) && ast.arg1().isList() && ast.arg1().argSize() > 0
+        && (isIndexList(ast.arg1()) || ((IAST) ast.arg1()).forAll(x -> isIndexList(x)))) {
+      // faces given by indices alone become the self-contained form, the point table and the faces
+      IExpr faces = isIndexList(ast.arg1()) ? F.List(ast.arg1()) : ast.arg1();
+      return F.binaryAST2(S.Polyhedron, points, faces);
+    }
     int[] pointArguments = ast.argSize() >= 1 ? pointArguments(ast) : null;
     if (pointArguments == null) {
       return ast.map(x -> substituteIndices(points, vertexData, x), 1);

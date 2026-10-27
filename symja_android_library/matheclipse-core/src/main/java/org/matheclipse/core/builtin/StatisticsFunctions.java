@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.LongPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -4968,12 +4969,13 @@ public class StatisticsFunctions {
               IAST list2 = (IAST) ast.arg3();
               IExpr ymin = list2.arg1();
               IExpr ymax = list2.arg2();
-              // (arg1*(ymax - ymin))/(max - min) - (min*ymax - max*ymin)/(max - min)
-              return F.Plus(
-                  F.Times(x, F.Power(F.Plus(max, F.Negate(min)), -1), F.Plus(ymax, F.Negate(ymin))),
-                  F.Times(F.CN1, F.Power(F.Plus(max, F.Negate(min)), -1),
-                      F.Plus(F.Times(min, ymax), F.Times(F.CN1, max, ymin))))
-                  .eval(engine);
+              // (x*(ymax - ymin))/(max - min) - (min*ymax - max*ymin)/(max - min)
+              final IExpr inverseDifference = F.Power(F.Plus(max, F.Negate(min)), -1);
+              return engine.evaluate(mapElements(x, min, max, ymin, ymax,
+                  element -> F.Plus(
+                      F.Times(element, inverseDifference, F.Plus(ymax, F.Negate(ymin))),
+                      F.Times(F.CN1, inverseDifference,
+                          F.Plus(F.Times(min, ymax), F.Times(F.CN1, max, ymin))))));
             }
             return F.NIL;
           }
@@ -4999,7 +5001,32 @@ public class StatisticsFunctions {
         }
         return S.Indeterminate;
       }
-      return F.Times(F.Subtract(x, min), inverseDifference);
+      // x/(max - min) - min/(max - min)
+      return mapElements(x, min, max, F.C0, F.C1, element -> F.Plus(
+          F.Times(element, inverseDifference), F.Times(F.CN1, min, inverseDifference)));
+    }
+
+    /**
+     * The rescaled value of each element of the (nested) list <code>x</code>, or of <code>x</code>
+     * itself. An element which is the lower or the upper end of the range is rescaled to the lower or
+     * upper end of the target range exactly, and not to an expression with that value which a
+     * function like <code>Floor</code> would have to tell from it numerically. An inexact element
+     * is rescaled to an inexact number.
+     */
+    private static IExpr mapElements(IExpr x, IExpr min, IExpr max, IExpr ymin, IExpr ymax,
+        Function<IExpr, IExpr> rescaled) {
+      if (x.isList()) {
+        return ((IAST) x).map(element -> mapElements(element, min, max, ymin, ymax, rescaled));
+      }
+      if (x.isFree(e -> e.isInexactNumber(), false)) {
+        if (x.equals(min)) {
+          return ymin;
+        }
+        if (x.equals(max)) {
+          return ymax;
+        }
+      }
+      return rescaled.apply(x);
     }
 
     @Override

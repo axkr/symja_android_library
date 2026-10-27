@@ -2948,9 +2948,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Rescale(1 + 0.5 I, {0, 1 + I})", //
         "0.75+I*(-0.25)");
     check("Rescale({a,b})", //
-        "{(a-Min(a,b))/(Max(a,b)-Min(a,b)),(b-Min(a,b))/(Max(a,b)-Min(a,b))}");
+        "{a/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b)),b/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b))}");
     check("Rescale(x,{xmin, xmax})", //
-        "(x-xmin)/(xmax-xmin)");
+        "x/(xmax-xmin)-xmin/(xmax-xmin)");
     check("Rescale(x,{xmin, xmax},{ymin, ymax})", //
         "(x*(ymax-ymin))/(xmax-xmin)+(-xmin*ymax+xmax*ymin)/(xmax-xmin)");
     check("Rescale(2.5,{-10,10})", //

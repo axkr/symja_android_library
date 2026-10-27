@@ -775,6 +775,10 @@ public class IntegerFunctions {
         return ((INumber) arg1).ceilFraction();
       }
       INumber number = roundingValue(arg1, engine);
+      IExpr exact = exactInteger(S.Ceiling, S.Ceiling, arg1, number, engine);
+      if (exact != null) {
+        return exact;
+      }
       if (number != null) {
         IExpr ceiling = number.ceilFraction();
         if (ceiling.equals(number.floorFraction())
@@ -1247,6 +1251,10 @@ public class IntegerFunctions {
         return ((INumber) arg1).floorFraction();
       }
       INumber number = roundingValue(arg1, engine);
+      IExpr exact = exactInteger(S.Floor, S.Floor, arg1, number, engine);
+      if (exact != null) {
+        return exact;
+      }
       if (number != null) {
         IExpr floor = number.floorFraction();
         if (floor.equals(number.ceilFraction())
@@ -1406,6 +1414,14 @@ public class IntegerFunctions {
       // }
       try {
         INumber rounding = roundingValue(arg1, engine);
+        IExpr exact = exactInteger(S.IntegerPart, S.FractionalPart, arg1, rounding, engine);
+        if (exact != null) {
+          // the integer part of the value, which decides it beyond the rounding of a machine value
+          if (exact.isNIL()) {
+            return F.NIL;
+          }
+          return exact.isZero() ? arg1 : F.Subtract(arg1, exact);
+        }
         IReal realNumber =
             rounding != null && rounding.isReal() ? (IReal) rounding : arg1.evalReal();
         if (realNumber != null) {
@@ -1747,6 +1763,10 @@ public class IntegerFunctions {
           return F.NIL;
         }
         final INumber rounding = roundingValue(arg1, engine);
+        final IExpr exact = exactInteger(S.IntegerPart, S.IntegerPart, arg1, rounding, engine);
+        if (exact != null) {
+          return exact;
+        }
         final IReal realNumber =
             rounding != null && rounding.isReal() ? (IReal) rounding : arg1.evalReal();
         if (realNumber != null) {
@@ -2797,22 +2817,11 @@ public class IntegerFunctions {
             return expr;
           }
           INumber number = roundingValue(expr, engine);
+          IExpr exact = exactInteger(S.Round, S.Round, expr, number, engine);
+          if (exact != null) {
+            return exact.isPresent() ? exact : res;
+          }
           if (number != null) {
-            if (number.isReal() && !expr.isNumber()) {
-              IExpr floor = number.floorFraction();
-              final double value = number.reDoubleValue();
-              if (value - Math.floor(value) == 0.5) {
-                // the value was rounded to a half; on which side of it the exact value lies
-                // decides: Round(1/2+Pi^(-1000)) is 1
-                int sign = CompareUtil.numericSign(
-                    engine.evaluate(F.Subtract(expr, F.Plus(floor, F.C1D2))), engine);
-                if (sign == 1) {
-                  return floor.inc();
-                } else if (sign == -1) {
-                  return floor;
-                }
-              }
-            }
             return number.roundExpr();
           }
           if (expr.isInfinity() || expr.isNegativeInfinity() || expr.isDirectedInfinity()
@@ -2904,6 +2913,70 @@ public class IntegerFunctions {
       }
     }
     return number;
+  }
+
+  /**
+   * The integer which <code>Floor</code>, <code>Ceiling</code>, <code>Round</code> or
+   * <code>IntegerPart</code> gives for an exact numeric expression which is no number. The machine
+   * value of such an expression may lie on the other side of the integer - for <code>Round</code>
+   * the half integer - next to it than the exact value does: <code>7.999999999999998</code> for an
+   * expression which is <code>8</code>. So the side is the sign of the difference to that boundary,
+   * which is evaluated with more digits until it is certain. A difference which cannot be told from
+   * zero leaves the function unevaluated with the message <code>meprec</code>.
+   *
+   * @param kind {@link S#Floor}, {@link S#Ceiling}, {@link S#Round} or {@link S#IntegerPart}
+   * @param messageHead the function which prints the message and is written in it
+   * @param expr the evaluated argument
+   * @param number its value from {@link #roundingValue(IExpr, EvalEngine)}
+   * @return the integer, {@link F#NIL} if the side could not be told, or <code>null</code> if the
+   *         value is decided otherwise
+   */
+  private static IExpr exactInteger(ISymbol kind, ISymbol messageHead, IExpr expr, INumber number,
+      EvalEngine engine) {
+    if (number == null || !number.isReal() || expr.isNumber()
+        || !expr.isFree(x -> x.isInexactNumber(), false)) {
+      return null;
+    }
+    final double value = number.reDoubleValue();
+    // from 2^52 on roundingValue() has evaluated the value with the digits of its integer part
+    if (!Double.isFinite(value) || Math.abs(value) >= 4.503599627370496E15) {
+      return null;
+    }
+    final IReal real = (IReal) number;
+    final IInteger floor = real.floorFraction();
+    final IExpr boundary;
+    if (kind == S.Round) {
+      boundary = floor.add(F.C1D2);
+    } else {
+      IInteger nearest = real.roundExpr();
+      if (kind == S.IntegerPart && nearest.isZero()) {
+        // both sides of 0 have the integer part 0
+        return F.C0;
+      }
+      boundary = nearest;
+    }
+    final int sign = CompareUtil.numericSign(expr, boundary, engine);
+    if (sign == CompareUtil.NOT_COMPARABLE) {
+      return null;
+    }
+    if (sign == CompareUtil.UNCERTAIN) {
+      // Internal precision limit `1` reached while evaluating `2`.
+      Errors.printMessage(messageHead, "meprec",
+          F.List(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."),
+              F.unaryAST1(messageHead, expr)),
+          engine);
+      return F.NIL;
+    }
+    if (kind == S.Round) {
+      // on the half integer itself the value would be a fraction and no expression
+      return sign > 0 ? floor.inc() : sign < 0 ? floor : null;
+    }
+    final IInteger n = (IInteger) boundary;
+    final boolean down = kind == S.Floor || (kind == S.IntegerPart && n.isPositive());
+    if (down) {
+      return sign < 0 ? n.dec() : n;
+    }
+    return sign > 0 ? n.inc() : n;
   }
 
   public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {

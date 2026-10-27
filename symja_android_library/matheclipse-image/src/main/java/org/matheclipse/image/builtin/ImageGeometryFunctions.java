@@ -15,6 +15,7 @@ import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Colors;
 import org.matheclipse.image.algo.Geometry;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.ImageExpr;
 
 /**
@@ -979,7 +980,10 @@ public class ImageGeometryFunctions {
    * taken from the position <code>f(p)</code> of the original, both in image coordinates.
    *
    * <p>
-   * <code>f</code> may be a function or a <code>TransformationFunction</code>.
+   * <code>f</code> may be a function or a <code>TransformationFunction</code>. The option
+   * <code>DataRange -&gt; {{x0, x1}, {y0, y1}}</code> gives the coordinates of the image rectangle,
+   * <code>DataRange -&gt; Full</code> those in pixels; <code>Padding -&gt; value</code> fills in what
+   * lies outside the original, and <code>Padding -&gt; "Fixed"</code> repeats its border.
    */
   private static class ImageTransformation extends AbstractEvaluator {
 
@@ -990,7 +994,7 @@ public class ImageGeometryFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_5;
     }
 
     @Override
@@ -1017,7 +1021,7 @@ public class ImageGeometryFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_5;
     }
 
     @Override
@@ -1040,7 +1044,7 @@ public class ImageGeometryFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_5;
     }
 
     @Override
@@ -1058,13 +1062,31 @@ public class ImageGeometryFunctions {
    *        image is resampled through its inverse
    */
   private static IExpr transform(IAST ast, EvalEngine engine, boolean forward) {
+    // the options DataRange and Padding come after the arguments
+    IExpr dataRange = F.NIL;
+    IExpr padding = F.NIL;
+    int positional = ast.argSize();
+    for (int i = ast.argSize(); i >= 3 && ast.get(i).isRuleAST(); i--) {
+      IExpr name = ast.get(i).first();
+      if (name == S.DataRange) {
+        dataRange = ast.get(i).second();
+      } else if (name == S.Padding) {
+        padding = ast.get(i).second();
+      } else {
+        return F.NIL;
+      }
+      positional = i - 1;
+    }
+    if (positional > 3) {
+      return F.NIL;
+    }
     BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
     if (image == null) {
       return F.NIL;
     }
     int width = image.getWidth();
     int height = image.getHeight();
-    if (ast.argSize() >= 3) {
+    if (positional >= 3) {
       int[] size = targetSize(ast.arg3(), width, height);
       if (size == null) {
         return F.NIL;
@@ -1083,6 +1105,14 @@ public class ImageGeometryFunctions {
     } else if (matrix == null && forward) {
       // a general function cannot be run forwards without leaving holes
       return F.NIL;
+    }
+
+    if (dataRange.isPresent() || padding.isPresent()) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      return resampled((ImageExpr) ast.arg1(), width, height, matrix, function, dataRange,
+          padding, engine);
     }
 
     int channels = Boof.channels(image);
@@ -1115,6 +1145,208 @@ public class ImageGeometryFunctions {
       return Geometry.sample(image, channels, source[0] - 0.5, sourceHeight - source[1] - 0.5, true,
           background);
     }), null);
+  }
+
+  /**
+   * The samples of <code>source</code> read backwards through <code>backward</code> or
+   * <code>function</code>, in the coordinates <code>dataRange</code> gives the image rectangle: x
+   * grows to the right, y upwards, and each pixel is read at its centre. Between the centres the
+   * samples are interpolated bilinearly; beyond the outermost centres the padding acts as a ring of
+   * pixels around the image.
+   *
+   * @param backward the homogeneous matrix which maps output positions to input positions, or
+   *        <code>null</code> if <code>function</code> does
+   * @param dataRange <code>{{x0, x1}, {y0, y1}}</code> or <code>Full</code> for the rectangle of
+   *        both images; <code>F.NIL</code> or <code>Automatic</code> measures each image in its own
+   *        pixels
+   * @param padding a value for every channel, a list of one per channel, a colour,
+   *        <code>"Fixed"</code> or <code>"Periodic"</code>; <code>F.NIL</code> pads with 0
+   * @return <code>F.NIL</code> if an option is not understood
+   */
+  private static IExpr resampled(ImageExpr source, int width, int height, double[][] backward,
+      IExpr function, IExpr dataRange, IExpr padding, EvalEngine engine) {
+    Raster raster = source.raster();
+    if (raster == null) {
+      return F.NIL;
+    }
+    final int sourceWidth = raster.width;
+    final int sourceHeight = raster.height;
+    final int channels = raster.channels;
+    // {x0, x1, y0, y1} of the input and of the output rectangle
+    double[] in = new double[] {0.0, sourceWidth, 0.0, sourceHeight};
+    double[] out = new double[] {0.0, width, 0.0, height};
+    if (dataRange.isPresent() && dataRange != S.Automatic) {
+      if (dataRange != S.Full) {
+        in = rectangle(dataRange);
+        if (in == null) {
+          return F.NIL;
+        }
+      }
+      out = in;
+    }
+
+    boolean repeatBorder = false;
+    boolean repeatImage = false;
+    double[] outside = new double[channels];
+    if (padding.isPresent()) {
+      if (padding.isString()) {
+        repeatBorder = "Fixed".equals(padding.toString());
+        repeatImage = "Periodic".equals(padding.toString());
+        if (!repeatBorder && !repeatImage) {
+          return F.NIL;
+        }
+      } else {
+        outside = paddingSamples(padding, channels, source.storedColorSpace());
+        if (outside == null) {
+          return F.NIL;
+        }
+      }
+    }
+
+    // a single precision image keeps the samples it can hold, written as short as they print
+    final boolean singlePrecision = Pixels.REAL32.equals(source.sampleType());
+    Raster result = new Raster(width, height, channels);
+    double[] values = new double[channels];
+    for (int y = 0; y < height; y++) {
+      double dataY = out[3] - (y + 0.5) * (out[3] - out[2]) / height;
+      for (int x = 0; x < width; x++) {
+        double dataX = out[0] + (x + 0.5) * (out[1] - out[0]) / width;
+        double[] position = backward != null //
+            ? Geometry.apply(backward, dataX, dataY)
+            : position(function, dataX, dataY, engine);
+        if (position == null || !Double.isFinite(position[0]) || !Double.isFinite(position[1])) {
+          for (int c = 0; c < channels; c++) {
+            result.set(x, y, c, outside[c]);
+          }
+          continue;
+        }
+        // column and row of the position, counted from the centre of the top left pixel
+        double column = (position[0] - in[0]) / (in[1] - in[0]) * sourceWidth - 0.5;
+        double row = (in[3] - position[1]) / (in[3] - in[2]) * sourceHeight - 0.5;
+        if (!repeatImage) {
+          // further out than the ring of padding pixels nothing changes any more
+          column = Math.max(-2.0, Math.min(sourceWidth + 1.0, column));
+          row = Math.max(-2.0, Math.min(sourceHeight + 1.0, row));
+        }
+        int left = (int) Math.floor(column);
+        int top = (int) Math.floor(row);
+        double fractionX = column - left;
+        double fractionY = row - top;
+        java.util.Arrays.fill(values, 0.0);
+        for (int dy = 0; dy <= 1; dy++) {
+          for (int dx = 0; dx <= 1; dx++) {
+            double weight = (dx == 0 ? 1.0 - fractionX : fractionX) //
+                * (dy == 0 ? 1.0 - fractionY : fractionY);
+            if (weight == 0.0) {
+              continue;
+            }
+            int sourceX = left + dx;
+            int sourceY = top + dy;
+            if (repeatBorder) {
+              sourceX = clamp(sourceX, sourceWidth);
+              sourceY = clamp(sourceY, sourceHeight);
+            } else if (repeatImage) {
+              sourceX = Math.floorMod(sourceX, sourceWidth);
+              sourceY = Math.floorMod(sourceY, sourceHeight);
+            }
+            boolean inside =
+                sourceX >= 0 && sourceY >= 0 && sourceX < sourceWidth && sourceY < sourceHeight;
+            for (int c = 0; c < channels; c++) {
+              values[c] += weight * (inside ? raster.get(sourceX, sourceY, c) : outside[c]);
+            }
+          }
+        }
+        for (int c = 0; c < channels; c++) {
+          result.set(x, y, c,
+              singlePrecision ? Double.parseDouble(Float.toString((float) values[c])) : values[c]);
+        }
+      }
+    }
+    ImageExpr image = ImageExpr.fromRaster(result, source.getOptions(), source.sampleType());
+    return image == null ? F.NIL : image;
+  }
+
+  /**
+   * <code>function({x, y})</code> as a pair of reals.
+   *
+   * @return <code>null</code> if the function does not give two reals
+   */
+  private static double[] position(IExpr function, double x, double y, EvalEngine engine) {
+    IExpr mapped = engine.evaluate(F.unaryAST1(function, F.List(F.num(x), F.num(y))));
+    if (!mapped.isList2()) {
+      return null;
+    }
+    return new double[] {mapped.first().evalfNaN(), mapped.second().evalfNaN()};
+  }
+
+  /**
+   * <code>{{x0, x1}, {y0, y1}}</code> as <code>{x0, x1, y0, y1}</code>.
+   *
+   * @return <code>null</code> unless these are four reals with <code>x0 != x1</code> and
+   *         <code>y0 != y1</code>
+   */
+  private static double[] rectangle(IExpr spec) {
+    if (!spec.isList2() || !spec.first().isList2() || !spec.second().isList2()) {
+      return null;
+    }
+    double[] result = new double[] {spec.first().first().evalfNaN(),
+        spec.first().second().evalfNaN(), spec.second().first().evalfNaN(),
+        spec.second().second().evalfNaN()};
+    for (double value : result) {
+      if (!Double.isFinite(value)) {
+        return null;
+      }
+    }
+    return result[0] == result[1] || result[2] == result[3] ? null : result;
+  }
+
+  /**
+   * The samples a padding value stands for: a number is the value of every channel, a list with one
+   * entry per channel gives each of them, and a colour is converted to the channels of the image.
+   *
+   * @param colorSpace <code>"HSB"</code> or <code>"CMYK"</code> for an image stored in that space,
+   *        <code>null</code> for grey levels or RGB
+   * @return <code>null</code> if <code>padding</code> is none of these, or a colour for an image
+   *         whose channels are no colour space
+   */
+  private static double[] paddingSamples(IExpr padding, int channels, String colorSpace) {
+    double[] result = new double[channels];
+    double number = padding.evalfNaN();
+    if (!Double.isNaN(number)) {
+      java.util.Arrays.fill(result, number);
+      return result;
+    }
+    if (padding.isList() && padding.argSize() == channels) {
+      for (int c = 0; c < channels; c++) {
+        result[c] = padding.getAt(c + 1).evalfNaN();
+        if (Double.isNaN(result[c])) {
+          return null;
+        }
+      }
+      return result;
+    }
+    float[] rgba = Colors.toRgba(padding);
+    if (rgba == null) {
+      return null;
+    }
+    float[] samples;
+    if ("HSB".equals(colorSpace)) {
+      samples = Colors.rgbToHsb(rgba);
+    } else if ("CMYK".equals(colorSpace)) {
+      samples = Colors.rgbToCmyk(rgba);
+    } else if (channels <= 2) {
+      double gray = Colors.grayLevel(rgba[0], rgba[1], rgba[2]);
+      return channels == 1 ? new double[] {gray} : new double[] {gray, rgba[3]};
+    } else {
+      samples = rgba;
+    }
+    if (channels > samples.length) {
+      return null;
+    }
+    for (int c = 0; c < channels; c++) {
+      result[c] = samples[c];
+    }
+    return result;
   }
 
   /**

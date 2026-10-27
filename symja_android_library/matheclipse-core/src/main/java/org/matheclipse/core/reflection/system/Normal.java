@@ -70,18 +70,43 @@ public final class Normal extends AbstractFunctionEvaluator {
         return path;
       }
     }
+    IExpr expr = arg1;
+    if (arg1.isAST() && (heads.isAST0() || heads.exists(y -> y == S.GraphicsComplex))) {
+      // a GraphicsComplex anywhere inside - in a list, in Graphics(...) or under any other head -
+      // is replaced by its primitives too
+      IExpr substituted = graphicsComplexesNormal(arg1);
+      if (substituted.isPresent()) {
+        expr = substituted;
+      }
+    }
     IExpr normal = F.NIL;
     if (heads.isAST0()) {
-      normal = arg1.normal(true);
+      normal = expr.normal(true);
     } else {
-      if (heads.exists(y -> y.equals(arg1.head()))) {
-        normal = arg1.normal(true);
+      final IExpr head = expr.head();
+      if (heads.exists(y -> y.equals(head))) {
+        normal = expr.normal(true);
       }
     }
     if (normal.isPresent()) {
       return normal;
     }
-    return arg1;
+    return expr;
+  }
+
+  /**
+   * Replace every <code>GraphicsComplex</code> inside <code>expr</code> by its primitives with the
+   * point indices resolved.
+   *
+   * @return {@link F#NIL} if there is nothing to replace
+   */
+  private static IExpr graphicsComplexesNormal(IExpr expr) {
+    return expr.replaceAll(x -> {
+      if (x.isAST(S.GraphicsComplex)) {
+        return org.matheclipse.core.builtin.GraphicsFunctions.graphicsComplexNormal((IAST) x);
+      }
+      return F.NIL;
+    });
   }
 
   private Function<IExpr, IExpr> normal(final IAST heads) {

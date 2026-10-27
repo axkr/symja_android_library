@@ -16676,6 +16676,155 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNormalGraphicsComplexNested() {
+    // several index lists give several primitives, a Point a list of single points
+    check("Normal(GraphicsComplex({{1,2},{3,4},{5,0}}, {Line({{1,3},{2,3}}), Point({1,3})}))", //
+        "{{Line({{1,2},{5,0}}),Line({{3,4},{5,0}})},{Point({1,2}),Point({5,0})}}");
+    check("Normal(GraphicsComplex({{1,2},{3,4},{5,0}}, {Blue, Polygon({3,2,1})}))", //
+        "{RGBColor(0,0,1),Polygon({{5,0},{3,4},{1,2}})}");
+    // data which is not a list becomes one
+    check("Normal(GraphicsComplex({{1,2},{3,4}}, Arrow({2,1})))", //
+        "{Arrow({{3,4},{1,2}})}");
+    check("Normal(GraphicsComplex({{1,2},{3,4}}, {Disk(1, 1/2), Text(\"p\", 2)}))", //
+        "{Disk({1,2},1/2),Text(p,{3,4})}");
+    // faces given by indices take the point table along
+    check("Normal(GraphicsComplex({{0,0,0},{2,0,0},{0,2,0},{0,0,2}}, "
+        + "Polyhedron({{1,3,2},{1,2,4},{1,4,3},{2,3,4}})))", //
+        "{Polyhedron({{0,0,0},{2,0,0},{0,2,0},{0,0,2}},{{1,3,2},{1,2,4},{1,4,3},{2,3,4}})}");
+    // a GraphicsComplex anywhere inside the argument
+    check("Normal({7, h(GraphicsComplex({{2,2},{4,4}}, Line({2,1})))})", //
+        "{7,h({Line({{4,4},{2,2}})})}");
+    check("List @@ Normal(Graphics({Green, GraphicsComplex({{2,2},{4,4}}, Point(2))}, "
+        + "Frame->True))", //
+        "{{RGBColor(0,1,0),{{Point({4,4})}}},Frame->True}");
+    check("List @@ Normal(Graphics(GraphicsComplex({{2,2},{4,4}}, Line({1,2}))))", //
+        "{{Line({{2,2},{4,4}})}}");
+    check("Normal(g(GraphicsComplex({{2,2},{4,4}}, Line({1,2}))), {GraphicsComplex})", //
+        "g({Line({{2,2},{4,4}})})");
+    check("Normal(g(GraphicsComplex({{2,2},{4,4}}, Line({1,2}))), {SeriesData})", //
+        "g(GraphicsComplex({{2,2},{4,4}},Line({1,2})))");
+    check("Normal({SeriesData(t, 0, {2, 3}, 0, 2, 1), "
+        + "GraphicsComplex({{2,2},{4,4}}, Line({1,2}))})", //
+        "{2+3*t,{Line({{2,2},{4,4}})}}");
+  }
+
+  @Test
+  public void testContourPlotGraphicsComplex() {
+    // points are told apart relative to the plotted range, also far away from the origin
+    check("cp = ContourPlot((x - 5*10^5)^2 + y^2 == 4*10^-6, {x, 5*10^5 - 0.003, 5*10^5 + 0.003}, "
+        + "{y, -0.003, 0.003}); Length(Union(Round(cp[[1, 1, 1, All, 1]] - 5*10^5, 10^-5))) > 10", //
+        "True");
+    // the curves of an equation are kept in a GraphicsComplex, with nothing else beside it
+    check("cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
+        + "{Head(cp[[1]]), Head(cp[[1, 1]]), Length(cp[[1]]), cp[[1, 2]]}", //
+        "{List,GraphicsComplex,2,{}}");
+    // the lines refer to the point table by index
+    check("cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
+        + "AllTrue(Cases(cp[[1, 1, 2]], Line(l_) :> l, Infinity), VectorQ(#, IntegerQ) &)", //
+        "True");
+    // and the points they stand for lie on the curve
+    check("cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
+        + "Max(Abs(#[[1]]^2 - #[[2]]) & /@ Flatten(Cases(Normal(cp), Line(l_) :> l, Infinity), 1))"
+        + " < 0.05", //
+        "True");
+    check("cp = ContourPlot(x + y == 1, {x, 0, 2}, {y, 0, 2}, ContourStyle -> {Orange}); "
+        + "{Head(cp[[1, 1]]), Cases(cp[[1]], _RGBColor, Infinity)}", //
+        "{GraphicsComplex,{RGBColor(1.0,0.5,0.0)}}");
+    // shaded contours of a function too; the mesh is drawn beside the complex
+    check("cp = ContourPlot(x - y, {x, 0, 1}, {y, 0, 1}, PlotPoints -> 4, Contours -> 1, "
+        + "Mesh -> 1); {Head(cp[[1, 1]]), "
+        + "Length(Cases(Normal(cp[[1, 1]]), _Polygon, Infinity)) > 0, Cases(cp[[1, 2]], _Line)}", //
+        "{GraphicsComplex,True,{Line({{0.0,0.0},{0.0,1.0}}),Line({{1.0,0.0},{1.0,1.0}}),"
+            + "Line({{0.0,0.0},{1.0,0.0}}),Line({{0.0,1.0},{1.0,1.0}})}}");
+  }
+
+  @Test
+  public void testIntegerFunctionsExactBoundary() {
+    // exact values which are an integer: the side of the integer cannot be told numerically
+    check("Check(Floor(5+7*(Log(5)-Log(5/2)-Log(2))), failed)", //
+        "failed");
+    check("Floor(5+7*(Log(5)-Log(5/2)-Log(2)))", //
+        "Floor(5+7*(-Log(2)-Log(5/2)+Log(5)))");
+    check("Ceiling((Sqrt(3)+1)^2-2*Sqrt(3))", //
+        "Ceiling(-2*Sqrt(3)+(1+Sqrt(3))^2)");
+    check("Check(Ceiling((Sqrt(3)+1)^2-2*Sqrt(3)), failed)", //
+        "failed");
+    check("Check(Round((Sqrt(3)+1)^2-2*Sqrt(3)-1/2), failed)", //
+        "failed");
+    check("Check(IntegerPart((Sqrt(5)+1)^2-2*Sqrt(5)), failed)", //
+        "failed");
+    check("Check(FractionalPart((Sqrt(5)+1)^2-2*Sqrt(5)), failed)", //
+        "failed");
+    // a value which simplifies to a number is rounded as that number
+    check("Round(Cos(Pi/3)+5/2)", //
+        "3");
+    // the difference to the integer decides, however small it is
+    check("{Floor(1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)), Floor(-1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)), "
+        + "Ceiling(1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)), Ceiling(-1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5))}", //
+        "{6,5,7,6}");
+    check("{IntegerPart(-1/10^20-(Sqrt(5)+1)^2+2*Sqrt(5)), "
+        + "Round(1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)-1/2), "
+        + "Round(-1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)-1/2)}", //
+        "{-6,6,5}");
+    check("{Floor(-E), Ceiling(-E), Round(E), IntegerPart(-Pi), FractionalPart(-Pi), "
+        + "Floor(E*10^25), Ceiling(2+E^(-60)), Floor(2-E^(-60))}", //
+        "{-3,-2,3,-3,3-Pi,27182818284590452353602874,3,1}");
+    // the ends of the range are rescaled to the ends of the target range exactly
+    check("v = {3, 2, 1}*Log(600/{7, 11, 500}); "
+        + "Floor(Rescale(v, {Min(v), Max(v)}, {4, 20}))", //
+        "{20,13,4}");
+  }
+
+  @Test
+  public void testRescaleExactForm() {
+    check("Rescale(y, {Log(3), Log(9)})", //
+        "y/(-Log(3)+Log(9))-Log(3)/(-Log(3)+Log(9))");
+    check("Rescale(y, {2, 6})", //
+        "-1/2+y/4");
+    check("Rescale(t, {c, d})", //
+        "-c/(-c+d)+t/(-c+d)");
+    check("Rescale({c, t, d}, {c, d}, {-1, 1})", //
+        "{-1,-(c+d)/(-c+d)+(2*t)/(-c+d),1}");
+    check("Rescale({Sqrt(2), Sqrt(3), Sqrt(5)})", //
+        "{0,-Sqrt(2)/(-Sqrt(2)+Sqrt(5))+Sqrt(3)/(-Sqrt(2)+Sqrt(5)),1}");
+  }
+
+  @Test
+  public void testToBoxesScripts() {
+    check("ToBoxes(TraditionalForm(Subsuperscript(b, 4, 5))) // InputForm", //
+        "TagBox(FormBox(TemplateBox({\"b\",\"4\",\"5\"},\"Subsuperscript\",syntaxform->SubsuperscriptBox),TraditionalForm),TraditionalForm,editable->True)");
+    check("ToBoxes(Subsuperscript(b, 4, 5)) // InputForm", //
+        "SubsuperscriptBox(\"b\",\"4\",\"5\")");
+    check("ToBoxes(Subscript(z, 7)) // InputForm", //
+        "SubscriptBox(\"z\",\"7\")");
+    check("ToBoxes(Subscript(z, i, j)) // InputForm", //
+        "SubscriptBox(\"z\",RowBox({\"i\",\",\",\"j\"}))");
+    check("ToBoxes(Superscript(z, n+1)) // InputForm", //
+        "SuperscriptBox(\"z\",RowBox({\"1\",\"+\",\"n\"}))");
+  }
+
+  @Test
+  public void testToStringStandardFormBoxEscape() {
+    check("ToString(y^3, StandardForm) // InputForm", //
+        "\"\\!\\(\\*SuperscriptBox[\\\"y\\\", \\\"3\\\"]\\)\"");
+    check("ToString(Subscript(w, 2), StandardForm) // InputForm", //
+        "\"\\!\\(\\*SubscriptBox[\\\"w\\\", \\\"2\\\"]\\)\"");
+    check("ToString(Style(\"pq\", Green), StandardForm) // InputForm", //
+        "\"\\!\\(\\*StyleBox[\\\"\\\\\\\"pq\\\\\\\"\\\", RGBColor[0, 1, 0], Rule[striponinput, False]]\\)\"");
+    check("ToString(1+y^3, StandardForm)", //
+        "\\!\\(\\*RowBox[{\"1\", \"+\", SuperscriptBox[\"y\", \"3\"]}]\\)");
+    // boxes which are text are that text
+    check("{ToString(p+q, StandardForm), ToString(\"pq\", StandardForm), ToString(17, StandardForm)}", //
+        "{p+q,pq,17}");
+    // the string reads back as the expression
+    check("ToExpression(ToString(y^3+2, StandardForm))", //
+        "2+y^3");
+    // the other forms are unchanged
+    check("{ToString(y^3, InputForm), ToString(y^3, OutputForm)}", //
+        "{y^3,y^3}");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

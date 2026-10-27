@@ -85,6 +85,18 @@ public class CompareUtil {
   }
 
   /**
+   * The sign of <code>a0 - a1</code> for two real numeric operands, with the certainty of
+   * {@link #numericSign(IExpr, EvalEngine)}: the difference is only evaluated when the machine
+   * values of the operands cannot tell them apart.
+   */
+  public static int numericSign(final IExpr a0, final IExpr a1, EvalEngine engine) {
+    if (a1.isZero()) {
+      return numericSign(a0, engine);
+    }
+    return compareNumeric(a0, a1, true, engine);
+  }
+
+  /**
    * The order of two real numeric operands for a selection like <code>Min</code> or
    * <code>Max</code>: as {@link #compareNumeric(IExpr, IExpr, EvalEngine)}, but two numbers are
    * ordered by their value without a tolerance, so that the smaller one of two nearly equal numbers

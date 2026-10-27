@@ -4538,6 +4538,17 @@ public final class StringFunctions {
      * @return {@link F#NIL} if <code>form</code> isn't a supported output form
      */
     private static IExpr toStringForm(IExpr expr, IExpr form, EvalEngine engine) {
+      if (form == S.StandardForm) {
+        if (expr.isString()) {
+          return expr;
+        }
+        // the text of the boxes, or the box escape \!\(\*boxes\) which reads back as expr; expr
+        // is already evaluated
+        IExpr boxes = engine.evaluate(F.unaryAST1(S.ToBoxes, F.Unevaluated(expr)));
+        if (BoxNotation.isBox(boxes) || boxes.isString()) {
+          return F.stringx(BoxNotation.toBoxString(boxes));
+        }
+      }
       if (form.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) form).ordinal()) {
           case ID.InputForm:

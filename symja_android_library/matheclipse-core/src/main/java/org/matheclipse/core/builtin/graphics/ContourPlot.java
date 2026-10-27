@@ -180,13 +180,78 @@ public class ContourPlot extends ListPlot {
           engine, false, contourLines, contourLabels, region, boundaryStyle);
     }
 
+    // the contours share one table of points; the mesh, which is not traced from the data, is
+    // drawn next to them
     IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, xRange[0], yRange[0], xRange[1], yRange[1],
         plotPoints, plotPoints);
-    if (meshLines.isPresent()) {
-      primitives.append(meshLines);
-    }
+    IAST content = F.List(graphicsComplex(primitives, xRange, yRange),
+        meshLines.isPresent() ? meshLines : F.CEmptyList);
 
-    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
+    return createGraphicsFunction(content, graphicsOptions, wrappedAST);
+  }
+
+  /**
+   * The contour primitives as a <code>GraphicsComplex</code>: every point of a <code>Line</code>,
+   * a <code>Polygon</code> or the position of a <code>Text</code> is replaced by its index in one
+   * table of points, which the cells that meet at a point share.
+   *
+   * @param xRange the plotted range of x; points closer than 2^-24 of it are the same point
+   * @param yRange the plotted range of y
+   */
+  static IAST graphicsComplex(IAST primitives, double[] xRange, double[] yRange) {
+    IASTAppendable points = F.ListAlloc();
+    java.util.Map<Long, Integer> indexOf = new java.util.HashMap<>();
+    IExpr data = indexPrimitives(primitives, xRange, yRange, points, indexOf);
+    return F.binaryAST2(S.GraphicsComplex, points, data);
+  }
+
+  private static IExpr indexPrimitives(IExpr expr, double[] xRange, double[] yRange,
+      IASTAppendable points, java.util.Map<Long, Integer> indexOf) {
+    if (expr.isList()) {
+      return ((IAST) expr).map(x -> indexPrimitives(x, xRange, yRange, points, indexOf), 1);
+    }
+    if ((expr.isAST(S.Line, 2) || expr.isAST(S.Polygon, 2) || expr.isAST(S.Tooltip))
+        && expr.argSize() >= 1) {
+      IExpr first = expr.isAST(S.Tooltip)
+          ? indexPrimitives(expr.first(), xRange, yRange, points, indexOf)
+          : indexPoints(expr.first(), xRange, yRange, points, indexOf);
+      return ((IAST) expr).setAtCopy(1, first);
+    }
+    if (expr.isAST(S.Text) && expr.argSize() >= 2) {
+      return ((IAST) expr).setAtCopy(2,
+          indexPoints(expr.second(), xRange, yRange, points, indexOf));
+    }
+    return expr;
+  }
+
+  /** A point, or a nested list of points, with every point replaced by its index. */
+  private static IExpr indexPoints(IExpr expr, double[] xRange, double[] yRange,
+      IASTAppendable points, java.util.Map<Long, Integer> indexOf) {
+    if (expr.isList2() && expr.first().isReal() && expr.second().isReal()) {
+      // points which agree to 2^-24 of the plotted range are the same point: two neighbouring
+      // cells compute the place where a contour crosses their common edge each from its own corner
+      long column = gridStep(expr.first().evalf(), xRange);
+      long row = gridStep(expr.second().evalf(), yRange);
+      long key = (column << 32) ^ (row & 0xffffffffL);
+      Integer index = indexOf.get(key);
+      if (index == null) {
+        points.append(expr);
+        index = points.argSize();
+        indexOf.put(key, index);
+      }
+      return F.ZZ(index);
+    }
+    if (expr.isList()) {
+      return ((IAST) expr).map(x -> indexPoints(x, xRange, yRange, points, indexOf), 1);
+    }
+    return expr;
+  }
+
+  /** The position of <code>value</code> in <code>range</code>, in steps of 2^-24 of its width. */
+  private static long gridStep(double value, double[] range) {
+    double width = range[1] - range[0];
+    double scaled = width > 0.0 ? (value - range[0]) / width : value;
+    return Math.round(scaled * (1 << 24));
   }
 
   private void generateContours(IASTAppendable primitives, IExpr function, double[] xRange,
