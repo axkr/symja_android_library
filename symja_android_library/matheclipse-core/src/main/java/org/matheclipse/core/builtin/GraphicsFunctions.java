@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -391,6 +392,104 @@ public class GraphicsFunctions {
     }
   }
 
+  /**
+   * <code>VerticalGauge(value)</code>, <code>VerticalGauge(value, {min, max})</code>: a vertical
+   * scale of width <code>0.2</code> drawn in coordinates in which <code>y</code> runs from
+   * <code>min</code> to <code>max</code> (<code>{0, 1}</code> if not given). A light track covers the
+   * whole range, a bar fills it up to the value and a single needle <code>Line</code> marks the
+   * value; the scale is labelled by <code>Text</code>s at <code>4</code> divisions. A value outside
+   * the range is drawn at the nearest end.
+   *
+   * <p>
+   * <code>GaugeStyle -&gt; colour</code> colours the bar, <code>ScaleDivisions -&gt; n</code> or
+   * <code>None</code> sets the number of labelled divisions; the other options of built-in symbols
+   * go to the <code>Graphics</code> and any other option is ignored.
+   */
+  private static class VerticalGauge extends AbstractEvaluator {
+    /** The width of the scale in the coordinates of the picture. */
+    private static final double WIDTH = 0.2;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      double value = ast.arg1().evalfNaN();
+      if (!Double.isFinite(value)) {
+        return F.NIL;
+      }
+      IExpr min = F.C0;
+      IExpr max = F.C1;
+      int optionStart = 2;
+      if (ast.size() > 2 && !ast.arg2().isRuleAST()) {
+        if (!ast.arg2().isList2()) {
+          return F.NIL;
+        }
+        min = ast.arg2().first();
+        max = ast.arg2().second();
+        optionStart = 3;
+      }
+      double low = min.evalfNaN();
+      double high = max.evalfNaN();
+      if (!Double.isFinite(low) || !Double.isFinite(high) || low >= high) {
+        return F.NIL;
+      }
+      IExpr barColor = GraphicsOptions.plotStyleColorExpr(0, F.NIL);
+      int divisions = 4;
+      IASTAppendable graphicsOptions = F.ListAlloc();
+      for (int i = optionStart; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (!option.isRuleAST()) {
+          return F.NIL;
+        }
+        IExpr name = option.first();
+        IExpr setting = option.second();
+        if (name == S.GaugeStyle) {
+          if (GraphicsOptions.isColorExpr(setting)) {
+            barColor = setting;
+          }
+        } else if (name == S.ScaleDivisions) {
+          if (setting.isNone()) {
+            divisions = 0;
+          } else if (setting.isInteger() && setting.isPositive()) {
+            divisions = setting.toIntDefault(4);
+          }
+        } else if (name.isBuiltInSymbol()) {
+          graphicsOptions.append(option);
+        }
+      }
+      double level = Math.max(low, Math.min(high, value));
+      IASTAppendable primitives = F.ListAlloc();
+      primitives.append(F.List(F.GrayLevel(0.9), //
+          F.Rectangle(F.List(F.CD0, F.num(low)), F.List(F.num(WIDTH), F.num(high)))));
+      primitives.append(F.List(barColor, //
+          F.Rectangle(F.List(F.CD0, F.num(low)), F.List(F.num(WIDTH), F.num(level)))));
+      primitives.append(F.List(S.Black, F.AbsoluteThickness(F.C2), //
+          F.Line(F.List(F.List(F.CD0, F.num(level)), F.List(F.num(WIDTH), F.num(level))))));
+      for (int k = 0; k <= divisions && divisions > 0; k++) {
+        // the labels keep exact bounds exact
+        IExpr label =
+            engine.evaluate(F.Plus(min, F.Times(F.QQ(k, divisions), F.Subtract(max, min))));
+        double y = low + k * (high - low) / divisions;
+        primitives.append(F.Text(label, F.List(F.num(1.5 * WIDTH), F.num(y)), F.List(F.CN1, F.C0)));
+      }
+      IASTAppendable graphics = F.ast(S.Graphics, graphicsOptions.size() + 2);
+      graphics.append(primitives);
+      graphics.appendArgs(graphicsOptions);
+      if (!graphicsOptions.exists(rule -> rule.first() == S.AspectRatio)) {
+        graphics.append(F.Rule(S.AspectRatio, F.C3));
+      }
+      return graphics;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+  }
+
   private static class Initializer {
 
     private static void init() {
@@ -406,7 +505,7 @@ public class GraphicsFunctions {
       S.Dotted.setEvaluator(new Dotted());
       S.Thick.setEvaluator(new Thick());
       S.Thin.setEvaluator(new Thin());
-
+      S.VerticalGauge.setEvaluator(new VerticalGauge());
 
       S.Arrow.setEvaluator(new Arrow());
       S.Circle.setEvaluator(new Circle());

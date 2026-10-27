@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateGranularity;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -68,6 +69,7 @@ public class DateTimeFunctions {
       S.AbsoluteTime.setEvaluator(new AbsoluteTime());
       S.CalendarConvert.setEvaluator(new CalendarConvert());
       S.Clock.setEvaluator(new Clock());
+      S.Date.setEvaluator(new Date());
       S.DateBounds.setEvaluator(new DateBounds());
       S.DateDifference.setEvaluator(new DateDifference());
       S.DateInterval.setEvaluator(new DateInterval());
@@ -1155,13 +1157,30 @@ public class DateTimeFunctions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.CD0;
+      // a value given by the user, also inside Block({$TimeZone = ...}, ...), belongs to the engine
+      IExpr value = engine.getDollarValue(S.$TimeZone);
+      return value.isPresent() ? value : F.CD0;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set the CONSTANT attribute, the value may be changed by the user
     }
+  }
+
+  /**
+   * The current value of <code>$TimeZone</code> as an offset in hours, <code>0</code> if it is no
+   * real number.
+   */
+  private static double timeZoneHours(EvalEngine engine) {
+    IExpr zone = engine.evaluate(S.$TimeZone);
+    if (zone.isReal()) {
+      double hours = zone.evalf();
+      if (Double.isFinite(hours)) {
+        return hours;
+      }
+    }
+    return 0.0;
   }
 
   /** <code>Yesterday</code> - the previous day as a day granularity date object. */
@@ -1451,12 +1470,64 @@ public class DateTimeFunctions {
     }
   }
 
+  /** <code>Date()</code>: the current local date as a date list with real seconds. */
+  private static final class Date extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return dateListOf(LocalDateTime.now());
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.PROTECTED, Attribute.READPROTECTED);
+    }
+  }
+
   private static final class DateList extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return dateListOf(LocalDateTime.now());
+      }
+      IExpr last = ast.last();
+      if (last.isRuleAST() && last.first() == S.TimeZone) {
+        // DateList(date, TimeZone -> tz): the date, read in its own zone or in $TimeZone, as the
+        // local time of the zone tz
+        IExpr zone = last.second();
+        if (!zone.isReal() || !Double.isFinite(zone.evalf())) {
+          return F.NIL;
+        }
+        double targetHours = zone.evalf();
+        if (ast.isAST1()) {
+          LocalDateTime utc = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+          LocalDateTime date = plusSecondsOrNull(utc, targetHours * 3600.0);
+          return date == null ? F.NIL : dateListOf(date);
+        }
+        if (!ast.isAST2()) {
+          return F.NIL;
+        }
+        DateSpec spec = dateSpec(ast.arg1());
+        if (spec == null) {
+          return F.NIL;
+        }
+        IExpr ownZone = spec.dateObject.getTimeZone();
+        double sourceHours = ast.arg1() instanceof DateObjectExpr && ownZone.isReal()
+            ? ownZone.evalf()
+            : timeZoneHours(engine);
+        LocalDateTime date = plusSecondsOrNull(spec.instant, (targetHours - sourceHours) * 3600.0);
+        return date == null ? F.NIL : dateListOf(date);
       }
       DateSpec spec = dateSpec(ast.arg1());
       if (spec == null) {

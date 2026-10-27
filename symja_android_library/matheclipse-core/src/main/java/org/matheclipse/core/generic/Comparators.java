@@ -206,7 +206,7 @@ public final class Comparators {
       double evalf1 = abs1.evalfNaN();
       if (!Double.isNaN(evalf2) && !Double.isNaN(evalf1)) {
         if (F.isEqual(evalf2, evalf1)) {
-          return o1.compareTo(o2);
+          return compareEqualAbs(o1, o2);
         }
         return evalf2 < evalf1 ? -1 : 1;
       }
@@ -223,6 +223,28 @@ public final class Comparators {
       boolean lt = engine.evalTrue(F.Less(o2.abs(), o1.abs()));
       if (lt) {
         return -1;
+      }
+      return o1.compareTo(o2);
+    }
+
+    /**
+     * Order two values of the same absolute value by increasing real part and then by decreasing
+     * imaginary part, so that <code>-1</code> comes before <code>I</code>, <code>-I</code> and
+     * <code>1</code>.
+     */
+    private static int compareEqualAbs(final IExpr o1, final IExpr o2) {
+      Complex c1 = o1.evalfcNaN();
+      Complex c2 = o2.evalfcNaN();
+      if (!c1.isNaN() && !c2.isNaN()) {
+        // compared exactly, so the order stays transitive; + 0.0 makes -0.0 equal to 0.0
+        int real = Double.compare(c1.getReal() + 0.0, c2.getReal() + 0.0);
+        if (real != 0) {
+          return real;
+        }
+        int imaginary = Double.compare(c2.getImaginary() + 0.0, c1.getImaginary() + 0.0);
+        if (imaginary != 0) {
+          return imaginary;
+        }
       }
       return o1.compareTo(o2);
     }

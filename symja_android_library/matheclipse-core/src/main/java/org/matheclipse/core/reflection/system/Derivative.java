@@ -142,6 +142,14 @@ public class Derivative extends AbstractFunctionEvaluator {
         return derivativeAST[2] != null ? derivativeAST[2].setAtCopy(0, derived) : derived;
       }
     }
+    if (derivativeAST[2] != null && functions.arg1().isAST(S.BSplineFunction)) {
+      // a spline at real parameters
+      IExpr derived = BSplineFunction.derivative((IAST) functions.arg1(), derivativeHead,
+          derivativeAST[2], engine);
+      if (derived.isPresent()) {
+        return derived;
+      }
+    }
     IExpr extremum = maxMinDerivative(derivativeHead, functions.arg1(), derivativeAST[2]);
     if (extremum.isPresent()) {
       return extremum;

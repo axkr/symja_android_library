@@ -385,9 +385,9 @@ public class RootTest extends ExprEvaluatorTestCase {
   @Test
   public void testRootNumeric() {
     // The root index k and the ordering flag n are positions in the list of roots, not numbers to
-    // approximate. Without NHoldRest N[] would rewrite Root[f, 1, 0] to Root[f, 1.0, 0.0].
+    // approximate. Without NHoldAll N[] would rewrite Root[f, 1, 0] to Root[f, 1.0, 0.0].
     check("Attributes(Root)", //
-        "{NHoldRest,Protected}");
+        "{NHoldAll,Protected,ReadProtected}");
     check("N(Root(1+2*#1+#1^5&,1,0)) // InputForm", //
         "-0.486389035934543`");
 

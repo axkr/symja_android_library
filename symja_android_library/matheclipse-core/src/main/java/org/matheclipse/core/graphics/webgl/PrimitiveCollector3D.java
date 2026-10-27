@@ -16,6 +16,7 @@ import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.manipulate.Dynamics;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -129,6 +130,12 @@ public final class PrimitiveCollector3D {
       return;
     }
     if (!expr.isAST()) {
+      return;
+    }
+    IExpr shown = Dynamics.primitivesNow(expr);
+    if (shown.isPresent()) {
+      // Dynamic[primitives] draws what the primitives are now
+      process(shown, style, context, transform);
       return;
     }
     IAST ast = (IAST) expr;
@@ -287,6 +294,8 @@ public final class PrimitiveCollector3D {
       case ID.Hue:
       case ID.GrayLevel:
       case ID.CMYKColor:
+      case ID.XYZColor:
+      case ID.LABColor:
       case ID.Lighter:
       case ID.Darker:
       case ID.Blend: {

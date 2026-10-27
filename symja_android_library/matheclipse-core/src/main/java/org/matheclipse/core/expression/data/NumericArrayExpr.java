@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Map;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
@@ -505,6 +506,40 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     } catch (RangeException | TypeException e) {
     }
     return null;
+  }
+
+  /**
+   * For a built-in function which has no numeric array implementation: evaluate <code>ast</code>
+   * with its numeric array arguments replaced by their nested lists.
+   *
+   * @param ast a call with numeric array arguments
+   * @param keepType if <code>true</code> and the first argument is a numeric array, a rectangular
+   *        array result whose elements fit the type of the first argument becomes a numeric array
+   *        of that type
+   * @return {@link F#NIL} if no argument is a numeric array or the call doesn't evaluate
+   */
+  public static IExpr evalNormal(IAST ast, boolean keepType, EvalEngine engine) {
+    if (!ast.exists(x -> x instanceof INumericArray)) {
+      return F.NIL;
+    }
+    IExpr call =
+        ast.map(x -> x instanceof INumericArray ? ((INumericArray) x).normal(false) : F.NIL, 1);
+    IExpr result = engine.evaluate(call);
+    if (result.equals(call)) {
+      return F.NIL;
+    }
+    if (keepType && result.isList() && ast.arg1() instanceof INumericArray) {
+      try {
+        NumericArrayExpr numericArray =
+            newList((IAST) result, ((INumericArray) ast.arg1()).getType());
+        if (numericArray != null) {
+          return numericArray;
+        }
+      } catch (RangeException | TypeException e) {
+        // the elements don't fit the type: the result stays a list
+      }
+    }
+    return result;
   }
 
   public static NumericArrayExpr newList(final IAST list, byte type)

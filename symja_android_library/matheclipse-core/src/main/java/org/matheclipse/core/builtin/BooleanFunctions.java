@@ -3280,6 +3280,11 @@ public final class BooleanFunctions {
           evaled = true;
           continue;
         }
+        if (arg.isNumericArray()) {
+          flattenListRecursive((IAST) arg.normal(false), result, engine);
+          evaled = true;
+          continue;
+        }
         int dim = arg.isVector();
         if (dim >= 0) {
           IExpr normal = arg.normal(false);

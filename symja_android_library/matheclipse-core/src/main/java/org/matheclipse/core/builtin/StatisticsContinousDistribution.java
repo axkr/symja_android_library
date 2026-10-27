@@ -5741,6 +5741,13 @@ public class StatisticsContinousDistribution {
         IExpr a = p[0];
         IExpr b = p[1];
         IExpr c = p[2];
+        if (k.isInexactNumber() && k.isReal() && c.isNumericFunction(true)) {
+          // the probability of the mode: the square root of either piece loses the last digit
+          IExpr peak = engine.evalN(F.Divide(F.Subtract(c, a), F.Subtract(b, a)));
+          if (peak.isReal() && ((IReal) k).doubleValue() == ((IReal) peak).doubleValue()) {
+            return engine.evalN(c);
+          }
+        }
         // the left piece holds the probability (c - a)/(b - a)
         // ConditionalExpression(Piecewise({{a + Sqrt((b - a)*(c - a)*#), # <= (c - a)/(b - a)}},
         // b - Sqrt((b - a)*(b - c)*(1 - #))), 0 <= # <= 1) &

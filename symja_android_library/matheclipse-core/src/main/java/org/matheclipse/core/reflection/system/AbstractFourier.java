@@ -46,6 +46,10 @@ public abstract class AbstractFourier extends AbstractFunctionOptionEvaluator {
     IExpr arg1 = ast.arg1();
     // Force numeric evaluation of the input list
     IExpr listExpr = engine.evalN(arg1);
+    if (listExpr.isSparseArray()) {
+      // the transform of a sparse array is dense: work on its ordinary list form
+      listExpr = listExpr.normal(false);
+    }
     if (!listExpr.isList()) {
       return F.NIL;
     }

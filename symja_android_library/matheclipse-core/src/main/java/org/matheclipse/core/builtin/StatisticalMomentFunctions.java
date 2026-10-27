@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.util.DistributionRegion;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -74,6 +75,7 @@ public class StatisticalMomentFunctions {
       S.FactorialMoment.setEvaluator(new FactorialMoment());
       S.FactorialMomentGeneratingFunction.setEvaluator(new FactorialMomentGeneratingFunction());
       S.Moment.setEvaluator(new Moment());
+      S.MomentEvaluate.setEvaluator(new MomentEvaluate());
       S.MomentGeneratingFunction.setEvaluator(new MomentGeneratingFunction());
     }
   }
@@ -679,6 +681,66 @@ public class StatisticalMomentFunctions {
       return sum;
     }
     return F.Log(mgf);
+  }
+
+  /**
+   * <code>MomentEvaluate(expr, data)</code>, <code>MomentEvaluate(expr, dist)</code>: replaces the
+   * formal moments <code>Moment(r)</code>, <code>CentralMoment(r)</code>, <code>Cumulant(r)</code>
+   * and <code>FactorialMoment(r)</code> in <code>expr</code> by their values for the data or the
+   * distribution. For a matrix of data with only univariate formal moments the result is the list of
+   * the values for each column.
+   */
+  private static class MomentEvaluate extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr expr = ast.arg1();
+      IExpr data = ast.arg2();
+      if (data.isList()) {
+        if (((IAST) data).isEmpty()) {
+          return F.NIL;
+        }
+        int[] dimensions = data.isMatrix(false);
+        if (dimensions != null && !hasMultivariateMoment(expr)) {
+          IExpr columns = engine.evaluate(F.Transpose(data));
+          if (!columns.isList()) {
+            return F.NIL;
+          }
+          return ((IAST) columns)
+              .mapThread(column -> engine.evaluate(F.binaryAST2(S.MomentEvaluate, expr, column)));
+        }
+      } else if (!(data.isAST() && data.isDistribution())) {
+        return F.NIL;
+      }
+      return engine.evaluate(expr.replaceAll(x -> isFormalMoment(x) //
+          ? F.binaryAST2(x.head(), data, x.first())
+          : F.NIL).orElse(expr));
+    }
+
+    /** <code>Moment(r)</code>, <code>CentralMoment(r)</code>, ... with one argument. */
+    private static boolean isFormalMoment(IExpr x) {
+      return x.isAST1() && (x.isAST(S.Moment) || x.isAST(S.CentralMoment)
+          || x.isAST(S.Cumulant) || x.isAST(S.FactorialMoment));
+    }
+
+    private static boolean hasMultivariateMoment(IExpr expr) {
+      return !expr.isFree(x -> isFormalMoment(x) && x.first().isList(), false);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.PROTECTED, Attribute.READPROTECTED);
+    }
   }
 
   /**

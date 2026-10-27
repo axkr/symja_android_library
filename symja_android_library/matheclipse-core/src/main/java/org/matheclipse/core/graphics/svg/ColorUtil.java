@@ -236,53 +236,131 @@ public final class ColorUtil {
   }
 
   /**
-   * {@code XYZColor[x, y, z]} and {@code XYZColor[x, y, z, a]}, in the CIE 1931 space with the D65
-   * white point, converted through linear sRGB.
+   * {@code XYZColor[x, y, z]} and {@code XYZColor[x, y, z, a]}, in the CIE 1931 space relative to
+   * the D50 white point, converted through linear sRGB.
    */
   private static Color parseXYZ(IAST ast) {
     if (ast.argSize() < 3) {
       return null;
     }
     float a = ast.argSize() >= 4 ? fclamp(dbl(ast.get(4), 1)) : 1.0f;
-    return xyzToColor(dbl(ast.arg1(), 0), dbl(ast.arg2(), 0), dbl(ast.arg3(), 0), a);
+    return rgbColor(xyzToRgb(dbl(ast.arg1(), 0), dbl(ast.arg2(), 0), dbl(ast.arg3(), 0)), a);
   }
 
   /**
-   * {@code LABColor[l, a, b]} and {@code LABColor[l, a, b, alpha]}, in CIE L*a*b* with the D65
-   * white point. The lightness runs 0..1 here, rather than the 0..100 of the underlying space.
+   * {@code LABColor[l, a, b]} and {@code LABColor[l, a, b, alpha]}, in CIE L*a*b* relative to the
+   * D50 white point. The lightness runs 0..1 here and a, b are scaled alike, rather than the 0..100
+   * of the underlying space.
    */
   private static Color parseLAB(IAST ast) {
     if (ast.argSize() < 3) {
       return null;
     }
-    double lightness = dbl(ast.arg1(), 0) * 100.0;
-    double aStar = dbl(ast.arg2(), 0) * 100.0;
-    double bStar = dbl(ast.arg3(), 0) * 100.0;
     float alpha = ast.argSize() >= 4 ? fclamp(dbl(ast.get(4), 1)) : 1.0f;
-
-    double fy = (lightness + 16.0) / 116.0;
-    double fx = fy + aStar / 500.0;
-    double fz = fy - bStar / 200.0;
-    return xyzToColor(D65_X * labInverse(fx), D65_Y * labInverse(fy), D65_Z * labInverse(fz),
-        alpha);
+    double[] xyz = labToXyz(dbl(ast.arg1(), 0), dbl(ast.arg2(), 0), dbl(ast.arg3(), 0));
+    return rgbColor(xyzToRgb(xyz[0], xyz[1], xyz[2]), alpha);
   }
 
-  /** The D65 white point, which is the one the script's colour spaces are relative to. */
-  private static final double D65_X = 0.95047;
-  private static final double D65_Y = 1.0;
-  private static final double D65_Z = 1.08883;
+  private static Color rgbColor(double[] rgb, float alpha) {
+    return new Color((float) rgb[0], (float) rgb[1], (float) rgb[2], alpha);
+  }
+
+  /**
+   * The sRGB primaries in CIE XYZ, adapted to D50 with the Bradford transform from the white
+   * points <code>x = 0.31271, y = 0.32902</code> (D65) and <code>x = 0.34567, y = 0.35850</code>
+   * (D50). One column per primary.
+   */
+  private static final double[][] SRGB_TO_XYZ_D50 = {//
+      {0.43602191242669813, 0.38510884137388846, 0.14308124062061284}, //
+      {0.22247517260243593, 0.7169066111623497, 0.06061821623521407}, //
+      {0.013928134067434789, 0.09710156693979348, 0.7141585835116004}};
+
+  /** The inverse of {@link #SRGB_TO_XYZ_D50}. */
+  private static final double[][] XYZ_D50_TO_SRGB = inverse(SRGB_TO_XYZ_D50);
+
+  /** The D50 white point, from its chromaticity <code>x = 0.34567, y = 0.35850</code>. */
+  private static final double[] D50_WHITE =
+      {0.34567 / 0.35850, 1.0, (1.0 - 0.34567 - 0.35850) / 0.35850};
+
+  /**
+   * sRGB to CIE XYZ, relative to the D50 white point: the channels are linearised by the sRGB
+   * transfer function and then multiplied by the sRGB primaries adapted from D65 to D50. Pure red,
+   * green and blue give the three columns of the matrix.
+   */
+  public static double[] rgbToXyz(double r, double g, double b) {
+    return times(SRGB_TO_XYZ_D50, linearSRGB(r), linearSRGB(g), linearSRGB(b));
+  }
+
+  /**
+   * CIE XYZ relative to D50 to sRGB, each channel clipped to <code>0.0 ... 1.0</code> before the
+   * sRGB transfer curve is applied.
+   */
+  public static double[] xyzToRgb(double x, double y, double z) {
+    double[] linear = times(XYZ_D50_TO_SRGB, x, y, z);
+    for (int i = 0; i < 3; i++) {
+      linear[i] = gamma(Math.max(0.0, Math.min(1.0, linear[i])));
+    }
+    return linear;
+  }
+
+  /**
+   * CIE XYZ to L*a*b*, both relative to D50, with the lightness in <code>0.0 ... 1.0</code> and
+   * a*, b* divided by 100 alike.
+   */
+  public static double[] xyzToLab(double x, double y, double z) {
+    double fx = labForward(x / D50_WHITE[0]);
+    double fy = labForward(y / D50_WHITE[1]);
+    double fz = labForward(z / D50_WHITE[2]);
+    return new double[] {(116.0 * fy - 16.0) / 100.0, 5.0 * (fx - fy), 2.0 * (fy - fz)};
+  }
+
+  /** The inverse of {@link #xyzToLab(double, double, double)}. */
+  public static double[] labToXyz(double l, double a, double b) {
+    double fy = (l * 100.0 + 16.0) / 116.0;
+    double fx = fy + a / 5.0;
+    double fz = fy - b / 2.0;
+    return new double[] {D50_WHITE[0] * labInverse(fx), D50_WHITE[1] * labInverse(fy),
+        D50_WHITE[2] * labInverse(fz)};
+  }
+
+  private static double labForward(double t) {
+    // the linear segment near black keeps the transform invertible where the cube root flattens
+    return t > 216.0 / 24389.0 ? Math.cbrt(t) : t * (24389.0 / 27.0) / 116.0 + 16.0 / 116.0;
+  }
 
   private static double labInverse(double t) {
-    // the linear segment near black keeps the transform invertible where the cube root flattens
     return t > 6.0 / 29.0 ? t * t * t : 3.0 * (6.0 / 29.0) * (6.0 / 29.0) * (t - 4.0 / 29.0);
   }
 
-  /** CIE XYZ to sRGB, through the linear working space and the sRGB transfer curve. */
-  private static Color xyzToColor(double x, double y, double z, float alpha) {
-    double r = 3.2404542 * x - 1.5371385 * y - 0.4985314 * z;
-    double g = -0.9692660 * x + 1.8760108 * y + 0.0415560 * z;
-    double b = 0.0556434 * x - 0.2040259 * y + 1.0572252 * z;
-    return new Color(fclamp(gamma(r)), fclamp(gamma(g)), fclamp(gamma(b)), alpha);
+  private static double[] times(double[][] m, double x, double y, double z) {
+    return new double[] {m[0][0] * x + m[0][1] * y + m[0][2] * z,
+        m[1][0] * x + m[1][1] * y + m[1][2] * z, m[2][0] * x + m[2][1] * y + m[2][2] * z};
+  }
+
+  /** The inverse of a regular 3 x 3 matrix, by its adjugate. */
+  private static double[][] inverse(double[][] m) {
+    double[][] adj = new double[3][3];
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        int r1 = (j + 1) % 3, r2 = (j + 2) % 3, c1 = (i + 1) % 3, c2 = (i + 2) % 3;
+        adj[i][j] = m[r1][c1] * m[r2][c2] - m[r1][c2] * m[r2][c1];
+      }
+    }
+    double det = m[0][0] * adj[0][0] + m[0][1] * adj[1][0] + m[0][2] * adj[2][0];
+    for (double[] row : adj) {
+      for (int j = 0; j < 3; j++) {
+        row[j] /= det;
+      }
+    }
+    return adj;
+  }
+
+  /** The sRGB transfer function undone: a channel value in proportion to the light it stands for. */
+  private static double linearSRGB(double c) {
+    if (c <= 0.04045) {
+      return c / 12.92;
+    }
+    return Math.pow((c + 0.055) / 1.055, 2.4);
   }
 
   private static double gamma(double linear) {

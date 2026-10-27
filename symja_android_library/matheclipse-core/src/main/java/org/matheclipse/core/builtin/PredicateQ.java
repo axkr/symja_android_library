@@ -738,14 +738,12 @@ public class PredicateQ {
       if ((ast.isAST2())) {
         IExpr arg1 = ast.arg1();
         IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-        IExpr arg1Evaled = engine.evaluate(arg1);
-        if (matcher.test(arg1Evaled, engine)) {
-          return S.True;
+        if (arg1.isUnevaluated()) {
+          // Unevaluated[expr] tests expr as it is written
+          return F.booleSymbol(matcher.test(arg1.first(), engine));
         }
-        if (arg1Evaled.isAST()) {
-          return F.booleSymbol(matcher.test(arg1, engine));
-        }
-
+        // only the value is tested: a symbol whose value is an expression is no _Symbol
+        return F.booleSymbol(matcher.test(engine.evaluate(arg1), engine));
       }
       return S.False;
     }

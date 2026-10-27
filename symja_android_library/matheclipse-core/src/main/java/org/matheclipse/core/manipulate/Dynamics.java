@@ -64,6 +64,22 @@ public class Dynamics {
   }
 
   /**
+   * What a <code>Dynamic</code> written among the primitives of a picture draws now:
+   * <code>Graphics[Dynamic[Table[Point[{i, i}], {i, 3}]]]</code> shows the three points the table
+   * currently gives.
+   *
+   * @return the current value, or {@link F#NIL} if <code>expr</code> is no <code>Dynamic</code> or
+   *         its value cannot be computed
+   */
+  public static IExpr primitivesNow(IExpr expr) {
+    if (!isDynamic(expr)) {
+      return F.NIL;
+    }
+    IExpr value = resolve(expr, EvalEngine.get());
+    return isDynamic(value) ? F.NIL : value;
+  }
+
+  /**
    * The value an option of a picture has now: <code>PlotRange -> Dynamic[r]</code> is drawn with
    * the current value of <code>r</code>, the way a front end shows it, rather than as if the option
    * were not there at all. An option without a <code>Dynamic</code> in it is returned untouched and

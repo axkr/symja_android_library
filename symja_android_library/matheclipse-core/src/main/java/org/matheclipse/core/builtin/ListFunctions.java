@@ -2925,6 +2925,10 @@ public final class ListFunctions {
         // bytes are dropped from a byte array and the rest is one again
         return byteArrayPart(ast, (ByteArrayExpr) arg1, engine);
       }
+      if (arg1.isNumericArray()) {
+        // the rest of a numeric array keeps its type
+        return NumericArrayExpr.evalNormal(ast, true, engine);
+      }
       if (!arg1.isASTOrAssociation() && !arg1.isSparseArray()) {
         // Nonatomic expression expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
@@ -4171,6 +4175,10 @@ public final class ListFunctions {
       }
       if (anyDataset) {
         return IASTDataset.restoreDataset(engine.evaluate(ast));
+      }
+      if (ast.exists(IExpr::isNumericArray)) {
+        // numeric arrays join into a numeric array of the type of the first one
+        return NumericArrayExpr.evalNormal(ast, true, engine);
       }
       int index = ast.indexOf(x -> x.isAtom() && !x.isAssociation() && !x.isSparseArray());
       if (index > 0) {
@@ -6642,6 +6650,10 @@ public final class ListFunctions {
         return onRows;
       }
       IExpr arg1 = ast.arg1();
+      if (arg1.isNumericArray()) {
+        // reverse the array and keep its type
+        return NumericArrayExpr.evalNormal(ast, true, engine);
+      }
       if (arg1.isSparseArray()) {
         // reverse the array and keep it sparse, with the same background
         return SparseArrayExpr.evalNormal(ast, true, engine);
@@ -8662,6 +8674,10 @@ public final class ListFunctions {
       }
 
       IExpr arg1 = ast.arg1();
+      if (arg1.isNumericArray()) {
+        // the sums are ordinary numbers and lists
+        return NumericArrayExpr.evalNormal(ast, false, engine);
+      }
       if (arg1.isSparseArray()) {
         ISparseArray sparseArray = (ISparseArray) arg1;
         int[] dims = sparseArray.getDimension();

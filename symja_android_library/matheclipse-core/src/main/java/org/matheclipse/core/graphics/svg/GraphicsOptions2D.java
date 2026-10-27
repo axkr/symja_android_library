@@ -81,6 +81,34 @@ public final class GraphicsOptions2D {
   public boolean plotRangeClipping = false;
   public PlotRangePaddingSpec plotRangePadding = PlotRangePaddingSpec.automatic(2);
 
+  /**
+   * The tick marks and tick labels of one set of axes or of the frame, styled by
+   * {@code TicksStyle} or {@code FrameTicksStyle} on top of what they would have had without it.
+   */
+  public static final class TicksStyle {
+    /** The tick marks: the axes or frame style with the ticks style applied. */
+    public final Style2D marks;
+    /** The tick labels: the label (or else axes or frame) style with the ticks style applied. */
+    public final Style2D labels;
+    /** Whether the ticks style gave a font size, as a bare number or inside a directive. */
+    public final boolean fontSizeSet;
+
+    TicksStyle(Style2D marks, Style2D labels, boolean fontSizeSet) {
+      this.marks = marks;
+      this.labels = labels;
+      this.fontSizeSet = fontSizeSet;
+    }
+  }
+
+  /** {@code TicksStyle} as written; it is read once all the other options are known. */
+  private IExpr ticksStyleValue = null;
+  /** {@code FrameTicksStyle} as written; it is read once all the other options are known. */
+  private IExpr frameTicksStyleValue = null;
+  /** The ticks of the axes, or {@code null} when no {@code TicksStyle} was given. */
+  public TicksStyle ticksStyle = null;
+  /** The ticks of the frame, or {@code null} when no {@code FrameTicksStyle} was given. */
+  public TicksStyle frameTicksStyle = null;
+
   /** {@code LabelStyle}, applied to every piece of text the plot labels itself with. */
   public Style2D labelStyle = null;
   /** Whether {@code LabelStyle} asked for a font size, as opposed to only a colour or weight. */
@@ -150,6 +178,33 @@ public final class GraphicsOptions2D {
         // a malformed option falls back to its default rather than losing the picture
       }
     }
+    // the ticks styles go on top of the axes, frame and label styles, whichever order the
+    // options were written in
+    ticksStyle = ticksStyle(ticksStyleValue, axesStyle, collector);
+    frameTicksStyle = ticksStyle(frameTicksStyleValue, frameStyle, collector);
+  }
+
+  /**
+   * The ticks styled by <code>value</code>, a directive, a <code>Directive(...)</code> or a list
+   * of directives, in which a bare number is the font size of the tick labels.
+   *
+   * @return {@code null} if no style was given
+   */
+  private TicksStyle ticksStyle(IExpr value, Style2D lineStyle, PrimitiveCollector collector) {
+    if (value == null || collector == null || value.isNone() || value == S.Automatic) {
+      return null;
+    }
+    Style2D marks = lineStyle.clone();
+    Style2D labels = (labelStyle != null ? labelStyle : lineStyle).clone();
+    double sizeBefore = labels.fontSize;
+    labels.fontSize = Double.NaN;
+    collector.applyTextStyle(value, labels);
+    boolean fontSizeSet = !Double.isNaN(labels.fontSize);
+    if (!fontSizeSet) {
+      labels.fontSize = sizeBefore;
+    }
+    collector.applyTextStyle(value, marks);
+    return new TicksStyle(marks, labels, fontSizeSet);
   }
 
   private void apply(int optionId, IExpr value, PrimitiveCollector collector) {
@@ -184,6 +239,12 @@ public final class GraphicsOptions2D {
         break;
       case ID.LabelStyle:
         applyLabelStyle(value, collector);
+        break;
+      case ID.TicksStyle:
+        ticksStyleValue = value;
+        break;
+      case ID.FrameTicksStyle:
+        frameTicksStyleValue = value;
         break;
       case ID.ScalingFunctions:
         // the same shape as $Scaling: a bare value scales y, a pair scales both axes. It is a

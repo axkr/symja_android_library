@@ -1,10 +1,20 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.Set;
+import java.util.TreeSet;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.AllowedSolution;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.exception.MathRuntimeException;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.IntervalDataSym;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -58,6 +68,10 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    */
   static IExpr solveNumeric(SolveOptions options, IAST ast, long precision, EvalEngine engine) {
     if (precision == SolveUtils.MACHINE_PRECISION_REQUESTED) {
+      IExpr bounded = rootsInBoundedInterval(ast, engine);
+      if (bounded.isPresent()) {
+        return bounded;
+      }
       SolveData solveData = new SolveData(options);
       IExpr result = solveData.of(ast, true, true, engine);
       if (!solveData.isCompleteSolutions()) {
@@ -75,6 +89,233 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
     }
     return Solve.sortNumericSolutions(Solve.withNumericValues(result,
         value -> engine.evaluate(F.N(value, precision))));
+  }
+
+  /** The first number of equidistant samples of the sign change search in a bounded interval. */
+  private static final int INTERVAL_SAMPLES = 2000;
+
+  /**
+   * The most samples of the search in one interval: the samples are doubled until two searches
+   * agree on the number of roots, and without agreement up to this number the system is left to
+   * the other methods.
+   */
+  private static final int MAX_INTERVAL_SAMPLES = INTERVAL_SAMPLES << 7;
+
+  /** The relative size of a function value which counts as zero at a refined root. */
+  private static final double ZERO = 1.0e-12;
+
+  /**
+   * All real roots of one transcendental equation in one variable whose inequalities restrict the
+   * variable to a bounded real interval (or a union of bounded intervals), as in
+   * <code>NSolve({Cos(x)==0.3, 0&lt;x&lt;8}, x)</code>. The general solution of such an equation is
+   * an infinite family, so the interval is searched numerically instead: the sign changes between
+   * equidistant samples are refined by a bracketing root finder, and at a sample whose absolute
+   * value is a local minimum the zero of the derivative is a candidate for a root of even
+   * multiplicity. Without a variable list the variable is the only variable of the system.
+   *
+   * @return the solutions sorted ascending, <code>{}</code> if the interval contains no root, or
+   *         {@link F#NIL} if the system isn't of this kind
+   */
+  private static IExpr rootsInBoundedInterval(IAST ast, EvalEngine engine) {
+    if (ast.argSize() > 3 || (ast.argSize() == 3 && ast.arg3() != S.Reals)) {
+      return F.NIL;
+    }
+    IExpr system = ast.arg1();
+    if (!system.isList() && !system.isAnd()) {
+      return F.NIL;
+    }
+    IExpr equation = F.NIL;
+    IASTAppendable conditions = F.ast(S.And, system.argSize());
+    for (IExpr term : (IAST) system) {
+      if (term.isEqual()) {
+        if (equation.isPresent()) {
+          return F.NIL;
+        }
+        equation = term;
+      } else {
+        conditions.append(term);
+      }
+    }
+    if (equation.isNIL() || conditions.argSize() == 0) {
+      return F.NIL;
+    }
+    IAST variables = ast.argSize() >= 2 ? ast.arg2().makeList()
+        : new VariablesSet(system).getVarList().removeIf(v -> v.isBuiltInSymbol());
+    if (variables.argSize() != 1 || !variables.arg1().isVariable()
+        || variables.arg1().isBuiltInSymbol()) {
+      return F.NIL;
+    }
+    ISymbol x = (ISymbol) variables.arg1();
+    IExpr f = engine.evaluate(F.Subtract(equation.first(), equation.second()));
+    if (!f.isNumericFunction(x) || f.isFree(x) || isAlgebraic(f, x)) {
+      return F.NIL;
+    }
+    IAST intervalData = IntervalDataSym.toIntervalData(conditions, x, engine, false);
+    if (intervalData.isNIL() || !intervalData.isAST(S.IntervalData)) {
+      return F.NIL;
+    }
+    double[][] pieces = new double[intervalData.argSize()][];
+    for (int i = 1; i < intervalData.size(); i++) {
+      IExpr piece = intervalData.get(i);
+      if (!piece.isList4()) {
+        return F.NIL;
+      }
+      double lower = piece.first().evalfNaN();
+      double upper = piece.last().evalfNaN();
+      if (!Double.isFinite(lower) || !Double.isFinite(upper) || lower > upper) {
+        return F.NIL;
+      }
+      pieces[i - 1] = new double[] {lower, upper, piece.second() == S.LessEqual ? 1.0 : 0.0,
+          piece.get(3) == S.LessEqual ? 1.0 : 0.0};
+    }
+    UnaryNumerical function = new UnaryNumerical(f, x, Double.NaN, engine);
+    TreeSet<Double> roots = new TreeSet<Double>();
+    for (double[] piece : pieces) {
+      // a root pair closer than the sample distance is missed, so the samples are doubled until
+      // the number of roots doesn't change
+      TreeSet<Double> previousRoots = null;
+      for (int samples = INTERVAL_SAMPLES;; samples *= 2) {
+        TreeSet<Double> pieceRoots = new TreeSet<Double>();
+        rootsInInterval(function, piece[0], piece[1], piece[2] != 0.0, piece[3] != 0.0, samples,
+            pieceRoots);
+        if (previousRoots != null
+            && distinctRoots(previousRoots) == distinctRoots(pieceRoots)) {
+          roots.addAll(pieceRoots);
+          break;
+        }
+        if (samples >= MAX_INTERVAL_SAMPLES) {
+          return F.NIL;
+        }
+        previousRoots = pieceRoots;
+      }
+    }
+    IASTAppendable result = F.ListAlloc(roots.size());
+    double previous = Double.NaN;
+    for (Double root : roots) {
+      double r = root.doubleValue();
+      if (!isSameRoot(r, previous)) {
+        result.append(F.list(F.Rule(x, F.num(r))));
+      }
+      previous = r;
+    }
+    return result;
+  }
+
+  private static boolean isSameRoot(double r, double previous) {
+    return Math.abs(r - previous) <= SAME * Math.max(1.0, Math.abs(r));
+  }
+
+  /** The number of roots which are not the same as the root before them. */
+  private static int distinctRoots(TreeSet<Double> roots) {
+    int count = 0;
+    double previous = Double.NaN;
+    for (Double root : roots) {
+      if (!isSameRoot(root.doubleValue(), previous)) {
+        count++;
+      }
+      previous = root.doubleValue();
+    }
+    return count;
+  }
+
+  /**
+   * Test if every subexpression which contains <code>x</code> is a sum, a product or a power with
+   * an exponent free of <code>x</code>. The algebraic equations are left to the exact solvers.
+   */
+  private static boolean isAlgebraic(IExpr expr, IExpr x) {
+    if (expr.isFree(x)) {
+      return true;
+    }
+    if (expr.equals(x)) {
+      return true;
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      return ((IAST) expr).forAll(arg -> isAlgebraic(arg, x));
+    }
+    if (expr.isPower()) {
+      return expr.exponent().isFree(x) && isAlgebraic(expr.base(), x);
+    }
+    return false;
+  }
+
+  /**
+   * Add the roots of <code>function</code> in the interval from <code>lower</code> to
+   * <code>upper</code>.
+   */
+  private static void rootsInInterval(UnaryNumerical function, double lower, double upper,
+      boolean lowerClosed, boolean upperClosed, int samples, Set<Double> roots) {
+    double width = (upper - lower) / samples;
+    double[] xs = new double[samples + 1];
+    double[] ys = new double[samples + 1];
+    for (int k = 0; k <= samples; k++) {
+      xs[k] = k == samples ? upper : lower + k * width;
+      ys[k] = function.value(xs[k]);
+    }
+    UnivariateFunction derivative = null;
+    for (int k = 0; k <= samples; k++) {
+      double y = ys[k];
+      if (Double.isNaN(y)) {
+        continue;
+      }
+      if (y == 0.0 || ((k == 0 || k == samples)
+          && Math.abs(y) <= ZERO * Math.max(1.0, Math.abs(ys[k == 0 ? 1 : samples - 1])))) {
+        // a root at a closed end, like Sin(x)==0 at x==2*Pi, needn't be a sign change
+        addRoot(xs[k], lower, upper, lowerClosed, upperClosed, roots);
+      } else if (k < samples && y * ys[k + 1] < 0.0) {
+        double root = refinedRoot(function, xs[k], xs[k + 1]);
+        double value = Double.isNaN(root) ? Double.NaN : Math.abs(function.value(root));
+        double next = Math.abs(ys[k + 1]);
+        // a pole or a jump of the function is a sign change, too
+        if (value < 1.0e-3 * Math.min(Math.abs(y), next)
+            || value <= ZERO * Math.max(1.0, Math.max(Math.abs(y), next))) {
+          addRoot(root, lower, upper, lowerClosed, upperClosed, roots);
+        }
+      } else if (k > 0 && k < samples && y * ys[k - 1] > 0.0 && y * ys[k + 1] > 0.0
+          && Math.abs(y) < Math.abs(ys[k - 1]) && Math.abs(y) < Math.abs(ys[k + 1])) {
+        // a local minimum of the absolute value: at the extremum, where the derivative changes
+        // its sign, the function touches zero at a root of even multiplicity, or crosses zero
+        // twice between the samples
+        if (derivative == null) {
+          derivative = function.derivative();
+        }
+        if (derivative.value(xs[k - 1]) * derivative.value(xs[k + 1]) < 0.0) {
+          double extremum = refinedRoot(derivative, xs[k - 1], xs[k + 1]);
+          if (Double.isNaN(extremum)) {
+            continue;
+          }
+          double value = function.value(extremum);
+          if (Math.abs(value) <= ZERO
+              * Math.max(1.0, Math.max(Math.abs(ys[k - 1]), Math.abs(ys[k + 1])))) {
+            addRoot(extremum, lower, upper, lowerClosed, upperClosed, roots);
+          } else if (value * y < 0.0) {
+            for (double root : new double[] {refinedRoot(function, xs[k - 1], extremum),
+                refinedRoot(function, extremum, xs[k + 1])}) {
+              if (!Double.isNaN(root)) {
+                addRoot(root, lower, upper, lowerClosed, upperClosed, roots);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /** The root of <code>function</code> between <code>a</code> and <code>b</code>, or NaN. */
+  private static double refinedRoot(UnivariateFunction function, double a, double b) {
+    try {
+      return new BracketingNthOrderBrentSolver(1.0e-15, 1.0e-15, 0.0, 5).solve(1000, function, a,
+          b, AllowedSolution.ANY_SIDE);
+    } catch (MathRuntimeException mre) {
+      return Double.NaN;
+    }
+  }
+
+  private static void addRoot(double root, double lower, double upper, boolean lowerClosed,
+      boolean upperClosed, Set<Double> roots) {
+    if ((root > lower || (lowerClosed && root == lower))
+        && (root < upper || (upperClosed && root == upper))) {
+      roots.add(root);
+    }
   }
 
   /**

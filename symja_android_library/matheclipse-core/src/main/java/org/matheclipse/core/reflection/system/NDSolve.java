@@ -44,6 +44,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -845,6 +846,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (delayed.isPresent()) {
         return delayed;
       }
+      IExpr eliminated =
+          eliminateAlgebraicFunctions(ast, whenEvents, timeVar, options, engine, ruleForm);
+      if (eliminated.isPresent()) {
+        return eliminated;
+      }
       FirstOrderSystem system = reduceToFirstOrder(ast, timeVar, engine);
       if (system == null) {
         return F.NIL;
@@ -861,6 +867,184 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(ast.topHead(), rex, engine);
     }
+  }
+
+  /**
+   * A function which the equations never differentiate is fixed by an algebraic equation alone,
+   * like <code>z(t)==2*x(t)</code> beside <code>x'(t)==-x(t)+z(t)</code>. The equation is solved
+   * for it and the solution substituted into the other equations; the smaller system is integrated
+   * and the function follows from its solution. The conditions on the function, like
+   * <code>z(0)==2</code>, are implied by the others and dropped.
+   *
+   * @param ast the <code>NDSolve(...)</code> expression with the equations as a list
+   * @param whenEvents the <code>WhenEvent(...)</code> entries taken out of the equations
+   * @return {@link F#NIL} if every function is differentiated, or if a function which is not
+   *         could not be solved for uniquely
+   */
+  private static IExpr eliminateAlgebraicFunctions(IAST ast, java.util.List<IAST> whenEvents,
+      ISymbol timeVar, IExpr[] options, EvalEngine engine, boolean ruleForm) {
+    IAST functionList = ast.arg2().makeList();
+    int numberOfFunctions = functionList.argSize();
+    ISymbol[] functions = new ISymbol[numberOfFunctions];
+    for (int j = 0; j < numberOfFunctions; j++) {
+      IExpr function = functionList.get(j + 1);
+      if (function.isSymbol()) {
+        functions[j] = (ISymbol) function;
+      } else if (function.isAST1() && function.head().isSymbol()
+          && function.first().equals(timeVar)) {
+        functions[j] = (ISymbol) function.head();
+      } else {
+        return F.NIL;
+      }
+    }
+    IASTAppendable equations = F.ListAlloc();
+    IASTAppendable conditions = F.ListAlloc();
+    for (IExpr equation : SolveUtils.toEquationList(ast.arg1()).makeList()) {
+      (equation.isFree(timeVar) ? conditions : equations).append(equation);
+    }
+    IExpr[] values = new IExpr[numberOfFunctions];
+    int eliminatedCount = 0;
+    for (int j = 0; j < numberOfFunctions; j++) {
+      final ISymbol function = functions[j];
+      IExpr call = F.unaryAST1(function, timeVar);
+      if (equations.isFree(call) || !equations.isFree(
+          x -> x.isAST1() && x.head().isAST(S.Derivative) && x.first().equals(function), true)) {
+        continue;
+      }
+      ISymbol dummy = F.Dummy("NDSolve$" + function.getSymbolName());
+      int solved = -1;
+      for (int i = 1; i < equations.size(); i++) {
+        // an algebraic equation, free of every derivative
+        IExpr equation = F.subst(equations.get(i), F.Rule(call, dummy));
+        if (!equation.isFree(dummy) && equation.isFree(function)
+            && equation.isFree(x -> x.isAST(S.Derivative), true)) {
+          IExpr solution = engine.evaluate(F.Solve(equation, dummy));
+          if (solution.isListOfLists() && solution.argSize() == 1
+              && solution.first().argSize() == 1 && solution.first().first().isRuleAST()
+              && solution.first().first().first().equals(dummy)
+              && solution.first().first().second().isFree(dummy)) {
+            values[j] = solution.first().first().second();
+            solved = i;
+            break;
+          }
+        }
+      }
+      if (solved < 0) {
+        return F.NIL;
+      }
+      IAST rule = F.Rule(call, values[j]);
+      equations.remove(solved);
+      for (int i = 1; i < equations.size(); i++) {
+        equations.set(i, engine.evaluate(F.subst(equations.get(i), rule)));
+      }
+      for (int k = 0; k < j; k++) {
+        if (values[k] != null) {
+          values[k] = F.subst(values[k], rule);
+        }
+      }
+      eliminatedCount++;
+    }
+    if (eliminatedCount == 0 || eliminatedCount == numberOfFunctions) {
+      return F.NIL;
+    }
+    IASTAppendable reducedEquations = equations.copyAppendable();
+    for (IExpr condition : conditions) {
+      boolean onEliminated = false;
+      for (int j = 0; j < numberOfFunctions; j++) {
+        onEliminated |= values[j] != null && !condition.isFree(functions[j]);
+      }
+      if (!onEliminated) {
+        reducedEquations.append(condition);
+      }
+    }
+    reducedEquations.appendAll(whenEvents);
+    IASTAppendable reducedFunctions = F.ListAlloc(numberOfFunctions - eliminatedCount);
+    for (int j = 0; j < numberOfFunctions; j++) {
+      if (values[j] == null) {
+        reducedFunctions.append(functionList.get(j + 1));
+      }
+    }
+    IASTMutable reducedAST = ast.setAtCopy(1, reducedEquations);
+    reducedAST.set(2, reducedFunctions);
+    IExpr solution = solve(reducedAST, options, engine, true);
+    if (!solution.isListOfLists() || solution.argSize() != 1) {
+      return F.NIL;
+    }
+    IAST rules = (IAST) solution.first();
+    // x(t)->f(t) of an applied form is substituted as x->f
+    IAST functionRules = F.mapList(rules,
+        rule -> rule.first().isAST1() && rule.second().isAST1()
+            && rule.first().first().equals(timeVar) && rule.second().first().equals(timeVar)
+                ? F.Rule(rule.first().head(), rule.second().head())
+                : rule);
+    IASTAppendable result = F.ListAlloc(numberOfFunctions);
+    int next = 1;
+    for (int j = 0; j < numberOfFunctions; j++) {
+      IExpr function = functionList.get(j + 1);
+      if (values[j] == null) {
+        IExpr rule = rules.get(next++);
+        result.append(ruleForm ? rule : rule.second());
+        continue;
+      }
+      IExpr value = engine.evaluate(F.subst(values[j], functionRules));
+      if (function.isSymbol()) {
+        // the applied form z(t) keeps the expression of the solutions, like 2*f(t)
+        IExpr interpolation = interpolationOfValue(value, timeVar, rules, engine);
+        value = interpolation.isPresent() ? interpolation
+            : F.Function(F.subst(value, F.Rule(timeVar, F.Slot1)));
+      }
+      result.append(ruleForm ? F.Rule(function, value) : value);
+    }
+    if (ruleForm) {
+      return F.list(result);
+    }
+    return numberOfFunctions == 1 ? result.arg1() : result;
+  }
+
+  /** The number of intervals at which an eliminated function is sampled for its interpolation. */
+  private static final int ELIMINATED_SAMPLES = 1024;
+
+  /**
+   * An eliminated function as an interpolating function like the others: its values, a function
+   * of the solutions, are sampled on the domain of the solutions and interpolated.
+   *
+   * @param value the eliminated function as an expression in <code>timeVar</code>
+   * @param rules the solutions of the reduced system
+   * @return {@link F#NIL} if there is no domain or a sample is no real number
+   */
+  private static IExpr interpolationOfValue(IExpr value, ISymbol timeVar, IAST rules,
+      EvalEngine engine) {
+    IExpr solution = F.NIL;
+    for (IExpr rule : rules) {
+      IExpr candidate = rule.second().isAST1() ? rule.second().head() : rule.second();
+      if (candidate instanceof InterpolatingFunctionExpr) {
+        solution = candidate;
+        break;
+      }
+    }
+    if (solution.isNIL()) {
+      return F.NIL;
+    }
+    IExpr domain = engine.evaluate(F.unaryAST1(solution, F.stringx("Domain")));
+    if (!domain.isList() || domain.argSize() != 1 || !domain.first().isList2()) {
+      return F.NIL;
+    }
+    double t0 = domain.first().first().evalfNaN();
+    double t1 = domain.first().second().evalfNaN();
+    if (!(t0 < t1) || !Double.isFinite(t1 - t0)) {
+      return F.NIL;
+    }
+    IASTAppendable points = F.ListAlloc(ELIMINATED_SAMPLES + 1);
+    for (int k = 0; k <= ELIMINATED_SAMPLES; k++) {
+      double t = k == ELIMINATED_SAMPLES ? t1 : t0 + k * (t1 - t0) / ELIMINATED_SAMPLES;
+      IExpr sample = engine.evalN(F.subst(value, F.Rule(timeVar, F.num(t))));
+      if (!sample.isReal()) {
+        return F.NIL;
+      }
+      points.append(F.list(F.num(t), sample));
+    }
+    IExpr interpolation = engine.evaluate(F.Interpolation(points));
+    return interpolation instanceof InterpolatingFunctionExpr ? interpolation : F.NIL;
   }
 
   /**

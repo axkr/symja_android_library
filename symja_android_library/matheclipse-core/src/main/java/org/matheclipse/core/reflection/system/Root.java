@@ -309,9 +309,10 @@ public class Root extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     // The root index k and the ordering flag n are positions in a list of roots, not numbers to be
-    // approximated: without NHoldRest, N[Root[f, k, n]] would rewrite them to 1.0 / 0.0 and the
-    // integer check in evaluate(IAST, EvalEngine) would no longer match.
-    newSymbol.setAttributes(Attribute.NHOLDREST);
+    // approximated: without NHoldAll, N[Root[f, k, n]] would rewrite them to 1.0 / 0.0 and the
+    // integer check in evaluate(IAST, EvalEngine) would no longer match. The exact coefficients of
+    // the polynomial f are kept, too: the root is approximated from the exact polynomial.
+    newSymbol.setAttributes(Attribute.NHOLDALL, Attribute.READPROTECTED);
   }
 
   /**

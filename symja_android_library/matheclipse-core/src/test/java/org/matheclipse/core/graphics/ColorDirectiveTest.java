@@ -197,8 +197,8 @@ public class ColorDirectiveTest {
     assertEquals(0, black.getGreen(), 2);
     assertEquals(0, black.getBlue(), 2);
 
-    // the D65 white point in XYZ is white in sRGB too
-    Color xyzWhite = ColorUtil.parse(eval("XYZColor(0.95047, 1.0, 1.08883)"));
+    // XYZ is relative to the D50 white point, which is white in sRGB too
+    Color xyzWhite = ColorUtil.parse(eval("XYZColor(0.96422, 1.0, 0.82521)"));
     assertNotNull(xyzWhite);
     assertEquals(255, xyzWhite.getRed(), 2);
     assertEquals(255, xyzWhite.getGreen(), 2);

@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
@@ -927,6 +928,23 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     return Errors.printMessage(head, "pkspec1", F.list(ast), engine);
   }
 
+  /**
+   * The parts of a numeric array: a single row is taken directly, every other specification from
+   * the nested lists, and a part which is an array keeps the type of the numeric array.
+   */
+  private static IExpr numericArrayPart(final IAST ast, IExpr numericArray, EvalEngine engine) {
+    if (ast.isAST2() && ast.arg2().isInteger()) {
+      int n = ast.arg2().toIntDefault();
+      if (n == 0) {
+        return numericArray.head();
+      }
+      if (n > 0 && n < numericArray.size()) {
+        return numericArray.get(n);
+      }
+    }
+    return NumericArrayExpr.evalNormal(ast, true, engine);
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
@@ -952,6 +970,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       evaledAST = ast.setAtCopy(1, arg1);
       arg1AST = partTarget(arg1);
       if (arg1AST.isNIL()) {
+        if (arg1.isNumericArray()) {
+          return numericArrayPart(evaledAST, arg1, engine).orElse(evaledAST);
+        }
         if (arg1.isSparseArray()) {
           return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
         }
@@ -973,6 +994,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       }
       arg1AST = partTarget(arg1);
       if (arg1AST.isNIL()) {
+        if (arg1.isNumericArray()) {
+          return numericArrayPart(ast, arg1, engine);
+        }
         if (arg1.isSparseArray()) {
           return sparseEvaluate(ast, (ISparseArray) arg1, engine);
         }

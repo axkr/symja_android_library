@@ -1818,10 +1818,13 @@ public class OutputFormFactory {
               break;
             case ID.Graphics:
             case ID.Graphics3D:
+            case ID.Sound:
               if (fGraphicsPlaceholder && !fInputForm) {
-                // a picture has no text representation - OutputForm shows a placeholder, while
-                // InputForm still writes the whole expression so that it can be read back
-                append(buf, functionID == ID.Graphics3D ? "-Graphics3D-" : "-Graphics-");
+                // a picture or a sound has no text representation - OutputForm shows a
+                // placeholder, while InputForm still writes the whole expression so that it can be
+                // read back
+                append(buf, functionID == ID.Graphics3D ? "-Graphics3D-"
+                    : functionID == ID.Sound ? "-Sound-" : "-Graphics-");
                 return;
               }
               break;

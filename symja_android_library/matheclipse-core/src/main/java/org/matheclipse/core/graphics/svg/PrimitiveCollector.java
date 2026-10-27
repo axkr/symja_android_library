@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.manipulate.Dynamics;
 
 /**
  * Walks a graphics expression and collects it into a list of {@link Prim2D}.
@@ -97,6 +98,12 @@ public final class PrimitiveCollector {
     if (!expr.isAST()) {
       return;
     }
+    IExpr shown = Dynamics.primitivesNow(expr);
+    if (shown.isPresent()) {
+      // Dynamic[primitives] draws what the primitives are now
+      collect(shown, style);
+      return;
+    }
     IAST ast = (IAST) expr;
     IExpr head = ast.head();
     if (!head.isBuiltInSymbol()) {
@@ -154,6 +161,8 @@ public final class PrimitiveCollector {
       case ID.Hue:
       case ID.GrayLevel:
       case ID.CMYKColor:
+      case ID.XYZColor:
+      case ID.LABColor:
       case ID.Blend:
       case ID.Lighter:
       case ID.Darker: {

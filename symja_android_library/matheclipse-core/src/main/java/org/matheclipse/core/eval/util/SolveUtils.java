@@ -36,6 +36,16 @@ public class SolveUtils {
    *         variable is a built-in symbol or a call of a call
    */
   public static IExpr solveWithRenamedBuiltinVariables(IAST ast, EvalEngine engine) {
+    return solveWithRenamedBuiltinVariables(ast, false, engine);
+  }
+
+  /**
+   * Like {@link #solveWithRenamedBuiltinVariables(IAST, EvalEngine)}, and if
+   * <code>indexedVariables</code> is set an indexed variable like <code>m(1)</code>, a call of a
+   * symbol which is no built-in function, is renamed to a fresh symbol, too.
+   */
+  public static IExpr solveWithRenamedBuiltinVariables(IAST ast, boolean indexedVariables,
+      EvalEngine engine) {
     if (ast.argSize() < 2) {
       return F.NIL;
     }
@@ -50,9 +60,12 @@ public class SolveUtils {
         ISymbol dummy = F.Dummy(((ISymbol) variable).getSymbolName());
         forward.put(variable, dummy);
         backward.put(dummy, variable);
-      } else if (variable.isAST() && variable.head().isAST()
-          && !variable.head().head().isAST(S.Derivative) && !forward.containsKey(variable)) {
-        // a call of a call like c(1)(t) is solved for as one unknown
+      } else if (variable.isAST() && !forward.containsKey(variable)
+          && ((variable.head().isAST() && !variable.head().head().isAST(S.Derivative))
+              || (indexedVariables && variable.head().isSymbol()
+                  && !variable.head().isBuiltInSymbol()))) {
+        // a call of a call like c(1)(t), or an indexed variable like m(1), is solved for as one
+        // unknown
         ISymbol dummy = F.Dummy("v" + (forward.size() + 1));
         forward.put(variable, dummy);
         backward.put(dummy, variable);

@@ -3463,7 +3463,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    IExpr withRenamedVariables = SolveUtils.solveWithRenamedBuiltinVariables(originalAST, engine);
+    IExpr withRenamedVariables =
+        SolveUtils.solveWithRenamedBuiltinVariables(originalAST, true, engine);
     if (withRenamedVariables.isPresent()) {
       // solved with the renamed variables, or unsolved there - which isn't tried a second time
       return withRenamedVariables.equals(originalAST) ? F.NIL : withRenamedVariables;

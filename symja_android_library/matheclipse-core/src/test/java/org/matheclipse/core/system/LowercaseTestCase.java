@@ -11020,7 +11020,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
     check("fb(1) /. fb(x_) -> {x}", //
         "{1}");
-    check("MatchQ(fb(1, 2, 0), fb(a__, 0))", //
+    // fb(1, 2, 0) itself evaluates to zero(fb(1, 2)) by the definition above
+    check("MatchQ(Unevaluated(fb(1, 2, 0)), fb(a__, 0))", //
         "True");
 
     check("ClearAll(fc); SetAttributes(fc, Flat); fc(x, y, z) /. fc(a__, z) :> {a}", //
@@ -16843,6 +16844,360 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the other forms are unchanged
     check("{ToString(y^3, InputForm), ToString(y^3, OutputForm)}", //
         "{y^3,y^3}");
+  }
+
+  @Test
+  public void testEigenvaluesEqualAbsOrder() {
+    // of eigenvalues with the same absolute value the real part increases, then the imaginary
+    // part decreases
+    check("Eigenvalues(DiagonalMatrix({3, -3, 3*I, -3*I}))", //
+        "{-3,I*3,-I*3,3}");
+    check("Eigenvalues(DiagonalMatrix({2+I, -2-I, -2+I, 2-I}))", //
+        "{-2+I,-2-I,2+I,2-I}");
+    check("Eigenvalues({{2,-3},{3,2}})", //
+        "{2+I*3,2-I*3}");
+    // the eigenvectors follow the order of the eigenvalues
+    check("Eigensystem(DiagonalMatrix({-1, I, 1, -I}))", //
+        "{{-1,I,-I,1},{{1,0,0,0},{0,1,0,0},{0,0,0,1},{0,0,1,0}}}");
+    check("Eigenvectors({{2,-3},{3,2}})", //
+        "{{I,1},{-I,1}}");
+  }
+
+  @Test
+  public void testFourierSparseArray() {
+    // the transform of a sparse array is a list
+    check("Fourier(SparseArray({1 -> 2, 4 -> 1}, 4))", //
+        "{1.5,1.0+I*(-0.5),0.5,1.0+I*0.5}");
+    check("InverseFourier(SparseArray({2 -> 1., 3 -> -I}, 4))", //
+        "{0.5+I*(-0.5),0.0,-0.5+I*(-0.5),I*1.0}");
+    check("Fourier(SparseArray({{1, 1} -> 1., {2, 2} -> 2.}, {2, 2}))", //
+        "{{1.5,-0.5},{-0.5,1.5}}");
+  }
+
+  @Test
+  public void testBSplineFunctionDerivative() {
+    check("f = BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}}); "
+        + "{f'(0.5), f''(0.2), Derivative(3)[f][0.7], Derivative(4)[f][0.7]}", //
+        "{{5.25,-1.5},{-1.2,-18.0},{-6.0,60.0},{0.0,0.0}}");
+    // beyond the ends a clamped spline is constant
+    check("f = BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}}, "
+        + "Method -> {\"Extrapolation\" -> \"Clamp\"}); {f'(1.25), f'(-0.5), f'(0.5)}", //
+        "{{0.0,0.0},{0.0,0.0},{5.25,-1.5}}");
+    // a symbolic parameter stays unevaluated
+    check("Head(Derivative(1)[BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}})][x])", //
+        "Derivative(1)[BSplineFunction({{0,1},{2,3},{4,0},{5,2}})]");
+    // a scalar spline with inner knots, and its slopes at the ends
+    check("k = BSplineFunction({0, 2, 1, 4, 3, 5, 1}); "
+        + "{k'(0.45), k''(0.45), k'(1.0), k'(0.0), Derivative(4)[k][0.3]}", //
+        "{6.52,-36.8,-48.0,24.0,0.0}");
+    // a closed spline and a surface
+    check("c = BSplineFunction({{0., 0.}, {1., 2.}, {2., 1.}, {3., 3.}}, SplineClosed -> True); "
+        + "{c'(0.3), c''(0.3)}", //
+        "{{4.0,0.08},{0.0,-28.8}}");
+    check("s = BSplineFunction({{0, 1, 2}, {1, 3, 2}, {2, 0, 1}}, 2); "
+        + "{Derivative(1, 0)[s][0.3, 0.6], Derivative(1, 1)[s][0.3, 0.6], "
+        + "Derivative(0, 3)[s][0.3, 0.6]}", //
+        "{0.584,-2.72,0.0}");
+  }
+
+  @Test
+  public void testNumericArrayListFunctions() {
+    check("a = NumericArray({7, -2, 5, 0}, \"Integer16\"); "
+        + "{Normal(Reverse(a)), Head(Reverse(a)), Total(a), Min(a), Max(a, 9), Normal(Drop(a, 2))}", //
+        "{{0,5,-2,7},NumericArray,10,-2,9,{5,0}}");
+    check("b = NumericArray({{5, 6, 7}, {8, 9, 10}}, \"Integer32\"); "
+        + "{b[[2, 3]], b[[-1, 1]], Normal(b[[All, 3]]), Head(b[[2]]), b[[0]], Total(b), Total(b, 2)}", //
+        "{10,8,{7,10},NumericArray,NumericArray,{13,15,17},45}");
+    check("b = NumericArray({{5, 6, 7}, {8, 9, 10}}, \"Integer32\"); "
+        + "{NumericArrayType(Transpose(b)), Normal(Transpose(b)), Normal(Join(b, b))}", //
+        "{Integer32,{{5,8},{6,9},{7,10}},{{5,6,7},{8,9,10},{5,6,7},{8,9,10}}}");
+    check("r = NumericArray({{1.5, -2.0}, {0.25, 3.0}}, \"Real64\"); "
+        + "{NumericArrayType(Reverse(r)), Normal(Reverse(r)), Total(r), Max(r), r[[2, 1]]}", //
+        "{Real64,{{0.25,3.0},{1.5,-2.0}},{1.75,1.0},3.0,0.25}");
+  }
+
+  @Test
+  public void testNSolveTranscendentalInBoundedInterval() {
+    // every root in the interval, not only the first one
+    // the samples are refined until close root pairs and long intervals are covered
+    check("Length(NSolve({Cos(x) == 0.25, 0 < x < 5000}, x))", //
+        "1591");
+    check("Length(NSolve({Cos(40*x) == 0.998, 0 < x < 5}, x))", //
+        "63");
+    check("NSolve({Sin(x) == 0.25, 0 < x < 12}, x)", //
+        "{{x->0.25268},{x->2.88891},{x->6.53587},{x->9.1721}}");
+    check("NSolveValues({Sin(x) == 0.25, 0 < x < 12}, x)", //
+        "{0.25268,2.88891,6.53587,9.1721}");
+    // the variable is the only one of the system
+    check("NSolve({2.0*Cos(x) == Sin(x + 0.5), 0 <= x < 4})", //
+        "{{x->1.04736}}");
+    // roots of even multiplicity and roots at a closed end
+    check("NSolve({Cos(x) == 1, 1 < x < 13}, x)", //
+        "{{x->6.28319},{x->12.56637}}");
+    check("NSolve({Sin(x) == 0, 0 <= x <= 2*Pi}, x)", //
+        "{{x->0.0},{x->3.14159},{x->6.28319}}");
+    // a pole is no root
+    check("NSolve({Tan(x) == 0, 4 < x < 6}, x)", //
+        "{}");
+    check("NSolve({Tan(x) == 0, 2 < x < 4}, x)", //
+        "{{x->3.14159}}");
+    check("NSolve({Exp(-x) == Sin(x), 0 <= x <= 10}, x)", //
+        "{{x->0.588533},{x->3.09636},{x->6.28505},{x->9.4247}}");
+  }
+
+  @Test
+  public void testReduceIndexedVariables() {
+    check("Reduce(b(3) == 5, {b(3)})", //
+        "b(3)==5");
+    check("Reduce(b(2)^2 < 9, b(2))", //
+        "b(2)>-3&&b(2)<3");
+    check("Reduce(y == 2, {b(1)})", //
+        "y==2");
+    check("Reduce({b(1) + b(2) == 3, b(1) - b(2) == 1}, {b(1), b(2)})", //
+        "b(1)==2&&b(2)==1");
+  }
+
+  @Test
+  public void testMaximizeMachineNumberPoint() {
+    // machine number input gives a machine number point
+    check("Maximize(0.25*Cos(2*x), x)", //
+        "{0.25,{x->0.0}}");
+    check("Minimize(1.5*Sin(x) - 2, x)", //
+        "{-3.5,{x->-1.5708}}");
+    check("Maximize(-x^2 + 0.5*x, x)", //
+        "{0.0625,{x->0.25}}");
+  }
+
+  @Test
+  public void testQuantileTriangularMode() {
+    // the probability of the mode gives the mode itself
+    check("Quantile(TriangularDistribution({-5, 5}), 0.5)", //
+        "0.0");
+    check("Quantile(TriangularDistribution({1, 4}, 2), 1/3.0)", //
+        "2.0");
+    check("Quantile(TriangularDistribution({1, 4}, 2), 0.25)", //
+        "1.86603");
+  }
+
+  @Test
+  public void testRootAttributesNHoldAll() {
+    check("Attributes(Root)", //
+        "{NHoldAll,Protected,ReadProtected}");
+    check("Attributes(RootSum)", //
+        "{Protected}");
+    check("N(Root(#^3 - 2*# - 5 &, 1))", //
+        "2.09455");
+    check("N(Root(#^3 - 2*# - 5 &, 1), 30)", //
+        "2.09455148154232659148238654058");
+    check("N(Root(#^3 - 2*# - 5 &, 2))", //
+        "-1.04728+I*(-1.13594)");
+  }
+
+  @Test
+  public void testDateListTimeZoneOption() {
+    // the date is read in $TimeZone and given as local time of the TimeZone option
+    check("Block({$TimeZone = 2}, DateList({2022, 3, 10, 6, 0, 0}, TimeZone -> -1))", //
+        "{2022,3,10,3,0,0.0}");
+    check("Block({$TimeZone = -4}, DateList(86400*3 + 3600, TimeZone -> 1))", //
+        "{1900,1,4,6,0,0.0}");
+    check("Block({$TimeZone = 0}, DateList({2019, 12, 31, 22, 30, 0}, TimeZone -> 3))", //
+        "{2020,1,1,1,30,0.0}");
+    // a date object brings its own zone
+    check(
+        "Block({$TimeZone = 1}, DateList(DateObject({2020, 1, 1, 12, 0, 0}, \"Instant\", \"Gregorian\", 3.0), TimeZone -> -2))", //
+        "{2020,1,1,7,0,0.0}");
+    check("Length(DateList(TimeZone -> -7))", //
+        "6");
+    check("Block({$TimeZone = 5}, $TimeZone)", //
+        "5");
+  }
+
+  @Test
+  public void testDatePlusDateStrings() {
+    check("DatePlus(\"Fri 9 Jan 2026 23:15:00\", {2, \"Hour\"})", //
+        "January 10, 2026 1:15 am");
+    check("DatePlus(\"2025-12-31 20:00:00\", {5, \"Hour\"})", //
+        "January 1, 2026 1:00 am");
+    check("DatePlus(\"June 30, 2025\", {1, \"Day\"})", //
+        "July 1, 2025 12:00 am");
+  }
+
+  @Test
+  public void testDMSListFromDMS() {
+    check("DMSList(41.7625) // InputForm", //
+        "{41,45,45.00000000001023`}");
+    check("DMSList(-12.4) // InputForm", //
+        "{-12,-24,-1.2789769243681803`*^-12}");
+    check("DMSList(Quantity(10.75, \"AngularDegrees\")) // InputForm", //
+        "{10,45,0.0`}");
+    // exact input gives exact components
+    check("DMSList(Quantity(Pi/3, \"Radians\"))", //
+        "{60,0,0}");
+    check("DMSList(7/16)", //
+        "{0,26,15}");
+    check("DMSList(\"51d28m40s\")", //
+        "{51,28,40}");
+    check("FromDMS(\"51d28m40s\")", //
+        "4633/90");
+    check("FromDMS({12, 15, 36})", //
+        "613/50");
+    check("FromDMS({12, 15, 36.5}) // InputForm", //
+        "12.26013888888889`");
+    check("FromDMS({10, 30})", //
+        "21/2");
+    check("FromDMS(\"5d15m W\")", //
+        "-21/4");
+    // no angle
+    check("{DMSList(x), FromDMS({a, b, c}), DMSList(Quantity(3, \"Meters\"))}", //
+        "{DMSList(x),FromDMS({a,b,c}),DMSList(Quantity(3,\"Meters\"))}");
+  }
+
+  @Test
+  public void testNDSolveAlgebraicUnknown() {
+    // w is never differentiated: it is solved for from the algebraic equation
+    check(
+        "s = NDSolve({y'(t) == 3*w(t) - y(t), w(t) == y(t), y(0) == 1, w(0) == 1}, {y, w}, {t, 0, 1}); "
+            + "Max(Abs({y(1), w(1)} - E^2 /. First(s))) < 10^-5", //
+        "True");
+    check(
+        "Abs(NDSolveValue({u'(t) == -v(t), v(t) - 2*u(t) == 0, u(0) == 1}, {u, v}, {t, 0, 1})[[2]][1] - 2*E^-2) < 10^-5", //
+        "True");
+    // an eliminated function given as a symbol is an interpolating function like the others
+    check("Head(NDSolveValue({u'(t) == -v(t), v(t) == 3*u(t), u(0) == 1}, {u, v}, {t, 0, 2})[[2]])", //
+        "InterpolatingFunction");
+  }
+
+  @Test
+  public void testVerticalGauge() {
+    check("VerticalGauge(0.65, {-1, 2}, ImageSize -> 80)", //
+        "-Graphics-");
+    // the needle is the only line, at the value in the coordinates of the range
+    check("Cases(VerticalGauge(0.65, {-1, 2}), Line(p_) :> p, Infinity)", //
+        "{{{0.0,0.65},{0.2,0.65}}}");
+    // the bar ends at the value, the track covers the range; a value outside of it is clipped
+    check("Cases(VerticalGauge(7, {2, 5}), Rectangle(a_, b_) :> {a, b}, Infinity)", //
+        "{{{0.0,2.0},{0.2,5.0}},{{0.0,2.0},{0.2,5.0}}}");
+    // the range defaults to {0, 1}, exact bounds give exact labels
+    check("Cases(VerticalGauge(2/5), Text(t_, ___) :> t, Infinity)", //
+        "{0,1/4,1/2,3/4,1}");
+    // ScaleDivisions -> None leaves out the labels; an option of a user symbol is ignored
+    check("Cases(VerticalGauge(0.1, {0, 3}, ScaleDivisions -> None), _Text, Infinity)", //
+        "{}");
+    check("Cases(VerticalGauge(0.1, {0, 3}, ScaleDivisions -> 3), Text(t_, ___) :> t, Infinity)", //
+        "{0,1,2,3}");
+    check("Cases(VerticalGauge(0.1, GaugeStyle -> Green), _RGBColor, Infinity)", //
+        "{RGBColor(0,1,0),RGBColor(0,0,0)}");
+    check("Cases(VerticalGauge(0.1, myGaugeOption -> 2), Text(t_, ___) :> t, Infinity)", //
+        "{0,1/4,1/2,3/4,1}");
+    check("VerticalGauge(y, {0, 1})", //
+        "VerticalGauge(y,{0,1})");
+    check("VerticalGauge(0.5, {1, 0})", //
+        "VerticalGauge(0.5,{1,0})");
+  }
+
+  @Test
+  public void testSound() {
+    // a sound is an inert wrapper which OutputForm shows as a placeholder
+    check("Sound(SampledSoundFunction(Cos(2*#)&, 50, 4000))", //
+        "-Sound-");
+    check("{Sound(Point(3)), Head(Sound(Point(3)))}", //
+        "{-Sound-,Sound}");
+    check("InputForm(Sound(f(1)))", //
+        "Sound(f(1))");
+  }
+
+  /** MatchQ tests the value of its first argument, not the symbol which holds it. */
+  @Test
+  public void testMatchQTestsTheValueOfASymbol() {
+    check("Module({q = Graphics(Circle())}, {MatchQ(q, _Symbol), MatchQ(q, _Graphics)})", //
+        "{False,True}");
+    check("Module({k = {1, 2, 3}}, {MatchQ(k, _Symbol), MatchQ(k, {__Integer})})", //
+        "{False,True}");
+    check("Module({k = {1, 2, 3}}, MatchQ(Unevaluated(k), _Symbol))", //
+        "True");
+    // the evaluated form only, unless the argument is wrapped in Unevaluated
+    check("{MatchQ(g(1 + 1), g(_Plus)), MatchQ(Unevaluated(g(1 + 1)), g(_Plus))}", //
+        "{False,True}");
+  }
+
+  /** A Dynamic among the primitives of a picture is drawn with its current value. */
+  @Test
+  public void testDynamicPrimitivesInSVG() {
+    check("Module({n = 3}, StringCount(ExportString(Graphics({Dynamic(Table(Disk({j, 0}, 0.4), "
+        + "{j, n}))}), \"SVG\"), \"<ellipse\"))", //
+        "3");
+    check("Module({n = 4}, StringCount(ExportString(Graphics3D(Dynamic(Table(Point({j, j, j}), "
+        + "{j, n}))), \"SVG\"), \"<circle\"))", //
+        "4");
+  }
+
+  /** FrameTicksStyle and TicksStyle style the tick marks and tick labels in SVG. */
+  @Test
+  public void testTicksStyleInSVG() {
+    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
+        + "FrameTicksStyle -> Red), \"SVG\"), \"fill:rgb(255,0,0)\") > 0", //
+        "True");
+    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True), \"SVG\"), "
+        + "\"fill:rgb(255,0,0)\")", //
+        "0");
+    // a number inside a directive is the font size of the labels
+    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
+        + "FrameTicksStyle -> Directive(Green, 7)), \"SVG\"), \"font-size:7px\") > 0", //
+        "True");
+    // the ticks style goes on top of LabelStyle
+    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
+        + "FrameTicksStyle -> {Red, 14}, LabelStyle -> Bold), \"SVG\"), "
+        + "\"fill:rgb(255,0,0);font-family:sans-serif;font-size:14px;font-weight:bold\") > 0", //
+        "True");
+    check("StringCount(ExportString(Plot(x, {x, 0, 2}, TicksStyle -> Red), \"SVG\"), "
+        + "\"fill:rgb(255,0,0)\") > 0", //
+        "True");
+  }
+
+  /** LABColor and XYZColor, relative to the D50 white point, are colour directives in SVG. */
+  @Test
+  public void testLabXyzColorDirectivesInSVG() {
+    check("StringCases(ExportString(Graphics({XYZColor(0.2, 0.1, 0.5), Disk()}), \"SVG\"), "
+        + "\"rgb(\" ~~ Shortest(x__) ~~ \")\")", //
+        "{rgb(129,29,217)}");
+    check("StringCases(ExportString(Graphics({LABColor(0.4, 0.15, 0.1), Disk()}), \"SVG\"), "
+        + "\"rgb(\" ~~ Shortest(x__) ~~ \")\")", //
+        "{rgb(121,85,79)}");
+  }
+
+  /** Date() is the current local date list with real seconds. */
+  @Test
+  public void testDateCurrentDateList() {
+    check("{Length(Date()), Head /@ Date()}", //
+        "{6,{Integer,Integer,Integer,Integer,Integer,Real}}");
+    check("Date()[[1]] == DateList()[[1]]", //
+        "True");
+    check("Attributes(Date)", //
+        "{Protected,ReadProtected}");
+  }
+
+  /** MomentEvaluate replaces formal moments by their values for data or a distribution. */
+  @Test
+  public void testMomentEvaluate() {
+    check("MomentEvaluate(Moment(2) - Moment(1)^2, {2, 3, 7})", //
+        "14/3");
+    check("MomentEvaluate(Cumulant(3), {2, 3, 7})", //
+        "6");
+    check("MomentEvaluate(FactorialMoment(3), {1, 2, 3, 5})", //
+        "33/2");
+    // one value for each column
+    check("MomentEvaluate(CentralMoment(3), {{1, 0}, {2, 1}, {4, 1}})", //
+        "{20/27,-2/27}");
+    check("MomentEvaluate(Moment(2)*y, PoissonDistribution(m))", //
+        "(m+m^2)*y");
+    check("MomentEvaluate(CentralMoment(4), ExponentialDistribution(k))", //
+        "9/k^4");
+    check("MomentEvaluate(Cumulant(1) + 1, {1, 2})", //
+        "5/2");
+    check("MomentEvaluate(Moment(2), x)", //
+        "MomentEvaluate(Moment(2),x)");
+    check("Attributes(MomentEvaluate)", //
+        "{Protected,ReadProtected}");
   }
 
   @Test

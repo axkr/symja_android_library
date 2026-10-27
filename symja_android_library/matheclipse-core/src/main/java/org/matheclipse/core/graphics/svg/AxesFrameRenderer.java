@@ -119,7 +119,8 @@ public final class AxesFrameRenderer {
     double originX = axisOriginX();
     double originY = axisOriginY();
     String lineStyle = axisCss(options.axesStyle);
-    String textStyle = textCss(options.axesStyle);
+    String tickStyle = tickCss(options.axesStyle, options.ticksStyle);
+    String textStyle = textCss(options.axesStyle, options.ticksStyle);
 
     IExpr xTickSpec = S.Automatic;
     IExpr yTickSpec = S.Automatic;
@@ -134,14 +135,14 @@ public final class AxesFrameRenderer {
       parent.with(tag("line").attr("x1", SvgRenderer2D.fmt(viewport.plotX1))
           .attr("y1", SvgRenderer2D.fmt(originY)).attr("x2", SvgRenderer2D.fmt(viewport.plotX2))
           .attr("y2", SvgRenderer2D.fmt(originY)).attr("style", lineStyle));
-      drawXTicks(ticksFor(xTickSpec, true), originY, lineStyle, textStyle, true,
+      drawXTicks(ticksFor(xTickSpec, true), originY, tickStyle, textStyle, true,
           !options.hasFrame(), parent);
     }
     if (options.axesY) {
       parent.with(tag("line").attr("x1", SvgRenderer2D.fmt(originX))
           .attr("y1", SvgRenderer2D.fmt(viewport.plotY1)).attr("x2", SvgRenderer2D.fmt(originX))
           .attr("y2", SvgRenderer2D.fmt(viewport.plotY2)).attr("style", lineStyle));
-      drawYTicks(ticksFor(yTickSpec, false), originX, lineStyle, textStyle, true,
+      drawYTicks(ticksFor(yTickSpec, false), originX, tickStyle, textStyle, true,
           !options.hasFrame(), parent);
     }
   }
@@ -180,7 +181,8 @@ public final class AxesFrameRenderer {
       return;
     }
     String lineStyle = axisCss(options.frameStyle);
-    String textStyle = textCss(options.frameStyle);
+    String tickStyle = tickCss(options.frameStyle, options.frameTicksStyle);
+    String textStyle = textCss(options.frameStyle, options.frameTicksStyle);
     double x1 = viewport.plotX1;
     double x2 = viewport.plotX2;
     double y1 = viewport.plotY1;
@@ -206,17 +208,17 @@ public final class AxesFrameRenderer {
     // edges too, as a plot that wants a scale on all four sides does.
     boolean farSideLabels = !options.frameTicks.isAutomatic();
     if (options.frame[2]) {
-      drawXTicks(ticksFor(frameTickSpec(2), true), y2, lineStyle, textStyle, true, true, parent);
+      drawXTicks(ticksFor(frameTickSpec(2), true), y2, tickStyle, textStyle, true, true, parent);
     }
     if (options.frame[3]) {
-      drawXTicks(ticksFor(frameTickSpec(3), true), y1, lineStyle, textStyle, false, farSideLabels,
+      drawXTicks(ticksFor(frameTickSpec(3), true), y1, tickStyle, textStyle, false, farSideLabels,
           parent);
     }
     if (options.frame[0]) {
-      drawYTicks(ticksFor(frameTickSpec(0), false), x1, lineStyle, textStyle, true, true, parent);
+      drawYTicks(ticksFor(frameTickSpec(0), false), x1, tickStyle, textStyle, true, true, parent);
     }
     if (options.frame[1]) {
-      drawYTicks(ticksFor(frameTickSpec(1), false), x2, lineStyle, textStyle, false, farSideLabels,
+      drawYTicks(ticksFor(frameTickSpec(1), false), x2, tickStyle, textStyle, false, farSideLabels,
           parent);
     }
   }
@@ -369,27 +371,40 @@ public final class AxesFrameRenderer {
     return sb.toString();
   }
 
-  private String textCss(Style2D style) {
-    // LabelStyle covers the tick labels too, so it overrides the axis or frame style here
+  /** The tick marks, drawn like the axis or frame line unless a ticks style says otherwise. */
+  private String tickCss(Style2D style, GraphicsOptions2D.TicksStyle ticks) {
+    return axisCss(ticks != null ? ticks.marks : style);
+  }
+
+  private String textCss(Style2D style, GraphicsOptions2D.TicksStyle ticks) {
+    // LabelStyle covers the tick labels too, so it overrides the axis or frame style here; a
+    // ticks style, already applied on top of it, is the most specific of the three
     Style2D label = options.labelStyle;
-    Style2D effective = label != null ? label : style;
+    Style2D effective = ticks != null ? ticks.labels : label != null ? label : style;
     StringBuilder sb = new StringBuilder();
     sb.append(String.format(Locale.US, "fill:%s;font-family:%s;font-size:%spx",
         ColorUtil.css(effective.strokeColor), effective.fontFamily,
-        SvgRenderer2D.fmt(tickFontSize(options))));
-    if (label != null) {
-      if ("bold".equals(label.fontWeight)) {
+        SvgRenderer2D.fmt(tickFontSize(options, ticks))));
+    if (label != null || ticks != null) {
+      if ("bold".equals(effective.fontWeight)) {
         sb.append(";font-weight:bold");
       }
-      if ("italic".equals(label.fontStyle)) {
+      if ("italic".equals(effective.fontStyle)) {
         sb.append(";font-style:italic");
       }
     }
     return sb.toString();
   }
 
-  /** Size of the tick labels, which {@code LabelStyle} may have asked to change. */
-  private static double tickFontSize(GraphicsOptions2D options) {
+  /**
+   * Size of the tick labels, which a ticks style or else {@code LabelStyle} may have asked to
+   * change.
+   */
+  private static double tickFontSize(GraphicsOptions2D options,
+      GraphicsOptions2D.TicksStyle ticks) {
+    if (ticks != null && ticks.fontSizeSet) {
+      return ticks.labels.fontSize;
+    }
     return options.labelFontSizeSet ? options.labelStyle.fontSize : TICK_FONT_SIZE;
   }
 
@@ -398,9 +413,11 @@ public final class AxesFrameRenderer {
     List<TickGenerator.Tick> ticks =
         viewport.isLogY() ? TickGenerator.logarithmic(viewport.rawMinY, viewport.rawMaxY)
             : TickGenerator.linear(viewport.minY, viewport.maxY);
+    double size =
+        tickFontSize(options, options.hasFrame() ? options.frameTicksStyle : options.ticksStyle);
     double widest = 0;
     for (TickGenerator.Tick t : ticks) {
-      widest = Math.max(widest, SvgRenderer2D.estimateTextWidth(t.label, tickFontSize(options)));
+      widest = Math.max(widest, SvgRenderer2D.estimateTextWidth(t.label, size));
     }
     return widest;
   }

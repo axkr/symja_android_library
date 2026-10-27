@@ -1142,7 +1142,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testEigensystem() {
     check("Eigensystem({{E,0,0},{0,4*E,-4*E},{0,4*E,4*E}})", //
-        "{{(4-I*4)*E,(4+I*4)*E,E},{{0,-I,1},{0,I,1},{1,0,0}}}");
+        "{{(4+I*4)*E,(4-I*4)*E,E},{{0,I,1},{0,-I,1},{1,0,0}}}");
 
     check("Eigensystem({{0,t,t}, {t,0,-t}, {t,-t,0}})", //
         "{{-2*t,t,t},{{-1,1,1},{1,0,1},{1,1,0}}}");

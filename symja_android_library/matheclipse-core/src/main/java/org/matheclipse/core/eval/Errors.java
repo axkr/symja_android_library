@@ -396,6 +396,8 @@ public class Errors {
       "This computation has exceeded the memeory limit settings of this evaluation engines instance.", //
       "meprec", "Internal precision limit `1` reached while evaluating `2`.", //
       "mindet", "Input matrix contains an indeterminate entry.", //
+      "mkinv",
+      "Expecting either an image or graphics with dimensions `1` or a list of positions to specify markers instead of `2`.", //
       "minv", "The `1` arguments to `2` must be ordinary integers.", // or gaussian
       "modp", "The value of the option `1` should be a prime number or zero.", //
       "mptd", "Object `1` at position {2,`2`} in `3` has only `4` of required `5` dimensions.", //

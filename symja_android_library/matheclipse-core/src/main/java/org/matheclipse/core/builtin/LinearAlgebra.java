@@ -77,6 +77,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -7197,6 +7198,10 @@ public final class LinearAlgebra {
         arg2 = ast.arg2();
       } else {
         arg2 = F.NIL;
+      }
+      if (arg1.isNumericArray()) {
+        // the transposed array keeps its type
+        return NumericArrayExpr.evalNormal(ast, true, engine);
       }
       if (SymbolicArrayUtil.isArrayValued(arg1)) {
         // a symbolic array carries its own shape, so it must not reach the "not a matrix" message

@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
@@ -567,7 +568,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       engine.setQuietMode(quiet);
     }
     if (result.isPresent()) {
-      return result;
+      return withNumericPoint(result, engine);
     }
     IExpr numeric = engine.evaluate(F.binaryAST2(numericHead, ast.arg1(), ast.arg2()));
     if (numeric.isAST(numericHead)
@@ -575,6 +576,25 @@ public class Maximize extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     return numeric;
+  }
+
+  /**
+   * The extremum <code>{value, {x-&gt;x0, ...}}</code> of a problem with machine numbers with the
+   * exact coordinates <code>x0</code> of its point evaluated to machine numbers, too.
+   */
+  private static IExpr withNumericPoint(IExpr result, EvalEngine engine) {
+    if (!result.isList2() || !result.second().isListOfRules()) {
+      return result;
+    }
+    IAST point = (IAST) result.second();
+    IASTMutable numericPoint = point.copy();
+    for (int i = 1; i < point.size(); i++) {
+      IExpr coordinate = point.get(i).second();
+      if (!coordinate.isInexactNumber() && coordinate.isNumericFunction(true)) {
+        numericPoint.set(i, F.Rule(point.get(i).first(), engine.evalN(coordinate)));
+      }
+    }
+    return F.list(result.first(), numericPoint);
   }
 
   /**
