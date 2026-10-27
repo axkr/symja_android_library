@@ -458,11 +458,11 @@ final public class ImageExpr extends DataExpr<byte[]> {
 
   /**
    * <code>FullForm</code> is not the form {@link #fullForm()} gives, which is written for
-   * <code>InputForm</code> only.
+   * <code>InputForm</code> only, but the pixel matrix of {@link #normal(boolean)}.
    */
   @Override
   public String fullFormString() {
-    return fHead + "(" + fData + ")";
+    return normal(false).fullFormString();
   }
 
   @Override

@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * <code>Dilation</code>, <code>Erosion</code>, <code>Opening</code>, <code>Closing</code>,
- * <code>MorphologicalComponents</code>, <code>DistanceTransform</code>,
- * <code>DerivativeFilter</code> and <code>GradientFilter</code>.
+ * <code>MorphologicalComponents</code>, <code>WatershedComponents</code>,
+ * <code>DistanceTransform</code>, <code>DerivativeFilter</code> and <code>GradientFilter</code>.
  */
 public class ImageMorphologyTest extends AbstractTestCase {
 
@@ -83,6 +83,45 @@ public class ImageMorphologyTest extends AbstractTestCase {
   }
 
   @Test
+  public void testWatershedComponents() {
+    // every regional minimum grows into a basin, the pixels between two basins are 0
+    check("WatershedComponents(Image({{0.3, 0.8, 0.2, 0.9, 0.1}}))", //
+        "{{1,0,2,0,3}}");
+    check("WatershedComponents(Image({{0.1, 0.5, 0.2}, {0.5, 0.5, 0.5}, {0.3, 0.5, 0.0}}))", //
+        "{{1,0,2},\n" //
+            + " {0,0,0},\n" //
+            + " {3,0,4}}");
+    // a plateau which is a minimum is one basin; its pixels may only touch at a corner
+    check("WatershedComponents(Image({{0.0, 0.5}, {0.5, 0.0}}))", //
+        "{{1,1},\n" //
+            + " {1,1}}");
+    check("WatershedComponents(Image({{0.0, 0.5}, {0.5, 0.0}}), CornerNeighbors -> False)", //
+        "{{1,0},\n" //
+            + " {0,2}}");
+    // a colour image is flooded by its grey levels
+    check("WatershedComponents(Image({{{1, 0, 0}, {0, 0, 0}, {0, 0, 1}}}))", //
+        "{{1,1,1}}");
+    // markers as positions in image coordinates, numbered in their order, or as an image
+    check("WatershedComponents(Image({{0.4, 0.3, 0.6, 0.2, 0.5, 0.1}}), "
+        + "{{3.5, 0.5}, {0.5, 0.5}})", //
+        "{{2,2,0,1,1,1}}");
+    check("WatershedComponents(Image({{0.4, 0.3, 0.6, 0.2, 0.5, 0.1}}), "
+        + "Image({{0, 1, 0, 0, 0, 1}}))", //
+        "{{1,1,0,2,2,2}}");
+    // a matrix, or an image of another size, is no marker specification
+    check("Check(WatershedComponents(Image({{0.4, 0.3, 0.6}}), {{1, 0, 2}}), failed)", //
+        "failed");
+    // also a label matrix of two columns, which could be read as positions
+    check("Check(WatershedComponents(Image({{0.2, 0.7}, {0.1, 0.8}}), {{1, 0}, {0, 2}}), failed)", //
+        "failed");
+    check("WatershedComponents(Image({{0.4, 0.3, 0.6}}), Image({{1, 0}}))", //
+        "WatershedComponents(Image(Dimensions: 3,1 Transparency: 1),"
+            + "Image(Dimensions: 2,1 Transparency: 1))");
+    check("WatershedComponents(7)", //
+        "WatershedComponents(7)");
+  }
+
+  @Test
   public void testMorphologicalComponents3D() {
     // an array of rank 3 is labelled in three dimensions: 26 neighbours by default
     check("MorphologicalComponents({{{1, 1}, {0, 0}}, {{0, 0}, {0, 1}}}) == "
@@ -155,6 +194,43 @@ public class ImageMorphologyTest extends AbstractTestCase {
             + "0.633974552154541, 0.633974552154541, -0.16987299919128418, 0.04551732540130615, "
             + "-0.01219630241394043})) < 10^-7", //
         "True");
+  }
+
+  @Test
+  public void testMorphologicalGraph() {
+    // the graph module isn't loaded here, so the Graph stays as built: vertices at pixel centres
+    // with y up and the first row on top; the options go to the Graph
+    // a T: the end points and the branch point are the vertices
+    check("MorphologicalGraph(Image({{0, 0, 1, 0, 0}, {0, 0, 1, 0, 0}, {1, 1, 1, 1, 1}}))", //
+        "Graph({1,2,3,4},{1<->2,2<->4,2<->3},"
+            + "VertexCoordinates->{{2.5,2.5},{2.5,0.75},{0.5,0.5},{4.5,0.5}})");
+    check("MorphologicalGraph(Image({{1, 1}}), ImageSize -> 40)", //
+        "Graph({1,2},{1<->2},VertexCoordinates->{{0.5,0.5},{1.5,0.5}},ImageSize->40)");
+    // a band 2 pixels thick along a diagonal keeps its two ends
+    check("MorphologicalGraph(Image({{1, 1, 0, 0, 0}, {0, 1, 1, 0, 0}, "
+        + "{0, 0, 1, 1, 0}, {0, 0, 0, 1, 1}}))", //
+        "Graph({1,2},{1<->2},VertexCoordinates->{{0.5,3.5},{4.5,0.5}})");
+    // two separate lines
+    check("MorphologicalGraph(Image({{1, 1, 0, 1, 1, 1, 1}}))", //
+        "Graph({1,2,3,4},{1<->2,3<->4},"
+            + "VertexCoordinates->{{0.5,0.5},{1.5,0.5},{3.5,0.5},{6.5,0.5}})");
+    // an isolated pixel is a vertex
+    check("MorphologicalGraph(Image({{0, 0, 0, 0}, {0, 0, 1, 0}}))", //
+        "Graph({1},{},VertexCoordinates->{{2.5,0.5}})");
+    // a closed curve without end or branch points has one vertex with a loop
+    check("MorphologicalGraph(Image({{0, 1, 1, 1, 0}, {1, 0, 0, 0, 1}, "
+        + "{1, 0, 0, 0, 1}, {0, 1, 1, 1, 0}}))", //
+        "Graph({1},{1<->1},VertexCoordinates->{{1.5,3.5}})");
+    check("MorphologicalGraph(Image({{0., 0.}, {0., 0.}}))", //
+        "Graph({},{},VertexCoordinates->{})");
+    // anything but an image stays unevaluated
+    check("MorphologicalGraph({{1, 1}})", //
+        "MorphologicalGraph({{1,1}})");
+    check("MorphologicalGraph(Image({{1, 1}}), 2)", //
+        "MorphologicalGraph(Image(Dimensions: 2,1 Transparency: 1),2)");
+    // FullForm writes an image argument with its pixels
+    check("FullForm(MorphologicalGraph(Image({{0.25, 0.5}}, \"Real64\"), 2))", //
+        "MorphologicalGraph(Image(List(List(0.25`, 0.5`)), \"Real64\"), 2)");
   }
 
   @Test

@@ -2,6 +2,7 @@ package org.matheclipse.image.algo;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import boofcv.alg.color.ColorLab;
@@ -14,8 +15,8 @@ import boofcv.alg.color.ColorLab;
  * The colour space conversions here all round trip through RGB, because that is the only thing an
  * <code>ImageExpr</code> can store. <code>"LAB"</code>, <code>"XYZ"</code> and <code>"LUV"</code>
  * have channels that do not fit in <code>0.0 ... 1.0</code>, so they appear here only as a
- * measurement - {@link #distance} - and as the space a single colour directive is converted into
- * ({@link #rgbToXyz}), not as a colour space an image can be converted into.
+ * measurement - {@link #distance} - and as the spaces a single colour directive is converted from
+ * or into ({@link #toXyzaDouble}), not as colour spaces an image can be converted into.
  */
 public final class Colors {
 
@@ -56,6 +57,11 @@ public final class Colors {
           return null;
         }
         return withAlpha(cmykToRgb(cmyk), ast, 5);
+      }
+      if (head == S.XYZColor || head == S.LABColor) {
+        double[] rgba = toRgbaDouble(ast);
+        return rgba == null ? null
+            : new float[] {(float) rgba[0], (float) rgba[1], (float) rgba[2], (float) rgba[3]};
       }
       if (ast.isList()) {
         if (ast.argSize() == 1) {
@@ -114,6 +120,14 @@ public final class Colors {
       }
       return result;
     }
+    if (expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)) {
+      double[] xyza = toXyzaDouble(expr);
+      if (xyza == null) {
+        return null;
+      }
+      double[] rgb = ColorUtil.xyzToRgb(xyza[0], xyza[1], xyza[2]);
+      return new double[] {rgb[0], rgb[1], rgb[2], xyza[3]};
+    }
     float[] rgba = toRgba(expr);
     if (rgba == null) {
       return null;
@@ -130,36 +144,60 @@ public final class Colors {
   }
 
   /**
-   * sRGB to CIE XYZ, relative to the D50 white point: the channels are linearised by the sRGB
-   * transfer function and then multiplied by the sRGB primaries adapted from D65 to D50 with the
-   * Bradford transform. Pure red, green and blue give the three columns of the matrix.
+   * sRGB to CIE XYZ, relative to the D50 white point, see
+   * {@link ColorUtil#rgbToXyz(double, double, double)}.
    */
   public static double[] rgbToXyz(double r, double g, double b) {
-    double lr = linearSRGB(r);
-    double lg = linearSRGB(g);
-    double lb = linearSRGB(b);
-    return new double[] {//
-        SRGB_TO_XYZ_D50[0][0] * lr + SRGB_TO_XYZ_D50[0][1] * lg + SRGB_TO_XYZ_D50[0][2] * lb,
-        SRGB_TO_XYZ_D50[1][0] * lr + SRGB_TO_XYZ_D50[1][1] * lg + SRGB_TO_XYZ_D50[1][2] * lb,
-        SRGB_TO_XYZ_D50[2][0] * lr + SRGB_TO_XYZ_D50[2][1] * lg + SRGB_TO_XYZ_D50[2][2] * lb};
+    return ColorUtil.rgbToXyz(r, g, b);
   }
 
   /**
-   * The sRGB primaries in CIE XYZ, adapted to D50 with the Bradford transform from the white
-   * points <code>x = 0.31271, y = 0.32902</code> (D65) and <code>x = 0.34567, y = 0.35850</code>
-   * (D50). One column per primary.
+   * The CIE XYZ coordinates, relative to D50, of a colour directive: an <code>XYZColor</code> or a
+   * <code>LABColor</code> is converted without going through the clipped RGB channels.
+   *
+   * @return <code>{x, y, z, alpha}</code>, or <code>null</code> if <code>expr</code> is not a
+   *         colour
    */
-  private static final double[][] SRGB_TO_XYZ_D50 = {//
-      {0.43602191242669813, 0.38510884137388846, 0.14308124062061284}, //
-      {0.22247517260243593, 0.7169066111623497, 0.06061821623521407}, //
-      {0.013928134067434789, 0.09710156693979348, 0.7141585835116004}};
-
-  /** The sRGB transfer function undone: a channel value in proportion to the light it stands for. */
-  private static double linearSRGB(double c) {
-    if (c <= 0.04045) {
-      return c / 12.92;
+  public static double[] toXyzaDouble(IExpr expr) {
+    if (expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)) {
+      double[] channels = channelsWithAlpha((IAST) expr);
+      if (channels == null) {
+        return null;
+      }
+      double[] xyz = expr.isAST(S.LABColor) //
+          ? ColorUtil.labToXyz(channels[0], channels[1], channels[2])
+          : channels;
+      return new double[] {xyz[0], xyz[1], xyz[2], channels[3]};
     }
-    return Math.pow((c + 0.055) / 1.055, 2.4);
+    double[] rgba = toRgbaDouble(expr);
+    if (rgba == null) {
+      return null;
+    }
+    double[] xyz = ColorUtil.rgbToXyz(rgba[0], rgba[1], rgba[2]);
+    return new double[] {xyz[0], xyz[1], xyz[2], rgba[3]};
+  }
+
+  /**
+   * The three channels and the alpha of <code>LABColor(c1, c2, c3)</code> or
+   * <code>XYZColor(c1, c2, c3, alpha)</code>, or of the same with the channels in one list.
+   *
+   * @return <code>null</code> if a channel is no real number
+   */
+  private static double[] channelsWithAlpha(IAST ast) {
+    if (ast.argSize() == 1 && ast.arg1().isList()) {
+      ast = ((IAST) ast.arg1()).apply(ast.head());
+    }
+    if (ast.argSize() < 3 || ast.argSize() > 4) {
+      return null;
+    }
+    double[] result = new double[] {0.0, 0.0, 0.0, 1.0};
+    for (int i = 1; i <= ast.argSize(); i++) {
+      result[i - 1] = ast.get(i).evalfNaN();
+      if (Double.isNaN(result[i - 1])) {
+        return null;
+      }
+    }
+    return result;
   }
 
   /** An <code>RGBColor</code> expression, with the alpha argument only when it is not opaque. */

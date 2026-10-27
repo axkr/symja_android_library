@@ -51,6 +51,27 @@ public class ColorFunctionsTest extends AbstractTestCase {
         "RGB");
   }
 
+  /**
+   * LABColor and XYZColor convert from and into RGB relative to the D50 white point; an RGB
+   * colour is clipped to 0 ... 1, an XYZ or LAB one is not.
+   */
+  @Test
+  public void testColorConvertLabXyz() {
+    check("InputForm({ColorConvert(LABColor(0.4, 0.15, 0.1), \"RGB\"), "
+        + "ColorConvert(RGBColor(0.8, 0.1, 0.4), \"LAB\")})", //
+        "{RGBColor(0.4761882949861423`,0.3328868533629956`,0.30860589692215257`),"
+            + "LABColor(0.45576105050914817`,0.680980305395355`,0.05803799791808162`)}");
+    check("InputForm({ColorConvert(XYZColor(0.5, 0.1, 0.6), \"RGB\"), "
+        + "ColorConvert(LABColor(0.7, 0.05, -0.2), \"XYZColor\")})", //
+        "{RGBColor(0.9999999999999999`,0.0`,0.9339329350141812`),"
+            + "XYZColor(0.4090253516389234`,0.40749415720201737`,0.4915056774995108`)}");
+    check("Chop(List @@ ColorConvert(ColorConvert(LABColor(0.45, -0.2, 0.3), \"XYZ\"), "
+        + "\"LABColor\") - {0.45, -0.2, 0.3}, 10^-15)", //
+        "{0,0,0}");
+    check("InputForm(ColorConvert(LABColor(0.4, 0.15, 0.1, 0.25), \"RGB\"))", //
+        "RGBColor(0.4761882949861423`,0.3328868533629956`,0.30860589692215257`,0.25`)");
+  }
+
   @Test
   public void colorConvertOfAnImage() {
     check("ImageChannels(ColorConvert(Image({{{1.0,0.0,0.0}}}),\"Grayscale\"))", "1");

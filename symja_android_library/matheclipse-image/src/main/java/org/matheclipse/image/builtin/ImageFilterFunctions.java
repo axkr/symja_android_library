@@ -17,9 +17,12 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.image.algo.Colors;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.algo.Raster;
+import org.matheclipse.image.algo.Skeleton;
 import org.matheclipse.image.algo.Volumes;
+import org.matheclipse.image.algo.Watershed;
 import org.matheclipse.image.expression.data.Image3DExpr;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.image.expression.data.ImageOptions;
@@ -33,7 +36,9 @@ import org.matheclipse.image.expression.data.ImageOptions;
  * <code>MedianFilter</code>,
  * <code>MinFilter</code>, <code>MaxFilter</code>,
  * <li>morphological: <code>Dilation</code>, <code>Erosion</code>, <code>Opening</code>,
- * <code>Closing</code>, <code>MorphologicalComponents</code>, <code>DistanceTransform</code>.
+ * <code>Closing</code>, <code>MorphologicalComponents</code>, <code>MorphologicalGraph</code>,
+ * <code>WatershedComponents</code>,
+ * <code>DistanceTransform</code>.
  * </ul>
  *
  * <p>
@@ -69,6 +74,8 @@ public class ImageFilterFunctions {
       S.Opening.setEvaluator(new Morphology(false, true));
       S.Closing.setEvaluator(new Morphology(true, true));
       S.MorphologicalComponents.setEvaluator(new MorphologicalComponents());
+      S.WatershedComponents.setEvaluator(new WatershedComponents());
+      S.MorphologicalGraph.setEvaluator(new MorphologicalGraph());
       S.ComponentMeasurements.setEvaluator(new ComponentMeasurements());
       S.DistanceTransform.setEvaluator(new DistanceTransform());
       S.Inpaint.setEvaluator(new Inpaint());
@@ -1135,6 +1142,175 @@ public class ImageFilterFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <code>WatershedComponents(image)</code>, <code>WatershedComponents(image, markers)</code>: the
+   * matrix of the basins the grey levels of <code>image</code> form, numbered from <code>1</code>,
+   * with <code>0</code> for the pixels of the watershed between two basins. Without markers every
+   * regional minimum grows into a basin, numbered in the order its first pixel is met row by row.
+   * The markers are an image of the same size, each connected component of whose non-zero pixels
+   * grows into a basin, or a list of positions <code>{x, y}</code> in image coordinates, each of
+   * which grows into the basin of its number in the list. Pixels which only touch at a corner are
+   * neighbours unless <code>CornerNeighbors -> False</code> is given.
+   */
+  private static class WatershedComponents extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      boolean cornerNeighbors = true;
+      IExpr markers = F.NIL;
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isRuleAST()) {
+          if (arg.first() != S.CornerNeighbors) {
+            return F.NIL;
+          }
+          cornerNeighbors = !arg.second().isFalse();
+        } else if (i == 2) {
+          markers = arg;
+        } else {
+          return F.NIL;
+        }
+      }
+      double[][] relief = grayLevels((ImageExpr) ast.arg1(), engine);
+      if (relief == null) {
+        return F.NIL;
+      }
+      final int height = relief.length;
+      final int width = relief[0].length;
+      final int[][] basins;
+      if (markers.isPresent()) {
+        int[][] seeds = seeds(markers, width, height, cornerNeighbors, engine);
+        if (seeds == null) {
+          // an image of another size, or a matrix, is no marker specification
+          return Errors.printMessage(S.WatershedComponents, "mkinv",
+              F.list(F.list(F.ZZ(width), F.ZZ(height)), markers), engine);
+        }
+        basins = Watershed.flood(relief, seeds, cornerNeighbors);
+      } else {
+        basins = Watershed.fromMinima(relief, cornerNeighbors);
+      }
+      return F.matrix((i, j) -> F.ZZ(basins[i][j]), height, width);
+    }
+
+    /**
+     * The grey levels of an image as <code>[row][column]</code>: the sample of a one channel image,
+     * and <code>0.299 r + 0.587 g + 0.114 b</code> of a colour one.
+     */
+    private static double[][] grayLevels(ImageExpr image, EvalEngine engine) {
+      double[][][] channels = channels(image, engine);
+      if (channels == null) {
+        return null;
+      }
+      if (channels.length < 3) {
+        return channels[0];
+      }
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      double[][] gray = new double[height][width];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          gray[y][x] = Colors.grayLevel(channels[0][y][x], channels[1][y][x], channels[2][y][x]);
+        }
+      }
+      return gray;
+    }
+
+    /**
+     * The seeds the markers give, numbered from <code>1</code>, in an image of
+     * <code>width x height</code> pixels.
+     *
+     * @return <code>null</code> if <code>markers</code> is no image of that size and no list of
+     *         positions inside the image
+     */
+    private static int[][] seeds(IExpr markers, int width, int height, boolean cornerNeighbors,
+        EvalEngine engine) {
+      if (markers instanceof ImageExpr) {
+        boolean[][] foreground = foreground(markers, 0.0, engine);
+        if (foreground == null || foreground.length != height || foreground[0].length != width) {
+          return null;
+        }
+        return labels(new boolean[][][] {foreground}, cornerNeighbors)[0];
+      }
+      if (!markers.isList() || markers.argSize() == 0) {
+        return null;
+      }
+      int[] dimensions = markers.isMatrix(false);
+      if (dimensions != null && dimensions[0] == height && dimensions[1] == width) {
+        // a matrix of the size of the image is a label matrix, not a list of positions
+        return null;
+      }
+      int[][] seeds = new int[height][width];
+      IAST positions = (IAST) markers;
+      for (int k = 1; k <= positions.argSize(); k++) {
+        IExpr position = positions.get(k);
+        if (!position.isList2()) {
+          return null;
+        }
+        double x = position.first().evalfNaN();
+        double y = position.second().evalfNaN();
+        if (Double.isNaN(x) || Double.isNaN(y) || x < 0 || x > width || y < 0 || y > height) {
+          return null;
+        }
+        // image coordinates count y from the bottom, the rows are counted from the top
+        int column = Math.min(width - 1, (int) Math.floor(x));
+        int row = height - 1 - Math.min(height - 1, (int) Math.floor(y));
+        seeds[row][column] = k;
+      }
+      return seeds;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <code>MorphologicalGraph(image, options)</code>: the graph of the skeleton of the pixels of an
+   * image greater than <code>1/2</code>, with a vertex at every end and branch point of the skeleton
+   * and an edge along every branch, see {@link Skeleton#graph(boolean[][])}. The options are given
+   * to the <code>Graph</code>.
+   */
+  private static class MorphologicalGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      for (int i = 2; i < ast.size(); i++) {
+        if (!ast.get(i).isRuleAST()) {
+          return F.NIL;
+        }
+      }
+      boolean[][] foreground = foreground(ast.arg1(), 0.5, engine);
+      if (foreground == null || foreground.length == 0 || foreground[0].length == 0) {
+        return F.NIL;
+      }
+      IASTAppendable graph = Skeleton.graph(foreground);
+      graph.appendAll(ast, 2, ast.size());
+      return graph;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
     }
   }
 
