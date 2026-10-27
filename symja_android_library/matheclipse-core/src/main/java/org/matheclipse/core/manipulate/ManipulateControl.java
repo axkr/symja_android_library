@@ -480,6 +480,11 @@ public class ManipulateControl {
       return String.format("#%02x%02x%02x", channel(color.arg1()), channel(color.arg2()),
           channel(color.arg3()));
     }
+    if (initial.isAST(S.GrayLevel, 2, 3)) {
+      // Black, Gray and White are grey levels
+      int level = channel(initial.first());
+      return String.format("#%02x%02x%02x", level, level, level);
+    }
     return initial.isPresent() ? initial.toString() : "";
   }
 

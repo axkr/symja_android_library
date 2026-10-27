@@ -142,11 +142,13 @@ public class Plot3DSamplingOptionsTest {
 
   /**
    * The segments of the mesh the mesh functions draw: indexed pairs in a group of their own inside
-   * the surface's {@code GraphicsComplex}, the way Mathematica writes a mesh.
+   * the surface's {@code GraphicsComplex}, the way Mathematica writes a mesh. The black rim has the
+   * same form, so it is switched off.
    */
   private static int meshSegments(String plot) {
-    return evaluator.eval("Total(Map(Length, Cases(" + plot
-        + ", {RGBColor(0,0,0), Line(s_, VertexColors->None)} :> s, Infinity)))").toIntDefault(-1);
+    String withoutRim = plot.substring(0, plot.length() - 1) + ",BoundaryStyle->None]";
+    return evaluator.eval("Total(Map(Length, Cases(" + withoutRim
+        + ", {GrayLevel(0), Line(s_, VertexColors->None)} :> s, Infinity)))").toIntDefault(-1);
   }
 
   /**

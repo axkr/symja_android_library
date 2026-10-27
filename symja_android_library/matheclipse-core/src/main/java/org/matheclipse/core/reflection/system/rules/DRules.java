@@ -242,9 +242,9 @@ public class DRules {
     // D(CarlsonRF(f_,g_,h_),x_?NotListQ):=-1/6*CarlsonRD(g,h,f)*D(f,x)-1/6*CarlsonRD(f,h,g)*D(g,x)-1/6*CarlsonRD(f,g,h)*D(h,x)
     ISetDelayed(D(CarlsonRF(f_,g_,h_),PatternTest(x_,NotListQ)),
       Plus(Times(QQ(-1L,6L),CarlsonRD(g,h,f),D(f,x)),Times(QQ(-1L,6L),CarlsonRD(f,h,g),D(g,x)),Times(QQ(-1L,6L),CarlsonRD(f,g,h),D(h,x)))),
-    // D(CarlsonRG(f_,g_,h_),x_?NotListQ):=1/12*(-f*CarlsonRD(g,h,f)+3*CarlsonRF(f,g,h))*D(f,x)+1/12*(-g*CarlsonRD(f,h,g)+3*CarlsonRF(f,g,h))*D(g,x)+1/12*(-h*CarlsonRD(f,g,h)+3*CarlsonRF(f,g,h))*D(h,x)
+    // D(CarlsonRG(f_,g_,h_),x_?NotListQ):=1/12*(-CarlsonRD(g,h,f)*f+3*CarlsonRF(f,g,h))*D(f,x)+1/12*(-CarlsonRD(f,h,g)*g+3*CarlsonRF(f,g,h))*D(g,x)+1/12*(-CarlsonRD(f,g,h)*h+3*CarlsonRF(f,g,h))*D(h,x)
     ISetDelayed(D(CarlsonRG(f_,g_,h_),PatternTest(x_,NotListQ)),
-      Plus(Times(QQ(1L,12L),Plus(Times(CN1,f,CarlsonRD(g,h,f)),Times(C3,CarlsonRF(f,g,h))),D(f,x)),Times(QQ(1L,12L),Plus(Times(CN1,g,CarlsonRD(f,h,g)),Times(C3,CarlsonRF(f,g,h))),D(g,x)),Times(QQ(1L,12L),Plus(Times(CN1,h,CarlsonRD(f,g,h)),Times(C3,CarlsonRF(f,g,h))),D(h,x)))),
+      Plus(Times(QQ(1L,12L),Plus(Times(CN1,CarlsonRD(g,h,f),f),Times(C3,CarlsonRF(f,g,h))),D(f,x)),Times(QQ(1L,12L),Plus(Times(CN1,CarlsonRD(f,h,g),g),Times(C3,CarlsonRF(f,g,h))),D(g,x)),Times(QQ(1L,12L),Plus(Times(CN1,CarlsonRD(f,g,h),h),Times(C3,CarlsonRF(f,g,h))),D(h,x)))),
     // D(PolyLog(f_,g_),x_?NotListQ):=(D(g,x)*PolyLog(-1+f,g))/g+D(f,x)*Derivative(1,0)[PolyLog][f,g]
     ISetDelayed(D(PolyLog(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(Power(g,CN1),D(g,x),PolyLog(Plus(CN1,f),g)),Times(D(f,x),$($(Derivative(C1,C0),PolyLog),f,g)))),

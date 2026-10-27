@@ -2,6 +2,9 @@ package org.matheclipse.core.graphics.svg;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.NumberFormatter.FormattedNumber;
+import org.matheclipse.core.form.output.NumberFormPrinter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -49,6 +52,12 @@ public final class LabelText {
     }
     if (expr.isAST(S.RawBoxes, 2) || expr.isAST(S.DisplayForm, 2)) {
       return boxes(expr.first());
+    }
+    if (expr.isAST() && NumberFormatter.formKind(expr.head()) != null) {
+      String number = formattedNumber((IAST) expr);
+      if (number != null) {
+        return number;
+      }
     }
     String derivative = derivative(expr);
     if (derivative != null) {
@@ -149,6 +158,26 @@ public final class LabelText {
     // a derivative anywhere inside is written with the same prime marks as one which stands alone
     return PrimitiveCollector
         .unquote((expr.isFree(S.Derivative, true) ? expr : primed(expr)).toString());
+  }
+
+  /**
+   * The number of a number form wrapper as it is written in a picture, with the exponent of the
+   * scientific notation in superscript digits on the same line: <code>7.08 × 10⁷</code>.
+   *
+   * @return <code>null</code> if the wrapper does not format an integer or a real number
+   */
+  private static String formattedNumber(IAST formAST) {
+    FormattedNumber formatted = NumberFormPrinter.formatArgument(formAST, EvalEngine.get());
+    if (formatted == null) {
+      return null;
+    }
+    if (!formatted.scientific) {
+      return formatted.mantissa;
+    }
+    String exponent = Integer.toString(formatted.exponent);
+    String script = script(exponent, SUPER_FROM, SUPER_TO);
+    return formatted.mantissa + " " + formatted.multiplier + " 10"
+        + (script != null ? script : "^" + exponent);
   }
 
   /** A sum as it is written by hand: <code>2 a - b</code>. */
@@ -357,10 +386,36 @@ public final class LabelText {
         : text;
   }
 
+  /**
+   * The characters of the inside of a string box: <code>a\"b</code> is <code>a"b</code>. The
+   * escapes are the ones a string box is written with: <code>\"</code>, <code>\\</code>,
+   * <code>\n</code> and <code>\t</code>.
+   */
+  private static String unescape(String text) {
+    if (text.indexOf('\\') < 0) {
+      return text;
+    }
+    StringBuilder buf = new StringBuilder(text.length());
+    for (int i = 0; i < text.length(); i++) {
+      char ch = text.charAt(i);
+      if (ch == '\\' && i + 1 < text.length()) {
+        char next = text.charAt(++i);
+        buf.append(next == 'n' ? '\n' : next == 't' ? '\t' : next);
+      } else {
+        buf.append(ch);
+      }
+    }
+    return buf.toString();
+  }
+
   /** The text of a box tree: the content of <code>RawBoxes</code> or <code>DisplayForm</code>. */
   private static String boxes(IExpr box) {
     if (box.isString()) {
-      return box.toString();
+      String text = box.toString();
+      // a string box shows its characters without the quotation marks and escapes
+      return text.length() >= 2 && text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"'
+          ? unescape(text.substring(1, text.length() - 1))
+          : text;
     }
     if (box.isList()) {
       StringBuilder text = new StringBuilder();

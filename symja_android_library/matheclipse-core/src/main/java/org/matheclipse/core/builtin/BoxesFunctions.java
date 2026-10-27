@@ -10,6 +10,8 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.output.NumberFormPrinter;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -198,6 +200,12 @@ public class BoxesFunctions {
       if (expr.isString()) {
         return F.$str(quotedString(expr.toString()));
       }
+      if (expr.isAST() && NumberFormatter.formKind(expr.head()) != null) {
+        IExpr formatted = numberFormBox((IAST) expr, engine);
+        if (formatted.isPresent()) {
+          return formatted;
+        }
+      }
       if (form == S.TraditionalForm && expr.isImaginaryUnit()) {
         // \[ImaginaryI]
         return F.$str("");
@@ -290,6 +298,30 @@ public class BoxesFunctions {
         return numberBox((INumber) expr, precedence);
       }
       return F.$str(expr.toString());
+    }
+
+    /**
+     * A number in a number form wrapper as the number it is shown as: <code>NumberForm(2.71828, {4,
+     * 2})</code> is <code>TagBox(InterpretationBox("2.72", 2.71828), NumberForm(#1, {4, 2})&amp;)
+     * </code>, a number in scientific notation the row <code>7.08×10^7</code>. The
+     * <code>InterpretationBox</code> reads back as the number and the tag as the wrapper.
+     *
+     * @return {@link F#NIL} if the wrapper does not format an integer or a real number
+     */
+    private static IExpr numberFormBox(IAST formAST, EvalEngine engine) {
+      NumberFormatter.FormattedNumber formatted =
+          NumberFormPrinter.formatArgument(formAST, engine == null ? EvalEngine.get() : engine);
+      if (formatted == null) {
+        return F.NIL;
+      }
+      IExpr shown = F.$str(formatted.mantissa);
+      if (formatted.scientific) {
+        shown = F.RowBox(F.list(shown, F.$str(formatted.multiplier),
+            F.binaryAST2(S.SuperscriptBox, F.$str("10"),
+                F.$str(Integer.toString(formatted.exponent)))));
+      }
+      return F.binaryAST2(S.TagBox, F.binaryAST2(S.InterpretationBox, shown, formAST.arg1()),
+          F.Function(formAST.setAtCopy(1, F.Slot1)));
     }
 
     /**

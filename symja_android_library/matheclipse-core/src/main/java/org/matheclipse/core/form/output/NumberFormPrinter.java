@@ -55,6 +55,25 @@ public class NumberFormPrinter {
   }
 
   /**
+   * The number which a number form wrapper formats, laid out by the wrapper's
+   * {@link NumberFormatter}: <code>NumberForm(70777777.78, {3, 2})</code> is the mantissa
+   * <code>7.08</code> with the exponent <code>7</code>.
+   *
+   * @param formAST a number form wrapper such as <code>NumberForm(2.71828, {4, 2})</code>
+   * @return <code>null</code> if <code>formAST</code> is not a number form wrapper of an integer or
+   *         a real number, or if a <code>NumberFormat</code> function lays the number out
+   */
+  public static FormattedNumber formatArgument(IAST formAST, EvalEngine engine) {
+    NumberFormatter formatter = NumberFormatter.of(formAST, engine);
+    if (formatter == null || formAST.size() < 2) {
+      return null;
+    }
+    FormattedNumber formatted =
+        format(formatter, formAST.arg1(), engine.getSignificantFigures() + 1);
+    return formatted == null || formatted.custom.isPresent() ? null : formatted;
+  }
+
+  /**
    * Split a number into the three lines it occupies, or return <code>null</code> if
    * <code>expr</code> is not a number which this class lays out itself.
    */

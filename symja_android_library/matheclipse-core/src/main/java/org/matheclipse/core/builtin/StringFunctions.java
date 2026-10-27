@@ -4496,6 +4496,14 @@ public final class StringFunctions {
           return F.stringx(formatted);
         }
       }
+      if (arg1.isAST(S.TraditionalForm, 2)) {
+        // a traditional form is typeset: the box escape \!\(\*FormBox[..., TraditionalForm]\)
+        IExpr boxes = engine
+            .evaluate(F.binaryAST2(S.ToBoxes, F.Unevaluated(arg1.first()), S.TraditionalForm));
+        if (BoxNotation.isBox(boxes) || boxes.isString()) {
+          return F.stringx(BoxNotation.toBoxString(boxes));
+        }
+      }
       // ToString(expr) is ToString(expr, OutputForm) - the display wrappers Style, Row and
       // Graphics show what they format rather than themselves
       return F.stringx(outputForm(formatValues(arg1, engine, 0)));

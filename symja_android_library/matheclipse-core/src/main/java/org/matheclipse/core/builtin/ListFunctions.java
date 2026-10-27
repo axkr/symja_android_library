@@ -360,6 +360,7 @@ public final class ListFunctions {
       S.Tally.setEvaluator(new Tally());
       S.Total.setEvaluator(new Total());
       S.Union.setEvaluator(new Union());
+      S.UpTo.setEvaluator(new UpTo());
     }
   }
 
@@ -8811,6 +8812,24 @@ public final class ListFunctions {
     }
   }
 
+
+  /**
+   * <code>UpTo(n)</code> - at most <code>n</code> elements. A real number with an integer value is
+   * that integer: <code>UpTo(3.0)</code> is <code>UpTo(3)</code>.
+   */
+  private static final class UpTo extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = Sequence.integerValuedReal(ast.arg1());
+      return n == ast.arg1() ? F.NIL : ast.setAtCopy(1, n);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   /**
    *

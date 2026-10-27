@@ -1187,106 +1187,173 @@ public final class NumberTheory {
   private static final class ContinuedFraction extends AbstractEvaluator {
 
     /**
-     * Find the periodic continued fraction expansion of a quadratic irrational of the form <code>
-     * (p + s*Sqrt(d)) / q</code>
+     * The continued fraction of the quadratic irrational <code>x = a + b*Sqrt(d)</code> with
+     * rational <code>a</code>, <code>b != 0</code> and an integer <code>d &gt; 1</code> which is not
+     * a square. The terms of a negative <code>x</code> are the negated terms of <code>-x</code>.
      *
      * <p>
-     * Compute the continued fraction expansion of a rational or a quadratic irrational number, i.e.
-     * <code>(p + s*Sqrt(d)) / q</code>, where `p`, `q != 0` and `d != 0` are integers. Returns the
-     * continued fraction representation (canonical form) as a list of integers, optionally ending
-     * (for quadratic irrationals) with list of integers representing the repeating (periodic)
-     * digits.
+     * <code>x</code> is written as <code>(p + Sqrt(dd)) / q</code> with integers, where
+     * <code>q</code> divides <code>dd - p^2</code>. Every complete quotient has this form again and
+     * its term is computed exactly from the integer square root of <code>dd</code>. The period
+     * starts at the first pair <code>{p, q}</code> which repeats.
      *
-     * @param p
-     * @param q
-     * @param d
-     * @param s
-     * @param negate
-     * @param maxIterations
-     * @param engine
-     * @return {@link F#NIL} if the evaluation into integers wasn't possible
+     * @param maxTerms the number of terms, or {@link Integer#MAX_VALUE} for the periodic form
+     *        <code>{a0, a1, ..., {period}}</code>
      */
-    private IAST continuedFractionPeriodic(IInteger p, IInteger q, IInteger d, IInteger s,
-        boolean negate, int maxIterations, EvalEngine engine) {
-      // https://github.com/sympy/sympy/blob/07a6388bc237a2c43e65dc3cf932373e4d06d91b/sympy/ntheory/continued_fraction.py#L71
-      IExpr sd = F.Sqrt(d);
-      if (q.isNegative()) {
+    private static IAST continuedFractionQuadratic(IRational a, IRational b, BigInteger d,
+        int maxTerms, EvalEngine engine) {
+      BigInteger q = a.toBigDenominator().multiply(b.toBigDenominator())
+          .divide(a.toBigDenominator().gcd(b.toBigDenominator()));
+      BigInteger p = a.toBigNumerator().multiply(q.divide(a.toBigDenominator()));
+      BigInteger s = b.toBigNumerator().multiply(q.divide(b.toBigDenominator()));
+      // x == (p + s*Sqrt(d)) / q with q > 0
+      final boolean negate = !isPositiveSurd(p, s, d);
+      if (negate) {
         p = p.negate();
-        q = q.negate();
         s = s.negate();
       }
-
-      IExpr n = S.Times.of(engine, F.Plus(p, F.Times(s, sd)));
-      if (n.isNegativeResult()) {
-        IAST resultList =
-            continuedFractionPeriodic(p.negate(), q, d, s.negate(), true, maxIterations, engine);
-        if (resultList.isList()) {
-          return resultList;
-        }
-        return F.NIL;
+      BigInteger dd = s.multiply(s).multiply(d);
+      if (s.signum() < 0) {
+        // (p - |s|*Sqrt(d)) / q == (-p + Sqrt(dd)) / (-q)
+        p = p.negate();
+        q = q.negate();
       }
-
-      d = d.multiply(s.multiply(s));
-      sd = F.Times(s, sd);
-      if (!d.subtract(p.multiply(p)).mod(q).isZero()) {
-        d = d.multiply(q.multiply(q));
-        sd = S.Times.of(engine, sd, q);
-        p = p.multiply(q);
-        q = q.multiply(q);
+      if (dd.subtract(p.multiply(p)).remainder(q).signum() != 0) {
+        BigInteger absQ = q.abs();
+        p = p.multiply(absQ);
+        dd = dd.multiply(q.multiply(q));
+        q = q.multiply(absQ);
       }
-
-      IASTAppendable integerTerms = F.ListAlloc(7);
-      Map<IAST, Integer> pqPeriodic2Index = new HashMap<IAST, Integer>();
-      IAST key = F.list(p, q);
-      do {
-        pqPeriodic2Index.put(key, integerTerms.argSize());
-        IExpr quotient = S.Quotient.of(engine, F.Plus(p, sd), q);
-        if (!quotient.isInteger()) {
-          return F.NIL;
+      final BigInteger root = dd.sqrt();
+      final boolean periodic = maxTerms == Integer.MAX_VALUE;
+      IASTAppendable terms = F.ListAlloc(periodic ? 16 : maxTerms);
+      Map<List<BigInteger>, Integer> seen = new HashMap<List<BigInteger>, Integer>();
+      int periodStart = -1;
+      while (true) {
+        if (periodic) {
+          Integer index = seen.putIfAbsent(java.util.Arrays.asList(p, q), terms.argSize());
+          if (index != null) {
+            periodStart = index;
+            break;
+          }
+          if (terms.argSize() >= Config.MAX_AST_SIZE) {
+            ASTElementLimitExceeded.throwIt(terms.argSize());
+          }
+        } else if (terms.argSize() >= maxTerms) {
+          break;
         }
-
-        IInteger x = (IInteger) quotient;
-        integerTerms.append(x);
-        if (maxIterations < Integer.MAX_VALUE && maxIterations > 0
-            && integerTerms.argSize() >= maxIterations) {
-          // enough terms requested; don't search for the end of the period, which can be much
-          // longer than the requested number of terms
-          return negate ? integerTerms.map(t -> t.negate()) : integerTerms;
-        }
-        p = x.multiply(q).subtract(p);
-        q = d.subtract(p.multiply(p)).quotient(q);
-        key = F.list(p, q);
-      } while (!pqPeriodic2Index.containsKey(key));
-
-      int i = pqPeriodic2Index.get(key);
-
-      IAST tempList = integerTerms;
-      if (negate) {
-        tempList = tempList.map(x -> x.negate());
+        engine.checkTimeLimit();
+        // Floor((p + Sqrt(dd)) / q) for an irrational Sqrt(dd)
+        BigInteger term = q.signum() > 0 ? floorDivide(p.add(root), q)
+            : floorDivide(p.negate().subtract(root).subtract(BigInteger.ONE), q.negate());
+        terms.append(F.ZZ(negate ? term.negate() : term));
+        p = term.multiply(q).subtract(p);
+        q = dd.subtract(p.multiply(p)).divide(q);
       }
+      if (periodStart < 0) {
+        return terms;
+      }
+      if (periodStart == 0) {
+        // a purely periodic expansion is written with its first term in front of the period
+        terms.append(terms.arg1());
+        periodStart = 1;
+      }
+      IASTAppendable result = F.ListAlloc(periodStart + 1);
+      result.appendAll(terms, 1, periodStart + 1);
+      result.append(terms.copyFrom(periodStart + 1));
+      return result;
+    }
 
-      if (maxIterations < Integer.MAX_VALUE && maxIterations > 0) {
-        IASTAppendable resultList = F.ListAlloc(maxIterations);
-        for (int j = 1; j < i + 1; j++) {
-          resultList.append(tempList.get(j));
-          if (--maxIterations == 0) {
-            return resultList;
+    /** Test if <code>p + s*Sqrt(d)</code> is positive, for a <code>d</code> which is no square. */
+    private static boolean isPositiveSurd(BigInteger p, BigInteger s, BigInteger d) {
+      if (p.signum() >= 0 && s.signum() > 0) {
+        return true;
+      }
+      if (p.signum() <= 0 && s.signum() < 0) {
+        return false;
+      }
+      int compare = p.multiply(p).compareTo(s.multiply(s).multiply(d));
+      return p.signum() > 0 ? compare > 0 : compare < 0;
+    }
+
+    /** <code>Floor(n / m)</code> for a positive <code>m</code>. */
+    private static BigInteger floorDivide(BigInteger n, BigInteger m) {
+      BigInteger[] quotientRemainder = n.divideAndRemainder(m);
+      return quotientRemainder[1].signum() < 0 ? quotientRemainder[0].subtract(BigInteger.ONE)
+          : quotientRemainder[0];
+    }
+
+    /**
+     * The rationals <code>a, b</code> and the integer <code>d</code> of an <code>expr</code> which
+     * is written <code>a + b*Sqrt(d)</code> with <code>b != 0</code> and <code>d &gt; 1</code> no
+     * square, or <code>null</code>.
+     */
+    private static IExpr[] quadraticSurd(IExpr expr) {
+      IExpr[] parts = new IExpr[] {F.C0, F.C0, null};
+      if (!addQuadraticSurd(expr, F.C1, parts) || parts[1].isZero() || parts[2] == null) {
+        return null;
+      }
+      return parts;
+    }
+
+    /**
+     * Add <code>factor*expr</code> to <code>parts[0] + parts[1]*Sqrt(parts[2])</code>.
+     *
+     * @return <code>false</code> if <code>expr</code> is not of the form <code>a + b*Sqrt(d)</code>
+     *         with the <code>d</code> of <code>parts[2]</code>
+     */
+    private static boolean addQuadraticSurd(IExpr expr, IRational factor, IExpr[] parts) {
+      if (expr.isRational()) {
+        parts[0] = ((IRational) parts[0]).add(factor.multiply((IRational) expr));
+        return true;
+      }
+      if (expr.isPlus()) {
+        for (IExpr summand : (IAST) expr) {
+          if (!addQuadraticSurd(summand, factor, parts)) {
+            return false;
           }
         }
-        IAST periodic = tempList.copyFrom(i + 1);
-        while (true) {
-          for (int j = 1; j < periodic.size(); j++) {
-            resultList.append(periodic.get(j));
-            if (--maxIterations == 0) {
-              return resultList;
-            }
-          }
-        }
+        return true;
       }
-      IASTAppendable resultList = F.ListAlloc(i + 1);
-      resultList.appendAll(tempList, 1, i + 1);
-      resultList.append(tempList.copyFrom(i + 1));
-      return resultList;
+      if (expr.isTimes2() && expr.first().isRational()) {
+        return addQuadraticSurd(expr.second(), factor.multiply((IRational) expr.first()), parts);
+      }
+      if (expr.isPower() && expr.base().isRational() && expr.base().isPositive()
+          && (expr.exponent().equals(F.C1D2) || expr.exponent().equals(F.CN1D2))) {
+        // Sqrt(n/m) == Sqrt(n*m)/m and 1/Sqrt(n/m) == Sqrt(n*m)/n
+        IRational radicand = (IRational) expr.base();
+        IInteger n = radicand.numerator();
+        IInteger m = radicand.denominator();
+        IInteger d = n.multiply(m);
+        IRational coefficient = factor.divideBy(expr.exponent().equals(F.C1D2) ? m : n);
+        BigInteger dRoot = d.toBigNumerator().sqrt();
+        if (dRoot.multiply(dRoot).equals(d.toBigNumerator())) {
+          // Sqrt(4/9) and 1 are rational
+          return false;
+        }
+        if (parts[2] == null) {
+          parts[2] = d;
+        } else if (!parts[2].equals(d)) {
+          return false;
+        }
+        parts[1] = ((IRational) parts[1]).add(coefficient);
+        return true;
+      }
+      if (expr.isPower() && expr.exponent().isMinusOne()) {
+        // 1/(a + b*Sqrt(d)) == (a - b*Sqrt(d)) / (a^2 - b^2*d)
+        IExpr[] inverse = quadraticSurd(expr.base());
+        if (inverse == null || (parts[2] != null && !parts[2].equals(inverse[2]))) {
+          return false;
+        }
+        IRational a = (IRational) inverse[0];
+        IRational b = (IRational) inverse[1];
+        IRational norm = a.multiply(a).subtract(b.multiply(b).multiply((IInteger) inverse[2]));
+        parts[0] = ((IRational) parts[0]).add(factor.multiply(a).divideBy(norm));
+        parts[1] = ((IRational) parts[1]).subtract(factor.multiply(b).divideBy(norm));
+        parts[2] = inverse[2];
+        return true;
+      }
+      return false;
     }
 
     @Override
@@ -1344,10 +1411,10 @@ public final class NumberTheory {
         }
       }
 
-      IAST list4 = quadraticIrrational(ast.arg1());
-      if (list4.isPresent()) {
-        return continuedFractionPeriodic((IInteger) list4.arg1(), (IInteger) list4.arg2(),
-            (IInteger) list4.arg3(), (IInteger) list4.arg4(), false, maxNTerms, engine);
+      IExpr[] surd = quadraticSurd(arg1);
+      if (surd != null) {
+        return continuedFractionQuadratic((IRational) surd[0], (IRational) surd[1],
+            ((IInteger) surd[2]).toBigNumerator(), maxNTerms, engine);
       }
 
       if (arg1 instanceof ApfloatNum && maxNTerms == Integer.MAX_VALUE) {

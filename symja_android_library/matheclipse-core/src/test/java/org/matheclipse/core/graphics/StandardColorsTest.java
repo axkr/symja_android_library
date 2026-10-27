@@ -102,7 +102,7 @@ public class StandardColorsTest {
   public void theExistingNamedColorsAreUnchanged() {
     assertEquals("RGBColor(1,1,0)", evaluator.eval("Yellow").toString());
     assertEquals("RGBColor(1,0,0)", evaluator.eval("Red").toString());
-    assertEquals("RGBColor(0.5,0.5,0.5)", evaluator.eval("Gray").toString());
+    assertEquals("GrayLevel(0.5)", evaluator.eval("Gray").toString());
     assertEquals("RGBColor(1.0,1.0,0.85)", evaluator.eval("LightYellow").toString());
   }
 }

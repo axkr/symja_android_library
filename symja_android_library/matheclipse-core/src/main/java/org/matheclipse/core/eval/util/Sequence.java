@@ -40,7 +40,7 @@ public final class Sequence extends ListSizeSequence {
     Sequence sequ = null;
     int j = 0;
     for (int i = startPosition; i < endPosition; i++) {
-      IExpr element = ast.get(i);
+      IExpr element = integerSpecification(ast.get(i));
       if (element.isList()) {
         if (element.argSize() < 1 || element.argSize() > 3) {
           // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
@@ -91,6 +91,40 @@ public final class Sequence extends ListSizeSequence {
       return null;
     }
     return sequArray;
+  }
+
+  /**
+   * A real number with an integer value in a sequence specification stands for that integer:
+   * <code>Take(list, 3.0)</code> is <code>Take(list, 3)</code> and <code>Take(list, {1.0, 5.0,
+   * 2.0})</code> is <code>Take(list, {1, 5, 2})</code>. A real number which is not an integer, like
+   * the <code>2.5</code> in <code>Take(list, 2.5)</code>, and any other expression are returned
+   * unchanged.
+   *
+   * @param spec a sequence specification or one of the numbers of a list specification
+   */
+  public static IExpr integerSpecification(final IExpr spec) {
+    if (spec.isList()) {
+      // the list is copied only if one of its numbers changes
+      return ((IAST) spec).map(x -> {
+        IExpr integer = integerValuedReal(x);
+        return integer == x ? F.NIL : integer;
+      }, 1);
+    }
+    return integerValuedReal(spec);
+  }
+
+  /**
+   * The integer value of a real number like <code>3.0</code>; any other expression is returned
+   * unchanged.
+   */
+  public static IExpr integerValuedReal(final IExpr expr) {
+    if (expr.isReal() && !expr.isRational() && expr.isNumIntValue()) {
+      int value = expr.toIntDefault();
+      if (!F.isNotPresent(value)) {
+        return F.ZZ(value);
+      }
+    }
+    return expr;
   }
 
   /**

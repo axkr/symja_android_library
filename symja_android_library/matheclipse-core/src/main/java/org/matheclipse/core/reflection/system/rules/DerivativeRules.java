@@ -320,9 +320,9 @@ public class DerivativeRules {
     // Derivative(0,1,0)[CarlsonRD]=(-CarlsonRD(#1,#2,#3)+CarlsonRD(#1,#3,#2))/(2*(#2-#3))&
     ISet($(Derivative(C0,C1,C0),CarlsonRD),
       Function(Times(Plus(Negate(CarlsonRD(Slot1,Slot2,Slot(C3))),CarlsonRD(Slot1,Slot(C3),Slot2)),Power(Times(C2,Subtract(Slot2,Slot(C3))),CN1))), true),
-    // Derivative(0,0,1)[CarlsonRD]=(-3*Sqrt(#1)*Sqrt(#2))/(2*#3^(3/2)*(-#1+#3)*(-#2+#3))-CarlsonRD(#1,#2,#3)*(1/(-#1+#3)+1/(-#2+#3))+(3*CarlsonRF(#1,#2,#3))/(2*(-#1+#3)*(-#2+#3))&
+    // Derivative(0,0,1)[CarlsonRD]=-(1/(-#1+#3)+1/(-#2+#3))*CarlsonRD(#1,#2,#3)+(-3*Sqrt(#1)*Sqrt(#2))/(2*#3^(3/2)*(-#1+#3)*(-#2+#3))+(3*CarlsonRF(#1,#2,#3))/(2*(-#1+#3)*(-#2+#3))&
     ISet($(Derivative(C0,C0,C1),CarlsonRD),
-      Function(Plus(Times(CN3,Sqrt(Slot1),Sqrt(Slot2),Power(Times(C2,Power(Slot(C3),QQ(3L,2L)),Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)),Times(CN1,CarlsonRD(Slot1,Slot2,Slot(C3)),Plus(Power(Plus(Negate(Slot1),Slot(C3)),CN1),Power(Plus(Negate(Slot2),Slot(C3)),CN1))),Times(C3,CarlsonRF(Slot1,Slot2,Slot(C3)),Power(Times(C2,Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)))), true),
+      Function(Plus(Times(CN1,Plus(Power(Plus(Negate(Slot1),Slot(C3)),CN1),Power(Plus(Negate(Slot2),Slot(C3)),CN1)),CarlsonRD(Slot1,Slot2,Slot(C3))),Times(CN3,Sqrt(Slot1),Sqrt(Slot2),Power(Times(C2,Power(Slot(C3),QQ(3L,2L)),Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)),Times(C3,CarlsonRF(Slot1,Slot2,Slot(C3)),Power(Times(C2,Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)))), true),
     // Derivative(1,0,0)[CarlsonRG]=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#2,#3,#1)*#1&
     ISet($(Derivative(C1,C0,C0),CarlsonRG),
       Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot2,Slot(C3),Slot1),Slot1))), true),

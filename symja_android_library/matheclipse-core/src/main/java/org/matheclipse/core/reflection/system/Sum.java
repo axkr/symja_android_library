@@ -326,7 +326,19 @@ public class Sum extends ListFunctions.Table implements SumRules {
       arg1 = F.expand(arg1, false, false, false);
     }
     if (arg1.isPlus()) {
-      return arg1.mapThread(ast, 1);
+      // a sum is split into the sums of its terms only if all of them have a closed form: a sum
+      // with a part which has none stays unevaluated as a whole with its summand as it is written,
+      // Sum(k+g(k), {k,1,n}) isn't n*(1+n)/2+Sum(g(k), {k,1,n})
+      IASTAppendable split = F.PlusAlloc(arg1.argSize());
+      for (IExpr term : (IAST) arg1) {
+        IExpr termSum = engine.evaluate(ast.setAtCopy(1, term));
+        if (hasUnevaluatedSum(termSum, term)) {
+          // the remaining terms are not summed: their sums would be dropped anyway
+          return F.NIL;
+        }
+        split.append(termSum);
+      }
+      return split;
     }
     if (forcedMethod == null && preevaledSum.isAST2()) {
       IExpr byFactorial = sumGammaAsFactorial(preevaledSum, engine);
@@ -421,6 +433,15 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return F.NIL;
     }
     return ast.size() == 3 ? ((IAST) terms).setAtCopy(0, S.Plus) : F.Total(F.Flatten(terms));
+  }
+
+  /**
+   * Test if a result contains a <code>Sum</code> which is not already a part of the summand, so
+   * that a sum was left unevaluated. An unevaluated sum written in the summand, which doesn't depend
+   * on the iterator, may stay: <code>Sum(k+Sum(g(j),{j,1,m}),{k,1,n})</code> has a closed form.
+   */
+  private static boolean hasUnevaluatedSum(IExpr result, IExpr summand) {
+    return !result.isFree(x -> x.isAST(S.Sum) && summand.isFree(x), false);
   }
 
   /**
@@ -531,7 +552,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
               && !Iterator.losesVariable(lastList, reducedResult, outerVariables)) {
             IASTMutable result = sumForm.removeAtCopy(sumForm.argSize());
             result.set(1, reducedResult);
-            return result;
+            // the outer sums must have a closed form too, otherwise the sum stays unevaluated as a
+            // whole: Sum(k*g(j), {j,1,n}, {k,1,m}) isn't Sum(m*(1+m)*g(j)/2, {j,1,n})
+            IExpr outerResult = engine.evaluate(result);
+            return hasUnevaluatedSum(outerResult, preevaledSum.arg1()) ? F.NIL : outerResult;
           }
         } else if (!isSmallSymbolicRange(sumForm.arg1(), lastList, engine)) {
           IExpr result = matcher1().apply(sumForm);

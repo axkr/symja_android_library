@@ -301,6 +301,7 @@ public class Errors {
       "incompCF", "Warning: `1` terminated before `2` terms.", //
       "incpt", "incompatible elements in `1` cannot be joined.", //
       "indet", "Indeterminate expression `1` encountered.", //
+      "indep", "`1` does not exist for `2`.", //
       "infeas",
       "There are no values of `1` for which the constraints `2` are satisfied and the objective function `3` is real valued.", //
       "infy", "Infinite expression `1` encountered.", //

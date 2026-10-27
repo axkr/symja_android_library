@@ -444,8 +444,15 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     // change and the whole head evaluation - one evalLoop() entry for every evaluated expression -
     // is skipped. Built-in symbols are protected, so only an own value assigned in package mode can
     // make the head evaluate to something else.
-    return (isConstantAttribute() || !hasAssignedSymbolValue()) ? F.NIL
-        : super.evaluateHead(ast, engine);
+    // A symbol evaluator which computes the value of the symbol (for example `Thick` evaluates to
+    // `Thickness(Large)`) is an own value too, so `Thick(2)` becomes `Thickness(Large)(2)`.
+    if (isConstantAttribute()) {
+      return F.NIL;
+    }
+    return (hasAssignedSymbolValue()
+        || (fEvaluator instanceof ISymbolEvaluator && fEvaluator != DUMMY_EVALUATOR))
+            ? super.evaluateHead(ast, engine)
+            : F.NIL;
   }
 
   /** {@inheritDoc} */

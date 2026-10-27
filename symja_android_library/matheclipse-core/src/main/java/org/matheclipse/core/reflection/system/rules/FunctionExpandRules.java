@@ -81,15 +81,15 @@ public class FunctionExpandRules {
     // FactorialPower(x_,n_,-1):=(x^n*Gamma(1-x))/((-x)^n*Gamma(1-n-x))
     SetDelayed(FactorialPower(x_,n_,CN1),
       Times(Power(x,n),Gamma(Subtract(C1,x)),Power(Times(Power(Negate(x),n),Gamma(Plus(C1,Negate(n),Negate(x)))),CN1))),
-    // FactorialPower(x_,n_Integer):=Product(-k+x,{k,0,-1+n})/;n>0
+    // FactorialPower(x_,n_Integer):=Product(-Plus(k)+x,{k,0,-1+n})/;n>0
     SetDelayed(FactorialPower(x_,$p(n, Integer)),
-      Condition(Product(Plus(Negate(k),x),list(k,C0,Plus(CN1,n))),Greater(n,C0))),
+      Condition(Product(Plus(Negate(Plus(k)),x),list(k,C0,Plus(CN1,n))),Greater(n,C0))),
     // FactorialPower(x_,n_):=Gamma(1+x)/Gamma(1-n+x)
     SetDelayed(FactorialPower(x_,n_),
       Times(Gamma(Plus(C1,x)),Power(Gamma(Plus(C1,Negate(n),x)),CN1))),
-    // FactorialPower(x_,n_Integer,h_):=Product(-h*k+x,{k,0,-1+n})/;n>0&&h=!=0
+    // FactorialPower(x_,n_Integer,h_):=Product(-k*h+x,{k,0,-1+n})/;n>0&&h=!=0
     SetDelayed(FactorialPower(x_,$p(n, Integer),h_),
-      Condition(Product(Plus(Times(CN1,h,k),x),list(k,C0,Plus(CN1,n))),And(Greater(n,C0),UnsameQ(h,C0)))),
+      Condition(Product(Plus(Times(CN1,k,h),x),list(k,C0,Plus(CN1,n))),And(Greater(n,C0),UnsameQ(h,C0)))),
     // FactorialPower(x_,n_,h_):=(x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))/;h=!=0
     SetDelayed(FactorialPower(x_,n_,h_),
       Condition(Times(Power(x,n),Gamma(Plus(C1,Times(Power(h,CN1),x))),Power(Times(Power(Times(Power(h,CN1),x),n),Gamma(Plus(C1,Negate(n),Times(Power(h,CN1),x)))),CN1)),UnsameQ(h,C0))),

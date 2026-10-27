@@ -1330,8 +1330,8 @@ public class Convert {
   }
 
   /**
-   * Convert the <code>RGBColor(r,g,b)</code> to a <code>org.matheclipse.core.convert.RGBColor
-   * </code>
+   * Convert the <code>RGBColor(r,g,b)</code> or <code>GrayLevel(g)</code> to a
+   * <code>org.matheclipse.core.convert.RGBColor</code>
    *
    * @param rgbColorAST
    * @return <code>null</code> if the conversion is not possible
@@ -1352,6 +1352,12 @@ public class Convert {
       double blue = rgbColor.arg3().evalfNaN();
       if (!Double.isNaN(red) && !Double.isNaN(green) && !Double.isNaN(blue)) {
         return new RGBColor((float) red, (float) green, (float) blue);
+      }
+    } else if (rgbColorAST.isAST(S.GrayLevel, 2, 3)) {
+      // a grey level like the values of Black, Gray and White
+      double level = rgbColorAST.first().evalfNaN();
+      if (!Double.isNaN(level)) {
+        return new RGBColor((float) level, (float) level, (float) level);
       }
     }
     return defaultColor;

@@ -66,11 +66,16 @@ public class NumberFormatter {
      */
     public final IExpr custom;
 
-    private FormattedNumber(String mantissa, int exponent, boolean scientific, IExpr custom) {
+    /** The <code>NumberMultiplier</code> string which goes before <code>10^exponent</code>. */
+    public final String multiplier;
+
+    private FormattedNumber(String mantissa, int exponent, boolean scientific, IExpr custom,
+        String multiplier) {
       this.mantissa = mantissa;
       this.exponent = exponent;
       this.scientific = scientific;
       this.custom = custom;
+      this.multiplier = multiplier;
     }
   }
 
@@ -313,7 +318,8 @@ public class NumberFormatter {
     String digits = negative ? value.substring(1) : value;
     String grouped = group(digits, digitBlockLeft, separatorLeft, true);
     String assembled = fillField(applySignsAndPadding(grouped, digits.length(), negative));
-    return new FormattedNumber(assembled, 0, false, applyNumberFormat(assembled, null));
+    return new FormattedNumber(assembled, 0, false, applyNumberFormat(assembled, null),
+        multiplier);
   }
 
   private FormattedNumber format(BigDecimal value, int significantFigures, boolean approximate) {
@@ -326,8 +332,16 @@ public class NumberFormatter {
 
     BigDecimal mantissa = shift == 0 ? abs : abs.movePointLeft(shift);
     if (fractionDigits >= 0 && approximate) {
+      int places = fractionDigits;
+      if (kind == FormKind.NUMBER && totalDigits > 0 && mantissa.signum() != 0) {
+        // NumberForm(x, {n, f}) keeps n significant digits and pads the remaining positions with
+        // zeros: NumberForm(12345.678, {3, 1}) is 12300.0. The number is rounded once, at the
+        // last digit shown, so NumberForm(2.4549, {3, 1}) is 2.5
+        int leadingExponent = mantissa.precision() - mantissa.scale() - 1;
+        places = Math.min(places, totalDigits - 1 - leadingExponent);
+      }
       // a decimal tie goes to the even digit: NumberForm(98765.25, {Infinity, 1}) is 98765.2
-      mantissa = mantissa.setScale(fractionDigits, RoundingMode.HALF_EVEN);
+      mantissa = mantissa.setScale(places, RoundingMode.HALF_EVEN).setScale(fractionDigits);
       if (kind == FormKind.ACCOUNTING) {
         // an accounting column shows no trailing zeros - it fills the field behind the number
         mantissa = stripTrailingZeros(mantissa);
@@ -362,7 +376,7 @@ public class NumberFormatter {
     String assembled = applySignsAndPadding(digits.toString(), integerPart.length(), negative);
     assembled = fillField(assembled);
     IExpr custom = applyNumberFormat(assembled, exponent);
-    return new FormattedNumber(assembled, shift, exponent != null, custom);
+    return new FormattedNumber(assembled, shift, exponent != null, custom, multiplier);
   }
 
   /**
@@ -411,9 +425,8 @@ public class NumberFormatter {
         if (scientificExponent >= -5 && scientificExponent <= 5) {
           return null;
         }
-        if (fractionDigits >= 0 && scientificExponent > 5
-            && (totalDigits <= 0 || scientificExponent < totalDigits)) {
-          // NumberForm(x, {n, f}) writes all integer digits of x if there are at most n of them,
+        if (fractionDigits >= 0 && scientificExponent > 5 && totalDigits <= 0) {
+          // NumberForm(x, {Infinity, f}) writes all integer digits of x,
           // NumberForm(1234567.5, {Infinity, 2}) is 1234567.50
           return null;
         }

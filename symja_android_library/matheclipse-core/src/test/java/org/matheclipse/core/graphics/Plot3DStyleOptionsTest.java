@@ -131,7 +131,7 @@ public class Plot3DStyleOptionsTest {
   public void complexPlot3DDefaultsMatchTheReference() {
     String options = plot("Options(ComplexPlot3D)");
     assertTrue(options.contains("Mesh->None"), "no mesh by default");
-    assertTrue(options.contains("BoundaryStyle->RGBColor(0,0,0)"), "a black rim");
+    assertTrue(options.contains("BoundaryStyle->GrayLevel(0)"), "a black rim");
 
     String plainOptions = plot("Options(Plot3D)");
     assertTrue(plainOptions.contains("Mesh->Automatic"), "Plot3D is unaffected");

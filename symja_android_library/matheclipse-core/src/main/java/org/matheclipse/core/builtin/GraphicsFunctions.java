@@ -152,7 +152,17 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static class Dashed extends AbstractSymbolEvaluator {
+  /**
+   * A symbol like <code>Thick</code> or <code>Dashed</code> whose value is a graphics directive.
+   */
+  private abstract static class GraphicsDirectiveSymbol extends AbstractSymbolEvaluator {
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.PROTECTED, Attribute.READPROTECTED);
+    }
+  }
+
+  private static class Dashed extends GraphicsDirectiveSymbol {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.Dashing(F.List(S.Small, S.Small));
@@ -191,14 +201,14 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static class DotDashed extends AbstractSymbolEvaluator {
+  private static class DotDashed extends GraphicsDirectiveSymbol {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.Dashing(F.List(F.C0, S.Small, S.Small, S.Small));
     }
   }
 
-  private static class Dotted extends AbstractSymbolEvaluator {
+  private static class Dotted extends GraphicsDirectiveSymbol {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.Dashing(F.List(F.C0, S.Small));
@@ -206,7 +216,7 @@ public class GraphicsFunctions {
   }
 
   /** <code>Thick</code> is equivalent to <code>Thickness(Large)</code>. */
-  private static class Thick extends AbstractSymbolEvaluator {
+  private static class Thick extends GraphicsDirectiveSymbol {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.unaryAST1(S.Thickness, S.Large);
@@ -214,7 +224,7 @@ public class GraphicsFunctions {
   }
 
   /** <code>Thin</code> is equivalent to <code>Thickness(Tiny)</code>. */
-  private static class Thin extends AbstractSymbolEvaluator {
+  private static class Thin extends GraphicsDirectiveSymbol {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.unaryAST1(S.Thickness, S.Tiny);

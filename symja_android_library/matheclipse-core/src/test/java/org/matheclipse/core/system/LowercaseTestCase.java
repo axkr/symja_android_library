@@ -15354,7 +15354,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToString(NumberForm(7654321.25, {Infinity, 3}, DigitBlock -> 3))", //
         "7,654,321.250");
     check("ToString(NumberForm(7654321.25, {9, 2}))", //
-        "7654321.25");
+        "6\n7.65×10");
     check("ToString(NumberForm(45, {Infinity, 2}))", //
         "45");
     check("ToString(NumberForm(-0.875, {Infinity, 2}))", //
@@ -17085,8 +17085,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
     check("Cases(VerticalGauge(0.1, {0, 3}, ScaleDivisions -> 3), Text(t_, ___) :> t, Infinity)", //
         "{0,1,2,3}");
-    check("Cases(VerticalGauge(0.1, GaugeStyle -> Green), _RGBColor, Infinity)", //
-        "{RGBColor(0,1,0),RGBColor(0,0,0)}");
+    check("Cases(VerticalGauge(0.1, GaugeStyle -> Green), _RGBColor|_GrayLevel, Infinity)", //
+        "{GrayLevel(0.9),RGBColor(0,1,0),GrayLevel(0)}");
     check("Cases(VerticalGauge(0.1, myGaugeOption -> 2), Text(t_, ___) :> t, Infinity)", //
         "{0,1/4,1/2,3/4,1}");
     check("VerticalGauge(y, {0, 1})", //
@@ -17198,6 +17198,244 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "MomentEvaluate(Moment(2),x)");
     check("Attributes(MomentEvaluate)", //
         "{Protected,ReadProtected}");
+  }
+
+  @Test
+  public void testTakeDropIntegerValuedReals() {
+    // a real number with an integer value is that integer in a sequence specification
+    check("{Take({p,q,r,s,t}, 2.0), Drop({p,q,r,s,t}, -3.0), Take({p,q,r,s,t}, -2.0)}", //
+        "{{p,q},{p,q},{s,t}}");
+    check("{Take({p,q,r,s,t}, {2.0, 4.0}), Take({p,q,r,s,t,u}, {2.0, 6.0, 2.0}), "
+        + "Drop({p,q,r,s}, {3.0}), Drop({p,q,r,s,t,u}, {1.0, -1.0, 2.0})}", //
+        "{{q,r,s},{q,s,u},{p,q,s},{q,s,u}}");
+    check("{Take({p,q,r}, 0.0), Drop({p,q,r}, 0.0)}", //
+        "{{},{p,q,r}}");
+    check("Take({{1,2,3},{4,5,6}}, 1.0, -2.0)", //
+        "{{2,3}}");
+    // Take: Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position 2 in ...
+    check("Take({p,q,r}, 1.25)", //
+        "Take({p,q,r},1.25)");
+    check("Drop({p,q,r}, {0.5})", //
+        "Drop({p,q,r},{0.5})");
+    check("{UpTo(5.0), UpTo(0.0), UpTo(1.5), UpTo(m)}", //
+        "{UpTo(5),UpTo(0),UpTo(1.5),UpTo(m)}");
+    check("{Take({p,q}, UpTo(4.0)), Take({p,q,r,s}, UpTo(3.0))}", //
+        "{{p,q},{p,q,r}}");
+    check("{p,q,r,s}[[3.0]]", //
+        "r");
+  }
+
+  @Test
+  public void testContinuedFractionQuadraticSurd() {
+    // the exact periodic expansion of a + b*Sqrt(d) with rational a and b
+    check("ContinuedFraction(1/3+Sqrt(6)/4)", //
+        "{0,1,{17,2,2,1,1,4}}");
+    check("ContinuedFraction(Sqrt(5/7))", //
+        "{0,1,{5,2}}");
+    check("ContinuedFraction(3/(2-Sqrt(5)))", //
+        "{-12,{-1,-2,-2,-2,-1,-12}}");
+    // a purely periodic expansion is written with its first term in front of the period
+    check("ContinuedFraction((3+Sqrt(5))/2)", //
+        "{2,{1}}");
+    check("ContinuedFraction(2+Sqrt(7))", //
+        "{4,{1,1,1,4}}");
+    // the terms of a negative number carry its sign
+    check("ContinuedFraction(-(2+Sqrt(10))/3)", //
+        "{-1,{-1,-2,-1}}");
+    check("ContinuedFraction(-(1/3+Sqrt(6)/4))", //
+        "{0,-1,{-17,-2,-2,-1,-1,-4}}");
+    check("ContinuedFraction((1+Sqrt(3))/2, 7)", //
+        "{1,2,1,2,1,2,1}");
+    check("ContinuedFraction(1/3+Sqrt(6)/4, 4)", //
+        "{0,1,17,2}");
+    check("FromContinuedFraction(ContinuedFraction(5/11-2*Sqrt(15)/9)) == 5/11-2*Sqrt(15)/9 // Simplify", //
+        "True");
+  }
+
+  @Test
+  public void testSumWithoutClosedFormStaysWhole() {
+    // a symbolic sum with a part which has no closed form stays unevaluated as a whole: it is not
+    // split into the sums of its terms and no constant factor is pulled out
+    check("Sum(5+h(n), {n, 1, q})", //
+        "Sum(5+h(n),{n,1,q})");
+    check("Sum(n^2+h(n), {n, q})", //
+        "Sum(n^2+h(n),{n,q})");
+    check("Sum(b*h(n), {n, q})", //
+        "Sum(b*h(n),{n,q})");
+    check("Sum(h(n)*t, {n, q}, {t, s})", //
+        "Sum(t*h(n),{n,q},{t,s})");
+    check("Sum(h(n)*u(t), {n, q}, {t, 2})", //
+        "Sum(h(n)*u(t),{n,q},{t,2})");
+    check("Sum(h(n)+2*h(n)+1, {n, q})", //
+        "Sum(1+3*h(n),{n,q})");
+    // finite ranges and closed forms are evaluated
+    check("Sum(h(n)+2, {n, 3})", //
+        "6+h(1)+h(2)+h(3)");
+    check("Sum(h(n)*t, {n, 2}, {t, s})", //
+        "1/2*s*(1+s)*h(1)+1/2*s*(1+s)*h(2)");
+    check("Sum(n^3+2*n, {n, q})", //
+        "q^2/4+q^3/2+q^4/4+q*(1+q)");
+    check("Sum(b*n, {n, q})", //
+        "1/2*b*q*(1+q)");
+    check("Sum(n*t, {n, q}, {t, s})", //
+        "1/4*q*(1+q)*s+1/4*q*(1+q)*s^2");
+    // an unevaluated sum written in the summand, which doesn't depend on the iterator, may stay
+    check("Sum(n+Sum(h(t), {t, 1, s}), {n, 1, q})", //
+        "1/2*q*(1+q)+q*Sum(h(t),{t,1,s})");
+  }
+
+  @Test
+  public void testPlotLegendOfGrayLevelStyle() {
+    // a named grey like Gray is a GrayLevel; the legend shows it like the equal RGBColor. The
+    // pictures differ only in the random id of their clip path
+    check("legendSvg(s_) := StringReplace(ExportString(Plot(2*x, {x, 0, 2}, PlotStyle -> s, "
+        + "PlotLegends -> {\"y\"}), \"SVG\"), RegularExpression(\"plotArea_[0-9a-f]+\") -> \"\")", //
+        "");
+    check("legendSvg(Gray) === legendSvg(RGBColor(0.5, 0.5, 0.5))", //
+        "True");
+    check("legendSvg(Gray) === legendSvg(RGBColor(0.6, 0.5, 0.5))", //
+        "False");
+  }
+
+  @Test
+  public void testNumberFormSignificantDigitsPadding() {
+    // n significant digits, the remaining integer positions padded with zeros
+    check("NumberForm(56789.123, {2, 2})", //
+        "57000.00");
+    check("NumberForm(-4567.891, {3, 1})", //
+        "-4570.0");
+    check("NumberForm(987.654, {4, 2})", //
+        "987.70");
+    check("NumberForm(0.04567, {2, 3})", //
+        "0.046");
+    check("NumberForm(0.0000456, {3, 3})", //
+        "0.000");
+    // rounded once, at the last digit shown
+    check("NumberForm(3.1549, {3, 1})", //
+        "3.2");
+    check("NumberForm(99.97, {3, 1})", //
+        "100.0");
+    // scientific notation from a decimal exponent of 6 on, whatever n is
+    check("NumberForm(2345678.9, {8, 1})", //
+        "2.3×10^6");
+    check("NumberForm(-876543.21, {4, 2})", //
+        "-876500.00");
+    check("NumberForm(3.4567*^-8, {3, 2})", //
+        "3.46×10^-8");
+    check("ToString(NumberForm(456789123.4, {5, 2}))", //
+        "8\n4.57×10");
+    // n Infinity keeps all integer digits
+    check("NumberForm(2345678.9, {Infinity, 1})", //
+        "2345678.9");
+  }
+
+  @Test
+  public void testTraditionalFormBoxString() {
+    check("ToString(TraditionalForm(y^3))", //
+        "\\!\\(\\*FormBox[SuperscriptBox[\"y\", \"3\"], TraditionalForm]\\)");
+    check("ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))", //
+        "\\!\\(\\*FormBox[TagBox[InterpretationBox[\"3.142\", 3.14159265`], "
+            + "Function[NumberForm[Slot[1], {5, 3}]]], TraditionalForm]\\)");
+    // the box escape reads back as the wrapper
+    check("FullForm(ToExpression(ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))))", //
+        "NumberForm(3.14159265`, List(5, 3))");
+    check("FullForm(ToExpression(ToString(NumberForm(4.5*^9, {3, 1}), StandardForm)))", //
+        "NumberForm(4.5`*^9, List(3, 1))");
+    check("ToBoxes(NumberForm(4.5*^9, {3, 1}))[[1, 1]]", //
+        "RowBox({4.5,×,SuperscriptBox(10,9)})");
+  }
+
+  @Test
+  public void testSvgTextNumberFormLabel() {
+    // the exponent of a number in scientific notation is drawn in superscript digits
+    check("StringCases(ExportString(Graphics({Text(Row({\"F = \", NumberForm(4.5*^9, {3, 1}), \" N\"}), {0, 0})}), \"SVG\"), "
+        + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
+        "{F = 4.5 × 10⁹ N}");
+    check("StringCases(ExportString(Graphics({Text(NumberForm(-2.5*^-12, {3, 2}), {0, 0})}), \"SVG\"), "
+        + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
+        "{-2.50 × 10⁻¹²}");
+    // a box escape in a label is drawn as the text it typesets
+    check("StringCases(ExportString(Graphics({Text(Row({\"r = \", ToString(TraditionalForm(NumberForm(2.2360679775, {5, 2})))}))}), \"SVG\"), "
+        + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
+        "{r = 2.24}");
+  }
+
+  @Test
+  public void testInsphereOfPolygons() {
+    // the apothem r*Cos(Pi/n) of a regular polygon
+    check("Insphere(RegularPolygon(3))", //
+        "Sphere({0,0},1/2)");
+    check("Insphere(RegularPolygon(4,6))", //
+        "Sphere({0,0},2*Sqrt(3))");
+    check("Insphere(RegularPolygon({2,3},{4,Pi/5},4))", //
+        "Sphere({2,3},2*Sqrt(2))");
+    check("Insphere(RegularPolygon(r,8))", //
+        "Sphere({0,0},r*Cos(Pi/8))");
+    // Insphere: Insphere does not exist for RegularPolygon({1,1},5,4).
+    check("Insphere(RegularPolygon({1,1},5,4))", //
+        "Insphere(RegularPolygon({1,1},5,4))");
+    // a polygon whose edge lines all touch one circle
+    check("Insphere(Triangle({{0,0},{8,0},{0,6}}))", //
+        "Sphere({2,2},2)");
+    check("Insphere({{0,0},{0,6},{8,0}})", //
+        "Sphere({2,2},2)");
+    check("Insphere(Polygon({{0,0},{4,0},{4,4},{0,4}}))", //
+        "Sphere({2,2},2)");
+    check("Insphere(Polygon({{0,1},{1,0},{0,-1},{-1,0}}))", //
+        "Sphere({0,0},1/Sqrt(2))");
+    check("Insphere(Polygon({{1.,1.},{9.,1.},{1.,7.}}))", //
+        "Sphere({3.0,3.0},2.0)");
+    // Insphere: Insphere does not exist for Polygon({{0,0},{5,0},{5,2},{0,2}}).
+    check("Insphere(Polygon({{0,0},{5,0},{5,2},{0,2}}))", //
+        "Insphere(Polygon({{0,0},{5,0},{5,2},{0,2}}))");
+    // not convex
+    check("Insphere(Polygon({{0,0},{2,0},{1,1},{2,2},{0,2}}))", //
+        "Insphere(Polygon({{0,0},{2,0},{1,1},{2,2},{0,2}}))");
+    check("Insphere(Polygon({{a,0},{1,0},{0,1}}))", //
+        "Insphere(Polygon({{a,0},{1,0},{0,1}}))");
+  }
+
+  @Test
+  public void testCircumsphereOfPolygons() {
+    check("Circumsphere(RegularPolygon({2,-1},3,6))", //
+        "Sphere({2,-1},3)");
+    check("Circumsphere(RegularPolygon(7))", //
+        "Sphere({0,0},1)");
+    check("Circumsphere(RegularPolygon({0,1},{5,Pi/3},3))", //
+        "Sphere({0,1},5)");
+    check("Circumsphere(Polygon({{0,0},{6,0},{6,8},{0,8}}))", //
+        "Sphere({3,4},5)");
+    check("Circumsphere(Polygon({{0,0},{2,0},{2,2},{0,2}}))", //
+        "Sphere({1,1},Sqrt(2))");
+    check("Circumsphere(Triangle({{2,0},{8,0},{2,8}}))", //
+        "Sphere({5,4},5)");
+    // Circumsphere: Circumsphere does not exist for Polygon({{0,0},{4,0},{4,1},{0,3}}).
+    check("Circumsphere(Polygon({{0,0},{4,0},{4,1},{0,3}}))", //
+        "Circumsphere(Polygon({{0,0},{4,0},{4,1},{0,3}}))");
+    // Circumsphere: Circumsphere does not exist for Polygon({{0,0},{1,1},{2,2}}).
+    check("Circumsphere(Polygon({{0,0},{1,1},{2,2}}))", //
+        "Circumsphere(Polygon({{0,0},{1,1},{2,2}}))");
+  }
+
+  @Test
+  public void testGraphicsDirectiveSymbolAsHead() {
+    // a symbol whose value is a directive evaluates to it also as a head
+    check("{Thick(a), Thin(), Dashed(z)}", //
+        "{Thickness(Large)[a],Thickness(Tiny)[],Dashing({Small,Small})[z]}");
+    check("{DotDashed(x,y), Dotted(1)}", //
+        "{Dashing({0,Small,Small,Small})[x,y],Dashing({0,Small})[1]}");
+    check("{Black(u), White(v), Gray(w), Gray}", //
+        "{GrayLevel(0)[u],GrayLevel(1)[v],GrayLevel(0.5)[w],GrayLevel(0.5)}");
+    check("Thin(p, q) /. Thin(u_, v_) :> {v, u}", //
+        "{q,p}");
+    check("Attributes({Thin, DotDashed, Small, White})", //
+        "{{Protected,ReadProtected},{Protected,ReadProtected},{Protected},{Protected}}");
+    // Attributes: Symbol or string expected at position 1 in Attributes(h(1)).
+    check("Attributes(h(1))", //
+        "Attributes(h(1))");
+    // Attributes: Symbol or string expected at position 1 in Attributes(3).
+    check("Attributes({Times, 3})", //
+        "{{Flat,Listable,NumericFunction,OneIdentity,Orderless,Protected},Attributes(3)}");
   }
 
   @Test
@@ -36402,8 +36640,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTreeForm() {
     checkGraphics("TreeForm(a+b)", //
-        "Graphics({RGBColor(0.5,0.5,0.5),Line({{1.25,0.0},{0.5,-2.0}}),Line({{1.25,0.0},{2.0,-2.0}}),RGBColor(\n" //
-            + "0,0,0),Tooltip(Text(Framed(Plus,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{1.25,0.0},{\n" //
+        "Graphics({GrayLevel(0.5),Line({{1.25,0.0},{0.5,-2.0}}),Line({{1.25,0.0},{2.0,-2.0}}),GrayLevel(\n" //
+            + "0),Tooltip(Text(Framed(Plus,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{1.25,0.0},{\n" //
             + "0,0}),a+b),Tooltip(Text(Framed(a,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{0.5,-2.0},{\n" //
             + "0,0}),a),Tooltip(Text(Framed(b,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{2.0,-2.0},{\n" //
             + "0,0}),b)},{AspectRatio->Automatic})");

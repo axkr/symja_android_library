@@ -938,6 +938,14 @@ public final class BoxNotation {
         }
         break;
       case "tagbox":
+        if (size >= 2 && args.get(1).isAST() && isSymbol(args.get(1).head(), "Function")) {
+          // a function tag rebuilds the wrapper: TagBox[box, NumberForm[#1, {4, 2}]&]
+          return slot(args.get(1)) + "[" + source(args.get(0)) + "]";
+        }
+        if (size >= 1) {
+          return source(args.get(0));
+        }
+        break;
       case "stylebox":
       case "framebox":
       case "adjustmentbox":

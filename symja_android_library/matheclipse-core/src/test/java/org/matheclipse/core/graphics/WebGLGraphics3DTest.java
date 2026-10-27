@@ -155,14 +155,14 @@ public class WebGLGraphics3DTest {
         "ParametricPlot3D[{u,v,u},{u,-1,1},{v,-1,1}, PlotPoints->3, MeshFunctions->(#1&), "
             + "Mesh->{{0.5}}, MeshShading->{Red,Blue}]",
         "Plot3D[x*y,{x,-1,1},{y,-1,1}, PlotPoints->3, MaxRecursion->0, MeshFunctions->{#3&}, "
-            + "Mesh->{{0.1}}]"}) {
+            + "Mesh->{{0.1}}, BoundaryStyle->None]"}) {
       evaluator.eval("meshPlot = " + plot);
       assertEquals("0", evaluator
           .eval("Length[Cases[meshPlot /. _GraphicsComplex -> Null, _Line, Infinity]]").toString(),
           plot + ": no line outside the complex");
       assertEquals("1",
           evaluator
-              .eval("Length[Cases[meshPlot, {RGBColor[0,0,0], "
+              .eval("Length[Cases[meshPlot, {GrayLevel[0], "
                   + "Line[{{_Integer, _Integer} ..}, VertexColors -> None]}, Infinity]]")
               .toString(),
           plot + ": one indexed group of mesh segments");

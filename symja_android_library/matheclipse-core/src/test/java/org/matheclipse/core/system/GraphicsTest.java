@@ -48,9 +48,9 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testRGBColor() {
-    // the pure colors are exact, as in WMA: Black is RGBColor(0,0,0)
+    // the pure colors are exact: Black is GrayLevel(0)
     check("Black", //
-        "RGBColor(0,0,0)");
+        "GrayLevel(0)");
     check("Blue", //
         "RGBColor(0,0,1)");
   }

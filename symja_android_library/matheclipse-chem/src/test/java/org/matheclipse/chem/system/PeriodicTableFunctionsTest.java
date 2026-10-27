@@ -154,7 +154,7 @@ public class PeriodicTableFunctionsTest extends AbstractTestCase {
         "RGBColor(0.90222,0.101808,0.198306,1.0)");
     // lettering follows the cell, so it does not disappear into the dark end of a scale
     check("PeriodicTablePlot(ColorFunction->\"AvocadoColors\")[[1,1,1,3,1,3]]", //
-        "RGBColor(1,1,1)");
+        "GrayLevel(1)");
     // asking for an indexed scheme says the values are categories, even when they are numbers
     check(
         "Head(PeriodicTablePlot(EntityProperty(\"Element\",\"Group\"),"

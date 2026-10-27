@@ -1,16 +1,16 @@
 { 
-Black=RGBColor(0,0,0),
+Black=GrayLevel(0),
 Brown=RGBColor(0.6,0.4,0.2),
 Blue=RGBColor(0,0,1),
 Cyan=RGBColor(0,1,1),
-Gray=RGBColor(0.5,0.5,0.5),
+Gray=GrayLevel(0.5),
 Green=RGBColor(0,1,0),
 Magenta=RGBColor(1,0,1),
 Orange=RGBColor(1.0,0.5,0.0),
 Pink=RGBColor(1.0,0.5,0.5),
 Purple=RGBColor(0.5,0.0,0.5),
 Red=RGBColor(1,0,0),
-White=RGBColor(1,1,1),
+White=GrayLevel(1),
 Yellow=RGBColor(1,1,0),
 
 LightBrown=RGBColor(0.94,0.91,0.88),
@@ -28,7 +28,7 @@ LightYellow=RGBColor(1.0,1.0,0.85),
 (* The Standard* family, curated to read well on both light and dark backgrounds.
    Values are the ones Wolfram documents each name as "currently equivalent to".
    StandardGray is documented as GrayLevel(0.62) and is written here as the equal
-   RGBColor, because every other name in this file is an RGBColor too. *)
+   RGBColor. *)
 StandardRed=RGBColor(0.93,0.27,0.27),
 StandardGreen=RGBColor(0.14,0.8,0.14),
 StandardBlue=RGBColor(0.4,0.6,1.0),

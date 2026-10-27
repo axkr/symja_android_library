@@ -26,7 +26,7 @@ public class PolyLogRules {
     // PolyLog(2,1/2)=Pi^2/12-Log(2)^2/2
     ISet(PolyLog(C2,C1D2),
       Plus(Times(QQ(1L,12L),Sqr(Pi)),Times(CN1D2,Sqr(Log(C2)))), true),
-    // PolyLog(2,2)=Pi^2/4+(-1)*I*Pi*Log(2)
+    // PolyLog(2,2)=Pi^2/4-Pi*I*Log(2)
     ISet(PolyLog(C2,C2),
       Plus(Times(C1D4,Sqr(Pi)),Times(CNI,Pi,Log(C2))), true),
     // PolyLog(2,I)=I*Catalan-Pi^2/48

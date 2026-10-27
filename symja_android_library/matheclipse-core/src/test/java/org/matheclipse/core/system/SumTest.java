@@ -893,9 +893,9 @@ public class SumTest extends ExprEvaluatorTestCase {
   @Test
   public void testDifferenceRoot() {
     // the inner sum over i has the closed form c*(PolyGamma(0,n+2-j)-PolyGamma(0,2-j)); the
-    // outer sum over j has none
+    // outer sum over j has none, so the sum stays unevaluated as a whole
     check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", //
-        "Sum(-c*PolyGamma(0,2-j),{j,1+i,n})+Sum(c*PolyGamma(0,2-j+n),{j,1+i,n})");
+        "Sum(c/(1+i-j),{j,1+i,n},{i,1,n})");
     check("Sum((-1)^(j-1)*Gamma(j),{j,1,n-1})", //
         "DifferenceRoot[Function({y,n},{-n*y(n)-y(1+n)+n*y(1+n)+y(2+n)==0,y(1)==0,y(2)==1})][n]");
   }

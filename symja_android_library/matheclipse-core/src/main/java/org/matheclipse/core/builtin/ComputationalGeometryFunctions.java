@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.tensor.opt.qh3.ConvexHull3D;
@@ -63,6 +64,7 @@ public class ComputationalGeometryFunctions {
       S.ConvexPolyhedronQ.setEvaluator(new ConvexPolyhedronQ());
       S.RegionProduct.setEvaluator(new RegionProduct());
       S.Circumsphere.setEvaluator(new Circumsphere());
+      S.Insphere.setEvaluator(new Insphere());
       S.PolyhedronData.setEvaluator(new PolyhedronData());
       Entities.register(PolyhedronData.POLYHEDRON, S.PolyhedronData);
       S.KnotData.setEvaluator(new org.matheclipse.core.reflection.system.KnotData());
@@ -343,6 +345,37 @@ public class ComputationalGeometryFunctions {
   }
 
   /** The squared euclidean distance between two 2D points. */
+  /** The cross product <code>p x q</code> of two vectors in the plane. */
+  private static IExpr cross(IExpr p, IExpr q) {
+    return F.Subtract(F.Times(p.first(), q.second()), F.Times(p.second(), q.first()));
+  }
+
+  /** The cross product <code>(b - a) x (c - b)</code> of two successive edges in the plane. */
+  private static IExpr turn(IExpr a, IExpr b, IExpr c) {
+    return F.Subtract(
+        F.Times(F.Subtract(b.first(), a.first()), F.Subtract(c.second(), b.second())),
+        F.Times(F.Subtract(b.second(), a.second()), F.Subtract(c.first(), b.first())));
+  }
+
+  /** The value of {@link #sign(IExpr, EvalEngine)} for a sign which can't be decided. */
+  private static final int UNDECIDED_SIGN = 2;
+
+  /**
+   * The sign of a numeric expression.
+   *
+   * @return <code>1</code>, <code>-1</code>, <code>0</code> or {@link #UNDECIDED_SIGN}
+   */
+  private static int sign(IExpr expr, EvalEngine engine) {
+    IExpr sign = engine.evaluate(F.Sign(expr));
+    if (sign.isOne()) {
+      return 1;
+    }
+    if (sign.isMinusOne()) {
+      return -1;
+    }
+    return sign.isZero() ? 0 : UNDECIDED_SIGN;
+  }
+
   private static IExpr squaredDistance(IAST p1, IAST p2) {
     IExpr dx = F.eval(p2.arg1().subtract(p1.arg1()));
     IExpr dy = F.eval(p2.arg2().subtract(p1.arg2()));
@@ -2870,6 +2903,11 @@ public class ComputationalGeometryFunctions {
    * <code>n</code> dimensions.
    *
    * <p>
+   * <code>Circumsphere(polygon)</code> - the circle through all vertices of a <code>Polygon</code>,
+   * <code>Triangle</code> or <code>RegularPolygon</code> in the plane. A polygon whose vertices
+   * don't lie on one circle has no circumsphere.
+   *
+   * <p>
    * The result is a <code>Sphere</code> in every dimension, so the circumcircle of three points in
    * the plane also comes back as <code>Sphere</code>.
    */
@@ -2877,10 +2915,51 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.arg1().isListOfLists()) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.RegularPolygon)) {
+        RegionPrimitives.RegularPolygonSpec spec =
+            RegionPrimitives.parseRegularPolygon((IAST) arg1);
+        if (spec == null || !isRegularPolygonOrder(spec.n)) {
+          return F.NIL;
+        }
+        return F.Sphere(spec.center, spec.radius);
+      }
+      IAST vertices = planarPolygonVertices(arg1);
+      if (vertices.isPresent()) {
+        int turn = sign(turn(vertices.arg1(), vertices.arg2(), vertices.arg3()), engine);
+        if (turn == UNDECIDED_SIGN) {
+          return F.NIL;
+        }
+        // three collinear vertices are on no circle
+        IExpr sphere = turn == 0 ? F.NIL
+            : circumsphere(F.List(vertices.arg1(), vertices.arg2(), vertices.arg3()), engine);
+        if (sphere.isPresent()) {
+          IExpr center = sphere.first();
+          IExpr radiusSquared = squaredDistance(center, vertices.arg1(), engine);
+          int i = 4;
+          while (i < vertices.size() && S.PossibleZeroQ.ofQ(engine,
+              F.Subtract(squaredDistance(center, vertices.get(i), engine), radiusSquared))) {
+            i++;
+          }
+          if (i == vertices.size()) {
+            return sphere;
+          }
+        }
+        // Circumsphere does not exist for `polygon`.
+        return Errors.printMessage(S.Circumsphere, "indep", F.list(S.Circumsphere, arg1), engine);
+      }
+      if (!arg1.isListOfLists()) {
         return F.NIL;
       }
-      IAST points = (IAST) ast.arg1();
+      return circumsphere((IAST) arg1, engine);
+    }
+
+    /**
+     * The sphere through <code>n + 1</code> points in <code>n</code> dimensions.
+     *
+     * @return {@link F#NIL} if the points are not of that shape or if they are degenerate
+     */
+    private static IExpr circumsphere(IAST points, EvalEngine engine) {
       int count = points.argSize();
       if (count < 2 || !points.arg1().isList()) {
         return F.NIL;
@@ -2936,6 +3015,200 @@ public class ComputationalGeometryFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+  }
+
+  /**
+   * <code>Insphere(polygon)</code> - the circle inside a <code>Polygon</code>,
+   * <code>Triangle</code> or <code>RegularPolygon</code> in the plane which touches every edge.
+   *
+   * <p>
+   * <code>Insphere({p1, p2, p3})</code> - the incircle of the triangle with these corners.
+   *
+   * <p>
+   * Only a convex polygon whose edge lines all have the same distance from one inner point has an
+   * insphere; for any other polygon a message is printed and the call stays unevaluated. A
+   * <code>RegularPolygon(c, r, n)</code> with a center and a plain radius gets that message too.
+   */
+  private static class Insphere extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.RegularPolygon)) {
+        IAST regularPolygon = (IAST) arg1;
+        RegionPrimitives.RegularPolygonSpec spec =
+            RegionPrimitives.parseRegularPolygon(regularPolygon);
+        if (spec == null || !isRegularPolygonOrder(spec.n)) {
+          return F.NIL;
+        }
+        if (regularPolygon.argSize() == 3 && !regularPolygon.arg2().isList()) {
+          // Insphere does not exist for `polygon`.
+          return Errors.printMessage(S.Insphere, "indep", F.list(S.Insphere, arg1), engine);
+        }
+        // the apothem of a regular n-gon is r*Cos(Pi/n)
+        IExpr apothem =
+            engine.evaluate(F.Simplify(F.Times(spec.radius, F.Cos(F.Divide(S.Pi, spec.n)))));
+        return F.Sphere(spec.center, apothem);
+      }
+      IAST vertices = planarPolygonVertices(arg1);
+      if (vertices.isNIL() && arg1.isListOfLists() && arg1.argSize() == 3) {
+        vertices = planarPolygonVertices(F.Triangle((IAST) arg1));
+      }
+      if (vertices.isNIL()) {
+        return F.NIL;
+      }
+      IExpr sphere = insphere(vertices, engine);
+      if (sphere == null) {
+        return F.NIL;
+      }
+      if (sphere.isNIL()) {
+        // Insphere does not exist for `polygon`.
+        return Errors.printMessage(S.Insphere, "indep", F.list(S.Insphere, arg1), engine);
+      }
+      return sphere;
+    }
+
+    /**
+     * The incircle of a convex polygon in the plane.
+     *
+     * @param vertices at least three numeric points in the plane
+     * @return {@link F#NIL} if the polygon is not strictly convex or no inner point has the same
+     *         distance from all edge lines, <code>null</code> if a sign can't be decided
+     */
+    private static IExpr insphere(IAST vertices, EvalEngine engine) {
+      final int n = vertices.argSize();
+      // twice the signed area gives the orientation
+      IASTAppendable doubleArea = F.PlusAlloc(n);
+      for (int i = 1; i <= n; i++) {
+        doubleArea.append(cross(vertices.get(i), vertices.get(i % n + 1)));
+      }
+      int orientation = sign(doubleArea, engine);
+      if (orientation == UNDECIDED_SIGN) {
+        return null;
+      }
+      if (orientation == 0) {
+        return F.NIL;
+      }
+      for (int i = 1; i <= n; i++) {
+        int turn = sign(
+            turn(vertices.get(i), vertices.get(i % n + 1), vertices.get((i + 1) % n + 1)), engine);
+        if (turn == UNDECIDED_SIGN) {
+          return null;
+        }
+        if (turn != orientation) {
+          // not strictly convex
+          return F.NIL;
+        }
+      }
+      if (n == 3) {
+        // the incenter is the mean of the corners weighted by the lengths of the opposite sides
+        IExpr p1 = vertices.arg1();
+        IExpr p2 = vertices.arg2();
+        IExpr p3 = vertices.arg3();
+        IExpr a = F.EuclideanDistance(p2, p3);
+        IExpr b = F.EuclideanDistance(p3, p1);
+        IExpr c = F.EuclideanDistance(p1, p2);
+        IExpr perimeter = F.Plus(a, b, c);
+        IExpr center = engine.evaluate(F.Simplify(
+            F.Divide(F.Plus(F.Times(a, p1), F.Times(b, p2), F.Times(c, p3)), perimeter)));
+        IExpr radius = engine.evaluate(F.Simplify(F.Divide(F.Abs(doubleArea), perimeter)));
+        return F.Sphere(center, radius);
+      }
+      // the signed distance of {x, y} from the line of edge i is u_i.{x, y} - u_i.v_i with the
+      // inward unit normal u_i; the first three edges determine the point at distance r from them
+      IAST[] normals = new IAST[n + 1];
+      IExpr[] offsets = new IExpr[n + 1];
+      for (int i = 1; i <= n; i++) {
+        IAST a = (IAST) vertices.get(i);
+        IAST b = (IAST) vertices.get(i % n + 1);
+        IExpr dx = F.Subtract(b.arg1(), a.arg1());
+        IExpr dy = F.Subtract(b.arg2(), a.arg2());
+        IExpr length = F.Sqrt(F.Plus(F.Sqr(dx), F.Sqr(dy)));
+        IAST normal = orientation > 0 //
+            ? F.List(F.Divide(F.Negate(dy), length), F.Divide(dx, length))
+            : F.List(F.Divide(dy, length), F.Divide(F.Negate(dx), length));
+        normals[i] = (IAST) engine.evaluate(normal);
+        offsets[i] = engine.evaluate(F.Dot(normals[i], a));
+      }
+      IASTAppendable matrix = F.ListAlloc(3);
+      IASTAppendable rhs = F.ListAlloc(3);
+      for (int i = 1; i <= 3; i++) {
+        matrix.append(F.List(normals[i].arg1(), normals[i].arg2(), F.CN1));
+        rhs.append(offsets[i]);
+      }
+      IExpr solution = S.LinearSolve.ofNIL(engine, matrix, rhs);
+      if (!solution.isList() || solution.argSize() != 3) {
+        return F.NIL;
+      }
+      IExpr x = engine.evaluate(F.Simplify(solution.first()));
+      IExpr y = engine.evaluate(F.Simplify(solution.second()));
+      IExpr r = engine.evaluate(F.Simplify(((IAST) solution).arg3()));
+      int radiusSign = sign(r, engine);
+      if (radiusSign == UNDECIDED_SIGN) {
+        return null;
+      }
+      if (radiusSign <= 0) {
+        return F.NIL;
+      }
+      for (int i = 4; i <= n; i++) {
+        IExpr distance = F.Plus(F.Times(normals[i].arg1(), x), F.Times(normals[i].arg2(), y),
+            F.Negate(offsets[i]), F.Negate(r));
+        if (!S.PossibleZeroQ.ofQ(engine, distance)) {
+          return F.NIL;
+        }
+      }
+      return F.Sphere(F.List(x, y), r);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /** <code>true</code> if <code>n</code> is an integer number of vertices of a regular polygon. */
+  private static boolean isRegularPolygonOrder(IExpr n) {
+    return n.isInteger() && ((IInteger) n).isGT(F.C2);
+  }
+
+  /**
+   * The vertices of a <code>Polygon(points)</code> or <code>Triangle(points)</code> in the plane
+   * with numeric coordinates.
+   *
+   * @return {@link F#NIL} for any other expression
+   */
+  private static IAST planarPolygonVertices(IExpr region) {
+    IExpr points;
+    if (region.isAST(S.Triangle, 1)) {
+      points = F.List(F.CListC0C0, F.List(F.C1, F.C0), F.List(F.C0, F.C1));
+    } else if (region.isAST(S.Triangle, 2) || region.isAST(S.Polygon, 2)) {
+      points = region.first();
+    } else {
+      return F.NIL;
+    }
+    if (!points.isListOfLists() || points.argSize() < 3
+        || (region.isAST(S.Triangle) && points.argSize() != 3)) {
+      return F.NIL;
+    }
+    IAST list = (IAST) points;
+    for (int i = 1; i < list.size(); i++) {
+      IExpr point = list.get(i);
+      if (point.argSize() != 2 || !point.first().isNumericFunction()
+          || !point.second().isNumericFunction()) {
+        return F.NIL;
+      }
+    }
+    return list;
+  }
+
+  private static IExpr squaredDistance(IExpr p, IExpr q, EvalEngine engine) {
+    return engine.evaluate(F.Plus(F.Sqr(F.Subtract(p.first(), q.first())),
+        F.Sqr(F.Subtract(p.second(), q.second()))));
   }
 
   /**

@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class AttributeFunctions {
 
@@ -63,6 +64,11 @@ public class AttributeFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr expr = ast.arg1();
+        if (!expr.isSymbol() && !expr.isString()
+            && !(expr.isAST(S.HoldPattern, 2) && expr.first().isSymbol())) {
+          // Symbol or string expected at position `2` in `1`.
+          return Errors.printMessage(S.Attributes, "ssle", F.list(ast, F.C1), engine);
+        }
         IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
         if (x.isNIL()) {
           return F.NIL;
@@ -113,6 +119,8 @@ public class AttributeFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDALL, Attribute.LISTABLE);
+      newSymbol.putMessage(IPatternMatcher.SET, "ssle",
+          F.stringx("Symbol or string expected at position `2` in `1`."));
     }
   }
 

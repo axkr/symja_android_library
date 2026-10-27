@@ -17,9 +17,9 @@ public class RGBColorRules {
 
   final public static IAST RULES = List(
     IInit(RGBColor, SIZES),
-    // Black=RGBColor(0,0,0)
+    // Black=GrayLevel(0)
     ISet(Black,
-      RGBColor(C0,C0,C0)),
+      GrayLevel(C0)),
     // Brown=RGBColor(0.6,0.4,0.2)
     ISet(Brown,
       RGBColor(num(0.6),num(0.4),num(0.2))),
@@ -29,9 +29,9 @@ public class RGBColorRules {
     // Cyan=RGBColor(0,1,1)
     ISet(Cyan,
       RGBColor(C0,C1,C1)),
-    // Gray=RGBColor(0.5,0.5,0.5)
+    // Gray=GrayLevel(0.5)
     ISet(Gray,
-      RGBColor(num(0.5),num(0.5),num(0.5))),
+      GrayLevel(num(0.5))),
     // Green=RGBColor(0,1,0)
     ISet(Green,
       RGBColor(C0,C1,C0)),
@@ -50,9 +50,9 @@ public class RGBColorRules {
     // Red=RGBColor(1,0,0)
     ISet(Red,
       RGBColor(C1,C0,C0)),
-    // White=RGBColor(1,1,1)
+    // White=GrayLevel(1)
     ISet(White,
-      RGBColor(C1,C1,C1)),
+      GrayLevel(C1)),
     // Yellow=RGBColor(1,1,0)
     ISet(Yellow,
       RGBColor(C1,C1,C0)),

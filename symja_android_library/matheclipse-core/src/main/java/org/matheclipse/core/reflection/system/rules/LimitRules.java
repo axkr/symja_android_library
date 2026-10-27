@@ -17,8 +17,8 @@ public class LimitRules {
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
-    // Limit((Sqrt(2*Pi))^(1/x_)*(Sin(x_)/x_!)^(1/x_)*x_,x_Symbol->Infinity):=E
-    ISetDelayed(Limit(Times(Power(Sqrt(C2Pi),Power(x_,CN1)),Power(Times(Power(Factorial(x_),CN1),Sin(x_)),Power(x_,CN1)),x_),Rule(x_Symbol,oo)),
+    // Limit((2*Pi)^(1/(2*x_))*(Sin(x_)/x_!)^(1/x_)*x_,x_Symbol->Infinity):=E
+    ISetDelayed(Limit(Times(Power(C2Pi,Times(C1D2,Power(x_,CN1))),Power(Times(Power(Factorial(x_),CN1),Sin(x_)),Power(x_,CN1)),x_),Rule(x_Symbol,oo)),
       E),
     // Limit(x_/(x_!)^(1/x_),x_Symbol->Infinity):=E
     ISetDelayed(Limit(Times(Power(Factorial(x_),Negate(Power(x_,CN1))),x_),Rule(x_Symbol,oo)),
