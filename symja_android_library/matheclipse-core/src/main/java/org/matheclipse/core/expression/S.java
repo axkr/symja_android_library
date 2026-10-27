@@ -12164,6 +12164,15 @@ public class S {
 
   public final static IBuiltInSymbol Inset = S.initFinalSymbol("Inset", ID.Inset);
 
+  /**
+   * Insphere(x) - TODO describe `Insphere`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Insphere.md">Insphere
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Insphere = S.initFinalSymbol("Insphere", ID.Insphere);
+
   public final static IBuiltInSymbol InstallJava = S.initFinalSymbol("InstallJava", ID.InstallJava);
 
   /**
