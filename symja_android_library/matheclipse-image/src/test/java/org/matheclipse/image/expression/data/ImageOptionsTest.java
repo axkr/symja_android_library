@@ -6,6 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -234,6 +238,24 @@ public class ImageOptionsTest {
   public void aSizeIsNeverRoundedAwayToNothing() {
     assertEquals("<img src=\"data:image/png;base64, ...\" style=\"width:1px; height:1px\"/>",
         imgTag(redPixel().withOptions(ImageOptions.DEFAULT.withImageSize(F.num(0.1)))));
+  }
+
+  /** The options go through Java serialization with the image, which is what a cached image needs. */
+  @Test
+  public void serializationCarriesTheOptionsOver() throws Exception {
+    ImageExpr image = redPixel().withOptions(ImageOptions.DEFAULT.withImageSize(F.ZZ(200)));
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+      out.writeObject(image);
+    }
+    ImageExpr copy;
+    try (ObjectInputStream in =
+        new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
+      copy = (ImageExpr) in.readObject();
+    }
+    assertEquals(image, copy);
+    assertEquals(image.getOptions(), copy.getOptions());
+    assertEquals(F.ZZ(200), copy.getOptions().imageSize());
   }
 
   @Test

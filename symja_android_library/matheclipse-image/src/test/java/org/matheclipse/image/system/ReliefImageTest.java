@@ -34,7 +34,7 @@ public class ReliefImageTest extends AbstractTestCase {
   @Test
   public void everyDocumentedOptionIsDeclared() {
     check("Options(ReliefImage)", //
-        "{ClippingStyle->{RGBColor(0,0,0),RGBColor(1,1,1)},ColorFunction->Automatic,"
+        "{ClippingStyle->{GrayLevel(0),GrayLevel(1)},ColorFunction->Automatic,"
             + "ColorFunctionScaling->True,ImageSize->Automatic,LightingAngle->Automatic,"
             + "Method->Automatic,PlotRange->All}");
   }

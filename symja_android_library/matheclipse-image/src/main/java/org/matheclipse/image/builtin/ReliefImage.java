@@ -91,7 +91,7 @@ public class ReliefImage extends AbstractFunctionOptionEvaluator {
             options[OPTION_COLOR_FUNCTION_SCALING], S.ReliefImage, engine)
         .sink(PlotColorFunction.Sink.FLAT).fallback(t -> F.GrayLevel(F.C1)).build();
     // the default is written as {Black, White}, and a bare colour symbol is not yet a colour - it
-    // has to be evaluated into the RGBColor it stands for before it can be read
+    // has to be evaluated into the GrayLevel or RGBColor it stands for before it can be read
     float[][] clipping = clippingStyle(engine.evaluate(options[OPTION_CLIPPING_STYLE]), engine);
 
     // the heights scaled onto 0.0 ... 1.0, which is what both the shading and the colour function

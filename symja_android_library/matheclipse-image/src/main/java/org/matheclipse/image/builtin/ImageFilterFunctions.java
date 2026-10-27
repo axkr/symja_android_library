@@ -926,7 +926,7 @@ public class ImageFilterFunctions {
             double v = piece + i * h;
             double inside = piece + Math.min(Math.max(i * h, 1e-12), 1.0 - 1e-12);
             double gauss = Math.exp(-(k - v) * (k - v) / (2.0 * sigma * sigma)) * norm;
-            double weight = i == 0 || i == steps ? 1.0 : i % 2 == 1 ? 4.0 : 2.0;
+            double weight = i == 0 || i == steps ? 1.0 : (i & 1) == 1 ? 4.0 : 2.0;
             sum += weight * bSpline(order, inside) * gauss;
           }
           total += sum * h / 3.0;

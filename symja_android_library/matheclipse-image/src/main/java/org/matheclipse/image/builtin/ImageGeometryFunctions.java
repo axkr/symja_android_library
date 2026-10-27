@@ -297,7 +297,7 @@ public class ImageGeometryFunctions {
       if (turns == 0) {
         return matrix;
       }
-      final boolean odd = turns % 2 == 1;
+      final boolean odd = (turns & 1) == 1;
       int newRows = odd ? cols : rows;
       int newCols = odd ? rows : cols;
       org.matheclipse.core.interfaces.IASTAppendable result = F.ListAlloc(newRows);

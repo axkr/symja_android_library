@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.image.algo.Colors;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.ImageExpr;
@@ -295,6 +296,12 @@ public class ImageArithmeticFunctions {
       }
       return result;
     }
+    if (colorChannels == 1 && isColor(operand)) {
+      // a colour on a greyscale image makes it a colour image, whatever the colour's own level
+      left = toColor(left);
+      result = left.copy();
+      colorChannels = 3;
+    }
     double[] operands = constantOperand(operand, colorChannels);
     if (operands == null) {
       return null;
@@ -309,14 +316,48 @@ public class ImageArithmeticFunctions {
     return result;
   }
 
-  /** A number, an <code>RGBColor</code> or a list of channel values, spread over the channels. */
-  private static double[] constantOperand(IExpr operand, int channels) {
-    IAST values = null;
-    if (operand.isAST(S.RGBColor) || operand.isList()) {
-      values = (IAST) operand;
+  /**
+   * Whether <code>operand</code> is a colour directive other than a grey: the operand which turns
+   * a greyscale image into a colour image.
+   */
+  private static boolean isColor(IExpr operand) {
+    return operand.isAST() && !operand.isList() && !operand.isAST(S.GrayLevel)
+        && Colors.toRgbaDouble(operand) != null;
+  }
+
+  /**
+   * A greyscale raster as an RGB one, every colour channel the intensity; an alpha channel stays.
+   */
+  private static Raster toColor(Raster grey) {
+    boolean alpha = grey.channels == 2;
+    Raster result = new Raster(grey.width, grey.height, alpha ? 4 : 3);
+    for (int y = 0; y < grey.height; y++) {
+      for (int x = 0; x < grey.width; x++) {
+        double intensity = grey.get(x, y, 0);
+        result.set(x, y, 0, intensity);
+        result.set(x, y, 1, intensity);
+        result.set(x, y, 2, intensity);
+        if (alpha) {
+          result.set(x, y, 3, grey.get(x, y, 1));
+        }
+      }
     }
+    return result;
+  }
+
+  /**
+   * A number, a colour or a list of channel values, spread over the colour channels: a number is
+   * the value of every channel, a list gives each of them, and a colour is converted to the
+   * channels of the image. On a greyscale image that is a <code>GrayLevel</code>, as any other
+   * colour has turned the image into a colour image first.
+   *
+   * @return <code>null</code> if <code>operand</code> is none of these, or a list with fewer
+   *         entries than there are channels
+   */
+  private static double[] constantOperand(IExpr operand, int channels) {
     double[] result = new double[channels];
-    if (values != null) {
+    if (operand.isList()) {
+      IAST values = (IAST) operand;
       if (values.argSize() < channels) {
         return null;
       }
@@ -328,11 +369,25 @@ public class ImageArithmeticFunctions {
       }
       return result;
     }
+    // a number before the colours: it is exact, where a colour is read through floats
     double scalar = operand.evalfNaN();
-    if (Double.isNaN(scalar)) {
+    if (!Double.isNaN(scalar)) {
+      java.util.Arrays.fill(result, scalar);
+      return result;
+    }
+    double[] rgba = Colors.toRgbaDouble(operand);
+    if (rgba == null || channels > 3) {
       return null;
     }
-    java.util.Arrays.fill(result, scalar);
+    if (channels == 1) {
+      // a grey is its level as written; the weighted sum is only for a colour reaching here
+      boolean grey = rgba[0] == rgba[1] && rgba[1] == rgba[2];
+      result[0] = grey ? rgba[0] : Colors.grayLevel(rgba[0], rgba[1], rgba[2]);
+      return result;
+    }
+    for (int c = 0; c < channels; c++) {
+      result[c] = rgba[c];
+    }
     return result;
   }
 

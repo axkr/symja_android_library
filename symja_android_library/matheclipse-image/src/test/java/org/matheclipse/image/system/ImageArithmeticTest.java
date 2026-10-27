@@ -49,6 +49,29 @@ public class ImageArithmeticTest extends AbstractTestCase {
         "{{{255,0,0}}}");
   }
 
+  /** The named greys White and Gray are grey levels, applied to every channel. */
+  @Test
+  public void aGrayLevelOperandAppliesToEveryChannel() {
+    check("ImageData(ImageMultiply(Image({{0.2,0.6}}),White),\"Byte\")", "{{51,153}}");
+    check("ImageData(ImageAdd(Image({{{0.25,0.0,0.5}}}),Gray),\"Byte\")", "{{{191,128,255}}}");
+  }
+
+  /**
+   * A colour on a greyscale image makes it a colour image: the intensity is spread over three
+   * channels and the colour applied to each; an image of reals is not clipped.
+   */
+  @Test
+  public void aColourTurnsAGreyscaleImageIntoAColourImage() {
+    check("ImageData(ImageMultiply(Image({{1.0}}),RGBColor(0,1,0)))", "{{{0.0,1.0,0.0}}}");
+    check("ImageChannels(ImageMultiply(Image({{1.0}}),RGBColor(0,1,0)))", "3");
+    check("ImageData(ImageAdd(Image({{0.5}}),RGBColor(0,0,1)))", "{{{0.5,0.5,1.5}}}");
+    check("ImageData(ImageMultiply(Image({{1.0}}),RGBColor(1,0,0)))", "{{{1.0,0.0,0.0}}}");
+    // a grey keeps the image greyscale, and its level is applied as written
+    check("ImageChannels(ImageMultiply(Image({{1.0}}),GrayLevel(0.3)))", "1");
+    check("ImageData(ImageMultiply(Image({{1.0}}),GrayLevel(0.3)))", "{{0.3}}");
+    check("ImageData(ImageMultiply(Image({{{0.5,1.0,0.25}}}),Hue(0)),\"Byte\")", "{{{128,0,0}}}");
+  }
+
   /** A greyscale operand is broadcast over the channels of a colour image. */
   @Test
   public void aScalarAppliesToEveryChannel() {

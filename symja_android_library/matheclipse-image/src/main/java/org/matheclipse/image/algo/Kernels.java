@@ -1,6 +1,5 @@
 package org.matheclipse.image.algo;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import boofcv.struct.convolve.Kernel2D_F32;
@@ -51,14 +50,15 @@ public final class Kernels {
       if (list.argSize() == 2) {
         int rx = list.arg1().toIntDefault();
         int ry = list.arg2().toIntDefault();
-        if (rx >= 0 && ry >= 0 && rx != Config.INVALID_INT && ry != Config.INVALID_INT) {
+        // a non integer reads as Config.INVALID_INT, which is negative
+        if (rx >= 0 && ry >= 0) {
           return new int[] {rx, ry};
         }
       }
       return null;
     }
     int radius = spec.toIntDefault();
-    if (radius >= 0 && radius != Config.INVALID_INT) {
+    if (radius >= 0) {
       return new int[] {radius, radius};
     }
     return null;

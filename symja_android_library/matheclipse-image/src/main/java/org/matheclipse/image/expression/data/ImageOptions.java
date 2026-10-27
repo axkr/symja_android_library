@@ -1,5 +1,6 @@
 package org.matheclipse.image.expression.data;
 
+import java.io.Serializable;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,7 +21,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>
  * Instances are immutable and shared; {@link #DEFAULT} is what an image built without options has.
  */
-public final class ImageOptions {
+public final class ImageOptions implements Serializable {
+
+  private static final long serialVersionUID = 2735198464079512337L;
 
   /** What an <code>Image</code> written without options carries. */
   public static final ImageOptions DEFAULT = new ImageOptions(S.Automatic, true, S.Automatic,
