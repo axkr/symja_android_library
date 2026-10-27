@@ -16398,6 +16398,16 @@ public class S {
       S.initFinalSymbol("MorphologicalComponents", ID.MorphologicalComponents);
 
   /**
+   * MorphologicalGraph(x) - TODO describe `MorphologicalGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MorphologicalGraph.md">MorphologicalGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MorphologicalGraph =
+      S.initFinalSymbol("MorphologicalGraph", ID.MorphologicalGraph);
+
+  /**
    * MorphologicalPerimeter(x) - TODO describe `MorphologicalPerimeter`.
    * 
    * @see <a href=
@@ -22637,6 +22647,15 @@ public class S {
   public final static IBuiltInSymbol SortBy = S.initFinalSymbol("SortBy", ID.SortBy);
 
   /**
+   * Sound(x) - TODO describe `Sound`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sound.md">Sound
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Sound = S.initFinalSymbol("Sound", ID.Sound);
+
+  /**
    * Source(x) - TODO describe `Source`.
    * 
    * @see <a href=
@@ -26386,6 +26405,16 @@ public class S {
       S.initFinalSymbol("VertexWeight", ID.VertexWeight);
 
   public final static IBuiltInSymbol VerticalBar = S.initFinalSymbol("VerticalBar", ID.VerticalBar);
+
+  /**
+   * VerticalGauge(x) - TODO describe `VerticalGauge`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VerticalGauge.md">VerticalGauge
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VerticalGauge =
+      S.initFinalSymbol("VerticalGauge", ID.VerticalGauge);
 
   public final static IBuiltInSymbol VerticalSeparator =
       S.initFinalSymbol("VerticalSeparator", ID.VerticalSeparator);
