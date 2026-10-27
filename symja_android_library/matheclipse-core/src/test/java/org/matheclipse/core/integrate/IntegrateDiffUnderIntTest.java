@@ -123,6 +123,45 @@ public class IntegrateDiffUnderIntTest {
     checkDeclines("Csc(2*x)^2*Log(1+Tan(x)^2)", "Pi/3");
   }
 
+  /**
+   * <code>Integrate((k1*x^p1 + ... + kn*x^pn)/Log(x), {x,0,1})</code> with coefficients adding up
+   * to zero is <code>k1*Log(1+p1) + ... + kn*Log(1+pn)</code>; a symbolic exponent brings its
+   * convergence condition.
+   */
+  @Test
+  public void powerSumOverLog() {
+    check("(x^7-x^3)/Log(x)", "1", "Log(2)");
+    check("(x^4-1)/Log(x)", "1", "Log(5)");
+    check("Log(3)*(x^4-1)/Log(x)", "1", "Log(3)*Log(5)");
+    check("(3*x^2-2*x-1)/Log(x)", "1", "Log(27/4)");
+    check("(Sqrt(x)-x^(1/4))/Log(x)", "1", "Log(6/5)");
+    check("(x^m-x^n)/Log(x)", "1",
+        "ConditionalExpression(Log(1+m)-Log(1+n), Re(m)>-1&&Re(n)>-1)");
+    check("x^s*(x^2-1)/Log(x)", "1", "ConditionalExpression(Log(3+s)-Log(1+s), Re(s)>-1)");
+    check("x^r*(x^q-1)/Log(x)", "1",
+        "ConditionalExpression(Log(1+q+r)-Log(1+r), Re(r)>-1&&Re(q+r)>-1)");
+  }
+
+  /** The assumptions in force settle the condition, or make it a real one. */
+  @Test
+  public void powerSumOverLogAssumptions() {
+    assertEquals(evaluator.eval("Log(1+m)-Log(1+n)"), evaluator
+        .eval("Integrate((x^m-x^n)/Log(x), {x,0,1}, Assumptions->m>0&&n>-1/2)"));
+    assertEquals(evaluator.eval("ConditionalExpression(Log(1+q+r)-Log(1+r), r>-1&&q+r>-1)"),
+        evaluator.eval(
+            "Integrate(x^r*(x^q-1)/Log(x), {x,0,1}, Assumptions->Element(q|r, Reals))"));
+  }
+
+  /** Coefficients which do not cancel, an exponent at or below -1, or a squared logarithm. */
+  @Test
+  public void powerSumOverLogDeclines() {
+    checkDeclines("(x^2+1)/Log(x)", "1");
+    checkDeclines("(x^(-3/2)-1)/Log(x)", "1");
+    checkDeclines("(x^(-1)-x)/Log(x)", "1");
+    checkDeclines("(x^3-1)/Log(x)^2", "1");
+    checkDeclines("(x^3-1)/Log(x)", "1/2");
+  }
+
   /** The value the general loop gives for an integral that carries a parameter of its own. */
   private IExpr generalValue(String integrand, String lower, String upper) {
     return DiffUnderIntegral.general(evaluator.eval(integrand), evaluator.eval("x"),
@@ -139,6 +178,9 @@ public class IntegrateDiffUnderIntTest {
   public void generalParameter() {
     assertEquals(evaluator.eval("ConditionalExpression(Log(1+a), a>-1)"),
         engine.evaluate(generalValue("(x^a-1)/Log(x)", "0", "1")));
+    // the base value is the other parameter, whose condition the answer needs as well
+    assertEquals(evaluator.eval("ConditionalExpression(Log(1+u)-Log(1+v), u>-1&&v>-1)"),
+        engine.evaluate(generalValue("(x^u-x^v)/Log(x)", "0", "1")));
   }
 
   /** What the general loop must not touch. */

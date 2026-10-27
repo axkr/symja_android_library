@@ -2883,12 +2883,45 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     // of a dummy variable are only given numerically
     IExpr polynomial = engine.evaluate(F.Numerator(F.Together(
         F.Expand(F.subst(F.Times(inU, F.Power(u, F.ZZ(-lowest))), u, variable)))));
-    if (!polynomial.isPolynomial(F.list(variable)) || polynomial.isFree(variable)) {
-      return F.NIL;
+    IExpr roots;
+    if (polynomial.isPolynomial(F.list(variable)) && !polynomial.isFree(variable)) {
+      roots = engine.evalQuiet(domain == S.Reals //
+          ? F.Solve(F.Equal(polynomial, F.C0), variable, S.Reals)
+          : F.Solve(F.Equal(polynomial, F.C0), variable));
+    } else {
+      // an algebraic equation in u, with radicals: the roots of the equation squared out are
+      // checked in the equation itself, which keeps only those of the principal branches
+      IExpr algebraic = engine.evaluate(F.subst(inU, u, variable));
+      if (!isAlgebraicIn(algebraic, variable)) {
+        return F.NIL;
+      }
+      IExpr candidates = engine.evalQuiet(F.Solve(F.Equal(algebraic, F.C0), variable));
+      if (!candidates.isList() || !(candidates.isEmptyList() || candidates.isListOfLists())) {
+        return F.NIL;
+      }
+      IASTAppendable verified = F.ListAlloc(candidates.argSize());
+      for (IExpr solution : (IAST) candidates) {
+        if (solution.argSize() != 1 || !solution.first().isRuleAST()) {
+          return F.NIL;
+        }
+        IExpr residual = engine.evalQuiet(F.subst(algebraic, variable, solution.first().second()));
+        if (residual.isZero()) {
+          verified.append(solution);
+        } else if (residual.isNumericFunction(true)) {
+          // a number: the sampled zero test decides it
+          if (engine.evalTrue(F.PossibleZeroQ(residual))) {
+            verified.append(solution);
+          }
+        } else if (engine.evalQuiet(F.Simplify(residual)).isZero()) {
+          verified.append(solution);
+        } else {
+          // with parameters, whether the root is on the principal branch depends on their
+          // values, which a sampled zero test does not see
+          return F.NIL;
+        }
+      }
+      roots = verified;
     }
-    IExpr roots = engine.evalQuiet(domain == S.Reals //
-        ? F.Solve(F.Equal(polynomial, F.C0), variable, S.Reals)
-        : F.Solve(F.Equal(polynomial, F.C0), variable));
     if (!roots.isList() || !(roots.isEmptyList() || roots.isListOfLists())) {
       return F.NIL;
     }
@@ -2941,6 +2974,40 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       result.append(F.list(F.Rule(variable, engine.evaluate(value))));
     }
     return result;
+  }
+
+  /**
+   * Whether the variable occurs in the expression only through sums, products and rational powers,
+   * with at least one power which is not an integer.
+   */
+  private static boolean isAlgebraicIn(IExpr expr, IExpr variable) {
+    boolean[] radical = new boolean[] {false};
+    boolean algebraic = isAlgebraicIn(expr, variable, radical);
+    return algebraic && radical[0];
+  }
+
+  private static boolean isAlgebraicIn(IExpr expr, IExpr variable, boolean[] radical) {
+    if (expr.isFree(variable)) {
+      return true;
+    }
+    if (expr.equals(variable)) {
+      return true;
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      for (IExpr arg : (IAST) expr) {
+        if (!isAlgebraicIn(arg, variable, radical)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (expr.isPower() && expr.exponent().isRational()) {
+      if (!expr.exponent().isInteger()) {
+        radical[0] = true;
+      }
+      return isAlgebraicIn(expr.base(), variable, radical);
+    }
+    return false;
   }
 
   /** The rational number with a small denominator which is <code>value</code>, or null. */

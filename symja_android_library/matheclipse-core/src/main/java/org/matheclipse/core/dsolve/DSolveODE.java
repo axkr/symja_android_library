@@ -2870,7 +2870,7 @@ final class DSolveODE {
   }
 
   /** Whether <code>expr</code> is an inert integral <code>Inactive(Integrate)[...]</code>. */
-  private static boolean isInertIntegral(IExpr expr) {
+  static boolean isInertIntegral(IExpr expr) {
     return expr.isAST() && expr.head().isAST(S.Inactive, 2)
         && expr.head().first() == S.Integrate;
   }
@@ -3664,6 +3664,19 @@ final class DSolveODE {
         IExpr forcedSol = solveByVariationOfParameters(lf, yFunction, xVar, C_1, ctx);
         if (forcedSol.isPresent())
           return forcedSol;
+
+        // An exact equation, (p*y' + q*y)' == g, whose first order equation has no elementary
+        // solution: none of the methods above owns it, and the reduced equation is answered with
+        // its quadrature left unevaluated. a2*y'' + a1*y' + a0*y is a derivative exactly when
+        // a2'' - a1' + a0 vanishes, which is asked before anything is integrated.
+        IExpr exactness =
+            engine.evaluate(F.Together(F.Plus(F.D(lf.coefficient(2), F.List(xVar, F.C2)),
+                F.Negate(F.D(lf.coefficient(1), xVar)), lf.coefficient(0))));
+        if (isVanishing(exactness, engine)) {
+          IExpr exactSol = DSolveTotalDerivative.solve(lhs, yFunction, xVar, n, C_1, true, ctx);
+          if (exactSol.isPresent())
+            return exactSol;
+        }
       }
 
       if (lf == null && n == 2) {

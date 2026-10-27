@@ -1,5 +1,6 @@
 package org.matheclipse.core.dsolve;
 
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -279,14 +280,16 @@ final class DSolveKovacic {
               F.Subtract(xVar, ((IAST) poles.get(i + 1)).arg1())));
         }
         IExpr exponent = engine.evaluate(F.Simplify(engine.evaluate(exponentTerms)));
-        IExpr exponential = expIntegral(exponent, xVar, ctx);
-        if (exponential.isNIL()) {
-          continue;
-        }
         IExpr remainder = engine.evaluate(F.Simplify(
             F.Subtract(F.Plus(F.D(exponent, xVar), F.Sqr(exponent)), r)));
         IExpr polynomial = monicPolynomial(exponent, remainder, degree, xVar, ctx);
-        if (polynomial.isPresent()) {
+        if (polynomial.isNIL()) {
+          continue;
+        }
+        // Integrated only for a choice which has its polynomial: with poles at the roots of an
+        // irreducible cubic the integral of each exponent costs far more than the linear system.
+        IExpr exponential = expIntegral(exponent, xVar, ctx);
+        if (exponential.isPresent()) {
           candidates.append(
               engine.evaluate(F.Simplify(F.Times(recovery, polynomial, exponential))));
         }
@@ -327,6 +330,9 @@ final class DSolveKovacic {
   private static IExpr monicPolynomial(IExpr exponent, IExpr remainder, int degree, IExpr xVar,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
+    if (!numericallyFeasible(exponent, remainder, degree, xVar, engine)) {
+      return F.NIL;
+    }
     IASTAppendable unknowns = F.ListAlloc(degree);
     IASTAppendable terms = F.PlusAlloc(degree + 1);
     terms.append(F.Power(xVar, F.ZZ(degree)));
@@ -345,6 +351,120 @@ final class DSolveKovacic {
     IExpr check = engine.evaluate(F.Simplify(F.Plus(F.D(fitted, F.List(xVar, F.C2)),
         F.Times(F.C2, exponent, F.D(fitted, xVar)), F.Times(remainder, fitted))));
     return DSolveODE.isVanishing(check, engine) ? fitted : F.NIL;
+  }
+
+  /**
+   * Whether a monic polynomial <code>p</code> of the degree can satisfy
+   * <code>p'' + 2*exponent*p' + remainder*p == 0</code>, judged from its values at a few complex
+   * points; <code>true</code> whenever that cannot be decided.
+   *
+   * <p>
+   * The equation is linear in the unknown coefficients, so they are solved for at as many points as
+   * there are unknowns and the solution is tried at three more. With poles at the roots of an
+   * irreducible polynomial of degree three or more the exact fit brings radicals over a common
+   * denominator, which takes seconds per choice of behaviours; this rejects the choices with no
+   * polynomial at the cost of a few numbers.
+   */
+  private static boolean numericallyFeasible(IExpr exponent, IExpr remainder, int degree,
+      IExpr xVar, EvalEngine engine) {
+    if (degree == 0) {
+      // nothing to solve for: the exact test of the remainder costs no more than this, and a
+      // remainder which is zero in an unsimplified form has nothing to compare its rounding with
+      return true;
+    }
+    final int extra = 3;
+    int points = degree + extra;
+    Complex[][] l = new Complex[points][degree + 1];
+    try {
+      for (int j = 0; j < points; j++) {
+        Complex x = new Complex(0.37 + 0.29 * j, 0.21 + 0.13 * j);
+        IExpr point = F.complexNum(x);
+        Complex theta = engine.evalComplex(F.subst(exponent, xVar, point));
+        Complex rho = engine.evalComplex(F.subst(remainder, xVar, point));
+        if (theta.isNaN() || theta.isInfinite() || rho.isNaN() || rho.isInfinite()) {
+          return true;
+        }
+        for (int i = 0; i <= degree; i++) {
+          // (x^i)'' + 2*theta*(x^i)' + rho*x^i
+          Complex value = rho.multiply(x.pow(i));
+          if (i >= 1) {
+            value = value.add(theta.multiply(2.0 * i).multiply(x.pow(i - 1)));
+          }
+          if (i >= 2) {
+            value = value.add(x.pow(i - 2).multiply((double) i * (i - 1)));
+          }
+          l[j][i] = value;
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return true;
+    }
+    // the coefficients from the first points, by elimination with partial pivoting
+    Complex[][] a = new Complex[degree][degree + 1];
+    for (int j = 0; j < degree; j++) {
+      for (int i = 0; i < degree; i++) {
+        a[j][i] = l[j][i];
+      }
+      a[j][degree] = l[j][degree].negate();
+    }
+    for (int c = 0; c < degree; c++) {
+      int pivot = c;
+      for (int j = c + 1; j < degree; j++) {
+        if (a[j][c].norm() > a[pivot][c].norm()) {
+          pivot = j;
+        }
+      }
+      if (a[pivot][c].norm() < 1.0e-12) {
+        return true;
+      }
+      Complex[] swap = a[c];
+      a[c] = a[pivot];
+      a[pivot] = swap;
+      for (int j = c + 1; j < degree; j++) {
+        Complex factor = a[j][c].divide(a[c][c]);
+        for (int i = c; i <= degree; i++) {
+          a[j][i] = a[j][i].subtract(factor.multiply(a[c][i]));
+        }
+      }
+    }
+    Complex[] k = new Complex[degree];
+    for (int c = degree - 1; c >= 0; c--) {
+      Complex sum = a[c][degree];
+      for (int i = c + 1; i < degree; i++) {
+        sum = sum.subtract(a[c][i].multiply(k[i]));
+      }
+      k[c] = sum.divide(a[c][c]);
+    }
+    // a residual counts against the size of the terms at its point, and below the size of the
+    // values overall it is rounding: a term which vanishes identically leaves only noise
+    double overall = 0.0;
+    for (int j = 0; j < points; j++) {
+      for (int i = 0; i <= degree; i++) {
+        double size = (i < degree ? Math.max(1.0, k[i].norm()) : 1.0) * l[j][i].norm();
+        overall = Math.max(overall, size);
+      }
+    }
+    if (overall < 1.0e-12) {
+      // every value is rounding, so nothing can be told apart
+      return true;
+    }
+    for (int j = degree; j < points; j++) {
+      Complex residual = l[j][degree];
+      double scale = l[j][degree].norm();
+      for (int i = 0; i < degree; i++) {
+        Complex term = k[i].multiply(l[j][i]);
+        residual = residual.add(term);
+        scale += term.norm();
+      }
+      if (!Double.isFinite(scale) || !Double.isFinite(overall) || residual.isNaN()) {
+        return true;
+      }
+      if (residual.norm() > 1.0e-6 * scale + 1.0e-9 * overall) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

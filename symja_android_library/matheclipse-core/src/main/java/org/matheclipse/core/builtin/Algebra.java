@@ -1668,7 +1668,9 @@ public class Algebra {
       // the leading coefficient in the lexicographic order of the variables decides the unit:
       // (3+3*I)*x^2-(3+3*I) is (3+3*I)*(-1+x)*(1+x)
       IExpr first = coefficients.arg1();
-      IExpr rules = engine.evaluate(F.CoefficientRules(expr, F.Variables(expr)));
+      // Variables may name non-symbols such as Log(a), which CoefficientRules rejects; the first
+      // coefficient then stays the one above
+      IExpr rules = engine.evalQuiet(F.CoefficientRules(expr, F.Variables(expr)));
       if (rules.isList() && rules.argSize() > 0 && rules.first().isRuleAST()) {
         first = rules.first().second();
       }

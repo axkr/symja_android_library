@@ -100,6 +100,89 @@ final class DSolveVerify {
   }
 
   /**
+   * Whether <code>body</code>, which carries unevaluated quadratures, makes every residual vanish
+   * symbolically. A numeric test cannot evaluate a quadrature, but its derivative by the upper limit
+   * is the integrand, and that is enough for the residual to cancel. Each quadrature up to
+   * <code>x</code> stands in for a function of its own while the residual is formed, and the
+   * derivatives of those functions become the integrands; nothing is integrated again.
+   */
+  static boolean acceptODEQuadrature(IAST residuals, IExpr yFunction, IExpr xVar, IExpr body,
+      EvalEngine engine) {
+    boolean quietMode = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      java.util.Map<IExpr, IExpr> functions = new java.util.LinkedHashMap<IExpr, IExpr>();
+      java.util.List<IExpr> integrands = new java.util.ArrayList<IExpr>();
+      IExpr standIn = replaceQuadratures(body, xVar, functions, integrands);
+      if (standIn.isNIL() || functions.isEmpty()) {
+        return false;
+      }
+      IAST bodies = F.list(standIn);
+      for (int i = 1; i <= residuals.argSize(); i++) {
+        IExpr residual =
+            substituteSolution(residuals.get(i), F.list(yFunction), F.list(xVar), bodies, engine);
+        if (residual.isNIL()) {
+          return false;
+        }
+        int order = Math.max(1, LinearODEForm.highestDerivativeOrder(residuals.get(i),
+            yFunction.head(), xVar));
+        // an integrand may hold a quadrature of its own, whose derivative comes in a round later
+        for (int round = 0; round <= functions.size(); round++) {
+          int j = 0;
+          for (IExpr function : functions.values()) {
+            IExpr integrand = integrands.get(j++);
+            for (int k = order + 1; k >= 1; k--) {
+              IExpr derivative = engine.evaluate(F.D(function, F.List(xVar, F.ZZ(k))));
+              residual = F.subst(residual, derivative,
+                  engine.evaluate(F.D(integrand, F.List(xVar, F.ZZ(k - 1)))));
+            }
+          }
+          residual = engine.evaluate(residual);
+        }
+        if (!residual.isFree(t -> t.isDerivative() != null, true)
+            || !DSolveODE.isVanishing(engine.evaluate(F.Expand(residual)), engine)) {
+          return false;
+        }
+      }
+      return true;
+    } catch (RuntimeException rex) {
+      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+      return false;
+    } finally {
+      engine.setQuietMode(quietMode);
+    }
+  }
+
+  /**
+   * <code>expr</code> with every quadrature <code>Inactive(Integrate)[f(K), {K, a, x}]</code>
+   * replaced by a call <code>q(x)</code> of a new function, the integrands <code>f(x)</code> in
+   * the same order as the functions, or {@link F#NIL} if an inactive expression of another kind
+   * is left.
+   */
+  private static IExpr replaceQuadratures(IExpr expr, IExpr xVar, java.util.Map<IExpr, IExpr> functions,
+      java.util.List<IExpr> integrands) {
+    IExpr replaced = expr.replaceAll(t -> {
+      if (DSolveODE.isInertIntegral(t) && t.argSize() == 2 && t.second().isList3()
+          && t.second().getAt(3).equals(xVar)) {
+        IExpr function = functions.get(t);
+        if (function == null) {
+          IExpr integrand = F.subst(t.first(), t.second().getAt(1), xVar);
+          IExpr inner = replaceQuadratures(integrand, xVar, functions, integrands);
+          if (inner.isNIL()) {
+            return F.NIL;
+          }
+          function = F.unaryAST1(F.Dummy("quadrature" + functions.size()), xVar);
+          functions.put(t, function);
+          integrands.add(inner);
+        }
+        return function;
+      }
+      return F.NIL;
+    }).orElse(expr);
+    return replaced.isFree(t -> t.isAST(S.Inactive), true) ? replaced : F.NIL;
+  }
+
+  /**
    * Whether the solutions <code>bodies</code> may be returned for the unknowns
    * <code>yFunctions</code> of the system <code>residuals</code>.
    */

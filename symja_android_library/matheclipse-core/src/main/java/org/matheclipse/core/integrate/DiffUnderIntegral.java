@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * Definite integrals answered by differentiating under the integral sign, which is Leibniz's rule
@@ -32,6 +33,8 @@ import org.matheclipse.core.interfaces.IExpr;
  *     <td><code>Pi^2/8 - ArcCos(c)^2/2</code></td></tr>
  * <tr><td><code>Csc(2*x)^2*Log(1 + Tan(x)^a)</code></td><td>0 to Pi/4</td>
  *     <td><code>(Pi*Csc(Pi/a) - a)/4</code></td></tr>
+ * <tr><td><code>(k1*x^p1 + ... + kn*x^pn)/Log(x)</code>, <code>k1 + ... + kn == 0</code></td>
+ *     <td>0 to 1</td><td><code>k1*Log(1 + p1) + ... + kn*Log(1 + pn)</code></td></tr>
  * </table>
  *
  * <p>
@@ -81,7 +84,7 @@ public final class DiffUnderIntegral {
   }
 
   /**
-   * The value of the definite integral, or {@link F#NIL} if it is not one of the three.
+   * The value of the definite integral, or {@link F#NIL} if it is not one of the families above.
    *
    * @param f the integrand
    * @param x the integration variable
@@ -96,7 +99,8 @@ public final class DiffUnderIntegral {
     }
     try {
       if (upper.isOne()) {
-        return powerLog(f, x, engine);
+        IExpr value = powerSumOverLog(f, x, engine);
+        return value.isPresent() ? value : powerLog(f, x, engine);
       }
       if (engine.evaluate(F.Subtract(upper, F.Divide(S.Pi, F.C4))).isZero()) {
         // The tangent power family owns a non-integer power of the tangent, and it is tried first:
@@ -108,6 +112,89 @@ public final class DiffUnderIntegral {
       Errors.rethrowsInterruptException(rex);
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>Integrate((k1*x^p1 + ... + kn*x^pn)/Log(x), {x,0,1})</code> with
+   * <code>k1 + ... + kn == 0</code>, which is <code>k1*Log(1+p1) + ... + kn*Log(1+pn)</code>.
+   *
+   * <p>
+   * Differentiating <code>Integrate((x^p - 1)/Log(x), {x,0,1})</code> by <code>p</code> leaves
+   * <code>Integrate(x^p, {x,0,1}) == 1/(1+p)</code>, and the integral is zero at <code>p == 0</code>.
+   * A sum whose coefficients add up to zero is a combination of such differences. Each power needs
+   * <code>Re(p) > -1</code> to converge at the origin: a number which fails it declines, a symbolic
+   * exponent carries it as a condition, which the assumptions in force may settle.
+   */
+  private static IExpr powerSumOverLog(IExpr f, IExpr x, EvalEngine engine) {
+    IExpr logX = F.Log(x);
+    if (f.isFree(logX, true)) {
+      return F.NIL;
+    }
+    IExpr numerator = engine.evaluate(F.Expand(F.Times(f, logX)));
+    if (!numerator.isPlus() || !numerator.isFree(logX, true)) {
+      return F.NIL;
+    }
+    IAST terms = (IAST) numerator;
+    IASTAppendable coefficients = F.PlusAlloc(terms.argSize());
+    IASTAppendable value = F.PlusAlloc(terms.argSize());
+    IASTAppendable conditions = F.AndAlloc(terms.argSize());
+    IASTAppendable product = F.TimesAlloc(terms.argSize());
+    java.util.Map<IExpr, IExpr> smallestShift = new java.util.LinkedHashMap<IExpr, IExpr>();
+    boolean numeric = true;
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      IExpr exponent = term.isFree(x, true) ? F.C0 : monomialExponent(term, x, engine);
+      if (exponent.isNIL()) {
+        return F.NIL;
+      }
+      IExpr coefficient = exponent.isZero() ? term
+          : engine.evaluate(F.Cancel(F.Divide(term, F.Power(x, exponent))));
+      if (!coefficient.isFree(x, true)) {
+        return F.NIL;
+      }
+      IExpr onePlus = engine.evaluate(F.Plus(F.C1, exponent));
+      if (onePlus.isReal()) {
+        if (!onePlus.isPositive()) {
+          return F.NIL;
+        }
+      } else {
+        // x^(q+2) converges where x^q does, so of the exponents q + number only the smallest
+        // number gives a condition
+        IExpr shift = exponent.isPlus() && exponent.first().isReal() ? exponent.first() : F.C0;
+        IExpr rest = engine.evaluate(F.Subtract(exponent, shift));
+        IExpr known = smallestShift.get(rest);
+        if (known == null || ((IReal) shift).isLT((IReal) known)) {
+          smallestShift.put(rest, shift);
+        }
+      }
+      numeric &= onePlus.isRational() && coefficient.isRational();
+      coefficients.append(coefficient);
+      value.append(F.Times(coefficient, F.Log(onePlus)));
+      product.append(F.Power(onePlus, coefficient));
+    }
+    if (!engine.evaluate(F.Together(coefficients.oneIdentity0())).isZero()) {
+      return F.NIL;
+    }
+    for (java.util.Map.Entry<IExpr, IExpr> entry : smallestShift.entrySet()) {
+      IExpr condition = engine
+          .evaluate(F.Greater(F.Re(entry.getKey()), F.Subtract(F.CN1, entry.getValue())));
+      if (condition.isFalse()) {
+        return F.NIL;
+      }
+      if (!condition.isTrue()) {
+        conditions.append(condition);
+      }
+    }
+    // with numbers throughout, the logarithms combine into one: Log(6) - Log(3) is Log(2)
+    IExpr result = engine.evaluate(numeric ? F.Log(product.oneIdentity1()) : value.oneIdentity0());
+    if (conditions.argSize() == 0) {
+      return result;
+    }
+    IExpr condition = engine.evalQuiet(F.Refine(conditions.oneIdentity1()));
+    if (condition.isTrue()) {
+      return result;
+    }
+    return condition.isFalse() ? F.NIL : F.ConditionalExpression(result, condition);
   }
 
   /**
@@ -459,6 +546,18 @@ public final class DiffUnderIntegral {
     IExpr[] base = baseValue(f, x, lower, upper, parameter, parameters, conditions, engine);
     if (base == null) {
       return F.NIL;
+    }
+    // The answer is the integral of the inner one from the base value up, so what the inner one
+    // needs must also hold at the base: with another parameter as the base (the Frullani case,
+    // x^a - x^b) that is a condition on it as well.
+    for (int i = conditions.argSize(); i >= 1; i--) {
+      IExpr atBase = engine.evaluate(F.subst(conditions.get(i), parameter, base[0]));
+      if (atBase.isFalse()) {
+        return F.NIL;
+      }
+      if (!atBase.isTrue() && !conditions.contains(atBase)) {
+        conditions.append(atBase);
+      }
     }
     IExpr shifted = engine.evaluate(F.subst(back, parameter, base[0]));
     if (!isUsable(shifted)) {

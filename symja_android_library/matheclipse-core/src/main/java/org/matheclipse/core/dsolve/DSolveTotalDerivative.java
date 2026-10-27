@@ -2,6 +2,7 @@ package org.matheclipse.core.dsolve;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -28,8 +29,11 @@ import org.matheclipse.core.interfaces.IExpr;
  * before anything is solved, and the solutions which come back are put into the equation.
  *
  * <p>
- * Nonlinear equations only, and after every method which knows the equation by its form: a linear
- * equation which is exact has methods of its own, and those write its answer better.
+ * Nonlinear equations, and after every method which knows the equation by its form: a linear
+ * equation which is exact has methods of its own, and those write its answer better. A linear
+ * equation of the second order comes here only after all of them declined, which happens when the
+ * reduced equation has no elementary solution; its answer then keeps the quadrature unevaluated,
+ * and that answer is checked symbolically.
  */
 final class DSolveTotalDerivative {
 
@@ -40,6 +44,9 @@ final class DSolveTotalDerivative {
 
   /** How long one of the quadratures may take. */
   private static final int INTEGRATE_SECONDS = 2;
+
+  /** The index of the variable of an unevaluated quadrature of the inhomogeneity. */
+  private static final int FORCING_DUMMY = 3;
 
   /** How big any of the expressions along the way may become. */
   private static final int MAX_LEAF_COUNT = 400;
@@ -53,6 +60,15 @@ final class DSolveTotalDerivative {
    * side is not a derivative, or if the equation it leaves cannot be solved.
    */
   static IExpr solve(IExpr lhs, IExpr yFunction, IExpr xVar, int n, IExpr c_n, DSolveContext ctx) {
+    return solve(lhs, yFunction, xVar, n, c_n, false, ctx);
+  }
+
+  /**
+   * {@link #solve(IExpr, IExpr, IExpr, int, IExpr, DSolveContext)}, where with <code>inert</code>
+   * the equation of one order less may also be answered with an integral left unevaluated.
+   */
+  static IExpr solve(IExpr lhs, IExpr yFunction, IExpr xVar, int n, IExpr c_n, boolean inert,
+      DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     if (n < 2 || lhs.leafCount() > MAX_LEAF_COUNT) {
       return F.NIL;
@@ -77,15 +93,19 @@ final class DSolveTotalDerivative {
     // The deadline covers the search for the integral only: the methods the reduced equation is
     // handed to keep one of their own, and there is one deadline at a time.
     IExpr integral;
+    // with inert, the part free of y whose integral has no closed form is kept here and its
+    // quadrature stays unevaluated
+    IExpr[] forcing = new IExpr[] {F.C0};
     ctx.startDeadline(DEADLINE_SECONDS);
     try {
-      integral = integrate(jet, symbols, n, xVar, ctx);
+      integral = integrate(jet, symbols, n, xVar, inert ? forcing : null, ctx);
       if (integral.isNIL() || integral.isFree(symbols[n - 1], true)
           || integral.leafCount() > MAX_LEAF_COUNT || ctx.expired()) {
         return F.NIL;
       }
       // The reason a wrong integral can only make this decline.
-      IExpr difference = F.Subtract(derivative(integral, symbols, n - 1, xVar, engine), jet);
+      IExpr difference = F.Subtract(derivative(integral, symbols, n - 1, xVar, engine),
+          F.Subtract(jet, forcing[0]));
       if (!DSolveODE.isVanishing(engine.evaluate(F.Expand(difference)), engine)) {
         return F.NIL;
       }
@@ -95,6 +115,11 @@ final class DSolveTotalDerivative {
     for (int k = n - 1; k >= 0; k--) {
       integral = F.subst(integral, symbols[k], derivatives[k]);
     }
+    if (!forcing[0].isZero()) {
+      // a dummy apart from the ones the reduced equation's own quadratures take
+      integral = F.Plus(integral,
+          DSolveODE.inertIntegral(forcing[0], xVar, xVar, FORCING_DUMMY));
+    }
     IExpr reduced = engine.evaluate(F.Subtract(integral, c_n));
     IExpr constant = ctx.nextConstant();
     IAST branches = F.CEmptyList;
@@ -103,9 +128,19 @@ final class DSolveTotalDerivative {
       // then it is integrated here, before the methods for an equation of the second order are
       // asked: they answer it too, and take many times as long over it.
       IExpr again = solve(engine.evaluate(F.ExpandAll(reduced)), yFunction, xVar, n - 1, constant,
-          ctx);
+          inert, ctx);
       if (again.isPresent()) {
         branches = again.makeList();
+      }
+    }
+    if (branches.argSize() == 0 && inert && yFunction.isAST()) {
+      // The reduced equation of a linear one is linear of the first order, and this writes its
+      // closed form where there is one; the cascade would try the same quadrature several times
+      // over before it declined.
+      IExpr withIntegrals = DSolveODE.solveWithInertIntegrals(F.Equal(reduced, F.C0), xVar,
+          (IAST) yFunction, constant, ctx);
+      if (withIntegrals.isPresent()) {
+        branches = withIntegrals.makeList();
       }
     }
     if (branches.argSize() == 0) {
@@ -123,7 +158,9 @@ final class DSolveTotalDerivative {
       if (body.isNIL() || !DSolveContext.isUsable(body) || body.leafCount() > MAX_LEAF_COUNT) {
         continue;
       }
-      if (DSolveVerify.acceptODEStrictAt(residuals, yFunction, xVar, body, samples, engine)) {
+      boolean quadrature = !body.isFree(t -> t.isAST(S.Inactive), true);
+      if (quadrature ? DSolveVerify.acceptODEQuadrature(residuals, yFunction, xVar, body, engine)
+          : DSolveVerify.acceptODEStrictAt(residuals, yFunction, xVar, body, samples, engine)) {
         accepted.append(DSolveUtil.renumberConstants(body, c_n, engine));
       }
     }
@@ -137,7 +174,7 @@ final class DSolveTotalDerivative {
    * The <code>G(x, y, ..., y^(m-1))</code> whose derivative is <code>expr</code>, an expression in
    * <code>x</code> and <code>symbols[0..m]</code>, or {@link F#NIL} if there is none.
    */
-  private static IExpr integrate(IExpr expr, IExpr[] symbols, int m, IExpr xVar,
+  private static IExpr integrate(IExpr expr, IExpr[] symbols, int m, IExpr xVar, IExpr[] forcing,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     IExpr integral = F.C0;
@@ -174,10 +211,13 @@ final class DSolveTotalDerivative {
     }
     if (!rest.isZero()) {
       IExpr part = ctx.integrate(rest, xVar, MAX_LEAF_COUNT, INTEGRATE_SECONDS);
-      if (part.isNIL()) {
+      if (part.isPresent()) {
+        integral = F.Plus(integral, part);
+      } else if (forcing != null) {
+        forcing[0] = rest;
+      } else {
         return F.NIL;
       }
-      integral = F.Plus(integral, part);
     }
     return engine.evaluate(integral);
   }

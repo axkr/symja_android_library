@@ -3079,6 +3079,27 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1-ProductLog(-E)}}");
   }
 
+  /** An equation in one exponential which is algebraic in it, with a radical. */
+  @Test
+  public void testSolveRadicalInExponential() {
+    // u == E^(2*t): Sqrt(u^2+5*u) == 3*u
+    check("Solve(Sqrt(E^(4*t)+5*E^(2*t))==3*E^(2*t), t)", //
+        "{{t->ConditionalExpression(1/2*(I*2*Pi*C(1)-Log(8/5)),C(1)∈Integers)}}");
+    check("Solve(Sqrt(E^(4*t)+5*E^(2*t))==3*E^(2*t), t, Reals)", //
+        "{{t->-Log(8/5)/2}}");
+    // squared out u == 1, which is not a root of the equation itself
+    check("Solve(Sqrt(E^(2*t)+8)==-E^t-2, t)", //
+        "{}");
+    // u == 3^t == -1 is a root: Sqrt(1-1) == -1+1
+    check("Solve(Sqrt(9^t+3^t)==3^t+1, t)", //
+        "{{t->ConditionalExpression((I*Pi)/Log(3)+(I*2*Pi*C(1))/Log(3),C(1)∈Integers)}}");
+    check("Solve(Sqrt(9^t+3^t)==3^t+1, t, Reals)", //
+        "{}");
+    // u == 4/(b-4) is a root only for some b, which a sampled zero test does not see
+    check("Solve(Sqrt(E^(2*t)+b*E^t)==E^t+2, t)", //
+        "Solve(Sqrt(b*E^t+E^(2*t))==2+E^t,t)");
+  }
+
   @Test
   public void testSolveLog() {
     check("Solve(a*x^n+b*Log(c*x)+d==0, x)", //

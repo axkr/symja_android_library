@@ -1658,6 +1658,33 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveKovacicRadicalPolesDecline() {
+    // Poles at the roots of x^3+7: each choice of behaviours used to bring radicals over a common
+    // denominator before finding it has no polynomial; the numeric check rejects them first.
+    check("First(Timing(DSolve((x^3+7)*y''(x)+4*x*y'(x)+y(x)==0, y(x), x)))<5", //
+        "True");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveExactLinearInertQuadrature() {
+    // (y' + Sin(x)*y)' == 0: the reduced equation needs the integral of E^(-Cos(x)), which stays
+    // unevaluated
+    check("DSolve(y''(x)+Sin(x)*y'(x)+Cos(x)*y(x)==0, y(x), x)", //
+        "{{y(x)->E^Cos(x)*C(1)+E^Cos(x)*C(2)*Inactive(Integrate)[E^(-Cos(K(1))),{K(1),1,x}]}}");
+    // x*y' + x*Cos(x)*y == C(1) after one integration
+    check("DSolve(x*y''(x)+(1+x*Cos(x))*y'(x)+(Cos(x)-x*Sin(x))*y(x)==0, y(x), x)", //
+        "{{y(x)->C(1)/E^Sin(x)+(C(2)*Inactive(Integrate)[E^Sin(K(1))/K(1),{K(1),1,x}])/E^Sin(x)}}");
+    check("DSolve({y''(x)+Sin(x)*y'(x)+Cos(x)*y(x)==0, y(0)==1, y'(0)==0}, y(x), x)", //
+        "{{y(x)->E^(-1+Cos(x))}}");
+    // the inhomogeneity has no closed form integral either, and its quadrature stays inside
+    check("DSolve(y''(x)+Sin(x)*y'(x)+Cos(x)*y(x)==E^Cos(x)/x, y(x), x)", //
+        "{{y(x)->E^Cos(x)*C(1)+E^Cos(x)*Inactive(Integrate)[C(2)/E^Cos(K(1))+Inactive(Integrate)[E^Cos(K(\n"
+            + "3))/K(3),{K(3),1,K(1)}]/E^Cos(K(1)),{K(1),1,x}]}}");
+  }
+
+  @Test
   public void testDSolveKovacicPolynomialFactor() {
     // A solution with zeros in it has no polynomial logarithmic derivative, so the guess which
     // looks only for one misses it. Splitting the zeros off into a factor of their own leaves an
