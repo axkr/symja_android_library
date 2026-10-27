@@ -9804,6 +9804,15 @@ public class S {
   public final static IBuiltInSymbol GatherBy = S.initFinalSymbol("GatherBy", ID.GatherBy);
 
   /**
+   * GaugeStyle(x) - TODO describe `GaugeStyle`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GaugeStyle.md">GaugeStyle
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GaugeStyle = S.initFinalSymbol("GaugeStyle", ID.GaugeStyle);
+
+  /**
    * GaussianFilter(x) - TODO describe `GaussianFilter`.
    * 
    * @see <a href=
@@ -21692,6 +21701,16 @@ public class S {
   public final static IBuiltInSymbol Scale = S.initFinalSymbol("Scale", ID.Scale);
 
   public final static IBuiltInSymbol Scaled = S.initFinalSymbol("Scaled", ID.Scaled);
+
+  /**
+   * ScaleDivisions(x) - TODO describe `ScaleDivisions`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ScaleDivisions.md">ScaleDivisions
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ScaleDivisions =
+      S.initFinalSymbol("ScaleDivisions", ID.ScaleDivisions);
 
   public final static IBuiltInSymbol ScalingFunctions =
       S.initFinalSymbol("ScalingFunctions", ID.ScalingFunctions);
