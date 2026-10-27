@@ -103,8 +103,8 @@ public class EllipticIntegrals {
 
       S.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
       S.WeierstrassInvariants.setEvaluator(new WeierstrassInvariants());
-      S.WeierstrassP.setEvaluator(new WeierstrassP());
-      S.WeierstrassPPrime.setEvaluator(new WeierstrassPPrime());
+      S.WeierstrassP.setEvaluator(new WeierstrassP(false));
+      S.WeierstrassPPrime.setEvaluator(new WeierstrassP(true));
       S.WeierstrassSigma.setEvaluator(new WeierstrassQuasiPeriodic(true));
       S.WeierstrassZeta.setEvaluator(new WeierstrassQuasiPeriodic(false));
     }
@@ -3205,7 +3205,15 @@ public class EllipticIntegrals {
         F.Power(F.JacobiSN(w, m), F.CN3));
   }
 
+  /** <code>WeierstrassP(u, {g2, g3})</code> and its derivative <code>WeierstrassPPrime</code> */
   private static class WeierstrassP extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    /** <code>true</code> for <code>WeierstrassPPrime</code> */
+    private final boolean derivative;
+
+    WeierstrassP(boolean derivative) {
+      this.derivative = derivative;
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -3213,7 +3221,8 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg2();
         IAST parameters = weierstrassJacobiParameters(list.arg1(), list.arg2());
         if (parameters.isPresent()) {
-          return weierstrassPJacobi(ast.arg1(), parameters);
+          return derivative ? weierstrassPPrimeJacobi(ast.arg1(), parameters)
+              : weierstrassPJacobi(ast.arg1(), parameters);
         }
       }
       return F.NIL;
@@ -3231,9 +3240,9 @@ public class EllipticIntegrals {
         IExpr g3 = list.arg2();
         if (u.isNumber() && g2.isNumber() && g3.isNumber() && (isArbitrary(u) || isArbitrary(g2)
             || isArbitrary(g3) || (engine.isArbitraryMode() && !u.isInexactNumber()))) {
-          return weierstrassArbitrary(u, g2, g3, false, engine);
+          return weierstrassArbitrary(u, g2, g3, derivative, engine);
         }
-        return weierstrassP(u, g2, g3).eval(engine);
+        return (derivative ? weierstrassPPrime(u, g2, g3) : weierstrassP(u, g2, g3)).eval(engine);
       }
       return F.NIL;
     }
@@ -3255,52 +3264,6 @@ public class EllipticIntegrals {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.WeierstrassP, rex);
         }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
-      super.setUp(newSymbol);
-    }
-  }
-
-  private static class WeierstrassPPrime extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
-
-    @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      if (ast.arg2().isList2()) {
-        IAST list = (IAST) ast.arg2();
-        IAST parameters = weierstrassJacobiParameters(list.arg1(), list.arg2());
-        if (parameters.isPresent()) {
-          return weierstrassPPrimeJacobi(ast.arg1(), parameters);
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr u = ast.arg1();
-      if (u.isZero()) {
-        return F.CComplexInfinity;
-      }
-      if (ast.arg2().isList2()) {
-        IAST list = (IAST) ast.arg2();
-        IExpr g2 = list.arg1();
-        IExpr g3 = list.arg2();
-        if (u.isNumber() && g2.isNumber() && g3.isNumber() && (isArbitrary(u) || isArbitrary(g2)
-            || isArbitrary(g3) || (engine.isArbitraryMode() && !u.isInexactNumber()))) {
-          return weierstrassArbitrary(u, g2, g3, true, engine);
-        }
-        return weierstrassPPrime(u, g2, g3).eval(engine);
       }
       return F.NIL;
     }

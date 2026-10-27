@@ -330,6 +330,7 @@ public class OpenIntToList<T> implements Serializable {
     mask = capacity - 1;
   }
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /**
    * Copy constructor.
    *
@@ -406,6 +407,7 @@ public class OpenIntToList<T> implements Serializable {
     ++count;
     return previous;
   }
+  // CPD-ON
 
   /**
    * Check if keys are equal.

@@ -313,6 +313,7 @@ public class ReduceVariableIntervalSet {
     return result;
   }
 
+  // CPD-OFF the interval and the equation solver differ in their right-hand side
   /**
    * Extract a value for the given <code>variabe</code>.
    *
@@ -346,43 +347,9 @@ public class ReduceVariableIntervalSet {
         }
         // }
       } else {
-        // int size = ast.size();
-        // if (size > 2 && ast.leafCount() < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) {
-        // IExpr lambertWEquationResult =
-        // solveLambertWEquation(ast, exprWithoutVariable, variable, multipleValues, engine);
-        // if (lambertWEquationResult.isPresent()) {
-        // return lambertWEquationResult;
-        // }
-
-        // if (exprWithoutVariable.isZero() && ast.isPlus()) {
-        // IAST elimZeroPlus = F.binaryAST2(elimzeroplus, ast, variable);
-        // IExpr result = zeroPlusMatcher().apply(elimZeroPlus);
-        // if (result.isPresent()) {
-        // return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
-        // engine);
-        // }
-        // }
-        // IAST elimInverse = F.binaryAST2(eliminv, ast, variable);
-        // IExpr result = inverseMatcher().apply(elimInverse);
-        // if (result.isPresent()) {
-        // return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
-        // engine);
-        // }
-        // }
 
         if (ast.isPlus()) {
           // a + b + c....
-          // if (exprWithoutVariable.isNumericFunction() //
-          // && ast.isPolynomial(variable) && ast.isNumericFunction(variable)) {
-          // IAST temp = RootsFunctions.rootsOfVariable(F.Subtract.of(ast, exprWithoutVariable),
-          // F.C1, F.list(variable), engine.isNumericMode(), engine);
-          // if (temp.isList() && temp.size() > 1) {
-          // if (!multipleValues || temp.size() == 2) {
-          // return temp.first();
-          // }
-          // return temp;
-          // }
-          // }
 
           IAST[] plusFilter = ast.filter(x -> x.isFree(predicate, true));
           IAST plusWithoutVariable = plusFilter[0];
@@ -417,11 +384,6 @@ public class ReduceVariableIntervalSet {
               }
             }
           }
-          // if (!ast.isFree(x -> x.isTrigFunction(), true)) {
-          // return tryTrigToExp(ast, variable, multipleValues, engine);
-          // } else if (ast.isFree(x -> x.isLog(), true)) {
-          // return tryPowerExpand(ast, variable, multipleValues, engine);
-          // }
         } else if (ast.isTimes()) {
           // a * b * c....
           IAST[] timesFilter = ast.filter(x -> x.isFree(predicate, true));
@@ -483,20 +445,6 @@ public class ReduceVariableIntervalSet {
               } else {
                 return F.NIL;
               }
-              // }
-              // // E ^ f(x) /; Element(f(x), Complexes)
-              // try {
-              // IExpr c_n = F.C(engine.incConstantCounter());
-              // // ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers))
-              // final IExpr exprwovar = exprWithoutVariable;
-              // IExpr expr =
-              // F.Plus(F.Times(F.C2, F.CI, S.Pi, c_n), engine.evaluate(F.Log(exprwovar)));
-              // IExpr temp = F.ConditionalExpression(expr, F.Element(c_n, S.Integers));
-              // return extractVariableRecursive(exponent, temp, predicate, variable,
-              // multipleValues);
-              // } finally {
-              // engine.decConstantCounter();
-              // }
             }
             // a ^ f(x)
             final IExpr exprwovar = IntervalDataSym.makeNonnegative(exprWithoutVariable);
@@ -514,6 +462,7 @@ public class ReduceVariableIntervalSet {
     }
     return F.NIL;
   }
+  // CPD-ON
 
   final public IBuiltInSymbol relation() {
     return relation;

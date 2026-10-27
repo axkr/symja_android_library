@@ -303,6 +303,7 @@ public final class AST3 extends AST2 {
     }
   }
 
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   @Override
   public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
     FixedArity.forEach(start, end, action, arg0, arg1, arg2, arg3);
@@ -342,6 +343,7 @@ public final class AST3 extends AST2 {
   public IExpr get(int location) {
     return FixedArity.get(location, arg0, arg1, arg2, arg3);
   }
+  // CPD-ON
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {

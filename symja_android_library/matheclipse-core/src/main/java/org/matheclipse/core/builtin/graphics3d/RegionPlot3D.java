@@ -43,12 +43,7 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
     if (PlotEndpoints.degenerate(S.RegionPlot3D, ast, 2, 4, true, engine)) {
       return F.NIL;
     }
-    if (ast.size() > 1) {
-      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
-      if (unwrapped != ast.arg1()) {
-        ast = ast.setAtCopy(1, unwrapped);
-      }
-    }
+    ast = PlotWrapper.stripFirstArgument(ast);
     if (argSize < 4) {
       return F.NIL;
     }

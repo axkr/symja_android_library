@@ -222,6 +222,62 @@ public class RegionPrimitives {
     return new TorusSpec(center, major, minor);
   }
 
+  // ---------------------------------------------------------------- Disk
+
+  /**
+   * The radii and the optional angles of <code>Disk(c, ...)</code>: <code>r1 == r2</code> for a
+   * circle, and <code>t1</code>, <code>t2</code> for a sector or <code>null</code> for the whole
+   * disk.
+   */
+  public static final class DiskSpec {
+    public final IExpr center;
+    public final IExpr r1;
+    public final IExpr r2;
+    public final IExpr t1;
+    public final IExpr t2;
+
+    private DiskSpec(IExpr center, IExpr r1, IExpr r2, IExpr t1, IExpr t2) {
+      this.center = center;
+      this.r1 = r1;
+      this.r2 = r2;
+      this.t1 = t1;
+      this.t2 = t2;
+    }
+  }
+
+  /**
+   * Parse <code>Disk(c)</code>, <code>Disk(c, r)</code>, <code>Disk(c, {r1, r2})</code> and the
+   * sectors <code>Disk(c, r, {t1, t2})</code>. The radius defaults to 1; <code>Disk()</code> itself
+   * is left to the caller.
+   *
+   * @return <code>null</code> if the arguments don't match one of those forms
+   */
+  public static DiskSpec parseDisk(IAST reg) {
+    if (reg.argSize() < 1 || reg.argSize() > 3 || !reg.arg1().isList()) {
+      return null;
+    }
+    IExpr r1 = F.C1;
+    IExpr r2 = F.C1;
+    if (reg.argSize() >= 2) {
+      if (reg.arg2().isList2()) {
+        r1 = reg.arg2().first();
+        r2 = reg.arg2().second();
+      } else if (!reg.arg2().isList()) {
+        r1 = reg.arg2();
+        r2 = r1;
+      } else {
+        return null;
+      }
+    }
+    if (reg.argSize() == 3) {
+      if (!reg.arg3().isList2()) {
+        return null;
+      }
+      return new DiskSpec(reg.arg1(), r1, r2, reg.arg3().first(), reg.arg3().second());
+    }
+    return new DiskSpec(reg.arg1(), r1, r2, null, null);
+  }
+
   // ---------------------------------------------------------------- Parallelogram
 
   /** The base point and the two direction vectors of a <code>Parallelogram</code>. */

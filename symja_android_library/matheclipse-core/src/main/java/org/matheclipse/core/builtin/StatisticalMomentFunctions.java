@@ -24,6 +24,45 @@ import org.matheclipse.core.interfaces.statistics.IStatistics;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class StatisticalMomentFunctions {
+
+  /** The factor of one matrix entry in a multivariate moment. */
+  @FunctionalInterface
+  private interface MomentFactor {
+    /**
+     * @param x the matrix entry
+     * @param r the order of its column, not zero
+     * @param column the 1-based column of the entry
+     */
+    IExpr apply(IExpr x, IExpr r, int column);
+  }
+
+  /**
+   * The multivariate moment of the rows of <code>list</code> for the orders <code>rList</code>: the
+   * mean over the rows of the product of <code>factor(x_j, r_j, j)</code>. A column of order 0
+   * contributes the factor 1, so <code>0^0</code> is never formed.
+   *
+   * @param list a matrix with <code>rList.argSize()</code> columns
+   */
+  private static IExpr multivariateMoment(IAST list, IAST rList, MomentFactor factor,
+      EvalEngine engine) {
+    final int n = list.argSize();
+    final int m = rList.argSize();
+    IASTAppendable sum = F.PlusAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      IAST row = (IAST) list.get(i);
+      IASTAppendable prod = F.TimesAlloc(m);
+      for (int j = 1; j <= m; j++) {
+        IExpr r = rList.get(j);
+        if (r.isZero()) {
+          continue;
+        }
+        prod.append(factor.apply(row.get(j), r, j));
+      }
+      sum.append(prod.oneIdentity1());
+    }
+    return engine.evaluate(F.Divide(sum, F.ZZ(n)));
+  }
+
   private static class Initializer {
 
     private static void init() {
@@ -64,43 +103,19 @@ public class StatisticalMomentFunctions {
 
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
-        if (dimensions.size() == 0 || dimensions.contains(0)) {
+        IntArrayList dimensions = nonEmptyDimensions(list);
+        if (dimensions == null) {
           return F.NIL;
         }
-
         int N = list.argSize();
-        if (N == 0)
-          return F.NIL;
 
         if (arg2.isList()) {
           // Multivariate
           IAST rList = (IAST) arg2;
           int m = rList.argSize();
           if (dimensions.size() == 2 && dimensions.getInt(1) == m) {
-            IASTAppendable sum = F.PlusAlloc(N);
-            for (int i = 1; i <= N; i++) {
-              IAST row = (IAST) list.get(i);
-              IASTAppendable prod = F.TimesAlloc(m);
-              for (int j = 1; j <= m; j++) {
-                IExpr r = rList.get(j);
-                if (r.isZero())
-                  continue; // x^0 is 1, handled gracefully to avoid 0^0 issues
-                if (r.isOne()) {
-                  prod.append(row.get(j));
-                } else {
-                  prod.append(F.Power(row.get(j), r));
-                }
-              }
-              IExpr term = F.C1;
-              if (prod.argSize() == 1) {
-                term = prod.arg1();
-              } else if (prod.argSize() > 1) {
-                term = prod;
-              }
-              sum.append(term);
-            }
-            return engine.evaluate(F.Divide(sum, F.ZZ(N)));
+            return multivariateMoment(list, rList,
+                (x, r, column) -> r.isOne() ? x : F.Power(x, r), engine);
           } else if (dimensions.size() > 2) {
             // Fallback layout reduction for higher dimensional arrays
             return engine.evaluate(
@@ -140,6 +155,19 @@ public class StatisticalMomentFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  /**
+   * The dimensions of a list of data for a moment function.
+   *
+   * @return <code>null</code> if the list is empty or has an empty dimension
+   */
+  private static IntArrayList nonEmptyDimensions(IAST list) {
+    IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
+    if (dimensions.size() == 0 || dimensions.contains(0) || list.argSize() == 0) {
+      return null;
+    }
+    return dimensions;
+  }
+
   private static final class CentralMoment extends AbstractEvaluator {
 
     @Override
@@ -154,14 +182,11 @@ public class StatisticalMomentFunctions {
 
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
-        if (dimensions.size() == 0 || dimensions.contains(0)) {
+        IntArrayList dimensions = nonEmptyDimensions(list);
+        if (dimensions == null) {
           return F.NIL;
         }
-
         int N = list.argSize();
-        if (N == 0)
-          return F.NIL;
 
         if (arg2.isList()) {
           // Multivariate
@@ -171,30 +196,10 @@ public class StatisticalMomentFunctions {
             IExpr meanVec = engine.evaluate(F.Mean(list));
             if (meanVec.isList() && ((IAST) meanVec).argSize() == m) {
               IAST means = (IAST) meanVec;
-              IASTAppendable sum = F.PlusAlloc(N);
-              for (int i = 1; i <= N; i++) {
-                IAST row = (IAST) list.get(i);
-                IASTAppendable prod = F.TimesAlloc(m);
-                for (int j = 1; j <= m; j++) {
-                  IExpr r = rList.get(j);
-                  if (r.isZero())
-                    continue; // Handles 0-order gracefully (avoids 0^0)
-                  IExpr diff = engine.evaluate(F.Subtract(row.get(j), means.get(j)));
-                  if (r.isOne()) {
-                    prod.append(diff);
-                  } else {
-                    prod.append(F.Power(diff, r));
-                  }
-                }
-                IExpr term = F.C1;
-                if (prod.argSize() == 1) {
-                  term = prod.arg1();
-                } else if (prod.argSize() > 1) {
-                  term = prod;
-                }
-                sum.append(term);
-              }
-              return engine.evaluate(F.Divide(sum, F.ZZ(N)));
+              return multivariateMoment(list, rList, (x, r, column) -> {
+                IExpr diff = engine.evaluate(F.Subtract(x, means.get(column)));
+                return r.isOne() ? diff : F.Power(diff, r);
+              }, engine);
             }
           } else if (dimensions.size() > 2) {
             // Fallback layout reduction for higher dimensional arrays
@@ -519,39 +524,19 @@ public class StatisticalMomentFunctions {
 
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
-        if (dimensions.size() == 0 || dimensions.contains(0)) {
+        IntArrayList dimensions = nonEmptyDimensions(list);
+        if (dimensions == null) {
           return F.NIL;
         }
-
         int N = list.argSize();
-        if (N == 0)
-          return F.NIL;
 
         if (arg2.isList()) {
           // Multivariate
           IAST rList = (IAST) arg2;
           int m = rList.argSize();
           if (dimensions.size() == 2 && dimensions.getInt(1) == m) {
-            IASTAppendable sum = F.PlusAlloc(N);
-            for (int i = 1; i <= N; i++) {
-              IAST row = (IAST) list.get(i);
-              IASTAppendable prod = F.TimesAlloc(m);
-              for (int j = 1; j <= m; j++) {
-                IExpr r = rList.get(j);
-                if (r.isZero())
-                  continue; // FactorialPower(x, 0) is 1
-                prod.append(factorialPower2(row.get(j), r));
-              }
-              IExpr term = F.C1;
-              if (prod.argSize() == 1) {
-                term = prod.arg1();
-              } else if (prod.argSize() > 1) {
-                term = prod;
-              }
-              sum.append(term);
-            }
-            return engine.evaluate(F.Divide(sum, F.ZZ(N)));
+            return multivariateMoment(list, rList,
+                (x, r, column) -> factorialPower2(x, r), engine);
           } else if (dimensions.size() > 2) {
             // Fallback layout reduction for higher dimensional arrays
             return engine.evaluate(F.ArrayReduce(F.Function(F.FactorialMoment(F.Slot1, arg2)), list,

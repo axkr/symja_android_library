@@ -27,46 +27,71 @@ public class FindShortestCurve extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
     IExpr p1 = ast.arg2();
     IExpr p2 = ast.arg3();
+    IAST reg = memberRegion(ast, engine);
+    if (reg.isPresent() && reg.head().isBuiltInSymbol()) {
+      int ordinal = ((IBuiltInSymbol) reg.head()).ordinal();
+      if (isConvexSolid(ordinal)) {
+        // In convex solids the geodesic is the straight segment, kept exact.
+        return F.Line(F.List(p1, p2));
+      }
+      switch (ordinal) {
+        case ID.Circle:
+          return circleCurve(reg, p1, p2, engine);
+        case ID.Line:
+          return lineCurve(reg, p1, p2);
+        default:
+          break;
+      }
+    }
+    return F.NIL;
+  }
 
+  /**
+   * The region of <code>f(region, p1, p2)</code> without a <code>Region</code> display wrapper.
+   *
+   * @return {@link F#NIL} if the region is no function, or if one of the points definitively lies
+   *         outside it; a membership which does not evaluate to <code>False</code> is accepted
+   */
+  static IAST memberRegion(final IAST ast, EvalEngine engine) {
+    IExpr arg1 = ast.arg1();
     // Unwrap Region display wrapper if present
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
     }
-
-    if (arg1.isAST()) {
-      IAST reg = (IAST) arg1;
-      IExpr head = reg.head();
-
-      // Strict membership validation: Return NIL if point definitively lies outside
-      IExpr mem1 = engine.evaluate(F.RegionMember(reg, p1));
-      IExpr mem2 = engine.evaluate(F.RegionMember(reg, p2));
-      if (mem1.isFalse() || mem2.isFalse()) {
-        return F.NIL;
-      }
-
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Circle:
-            return circleCurve(reg, p1, p2, engine);
-          case ID.Disk:
-          case ID.Ball:
-          case ID.Rectangle:
-          case ID.Cuboid:
-          case ID.Triangle:
-          case ID.Polygon:
-          case ID.Simplex:
-          case ID.Tetrahedron:
-            // In convex solids the geodesic is the straight segment, kept exact.
-            return F.Line(F.List(p1, p2));
-          case ID.Line:
-            return lineCurve(reg, p1, p2);
-        }
-      }
+    if (!arg1.isAST()) {
+      return F.NIL;
     }
-    return F.NIL;
+    IAST reg = (IAST) arg1;
+    IExpr mem1 = engine.evaluate(F.RegionMember(reg, ast.arg2()));
+    IExpr mem2 = engine.evaluate(F.RegionMember(reg, ast.arg3()));
+    if (mem1.isFalse() || mem2.isFalse()) {
+      return F.NIL;
+    }
+    return reg;
+  }
+
+  /**
+   * The regions in which the shortest curve between two points is the straight segment between
+   * them.
+   *
+   * @param ordinal the ordinal of the region's head
+   */
+  static boolean isConvexSolid(int ordinal) {
+    switch (ordinal) {
+      case ID.Disk:
+      case ID.Ball:
+      case ID.Rectangle:
+      case ID.Cuboid:
+      case ID.Triangle:
+      case ID.Polygon:
+      case ID.Simplex:
+      case ID.Tetrahedron:
+        return true;
+      default:
+        return false;
+    }
   }
 
   private IExpr circleCurve(IAST reg, IExpr p1, IExpr p2, EvalEngine engine) {

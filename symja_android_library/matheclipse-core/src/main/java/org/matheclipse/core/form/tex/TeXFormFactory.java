@@ -461,52 +461,6 @@ public class TeXFormFactory {
       return true;
     }
 
-    private boolean convertMatrix(final StringBuilder buffer, final IAST ast, int[] dims) {
-      // create a LaTeX matrix
-
-      final IAST matrix = ast;
-
-      if (Config.MATRIX_TEXFORM) {
-        // problem with KaTeX?
-        buffer.append("\\left(\n\\begin{array}{");
-        for (int i = 0; i < dims[1]; i++) {
-          buffer.append("c");
-        }
-        buffer.append("}\n");
-        if (ast.size() > 1) {
-          for (int i = 1; i < ast.size(); i++) {
-            IAST row = ast.getAST(i);
-            for (int j = 1; j < row.size(); j++) {
-              fFactory.convert(buffer, row.get(j), Precedence.NO_PRECEDENCE);
-              if (j < row.argSize()) {
-                buffer.append(" & ");
-              }
-            }
-            buffer.append(" \\\\\n");
-          }
-        }
-        buffer.append("\\end{array}\n\\right) ");
-      } else {
-        buffer.append("\\begin{pmatrix}\n");
-        IAST row;
-        for (int i = 1; i < matrix.size(); i++) {
-          row = (IAST) matrix.get(i);
-          for (int j = 1; j < row.size(); j++) {
-            buffer.append(' ');
-            fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-            buffer.append(' ');
-            if (j < row.argSize()) {
-              buffer.append('&');
-            }
-          }
-          buffer.append("\\\\\n");
-        }
-
-        buffer.append("\\end{pmatrix}");
-      }
-      return true;
-    }
-
     private boolean convertMultiline(final StringBuilder buf, final IAST list) {
 
       buf.append("\\begin{array}{c}\n");

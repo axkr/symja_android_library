@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin.graphics;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -11,7 +10,6 @@ import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -40,12 +38,7 @@ public class ArrayPlot extends ListPlot {
     // the shape tests below read the data through any display wrapper; `wrappedAST` keeps the
     // wrapper, so the label can still be put over the finished picture
     final IAST wrappedAST = ast;
-    if (ast.size() > 1) {
-      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
-      if (unwrapped != ast.arg1()) {
-        ast = ast.setAtCopy(1, unwrapped);
-      }
-    }
+    ast = PlotWrapper.stripFirstArgument(ast);
     if (argSize < 1) {
       return F.NIL;
     }
@@ -57,36 +50,8 @@ public class ArrayPlot extends ListPlot {
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
-    boolean colorFunctionScaling = true;
-    IExpr colorFunctionOpt = S.Automatic;
-    IExpr colorRulesOpt = S.None;
-    IExpr meshOpt = S.None;
-    // the options array holds resolved values, not the rules the caller wrote,
-    // so the option rules are read back off the original call
-    for (IExpr opt : originalAST) {
-      if (opt.isRuleAST()) {
-        IExpr key = ((IAST) opt).arg1();
-        IExpr val = ((IAST) opt).arg2();
-        if (key.isBuiltInSymbol()) {
-          switch (((IBuiltInSymbol) key).ordinal()) {
-            case ID.ColorFunctionScaling:
-              if (val.isFalse()) {
-                colorFunctionScaling = false;
-              }
-              break;
-            case ID.ColorFunction:
-              colorFunctionOpt = val;
-              break;
-            case ID.ColorRules:
-              colorRulesOpt = val;
-              break;
-            case ID.Mesh:
-              meshOpt = val;
-              break;
-          }
-        }
-      }
-    }
+    GraphicsOptions.MatrixPlotOptions matrixOptions =
+        GraphicsOptions.readMatrixPlotOptions(originalAST);
 
     IAST list = (IAST) dataArg;
     int rows = list.argSize();
@@ -154,16 +119,18 @@ public class ArrayPlot extends ListPlot {
     // the value the grey scale reaches black at: the extreme furthest from zero on whichever side
     // the data lies, which is the maximum unless every value is negative
     final double greyLimit = max > 0.0 ? max : min;
-    final boolean scaling = colorFunctionScaling;
+    final boolean scaling = matrixOptions.colorFunctionScaling;
     // A ColorFunction is a scale over the range of the data. The default grey scale is a
     // different one - see greyColor - so the two are separate objects rather than one function
     // reached through two sets of arithmetic.
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.ARRAY, colorFunctionOpt, F.bool(scaling), S.ArrayPlot, engine)
+        .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.bool(scaling),
+            S.ArrayPlot, engine)
         .range(1, min, max).sink(PlotColorFunction.Sink.FLAT)
         .fallback(t -> greyColor(t, greyLimit, scaling)).build();
     // compiled once for the whole array: the rules are matched like Replace, once per cell
-    GraphicsOptions.ColorRuleTable colorRules = GraphicsOptions.colorRules(colorRulesOpt, engine);
+    GraphicsOptions.ColorRuleTable colorRules =
+        GraphicsOptions.colorRules(matrixOptions.colorRules, engine);
     IExpr[][] cells = new IExpr[rows][cols];
 
     // Draw cells
@@ -206,36 +173,10 @@ public class ArrayPlot extends ListPlot {
         }
       }
     }
-    if (GraphicsOptions.optionValue(originalAST, S.DataReversed, S.False).isTrue()) {
-      GraphicsOptions.reverseRows(cells);
-    }
-    IExpr dataRange = GraphicsOptions.optionValue(originalAST, S.DataRange, S.Automatic);
-    final double[] extent = GraphicsOptions.rasterExtent(dataRange, rows, cols);
-    primitives.append(
-        GraphicsOptions.rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]));
-    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, extent[0], extent[1], extent[2],
-        extent[3], cols, rows);
-    if (meshLines.isPresent()) {
-      primitives.append(meshLines);
-    }
-
-    graphicsOptions
-        .setBoundingBox(new double[] {extent[0], extent[2], extent[1], extent[3]});
-
-    if (graphicsOptions.aspectRatio().isAutomatic()) {
-      // Square cells
-      graphicsOptions.setAspectRatio(F.num((double) rows / (double) cols));
-    }
-
-    IExpr frameTicksOpt = GraphicsOptions.optionValue(originalAST, S.FrameTicks, S.None);
-    if ((frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) && !dataRange.isList()) {
-      // asked-for ticks count cells, as MatrixPlot's do, rather than coordinates
-      graphicsOptions
-          .addOption(F.Rule(S.FrameTicks, GraphicsOptions.matrixIndexFrameTicks(rows, cols)));
-    } else if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
-      // with a DataRange the ticks are the coordinates it gives
-      graphicsOptions.addOption(F.Rule(S.FrameTicks, S.Automatic));
-    } else if (graphicsOptions.frameTicks().isNone()
+    IExpr frameTicksOpt = GraphicsOptions.finishMatrixRaster(primitives, cells, rows, cols,
+        matrixOptions.mesh, graphicsOptions, originalAST, S.None);
+    if (!(frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue())
+        && graphicsOptions.frameTicks().isNone()
         && options[GraphicsOptions.X_FRAMETICKS].isNone()) {
       // Default FrameTicks -> None for ArrayPlot
       // Ensure options reflect this so SVG doesn't draw default ticks

@@ -344,6 +344,7 @@ public final class ExpVectorLong implements Serializable {
     return result;
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Combine with ExpVectorLong. Combine this with the other ExpVectorLong V.
    *
@@ -518,6 +519,7 @@ public final class ExpVectorLong implements Serializable {
     }
     return s.toString();
   }
+  // CPD-ON
 
   /**
    * Comparison with any other object.

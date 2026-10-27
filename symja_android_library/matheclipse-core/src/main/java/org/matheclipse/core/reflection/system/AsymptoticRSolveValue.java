@@ -258,42 +258,10 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
       IAST solve = F.Solve(algebraicSystem, cVarsReversed);
       IExpr solList = engine.evaluate(solve);
 
-      if (solList.isList() && ((IAST) solList).argSize() > 0) {
-
-        // Iterate branches; skip any that contain ConditionalExpression — those come
-        // from transcendental roots of equations like -Sin(c0/z + ...) == 0 and are
-        // not valid polynomial asymptotic coefficients.
-        IAST firstSol = F.NIL;
-        for (int bi = 1; bi <= ((IAST) solList).argSize(); bi++) {
-          IAST candidate = (IAST) ((IAST) solList).get(bi);
-          if (candidate.isFreeAST(S.ConditionalExpression)) {
-            firstSol = candidate;
-            break;
-          }
-        }
-
-        if (firstSol.isPresent() && firstSol.argSize() > 0) {
-          // Drop spurious coefficients beyond our requested `order` bounds
-          IExpr finalSeries = engine.evaluate(F.subst(ansatzTrunc, firstSol));
-
-          // Assign unbound generic variables to unified Canonical form: C(1), C(2)
-          int cIndex = engine.incConstantCounter();
-          IASTAppendable finalRules = F.ListAlloc();
-          for (int i = 1; i <= cVars.argSize(); i++) {
-            IExpr c = cVars.get(i);
-            if (!finalSeries.isFree(c)) {
-              finalRules.append(F.Rule(c, F.C(cIndex++)));
-            }
-          }
-          if (finalRules.argSize() > 0) {
-            finalSeries = engine.evaluate(F.subst(finalSeries, finalRules));
-          }
-
-          IExpr cPattern = F.C(F.$b());
-          finalSeries = engine.evaluate(F.Collect(finalSeries, cPattern));
-
-          return engine.evaluate(finalSeries);
-        }
+      IExpr series =
+          AsymptoticDSolveValue.seriesFromSolutions(solList, ansatzTrunc, cVars, engine);
+      if (series.isPresent()) {
+        return series;
       }
     }
 

@@ -1135,6 +1135,7 @@ public class StatisticsDiscreteDistributions {
       return ARGS_1_1;
     }
 
+    // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
@@ -1184,6 +1185,7 @@ public class StatisticsDiscreteDistributions {
       }
       return F.NIL;
     }
+    // CPD-ON
 
     public IExpr[] minmax(IAST dist) {
       if (dist.size() == 2 && dist.arg1().isList()) {

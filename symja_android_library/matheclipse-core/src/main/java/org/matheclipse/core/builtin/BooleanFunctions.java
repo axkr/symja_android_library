@@ -2231,6 +2231,40 @@ public final class BooleanFunctions {
     }
 
     /**
+     * Ternary comparison of two intervals for the inclusive <code>&gt;=</code> relation of
+     * <code>GreaterEqual</code> and <code>LessEqual</code> (which swaps its arguments):
+     * <code>lower0 &gt;= upper1</code> makes the relation True, touching allowed.
+     */
+    protected static IExpr.COMPARE_TERNARY inclusiveIntervalTernary(final IExpr lower0,
+        final IExpr upper0, final IExpr lower1, final IExpr upper1) {
+      if (lower0.greaterEqualThan(upper1).isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      } else if (upper0.lessThan(lower1).isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    /**
+     * Ternary comparison of two <code>IntervalData</code> bound pairs for the inclusive
+     * <code>&gt;=</code> relation: touching bounds still satisfy it for every pair of values,
+     * unless one of the touching bounds is open.
+     */
+    protected static IExpr.COMPARE_TERNARY inclusiveIntervalDataTernary(Bounds b0, Bounds b1) {
+      if (b0.lower.greaterEqualThan(b1.upper).isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      if (b0.upper.lessThan(b1.lower).isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (b0.upper.equals(b1.lower) && (!b0.upperClosed || !b1.lowerClosed)) {
+        // b0 lies strictly below b1, so ">=" never holds
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    /**
      * Ternary comparison of two intervals for the strict <code>Greater</code> relation. The
      * <code>GreaterEqual</code> / <code>LessEqual</code> subclasses override this with an inclusive
      * variant so that touching intervals (e.g. <code>[1,2]</code> and <code>[2,3]</code>) compare
@@ -2655,29 +2689,12 @@ public final class BooleanFunctions {
     @Override
     protected IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(final IExpr lower0,
         final IExpr upper0, final IExpr lower1, final IExpr upper1) {
-      // inclusive: lower0 >= upper1 makes the whole interval relation True (touching allowed)
-      if (lower0.greaterEqualThan(upper1).isTrue()) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      } else if (upper0.lessThan(lower1).isTrue()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      return inclusiveIntervalTernary(lower0, upper0, lower1, upper1);
     }
 
     @Override
     protected IExpr.COMPARE_TERNARY compareGreaterIntervalDataTernary(Bounds b0, Bounds b1) {
-      // inclusive: touching bounds still satisfy ">=" for every pair of values
-      if (b0.lower.greaterEqualThan(b1.upper).isTrue()) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      }
-      if (b0.upper.lessThan(b1.lower).isTrue()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      if (b0.upper.equals(b1.lower) && (!b0.upperClosed || !b1.lowerClosed)) {
-        // b0 lies strictly below b1, so ">=" never holds
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      return inclusiveIntervalDataTernary(b0, b1);
     }
   }
 
@@ -2997,27 +3014,13 @@ public final class BooleanFunctions {
         final IExpr upper0, final IExpr lower1, final IExpr upper1) {
       // LessEqual delegates to Greater with swapped arguments; use the inclusive bound so that
       // touching intervals (e.g. [1,2] <= [2,3]) compare as True.
-      if (lower0.greaterEqualThan(upper1).isTrue()) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      } else if (upper0.lessThan(lower1).isTrue()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      return inclusiveIntervalTernary(lower0, upper0, lower1, upper1);
     }
 
     @Override
     protected IExpr.COMPARE_TERNARY compareGreaterIntervalDataTernary(Bounds b0, Bounds b1) {
       // see GreaterEqual: LessEqual reaches this with swapped arguments
-      if (b0.lower.greaterEqualThan(b1.upper).isTrue()) {
-        return IExpr.COMPARE_TERNARY.TRUE;
-      }
-      if (b0.upper.lessThan(b1.lower).isTrue()) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      if (b0.upper.equals(b1.lower) && (!b0.upperClosed || !b1.lowerClosed)) {
-        return IExpr.COMPARE_TERNARY.FALSE;
-      }
-      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      return inclusiveIntervalDataTernary(b0, b1);
     }
   }
 

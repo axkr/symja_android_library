@@ -9,6 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.NDSolvePDE.Coefficient;
 
 /**
  * <code>NDSolve</code> of a system of equations, first order in time, in one space variable:
@@ -87,21 +88,16 @@ final class NDSolvePDESystem {
    *        the functions themselves
    */
   static IExpr solve(IAST ast, EvalEngine engine, boolean ruleForm) {
-    if (ast.argSize() < 4 || !ast.arg3().isList3() || !ast.arg4().isList3()
-        || !ast.arg3().first().isSymbol() || !ast.arg4().first().isSymbol()) {
+    NDSolvePDE.Ranges ranges = NDSolvePDE.parseRanges(ast);
+    if (ranges == null) {
       return F.NIL;
     }
-    IAST tRange = (IAST) ast.arg3();
-    IAST xRange = (IAST) ast.arg4();
-    ISymbol t = (ISymbol) tRange.arg1();
-    ISymbol x = (ISymbol) xRange.arg1();
-    double t0 = tRange.arg2().evalfNaN();
-    double t1 = tRange.arg3().evalfNaN();
-    double x0 = xRange.arg2().evalfNaN();
-    double x1 = xRange.arg3().evalfNaN();
-    if (!(t1 > t0) || !(x1 > x0)) {
-      return F.NIL;
-    }
+    ISymbol t = ranges.t;
+    ISymbol x = ranges.x;
+    double t0 = ranges.t0;
+    double t1 = ranges.t1;
+    double x0 = ranges.x0;
+    double x1 = ranges.x1;
 
     // the unknowns, written as u, u(x, t) or a list of them
     IAST unknowns = ast.arg2().makeList();
@@ -789,57 +785,5 @@ final class NDSolvePDESystem {
       result[k] = sum / matrix[k][w];
     }
     return result;
-  }
-
-  /**
-   * A coefficient of the equations, or a condition, as a function of <code>t</code> and
-   * <code>x</code>; evaluated once if it depends on neither and remembered per point if it
-   * depends on <code>x</code> only.
-   */
-  private static final class Coefficient {
-    private final IExpr expr;
-    private final ISymbol t;
-    private final ISymbol x;
-    private final EvalEngine engine;
-    private final boolean dependsOnT;
-    private final boolean dependsOnX;
-    private double constant = Double.NaN;
-    private final java.util.Map<Double, Double> byX = new java.util.HashMap<>();
-
-    Coefficient(IExpr expr, ISymbol t, ISymbol x, EvalEngine engine) {
-      this.expr = expr;
-      this.t = t;
-      this.x = x;
-      this.engine = engine;
-      this.dependsOnT = !expr.isFree(t);
-      this.dependsOnX = !expr.isFree(x);
-    }
-
-    double value(double tv, double xv) {
-      if (expr.isZero()) {
-        return 0.0;
-      }
-      if (!dependsOnT && !dependsOnX) {
-        if (Double.isNaN(constant)) {
-          constant = evaluate(tv, xv);
-        }
-        return constant;
-      }
-      if (!dependsOnT) {
-        Double cached = byX.get(xv);
-        if (cached == null) {
-          cached = evaluate(tv, xv);
-          byX.put(xv, cached);
-        }
-        return cached;
-      }
-      return evaluate(tv, xv);
-    }
-
-    private double evaluate(double tv, double xv) {
-      IExpr value =
-          engine.evalN(F.subst(expr, F.List(F.Rule(t, F.num(tv)), F.Rule(x, F.num(xv)))));
-      return value.isReal() ? value.evalf() : Double.NaN;
-    }
   }
 }

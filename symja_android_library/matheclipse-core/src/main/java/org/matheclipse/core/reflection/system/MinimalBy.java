@@ -19,6 +19,16 @@ public class MinimalBy extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    return extremalBy(ast, engine, false);
+  }
+
+  /**
+   * <code>MinimalBy(data, f, ...)</code> or, with <code>max</code>, <code>MaximalBy(data, f,
+   * ...)</code>: the elements of <code>data</code> - a list or an association - with the smallest or
+   * largest values of <code>f</code>, or the first <code>n</code> of them ordered by
+   * <code>f</code>, optionally with the ordering function <code>p</code>.
+   */
+  static IExpr extremalBy(final IAST ast, EvalEngine engine, boolean max) {
     int argSize = ast.argSize();
     if (argSize < 2) {
       return F.NIL;
@@ -46,10 +56,11 @@ public class MinimalBy extends AbstractFunctionEvaluator {
     }
 
     if (argSize == 2) {
-      return minimalElements(data, fValues, Comparators.CANONICAL_COMPARATOR, isAssociation);
+      return extremalElements(data, fValues, Comparators.CANONICAL_COMPARATOR, isAssociation,
+          max);
     }
 
-    // argSize >= 3: MinimalBy[data, f, n] or MinimalBy[data, f, n, p]
+    // argSize >= 3: f(data, f, n) or f(data, f, n, p)
     final Comparator<IExpr> comparator;
     if (argSize >= 4) {
       IExpr p = ast.arg4();
@@ -76,7 +87,8 @@ public class MinimalBy extends AbstractFunctionEvaluator {
     }
     n = Math.min(n, size);
 
-    // Sort indices by f value; stable sort preserves original order for ties
+    // Sort indices by f value, descending for the maximum; stable sort preserves original order
+    // for ties
     Integer[] indices = new Integer[size];
     for (int i = 0; i < size; i++) {
       indices[i] = i;
@@ -84,7 +96,8 @@ public class MinimalBy extends AbstractFunctionEvaluator {
     final List<IExpr> fVals = fValues;
     final Comparator<IExpr> comp = comparator;
     Arrays.sort(indices, (a, b) -> {
-      int c = comp.compare(fVals.get(a), fVals.get(b));
+      int c = max ? comp.compare(fVals.get(b), fVals.get(a))
+          : comp.compare(fVals.get(a), fVals.get(b));
       return c != 0 ? c : Integer.compare(a, b);
     });
 
@@ -92,23 +105,25 @@ public class MinimalBy extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Returns all elements of {@code data} whose f-value equals the minimum f-value, preserving
-   * original order. Returns an association if {@code data} is an association.
+   * Returns all elements of {@code data} whose f-value equals the minimum, or with {@code max} the
+   * maximum, f-value, preserving original order. Returns an association if {@code data} is an
+   * association.
    */
-  private static IExpr minimalElements(IAST data, List<IExpr> fValues, Comparator<IExpr> comparator,
-      boolean isAssociation) {
-    IExpr minVal = fValues.get(0);
+  private static IExpr extremalElements(IAST data, List<IExpr> fValues,
+      Comparator<IExpr> comparator, boolean isAssociation, boolean max) {
+    IExpr extremalVal = fValues.get(0);
     for (int i = 1; i < fValues.size(); i++) {
       IExpr v = fValues.get(i);
-      if (comparator.compare(v, minVal) < 0) {
-        minVal = v;
+      int c = comparator.compare(v, extremalVal);
+      if (max ? c > 0 : c < 0) {
+        extremalVal = v;
       }
     }
 
     if (isAssociation) {
       IASTAppendable result = data.copyHead(fValues.size());
       for (int i = 0; i < fValues.size(); i++) {
-        if (comparator.compare(fValues.get(i), minVal) == 0) {
+        if (comparator.compare(fValues.get(i), extremalVal) == 0) {
           result.appendRule(((IAssociation) data).getRule(i + 1));
         }
       }
@@ -117,7 +132,7 @@ public class MinimalBy extends AbstractFunctionEvaluator {
 
     IASTAppendable result = F.ListAlloc(fValues.size());
     for (int i = 0; i < fValues.size(); i++) {
-      if (comparator.compare(fValues.get(i), minVal) == 0) {
+      if (comparator.compare(fValues.get(i), extremalVal) == 0) {
         result.append(data.get(i + 1));
       }
     }

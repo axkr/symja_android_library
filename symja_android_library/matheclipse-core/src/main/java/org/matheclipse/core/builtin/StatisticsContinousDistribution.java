@@ -5005,6 +5005,7 @@ public class StatisticsContinousDistribution {
       return ARGS_0_1;
     }
 
+    // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
@@ -5066,6 +5067,7 @@ public class StatisticsContinousDistribution {
       }
       return F.NIL;
     }
+    // CPD-ON
 
     public IExpr[] minmax(IAST dist) {
       if (dist.size() == 2 && dist.arg1().isList()) {
@@ -5373,27 +5375,49 @@ public class StatisticsContinousDistribution {
   private static final class WeibullDistribution extends AbstractEvaluator
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
+    /**
+     * The CDF or PDF of <code>WeibullDistribution(n, scale, loc)</code> at <code>k</code> in
+     * machine precision, if one of the arguments is numeric.
+     *
+     * @param loc the location, or <code>null</code> for <code>WeibullDistribution(n, scale)</code>
+     * @param cdf <code>true</code> for the CDF, <code>false</code> for the PDF
+     * @return {@link F#NIL} if the value is not computed numerically
+     */
+    private static IExpr numericWeibull(IExpr n, IExpr scale, IExpr loc, IExpr k, boolean cdf,
+        EvalEngine engine) {
+      if (engine.isArbitraryMode() || !(n.isNumericArgument(true)
+          || scale.isNumericArgument(true) || (loc != null && loc.isNumericArgument(true))
+          || k.isNumericArgument(true))) {
+        return F.NIL;
+      }
+      double nDouble = n.evalfNaN();
+      double scaleDouble = scale.evalfNaN();
+      double kDouble = k.evalfNaN();
+      double locDouble = loc == null ? 0.0 : loc.evalfNaN();
+      if (Double.isNaN(nDouble) || Double.isNaN(scaleDouble) || Double.isNaN(kDouble)
+          || Double.isNaN(locDouble)) {
+        return F.NIL;
+      }
+      try {
+        org.hipparchus.distribution.continuous.WeibullDistribution weibull =
+            new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble, scaleDouble);
+        // shift x by the location parameter
+        double x = loc == null ? kDouble : kDouble - locDouble;
+        return F.num(cdf ? weibull.cumulativeProbability(x) : weibull.density(x));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        //
-        if (!engine.isArbitraryMode() && //
-            (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double nDouble = n.evalfNaN();
-          double mDouble = m.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F.num(
-                  new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble, mDouble) //
-                      .cumulativeProbability(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
+        IExpr numeric = numericWeibull(n, m, null, k, true, engine);
+        if (numeric.isPresent()) {
+          return numeric;
         }
         IExpr function =
             // [$ Piecewise({{1 - E^(-(#/m)^n),# > 0}}, 0) & $]
@@ -5405,26 +5429,9 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr scale = dist.arg2();
         IExpr loc = dist.arg3();
-        //
-        if (!engine.isArbitraryMode() && //
-            (n.isNumericArgument(true) || scale.isNumericArgument(true)
-                || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double nDouble = n.evalfNaN();
-          double scaleDouble = scale.evalfNaN();
-          double kDouble = k.evalfNaN();
-          double locDouble = loc.evalfNaN();
-          if (!Double.isNaN(nDouble) && !Double.isNaN(scaleDouble) && !Double.isNaN(kDouble)
-              && !Double.isNaN(locDouble)) {
-            try {
-              // Shift x by the location parameter before calculating CDF
-              return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
-                  scaleDouble) //
-                      .cumulativeProbability(kDouble - locDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
+        IExpr numeric = numericWeibull(n, scale, loc, k, true, engine);
+        if (numeric.isPresent()) {
+          return numeric;
         }
         IExpr function =
             // [$ Piecewise({{1 - E^(-((# - loc)/scale)^n),# > loc}}, 0) & $]
@@ -5572,22 +5579,9 @@ public class StatisticsContinousDistribution {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        //
-        if (!engine.isArbitraryMode() && //
-            (n.isNumericArgument(true) || m.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double nDouble = n.evalfNaN();
-          double mDouble = m.evalfNaN();
-          double kDouble = k.evalfNaN();
-          if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
-            try {
-              return F.num(
-                  new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble, mDouble) //
-                      .density(kDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
+        IExpr numeric = numericWeibull(n, m, null, k, false, engine);
+        if (numeric.isPresent()) {
+          return numeric;
         }
         IExpr function =
             // [$ Piecewise({{((#/m)^(-1 + n)*n)/(E^(#/m)^n*m), # > 0}}, 0) & $]
@@ -5608,25 +5602,9 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr scale = dist.arg2();
         IExpr loc = dist.arg3();
-        //
-        if (!engine.isArbitraryMode() && //
-            (n.isNumericArgument(true) || scale.isNumericArgument(true)
-                || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
-          double nDouble = n.evalfNaN();
-          double scaleDouble = scale.evalfNaN();
-          double kDouble = k.evalfNaN();
-          double locDouble = loc.evalfNaN();
-          if (!Double.isNaN(nDouble) && !Double.isNaN(scaleDouble) && !Double.isNaN(kDouble)
-              && !Double.isNaN(locDouble)) {
-            try {
-              return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(nDouble,
-                  scaleDouble) //
-                      .density(kDouble - locDouble));
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              //
-            }
-          }
+        IExpr numeric = numericWeibull(n, scale, loc, k, false, engine);
+        if (numeric.isPresent()) {
+          return numeric;
         }
         IExpr function =
             // [$ Piecewise({{(((# - loc)/scale)^(-1 + n)*n)/(E^((# - loc)/scale)^n*scale), # >
@@ -7631,6 +7609,7 @@ public class StatisticsContinousDistribution {
       return F.NIL;
     }
 
+    // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (checkParameters(dist).isPresent()) {
@@ -7687,6 +7666,7 @@ public class StatisticsContinousDistribution {
       }
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
@@ -7749,6 +7729,7 @@ public class StatisticsContinousDistribution {
       return F.NIL;
     }
 
+    // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (checkParameters(dist).isPresent()) {
@@ -7801,6 +7782,7 @@ public class StatisticsContinousDistribution {
       }
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
@@ -8208,18 +8190,7 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr mean(IAST dist) {
       if (dist.isAST3()) {
-        IExpr a = dist.arg1();
-        IExpr b = dist.arg2();
-        IExpr g = dist.arg3();
-        // Piecewise({{a - b*EulerGamma, g == 0},
-        // {(b + a*g - b*Gamma(1 - g))/g, g != 0 && g < 1}}, Indeterminate)
-        return F.Piecewise(F.list(//
-            F.list(F.Subtract(a, F.Times(b, S.EulerGamma)), F.Equal(g, F.C0)), //
-            F.list(
-                F.Divide(F.Plus(b, F.Times(a, g), F.Times(F.CN1, b, F.Gamma(F.Subtract(F.C1, g)))),
-                    g),
-                F.And(F.Unequal(g, F.C0), F.Less(g, F.C1)))),
-            S.Indeterminate);
+        return stableMean(dist.arg1(), dist.arg2(), dist.arg3(), false);
       }
       return F.NIL;
     }
@@ -8282,6 +8253,27 @@ public class StatisticsContinousDistribution {
                 F.Times(b, F.Exp(F.Power(z, F.Negate(inverseG))))),
             F.And(F.Unequal(g, F.C0), F.Greater(z, F.C0)))),
         F.C0));
+  }
+
+  /**
+   * The mean of <code>MinStableDistribution(a, b, g)</code>:
+   * <code>Piecewise({{a - b*EulerGamma, g == 0}, {(b + a*g - b*Gamma(1 - g))/g,
+   * g != 0 && g < 1}}, Indeterminate)</code>, and of <code>MaxStableDistribution(a, b, g)</code>
+   * with the sign of <code>b</code> flipped: <code>Piecewise({{a + b*EulerGamma, g == 0},
+   * {(-b + a*g + b*Gamma(1 - g))/g, g != 0 && g < 1}}, Indeterminate)</code>
+   *
+   * @param max <code>true</code> for <code>MaxStableDistribution</code>
+   */
+  private static IExpr stableMean(IExpr a, IExpr b, IExpr g, boolean max) {
+    IExpr gumbel = max ? F.Plus(a, F.Times(b, S.EulerGamma))
+        : F.Subtract(a, F.Times(b, S.EulerGamma));
+    IExpr numerator = max
+        ? F.Plus(F.Negate(b), F.Times(a, g), F.Times(b, F.Gamma(F.Subtract(F.C1, g))))
+        : F.Plus(b, F.Times(a, g), F.Times(F.CN1, b, F.Gamma(F.Subtract(F.C1, g))));
+    return F.Piecewise(F.list(//
+        F.list(gumbel, F.Equal(g, F.C0)), //
+        F.list(F.Divide(numerator, g), F.And(F.Unequal(g, F.C0), F.Less(g, F.C1)))),
+        S.Indeterminate);
   }
 
   /**
@@ -8351,17 +8343,7 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr mean(IAST dist) {
       if (dist.isAST3()) {
-        IExpr a = dist.arg1();
-        IExpr b = dist.arg2();
-        IExpr g = dist.arg3();
-        // Piecewise({{a + b*EulerGamma, g == 0},
-        // {(-b + a*g + b*Gamma(1 - g))/g, g != 0 && g < 1}}, Indeterminate)
-        return F.Piecewise(F.list(//
-            F.list(F.Plus(a, F.Times(b, S.EulerGamma)), F.Equal(g, F.C0)), //
-            F.list(F.Divide(
-                F.Plus(F.Negate(b), F.Times(a, g), F.Times(b, F.Gamma(F.Subtract(F.C1, g)))), g),
-                F.And(F.Unequal(g, F.C0), F.Less(g, F.C1)))),
-            S.Indeterminate);
+        return stableMean(dist.arg1(), dist.arg2(), dist.arg3(), true);
       }
       return F.NIL;
     }

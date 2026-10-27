@@ -631,28 +631,8 @@ public class JASConvert<C extends RingElem<C>> {
           // fall through
         }
       } else {
-        if (ast.isPlus()) {
-          GenPolynomial<C> result = fPolyFactory.getZERO();
-          for (int i = 1; i < ast.size(); i++) {
-            IExpr expr = ast.get(i);
-            GenPolynomial<C> p = expr2Poly(expr, numeric2Rational);
-            if (p == null) {
-              return null;
-            }
-            result = result.sum(p);
-          }
-          return result;
-        } else if (ast.isTimes()) {
-          GenPolynomial<C> result = fPolyFactory.getONE();
-          for (int i = 1; i < ast.size(); i++) {
-            IExpr expr = ast.get(i);
-            GenPolynomial<C> p = expr2Poly(expr, numeric2Rational);
-            if (p == null) {
-              return null;
-            }
-            result = result.multiply(p);
-          }
-          return result;
+        if (ast.isPlus() || ast.isTimes()) {
+          return foldPlusTimes(ast, fPolyFactory, x -> expr2Poly(x, numeric2Rational));
         } else if (ast.isPower() && ast.base().isSymbol()) {
           final ISymbol base = (ISymbol) ast.base();
           int exponent = ast.exponent().toIntDefault();
@@ -1096,6 +1076,29 @@ public class JASConvert<C extends RingElem<C>> {
       IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
       monomialToExpr(coeff, exp, monomTimes);
       result.append(monomTimes.oneIdentity1());
+    }
+    return result;
+  }
+
+  /**
+   * The sum or the product of the polynomials of the arguments of a <code>Plus</code> or
+   * <code>Times</code> expression.
+   *
+   * @param ast a <code>Plus</code> or <code>Times</code> expression
+   * @param ring the polynomial ring, for the empty sum or product
+   * @param converter the polynomial of an argument, or <code>null</code> if it has none
+   * @return <code>null</code> if an argument has no polynomial
+   */
+  static <R extends RingElem<R>> GenPolynomial<R> foldPlusTimes(IAST ast,
+      GenPolynomialRing<R> ring, java.util.function.Function<IExpr, GenPolynomial<R>> converter) {
+    final boolean plus = ast.isPlus();
+    GenPolynomial<R> result = plus ? ring.getZERO() : ring.getONE();
+    for (int i = 1; i < ast.size(); i++) {
+      GenPolynomial<R> p = converter.apply(ast.get(i));
+      if (p == null) {
+        return null;
+      }
+      result = plus ? result.sum(p) : result.multiply(p);
     }
     return result;
   }

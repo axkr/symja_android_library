@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import java.io.IOException;
+import java.io.ObjectOutput;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -1614,6 +1616,53 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   protected int fEvalFlags = 0;
 
   protected transient int hashValue;
+
+  /**
+   * Write this AST for {@link java.io.Externalizable#writeExternal(ObjectOutput)}: the persistent
+   * evaluation flags, then either the compact form (size byte, the short IDs of the head and the
+   * leading builtin arguments, the remaining arguments as objects) or the size and all elements as
+   * objects.
+   */
+  protected final void writeExternalCompact(ObjectOutput objectOutput) throws IOException {
+    // only the flags which cannot be recomputed are persisted
+    objectOutput.writeShort(fEvalFlags & EvalFlags.Mask.PERSISTENT);
+
+    int size = size();
+    byte attributeFlags = (byte) 0;
+    if (size > 0 && size < 128) {
+      Short exprID = S.GLOBAL_IDS_MAP.get(head());
+      if (exprID != null) {
+        int exprIDSize = 1;
+        short[] exprIDArray = new short[size];
+        exprIDArray[0] = exprID;
+        for (int i = 1; i < size; i++) {
+          exprID = S.GLOBAL_IDS_MAP.get(get(i));
+          if (exprID == null) {
+            break;
+          }
+          exprIDArray[i] = exprID;
+          exprIDSize++;
+        }
+        // optimized path
+        attributeFlags = (byte) size;
+        objectOutput.writeByte(attributeFlags);
+        objectOutput.writeByte((byte) exprIDSize);
+        for (int i = 0; i < exprIDSize; i++) {
+          objectOutput.writeShort(exprIDArray[i]);
+        }
+        for (int i = exprIDSize; i < size; i++) {
+          objectOutput.writeObject(get(i));
+        }
+        return;
+      }
+    }
+
+    objectOutput.writeByte(attributeFlags);
+    objectOutput.writeInt(size);
+    for (int i = 0; i < size; i++) {
+      objectOutput.writeObject(get(i));
+    }
+  }
 
   public AbstractAST() {
     super();

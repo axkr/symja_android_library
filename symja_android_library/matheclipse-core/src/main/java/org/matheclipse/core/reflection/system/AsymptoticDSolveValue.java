@@ -180,30 +180,54 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
     if (DEBUG) {
       System.out.println("solList: " + solList);
     }
-    if (solList.isList() && ((IAST) solList).argSize() > 0) {
-      IAST firstSol = (IAST) ((IAST) solList).arg1();
+    return seriesFromSolutions(solList, ansatzTrunc, cVars, engine);
+  }
 
-      IExpr finalSeries = engine.evaluate(F.subst(ansatzTrunc, firstSol));
-
-      int cIndex = engine.incConstantCounter();
-      IASTAppendable finalRules = F.ListAlloc();
-      for (int i = 1; i <= cVars.argSize(); i++) {
-        IExpr c = cVars.get(i);
-        if (!finalSeries.isFree(c)) {
-          finalRules.append(F.Rule(c, F.C(cIndex++)));
-        }
+  /**
+   * The asymptotic series of the first usable solution in <code>solList</code>: the result of
+   * <code>Solve</code> for the coefficients <code>cVars</code> of the ansatz. A solution with a
+   * <code>ConditionalExpression</code> comes from a transcendental root and is skipped. Coefficients
+   * left free are renamed to <code>C(1), C(2), ...</code> and collected.
+   *
+   * @return {@link F#NIL} if there is no usable solution
+   */
+  static IExpr seriesFromSolutions(IExpr solList, IExpr ansatzTrunc, IAST cVars,
+      EvalEngine engine) {
+    if (!solList.isList() || ((IAST) solList).argSize() == 0) {
+      return F.NIL;
+    }
+    // skip any branch that contains ConditionalExpression - those come from transcendental roots
+    // of equations like -Sin(c0/z + ...) == 0 and are not valid polynomial asymptotic coefficients
+    IAST firstSol = F.NIL;
+    for (int bi = 1; bi <= ((IAST) solList).argSize(); bi++) {
+      IAST candidate = (IAST) ((IAST) solList).get(bi);
+      if (candidate.isFreeAST(S.ConditionalExpression)) {
+        firstSol = candidate;
+        break;
       }
-      if (finalRules.argSize() > 0) {
-        finalSeries = engine.evaluate(F.subst(finalSeries, finalRules));
+    }
+    if (firstSol.isNIL() || firstSol.argSize() == 0) {
+      return F.NIL;
+    }
+    // Drop spurious coefficients beyond our requested `order` bounds
+    IExpr finalSeries = engine.evaluate(F.subst(ansatzTrunc, firstSol));
+
+    // Assign unbound generic variables to unified Canonical form: C(1), C(2)
+    int cIndex = engine.incConstantCounter();
+    IASTAppendable finalRules = F.ListAlloc();
+    for (int i = 1; i <= cVars.argSize(); i++) {
+      IExpr c = cVars.get(i);
+      if (!finalSeries.isFree(c)) {
+        finalRules.append(F.Rule(c, F.C(cIndex++)));
       }
-
-      IExpr cPattern = F.C(F.$b());
-      finalSeries = engine.evaluate(F.Collect(finalSeries, cPattern));
-
-      return engine.evaluate(finalSeries);
+    }
+    if (finalRules.argSize() > 0) {
+      finalSeries = engine.evaluate(F.subst(finalSeries, finalRules));
     }
 
-    return F.NIL;
+    IExpr cPattern = F.C(F.$b());
+    finalSeries = engine.evaluate(F.Collect(finalSeries, cPattern));
+    return engine.evaluate(finalSeries);
   }
 
   @Override

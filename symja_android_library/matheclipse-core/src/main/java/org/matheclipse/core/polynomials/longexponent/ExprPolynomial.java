@@ -735,6 +735,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * GenPolynomial extended greatest comon divisor. Only for univariate polynomials over fields.
    *
@@ -825,6 +826,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     ret[2] = c2;
     return ret;
   }
+  // CPD-ON
 
   /**
    * Comparison with any other object.
@@ -1811,6 +1813,35 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
   }
 
   /**
+   * <code>n - a*x^e*S</code>, computed in the terms of <code>n</code>.
+   *
+   * @param n a polynomial which may be modified
+   * @return <code>n</code>
+   */
+  private static ExprPolynomial subtractScaledInPlace(ExprPolynomial n, IExpr a, ExpVectorLong e, ExprPolynomial S) {
+    SortedMap<ExpVectorLong, IExpr> nv = n.val;
+    SortedMap<ExpVectorLong, IExpr> sv = S.val;
+    for (Map.Entry<ExpVectorLong, IExpr> me : sv.entrySet()) {
+      ExpVectorLong f = me.getKey();
+      f = e.sum(f);
+      IExpr y = me.getValue(); // assert y != null
+      y = a.multiply(y); // y can be zero now
+      IExpr x = nv.get(f);
+      if (x != null) {
+        x = x.subtract(y);
+        if (!x.isZERO()) {
+          nv.put(f, x);
+        } else {
+          nv.remove(f);
+        }
+      } else if (!y.isZERO()) {
+        nv.put(f, y.negate());
+      }
+    }
+    return n;
+  }
+
+  /**
    * GenPolynomial scale and subtract a multiple.
    *
    * @param b scale factor.
@@ -1836,26 +1867,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
     assert (ring.nvar == S.ring.nvar);
     ExprPolynomial n = this.multiply(b, g);
-    SortedMap<ExpVectorLong, IExpr> nv = n.val;
-    SortedMap<ExpVectorLong, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorLong, IExpr> me : sv.entrySet()) {
-      ExpVectorLong f = me.getKey();
-      f = e.sum(f);
-      IExpr y = me.getValue(); // assert y != null
-      y = a.multiply(y); // y can be zero now
-      IExpr x = nv.get(f);
-      if (x != null) {
-        x = x.subtract(y);
-        if (!x.isZERO()) {
-          nv.put(f, x);
-        } else {
-          nv.remove(f);
-        }
-      } else if (!y.isZERO()) {
-        nv.put(f, y.negate());
-      }
-    }
-    return n;
+    return subtractScaledInPlace(n, a, e, S);
   }
 
   /**
@@ -1927,26 +1939,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
     assert (ring.nvar == S.ring.nvar);
     ExprPolynomial n = this.multiply(b);
-    SortedMap<ExpVectorLong, IExpr> nv = n.val;
-    SortedMap<ExpVectorLong, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorLong, IExpr> me : sv.entrySet()) {
-      ExpVectorLong f = me.getKey();
-      f = e.sum(f);
-      IExpr y = me.getValue(); // assert y != null
-      y = a.multiply(y); // now y can be zero
-      IExpr x = nv.get(f);
-      if (x != null) {
-        x = x.subtract(y);
-        if (!x.isZERO()) {
-          nv.put(f, x);
-        } else {
-          nv.remove(f);
-        }
-      } else if (!y.isZERO()) {
-        nv.put(f, y.negate());
-      }
-    }
-    return n;
+    return subtractScaledInPlace(n, a, e, S);
   }
 
   /**
@@ -2102,26 +2095,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
     assert (ring.nvar == S.ring.nvar);
     ExprPolynomial n = this.copy();
-    SortedMap<ExpVectorLong, IExpr> nv = n.val;
-    SortedMap<ExpVectorLong, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorLong, IExpr> me : sv.entrySet()) {
-      ExpVectorLong f = me.getKey();
-      f = e.sum(f);
-      IExpr y = me.getValue(); // assert y != null
-      y = a.multiply(y);
-      IExpr x = nv.get(f);
-      if (x != null) {
-        x = x.subtract(y);
-        if (!x.isZERO()) {
-          nv.put(f, x);
-        } else {
-          nv.remove(f);
-        }
-      } else if (!y.isZERO()) {
-        nv.put(f, y.negate());
-      }
-    }
-    return n;
+    return subtractScaledInPlace(n, a, e, S);
   }
 
   /**
@@ -2219,6 +2193,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     return n;
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Get a scripting compatible string representation.
    *
@@ -2395,6 +2370,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
     return s.toString();
   }
+  // CPD-ON
 
   /**
    * Total degree.

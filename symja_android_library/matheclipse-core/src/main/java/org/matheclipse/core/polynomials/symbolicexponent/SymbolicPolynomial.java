@@ -267,6 +267,7 @@ public class SymbolicPolynomial
     return s.toString();
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * String representation of GenPolynomial.
    *
@@ -421,6 +422,7 @@ public class SymbolicPolynomial
   public boolean isZero() {
     return (val.size() == 0);
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override
@@ -1145,25 +1147,12 @@ public class SymbolicPolynomial
   }
 
   /**
-   * GenPolynomial subtract a multiple.
+   * <code>n - a*x^e*S</code>, computed in the terms of <code>n</code>.
    *
-   * @param a coefficient.
-   * @param e exponent.
-   * @param S GenPolynomial.
-   * @return this - a x<sup>e</sup> S.
+   * @param n a polynomial which may be modified
+   * @return <code>n</code>
    */
-  public SymbolicPolynomial subtractMultiple(IExpr a, ExpVectorSymbolic e, SymbolicPolynomial S) {
-    if (a == null || a.isZERO()) {
-      return this;
-    }
-    if (S == null || S.isZERO()) {
-      return this;
-    }
-    if (this.isZERO()) {
-      return S.multiply(a.negate(), e);
-    }
-    assert (ring.nvar == S.ring.nvar);
-    SymbolicPolynomial n = this.copy();
+  private static SymbolicPolynomial subtractScaledInPlace(SymbolicPolynomial n, IExpr a, ExpVectorSymbolic e, SymbolicPolynomial S) {
     SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
     SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
     for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
@@ -1184,6 +1173,29 @@ public class SymbolicPolynomial
       }
     }
     return n;
+  }
+
+  /**
+   * GenPolynomial subtract a multiple.
+   *
+   * @param a coefficient.
+   * @param e exponent.
+   * @param S GenPolynomial.
+   * @return this - a x<sup>e</sup> S.
+   */
+  public SymbolicPolynomial subtractMultiple(IExpr a, ExpVectorSymbolic e, SymbolicPolynomial S) {
+    if (a == null || a.isZERO()) {
+      return this;
+    }
+    if (S == null || S.isZERO()) {
+      return this;
+    }
+    if (this.isZERO()) {
+      return S.multiply(a.negate(), e);
+    }
+    assert (ring.nvar == S.ring.nvar);
+    SymbolicPolynomial n = this.copy();
+    return subtractScaledInPlace(n, a, e, S);
   }
 
   /**
@@ -1256,26 +1268,7 @@ public class SymbolicPolynomial
     }
     assert (ring.nvar == S.ring.nvar);
     SymbolicPolynomial n = this.multiply(b);
-    SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
-    SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
-      ExpVectorSymbolic f = me.getKey();
-      f = e.sum(f);
-      IExpr y = me.getValue(); // assert y != null
-      y = a.multiply(y); // now y can be zero
-      IExpr x = nv.get(f);
-      if (x != null) {
-        x = x.subtract(y);
-        if (!x.isZERO()) {
-          nv.put(f, x);
-        } else {
-          nv.remove(f);
-        }
-      } else if (!y.isZERO()) {
-        nv.put(f, y.negate());
-      }
-    }
-    return n;
+    return subtractScaledInPlace(n, a, e, S);
   }
 
   /**
@@ -1304,26 +1297,7 @@ public class SymbolicPolynomial
     }
     assert (ring.nvar == S.ring.nvar);
     SymbolicPolynomial n = this.multiply(b, g);
-    SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
-    SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
-      ExpVectorSymbolic f = me.getKey();
-      f = e.sum(f);
-      IExpr y = me.getValue(); // assert y != null
-      y = a.multiply(y); // y can be zero now
-      IExpr x = nv.get(f);
-      if (x != null) {
-        x = x.subtract(y);
-        if (!x.isZERO()) {
-          nv.put(f, x);
-        } else {
-          nv.remove(f);
-        }
-      } else if (!y.isZERO()) {
-        nv.put(f, y.negate());
-      }
-    }
-    return n;
+    return subtractScaledInPlace(n, a, e, S);
   }
 
   /**
@@ -1773,6 +1747,7 @@ public class SymbolicPolynomial
     return q.monic(); // normalize
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * GenPolynomial extended greatest comon divisor. Only for univariate polynomials over fields.
    *
@@ -1852,6 +1827,7 @@ public class SymbolicPolynomial
     ret[2] = c2;
     return ret;
   }
+  // CPD-ON
 
   /**
    * GenPolynomial half extended greatest comon divisor. Only for univariate polynomials over

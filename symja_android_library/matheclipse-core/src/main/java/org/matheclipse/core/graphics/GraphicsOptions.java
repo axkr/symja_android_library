@@ -8,6 +8,7 @@ import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.graphics.svg.ColorUtil;
@@ -2021,6 +2022,96 @@ public class GraphicsOptions {
     IAST thinned = downsampleMatrix((IAST) dataArg,
         optionValue(originalAST, S.MaxPlotPoints, S.Automatic).toIntDefault(-1));
     return thinned.isPresent() ? thinned : dataArg;
+  }
+
+  /**
+   * The options of <code>ArrayPlot</code> and <code>MatrixPlot</code> which are read back off the
+   * call, because the options array holds resolved values rather than the rules the caller wrote.
+   */
+  public static final class MatrixPlotOptions {
+    public boolean colorFunctionScaling = true;
+    public IExpr colorFunction = S.Automatic;
+    public IExpr colorRules = S.None;
+    public IExpr mesh = S.None;
+  }
+
+  /**
+   * Read <code>ColorFunctionScaling</code>, <code>ColorFunction</code>, <code>ColorRules</code> and
+   * <code>Mesh</code> off the rules of <code>originalAST</code>.
+   */
+  public static MatrixPlotOptions readMatrixPlotOptions(IAST originalAST) {
+    MatrixPlotOptions result = new MatrixPlotOptions();
+    for (IExpr opt : originalAST) {
+      if (opt.isRuleAST()) {
+        IExpr key = ((IAST) opt).arg1();
+        IExpr val = ((IAST) opt).arg2();
+        if (key.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) key).ordinal()) {
+            case ID.ColorFunctionScaling:
+              if (val.isFalse()) {
+                result.colorFunctionScaling = false;
+              }
+              break;
+            case ID.ColorFunction:
+              result.colorFunction = val;
+              break;
+            case ID.ColorRules:
+              result.colorRules = val;
+              break;
+            case ID.Mesh:
+              result.mesh = val;
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Finish the picture of a matrix of cell colours, row 0 at the top: <code>DataReversed</code>,
+   * one raster over the <code>DataRange</code>, the <code>Mesh</code> lines, the bounding box,
+   * square cells unless an <code>AspectRatio</code> was given, and asked-for
+   * <code>FrameTicks</code>: one tick per cell index, or the coordinates of a given
+   * <code>DataRange</code>.
+   *
+   * @param frameTicksDefault the <code>FrameTicks</code> of a call without the option
+   * @return the <code>FrameTicks</code> option of the call, or <code>frameTicksDefault</code>
+   */
+  public static IExpr finishMatrixRaster(IASTAppendable primitives, IExpr[][] cells, int rows,
+      int cols, IExpr mesh, GraphicsOptions graphicsOptions, IAST originalAST,
+      IExpr frameTicksDefault) {
+    if (optionValue(originalAST, S.DataReversed, S.False).isTrue()) {
+      reverseRows(cells);
+    }
+    IExpr dataRange = optionValue(originalAST, S.DataRange, S.Automatic);
+    final double[] extent = rasterExtent(dataRange, rows, cols);
+    primitives.append(rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]));
+    IExpr meshLines = meshGrid(mesh, extent[0], extent[1], extent[2], extent[3], cols, rows);
+    if (meshLines.isPresent()) {
+      primitives.append(meshLines);
+    }
+
+    graphicsOptions.setBoundingBox(new double[] {extent[0], extent[2], extent[1], extent[3]});
+
+    if (graphicsOptions.aspectRatio().isAutomatic()) {
+      // Square cells
+      graphicsOptions.setAspectRatio(F.num((double) rows / (double) cols));
+    }
+
+    IExpr frameTicksOpt = optionValue(originalAST, S.FrameTicks, frameTicksDefault);
+    if ((frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) && !dataRange.isList()) {
+      // one tick per cell index at the centre of its cell, row 1 at the top; through addOption,
+      // not setFrameTicks: the field is not one of the values getListOfRules emits, so setting it
+      // alone leaves the registered default of None in the output
+      graphicsOptions.addOption(F.Rule(S.FrameTicks, matrixIndexFrameTicks(rows, cols)));
+    } else if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
+      // with a DataRange the ticks are the coordinates it gives
+      graphicsOptions.addOption(F.Rule(S.FrameTicks, S.Automatic));
+    }
+    return frameTicksOpt;
   }
 
   /**

@@ -58,7 +58,7 @@ public final class ResidueClasses {
    *         be written this way
    */
   public static IExpr form(Formula formula, List<Variable> targets) {
-    List<List<Atom>> branches = dnf(formula, new int[] {MAX_CLASSES});
+    List<List<Atom>> branches = Formula.disjunctiveNormalForm(formula, MAX_CLASSES);
     if (branches == null || branches.isEmpty()) {
       return F.NIL;
     }
@@ -90,63 +90,6 @@ public final class ResidueClasses {
       return F.NIL;
     }
     return disjuncts.argSize() == 1 ? disjuncts.arg1() : disjuncts;
-  }
-
-  /** The disjunctive normal form, or <code>null</code> if it has more than a budget of branches. */
-  private static List<List<Atom>> dnf(Formula formula, int[] budget) {
-    switch (formula.kind()) {
-      case TRUE: {
-        List<List<Atom>> result = new ArrayList<List<Atom>>();
-        result.add(new ArrayList<Atom>());
-        return result;
-      }
-      case FALSE:
-        return new ArrayList<List<Atom>>();
-      case ATOM: {
-        List<List<Atom>> result = new ArrayList<List<Atom>>();
-        List<Atom> single = new ArrayList<Atom>();
-        single.add(formula.atom());
-        result.add(single);
-        return result;
-      }
-      case OR: {
-        List<List<Atom>> result = new ArrayList<List<Atom>>();
-        for (Formula child : formula.children()) {
-          List<List<Atom>> branches = dnf(child, budget);
-          if (branches == null) {
-            return null;
-          }
-          result.addAll(branches);
-        }
-        return result.size() > budget[0] ? null : result;
-      }
-      case AND: {
-        List<List<Atom>> product = new ArrayList<List<Atom>>();
-        product.add(new ArrayList<Atom>());
-        for (Formula child : formula.children()) {
-          List<List<Atom>> alternatives = dnf(child, budget);
-          if (alternatives == null) {
-            return null;
-          }
-          List<List<Atom>> next = new ArrayList<List<Atom>>();
-          for (List<Atom> prefix : product) {
-            for (List<Atom> alternative : alternatives) {
-              List<Atom> conjunction = new ArrayList<Atom>(prefix);
-              conjunction.addAll(alternative);
-              next.add(conjunction);
-            }
-          }
-          if (next.size() > budget[0]) {
-            return null;
-          }
-          product = next;
-        }
-        return product;
-      }
-      default:
-        // negations and quantifiers are eliminated before
-        return null;
-    }
   }
 
   /**

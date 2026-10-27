@@ -1,7 +1,9 @@
 package org.matheclipse.core.integrate;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -63,5 +65,59 @@ public final class AntiderivativeCheck {
   /** <code>true</code> if at least three real sample points agree and none disagrees. */
   public static boolean agrees(IExpr antiderivative, IExpr integrand, IExpr x, EvalEngine engine) {
     return differentiatesBack(antiderivative, integrand, x, 3, engine) == Verdict.AGREES;
+  }
+
+  /**
+   * Differentiate-back check of a stage result: <code>D(result, x) - integrand</code> must vanish
+   * under <code>Together</code>, <code>Simplify</code> or (with <code>tryTrigReduce</code>)
+   * <code>Simplify(TrigReduce(...))</code>. If none of them proves it, a result whose difference
+   * vanishes numerically at four sample points in <code>(0, Pi)</code> is accepted as well: that
+   * accepts some results which no symbolic step proved.
+   *
+   * @return <code>false</code> for a missing result, one that still contains <code>Integrate</code>
+   *         or special values, and a difference that is not zero
+   */
+  static boolean verifySymbolicOrSampled(IExpr result, IExpr integrand, IExpr x,
+      boolean tryTrigReduce, EvalEngine engine) {
+    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
+      return false;
+    }
+    try {
+      IExpr diff = F.Subtract(F.D(result, x), integrand);
+      if (engine.evaluate(F.Together(diff)).isZero()) {
+        return true;
+      }
+      if (engine.evaluate(F.Simplify(diff)).isZero()) {
+        return true;
+      }
+      if (tryTrigReduce && engine.evaluate(F.Simplify(F.TrigReduce(diff))).isZero()) {
+        return true;
+      }
+      // special function and half-angle antiderivatives often do not reduce symbolically (Log
+      // branch identities, Tan(x/2)); the sample points decide
+      return vanishesAtSamplePoints(diff, x, engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+  }
+
+  /** True iff {@code expr} numerically vanishes at every sample point (all chosen in (0, Pi)). */
+  static boolean vanishesAtSamplePoints(IExpr expr, IExpr x, EvalEngine engine) {
+    final double[] points = {0.35, 0.9, 1.4, 2.3};
+    for (double pt : points) {
+      IExpr check;
+      try {
+        check =
+            engine.evaluate(F.Less(F.Abs(F.ReplaceAll(expr, F.Rule(x, F.num(pt)))), F.num(1.0e-9)));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return false;
+      }
+      if (!check.isTrue()) {
+        return false;
+      }
+    }
+    return true;
   }
 }

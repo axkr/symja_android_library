@@ -19,19 +19,11 @@ public class FourierDCTMatrix extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    int method = transformType(ast, engine);
+    if (method < 0) {
+      return F.NIL;
+    }
     int n = ast.arg1().toMachineInt();
-    if (n <= 0) {
-      // Positive integer argument expected in `1`.
-      return Errors.printMessage(ast.topHead(), "intpp", F.List(ast.arg1()), engine);
-    }
-    int method = 2;
-    if (ast.isAST2()) {
-      method = ast.arg2().toMachineInt();
-      if (method < 1 || method > 4) {
-        // The transform type `1` should be 1, 2, 3 or 4.
-        return Errors.printMessage(ast.topHead(), "fttype", F.List(ast.arg1()), engine);
-      }
-    }
     IInteger nZZ = F.ZZ(n);
     IFraction nReciprocalQQ = F.QQ(1, n);
     switch (method) {
@@ -52,6 +44,32 @@ public class FourierDCTMatrix extends AbstractFunctionEvaluator {
         return F.matrix((r, s) -> dct4(factor4, nReciprocalQQ, r, s), n, n);
     }
     return F.NIL;
+  }
+
+  /**
+   * The transform type of <code>f(n)</code> or <code>f(n, type)</code>: 2 by default, otherwise 1,
+   * 2, 3 or 4.
+   *
+   * @return <code>-1</code> after a message if <code>n</code> is no positive machine integer or the
+   *         type is not 1, 2, 3 or 4
+   */
+  static int transformType(final IAST ast, EvalEngine engine) {
+    int n = ast.arg1().toMachineInt();
+    if (n <= 0) {
+      // Positive integer argument expected in `1`.
+      Errors.printMessage(ast.topHead(), "intpp", F.List(ast.arg1()), engine);
+      return -1;
+    }
+    if (ast.isAST2()) {
+      int method = ast.arg2().toMachineInt();
+      if (method < 1 || method > 4) {
+        // The transform type `1` should be 1, 2, 3 or 4.
+        Errors.printMessage(ast.topHead(), "fttype", F.List(ast.arg2()), engine);
+        return -1;
+      }
+      return method;
+    }
+    return 2;
   }
 
   private static IExpr dct1(IExpr factor, int n, int r, int s) {

@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -20,19 +19,11 @@ public class FourierDSTMatrix extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    int method = FourierDCTMatrix.transformType(ast, engine);
+    if (method < 0) {
+      return F.NIL;
+    }
     int n = ast.arg1().toMachineInt();
-    if (n <= 0) {
-      // Positive integer argument expected in `1`.
-      return Errors.printMessage(ast.topHead(), "intpp", F.List(ast.arg1()), engine);
-    }
-    int method = 2;
-    if (ast.isAST2()) {
-      method = ast.arg2().toMachineInt();
-      if (method < 1 || method > 4) {
-        // The transform type `1` should be 1, 2, 3 or 4.
-        return Errors.printMessage(ast.topHead(), "fttype", F.List(ast.arg1()), engine);
-      }
-    }
     IInteger nZZ = F.ZZ(n);
     IFraction nReciprocalQQ = F.QQ(1, n);
     switch (method) {

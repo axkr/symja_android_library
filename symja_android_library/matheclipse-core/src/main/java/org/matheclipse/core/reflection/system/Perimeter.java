@@ -246,62 +246,44 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
     if (geoForm.argSize() == 0) {
       return F.C2Pi;
     }
-    if (geoForm.arg1().isList()) {
-      IExpr r1 = F.C1;
-      IExpr r2 = F.C1;
-      if (geoForm.argSize() >= 2) {
-        if (geoForm.arg2().isList2()) {
-          r1 = geoForm.arg2().first();
-          r2 = geoForm.arg2().second();
-        } else if (!geoForm.arg2().isList()) {
-          r1 = geoForm.arg2();
-          r2 = r1;
-        } else {
-          return F.NIL;
-        }
-      }
-
-      if (geoForm.argSize() == 3) {
-        if (geoForm.arg3().isList2()) {
-          IExpr t1 = geoForm.arg3().first();
-          IExpr t2 = geoForm.arg3().second();
-          return engine.evaluate(
-              // [$ (r2*(-EllipticE(t1, 1 - r1^2/r2^2) + EllipticE(t2, 1 - r1^2/r2^2)) +
-              // Sqrt(r1^2*Cos(t1)^2 + r2^2*Sin(t1)^2) +
-              // Sqrt(r1^2*Cos(t2)^2 + r2^2*Sin(t2)^2))*UnitStep(2*Pi - Abs(-t1 + t2)) +
-              // 4*r2*EllipticE(1 - r1^2/r2^2)*UnitStep(-2*Pi + Abs(-t1 + t2)) $]
-              F.Plus(
-                  F.Times(
-                      F.Plus(
-                          F.Times(
-                              r2, F
-                                  .Plus(
-                                      F.Negate(F.EllipticE(t1,
-                                          F.Plus(F.C1,
-                                              F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2))))),
-                                      F.EllipticE(t2,
-                                          F.Plus(F.C1,
-                                              F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2)))))),
-                          F.Sqrt(F.Plus(F.Times(F.Sqr(r1), F.Sqr(F.Cos(t1))),
-                              F.Times(F.Sqr(r2), F.Sqr(F.Sin(t1))))),
-                          F.Sqrt(F.Plus(F.Times(F.Sqr(r1), F.Sqr(F.Cos(t2))),
-                              F.Times(F.Sqr(r2), F.Sqr(F.Sin(t2)))))),
-                      F.UnitStep(F.Subtract(F.C2Pi, F.Abs(F.Plus(F.Negate(t1), t2))))),
-                  F.Times(F.C4, r2,
-                      F.EllipticE(F.Plus(F.C1, F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2)))),
-                      F.UnitStep(F.Plus(F.CN2Pi, F.Abs(F.Plus(F.Negate(t1), t2)))))) // $$;
-          );
-        }
-        return F.NIL;
-      }
-      if (geoForm.argSize() > 3) {
-        return F.NIL;
-      }
-
-      return engine.evaluate(
-          F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2))))));
+    RegionPrimitives.DiskSpec spec = RegionPrimitives.parseDisk(geoForm);
+    if (spec == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    IExpr r1 = spec.r1;
+    IExpr r2 = spec.r2;
+    if (spec.t1 != null) {
+      IExpr t1 = spec.t1;
+      IExpr t2 = spec.t2;
+      return engine.evaluate(
+          // [$ (r2*(-EllipticE(t1, 1 - r1^2/r2^2) + EllipticE(t2, 1 - r1^2/r2^2)) +
+          // Sqrt(r1^2*Cos(t1)^2 + r2^2*Sin(t1)^2) +
+          // Sqrt(r1^2*Cos(t2)^2 + r2^2*Sin(t2)^2))*UnitStep(2*Pi - Abs(-t1 + t2)) +
+          // 4*r2*EllipticE(1 - r1^2/r2^2)*UnitStep(-2*Pi + Abs(-t1 + t2)) $]
+          F.Plus(
+              F.Times(
+                  F.Plus(
+                      F.Times(
+                          r2, F
+                              .Plus(
+                                  F.Negate(F.EllipticE(t1,
+                                      F.Plus(F.C1,
+                                          F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2))))),
+                                  F.EllipticE(t2,
+                                      F.Plus(F.C1,
+                                          F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2)))))),
+                      F.Sqrt(F.Plus(F.Times(F.Sqr(r1), F.Sqr(F.Cos(t1))),
+                          F.Times(F.Sqr(r2), F.Sqr(F.Sin(t1))))),
+                      F.Sqrt(F.Plus(F.Times(F.Sqr(r1), F.Sqr(F.Cos(t2))),
+                          F.Times(F.Sqr(r2), F.Sqr(F.Sin(t2)))))),
+                  F.UnitStep(F.Subtract(F.C2Pi, F.Abs(F.Plus(F.Negate(t1), t2))))),
+              F.Times(F.C4, r2,
+                  F.EllipticE(F.Plus(F.C1, F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2)))),
+                  F.UnitStep(F.Plus(F.CN2Pi, F.Abs(F.Plus(F.Negate(t1), t2)))))) // $$;
+      );
+    }
+    return engine.evaluate(
+        F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2))))));
   }
 
   /** Twice the sum of the side lengths of an axis aligned box. */

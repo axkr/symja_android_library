@@ -449,4 +449,75 @@ public final class Formula implements Comparable<Formula> {
       }
     }
   }
+
+  /**
+   * Expand a formula in negation normal form into its conjunctions.
+   *
+   * @param maxBranches the most conjunctions to build
+   * @return one list of atoms per conjunction, or <code>null</code> if the expansion exceeds
+   *         <code>maxBranches</code> or the formula is not in negation normal form
+   */
+  public static List<List<Atom>> disjunctiveNormalForm(Formula formula, int maxBranches) {
+    switch (formula.kind()) {
+      case TRUE: {
+        List<List<Atom>> branches = new ArrayList<List<Atom>>(1);
+        branches.add(new ArrayList<Atom>());
+        return branches;
+      }
+      case FALSE:
+        return new ArrayList<List<Atom>>();
+      case ATOM: {
+        List<List<Atom>> branches = new ArrayList<List<Atom>>(1);
+        List<Atom> branch = new ArrayList<Atom>(1);
+        branch.add(formula.atom());
+        branches.add(branch);
+        return branches;
+      }
+      case OR: {
+        List<List<Atom>> branches = new ArrayList<List<Atom>>();
+        for (Formula child : formula.children()) {
+          List<List<Atom>> childBranches = disjunctiveNormalForm(child, maxBranches);
+          if (childBranches == null) {
+            return null;
+          }
+          branches.addAll(childBranches);
+          if (branches.size() > maxBranches) {
+            return null;
+          }
+        }
+        return branches;
+      }
+      case AND: {
+        List<List<Atom>> product = new ArrayList<List<Atom>>();
+        product.add(new ArrayList<Atom>());
+        for (Formula child : formula.children()) {
+          List<List<Atom>> childBranches = disjunctiveNormalForm(child, maxBranches);
+          if (childBranches == null) {
+            return null;
+          }
+          if (childBranches.isEmpty()) {
+            return new ArrayList<List<Atom>>();
+          }
+          if ((long) product.size() * childBranches.size() > maxBranches) {
+            return null;
+          }
+          List<List<Atom>> next =
+              new ArrayList<List<Atom>>(product.size() * childBranches.size());
+          for (List<Atom> prefix : product) {
+            for (List<Atom> suffix : childBranches) {
+              List<Atom> combined = new ArrayList<Atom>(prefix.size() + suffix.size());
+              combined.addAll(prefix);
+              combined.addAll(suffix);
+              next.add(combined);
+            }
+          }
+          product = next;
+        }
+        return product;
+      }
+      default:
+        // a quantifier or a negation above a compound formula is not in normal form
+        return null;
+    }
+  }
 }

@@ -41,12 +41,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
     // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
     // primitives, reading it from the original call
-    if (ast.size() > 1) {
-      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
-      if (unwrapped != ast.arg1()) {
-        ast = ast.setAtCopy(1, unwrapped);
-      }
-    }
+    ast = PlotWrapper.stripFirstArgument(ast);
     // a function which only takes its shape once evaluated, g(t) with g(u_?NumericQ) := {...},
     // is not a list yet, and its sampled values decide what it draws
     if (argSize < 2 || ast.arg1().isAtom()) {

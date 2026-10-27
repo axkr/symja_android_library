@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -22,6 +23,18 @@ public class DSolveValue extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    return solveValue(S.DSolve, ast, engine);
+  }
+
+  /**
+   * <code>DSolveValue(eqns, expr, x)</code> or <code>RSolveValue(eqns, expr, n)</code>: solve
+   * <code>eqns</code> for the unknown functions occurring in <code>expr</code> with
+   * <code>solver</code> and substitute the solutions into <code>expr</code>.
+   *
+   * @param solver {@link S#DSolve} or {@link S#RSolve}
+   * @return the value, a list of values for several solutions, or {@link F#NIL}
+   */
+  static IExpr solveValue(IBuiltInSymbol solver, final IAST ast, EvalEngine engine) {
     if (ast.argSize() != 3) {
       return F.NIL;
     }
@@ -73,8 +86,8 @@ public class DSolveValue extends AbstractFunctionEvaluator {
       }
     }
 
-    // Delegate to the core DSolve function
-    IAST dsolveAST = F.ternaryAST3(S.DSolve, eqns, dependentVars, xVar);
+    // Delegate to the core DSolve or RSolve function
+    IAST dsolveAST = F.ternaryAST3(solver, eqns, dependentVars, xVar);
     IExpr dsolveResult = engine.evaluate(dsolveAST);
 
     // Map the generated Rules back onto the requested expression

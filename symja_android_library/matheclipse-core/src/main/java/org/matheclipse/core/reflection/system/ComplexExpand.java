@@ -236,17 +236,8 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
             return F.Sqrt(Plus(Power(x, C2), Power(y, C2)));
           case ID.ArcCos: {
             // Pi/2-Arg(Sqrt(1-(x+I*y)^2)+I*(x+I*y))+I*Log(Sqrt((-y+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Cos(Arg(1-(x+I*y)^2)/2))^2+(x+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Sin(Arg(1-(x+I*y)^2)/2))^2))
-            IExpr v1 = F.Sqr(x);
-            IExpr v2 = F.Subtract(F.C1, F.Sqr(F.Plus(x, F.Times(F.CI, y))));
-            IExpr v3 = F.Plus(x, F.Times(F.CI, y));
-            IExpr v4 = F.Sqr(y);
-            IExpr v5 = F.Power(F.Plus(F.Times(F.C4, v1, v4), F.Sqr(F.Plus(F.C1, F.Negate(v1), v4))),
-                F.C1D4);
-            IExpr v6 = F.Times(F.C1D2, F.Arg(v2));
-            return F.Plus(F.CPiHalf, F.Negate(F.Arg(F.Plus(F.Sqrt(v2), F.Times(F.CI, v3)))),
-                F.Times(F.CC(0L, 1L, 1L, 2L),
-                    F.Log(F.Plus(F.Sqr(F.Plus(y, F.Times(F.CN1, v5, F.Cos(v6)))),
-                        F.Sqr(F.Plus(x, F.Times(v5, F.Sin(v6))))))));
+            IExpr[] parts = arcSinParts(x, y);
+            return F.Plus(F.CPiHalf, F.Negate(parts[0]), F.Times(F.CC(0L, 1L, 1L, 2L), parts[1]));
           }
           case ID.ArcCot: {
             // -Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2+I*(-Log(x^2/(x^2+y^2)^2+(1+y/(x^2+y^2))^2)/4+Log(x^2/(x^2+y^2)^2+(1-y/(x^2+y^2))^2)/4)
@@ -277,17 +268,8 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
           }
           case ID.ArcSin: {
             // Arg(Sqrt(1-(x+I*y)^2)+I*(x+I*y))-I*Log(Sqrt((-y+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Cos(Arg(1-(x+I*y)^2)/2))^2+(x+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Sin(Arg(1-(x+I*y)^2)/2))^2))
-            IExpr v1 = F.Sqr(x);
-            IExpr v2 = F.Subtract(F.C1, F.Sqr(F.Plus(x, F.Times(F.CI, y))));
-            IExpr v3 = F.Plus(x, F.Times(F.CI, y));
-            IExpr v4 = F.Sqr(y);
-            IExpr v5 = F.Power(F.Plus(F.Times(F.C4, v1, v4), F.Sqr(F.Plus(F.C1, F.Negate(v1), v4))),
-                F.C1D4);
-            IExpr v6 = F.Times(F.C1D2, F.Arg(v2));
-            return F.Plus(F.Arg(F.Plus(F.Sqrt(v2), F.Times(F.CI, v3))),
-                F.Times(F.CC(0L, 1L, -1L, 2L),
-                    F.Log(F.Plus(F.Sqr(F.Plus(y, F.Times(F.CN1, v5, F.Cos(v6)))),
-                        F.Sqr(F.Plus(x, F.Times(v5, F.Sin(v6))))))));
+            IExpr[] parts = arcSinParts(x, y);
+            return F.Plus(parts[0], F.Times(F.CC(0L, 1L, -1L, 2L), parts[1]));
           }
           case ID.ArcTan: {
             // -Arg(1-I*x-y)/2+Arg(1+I*x-y)/2+I*(-Log(x^2+(1-y)^2)/4+Log(x^2+(1+y)^2)/4)
@@ -646,13 +628,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
       switch (head) {
         case ID.ArcCos: {
           // Log(Sqrt((-y+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Cos(Arg(1-(x+I*y)^2)/2))^2+(x+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Sin(Arg(1-(x+I*y)^2)/2))^2))
-          IExpr v1 = F.Sqr(x);
-          IExpr v2 = F.Sqr(y);
-          IExpr v3 =
-              F.Power(F.Plus(F.Times(F.C4, v1, v2), F.Sqr(F.Plus(F.C1, F.Negate(v1), v2))), F.C1D4);
-          IExpr v4 = F.Times(F.C1D2, F.Arg(F.Subtract(F.C1, F.Sqr(F.Plus(x, F.Times(F.CI, y))))));
-          return F.Times(F.C1D2, F.Log(F.Plus(F.Sqr(F.Plus(y, F.Times(F.CN1, v3, F.Cos(v4)))),
-              F.Sqr(F.Plus(x, F.Times(v3, F.Sin(v4)))))));
+          return F.Times(F.C1D2, arcSinParts(x, y)[1]);
         }
         case ID.ArcCot: {
           // -Log(x^2/(x^2+y^2)^2+(1+y/(x^2+y^2))^2)/4+Log(x^2/(x^2+y^2)^2+(1-y/(x^2+y^2))^2)/4
@@ -665,45 +641,15 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
         }
         case ID.ArcCsc: {
           // -Log(Sqrt((y/(x^2+y^2)+((4*x^2*y^2)/(x^2+y^2)^4+(1-(x^2-y^2)/(x^2+y^2)^2)^2)^(1/4)*Cos(Arg(1-1/(x+I*y)^2)/2))^2+(x/(x^2+y^2)+((4*x^2*y^2)/(x^2+y^2)^4+(1-(x^2-y^2)/(x^2+y^2)^2)^2)^(1/4)*Sin(Arg(1-1/(x+I*y)^2)/2))^2))
-          IExpr v1 = F.Sqr(x);
-          IExpr v2 = F.Sqr(y);
-          IExpr v3 = F.Plus(v1, v2);
-          IExpr v4 = F.Power(v3, F.CN1);
-          IExpr v5 = F.Power(
-              F.Plus(F.Times(F.C4, v1, v2, F.Power(v3, F.CN4)),
-                  F.Sqr(F.Plus(F.C1, F.Times(F.CN1, F.Subtract(v1, v2), F.Power(v3, F.CN2))))),
-              F.C1D4);
-          IExpr v6 =
-              F.Times(F.C1D2, F.Arg(F.Subtract(F.C1, F.Power(F.Plus(x, F.Times(F.CI, y)), F.CN2))));
-          return F.Times(F.CN1D2,
-              F.Log(F.Plus(F.Sqr(F.Plus(F.Times(v4, y), F.Times(v5, F.Cos(v6)))),
-                  F.Sqr(F.Plus(F.Times(v4, x), F.Times(v5, F.Sin(v6)))))));
+          return F.Times(F.CN1D2, arcCscParts(x, y)[1]);
         }
         case ID.ArcSec: {
           // Log(Sqrt((y/(x^2+y^2)+((4*x^2*y^2)/(x^2+y^2)^4+(1-(x^2-y^2)/(x^2+y^2)^2)^2)^(1/4)*Cos(Arg(1-1/(x+I*y)^2)/2))^2+(x/(x^2+y^2)+((4*x^2*y^2)/(x^2+y^2)^4+(1-(x^2-y^2)/(x^2+y^2)^2)^2)^(1/4)*Sin(Arg(1-1/(x+I*y)^2)/2))^2))
-          IExpr v1 = F.Sqr(x);
-          IExpr v2 = F.Sqr(y);
-          IExpr v3 = F.Plus(v1, v2);
-          IExpr v4 = F.Power(v3, F.CN1);
-          IExpr v5 = F.Power(
-              F.Plus(F.Times(F.C4, v1, v2, F.Power(v3, F.CN4)),
-                  F.Sqr(F.Plus(F.C1, F.Times(F.CN1, F.Subtract(v1, v2), F.Power(v3, F.CN2))))),
-              F.C1D4);
-          IExpr v6 =
-              F.Times(F.C1D2, F.Arg(F.Subtract(F.C1, F.Power(F.Plus(x, F.Times(F.CI, y)), F.CN2))));
-          return F.Times(F.C1D2, F.Log(F.Plus(F.Sqr(F.Plus(F.Times(v4, y), F.Times(v5, F.Cos(v6)))),
-              F.Sqr(F.Plus(F.Times(v4, x), F.Times(v5, F.Sin(v6)))))));
+          return F.Times(F.C1D2, arcCscParts(x, y)[1]);
         }
         case ID.ArcSin: {
           // -Log(Sqrt((-y+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Cos(Arg(1-(x+I*y)^2)/2))^2+(x+(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)*Sin(Arg(1-(x+I*y)^2)/2))^2))
-          IExpr v1 = F.Sqr(x);
-          IExpr v2 = F.Sqr(y);
-          IExpr v3 =
-              F.Power(F.Plus(F.Times(F.C4, v1, v2), F.Sqr(F.Plus(F.C1, F.Negate(v1), v2))), F.C1D4);
-          IExpr v4 = F.Times(F.C1D2, F.Arg(F.Subtract(F.C1, F.Sqr(F.Plus(x, F.Times(F.CI, y))))));
-          return F.Times(F.CN1D2, F.Log(F.Plus(F.Sqr(F.Plus(y, F.Times(F.CN1, v3, F.Cos(v4)))),
-              F.Sqr(F.Plus(x, F.Times(v3, F.Sin(v4)))))));
-
+          return F.Times(F.CN1D2, arcSinParts(x, y)[1]);
         }
         case ID.ArcTan: {
           // -Log(x^2+(1-y)^2)/4+Log(x^2+(1+y)^2)/4
@@ -828,6 +774,25 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
     return new IExpr[] {F.Arg(F.Plus(F.Sqrt(v4), F.Times(F.CI, F.Power(v5, F.CN1)))),
         F.Log(F.Plus(F.Sqr(F.Plus(F.Times(v6, y), F.Times(v7, F.Cos(v8)))),
             F.Sqr(F.Plus(F.Times(v6, x), F.Times(v7, F.Sin(v8))))))};
+  }
+
+  /**
+   * The parts of <code>ArcSin(x+I*y)</code> and <code>ArcCos(x+I*y)</code> for real
+   * <code>x, y</code>:
+   * <code>{Arg(Sqrt(1-(x+I*y)^2)+I*(x+I*y)), Log((-y+r*Cos(t))^2+(x+r*Sin(t))^2)}</code> with
+   * <code>r=(4*x^2*y^2+(1-x^2+y^2)^2)^(1/4)</code> and <code>t=Arg(1-(x+I*y)^2)/2</code>.
+   */
+  private static IExpr[] arcSinParts(IExpr x, IExpr y) {
+    IExpr v1 = F.Sqr(x);
+    IExpr v2 = F.Subtract(F.C1, F.Sqr(F.Plus(x, F.Times(F.CI, y))));
+    IExpr v3 = F.Plus(x, F.Times(F.CI, y));
+    IExpr v4 = F.Sqr(y);
+    IExpr v5 =
+        F.Power(F.Plus(F.Times(F.C4, v1, v4), F.Sqr(F.Plus(F.C1, F.Negate(v1), v4))), F.C1D4);
+    IExpr v6 = F.Times(F.C1D2, F.Arg(v2));
+    return new IExpr[] {F.Arg(F.Plus(F.Sqrt(v2), F.Times(F.CI, v3))),
+        F.Log(F.Plus(F.Sqr(F.Plus(y, F.Times(F.CN1, v5, F.Cos(v6)))),
+            F.Sqr(F.Plus(x, F.Times(v5, F.Sin(v6))))))};
   }
 
   /**

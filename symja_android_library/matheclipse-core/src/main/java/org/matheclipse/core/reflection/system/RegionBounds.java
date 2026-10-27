@@ -36,9 +36,9 @@ public class RegionBounds extends AbstractFunctionEvaluator {
           case ID.Simplex:
             return pointBounds(reg, engine);
           case ID.HalfLine:
-            return halfLineBounds(reg, engine);
+            return lineBounds(reg, engine, true);
           case ID.InfiniteLine:
-            return infiniteLineBounds(reg, engine);
+            return lineBounds(reg, engine, false);
           case ID.Disk:
           case ID.Circle:
           case ID.Ball:
@@ -168,7 +168,13 @@ public class RegionBounds extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private IExpr halfLineBounds(IAST reg, EvalEngine engine) {
+  /**
+   * The bounds of <code>HalfLine({p1, p2})</code> or, without <code>half</code>, of
+   * <code>InfiniteLine({p1, p2})</code>: per coordinate the point itself where the direction does
+   * not change it, otherwise unbounded - on one side for a half line, on both for a line. A half
+   * line whose direction has a coordinate of unknown sign has no bounds.
+   */
+  private IExpr lineBounds(IAST reg, EvalEngine engine, boolean half) {
     if (reg.argSize() == 1 && reg.arg1().isList2()) {
       IAST pts = (IAST) reg.arg1();
       IExpr p1 = pts.arg1();
@@ -179,7 +185,13 @@ public class RegionBounds extends AbstractFunctionEvaluator {
         IASTAppendable res = F.ListAlloc(p1L.argSize());
         for (int i = 1; i <= p1L.argSize(); i++) {
           IExpr diff = engine.evaluate(F.Subtract(p2L.get(i), p1L.get(i)));
-          if (diff.isPositiveResult()) {
+          if (!half) {
+            if (!diff.isZero()) {
+              res.append(F.List(F.CNInfinity, S.Infinity));
+            } else {
+              res.append(F.List(p1L.get(i), p1L.get(i)));
+            }
+          } else if (diff.isPositiveResult()) {
             res.append(F.List(p1L.get(i), S.Infinity));
           } else if (diff.isNegativeResult()) {
             res.append(F.List(F.CNInfinity, p1L.get(i)));
@@ -187,29 +199,6 @@ public class RegionBounds extends AbstractFunctionEvaluator {
             res.append(F.List(p1L.get(i), p1L.get(i)));
           } else {
             return F.NIL;
-          }
-        }
-        return res;
-      }
-    }
-    return F.NIL;
-  }
-
-  private IExpr infiniteLineBounds(IAST reg, EvalEngine engine) {
-    if (reg.argSize() == 1 && reg.arg1().isList2()) {
-      IAST pts = (IAST) reg.arg1();
-      IExpr p1 = pts.arg1();
-      IExpr p2 = pts.arg2();
-      if (p1.isList() && p2.isList() && p1.argSize() == p2.argSize()) {
-        IAST p1L = (IAST) p1;
-        IAST p2L = (IAST) p2;
-        IASTAppendable res = F.ListAlloc(p1L.argSize());
-        for (int i = 1; i <= p1L.argSize(); i++) {
-          IExpr diff = engine.evaluate(F.Subtract(p2L.get(i), p1L.get(i)));
-          if (!diff.isZero()) {
-            res.append(F.List(F.CNInfinity, S.Infinity));
-          } else {
-            res.append(F.List(p1L.get(i), p1L.get(i)));
           }
         }
         return res;

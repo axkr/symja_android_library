@@ -206,11 +206,14 @@ public class TranscendentalRisch {
   }
 
   /**
-   * {@code Integrate(c*E^(k*x+d)/x^m, x)} for {@code m >= 1}, via the integration-by-parts
-   * recurrence {@code I_m = -E^(k*x)/((m-1) x^(m-1)) + k/(m-1) I_(m-1)},
-   * {@code I_1 = ExpIntegralEi(k*x)}.
+   * Split a product into a factor free of <code>x</code>, one power of <code>E</code> and one power
+   * of <code>x</code>.
+   *
+   * @return <code>{c, expFactor, xExponent}</code>, where a missing exp factor or x exponent is
+   *         {@link F#NIL}, or <code>null</code> if a factor is none of the three kinds or one of the
+   *         two kinds occurs twice
    */
-  private static IExpr integrateExpOverX(IExpr integrand, IExpr x, EvalEngine engine) {
+  private static IExpr[] splitConstExpPower(IExpr integrand, IExpr x) {
     IExpr c = F.C1;
     IExpr expFactor = F.NIL;
     IExpr xExponent = F.NIL;
@@ -221,17 +224,33 @@ public class TranscendentalRisch {
         c = F.Times(c, factor);
       } else if (factor.isPower() && factor.base() == S.E) {
         if (expFactor.isPresent()) {
-          return F.NIL;
+          return null;
         }
         expFactor = factor;
       } else {
         IExpr e = xPowerExponent(factor, x);
         if (e.isNIL() || xExponent.isPresent()) {
-          return F.NIL;
+          return null;
         }
         xExponent = e;
       }
     }
+    return new IExpr[] {c, expFactor, xExponent};
+  }
+
+  /**
+   * {@code Integrate(c*E^(k*x+d)/x^m, x)} for {@code m >= 1}, via the integration-by-parts
+   * recurrence {@code I_m = -E^(k*x)/((m-1) x^(m-1)) + k/(m-1) I_(m-1)},
+   * {@code I_1 = ExpIntegralEi(k*x)}.
+   */
+  private static IExpr integrateExpOverX(IExpr integrand, IExpr x, EvalEngine engine) {
+    IExpr[] parts = splitConstExpPower(integrand, x);
+    if (parts == null) {
+      return F.NIL;
+    }
+    IExpr c = parts[0];
+    IExpr expFactor = parts[1];
+    IExpr xExponent = parts[2];
     if (expFactor.isNIL() || xExponent.isNIL() || !xExponent.isNegative()
         || !xExponent.isInteger()) {
       return F.NIL; // need a reciprocal power 1/x^m, m >= 1
@@ -455,27 +474,13 @@ public class TranscendentalRisch {
    * form).
    */
   private static IExpr integrateIncompleteGamma(IExpr integrand, IExpr x, EvalEngine engine) {
-    IExpr c = F.C1;
-    IExpr expFactor = F.NIL;
-    IExpr xExponent = F.NIL;
-    IAST factors = factorsOf(integrand);
-    for (int i = 1; i < factors.size(); i++) {
-      IExpr factor = factors.get(i);
-      if (factor.isFree(x, true)) {
-        c = F.Times(c, factor);
-      } else if (factor.isPower() && factor.base() == S.E) {
-        if (expFactor.isPresent()) {
-          return F.NIL;
-        }
-        expFactor = factor;
-      } else {
-        IExpr e = xPowerExponent(factor, x);
-        if (e.isNIL() || xExponent.isPresent()) {
-          return F.NIL;
-        }
-        xExponent = e;
-      }
+    IExpr[] parts = splitConstExpPower(integrand, x);
+    if (parts == null) {
+      return F.NIL;
     }
+    IExpr c = parts[0];
+    IExpr expFactor = parts[1];
+    IExpr xExponent = parts[2];
     if (expFactor.isNIL() || xExponent.isNIL()) {
       return F.NIL;
     }
@@ -798,46 +803,6 @@ public class TranscendentalRisch {
   /** Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand. */
   private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
       EvalEngine engine) {
-    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
-      return false;
-    }
-    try {
-      IExpr diff = F.Subtract(F.D(result, x), integrand);
-      if (engine.evaluate(F.Together(diff)).isZero()) {
-        return true;
-      }
-      if (engine.evaluate(F.Simplify(diff)).isZero()) {
-        return true;
-      }
-      // Special-function antiderivatives (LogIntegral of x^(a+1), PolyLog, ...) often will not
-      // reduce
-      // symbolically because of Log branch identities; confirm numerically at generic interior
-      // points.
-      // This can only reject, so it never accepts a result a nonzero symbolic diff already
-      // disproved.
-      return numericallyZero(diff, x, engine);
-    } catch (RuntimeException rex) {
-      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-      return false;
-    }
-  }
-
-  /** True iff {@code expr} numerically vanishes at every sample point (all chosen in (0, Pi)). */
-  private static boolean numericallyZero(IExpr expr, IExpr x, EvalEngine engine) {
-    final double[] points = {0.35, 0.9, 1.4, 2.3};
-    for (double pt : points) {
-      IExpr check;
-      try {
-        check =
-            engine.evaluate(F.Less(F.Abs(F.ReplaceAll(expr, F.Rule(x, F.num(pt)))), F.num(1.0e-9)));
-      } catch (RuntimeException rex) {
-        org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-        return false;
-      }
-      if (!check.isTrue()) {
-        return false;
-      }
-    }
-    return true;
+    return AntiderivativeCheck.verifySymbolicOrSampled(result, integrand, x, false, engine);
   }
 }

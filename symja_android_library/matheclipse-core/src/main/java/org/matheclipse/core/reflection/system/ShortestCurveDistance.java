@@ -26,43 +26,22 @@ public class ShortestCurveDistance extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
     IExpr p1 = ast.arg2();
     IExpr p2 = ast.arg3();
-
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-
-    if (arg1.isAST()) {
-      IAST reg = (IAST) arg1;
-      IExpr head = reg.head();
-
-      // Strict membership validation: Only return NIL if it explicitly evaluates to False
-      IExpr mem1 = engine.evaluate(F.RegionMember(reg, p1));
-      IExpr mem2 = engine.evaluate(F.RegionMember(reg, p2));
-      if (mem1.isFalse() || mem2.isFalse()) {
-        return F.NIL;
+    IAST reg = FindShortestCurve.memberRegion(ast, engine);
+    if (reg.isPresent() && reg.head().isBuiltInSymbol()) {
+      int ordinal = ((IBuiltInSymbol) reg.head()).ordinal();
+      if (FindShortestCurve.isConvexSolid(ordinal)) {
+        return euclideanDistance(p1, p2, engine);
       }
-
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Circle:
-          case ID.Sphere:
-            return circleSphereDistance(reg, p1, p2, engine);
-          case ID.Disk:
-          case ID.Ball:
-          case ID.Rectangle:
-          case ID.Cuboid:
-          case ID.Triangle:
-          case ID.Polygon:
-          case ID.Simplex:
-          case ID.Tetrahedron:
-            return euclideanDistance(p1, p2, engine);
-          case ID.Line:
-            return lineDistance(reg, p1, p2, engine);
-        }
+      switch (ordinal) {
+        case ID.Circle:
+        case ID.Sphere:
+          return circleSphereDistance(reg, p1, p2, engine);
+        case ID.Line:
+          return lineDistance(reg, p1, p2, engine);
+        default:
+          break;
       }
     }
     return F.NIL;

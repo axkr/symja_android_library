@@ -429,59 +429,74 @@ public class QuarticSolver {
       if (additionalSolution != null) {
         result.append(additionalSolution);
       }
-      IExpr[] invariants = cubicInvariants(a, b, c, d);
-      IExpr discriminant = invariants[0];
-      IExpr delta0 = invariants[1];
-      IExpr argDelta3 = invariants[3];
-      IExpr delta3 = invariants[4];
-
-      IAST value = Times(CN1, b, Power(Times(C3, a), CN1));
-      if (discriminant.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        if (delta0.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-          // the three roots are equal
-          // (-b)/(3*a)
-          result.append(value);
-          result.append(value);
-          result.append(value);
-        } else {
-          // the double root
-          // (9*a*d-b*c)/(2*delta0)
-          IASTMutable doubledRoot =
-              Times(Plus(Times(ZZ(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1));
-          result.append(doubledRoot);
-          result.append(doubledRoot);
-          // and a simple root
-          // (4*a*b*c-9*a^2*d-b^3)/(a*delta0)
-          result.append(Times(Plus(Times(C4, a, b, c), Times(CN1, ZZ(9L), Power(a, C2), d),
-              Times(CN1, Power(b, C3))), Power(Times(a, delta0), CN1)));
-        }
-      } else {
-        // -(b/(3*a)) - (2^(1/3) (-delta0))/(3*a*delta3) +
-        // delta3/(3*2^(1/3)*a)
-        result.append(Plus(b.negate().times(C3.times(a).power(CN1)),
-            Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-            Times(Power(argDelta3.timesDistributed(C1D2), C1D3), C3.times(a).power(CN1))));
-
-        // -(b/(3*a)) + ((1 + I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
-        // - ((1 - I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-        result.append(Plus(value,
-            Times(Plus(C1, Times(CI, Sqrt(C3))), CN1, delta0,
-                Power(Times(C3, Power(C2, F.QQ(2L, 3L)), a, delta3), CN1)),
-            Times(CN1, Plus(C1, Times(CN1, CI, Sqrt(C3))), delta3,
-                Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
-
-        // -(b/(3*a)) + ((1 - I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
-        // - ((1 + I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-        result.append(Plus(value,
-            Times(Plus(C1, Times(CN1, CI, Sqrt(C3))), CN1, delta0,
-                Power(Times(C3, Power(C2, F.QQ(2L, 3L)), a, delta3), CN1)),
-            Times(CN1, Plus(C1, Times(CI, Sqrt(C3))), delta3,
-                Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
-      }
+      appendCubicRoots(result, a, b, c, d, cubicInvariants(a, b, c, d), true);
       if (createSet) {
         return createSet(result);
       }
       return evalAndSort(result, sort);
+    }
+  }
+
+  /**
+   * Append the roots of the cubic <code>a*x^3 + b*x^2 + c*x + d</code>: a triple root, a double and
+   * a simple root, or the three roots of Cardano's formula.
+   *
+   * @param invariants the result of {@link #cubicInvariants(IExpr, IExpr, IExpr, IExpr)}
+   * @param withMultiplicity append a triple root three times and a double root twice
+   */
+  public static void appendCubicRoots(IASTAppendable result, IExpr a, IExpr b, IExpr c, IExpr d,
+      IExpr[] invariants, boolean withMultiplicity) {
+    IExpr discriminant = invariants[0];
+    IExpr delta0 = invariants[1];
+    IExpr argDelta3 = invariants[3];
+    IExpr delta3 = invariants[4];
+
+    IAST value = Times(CN1, b, Power(Times(C3, a), CN1));
+    if (discriminant.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (delta0.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        // the three roots are equal
+        // (-b)/(3*a)
+        result.append(value);
+        if (withMultiplicity) {
+          result.append(value);
+          result.append(value);
+        }
+      } else {
+        // the double root
+        // (9*a*d-b*c)/(2*delta0)
+        IASTMutable doubledRoot =
+            Times(Plus(Times(ZZ(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1));
+        result.append(doubledRoot);
+        if (withMultiplicity) {
+          result.append(doubledRoot);
+        }
+        // and a simple root
+        // (4*a*b*c-9*a^2*d-b^3)/(a*delta0)
+        result.append(Times(Plus(Times(C4, a, b, c), Times(CN1, ZZ(9L), Power(a, C2), d),
+            Times(CN1, Power(b, C3))), Power(Times(a, delta0), CN1)));
+      }
+    } else {
+      // -(b/(3*a)) - (2^(1/3) (-delta0))/(3*a*delta3) +
+      // delta3/(3*2^(1/3)*a)
+      result.append(Plus(b.negate().times(C3.times(a).power(CN1)),
+          Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
+          Times(Power(argDelta3.timesDistributed(C1D2), C1D3), C3.times(a).power(CN1))));
+
+      // -(b/(3*a)) + ((1 + I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
+      // - ((1 - I Sqrt[3]) delta3)/(6*2^(1/3)*a)
+      result.append(Plus(value,
+          Times(Plus(C1, Times(CI, Sqrt(C3))), CN1, delta0,
+              Power(Times(C3, Power(C2, F.QQ(2L, 3L)), a, delta3), CN1)),
+          Times(CN1, Plus(C1, Times(CN1, CI, Sqrt(C3))), delta3,
+              Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
+
+      // -(b/(3*a)) + ((1 - I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
+      // - ((1 + I Sqrt[3]) delta3)/(6*2^(1/3)*a)
+      result.append(Plus(value,
+          Times(Plus(C1, Times(CN1, CI, Sqrt(C3))), CN1, delta0,
+              Power(Times(C3, Power(C2, F.QQ(2L, 3L)), a, delta3), CN1)),
+          Times(CN1, Plus(C1, Times(CI, Sqrt(C3))), delta3,
+              Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
     }
   }
 

@@ -2,6 +2,7 @@ package org.matheclipse.core.expression.data;
 
 import java.util.Arrays;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.hipparchus.distribution.continuous.TDistribution;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
@@ -99,5 +100,75 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
   @Override
   public int hierarchy() {
     return FITTEDMODELID;
+  }
+
+  /**
+   * A table of the fitted model in a dialog style: the first column left-aligned, gray lines below
+   * the header row and after the first column.
+   *
+   * @param grid the rows of the table, the header row first
+   */
+  protected static IExpr dialogGrid(IAST grid) {
+    IExpr gray = F.GrayLevel(F.num(0.7));
+    return F.binaryAST2(S.Style,
+        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
+            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
+            F.Rule(S.Spacings,
+                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
+        F.stringx("DialogStyle"));
+  }
+
+  /**
+   * One row <code>{DF, SS, ...}</code> of an analysis of variance. The degrees of freedom are whole
+   * numbers; a value which cannot be computed is <code>Indeterminate</code>, and an infinite one -
+   * the F-statistic of an exact fit - is <code>ComplexInfinity</code>.
+   */
+  protected static IAST anovaRow(double[] row) {
+    IASTAppendable list = F.ListAlloc(row.length);
+    // the degrees of freedom are whole numbers
+    list.append(F.ZZ((int) row[0]));
+    for (int j = 1; j < row.length; j++) {
+      // an exact fit leaves no error, and its F-statistic is infinite
+      list.append(Double.isNaN(row[j]) ? S.Indeterminate
+          : Double.isInfinite(row[j]) ? F.CInfinity : F.num(row[j]));
+    }
+    return list;
+  }
+
+  /** One column of the analysis of variance <code>rows</code>, for each row that has it. */
+  protected static IExpr anovaColumn(double[][] rows, int column) {
+    IASTAppendable list = F.ListAlloc(rows.length);
+    for (double[] row : rows) {
+      if (column < row.length) {
+        list.append(anovaRow(row).get(column + 1));
+      }
+    }
+    return list;
+  }
+
+  /**
+   * One column of the parameter statistics <code>rows</code>, one row
+   * <code>{estimate, standard error, t, p}</code> per parameter.
+   */
+  protected static IAST parameterColumn(IExpr[][] rows, int column) {
+    return F.mapRange(0, rows.length, i -> rows[i][column]);
+  }
+
+  /**
+   * <code>{estimate - q se, estimate + q se}</code> for each row of the parameter statistics
+   * <code>rows</code>, with q the quantile of Student's t distribution with <code>df</code> degrees
+   * of freedom; <code>{Indeterminate, Indeterminate}</code> where the standard error is unknown.
+   */
+  protected static IAST confidenceIntervals(IExpr[][] rows, int df, double level) {
+    double q =
+        df > 0 ? new TDistribution(df).inverseCumulativeProbability(0.5 + 0.5 * level) : Double.NaN;
+    return F.mapRange(0, rows.length, i -> {
+      if (!rows[i][1].isReal()) {
+        return F.List(S.Indeterminate, S.Indeterminate);
+      }
+      double estimate = rows[i][0].evalf();
+      double halfWidth = q * rows[i][1].evalf();
+      return F.List(F.num(estimate - halfWidth), F.num(estimate + halfWidth));
+    });
   }
 }

@@ -304,6 +304,43 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return true;
   }
 
+  /**
+   * A list plot on logarithmic axes, for <code>ListLogPlot</code>, <code>ListLogLinearPlot</code>
+   * and <code>ListLogLogPlot</code>. The points are generated unscaled; the graphics carries the
+   * option <code>$Scaling -&gt; scaling</code>, which the renderers apply.
+   *
+   * @param scaling <code>{xScaling, yScaling}</code>, each <code>None</code> or <code>"Log"</code>
+   *        (the natural logarithm)
+   */
+  protected IExpr logScaledListPlot(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine, IAST originalAST, IExpr scaling) {
+    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
+
+    // Use standard options initially (no data transformation)
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
+
+    // Generate raw points
+    IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
+    if (graphicsPrimitives.isPresent()) {
+      graphicsOptions.addPadding();
+      // Force the scaling option into the output Graphics object
+      graphicsOptions.addOption(F.Rule(S.$Scaling, scaling));
+      return createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
+    }
+    return F.NIL;
+  }
+
   protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions,
       IAST plotAST) {
     IAST expressionsRule = checkForExpressionsLegend(plotAST.arg1(), graphicsOptions);

@@ -123,6 +123,25 @@ public class Minimize extends AbstractFunctionEvaluator {
     return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
+  /**
+   * The coefficients <code>{a, b, c, d, e}</code> of <code>a*x^4 + b*x^3 + c*x^2 + d*x + e</code>,
+   * zero where a power is missing.
+   *
+   * @param functionName the name the exception for a higher exponent gives
+   * @throws ArithmeticException for an exponent above 4
+   */
+  static IExpr[] polynomialCoefficients(ExprPolynomial polynomial, String functionName) {
+    IExpr[] coefficients = {F.C0, F.C0, F.C0, F.C0, F.C0};
+    for (ExprMonomial monomial : polynomial) {
+      long lExp = monomial.exponent().getVal(0);
+      if (lExp < 0 || lExp > 4) {
+        throw new ArithmeticException(functionName + "::Unexpected exponent value: " + lExp);
+      }
+      coefficients[4 - (int) lExp] = monomial.coefficient();
+    }
+    return coefficients;
+  }
+
   public static IAST minimizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
     long varDegree = polynomial.degree(0);
     IExpr a;
@@ -132,28 +151,12 @@ public class Minimize extends AbstractFunctionEvaluator {
     IExpr e;
     if (varDegree <= 3) {
       // solve cubic or quadratic minimize:
-      a = F.C0;
-      b = F.C0;
-      c = F.C0;
-      d = F.C0;
-      e = F.C0;
-      for (ExprMonomial monomial : polynomial) {
-        IExpr coeff = monomial.coefficient();
-        long lExp = monomial.exponent().getVal(0);
-        if (lExp == 4) {
-          a = coeff;
-        } else if (lExp == 3) {
-          b = coeff;
-        } else if (lExp == 2) {
-          c = coeff;
-        } else if (lExp == 1) {
-          d = coeff;
-        } else if (lExp == 0) {
-          e = coeff;
-        } else {
-          throw new ArithmeticException("Minimize::Unexpected exponent value: " + lExp);
-        }
-      }
+      IExpr[] coefficients = polynomialCoefficients(polynomial, "Minimize");
+      a = coefficients[0];
+      b = coefficients[1];
+      c = coefficients[2];
+      d = coefficients[3];
+      e = coefficients[4];
       if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // quadratic

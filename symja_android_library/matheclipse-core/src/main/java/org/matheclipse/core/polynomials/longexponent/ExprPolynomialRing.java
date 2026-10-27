@@ -43,6 +43,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 
     ExprPolynomial current;
 
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     /** Polynomial iterator constructor. */
     @SuppressWarnings("unchecked")
     public GenPolynomialMonomialIterator(ExprPolynomialRing fac) throws IllegalArgumentException {
@@ -78,6 +79,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       ExpVectorLong e = ExpVectorLong.create(ecl);
       current = new ExprPolynomial(ring, c, e);
     }
+    // CPD-ON
 
     /**
      * Test for availability of a next element.
@@ -719,7 +721,6 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     }
     return false;
   }
-  // CPD-ON
 
   /**
    * Get the String representation.
@@ -844,7 +845,6 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     return e.toScript();
   }
 
-  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Comparison with any other object.
    *

@@ -140,26 +140,8 @@ public class JASModInteger {
       throws ArithmeticException, ClassCastException {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
-      GenPolynomial<ModLong> result = fPolyFactory.getZERO();
-      GenPolynomial<ModLong> p = fPolyFactory.getZERO();
-      if (ast.isPlus()) {
-        IExpr expr = ast.arg1();
-        result = expr2Poly(expr, numeric2Rational);
-        for (int i = 2; i < ast.size(); i++) {
-          expr = ast.get(i);
-          p = expr2Poly(expr, numeric2Rational);
-          result = result.sum(p);
-        }
-        return result;
-      } else if (ast.isTimes()) {
-        IExpr expr = ast.arg1();
-        result = expr2Poly(expr, numeric2Rational);
-        for (int i = 2; i < ast.size(); i++) {
-          expr = ast.get(i);
-          p = expr2Poly(expr, numeric2Rational);
-          result = result.multiply(p);
-        }
-        return result;
+      if (ast.isPlus() || ast.isTimes()) {
+        return JASConvert.foldPlusTimes(ast, fPolyFactory, x -> expr2Poly(x, numeric2Rational));
       } else if (ast.isPower()) {
         final IExpr base = ast.base();
         for (int i = 0; i < fVariables.argSize(); i++) {
@@ -223,26 +205,8 @@ public class JASModInteger {
       throws ArithmeticException, ClassCastException {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
-      GenPolynomial<ModLong> result = fPolyFactory.getZERO();
-      GenPolynomial<ModLong> p = fPolyFactory.getZERO();
-      if (ast.isPlus()) {
-        IExpr expr = ast.arg1();
-        result = expr2IExprPoly(expr);
-        for (int i = 2; i < ast.size(); i++) {
-          expr = ast.get(i);
-          p = expr2IExprPoly(expr);
-          result = result.sum(p);
-        }
-        return result;
-      } else if (ast.isTimes()) {
-        IExpr expr = ast.arg1();
-        result = expr2IExprPoly(expr);
-        for (int i = 2; i < ast.size(); i++) {
-          expr = ast.get(i);
-          p = expr2IExprPoly(expr);
-          result = result.multiply(p);
-        }
-        return result;
+      if (ast.isPlus() || ast.isTimes()) {
+        return JASConvert.foldPlusTimes(ast, fPolyFactory, x -> expr2IExprPoly(x));
       } else if (ast.isPower()) {
         final IExpr base = ast.base();
         for (int i = 0; i < fVariables.argSize(); i++) {

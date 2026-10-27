@@ -339,6 +339,7 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
     mask = capacity - 1;
   }
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /**
    * Copy constructor.
    *
@@ -413,6 +414,7 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
     ++count;
     return previous;
   }
+  // CPD-ON
 
   /**
    * Check if keys are equal.

@@ -10,8 +10,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import java.util.function.ObjIntConsumer;
 
 /**
- * Method bodies shared by the fixed-size AST classes with two arguments ({@link AST2}, {@link B2})
- * and with three arguments ({@link AST3}, {@link B3}). The two hierarchies have no common
+ * Method bodies shared by the fixed-size AST classes with one argument ({@link AST1},
+ * {@link B1}), two arguments ({@link AST2}, {@link B2}) and three arguments ({@link AST3},
+ * {@link B3}). The two hierarchies have no common
  * superclass, so each class passes its head and argument slots in; the JIT inlines these small
  * static methods, so the classes keep their field access speed.
  *
@@ -21,6 +22,50 @@ import java.util.function.ObjIntConsumer;
 final class FixedArity {
 
   private FixedArity() {}
+
+  // ---- one argument: size 2 ----
+
+  static boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset, IExpr a0,
+      IExpr a1) {
+    switch (startOffset) {
+      case 0:
+        return predicate.test(a0, 0) || predicate.test(a1, 1);
+      case 1:
+        return predicate.test(a1, 1);
+      default:
+        return false;
+    }
+  }
+
+  static boolean exists(Predicate<? super IExpr> predicate, int startOffset, IExpr a0, IExpr a1) {
+    switch (startOffset) {
+      case 0:
+        return predicate.test(a0) || predicate.test(a1);
+      case 1:
+        return predicate.test(a1);
+      default:
+        return false;
+    }
+  }
+
+  static IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
+      Predicate<? super IExpr> predicate, IExpr a1) {
+    filterOne(filterAST, restAST, predicate, a1);
+    return filterAST;
+  }
+
+  static IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate, IExpr a1) {
+    if (predicate.test(a1)) {
+      filterAST.append(a1);
+    }
+    return filterAST;
+  }
+
+  static IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+      Function<IExpr, IExpr> function, IExpr a1) {
+    filterFunctionOne(filterAST, restAST, function, a1);
+    return filterAST;
+  }
 
   // ---- two arguments: size 3 ----
 

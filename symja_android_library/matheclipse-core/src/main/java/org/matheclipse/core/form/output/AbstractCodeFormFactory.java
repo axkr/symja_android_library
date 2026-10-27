@@ -32,6 +32,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
@@ -562,6 +563,54 @@ public abstract class AbstractCodeFormFactory {
    */
   protected abstract void convertInternal(final StringBuilder buf, final IExpr o,
       final int precedence, boolean isASTHead);
+
+  /**
+   * Convert Plus, Times and Power, which each factory writes in its own way.
+   *
+   * @return <code>false</code> if <code>head</code> is none of them
+   */
+  protected abstract boolean convertArithmetic(final StringBuilder buf, final IAST list,
+      final InfixOperator infixOperator, final int precedence, ISymbol head);
+
+  /**
+   * Convert an operator expression: prefix and postfix operators, Plus, Times and Power through
+   * {@link #convertArithmetic}, Apply and MapApply, and the other infix operators.
+   *
+   * @return <code>false</code> if <code>list</code> is not written as an operator
+   */
+  protected boolean convertOperator(final Operator operator, final IAST list,
+      final StringBuilder buf, final int precedence, ISymbol head) {
+    if ((operator instanceof PrefixOperator) && (list.isAST1())) {
+      convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
+      return true;
+    }
+    if ((operator instanceof InfixOperator) && (list.size() > 2)) {
+      InfixOperator infixOperator = (InfixOperator) operator;
+      if (convertArithmetic(buf, list, infixOperator, precedence, head)) {
+        return true;
+      }
+      if (list.isAST(S.Apply)) {
+        if (list.size() == 3) {
+          convertInfixOperator(head, buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
+          return true;
+        }
+        if (list.size() == 4 && list.arg2().equals(F.CListC1)) {
+          convertInfixOperator(head, buf, list, ASTNodeFactory.MAPAPPLY_OPERATOR, precedence);
+          return true;
+        }
+        return false;
+      } else if (list.size() != 3 && infixOperator.getGrouping() != InfixOperator.NONE) {
+        return false;
+      }
+      convertInfixOperator(head, buf, list, (InfixOperator) operator, precedence);
+      return true;
+    }
+    if ((operator instanceof PostfixOperator) && (list.isAST1())) {
+      convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
+      return true;
+    }
+    return false;
+  }
 
   public Operator getOperator(ISymbol head) {
     // Operator operator = null;

@@ -569,29 +569,9 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     double[][] rows = anovaRows();
     return F.mapRange(0, rows.length, i -> anovaRow(rows[i]));
   }
-
-  private static IAST anovaRow(double[] row) {
-    IASTAppendable list = F.ListAlloc(row.length);
-    // the degrees of freedom are whole numbers
-    list.append(F.ZZ((int) row[0]));
-    for (int j = 1; j < row.length; j++) {
-      // an exact fit leaves no error, and its F-statistic is infinite
-      list.append(Double.isNaN(row[j]) ? S.Indeterminate
-          : Double.isInfinite(row[j]) ? F.CInfinity : F.num(row[j]));
-    }
-    return list;
-  }
-
   /** One column of the analysis of variance, for each row that has it. */
   private IExpr anovaColumn(int column) {
-    double[][] rows = anovaRows();
-    IASTAppendable list = F.ListAlloc(rows.length);
-    for (double[] row : rows) {
-      if (column < row.length) {
-        list.append(anovaRow(row).get(column + 1));
-      }
-    }
-    return list;
+    return anovaColumn(anovaRows(), column);
   }
 
   /** The analysis of variance as a table: a row per basis function, the error and the total. */
@@ -621,13 +601,7 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     total.append(F.stringx("Total"));
     total.appendArgs(anovaRow(rows[rows.length - 1]));
     grid.append(total);
-    IExpr gray = F.GrayLevel(F.num(0.7));
-    return F.binaryAST2(S.Style,
-        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
-            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
-            F.Rule(S.Spacings,
-                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
-        F.stringx("DialogStyle"));
+    return dialogGrid(grid);
   }
 
   /** The residual degrees of freedom: data points less parameters. */
@@ -669,24 +643,12 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
 
   /** One column of the parameter table, for every parameter. */
   private IAST parameterColumn(ExprOLSLinearRegression regression, int column) {
-    IExpr[][] rows = parameterStatistics(regression);
-    return F.mapRange(0, rows.length, i -> rows[i][column]);
+    return parameterColumn(parameterStatistics(regression), column);
   }
 
   /** <code>{estimate - q se, estimate + q se}</code> with q the Student t quantile. */
   private IAST confidenceIntervals(ExprOLSLinearRegression regression, double level) {
-    IExpr[][] rows = parameterStatistics(regression);
-    int df = degreesOfFreedom();
-    double q =
-        df > 0 ? new TDistribution(df).inverseCumulativeProbability(0.5 + 0.5 * level) : Double.NaN;
-    return F.mapRange(0, rows.length, i -> {
-      if (!rows[i][1].isReal()) {
-        return F.List(S.Indeterminate, S.Indeterminate);
-      }
-      double estimate = rows[i][0].evalf();
-      double halfWidth = q * rows[i][1].evalf();
-      return F.List(F.num(estimate - halfWidth), F.num(estimate + halfWidth));
-    });
+    return confidenceIntervals(parameterStatistics(regression), degreesOfFreedom(), level);
   }
 
   /** The parameter table, one row per basis function. */
@@ -701,13 +663,7 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
       row.appendAll(rows[i], 0, 4);
       grid.append(row);
     }
-    IExpr gray = F.GrayLevel(F.num(0.7));
-    return F.binaryAST2(S.Style,
-        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
-            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
-            F.Rule(S.Spacings,
-                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
-        F.stringx("DialogStyle"));
+    return dialogGrid(grid);
   }
 
   /** The fitted value at each data point: the observed value less its residual. */

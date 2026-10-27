@@ -1487,6 +1487,7 @@ public class Symbol implements ISymbol, Serializable {
     }
   }
 
+  // CPD-OFF value and rule handling on separate private fields
   public Object readResolve() {
     return fContext == Context.DUMMY ? this
         : fContext == Context.FORMAL ? F.HIDDEN_SYMBOLS_MAP.get(fSymbolName)
@@ -1501,7 +1502,6 @@ public class Symbol implements ISymbol, Serializable {
     fAttributes = stream.readInt();
     boolean hasDownRulesData = stream.readBoolean();
     if (hasDownRulesData) {
-      fRulesData = new RulesData();
       fRulesData = (RulesData) stream.readObject();
     }
   }
@@ -1548,6 +1548,7 @@ public class Symbol implements ISymbol, Serializable {
     Errors.printMessage(functionSymbol, "rvalue", F.list(this), engine);
     return null;
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override

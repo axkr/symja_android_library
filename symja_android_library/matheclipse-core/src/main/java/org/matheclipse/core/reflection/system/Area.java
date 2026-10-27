@@ -682,37 +682,20 @@ public class Area extends AbstractFunctionOptionEvaluator {
     if (geoForm.argSize() == 0) {
       return S.Pi;
     }
-    if (geoForm.arg1().isList()) {
-      IExpr r1 = F.C1;
-      IExpr r2 = F.C1;
-      if (geoForm.argSize() >= 2) {
-        if (geoForm.arg2().isList2()) {
-          r1 = geoForm.arg2().first();
-          r2 = geoForm.arg2().second();
-        } else if (!geoForm.arg2().isList()) {
-          r1 = geoForm.arg2();
-          r2 = r1;
-        } else {
-          return F.NIL;
-        }
-      }
-
-      if (geoForm.argSize() == 3) {
-        if (geoForm.arg3().isList2()) {
-          IExpr t1 = geoForm.arg3().first();
-          IExpr t2 = geoForm.arg3().second();
-          return
-          // [$ (r1*r2*Min(Pi, Abs(-t1+t2)/2)) $]
-          F.Times(r1, r2, F.Min(S.Pi, F.Times(F.C1D2, F.Abs(F.Plus(F.Negate(t1), t2))))); // $$;
-        }
-        return F.NIL;
-      }
-      if (geoForm.argSize() > 3) {
-        return F.NIL;
-      }
-      return F.Times(S.Pi, r1, r2);
+    RegionPrimitives.DiskSpec spec = RegionPrimitives.parseDisk(geoForm);
+    if (spec == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    IExpr r1 = spec.r1;
+    IExpr r2 = spec.r2;
+    if (spec.t1 != null) {
+      IExpr t1 = spec.t1;
+      IExpr t2 = spec.t2;
+      return
+      // [$ (r1*r2*Min(Pi, Abs(-t1+t2)/2)) $]
+      F.Times(r1, r2, F.Min(S.Pi, F.Times(F.C1D2, F.Abs(F.Plus(F.Negate(t1), t2))))); // $$;
+    }
+    return F.Times(S.Pi, r1, r2);
   }
 
   /** The product of the side lengths of an axis aligned box. */

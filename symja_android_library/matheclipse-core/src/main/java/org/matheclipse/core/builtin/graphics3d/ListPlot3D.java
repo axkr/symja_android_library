@@ -33,12 +33,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
     // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
     // primitives, reading it from the original call
-    if (ast.size() > 1) {
-      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
-      if (unwrapped != ast.arg1()) {
-        ast = ast.setAtCopy(1, unwrapped);
-      }
-    }
+    ast = PlotWrapper.stripFirstArgument(ast);
     IExpr data = ast.arg1();
     if (!data.isList()) {
       return F.NIL;

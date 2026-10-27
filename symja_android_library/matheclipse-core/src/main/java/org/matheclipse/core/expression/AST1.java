@@ -201,25 +201,13 @@ public class AST1 extends AST0 {
   /** {@inheritDoc} */
   @Override
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(arg0, 0) || predicate.test(arg1, 1);
-      case 1:
-        return predicate.test(arg1, 1);
-    }
-    return false;
+    return FixedArity.exists(predicate, startOffset, arg0, arg1);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(arg0) || predicate.test(arg1);
-      case 1:
-        return predicate.test(arg1);
-    }
-    return false;
+    return FixedArity.exists(predicate, startOffset, arg0, arg1);
   }
 
   @Override
@@ -231,34 +219,20 @@ public class AST1 extends AST0 {
   @Override
   public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
       Predicate<? super IExpr> predicate) {
-    if (predicate.test(arg1)) {
-      filterAST.append(arg1);
-    } else {
-      restAST.append(arg1);
-    }
-    return filterAST;
+    return FixedArity.filter(filterAST, restAST, predicate, arg1);
   }
 
   /** {@inheritDoc} */
   @Override
   public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
-    if (predicate.test(arg1)) {
-      filterAST.append(arg1);
-    }
-    return filterAST;
+    return FixedArity.filter(filterAST, predicate, arg1);
   }
 
   /** {@inheritDoc} */
   @Override
   public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
       final Function<IExpr, IExpr> function) {
-    IExpr expr = function.apply(arg1);
-    if (expr.isPresent()) {
-      filterAST.append(expr);
-    } else {
-      restAST.append(arg1);
-    }
-    return filterAST;
+    return FixedArity.filterFunction(filterAST, restAST, function, arg1);
   }
 
   /** {@inheritDoc} */

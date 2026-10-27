@@ -620,6 +620,31 @@ final class DSolveUtil {
   }
 
   /**
+   * Solve an equation of the first degree in <code>y'(x)</code> for the derivative.
+   *
+   * <p>
+   * The coefficient of the derivative may depend on the unknown, as it does in
+   * <code>y'(x)*Cos(y(x)) == ...</code>; all that is needed is to be able to solve for the
+   * derivative, which asks for the equation to be of the first degree in it.
+   *
+   * @param lhs the equation <code>lhs == 0</code>
+   * @param yDummy the symbol which replaces <code>y(x)</code> in the result
+   * @return <code>right</code> with <code>y'(x) == right</code>, or {@link F#NIL} if the equation is
+   *         not of the first degree in <code>y'(x)</code>
+   */
+  static IExpr solveForFirstDerivative(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr yDummy,
+      EvalEngine engine) {
+    IExpr dyx = engine.evaluate(F.D(yFunction, xVar));
+    IExpr coefficient = engine.evaluate(F.Coefficient(lhs, dyx));
+    if (coefficient.isZero() || !DSolveODE.isLinearInDerivative(lhs, dyx, engine)) {
+      return F.NIL;
+    }
+    IExpr rest = engine.evaluate(F.Subtract(lhs, F.Times(coefficient, dyx)));
+    return engine.evaluate(
+        F.subst(F.Cancel(F.Together(F.Divide(F.Negate(rest), coefficient))), yFunction, yDummy));
+  }
+
+  /**
    * The second derivative isolated as <code>Phi(x, yDummy, pDummy)</code>, with the first
    * derivative written as <code>pDummy</code> and the unknown as <code>yDummy</code>, or
    * {@link F#NIL}.

@@ -3041,6 +3041,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     return false;
   }
 
+  // CPD-OFF operator dispatch of form factories without a common base
   private boolean convertOperator(final org.matheclipse.parser.client.operator.Operator operator,
       IAST list, final StringBuilder buf, final int precedence, ISymbol head) {
     if ((operator instanceof PrefixOperator) && (list.isAST1())) {
@@ -3049,23 +3050,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
     if ((operator instanceof InfixOperator) && (list.size() > 2)) {
       InfixOperator infixOperator = (InfixOperator) operator;
-      // if (head.equals(F.Plus)) {
-      // if (fPlusReversed) {
-      // convertPlusOperatorReversed(buf, list, infixOperator, precedence);
-      // } else {
-      // convertPlusOperator(buf, list, infixOperator, precedence);
-      // }
-      // return true;
-      // } else
-      // if (head.equals(F.Times)) {
-      // convertTimesOperator(buf, list, infixOperator, precedence, NO_PLUS_CALL);
-      // return true;
-      // convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
-      // return true;
-      // } else if (list.isPower()) {
-      // convertPowerOperator(buf, list, infixOperator, precedence);
-      // return true;
-      // } else
       if (list.isAST(S.Apply)) {
         if (list.size() == 3) {
           convertInfixOperator(buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
@@ -3118,6 +3102,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
     tagEnd(buf, "mrow");
   }
+  // CPD-ON
 
   public void convertPostfixOperator(final StringBuilder buf, final IAST list,
       final PostfixOperator oper, final int precedence) {

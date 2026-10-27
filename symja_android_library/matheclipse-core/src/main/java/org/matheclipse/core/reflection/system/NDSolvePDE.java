@@ -55,6 +55,48 @@ final class NDSolvePDE {
 
   private NDSolvePDE() {}
 
+  /** The time and space variables of a problem with their ranges. */
+  static final class Ranges {
+    final ISymbol t;
+    final ISymbol x;
+    final double t0;
+    final double t1;
+    final double x0;
+    final double x1;
+
+    private Ranges(ISymbol t, ISymbol x, double t0, double t1, double x0, double x1) {
+      this.t = t;
+      this.x = x;
+      this.t0 = t0;
+      this.t1 = t1;
+      this.x0 = x0;
+      this.x1 = x1;
+    }
+  }
+
+  /**
+   * The ranges <code>{t, t0, t1}</code> and <code>{x, x0, x1}</code> of <code>ast</code>, the third
+   * and fourth argument of <code>NDSolve(...)</code>.
+   *
+   * @return <code>null</code> if they are no such ranges or an end does not lie above its start
+   */
+  static Ranges parseRanges(IAST ast) {
+    if (ast.argSize() < 4 || !ast.arg3().isList3() || !ast.arg4().isList3()
+        || !ast.arg3().first().isSymbol() || !ast.arg4().first().isSymbol()) {
+      return null;
+    }
+    IAST tRange = (IAST) ast.arg3();
+    IAST xRange = (IAST) ast.arg4();
+    double t0 = tRange.arg2().evalfNaN();
+    double t1 = tRange.arg3().evalfNaN();
+    double x0 = xRange.arg2().evalfNaN();
+    double x1 = xRange.arg3().evalfNaN();
+    if (!(t1 > t0) || !(x1 > x0)) {
+      return null;
+    }
+    return new Ranges((ISymbol) tRange.arg1(), (ISymbol) xRange.arg1(), t0, t1, x0, x1);
+  }
+
   /**
    * The solution of the problem in <code>ast</code>, or {@link F#NIL} where it is not one this
    * class solves - an ordinary differential equation, a second space variable, a boundary condition
@@ -66,21 +108,16 @@ final class NDSolvePDE {
    *        function itself
    */
   static IExpr solve(IAST ast, EvalEngine engine, boolean ruleForm) {
-    if (ast.argSize() < 4 || !ast.arg3().isList3() || !ast.arg4().isList3()
-        || !ast.arg3().first().isSymbol() || !ast.arg4().first().isSymbol()) {
+    Ranges ranges = parseRanges(ast);
+    if (ranges == null) {
       return F.NIL;
     }
-    IAST tRange = (IAST) ast.arg3();
-    IAST xRange = (IAST) ast.arg4();
-    ISymbol t = (ISymbol) tRange.arg1();
-    ISymbol x = (ISymbol) xRange.arg1();
-    double t0 = tRange.arg2().evalfNaN();
-    double t1 = tRange.arg3().evalfNaN();
-    double x0 = xRange.arg2().evalfNaN();
-    double x1 = xRange.arg3().evalfNaN();
-    if (!(t1 > t0) || !(x1 > x0)) {
-      return F.NIL;
-    }
+    ISymbol t = ranges.t;
+    ISymbol x = ranges.x;
+    double t0 = ranges.t0;
+    double t1 = ranges.t1;
+    double x0 = ranges.x0;
+    double x1 = ranges.x1;
 
     // the unknown, written as u or as u(t, x)
     IExpr unknown = ast.arg2();
@@ -603,9 +640,9 @@ final class NDSolvePDE {
   /**
    * A coefficient of the equation, or a condition, as a function of <code>t</code> and
    * <code>x</code>. One that depends on neither is evaluated once; one that depends on
-   * <code>x</code> only is remembered per grid point.
+   * <code>x</code> only is remembered per grid point. Shared with {@link NDSolvePDESystem}.
    */
-  private static final class Coefficient {
+  static final class Coefficient {
     private final IExpr expr;
     private final ISymbol t;
     private final ISymbol x;
@@ -625,6 +662,9 @@ final class NDSolvePDE {
     }
 
     double value(double tv, double xv) {
+      if (expr.isZero()) {
+        return 0.0;
+      }
       if (!dependsOnT && !dependsOnX) {
         if (Double.isNaN(constant)) {
           constant = evaluate(tv, xv);

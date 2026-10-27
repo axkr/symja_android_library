@@ -694,10 +694,25 @@ public class OutputFormFactory {
 
   public void convertDoubleComplex(final Appendable buf, final IComplexNum dc, final int precedence,
       boolean caller) throws IOException {
-    if (fComplexReImI) {
-      convertDoubleComplexReImI(buf, dc, precedence, caller);
-      return;
-    }
+    convertDoubleComplex(buf, dc, precedence, caller, fComplexReImI);
+  }
+
+  /** Print a machine complex number with the imaginary unit last: <code>a+b*I</code>. */
+  public void convertDoubleComplexReImI(final Appendable buf, final IComplexNum dc,
+      final int precedence, boolean caller) throws IOException {
+    convertDoubleComplex(buf, dc, precedence, caller, true);
+  }
+
+  /** The string of a machine double, the full precision one in input form. */
+  private String formatDouble(double value) {
+    return fInputForm ? Num.fullFormString(value) : convertDoubleToFormattedString(value);
+  }
+
+  /**
+   * @param reImI print the imaginary part as <code>b*I</code> instead of <code>I*b</code>
+   */
+  private void convertDoubleComplex(final Appendable buf, final IComplexNum dc,
+      final int precedence, boolean caller, boolean reImI) throws IOException {
     if (dc instanceof ApcomplexNum) {
       convertApcomplex(buf, (ApcomplexNum) dc, precedence, caller);
       return;
@@ -718,82 +733,36 @@ public class OutputFormFactory {
     if (realZero && imaginaryZero) {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
     } else {
+      final boolean isNegative = imaginaryPart < 0;
       if (!realZero) {
-        String str =
-            fInputForm ? Num.fullFormString(realPart) : convertDoubleToFormattedString(realPart);
-        append(buf, str);
+        append(buf, formatDouble(realPart));
         if (!imaginaryZero) {
-          append(buf, "+I*");
-          final boolean isNegative = imaginaryPart < 0;
-          str = fInputForm ? Num.fullFormString(imaginaryPart)
-              : convertDoubleToFormattedString(imaginaryPart);
-          convertDoubleString(buf, str, Precedence.TIMES, isNegative);
+          if (reImI) {
+            if (!isNegative) {
+              append(buf, "+");
+            }
+            convertDoubleString(buf, formatDouble(imaginaryPart), Precedence.PLUS, isNegative);
+            append(buf, "*I");
+          } else {
+            append(buf, "+I*");
+            convertDoubleString(buf, formatDouble(imaginaryPart), Precedence.TIMES, isNegative);
+          }
         }
+      } else if (reImI) {
+        // a negative imaginary part brings its own sign
+        if (!isNegative && caller == PLUS_CALL) {
+          append(buf, "+");
+          caller = false;
+        }
+        convertDoubleString(buf, formatDouble(imaginaryPart), precedence, isNegative);
+        append(buf, "*I");
       } else {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
           caller = false;
         }
         append(buf, "I*");
-        final boolean isNegative = imaginaryPart < 0;
-        String str = fInputForm ? Num.fullFormString(imaginaryPart)
-            : convertDoubleToFormattedString(imaginaryPart);
-        convertDoubleString(buf, str, Precedence.TIMES, isNegative);
-      }
-    }
-
-    if (Precedence.PLUS < precedence) {
-      append(buf, ")");
-    }
-  }
-
-  public void convertDoubleComplexReImI(final Appendable buf, final IComplexNum dc,
-      final int precedence, boolean caller) throws IOException {
-    if (dc instanceof ApcomplexNum) {
-      convertApcomplex(buf, (ApcomplexNum) dc, precedence, caller);
-      return;
-    }
-    if (Precedence.PLUS < precedence) {
-      if (caller == PLUS_CALL) {
-        append(buf, fInputForm ? " + " : "+");
-        caller = false;
-      }
-      append(buf, "(");
-    }
-
-    double realPart = dc.getRealPart();
-    double imaginaryPart = dc.getImaginaryPart();
-    // a part is left out if it is zero - as for a real number, not below the machine epsilon
-    boolean realZero = F.isZero(realPart, Config.ZERO_IN_OUTPUT_FORMAT);
-    boolean imaginaryZero = F.isZero(imaginaryPart, Config.ZERO_IN_OUTPUT_FORMAT);
-    if (realZero && imaginaryZero) {
-      convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
-    } else {
-      if (!realZero) {
-        String str =
-            fInputForm ? Num.fullFormString(realPart) : convertDoubleToFormattedString(realPart);
-        append(buf, str);
-        if (!imaginaryZero) {
-          final boolean isNegative = imaginaryPart < 0;
-          if (!isNegative) {
-            append(buf, "+");
-          }
-          str = fInputForm ? Num.fullFormString(imaginaryPart)
-              : convertDoubleToFormattedString(imaginaryPart);
-          convertDoubleString(buf, str, Precedence.PLUS, isNegative);
-          append(buf, "*I");
-        }
-      } else {
-        final boolean isNegative = imaginaryPart < 0;
-        if (!isNegative && caller == PLUS_CALL) {
-          append(buf, "+");
-          caller = false;
-        }
-
-        String str = fInputForm ? Num.fullFormString(imaginaryPart)
-            : convertDoubleToFormattedString(imaginaryPart);
-        convertDoubleString(buf, str, precedence, isNegative);
-        append(buf, "*I");
+        convertDoubleString(buf, formatDouble(imaginaryPart), Precedence.TIMES, isNegative);
       }
     }
 
@@ -2192,6 +2161,7 @@ public class OutputFormFactory {
     return true;
   }
 
+  // CPD-OFF operator dispatch of form factories without a common base
   private boolean convertOperator(final Operator operator, final IAST list, final Appendable buf,
       final int precedence, ISymbol head) throws IOException {
     if ((operator instanceof PrefixOperator) && (list.isAST1())) {
@@ -2291,6 +2261,7 @@ public class OutputFormFactory {
     }
     return preferred;
   }
+  // CPD-ON
 
   /**
    * Write a <code>Slot</code> or <code>SlotSequence</code> in its short form.

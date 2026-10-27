@@ -52,12 +52,7 @@ public class ListDensityPlot extends DensityPlot {
     // the shape tests below read the data through any display wrapper; `wrappedAST` keeps the
     // wrapper, so the label can still be put over the finished picture
     final IAST wrappedAST = ast;
-    if (ast.size() > 1) {
-      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
-      if (unwrapped != ast.arg1()) {
-        ast = ast.setAtCopy(1, unwrapped);
-      }
-    }
+    ast = PlotWrapper.stripFirstArgument(ast);
     if (argSize < 1) {
       return F.NIL;
     }

@@ -799,6 +799,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   @Override
   public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
     FixedArity.forEach(start, end, action, head(), arg1, arg2, arg3);
@@ -839,6 +840,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   public IExpr get(int location) {
     return FixedArity.get(location, head(), arg1, arg2, arg3);
   }
+  // CPD-ON
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {

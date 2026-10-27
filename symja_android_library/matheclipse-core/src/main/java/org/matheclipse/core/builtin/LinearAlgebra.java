@@ -1504,6 +1504,45 @@ public final class LinearAlgebra {
     }
   }
 
+  /**
+   * The number of eigenvalues the optional second argument of <code>Eigenvalues</code>,
+   * <code>Eigenvectors</code> or <code>Eigensystem</code> asks for.
+   *
+   * @return <code>-1</code> without a second argument, or {@link Config#INVALID_INT} after the
+   *         message for a second argument which is no machine integer
+   */
+  private static int eigenvalueCount(IAST ast, EvalEngine engine) {
+    if (ast.argSize() <= 1) {
+      return -1;
+    }
+    int n = ast.arg2().toIntDefault();
+    if (F.isNotPresent(n)) {
+      // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+      // `1`.
+      Errors.printMessage(ast.topHead(), "seqs", F.List(ast, F.C2), engine);
+    }
+    return n;
+  }
+
+  /**
+   * The first <code>maxValues</code> numeric eigenvalues as a list, a value with a zero imaginary
+   * part as a real number.
+   *
+   * @param maxValues the number of values, or a negative number for all of them
+   */
+  private static IAST complexToList(final Complex[] values, int maxValues) {
+    int size = values.length;
+    if (maxValues >= 0 && maxValues < size) {
+      size = maxValues;
+    }
+    return F.mapRange(0, size, (int i) -> {
+      if (F.isZero(values[i].getImaginary())) {
+        return F.num(values[i].getReal());
+      }
+      return F.complexNum(values[i].getReal(), values[i].getImaginary());
+    });
+  }
+
   private static class Eigensystem extends AbstractMatrix1Expr {
 
     @Override
@@ -1543,16 +1582,9 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
-      IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
-      int maxValues = -1;
-      if (numberOfEigenvalues.isPresent()) {
-        int n = numberOfEigenvalues.toIntDefault();
-        if (F.isNotPresent(n)) {
-          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
-          // `1`.
-          return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
-        }
-        maxValues = n;
+      int maxValues = eigenvalueCount(ast, engine);
+      if (F.isNotPresent(maxValues)) {
+        return F.NIL;
       }
       try {
         ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
@@ -1560,18 +1592,8 @@ public final class LinearAlgebra {
             ComplexEigenDecomposition.DEFAULT_EPSILON, //
             Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
             Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
-        Complex[] eigenvalues = ced.getEigenvalues();
-        int vectorSize = eigenvalues.length;
-        if (maxValues >= 0 && maxValues < vectorSize) {
-          vectorSize = maxValues;
-        }
-        IAST values = F.mapRange(0, vectorSize, (int i) -> {
-          if (F.isZero(eigenvalues[i].getImaginary())) {
-            return F.num(eigenvalues[i].getReal());
-          }
-          return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
-        });
-        IAST vectors = F.mapRange(0, vectorSize,
+        IAST values = complexToList(ced.getEigenvalues(), maxValues);
+        IAST vectors = F.mapRange(0, values.argSize(),
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
         return F.List(values, vectors);
       } catch (RuntimeException rex) {
@@ -1579,18 +1601,8 @@ public final class LinearAlgebra {
 
       }
       EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
-      Complex[] eigenvalues = edns.getEigenvalues();
-      int vectorSize = eigenvalues.length;
-      if (maxValues >= 0 && maxValues < vectorSize) {
-        vectorSize = maxValues;
-      }
-      IAST values = F.mapRange(0, vectorSize, (int i) -> {
-        if (F.isZero(eigenvalues[i].getImaginary())) {
-          return F.num(eigenvalues[i].getReal());
-        }
-        return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
-      });
-      IAST vectors = F.mapRange(0, vectorSize,
+      IAST values = complexToList(edns.getEigenvalues(), maxValues);
+      IAST vectors = F.mapRange(0, values.argSize(),
           j -> S.Normalize.of(engine, Convert.complexVector2List(edns.getEigenvector(j))));
       return F.List(values, vectors);
     }
@@ -1765,15 +1777,9 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
-      int maxValues = -1;
-      if (numberOfEigenvalues.isPresent()) {
-        int n = numberOfEigenvalues.toIntDefault();
-        if (F.isNotPresent(n)) {
-          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
-          // `1`.
-          return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
-        }
-        maxValues = n;
+      int maxValues = eigenvalueCount(ast, engine);
+      if (F.isNotPresent(maxValues)) {
+        return F.NIL;
       }
       IExpr pencil = generalizedEigenvalues(ast, engine);
       if (pencil.isPresent()) {
@@ -1874,16 +1880,9 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
-      IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
-      int maxValues = -1;
-      if (numberOfEigenvalues.isPresent()) {
-        int n = numberOfEigenvalues.toIntDefault();
-        if (F.isNotPresent(n)) {
-          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
-          // `1`.
-          return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
-        }
-        maxValues = n;
+      int maxValues = eigenvalueCount(ast, engine);
+      if (F.isNotPresent(maxValues)) {
+        return F.NIL;
       }
       try {
         // https://github.com/Hipparchus-Math/hipparchus/issues/337
@@ -1893,33 +1892,12 @@ public final class LinearAlgebra {
             ComplexEigenDecomposition.DEFAULT_EPSILON, //
             Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
             Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
-        Complex[] eigenvalues = ced.getEigenvalues();
-        int vectorSize = eigenvalues.length;
-        if (maxValues >= 0 && maxValues < vectorSize) {
-          vectorSize = maxValues;
-        }
-        return F.mapRange(0, vectorSize, (int i) -> {
-          if (F.isZero(eigenvalues[i].getImaginary())) {
-            return F.num(eigenvalues[i].getReal());
-          }
-          return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
-        });
+        return complexToList(ced.getEigenvalues(), maxValues);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        // rex.printStackTrace();
       }
       EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
-      Complex[] eigenvalues = edns.getEigenvalues();
-      int vectorSize = eigenvalues.length;
-      if (maxValues >= 0 && maxValues < vectorSize) {
-        vectorSize = maxValues;
-      }
-      return F.mapRange(0, vectorSize, (int i) -> {
-        if (F.isZero(eigenvalues[i].getImaginary())) {
-          return F.num(eigenvalues[i].getReal());
-        }
-        return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
-      });
+      return complexToList(edns.getEigenvalues(), maxValues);
     }
 
     @Override
@@ -2125,17 +2103,9 @@ public final class LinearAlgebra {
             if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
               if (!engine.isNumericMode() && !arg1.isNumericArgument(true)
                   && !arg1.isSparseArray()) {
-                IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
-                int maxValues = -1;
-                if (numberOfEigenvalues.isPresent()) {
-                  int n = numberOfEigenvalues.toIntDefault();
-                  if (F.isNotPresent(n)) {
-                    // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at
-                    // position `2` in
-                    // `1`.
-                    return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
-                  }
-                  maxValues = n;
+                int maxValues = eigenvalueCount(ast, engine);
+                if (F.isNotPresent(maxValues)) {
+                  return F.NIL;
                 }
                 IAST temp = eigensystemSymbolic(ast, arg1, maxValues, false, engine);
                 if (temp.isList2()) {
@@ -2164,16 +2134,9 @@ public final class LinearAlgebra {
     @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
       try {
-        IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
-        int maxValues = -1;
-        if (numberOfEigenvalues.isPresent()) {
-          int n = numberOfEigenvalues.toIntDefault();
-          if (F.isNotPresent(n)) {
-            // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
-            // `1`.
-            return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
-          }
-          maxValues = n;
+        int maxValues = eigenvalueCount(ast, engine);
+        if (F.isNotPresent(maxValues)) {
+          return F.NIL;
         }
         // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
         ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
@@ -4689,30 +4652,42 @@ public final class LinearAlgebra {
     return Validate.checkIntType(ast, 2, Config.INVALID_INT);
   }
 
+  /**
+   * <code>LowerTriangularize(m, k)</code> or <code>UpperTriangularize(m, k)</code>: the matrix with
+   * the elements above (below) the <code>k</code>-th diagonal set to 0.
+   *
+   * @param lower <code>true</code> for <code>LowerTriangularize</code>
+   */
+  private static IExpr triangularize(final IAST ast, EvalEngine engine, boolean lower) {
+    int[] dim = ast.arg1().isMatrix(false);
+    if (dim == null) {
+      // Argument `1` at position `2` is not a non-empty rectangular matrix.
+      return Errors.printMessage(ast.topHead(), "matrix", F.list(ast.arg1(), F.C1), engine);
+    }
+    final int k;
+    if (ast.size() == 3) {
+      k = triangularizeOffset(ast, engine);
+      if (k == Config.INVALID_INT) {
+        return F.NIL;
+      }
+    } else {
+      k = 0;
+    }
+    int m = dim[0];
+    int n = dim[1];
+    FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+    // in long arithmetic: j - k overflows for an offset near the int range
+    if (lower) {
+      return F.matrix((i, j) -> i >= (long) j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+    }
+    return F.matrix((i, j) -> i <= (long) j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+  }
+
   private static class LowerTriangularize extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int[] dim = ast.arg1().isMatrix(false);
-      if (dim == null) {
-        // Argument `1` at position `2` is not a non-empty rectangular matrix.
-        return Errors.printMessage(ast.topHead(), "matrix", F.list(ast.arg1(), F.C1), engine);
-      }
-
-      final int k;
-      if (ast.size() == 3) {
-        k = triangularizeOffset(ast, engine);
-        if (k == Config.INVALID_INT) {
-          return F.NIL;
-        }
-      } else {
-        k = 0;
-      }
-      int m = dim[0];
-      int n = dim[1];
-      FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-      // in long arithmetic: j - k overflows for an offset near the int range
-      return F.matrix((i, j) -> i >= (long) j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+      return triangularize(ast, engine, true);
     }
 
     @Override
@@ -7447,25 +7422,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int[] dim = ast.arg1().isMatrix(false);
-      if (dim == null) {
-        // Argument `1` at position `2` is not a non-empty rectangular matrix.
-        return Errors.printMessage(ast.topHead(), "matrix", F.list(ast.arg1(), F.C1), engine);
-      }
-      final int k;
-      if (ast.size() == 3) {
-        k = triangularizeOffset(ast, engine);
-        if (k == Config.INVALID_INT) {
-          return F.NIL;
-        }
-      } else {
-        k = 0;
-      }
-      int m = dim[0];
-      int n = dim[1];
-      FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-      // in long arithmetic: j - k overflows for an offset near the int range
-      return F.matrix((i, j) -> i <= (long) j - k ? matrix.getEntry(i, j) : F.C0, m, n);
+      return triangularize(ast, engine, false);
     }
 
     @Override

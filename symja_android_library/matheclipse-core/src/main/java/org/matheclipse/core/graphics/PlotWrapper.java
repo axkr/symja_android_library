@@ -127,6 +127,22 @@ public final class PlotWrapper {
     return item == null || !item.isPresent() ? F.NIL : item.stripDisplayWrappers();
   }
 
+  /**
+   * The plot call with the display wrappers removed from its first argument, so that the shape
+   * tests read the data itself.
+   *
+   * @return <code>plotAST</code> itself if the first argument has no wrapper
+   */
+  public static IAST stripFirstArgument(IAST plotAST) {
+    if (plotAST.size() > 1) {
+      IExpr unwrapped = strip(plotAST.arg1());
+      if (unwrapped != plotAST.arg1()) {
+        return plotAST.setAtCopy(1, unwrapped);
+      }
+    }
+    return plotAST;
+  }
+
   /** Whether this item is dressed in a wrapper at all. */
   public static boolean isWrapper(IExpr item) {
     return item != null && item.isAST() && IExpr.isDisplayWrapperHead(item.head());

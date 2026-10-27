@@ -1267,16 +1267,8 @@ final class DSolveODE {
         break;
       }
       int[] sample = samples[s];
-      IASTAppendable rules = F.ListAlloc(2 + parameters.argSize());
-      rules.append(F.Rule(x, F.QQ(sample[0], sample[1])));
-      rules.append(F.Rule(y, F.QQ(sample[2], sample[3])));
-      for (int p = 1; p <= parameters.argSize(); p++) {
-        IExpr parameter = parameters.get(p);
-        if (!parameter.equals(x) && !parameter.equals(y)) {
-          // other values at every point: a weight which depends on a parameter differs
-          rules.append(F.Rule(parameter, F.QQ(2L * p + 3 + s, 4L * p + 7)));
-        }
-      }
+      // other values at every point: a weight which depends on a parameter differs
+      IAST rules = sampleRules(x, y, sample, parameters, s);
       IExpr value;
       try {
         value = engine.evalN(F.subst(weight, rules));
@@ -1434,15 +1426,7 @@ final class DSolveODE {
     int zeros = 0;
     for (int s = 0; s < samples.length; s++) {
       int[] sample = samples[s];
-      IASTAppendable rules = F.ListAlloc(2 + parameters.argSize());
-      rules.append(F.Rule(x, F.QQ(sample[0], sample[1])));
-      rules.append(F.Rule(y, F.QQ(sample[2], sample[3])));
-      for (int p = 1; p <= parameters.argSize(); p++) {
-        IExpr parameter = parameters.get(p);
-        if (!parameter.equals(x) && !parameter.equals(y)) {
-          rules.append(F.Rule(parameter, F.QQ(2L * p + 3 + s, 4L * p + 7)));
-        }
-      }
+      IAST rules = sampleRules(x, y, sample, parameters, s);
       IExpr size;
       IExpr magnitude;
       try {
@@ -5440,5 +5424,23 @@ final class DSolveODE {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The substitution of one sample point: <code>x</code> and <code>y</code> by the fractions
+   * <code>sample[0]/sample[1]</code> and <code>sample[2]/sample[3]</code>, and every other
+   * parameter by a value which changes with the sample index <code>s</code>.
+   */
+  private static IAST sampleRules(IExpr x, IExpr y, int[] sample, IAST parameters, int s) {
+    IASTAppendable rules = F.ListAlloc(2 + parameters.argSize());
+    rules.append(F.Rule(x, F.QQ(sample[0], sample[1])));
+    rules.append(F.Rule(y, F.QQ(sample[2], sample[3])));
+    for (int p = 1; p <= parameters.argSize(); p++) {
+      IExpr parameter = parameters.get(p);
+      if (!parameter.equals(x) && !parameter.equals(y)) {
+        rules.append(F.Rule(parameter, F.QQ(2L * p + 3 + s, 4L * p + 7)));
+      }
+    }
+    return rules;
   }
 }

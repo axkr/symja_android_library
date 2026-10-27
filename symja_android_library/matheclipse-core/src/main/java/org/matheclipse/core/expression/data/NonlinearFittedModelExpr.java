@@ -191,27 +191,9 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
         {n, uncorrected}, //
         {n - 1, corrected}};
   }
-
-  private static IAST anovaRow(double[] row) {
-    IASTAppendable list = F.ListAlloc(row.length);
-    // the degrees of freedom are whole numbers
-    list.append(F.ZZ((int) row[0]));
-    for (int j = 1; j < row.length; j++) {
-      list.append(Double.isNaN(row[j]) ? S.Indeterminate : F.num(row[j]));
-    }
-    return list;
-  }
-
   /** One column of the analysis of variance, for each row that has it. */
   private IExpr anovaColumn(EvalEngine engine, int column) {
-    double[][] rows = anovaRows(engine);
-    IASTAppendable list = F.ListAlloc(rows.length);
-    for (double[] row : rows) {
-      if (column < row.length) {
-        list.append(anovaRow(row).get(column + 1));
-      }
-    }
-    return list;
+    return anovaColumn(anovaRows(engine), column);
   }
 
   /** The analysis of variance as a table. */
@@ -226,13 +208,7 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
       row.appendArgs(anovaRow(rows[i]));
       grid.append(row);
     }
-    IExpr gray = F.GrayLevel(F.num(0.7));
-    return F.binaryAST2(S.Style,
-        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
-            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
-            F.Rule(S.Spacings,
-                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
-        F.stringx("DialogStyle"));
+    return dialogGrid(grid);
   }
 
   /** The residual degrees of freedom: data points less parameters. */
@@ -324,24 +300,12 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
 
   /** One column of the parameter table, for every parameter. */
   private IAST parameterColumn(EvalEngine engine, int column) {
-    IExpr[][] rows = parameterStatistics(engine);
-    return F.mapRange(0, rows.length, i -> rows[i][column]);
+    return parameterColumn(parameterStatistics(engine), column);
   }
 
   /** <code>{estimate - q se, estimate + q se}</code> with q the Student t quantile. */
   private IAST confidenceIntervals(EvalEngine engine, double level) {
-    IExpr[][] rows = parameterStatistics(engine);
-    int df = degreesOfFreedom();
-    double q =
-        df > 0 ? new TDistribution(df).inverseCumulativeProbability(0.5 + 0.5 * level) : Double.NaN;
-    return F.mapRange(0, rows.length, i -> {
-      if (!rows[i][1].isReal()) {
-        return F.List(S.Indeterminate, S.Indeterminate);
-      }
-      double estimate = rows[i][0].evalf();
-      double halfWidth = q * rows[i][1].evalf();
-      return F.List(F.num(estimate - halfWidth), F.num(estimate + halfWidth));
-    });
+    return confidenceIntervals(parameterStatistics(engine), degreesOfFreedom(), level);
   }
 
   /** The parameter table, one row per parameter. */
@@ -357,13 +321,7 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
       row.appendAll(rows[i], 0, 4);
       grid.append(row);
     }
-    IExpr gray = F.GrayLevel(F.num(0.7));
-    return F.binaryAST2(S.Style,
-        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
-            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
-            F.Rule(S.Spacings,
-                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
-        F.stringx("DialogStyle"));
+    return dialogGrid(grid);
   }
 
   @Override

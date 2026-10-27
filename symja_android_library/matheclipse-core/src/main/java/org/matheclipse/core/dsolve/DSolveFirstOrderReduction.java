@@ -29,16 +29,10 @@ final class DSolveFirstOrderReduction {
   static IExpr solve(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr c_n, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     IExpr head = yFunction.head();
-    IExpr dyx = engine.evaluate(F.D(yFunction, xVar));
-    IExpr coefficient = engine.evaluate(F.Coefficient(lhs, dyx));
-    if (coefficient.isZero() || !DSolveODE.isLinearInDerivative(lhs, dyx, engine)) {
-      return F.NIL;
-    }
-    IExpr rest = engine.evaluate(F.Subtract(lhs, F.Times(coefficient, dyx)));
     IExpr yDummy = F.Dummy("Y");
-    IExpr right = engine.evaluate(
-        F.subst(F.Cancel(F.Together(F.Divide(F.Negate(rest), coefficient))), yFunction, yDummy));
-    if (!right.isFree(head, true) || right.leafCount() > MAX_LEAF_COUNT || right.isFree(yDummy)) {
+    IExpr right = DSolveUtil.solveForFirstDerivative(lhs, yFunction, xVar, yDummy, engine);
+    if (right.isNIL() || !right.isFree(head, true) || right.leafCount() > MAX_LEAF_COUNT
+        || right.isFree(yDummy)) {
       return F.NIL;
     }
 

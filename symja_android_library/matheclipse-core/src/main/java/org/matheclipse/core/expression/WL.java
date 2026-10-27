@@ -242,29 +242,11 @@ public class WL {
     }
 
     private double parseDouble() {
-      long bits = 0;
-      position += 8;
-      int pos2 = position - 1;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF));
-      return Double.longBitsToDouble(bits);
+      return Double.longBitsToDouble(parseInteger64());
     }
 
     private float parseFloat() {
-      int bits = 0;
-      position += 4;
-      int pos2 = position - 1;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF)) << 8;
-      bits = (bits | (array[pos2--] & 0xFF));
-      return Float.intBitsToFloat(bits);
+      return Float.intBitsToFloat(parseInteger32());
     }
 
     private short parseInteger16() {
@@ -711,15 +693,7 @@ public class WL {
     }
 
     private void writeDouble(double d) {
-      long bits = Double.doubleToRawLongBits(d);
-      stream.write((byte) (bits & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 8) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 16) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 24) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 32) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 40) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 48) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 56) & 0x00000000000000ff));
+      writeDoubleLE(d, stream::write);
     }
 
     private void writeFloat(float f) {
@@ -1016,6 +990,19 @@ public class WL {
 
 
   /** The list of all the WXF tokens. */
+  /**
+   * Write the 8 bytes of a <code>double</code> in little-endian order, as the WXF format stores a
+   * Real64.
+   *
+   * @param out receives one byte per call
+   */
+  static void writeDoubleLE(double d, java.util.function.IntConsumer out) {
+    long bits = Double.doubleToRawLongBits(d);
+    for (int shift = 0; shift < 64; shift += 8) {
+      out.accept((byte) ((bits >> shift) & 0xff));
+    }
+  }
+
   private static class WXF_CONSTANTS {
     static final byte Function = 'f';
     static final byte Symbol = 's';

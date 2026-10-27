@@ -774,7 +774,6 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     }
     return false;
   }
-  // CPD-ON
 
   /**
    * Get the String representation.
@@ -899,7 +898,6 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     return e.toScript();
   }
 
-  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Comparison with any other object.
    *
@@ -1510,6 +1508,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
 
     SymbolicPolynomial current;
 
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     /** Polynomial iterator constructor. */
     @SuppressWarnings("unchecked")
     public GenPolynomialMonomialIterator(SymbolicPolynomialRing fac)
@@ -1546,6 +1545,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
       ExpVectorSymbolic e = ExpVectorSymbolic.create(ecl);
       current = new SymbolicPolynomial(ring, c, e);
     }
+    // CPD-ON
 
     /**
      * Test for availability of a next element.

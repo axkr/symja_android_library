@@ -23,7 +23,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.optimization.ILinearOptimizer;
 import org.matheclipse.core.optimization.LinearExtremum;
 import org.matheclipse.core.optimization.OptimizationMethod;
-import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -3419,28 +3418,12 @@ public class Maximize extends AbstractFunctionEvaluator {
     IExpr e;
     if (varDegree <= 3) {
       // solve cubic or quadratic maximize:
-      a = F.C0;
-      b = F.C0;
-      c = F.C0;
-      d = F.C0;
-      e = F.C0;
-      for (ExprMonomial monomial : polynomial) {
-        IExpr coeff = monomial.coefficient();
-        long lExp = monomial.exponent().getVal(0);
-        if (lExp == 4) {
-          a = coeff;
-        } else if (lExp == 3) {
-          b = coeff;
-        } else if (lExp == 2) {
-          c = coeff;
-        } else if (lExp == 1) {
-          d = coeff;
-        } else if (lExp == 0) {
-          e = coeff;
-        } else {
-          throw new ArithmeticException("Maximize::Unexpected exponent value: " + lExp);
-        }
-      }
+      IExpr[] coefficients = Minimize.polynomialCoefficients(polynomial, "Maximize");
+      a = coefficients[0];
+      b = coefficients[1];
+      c = coefficients[2];
+      d = coefficients[3];
+      e = coefficients[4];
       if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // quadratic

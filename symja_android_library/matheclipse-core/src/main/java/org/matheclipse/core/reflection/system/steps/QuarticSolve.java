@@ -1,21 +1,13 @@
 package org.matheclipse.core.reflection.system.steps;
 
 import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C1D3;
 import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.C4;
-import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CN4;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.ZZ;
-import static org.matheclipse.core.expression.F.fraction;
 import java.util.Set;
 import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
@@ -83,51 +75,9 @@ public class QuarticSolve extends AbstractFunctionEvaluator {
       if (additionalSolution != null) {
         result.append(additionalSolution);
       }
-      IExpr[] invariants = QuarticSolver.cubicInvariants(a, b, c, d);
-      IExpr discriminant = invariants[0];
-      IExpr delta0 = invariants[1];
-      IExpr argDelta3 = invariants[3];
-      IExpr delta3 = invariants[4];
-
-      // IExpr C = F.eval(Times(ZZ(-27L), a.power(C2), discriminant));
-      if (discriminant.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        if (delta0.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-          // the three roots are equal
-          // (-b)/(3*a)
-          result.append(Times(CN1, b, Power(Times(C3, a), CN1)));
-        } else {
-          // the double root
-          // (9*a*d-b*c)/(2*delta0)
-          result.append(
-              Times(Plus(Times(ZZ(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1)));
-          // and a simple root
-          // (4*a*b*c-9*a^2*d-b^3)/(a*delta0)
-          result.append(Times(Plus(Times(C4, a, b, c), Times(CN1, ZZ(9L), Power(a, C2), d),
-              Times(CN1, Power(b, C3))), Power(Times(a, delta0), CN1)));
-        }
-      } else {
-        // -(b/(3*a)) - (2^(1/3) (-delta0))/(3*a*delta3) +
-        // delta3/(3*2^(1/3)*a)
-        result.append(Plus(b.negate().times(C3.times(a).power(CN1)),
-            Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-            Times(Power(argDelta3.timesDistributed(C1D2), C1D3), C3.times(a).power(CN1))));
-
-        // -(b/(3*a)) + ((1 + I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
-        // - ((1 - I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-        result.append(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
-            Times(Plus(C1, Times(CI, Sqrt(C3))), CN1, delta0,
-                Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
-            Times(CN1, Plus(C1, Times(CN1, CI, Sqrt(C3))), delta3,
-                Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
-
-        // -(b/(3*a)) + ((1 - I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
-        // - ((1 + I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-        result.append(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
-            Times(Plus(C1, Times(CN1, CI, Sqrt(C3))), CN1, delta0,
-                Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
-            Times(CN1, Plus(C1, Times(CI, Sqrt(C3))), delta3,
-                Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
-      }
+      // the multiple roots are appended repeatedly; createSet keeps each root once
+      QuarticSolver.appendCubicRoots(result, a, b, c, d, QuarticSolver.cubicInvariants(a, b, c, d),
+          false);
       return createSet(result);
     }
   }

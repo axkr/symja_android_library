@@ -79,48 +79,6 @@ public class WeierstrassIntegration {
    */
   private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
       EvalEngine engine) {
-    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
-      return false;
-    }
-    try {
-      IExpr diff = F.Subtract(F.D(result, x), integrand);
-      if (engine.evaluate(F.Together(diff)).isZero()) {
-        return true;
-      }
-      if (engine.evaluate(F.Simplify(diff)).isZero()) {
-        return true;
-      }
-      if (engine.evaluate(F.Simplify(F.TrigReduce(diff))).isZero()) {
-        return true;
-      }
-      // Half-angle antiderivatives rarely reduce symbolically; confirm numerically at several
-      // generic
-      // interior points. This can only reject (false negatives fall through to the Rubi rules), so
-      // it
-      // never accepts a wrong antiderivative that a symbolic proof would have caught.
-      return numericallyZero(diff, x, engine);
-    } catch (RuntimeException rex) {
-      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-      return false;
-    }
-  }
-
-  /** True iff {@code expr} numerically vanishes at every sample point (all chosen in (0, Pi)). */
-  private static boolean numericallyZero(IExpr expr, IExpr x, EvalEngine engine) {
-    final double[] points = {0.35, 0.9, 1.4, 2.3};
-    for (double pt : points) {
-      IExpr check;
-      try {
-        check =
-            engine.evaluate(F.Less(F.Abs(F.ReplaceAll(expr, F.Rule(x, F.num(pt)))), F.num(1.0e-9)));
-      } catch (RuntimeException rex) {
-        org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-        return false;
-      }
-      if (!check.isTrue()) {
-        return false;
-      }
-    }
-    return true;
+    return AntiderivativeCheck.verifySymbolicOrSampled(result, integrand, x, true, engine);
   }
 }

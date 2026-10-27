@@ -183,6 +183,24 @@ public class SidesFunctions {
     return arg1.second();
   }
 
+  /**
+   * The operand of <code>f(eqn, c)</code>, or for <code>f(eqn)</code> the right-hand side of the
+   * equation or inequality.
+   *
+   * @param arg1 the evaluated first argument
+   * @return <code>null</code> for one argument which has not two sides, where the function gives
+   *         up without a message; {@link F#NIL} if <code>arg1</code> has no right-hand side
+   */
+  private static IExpr sidesOperand(final IAST ast, IExpr arg1, EvalEngine engine) {
+    if (ast.isAST1()) {
+      if (arg1.size() != 3) {
+        return null;
+      }
+      return rightHandSide(arg1);
+    }
+    return engine.evaluate(ast.arg2());
+  }
+
   private static class DivideSides extends AbstractCoreFunctionEvaluator {
 
     private static IExpr function(IExpr x, IExpr y) {
@@ -198,14 +216,9 @@ public class SidesFunctions {
       if (arg1.isTrue() || arg1.isFalse()) {
         return arg1;
       }
-      IExpr arg2 = F.NIL;
-      if (ast.isAST1()) {
-        if (arg1.size() != 3) {
-          return F.NIL;
-        }
-        arg2 = rightHandSide(arg1);
-      } else {
-        arg2 = engine.evaluate(ast.arg2());
+      IExpr arg2 = sidesOperand(ast, arg1, engine);
+      if (arg2 == null) {
+        return F.NIL;
       }
       if (arg2.isPresent()) {
         if (arg1.isConditionalExpression() && arg1.first().isAST()) {
@@ -304,14 +317,9 @@ public class SidesFunctions {
       if (arg1.isTrue() || arg1.isFalse()) {
         return arg1;
       }
-      IExpr arg2 = F.NIL;
-      if (ast.isAST1()) {
-        if (arg1.size() != 3) {
-          return F.NIL;
-        }
-        arg2 = rightHandSide(arg1);
-      } else {
-        arg2 = engine.evaluate(ast.arg2());
+      IExpr arg2 = sidesOperand(ast, arg1, engine);
+      if (arg2 == null) {
+        return F.NIL;
       }
       if (arg2.isPresent()) {
         if (arg1.isConditionalExpression() && arg1.first().isAST()) {

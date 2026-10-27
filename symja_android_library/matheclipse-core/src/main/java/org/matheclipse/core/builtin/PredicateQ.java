@@ -375,48 +375,13 @@ public class PredicateQ {
 
   }
 
-  private static class DiagonalMatrixQ extends AbstractFunctionEvaluator {
+  /** The matrix scan of {@link LowerTriangularMatrixQ}, with only the k-th diagonal non-zero. */
+  private static class DiagonalMatrixQ extends LowerTriangularMatrixQ {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
-      int[] dims = arg1.isMatrix();
-      if (dims == null) {
-        // no square matrix
-        return S.False;
-      }
-
-      int diagonal = 0;
-      if (ast.isAST2()) {
-        int k = ast.arg2().toMachineInt();
-        if (F.isNotPresent(k)) {
-          return F.NIL;
-        }
-        diagonal = k;
-      }
-      IAST matrix = (IAST) arg1.normal(false);
-      for (int i = 1; i <= dims[0]; i++) {
-        IAST row = matrix.getAST(i);
-        for (int j = 1; j <= dims[1]; j++) {
-          IExpr element = row.get(j);
-          if (i + diagonal != j) {
-            if (!element.isZero()) {
-              return S.False;
-            }
-          }
-        }
-      }
-
-      return S.True;
+    protected boolean test(IExpr element, int row, int column, int diagonal) {
+      return row + diagonal == column || element.isZero();
     }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
   }
 
   /**

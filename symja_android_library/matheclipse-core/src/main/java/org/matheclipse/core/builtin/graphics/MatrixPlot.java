@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -10,7 +9,6 @@ import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -38,61 +36,23 @@ public class MatrixPlot extends ListPlot {
     // the shape tests below read the data through any display wrapper; `wrappedAST` keeps the
     // wrapper, so the label can still be put over the finished picture
     final IAST wrappedAST = ast;
-    if (ast.size() > 1) {
-      IExpr unwrapped = PlotWrapper.strip(ast.arg1());
-      if (unwrapped != ast.arg1()) {
-        ast = ast.setAtCopy(1, unwrapped);
-      }
-    }
+    ast = PlotWrapper.stripFirstArgument(ast);
     if (argSize < 1) {
       return F.NIL;
     }
 
-    IExpr dataArg = engine.evaluate(ast.arg1());
-    if (!dataArg.isList()) {
+    IExpr dataArg = GraphicsOptions.matrixPlotData(ast.arg1(), originalAST, engine);
+    if (dataArg.isNIL()) {
       return F.NIL;
     }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
-    boolean colorFunctionScaling = true;
-    IExpr colorFunctionOpt = S.Automatic;
-    IExpr colorRulesOpt = S.None;
-    IExpr meshOpt = S.None;
-    // the options array holds resolved values, not the rules the caller wrote,
-    // so the option rules are read back off the original call
-    for (IExpr opt : originalAST) {
-      if (opt.isRuleAST()) {
-        IExpr key = ((IAST) opt).arg1();
-        IExpr val = ((IAST) opt).arg2();
-        if (key.isBuiltInSymbol()) {
-          switch (((IBuiltInSymbol) key).ordinal()) {
-            case ID.ColorFunctionScaling:
-              if (val.isFalse()) {
-                colorFunctionScaling = false;
-              }
-              break;
-            case ID.ColorFunction:
-              colorFunctionOpt = val;
-              break;
-            case ID.ColorRules:
-              colorRulesOpt = val;
-              break;
-            case ID.Mesh:
-              meshOpt = val;
-              break;
-          }
-        }
-      }
-    }
+    GraphicsOptions.MatrixPlotOptions matrixOptions =
+        GraphicsOptions.readMatrixPlotOptions(originalAST);
 
+    // MaxPlotPoints has already thinned a large matrix to a sample of its entries
     IAST list = (IAST) dataArg;
-    // MaxPlotPoints draws a large matrix from a sample of it rather than from every entry
-    IAST thinned = GraphicsOptions.downsampleMatrix(list,
-        GraphicsOptions.optionValue(originalAST, S.MaxPlotPoints, S.Automatic).toIntDefault(-1));
-    if (thinned.isPresent()) {
-      list = thinned;
-    }
     int rows = list.argSize();
     if (rows == 0)
       return F.NIL;
@@ -145,17 +105,19 @@ public class MatrixPlot extends ListPlot {
 
     // One raster rather than one rectangle per cell: row 0 of the matrix is drawn at the top,
     // which is the order rasterTopFirst expects.
-    final double[] sortedValues = colorFunctionScaling ? sortedFiniteValues(data) : null;
-    final boolean scaling = colorFunctionScaling;
+    final boolean scaling = matrixOptions.colorFunctionScaling;
+    final double[] sortedValues = scaling ? sortedFiniteValues(data) : null;
     // The default scale places a value by its rank among the others, which is what keeps a matrix
     // of wildly different magnitudes readable. A ColorFunction is given the plain range instead:
     // a caller who wrote GrayLevel(#) asked for the value, not for its position in a sort.
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.ARRAY, colorFunctionOpt, F.bool(scaling), S.MatrixPlot, engine)
+        .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.bool(scaling),
+            S.MatrixPlot, engine)
         .range(1, minValue(data), maxValue(data)).sink(PlotColorFunction.Sink.FLAT)
         .fallback(GraphicsOptions::getMatrixColor).build();
     // compiled once for the whole matrix: the rules are matched like Replace, once per cell
-    GraphicsOptions.ColorRuleTable colorRules = GraphicsOptions.colorRules(colorRulesOpt, engine);
+    GraphicsOptions.ColorRuleTable colorRules =
+        GraphicsOptions.colorRules(matrixOptions.colorRules, engine);
     IExpr[][] cells = new IExpr[rows][cols];
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
@@ -176,38 +138,8 @@ public class MatrixPlot extends ListPlot {
         }
       }
     }
-    if (GraphicsOptions.optionValue(originalAST, S.DataReversed, S.False).isTrue()) {
-      GraphicsOptions.reverseRows(cells);
-    }
-    IExpr dataRange = GraphicsOptions.optionValue(originalAST, S.DataRange, S.Automatic);
-    final double[] extent = GraphicsOptions.rasterExtent(dataRange, rows, cols);
-    primitives.append(
-        GraphicsOptions.rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]));
-    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, extent[0], extent[1], extent[2],
-        extent[3], cols, rows);
-    if (meshLines.isPresent()) {
-      primitives.append(meshLines);
-    }
-
-    graphicsOptions
-        .setBoundingBox(new double[] {extent[0], extent[2], extent[1], extent[3]});
-
-    if (graphicsOptions.aspectRatio() == S.Automatic) {
-      graphicsOptions.setAspectRatio(F.num((double) rows / (double) cols));
-    }
-
-    // one tick per cell index at the centre of its cell, row 1 at the top; explicit FrameTicks of
-    // the caller's own are left alone
-    IExpr frameTicksOpt = GraphicsOptions.optionValue(originalAST, S.FrameTicks, S.Automatic);
-    if ((frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) && !dataRange.isList()) {
-      // through addOption, not setFrameTicks: the field is not one of the values getListOfRules
-      // emits, so setting it alone leaves the registered default of None in the output
-      graphicsOptions
-          .addOption(F.Rule(S.FrameTicks, GraphicsOptions.matrixIndexFrameTicks(rows, cols)));
-    } else if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
-      // with a DataRange the ticks are the coordinates it gives
-      graphicsOptions.addOption(F.Rule(S.FrameTicks, S.Automatic));
-    }
+    GraphicsOptions.finishMatrixRaster(primitives, cells, rows, cols, matrixOptions.mesh,
+        graphicsOptions, originalAST, S.Automatic);
 
     return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
   }

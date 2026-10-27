@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
@@ -15,7 +13,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Functions for generating Bar Charts.
@@ -24,7 +21,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>BarChart[{1, 2, 3}, ChartStyle -> {Red, Green, Blue}]</code>
  * <code>BarChart[{{1, 2}, {3, 4}}, ChartLayout -> "Stacked"]</code>
  */
-public class BarChart extends ListPlot {
+public class BarChart extends AbstractChart {
 
   /** Extra room left between the groups of a multi-dataset chart, in category units. */
   private static final double GROUP_GAP = 0.5;
@@ -440,40 +437,5 @@ public class BarChart extends ListPlot {
     } catch (RuntimeException e) {
       return Double.NaN;
     }
-  }
-
-  @Override
-  protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
-      IAST plotAST) {
-    graphicsOptions.addPadding();
-    IASTAppendable result = F.Graphics(primitives);
-    result.appendArgs(graphicsOptions.getGraphicsRules());
-    return GraphicsOptions.legended(result);
-  }
-
-  @Override
-  public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
-  }
-
-  @Override
-  public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_1;
-  }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
-    // charts and rasters draw their own extent, so the reference rendering does not clip
-    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
-
-    // BarChart Defaults
-    defaults[GraphicsOptions.X_AXES] = F.List(S.False, S.True); // X axis usually hidden/replaced by
-                                                                // labels, Y axis shown
-    defaults[GraphicsOptions.X_FRAME] = S.False;
-
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions.chartExtras(
-        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
-    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

@@ -95,7 +95,23 @@ public class SequenceFunctions {
 
 
 
-  private static final class SequenceCases extends AbstractFunctionOptionEvaluator {
+  /**
+   * <code>f(list, pattern)</code> with the option <code>Overlaps</code>: checks the option and the
+   * arguments, then calls {@link #apply} with the evaluated list and pattern.
+   */
+  private abstract static class AbstractSequenceOverlaps extends AbstractFunctionOptionEvaluator {
+
+    /**
+     * Evaluate for a valid call.
+     *
+     * @param ast the call
+     * @param list the evaluated first argument
+     * @param pattern the second argument, evaluated as a pattern
+     * @param overlapsOption <code>True</code>, <code>False</code> or <code>All</code>
+     */
+    protected abstract IExpr apply(IAST ast, int argSize, IAST list, IExpr pattern,
+        IExpr overlapsOption, EvalEngine engine);
+
     @Override
     public IExpr evaluate(final IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -104,19 +120,17 @@ public class SequenceFunctions {
           // List or pattern matching a list expected at position `1` in `2`.
           return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
         }
-        IExpr overlapsOption = S.False;
-        if (options[0] == S.All || options[0].isFalse() || options[0].isTrue()) {
-          overlapsOption = options[0];
-        } else {
+        if (!(options[0] == S.All || options[0].isFalse() || options[0].isTrue())) {
           // Value of option `1` must be True, False or All.
           return Errors.printMessage(ast.topHead(), "ovls", F.List(F.Rule(S.Overlaps, options[0])),
               engine);
         }
+        final IExpr overlapsOption = options[0];
 
         final IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           final IExpr arg2 = engine.evalPattern(ast.arg2());
-          return sequenceCases((IAST) arg1, arg2, overlapsOption, engine);
+          return apply(ast, argSize, (IAST) arg1, arg2, overlapsOption, engine);
         }
         // List expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
@@ -128,6 +142,20 @@ public class SequenceFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Overlaps, S.False);
+    }
+  }
+
+  private static final class SequenceCases extends AbstractSequenceOverlaps {
+
+    @Override
+    protected IExpr apply(IAST ast, int argSize, IAST list, IExpr pattern, IExpr overlapsOption,
+        EvalEngine engine) {
+      return sequenceCases(list, pattern, overlapsOption, engine);
     }
 
     public static IAST sequenceCases(final IAST ast, final IExpr pattern, IExpr overlapsOption,
@@ -249,48 +277,14 @@ public class SequenceFunctions {
       }
       return resultAST;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.Overlaps, S.False);
-    }
-
   }
 
-  private static final class SequenceCount extends AbstractFunctionOptionEvaluator {
+  private static final class SequenceCount extends AbstractSequenceOverlaps {
 
     @Override
-    public IExpr evaluate(final IAST ast, int argSize, IExpr[] options, EvalEngine engine,
-        IAST originalAST) {
-      try {
-        if (ast.arg2().isAST(S.Rule, 3, S.Overlaps)) {
-          // List or pattern matching a list expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
-        }
-        IExpr overlapsOption = S.False;
-        if (options[0] == S.All || options[0].isFalse() || options[0].isTrue()) {
-          overlapsOption = options[0];
-        } else {
-          // Value of option `1` must be True, False or All.
-          return Errors.printMessage(ast.topHead(), "ovls", F.List(F.Rule(S.Overlaps, options[0])),
-              engine);
-        }
-
-        final IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          final IExpr arg2 = engine.evalPattern(ast.arg2());
-          return sequenceCount((IAST) arg1, arg2, overlapsOption, engine);
-        }
-        // List expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
-      } catch (final ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
-      }
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+    protected IExpr apply(IAST ast, int argSize, IAST list, IExpr pattern, IExpr overlapsOption,
+        EvalEngine engine) {
+      return sequenceCount(list, pattern, overlapsOption, engine);
     }
 
     public static IExpr sequenceCount(final IAST ast, final IExpr pattern, IExpr overlapsOption,
@@ -320,59 +314,26 @@ public class SequenceFunctions {
       }
       return F.ZZ(count);
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.Overlaps, S.False);
-    }
   }
 
-  private static final class SequencePosition extends AbstractFunctionOptionEvaluator {
+  private static final class SequencePosition extends AbstractSequenceOverlaps {
+
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
-        IAST originalAST) {
-      try {
-        IExpr overlapsOption = S.True;
-        int maxMatches = Integer.MAX_VALUE;
-
-        if (ast.arg2().isAST(S.Rule, 3, S.Overlaps)) {
-          // List or pattern matching a list expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
-        }
-        if (options[0] == S.All || options[0].isFalse() || options[0].isTrue()) {
-          overlapsOption = options[0];
-        } else {
-          // Value of option `1` must be True, False or All.
-          return Errors.printMessage(ast.topHead(), "ovls", F.List(F.Rule(S.Overlaps, options[0])),
-              engine);
-        }
-
-        final IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          final IExpr arg2 = engine.evalPattern(ast.arg2());
-          if (argSize == 3) {
-            final IExpr arg3 = engine.evaluate(ast.arg3());
-            if (!arg3.isInfinity()) {
-              int maxN = arg3.toMachineInt();
-              if (maxN < 0 || !arg3.isInteger()) {
-                // Non-negative integer or Infinity expected at position `3` in `ast`.
-                return Errors.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
-              }
-              maxMatches = maxN;
-            }
+    protected IExpr apply(IAST ast, int argSize, IAST list, IExpr pattern, IExpr overlapsOption,
+        EvalEngine engine) {
+      int maxMatches = Integer.MAX_VALUE;
+      if (argSize == 3) {
+        final IExpr arg3 = engine.evaluate(ast.arg3());
+        if (!arg3.isInfinity()) {
+          int maxN = arg3.toMachineInt();
+          if (maxN < 0 || !arg3.isInteger()) {
+            // Non-negative integer or Infinity expected at position `3` in `ast`.
+            return Errors.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
           }
-          return sequencePosition((IAST) arg1, arg2, overlapsOption, maxMatches, engine);
+          maxMatches = maxN;
         }
-        // List expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
-      } catch (final ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
       }
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return sequencePosition(list, pattern, overlapsOption, maxMatches, engine);
     }
 
     public static IAST sequencePosition(final IAST ast, final IExpr pattern, IExpr overlapsOption,

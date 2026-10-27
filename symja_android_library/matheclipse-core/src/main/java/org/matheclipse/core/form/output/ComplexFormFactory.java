@@ -11,11 +11,9 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
-import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public abstract class ComplexFormFactory extends AbstractCodeFormFactory {
@@ -126,45 +124,21 @@ public abstract class ComplexFormFactory extends AbstractCodeFormFactory {
     convertString(buf, o.toString());
   }
 
-  protected boolean convertOperator(final Operator operator, final IAST list,
-      final StringBuilder buf, final int precedence, ISymbol head) {
-    if ((operator instanceof PrefixOperator) && (list.isAST1())) {
-      convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
-      return true;
-    }
-    if ((operator instanceof InfixOperator) && (list.size() > 2)) {
-      InfixOperator infixOperator = (InfixOperator) operator;
-      if (head == S.Plus) {
-        if (fPlusReversed) {
-          convertInfixOperatorReversed(buf, list, "add");
-        } else {
-          convertInfixOperator(buf, list, "add");
-        }
-        return true;
-      } else if (head == S.Times) {
-        convertInfixOperator(buf, list, "multiply");
-        return true;
-      } else if (list.isPower()) {
-        convertInfixOperator(buf, list, "pow");
-        return true;
-      } else if (list.isAST(S.Apply)) {
-        if (list.size() == 3) {
-          convertInfixOperator(head, buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
-          return true;
-        }
-        if (list.size() == 4 && list.arg2().equals(F.CListC1)) {
-          convertInfixOperator(head, buf, list, ASTNodeFactory.MAPAPPLY_OPERATOR, precedence);
-          return true;
-        }
-        return false;
-      } else if (list.size() != 3 && infixOperator.getGrouping() != InfixOperator.NONE) {
-        return false;
+  @Override
+  protected boolean convertArithmetic(final StringBuilder buf, final IAST list,
+      final InfixOperator infixOperator, final int precedence, ISymbol head) {
+    if (head == S.Plus) {
+      if (fPlusReversed) {
+        convertInfixOperatorReversed(buf, list, "add");
+      } else {
+        convertInfixOperator(buf, list, "add");
       }
-      convertInfixOperator(head, buf, list, (InfixOperator) operator, precedence);
       return true;
-    }
-    if ((operator instanceof PostfixOperator) && (list.isAST1())) {
-      convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
+    } else if (head == S.Times) {
+      convertInfixOperator(buf, list, "multiply");
+      return true;
+    } else if (list.isPower()) {
+      convertInfixOperator(buf, list, "pow");
       return true;
     }
     return false;

@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <code>RectangleChart({{w1, h1}, {w2, h2}, ...})</code> - a bar chart whose bars have the width
@@ -24,7 +21,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * gap between them, and their bars are coloured by their position within the dataset. An entry
  * which is not a pair of numbers is left out.
  */
-public class RectangleChart extends ListPlot {
+public class RectangleChart extends AbstractChart {
 
   /** The gap between the datasets of a chart, unless <code>BarSpacing</code> sets one. */
   private static final double DATASET_GAP = 0.2;
@@ -237,37 +234,5 @@ public class RectangleChart extends ListPlot {
       cursor += entry.sizes[0];
     }
     return boxes;
-  }
-
-  @Override
-  protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
-      IAST plotAST) {
-    graphicsOptions.addPadding();
-    IASTAppendable result = F.Graphics(primitives);
-    result.appendArgs(graphicsOptions.getGraphicsRules());
-    return GraphicsOptions.legended(result);
-  }
-
-  @Override
-  public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
-  }
-
-  @Override
-  public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_1;
-  }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
-    // charts draw their own extent, so the reference rendering does not clip
-    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
-    defaults[GraphicsOptions.X_AXES] = F.List(S.False, S.True);
-    defaults[GraphicsOptions.X_FRAME] = S.False;
-
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions.chartExtras(
-        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
-    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

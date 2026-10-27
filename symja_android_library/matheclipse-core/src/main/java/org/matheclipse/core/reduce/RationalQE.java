@@ -70,7 +70,7 @@ public final class RationalQE {
       }
     }
     order.addAll(targets);
-    List<List<Atom>> branches = dnf(splitDisequalities(quantifierFree));
+    List<List<Atom>> branches = Formula.disjunctiveNormalForm(splitDisequalities(quantifierFree), MAX_BRANCHES);
     if (branches == null) {
       return F.NIL;
     }
@@ -184,7 +184,7 @@ public final class RationalQE {
   }
 
   private static Formula eliminateExists(Formula body, Variable variable) {
-    List<List<Atom>> branches = dnf(splitDisequalities(body));
+    List<List<Atom>> branches = Formula.disjunctiveNormalForm(splitDisequalities(body), MAX_BRANCHES);
     if (branches == null) {
       return null;
     }
@@ -220,65 +220,6 @@ public final class RationalQE {
       }
       default:
         return formula;
-    }
-  }
-
-  /** The disjunctive normal form, or <code>null</code> beyond the branch budget. */
-  private static List<List<Atom>> dnf(Formula formula) {
-    switch (formula.kind()) {
-      case TRUE: {
-        List<List<Atom>> result = new ArrayList<List<Atom>>();
-        result.add(new ArrayList<Atom>());
-        return result;
-      }
-      case FALSE:
-        return new ArrayList<List<Atom>>();
-      case ATOM: {
-        List<List<Atom>> result = new ArrayList<List<Atom>>();
-        List<Atom> single = new ArrayList<Atom>();
-        single.add(formula.atom());
-        result.add(single);
-        return result;
-      }
-      case OR: {
-        List<List<Atom>> result = new ArrayList<List<Atom>>();
-        for (Formula child : formula.children()) {
-          List<List<Atom>> branches = dnf(child);
-          if (branches == null) {
-            return null;
-          }
-          result.addAll(branches);
-          if (result.size() > MAX_BRANCHES) {
-            return null;
-          }
-        }
-        return result;
-      }
-      case AND: {
-        List<List<Atom>> product = new ArrayList<List<Atom>>();
-        product.add(new ArrayList<Atom>());
-        for (Formula child : formula.children()) {
-          List<List<Atom>> alternatives = dnf(child);
-          if (alternatives == null) {
-            return null;
-          }
-          List<List<Atom>> next = new ArrayList<List<Atom>>();
-          for (List<Atom> prefix : product) {
-            for (List<Atom> alternative : alternatives) {
-              List<Atom> conjunction = new ArrayList<Atom>(prefix);
-              conjunction.addAll(alternative);
-              next.add(conjunction);
-            }
-          }
-          if (next.size() > MAX_BRANCHES) {
-            return null;
-          }
-          product = next;
-        }
-        return product;
-      }
-      default:
-        return null;
     }
   }
 

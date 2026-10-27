@@ -950,6 +950,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     throw new UnsupportedOperationException();
   }
 
+  // CPD-OFF value and rule handling on separate private fields
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     fSymbolName = stream.readUTF();
@@ -976,7 +977,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     fAttributes = stream.readInt();
     boolean hasDownRulesData = stream.readBoolean();
     if (hasDownRulesData) {
-      fRulesData = new RulesData();
       fRulesData = (RulesData) stream.readObject();
     }
   }
@@ -1015,6 +1015,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     Errors.printMessage(functionSymbol, "rvalue", F.list(this), engine);
     return null;
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override

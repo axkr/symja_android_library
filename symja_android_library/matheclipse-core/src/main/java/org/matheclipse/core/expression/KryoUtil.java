@@ -471,15 +471,7 @@ public class KryoUtil {
     }
 
     private void writeDouble(Output stream, double d) {
-      long bits = Double.doubleToRawLongBits(d);
-      stream.write((byte) (bits & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 8) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 16) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 24) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 32) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 40) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 48) & 0x00000000000000ff));
-      stream.write((byte) ((bits >> 56) & 0x00000000000000ff));
+      WL.writeDoubleLE(d, stream::write);
     }
 
     @Deprecated

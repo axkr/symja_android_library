@@ -343,11 +343,11 @@ public final class ListFunctions {
       S.Subdivide.setEvaluator(new Subdivide());
       S.Table.setEvaluator(new Table());
       S.Take.setEvaluator(new Take());
-      S.TakeLargest.setEvaluator(new TakeLargest());
-      S.TakeLargestBy.setEvaluator(new TakeLargestBy());
+      S.TakeLargest.setEvaluator(new TakeLargestSmallest(false));
+      S.TakeLargestBy.setEvaluator(new TakeLargestSmallestBy(false));
       S.TakeList.setEvaluator(new TakeList());
-      S.TakeSmallest.setEvaluator(new TakeSmallest());
-      S.TakeSmallestBy.setEvaluator(new TakeSmallestBy());
+      S.TakeSmallest.setEvaluator(new TakeLargestSmallest(true));
+      S.TakeSmallestBy.setEvaluator(new TakeLargestSmallestBy(true));
       S.TakeWhile.setEvaluator(new TakeWhile());
       S.Tally.setEvaluator(new Tally());
       S.Total.setEvaluator(new Total());
@@ -8177,7 +8177,36 @@ public final class ListFunctions {
   }
 
 
-  private static final class TakeLargest extends AbstractEvaluator {
+  /**
+   * The elements of <code>list</code> at the <code>n</code> positions of the largest (or smallest)
+   * <code>values</code>, in that order.
+   *
+   * @param values the numeric values to compare, one per element of <code>list</code>
+   * @param smallest <code>true</code> for the smallest values
+   * @throws NoEvalException if two values cannot be compared
+   */
+  private static IAST takeByValues(IAST list, IAST values, int n, boolean smallest,
+      EvalEngine engine) {
+    LargestIndexComparator comparator = smallest ? new SmallestIndexComparator(values, engine)
+        : new LargestIndexComparator(values, engine);
+    Integer[] indexes = comparator.createIndexArray();
+    Arrays.sort(indexes, comparator);
+    int[] firstIndexes = new int[n];
+    for (int i = 0; i < n; i++) {
+      firstIndexes[i] = indexes[i];
+    }
+    return list.getItems(firstIndexes, firstIndexes.length);
+  }
+
+  /** <code>TakeLargest(list, n)</code> and <code>TakeSmallest(list, n)</code> */
+  private static final class TakeLargestSmallest extends AbstractEvaluator {
+
+    /** <code>true</code> for <code>TakeSmallest</code> */
+    private final boolean smallest;
+
+    TakeLargestSmallest(boolean smallest) {
+      this.smallest = smallest;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -8201,15 +8230,7 @@ public final class ListFunctions {
                 }
                 IExpr temp = engine.evalN(cleanedList);
                 if (temp.isListOrAssociation()) {
-                  LargestIndexComparator comparator =
-                      new LargestIndexComparator((IAST) temp, engine);
-                  Integer[] indexes = comparator.createIndexArray();
-                  Arrays.sort(indexes, comparator);
-                  int[] largestIndexes = new int[n];
-                  for (int i = 0; i < n; i++) {
-                    largestIndexes[i] = indexes[i];
-                  }
-                  return cleanedList.getItems(largestIndexes, largestIndexes.length);
+                  return takeByValues(cleanedList, (IAST) temp, n, smallest, engine);
                 }
               }
             } catch (NoEvalException neex) {
@@ -8219,7 +8240,7 @@ public final class ListFunctions {
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.TakeLargest, rex, EvalEngine.get());
+          return Errors.printMessage(ast.topHead(), rex, EvalEngine.get());
         }
       }
       return F.NIL;
@@ -8235,7 +8256,15 @@ public final class ListFunctions {
   }
 
 
-  private static final class TakeLargestBy extends AbstractEvaluator {
+  /** <code>TakeLargestBy(list, f, n)</code> and <code>TakeSmallestBy(list, f, n)</code> */
+  private static final class TakeLargestSmallestBy extends AbstractEvaluator {
+
+    /** <code>true</code> for <code>TakeSmallestBy</code> */
+    private final boolean smallest;
+
+    TakeLargestSmallestBy(boolean smallest) {
+      this.smallest = smallest;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -8260,16 +8289,8 @@ public final class ListFunctions {
               if (temp.isListOrAssociation()) {
                 list = (IAST) temp;
                 try {
-                  LargestIndexComparator comparator = new LargestIndexComparator(list, engine);
-                  Integer[] indexes = comparator.createIndexArray();
-                  Arrays.sort(indexes, comparator);
-                  int[] largestIndexes = new int[n];
-                  for (int i = 0; i < n; i++) {
-                    largestIndexes[i] = indexes[i];
-                  }
-                  return cleanedList.getItems(largestIndexes, largestIndexes.length);
+                  return takeByValues(cleanedList, list, n, smallest, engine);
                 } catch (NoEvalException neex) {
-                  // neex.printStackTrace();
                   // Values `1` produced by the function `2` cannot be used for numerical sorting
                   // because they are not all real.
                   return Errors.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
@@ -8280,7 +8301,7 @@ public final class ListFunctions {
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.TakeLargestBy, rex, EvalEngine.get());
+          return Errors.printMessage(ast.topHead(), rex, EvalEngine.get());
         }
       }
       return F.NIL;
@@ -8505,126 +8526,6 @@ public final class ListFunctions {
       return ARGS_1_INFINITY;
     }
   }
-
-  private static final class TakeSmallest extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows. Asked before anything
-        // else because the cleaning below reads a dataset as a plain AST and hands N something it
-        // cannot make a number of, which aborted the evaluation rather than declining it
-        IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
-        if (onRows.isPresent()) {
-          return onRows;
-        }
-        try {
-          if (ast.arg1().isASTOrAssociation()) {
-            IAST cleanedList = cleanList((IAST) ast.arg1());
-            try {
-              int n = ast.arg2().toMachineInt();
-              if (n > 0) {
-                if (n > cleanedList.argSize()) {
-                  return Errors.printMessage(ast.topHead(), "insuff",
-                      F.List(n, cleanedList.argSize()), engine);
-                }
-                IExpr temp = engine.evalN(cleanedList);
-                if (temp.isListOrAssociation()) {
-                  SmallestIndexComparator comparator =
-                      new SmallestIndexComparator((IAST) temp, engine);
-                  Integer[] indexes = comparator.createIndexArray();
-                  Arrays.sort(indexes, comparator);
-                  int[] smallestIndexes = new int[n];
-                  for (int i = 0; i < n; i++) {
-                    smallestIndexes[i] = indexes[i];
-                  }
-                  return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
-                }
-              }
-            } catch (NoEvalException neex) {
-              // Input `1` is not a real-valued vector.
-              return Errors.printMessage(ast.topHead(), "rvec2", F.list(cleanedList), engine);
-            }
-          }
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.TakeSmallest, rex, EvalEngine.get());
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-  }
-
-
-  private static final class TakeSmallestBy extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
-      IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
-      if (onRows.isPresent()) {
-        return onRows;
-      }
-      if (ast.isAST3()) {
-        try {
-          if (ast.arg1().isASTOrAssociation()) {
-            IAST cleanedList = cleanList((IAST) ast.arg1());
-            int n = ast.arg3().toMachineInt();
-            if (n > 0) {
-              if (n > cleanedList.argSize()) {
-                return Errors.printMessage(ast.topHead(), "insuff",
-                    F.List(n, cleanedList.argSize()), engine);
-              }
-              IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
-              IExpr temp = engine.evalN(list);
-              if (temp.isListOrAssociation()) {
-                list = (IAST) temp;
-                try {
-                  SmallestIndexComparator comparator = new SmallestIndexComparator(list, engine);
-                  Integer[] indexes = comparator.createIndexArray();
-                  Arrays.sort(indexes, comparator);
-                  int[] smallestIndexes = new int[n];
-                  for (int i = 0; i < n; i++) {
-                    smallestIndexes[i] = indexes[i];
-                  }
-                  return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
-                } catch (NoEvalException neex) {
-                  // Values `1` produced by the function `2` cannot be used for numerical sorting
-                  // because they are not all real.
-                  return Errors.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
-                      engine);
-                }
-              }
-            }
-          }
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.TakeSmallestBy, rex, EvalEngine.get());
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      // the third entry declares the operator form: TakeSmallestBy[f, n][list] becomes
-      // TakeSmallestBy[list, f, n], rewritten by EvalEngine#checkBuiltinArguments. The guard that
-      // used to stand in for this asked isAST2(), which F#operatorForm1Append can never accept
-      return ARGS_2_3_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-  }
-
 
   private static final class TakeWhile extends AbstractFunctionEvaluator {
 

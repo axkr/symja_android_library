@@ -185,7 +185,8 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
 
   @Override
   public <T extends Derivative<T>> T value(T x) throws MathIllegalArgumentException {
-    return x.compose(value(x.getReal()), fFirstDerivative.value(x.getReal()));
+    // derivative() builds the first derivative where the constructor did not
+    return x.compose(value(x.getReal()), derivative().value(x.getReal()));
   }
 
   /** First derivative of unary function */
@@ -200,33 +201,15 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
   }
 
   public ComplexNum value(final ComplexNum z) {
-    final Object temp = apply(z);
-    if (temp instanceof ComplexNum) {
-      return (ComplexNum) temp;
-    }
-    if (temp instanceof INum) {
-      return ComplexNum.valueOf((INum) temp);
-    }
-    throw new ArithmeticException("Expected numerical complex value object!");
+    return UnaryFunctions.toComplexNum(apply(z));
   }
 
   public Complex value(final Complex z) {
-    final Object temp = apply(F.complexNum(z));
-    if (temp instanceof ComplexNum) {
-      return ((ComplexNum) temp).complexValue();
-    }
-    if (temp instanceof INum) {
-      return Complex.valueOf(((INum) temp).doubleValue());
-    }
-    throw new ArithmeticException("Expected numerical complex value object!");
+    return UnaryFunctions.toComplex(apply(F.complexNum(z)));
   }
 
   public INum value(final INum z) {
-    final Object temp = apply(z);
-    if (temp instanceof INum) {
-      return (INum) temp;
-    }
-    throw new ArithmeticException("Expected numerical double value object!");
+    return UnaryFunctions.toINum(apply(z));
   }
 
   @Override

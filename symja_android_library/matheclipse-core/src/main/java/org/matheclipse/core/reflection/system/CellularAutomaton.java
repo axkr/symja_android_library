@@ -965,27 +965,12 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     }
 
     IAST firstInit = initStates.get(0);
-    IAST aspec;
-
-    if (!isCyclic) {
-      aspec = (IAST) firstInit.arg1();
-    } else {
-      aspec = firstInit;
-    }
-
-    int aspecSizeY = aspec.argSize();
-    if (aspecSizeY == 0)
+    int[] extent = aspecExtent2D(firstInit, isCyclic);
+    if (extent == null) {
       return F.NIL;
-    int aspecSizeX = 0;
-    for (int i = 1; i <= aspecSizeY; i++) {
-      if (aspec.get(i).isList()) {
-        int cols = ((IAST) aspec.get(i)).argSize();
-        if (cols > aspecSizeX)
-          aspecSizeX = cols;
-      }
     }
-    if (aspecSizeX == 0)
-      return F.NIL;
+    int aspecSizeY = extent[0];
+    int aspecSizeX = extent[1];
 
     int paddingY = isCyclic ? 0 : steps * rY;
     int paddingX = isCyclic ? 0 : steps * rX;
@@ -1832,26 +1817,12 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     }
 
     IAST firstInit = initStates.get(0);
-    IAST aspec;
-    if (!isCyclic) {
-      aspec = (IAST) firstInit.arg1();
-    } else {
-      aspec = firstInit;
-    }
-
-    int aspecSizeY = aspec.argSize();
-    if (aspecSizeY == 0)
+    int[] extent = aspecExtent2D(firstInit, isCyclic);
+    if (extent == null) {
       return F.NIL;
-    int aspecSizeX = 0;
-    for (int i = 1; i <= aspecSizeY; i++) {
-      if (aspec.get(i).isList()) {
-        int cols = ((IAST) aspec.get(i)).argSize();
-        if (cols > aspecSizeX)
-          aspecSizeX = cols;
-      }
     }
-    if (aspecSizeX == 0)
-      return F.NIL;
+    int aspecSizeY = extent[0];
+    int aspecSizeX = extent[1];
 
     int paddingY = isCyclic ? 0 : steps * rY;
     int paddingX = isCyclic ? 0 : steps * rX;
@@ -2092,5 +2063,32 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       }
     }
     return max;
+  }
+
+  /**
+   * The extent of the initial 2D state: the number of rows and the length of the longest row.
+   *
+   * @param firstInit the first initial state, <code>{aspec, background}</code> unless cyclic
+   * @return <code>{rows, columns}</code>, or <code>null</code> if either is zero
+   */
+  private static int[] aspecExtent2D(IAST firstInit, boolean isCyclic) {
+    IAST aspec = isCyclic ? firstInit : (IAST) firstInit.arg1();
+    int aspecSizeY = aspec.argSize();
+    if (aspecSizeY == 0) {
+      return null;
+    }
+    int aspecSizeX = 0;
+    for (int i = 1; i <= aspecSizeY; i++) {
+      if (aspec.get(i).isList()) {
+        int cols = ((IAST) aspec.get(i)).argSize();
+        if (cols > aspecSizeX) {
+          aspecSizeX = cols;
+        }
+      }
+    }
+    if (aspecSizeX == 0) {
+      return null;
+    }
+    return new int[] {aspecSizeY, aspecSizeX};
   }
 }
