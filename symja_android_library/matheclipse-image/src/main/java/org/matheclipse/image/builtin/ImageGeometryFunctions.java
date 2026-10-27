@@ -980,10 +980,12 @@ public class ImageGeometryFunctions {
    * taken from the position <code>f(p)</code> of the original, both in image coordinates.
    *
    * <p>
-   * <code>f</code> may be a function or a <code>TransformationFunction</code>. The option
-   * <code>DataRange -&gt; {{x0, x1}, {y0, y1}}</code> gives the coordinates of the image rectangle,
-   * <code>DataRange -&gt; Full</code> those in pixels; <code>Padding -&gt; value</code> fills in what
-   * lies outside the original, and <code>Padding -&gt; "Fixed"</code> repeats its border.
+   * <code>f</code> may be a function or a <code>TransformationFunction</code>. The image rectangle
+   * has the coordinates <code>{{0, 1}, {0, h/w}}</code>; the option
+   * <code>DataRange -&gt; {{x0, x1}, {y0, y1}}</code> gives others, <code>DataRange -&gt; Full</code>
+   * those in pixels. <code>Padding -&gt; value</code>, 0 by default, fills in what lies outside the
+   * original; <code>"Fixed"</code>, <code>"Periodic"</code>, <code>"Reflected"</code> and
+   * <code>"Reversed"</code> continue the image.
    */
   private static class ImageTransformation extends AbstractEvaluator {
 
@@ -1107,44 +1109,8 @@ public class ImageGeometryFunctions {
       return F.NIL;
     }
 
-    if (dataRange.isPresent() || padding.isPresent()) {
-      if (!(ast.arg1() instanceof ImageExpr)) {
-        return F.NIL;
-      }
-      return resampled((ImageExpr) ast.arg1(), width, height, matrix, function, dataRange,
-          padding, engine);
-    }
-
-    int channels = Boof.channels(image);
-    int sourceHeight = image.getHeight();
-    Geometry.Background background = Geometry.transparentOrWhite();
-    final double[][] backward = matrix;
-    final int outputHeight = height;
-    return new ImageExpr(Pixels.fromPixels(width, height, channels, (x, y) -> {
-      // image coordinates: y counts from the bottom
-      double imageX = x + 0.5;
-      double imageY = outputHeight - y - 0.5;
-      double[] source;
-      if (backward != null) {
-        source = Geometry.apply(backward, imageX, imageY);
-      } else {
-        IExpr position =
-            engine.evaluate(F.unaryAST1(function, F.List(F.num(imageX), F.num(imageY))));
-        if (!position.isList() || ((IAST) position).argSize() != 2) {
-          return background.outside(channels);
-        }
-        double sourceX = ((IAST) position).arg1().evalfNaN();
-        double sourceY = ((IAST) position).arg2().evalfNaN();
-        source = Double.isNaN(sourceX) || Double.isNaN(sourceY) //
-            ? null
-            : new double[] {sourceX, sourceY};
-      }
-      if (source == null) {
-        return background.outside(channels);
-      }
-      return Geometry.sample(image, channels, source[0] - 0.5, sourceHeight - source[1] - 0.5, true,
-          background);
-    }), null);
+    return resampled((ImageExpr) ast.arg1(), width, height, matrix, function, dataRange, padding,
+        engine);
   }
 
   /**
@@ -1157,10 +1123,12 @@ public class ImageGeometryFunctions {
    * @param backward the homogeneous matrix which maps output positions to input positions, or
    *        <code>null</code> if <code>function</code> does
    * @param dataRange <code>{{x0, x1}, {y0, y1}}</code> or <code>Full</code> for the rectangle of
-   *        both images; <code>F.NIL</code> or <code>Automatic</code> measures each image in its own
-   *        pixels
+   *        both images; <code>F.NIL</code> or <code>Automatic</code> for
+   *        <code>{{0, 1}, {0, h/w}}</code> of the original
    * @param padding a value for every channel, a list of one per channel, a colour,
-   *        <code>"Fixed"</code> or <code>"Periodic"</code>; <code>F.NIL</code> pads with 0
+   *        <code>"Fixed"</code>, <code>"Periodic"</code>, <code>"Reflected"</code> or
+   *        <code>"Reversed"</code>; <code>F.NIL</code> pads with 0. A list or a colour also makes
+   *        the image itself opaque.
    * @return <code>F.NIL</code> if an option is not understood
    */
   private static IExpr resampled(ImageExpr source, int width, int height, double[][] backward,
@@ -1172,33 +1140,40 @@ public class ImageGeometryFunctions {
     final int sourceWidth = raster.width;
     final int sourceHeight = raster.height;
     final int channels = raster.channels;
-    // {x0, x1, y0, y1} of the input and of the output rectangle
-    double[] in = new double[] {0.0, sourceWidth, 0.0, sourceHeight};
-    double[] out = new double[] {0.0, width, 0.0, height};
-    if (dataRange.isPresent() && dataRange != S.Automatic) {
-      if (dataRange != S.Full) {
-        in = rectangle(dataRange);
-        if (in == null) {
-          return F.NIL;
-        }
+    // {x0, x1, y0, y1} of the input rectangle, which the output covers too
+    double[] in;
+    if (dataRange == S.Full) {
+      in = new double[] {0.0, sourceWidth, 0.0, sourceHeight};
+    } else if (dataRange.isPresent() && dataRange != S.Automatic) {
+      in = rectangle(dataRange);
+      if (in == null) {
+        return F.NIL;
       }
-      out = in;
+    } else {
+      in = new double[] {0.0, 1.0, 0.0, (double) sourceHeight / sourceWidth};
     }
+    final double[] out = in;
 
-    boolean repeatBorder = false;
-    boolean repeatImage = false;
+    // how a position outside the image is continued: by the padding samples or from the image
+    String continuation = null;
     double[] outside = new double[channels];
+    // the channel which is made opaque, or -1
+    int opaqueChannel = -1;
     if (padding.isPresent()) {
       if (padding.isString()) {
-        repeatBorder = "Fixed".equals(padding.toString());
-        repeatImage = "Periodic".equals(padding.toString());
-        if (!repeatBorder && !repeatImage) {
+        continuation = padding.toString();
+        if (!CONTINUATIONS.contains(continuation)) {
           return F.NIL;
         }
       } else {
         outside = paddingSamples(padding, channels, source.storedColorSpace());
         if (outside == null) {
           return F.NIL;
+        }
+        if ((padding.isList() || !padding.isNumericFunction()) && source.storedColorSpace() == null
+            && (channels == 2 || channels == 4)) {
+          // a padding colour turns the image into an opaque one
+          opaqueChannel = channels - 1;
         }
       }
     }
@@ -1223,7 +1198,7 @@ public class ImageGeometryFunctions {
         // column and row of the position, counted from the centre of the top left pixel
         double column = (position[0] - in[0]) / (in[1] - in[0]) * sourceWidth - 0.5;
         double row = (in[3] - position[1]) / (in[3] - in[2]) * sourceHeight - 0.5;
-        if (!repeatImage) {
+        if (continuation == null || "Fixed".equals(continuation)) {
           // further out than the ring of padding pixels nothing changes any more
           column = Math.max(-2.0, Math.min(sourceWidth + 1.0, column));
           row = Math.max(-2.0, Math.min(sourceHeight + 1.0, row));
@@ -1242,17 +1217,16 @@ public class ImageGeometryFunctions {
             }
             int sourceX = left + dx;
             int sourceY = top + dy;
-            if (repeatBorder) {
-              sourceX = clamp(sourceX, sourceWidth);
-              sourceY = clamp(sourceY, sourceHeight);
-            } else if (repeatImage) {
-              sourceX = Math.floorMod(sourceX, sourceWidth);
-              sourceY = Math.floorMod(sourceY, sourceHeight);
+            if (continuation != null) {
+              sourceX = continued(sourceX, sourceWidth, continuation);
+              sourceY = continued(sourceY, sourceHeight, continuation);
             }
             boolean inside =
                 sourceX >= 0 && sourceY >= 0 && sourceX < sourceWidth && sourceY < sourceHeight;
             for (int c = 0; c < channels; c++) {
-              values[c] += weight * (inside ? raster.get(sourceX, sourceY, c) : outside[c]);
+              double sample = !inside ? outside[c]
+                  : c == opaqueChannel ? 1.0 : raster.get(sourceX, sourceY, c);
+              values[c] += weight * sample;
             }
           }
         }
@@ -1264,6 +1238,34 @@ public class ImageGeometryFunctions {
     }
     ImageExpr image = ImageExpr.fromRaster(result, source.getOptions(), source.sampleType());
     return image == null ? F.NIL : image;
+  }
+
+  /** The string values of <code>Padding</code> which continue the image. */
+  private static final java.util.Set<String> CONTINUATIONS =
+      java.util.Set.of("Fixed", "Periodic", "Reflected", "Reversed");
+
+  /**
+   * The index inside <code>0 ... n-1</code> which continues the image at <code>index</code>:
+   * <code>"Fixed"</code> repeats the border, <code>"Periodic"</code> the image,
+   * <code>"Reflected"</code> mirrors it at the border pixel and <code>"Reversed"</code> at the edge.
+   */
+  private static int continued(int index, int n, String continuation) {
+    switch (continuation) {
+      case "Fixed":
+        return clamp(index, n);
+      case "Periodic":
+        return Math.floorMod(index, n);
+      case "Reflected":
+        if (n == 1) {
+          return 0;
+        }
+        int period = 2 * (n - 1);
+        int r = Math.floorMod(index, period);
+        return r < n ? r : period - r;
+      default:
+        int r2 = Math.floorMod(index, 2 * n);
+        return r2 < n ? r2 : 2 * n - 1 - r2;
+    }
   }
 
   /**

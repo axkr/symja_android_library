@@ -138,26 +138,31 @@ public class ImageGeometryTest extends AbstractTestCase {
 
   /**
    * The function of <code>ImageTransformation</code> runs backwards - it says where each output
-   * pixel reads from - so shifting the read position right moves the picture left.
+   * pixel reads from - so shifting the read position right moves the picture left. The image is
+   * one unit wide, and what lies outside it is padded with 0.
    */
   @Test
   public void transformationReadsBackwards() {
-    check("ImageData(ImageTransformation(" + IMAGE + ",#+{1,0}&),\"Byte\")", //
-        "{{255,255},{128,255}}");
+    check("ImageData(ImageTransformation(" + IMAGE + ",#+{0.5,0}&),\"Byte\")", //
+        "{{255,0},{128,0}}");
+    // a whole width further only the padding is left
+    check("ImageData(ImageTransformation(" + IMAGE + ",#+{1,0}&,Padding->0.25))", //
+        "{{0.25,0.25},\n {0.25,0.25}}");
   }
 
   /** The forward version of the same translation moves the picture the other way. */
   @Test
   public void forwardTransformationMovesThePicture() {
-    check("ImageData(ImageForwardTransformation(" + IMAGE + ",{{1,0,1},{0,1,0},{0,0,1}}),\"Byte\")",
-        "{{255,0},{255,64}}");
+    check(
+        "ImageData(ImageForwardTransformation(" + IMAGE + ",{{1,0,0.5},{0,1,0},{0,0,1}}),\"Byte\")",
+        "{{0,0},{0,64}}");
   }
 
   @Test
   public void aTransformationFunctionIsAccepted() {
     check("ImageData(ImageTransformation(" + IMAGE
-        + ",TransformationFunction({{1,0,1},{0,1,0},{0,0,1}})),\"Byte\")", //
-        "{{255,255},{128,255}}");
+        + ",TransformationFunction({{1,0,0.5},{0,1,0},{0,0,1}})),\"Byte\")", //
+        "{{255,0},{128,0}}");
   }
 
   /**
@@ -190,6 +195,35 @@ public class ImageGeometryTest extends AbstractTestCase {
     check("ImageData(ImageTransformation(Image({{0.25,0.75,0.5}}),{#[[1]]+5,#[[2]]}&,"
         + "DataRange->Full))", //
         "{{0.0,0.0,0.0}}");
+  }
+
+  /**
+   * A padding colour or a list of samples makes an image with an alpha channel opaque; a single
+   * number pads every channel and keeps the alpha samples.
+   */
+  @Test
+  public void transformationPaddingOfAnImageWithAlpha() {
+    String rgba = "Image({{{0.25,0.5,0.75,0.5},{0.125,0.375,0.625,0.25}}})";
+    check("ImageData(ImageTransformation(" + rgba + ",{#[[1]]-1,#[[2]]}&,DataRange->Full,"
+        + "Padding->0.75))", //
+        "{{{0.75,0.75,0.75,0.75},{0.25,0.5,0.75,0.5}}}");
+    check("ImageData(ImageTransformation(" + rgba + ",{#[[1]]-1,#[[2]]}&,DataRange->Full,"
+        + "Padding->Green))", //
+        "{{{0.0,1.0,0.0,1.0},{0.25,0.5,0.75,1.0}}}");
+    check("ImageData(ImageTransformation(" + rgba + ",{#[[1]]+1,#[[2]]}&,DataRange->Full,"
+        + "Padding->{0.5,0.25,0.125,0.75}))", //
+        "{{{0.125,0.375,0.625,1.0},{0.5,0.25,0.125,0.75}}}");
+  }
+
+  /** The image mirrored at its border pixel or at its edge. */
+  @Test
+  public void transformationPaddingReflectedReversed() {
+    check("ImageData(ImageTransformation(Image({{0.25,0.5,0.75}}),{#[[1]]+2,#[[2]]}&,"
+        + "DataRange->Full,Padding->\"Reflected\"))", //
+        "{{0.75,0.5,0.25}}");
+    check("ImageData(ImageTransformation(Image({{0.25,0.5,0.75}}),{#[[1]]+2,#[[2]]}&,"
+        + "DataRange->Full,Padding->\"Reversed\"))", //
+        "{{0.75,0.75,0.5}}");
   }
 
   /** A padding colour is converted to the colour space the samples are stored in. */
