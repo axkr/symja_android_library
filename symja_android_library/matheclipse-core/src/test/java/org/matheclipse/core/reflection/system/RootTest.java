@@ -508,4 +508,14 @@ public class RootTest extends ExprEvaluatorTestCase {
         "Root({2*#1-Tan(#1)&,4.60422})");
   }
 
+  @Test
+  public void testRootOrderOnEqualRealParts() {
+    // equal real parts: ascending absolute imaginary part, the negative one of a pair first
+    check("Table(Root(#^4+10*#^2+9&, k), {k, 4})", //
+        "{-I,I,-I*3,I*3}");
+    check("Table(Root(#^4+20*#^2+64&, k), {k, 4}) // N", //
+        "{I*(-2.0),I*2.0,I*(-4.0),I*4.0}");
+    check("Table(Root(Expand((#^2+9)*(#^2+2*#+2)*(#-2))&, k), {k, 5}) // N", //
+        "{2.0,-1.0+I*(-1.0),-1.0+I*1.0,I*(-3.0),I*3.0}");
+  }
 }

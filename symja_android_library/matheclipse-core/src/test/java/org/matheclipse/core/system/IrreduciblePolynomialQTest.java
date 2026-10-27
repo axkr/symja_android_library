@@ -171,4 +171,14 @@ public class IrreduciblePolynomialQTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
+  public void testRepeatedFactorOverExtension() {
+    // (u+Sqrt(5)*v)^2: the norm of a square is never square-free
+    check("IrreduciblePolynomialQ(u^2 + 2*Sqrt(5)*u*v + 5*v^2, Extension -> Automatic)", //
+        "False");
+    check("IrreduciblePolynomialQ(u^2 + 2*Sqrt(5)*u*v + 5*v^2, Extension -> Sqrt(5))", //
+        "False");
+    check("IrreduciblePolynomialQ(u^2 + 2*Sqrt(5)*u*v + 7*v^2, Extension -> Automatic)", //
+        "True");
+  }
 }

@@ -157,6 +157,14 @@ public class Root extends AbstractFunctionEvaluator {
         }
         return ast.setAtCopy(1, F.Function(F.subst(arg1.second(), parameter, F.Slot1)));
       }
+      if (arg1.isFunction() && polynomialCoefficients(arg1.first()) == null) {
+        // Root[Expand[(#^2+1)*(#^2+4)] &, k]: the held body names its polynomial only after it is
+        // evaluated; a canonical Root object's body is a polynomial already
+        IExpr body = engine.evaluate(arg1.first());
+        if (!body.equals(arg1.first()) && polynomialCoefficients(body) != null) {
+          return ast.setAtCopy(1, F.Function(body));
+        }
+      }
       if (!arg1.isFunction() && !arg1.isList()) {
         // Root[poly, k] with a plain polynomial expression instead of a pure function of Slot1:
         // rewrite it, so that Root[x^2-2, 1] and Root[#^2-2 &, 1] denote the same object. Only a
@@ -313,7 +321,8 @@ public class Root extends AbstractFunctionEvaluator {
    * <p>
    * All roots are computed at machine precision with Laguerre's method and are then ordered by the
    * {@code Root} k-indexing convention (real roots first in ascending order, then the complex roots
-   * by ascending real part and ascending imaginary part). If the engine asks for more than machine
+   * by ascending real part, then ascending absolute value of the imaginary part, the negative one of
+   * a conjugate pair first). If the engine asks for more than machine
    * precision, the selected root is additionally refined with Newton's method in {@link Apcomplex}
    * arithmetic.
    *
@@ -567,10 +576,23 @@ public class Root extends AbstractFunctionEvaluator {
         complex.add(numeric[i]);
       }
     }
-    // the complex roots by ascending real part, then ascending imaginary part
-    complex.sort((a, b) -> Math.abs(a.getReal() - b.getReal()) > 1e-10
-        ? Double.compare(a.getReal(), b.getReal())
-        : Double.compare(a.getImaginary(), b.getImaginary()));
+    // the complex roots by ascending real part, then ascending absolute value of the imaginary
+    // part, the negative one of a conjugate pair first
+    double[] reParts = new double[complex.size()];
+    double[] imParts = new double[complex.size()];
+    Integer[] indices = new Integer[complex.size()];
+    for (int i = 0; i < indices.length; i++) {
+      reParts[i] = complex.get(i).getReal();
+      imParts[i] = complex.get(i).getImaginary();
+      indices[i] = i;
+    }
+    Integer[] order = ToRadicals.complexRootOrder(reParts, imParts, indices);
+    java.util.List<org.hipparchus.complex.Complex> ordered =
+        new java.util.ArrayList<org.hipparchus.complex.Complex>(order.length);
+    for (int i : order) {
+      ordered.add(complex.get(i));
+    }
+    complex = ordered;
     IExpr[] roots = new IExpr[degree];
     int index = 0;
     for (double value : real) {

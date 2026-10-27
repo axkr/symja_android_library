@@ -215,7 +215,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
             }
 
             if (!sorted) {
-              // Sort by (real-first, then Re asc, then Im asc) to match k-indexing.
+              // Sort by (real-first, then Re asc, then abs(Im) asc, then Im) to match k-indexing.
               radicalRoots = sortRootsByMmaOrder(radicalRoots);
             }
 
@@ -232,7 +232,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
             if (radicalRoots == null) {
               return F.NIL;
             }
-            // Sort by (real-first, then Re asc, then Im asc) to match k-indexing.
+            // Sort by (real-first, then Re asc, then abs(Im) asc, then Im) to match k-indexing.
             radicalRoots = sortRootsByMmaOrder(radicalRoots);
             if (k < 1 || k > radicalRoots.length) {
               return F.NIL;
@@ -531,7 +531,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
    * Sort the given radical roots by {@code Root} k-indexing convention:
    * <ol>
    * <li>real roots first, ordered by ascending value</li>
-   * <li>complex roots ordered by ascending real part, then ascending imaginary part</li>
+   * <li>complex roots by {@link #complexRootOrder(double[], double[], Integer[])}</li>
    * </ol>
    * If any root cannot be evaluated to a numeric value (e.g. symbolic coefficients), the original
    * order is returned unchanged so that the natural Cardano/Ferrari k-indexing is preserved.
@@ -580,8 +580,8 @@ public class ToRadicals extends AbstractFunctionEvaluator {
 
   /**
    * Sort the root indices in <code>order</code> by the {@code Root} k-indexing convention: real
-   * roots first, then by real part, then by imaginary part, with a tolerance of
-   * <code>1e-10</code>.
+   * roots first in ascending order, then the non-real roots by
+   * {@link #complexRootOrder(double[], double[], Integer[])}.
    *
    * @param order the indices into <code>reVals</code> and <code>imVals</code>, sorted in place
    * @param reVals the real parts of the roots
@@ -589,21 +589,84 @@ public class ToRadicals extends AbstractFunctionEvaluator {
    */
   static void sortRootOrder(Integer[] order, final double[] reVals, final double[] imVals) {
     final double imTol = 1e-10;
-    final double reTol = 1e-10;
+    java.util.List<Integer> real = new java.util.ArrayList<Integer>();
+    java.util.List<Integer> complex = new java.util.ArrayList<Integer>();
+    for (int i : order) {
+      (Math.abs(imVals[i]) < imTol ? real : complex).add(i);
+    }
+    Integer[] realIndices = real.toArray(new Integer[real.size()]);
+    final double[] realValues = clusterValues(reVals, realIndices, 1e-10);
+    java.util.Arrays.sort(realIndices, (a, b) -> Double.compare(realValues[a], realValues[b]));
+    Integer[] complexIndices =
+        complexRootOrder(reVals, imVals, complex.toArray(new Integer[complex.size()]));
+    int k = 0;
+    for (int i : realIndices) {
+      order[k++] = i;
+    }
+    for (int i : complexIndices) {
+      order[k++] = i;
+    }
+  }
+
+  /**
+   * The order of non-real roots in the {@code Root} k-indexing: ascending real part, then ascending
+   * absolute value of the imaginary part, and of a conjugate pair the root with the negative
+   * imaginary part first. Parts which agree within the accuracy of the estimates count as equal, so
+   * roundoff in a real part of <code>0</code> does not decide the order of roots on the imaginary
+   * axis.
+   *
+   * @param reVals the real parts
+   * @param imVals the imaginary parts
+   * @param indices the indices of the roots to order
+   * @return the indices in their order
+   */
+  static Integer[] complexRootOrder(final double[] reVals, final double[] imVals,
+      Integer[] indices) {
+    double scale = 1.0;
+    for (int i : indices) {
+      scale = Math.max(scale, Math.hypot(reVals[i], imVals[i]));
+    }
+    final double tolerance = 1e-10 * scale;
+    final double[] absIm = new double[imVals.length];
+    for (int i : indices) {
+      absIm[i] = Math.abs(imVals[i]);
+    }
+    final double[] re = clusterValues(reVals, indices, tolerance);
+    final double[] im = clusterValues(absIm, indices, tolerance);
+    Integer[] order = indices.clone();
     java.util.Arrays.sort(order, (xi, yi) -> {
-      boolean xReal = Math.abs(imVals[xi]) < imTol;
-      boolean yReal = Math.abs(imVals[yi]) < imTol;
-      if (xReal && !yReal) {
-        return -1;
+      int c = Double.compare(re[xi], re[yi]);
+      if (c != 0) {
+        return c;
       }
-      if (!xReal && yReal) {
-        return 1;
-      }
-      if (Math.abs(reVals[xi] - reVals[yi]) > reTol) {
-        return Double.compare(reVals[xi], reVals[yi]);
-      }
-      return Double.compare(imVals[xi], imVals[yi]);
+      c = Double.compare(im[xi], im[yi]);
+      return c != 0 ? c : Double.compare(imVals[xi], imVals[yi]);
     });
+    return order;
+  }
+
+  /**
+   * Replace each of the <code>values</code> at <code>indices</code> by the smallest value of its
+   * cluster, the values which are connected by gaps of at most <code>tolerance</code>. Comparing
+   * the replaced values is exact, so a sort by them is consistent - a comparison with a tolerance
+   * is not transitive.
+   */
+  private static double[] clusterValues(final double[] values, Integer[] indices,
+      double tolerance) {
+    Integer[] sorted = indices.clone();
+    java.util.Arrays.sort(sorted, (a, b) -> Double.compare(values[a], values[b]));
+    double[] result = new double[values.length];
+    double representative = 0.0;
+    double previous = 0.0;
+    for (int k = 0; k < sorted.length; k++) {
+      double value = values[sorted[k]];
+      if (k == 0 || value - previous > tolerance) {
+        representative = value;
+      }
+      result[sorted[k]] = representative;
+      previous = value;
+    }
+    return result;
   }
 
   /**

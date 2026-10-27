@@ -263,8 +263,8 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(Cos(Pi*i), {i, 1, Infinity})", //
         "Sum(Cos(i*Pi),{i,1,Infinity})");
     check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})", //
-        "(-1+y^5)/(-1+y)+(x*(-1+y^5))/(-1+y)+(x^2*(-1+y^5))/(-1+y)+(x^3*(-1+y^5))/(-1+y)+(x^\n"
-            + "4*(-1+y^5))/(-1+y)");
+        "1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n"
+            + "4*(1+y+y^2+y^3+y^4)");
   }
 
   @Test
@@ -301,7 +301,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "1/4");
 
     check("Sum(a^i,{i,0,1})", //
-        "(-1+a^2)/(-1+a)");
+        "1+a");
     check("Sum(a^i,{i,0,Infinity})", //
         "1/(1-a)");
     check("Sum(a^i,{i,1,Infinity})", //
@@ -918,5 +918,28 @@ public class SumTest extends ExprEvaluatorTestCase {
     // any other angle doesn't, and the term ratio isn't simplified (took 14s)
     check("Sum(Sin(2*(k-j)*y),{j,0,k-1})", //
         "Sum(Sin(2*(-j+k)*y),{j,0,-1+k})");
+  }
+
+  @Test
+  public void testFiniteRangeIsWrittenOut() {
+    // a symbolic summand over a short integer range is written out, not put in closed form
+    check("Sum(Binomial(5, k)*z^k, {k, 0, 5})", //
+        "1+5*z+10*z^2+10*z^3+5*z^4+z^5");
+    check("Sum(z^i, {i, 1, 4})", //
+        "z+z^2+z^3+z^4");
+    check("Sum(z^i*w^j, {i, 0, 1}, {j, 0, 1})", //
+        "1+w+z+w*z");
+    check("Expand((z+3)^40) === Sum(Binomial(40, k)*z^k*3^(40 - k), {k, 0, 40})", //
+        "True");
+    // terms which are not rational numbers are written out too
+    check("Sum(E^i, {i, 0, 3})", //
+        "1+E+E^2+E^3");
+    check("Sum(Sqrt(3)^i, {i, 0, 3})", //
+        "4+4*Sqrt(3)");
+    // a rational summand keeps the closed form, a symbolic range too
+    check("Sum(k, {k, 1, 10^12})", //
+        "500000000000500000000000");
+    check("Sum(z^i, {i, 0, n})", //
+        "(-1+z^(1+n))/(-1+z)");
   }
 }

@@ -994,4 +994,46 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Simplify(ArcTan(1/y)+ArcTan(y)-Pi/2, -1/2<y<1/2)", //
         "-Pi/2+ArcTan(1/y)+ArcTan(y)");
   }
+
+  @Test
+  public void testSimplifyLogFusionIsSound() {
+    // Log(z)+Log(1/z) is 2*I*Pi for a negative z
+    check("Simplify(Log(z)+Log(1/z))", //
+        "Log(1/z)+Log(z)");
+    check("Simplify(Log(z)+Log(1/z), z>0)", //
+        "0");
+    check("Simplify(Log(-z)+Log(-1/z), z>0)", //
+        "I*2*Pi");
+    check("Simplify(Log(u)+Log(v))", //
+        "Log(u)+Log(v)");
+    check("Simplify(Log(u)+Log(v), u>0&&v>0)", //
+        "Log(u*v)");
+    // one argument of unknown sign may join positive ones
+    check("Simplify(Log(u)+Log(v), u>0)", //
+        "Log(u*v)");
+    // an integer multiple of a symbolic logarithm is not made a power
+    check("Simplify(3*Log(u)+Log(v), u>0)", //
+        "3*Log(u)+Log(v)");
+    check("Simplify(3*Log(5)+Log(7))", //
+        "Log(875)");
+    check("Simplify(2*Log(E+1)+Log(5))", //
+        "Log(5*(1+E)^2)");
+    // a symbolic power which cancels from the product
+    check("Simplify(Log(5*w^3)-3*Log(w), w>0)", //
+        "Log(5)");
+    check("Simplify(Log(u)+Log(v)-Log(u*v), u>0)", //
+        "0");
+    // a positive constant factor splits off for every argument
+    check("Simplify(Log(5*z)-Log(z))", //
+        "Log(5)");
+    // a rational common factor
+    check("Simplify(1/3*Log(2-z)+1/3*Log((2+z)/(2-z)), 0<z<2)", //
+        "Log(2+z)/3");
+    check("Simplify(Log(u^2-v^2)-Log(u-v)-Log(u+v), u>v>0)", //
+        "0");
+    check("Simplify(Log(-7)+Log(-7))", //
+        "I*2*Pi+Log(49)");
+    check("Simplify(Log(2+I)+Log(2-I))", //
+        "Log(5)");
+  }
 }

@@ -533,7 +533,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
             result.set(1, reducedResult);
             return result;
           }
-        } else {
+        } else if (!isSmallSymbolicRange(sumForm.arg1(), lastList, engine)) {
           IExpr result = matcher1().apply(sumForm);
           if (result.isPresent()) {
             return result;
@@ -670,6 +670,66 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
     }
     return F.NIL;
+  }
+
+  /** Integer ranges up to this many terms are written out term by term. */
+  private static final int ENUMERATION_LIMIT = 1_000_000;
+
+  /**
+   * Test if <code>Sum(summand, {i, a, b})</code> runs over at most {@link #ENUMERATION_LIMIT}
+   * integers and its terms are not known to be rational numbers. Such a sum is written out term by
+   * term instead of matched against the closed-form rules: <code>Sum(x^i, {i,0,3})</code> is
+   * <code>1+x+x^2+x^3</code>, not <code>(-1+x^4)/(-1+x)</code>, and <code>Sum(Pi^i, {i,0,3})</code>
+   * is <code>1+Pi+Pi^2+Pi^3</code>. A rational summand (see {@link #isRationalTerm(IExpr, IExpr)})
+   * keeps the rules, the closed form of a rational sum is the same number.
+   */
+  private static boolean isSmallSymbolicRange(IExpr summand, IAST iterator, EvalEngine engine) {
+    if (iterator.argSize() != 3 || !iterator.arg1().isSymbol()) {
+      return false;
+    }
+    final IExpr variable = iterator.arg1();
+    if (summand.isFree(variable)) {
+      return false;
+    }
+    IExpr from = engine.evaluate(iterator.arg2());
+    IExpr to = engine.evaluate(iterator.arg3());
+    if (!from.isInteger() || !to.isInteger()
+        || !((IInteger) to).subtract((IInteger) from).isLT(F.ZZ(ENUMERATION_LIMIT))) {
+      return false;
+    }
+    return !isRationalTerm(summand, variable);
+  }
+
+  /** Functions whose value at rational arguments is rational. */
+  private static final java.util.Set<IExpr> RATIONAL_FUNCTIONS = java.util.Set.of(S.Plus,
+      S.Times, S.Binomial, S.Factorial, S.Factorial2, S.Subfactorial, S.Pochhammer,
+      S.Multinomial, S.HarmonicNumber, S.Fibonacci, S.LucasL, S.CatalanNumber, S.BernoulliB,
+      S.EulerE, S.StirlingS1, S.StirlingS2, S.KroneckerDelta, S.Abs, S.Sign, S.Floor,
+      S.Ceiling, S.Mod, S.Quotient, S.Max, S.Min);
+
+  /**
+   * Test structurally, without evaluating it, if every term of <code>summand</code> at an integer
+   * <code>variable</code> is a rational number: it is built from the variable, rational numbers,
+   * {@link #RATIONAL_FUNCTIONS} and powers whose exponent has no fraction in it.
+   * <code>(1/2)^i*Binomial(5,i)</code> is, <code>Sqrt(2)^i</code>, <code>2^(i/2)</code>,
+   * <code>Pi^i</code> and <code>Sin(i)</code> are not.
+   */
+  private static boolean isRationalTerm(IExpr summand, IExpr variable) {
+    if (summand.isRational() || summand.equals(variable)) {
+      return true;
+    }
+    if (!summand.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) summand;
+    if (ast.isPower()) {
+      return ast.exponent().isFree(x -> x.isFraction(), false) && isRationalTerm(ast.base(), variable)
+          && isRationalTerm(ast.exponent(), variable);
+    }
+    if (!RATIONAL_FUNCTIONS.contains(ast.head())) {
+      return false;
+    }
+    return ast.forAll(arg -> isRationalTerm(arg, variable));
   }
 
   /**

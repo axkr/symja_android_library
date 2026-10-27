@@ -2634,6 +2634,93 @@ public class Algebra {
   }
 
   /**
+   * Without <code>Extension</code> an algebraic number in a coefficient is a generator of its own:
+   * <code>PolynomialGCD(x^2-2, x-Sqrt(2))</code> is <code>1</code>,
+   * <code>PolynomialLCM(x^2-2, x-Sqrt(2))</code> is <code>(-Sqrt(2)+x)*(-2+x^2)</code>, and
+   * <code>PolynomialGCD((x+a*y)*(x+1), (x+a*y)*(x+2))</code> is <code>x+a*y</code> for
+   * <code>a = AlgebraicNumber(Sqrt(2), {0,1})</code>. Each such number is replaced by a fresh
+   * symbol, the function <code>PolynomialGCD</code> or <code>PolynomialLCM</code> of
+   * <code>ast</code> is evaluated, and the numbers are put back.
+   *
+   * <p>
+   * Radicals are generators only if some argument has none: when every argument has one, as in the
+   * square-free part <code>PolynomialGCD(p, D(p,x))</code> which other functions compute, the
+   * arithmetic of the coefficients is kept and <code>(x-Sqrt(2))^2</code> keeps its repeated
+   * factor.
+   *
+   * @param radicals whether a radical like <code>Sqrt(2)</code> or <code>2^(1/3)</code> may be a
+   *        generator too, besides an <code>AlgebraicNumber</code>
+   * @return {@link F#NIL} if no argument has such a number
+   */
+  private static IExpr withAlgebraicGenerators(IAST ast, int argSize, boolean radicals,
+      EvalEngine engine) {
+    if (radicals) {
+      boolean everyArgument = true;
+      for (int i = 1; i <= argSize && everyArgument; i++) {
+        everyArgument = !ast.get(i).isFree(Algebra::isRationalRadical, true);
+      }
+      radicals = !everyArgument;
+    }
+    final boolean maskRadicals = radicals;
+    final java.util.Map<IExpr, IExpr> generators = new java.util.HashMap<IExpr, IExpr>();
+    IASTAppendable masked = F.ast(ast.topHead(), argSize);
+    for (int i = 1; i <= argSize; i++) {
+      masked.append(F.subst(ast.get(i), x -> {
+        if (x.isAST(S.AlgebraicNumber, 3) || (maskRadicals && isRationalRadical(x))) {
+          return generators.computeIfAbsent(x, k -> F.Dummy("algebraic" + generators.size()));
+        }
+        return F.NIL;
+      }));
+    }
+    if (generators.isEmpty()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(masked);
+    if (result.isAST(ast.topHead())) {
+      return F.NIL;
+    }
+    final java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+    generators.forEach((number, symbol) -> back.put(symbol, number));
+    return engine.evaluate(F.subst(result, x -> {
+      IExpr number = back.get(x);
+      return number == null ? F.NIL : number;
+    }));
+  }
+
+  /** Test if <code>expr</code> is free of the variables of the polynomial arguments of ast. */
+  private static boolean isConstantIn(IExpr expr, IAST ast, int argSize) {
+    VariablesSet eVar = new VariablesSet();
+    for (int i = 1; i <= argSize; i++) {
+      eVar.addVarList(ast.get(i));
+    }
+    return eVar.getVarList().forAll(v -> expr.isFree(v));
+  }
+
+  /** A radical of a rational number: <code>Sqrt(2)</code>, <code>3^(-1/3)</code>. */
+  private static boolean isRationalRadical(IExpr x) {
+    return x.isPower() && x.base().isRational() && x.exponent().isRational()
+        && !x.exponent().isInteger();
+  }
+
+  /**
+   * Choose between the result with algebraic numbers as generators (see
+   * {@link #withAlgebraicGenerators(IAST, int, boolean, EvalEngine)}) and the one computed over
+   * their coefficient domain. They differ when that computation used <code>Sqrt(2)^2 == 2</code>;
+   * if they only differ by a constant factor the form of <code>result</code> is kept.
+   *
+   * @return <code>result</code> if <code>generatorResult</code> is {@link F#NIL} or differs from it
+   *         by a factor free of <code>variables</code>, <code>generatorResult</code> otherwise
+   */
+  private static IExpr preferredForm(IExpr generatorResult, IExpr result, IAST variables,
+      EvalEngine engine) {
+    if (generatorResult.isNIL() || result.isNIL()) {
+      return result.isPresent() ? result : generatorResult;
+    }
+    IExpr ratio = engine.evaluate(F.Together(F.Divide(generatorResult, result)));
+    return variables.exists(v -> !ratio.isFree(v)) ? generatorResult : result;
+  }
+
+  /**
    *
    *
    * <h2>PolynomialGCD</h2>
@@ -2820,40 +2907,6 @@ public class Algebra {
       return engine.evaluate(sum);
     }
 
-    /**
-     * Without <code>Extension</code> an <code>AlgebraicNumber</code> coefficient is a generator of
-     * its own, as a radical is: WMA gives <code>x+y*a</code> for
-     * <code>PolynomialGCD((x+a*y)*(x+1), (x+a*y)*(x+2))</code> and <code>1</code> for
-     * <code>PolynomialGCD(x^2-2, x-a)</code>, <code>a = AlgebraicNumber(Sqrt(2), {0,1})</code>.
-     *
-     * @return {@link F#NIL} if no argument has an <code>AlgebraicNumber</code>
-     */
-    private static IExpr generatorGCD(IAST ast, int argSize, EvalEngine engine) {
-      final java.util.Map<IExpr, IExpr> generators = new java.util.HashMap<IExpr, IExpr>();
-      IASTAppendable masked = F.ast(S.PolynomialGCD, argSize);
-      for (int i = 1; i <= argSize; i++) {
-        masked.append(F.subst(ast.get(i), x -> {
-          if (x.isAST(S.AlgebraicNumber, 3)) {
-            return generators.computeIfAbsent(x, k -> F.Dummy("algebraic" + generators.size()));
-          }
-          return F.NIL;
-        }));
-      }
-      if (generators.isEmpty()) {
-        return F.NIL;
-      }
-      IExpr gcd = engine.evaluate(masked);
-      if (gcd.isAST(S.PolynomialGCD)) {
-        return F.NIL;
-      }
-      final java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
-      generators.forEach((number, symbol) -> back.put(symbol, number));
-      return engine.evaluate(F.subst(gcd, x -> {
-        IExpr number = back.get(x);
-        return number == null ? F.NIL : number;
-      }));
-    }
-
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -2869,15 +2922,20 @@ public class Algebra {
           return result;
         }
       }
+      IExpr generatorGCD = F.NIL;
       if (argSize >= 2 && options[MODULUS_OPTION].isZero() && !hasListArgument(ast, argSize)) {
         IExpr result = inexactGCD(ast, argSize, engine);
         if (result.isPresent()) {
           return result;
         }
         if (options[1] != S.Automatic) {
-          result = generatorGCD(ast, argSize, engine);
+          result = withAlgebraicGenerators(ast, argSize, options[1] == S.None, engine);
           if (result.isPresent()) {
-            return result;
+            if (options[1] != S.None || isConstantIn(result, ast, argSize)) {
+              // a constant GCD is 1 up to a unit whatever the coefficient domain computes
+              return result;
+            }
+            generatorGCD = result;
           }
         }
       }
@@ -2897,17 +2955,14 @@ public class Algebra {
         }
 
         IExpr result = polynomialGCD(ast, argSize, eVar, engine);
-        if (result.isPresent()) {
-          return result;
+        if (result.isNIL()) {
+          IAST list = ast.setAtCopy(0, S.List, argSize + 1);
+          Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(list, false);
+          result = commonFactors.isPresent() ? commonFactors.get()[0] : F.C1;
         }
-        IAST list = ast.setAtCopy(0, S.List, argSize + 1);
-        Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(list, false);
-        if (commonFactors.isPresent()) {
-          return commonFactors.get()[0];
-        }
-        return F.C1;
+        return preferredForm(generatorGCD, result, eVar.getVarList(), engine);
       }
-      return F.NIL;
+      return generatorGCD;
     }
 
     @Override
@@ -3270,6 +3325,64 @@ public class Algebra {
       return F.NIL;
     }
 
+    /**
+     * The least common multiple over the number field given by the <code>Extension</code> option:
+     * fold with <code>lcm(a, b) == (a / gcd(a, b)) * b</code>, the GCD taken with the same option,
+     * and expand. Coprime factors give their expanded product,
+     * <code>PolynomialLCM(x+2^(1/3), x+3^(1/3), Extension->Automatic)</code> is
+     * <code>6^(1/3)+2^(1/3)*x+3^(1/3)*x+x^2</code>. A univariate GCD is made monic and divided out
+     * with <code>PolynomialQuotient</code>, a multivariate one with <code>Cancel</code>.
+     *
+     * @return {@link F#NIL} if a GCD or a division over the extension is not determined
+     */
+    private static IExpr extensionLCM(IAST ast, int argSize, IExpr extension, IAST variables,
+        EvalEngine engine) {
+      IExpr lcm = F.evalExpandAll(ast.arg1(), engine);
+      for (int i = 2; i <= argSize; i++) {
+        IExpr poly = F.evalExpandAll(ast.get(i), engine);
+        IExpr gcd = engine.evalQuiet(
+            F.ternaryAST3(S.PolynomialGCD, lcm, poly, F.Rule(S.Extension, extension)));
+        if (!gcd.isFree(S.PolynomialGCD) || gcd.isZero()) {
+          return F.NIL;
+        }
+        if (variables.exists(v -> !gcd.isFree(v))) {
+          lcm = divideExactly(lcm, gcd, variables, engine);
+          if (lcm.isNIL()) {
+            return F.NIL;
+          }
+        }
+        lcm = engine.evaluate(F.Expand(F.Times(lcm, poly)));
+      }
+      return lcm;
+    }
+
+    /**
+     * The quotient <code>dividend / divisor</code> of two polynomials over the coefficients'
+     * number field, or {@link F#NIL} if the division is not shown to be exact.
+     */
+    private static IExpr divideExactly(IExpr dividend, IExpr divisor, IAST variables,
+        EvalEngine engine) {
+      // a divisor made monic in its leading monomial keeps the sign and leading coefficient of the
+      // dividend
+      IExpr rules = engine.evalQuiet(F.CoefficientRules(divisor, variables));
+      if (!rules.isList() || rules.argSize() == 0 || !rules.first().isRuleAST()) {
+        return F.NIL;
+      }
+      IExpr monic = engine.evaluate(F.Expand(F.Divide(divisor, rules.first().second())));
+      if (variables.isAST1()) {
+        IExpr variable = variables.arg1();
+        IExpr remainder = engine.evalQuiet(F.PolynomialRemainder(dividend, monic, variable));
+        if (!remainder.isZero() && !engine.evalTrue(F.PossibleZeroQ(remainder))) {
+          return F.NIL;
+        }
+        IExpr quotient = engine.evalQuiet(F.PolynomialQuotient(dividend, monic, variable));
+        return quotient.isFree(S.PolynomialQuotient) ? quotient : F.NIL;
+      }
+      IExpr quotient = engine.evalQuiet(F.Cancel(F.Divide(dividend, monic)));
+      IExpr denominator = engine.evaluate(F.Denominator(quotient));
+      return variables.forAll(v -> denominator.isFree(v)) ? quotient : F.NIL;
+    }
+
     private static IExpr polynomialLCMModulus(IAST ast, int argSize, IExpr modulus, IAST varList) {
       if (JASModular.isModpMessage(S.PolynomialLCM, modulus)) {
         return F.NIL;
@@ -3348,8 +3461,16 @@ public class Algebra {
           }
           return polynomialLCMModulus(ast, argSize, option, eVar.getVarList());
         }
-
-        return polynomialLCM(ast, argSize, eVar, engine);
+        if (options[1] == S.None) {
+          return preferredForm(withAlgebraicGenerators(ast, argSize, true, engine),
+              polynomialLCM(ast, argSize, eVar, engine), eVar.getVarList(), engine);
+        }
+        if (eVar.size() == 0) {
+          return polynomialLCM(ast, argSize, eVar, engine);
+        }
+        // an extension the LCM can't be determined over stays unevaluated, rather than being
+        // ignored
+        return extensionLCM(ast, argSize, options[1], eVar.getVarList(), engine);
       }
       return F.NIL;
     }
@@ -3362,8 +3483,8 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
-      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
-      IExpr[] optionValues = new IExpr[] {F.C0};
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus, S.Extension};
+      IExpr[] optionValues = new IExpr[] {F.C0, S.None};
       setOptions(newSymbol, optionKeys, optionValues);
     }
   }

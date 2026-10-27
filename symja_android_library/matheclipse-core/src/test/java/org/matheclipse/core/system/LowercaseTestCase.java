@@ -26453,7 +26453,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
         "1");
     check("PolynomialGCD(x^2 - 2, x - Sqrt(2))", //
-        "-Sqrt(2)+x");
+        "1");
 
     check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", //
         "(1+x)^2");
@@ -26480,9 +26480,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2 )", //
         "1");
 
-    // TODO difference to MMA handle Extension->Automatic correctly
+    // without Extension Sqrt(2) is a generator of its own
     check("PolynomialGCD(x^2 - 2, x - Sqrt(2))", //
-        "-Sqrt(2)+x");
+        "1");
 
     // check("PolynomialGCD(I*2,12)", "2");
     check("PolynomialGCD(a+b*x,c+d*x)", //
@@ -26678,6 +26678,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x^2-y^2");
     check("PolynomialGCD(0, 0)", //
         "0");
+  }
+
+  @Test
+  public void testPolynomialGCDLCMRadicalGenerator() {
+    // without Extension a radical is a generator of its own
+    check("PolynomialGCD(x^2 - 5, x + Sqrt(5))", //
+        "1");
+    check("PolynomialLCM(x^2 - 5, x + Sqrt(5))", //
+        "(Sqrt(5)+x)*(-5+x^2)");
+    check("PolynomialGCD(x^2 - 5, x + Sqrt(5), Extension -> Automatic)", //
+        "Sqrt(5)+x");
+    // a radical in every argument: the repeated factor of a square-free computation is kept
+    check("PolynomialGCD(Expand((x - Sqrt(5))^2), 2*x - 2*Sqrt(5))", //
+        "-Sqrt(5)+x");
+  }
+
+  @Test
+  public void testPolynomialLCMExtension() {
+    check("PolynomialLCM(x + 5^(1/3), x + 7^(1/3), Extension -> Automatic)", //
+        "35^(1/3)+5^(1/3)*x+7^(1/3)*x+x^2");
+    check("PolynomialLCM(x^2 - 3, x - Sqrt(3), Extension -> Automatic)", //
+        "-3+x^2");
+    check("PolynomialLCM(x^2 - 3, x + Sqrt(3), x - Sqrt(3), Extension -> Automatic)", //
+        "-3+x^2");
+    check("PolynomialLCM(u^2 - 5*v^2, u - Sqrt(5)*v, Extension -> Automatic)", //
+        "u^2-5*v^2");
   }
 
   /** {@code Modulus->p} computes the least common multiple in {@code GF(p)[x]}. */

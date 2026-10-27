@@ -941,6 +941,7 @@ public class SimplifyUtil extends VisitorExpr {
       return F.NIL;
     }
     IInteger gcd = null;
+    int nonPositive = 0;
     IInteger[] coefficients = new IInteger[plusAST.size()];
     IExpr[] arguments = new IExpr[plusAST.size()];
     for (int i = 1; i < plusAST.size(); i++) {
@@ -964,13 +965,22 @@ public class SimplifyUtil extends VisitorExpr {
         coefficients[i] = coefficients[i].multiply(power[1]);
         arguments[i] = power[0];
       }
+      if (!arguments[i].isPositiveResult()) {
+        // c*Log(a)+c*Log(b) == c*Log(a*b) needs all arguments but one positive, and that one
+        // with the factor c itself
+        if (nonPositive > 0) {
+          return F.NIL;
+        }
+        nonPositive = i;
+      }
       IInteger magnitude = coefficients[i].abs();
       gcd = (gcd == null) ? magnitude : gcd.gcd(magnitude);
       if (gcd.isOne()) {
         return F.NIL;
       }
     }
-    if (gcd == null || gcd.isOne()) {
+    if (gcd == null || gcd.isOne()
+        || (nonPositive > 0 && !coefficients[nonPositive].equals(gcd))) {
       return F.NIL;
     }
     IExpr product = F.C1;
@@ -981,90 +991,228 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   /**
-   * Fold the logarithms of real arguments in a sum into a single logarithm:
-   * <code>Log(x)+Log(y)+p*Log(z)</code> becomes <code>Log(x*y*z^p)</code> for an integer
-   * <code>p</code>. Summands that are not logarithms are kept.
+   * Fold the logarithms in a sum into a single logarithm: <code>Log(x)+Log(y)+p*Log(z)</code>
+   * becomes <code>Log(x*y*z^p)</code> for an integer <code>p</code> and a numeric <code>z</code>
+   * (a symbolic <code>z</code> keeps <code>p*Log(z)</code> unless it cancels), and a common rational
+   * factor
+   * is pulled out, <code>1/2*Log(1-x)+1/2*Log((1+x)/(1-x))</code> is <code>1/2*Log(1+x)</code> for
+   * <code>0&lt;x&lt;1</code>. Summands that are not logarithms are kept.
    *
    * <p>
-   * A pair of logarithms with non-real arguments is folded too, when
-   * {@link #foldsToLogOfProduct(IExpr, IExpr)} proves it is allowed - see there for the branch cut
-   * argument. That case is what a complex conjugate pair of eigenvalues produces, so
-   * <code>MatrixLog</code> depends on it.
+   * <code>c*Log(a)+c*Log(b) == c*Log(a*b)</code> holds when <code>Arg(a)+Arg(b)</code> stays in
+   * <code>(-Pi, Pi]</code>. That is certain when every argument but one is positive, so an argument
+   * which is not provably positive is folded only with coefficient <code>1</code> (relative to the
+   * common factor), and only one of them, or a pair that
+   * {@link #foldsToLogOfProduct(IExpr, IExpr)} proves - a complex conjugate pair of eigenvalues, as
+   * <code>MatrixLog</code> needs it. <code>Log(x)+Log(1/x)</code> is not <code>0</code>: both
+   * arguments may be negative reals. A positive constant factor is split off first,
+   * <code>Log(2*x)-Log(x)</code> is <code>Log(2)</code>.
    *
    * @param plusAST the sum to fold
    * @return the folded sum, or {@link F#NIL} if fewer than two summands are logarithms
    */
   private IExpr tryPlusLog(IAST plusAST) {
-    if (plusAST.size() > 2) {
-      IASTAppendable logPlus = F.PlusAlloc(plusAST.size());
-      // logarithms whose argument is not (provably) real: they cannot join `a1` one at a time,
-      // because only the product of a whole pair is real again
-      IASTAppendable pendingComplexLogs = F.ListAlloc(plusAST.size());
-      IExpr a1 = F.NIL;
-      boolean evaled = false;
-      for (int i = 1; i < plusAST.size(); i++) {
-        IExpr a2 = plusAST.get(i);
-        IExpr arg = F.NIL;
-        if (a2.isTimes2() && a2.first().isInteger() && //
-            a2.second().isLog() && a2.second().first().isRealResult()) {
-          arg = S.Power.of(a2.second().first(), a2.first());
-        } else if (a2.isLog() && a2.first().isRealResult()) {
-          arg = a2.first();
-        }
-        if (arg.isRealResult()) {
-          if (a1.isPresent()) {
-            a1 = a1.multiply(arg);
-            evaled = true;
-          } else {
-            a1 = arg;
-          }
-          continue;
-        }
-        if (a2.isLog()) {
-          pendingComplexLogs.append(a2);
-          continue;
-        }
-        logPlus.append(a2);
+    if (plusAST.size() <= 2) {
+      return F.NIL;
+    }
+    IAST split = splitPositiveFactorLogs(plusAST);
+    if (split != plusAST) {
+      IExpr evaluated = eval(split);
+      if (!evaluated.isPlus()) {
+        return evaluated;
       }
+      plusAST = (IAST) evaluated;
+      if (plusAST.size() <= 2) {
+        return plusAST;
+      }
+    }
+    IExpr result = foldLogs(plusAST, true);
+    return result != null ? result : foldLogs(plusAST, false);
+  }
 
-      // pair up the complex logarithms; an unpaired one stays a summand of its own
-      for (int i = 1; i < pendingComplexLogs.size(); i++) {
-        IExpr logI = pendingComplexLogs.get(i);
-        if (logI.isNIL()) {
+  /**
+   * The fold of {@link #tryPlusLog(IAST)} after the positive factors are split off.
+   *
+   * @param symbolicPowers whether an integer multiple <code>p*Log(z)</code> of a symbolic
+   *        <code>z</code> may join as <code>z^p</code>. It is only kept if <code>z</code> cancels
+   *        from the folded product: <code>Log(8*c^2)-2*Log(c)</code> is <code>Log(8)</code> for
+   *        <code>c&gt;0</code>, but <code>2*Log(x)+Log(y)</code> stays a sum.
+   * @return the folded sum, {@link F#NIL} if fewer than two summands fold, or <code>null</code> if
+   *         a symbolic power did not cancel
+   */
+  private IExpr foldLogs(IAST plusAST, boolean symbolicPowers) {
+    IRational[] coefficients = new IRational[plusAST.size()];
+    IExpr[] arguments = new IExpr[plusAST.size()];
+    IRational unit = null;
+    boolean allIntegers = true;
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr summand = plusAST.get(i);
+      if (summand.isLog()) {
+        coefficients[i] = F.C1;
+        arguments[i] = summand.first();
+      } else if (summand.isTimes2() && summand.first().isRational() && summand.second().isLog()) {
+        coefficients[i] = (IRational) summand.first();
+        arguments[i] = summand.second().first();
+      } else {
+        continue;
+      }
+      allIntegers &= coefficients[i].isInteger();
+      IRational magnitude = coefficients[i].abs();
+      if (unit == null || magnitude.isLT(unit)) {
+        unit = magnitude;
+      }
+    }
+    if (unit == null) {
+      return F.NIL;
+    }
+    if (allIntegers) {
+      unit = F.C1;
+    }
+    IASTAppendable rest = F.PlusAlloc(plusAST.size());
+    IExpr product = F.NIL;
+    IExpr free = F.NIL;
+    // logarithms whose argument is not provably positive: they may join `product` one at a time
+    // only, or as a pair whose product is proven
+    IASTAppendable pending = F.ListAlloc(plusAST.size());
+    IASTAppendable powered = F.ListAlloc();
+    int folded = 0;
+    for (int i = 1; i < plusAST.size(); i++) {
+      if (coefficients[i] == null) {
+        rest.append(plusAST.get(i));
+        continue;
+      }
+      IRational ratio = coefficients[i].divideBy(unit).normalize();
+      if (!ratio.isInteger()) {
+        rest.append(plusAST.get(i));
+        continue;
+      }
+      boolean symbolicPower =
+          !ratio.isOne() && !ratio.isMinusOne() && !arguments[i].isNumericFunction(true);
+      if (symbolicPower && !symbolicPowers) {
+        rest.append(plusAST.get(i));
+      } else if (isProvablyPositive(arguments[i])) {
+        if (symbolicPower) {
+          powered.append(arguments[i]);
+        }
+        IExpr factor = S.Power.of(arguments[i], ratio);
+        product = product.isPresent() ? product.multiply(factor) : factor;
+        folded++;
+      } else if (ratio.isOne()) {
+        pending.append(arguments[i]);
+      } else {
+        rest.append(plusAST.get(i));
+      }
+    }
+    for (int i = 1; i < pending.size(); i++) {
+      IExpr argI = pending.get(i);
+      if (argI.isNIL()) {
+        continue;
+      }
+      for (int j = i + 1; j < pending.size(); j++) {
+        IExpr argJ = pending.get(j);
+        if (argJ.isNIL()) {
           continue;
         }
-        for (int j = i + 1; j < pendingComplexLogs.size(); j++) {
-          IExpr logJ = pendingComplexLogs.get(j);
-          if (logJ.isNIL()) {
-            continue;
-          }
-          IExpr product = foldsToLogOfProduct(logI.first(), logJ.first());
-          if (product.isPresent()) {
-            a1 = a1.isPresent() ? a1.multiply(product) : product;
-            evaled = true;
-            pendingComplexLogs.set(i, F.NIL);
-            pendingComplexLogs.set(j, F.NIL);
-            break;
-          }
-        }
-      }
-      for (int i = 1; i < pendingComplexLogs.size(); i++) {
-        if (pendingComplexLogs.get(i).isPresent()) {
-          logPlus.append(pendingComplexLogs.get(i));
-        }
-      }
-
-      if (evaled) {
-        a1 = eval(a1);
-        if (logPlus.isEmpty()) {
-          return F.Log(a1);
-        } else {
-          logPlus.append(F.Log(a1));
-          return logPlus;
+        IExpr pair = foldsToLogOfProduct(argI, argJ);
+        if (pair.isPresent()) {
+          product = product.isPresent() ? product.multiply(pair) : pair;
+          folded += 2;
+          pending.set(i, F.NIL);
+          pending.set(j, F.NIL);
+          break;
         }
       }
     }
-    return F.NIL;
+    for (int i = 1; i < pending.size(); i++) {
+      IExpr argI = pending.get(i);
+      if (argI.isNIL()) {
+        continue;
+      }
+      if (free.isNIL()) {
+        free = argI;
+        folded++;
+      } else {
+        rest.append(F.Times(unit, F.Log(argI)));
+      }
+    }
+    if (folded < 2) {
+      return F.NIL;
+    }
+    if (free.isPresent()) {
+      product = product.isPresent() ? product.multiply(free) : free;
+    }
+    product = eval(product);
+    if (!product.isNumber()) {
+      product = eval(F.Cancel(product));
+    }
+    for (int i = 1; i < powered.size(); i++) {
+      if (!product.isFree(powered.get(i))) {
+        return null;
+      }
+    }
+    rest.append(F.Times(unit, F.Log(product)));
+    return eval(rest.oneIdentity0());
+  }
+
+  /**
+   * Split <code>c*Log(p*u)</code> with a positive factor <code>p</code> into
+   * <code>c*Log(p)+c*Log(u)</code>, which holds for every <code>u</code>.
+   *
+   * @return the rewritten (unevaluated) sum, or <code>plusAST</code> itself if nothing was split
+   */
+  private IAST splitPositiveFactorLogs(IAST plusAST) {
+    IASTAppendable result = F.NIL;
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr summand = plusAST.get(i);
+      IExpr coefficient = F.C1;
+      IExpr log = summand;
+      if (summand.isTimes2() && summand.first().isRational() && summand.second().isLog()) {
+        coefficient = summand.first();
+        log = summand.second();
+      }
+      if (!log.isLog() || !log.first().isTimes()) {
+        continue;
+      }
+      IAST times = (IAST) log.first();
+      IASTAppendable positive = F.TimesAlloc(times.size());
+      IASTAppendable other = F.TimesAlloc(times.size());
+      for (int j = 1; j < times.size(); j++) {
+        IExpr factor = times.get(j);
+        if (!factor.isOne() && isProvablyPositive(factor)) {
+          positive.append(factor);
+        } else {
+          other.append(factor);
+        }
+      }
+      if (positive.isEmpty() || other.isEmpty()) {
+        continue;
+      }
+      if (result.isNIL()) {
+        result = plusAST.copyAppendable();
+      }
+      IASTAppendable split = F.PlusAlloc(positive.size() + 1);
+      for (int j = 1; j < positive.size(); j++) {
+        split.append(F.Times(coefficient, F.Log(positive.get(j))));
+      }
+      split.append(F.Times(coefficient, F.Log(other.oneIdentity1())));
+      result.set(i, split);
+    }
+    return result.isPresent() ? result : plusAST;
+  }
+
+  /**
+   * Test if <code>expr</code> is positive, by its sign or by the assumptions of the evaluation. The
+   * answers are cached for this simplification, whose assumptions don't change.
+   */
+  private boolean isProvablyPositive(IExpr expr) {
+    if (expr.isPositiveResult()) {
+      return true;
+    }
+    if (fEngine.getAssumptions() == null || expr.isNumber() || expr.isNumericFunction(true)) {
+      return false;
+    }
+    return fPositiveCache.computeIfAbsent(expr,
+        e -> fEngine.evalTrue(F.Refine(F.Greater(e, F.C0))));
   }
 
   /**
@@ -1077,26 +1225,47 @@ public class SimplifyUtil extends VisitorExpr {
    * each argument lies in <code>(-Pi, Pi]</code> their sum lies in <code>(-2*Pi, 2*Pi]</code>, so
    * it is either <code>0</code> or <code>2*Pi</code>, and it can only be <code>2*Pi</code> when
    * both arguments equal <code>Pi</code>, that is when <code>z</code> and <code>w</code> are both
-   * negative reals. Excluding that one case makes the fold sound.
+   * negative reals. The fold is therefore sound when one of them is proven not to be a negative
+   * real.
    *
    * <p>
    * The excluded case is not academic: <code>Log(-5)+Log(-5)</code> is
-   * <code>I*2*Pi+2*Log(5)</code>, and a conjugate test would not catch it, because a negative real
-   * is its own conjugate. This test needs no <code>Conjugate</code> call and is more general than a
-   * conjugate pair; a symbolic argument is rejected because its product does not evaluate to a
-   * positive real.
+   * <code>I*2*Pi+2*Log(5)</code>, and <code>Log(x)+Log(1/x)</code> is <code>I*2*Pi</code> for a
+   * negative <code>x</code>.
    *
    * @param z the argument of the first logarithm
    * @param w the argument of the second logarithm
    * @return the evaluated product <code>z*w</code>, or {@link F#NIL} if the fold is not allowed
    */
   private IExpr foldsToLogOfProduct(IExpr z, IExpr w) {
-    if (z.isNegativeResult() && w.isNegativeResult()) {
-      // both arguments have Arg == Pi, so the folded logarithm would lose a term of I*2*Pi
+    if (!isNotNegativeReal(z) && !isNotNegativeReal(w)) {
       return F.NIL;
     }
     IExpr product = eval(F.Times(z, w));
     return product.isPositiveResult() ? product : F.NIL;
+  }
+
+  /**
+   * Test if <code>z</code> is proven not to be a negative real number. An imaginary part of a
+   * numeric <code>z</code> counts only if it is clearly more than roundoff of a real value; a value
+   * which is real within that bound and negative is a negative real.
+   */
+  private boolean isNotNegativeReal(IExpr z) {
+    if (z.isPositiveResult()) {
+      return true;
+    }
+    if (!z.isNumericFunction(true)) {
+      return false;
+    }
+    double re = z.re().evalfNaN();
+    double im = z.im().evalfNaN();
+    if (Double.isNaN(re) || Double.isNaN(im)) {
+      return false;
+    }
+    if (Math.abs(im) > 1.0e-10 * Math.max(1.0, Math.abs(re))) {
+      return true;
+    }
+    return re >= 0.0;
   }
 
   private static IExpr tryTimesLog(IAST timesAST) {
@@ -1149,6 +1318,9 @@ public class SimplifyUtil extends VisitorExpr {
     fNoApart = noApart;
     fTransformationCache = transformationCache;
   }
+
+  /** The results of {@link #isProvablyPositive(IExpr)} under the assumptions of this call. */
+  private final Map<IExpr, Boolean> fPositiveCache = new HashMap<>();
 
   private IExpr eval(IExpr a) {
     return fEngine.evaluate(a);

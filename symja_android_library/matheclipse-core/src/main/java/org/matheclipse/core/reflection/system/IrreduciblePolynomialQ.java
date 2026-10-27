@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.AlgebraicNumberUtils;
 
@@ -118,6 +119,12 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
     // m(t). For increasing shifts s = 0, 1, ... compute R = Resultant_t(m(t), p[v -> v + s*t], t)
     // over the first variable v, until R is square-free. Then poly is irreducible over Q(alpha)
     // iff R has exactly one (non-constant) irreducible factor over Q.
+    if (extensionGenerators.argSize() > 0 && variables.argSize() >= 2
+        && hasRepeatedFactor(poly, variables, engine)) {
+      // the resultant test below needs a square-free polynomial: the norm of
+      // (x+Sqrt(3)*y)^2 is never square-free, whatever the shift
+      return S.False;
+    }
     if (extensionGenerators.argSize() == 1 && variables.argSize() >= 2) {
       IExpr alpha = extensionGenerators.arg1();
       ISymbol t = F.Dummy("$ipqT");
@@ -237,6 +244,24 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
 
     // An irreducible polynomial should only have 1 non-constant factor evaluated
     return nonConstantFactorsCount == 1 ? S.True : S.False;
+  }
+
+  /**
+   * Test if the discriminant of <code>poly</code> with respect to one of its variables of degree
+   * at least <code>2</code> vanishes identically. Then <code>poly</code> has a repeated factor over
+   * the field of its coefficients and is reducible.
+   */
+  private static boolean hasRepeatedFactor(IExpr poly, IAST variables, EvalEngine engine) {
+    for (int i = 1; i <= variables.argSize(); i++) {
+      IExpr variable = variables.get(i);
+      IExpr degree = engine.evaluate(F.Exponent(poly, variable));
+      if (degree.isInteger() && ((IInteger) degree).isGT(F.C1)) {
+        IExpr discriminant =
+            engine.evalQuiet(F.Expand(F.Discriminant(poly, variable)));
+        return discriminant.isZero();
+      }
+    }
+    return false;
   }
 
   /**

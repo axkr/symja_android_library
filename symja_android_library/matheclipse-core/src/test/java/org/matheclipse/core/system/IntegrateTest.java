@@ -1720,13 +1720,13 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(Tan(x), {x,0,2*Pi/3}, PrincipalValue->True)", //
         "Log(2)");
     check("Integrate(Cot(x), {x,-Pi/3,Pi/2}, PrincipalValue->True)", //
-        "Log(2)-Log(3)/2");
+        "Log(4/3)/2");
     check("Integrate(x/(x^2-c^2), {x,0,3*c}, PrincipalValue->True, Assumptions->c>0)", //
         "Log(8)/2");
     check("Integrate(Exp(x)/x, {x,-c,c}, PrincipalValue->True, Assumptions->c>0)", //
         "-ExpIntegralEi(-c)+ExpIntegralEi(c)");
     check("Integrate(1/(x^2-9), {x,0,5}, PrincipalValue->True)", //
-        "-ArcTanh(3/5)/3");
+        "-Log(4)/6");
     // a double pole has no principal value
     check("Integrate(1/x^2, {x,-1,2}, PrincipalValue->True)", //
         "Integrate(1/x^2,{x,-1,2},PrincipalValue->True)");
