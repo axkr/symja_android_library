@@ -11595,9 +11595,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testHoldFormBoxes() {
     check("InputForm(ToBoxes(HoldForm(1 + 1)))", //
         "TagBox(RowBox({\"1\",\"+\",\"1\"}),HoldForm)");
-    // Editable is no built-in symbol yet, so the relaxed syntax lowercases it
     check("InputForm(ToBoxes(TraditionalForm(x^2)))", //
-        "TagBox(FormBox(SuperscriptBox(\"x\",\"2\"),TraditionalForm),TraditionalForm,editable->True)");
+        "TagBox(FormBox(SuperscriptBox(\"x\",\"2\"),TraditionalForm),TraditionalForm,Editable->True)");
     check("InputForm(ToBoxes(Defer(1 + 1)))", //
         "RowBox({\"1\",\"+\",\"1\"})");
     check("ToString(HoldForm(1 + 1), InputForm)", //
@@ -16792,9 +16791,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testToBoxesScripts() {
     check("ToBoxes(TraditionalForm(Subsuperscript(b, 4, 5))) // InputForm", //
-        "TagBox(FormBox(TemplateBox({\"b\",\"4\",\"5\"},\"Subsuperscript\",syntaxform->SubsuperscriptBox),TraditionalForm),TraditionalForm,editable->True)");
+        "TagBox(FormBox(TemplateBox({\"b\",\"4\",\"5\"},\"Subsuperscript\",SyntaxForm->SubsuperscriptBox),TraditionalForm),TraditionalForm,Editable->True)");
     check("ToBoxes(Subsuperscript(b, 4, 5)) // InputForm", //
-        "SubsuperscriptBox(\"b\",\"4\",\"5\")");
+        "TemplateBox({\"b\",\"4\",\"5\"},\"Subsuperscript\",SyntaxForm->SubsuperscriptBox)");
     check("ToBoxes(Subscript(z, 7)) // InputForm", //
         "SubscriptBox(\"z\",\"7\")");
     check("ToBoxes(Subscript(z, i, j)) // InputForm", //
@@ -16810,7 +16809,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToString(Subscript(w, 2), StandardForm) // InputForm", //
         "\"\\!\\(\\*SubscriptBox[\\\"w\\\", \\\"2\\\"]\\)\"");
     check("ToString(Style(\"pq\", Green), StandardForm) // InputForm", //
-        "\"\\!\\(\\*StyleBox[\\\"\\\\\\\"pq\\\\\\\"\\\", RGBColor[0, 1, 0], Rule[striponinput, False]]\\)\"");
+        "\"\\!\\(\\*StyleBox[\\\"\\\\\\\"pq\\\\\\\"\\\", RGBColor[0, 1, 0], Rule[StripOnInput, False]]\\)\"");
+    // boxes which are text only are that text
+    check("ToString(c + d, StandardForm)", //
+        "c+d");
+    check("ToString({\"rs\"}, StandardForm) // InputForm", //
+        "\"{\\\"rs\\\"}\"");
     check("ToString(1+y^3, StandardForm)", //
         "\\!\\(\\*RowBox[{\"1\", \"+\", SuperscriptBox[\"y\", \"3\"]}]\\)");
     // boxes which are text are that text

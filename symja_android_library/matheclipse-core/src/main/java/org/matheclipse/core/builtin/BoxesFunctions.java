@@ -193,7 +193,7 @@ public class BoxesFunctions {
             F.binaryAST2(S.FormBox,
                 standardFormRecursive(expr.first(), 0, S.TraditionalForm, engine),
                 S.TraditionalForm),
-            S.TraditionalForm, F.Rule(F.symbol("Editable"), S.True));
+            S.TraditionalForm, F.Rule(S.Editable, S.True));
       }
       if (expr.isString()) {
         return F.$str(quotedString(expr.toString()));
@@ -481,7 +481,7 @@ public class BoxesFunctions {
         for (int i = 2; i < ast.size(); i++) {
           styleBox.append(ast.get(i));
         }
-        styleBox.append(F.Rule(F.symbol("StripOnInput"), S.False));
+        styleBox.append(F.Rule(S.StripOnInput, S.False));
         return styleBox;
       }
       if (ast.isAST(S.Subscript) && ast.argSize() >= 2) {
@@ -506,12 +506,9 @@ public class BoxesFunctions {
         IExpr base = standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine);
         IExpr subscript = standardFormRecursive(ast.arg2(), 0, form, engine);
         IExpr superscript = standardFormRecursive(ast.arg3(), 0, form, engine);
-        if (form == S.TraditionalForm) {
-          // the template which is written as a SubsuperscriptBox
-          return F.ternaryAST3(S.TemplateBox, F.list(base, subscript, superscript),
-              F.$str("Subsuperscript"), F.Rule(F.symbol("SyntaxForm"), S.SubsuperscriptBox));
-        }
-        return F.ternaryAST3(S.SubsuperscriptBox, base, subscript, superscript);
+        // the template which is written as a SubsuperscriptBox
+        return F.ternaryAST3(S.TemplateBox, F.list(base, subscript, superscript),
+            F.$str("Subsuperscript"), F.Rule(S.SyntaxForm, S.SubsuperscriptBox));
       }
       if (ast.isAST(S.Row, 2) && ast.arg1().isList()) {
         // Row({e1, e2, ...}): the boxes of the elements side by side

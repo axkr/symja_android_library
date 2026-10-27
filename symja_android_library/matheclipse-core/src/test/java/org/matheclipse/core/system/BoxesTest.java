@@ -189,7 +189,7 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("MakeBoxes[Row[{\"(\", z, \")\"}], TraditionalForm] // InputForm", //
         "TemplateBox({\"\\\"(\\\"\",\"z\",\"\\\")\\\"\"},\"RowDefault\")");
     check("MakeBoxes[Style[z, Bold], TraditionalForm] // InputForm", //
-        "StyleBox(\"z\",Bold,striponinput->False)");
+        "StyleBox(\"z\",Bold,StripOnInput->False)");
     // the imaginary unit is written \[ImaginaryI]
     check("ToString[MakeBoxes[I, TraditionalForm], InputForm, CharacterEncoding -> \"Unicode\"]",
         "\"\"");
