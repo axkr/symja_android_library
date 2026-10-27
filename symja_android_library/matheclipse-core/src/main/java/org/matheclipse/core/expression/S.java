@@ -5353,6 +5353,15 @@ public class S {
       S.initFinalSymbol("DataStructureQ", ID.DataStructureQ);
 
   /**
+   * Date(x) - TODO describe `Date`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Date.md">Date
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Date = S.initFinalSymbol("Date", ID.Date);
+
+  /**
    * DateBounds(x) - TODO describe `DateBounds`.
    * 
    * @see <a href=
@@ -16304,6 +16313,16 @@ public class S {
       S.initFinalSymbol("MoleculeValue", ID.MoleculeValue);
 
   public final static IBuiltInSymbol Moment = S.initFinalSymbol("Moment", ID.Moment);
+
+  /**
+   * MomentEvaluate(x) - TODO describe `MomentEvaluate`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MomentEvaluate.md">MomentEvaluate
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MomentEvaluate =
+      S.initFinalSymbol("MomentEvaluate", ID.MomentEvaluate);
 
   /**
    * MomentGeneratingFunction(x) - TODO describe `MomentGeneratingFunction`.
