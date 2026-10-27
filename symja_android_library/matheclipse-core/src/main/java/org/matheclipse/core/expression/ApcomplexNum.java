@@ -1402,6 +1402,7 @@ public class ApcomplexNum implements IComplexNum {
     if (x instanceof INumber) {
       try {
         return F
+            // CPD-OFF numeric special-function dispatch per number type
             .complexNum(h().gamma(fApcomplex, ((INumber) x).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException are) {
         // Upper gamma with first argument real part non-positive and second argment zero
@@ -1431,6 +1432,7 @@ public class ApcomplexNum implements IComplexNum {
     // }
     if (x0 instanceof INumber && x1 instanceof INumber) {
       try {
+      // CPD-ON
         return F.complexNum(h().gamma(fApcomplex,
             ((INumber) x0).apcomplexValue(), ((INumber) x1).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException are) {
@@ -1989,8 +1991,7 @@ public class ApcomplexNum implements IComplexNum {
     try {
       Apcomplex polylog = ApcomplexZetaMath.polylog(
           new Apcomplex(nu.real().truncate(), nu.imag().precision(precision)),
-          new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().precision(precision),
-              z.imag().signum() == 0 ? z.imag() : z.imag().precision(precision)));
+          precisionOfParts(z, precision));
       return F.complexNum(polylog);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {
       return F.NIL;

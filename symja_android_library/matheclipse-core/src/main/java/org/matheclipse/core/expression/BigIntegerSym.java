@@ -22,7 +22,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
 import edu.jas.arith.BigRational;
 
@@ -322,28 +321,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public final boolean equalsInt(int value) {
     return fBigIntValue.intValue() == value && fBigIntValue.bitLength() <= 31;
-  }
-
-  /**
-   * Get the highest exponent of <code>base</code> that divides <code>this</code>
-   *
-   * @return the exponent
-   */
-  @Override
-  public IExpr exponent(IInteger base) {
-    IInteger b = this;
-    if (complexSign() < 0) {
-      b = b.negate();
-    } else if (b.isZero()) {
-      return F.CInfinity;
-    } else if (b.isOne()) {
-      return F.C0;
-    }
-    if (b.equals(base)) {
-      return F.C1;
-    }
-    BigInteger rest = Primality.countExponent(b.toBigNumerator(), base.toBigNumerator());
-    return valueOf(rest);
   }
 
   /** Returns the greatest common divisor of this large integer and the one specified. */

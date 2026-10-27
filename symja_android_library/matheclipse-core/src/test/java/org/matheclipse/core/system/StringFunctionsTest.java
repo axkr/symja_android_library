@@ -441,6 +441,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "abcdefghi");
     check("StringDrop(\"\",-1)", //
         "StringDrop(,-1)");
+    // message: StringDrop: String or list of strings expected at position 1 in StringDrop(x,2).
+    check("StringDrop(x, 2)", //
+        "StringDrop(x,2)");
   }
 
   @Test
@@ -760,6 +763,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringReplace() {
+    // StringReplace: String or list of strings expected at position 1 in StringReplace(x,a->b).
+    check("StringReplace(x, \"a\" -> \"b\")", //
+        "StringReplace(x,a->b)");
     // rules held in a variable
     check("srl = {\"a\" -> \"b\"}; StringReplace(\"abc\", srl)", //
         "bbc");

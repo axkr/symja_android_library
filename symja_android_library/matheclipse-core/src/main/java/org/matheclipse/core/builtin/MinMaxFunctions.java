@@ -104,7 +104,7 @@ public class MinMaxFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.arg2();
       if (x.isSymbol() || (x.isAST() && !x.isList())) {
-        IExpr result = Maximize.maximize(ast.topHead(), ast.arg1(), x, engine);
+        IExpr result = optimize(ast.topHead(), ast.arg1(), x, engine);
         if (result.isList() && result.argSize() >= 1 && result.last().isList()) {
           IAST subList = (IAST) result.last();
           if (subList.argSize() >= 1 && subList.last().isRule()) {
@@ -113,6 +113,11 @@ public class MinMaxFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /** The optimization result <code>{value, {x -> point}}</code> of <code>function</code>. */
+    protected IExpr optimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
+      return Maximize.maximize(head, function, x, engine);
     }
 
     @Override
@@ -156,31 +161,11 @@ public class MinMaxFunctions {
    * </code>
    * </pre>
    */
-  private static class ArgMin extends AbstractEvaluator {
+  private static class ArgMin extends ArgMax {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr x = ast.arg2();
-      if (x.isSymbol() || (x.isAST() && !x.isList())) {
-        IExpr result = Minimize.minimize(ast.topHead(), ast.arg1(), x, engine);
-        if (result.isList() && result.argSize() >= 1 && result.last().isList()) {
-          IAST subList = (IAST) result.last();
-          if (subList.argSize() >= 1 && subList.last().isRule()) {
-            return subList.last().second();
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.FULL_SUPPORT;
+    protected IExpr optimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
+      return Minimize.minimize(head, function, x, engine);
     }
   }
 
@@ -1170,7 +1155,7 @@ public class MinMaxFunctions {
             } else if (head == S.Cot || head == S.Csc) {
               // Poles when Sin(x) == 0
               conditions.add(F.Equal(F.Sin(ast.arg1()), F.C0));
-            } else if (head == S.ArcSin || head == S.ArcCos) {
+            } else if (head == S.ArcSin || head == S.ArcCos || head == S.ArcTanh) {
               // Branch points at z == 1, z == -1
               IExpr z = ast.arg1();
               conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
@@ -1188,6 +1173,7 @@ public class MinMaxFunctions {
               conditions.add(F.And(F.Equal(F.Re(z), F.C0), F.LessEqual(F.Im(z), F.CN1)));
             } else if (head == S.ArcCot) {
               // Branch points at z == I, z == -I
+              // CPD-OFF branch points and cuts per function
               IExpr z = ast.arg1();
               conditions.add(F.Equal(F.Plus(F.CI, z), F.C0));
               conditions.add(F.Equal(F.Subtract(F.CI, z), F.C0));
@@ -1195,8 +1181,10 @@ public class MinMaxFunctions {
               conditions.add(F.And(F.Equal(F.Re(z), F.C0), F.GreaterEqual(F.Im(z), F.CN1),
                   F.LessEqual(F.Im(z), F.C1)));
             } else if (head == S.ArcSec || head == S.ArcCsc) {
+            // CPD-ON
               // Branch points z == +/- 1 and z == 0
               IExpr z = ast.arg1();
+              // CPD-OFF branch points and cuts per function
               conditions.add(F.Equal(z, F.C0));
               conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
               conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
@@ -1204,22 +1192,16 @@ public class MinMaxFunctions {
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.CN1),
                   F.LessEqual(F.Re(z), F.C1)));
             } else if (head == S.ArcCosh) {
+            // CPD-ON
               // Branch points z == 1, z == -1
               IExpr z = ast.arg1();
               conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
               conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
               // Branch cut: (-inf, 1]
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.C1)));
-            } else if (head == S.ArcTanh) {
-              // Branch points z == 1, z == -1
-              IExpr z = ast.arg1();
-              conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
-              conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
-              // Branch cuts: (-inf, -1] U [1, inf)
-              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.CN1)));
-              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.C1)));
             } else if (head == S.ArcCoth) {
               // Branch points z == 1, z == -1
+              // CPD-OFF branch points and cuts per function
               IExpr z = ast.arg1();
               conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
               conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
@@ -1227,6 +1209,7 @@ public class MinMaxFunctions {
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.CN1),
                   F.LessEqual(F.Re(z), F.C1)));
             } else if (head == S.ArcSech) {
+            // CPD-ON
               // ArcSech(z) = ArcCosh(1/z).
               IExpr z = ast.arg1();
               conditions.add(F.Equal(z, F.C0));
@@ -1238,6 +1221,7 @@ public class MinMaxFunctions {
             } else if (head == S.ArcCsch) {
               // ArcCsch(z) = ArcSinh(1/z).
               IExpr z = ast.arg1();
+              // CPD-OFF branch points and cuts per function
               conditions.add(F.Equal(z, F.C0));
               conditions.add(F.Equal(F.Plus(F.CI, z), F.C0));
               conditions.add(F.Equal(F.Subtract(F.CI, z), F.C0));
@@ -1245,6 +1229,7 @@ public class MinMaxFunctions {
               conditions.add(F.And(F.Equal(F.Re(z), F.C0), F.GreaterEqual(F.Im(z), F.CN1),
                   F.LessEqual(F.Im(z), F.C1)));
             }
+            // CPD-ON
           }
         } else {
           // Logic for Reals (simplified)

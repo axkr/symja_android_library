@@ -483,42 +483,122 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     return offsets;
   }
 
-  private IExpr evaluateInteger1D(IInteger ruleNum, int k, int r, int s, boolean isTotalistic,
-      int[][] explicitWeights, IAST init, int steps, int tStart, int tEnd, int dt,
-      boolean returnSingleStep, boolean isOperatorForm, int[] xWindow) {
-    if (k < 2 || r < 0 || s < 1)
-      return F.NIL;
-
+  /**
+   * The new cell value of every transition of an integer rule: the base {@code k} digits of
+   * {@code ruleNum}, lowest first.
+   *
+   * <p>
+   * A rule with explicit weights has a transition for each weighted sum of the cells, a totalistic
+   * rule one for each sum of the cells, and any other rule one for each pattern of the cells of its
+   * {@code s} preceding steps.
+   *
+   * @param cells the number of cells in the neighbourhood
+   * @param weighted whether the rule has explicit weights
+   * @param weightTotal the sum of the explicit weights
+   * @return {@code null} for weights with a negative sum
+   */
+  private static int[] ruleTable(IInteger ruleNum, int k, int s, int cells, boolean weighted,
+      long weightTotal,
+      boolean isTotalistic) {
     long numTransitions;
-    if (explicitWeights != null) {
-      int weightTotal = 0;
-      for (int j = 0; j < 2 * r + 1; j++) {
-        weightTotal += explicitWeights[0][j];
+    if (weighted) {
+      if (weightTotal < 0) {
+        return null;
       }
-      numTransitions = (long) weightTotal * (k - 1) * s + 1;
+      numTransitions = weightTotal * (k - 1) * s + 1;
     } else if (isTotalistic) {
-      numTransitions = (long) s * (2 * r + 1) * (k - 1) + 1;
+      numTransitions = (long) s * cells * (k - 1) + 1;
     } else {
-      double numTransDouble = Math.pow(k, s * (2 * r + 1));
-      if (numTransDouble > Config.MAX_AST_SIZE) {
-        ASTElementLimitExceeded.throwIt((long) numTransDouble);
-        return F.NIL;
+      double count = Math.pow(k, (double) s * cells);
+      if (count > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt((long) Math.min(count, Long.MAX_VALUE));
       }
-      numTransitions = (long) numTransDouble;
+      numTransitions = (long) count;
     }
-
     if (numTransitions > Config.MAX_AST_SIZE) {
       ASTElementLimitExceeded.throwIt(numTransitions);
-      return F.NIL;
     }
     int[] ruleBits = new int[(int) numTransitions];
-
     IInteger temp = ruleNum;
     IInteger ZZk = F.ZZ(k);
     for (int i = 0; i < numTransitions; i++) {
       IExpr[] divMod = temp.divideAndRemainder(ZZk);
       ruleBits[i] = divMod[1].toIntDefault(0);
       temp = (IInteger) divMod[0];
+    }
+    return ruleBits;
+  }
+
+  /** Whether <code>init</code> is <code>{aspec, background}</code> with an integer background. */
+  private static boolean hasBackground(IAST init) {
+    return init.argSize() == 2 && init.get(2).isInteger() && init.get(1).isList();
+  }
+
+  /**
+   * The initial states of the <code>s</code> preceding steps of an integer rule: each one
+   * <code>{aspec, background}</code> or a cyclic array.
+   *
+   * @param oneDimensional unwrap a 1D <code>{{cells}}</code> of a rule of order 1
+   * @return <code>null</code> if <code>init</code> has not the form of <code>s</code> initial
+   *         states
+   */
+  private static List<IAST> initialStates(IAST init, int s, boolean oneDimensional) {
+    List<IAST> initStates = new ArrayList<>();
+    if (hasBackground(init)) {
+      IAST aspecList = (IAST) init.get(1);
+      int bg = init.get(2).toIntDefault(0);
+      if (oneDimensional && s == 1 && aspecList.argSize() == 1 && aspecList.arg1().isList()) {
+        aspecList = (IAST) aspecList.arg1();
+      }
+      if (s > 1) {
+        if (aspecList.argSize() != s || !aspecList.arg1().isList()) {
+          return null;
+        }
+        for (int i = 1; i <= s; i++) {
+          IASTAppendable paddedStep = F.ListAlloc(2);
+          paddedStep.append(aspecList.get(i));
+          paddedStep.append(F.ZZ(bg));
+          initStates.add(paddedStep);
+        }
+      } else {
+        IASTAppendable paddedStep = F.ListAlloc(2);
+        paddedStep.append(aspecList);
+        paddedStep.append(F.ZZ(bg));
+        initStates.add(paddedStep);
+      }
+    } else if (s > 1) {
+      if (init.argSize() != s || !init.arg1().isList()) {
+        return null;
+      }
+      for (int i = 1; i <= s; i++) {
+        IExpr stepVal = init.get(i);
+        if (!stepVal.isList()) {
+          return null;
+        }
+        initStates.add((IAST) stepVal);
+      }
+    } else {
+      initStates.add(init);
+    }
+    return initStates;
+  }
+
+  private IExpr evaluateInteger1D(IInteger ruleNum, int k, int r, int s, boolean isTotalistic,
+      int[][] explicitWeights, IAST init, int steps, int tStart, int tEnd, int dt,
+      boolean returnSingleStep, boolean isOperatorForm, int[] xWindow) {
+    if (k < 2 || r < 0 || s < 1)
+      return F.NIL;
+
+    long weightTotal = 0;
+    if (explicitWeights != null) {
+      for (int j = 0; j < 2 * r + 1; j++) {
+        weightTotal += explicitWeights[0][j];
+      }
+    }
+    int[] ruleBits = ruleTable(ruleNum, k, s, 2 * r + 1, explicitWeights != null, weightTotal,
+        isTotalistic);
+    if (ruleBits == null) {
+      return F.NIL;
     }
 
     if (s == 1 && !isOperatorForm && init.argSize() == 2 && init.arg1().isList()
@@ -537,57 +617,13 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           steps, tStart, tEnd, dt, returnSingleStep, xWindow);
     }
 
-    boolean isCyclic = true;
-    List<IAST> initStates = new ArrayList<>();
-
     if (s == 1 && init.argSize() == 1 && init.arg1().isList()) {
       init = (IAST) init.arg1();
     }
-
-    if (init.argSize() == 2 && init.get(2).isInteger() && init.get(1).isList()) {
-      IAST aspecList = (IAST) init.get(1);
-      int bg = init.get(2).toIntDefault(0);
-      isCyclic = false;
-
-      if (s == 1 && aspecList.argSize() == 1 && aspecList.arg1().isList()) {
-        aspecList = (IAST) aspecList.arg1();
-      }
-
-      if (s > 1) {
-        if (aspecList.argSize() == s && aspecList.arg1().isList()) {
-          for (int i = 1; i <= s; i++) {
-            IASTAppendable paddedStep = F.ListAlloc(2);
-            paddedStep.append(aspecList.get(i));
-            paddedStep.append(F.ZZ(bg));
-            initStates.add(paddedStep);
-          }
-        } else {
-          return F.NIL;
-        }
-      } else {
-        IASTAppendable paddedStep = F.ListAlloc(2);
-        paddedStep.append(aspecList);
-        paddedStep.append(F.ZZ(bg));
-        initStates.add(paddedStep);
-      }
-    } else {
-      isCyclic = true;
-      if (s > 1) {
-        if (init.argSize() == s && init.arg1().isList()) {
-          for (int i = 1; i <= s; i++) {
-            IExpr stepVal = init.get(i);
-            if (stepVal.isList()) {
-              initStates.add((IAST) stepVal);
-            } else {
-              return F.NIL;
-            }
-          }
-        } else {
-          return F.NIL;
-        }
-      } else {
-        initStates.add(init);
-      }
+    boolean isCyclic = !hasBackground(init);
+    List<IAST> initStates = initialStates(init, s, true);
+    if (initStates == null) {
+      return F.NIL;
     }
 
     IAST firstInit = initStates.get(0);
@@ -890,78 +926,24 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     if (k < 2 || rY < 0 || rX < 0 || s < 1)
       return F.NIL;
 
-    long numTransitions;
+    long weightTotal = 0;
     if (explicitWeights != null) {
-      int weightTotal = 0;
       for (int i = 0; i < 2 * rY + 1; i++) {
         for (int j = 0; j < 2 * rX + 1; j++) {
           weightTotal += explicitWeights[i][j];
         }
       }
-      numTransitions = (long) weightTotal * (k - 1) * s + 1;
-    } else if (isTotalistic) {
-      numTransitions = (long) s * ((2 * rY + 1) * (2 * rX + 1)) * (k - 1) + 1;
-    } else {
-      double numTransDouble = Math.pow(k, s * (2 * rY + 1) * (2 * rX + 1));
-      if (numTransDouble > Config.MAX_AST_SIZE) {
-        ASTElementLimitExceeded.throwIt((long) numTransDouble);
-        return F.NIL;
-      }
-      numTransitions = (long) numTransDouble;
     }
-
-    if (numTransitions > Config.MAX_AST_SIZE) {
-      ASTElementLimitExceeded.throwIt(numTransitions);
+    int[] ruleBits = ruleTable(ruleNum, k, s, (2 * rY + 1) * (2 * rX + 1),
+        explicitWeights != null, weightTotal, isTotalistic);
+    if (ruleBits == null) {
       return F.NIL;
     }
-    int[] ruleBits = new int[(int) numTransitions];
 
-    IInteger temp = ruleNum;
-    IInteger ZZk = F.ZZ(k);
-    for (int i = 0; i < numTransitions; i++) {
-      IExpr[] divMod = temp.divideAndRemainder(ZZk);
-      ruleBits[i] = divMod[1].toIntDefault(0);
-      temp = (IInteger) divMod[0];
-    }
-
-    boolean isCyclic = true;
-    List<IAST> initStates = new ArrayList<>();
-
-    if (init.argSize() == 2 && init.get(2).isInteger() && init.get(1).isList()) {
-      IAST aspecList = (IAST) init.get(1);
-      int bg = init.get(2).toIntDefault(0);
-      isCyclic = false;
-
-      if (s > 1) {
-        if (aspecList.argSize() == s) {
-          for (int i = 1; i <= s; i++) {
-            IASTAppendable paddedStep = F.ListAlloc(2);
-            paddedStep.append(aspecList.get(i));
-            paddedStep.append(F.ZZ(bg));
-            initStates.add(paddedStep);
-          }
-        } else {
-          return F.NIL;
-        }
-      } else {
-        IASTAppendable paddedStep = F.ListAlloc(2);
-        paddedStep.append(aspecList);
-        paddedStep.append(F.ZZ(bg));
-        initStates.add(paddedStep);
-      }
-    } else {
-      isCyclic = true;
-      if (s > 1) {
-        if (init.argSize() == s) {
-          for (int i = 1; i <= s; i++) {
-            initStates.add((IAST) init.get(i));
-          }
-        } else {
-          return F.NIL;
-        }
-      } else {
-        initStates.add(init);
-      }
+    boolean isCyclic = !hasBackground(init);
+    List<IAST> initStates = initialStates(init, s, false);
+    if (initStates == null) {
+      return F.NIL;
     }
 
     IAST firstInit = initStates.get(0);
@@ -992,6 +974,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         currentAspec = stateExpr;
       }
 
+      // CPD-OFF int and expression states are filled and trimmed separately
       int[] stateArr = new int[gridY * gridX];
       for (int i = 0; i < stateArr.length; i++)
         stateArr[i] = bgForThisStep;
@@ -1003,6 +986,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
             int gY = paddingY + y - 1;
             int gX = paddingX + x - 1;
             if (gY < gridY && gX < gridX) {
+            // CPD-ON
               IExpr val = row.get(x);
               if (val.isInteger()) {
                 stateArr[gY * gridX + gX] = val.toIntDefault(0);
@@ -1070,6 +1054,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           }
         }
         nextBg = ruleBits[v];
+      // CPD-OFF int and expression states are trimmed separately
       } else {
         nextBg = bgHistory.get(bgHistory.size() - 1);
       }
@@ -1087,6 +1072,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
 
     if (!isCyclic && !isOperatorForm) {
       for (int tIdx = tStart; (localDt > 0 ? tIdx <= tEnd : tIdx >= tEnd); tIdx += localDt) {
+      // CPD-ON
         int hIdx = s - 1 + tIdx;
         if (hIdx >= 0 && hIdx < history.size()) {
           int[] state = history.get(hIdx);
@@ -1213,34 +1199,16 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       returnSingleStep = false;
     }
 
-    long numTransitions;
+    long weightTotal = 0;
     if (weights != null) {
-      long weightTotal = 0;
       for (int w : weights) {
         weightTotal += w;
       }
-      numTransitions = weightTotal * (k - 1) * s + 1;
-    } else if (isTotalistic) {
-      numTransitions = (long) s * blockSize * (k - 1) + 1;
-    } else {
-      double count = Math.pow(k, (double) s * blockSize);
-      if (count > Config.MAX_AST_SIZE) {
-        ASTElementLimitExceeded.throwIt((long) Math.min(count, Long.MAX_VALUE));
-        return F.NIL;
-      }
-      numTransitions = (long) count;
     }
-    if (numTransitions > Config.MAX_AST_SIZE) {
-      ASTElementLimitExceeded.throwIt(numTransitions);
+    int[] ruleBits =
+        ruleTable(ruleNum, k, s, blockSize, weights != null, weightTotal, isTotalistic);
+    if (ruleBits == null) {
       return F.NIL;
-    }
-    int[] ruleBits = new int[(int) numTransitions];
-    IInteger temp = ruleNum;
-    IInteger ZZk = F.ZZ(k);
-    for (int i = 0; i < numTransitions; i++) {
-      IExpr[] divMod = temp.divideAndRemainder(ZZk);
-      ruleBits[i] = divMod[1].toIntDefault(0);
-      temp = (IInteger) divMod[0];
     }
 
     // the initial arrays (s of them for a rule of order s) and their background
@@ -1843,6 +1811,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       currentAspec = stateExpr;
     }
 
+    // CPD-OFF int and expression states are filled and trimmed separately
     IExpr[] stateArr = new IExpr[gridY * gridX];
     for (int i = 0; i < stateArr.length; i++)
       stateArr[i] = bgForThisStep;
@@ -1854,6 +1823,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           int gY = paddingY + y - 1;
           int gX = paddingX + x - 1;
           if (gY < gridY && gX < gridX) {
+          // CPD-ON
             stateArr[gY * gridX + gX] = row.get(x);
           }
         }
@@ -1936,6 +1906,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         } else {
           nextBg = engine.evaluate(F.binaryAST2(fun, bgNeighborhood, F.ZZ(t + 1)));
         }
+      // CPD-OFF int and expression states are trimmed separately
       } else {
         nextBg = bgHistory.get(bgHistory.size() - 1);
       }
@@ -1953,6 +1924,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
 
     if (!isCyclic && !isOperatorForm) {
       for (int tIdx = tStart; (localDt > 0 ? tIdx <= tEnd : tIdx >= tEnd); tIdx += localDt) {
+      // CPD-ON
         if (tIdx >= 0 && tIdx < history.size()) {
           IExpr[] state = history.get(tIdx);
           IExpr b = bgHistory.get(tIdx);

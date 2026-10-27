@@ -541,19 +541,7 @@ public class TeXFormFactory {
           buffer.append("\\end{array}\n\\right) ");
         } else {
           buffer.append("\\begin{pmatrix}\n");
-          IAST row;
-          for (int i = 1; i < matrix.size(); i++) {
-            row = (IAST) matrix.get(i);
-            for (int j = 1; j < row.size(); j++) {
-              buffer.append(' ');
-              fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-              buffer.append(' ');
-              if (j < row.argSize()) {
-                buffer.append('&');
-              }
-            }
-            buffer.append("\\\\\n");
-          }
+          appendMatrixRows(buffer, matrix);
 
           buffer.append("\\end{pmatrix}");
         }
@@ -791,19 +779,7 @@ public class TeXFormFactory {
           buffer.append("c");
         }
         buffer.append("}\n");
-        IAST row;
-        for (int i = 1; i < matrix.size(); i++) {
-          row = (IAST) matrix.get(i);
-          for (int j = 1; j < row.size(); j++) {
-            buffer.append(' ');
-            fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-            buffer.append(' ');
-            if (j < row.argSize()) {
-              buffer.append('&');
-            }
-          }
-          buffer.append("\\\\\n");
-        }
+        appendMatrixRows(buffer, matrix);
 
         buffer.append("\\end{array}");
       }

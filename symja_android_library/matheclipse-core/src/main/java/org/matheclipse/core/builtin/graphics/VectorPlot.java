@@ -32,8 +32,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class VectorPlot extends AbstractFunctionEvaluator {
 
-  /** How much of the grid spacing the longest arrow spans. */
-  private static final double DEFAULT_SCALE = 0.9;
+  /** How much of the grid spacing, or the spacing between points, the longest arrow spans. */
+  static final double DEFAULT_SCALE = 0.9;
 
   /** 2 for VectorPlot, 3 for VectorPlot3D. */
   private final int dimension;
@@ -79,6 +79,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     IExpr style = F.NIL;
     RegionFunctionFilter region = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
+    // CPD-OFF the vector plots handle different option keys
     for (int i = dimension + 2; i < ast.size(); i++) {
       IExpr option = ast.get(i);
       if (!option.isRuleAST()) {
@@ -89,15 +90,12 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         continue;
       }
       if (key == S.VectorScale) {
-        IExpr value = engine.evaluate(option.second());
-        IExpr first = value.isList() && value.argSize() > 0 ? value.first() : value;
-        if (first.isReal()) {
-          scale = first.evalf();
-        }
+        scale = VectorPlot.vectorScale(engine.evaluate(option.second()), scale);
         continue;
       }
       if (key == S.VectorColorFunction) {
         colored = !engine.evaluate(option.second()).isNone();
+        // CPD-ON
         colorFunctionGiven = true;
         continue;
       }
@@ -391,6 +389,15 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       vector[d] = component.evalf();
     }
     return vector;
+  }
+
+  /**
+   * The length of the longest arrow given by a {@code VectorScale} value: a number, or the first
+   * element of a list; {@code fallback} for anything else.
+   */
+  static double vectorScale(IExpr value, double fallback) {
+    IExpr first = value.isList() && value.argSize() > 0 ? value.first() : value;
+    return first.isReal() ? first.evalf() : fallback;
   }
 
   static double norm(double[] vector) {

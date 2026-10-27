@@ -600,6 +600,7 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
     hashValue = 0;
   }
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /**
    * Remove the value associated with a key.
    *
@@ -647,6 +648,7 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
   public int size() {
     return size;
   }
+  // CPD-ON
 
   /**
    * Build an array of elements.

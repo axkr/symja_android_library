@@ -1960,6 +1960,25 @@ public class AssociationFunctions {
     return null;
   }
 
+  /**
+   * Convert every element of <code>list</code> into an {@link IAssociation} with
+   * {@link #toAssociation(IExpr)}.
+   *
+   * @param list
+   * @return <code>null</code> if an element is neither an association nor a list of rules
+   */
+  public static IAssociation[] toAssociations(final IAST list) {
+    IAssociation[] associations = new IAssociation[list.argSize()];
+    for (int i = 1; i <= list.argSize(); i++) {
+      IAssociation assoc = toAssociation(list.get(i));
+      if (assoc == null) {
+        return null;
+      }
+      associations[i - 1] = assoc;
+    }
+    return associations;
+  }
+
   private static IAST keyDrop(final IAssociation list1, final IAST list2) {
     IAssociation assoc = list1;
     final IAssociation result = assoc.copyAppendable();

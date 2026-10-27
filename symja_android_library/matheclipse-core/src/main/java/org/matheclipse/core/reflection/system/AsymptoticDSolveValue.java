@@ -210,24 +210,31 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     // Drop spurious coefficients beyond our requested `order` bounds
-    IExpr finalSeries = engine.evaluate(F.subst(ansatzTrunc, firstSol));
-
-    // Assign unbound generic variables to unified Canonical form: C(1), C(2)
-    int cIndex = engine.incConstantCounter();
-    IASTAppendable finalRules = F.ListAlloc();
-    for (int i = 1; i <= cVars.argSize(); i++) {
-      IExpr c = cVars.get(i);
-      if (!finalSeries.isFree(c)) {
-        finalRules.append(F.Rule(c, F.C(cIndex++)));
-      }
-    }
-    if (finalRules.argSize() > 0) {
-      finalSeries = engine.evaluate(F.subst(finalSeries, finalRules));
-    }
+    IExpr finalSeries = canonicalConstants(ansatzTrunc, firstSol, cVars, engine);
 
     IExpr cPattern = F.C(F.$b());
     finalSeries = engine.evaluate(F.Collect(finalSeries, cPattern));
     return engine.evaluate(finalSeries);
+  }
+
+  /**
+   * The ansatz with the coefficients of <code>solution</code> substituted. The coefficients of
+   * <code>cVars</code> which are still free are renamed to the constants <code>C(n)</code>.
+   */
+  static IExpr canonicalConstants(IExpr ansatz, IAST solution, IAST cVars, EvalEngine engine) {
+    IExpr series = engine.evaluate(F.subst(ansatz, solution));
+    int cIndex = engine.incConstantCounter();
+    IASTAppendable rules = F.ListAlloc();
+    for (int i = 1; i <= cVars.argSize(); i++) {
+      IExpr c = cVars.get(i);
+      if (!series.isFree(c)) {
+        rules.append(F.Rule(c, F.C(cIndex++)));
+      }
+    }
+    if (rules.argSize() > 0) {
+      series = engine.evaluate(F.subst(series, rules));
+    }
+    return series;
   }
 
   @Override

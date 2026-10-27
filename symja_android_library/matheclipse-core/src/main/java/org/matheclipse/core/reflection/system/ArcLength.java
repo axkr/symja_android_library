@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -135,16 +136,8 @@ public class ArcLength extends AbstractFunctionEvaluator {
       }
     }
 
-    if (r.isList2()) {
-      // Full perimeter of an ellipse
-      IExpr r1 = ((IAST) r).arg1();
-      IExpr r2 = ((IAST) r).arg2();
-      return engine.evaluate(
-          F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2))))));
-    }
-
-    // Full perimeter of a standard circle
-    return engine.evaluate(F.Times(F.C2, S.Pi, r));
+    // the full perimeter of a circle or an ellipse
+    return RegionPrimitives.ellipsePerimeter(r, engine);
   }
 
   private IExpr lineArcLength(IAST reg, EvalEngine engine) {

@@ -86,7 +86,7 @@ public class ChebyshevIntegration {
       return F.NIL;
     }
     IExpr result = engine.evaluate(F.subst(inner, t, backSubstitution(par, x)));
-    if (verifyAntiderivative(result, integrand, x, engine)) {
+    if (AntiderivativeCheck.verifySymbolic(result, integrand, x, engine)) {
       return result;
     }
     return F.NIL;
@@ -244,26 +244,4 @@ public class ChebyshevIntegration {
     return par;
   }
 
-  /**
-   * Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand.
-   * Because the reduction uses {@code PowerExpand} (which assumes principal branches), this check
-   * is what guarantees the returned antiderivative is actually correct before it can short-circuit
-   * anything.
-   */
-  private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
-      EvalEngine engine) {
-    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
-      return false;
-    }
-    try {
-      IExpr diff = engine.evaluate(F.Together(F.Subtract(F.D(result, x), integrand)));
-      if (diff.isZero()) {
-        return true;
-      }
-      return engine.evaluate(F.Simplify(diff)).isZero();
-    } catch (RuntimeException rex) {
-      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-      return false;
-    }
-  }
 }

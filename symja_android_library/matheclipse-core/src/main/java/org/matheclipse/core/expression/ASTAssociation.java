@@ -739,33 +739,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   /** {@inheritDoc} */
   @Override
   public int[] isAssociationMatrix() {
-    final int[] dim = new int[2];
-    dim[0] = argSize();
-    if (dim[0] > 0) {
-      dim[1] = 0;
-      if (arg1().isList()) {
-        dim[1] = ((IAST) arg1()).argSize();
-        for (int i = 1; i < size(); i++) {
-          if (!get(i).isList()) {
-            // this row is not a list
-            return null;
-          }
-          IAST rowList = (IAST) get(i);
-          if (dim[1] != rowList.argSize()) {
-            // this row has another dimension
-            return null;
-          }
-          for (int j = 1; j < rowList.size(); j++) {
-            if (rowList.get(j).isList()) {
-              // this row is not a list
-              return null;
-            }
-          }
-        }
-        return dim;
-      }
-    }
-    return null;
+    return matrixDimensions(true);
   }
 
   /** {@inheritDoc} */

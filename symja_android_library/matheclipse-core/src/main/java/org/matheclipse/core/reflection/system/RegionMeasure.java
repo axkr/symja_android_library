@@ -100,7 +100,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
           case ID.Ellipsoid:
             return ellipsoidMeasure(reg, engine);
           case ID.Cylinder:
-            return cylinderMeasure(reg, engine);
+            return RegionPrimitives.cylinderVolume(reg, engine);
           case ID.Cone:
             return coneMeasure(reg, engine);
           case ID.Simplex:
@@ -179,14 +179,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     if (reg.argSize() >= 2) {
       r = reg.arg2();
     }
-    if (r.isList2()) {
-      IExpr r1 = ((IAST) r).arg1();
-      IExpr r2 = ((IAST) r).arg2();
-      // Perimeter of an ellipse
-      return engine.evaluate(
-          F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2))))));
-    }
-    return engine.evaluate(F.Times(F.C2, S.Pi, r));
+    return RegionPrimitives.ellipsePerimeter(r, engine);
   }
 
   private IExpr diskMeasure(IAST reg, EvalEngine engine) {
@@ -255,17 +248,9 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
   }
 
   private IExpr ballMeasure(IAST reg, EvalEngine engine) {
-    int dim = 3;
-    IExpr r = F.C1;
-    if (reg.argSize() >= 1) {
-      IExpr c = reg.arg1();
-      if (c.isList()) {
-        dim = c.argSize();
-      }
-    }
-    if (reg.argSize() >= 2) {
-      r = reg.arg2();
-    }
+    RegionPrimitives.BallSpec ball = RegionPrimitives.parseBall(reg);
+    int dim = ball.center.isList() ? ball.center.argSize() : 3;
+    IExpr r = ball.radius;
 
     // Exact N-dimensional volume formulation: V = (Pi^(dim/2) / Gamma(dim/2 + 1)) * r^dim
     IExpr piPow = F.Power(S.Pi, F.QQ(dim, 2));
@@ -275,17 +260,9 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
   }
 
   private IExpr sphereMeasure(IAST reg, EvalEngine engine) {
-    int dim = 3;
-    IExpr r = F.C1;
-    if (reg.argSize() >= 1) {
-      IExpr c = reg.arg1();
-      if (c.isList()) {
-        dim = c.argSize();
-      }
-    }
-    if (reg.argSize() >= 2) {
-      r = reg.arg2();
-    }
+    RegionPrimitives.BallSpec ball = RegionPrimitives.parseBall(reg);
+    int dim = ball.center.isList() ? ball.center.argSize() : 3;
+    IExpr r = ball.radius;
 
     // Exact N-dimensional surface formulation: A = 2 * Pi^(dim/2) / Gamma(dim/2) * r^(dim-1)
     IExpr piPow = F.Power(S.Pi, F.QQ(dim, 2));
@@ -313,26 +290,8 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private IExpr cylinderMeasure(IAST reg, EvalEngine engine) {
-    IExpr p1 = F.List(F.C0, F.C0, F.CN1);
-    IExpr p2 = F.List(F.C0, F.C0, F.C1);
-    IExpr r = F.C1;
-    if (reg.argSize() >= 1) {
-      if (reg.arg1().isList2()) {
-        IAST pts = (IAST) reg.arg1();
-        p1 = pts.arg1();
-        p2 = pts.arg2();
-      }
-    }
-    if (reg.argSize() >= 2) {
-      r = reg.arg2();
-    }
-    IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p1, p2))));
-    return engine.evaluate(F.Times(S.Pi, F.Sqr(r), F.Sqrt(dist2)));
-  }
-
   private IExpr coneMeasure(IAST reg, EvalEngine engine) {
-    IExpr cyl = cylinderMeasure(reg, engine);
+    IExpr cyl = RegionPrimitives.cylinderVolume(reg, engine);
     if (cyl.isPresent()) {
       return engine.evaluate(F.Times(F.C1D3, cyl));
     }

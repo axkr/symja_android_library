@@ -1003,7 +1003,8 @@ public class WL {
     }
   }
 
-  private static class WXF_CONSTANTS {
+  /** The WXF tokens, shared with {@link KryoUtil}. */
+  static class WXF_CONSTANTS {
     static final byte Function = 'f';
     static final byte Symbol = 's';
     static final byte String = 'S';

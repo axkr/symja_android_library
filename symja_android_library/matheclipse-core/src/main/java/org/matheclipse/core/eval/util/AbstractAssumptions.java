@@ -854,6 +854,28 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return null;
   }
 
+  /**
+   * The sign of a product whose factors are each known to be positive or negative: a product is
+   * negative if no factor can be 0 and an odd number of them is negative. A factor which is only
+   * known to be non-negative, like x for x>=0, may make it 0.
+   *
+   * @return <code>1</code> or <code>-1</code>, or <code>0</code> if the sign of a factor is unknown
+   */
+  private static int strictProductSign(IAST times) {
+    int sign = 1;
+    for (int i = 1; i < times.size(); i++) {
+      IExpr x = times.get(i);
+      if (x.isPositiveResult() || assumePositive(x)) {
+        continue;
+      }
+      if (!x.isNegativeResult() && !assumeNegative(x)) {
+        return 0;
+      }
+      sign = -sign;
+    }
+    return sign;
+  }
+
   public static boolean isNegativeResult(IAST ast) {
     // evalReal "chops" imaginary parts to 0
     INumber e = ast.evalNumber();
@@ -909,22 +931,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
           return negativeRange.isPresent() && IntervalDataSym.isNegativeResult(negativeRange);
         }
         if (ast.isTimes()) {
-          // a product is negative if no factor can be 0 and an odd number of them is negative: a
-          // factor which is only known to be non-negative, like x for x>=0, may make it 0
-          boolean flag = false;
-          for (int i = 1; i < size; i++) {
-            IExpr x = ast.get(i);
-            if (x.isPositiveResult() || assumePositive(x)) {
-            } else {
-              if (x.isNegativeResult()) {
-              } else if (assumeNegative(x)) {
-              } else {
-                return false;
-              }
-              flag = !flag;
-            }
-          }
-          return flag;
+          return strictProductSign(ast) < 0;
         }
         if (ast.isPower()) {
           IExpr base = ast.base();
@@ -1189,20 +1196,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
         return positiveRange.isPresent() && IntervalDataSym.isPositiveResult(positiveRange);
       }
       if (ast.isTimes()) {
-        boolean flag = true;
-        for (int i = 1; i < size; i++) {
-          IExpr x = ast.get(i);
-          if (x.isPositiveResult() || assumePositive(x)) {
-          } else {
-            if (x.isNegativeResult()) {
-            } else if (assumeNegative(x)) {
-            } else {
-              return false;
-            }
-            flag = !flag;
-          }
-        }
-        return flag;
+        return strictProductSign(ast) > 0;
       }
       if (ast.isPower()) {
         // base ^ exponent

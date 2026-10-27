@@ -339,28 +339,6 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   /**
-   * Get the highest exponent of <code>base</code> that divides <code>this</code>
-   *
-   * @return the exponent
-   */
-  @Override
-  public IExpr exponent(IInteger base) {
-    IInteger b = this;
-    if (complexSign() < 0) {
-      b = b.negate();
-    } else if (b.isZero()) {
-      return F.CInfinity;
-    } else if (b.isOne()) {
-      return F.C0;
-    }
-    if (b.equals(base)) {
-      return F.C1;
-    }
-    BigInteger rest = Primality.countExponent(b.toBigNumerator(), base.toBigNumerator());
-    return valueOf(rest);
-  }
-
-  /**
    * Returns the greatest common divisor of this large integer and the one specified. If a
    * {@link LocalizedCoreFormats#GCD_OVERFLOW_32_BITS} error is thrown in the <code>int</code>
    * calculation, the calculation switches to {@link BigInteger#gcd(BigInteger)} calculation.
@@ -800,29 +778,10 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IInteger[] nthRootSplit(int n) throws ArithmeticException {
-    IInteger[] result = new IInteger[2];
-    if (complexSign() == 0) {
-      result[0] = F.C0;
-      result[1] = F.C1;
-      return result;
-    } else if (complexSign() < 0) {
-      if (n % 2 == 0) {
-        // even exponent n
-        throw new ArithmeticException();
-      } else {
-        // odd exponent n
-        result = negate().nthRootSplit(n);
-        result[1] = result[1].negate();
-        return result;
-      }
-    }
-
-    long b = fIntValue;
-    long[] nthRoot = Primality.countRoot1021(b, n);
-    result[0] = AbstractIntegerSym.valueOf(nthRoot[0]);
-    result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
-    return result;
+  protected IInteger[] nthRootSplitPositive(int n) {
+    long[] nthRoot = Primality.countRoot1021(fIntValue, n);
+    return new IInteger[] {AbstractIntegerSym.valueOf(nthRoot[0]),
+        AbstractIntegerSym.valueOf(nthRoot[1])};
   }
 
   /** {@inheritDoc} */

@@ -5,7 +5,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 
 /**
  * First order systems <code>Y' == A(x).Y + b(x)</code> whose matrix depends on the variable.
@@ -147,7 +146,7 @@ final class DSolveSystemVarCoeff {
       // A nilpotent kernel: the exponential is a polynomial.
       diagonal = F.C1;
       offDiagonal = scale;
-    } else if (numericSign(squared, engine) < 0) {
+    } else if (DSolveUtil.numericSign(squared, engine) < 0) {
       IExpr frequency = engine.evaluate(F.Sqrt(F.Negate(squared)));
       diagonal = engine.evaluate(F.Cos(F.Times(frequency, scale)));
       offDiagonal = engine.evaluate(F.Divide(F.Sin(F.Times(frequency, scale)), frequency));
@@ -206,19 +205,4 @@ final class DSolveSystemVarCoeff {
     return ((IAST) matrix.get(i)).get(j);
   }
 
-  /** The sign of a parameter, or <code>0</code> if it does not evaluate to a real number. */
-  private static int numericSign(IExpr expr, EvalEngine engine) {
-    try {
-      IExpr value = engine.evalN(expr);
-      if (value instanceof INumber && ((INumber) value).isReal()) {
-        double d = ((INumber) value).evalf();
-        if (Double.isFinite(d) && d != 0.0) {
-          return d > 0.0 ? 1 : -1;
-        }
-      }
-    } catch (RuntimeException rex) {
-      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-    }
-    return 0;
-  }
 }

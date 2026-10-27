@@ -630,13 +630,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           if (!point.isPresent() || isNonReal(point)) {
             // If lastPoint was isolated, render it now before breaking
             if (!isConnected && lastPoint.isPresent()) {
-              IExpr xLast = xFunction.apply(lastPoint.arg1());
-              IExpr yLast = yFunction.apply(lastPoint.arg2());
-              if (xBoundingBox(boundingbox, xLast, engine)
-                  && yBoundingBox(boundingbox, yLast, engine)) {
-                addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives,
-                    boundingbox, engine, xLast, yLast, lastArg);
-              }
+              addPoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                  engine, lastPoint, lastArg, xFunction, yFunction);
             }
 
             if (pointPrimitives.argSize() > 0) {
@@ -650,13 +645,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr xValue = xFunction.apply(point.arg1());
           IExpr yValue = yFunction.apply(point.arg2());
           if (!isConnected && lastPoint.isPresent()) {
-            IExpr xLast = xFunction.apply(lastPoint.arg1());
-            IExpr yLast = yFunction.apply(lastPoint.arg2());
-            if (xBoundingBox(boundingbox, xLast, engine)
-                && yBoundingBox(boundingbox, yLast, engine)) {
-              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
-                  engine, xLast, yLast, lastArg);
-            }
+            addPoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
+                lastPoint, lastArg, xFunction, yFunction);
 
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
@@ -674,15 +664,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
             }
           }
           lastPoint = point;
+          lastArg = (IAST) arg;
         }
         if (!isConnected && lastPoint.isPresent()) {
-          IExpr xLast = xFunction.apply(lastPoint.arg1());
-          IExpr yLast = yFunction.apply(lastPoint.arg2());
-          if (xBoundingBox(boundingbox, xLast, engine)
-              && yBoundingBox(boundingbox, yLast, engine)) {
-            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
-                engine, xLast, yLast, lastArg);
-          }
+          addPoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
+              lastPoint, lastArg, xFunction, yFunction);
         }
 
         if (pointPrimitives.argSize() > 0) {
@@ -692,6 +678,21 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           graphicsPrimitives.append(graphicsExtraPrimitives);
         }
       }
+    }
+  }
+
+  /**
+   * Add the single point <code>point</code> of the datum <code>arg</code> if it lies inside the
+   * bounding box.
+   */
+  private static void addPoint(GraphicsOptions graphicsOptions, IASTAppendable pointPrimitives,
+      IASTAppendable graphicsExtraPrimitives, double[] boundingbox, EvalEngine engine, IAST point,
+      IAST arg, Function<IExpr, IExpr> xFunction, Function<IExpr, IExpr> yFunction) {
+    IExpr x = xFunction.apply(point.arg1());
+    IExpr y = yFunction.apply(point.arg2());
+    if (xBoundingBox(boundingbox, x, engine) && yBoundingBox(boundingbox, y, engine)) {
+      addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
+          x, y, arg);
     }
   }
 

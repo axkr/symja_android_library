@@ -376,6 +376,91 @@ public class SequenceFunctions {
   }
 
 
+  /** Appends the elements <code>[from, to)</code> between two matched subsequences. */
+  @FunctionalInterface
+  private interface GapAppender {
+    void append(IASTAppendable result, int from, int to);
+  }
+
+  /**
+   * Scan <code>list</code> from left to right for the longest subsequences which a rule of
+   * <code>functions</code> rewrites or a pattern of <code>matchers</code> matches, and append the
+   * gaps between them and the rewritten subsequences to <code>resultAST</code>.
+   *
+   * @param functions the rules as functions; an entry is used where <code>matchers</code> has none
+   * @param matchers the patterns, or <code>null</code> if there are rules only
+   * @param maxLength the longest subsequence a pattern can match
+   * @param maxMatches the number of matches after which the rest of the list is a gap
+   * @param gap appends a gap to the result
+   */
+  @SuppressWarnings("unchecked")
+  private static IAST scanSubsequences(final IAST list, Object[] functions,
+      IPatternMatcher[] matchers, int maxLength, int maxMatches, IASTAppendable resultAST,
+      GapAppender gap) {
+    int i = 1;
+    int lastI = i;
+    while (i < list.size()) {
+      // i moves forward inside this loop after a match and the scan goes on from there, so the
+      // bound is read again on every step rather than fixed for the i the loop started with
+      for (int j = i + 1; j <= scanLimit(list.size(), i, maxLength); j++) {
+        IExpr subResult = F.NIL;
+        int lastK = -1;
+
+        boolean matched = false;
+        for (int k = j; k <= scanLimit(list.size(), i, maxLength); k++) {
+          if (i >= k) {
+            break;
+          }
+          // greedy search
+          IASTAppendable subSequence = list.copyFrom(i, k);
+          for (int l = 0; l < functions.length; l++) {
+            if (matchers != null && matchers[l] != null) {
+              if (matchers[l].test(subSequence)) {
+                subResult = F.NIL;
+                lastK = k;
+                matched = true;
+                break;
+              }
+            } else {
+              IExpr temp = ((Function<IExpr, IExpr>) functions[l]).apply(subSequence);
+              if (temp.isPresent()) {
+                subResult = temp;
+                lastK = k;
+                matched = true;
+                break;
+              }
+            }
+          }
+          if (!matched) {
+            break;
+          }
+        }
+        if (lastK > i) {
+          if (lastI < i) {
+            gap.append(resultAST, lastI, i);
+          }
+          if (subResult.isPresent()) {
+            resultAST.append(subResult);
+          }
+          i = lastK;
+          lastI = i;
+          if (--maxMatches <= 0) {
+            if (lastI < list.size()) {
+              gap.append(resultAST, lastI, list.size());
+            }
+            return resultAST;
+          }
+        }
+
+      }
+      i++;
+    }
+    if (lastI < list.size()) {
+      gap.append(resultAST, lastI, list.size());
+    }
+    return resultAST;
+  }
+
   private static final class SequenceReplace extends AbstractFunctionEvaluator {
 
     @Override
@@ -425,62 +510,12 @@ public class SequenceFunctions {
         } else {
           // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
           // used for replacing.
-          return Errors.printMessage(S.SequenceSplit, "reps", F.List(listOfRules), engine);
+          return Errors.printMessage(S.SequenceReplace, "reps", F.List(listOfRules), engine);
         }
       }
-      final int maxLength = maxSequenceLengthOfAll(listOfRules);
-      int i = 1;
-      int lastI = i;
-      while (i < list.size()) {
-        // i moves forward inside this loop after a match and the scan goes on from there, so the
-        // bound is read again on every step rather than fixed for the i the loop started with
-        for (int j = i + 1; j <= scanLimit(list.size(), i, maxLength); j++) {
-          IExpr subResult = F.NIL;
-          int lastK = -1;
-
-          boolean matched = false;
-          for (int k = j; k <= scanLimit(list.size(), i, maxLength); k++) {
-            if (i >= k) {
-              break;
-            }
-            IASTAppendable subSequence = list.copyFrom(i, k);
-            for (int l = 0; l < functions.length; l++) {
-              IExpr temp = ((Function<IExpr, IExpr>) functions[l]).apply(subSequence);
-              if (temp.isPresent()) {
-                subResult = temp;
-                lastK = k;
-                matched = true;
-                break;
-              }
-            }
-            if (!matched) {
-              break;
-            }
-          }
-          if (lastK > i) {
-            if (lastI < i) {
-              resultAST.appendArgs(lastI, i, n -> list.get(n));
-            }
-            if (subResult.isPresent()) {
-              resultAST.append(subResult);
-            }
-            i = lastK;
-            lastI = i;
-            if (--maxReplacements <= 0) {
-              if (lastI < list.size()) {
-                resultAST.appendArgs(lastI, list.size(), n -> list.get(n));
-              }
-              return resultAST;
-            }
-          }
-
-        }
-        i++;
-      }
-      if (lastI < list.size()) {
-        resultAST.appendArgs(lastI, list.size(), n -> list.get(n));
-      }
-      return resultAST;
+      return scanSubsequences(list, functions, null, maxSequenceLengthOfAll(listOfRules),
+          maxReplacements, resultAST, (result, from, to) -> result.appendArgs(from, to,
+              n -> list.get(n)));
     }
 
     @Override
@@ -539,69 +574,8 @@ public class SequenceFunctions {
           matchers[i - 1] = engine.evalPatternMatcher(pattern);
         }
       }
-      final int maxLength = maxSequenceLengthOfAll(listOfPattern);
-      int i = 1;
-      int lastI = i;
-      while (i < list.size()) {
-        // i moves forward inside this loop after a match and the scan goes on from there, so the
-        // bound is read again on every step rather than fixed for the i the loop started with
-        for (int j = i + 1; j <= scanLimit(list.size(), i, maxLength); j++) {
-          IExpr subResult = F.NIL;
-          int lastK = -1;
-
-          boolean matched = false;
-          for (int k = j; k <= scanLimit(list.size(), i, maxLength); k++) {
-            if (i >= k) {
-              break;
-            }
-            // greedy search
-            IASTAppendable subSequence = list.copyFrom(i, k);
-            for (int l = 0; l < matchers.length; l++) {
-              if (matchers[l] != null) {
-                if (matchers[l].test(subSequence)) {
-                  subResult = F.NIL;
-                  lastK = k;
-                  matched = true;
-                  break;
-                }
-              } else {
-                IExpr temp = ((Function<IExpr, IExpr>) functions[l]).apply(subSequence);
-                if (temp.isPresent()) {
-                  subResult = temp;
-                  lastK = k;
-                  matched = true;
-                  break;
-                }
-              }
-            }
-            if (!matched) {
-              break;
-            }
-          }
-          if (lastK > i) {
-            if (lastI < i) {
-              resultAST.append(list.copyFrom(lastI, i));
-            }
-            if (subResult.isPresent()) {
-              resultAST.append(subResult);
-            }
-            i = lastK;
-            lastI = i;
-            if (--maxSplits <= 0) {
-              if (lastI < list.size()) {
-                resultAST.append(list.copyFrom(lastI, list.size()));
-              }
-              return resultAST;
-            }
-          }
-
-        }
-        i++;
-      }
-      if (lastI < list.size()) {
-        resultAST.append(list.copyFrom(lastI, list.size()));
-      }
-      return resultAST;
+      return scanSubsequences(list, functions, matchers, maxSequenceLengthOfAll(listOfPattern),
+          maxSplits, resultAST, (result, from, to) -> result.append(list.copyFrom(from, to)));
     }
 
     @Override

@@ -347,20 +347,9 @@ public class AsymptoticSolve extends AbstractFunctionOptionEvaluator {
 
         if (solC.isList() && ((IAST) solC).argSize() > 0) {
           IAST firstSol = (IAST) ((IAST) solC).arg1();
-          IExpr finalSeries = engine.evaluate(F.subst(ansatz, firstSol));
-
           // Package any residual unspecified generic coefficients safely into canonical notation
-          int cIndex = engine.incConstantCounter();
-          IASTAppendable finalRules = F.ListAlloc();
-          for (int i = 1; i <= cVars.argSize(); i++) {
-            IExpr c = cVars.get(i);
-            if (!finalSeries.isFree(c)) {
-              finalRules.append(F.Rule(c, F.C(cIndex++)));
-            }
-          }
-          if (finalRules.argSize() > 0) {
-            finalSeries = engine.evaluate(F.subst(finalSeries, finalRules));
-          }
+          IExpr finalSeries =
+              AsymptoticDSolveValue.canonicalConstants(ansatz, firstSol, cVars, engine);
 
           finalAlgebraicSols.append(F.List(F.Rule(yVar, finalSeries)));
         }

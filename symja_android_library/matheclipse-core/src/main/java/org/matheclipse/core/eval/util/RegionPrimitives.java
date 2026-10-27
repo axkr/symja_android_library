@@ -222,6 +222,37 @@ public class RegionPrimitives {
     return new TorusSpec(center, major, minor);
   }
 
+  // ---------------------------------------------------------------- Ball
+
+  /**
+   * The center and the radius of a <code>Ball</code>, <code>Sphere</code>, <code>Disk</code> or
+   * <code>Circle</code>.
+   */
+  public static final class BallSpec {
+    public final IExpr center;
+    public final IExpr radius;
+
+    private BallSpec(IExpr center, IExpr radius) {
+      this.center = center;
+      this.radius = radius;
+    }
+  }
+
+  /**
+   * The center and the radius of <code>Ball(c, r)</code>, <code>Sphere(c, r)</code>,
+   * <code>Disk(c, r)</code> or <code>Circle(c, r)</code>. Without arguments the center is the
+   * origin of the plane for <code>Disk</code> and <code>Circle</code>, of space otherwise; the
+   * radius defaults to 1. The arguments are not checked: the center may not be a list.
+   */
+  public static BallSpec parseBall(IAST reg) {
+    if (reg.argSize() == 0) {
+      IExpr head = reg.head();
+      return new BallSpec(head == S.Disk || head == S.Circle ? F.List(F.C0, F.C0)
+          : F.List(F.C0, F.C0, F.C0), F.C1);
+    }
+    return new BallSpec(reg.arg1(), reg.argSize() >= 2 ? reg.arg2() : F.C1);
+  }
+
   // ---------------------------------------------------------------- Disk
 
   /**
@@ -278,6 +309,23 @@ public class RegionPrimitives {
     return new DiskSpec(reg.arg1(), r1, r2, null, null);
   }
 
+  /**
+   * The perimeter <code>2*Pi*r</code> of a circle, or of an ellipse if <code>r</code> is the list
+   * of radii <code>{r1, r2}</code>.
+   */
+  public static IExpr ellipsePerimeter(IExpr r, EvalEngine engine) {
+    if (r.isList2()) {
+      return ellipsePerimeter(((IAST) r).arg1(), ((IAST) r).arg2(), engine);
+    }
+    return engine.evaluate(F.Times(F.C2, S.Pi, r));
+  }
+
+  /** The perimeter <code>4*r2*EllipticE(1 - r1^2/r2^2)</code> of an ellipse with radii r1, r2. */
+  public static IExpr ellipsePerimeter(IExpr r1, IExpr r2, EvalEngine engine) {
+    return engine.evaluate(
+        F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2))))));
+  }
+
   // ---------------------------------------------------------------- Parallelogram
 
   /** The base point and the two direction vectors of a <code>Parallelogram</code>. */
@@ -304,6 +352,22 @@ public class RegionPrimitives {
     }
     if (reg.argSize() == 2 && reg.arg1().isList() && reg.arg2().isList2()
         && reg.arg2().isListOfLists()) {
+      return new ParallelogramSpec(reg.arg1(), (IAST) reg.arg2());
+    }
+    return null;
+  }
+
+  /**
+   * Parse a <code>Parallelogram</code> like {@link #parseParallelogram(IAST)} and
+   * <code>Parallelepiped(p, {v1, ..., vn})</code>.
+   *
+   * @return <code>null</code> if the arguments don't match one of those forms
+   */
+  public static ParallelogramSpec parseParallelepiped(IAST reg) {
+    if (reg.isAST(S.Parallelogram)) {
+      return parseParallelogram(reg);
+    }
+    if (reg.argSize() == 2 && reg.arg1().isList() && reg.arg2().isListOfLists()) {
       return new ParallelogramSpec(reg.arg1(), (IAST) reg.arg2());
     }
     return null;
@@ -484,6 +548,29 @@ public class RegionPrimitives {
     return engine.evaluate(F.Plus(//
         F.Times(S.Pi, F.Sqr(spec.radius), h), //
         F.Times(F.QQ(4, 3), S.Pi, F.Power(spec.radius, F.C3))));
+  }
+
+  /**
+   * <code>Pi*r^2*h</code> of a <code>Cylinder</code>, or of the cylinder around a <code>Cone</code>
+   * with the same arguments. The axis runs from <code>{0,0,-1}</code> to <code>{0,0,1}</code> and
+   * the radius is <code>1</code> unless given.
+   */
+  public static IExpr cylinderVolume(IAST reg, EvalEngine engine) {
+    IExpr p1 = F.List(F.C0, F.C0, F.CN1);
+    IExpr p2 = F.List(F.C0, F.C0, F.C1);
+    IExpr r = F.C1;
+    if (reg.argSize() >= 1) {
+      if (reg.arg1().isList2()) {
+        IAST pts = (IAST) reg.arg1();
+        p1 = pts.arg1();
+        p2 = pts.arg2();
+      }
+    }
+    if (reg.argSize() >= 2) {
+      r = reg.arg2();
+    }
+    IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p1, p2))));
+    return engine.evaluate(F.Times(S.Pi, F.Sqr(r), F.Sqrt(dist2)));
   }
 
   // ---------------------------------------------------------------- StadiumShape
@@ -1020,6 +1107,44 @@ public class RegionPrimitives {
       return list;
     }
     return F.list(s.variable, t.variable, expr);
+  }
+
+  /** The parameter ranges and the coordinate functions of a parametrized surface. */
+  public static final class ParametricSurface {
+    public final ParameterRange s;
+    public final ParameterRange t;
+    public final IAST coordinates;
+
+    private ParametricSurface(ParameterRange s, ParameterRange t, IAST coordinates) {
+      this.s = s;
+      this.t = t;
+      this.coordinates = coordinates;
+    }
+  }
+
+  /**
+   * Parse the arguments <code>({x1,...,xn}, {s,smin,smax}, {t,tmin,tmax})</code> of a measure of a
+   * parametrized surface.
+   *
+   * @param argSize the number of arguments without options
+   * @return <code>null</code> for the coordinate chart variant with more arguments, and if the
+   *         arguments are not a coordinate vector and two ranges of different parameters
+   */
+  public static ParametricSurface parseParametricSurface(IAST ast, int argSize) {
+    if (argSize > 3) {
+      // the coordinate chart variant is not supported
+      return null;
+    }
+    ParameterRange s = parseParameterRange(ast.arg2());
+    ParameterRange t = parseParameterRange(ast.arg3());
+    if (s == null || t == null || s.variable.equals(t.variable)) {
+      return null;
+    }
+    IAST coordinates = surfaceCoordinates(ast.arg1(), s, t);
+    if (coordinates.isNIL()) {
+      return null;
+    }
+    return new ParametricSurface(s, t, coordinates);
   }
 
   /**

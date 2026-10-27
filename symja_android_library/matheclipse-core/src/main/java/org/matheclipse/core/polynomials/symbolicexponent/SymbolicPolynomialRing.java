@@ -1021,6 +1021,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
    *
    * @return 1 as GenPolynomial.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicPolynomial getOne() {
     return ONE;
   }
@@ -1083,6 +1084,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
    * @return a GenPolynomial&lt;C&gt;.
    */
   public SymbolicPolynomial valueOf(IExpr a) {
+  // CPD-ON
     return new SymbolicPolynomial(this, a);
   }
 
@@ -1443,6 +1445,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
       return true;
     }
 
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     /**
      * Get next polynomial.
      *
@@ -1490,6 +1493,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
       current = pol;
       return res;
     }
+    // CPD-ON
 
     /** Remove an element if allowed. */
     @Override

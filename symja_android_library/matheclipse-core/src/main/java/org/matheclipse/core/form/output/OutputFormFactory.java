@@ -714,7 +714,7 @@ public class OutputFormFactory {
   private void convertDoubleComplex(final Appendable buf, final IComplexNum dc,
       final int precedence, boolean caller, boolean reImI) throws IOException {
     if (dc instanceof ApcomplexNum) {
-      convertApcomplex(buf, (ApcomplexNum) dc, precedence, caller);
+      convertApcomplex(buf, (ApcomplexNum) dc, precedence, caller, reImI);
       return;
     }
     if (Precedence.PLUS < precedence) {
@@ -773,19 +773,23 @@ public class OutputFormFactory {
 
   public void convertApcomplex(final Appendable buf, final Apcomplex dc, final int precedence,
       boolean caller) throws IOException {
-    convertApcomplex(buf, dc, null, null, precedence, caller);
+    convertApcomplex(buf, dc, null, null, precedence, caller, fComplexReImI);
   }
 
   /** An arbitrary-precision complex number, whose parts show the digits they are known to. */
   public void convertApcomplex(final Appendable buf, final ApcomplexNum dc, final int precedence,
       boolean caller) throws IOException {
+    convertApcomplex(buf, dc, precedence, caller, fComplexReImI);
+  }
+
+  /**
+   * @param reImI print the imaginary part as <code>b*I</code> instead of <code>I*b</code>
+   */
+  private void convertApcomplex(final Appendable buf, final ApcomplexNum dc, final int precedence,
+      boolean caller, boolean reImI) throws IOException {
     final IReal re = dc.isSignificanceTracked() ? dc.re() : null;
     final IReal im = dc.isSignificanceTracked() ? dc.im() : null;
-    if (fComplexReImI) {
-      convertApcomplexReImI(buf, dc.apcomplexValue(), re, im, precedence, caller);
-      return;
-    }
-    convertApcomplex(buf, dc.apcomplexValue(), re, im, precedence, caller);
+    convertApcomplex(buf, dc.apcomplexValue(), re, im, precedence, caller, reImI);
   }
 
   /**
@@ -802,17 +806,20 @@ public class OutputFormFactory {
     return fInputForm ? ApfloatNum.fullFormString(part) : convertApfloatToFormattedString(part);
   }
 
+  public void convertApcomplexReImI(final Appendable buf, final Apcomplex dc, final int precedence,
+      boolean caller) throws IOException {
+    convertApcomplex(buf, dc, null, null, precedence, caller, true);
+  }
+
   /**
    * @param knownRe the real part with its error, or <code>null</code>: the digits of a complex
    *        number with an error of its own are the ones its parts are known to
    * @param knownIm the imaginary part with its error, or <code>null</code>
+   * @param reImI print the imaginary part as <code>b*I</code> instead of <code>I*b</code>
    */
   private void convertApcomplex(final Appendable buf, final Apcomplex dc, final IReal knownRe,
-      final IReal knownIm, final int precedence, boolean caller) throws IOException {
-    if (fComplexReImI) {
-      convertApcomplexReImI(buf, dc, precedence, caller);
-      return;
-    }
+      final IReal knownIm, final int precedence, boolean caller, boolean reImI)
+      throws IOException {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
         append(buf, fInputForm ? " + " : "+");
@@ -827,78 +834,38 @@ public class OutputFormFactory {
     if (realZero && imaginaryZero) {
       convertDoubleString(buf, "0.0", Precedence.PLUS, false);
     } else {
+      final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
       if (!realZero) {
-        String str = partString(realPart, knownRe);
-        append(buf, str);
+        append(buf, partString(realPart, knownRe));
         if (!imaginaryZero) {
-          append(buf, "+I*");
-          final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-          str = partString(imaginaryPart, knownIm);
-          convertDoubleString(buf, str, Precedence.TIMES, isNegative);
+          String str = partString(imaginaryPart, knownIm);
+          if (reImI) {
+            if (!isNegative) {
+              append(buf, fInputForm ? " + " : "+");
+            }
+            convertDoubleString(buf, str, Precedence.PLUS, isNegative);
+            append(buf, "*I");
+          } else {
+            append(buf, "+I*");
+            convertDoubleString(buf, str, Precedence.TIMES, isNegative);
+          }
         }
+      } else if (reImI) {
+        // a negative imaginary part brings its own sign
+        if (!isNegative && caller == PLUS_CALL) {
+          append(buf, fInputForm ? " + " : "+");
+          caller = false;
+        }
+        convertDoubleString(buf, partString(imaginaryPart, knownIm), precedence, isNegative);
+        append(buf, "*I");
       } else {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
           caller = false;
         }
         append(buf, "I*");
-        final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-        String str = partString(imaginaryPart, knownIm);
-        convertDoubleString(buf, str, Precedence.TIMES, isNegative);
-      }
-    }
-    if (Precedence.PLUS < precedence) {
-      append(buf, ")");
-    }
-  }
-
-  public void convertApcomplexReImI(final Appendable buf, final Apcomplex dc, final int precedence,
-      boolean caller) throws IOException {
-    convertApcomplexReImI(buf, dc, null, null, precedence, caller);
-  }
-
-  /**
-   * @param knownRe the real part with its error, or <code>null</code>: the digits of a complex
-   *        number with an error of its own are the ones its parts are known to
-   * @param knownIm the imaginary part with its error, or <code>null</code>
-   */
-  private void convertApcomplexReImI(final Appendable buf, final Apcomplex dc, final IReal knownRe,
-      final IReal knownIm, final int precedence, boolean caller) throws IOException {
-    if (Precedence.PLUS < precedence) {
-      if (caller == PLUS_CALL) {
-        append(buf, fInputForm ? " + " : "+");
-        caller = false;
-      }
-      append(buf, "(");
-    }
-    Apfloat realPart = dc.real();
-    Apfloat imaginaryPart = dc.imag();
-    boolean realZero = realPart.equals(Apcomplex.ZERO);
-    boolean imaginaryZero = imaginaryPart.equals(Apcomplex.ZERO);
-    if (realZero && imaginaryZero) {
-      convertDoubleString(buf, "0.0", Precedence.PLUS, false);
-    } else {
-      if (!realZero) {
-        String str = partString(realPart, knownRe);
-        append(buf, str);
-        if (!imaginaryZero) {
-          final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-          if (!isNegative) {
-            append(buf, fInputForm ? " + " : "+");
-          }
-          str = partString(imaginaryPart, knownIm);
-          convertDoubleString(buf, str, Precedence.PLUS, isNegative);
-          append(buf, "*I");
-        }
-      } else {
-        final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-        if (!isNegative && caller == PLUS_CALL) {
-          append(buf, fInputForm ? " + " : "+");
-          caller = false;
-        }
-        String str = partString(imaginaryPart, knownIm);
-        convertDoubleString(buf, str, precedence, isNegative);
-        append(buf, "*I");
+        convertDoubleString(buf, partString(imaginaryPart, knownIm), Precedence.TIMES,
+            isNegative);
       }
     }
     if (Precedence.PLUS < precedence) {
@@ -928,6 +895,30 @@ public class OutputFormFactory {
   // return str;
   // }
 
+  /**
+   * Append the digits of a number, split into lines of 79 digits ending in a backslash if they do
+   * not fit into the current line.
+   */
+  private void appendWrappedDigits(final Appendable buf, final String str) throws IOException {
+    if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
+      if (getColumnCounter() > 40) {
+        newLine(buf);
+      }
+      final int len = str.length();
+      for (int j = 0; j < len; j += 79) {
+        if (j + 79 < len) {
+          append(buf, str.substring(j, j + 79));
+          append(buf, '\\');
+          newLine(buf);
+        } else {
+          append(buf, str.substring(j, len));
+        }
+      }
+    } else {
+      append(buf, str);
+    }
+  }
+
   public void convertInteger(final Appendable buf, IInteger i, final int precedence, boolean caller)
       throws IOException {
     final boolean isNegative = i.isNegative();
@@ -956,23 +947,7 @@ public class OutputFormFactory {
       str = i.toString();
     }
 
-    if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
-      if (getColumnCounter() > 40) {
-        newLine(buf);
-      }
-      final int len = str.length();
-      for (int j = 0; j < len; j += 79) {
-        if (j + 79 < len) {
-          append(buf, str.substring(j, j + 79));
-          append(buf, '\\');
-          newLine(buf);
-        } else {
-          append(buf, str.substring(j, len));
-        }
-      }
-    } else {
-      append(buf, str);
-    }
+    appendWrappedDigits(buf, str);
     if (isNegative && (Precedence.PLUS < precedence)) {
       append(buf, ")");
     }
@@ -1002,43 +977,11 @@ public class OutputFormFactory {
       append(buf, fInputForm && (caller == PLUS_CALL) ? " - " : "-");
     }
     String str = numerator.toString();
-    if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
-      if (getColumnCounter() > 40) {
-        newLine(buf);
-      }
-      final int len = str.length();
-      for (int j = 0; j < len; j += 79) {
-        if (j + 79 < len) {
-          append(buf, str.substring(j, j + 79));
-          append(buf, '\\');
-          newLine(buf);
-        } else {
-          append(buf, str.substring(j, len));
-        }
-      }
-    } else {
-      append(buf, str);
-    }
+    appendWrappedDigits(buf, str);
     if (!isInteger) {
       append(buf, "/");
       str = denominator.toString();
-      if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
-        if (getColumnCounter() > 40) {
-          newLine(buf);
-        }
-        final int len = str.length();
-        for (int j = 0; j < len; j += 79) {
-          if (j + 79 < len) {
-            append(buf, str.substring(j, j + 79));
-            append(buf, '\\');
-            newLine(buf);
-          } else {
-            append(buf, str.substring(j, len));
-          }
-        }
-      } else {
-        append(buf, str);
-      }
+      appendWrappedDigits(buf, str);
     }
     if (prec < precedence) {
       append(buf, ")");
@@ -1270,6 +1213,7 @@ public class OutputFormFactory {
   }
 
   private void convertPlusOperator(final Appendable buf, final IAST plusAST,
+      // CPD-OFF form factories without a common base for this conversion
       final InfixOperator oper, final int precedence) throws IOException {
     int operPrecedence = oper.getPrecedence();
     if (operPrecedence < precedence) {
@@ -1291,6 +1235,7 @@ public class OutputFormFactory {
   }
 
   public void convertPlusArgument(final Appendable buf, IExpr plusArg, boolean caller)
+  // CPD-ON
       throws IOException {
     if (plusArg.isTimes()) {
       final IAST timesAST = (IAST) plusArg;
@@ -1311,6 +1256,7 @@ public class OutputFormFactory {
     }
   }
 
+  // CPD-OFF form factories without a common base for this conversion
   private void convertTimesFraction(final Appendable buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) throws IOException {
     Optional<IExpr[]> parts =
@@ -1381,6 +1327,7 @@ public class OutputFormFactory {
     }
     convertTimesOperator(buf, timesAST, oper, precedence, caller);
   }
+  // CPD-ON
 
   private void convertTimesOperator(final Appendable buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) throws IOException {
@@ -2277,6 +2224,7 @@ public class OutputFormFactory {
     return true;
   }
 
+  // CPD-OFF form factories without a common base for this conversion
   public void convertList(final Appendable buf, final IAST list, boolean isMatrix)
       throws IOException {
     if (list instanceof ASTRealVector) {
@@ -2344,6 +2292,7 @@ public class OutputFormFactory {
     }
     append(buf, "}");
   }
+  // CPD-ON
 
   /**
    * This method will only be called if <code>list.isAST2()==true</code> and the head equals "Part".

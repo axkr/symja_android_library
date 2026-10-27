@@ -514,16 +514,12 @@ public class ElementData extends AbstractFunctionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IAST[] list = ElementData1.ELEMENTS;
-    for (int i = 0; i < list.length; i++) {
-      final IAST iList = list[i];
-      MAP_NUMBER_NAME.put(iList.arg1(), iList.arg3());
-      IASTAppendable subList = F.mapRange(1, iList.size(), j -> iList.get(j));
-      MAP_NAME_DATA.put(iList.arg1(), subList);
-      MAP_NAME_DATA.put(iList.arg2(), subList);
-      MAP_NAME_DATA.put(iList.arg3(), subList);
-    }
-    list = ElementData2.ELEMENTS;
+    register(ElementData1.ELEMENTS);
+    register(ElementData2.ELEMENTS);
+  }
+
+  /** Index the rows of an element table by atomic number, abbreviation and name. */
+  private static void register(IAST[] list) {
     for (int i = 0; i < list.length; i++) {
       final IAST iList = list[i];
       MAP_NUMBER_NAME.put(iList.arg1(), iList.arg3());

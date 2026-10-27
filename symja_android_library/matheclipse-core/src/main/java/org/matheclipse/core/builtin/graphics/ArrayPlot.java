@@ -30,6 +30,7 @@ public class ArrayPlot extends ListPlot {
     return false;
   }
 
+  // CPD-OFF matrix plots share the preamble, the cell colouring differs
   public ArrayPlot() {}
 
   @Override
@@ -60,6 +61,7 @@ public class ArrayPlot extends ListPlot {
 
     // Determine dimensions
     int cols = 0;
+    // CPD-ON
     boolean hasSubLists = false;
     for (IExpr row : list) {
       if (row.isList()) {

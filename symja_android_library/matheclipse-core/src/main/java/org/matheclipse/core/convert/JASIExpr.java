@@ -21,7 +21,6 @@ import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import edu.jas.arith.BigRational;
-import edu.jas.poly.Complex;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
@@ -125,47 +124,6 @@ public class JASIExpr {
         new GenPolynomialRing<IExpr>(fRingFactory, fVariables.size(), fTermOrder, vars);
     this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
         edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
-  }
-
-  /**
-   * Convert a JAS complex polynomial to <code>IExpr</code>.
-   *
-   * @param poly
-   * @return
-   * @throws ArithmeticException
-   * @throws ClassCastException
-   */
-  public IExpr complexPoly2Expr(final GenPolynomial<Complex<BigRational>> poly)
-      throws ArithmeticException, ClassCastException {
-    if (poly.length() == 0) {
-      return F.C0;
-    }
-    IASTAppendable result = F.PlusAlloc(poly.length());
-    for (Monomial<Complex<BigRational>> monomial : poly) {
-      Complex<BigRational> coeff = monomial.coefficient();
-      ExpVector exp = monomial.exponent();
-      BigRational re = coeff.getRe();
-      BigRational im = coeff.getIm();
-      IASTAppendable monomTimes = F.Times(F.CC(F.fraction(re.numerator(), re.denominator()),
-          F.fraction(im.numerator(), im.denominator())));
-      long lExp;
-      for (int i = 0; i < exp.length(); i++) {
-        lExp = exp.getVal(i);
-        if (lExp != 0) {
-          monomTimes.append(F.Power(fVariables.get(i), F.ZZ(lExp)));
-        }
-      }
-      if (monomTimes.isAST1()) {
-        result.append(monomTimes.arg1());
-      } else {
-        result.append(monomTimes);
-      }
-    }
-    if (result.isAST1()) {
-      return result.arg1();
-    } else {
-      return result;
-    }
   }
 
   /**
@@ -342,46 +300,6 @@ public class JASIExpr {
   public GenPolynomial<edu.jas.arith.BigInteger> integerFromRationalCoefficients(
       GenPolynomial<BigRational> A) {
     return PolyUtil.integerFromRationalCoefficients(fBigIntegerPolyFactory, A);
-  }
-
-  /**
-   * Convert a JAS integer polynomial to <code>IExpr</code>.
-   *
-   * @param poly
-   * @return
-   * @throws ArithmeticException
-   * @throws ClassCastException
-   */
-  public IExpr integerPoly2Expr(final GenPolynomial<edu.jas.arith.BigInteger> poly)
-      throws ArithmeticException, ClassCastException {
-    if (poly.length() == 0) {
-      return F.C0;
-    }
-    IASTAppendable result = F.PlusAlloc(poly.length());
-    for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
-      edu.jas.arith.BigInteger coeff = monomial.coefficient();
-      ExpVector exp = monomial.exponent();
-      IInteger coeffValue = F.integer(coeff.getVal());
-      IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
-      monomTimes.append(coeffValue);
-      long lExp;
-      for (int i = 0; i < exp.length(); i++) {
-        lExp = exp.getVal(i);
-        if (lExp != 0) {
-          monomTimes.append(F.Power(fVariables.get(i), F.ZZ(lExp)));
-        }
-      }
-      if (monomTimes.isAST1()) {
-        result.append(monomTimes.arg1());
-      } else {
-        result.append(monomTimes);
-      }
-    }
-    if (result.isAST1()) {
-      return result.arg1();
-    } else {
-      return result;
-    }
   }
 
   /**

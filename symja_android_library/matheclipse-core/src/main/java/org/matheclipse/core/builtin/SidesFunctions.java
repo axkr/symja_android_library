@@ -23,33 +23,82 @@ public class SidesFunctions {
     }
   }
 
-  private static class AddSides extends AbstractCoreFunctionEvaluator {
+  /**
+   * The evaluator of a function which applies an operation with a second operand to both sides of
+   * an equation or inequality, also of one wrapped in <code>ConditionalExpression</code>.
+   */
+  private abstract static class AbstractSidesEvaluator extends AbstractCoreFunctionEvaluator {
 
-    private static IExpr function(IExpr x, IExpr y) {
-      return F.Plus(x, y);
+    /** The operand is required and evaluated before the equation; none may be an equation. */
+    private final boolean operandFirst;
+
+    /**
+     * The operation scales the sides: a conditional equation becomes a <code>Piecewise</code> which
+     * requires a nonzero operand.
+     */
+    private final boolean scaled;
+
+    /** The operand is a divisor, which must not be zero for an equation or inequality. */
+    private final boolean divisor;
+
+    AbstractSidesEvaluator(boolean operandFirst, boolean scaled, boolean divisor) {
+      this.operandFirst = operandFirst;
+      this.scaled = scaled;
+      this.divisor = divisor;
     }
+
+    /**
+     * Apply the operation with <code>operand</code> to both sides of <code>comparator</code>.
+     *
+     * @return {@link F#NIL} if <code>comparator</code> is no equation or inequality
+     */
+    protected abstract IExpr sides(IAST comparator, IExpr operand);
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg2 = engine.evaluate(ast.arg2());
       IExpr arg1 = ast.arg1();
-      if (!arg2.isComparatorFunction()) {
-        if (!arg1.isComparatorFunction()) {
-          arg1 = engine.evaluate(arg1);
+      IExpr arg2;
+      if (operandFirst) {
+        arg2 = engine.evaluate(ast.arg2());
+        if (arg2.isComparatorFunction()) {
+          // `1` should be an equation or inequality.
+          return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
         }
-        if (arg1.isTrue() || arg1.isFalse()) {
-          return arg1;
-        } else if (arg1.isConditionalExpression() && arg1.first().isAST()) {
+      } else {
+        arg2 = null;
+      }
+      if (!arg1.isComparatorFunction()) {
+        arg1 = engine.evaluate(arg1);
+      }
+      if (arg1.isTrue() || arg1.isFalse()) {
+        return arg1;
+      }
+      if (!operandFirst) {
+        arg2 = sidesOperand(ast, arg1, engine);
+        if (arg2 == null) {
+          return F.NIL;
+        }
+      }
+      if (arg2.isPresent()) {
+        if (arg1.isConditionalExpression() && arg1.first().isAST()) {
           IAST a1 = (IAST) arg1.first();
-          IExpr temp = addSides(a1, arg2);
+          IExpr temp = sides(a1, arg2);
           if (temp.isPresent()) {
+            if (scaled) {
+              temp = engine.evaluate(temp);
+              temp = F.Piecewise(F.list(F.list(temp), F.Unequal(arg2, F.C0)), a1);
+            }
             return F.ConditionalExpression(temp, arg1.second());
           }
         } else if (arg1.isComparatorFunction()) {
-          IAST comparator = (IAST) arg1;
-          IExpr temp = addSides(comparator, arg2);
-          if (temp.isPresent()) {
-            return temp;
+          if (divisor && arg2.isZero()) {
+            // Cannot divide sides of an equation or inequality by 0.
+            return Errors.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
+          } else if (!arg2.isComparatorFunction()) {
+            IExpr temp = sides((IAST) arg1, arg2);
+            if (temp.isPresent()) {
+              return temp;
+            }
           }
         }
       }
@@ -57,23 +106,21 @@ public class SidesFunctions {
       return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
-    private IExpr addSides(IAST comparator, final IExpr arg2) {
-      int headID = comparator.headID();
-      switch (headID) {
-        case ID.Equal:
-        case ID.Unequal:
-        case ID.Less:
-        case ID.LessEqual:
-        case ID.Greater:
-        case ID.GreaterEqual:
-          return comparator.map(x -> function(x, arg2));
-      }
-      return F.NIL;
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return operandFirst ? ARGS_2_2 : ARGS_1_2;
+    }
+  }
+
+  private static class AddSides extends AbstractSidesEvaluator {
+
+    AddSides() {
+      super(true, false, false);
     }
 
     @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+    protected IExpr sides(IAST comparator, IExpr operand) {
+      return shiftSides(comparator, x -> F.Plus(x, operand));
     }
   }
 
@@ -125,6 +172,25 @@ public class SidesFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+  }
+
+  /**
+   * Apply <code>f</code>, an addition or subtraction, to both sides of an equation or inequality.
+   *
+   * @return {@link F#NIL} if <code>comparator</code> is no equation or inequality
+   */
+  private static IExpr shiftSides(IAST comparator, Function<IExpr, IExpr> f) {
+    switch (comparator.headID()) {
+      case ID.Equal:
+      case ID.Unequal:
+      case ID.Less:
+      case ID.LessEqual:
+      case ID.Greater:
+      case ID.GreaterEqual:
+        return comparator.map(f);
+      default:
+        return F.NIL;
     }
   }
 
@@ -201,164 +267,39 @@ public class SidesFunctions {
     return engine.evaluate(ast.arg2());
   }
 
-  private static class DivideSides extends AbstractCoreFunctionEvaluator {
+  private static class DivideSides extends AbstractSidesEvaluator {
 
-    private static IExpr function(IExpr x, IExpr y) {
-      return F.Divide(x, y);
+    DivideSides() {
+      super(false, true, true);
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (!arg1.isComparatorFunction()) {
-        arg1 = engine.evaluate(arg1);
-      }
-      if (arg1.isTrue() || arg1.isFalse()) {
-        return arg1;
-      }
-      IExpr arg2 = sidesOperand(ast, arg1, engine);
-      if (arg2 == null) {
-        return F.NIL;
-      }
-      if (arg2.isPresent()) {
-        if (arg1.isConditionalExpression() && arg1.first().isAST()) {
-          IAST a1 = (IAST) arg1.first();
-          IExpr temp = divideSides(a1, arg2);
-          if (temp.isPresent()) {
-            temp = engine.evaluate(temp);
-            IExpr piecewise = F.Piecewise(F.list(F.list(temp), F.Unequal(arg2, F.C0)), a1);
-            return F.ConditionalExpression(piecewise, arg1.second());
-          }
-        } else if (arg1.isComparatorFunction()) {
-          if (arg2.isZero()) {
-            // Cannot divide sides of an equation or inequality by 0.
-            return Errors.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
-          } else if (!arg2.isComparatorFunction()) {
-            IAST comparator = (IAST) arg1;
-            IExpr temp = divideSides(comparator, arg2);
-            if (temp.isPresent()) {
-              return temp;
-            }
-          }
-        }
-      }
-      // `1` should be an equation or inequality.
-      return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
-    }
-
-    private IExpr divideSides(IAST comparator, IExpr arg2) {
-      return scaleSides(comparator, arg2, x -> function(x, arg2));
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+    protected IExpr sides(IAST comparator, IExpr operand) {
+      return scaleSides(comparator, operand, x -> F.Divide(x, operand));
     }
   }
 
-  private static class MultiplySides extends AbstractCoreFunctionEvaluator {
+  private static class MultiplySides extends AbstractSidesEvaluator {
 
-    private static IExpr function(IExpr x, IExpr y) {
-      return F.Times(x, y);
+    MultiplySides() {
+      super(true, true, false);
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg2 = engine.evaluate(ast.arg2());
-      IExpr arg1 = ast.arg1();
-      if (!arg2.isComparatorFunction()) {
-        if (!arg1.isComparatorFunction()) {
-          arg1 = engine.evaluate(arg1);
-        }
-        if (arg1.isTrue() || arg1.isFalse()) {
-          return arg1;
-        } else if (arg1.isConditionalExpression() && arg1.first().isAST()) {
-          IAST a1 = (IAST) arg1.first();
-          IExpr temp = multiplySides(a1, arg2);
-          if (temp.isPresent()) {
-            temp = engine.evaluate(temp);
-            IExpr piecewise = F.Piecewise(F.list(F.list(temp), F.Unequal(arg2, F.C0)), a1);
-            return F.ConditionalExpression(piecewise, arg1.second());
-          }
-        } else if (arg1.isComparatorFunction()) {
-          IAST comparator = (IAST) arg1;
-          IExpr temp = multiplySides(comparator, arg2);
-          if (temp.isPresent()) {
-            return temp;
-          }
-        }
-      }
-      // `1` should be an equation or inequality.
-      return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
-    }
-
-    private IExpr multiplySides(IAST comparator, final IExpr arg2) {
-      return scaleSides(comparator, arg2, x -> function(x, arg2));
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+    protected IExpr sides(IAST comparator, IExpr operand) {
+      return scaleSides(comparator, operand, x -> F.Times(x, operand));
     }
   }
 
-  private static class SubtractSides extends AbstractCoreFunctionEvaluator {
+  private static class SubtractSides extends AbstractSidesEvaluator {
 
-    private static IExpr function(IExpr x, IExpr y) {
-      return F.Subtract(x, y);
+    SubtractSides() {
+      super(false, false, false);
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (!arg1.isComparatorFunction()) {
-        arg1 = engine.evaluate(arg1);
-      }
-      if (arg1.isTrue() || arg1.isFalse()) {
-        return arg1;
-      }
-      IExpr arg2 = sidesOperand(ast, arg1, engine);
-      if (arg2 == null) {
-        return F.NIL;
-      }
-      if (arg2.isPresent()) {
-        if (arg1.isConditionalExpression() && arg1.first().isAST()) {
-          IAST a1 = (IAST) arg1.first();
-          IExpr temp = subtractSides(a1, arg2);
-          if (temp.isPresent()) {
-            return F.ConditionalExpression(temp, arg1.second());
-          }
-        } else if (arg1.isComparatorFunction()) {
-          if (!arg2.isComparatorFunction()) {
-            IAST comparator = (IAST) arg1;
-            IExpr temp = subtractSides(comparator, arg2);
-            if (temp.isPresent()) {
-              return temp;
-            }
-          }
-        }
-      }
-      // `1` should be an equation or inequality.
-      return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
-    }
-
-    private IExpr subtractSides(IAST comparator, final IExpr arg2) {
-      int headID = comparator.headID();
-      switch (headID) {
-        case ID.Equal:
-        case ID.Unequal:
-        case ID.Less:
-        case ID.LessEqual:
-        case ID.Greater:
-        case ID.GreaterEqual:
-          return comparator.map(x -> function(x, arg2));
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+    protected IExpr sides(IAST comparator, IExpr operand) {
+      return shiftSides(comparator, x -> F.Subtract(x, operand));
     }
   }
 

@@ -149,53 +149,6 @@ public class JASConvert<C extends RingElem<C>> {
     return out;
   }
 
-  /**
-   * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
-   *
-   * @param poly
-   * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
-   */
-  private static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
-    if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
-      result[0] = BigRational.ZERO;
-      result[1] = BigRational.ZERO;
-      result[2] = BigRational.ZERO;
-      for (Monomial<BigRational> monomial : poly) {
-        BigRational coeff = monomial.coefficient();
-        ExpVector exp = monomial.exponent();
-        for (int i = 0; i < exp.length(); i++) {
-          result[(int) exp.getVal(i)] = coeff;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
-   *
-   * @param poly
-   * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
-   */
-  private static boolean isQuadratic(GenPolynomial<edu.jas.arith.BigInteger> poly,
-      edu.jas.arith.BigInteger[] result) {
-    if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
-      result[0] = edu.jas.arith.BigInteger.ZERO;
-      result[1] = edu.jas.arith.BigInteger.ZERO;
-      result[2] = edu.jas.arith.BigInteger.ZERO;
-      for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
-        edu.jas.arith.BigInteger coeff = monomial.coefficient();
-        ExpVector exp = monomial.exponent();
-        for (int i = 0; i < exp.length(); i++) {
-          result[(int) exp.getVal(i)] = coeff;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
   public static IComplex jas2Complex(edu.jas.poly.Complex<BigRational> c) {
     IFraction re = F.fraction(c.getRe().numerator(), c.getRe().denominator());
     IFraction im = F.fraction(c.getIm().numerator(), c.getIm().denominator());
@@ -352,42 +305,18 @@ public class JASConvert<C extends RingElem<C>> {
 
   static edu.jas.arith.BigInteger[][] list2JASArray(final IExpr expr)
       throws ClassCastException, IndexOutOfBoundsException {
-    if (expr == null) {
+    java.math.BigInteger[][] values = Convert.list2BigIntegerMatrix(expr);
+    if (values == null) {
       return null;
     }
-    int[] dim = expr.isMatrix(false);
-    if (dim == null || dim[0] == 0 || dim[1] == 0) {
-      return null;
-    }
-    if (expr.isList()) {
-      IAST list = (IAST) expr;
-      IAST currInRow = (IAST) list.arg1();
-      if (currInRow.isAST0()) {
-        // special case 0-Matrix
-        edu.jas.arith.BigInteger[][] array = new edu.jas.arith.BigInteger[0][0];
-        return array;
+    final edu.jas.arith.BigInteger[][] elements = new edu.jas.arith.BigInteger[values.length][];
+    for (int i = 0; i < values.length; i++) {
+      elements[i] = new edu.jas.arith.BigInteger[values[i].length];
+      for (int j = 0; j < values[i].length; j++) {
+        elements[i][j] = new edu.jas.arith.BigInteger(values[i][j]);
       }
-      final int rowSize = expr.argSize();
-      final int colSize = currInRow.argSize();
-      final edu.jas.arith.BigInteger[][] elements = new edu.jas.arith.BigInteger[rowSize][colSize];
-      for (int i = 1; i < rowSize + 1; i++) {
-        currInRow = (IAST) list.get(i);
-        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-          return null;
-        }
-        for (int j = 1; j < colSize + 1; j++) {
-          IExpr elem = currInRow.get(j);
-          if (elem.isInteger()) {
-            elements[i - 1][j - 1] =
-                new edu.jas.arith.BigInteger(((IInteger) elem).toBigNumerator());
-          } else {
-            return null;
-          }
-        }
-      }
-      return elements;
     }
-    return null;
+    return elements;
   }
 
   public static edu.jas.arith.BigInteger[][] list2JASBigIntegerMatrix(final IExpr expr)
@@ -708,17 +637,28 @@ public class JASConvert<C extends RingElem<C>> {
   }
 
   private boolean expVectorToExpr(ExpVector exp, IASTAppendable monomTimes) {
-    long lExp;
-    ExpVector leer = fPolyFactory.evzero;
+    return appendExpVector(exp, fPolyFactory.evzero, fVariables, monomTimes);
+  }
+
+  /**
+   * Append the powers of the <code>variables</code> of the exponent vector <code>exp</code> to
+   * <code>monomTimes</code>.
+   *
+   * @param leer the zero exponent vector of the ring, which maps a JAS position to the index of the
+   *        variable
+   * @return <code>false</code> if a position has no variable
+   */
+  static boolean appendExpVector(ExpVector exp, ExpVector leer, IAST variables,
+      IASTAppendable monomTimes) {
     for (int i = 0; i < exp.length(); i++) {
-      lExp = exp.getVal(i);
+      long lExp = exp.getVal(i);
       if (lExp != 0) {
         int ix = leer.varIndex(i);
         if (ix >= 0) {
           if (lExp == 1L) {
-            monomTimes.append(fVariables.get(ix + 1));
+            monomTimes.append(variables.get(ix + 1));
           } else {
-            monomTimes.append(F.Power(fVariables.get(ix + 1), F.ZZ(lExp)));
+            monomTimes.append(F.Power(variables.get(ix + 1), F.ZZ(lExp)));
           }
         } else {
           return false;

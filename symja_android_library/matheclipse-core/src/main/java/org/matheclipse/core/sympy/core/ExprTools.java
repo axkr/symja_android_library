@@ -659,31 +659,29 @@ public class ExprTools {
   }
 
   private static IExpr fractionalGCD(IExpr a, IExpr b) {
-    if (a.isRational() && b.isRational()) {
-      IInteger numA = a.isFraction() ? ((IFraction) a).numerator() : (IInteger) a;
-      IInteger denA = a.isFraction() ? ((IFraction) a).denominator() : F.C1;
-      IInteger numB = b.isFraction() ? ((IFraction) b).numerator() : (IInteger) b;
-      IInteger denB = b.isFraction() ? ((IFraction) b).denominator() : F.C1;
-
-      IExpr numGCD = F.eval(F.GCD(numA, numB));
-      IExpr denLCM = F.eval(F.LCM(denA, denB));
-      return F.eval(F.Divide(numGCD, denLCM));
-    }
-    return F.eval(F.GCD(a, b));
+    return fractionalGcdLcm(a, b, true);
   }
 
   private static IExpr fractionalLCM(IExpr a, IExpr b) {
+    return fractionalGcdLcm(a, b, false);
+  }
+
+  /**
+   * The GCD (or LCM) of two rationals: the GCD (LCM) of the numerators over the LCM (GCD) of the
+   * denominators. Other numbers fall back to <code>GCD(a, b)</code> (<code>LCM(a, b)</code>).
+   */
+  private static IExpr fractionalGcdLcm(IExpr a, IExpr b, boolean gcd) {
     if (a.isRational() && b.isRational()) {
       IInteger numA = a.isFraction() ? ((IFraction) a).numerator() : (IInteger) a;
       IInteger denA = a.isFraction() ? ((IFraction) a).denominator() : F.C1;
       IInteger numB = b.isFraction() ? ((IFraction) b).numerator() : (IInteger) b;
       IInteger denB = b.isFraction() ? ((IFraction) b).denominator() : F.C1;
 
-      IExpr numLCM = F.eval(F.LCM(numA, numB));
-      IExpr denGCD = F.eval(F.GCD(denA, denB));
-      return F.eval(F.Divide(numLCM, denGCD));
+      IExpr num = F.eval(gcd ? F.GCD(numA, numB) : F.LCM(numA, numB));
+      IExpr den = F.eval(gcd ? F.LCM(denA, denB) : F.GCD(denA, denB));
+      return F.eval(F.Divide(num, den));
     }
-    return F.eval(F.LCM(a, b));
+    return F.eval(gcd ? F.GCD(a, b) : F.LCM(a, b));
   }
 
   /**

@@ -706,6 +706,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, head(), arg1);
   }
 
@@ -737,6 +738,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public IExpr findFirst(Function<IExpr, IExpr> function) {
+  // CPD-ON
     return function.apply(arg1);
   }
 
@@ -850,15 +852,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {
-    if (length == 0) {
-      return new AST0(head());
-    }
-    AST result = new AST(length, true);
-    result.set(0, head());
-    for (int i = 0; i < length; i++) {
-      result.set(i + 1, get(items[i] + offset));
-    }
-    return result;
+    return FixedArity.getItems(this, items, length, offset);
   }
 
   @Override

@@ -108,6 +108,7 @@ public final class EnsembleComplex extends SeriesAlgorithmComplex {
       myMethodCount = myMethods.size();
       myOldSignum = Math.signum(e.getReal());
       myPrevEst = new Complex[myMethodCount];
+      // CPD-OFF double and Complex variants of the same algorithm
       myEst = new Complex[myMethodCount];
       myExcept = new boolean[myMethodCount];
 
@@ -129,6 +130,7 @@ public final class EnsembleComplex extends SeriesAlgorithmComplex {
       for (int m = 0; m < myMethodCount; ++m) {
         if (!myExcept[m]) {
           final SeriesAlgorithmComplex method = myMethods.get(m);
+          // CPD-ON
           method.myIndex = 0;
           myEst[m] = method.next(e, term);
         }
@@ -166,6 +168,7 @@ public final class EnsembleComplex extends SeriesAlgorithmComplex {
     }
 
     // track the sign of the sequence
+    // CPD-OFF double and Complex variants of the same algorithm
     final double signum = Math.signum(e.getReal());
     if (myIndex > 0 && myIsAlternating && signum * myOldSignum >= 0) {
       myIsAlternating = false;
@@ -197,6 +200,7 @@ public final class EnsembleComplex extends SeriesAlgorithmComplex {
 
       // estimate the next terms
       final SeriesAlgorithmComplex method = myMethods.get(m);
+      // CPD-ON
       myPrevEst[m] = myEst[m];
       myEst[m] = method.next(e, term);
 
@@ -239,6 +243,7 @@ public final class EnsembleComplex extends SeriesAlgorithmComplex {
   public final SeriesSolutionComplex limit(final Iterable<Complex> seq, final boolean series,
       final int extrapolateStart) {
     myCheckForSequenceOnly = !series;
+    // CPD-OFF double and Complex variants of the same algorithm
     final SeriesSolutionComplex result = super.limit(seq, series, extrapolateStart);
     if (myPrint > 0 && myBestMethod >= 0 && result.converged) {
       System.out.println("Converged at iteration " + myIndex + " with method "
@@ -260,6 +265,7 @@ public final class EnsembleComplex extends SeriesAlgorithmComplex {
         str = "-";
       } else {
         str = myEst[m].toString();
+        // CPD-ON
       }
       line += "\t" + pad(str, PRINT_DIGITS);
     }

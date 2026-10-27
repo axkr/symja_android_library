@@ -1311,6 +1311,7 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 3) {
+        // CPD-OFF ListConvolve and ListCorrelate check their arguments differently
         return ListCorrelate.aligned(ast, true);
       }
       if (ast.isAST2()) {
@@ -1324,6 +1325,7 @@ public class TensorFunctions {
           IntList kernelDims = LinearAlgebraUtil.dimensions(kernel);
           IntList tensorDims = LinearAlgebraUtil.dimensions(tensor);
           if (kernelDims.size() > 0 && kernelDims.size() == tensorDims.size()) {
+          // CPD-ON
             int kernelSize = kernel.size();
             int tensorSize = tensor.size();
             if (kernelSize <= tensorSize) {
@@ -1412,6 +1414,7 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 3) {
+        // CPD-OFF ListConvolve and ListCorrelate check their arguments differently
         return aligned(ast, false);
       }
       if (ast.isAST2()) {
@@ -1425,6 +1428,7 @@ public class TensorFunctions {
           if (kernelDims.size() > 0 && kernelDims.size() == tensorDims.size()) {
             return listCorrelate(kernel, tensor, S.Plus, S.Times);
           }
+          // CPD-ON
         }
 
       }
@@ -1779,12 +1783,7 @@ public class TensorFunctions {
       }
 
       public Integer[] createIndexArray() {
-        final int argSize = ast.argSize();
-        Integer[] indexes = new Integer[argSize];
-        for (int i = 1; i <= argSize; i++) {
-          indexes[i - 1] = i;
-        }
-        return indexes;
+        return ListFunctions.argumentIndexes(ast);
       }
 
       @Override

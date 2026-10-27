@@ -296,6 +296,21 @@ public class Documentation {
   }
 
   /**
+   * The regular expression of a symbol name pattern. A string pattern without a context mark is
+   * looked up in context <code>System`</code>.
+   *
+   * @return <code>null</code> if <code>pattern</code> is no string pattern
+   */
+  private static java.util.regex.Pattern systemRegexPattern(IExpr pattern, boolean ignoreCase,
+      final IAST ast, EvalEngine engine) {
+    if (pattern.isString() && pattern.toString().indexOf("`") < 0) {
+      pattern = F.$str("System`" + pattern.toString());
+    }
+    Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
+    return IStringX.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
+  }
+
+  /**
    * Returns a list of {@link IStringX} of the defined symbol names in context System`
    * 
    * @param pattern
@@ -305,15 +320,7 @@ public class Documentation {
    */
   public static IAST getNamesByPattern(IExpr pattern, boolean ignoreCase, final IAST ast,
       EvalEngine engine) {
-    if (pattern.isString()) {
-      int indx = pattern.toString().indexOf("`");
-      if (indx < 0) {
-        pattern = F.$str("System`" + pattern.toString());
-      }
-    }
-    Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-    java.util.regex.Pattern regexPattern =
-        IStringX.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
+    java.util.regex.Pattern regexPattern = systemRegexPattern(pattern, ignoreCase, ast, engine);
 
     if (regexPattern == null) {
       return F.NIL;
@@ -393,53 +400,40 @@ public class Documentation {
     IASTAppendable list = F.ListAlloc(31);
     Map<String, Context> contextMap = contextPath.getContextMap();
     for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
-      Context context = mapEntry.getValue();
-      for (Map.Entry<String, ISymbol> entry : symbolsOf(context)) {
-        String fullName = context.completeContextName() + entry.getKey();
-        java.util.regex.Matcher matcher = pattern.matcher(fullName);
-        if (matcher.matches()) {
-          if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
-            String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
-            if (str != null) {
-              list.append(F.$str(str));
-              continue;
-            }
-          }
-          ISymbol value = entry.getValue();
-          if (context.isGlobal() || context.isSystem()) {
-            list.append(F.$str(value.toString()));
-          } else {
-            list.append(F.$str(fullName));
-          }
-        }
-      }
+      appendMatchingNames(list, mapEntry.getValue(), pattern);
     }
 
     for (Context context : contextPath) {
-      String completeContextName = context.completeContextName();
-      if (!contextMap.containsKey(completeContextName)) {
-        for (Map.Entry<String, ISymbol> entry : symbolsOf(context)) {
-          String fullName = completeContextName + entry.getKey();
-          java.util.regex.Matcher matcher = pattern.matcher(fullName);
-          if (matcher.matches()) {
-            if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
-              String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
-              if (str != null) {
-                list.append(F.$str(str));
-                continue;
-              }
-            }
-            ISymbol value = entry.getValue();
-            if (context.isGlobal() || context.isSystem()) {
-              list.append(F.$str(value.toString()));
-            } else {
-              list.append(F.$str(fullName));
-            }
-          }
-        }
+      if (!contextMap.containsKey(context.completeContextName())) {
+        appendMatchingNames(list, context, pattern);
       }
     }
     return list;
+  }
+
+  /** Append the names of the symbols of <code>context</code> whose full name matches. */
+  private static void appendMatchingNames(IASTAppendable list, Context context,
+      java.util.regex.Pattern pattern) {
+    String completeContextName = context.completeContextName();
+    for (Map.Entry<String, ISymbol> entry : symbolsOf(context)) {
+      String fullName = completeContextName + entry.getKey();
+      java.util.regex.Matcher matcher = pattern.matcher(fullName);
+      if (matcher.matches()) {
+        if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+          String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
+          if (str != null) {
+            list.append(F.$str(str));
+            continue;
+          }
+        }
+        ISymbol value = entry.getValue();
+        if (context.isGlobal() || context.isSystem()) {
+          list.append(F.$str(value.toString()));
+        } else {
+          list.append(F.$str(fullName));
+        }
+      }
+    }
   }
 
   public static IAST getNamesByPrefix(String name, final boolean exact) {
@@ -484,15 +478,7 @@ public class Documentation {
    */
   public static IAST getSymbolsByPattern(IExpr pattern, boolean ignoreCase, final IAST ast,
       EvalEngine engine) {
-    if (pattern.isString()) {
-      int indx = pattern.toString().indexOf("`");
-      if (indx < 0) {
-        pattern = F.$str("System`" + pattern.toString());
-      }
-    }
-    Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-    java.util.regex.Pattern regexPattern =
-        IStringX.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
+    java.util.regex.Pattern regexPattern = systemRegexPattern(pattern, ignoreCase, ast, engine);
 
     if (regexPattern == null) {
       return F.NIL;

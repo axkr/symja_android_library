@@ -655,6 +655,31 @@ public class IntervalSym {
   }
 
   /**
+   * Test if every argument of <code>ast</code> is an <code>Interval</code> whose segments
+   * <code>{min, max}</code> have real bounds.
+   *
+   * @param ast the function call with the intervals as arguments
+   */
+  public static boolean isRealIntervalArgs(final IAST ast) {
+    for (int i = 1; i < ast.size(); i++) {
+      if (!ast.get(i).isInterval()) {
+        return false;
+      }
+      IAST interval = (IAST) ast.get(i);
+      for (int j = 1; j < interval.size(); j++) {
+        if (!interval.get(j).isList2()) {
+          return false;
+        }
+        IAST list1 = (IAST) interval.get(j);
+        if (!list1.arg1().isRealResult() || !list1.arg2().isRealResult()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
    * The list of intervals are sorted and overlapping intervals are merged.
    *
    * @param intervalList
@@ -808,6 +833,7 @@ public class IntervalSym {
     return F.Interval(F.list(min, max));
   }
 
+  // CPD-OFF interval plus and times share the bound loop, only the pair operation differs
   public static IExpr plus(final IAST ast1, final IAST ast2) {
     IAST interval1 = normalize(ast1);
     IAST interval2 = normalize(ast2);
@@ -832,6 +858,7 @@ public class IntervalSym {
     }
     return F.NIL;
   }
+  // CPD-ON
 
   public static IExpr plus(final IExpr scalar, final IAST ast2) {
     IAST interval2 = normalize(ast2);
@@ -842,6 +869,7 @@ public class IntervalSym {
         IExpr min2 = list2.arg1();
         IExpr max2 = list2.arg2();
 
+        // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
         IAST list = F.list(scalar.plus(min2), //
             scalar.plus(max2));
         result.append(list);
@@ -851,60 +879,9 @@ public class IntervalSym {
     return F.NIL;
   }
 
-  /**
-   * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
-   *
-   * <p>
-   * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval
-   * arithmetic - Elementary functions</a>
-   *
-   * @param baseInterval
-   * @param exponent
-   * @return
-   */
+  /** {@link #power(IAST, IReal)} for an integer exponent. */
   public static IExpr power(final IAST baseInterval, IInteger exponent) {
-    IAST interval = normalize(baseInterval);
-    if (interval.isPresent()) {
-      boolean negative = false;
-
-      if (exponent.isNegative()) {
-        negative = true;
-        exponent = exponent.negate();
-      }
-      if (exponent.isOne()) {
-        if (negative) {
-          return inverse(interval);
-        }
-        return baseInterval;
-      }
-      IASTAppendable result = F.IntervalAlloc(baseInterval.size());
-      for (int i = 1; i < interval.size(); i++) {
-        IAST list = (IAST) interval.get(i);
-        if (list.arg1().isRealResult() && list.arg2().isRealResult()) {
-          if (exponent.isEven()) {
-            if (list.arg1().isNonNegativeResult()) {
-              result.append(F.list(list.arg1().power(exponent), list.arg2().power(exponent)));
-            } else {
-              if (list.arg2().isNegativeResult()) {
-                result.append(F.list(list.arg2().power(exponent), list.arg1().power(exponent)));
-              } else {
-                result.append(
-                    F.list(F.C0, F.Max(list.arg1().power(exponent), list.arg2().power(exponent))));
-              }
-            }
-          } else {
-            result.append(F.list(list.arg1().power(exponent), list.arg2().power(exponent)));
-          }
-        } else {
-          return F.NIL;
-        }
-      }
-      if (negative) {
-        return inverse(result);
-      }
-      return result;
-    }
-    return F.NIL;
+    return power(baseInterval, (IReal) exponent);
   }
 
   /**
@@ -919,35 +896,68 @@ public class IntervalSym {
    * @return
    */
   public static IExpr power(final IAST baseInterval, IReal exponent) {
+    if (exponent.isNegative()) {
+      IExpr positivePower = power(baseInterval, exponent.negate());
+      return positivePower.isPresent() ? inverse((IAST) positivePower) : F.NIL;
+    }
     IAST interval = normalize(baseInterval);
     if (interval.isPresent()) {
-      boolean negative = false;
-
-      if (exponent.isNegative()) {
-        negative = true;
-        exponent = exponent.negate();
-      }
       if (exponent.isOne()) {
-        if (negative) {
-          return inverse(interval);
-        }
         return baseInterval;
       }
-      IASTAppendable result = F.IntervalAlloc(baseInterval.size());
-      for (int i = 1; i < interval.size(); i++) {
-        IAST list = (IAST) interval.get(i);
-        if (list.arg1().isNonNegativeResult() && list.arg2().isNonNegativeResult()) {
-          result.append(F.list(list.arg1().power(exponent), list.arg2().power(exponent)));
-        } else {
-          return F.NIL;
-        }
-      }
-      if (negative) {
-        return inverse(result);
-      }
-      return result;
+      return exponent instanceof IInteger
+          ? integerPower(baseInterval, interval, (IInteger) exponent)
+          // CPD-ON
+          : realPower(baseInterval, interval, exponent);
     }
     return F.NIL;
+  }
+
+  /**
+   * {@link #power(IAST, IReal)} of the normalized <code>interval</code> for a non-negative integer
+   * exponent other than 1.
+   */
+  private static IExpr integerPower(final IAST baseInterval, IAST interval, IInteger exponent) {
+    IASTAppendable result = F.IntervalAlloc(baseInterval.size());
+    for (int i = 1; i < interval.size(); i++) {
+      IAST list = (IAST) interval.get(i);
+      if (list.arg1().isRealResult() && list.arg2().isRealResult()) {
+        if (exponent.isEven()) {
+          if (list.arg1().isNonNegativeResult()) {
+            result.append(F.list(list.arg1().power(exponent), list.arg2().power(exponent)));
+          } else {
+            if (list.arg2().isNegativeResult()) {
+              result.append(F.list(list.arg2().power(exponent), list.arg1().power(exponent)));
+            } else {
+              result.append(
+                  F.list(F.C0, F.Max(list.arg1().power(exponent), list.arg2().power(exponent))));
+            }
+          }
+        } else {
+          result.append(F.list(list.arg1().power(exponent), list.arg2().power(exponent)));
+        }
+      } else {
+        return F.NIL;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * {@link #power(IAST, IReal)} of the normalized <code>interval</code> for a non-negative real
+   * exponent other than 1, defined for non-negative bounds only.
+   */
+  private static IExpr realPower(final IAST baseInterval, IAST interval, IReal exponent) {
+    IASTAppendable result = F.IntervalAlloc(baseInterval.size());
+    for (int i = 1; i < interval.size(); i++) {
+      IAST list = (IAST) interval.get(i);
+      if (list.arg1().isNonNegativeResult() && list.arg2().isNonNegativeResult()) {
+        result.append(F.list(list.arg1().power(exponent), list.arg2().power(exponent)));
+      } else {
+        return F.NIL;
+      }
+    }
+    return result;
   }
 
   /**
@@ -1231,6 +1241,7 @@ public class IntervalSym {
     }
   }
 
+  // CPD-OFF interval plus and times share the bound loop, only the pair operation differs
   public static IExpr times(final IAST ast1, final IAST ast2) {
     IAST interval1 = normalize(ast1);
     IAST interval2 = normalize(ast2);
@@ -1264,6 +1275,7 @@ public class IntervalSym {
     }
     return F.NIL;
   }
+  // CPD-ON
 
   public static IExpr times(final IExpr scalar, final IAST ast2) {
     IAST interval2 = normalize(ast2);
@@ -1284,37 +1296,6 @@ public class IntervalSym {
       return result;
     }
     return F.NIL;
-  }
-
-  /**
-   * Converts a potentially disjoint multi-part interval into a single bounding box (hull). If the
-   * result is a single point, returns that point instead of an interval. Otherwise, returns the
-   * input expression.
-   *
-   * @param expr the expression or interval to bound
-   * @return a single point, or the input expression
-   */
-  public static IExpr toAccumBounds(IExpr expr) {
-    if (expr.isInterval()) {
-      IExpr result = IntervalSym.boundingBox(expr);
-      if (result.isNIL()) {
-        return expr;
-      }
-      IAST bounds = (IAST) ((IAST) result).arg1();
-      IExpr lo = bounds.arg1();
-      IExpr hi = bounds.arg2();
-      IAST list2 = (IAST) expr.first();
-      if (lo.equals(hi)) {
-        return list2.arg1();
-      }
-      if (lo.isInfinity() && hi.isInfinity()) {
-        return F.CInfinity;
-      }
-      if (lo.isNegativeInfinity() && hi.isNegativeInfinity()) {
-        return F.CNInfinity;
-      }
-    }
-    return expr;
   }
 
   /**

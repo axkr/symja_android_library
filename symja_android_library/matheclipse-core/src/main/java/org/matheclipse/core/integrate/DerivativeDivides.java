@@ -158,7 +158,7 @@ public class DerivativeDivides {
       }
       // back-substitute t -> u(x)
       IExpr result = engine.evaluate(F.subst(inner, t, u));
-      if (verifyAntiderivative(result, integrand, x, engine)) {
+      if (AntiderivativeCheck.verifySymbolic(result, integrand, x, engine)) {
         return result;
       }
       // spurious / wrong-branch candidate: try the next inner function
@@ -291,28 +291,6 @@ public class DerivativeDivides {
       product.append(coefficient.isOne() ? dummy : F.Power(dummy, coefficient));
     }
     return product.oneIdentity1();
-  }
-
-  /**
-   * Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand. Guards
-   * against wrong-branch or spurious substitutions so the stage never short-circuits the Rubi rules
-   * with an incorrect antiderivative.
-   */
-  private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
-      EvalEngine engine) {
-    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
-      return false;
-    }
-    try {
-      IExpr diff = engine.evaluate(F.Together(F.Subtract(F.D(result, x), integrand)));
-      if (diff.isZero()) {
-        return true;
-      }
-      return engine.evaluate(F.Simplify(diff)).isZero();
-    } catch (RuntimeException rex) {
-      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-      return false;
-    }
   }
 
   /**

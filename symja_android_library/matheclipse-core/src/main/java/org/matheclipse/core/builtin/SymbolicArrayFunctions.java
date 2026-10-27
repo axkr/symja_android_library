@@ -999,21 +999,36 @@ public class SymbolicArrayFunctions {
       return ((IAST) arg1).mapThread(F.unaryAST1(head, F.Slot1), 1);
     }
     if (arg1.isTimes()) {
-      IAST times = (IAST) arg1;
-      IASTAppendable scalars = F.TimesAlloc(times.argSize());
-      IASTAppendable arrays = F.TimesAlloc(times.argSize());
-      for (int i = 1; i < times.size(); i++) {
-        if (SymbolicArrayUtil.tensorDimensions(times.get(i), engine).isEmptyList()) {
-          scalars.append(head == S.ConjugateTranspose ? F.Conjugate(times.get(i)) : times.get(i));
-        } else {
-          arrays.append(times.get(i));
-        }
-      }
-      if (scalars.argSize() > 0 && arrays.argSize() > 0) {
-        return F.Times(scalars.oneIdentity1(), F.unaryAST1(head, arrays.oneIdentity1()));
+      IExpr[] factors = splitScalarFactors((IAST) arg1, head == S.ConjugateTranspose, engine);
+      if (factors != null) {
+        return F.Times(factors[0], F.unaryAST1(head, factors[1]));
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Split a product into its scalar factors and its array factors.
+   *
+   * @param conjugateScalars whether to conjugate each scalar factor
+   * @return the product of the scalars and the product of the arrays, or <code>null</code> unless
+   *         there are both
+   */
+  private static IExpr[] splitScalarFactors(IAST times, boolean conjugateScalars,
+      EvalEngine engine) {
+    IASTAppendable scalars = F.TimesAlloc(times.argSize());
+    IASTAppendable arrays = F.TimesAlloc(times.argSize());
+    for (int i = 1; i < times.size(); i++) {
+      if (SymbolicArrayUtil.tensorDimensions(times.get(i), engine).isEmptyList()) {
+        scalars.append(conjugateScalars ? F.Conjugate(times.get(i)) : times.get(i));
+      } else {
+        arrays.append(times.get(i));
+      }
+    }
+    if (scalars.argSize() > 0 && arrays.argSize() > 0) {
+      return new IExpr[] {scalars.oneIdentity1(), arrays.oneIdentity1()};
+    }
+    return null;
   }
 
   /** Rewrite rules for {@link S#Inverse}. */
@@ -1036,18 +1051,9 @@ public class SymbolicArrayFunctions {
       return result;
     }
     if (arg1.isTimes()) {
-      IAST times = (IAST) arg1;
-      IASTAppendable scalars = F.TimesAlloc(times.argSize());
-      IASTAppendable arrays = F.TimesAlloc(times.argSize());
-      for (int i = 1; i < times.size(); i++) {
-        if (SymbolicArrayUtil.tensorDimensions(times.get(i), engine).isEmptyList()) {
-          scalars.append(times.get(i));
-        } else {
-          arrays.append(times.get(i));
-        }
-      }
-      if (scalars.argSize() > 0 && arrays.argSize() > 0) {
-        return F.Divide(F.Inverse(arrays.oneIdentity1()), scalars.oneIdentity1());
+      IExpr[] factors = splitScalarFactors((IAST) arg1, false, engine);
+      if (factors != null) {
+        return F.Divide(F.Inverse(factors[1]), factors[0]);
       }
     }
     return F.NIL;
@@ -1067,18 +1073,9 @@ public class SymbolicArrayFunctions {
       return ((IAST) arg1).mapThread(F.Tr(F.Slot1), 1);
     }
     if (arg1.isTimes()) {
-      IAST times = (IAST) arg1;
-      IASTAppendable scalars = F.TimesAlloc(times.argSize());
-      IASTAppendable arrays = F.TimesAlloc(times.argSize());
-      for (int i = 1; i < times.size(); i++) {
-        if (SymbolicArrayUtil.tensorDimensions(times.get(i), engine).isEmptyList()) {
-          scalars.append(times.get(i));
-        } else {
-          arrays.append(times.get(i));
-        }
-      }
-      if (scalars.argSize() > 0 && arrays.argSize() > 0) {
-        return F.Times(scalars.oneIdentity1(), F.Tr(arrays.oneIdentity1()));
+      IExpr[] factors = splitScalarFactors((IAST) arg1, false, engine);
+      if (factors != null) {
+        return F.Times(factors[0], F.Tr(factors[1]));
       }
     }
     return F.NIL;
@@ -1111,23 +1108,14 @@ public class SymbolicArrayFunctions {
       return result;
     }
     if (arg1.isTimes()) {
-      IAST times = (IAST) arg1;
-      IASTAppendable scalars = F.TimesAlloc(times.argSize());
-      IASTAppendable arrays = F.TimesAlloc(times.argSize());
-      for (int i = 1; i < times.size(); i++) {
-        if (SymbolicArrayUtil.tensorDimensions(times.get(i), engine).isEmptyList()) {
-          scalars.append(times.get(i));
-        } else {
-          arrays.append(times.get(i));
-        }
-      }
-      if (scalars.argSize() > 0 && arrays.argSize() > 0) {
-        IAST dimensions = SymbolicArrayUtil.tensorDimensions(arrays.oneIdentity1(), engine);
+      IExpr[] factors = splitScalarFactors((IAST) arg1, false, engine);
+      if (factors != null) {
+        IAST dimensions = SymbolicArrayUtil.tensorDimensions(factors[1], engine);
         if (dimensions.isPresent() && dimensions.argSize() == 2
             && dimensions.arg1().equals(dimensions.arg2())) {
           // scaling an n x n matrix scales its determinant by the n-th power
-          return F.Times(F.Power(scalars.oneIdentity1(), dimensions.arg1()),
-              F.Det(arrays.oneIdentity1()));
+          return F.Times(F.Power(factors[0], dimensions.arg1()),
+              F.Det(factors[1]));
         }
       }
     }

@@ -332,12 +332,14 @@ public class ComputationalGeometryFunctions {
    *
    * @return <code>Det2D[p2 - p1, p3 - p1]</code>
    */
+  // CPD-OFF short difference components, a helper would read worse
   private static IExpr counterClockwise(IAST p1, IAST p2, IAST p3) {
     IExpr ux = F.eval(p2.arg1().subtract(p1.arg1()));
     IExpr uy = F.eval(p2.arg2().subtract(p1.arg2()));
     IExpr vx = F.eval(p3.arg1().subtract(p1.arg1()));
     IExpr vy = F.eval(p3.arg2().subtract(p1.arg2()));
     return F.eval(ux.times(vy).subtract(uy.times(vx)));
+    // CPD-ON
   }
 
   /** The squared euclidean distance between two 2D points. */
@@ -348,12 +350,14 @@ public class ComputationalGeometryFunctions {
   }
 
   /** The scalar product of the vectors <code>p2 - p1</code> and <code>p3 - p1</code>. */
+  // CPD-OFF short difference components, a helper would read worse
   private static IExpr scalarProduct(IAST p1, IAST p2, IAST p3) {
     IExpr ux = F.eval(p2.arg1().subtract(p1.arg1()));
     IExpr uy = F.eval(p2.arg2().subtract(p1.arg2()));
     IExpr vx = F.eval(p3.arg1().subtract(p1.arg1()));
     IExpr vy = F.eval(p3.arg2().subtract(p1.arg2()));
     return F.eval(ux.times(vx).plus(uy.times(vy)));
+    // CPD-ON
   }
 
   /**
@@ -1045,21 +1049,12 @@ public class ComputationalGeometryFunctions {
 
   /** The <code>2^n</code> corners of a parallelepiped: the base plus every subset sum. */
   private static IAST parallelepipedVertices(IAST reg) {
-    IExpr base;
-    IAST vectors;
-    if (reg.isAST(S.Parallelogram)) {
-      RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(reg);
-      if (spec == null) {
-        return F.NIL;
-      }
-      base = spec.base;
-      vectors = spec.vectors;
-    } else if (reg.argSize() == 2 && reg.arg1().isList() && reg.arg2().isListOfLists()) {
-      base = reg.arg1();
-      vectors = (IAST) reg.arg2();
-    } else {
+    RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelepiped(reg);
+    if (spec == null) {
       return F.NIL;
     }
+    IExpr base = spec.base;
+    IAST vectors = spec.vectors;
     int n = vectors.argSize();
     if (n < 1 || n > 20) {
       return F.NIL;

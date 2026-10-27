@@ -76,6 +76,11 @@ public class PartTest extends ExprEvaluatorTestCase {
 
     check("{1,2,3,4,5}[[3;;1;;-1]]", //
         "{3,2,1}");
+    // a descending span of an association takes the parts of its values like an ascending one
+    check("<|p->{5,6},q->{7,8},r->{9,10}|>[[3;;1;;-2, 2]]", //
+        "<|r->10,p->6|>");
+    check("<|p->{5,6},q->{7,8}|>[[1;;2, 1]]", //
+        "<|p->5,q->7|>");
 
     check("{1, 2, 3, 4, 5}[[;; ;; -1]]", //
         "{5,4,3,2,1}");

@@ -2,7 +2,6 @@ package org.matheclipse.core.form.output;
 
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -226,28 +225,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
         return;
       }
       if (function.isPower()) {
-        IExpr base = function.base();
-        IExpr exponent = function.exponent();
-        if (exponent.isMinusOne()) {
-          buf.append("1.0/(");
-          convertInternal(buf, base);
-          buf.append(")");
-          return;
-        }
-        if (exponent.isNumEqualRational(F.C1D2)) {
-          buf.append("Math.sqrt(");
-          convertInternal(buf, base);
-          buf.append(")");
-          return;
-        }
-        if (exponent.isNumEqualRational(F.C1D3)) {
-          buf.append("Math.cbrt(");
-          convertInternal(buf, base);
-          buf.append(")");
-          return;
-        }
-        buf.append("Math.pow");
-        convertArgs(buf, head, function);
+        convertPower(buf, function);
         return;
       } else if (function.isDirectedInfinity()) {
         if (function.isInfinity()) {

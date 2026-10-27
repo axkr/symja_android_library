@@ -120,4 +120,83 @@ public final class AntiderivativeCheck {
     }
     return true;
   }
+
+  /**
+   * Diff-back check of a stage result: <code>D(result, x) - integrand</code> must vanish under
+   * <code>Together</code> or <code>Simplify</code>.
+   *
+   * @return <code>false</code> for a missing result, one that still contains <code>Integrate</code>
+   *         or special values, and a difference that is not zero
+   */
+  static boolean verifySymbolic(IExpr result, IExpr integrand, IExpr x, EvalEngine engine) {
+    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
+      return false;
+    }
+    try {
+      IExpr diff = engine.evaluate(F.Together(F.Subtract(F.D(result, x), integrand)));
+      if (diff.isZero()) {
+        return true;
+      }
+      return engine.evaluate(F.Simplify(diff)).isZero();
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+  }
+
+  /**
+   * Diff-back check of a stage result: real sample points ({@link #agrees}), then
+   * <code>Together</code> and <code>Simplify</code> of <code>D(result, x) - integrand</code>, and
+   * last the difference at <code>points</code> ({@link #vanishesNumerically}).
+   *
+   * @return <code>false</code> for a missing result, one that still contains <code>Integrate</code>
+   *         or special values, and a difference that is not zero
+   */
+  static boolean verifyWithNumericFallback(IExpr result, IExpr integrand, IExpr x,
+      double[] points, EvalEngine engine) {
+    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
+      return false;
+    }
+    try {
+      if (agrees(result, integrand, x, engine)) {
+        return true;
+      }
+      IExpr diff = F.Subtract(F.D(result, x), integrand);
+      if (engine.evaluate(F.Together(diff)).isZero()) {
+        return true;
+      }
+      if (engine.evaluate(F.Simplify(diff)).isZero()) {
+        return true;
+      }
+      return vanishesNumerically(diff, x, points, engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+  }
+
+  /**
+   * True iff {@code expr} numerically vanishes at the {@code points} where it can be evaluated to a
+   * number at all (at least two of them must be usable).
+   */
+  static boolean vanishesNumerically(IExpr expr, IExpr x, double[] points, EvalEngine engine) {
+    int evaluated = 0;
+    for (double point : points) {
+      IExpr value;
+      try {
+        value = engine.evaluate(F.N(F.ReplaceAll(expr, F.Rule(x, F.num(point)))));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return false;
+      }
+      if (!value.isNumber() || !value.isSpecialsFree()) {
+        continue;
+      }
+      evaluated++;
+      if (!engine.evaluate(F.Less(F.Abs(value), F.num(1.0e-8))).isTrue()) {
+        return false;
+      }
+    }
+    return evaluated >= 2;
+  }
 }

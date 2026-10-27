@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.Random;
 import org.hipparchus.random.RandomDataGenerator;
 import org.matheclipse.core.builtin.RandomFunctions;
+import org.matheclipse.core.builtin.StatisticsContinousDistribution;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -71,25 +72,38 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
 
   @Override
   public IExpr kurtosis(IAST dist, EvalEngine engine) {
-    IExpr nu = F.NIL;
-    IExpr mu = F.NIL;
-    if (dist.isAST2()) {
-      nu = dist.arg2();
-      int[] dims = dist.arg1().isMatrix();
-      if (dims != null && dims[0] == dims[1]) {
-        mu = F.constantArray(F.C0, dims[0]);
-      }
-    } else if (dist.isAST3()) {
-      nu = dist.arg3();
-      mu = dist.arg1();
-    }
-    if (mu.isPresent() && nu.isPresent()) {
+    int dimension = dimension(dist);
+    if (dimension >= 0) {
+      IExpr nu = nu(dist);
       // Marginal kurtosis is 3 + 6/(nu - 4) for nu > 4
       IExpr kVal = F.Plus(F.C3, F.Divide(F.C6, F.Subtract(nu, F.C4)));
-      IExpr kVec = F.constantArray(kVal, mu.argSize());
+      IExpr kVec = F.constantArray(kVal, dimension);
       return F.Piecewise(F.list(F.list(kVec, F.Greater(nu, F.C4))), S.Indeterminate);
     }
     return F.NIL;
+  }
+
+  /**
+   * The dimension of <code>MultivariateTDistribution(sigma, nu)</code> or
+   * <code>MultivariateTDistribution(mu, sigma, nu)</code>: the size of the square matrix
+   * <code>sigma</code> or the length of the vector <code>mu</code>.
+   *
+   * @return <code>-1</code> if it is not known
+   */
+  private static int dimension(IAST dist) {
+    if (dist.isAST2()) {
+      int[] dims = dist.arg1().isMatrix();
+      return dims != null && dims[0] == dims[1] ? dims[0] : -1;
+    }
+    if (dist.isAST3() && dist.arg1().isList()) {
+      return dist.arg1().argSize();
+    }
+    return -1;
+  }
+
+  /** The degrees of freedom <code>nu</code>, the last argument of the distribution. */
+  private static IExpr nu(IAST dist) {
+    return dist.isAST2() || dist.isAST3() ? dist.last() : F.NIL;
   }
 
   @Override
@@ -247,21 +261,10 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
 
   @Override
   public IExpr skewness(IAST dist) {
-    IExpr nu = F.NIL;
-    IExpr mu = F.NIL;
-    if (dist.isAST2()) {
-      nu = dist.arg2();
-      int[] dims = dist.arg1().isMatrix();
-      if (dims != null && dims[0] == dims[1]) {
-        mu = F.constantArray(F.C0, dims[0]);
-      }
-    } else if (dist.isAST3()) {
-      nu = dist.arg3();
-      mu = dist.arg1();
-    }
-    if (mu.isPresent() && nu.isPresent()) {
-      IExpr zeros = F.constantArray(F.C0, mu.argSize());
-      return F.Piecewise(F.list(F.list(zeros, F.Greater(nu, F.C3))), S.Indeterminate);
+    int dimension = dimension(dist);
+    if (dimension >= 0) {
+      IExpr zeros = F.constantArray(F.C0, dimension);
+      return F.Piecewise(F.list(F.list(zeros, F.Greater(nu(dist), F.C3))), S.Indeterminate);
     }
     return F.NIL;
   }
@@ -278,19 +281,8 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
       nu = dist.arg3();
     }
     if (sigma.isPresent() && nu.isPresent()) {
-      int[] dims = sigma.isMatrix();
-      if (dims != null && dims[0] == dims[1]) {
-        IAST matrix = (IAST) sigma;
-        int dim = matrix.argSize();
-        IASTAppendable varianceVec = F.ListAlloc(dim);
-        for (int i = 1; i <= dim; i++) {
-          IExpr row = matrix.get(i);
-          if (row.isList() && row.size() > i) {
-            varianceVec.append(row.get(i)); // Extract diagonal element
-          } else {
-            return F.NIL;
-          }
-        }
+      IExpr varianceVec = StatisticsContinousDistribution.diagonalOfSquareMatrix(sigma);
+      if (varianceVec.isPresent()) {
         IExpr var = F.Times(F.Divide(nu, F.Subtract(nu, F.C2)), varianceVec);
         return F.Piecewise(F.list(F.list(var, F.Greater(nu, F.C2))), S.Indeterminate);
       }

@@ -605,21 +605,12 @@ public class RegionMember extends AbstractFunctionEvaluator {
 
   /** Every coefficient of the point in the basis of the spanning vectors lies in [0,1]. */
   private static IExpr parallelepipedMember(IAST reg, IExpr point, EvalEngine engine) {
-    IExpr base;
-    IAST vectors;
-    if (reg.isAST(S.Parallelogram)) {
-      RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelogram(reg);
-      if (spec == null) {
-        return F.NIL;
-      }
-      base = spec.base;
-      vectors = spec.vectors;
-    } else if (reg.argSize() == 2 && reg.arg1().isList() && reg.arg2().isListOfLists()) {
-      base = reg.arg1();
-      vectors = (IAST) reg.arg2();
-    } else {
+    RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelepiped(reg);
+    if (spec == null) {
       return F.NIL;
     }
+    IExpr base = spec.base;
+    IAST vectors = spec.vectors;
     int dimension = base.argSize();
     if (coordinates(point, dimension).isNIL() || vectors.argSize() != dimension) {
       return F.NIL;

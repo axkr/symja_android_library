@@ -9,8 +9,6 @@ import java.util.RandomAccess;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealVector;
@@ -290,37 +288,8 @@ public final class ASTRealVector extends AbstractAST
 
   /** {@inheritDoc} */
   @Override
-  public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
-      final Function<IExpr, IExpr> function) {
-    final int size = size();
-    for (int i = 1; i < size; i++) {
-      IExpr expr = function.apply(get(i));
-      if (expr.isPresent()) {
-        filterAST.append(expr);
-      } else {
-        restAST.append(get(i));
-      }
-    }
-    return filterAST;
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public final String fullFormString() {
     return fullFormString(S.List);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
-      Predicate<? super IExpr> predicate) {
-    return filterAST;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
-    return filterAST;
   }
 
   @Override

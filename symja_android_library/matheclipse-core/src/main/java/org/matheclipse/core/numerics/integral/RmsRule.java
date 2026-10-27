@@ -341,7 +341,7 @@ public final class RmsRule extends Quadrature {
       // 30: CALL subroutine QPSRT TO MAINTAIN THE DESCENDING ORDERING
       // IN THE LIST OF ERROR ESTIMATES AND SELECT THE SUBINTERVAL
       // WITH NRMAX-TH LARGEST ERROR ESTIMATE (TO BE BISECTED NEXT).
-      qpsrt(limit, last, maxerr, errmax, elist, iord, nrmax);
+      GaussKronrod.dqpsrt(limit, last[0], maxerr, errmax, elist, iord, nrmax);
       if (errsum <= errbnd) {
         exit = 115;
         break;
@@ -671,82 +671,14 @@ public final class RmsRule extends Quadrature {
     System.arraycopy(b, 0, a, 0, l);
   }
 
-  private static void qpsrt(final int limit, final int[] last, final int[] maxerr,
-      final double[] ermax, final double[] elist, final int[] iord, final int[] nrmax) {
-    double errmax, errmin;
-    int i, ibeg, ido, isucc, j, jbnd, jupbn, k;
-
-    // CHECK WHETHER THE LIST CONTAINS MORE THAN TWO ERROR ESTIMATES.
-    if (last[0] <= 2) {
-      iord[1 - 1] = 1;
-      iord[2 - 1] = 2;
-      maxerr[0] = iord[nrmax[0] - 1];
-      ermax[0] = elist[maxerr[0] - 1];
-      return;
-    }
-
-    // 10: THIS PART OF THE ROUTINE IS ONLY EXECUTED IF,
-    // DUE TO A DIFFICULT INTEGRAND, SUBDIVISION INCREASED
-    // THE ERROR ESTIMATE. IN THE NORMAL CASE THE INSERT PROCEDURE
-    // SHOULD START AFTER THE NRMAX-TH LARGEST ERROR ESTIMATE.
-    errmax = elist[maxerr[0] - 1];
-    if (nrmax[0] != 1) {
-      ido = nrmax[0] - 1;
-      for (i = 1; i <= ido; ++i) {
-        isucc = iord[nrmax[0] - 1 - 1];
-        if (errmax <= elist[isucc - 1]) {
-          break;
-        }
-        iord[nrmax[0] - 1] = isucc;
-        --nrmax[0];
-      }
-    }
-
-    // 30: COMPUTE THE NUMBER OF ELEMENTS IN THE LIST TO BE MAINTAINED
-    // IN DESCENDING ORDER. THIS NUMBER DEPENDS ON THE NUMBER OF
-    // SUBDIVISIONS STILL ALLOWED.
-    jupbn = last[0];
-    if (last[0] > ((limit >> 1) + 2)) {
-      jupbn = limit + 3 - last[0];
-    }
-    errmin = elist[last[0] - 1];
-
-    // INSERT ERRMAX BY TRAVERSING THE LIST TOP-DOWN,
-    // STARTING COMPARISON FROM THE ELEMENT ELIST(IORD(NRMAX+1)).
-    jbnd = jupbn - 1;
-    ibeg = nrmax[0] + 1;
-    for (i = ibeg; i <= jbnd; ++i) {
-      isucc = iord[i - 1];
-      if (errmax >= elist[isucc - 1]) {
-
-        // 60: INSERT ERRMIN BY TRAVERSING THE LIST BOTTOM-UP.
-        iord[i - 1 - 1] = maxerr[0];
-        k = jbnd;
-        for (j = 1; j <= jbnd; ++j) {
-          isucc = iord[k - 1];
-          if (errmin < elist[isucc - 1]) {
-            iord[k + 1 - 1] = last[0];
-            maxerr[0] = iord[nrmax[0] - 1];
-            ermax[0] = elist[maxerr[0] - 1];
-            return;
-          }
-          iord[k + 1 - 1] = isucc;
-          --k;
-        }
-        iord[i - 1] = last[0];
-        maxerr[0] = iord[nrmax[0] - 1];
-        ermax[0] = elist[maxerr[0] - 1];
-        return;
-      }
-      iord[i - 1 - 1] = isucc;
-    }
-    iord[jbnd - 1] = maxerr[0];
-    iord[jupbn - 1] = last[0];
-    maxerr[0] = iord[nrmax[0] - 1];
-    ermax[0] = elist[maxerr[0] - 1];
-  }
-
-  private static void qelg(final int[] n, final double[] epstab, final double[] result,
+  /**
+   * The epsilon algorithm extrapolation of the QUADPACK routine <code>QELG</code>, shared with
+   * {@link GaussKronrod}.
+   *
+   * @param epmach the relative machine precision
+   * @param oflow the largest magnitude
+   */
+  static void qelg(final int[] n, final double[] epstab, final double[] result,
       final double[] abserr, final double[] res3la, final int[] nres, final double epmach,
       final double oflow) {
     double delta1, delta2, delta3, epsinf, error, err1, err2, err3, e0, e1, e1abs, e2, e3, res, ss,

@@ -42,6 +42,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class SurdRationalization {
 
+  /**
+   * Generic points of the numeric diff-back check: nested radicals rarely cancel symbolically.
+   */
+  private static final double[] SAMPLE_POINTS = {0.17, 0.43, 0.71, 0.93, 1.7};
+
   /** Recursion depth guard for nested rationalizations. */
   private static final ThreadLocal<Integer> RECURSION_DEPTH = ThreadLocal.withInitial(() -> 0);
 
@@ -146,14 +151,15 @@ public class SurdRationalization {
     }
 
     IExpr result = engine.evaluateNIL(F.Integrate(rationalized, x));
-    if (result.isPresent() && verifyAntiderivative(result, integrand, x, engine)) {
+    if (result.isPresent() && AntiderivativeCheck.verifyWithNumericFallback(result, integrand, x,
+        SAMPLE_POINTS, engine)) {
       return result;
     }
     // Second chance: the rational part and the part carrying the root sometimes only integrate
     // (or only integrate correctly) on their own.
     result = integrateByLinearity(conjugateNumerator, conjugateDenominator, x, engine);
-    return result.isPresent() && verifyAntiderivative(result, integrand, x, engine) ? result
-        : F.NIL;
+    return result.isPresent() && AntiderivativeCheck.verifyWithNumericFallback(result, integrand,
+        x, SAMPLE_POINTS, engine) ? result : F.NIL;
   }
 
   /**
@@ -244,55 +250,4 @@ public class SurdRationalization {
     return failed[0] ? F.NIL : result;
   }
 
-  /** Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand. */
-  private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
-      EvalEngine engine) {
-    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
-      return false;
-    }
-    try {
-      if (AntiderivativeCheck.agrees(result, integrand, x, engine)) {
-        return true;
-      }
-      IExpr diff = F.Subtract(F.D(result, x), integrand);
-      if (engine.evaluate(F.Together(diff)).isZero()) {
-        return true;
-      }
-      if (engine.evaluate(F.Simplify(diff)).isZero()) {
-        return true;
-      }
-      // Nested radicals rarely cancel symbolically; confirm numerically at generic points. This can
-      // only reject, so it never accepts a result a nonzero symbolic difference already disproved.
-      return numericallyZero(diff, x, engine);
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      return false;
-    }
-  }
-
-  /**
-   * True iff {@code expr} numerically vanishes at the sample points where it can be evaluated to a
-   * number at all (at least two of them must be usable).
-   */
-  private static boolean numericallyZero(IExpr expr, IExpr x, EvalEngine engine) {
-    final double[] points = {0.17, 0.43, 0.71, 0.93, 1.7};
-    int evaluated = 0;
-    for (double point : points) {
-      IExpr value;
-      try {
-        value = engine.evaluate(F.N(F.ReplaceAll(expr, F.Rule(x, F.num(point)))));
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        return false;
-      }
-      if (!value.isNumber() || !value.isSpecialsFree()) {
-        continue;
-      }
-      evaluated++;
-      if (!engine.evaluate(F.Less(F.Abs(value), F.num(1.0e-8))).isTrue()) {
-        return false;
-      }
-    }
-    return evaluated >= 2;
-  }
 }

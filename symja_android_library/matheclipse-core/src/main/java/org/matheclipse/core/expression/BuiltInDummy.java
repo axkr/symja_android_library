@@ -16,7 +16,6 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -326,29 +325,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String definitionToString() {
-    StringBuilder buf = new StringBuilder();
-    IAST attributesList = ISymbol.attributesList(this);
-    if (attributesList.size() > 1) {
-      buf.append("Attributes(");
-      buf.append(this.toString());
-      buf.append(")=");
-      buf.append(attributesList.toString());
-      buf.append("\n");
-    }
-
-    OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
-    off.setIgnoreNewLine(true);
-    IAST list = definition();
-    for (int i = 1; i < list.size(); i++) {
-      if (!off.convert(buf, list.get(i))) {
-        return "ERROR-IN-OUTPUTFORM";
-      }
-      if (i < list.argSize()) {
-        buf.append("\n");
-        off.setColumnCounter(0);
-      }
-    }
-    return buf.toString();
+    return Symbol.definitionString(this);
   }
 
   /** {@inheritDoc} */
@@ -645,49 +622,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
     if (properties.symbolsAsFactoryMethod) {
       return new StringBuilder(SourceCodeProperties.getPrefixF(properties))
-          .append(internalJavaStringAsFactoryMethod());
+          .append(Symbol.internalJavaStringAsFactoryMethod(fSymbolName));
     }
     return Symbol.internalJavaString(fSymbolName, properties);
-  }
-
-  /**
-   * Used to generate special Symja Java code
-   *
-   * @return
-   */
-  private String internalJavaStringAsFactoryMethod() {
-    if (fSymbolName.length() == 1) {
-      char ch = fSymbolName.charAt(0);
-      if ('a' <= ch && ch <= 'z') {
-        return fSymbolName;
-      }
-      if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
-        return fSymbolName + "Symbol";
-      }
-    }
-    if (Config.RUBI_CONVERT_SYMBOLS) {
-      if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0)
-          && Character.isLowerCase(fSymbolName.charAt(1))) {
-        char ch = fSymbolName.charAt(1);
-        if ('a' <= ch && ch <= 'z') {
-          return "p" + ch;
-        }
-      } else if (fSymbolName.equals("Int")) {
-        return "Integrate";
-      }
-    }
-    if (Character.isUpperCase(fSymbolName.charAt(0))) {
-      String alias = F.getPredefinedInternalFormString(fSymbolName);
-      if (alias != null) {
-        if (Config.RUBI_CONVERT_SYMBOLS) {
-          if (alias.startsWith("Rubi`")) {
-            return "$rubi(\"" + alias.substring(5) + "\")";
-          }
-        }
-        return alias;
-      }
-    }
-    return "$s(\"" + fSymbolName + "\")";
   }
 
   /** {@inheritDoc} */
@@ -832,6 +769,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
   @Override
+  // CPD-OFF value and rule handling on separate private fields
   public final boolean isStringIgnoreCase(final String str) {
     return fSymbolName.equalsIgnoreCase(str);
   }
@@ -855,7 +793,13 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
         return true;
       }
     }
+    if ((method & ISymbol.OWN_VALUES_PRESENT) == ISymbol.OWN_VALUES_PRESENT) {
+      if (hasAssignedSymbolValue()) {
+        return true;
+      }
+    }
     if ((method & ISymbol.SYMBOL_DEFINITION_PRESENT) == ISymbol.SYMBOL_DEFINITION_PRESENT) {
+    // CPD-ON
       if ((fRulesData != null && fRulesData.isDefinitionsPresent())) {
         return true;
       }

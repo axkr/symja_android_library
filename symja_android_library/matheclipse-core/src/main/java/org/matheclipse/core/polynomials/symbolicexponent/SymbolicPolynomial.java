@@ -428,6 +428,7 @@ public class SymbolicPolynomial
   @Override
   public boolean isZERO() {
     return isZero();
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   }
 
   /**
@@ -476,6 +477,7 @@ public class SymbolicPolynomial
    * @return If this is a constant polynomial then true is returned, else false.
    */
   public boolean isConstant() {
+  // CPD-ON
     if (val.size() != 1) {
       return false;
     }
@@ -901,25 +903,8 @@ public class SymbolicPolynomial
     if (this.isZERO()) {
       return S;
     }
-    assert (ring.nvar == S.ring.nvar);
     SymbolicPolynomial n = this.copy(); // new GenPolynomial(ring, val);
-    SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
-    SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
-      ExpVectorSymbolic e = me.getKey();
-      IExpr y = me.getValue(); // sv.get(e); // assert y != null
-      IExpr x = nv.get(e);
-      if (x != null) {
-        x = x.plus(y);
-        if (!x.isZERO()) {
-          nv.put(e, x);
-        } else {
-          nv.remove(e);
-        }
-      } else {
-        nv.put(e, y);
-      }
-    }
+    n.doAddTo(S);
     return n;
   }
 
@@ -1125,39 +1110,22 @@ public class SymbolicPolynomial
     }
     assert (ring.nvar == S.ring.nvar);
     SymbolicPolynomial n = this.copy();
-    SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
-    SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
-      ExpVectorSymbolic f = me.getKey();
-      IExpr y = me.getValue(); // assert y != null
-      y = a.multiply(y);
-      IExpr x = nv.get(f);
-      if (x != null) {
-        x = x.subtract(y);
-        if (!x.isZERO()) {
-          nv.put(f, x);
-        } else {
-          nv.remove(f);
-        }
-      } else if (!y.isZERO()) {
-        nv.put(f, y.negate());
-      }
-    }
-    return n;
+    return subtractScaledInPlace(n, a, null, S);
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * <code>n - a*x^e*S</code>, computed in the terms of <code>n</code>.
    *
    * @param n a polynomial which may be modified
+   * @param e exponent, or <code>null</code> for <code>x^0</code>
    * @return <code>n</code>
    */
   private static SymbolicPolynomial subtractScaledInPlace(SymbolicPolynomial n, IExpr a, ExpVectorSymbolic e, SymbolicPolynomial S) {
     SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
     SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
     for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
-      ExpVectorSymbolic f = me.getKey();
-      f = e.sum(f);
+      ExpVectorSymbolic f = e == null ? me.getKey() : e.sum(me.getKey());
       IExpr y = me.getValue(); // assert y != null
       y = a.multiply(y);
       IExpr x = nv.get(f);
@@ -1197,6 +1165,7 @@ public class SymbolicPolynomial
     SymbolicPolynomial n = this.copy();
     return subtractScaledInPlace(n, a, e, S);
   }
+  // CPD-ON
 
   /**
    * GenPolynomial scale and subtract a multiple.
@@ -1206,6 +1175,7 @@ public class SymbolicPolynomial
    * @param S GenPolynomial.
    * @return this * b - a S.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicPolynomial scaleSubtractMultiple(IExpr b, IExpr a, SymbolicPolynomial S) {
     if (a == null || S == null) {
       return this.multiply(b);
@@ -1220,27 +1190,9 @@ public class SymbolicPolynomial
       return subtractMultiple(a, S);
     }
     assert (ring.nvar == S.ring.nvar);
+    // CPD-ON
     SymbolicPolynomial n = this.multiply(b);
-    SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
-    SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
-      ExpVectorSymbolic f = me.getKey();
-      // f = e.sum(f);
-      IExpr y = me.getValue(); // assert y != null
-      y = a.multiply(y); // now y can be zero
-      IExpr x = nv.get(f);
-      if (x != null) {
-        x = x.subtract(y);
-        if (!x.isZERO()) {
-          nv.put(f, x);
-        } else {
-          nv.remove(f);
-        }
-      } else if (!y.isZERO()) {
-        nv.put(f, y.negate());
-      }
-    }
-    return n;
+    return subtractScaledInPlace(n, a, null, S);
   }
 
   /**
@@ -1253,6 +1205,7 @@ public class SymbolicPolynomial
    * @return this * b - a x<sup>e</sup> S.
    */
   public SymbolicPolynomial scaleSubtractMultiple(IExpr b, IExpr a, ExpVectorSymbolic e,
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       SymbolicPolynomial S) {
     if (a == null || S == null) {
       return this.multiply(b);
@@ -1267,6 +1220,7 @@ public class SymbolicPolynomial
       return subtractMultiple(a, e, S);
     }
     assert (ring.nvar == S.ring.nvar);
+    // CPD-ON
     SymbolicPolynomial n = this.multiply(b);
     return subtractScaledInPlace(n, a, e, S);
   }
@@ -1422,33 +1376,7 @@ public class SymbolicPolynomial
    * @return this*s.
    */
   public SymbolicPolynomial multiply(IExpr s) {
-    if (s == null) {
-      return ring.getZero();
-    }
-    if (s.isZERO()) {
-      return ring.getZero();
-    }
-    if (this.isZERO()) {
-      return this;
-    }
-    // if (this instanceof GenSolvablePolynomial) {
-    // // throw new RuntimeException("wrong method dispatch in JRE ");
-    // logger.debug("warn: wrong method dispatch in JRE multiply(s) - trying
-    // to fix");
-    // GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
-    // return T.multiply(s);
-    // }
-    SymbolicPolynomial p = ring.getZero().copy();
-    SortedMap<ExpVectorSymbolic, IExpr> pv = p.val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> m1 : val.entrySet()) {
-      IExpr c1 = m1.getValue();
-      ExpVectorSymbolic e1 = m1.getKey();
-      IExpr c = c1.multiply(s); // check non zero if not domain
-      if (!c.isZERO()) {
-        pv.put(e1, c); // or m1.setValue( c )
-      }
-    }
-    return p;
+    return multiplyTerm(s, null);
   }
 
   /**
@@ -1477,6 +1405,17 @@ public class SymbolicPolynomial
    * @return this * s x<sup>e</sup>.
    */
   public SymbolicPolynomial multiply(IExpr s, ExpVectorSymbolic e) {
+    return multiplyTerm(s, e);
+  }
+
+  /**
+   * Product with the term s x<sup>e</sup>.
+   *
+   * @param s coefficient.
+   * @param e exponent, or <code>null</code> for a product with the coefficient only.
+   * @return this * s x<sup>e</sup>.
+   */
+  private SymbolicPolynomial multiplyTerm(IExpr s, ExpVectorSymbolic e) {
     if (s == null) {
       return ring.getZero();
     }
@@ -1486,22 +1425,13 @@ public class SymbolicPolynomial
     if (this.isZERO()) {
       return this;
     }
-    // if (this instanceof GenSolvablePolynomial) {
-    // // throw new RuntimeException("wrong method dispatch in JRE ");
-    // logger.debug("warn: wrong method dispatch in JRE multiply(s,e) -
-    // trying to fix");
-    // GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
-    // return T.multiply(s, e);
-    // }
     SymbolicPolynomial p = ring.getZero().copy();
     SortedMap<ExpVectorSymbolic, IExpr> pv = p.val;
     for (Map.Entry<ExpVectorSymbolic, IExpr> m1 : val.entrySet()) {
-      IExpr c1 = m1.getValue();
-      ExpVectorSymbolic e1 = m1.getKey();
-      IExpr c = c1.multiply(s); // check non zero if not domain
+      IExpr c = m1.getValue().multiply(s); // check non zero if not domain
       if (!c.isZERO()) {
-        ExpVectorSymbolic e2 = e1.sum(e);
-        pv.put(e2, c);
+        ExpVectorSymbolic e1 = m1.getKey();
+        pv.put(e == null ? e1 : e1.sum(e), c);
       }
     }
     return p;
@@ -1568,6 +1498,7 @@ public class SymbolicPolynomial
     SymbolicPolynomial p = ring.getZero().copy();
     SortedMap<ExpVectorSymbolic, IExpr> pv = p.val;
     for (Map.Entry<ExpVectorSymbolic, IExpr> m : val.entrySet()) {
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExpVectorSymbolic e = m.getKey();
       IExpr c1 = m.getValue();
       IExpr c = c1.divide(s);
@@ -1585,6 +1516,7 @@ public class SymbolicPolynomial
     }
     return p;
   }
+  // CPD-ON
 
   /**
    * GenPolynomial division with remainder. Fails, if exact division by leading base coefficient is
@@ -1858,6 +1790,7 @@ public class SymbolicPolynomial
     SymbolicPolynomial r = S;
     SymbolicPolynomial c1 = ring.getOne().copy();
     SymbolicPolynomial d1 = ring.getZero().copy();
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SymbolicPolynomial x1;
     while (!r.isZERO()) {
       qr = q.quotientRemainder(r);
@@ -1888,6 +1821,7 @@ public class SymbolicPolynomial
       IExpr c = leadingBaseCoefficient().inverse();
       return ring.getOne().multiply(c);
     }
+    // CPD-ON
     throw new NotInvertibleException("element not invertible " + this + " :: " + ring);
   }
 
@@ -1924,23 +1858,7 @@ public class SymbolicPolynomial
    * @return extended polynomial.
    */
   public SymbolicPolynomial extend(SymbolicPolynomialRing pfac, int j, IExpr k) {
-    if (ring.equals(pfac)) { // nothing to do
-      return this;
-    }
-    SymbolicPolynomial Cp = pfac.getZero().copy();
-    if (this.isZERO()) {
-      return Cp;
-    }
-    int i = pfac.nvar - ring.nvar;
-    Map<ExpVectorSymbolic, IExpr> C = Cp.val; // getMap();
-    Map<ExpVectorSymbolic, IExpr> A = val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> y : A.entrySet()) {
-      ExpVectorSymbolic e = y.getKey();
-      IExpr a = y.getValue();
-      ExpVectorSymbolic f = e.extend(i, j, k);
-      C.put(f, a);
-    }
-    return Cp;
+    return extendTerms(pfac, j, k, false);
   }
 
   /**
@@ -1953,6 +1871,16 @@ public class SymbolicPolynomial
    * @return extended polynomial.
    */
   public SymbolicPolynomial extendLower(SymbolicPolynomialRing pfac, int j, IExpr k) {
+    return extendTerms(pfac, j, k, true);
+  }
+
+  /**
+   * Extend all exponent vectors by the new variables of <code>pfac</code> and multiply by
+   * x_j^k.
+   *
+   * @param lower whether the new variables are the lower ones
+   */
+  private SymbolicPolynomial extendTerms(SymbolicPolynomialRing pfac, int j, IExpr k, boolean lower) {
     if (ring.equals(pfac)) { // nothing to do
       return this;
     }
@@ -1962,12 +1890,9 @@ public class SymbolicPolynomial
     }
     int i = pfac.nvar - ring.nvar;
     Map<ExpVectorSymbolic, IExpr> C = Cp.val; // getMap();
-    Map<ExpVectorSymbolic, IExpr> A = val;
-    for (Map.Entry<ExpVectorSymbolic, IExpr> y : A.entrySet()) {
+    for (Map.Entry<ExpVectorSymbolic, IExpr> y : val.entrySet()) {
       ExpVectorSymbolic e = y.getKey();
-      IExpr a = y.getValue();
-      ExpVectorSymbolic f = e.extendLower(i, j, k);
-      C.put(f, a);
+      C.put(lower ? e.extendLower(i, j, k) : e.extend(i, j, k), y.getValue());
     }
     return Cp;
   }
@@ -2269,19 +2194,7 @@ public class SymbolicPolynomial
     if (!coefficient.isOne()) {
       times.append(coefficient);
     }
-    ExpVectorSymbolic leer = ring.evzero;
-    for (int i = 0; i < arr.length; i++) {
-      if (!arr[i].isZero()) {
-        int ix = leer.varIndex(i);
-        if (ix >= 0) {
-          if (arr[i].isOne()) {
-            times.append(variables.get(ix + 1));
-          } else {
-            times.append(F.Power(variables.get(ix + 1), arr[i]));
-          }
-        }
-      }
-    }
+    appendToExpr(times, expArray, variables);
     return times.oneIdentity1();
   }
 

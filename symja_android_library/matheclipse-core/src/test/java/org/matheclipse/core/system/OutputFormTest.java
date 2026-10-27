@@ -6,6 +6,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class OutputFormTest extends ExprEvaluatorTestCase {
@@ -246,6 +247,25 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
    * <code>2.0^1.500000000000000*10^30</code>, which reads back as <code>(2.0^1.5)*10^30</code> - a
    * different, finite value.
    */
+  /** The imaginary unit goes last for arbitrary-precision numbers as for machine numbers. */
+  @Test
+  public void testDoubleComplexReImIArbitraryPrecision() throws java.io.IOException {
+    ExprEvaluator evaluator = new ExprEvaluator();
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, false);
+
+    IExpr machine = evaluator.eval("N(5/4-7/2*I)");
+    StringBuilder buf = new StringBuilder();
+    outputFormFactory.convertDoubleComplexReImI(buf, (IComplexNum) machine, Integer.MIN_VALUE,
+        false);
+    assertEquals(buf.toString(), "1.25-3.5*I");
+
+    IExpr arbitrary = evaluator.eval("N(5/4-7/2*I, 20)");
+    buf = new StringBuilder();
+    outputFormFactory.convertDoubleComplexReImI(buf, (IComplexNum) arbitrary, Integer.MIN_VALUE,
+        false);
+    assertEquals(buf.toString(), "1.25-3.5*I");
+  }
+
   @Test
   public void testScientificNotationIsParenthesizedUnderPower() {
     ExprEvaluator evaluator = new ExprEvaluator();

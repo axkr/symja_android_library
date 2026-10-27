@@ -127,20 +127,9 @@ public class MarginalDistribution extends AbstractFunctionEvaluator implements I
     }
 
     if (indices.length > 1) {
-      IASTAppendable newMu = (mu == null) ? null : F.ListAlloc(indices.length);
-      IASTAppendable newSigma = F.ListAlloc(indices.length);
-
-      for (int r : indices) {
-        if (newMu != null) {
-          newMu.append(evaluatePart(mu, engine, r));
-        }
-        IASTAppendable row = F.ListAlloc(indices.length);
-        for (int c : indices) {
-          row.append(evaluatePart(sigma, engine, r, c));
-        }
-        newSigma.append(row);
-      }
-
+      IASTAppendable[] muSigma = subMuSigma(mu, sigma, indices, engine);
+      IASTAppendable newMu = muSigma[0];
+      IASTAppendable newSigma = muSigma[1];
       if (newMu == null) {
         return F.MultivariateTDistribution(newSigma, nu);
       }
@@ -231,20 +220,9 @@ public class MarginalDistribution extends AbstractFunctionEvaluator implements I
     }
 
     if (indices.length > 1) {
-      IASTAppendable newMu = (mu == null) ? null : F.ListAlloc(indices.length);
-      IASTAppendable newSigma = F.ListAlloc(indices.length);
-
-      for (int r : indices) {
-        if (newMu != null) {
-          newMu.append(evaluatePart(mu, engine, r));
-        }
-        IASTAppendable row = F.ListAlloc(indices.length);
-        for (int c : indices) {
-          row.append(evaluatePart(sigma, engine, r, c));
-        }
-        newSigma.append(row);
-      }
-
+      IASTAppendable[] muSigma = subMuSigma(mu, sigma, indices, engine);
+      IASTAppendable newMu = muSigma[0];
+      IASTAppendable newSigma = muSigma[1];
       if (newMu == null) {
         return F.MultinormalDistribution(newSigma);
       }
@@ -252,6 +230,29 @@ public class MarginalDistribution extends AbstractFunctionEvaluator implements I
     }
 
     return F.NIL;
+  }
+
+  /**
+   * The location vector and the scale matrix of the marginal distribution for <code>indices</code>.
+   *
+   * @param mu the location vector or <code>null</code>
+   * @return <code>{newMu, newSigma}</code>, where <code>newMu</code> is <code>null</code> if
+   *         <code>mu</code> is <code>null</code>
+   */
+  private IASTAppendable[] subMuSigma(IExpr mu, IExpr sigma, int[] indices, EvalEngine engine) {
+    IASTAppendable newMu = (mu == null) ? null : F.ListAlloc(indices.length);
+    IASTAppendable newSigma = F.ListAlloc(indices.length);
+    for (int r : indices) {
+      if (newMu != null) {
+        newMu.append(evaluatePart(mu, engine, r));
+      }
+      IASTAppendable row = F.ListAlloc(indices.length);
+      for (int c : indices) {
+        row.append(evaluatePart(sigma, engine, r, c));
+      }
+      newSigma.append(row);
+    }
+    return new IASTAppendable[] {newMu, newSigma};
   }
 
   /**

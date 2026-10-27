@@ -612,6 +612,32 @@ public abstract class AbstractCodeFormFactory {
     return false;
   }
 
+  /**
+   * Convert <code>list</code> if its head is written as an operator.
+   *
+   * @param isASTHead <code>true</code> if <code>list</code> is the head of a function call
+   * @return <code>false</code> if <code>list</code> is not written as an operator
+   */
+  protected boolean convertOperatorAST(final StringBuilder buf, final IAST list,
+      final int precedence, boolean isASTHead) {
+    if (list.head().isSymbol()) {
+      ISymbol head = (ISymbol) list.head();
+      final Operator operator = getOperator(head);
+      if (operator != null) {
+        if (operator instanceof PostfixOperator) {
+          if (list.isAST1()) {
+            convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
+            return true;
+          }
+        } else {
+          return convertOperator(operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence,
+              head);
+        }
+      }
+    }
+    return false;
+  }
+
   public Operator getOperator(ISymbol head) {
     // Operator operator = null;
     if (head == S.Plus || head == S.Times || head == S.Equal || head == S.Unequal || head == S.Less
@@ -640,6 +666,7 @@ public abstract class AbstractCodeFormFactory {
     }
   }
 
+  // CPD-OFF form factories without a common base for this conversion
   public void convertList(final StringBuilder buf, final IAST list) {
     if (list instanceof ASTRealVector) {
 
@@ -704,6 +731,7 @@ public abstract class AbstractCodeFormFactory {
     }
     append(buf, "}");
   }
+  // CPD-ON
 
   /**
    * This method will only be called if <code>list.isAST2()==true</code> and the head equals "Part".

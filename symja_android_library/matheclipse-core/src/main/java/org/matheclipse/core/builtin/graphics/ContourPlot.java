@@ -281,6 +281,7 @@ public class ContourPlot extends ListPlot {
 
     // 1. Compute Grid
     boolean[][] defined = new boolean[gridX + 1][gridY + 1];
+    // CPD-OFF grid sampling kept per plot, the numeric evaluation differs
     boolean[][] inside = new boolean[gridX + 1][gridY + 1];
     for (int i = 0; i <= gridX; i++) {
       double xVal = xRange[0] + i * stepX;
@@ -296,6 +297,7 @@ public class ContourPlot extends ListPlot {
         } catch (Exception e) {
           z = Double.NaN;
         }
+        // CPD-ON
 
         zGrid[i][j] = z;
         // The value is kept even where the region rejects it: a cell the edge of the region runs
@@ -648,15 +650,20 @@ public class ContourPlot extends ListPlot {
 
   // --- Marching Squares: Polygons (shared with ListContourPlot) ---
 
-  static void processCellPolygon(IASTAppendable out, double x, double y, double dx, double dy,
-      double v0, double v1, double v2, double v3, double level) {
+  /**
+   * The marching squares case of a cell: bit <code>k</code> is set if corner <code>k</code> is at
+   * or above <code>level</code>.
+   *
+   * @return <code>-1</code> for an incomplete cell. A corner without a value is not "below the
+   *         level": comparing NaN with >= says false, which would classify the cell as filled up to
+   *         that corner and then interpolate across the edge, producing NaN coordinates. An
+   *         incomplete cell has no interior to shade and no contour to trace - that is what leaves
+   *         a hole where a RegionFunction cuts, or where the function has no value.
+   */
+  static int cellIndex(double v0, double v1, double v2, double v3, double level) {
     if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
         || !Double.isFinite(v3)) {
-      // A corner without a value is not "below the level": comparing NaN with >= says false, which
-      // would classify the cell as filled up to that corner and then interpolate across the edge,
-      // producing a polygon with NaN coordinates. An incomplete cell has no interior to shade -
-      // that is what leaves a hole where a RegionFunction cuts, or where the function has no value.
-      return;
+      return -1;
     }
     int index = 0;
     if (v0 >= level)
@@ -667,8 +674,13 @@ public class ContourPlot extends ListPlot {
       index |= 4;
     if (v3 >= level)
       index |= 8;
+    return index;
+  }
 
-    if (index == 0)
+  static void processCellPolygon(IASTAppendable out, double x, double y, double dx, double dy,
+      double v0, double v1, double v2, double v3, double level) {
+    int index = cellIndex(v0, v1, v2, v3, level);
+    if (index <= 0)
       return;
     if (index == 15) {
       out.append(F.Polygon(F.List(F.List(F.num(x), F.num(y)), F.List(F.num(x + dx), F.num(y)),
@@ -791,22 +803,10 @@ public class ContourPlot extends ListPlot {
 
   static void processCellLine(IASTAppendable out, double x, double y, double dx, double dy,
       double v0, double v1, double v2, double v3, double level) {
-    if (!Double.isFinite(v0) || !Double.isFinite(v1) || !Double.isFinite(v2)
-        || !Double.isFinite(v3)) {
-      // an incomplete cell has no contour to trace; see processCellPolygon
+    int index = cellIndex(v0, v1, v2, v3, level);
+    if (index < 0) {
       return;
     }
-
-    int index = 0;
-    if (v0 >= level)
-      index |= 1;
-    if (v1 >= level)
-      index |= 2;
-    if (v2 >= level)
-      index |= 4;
-    if (v3 >= level)
-      index |= 8;
-
     int[] edges = ISO_LINES[index];
     for (int i = 0; i < edges.length; i += 2) {
       int e1 = edges[i];

@@ -149,28 +149,7 @@ public class VisitorReplaceEvalf extends VisitorExpr {
     if (replacement.isPresent()) {
       return replacement;
     }
-    int size = assoc.size();
-    for (int i = 1; i < size; i++) {
-      IExpr temp = assoc.getValue(i).accept(this);
-      if (temp.isPresent()) {
-        // something was evaluated - return a new IAST:
-        IAST iRuleOrNIL = assoc.getRule(i);
-        IASTMutable result;
-        if (iRuleOrNIL.isPresent()) {
-          result = assoc.setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
-        } else {
-          result = assoc.copy();
-        }
-        assoc.forEach(i + 1, size, (x, j) -> {
-          IExpr t = x.accept(this);
-          if (t.isPresent()) {
-            result.set(j, assoc.getRule(j).setAtCopy(2, t));
-          }
-        });
-        return result;
-      }
-    }
-    return F.NIL;
+    return visitAssociationValues(assoc, 1);
   }
 
   @Override

@@ -129,27 +129,10 @@ public final class GaussKronrod extends Quadrature {
     return new QuadratureResult(result[0], abserr[0], neval[0], ier[0], worst[0]);
   }
 
+  /** The infinite bounds case by the QUADPACK routine <code>DQAGI</code>. */
   @Override
-  public final QuadratureResult integrate(DoubleUnaryOperator f, final double a, final double b) {
-
-    // null integral
-    if (a == b) {
-      return new QuadratureResult(0.0, 0.0, 0, true);
-    }
-
-    // make sure a < b
-    if (a > b) {
-      final QuadratureResult result = integrate(f, b, a);
-      return new QuadratureResult(-result.estimate, result.error, result.evaluations,
-          result.status, result.worstPoint);
-    }
-
-    // both are finite
-    if (Double.isFinite(a) && Double.isFinite(b)) {
-      return properIntegral(f, a, b);
-    }
-
-    // infinite bounds case
+  protected final QuadratureResult improperIntegral(DoubleUnaryOperator f, final double a,
+      final double b) {
     final double[] result = new double[1], abserr = new double[1];
     final int[] neval = new int[1], ier = new int[1];
     final double[] worst = {Double.NaN};
@@ -182,6 +165,7 @@ public final class GaussKronrod extends Quadrature {
     return "Gauss-Kronrod";
   }
 
+  // CPD-OFF port of the original Fortran routine, kept close to it
   // *******************************************************************************
   // FINITE BOUNDS INTEGRATION (DQAGS)
   // *******************************************************************************
@@ -209,6 +193,7 @@ public final class GaussKronrod extends Quadrature {
       worst[0] = 0.5 * (alist[k] + blist[k]);
     }
   }
+  // CPD-ON
 
   /** The index of the largest error estimate among the first <code>last</code> subintervals. */
   private static int worstInterval(final double[] elist, final int last) {
@@ -438,7 +423,7 @@ public final class GaussKronrod extends Quadrature {
       // PERFORM EXTRAPOLATION
       ++numrl2[0];
       rlist2[numrl2[0] - 1] = area;
-      dqelg(numrl2, rlist2, reseps, abseps, res3la, nres);
+      RmsRule.qelg(numrl2, rlist2, reseps, abseps, res3la, nres, EPMACH, OFLOW);
       ++ktmin;
       if (ktmin > 5 && abserr[0] < 1e-3 * errsum) {
         ier[0] = 5;
@@ -550,120 +535,12 @@ public final class GaussKronrod extends Quadrature {
   }
   // CPD-ON
 
-  private static final void dqelg(final int[] n, final double[] epstab, final double[] result,
-      final double[] abserr, final double[] res3la, final int[] nres) {
-    double delta1, delta2, delta3, epsinf, error, err1, err2, err3, e0, e1, e1abs, e2, e3, res, ss,
-        tol1, tol2, tol3;
-    int i, ib, ib2, ie, indx, k1, k2, k3, limexp, newelm, num;
-
-    ++nres[0];
-    abserr[0] = OFLOW;
-    result[0] = epstab[n[0] - 1];
-    if (n[0] < 3) {
-      abserr[0] = Math.max(abserr[0], 5.0 * EPMACH * Math.abs(result[0]));
-      return;
-    }
-
-    limexp = 50;
-    epstab[n[0] + 2 - 1] = epstab[n[0] - 1];
-    newelm = (n[0] - 1) >> 1;
-    epstab[n[0] - 1] = OFLOW;
-    num = k1 = n[0];
-    for (i = 1; i <= newelm; ++i) {
-      k2 = k1 - 1;
-      k3 = k1 - 2;
-      res = epstab[k1 + 2 - 1];
-      e0 = epstab[k3 - 1];
-      e1 = epstab[k2 - 1];
-      e2 = res;
-      e1abs = Math.abs(e1);
-      delta2 = e2 - e1;
-      err2 = Math.abs(delta2);
-      tol2 = Math.max(Math.abs(e2), e1abs) * EPMACH;
-      delta3 = e1 - e0;
-      err3 = Math.abs(delta3);
-      tol3 = Math.max(e1abs, Math.abs(e0)) * EPMACH;
-      if (err2 <= tol2 && err3 <= tol3) {
-
-        // if e0, e1 and e2 are equal to within machine accuracy, convergence is
-        // assumed.
-        result[0] = res;
-        abserr[0] = err2 + err3;
-        abserr[0] = Math.max(abserr[0], 5.0 * EPMACH * Math.abs(result[0]));
-        return;
-      }
-
-      e3 = epstab[k1 - 1];
-      epstab[k1 - 1] = e1;
-      delta1 = e1 - e3;
-      err1 = Math.abs(delta1);
-      tol1 = Math.max(e1abs, Math.abs(e3)) * EPMACH;
-
-      // if two elements are very close to each other, omit a part of the table by
-      // adjusting the value of n
-      if (err1 <= tol1 || err2 <= tol2 || err3 <= tol3) {
-        n[0] = i + i - 1;
-        break;
-      }
-      ss = 1.0 / delta1 + 1.0 / delta2 - 1.0 / delta3;
-      epsinf = Math.abs(ss * e1);
-
-      // test to detect irregular behaviour in the table, and eventually omit a part
-      // of the table adjusting the value of n
-      if (epsinf <= 0.1E-3) {
-        n[0] = i + i - 1;
-        break;
-      }
-
-      // compute a new element and eventually adjust the value of result.
-      res = e1 + 1.0 / ss;
-      epstab[k1 - 1] = res;
-      k1 -= 2;
-      error = err2 + Math.abs(res - e2) + err3;
-      if (error <= abserr[0]) {
-        abserr[0] = error;
-        result[0] = res;
-      }
-    }
-
-    // shift the table.
-    if (n[0] == limexp) {
-      n[0] = ((limexp >> 1) << 1) - 1;
-    }
-    ib = 1;
-    if (((num >> 1) << 1) == num) {
-      ib = 2;
-    }
-    ie = newelm + 1;
-    for (i = 1; i <= ie; ++i) {
-      ib2 = ib + 2;
-      epstab[ib - 1] = epstab[ib2 - 1];
-      ib = ib2;
-    }
-    if (num != n[0]) {
-      indx = num - n[0] + 1;
-      for (i = 1; i <= n[0]; ++i) {
-        epstab[i - 1] = epstab[indx - 1];
-        ++indx;
-      }
-    }
-
-    if (nres[0] >= 4) {
-
-      // compute error estimate
-      abserr[0] = Math.abs(result[0] - res3la[3 - 1]) + Math.abs(result[0] - res3la[2 - 1])
-          + Math.abs(result[0] - res3la[1 - 1]);
-      res3la[1 - 1] = res3la[2 - 1];
-      res3la[2 - 1] = res3la[3 - 1];
-      res3la[3 - 1] = result[0];
-    } else {
-      res3la[nres[0] - 1] = result[0];
-      abserr[0] = OFLOW;
-    }
-    abserr[0] = Math.max(abserr[0], 5.0 * EPMACH * Math.abs(result[0]));
-  }
-
-  private static final void dqpsrt(final int limit, final int last, final int[] maxerr,
+  /**
+   * Maintains the descending order of the error estimates of the QUADPACK routine
+   * <code>QPSRT</code>, shared with {@link RmsRule}: selects the subinterval with the
+   * <code>nrmax</code>-th largest error estimate.
+   */
+  static final void dqpsrt(final int limit, final int last, final int[] maxerr,
       final double[] ermax, final double[] elist, final int[] iord, final int[] nrmax) {
     double errmax, errmin;
     int i, ibeg, ido, isucc, j, jbnd, jupbn, k;
@@ -1112,7 +989,7 @@ public final class GaussKronrod extends Quadrature {
       // PERFORM EXTRAPOLATION
       ++numrl2[0];
       rlist2[numrl2[0] - 1] = area;
-      dqelg(numrl2, rlist2, reseps, abseps, res3la, nres);
+      RmsRule.qelg(numrl2, rlist2, reseps, abseps, res3la, nres, EPMACH, OFLOW);
       ++ktmin;
       if (ktmin > 5 && abserr[0] < 1.0e-3 * errsum) {
         ier[0] = 5;
@@ -1240,7 +1117,6 @@ public final class GaussKronrod extends Quadrature {
       --ier[0];
     }
   }
-  // CPD-ON
 
   private static void dqagi1(final DoubleUnaryOperator f, final double boun, final int inf,
       final double epsabs, final double epsrel, final double[] result, final double[] abserr,
@@ -1269,4 +1145,5 @@ public final class GaussKronrod extends Quadrature {
       worst[0] = boun + Math.min(1.0, inf) * (1.0 - t) / t;
     }
   }
+  // CPD-ON
 }

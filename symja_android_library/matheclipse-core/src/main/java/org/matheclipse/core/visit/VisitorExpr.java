@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Visit every node of an <code>IExpr</code> expression. */
@@ -71,6 +72,37 @@ public abstract class VisitorExpr extends AbstractVisitor {
           IExpr t = x.accept(this);
           if (t.isPresent()) {
             result.set(j, t);
+          }
+        });
+        return result;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Visit the values of an association from position <code>start</code> on.
+   *
+   * @return the copied association with the changed values, or <code>F.NIL</code>, if no
+   *         evaluation is possible
+   */
+  protected IASTMutable visitAssociationValues(IAssociation assoc, int start) {
+    int size = assoc.size();
+    for (int i = start; i < size; i++) {
+      IExpr temp = assoc.getValue(i).accept(this);
+      if (temp.isPresent()) {
+        // something was evaluated - return a new IAST:
+        IAST iRuleOrNIL = assoc.getRule(i);
+        IASTMutable result;
+        if (iRuleOrNIL.isPresent()) {
+          result = assoc.setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
+        } else {
+          result = assoc.copy();
+        }
+        assoc.forEach(i + 1, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, assoc.getRule(j).setAtCopy(2, t));
           }
         });
         return result;

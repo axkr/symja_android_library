@@ -74,19 +74,14 @@ public class Area extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr parametricArea(IAST ast, int argSize, IExpr[] options,
       EvalEngine engine) {
-    if (argSize > 3) {
-      // the coordinate chart variant is not supported
+    RegionPrimitives.ParametricSurface surface =
+        RegionPrimitives.parseParametricSurface(ast, argSize);
+    if (surface == null) {
       return F.NIL;
     }
-    RegionPrimitives.ParameterRange s = RegionPrimitives.parseParameterRange(ast.arg2());
-    RegionPrimitives.ParameterRange t = RegionPrimitives.parseParameterRange(ast.arg3());
-    if (s == null || t == null || s.variable.equals(t.variable)) {
-      return F.NIL;
-    }
-    IAST coordinates = RegionPrimitives.surfaceCoordinates(ast.arg1(), s, t);
-    if (coordinates.isNIL()) {
-      return F.NIL;
-    }
+    RegionPrimitives.ParameterRange s = surface.s;
+    RegionPrimitives.ParameterRange t = surface.t;
+    IAST coordinates = surface.coordinates;
     IExpr element = RegionPrimitives.surfaceAreaElement(coordinates, s, t, engine);
     if (element.isNIL()) {
       return F.NIL;

@@ -81,19 +81,14 @@ final class DSolvePDEInitialValue {
       return F.NIL;
     }
 
-    IExpr inTime = coefficientOf(lhs, uApplied, space, time, 0, 2, engine);
-    IExpr inSpace = coefficientOf(lhs, uApplied, space, time, 2, 0, engine);
-    if (inTime.isZero() || !inTime.isFree(x) || !inTime.isFree(y) || !inSpace.isFree(x)
-        || !inSpace.isFree(y)) {
-      return F.NIL;
-    }
     // Nothing but the two second derivatives, so no damping, no source and no mixed term.
-    IExpr rest = engine.evaluate(F.Subtract(lhs, F.Plus(
-        F.Times(inTime, derivative(uApplied, space, time, 0, 2, engine)),
-        F.Times(inSpace, derivative(uApplied, space, time, 2, 0, engine)))));
-    if (!DSolveODE.isVanishing(rest, engine)) {
+    IExpr[] coefficients =
+        twoTermConstantCoefficients(lhs, uApplied, space, time, x, y, 2, engine);
+    if (coefficients == null) {
       return F.NIL;
     }
+    IExpr inTime = coefficients[0];
+    IExpr inSpace = coefficients[1];
     IExpr speedSquared = engine.evaluate(F.Cancel(F.Divide(F.Negate(inSpace), inTime)));
     if (speedSquared.isZero()) {
       return F.NIL;
@@ -151,6 +146,30 @@ final class DSolvePDEInitialValue {
   }
 
   /**
+   * The constant coefficients <code>{a, b}</code> of an equation
+   * <code>lhs == a*D(u, {time, timeOrder}) + b*D(u, {space, 2})</code> without any other term.
+   *
+   * @return <code>null</code> if <code>lhs</code> is not of that form, <code>a</code> is zero or a
+   *         coefficient depends on <code>x</code> or <code>y</code>
+   */
+  private static IExpr[] twoTermConstantCoefficients(IExpr lhs, IExpr uApplied, IExpr space,
+      IExpr time, IExpr x, IExpr y, int timeOrder, EvalEngine engine) {
+    IExpr inTime = coefficientOf(lhs, uApplied, space, time, 0, timeOrder, engine);
+    IExpr inSpace = coefficientOf(lhs, uApplied, space, time, 2, 0, engine);
+    if (inTime.isZero() || !inTime.isFree(x) || !inTime.isFree(y) || !inSpace.isFree(x)
+        || !inSpace.isFree(y)) {
+      return null;
+    }
+    IExpr rest = engine.evaluate(F.Subtract(lhs, F.Plus(
+        F.Times(inTime, derivative(uApplied, space, time, 0, timeOrder, engine)),
+        F.Times(inSpace, derivative(uApplied, space, time, 2, 0, engine)))));
+    if (!DSolveODE.isVanishing(rest, engine)) {
+      return null;
+    }
+    return new IExpr[] {inTime, inSpace};
+  }
+
+  /**
    * The temperature of a rod which starts from a given one.
    *
    * <p>
@@ -168,19 +187,14 @@ final class DSolvePDEInitialValue {
     IExpr space = condition.freeIsX ? x : y;
     IExpr time = condition.freeIsX ? y : x;
 
-    IExpr inTime = coefficientOf(lhs, uApplied, space, time, 0, 1, engine);
-    IExpr inSpace = coefficientOf(lhs, uApplied, space, time, 2, 0, engine);
-    if (inTime.isZero() || !inTime.isFree(x) || !inTime.isFree(y) || !inSpace.isFree(x)
-        || !inSpace.isFree(y)) {
-      return F.NIL;
-    }
     // Nothing but those two, so no drift along the rod and no heat made or lost in it.
-    IExpr rest = engine.evaluate(F.Subtract(lhs, F.Plus(
-        F.Times(inTime, derivative(uApplied, space, time, 0, 1, engine)),
-        F.Times(inSpace, derivative(uApplied, space, time, 2, 0, engine)))));
-    if (!DSolveODE.isVanishing(rest, engine)) {
+    IExpr[] coefficients =
+        twoTermConstantCoefficients(lhs, uApplied, space, time, x, y, 1, engine);
+    if (coefficients == null) {
       return F.NIL;
     }
+    IExpr inTime = coefficients[0];
+    IExpr inSpace = coefficients[1];
     IExpr rate = engine.evaluate(F.Cancel(F.Divide(F.Negate(inSpace), inTime)));
     if (rate.isZero() || rate.isNegativeResult()) {
       return F.NIL;

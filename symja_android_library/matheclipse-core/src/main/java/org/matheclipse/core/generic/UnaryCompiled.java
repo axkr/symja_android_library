@@ -169,6 +169,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
    */
   public double valueLimit(double value) {
     try {
+      // CPD-OFF compiled and numerical unary functions differ in their variable
       return fEngine.evalDouble(F.Limit(fUnaryFunction, F.Rule(fVariable, F.num(value))));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -195,6 +196,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
       return fFirstDerivative;
     }
     final IAST ast = F.D(fUnaryFunction, fVariable);
+    // CPD-ON
     IExpr expr = fEngine.evaluate(ast);
     fFirstDerivative = new UnaryCompiled(expr, fVariable, fEngine, false);
     return fFirstDerivative;

@@ -9,30 +9,18 @@ import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class MapPositions {
-  final IAST originalAST;
+public class MapPositions extends PositionsVisitor {
   final Function<IExpr, IExpr> f;
-  int level;
-  IAST positions;
 
   public MapPositions(Function<IExpr, IExpr> f, IAST ast) {
-    this.f = f;
-    this.originalAST = ast;
-    reset(F.CEmptyList);
+    this(f, ast, F.CEmptyList);
   }
 
   public MapPositions(Function<IExpr, IExpr> f, IAST ast, IAST positions) {
+    super(ast, positions);
     this.f = f;
-    this.originalAST = ast;
-    reset(positions);
-  }
-
-  protected void reset(IAST positions) {
-    this.level = 1;
-    this.positions = positions;
   }
 
   /**
@@ -90,85 +78,39 @@ public class MapPositions {
     return result;
   }
 
-  protected IAST mapAtRecursive(IAST ast) {
-    IExpr position = positions.get(level);
+  @Override
+  protected IAST visitOther(IAST ast, IExpr position) {
     if (position == S.All) {
       return mapAtRecursiveSpan(ast, 1, ast.size(), 1);
     }
     if (position.isAST(S.Span, 3, 4)) {
       return mapAtRecursiveSpan(ast, (IAST) position);
     }
-    if (position.isString() || position.isKey()) {
+    return null;
+  }
+
+  @Override
+  protected IAST keyLeaf(IAST ast, int index, IAST rule) {
+    IExpr temp = f.apply(rule.second());
+    if (temp.isPresent()) {
+      IASTAppendable association = getAppendableAST(ast);
+      association.set(index, rule.setAtCopy(2, temp));
+      return association;
+    }
+    return null;
+  }
+
+  @Override
+  protected IAST indexLeaf(IAST ast, int p) {
+    IExpr temp = f.apply(ast.get(p));
+    if (temp.isPresent()) {
       if (ast.isAssociation()) {
-        IExpr key = position.isString() ? position : position.first();
-        IAST rule = ((IAssociation) ast).getRule(key);
-        if (rule.isPresent()) {
-          if (level == positions.argSize()) {
-            IExpr temp = f.apply(rule.second());
-            if (temp.isPresent()) {
-              rule = rule.setAtCopy(2, temp);
-              IASTAppendable association = getAppendableAST(ast);
-              association.appendRule(rule);
-              return association;
-            }
-
-          } else {
-            IExpr arg = rule.second();
-            if (arg.isASTOrAssociation()) {
-              level++;
-              IExpr temp = mapAtRecursive(((IAST) arg));
-              if (temp.isPresent()) {
-                rule = rule.setAtCopy(2, temp);
-                IASTAppendable association = getAppendableAST(ast);
-                association.appendRule(rule);
-                level--;
-                return association;
-              }
-              level--;
-            }
-          }
-        }
+        IExpr rule = ((IAST) ast.getRule(p)).setAtCopy(2, temp);
+        return ast.setAtCopy(p, rule);
       }
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
+      return ast.setAtCopy(p, temp);
     }
-
-    int p = position.toIntDefault();
-    if (F.isNotPresent(p)) {
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
-    }
-    if (p < 0) {
-      p = ast.size() + p;
-    }
-
-    if (p >= 0 && p < ast.size()) {
-      if (level == positions.argSize()) {
-        IExpr temp = f.apply(ast.get(p));
-        if (temp.isPresent()) {
-          if (ast.isAssociation()) {
-            IExpr rule = ((IAST) ast.getRule(p)).setAtCopy(2, temp);
-            return ast.setAtCopy(p, rule);
-          }
-          return ast.setAtCopy(p, temp);
-        }
-      } else {
-        IExpr arg = ast.get(p);
-        if (arg.isASTOrAssociation()) {
-          IASTMutable subResult = getAppendableAST(ast);
-          level++;
-          IExpr temp = mapAtRecursive((IAST) arg);
-          if (temp.isPresent()) {
-            level--;
-            subResult.set(p, temp);
-            return subResult;
-          }
-          level--;
-        }
-      }
-    }
-    // Part `1` of `2` does not exist.
-    throw new ArgumentTypeException("partw", F.list(positions, originalAST));
+    return null;
   }
 
   protected IAST mapAtRecursiveSpan(IAST ast, IAST span) {
@@ -223,15 +165,6 @@ public class MapPositions {
       level--;
     }
     return result;
-  }
-
-  protected static IASTAppendable getAppendableAST(IAST ast) {
-    if (ast.hasFlag(Flag.IS_COPIED)) {
-      return (IASTAppendable) ast;
-    }
-    IASTAppendable appendable = ast.copyAppendable();
-    appendable.addFlag(Flag.IS_COPIED);
-    return appendable;
   }
 
   private static IASTMutable getMutableAST(IAST ast) {

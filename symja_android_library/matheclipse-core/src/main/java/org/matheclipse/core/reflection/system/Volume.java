@@ -116,24 +116,7 @@ public class Volume extends AbstractFunctionEvaluator {
   }
 
   private IExpr cylinder(IAST reg, EvalEngine engine, boolean isCone) {
-    IExpr p1 = F.List(F.C0, F.C0, F.CN1);
-    IExpr p2 = F.List(F.C0, F.C0, F.C1);
-    IExpr r = F.C1;
-
-    if (reg.argSize() >= 1) {
-      if (reg.arg1().isList2()) {
-        IAST pts = (IAST) reg.arg1();
-        p1 = pts.arg1();
-        p2 = pts.arg2();
-      }
-    }
-    if (reg.argSize() >= 2) {
-      r = reg.arg2();
-    }
-
-    IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p1, p2))));
-    IExpr vol = engine.evaluate(F.Times(S.Pi, F.Sqr(r), F.Sqrt(dist2)));
-
+    IExpr vol = RegionPrimitives.cylinderVolume(reg, engine);
     if (isCone) {
       vol = engine.evaluate(F.Times(F.C1D3, vol));
     }

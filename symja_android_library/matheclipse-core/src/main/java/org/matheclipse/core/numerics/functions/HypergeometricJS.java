@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 
@@ -621,7 +622,7 @@ public class HypergeometricJS extends JS {
           new Apfloat(b), new Apfloat(c), new Apfloat(x));
       return hypergeometric2f1.doubleValue();
     } catch (ArithmeticException | NumericComputationException ex) {
-      if (ex.getMessage().equals("Division by zero")) {
+      if (Num.isDivisionByZero(ex)) {
         throw new ResultException(F.CComplexInfinity);
       }
       throw ex;

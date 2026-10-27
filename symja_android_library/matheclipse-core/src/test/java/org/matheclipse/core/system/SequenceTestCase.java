@@ -139,6 +139,10 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSequenceReplace() {
+    // SequenceReplace: ({x}) is neither a list of replacement rules nor a valid dispatch table and
+    // cannot be used for replacing.
+    check("SequenceReplace({1,2,3},x)", //
+        "SequenceReplace({1,2,3},x)");
     // operator form
     check("SequenceReplace({a, e_} :> e)[{a, b, x, x, a, c}]", //
         "{b,x,x,c}");

@@ -15,53 +15,20 @@ package org.matheclipse.core.numerics.series.dp;
  * </ul>
  * </p>
  */
-public final class WynnRho extends SeriesAlgorithm {
+public final class WynnRho extends OsadaAdaptiveAlgorithm {
 
-  private int status;
-  private double xx, dx, dd, xp, alpha;
-  private final double[] x;
   private final double[][] myTab, myTab2;
 
   public WynnRho(final double tolerance, final int maxIters, final int patience) {
     super(tolerance, maxIters, patience);
-    x = new double[maxIters + 1];
     myTab = new double[2][maxIters + 1];
     myTab2 = new double[2][maxIters + 1];
   }
 
   @Override
-  public final double next(final double e, final double term) {
-    if (myIndex == 0) {
-      xx = dx = dd = 0.0;
-    }
-    final double xxp = xx;
-    x[myIndex] = xx = term;
-    if (myIndex == 0) {
-      dx = xx;
-    } else if (myIndex == 1) {
-      final double dxp = dx;
-      dx = xx - xxp;
-      dd = dx / (dx - dxp);
-    } else {
-      final double dxp = dx;
-      final double ddp = dd;
-      dx = xx - xxp;
-      dd = dx / (dx - dxp);
-      alpha = 1.0 / (dd - ddp) + 1.0;
-      alpha = wynnrho(alpha, myTab2, myIndex - 1, -2.0);
-    }
-    xp = xx;
-    if (myIndex >= 2) {
-      for (int m = 1; m <= myIndex + 1; ++m) {
-        xp = wynnrho(x[m - 1], myTab, m, alpha);
-      }
-    }
-    ++myIndex;
-    if (status == 1) {
-      return Double.NaN;
-    } else {
-      return xp;
-    }
+  protected final double transform(final double xx, final boolean alphaTable, final int n,
+      final double theta) {
+    return wynnrho(xx, alphaTable ? myTab2 : myTab, n, theta);
   }
 
   private final double wynnrho(final double xx, final double[][] tab, final int n,

@@ -471,6 +471,7 @@ public class OpenIntToSet<T> implements Serializable {
    * @param key key associated with the data
    * @return data associated with the key
    */
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   public Set<T> get(final int key) {
 
     final int hash = hashOf(key);
@@ -494,6 +495,7 @@ public class OpenIntToSet<T> implements Serializable {
 
     return null;
   }
+  // CPD-ON
 
   public Set<T>[] getValues() {
     return values;

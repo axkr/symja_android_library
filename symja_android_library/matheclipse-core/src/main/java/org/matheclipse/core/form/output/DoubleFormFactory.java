@@ -22,8 +22,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
-import org.matheclipse.parser.client.operator.Operator;
-import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
@@ -114,6 +112,7 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
   }
 
   private void convertPlusOperator(final StringBuilder buf, final IAST plusAST,
+      // CPD-OFF form factories without a common base for this conversion
       final InfixOperator oper, final int precedence) {
     int operPrecedence = oper.getPrecedence();
     if (operPrecedence < precedence) {
@@ -135,6 +134,7 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
   }
 
   public void convertPlusArgument(final StringBuilder buf, IExpr plusArg, boolean caller) {
+  // CPD-ON
     if (plusArg.isTimes()) {
       final IAST timesAST = (IAST) plusArg;
       // IExpr arg1 = timesAST.arg1();
@@ -224,6 +224,7 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
     }
   }
 
+  // CPD-OFF form factories without a common base for this conversion
   private void convertTimesFraction(final StringBuilder buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) {
     Optional<IExpr[]> parts =
@@ -279,6 +280,7 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
     }
     convertTimesOperator(buf, timesAST, oper, precedence, caller);
   }
+  // CPD-ON
 
   private void convertTimesOperator(final StringBuilder buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) {
@@ -391,22 +393,8 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
       boolean isASTHead, boolean eval) {
     if (o instanceof IAST) {
       final IAST list = (IAST) o;
-      if (list.head().isSymbol()) {
-        ISymbol head = (ISymbol) list.head();
-        final Operator operator = getOperator(head);
-        if (operator != null) {
-          if (operator instanceof PostfixOperator) {
-            if (list.isAST1()) {
-              convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
-              return;
-            }
-          } else {
-            if (convertOperator(operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence,
-                head)) {
-              return;
-            }
-          }
-        }
+      if (convertOperatorAST(buf, list, precedence, isASTHead)) {
+        return;
       }
       convertAST(buf, list, precedence, eval);
       return;
@@ -608,6 +596,39 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
       convertInternal(buf, head);
       convertArgs(buf, head, function);
     }
+  }
+
+  /**
+   * Convert the <code>Power(base, exponent)</code> expression into Java or JavaScript form:
+   * <code>1.0/(...)</code>, <code>Math.sqrt</code>, <code>Math.cbrt</code> or
+   * <code>Math.pow</code>.
+   *
+   * @param buf
+   * @param powerAST the <code>Power(base, exponent)</code> expression
+   */
+  protected void convertPower(final StringBuilder buf, final IAST powerAST) {
+    IExpr base = powerAST.base();
+    IExpr exponent = powerAST.exponent();
+    if (exponent.isMinusOne()) {
+      buf.append("1.0/(");
+      convertInternal(buf, base);
+      buf.append(")");
+      return;
+    }
+    if (exponent.isNumEqualRational(F.C1D2)) {
+      buf.append("Math.sqrt(");
+      convertInternal(buf, base);
+      buf.append(")");
+      return;
+    }
+    if (exponent.isNumEqualRational(F.C1D3)) {
+      buf.append("Math.cbrt(");
+      convertInternal(buf, base);
+      buf.append(")");
+      return;
+    }
+    buf.append("Math.pow");
+    convertArgs(buf, powerAST.head(), powerAST);
   }
 
   public void convertArgs(final StringBuilder buf, IExpr head, final IAST function) {

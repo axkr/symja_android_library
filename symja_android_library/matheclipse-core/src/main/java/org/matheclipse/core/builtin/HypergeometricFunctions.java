@@ -25,6 +25,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.DMath;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.F;
@@ -207,6 +208,7 @@ public class HypergeometricFunctions {
 
   private static class CosIntegral extends AbstractFunctionEvaluator { // implements INumeric,
                                                                        // DoubleUnaryOperator {
+    // CPD-OFF per-function evaluator boilerplate
     @Override
     public boolean evalIsReal(IAST ast) {
       if (ast.argSize() == 1) {
@@ -246,6 +248,7 @@ public class HypergeometricFunctions {
       }
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
@@ -274,6 +277,7 @@ public class HypergeometricFunctions {
 
   private static class CoshIntegral extends AbstractFunctionEvaluator {
 
+    // CPD-OFF per-function evaluator boilerplate
     @Override
     public boolean evalIsReal(IAST ast) {
       if (ast.argSize() == 1) {
@@ -318,6 +322,7 @@ public class HypergeometricFunctions {
       // }
       return F.NIL;
     }
+    // CPD-ON
 
     private static IExpr basicRewrite(IExpr z) {
       if (F.isExactZero(z)) {
@@ -1179,18 +1184,26 @@ public class HypergeometricFunctions {
     }
   }
 
+  /**
+   * Test if <code>Hypergeometric1F1(a, b, z)</code> or its regularized form is real: real
+   * <code>a</code> and <code>z</code>, and <code>b</code> positive or a non-integer real.
+   */
+  private static boolean isReal1F1(IAST ast) {
+    if (ast.argSize() == 3) {
+      IExpr y = ast.arg2();
+      if (ast.arg1().isRealResult() && ast.arg3().isRealResult()) {
+        return y.isPositiveResult() || (y.isReal() && !y.isInteger());
+      }
+    }
+    return false;
+  }
+
   private static class Hypergeometric1F1 extends AbstractFunctionEvaluator
       implements IFunctionExpand {
 
     @Override
     public boolean evalIsReal(IAST ast) {
-      if (ast.argSize() == 3) {
-        IExpr y = ast.arg2();
-        if (ast.arg1().isRealResult() && ast.arg3().isRealResult()) {
-          return y.isPositiveResult() || (y.isReal() && !y.isInteger());
-        }
-      }
-      return false;
+      return isReal1F1(ast);
     }
 
     @Override
@@ -1479,7 +1492,7 @@ public class HypergeometricFunctions {
           }
         } catch (ArithmeticException e) {
           Errors.printMessage(S.Hypergeometric2F1, e, engine);
-          if (e.getMessage().equals("Division by zero")) {
+          if (Num.isDivisionByZero(e)) {
             return F.ComplexInfinity;
           }
         }
@@ -1506,13 +1519,7 @@ public class HypergeometricFunctions {
 
     @Override
     public boolean evalIsReal(IAST ast) {
-      if (ast.argSize() == 3) {
-        IExpr y = ast.arg2();
-        if (ast.arg1().isRealResult() && ast.arg3().isRealResult()) {
-          return y.isPositiveResult() || (y.isReal() && !y.isInteger());
-        }
-      }
-      return false;
+      return isReal1F1(ast);
     }
 
     @Override
@@ -1578,7 +1585,7 @@ public class HypergeometricFunctions {
         } catch (ArithmeticException | NumericComputationException e) {
           // java.lang.ArithmeticException: Gamma of zero
           Errors.printMessage(S.Hypergeometric1F1, e, engine);
-          if (e.getMessage().equals("Division by zero")) {
+          if (Num.isDivisionByZero(e)) {
             return F.ComplexInfinity;
           }
 
@@ -1928,7 +1935,7 @@ public class HypergeometricFunctions {
           return a.hypergeometric2F1Regularized(b, c, z);
         } catch (ArithmeticException e) {
           Errors.printMessage(S.Hypergeometric2F1, e, engine);
-          if (e.getMessage().equals("Division by zero")) {
+          if (Num.isDivisionByZero(e)) {
             return F.ComplexInfinity;
           }
         }
@@ -2148,8 +2155,7 @@ public class HypergeometricFunctions {
       Apcomplex sum;
       try {
         sum = ApcomplexHypergeometricMath.hypergeometricOnesTwos(p,
-            new Apcomplex(zc.real().signum() == 0 ? zc.real() : zc.real().precision(targetPrecision),
-                zc.imag().signum() == 0 ? zc.imag() : zc.imag().precision(targetPrecision)));
+            ApcomplexNum.precisionOfParts(zc, targetPrecision));
       } catch (ArithmeticException ae) {
         // cannot happen for a converging summand sequence - don't return a truncated sum
         return F.NIL;

@@ -3864,6 +3864,43 @@ public final class PatternMatching {
     }
   }
 
+  /**
+   * Attach an up rule to the symbol of each argument of <code>leftHandSide</code>, for
+   * <code>UpSet</code> or <code>UpSetDelayed</code>.
+   *
+   * @param head <code>UpSet</code> or <code>UpSetDelayed</code>, which reports the messages
+   * @param flag the flags of the rule
+   * @param failOnProtected whether a protected symbol fails the assignment with
+   *        <code>$Failed</code>; otherwise the remaining arguments are skipped after the message
+   * @throws FailedException after a message, if no argument has a symbol to attach the rule to, or
+   *         if an argument's symbol is protected and <code>failOnProtected</code> is set
+   */
+  private static void putUpRules(IBuiltInSymbol head, IExpr leftHandSide, IExpr rightHandSide,
+      int flag, boolean failOnProtected, EvalEngine engine) {
+    IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide, head);
+    IPatternMatcher lastRule = null;
+    for (int i = 1; i < lhsAST.size(); i++) {
+      ISymbol lhsSymbol = getLookupReferenceName(lhsAST.get(i));
+      if (lhsSymbol == null) {
+        continue;
+      }
+      if (lhsSymbol.hasProtectedAttribute()) {
+        // Tag `1` in `2` is Protected.
+        Errors.printMessage(head, "write", F.list(lhsSymbol, leftHandSide), engine);
+        if (failOnProtected) {
+          throw new FailedException();
+        }
+        return;
+      }
+      lastRule = lhsSymbol.putUpRule(flag, false, lhsAST, rightHandSide);
+    }
+    if (lastRule == null) {
+      // `1` does not contain a symbol to attach a rule to.
+      Errors.printMessage(head, "nosym", F.list(lhsAST), engine);
+      throw new FailedException();
+    }
+  }
+
   private static final class UpSet extends AbstractFunctionEvaluator {
 
     @Override
@@ -3890,8 +3927,7 @@ public final class PatternMatching {
             Errors.printMessage(S.UpSet, "setraw", F.list(leftHandSide), engine);
             return rightHandSide;
           }
-          Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
-          return (IExpr) result[1];
+          return upSet(leftHandSide, rightHandSide, engine);
         } catch (final ValidateException ve) {
           Errors.printMessage(ast.topHead(), ve, engine);
           return F.NIL;
@@ -3907,10 +3943,14 @@ public final class PatternMatching {
       return ARGS_2_2;
     }
 
-    private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
-        boolean packageMode, EvalEngine engine) throws RuleCreationError {
-      final Object[] result = new Object[2];
-
+    /**
+     * Attach the rule <code>leftHandSide ^= rightHandSide</code> to the symbols of the arguments
+     * of <code>leftHandSide</code>, with the evaluated right-hand side.
+     *
+     * @return the evaluated right-hand side
+     */
+    private static IExpr upSet(IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine)
+        throws RuleCreationError {
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
       leftHandSide = evalLHS(leftHandSide, flags, engine);
 
@@ -3920,33 +3960,10 @@ public final class PatternMatching {
       } catch (final ReturnException e) {
         rightHandSide = e.getValue();
       }
-
-      result[0] = null; // IPatternMatcher
-      result[1] = rightHandSide;
-
-      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide, S.UpSet);
-      for (int i = 1; i < lhsAST.size(); i++) {
-        IExpr temp = lhsAST.get(i);
-        ISymbol lhsSymbol = getLookupReferenceName(temp);
-        if (lhsSymbol == null) {
-          continue;
-        }
-        if (lhsSymbol.hasProtectedAttribute()) {
-          // Tag `1` in `2` is Protected.
-          Errors.printMessage(S.UpSet, "write", F.list(lhsSymbol, leftHandSide), EvalEngine.get());
-          return result;
-        }
-
-        result[0] =
-            lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
-
-      }
-      if (result[0] == null) {
-        // `1` does not contain a symbol to attach a rule to.
-        Errors.printMessage(S.UpSet, "nosym", F.list(lhsAST), engine);
-        throw new FailedException();
-      }
-      return result;
+      // the assignment gives the right-hand side, also when a tag is protected
+      putUpRules(S.UpSet, leftHandSide, rightHandSide, flags[0] | IPatternMatcher.UPSET, false,
+          engine);
+      return rightHandSide;
     }
 
     @Override
@@ -3969,8 +3986,7 @@ public final class PatternMatching {
             return rightHandSide;
           }
 
-          createPatternMatcher(leftHandSide, rightHandSide, false, engine);
-
+          upSetDelayed(leftHandSide, rightHandSide, engine);
           return S.Null;
         } catch (final ValidateException ve) {
           Errors.printMessage(ast.topHead(), ve, engine);
@@ -3987,58 +4003,16 @@ public final class PatternMatching {
       return ARGS_2_2;
     }
 
-    private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
-        boolean packageMode, EvalEngine engine) throws RuleCreationError {
-      final Object[] result = new Object[2];
-
+    /**
+     * Attach the rule <code>leftHandSide ^:= rightHandSide</code> to the symbols of the arguments
+     * of <code>leftHandSide</code>.
+     */
+    private static void upSetDelayed(IExpr leftHandSide, IExpr rightHandSide, EvalEngine engine)
+        throws RuleCreationError {
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
       leftHandSide = evalLHS(leftHandSide, flags, engine);
-
-      result[0] = null;
-      result[1] = rightHandSide;
-
-      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide, S.UpSetDelayed);
-      for (int i = 1; i < lhsAST.size(); i++) {
-        IExpr temp = lhsAST.get(i);
-        ISymbol lhsSymbol = getLookupReferenceName(temp);
-        if (lhsSymbol == null) {
-          continue;
-        }
-        if (lhsSymbol.hasProtectedAttribute()) {
-          // Tag `1` in `2` is Protected.
-          Errors.printMessage(S.UpSet, "write", F.list(lhsSymbol, leftHandSide), EvalEngine.get());
-          throw new FailedException();
-        }
-        result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST,
-            rightHandSide);
-
-        // if (temp instanceof IPatternObject) {
-        // IExpr headTest = ((IPatternObject) temp).getHeadTest();
-        // if (headTest != null && headTest.isSymbol()) {
-        // ISymbol lhsSymbol = (ISymbol) headTest;
-        // result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false,
-        // lhsAST,
-        // rightHandSide);
-        // }
-        // continue;
-        // }
-        // ISymbol lhsSymbol = null;
-        // if (temp.isSymbol()) {
-        // lhsSymbol = (ISymbol) temp;
-        // } else {
-        // lhsSymbol = lhsAST.get(i).topHead();
-        // }
-        // result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false,
-        // lhsAST,
-        // rightHandSide);
-
-      }
-      if (result[0] == null) {
-        // `1` does not contain a symbol to attach a rule to.
-        Errors.printMessage(S.UpSetDelayed, "nosym", F.list(lhsAST), engine);
-        throw new FailedException();
-      }
-      return result;
+      putUpRules(S.UpSetDelayed, leftHandSide, rightHandSide,
+          flags[0] | IPatternMatcher.UPSET_DELAYED, true, engine);
     }
 
     @Override

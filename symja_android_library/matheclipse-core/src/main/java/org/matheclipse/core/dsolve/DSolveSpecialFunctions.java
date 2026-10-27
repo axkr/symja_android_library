@@ -11,7 +11,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INumber;
 
 /**
  * The linear equations of second order whose solutions are named functions.
@@ -39,14 +38,12 @@ final class DSolveSpecialFunctions {
    */
   static IExpr solve(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero()) {
+    IExpr[] pq = normalizedPQ(lf, engine);
+    if (pq == null) {
       return F.NIL;
     }
-    IExpr p = cancel(F.Divide(lf.a[1], lf.a[2]), engine);
-    IExpr q = cancel(F.Divide(lf.a[0], lf.a[2]), engine);
-    if (q.isZero()) {
-      return F.NIL;
-    }
+    IExpr p = pq[0];
+    IExpr q = pq[1];
 
     IExpr[] basis = legendre(p, q, xVar, engine);
     if (basis == null) {
@@ -93,10 +90,7 @@ final class DSolveSpecialFunctions {
       // equations - Weber's among them - write it with shorter functions than Whittaker's.
       basis = generalizedPowerPotential(p, q, yFunction, xVar, engine);
     }
-    if (basis == null) {
-      return F.NIL;
-    }
-    return engine.evaluate(F.Plus(F.Times(c_n, basis[0]), F.Times(ctx.nextConstant(), basis[1])));
+    return generalSolution(basis, c_n, ctx);
   }
 
   /**
@@ -112,23 +106,41 @@ final class DSolveSpecialFunctions {
    */
   static IExpr solveByRewriting(LinearODEForm lf, IExpr yFunction, IExpr xVar, IExpr c_n,
       DSolveContext ctx) {
-    EvalEngine engine = ctx.engine;
-    if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero()) {
+    IExpr[] pq = normalizedPQ(lf, ctx.engine);
+    if (pq == null) {
       return F.NIL;
     }
-    IExpr p = cancel(F.Divide(lf.a[1], lf.a[2]), engine);
-    IExpr q = cancel(F.Divide(lf.a[0], lf.a[2]), engine);
-    if (q.isZero()) {
-      return F.NIL;
-    }
+    IExpr p = pq[0];
+    IExpr q = pq[1];
     IExpr[] basis = fuchsian(p, q, yFunction, xVar, ctx);
     if (basis == null) {
       basis = normalFormPrePass(p, q, yFunction, xVar, ctx);
     }
+    return generalSolution(basis, c_n, ctx);
+  }
+
+  /**
+   * <code>{p, q}</code> of the homogeneous second order equation
+   * <code>y'' + p*y' + q*y == 0</code>, or <code>null</code> if the equation is not of that form
+   * with <code>q</code> different from zero.
+   */
+  private static IExpr[] normalizedPQ(LinearODEForm lf, EvalEngine engine) {
+    if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero()) {
+      return null;
+    }
+    IExpr q = cancel(F.Divide(lf.a[0], lf.a[2]), engine);
+    if (q.isZero()) {
+      return null;
+    }
+    return new IExpr[] {cancel(F.Divide(lf.a[1], lf.a[2]), engine), q};
+  }
+
+  /** <code>c_n*basis[0] + C*basis[1]</code>, or {@link F#NIL} if there is no basis. */
+  private static IExpr generalSolution(IExpr[] basis, IExpr c_n, DSolveContext ctx) {
     if (basis == null) {
       return F.NIL;
     }
-    return engine.evaluate(
+    return ctx.engine.evaluate(
         F.Plus(F.Times(c_n, basis[0]), F.Times(ctx.nextConstant(), basis[1])));
   }
 
@@ -337,7 +349,7 @@ final class DSolveSpecialFunctions {
     if (!factor.isFree(xVar) || factor.isZero()) {
       return null;
     }
-    int sign = numericSign(factor, engine);
+    int sign = DSolveUtil.numericSign(factor, engine);
     // An exponent or a coefficient which is a symbol has no sign and no absolute value to write
     // the answer with. Bessel's functions of the two signs are each other's continuation, so the
     // J/Y pair with Sqrt(A) is the answer for either one, and it is verified below like every
@@ -373,8 +385,8 @@ final class DSolveSpecialFunctions {
     if (!factor.isFree(xVar) || factor.isZero()) {
       return null;
     }
-    int sign = numericSign(factor, engine);
-    int rateSign = numericSign(rate, engine);
+    int sign = DSolveUtil.numericSign(factor, engine);
+    int rateSign = DSolveUtil.numericSign(rate, engine);
     if (sign == 0 || rateSign == 0) {
       return null;
     }
@@ -407,7 +419,7 @@ final class DSolveSpecialFunctions {
       return null;
     }
     IExpr nu = engine.evaluate(F.PowerExpand(F.Sqrt(F.Subtract(F.QQ(1, 4), constant))));
-    boolean modified = numericSign(squared, engine) < 0;
+    boolean modified = DSolveUtil.numericSign(squared, engine) < 0;
     IExpr magnitude = engine.evaluate(modified ? F.Negate(squared) : squared);
     IExpr argument = engine.evaluate(F.Times(F.Sqrt(magnitude), xVar));
     IExpr root = F.Sqrt(xVar);
@@ -468,7 +480,7 @@ final class DSolveSpecialFunctions {
       return basis;
     }
     IExpr shifted = engine.evaluate(F.Plus(power[1], F.C2));
-    int sign = numericSign(power[0], engine);
+    int sign = DSolveUtil.numericSign(power[0], engine);
     if (!shifted.isNumber() || shifted.isZero() || power[1].isZero() || sign == 0) {
       return null;
     }
@@ -654,7 +666,7 @@ final class DSolveSpecialFunctions {
         F.Hypergeometric1F1(F.Times(F.CN1D2, degree), F.C1D2, square),
         F.Times(xVar,
             F.Hypergeometric1F1(F.Times(F.C1D2, F.Subtract(F.C1, degree)), F.QQ(3L, 2L), square))};
-    if (numericSign(b, engine) > 0) {
+    if (DSolveUtil.numericSign(b, engine) > 0) {
       // The series are in a negative multiple of x^2. Where one of them terminates it is a
       // polynomial and is kept, but otherwise a confluent function of a negative argument evaluates
       // to incomplete gamma functions of it with Sqrt(-x^2) in the denominator: no value at x == 0,
@@ -1364,7 +1376,7 @@ final class DSolveSpecialFunctions {
    */
   private static IExpr[] besselSimplePole(IExpr b0, IExpr b1, IExpr shifted, IExpr yFunction,
       IExpr q, IExpr xVar, EvalEngine engine) {
-    int sign = numericSign(b1, engine);
+    int sign = DSolveUtil.numericSign(b1, engine);
     if (sign == 0) {
       return null;
     }
@@ -1421,24 +1433,6 @@ final class DSolveSpecialFunctions {
     return engine.evaluate(F.Cancel(F.Together(expr)));
   }
 
-  /**
-   * The sign of a parameter, or <code>0</code> if it does not evaluate to a real number. A row
-   * whose solutions depend on the sign has to decline in that case.
-   */
-  private static int numericSign(IExpr expr, EvalEngine engine) {
-    try {
-      IExpr value = engine.evalN(expr);
-      if (value instanceof INumber && ((INumber) value).isReal()) {
-        double d = ((INumber) value).evalf();
-        if (Double.isFinite(d) && d != 0.0) {
-          return d > 0.0 ? 1 : -1;
-        }
-      }
-    } catch (RuntimeException rex) {
-      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
-    }
-    return 0;
-  }
 
   /** Whether the parameter is an integer, which makes the second solution a copy of the first. */
   private static boolean isProvableInteger(IExpr expr, EvalEngine engine) {

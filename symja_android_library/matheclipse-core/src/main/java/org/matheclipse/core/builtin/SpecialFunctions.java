@@ -2,6 +2,9 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.external.apfloat.ApcomplexParabolicCylinderMath;
 import org.matheclipse.external.apfloat.ApcomplexCoulombMath;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.DoubleBinaryOperator;
 import java.util.function.Function;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
@@ -3369,6 +3372,73 @@ public class SpecialFunctions {
    * @return {@link F#NIL} if the real part of <code>nu</code> can't be compared with
    *         <code>-1</code>, and for <code>nu == -1</code>
    */
+  /**
+   * <code>StruveH(n, I*z)</code> or <code>StruveL(n, I*z)</code> in terms of the other function of
+   * <code>z</code>, <code>((I*z)^(1+n)*partner(n,z))/z^(1+n)</code>.
+   */
+  private static IExpr struveImaginaryArgument(IAST ast, BinaryOperator<IExpr> partner) {
+    if (ast.isAST2()) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(z);
+      if (restExpr.isPresent()) {
+        return F.Times(F.Power(F.Times(F.CI, restExpr), F.Plus(F.C1, n)),
+            F.Power(restExpr, F.Subtract(F.CN1, n)), partner.apply(n, restExpr));
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * <code>StruveH(nu, z)</code> or <code>StruveL(nu, z)</code> of a negative <code>z</code> in terms
+   * of the value at <code>-z</code>, <code>-z^nu*(-z)^(-nu)*head(nu,-z)</code>.
+   *
+   * @return {@link F#NIL} if <code>z</code> is not of negative form
+   */
+  private static IExpr struveReflection(ISymbol head, IExpr nu, IExpr z) {
+    IExpr negZ = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+    if (negZ.isPresent()) {
+      return F.Times(F.CN1, F.Power(z, nu), F.Power(negZ, F.Negate(nu)),
+          F.binaryAST2(head, nu, negZ));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The numeric value of <code>StruveH</code> or <code>StruveL</code>: the machine routine for two
+   * machine reals, the working precision routine, and last the series of the library.
+   */
+  private static IExpr struveNumeric(IAST ast, DoubleBinaryOperator machineFunction,
+      WorkingPrecision.Routine routine,
+      BiFunction<IInexactNumber, IInexactNumber, IExpr> series) {
+    if (ast.argSize() == 2) {
+      IInexactNumber n = (IInexactNumber) ast.arg1();
+      IInexactNumber z = (IInexactNumber) ast.arg2();
+      if (n instanceof Num && z instanceof Num) {
+        try {
+          double machine =
+              machineFunction.applyAsDouble(((Num) n).doubleValue(), ((Num) z).doubleValue());
+          if (!Double.isNaN(machine)) {
+            return F.num(machine);
+          }
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          // the arbitrary precision routines below
+        }
+      }
+      // the expansion for a large argument, or the series with the digits which it cancels
+      IExpr value = WorkingPrecision.evaluate(n, z, z.isReal() && !z.isNegative(), routine);
+      if (value.isPresent()) {
+        // on the negative real axis the value is real for some orders only
+        return value.isNumber() && !value.isReal() && value.im().isZero() ? value.re() : value;
+      }
+      if (isBeyondStruveSeries(n, z)) {
+        return F.NIL;
+      }
+      return series.apply(n, z);
+    }
+    return F.NIL;
+  }
+
   private static IExpr struveAtZero(IExpr nu) {
     if (nu.isFraction() && ((IFraction) nu).denominator().equals(F.C2) && nu.isNegative()) {
       // nu = -n-1/2: the terms with a pole of Gamma(k+nu+3/2) are zero, the first other one has
@@ -3397,47 +3467,14 @@ public class SpecialFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        IExpr n = ast.arg1();
-        IExpr z = ast.arg2();
-        IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(z);
-        if (restExpr.isPresent()) {
-          // ((I*z)^(1+n)*StruveL(n,z))/z^(1+n)
-          return F.Times(F.Power(F.Times(F.CI, restExpr), F.Plus(F.C1, n)),
-              F.Power(restExpr, F.Subtract(F.CN1, n)), F.StruveL(n, restExpr));
-        }
-      }
-      return F.NIL;
+      return struveImaginaryArgument(ast, F::StruveL);
     }
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
-        IInexactNumber z = (IInexactNumber) ast.arg2();
-        if (n instanceof Num && z instanceof Num) {
-          try {
-            double machine = DMath.struveH(((Num) n).doubleValue(), ((Num) z).doubleValue());
-            if (!Double.isNaN(machine)) {
-              return F.num(machine);
-            }
-          } catch (ArithmeticException | ApfloatRuntimeException ex) {
-            // the arbitrary precision routines below
-          }
-        }
-        // the expansion for a large argument, or the series with the digits which it cancels
-        IExpr value = WorkingPrecision.evaluate(n, z, z.isReal() && !z.isNegative(),
-            (nu, argument, precision) -> ApcomplexStruveMath.struveH(nu, argument));
-        if (value.isPresent()) {
-          // on the negative real axis the value is real for some orders only
-          return value.isNumber() && !value.isReal() && value.im().isZero() ? value.re() : value;
-        }
-        if (isBeyondStruveSeries(n, z)) {
-          return F.NIL;
-        }
-        return n.struveH(z);
-      }
-      return F.NIL;
+      return struveNumeric(ast, DMath::struveH,
+          (nu, argument, precision) -> ApcomplexStruveMath.struveH(nu, argument),
+          IInexactNumber::struveH);
     }
 
     @Override
@@ -3448,6 +3485,7 @@ public class SpecialFunctions {
       return result.isPresent() ? result : F.NIL;
     }
 
+    // CPD-OFF closed-form half-integer Struve formulas
     private IExpr struveH(IExpr arg1, IExpr arg2, EvalEngine engine) {
       try {
         if (F.isExactZero(arg2)) {
@@ -3464,6 +3502,7 @@ public class SpecialFunctions {
                 // H_{-n-1/2}(z) = (-1)^n * J_{n+1/2}(z)
                 int n = (-num - 1) / 2;
                 IExpr besselJ = engine.evaluate(F.BesselJ(F.Plus(F.ZZ(n), F.C1D2), arg2));
+                // CPD-ON
                 IExpr result = (n % 2 == 0) ? besselJ : F.Negate(besselJ);
                 return engine.evaluate(F.Together(result));
               } else {
@@ -3471,21 +3510,19 @@ public class SpecialFunctions {
                 int n = (num - 1) / 2;
                 IExpr sum = F.sum(
                     k -> F.Times(F.Power(F.CN1, F.Plus(k, F.ZZ(-n))),
+                        // CPD-OFF closed-form half-integer Struve formulas
                         F.Power(F.Gamma(F.Plus(k, F.C1)), F.CN1),
                         F.Power(F.Gamma(F.Plus(k, F.ZZ(-n), F.C1D2)), F.CN1), F.Power(
                             F.Times(arg2, F.C1D2), F.Plus(F.Times(F.C2, k), F.ZZ(-n), F.CN1D2))),
                     0, n);
                 IExpr result = F.Plus(F.BesselY(arg1, arg2), sum);
+                // CPD-ON
                 return engine.evaluate(F.Together(result));
               }
             }
           }
         }
-        IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
-        if (negArg2.isPresent()) {
-          return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
-              F.StruveH(arg1, negArg2));
-        }
+        return struveReflection(S.StruveH, arg1, arg2);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.StruveH, rex);
@@ -3515,43 +3552,14 @@ public class SpecialFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        IExpr n = ast.arg1();
-        IExpr z = ast.arg2();
-        IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(z);
-        if (restExpr.isPresent()) {
-          // ((I*z)^(1+n)*StruveH(n,z))/z^(1+n)
-          return F.Times(F.Power(F.Times(F.CI, restExpr), F.Plus(F.C1, n)),
-              F.Power(restExpr, F.Subtract(F.CN1, n)), F.StruveH(n, restExpr));
-        }
-      }
-      return F.NIL;
+      return struveImaginaryArgument(ast, F::StruveH);
     }
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
-        IInexactNumber z = (IInexactNumber) ast.arg2();
-        if (n instanceof Num && z instanceof Num) {
-          double machine = DMath.struveL(((Num) n).doubleValue(), ((Num) z).doubleValue());
-          if (!Double.isNaN(machine)) {
-            return F.num(machine);
-          }
-        }
-        // the expansion for a large argument, or the series with the digits which it cancels
-        IExpr value = WorkingPrecision.evaluate(n, z, z.isReal() && !z.isNegative(),
-            (nu, argument, precision) -> ApcomplexStruveMath.struveL(nu, argument));
-        if (value.isPresent()) {
-          // on the negative real axis the value is real for some orders only
-          return value.isNumber() && !value.isReal() && value.im().isZero() ? value.re() : value;
-        }
-        if (isBeyondStruveSeries(n, z)) {
-          return F.NIL;
-        }
-        return n.struveL(z);
-      }
-      return F.NIL;
+      return struveNumeric(ast, DMath::struveL,
+          (nu, argument, precision) -> ApcomplexStruveMath.struveL(nu, argument),
+          IInexactNumber::struveL);
     }
 
     @Override
@@ -3562,6 +3570,7 @@ public class SpecialFunctions {
       return result.isPresent() ? result : F.NIL;
     }
 
+    // CPD-OFF closed-form half-integer Struve formulas
     private static IExpr struveL(IExpr arg1, IExpr arg2, EvalEngine engine) {
       try {
         if (F.isExactZero(arg2)) {
@@ -3578,25 +3587,24 @@ public class SpecialFunctions {
                 IExpr besselI = engine.evaluate(F.BesselI(F.Plus(F.ZZ(n), F.C1D2), arg2));
                 return engine.evaluate(F.Together(besselI));
               } else {
+              // CPD-ON
                 // L_{n+1/2}(z) = I_{-n-1/2}(z) - Sum
                 int n = (num - 1) / 2;
                 IExpr sum = F.sum(
+                    // CPD-OFF closed-form half-integer Struve formulas
                     k -> F.Times(F.Power(F.Gamma(F.Plus(k, F.C1)), F.CN1),
                         F.Power(F.Gamma(F.Plus(k, F.ZZ(-n), F.C1D2)), F.CN1), F.Power(
                             F.Times(arg2, F.C1D2), F.Plus(F.Times(F.C2, k), F.ZZ(-n), F.CN1D2))),
                     0, n);
                 IExpr result = F.Subtract(F.BesselI(F.Negate(arg1), arg2), sum);
+                // CPD-ON
                 return engine.evaluate(F.Together(result));
               }
             }
           }
         }
         if (!arg2.isZero()) {
-          IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
-          if (negArg2.isPresent()) {
-            return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
-                F.StruveL(arg1, negArg2));
-          }
+          return struveReflection(S.StruveL, arg1, arg2);
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);

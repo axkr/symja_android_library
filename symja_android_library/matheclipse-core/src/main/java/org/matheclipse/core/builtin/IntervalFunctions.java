@@ -112,22 +112,8 @@ public class IntervalFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      for (int i = 1; i < ast.size(); i++) {
-        if (!ast.get(i).isIntervalData()) {
-          return F.NIL;
-        }
-        IAST interval = (IAST) ast.get(i);
-        for (int j = 1; j < interval.size(); j++) {
-          if (!interval.get(j).isList4()) {
-            return F.NIL;
-          }
-          IAST list1 = (IAST) interval.get(j);
-          IExpr min1 = list1.arg1();
-          IExpr max1 = list1.arg4();
-          if (!min1.isRealResult() || !max1.isRealResult()) {
-            return F.NIL;
-          }
-        }
+      if (!IntervalDataSym.isRealIntervalDataArgs(ast)) {
+        return F.NIL;
       }
       IAST interval1 = (IAST) ast.arg1();
       interval1 = IntervalDataSym.normalize(interval1);
@@ -409,22 +395,8 @@ public class IntervalFunctions {
       if (indexOf > 0) {
         return IntervalDataSym.intervalDataIntersection(ast, engine);
       }
-      for (int i = 1; i < ast.size(); i++) {
-        if (!ast.get(i).isInterval()) {
-          return F.NIL;
-        }
-        IAST interval = (IAST) ast.get(i);
-        for (int j = 1; j < interval.size(); j++) {
-          if (!interval.get(j).isList2()) {
-            return F.NIL;
-          }
-          IAST list1 = (IAST) interval.get(j);
-          IExpr min1 = list1.arg1();
-          IExpr max1 = list1.arg2();
-          if (!min1.isRealResult() || !max1.isRealResult()) {
-            return F.NIL;
-          }
-        }
+      if (!IntervalSym.isRealIntervalArgs(ast)) {
+        return F.NIL;
       }
       return intervalIntersection(ast, engine);
     }
@@ -529,24 +501,12 @@ public class IntervalFunctions {
       if (indexOf > 0) {
         return IntervalDataSym.intervalDataUnion(ast, engine);
       }
+      if (!IntervalSym.isRealIntervalArgs(ast)) {
+        return F.NIL;
+      }
       int calculatedResultSize = 2;
       for (int i = 1; i < ast.size(); i++) {
-        if (!ast.get(i).isInterval()) {
-          return F.NIL;
-        }
-        IAST interval = (IAST) ast.get(i);
-        calculatedResultSize += interval.argSize();
-        for (int j = 1; j < interval.size(); j++) {
-          if (!interval.get(j).isList2()) {
-            return F.NIL;
-          }
-          IAST list1 = (IAST) interval.get(j);
-          IExpr min1 = list1.arg1();
-          IExpr max1 = list1.arg2();
-          if (!min1.isRealResult() || !max1.isRealResult()) {
-            return F.NIL;
-          }
-        }
+        calculatedResultSize += ast.get(i).argSize();
       }
       IASTAppendable result = F.ast(S.Interval, calculatedResultSize);
       for (int i = 1; i < ast.size(); i++) {

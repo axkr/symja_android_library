@@ -202,6 +202,7 @@ public final class WynnEpsilonComplex extends SeriesAlgorithmComplex {
     return result;
   }
 
+  // CPD-OFF double and Complex variants of the same algorithm
   private final Complex nextGTransform(final Complex e, final Complex term) {
 
     // wait to compute series difference
@@ -244,13 +245,13 @@ public final class WynnEpsilonComplex extends SeriesAlgorithmComplex {
           return Complex.NaN;
         }
         if (i == 0) {
-          tmp3 = myTab[0].subtract(extrap.subtract(myTab[0])).divide(rs);
+          tmp3 = myTab[0].subtract(extrap.subtract(myTab[0]).divide(rs));
           myTab[0] = extrap;
           if (myIndex <= 4) {
             extrap = tmp3;
           }
         } else {
-          extrap = myTab[i - 1].subtract(myTab[i].subtract(myTab[i - 1])).divide(rs);
+          extrap = myTab[i - 1].subtract(myTab[i].subtract(myTab[i - 1]).divide(rs));
           myTab[i - 1] = myTab[i];
           myTab[i] = tmp3;
           tmp3 = extrap;
@@ -285,4 +286,5 @@ public final class WynnEpsilonComplex extends SeriesAlgorithmComplex {
         return "Wynn Epsilon";
     }
   }
+  // CPD-ON
 }

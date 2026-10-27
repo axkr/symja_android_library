@@ -158,23 +158,13 @@ public final class AST3 extends AST2 {
   /** {@inheritDoc} */
   @Override
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(arg0, 0) || predicate.test(arg1, 1) || predicate.test(arg2, 2)
-            || predicate.test(arg3, 3);
-      case 1:
-        return predicate.test(arg1, 1) || predicate.test(arg2, 2) || predicate.test(arg3, 3);
-      case 2:
-        return predicate.test(arg2, 2) || predicate.test(arg3, 3);
-      case 3:
-        return predicate.test(arg3, 3);
-    }
-    return false;
+    return FixedArity.exists(predicate, startOffset, arg0, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, arg0, arg1, arg2, arg3);
   }
 
@@ -199,6 +189,7 @@ public final class AST3 extends AST2 {
   /** {@inheritDoc} */
   @Override
   public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+  // CPD-ON
       final Function<IExpr, IExpr> function) {
     return FixedArity.filterFunction(filterAST, restAST, function, arg1, arg2, arg3);
   }
@@ -212,18 +203,7 @@ public final class AST3 extends AST2 {
   /** {@inheritDoc} */
   @Override
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(arg0) && predicate.test(arg1) && predicate.test(arg2)
-            && predicate.test(arg3);
-      case 1:
-        return predicate.test(arg1) && predicate.test(arg2) && predicate.test(arg3);
-      case 2:
-        return predicate.test(arg2) && predicate.test(arg3);
-      case 3:
-        return predicate.test(arg3);
-    }
-    return true;
+    return FixedArity.forAll(predicate, startOffset, arg0, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
@@ -237,70 +217,13 @@ public final class AST3 extends AST2 {
   /** {@inheritDoc} */
   @Override
   public void forEach(Consumer<? super IExpr> action, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        action.accept(arg0);
-        action.accept(arg1);
-        action.accept(arg2);
-        action.accept(arg3);
-        break;
-      case 1:
-        action.accept(arg1);
-        action.accept(arg2);
-        action.accept(arg3);
-        break;
-      case 2:
-        action.accept(arg2);
-        action.accept(arg3);
-        break;
-      case 3:
-        action.accept(arg3);
-        break;
-      default:
-        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 2");
-    }
+    FixedArity.forEach(action, startOffset, arg0, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
-    if (startOffset < endOffset) {
-      switch (startOffset) {
-        case 0:
-          action.accept(arg0);
-          if (startOffset + 1 < endOffset) {
-            action.accept(arg1);
-            if (startOffset + 2 < endOffset) {
-              action.accept(arg2);
-              if (startOffset + 3 < endOffset) {
-                action.accept(arg3);
-              }
-            }
-          }
-          break;
-        case 1:
-          action.accept(arg1);
-          if (startOffset + 1 < endOffset) {
-            action.accept(arg2);
-            if (startOffset + 2 < endOffset) {
-              action.accept(arg3);
-            }
-          }
-          break;
-        case 2:
-          action.accept(arg2);
-          if (startOffset + 1 < endOffset) {
-            action.accept(arg3);
-          }
-          break;
-        case 3:
-          action.accept(arg3);
-          break;
-        default:
-          throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(startOffset) + ", Size: 2");
-      }
-    }
+    FixedArity.forEach(startOffset, endOffset, action, arg0, arg1, arg2, arg3);
   }
 
   // CPD-OFF arity specialization of the AST classes, kept apart for speed

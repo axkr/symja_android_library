@@ -242,6 +242,7 @@ public class VectorAnalysisFunctions {
    */
   private static final class Div extends AbstractFunctionEvaluator {
 
+    // CPD-OFF closed-form formulas per coordinate system
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // if (ast.arg1().isListOfLists()) {
@@ -450,6 +451,7 @@ public class VectorAnalysisFunctions {
 
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public int status() {
@@ -595,6 +597,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
+    // CPD-OFF closed-form formulas per coordinate system
     private IExpr grad3(IAST list, final String metricStr, IntArrayList dimensions,
         final IAST variables, EvalEngine engine) {
       Metric metric;
@@ -734,7 +737,6 @@ public class VectorAnalysisFunctions {
                   F.Csc(y), F.Plus(F.Times(F.Cos(y), g), F.Times(f, F.Sin(y)), F.D(h, z)))));
 
         }
-        // CPD-OFF closed-form formulas per coordinate system
         if (dimensions.size() == 2) {
           metric = Metric.SPHERICAL;
           if (!fitsMetric(S.Grad, "Spherical", 3, numberOfVars, dimensions, engine)) {
@@ -803,12 +805,12 @@ public class VectorAnalysisFunctions {
 
           return F.list(r1, r2, r3);
         }
-        // CPD-ON
 
         return F.NIL;
       }
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public int status() {
@@ -978,6 +980,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
+    // CPD-OFF closed-form formulas per coordinate system
     private static IExpr laplacianSphericalVector(IAST vector, final IAST variables,
         EvalEngine engine) {
       IExpr f = vector.arg1();
@@ -1005,7 +1008,7 @@ public class VectorAnalysisFunctions {
                       F.Times(F.Sin(y), F.D(f, x)))),
               F.D(f, F.list(x, F.C2))));
 
-      // ((-g+D(f,y))/x+(D(f,y)+D(g,{y,2}))/x+D(g,x))/x+(Csc(y)*((-Cot(y)*(Cos(y)*g+f*Sin(y)+D(h,z)))/x+(Csc(y)*(-Cos(y)*D(h,z)+D(g,{z,2})))/x+(Cos(y)*(f+D(g,y)))/x+Sin(y)*D(g,x)))/x+D(x,{x,2})
+      // ((-g+D(f,y))/x+(D(f,y)+D(g,{y,2}))/x+D(g,x))/x+(Csc(y)*((-Cot(y)*(Cos(y)*g+f*Sin(y)+D(h,z)))/x+(Csc(y)*(-Cos(y)*D(h,z)+D(g,{z,2})))/x+(Cos(y)*(f+D(g,y)))/x+Sin(y)*D(g,x)))/x+D(g,{x,2})
       IExpr result2 =
           engine
               .evaluate(
@@ -1026,7 +1029,7 @@ public class VectorAnalysisFunctions {
                                           F.D(g, F.list(z, F.C2)))),
                                   F.Times(F.Power(x, F.CN1), F.Cos(y), F.Plus(f, F.D(g, y))),
                                   F.Times(F.Sin(y), F.D(g, x)))),
-                      F.D(x, F.list(x, F.C2))));
+                      F.D(g, F.list(x, F.C2))));
 
       // (D(h,{y,2})/x+D(h,x))/x+(Csc(y)*((-h*Sin(y)+D(f,z))/x+(Cot(y)*(-Cos(y)*h+D(g,z)))/x+(Csc(y)*(Sin(y)*D(f,z)+Cos(y)*D(g,z)+D(h,{z,2})))/x+(Cos(y)*D(h,y))/x+Sin(y)*D(h,x)))/x+D(h,{x,2})
       IExpr result3 = engine.evaluate(F.Plus(
@@ -1077,6 +1080,7 @@ public class VectorAnalysisFunctions {
 
       return F.List(result1, result2, result3);
     }
+    // CPD-ON
 
     private static IExpr laplacianPolarVector(final IAST vector, final IAST variables,
         EvalEngine engine) {

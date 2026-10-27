@@ -17,6 +17,7 @@ import edu.jas.kern.Scripting;
  */
 public final class ExprTermOrder implements Serializable {
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /** */
   private static final long serialVersionUID = 360644493672021694L;
 
@@ -69,6 +70,7 @@ public final class ExprTermOrder implements Serializable {
 
   /** Defined array of weight vectors. */
   private final long[][] weight;
+  // CPD-ON
 
   /** Defined descending order comparator. Sorts the highest terms first. */
   private final EVComparator horder;
@@ -289,6 +291,7 @@ public final class ExprTermOrder implements Serializable {
    * @param r max number of exponents to compare.
    * @param split index.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExprTermOrder(int ev1, int ev2, int r, int split) {
     if (ev1 < MIN_EVORD || MAX_EVORD - 2 < ev1) {
       throw new IllegalArgumentException("invalid split term order 1: " + ev1);
@@ -309,6 +312,7 @@ public final class ExprTermOrder implements Serializable {
     }
     switch (evord) { // horder = new EVhorder();
       case ExprTermOrder.LEX: {
+      // CPD-ON
         switch (evord2) {
           case ExprTermOrder.LEX: {
             horder = new EVComparator() {

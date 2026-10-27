@@ -115,6 +115,20 @@ public abstract class Quadrature {
     if (Double.isFinite(a) && Double.isFinite(b)) {
       return properIntegral(f, a, b);
     }
+    return improperIntegral(f, a, b);
+  }
+
+  /**
+   * Estimates an integral with at least one infinite bound and <code>a &lt; b</code>, by a change
+   * of variable to the finite interval <code>(0, 1)</code>.
+   *
+   * @param f the function to integrate
+   * @param a the left endpoint of the integration interval
+   * @param b the right endpoint of the integration interval
+   * @return an estimate of the improper integral
+   */
+  protected QuadratureResult improperIntegral(final DoubleUnaryOperator f, final double a,
+      final double b) {
 
     // improper integral of the form [a, infinity]
     if (Double.isFinite(a) && !Double.isFinite(b)) {

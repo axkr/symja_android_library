@@ -108,6 +108,7 @@ public final class Ensemble extends SeriesAlgorithm {
       myMethodCount = myMethods.size();
       myOldSignum = Math.signum(e);
       myPrevEst = new double[myMethodCount];
+      // CPD-OFF double and Complex variants of the same algorithm
       myEst = new double[myMethodCount];
       myExcept = new boolean[myMethodCount];
 
@@ -129,6 +130,7 @@ public final class Ensemble extends SeriesAlgorithm {
       for (int m = 0; m < myMethodCount; ++m) {
         if (!myExcept[m]) {
           final SeriesAlgorithm method = myMethods.get(m);
+          // CPD-ON
           method.myIndex = 0;
           myEst[m] = method.next(e, term);
         }
@@ -166,6 +168,7 @@ public final class Ensemble extends SeriesAlgorithm {
     }
 
     // track the sign of the sequence
+    // CPD-OFF double and Complex variants of the same algorithm
     final double signum = Math.signum(e);
     if (myIndex > 0 && myIsAlternating && signum * myOldSignum >= 0) {
       myIsAlternating = false;
@@ -197,6 +200,7 @@ public final class Ensemble extends SeriesAlgorithm {
 
       // estimate the next terms
       final SeriesAlgorithm method = myMethods.get(m);
+      // CPD-ON
       myPrevEst[m] = myEst[m];
       myEst[m] = method.next(e, term);
 
@@ -238,6 +242,7 @@ public final class Ensemble extends SeriesAlgorithm {
   public final SeriesSolution limit(final Iterable<Double> seq, final boolean series,
       final int extrapolateStart) {
     myCheckForSequenceOnly = !series;
+    // CPD-OFF double and Complex variants of the same algorithm
     final SeriesSolution result = super.limit(seq, series, extrapolateStart);
     if (myPrint > 0 && myBestMethod >= 0 && result.converged) {
       System.out.println("Converged at iteration " + myIndex + " with method "
@@ -259,6 +264,7 @@ public final class Ensemble extends SeriesAlgorithm {
         str = "-";
       } else {
         str = Double.toString(myEst[m]);
+        // CPD-ON
       }
       line += "\t" + pad(str, PRINT_DIGITS);
     }

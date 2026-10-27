@@ -31,6 +31,8 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -46,6 +48,24 @@ import org.matheclipse.core.interfaces.ISymbol;
  * TODO not completly tested. Especially if a division through zero occurs.
  */
 public class QuarticSolver {
+
+  /**
+   * The coefficients of a univariate polynomial of degree at most 4, indexed by the exponent: the
+   * coefficient of <code>x^k</code> at position <code>k</code>, <code>0</code> for a missing term.
+   *
+   * @return <code>null</code> if the polynomial has a term of a higher degree
+   */
+  public static IExpr[] coefficients(ExprPolynomial polynomial) {
+    IExpr[] coefficients = {F.C0, F.C0, F.C0, F.C0, F.C0};
+    for (ExprMonomial monomial : polynomial) {
+      long exponent = monomial.exponent().getVal(0);
+      if (exponent < 0 || exponent > 4) {
+        return null;
+      }
+      coefficients[(int) exponent] = monomial.coefficient();
+    }
+    return coefficients;
+  }
   private final static int QUADRATIC_A = 2;
   private final static int QUADRATIC_B = 1;
   private final static int QUADRATIC_C = 0;

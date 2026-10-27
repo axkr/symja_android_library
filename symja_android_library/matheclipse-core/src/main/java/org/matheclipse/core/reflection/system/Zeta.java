@@ -117,9 +117,8 @@ public class Zeta extends AbstractArg12 {
         return F.complexNum(h.valueOf(nearPole));
       }
       final long precision = h.precision();
-      Apcomplex large = ApcomplexZetaMath.zetaOfLargeRealPart(new Apcomplex(
-          arg1.real().signum() == 0 ? arg1.real() : arg1.real().precision(precision),
-          arg1.imag().signum() == 0 ? arg1.imag() : arg1.imag().precision(precision)));
+      Apcomplex large =
+          ApcomplexZetaMath.zetaOfLargeRealPart(ApcomplexNum.precisionOfParts(arg1, precision));
       if (large != null) {
         return F.complexNum(large);
       }
@@ -181,28 +180,14 @@ public class Zeta extends AbstractArg12 {
 
   @Override
   public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
-    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    try {
-      // Zeta(s, a): delegates directly to HurwitzZeta(s, a)) (in apfloat zeta(a,s) is hurwitz
-      // zeta(a,s)
-      return F.num(h.zeta(a1.apfloatValue(), a2.apfloatValue()));
-    } catch (Exception ce) {
-      Errors.rethrowsInterruptException(ce);
-    }
-    return F.NIL;
+    // Zeta(s, a) is HurwitzZeta(s, a)
+    return HurwitzZeta.e2ApfloatArg(a1, a2);
   }
 
   @Override
   public IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
-    FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
-    try {
-      // Zeta(s, a): delegates directly to HurwitzZeta(s, a)) (in apfloat zeta(a,s) is hurwitz
-      // zeta(a,s)
-      return F.complexNum(h.zeta(a1.apcomplexValue(), a2.apcomplexValue()));
-    } catch (Exception ce) {
-      Errors.rethrowsInterruptException(ce);
-    }
-    return F.NIL;
+    // Zeta(s, a) is HurwitzZeta(s, a)
+    return HurwitzZeta.e2ApcomplexArg(a1, a2);
   }
 
   @Override

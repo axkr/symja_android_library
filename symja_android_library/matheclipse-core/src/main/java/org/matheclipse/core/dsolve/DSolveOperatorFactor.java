@@ -202,18 +202,8 @@ final class DSolveOperatorFactor {
     EvalEngine engine = ctx.engine;
     IExpr residual = riccatiResidual(a, n, guess, xVar, engine);
     IExpr numerator = engine.evaluate(F.Numerator(F.Together(residual)));
-    IExpr coefficients = engine.evaluate(F.CoefficientList(numerator, xVar));
-    if (!coefficients.isList()) {
-      return F.NIL;
-    }
-    IASTAppendable equations = F.ListAlloc(((IAST) coefficients).argSize());
-    for (int i = 1; i <= ((IAST) coefficients).argSize(); i++) {
-      IExpr coefficient = ((IAST) coefficients).get(i);
-      if (!coefficient.isZero()) {
-        equations.append(F.Equal(coefficient, F.C0));
-      }
-    }
-    if (equations.argSize() == 0) {
+    IExpr equations = DSolveUtil.vanishingCoefficientEquations(numerator, xVar, engine);
+    if (equations.isNIL() || equations.argSize() == 0) {
       return F.NIL;
     }
     IExpr solutions = ctx.evalTimeConstrained(F.Solve(equations, unknowns), STEP_SECONDS);

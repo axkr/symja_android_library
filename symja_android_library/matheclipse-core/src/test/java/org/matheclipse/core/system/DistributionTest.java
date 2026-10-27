@@ -1198,6 +1198,30 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{s1^2,s2^2}");
     check("Variance(BinormalDistribution({m1, m2}, {s1,s2},p))", //
         "{s1^2,s2^2}");
+
+    check("Covariance(BinormalDistribution(r))", //
+        "{{1,r},{r,1}}");
+    check("Covariance(BinormalDistribution({s1,s2},r))", //
+        "{{s1^2,r*s1*s2},{r*s1*s2,s2^2}}");
+    check("Covariance(BinormalDistribution({m1,m2},{s1,s2},r))", //
+        "{{s1^2,r*s1*s2},{r*s1*s2,s2^2}}");
+    check("Dimensions(RandomVariate(BinormalDistribution({2,3},1/2),4))", //
+        "{4,2}");
+    check("Dimensions(RandomVariate(BinormalDistribution({1,-1},{2,3},1/3),5))", //
+        "{5,2}");
+  }
+
+  @Test
+  public void testMultivariateTDistributionMoments() {
+    check("Variance(MultivariateTDistribution({1,2},{{2,1},{1,3}},nu))", //
+        "Piecewise({{{(2*nu)/(-2+nu),(3*nu)/(-2+nu)},nu>2}},Indeterminate)");
+    check("Kurtosis(MultivariateTDistribution({{2,1},{1,3}},nu))", //
+        "Piecewise({{{3+6/(-4+nu),3+6/(-4+nu)},nu>4}},Indeterminate)");
+    check("Skewness(MultivariateTDistribution({1,2},{{2,1},{1,3}},nu))", //
+        "Piecewise({{{0,0},nu>3}},Indeterminate)");
+    // the location is no vector
+    check("Kurtosis(MultivariateTDistribution(m,{{2,1},{1,3}},nu))", //
+        "Kurtosis(MultivariateTDistribution(m,{{2,1},{1,3}},nu))");
   }
 
   @Test

@@ -68,6 +68,20 @@ import org.matheclipse.external.fastutil.ints.IntList;
 
 public class StatisticsFunctions {
 
+  /**
+   * The fraction <code>Sum(Boole(test(e)), {e, data}) / Length(data)</code> of the
+   * <code>data</code> elements which satisfy <code>test</code>.
+   */
+  private static IExpr dataProbability(IAST data, Predicate<IExpr> test) {
+    int sum = 0;
+    for (int i = 1; i < data.size(); i++) {
+      if (test.test(data.get(i))) {
+        sum++;
+      }
+    }
+    return F.QQ(sum, data.argSize());
+  }
+
   // avoid result -Infinity when reference is close to 1.0
   static final double NEXTDOWNONE = Math.nextDown(1.0);
 
@@ -184,7 +198,7 @@ public class StatisticsFunctions {
   /**
    * If <code>expr</code> is a <code>Boole(pred)</code> factor (or contains one as a
    * <code>Times</code> factor) whose predicate converts into an interval region of <code>x</code>,
-   * return <code>{remainingFactor, region}</code>, otherwise <code>null</code>.
+   * return <code>{remainingFactor, region}</code>, otherwise <code>{expr, F.NIL}</code>.
    */
   private static IExpr[] extractBooleFactor(IExpr expr, IExpr x) {
     if (expr.isAST(S.Boole, 2)) {
@@ -210,7 +224,7 @@ public class StatisticsFunctions {
         }
       }
     }
-    return null;
+    return new IExpr[] {expr, F.NIL};
   }
 
   /**
@@ -266,6 +280,7 @@ public class StatisticsFunctions {
    */
   private static IExpr sumProductOverPiecewise(IExpr factor, IExpr piecewisePdf, IExpr x,
       long[] windows, EvalEngine engine) {
+    // CPD-OFF piecewise sum and integral share only the branch walk
     IAST branches = piecewiseZeroDefaultBranches(piecewisePdf);
     if (branches == null) {
       return F.NIL;
@@ -280,6 +295,7 @@ public class StatisticsFunctions {
       if (region.isNIL()) {
         return F.NIL;
       }
+      // CPD-ON
       long[] branchWindows = DistributionRegion.integerWindows(region, engine);
       if (branchWindows == null) {
         return F.NIL;
@@ -399,6 +415,7 @@ public class StatisticsFunctions {
    */
   private static IExpr integrateProductOverPiecewise(IExpr factor, IExpr piecewise, IExpr x,
       IAST booleRegion, IBuiltInSymbol integrateHead, EvalEngine engine) {
+    // CPD-OFF piecewise sum and integral share only the branch walk
     IAST branches = piecewiseZeroDefaultBranches(piecewise);
     if (branches == null) {
       return F.NIL;
@@ -413,6 +430,7 @@ public class StatisticsFunctions {
       if (region.isNIL()) {
         return F.NIL;
       }
+      // CPD-ON
       if (booleRegion != null && booleRegion.isPresent()) {
         region = IntervalDataSym.intersection(region, booleRegion);
         if (!region.isIntervalData()) {
@@ -1696,7 +1714,33 @@ public class StatisticsFunctions {
    * 1/4*(12+2*a+2*b+2*c+2*d)
    * </pre>
    */
-  private static class Expectation extends AbstractFunctionOptionEvaluator {
+  /**
+   * The common part of <code>Expectation</code>, <code>NExpectation</code>,
+   * <code>Probability</code> and <code>NProbability</code>: two arguments, an expression or
+   * predicate and a distribution specification, and the options of the integration.
+   */
+  private abstract static class AbstractDistributionQuery extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol,
+          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
+              S.AccuracyGoal, S.PrecisionGoal},
+          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  private static class Expectation extends AbstractDistributionQuery {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
@@ -1809,13 +1853,9 @@ public class StatisticsFunctions {
       if (pdf.isNIL()) {
         return F.NIL;
       }
-      IExpr remainder = xExpr;
-      IAST booleRegion = F.NIL;
       IExpr[] extracted = extractBooleFactor(xExpr, x);
-      if (extracted != null) {
-        remainder = extracted[0];
-        booleRegion = (IAST) extracted[1];
-      }
+      IExpr remainder = extracted[0];
+      IAST booleRegion = (IAST) extracted[1];
       if (pdf.isFree(S.Piecewise)) {
         if (booleRegion.isPresent()) {
           return integrateOverRegion(F.Times(remainder, pdf), x, booleRegion, S.Integrate, engine);
@@ -1855,7 +1895,7 @@ public class StatisticsFunctions {
       IExpr remainder = xExpr;
       long[] windows = new long[] {supportLo, supportHi};
       IExpr[] extracted = extractBooleFactor(xExpr, x);
-      if (extracted != null) {
+      if (extracted[1].isPresent()) {
         long[] restricted = DistributionRegion.integerWindows((IAST) extracted[1], engine);
         if (restricted != null) {
           remainder = extracted[0];
@@ -2036,26 +2076,9 @@ public class StatisticsFunctions {
       return engine.evaluate(F.subst(derivative, dummy, t));
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol,
-          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
-              S.AccuracyGoal, S.PrecisionGoal},
-          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
   }
 
-  private static class NExpectation extends AbstractFunctionOptionEvaluator {
+  private static class NExpectation extends AbstractDistributionQuery {
     /**
      * Tail probability which is cut off on each side when a numeric expectation falls back to the
      * effective support of the distribution.
@@ -2163,13 +2186,9 @@ public class StatisticsFunctions {
       if (pdf.isNIL()) {
         return F.NIL;
       }
-      IExpr remainder = xExpr;
-      IAST booleRegion = F.NIL;
       IExpr[] extracted = extractBooleFactor(xExpr, x);
-      if (extracted != null) {
-        remainder = extracted[0];
-        booleRegion = (IAST) extracted[1];
-      }
+      IExpr remainder = extracted[0];
+      IAST booleRegion = (IAST) extracted[1];
       if (pdf.isFree(S.Piecewise)) {
         if (booleRegion.isPresent()) {
           IExpr result =
@@ -2257,7 +2276,7 @@ public class StatisticsFunctions {
       IExpr remainder = xExpr;
       long[] restriction = null;
       IExpr[] extracted = extractBooleFactor(xExpr, x);
-      if (extracted != null) {
+      if (extracted[1].isPresent()) {
         long[] windows = DistributionRegion.integerWindows((IAST) extracted[1], engine);
         if (windows != null) {
           remainder = extracted[0];
@@ -2310,26 +2329,9 @@ public class StatisticsFunctions {
       return NSum.nsum(F.Times(xExpr, pdf), x, lower, upper);
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol,
-          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
-              S.AccuracyGoal, S.PrecisionGoal},
-          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
   }
 
-  private static class NProbability extends AbstractFunctionOptionEvaluator {
+  private static class NProbability extends AbstractDistributionQuery {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
@@ -2343,14 +2345,7 @@ public class StatisticsFunctions {
         if (arg2.isList() && !isDistributedList(arg2)) {
           if (predicate.isFunction()) {
             IAST data = (IAST) arg2;
-            // Sum( Boole(predicate), data ) / data.argSize()
-            int sum = 0;
-            for (int i = 1; i < data.size(); i++) {
-              if (engine.evalTrue(predicate, data.get(i))) {
-                sum++;
-              }
-            }
-            return engine.evalN(F.QQ(sum, data.argSize()));
+            return engine.evalN(dataProbability(data, e -> engine.evalTrue(predicate, e)));
           }
           return F.NIL;
         }
@@ -2384,14 +2379,8 @@ public class StatisticsFunctions {
           }
           if (distribution.isList()) {
             IAST data = (IAST) distribution;
-            // Sum( Boole(predicate), data ) / data.argSize()
-            int sum = 0;
-            for (int i = 1; i < data.size(); i++) {
-              if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
-                sum++;
-              }
-            }
-            return engine.evalN(F.QQ(sum, data.argSize()));
+            return engine
+                .evalN(dataProbability(data, e -> engine.evalTrue(F.subst(predicate, x, e))));
           }
           int samples = monteCarloSamples(options);
           if (samples > 0) {
@@ -2526,23 +2515,6 @@ public class StatisticsFunctions {
       return F.NIL;
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol,
-          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
-              S.AccuracyGoal, S.PrecisionGoal},
-          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
   }
 
 
@@ -3423,12 +3395,7 @@ public class StatisticsFunctions {
       }
 
       public Integer[] createIndexArray() {
-        int size = ast.size();
-        Integer[] indexes = new Integer[size - 1];
-        for (int i = 1; i < size; i++) {
-          indexes[i - 1] = i;
-        }
-        return indexes;
+        return ListFunctions.argumentIndexes(ast);
       }
 
       @Override
@@ -3680,7 +3647,7 @@ public class StatisticsFunctions {
    * 9/10
    * </pre>
    */
-  private static class Probability extends AbstractFunctionOptionEvaluator {
+  private static class Probability extends AbstractDistributionQuery {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
@@ -3694,14 +3661,7 @@ public class StatisticsFunctions {
         if (arg2.isList() && !isDistributedList(arg2)) {
           if (predicate.isFunction()) {
             IAST data = (IAST) arg2;
-            // Sum( Boole(predicate), data ) / data.argSize()
-            int sum = 0;
-            for (int i = 1; i < data.size(); i++) {
-              if (engine.evalTrue(predicate, data.get(i))) {
-                sum++;
-              }
-            }
-            return F.QQ(sum, data.argSize());
+            return dataProbability(data, e -> engine.evalTrue(predicate, e));
           }
           return F.NIL;
         }
@@ -3743,14 +3703,7 @@ public class StatisticsFunctions {
           }
           if (distribution.isList()) {
             IAST data = (IAST) distribution;
-            // Sum( Boole(predicate), data ) / data.argSize()
-            int sum = 0;
-            for (int i = 1; i < data.size(); i++) {
-              if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
-                sum++;
-              }
-            }
-            return F.QQ(sum, data.argSize());
+            return dataProbability(data, e -> engine.evalTrue(F.subst(predicate, x, e)));
           } else if (distribution.isDiscreteDistribution()) {
             IExpr result = probabilityDiscrete(predicate, x, distribution, engine);
             if (result.isPresent()) {
@@ -3913,23 +3866,6 @@ public class StatisticsFunctions {
       return engine.evaluate(F.Subtract(upper, lower));
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol,
-          new IBuiltInSymbol[] {S.Method, S.Assumptions, S.GenerateConditions, S.WorkingPrecision,
-              S.AccuracyGoal, S.PrecisionGoal},
-          new IExpr[] {S.Automatic, S.Automatic, S.False, S.Automatic, S.Automatic, S.Automatic});
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
   }
 
 

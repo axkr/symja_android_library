@@ -482,12 +482,7 @@ public class PredicateQ {
         return false;
       }
       IInteger[] gaussian = reImParts.get();
-      if (gaussian[1].isZero()) {
-        return gaussian[0].isEven();
-      }
-      if (gaussian[0].isZero()) {
-        return gaussian[1].isEven();
-      }
+      // zero is even, so a real or an imaginary Gaussian integer needs no case of its own
       return gaussian[0].isEven() && gaussian[1].isEven();
     }
 
@@ -946,36 +941,52 @@ public class PredicateQ {
     }
   }
 
+  /**
+   * Test if <code>matrix</code> is a Hermitian matrix whose eigenvalues all have the sign
+   * <code>sign</code>, or are also zero for a semidefinite matrix. An eigenvalue whose sign cannot
+   * be decided does not reject the matrix.
+   *
+   * <p>
+   * A definite matrix requires the strict sign, so a tiny inexact eigenvalue of the right sign
+   * passes. A semidefinite matrix takes an inexact eigenvalue of the wrong sign, which is zero
+   * within the tolerance of {@link IExpr#isPossibleZero(boolean)}, as zero.
+   *
+   * @param sign <code>1</code> for a positive and <code>-1</code> for a negative (semi)definite
+   *        matrix
+   * @param semidefinite whether eigenvalues may be zero
+   */
+  private static IExpr definiteMatrixQ(IExpr matrix, int sign, boolean semidefinite,
+      EvalEngine engine) {
+    // a (semi)definite matrix must be Hermitian (and thus square)
+    if (!S.HermitianMatrixQ.ofQ(engine, matrix)) {
+      return S.False;
+    }
+    // the eigenvalues of a Hermitian matrix are real
+    IExpr eigenvalues = engine.evaluate(F.Eigenvalues(matrix));
+    if (!eigenvalues.isList() || eigenvalues.argSize() == 0) {
+      return S.False;
+    }
+    for (IExpr eigenvalue : (IAST) eigenvalues) {
+      if (semidefinite) {
+        boolean wrongSign =
+            sign > 0 ? eigenvalue.isNegativeResult() : eigenvalue.isPositiveResult();
+        if (wrongSign && !eigenvalue.isPossibleZero(true)) {
+          return S.False;
+        }
+      } else if (sign > 0 ? eigenvalue.isNonPositiveResult()
+          : eigenvalue.isNonNegativeResult()) {
+        return S.False;
+      }
+    }
+    return S.True;
+  }
+
   private static final class NegativeDefiniteMatrixQ extends AbstractFunctionEvaluator
       implements IPredicate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-
-      // A negative definite matrix must be Hermitian (and thus square)
-      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
-        return S.False;
-      }
-
-      // All eigenvalues must be negative
-      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
-      if (eigenvalues.isList()) {
-        IAST list = (IAST) eigenvalues;
-        if (list.argSize() == 0) {
-          return S.False;
-        }
-
-        for (IExpr eigenvalue : list) {
-          // If any eigenvalue is not negative (< 0), return False
-          if (eigenvalue.isNonNegativeResult()) {
-            return S.False;
-          }
-        }
-        return S.True;
-      }
-
-      return S.False;
+      return definiteMatrixQ(ast.arg1(), -1, false, engine);
     }
 
     @Override
@@ -989,31 +1000,7 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-
-      // 1. A negative semidefinite matrix must be Hermitian (and thus square)
-      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
-        return S.False;
-      }
-
-      // 2. All eigenvalues must be non-positive (<= 0)
-      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
-      if (eigenvalues.isList()) {
-        IAST list = (IAST) eigenvalues;
-        if (list.argSize() == 0) {
-          return S.False;
-        }
-
-        for (IExpr eigenvalue : list) {
-          // If any eigenvalue is not non-positive (<= 0), return False
-          if (eigenvalue.isPositiveResult()) {
-            return S.False;
-          }
-        }
-        return S.True;
-      }
-
-      return S.False;
+      return definiteMatrixQ(ast.arg1(), -1, true, engine);
     }
 
     @Override
@@ -1089,16 +1076,9 @@ public class PredicateQ {
         return false;
       }
       IInteger[] gaussian = reImParts.get();
-      if (gaussian[1].isZero()) {
-        return gaussian[0].isOdd();
-      }
-      if (gaussian[0].isZero()) {
-        return gaussian[1].isOdd();
-      }
-      if (gaussian[0].isOdd() && gaussian[1].isOdd()) {
-        return false;
-      }
-      return gaussian[0].isOdd() || gaussian[1].isOdd();
+      // exactly one odd part; zero is even, so a real or an imaginary Gaussian integer needs no
+      // case of its own
+      return gaussian[0].isOdd() != gaussian[1].isOdd();
     }
 
     @Override
@@ -1299,35 +1279,7 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-
-      // A positive definite matrix must be Hermitian (and thus square)
-      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
-        return S.False;
-      }
-
-      // All eigenvalues must be positive
-      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
-      if (eigenvalues.isList()) {
-        IAST list = (IAST) eigenvalues;
-        if (list.argSize() == 0) {
-          // Empty matrix is not positive definite
-          return S.False;
-        }
-
-        for (IExpr eigenvalue : list) {
-          // If any eigenvalue is not positive (<= 0 or complex or indeterminate), return False
-          if (eigenvalue.isNegativeResult()) {
-            return S.False;
-          }
-          if (eigenvalue.isPossibleZero(true)) {
-            return S.False;
-          }
-        }
-        return S.True;
-      }
-
-      return S.False;
+      return definiteMatrixQ(ast.arg1(), 1, false, engine);
     }
 
     @Override
@@ -1341,33 +1293,7 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-
-      // 1. A positive semidefinite matrix must be Hermitian (and thus square)
-      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
-        return S.False;
-      }
-
-      // 2. All eigenvalues must be non-negative (>= 0)
-      // Note: Eigenvalues of a Hermitian matrix are real.
-      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
-      if (eigenvalues.isList()) {
-        IAST list = (IAST) eigenvalues;
-        if (list.argSize() == 0) {
-          // Empty matrix is typically not considered positive semidefinite in this context
-          return S.False;
-        }
-
-        for (IExpr eigenvalue : list) {
-          // Check if eigenvalue is non-negative (>= 0)
-          if (eigenvalue.isNegativeResult()) {
-            return S.False;
-          }
-        }
-        return S.True;
-      }
-
-      return S.False;
+      return definiteMatrixQ(ast.arg1(), 1, true, engine);
     }
 
     @Override

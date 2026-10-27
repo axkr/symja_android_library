@@ -14,16 +14,12 @@ import org.hipparchus.complex.Complex;
  * </ul>
  * </p>
  */
-public final class AitkenComplex extends SeriesAlgorithmComplex {
+public final class AitkenComplex extends OsadaAdaptiveAlgorithmComplex {
 
-  private int status;
-  private Complex xx, dx, dd, xp, alpha;
-  private final Complex[] x;
   private final Complex[][] s, ds, ts, dts;
 
   public AitkenComplex(final double tolerance, final int maxIters, final int patience) {
     super(tolerance, maxIters, patience);
-    x = new Complex[maxIters];
     s = new Complex[2][maxIters + 1];
     ds = new Complex[2][maxIters + 1];
     ts = new Complex[2][maxIters + 1];
@@ -39,40 +35,12 @@ public final class AitkenComplex extends SeriesAlgorithmComplex {
   }
 
   @Override
-  public final Complex next(final Complex e, final Complex term) {
-    if (myIndex == 0) {
-      xx = dx = dd = Complex.ZERO;
-    }
-    final Complex xxp = xx;
-    x[myIndex] = xx = term;
-    if (myIndex == 0) {
-      dx = xx;
-    } else if (myIndex == 1) {
-      final Complex dxp = dx;
-      dx = xx.subtract(xxp);
-      dd = dx.divide(dx.subtract(dxp));
-    } else {
-      final Complex dxp = dx;
-      final Complex ddp = dd;
-      dx = xx.subtract(xxp);
-      dd = dx.divide(dx.subtract(dxp));
-      alpha = dd.subtract(ddp).reciprocal().add(1.0);
-      alpha = aitken(alpha, ts, dts, myIndex - 1, new Complex(-2.0));
-    }
-    xp = xx;
-    if (myIndex >= 2) {
-      for (int m = 1; m <= myIndex + 1; ++m) {
-        xp = aitken(x[m - 1], s, ds, m, alpha);
-      }
-    }
-    ++myIndex;
-    if (status == 1) {
-      return Complex.NaN;
-    } else {
-      return xp;
-    }
+  protected final Complex transform(final Complex xx, final boolean alphaTable, final int n,
+      final Complex theta) {
+    return alphaTable ? aitken(xx, ts, dts, n, theta) : aitken(xx, s, ds, n, theta);
   }
 
+  // CPD-OFF double and Complex variants of the same algorithm
   private final Complex aitken(final Complex xx, final Complex[][] s, final Complex[][] ds,
       final int n, final Complex theta) {
     status = 0;
@@ -109,6 +77,7 @@ public final class AitkenComplex extends SeriesAlgorithmComplex {
     final int kopt = n >> 1;
     return s[1][kopt];
   }
+  // CPD-ON
 
   @Override
   public final String getName() {

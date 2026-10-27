@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -179,19 +180,9 @@ public class RegionNearest extends AbstractFunctionEvaluator {
   }
 
   private IExpr ballNearest(IAST reg, IExpr p, EvalEngine engine, boolean isBoundaryOnly) {
-    IExpr head = reg.head();
-    int dim = (head == S.Disk || head == S.Circle) ? 2 : 3;
-    IExpr c = F.NIL;
-    IExpr r = F.C1;
-
-    if (reg.argSize() == 0) {
-      c = (dim == 2) ? F.List(F.C0, F.C0) : F.List(F.C0, F.C0, F.C0);
-    } else if (reg.argSize() >= 1) {
-      c = reg.arg1();
-      if (reg.argSize() >= 2) {
-        r = reg.arg2();
-      }
-    }
+    RegionPrimitives.BallSpec ball = RegionPrimitives.parseBall(reg);
+    IExpr c = ball.center;
+    IExpr r = ball.radius;
 
     if (r.isList()) {
       return F.NIL;

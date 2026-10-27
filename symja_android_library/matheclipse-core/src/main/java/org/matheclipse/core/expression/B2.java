@@ -1139,6 +1139,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   public IExpr arg3() {
     // be compatible with get() contract
     throw new IndexOutOfBoundsException("Index: 3, Size: " + size());
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /**
@@ -1188,6 +1189,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     SortedSet<IExpr> set = new TreeSet<>(comparator);
     set.add(arg1);
     set.add(arg2);
+    // CPD-ON
     return set;
   }
 
@@ -1257,6 +1259,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     return false;
   }
 
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
@@ -1293,6 +1296,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   public IExpr findFirst(Function<IExpr, IExpr> function) {
     return FixedArity.findFirst(function, arg1, arg2);
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override
@@ -1396,15 +1400,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {
-    if (length == 0) {
-      return new AST0(head());
-    }
-    AST result = new AST(length, true);
-    result.set(0, head());
-    for (int i = 0; i < length; i++) {
-      result.set(i + 1, get(items[i] + offset));
-    }
-    return result;
+    return FixedArity.getItems(this, items, length, offset);
   }
 
 

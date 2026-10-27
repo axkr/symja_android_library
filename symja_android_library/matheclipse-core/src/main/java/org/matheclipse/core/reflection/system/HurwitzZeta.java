@@ -31,7 +31,8 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
   /** Largest number of terms with a negative <code>k+a</code> which are summed one by one. */
   private static final double MAX_SHIFTED_TERMS = 1.0e6;
 
-  public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
+  /** <code>HurwitzZeta(s, a)</code> of two real arbitrary precision numbers. */
+  public static IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     try {
       return F.num(h.zeta(a1.apfloatValue(), a2.apfloatValue()));
@@ -41,13 +42,13 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  public IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
+  /** <code>HurwitzZeta(s, a)</code> of two complex arbitrary precision numbers. */
+  public static IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
     try {
       return F.complexNum(h.zeta(a1.apcomplexValue(), a2.apcomplexValue()));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
-
     }
     return F.NIL;
   }

@@ -916,6 +916,28 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return F.NIL;
   }
 
+  /**
+   * Get the highest exponent of <code>base</code> that divides <code>this</code>
+   *
+   * @return the exponent
+   */
+  @Override
+  public IExpr exponent(IInteger base) {
+    IInteger b = this;
+    if (complexSign() < 0) {
+      b = b.negate();
+    } else if (b.isZero()) {
+      return F.CInfinity;
+    } else if (b.isOne()) {
+      return F.C0;
+    }
+    if (b.equals(base)) {
+      return F.C1;
+    }
+    BigInteger rest = Primality.countExponent(b.toBigNumerator(), base.toBigNumerator());
+    return valueOf(rest);
+  }
+
   @Override
   public IInteger factorial() {
     int ni = toIntDefault();
@@ -1314,11 +1336,18 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       }
     }
 
-    AbstractIntegerSym b = this;
-    BigInteger[] nthRoot = Primality.countRoot1021(b.toBigNumerator(), n);
-    result[0] = AbstractIntegerSym.valueOf(nthRoot[0]);
-    result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
-    return result;
+    return nthRootSplitPositive(n);
+  }
+
+  /**
+   * {@link #nthRootSplit(int)} of this positive integer.
+   *
+   * @return <code>{nth-root, rest}</code>
+   */
+  protected IInteger[] nthRootSplitPositive(int n) {
+    BigInteger[] nthRoot = Primality.countRoot1021(toBigNumerator(), n);
+    return new IInteger[] {AbstractIntegerSym.valueOf(nthRoot[0]),
+        AbstractIntegerSym.valueOf(nthRoot[1])};
   }
 
   @Override
@@ -1621,22 +1650,32 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (that.isMinusOne()) {
       return negate().numericNumber();
     }
-    if (isZero() || F.isExactZero(that)) {
-      // exactly zero: a small machine number is no zero
+    return timesInexact(this, that);
+  }
+
+  /**
+   * The product of an exact rational number with a machine number or an arbitrary-precision complex
+   * number. A factor which is exactly zero gives the machine zero; a small machine number is no
+   * zero.
+   *
+   * @throws ArithmeticException for another type of <code>that</code>
+   */
+  static INumber timesInexact(IRational exact, INumber that) {
+    if (exact.isZero() || F.isExactZero(that)) {
       return F.CD0;
     }
     if (that instanceof Num) {
-      return ((Num) that).times((INumber) this);
+      return ((Num) that).times((INumber) exact);
     }
     if (that instanceof ComplexNum) {
-      return F.complexNum(evalfc().multiply(that.evalfc()));
+      return F.complexNum(exact.evalfc().multiply(that.evalfc()));
     }
     if (that instanceof ApcomplexNum) {
       if (((ApcomplexNum) that).isSignificanceTracked()) {
         // the error of the number carries on
-        return ((ApcomplexNum) that).times(this);
+        return ((ApcomplexNum) that).times(exact);
       }
-      return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
+      return exact.apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
   }

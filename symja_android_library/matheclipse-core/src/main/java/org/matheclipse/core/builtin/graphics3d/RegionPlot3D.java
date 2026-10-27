@@ -61,14 +61,8 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
     ISymbol[] vars = new ISymbol[3];
     double[] min = new double[3];
     double[] max = new double[3];
-    for (int i = 0; i < 3; i++) {
-      IAST range = (IAST) ast.get(i + 2);
-      vars[i] = (ISymbol) range.arg1();
-      min[i] = range.arg2().evalfNaN();
-      max[i] = range.arg3().evalfNaN();
-      if (!Double.isFinite(min[i]) || !Double.isFinite(max[i]) || max[i] <= min[i]) {
-        return Errors.printMessage(S.RegionPlot3D, "pllim", F.list(range), engine);
-      }
+    if (!Plot3DTools.readBox(ast, S.RegionPlot3D, vars, min, max, engine)) {
+      return F.NIL;
     }
 
     int points = Math.max(2, Math.min(

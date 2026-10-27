@@ -110,6 +110,19 @@ public final class ListFunctions {
   }
 
   /**
+   * The argument positions <code>1, 2, ..., ast.argSize()</code>, to be sorted by an index
+   * comparator.
+   */
+  static Integer[] argumentIndexes(IAST ast) {
+    final int argSize = ast.argSize();
+    Integer[] indexes = new Integer[argSize];
+    for (int i = 1; i <= argSize; i++) {
+      indexes[i - 1] = i;
+    }
+    return indexes;
+  }
+
+  /**
    * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after
    * sorting?</a>
    */
@@ -123,12 +136,7 @@ public final class ListFunctions {
     }
 
     public Integer[] createIndexArray() {
-      int size = ast.size();
-      Integer[] indexes = new Integer[size - 1];
-      for (int i = 1; i < size; i++) {
-        indexes[i - 1] = i;
-      }
-      return indexes;
+      return argumentIndexes(ast);
     }
 
     @Override
@@ -723,6 +731,7 @@ public final class ListFunctions {
             .restoreDataset(engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
       }
       if (arg1 instanceof ISparseArray) {
+        // CPD-OFF Append and Prepend handle associations differently
         return appendSparse(S.Append, arg1, engine.evaluate(ast.arg2()), engine);
       }
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
@@ -733,6 +742,7 @@ public final class ListFunctions {
       if (arg1.isAssociation()) {
         if (arg2.isRuleAST() || arg2.isListOfRules() || arg2.isAssociation()) {
           IAssociation result = ((IAssociation) arg1).copy();
+          // CPD-ON
           // an existing key moves to the end: Append(<|a->1,b->2|>, a->9) is <|b->2,a->9|>
           IAST rules = arg2.isRuleAST() ? F.list(arg2)
               : arg2.isAssociation() ? ((IAssociation) arg2).normal(false) : (IAST) arg2;
@@ -2417,6 +2427,49 @@ public final class ListFunctions {
   }
 
   /** Delete(list,n) - delete the n-th argument from the list. Negative n counts from the end. */
+  /**
+   * Apply the operation of <code>Delete</code>, <code>Insert</code> or <code>FlattenAt</code> at
+   * the positions <code>spec</code> of <code>ast1</code>: an integer (also a string or a key if
+   * <code>keys</code> is set) is a single position, a list of lists several positions.
+   *
+   * @param ast the evaluated call, whose head reports the messages
+   * @param keys whether a string or a <code>Key</code> is a position as well
+   * @param stopOnArgumentType whether an {@link ArgumentTypeStopException} prints its message and
+   *        returns <code>ast1</code> unchanged
+   * @param many the operation at a list of positions
+   * @param one the operation at one position; {@link F#NIL} leaves <code>ast1</code> unchanged
+   * @return {@link F#NIL} if <code>spec</code> is no position specification
+   */
+  static IExpr applyAtPositions(IAST ast, IAST ast1, IExpr spec, boolean keys,
+      boolean stopOnArgumentType, Function<IAST, IExpr> many, Function<IAST, IExpr> one,
+      EvalEngine engine) {
+    try {
+      if (spec.isInteger() || (keys && (spec.isString() || spec.isKey()))) {
+        // `All` and `Span` cannot be used in Delete and Insert
+        spec = spec.makeList();
+      }
+      if (spec.isListOfLists()) {
+        return many.apply((IAST) spec);
+      } else if (spec.isList()) {
+        IExpr temp = one.apply((IAST) spec);
+        return temp.isPresent() ? temp : ast1;
+      }
+    } catch (final ValidateException ve) {
+      return Errors.printMessage(ast.topHead(), ve, engine);
+    } catch (RuntimeException rex) {
+      if (stopOnArgumentType && rex instanceof ArgumentTypeStopException) {
+        Errors.printMessage(ast.topHead(), (ArgumentTypeStopException) rex, engine);
+        return ast1;
+      }
+      if (Config.DEBUG) {
+        rex.printStackTrace();
+      }
+      Errors.rethrowsInterruptException(rex);
+      return Errors.printMessage(ast.topHead(), rex, engine);
+    }
+    return F.NIL;
+  }
+
   private static class Delete extends AbstractFunctionEvaluator {
 
     @Override
@@ -2430,32 +2483,14 @@ public final class ListFunctions {
       IExpr arg2 = ast.arg2();
 
       if (arg1.isASTOrAssociation()) {
-        try {
-          IAST ast1 = (IAST) arg1;
-          if (arg2.isInteger() || arg2.isString() || arg2.isKey()) {
-            // `All` and `Span` cannot be used in Delete and Insert
-            arg2 = arg2.makeList();
-          }
-          if (arg2.isListOfLists()) {
-            IAST listOfLists = ((IAST) arg2);
-            return keepHeadDeletionSequence(
-                DeletePositions.deleteListOfPositions(ast1, listOfLists));
-          } else if (arg2.isList()) {
-            IExpr temp = DeletePositions.deletePositions(ast1, (IAST) arg2);
-            if (temp.isPresent()) {
-              return keepHeadDeletionSequence(temp);
-            }
-            return ast1;
-          }
-        } catch (final ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          if (Config.DEBUG) {
-            rex.printStackTrace();
-          }
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.Delete, rex, engine);
-        }
+        IAST ast1 = (IAST) arg1;
+        return applyAtPositions(ast, ast1, arg2, true, false,
+            positions -> keepHeadDeletionSequence(
+                DeletePositions.deleteListOfPositions(ast1, positions)),
+            position -> {
+              IExpr temp = DeletePositions.deletePositions(ast1, position);
+              return temp.isPresent() ? keepHeadDeletionSequence(temp) : F.NIL;
+            }, engine);
       }
       return F.NIL;
     }
@@ -3995,34 +4030,10 @@ public final class ListFunctions {
         IExpr arg3 = ast.arg3();
 
         if (arg1.isASTOrAssociation()) {
-          try {
-            IAST ast1 = (IAST) arg1;
-            if (arg3.isInteger() || arg3.isString() || arg3.isKey()) {
-              // `All` and `Span` cannot be used in Delete and Insert
-              arg3 = arg3.makeList();
-            }
-            if (arg3.isListOfLists()) {
-              IAST listOfLists = ((IAST) arg3);
-              return InsertPositions.insertListOfPositions(ast1, arg2, listOfLists);
-            } else if (arg3.isList()) {
-              IExpr temp = InsertPositions.insertPositions(ast1, arg2, (IAST) arg3);
-              if (temp.isPresent()) {
-                return temp;
-              }
-              return ast1;
-            }
-          } catch (final ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
-          } catch (final ArgumentTypeStopException atse) {
-            Errors.printMessage(ast.topHead(), atse, engine);
-            return arg1;
-          } catch (RuntimeException rex) {
-            if (Config.DEBUG) {
-              rex.printStackTrace();
-            }
-            Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.Delete, rex, engine);
-          }
+          IAST ast1 = (IAST) arg1;
+          return applyAtPositions(ast, ast1, arg3, true, true,
+              positions -> InsertPositions.insertListOfPositions(ast1, arg2, positions),
+              position -> InsertPositions.insertPositions(ast1, arg2, position), engine);
         }
       }
       return F.NIL;
@@ -5580,6 +5591,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1 instanceof ISparseArray) {
+        // CPD-OFF Append and Prepend handle associations differently
         return appendSparse(S.Prepend, arg1, engine.evaluate(ast.arg2()), engine);
       }
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
@@ -5590,6 +5602,7 @@ public final class ListFunctions {
       if (arg1.isAssociation()) {
         if (arg2.isRuleAST() || arg2.isListOfRules() || arg2.isAssociation()) {
           IAssociation result = ((IAssociation) arg1).copy();
+          // CPD-ON
           result.prependRules((IAST) arg2);
           return result;
         } else {
@@ -8120,22 +8133,7 @@ public final class ListFunctions {
         }
         // negative step used here
         for (int i = start; i >= end; i += step) {
-          IAST rule = assoc2.getRule(i);
-          IExpr arg = rule.second();
-          if (sequenceSpecifications.length > newLevel) {
-            if (arg.isAssociation()) {
-              resultAssoc.appendRule(
-                  F.Rule(rule.first(), take((IAssociation) arg, newLevel, sequenceSpecifications)));
-            } else if (arg.isASTOrAssociation()) {
-              resultAssoc.appendRule(
-                  F.Rule(rule.first(), take((IAST) arg, newLevel, sequenceSpecifications)));
-            } else {
-              throw new ArgumentTypeException(
-                  "cannot execute take for argument: " + arg.toString());
-            }
-          } else {
-            resultAssoc.appendRule(rule);
-          }
+          appendTaken(resultAssoc, assoc2, i, newLevel, sequenceSpecifications);
         }
       } else {
         if (start == 0) {
@@ -8148,26 +8146,36 @@ public final class ListFunctions {
           throw new ArgumentTypeException(str);
         }
         for (int i = start; i < end; i += step) {
-          IAST rule = assoc2.getRule(i);
-          IExpr arg = rule.second();
-          if (sequenceSpecifications.length > newLevel) {
-            if (arg.isAssociation()) {
-              resultAssoc.appendRule(
-                  F.Rule(rule.first(), take((IAssociation) arg, newLevel, sequenceSpecifications)));
-            } else if (arg.isASTOrAssociation()) {
-              resultAssoc.appendRule(
-                  F.Rule(rule.first(), take((IAST) arg, newLevel, sequenceSpecifications)));
-            } else {
-              // List expected at position `1` in `2`.
-              String str = Errors.getMessage("list", F.list(F.ZZ(i), assoc2), EvalEngine.get());
-              throw new ArgumentTypeException(str);
-            }
-          } else {
-            resultAssoc.appendRule(rule);
-          }
+          appendTaken(resultAssoc, assoc2, i, newLevel, sequenceSpecifications);
         }
       }
       return resultAssoc;
+    }
+
+    /**
+     * Append the rule at position <code>i</code> of <code>assoc2</code> to
+     * <code>resultAssoc</code>, with its value taken at the deeper levels of
+     * <code>sequenceSpecifications</code> from <code>newLevel</code> on.
+     */
+    private static void appendTaken(final IASTAppendable resultAssoc, final IAssociation assoc2,
+        int i, final int newLevel, final ISequence[] sequenceSpecifications) {
+      IAST rule = assoc2.getRule(i);
+      IExpr arg = rule.second();
+      if (sequenceSpecifications.length > newLevel) {
+        if (arg.isAssociation()) {
+          resultAssoc.appendRule(
+              F.Rule(rule.first(), take((IAssociation) arg, newLevel, sequenceSpecifications)));
+        } else if (arg.isASTOrAssociation()) {
+          resultAssoc.appendRule(
+              F.Rule(rule.first(), take((IAST) arg, newLevel, sequenceSpecifications)));
+        } else {
+          // List expected at position `1` in `2`.
+          String str = Errors.getMessage("list", F.list(F.ZZ(i), assoc2), EvalEngine.get());
+          throw new ArgumentTypeException(str);
+        }
+      } else {
+        resultAssoc.appendRule(rule);
+      }
     }
 
     @Override

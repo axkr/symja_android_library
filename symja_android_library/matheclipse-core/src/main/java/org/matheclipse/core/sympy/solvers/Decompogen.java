@@ -103,45 +103,7 @@ public class Decompogen {
       }
 
       // TODO improve for polynomials
-      if (function.isPlus()) {
-        boolean evaled = false;
-        for (int i = 1; i < function.size(); i++) {
-          IExpr arg = function.get(i);
-          if (arg.isAST() && !arg.isFree(symbol)) {
-            IAST decompogen = decompogen(arg, symbol);
-            if (decompogen.isPresent()) {
-              // System.out.println(decompogen);
-              function = (IAST) function.subs(decompogen.first(), symbol);
-              result.append(decompogen.first());
-              evaled = true;
-            }
-          }
-        }
-        if (evaled) {
-          result.set(1, function);
-          return result;
-        }
-        return F.NIL;
-      } else if (function.isTimes()) {
-        boolean evaled = false;
-        for (int i = 1; i < function.size(); i++) {
-          IExpr arg = function.get(i);
-          if (arg.isAST() && !arg.isFree(symbol)) {
-            IAST decompogen = decompogen(arg, symbol);
-            if (decompogen.isPresent()) {
-              // System.out.println(decompogen);
-              function = (IAST) function.subs(decompogen.first(), symbol);
-              result.append(decompogen.first());
-              evaled = true;
-            }
-          }
-        }
-        if (evaled) {
-          result.set(1, function);
-          return result;
-        }
-        return F.NIL;
-      } else if (function.isPower()) {
+      if (function.isPower()) {
         IExpr base = function.base();
         IExpr exponent = function.exponent();
         if (exponent.isReal()) {
@@ -166,6 +128,7 @@ public class Decompogen {
           }
         }
       } else {
+        // Plus, Times and other heads: decompose each argument which depends on symbol
         boolean evaled = false;
         for (int i = 1; i < function.size(); i++) {
           IExpr arg = function.get(i);

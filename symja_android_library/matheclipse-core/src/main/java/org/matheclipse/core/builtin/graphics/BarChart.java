@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.graphics;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -65,6 +64,7 @@ public class BarChart extends AbstractChart {
     double center() {
       return (from + to) / 2.0;
     }
+  // CPD-OFF each chart reads its own option set
   }
 
   @Override
@@ -76,17 +76,17 @@ public class BarChart extends AbstractChart {
 
     // a Dataset plots its rows and an Association its values, labelled by its keys
     IASTAppendable keyLabels = F.ListAlloc();
-    IExpr dataArg = GraphicsOptions.chartData(engine.evaluate(ast.arg1()), keyLabels);
-    if (!dataArg.isList()) {
+    IExpr dataArg = GraphicsOptions.chartDataMagnitudes(engine.evaluate(ast.arg1()), originalAST,
+        keyLabels, engine);
+    if (dataArg.isNIL()) {
       return F.NIL;
     }
-    dataArg = QuantityFunctions.quantityPlotMagnitudes(dataArg,
-        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     IExpr chartStyle = GraphicsOptions.optionValue(originalAST, S.ChartStyle, S.Automatic);
     IExpr barSpacing = GraphicsOptions.optionValue(originalAST, S.BarSpacing, S.Automatic);
+    // CPD-ON
     IExpr chartLabels = GraphicsOptions.chartLabels(
         GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None), keyLabels);
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);

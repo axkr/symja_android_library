@@ -241,21 +241,7 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
    * slots) and a deserialized model alike.
    */
   private static boolean hasConstantColumn(FieldMatrix<IExpr> designMatrix) {
-    int rows = designMatrix.getRowDimension();
-    for (int j = 0; j < designMatrix.getColumnDimension(); j++) {
-      double first = designMatrix.getEntry(0, j).evalfNaN();
-      if (Double.isNaN(first) || first == 0.0) {
-        continue;
-      }
-      boolean constant = true;
-      for (int i = 1; i < rows && constant; i++) {
-        constant = designMatrix.getEntry(i, j).evalfNaN() == first;
-      }
-      if (constant) {
-        return true;
-      }
-    }
-    return false;
+    return constantColumn(designMatrix) >= 0;
   }
 
   private static final String[] PROPERTIES = {"AdjustedRSquared", "ANOVATable",
@@ -390,14 +376,8 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   private double[][] computeAnovaRows() {
     final int n = designMatrix.getRowDimension();
     final int p = designMatrix.getColumnDimension();
-    double[][] x = new double[n][p];
-    double[] y = new double[n];
-    for (int i = 0; i < n; i++) {
-      y[i] = responseVector.getEntry(i).evalfNaN();
-      for (int j = 0; j < p; j++) {
-        x[i][j] = designMatrix.getEntry(i, j).evalfNaN();
-      }
-    }
+    double[][] x = machineDesign();
+    double[] y = machineResponse();
     // the constant column, which isn't a row of the table
     final int constant = constantColumn();
     java.util.List<Integer> columns = new java.util.ArrayList<Integer>();
@@ -450,18 +430,16 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   private IExpr diagnostics(boolean cook) {
     final int n = designMatrix.getRowDimension();
     final int p = designMatrix.getColumnDimension();
-    double[][] x = new double[n][p];
-    double[] y = new double[n];
+    double[][] x = machineDesign();
+    double[] y = machineResponse();
     for (int i = 0; i < n; i++) {
-      y[i] = responseVector.getEntry(i).evalfNaN();
+      if (Double.isNaN(y[i])) {
+        return F.NIL;
+      }
       for (int j = 0; j < p; j++) {
-        x[i][j] = designMatrix.getEntry(i, j).evalfNaN();
         if (Double.isNaN(x[i][j])) {
           return F.NIL;
         }
-      }
-      if (Double.isNaN(y[i])) {
-        return F.NIL;
       }
     }
     if (n < p) {
@@ -508,8 +486,36 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     }
   }
 
+  /** The design matrix in machine precision, <code>NaN</code> for an entry without a value. */
+  private double[][] machineDesign() {
+    final int n = designMatrix.getRowDimension();
+    final int p = designMatrix.getColumnDimension();
+    double[][] x = new double[n][p];
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < p; j++) {
+        x[i][j] = designMatrix.getEntry(i, j).evalfNaN();
+      }
+    }
+    return x;
+  }
+
+  /** The response vector in machine precision, <code>NaN</code> for an entry without a value. */
+  private double[] machineResponse() {
+    final int n = responseVector.getDimension();
+    double[] y = new double[n];
+    for (int i = 0; i < n; i++) {
+      y[i] = responseVector.getEntry(i).evalfNaN();
+    }
+    return y;
+  }
+
   /** The index of the first constant, non-zero column of the design matrix, or <code>-1</code>. */
   private int constantColumn() {
+    return constantColumn(designMatrix);
+  }
+
+  /** The index of the first constant, non-zero column of <code>designMatrix</code>, or -1. */
+  private static int constantColumn(FieldMatrix<IExpr> designMatrix) {
     final int n = designMatrix.getRowDimension();
     for (int j = 0; j < designMatrix.getColumnDimension(); j++) {
       double first = designMatrix.getEntry(0, j).evalfNaN();

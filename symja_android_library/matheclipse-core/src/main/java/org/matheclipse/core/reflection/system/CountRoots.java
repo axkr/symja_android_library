@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.List;
+import java.util.function.ToLongFunction;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -225,11 +226,27 @@ public class CountRoots extends AbstractFunctionEvaluator {
       im0 = im1;
       im1 = t;
     }
+    final BigRational reMin = re0;
+    final BigRational imMin = im0;
+    final BigRational reMax = re1;
+    final BigRational imMax = im1;
+    return countBySquareFreeFactors(polynomial, x, engine,
+        f -> countSquareFreeInRectangle(f, x, reMin, imMin, reMax, imMax, engine));
+  }
+
+  /**
+   * The roots of <code>polynomial</code> with multiplicity: <code>count</code> gives the roots of
+   * each of its square free factors, or <code>-1</code> if they can't be counted.
+   *
+   * @return {@link F#NIL} if a factor's roots can't be counted
+   */
+  private static IExpr countBySquareFreeFactors(IExpr polynomial, IExpr x, EvalEngine engine,
+      ToLongFunction<IExpr> count) {
     IExpr factors = engine.evaluate(F.unaryAST1(S.FactorSquareFreeList, polynomial));
     if (!factors.isListOfLists()) {
       return F.NIL;
     }
-    long count = 0;
+    long sum = 0;
     IAST list = (IAST) factors;
     for (int i = 1; i < list.size(); i++) {
       IAST factor = (IAST) list.get(i);
@@ -240,13 +257,13 @@ public class CountRoots extends AbstractFunctionEvaluator {
       if (multiplicity <= 0) {
         return F.NIL;
       }
-      long roots = countSquareFreeInRectangle(factor.arg1(), x, re0, im0, re1, im1, engine);
+      long roots = count.applyAsLong(factor.arg1());
       if (roots < 0) {
         return F.NIL;
       }
-      count += multiplicity * roots;
+      sum += multiplicity * roots;
     }
-    return F.ZZ(count);
+    return F.ZZ(sum);
   }
 
   private static IRational toExpr(BigRational r) {
@@ -470,30 +487,18 @@ public class CountRoots extends AbstractFunctionEvaluator {
     if (polynomial.isFree(x) || !polynomial.isPolynomial(F.List(x))) {
       return F.NIL;
     }
-    IExpr factors = engine.evaluate(F.unaryAST1(S.FactorSquareFreeList, polynomial));
-    if (!factors.isListOfLists()) {
-      return F.NIL;
-    }
-    long count = 0;
-    IAST list = (IAST) factors;
-    for (int i = 1; i < list.size(); i++) {
-      IAST factor = (IAST) list.get(i);
-      if (!factor.isList2() || factor.arg1().isFree(x)) {
-        continue;
-      }
-      int multiplicity = factor.arg2().toIntDefault();
-      if (multiplicity <= 0) {
-        return F.NIL;
-      }
+    final IExpr variable = x;
+    final BigRational lowerBound = lower;
+    final BigRational upperBound = upper;
+    return countBySquareFreeFactors(polynomial, x, engine, f -> {
       @SuppressWarnings("unchecked")
       GenPolynomial<BigRational>[] poly = new GenPolynomial[1];
-      List<Interval<BigRational>> roots = realRoots(factor.arg1(), x, poly);
+      List<Interval<BigRational>> roots = realRoots(f, variable, poly);
       if (roots == null) {
-        return F.NIL;
+        return -1;
       }
-      count += multiplicity * countRoots(poly[0], roots, lower, upper);
-    }
-    return F.ZZ(count);
+      return countRoots(poly[0], roots, lowerBound, upperBound);
+    });
   }
 
   @Override

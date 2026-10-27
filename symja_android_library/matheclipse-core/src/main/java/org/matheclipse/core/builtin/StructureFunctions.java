@@ -15,7 +15,6 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
-import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -921,34 +920,10 @@ public class StructureFunctions {
       IExpr arg2 = engine.evaluate(ast.arg2());
 
       if (arg1.isAST()) {
-        try {
-          IAST ast1 = (IAST) arg1;
-          if (arg2.isInteger()) {
-            arg2 = arg2.makeList();
-          }
-          if (arg2.isListOfLists()) {
-            IAST listOfLists = ((IAST) arg2);
-            return FlattenPositions.flattenListOfPositions(ast1, listOfLists);
-          } else if (arg2.isList()) {
-            IExpr temp = FlattenPositions.flattenPositions(ast1, (IAST) arg2);
-            if (temp.isPresent()) {
-              return temp;
-            }
-            return ast1;
-          }
-        } catch (final ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (final ArgumentTypeStopException atse) {
-          Errors.printMessage(ast.topHead(), atse, engine);
-          return arg1;
-        } catch (RuntimeException rex) {
-          if (Config.DEBUG) {
-            rex.printStackTrace();
-          }
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.Delete, rex, engine);
-        }
-        return F.NIL;
+        IAST ast1 = (IAST) arg1;
+        return ListFunctions.applyAtPositions(ast, ast1, arg2, false, true,
+            positions -> FlattenPositions.flattenListOfPositions(ast1, positions),
+            position -> FlattenPositions.flattenPositions(ast1, position), engine);
       }
       // Part `1` of `2` does not exist.
       return Errors.printMessage(ast.topHead(), "partw", F.list(arg2, arg1), engine);

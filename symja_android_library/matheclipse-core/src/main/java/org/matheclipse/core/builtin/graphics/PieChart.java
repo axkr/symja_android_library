@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics;
 
-import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -32,6 +31,7 @@ public class PieChart extends ListPlot {
   /** The gap Mathematica leaves between two rings. */
   private static final double RING_GAP = 0.25;
 
+  // CPD-OFF each chart reads its own option set
   public PieChart() {}
 
   @Override
@@ -43,12 +43,11 @@ public class PieChart extends ListPlot {
 
     // a Dataset plots its rows and an Association its values, labelled by its keys
     IASTAppendable keyLabels = F.ListAlloc();
-    IExpr dataArg = GraphicsOptions.chartData(engine.evaluate(ast.arg1()), keyLabels);
-    if (!dataArg.isList()) {
+    IExpr dataArg = GraphicsOptions.chartDataMagnitudes(engine.evaluate(ast.arg1()), originalAST,
+        keyLabels, engine);
+    if (dataArg.isNIL()) {
       return F.NIL;
     }
-    dataArg = QuantityFunctions.quantityPlotMagnitudes(dataArg,
-        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
@@ -58,6 +57,7 @@ public class PieChart extends ListPlot {
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     IExpr sectorOrigin = GraphicsOptions.optionValue(originalAST, S.SectorOrigin, S.Automatic);
+    // CPD-ON
     IExpr sectorSpacing = GraphicsOptions.optionValue(originalAST, S.SectorSpacing, S.None);
     IExpr labelingFunction =
         GraphicsOptions.optionValue(originalAST, S.LabelingFunction, S.Automatic);
@@ -294,13 +294,6 @@ public class PieChart extends ListPlot {
     } catch (Exception e) {
       return Double.NaN;
     }
-  }
-
-  @Override
-  protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
-      IAST plotAST) {
-    // PieChart usually has no axes or frame
-    return super.createGraphicsFunction(primitives, graphicsOptions, plotAST);
   }
 
   @Override

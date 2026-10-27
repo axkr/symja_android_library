@@ -410,6 +410,7 @@ public abstract class AbstractFractionSym implements IFraction {
           new FractionSym(-1, 26), new FractionSym(-1, 27), new FractionSym(-1, 28),
           new FractionSym(-1, 29), new FractionSym(-1, 30), new FractionSym(-1, 31),
           new FractionSym(-1, 32)}, //
+      // CPD-OFF literal constant table
       {new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
           new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
           new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
@@ -420,6 +421,7 @@ public abstract class AbstractFractionSym implements IFraction {
           new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
           new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
           new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1)}, //
+          // CPD-ON
       {new FractionSym(1, 2), new FractionSym(1, 3), new FractionSym(1, 4), new FractionSym(1, 5),
           new FractionSym(1, 6), new FractionSym(1, 7), new FractionSym(1, 8),
           new FractionSym(1, 9), new FractionSym(1, 10), new FractionSym(1, 11),
@@ -1978,24 +1980,7 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     // a machine number, or an arbitrary-precision complex number: an inexact 1 or -1 gives an
     // inexact product, 1./225 is no exact 1/225
-    if (F.isExactZero(that)) {
-      // exactly zero: a small machine number is no zero, $MinMachineNumber/2 is not 0
-      return F.C0;
-    }
-    if (that instanceof Num) {
-      return ((Num) that).times((INumber) this);
-    }
-    if (that instanceof ComplexNum) {
-      return F.complexNum(evalfc().multiply(that.evalfc()));
-    }
-    if (that instanceof ApcomplexNum) {
-      if (((ApcomplexNum) that).isSignificanceTracked()) {
-        // the error of the number carries on
-        return ((ApcomplexNum) that).times(this);
-      }
-      return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
-    }
-    throw new java.lang.ArithmeticException();
+    return AbstractIntegerSym.timesInexact(this, that);
   }
 
   @Override

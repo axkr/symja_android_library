@@ -4592,37 +4592,47 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     }
     if (isList()) {
-      final int[] dim = new int[2];
-      dim[0] = argSize();
-      if (dim[0] > 0) {
-        dim[1] = 0;
-        if (arg1().isList()) {
-          dim[1] = ((IAST) arg1()).argSize();
-          for (int i = 1; i < size(); i++) {
-            if (!get(i).isList()) {
+      final int[] dim = matrixDimensions(!isUniform(UniformFlags.ATOM));
+      if (dim != null && setMatrixFormat && (dim[0] > 1 || dim[1] > 0)) {
+        addFlag(Flag.IS_MATRIX);
+      }
+      return dim;
+    }
+    return null;
+  }
+
+  /**
+   * The dimensions <code>{rows, columns}</code> if every argument is a list and all have the same
+   * length.
+   *
+   * @param scanElements if <code>true</code> the elements of a row must not be lists
+   * @return <code>null</code> if the arguments don't form a matrix
+   */
+  protected final int[] matrixDimensions(boolean scanElements) {
+    final int[] dim = new int[2];
+    dim[0] = argSize();
+    if (dim[0] > 0 && arg1().isList()) {
+      dim[1] = ((IAST) arg1()).argSize();
+      for (int i = 1; i < size(); i++) {
+        if (!get(i).isList()) {
+          // this row is not a list
+          return null;
+        }
+        IAST rowList = (IAST) get(i);
+        if (dim[1] != rowList.argSize()) {
+          // this row has another dimension
+          return null;
+        }
+        if (scanElements) {
+          for (int j = 1; j < rowList.size(); j++) {
+            if (rowList.get(j).isList()) {
               // this row is not a list
               return null;
             }
-            IAST rowList = (IAST) get(i);
-            if (dim[1] != rowList.argSize()) {
-              // this row has another dimension
-              return null;
-            }
-            if (!isUniform(UniformFlags.ATOM)) {
-              for (int j = 1; j < rowList.size(); j++) {
-                if (rowList.get(j).isList()) {
-                  // this row is not a list
-                  return null;
-                }
-              }
-            }
           }
-          if (setMatrixFormat && (dim[0] > 1 || dim[1] > 0)) {
-            addFlag(Flag.IS_MATRIX);
-          }
-          return dim;
         }
       }
+      return dim;
     }
     return null;
   }

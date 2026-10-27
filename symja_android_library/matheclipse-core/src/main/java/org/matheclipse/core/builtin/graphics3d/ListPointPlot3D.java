@@ -205,8 +205,8 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     double[] y = {1.0, rowCount};
     if (dataRange != null && dataRange.isList() && ((IAST) dataRange).argSize() == 2) {
       IAST ranges = (IAST) dataRange;
-      double[] parsedX = pair(ranges.arg1());
-      double[] parsedY = pair(ranges.arg2());
+      double[] parsedX = Plot3DTools.finitePair(ranges.arg1());
+      double[] parsedY = Plot3DTools.finitePair(ranges.arg2());
       if (parsedX != null && parsedY != null) {
         x = parsedX;
         y = parsedY;
@@ -333,15 +333,6 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       return UncertainValue.center(expr);
     }
     return expr.evalfNaN();
-  }
-
-  private static double[] pair(IExpr expr) {
-    if (!expr.isList() || ((IAST) expr).argSize() < 2) {
-      return null;
-    }
-    double lo = ((IAST) expr).arg1().evalfNaN();
-    double hi = ((IAST) expr).arg2().evalfNaN();
-    return Double.isFinite(lo) && Double.isFinite(hi) ? new double[] {lo, hi} : null;
   }
 
   @Override

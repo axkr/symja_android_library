@@ -116,6 +116,14 @@ public class Num implements INum {
           3.64535870476272953053138811652743541288, 3.69081325021727498507684266198198086743,
           3.73429151108684020246814700980806782395, 3.77595817775350686913481367647473449062};
 
+  /**
+   * Whether <code>ex</code> reports a division by zero; <code>false</code> for an exception without
+   * a message.
+   */
+  public static boolean isDivisionByZero(RuntimeException ex) {
+    return "Division by zero".equals(ex.getMessage());
+  }
+
   public static double factorial(final double arg) {
     int n = (int) arg;
     if (n == arg && n > 0) {
@@ -1306,6 +1314,7 @@ public class Num implements INum {
         return F.num(gamma.doubleValue());
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
+      // CPD-OFF numeric special-function dispatch per number type
       }
     }
     if (x0 instanceof INumber && x1 instanceof INumber) {
@@ -1318,6 +1327,7 @@ public class Num implements INum {
       }
     }
     return INum.super.gamma(x0, x1);
+    // CPD-ON
   }
 
   @Override
@@ -1671,7 +1681,7 @@ public class Num implements INum {
           return F.ComplexInfinity;
         }
       } catch (ArithmeticException | NumericComputationException ex) {
-        if (ex.getMessage().equals("Division by zero")) {
+        if (isDivisionByZero(ex)) {
           return F.ComplexInfinity;
         }
         // try as computation with complex numbers
@@ -1689,7 +1699,7 @@ public class Num implements INum {
           return F.ComplexInfinity;
         }
       } catch (ArithmeticException | NumericComputationException aex) {
-        if (aex.getMessage().equals("Division by zero")) {
+        if (isDivisionByZero(aex)) {
           return F.ComplexInfinity;
         }
       }
@@ -1728,12 +1738,13 @@ public class Num implements INum {
           return F.ComplexInfinity;
         }
       } catch (ArithmeticException | NumericComputationException ex) {
-        if (ex.getMessage().equals("Division by zero")) {
+        if (isDivisionByZero(ex)) {
           return F.ComplexInfinity;
         }
         // try as computation with complex numbers
       }
     }
+    // CPD-OFF numeric special-function dispatch per number type
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
         Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
@@ -1746,6 +1757,7 @@ public class Num implements INum {
       }
     }
     return INum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
+    // CPD-ON
   }
 
   @Override
@@ -1772,7 +1784,7 @@ public class Num implements INum {
         return F.ComplexInfinity;
       }
     } catch (ArithmeticException aex) {
-      if (aex.getMessage().equals("Division by zero")) {
+      if (isDivisionByZero(aex)) {
         return F.ComplexInfinity;
       }
     }

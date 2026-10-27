@@ -667,23 +667,34 @@ public class IntervalDataSym {
     return result;
   }
 
-  public static IAST intervalDataIntersection(final IAST ast, EvalEngine engine) {
+  /**
+   * Test if every argument of <code>ast</code> is an <code>IntervalData</code> whose segments
+   * <code>{min, _, _, max}</code> have real bounds.
+   *
+   * @param ast the function call with the intervals as arguments
+   */
+  public static boolean isRealIntervalDataArgs(final IAST ast) {
     for (int i = 1; i < ast.size(); i++) {
       if (!ast.get(i).isIntervalData()) {
-        return F.NIL;
+        return false;
       }
       IAST interval = (IAST) ast.get(i);
       for (int j = 1; j < interval.size(); j++) {
         if (!interval.get(j).isList4()) {
-          return F.NIL;
+          return false;
         }
         IAST list1 = (IAST) interval.get(j);
-        IExpr min1 = list1.arg1();
-        IExpr max1 = list1.arg4();
-        if (!min1.isRealResult() || !max1.isRealResult()) {
-          return F.NIL;
+        if (!list1.arg1().isRealResult() || !list1.arg4().isRealResult()) {
+          return false;
         }
       }
+    }
+    return true;
+  }
+
+  public static IAST intervalDataIntersection(final IAST ast, EvalEngine engine) {
+    if (!isRealIntervalDataArgs(ast)) {
+      return F.NIL;
     }
     IAST result = (IAST) ast.arg1();
     result = normalize(result, engine);
@@ -706,26 +717,12 @@ public class IntervalDataSym {
   }
 
   public static IAST intervalDataUnion(final IAST ast, EvalEngine engine) {
+    if (!isRealIntervalDataArgs(ast)) {
+      return F.NIL;
+    }
     int calculatedResultSize = 2;
     for (int i = 1; i < ast.size(); i++) {
-      IAST interval;
-      if (!ast.get(i).isIntervalData()) {
-        return F.NIL;
-      } else {
-        interval = (IAST) ast.get(i);
-      }
-      calculatedResultSize += interval.argSize();
-      for (int j = 1; j < interval.size(); j++) {
-        if (!interval.get(j).isList4()) {
-          return F.NIL;
-        }
-        IAST list1 = (IAST) interval.get(j);
-        IExpr min1 = list1.arg1();
-        IExpr max1 = list1.arg4();
-        if (!min1.isRealResult() || !max1.isRealResult()) {
-          return F.NIL;
-        }
-      }
+      calculatedResultSize += ast.get(i).argSize();
     }
     IASTAppendable result = F.IntervalDataAlloc(calculatedResultSize);
     for (int i = 1; i < ast.size(); i++) {
@@ -1709,6 +1706,7 @@ public class IntervalDataSym {
 
         IAST list = F.List(scalar.plus(min2), //
             list2.arg2(), //
+            // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
             list2.arg3(), //
             scalar.plus(max2));
         result.append(list);
@@ -1718,108 +1716,101 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
+  /** {@link #power(IAST, IReal)} for an integer exponent. */
   public static IExpr power(final IAST baseInterval, IInteger exponent) {
+    return power(baseInterval, (IReal) exponent);
+  }
+
+  public static IExpr power(final IAST baseInterval, IReal exponent) {
+    if (exponent.isNegative()) {
+      IExpr positivePower = power(baseInterval, exponent.negate());
+      return positivePower.isPresent() ? inverse((IAST) positivePower) : F.NIL;
+    }
     IAST interval = normalize(baseInterval);
     if (interval.isPresent()) {
-      boolean negative = false;
-
-      if (exponent.isNegative()) {
-        negative = true;
-        exponent = exponent.negate();
-      }
       if (exponent.isOne()) {
-        if (negative) {
-          return inverse(interval);
-        }
         return baseInterval;
       }
-      IASTAppendable result = F.IntervalDataAlloc(baseInterval.argSize());
-      for (int i = 1; i < interval.size(); i++) {
-        IAST list = (IAST) interval.get(i);
-        final IExpr min = list.arg1();
-        final IBuiltInSymbol lessMin = (IBuiltInSymbol) list.arg2();
-        final IBuiltInSymbol lessMax = (IBuiltInSymbol) list.arg3();
-        final IExpr max = list.arg4();
-        if (min.isRealResult() && max.isRealResult()) {
-          final IExpr minPower = min.power(exponent);
-          final IExpr maxPower = max.power(exponent);
-          if (exponent.isEven()) {
-            if (min.isNonNegativeResult()) {
-              result.append(F.List(minPower, lessMin, lessMax, maxPower));
-            } else {
-              if (max.isNegativeResult()) {
-                result.append(F.List(maxPower, lessMax, lessMin, minPower));
-              } else {
-                final IExpr isGreater = minPower.greater(maxPower);
-                final IExpr isLess = minPower.less(maxPower);
-                IBuiltInSymbol newRelation;
-                IExpr newMax;
-                if (isGreater.isTrue()) {
-                  newRelation = lessMin;
-                  newMax = minPower;
-                } else if (isLess.isTrue()) {
-                  newRelation = lessMax;
-                  newMax = maxPower;
-                } else if (minPower.equals(maxPower)
-                    || S.Equal.ofQ(EvalEngine.get(), minPower, maxPower)) {
-                  newRelation =
-                      (lessMin == S.LessEqual || lessMax == S.LessEqual) ? S.LessEqual : S.Less;
-                  newMax = maxPower;
-                } else {
-                  return F.NIL;
-                }
-                result.append(F.List(F.C0, S.LessEqual, newRelation, newMax));
-              }
-            }
-          } else {
-            result.append(F.List(minPower, lessMin, lessMax, maxPower));
-          }
-        } else {
-          return F.NIL;
-        }
-      }
-      if (negative) {
-        return inverse(result);
-      }
-      return result;
+      return exponent instanceof IInteger
+          ? integerPower(baseInterval, interval, (IInteger) exponent)
+          : realPower(baseInterval, interval, exponent);
     }
     return F.NIL;
   }
 
-  public static IExpr power(final IAST baseInterval, IReal exponent) {
-    IAST interval = normalize(baseInterval);
-    if (interval.isPresent()) {
-      boolean negative = false;
-
-      if (exponent.isNegative()) {
-        negative = true;
-        exponent = exponent.negate();
-      }
-      if (exponent.isOne()) {
-        if (negative) {
-          return inverse(interval);
-        }
-        return baseInterval;
-      }
-      IASTAppendable result = F.IntervalDataAlloc(baseInterval.argSize());
-      for (int i = 1; i < interval.size(); i++) {
-        IAST list = (IAST) interval.get(i);
-        final IExpr min = list.arg1();
-        final IExpr lessMin = list.arg2();
-        final IExpr lessMax = list.arg3();
-        final IExpr max = list.arg4();
-        if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
-          result.append(F.List(min.power(exponent), lessMin, lessMax, max.power(exponent)));
+  /**
+   * {@link #power(IAST, IReal)} of the normalized <code>interval</code> for a non-negative integer
+   * exponent other than 1.
+   */
+  private static IExpr integerPower(final IAST baseInterval, IAST interval, IInteger exponent) {
+    IASTAppendable result = F.IntervalDataAlloc(baseInterval.argSize());
+    // CPD-ON
+    for (int i = 1; i < interval.size(); i++) {
+      IAST list = (IAST) interval.get(i);
+      final IExpr min = list.arg1();
+      final IBuiltInSymbol lessMin = (IBuiltInSymbol) list.arg2();
+      final IBuiltInSymbol lessMax = (IBuiltInSymbol) list.arg3();
+      final IExpr max = list.arg4();
+      if (min.isRealResult() && max.isRealResult()) {
+        final IExpr minPower = min.power(exponent);
+        final IExpr maxPower = max.power(exponent);
+        if (exponent.isEven()) {
+          if (min.isNonNegativeResult()) {
+            result.append(F.List(minPower, lessMin, lessMax, maxPower));
+          } else {
+            if (max.isNegativeResult()) {
+              result.append(F.List(maxPower, lessMax, lessMin, minPower));
+            } else {
+              final IExpr isGreater = minPower.greater(maxPower);
+              final IExpr isLess = minPower.less(maxPower);
+              IBuiltInSymbol newRelation;
+              IExpr newMax;
+              if (isGreater.isTrue()) {
+                newRelation = lessMin;
+                newMax = minPower;
+              } else if (isLess.isTrue()) {
+                newRelation = lessMax;
+                newMax = maxPower;
+              } else if (minPower.equals(maxPower)
+                  || S.Equal.ofQ(EvalEngine.get(), minPower, maxPower)) {
+                newRelation =
+                    (lessMin == S.LessEqual || lessMax == S.LessEqual) ? S.LessEqual : S.Less;
+                newMax = maxPower;
+              } else {
+                return F.NIL;
+              }
+              result.append(F.List(F.C0, S.LessEqual, newRelation, newMax));
+            }
+          }
         } else {
-          return F.NIL;
+          result.append(F.List(minPower, lessMin, lessMax, maxPower));
         }
+      } else {
+        return F.NIL;
       }
-      if (negative) {
-        return inverse(result);
-      }
-      return result;
     }
-    return F.NIL;
+    return result;
+  }
+
+  /**
+   * {@link #power(IAST, IReal)} of the normalized <code>interval</code> for a non-negative real
+   * exponent other than 1, defined for non-negative bounds only.
+   */
+  private static IExpr realPower(final IAST baseInterval, IAST interval, IReal exponent) {
+    IASTAppendable result = F.IntervalDataAlloc(baseInterval.argSize());
+    for (int i = 1; i < interval.size(); i++) {
+      IAST list = (IAST) interval.get(i);
+      final IExpr min = list.arg1();
+      final IExpr lessMin = list.arg2();
+      final IExpr lessMax = list.arg3();
+      final IExpr max = list.arg4();
+      if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
+        result.append(F.List(min.power(exponent), lessMin, lessMax, max.power(exponent)));
+      } else {
+        return F.NIL;
+      }
+    }
+    return result;
   }
 
   public static IExpr power(IExpr base, final IAST intervalExponent) {

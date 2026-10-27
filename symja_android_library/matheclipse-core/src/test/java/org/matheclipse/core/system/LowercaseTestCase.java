@@ -5585,6 +5585,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDelete() {
+    // positions through nested associations, by key and by index from the end
+    check("Delete(<|\"a\"->1,\"b\"-><|\"c\"->2,\"d\"->3|>|>,{\"b\",\"d\"})", //
+        "<|a->1,b-><|c->2|>|>");
+    check("Delete(<|a->1,b-><|c->2,d->3|>|>,{Key(b),Key(c)})", //
+        "<|a->1,b-><|d->3|>|>");
+    check("Delete(<|a->1,b-><|c->2,d->3|>|>,{2,-1})", //
+        "<|a->1,b-><|c->2|>|>");
+    check("Delete(<|\"a\"->1,\"b\"-><|\"c\"->2,\"d\"->3|>|>,{{\"a\"},{\"b\",\"c\"}})", //
+        "<|b-><|d->3|>|>");
+    check("Delete({{1,2},{3,<|\"u\"->4,\"v\"->5|>}},{-1,-1,\"v\"})", //
+        "{{1,2},{3,<|u->4|>}}");
+    check("Delete(<|a->{1,2},b->3|>,{Key(a),-1})", //
+        "<|a->{1},b->3|>");
+    check("Delete(<|a->1,b->2|>,0)", //
+        "Sequence(1,2)");
+    check("Delete(<|\"a\"->1|>,{\"z\"})", //
+        "Delete(<|a->1|>,{z})");
     check("Delete({a, b, c, d}, 2)", //
         "{a,c,d}");
     check("Delete({a, b, c, d}, -1)", //
@@ -19965,6 +19982,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     EvalEngine.resetModuleCounter4JUnit();
     check("JavaForm(Sqrt(x), Complex)", //
         "(x).sqrt()");
+    // the option form selects the complex code as well
+    check("JavaForm(Sqrt(x), Complex->True)", //
+        "(x).sqrt()");
+    check("JavaForm(1/(x+y), Complex->True)", //
+        "(x.add(y)).reciprocal()");
     check("JavaForm(1/(x+y), Complex)", //
         "(x.add(y)).reciprocal()");
     check("JavaForm(1/Sqrt(x), Complex)", //
@@ -21678,6 +21700,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMapAt() {
+    // positions through nested associations, by key and by index from the end
+    check("MapAt(f,<|\"a\"->1,\"b\"-><|\"c\"->2,\"d\"->3|>|>,{\"b\",\"d\"})", //
+        "<|a->1,b-><|c->2,d->f(3)|>|>");
+    check("MapAt(f,<|a->1,b-><|c->2,d->3|>|>,{Key(b),Key(c)})", //
+        "<|a->1,b-><|c->f(2),d->3|>|>");
+    check("MapAt(f,<|a->1,b-><|c->2,d->3|>|>,{2,-1})", //
+        "<|a->1,b-><|c->2,d->f(3)|>|>");
+    check("MapAt(f,<|\"a\"->1,\"b\"-><|\"c\"->2,\"d\"->3|>|>,{{\"a\"},{\"b\",\"c\"}})", //
+        "<|a->f(1),b-><|c->f(2),d->3|>|>");
+    check("MapAt(f,{{1,2},{3,<|\"u\"->4,\"v\"->5|>}},{-1,-1,\"v\"})", //
+        "{{1,2},{3,<|u->4,v->f(5)|>}}");
+    check("MapAt(f,<|a->{1,2},b->3|>,{Key(a),-1})", //
+        "<|a->{1,f(2)},b->3|>");
+    check("MapAt(f,<|\"a\"->1|>,{\"z\"})", //
+        "MapAt(f,<|a->1|>,{z})");
     // MapAt: Part {5} of {a,b,c,d} does not exist.
     check("MapAt(f, {a, b, c, d}, 5)", //
         "MapAt(f,{a,b,c,d},5)");
@@ -30663,6 +30700,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    // equality is still possible, so a non-strict relation is not False
+    check("Refine(3<=x, x<=3)", //
+        "3<=x");
+    check("Refine(3>=x, x>=3)", //
+        "3>=x");
+    check("Refine(x<=3, x>=3)", //
+        "x<=3");
     // non positive assumptions
     check("Refine(Sqrt(x^2), x <= 0)", //
         "-x");
@@ -32016,6 +32060,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSech() {
+    check("Sech(0)", //
+        "1");
+    check("Sech(0.0)", //
+        "1.0");
     check("N(Sech(5/2),30)", //
         "0.163071231929977826043195139321");
     check("N(Sech(1/2+I),30)", //
@@ -34394,6 +34442,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTake() {
+    // Take: List expected at position 2 in <|a->1,b->2|>.
+    check("Take(<|a->1,b->2|>,{2,1,-1},1)", //
+        "Take(<|a->1,b->2|>,{2,1,-1},1)");
     // a Span is the same specification as the equivalent list
     check("Take({1,2,3,4,5}, 2;;4)", //
         "{2,3,4}");

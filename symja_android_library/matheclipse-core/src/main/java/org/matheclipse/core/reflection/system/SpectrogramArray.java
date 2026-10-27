@@ -45,48 +45,19 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
     IAST list = (IAST) listExpr;
 
     int listLength = list.argSize();
-    int n = -1;
-    int d = -1;
-    int m = -1;
-    IExpr wfun = F.DirichletWindow;
-
-    // Determine n (Partition Length)
-    if (ast.argSize() >= 2) {
-      IExpr arg2 = ast.arg2();
-      if (arg2.isInteger()) {
-        n = arg2.toIntDefault();
-      }
-    }
+    int n = intArg(ast, 2);
     if (n <= 0) {
       // Default n: commonly 256 or list length if smaller
       n = Math.min(listLength, 256);
     }
-
-    // Determine d (Offset)
-    if (ast.argSize() >= 3) {
-      IExpr arg3 = ast.arg3();
-      if (arg3.isInteger()) {
-        d = arg3.toIntDefault();
-      }
-    }
+    int d = intArg(ast, 3);
     if (d <= 0) {
       // Default d: 1 (Standard SpectrogramArray behavior matches Partition[..., 1])
       // Note: This differs from visual Spectrogram which often defaults to n/2.
       d = 1;
     }
-
-    // Determine wfun (Window Function)
-    if (ast.argSize() >= 4) {
-      wfun = ast.arg4();
-    }
-
-    // Determine m (Padding Size)
-    if (ast.argSize() >= 5) {
-      IExpr arg5 = ast.arg5();
-      if (arg5.isInteger()) {
-        m = arg5.toIntDefault();
-      }
-    }
+    IExpr wfun = ast.argSize() >= 4 ? ast.arg4() : F.DirichletWindow;
+    int m = intArg(ast, 5);
     if (m <= 0) {
       m = n;
     }
@@ -111,18 +82,7 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
     }
     IAST partitionList = (IAST) evalPartitions;
 
-    // Prepare Window Weights (Numeric)
-    IExpr windowWeights = F.NIL;
-    if (wfun != S.DirichletWindow && !wfun.equals(F.C1)) {
-      if (wfun.isList()) {
-        windowWeights = engine.evalN(wfun);
-      } else {
-        // Sample window from -0.5 to 0.5
-        // Subdivide[-0.5, 0.5, n - 1]
-        IExpr range = F.Subdivide(F.CN1D2, F.C1D2, F.ZZ(n - 1));
-        windowWeights = engine.evaluate(F.N(F.Map(wfun, range)));
-      }
-    }
+    IExpr windowWeights = windowWeights(wfun, n, engine);
 
     // Process partitions: Apply Window -> Pad -> Fourier
     IASTAppendable result = F.ListAlloc(partitionList.argSize());
@@ -159,5 +119,35 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_1_5;
+  }
+
+  /**
+   * The machine integer at position {@code position} of {@code ast}, or a number {@code <= 0} if
+   * there is none, so that the caller uses its default.
+   */
+  static int intArg(IAST ast, int position) {
+    if (ast.argSize() >= position) {
+      IExpr arg = ast.get(position);
+      if (arg.isInteger()) {
+        return arg.toIntDefault();
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * The numeric weights of the window function {@code wfun} for partitions of length {@code n}:
+   * {@code wfun} itself if it is a list, otherwise {@code wfun} sampled from {@code -1/2} to
+   * {@code 1/2}. {@code F.NIL} for the rectangular window.
+   */
+  static IExpr windowWeights(IExpr wfun, int n, EvalEngine engine) {
+    if (wfun == S.DirichletWindow || wfun.equals(F.C1)) {
+      return F.NIL;
+    }
+    if (wfun.isList()) {
+      return engine.evalN(wfun);
+    }
+    IExpr range = F.Subdivide(F.CN1D2, F.C1D2, F.ZZ(n - 1));
+    return engine.evaluate(F.N(F.Map(wfun, range)));
   }
 }

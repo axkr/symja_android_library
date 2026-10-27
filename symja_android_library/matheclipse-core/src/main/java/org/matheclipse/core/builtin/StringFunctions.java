@@ -1614,6 +1614,48 @@ public final class StringFunctions {
   }
 
   /**
+   * The first argument of a string function evaluated, threaded over a list or reported with the
+   * <code>strse</code> message when it is no string.
+   *
+   * @return the string, the threaded result or <code>F.NIL</code>
+   */
+  private static IExpr evalStringArg1(final IAST ast, EvalEngine engine) {
+    IExpr arg1 = engine.evaluate(ast.arg1());
+    if (arg1.isList()) {
+      return arg1.mapThread(ast, 1);
+    }
+    if (!arg1.isString()) {
+      // String or list of strings expected at position `1` in `2`.
+      return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+    }
+    return arg1;
+  }
+
+  /**
+   * The common start of <code>StringDrop</code> and <code>StringTake</code>. `Span(m, n)` denotes
+   * the same range as the list `{m, n}`, which both functions already understand, so
+   * `StringTake("hello", 2;;4)` needs no separate branch.
+   *
+   * @return the result of the call, or <code>null</code> when the first argument is a string and
+   *         the second no span
+   */
+  private static IExpr stringPartPrelude(final IAST ast, EvalEngine engine) {
+    if (ast.isAST2() && (ast.arg2().isAST(S.Span, 3) || ast.arg2().isAST(S.Span, 4))) {
+      return engine.evaluate(ast.setAtCopy(2,
+          org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) ast.arg2())));
+    }
+    IExpr arg1 = ast.arg1();
+    if (!arg1.isString()) {
+      if (arg1.isListOfStrings()) {
+        return arg1.mapThread(ast, 1);
+      }
+      // String or list of strings expected at position `1` in `2`.
+      return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+    }
+    return null;
+  }
+
+  /**
    *
    *
    * <pre>
@@ -1723,31 +1765,42 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
+  /**
+   * Test the string pattern at position 2 of <code>ast</code> on the string at position 1 with
+   * <code>test</code>; a list of strings at position 1 is threaded over.
+   *
+   * @return {@link S#True}, {@link S#False} or {@link F#NIL} if the arguments are no string and
+   *         string pattern
+   */
+  private static IExpr stringPatternQ(final IAST ast, boolean ignoreCase, final EvalEngine engine,
+      Predicate<StringPatternMatcher> test) {
+    IExpr arg1 = engine.evaluate(ast.arg1());
+    if (arg1.isList()) {
+      return arg1.mapThread(ast, 1);
+    }
+    // a core evaluator gets its arguments unevaluated, and a string pattern is often
+    // built rather than written out: a RegularExpression joined from pieces, or a
+    // list of alternatives kept in a variable
+    IExpr stringPattern = engine.evaluate(ast.arg2());
+    if (arg1.isString() && !stringPattern.isRuleAST()) {
+      StringPatternMatcher matcher =
+          StringPatternMatcher.compile(stringPattern, false, ignoreCase, ast, engine);
+      if (matcher == null) {
+        return F.NIL;
+      }
+      matcher.reset(arg1.toString());
+      return F.booleSymbol(test.test(matcher));
+    }
+    return F.NIL;
+  }
+
   private static class StringContainsQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
     protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       if (argSize >= 2) {
-        boolean ignoreCase = option[0].isTrue();
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
-        // a core evaluator gets its arguments unevaluated, and a string pattern is often
-        // built rather than written out: a RegularExpression joined from pieces, or a
-        // list of alternatives kept in a variable
-        IExpr stringPattern = engine.evaluate(ast.arg2());
-        if (arg1.isString() && !stringPattern.isRuleAST()) {
-          StringPatternMatcher matcher =
-              StringPatternMatcher.compile(stringPattern, false, ignoreCase, ast, engine);
-          if (matcher == null) {
-            return F.NIL;
-          }
-          matcher.reset(arg1.toString());
-          return F.booleSymbol(matcher.find(0));
-        }
-        return F.NIL;
+        return stringPatternQ(ast, option[0].isTrue(), engine, matcher -> matcher.find(0));
       }
       return F.NIL;
     }
@@ -1839,19 +1892,11 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // `Span(m, n)` denotes the same range as the list `{m, n}`, which the code below already
-      // understands, so `StringDrop("hello", 2;;4)` needs no separate branch.
-      if (ast.isAST2() && (ast.arg2().isAST(S.Span, 3) || ast.arg2().isAST(S.Span, 4))) {
-        return engine.evaluate(ast.setAtCopy(2,
-            org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) ast.arg2())));
+      IExpr result = stringPartPrelude(ast, engine);
+      if (result != null) {
+        return result;
       }
       IExpr arg1 = ast.arg1();
-      if (!arg1.isString()) {
-        if (arg1.isListOfStrings()) {
-          return arg1.mapThread(ast, 1);
-        }
-        return F.NIL;
-      }
       IExpr arg2 = ast.arg2();
       if (isListOfSpecs(arg2, false)) {
         return F.NIL;
@@ -2030,13 +2075,9 @@ public final class StringFunctions {
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
 
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
+        IExpr arg1 = evalStringArg1(ast, engine);
         if (!arg1.isString()) {
-          // String or list of strings expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+          return arg1;
         }
 
         IExpr arg2 = ast.arg2();
@@ -2548,13 +2589,9 @@ public final class StringFunctions {
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
 
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
+        IExpr arg1 = evalStringArg1(ast, engine);
         if (!arg1.isString()) {
-          // String or list of strings expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+          return arg1;
         }
         // a core evaluator gets its arguments unevaluated, and a string pattern is often
         // built rather than written out: a RegularExpression joined from pieces, or a
@@ -2708,13 +2745,9 @@ public final class StringFunctions {
           return F.NIL;
         }
 
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
+        IExpr arg1 = evalStringArg1(ast, engine);
         if (!arg1.isString()) {
-          // String or list of strings expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+          return arg1;
         }
 
         IExpr arg2 = engine.evaluate(ast.arg2());
@@ -2833,6 +2866,46 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
+  /**
+   * The rules of <code>StringReplace(s, rules, n)</code> and its occurrence limit <code>n</code>.
+   */
+  private static final class Replacements {
+    final StringPatternMatcher.Rules rules;
+    final int limit;
+
+    private Replacements(StringPatternMatcher.Rules rules, int limit) {
+      this.rules = rules;
+      this.limit = limit;
+    }
+
+    /**
+     * The replacement rules at position 2 of <code>ast</code> and the occurrence limit at position
+     * 3.
+     *
+     * @return <code>null</code> if the second argument is no rule or list of rules or the limit is
+     *         invalid
+     */
+    static Replacements of(final IAST ast, final int argSize, boolean ignoreCase,
+        final EvalEngine engine) {
+      IExpr arg2 = ast.arg2();
+      if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
+        // rules written out stay as they are, so that their right-hand sides are evaluated only
+        // for each match; rules held in a variable or made by a function have to be fetched
+        arg2 = engine.evaluate(arg2);
+      }
+      if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
+        return null;
+      }
+      int limit = occurrenceLimit(ast, argSize, 3, engine);
+      if (limit < 0) {
+        return null;
+      }
+      StringPatternMatcher.Rules rules =
+          StringPatternMatcher.Rules.of(arg2, true, false, ignoreCase, ast, engine);
+      return rules == null ? null : new Replacements(rules, limit);
+    }
+  }
+
   private static class StringReplace extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
@@ -2841,36 +2914,18 @@ public final class StringFunctions {
 
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
+        IExpr arg1 = evalStringArg1(ast, engine);
         if (!arg1.isString()) {
-          return F.NIL;
+          return arg1;
         }
-        String str = arg1.toString();
-        IExpr arg2 = ast.arg2();
-        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
-          // rules written out stay as they are, so that their right-hand sides are evaluated only
-          // for each match; rules held in a variable or made by a function have to be fetched
-          arg2 = engine.evaluate(arg2);
-        }
-        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
-          return F.NIL;
-        }
-        int limit = occurrenceLimit(ast, argSize, 3, engine);
-        if (limit < 0) {
+        Replacements replacements = Replacements.of(ast, argSize, ignoreCase, engine);
+        if (replacements == null) {
           return F.NIL;
         }
         // the rules are tried together: at each position the first which matches replaces it,
         // and what a replacement inserted is not looked at again
-        StringPatternMatcher.Rules rules =
-            StringPatternMatcher.Rules.of(arg2, true, false, ignoreCase, ast, engine);
-        if (rules == null) {
-          return F.NIL;
-        }
-        rules.reset(str);
-        return replaceMatches(rules, limit, F.NIL, engine);
+        replacements.rules.reset(arg1.toString());
+        return replaceMatches(replacements.rules, replacements.limit, F.NIL, engine);
       }
       return F.NIL;
     }
@@ -2975,13 +3030,9 @@ public final class StringFunctions {
         final EvalEngine engine) {
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
+        IExpr arg1 = evalStringArg1(ast, engine);
         if (!arg1.isString()) {
-          // String or list of strings expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+          return arg1;
         }
         IExpr arg2 = engine.evaluate(ast.arg2());
         StringPatternMatcher.Rules rules =
@@ -3018,30 +3069,16 @@ public final class StringFunctions {
         final EvalEngine engine) {
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
+        IExpr arg1 = evalStringArg1(ast, engine);
         if (!arg1.isString()) {
-          // String or list of strings expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+          return arg1;
         }
-        IExpr arg2 = ast.arg2();
-        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
-          arg2 = engine.evaluate(arg2);
-        }
-        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
+        Replacements replacements = Replacements.of(ast, argSize, ignoreCase, engine);
+        if (replacements == null) {
           return F.NIL;
         }
-        int limit = occurrenceLimit(ast, argSize, 3, engine);
-        if (limit < 0) {
-          return F.NIL;
-        }
-        StringPatternMatcher.Rules rules =
-            StringPatternMatcher.Rules.of(arg2, true, false, ignoreCase, ast, engine);
-        if (rules == null) {
-          return F.NIL;
-        }
+        StringPatternMatcher.Rules rules = replacements.rules;
+        int limit = replacements.limit;
         final String str = arg1.toString();
         rules.reset(str);
         // each match is {start, end, rule}; its replacement is kept in values
@@ -3677,26 +3714,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2) {
-        boolean ignoreCase = options[0].isTrue();
-        IExpr arg1 = engine.evaluate(ast.arg1());
-
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
-
-        // a core evaluator gets its arguments unevaluated, and a string pattern is often
-        // built rather than written out: a RegularExpression joined from pieces, or a
-        // list of alternatives kept in a variable
-        IExpr stringPattern = engine.evaluate(ast.arg2());
-        if (arg1.isString() && !stringPattern.isRuleAST()) {
-          StringPatternMatcher matcher =
-              StringPatternMatcher.compile(stringPattern, false, ignoreCase, ast, engine);
-          if (matcher == null) {
-            return F.NIL;
-          }
-          matcher.reset(arg1.toString());
-          return F.booleSymbol(matcher.lookingAt());
-        }
+        return stringPatternQ(ast, options[0].isTrue(), engine, StringPatternMatcher::lookingAt);
       }
       return F.NIL;
     }
@@ -3846,20 +3864,11 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // `Span(m, n)` denotes the same range as the list `{m, n}`, which the code below already
-      // understands, so `StringTake("hello", 2;;4)` needs no separate branch.
-      if (ast.isAST2() && (ast.arg2().isAST(S.Span, 3) || ast.arg2().isAST(S.Span, 4))) {
-        return engine.evaluate(ast.setAtCopy(2,
-            org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) ast.arg2())));
+      IExpr result = stringPartPrelude(ast, engine);
+      if (result != null) {
+        return result;
       }
       IExpr arg1 = ast.arg1();
-      if (!arg1.isString()) {
-        if (arg1.isListOfStrings()) {
-          return arg1.mapThread(ast, 1);
-        }
-        // String or list of strings expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
-      }
       IExpr arg2 = ast.arg2();
       if (isListOfSpecs(arg2, true)) {
         // StringTake[str, {{m1, n1}, {m2, n2}, …}] takes several pieces at once and answers a

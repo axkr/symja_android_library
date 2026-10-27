@@ -635,6 +635,25 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  /**
+   * Test if the arguments of <code>args</code> contain a symbol <code>x</code> and its negation
+   * <code>!x</code>.
+   */
+  private static boolean hasComplementaryLiterals(IAST args) {
+    for (int i = 1; i < args.size(); i++) {
+      IExpr arg = args.get(i);
+      if (arg.isNot() && arg.first().isSymbol()) {
+        IExpr symbol = arg.first();
+        for (int j = 1; j < args.size(); j++) {
+          if (args.get(j).equals(symbol)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   private static class And extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -695,11 +714,10 @@ public final class BooleanFunctions {
       }
 
       IASTAppendable result = flattenedAST.copyFrom(start);
-      result.set(index, temp);
+      // the first argument which is not True was evaluated above
+      result.set(index++, temp);
 
-      int[] symbols = new int[flattenedAST.size()];
-      int[] notSymbols = new int[flattenedAST.size()];
-      for (int i = start; i < flattenedAST.size(); i++) {
+      for (int i = start + 1; i < flattenedAST.size(); i++) {
         temp = flattenedAST.get(i);
         if (temp.isFalse()) {
           return S.False;
@@ -723,26 +741,11 @@ public final class BooleanFunctions {
         } else {
           temp = flattenedAST.get(i);
         }
-
-        if (temp.isSymbol()) {
-          symbols[i] = flattenedAST.get(i).hashCode();
-        } else if (temp.isNot()) {
-          IExpr sym = temp.first();
-          if (sym.isSymbol()) {
-            notSymbols[i] = sym.hashCode();
-          }
-        }
         index++;
       }
-      for (int i = 1; i < symbols.length; i++) {
-        if (symbols[i] != 0) {
-          for (int j = 1; j < notSymbols.length; j++) {
-            if (i != j && symbols[i] == notSymbols[j]
-                && (result.equalsAt(i, result.get(j).first()))) {
-              return S.False;
-            }
-          }
-        }
+      if (hasComplementaryLiterals(result)) {
+        // x && !x
+        return S.False;
       }
       if (result.isAST1()) {
         return result.arg1();
@@ -1819,27 +1822,33 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {}
 
     private static IExpr equalNIL(final IExpr a1, final IExpr a2, EvalEngine engine) {
+      IExpr[] expanded = new IExpr[2];
+      IExpr result = decideEqual(a1, a2, engine, expanded);
+      if (result.isPresent() || expanded[0] == null) {
+        return result;
+      }
+      return BooleanFunctions.Equal.simplifyCompare(S.Equal, a1, a2);
+    }
+
+    /**
+     * Decide <code>a1 == a2</code> for quantities, exact numbers and strings, by comparing the
+     * expanded arguments and with the assumptions of the evaluation engine.
+     *
+     * @param expanded receives the expanded arguments <code>{arg1, arg2}</code> if the equation
+     *        is not decided and may still be simplified; stays empty for two quantities
+     * @return {@link S#True}, {@link S#False} or {@link F#NIL} if the equation is not decided
+     */
+    static IExpr decideEqual(final IExpr a1, final IExpr a2, EvalEngine engine,
+        IExpr[] expanded) {
       if (a1.isQuantity() && a2.isQuantity()) {
         return BooleanFunctions.quantityEquals((IAST) a1, (IAST) a2);
       }
       if ((a1.isExactNumber() || a1.isString()) && (a2.isExactNumber() || a2.isString())) {
         return a1.equals(a2) ? S.True : S.False;
       }
-      IExpr.COMPARE_TERNARY b;
-      final IExpr arg1;
-      if (a1.isNumber()) {
-        arg1 = a1;
-      } else {
-        arg1 = engine.evaluate(F.expandAll(a1, true, true));
-      }
-      IExpr arg2;
-      if (a2.isNumber()) {
-        arg2 = a2;
-      } else {
-        arg2 = engine.evaluate(F.expandAll(a2, true, true));
-      }
-
-      b = arg1.equalTernary(arg2, engine);
+      final IExpr arg1 = a1.isNumber() ? a1 : engine.evaluate(F.expandAll(a1, true, true));
+      final IExpr arg2 = a2.isNumber() ? a2 : engine.evaluate(F.expandAll(a2, true, true));
+      IExpr.COMPARE_TERNARY b = arg1.equalTernary(arg2, engine);
       if (b == IExpr.COMPARE_TERNARY.FALSE) {
         return S.False;
       }
@@ -1853,8 +1862,9 @@ public final class BooleanFunctions {
       if (checkUnequalAssumptions(arg1, arg2, engine)) {
         return S.False;
       }
-
-      return BooleanFunctions.Equal.simplifyCompare(S.Equal, a1, a2);
+      expanded[0] = arg1;
+      expanded[1] = arg2;
+      return F.NIL;
     }
 
     /**
@@ -2645,10 +2655,12 @@ public final class BooleanFunctions {
       }
       IReal a1 = arg1.evalReal();
       if (a1 != null && !arg2.hasComplexNumber()) {
-        if (AbstractAssumptions.assumeLessThan(arg2, arg1)) {
+        if (AbstractAssumptions.assumeLessThan(arg2, arg1)
+            || AbstractAssumptions.assumeLessEqual(arg2, arg1)) {
           return S.True;
         }
-        if (AbstractAssumptions.assumeGreaterEqual(arg2, arg1)) {
+        // arg2 == arg1 still satisfies arg1 >= arg2
+        if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)) {
           return S.False;
         }
       }
@@ -2873,6 +2885,7 @@ public final class BooleanFunctions {
     @Override
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
+        // CPD-OFF strict and non-strict comparisons decide assumptions differently
         if (arg1.isPositiveResult()) {
           return S.False;
         }
@@ -2892,6 +2905,7 @@ public final class BooleanFunctions {
       IReal a2 = arg2.evalReal();
       if (a2 != null && !arg1.hasComplexNumber()) {
         if (AbstractAssumptions.assumeLessThan(arg1, arg2)) {
+        // CPD-ON
           return S.True;
         }
         if (AbstractAssumptions.assumeGreaterThan(arg1, arg2)) {
@@ -2941,6 +2955,7 @@ public final class BooleanFunctions {
     @Override
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
+        // CPD-OFF strict and non-strict comparisons decide assumptions differently
         if (arg1.isNonNegativeResult()) {
           return S.False;
         }
@@ -2960,6 +2975,7 @@ public final class BooleanFunctions {
       IReal a2 = arg2.evalReal();
       if (a2 != null && !arg1.hasComplexNumber()) {
         if (AbstractAssumptions.assumeLessEqual(arg1, arg2)) {
+        // CPD-ON
           return S.True;
         }
         if (AbstractAssumptions.assumeGreaterThan(arg1, arg2)) {
@@ -2968,10 +2984,12 @@ public final class BooleanFunctions {
       }
       IReal a1 = arg1.evalReal();
       if (a1 != null && !arg2.hasComplexNumber()) {
-        if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)) {
+        if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)
+            || AbstractAssumptions.assumeGreaterEqual(arg2, arg1)) {
           return S.True;
         }
-        if (AbstractAssumptions.assumeLessEqual(arg2, arg1)) {
+        // arg2 == arg1 still satisfies arg1 <= arg2
+        if (AbstractAssumptions.assumeLessThan(arg2, arg1)) {
           return S.False;
         }
       }
@@ -3859,9 +3877,6 @@ public final class BooleanFunctions {
       }
 
       IASTAppendable result = flattenedAST.copyAppendable();
-      IExpr sym;
-      int[] symbols = new int[flattenedAST.size()];
-      int[] notSymbols = new int[flattenedAST.size()];
       int index = 1;
 
       for (int i = 1; i < flattenedAST.size(); i++) {
@@ -3899,26 +3914,11 @@ public final class BooleanFunctions {
         } else {
           arg = flattenedAST.get(i);
         }
-
-        if (arg.isSymbol()) {
-          symbols[i] = arg.hashCode();
-        } else if (arg.isNot()) {
-          sym = arg.first();
-          if (sym.isSymbol()) {
-            notSymbols[i] = sym.hashCode();
-          }
-        }
         index++;
       }
-      for (int i = 1; i < symbols.length; i++) {
-        if (symbols[i] != 0) {
-          for (int j = 1; j < notSymbols.length; j++) {
-            if (i != j && symbols[i] == notSymbols[j]
-                && (result.equalsAt(i, result.get(j).first()))) {
-              return S.True;
-            }
-          }
-        }
+      if (hasComplementaryLiterals(result)) {
+        // x || !x
+        return S.True;
       }
       if (result.isAST1()) {
         return result.arg1();
@@ -4107,6 +4107,45 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * Evaluate <code>expr</code> for all <code>True</code>/<code>False</code> assignments of the
+   * <code>variables</code> from <code>position</code> on.
+   *
+   * @param forAll if <code>true</code> test if <code>expr</code> is <code>True</code> for all
+   *        assignments, otherwise test if it is <code>True</code> for at least one assignment
+   */
+  private static boolean bruteForce(IExpr expr, IAST variables, int position, boolean forAll) {
+    if (variables.size() <= position) {
+      return EvalEngine.get().evalTrue(expr);
+    }
+    IExpr sym = variables.get(position);
+    if (sym.isSymbol()) {
+      if (sym.isBuiltInSymbol() || !sym.isVariable()) {
+        throw new ArgumentTypeException(
+            Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
+      }
+      ISymbol symbol = (ISymbol) sym;
+      IExpr oldValue = symbol.assignedValue();
+      try {
+        symbol.assignValue(S.True, false);
+        if (bruteForce(expr, variables, position + 1, forAll) != forAll) {
+          return !forAll;
+        }
+      } finally {
+        symbol.clearValue(oldValue);
+      }
+      try {
+        symbol.assignValue(S.False, false);
+        if (bruteForce(expr, variables, position + 1, forAll) != forAll) {
+          return !forAll;
+        }
+      } finally {
+        symbol.clearValue(oldValue);
+      }
+    }
+    return forAll;
+  }
+
   private static final class SatisfiableQ extends AbstractFunctionEvaluator implements IPredicate {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -4138,7 +4177,7 @@ public final class BooleanFunctions {
         } else {
           return logicNGSatisfiableQ(arg1);
         }
-        return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
+        return bruteForce(arg1, userDefinedVariables, 1, false) ? S.True : S.False;
       } catch (MathException me) {
       }
       return S.False;
@@ -4164,37 +4203,6 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
-    private static boolean bruteForceSatisfiableQ(IExpr expr, IAST variables, int position) {
-      if (variables.size() <= position) {
-        return EvalEngine.get().evalTrue(expr);
-      }
-      IExpr sym = variables.get(position);
-      if (sym.isSymbol()) {
-        if (sym.isBuiltInSymbol() || !sym.isVariable()) {
-          throw new ArgumentTypeException(
-              Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
-        }
-        ISymbol symbol = (ISymbol) sym;
-        IExpr oldValue = symbol.assignedValue();
-        try {
-          symbol.assignValue(S.True, false);
-          if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
-            return true;
-          }
-        } finally {
-          symbol.clearValue(oldValue);
-        }
-        try {
-          symbol.assignValue(S.False, false);
-          if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
-            return true;
-          }
-        } finally {
-          symbol.clearValue(oldValue);
-        }
-      }
-      return false;
-    }
   }
 
   private static class TautologyQ extends AbstractFunctionEvaluator implements IPredicate {
@@ -4220,7 +4228,7 @@ public final class BooleanFunctions {
           return logicNGTautologyQ(arg1);
         }
 
-        return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
+        return bruteForce(arg1, userDefinedVariables, 1, true) ? S.True : S.False;
       } catch (MathException me) {
       }
       return S.False;
@@ -4239,37 +4247,6 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
-    private static boolean bruteForceTautologyQ(IExpr expr, IAST variables, int position) {
-      if (variables.size() <= position) {
-        return EvalEngine.get().evalTrue(expr);
-      }
-      IExpr sym = variables.get(position);
-      if (sym.isSymbol()) {
-        if (sym.isBuiltInSymbol() || !sym.isVariable()) {
-          throw new ArgumentTypeException(
-              Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
-        }
-        ISymbol symbol = (ISymbol) sym;
-        IExpr oldValue = symbol.assignedValue();
-        try {
-          symbol.assignValue(S.True, false);
-          if (!bruteForceTautologyQ(expr, variables, position + 1)) {
-            return false;
-          }
-        } finally {
-          symbol.clearValue(oldValue);
-        }
-        try {
-          symbol.assignValue(S.False, false);
-          if (!bruteForceTautologyQ(expr, variables, position + 1)) {
-            return false;
-          }
-        } finally {
-          symbol.clearValue(oldValue);
-        }
-      }
-      return true;
-    }
   }
 
   private static class TrueQ extends AbstractFunctionEvaluator implements IPredicate {
@@ -4487,17 +4464,6 @@ public final class BooleanFunctions {
     return F.NIL;
   }
 
-  private static IExpr quantityUnequals(IAST q1, IAST q2) {
-    IExpr equals = quantityEquals(q1, q2);
-    if (equals.isTrue()) {
-      return S.False;
-    }
-    if (equals.isFalse()) {
-      return S.True;
-    }
-    return F.NIL;
-  }
-
   private static int quantityCompareTo(IAST q1, IAST q2) {
     try {
       int result = org.matheclipse.core.units.QuantityOps.compare(q1, q2, EvalEngine.get());
@@ -4511,41 +4477,18 @@ public final class BooleanFunctions {
   }
 
   public static IExpr unequalNIL(IExpr a1, IExpr a2, EvalEngine engine) {
-    if (a1.isQuantity() && a2.isQuantity()) {
-      return quantityUnequals((IAST) a1, (IAST) a2);
-    }
-    if ((a1.isExactNumber() || a1.isString()) && (a2.isExactNumber() || a2.isString())) {
-      return a1.equals(a2) ? S.False : S.True;
-    }
-    IExpr.COMPARE_TERNARY b;
-    final IExpr arg1;
-    if (a1.isNumber()) {
-      arg1 = a1;
-    } else {
-      arg1 = engine.evaluate(F.expandAll(a1, true, true));
-    }
-    IExpr arg2;
-    if (a2.isNumber()) {
-      arg2 = a2;
-    } else {
-      arg2 = engine.evaluate(F.expandAll(a2, true, true));
-    }
-    b = arg1.equalTernary(arg2, engine);
-    if (b == IExpr.COMPARE_TERNARY.FALSE) {
-      return S.True;
-    }
-    if (b == IExpr.COMPARE_TERNARY.TRUE) {
+    IExpr[] expanded = new IExpr[2];
+    IExpr result = Equal.decideEqual(a1, a2, engine, expanded);
+    if (result.isTrue()) {
       return S.False;
     }
-    IExpr temp = Equal.checkPolynomialAssumptions(arg1, arg2, engine);
-    if (temp.isPresent()) {
-      return temp.isTrue() ? S.False : S.True;
-    }
-    if (checkUnequalAssumptions(arg1, arg2, engine)) {
+    if (result.isFalse()) {
       return S.True;
     }
-
-    return Equal.simplifyCompare(S.Unequal, arg1, arg2);
+    if (result.isPresent() || expanded[0] == null) {
+      return F.NIL;
+    }
+    return Equal.simplifyCompare(S.Unequal, expanded[0], expanded[1]);
   }
 
   /**

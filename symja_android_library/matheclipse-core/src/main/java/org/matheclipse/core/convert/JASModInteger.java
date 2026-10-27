@@ -143,31 +143,15 @@ public class JASModInteger {
       if (ast.isPlus() || ast.isTimes()) {
         return JASConvert.foldPlusTimes(ast, fPolyFactory, x -> expr2Poly(x, numeric2Rational));
       } else if (ast.isPower()) {
-        final IExpr base = ast.base();
-        for (int i = 0; i < fVariables.argSize(); i++) {
-          if (fVariables.get(i + 1).equals(base)) {
-            int exponent = ast.exponent().toIntDefault();
-            if (exponent < 0) {
-              throw new ArithmeticException(
-                  "JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
-            }
-            // JAS stores variables in reverse order in the ExpVector: position 0 corresponds to
-            // the last variable in the user list. Map the user-facing index i to the JAS-internal
-            // position so the write round-trips correctly with monomialToExpr (which uses
-            // leer.varIndex(i) to reverse the position back to a user index).
-            int jasIndex = fVariables.argSize() - 1 - i;
-            ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, exponent);
-            return fPolyFactory.valueOf(e);
-          }
+        GenPolynomial<ModLong> monomial = powerMonomial(ast);
+        if (monomial != null) {
+          return monomial;
         }
       }
     } else if (exprPoly instanceof ISymbol) {
-      for (int i = 0; i < fVariables.argSize(); i++) {
-        if (fVariables.get(i + 1).equals(exprPoly)) {
-          int jasIndex = fVariables.argSize() - 1 - i;
-          ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, 1L);
-          return fPolyFactory.getONE().multiply(e);
-        }
+      int i = variableIndex(exprPoly);
+      if (i >= 0) {
+        return monomial(i, 1L);
       }
       // class cast exception
     } else if (exprPoly instanceof IInteger) {
@@ -178,6 +162,49 @@ public class JASModInteger {
       return fraction2Poly((IFraction) exprPoly);
     }
     throw new ClassCastException(exprPoly.toString());
+  }
+
+  /** The position of <code>expr</code> in the variables list, <code>-1</code> if it isn't one. */
+  private int variableIndex(IExpr expr) {
+    for (int i = 0; i < fVariables.argSize(); i++) {
+      if (fVariables.get(i + 1).equals(expr)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * The monomial <code>v^exponent</code> of the variable <code>v</code> at position
+   * <code>i</code> of the variables list.
+   */
+  private GenPolynomial<ModLong> monomial(int i, long exponent) {
+    // JAS stores variables in reverse order in the ExpVector: position 0 corresponds to
+    // the last variable in the user list. Map the user-facing index i to the JAS-internal
+    // position so the write round-trips correctly with monomialToExpr (which uses
+    // leer.varIndex(i) to reverse the position back to a user index).
+    int jasIndex = fVariables.argSize() - 1 - i;
+    ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, exponent);
+    return fPolyFactory.valueOf(e);
+  }
+
+  /**
+   * The monomial for a power of one of the variables, <code>null</code> if the base isn't a
+   * variable.
+   *
+   * @throws ArithmeticException if the exponent isn't a non-negative integer
+   */
+  private GenPolynomial<ModLong> powerMonomial(final IAST power) {
+    int i = variableIndex(power.base());
+    if (i < 0) {
+      return null;
+    }
+    int exponent = power.exponent().toIntDefault();
+    if (exponent < 0) {
+      throw new ArithmeticException(
+          "JASModInteger:expr2Poly - invalid exponent: " + power.exponent().toString());
+    }
+    return monomial(i, exponent);
   }
 
   /**
@@ -208,27 +235,15 @@ public class JASModInteger {
       if (ast.isPlus() || ast.isTimes()) {
         return JASConvert.foldPlusTimes(ast, fPolyFactory, x -> expr2IExprPoly(x));
       } else if (ast.isPower()) {
-        final IExpr base = ast.base();
-        for (int i = 0; i < fVariables.argSize(); i++) {
-          if (fVariables.get(i + 1).equals(base)) {
-            int exponent = ast.exponent().toIntDefault();
-            if (exponent < 0) {
-              throw new ArithmeticException(
-                  "JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
-            }
-            int jasIndex = fVariables.argSize() - 1 - i;
-            ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, exponent);
-            return fPolyFactory.getONE().multiply(e);
-          }
+        GenPolynomial<ModLong> monomial = powerMonomial(ast);
+        if (monomial != null) {
+          return monomial;
         }
       }
     } else if (exprPoly instanceof ISymbol) {
-      for (int i = 0; i < fVariables.argSize(); i++) {
-        if (fVariables.get(i + 1).equals(exprPoly)) {
-          int jasIndex = fVariables.argSize() - 1 - i;
-          ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, 1L);
-          return fPolyFactory.getONE().multiply(e);
-        }
+      int i = variableIndex(exprPoly);
+      if (i >= 0) {
+        return monomial(i, 1L);
       }
       return new GenPolynomial(fPolyFactory, exprPoly);
     } else if (exprPoly instanceof IInteger) {
@@ -274,27 +289,10 @@ public class JASModInteger {
   }
 
   public boolean monomialToExpr(IInteger coeff, ExpVector exp, IASTAppendable monomTimes) {
-    long lExp;
-    ExpVector leer = fPolyFactory.evzero;
     if (!coeff.isOne()) {
       monomTimes.append(coeff);
     }
-    for (int i = 0; i < exp.length(); i++) {
-      lExp = exp.getVal(i);
-      if (lExp != 0) {
-        int ix = leer.varIndex(i);
-        if (ix >= 0) {
-          if (lExp == 1L) {
-            monomTimes.append(fVariables.get(ix + 1));
-          } else {
-            monomTimes.append(F.Power(fVariables.get(ix + 1), F.ZZ(lExp)));
-          }
-        } else {
-          return false;
-        }
-      }
-    }
-    return true;
+    return JASConvert.appendExpVector(exp, fPolyFactory.evzero, fVariables, monomTimes);
   }
 
   /**

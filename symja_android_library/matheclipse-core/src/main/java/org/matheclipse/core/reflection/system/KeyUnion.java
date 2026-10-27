@@ -22,15 +22,10 @@ public class KeyUnion extends AbstractFunctionEvaluator {
       missing = ast.arg2();
     }
     if (arg1.isList()) {
-      IAST list = (IAST) arg1;
-      IAssociation[] associations = new IAssociation[list.argSize()];
-      for (int i = 1; i <= list.argSize(); i++) {
-        IAssociation assoc = AssociationFunctions.toAssociation(list.get(i));
-        if (assoc == null) {
-          // All elements must be associations or lists of rules
-          return F.NIL;
-        }
-        associations[i - 1] = assoc;
+      IAssociation[] associations = AssociationFunctions.toAssociations((IAST) arg1);
+      if (associations == null) {
+        // All elements must be associations or lists of rules
+        return F.NIL;
       }
 
       // 1. Collect all keys across all associations in first-appearance order

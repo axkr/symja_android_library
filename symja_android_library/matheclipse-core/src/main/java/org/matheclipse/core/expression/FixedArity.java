@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -210,6 +211,39 @@ final class FixedArity {
     }
   }
 
+  static boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset, IExpr a0,
+      IExpr a1, IExpr a2, IExpr a3) {
+    switch (startOffset) {
+      case 0:
+        return predicate.test(a0, 0) || predicate.test(a1, 1) || predicate.test(a2, 2)
+            || predicate.test(a3, 3);
+      case 1:
+        return predicate.test(a1, 1) || predicate.test(a2, 2) || predicate.test(a3, 3);
+      case 2:
+        return predicate.test(a2, 2) || predicate.test(a3, 3);
+      case 3:
+        return predicate.test(a3, 3);
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * The arguments <code>ast.get(items[i] + offset)</code> for <code>i &lt; length</code> under the
+   * head of <code>ast</code>.
+   */
+  static IAST getItems(IAST ast, int[] items, int length, int offset) {
+    if (length == 0) {
+      return new AST0(ast.head());
+    }
+    AST result = new AST(length, true);
+    result.set(0, ast.head());
+    for (int i = 0; i < length; i++) {
+      result.set(i + 1, ast.get(items[i] + offset));
+    }
+    return result;
+  }
+
   static boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate, IExpr a1, IExpr a2,
       IExpr a3) {
     return stopPredicate.test(a1, a2) || stopPredicate.test(a2, a3);
@@ -271,6 +305,89 @@ final class FixedArity {
         return predicate.test(a3, 3);
       default:
         return true;
+    }
+  }
+
+  static boolean forAll(Predicate<? super IExpr> predicate, int startOffset, IExpr a0, IExpr a1,
+      IExpr a2, IExpr a3) {
+    switch (startOffset) {
+      case 0:
+        return predicate.test(a0) && predicate.test(a1) && predicate.test(a2)
+            && predicate.test(a3);
+      case 1:
+        return predicate.test(a1) && predicate.test(a2) && predicate.test(a3);
+      case 2:
+        return predicate.test(a2) && predicate.test(a3);
+      case 3:
+        return predicate.test(a3);
+      default:
+        return true;
+    }
+  }
+
+  static void forEach(Consumer<? super IExpr> action, int startOffset, IExpr a0, IExpr a1,
+      IExpr a2, IExpr a3) {
+    switch (startOffset) {
+      case 0:
+        action.accept(a0);
+        action.accept(a1);
+        action.accept(a2);
+        action.accept(a3);
+        break;
+      case 1:
+        action.accept(a1);
+        action.accept(a2);
+        action.accept(a3);
+        break;
+      case 2:
+        action.accept(a2);
+        action.accept(a3);
+        break;
+      case 3:
+        action.accept(a3);
+        break;
+      default:
+        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 4");
+    }
+  }
+
+  static void forEach(int start, int end, Consumer<? super IExpr> action, IExpr a0, IExpr a1,
+      IExpr a2, IExpr a3) {
+    if (start < end) {
+      switch (start) {
+        case 0:
+          action.accept(a0);
+          if (1 < end) {
+            action.accept(a1);
+            if (2 < end) {
+              action.accept(a2);
+              if (3 < end) {
+                action.accept(a3);
+              }
+            }
+          }
+          break;
+        case 1:
+          action.accept(a1);
+          if (2 < end) {
+            action.accept(a2);
+            if (3 < end) {
+              action.accept(a3);
+            }
+          }
+          break;
+        case 2:
+          action.accept(a2);
+          if (3 < end) {
+            action.accept(a3);
+          }
+          break;
+        case 3:
+          action.accept(a3);
+          break;
+        default:
+          throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: 4");
+      }
     }
   }
 

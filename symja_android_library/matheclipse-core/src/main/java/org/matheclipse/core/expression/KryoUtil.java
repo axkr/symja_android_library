@@ -29,53 +29,6 @@ import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 public class KryoUtil {
 
-  /** The list of all the WXF tokens. */
-  private static class WXF_CONSTANTS {
-    static final byte Function = 'f';
-    static final byte Symbol = 's';
-    static final byte String = 'S';
-    static final byte BinaryString = 'B';
-    static final byte Integer8 = 'C';
-    static final byte Integer16 = 'j';
-    static final byte Integer32 = 'i';
-    static final byte Integer64 = 'L';
-    static final byte Real64 = 'r';
-    static final byte BigInteger = 'I';
-    static final byte BigReal = 'R';
-    static final byte PackedArray = (byte) 0xC1;
-    static final byte RawArray = (byte) 0xC2;
-    static final byte Association = 'A';
-    static final byte Rule = '-';
-    static final byte RuleDelayed = ':';
-  }
-
-  /** Serialize <code>length</code> into varint bytes and return them as a byte array. */
-  @Deprecated
-  public static byte[] varintBytes(int length) {
-    byte[] buf = new byte[9];
-    if (length < 0) {
-      throw new UnsupportedOperationException("Negative values cannot be encoded as varint.");
-    }
-    int count = 0;
-    while (true) {
-      int next = (length & 0x7f);
-      length >>= 7;
-      if (length != 0) {
-        buf[count] = (byte) (next | 0x80);
-        count += 1;
-      } else {
-        buf[count] = (byte) next;
-        count += 1;
-        break;
-      }
-    }
-    byte[] result = new byte[count];
-    for (int i = 0; i < count; i++) {
-      result[i] = buf[i];
-    }
-    return result;
-  }
-
   private static class BuiltInSymbolSerializer extends Serializer<IExpr> {
 
     public BuiltInSymbolSerializer() {
@@ -425,21 +378,21 @@ public class KryoUtil {
     public void write(Kryo kryo, Output stream, IAST ast) {
       if (ast instanceof ASTRealVector) {
         RealVector vector = ((ASTRealVector) ast).getRealVector();
-        stream.writeInt(WXF_CONSTANTS.PackedArray);
+        stream.writeInt(WL.WXF_CONSTANTS.PackedArray);
         stream.write(NumericArrayExpr.Real64);
         stream.write(0x01);
-        stream.write(varintBytes(vector.getDimension()));
+        stream.write(WL.varintBytes(vector.getDimension()));
         for (int i = 0; i < vector.getDimension(); i++) {
           writeDouble(stream, vector.getEntry(i));
         }
         return;
       } else if (ast instanceof ASTRealMatrix) {
         RealMatrix matrix = ((ASTRealMatrix) ast).getRealMatrix();
-        stream.writeInt(WXF_CONSTANTS.PackedArray);
+        stream.writeInt(WL.WXF_CONSTANTS.PackedArray);
         stream.write(NumericArrayExpr.Real64);
         stream.write(0x02);
-        stream.write(varintBytes(matrix.getRowDimension()));
-        stream.write(varintBytes(matrix.getColumnDimension()));
+        stream.write(WL.varintBytes(matrix.getRowDimension()));
+        stream.write(WL.varintBytes(matrix.getColumnDimension()));
         for (int i = 0; i < matrix.getRowDimension(); i++) {
           for (int j = 0; j < matrix.getColumnDimension(); j++) {
             writeDouble(stream, matrix.getEntry(i, j));
@@ -448,21 +401,21 @@ public class KryoUtil {
         return;
       } else if (ast instanceof ASTAssociation) {
         // <|a->b, c:>d,...|>
-        stream.writeInt(WXF_CONSTANTS.Association);
-        stream.write(varintBytes(ast.argSize()));
+        stream.writeInt(WL.WXF_CONSTANTS.Association);
+        stream.write(WL.varintBytes(ast.argSize()));
         for (int i = 1; i < ast.size(); i++) {
           IAST rule = (IAST) ast.getRule(i);
           if (rule.isRuleDelayed()) {
-            stream.write(WXF_CONSTANTS.RuleDelayed);
+            stream.write(WL.WXF_CONSTANTS.RuleDelayed);
           } else {
-            stream.write(WXF_CONSTANTS.Rule);
+            stream.write(WL.WXF_CONSTANTS.Rule);
           }
           kryo.writeObject(stream, rule.arg1());
           kryo.writeObject(stream, rule.arg2());
         }
         return;
       }
-      stream.writeInt(WXF_CONSTANTS.Function);
+      stream.writeInt(WL.WXF_CONSTANTS.Function);
       stream.writeInt(ast.argSize());
       for (int i = 0; i < ast.size(); i++) {
         kryo.writeClassAndObject(stream, ast.get(i));
@@ -480,7 +433,7 @@ public class KryoUtil {
       if (IAST.class.isAssignableFrom(type)) {
         int exprType = input.readInt();
         switch (exprType) {
-          case WXF_CONSTANTS.Function:
+          case WL.WXF_CONSTANTS.Function:
             int length = input.readInt();
             IASTAppendable ast = F.ast(F.NIL, length);
             ast.set(0, (IExpr) kryo.readClassAndObject(input));

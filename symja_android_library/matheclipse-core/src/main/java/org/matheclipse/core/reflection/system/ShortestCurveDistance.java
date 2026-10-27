@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -48,19 +48,9 @@ public class ShortestCurveDistance extends AbstractFunctionEvaluator {
   }
 
   private IExpr circleSphereDistance(IAST reg, IExpr p1, IExpr p2, EvalEngine engine) {
-    IExpr head = reg.head();
-    int dim = (head == S.Circle) ? 2 : 3;
-    IExpr c = F.NIL;
-    IExpr r = F.C1;
-
-    if (reg.argSize() == 0) {
-      c = (dim == 2) ? F.List(F.C0, F.C0) : F.List(F.C0, F.C0, F.C0);
-    } else if (reg.argSize() >= 1) {
-      c = reg.arg1();
-      if (reg.argSize() >= 2) {
-        r = reg.arg2();
-      }
-    }
+    RegionPrimitives.BallSpec ball = RegionPrimitives.parseBall(reg);
+    IExpr c = ball.center;
+    IExpr r = ball.radius;
 
     if (c.isList()) {
       IExpr v1 = engine.evaluate(F.Subtract(p1, c));

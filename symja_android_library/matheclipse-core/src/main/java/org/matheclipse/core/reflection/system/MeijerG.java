@@ -562,21 +562,36 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
         F.Plus(F.C1, F.Negate(a1), b1), F.Plus(F.C1, b1, F.Negate(b2)), F.Negate(z.w()))); // $$;
   }
 
+  /**
+   * The evaluated factors <code>Gamma(1-a1+b1)</code> and <code>Gamma(1-a1+b2)</code>.
+   *
+   * @return <code>null</code> if one of them is not free of special values like
+   *         <code>ComplexInfinity</code>
+   */
+  private static IExpr[] gammaFactors(IExpr a1, IExpr b1, IExpr b2, EvalEngine engine) {
+    IExpr gamma1 = engine.evaluate(F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)));
+    if (!gamma1.isSpecialsFree()) {
+      return null;
+    }
+    IExpr gamma2 = engine.evaluate(F.Gamma(F.Plus(F.C1, F.Negate(a1), b2)));
+    if (!gamma2.isSpecialsFree()) {
+      return null;
+    }
+    return new IExpr[] {gamma1, gamma2};
+  }
+
   private static IExpr meijerg1020(IExpr a1, IExpr b1, IExpr b2, Argument z, EvalEngine engine) {
     if (!z.allows(ONE_R)) {
       return F.NIL;
     }
     // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/12/0002/
     // z^b1*Gamma(1-a1+b1)*Gamma(1-a1+b2)*HypergeometricU(1-a1+b1,1+b1-b2,z)
-    IExpr gamma1 = engine.evaluate(F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)));
-    if (gamma1.isSpecialsFree()) {
-      IExpr gamma2 = engine.evaluate(F.Gamma(F.Plus(F.C1, F.Negate(a1), b2)));
-      if (gamma2.isSpecialsFree()) {
-        return F.Times(z.pow(b1), gamma1, gamma2, F.HypergeometricU(
-            F.Plus(F.C1, F.Negate(a1), b1), F.Plus(F.C1, b1, F.Negate(b2)), z.w()));
-      }
+    IExpr[] gammas = gammaFactors(a1, b1, b2, engine);
+    if (gammas == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    return F.Times(z.pow(b1), gammas[0], gammas[1], F.HypergeometricU(
+        F.Plus(F.C1, F.Negate(a1), b1), F.Plus(F.C1, b1, F.Negate(b2)), z.w()));
   }
 
   /**
@@ -659,17 +674,14 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
     }
     // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/14/0001/
     // (Gamma(1-a1+b1)*Gamma(1-a1+b2)*Hypergeometric2F1Regularized(1-a1+b1,1-a1+b2,1-a1+a2,-1/z))/z^(1-a1)
-    IExpr gamma1 = engine.evaluate(F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)));
-    if (gamma1.isSpecialsFree()) {
-      IExpr gamma2 = engine.evaluate(F.Gamma(F.Plus(F.C1, F.Negate(a1), b2)));
-      if (gamma2.isSpecialsFree()) {
-        return F.Times(z.pow(F.Plus(F.CN1, a1)), gamma1, gamma2,
-            F.Hypergeometric2F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
-                F.Plus(F.C1, F.Negate(a1), b2), F.Plus(F.C1, F.Negate(a1), a2),
-                F.Negate(z.pow(F.CN1))));
-      }
+    IExpr[] gammas = gammaFactors(a1, b1, b2, engine);
+    if (gammas == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    return F.Times(z.pow(F.Plus(F.CN1, a1)), gammas[0], gammas[1],
+        F.Hypergeometric2F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
+            F.Plus(F.C1, F.Negate(a1), b2), F.Plus(F.C1, F.Negate(a1), a2),
+            F.Negate(z.pow(F.CN1))));
   }
 
   private static IExpr meijerg1220(IExpr a1, IExpr a2, IExpr a3, IExpr b1, IExpr b2, Argument z,
@@ -678,16 +690,13 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
     // (Gamma(1-a1+b1)*Gamma(1-a1+b2)*HypergeometricPFQRegularized({1-a1+b1,1-a1+b2},{1-a1+a2,1-a1+a3},-1/z))/z^(1-a1)
     IExpr v2 = F.Subtract(F.C1, a1);
     IExpr v1 = F.Plus(v2, b1);
-    IExpr gamma1 = engine.evaluate(F.Gamma(F.Plus(v2, b1)));
-    if (gamma1.isSpecialsFree()) {
-      IExpr gamma2 = engine.evaluate(F.Gamma(F.Plus(b2, v2)));
-      if (gamma2.isSpecialsFree()) {
-        return F.Times(z.pow(F.Plus(F.CN1, a1)), gamma1, gamma2,
-            F.HypergeometricPFQRegularized(F.list(v1, F.Plus(b2, v2)),
-                F.list(F.Plus(a2, v2), F.Plus(a3, v2)), F.Negate(z.pow(F.CN1))));
-      }
+    IExpr[] gammas = gammaFactors(a1, b1, b2, engine);
+    if (gammas == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    return F.Times(z.pow(F.Plus(F.CN1, a1)), gammas[0], gammas[1],
+        F.HypergeometricPFQRegularized(F.list(v1, F.Plus(b2, v2)),
+            F.list(F.Plus(a2, v2), F.Plus(a3, v2)), F.Negate(z.pow(F.CN1))));
   }
 
   public MeijerG() {}

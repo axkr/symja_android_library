@@ -968,6 +968,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    *
    * @return 1 as GenPolynomial.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExprPolynomial getOne() {
     return ONE;
   }
@@ -1030,6 +1031,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @return a GenPolynomial&lt;C&gt;.
    */
   public ExprPolynomial valueOf(IExpr a) {
+  // CPD-ON
     return new ExprPolynomial(this, a);
   }
 
@@ -1392,6 +1394,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       return true;
     }
 
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     /**
      * Get next polynomial.
      *
@@ -1439,6 +1442,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       current = pol;
       return res;
     }
+    // CPD-ON
 
     /** Remove an element if allowed. */
     @Override

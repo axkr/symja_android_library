@@ -5,14 +5,12 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <code>BubbleChart({{x, y, z}, ...})</code> - the points <code>{x, y}</code> as bubbles whose area
@@ -23,7 +21,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * what grows with the value, as Mathematica draws them. Several datasets, <code>{{{x, y, z},
  * ...}, ...}</code>, each take a colour of their own.
  */
-public class BubbleChart extends ListPlot {
+public class BubbleChart extends AbstractChart {
 
   /** The smallest bubble radius, as a fraction of the width of the data. */
   private static final double MIN_RADIUS = 0.01;
@@ -225,35 +223,14 @@ public class BubbleChart extends ListPlot {
   }
 
   @Override
-  protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
-      IAST plotAST) {
-    graphicsOptions.addPadding();
-    IASTAppendable result = F.Graphics(primitives);
-    result.appendArgs(graphicsOptions.getGraphicsRules());
-    return GraphicsOptions.legended(result);
-  }
-
-  @Override
-  public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
-  }
-
-  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_INFINITY;
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {
-    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
-    // charts draw their own extent, so the reference rendering does not clip
-    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
+  protected void chartDefaults(IExpr[] defaults) {
     defaults[GraphicsOptions.X_FRAME] = S.True;
     defaults[GraphicsOptions.X_AXES] = S.False;
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.C1;
-
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions.chartExtras(
-        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
-    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

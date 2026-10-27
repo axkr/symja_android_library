@@ -20,7 +20,8 @@ public final class ExpVectorLong implements Serializable {
   /** The data structure is an array of longs. */
   /* package */ final long[] val;
 
-  transient protected int hash = -1;
+  /** The cached hash code, <code>0</code> if not computed yet (also after deserialization). */
+  transient protected int hash;
 
   /**
    * Constructor for ExpVectorLong.
@@ -144,6 +145,7 @@ public final class ExpVectorLong implements Serializable {
     return val[i];
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Set the exponent at position i to e.
    *
@@ -154,7 +156,7 @@ public final class ExpVectorLong implements Serializable {
   protected long setVal(int i, long e) {
     long x = val[i];
     val[i] = e;
-    hash = -1; // beware of race condition
+    hash = 0; // beware of race condition
     return x;
   }
 
@@ -247,6 +249,7 @@ public final class ExpVectorLong implements Serializable {
     w[j] = e;
     return result;
   }
+  // CPD-ON
 
   /**
    * Extend lower variables. Extend this by i lower elements and set val[j] to e.
@@ -553,15 +556,15 @@ public final class ExpVectorLong implements Serializable {
    */
   @Override
   public int hashCode() {
-    if (hash < 0) {
-      int h = 0;
+    int h = hash;
+    if (h == 0) {
       final int len = length();
       for (int i = 0; i < len; i++) {
-        hash = (hash << 3) + (int) getVal(i);
+        h = (h << 3) + (int) getVal(i);
       }
       hash = h;
     }
-    return hash;
+    return h;
   }
 
   /**

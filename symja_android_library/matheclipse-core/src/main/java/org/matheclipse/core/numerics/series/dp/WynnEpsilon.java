@@ -200,6 +200,7 @@ public final class WynnEpsilon extends SeriesAlgorithm {
     return result;
   }
 
+  // CPD-OFF double and Complex variants of the same algorithm
   private final double nextGTransform(final double e, final double term) {
 
     // wait to compute series difference
@@ -283,4 +284,5 @@ public final class WynnEpsilon extends SeriesAlgorithm {
         return "Wynn Epsilon";
     }
   }
+  // CPD-ON
 }

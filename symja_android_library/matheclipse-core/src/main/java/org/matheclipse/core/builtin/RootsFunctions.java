@@ -905,28 +905,15 @@ public class RootsFunctions {
     IExpr e;
     if (varDegree <= 4) {
       // solve quartic equation:
-      a = C0;
-      b = C0;
-      c = C0;
-      d = C0;
-      e = C0;
-      for (ExprMonomial monomial : polynomial) {
-        IExpr coeff = monomial.coefficient();
-        long lExp = monomial.exponent().getVal(0);
-        if (lExp == 4) {
-          a = coeff;
-        } else if (lExp == 3) {
-          b = coeff;
-        } else if (lExp == 2) {
-          c = coeff;
-        } else if (lExp == 1) {
-          d = coeff;
-        } else if (lExp == 0) {
-          e = coeff;
-        } else {
-          return F.NIL;
-        }
+      IExpr[] coefficients = QuarticSolver.coefficients(polynomial);
+      if (coefficients == null) {
+        return F.NIL;
       }
+      a = coefficients[4];
+      b = coefficients[3];
+      c = coefficients[2];
+      d = coefficients[1];
+      e = coefficients[0];
       IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e, createSet, true);
       if (result.isPresent()) {
         return (IASTAppendable) QuarticSolver.sortASTArguments(result);
@@ -1105,28 +1092,15 @@ public class RootsFunctions {
         }
       }
       // solve quadratic equation:
-      a = C0;
-      b = C0;
-      c = C0;
-      d = C0;
-      e = C0;
-      for (ExprMonomial monomial : polynomial) {
-        IExpr coeff = monomial.coefficient();
-        long lExp = monomial.exponent().getVal(0);
-        if (lExp == 4) {
-          a = coeff;
-        } else if (lExp == 3) {
-          b = coeff;
-        } else if (lExp == 2) {
-          c = coeff;
-        } else if (lExp == 1) {
-          d = coeff;
-        } else if (lExp == 0) {
-          e = coeff;
-        } else {
-          throw new ArithmeticException("Roots::Unexpected exponent value: " + lExp);
-        }
+      IExpr[] coefficients = QuarticSolver.coefficients(polynomial);
+      if (coefficients == null) {
+        throw new ArithmeticException("Roots::Unexpected exponent value");
       }
+      a = coefficients[4];
+      b = coefficients[3];
+      c = coefficients[2];
+      d = coefficients[1];
+      e = coefficients[0];
       IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
       if (result.isPresent()) {
         result = (IASTAppendable) QuarticSolver.sortASTArguments(result);

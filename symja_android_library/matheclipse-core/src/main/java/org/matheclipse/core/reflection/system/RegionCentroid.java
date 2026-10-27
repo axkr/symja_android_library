@@ -262,16 +262,17 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
 
   /** The centroid of a parallelepiped is its base point plus half of every spanning vector. */
   private IExpr parallelepipedCentroid(IAST reg, EvalEngine engine) {
-    if (reg.argSize() == 2 && reg.arg1().isList() && reg.arg2().isListOfLists()) {
-      IAST vectors = (IAST) reg.arg2();
-      IASTAppendable sum = F.PlusAlloc(vectors.argSize() + 1);
-      sum.append(reg.arg1());
-      for (int i = 1; i <= vectors.argSize(); i++) {
-        sum.append(F.Times(F.C1D2, vectors.get(i)));
-      }
-      return engine.evaluate(sum);
+    RegionPrimitives.ParallelogramSpec spec = RegionPrimitives.parseParallelepiped(reg);
+    if (spec == null) {
+      return F.NIL;
     }
-    return F.NIL;
+    IAST vectors = spec.vectors;
+    IASTAppendable sum = F.PlusAlloc(vectors.argSize() + 1);
+    sum.append(spec.base);
+    for (int i = 1; i <= vectors.argSize(); i++) {
+      sum.append(F.Times(F.C1D2, vectors.get(i)));
+    }
+    return engine.evaluate(sum);
   }
 
   private IExpr platonicSolidCentroid(IAST reg) {

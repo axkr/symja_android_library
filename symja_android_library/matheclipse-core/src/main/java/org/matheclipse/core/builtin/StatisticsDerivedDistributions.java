@@ -663,6 +663,27 @@ public class StatisticsDerivedDistributions {
   }
 
   /**
+   * Canonicalizes the inner distribution of <code>head({xmin, xmax}, dist)</code>, e.g.
+   * <code>NormalDistribution()</code> to <code>NormalDistribution(0,1)</code>.
+   *
+   * @return {@link F#NIL} if the inner distribution is unchanged or not a known distribution
+   */
+  private static IExpr canonicalizeInner(final IAST ast, ISymbol head, EvalEngine engine) {
+    if (ast.isAST2() && ast.arg1().isList2() && ast.arg2().isAST()) {
+      IExpr distribution = engine.evaluate(ast.arg2());
+      IDistribution evaluator =
+          distribution.isAST() ? ((IAST) distribution).headInstanceOf(IDistribution.class) : null;
+      if (evaluator != null) {
+        IAST checked = evaluator.checkParameters((IAST) distribution);
+        if (checked.isPresent() && !checked.equals(ast.arg2())) {
+          return F.binaryAST2(head, ast.arg1(), checked);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * <code>CensoredDistribution({xmin, xmax}, dist)</code> - the values of <code>dist</code>
    * censored to lie between <code>xmin</code> and <code>xmax</code>.
    */
@@ -671,19 +692,7 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST2() && ast.arg1().isList2() && ast.arg2().isAST()) {
-        // canonicalize the inner distribution, e.g. NormalDistribution() -> NormalDistribution(0,1)
-        IExpr distribution = engine.evaluate(ast.arg2());
-        IDistribution evaluator =
-            distribution.isAST() ? ((IAST) distribution).headInstanceOf(IDistribution.class) : null;
-        if (evaluator != null) {
-          IAST checked = evaluator.checkParameters((IAST) distribution);
-          if (checked.isPresent() && !checked.equals(ast.arg2())) {
-            return F.binaryAST2(S.CensoredDistribution, ast.arg1(), checked);
-          }
-        }
-      }
-      return F.NIL;
+      return canonicalizeInner(ast, S.CensoredDistribution, engine);
     }
 
     @Override
@@ -809,19 +818,7 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST2() && ast.arg1().isList2() && ast.arg2().isAST()) {
-        // canonicalize the inner distribution, e.g. NormalDistribution() -> NormalDistribution(0,1)
-        IExpr distribution = engine.evaluate(ast.arg2());
-        IDistribution evaluator =
-            distribution.isAST() ? ((IAST) distribution).headInstanceOf(IDistribution.class) : null;
-        if (evaluator != null) {
-          IAST checked = evaluator.checkParameters((IAST) distribution);
-          if (checked.isPresent() && !checked.equals(ast.arg2())) {
-            return F.binaryAST2(S.TruncatedDistribution, ast.arg1(), checked);
-          }
-        }
-      }
-      return F.NIL;
+      return canonicalizeInner(ast, S.TruncatedDistribution, engine);
     }
 
     @Override

@@ -25,6 +25,18 @@ public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAnd() {
+    // a symbol and its negation
+    check("And(a, True, !a)", //
+        "False");
+    check("And(b, a, True, c, !a)", //
+        "False");
+    check("Or(a, False, !a)", //
+        "True");
+    check("Or(b, False, c, !b)", //
+        "True");
+    // the first argument which is not True is evaluated once
+    check("k=0;And(k++;p, q);k", //
+        "1");
     // let x&&x unevaluated because of pattern matching
     check("x&&x", //
         "x&&x");

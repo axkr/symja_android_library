@@ -289,18 +289,9 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     } else if (expression.isAST()) {
       if (checkTimesPlus && expression.isTimes()) {
         IAST timesAST = ((IAST) expression);
-        IExpr arg1 = timesAST.arg1();
-        // see github #110: checking for arg1.isNegative() will trigger infinite recursion!
-        if (arg1.isNumber()) {
-          if (((INumber) arg1).complexSign() < 0) {
-            IExpr negNum = ((INumber) arg1).negate();
-            if (negNum.isOne()) {
-              return timesAST.rest().oneIdentity1();
-            }
-            return timesAST.setAtCopy(1, negNum);
-          }
-        } else if (arg1.isNegativeInfinity()) {
-          return timesAST.setAtCopy(1, F.CInfinity);
+        IExpr negated = negateLeadingTimesFactor(timesAST);
+        if (negated.isPresent()) {
+          return negated;
         }
         int index = timesAST.indexOf(x -> x.isNegativeInfinity(), 2);
         if (index > 1) {
@@ -475,6 +466,30 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   }
 
   /**
+   * Negates the first factor of a <code>Times(...)</code> expression if it is a negative number or
+   * <code>-Infinity</code>.
+   *
+   * @param timesAST a <code>Times(...)</code> expression
+   * @return <code>F.NIL</code> if the first factor is neither
+   */
+  private static IExpr negateLeadingTimesFactor(IAST timesAST) {
+    IExpr arg1 = timesAST.arg1();
+    // see github #110: checking for arg1.isNegative() will trigger infinite recursion!
+    if (arg1.isNumber()) {
+      if (((INumber) arg1).complexSign() < 0) {
+        IExpr negNum = ((INumber) arg1).negate();
+        if (negNum.isOne()) {
+          return timesAST.rest().oneIdentity1();
+        }
+        return timesAST.setAtCopy(1, negNum);
+      }
+    } else if (arg1.isNegativeInfinity()) {
+      return timesAST.setAtCopy(1, F.CInfinity);
+    }
+    return F.NIL;
+  }
+
+  /**
    * Check if the expression is canonical negative.
    *
    * @param expression
@@ -492,19 +507,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     }
     if (expression.isAST()) {
       if (checkTimesPlus && expression.isTimes()) {
-        IAST timesAST = ((IAST) expression);
-        IExpr arg1 = timesAST.arg1();
-        if (arg1.isNumber()) {
-          if (((INumber) arg1).complexSign() < 0) {
-            IExpr negNum = ((INumber) arg1).negate();
-            if (negNum.isOne()) {
-              return timesAST.rest().oneIdentity1();
-            }
-            return timesAST.setAtCopy(1, negNum);
-          }
-        } else if (arg1.isNegativeInfinity()) {
-          return timesAST.setAtCopy(1, F.CInfinity);
-        }
+        return negateLeadingTimesFactor((IAST) expression);
       } else if (checkTimesPlus && expression.isPlus()) {
         IAST plusAST = ((IAST) expression);
         IExpr arg1 = plusAST.arg1();

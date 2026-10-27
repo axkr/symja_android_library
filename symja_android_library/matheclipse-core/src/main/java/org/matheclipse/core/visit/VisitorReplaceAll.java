@@ -287,28 +287,8 @@ public class VisitorReplaceAll extends VisitorExpr {
       IASTMutable rules = assoc.normal(false).setAtCopy(0, head);
       return visitAST(rules).orElse(rules);
     }
-    int size = assoc.size();
-    for (int i = fOffset; i < size; i++) {
-      IExpr temp = assoc.getValue(i).accept(this);
-      if (temp.isPresent()) {
-        // something was evaluated - return a new IAST:
-        IAST iRuleOrNIL = assoc.getRule(i);
-        IASTMutable result;
-        if (iRuleOrNIL.isPresent()) {
-          result = assoc.setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
-        } else {
-          result = assoc.copy();
-        }
-        assoc.forEach(i + 1, size, (x, j) -> {
-          IExpr t = x.accept(this);
-          if (t.isPresent()) {
-            result.set(j, assoc.getRule(j).setAtCopy(2, t));
-          }
-        });
-        return postProcessing(result);
-      }
-    }
-    return F.NIL;
+    IASTMutable result = visitAssociationValues(assoc, fOffset);
+    return result.isPresent() ? postProcessing(result) : F.NIL;
   }
 
   @Override

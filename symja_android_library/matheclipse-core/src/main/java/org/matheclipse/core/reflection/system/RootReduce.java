@@ -162,22 +162,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
         order[i] = i;
       }
       if (canSort) {
-        final double imTol = 1e-10;
-        final double reTol = 1e-10;
-        java.util.Arrays.sort(order, (xi, yi) -> {
-          boolean xReal = Math.abs(imVals[xi]) < imTol;
-          boolean yReal = Math.abs(imVals[yi]) < imTol;
-          if (xReal && !yReal) {
-            return -1;
-          }
-          if (!xReal && yReal) {
-            return 1;
-          }
-          if (Math.abs(reVals[xi] - reVals[yi]) > reTol) {
-            return Double.compare(reVals[xi], reVals[yi]);
-          }
-          return Double.compare(imVals[xi], imVals[yi]);
-        });
+        ToRadicals.sortRootOrder(order, reVals, imVals);
       }
 
       // Step 6: find the root index k (1-based) whose numeric value is closest to the given value,

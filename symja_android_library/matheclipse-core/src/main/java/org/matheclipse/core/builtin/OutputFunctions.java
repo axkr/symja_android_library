@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.hipparchus.linear.FieldMatrix;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
@@ -612,6 +611,55 @@ public final class OutputFunctions {
       return arg1.internalJavaString(p, 0, x -> null);
     }
 
+    /**
+     * The Java code of <code>arg1</code> with values of the given <code>type</code>: a method
+     * <code>type fN(type x, ...)</code> with the common subexpressions as local variables if
+     * <code>OptimizeExpression</code> finds some, otherwise the expression alone.
+     *
+     * @param toJava the Java code of an expression with values of <code>type</code>
+     */
+    private static IExpr javaFunction(IExpr arg1, String type, Function<IExpr, String> toJava,
+        EvalEngine engine) {
+      IExpr optimized = S.OptimizeExpression.of(engine, arg1);
+      if (optimized.isList2() && optimized.second().isListOfRules()
+          && !optimized.second().isEmptyList()) {
+        IExpr newExpr = optimized.first();
+        IAST listOfRules = (IAST) optimized.second();
+        VariablesSet varSet = new VariablesSet(arg1);
+        List<IExpr> functionsParameters = varSet.getArrayList();
+        StringBuilder buf = new StringBuilder();
+        long functionCounter = EvalEngine.incModuleCounter();
+        buf.append(type);
+        buf.append(" f");
+        buf.append(functionCounter);
+        buf.append("(");
+        for (int i = 0; i < functionsParameters.size(); i++) {
+          buf.append(type);
+          buf.append(" ");
+          buf.append(functionsParameters.get(i));
+          if (i < functionsParameters.size() - 1) {
+            buf.append(", ");
+          }
+        }
+        buf.append(") {\n");
+        for (int i = 1; i < listOfRules.size(); i++) {
+          IAST rule = (IAST) listOfRules.get(i);
+          buf.append(type);
+          buf.append(" ");
+          buf.append(toJava.apply(rule.first()));
+          buf.append(" = ");
+          buf.append(toJava.apply(rule.second()));
+          buf.append(";\n");
+        }
+        buf.append("return ");
+        buf.append(toJava.apply(newExpr));
+        buf.append(";\n");
+        buf.append("}\n");
+        return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
+      }
+      return F.$str(toJava.apply(arg1), IStringX.APPLICATION_JAVA);
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
@@ -633,84 +681,15 @@ public final class OutputFunctions {
           } else {
             final OptionArgs options = new OptionArgs(ast.topHead(), arg2, engine);
             floatJava = options.isTrue(S.Float);
+            complexJava = options.isTrue(S.Complex);
             strictJava = options.isTrue(S.Strict);
             usePrefix = options.isTrue(S.Prefix);
           }
         }
         if (floatJava) {
-          IExpr optimized = S.OptimizeExpression.of(engine, arg1);
-          if (optimized.isList2() && optimized.second().isListOfRules()
-              && !optimized.second().isEmptyList()) {
-            IExpr newExpr = optimized.first();
-            IAST listOfRules = (IAST) optimized.second();
-            VariablesSet varSet = new VariablesSet(arg1);
-            List<IExpr> functionsParameters = varSet.getArrayList();
-            StringBuilder buf = new StringBuilder();
-            long functionCounter = EvalEngine.incModuleCounter();
-            buf.append("double f");
-            buf.append(functionCounter);
-            buf.append("(");
-            for (int i = 0; i < functionsParameters.size(); i++) {
-              buf.append("double ");
-              buf.append(functionsParameters.get(i));
-              if (i < functionsParameters.size() - 1) {
-                buf.append(", ");
-              }
-            }
-            buf.append(") {\n");
-            for (int i = 1; i < listOfRules.size(); i++) {
-              IAST rule = (IAST) listOfRules.get(i);
-              buf.append("double ");
-              buf.append(toJavaDouble(rule.first()));
-              buf.append(" = ");
-              buf.append(toJavaDouble(rule.second()));
-              buf.append(";\n");
-            }
-            buf.append("return ");
-            buf.append(toJavaDouble(newExpr));
-            buf.append(";\n");
-            buf.append("}\n");
-            return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
-          }
-
-          return F.$str(toJavaDouble(arg1), IStringX.APPLICATION_JAVA);
+          return javaFunction(arg1, "double", OutputFunctions::toJavaDouble, engine);
         } else if (complexJava) {
-          IExpr optimized = S.OptimizeExpression.of(engine, arg1);
-          if (optimized.isList2() && optimized.second().isListOfRules()
-              && !optimized.second().isEmptyList()) {
-            IExpr newExpr = optimized.first();
-            IAST listOfRules = (IAST) optimized.second();
-            VariablesSet varSet = new VariablesSet(arg1);
-            List<IExpr> functionsParameters = varSet.getArrayList();
-            StringBuilder buf = new StringBuilder();
-            long functionCounter = EvalEngine.incModuleCounter();
-            buf.append("Complex f");
-            buf.append(functionCounter);
-            buf.append("(");
-            for (int i = 0; i < functionsParameters.size(); i++) {
-              buf.append("Complex ");
-              buf.append(functionsParameters.get(i));
-              if (i < functionsParameters.size() - 1) {
-                buf.append(", ");
-              }
-            }
-            buf.append(") {\n");
-            for (int i = 1; i < listOfRules.size(); i++) {
-              IAST rule = (IAST) listOfRules.get(i);
-              buf.append("Complex ");
-              buf.append(toJavaComplex(rule.first()));
-              buf.append(" = ");
-              buf.append(toJavaComplex(rule.second()));
-              buf.append(";\n");
-            }
-            buf.append("return ");
-            buf.append(toJavaComplex(newExpr));
-            buf.append(";\n");
-            buf.append("}\n");
-            return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
-          }
-
-          return F.$str(toJavaComplex(arg1), IStringX.APPLICATION_JAVA);
+          return javaFunction(arg1, "Complex", OutputFunctions::toJavaComplex, engine);
         }
         String resultStr = javaForm(arg1, strictJava, usePrefix).toString();
         return F.$str(resultStr, IStringX.APPLICATION_JAVA);
@@ -1360,103 +1339,6 @@ public final class OutputFunctions {
       for (int i = 0; i < rowDimension; i++) {
         result.append(sb[i]);
         result.append("|");
-        if (i < rowDimension - 1) {
-          result.append("\n");
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-
-  /**
-   * @param result
-   * @param expr
-   * @param delimiter
-   * @param function
-   * @param fillUpWithSPACE
-   * @return
-   * @deprecated use freva/ascii-table now - https://github.com/freva/ascii-table
-   */
-  @Deprecated
-  public static boolean plaintextTable(StringBuilder result, IExpr expr, String delimiter,
-      java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
-    int[] dim = expr.isMatrix();
-    if (dim != null && dim[0] > 0 && dim[1] > 0) {
-      int rowDimension = dim[0];
-      int columnDimension = dim[1];
-      StringBuilder[] sb = new StringBuilder[rowDimension];
-      for (int j = 0; j < rowDimension; j++) {
-        sb[j] = new StringBuilder();
-      }
-      if (expr.isAST()) {
-        IAST matrix = (IAST) expr;
-        int rowLength = 0;
-        for (int i = 0; i < columnDimension; i++) {
-          int columnLength = 0;
-          for (int j = 0; j < rowDimension; j++) {
-            String str = function.apply(matrix.getPart(j + 1, i + 1));
-            if (str.length() > columnLength) {
-              columnLength = str.length();
-            }
-            sb[j].append(str);
-            if (i < columnDimension - 1) {
-              sb[j].append(delimiter);
-            }
-          }
-          if (i < columnDimension - 1) {
-            rowLength += columnLength + 1;
-          } else {
-            rowLength += columnLength;
-          }
-          if (fillUpWithSPACE) {
-            for (int j = 0; j < rowDimension; j++) {
-              int rest = rowLength - sb[j].length();
-              for (int k = 0; k < rest; k++) {
-                sb[j].append(' ');
-              }
-            }
-          }
-        }
-      } else {
-        FieldMatrix<IExpr> matrix = Convert.list2Matrix(expr);
-        int rowLength = 0;
-        if (matrix == null) {
-          return false;
-        } else {
-          for (int i = 0; i < columnDimension; i++) {
-            int columnLength = 0;
-            for (int j = 0; j < rowDimension; j++) {
-              IExpr arg = matrix.getEntry(j, i);
-              String str = function.apply(arg);
-              if (str.length() > columnLength) {
-                columnLength = str.length();
-              }
-              sb[j].append(str);
-              if (i < columnDimension - 1) {
-                sb[j].append(delimiter);
-              }
-            }
-            if (i < columnDimension - 1) {
-              rowLength += columnLength + 1;
-            } else {
-              rowLength += columnLength;
-            }
-            if (fillUpWithSPACE) {
-              for (int j = 0; j < rowDimension; j++) {
-                int rest = rowLength - sb[j].length();
-                for (int k = 0; k < rest; k++) {
-                  sb[j].append(' ');
-                }
-              }
-            }
-          }
-        }
-      }
-
-      for (int i = 0; i < rowDimension; i++) {
-        result.append(sb[i]);
         if (i < rowDimension - 1) {
           result.append("\n");
         }

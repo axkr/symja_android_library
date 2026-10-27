@@ -814,18 +814,11 @@ final class DSolveKovacic {
       ctx.setFitTimedOut();
       return F.NIL;
     }
-    IExpr coefficients = engine.evaluate(F.CoefficientList(numerator, xVar));
-    if (!coefficients.isList()) {
+    IExpr equations = DSolveUtil.vanishingCoefficientEquations(numerator, xVar, engine);
+    if (equations.isNIL()) {
       return F.NIL;
     }
-    IASTAppendable equations = F.ListAlloc(((IAST) coefficients).argSize());
-    for (int i = 1; i <= ((IAST) coefficients).argSize(); i++) {
-      IExpr coefficient = ((IAST) coefficients).get(i);
-      if (!coefficient.isZero()) {
-        equations.append(F.Equal(coefficient, F.C0));
-      }
-    }
-    return solveFor(equations, unknowns, guess, ctx);
+    return solveFor((IAST) equations, unknowns, guess, ctx);
   }
 
   /**

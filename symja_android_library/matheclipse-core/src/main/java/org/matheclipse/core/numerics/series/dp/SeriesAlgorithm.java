@@ -2,7 +2,6 @@ package org.matheclipse.core.numerics.series.dp;
 
 import java.util.Iterator;
 import java.util.function.Function;
-import org.hipparchus.complex.Complex;
 
 /**
  * The base class of all convergence acceleration algorithms. Provides functionality for evaluating
@@ -18,28 +17,6 @@ public abstract class SeriesAlgorithm {
     public final boolean converged;
 
     public SeriesSolution(final double est, final double err, final int evals,
-        final boolean success) {
-      limit = est;
-      error = err;
-      evaluations = evals;
-      converged = success;
-    }
-
-    @Override
-    public String toString() {
-      return String.format("%.08f", limit) + " +- " + String.format("%.08f", error) + "\n"
-          + "evaluations: " + evaluations + "\n" + "converged: " + converged;
-    }
-  }
-
-  public static final class SeriesSolutionComplex {
-
-    public final Complex limit;
-    public final double error;
-    public final int evaluations;
-    public final boolean converged;
-
-    public SeriesSolutionComplex(final Complex est, final double err, final int evals,
         final boolean success) {
       limit = est;
       error = err;
@@ -86,10 +63,6 @@ public abstract class SeriesAlgorithm {
    * @return the next estimate of the limit of the sequence
    */
   public abstract double next(double e, double term);
-
-  public Complex nextComplex(Complex e, Complex term) {
-    return null;
-  }
 
   /**
    * Returns a string representation of the current algorithm.
@@ -169,67 +142,6 @@ public abstract class SeriesAlgorithm {
     // did not achieve the desired error
     return new SeriesSolution(est + partial, Double.NaN, evals, false);
   }
-
-  // public SeriesSolutionComplex limitComplex(final Iterable<Complex> seq, final boolean series) {
-  // return limitComplex(seq, series, 0);
-  // }
-  //
-  // public SeriesSolutionComplex limitComplex(final Iterable<Complex> seq, final boolean series,
-  // final int extrapolateStart) {
-  // myIndex = 0;
-  // int convergeSteps = 0;
-  // int indexBeforeExtrap = 0;
-  // int evals = 0;
-  // Complex partial = Complex.ZERO;
-  // Complex term = Complex.ZERO;
-  // Complex est = Complex.NaN;
-  //
-  // for (final Complex e : seq) {
-  // ++evals;
-  //
-  // // check if extrapolation starts
-  // if (indexBeforeExtrap < extrapolateStart) {
-  // if (series) {
-  // partial = partial.add(e);
-  // }
-  // ++indexBeforeExtrap;
-  // continue;
-  // }
-  //
-  // // get the next term of the sequence
-  // if (series) {
-  // term = term.add(e);
-  // } else {
-  // term = e;
-  // }
-  //
-  // // estimate the next term
-  // final Complex oldest = est;
-  // est = nextComplex(e, term);
-  // if (est.isNaN()) {
-  // break;
-  // }
-  //
-  // // monitor convergence
-  // if (myIndex >= 2) {
-  // final double error = oldest.subtract(est).norm();
-  // if (error <= myTol && est.getReal() != HUGE && est.getImaginary() != HUGE) {
-  // ++convergeSteps;
-  // } else {
-  // convergeSteps = 0;
-  // }
-  // if (convergeSteps >= myPatience) {
-  // return new SeriesSolutionComplex(est.add(partial), error, evals, true);
-  // }
-  // if (myIndex >= myMaxIters || !Double.isFinite(error)) {
-  // break;
-  // }
-  // }
-  // }
-  //
-  // // did not achieve the desired error
-  // return new SeriesSolutionComplex(est.add(partial), Double.NaN, evals, false);
-  // }
 
   /**
    * Given a sequence represented as an Iterable object, numerically evaluates the limit of the

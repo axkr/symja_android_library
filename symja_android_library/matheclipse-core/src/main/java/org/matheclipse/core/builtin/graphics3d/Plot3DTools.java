@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics3d;
 
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -866,6 +867,19 @@ public final class Plot3DTools {
   }
 
   /**
+   * The two finite numbers of a {@code {lo, hi}} list, or {@code null} if {@code expr} is not
+   * such a list.
+   */
+  static double[] finitePair(IExpr expr) {
+    if (!expr.isList() || ((IAST) expr).argSize() < 2) {
+      return null;
+    }
+    double lo = ((IAST) expr).arg1().evalfNaN();
+    double hi = ((IAST) expr).arg2().evalfNaN();
+    return Double.isFinite(lo) && Double.isFinite(hi) ? new double[] {lo, hi} : null;
+  }
+
+  /**
    * {@code BoxRatios -> Automatic} written out as numbers: the proportions of what was drawn, the
    * largest side being {@code 1}. Any other value is returned as it is.
    *
@@ -1384,6 +1398,41 @@ public final class Plot3DTools {
   private static double[] cross(double[] a, double[] b) {
     return new double[] {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
         a[0] * b[1] - a[1] * b[0]};
+  }
+
+  /**
+   * Read the iterators {@code {x, xmin, xmax}}, {@code {y, ...}}, {@code {z, ...}} at positions 2
+   * to 4 of {@code ast}, whose shape has already been checked, into {@code vars}, {@code min} and
+   * {@code max}.
+   *
+   * @return {@code false} after printing {@code pllim} for a range that is not finite and
+   *         increasing
+   */
+  static boolean readBox(IAST ast, ISymbol caller, ISymbol[] vars, double[] min, double[] max,
+      EvalEngine engine) {
+    for (int i = 0; i < 3; i++) {
+      IAST range = (IAST) ast.get(i + 2);
+      vars[i] = (ISymbol) range.arg1();
+      min[i] = range.arg2().evalfNaN();
+      max[i] = range.arg3().evalfNaN();
+      if (!Double.isFinite(min[i]) || !Double.isFinite(max[i]) || max[i] <= min[i]) {
+        Errors.printMessage(caller, "pllim", F.list(range), engine);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The {@code Graphics3D} of a surface or curve plot: its {@code PlotRange}, {@code BoxRatios}
+   * measured from the content, axes and the plot lighting.
+   */
+  static IExpr surfaceGraphics3D(IAST graphicsList, IAST originalAST, int argSize,
+      IExpr[] options) {
+    return graphics3D(graphicsList, originalAST, argSize,
+        new IExpr[] {F.Rule(S.PlotRange, options[X_PLOT_RANGE]),
+            F.Rule(S.BoxRatios, automaticBoxRatios(options[X_BOX_RATIOS], graphicsList)),
+            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, PLOT_LIGHTING)});
   }
 
   /**

@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
@@ -88,6 +88,28 @@ public class VariablesSet {
 
 
   /**
+   * Test if the head of <code>ast</code> is a logical connective, <code>Equal</code> or
+   * <code>Unequal</code>.
+   */
+  private static boolean isLogicEquation(IAST ast) {
+    switch (ast.headID()) {
+      case ID.And:
+      case ID.Or:
+      case ID.Not:
+      case ID.Xor:
+      case ID.Nand:
+      case ID.Nor:
+      case ID.Implies:
+      case ID.Equivalent:
+      case ID.Equal:
+      case ID.Unequal:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Collect the variables which satisfy the <code>IExpr#isVariable()</code> predicate and which are
    * used in logical functions like Not, And, OR, Xor,...
    *
@@ -101,13 +123,8 @@ public class VariablesSet {
 
     @Override
     public boolean visit(IAST ast) {
-      ISymbol[] logicEquationHeads =
-          {S.And, S.Or, S.Not, S.Xor, S.Nand, S.Nor, S.Implies, S.Equivalent, S.Equal, S.Unequal};
-      for (int i = 0; i < logicEquationHeads.length; i++) {
-        if (ast.isAST(logicEquationHeads[i])) {
-          ast.forEach(x -> x.accept(this));
-          break;
-        }
+      if (isLogicEquation(ast)) {
+        ast.forEach(x -> x.accept(this));
       }
 
       return false;
@@ -144,13 +161,8 @@ public class VariablesSet {
         }
         return true;
       }
-      ISymbol[] logicEquationHeads =
-          {S.And, S.Or, S.Not, S.Xor, S.Nand, S.Nor, S.Implies, S.Equivalent, S.Equal, S.Unequal};
-      for (int i = 0; i < logicEquationHeads.length; i++) {
-        if (ast.isAST(logicEquationHeads[i])) {
-          ast.forEach(x -> x.accept(this));
-          break;
-        }
+      if (isLogicEquation(ast)) {
+        ast.forEach(x -> x.accept(this));
       }
 
       return false;

@@ -4152,6 +4152,7 @@ public final class Arithmetic {
       return base.pow(exponent);
     }
 
+    // CPD-OFF same power rules on Apfloat and on double
     private static IExpr e2ApfloatArg(final ApfloatNum base, final ApfloatNum exponent) {
       if (F.isExactZero(base)) {
         if (exponent.isNegative()) {
@@ -4180,6 +4181,7 @@ public final class Arithmetic {
 
       return base.pow(exponent);
     }
+    // CPD-ON
 
     /**
      * The machine value of an exact real number, or the arbitrary precision number of machine
@@ -4195,6 +4197,7 @@ public final class Arithmetic {
       return x.numValue();
     }
 
+    // CPD-OFF same power rules on Apfloat and on double
     private static IExpr e2DblArg(final INum base, final INum exponent) {
       if (F.isExactZero(base)) {
         if (exponent.isNegative()) {
@@ -4229,6 +4232,7 @@ public final class Arithmetic {
       }
       return pow;
     }
+    // CPD-ON
 
     /**
      * <code>base^exponent</code> computed with 17 digits and rounded to machine precision, for a

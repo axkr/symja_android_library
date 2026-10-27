@@ -543,6 +543,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public IExpr arg3() {
     return arg3;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /**
@@ -592,6 +593,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     SortedSet<IExpr> set = new TreeSet<>(comparator);
     set.add(arg1);
     set.add(arg2);
+    // CPD-ON
     set.add(arg3);
     return set;
   }
@@ -654,23 +656,13 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(head(), 0) || predicate.test(arg1, 1) || predicate.test(arg2, 2)
-            || predicate.test(arg3, 3);
-      case 1:
-        return predicate.test(arg1, 1) || predicate.test(arg2, 2) || predicate.test(arg3, 3);
-      case 2:
-        return predicate.test(arg2, 2) || predicate.test(arg3, 3);
-      case 3:
-        return predicate.test(arg3, 3);
-    }
-    return false;
+    return FixedArity.exists(predicate, startOffset, head(), arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, head(), arg1, arg2, arg3);
   }
 
@@ -695,6 +687,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+  // CPD-ON
       final Function<IExpr, IExpr> function) {
     return FixedArity.filterFunction(filterAST, restAST, function, arg1, arg2, arg3);
   }
@@ -708,18 +701,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        return predicate.test(head()) && predicate.test(arg1) && predicate.test(arg2)
-            && predicate.test(arg3);
-      case 1:
-        return predicate.test(arg1) && predicate.test(arg2) && predicate.test(arg3);
-      case 2:
-        return predicate.test(arg2) && predicate.test(arg3);
-      case 3:
-        return predicate.test(arg3);
-    }
-    return true;
+    return FixedArity.forAll(predicate, startOffset, head(), arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
@@ -733,70 +715,13 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public void forEach(Consumer<? super IExpr> action, int startOffset) {
-    switch (startOffset) {
-      case 0:
-        action.accept(head());
-        action.accept(arg1);
-        action.accept(arg2);
-        action.accept(arg3);
-        break;
-      case 1:
-        action.accept(arg1);
-        action.accept(arg2);
-        action.accept(arg3);
-        break;
-      case 2:
-        action.accept(arg2);
-        action.accept(arg3);
-        break;
-      case 3:
-        action.accept(arg3);
-        break;
-      default:
-        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 4");
-    }
+    FixedArity.forEach(action, startOffset, head(), arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
-    if (startOffset < endOffset) {
-      switch (startOffset) {
-        case 0:
-          action.accept(head());
-          if (startOffset + 1 < endOffset) {
-            action.accept(arg1);
-            if (startOffset + 2 < endOffset) {
-              action.accept(arg2);
-              if (startOffset + 3 < endOffset) {
-                action.accept(arg3);
-              }
-            }
-          }
-          break;
-        case 1:
-          action.accept(arg1);
-          if (startOffset + 1 < endOffset) {
-            action.accept(arg2);
-            if (startOffset + 2 < endOffset) {
-              action.accept(arg3);
-            }
-          }
-          break;
-        case 2:
-          action.accept(arg2);
-          if (startOffset + 1 < endOffset) {
-            action.accept(arg3);
-          }
-          break;
-        case 3:
-          action.accept(arg3);
-          break;
-        default:
-          throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(startOffset) + ", Size: 4");
-      }
-    }
+    FixedArity.forEach(startOffset, endOffset, action, head(), arg1, arg2, arg3);
   }
 
   // CPD-OFF arity specialization of the AST classes, kept apart for speed
@@ -844,15 +769,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {
-    if (length == 0) {
-      return new AST0(head());
-    }
-    AST result = new AST(length, true);
-    result.set(0, head());
-    for (int i = 0; i < length; i++) {
-      result.set(i + 1, get(items[i] + offset));
-    }
-    return result;
+    return FixedArity.getItems(this, items, length, offset);
   }
 
   @Override

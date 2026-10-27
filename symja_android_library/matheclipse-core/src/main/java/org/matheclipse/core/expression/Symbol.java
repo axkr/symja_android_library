@@ -690,11 +690,19 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String definitionToString() {
+    return definitionString(this);
+  }
+
+  /**
+   * The attributes and the definitions of <code>symbol</code> in input form, separated by empty
+   * lines; up-values with their tag are printed as <code>tag /: lhs := rhs</code>.
+   */
+  static String definitionString(ISymbol symbol) {
     StringBuilder buf = new StringBuilder();
-    IAST attributesList = ISymbol.attributesList(this);
+    IAST attributesList = ISymbol.attributesList(symbol);
     if (attributesList.size() > 1) {
       buf.append("Attributes(");
-      buf.append(this.toString());
+      buf.append(symbol.toString());
       buf.append(")=");
       buf.append(attributesList.toString());
       buf.append("\n\n");
@@ -705,7 +713,7 @@ public class Symbol implements ISymbol, Serializable {
     // the formal symbols of a built-in rule are local names: LerchPhi(z_,s_,n_Integer):=...
     off.setFormalSymbolsAsPlainLetters(true);
     off.setIgnoreNewLine(true);
-    IAST list = definition();
+    IAST list = symbol.definition();
     for (int i = 1; i < list.size(); i++) {
       IExpr rule = list.getRule(i);
       if (rule.isAST3() && (rule.head() == S.TagSet || rule.head() == S.TagSetDelayed)) {
@@ -1099,6 +1107,14 @@ public class Symbol implements ISymbol, Serializable {
    * @return
    */
   protected CharSequence internalJavaStringAsFactoryMethod() {
+    return internalJavaStringAsFactoryMethod(fSymbolName);
+  }
+
+  /**
+   * The Java factory method call which creates the symbol with this name in generated Symja Java
+   * code.
+   */
+  static CharSequence internalJavaStringAsFactoryMethod(String fSymbolName) {
     if (fSymbolName.length() == 1) {
       char ch = fSymbolName.charAt(0);
       if ('a' <= ch && ch <= 'z') {
@@ -1300,6 +1316,7 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   @Override
+  // CPD-OFF value and rule handling on separate private fields
   public final boolean isStringIgnoreCase(String str) {
     return fSymbolName.equalsIgnoreCase(str);
   }
@@ -1329,6 +1346,7 @@ public class Symbol implements ISymbol, Serializable {
       }
     }
     if ((method & ISymbol.SYMBOL_DEFINITION_PRESENT) == ISymbol.SYMBOL_DEFINITION_PRESENT) {
+    // CPD-ON
       ensureRulesLoaded();
       if ((fRulesData != null && fRulesData.isDefinitionsPresent())) {
         return true;

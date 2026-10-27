@@ -569,6 +569,7 @@ public final class LinearAlgebra {
                                       F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
                                           F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a12))))),
                               F.Times(
+                                  // CPD-OFF generated closed-form formula
                                   F.Plus(
                                       a23, F
                                           .Times(F.CN1, F.Power(a11, F.CN1D2), a13,
@@ -578,11 +579,13 @@ public final class LinearAlgebra {
                                           F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
                                               F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a12)))),
                                       F.CN1D2))),
+                                      // CPD-ON
                           F.list(F.C0, F.C0,
                               F.Sqrt(F.Plus(a33,
                                   F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
                                       F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a13))),
                                   F.Times(
+                                      // CPD-OFF generated closed-form formula
                                       F.CN1, F
                                           .Plus(a23,
                                               F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
@@ -592,6 +595,7 @@ public final class LinearAlgebra {
                                           F.Plus(a22,
                                               F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
                                                   F.Conjugate(
+                                                  // CPD-ON
                                                       F.Times(F.Power(a11, F.CN1D2), a12)))),
                                           F.CN1D2),
                                       F.Plus(F.Times(F.CN1, F.Power(a11, F.CN1D2), a12, F
@@ -3067,9 +3071,7 @@ public final class LinearAlgebra {
 
     private IExpr fromPolarCoordinates3(IExpr r, IExpr theta, IExpr phi, final IAST ast,
         EvalEngine engine) {
-      if (r.lessEqualThan(F.C0).isTrue() //
-          || (theta.greaterEqualThan(S.Pi).isTrue() || theta.lessEqualThan(F.C0).isTrue()) //
-          || (phi.greaterThan(S.Pi).isTrue() || phi.lessEqualThan(F.CNPi).isTrue())) {
+      if (isBadSphericalPoint(r, theta, phi)) {
         // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
         return Errors.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
       }
@@ -3086,6 +3088,17 @@ public final class LinearAlgebra {
     }
   }
 
+
+  /**
+   * Test if <code>{r, theta, phi}</code> is outside the range <code>r &gt; 0</code>,
+   * <code>0 &lt; theta &lt; Pi</code>, <code>-Pi &lt; phi &lt;= Pi</code> of spherical
+   * coordinates.
+   */
+  private static boolean isBadSphericalPoint(IExpr r, IExpr theta, IExpr phi) {
+    return r.lessEqualThan(F.C0).isTrue() //
+        || (theta.greaterEqualThan(S.Pi).isTrue() || theta.lessEqualThan(F.C0).isTrue()) //
+        || (phi.greaterThan(S.Pi).isTrue() || phi.lessEqualThan(F.CNPi).isTrue());
+  }
 
   public static class FromSphericalCoordinates extends AbstractEvaluator {
 
@@ -3119,9 +3132,7 @@ public final class LinearAlgebra {
 
     private IExpr fromSphericalCoordinates(IExpr r, IExpr theta, IExpr phi, final IAST ast,
         EvalEngine engine) {
-      if (r.lessEqualThan(F.C0).isTrue() //
-          || (theta.greaterEqualThan(S.Pi).isTrue() || theta.lessEqualThan(F.C0).isTrue()) //
-          || (phi.greaterThan(S.Pi).isTrue() || phi.lessEqualThan(F.CNPi).isTrue())) {
+      if (isBadSphericalPoint(r, theta, phi)) {
         // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
         return Errors.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
       }
@@ -3425,17 +3436,15 @@ public final class LinearAlgebra {
           }
           matrix = arg1.toRealMatrix();
           if (matrix != null) {
-            if (arg1.isFree(x -> x.isInexactNumber(), false)) {
+            if (rejectsExactMatrix() && arg1.isFree(x -> x.isInexactNumber(), false)) {
               // the decomposition is only computed in machine precision
               // `1` has received a matrix with infinite precision.
               return Errors.printMessage(ast.topHead(), "schurf", F.list(ast.topHead()), engine);
             }
-            HessenbergTransformer hessenbergTransformer = new HessenbergTransformer(matrix);
-            final RealMatrix pMatrix = hessenbergTransformer.getP();
-            final RealMatrix tMatrix = hessenbergTransformer.getH();
-            IASTAppendable m1 = Convert.matrix2List(pMatrix);
+            RealMatrix[] pt = decompose(matrix);
+            IASTAppendable m1 = Convert.matrix2List(pt[0]);
             if (m1.isPresent()) {
-              IASTAppendable m2 = Convert.matrix2List(tMatrix);
+              IASTAppendable m2 = Convert.matrix2List(pt[1]);
               if (m2.isPresent()) {
                 return F.list(m1, m2);
               }
@@ -3449,6 +3458,17 @@ public final class LinearAlgebra {
       }
 
       return F.NIL;
+    }
+
+    /** Whether a matrix without inexact entries is rejected with the <code>schurf</code> message. */
+    protected boolean rejectsExactMatrix() {
+      return true;
+    }
+
+    /** The matrices <code>{p, h}</code> of the Hessenberg decomposition of <code>matrix</code>. */
+    protected RealMatrix[] decompose(RealMatrix matrix) {
+      HessenbergTransformer hessenbergTransformer = new HessenbergTransformer(matrix);
+      return new RealMatrix[] {hessenbergTransformer.getP(), hessenbergTransformer.getH()};
     }
 
     @Override
@@ -4330,10 +4350,17 @@ public final class LinearAlgebra {
       // x/a
       IExpr row = F.Divide(x, a);
       result.append(row);
-      if (matrix.getColumnDimension() > 1) {
-        for (int i = 1; i < matrix.getColumnDimension(); i++) {
-          result.append(F.C0);
-        }
+      return solutionOrNil(result, matrix.getColumnDimension(), engine);
+    }
+
+    /**
+     * Pad <code>result</code> with zeros to <code>columns</code> entries and evaluate it.
+     *
+     * @return {@link F#NIL} if an entry evaluates to <code>Indeterminate</code> or an infinity
+     */
+    private static IExpr solutionOrNil(IASTAppendable result, int columns, EvalEngine engine) {
+      for (int i = result.argSize(); i < columns; i++) {
+        result.append(F.C0);
       }
       IExpr temp = engine.evalQuiet(result);
       if (temp.isAST()) {
@@ -4374,21 +4401,7 @@ public final class LinearAlgebra {
           F.Plus(F.Times(c, x), F.Times(F.CN1, a, y)));
       result.append(row);
 
-      if (matrix.getColumnDimension() > 2) {
-        for (int i = 2; i < matrix.getColumnDimension(); i++) {
-          result.append(F.C0);
-        }
-      }
-      IExpr temp = engine.evalQuiet(result);
-      if (temp.isAST()) {
-        IAST ast = (IAST) temp;
-        for (int k = 1; k < ast.size(); k++) {
-          if (ast.get(k).isIndeterminate() || ast.get(k).isDirectedInfinity()) {
-            return F.NIL;
-          }
-        }
-      }
-      return temp;
+      return solutionOrNil(result, matrix.getColumnDimension(), engine);
     }
 
     /**
@@ -4415,44 +4428,27 @@ public final class LinearAlgebra {
       IExpr x = vector.getEntry(0);
       IExpr y = vector.getEntry(1);
       IExpr z = vector.getEntry(2);
-      // (f*h*x-e*i*x-c*h*y+b*i*y+c*e*z-b*f*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
-      IExpr row = F.Times(
+      // 1/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
+      IExpr inverseDeterminant =
           F.Power(F.Plus(F.Times(c, e, g), F.Times(F.CN1, b, f, g), F.Times(F.CN1, c, d, h),
-              F.Times(a, f, h), F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1),
+              F.Times(a, f, h), F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1);
+      // (f*h*x-e*i*x-c*h*y+b*i*y+c*e*z-b*f*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
+      IExpr row = F.Times(inverseDeterminant,
           F.Plus(F.Times(f, h, x), F.Times(F.CN1, e, i, x), F.Times(F.CN1, c, h, y),
               F.Times(b, i, y), F.Times(c, e, z), F.Times(F.CN1, b, f, z)));
       result.append(row);
       // ((-f)*g*x+d*i*x+c*g*y-a*i*y-c*d*z+a*f*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
-      row = F.Times(
-          F.Power(F.Plus(F.Times(c, e, g), F.Times(F.CN1, b, f, g), F.Times(F.CN1, c, d, h),
-              F.Times(a, f, h), F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1),
+      row = F.Times(inverseDeterminant,
           F.Plus(F.Times(F.CN1, f, g, x), F.Times(d, i, x), F.Times(c, g, y),
               F.Times(F.CN1, a, i, y), F.Times(F.CN1, c, d, z), F.Times(a, f, z)));
       result.append(row);
       // (e*g*x-d*h*x-b*g*y+a*h*y+b*d*z-a*e*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
-      row = F.Times(
-          F.Power(F.Plus(F.Times(c, e, g), F.Times(F.CN1, b, f, g), F.Times(F.CN1, c, d, h),
-              F.Times(a, f, h), F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1),
+      row = F.Times(inverseDeterminant,
           F.Plus(F.Times(e, g, x), F.Times(F.CN1, d, h, x), F.Times(F.CN1, b, g, y),
               F.Times(a, h, y), F.Times(b, d, z), F.Times(F.CN1, a, e, z)));
       result.append(row);
 
-      if (matrix.getColumnDimension() > 3) {
-        for (int k = 3; k < matrix.getColumnDimension(); k++) {
-          result.append(F.C0);
-        }
-      }
-
-      IExpr temp = engine.evalQuiet(result);
-      if (temp.isAST()) {
-        IAST ast = (IAST) temp;
-        for (int k = 1; k < ast.size(); k++) {
-          if (ast.get(k).isIndeterminate() || ast.get(k).isDirectedInfinity()) {
-            return F.NIL;
-          }
-        }
-      }
-      return temp;
+      return solutionOrNil(result, matrix.getColumnDimension(), engine);
     }
 
     @Override
@@ -6396,47 +6392,18 @@ public final class LinearAlgebra {
   }
 
 
-  private static class SchurDecomposition extends AbstractFunctionEvaluator {
+  private static class SchurDecomposition extends HessenbergDecomposition {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      RealMatrix matrix;
-      boolean togetherMode = engine.isTogetherMode();
-      try {
-        engine.setTogetherMode(true);
-        final IExpr arg1 = ast.arg1();
-        int[] dim = arg1.isMatrix();
-        if (dim != null && dim[0] > 0 && dim[1] > 0) {
-          if (dim[0] != dim[1]) {
-            // Argument `1` at position `2` is not a non-empty square matrix.
-            return Errors.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
-          }
-          matrix = arg1.toRealMatrix();
-          if (matrix != null) {
-            SchurTransformer schurTransformer = new SchurTransformer(matrix);
-            final RealMatrix pMatrix = schurTransformer.getP();
-            final RealMatrix tMatrix = schurTransformer.getT();
-            IASTAppendable m1 = Convert.matrix2List(pMatrix);
-            if (m1.isPresent()) {
-              IASTAppendable m2 = Convert.matrix2List(tMatrix);
-              if (m2.isPresent()) {
-                return F.list(m1, m2);
-              }
-            }
-          }
-        }
-      } catch (IndexOutOfBoundsException | ClassCastException e) {
-        return Errors.printMessage(ast.topHead(), e, engine);
-      } finally {
-        engine.setTogetherMode(togetherMode);
-      }
-
-      return F.NIL;
+    protected boolean rejectsExactMatrix() {
+      return false;
     }
 
+    /** The matrices <code>{p, t}</code> of the Schur decomposition of <code>matrix</code>. */
     @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+    protected RealMatrix[] decompose(RealMatrix matrix) {
+      SchurTransformer schurTransformer = new SchurTransformer(matrix);
+      return new RealMatrix[] {schurTransformer.getP(), schurTransformer.getT()};
     }
   }
 

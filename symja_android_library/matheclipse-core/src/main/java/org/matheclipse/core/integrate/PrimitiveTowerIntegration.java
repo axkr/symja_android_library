@@ -51,6 +51,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class PrimitiveTowerIntegration {
 
+  /** Generic points of the numeric diff-back check. */
+  private static final double[] SAMPLE_POINTS = {1.3, 2.1, 3.7, 5.2};
+
   /** Recursion guard: the stage re-enters {@code Integrate} for the individual terms. */
   private static final ThreadLocal<Integer> DEPTH = ThreadLocal.withInitial(() -> 0);
 
@@ -113,8 +116,8 @@ public class PrimitiveTowerIntegration {
       return F.NIL; // the logs were independent - nothing collapsed
     }
     IExpr result = integrateByEngine(normalized, x, engine);
-    return result.isPresent() && verifyAntiderivative(result, integrand, x, engine) ? result
-        : F.NIL;
+    return result.isPresent() && AntiderivativeCheck.verifyWithNumericFallback(result, integrand,
+        x, SAMPLE_POINTS, engine) ? result : F.NIL;
   }
 
   private static IExpr integrateTower(IExpr integrand, IExpr x, EvalEngine engine) {
@@ -183,7 +186,8 @@ public class PrimitiveTowerIntegration {
     }
 
     IExpr antiderivative = engine.evaluate(result);
-    return verifyAntiderivative(antiderivative, integrand, x, engine) ? antiderivative : F.NIL;
+    return AntiderivativeCheck.verifyWithNumericFallback(antiderivative, integrand, x,
+        SAMPLE_POINTS, engine) ? antiderivative : F.NIL;
   }
 
   /**
@@ -384,50 +388,4 @@ public class PrimitiveTowerIntegration {
     return integrated;
   }
 
-  /** Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand. */
-  private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
-      EvalEngine engine) {
-    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
-      return false;
-    }
-    try {
-      if (AntiderivativeCheck.agrees(result, integrand, x, engine)) {
-        return true;
-      }
-      IExpr difference = F.Subtract(F.D(result, x), integrand);
-      if (engine.evaluate(F.Together(difference)).isZero()) {
-        return true;
-      }
-      if (engine.evaluate(F.Simplify(difference)).isZero()) {
-        return true;
-      }
-      return numericallyZero(difference, x, engine);
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      return false;
-    }
-  }
-
-  /** True iff {@code expr} vanishes numerically at the sample points where it evaluates at all. */
-  private static boolean numericallyZero(IExpr expr, IExpr x, EvalEngine engine) {
-    final double[] points = {1.3, 2.1, 3.7, 5.2};
-    int evaluated = 0;
-    for (double point : points) {
-      IExpr value;
-      try {
-        value = engine.evaluate(F.N(F.ReplaceAll(expr, F.Rule(x, F.num(point)))));
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        return false;
-      }
-      if (!value.isNumber() || !value.isSpecialsFree()) {
-        continue;
-      }
-      evaluated++;
-      if (!engine.evaluate(F.Less(F.Abs(value), F.num(1.0e-8))).isTrue()) {
-        return false;
-      }
-    }
-    return evaluated >= 2;
-  }
 }

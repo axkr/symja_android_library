@@ -61,6 +61,7 @@ public final class SetSpecification extends SetSpec {
           } else {
             fMaxCount = i.toBigNumerator().intValue();
             fMinCount = i.toBigNumerator().intValue();
+            // CPD-OFF count and level specifications fill different fields
             if (fMaxCount < fMinCount) {
               String str = Errors.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
@@ -75,6 +76,7 @@ public final class SetSpecification extends SetSpec {
             final IInteger i0 = (IInteger) lst.arg1();
             final IInteger i1 = (IInteger) lst.arg2();
             if (i0.isNegative() && i1.isNegative()) {
+            // CPD-ON
               fMinCount = 0;
               fMaxCount = Integer.MAX_VALUE;
             } else if (i0.isNegative()) {

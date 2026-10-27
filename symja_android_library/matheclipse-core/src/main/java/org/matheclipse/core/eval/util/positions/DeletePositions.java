@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.util.positions;
 
 import java.util.function.Function;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -10,26 +9,14 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class DeletePositions {
-
-  final IAST originalAST;
-
-  int level;
-  IAST positions;
+public class DeletePositions extends PositionsVisitor {
 
   public DeletePositions(Function<IExpr, IExpr> f, IAST ast) {
-    this.originalAST = ast;
-    reset(F.CEmptyList);
+    super(ast, F.CEmptyList);
   }
 
   public DeletePositions(Function<IExpr, IExpr> f, IAST ast, IAST positions) {
-    this.originalAST = ast;
-    reset(positions);
-  }
-
-  protected void reset(IAST positions) {
-    this.level = 1;
-    this.positions = positions;
+    super(ast, positions);
   }
 
   /**
@@ -64,107 +51,48 @@ public class DeletePositions {
       return ast;
     }
     DeletePositions deletePositions = new DeletePositions(x -> null, ast, listOfPositions);
-    IASTAppendable result = deletePositions.mapAtRecursive(ast);
+    IAST result = deletePositions.mapAtRecursive(ast);
     return removeNILRecursive(result);
   }
 
-  protected IASTAppendable mapAtRecursive(IAST ast) {
-    IExpr position = positions.get(level);
-    // Note: `All` and `Span` cannot be used in Delete and Insert
-    if (position.isString() || position.isKey()) {
+  // Note: `All` and `Span` cannot be used in Delete and Insert
+
+  /** Mark the value of the rule as deleted. */
+  @Override
+  protected IAST keyLeaf(IAST ast, int index, IAST rule) {
+    IASTAppendable association = getAppendableAST(ast);
+    association.set(index, rule.setAtCopy(2, F.NIL));
+    return association;
+  }
+
+  /** Mark the part <code>p</code> as deleted; deleting the head splices the parts. */
+  @Override
+  protected IAST indexLeaf(IAST ast, int p) {
+    if (p == 0) {
       if (ast.isAssociation()) {
-        IAssociation assoc = (IAssociation) ast;
-        IExpr key = position.isString() ? position : position.first();
-        int index = -1;
-        // Find the index of the rule for this key
+        // deleting the head yields the bare values as a Sequence(...),
+        // consistent with the non-association head removal below
+        IASTAppendable result = F.ast(S.Sequence, ast.argSize());
+        result.addFlag(Flag.IS_COPIED);
         for (int i = 1; i < ast.size(); i++) {
-          if (ast.getRule(i).first().equals(key)) {
-            index = i;
-            break;
-          }
+          IExpr rule = ast.getRule(i);
+          result.append(rule.second());
         }
-
-        if (index > 0) {
-          IAST rule = assoc.getRule(index);
-          if (level == positions.argSize()) {
-            rule = rule.setAtCopy(2, F.NIL);
-            IASTAppendable association = MapPositions.getAppendableAST(ast);
-            association.set(index, rule); // FIX: Replace at index instead of appendRule()
-            return association;
-          } else {
-            IExpr arg = rule.second();
-            if (arg.isASTOrAssociation()) {
-              level++;
-              IExpr temp = mapAtRecursive(((IAST) arg));
-              if (temp.isPresent()) {
-                rule = rule.setAtCopy(2, temp);
-                IASTAppendable association = MapPositions.getAppendableAST(ast);
-                association.set(index, rule); // FIX: Replace at index instead of appendRule()
-                level--;
-                return association;
-              }
-              level--;
-            }
-          }
-        }
-      }
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
-    }
-
-    int p = position.toIntDefault();
-    if (F.isNotPresent(p)) {
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
-    }
-    if (p < 0) {
-      p = ast.size() + p;
-    }
-
-    if (p >= 0 && p < ast.size()) {
-      if (level == positions.argSize()) {
-        if (p == 0) {
-          if (ast.isAssociation()) {
-            // deleting the head yields the bare values as a Sequence(...),
-            // consistent with the non-association head removal below
-            IASTAppendable result = F.ast(S.Sequence, ast.argSize());
-            result.addFlag(Flag.IS_COPIED);
-            for (int i = 1; i < ast.size(); i++) {
-              IExpr rule = ast.getRule(i);
-              result.append(rule.second());
-            }
-            return result;
-          }
-          IASTAppendable subResult = MapPositions.getAppendableAST(ast);
-          subResult.set(0, S.Sequence);
-          return subResult;
-        }
-        if (ast.isAssociation()) {
-          IASTAppendable result = MapPositions.getAppendableAST(ast);
-          IExpr rule = ((IAST) ast.getRule(p)).setAtCopy(2, F.NIL);
-          result.set(p, rule);
-          return result;
-        }
-        IASTAppendable result = MapPositions.getAppendableAST(ast);
-        result.set(p, F.NIL);
         return result;
-      } else {
-        IExpr arg = ast.get(p);
-        if (arg.isASTOrAssociation()) {
-          IASTAppendable subResult = MapPositions.getAppendableAST(ast);
-          level++;
-          IExpr temp = mapAtRecursive((IAST) arg);
-          if (temp.isPresent()) {
-            level--;
-            subResult.set(p, temp);
-            return subResult;
-          }
-          level--;
-        }
       }
+      IASTAppendable subResult = getAppendableAST(ast);
+      subResult.set(0, S.Sequence);
+      return subResult;
     }
-    // Part `1` of `2` does not exist.
-    throw new ArgumentTypeException("partw", F.list(positions, originalAST));
+    if (ast.isAssociation()) {
+      IASTAppendable result = getAppendableAST(ast);
+      IExpr rule = ((IAST) ast.getRule(p)).setAtCopy(2, F.NIL);
+      result.set(p, rule);
+      return result;
+    }
+    IASTAppendable result = getAppendableAST(ast);
+    result.set(p, F.NIL);
+    return result;
   }
 
   /**

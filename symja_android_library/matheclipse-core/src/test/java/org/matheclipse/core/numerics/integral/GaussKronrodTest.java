@@ -78,4 +78,21 @@ public class GaussKronrodTest {
     assertTrue(count.get() <= 500, "evaluations " + count.get());
     assertEquals(count.get(), result.evaluations);
   }
+
+  /**
+   * The RMS rule shares the error list ordering of QUADPACK with this class; symmetric integrands
+   * produce equal error estimates on several subintervals.
+   */
+  @Test
+  public void testRmsRuleSharedOrdering() {
+    assertRmsIntegral(2.0 / 3.0, Math::sqrt);
+    assertRmsIntegral(4.0 / Math.PI, x -> 2.0 * Math.abs(Math.sin(4.0 * Math.PI * x)));
+    assertRmsIntegral(2.0 / Math.PI, x -> Math.abs(Math.sin(8.0 * Math.PI * x)));
+    assertRmsIntegral(-4.0 / 9.0, x -> Math.sqrt(x) * Math.log(x));
+  }
+
+  private static void assertRmsIntegral(double expected, DoubleUnaryOperator f) {
+    QuadratureResult result = new RmsRule(1.0e-10, 1.0e-10, 100000).integrate(f, 0.0, 1.0);
+    assertEquals(expected, result.estimate, 1.0e-8, result.toString());
+  }
 }

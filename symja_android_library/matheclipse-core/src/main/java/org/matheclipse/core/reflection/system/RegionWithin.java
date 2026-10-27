@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -109,25 +110,13 @@ public class RegionWithin extends AbstractFunctionEvaluator {
   }
 
   private IExpr ballWithin(IAST r1, IAST r2, EvalEngine engine) {
-    IExpr c1 = F.NIL, c2 = F.NIL;
-    IExpr rad1 = F.C1, rad2 = F.C1;
-    int dim = (r1.head() == S.Disk) ? 2 : 3;
-
-    if (r1.argSize() == 0)
-      c1 = (dim == 2) ? F.List(F.C0, F.C0) : F.List(F.C0, F.C0, F.C0);
-    else if (r1.argSize() >= 1) {
-      c1 = r1.arg1();
-      if (r1.argSize() >= 2)
-        rad1 = r1.arg2();
-    }
-
-    if (r2.argSize() == 0)
-      c2 = (dim == 2) ? F.List(F.C0, F.C0) : F.List(F.C0, F.C0, F.C0);
-    else if (r2.argSize() >= 1) {
-      c2 = r2.arg1();
-      if (r2.argSize() >= 2)
-        rad2 = r2.arg2();
-    }
+    // both regions have the same head, Disk or Ball
+    RegionPrimitives.BallSpec ball1 = RegionPrimitives.parseBall(r1);
+    RegionPrimitives.BallSpec ball2 = RegionPrimitives.parseBall(r2);
+    IExpr c1 = ball1.center;
+    IExpr c2 = ball2.center;
+    IExpr rad1 = ball1.radius;
+    IExpr rad2 = ball2.radius;
 
     if (rad1.isList() || rad2.isList())
       return F.NIL;

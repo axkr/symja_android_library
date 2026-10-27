@@ -22,7 +22,8 @@ public final class ExpVectorSymbolic implements Serializable {
   /** The data structure is an array of longs. */
   /* package */ final IExpr[] val;
 
-  int hash;
+  /** The cached hash code, <code>0</code> if not computed yet. */
+  transient int hash;
 
   /**
    * Constructor for ExpVectorLong.
@@ -106,6 +107,7 @@ public final class ExpVectorSymbolic implements Serializable {
     return val[i];
   }
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Set the exponent at position i to e.
    *
@@ -209,6 +211,7 @@ public final class ExpVectorSymbolic implements Serializable {
     w[j] = e;
     return result;
   }
+  // CPD-ON
 
   /**
    * Extend lower variables. Extend this by i lower elements and set val[j] to e.
@@ -513,15 +516,15 @@ public final class ExpVectorSymbolic implements Serializable {
    */
   @Override
   public int hashCode() {
-    if (hash < 0) {
-      int h = 0;
+    int h = hash;
+    if (h == 0) {
       final int len = length();
       for (int i = 0; i < len; i++) {
-        hash = (hash << 3) + getVal(i).hashCode();
+        h = (h << 3) + getVal(i).hashCode();
       }
       hash = h;
     }
-    return hash;
+    return h;
   }
 
   /**
@@ -949,6 +952,33 @@ public final class ExpVectorSymbolic implements Serializable {
     return c < 0 ? -1 : (c > 0 ? 1 : 0);
   }
 
+  /**
+   * Compares the evaluated sums <code>u[from] + ... + u[to-1]</code> and
+   * <code>v[from] + ... + v[to-1]</code>.
+   *
+   * @param tie the result if neither sum is of greater order
+   * @return 1 if the sum of <code>u</code> is of greater order, -1 if it is of lesser order,
+   *         otherwise <code>tie</code>.
+   */
+  private static int compareSums(IExpr[] u, IExpr[] v, int from, int to, int tie) {
+    IASTAppendable up = F.PlusAlloc(to - from);
+    IASTAppendable vp = F.PlusAlloc(to - from);
+    for (int j = from; j < to; j++) {
+      up.append(u[j]);
+      vp.append(v[j]);
+    }
+    EvalEngine engine = EvalEngine.get();
+    IExpr upEvaled = engine.evaluate(up);
+    IExpr vpEvaled = engine.evaluate(vp);
+    if (greaterOrder(upEvaled, vpEvaled)) {
+      return 1;
+    }
+    if (lessOrder(upEvaled, vpEvaled)) {
+      return -1;
+    }
+    return tie;
+  }
+
   private static boolean greaterOrder(IExpr a, IExpr b) {
     return compareExponent(a, b) > 0;
   }
@@ -1027,22 +1057,7 @@ public final class ExpVectorSymbolic implements Serializable {
     if (t == 0) {
       return t;
     }
-    IASTAppendable up = F.PlusAlloc(u.length - i);
-    IASTAppendable vp = F.PlusAlloc(u.length - i);
-    for (int j = i; j < u.length; j++) {
-      up.append(u[j]);
-      vp.append(v[j]);
-    }
-    IExpr upEvaled = EvalEngine.get().evaluate(up);
-    IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-    if (greaterOrder(upEvaled, vpEvaled)) {
-      t = 1;
-    } else {
-      if (lessOrder(upEvaled, vpEvaled)) {
-        t = -1;
-      }
-    }
-    return t;
+    return compareSums(u, v, i, u.length, t);
     // return EVIGLC(this, V);
   }
 
@@ -1072,23 +1087,7 @@ public final class ExpVectorSymbolic implements Serializable {
     if (t == 0) {
       return t;
     }
-    IASTAppendable up = F.PlusAlloc(end - i);
-    IASTAppendable vp = F.PlusAlloc(end - i);
-    for (int j = i; j < end; j++) {
-      up.append(u[j]);
-      vp.append(v[j]);
-    }
-    IExpr upEvaled = EvalEngine.get().evaluate(up);
-    IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-
-    if (greaterOrder(upEvaled, vpEvaled)) {
-      t = 1;
-    } else {
-      if (lessOrder(upEvaled, vpEvaled)) {
-        t = -1;
-      }
-    }
-    return t;
+    return compareSums(u, v, i, end, t);
   }
 
   /**
@@ -1161,24 +1160,7 @@ public final class ExpVectorSymbolic implements Serializable {
     if (t == 0) {
       return t;
     }
-
-    IASTAppendable up = F.PlusAlloc(i + 1);
-    IASTAppendable vp = F.PlusAlloc(i + 1);
-    for (int j = i; j >= 0; j--) {
-      up.append(u[j]);
-      vp.append(v[j]);
-    }
-    IExpr upEvaled = EvalEngine.get().evaluate(up);
-    IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-
-    if (greaterOrder(upEvaled, vpEvaled)) {
-      t = 1;
-    } else {
-      if (lessOrder(upEvaled, vpEvaled)) {
-        t = -1;
-      }
-    }
-    return t;
+    return compareSums(u, v, 0, i + 1, t);
     // return EVRIGLC(this, V);
   }
 
@@ -1208,23 +1190,7 @@ public final class ExpVectorSymbolic implements Serializable {
     if (t == 0) {
       return t;
     }
-    IASTAppendable up = F.PlusAlloc(i - begin + 1);
-    IASTAppendable vp = F.PlusAlloc(i - begin + 1);
-    for (int j = i; j >= begin; j--) {
-      up.append(u[j]);
-      vp.append(v[j]);
-    }
-    IExpr upEvaled = EvalEngine.get().evaluate(up);
-    IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-
-    if (greaterOrder(upEvaled, vpEvaled)) {
-      t = 1;
-    } else {
-      if (lessOrder(upEvaled, vpEvaled)) {
-        t = -1;
-      }
-    }
-    return t;
+    return compareSums(u, v, begin, i + 1, t);
     // return EVRIGLC(this, V, begin, end);
   }
 
@@ -1252,24 +1218,7 @@ public final class ExpVectorSymbolic implements Serializable {
     if (t == 0) {
       return t;
     }
-
-    IASTAppendable up = F.PlusAlloc(u.length - i + 1);
-    IASTAppendable vp = F.PlusAlloc(u.length - i + 1);
-    for (int j = i; j < u.length; j++) {
-      up.append(u[j]);
-      vp.append(v[j]);
-    }
-    IExpr upEvaled = EvalEngine.get().evaluate(up);
-    IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-
-    if (greaterOrder(upEvaled, vpEvaled)) {
-      t = 1;
-    } else {
-      if (lessOrder(upEvaled, vpEvaled)) {
-        t = -1;
-      }
-    }
-    return t;
+    return compareSums(u, v, i, u.length, t);
   }
 
   /**
@@ -1296,23 +1245,7 @@ public final class ExpVectorSymbolic implements Serializable {
     if (t == 0) {
       return t;
     }
-
-    IASTAppendable up = F.PlusAlloc(i + 1);
-    IASTAppendable vp = F.PlusAlloc(i + 1);
-    for (int j = i; j >= 0; j--) {
-      up.append(u[j]);
-      vp.append(v[j]);
-    }
-    IExpr upEvaled = EvalEngine.get().evaluate(up);
-    IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-    if (greaterOrder(upEvaled, vpEvaled)) {
-      t = 1;
-    } else {
-      if (lessOrder(upEvaled, vpEvaled)) {
-        t = -1;
-      }
-    }
-    return t;
+    return compareSums(u, v, 0, i + 1, t);
   }
 
   /**

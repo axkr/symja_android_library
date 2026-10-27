@@ -213,26 +213,4 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
     return false;
   }
 
-  /**
-   * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
-   *
-   * @param poly
-   * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
-   */
-  public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
-    if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
-      result[0] = BigInteger.ZERO;
-      result[1] = BigInteger.ZERO;
-      result[2] = BigInteger.ZERO;
-      for (Monomial<BigInteger> monomial : poly) {
-        BigInteger coeff = monomial.coefficient();
-        ExpVector exp = monomial.exponent();
-        for (int i = 0; i < exp.length(); i++) {
-          result[(int) exp.getVal(i)] = coeff;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
 }

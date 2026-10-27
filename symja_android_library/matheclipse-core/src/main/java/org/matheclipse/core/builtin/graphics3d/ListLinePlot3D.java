@@ -212,8 +212,8 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
     double[] xRange = {1.0, rowCount};
     double[] yRange = {1.0, columnCount};
     if (dataRange != null && dataRange.isList() && ((IAST) dataRange).argSize() == 2) {
-      double[] parsedX = pair(((IAST) dataRange).arg1());
-      double[] parsedY = pair(((IAST) dataRange).arg2());
+      double[] parsedX = Plot3DTools.finitePair(((IAST) dataRange).arg1());
+      double[] parsedY = Plot3DTools.finitePair(((IAST) dataRange).arg2());
       if (parsedX != null && parsedY != null) {
         xRange = parsedX;
         yRange = parsedY;
@@ -327,15 +327,6 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
       }
     }
     return lineList;
-  }
-
-  private static double[] pair(IExpr expr) {
-    if (!expr.isList() || ((IAST) expr).argSize() < 2) {
-      return null;
-    }
-    double lo = ((IAST) expr).arg1().evalfNaN();
-    double hi = ((IAST) expr).arg2().evalfNaN();
-    return Double.isFinite(lo) && Double.isFinite(hi) ? new double[] {lo, hi} : null;
   }
 
   @Override

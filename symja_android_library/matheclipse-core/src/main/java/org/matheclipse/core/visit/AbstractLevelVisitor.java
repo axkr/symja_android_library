@@ -1,11 +1,7 @@
 package org.matheclipse.core.visit;
 
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -48,113 +44,12 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
       int startValueForAll, final EvalEngine engine) {
     this.fIncludeHeads = includeHeads;
     this.fEngine = engine;
-    IExpr levelExpr = unevaledLevelExpr.eval(engine);
-    fFromLevel = fToLevel = -1;
-    fFromDepth = fToDepth = 0;
-    if (levelExpr instanceof IInteger) {
-      final IInteger value = (IInteger) levelExpr;
-
-      if (value.isNegative()) {
-        fFromDepth = Integer.MIN_VALUE;
-        fToDepth = Validate.throwIntType(value, Integer.MIN_VALUE, engine);
-        fFromLevel = 1;
-        fToLevel = Integer.MAX_VALUE;
-      } else {
-        fToLevel = Validate.throwIntType(value, Integer.MIN_VALUE, engine);
-        fFromLevel = 1;
-        fFromDepth = Integer.MIN_VALUE;
-        fToDepth = -1;
-      }
-      return;
-    }
-    if (levelExpr.isList()) {
-      final IAST lst = (IAST) levelExpr;
-
-      if (lst.isAST1()) {
-        if (lst.arg1() instanceof IInteger) {
-          final IInteger i = (IInteger) lst.arg1();
-
-          final int level = Validate.throwIntType(i, Integer.MIN_VALUE, engine);
-          if (i.isNegative()) {
-            fFromDepth = level;
-            fToDepth = level;
-            fFromLevel = 0;
-            fToLevel = Integer.MAX_VALUE;
-          } else {
-            fToLevel = level;
-            fFromLevel = level;
-            fFromDepth = Integer.MIN_VALUE;
-            fToDepth = -1;
-          }
-          return;
-        }
-      } else {
-        if ((lst.isAST2())) {
-          if ((lst.arg1() instanceof IInteger) && (lst.arg2() instanceof IInteger)) {
-            final IInteger i0 = (IInteger) lst.arg1();
-            final IInteger i1 = (IInteger) lst.arg2();
-            if (i0.isNegative() && i1.isNegative()) {
-              fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
-              fToDepth = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
-              fFromLevel = 0;
-              fToLevel = Integer.MAX_VALUE;
-            } else if (i0.isNegative()) {
-              // all subexpressions at levels i0 or above with a depth of -i1 or less.
-              fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
-              fToDepth = -1;
-              fFromLevel = 0;
-              fToLevel = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
-            } else if (i1.isNegative()) {
-              // all subexpressions at any level greater equal i0 that have a depth of -i1 or
-              // greater.
-              fFromDepth = Integer.MIN_VALUE;
-              fToDepth = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
-              fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
-              fToLevel = Integer.MAX_VALUE;
-            } else {
-              fFromDepth = Integer.MIN_VALUE;
-              fToDepth = -1;
-              fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
-              fToLevel = Validate.throwIntType(i1, Integer.MIN_VALUE, engine);
-            }
-            return;
-          } else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
-            final IInteger i0 = (IInteger) lst.arg1();
-            if (i0.isNegative()) {
-              fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
-              fToDepth = -1;
-              fFromLevel = 0;
-              fToLevel = Integer.MAX_VALUE;
-            } else {
-              fFromDepth = Integer.MIN_VALUE;
-              fToDepth = -1;
-              fFromLevel = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
-              fToLevel = Integer.MAX_VALUE;
-            }
-            return;
-          } else if ((lst.arg1().isNegativeInfinity()) && (lst.arg2().isInfinity())) {
-            // level specification {-Infinity, Infinity} is effectively the same as {0,-1}
-            fFromDepth = Integer.MIN_VALUE;
-            fToDepth = -1;
-            fFromLevel = 0;
-            fToLevel = Integer.MAX_VALUE;
-            return;
-          }
-        }
-      }
-    }
-    if (levelExpr.isInfinity() || levelExpr == S.All) {
-      // level specification Infinity and -1 are equivalent
-      fToLevel = Integer.MAX_VALUE;
-      fFromLevel = startValueForAll;
-      fFromDepth = Integer.MIN_VALUE;
-      fToDepth = -1;
-      return;
-    }
-    // Level specification `1` is not of the form n, {n}, or {m, n}.
-    String str = Errors.getMessage("level", F.list(levelExpr), fEngine);
-    throw new ArgumentTypeException(str);
-    // throw new MathException("Invalid Level specification: " + levelExpr.toString());
+    LevelBounds bounds = new LevelBounds(unevaledLevelExpr.eval(engine), startValueForAll, true,
+        i -> Validate.throwIntType(i, Integer.MIN_VALUE, engine), engine);
+    fFromLevel = bounds.fromLevel;
+    fToLevel = bounds.toLevel;
+    fFromDepth = bounds.fromDepth;
+    fToDepth = bounds.toDepth;
   }
 
   /**

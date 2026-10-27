@@ -232,11 +232,15 @@ public class ShiftRegisterSequence extends AbstractFunctionOptionEvaluator {
       }
 
       // ----- Run the LFSR -----
-      // Polynomial spec:uses a Galois LFSR where each step subtracts output
-      // mask (mod p) from the freshly shifted state, with mask = polynomial coefficients
-      // (c_0, ..., c_{n-1}) of the characteristic polynomial.
+      // Polynomial spec: a Galois LFSR where each step subtracts output * mask (mod p) from the
+      // freshly shifted state, with mask = polynomial coefficients (c_0, ..., c_{n-1}) of the
+      // characteristic polynomial. Subtracting is adding the negated mask.
       if (f == null && polynomialSpec) {
-        return runGaloisLfsrSubtract(initValues, polyMask, n, p, numElements);
+        int[] negatedMask = new int[polyMask.length];
+        for (int i = 0; i < polyMask.length; i++) {
+          negatedMask[i] = -polyMask[i];
+        }
+        return runGaloisLfsrWithMask(initValues, negatedMask, n, p, numElements);
       }
       // {n,T} with explicit init (no custom feedback function): Galois LFSR
       // tap positions as the (binary) mask and an ADD step. Matches earlier user-confirmed values.
@@ -322,9 +326,15 @@ public class ShiftRegisterSequence extends AbstractFunctionOptionEvaluator {
    * At each step: <code>output = state[n - 1]</code>; shift left
    * (<code>state[i] = state[i - 1]</code> for <code>i &gt; 0</code>; <code>state[0] = 0</code>); if
    * <code>output &ne; 0</code>, add <code>output * mask[i]</code> to each <code>state[i]</code>
-   * modulo <code>p</code>. The <code>mask</code> is the polynomial coefficient vector
-   * <code>(c_0, c_1, ..., c_{n-1})</code> of the characteristic polynomial
-   * <code>x^n + c_{n-1} x^{n-1} + ... + c_0</code>.
+   * modulo <code>p</code>. The mask entries are arbitrary integers taken modulo <code>p</code>, so
+   * they may be negative.
+   *
+   * <p>
+   * For a polynomial spec the mask is the negated coefficient vector
+   * <code>(-c_0, -c_1, ..., -c_{n-1})</code> of the characteristic polynomial
+   * <code>x^n + c_{n-1} x^{n-1} + ... + c_0</code>, which implements the recurrence
+   * <code>o_k = -(c_{n-1}*o_{k-1} + ... + c_0*o_{k-n}) mod p</code>. For <code>{n, T}</code> it is
+   * the binary tap mask.
    */
   private static IExpr runGaloisLfsrWithMask(int[] initValues, int[] mask, int n, int p,
       int numElements) {
@@ -340,36 +350,6 @@ public class ShiftRegisterSequence extends AbstractFunctionOptionEvaluator {
         for (int i = 0; i < n; i++) {
           if (mask[i] != 0) {
             state[i] = Math.floorMod(state[i] + (long) output * mask[i], p);
-          }
-        }
-      }
-      resultList.append(F.ZZ(output));
-    }
-    return resultList;
-  }
-
-  /**
-   * Galois LFSR simulator for polynomial spec (shift-LEFT, SUBTRACT variant). At each step:
-   * <code>output = state[n - 1]</code>; shift left (<code>state[i] = state[i - 1]</code> for
-   * <code>i &gt; 0</code>; <code>state[0] = 0</code>); if <code>output &ne; 0</code>, subtract
-   * <code>output * mask[i]</code> from each <code>state[i]</code> modulo <code>p</code>. This
-   * implements the recurrence <code>o_k = -(c_{n-1}*o_{k-1} + ... + c_0*o_{k-n}) mod p</code>
-   * induced by the characteristic polynomial <code>p(x) = x^n + c_{n-1} x^{n-1} + ... + c_0</code>.
-   */
-  private static IExpr runGaloisLfsrSubtract(int[] initValues, int[] mask, int n, int p,
-      int numElements) {
-    int[] state = Arrays.copyOf(initValues, n);
-    IASTAppendable resultList = F.ListAlloc(numElements);
-    for (int step = 0; step < numElements; step++) {
-      int output = state[n - 1];
-      for (int i = n - 1; i > 0; i--) {
-        state[i] = state[i - 1];
-      }
-      state[0] = 0;
-      if (output != 0) {
-        for (int i = 0; i < n; i++) {
-          if (mask[i] != 0) {
-            state[i] = Math.floorMod(state[i] - (long) output * mask[i], p);
           }
         }
       }

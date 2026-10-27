@@ -28,6 +28,7 @@ public class MatrixPlot extends ListPlot {
     return false;
   }
 
+  // CPD-OFF matrix plots share the preamble, the cell colouring differs
   public MatrixPlot() {}
 
   @Override
@@ -58,6 +59,7 @@ public class MatrixPlot extends ListPlot {
       return F.NIL;
 
     int cols = 0;
+    // CPD-ON
     for (IExpr row : list) {
       if (row.isList()) {
         cols = Math.max(cols, ((IAST) row).argSize());

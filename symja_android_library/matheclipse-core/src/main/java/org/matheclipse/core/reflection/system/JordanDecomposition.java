@@ -114,11 +114,13 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
   }
 
   /**
-   * The eigenvalues of <code>matrix</code> with their algebraic multiplicities.
+   * The distinct eigenvalues of <code>matrix</code> in canonical order with their algebraic
+   * multiplicities.
    *
    * @return <code>null</code> if the eigenvalues are not computed
    */
-  private static Map<IExpr, Integer> eigenvalueCounts(IExpr matrix, EvalEngine engine) {
+  private static List<Map.Entry<IExpr, Integer>> eigenvalueCounts(IExpr matrix,
+      EvalEngine engine) {
     IExpr eigenvaluesExpr = engine.evaluate(F.Eigenvalues(matrix));
     if (!eigenvaluesExpr.isList()) {
       return null;
@@ -127,7 +129,9 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
     for (IExpr root : (IAST) eigenvaluesExpr) {
       rootCounts.put(root, rootCounts.getOrDefault(root, 0) + 1);
     }
-    return rootCounts;
+    List<Map.Entry<IExpr, Integer>> sorted = new ArrayList<>(rootCounts.entrySet());
+    sorted.sort(Map.Entry.comparingByKey(IExpr::compareTo));
+    return sorted;
   }
 
   /** An <code>n x n</code> matrix of zeros whose rows can be changed. */
@@ -148,14 +152,12 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
    * from the null space. It matches similarity matrix S by inheriting standard basis vectors
    * directly from NullSpace() and LinearSolve().
    */
+  // CPD-OFF bottom-up and top-down Jordan chains share the setup
   private IExpr computeBottomUp(IExpr matrix, int n, EvalEngine engine) {
-    Map<IExpr, Integer> rootCounts = eigenvalueCounts(matrix, engine);
+    List<Map.Entry<IExpr, Integer>> rootCounts = eigenvalueCounts(matrix, engine);
     if (rootCounts == null) {
       return F.NIL;
     }
-    // Sort eigenvalues in canonical order
-    List<IExpr> sortedRoots = new ArrayList<>(rootCounts.keySet());
-    sortedRoots.sort(IExpr::compareTo);
 
     IASTAppendable sCols = F.ListAlloc(n);
     IASTAppendable jMatrix = zeroMatrix(n);
@@ -163,10 +165,12 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
     IExpr identity = engine.evaluate(F.IdentityMatrix(n));
     int currentIndex = 1;
 
-    for (IExpr lambda : sortedRoots) {
-      int algMult = rootCounts.get(lambda);
+    for (Map.Entry<IExpr, Integer> entry : rootCounts) {
+      IExpr lambda = entry.getKey();
+      int algMult = entry.getValue();
 
       IExpr bMat = engine.evaluate(F.Subtract(matrix, F.Times(lambda, identity)));
+      // CPD-ON
       IExpr nullSpaceExpr = engine.evaluate(F.NullSpace(bMat));
       if (!nullSpaceExpr.isList()) {
         return F.NIL;
@@ -223,14 +227,12 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
    * eigenvectors from the top down. Extremely robust but generates arbitrary choices of independent
    * bases.
    */
+  // CPD-OFF bottom-up and top-down Jordan chains share the setup
   private IExpr computeTopDown(IExpr matrix, int n, EvalEngine engine) {
-    Map<IExpr, Integer> rootCounts = eigenvalueCounts(matrix, engine);
+    List<Map.Entry<IExpr, Integer>> rootCounts = eigenvalueCounts(matrix, engine);
     if (rootCounts == null) {
       return F.NIL;
     }
-    // Sort eigenvalues in canonical order
-    List<IExpr> sortedRoots = new ArrayList<>(rootCounts.keySet());
-    sortedRoots.sort(IExpr::compareTo);
 
     IASTAppendable sCols = F.ListAlloc(n);
     IASTAppendable jMatrix = zeroMatrix(n);
@@ -238,10 +240,12 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
     IExpr identity = engine.evaluate(F.IdentityMatrix(n));
     int currentIndex = 1;
 
-    for (IExpr lambda : sortedRoots) {
-      int algMult = rootCounts.get(lambda);
+    for (Map.Entry<IExpr, Integer> entry : rootCounts) {
+      IExpr lambda = entry.getKey();
+      int algMult = entry.getValue();
 
       IExpr bMat = engine.evaluate(F.Subtract(matrix, F.Times(lambda, identity)));
+      // CPD-ON
 
       List<IAST> nullSpaces = new ArrayList<>();
       nullSpaces.add(F.CEmptyList);

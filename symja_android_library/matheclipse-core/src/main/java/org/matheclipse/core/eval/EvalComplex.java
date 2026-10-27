@@ -54,7 +54,15 @@ public class EvalComplex {
       }
     }
     // slow evaluation path
-    final IExpr result = F.evaln(ast);
+    return toPair(F.evaln(ast));
+  }
+
+  /**
+   * The real and imaginary part of the numeric value <code>result</code>.
+   *
+   * @throws UnsupportedOperationException if <code>result</code> is no machine number
+   */
+  private static double[] toPair(final IExpr result) {
     if (result instanceof ComplexNum) {
       final double[] res = new double[2];
       res[0] = ((ComplexNum) result).getRealPart();
@@ -106,19 +114,6 @@ public class EvalComplex {
     }
 
     // slow evaluation path
-    final IExpr result = F.evaln(symbol);
-    if (result instanceof ComplexNum) {
-      final double[] res = new double[2];
-      res[0] = ((ComplexNum) result).getRealPart();
-      res[1] = ((ComplexNum) result).getImaginaryPart();
-      return res;
-    }
-    if (result instanceof Num) {
-      final double[] res = new double[2];
-      res[0] = ((Num) result).doubleValue();
-      res[1] = 0.0;
-      return res;
-    }
-    throw new UnsupportedOperationException();
+    return toPair(F.evaln(symbol));
   }
 }

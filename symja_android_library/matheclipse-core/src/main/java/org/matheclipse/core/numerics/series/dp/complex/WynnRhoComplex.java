@@ -17,53 +17,20 @@ import org.hipparchus.complex.Complex;
  * </ul>
  * </p>
  */
-public final class WynnRhoComplex extends SeriesAlgorithmComplex {
+public final class WynnRhoComplex extends OsadaAdaptiveAlgorithmComplex {
 
-  private int status;
-  private Complex xx, dx, dd, xp, alpha;
-  private final Complex[] x;
   private final Complex[][] myTab, myTab2;
 
   public WynnRhoComplex(final double tolerance, final int maxIters, final int patience) {
     super(tolerance, maxIters, patience);
-    x = new Complex[maxIters + 1];
     myTab = new Complex[2][maxIters + 1];
     myTab2 = new Complex[2][maxIters + 1];
   }
 
   @Override
-  public final Complex next(final Complex e, final Complex term) {
-    if (myIndex == 0) {
-      xx = dx = dd = Complex.ZERO;
-    }
-    final Complex xxp = xx;
-    x[myIndex] = xx = term;
-    if (myIndex == 0) {
-      dx = xx;
-    } else if (myIndex == 1) {
-      final Complex dxp = dx;
-      dx = xx.subtract(xxp);
-      dd = dx.divide(dx.subtract(dxp));
-    } else {
-      final Complex dxp = dx;
-      final Complex ddp = dd;
-      dx = xx.subtract(xxp);
-      dd = dx.divide(dx.subtract(dxp));
-      alpha = dd.subtract(ddp).reciprocal().add(1.0);
-      alpha = wynnrho(alpha, myTab2, myIndex - 1, new Complex(-2.0));
-    }
-    xp = xx;
-    if (myIndex >= 2) {
-      for (int m = 1; m <= myIndex + 1; ++m) {
-        xp = wynnrho(x[m - 1], myTab, m, alpha);
-      }
-    }
-    ++myIndex;
-    if (status == 1) {
-      return Complex.NaN;
-    } else {
-      return xp;
-    }
+  protected final Complex transform(final Complex xx, final boolean alphaTable, final int n,
+      final Complex theta) {
+    return wynnrho(xx, alphaTable ? myTab2 : myTab, n, theta);
   }
 
   private final Complex wynnrho(final Complex xx, final Complex[][] tab, final int n,

@@ -149,16 +149,12 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     }
 
     // Otherwise each boundary condition picks out the solution which meets it.
-    IExpr atMin = matching(problem, head, xVar, xMin, engine);
-    IExpr atMax = matching(problem, head, xVar, xMax, engine);
-    if (atMin.isNIL() || atMax.isNIL() || atMin.equals(atMax)) {
+    IExpr[] y = boundarySolutions(problem, head, xVar, xMin, xMax, basis, engine);
+    if (y == null) {
       return F.NIL;
     }
-    IExpr y1 = meeting(atMin, basis, head, xVar, engine);
-    IExpr y2 = meeting(atMax, basis, head, xVar, engine);
-    if (y1.isNIL() || y2.isNIL()) {
-      return F.NIL;
-    }
+    IExpr y1 = y[0];
+    IExpr y2 = y[1];
 
     IExpr wronskian = engine.evaluate(F.Simplify(S.Wronskian.of(engine, F.List(y1, y2), xVar)));
     if (wronskian.isZero() || !wronskian.isFree(S.Wronskian, true)) {
@@ -281,6 +277,26 @@ public class GreenFunction extends AbstractFunctionEvaluator {
       }
     }
     return true;
+  }
+
+  /**
+   * The solutions <code>{y1, y2}</code> of the homogeneous equation which meet the condition at
+   * <code>xMin</code> and the one at <code>xMax</code>, or <code>null</code> if there are not two
+   * different conditions or a solution is not found.
+   */
+  private static IExpr[] boundarySolutions(IAST problem, IExpr head, IExpr xVar, IExpr xMin,
+      IExpr xMax, IExpr[] basis, EvalEngine engine) {
+    IExpr atMin = matching(problem, head, xVar, xMin, engine);
+    IExpr atMax = matching(problem, head, xVar, xMax, engine);
+    if (atMin.isNIL() || atMax.isNIL() || atMin.equals(atMax)) {
+      return null;
+    }
+    IExpr y1 = meeting(atMin, basis, head, xVar, engine);
+    IExpr y2 = meeting(atMax, basis, head, xVar, engine);
+    if (y1.isNIL() || y2.isNIL()) {
+      return null;
+    }
+    return new IExpr[] {y1, y2};
   }
 
   /** The condition which prescribes something at the given end of the interval. */
@@ -419,16 +435,12 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     if (order != 2 || countAt(problem, head, xVar, xMin) != 1 || conditionsAtMax != 1) {
       return F.NIL;
     }
-    IExpr atMin = matching(problem, head, xVar, xMin, engine);
-    IExpr atMax = matching(problem, head, xVar, xMax, engine);
-    if (atMin.isNIL() || atMax.isNIL() || atMin.equals(atMax)) {
+    IExpr[] y = boundarySolutions(problem, head, xVar, xMin, xMax, basis, engine);
+    if (y == null) {
       return F.NIL;
     }
-    IExpr y1 = meeting(atMin, basis, head, xVar, engine);
-    IExpr y2 = meeting(atMax, basis, head, xVar, engine);
-    if (y1.isNIL() || y2.isNIL()) {
-      return F.NIL;
-    }
+    IExpr y1 = y[0];
+    IExpr y2 = y[1];
     IExpr casoratian = engine.evaluate(F.Simplify(
         S.Casoratian.of(engine, F.List(y1, y2), xVar)));
     if (casoratian.isZero() || !casoratian.isFree(S.Casoratian, true)) {

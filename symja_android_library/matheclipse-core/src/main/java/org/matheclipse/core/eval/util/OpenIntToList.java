@@ -462,6 +462,7 @@ public class OpenIntToList<T> implements Serializable {
    * @param key key associated with the data
    * @return data associated with the key
    */
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   public List<T> get(final int key) {
 
     final int hash = hashOf(key);
@@ -486,7 +487,6 @@ public class OpenIntToList<T> implements Serializable {
     return null;
   }
 
-  // CPD-OFF int-keyed hash map specialized per value type for speed
   /** Grow the tables. */
   private void growTable() {
 
@@ -597,6 +597,7 @@ public class OpenIntToList<T> implements Serializable {
     hashValue = 0;
   }
 
+  // CPD-OFF int-keyed hash map specialized per value type for speed
   /**
    * Remove the value associated with a key.
    *
@@ -644,4 +645,5 @@ public class OpenIntToList<T> implements Serializable {
   public int size() {
     return size;
   }
+  // CPD-ON
 }

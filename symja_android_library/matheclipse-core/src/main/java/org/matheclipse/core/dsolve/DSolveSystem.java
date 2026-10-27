@@ -275,41 +275,8 @@ final class DSolveSystem {
             tempRules.append(F.Rule(aVar, engine.evaluate(DSolveUtil.stripConditionalExpression(aExprSol))));
           }
 
-          IExpr systemRoots = tempRules;
-          if (boundaryConditions.isPresent() && boundaryConditions.isAST()
-              && boundaryConditions.argSize() > 0) {
-            systemRoots = applySystemBCs(systemRoots, dependentFunctions, indepentVariable,
-                boundaryConditions, ctx);
-            if (systemRoots.isNIL()) {
-              return F.NIL;
-            }
-          }
-
-          IASTAppendable fullSol = F.ListAlloc();
-          for (int i = 1; i <= n; i++) {
-            IExpr v = dependentFunctions.get(i);
-
-            // Extract the final solved raw result for this variable
-            IExpr rawResult = F.NIL;
-            for (int j = 1; j <= ((IAST) systemRoots).argSize(); j++) {
-              IExpr rule = ((IAST) systemRoots).get(j);
-              if (rule.isRule() && rule.first().equals(v)) {
-                rawResult = rule.second();
-                break;
-              }
-            }
-            if (rawResult.isNIL())
-              return F.NIL;
-
-            IExpr arg2Var =
-                outputFunctions.isList() ? ((IAST) outputFunctions).get(i) : outputFunctions;
-            if (arg2Var.isSymbol() && indepentVariable.isSymbol()) {
-              fullSol.append(F.Rule(arg2Var, F.Function(F.List(indepentVariable), rawResult)));
-            } else {
-              fullSol.append(F.Rule(arg2Var, rawResult));
-            }
-          }
-          return F.List(fullSol);
+          return assembleSystemSolution(tempRules, dependentFunctions, indepentVariable,
+              boundaryConditions, outputFunctions, ctx);
         }
       }
       return F.NIL;
@@ -1090,7 +1057,20 @@ final class DSolveSystem {
       tempRules.append(F.Rule(dependentFunctions.get(i),
           DSolveUtil.stripConditionalExpression(bodies.get(i))));
     }
+    return assembleSystemSolution(tempRules, dependentFunctions, xVar, boundaryConditions,
+        outputFunctions, ctx);
+  }
 
+  /**
+   * The rules {@link DSolve} answers with for the rules <code>dependentFunction -> body</code>,
+   * after fitting whatever boundary conditions were given.
+   *
+   * @param outputFunctions the functions of the answer, one per dependent function
+   * @return {@link F#NIL} if the boundary conditions cannot be fitted or a function has no body
+   */
+  private static IExpr assembleSystemSolution(IAST tempRules, IAST dependentFunctions, IExpr xVar,
+      IAST boundaryConditions, IExpr outputFunctions, DSolveContext ctx) {
+    int n = dependentFunctions.argSize();
     IExpr systemRoots = tempRules;
     if (boundaryConditions.isPresent() && boundaryConditions.isAST()
         && boundaryConditions.argSize() > 0) {

@@ -2380,6 +2380,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNegativeSemidefiniteMatrixQ() {
+    // an inexact eigenvalue of the wrong sign which is zero within the tolerance counts as zero for
+    // a semidefinite matrix; a tiny eigenvalue of the right sign passes a definite test
+    check("NegativeSemidefiniteMatrixQ({{-1,0},{0,10.^-20}})", //
+        "True");
+    check("PositiveSemidefiniteMatrixQ({{1,0},{0,10.^-20}})", //
+        "True");
+    check("PositiveDefiniteMatrixQ({{1,0},{0,10.^-20}})", //
+        "True");
+    check("NegativeDefiniteMatrixQ({{-1,0},{0,-10.^-20}})", //
+        "True");
+    check("PositiveDefiniteMatrixQ({{0,0},{0,1}})", //
+        "False");
     check("NegativeSemidefiniteMatrixQ({{5,-1},{-1, 4} })", //
         "False");
     check("NegativeSemidefiniteMatrixQ({{-2,0},{0,0}})", //

@@ -166,6 +166,38 @@ public class EllipticIntegrals {
     return count;
   }
 
+  /** A Carlson integral of three machine numbers. */
+  @FunctionalInterface
+  private interface DoubleCarlson {
+    double apply(double x, double y, double z);
+  }
+
+  /** A Carlson integral of three complex machine numbers. */
+  @FunctionalInterface
+  private interface ComplexCarlson {
+    Complex apply(Complex x, Complex y, Complex z);
+  }
+
+  /**
+   * A Carlson integral in machine precision: with real arguments if all of them are real, and with
+   * complex arguments otherwise or if a negative argument puts the real value on the branch cut.
+   */
+  private static IExpr carlsonDouble(IExpr x, IExpr y, IExpr z, DoubleCarlson real,
+      ComplexCarlson complex) {
+    double xd = x.evalfNaN();
+    double yd = y.evalfNaN();
+    double zd = z.evalfNaN();
+    if (Double.isNaN(xd) || Double.isNaN(yd) || Double.isNaN(zd)) {
+      return F.complexNum(complex.apply(x.evalfc(), y.evalfc(), z.evalfc()));
+    }
+    double value = real.apply(xd, yd, zd);
+    if (Double.isNaN(value)) {
+      // a negative argument is on the branch cut: the complex value of the integral
+      return F.complexNum(complex.apply(new Complex(xd), new Complex(yd), new Complex(zd)));
+    }
+    return F.num(value);
+  }
+
   private static class CarlsonRC extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -299,22 +331,8 @@ public class EllipticIntegrals {
                     ArbitraryPrecision.digits(engine)));
       }
       if (engine.isDoubleMode()) {
-        double xd = x.evalfNaN();
-        double yd = y.evalfNaN();
-        double zd = z.evalfNaN();
-        if (Double.isNaN(xd) || Double.isNaN(yd) || Double.isNaN(zd)) {
-          Complex xc = x.evalfc();
-          Complex yc = y.evalfc();
-          Complex zc = z.evalfc();
-          return F.complexNum(EllipticIntegralsJS.carlsonRD(xc, yc, zc));
-        } else {
-          double value = EllipticIntegralsJS.carlsonRD(xd, yd, zd);
-          if (Double.isNaN(value)) {
-            // a negative argument is on the branch cut: the complex value of the integral
-            return F.complexNum(EllipticIntegralsJS.carlsonRD(new Complex(xd), new Complex(yd), new Complex(zd)));
-          }
-          return F.num(value);
-        }
+        return carlsonDouble(x, y, z, EllipticIntegralsJS::carlsonRD,
+            EllipticIntegralsJS::carlsonRD);
       }
       return F.NIL;
     }
@@ -377,22 +395,8 @@ public class EllipticIntegrals {
                     ArbitraryPrecision.digits(engine)));
       }
       if (engine.isDoubleMode()) {
-        double xd = x.evalfNaN();
-        double yd = y.evalfNaN();
-        double zd = z.evalfNaN();
-        if (Double.isNaN(xd) || Double.isNaN(yd) || Double.isNaN(zd)) {
-          Complex xc = x.evalfc();
-          Complex yc = y.evalfc();
-          Complex zc = z.evalfc();
-          return F.complexNum(EllipticIntegralsJS.carlsonRF(xc, yc, zc));
-        } else {
-          double value = EllipticIntegralsJS.carlsonRF(xd, yd, zd);
-          if (Double.isNaN(value)) {
-            // a negative argument is on the branch cut: the complex value of the integral
-            return F.complexNum(EllipticIntegralsJS.carlsonRF(new Complex(xd), new Complex(yd), new Complex(zd)));
-          }
-          return F.num(value);
-        }
+        return carlsonDouble(x, y, z, EllipticIntegralsJS::carlsonRF,
+            EllipticIntegralsJS::carlsonRF);
       }
       return F.NIL;
     }
@@ -464,22 +468,8 @@ public class EllipticIntegrals {
       }
       if (engine.isDoubleMode()) {
         try {
-          double xd = x.evalfNaN();
-          double yd = y.evalfNaN();
-          double zd = z.evalfNaN();
-          if (Double.isNaN(xd) || Double.isNaN(yd) || Double.isNaN(zd)) {
-            Complex xc = x.evalfc();
-            Complex yc = y.evalfc();
-            Complex zc = z.evalfc();
-            return F.complexNum(EllipticIntegralsJS.carlsonRG(xc, yc, zc));
-          } else {
-            double value = EllipticIntegralsJS.carlsonRG(xd, yd, zd);
-            if (Double.isNaN(value)) {
-              // a negative argument is on the branch cut: the complex value of the integral
-              return F.complexNum(EllipticIntegralsJS.carlsonRG(new Complex(xd), new Complex(yd), new Complex(zd)));
-            }
-            return F.num(value);
-          }
+          return carlsonDouble(x, y, z, EllipticIntegralsJS::carlsonRG,
+              EllipticIntegralsJS::carlsonRG);
         } catch (ValidateException ve) {
           throw ve;
         } catch (RuntimeException rex) {

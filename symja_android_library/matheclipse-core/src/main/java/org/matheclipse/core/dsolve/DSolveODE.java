@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -714,22 +715,9 @@ final class DSolveODE {
         rest.append(term);
         continue;
       }
-      IExpr carried = term;
-      IExpr coefficient = F.C1;
-      if (term.isTimes()) {
-        IAST factors = (IAST) term;
-        IASTAppendable carrying = F.TimesAlloc(factors.argSize());
-        IASTAppendable coefficients = F.TimesAlloc(factors.argSize());
-        for (int k = 1; k <= factors.argSize(); k++) {
-          if (factors.get(k).isFree(y, true)) {
-            coefficients.append(factors.get(k));
-          } else {
-            carrying.append(factors.get(k));
-          }
-        }
-        carried = carrying.oneIdentity1();
-        coefficient = coefficients.oneIdentity1();
-      }
+      IExpr[] split = splitYFree(term, y);
+      IExpr carried = split[0];
+      IExpr coefficient = split[1];
       if (carried.isLog()) {
         if (logCoefficient.isPresent() || !isLinearIn(carried.first(), y, engine)) {
           return null;
@@ -837,6 +825,29 @@ final class DSolveODE {
     return a;
   }
 
+  /**
+   * Splits a product into the factors that contain <code>y</code> and the <code>y</code>-free
+   * coefficient.
+   *
+   * @return <code>{carried, coefficient}</code>
+   */
+  private static IExpr[] splitYFree(IExpr term, IExpr y) {
+    if (!term.isTimes()) {
+      return new IExpr[] {term, F.C1};
+    }
+    IAST factors = (IAST) term;
+    IASTAppendable carrying = F.TimesAlloc(factors.argSize());
+    IASTAppendable coefficients = F.TimesAlloc(factors.argSize());
+    for (int k = 1; k <= factors.argSize(); k++) {
+      if (factors.get(k).isFree(y, true)) {
+        coefficients.append(factors.get(k));
+      } else {
+        carrying.append(factors.get(k));
+      }
+    }
+    return new IExpr[] {carrying.oneIdentity1(), coefficients.oneIdentity1()};
+  }
+
   private static int exponentiationPower(IExpr gyExpr, IExpr y) {
     boolean anyLogarithm = false;
     long power = 1;
@@ -846,22 +857,9 @@ final class DSolveODE {
       if (term.isFree(y, true)) {
         continue;
       }
-      IExpr carried = term;
-      IExpr coefficient = F.C1;
-      if (term.isTimes()) {
-        IAST factors = (IAST) term;
-        IASTAppendable carrying = F.TimesAlloc(factors.argSize());
-        IASTAppendable coefficients = F.TimesAlloc(factors.argSize());
-        for (int k = 1; k <= factors.argSize(); k++) {
-          if (factors.get(k).isFree(y, true)) {
-            coefficients.append(factors.get(k));
-          } else {
-            carrying.append(factors.get(k));
-          }
-        }
-        carried = carrying.oneIdentity1();
-        coefficient = coefficients.oneIdentity1();
-      }
+      IExpr[] split = splitYFree(term, y);
+      IExpr carried = split[0];
+      IExpr coefficient = split[1];
       if (carried.equals(y)) {
         continue;
       }
@@ -1571,22 +1569,22 @@ final class DSolveODE {
    */
   private static boolean refutedBy(IExpr root, IAST uFunction1Arg, IExpr xVar,
       IAST boundaryConditions, EvalEngine engine) {
-    IAST evaluatedBCs = evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
-    for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
-      IExpr bc = evaluatedBCs.get(k);
-      IExpr residual = bc.isEqual() ? engine.evaluate(F.Subtract(bc.first(), bc.second())) : bc;
-      if (residual.isZero() || (bc.isEqual() && engine.evaluate(bc).isTrue())) {
-        continue;
-      }
-      if (DSolveVerify.refutesCondition(residual, engine)) {
-        return true;
-      }
-    }
-    return false;
+    return anyOpenResidual(root, uFunction1Arg, xVar, boundaryConditions, engine,
+        residual -> DSolveVerify.refutesCondition(residual, engine));
   }
 
   private static boolean meetsConditions(IExpr root, IAST uFunction1Arg, IExpr xVar,
       IAST boundaryConditions, EvalEngine engine) {
+    return !anyOpenResidual(root, uFunction1Arg, xVar, boundaryConditions, engine,
+        residual -> !DSolveVerify.acceptCondition(residual, engine));
+  }
+
+  /**
+   * Whether the residual of a condition which is not already satisfied by <code>root</code>
+   * matches <code>test</code>.
+   */
+  private static boolean anyOpenResidual(IExpr root, IAST uFunction1Arg, IExpr xVar,
+      IAST boundaryConditions, EvalEngine engine, Predicate<IExpr> test) {
     IAST evaluatedBCs = evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
     for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
       IExpr bc = evaluatedBCs.get(k);
@@ -1594,11 +1592,11 @@ final class DSolveODE {
       if (residual.isZero() || (bc.isEqual() && engine.evaluate(bc).isTrue())) {
         continue;
       }
-      if (!DSolveVerify.acceptCondition(residual, engine)) {
-        return false;
+      if (test.test(residual)) {
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   /**
@@ -2253,6 +2251,30 @@ final class DSolveODE {
   }
 
   /**
+   * Solves the reduced equation <code>newLhs == 0</code> of a reduction of order for
+   * <code>vFunc</code>, a function of <code>var</code>, after normalizing the coefficient of its
+   * highest derivative <code>highest</code> to <code>1</code>.
+   *
+   * @return the solutions for <code>vFunc</code>, or {@link F#NIL} if there are none
+   */
+  private static IAST solveReducedV(IExpr newLhs, IExpr highest, IExpr var, IExpr vFunc,
+      IExpr c_n, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    IExpr coefficient = engine.evaluate(F.Coefficient(newLhs, highest));
+    if (!coefficient.isZero() && !coefficient.isOne()) {
+      newLhs = engine.evaluate(F.Simplify(F.Divide(newLhs, coefficient)));
+    }
+    IExpr vSols = solveSingleODE(F.Equal(newLhs, F.C0), var, F.List(vFunc), c_n, ctx);
+    if (vSols.isNIL()) {
+      vSols = odeSolve(engine, F.Equal(newLhs, F.C0), var, vFunc, c_n);
+    }
+    if (vSols.isList()) {
+      return vSols.argSize() > 0 ? (IAST) vSols : F.NIL;
+    }
+    return vSols.isPresent() ? F.List(vSols) : F.NIL;
+  }
+
+  /**
    * Applies Reduction of Order for Non-Linear ODEs of order n >= 2. Case 1: Missing dependent
    * variable y(x). Substitutes v(x) = y'(x). Case 2: Missing independent variable x (for n=2).
    * Substitutes y' = v(y) and y'' = v(y)*v'(y).
@@ -2279,27 +2301,9 @@ final class DSolveODE {
       }
       IExpr newLhs = engine.evaluate(F.subst(lhs, rules));
 
-      // Normalize the ODE so the coefficient of the highest derivative is exactly 1
-      int vOrder = n - 1;
-      IExpr highestV = engine.evaluate(F.D(vFunc, F.List(xVar, F.ZZ(vOrder))));
-      IExpr coeffHighest = engine.evaluate(F.Coefficient(newLhs, highestV));
-      if (!coeffHighest.isZero() && !coeffHighest.isOne()) {
-        newLhs = engine.evaluate(F.Simplify(F.Divide(newLhs, coeffHighest)));
-      }
-
-      IExpr vSols = solveSingleODE(F.Equal(newLhs, F.C0), xVar, F.List(vFunc), c_n, ctx);
-      if (vSols.isNIL()) {
-        vSols = odeSolve(engine, F.Equal(newLhs, F.C0), xVar, vFunc, c_n);
-      }
-
-      IAST roots = F.NIL;
-      if (vSols.isList()) {
-        roots = (IAST) vSols;
-      } else if (vSols.isPresent()) {
-        roots = F.List(vSols);
-      }
-
-      if (roots.isPresent() && roots.argSize() > 0) {
+      IExpr highestV = engine.evaluate(F.D(vFunc, F.List(xVar, F.ZZ(n - 1))));
+      IAST roots = solveReducedV(newLhs, highestV, xVar, vFunc, c_n, ctx);
+      if (roots.isPresent()) {
         IASTAppendable resultList = F.ListAlloc();
         IExpr C_2 = F.C(engine.incConstantCounter());
         for (int r = 1; r <= roots.argSize(); r++) {
@@ -2334,25 +2338,8 @@ final class DSolveODE {
         IExpr newLhs = engine.evaluate(F.subst(testExprX,
             F.List(F.Rule(p2, F.Times(vFunc, vPrime)), F.Rule(p1, vFunc), F.Rule(p0, yDummy))));
 
-        // Normalize the ODE so the coefficient of v'(Y) is exactly 1
-        IExpr coeffVPrime = engine.evaluate(F.Coefficient(newLhs, vPrime));
-        if (!coeffVPrime.isZero() && !coeffVPrime.isOne()) {
-          newLhs = engine.evaluate(F.Simplify(F.Divide(newLhs, coeffVPrime)));
-        }
-
-        IExpr vSols = solveSingleODE(F.Equal(newLhs, F.C0), yDummy, F.List(vFunc), c_n, ctx);
-        if (vSols.isNIL()) {
-          vSols = odeSolve(engine, F.Equal(newLhs, F.C0), yDummy, vFunc, c_n);
-        }
-
-        IAST roots = F.NIL;
-        if (vSols.isList()) {
-          roots = (IAST) vSols;
-        } else if (vSols.isPresent()) {
-          roots = F.List(vSols);
-        }
-
-        if (roots.isPresent() && roots.argSize() > 0) {
+        IAST roots = solveReducedV(newLhs, vPrime, yDummy, vFunc, c_n, ctx);
+        if (roots.isPresent()) {
           IASTAppendable resultList = F.ListAlloc();
           IExpr C_2 = F.C(engine.incConstantCounter());
 
@@ -3095,19 +3082,31 @@ final class DSolveODE {
             .isZero()) {
       return null;
     }
-    IExpr expandedRest = engine.evaluate(F.ExpandAll(rest));
+    IExpr[] q = quadraticInY(engine.evaluate(F.ExpandAll(rest)), yFunction, engine);
+    if (q == null || q[0].isZero()) {
+      return null;
+    }
+    return new IExpr[] {engine.evaluate(F.Divide(F.Negate(q[2]), coeffDyx)),
+        engine.evaluate(F.Divide(F.Negate(q[1]), coeffDyx)),
+        engine.evaluate(F.Divide(F.Negate(q[0]), coeffDyx))};
+  }
+
+  /**
+   * The coefficients <code>{q0, q1, q2}</code> of <code>expandedRest == q0 + q1*y + q2*y^2</code>
+   * with <code>q2</code> different from zero, or <code>null</code> if <code>expandedRest</code> is
+   * not of that form with coefficients free of <code>y</code>.
+   */
+  private static IExpr[] quadraticInY(IExpr expandedRest, IExpr yFunction, EvalEngine engine) {
     IExpr q0 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C0));
     IExpr q1 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C1));
     IExpr q2 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C2));
     IExpr remainder = engine.evaluate(F.ExpandAll(F.Subtract(expandedRest,
         F.Plus(q0, F.Times(q1, yFunction), F.Times(q2, F.Sqr(yFunction))))));
-    if (!remainder.isZero() || q2.isZero() || q0.isZero() || !q0.isFree(yFunction)
-        || !q1.isFree(yFunction) || !q2.isFree(yFunction)) {
+    if (!remainder.isZero() || q2.isZero() || !q0.isFree(yFunction) || !q1.isFree(yFunction)
+        || !q2.isFree(yFunction)) {
       return null;
     }
-    return new IExpr[] {engine.evaluate(F.Divide(F.Negate(q2), coeffDyx)),
-        engine.evaluate(F.Divide(F.Negate(q1), coeffDyx)),
-        engine.evaluate(F.Divide(F.Negate(q0), coeffDyx))};
+    return new IExpr[] {q0, q1, q2};
   }
 
   /**
@@ -3813,18 +3812,11 @@ final class DSolveODE {
         }
 
         // Attempt 2: Riccati or Bernoulli Polynomial Extraction
-        IExpr expandedRest = engine.evaluate(F.ExpandAll(rest));
-        IExpr q0 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C0));
-        IExpr q1 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C1));
-        IExpr q2 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C2));
-
-        IExpr remainder = engine.evaluate(F.ExpandAll(F.Subtract(expandedRest,
-            F.Plus(q0, F.Times(q1, yFunction), F.Times(q2, F.Sqr(yFunction))))));
-
-        if (remainder.isZero() && !q2.isZero()) {
-          IExpr a = engine.evaluate(F.Divide(F.Negate(q2), coeffDyx));
-          IExpr b = engine.evaluate(F.Divide(F.Negate(q1), coeffDyx));
-          IExpr c = engine.evaluate(F.Divide(F.Negate(q0), coeffDyx));
+        IExpr[] q = quadraticInY(engine.evaluate(F.ExpandAll(rest)), yFunction, engine);
+        if (q != null) {
+          IExpr a = engine.evaluate(F.Divide(F.Negate(q[2]), coeffDyx));
+          IExpr b = engine.evaluate(F.Divide(F.Negate(q[1]), coeffDyx));
+          IExpr c = engine.evaluate(F.Divide(F.Negate(q[0]), coeffDyx));
 
           if (c.isZero()) {
             IExpr cConstant = C_1;

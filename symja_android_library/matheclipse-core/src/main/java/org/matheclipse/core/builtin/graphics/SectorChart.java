@@ -3,14 +3,12 @@ package org.matheclipse.core.builtin.graphics;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <code>SectorChart({{angle, radius}, ...})</code> - a pie whose sectors also differ in radius: the
@@ -22,7 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>SectorOrigin -&gt; {angle, r}</code> starts them elsewhere and leaves a hole of radius
  * <code>r</code> in the middle, which turns the sectors into rings.
  */
-public class SectorChart extends ListPlot {
+public class SectorChart extends AbstractChart {
 
   public SectorChart() {}
 
@@ -34,6 +32,7 @@ public class SectorChart extends ListPlot {
     }
     IASTAppendable keyLabels = F.ListAlloc();
     IExpr dataArg = GraphicsOptions.chartData(engine.evaluate(ast.arg1()), keyLabels);
+    // CPD-OFF each chart reads its own option set
     if (!dataArg.isList() || ((IAST) dataArg).argSize() == 0) {
       return F.NIL;
     }
@@ -46,6 +45,7 @@ public class SectorChart extends ListPlot {
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     IExpr sectorOrigin = GraphicsOptions.optionValue(originalAST, S.SectorOrigin, S.Automatic);
     IExpr labelingFunction =
+    // CPD-ON
         GraphicsOptions.optionValue(originalAST, S.LabelingFunction, S.Automatic);
     IExpr polarAxes = GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False);
     IExpr polarGridLines = GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None);
@@ -220,35 +220,19 @@ public class SectorChart extends ListPlot {
   }
 
   @Override
-  protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
-      IAST plotAST) {
-    graphicsOptions.addPadding();
-    IASTAppendable result = F.Graphics(primitives);
-    result.appendArgs(graphicsOptions.getGraphicsRules());
-    return GraphicsOptions.legended(result);
-  }
-
-  @Override
-  public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
-  }
-
-  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_INFINITY;
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {
-    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
-    // charts draw their own extent, so the reference rendering does not clip
-    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
+  protected void chartDefaults(IExpr[] defaults) {
     defaults[GraphicsOptions.X_AXES] = S.False;
     defaults[GraphicsOptions.X_FRAME] = S.False;
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.C1;
+  }
 
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions.polarExtras(GraphicsOptions.chartExtras(
-        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults)));
-    setOptions(newSymbol, optionSet.keys(), optionSet.values());
+  @Override
+  protected GraphicsOptions.OptionSet optionExtras(GraphicsOptions.OptionSet optionSet) {
+    return GraphicsOptions.polarExtras(optionSet);
   }
 }

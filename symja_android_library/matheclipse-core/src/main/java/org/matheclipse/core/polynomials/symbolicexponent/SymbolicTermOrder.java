@@ -12,6 +12,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import edu.jas.kern.Scripting;
 
 /**
@@ -20,6 +21,7 @@ import edu.jas.kern.Scripting;
  */
 public final class SymbolicTermOrder implements Serializable {
 
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   /** */
   private static final long serialVersionUID = 360644493672021694L;
 
@@ -72,6 +74,7 @@ public final class SymbolicTermOrder implements Serializable {
 
   /** Defined array of weight vectors. */
   private final IExpr[][] weight;
+  // CPD-ON
 
   /** Defined descending order comparator. Sorts the highest terms first. */
   private final EVComparator horder;
@@ -292,6 +295,7 @@ public final class SymbolicTermOrder implements Serializable {
    * @param r max number of exponents to compare.
    * @param split index.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicTermOrder(int ev1, int ev2, int r, int split) {
     if (ev1 < MIN_EVORD || MAX_EVORD - 2 < ev1) {
       throw new IllegalArgumentException("invalid split term order 1: " + ev1);
@@ -312,6 +316,7 @@ public final class SymbolicTermOrder implements Serializable {
     }
     switch (evord) { // horder = new EVhorder();
       case SymbolicTermOrder.LEX: {
+      // CPD-ON
         switch (evord2) {
           case SymbolicTermOrder.LEX: {
             horder = new EVComparator() {
@@ -1777,37 +1782,8 @@ public final class SymbolicTermOrder implements Serializable {
    * @return reverted exponent order.
    */
   public static int revert(int evord) {
-    int i = evord;
-    switch (evord) {
-      case LEX:
-        i = REVLEX;
-        break;
-      case INVLEX:
-        i = REVILEX;
-        break;
-      case GRLEX:
-        i = REVTDEG;
-        break;
-      case IGRLEX:
-        i = REVITDG;
-        break;
-      case REVLEX:
-        i = LEX;
-        break;
-      case REVILEX:
-        i = INVLEX;
-        break;
-      case REVTDEG:
-        i = GRLEX;
-        break;
-      case REVITDG:
-        i = IGRLEX;
-        break;
-      default: // REVITDEG, ITDEGLEX
-        // logger.error("can not revert " + evord);
-        break;
-    }
-    return i;
+    // the exponent order constants are the same as in ExprTermOrder
+    return ExprTermOrder.revert(evord);
   }
 
   /**

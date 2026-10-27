@@ -66,54 +66,9 @@ public class RischDifferentialEquation {
       // D(y) = g -> termwise polynomial antiderivative.
       return polynomialAntiderivative(gp, x, engine);
     }
-    int df = degree(fp, x, engine);
-    int dg = degree(gp, x, engine);
-    if (df < 0 || dg < 0) {
-      return F.NIL;
-    }
-    // Degree bound: deg(f*y) dominates deg(y'), so deg(g) = deg(f) + deg(y) when deg(f) >= 1, and
-    // deg(g) = deg(y) when f is a non-zero constant.
-    int beta = (df == 0) ? dg : (dg - df);
-    if (beta < 0 || beta > MAX_DEGREE) {
-      return F.NIL;
-    }
-    // Trial solution y = sum_{i=0}^{beta} c_i x^i with undetermined coefficients.
-    ISymbol[] coefficientSymbols = new ISymbol[beta + 1];
-    IASTAppendable trial = F.PlusAlloc(beta + 1);
-    for (int i = 0; i <= beta; i++) {
-      coefficientSymbols[i] = F.Dummy("rde$c" + i);
-      trial.append(F.Times(coefficientSymbols[i], F.Power(x, F.ZZ(i))));
-    }
-    IExpr y = trial;
-    IExpr residual =
-        engine.evaluate(F.ExpandAll(F.Subtract(F.Plus(F.D(y, x), F.Times(fp, y)), gp)));
-    IExpr coeffList = engine.evaluate(F.CoefficientList(residual, x));
-    if (!coeffList.isList()) {
-      return F.NIL;
-    }
-    IAST coeffs = (IAST) coeffList;
-    IASTAppendable equations = F.ListAlloc(coeffs.argSize());
-    for (int i = 1; i < coeffs.size(); i++) {
-      equations.append(F.Equal(coeffs.get(i), F.C0));
-    }
-    IASTAppendable variables = F.ListAlloc(coefficientSymbols.length);
-    for (ISymbol c : coefficientSymbols) {
-      variables.append(c);
-    }
-    IExpr solution = engine.evaluate(F.Solve(equations, variables));
-    if (!solution.isList() || ((IAST) solution).argSize() == 0) {
-      // No polynomial solution: the corresponding integral has no antiderivative of this form.
-      return F.NIL;
-    }
-    IExpr ySolved = engine.evaluate(F.ReplaceAll(y, ((IAST) solution).arg1()));
-    // A determined system leaves no free coefficients; if any survive (degenerate case), pin them
-    // to 0.
-    for (ISymbol c : coefficientSymbols) {
-      if (!ySolved.isFree(c, true)) {
-        ySolved = engine.evaluate(F.ReplaceAll(ySolved, F.Rule(c, F.C0)));
-      }
-    }
-    return ySolved;
+    // the generalized RDE with a = 1: deg(f*y) dominates deg(y'), so the degree bound is
+    // deg(g) - deg(f), and deg(g) for a non-zero constant f
+    return solveGeneralPolynomialRDE(F.C1, fp, gp, x, engine);
   }
 
   /**

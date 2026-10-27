@@ -131,11 +131,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
 
     // every curve was empty, or no sample had a numeric value - pos(t) of an undefined pos: an
     // empty picture, not a call that could not be read, the way Plot3D answers for f(x, y)
-    return Plot3DTools.graphics3D(graphicsList, originalAST, argSize,
-        new IExpr[] {F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
-            F.Rule(S.BoxRatios,
-                Plot3DTools.automaticBoxRatios(options[Plot3DTools.X_BOX_RATIOS], graphicsList)),
-            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+    return Plot3DTools.surfaceGraphics3D(graphicsList, originalAST, argSize, options);
   }
 
   private void createCurveGeometry(IExpr func, IAST range, int pointsCount, EvalEngine engine,
@@ -319,23 +315,6 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
     }
     return true;
-  }
-
-  private static double[] extent(double[][][] grid) {
-    double[] bounds = {Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE,
-        Double.MAX_VALUE, -Double.MAX_VALUE};
-    for (double[][] row : grid) {
-      for (double[] p : row) {
-        if (p == null) {
-          continue;
-        }
-        for (int c = 0; c < 3; c++) {
-          bounds[c * 2] = Math.min(bounds[c * 2], p[c]);
-          bounds[c * 2 + 1] = Math.max(bounds[c * 2 + 1], p[c]);
-        }
-      }
-    }
-    return bounds;
   }
 
   private static double fraction(double value, double min, double max) {

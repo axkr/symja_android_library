@@ -154,103 +154,46 @@ public class MathUtils {
     for (int i = 0; i < romI; i++) {
       double step = (x2 - x1) / Math.pow(2, i);
       double aTemp = x1;
-      rom = new Double[romI][romI];
-      // integVarX.setVal(aTemp);
-      integParser.defineVariable(integVarX, aTemp);
-      double a = integParser.evaluateNode(y1);
-      double b = integParser.evaluateNode(y2);
-
-      for (int j = 0; j < romI; j++) {
-        double stepY = (b - a) / Math.pow(2, j);
-        double aTempY = a;
-        // integVarY.setVal(a);
-        // double valueY = integFun.getVal() / 2;
-        integParser.defineVariable(integVarY, a);
-        double valueY = integParser.evaluateNode(integFun) / 2;
-        for (int k = 0; k < Math.pow(2, j) - 1; k++) {
-          aTempY += stepY;
-          // integVarY.setVal(aTempY);
-          // valueY += integFun.getVal();
-          integParser.defineVariable(integVarY, aTempY);
-          valueY += integParser.evaluateNode(integFun);
-        }
-        // integVarY.setVal(b);
-        // valueY += integFun.getVal() / 2;
-        integParser.defineVariable(integVarY, b);
-        valueY += integParser.evaluateNode(integFun) / 2;
-        valueY *= stepY;
-        rom[j][0] = valueY;
-      }
-      double valueX = romberg(romI - 1, romI - 1) / 2;
-
+      double valueX =
+          innerRomberg(integParser, integVarX, aTemp, y1, y2, integVarY, integFun, romI) / 2;
       for (int l = 0; l < Math.pow(2, i) - 1; l++) {
-        rom = new Double[romI][romI];
         aTemp += step;
-        // integVarX.setVal(aTemp);
-        // a = y1.getVal();
-        // b = y2.getVal();
-        integParser.defineVariable(integVarX, aTemp);
-        a = integParser.evaluateNode(y1);
-        b = integParser.evaluateNode(y2);
-        for (int j = 0; j < romI; j++) {
-          double stepY = (b - a) / Math.pow(2, j);
-          double aTempY = a;
-          // integVarY.setVal(a);
-          // double valueY = integFun.getVal() / 2;
-          integParser.defineVariable(integVarY, a);
-          double valueY = integParser.evaluateNode(integFun) / 2;
-          for (int k = 0; k < Math.pow(2, j) - 1; k++) {
-            aTempY += stepY;
-            // integVarY.setVal(aTempY);
-            // valueY += integFun.getVal();
-            integParser.defineVariable(integVarY, aTempY);
-            valueY += integParser.evaluateNode(integFun);
-          }
-          // integVarY.setVal(b);
-          // valueY += integFun.getVal() / 2;
-          integParser.defineVariable(integVarY, b);
-          valueY += integParser.evaluateNode(integFun) / 2;
-          valueY *= stepY;
-          rom[j][0] = valueY;
-        }
-        valueX += romberg(romI - 1, romI - 1);
+        valueX += innerRomberg(integParser, integVarX, aTemp, y1, y2, integVarY, integFun, romI);
       }
-
-      // integVarX.setVal(x2);
-      // a = y1.getVal();
-      // b = y2.getVal();
-      integParser.defineVariable(integVarX, x2);
-      a = integParser.evaluateNode(y1);
-      b = integParser.evaluateNode(y2);
-      rom = new Double[romI][romI];
-
-      for (int j = 0; j < romI; j++) {
-        double stepY = (b - a) / Math.pow(2, j);
-        double aTempY = a;
-        // integVarY.setVal(a);
-        // double valueY = integFun.getVal() / 2;
-        integParser.defineVariable(integVarY, a);
-        double valueY = integParser.evaluateNode(integFun) / 2;
-        for (int k = 0; k < Math.pow(2, j) - 1; k++) {
-          aTempY += stepY;
-          // integVarY.setVal(aTempY);
-          // valueY += integFun.getVal();
-          integParser.defineVariable(integVarY, aTempY);
-          valueY += integParser.evaluateNode(integFun);
-        }
-        // integVarY.setVal(b);
-        // valueY += integFun.getVal() / 2;
-        integParser.defineVariable(integVarY, b);
-        valueY += integParser.evaluateNode(integFun) / 2;
-        valueY *= stepY;
-        rom[j][0] = valueY;
-      }
-      valueX += romberg(romI - 1, romI - 1) / 2;
+      valueX += innerRomberg(integParser, integVarX, x2, y1, y2, integVarY, integFun, romI) / 2;
       valueX *= step;
       romX[i][0] = valueX;
     }
     rom = romX;
 
+    return romberg(romI - 1, romI - 1);
+  }
+
+  /**
+   * The Romberg integral of <code>fun</code> over <code>varY</code> from <code>y1</code> to
+   * <code>y2</code> at <code>varX = x</code>. Uses the {@link #rom} table.
+   */
+  private static double innerRomberg(EvalDouble parser, String varX, double x, ASTNode y1,
+      ASTNode y2, String varY, ASTNode fun, int romI) {
+    rom = new Double[romI][romI];
+    parser.defineVariable(varX, x);
+    double a = parser.evaluateNode(y1);
+    double b = parser.evaluateNode(y2);
+    for (int j = 0; j < romI; j++) {
+      double stepY = (b - a) / Math.pow(2, j);
+      double aTempY = a;
+      parser.defineVariable(varY, a);
+      double valueY = parser.evaluateNode(fun) / 2;
+      for (int k = 0; k < Math.pow(2, j) - 1; k++) {
+        aTempY += stepY;
+        parser.defineVariable(varY, aTempY);
+        valueY += parser.evaluateNode(fun);
+      }
+      parser.defineVariable(varY, b);
+      valueY += parser.evaluateNode(fun) / 2;
+      valueY *= stepY;
+      rom[j][0] = valueY;
+    }
     return romberg(romI - 1, romI - 1);
   }
 

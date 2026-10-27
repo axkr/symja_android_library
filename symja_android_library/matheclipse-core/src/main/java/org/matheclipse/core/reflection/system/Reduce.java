@@ -628,6 +628,22 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    *         holds for some values of the parameters
    */
   private static IExpr keepRealRoots(IExpr roots, IExpr variable) {
+    boolean[] allReal = {true};
+    IExpr realRoots = dropNonRealRoots(roots, variable, allReal);
+    return allReal[0] ? realRoots : F.NIL;
+  }
+
+  /**
+   * Drop the roots which are provably non-real from a solved form.
+   *
+   * @param roots the solved form <code>variable==value</code> or a disjunction of those
+   * @param variable the reduced variable
+   * @param allReal <code>allReal[0]</code> is set to <code>false</code> if the reality of one of
+   *        the kept roots isn't decided
+   * @return the remaining roots, {@link S#False} if none is left, or {@link F#NIL} if
+   *         <code>roots</code> isn't a solved form for <code>variable</code>
+   */
+  private static IExpr dropNonRealRoots(IExpr roots, IExpr variable, boolean[] allReal) {
     IAST disjuncts = roots.isOr() ? (IAST) roots : F.list(roots);
     IASTAppendable realRoots = F.OrAlloc(disjuncts.size());
     for (int i = 1; i < disjuncts.size(); i++) {
@@ -640,7 +656,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         continue;
       }
       if (!value.isRealResult()) {
-        return F.NIL;
+        allReal[0] = false;
       }
       realRoots.append(disjunct);
     }
@@ -648,6 +664,24 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return S.False;
     }
     return realRoots.isAST1() ? realRoots.arg1() : realRoots;
+  }
+
+  /**
+   * Solve the polynomial with the given coefficients, truncated at <code>degree</code>.
+   *
+   * @return the solved form, or {@link F#NIL} if it isn't found or contains <code>Roots</code>
+   */
+  private static IExpr rootsOfDegree(IAST coefficientList, int degree, IExpr variable,
+      SolveOptions options, EvalEngine engine) {
+    IASTAppendable poly = F.PlusAlloc(degree + 1);
+    for (int i = 0; i <= degree; i++) {
+      poly.append(F.Times(coefficientList.get(i + 1), F.Power(variable, F.ZZ(i))));
+    }
+    IExpr roots = rootsOf(F.Equal(engine.evaluate(poly), F.C0), variable, options, engine);
+    if (roots.isNIL() || !roots.isFree(S.Roots)) {
+      return F.NIL;
+    }
+    return roots;
   }
 
   /**
@@ -816,42 +850,16 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr realRootsOfDegree(IAST coefficientList, int degree, IExpr variable,
       IExpr assumptions, SolveOptions options, EvalEngine engine) {
-    IASTAppendable poly = F.PlusAlloc(degree + 1);
-    for (int i = 0; i <= degree; i++) {
-      poly.append(F.Times(coefficientList.get(i + 1), F.Power(variable, F.ZZ(i))));
-    }
-    IExpr roots = rootsOf(F.Equal(engine.evaluate(poly), F.C0), variable, options, engine);
-    if (roots.isNIL() || !roots.isFree(S.Roots)) {
-      return F.NIL;
-    }
-    if (roots.isFalse()) {
-      return S.False;
+    IExpr roots = rootsOfDegree(coefficientList, degree, variable, options, engine);
+    if (roots.isNIL() || roots.isFalse()) {
+      return roots;
     }
 
     // drop the roots which are provably non-real; the others need the condition unless every one of
     // them is provably real
-    boolean allReal = true;
-    IAST disjuncts = roots.isOr() ? (IAST) roots : F.list(roots);
-    IASTAppendable realRoots = F.OrAlloc(disjuncts.size());
-    for (int i = 1; i < disjuncts.size(); i++) {
-      IExpr disjunct = disjuncts.get(i);
-      if (!disjunct.isEqual() || !disjunct.first().equals(variable)) {
-        return F.NIL;
-      }
-      IExpr value = disjunct.second();
-      if (isComplexNonReal(value)) {
-        continue;
-      }
-      if (!value.isRealResult()) {
-        allReal = false;
-      }
-      realRoots.append(disjunct);
-    }
-    if (realRoots.isAST0()) {
-      return S.False;
-    }
-    IExpr rootSet = realRoots.isAST1() ? realRoots.arg1() : realRoots;
-    if (allReal) {
+    boolean[] allReal = {true};
+    IExpr rootSet = dropNonRealRoots(roots, variable, allReal);
+    if (rootSet.isNIL() || rootSet.isFalse() || allReal[0]) {
       return rootSet;
     }
 
@@ -979,12 +987,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // this coefficient vanishes identically - skip to the lower degree
       return parametricCases(coefficientList, degree - 1, variable, options, engine);
     }
-    IASTAppendable poly = F.PlusAlloc(degree + 1);
-    for (int i = 0; i <= degree; i++) {
-      poly.append(F.Times(coefficientList.get(i + 1), F.Power(variable, F.ZZ(i))));
-    }
-    IExpr roots = rootsOf(F.Equal(engine.evaluate(poly), F.C0), variable, options, engine);
-    if (roots.isNIL() || !roots.isFree(S.Roots)) {
+    IExpr roots = rootsOfDegree(coefficientList, degree, variable, options, engine);
+    if (roots.isNIL()) {
       return F.NIL;
     }
     if (ck.isNumericFunction()) {

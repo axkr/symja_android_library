@@ -12,16 +12,12 @@ package org.matheclipse.core.numerics.series.dp;
  * </ul>
  * </p>
  */
-public final class Aitken extends SeriesAlgorithm {
+public final class Aitken extends OsadaAdaptiveAlgorithm {
 
-  private int status;
-  private double xx, dx, dd, xp, alpha;
-  private final double[] x;
   private final double[][] s, ds, ts, dts;
 
   public Aitken(final double tolerance, final int maxIters, final int patience) {
     super(tolerance, maxIters, patience);
-    x = new double[maxIters];
     s = new double[2][maxIters + 1];
     ds = new double[2][maxIters + 1];
     ts = new double[2][maxIters + 1];
@@ -29,40 +25,12 @@ public final class Aitken extends SeriesAlgorithm {
   }
 
   @Override
-  public final double next(final double e, final double term) {
-    if (myIndex == 0) {
-      xx = dx = dd = 0.0;
-    }
-    final double xxp = xx;
-    x[myIndex] = xx = term;
-    if (myIndex == 0) {
-      dx = xx;
-    } else if (myIndex == 1) {
-      final double dxp = dx;
-      dx = xx - xxp;
-      dd = dx / (dx - dxp);
-    } else {
-      final double dxp = dx;
-      final double ddp = dd;
-      dx = xx - xxp;
-      dd = dx / (dx - dxp);
-      alpha = 1.0 / (dd - ddp) + 1.0;
-      alpha = aitken(alpha, ts, dts, myIndex - 1, -2.0);
-    }
-    xp = xx;
-    if (myIndex >= 2) {
-      for (int m = 1; m <= myIndex + 1; ++m) {
-        xp = aitken(x[m - 1], s, ds, m, alpha);
-      }
-    }
-    ++myIndex;
-    if (status == 1) {
-      return Double.NaN;
-    } else {
-      return xp;
-    }
+  protected final double transform(final double xx, final boolean alphaTable, final int n,
+      final double theta) {
+    return alphaTable ? aitken(xx, ts, dts, n, theta) : aitken(xx, s, ds, n, theta);
   }
 
+  // CPD-OFF double and Complex variants of the same algorithm
   private final double aitken(final double xx, final double[][] s, final double[][] ds, final int n,
       final double theta) {
     status = 0;
@@ -98,6 +66,7 @@ public final class Aitken extends SeriesAlgorithm {
     final int kopt = n >> 1;
     return s[1][kopt];
   }
+  // CPD-ON
 
   @Override
   public final String getName() {

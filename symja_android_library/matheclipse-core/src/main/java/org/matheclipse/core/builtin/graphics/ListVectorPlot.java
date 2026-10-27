@@ -32,9 +32,6 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class ListVectorPlot extends AbstractFunctionEvaluator {
 
-  /** How much of the spacing between points the longest arrow spans. */
-  private static final double DEFAULT_SCALE = 0.9;
-
   /** 2 for ListVectorPlot, 3 for ListVectorPlot3D. */
   private final int dimension;
 
@@ -53,10 +50,11 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     }
     IAST data = (IAST) evaluated;
 
-    double scale = DEFAULT_SCALE;
+    double scale = VectorPlot.DEFAULT_SCALE;
     boolean colored = true;
     double[][] dataRange = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
+    // CPD-OFF the vector plots handle different option keys
     for (int i = 2; i < ast.size(); i++) {
       IExpr option = ast.get(i);
       if (!option.isRuleAST()) {
@@ -67,15 +65,12 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
         continue;
       }
       if (key == S.VectorScale) {
-        IExpr value = engine.evaluate(option.second());
-        IExpr first = value.isList() && value.argSize() > 0 ? value.first() : value;
-        if (first.isReal()) {
-          scale = first.evalf();
-        }
+        scale = VectorPlot.vectorScale(engine.evaluate(option.second()), scale);
         continue;
       }
       if (key == S.VectorColorFunction) {
         colored = !engine.evaluate(option.second()).isNone();
+        // CPD-ON
         continue;
       }
       if (key == S.DataRange) {

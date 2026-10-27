@@ -3,6 +3,7 @@ package org.matheclipse.core.graphics;
 import java.util.Locale;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
@@ -59,6 +60,24 @@ public class GraphicsOptions {
       return values;
     }
     return data;
+  }
+
+  /**
+   * The {@link #chartData(IExpr, IASTAppendable) chartData} of <code>arg</code> with its
+   * quantities converted to plain magnitudes in the <code>TargetUnits</code> of
+   * <code>originalAST</code>.
+   *
+   * @param labelsOut collects the keys of an association, in order; left alone otherwise
+   * @return the data to plot, or <code>F.NIL</code> if it is not a list
+   */
+  public static IExpr chartDataMagnitudes(IExpr arg, IAST originalAST, IASTAppendable labelsOut,
+      EvalEngine engine) {
+    IExpr data = chartData(arg, labelsOut);
+    if (!data.isList()) {
+      return F.NIL;
+    }
+    return QuantityFunctions.quantityPlotMagnitudes(data,
+        optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
   }
 
   /**

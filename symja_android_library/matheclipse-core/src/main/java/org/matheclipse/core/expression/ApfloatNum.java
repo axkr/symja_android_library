@@ -1080,14 +1080,6 @@ public class ApfloatNum implements INum {
   }
 
   /**
-   * <code>BesselY(nu, z)</code> or <code>BesselK(nu, z)</code> with the digits which the difference
-   * of the two Bessel functions behind them cancels, and at an integer order - see
-   * {@link ApcomplexBesselMath}.
-   *
-   * @param precision the precision of the arguments, which are padded to it
-   * @return a real number if the imaginary part of the value is zero
-   */
-  /**
    * <code>BesselJ(nu, z)</code> or <code>BesselI(nu, z)</code> with the digits which the series
    * cancels where the order and the argument are large - see {@link ApcomplexBesselMath}.
    *
@@ -1095,10 +1087,8 @@ public class ApfloatNum implements INum {
    */
   static IExpr guardedBesselFirstKind(Apcomplex nu, Apcomplex z, long precision,
       boolean modified) {
-    nu = new Apcomplex(nu.real().signum() == 0 ? nu.real() : nu.real().precision(precision),
-        nu.imag().signum() == 0 ? nu.imag() : nu.imag().precision(precision));
-    z = new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().precision(precision),
-        z.imag().signum() == 0 ? z.imag() : z.imag().precision(precision));
+    nu = ApcomplexNum.precisionOfParts(nu, precision);
+    z = ApcomplexNum.precisionOfParts(z, precision);
     Apcomplex value =
         modified ? ApcomplexBesselMath.besselI(nu, z) : ApcomplexBesselMath.besselJ(nu, z);
     return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
@@ -1106,18 +1096,22 @@ public class ApfloatNum implements INum {
 
   /** <code>Pochhammer(a, n)</code> of numbers which are padded to the precision. */
   static Apcomplex pochhammer(Apcomplex a, Apcomplex n, long precision) {
-    a = new Apcomplex(a.real().signum() == 0 ? a.real() : a.real().precision(precision),
-        a.imag().signum() == 0 ? a.imag() : a.imag().precision(precision));
-    n = new Apcomplex(n.real().signum() == 0 ? n.real() : n.real().precision(precision),
-        n.imag().signum() == 0 ? n.imag() : n.imag().precision(precision));
+    a = ApcomplexNum.precisionOfParts(a, precision);
+    n = ApcomplexNum.precisionOfParts(n, precision);
     return ApcomplexBetaMath.pochhammer(a, n);
   }
 
+  /**
+   * <code>BesselY(nu, z)</code> or <code>BesselK(nu, z)</code> with the digits which the difference
+   * of the two Bessel functions behind them cancels, and at an integer order - see
+   * {@link ApcomplexBesselMath}.
+   *
+   * @param precision the precision of the arguments, which are padded to it
+   * @return a real number if the imaginary part of the value is zero
+   */
   static IExpr guardedBessel(Apcomplex nu, Apcomplex z, long precision, boolean besselY) {
-    nu = new Apcomplex(nu.real().signum() == 0 ? nu.real() : nu.real().precision(precision),
-        nu.imag().signum() == 0 ? nu.imag() : nu.imag().precision(precision));
-    z = new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().precision(precision),
-        z.imag().signum() == 0 ? z.imag() : z.imag().precision(precision));
+    nu = ApcomplexNum.precisionOfParts(nu, precision);
+    z = ApcomplexNum.precisionOfParts(z, precision);
     Apcomplex value =
         besselY ? ApcomplexBesselMath.besselY(nu, z) : ApcomplexBesselMath.besselK(nu, z);
     return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
@@ -2045,7 +2039,7 @@ public class ApfloatNum implements INum {
           return F.ComplexInfinity;
         }
       } catch (ArithmeticException | NumericComputationException aex) {
-        if (aex.getMessage().equals("Division by zero")) {
+        if (Num.isDivisionByZero(aex)) {
           return F.ComplexInfinity;
         }
       }

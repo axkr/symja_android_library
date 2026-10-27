@@ -207,6 +207,7 @@ public class AST1 extends AST0 {
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, arg0, arg1);
   }
 
@@ -238,6 +239,7 @@ public class AST1 extends AST0 {
   /** {@inheritDoc} */
   @Override
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+  // CPD-ON
     switch (startOffset) {
       case 0:
         return predicate.test(arg0, 0) && predicate.test(arg1, 1);

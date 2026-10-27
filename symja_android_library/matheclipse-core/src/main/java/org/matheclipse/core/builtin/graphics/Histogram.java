@@ -2,11 +2,9 @@ package org.matheclipse.core.builtin.graphics;
 
 import java.util.Arrays;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
-import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
@@ -15,7 +13,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Functions for generating Histograms.
@@ -23,7 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Example: <code>Histogram[RandomReal[{0, 10}, 100]]</code>
  * <code>Histogram[data, Automatic, "PDF"]</code> (Basic binning support)
  */
-public class Histogram extends ListPlot {
+public class Histogram extends AbstractChart {
 
   public Histogram() {}
 
@@ -39,12 +36,12 @@ public class Histogram extends ListPlot {
     // a wrapper around the whole argument is taken off before the data is read; its label is put
     // back on each bar, since a bin is what a reader can point at
     final PlotWrapper outerWrapper = PlotWrapper.of(engine.evaluate(ast.arg1()));
-    IExpr dataArg = GraphicsOptions.chartData(outerWrapper.datum, keyLabels);
-    if (!dataArg.isList()) {
+    IExpr dataArg =
+        // CPD-OFF each chart reads its own option set
+        GraphicsOptions.chartDataMagnitudes(outerWrapper.datum, originalAST, keyLabels, engine);
+    if (dataArg.isNIL()) {
       return F.NIL;
     }
-    dataArg = QuantityFunctions.quantityPlotMagnitudes(dataArg,
-        GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
@@ -55,6 +52,7 @@ public class Histogram extends ListPlot {
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     IExpr layout = GraphicsOptions.optionValue(originalAST, S.ChartLayout, S.Automatic);
     IExpr elementFunction =
+    // CPD-ON
         GraphicsOptions.optionValue(originalAST, S.ChartElementFunction, S.Automatic);
 
     if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
@@ -306,38 +304,15 @@ public class Histogram extends ListPlot {
   }
 
   @Override
-  protected IExpr createGraphicsFunction(IAST primitives, GraphicsOptions graphicsOptions,
-      IAST plotAST) {
-    graphicsOptions.addPadding();
-    IASTAppendable result = F.Graphics(primitives);
-    result.appendArgs(graphicsOptions.getGraphicsRules());
-    return GraphicsOptions.legended(result);
-  }
-
-  @Override
-  public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
-  }
-
-  @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_INFINITY;
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {
-    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
-    // charts and rasters draw their own extent, so the reference rendering does not clip
-    defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
-
-    // Updated Defaults: Frame->True, Axes->False to put scales on the outside (left/bottom)
+  protected void chartDefaults(IExpr[] defaults) {
+    // a frame and no axes put the scales on the outside (left/bottom)
     defaults[GraphicsOptions.X_FRAME] = S.True;
     defaults[GraphicsOptions.X_AXES] = S.False;
-
     defaults[GraphicsOptions.X_ASPECTRATIO] = F.Power(S.GoldenRatio, F.CN1);
-
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions.chartExtras(
-        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
-    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

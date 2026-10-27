@@ -135,90 +135,69 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
     });
 
     if (k > maxInitial) {
-      IExpr headTerm = (maxShift == 0) ? F.unary(dY, dN) : F.unary(dY, F.Plus(dN, F.ZZ(maxShift)));
-
-      IAST solveRes = (IAST) engine.evaluate(F.Solve(safeEq, headTerm));
-      if (solveRes.size() < 2 || !solveRes.arg1().isList()) {
+      if (!extend(safeEq, dY, dN, maxShift, maxInitial + 1, k, 1, initialValues, engine)) {
         return F.NIL;
-      }
-      IAST rules = (IAST) solveRes.arg1();
-      if (rules.size() < 2 || !rules.arg1().isRuleAST()) {
-        return F.NIL;
-      }
-      IExpr rhs = ((IAST) rules.arg1()).arg2();
-
-      for (int i = maxInitial + 1; i <= k; i++) {
-        final int currentN = i - maxShift;
-
-        IExpr step = F.subst(rhs, x -> {
-          if (x.equals(dN))
-            return F.ZZ(currentN);
-          return F.NIL;
-        });
-
-        step = engine.evaluate(step);
-
-        IExpr evaluatedStep = F.subst(step, x -> {
-          if (x.isAST(dY, 2)) {
-            IExpr arg = ((IAST) x).arg1();
-            if (arg.isInteger()) {
-              int idx = arg.toIntDefault();
-              if (initialValues.containsKey(idx)) {
-                return initialValues.get(idx);
-              }
-            }
-          }
-          return F.NIL;
-        });
-
-        IExpr val = engine.evaluate(F.Expand(evaluatedStep));
-        initialValues.put(i, val);
       }
     } else if (k < minInitial) {
-      IExpr tailTerm = (minShift == 0) ? F.unary(dY, dN) : F.unary(dY, F.Plus(dN, F.ZZ(minShift)));
-
-      IAST solveRes = (IAST) engine.evaluate(F.Solve(safeEq, tailTerm));
-      if (solveRes.size() < 2 || !solveRes.arg1().isList()) {
+      if (!extend(safeEq, dY, dN, minShift, minInitial - 1, k, -1, initialValues, engine)) {
         return F.NIL;
-      }
-      IAST rules = (IAST) solveRes.arg1();
-      if (rules.size() < 2 || !rules.arg1().isRuleAST()) {
-        return F.NIL;
-      }
-      IExpr rhs = ((IAST) rules.arg1()).arg2();
-
-      for (int i = minInitial - 1; i >= k; i--) {
-        final int currentN = i - minShift;
-
-        IExpr step = F.subst(rhs, x -> {
-          if (x.equals(dN))
-            return F.ZZ(currentN);
-          return F.NIL;
-        });
-
-        step = engine.evaluate(step);
-
-        IExpr evaluatedStep = F.subst(step, x -> {
-          if (x.isAST(dY, 2)) {
-            IExpr arg = ((IAST) x).arg1();
-            if (arg.isInteger()) {
-              int idx = arg.toIntDefault();
-              if (initialValues.containsKey(idx)) {
-                return initialValues.get(idx);
-              }
-            }
-          }
-          return F.NIL;
-        });
-
-        IExpr val = engine.evaluate(F.Expand(evaluatedStep));
-        initialValues.put(i, val);
       }
     } else {
       return F.NIL;
     }
 
     return initialValues.get(k);
+  }
+
+  /**
+   * Solve the recurrence <code>safeEq</code> for the term <code>dY(dN + shift)</code> and fill
+   * <code>initialValues</code> from index <code>from</code> to <code>to</code> in steps of
+   * <code>direction</code> (<code>1</code> forward, <code>-1</code> backward).
+   *
+   * @return <code>false</code> if the recurrence could not be solved for that term
+   */
+  private static boolean extend(IExpr safeEq, ISymbol dY, ISymbol dN, int shift, int from, int to,
+      int direction, Map<Integer, IExpr> initialValues, EvalEngine engine) {
+    IExpr term = (shift == 0) ? F.unary(dY, dN) : F.unary(dY, F.Plus(dN, F.ZZ(shift)));
+
+    IAST solveRes = (IAST) engine.evaluate(F.Solve(safeEq, term));
+    if (solveRes.size() < 2 || !solveRes.arg1().isList()) {
+      return false;
+    }
+    IAST rules = (IAST) solveRes.arg1();
+    if (rules.size() < 2 || !rules.arg1().isRuleAST()) {
+      return false;
+    }
+    IExpr rhs = ((IAST) rules.arg1()).arg2();
+
+    for (int i = from; direction > 0 ? i <= to : i >= to; i += direction) {
+      final int currentN = i - shift;
+
+      IExpr step = F.subst(rhs, x -> {
+        if (x.equals(dN))
+          return F.ZZ(currentN);
+        return F.NIL;
+      });
+
+      step = engine.evaluate(step);
+
+      IExpr evaluatedStep = F.subst(step, x -> {
+        if (x.isAST(dY, 2)) {
+          IExpr arg = ((IAST) x).arg1();
+          if (arg.isInteger()) {
+            int idx = arg.toIntDefault();
+            if (initialValues.containsKey(idx)) {
+              return initialValues.get(idx);
+            }
+          }
+        }
+        return F.NIL;
+      });
+
+      IExpr val = engine.evaluate(F.Expand(evaluatedStep));
+      initialValues.put(i, val);
+    }
+    return true;
   }
 
   private void parseEquations(IExpr body, ISymbol y, Map<Integer, IExpr> initialValues,

@@ -131,6 +131,7 @@ public class DensityPlot extends ListPlot {
 
     double minZ = Double.MAX_VALUE;
     double maxZ = -Double.MAX_VALUE;
+    // CPD-OFF grid sampling kept per plot, the numeric evaluation differs
     boolean[][] defined = new boolean[gridX + 1][gridY + 1];
 
     for (int i = 0; i <= gridX; i++) {
@@ -146,6 +147,7 @@ public class DensityPlot extends ListPlot {
           IExpr result = engine.evaluate(valExpr);
           // Use evalf() per user guidelines, then extract value
           z = result.evalfNaN();
+          // CPD-ON
           // if (num instanceof INumber) {
           // z = ((INumber) num).reDoubleValue();
           // }

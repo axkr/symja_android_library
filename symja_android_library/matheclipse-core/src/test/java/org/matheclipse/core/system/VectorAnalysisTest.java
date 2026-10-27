@@ -306,6 +306,9 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
         "{-a/r^2+(Csc(t)*((-b*Cos(t))/r-(b*Cos(t)+a*Sin(t))/r))/r,"//
             + "-b/r^2+(Csc(t)*((a*Cos(t))/r+(-Cot(t)*(b*Cos(t)+a*Sin(t)))/r))/r,"//
             + "(Csc(t)*((-c*Cos(t)*Cot(t))/r+(-c*Sin(t))/r))/r}");
+    // the theta component includes D(A_theta, {r, 2}): 12*r - r*Csc(t)^2 for A_theta = r^3
+    check("Laplacian({0, r^3, 0}, {r,t,p},\"Spherical\")", //
+        "{-2*r*Cot(t),8*r+(Csc(t)*(-r^2*Cos(t)*Cot(t)+3*r^2*Sin(t)))/r,0}");
   }
 
   @Test

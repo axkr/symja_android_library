@@ -838,9 +838,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       int start, int last, int step, int p1, ISymbol head, EvalEngine engine) {
 
     final int size = arg1.size();
-    if (step < 0 && start >= last) {
+    if ((step < 0 && start >= last) || (step > 0 && (last != 1 || start <= last))) {
       IASTAppendable result = arg1.copyHead((last - start) / step + 2);
-      for (int i = start; i >= last; i += step) {
+      for (int i = start; step < 0 ? i >= last : i <= last; i += step) {
         if (p1 >= ast.size()) {
           IExpr temp = getIndexRule(arg1, i, head, engine);
           if (temp.isPresent()) {
@@ -858,37 +858,6 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
         }
         IAST target = partTarget(arg1.get(i));
         if (target.isPresent()) {
-          IExpr temp = part(target, ast, p1, head, engine);
-          if (temp.isPresent()) {
-            result.append(temp);
-            continue;
-          }
-        }
-        // Part specification `1` is longer than depth of object.
-        return Errors.printMessage(head, "partd", F.list(arg1.get(i)), engine);
-      }
-      return result;
-    } else if (step > 0 && (last != 1 || start <= last)) {
-      IASTAppendable result = arg1.copyHead((last - start) / step + 2);
-      for (int i = start; i <= last; i += step) {
-        if (p1 >= ast.size()) {
-          IExpr temp = getIndexRule(arg1, i, head, engine);
-          if (temp.isPresent()) {
-            result.appendRule(temp);
-            continue;
-          }
-          return F.NIL;
-        }
-        if (i >= size || i < 0) {
-          // tested before the element is read: a span which runs past the end is an error message
-          // and not an IndexOutOfBoundsException
-          // Cannot take positions `1` through `2` in `3`.
-          return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
-              engine);
-        }
-        IAST target = partTarget(arg1.get(i));
-        if (target.isPresent()) {
-
           if (arg1.isAssociation()) {
             IAST rule = (IAST) arg1.getRule(i);
             IAST argAST = partTarget(rule.second());

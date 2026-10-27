@@ -607,37 +607,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
    * @param buf
    * @param powerAST the <code>Power(base, exponent)</code> expression
    */
-  private void convertPower(final StringBuilder buf, final IAST powerAST) {
-    IExpr base = powerAST.base();
-    IExpr exponent = powerAST.exponent();
-    if (exponent.isMinusOne()) {
-      buf.append("1.0/(");
-      convertInternal(buf, base);
-      buf.append(")");
-      return;
-    }
-    if (exponent.isNumEqualRational(F.C1D2)) {
-      buf.append("Math.sqrt(");
-      convertInternal(buf, base);
-      buf.append(")");
-      return;
-    }
-    if (exponent.isNumEqualRational(F.C1D3)) {
-      buf.append("Math.cbrt(");
-      convertInternal(buf, base);
-      buf.append(")");
-      return;
-    }
-    buf.append("Math.pow");
-    convertArgs(buf, powerAST.head(), powerAST);
-  }
-
-  /**
-   * Convert the <code>Power(base, exponent)</code> expression into JavaScript form.
-   *
-   * @param buf
-   * @param powerAST the <code>Power(base, exponent)</code> expression
-   */
   private void convertPowerMathcell(final StringBuilder buf, final IAST powerAST) {
     IExpr base = powerAST.base();
     IExpr exponent = powerAST.exponent();

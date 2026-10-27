@@ -8,11 +8,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVFormat.Builder;
 import org.apache.commons.csv.CSVRecord;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.FieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -454,14 +457,14 @@ public class Convert {
   }
 
   /**
-   * Returns a {@code FieldMatrix<ApcomplexField>} if possible.
+   * Returns a {@code FieldMatrix<T>} if possible.
    *
-   * @param expr
+   * @param newArray creates the array of the elements for the given numbers of rows and columns
+   * @param element converts an element of the matrix
    * @return {@code null} if the conversion isn't possible.
-   * @throws ClassCastException
-   * @throws IndexOutOfBoundsException
    */
-  public static FieldMatrix<ApcomplexField> list2ApcomplexMatrix(IExpr expr)
+  private static <T extends FieldElement<T>> FieldMatrix<T> list2FieldMatrix(IExpr expr,
+      BiFunction<Integer, Integer, T[][]> newArray, Function<IExpr, T> element)
       throws ClassCastException, IndexOutOfBoundsException {
     if (expr == null) {
       return null;
@@ -476,27 +479,19 @@ public class Convert {
     if (expr.isList()) {
       try {
         IAST list = (IAST) expr;
-        IAST currInRow = (IAST) list.arg1();
-        if (currInRow.isAST0()) {
-          // special case 0-Matrix
-          ApcomplexField[][] array = new ApcomplexField[0][0];
-          return new Array2DRowFieldMatrix<ApcomplexField>(array, false);
-        }
         final int rowSize = expr.argSize();
-        final int colSize = currInRow.argSize();
-
-        EvalEngine engine = EvalEngine.get();
-        final ApcomplexField[][] elements = new ApcomplexField[rowSize][colSize];
+        final int colSize = ((IAST) list.arg1()).argSize();
+        final T[][] elements = newArray.apply(rowSize, colSize);
         for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
+          IAST currInRow = (IAST) list.get(i);
           if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
             return null;
           }
           for (int j = 1; j < colSize + 1; j++) {
-            elements[i - 1][j - 1] = engine.evalApcomplex(currInRow.get(j));
+            elements[i - 1][j - 1] = element.apply(currInRow.get(j));
           }
         }
-        return new Array2DRowFieldMatrix<ApcomplexField>(elements, false);
+        return new Array2DRowFieldMatrix<T>(elements, false);
       } catch (ValidateException vex) {
         // pass
       }
@@ -505,14 +500,14 @@ public class Convert {
   }
 
   /**
-   * Returns a {@code FieldVector<ApcomplexField>} if possible.
+   * Returns a {@code FieldVector<T>} if possible.
    *
-   * @param expr
+   * @param newArray creates the array of the elements for the given length
+   * @param element converts an element of the vector
    * @return {@code null} if the conversion isn't possible.
-   * @throws ClassCastException
    */
-  public static FieldVector<ApcomplexField> list2ApcomplexVector(IExpr expr)
-      throws ClassCastException {
+  private static <T extends FieldElement<T>> FieldVector<T> list2FieldVector(IExpr expr,
+      IntFunction<T[]> newArray, Function<IExpr, T> element) throws ClassCastException {
     if (expr == null) {
       return null;
     }
@@ -527,17 +522,44 @@ public class Convert {
       try {
         final int rowSize = expr.argSize();
         IAST list = (IAST) expr;
-        EvalEngine engine = EvalEngine.get();
-        final ApcomplexField[] elements = new ApcomplexField[rowSize];
+        final T[] elements = newArray.apply(rowSize);
         for (int i = 0; i < rowSize; i++) {
-          elements[i] = engine.evalApcomplex(list.get(i + 1));
+          elements[i] = element.apply(list.get(i + 1));
         }
-        return new ArrayFieldVector<ApcomplexField>(elements, false);
+        return new ArrayFieldVector<T>(elements, false);
       } catch (ValidateException vex) {
         // pass
       }
     }
     return null;
+  }
+
+  /**
+   * Returns a {@code FieldMatrix<ApcomplexField>} if possible.
+   *
+   * @param expr
+   * @return {@code null} if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<ApcomplexField> list2ApcomplexMatrix(IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    EvalEngine engine = EvalEngine.get();
+    return list2FieldMatrix(expr, (rows, columns) -> new ApcomplexField[rows][columns],
+        x -> engine.evalApcomplex(x));
+  }
+
+  /**
+   * Returns a {@code FieldVector<ApcomplexField>} if possible.
+   *
+   * @param expr
+   * @return {@code null} if the conversion isn't possible.
+   * @throws ClassCastException
+   */
+  public static FieldVector<ApcomplexField> list2ApcomplexVector(IExpr expr)
+      throws ClassCastException {
+    EvalEngine engine = EvalEngine.get();
+    return list2FieldVector(expr, ApcomplexField[]::new, x -> engine.evalApcomplex(x));
   }
 
 
@@ -552,73 +574,14 @@ public class Convert {
    */
   public static FieldMatrix<ApfloatField> list2ApfloatMatrix(IExpr expr)
       throws ClassCastException, IndexOutOfBoundsException {
-    if (expr == null) {
-      return null;
-    }
-    int[] dim = expr.isMatrix();
-    if (dim == null || dim[0] == 0 || dim[1] == 0) {
-      return null;
-    }
-    if (expr.isSparseArray()) {
-      expr = ((ISparseArray) expr).normal(false);
-    }
-    if (expr.isList()) {
-      try {
-        IAST list = (IAST) expr;
-        IAST currInRow = (IAST) list.arg1();
-        if (currInRow.isAST0()) {
-          // special case 0-Matrix
-          ApfloatField[][] array = new ApfloatField[0][0];
-          return new Array2DRowFieldMatrix<ApfloatField>(array, false);
-        }
-        final int rowSize = expr.argSize();
-        final int colSize = currInRow.argSize();
-
-        EvalEngine engine = EvalEngine.get();
-        final ApfloatField[][] elements = new ApfloatField[rowSize][colSize];
-        for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
-          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-            return null;
-          }
-          for (int j = 1; j < colSize + 1; j++) {
-            elements[i - 1][j - 1] = engine.evalApfloat(currInRow.get(j));
-          }
-        }
-        return new Array2DRowFieldMatrix<ApfloatField>(elements, false);
-      } catch (ValidateException vex) {
-        // pass
-      }
-    }
-    return null;
+    EvalEngine engine = EvalEngine.get();
+    return list2FieldMatrix(expr, (rows, columns) -> new ApfloatField[rows][columns],
+        x -> engine.evalApfloat(x));
   }
 
   public static FieldVector<ApfloatField> list2ApfloatVector(IExpr expr) throws ClassCastException {
-    if (expr == null) {
-      return null;
-    }
-    int dim = expr.isVector();
-    if (dim <= 0) {
-      return null;
-    }
-    if (expr.isSparseArray()) {
-      expr = ((ISparseArray) expr).normal(false);
-    }
-    if (expr.isList()) {
-      try {
-        final int rowSize = expr.argSize();
-        IAST list = (IAST) expr;
-        EvalEngine engine = EvalEngine.get();
-        final ApfloatField[] elements = new ApfloatField[rowSize];
-        for (int i = 0; i < rowSize; i++) {
-          elements[i] = engine.evalApfloat(list.get(i + 1));
-        }
-        return new ArrayFieldVector<ApfloatField>(elements, false);
-      } catch (ValidateException vex) {
-        // pass
-      }
-    }
-    return null;
+    EvalEngine engine = EvalEngine.get();
+    return list2FieldVector(expr, ApfloatField[]::new, x -> engine.evalApfloat(x));
   }
 
   /**
@@ -776,75 +739,11 @@ public class Convert {
    */
   public static FieldMatrix<Complex> list2ComplexMatrix(IExpr expr)
       throws ClassCastException, IndexOutOfBoundsException {
-    if (expr == null) {
-      return null;
-    }
-    int[] dim = expr.isMatrix();
-    if (dim == null || dim[0] == 0 || dim[1] == 0) {
-      return null;
-    }
-    if (expr.isSparseArray()) {
-      // TODO optimize for sparse arrays
-      // ISparseArray array = (ISparseArray) expr;
-      expr = ((ISparseArray) expr).normal(false);
-    }
-    if (expr.isList()) {
-      try {
-        IAST list = (IAST) expr;
-        IAST currInRow = (IAST) list.arg1();
-        if (currInRow.isAST0()) {
-          // special case 0-Matrix
-          Complex[][] array = new Complex[0][0];
-          return new Array2DRowFieldMatrix<Complex>(array, false);
-        }
-        final int rowSize = expr.argSize();
-        final int colSize = currInRow.argSize();
-
-        final Complex[][] elements = new Complex[rowSize][colSize];
-        for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
-          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-            return null;
-          }
-          for (int j = 1; j < colSize + 1; j++) {
-            elements[i - 1][j - 1] = currInRow.get(j).evalfc();
-          }
-        }
-        return new Array2DRowFieldMatrix<Complex>(elements, false);
-      } catch (ValidateException vex) {
-        // pass
-      }
-    }
-    return null;
+    return list2FieldMatrix(expr, (rows, columns) -> new Complex[rows][columns], IExpr::evalfc);
   }
 
   public static FieldVector<Complex> list2ComplexVector(IExpr expr) throws ClassCastException {
-    if (expr == null) {
-      return null;
-    }
-    int dim = expr.isVector();
-    if (dim <= 0) {
-      return null;
-    }
-    if (expr.isSparseArray()) {
-      // ISparseArray array = (ISparseArray) expr;
-      // return array.toFieldVector(false);
-      expr = ((ISparseArray) expr).normal(false);
-    }
-    if (expr.isList()) {
-      try {
-        final int rowSize = expr.argSize();
-        IAST list = (IAST) expr;
-        final Complex[] elements = new Complex[rowSize];
-        for (int i = 0; i < rowSize; i++) {
-          elements[i] = list.get(i + 1).evalfc();
-        }
-        return new ArrayFieldVector<Complex>(elements, false);
-      } catch (ValidateException vex) {
-        // pass
-      }
-    }
-    return null;
+    return list2FieldVector(expr, Complex[]::new, IExpr::evalfc);
   }
 
   public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr)

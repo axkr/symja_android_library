@@ -11,9 +11,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * The common part of the charts of one data argument, <code>BarChart</code> and
- * <code>RectangleChart</code>: a padded <code>Graphics</code> with an optional legend, and the
- * chart defaults - no clipping, a vertical axis only, no frame.
+ * The common part of the charts <code>BarChart</code>, <code>RectangleChart</code>,
+ * <code>BubbleChart</code>, <code>Histogram</code>, <code>BoxWhiskerChart</code> and
+ * <code>SectorChart</code>: a padded <code>Graphics</code> with an
+ * optional legend, and the chart defaults - no clipping and, unless a chart sets its own, a
+ * vertical axis only, no frame.
  */
 public abstract class AbstractChart extends ListPlot {
 
@@ -41,12 +43,25 @@ public abstract class AbstractChart extends ListPlot {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
     // charts and rasters draw their own extent, so the reference rendering does not clip
     defaults[GraphicsOptions.X_PLOTRANGECLIPPING] = S.False;
-    // the horizontal axis is usually hidden or replaced by labels, the vertical axis shown
+    chartDefaults(defaults);
+
+    GraphicsOptions.OptionSet optionSet = optionExtras(GraphicsOptions.chartExtras(
+        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults)));
+    setOptions(newSymbol, optionSet.keys(), optionSet.values());
+  }
+
+  /** Add the chart's own options beyond the chart options; without an override none. */
+  protected GraphicsOptions.OptionSet optionExtras(GraphicsOptions.OptionSet optionSet) {
+    return optionSet;
+  }
+
+  /**
+   * Set the chart's own defaults for frame, axes and aspect ratio in the list plot defaults.
+   * Without an override the horizontal axis, usually hidden or replaced by labels, is not shown,
+   * the vertical axis is, and there is no frame.
+   */
+  protected void chartDefaults(IExpr[] defaults) {
     defaults[GraphicsOptions.X_AXES] = F.List(S.False, S.True);
     defaults[GraphicsOptions.X_FRAME] = S.False;
-
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions.chartExtras(
-        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
-    setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

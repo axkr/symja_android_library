@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
+import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -398,28 +398,15 @@ public class ToRadicals extends AbstractFunctionEvaluator {
    *         <code>null</code> if one of them has no radical form
    */
   private static IExpr[] radicalRoots(ExprPolynomial polynomial, int degree, EvalEngine engine) {
-    IExpr a = C0;
-    IExpr b = C0;
-    IExpr c2 = C0;
-    IExpr d = C0;
-    IExpr e = C0;
-    for (ExprMonomial monomial : polynomial) {
-      final IExpr coeff = monomial.coefficient();
-      long lExp = monomial.exponent().getVal(0);
-      if (lExp == 4) {
-        e = coeff;
-      } else if (lExp == 3) {
-        d = coeff;
-      } else if (lExp == 2) {
-        c2 = coeff;
-      } else if (lExp == 1) {
-        b = coeff;
-      } else if (lExp == 0) {
-        a = coeff;
-      } else {
-        throw new ArithmeticException("Root::Unexpected exponent value: " + lExp);
-      }
+    IExpr[] coefficients = QuarticSolver.coefficients(polynomial);
+    if (coefficients == null) {
+      throw new ArithmeticException("Root::Unexpected exponent value");
     }
+    IExpr a = coefficients[0];
+    IExpr b = coefficients[1];
+    IExpr c2 = coefficients[2];
+    IExpr d = coefficients[3];
+    IExpr e = coefficients[4];
 
     IExpr[] radicalRoots = new IExpr[degree];
     for (int i = 1; i <= degree; i++) {
@@ -583,6 +570,24 @@ public class ToRadicals extends AbstractFunctionEvaluator {
     for (int i = 0; i < n; i++) {
       order[i] = i;
     }
+    sortRootOrder(order, reVals, imVals);
+    IExpr[] sorted = new IExpr[n];
+    for (int i = 0; i < n; i++) {
+      sorted[i] = roots[order[i]];
+    }
+    return sorted;
+  }
+
+  /**
+   * Sort the root indices in <code>order</code> by the {@code Root} k-indexing convention: real
+   * roots first, then by real part, then by imaginary part, with a tolerance of
+   * <code>1e-10</code>.
+   *
+   * @param order the indices into <code>reVals</code> and <code>imVals</code>, sorted in place
+   * @param reVals the real parts of the roots
+   * @param imVals the imaginary parts of the roots
+   */
+  static void sortRootOrder(Integer[] order, final double[] reVals, final double[] imVals) {
     final double imTol = 1e-10;
     final double reTol = 1e-10;
     java.util.Arrays.sort(order, (xi, yi) -> {
@@ -599,11 +604,6 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       }
       return Double.compare(imVals[xi], imVals[yi]);
     });
-    IExpr[] sorted = new IExpr[n];
-    for (int i = 0; i < n; i++) {
-      sorted[i] = roots[order[i]];
-    }
-    return sorted;
   }
 
   /**

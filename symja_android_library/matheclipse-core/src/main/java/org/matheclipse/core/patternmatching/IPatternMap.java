@@ -572,6 +572,7 @@ public interface IPatternMap {
       fValue2 = patternValuesArray[1];
     }
 
+    // CPD-OFF pattern maps specialized per number of pattern variables
     @Override
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       boolean result = false;
@@ -620,6 +621,7 @@ public interface IPatternMap {
       }
       return false;
     }
+    // CPD-ON
 
     @Override
     public boolean setValue(IPatternSequence pattern, IAST sequence) {
@@ -675,6 +677,7 @@ public interface IPatternMap {
       });
     }
 
+    // CPD-OFF pattern maps specialized per number of pattern variables
     @Override
     public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       return F.subst(rhsExpr, (IExpr input) -> {
@@ -714,6 +717,7 @@ public interface IPatternMap {
       buf.append("]");
       return buf.toString();
     }
+    // CPD-ON
   }
 
 
@@ -887,6 +891,7 @@ public interface IPatternMap {
       fValue3 = patternValuesArray[2];
     }
 
+    // CPD-OFF pattern maps specialized per number of pattern variables
     @Override
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       boolean result = false;
@@ -949,6 +954,7 @@ public interface IPatternMap {
       }
       return false;
     }
+    // CPD-ON
 
     @Override
     public boolean setValue(IPatternSequence pattern, IAST sequence) {
@@ -1014,6 +1020,7 @@ public interface IPatternMap {
       });
     }
 
+    // CPD-OFF pattern maps specialized per number of pattern variables
     @Override
     public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       return F.subst(rhsExpr, (IExpr input) -> {
@@ -1066,6 +1073,7 @@ public interface IPatternMap {
       buf.append("]");
       return buf.toString();
     }
+    // CPD-ON
   }
 
   // CPD-OFF pattern maps specialized per number of pattern variables

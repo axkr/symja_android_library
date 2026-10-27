@@ -75,6 +75,7 @@ public final class LevelSpecification extends LevelSpec {
             fFromLevel = i.toBigNumerator().intValue();
             fFromDepth = Integer.MIN_VALUE;
             fToDepth = -1;
+            // CPD-OFF count and level specifications fill different fields
             if (fToLevel < fFromLevel) {
               String str = Errors.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
@@ -89,6 +90,7 @@ public final class LevelSpecification extends LevelSpec {
             final IInteger i0 = (IInteger) lst.arg1();
             final IInteger i1 = (IInteger) lst.arg2();
             if (i0.isNegative() && i1.isNegative()) {
+            // CPD-ON
               fFromDepth = i0.toBigNumerator().intValue();
               fToDepth = i1.toBigNumerator().intValue();
               fFromLevel = 0;

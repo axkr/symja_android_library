@@ -10,7 +10,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
@@ -290,8 +289,8 @@ public final class ASTRealMatrix extends AbstractAST
     if (engine.isNumericMode() && engine.isArbitraryMode()) {
       IASTAppendable result = F.ListAlloc(matrix.getRowDimension());
       for (int i = 0; i < matrix.getRowDimension(); i++) {
-        IASTAppendable rowVector = F.ListAlloc(matrix.getRowDimension());
-        for (int j = 0; j < matrix.getRowDimension(); j++) {
+        IASTAppendable rowVector = F.ListAlloc(matrix.getColumnDimension());
+        for (int j = 0; j < matrix.getColumnDimension(); j++) {
           rowVector.append(ApfloatNum.valueOf(matrix.getEntry(i, j)));
         }
         result.append(rowVector);
@@ -304,35 +303,6 @@ public final class ASTRealMatrix extends AbstractAST
   @Override
   public IExpr evalEvaluate(EvalEngine engine) {
     return F.NIL;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
-      final Function<IExpr, IExpr> function) {
-    final int size = size();
-    for (int i = 1; i < size; i++) {
-      IExpr expr = function.apply(get(i));
-      if (expr.isPresent()) {
-        filterAST.append(expr);
-      } else {
-        restAST.append(get(i));
-      }
-    }
-    return filterAST;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
-      Predicate<? super IExpr> predicate) {
-    return filterAST;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
-    return filterAST;
   }
 
   @Override

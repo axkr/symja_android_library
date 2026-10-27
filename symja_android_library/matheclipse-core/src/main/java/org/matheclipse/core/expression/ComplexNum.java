@@ -1218,6 +1218,7 @@ public class ComplexNum implements IComplexNum {
       try {
         Apcomplex gamma =
             EvalEngine.getApfloatDouble().gamma(apcomplexValue(), ((INumber) x).apcomplexValue());
+        // CPD-OFF numeric special-function dispatch per number type
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
       } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers
@@ -1249,6 +1250,7 @@ public class ComplexNum implements IComplexNum {
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
         // second argment zero
         return Errors.printMessage(S.Gamma, are, EvalEngine.get());
+        // CPD-ON
       }
     }
     return IComplexNum.super.gamma(x0, x1);
@@ -1493,6 +1495,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr hypergeometric2F1Regularized(IExpr arg2, IExpr arg3, IExpr arg4) {
+    // CPD-OFF numeric special-function dispatch per number type
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
         Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
@@ -1505,6 +1508,7 @@ public class ComplexNum implements IComplexNum {
       }
     }
     return IComplexNum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
+    // CPD-ON
   }
 
   @Override

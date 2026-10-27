@@ -1600,6 +1600,7 @@ public class BesselFunctions {
             F.Times(F.Power(b, F.CN1D2), F.Sqrt(F.CPiHalf),
                 F.BesselJ(F.Times(C1D2, F.Plus(F.C1, F.Times(C2, a))), b)),
             Times(CI, Power(b, CN1D2), Sqrt(CPiHalf),
+                // CPD-OFF per-function evaluator boilerplate
                 BesselY(Times(C1D2, Plus(C1, Times(C2, a))), b)));
       }
       return F.NIL;
@@ -1621,6 +1622,7 @@ public class BesselFunctions {
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.SphericalHankelH1, rex, engine);
+          // CPD-ON
         }
       }
       return F.NIL;
@@ -1672,6 +1674,7 @@ public class BesselFunctions {
             F.Times(Power(b, CN1D2), F.Sqrt(CPiHalf),
                 F.BesselJ(F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, a))), b)),
             F.Times(F.CNI, F.Power(b, F.CN1D2), F.Sqrt(F.CPiHalf),
+                // CPD-OFF per-function evaluator boilerplate
                 F.BesselY(F.Times(F.C1D2, F.Plus(F.C1, F.Times(C2, a))), b)));
 
       }
@@ -1693,6 +1696,7 @@ public class BesselFunctions {
           return Errors.printMessage(S.SphericalHankelH2, rex, engine);
         }
       }
+      // CPD-ON
       return F.NIL;
     }
 

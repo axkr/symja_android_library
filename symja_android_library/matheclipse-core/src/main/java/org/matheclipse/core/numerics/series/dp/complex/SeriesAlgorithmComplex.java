@@ -10,7 +10,6 @@ import org.hipparchus.complex.Complex;
  */
 public abstract class SeriesAlgorithmComplex {
 
-
   public static final class SeriesSolutionComplex {
 
     public final Complex limit;
@@ -28,7 +27,8 @@ public abstract class SeriesAlgorithmComplex {
 
     @Override
     public String toString() {
-      return String.format("%.08f", limit) + " +- " + String.format("%.08f", error) + "\n"
+      return String.format("%.08f%+.08fi", limit.getReal(), limit.getImaginary()) + " +- "
+          + String.format("%.08f", error) + "\n"
           + "evaluations: " + evaluations + "\n" + "converged: " + converged;
     }
   }

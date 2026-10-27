@@ -791,12 +791,13 @@ public class ExpTrigsFunctions {
   }
 
   /**
-   * Inverse hyperbolic tangent
+   * Inverse cosecant
    *
    * <p>
    * See <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions">Inverse
    * trigonometric functions</a>
    */
+  // CPD-OFF closed-form tables per function
   private static final class ArcCsc extends AbstractTrigArg1 implements IRewrite {
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -813,6 +814,7 @@ public class ExpTrigsFunctions {
         return F.CComplexInfinity;
       }
       return F.complexNum(Complex.ONE.divide(arg1).asin());
+      // CPD-ON
     }
 
     @Override
@@ -870,7 +872,7 @@ public class ExpTrigsFunctions {
   }
 
   /**
-   * Inverse hyperbolic tangent
+   * Inverse hyperbolic cosecant
    *
    * <p>
    * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
@@ -1021,6 +1023,7 @@ public class ExpTrigsFunctions {
     }
   }
 
+  // CPD-OFF closed-form tables per function
   private static final class ArcSec extends AbstractTrigArg1 implements IRewrite {
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -1037,6 +1040,7 @@ public class ExpTrigsFunctions {
         return F.CComplexInfinity;
       }
       return F.complexNum(Complex.ONE.divide(arg1).acos());
+      // CPD-ON
     }
 
     @Override
@@ -1730,6 +1734,7 @@ public class ExpTrigsFunctions {
             return F.Cos(F.Times(F.Subtract(F.C2, t), S.Pi));
           }
           // Cos((t-2*Quotient(IntegerPart(t),2))*Pi)
+          // CPD-OFF closed-form tables per function
           return F.Cos(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
 
@@ -1753,6 +1758,7 @@ public class ExpTrigsFunctions {
         IRational realPart = c.re();
         if (realPart.isInteger()) {
           IAST cosResult = F.Cos(F.Times(F.CC(F.C0, c.im()), S.Pi));
+          // CPD-ON
           if (realPart.isEven()) {
             // https://functions.wolfram.com/ElementaryFunctions/Cos/04/02/03/0002/
             // Cos(I*imaginaryPart*Pi)
@@ -1960,23 +1966,7 @@ public class ExpTrigsFunctions {
       implements INumeric, IRewrite, DoubleUnaryOperator, IReciprocalTrigonometricFunction {
     @Override
     public boolean evalIsReal(IAST ast) {
-      if (ast.argSize() >= 1) {
-        IExpr x = ast.arg1();
-        if (x.isRealResult()) {
-          if (x == S.Pi) {
-            return false;
-          }
-          if (x.isTimes()) {
-            IAST timesAST = (IAST) x;
-            IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
-            if (t.isInteger()) {
-              return false;
-            }
-          }
-          return true;
-        }
-      }
-      return false;
+      return isRealOffPiMultiples(ast);
     }
 
     @Override
@@ -2221,6 +2211,7 @@ public class ExpTrigsFunctions {
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return Cosh(negExpr);
       }
       if (arg1.isZero()) {
@@ -2246,6 +2237,7 @@ public class ExpTrigsFunctions {
             } else if (t.isLT(F.C2)) { // t < 2
               // -Cosh(arg1 - I*Pi)
               return F.Negate(F.Cosh(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
+              // CPD-ON
             }
             // Cosh(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F
@@ -2333,23 +2325,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public boolean evalIsReal(IAST ast) {
-      if (ast.argSize() >= 1) {
-        IExpr x = ast.arg1();
-        if (x.isRealResult()) {
-          if (x == S.Pi) {
-            return false;
-          }
-          if (x.isTimes()) {
-            IAST timesAST = (IAST) x;
-            IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
-            if (t.isInteger()) {
-              return false;
-            }
-          }
-          return true;
-        }
-      }
-      return false;
+      return isRealOffPiMultiples(ast);
     }
 
     @Override
@@ -2593,6 +2569,7 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Csch(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
               return F
+                  // CPD-OFF closed-form tables per function
                   .Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
@@ -2600,6 +2577,7 @@ public class ExpTrigsFunctions {
             } else if (t.isLT(F.C1)) { // t < 1
               // -I * Sech(arg1-1/2*I*Pi)
               return F.Times(F.CNI, F.Sech(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
+              // CPD-ON
             } else if (t.isLT(F.C2)) { // t < 2
               // -Csch(arg1 - I*Pi)
               return F.Negate(F.Csch(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
@@ -3494,10 +3472,11 @@ public class ExpTrigsFunctions {
       }
       IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       if (imPart.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return F.Sec(imPart);
       }
       if (arg1.isZero()) {
-        return F.C0;
+        return F.C1;
       }
       if (arg1.isPlus()) {
         IAST list = AbstractFunctionEvaluator.peelOffPlusI((IAST) arg1, engine);
@@ -3519,6 +3498,7 @@ public class ExpTrigsFunctions {
             } else if (t.isLT(F.C2)) { // t < 2
               // -Sech(arg1 - I*Pi)
               return F.Negate(F.Sech(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
+              // CPD-ON
             }
             // Sech(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F
@@ -3698,6 +3678,7 @@ public class ExpTrigsFunctions {
             return F.Negate(F.Sin(F.Times(F.Subtract(F.C2, t), S.Pi)));
           }
           // Sin((t-2*Quotient(IntegerPart(t),2))*Pi)
+          // CPD-OFF closed-form tables per function
           return F.Sin(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
 
@@ -3721,6 +3702,7 @@ public class ExpTrigsFunctions {
         IRational realPart = c.re();
         if (realPart.isInteger()) {
           IAST sinResult = F.Sin(F.Times(F.CC(F.C0, c.im()), S.Pi));
+          // CPD-ON
           if (realPart.isEven()) {
             // https://functions.wolfram.com/ElementaryFunctions/Sin/04/02/03/0002/
             // Sin(I*imaginaryPart*Pi)
@@ -3981,6 +3963,7 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
               return F
+                  // CPD-OFF closed-form tables per function
                   .Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
@@ -3988,6 +3971,7 @@ public class ExpTrigsFunctions {
             } else if (t.isLT(F.C1)) { // t < 1
               // I * Cosh(arg1-1/2*I*Pi)
               return F.Times(F.CI, F.Cosh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
+              // CPD-ON
             } else if (t.isLT(F.C2)) { // t < 2
               // -Sinh(arg1 - I*Pi)
               return F.Negate(F.Sinh(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
@@ -4404,6 +4388,7 @@ public class ExpTrigsFunctions {
    * @param arg1 is assumed to be <code>Tan(z)</code> or <code>Cot(z)</code>
    * @return
    */
+  // CPD-OFF closed-form tables per function
   private static IExpr arcTanArcCotInverse(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
@@ -4415,6 +4400,7 @@ public class ExpTrigsFunctions {
       IExpr max = S.Times.of(F.Plus(F.C1D2, k), Pi);
       // z - k*Pi
       IAST result = F.Subtract(z, F.Times(k, S.Pi));
+      // CPD-ON
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
       if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) { // S.Greater.ofQ(max, zRe)) {
         // z - k*Pi
@@ -4457,11 +4443,36 @@ public class ExpTrigsFunctions {
   }
 
   /**
+   * Whether the argument of <code>Csc(x)</code> or <code>Cot(x)</code> is real and not
+   * <code>Pi</code> or an integer multiple <code>n*Pi</code>, where both functions have poles.
+   */
+  private static boolean isRealOffPiMultiples(IAST ast) {
+    if (ast.argSize() >= 1) {
+      IExpr x = ast.arg1();
+      if (x.isRealResult()) {
+        if (x == S.Pi) {
+          return false;
+        }
+        if (x.isTimes()) {
+          IAST timesAST = (IAST) x;
+          IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+          if (t.isInteger()) {
+            return false;
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Try simplifying <code>ArcSin(Sin(z))</code>
    *
-   * @param arg1 is assumed to be <code>Tan(z)</code> or <code>Cot(z)</code>
+   * @param arg1 is assumed to be <code>Sin(z)</code>
    * @return
    */
+  // CPD-OFF closed-form tables per function
   private static IExpr arcSinSin(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
@@ -4473,6 +4484,7 @@ public class ExpTrigsFunctions {
       IExpr max = S.Times.of(F.Plus(F.C1D2, k), Pi);
       // (-1)^k * (z - Pi*k)
       IAST result = F.Times(F.Power(-1, k), F.Subtract(z, F.Times(k, S.Pi)));
+      // CPD-ON
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
       if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) {// S.Greater.ofQ(max, zRe)) {
         // (-1)^k * (z - Pi*k)

@@ -12,8 +12,6 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.InfixOperator;
-import org.matheclipse.parser.client.operator.Operator;
-import org.matheclipse.parser.client.operator.PostfixOperator;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public abstract class ComplexFormFactory extends AbstractCodeFormFactory {
@@ -72,22 +70,8 @@ public abstract class ComplexFormFactory extends AbstractCodeFormFactory {
     if (o instanceof IAST) {
       final IAST list = (IAST) o;
 
-      if (list.head().isSymbol()) {
-        ISymbol head = (ISymbol) list.head();
-        final Operator operator = getOperator(head);
-        if (operator != null) {
-          if (operator instanceof PostfixOperator) {
-            if (list.isAST1()) {
-              convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
-              return;
-            }
-          } else {
-            if (convertOperator(operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence,
-                head)) {
-              return;
-            }
-          }
-        }
+      if (convertOperatorAST(buf, list, precedence, isASTHead)) {
+        return;
       }
 
       convertAST(buf, list);

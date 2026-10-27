@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 
 /**
  * Helpers shared by the {@link DSolve} solvers: constant bookkeeping, result unwrapping
@@ -668,5 +669,46 @@ final class DSolveUtil {
     field = engine.evaluate(F.subst(field, engine.evaluate(F.D(yFunction, xVar)), pDummy));
     field = engine.evaluate(F.subst(field, yFunction, yDummy));
     return field.isFree(yFunction.head(), true) ? field : F.NIL;
+  }
+
+  /**
+   * The equations <code>c == 0</code> for the nonzero coefficients <code>c</code> of the
+   * polynomial <code>polynomial</code> in <code>xVar</code>.
+   *
+   * @return {@link F#NIL} if the coefficients cannot be computed
+   */
+  static IExpr vanishingCoefficientEquations(IExpr polynomial, IExpr xVar, EvalEngine engine) {
+    IExpr coefficients = engine.evaluate(F.CoefficientList(polynomial, xVar));
+    if (!coefficients.isList()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) coefficients;
+    IASTAppendable equations = F.ListAlloc(list.argSize());
+    for (int i = 1; i <= list.argSize(); i++) {
+      IExpr coefficient = list.get(i);
+      if (!coefficient.isZero()) {
+        equations.append(F.Equal(coefficient, F.C0));
+      }
+    }
+    return equations;
+  }
+
+  /**
+   * The sign of a parameter, or <code>0</code> if it does not evaluate to a real number. A solver
+   * whose solutions depend on the sign has to decline in that case.
+   */
+  static int numericSign(IExpr expr, EvalEngine engine) {
+    try {
+      IExpr value = engine.evalN(expr);
+      if (value instanceof INumber && ((INumber) value).isReal()) {
+        double d = ((INumber) value).evalf();
+        if (Double.isFinite(d) && d != 0.0) {
+          return d > 0.0 ? 1 : -1;
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return 0;
   }
 }

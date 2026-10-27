@@ -170,6 +170,7 @@ public class StatisticalMomentFunctions {
 
   private static final class CentralMoment extends AbstractEvaluator {
 
+    // CPD-OFF moment evaluators share the argument checks, the per-element moments differ
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
@@ -251,6 +252,7 @@ public class StatisticalMomentFunctions {
 
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public int status() {
@@ -512,6 +514,7 @@ public class StatisticalMomentFunctions {
 
   private static final class FactorialMoment extends AbstractEvaluator {
 
+    // CPD-OFF moment evaluators share the argument checks, the per-element moments differ
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
@@ -566,6 +569,7 @@ public class StatisticalMomentFunctions {
       }
       return F.NIL;
     }
+    // CPD-ON
 
     private IAST factorialPower2(IExpr arg1, IExpr arg2) {
       if (arg2.isInteger() && arg2.isPositive() && arg2.isPositive()
