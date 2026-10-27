@@ -1236,6 +1236,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{0,0}");
     check("Skewness(MultinormalDistribution(s))", //
         "{0,0}");
+    // a covariance matrix given as a SparseArray
+    check("Variance(MultinormalDistribution({1,2}, SparseArray({{4,1},{1,9}})))", //
+        "{4,9}");
   }
 
   @Test

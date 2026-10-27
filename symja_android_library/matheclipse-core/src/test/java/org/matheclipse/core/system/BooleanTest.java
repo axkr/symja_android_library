@@ -34,6 +34,11 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "True");
     check("Or(b, False, c, !b)", //
         "True");
+    // False with a later Undefined is Undefined, also behind a first argument
+    check("And(False, Undefined)", //
+        "Undefined");
+    check("And(x, False, Undefined)", //
+        "Undefined");
     // the first argument which is not True is evaluated once
     check("k=0;And(k++;p, q);k", //
         "1");

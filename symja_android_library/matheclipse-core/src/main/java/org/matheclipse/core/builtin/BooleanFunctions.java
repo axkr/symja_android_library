@@ -5,8 +5,10 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Substitution;
@@ -640,18 +642,34 @@ public final class BooleanFunctions {
    * <code>!x</code>.
    */
   private static boolean hasComplementaryLiterals(IAST args) {
+    Set<IExpr> negatedSymbols = null;
     for (int i = 1; i < args.size(); i++) {
       IExpr arg = args.get(i);
       if (arg.isNot() && arg.first().isSymbol()) {
-        IExpr symbol = arg.first();
-        for (int j = 1; j < args.size(); j++) {
-          if (args.get(j).equals(symbol)) {
-            return true;
-          }
+        if (negatedSymbols == null) {
+          negatedSymbols = new HashSet<IExpr>();
+        }
+        negatedSymbols.add(arg.first());
+      }
+    }
+    if (negatedSymbols != null) {
+      for (int i = 1; i < args.size(); i++) {
+        IExpr arg = args.get(i);
+        if (arg.isSymbol() && negatedSymbols.contains(arg)) {
+          return true;
         }
       }
     }
     return false;
+  }
+
+  /**
+   * The value of a conjunction whose argument at <code>position</code> is <code>False</code>:
+   * <code>Undefined</code> if a later argument is <code>Undefined</code>, otherwise
+   * <code>False</code>.
+   */
+  private static IExpr falseOrUndefined(IAST conjunction, int position) {
+    return conjunction.exists(x -> x.isUndefined(), position + 1) ? S.Undefined : S.False;
   }
 
   private static class And extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
@@ -683,10 +701,7 @@ public final class BooleanFunctions {
             return S.Undefined;
           }
           if (temp.isFalse()) {
-            if (flattenedAST.exists(x -> x.isUndefined(), i + 1)) {
-              return S.Undefined;
-            }
-            return S.False;
+            return falseOrUndefined(flattenedAST, i);
           } else if (temp.isTrue()) {
             continue;
           }
@@ -695,10 +710,7 @@ public final class BooleanFunctions {
         temp = engine.evaluateNIL(temp);
         if (temp.isPresent()) {
           if (temp.isFalse()) {
-            if (flattenedAST.exists(x -> x.isUndefined(), i + 1)) {
-              return S.Undefined;
-            }
-            return S.False;
+            return falseOrUndefined(flattenedAST, i);
           } else if (temp.isTrue()) {
             continue;
           }
@@ -720,7 +732,7 @@ public final class BooleanFunctions {
       for (int i = start + 1; i < flattenedAST.size(); i++) {
         temp = flattenedAST.get(i);
         if (temp.isFalse()) {
-          return S.False;
+          return falseOrUndefined(flattenedAST, i);
         } else if (temp.isTrue()) {
           result.remove(index);
           evaled = true;
@@ -730,7 +742,7 @@ public final class BooleanFunctions {
         temp = engine.evaluateNIL(temp);
         if (temp.isPresent()) {
           if (temp.isFalse()) {
-            return S.False;
+            return falseOrUndefined(flattenedAST, i);
           } else if (temp.isTrue()) {
             result.remove(index);
             evaled = true;

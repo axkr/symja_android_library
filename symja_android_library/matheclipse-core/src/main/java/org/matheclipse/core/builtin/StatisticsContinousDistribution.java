@@ -146,6 +146,9 @@ public class StatisticsContinousDistribution {
    * @return {@link F#NIL} if <code>matrix</code> is not a square matrix
    */
   public static IExpr diagonalOfSquareMatrix(IExpr matrix) {
+    if (matrix.isSparseArray()) {
+      matrix = matrix.normal(false);
+    }
     int[] dimensions = matrix.isMatrix();
     if (dimensions == null || dimensions[0] != dimensions[1]) {
       return F.NIL;

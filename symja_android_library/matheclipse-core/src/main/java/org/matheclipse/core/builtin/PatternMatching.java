@@ -3871,7 +3871,8 @@ public final class PatternMatching {
    * @param head <code>UpSet</code> or <code>UpSetDelayed</code>, which reports the messages
    * @param flag the flags of the rule
    * @param failOnProtected whether a protected symbol fails the assignment with
-   *        <code>$Failed</code>; otherwise the remaining arguments are skipped after the message
+   *        <code>$Failed</code>; otherwise the remaining arguments are skipped after the message.
+   *        The rules attached to the arguments before the protected one stay in place
    * @throws FailedException after a message, if no argument has a symbol to attach the rule to, or
    *         if an argument's symbol is protected and <code>failOnProtected</code> is set
    */
