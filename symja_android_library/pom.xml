@@ -775,9 +775,9 @@
 						<format>xml</format>
 
 						<!-- The minimum number of duplicated tokens to be
-						reported. 100 (the plugin default) reports hundreds of
-						small look-alike methods; 200 keeps real copy-paste. -->
-						<minimumTokens>200</minimumTokens>
+						reported, the plugin default. Deliberate copies are
+						wrapped in CPD-OFF/CPD-ON comments. -->
+						<minimumTokens>100</minimumTokens>
 
 						<!-- Literals and identifiers must match exactly. With
 						ignoreLiterals/ignoreIdentifiers every builtin's
