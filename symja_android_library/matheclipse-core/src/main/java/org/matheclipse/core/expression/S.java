@@ -7271,6 +7271,15 @@ public class S {
       S.initFinalSymbol("EdgeWeightedGraphQ", ID.EdgeWeightedGraphQ);
 
   /**
+   * Editable(x) - TODO describe `Editable`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Editable.md">Editable
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Editable = S.initFinalSymbol("Editable", ID.Editable);
+
+  /**
    * EditDistance(a, b) - returns the Levenshtein distance of `a` and `b`, which is defined as the
    * minimum number of insertions, deletions and substitutions on the constituents of `a` and `b`
    * needed to transform one into the other.
@@ -23611,6 +23620,16 @@ public class S {
    */
   public final static IBuiltInSymbol StringTrim = S.initFinalSymbol("StringTrim", ID.StringTrim);
 
+  /**
+   * StripOnInput(x) - TODO describe `StripOnInput`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StripOnInput.md">StripOnInput
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StripOnInput =
+      S.initFinalSymbol("StripOnInput", ID.StripOnInput);
+
   public final static IBuiltInSymbol Structure = S.initFinalSymbol("Structure", ID.Structure);
 
   /**
@@ -24059,6 +24078,15 @@ public class S {
    */
   public final static IBuiltInSymbol SynchronousUpdating =
       S.initFinalSymbol("SynchronousUpdating", ID.SynchronousUpdating);
+
+  /**
+   * SyntaxForm(x) - TODO describe `SyntaxForm`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SyntaxForm.md">SyntaxForm
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SyntaxForm = S.initFinalSymbol("SyntaxForm", ID.SyntaxForm);
 
   /**
    * SyntaxInformation(x) - TODO describe `SyntaxInformation`.
