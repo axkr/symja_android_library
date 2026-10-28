@@ -9314,6 +9314,16 @@ public class S {
       S.initFinalSymbol("FourierParameters", ID.FourierParameters);
 
   /**
+   * FourierSequenceTransform(x) - TODO describe `FourierSequenceTransform`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FourierSequenceTransform.md">FourierSequenceTransform
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FourierSequenceTransform =
+      S.initFinalSymbol("FourierSequenceTransform", ID.FourierSequenceTransform);
+
+  /**
    * FourierSeries(x) - TODO describe `FourierSeries`.
    * 
    * @see <a href=
