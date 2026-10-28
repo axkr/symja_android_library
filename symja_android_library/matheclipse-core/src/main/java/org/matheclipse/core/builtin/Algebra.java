@@ -498,11 +498,10 @@ public class Algebra {
           // without a factorization; the steps of a trace show the factors
           Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
           if (parts.isPresent() && parts.get()[0].isPlus() && parts.get()[1].isPlus()) {
-            Optional<IExpr[]> quotients =
-                AlgebraUtil.cancelByGCD(parts.get()[0], parts.get()[1]);
+            IExpr[] quotients = AlgebraUtil.cancelByGCD(parts.get()[0], parts.get()[1]);
             if (quotients != null) {
-              return quotients.isPresent() ? expandedFraction(quotients.get()[0],
-                  quotients.get()[1], engine) : F.NIL;
+              return quotients.length == 2 ? expandedFraction(quotients[0], quotients[1], engine)
+                  : F.NIL;
             }
           }
         }

@@ -6,6 +6,7 @@ import org.hipparchus.special.Gamma;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.external.apfloat.ApfloatInverseGammaBetaMath;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Inverses of the regularized incomplete gamma and beta functions in <code>double</code>
@@ -213,6 +214,8 @@ public final class InverseGammaBetaJS {
     return inverseBeta(p, a, b);
   }
 
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "the iteration stops at the exact end points of the interval")
   private static double inverseBeta(double p, double a, double b) {
     final double a1 = a - 1.0;
     final double b1 = b - 1.0;

@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Numeric discrete Fourier transform shared by <code>Fourier</code> and
@@ -41,6 +42,8 @@ public abstract class AbstractFourier extends AbstractFunctionOptionEvaluator {
   protected abstract int direction();
 
   @Override
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "a scale of exactly 1.0 skips the multiplication")
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
     IExpr arg1 = ast.arg1();

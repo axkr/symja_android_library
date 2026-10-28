@@ -35,6 +35,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * <pre>
@@ -297,6 +298,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
      * accuracy, which leaves the last digits of a simple root off by a few units. At a multiple
      * root the steps stay large and the root is left as the requested accuracy found it.
      */
+    @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+        justification = "a zero slope or an unchanged point ends the Newton steps")
     private static double polish(UnaryNumerical f, double x) {
       double fx = Math.abs(f.value(x));
       for (int i = 0; i < 3 && fx > 0.0; i++) {

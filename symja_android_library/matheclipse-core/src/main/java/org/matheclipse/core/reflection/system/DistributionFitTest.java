@@ -286,7 +286,7 @@ public class DistributionFitTest extends AbstractFunctionEvaluator {
     double[][] half = matrixPower(matrix, n / 2, exponent);
     double[][] result = multiply(half, half);
     int e = 2 * exponent[0];
-    if (n % 2 == 1) {
+    if ((n & 1) != 0) {
       result = multiply(matrix, result);
     }
     int m = matrix.length;

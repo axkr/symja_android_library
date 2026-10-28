@@ -20,6 +20,7 @@ import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.BesselIK;
 import org.matheclipse.core.numerics.functions.ComplexGamma;
 import org.matheclipse.core.numerics.functions.BesselJY;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DMath {
 
@@ -505,6 +506,8 @@ public class DMath {
    *         a double, an infinity where the value leaves the range of one
    * @see <a href="https://dlmf.nist.gov/11.6#E1">DLMF 11.6.1</a>
    */
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "exact test for a pole of Gamma(v+1/2) at a non-positive integer")
   public static double struveHLargeArgument(double v, double x) {
     if (!(x > 100.0) || Double.isInfinite(x) || !(4.0 * x > 5.0 * Math.abs(v))) {
       return Double.NaN;
@@ -623,6 +626,8 @@ public class DMath {
    *
    * @see <a href="https://dlmf.nist.gov/11.4#E23">DLMF 11.4.23</a>
    */
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "exact test for a half-integer order")
   private static double struveHDownward(double v, double x) {
     if (!(v >= MIN_STRUVE_ORDER)) {
       return Double.NaN;
@@ -664,6 +669,8 @@ public class DMath {
    * The recurrence of {@link #struveHDownward(double, double)} from <code>H(v+steps, x)</code> and
    * <code>H(v+steps+1, x)</code> down to <code>H(v, x)</code>.
    */
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "exact test for a pole of the gamma function")
   private static double struveHRecurrence(double v, double x, int steps, double start,
       double above) {
     final double half = 0.5 * x;
@@ -856,6 +863,8 @@ public class DMath {
    * @return {@link Double#NaN} if the quotient is left to the gamma functions: small arguments, a
    *         value beyond the range of a double, or a case this method has no formula for
    */
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "exact tests for integer arguments and an integer difference")
   public static double binomial(double n, double k) {
     if (!Double.isFinite(n) || !Double.isFinite(k) || Math.max(Math.abs(n), Math.abs(k)) < 20.0) {
       return Double.NaN;

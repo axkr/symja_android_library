@@ -903,16 +903,16 @@ public class AlgebraUtil {
    * Numerator and denominator of a fraction of polynomials with rational coefficients divided by
    * their greatest common divisor, without a factorization.
    *
-   * @return <code>null</code> if they are no polynomials with rational coefficients,
-   *         {@link Optional#empty()} if nothing cancels, otherwise the two quotients
+   * @return <code>null</code> if they are no polynomials with rational coefficients, an empty
+   *         array if nothing cancels, otherwise the two quotients
    */
-  public static Optional<IExpr[]> cancelByGCD(IExpr numerator, IExpr denominator) {
+  public static IExpr[] cancelByGCD(IExpr numerator, IExpr denominator) {
     RationalQuotients quotients = rationalQuotients(numerator, denominator);
     if (quotients == null) {
       return null;
     }
-    return quotients.coprime ? Optional.empty()
-        : Optional.of(new IExpr[] {quotients.numerator(), quotients.denominator()});
+    return quotients.coprime ? new IExpr[0]
+        : new IExpr[] {quotients.numerator(), quotients.denominator()};
   }
 
   /**

@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Functions for generating Histograms.
@@ -25,6 +26,8 @@ public class Histogram extends AbstractChart {
   public Histogram() {}
 
   @Override
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "a scale of exactly 1.0 keeps the integer counts")
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
     if (argSize < 1) {

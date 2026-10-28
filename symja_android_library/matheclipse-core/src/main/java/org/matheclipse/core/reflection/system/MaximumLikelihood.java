@@ -238,10 +238,12 @@ public final class MaximumLikelihood {
    */
   private static double trigamma(double x) {
     double result = 0.0;
-    while (x < 12.0) {
-      result += 1.0 / (x * x);
-      x += 1.0;
+    final int shifts = x < 12.0 ? (int) Math.ceil(12.0 - x) : 0;
+    for (int k = 0; k < shifts; k++) {
+      final double y = x + k;
+      result += 1.0 / (y * y);
     }
+    x += shifts;
     double t = 1.0 / (x * x);
     return result + 1.0 / x
         + t * (0.5 + (1.0 / 6.0 - (1.0 / 30.0 - (1.0 / 42.0 - t / 30.0) * t) * t) / x);
