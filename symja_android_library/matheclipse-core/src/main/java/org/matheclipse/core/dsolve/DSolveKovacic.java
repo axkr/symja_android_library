@@ -341,7 +341,8 @@ final class DSolveKovacic {
   private static IExpr monicPolynomial(IExpr exponent, IExpr remainder, int degree, IExpr xVar,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    if (!numericallyFeasible(exponent, remainder, degree, xVar, engine)) {
+    if (degree == 0 ? !remainderMayVanish(exponent, remainder, xVar, engine)
+        : !numericallyFeasible(exponent, remainder, degree, xVar, engine)) {
       return F.NIL;
     }
     IASTAppendable unknowns = F.ListAlloc(degree);
@@ -365,6 +366,48 @@ final class DSolveKovacic {
   }
 
   /**
+   * Whether the constant polynomial can satisfy the equation, that is whether
+   * <code>remainder = exponent' + exponent^2 - r</code> may vanish; <code>true</code> whenever
+   * that cannot be decided.
+   *
+   * <p>
+   * The remainder is compared with the size of its parts at a few complex points, to 30 digits: a
+   * remainder which is zero in an unsimplified form leaves only rounding there. Bringing such a
+   * remainder over one denominator can take seconds where its poles are radicals, and its
+   * coefficients then need zero tests at rising precision.
+   */
+  private static boolean remainderMayVanish(IExpr exponent, IExpr remainder, IExpr xVar,
+      EvalEngine engine) {
+    if (remainder.isZero()) {
+      return true;
+    }
+    try {
+      IExpr derivative = engine.evaluate(F.D(exponent, xVar));
+      for (int j = 0; j < 3; j++) {
+        IExpr point = F.complex(F.QQ(37 + 29 * j, 100), F.QQ(21 + 13 * j, 100));
+        double rho = absoluteValueAt(remainder, xVar, point, engine);
+        double theta = absoluteValueAt(exponent, xVar, point, engine);
+        double scale = absoluteValueAt(derivative, xVar, point, engine) + theta * theta + rho;
+        if (!Double.isFinite(rho) || !Double.isFinite(scale)) {
+          return true;
+        }
+        if (rho > 1.0e-15 * scale) {
+          return false;
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return true;
+  }
+
+  /** <code>Abs(expr)</code> at <code>xVar = point</code> to 30 digits, or NaN. */
+  private static double absoluteValueAt(IExpr expr, IExpr xVar, IExpr point, EvalEngine engine) {
+    IExpr value = engine.evaluate(F.N(F.Abs(F.subst(expr, xVar, point)), F.ZZ(30)));
+    return value.isReal() ? value.evalf() : Double.NaN;
+  }
+
+  /**
    * Whether a monic polynomial <code>p</code> of the degree can satisfy
    * <code>p'' + 2*exponent*p' + remainder*p == 0</code>, judged from its values at a few complex
    * points; <code>true</code> whenever that cannot be decided.
@@ -378,11 +421,6 @@ final class DSolveKovacic {
    */
   private static boolean numericallyFeasible(IExpr exponent, IExpr remainder, int degree,
       IExpr xVar, EvalEngine engine) {
-    if (degree == 0) {
-      // nothing to solve for: the exact test of the remainder costs no more than this, and a
-      // remainder which is zero in an unsimplified form has nothing to compare its rounding with
-      return true;
-    }
     final int extra = 3;
     int points = degree + extra;
     Complex[][] l = new Complex[points][degree + 1];
@@ -812,21 +850,27 @@ final class DSolveKovacic {
     if (ctx.isFitTimedOut()) {
       return F.NIL;
     }
-    IExpr numerator;
+    // the coefficients of a numerator full of radicals need zero tests at rising precision, so
+    // they share the budget of the common denominator
+    IExpr equations;
     try {
-      numerator = IntegrateTimeBudget.runWithin(
-          () -> engine.evaluate(F.Numerator(F.Together(equation))),
-          MachineProfile.seconds(FIT_SECONDS) * 1000L);
+      equations = IntegrateTimeBudget.runWithin(() -> {
+        IExpr numerator = engine.evaluate(F.Numerator(F.Together(equation)));
+        if (numerator.isNIL() || numerator.equals(S.$Aborted)) {
+          return S.$Aborted;
+        }
+        IExpr coefficients = DSolveUtil.vanishingCoefficientEquations(numerator, xVar, engine);
+        return coefficients.isNIL() ? S.Null : coefficients;
+      }, MachineProfile.seconds(FIT_SECONDS) * 1000L);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
     }
-    if (numerator.isNIL() || numerator.equals(S.$Aborted)) {
+    if (equations.isNIL() || equations.equals(S.$Aborted)) {
       ctx.setFitTimedOut();
       return F.NIL;
     }
-    IExpr equations = DSolveUtil.vanishingCoefficientEquations(numerator, xVar, engine);
-    if (equations.isNIL()) {
+    if (!equations.isList()) {
       return F.NIL;
     }
     return solveFor((IAST) equations, unknowns, guess, ctx);

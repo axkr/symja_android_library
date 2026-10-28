@@ -1664,6 +1664,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // denominator before finding it has no polynomial; the numeric check rejects them first.
     check("First(Timing(DSolve((x^3+7)*y''(x)+4*x*y'(x)+y(x)==0, y(x), x)))<5", //
         "True");
+    // a choice of behaviours with a constant polynomial: its remainder is tested numerically
+    // before an exact common denominator full of radicals
+    check("First(Timing(DSolve((x^3+5)*y''(x)+4*x*y'(x)+y(x)==0, y(x), x)))<5", //
+        "True");
+    check("First(Timing(DSolve((x^3+11)*y''(x)+5*x*y'(x)-y(x)==0, y(x), x)))<5", //
+        "True");
   }
 
   @Test
