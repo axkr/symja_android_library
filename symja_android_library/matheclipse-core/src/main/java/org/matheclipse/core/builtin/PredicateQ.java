@@ -559,7 +559,8 @@ public class PredicateQ {
         if (levelSpec == null) {
           levelSpec = F.list(F.C0, F.CInfinity);
         }
-        final IPatternMatcher matcher = engine.evalPatternMatcher(form);
+        // the parts of an Orderless expression count, as without a level specification
+        final Predicate<IExpr> matcher = Predicates.toFreeQ(form);
         final boolean includeHeads = heads;
         Predicate<IExpr> occurs = x -> matcher.test(x)
             || (x.isNumber() && IExpr.containsNumberWithHead(x, form, includeHeads));

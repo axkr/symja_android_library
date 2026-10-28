@@ -17691,6 +17691,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFreeQOrderlessParts() {
+    // the parts of an Orderless expression match a pattern, also with a level specification
+    check("{FreeQ(c*g(3)*g(5), u_g*v_g), FreeQ(c*g(3)*g(5), u_g*v_g, {0}), "
+        + "FreeQ(c*g(3)*g(5), u_g*v_g, {0,Infinity}), FreeQ(b+g(3)+g(5), u_g+v_g)}", //
+        "{False,False,False,False}");
+    check("{FreeQ(p*q*r, p*r, {0}), FreeQ(p*q*r, p*r, {1}), FreeQ(h(c*g(3)*g(5)), u_g*v_g, {1}), "
+        + "FreeQ(h(c*g(3)*g(5)), u_g*v_g, {2})}", //
+        "{False,True,False,True}");
+    check("{FreeQ(c*g(3)*k(5), u_g*v_g), FreeQ(b+c, u_+v_+w_), FreeQ(g(3), u_.*v_g)}", //
+        "{True,True,False}");
+  }
+
+  @Test
   public void testMathMLFormMatrixFormOfANonList() {
     // MatrixForm of something which is no matrix displays it as it is
     check(

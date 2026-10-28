@@ -372,16 +372,24 @@ public class Predicates {
     if (pattern.isAtomicConstant()) {
       return x -> x.equals(pattern);
     }
-    final IPatternMatcher matcher;
-    if (pattern.isOrderlessAST() && pattern.isFreeOfPatterns()) {
-      // append a BlankNullSequence[] to match the parts of an Orderless expression
+    if (pattern.isOrderlessAST()) {
+      // append a BlankNullSequence[] to match the parts of an Orderless expression:
+      // a*f(1)*f(2) contains x_f*y_f
       IPatternSequence blankNullRest = F.$ps(null, true);
       IASTAppendable newPattern = ((IAST) pattern).appendClone(blankNullRest);
-      matcher = new PatternMatcher(newPattern);
-    } else {
-      matcher = new PatternMatcher(pattern);
+      final IPatternMatcher partsMatcher = new PatternMatcher(newPattern);
+      if (pattern.isFreeOfPatterns()) {
+        return partsMatcher;
+      }
+      // the whole pattern is still tested on its own, because a default value like x_. in
+      // x_.*y_f may stand for a missing factor: f(1) contains x_.*y_f
+      final IPatternMatcher matcher = new PatternMatcher(pattern);
+      final IExpr head = pattern.head();
+      final int argSize = pattern.argSize();
+      return x -> matcher.test(x)
+          || (x.isAST() && x.head().equals(head) && x.argSize() > argSize && partsMatcher.test(x));
     }
-    return matcher;
+    return new PatternMatcher(pattern);
   }
 
   /**
