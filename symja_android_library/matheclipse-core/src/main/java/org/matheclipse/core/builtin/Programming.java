@@ -208,7 +208,7 @@ public final class Programming {
         final long begin = System.currentTimeMillis();
         final IExpr result = engine.evaluate(ast.arg1());
         double value = (System.currentTimeMillis() - begin) / 1000.0;
-        return F.list(F.num(value), F.HoldForm(result));
+        return F.list(F.num(value), result);
       }
       return engine.checkBuiltinArgsSize(ast, this);
     }
@@ -2818,7 +2818,7 @@ public final class Programming {
           r[i] = (System.currentTimeMillis() - begin) / 1000.0;
         }
         DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(r);
-        return F.list(F.num(descriptiveStatistics.getMean()), F.HoldForm(result));
+        return F.list(F.num(descriptiveStatistics.getMean()), result);
       }
       return engine.checkBuiltinArgsSize(ast, this);
     }
@@ -3487,7 +3487,7 @@ public final class Programming {
             final IExpr result = engine.evaluate(ast.arg1());
             final long end = bean.getCurrentThreadCpuTime();
             double value = (end - begin) / 1000000000.0;
-            return F.list(F.num(value), F.HoldForm(result));
+            return F.list(F.num(value), result);
           }
         }
         // fall back to AbsoluteTiming

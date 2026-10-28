@@ -58,7 +58,7 @@ public final class AlgebraicCoefficientGCD {
    * Sqrt(3)</code> (degree 8) takes under a second, <code>I, 2^(1/3), Sqrt(3)</code> (degree 12)
    * did not finish in ten minutes.
    */
-  private static final int MAX_FIELD_DEGREE = 8;
+  static final int MAX_FIELD_DEGREE = 8;
 
   /** A coefficient raised to a larger integer power is not converted. */
   private static final int MAX_EXPONENT = 1024;
@@ -80,7 +80,7 @@ public final class AlgebraicCoefficientGCD {
   public static final Quotients COPRIME = new Quotients(null, null);
 
   /** A number field together with the atoms it was built for and the basis to write back in. */
-  private static final class CoefficientField {
+  static final class CoefficientField {
     final AlgebraicNumberField field;
 
     final Map<IExpr, AlgebraicNumber<BigRational>> atoms;
@@ -91,15 +91,23 @@ public final class AlgebraicCoefficientGCD {
     /** Maps power-basis coordinates of an element to its coordinates in {@link #basis}. */
     final BigRational[][] toBasis;
 
+    /** The atoms in their canonical order. */
+    final IAST atomList;
+
+    /** For each basis element the exponents of the atoms in {@link #atomList} it is a product of. */
+    final int[][] basisExponents;
+
     /** Primes <code>p</code> and simple roots <code>r</code> of the minimal polynomial mod p. */
     private long[][] primeRoots;
 
     CoefficientField(AlgebraicNumberField field, Map<IExpr, AlgebraicNumber<BigRational>> atoms,
-        IExpr[] basis, BigRational[][] toBasis) {
+        IExpr[] basis, BigRational[][] toBasis, IAST atomList, int[][] basisExponents) {
       this.field = field;
       this.atoms = atoms;
       this.basis = basis;
       this.toBasis = toBasis;
+      this.atomList = atomList;
+      this.basisExponents = basisExponents;
     }
 
     /**
@@ -152,7 +160,7 @@ public final class AlgebraicCoefficientGCD {
   }
 
   /** Marks an atom set for which no usable field was found, so it is not searched again. */
-  private static final CoefficientField NO_FIELD = new CoefficientField(null, null, null, null);
+  private static final CoefficientField NO_FIELD = new CoefficientField(null, null, null, null, null, null);
 
   /** Keyed by the sorted list of atoms; finding a common field is the expensive step. */
   private static final Map<IAST, CoefficientField> CACHE =
@@ -501,7 +509,7 @@ public final class AlgebraicCoefficientGCD {
   }
 
   /** @param allowRoot whether a <code>Root(f, k)</code> object is an atom as well */
-  private static boolean collectAtoms(GenPolynomial<IExpr> p, Set<IExpr> atoms,
+  static boolean collectAtoms(GenPolynomial<IExpr> p, Set<IExpr> atoms,
       boolean allowRoot) {
     for (IExpr c : p.getMap().values()) {
       if (!collectAtoms(c, atoms, allowRoot)) {
@@ -511,7 +519,7 @@ public final class AlgebraicCoefficientGCD {
     return true;
   }
 
-  private static boolean collectAtoms(IExpr c, Set<IExpr> atoms, boolean allowRoot) {
+  static boolean collectAtoms(IExpr c, Set<IExpr> atoms, boolean allowRoot) {
     if (c.isRational()) {
       return true;
     }
@@ -560,7 +568,7 @@ public final class AlgebraicCoefficientGCD {
   }
 
   /** The product of an upper bound of each atom's degree over the rationals. */
-  private static long degreeBound(Set<IExpr> atoms) {
+  static long degreeBound(Set<IExpr> atoms) {
     long bound = 1;
     for (IExpr atom : atoms) {
       long degree;
@@ -593,7 +601,7 @@ public final class AlgebraicCoefficientGCD {
     return bound;
   }
 
-  private static CoefficientField coefficientField(Set<IExpr> atomSet, EvalEngine engine) {
+  static CoefficientField coefficientField(Set<IExpr> atomSet, EvalEngine engine) {
     IAST key = F.ListAlloc(atomSet);
     CoefficientField cached = CACHE.get(key);
     if (cached == null) {
@@ -625,6 +633,7 @@ public final class AlgebraicCoefficientGCD {
     // multiplication by every atom, and so it is the whole field.
     int m = atomList.argSize();
     List<IExpr> basis = new ArrayList<IExpr>();
+    List<int[]> basisExponents = new ArrayList<int[]>();
     List<BigRational[]> columns = new ArrayList<BigRational[]>();
     List<BigRational[]> echelon = new ArrayList<BigRational[]>();
     List<Integer> pivots = new ArrayList<Integer>();
@@ -649,6 +658,7 @@ public final class AlgebraicCoefficientGCD {
         continue;
       }
       basis.add(engine.evaluate(monomial.oneIdentity1()));
+      basisExponents.add(exponents);
       columns.add(vector);
       for (int j = 0; j < m; j++) {
         int[] next = exponents.clone();
@@ -663,7 +673,8 @@ public final class AlgebraicCoefficientGCD {
     if (toBasis == null) {
       return NO_FIELD;
     }
-    return new CoefficientField(field, atoms, basis.toArray(new IExpr[n]), toBasis);
+    return new CoefficientField(field, atoms, basis.toArray(new IExpr[n]), toBasis, atomList,
+        basisExponents.toArray(new int[n][]));
   }
 
   /**
@@ -742,7 +753,7 @@ public final class AlgebraicCoefficientGCD {
     return result;
   }
 
-  private static GenPolynomial<AlgebraicNumber<BigRational>> toField(GenPolynomial<IExpr> p,
+  static GenPolynomial<AlgebraicNumber<BigRational>> toField(GenPolynomial<IExpr> p,
       GenPolynomialRing<AlgebraicNumber<BigRational>> ring, CoefficientField coefficients) {
     GenPolynomial<AlgebraicNumber<BigRational>> result = ring.getZERO().copy();
     for (Map.Entry<ExpVector, IExpr> monomial : p.getMap().entrySet()) {
@@ -817,7 +828,7 @@ public final class AlgebraicCoefficientGCD {
   }
 
   /** The coordinates of every coefficient of <code>p</code> in the basis of atom products. */
-  private static Map<ExpVector, BigRational[]> basisCoordinates(
+  static Map<ExpVector, BigRational[]> basisCoordinates(
       GenPolynomial<AlgebraicNumber<BigRational>> p, CoefficientField coefficients) {
     Map<ExpVector, BigRational[]> result = new LinkedHashMap<ExpVector, BigRational[]>();
     int n = coefficients.basis.length;
@@ -838,7 +849,7 @@ public final class AlgebraicCoefficientGCD {
   }
 
   /** The polynomial with the given basis coordinates, each multiplied by <code>scale</code>. */
-  private static GenPolynomial<IExpr> fromBasis(Map<ExpVector, BigRational[]> coordinates,
+  static GenPolynomial<IExpr> fromBasis(Map<ExpVector, BigRational[]> coordinates,
       BigRational scale, GenPolynomialRing<IExpr> ring, CoefficientField coefficients,
       EvalEngine engine) {
     GenPolynomial<IExpr> result = new GenPolynomial<IExpr>(ring);

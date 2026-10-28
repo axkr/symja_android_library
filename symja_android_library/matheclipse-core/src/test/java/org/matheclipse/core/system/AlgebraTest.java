@@ -282,9 +282,9 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   public void testFactorKeepsTheUnitOfAGaussianContent() {
     for (int i = 0; i < 120; i++) {
       check("Factor(I*a-b+a*z+I*b*z)", //
-          "I*(-I*a+b)*(I+z)");
+          "(a+I*b)*(I+z)");
       check("Factor(I*u-v+u*w^2+I*v*w^2)", //
-          "I*(-I*u+v)*(I+w^2)");
+          "(u+I*v)*(I+w^2)");
       // whatever the units are distributed like, the factors have to multiply to the polynomial
       check("Expand(Factor(I*a-b+a*z+I*b*z) - (I*a-b+a*z+I*b*z))", //
           "0");

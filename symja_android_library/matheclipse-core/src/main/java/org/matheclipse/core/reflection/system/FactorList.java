@@ -54,6 +54,15 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    boolean field = options[1] != S.None || options[2].isTrue();
+    if (field && options[0].isZero()) {
+      IAST list = org.matheclipse.core.builtin.Algebra.Factor.factorListNumberField(arg1,
+          options[1], options[2].isTrue(), engine);
+      if (list.isPresent()) {
+        return list;
+      }
+    }
+
     // Reconstruct the Factor AST to delegate the primary evaluation
     IASTAppendable factorAST = F.ast(S.Factor);
     factorAST.append(arg1);
@@ -75,7 +84,8 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    return splitSymbolicExponents(factorListFromFactored(factored), engine);
+    // with a field option an algebraic number in front belongs to the content: {{Sqrt(2),1},...}
+    return splitSymbolicExponents(factorListFromFactored(factored, field), engine);
   }
 
   /**
@@ -141,7 +151,7 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
    * 
    * @return a list of factors and their exponents with the numeric constant as the first element
    */
-  private static IAST factorListFromFactored(IExpr factored) {
+  private static IAST factorListFromFactored(IExpr factored, boolean field) {
     IASTAppendable result = F.ListAlloc();
 
     if (factored.isNumber()) {
@@ -160,8 +170,9 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       // First pass: accumulate numeric factors for the content block
       for (int i = 1; i <= times.argSize(); i++) {
         IExpr arg = times.get(i);
-        if (arg.isNumber()) {
-          numericFactor = numericFactor.times(arg);
+        if (isContent(arg, field)) {
+          numericFactor = field ? EvalEngine.get().evaluate(F.Times(numericFactor, arg))
+              : numericFactor.times(arg);
         }
       }
       // The numeric content becomes the leading factor(s). A rational content is split into
@@ -176,7 +187,7 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       // Second pass: append non-numeric polynomial factors
       for (int i = 1; i <= times.argSize(); i++) {
         IExpr arg = times.get(i);
-        if (!arg.isNumber()) {
+        if (!isContent(arg, field)) {
           appendFactor(result, arg);
         }
       }
@@ -187,6 +198,11 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
     }
 
     return leadingTermsPositive(result);
+  }
+
+  /** A number, or over a number field any numeric factor such as <code>Sqrt(2)</code>. */
+  private static boolean isContent(IExpr factor, boolean field) {
+    return factor.isNumber() || (field && factor.isNumericFunction(true));
   }
 
   /**

@@ -573,7 +573,9 @@ public class JASConvert<C extends RingElem<C>> {
           try {
             int indexOf = fVariables.indexOf(base);
             if (indexOf >= 1) {
-              GenPolynomial<C> v = fPolyFactory.univariate(base.getSymbolName(), 1L);
+              // the ring's variables are named by toString(), see the constructor
+              GenPolynomial<C> v =
+                  fPolyFactory.univariate(fVariables.get(indexOf).toString(), 1L);
               return v.power(exponent);
             }
           } catch (IllegalArgumentException iae) {
@@ -610,7 +612,7 @@ public class JASConvert<C extends RingElem<C>> {
         }
         int indexOf = fVariables.indexOf(symbol);
         if (indexOf >= 1) {
-          return fPolyFactory.univariate(symbol.getSymbolName(), 1L);
+          return fPolyFactory.univariate(fVariables.get(indexOf).toString(), 1L);
         }
       } catch (IllegalArgumentException iae) {
         // java.lang.IllegalArgumentException: variable 'XXX' not defined in polynomial ring

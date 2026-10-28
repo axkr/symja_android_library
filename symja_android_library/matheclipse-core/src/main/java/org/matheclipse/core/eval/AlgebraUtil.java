@@ -716,6 +716,24 @@ public class AlgebraUtil {
         return F.list(F.C1, c);
       });
 
+  /** <code>q^exponent</code> for a negative exponent as well (a factor of a denominator). */
+  private static IRational signedPower(IRational q, long exponent) {
+    return exponent < 0 ? q.inverse().powerRational(-exponent) : q.powerRational(exponent);
+  }
+
+  /** Append every symbol with the <code>Constant</code> attribute in <code>expr</code>, such as <code>Pi</code>. */
+  private static void collectConstantSymbols(IExpr expr, IASTAppendable symbols) {
+    if (expr.isSymbol()) {
+      if (((ISymbol) expr).isConstantAttribute() && !symbols.contains(expr)) {
+        symbols.append(expr);
+      }
+    } else if (expr.isAST()) {
+      for (IExpr arg : (IAST) expr) {
+        collectConstantSymbols(arg, symbols);
+      }
+    }
+  }
+
   private static void addSquareFreeFactor(Map<IExpr, Long> factorMap, IExpr factor, long exponent) {
     factorMap.merge(factor, exponent, Long::sum);
   }
@@ -788,6 +806,44 @@ public class AlgebraUtil {
   }
 
   /**
+   * A factored power of a product as the product of the powers:
+   * <code>x^2*(5+5*x-x^2)^2</code> for <code>(x*(5+5*x-x^2))^2</code>, so that each factor can
+   * cancel.
+   */
+  private static IExpr powerOfProductFactors(IExpr factored) {
+    IAST factors = factored.isTimes() ? (IAST) factored : F.Times(factored);
+    if (!factors.exists(x -> x.isPower() && x.base().isTimes() && x.exponent().isInteger())) {
+      return factored;
+    }
+    IASTAppendable result = F.TimesAlloc(factors.argSize() + 4);
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.base().isTimes() && factor.exponent().isInteger()) {
+        for (IExpr base : (IAST) factor.base()) {
+          result.append(F.Power(base, factor.exponent()));
+        }
+      } else {
+        result.append(factor);
+      }
+    }
+    return EvalEngine.get().evaluate(result);
+  }
+
+  /**
+   * Whether <code>expr</code> has no radical of a rational number. <code>Factor</code> takes such a
+   * radical for a generator, so its factors miss the ones the radical's minimal polynomial gives;
+   * the GCD over the number field finds those.
+   */
+  private static boolean isRadicalFree(IExpr expr) {
+    return expr.isFree(
+        x -> x.isPower() && x.base().isRational() && x.exponent().isFraction(), false)
+        || new VariablesSet(expr).size() == 0;
+  }
+
+  private static boolean isSumOrPowerOfSum(IExpr expr) {
+    return expr.isPlus() || (expr.isPower() && expr.base().isPlus());
+  }
+
+  /**
    * Cancel common factors in numerator and denominator.
    * 
    * @param numerator
@@ -797,10 +853,11 @@ public class AlgebraUtil {
    */
   public static IAST cancelCommonFactors(IExpr numerator, IExpr denominator) {
     IExpr numer = numerator;
-    if (numerator.isPlus() //
-        || (numerator.isTimes() && numerator.exists(x -> x.isPlus()))) {
-      if (VariablesSet.isMultivariate(numerator, 3)) {
-        numer = S.Factor.of(numerator);
+    // a power of a sum hides its factors as well: (5*x+5*x^2-x^3)^2 has the factor x^2
+    if (isSumOrPowerOfSum(numerator)
+        || (numerator.isTimes() && numerator.exists(AlgebraUtil::isSumOrPowerOfSum))) {
+      if (VariablesSet.isMultivariate(numerator, 3) && isRadicalFree(numerator)) {
+        numer = powerOfProductFactors(S.Factor.of(numerator));
       }
     } else if (numerator.isSymbol() //
         || (numerator.isPower() && numerator.first().isSymbol())) {
@@ -808,10 +865,10 @@ public class AlgebraUtil {
     }
 
     IExpr denom = denominator;
-    if (denominator.isPlus()//
-        || (denominator.isTimes() && denominator.exists(x -> x.isPlus()))) {
-      if (VariablesSet.isMultivariate(denominator, 3)) {
-        denom = S.Factor.of(denominator);
+    if (isSumOrPowerOfSum(denominator)
+        || (denominator.isTimes() && denominator.exists(AlgebraUtil::isSumOrPowerOfSum))) {
+      if (VariablesSet.isMultivariate(denominator, 3) && isRadicalFree(denominator)) {
+        denom = powerOfProductFactors(S.Factor.of(denominator));
       }
     } else if (denominator.isSymbol() //
         || (denominator.isPower() && denominator.first().isSymbol())) {
@@ -1303,16 +1360,19 @@ public class AlgebraUtil {
     }
     if (expr.isPower()) {
       int exponent = expr.exponent().toIntDefault();
-      if (exponent > 0) {
+      if (exponent > 0 || (exponent < 0 && exponent != Integer.MIN_VALUE
+          && expr.base().isPlus())) {
+        // a denominator (x+1)^(-3) contributes negative multiplicities, which cancel against the
+        // numerator in the refinement: (x^2-1)^2/(x+1)^3 is (-1+x)^2/(1+x)
         return collectSquareFreeFactors(expr.base(), multiplier * exponent, eVar, factorMap,
             content, anyPolynomial, engine);
       }
-      // a non-positive-integer exponent (e.g. a denominator or a root): keep as an opaque factor
+      // a non-integer exponent (e.g. a root): keep as an opaque factor
       addSquareFreeFactor(factorMap, expr, multiplier);
       return true;
     }
     if (expr.isRational()) {
-      content[0] = content[0].multiply(((IRational) expr).powerRational(multiplier));
+      content[0] = content[0].multiply(signedPower((IRational) expr, multiplier));
       return true;
     }
     if (expr.isPlus()) {
@@ -1747,6 +1807,10 @@ public class AlgebraUtil {
       // Exponent ist out of bounds for function `1`.
       return Errors.printMessage(S.Factor, "lrgexp", F.List(S.Factor));
     }
+    if (polynomial.isZERO()) {
+      // no factors: the empty product would be 1
+      return F.C0;
+    }
     FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
     SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);
 
@@ -1882,6 +1946,10 @@ public class AlgebraUtil {
    */
   public static <C extends GcdRingElem<C> & Modular> IAST factorModulus(JASModular<C> jas,
       GenPolynomial<C> poly, boolean factorSquareFree) {
+    if (poly.isZERO()) {
+      // 4*x^2+4 modulo 2 has no factors: the empty product would be 1
+      return F.unaryAST1(S.Times, F.C0);
+    }
     SortedMap<GenPolynomial<C>, Long> map;
     try {
       map = jas.factors(poly, factorSquareFree);
@@ -2054,6 +2122,8 @@ public class AlgebraUtil {
     for (Map.Entry<IExpr, Long> entry : factorMap.entrySet()) {
       addSignedFactor(signed, entry.getKey(), entry.getValue(), content, engine);
     }
+    // a numerator factor which cancelled a denominator one
+    signed.values().removeIf(exponent -> exponent == 0L);
     return signed;
   }
 
@@ -2064,7 +2134,7 @@ public class AlgebraUtil {
   private static void addSignedFactor(Map<IExpr, Long> factorMap, IExpr factor, long exponent,
       IRational[] content, EvalEngine engine) {
     if (factor.isRational()) {
-      content[0] = content[0].multiply(((IRational) factor).powerRational(exponent));
+      content[0] = content[0].multiply(signedPower((IRational) factor, exponent));
       return;
     }
     if (factor.isPlus() && hasNegativeLeadingTerm((IAST) factor, engine)) {
@@ -2151,6 +2221,45 @@ public class AlgebraUtil {
     } else {
       return factorization;
     }
+    // a factored denominator (a*b)^(-1) is a^(-1)*b^(-1): each of its factors gets its sign
+    IExpr signed = factorSigns(factorization, flatten(factors, false), engine);
+    if (factors.exists(x -> x.isTimes())) {
+      // a factored numerator a*b inside the product: its factors only if that cancels one, as in
+      // (1-x)*(1+x)/(-1+x), which is -1-x
+      IExpr flat = factorSigns(factorization, flatten(factors, true), engine);
+      if (countFactors(flat) < countFactors(engine.evaluate(signed))) {
+        return flat;
+      }
+    }
+    return signed;
+  }
+
+  /**
+   * The factors of the powers of products (with a negative exponent only, unless
+   * <code>numerators</code>) and, if <code>numerators</code>, of the nested products.
+   */
+  private static IAST flatten(IAST factors, boolean numerators) {
+    if (!factors.exists(x -> (numerators && x.isTimes()) || (x.isPower() && x.base().isTimes()
+        && x.exponent().isInteger() && (numerators || x.exponent().isNegative())))) {
+      return factors;
+    }
+    IASTAppendable flat = F.TimesAlloc(factors.argSize() + 4);
+    for (IExpr factor : factors) {
+      if (numerators && factor.isTimes()) {
+        flat.appendArgs((IAST) factor);
+      } else if (factor.isPower() && factor.base().isTimes() && factor.exponent().isInteger()
+          && (numerators || factor.exponent().isNegative())) {
+        for (IExpr base : (IAST) factor.base()) {
+          flat.append(F.Power(base, factor.exponent()));
+        }
+      } else {
+        flat.append(factor);
+      }
+    }
+    return flat;
+  }
+
+  private static IExpr factorSigns(IExpr factorization, IAST factors, EvalEngine engine) {
     boolean negative = false;
     boolean changed = false;
     IASTAppendable result = F.TimesAlloc(factors.argSize() + 1);
@@ -2179,14 +2288,22 @@ public class AlgebraUtil {
       return factorization;
     }
     if (negative) {
+      result.append(1, F.CN1);
       if (result.exists(x -> x.isPlus())) {
         // a factor -1 in front of a sum is multiplied into the sum when the product is evaluated,
-        // -(x-y)*(x+2*y) is (-x+y)*(x+2*y): such a product keeps the signs it had
-        return factorization;
+        // -(x-y)*(x+2*y) is (-x+y)*(x+2*y): such a product keeps the signs it had - unless the
+        // equal signs let a numerator factor cancel a denominator one: (1-x)*(1+x)/(-1+x) is -1-x
+        IExpr evaluated = engine.evaluate(result);
+        return countFactors(evaluated) < countFactors(factors) ? evaluated : factorization;
       }
-      result.append(1, F.CN1);
     }
     return engine.evaluate(result);
+  }
+
+  /** The number of non-numeric factors of a product. */
+  private static int countFactors(IExpr product) {
+    return product.isTimes() ? ((IAST) product).count(x -> !x.isNumber())
+        : (product.isNumber() ? 0 : 1);
   }
 
   /** Whether the lexicographically first term of the sum has a negative coefficient. */
@@ -3871,8 +3988,21 @@ public class AlgebraUtil {
     try {
       polyRat = jas.expr2JAS(plus, false);
     } catch (JASConversionException e) {
-      addSquareFreeFactor(factorMap, plus, multiplier);
-      return true;
+      polyRat = null;
+    }
+    if (polyRat == null) {
+      // a constant such as Pi in the coefficients is a generator of its own:
+      // Pi+2*Pi*x+Pi*x^2 is Pi*(1+x)^2
+      IASTAppendable generators = eVar.getVarList().copyAppendable();
+      collectConstantSymbols(plus, generators);
+      if (generators.argSize() > eVar.getVarList().argSize()) {
+        jas = new JASConvert<BigRational>(generators, BigRational.ZERO, TermOrderByName.INVLEX);
+        try {
+          polyRat = jas.expr2JAS(plus, false);
+        } catch (JASConversionException e2) {
+          polyRat = null;
+        }
+      }
     }
     if (polyRat == null || polyRat.length() <= 1) {
       addSquareFreeFactor(factorMap, plus, multiplier);
@@ -3913,7 +4043,7 @@ public class AlgebraUtil {
       }
       addSquareFreeFactor(factorMap, jas.integerPoly2Expr(poly), exponent * multiplier);
     }
-    content[0] = content[0].multiply(leafContent.powerRational(multiplier));
+    content[0] = content[0].multiply(signedPower(leafContent, multiplier));
     return true;
   }
 
@@ -4091,6 +4221,15 @@ public class AlgebraUtil {
     if (!primitive.isPlus()) {
       return null;
     }
+    IInteger lcm = gaussianDenominatorLCM((IAST) primitive);
+    if (!lcm.isOne()) {
+      // the content of 3/5+I/5+x is 1/5: (-1-I)/(3/5+I/5+x) is (-5-5*I)/(3+I+5*x)
+      content = content.divide(lcm);
+      primitive = engine.evaluate(F.Expand(F.Times(lcm, primitive)));
+      if (!primitive.isPlus()) {
+        return null;
+      }
+    }
     IAST terms = (IAST) primitive;
     int best = -1;
     java.util.TreeMap<IExpr, Integer> bestExponents = null;
@@ -4109,14 +4248,35 @@ public class AlgebraUtil {
         leadNegative = term.isNegative() || (term.isTimes() && term.first().isNegative());
       }
     }
-    // the content with the sign of the leading term of the sum itself
+    // the content with the sign of the leading term of the sum itself; a sum with Gaussian
+    // coefficients keeps its signs: (I*x+x^2)/(1-I*x-x^2)
     boolean contentNegative = content.isNegative();
-    if (leadNegative) {
+    if (leadNegative && terms.isFree(x -> x instanceof IComplex, false)) {
       primitive = engine.evaluate(F.Distribute(F.Times(F.CN1, primitive)));
       contentNegative = !contentNegative;
     }
     IExpr magnitude = content.isNegative() ? content.negate() : content;
     return new IExpr[] {contentNegative ? magnitude.negate() : magnitude, primitive};
+  }
+
+  /**
+   * The least common multiple of the denominators of the real and imaginary parts of the Gaussian
+   * rational coefficients of <code>sum</code>, <code>1</code> if no coefficient is complex.
+   */
+  private static IInteger gaussianDenominatorLCM(IAST sum) {
+    IInteger lcm = F.C1;
+    boolean complex = false;
+    for (IExpr term : sum) {
+      IExpr coefficient = term.isTimes() ? term.first() : term;
+      if (coefficient instanceof IComplex) {
+        IComplex z = (IComplex) coefficient;
+        complex = true;
+        lcm = lcm.lcm(z.getRealPart().denominator()).lcm(z.getImaginaryPart().denominator());
+      } else if (coefficient.isRational()) {
+        lcm = lcm.lcm(((IRational) coefficient).denominator());
+      }
+    }
+    return complex ? lcm : F.C1;
   }
 
   /** The exponent of every non-numeric factor of a product. */
@@ -4180,7 +4340,8 @@ public class AlgebraUtil {
   /** No negative power and nothing but sums, products and positive integer powers of atoms. */
   private static boolean isFractionFree(IExpr expr) {
     if (expr.isAtom()) {
-      return expr.isSymbol() || expr.isInteger();
+      // a Gaussian rational content is taken out like a rational one: (-1-I)/(3/5+I/5+x)
+      return expr.isSymbol() || expr.isInteger() || expr instanceof IComplex;
     }
     if (expr.isPlus() || expr.isTimes()) {
       return ((IAST) expr).forAll(AlgebraUtil::isFractionFree);

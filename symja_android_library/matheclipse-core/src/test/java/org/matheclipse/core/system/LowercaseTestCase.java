@@ -189,6 +189,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "True");
     // check("Timing(x = 1; Pause(x); x + 3)[[1]]<1", //
     // "True");
+
+    // the second entry is the plain result, not wrapped in HoldForm
+    check("Rest(AbsoluteTiming(Expand((a+b)^2)))", //
+        "{a^2+2*a*b+b^2}");
+    check("Last(Timing(Table(k^2,{k,4})))", //
+        "{1,4,9,16}");
+    check("Head(Last(RepeatedTiming(7+6)))", //
+        "Integer");
+    check("Last(Timing(Hold(2+5)))", //
+        "Hold(2+5)");
+    check("Timing(Length({1,2});)[[2]]===Null", //
+        "True");
   }
 
   @Test
@@ -9367,12 +9379,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // github #121
     System.out.print('.');
     check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
-        "(x-y)*(-I*x+y)*(I*x+y)*(x+y)*(x^2+x*y+y^2)*(x^2-x*y+y^2)*(-x^2-I*x*y+y^2)*(-x^2+I*x*y+y^\n"
+        "(x-y)*(x-I*y)*(x+I*y)*(x+y)*(x^2-I*x*y-y^2)*(x^2+I*x*y-y^2)*(x^2+x*y+y^2)*(x^2-x*y+y^\n"
             + //
             "2)");
     System.out.print('.');
     check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
-        "(-I*x+y)*(I*x+y)");
+        "(x-I*y)*(x+I*y)");
     System.out.print('.');
     check("Factor(Sin(x), GaussianIntegers->True)", //
         "Sin(x)");
@@ -9454,10 +9466,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
     System.out.print('.');
     check("Factor(4*x^2+3, Extension->I)", //
-        "4*(3/4+x^2)");
+        "3+4*x^2");
     System.out.print('.');
     check("Factor(3/4*x^2+9/16, Extension->I)", //
-        "3/4*(3/4+x^2)");
+        "3/16*(3+4*x^2)");
 
     System.out.print('.');
     check("Factor(x^10 - 1, Modulus -> 2)", //
@@ -9505,11 +9517,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // Testing Gaussian integers
     check("FactorList(x^2+y^2, GaussianIntegers->True)", //
-        "{{1,1},{-I*x+y,1},{I*x+y,1}}");
+        "{{1,1},{x-I*y,1},{x+I*y,1}}");
 
     check("FactorList(x^12-y^12, GaussianIntegers->True)", //
-        "{{1,1},{x-y,1},{-I*x+y,1},{I*x+y,1},{x+y,1},{x^2+x*y+y^2,1},{x^2-x*y+y^2,1},{x^2+I*x*y-y^\n"
-            + "2,1},{x^2-I*x*y-y^2,1}}");
+        "{{1,1},{x-y,1},{x-I*y,1},{x+I*y,1},{x+y,1},{x^2-I*x*y-y^2,1},{x^2+I*x*y-y^2,1},{x^\n"
+            + "2+x*y+y^2,1},{x^2-x*y+y^2,1}}");
 
     // Testing finite field arithmetic (Modulus)
     check("FactorList(x^10 - 1, Modulus -> 2)", //
