@@ -20078,6 +20078,16 @@ public class S {
    */
   public final static IBuiltInSymbol Properties = S.initFinalSymbol("Properties", ID.Properties);
 
+  /**
+   * PropertyValue(x) - TODO describe `PropertyValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PropertyValue.md">PropertyValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PropertyValue =
+      S.initFinalSymbol("PropertyValue", ID.PropertyValue);
+
   public final static IBuiltInSymbol Proportion = S.initFinalSymbol("Proportion", ID.Proportion);
 
   public final static IBuiltInSymbol Proportional =
