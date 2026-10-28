@@ -628,9 +628,10 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
-    IASTAppendable result = F.ast(head(), additionalCapacity + 2);
+    IASTAppendable result = F.ast(head(), additionalCapacity + 3);
     result.append(arg1);
     result.append(arg2);
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     result.append(arg3);
     return result;
   }
@@ -648,6 +649,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
         return false;
       }
       return list.size() == SIZE && arg1.equals(list.arg1()) && arg2.equals(list.arg2())
+      // CPD-ON
           && arg3.equals(list.arg3());
     }
     return false;
@@ -849,6 +851,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public boolean isPower() {
     return false;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /** {@inheritDoc} */
@@ -879,6 +882,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public final IExpr last() {
     return arg3;
+    // CPD-ON
   }
 
   /** {@inheritDoc} */

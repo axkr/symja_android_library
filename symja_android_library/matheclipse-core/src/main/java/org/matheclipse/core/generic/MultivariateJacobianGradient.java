@@ -7,9 +7,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -43,28 +41,16 @@ public final class MultivariateJacobianGradient implements MultivariateJacobianF
   public MultivariateJacobianGradient(final IAST function, final IAST variablesList,
       final EvalEngine engine) {
     fVariableList = variablesList;
-    fIndexMap = new Object2IntOpenHashMap<IExpr>(fVariableList.argSize());
-    for (int i = 1; i < fVariableList.size(); i++) {
-      fIndexMap.put(variablesList.get(i), i);
-    }
+    fIndexMap = MultiVariateVectorGradient.variableIndexMap(variablesList);
     fEngine = engine;
     fFunction = function;
     IExpr gradientList = S.Grad.of(engine, function, fVariableList);
     if (gradientList.isList() && gradientList.size() >= variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {
-      // Cannot assign to raw object `1`.
-      throw new ArgumentTypeException(
-          Errors.getMessage("setraw", F.list(gradientList), EvalEngine.get()));
+      throw MultiVariateVectorGradient.rawObjectException(gradientList);
     }
-    variablesList.exists(x -> {
-      if (!x.isVariable() || x.isBuiltInSymbol()) {
-        // Cannot assign to raw object `1`.
-        throw new ArgumentTypeException(Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
-      }
-      return false;
-    });
-
+    MultiVariateVectorGradient.checkVariables(variablesList);
   }
 
   public IAST getFunction() {

@@ -599,17 +599,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    objectOutput.writeShort((short) fSetFlags);
-    objectOutput.writeObject(fLhsPatternExpr);
-    objectOutput.writeObject(fRightHandSide);
+    writeRule(objectOutput, fRightHandSide);
   }
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-    // mask the sign extension - the flags were written with writeShort()
-    fSetFlags = objectInput.readShort() & 0xFFFF;
-    fLhsPatternExpr = (IExpr) objectInput.readObject();
-    fRightHandSide = (IExpr) objectInput.readObject();
+    fRightHandSide = readRule(objectInput);
     if (fLhsPatternExpr != null) {
       // also restores fLHSPriority, which was formerly left at 0 - a deserialized rule would sort
       // in front of all other rules and compare wrongly in equivalentTo()

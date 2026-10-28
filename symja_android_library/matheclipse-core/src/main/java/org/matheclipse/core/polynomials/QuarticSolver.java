@@ -100,89 +100,44 @@ public class QuarticSolver {
       IAST roots = quadraticSolve(a, b, c);
       parameters[QUADRATIC_ROOTS] = roots;
 
-      if (a.greater(F.C0).isTrue()) {
-        // a > 0 - parabola opens upwards - function has minimum value
-
-        if (discriminant.greater(F.C0).isTrue()) {
-          // discriminant > 0 - two distinct real roots - the parabola intersects the x-axis at two
-          // points
-          if (symbol == S.Less) {
-            parameters[QUADRATIC_INTERVAL_DATA] =
-                F.IntervalData(F.List(roots.first(), S.Less, S.Less, roots.second()));
-          } else if (symbol == S.LessEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] =
-                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.second()));
-          } else if (symbol == S.Greater) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
-                F.List(F.CNIInfinity, S.Less, S.Less, roots.first()), //
-                F.List(roots.second(), S.Less, S.Less, F.CInfinity));
-          } else if (symbol == S.GreaterEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
-                F.List(F.CNIInfinity, S.Less, S.LessEqual, roots.first()), //
-                F.List(roots.second(), S.LessEqual, S.Less, F.CInfinity));
-          }
-        } else if (discriminant.less(F.C0).isTrue()) {
-          // discriminant < 0 - there are no real roots. The parabola does not intersect the x-axis
-          // The entire parabola is above the x-axis.
-          if (symbol == S.Less || symbol == S.LessEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
-          } else if (symbol == S.Greater || symbol == S.GreaterEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.CRealsIntervalData;
-          }
-
-        } else if (discriminant.isPossibleZero(true)) {
-          // discriminant == 0 - exactly one real root. The parabola touches the x-axis at one point
-          // (the vertex is on the x-axis)
-          if (symbol == S.Less || symbol == S.Greater) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
-          } else if (symbol == S.LessEqual || symbol == S.GreaterEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] =
-                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.first()));
-          }
-        } else {
-          return null;
+      IBuiltInSymbol relation = symbol;
+      if (a.less(F.C0).isTrue()) {
+        // a < 0 - parabola opens downwards: compare the negated polynomial with the flipped
+        // relation, which has the same roots and discriminant
+        relation = flippedRelation(symbol);
+      } else if (!a.greater(F.C0).isTrue()) {
+        return null;
+      }
+      // a > 0 - parabola opens upwards - function has minimum value
+      if (discriminant.greater(F.C0).isTrue()) {
+        // discriminant > 0 - two distinct real roots - the parabola intersects the x-axis at two
+        // points
+        roots = ascending(roots);
+        if (relation == S.Less || relation == S.LessEqual) {
+          parameters[QUADRATIC_INTERVAL_DATA] = betweenRoots(roots, relation == S.LessEqual);
+        } else if (relation == S.Greater || relation == S.GreaterEqual) {
+          parameters[QUADRATIC_INTERVAL_DATA] = outsideRoots(roots, relation == S.GreaterEqual);
         }
-      } else if (a.less(F.C0).isTrue()) {
-        // a < 0 - parabola opens downwards - function has maximum value
-
-        if (discriminant.greater(F.C0).isTrue()) {
-          // discriminant > 0 - two distinct real roots - the parabola intersects the x-axis at two
-          // points
-          if (symbol == S.Less) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
-                F.List(F.CNIInfinity, S.Less, S.Less, roots.first()), //
-                F.List(roots.second(), S.Less, S.Less, F.CInfinity));
-          } else if (symbol == S.LessEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
-                F.List(F.CNIInfinity, S.Less, S.LessEqual, roots.first()), //
-                F.List(roots.second(), S.LessEqual, S.Less, F.CInfinity));
-          } else if (symbol == S.Greater) {
-            parameters[QUADRATIC_INTERVAL_DATA] =
-                F.IntervalData(F.List(roots.first(), S.Less, S.Less, roots.second()));
-          } else if (symbol == S.GreaterEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] =
-                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.second()));
-          }
-        } else if (discriminant.less(F.C0).isTrue()) {
-          // discriminant < 0 - there are no real roots. The parabola does not intersect the x-axis
-          // The entire parabola is below the x-axis.
-          if (symbol == S.Less || symbol == S.LessEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.CRealsIntervalData;
-          } else if (symbol == S.Greater || symbol == S.GreaterEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
-          }
-
-        } else if (discriminant.isPossibleZero(true)) {
-          // discriminant == 0 - exactly one real root. The parabola touches the x-axis at one point
-          // (the vertex is on the x-axis)
-          if (symbol == S.Less || symbol == S.Greater) {
-            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
-          } else if (symbol == S.LessEqual || symbol == S.GreaterEqual) {
-            parameters[QUADRATIC_INTERVAL_DATA] =
-                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.first()));
-          }
-        } else {
-          return null;
+      } else if (discriminant.less(F.C0).isTrue()) {
+        // discriminant < 0 - there are no real roots. The parabola does not intersect the x-axis
+        // The entire parabola is above the x-axis.
+        if (relation == S.Less || relation == S.LessEqual) {
+          parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
+        } else if (relation == S.Greater || relation == S.GreaterEqual) {
+          parameters[QUADRATIC_INTERVAL_DATA] = F.CRealsIntervalData;
+        }
+      } else if (discriminant.isPossibleZero(true)) {
+        // discriminant == 0 - exactly one real root. The parabola touches the x-axis at one point
+        // (the vertex is on the x-axis) and is above the x-axis everywhere else
+        IExpr root = roots.first();
+        if (relation == S.Less) {
+          parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
+        } else if (relation == S.LessEqual) {
+          parameters[QUADRATIC_INTERVAL_DATA] = betweenRoots(F.List(root, root), true);
+        } else if (relation == S.Greater) {
+          parameters[QUADRATIC_INTERVAL_DATA] = outsideRoots(F.List(root, root), false);
+        } else if (relation == S.GreaterEqual) {
+          parameters[QUADRATIC_INTERVAL_DATA] = F.CRealsIntervalData;
         }
       } else {
         return null;
@@ -190,6 +145,51 @@ public class QuarticSolver {
       return parameters;
     }
     return null;
+  }
+
+  /** The relation <code>R'</code> with <code>p R 0</code> equivalent to <code>-p R' 0</code>. */
+  private static IBuiltInSymbol flippedRelation(IBuiltInSymbol relation) {
+    if (relation == S.Less) {
+      return S.Greater;
+    } else if (relation == S.LessEqual) {
+      return S.GreaterEqual;
+    } else if (relation == S.Greater) {
+      return S.Less;
+    } else if (relation == S.GreaterEqual) {
+      return S.LessEqual;
+    }
+    return relation;
+  }
+
+  /** The two real roots <code>{r1, r2}</code> with <code>r1 &lt;= r2</code>. */
+  private static IAST ascending(IAST roots) {
+    if (roots.argSize() == 2 && roots.first().greater(roots.second()).isTrue()) {
+      return F.List(roots.second(), roots.first());
+    }
+    return roots;
+  }
+
+  /**
+   * The interval between the two ascending <code>roots</code>.
+   *
+   * @param closed whether the roots belong to the interval
+   */
+  private static IAST betweenRoots(IAST roots, boolean closed) {
+    IBuiltInSymbol bound = closed ? S.LessEqual : S.Less;
+    return F.IntervalData(F.List(roots.first(), bound, bound, roots.second()));
+  }
+
+  /**
+   * The two intervals below the first and above the second of the two ascending
+   * <code>roots</code>.
+   *
+   * @param closed whether the roots belong to the intervals
+   */
+  private static IAST outsideRoots(IAST roots, boolean closed) {
+    IBuiltInSymbol bound = closed ? S.LessEqual : S.Less;
+    return F.IntervalData(//
+        F.List(F.CNInfinity, S.Less, bound, roots.first()), //
+        F.List(roots.second(), bound, S.Less, F.CInfinity));
   }
 
   public static IASTMutable solve(IExpr exprPoly, IExpr x, boolean createSet, boolean sort)

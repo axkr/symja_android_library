@@ -176,6 +176,7 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
     return evaluateWithOptions(ast, engine);
   }
 
+  // CPD-OFF option handling of the core and the normal evaluator hierarchies
   private IExpr evaluateWithOptions(IAST ast, EvalEngine engine) {
     IExpr[] option;
     int argSize = ast.argSize();
@@ -187,6 +188,7 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
           expectedArgSize(ast), optionSymbols, engine);
     }
     return evaluate(ast, argSize, option, engine, ast);
+    // CPD-ON
   }
 
   protected void setOptions(final ISymbol symbol, IBuiltInSymbol lhsOptionSymbol, IExpr rhsValue) {

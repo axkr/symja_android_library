@@ -605,15 +605,19 @@ public class EllipticIntegrals {
       }
       if (z.isNumEqualRational(F.C1D2)) {
         // (Pi^2 + 2 Gamma(3/4)^4)/(4*Sqrt(Pi)*Gamma(3/4)^2)
+        // CPD-OFF closed-form special values per function
         return F.Times(F.C1D4, F.Power(S.Pi, F.CN1D2), F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
             F.Plus(F.Sqr(S.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
       }
       if (z.isMinusOne()) {
+      // CPD-ON
         // (Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2)*Sqrt(Pi)*Gamma(3/4)^2)
+        // CPD-OFF closed-form special values per function
         return F.Times(F.C1D2, F.C1DSqrt2, F.Power(S.Pi, F.CN1D2),
             F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
             F.Plus(F.Sqr(S.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
       }
+      // CPD-ON
 
       if (z.isInfinity() || z.isNegativeInfinity() || z.isComplexInfinity()) {
         return F.CComplexInfinity;
@@ -1530,17 +1534,12 @@ public class EllipticIntegrals {
       final boolean arbitrary = z instanceof ApfloatNum || z instanceof ApcomplexNum
           || q instanceof ApfloatNum || q instanceof ApcomplexNum
           || (engine.isArbitraryMode() && !z.isInexactNumber() && !q.isInexactNumber());
-      final int digits =
-          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
       try {
         Apcomplex argument = CarlsonArbitraryPrecision.apcomplex(z, digits);
         Apcomplex value = ApcomplexThetaMath.ellipticTheta(a, argument,
             CarlsonArbitraryPrecision.apcomplex(q, digits));
-        if (value.imag().signum() == 0) {
-          return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
-        }
-        return arbitrary ? F.complexNum(value)
-            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+        return CarlsonArbitraryPrecision.toNumber(value, value.imag().signum() == 0, arbitrary);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         return F.NIL;
@@ -2069,16 +2068,11 @@ public class EllipticIntegrals {
       if (!arbitrary && !z.isInexactNumber() && !engine.isDoubleMode()) {
         return F.NIL;
       }
-      final int digits =
-          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
       try {
         Apcomplex value = function.apply(CarlsonArbitraryPrecision.apcomplex(z, digits));
         final boolean real = value.imag().signum() == 0 || (realResult && z.isReal());
-        if (arbitrary) {
-          return real ? F.num(value.real()) : F.complexNum(value);
-        }
-        return real ? F.num(value.real().doubleValue())
-            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+        return CarlsonArbitraryPrecision.toNumber(value, real, arbitrary);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         return F.NIL;
@@ -2095,6 +2089,12 @@ public class EllipticIntegrals {
       newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+  }
+
+  /** Whether two numbers are evaluated numerically: one is inexact or the engine is numeric. */
+  private static boolean numericPair(IExpr a, IExpr b, EvalEngine engine) {
+    return (a.isInexactNumber() || b.isInexactNumber() || engine.isNumericMode()) && a.isNumber()
+        && b.isNumber();
   }
 
   /** Whether two numbers are evaluated with the precision of the engine. */
@@ -2126,17 +2126,12 @@ public class EllipticIntegrals {
     if (!arbitrary && !engine.isDoubleMode()) {
       return F.NIL;
     }
-    final int digits =
-        arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+    final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
     try {
       Apcomplex value = ApcomplexThetaMath.inverseJacobi(Character.toLowerCase(kind.charAt(0)),
           Character.toLowerCase(kind.charAt(1)), CarlsonArbitraryPrecision.apcomplex(z, digits),
           CarlsonArbitraryPrecision.apcomplex(m, digits));
-      if (arbitrary) {
-        return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
-      }
-      return value.imag().signum() == 0 ? F.num(value.real().doubleValue())
-          : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      return CarlsonArbitraryPrecision.toNumber(value, value.imag().signum() == 0, arbitrary);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
       return F.NIL;
@@ -2456,6 +2451,7 @@ public class EllipticIntegrals {
     private static IExpr jacobiCN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Cos(z);
+      // CPD-OFF closed-form special values per function
       }
       if (m.isOne()) {
         return F.Sech(z);
@@ -2469,6 +2465,7 @@ public class EllipticIntegrals {
           double mDouble = m.evalfNaN();
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
             return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalfc(), m.evalfc()));
+            // CPD-ON
           } else {
             return F.num(EllipticFunctionsJS.jacobiCN(zDouble, mDouble));
           }
@@ -2538,6 +2535,7 @@ public class EllipticIntegrals {
     private static IExpr jacobiDN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.C1;
+      // CPD-OFF closed-form special values per function
       }
       if (m.isOne()) {
         return F.Sech(z);
@@ -2551,6 +2549,7 @@ public class EllipticIntegrals {
           double mDouble = m.evalfNaN();
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
             return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalfc(), m.evalfc()));
+            // CPD-ON
           } else {
             return F.num(EllipticFunctionsJS.jacobiDN(zDouble, mDouble));
           }
@@ -2619,6 +2618,7 @@ public class EllipticIntegrals {
 
     private static IExpr jacobiSC(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
+        // CPD-OFF closed-form special values per function
         return F.Tan(z);
       }
       if (m.isOne()) {
@@ -2633,6 +2633,7 @@ public class EllipticIntegrals {
           double mDouble = m.evalfNaN();
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
             return F.complexNum(EllipticFunctionsJS.jacobiSC(z.evalfc(), m.evalfc()));
+            // CPD-ON
           } else {
             return F.num(EllipticFunctionsJS.jacobiSC(zDouble, mDouble));
           }
@@ -2701,6 +2702,7 @@ public class EllipticIntegrals {
 
     private static IExpr jacobiSD(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
+        // CPD-OFF closed-form special values per function
         return F.Sin(z);
       }
       if (m.isOne()) {
@@ -2715,6 +2717,7 @@ public class EllipticIntegrals {
           double mDouble = m.evalfNaN();
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
             return F.complexNum(EllipticFunctionsJS.jacobiSD(z.evalfc(), m.evalfc()));
+            // CPD-ON
           } else {
             return F.num(EllipticFunctionsJS.jacobiSD(zDouble, mDouble));
           }
@@ -2905,18 +2908,14 @@ public class EllipticIntegrals {
         EvalEngine engine = EvalEngine.get();
         final boolean arbitrary = t instanceof ApfloatNum || t instanceof ApcomplexNum
             || (engine.isArbitraryMode() && !t.isInexactNumber());
-        final int digits = arbitrary ? (int) engine.getNumericPrecision()
-            : (int) ParserConfig.MACHINE_PRECISION + 1;
+        final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
         try {
           Apcomplex value =
               ApcomplexThetaMath.kleinInvariantJ(CarlsonArbitraryPrecision.apcomplex(t, digits));
           // real on the imaginary axis and on the lines Re(t) == k/2
-          if (value.imag().signum() == 0
-              || value.imag().scale() < value.real().scale() - digits + 3) {
-            return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
-          }
-          return arbitrary ? F.complexNum(value)
-              : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+          boolean real = value.imag().signum() == 0
+              || value.imag().scale() < value.real().scale() - digits + 3;
+          return CarlsonArbitraryPrecision.toNumber(value, real, arbitrary);
         } catch (ArithmeticException | ApfloatRuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
           if (arbitrary) {
@@ -2967,27 +2966,24 @@ public class EllipticIntegrals {
     }
 
     private static IExpr weierstrassHalfPeriods(IExpr g2, IExpr g3, EvalEngine engine) {
-      if (g2.isInexactNumber() || g3.isInexactNumber() || engine.isNumericMode()) {
-        if (g2.isNumber() && g3.isNumber()) {
-          try {
-            if (isArbitrary(g2) || isArbitrary(g3) || (engine.isArbitraryMode()
-                && !g2.isInexactNumber() && !g3.isInexactNumber())) {
-              final int digits = (int) engine.getNumericPrecision();
-              Apcomplex[] e = weierstrassRoots(g2, g3, digits);
-              if (e == null) {
-                return F.NIL;
-              }
-              Apcomplex[] w = ApcomplexWeierstrassMath.weierstrassHalfPeriods(e[0], e[1], e[2]);
-              return F.list(CarlsonArbitraryPrecision.round(w[0], digits),
-                  CarlsonArbitraryPrecision.round(w[1], digits));
+      if (numericPair(g2, g3, engine)) {
+        try {
+          if (isArbitrary(g2, g3, engine)) {
+            final int digits = (int) engine.getNumericPrecision();
+            Apcomplex[] e = weierstrassRoots(g2, g3, digits);
+            if (e == null) {
+              return F.NIL;
             }
-            org.hipparchus.complex.Complex[] invariants =
-                EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
-            return Object2Expr.convertComplex(false, invariants);
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            Errors.printMessage(S.WeierstrassHalfPeriods, rex);
+            Apcomplex[] w = ApcomplexWeierstrassMath.weierstrassHalfPeriods(e[0], e[1], e[2]);
+            return F.list(CarlsonArbitraryPrecision.round(w[0], digits),
+                CarlsonArbitraryPrecision.round(w[1], digits));
           }
+          org.hipparchus.complex.Complex[] invariants =
+              EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
+          return Object2Expr.convertComplex(false, invariants);
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.WeierstrassHalfPeriods, rex);
         }
       }
       return F.NIL;
@@ -3019,28 +3015,25 @@ public class EllipticIntegrals {
     }
 
     private static IExpr weierstrassInvariants(IExpr g2, IExpr g3, EvalEngine engine) {
-      if (g2.isInexactNumber() || g3.isInexactNumber() || engine.isNumericMode()) {
-        if (g2.isNumber() && g3.isNumber()) {
-          try {
-            if (isArbitrary(g2) || isArbitrary(g3) || (engine.isArbitraryMode()
-                && !g2.isInexactNumber() && !g3.isInexactNumber())) {
-              final int digits = (int) engine.getNumericPrecision();
-              final int working = digits + CarlsonArbitraryPrecision.GUARD_DIGITS;
-              Apcomplex[] g = ApcomplexWeierstrassMath.weierstrassInvariants(
-                  CarlsonArbitraryPrecision.apcomplex(g2, working),
-                  CarlsonArbitraryPrecision.apcomplex(g3, working));
-              return F.list(CarlsonArbitraryPrecision.round(g[0], digits),
-                  CarlsonArbitraryPrecision.round(g[1], digits));
-            }
-            org.hipparchus.complex.Complex[] invariants =
-                EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
-            return Object2Expr.convertComplex(false, invariants);
-          } catch (ValidateException ve) {
-            throw ve;
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            Errors.printMessage(S.WeierstrassInvariants, rex);
+      if (numericPair(g2, g3, engine)) {
+        try {
+          if (isArbitrary(g2, g3, engine)) {
+            final int digits = (int) engine.getNumericPrecision();
+            final int working = digits + CarlsonArbitraryPrecision.GUARD_DIGITS;
+            Apcomplex[] g = ApcomplexWeierstrassMath.weierstrassInvariants(
+                CarlsonArbitraryPrecision.apcomplex(g2, working),
+                CarlsonArbitraryPrecision.apcomplex(g3, working));
+            return F.list(CarlsonArbitraryPrecision.round(g[0], digits),
+                CarlsonArbitraryPrecision.round(g[1], digits));
           }
+          org.hipparchus.complex.Complex[] invariants =
+              EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
+          return Object2Expr.convertComplex(false, invariants);
+        } catch (ValidateException ve) {
+          throw ve;
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.WeierstrassInvariants, rex);
         }
       }
       return F.NIL;
@@ -3347,8 +3340,7 @@ public class EllipticIntegrals {
           && !g3.isInexactNumber()) {
         return F.NIL;
       }
-      final int digits =
-          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
       try {
         Apcomplex[] e = weierstrassRoots(g2, g3, digits);
         if (e == null) {
@@ -3365,8 +3357,7 @@ public class EllipticIntegrals {
         if (arbitrary) {
           return CarlsonArbitraryPrecision.round(value, digits);
         }
-        return value.imag().signum() == 0 ? F.num(value.real().doubleValue())
-            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+        return CarlsonArbitraryPrecision.toNumber(value, value.imag().signum() == 0, false);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         return F.NIL;

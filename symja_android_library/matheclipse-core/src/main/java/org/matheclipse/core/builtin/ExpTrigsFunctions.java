@@ -769,6 +769,7 @@ public class ExpTrigsFunctions {
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.ArcCot(imPart));
       }
+      // CPD-OFF closed-form tables per function
       if (arg1.isAST(S.Coth, 2) && arg1.first().isRealResult()) {
         return arg1.first();
       }
@@ -786,6 +787,7 @@ public class ExpTrigsFunctions {
       return
       // [$ (-(1/2))*Log(1 - 1/arg1) + (1/2)*Log(1 + 1/arg1) $]
       F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, F.Power(arg1, F.CN1)))),
+      // CPD-ON
           F.Times(F.C1D2, F.Log(F.Plus(F.C1, F.Power(arg1, F.CN1))))); // $$;
     }
   }
@@ -1587,6 +1589,7 @@ public class ExpTrigsFunctions {
       // if (imPart.isPresent()) {
       // return F.Times(F.CI, F.ArcTan(imPart));
       // }
+      // CPD-OFF closed-form tables per function
       if (arg1.isTanh() && arg1.first().isRealResult()) {
         return arg1.first();
       }
@@ -1604,6 +1607,7 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (-(1/2))*Log(1 - arg1) + (1/2)*Log(1 + arg1) $]
+      // CPD-ON
       F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, arg1))),
           F.Times(F.C1D2, F.Log(F.Plus(F.C1, arg1)))); // $$;
     }
@@ -1657,6 +1661,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
+      // CPD-OFF closed-form tables per function
       return Math.cos(stack[top]);
     }
 
@@ -1678,6 +1683,7 @@ public class ExpTrigsFunctions {
               if (negExpr.isPresent()) {
                 // Sin(1/2*Pi - arg1)
                 return F.Sin(F.Subtract(F.Times(F.C1D2, S.Pi), arg1));
+                // CPD-ON
               }
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
@@ -1713,6 +1719,7 @@ public class ExpTrigsFunctions {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         // https://functions.wolfram.com/ElementaryFunctions/Cos/04/02/01/
+        // CPD-OFF closed-form tables per function
         return Cos(negExpr);
       }
 
@@ -1726,6 +1733,7 @@ public class ExpTrigsFunctions {
           } else if (t.isLT(F.C1)) { // t < 1
             // -Cos((1-t)*Pi)
             return F.Negate(F.Cos(F.Times(F.Subtract(F.C1, t), S.Pi)));
+            // CPD-ON
           } else if (t.isLT(F.C3D2)) { // t < 3/2
             // -Cos((t-1)*Pi)
             return F.Negate(F.Cos(F.Times(F.Subtract(t, F.C1), S.Pi)));
@@ -1882,6 +1890,7 @@ public class ExpTrigsFunctions {
       }
       IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       if (imPart.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return F.Times(F.CNI, F.Cot(imPart));
       }
       if (F.isExactZero(arg1)) {
@@ -1898,6 +1907,7 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Coth(arg1-I*Pi*IntegerPart(t) + I*Pi )
               return F
+              // CPD-ON
                   .Coth(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
@@ -2004,6 +2014,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
+      // CPD-OFF closed-form tables per function
       return 1.0D / Math.sin(stack[top]);
     }
 
@@ -2020,6 +2031,7 @@ public class ExpTrigsFunctions {
               // Csc(arg1 - 2*Pi*IntegerPart(1/2*t) + 2*Pi)
               return F
                   .Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
+                  // CPD-ON
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
@@ -2048,6 +2060,7 @@ public class ExpTrigsFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return Negate(Csc(negExpr));
       }
 
@@ -2061,6 +2074,7 @@ public class ExpTrigsFunctions {
           } else if (t.isLT(F.C1)) { // t < 1
             // Csc((1-t)*Pi)
             return F.Csc(F.Times(F.Subtract(F.C1, t), S.Pi));
+            // CPD-ON
           } else if (t.isLT(F.C2)) { // t < 2
             // -Csc((2-t)*Pi)
             return F.Negate(F.Csc(F.Times(F.Subtract(F.C2, t), S.Pi)));
@@ -2107,6 +2121,7 @@ public class ExpTrigsFunctions {
       } else if (t.im().isZero()) {
         if (t.isIntegerResult()) {
           return F.CComplexInfinity;
+        // CPD-OFF closed-form tables per function
         }
 
         // 1/2 * t
@@ -2123,6 +2138,7 @@ public class ExpTrigsFunctions {
         }
         // t - 1/2
         temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
+        // CPD-ON
         if (temp2.isIntegerResult()) {
           // I^(-1+2*t); distribute the 2 over a Plus, so that the half integer part of t
           // cancels against the -1 instead of being carried along unevaluated
@@ -2371,6 +2387,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
+      // CPD-OFF closed-form tables per function
       return 1.0D / Math.tan(stack[top]);
     }
 
@@ -2387,6 +2404,7 @@ public class ExpTrigsFunctions {
               // Cot(arg1 + Pi - Pi*IntegerPart(t))
               return F.Cot(F.Plus(arg1, S.Pi, F.Times(F.CN1, S.Pi, t.integerPart())));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
+            // CPD-ON
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -Tan(arg1-1/2*Pi)
@@ -2408,6 +2426,7 @@ public class ExpTrigsFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return Negate(Cot(negExpr));
       }
 
@@ -2421,6 +2440,7 @@ public class ExpTrigsFunctions {
           } else if (t.isLT(F.C1)) { // t < 1
             // -Cot((1-t)*Pi)
             return F.Negate(F.Cot(F.Times(F.Subtract(F.C1, t), S.Pi)));
+            // CPD-ON
           } else if (t.isLT(F.C2)) { // t < 2
             // Cot((t-1)*Pi)
             return F.Cot(F.Times(F.Subtract(t, F.C1), S.Pi));
@@ -2554,6 +2574,7 @@ public class ExpTrigsFunctions {
       }
       IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       if (imPart.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return F.Times(F.CNI, F.Csc(imPart));
       }
       if (F.isExactZero(arg1)) {
@@ -2569,7 +2590,6 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Csch(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
               return F
-                  // CPD-OFF closed-form tables per function
                   .Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
@@ -2577,10 +2597,10 @@ public class ExpTrigsFunctions {
             } else if (t.isLT(F.C1)) { // t < 1
               // -I * Sech(arg1-1/2*I*Pi)
               return F.Times(F.CNI, F.Sech(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
-              // CPD-ON
             } else if (t.isLT(F.C2)) { // t < 2
               // -Csch(arg1 - I*Pi)
               return F.Negate(F.Csch(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
+              // CPD-ON
             }
             // Csch(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F
@@ -2674,6 +2694,7 @@ public class ExpTrigsFunctions {
             }
           }
           return result;
+        // CPD-OFF closed-form tables per function
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
@@ -2696,6 +2717,7 @@ public class ExpTrigsFunctions {
   }
 
   private static final class Gudermannian extends AbstractFunctionEvaluator {
+  // CPD-ON
     @Override
     public boolean evalIsReal(IAST ast) {
       if (ast.argSize() >= 1) {
@@ -2730,6 +2752,7 @@ public class ExpTrigsFunctions {
             // 2*ArcTan( Tanh( z/2 )
             return z.times(F.C1D2).tanh().atan().times(F.C2);
           }
+        // CPD-OFF closed-form tables per function
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
@@ -2748,6 +2771,7 @@ public class ExpTrigsFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      // CPD-ON
       super.setUp(newSymbol);
     }
   }
@@ -2821,6 +2845,7 @@ public class ExpTrigsFunctions {
           // 2*ArcTanh( Tan( z/2 )
           return z.times(F.C1D2).tan().atanh().times(F.C2);
 
+        // CPD-OFF closed-form tables per function
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
@@ -2843,6 +2868,7 @@ public class ExpTrigsFunctions {
   }
 
   private static final class InverseHaversine extends AbstractFunctionEvaluator {
+  // CPD-ON
     @Override
     public boolean evalIsReal(IAST ast) {
       if (ast.argSize() >= 1) {
@@ -3272,6 +3298,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
+      // CPD-OFF closed-form tables per function
       return 1.0D / Math.cos(stack[top]);
     }
 
@@ -3288,6 +3315,7 @@ public class ExpTrigsFunctions {
               return F
                   .Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
+            // CPD-ON
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -Csc(arg1-1/2*Pi)
@@ -3315,6 +3343,7 @@ public class ExpTrigsFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return Sec(negExpr);
       }
 
@@ -3328,6 +3357,7 @@ public class ExpTrigsFunctions {
           } else if (t.isLT(F.C1)) { // t < 1
             // -Sec((1-t)*Pi)
             return F.Negate(F.Sec(F.Times(F.Subtract(F.C1, t), S.Pi)));
+            // CPD-ON
           } else if (t.isLT(F.C2)) { // t < 2
             // Sec((2-t)*Pi)
             return F.Sec(F.Times(F.Subtract(F.C2, t), S.Pi));
@@ -3601,6 +3631,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
+      // CPD-OFF closed-form tables per function
       return Math.sin(stack[top]);
     }
 
@@ -3622,6 +3653,7 @@ public class ExpTrigsFunctions {
               IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(temp);
               if (negExpr.isPresent()) {
                 // Cos(1/2*Pi - arg1)
+                // CPD-ON
                 return F.Cos(F.Subtract(F.Times(F.C1D2, S.Pi), arg1));
               }
 
@@ -3657,6 +3689,7 @@ public class ExpTrigsFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return Negate(Sin(negExpr));
       }
 
@@ -3670,6 +3703,7 @@ public class ExpTrigsFunctions {
           } else if (t.isLT(F.C1)) { // t < 1
             // Sin((1-t)*Pi)
             return F.Sin(F.Times(F.Subtract(F.C1, t), S.Pi));
+            // CPD-ON
           } else if (t.isLT(F.C3D2)) { // t < 3/2
             // -Sin((t-1)*Pi)
             return F.Negate(F.Sin(F.Times(F.Subtract(t, F.C1), S.Pi)));
@@ -3716,6 +3750,7 @@ public class ExpTrigsFunctions {
       } else if (t.im().isZero()) {
         if (t.isIntegerResult()) {
           return F.C0;
+        // CPD-OFF closed-form tables per function
         }
 
         // 1/2 * t
@@ -3732,6 +3767,7 @@ public class ExpTrigsFunctions {
         }
         // t - 1/2, expanded: t == 1/2*(1+2*k) gives k
         temp2 = engine.evaluate(F.Expand(F.Plus(t, F.CN1D2)));
+        // CPD-ON
         if (temp2.isIntegerResult()) {
           // Sin((m+1/2)*Pi) == (-1)^m
           return F.Power(F.CN1, temp2);
@@ -3948,6 +3984,7 @@ public class ExpTrigsFunctions {
       }
       IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       if (imPart.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return F.Times(F.CI, F.Sin(imPart));
       }
       if (arg1.isZero()) {
@@ -3963,7 +4000,6 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
               return F
-                  // CPD-OFF closed-form tables per function
                   .Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
@@ -3971,10 +4007,10 @@ public class ExpTrigsFunctions {
             } else if (t.isLT(F.C1)) { // t < 1
               // I * Cosh(arg1-1/2*I*Pi)
               return F.Times(F.CI, F.Cosh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi))));
-              // CPD-ON
             } else if (t.isLT(F.C2)) { // t < 2
               // -Sinh(arg1 - I*Pi)
               return F.Negate(F.Sinh(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
+              // CPD-ON
             }
             // Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) )
             return F
@@ -4121,6 +4157,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
+      // CPD-OFF closed-form tables per function
       return Math.tan(stack[top]);
     }
 
@@ -4137,6 +4174,7 @@ public class ExpTrigsFunctions {
               // Tan(arg1 + Pi - Pi*IntegerPart(t))
               return F.Tan(F.Plus(arg1, S.Pi, F.Times(F.CNPi, t.integerPart())));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
+            // CPD-ON
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // -Cot(arg1-1/2*Pi)
@@ -4157,6 +4195,7 @@ public class ExpTrigsFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return Negate(Tan(negExpr));
       }
 
@@ -4168,6 +4207,7 @@ public class ExpTrigsFunctions {
           if (t.isLT(F.C1D2)) { // t < 1/2
             return F.NIL;
           } else if (t.equals(F.C1D2)) { // t == 1/2
+          // CPD-ON
             return F.CComplexInfinity;
           } else if (t.isLT(F.C1)) { // t < 1
             // -Tan((1-t)*Pi)
@@ -4300,6 +4340,7 @@ public class ExpTrigsFunctions {
       }
       IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       if (imPart.isPresent()) {
+        // CPD-OFF closed-form tables per function
         return F.Times(F.CI, F.Tan(imPart));
       }
       if (arg1.isZero()) {
@@ -4315,6 +4356,7 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Tanh(arg1-I*Pi*IntegerPart(t) + I*Pi )
+              // CPD-ON
               return F
                   .Tanh(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
@@ -4486,6 +4528,7 @@ public class ExpTrigsFunctions {
       IAST result = F.Times(F.Power(-1, k), F.Subtract(z, F.Times(k, S.Pi)));
       // CPD-ON
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
+      // CPD-OFF closed-form tables per function
       if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) {// S.Greater.ofQ(max, zRe)) {
         // (-1)^k * (z - Pi*k)
         return result;
@@ -4506,6 +4549,7 @@ public class ExpTrigsFunctions {
     }
     return F.NIL;
   }
+  // CPD-ON
 
   /**
    * Try simplifying <code>ArcCos(Cos(z))</code>
@@ -4527,6 +4571,7 @@ public class ExpTrigsFunctions {
           F.CPiHalf);
 
       // (k*Pi < Re(z) < (k + 1)*Pi
+      // CPD-OFF closed-form tables per function
       if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) { // S.Greater.ofQ(max, zRe)) {
         return result;
       }
@@ -4547,6 +4592,7 @@ public class ExpTrigsFunctions {
 
   public static void initialize() {
     Initializer.init();
+    // CPD-ON
   }
 
   private ExpTrigsFunctions() {}

@@ -221,16 +221,7 @@ public class BoxesFunctions {
         IAST association = (IAST) expr;
         IASTAppendable list = F.ListAlloc(3);
         list.append("<|");
-        if (association.argSize() > 0) {
-          IASTAppendable argsList = F.ListAlloc(association.size());
-          for (int i = 1; i < association.size(); i++) {
-            argsList.append(standardFormRecursive(association.getRule(i), 0, form, engine));
-            if (i < association.argSize()) {
-              argsList.append(",");
-            }
-          }
-          list.append(F.RowBox(argsList));
-        }
+        appendArgumentRow(list, association, form, engine);
         list.append("|>");
         return F.RowBox(list);
       }
@@ -244,17 +235,8 @@ public class BoxesFunctions {
           if (function.isList()) {
             IASTAppendable list = F.ListAlloc(3);
             list.append("{");
-            IASTAppendable argsList = F.ListAlloc(function.size());
-            for (int i = 1; i < function.size(); i++) {
-              argsList.append(standardFormRecursive(function.getRule(i), precedence, form, engine));
-              if (i < function.argSize()) {
-                argsList.append(",");
-              }
-            }
             // {} is RowBox({"{","}"}), with no empty row in between
-            if (argsList.argSize() > 0) {
-              list.append(F.RowBox(argsList));
-            }
+            appendArgumentRow(list, function, form, engine);
             list.append("}");
             return F.RowBox(list);
           }
@@ -285,16 +267,7 @@ public class BoxesFunctions {
           IASTAppendable list = F.ListAlloc(4);
           list.append(standardFormRecursive(function.head(), precedence, form, engine));
           list.append("[");
-          IASTAppendable argsList = F.ListAlloc(function.size());
-          for (int i = 1; i < function.size(); i++) {
-            argsList.append(standardFormRecursive(function.getRule(i), precedence, form, engine));
-            if (i < function.argSize()) {
-              argsList.append(",");
-            }
-          }
-          if (argsList.argSize() > 0) {
-            list.append(F.RowBox(argsList));
-          }
+          appendArgumentRow(list, function, form, engine);
           list.append("]");
           return F.RowBox(list);
         }
@@ -304,6 +277,30 @@ public class BoxesFunctions {
         return numberBox((INumber) expr, precedence);
       }
       return F.$str(expr.toString());
+    }
+
+    /**
+     * Append the comma-separated <code>RowBox</code> of the arguments of <code>function</code> to
+     * <code>list</code>. The arguments are separated by commas, so each one is boxed at precedence
+     * <code>0</code>. Nothing is appended for a function without arguments.
+     *
+     * @param list the boxes of the enclosing bracket construct
+     * @param function the function whose arguments are boxed
+     * @param form the box form
+     * @param engine the evaluation engine
+     */
+    private static void appendArgumentRow(IASTAppendable list, IAST function, IExpr form,
+        EvalEngine engine) {
+      if (function.argSize() > 0) {
+        IASTAppendable argsList = F.ListAlloc(function.size());
+        for (int i = 1; i < function.size(); i++) {
+          argsList.append(standardFormRecursive(function.getRule(i), 0, form, engine));
+          if (i < function.argSize()) {
+            argsList.append(",");
+          }
+        }
+        list.append(F.RowBox(argsList));
+      }
     }
 
     /**

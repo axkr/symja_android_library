@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -13,6 +14,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * Carlson's symmetric elliptic integrals in arbitrary precision.
@@ -50,6 +52,27 @@ public final class CarlsonArbitraryPrecision {
       return F.num(re);
     }
     return F.complexNum(new Apcomplex(re, round(value.imag(), precision)));
+  }
+
+  /**
+   * The number of <code>value</code> at arbitrary precision or as a machine number: its real part
+   * if <code>real</code> is set, otherwise the complex number.
+   */
+  public static IExpr toNumber(Apcomplex value, boolean real, boolean arbitrary) {
+    if (real) {
+      return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+    }
+    return arbitrary ? F.complexNum(value)
+        : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+  }
+
+  /**
+   * The digits of an apfloat computation: the precision of the engine, or machine precision plus
+   * one digit.
+   */
+  public static int digits(boolean arbitrary, EvalEngine engine) {
+    return arbitrary ? (int) engine.getNumericPrecision()
+        : (int) ParserConfig.MACHINE_PRECISION + 1;
   }
 
   private static Apfloat round(Apfloat x, long precision) {

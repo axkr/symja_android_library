@@ -216,14 +216,22 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     addIntervalMarkers(builder, bars, originalAST);
 
     IExpr graphicsComplex = builder.build();
-    if (graphicsComplex.equals(F.NIL)) {
+    if (graphicsComplex.isNIL()) {
       return F.NIL;
     }
 
     return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
-        new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
-            F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
-            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+        surfaceDefaults(plotRangeOpt, boxRatiosOpt));
+  }
+
+  /**
+   * The default options of a surface: the <code>PlotRange</code>, the <code>BoxRatios</code> (flat
+   * if not given as a list), axes and the plot lighting.
+   */
+  private static IExpr[] surfaceDefaults(IExpr plotRange, IExpr boxRatios) {
+    return new IExpr[] {F.Rule(S.PlotRange, plotRange),
+        F.Rule(S.BoxRatios, boxRatios.isList() ? boxRatios : Plot3DTools.FLAT_BOX_RATIOS),
+        F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)};
   }
 
   /**
@@ -341,9 +349,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
-        new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
-            F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
-            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+        surfaceDefaults(plotRangeOpt, boxRatiosOpt));
   }
 
   /**

@@ -500,6 +500,7 @@ public class ClusteringFunctions {
     private static final long serialVersionUID = 2872848600632425591L;
 
     static final DistanceMeasure distance =
+        // CPD-OFF per-metric closed form
         new org.hipparchus.clustering.distance.EuclideanDistance();
 
     @Override
@@ -513,6 +514,7 @@ public class ClusteringFunctions {
       IAST vect2 = (IAST) b.normal(false);
       int size = a.size();
       IASTAppendable plusAST = F.PlusAlloc(size);
+      // CPD-ON
       plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(vect1.get(i), vect2.get(i)))));
       return F.Sqrt(plusAST);
     }
@@ -791,6 +793,7 @@ public class ClusteringFunctions {
     private static final long serialVersionUID = -3203931866584067444L;
 
     static final DistanceMeasure distance =
+        // CPD-OFF per-metric closed form
         new org.hipparchus.clustering.distance.ManhattanDistance();
 
     @Override
@@ -804,6 +807,7 @@ public class ClusteringFunctions {
       IAST vect2 = (IAST) b.normal(false);
       int size = a.size();
       IASTAppendable plusAST = F.PlusAlloc(size);
+      // CPD-ON
       return plusAST.appendArgs(size, i -> F.Abs(F.Subtract(vect1.get(i), vect2.get(i))));
     }
 

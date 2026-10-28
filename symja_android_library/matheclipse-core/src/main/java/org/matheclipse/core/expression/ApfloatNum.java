@@ -1158,12 +1158,8 @@ public class ApfloatNum implements INum {
           || fApfloat.signum() < 0 && !af.isInteger())) {
         try {
           return valueOf(h().beta(fApfloat, af, bf));
-        } catch (ApfloatArithmeticException aaex) {
-          if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-            return F.ComplexInfinity;
-          }
         } catch (ArithmeticException | NumericComputationException e) {
-          if ("Division by zero".equals(e.getMessage())) {
+          if (Num.isDivisionByZeroAny(e)) {
             return F.ComplexInfinity;
           }
         }
@@ -1173,12 +1169,8 @@ public class ApfloatNum implements INum {
       try {
         return F.complexNum(
             h().beta(fApfloat, ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
-      } catch (ApfloatArithmeticException aaex) {
-        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-          return F.ComplexInfinity;
-        }
       } catch (ArithmeticException | NumericComputationException aex) {
-        if ("Division by zero".equals(aex.getMessage())) {
+        if (Num.isDivisionByZeroAny(aex)) {
           return F.ComplexInfinity;
         }
       }
@@ -1206,12 +1198,8 @@ public class ApfloatNum implements INum {
         return F.complexNum(h().beta(fApfloat, ((INumber) x2).apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
       } catch (NumericComputationException aex) {
-      } catch (ApfloatArithmeticException aaex) {
-        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-          return F.ComplexInfinity;
-        }
       } catch (ArithmeticException aex) {
-        if ("Division by zero".equals(aex.getMessage())) {
+        if (Num.isDivisionByZeroAny(aex)) {
           return F.ComplexInfinity;
         }
       }
@@ -2034,12 +2022,8 @@ public class ApfloatNum implements INum {
       try {
         return F.complexNum(h().hypergeometric2F1(fApfloat, ((INumber) arg2).apcomplexValue(),
             ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
-      } catch (ApfloatArithmeticException aaex) {
-        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-          return F.ComplexInfinity;
-        }
       } catch (ArithmeticException | NumericComputationException aex) {
-        if (Num.isDivisionByZero(aex)) {
+        if (Num.isDivisionByZeroAny(aex)) {
           return F.ComplexInfinity;
         }
       }
@@ -2639,22 +2623,18 @@ public class ApfloatNum implements INum {
     try {
       Apfloat polygamma = h().polygamma(n, fApfloat);
       return F.num(polygamma);
-    } catch (ApfloatArithmeticException aaex) {
-      if ("polygamma.ofNonpositiveInteger".equals(aaex.getLocalizationKey())) {
+    } catch (ArithmeticException | NumericComputationException aex) {
+      if (Num.hasApfloatKey(aex, "polygamma.ofNonpositiveInteger")) {
         return F.ComplexInfinity;
       }
-    } catch (ArithmeticException | NumericComputationException aex) {
-      // java.lang.ArithmeticException: Polygamma of non-positive integer
     }
     try {
       Apcomplex polygamma = h().polygamma(n, apcomplexValue());
       return F.complexNum(polygamma);
-    } catch (ApfloatArithmeticException aaex) {
-      if ("polygamma.ofNonpositiveInteger".equals(aaex.getLocalizationKey())) {
+    } catch (ArithmeticException | NumericComputationException aex) {
+      if (Num.hasApfloatKey(aex, "polygamma.ofNonpositiveInteger")) {
         return F.ComplexInfinity;
       }
-    } catch (ArithmeticException | NumericComputationException aex) {
-      // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
     return INum.super.polyGamma(n);
   }

@@ -1886,6 +1886,7 @@ public class TeXFormFactory {
       buf.append("NIL");
       return;
     }
+    // CPD-OFF the same dispatch emitted as TeX and as MathML
     IExpr header = list.head();
     if (!header.isSymbol()) {
       // print expressions like: f(#1, y)& [x]
@@ -1897,6 +1898,7 @@ public class TeXFormFactory {
         if (a1Head.isAST1() && headAST.isAST1()
             && (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
           try {
+          // CPD-ON
             IExpr symbolOrAST = headAST.arg1();
             int n = a1Head.arg1().toIntDefault();
             if (n == 1 || n == 2) {
@@ -1931,6 +1933,7 @@ public class TeXFormFactory {
       return;
     }
     if (header.isBuiltInSymbol()) {
+      // CPD-OFF the same dispatch emitted as TeX and as MathML
       int functionID = ((ISymbol) header).ordinal();
       if (functionID > ID.UNKNOWN) {
         switch (functionID) {
@@ -1941,6 +1944,7 @@ public class TeXFormFactory {
             break;
           case ID.Quantity:
             if (list.isAST2() && org.matheclipse.core.units.Units.isKnownUnit(list.arg2())) {
+            // CPD-ON
               // magnitude, thin space, upright unit abbreviation
               convertInternal(buf, list.arg1(), Precedence.TIMES, NO_PLUS_CALL);
               appendUnit(buf,

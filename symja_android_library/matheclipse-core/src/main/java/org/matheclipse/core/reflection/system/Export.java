@@ -152,22 +152,7 @@ public class Export extends AbstractEvaluator {
         } else if (format.equals(Extension.TABLE)) {
           int[] dims = arg2.isMatrix();
           if (dims != null) {
-            for (int j = 0; j < dims[0]; j++) {
-              IAST rowList = (IAST) arg2.getAt(j + 1);
-              for (int i = 1; i <= dims[1]; i++) {
-                if (rowList.get(i).isReal()) {
-                  writer.append(rowList.get(i).toString());
-                } else {
-                  writer.append("\"");
-                  writer.append(rowList.get(i).toString());
-                  writer.append("\"");
-                }
-                if (i < dims[1]) {
-                  writer.append(",");
-                }
-              }
-              writer.append("\n");
-            }
+            writeTable(writer, arg2, dims);
             return arg1;
           } else {
             if (arg2.isList()) {
@@ -204,6 +189,30 @@ public class Export extends AbstractEvaluator {
     }
     return F.NIL;
   }
+
+  /**
+   * Write the rows of <code>matrix</code> as lines of cells separated by a tab, without a newline
+   * after the last row.
+   *
+   * @param writer the target
+   * @param matrix a matrix
+   * @param dims the dimensions of <code>matrix</code>
+   */
+  static void writeTable(Writer writer, IExpr matrix, int[] dims) throws IOException {
+    for (int j = 0; j < dims[0]; j++) {
+      if (j > 0) {
+        writer.append('\n');
+      }
+      IAST rowList = (IAST) matrix.getAt(j + 1);
+      for (int i = 1; i <= dims[1]; i++) {
+        if (i > 1) {
+          writer.append('\t');
+        }
+        writer.append(rowList.get(i).toString());
+      }
+    }
+  }
+
 
   public static boolean exportImage(String filename, IAST matrix, Extension format) {
     try (OutputStream outputStream = new FileOutputStream(filename)) {

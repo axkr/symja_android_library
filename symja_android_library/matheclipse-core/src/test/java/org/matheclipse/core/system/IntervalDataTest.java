@@ -395,6 +395,37 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntervalDataSinCosExtrema() {
+    // Pi lies inside: the minimum -1 is reached, the maximum is the larger bound value
+    check("Cos(IntervalData({1,LessEqual,LessEqual,5}))", //
+        "IntervalData({-1,LessEqual,LessEqual,Cos(1)})");
+    // 0 lies inside: the maximum 1 is reached, the minimum is the smaller bound value
+    check("Cos(IntervalData({-1,LessEqual,LessEqual,3}))", //
+        "IntervalData({Cos(3),LessEqual,LessEqual,1})");
+    // 0 and Pi lie inside
+    check("Cos(IntervalData({-1,LessEqual,LessEqual,4}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    check("Cos(IntervalData({-1,Less,Less,4}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    check("Sin(IntervalData({0,Less,Less,5}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+    check("Sin(IntervalData({2,LessEqual,LessEqual,6}))", //
+        "IntervalData({-1,LessEqual,LessEqual,Sin(2)})");
+    // one extremum inside an open interval is reached, the other bound stays open
+    check("Sin(IntervalData({0,Less,Less,3}))", //
+        "IntervalData({0,Less,LessEqual,1})");
+    check("Cos(IntervalData({2,Less,Less,4}))", //
+        "IntervalData({-1,LessEqual,Less,Cos(2)})");
+    // the maximum on an open bound is not reached
+    check("Sin(IntervalData({Pi/2,Less,Less,3}))", //
+        "IntervalData({Sin(3),Less,Less,1})");
+    check("Cos(Interval({1,5}))", //
+        "Interval({-1,Cos(1)})");
+    check("Sin(Interval({-1,3}))", //
+        "Interval({-Sin(1),1})");
+  }
+
+  @Test
   public void testIntervalPlus() {
     check("Interval({2,7})*x+Interval({3,5})*x", //
         "Interval({5,12})*x");

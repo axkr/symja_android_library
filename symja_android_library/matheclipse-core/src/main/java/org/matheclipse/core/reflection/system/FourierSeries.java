@@ -48,6 +48,28 @@ public class FourierSeries extends AbstractFunctionOptionEvaluator {
     this.kind = kind;
   }
 
+  /**
+   * The parameters <code>{a, b}</code> of the <code>FourierParameters</code> option value
+   * <code>option</code>; <code>Automatic</code> gives <code>{1, 1}</code>.
+   *
+   * @return <code>null</code> if <code>option</code> is malformed or <code>b</code> is zero or not
+   *         real
+   */
+  static IExpr[] fourierParametersAB(IExpr option) {
+    IExpr a = F.C1;
+    IExpr b = F.C1;
+    if (option.isList2()) {
+      a = option.first();
+      b = option.second();
+    } else if (!option.equals(S.Automatic)) {
+      return null;
+    }
+    if (b.isZero() || !b.isRealResult()) {
+      return null;
+    }
+    return new IExpr[] {a, b};
+  }
+
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine,
       IAST originalAST) {
@@ -61,17 +83,12 @@ public class FourierSeries extends AbstractFunctionOptionEvaluator {
       // `1` is not a valid variable.
       return Errors.printMessage(ast.topHead(), "ivar", F.List(t), engine);
     }
-    IExpr a = F.C1;
-    IExpr b = F.C1;
-    if (option[0].isList2()) {
-      a = option[0].first();
-      b = option[0].second();
-    } else if (!option[0].equals(S.Automatic)) {
+    final IExpr[] ab = fourierParametersAB(option[0]);
+    if (ab == null) {
       return F.NIL;
     }
-    if (b.isZero() || !b.isRealResult()) {
-      return F.NIL;
-    }
+    final IExpr a = ab[0];
+    final IExpr b = ab[1];
     final IExpr absB = engine.evaluate(F.Abs(b));
     final IExpr upper = engine.evaluate(F.Divide(S.Pi, absB));
     final IExpr lower = engine.evaluate(F.Negate(upper));

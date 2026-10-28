@@ -47,10 +47,7 @@ public final class MultiVariateVectorGradient implements MultivariateVectorFunct
       boolean useAbsReal, final EvalEngine engine) {
 
     fVariableList = variablesList;
-    fIndexMap = new Object2IntOpenHashMap<IExpr>(fVariableList.argSize());
-    for (int i = 1; i < fVariableList.size(); i++) {
-      fIndexMap.put(variablesList.get(i), i);
-    }
+    fIndexMap = variableIndexMap(variablesList);
     fEngine = engine;
     if (useAbsReal) {
       fFunction = F.substAbs(function);
@@ -61,18 +58,50 @@ public final class MultiVariateVectorGradient implements MultivariateVectorFunct
     if (gradientList.isList() && gradientList.size() == variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {
-      // Cannot assign to raw object `1`.
-      throw new ArgumentTypeException(
-          Errors.getMessage("setraw", F.list(gradientList), EvalEngine.get()));
+      throw rawObjectException(gradientList);
     }
+    checkVariables(variablesList);
+  }
+
+  /**
+   * Map each variable of <code>variablesList</code> to its (1-based) position.
+   *
+   * @param variablesList the list of variables
+   * @return the map from variable to index
+   */
+  static Object2IntOpenHashMap<IExpr> variableIndexMap(final IAST variablesList) {
+    Object2IntOpenHashMap<IExpr> indexMap =
+        new Object2IntOpenHashMap<IExpr>(variablesList.argSize());
+    for (int i = 1; i < variablesList.size(); i++) {
+      indexMap.put(variablesList.get(i), i);
+    }
+    return indexMap;
+  }
+
+  /**
+   * Check that every entry of <code>variablesList</code> is a variable and not a built-in symbol.
+   *
+   * @param variablesList the list of variables
+   * @throws ArgumentTypeException for the first entry which is not an assignable variable
+   */
+  static void checkVariables(final IAST variablesList) {
     variablesList.exists(x -> {
       if (!x.isVariable() || x.isBuiltInSymbol()) {
-        // Cannot assign to raw object `1`.
-        throw new ArgumentTypeException(Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
+        throw rawObjectException(x);
       }
       return false;
     });
+  }
 
+  /**
+   * The <code>setraw</code> exception for <code>expr</code>.
+   *
+   * @param expr the expression which cannot be used as a variable or gradient list
+   * @return the exception to throw
+   */
+  static ArgumentTypeException rawObjectException(final IExpr expr) {
+    // Cannot assign to raw object `1`.
+    return new ArgumentTypeException(Errors.getMessage("setraw", F.list(expr), EvalEngine.get()));
   }
 
   /**

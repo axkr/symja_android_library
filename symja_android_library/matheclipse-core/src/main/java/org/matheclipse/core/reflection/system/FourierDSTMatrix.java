@@ -62,6 +62,7 @@ public class FourierDSTMatrix extends AbstractFunctionEvaluator {
   }
 
   private static IASTMutable dst4(IExpr factor, IFraction nReciprocalQQ, int r, int s) {
+    // CPD-OFF closed-form DCT and DST kernel formulas
     return F.Times(factor, F.Sin(
         F.Times(nReciprocalQQ, S.Pi, F.Plus(F.ZZ(r + 1), F.CN1D2), F.Plus(F.ZZ(s + 1), F.CN1D2))));
   }
@@ -79,3 +80,4 @@ public class FourierDSTMatrix extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {}
 }
+// CPD-ON

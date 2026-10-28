@@ -1472,6 +1472,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
+  // CPD-OFF literal constant table
   public int compareTo(IExpr expr) {
     if (expr.isNumber() && !expr.isReal()) {
       int c = this.compareTo(expr.re());
@@ -1487,6 +1488,7 @@ public abstract class AbstractFractionSym implements IFraction {
   /** {@inheritDoc} */
   @Override
   public int complexSign() {
+  // CPD-ON
     return toBigNumerator().signum();
   }
 
@@ -1602,6 +1604,7 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     if (this.isZero()) {
       return that;
+    // CPD-OFF literal constant table
     }
     BigInteger tdenom = this.toBigDenominator();
     BigInteger odenom = that.toBigDenominator();
@@ -1624,6 +1627,7 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public ISymbol head() {
     return S.Rational;
+    // CPD-ON
   }
 
   @Override
@@ -1935,6 +1939,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
+  // CPD-OFF literal constant table
   public IRational subtract(IRational that) {
     if (isZero()) {
       return that.negate();
@@ -1954,6 +1959,7 @@ public abstract class AbstractFractionSym implements IFraction {
   /** {@inheritDoc} */
   @Override
   public IExpr times(IExpr that) {
+  // CPD-ON
     if (that instanceof INumber) {
       return this.times((INumber) that);
     }

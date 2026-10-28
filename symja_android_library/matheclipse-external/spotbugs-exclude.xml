@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SpotBugs patterns which are intended in matheclipse-external. Every entry says why. -->
+<FindBugsFilter xmlns="https://github.com/spotbugs/filter/3.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+	<!-- The generators are seeded on purpose, so that a computation or a test is reproducible,
+	and each one is used in a loop: the detector sees one call site, not one call. -->
+	<Match>
+		<Bug pattern="DMI_RANDOM_USED_ONLY_ONCE" />
+	</Match>
+
+	<!-- Synchronizing on an object or a class which other code can see (a synchronized method, a
+	public lock field) lets that code block it. The locks of JAS and SnuggleTeX are only taken by
+	the library itself, and moving every synchronized method to a private lock object would be a
+	redesign without a defect behind it. -->
+	<Match>
+		<Bug code="USO" />
+	</Match>
+
+	<!-- Every level of the JAS solvable polynomial ring hierarchy publishes its constants ZERO
+	and ONE with its own polynomial type, hiding the fields of the ring above it; getZERO() and
+	getONE() are the typed accessors. Removing the fields would be a redesign of eight ring
+	classes without a defect behind it. -->
+	<Match>
+		<Class name="~edu\.jas\.(poly|fd|application)\..*Solvable.*PolynomialRing" />
+		<Bug pattern="MF_CLASS_MASKS_FIELD" />
+	</Match>
+</FindBugsFilter>

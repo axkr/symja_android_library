@@ -3817,6 +3817,25 @@ public final class ListFunctions {
   }
 
   /** A column name or a list of them, which is a dataset's own way of naming what to group on. */
+  /**
+   * The sorted list of the distinct elements of <code>arg1</code>, as returned by the one-argument
+   * forms of <code>Intersection</code> and <code>Union</code>.
+   *
+   * @param arg1 the single argument
+   * @param sameTest the comparator which identifies equal elements
+   * @return {@link F#NIL} if <code>arg1</code> is no list or association
+   */
+  private static IExpr sortedUnion1(IExpr arg1, SameTestComparator sameTest) {
+    if (arg1.isASTOrAssociation()) {
+      IAST sorted = EvalAttributes.copySort((IAST) arg1);
+      Set<IExpr> set = sorted.asSortedSet(sameTest);
+      if (set != null) {
+        return F.ListAlloc(set);
+      }
+    }
+    return F.NIL;
+  }
+
   private static boolean isColumnSpecification(IExpr expr) {
     return expr.isString() || (expr.isList() && ((IAST) expr).forAll(x -> x.isString()));
   }
@@ -3964,17 +3983,7 @@ public final class ListFunctions {
         final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         if (argSize == 1) {
-          if (ast.arg1().isASTOrAssociation()) {
-            IAST arg1 = (IAST) ast.arg1();
-            arg1 = EvalAttributes.copySort(arg1);
-            Set<IExpr> set = arg1.asSortedSet(sameTest);
-            if (set != null) {
-              final IASTMutable result = F.ListAlloc(set);
-              // EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
-              return result;
-            }
-          }
-          return F.NIL;
+          return sortedUnion1(ast.arg1(), sameTest);
         }
 
         if (ast.arg1().isASTOrAssociation()) {
@@ -8875,16 +8884,7 @@ public final class ListFunctions {
         final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         if (argSize == 1) {
-          if (ast.arg1().isASTOrAssociation()) {
-            IAST arg1 = (IAST) ast.arg1();
-            arg1 = EvalAttributes.copySort(arg1);
-            Set<IExpr> set = arg1.asSortedSet(sameTest);
-            if (set != null) {
-              final IASTAppendable result = F.mapSet(set, x -> x);
-              return result;
-            }
-          }
-          return F.NIL;
+          return sortedUnion1(ast.arg1(), sameTest);
         }
 
         if (ast.arg1().isASTOrAssociation()) {

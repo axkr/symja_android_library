@@ -1,6 +1,5 @@
 package org.matheclipse.core.form.tex;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -244,31 +243,6 @@ class TeXSegmentParser {
 
   public static void initialize() {
     Initializer.init();
-  }
-
-  private static String toUnicodeString(final String unicodeInput, final String inputEncoding) {
-    final StringBuilder unicodeStringBuilder = new StringBuilder();
-    String unicodeString = null;
-
-    try {
-      final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
-      String hexValueString = null;
-      int hexValueLength = 0;
-      for (int i = 0; i < utf8String.length(); i++) {
-        hexValueString = Integer.toHexString(utf8String.charAt(i));
-        hexValueLength = hexValueString.length();
-        if (hexValueLength < 4) {
-          for (int j = 0; j < (4 - hexValueLength); j++) {
-            hexValueString = "0" + hexValueString;
-          }
-        }
-        unicodeStringBuilder.append("\\u");
-        unicodeStringBuilder.append(hexValueString);
-      }
-      unicodeString = unicodeStringBuilder.toString();
-    } catch (final UnsupportedEncodingException e) {
-    }
-    return unicodeString;
   }
 
   int counter = 0;

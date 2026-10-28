@@ -12,6 +12,7 @@ public abstract class AbstractCoreFunctionOptionEvaluator extends AbstractCoreFu
   protected IBuiltInSymbol[] optionSymbols = null;
 
   @Override
+  // CPD-OFF option handling of the core and the normal evaluator hierarchies
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     IExpr[] option;
     int argSize = ast.argSize();
@@ -23,6 +24,7 @@ public abstract class AbstractCoreFunctionOptionEvaluator extends AbstractCoreFu
           expectedArgSize(ast), optionSymbols, engine);
     }
 
+    // CPD-ON
     return evaluate(ast, argSize, option, engine);
   }
 

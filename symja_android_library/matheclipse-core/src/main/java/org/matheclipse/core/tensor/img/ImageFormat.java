@@ -125,40 +125,6 @@ public class ImageFormat {
    * @param imageType
    * @return <code>null</code> if conversion wasn't possible
    */
-  private static BufferedImage toTYPE_INT(IAST tensor, int width, int height, int imageType)
-      throws IllegalArgumentException {
-    // fast extraction of color information to buffered image
-    BufferedImage bufferedImage = new BufferedImage(width, height, imageType);
-
-    int indx = 0;
-
-    IExpr flattenedArray = S.Flatten.of(tensor, F.C1);
-    if (flattenedArray.isList()) {
-      int[] rgbArray = new int[width * height];
-      RGBColor color;
-      double[][] doubleMatrix = flattenedArray.toDoubleMatrix(true);
-
-      for (int i = 0; i < doubleMatrix.length; i++) {
-        int red = (int) (255.0 * doubleMatrix[i][0]);
-        int green = (int) (255.0 * doubleMatrix[i][1]);
-        int blue = (int) (255.0 * doubleMatrix[i][2]);
-        color = new RGBColor(red, green, blue);
-        rgbArray[indx++] = color.getRGB();
-      }
-      bufferedImage.setRGB(0, 0, width, height, rgbArray, 0, width);
-      return bufferedImage;
-    }
-    return null;
-  }
-
-  /**
-   * 
-   * @param tensor
-   * @param width
-   * @param height
-   * @param imageType
-   * @return <code>null</code> if conversion wasn't possible
-   */
   private static BufferedImage toINT(IAST tensor, int width, int height, int imageType) {
     // fast extraction of color information to buffered image
     BufferedImage bufferedImage = new BufferedImage(width, height, imageType);

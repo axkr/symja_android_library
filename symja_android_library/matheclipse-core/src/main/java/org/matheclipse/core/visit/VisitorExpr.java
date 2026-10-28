@@ -62,8 +62,18 @@ public abstract class VisitorExpr extends AbstractVisitor {
    *     </code>, if no evaluation is possible
    */
   protected IExpr visitAST(IAST ast) {
+    return visitArguments(ast, 1);
+  }
+
+  /**
+   * Visit the arguments of <code>ast</code> from position <code>start</code> on.
+   *
+   * @return the copied <code>IAST</code> with the changed arguments, or <code>F.NIL</code>, if no
+   *         evaluation is possible
+   */
+  protected final IExpr visitArguments(IAST ast, int start) {
     int size = ast.size();
-    for (int i = 1; i < size; i++) {
+    for (int i = start; i < size; i++) {
       IExpr temp = ast.get(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:

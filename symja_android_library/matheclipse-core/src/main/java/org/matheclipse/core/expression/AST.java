@@ -402,36 +402,6 @@ public class AST extends HMArrayList implements Externalizable {
   }
 
   @Override
-  public IAST removeFromStart(int firstPosition) {
-    if (firstPosition == 1) {
-      return this;
-    }
-    if (0 < firstPosition && firstPosition <= size()) {
-      int last = size();
-      int size = last - firstPosition + 1;
-      switch (size) {
-        case 1:
-          return F.headAST0(head());
-        case 2:
-          return F.unaryAST1(head(), get(last - 1));
-        case 3:
-          return F.binaryAST2(head(), get(last - 2), get(last - 1));
-        case 4:
-          return F.ternaryAST3(head(), get(last - 3), get(last - 2), get(last - 1));
-        default:
-          if (isOrderlessAST()) {
-            return copyFrom(firstPosition);
-          }
-          // return new ASTProxy(this, firstPosition);
-          return copyFrom(firstPosition);
-      }
-    } else {
-      throw new IndexOutOfBoundsException(
-          "Index: " + Integer.valueOf(firstPosition) + ", Size: " + size());
-    }
-  }
-
-  @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
     // only the flags which cannot be recomputed are persisted; masking also undoes the sign
     // extension of readShort()

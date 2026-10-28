@@ -625,19 +625,10 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     int df = degreesOfFreedom();
     IExpr[] errors = df > 0 ? regression.estimateRegressionParametersStandardErrors() : null;
     TDistribution t = df > 0 ? new TDistribution(df) : null;
-    IExpr[][] rows = new IExpr[estimates.length][4];
+    IExpr[][] rows = new IExpr[estimates.length][];
     for (int i = 0; i < estimates.length; i++) {
-      double estimate = estimates[i].evalfNaN();
-      rows[i][0] = F.num(estimate);
       double error = errors == null ? Double.NaN : errors[i].evalfNaN();
-      if (!(error > 0.0) || Double.isNaN(estimate)) {
-        rows[i][1] = rows[i][2] = rows[i][3] = S.Indeterminate;
-        continue;
-      }
-      double statistic = estimate / error;
-      rows[i][1] = F.num(error);
-      rows[i][2] = F.num(statistic);
-      rows[i][3] = F.num(2.0 * t.cumulativeProbability(-Math.abs(statistic)));
+      rows[i] = statisticsRow(estimates[i].evalfNaN(), error, t);
     }
     return rows;
   }
@@ -659,17 +650,7 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
 
   /** The parameter table, one row per basis function. */
   private IExpr parameterTable(ExprOLSLinearRegression regression) {
-    IExpr[][] rows = parameterStatistics(regression);
-    IASTAppendable grid = F.ListAlloc(rows.length + 1);
-    grid.append(F.List(F.stringx(""), F.stringx("Estimate"), F.stringx("Standard Error"),
-        F.stringx("t\u2010Statistic"), F.stringx("P\u2010Value")));
-    for (int i = 0; i < rows.length; i++) {
-      IASTAppendable row = F.ListAlloc(5);
-      row.append(basisFunctions.getEntry(i));
-      row.appendAll(rows[i], 0, 4);
-      grid.append(row);
-    }
-    return dialogGrid(grid);
+    return parameterTable(parameterStatistics(regression), basisFunctions::getEntry);
   }
 
   /** The fitted value at each data point: the observed value less its residual. */

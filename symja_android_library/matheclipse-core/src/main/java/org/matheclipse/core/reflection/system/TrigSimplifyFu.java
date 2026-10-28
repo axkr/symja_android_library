@@ -807,7 +807,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     IAST timesAST = (IAST) rv;
     IASTAppendable other = F.TimesAlloc(16);
     IASTAppendable process = F.ListAlloc();
-    IExpr g, t, f, si, a, e;
+    IExpr g, f, si, a, e;
 
     for (int i = 1; i < timesAST.size(); i++) {
       a = timesAST.get(i);
@@ -840,7 +840,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
     int nother = other.argSize();
 
-    int gn = 1, en = 3, fn = 4, sn = 5, an = 6;
+    int en = 3, fn = 4, sn = 5, an = 6;
 
     while (process.argSize() > 0) {
       IAST A = (IAST) process.remove(1);
@@ -865,10 +865,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
                 process.append(1, rem);
               }
 
-              t = A.get(fn).isCos() ? S.Sin : S.Cos;
-              IAST tFunction = F.unaryAST1(t, A.get(fn).first());
-              other.append(
-                  F.Power(F.Times(A.get(gn).negate(), B.get(gn), F.Power(tFunction, F.C2)), take));
+              other.append(squaredCofactorPower(A, B, take));
               continue;
             }
           }
@@ -878,10 +875,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
             if (!A.get(sn).equals(B.get(sn))) {
               B = (IAST) process.remove(1);
               IExpr take = A.get(en);
-              t = A.get(fn).isCos() ? S.Sin : S.Cos;
-              IAST tFunction = F.unaryAST1(t, A.get(fn).first());
-              other.append(
-                  F.Power(F.Times(A.get(gn).negate(), B.get(gn), F.Power(tFunction, F.C2)), take));
+              other.append(squaredCofactorPower(A, B, take));
               continue;
             }
           }
@@ -895,6 +889,21 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * <code>(-gA*gB*t(x)^2)^take</code> for two factors <code>A</code>, <code>B</code> of
+   * <code>tr14</code> with the same function <code>Sin(x)</code> or <code>Cos(x)</code> and
+   * opposite signs, where <code>t</code> is the other function.
+   *
+   * @param A the row <code>{g, isNumber, e, f, si, a}</code> of the first factor
+   * @param B the row of the second factor
+   * @param take the common exponent
+   */
+  private static IExpr squaredCofactorPower(IAST A, IAST B, IExpr take) {
+    IExpr f = A.get(4);
+    IAST t = F.unaryAST1(f.isCos() ? S.Sin : S.Cos, f.first());
+    return F.Power(F.Times(A.get(1).negate(), B.get(1), F.Power(t, F.C2)), take);
+  }
+
   public static IExpr tr15(IExpr expr) {
     return tr15(expr, F.C4, false);
   }
@@ -904,14 +913,28 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   }
 
   private static IExpr tr15Step(IExpr rv, IInteger max, boolean pow) {
+    return inverseSquareStep(rv, S.Sin, max, pow);
+  }
+
+  /**
+   * Rewrite a negative power of <code>Sin(x)</code> (or <code>Cos(x)</code>) with
+   * <code>1 + Cot(x)^2</code> (or <code>1 + Tan(x)^2</code>); an odd power is first raised by one.
+   *
+   * @param rv the expression
+   * @param f {@link S#Sin} or {@link S#Cos}
+   * @param max the largest exponent which is rewritten
+   * @param pow the exponent rule of <code>tr56</code>
+   * @return {@link F#NIL} if <code>rv</code> is not rewritten
+   */
+  private static IExpr inverseSquareStep(IExpr rv, IBuiltInSymbol f, IInteger max, boolean pow) {
     if (!rv.isPower()) {
       return F.NIL;
     }
     IExpr b = rv.base();
     IExpr e = rv.exponent();
-    if (b.isSin()) {
+    if (f == S.Sin ? b.isSin() : b.isCos()) {
       if (e.isInteger() && ((IInteger) e).isOdd()) {
-        IExpr step = tr15Step(F.eval(F.Power(b, e.plus(F.C1))), max, pow);
+        IExpr step = inverseSquareStep(F.eval(F.Power(b, e.plus(F.C1))), f, max, pow);
         if (step.isPresent()) {
           return F.eval(F.Divide(step, b));
         }
@@ -920,7 +943,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       // Compute 1/rv by directly negating the exponent to avoid nested ASTs
       IExpr ia = F.eval(F.Power(b, e.negate()));
 
-      IExpr a = tr56(ia, S.Sin, S.Cot, x -> F.Plus(F.C1, x), max, pow);
+      IExpr a = tr56(ia, f, f == S.Sin ? S.Cot : S.Tan, x -> F.Plus(F.C1, x), max, pow);
       if (a.isPresent() && !a.equals(ia)) {
         return a;
       }
@@ -937,28 +960,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   }
 
   private static IExpr tr16Step(IExpr rv, IInteger max, boolean pow) {
-    if (!rv.isPower()) {
-      return F.NIL;
-    }
-    IExpr b = rv.base();
-    IExpr e = rv.exponent();
-    if (b.isCos()) {
-      if (e.isInteger() && ((IInteger) e).isOdd()) {
-        IExpr step = tr16Step(F.eval(F.Power(b, e.plus(F.C1))), max, pow);
-        if (step.isPresent()) {
-          return F.eval(F.Divide(step, b));
-        }
-      }
-
-      // Compute 1/rv by directly negating the exponent to avoid nested ASTs
-      IExpr ia = F.eval(F.Power(b, e.negate()));
-
-      IExpr a = tr56(ia, S.Cos, S.Tan, x -> F.Plus(F.C1, x), max, pow);
-      if (a.isPresent() && !a.equals(ia)) {
-        return a;
-      }
-    }
-    return F.NIL;
+    return inverseSquareStep(rv, S.Cos, max, pow);
   }
 
   private static IExpr tr1Step(IExpr expr) {
@@ -1845,13 +1847,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     if (assumptionExpr.isPresent()) {
       if (assumptionExpr.isAST()) {
         IAssumptions oldAssumptions = engine.getAssumptions();
-        IAssumptions assumptions;
-        if (oldAssumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
-        } else {
-          assumptions = oldAssumptions.copy();
-          assumptions = assumptions.addAssumption(assumptionExpr);
-        }
+        IAssumptions assumptions = IAssumptions.extend(oldAssumptions, assumptionExpr);
         if (assumptions != null) {
           try {
             engine.setAssumptions(assumptions);

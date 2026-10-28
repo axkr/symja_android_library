@@ -34,52 +34,20 @@ public class BoundedRegionQ extends AbstractFunctionEvaluator {
       // a mesh region is built from finitely many explicit coordinates
       return S.True;
     }
-    if (arg1.isAST()) {
-      IAST reg = (IAST) arg1;
-      IExpr head = reg.head();
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Point:
-          case ID.Line:
-          case ID.Circle:
-          case ID.Disk:
-          case ID.DiskSegment:
-          case ID.Annulus:
-          case ID.Rectangle:
-          case ID.Cuboid:
-          case ID.Triangle:
-          case ID.Polygon:
-          case ID.Ball:
-          case ID.Sphere:
-          case ID.Ellipsoid:
-          case ID.Cylinder:
-          case ID.Cone:
-          case ID.Simplex:
-          case ID.Parallelepiped:
-          case ID.Parallelogram:
-          case ID.Tetrahedron:
-          case ID.Cube:
-          case ID.Octahedron:
-          case ID.Dodecahedron:
-          case ID.Icosahedron:
-          case ID.Torus:
-          case ID.FilledTorus:
-          case ID.SphericalShell:
-          case ID.CapsuleShape:
-          case ID.StadiumShape:
-          case ID.EmptyRegion:
-            return S.True;
-          case ID.HalfLine:
-          case ID.InfiniteLine:
-          case ID.HalfPlane:
-          case ID.InfinitePlane:
-          case ID.HalfSpace:
-          case ID.FullRegion:
-            return S.False;
-        }
+    IExpr head = arg1.head();
+    if (arg1.isAST() && head.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) head).ordinal()) {
+        case ID.HalfLine:
+        case ID.InfiniteLine:
+        case ID.HalfPlane:
+        case ID.InfinitePlane:
+        case ID.HalfSpace:
+        case ID.FullRegion:
+          return S.False;
       }
     }
-    return F.NIL;
+    // every other region primitive is bounded
+    return RegionQ.isRegion(arg1) ? S.True : F.NIL;
   }
 
   @Override

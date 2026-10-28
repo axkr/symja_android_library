@@ -384,6 +384,7 @@ public class BesselJS extends JS {
       // an asymptotic series: up to the term below the rounding level of the sum, or the smallest
       while (!isNegligible(p, s) && !p.isZero()) {
         Complex next =
+            // CPD-OFF mirrored Hankel asymptotic series, kept as in the ported source
             mul(1.0 / (i * 8.0), p, plusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
         if (next.norm() > p.norm()) {
           break;
@@ -394,6 +395,7 @@ public class BesselJS extends JS {
       }
 
       return mul(div(Math.sqrt(2.0 / Math.PI), sqrt(x)), exp(mul(plusI, w)), s);
+      // CPD-ON
 
     }
 
@@ -435,6 +437,7 @@ public class BesselJS extends JS {
       // an asymptotic series: up to the term below the rounding level of the sum, or the smallest
       while (!isNegligible(p, s) && !p.isZero()) {
         Complex next =
+            // CPD-OFF mirrored Hankel asymptotic series, kept as in the ported source
             mul(1.0 / (i * 8.0), p, minusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
         if (next.norm() > p.norm()) {
           break;
@@ -445,6 +448,7 @@ public class BesselJS extends JS {
       }
 
       return mul(div(Math.sqrt(2.0 / Math.PI), sqrt(x)), exp(mul(minusI, w)), s);
+      // CPD-ON
 
     }
 

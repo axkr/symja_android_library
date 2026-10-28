@@ -1392,6 +1392,7 @@ public class StatisticsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  // CPD-OFF per-statistic evaluators with the same list and matrix threading
   private static class GeometricMean extends AbstractFunctionEvaluator {
 
     @Override
@@ -1406,6 +1407,7 @@ public class StatisticsFunctions {
         }
         if (dim != null) {
           return list.mapMatrixColumns(dim, x -> F.GeometricMean(x)).normal(false);
+          // CPD-ON
         }
         if (arg1.isRealVector()) {
           double[] arg1DoubleArray = arg1.toDoubleVector();
@@ -1434,6 +1436,7 @@ public class StatisticsFunctions {
     }
   }
 
+  // CPD-OFF per-statistic evaluators with the same list and matrix threading
   private static class HarmonicMean extends AbstractFunctionEvaluator {
 
     @Override
@@ -1448,6 +1451,7 @@ public class StatisticsFunctions {
         }
         if (dim != null) {
           return list.mapMatrixColumns(dim, x -> F.HarmonicMean(x)).normal(false);
+          // CPD-ON
         }
 
         IASTAppendable result = F.PlusAlloc(8);
@@ -1740,6 +1744,15 @@ public class StatisticsFunctions {
     }
   }
 
+  /** The mean <code>(f(d1) + f(d2) + ...)/n</code> of the function <code>f</code> on the data. */
+  private static IExpr dataMean(IExpr f, IAST data) {
+    IASTAppendable sum = F.PlusAlloc(data.size());
+    for (int i = 1; i < data.size(); i++) {
+      sum.append(F.unaryAST1(f, data.get(i)));
+    }
+    return sum.divide(F.ZZ(data.argSize()));
+  }
+
   private static class Expectation extends AbstractDistributionQuery {
 
     @Override
@@ -1756,12 +1769,7 @@ public class StatisticsFunctions {
           return conditionedExpectation(S.Expectation, S.Probability, (IAST) xExpr, arg2, engine);
         }
         if (xExpr.isFunction() && arg2.isList()) {
-          IAST data = (IAST) arg2;
-          IASTAppendable sum = F.PlusAlloc(data.size());
-          for (int i = 1; i < data.size(); i++) {
-            sum.append(F.unaryAST1(xExpr, data.get(i)));
-          }
-          return sum.divide(F.ZZ(data.argSize()));
+          return dataMean(xExpr, (IAST) arg2);
         }
         if (isDistributedList(arg2)) {
           // independent random variables: iterated expectation, the last variable is summed
@@ -1847,6 +1855,7 @@ public class StatisticsFunctions {
      * <code>Boole</code> factor restricts the integration region; a piecewise density restricts the
      * integration to the branch validity intervals.
      */
+    // CPD-OFF piecewise sum and integral share only the branch walk
     private static IExpr expectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
         EvalEngine engine) {
       IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
@@ -1858,6 +1867,7 @@ public class StatisticsFunctions {
       IAST booleRegion = (IAST) extracted[1];
       if (pdf.isFree(S.Piecewise)) {
         if (booleRegion.isPresent()) {
+        // CPD-ON
           return integrateOverRegion(F.Times(remainder, pdf), x, booleRegion, S.Integrate, engine);
         }
         return F.Integrate(F.Times(xExpr, pdf), F.list(x, F.CNInfinity, F.CInfinity));
@@ -2100,12 +2110,7 @@ public class StatisticsFunctions {
           return conditionedExpectation(S.NExpectation, S.NProbability, (IAST) xExpr, arg2, engine);
         }
         if (xExpr.isFunction() && arg2.isList()) {
-          IAST data = (IAST) arg2;
-          IASTAppendable sum = F.PlusAlloc(data.size());
-          for (int i = 1; i < data.size(); i++) {
-            sum.append(F.unaryAST1(xExpr, data.get(i)));
-          }
-          return engine.evalN(sum.divide(F.ZZ(data.argSize())));
+          return engine.evalN(dataMean(xExpr, (IAST) arg2));
         }
         if (isDistributedList(arg2)) {
           // iterated expectation over independent variables: compute symbolically and numericize
@@ -2180,6 +2185,7 @@ public class StatisticsFunctions {
      * restricts the integration to the branch validity intervals - this avoids integrating a
      * discontinuous integrand over an infinite interval.
      */
+    // CPD-OFF piecewise sum and integral share only the branch walk
     private static IExpr nExpectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
         EvalEngine engine) {
       IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
@@ -2191,6 +2197,7 @@ public class StatisticsFunctions {
       IAST booleRegion = (IAST) extracted[1];
       if (pdf.isFree(S.Piecewise)) {
         if (booleRegion.isPresent()) {
+        // CPD-ON
           IExpr result =
               integrateOverRegion(F.Times(remainder, pdf), x, booleRegion, S.NIntegrate, engine);
           if (result.isPresent()) {
@@ -2331,6 +2338,7 @@ public class StatisticsFunctions {
 
   }
 
+  // CPD-OFF piecewise sum and integral share only the branch walk
   private static class NProbability extends AbstractDistributionQuery {
 
     @Override
@@ -2346,6 +2354,7 @@ public class StatisticsFunctions {
           if (predicate.isFunction()) {
             IAST data = (IAST) arg2;
             return engine.evalN(dataProbability(data, e -> engine.evalTrue(predicate, e)));
+            // CPD-ON
           }
           return F.NIL;
         }
@@ -2924,14 +2933,17 @@ public class StatisticsFunctions {
 
 
   /**
-   * <code>DistributionParameterQ(dist)</code> - test whether the parameters of <code>dist</code>
-   * are consistent.
-   *
-   * <p>
-   * Symbolic parameters are assumed to be valid, so only an explicitly {@link S#False} assumption
-   * makes the result {@link S#False}. For an argument which is not a distribution the expression
-   * stays unevaluated.
+   * The {@link IDistribution} evaluator of the built-in head of <code>arg1</code>, or
+   * <code>null</code> if <code>arg1</code> is no distribution expression.
    */
+  private static IDistribution distributionEvaluator(IExpr arg1) {
+    if (!arg1.isAST() || !arg1.head().isBuiltInSymbol()) {
+      return null;
+    }
+    IEvaluator evaluator = ((IBuiltInSymbol) arg1.head()).getEvaluator();
+    return evaluator instanceof IDistribution ? (IDistribution) evaluator : null;
+  }
+
   /**
    * <code>DistributionParameterAssumptions(dist)</code> - the conditions the parameters of
    * <code>dist</code> have to fulfill, as <code>m \u2208 Reals &amp;&amp; s &gt; 0</code> for
@@ -2942,14 +2954,11 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (!arg1.isAST() || !arg1.head().isBuiltInSymbol()) {
+      IDistribution distribution = distributionEvaluator(arg1);
+      if (distribution == null) {
         return F.NIL;
       }
-      IEvaluator evaluator = ((IBuiltInSymbol) arg1.head()).getEvaluator();
-      if (!(evaluator instanceof IDistribution)) {
-        return F.NIL;
-      }
-      IExpr assumptions = ((IDistribution) evaluator).parameterAssumptions((IAST) arg1);
+      IExpr assumptions = distribution.parameterAssumptions((IAST) arg1);
       return assumptions.isPresent() ? engine.evaluate(assumptions) : F.NIL;
     }
 
@@ -2964,20 +2973,25 @@ public class StatisticsFunctions {
     }
   }
 
+  /**
+   * <code>DistributionParameterQ(dist)</code> - test whether the parameters of <code>dist</code>
+   * are consistent.
+   *
+   * <p>
+   * Symbolic parameters are assumed to be valid, so only an explicitly {@link S#False} assumption
+   * makes the result {@link S#False}. For an argument which is not a distribution the expression
+   * stays unevaluated.
+   */
   private static final class DistributionParameterQ extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (!arg1.isAST() || !arg1.head().isBuiltInSymbol()) {
-        return F.NIL;
-      }
-      IEvaluator evaluator = ((IBuiltInSymbol) arg1.head()).getEvaluator();
-      if (!(evaluator instanceof IDistribution)) {
+      IDistribution distribution = distributionEvaluator(arg1);
+      if (distribution == null) {
         return F.NIL;
       }
       IAST dist = (IAST) arg1;
-      IDistribution distribution = (IDistribution) evaluator;
       IExpr assumptions = distribution.parameterAssumptions(dist);
       if (assumptions.isNIL()) {
         // no assumptions known for this distribution: only the argument count can be checked
@@ -3180,10 +3194,11 @@ public class StatisticsFunctions {
   }
 
   /**
-   * <code>MedianDeviation(list)</code> - the median absolute deviation from the median of the
-   * elements in <code>list</code>.
+   * Frame of the deviation statistics: the data is normalized, a quantity vector is delegated, a
+   * vector is measured by {@link #vectorDeviation(IAST, IExpr, int, EvalEngine)}, a matrix column
+   * by column and a higher rank array by <code>ArrayReduce</code> over the first level.
    */
-  private static final class MedianDeviation extends AbstractFunctionEvaluator {
+  private abstract static class AbstractDeviation extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3199,21 +3214,13 @@ public class StatisticsFunctions {
       if (dimensions.size() != 0) {
         switch (dimensions.size()) {
           case 1:
-            arg1 = arg1.normal(false);
-            if (arg1.isList()) {
-              IAST vector = (IAST) arg1;
-              IExpr median = engine.evaluate(F.Median(vector));
-              if (median.isAST(S.Median)) {
-                return F.NIL;
-              }
-              return F.Median(vector.map(x -> F.Abs(F.Subtract(x, median)), 1));
-            }
-            return F.NIL;
+            return vectorDeviation(ast, arg1, dimensions.getInt(0), engine);
           case 2:
-            return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.MedianDeviation(x))
+            final IExpr head = ast.topHead();
+            return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.unaryAST1(head, x))
                 .normal(false);
           default:
-            return F.ArrayReduce(S.MedianDeviation, arg1, F.C1);
+            return F.ArrayReduce(ast.topHead(), arg1, F.C1);
         }
       }
       if (arg1.isNumber()) {
@@ -3222,6 +3229,13 @@ public class StatisticsFunctions {
       }
       return F.NIL;
     }
+
+    /**
+     * The deviation of the normalized vector <code>arg1</code> of <code>length</code> elements, or
+     * {@link F#NIL}.
+     */
+    protected abstract IExpr vectorDeviation(IAST ast, IExpr arg1, int length,
+        EvalEngine engine);
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -3234,71 +3248,57 @@ public class StatisticsFunctions {
     }
   }
 
-  private static final class MeanDeviation extends AbstractFunctionEvaluator {
+  /**
+   * <code>MedianDeviation(list)</code> - the median absolute deviation from the median of the
+   * elements in <code>list</code>.
+   */
+  private static final class MedianDeviation extends AbstractDeviation {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // an Association contributes its values, a Dataset its rows - see #normalizeData
-      IExpr arg1 = normalizeData(ast.arg1());
-      if (isQuantityVector(arg1)) {
-        // a message from here is the whole answer; do not fall through to the gate as well
-        return quantityStatistic(ast.setAtCopy(1, arg1), engine);
-      }
-
-      final IntList dimensions =
-          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
-      if (dimensions.size() != 0) {
-        switch (dimensions.size()) {
-          case 1:
-            int length = dimensions.getInt(0);
-            if (length == 0) {
-              // Argument `1` is neither a nonempty vector nor a nonempty matrix.
-              return Errors.printMessage(ast.topHead(), "vecmat1", F.list(ast.arg1()), engine);
-            }
-            if (arg1.isRealVector()) {
-              double[] values = arg1.toDoubleVector();
-              if (values == null) {
-                return F.NIL;
-              }
-              double dataMean = StatisticsFunctions.mean(values);
-              double[] newValues = new double[length];
-              for (int i = 0; i < length; i++) {
-                newValues[i] = Math.abs(values[i] - dataMean);
-              }
-              return F.num(StatisticsFunctions.mean(newValues));
-            }
-            arg1 = arg1.normal(false);
-            if (arg1.isList()) {
-              IAST vector = (IAST) arg1;
-              int size = vector.size();
-              IASTAppendable sum = F.PlusAlloc(size);
-              final IExpr mean = S.Mean.of(engine, vector.negate());
-              vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
-              return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
-            }
-            return F.NIL;
-          case 2:
-            return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.MeanDeviation(x))
-                .normal(false);
-          default:
-            return F.ArrayReduce(S.MeanDeviation, arg1, F.C1);
+    protected IExpr vectorDeviation(IAST ast, IExpr arg1, int length, EvalEngine engine) {
+      arg1 = arg1.normal(false);
+      if (arg1.isList()) {
+        IAST vector = (IAST) arg1;
+        IExpr median = engine.evaluate(F.Median(vector));
+        if (median.isAST(S.Median)) {
+          return F.NIL;
         }
-      }
-      if (arg1.isNumber()) {
-        // Rectangular array expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "rectt", F.list(F.C1, ast), engine);
+        return F.Median(vector.map(x -> F.Abs(F.Subtract(x, median)), 1));
       }
       return F.NIL;
     }
+  }
+
+  private static final class MeanDeviation extends AbstractDeviation {
 
     @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    protected IExpr vectorDeviation(IAST ast, IExpr arg1, int length, EvalEngine engine) {
+      if (length == 0) {
+        // Argument `1` is neither a nonempty vector nor a nonempty matrix.
+        return Errors.printMessage(ast.topHead(), "vecmat1", F.list(ast.arg1()), engine);
+      }
+      if (arg1.isRealVector()) {
+        double[] values = arg1.toDoubleVector();
+        if (values == null) {
+          return F.NIL;
+        }
+        double dataMean = StatisticsFunctions.mean(values);
+        double[] newValues = new double[length];
+        for (int i = 0; i < length; i++) {
+          newValues[i] = Math.abs(values[i] - dataMean);
+        }
+        return F.num(StatisticsFunctions.mean(newValues));
+      }
+      arg1 = arg1.normal(false);
+      if (arg1.isList()) {
+        IAST vector = (IAST) arg1;
+        int size = vector.size();
+        IASTAppendable sum = F.PlusAlloc(size);
+        final IExpr mean = S.Mean.of(engine, vector.negate());
+        vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
+        return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
+      }
+      return F.NIL;
     }
   }
 
@@ -3647,6 +3647,7 @@ public class StatisticsFunctions {
    * 9/10
    * </pre>
    */
+  // CPD-OFF piecewise sum and integral share only the branch walk
   private static class Probability extends AbstractDistributionQuery {
 
     @Override
@@ -3662,6 +3663,7 @@ public class StatisticsFunctions {
           if (predicate.isFunction()) {
             IAST data = (IAST) arg2;
             return dataProbability(data, e -> engine.evalTrue(predicate, e));
+            // CPD-ON
           }
           return F.NIL;
         }

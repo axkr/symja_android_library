@@ -240,16 +240,12 @@ final class DSolveSpecialFunctions {
     }
     // The potential arrives over a common denominator, x^(-1)*(b*x^k + a*x^(1+2*k)), where the
     // two powers it is made of have to be read off separately.
-    IExpr potential = engine.evaluate(F.Expand(q));
-    if (!potential.isPlus() || potential.argSize() != 2) {
+    IExpr[][] terms = twoPowerTerms(engine.evaluate(F.Expand(q)), xVar, engine);
+    if (terms == null) {
       return null;
     }
-    IAST terms = (IAST) potential;
-    IExpr[] first = powerTerm(terms.arg1(), xVar, engine);
-    IExpr[] second = powerTerm(terms.arg2(), xVar, engine);
-    if (first == null || second == null) {
-      return null;
-    }
+    IExpr[] first = terms[0];
+    IExpr[] second = terms[1];
     // A*x^(2*m) + B*x^(m-1): the two exponents are 2*m and m-1, either way round
     IExpr[] basis = whittakerOfPowers(first, second, yFunction, xVar, engine);
     return basis != null ? basis : whittakerOfPowers(second, first, yFunction, xVar, engine);
@@ -302,6 +298,35 @@ final class DSolveSpecialFunctions {
       }
     }
     return basis;
+  }
+
+  /**
+   * The {@link #powerTerm} pairs of the two terms of a potential <code>A*x^a + B*x^b</code>, or
+   * <code>null</code> if it is not a sum of two such terms.
+   */
+  private static IExpr[][] twoPowerTerms(IExpr potential, IExpr xVar, EvalEngine engine) {
+    if (!potential.isPlus() || potential.argSize() != 2) {
+      return null;
+    }
+    IExpr[] first = powerTerm(potential.first(), xVar, engine);
+    IExpr[] second = powerTerm(potential.second(), xVar, engine);
+    if (first == null || second == null) {
+      return null;
+    }
+    return new IExpr[][] {first, second};
+  }
+
+  /**
+   * The basis <code>{Sqrt(x)*I(nu, z), Sqrt(x)*K(nu, z)}</code> of the modified Bessel functions,
+   * or <code>{Sqrt(x)*J(nu, z), Sqrt(x)*Y(nu, z)}</code> of the ordinary ones.
+   */
+  private static IExpr[] rootBesselBasis(boolean modified, IExpr nu, IExpr argument, IExpr xVar) {
+    IExpr root = F.Sqrt(xVar);
+    return modified //
+        ? new IExpr[] {F.Times(root, F.BesselI(nu, argument)),
+            F.Times(root, F.BesselK(nu, argument))}
+        : new IExpr[] {F.Times(root, F.BesselJ(nu, argument)),
+            F.Times(root, F.BesselY(nu, argument))};
   }
 
   /**
@@ -361,12 +386,7 @@ final class DSolveSpecialFunctions {
     IExpr scale = symbolic ? half : F.Abs(half);
     IExpr argument =
         engine.evaluate(F.Times(F.Divide(F.Sqrt(magnitude), scale), F.Power(xVar, half)));
-    IExpr root = F.Sqrt(xVar);
-    return sign > 0 //
-        ? new IExpr[] {F.Times(root, F.BesselI(nu, argument)),
-            F.Times(root, F.BesselK(nu, argument))}
-        : new IExpr[] {F.Times(root, F.BesselJ(nu, argument)),
-            F.Times(root, F.BesselY(nu, argument))};
+    return rootBesselBasis(sign > 0, nu, argument, xVar);
   }
 
   /**
@@ -422,12 +442,7 @@ final class DSolveSpecialFunctions {
     boolean modified = DSolveUtil.numericSign(squared, engine) < 0;
     IExpr magnitude = engine.evaluate(modified ? F.Negate(squared) : squared);
     IExpr argument = engine.evaluate(F.Times(F.Sqrt(magnitude), xVar));
-    IExpr root = F.Sqrt(xVar);
-    return modified //
-        ? new IExpr[] {F.Times(root, F.BesselI(nu, argument)),
-            F.Times(root, F.BesselK(nu, argument))}
-        : new IExpr[] {F.Times(root, F.BesselJ(nu, argument)),
-            F.Times(root, F.BesselY(nu, argument))};
+    return rootBesselBasis(modified, nu, argument, xVar);
   }
 
   /**
@@ -443,15 +458,12 @@ final class DSolveSpecialFunctions {
     }
     // the potential Q == -q == A*x^m + B*x^(-2)
     IExpr potential = engine.evaluate(F.Expand(F.Negate(q)));
-    if (!potential.isPlus() || potential.argSize() != 2) {
+    IExpr[][] terms = twoPowerTerms(potential, xVar, engine);
+    if (terms == null) {
       return null;
     }
-    IAST terms = (IAST) potential;
-    IExpr[] first = powerTerm(terms.arg1(), xVar, engine);
-    IExpr[] second = powerTerm(terms.arg2(), xVar, engine);
-    if (first == null || second == null) {
-      return null;
-    }
+    IExpr[] first = terms[0];
+    IExpr[] second = terms[1];
     IExpr[] power;
     IExpr b;
     if (second[1].equals(F.CN2) && !first[1].equals(F.CN2)) {

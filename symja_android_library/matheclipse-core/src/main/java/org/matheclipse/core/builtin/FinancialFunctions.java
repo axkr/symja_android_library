@@ -143,11 +143,13 @@ public class FinancialFunctions {
           // b)^q) $]
           F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
               F.Power(F.Power(F.Plus(F.C1, b), q),
+                  // CPD-OFF generated annuity formulas
                   F.Plus(F.Times(F.CN1, F.Power(q, F.CN1), t), F.Times(c, F.Power(q, F.CN1)))),
               F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
               p); // $$;
 
         } catch (RuntimeException rex) {
+        // CPD-ON
           Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.TimeValue, rex, engine);
         }
@@ -177,11 +179,13 @@ public class FinancialFunctions {
             // b)^q) $]
             F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
                 F.Power(F.Power(F.Plus(F.C1, b), q),
+                    // CPD-OFF generated annuity formulas
                     F.Plus(F.C1, F.Times(F.CN1, F.Power(q, F.CN1), t),
                         F.Times(c, F.Power(q, F.CN1)))),
                 F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
                 p); // $$;
           }
+          // CPD-ON
 
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);

@@ -1224,6 +1224,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   public IASTAppendable copyAppendable(int additionalCapacity) {
     IASTAppendable result = F.ast(head(), additionalCapacity + 2);
     result.append(arg1);
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     result.append(arg2);
     return result;
   }
@@ -1241,6 +1242,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
         return false;
       }
       return list.size() == SIZE && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
+      // CPD-ON
     }
     return false;
   }
@@ -1491,6 +1493,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   public boolean isPlusTimesPower() {
     final ISymbol head = head();
     return head == S.Plus || head == S.Times || head == S.Power;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /** {@inheritDoc} */
@@ -1527,12 +1530,14 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public final IExpr last() {
     return arg2;
+    // CPD-ON
   }
 
   /** {@inheritDoc} */
   @Override
   public final IExpr oneIdentity(IExpr defaultValue) {
     return this;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   @Override
@@ -1568,6 +1573,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
     if (fromPosition == 2) {
       return new AST1(head(), arg1);
+      // CPD-ON
     }
     if (fromPosition == 3) {
       return this;

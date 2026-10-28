@@ -177,6 +177,18 @@ public class FilterFunctions {
   }
 
   /**
+   * The rows of the numeric vector (as a single row) or matrix <code>list</code>, or
+   * <code>null</code> if <code>list</code> is not numeric.
+   */
+  private static double[][] numericRows(IAST list, boolean vector) {
+    double[][] data = vector ? new double[][] {list.toDoubleVector()} : list.toDoubleMatrix();
+    if (data == null || data[0] == null) {
+      return null;
+    }
+    return data;
+  }
+
+  /**
    * <code>{radius, sigma}</code> of the specifications <code>r</code> (with
    * <code>sigma == r/2</code>) and <code>{r, sigma}</code>, or <code>null</code>.
    */
@@ -307,8 +319,8 @@ public class FilterFunctions {
         return F.NIL;
       }
       final boolean vector = dims.size() == 1;
-      double[][] data = vector ? new double[][] {list.toDoubleVector()} : list.toDoubleMatrix();
-      if (data == null || data[0] == null) {
+      double[][] data = numericRows(list, vector);
+      if (data == null) {
         return F.NIL;
       }
       double[] kernel = gaussianKernel((int) spec[0], spec[1], engine);
@@ -439,8 +451,8 @@ public class FilterFunctions {
         return F.NIL;
       }
       final boolean vector = dims.size() == 1;
-      double[][] data = vector ? new double[][] {list.toDoubleVector()} : list.toDoubleMatrix();
-      if (data == null || data[0] == null || data[0].length == 0) {
+      double[][] data = numericRows(list, vector);
+      if (data == null || data[0].length == 0) {
         return F.NIL;
       }
       final double[][] filtered = laplacianFilter(data, radius, vector);

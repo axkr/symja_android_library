@@ -488,8 +488,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         // Add elements present in 'this'
         for (TrieNode<int[], IExpr> entry : array.fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr vValue = vSparse.array.fData.get(key);
-          vValue = vValue == null ? vSparse.array.fDefaultValue : vValue;
+          IExpr vValue = vSparse.array.getIndex(key);
           res.setEntry(key[0] - 1, entry.getValue().plus(vValue));
         }
 
@@ -639,8 +638,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         // Divide elements present in 'this'
         for (TrieNode<int[], IExpr> entry : array.fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr vValue = vSparse.array.fData.get(key);
-          vValue = vValue == null ? vSparse.array.fDefaultValue : vValue;
+          IExpr vValue = vSparse.array.getIndex(key);
           res.setEntry(key[0] - 1, entry.getValue().divide(vValue));
         }
 
@@ -683,8 +681,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         // Multiply elements present in 'this'
         for (TrieNode<int[], IExpr> entry : array.fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr vValue = vSparse.array.fData.get(key);
-          vValue = vValue == null ? vSparse.array.fDefaultValue : vValue;
+          IExpr vValue = vSparse.array.getIndex(key);
           res.setEntry(key[0] - 1, entry.getValue().times(vValue));
         }
 
@@ -1089,8 +1086,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         // Subtract explicitly set elements in 'this'
         for (TrieNode<int[], IExpr> entry : array.fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr vVal = v.array.fData.get(key);
-          vVal = vVal == null ? v.array.fDefaultValue : vVal;
+          IExpr vVal = v.array.getIndex(key);
           IExpr newVal = entry.getValue().subtract(vVal);
 
           if (!newVal.equals(newDefault)) {
@@ -3313,6 +3309,21 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return Double.isNaN(converted) && !value.isReal();
   }
 
+  /**
+   * {@link #isNotConvertible(IExpr, double)} for an explicitly stored entry; prints the "mindet"
+   * message if the entry is <code>Indeterminate</code>.
+   */
+  private static boolean isNotConvertibleEntry(IExpr value, double converted) {
+    if (isNotConvertible(value, converted)) {
+      if (value.isIndeterminate()) {
+        // Input matrix contains an indeterminate entry.
+        Errors.printMessage(S.SparseArray, "mindet", F.List());
+      }
+      return true;
+    }
+    return false;
+  }
+
   /** {@inheritDoc} */
   @Override
   public double[][] toDoubleMatrix(boolean setMatrixFormat) {
@@ -3333,11 +3344,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         int[] key = entry.getKey();
         IExpr value = entry.getValue();
         double d = value.evalfNaN();
-        if (isNotConvertible(value, d)) {
-          if (value.isIndeterminate()) {
-            // Input matrix contains an indeterminate entry.
-            Errors.printMessage(S.SparseArray, "mindet", F.List());
-          }
+        if (isNotConvertibleEntry(value, d)) {
           return null;
         }
         result[key[0] - 1][key[1] - 1] = d;
@@ -3365,11 +3372,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         int[] key = entry.getKey();
         IExpr value = entry.getValue();
         double d = value.evalfNaN();
-        if (isNotConvertible(value, d)) {
-          if (value.isIndeterminate()) {
-            // Input matrix contains an indeterminate entry.
-            Errors.printMessage(S.SparseArray, "mindet", F.List());
-          }
+        if (isNotConvertibleEntry(value, d)) {
           return null;
         }
         result[key[0] - 1] = d;
@@ -3415,11 +3418,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         int[] key = entry.getKey();
         IExpr value = entry.getValue();
         double d = value.evalfNaN();
-        if (isNotConvertible(value, d)) {
-          if (value.isIndeterminate()) {
-            // Input matrix contains an indeterminate entry.
-            Errors.printMessage(S.SparseArray, "mindet", F.List());
-          }
+        if (isNotConvertibleEntry(value, d)) {
           return null;
         }
         result.setEntry(key[0] - 1, key[1] - 1, d);
@@ -3447,11 +3446,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         int[] key = entry.getKey();
         IExpr value = entry.getValue();
         double d = value.evalfNaN();
-        if (isNotConvertible(value, d)) {
-          if (value.isIndeterminate()) {
-            // Input matrix contains an indeterminate entry.
-            Errors.printMessage(S.SparseArray, "mindet", F.List());
-          }
+        if (isNotConvertibleEntry(value, d)) {
           return null;
         }
         result.setEntry(key[0] - 1, d);

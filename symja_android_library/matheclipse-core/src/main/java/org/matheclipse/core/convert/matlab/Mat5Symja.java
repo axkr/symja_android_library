@@ -72,16 +72,6 @@ public class Mat5Symja {
     }
     if (baseMatrix.getType() == MatlabType.Sparse) {
       return F.NIL;
-      // int[] indices = new int[dimensions.length];
-      // final int size = dimensions[0];
-      // ISparseArray sparse =
-      // F.sparseArray(F.List(F.Rule(F.List(1, 2, 3), F.b), F.Rule(F.List(1, 4, 5), F.a)));
-      // IASTAppendable result = F.ListAlloc();
-      // for (int i = 0; i < size; i++) {
-      // indices[0] = i;
-      // getSparseRecursive(baseMatrix, dimensions, indices, 1, result);
-      // }
-      // return result;
     }
     int[] indices = new int[dimensions.length];
     final int size = dimensions[0];
@@ -91,37 +81,6 @@ public class Mat5Symja {
       getTensorRecursive(baseMatrix, dimensions, indices, 1, result);
     }
     return result;
-  }
-
-  private static void getSparseRecursive(AbstractMatrixBase baseMatrix, int[] dimensions,
-      int[] indices, int indexCounter, IASTAppendable result) {
-    int newCounter = indexCounter + 1;
-    if (indexCounter == dimensions.length) {
-      MatlabType type = baseMatrix.getType();
-      switch (type) {
-        case UInt8:
-          result.append(baseMatrix.getBoolean(indices));
-          return;
-        case Double:
-          result.append(baseMatrix.getDouble(indices));
-          return;
-        case Single:
-          result.append(baseMatrix.getFloat(indices));
-          return;
-        case Sparse:
-          double d = baseMatrix.getDouble(indices);
-          result.append(d);
-          return;
-      }
-      return;
-    }
-    final int size = dimensions[indexCounter];
-    IASTAppendable subRow = F.ListAlloc();
-    for (int i = 0; i < size; i++) {
-      indices[indexCounter] = i;
-      getTensorRecursive(baseMatrix, dimensions, indices, newCounter, subRow);
-    }
-    result.append(subRow);
   }
 
   private static void getTensorRecursive(AbstractMatrixBase baseMatrix, int[] dimensions,

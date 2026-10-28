@@ -9819,6 +9819,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorTermsList() {
+    // the zero polynomial gives the same pair with and without variables
+    check("FactorTermsList(0, y)", //
+        "{1,0}");
+    check("FactorTermsList(0, {u, v})", //
+        "{1,0}");
+    check("FactorTermsList(0)", //
+        "{1,0}");
+    check("FactorTerms(0, y)", //
+        "0");
     check("FactorTermsList(6*a^2 + 9*x^2 + 12*b^2)", //
         "{3,2*a^2+4*b^2+3*x^2}");
     check("FactorTermsList(3 + 3*a + 6*a*x + 6*x + 12*a*x^2 + 12*x^2, x)", //
@@ -18536,6 +18545,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testExportStringTable() {
+    // cells separated by a tab, rows by a newline
+    check("ExportString({{1,2},{3,4}}, \"Table\") == \"1\\t2\\n3\\t4\"", //
+        "True");
+    check("ExportString({{2.5,\"cd\"},{7,y}}, \"Table\") == \"2.5\\tcd\\n7\\ty\"", //
+        "True");
+  }
+
+  @Test
+  public void testFunctionDomainQuadraticRadicand() {
+    // a radicand with a double root is non-negative or non-positive everywhere
+    check("FunctionDomain(Sqrt(x^2-2*x+1), x)", //
+        "True");
+    check("FunctionDomain(Sqrt(-x^2+2*x-1), x)", //
+        "x==1");
+    check("FunctionDomain(Log(x^2-6*x+9), x)", //
+        "x<3||x>3");
+    check("FunctionDomain(Log(-x^2+6*x-9), x)", //
+        "False");
+    check("FunctionDomain(Sqrt(x^2-4), x)", //
+        "x<=-2||x>=2");
+    check("FunctionDomain(Sqrt(-x^2+5*x-6), x)", //
+        "2<=x<=3");
+    check("FunctionDomain(Log(-x^2+5*x-6), x)", //
+        "2<x<3");
+    check("FunctionDomain(Log(x^2-5*x+6), x)", //
+        "x<2||x>3");
+  }
+
+  @Test
   public void testFunctionDomainReals() {
     // FunctionDomain: -1/2 is not a valid variable.
     // check("FunctionDomain(3/2,{x,-1/2})", //
@@ -22683,6 +22722,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "SparseArray(Number of elements: 3 Dimensions: {10} Default value: 0)");
     check("ReplaceAt(sparr, _ -> xx, {{2}, {3}})", //
         "{1,xx,xx,0,0,0,0,0,0,10}");
+
+    // a part which no rule matches stays unchanged
+    check("ReplaceAt({u, v, w}, z -> q, 3)", //
+        "{u,v,w}");
+    check("ReplaceAt({u, v, w}, v -> q, 2)", //
+        "{u,q,w}");
+    check("ReplaceAt({u, v, w}, u -> q, {{1}, {3}})", //
+        "{q,v,w}");
+    check("ReplaceAt({{u, v}, {w, u}}, u -> q, {All, 2})", //
+        "{{u,v},{w,q}}");
 
   }
 
@@ -33186,6 +33235,37 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   /**
+   * An attribute list element which is not a symbol is reported and nothing is set; a protected
+   * symbol is reported with the head SetAttributes.
+   */
+  @Test
+  public void testSetAttributesNonSymbolAttribute() {
+    java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+    java.io.PrintStream messages = new java.io.PrintStream(bytes);
+    java.io.PrintStream previous = evaluator.getEvalEngine().getErrorPrintStream();
+    evaluator.getEvalEngine().setErrorPrintStream(messages);
+    try {
+      check("SetAttributes(q, {Orderless, 7, Flat})", //
+          "SetAttributes(q,{Orderless,7,Flat})");
+      messages.flush();
+      assertEquals("SetAttributes: Argument 7 at position 2 is expected to be a symbol.",
+          bytes.toString().trim());
+      check("Attributes(q)", //
+          "{}");
+
+      bytes.reset();
+      check("SetAttributes(Cos, Orderless)", //
+          "$Failed");
+      messages.flush();
+      assertTrue(bytes.toString().trim().startsWith("SetAttributes:"), bytes.toString());
+    } finally {
+      evaluator.getEvalEngine().setErrorPrintStream(previous);
+    }
+    check("Attributes(Cos)", //
+        "{Listable,NumericFunction,Protected}");
+  }
+
+  /**
    * A name that is no system option is a message and the call stays unevaluated; it used to answer
    * Null and discard the rule silently.
    */
@@ -33777,6 +33857,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testSkewness() {
     check("Skewness({1.1, 1.2, 1.4, 2.1, 2.4})", //
         "0.407041");
+    check("Skewness(BetaDistribution(4,1))", //
+        "-3/7*Sqrt(6)");
+    check("Skewness(BetaDistribution(5,5))", //
+        "0");
+    check("Skewness(BetaDistribution(u,v))", //
+        "(2*(-u+v)*Sqrt(1+u+v))/(Sqrt(u*v)*(2+u+v))");
     check("Skewness(WeibullDistribution(n,m))", //
         "(2*Gamma(1+1/n)^3-3*Gamma(1+1/n)*Gamma(1+2/n)+Gamma(1+3/n))/(-Gamma(1+1/n)^2+Gamma(\n" + //
             "1+2/n))^(3/2)");

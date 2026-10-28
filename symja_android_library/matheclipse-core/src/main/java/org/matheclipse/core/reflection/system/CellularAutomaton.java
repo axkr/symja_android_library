@@ -741,6 +741,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     int minX = (isOperatorForm && !isCyclic) ? 0 : padding;
     int maxX = (isOperatorForm && !isCyclic) ? gridSize - 1 : padding + aspecSize - 1;
 
+    // CPD-OFF int and expression states are filled and trimmed separately
     int localDt = (dt == 0) ? 1 : dt;
 
     if (!isCyclic && !isOperatorForm) {
@@ -750,6 +751,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           int[] state = history.get(hIdx);
           int b = bgHistory.get(hIdx);
           for (int i = 0; i < gridSize; i++) {
+          // CPD-ON
             if (state[i] != b) {
               if (i < minX)
                 minX = i;
@@ -944,6 +946,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     List<IAST> initStates = initialStates(init, s, false);
     if (initStates == null) {
       return F.NIL;
+    // CPD-OFF int and expression states are filled and trimmed separately
     }
 
     IAST firstInit = initStates.get(0);
@@ -960,6 +963,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     int gridX = aspecSizeX + 2 * paddingX;
 
     List<int[]> history = new ArrayList<>();
+    // CPD-ON
     List<Integer> bgHistory = new ArrayList<>();
 
     for (int step = 0; step < s; step++) {
@@ -1354,6 +1358,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       min[d] = wholeGrid ? 0 : padding[d];
       max[d] = wholeGrid ? grid[d] - 1 : padding[d] + size[d] - 1;
     }
+    // CPD-OFF int and expression states are filled and trimmed separately
     final int localDt = (dt == 0) ? 1 : dt;
     if (!isCyclic && !isOperatorForm) {
       for (int tIdx = tStart; (localDt > 0 ? tIdx <= tEnd : tIdx >= tEnd); tIdx += localDt) {
@@ -1363,6 +1368,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           int b = bgHistory.get(hIdx);
           for (int z = 0; z < grid[0]; z++) {
             for (int y = 0; y < grid[1]; y++) {
+            // CPD-ON
               for (int x = 0; x < grid[2]; x++) {
                 if (state[(z * grid[1] + y) * grid[2] + x] != b) {
                   min[0] = Math.min(min[0], z);
@@ -1782,6 +1788,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     } else {
       isCyclic = true;
       initStates.add(init);
+    // CPD-OFF int and expression states are filled and trimmed separately
     }
 
     IAST firstInit = initStates.get(0);
@@ -1798,6 +1805,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     int gridX = aspecSizeX + 2 * paddingX;
 
     List<IExpr[]> history = new ArrayList<>();
+    // CPD-ON
     List<IExpr> bgHistory = new ArrayList<>();
 
     IAST stateExpr = initStates.get(0);

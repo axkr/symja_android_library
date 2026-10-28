@@ -2342,23 +2342,7 @@ public class TensorFunctions {
 
   }
 
-  private static class SymbolicIdentityArray extends AbstractFunctionEvaluator
-      implements ISymbolicArray {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.NIL;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.NONTHREADABLE);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
+  private static final class SymbolicIdentityArray extends SymbolicShapeArray {
 
     /**
      * {@inheritDoc}
@@ -2372,8 +2356,8 @@ public class TensorFunctions {
      */
     @Override
     public IAST getDimensions(IAST ast) {
-      if (ast.isAST1() && ast.first().isList()) {
-        IAST dimensions = (IAST) ast.first();
+      IAST dimensions = super.getDimensions(ast);
+      if (dimensions.isPresent()) {
         return SymbolicArrayUtil.joinDimensions(dimensions, dimensions);
       }
       return F.NIL;

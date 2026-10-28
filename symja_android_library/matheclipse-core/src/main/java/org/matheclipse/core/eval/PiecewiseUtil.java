@@ -11,6 +11,77 @@ import org.matheclipse.core.interfaces.IExpr;
 public class PiecewiseUtil {
 
   /**
+   * Distribute the other summands or factors over the values and the default value of the first
+   * <code>Piecewise</code> argument of a <code>Plus</code> or <code>Times</code> function.
+   *
+   * @param function a <code>Plus</code> or <code>Times</code> function
+   * @param plus <code>true</code> for <code>Plus</code>
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if there is no <code>Piecewise</code> argument
+   */
+  private static IExpr distributeOverPiecewise(final IAST function, boolean plus,
+      EvalEngine engine) {
+    int piecewisePosition = function.indexOf(x -> x.isPiecewise() != null);
+    if (piecewisePosition > 0) {
+      IAST piecewise = (IAST) function.get(piecewisePosition);
+      int[] piecewiseDimension = piecewise.isPiecewise();
+      if (piecewiseDimension[0] > 0 && piecewiseDimension[1] == 2) {
+        IAST piecewiseList = (IAST) piecewise.arg1();
+        IAST restAST = function.removeAtCopy(piecewisePosition);
+        IExpr rest = plus ? restAST.oneIdentity0() : restAST.oneIdentity1();
+
+        IASTAppendable result = F.ListAlloc(piecewiseList.argSize());
+        for (int i = 1; i <= piecewiseList.argSize(); i++) {
+          IAST subList = (IAST) piecewiseList.get(i);
+          IExpr value = plus ? F.Plus(rest, subList.arg1()) : F.Times(rest, subList.arg1());
+          result.append(F.list(value, subList.arg2()));
+        }
+
+        if (piecewise.argSize() == 2) {
+          IBuiltInSymbol op = plus ? S.Plus : S.Times;
+          return F.Piecewise(result, op.of(engine, rest, piecewise.arg2()));
+        }
+        return F.Piecewise(result);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Rewrite <code>Max(...)</code> or <code>Min(...)</code> with at least two arguments as a
+   * <code>Piecewise</code> function. An argument is chosen if it is strictly greater (smaller) than
+   * all previous arguments and greater (smaller) than or equal to all subsequent arguments.
+   *
+   * @param function a <code>Max</code> or <code>Min</code> function
+   * @param max <code>true</code> for <code>Max</code>
+   * @return {@link F#NIL} if the function has less than two arguments
+   */
+  private static IExpr minMaxPiecewise(final IAST function, boolean max) {
+    final int argSize = function.argSize();
+    if (argSize > 1) {
+      IASTAppendable conditions = F.ListAlloc(argSize);
+      for (int i = 1; i < argSize; i++) {
+        IExpr curr = function.get(i);
+        IASTAppendable andAST = F.ast(S.And, argSize);
+
+        for (int j = 1; j < i; j++) {
+          IExpr difference = F.Subtract(function.get(j), curr);
+          andAST.append(max ? F.Less(difference, F.C0) : F.Greater(difference, F.C0));
+        }
+        for (int k = i + 1; k <= argSize; k++) {
+          IExpr difference = F.Subtract(curr, function.get(k));
+          andAST.append(max ? F.GreaterEqual(difference, F.C0) : F.LessEqual(difference, F.C0));
+        }
+
+        IExpr cond = andAST.isAST1() ? andAST.arg1() : andAST;
+        conditions.append(F.list(curr, cond));
+      }
+      return F.Piecewise(conditions, function.last());
+    }
+    return F.NIL;
+  }
+
+  /**
    * Rewrite the function as <code>Piecewise()</code> function if possible. Rewrites functions:
    * <code>Abs, Arg, BernsteinBasis, Boole, Clip, DiscreteDelta, If, KroneckerDelta, Max, Min, Ramp, Sign, Unitize, UnitBox, UnitStep, UnitTriangle, Which</code>
    *
@@ -27,52 +98,10 @@ public class PiecewiseUtil {
       final int argSize = function.argSize();
 
       switch (((IBuiltInSymbol) head).ordinal()) {
-        case ID.Plus: {
-          int piecewisePosition = function.indexOf(x -> x.isPiecewise() != null);
-          if (piecewisePosition > 0) {
-            IAST piecewise = (IAST) function.get(piecewisePosition);
-            int[] piecewiseDimension = piecewise.isPiecewise();
-            if (piecewiseDimension[0] > 0 && piecewiseDimension[1] == 2) {
-              IAST piecewiseList = (IAST) piecewise.arg1();
-              IExpr rest = function.removeAtCopy(piecewisePosition).oneIdentity0();
-
-              IASTAppendable result = F.ListAlloc(piecewiseList.argSize());
-              for (int i = 1; i <= piecewiseList.argSize(); i++) {
-                IAST subList = (IAST) piecewiseList.get(i);
-                result.append(F.list(F.Plus(rest, subList.arg1()), subList.arg2()));
-              }
-
-              if (piecewise.argSize() == 2) {
-                return F.Piecewise(result, S.Plus.of(engine, rest, piecewise.arg2()));
-              }
-              return F.Piecewise(result);
-            }
-          }
-          return F.NIL;
-        }
-        case ID.Times: {
-          int piecewisePosition = function.indexOf(x -> x.isPiecewise() != null);
-          if (piecewisePosition > 0) {
-            IAST piecewise = (IAST) function.get(piecewisePosition);
-            int[] piecewiseDimension = piecewise.isPiecewise();
-            if (piecewiseDimension[0] > 0 && piecewiseDimension[1] == 2) {
-              IAST piecewiseList = (IAST) piecewise.arg1();
-              IExpr rest = function.removeAtCopy(piecewisePosition).oneIdentity1();
-
-              IASTAppendable result = F.ListAlloc(piecewiseList.argSize());
-              for (int i = 1; i <= piecewiseList.argSize(); i++) {
-                IAST subList = (IAST) piecewiseList.get(i);
-                result.append(F.list(F.Times(rest, subList.arg1()), subList.arg2()));
-              }
-
-              if (piecewise.argSize() == 2) {
-                return F.Piecewise(result, S.Times.of(engine, rest, piecewise.arg2()));
-              }
-              return F.Piecewise(result);
-            }
-          }
-          return F.NIL;
-        }
+        case ID.Plus:
+          return distributeOverPiecewise(function, true, engine);
+        case ID.Times:
+          return distributeOverPiecewise(function, false, engine);
         case ID.Abs:
         case ID.RealAbs: {
           if (argSize == 1) {
@@ -266,56 +295,10 @@ public class PiecewiseUtil {
           }
           return F.NIL;
         }
-        case ID.Max: {
-          if (argSize > 1) {
-            IASTAppendable conditions = F.ListAlloc(argSize);
-            for (int i = 1; i < argSize; i++) {
-              IExpr curr = function.get(i);
-              IASTAppendable andAST = F.ast(S.And, argSize);
-
-              // It must be strictly greater than all previous arguments
-              for (int j = 1; j < i; j++) {
-                IExpr prev = function.get(j);
-                andAST.append(F.Less(F.Subtract(prev, curr), F.C0));
-              }
-              // It must be greater than or equal to all subsequent arguments
-              for (int k = i + 1; k <= argSize; k++) {
-                IExpr next = function.get(k);
-                andAST.append(F.GreaterEqual(F.Subtract(curr, next), F.C0));
-              }
-
-              IExpr cond = andAST.isAST1() ? andAST.arg1() : andAST;
-              conditions.append(F.list(curr, cond));
-            }
-            return F.Piecewise(conditions, function.last());
-          }
-          return F.NIL;
-        }
-        case ID.Min: {
-          if (argSize > 1) {
-            IASTAppendable conditions = F.ListAlloc(argSize);
-            for (int i = 1; i < argSize; i++) {
-              IExpr curr = function.get(i);
-              IASTAppendable andAST = F.ast(S.And, argSize);
-
-              // It must be strictly less than all previous arguments
-              for (int j = 1; j < i; j++) {
-                IExpr prev = function.get(j);
-                andAST.append(F.Greater(F.Subtract(prev, curr), F.C0));
-              }
-              // It must be less than or equal to all subsequent arguments
-              for (int k = i + 1; k <= argSize; k++) {
-                IExpr next = function.get(k);
-                andAST.append(F.LessEqual(F.Subtract(curr, next), F.C0));
-              }
-
-              IExpr cond = andAST.isAST1() ? andAST.arg1() : andAST;
-              conditions.append(F.list(curr, cond));
-            }
-            return F.Piecewise(conditions, function.last());
-          }
-          return F.NIL;
-        }
+        case ID.Max:
+          return minMaxPiecewise(function, true);
+        case ID.Min:
+          return minMaxPiecewise(function, false);
       }
     }
     return F.NIL;

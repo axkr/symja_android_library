@@ -1,11 +1,9 @@
 package org.matheclipse.core.form.output;
 
 import java.util.Map;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.collect.ImmutableMap;
 
@@ -178,17 +176,8 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
   @Override
   public void convertAST(final StringBuilder buf, final IAST function, final int precedence,
       boolean eval) {
-    if (function.isNumericFunction(true)) {
-      try {
-        INumber value = function.evalNumber();
-        if (value != null) {
-          convertNumber(buf, value, precedence, NO_PLUS_CALL);
-          return;
-        }
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        //
-      }
+    if (convertNumericValue(buf, function, precedence)) {
+      return;
     }
     IExpr head = function.head();
     if ((head == S.Max || head == S.Min) && function.argSize() > 2) {

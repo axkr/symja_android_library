@@ -1327,6 +1327,7 @@ public class StatisticsDiscreteDistributions {
                             F.HurwitzLerchPhi(F.Subtract(F.C1, n), F.Negate(m),
                                 F.Subtract(F.C1, F.Power(n, F.CN1)))),
                         F.GreaterEqual(m, F.C0))),
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.C0);
       }
       return F.NIL;
@@ -1351,6 +1352,7 @@ public class StatisticsDiscreteDistributions {
     private static Survival survival(IAST dist) {
       if (dist.isAST1()) {
         double p = dist.arg1().evalfNaN();
+        // CPD-ON
         if (0.0 < p && p <= 1.0) {
           // P(X > k) = (1-p)^(k+1)
           double log1mp = Math.log1p(-p);
@@ -1960,6 +1962,23 @@ public class StatisticsDiscreteDistributions {
       return F.NIL;
     }
 
+    /**
+     * Print the <code>posprm</code> message if the rate <code>p</code> is a real number which is
+     * not positive.
+     *
+     * @param p the rate parameter of <code>dist</code>
+     * @param dist the <code>PoissonDistribution(p)</code>
+     * @return <code>true</code> if the message was printed
+     */
+    private static boolean isNonPositiveParameter(IExpr p, IAST dist) {
+      if (p.isReal() && !p.isPositive()) {
+        // Parameter `1` at position `2` in `3` is expected to be positive.
+        Errors.printMessage(S.PoissonDistribution, "posprm", F.List(p, F.C1, dist));
+        return true;
+      }
+      return false;
+    }
+
     @Override
     public IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
@@ -1972,9 +1991,8 @@ public class StatisticsDiscreteDistributions {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
-        if (p.isReal() && !p.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(p, F.C1, dist));
+        if (isNonPositiveParameter(p, dist)) {
+          return F.NIL;
         }
         //
         IExpr function =
@@ -2001,9 +2019,8 @@ public class StatisticsDiscreteDistributions {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
-        if (p.isReal() && !p.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(p, F.C1, dist));
+        if (isNonPositiveParameter(p, dist)) {
+          return F.NIL;
         }
         if (!p.isReal() || !k.isReal()) {
           return F.NIL;
@@ -2039,9 +2056,8 @@ public class StatisticsDiscreteDistributions {
     public IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
-        if (arg1.isReal() && !arg1.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        if (isNonPositiveParameter(arg1, dist)) {
+          return F.NIL;
         }
         return arg1;
       }
@@ -2052,9 +2068,8 @@ public class StatisticsDiscreteDistributions {
     public IExpr median(IAST dist) {
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
-        if (arg1.isReal() && !arg1.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        if (isNonPositiveParameter(arg1, dist)) {
+          return F.NIL;
         }
       }
       return F.NIL;
@@ -2064,9 +2079,8 @@ public class StatisticsDiscreteDistributions {
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
-        if (p.isReal() && !p.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(p, F.C1, dist));
+        if (isNonPositiveParameter(p, dist)) {
+          return F.NIL;
         }
         //
         IExpr function =
@@ -2085,9 +2099,8 @@ public class StatisticsDiscreteDistributions {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
         IExpr arg1 = dist.arg1();
-        if (arg1.isReal() && !arg1.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        if (isNonPositiveParameter(arg1, dist)) {
+          return F.NIL;
         }
         double mean = arg1.evalfNaN();
         if (Double.isNaN(mean)) {
@@ -2109,9 +2122,8 @@ public class StatisticsDiscreteDistributions {
     public IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        if (n.isReal() && !n.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(n, F.C1, dist));
+        if (isNonPositiveParameter(n, dist)) {
+          return F.NIL;
         }
         return n.sqrt().inverse();
       }
@@ -2122,9 +2134,8 @@ public class StatisticsDiscreteDistributions {
     public IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
-        if (arg1.isReal() && !arg1.isPositive()) {
-          // Parameter `1` at position `2` in `3` is expected to be positive.
-          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        if (isNonPositiveParameter(arg1, dist)) {
+          return F.NIL;
         }
         return arg1;
       }
@@ -2334,6 +2345,7 @@ public class StatisticsDiscreteDistributions {
         return callFunction(F.Function(F.Piecewise(F.list(//
             F.list(F.Divide(F.Log(F.Plus(F.C1, F.Floor(F.Slot1))), F.Log(b)),
                 F.And(F.LessEqual(F.C1, F.Slot1), F.Less(F.Slot1, F.Subtract(b, F.C1)))), //
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.list(F.C1, F.GreaterEqual(F.Slot1, F.Subtract(b, F.C1)))), F.C0)), k);
       }
       return F.NIL;
@@ -2358,6 +2370,7 @@ public class StatisticsDiscreteDistributions {
     private static Survival survival(IAST dist) {
       if (dist.isAST1()) {
         double b = dist.arg1().evalfNaN();
+        // CPD-ON
         if (b > 1.0 && Double.isFinite(b)) {
           // P(X > k) = 1 - Log(1 + k)/Log(b) for 1 <= k < b - 1, and 0 from b - 1 on
           double logB = Math.log(b);
@@ -2659,6 +2672,7 @@ public class StatisticsDiscreteDistributions {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         int n = dist.arg2().toIntDefault();
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return cdfOfNumericArguments(dist, k, this, n >= 1 ? n : -1L, logProbability(dist),
             tailRatio(dist), engine);
       }
@@ -2671,6 +2685,7 @@ public class StatisticsDiscreteDistributions {
         LongToDoubleFunction logProbability = logProbability(dist);
         double q = ((IReal) k).doubleValue();
         if (logProbability != null && q >= 0.0 && q <= 1.0) {
+        // CPD-ON
           long n = dist.arg2().toIntDefault();
           if (q == 0.0) {
             return F.ZZ(n);
@@ -2972,6 +2987,7 @@ public class StatisticsDiscreteDistributions {
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return cdfOfNumericArguments(dist, k, this, 0L, logProbability(dist), tailRatio(dist),
             engine);
       }
@@ -2984,6 +3000,7 @@ public class StatisticsDiscreteDistributions {
         LongToDoubleFunction logProbability = logProbability(dist);
         double q = ((IReal) k).doubleValue();
         if (logProbability != null && q >= 0.0 && q <= 1.0) {
+        // CPD-ON
           if (q == 0.0) {
             return F.C0;
           }

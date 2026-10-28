@@ -195,15 +195,9 @@ public class AttributeFunctions {
      * @return {@link F#NIL} if <code>expr</code> is not a symbol
      */
     private IExpr clearAttributes(final IExpr expr, IExpr attributes, IAST ast, EvalEngine engine) {
-      IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
-      if (x.isNIL()) {
+      ISymbol sym = writableSymbol(expr, ast, engine);
+      if (sym == null) {
         return F.NIL;
-      }
-      ISymbol sym = (ISymbol) x;
-      if (!engine.isPackageMode()) {
-        if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
-          throw new RuleCreationError(sym);
-        }
       }
       if (sym.hasProtectedAttribute()) {
         // Tag `1` in `2` is Protected.
@@ -258,14 +252,9 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IASTMutable mutable = ast.copyAST();
-      for (int i = 1; i < ast.size(); i++) {
-        IExpr expr = ast.get(i);
-        IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
-        if (x.isNIL()) {
-          return F.NIL;
-        }
-        mutable.set(i, x);
+      IASTMutable mutable = checkIdentifiers(ast, engine);
+      if (mutable.isNIL()) {
+        return F.NIL;
       }
       final IASTAppendable result = F.ListAlloc(mutable.size());
       mutable.forEach(x -> {
@@ -295,14 +284,9 @@ public class AttributeFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.UNPROTECT_ALLOWED) {
-        IASTMutable mutable = ast.copyAST();
-        for (int i = 1; i < ast.size(); i++) {
-          IExpr expr = ast.get(i);
-          IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
-          if (x.isNIL()) {
-            return F.NIL;
-          }
-          mutable.set(i, x);
+        IASTMutable mutable = checkIdentifiers(ast, engine);
+        if (mutable.isNIL()) {
+          return F.NIL;
         }
         final IASTAppendable result = F.ListAlloc(mutable.size());
         mutable.forEach(x -> appendUnprotected(result, x));
@@ -379,11 +363,20 @@ public class AttributeFunctions {
     private static IExpr setSymbolsAttributes(IAST listOfSymbols, IExpr attributes, IAST ast,
         EvalEngine engine) {
       attributes = engine.evaluate(attributes);
+      if (attributes.isList()) {
+        IAST list = (IAST) attributes;
+        int index = list.indexOf(x -> !x.isSymbol());
+        if (index > 0) {
+          // Argument `1` at position `2` is expected to be a symbol.
+          return Errors.printMessage(S.SetAttributes, "sym", F.List(list.get(index), F.C2),
+              engine);
+        }
+      }
       for (int i = 1; i < listOfSymbols.size(); i++) {
         final IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
           if (((ISymbol) arg).hasProtectedAttribute()) {
-            Errors.printMessage(S.ClearAttributes, "write", F.list(arg), EvalEngine.get());
+            Errors.printMessage(S.SetAttributes, "write", F.list(arg), EvalEngine.get());
             throw new FailedException();
           }
           if (addAttributes(arg, attributes, ast, engine).isNIL()) {
@@ -407,15 +400,9 @@ public class AttributeFunctions {
      */
     private static IExpr addAttributes(final IExpr expr, IExpr attributes, IAST ast,
         EvalEngine engine) {
-      IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
-      if (x.isNIL()) {
+      ISymbol sym = writableSymbol(expr, ast, engine);
+      if (sym == null) {
         return F.NIL;
-      }
-      ISymbol sym = (ISymbol) x;
-      if (!engine.isPackageMode()) {
-        if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
-          throw new RuleCreationError(expr);
-        }
       }
       if (attributes.isSymbol()) {
         ISymbol attribute = (ISymbol) attributes;
@@ -456,6 +443,45 @@ public class AttributeFunctions {
       sym.addAttributes(known.mask());
       return true;
     }
+  }
+
+  /**
+   * Replace every argument of <code>ast</code> by the identifier it denotes (a symbol or the
+   * symbol of a <code>HoldPattern</code>).
+   *
+   * @return a copy of <code>ast</code> or {@link F#NIL} (with a message) if an argument is not an
+   *         identifier
+   */
+  private static IASTMutable checkIdentifiers(final IAST ast, EvalEngine engine) {
+    IASTMutable mutable = ast.copyAST();
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
+      if (x.isNIL()) {
+        return F.NIL;
+      }
+      mutable.set(i, x);
+    }
+    return mutable;
+  }
+
+  /**
+   * The symbol whose attributes should be changed.
+   *
+   * @return <code>null</code> (with a message) if <code>expr</code> is not an identifier
+   * @throws RuleCreationError in server mode for a symbol not starting with <code>$</code>
+   */
+  private static ISymbol writableSymbol(final IExpr expr, IAST ast, EvalEngine engine) {
+    IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
+    if (x.isNIL()) {
+      return null;
+    }
+    ISymbol sym = (ISymbol) x;
+    if (!engine.isPackageMode()) {
+      if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
+        throw new RuleCreationError(sym);
+      }
+    }
+    return sym;
   }
 
   public static int getSymbolsAsAttributes(IAST listOfSymbols, EvalEngine engine) {

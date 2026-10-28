@@ -973,6 +973,15 @@ public class SymbolicArrayFunctions {
     return F.NIL;
   }
 
+  /** The product <code>Dot(head(dot_n), ..., head(dot_1))</code> in reverse order. */
+  private static IAST reverseDot(IAST dot, IExpr head) {
+    IASTAppendable result = F.ast(S.Dot, dot.argSize());
+    for (int i = dot.argSize(); i >= 1; i--) {
+      result.append(F.unaryAST1(head, dot.get(i)));
+    }
+    return result;
+  }
+
   /** Rewrite rules for {@link S#Transpose} and {@link S#ConjugateTranspose}. */
   private static IExpr transposeRule(IAST transpose, EvalEngine engine) {
     // reversing a transposed product is a canonicalisation, so it runs in both passes
@@ -988,12 +997,7 @@ public class SymbolicArrayFunctions {
     }
     if (arg1.isAST(S.Dot) && arg1.size() > 2) {
       // transposing a product reverses it
-      IAST dot = (IAST) arg1;
-      IASTAppendable result = F.ast(S.Dot, dot.argSize());
-      for (int i = dot.argSize(); i >= 1; i--) {
-        result.append(F.unaryAST1(head, dot.get(i)));
-      }
-      return result;
+      return reverseDot((IAST) arg1, head);
     }
     if (arg1.isPlus()) {
       return ((IAST) arg1).mapThread(F.unaryAST1(head, F.Slot1), 1);
@@ -1043,12 +1047,7 @@ public class SymbolicArrayFunctions {
     }
     if (arg1.isAST(S.Dot) && arg1.size() > 2) {
       // inverting a product reverses it
-      IAST dot = (IAST) arg1;
-      IASTAppendable result = F.ast(S.Dot, dot.argSize());
-      for (int i = dot.argSize(); i >= 1; i--) {
-        result.append(F.Inverse(dot.get(i)));
-      }
-      return result;
+      return reverseDot((IAST) arg1, S.Inverse);
     }
     if (arg1.isTimes()) {
       IExpr[] factors = splitScalarFactors((IAST) arg1, false, engine);

@@ -4,7 +4,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -14,7 +13,6 @@ import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -62,37 +60,15 @@ public class DensityPlot extends ListPlot {
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     // Increase default resolution to 50 for smoother gradients
-    int plotPoints = 50;
-    boolean colorFunctionScaling = true;
-    IExpr colorFunctionOpt = S.Automatic;
-    IExpr meshOpt = S.None;
-
     // the options array holds resolved values, not the rules the caller wrote,
     // so the option rules are read back off the original call
-    for (IExpr opt : originalAST) {
-      if (opt.isRuleAST()) {
-        IExpr key = ((IAST) opt).arg1();
-        IExpr val = ((IAST) opt).arg2();
-
-        if (key.isBuiltInSymbol()) {
-          switch (((IBuiltInSymbol) key).ordinal()) {
-            case ID.ColorFunctionScaling:
-              if (val.isFalse())
-                colorFunctionScaling = false;
-              break;
-            case ID.PlotPoints:
-              plotPoints = val.toIntDefault(50);
-              break;
-            case ID.ColorFunction:
-              colorFunctionOpt = val;
-              break;
-            case ID.Mesh:
-              meshOpt = val;
-              break;
-          }
-        }
-      }
-    }
+    int plotPoints =
+        GraphicsOptions.optionValue(originalAST, S.PlotPoints, F.ZZ(50)).toIntDefault(50);
+    GraphicsOptions.MatrixPlotOptions matrixOptions =
+        GraphicsOptions.readMatrixPlotOptions(originalAST);
+    boolean colorFunctionScaling = matrixOptions.colorFunctionScaling;
+    IExpr colorFunctionOpt = matrixOptions.colorFunction;
+    IExpr meshOpt = matrixOptions.mesh;
 
     IExpr function = ast.arg1();
     IExpr xIter = ast.arg2();
@@ -395,13 +371,7 @@ public class DensityPlot extends ListPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
-    defaults[GraphicsOptions.X_FRAME] = S.True;
-    defaults[GraphicsOptions.X_AXES] = S.False;
-    defaults[GraphicsOptions.X_ASPECTRATIO] = F.C1;
-
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions.densityExtras(
-        new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(), defaults));
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.densityPlotOptions();
     setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 }

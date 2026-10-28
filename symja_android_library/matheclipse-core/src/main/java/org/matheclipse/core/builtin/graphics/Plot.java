@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -29,18 +30,41 @@ public class Plot extends ListPlot {
 
   public Plot() {}
 
+  /**
+   * Test if the second argument is a range <code>{x, xmin, xmax}</code> of a curve plot.
+   *
+   * @param ast the plot call
+   * @param argSize the number of positional arguments
+   */
+  protected static boolean isCurveRange(IAST ast, int argSize) {
+    return argSize >= 2 && ast.arg2().isList3() && ast.arg2().first().isSymbol();
+  }
 
-  @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
-      IAST originalAST) {
-    if (argSize < 2 || !ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
-      // Range specification `1` is not of the form {x, xmin, xmax}.
-      IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
-      // Range specification `1` is not of the form {x, xmin, xmax}.
-      return Errors.printMessage(S.Plot, "pllim", F.list(arg2), engine);
-    }
+  /**
+   * Print the message that the range specification is not of the form <code>{x, xmin, xmax}</code>.
+   *
+   * @param ast the plot call
+   * @param argSize the number of positional arguments
+   * @param head the plot function which owns the message
+   * @param engine the evaluation engine
+   * @return {@link F#NIL}
+   */
+  protected static IExpr pllimMessage(IAST ast, int argSize, ISymbol head, EvalEngine engine) {
+    IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
+    // Range specification `1` is not of the form {x, xmin, xmax}.
+    return Errors.printMessage(head, "pllim", F.list(arg2), engine);
+  }
 
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
+  /**
+   * Read the options of a plot whose points are adaptive samples of a function.
+   *
+   * @param graphicsOptions the options to set
+   * @param originalAST the plot call with its options
+   * @param family the arguments the colour function is given, or <code>null</code> for the
+   *        default
+   */
+  protected static void readSampledCurveOptions(GraphicsOptions graphicsOptions,
+      IAST originalAST, PlotColorFunction.Family family) {
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
@@ -49,8 +73,23 @@ public class Plot extends ListPlot {
     graphicsOptions.setSampledCurve(true);
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
+    if (family != null) {
+      graphicsOptions.setColorFamily(family);
+    }
     graphicsOptions.applyPlotTheme(originalAST);
     graphicsOptions.readPassThroughOptions(originalAST);
+  }
+
+
+  @Override
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+    if (!isCurveRange(ast, argSize)) {
+      return pllimMessage(ast, argSize, S.Plot, engine);
+    }
+
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
+    readSampledCurveOptions(graphicsOptions, originalAST, null);
 
     if (argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);

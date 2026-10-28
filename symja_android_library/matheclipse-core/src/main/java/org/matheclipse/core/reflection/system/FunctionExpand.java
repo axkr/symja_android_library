@@ -232,16 +232,7 @@ public class FunctionExpand extends AbstractEvaluator {
       MATCHER.caseOf(S.ParzenWindow.of(x_), WindowFunctions.parzenWindow(x));
       MATCHER.caseOf(S.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
 
-      IAST list = FunctionExpandRules.RULES;
-
-      for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.get(i);
-        if (arg.isAST(S.SetDelayed, 3)) {
-          MATCHER.caseOf(arg.first(), arg.second());
-        } else if (arg.isAST(S.Set, 3)) {
-          MATCHER.caseOf(arg.first(), arg.second());
-        }
-      }
+      MATCHER.caseOfRules(FunctionExpandRules.RULES);
       return MATCHER;
     }
   }
@@ -665,13 +656,7 @@ public class FunctionExpand extends AbstractEvaluator {
     if (assumptionExpr.isPresent()) {
       if (assumptionExpr.isAST()) {
         IAssumptions oldAssumptions = engine.getAssumptions();
-        IAssumptions assumptions;
-        if (oldAssumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
-        } else {
-          assumptions = oldAssumptions.copy();
-          assumptions = assumptions.addAssumption(assumptionExpr);
-        }
+        IAssumptions assumptions = IAssumptions.extend(oldAssumptions, assumptionExpr);
         if (assumptions != null) {
           try {
             engine.setAssumptions(assumptions);

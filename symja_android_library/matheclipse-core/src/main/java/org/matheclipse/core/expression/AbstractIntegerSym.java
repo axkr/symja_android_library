@@ -746,6 +746,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
+  // CPD-OFF Integer and Fraction specialisation of hot number arithmetic
   public int compareTo(final IExpr expr) {
     if (expr.isNumber() && !expr.isReal()) {
       int c = this.compareTo(expr.re());
@@ -761,6 +762,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public IExpr copy() {
     return this;
+    // CPD-ON
   }
 
   @Override
@@ -1073,6 +1075,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     }
     if (that.isInteger()) {
       return gcd((IInteger) that);
+    // CPD-OFF Integer and Fraction specialisation of hot number arithmetic
     }
     BigInteger tdenom = this.toBigDenominator();
     BigInteger odenom = that.toBigDenominator();
@@ -1095,11 +1098,18 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public ISymbol head() {
     return S.Integer;
+    // CPD-ON
   }
 
   @Override
   public int hierarchy() {
     return INTEGERID;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IReal im() {
+    return F.C0;
   }
 
   @Override
@@ -1109,8 +1119,25 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   /** {@inheritDoc} */
   @Override
+  public IInteger inc() {
+    return add(F.C1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IInteger integerPart() {
     return this;
+  }
+
+  @Override
+  public long integerLength(IInteger radix) {
+    long length = 0L;
+    IInteger ai = this;
+    while (!ai.isZero()) {
+      ai = ai.div(radix);
+      length++;
+    }
+    return length;
   }
 
   @Override
@@ -1589,6 +1616,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
+  // CPD-OFF Integer and Fraction specialisation of hot number arithmetic
   public IRational subtract(final IRational that) {
     if (isZero()) {
       return that.negate();
@@ -1608,6 +1636,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   public IExpr times(final IExpr that) {
     if (that instanceof INumber) {
       return this.times((INumber) that);
+      // CPD-ON
     }
     return IInteger.super.times(that);
   }

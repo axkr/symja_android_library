@@ -536,15 +536,52 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * @return
    */
   private static IExpr getIndex(IAST ast, final int pos, ISymbol head, EvalEngine engine) {
+    int position = checkedPosition(ast, pos);
+    if (position < 0) {
+      // Part `1` of `2` does not exist.
+      return Errors.printMessage(head, "partw", F.list(F.ZZ(pos), ast), engine);
+    }
+    return ast.get(position);
+  }
+
+  /**
+   * The index of the part <code>pos</code> of <code>ast</code>; a negative <code>pos</code> counts
+   * from the end.
+   *
+   * @return <code>-1</code> if the part does not exist
+   */
+  private static int checkedPosition(IAST ast, final int pos) {
     int position = pos;
     if (position < 0) {
       position = ast.size() + position;
     }
     if ((position < 0) || (position >= ast.size())) {
-      // Part `1` of `2` does not exist.
-      return Errors.printMessage(head, "partw", F.list(F.ZZ(pos), ast), engine);
+      return -1;
     }
-    return ast.get(position);
+    return position;
+  }
+
+  /**
+   * Evaluate the part specifications <code>ast.arg2(), ast.arg3(), ...</code>.
+   *
+   * @param evaledAST a copy of <code>ast</code> with an already evaluated first argument, or
+   *        {@link F#NIL}
+   * @return <code>ast</code> if neither the first argument nor a part specification changed
+   */
+  private static IAST evaluateIndices(IAST ast, IASTMutable evaledAST, EvalEngine engine) {
+    final int astSize = ast.size();
+    for (int i = 2; i < astSize; i++) {
+      IExpr temp = engine.evaluateNIL(ast.get(i));
+      if (temp.isPresent()) {
+        if (evaledAST.isPresent()) {
+          evaledAST.set(i, temp);
+        } else {
+          evaledAST = ast.setAtCopy(i, temp);
+          evaledAST.copyFlagsFrom(ast, Group.MATRIX_OR_VECTOR);
+        }
+      }
+    }
+    return evaledAST.orElse(ast);
   }
 
   /**
@@ -558,11 +595,8 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    */
   private static IExpr getIndexRule(IAST ast, final int pos, ISymbol head,
       EvalEngine engine) {
-    int position = pos;
+    int position = checkedPosition(ast, pos);
     if (position < 0) {
-      position = ast.size() + position;
-    }
-    if ((position < 0) || (position >= ast.size())) {
       // Part `1` of `2` does not exist.
       return Errors.printMessage(head, "partw", F.list(F.ZZ(pos), ast), engine);
     }
@@ -1027,19 +1061,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       }
     }
 
-    final int astSize = ast.size();
-    for (int i = 2; i < astSize; i++) {
-      IExpr temp = engine.evaluateNIL(ast.get(i));
-      if (temp.isPresent()) {
-        if (evaledAST.isPresent()) {
-          evaledAST.set(i, temp);
-        } else {
-          evaledAST = ast.setAtCopy(i, temp);
-          evaledAST.copyFlagsFrom(ast, Group.MATRIX_OR_VECTOR);
-        }
-      }
-    }
-    return part(arg1AST, evaledAST.orElse(ast), 2, engine);
+    return part(arg1AST, evaluateIndices(ast, evaledAST, engine), 2, engine);
   }
 
   /**
@@ -1157,20 +1179,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
   public IExpr sparseEvaluate(final IAST ast, ISparseArray arg1, EvalEngine engine) {
     // ast.builtinEvaled();
     if (ast.size() >= 3) {
-      IASTMutable evaledAST = F.NIL;
-      int astSize = ast.size();
-      for (int i = 2; i < astSize; i++) {
-        IExpr temp = engine.evaluateNIL(ast.get(i));
-        if (temp.isPresent()) {
-          if (evaledAST.isPresent()) {
-            evaledAST.set(i, temp);
-          } else {
-            evaledAST = ast.setAtCopy(i, temp);
-            evaledAST.copyFlagsFrom(ast, Group.MATRIX_OR_VECTOR);
-          }
-        }
-      }
-      return sparsePart(arg1, evaledAST.orElse(ast), 2, engine);
+      return sparsePart(arg1, evaluateIndices(ast, F.NIL, engine), 2, engine);
     }
     return F.NIL;
   }

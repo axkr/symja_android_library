@@ -1211,6 +1211,24 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRegionQBoundedRegionQSameHeads() {
+    check("RegionQ(FullRegion(3))", //
+        "True");
+    check("BoundedRegionQ(FullRegion(3))", //
+        "False");
+    check("{RegionQ(HalfSpace({1,1,0},{0,0,4})), BoundedRegionQ(HalfSpace({1,1,0},{0,0,4}))}", //
+        "{True,False}");
+    // a pyramid over the unit square given only by its faces
+    check("BoundedRegionQ(Polyhedron({{{0,0,0},{1,0,0},{1,1,0},{0,1,0}},{{0,0,0},{1,0,0},{0,0,3}},"
+        + "{{1,0,0},{1,1,0},{0,0,3}},{{1,1,0},{0,1,0},{0,0,3}},{{0,1,0},{0,0,0},{0,0,3}}}))", //
+        "True");
+    check("BoundedRegionQ(Annulus({2,-1},{1,3}))", //
+        "True");
+    check("BoundedRegionQ(foo(1,2))", //
+        "BoundedRegionQ(foo(1,2))");
+  }
+
+  @Test
   public void testFormulaRegionDimensions() {
     check("RegionEmbeddingDimension(ImplicitRegion(x^2+y^2<=1, {x,y}))", //
         "2");

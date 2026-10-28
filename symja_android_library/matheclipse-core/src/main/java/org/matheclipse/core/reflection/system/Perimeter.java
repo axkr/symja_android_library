@@ -104,6 +104,7 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     switch (headID) {
+      // CPD-OFF per-measure dispatch over region heads
       case ID.Disk:
       case ID.Ball:
         // in the plane a ball is a disk
@@ -122,6 +123,7 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
         return annulus(geoForm, engine);
       case ID.Ellipsoid:
         return ellipsoid(geoForm, engine);
+        // CPD-ON
       case ID.RegularPolygon:
         return regularPolygon(geoForm, engine);
       case ID.DiskSegment:

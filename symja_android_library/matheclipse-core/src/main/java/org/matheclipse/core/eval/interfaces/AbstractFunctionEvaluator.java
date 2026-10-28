@@ -317,55 +317,33 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   }
 
   private static IExpr getNormalizedNegativePlus(final IAST plusAST, boolean checkTimesPlus) {
-    IASTMutable result;
     IExpr arg1 = plusAST.arg1();
     if (arg1.isNumber()) {
       if (((INumber) arg1).complexSign() < 0) {
-        result = plusAST.copy();
-        result.set(1, arg1.negate());
-        for (int i = 2; i < plusAST.size(); i++) {
-          result.set(i, plusAST.get(i).negate());
-        }
-        return result;
+        return negateRest(plusAST, arg1.negate());
       }
     } else if (arg1.isTimes()) {
       IExpr arg1Negated = getNormalizedNegativeExpression(arg1, checkTimesPlus);
       if (arg1Negated.isPresent()) {
-        // int positiveElementsCounter = 0;
-        result = plusAST.copy();
-        result.set(1, arg1Negated);
-        for (int i = 2; i < plusAST.size(); i++) {
-          IExpr temp = plusAST.get(i);
-          // if (!temp.isTimes() && !temp.isPower()) {
-          // return F.NIL;
-          // }
-
-          // arg1Negated = getNormalizedNegativeExpression(temp, checkTimesPlus);
-          // if (arg1Negated.isPresent()) {
-          // result.set(i, arg1Negated);
-          // } else {
-
-          // positiveElementsCounter++;
-          // if (positiveElementsCounter * 2 > plusAST.argSize()) {
-          // number of positive elements is greater
-          // than number of negative elements
-          // return F.NIL;
-          // }
-          result.set(i, temp.negate());
-
-          // }
-        }
-        return result;
+        return negateRest(plusAST, arg1Negated);
       } else if (arg1.isNegativeInfinity()) {
-        result = plusAST.copy();
-        result.set(1, F.CInfinity);
-        for (int i = 2; i < plusAST.size(); i++) {
-          result.set(i, plusAST.get(i).negate());
-        }
-        return result;
+        return negateRest(plusAST, F.CInfinity);
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Copy <code>plusAST</code> with <code>newFirst</code> as first argument and all other arguments
+   * negated.
+   */
+  private static IASTMutable negateRest(final IAST plusAST, IExpr newFirst) {
+    IASTMutable result = plusAST.copy();
+    result.set(1, newFirst);
+    for (int i = 2; i < plusAST.size(); i++) {
+      result.set(i, plusAST.get(i).negate());
+    }
+    return result;
   }
 
   /**
@@ -513,20 +491,10 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         IExpr arg1 = plusAST.arg1();
         if (arg1.isNumber()) {
           if (((INumber) arg1).complexSign() < 0) {
-            result = plusAST.copy();
-            result.set(1, arg1.negate());
-            for (int i = 2; i < plusAST.size(); i++) {
-              result.set(i, plusAST.get(i).negate());
-            }
-            return result;
+            return negateRest(plusAST, arg1.negate());
           }
         } else if (arg1.isNegativeInfinity()) {
-          result = plusAST.copy();
-          result.set(1, F.CInfinity);
-          for (int i = 2; i < plusAST.size(); i++) {
-            result.set(i, plusAST.get(i).negate());
-          }
-          return result;
+          return negateRest(plusAST, F.CInfinity);
         } else if (arg1.isTimes()) {
           IExpr arg1Negated = getPowerNegativeExpression(arg1, checkTimesPlus);
           if (arg1Negated.isPresent()) {

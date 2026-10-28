@@ -655,40 +655,22 @@ public class Convert {
 
   private static BigInteger[][] list2BigIntegerArray(final IExpr expr)
       throws ClassCastException, IndexOutOfBoundsException {
-    if (expr == null) {
+    final IExpr[][] array = list2Array(expr, false);
+    if (array == null) {
       return null;
     }
-    int[] dim = expr.isMatrix(false);
-    if (dim == null || dim[0] == 0 || dim[1] == 0) {
-      return null;
-    }
-    if (expr.isList()) {
-      IAST list = (IAST) expr;
-      IAST currInRow = (IAST) list.arg1();
-      if (currInRow.isAST0()) {
-        // special case 0-Matrix
-        return new BigInteger[0][0];
-      }
-      final int rowSize = expr.argSize();
-      final int colSize = currInRow.argSize();
-      final BigInteger[][] elements = new BigInteger[rowSize][colSize];
-      for (int i = 1; i < rowSize + 1; i++) {
-        currInRow = (IAST) list.get(i);
-        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+    final BigInteger[][] elements = new BigInteger[array.length][];
+    for (int i = 0; i < array.length; i++) {
+      final IExpr[] row = array[i];
+      elements[i] = new BigInteger[row.length];
+      for (int j = 0; j < row.length; j++) {
+        if (!(row[j] instanceof IInteger)) {
           return null;
         }
-        for (int j = 1; j < colSize + 1; j++) {
-          IExpr elem = currInRow.get(j);
-          if (elem.isInteger()) {
-            elements[i - 1][j - 1] = ((IInteger) elem).toBigNumerator();
-          } else {
-            return null;
-          }
-        }
+        elements[i][j] = ((IInteger) row[j]).toBigNumerator();
       }
-      return elements;
     }
-    return null;
+    return elements;
   }
 
   public static BigInteger[][] list2BigIntegerMatrix(final IExpr expr)
@@ -885,40 +867,22 @@ public class Convert {
 
   private static IRational[][] list2RationalArray(final IExpr expr)
       throws ClassCastException, IndexOutOfBoundsException {
-    if (expr == null) {
+    final IExpr[][] array = list2Array(expr, false);
+    if (array == null) {
       return null;
     }
-    int[] dim = expr.isMatrix(false);
-    if (dim == null || dim[0] == 0 || dim[1] == 0) {
-      return null;
-    }
-    if (expr.isList()) {
-      IAST list = (IAST) expr;
-      IAST currInRow = (IAST) list.arg1();
-      if (currInRow.isAST0()) {
-        // special case 0-Matrix
-        return new IRational[0][0];
-      }
-      final int rowSize = expr.argSize();
-      final int colSize = currInRow.argSize();
-      final IRational[][] elements = new IRational[rowSize][colSize];
-      for (int i = 1; i < rowSize + 1; i++) {
-        currInRow = (IAST) list.get(i);
-        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+    final IRational[][] elements = new IRational[array.length][];
+    for (int i = 0; i < array.length; i++) {
+      final IExpr[] row = array[i];
+      elements[i] = new IRational[row.length];
+      for (int j = 0; j < row.length; j++) {
+        if (!(row[j] instanceof IRational)) {
           return null;
         }
-        for (int j = 1; j < colSize + 1; j++) {
-          IExpr elem = currInRow.get(j);
-          if (elem.isRational()) {
-            elements[i - 1][j - 1] = ((IRational) elem);
-          } else {
-            return null;
-          }
-        }
+        elements[i][j] = (IRational) row[j];
       }
-      return elements;
     }
-    return null;
+    return elements;
   }
 
   public static IRational[][] list2RationalMatrix(final IExpr expr)

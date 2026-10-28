@@ -10,7 +10,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class Activate extends AbstractFunctionOptionEvaluator {
 
@@ -22,14 +21,7 @@ public class Activate extends AbstractFunctionOptionEvaluator {
     IExpr expr = ast.arg1();
     boolean heads = option[0].isTrue();
 
-    Predicate<IExpr> matcher;
-    if (argSize == 2) {
-      final IPatternMatcher pm = engine.evalPatternMatcher(ast.arg2());
-      matcher = s -> pm.test(s, engine);
-    } else {
-      matcher = s -> true;
-    }
-
+    Predicate<IExpr> matcher = Inactivate.patternPredicate(ast, argSize, engine);
     return activate(expr, matcher, heads, engine);
   }
 

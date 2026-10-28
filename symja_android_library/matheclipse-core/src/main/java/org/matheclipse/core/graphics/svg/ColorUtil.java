@@ -550,4 +550,25 @@ public final class ColorUtil {
     double d = expr.evalfNaN();
     return Double.isNaN(d) ? def : d;
   }
+
+  /**
+   * The four sides <code>{left, right, bottom, top}</code> of a margin or padding: one number for
+   * all sides or <code>{{left, right}, {bottom, top}}</code>; {@code null} for any other form.
+   */
+  static double[] sideValues(IExpr value) {
+    double all = dbl(value, Double.NaN);
+    if (!Double.isNaN(all)) {
+      return new double[] {all, all, all, all};
+    }
+    if (value.isList() && ((IAST) value).argSize() >= 2) {
+      IAST list = (IAST) value;
+      if (list.arg1().isList() && list.arg2().isList()) {
+        IAST lr = (IAST) list.arg1();
+        IAST bt = (IAST) list.arg2();
+        return new double[] {dbl(lr.arg1(), 0), dbl(lr.arg2(), 0), dbl(bt.arg1(), 0),
+            dbl(bt.arg2(), 0)};
+      }
+    }
+    return null;
+  }
 }

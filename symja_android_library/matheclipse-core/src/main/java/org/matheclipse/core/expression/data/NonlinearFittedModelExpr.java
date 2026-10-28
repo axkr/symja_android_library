@@ -11,7 +11,6 @@ import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -281,19 +280,9 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
     double[] errors = standardErrors(engine);
     int df = degreesOfFreedom();
     TDistribution t = df > 0 ? new TDistribution(df) : null;
-    IExpr[][] rows = new IExpr[fit.values.length][4];
+    IExpr[][] rows = new IExpr[fit.values.length][];
     for (int i = 0; i < rows.length; i++) {
-      double estimate = fit.values[i];
-      rows[i][0] = F.num(estimate);
-      double error = errors == null ? Double.NaN : errors[i];
-      if (!(error > 0.0) || Double.isNaN(estimate) || t == null) {
-        rows[i][1] = rows[i][2] = rows[i][3] = S.Indeterminate;
-        continue;
-      }
-      double statistic = estimate / error;
-      rows[i][1] = F.num(error);
-      rows[i][2] = F.num(statistic);
-      rows[i][3] = F.num(2.0 * t.cumulativeProbability(-Math.abs(statistic)));
+      rows[i] = statisticsRow(fit.values[i], errors == null ? Double.NaN : errors[i], t);
     }
     return rows;
   }
@@ -310,18 +299,8 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
 
   /** The parameter table, one row per parameter. */
   private IExpr parameterTable(EvalEngine engine) {
-    IExpr[][] rows = parameterStatistics(engine);
     IAST parameters = toData().parameters;
-    IASTAppendable grid = F.ListAlloc(rows.length + 1);
-    grid.append(F.List(F.stringx(""), F.stringx("Estimate"), F.stringx("Standard Error"),
-        F.stringx("t\u2010Statistic"), F.stringx("P\u2010Value")));
-    for (int i = 0; i < rows.length; i++) {
-      IASTAppendable row = F.ListAlloc(5);
-      row.append(parameters.get(i + 1));
-      row.appendAll(rows[i], 0, 4);
-      grid.append(row);
-    }
-    return dialogGrid(grid);
+    return parameterTable(parameterStatistics(engine), i -> parameters.get(i + 1));
   }
 
   @Override

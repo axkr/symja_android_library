@@ -274,6 +274,7 @@ public class AST1 extends AST0 {
   public void forEach(Consumer<? super IExpr> action, int startOffset) {
     switch (startOffset) {
       case 0:
+        // CPD-OFF arity specialization of the AST classes, kept apart for speed
         action.accept(arg0);
         action.accept(arg1);
         break;
@@ -327,6 +328,7 @@ public class AST1 extends AST0 {
 
   @Override
   public void forEach(ObjIntConsumer<? super IExpr> action) {
+  // CPD-ON
     action.accept(arg1, 1);
   }
 
@@ -427,6 +429,7 @@ public class AST1 extends AST0 {
   @Override
   public boolean isPower() {
     return false;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /** {@inheritDoc} */
@@ -457,6 +460,7 @@ public class AST1 extends AST0 {
   @Override
   public IExpr last() {
     return arg1;
+    // CPD-ON
   }
 
   /** {@inheritDoc} */

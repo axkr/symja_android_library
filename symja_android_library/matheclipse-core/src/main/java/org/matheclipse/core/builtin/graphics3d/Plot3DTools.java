@@ -10,6 +10,7 @@ import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionClip;
+import org.matheclipse.core.graphics.Vec3;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -1345,7 +1346,7 @@ public final class Plot3DTools {
         // by construction. Forcing it towards increasing z instead would be right for a height
         // field and wrong for anything that closes on itself: on the underside of a sphere the
         // outward normal points down, and flipping it there left those faces unlit.
-        double[] n = cross(du, dv);
+        double[] n = Vec3.cross(du, dv);
         double length = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
         if (!(length > 1e-12)) {
           continue;
@@ -1363,13 +1364,13 @@ public final class Plot3DTools {
     double[] backward = at(grid, i - di, j - dj, rows, cols, wrapU, wrapV);
     double[] center = grid[i][j];
     if (forward != null && backward != null) {
-      return subtract(forward, backward);
+      return Vec3.subtract(forward, backward);
     }
     if (forward != null) {
-      return subtract(forward, center);
+      return Vec3.subtract(forward, center);
     }
     if (backward != null) {
-      return subtract(center, backward);
+      return Vec3.subtract(center, backward);
     }
     return null;
   }
@@ -1389,15 +1390,6 @@ public final class Plot3DTools {
       j = Math.floorMod(j, cols);
     }
     return grid[i][j];
-  }
-
-  private static double[] subtract(double[] a, double[] b) {
-    return new double[] {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
-  }
-
-  private static double[] cross(double[] a, double[] b) {
-    return new double[] {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0]};
   }
 
   /**
@@ -1433,6 +1425,22 @@ public final class Plot3DTools {
         new IExpr[] {F.Rule(S.PlotRange, options[X_PLOT_RANGE]),
             F.Rule(S.BoxRatios, automaticBoxRatios(options[X_BOX_RATIOS], graphicsList)),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, PLOT_LIGHTING)});
+  }
+
+  /**
+   * The default options of a plot over the box from <code>min</code> to <code>max</code>: that box
+   * as <code>PlotRange</code>, <code>BoxRatios -> {1, 1, 1}</code>, <code>Axes -> True</code> and,
+   * if <code>lighting</code> is set, the plot lighting.
+   */
+  static IExpr[] cubeDefaults(double[] min, double[] max, boolean lighting) {
+    IExpr plotRange =
+        F.Rule(S.PlotRange, F.List(F.List(F.num(min[0]), F.num(max[0])),
+            F.List(F.num(min[1]), F.num(max[1])), F.List(F.num(min[2]), F.num(max[2]))));
+    IExpr boxRatios = F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1));
+    IExpr axes = F.Rule(S.Axes, S.True);
+    return lighting
+        ? new IExpr[] {plotRange, boxRatios, axes, F.Rule(S.Lighting, PLOT_LIGHTING)}
+        : new IExpr[] {plotRange, boxRatios, axes};
   }
 
   /**

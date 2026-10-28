@@ -378,6 +378,18 @@ public class GraphicsOptions {
         .add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh);
   }
 
+  /**
+   * The list plot options with a frame, no axes and aspect ratio 1, plus the
+   * {@link #densityExtras(OptionSet)} of <code>DensityPlot</code> and <code>ListDensityPlot</code>.
+   */
+  public static OptionSet densityPlotOptions() {
+    IExpr[] defaults = listPlotDefaultOptionValues(false, true);
+    defaults[X_FRAME] = S.True;
+    defaults[X_AXES] = S.False;
+    defaults[X_ASPECTRATIO] = F.C1;
+    return densityExtras(new OptionSet().add(listPlotDefaultOptionKeys(), defaults));
+  }
+
   /** Options of the plots that paint a grid of cells. */
   public static OptionSet rasterExtras(OptionSet set) {
     return set.add(S.Automatic, S.ColorFunction, S.ColorRules, S.MaxPlotPoints, S.MeshStyle,
@@ -666,6 +678,21 @@ public class GraphicsOptions {
     return F.Line(F.List(//
         F.List(F.num(x0 + i1 * stepX), F.num(y0 + j1 * stepY)), //
         F.List(F.num(x0 + i2 * stepX), F.num(y0 + j2 * stepY))));
+  }
+
+  /**
+   * A <code>RGBColor</code>, <code>Hue</code>, <code>GrayLevel</code> or <code>CMYKColor</code>
+   * expression or one of the basic named colours; unlike {@link #isColorExpr(IExpr)} no
+   * <code>Opacity</code> or <code>Directive</code>.
+   */
+  public static boolean isBasicColor(IExpr e) {
+    if (e.isAST()) {
+      IExpr head = e.head();
+      return head == S.RGBColor || head == S.Hue || head == S.GrayLevel || head == S.CMYKColor;
+    }
+    return e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue || e == S.Black
+        || e == S.White || e == S.Gray || e == S.Yellow || e == S.Cyan || e == S.Magenta
+        || e == S.Orange || e == S.Pink || e == S.Purple || e == S.Brown);
   }
 
   /** Anything a 2D primitive list may carry as a colour directive. */
@@ -1088,45 +1115,40 @@ public class GraphicsOptions {
     json.set("color", arrayNode);
   }
 
-  public static void setColor(ObjectNode json, IAST color, IAST defaultColor, boolean color3D) {
-    if (color.isPresent()) {
-      if (color.isAST(S.RGBColor, 4, 5)) {
-        double red = color.arg1().toDoubleDefault(0.0);
-        double green = color.arg2().toDoubleDefault(0.0);
-        double blue = color.arg3().toDoubleDefault(0.0);
+  /**
+   * The arguments <code>r, g, b[, a]</code> of a color <code>RGBColor(r, g, b[, a])</code> or
+   * <code>RGBColor({r, g, b[, a]})</code>.
+   *
+   * @return <code>color</code> itself, the list argument of <code>color</code>, or
+   *         <code>null</code> if <code>color</code> is not of one of these forms
+   */
+  private static IAST rgbArgs(IAST color) {
+    if (color.isAST(S.RGBColor, 4, 5)) {
+      return color;
+    }
+    if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4, 5)) {
+      return (IAST) color.arg1();
+    }
+    return null;
+  }
 
-        ArrayNode arrayNode = json.arrayNode();
-        arrayNode.add(red);
-        arrayNode.add(green);
-        arrayNode.add(blue);
-        json.set("color", arrayNode);
-        return;
-      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4, 5)) {
-        IAST list = (IAST) color.arg1();
-        // if (color.size() == 5) {
-        // double opacity = list.arg4().toDoubleDefault(1.0);
-        // json.put("opacity", opacity);
-        // }
-        double red = list.arg1().toDoubleDefault(0.0);
-        double green = list.arg2().toDoubleDefault(0.0);
-        double blue = list.arg3().toDoubleDefault(0.0);
-        ArrayNode arrayNode = json.arrayNode();
-        arrayNode.add(red);
-        arrayNode.add(green);
-        arrayNode.add(blue);
-        json.set("color", arrayNode);
-        return;
-      }
+  /** The JSON array <code>[r, g, b]</code> of the color arguments <code>rgb</code>. */
+  private static ArrayNode rgbArray(ObjectNode json, IAST rgb) {
+    ArrayNode arrayNode = json.arrayNode();
+    arrayNode.add(rgb.arg1().toDoubleDefault(0.0));
+    arrayNode.add(rgb.arg2().toDoubleDefault(0.0));
+    arrayNode.add(rgb.arg3().toDoubleDefault(0.0));
+    return arrayNode;
+  }
+
+  public static void setColor(ObjectNode json, IAST color, IAST defaultColor, boolean color3D) {
+    IAST rgb = rgbArgs(color);
+    if (rgb != null) {
+      json.set("color", rgbArray(json, rgb));
+      return;
     }
     if (defaultColor.isAST(S.RGBColor, 4, 5)) {
-      double red = defaultColor.arg1().toDoubleDefault(0.0);
-      double green = defaultColor.arg2().toDoubleDefault(0.0);
-      double blue = defaultColor.arg3().toDoubleDefault(0.0);
-      ArrayNode arrayNode = json.arrayNode();
-      arrayNode.add(red);
-      arrayNode.add(green);
-      arrayNode.add(blue);
-      json.set("color", arrayNode);
+      json.set("color", rgbArray(json, defaultColor));
     } else {
       // black
       ArrayNode arrayNode = json.arrayNode();
@@ -1154,36 +1176,18 @@ public class GraphicsOptions {
   }
 
   public static void setColorOption(ArrayNode arrayNode, IAST color) {
-    if (color.isPresent()) {
-      if (color.isAST(S.RGBColor, 4, 5)) {
-        double red = color.arg1().toDoubleDefault(0.0);
-        double green = color.arg2().toDoubleDefault(0.0);
-        double blue = color.arg3().toDoubleDefault(0.0);
-        ObjectNode g = arrayNode.objectNode();
-        setColorOption(g, red, green, blue);
-        arrayNode.add(g);
-        double opacity = 1.0;
-        if (color.argSize() == 4) {
-          opacity = color.arg4().toDoubleDefault(1.0);
-        }
-        optionDouble(arrayNode, "opacity", opacity);
-        return;
-      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4, 5)) {
-        IAST list = (IAST) color.arg1();
-        double red = list.arg1().toDoubleDefault(0.0);
-        double green = list.arg2().toDoubleDefault(0.0);
-        double blue = list.arg3().toDoubleDefault(0.0);
-        ObjectNode g = arrayNode.objectNode();
-        setColorOption(g, red, green, blue);
-        arrayNode.add(g);
-        double opacity = 1.0;
-        if (list.argSize() == 4) {
-          opacity = list.arg4().toDoubleDefault(1.0);
-        }
-
-        GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
-        return;
+    IAST rgb = rgbArgs(color);
+    if (rgb != null) {
+      ObjectNode g = arrayNode.objectNode();
+      g.put("option", "color");
+      g.set("value", rgbArray(g, rgb));
+      arrayNode.add(g);
+      double opacity = 1.0;
+      if (rgb.argSize() == 4) {
+        opacity = rgb.arg4().toDoubleDefault(1.0);
       }
+      optionDouble(arrayNode, "opacity", opacity);
+      return;
     }
     // black
     ObjectNode g = arrayNode.objectNode();
@@ -2044,8 +2048,9 @@ public class GraphicsOptions {
   }
 
   /**
-   * The options of <code>ArrayPlot</code> and <code>MatrixPlot</code> which are read back off the
-   * call, because the options array holds resolved values rather than the rules the caller wrote.
+   * The options of <code>ArrayPlot</code>, <code>MatrixPlot</code> and the density and contour
+   * plots which are read back off the call, because the options array holds resolved values
+   * rather than the rules the caller wrote.
    */
   public static final class MatrixPlotOptions {
     public boolean colorFunctionScaling = true;
@@ -2701,53 +2706,6 @@ public class GraphicsOptions {
     }
   }
 
-  public boolean graphicsExtent2D(ObjectNode objectNode, IExpr plotRange) {
-    if (plotRange.isList2()) {
-      IExpr arg1 = plotRange.first();
-      IExpr arg2 = plotRange.second();
-      if (arg1.isList2() && arg2.isList2()) {
-        double xMin = arg1.first().evalfNaN();
-        double xMax = arg1.second().evalfNaN();
-        double yMin = arg2.first().evalfNaN();
-        double yMax = arg2.second().evalfNaN();
-        if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin) || Double.isNaN(yMax)) {
-          return false;
-        }
-        boundingbox[0] = xMin;
-        boundingbox[1] = xMax;
-        boundingbox[2] = yMin;
-        boundingbox[3] = yMax;
-        objectNode.put("xmin", boundingbox[0]);
-        objectNode.put("xmax", boundingbox[1]);
-        objectNode.put("ymin", boundingbox[2]);
-        objectNode.put("ymax", boundingbox[3]);
-        return true;
-      } else {
-        objectNode.put("xmin", boundingbox[0]);
-        objectNode.put("xmax", boundingbox[1]);
-        double yMin = arg1.evalfNaN();
-        double yMax = arg2.evalfNaN();
-        if (Double.isNaN(yMin) || Double.isNaN(yMax)) {
-          return false;
-        }
-        boundingbox[2] = yMin;
-        boundingbox[3] = yMax;
-        objectNode.put("ymin", boundingbox[2]);
-        objectNode.put("ymax", boundingbox[3]);
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public boolean graphicsExtent2D(ObjectNode objectNode) {
-    objectNode.put("xmin", boundingbox[0]);
-    objectNode.put("xmax", boundingbox[1]);
-    objectNode.put("ymin", boundingbox[2]);
-    objectNode.put("ymax", boundingbox[3]);
-    return true;
-  }
-
   public int incColorIndex() {
     if (PLOT_COLORS.length - 1 == colorIndex) {
       colorIndex = 1;
@@ -2768,64 +2726,6 @@ public class GraphicsOptions {
     return joined;
   }
 
-
-  public void mergeOptions(IAST listOfOptions, double[] yMinMax) {
-    for (int i = 1; i < listOfOptions.size(); i++) {
-      if (listOfOptions.get(i).isRuleAST()) {
-        IExpr option = listOfOptions.get(i).first();
-        if (option == S.PlotRange) {
-          IExpr plotRange = listOfOptions.get(i).second();
-          if (plotRange.isList2()) {
-            IExpr arg1 = plotRange.first();
-            IExpr arg2 = plotRange.second();
-            if (arg1.isList2() && arg2.isList2()) {
-              double xMin = arg1.first().evalfNaN();
-              double xMax = arg1.second().evalfNaN();
-              double yMin = arg2.first().evalfNaN();
-              double yMax = arg2.second().evalfNaN();
-              // only assign if every bound is numeric - ignore false plot ranges
-              if (!Double.isNaN(xMin) && !Double.isNaN(xMax) && !Double.isNaN(yMin)
-                  && !Double.isNaN(yMax)) {
-                boundingbox[0] = xMin;
-                boundingbox[1] = xMax;
-                boundingbox[2] = yMin;
-                boundingbox[3] = yMax;
-                yMinMax[0] = yMin;
-                yMinMax[1] = yMax;
-              }
-            } else if (arg2.isList2()) {
-              // {All, {ymin, ymax}}: the x axis keeps its own range
-              double yMin = arg2.first().evalfNaN();
-              double yMax = arg2.second().evalfNaN();
-              if (!Double.isNaN(yMin) && !Double.isNaN(yMax)) {
-                boundingbox[2] = yMin;
-                boundingbox[3] = yMax;
-                yMinMax[0] = yMin;
-                yMinMax[1] = yMax;
-              }
-            } else if (arg1.isList2()) {
-              // {{xmin, xmax}, All}: the y axis keeps its own range
-              double xMin = arg1.first().evalfNaN();
-              double xMax = arg1.second().evalfNaN();
-              if (!Double.isNaN(xMin) && !Double.isNaN(xMax)) {
-                boundingbox[0] = xMin;
-                boundingbox[1] = xMax;
-              }
-            } else {
-              double yMin = arg1.evalfNaN();
-              double yMax = arg2.evalfNaN();
-              if (!Double.isNaN(yMin) && !Double.isNaN(yMax)) {
-                boundingbox[2] = yMin;
-                boundingbox[3] = yMax;
-                yMinMax[0] = yMin;
-                yMinMax[1] = yMax;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
 
   public double opacity() {
     return opacity;

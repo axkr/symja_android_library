@@ -98,17 +98,12 @@ public class FourierSequenceTransform extends AbstractFunctionOptionEvaluator {
       // `1` is not a valid variable.
       return Errors.printMessage(ast.topHead(), "ivar", F.List(n), engine);
     }
-    IExpr a = F.C1;
-    IExpr b = F.C1;
-    if (option[0].isList2()) {
-      a = option[0].first();
-      b = option[0].second();
-    } else if (!option[0].equals(S.Automatic)) {
+    final IExpr[] ab = FourierSeries.fourierParametersAB(option[0]);
+    if (ab == null) {
       return F.NIL;
     }
-    if (b.isZero() || !b.isRealResult()) {
-      return F.NIL;
-    }
+    final IExpr a = ab[0];
+    final IExpr b = ab[1];
     try {
       final Support support = support(u, n, engine);
       if (!support.isFinite() || (!support.isEmpty()

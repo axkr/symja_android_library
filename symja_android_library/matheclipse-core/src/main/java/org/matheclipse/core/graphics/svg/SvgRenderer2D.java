@@ -595,6 +595,7 @@ public final class SvgRenderer2D {
     double total = pathLength(pixels);
     if (total <= 0) {
       return pixels.get(pixels.size() - 1);
+    // CPD-OFF polyline walks with different stopping rules
     }
     double target = total * t;
     double travelled = 0;
@@ -603,6 +604,7 @@ public final class SvgRenderer2D {
       double[] b = pixels.get(i + 1);
       double len = Math.hypot(b[0] - a[0], b[1] - a[1]);
       if (travelled + len >= target) {
+      // CPD-ON
         double u = len <= 0 ? 0 : (target - travelled) / len;
         return new double[] {a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u};
       }
@@ -615,6 +617,7 @@ public final class SvgRenderer2D {
     double total = pathLength(pixels);
     if (total <= 0) {
       return null;
+    // CPD-OFF polyline walks with different stopping rules
     }
     double target = total * t;
     double travelled = 0;
@@ -623,6 +626,7 @@ public final class SvgRenderer2D {
       double[] b = pixels.get(i + 1);
       double len = Math.hypot(b[0] - a[0], b[1] - a[1]);
       if (travelled + len >= target || i + 2 == pixels.size()) {
+      // CPD-ON
         if (len <= 0) {
           continue;
         }

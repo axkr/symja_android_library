@@ -98,6 +98,7 @@ public class FourierDCTMatrix extends AbstractFunctionEvaluator {
   }
 
   private static IExpr dct4(IExpr factor, IFraction nReciprocalQQ, int r, int s) {
+    // CPD-OFF closed-form DCT and DST kernel formulas
     return F.Times(factor, F.Cos(
         F.Times(nReciprocalQQ, S.Pi, F.Plus(F.ZZ(r + 1), F.CN1D2), F.Plus(F.ZZ(s + 1), F.CN1D2))));
   }
@@ -115,3 +116,4 @@ public class FourierDCTMatrix extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {}
 }
+// CPD-ON

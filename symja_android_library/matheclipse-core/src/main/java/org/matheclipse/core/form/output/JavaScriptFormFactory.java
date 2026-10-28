@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.PiecewiseUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -15,7 +14,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
@@ -375,17 +373,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   @Override
   public void convertAST(final StringBuilder buf, final IAST function, final int precedence,
       boolean eval) {
-    if (eval && function.isNumericFunction(true)) {
-      try {
-        INumber value = function.evalNumber();
-        if (value != null) {
-          convertNumber(buf, value, precedence, NO_PLUS_CALL);
-          return;
-        }
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        //
-      }
+    if (eval && convertNumericValue(buf, function, precedence)) {
+      return;
     }
     IExpr head = function.head();
     if (head.isSymbol()) {
@@ -485,13 +474,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
           buf.append(")");
           return;
         }
-      } else if (function.head() == S.Piecewise && function.size() > 1) {
-        int[] dim = function.isPiecewise();
-        if (dim != null && convertPiecewise(dim, function, buf)) {
-          return;
-        }
-      } else if (function.isAST(S.ConditionalExpression, 3)) {
-        convertConditionalExpression(function, buf);
+      } else if (convertPiecewiseLike(function, buf)) {
         return;
       } else if (function.head() == S.HeavisideTheta && function.size() >= 2) {
         convertHeavisideTheta(function, buf);
@@ -500,12 +483,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         convertLogisticSigmoid(function, buf);
         return;
       }
-      if (!(function.isAST(S.Min, 3) || function.isAST(S.Max, 3))) {
-        IExpr piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
-        int[] dim = piecewiseExpand.isPiecewise();
-        if (dim != null && convertPiecewise(dim, (IAST) piecewiseExpand, buf)) {
-          return;
-        }
+      if (!(function.isAST(S.Min, 3) || function.isAST(S.Max, 3))
+          && convertPiecewiseExpanded(function, buf)) {
+        return;
       }
     } else {
       if (function.isPower()) {
@@ -517,13 +497,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       } else if (function.isNegativeInfinity()) {
         buf.append("Number.NEGATIVE_INFINITY");
         return;
-      } else if (function.head() == S.Piecewise && function.size() > 1) {
-        int[] dim = function.isPiecewise();
-        if (dim != null && convertPiecewise(dim, function, buf)) {
-          return;
-        }
-      } else if (function.isAST(S.ConditionalExpression, 3)) {
-        convertConditionalExpression(function, buf);
+      } else if (convertPiecewiseLike(function, buf)) {
         return;
       } else if (function.isAST(S.Cot, 2)) {
         buf.append("(1/Math.tan(");
@@ -541,9 +515,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         buf.append("))))");
         return;
       }
-      IExpr piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
-      int[] dim = piecewiseExpand.isPiecewise();
-      if (dim != null && convertPiecewise(dim, (IAST) piecewiseExpand, buf)) {
+      if (convertPiecewiseExpanded(function, buf)) {
         return;
       }
     }
@@ -624,6 +596,34 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     }
     buf.append("pow");
     convertArgs(buf, powerAST.head(), powerAST);
+  }
+
+  /**
+   * Convert a <code>Piecewise</code> function or a <code>ConditionalExpression</code>.
+   *
+   * @return <code>true</code> if the function was written into <code>buf</code>
+   */
+  private boolean convertPiecewiseLike(final IAST function, final StringBuilder buf) {
+    if (function.head() == S.Piecewise && function.size() > 1) {
+      int[] dim = function.isPiecewise();
+      return dim != null && convertPiecewise(dim, function, buf);
+    } else if (function.isAST(S.ConditionalExpression, 3)) {
+      convertConditionalExpression(function, buf);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Convert the function after rewriting it as a <code>Piecewise</code> function.
+   *
+   * @return <code>true</code> if the function could be rewritten and was written into
+   *         <code>buf</code>
+   */
+  private boolean convertPiecewiseExpanded(final IAST function, final StringBuilder buf) {
+    IExpr piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
+    int[] dim = piecewiseExpand.isPiecewise();
+    return dim != null && convertPiecewise(dim, (IAST) piecewiseExpand, buf);
   }
 
   private void convertConditionalExpression(final IAST function, final StringBuilder buf) {

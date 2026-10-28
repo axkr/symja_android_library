@@ -539,6 +539,7 @@ public class Sequences {
         start = limits.arg2();
         stop = limits.arg3();
       } else if (limits.isList2()) {
+        // CPD-OFF port of the sympy sequence constructors, which duplicate the limits parsing
         x = _find_x(formula);
         start = limits.arg1();
         stop = limits.arg2();
@@ -554,6 +555,7 @@ public class Sequences {
     }
 
     private static IExpr _find_x(IExpr formula) {
+    // CPD-ON
       VariablesSet free = new VariablesSet(formula);
       if (free.size() == 1) {
         return free.getArrayList().get(0);
@@ -626,6 +628,7 @@ public class Sequences {
         start = limits.arg2();
         stop = limits.arg3();
       } else if (limits.isList2()) {
+        // CPD-OFF port of the sympy sequence constructors, which duplicate the limits parsing
         x = findX(periodical);
         start = limits.arg1();
         stop = limits.arg2();
@@ -641,6 +644,7 @@ public class Sequences {
       seqAST.set(2, limits);
     }
 
+    // CPD-ON
     private static IExpr findX(IExpr periodical) {
       VariablesSet set = new VariablesSet(periodical);
       if (set.size() == 1) {

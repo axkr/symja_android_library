@@ -189,6 +189,15 @@ public class Wronskian extends AbstractFunctionEvaluator {
     return best;
   }
 
+  /** <code>ExpandAll(lhs - rhs)</code> of an equation, or <code>ExpandAll(expr)</code>. */
+  static IExpr expandedResidual(IExpr equation, EvalEngine engine) {
+    IExpr residual = equation;
+    if (equation.isEqual()) {
+      residual = S.Subtract.of(engine, equation.first(), equation.second());
+    }
+    return engine.evaluate(F.ExpandAll(residual));
+  }
+
   /**
    * The Wronskian of a basis of the solutions of a linear differential equation, by Abel's
    * identity: for <code>a[n]*y^(n) + a[n-1]*y^(n-1) + ... == 0</code> it is
@@ -204,11 +213,7 @@ public class Wronskian extends AbstractFunctionEvaluator {
     if (!head.isSymbol()) {
       return F.NIL;
     }
-    IExpr residual = equation;
-    if (equation.isEqual()) {
-      residual = S.Subtract.of(engine, equation.first(), equation.second());
-    }
-    residual = engine.evaluate(F.ExpandAll(residual));
+    IExpr residual = expandedResidual(equation, engine);
 
     IExpr applied = F.unaryAST1(head, variable);
     int n = LinearODEForm.highestDerivativeOrder(residual, head, variable);

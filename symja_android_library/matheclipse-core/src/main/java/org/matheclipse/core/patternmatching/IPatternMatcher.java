@@ -1,5 +1,8 @@
 package org.matheclipse.core.patternmatching;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
@@ -293,6 +296,31 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    */
   public final boolean isFlagOn(int flags) {
     return (fSetFlags & flags) == flags;
+  }
+
+  /**
+   * Write the flags, the left-hand-side and <code>rhs</code> of a rule for serialization.
+   *
+   * @see #readRule(ObjectInput)
+   */
+  protected final void writeRule(ObjectOutput objectOutput, IExpr rhs) throws IOException {
+    objectOutput.writeShort((short) fSetFlags);
+    objectOutput.writeObject(fLhsPatternExpr);
+    objectOutput.writeObject(rhs);
+  }
+
+  /**
+   * Read the flags and the left-hand-side of a rule written by
+   * {@link #writeRule(ObjectOutput, IExpr)}.
+   *
+   * @return the right-hand-side of the rule
+   */
+  protected final IExpr readRule(ObjectInput objectInput)
+      throws IOException, ClassNotFoundException {
+    // mask the sign extension - the flags were written with writeShort()
+    fSetFlags = objectInput.readShort() & 0xFFFF;
+    fLhsPatternExpr = (IExpr) objectInput.readObject();
+    return (IExpr) objectInput.readObject();
   }
 
   /**

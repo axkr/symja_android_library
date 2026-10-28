@@ -111,22 +111,7 @@ public class ExportString extends AbstractEvaluator {
       } else if (format.equals(Extension.TABLE)) {
         int[] dims = arg1.isMatrix();
         if (dims != null) {
-          for (int j = 0; j < dims[0]; j++) {
-            IAST rowList = (IAST) arg1.getAt(j + 1);
-            for (int i = 1; i <= dims[1]; i++) {
-              if (rowList.get(i).isReal()) {
-                writer.append(rowList.get(i).toString());
-              } else {
-                writer.append("\"");
-                writer.append(rowList.get(i).toString());
-                writer.append("\"");
-              }
-              if (i < dims[1]) {
-                writer.append(" ");
-              }
-            }
-            writer.append("\n");
-          }
+          Export.writeTable(writer, arg1, dims);
           return F.stringx(writer.toString());
         } else {
           if (arg1.isList()) {

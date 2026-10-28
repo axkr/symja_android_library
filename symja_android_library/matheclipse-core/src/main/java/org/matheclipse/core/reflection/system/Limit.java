@@ -5218,6 +5218,21 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         && engine.evalQuiet(F.unaryAST1(S.Reduce, t.second())).isFalse(), true);
   }
 
+  /**
+   * Test if the limit point is finite and <code>f</code> has an even root, a power with a fraction
+   * exponent of even denominator, of an expression depending on the limit variable.
+   *
+   * @param f the function
+   * @param rule the limit rule <code>x -&gt; x0</code>
+   */
+  private static boolean hasEvenRootAtFinitePoint(IExpr f, IAST rule) {
+    return !rule.arg2().isDirectedInfinity()
+        && rule.arg2().isFree(z -> z.isDirectedInfinity(), true)
+        && f.has(y -> y.isPower() && y.exponent().isFraction()
+            && ((IFraction) y.exponent()).denominator().isEven()
+            && !y.base().isFree(rule.arg1(), true), true);
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
@@ -5297,11 +5312,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // The two sides of a point can take different branches of an even root. If both one-sided
       // limits are found, they decide the two-sided one.
       if (direction == Direction.TWO_SIDED && builtinDepth == 0
-          && !rule.arg2().isDirectedInfinity()
-          && rule.arg2().isFree(z -> z.isDirectedInfinity(), true)
-          && arg1.has(y -> y.isPower() && y.exponent().isFraction()
-              && ((IFraction) y.exponent()).denominator().isEven()
-              && !y.base().isFree(rule.arg1(), true), true)) {
+          && hasEvenRootAtFinitePoint(arg1, rule)) {
         IExpr fromBelow = engine.evalQuiet(F.Limit(arg1, rule, F.Rule(S.Direction, F.C1)));
         if (fromBelow.isFree(S.Limit, true) && !fromBelow.isConditionalExpression()) {
           IExpr fromAbove = engine.evalQuiet(F.Limit(arg1, rule, F.Rule(S.Direction, F.CN1)));
@@ -5324,11 +5335,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // An even root takes its branch from the side of the approach, and the expansions take the
       // one of the right side: a limit from below is taken as the limit from above of the
       // function mirrored at the point.
-      if (direction == Direction.FROM_BELOW && !rule.arg2().isDirectedInfinity()
-          && rule.arg2().isFree(z -> z.isDirectedInfinity(), true)
-          && arg1.has(y -> y.isPower() && y.exponent().isFraction()
-              && ((IFraction) y.exponent()).denominator().isEven()
-              && !y.base().isFree(rule.arg1(), true), true)) {
+      if (direction == Direction.FROM_BELOW && hasEvenRootAtFinitePoint(arg1, rule)) {
         IExpr mirrored = engine.evalQuiet(F.subst(arg1, rule.arg1(),
             F.Subtract(F.Times(F.C2, rule.arg2()), rule.arg1())));
         if (mirrored.isPresent() && mirrored.isIndeterminateFree()) {

@@ -71,6 +71,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator
     return F.NIL;
   }
 
+  // CPD-OFF default hooks of two parallel evaluator base classes
   public IExpr e2DblComArg(final IComplexNum d0, final IComplexNum d1) {
     return F.NIL;
   }
@@ -100,6 +101,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator
    * @return <code>F#NIL</code> if no evaluation is possible.
    */
   public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
+  // CPD-ON
     return F.NIL;
   }
 

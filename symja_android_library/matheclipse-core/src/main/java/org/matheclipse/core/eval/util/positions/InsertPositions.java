@@ -6,7 +6,6 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -100,7 +99,7 @@ public class InsertPositions {
           throw new ArgumentTypeStopException("invdt2", F.list(element, ast));
         }
         IExpr key = position.isString() ? position : position.first();
-        final Object[] pair = getAppendableIntPair(ast);
+        final Object[] pair = MapPositions.appendableIntPair(ast, insertASTCache);
         final IAssociation association = (IAssociation) pair[0];
         // IntArrayList insertedPositions = (IntArrayList) pair[1];
         if (level == positions.argSize()) {
@@ -130,12 +129,8 @@ public class InsertPositions {
       throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }
 
-    int p = position.toIntDefault();
-    if (F.isNotPresent(p)) {
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
-    }
-    Object[] pair = getAppendableIntPair(ast);
+    int p = MapPositions.partIndex(position, positions, originalAST);
+    Object[] pair = MapPositions.appendableIntPair(ast, insertASTCache);
     IASTAppendable subResult = (IASTAppendable) pair[0];
     IntArrayList insertedPositions = (IntArrayList) pair[1];
     if (p < 0) {
@@ -238,26 +233,6 @@ public class InsertPositions {
 
   protected int getInsertPositionSize(IntArrayList insertedPositions) {
     return insertedPositions.size();
-  }
-
-
-  /**
-   * Get the pair of [{@link IASTAppendable}, {@link IntArrayList}] list of already inserted
-   * original position numbers.
-   * 
-   * @param ast
-   * @return
-   */
-  protected Object[] getAppendableIntPair(IAST ast) {
-    if (ast.hasFlag(Flag.IS_COPIED)) {
-      IntArrayList value = insertASTCache.get(ast);
-      return new Object[] {ast, value};
-    }
-    IASTAppendable appendable = ast.copyAppendable();
-    appendable.addFlag(Flag.IS_COPIED);
-    IntArrayList list = new IntArrayList();
-    insertASTCache.put(appendable, list);
-    return new Object[] {appendable, list};
   }
 
 }

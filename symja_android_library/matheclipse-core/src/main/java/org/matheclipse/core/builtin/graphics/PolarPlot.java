@@ -31,11 +31,8 @@ public class PolarPlot extends Plot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    if (argSize < 2 || !ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
-      // Range specification `1` is not of the form {x, xmin, xmax}.
-      IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
-      // Range specification `1` is not of the form {x, xmin, xmax}.
-      return Errors.printMessage(S.PolarPlot, "pllim", F.list(arg2), engine);
+    if (!isCurveRange(ast, argSize)) {
+      return pllimMessage(ast, argSize, S.PolarPlot, engine);
     }
 
     if (argSize < ast.argSize()) {
@@ -43,18 +40,8 @@ public class PolarPlot extends Plot {
     }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
-    // PlotMarkers and Mesh are family options appended after the positional block, so they
-    // are read from the call rather than by index
-    graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
-    // the points are adaptive samples of a function, not data, so markers are spaced out
-    graphicsOptions.setSampledCurve(true);
-    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
-    graphicsOptions.readColorFunction(originalAST);
     // a polar curve's colour function is given its angle and radius as well as its coordinates
-    graphicsOptions.setColorFamily(PlotColorFunction.Family.POLAR_2D);
-    graphicsOptions.applyPlotTheme(originalAST);
-    graphicsOptions.readPassThroughOptions(originalAST);
+    readSampledCurveOptions(graphicsOptions, originalAST, PlotColorFunction.Family.POLAR_2D);
     IExpr function = ast.arg1();
     IAST rangeList = (IAST) ast.arg2();
 

@@ -43,13 +43,21 @@ public final class ComplexGamma {
    * poles of <code>Gamma</code> and the branch points of <code>LogGamma</code>.
    */
   public static boolean isSupported(Complex z) {
+    return isRegular(z, MAX_NORM);
+  }
+
+  /**
+   * Whether <code>z</code> is a number, not a non-positive integer, and has a norm of at most
+   * <code>maxNorm</code>.
+   */
+  public static boolean isRegular(Complex z, double maxNorm) {
     if (z == null || Double.isNaN(z.getReal()) || Double.isNaN(z.getImaginary())) {
       return false;
     }
     if (z.getImaginary() == 0.0 && z.getReal() <= 0.0 && Math.rint(z.getReal()) == z.getReal()) {
       return false;
     }
-    return z.norm() <= MAX_NORM;
+    return z.norm() <= maxNorm;
   }
 
   /**

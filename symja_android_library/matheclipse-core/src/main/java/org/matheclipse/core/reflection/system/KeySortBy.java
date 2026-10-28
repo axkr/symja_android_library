@@ -23,6 +23,35 @@ public class KeySortBy extends AbstractFunctionEvaluator {
     }
   }
 
+  /**
+   * Sort the rules stably by the value of <code>f(key)</code>.
+   *
+   * @param rules a list of rules
+   * @param f the function applied to the keys
+   * @param engine the evaluation engine
+   */
+  private static KeyEvaluation[] sortedByKey(IAST rules, IExpr f, EvalEngine engine) {
+    int size = rules.argSize();
+    KeyEvaluation[] evals = new KeyEvaluation[size];
+
+    for (int i = 1; i <= size; i++) {
+      IAST rule = (IAST) rules.get(i);
+      IExpr key = rule.arg1();
+      IExpr evaluatedKey = engine.evaluate(F.unaryAST1(f, key));
+      evals[i - 1] = new KeyEvaluation(rule, evaluatedKey, i);
+    }
+
+    Arrays.sort(evals, (a, b) -> {
+      int cmp = a.evaluatedKey.compareTo(b.evaluatedKey);
+      if (cmp == 0) {
+        // ensure stable sort on ties
+        return Integer.compare(a.originalIndex, b.originalIndex);
+      }
+      return cmp;
+    });
+    return evals;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     if (ast.isAST1()) {
@@ -37,55 +66,18 @@ public class KeySortBy extends AbstractFunctionEvaluator {
       IExpr arg2 = ast.arg2(); // the sorting function f
 
       if (arg1.isAssociation()) {
-        IAssociation assoc = (IAssociation) arg1;
-        int size = assoc.argSize();
-        KeyEvaluation[] evals = new KeyEvaluation[size];
-
-        for (int i = 1; i <= size; i++) {
-          IAST rule = assoc.getRule(i);
-          IExpr key = rule.arg1();
-          IExpr evaluatedKey = engine.evaluate(F.unaryAST1(arg2, key));
-          evals[i - 1] = new KeyEvaluation(rule, evaluatedKey, i);
-        }
-
-        Arrays.sort(evals, (a, b) -> {
-          int cmp = a.evaluatedKey.compareTo(b.evaluatedKey);
-          if (cmp == 0) {
-            // ensure stable sort on ties
-            return Integer.compare(a.originalIndex, b.originalIndex);
-          }
-          return cmp;
-        });
-
+        KeyEvaluation[] evals = sortedByKey(((IAssociation) arg1).normal(false), arg2, engine);
         IAssociation result = F.assoc();
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < evals.length; i++) {
           result.appendRule(evals[i].rule);
         }
         return result;
 
       } else if (arg1.isListOfRules(false)) {
         IAST list = (IAST) arg1;
-        int size = list.argSize();
-        KeyEvaluation[] evals = new KeyEvaluation[size];
-
-        for (int i = 1; i <= size; i++) {
-          IAST rule = (IAST) list.get(i);
-          IExpr key = rule.arg1();
-          IExpr evaluatedKey = engine.evaluate(F.unaryAST1(arg2, key));
-          evals[i - 1] = new KeyEvaluation(rule, evaluatedKey, i);
-        }
-
-        Arrays.sort(evals, (a, b) -> {
-          int cmp = a.evaluatedKey.compareTo(b.evaluatedKey);
-          if (cmp == 0) {
-            // ensure stable sort on ties
-            return Integer.compare(a.originalIndex, b.originalIndex);
-          }
-          return cmp;
-        });
-
+        KeyEvaluation[] evals = sortedByKey(list, arg2, engine);
         IASTAppendable result = list.copyHead();
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < evals.length; i++) {
           result.append(evals[i].rule);
         }
         return result;

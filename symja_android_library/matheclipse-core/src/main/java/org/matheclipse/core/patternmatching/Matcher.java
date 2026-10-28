@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -179,6 +180,21 @@ public class Matcher implements Function<IExpr, IExpr> {
     // unexpected NIL expression encountered.
     String str = Errors.getMessage("nil", F.CEmptyList, EvalEngine.get());
     throw new ArgumentTypeException(str);
+  }
+
+  /**
+   * Add the pattern-matching rule <code>lhs -&gt; rhs</code> of every <code>lhs = rhs</code> and
+   * <code>lhs := rhs</code> in the list <code>rules</code>; other elements are ignored.
+   *
+   * @param rules a list of <code>Set</code> and <code>SetDelayed</code> definitions
+   */
+  public void caseOfRules(final IAST rules) {
+    for (int i = 1; i < rules.size(); i++) {
+      IExpr arg = rules.get(i);
+      if (arg.isAST(S.SetDelayed, 3) || arg.isAST(S.Set, 3)) {
+        caseOf(arg.first(), arg.second());
+      }
+    }
   }
 
   /**

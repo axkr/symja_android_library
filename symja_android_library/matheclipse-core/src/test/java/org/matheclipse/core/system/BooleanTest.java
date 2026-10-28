@@ -787,6 +787,13 @@ public class BooleanTest extends ExprEvaluatorTestCase {
   public void testExists() {
     check("Exists(a, f(b)>c)", //
         "f(b)>c");
+    // the variable is wrapped in a list when an argument evaluates
+    check("Exists(y, y > 4-1)", //
+        "Exists(y,y>3)");
+    check("Exists(y, y > 4-1, y < 2+3)", //
+        "Exists(y,y>3,y<5)");
+    check("Exists(y, y > 3)", //
+        "Exists(y,y>3)");
   }
 
   @Test
@@ -801,6 +808,14 @@ public class BooleanTest extends ExprEvaluatorTestCase {
   public void testForAll() {
     check("ForAll(a, f(b)>c)", //
         "f(b)>c");
+    check("ForAll(y, y > 4-1)", //
+        "ForAll(y,y>3)");
+    check("ForAll(y, y > 4-1, y < 2+3)", //
+        "ForAll(y,y>3,y<5)");
+    check("ForAll({y, z}, y > 4-1)", //
+        "ForAll({y,z},y>3)");
+    check("ForAll({y, z}, w > 4-1)", //
+        "w>3");
   }
 
   @Test

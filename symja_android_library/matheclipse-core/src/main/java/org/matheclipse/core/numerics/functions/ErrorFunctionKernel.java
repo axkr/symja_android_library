@@ -446,6 +446,7 @@ public final class ErrorFunctionKernel {
       double r = ed * SALZER_EXP_M14; // P_(n+1)/P_n
       double m = mn0;
       for (int n = n0; n <= bigN; n++) {
+        // CPD-OFF unrolled compensated sums of a hot numeric kernel
         final double q = 1.0 / ((double) n * n + fx2);
         final double qq = p * m;
         if (n <= 13) {
@@ -459,6 +460,7 @@ public final class ErrorFunctionKernel {
         t = ssScaled + v;
         eSs += v - (t - ssScaled);
         ssScaled = t;
+        // CPD-ON
         p *= r;
         r *= SALZER_EXP_M12;
         m *= eY2;
@@ -474,6 +476,7 @@ public final class ErrorFunctionKernel {
         p *= r;
         r *= SALZER_EXP_M12;
         m *= eY2i;
+        // CPD-OFF unrolled compensated sums of a hot numeric kernel
         final double q = 1.0 / ((double) n * n + fx2);
         final double qq = p * m;
         if (n <= 13) {
@@ -487,6 +490,7 @@ public final class ErrorFunctionKernel {
         t = ssScaled + v;
         eSs += v - (t - ssScaled);
         ssScaled = t;
+        // CPD-ON
       }
     }
     sc = 0.5 * (sc + eSc);
@@ -849,6 +853,7 @@ public final class ErrorFunctionKernel {
    *
    * @return <code>{re, im}</code>, or <code>null</code> if not covered or not a finite double
    */
+  // CPD-OFF unrolled compensated sums of a hot numeric kernel
   public static double[] erf(double x, double y) {
     if (!Double.isFinite(x) || !Double.isFinite(y)) {
       return null;
@@ -860,6 +865,7 @@ public final class ErrorFunctionKernel {
         return null;
       }
       return x < 0.0 ? finite(c[0] - 1.0, c[1]) : finite(1.0 - c[0], -c[1]);
+      // CPD-ON
     }
     final double[] f = new double[3];
     if (!erfQuadrant(Math.abs(x), Math.abs(y), f)) {
@@ -875,6 +881,7 @@ public final class ErrorFunctionKernel {
    *
    * @return <code>{re, im}</code>, or <code>null</code> if not covered or not a finite double
    */
+  // CPD-OFF unrolled compensated sums of a hot numeric kernel
   public static double[] erfc(double x, double y) {
     if (!Double.isFinite(x) || !Double.isFinite(y)) {
       return null;
@@ -886,6 +893,7 @@ public final class ErrorFunctionKernel {
         return null;
       }
       return x < 0.0 ? finite(2.0 - c[0], -c[1]) : c;
+      // CPD-ON
     }
     final double ax = Math.abs(x);
     final double ay = Math.abs(y);

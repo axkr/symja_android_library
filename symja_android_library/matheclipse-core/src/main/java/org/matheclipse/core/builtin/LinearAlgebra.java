@@ -1530,6 +1530,18 @@ public final class LinearAlgebra {
   }
 
   /**
+   * The complex eigen decomposition of <code>matrix</code> with the default tolerances, the
+   * eigenvalues ordered by descending norm.
+   */
+  private static ComplexEigenDecomposition orderedEigenDecomposition(RealMatrix matrix) {
+    return new OrderedComplexEigenDecomposition(matrix, //
+        ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
+        ComplexEigenDecomposition.DEFAULT_EPSILON, //
+        Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
+        Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
+  }
+
+  /**
    * The first <code>maxValues</code> numeric eigenvalues as a list, a value with a zero imaginary
    * part as a real number.
    *
@@ -1592,11 +1604,7 @@ public final class LinearAlgebra {
         return F.NIL;
       }
       try {
-        ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
-            ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
-            ComplexEigenDecomposition.DEFAULT_EPSILON, //
-            Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
-            Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
+        ComplexEigenDecomposition ced = orderedEigenDecomposition(matrix);
         IAST values = complexToList(ced.getEigenvalues(), maxValues);
         IAST vectors = F.mapRange(0, values.argSize(),
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
@@ -1892,11 +1900,7 @@ public final class LinearAlgebra {
       try {
         // https://github.com/Hipparchus-Math/hipparchus/issues/337
         // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
-        ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
-            ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
-            ComplexEigenDecomposition.DEFAULT_EPSILON, //
-            Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
-            Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
+        ComplexEigenDecomposition ced = orderedEigenDecomposition(matrix);
         return complexToList(ced.getEigenvalues(), maxValues);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
@@ -2144,11 +2148,7 @@ public final class LinearAlgebra {
           return F.NIL;
         }
         // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
-        ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
-            ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
-            ComplexEigenDecomposition.DEFAULT_EPSILON, //
-            Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
-            Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
+        ComplexEigenDecomposition ced = orderedEigenDecomposition(matrix);
         int vectorSize = matrix.getColumnDimension();
         if (maxValues >= 0 && maxValues < vectorSize) {
           vectorSize = maxValues;
@@ -3027,38 +3027,16 @@ public final class LinearAlgebra {
    * {r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}
    * </pre>
    */
-  public static class FromPolarCoordinates extends AbstractEvaluator {
+  public static class FromPolarCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      int dim = arg1.isVector();
-      if (dim > 0) {
-        if (arg1.isAST()) {
-          IAST list = (IAST) arg1;
-          if (dim == 2) {
-            return fromPolarCoordinates2(list.arg1(), list.arg2(), ast, engine);
-          } else if (dim == 3) {
-            return fromPolarCoordinates3(list.arg1(), list.arg2(), list.arg3(), ast, engine);
-          }
-        } else {
-          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-          if (dim == 2) {
-            return fromPolarCoordinates2(vector.getEntry(0), vector.getEntry(1), ast, engine);
-          } else if (dim == 3) {
-            return fromPolarCoordinates3(vector.getEntry(0), vector.getEntry(1), vector.getEntry(2),
-                ast, engine);
-          }
-        }
-      } else if (arg1.isList()) {
-        return ((IAST) arg1).mapThreadEvaled(engine, F.ListAlloc(ast.size()), ast, 1);
+    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+      if (vector.argSize() == 2) {
+        return fromPolarCoordinates2(vector.arg1(), vector.arg2(), ast, engine);
+      } else if (vector.argSize() == 3) {
+        return fromPolarCoordinates3(vector.arg1(), vector.arg2(), vector.arg3(), ast, engine);
       }
       return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
     }
 
     private IExpr fromPolarCoordinates2(IExpr r, IExpr theta, final IAST ast, EvalEngine engine) {
@@ -3079,6 +3057,38 @@ public final class LinearAlgebra {
       return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
           F.Times(r, F.Sin(theta), F.Sin(phi)));
     }
+  }
+
+
+  /**
+   * The coordinate conversions: a vector is converted, a list which is no vector is threaded over.
+   */
+  private abstract static class AbstractCoordinateConversion extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = ast.arg1();
+      if (arg1.isVector() > 0) {
+        return convert(denseVector(arg1), ast, engine);
+      }
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Convert the coordinates <code>vector</code>.
+     *
+     * @return {@link F#NIL} if the number of coordinates isn't supported
+     */
+    protected abstract IExpr convert(IAST vector, final IAST ast, EvalEngine engine);
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
@@ -3087,8 +3097,20 @@ public final class LinearAlgebra {
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
-  }
 
+    /**
+     * The entries of a vector as an {@link IAST}: the vector itself if it is an AST, otherwise (for
+     * example a sparse array) a list of its entries.
+     *
+     * @param vector an expression for which {@link IExpr#isVector()} is positive
+     */
+    private static IAST denseVector(IExpr vector) {
+      if (vector.isAST()) {
+        return (IAST) vector;
+      }
+      return Convert.vector2List(Convert.list2Vector(vector));
+    }
+  }
 
   /**
    * Test if <code>{r, theta, phi}</code> is outside the range <code>r &gt; 0</code>,
@@ -3101,34 +3123,14 @@ public final class LinearAlgebra {
         || (phi.greaterThan(S.Pi).isTrue() || phi.lessEqualThan(F.CNPi).isTrue());
   }
 
-  public static class FromSphericalCoordinates extends AbstractEvaluator {
+  public static class FromSphericalCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      int dim = arg1.isVector();
-      if (dim > 0) {
-        if (arg1.isAST()) {
-          IAST list = (IAST) arg1;
-          if (dim == 3) {
-            return fromSphericalCoordinates(list.arg1(), list.arg2(), list.arg3(), ast, engine);
-          }
-        } else {
-          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-          if (dim == 3) {
-            return fromSphericalCoordinates(vector.getEntry(0), vector.getEntry(1),
-                vector.getEntry(2), ast, engine);
-          }
-        }
-      } else if (arg1.isList()) {
-        return ((IAST) arg1).mapThreadEvaled(engine, F.ListAlloc(ast.size()), ast, 1);
+    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+      if (vector.argSize() == 3) {
+        return fromSphericalCoordinates(vector.arg1(), vector.arg2(), vector.arg3(), ast, engine);
       }
       return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
     }
 
     private IExpr fromSphericalCoordinates(IExpr r, IExpr theta, IExpr phi, final IAST ast,
@@ -3140,14 +3142,6 @@ public final class LinearAlgebra {
       return F.list(F.Times(r, F.Sin(theta), F.Cos(phi)), //
           F.Times(r, F.Sin(theta), F.Sin(phi)), //
           F.Times(r, F.Cos(theta)));
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -6827,112 +6821,28 @@ public final class LinearAlgebra {
    * {Sqrt(x^2+y^2+z^2),ArcCos(x/Sqrt(x^2+y^2+z^2)),ArcTan(y,z)}
    * </pre>
    */
-  public static class ToPolarCoordinates extends AbstractEvaluator {
+  public static class ToPolarCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
-      int dim = arg1.isVector();
-      if (dim > 0) {
-        if (arg1.isAST()) {
-          IAST list = (IAST) arg1;
-          if (dim == 2) {
-            IExpr x = list.arg1();
-            IExpr y = list.arg2();
-            return toPolarCoordinates(x, y);
-          } else if (dim == 3) {
-            IExpr x = list.arg1();
-            IExpr y = list.arg2();
-            IExpr z = list.arg3();
-            return toPolarCoordinates(x, y, z);
-          }
-        } else {
-          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-          if (dim == 2) {
-            IExpr x = vector.getEntry(0);
-            IExpr y = vector.getEntry(1);
-            return toPolarCoordinates(x, y);
-          } else if (dim == 3) {
-            IExpr x = vector.getEntry(0);
-            IExpr y = vector.getEntry(1);
-            IExpr z = vector.getEntry(2);
-            return toPolarCoordinates(x, y, z);
-          }
-        }
-      } else if (arg1.isList()) {
-        IAST list = (IAST) arg1;
-        return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
+    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+      if (vector.argSize() == 2) {
+        return toPolarCoordinates(vector.arg1(), vector.arg2());
+      } else if (vector.argSize() == 3) {
+        return toPolarCoordinates(vector.arg1(), vector.arg2(), vector.arg3());
       }
       return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
 
-  public static class ToSphericalCoordinates extends AbstractEvaluator {
+  public static class ToSphericalCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
-      int dim = arg1.isVector();
-      if (dim > 0) {
-        if (arg1.isAST()) {
-          IAST list = (IAST) arg1;
-          // if (dim == 2) {
-          // IExpr x = list.arg1();
-          // IExpr y = list.arg2();
-          // return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
-          // } else
-          if (dim == 3) {
-            IExpr x = list.arg1();
-            IExpr y = list.arg2();
-            IExpr z = list.arg3();
-            return toSphericalCoordinates(x, y, z);
-          }
-        } else {
-          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-          // if (dim == 2) {
-          // IExpr x = vector.getEntry(0);
-          // IExpr y = vector.getEntry(1);
-          // return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
-          // } else
-          if (dim == 3) {
-            IExpr x = vector.getEntry(0);
-            IExpr y = vector.getEntry(1);
-            IExpr z = vector.getEntry(2);
-            return toSphericalCoordinates(x, y, z);
-          }
-        }
-      } else if (arg1.isList()) {
-        IAST list = (IAST) arg1;
-        return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
+    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+      if (vector.argSize() == 3) {
+        return toSphericalCoordinates(vector.arg1(), vector.arg2(), vector.arg3());
       }
       return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 

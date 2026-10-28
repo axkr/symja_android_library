@@ -70,20 +70,21 @@ final class DSolveODE {
       IExpr equation = F.Equal(f_xy_real, C_1);
 
       // Attempt to extract explicit y(x) from the implicit equation
-      IExpr ySols = engine.evaluate(F.Solve(equation, F.List(y)));
-      IAST extracted = DSolveUtil.extractSolveResults(ySols);
-      if (extracted.argSize() > 0) {
-        IASTAppendable roots = F.ListAlloc(extracted.argSize());
-        for (int i = 1; i <= extracted.argSize(); i++) {
-          // roots.append(engine.evaluate(F.Simplify(extracted.get(i))));
-          roots.append(extracted.get(i));
-        }
-        if (roots.argSize() == 1) {
-          return roots.arg1();
-        } else if (roots.argSize() > 1) {
-          return roots; // Return all roots as a List
-        }
-      }
+      return singleOrList(
+          DSolveUtil.extractSolveResults(engine.evaluate(F.Solve(equation, F.List(y)))));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The only element of <code>roots</code>, all of them as a list if there are more, or
+   * {@link F#NIL} if there are none.
+   */
+  private static IExpr singleOrList(IAST roots) {
+    if (roots.argSize() == 1) {
+      return roots.arg1();
+    } else if (roots.argSize() > 1) {
+      return roots;
     }
     return F.NIL;
   }
@@ -93,6 +94,7 @@ final class DSolveODE {
    * curves <code>f == C</code> are its solutions, or {@link F#NIL} if the equation is not exact or
    * an integral does not close.
    */
+  // CPD-OFF root collection of two solution methods with different follow-up
   private static IExpr exactPotential(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
     // Substitute y(x) with a dummy variable Y to treat it as an independent variable
     // for partial differentiation and integration without triggering the chain rule.
@@ -105,6 +107,7 @@ final class DSolveODE {
     IExpr dNdx = engine.evaluate(F.D(nDummy, x));
 
     IExpr diff = engine.evaluate(F.Subtract(dMdy, dNdx));
+    // CPD-ON
 
     // A pair can be exact without saying so in the form it arrives in, and the integrating factor
     // method hands this one a pair it has just multiplied by mu. The cheap test comes first.
@@ -167,11 +170,7 @@ final class DSolveODE {
         }
         results.append(engine.evaluate(F.Expand(F.Times(x, branch))));
       }
-      if (results.argSize() == 1) {
-        return results.arg1();
-      } else if (results.argSize() > 1) {
-        return results;
-      }
+      return singleOrList(results);
     }
     return F.NIL;
   }
@@ -239,6 +238,7 @@ final class DSolveODE {
    * An integrating factor of <code>M + N*y' == 0</code> depending on <code>x</code> alone or on
    * <code>y</code> alone, or {@link F#NIL}.
    */
+  // CPD-OFF root collection of two solution methods with different follow-up
   private static IExpr integratingFactor(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
     // Substitute y(x) with a dummy variable Y for partial derivatives
     IExpr yDummy = F.Dummy("Y");
@@ -251,6 +251,7 @@ final class DSolveODE {
     // Case 1: Integrating factor depends only on x
     // Check if (dM/dy - dN/dx) / N == f(x)
     // Cancelled, because the ratio is a function of x alone only after the common factor goes:
+    // CPD-ON
     // x^3 + y/x + (y^2 + Log(x))*y' == 0 is exact as it stands, but the coefficient of y' is
     // cleared of its denominator before it arrives here, and the pair which arrives is not. Its
     // integrating factor is 1/x, and the ratio which says so reads
@@ -1678,16 +1679,7 @@ final class DSolveODE {
     DSolveUtil.extractCVars(evaluatedBCs, cVars);
 
     if (cVars.argSize() == 0) {
-      for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
-        IExpr bc = evaluatedBCs.get(k);
-        if (bc.isEqual()) {
-          if (!engine.evaluate(bc).isTrue())
-            return F.CEmptyList;
-        } else if (!bc.isZero()) {
-          return F.CEmptyList;
-        }
-      }
-      return F.list(root);
+      return DSolveUtil.conditionsHold(evaluatedBCs, engine) ? F.list(root) : F.CEmptyList;
     }
 
     // Shield existing Equal expressions from being double-wrapped
@@ -3555,19 +3547,7 @@ final class DSolveODE {
     // No derivative present — solve as a pure algebraic equation for yFunction
     if (n == 0) {
       IExpr solutions = engine.evaluate(F.Solve(F.Equal(lhs, F.C0), F.List(yFunction)));
-      IAST extracted = DSolveUtil.extractSolveResults(solutions);
-      if (extracted.argSize() > 0) {
-        IASTAppendable roots = F.ListAlloc(extracted.argSize());
-        for (int i = 1; i <= extracted.argSize(); i++) {
-          roots.append(extracted.get(i));
-        }
-        if (roots.argSize() == 1) {
-          return roots.arg1();
-        } else if (roots.argSize() > 1) {
-          return roots;
-        }
-      }
-      return F.NIL;
+      return singleOrList(DSolveUtil.extractSolveResults(solutions));
     }
 
     // A product is split before the methods below are asked to recognize it whole: anything

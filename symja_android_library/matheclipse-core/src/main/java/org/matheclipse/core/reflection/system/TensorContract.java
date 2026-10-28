@@ -72,15 +72,11 @@ public class TensorContract extends AbstractEvaluator {
 
     // Validate indices against rank and positivity
     for (int[] pair : contractions) {
+      if (nonPositiveSlot(ast, pair, engine)) {
+        return F.NIL;
+      }
       int u = pair[0];
       int v = pair[1];
-
-      if (u <= 0) {
-        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(u)), engine);
-      }
-      if (v <= 0) {
-        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(v)), engine);
-      }
 
       if (u > rank || v > rank || u == v) {
         // Invalid index for this symbol -> likely return NIL or error
@@ -105,6 +101,22 @@ public class TensorContract extends AbstractEvaluator {
   }
 
   /**
+   * Prints the <code>pcontr</code> message for the first slot of the contraction
+   * <code>pair</code> which is not positive.
+   *
+   * @return <code>true</code> if a slot is not positive
+   */
+  private static boolean nonPositiveSlot(final IAST ast, int[] pair, EvalEngine engine) {
+    for (int slot : pair) {
+      if (slot <= 0) {
+        Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(slot)), engine);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Performs contraction on an explicit nested list.
    */
   private IExpr contractList(final IAST ast, IAST tensor, IExpr slots, EvalEngine engine) {
@@ -116,15 +128,11 @@ public class TensorContract extends AbstractEvaluator {
     IExpr currentTensor = tensor;
 
     for (int[] pair : contractions) {
+      if (nonPositiveSlot(ast, pair, engine)) {
+        return F.NIL;
+      }
       int u = pair[0];
       int v = pair[1];
-
-      if (u <= 0) {
-        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(u)), engine);
-      }
-      if (v <= 0) {
-        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(v)), engine);
-      }
 
       int rank = getRank(currentTensor);
       if (u > rank || v > rank || u == v) {

@@ -207,6 +207,26 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testExtremumOverRealDomain() {
+    // the logarithm is not real for x<0: the limit at -Infinity doesn't count
+    check("Maximize(3*Log(x)-x, x)", //
+        "{-3+3*Log(3),{x->3}}");
+    check("Minimize(x-3*Log(x), x)", //
+        "{3-3*Log(3),{x->3}}");
+    check("Minimize(2*x*Log(x), x)", //
+        "{-2/E,{x->1/E}}");
+    check("Maximize(Log(4-x^2), x)", //
+        "{Log(4),{x->0}}");
+    check("Maximize(Sqrt(x)-2*x, x)", //
+        "{1/8,{x->1/16}}");
+    // the real domain depends on the parameter and isn't known
+    check("Assuming(c>0, Maximize(c*Log(x)-x, x))", //
+        "Maximize(-x+c*Log(x),x)");
+    check("Maximize(c*Log(x)-x, x)", //
+        "Maximize(-x+c*Log(x),x)");
+  }
+
+  @Test
   public void testMaximize() {
     check("Maximize({3*x + 4*y, x^2 + y^2 <= 1}, {x, y})", //
         "{5,{x->3/5,y->4/5}}");
@@ -224,6 +244,12 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{Infinity,{x->-Infinity}}");
     check("Maximize(-2*x^2 - 3*x + 5, x)", //
         "{49/8,{x->-3/4}}");
+
+    // the second derivative test at a stationary point with a non-numeric constant
+    check("{Maximize(Pi-Pi*Cosh(x), x), Minimize(Pi*Cosh(x)-Pi, x)}", //
+        "{{0,{x->0}},{0,{x->0}}}");
+    check("{Maximize(Sqrt(3)*(x*E^(-x)-1/E), x), Minimize(Sqrt(3)*(1/E-x*E^(-x)), x)}", //
+        "{{0,{x->1}},{0,{x->1}}}");
   }
 
   @Test

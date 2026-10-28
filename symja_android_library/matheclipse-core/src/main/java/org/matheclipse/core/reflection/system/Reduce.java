@@ -824,7 +824,21 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (lowerCases.isNIL()) {
       return F.NIL;
     }
-    IASTAppendable result = F.OrAlloc(degree + 1);
+    return splitOnLeadingCoefficient(ck, branch, lowerCases);
+  }
+
+  /**
+   * <code>(ck!=0 &amp;&amp; branch) || (ck==0 &amp;&amp; lowerCase1) || (ck==0 &amp;&amp;
+   * lowerCase2) || ...</code>, where the first case is left out if <code>branch</code> is
+   * {@link S#False}.
+   *
+   * @param ck the leading coefficient
+   * @param branch the solution for a non-zero leading coefficient
+   * @param lowerCases the solution of the polynomial of lower degree, an {@link S#Or} of its cases
+   *        or a single case
+   */
+  private static IAST splitOnLeadingCoefficient(IExpr ck, IExpr branch, IExpr lowerCases) {
+    IASTAppendable result = F.OrAlloc(lowerCases.isOr() ? lowerCases.size() : 2);
     if (!branch.isFalse()) {
       result.append(F.And(F.Unequal(ck, F.C0), branch));
     }
@@ -999,19 +1013,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (lowerCases.isNIL()) {
       return F.NIL;
     }
-    IASTAppendable result = F.OrAlloc(degree + 1);
-    result.append(F.And(F.Unequal(ck, F.C0), roots));
-    IExpr zeroCondition = F.Equal(ck, F.C0);
-    if (lowerCases.isOr()) {
-      // distribute the zero condition over the lower degree cases
-      IAST orCases = (IAST) lowerCases;
-      for (int j = 1; j < orCases.size(); j++) {
-        result.append(F.And(zeroCondition, orCases.get(j)));
-      }
-    } else {
-      result.append(F.And(zeroCondition, lowerCases));
-    }
-    return result;
+    return splitOnLeadingCoefficient(ck, roots, lowerCases);
   }
 
 
@@ -1216,7 +1218,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (equalSinCos.isPresent()) {
       return equalSinCos;
     }
-    PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
+    PeriodicTerm term =
+        parsePeriodicTerm(f, variable, InverseFunctionExpander::isPeriodicFunction);
     if (term == null) {
       return F.NIL;
     }
@@ -2482,7 +2485,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IExpr f = engine.evaluate(F.Subtract(arg.first(), arg.second()));
-      PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
+      PeriodicTerm term =
+          parsePeriodicTerm(f, variable, InverseFunctionExpander::isPeriodicFunction);
       if (term != null) {
         if (relation.isPresent() || term.isPower() || !isPoleFreeTrigFunction(term.head)) {
           return F.NIL;
@@ -3402,34 +3406,6 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       case ID.ArcSin:
       case ID.ArcTan:
       case ID.Log:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Test whether the given function head id refers to a forward periodic (invertible) trigonometric
-   * or hyperbolic function whose inverse produces infinitely many periodic branches.
-   *
-   * @param headID the {@link ID} of the function head
-   * @return <code>true</code> for {@link S#Sin}, {@link S#Cos}, {@link S#Tan}, {@link S#Cot},
-   *         {@link S#Sec}, {@link S#Csc} and their hyperbolic counterparts
-   */
-  private static boolean isForwardPeriodicFunction(int headID) {
-    switch (headID) {
-      case ID.Cos:
-      case ID.Cosh:
-      case ID.Cot:
-      case ID.Coth:
-      case ID.Csc:
-      case ID.Csch:
-      case ID.Sec:
-      case ID.Sech:
-      case ID.Sin:
-      case ID.Sinh:
-      case ID.Tan:
-      case ID.Tanh:
         return true;
       default:
         return false;

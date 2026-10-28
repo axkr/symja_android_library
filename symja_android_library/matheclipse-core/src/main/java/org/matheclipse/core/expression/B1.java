@@ -577,6 +577,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
    * @see IExpr#head()
    */
   @Override
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   public final IExpr arg2() {
     // be compatible with get() contract
     throw new IndexOutOfBoundsException("Index: 2, Size: " + size());
@@ -636,6 +637,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public final int argSize() {
+  // CPD-ON
     return SIZE - 1;
   }
 
@@ -777,6 +779,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   public void forEach(Consumer<? super IExpr> action, int startOffset) {
     switch (startOffset) {
       case 0:
+        // CPD-OFF arity specialization of the AST classes, kept apart for speed
         action.accept(head());
         action.accept(arg1);
         break;
@@ -830,6 +833,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public final void forEach(ObjIntConsumer<? super IExpr> action) {
+  // CPD-ON
     action.accept(arg1, 1);
   }
 
@@ -932,6 +936,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public final boolean isPlus() {
     return head() == S.Plus;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /** {@inheritDoc} */
@@ -961,6 +966,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public final boolean isTimes() {
+  // CPD-ON
     return head() == S.Times;
   }
 
@@ -974,6 +980,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public final IExpr oneIdentity(IExpr defaultValue) {
     return arg1;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   @Override
@@ -1009,6 +1016,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
     if (fromPosition == 2) {
       return this;
+      // CPD-ON
     }
     throw new IndexOutOfBoundsException(
         "Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());

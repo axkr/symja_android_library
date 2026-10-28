@@ -77,13 +77,7 @@ final class DSolveKovacic {
       return F.NIL;
     }
     IAST places = (IAST) factorList;
-    int poles = 0;
-    for (int i = 1; i <= places.argSize(); i++) {
-      IExpr entry = places.get(i);
-      if (entry.isList() && entry.size() > 1 && !entry.first().isFree(xVar)) {
-        poles++;
-      }
-    }
+    int poles = countPoles(places, xVar);
     int denominatorDegree = engine.evaluate(F.Exponent(denominator, xVar)).toIntDefault();
     if (poles > MAX_POLES || denominatorDegree > MAX_DENOMINATOR_DEGREE
         || denominatorDegree < 0) {
@@ -203,6 +197,23 @@ final class DSolveKovacic {
     return DSolveVerify.acceptODEStrict(F.List(residual), yFunction, xVar, body, engine) //
         ? body
         : F.NIL;
+  }
+
+  /**
+   * The number of factors of a <code>FactorList</code> result which depend on <code>xVar</code>,
+   * that is the number of places a rational function with this denominator becomes infinite at.
+   *
+   * @param places the evaluated <code>FactorList</code> of a denominator
+   */
+  static int countPoles(IAST places, IExpr xVar) {
+    int poles = 0;
+    for (int i = 1; i <= places.argSize(); i++) {
+      IExpr entry = places.get(i);
+      if (entry.isList() && entry.size() > 1 && !entry.first().isFree(xVar)) {
+        poles++;
+      }
+    }
+    return poles;
   }
 
   /** How high a degree the polynomial of the apparent singularities may have. */

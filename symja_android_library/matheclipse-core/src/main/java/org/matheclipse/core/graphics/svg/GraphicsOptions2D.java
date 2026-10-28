@@ -159,6 +159,7 @@ public final class GraphicsOptions2D {
    *
    * @param collector used to interpret style options with the same rules as inline directives
    */
+  // CPD-OFF option-rule loop of the 2D and the 3D option parsers
   public void parse(IAST ast, PrimitiveCollector collector) {
     for (int i = 2; i <= ast.argSize(); i++) {
       IExpr arg = ast.get(i);
@@ -172,6 +173,7 @@ public final class GraphicsOptions2D {
       if (!key.isBuiltInSymbol()) {
         continue;
       }
+      // CPD-ON
       try {
         apply(((IBuiltInSymbol) key).ordinal(), value, collector);
       } catch (RuntimeException rex) {
@@ -544,19 +546,9 @@ public final class GraphicsOptions2D {
       imagePadding = null;
       return;
     }
-    double all = ColorUtil.dbl(value, Double.NaN);
-    if (!Double.isNaN(all)) {
-      imagePadding = new double[] {all, all, all, all};
-      return;
-    }
-    if (value.isList() && ((IAST) value).argSize() >= 2) {
-      IAST list = (IAST) value;
-      if (list.arg1().isList() && list.arg2().isList()) {
-        IAST lr = (IAST) list.arg1();
-        IAST bt = (IAST) list.arg2();
-        imagePadding = new double[] {ColorUtil.dbl(lr.arg1(), 0), ColorUtil.dbl(lr.arg2(), 0),
-            ColorUtil.dbl(bt.arg1(), 0), ColorUtil.dbl(bt.arg2(), 0)};
-      }
+    double[] sides = ColorUtil.sideValues(value);
+    if (sides != null) {
+      imagePadding = sides;
     }
   }
 

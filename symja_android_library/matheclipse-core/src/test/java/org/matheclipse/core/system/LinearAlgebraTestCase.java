@@ -2154,6 +2154,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)", //
         "True");
+    // the test reaches the last row and the first column
+    check("MatrixQ({{y}}, NumberQ)", //
+        "False");
+    check("MatrixQ({{7, 5}, {9, z}}, NumberQ)", //
+        "False");
+    check("MatrixQ({{6, 10}, {12, 14}}, EvenQ)", //
+        "True");
+    check("MatrixQ(SparseArray({{w, 5}, {9, 2}}), NumberQ)", //
+        "False");
+    check("MatrixQ(SparseArray({{5, w}, {9, 2}}), NumberQ)", //
+        "False");
   }
 
   @Test

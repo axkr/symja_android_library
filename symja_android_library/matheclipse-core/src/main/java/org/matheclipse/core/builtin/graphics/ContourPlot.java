@@ -64,12 +64,14 @@ public class ContourPlot extends ListPlot {
     int numberOfContours = 10;
     IExpr contourStyle = S.Automatic;
     IExpr contourShading = S.Automatic;
-    boolean colorFunctionScaling = true;
-    IExpr colorFunctionOpt = S.Automatic;
-    IExpr meshOpt = S.None;
 
     // the options array holds resolved values, not the rules the caller wrote,
     // so the option rules are read back off the original call
+    GraphicsOptions.MatrixPlotOptions matrixOptions =
+        GraphicsOptions.readMatrixPlotOptions(originalAST);
+    boolean colorFunctionScaling = matrixOptions.colorFunctionScaling;
+    IExpr colorFunctionOpt = matrixOptions.colorFunction;
+    IExpr meshOpt = matrixOptions.mesh;
     for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
@@ -87,21 +89,11 @@ public class ContourPlot extends ListPlot {
             case ID.ContourShading:
               contourShading = val;
               break;
-            case ID.ColorFunctionScaling:
-              if (val.isFalse())
-                colorFunctionScaling = false;
-              break;
             case ID.PlotPoints:
               plotPoints = val.toIntDefault(25);
               break;
             case ID.MaxRecursion:
               maxRecursion = val.toIntDefault(-1);
-              break;
-            case ID.ColorFunction:
-              colorFunctionOpt = val;
-              break;
-            case ID.Mesh:
-              meshOpt = val;
               break;
           }
         }

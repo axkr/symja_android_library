@@ -305,6 +305,7 @@ public class ApcomplexField implements CalculusFieldElement<ApcomplexField> {
   @Override
   public ApcomplexField linearCombination(ApcomplexField a1, ApcomplexField b1, ApcomplexField a2,
       ApcomplexField b2, ApcomplexField a3, ApcomplexField b3, ApcomplexField a4,
+      // CPD-OFF Apfloat and Apcomplex specialisations of the same field method
       ApcomplexField b4) {
     FixedPrecisionApfloatHelper h = h();
     return wrap(h.add(h.add(h.add(h.multiply(a1.value, b1.value), h.multiply(a2.value, b2.value)),
@@ -313,6 +314,7 @@ public class ApcomplexField implements CalculusFieldElement<ApcomplexField> {
 
   @Override
   public ApcomplexField linearCombination(ApcomplexField[] a, ApcomplexField[] b)
+  // CPD-ON
       throws MathIllegalArgumentException {
     FixedPrecisionApfloatHelper h = h();
     Apcomplex sum = Apcomplex.ZERO;

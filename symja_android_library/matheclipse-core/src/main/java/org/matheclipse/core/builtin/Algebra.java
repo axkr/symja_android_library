@@ -585,8 +585,13 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
-      setOptions(newSymbol, F.list(F.Rule(S.Extension, S.None), F.Rule(S.Modulus, F.C0), F.Rule(S.Trig, S.False)));
+      setOptions(newSymbol, rationalFunctionOptions());
     }
+  }
+
+  /** The options of <code>Cancel</code> and <code>Together</code>. */
+  private static IAST rationalFunctionOptions() {
+    return F.list(F.Rule(S.Extension, S.None), F.Rule(S.Modulus, F.C0), F.Rule(S.Trig, S.False));
   }
 
   /**
@@ -773,22 +778,33 @@ public class Algebra {
         }
         return;
       } else if (blankNullRest == null && expr.isTimes()) {
-        IAST timesAST = (IAST) expr;
-        if (timesAST.exists((x, i) -> {
-          if (matcher.test(x) || isPowerMatched(x, matcher)) {
-            IASTAppendable clone = timesAST.copyAppendable();
-            clone.remove(i);
-            addOneIdentityPowerFactor(x, clone, defaultdict);
-            return true;
-          }
-          return false;
-        }, 1)) {
+        if (collectTimesFactor((IAST) expr, matcher, defaultdict)) {
           return;
         }
         rest.append(expr);
         return;
       }
       rest.append(expr);
+    }
+
+    /**
+     * Add the first factor of <code>timesAST</code> which matches <code>matcher</code> (or is a
+     * power of a matching base) as key and the remaining factors as value to
+     * <code>defaultdict</code>.
+     *
+     * @return <code>true</code> if a matching factor was found
+     */
+    private boolean collectTimesFactor(IAST timesAST, IPatternMatcher matcher,
+        DefaultDict<IASTAppendable> defaultdict) {
+      return timesAST.exists((x, i) -> {
+        if (matcher.test(x) || isPowerMatched(x, matcher)) {
+          IASTAppendable clone = timesAST.copyAppendable();
+          clone.remove(i);
+          addOneIdentityPowerFactor(x, clone, defaultdict);
+          return true;
+        }
+        return false;
+      }, 1);
     }
 
     public boolean collectTimesToMapPlus(final IExpr key, IExpr expr, IPatternMatcher matcher,
@@ -829,16 +845,7 @@ public class Algebra {
         }
         return;
       } else if (expr.isTimes()) {
-        IAST timesAST = (IAST) expr;
-        if (timesAST.exists((x, i) -> {
-          if (matcher.test(x) || isPowerMatched(x, matcher)) {
-            IASTAppendable clone = timesAST.copyAppendable();
-            clone.remove(i);
-            addOneIdentityPowerFactor(x, clone, defaultdict);
-            return true;
-          }
-          return false;
-        }, 1)) {
+        if (collectTimesFactor((IAST) expr, matcher, defaultdict)) {
           return;
         }
         rest.append(expr);
@@ -1051,6 +1058,30 @@ public class Algebra {
   }
 
   /**
+   * Common argument count, <code>Trig</code> and <code>Modulus</code> options and status of
+   * <code>Expand</code> and <code>ExpandAll</code>.
+   */
+  abstract static class AbstractExpandEvaluator extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Trig, S.Modulus};
+      IExpr[] optionValues = new IExpr[] {S.False, F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -1120,7 +1151,7 @@ public class Algebra {
    * 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3
    * </pre>
    */
-  public static class Expand extends AbstractFunctionOptionEvaluator {
+  public static class Expand extends AbstractExpandEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
@@ -1149,25 +1180,6 @@ public class Algebra {
         return result;
       }
       return ast.arg1();
-    }
-
-
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Trig, S.Modulus};
-      IExpr[] optionValues = new IExpr[] {S.False, F.C0};
-      setOptions(newSymbol, optionKeys, optionValues);
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -1214,7 +1226,7 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  public static class ExpandAll extends AbstractFunctionOptionEvaluator {
+  public static class ExpandAll extends AbstractExpandEvaluator {
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -1281,45 +1293,43 @@ public class Algebra {
       }
       return expr;
     }
+  }
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+  /**
+   * Expand the numerator (<code>part == 0</code>) or the denominator (<code>part == 1</code>) of
+   * <code>ast.arg1()</code>. Sums are threaded with the head of <code>ast</code>.
+   */
+  private static IExpr expandFractionPart(final IAST ast, int part, EvalEngine engine) {
+    IExpr arg1 = ast.arg1();
+    IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
+    if (tempAST.isPresent()) {
+      return tempAST;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Trig, S.Modulus};
-      IExpr[] optionValues = new IExpr[] {S.False, F.C0};
-      setOptions(newSymbol, optionKeys, optionValues);
+    if (arg1.isAST()) {
+      if (arg1.isPlus()) {
+        final IExpr head = ast.topHead();
+        return ((IAST) arg1).mapThread(x -> F.unaryAST1(head, x));
+      }
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
+      if (parts.isPresent() && parts.get()[part].isAST()) {
+        IExpr numerator = parts.get()[0];
+        IExpr denominator = parts.get()[1];
+        if (part == 0) {
+          numerator = engine.evaluate(F.Expand(numerator));
+        } else {
+          denominator = engine.evaluate(F.Expand(denominator));
+        }
+        return F.Divide(numerator, denominator);
+      }
     }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
+    return arg1;
   }
 
   private static class ExpandDenominator extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
-      if (tempAST.isPresent()) {
-        return tempAST;
-      }
-      if (arg1.isAST()) {
-        if (arg1.isPlus()) {
-          return ((IAST) arg1).mapThread(x -> F.ExpandDenominator(x));
-        }
-        Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
-        if (parts.isPresent() && parts.get()[1].isAST()) {
-          IExpr denominator = engine.evaluate(F.Expand(parts.get()[1]));
-          return F.Divide(parts.get()[0], denominator);
-        }
-      }
-      return arg1;
+      return expandFractionPart(ast, 1, engine);
     }
 
     @Override
@@ -1333,22 +1343,7 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
-      if (tempAST.isPresent()) {
-        return tempAST;
-      }
-      if (arg1.isAST()) {
-        if (arg1.isPlus()) {
-          return ((IAST) arg1).mapThread(x -> F.ExpandNumerator(x));
-        }
-        Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
-        if (parts.isPresent() && parts.get()[0].isAST()) {
-          IExpr numerator = engine.evaluate(F.Expand(parts.get()[0]));
-          return F.Divide(numerator, parts.get()[1]);
-        }
-      }
-      return arg1;
+      return expandFractionPart(ast, 0, engine);
     }
 
     @Override
@@ -2312,14 +2307,28 @@ public class Algebra {
       return ARGS_1_1;
     }
 
+    /**
+     * The option names of <code>Factor</code> and <code>FactorList</code>.
+     *
+     * @see #factorOptionValues()
+     */
+    public static IBuiltInSymbol[] factorOptionKeys() {
+      return new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers, S.Trig};
+    }
+
+    /**
+     * The default option values of <code>Factor</code> and <code>FactorList</code>.
+     *
+     * @see #factorOptionKeys()
+     */
+    public static IExpr[] factorOptionValues() {
+      return new IExpr[] {F.C0, S.None, S.False, S.False};
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
-
-      IBuiltInSymbol[] optionKeys =
-          new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers, S.Trig};
-      IExpr[] optionValues = new IExpr[] {F.C0, S.None, S.False, S.False};
-      setOptions(newSymbol, optionKeys, optionValues);
+      setOptions(newSymbol, factorOptionKeys(), factorOptionValues());
     }
   }
 
@@ -2571,6 +2580,36 @@ public class Algebra {
    * </code>
    * </pre>
    */
+  /**
+   * Split the polynomial <code>expr</code> in <code>variableList</code> into its rational content
+   * and the primitive integer polynomial.
+   *
+   * @return <code>{content, primitivePolynomial}</code>, <code>{1, 0}</code> for the zero
+   *         polynomial, or {@link F#NIL} if <code>expr</code> is not a polynomial
+   */
+  @SuppressWarnings("unchecked")
+  private static IAST factorTermsPair(IExpr expr, IAST variableList) {
+    try {
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
+      GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+      if (poly == null) {
+        return F.NIL;
+      }
+      Object[] objects = jas.factorTerms(poly);
+      java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+      java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+      if (lcm.signum() == 0) {
+        // zero polynomial
+        return F.list(F.C1, F.C0);
+      }
+      GenPolynomial<edu.jas.arith.BigInteger> iPoly =
+          (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+      return F.list(F.fraction(gcd, lcm), jas.integerPoly2Expr(iPoly));
+    } catch (JASConversionException e1) {
+      return F.NIL;
+    }
+  }
+
   static class FactorTerms extends AbstractFunctionEvaluator {
 
     @Override
@@ -2618,44 +2657,9 @@ public class Algebra {
       // // FactorTerms only possible for univariate polynomials
       // return arg1;
       // }
-      IExpr expr = expanded; // F.evalExpandAll(arg1, engine);
-      try {
-        JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
-        GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-        if (poly == null) {
-          return arg1;
-        }
-        Object[] objects = jas.factorTerms(poly);
-        java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-        java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-        if (lcm.signum() == 0) {
-          // no changes
-          return expr;
-        }
-        GenPolynomial<edu.jas.arith.BigInteger> iPoly =
-            (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-        IASTAppendable result = F.TimesAlloc(2);
-        result.append(F.fraction(gcd, lcm));
-        result.append(jas.integerPoly2Expr(iPoly));
-        return result;
-      } catch (JASConversionException e1) {
-        // try {
-        // if (variableList.isAST1()) {
-        // IAST list = PolynomialFunctions.rootsOfExprPolynomial(expr, variableList, true);
-        // if (list.isList()) {
-        // IExpr x = variableList.arg1();
-        // IASTAppendable result = F.TimesAlloc(list.size());
-        // list.forEach(arg -> result.append(F.Plus(x, arg)));
-        // // for (int i = 1; i < list.size(); i++) {
-        // // result.append(F.Plus(x, list.get(i)));
-        // // }
-        // return result;
-        // }
-        // }
-        // } catch (JASConversionException e2) {
-        // LOGGER.debug("FactorTerms.evaluate() failed", e2);
-        // }
-
+      IAST pair = factorTermsPair(expanded, variableList);
+      if (pair.isPresent()) {
+        return F.binaryAST2(S.Times, pair.arg1(), pair.arg2());
       }
       return arg1;
     }
@@ -2760,24 +2764,9 @@ public class Algebra {
       // return F.NIL;
       // }
 
-      IExpr expr = expanded;
-      try {
-        JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
-        GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-        if (poly == null) {
-          return F.List(F.C1, arg1);
-        }
-        Object[] objects = jas.factorTerms(poly);
-        java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-        java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-        if (lcm.signum() == 0) {
-          // no changes
-          return expr;
-        }
-        GenPolynomial<edu.jas.arith.BigInteger> iPoly =
-            (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-        return F.List(F.fraction(gcd, lcm), jas.integerPoly2Expr(iPoly));
-      } catch (JASConversionException e1) {
+      IAST pair = factorTermsPair(expanded, variableList);
+      if (pair.isPresent()) {
+        return pair;
       }
       return F.List(F.C1, arg1);
     }
@@ -3417,6 +3406,7 @@ public class Algebra {
     private static IExpr polynomialGCD(IAST ast, int argSize, VariablesSet eVar,
         EvalEngine engine) {
       try {
+        // CPD-OFF PolynomialGCD and PolynomialLCM fold their arguments with different operations
         ArrayList<GenPolynomial<BigRational>> polyList = new ArrayList<>();
         IASTAppendable exprList = F.TimesAlloc(4);
         JASConvert<BigRational> jas =
@@ -3426,6 +3416,7 @@ public class Algebra {
           try {
             GenPolynomial<BigRational> temp = jas.expr2JAS(expr, false);
             if (temp != null) {
+            // CPD-ON
               polyList.add(temp);
             } else {
               exprList.append(ast.get(i));
@@ -3780,6 +3771,7 @@ public class Algebra {
       try {
         boolean evaled = false;
         IExpr lcm = F.C1;
+        // CPD-OFF PolynomialGCD and PolynomialLCM fold their arguments with different operations
         ArrayList<GenPolynomial<edu.jas.arith.BigInteger>> polyList = new ArrayList<>();
         IASTAppendable exprList = F.TimesAlloc(4);
         JASConvert<BigRational> jas =
@@ -3789,6 +3781,7 @@ public class Algebra {
           try {
             GenPolynomial<BigRational> temp = jas.expr2JAS(expr, false);
             if (temp != null) {
+            // CPD-ON
               Object[] objects = jas.factorTerms(temp);
               GenPolynomial<edu.jas.arith.BigInteger> intPoly =
                   (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
@@ -4810,14 +4803,9 @@ public class Algebra {
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
 
-      IExpr variable;
-      if (ast.arg3().isAST()) {
-        variable = ast.arg3();
-      } else {
-        variable = Validate.checkIsVariable(ast, 3, engine);
-        if (variable.isNIL()) {
-          return F.NIL;
-        }
+      IExpr variable = polynomialVariable(ast, engine);
+      if (variable.isNIL()) {
+        return F.NIL;
       }
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -5015,6 +5003,19 @@ public class Algebra {
       return Optional.empty();
     }
 
+    /**
+     * The variable argument <code>ast.arg3()</code> of the polynomial division functions.
+     *
+     * @return {@link F#NIL} (with a message) if <code>ast.arg3()</code> is neither an AST nor a
+     *         variable
+     */
+    static IExpr polynomialVariable(IAST ast, EvalEngine engine) {
+      if (ast.arg3().isAST()) {
+        return ast.arg3();
+      }
+      return Validate.checkIsVariable(ast, 3, engine);
+    }
+
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -5022,14 +5023,9 @@ public class Algebra {
       if (temp != null) {
         return temp;
       }
-      IExpr variable;
-      if (ast.arg3().isAST()) {
-        variable = ast.arg3();
-      } else {
-        variable = Validate.checkIsVariable(ast, 3, engine);
-        if (variable.isNIL()) {
-          return F.NIL;
-        }
+      IExpr variable = polynomialVariable(ast, engine);
+      if (variable.isNIL()) {
+        return F.NIL;
       }
       // IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
       // IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
@@ -5157,14 +5153,9 @@ public class Algebra {
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
-      IExpr variable;
-      if (ast.arg3().isAST()) {
-        variable = ast.arg3();
-      } else {
-        variable = Validate.checkIsVariable(ast, 3, engine);
-        if (variable.isNIL()) {
-          return F.NIL;
-        }
+      IExpr variable = polynomialVariable(ast, engine);
+      if (variable.isNIL()) {
+        return F.NIL;
       }
       IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
       IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
@@ -5356,6 +5347,7 @@ public class Algebra {
           return F.unaryAST1(head, arg1);
         }
         return F.NIL;
+      // CPD-OFF visitor prologue of two unrelated visitors with different Power rules
       }
 
       /** {@inheritDoc} */
@@ -5377,6 +5369,7 @@ public class Algebra {
 
         if (head.equals(Power)) {
           if (x1.isTimes()) {
+          // CPD-ON
             // Power(x_ * y_, z_) -> x^z * y^z
             IAST timesAST = (IAST) x1;
             IASTAppendable timesResult = F.TimesAlloc(timesAST.size() + (assumptions ? 1 : 0));
@@ -5574,8 +5567,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
-      setOptions(newSymbol,
-          F.list(F.Rule(S.Extension, S.None), F.Rule(S.Modulus, F.C0), F.Rule(S.Trig, S.False)));
+      setOptions(newSymbol, rationalFunctionOptions());
     }
   }
 

@@ -46,17 +46,7 @@ public class ExponentialGeneratingFunction extends AbstractFunctionOptionEvaluat
 
     // Handle multidimensional exponential generating functions
     if (n.isList() && x.isList()) {
-      IAST nList = (IAST) n;
-      IAST xList = (IAST) x;
-      if (nList.argSize() != xList.argSize()) {
-        return F.NIL;
-      }
-      IExpr result = expr;
-      for (int i = 1; i <= nList.argSize(); i++) {
-        result = engine.evaluate(
-            F.ternaryAST3(S.ExponentialGeneratingFunction, result, nList.get(i), xList.get(i)));
-      }
-      return result;
+      return GeneratingFunction.nestPerVariable(ast, engine);
     }
 
     if (n.isVariable() && x.isVariable()) {

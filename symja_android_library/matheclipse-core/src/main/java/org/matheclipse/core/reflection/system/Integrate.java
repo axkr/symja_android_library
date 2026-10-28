@@ -37,6 +37,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
+import org.matheclipse.core.integrate.AntiderivativeCheck;
 import org.matheclipse.core.integrate.ChebyshevIntegration;
 import org.matheclipse.core.integrate.DerivativeDivides;
 import org.matheclipse.core.integrate.DiffUnderIntegral;
@@ -126,16 +127,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   private static Matcher initPowerTimesFunction() {
     Matcher MATCHER = new Matcher();
-    IAST list = IntegratePowerTimesFunctionRules.RULES;
-
-    for (int i = 1; i < list.size(); i++) {
-      IExpr arg = list.get(i);
-      if (arg.isAST(S.SetDelayed, 3)) {
-        MATCHER.caseOf(arg.first(), arg.second());
-      } else if (arg.isAST(S.Set, 3)) {
-        MATCHER.caseOf(arg.first(), arg.second());
-      }
-    }
+    MATCHER.caseOfRules(IntegratePowerTimesFunctionRules.RULES);
     return MATCHER;
   }
 
@@ -465,7 +457,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       rules.append(F.Rule(F.Integrate(g, x), integrated));
     }
     IExpr finished = engine.evaluate(F.subst(partial, rules));
-    if (!finished.isFree(S.Integrate, true) || !differentiatesBack(finished, fx, x, engine)) {
+    if (!finished.isFree(S.Integrate, true) || AntiderivativeCheck.differentiatesBack(finished, fx,
+        x, 2, engine) != AntiderivativeCheck.Verdict.AGREES) {
       return F.NIL;
     }
     return finished;
@@ -481,36 +474,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         collectLeftovers(arg, x, leftovers);
       }
     }
-  }
-
-  /**
-   * <code>D(antiderivative, x) == integrand</code> numerically, at the sample points where the
-   * integrand is real: every one of them has to agree, and there have to be two at least. The
-   * points outside the real domain are skipped, because the two sides may be continued there on
-   * different branches.
-   */
-  private static boolean differentiatesBack(IExpr antiderivative, IExpr integrand, IExpr x,
-      EvalEngine engine) {
-    IExpr difference = engine.evaluate(F.Subtract(F.D(antiderivative, x), integrand));
-    double[] points = {0.37, 0.61, 1.37, 2.19, -0.43};
-    int checked = 0;
-    for (double point : points) {
-      IExpr f = engine.evaluate(F.N(F.subst(integrand, x, F.num(point))));
-      if (!f.isReal()) {
-        continue;
-      }
-      double scale = Math.abs(f.evalf());
-      if (Double.isNaN(scale) || Double.isInfinite(scale)) {
-        continue;
-      }
-      IExpr d = engine.evaluate(F.N(F.Abs(F.subst(difference, x, F.num(point)))));
-      double deviation = d.evalfNaN();
-      if (Double.isNaN(deviation) || deviation > 1e-8 * (1.0 + scale)) {
-        return false;
-      }
-      checked++;
-    }
-    return checked >= 2;
   }
 
   /** Forget the partial answers of the rules remembered during this top-level integration. */

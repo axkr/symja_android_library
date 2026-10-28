@@ -8,7 +8,11 @@ import org.matheclipse.external.apfloat.ApcomplexBetaMath;
 import java.util.function.BinaryOperator;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.eval.exception.SymjaMathException;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.LossOfPrecisionException;
+import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.eval.EvalEngine;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.interfaces.INumber;
@@ -375,6 +379,40 @@ public class DMath {
       throw new ArithmeticException("Bessel function with a complex value");
     }
     return value.real().doubleValue();
+  }
+
+  /**
+   * <code>head(nu, z)</code> for one of the heads <code>BesselI, BesselJ, BesselK, BesselY</code>
+   * by {@link #besselComplex(BinaryOperator, BinaryOperator, INumber, INumber)}.
+   */
+  static Apcomplex besselComplex(ISymbol head, INumber nu, INumber z) {
+    if (head == S.BesselI) {
+      return besselComplex(ApcomplexBesselMath::besselI,
+          (n, x) -> EvalEngine.getApfloatDouble().besselI(n, x), nu, z);
+    }
+    if (head == S.BesselJ) {
+      return besselComplex(ApcomplexBesselMath::besselJ,
+          (n, x) -> EvalEngine.getApfloatDouble().besselJ(n, x), nu, z);
+    }
+    if (head == S.BesselK) {
+      return besselComplex(ApcomplexBesselMath::besselK,
+          (n, x) -> EvalEngine.getApfloatDouble().besselK(n, x), nu, z);
+    }
+    return besselComplex(ApcomplexBesselMath::besselY,
+        (n, x) -> EvalEngine.getApfloatDouble().besselY(n, x), nu, z);
+  }
+
+  /**
+   * <code>head(nu, z)</code> as a machine complex number, see
+   * {@link #besselComplex(ISymbol, INumber, INumber)}; a failure is reported as message of
+   * <code>head</code>.
+   */
+  static IExpr besselComplexNum(ISymbol head, INumber nu, INumber z) {
+    try {
+      return ComplexNum.machine(besselComplex(head, nu, z));
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
+      return Errors.printMessage(head, are);
+    }
   }
 
   /**

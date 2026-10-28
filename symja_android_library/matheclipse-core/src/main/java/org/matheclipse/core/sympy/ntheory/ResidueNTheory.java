@@ -71,26 +71,7 @@ public class ResidueNTheory {
     BigInteger aVal = a.toBigNumerator().mod(mVal);
 
     SortedMap<BigInteger, Integer> factors = new Primality().factorInteger(mVal);
-    List<BigInteger> moduli = new ArrayList<>(factors.size());
-    List<List<BigInteger>> rootsPerComponent = new ArrayList<>(factors.size());
-    long totalCombinations = 1L;
-    for (Map.Entry<BigInteger, Integer> e : factors.entrySet()) {
-      BigInteger p = e.getKey();
-      int k = e.getValue();
-      BigInteger pk = p.pow(k);
-      List<BigInteger> roots = sqrtModPrimePower(aVal.mod(pk), p, k);
-      if (roots.isEmpty()) {
-        return F.NIL;
-      }
-      moduli.add(pk);
-      rootsPerComponent.add(roots);
-      totalCombinations *= roots.size();
-      if (totalCombinations > MAX_ROOTS || totalCombinations < 0) {
-        return F.NIL;
-      }
-    }
-    BigInteger best = smallestCrt(rootsPerComponent, moduli);
-    return best == null ? F.NIL : F.ZZ(best);
+    return crtOfPrimePowerRoots(aVal, TWO, factors);
   }
 
   /**
@@ -126,6 +107,22 @@ public class ResidueNTheory {
       return nthRootModPrime(aVal, nVal, mVal);
     }
 
+    return crtOfPrimePowerRoots(aVal, nVal, factors);
+  }
+
+  /**
+   * The smallest root of <code>x^n == a (mod m)</code> combined by the Chinese remainder theorem
+   * from the roots modulo the prime powers of <code>m</code>.
+   *
+   * @param aVal <code>a</code> reduced modulo <code>m</code>
+   * @param nVal the exponent <code>n</code>
+   * @param factors the prime factorization of <code>m</code>
+   * @return {@link F#NIL} if a component has no root or there are more than {@link #MAX_ROOTS}
+   *         combinations
+   */
+  private static IExpr crtOfPrimePowerRoots(BigInteger aVal, BigInteger nVal,
+      SortedMap<BigInteger, Integer> factors) {
+    boolean sqrt = nVal.equals(TWO);
     List<BigInteger> moduli = new ArrayList<>(factors.size());
     List<List<BigInteger>> rootsPerComponent = new ArrayList<>(factors.size());
     long totalCombinations = 1L;
@@ -133,7 +130,8 @@ public class ResidueNTheory {
       BigInteger p = e.getKey();
       int k = e.getValue();
       BigInteger pk = p.pow(k);
-      List<BigInteger> roots = nthRootModPrimePower(aVal.mod(pk), nVal, p, k);
+      List<BigInteger> roots = sqrt ? sqrtModPrimePower(aVal.mod(pk), p, k)
+          : nthRootModPrimePower(aVal.mod(pk), nVal, p, k);
       if (roots.isEmpty()) {
         return F.NIL;
       }

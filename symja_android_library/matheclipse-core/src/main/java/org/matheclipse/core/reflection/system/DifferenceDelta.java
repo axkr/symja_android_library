@@ -163,33 +163,23 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
           IExpr a = linear[1];
           IExpr nExpr = F.ZZ(n);
           switch (f.validHeadID()) {
-            case ID.Sin: {
-              // 2^n * Sin[a*h/2]^n * Sin[c + a*x + n*(a*h + Pi)/2]
-              IExpr coeff =
-                  F.Times(F.Power(F.C2, nExpr), F.Power(F.Sin(F.Times(a, h, F.C1D2)), nExpr));
-              IExpr inner = F.Plus(arg, F.Times(nExpr, F.Plus(F.Times(a, h), S.Pi), F.C1D2));
-              return F.Times(coeff, F.Sin(inner));
-            }
+            case ID.Sin:
             case ID.Cos: {
-              // 2^n * Sin[a*h/2]^n * Cos[c + a*x + n*(a*h + Pi)/2]
+              // 2^n * Sin[a*h/2]^n * Sin[c + a*x + n*(a*h + Pi)/2], the same with Cos
               IExpr coeff =
                   F.Times(F.Power(F.C2, nExpr), F.Power(F.Sin(F.Times(a, h, F.C1D2)), nExpr));
               IExpr inner = F.Plus(arg, F.Times(nExpr, F.Plus(F.Times(a, h), S.Pi), F.C1D2));
-              return F.Times(coeff, F.Cos(inner));
+              return F.Times(coeff, head == S.Sin ? F.Sin(inner) : F.Cos(inner));
             }
-            case ID.Sinh: {
-              // 2^n * Sinh[a*h/2]^n * (Sinh or Cosh)
-              IExpr coeff =
-                  F.Times(F.Power(F.C2, nExpr), F.Power(F.Sinh(F.Times(a, h, F.C1D2)), nExpr));
-              IExpr inner = F.Plus(arg, F.Times(nExpr, a, h, F.C1D2));
-              return F.Times(coeff, (n % 2 == 0) ? F.Sinh(inner) : F.Cosh(inner));
-            }
+            case ID.Sinh:
             case ID.Cosh: {
-              // 2^n * Sinh[a*h/2]^n * (Cosh or Sinh)
+              // 2^n * Sinh[a*h/2]^n * Sinh[c + a*x + n*a*h/2] for even n, Cosh for odd n; the
+              // other way round for Cosh
               IExpr coeff =
                   F.Times(F.Power(F.C2, nExpr), F.Power(F.Sinh(F.Times(a, h, F.C1D2)), nExpr));
               IExpr inner = F.Plus(arg, F.Times(nExpr, a, h, F.C1D2));
-              return F.Times(coeff, (n % 2 == 0) ? F.Cosh(inner) : F.Sinh(inner));
+              boolean sinh = (head == S.Sinh) == (n % 2 == 0);
+              return F.Times(coeff, sinh ? F.Sinh(inner) : F.Cosh(inner));
             }
             case ID.Factorial: {
               // first forward difference: Factorial(arg + a*h) - Factorial(arg)

@@ -228,6 +228,13 @@ public class BDDExpr extends DataExpr<BDD> implements Externalizable {
     }
   }
 
+  /** The accessible private method <code>name(int)</code> of {@link BDDKernel}. */
+  private static java.lang.reflect.Method kernelMethod(String name) throws NoSuchMethodException {
+    java.lang.reflect.Method method = BDDKernel.class.getDeclaredMethod(name, int.class);
+    method.setAccessible(true);
+    return method;
+  }
+
   /**
    * Generates a flat integer array representation of the BDD rooted at the given node. The format
    * encodes a Canonical Directed Acyclic Graph (DAG) with Complemented Edges.
@@ -252,14 +259,9 @@ public class BDDExpr extends DataExpr<BDD> implements Externalizable {
     int rootEdge;
     try {
       // Set up reflection once to avoid massive overhead during recursive graph traversal
-      java.lang.reflect.Method levelMethod = BDDKernel.class.getDeclaredMethod("level", int.class);
-      levelMethod.setAccessible(true);
-
-      java.lang.reflect.Method highMethod = BDDKernel.class.getDeclaredMethod("high", int.class);
-      highMethod.setAccessible(true);
-
-      java.lang.reflect.Method lowMethod = BDDKernel.class.getDeclaredMethod("low", int.class);
-      lowMethod.setAccessible(true);
+      java.lang.reflect.Method levelMethod = kernelMethod("level");
+      java.lang.reflect.Method highMethod = kernelMethod("high");
+      java.lang.reflect.Method lowMethod = kernelMethod("low");
 
       java.lang.reflect.Field level2varField = BDDKernel.class.getDeclaredField("level2var");
       level2varField.setAccessible(true);
@@ -406,14 +408,9 @@ public class BDDExpr extends DataExpr<BDD> implements Externalizable {
       // Access the native JBuddy kernel directly
       org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel kernel = fData.underlyingKernel();
 
-      java.lang.reflect.Method levelMethod = BDDKernel.class.getDeclaredMethod("level", int.class);
-      levelMethod.setAccessible(true);
-
-      java.lang.reflect.Method highMethod = BDDKernel.class.getDeclaredMethod("high", int.class);
-      highMethod.setAccessible(true);
-
-      java.lang.reflect.Method lowMethod = BDDKernel.class.getDeclaredMethod("low", int.class);
-      lowMethod.setAccessible(true);
+      java.lang.reflect.Method levelMethod = kernelMethod("level");
+      java.lang.reflect.Method highMethod = kernelMethod("high");
+      java.lang.reflect.Method lowMethod = kernelMethod("low");
 
       java.util.Map<Integer, java.math.BigInteger> memo = new java.util.HashMap<>();
 

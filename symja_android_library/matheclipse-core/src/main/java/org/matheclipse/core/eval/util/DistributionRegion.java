@@ -123,15 +123,32 @@ public final class DistributionRegion {
   }
 
   /**
+   * The numeric lower bound of a region piece
+   * <code>{min, LessEqual|Less, LessEqual|Less, max}</code>, {@link Double#NaN} if it is not
+   * numeric.
+   */
+  private static double lowerBound(IAST piece) {
+    return piece.arg1().isNegativeInfinity() ? Double.NEGATIVE_INFINITY : piece.arg1().evalfNaN();
+  }
+
+  /**
+   * The numeric upper bound of a region piece
+   * <code>{min, LessEqual|Less, LessEqual|Less, max}</code>, {@link Double#NaN} if it is not
+   * numeric.
+   */
+  private static double upperBound(IAST piece) {
+    return piece.arg4().isInfinity() ? Double.POSITIVE_INFINITY : piece.arg4().evalfNaN();
+  }
+
+  /**
    * Test numerically whether <code>value</code> lies in one of the region pieces. The region bounds
    * must be numerically evaluable.
    */
   private static boolean regionContains(IAST region, double value) {
     for (int i = 1; i < region.size(); i++) {
       IAST piece = (IAST) region.get(i);
-      double min =
-          piece.arg1().isNegativeInfinity() ? Double.NEGATIVE_INFINITY : piece.arg1().evalfNaN();
-      double max = piece.arg4().isInfinity() ? Double.POSITIVE_INFINITY : piece.arg4().evalfNaN();
+      double min = lowerBound(piece);
+      double max = upperBound(piece);
       boolean leftOk = piece.arg2() == S.LessEqual ? value >= min : value > min;
       boolean rightOk = piece.arg3() == S.LessEqual ? value <= max : value < max;
       if (leftOk && rightOk) {
@@ -149,9 +166,8 @@ public final class DistributionRegion {
     ArrayList<Double> samples = new ArrayList<Double>();
     for (int i = 1; i < region.size(); i++) {
       IAST piece = (IAST) region.get(i);
-      double min =
-          piece.arg1().isNegativeInfinity() ? Double.NEGATIVE_INFINITY : piece.arg1().evalfNaN();
-      double max = piece.arg4().isInfinity() ? Double.POSITIVE_INFINITY : piece.arg4().evalfNaN();
+      double min = lowerBound(piece);
+      double max = upperBound(piece);
       if (Double.isNaN(min) || Double.isNaN(max)) {
         return false;
       }

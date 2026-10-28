@@ -131,6 +131,7 @@ public final class Levin extends SeriesAlgorithm {
     if (k > 0) {
       myTabHi[k - 1] = myTabHi[k] - myTabHi[k - 1];
       myTabLo[k - 1] = myTabLo[k] - myTabLo[k - 1];
+      // CPD-OFF double and Complex variants of the same algorithm
       if (k > 1) {
         final double base = (myBeta + k - 1) / (myBeta + k);
         for (int j = 2; j <= k; ++j) {
@@ -138,6 +139,7 @@ public final class Levin extends SeriesAlgorithm {
           final double cjm2 = SimpleMath.pow(base, j - 2);
           final double fac = (myBeta + kmj) * cjm2 / (myBeta + k);
           myTabHi[kmj] = myTabHi[kmj + 1] - fac * myTabHi[kmj];
+          // CPD-ON
           myTabLo[kmj] = myTabLo[kmj + 1] - fac * myTabLo[kmj];
         }
       }

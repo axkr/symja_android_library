@@ -46,17 +46,7 @@ public class GeneratingFunction extends AbstractFunctionOptionEvaluator {
 
     // Handle multidimensional generating functions
     if (n.isList() && x.isList()) {
-      IAST nList = (IAST) n;
-      IAST xList = (IAST) x;
-      if (nList.argSize() != xList.argSize()) {
-        return F.NIL;
-      }
-      IExpr result = expr;
-      for (int i = 1; i <= nList.argSize(); i++) {
-        result = engine
-            .evaluate(F.ternaryAST3(S.GeneratingFunction, result, nList.get(i), xList.get(i)));
-      }
-      return result;
+      return nestPerVariable(ast, engine);
     }
 
     if (n.isVariable() && x.isVariable()) {
@@ -72,6 +62,26 @@ public class GeneratingFunction extends AbstractFunctionOptionEvaluator {
     }
 
     return Errors.printMessage(ast.topHead(), "ivar", F.List(n), engine);
+  }
+
+  /**
+   * The multidimensional generating function <code>head(expr, {n1, n2, ...}, {x1, x2, ...})</code>
+   * of <code>ast</code> as the nested one dimensional generating functions
+   * <code>head(...head(expr, n1, x1)..., nk, xk)</code>, or {@link F#NIL} if the lists differ in
+   * length.
+   */
+  static IExpr nestPerVariable(IAST ast, EvalEngine engine) {
+    IAST nList = (IAST) ast.arg2();
+    IAST xList = (IAST) ast.arg3();
+    if (nList.argSize() != xList.argSize()) {
+      return F.NIL;
+    }
+    final IExpr head = ast.topHead();
+    IExpr result = ast.arg1();
+    for (int i = 1; i <= nList.argSize(); i++) {
+      result = engine.evaluate(F.ternaryAST3(head, result, nList.get(i), xList.get(i)));
+    }
+    return result;
   }
 
   /**

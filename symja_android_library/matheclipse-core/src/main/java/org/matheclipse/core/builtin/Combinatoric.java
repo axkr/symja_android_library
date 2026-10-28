@@ -327,6 +327,7 @@ public final class Combinatoric {
    * </code>
    * </pre>
    */
+  // CPD-OFF dissimilarity formula per measure
   private static final class DiceDissimilarity extends AbstractEvaluator {
 
     @Override
@@ -339,6 +340,7 @@ public final class Combinatoric {
       int n10 = counts[2];
       int n11 = counts[3];
       return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ(2L * n11 + n10 + n01));
+      // CPD-ON
     }
 
     @Override
@@ -522,6 +524,7 @@ public final class Combinatoric {
    * </code>
    * </pre>
    */
+  // CPD-OFF dissimilarity formula per measure
   private static class JaccardDissimilarity extends AbstractEvaluator {
 
     @Override
@@ -534,6 +537,7 @@ public final class Combinatoric {
       int n10 = counts[2];
       int n11 = counts[3];
       return F.Divide(F.ZZ((long) n10 + (long) n01), F.ZZ((long) n11 + (long) n10 + n01));
+      // CPD-ON
     }
 
     @Override

@@ -147,6 +147,7 @@ public abstract class AbstractCodeFormFactory {
     }
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
+        // CPD-OFF form factories without a common base for this conversion
         append(buf, "+");
         caller = false;
       }
@@ -161,6 +162,7 @@ public abstract class AbstractCodeFormFactory {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
     } else {
       if (!realZero) {
+      // CPD-ON
         append(buf, convertDoubleToFormattedString(realPart));
         if (!imaginaryZero) {
           append(buf, "+I*");
@@ -329,6 +331,21 @@ public abstract class AbstractCodeFormFactory {
     }
   }
 
+  /**
+   * Convert a symbol, a pattern object or (as a string) any other expression.
+   */
+  protected final void convertSymbolOrPattern(final StringBuilder buf, final IExpr o) {
+    if (o instanceof ISymbol) {
+      convertSymbol(buf, (ISymbol) o);
+      return;
+    }
+    if (o instanceof IPatternObject) {
+      convertPattern(buf, (IPatternObject) o);
+      return;
+    }
+    convertString(buf, o.toString());
+  }
+
   public void convertString(final StringBuilder buf, final String str) {
     if (fQuotes) {
       append(buf, "\"");
@@ -405,6 +422,7 @@ public abstract class AbstractCodeFormFactory {
         } else {
           append(buf, "[");
         }
+        // CPD-OFF form factories without a common base for this conversion
         convertInternal(buf, list.arg1(), Precedence.NO_PRECEDENCE, false);
         if (fRelaxedSyntax) {
           append(buf, ")");
@@ -419,6 +437,7 @@ public abstract class AbstractCodeFormFactory {
         }
         append(buf, "1/");
         if (exp.isMinusOne()) {
+        // CPD-ON
           convertInternal(buf, list.arg1(), Precedence.DIVIDE, false);
           if (Precedence.DIVIDE < precedence) {
             append(buf, ")");

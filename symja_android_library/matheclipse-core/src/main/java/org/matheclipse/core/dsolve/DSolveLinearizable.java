@@ -57,10 +57,10 @@ final class DSolveLinearizable {
    */
   static IExpr solve(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr c_n, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    IExpr head = yFunction.head();
     IExpr yDummy = F.Dummy("Y");
-    IExpr right = DSolveUtil.solveForFirstDerivative(lhs, yFunction, xVar, yDummy, engine);
-    if (right.isNIL() || !right.isFree(head, true) || right.leafCount() > MAX_LEAF_COUNT) {
+    IExpr right =
+        DSolveUtil.solveForFirstDerivative(lhs, yFunction, xVar, yDummy, engine, MAX_LEAF_COUNT);
+    if (right.isNIL()) {
       return F.NIL;
     }
     if (!hasTranscendental(right, yDummy) || isSeparable(right, xVar, yDummy)) {

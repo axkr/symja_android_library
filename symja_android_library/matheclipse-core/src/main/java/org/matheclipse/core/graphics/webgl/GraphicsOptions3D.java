@@ -181,6 +181,7 @@ public final class GraphicsOptions3D {
   }
 
   /** Read the option rules of {@code ast}, starting after the first argument. */
+  // CPD-OFF option-rule loop of the 2D and the 3D option parsers
   public void parse(IAST ast) {
     for (int i = 2; i <= ast.argSize(); i++) {
       IExpr arg = ast.get(i);
@@ -194,6 +195,7 @@ public final class GraphicsOptions3D {
       if (!key.isBuiltInSymbol()) {
         continue;
       }
+      // CPD-ON
       switch (((IBuiltInSymbol) key).ordinal()) {
         case ID.Axes:
           parseAxes(value);

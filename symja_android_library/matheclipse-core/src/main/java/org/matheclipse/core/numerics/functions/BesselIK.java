@@ -194,6 +194,7 @@ public final class BesselIK {
     double rkmu;
     double rk1;
 
+    // CPD-OFF Temme series of the bessjy and bessik kernels, kept close to the original
     if (x < X_MIN) {
       // --- Temme's series for K_xmu and K_xmu+1 ---
       final double x2 = 0.5 * x;
@@ -204,6 +205,7 @@ public final class BesselIK {
       final double factSinh = (Math.abs(e) < EPS) ? 1.0 : Math.sinh(e) / e;
 
       final double[] gam = BesselJY.chebyshevGamma(xmu);
+      // CPD-ON
       final double gam1 = gam[0];
       final double gam2 = gam[1];
       final double gampl = gam[2];

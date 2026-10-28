@@ -3430,81 +3430,70 @@ public class Maximize extends AbstractFunctionEvaluator {
   }
 
   public static IAST maximizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
-    long varDegree = polynomial.degree(0);
-    IExpr a;
-    IExpr b;
-    IExpr c;
-    IExpr d;
-    IExpr e;
-    if (varDegree <= 3) {
-      // solve cubic or quadratic maximize:
-      IExpr[] coefficients = Minimize.polynomialCoefficients(polynomial, "Maximize");
-      a = coefficients[0];
-      b = coefficients[1];
-      c = coefficients[2];
-      d = coefficients[3];
-      e = coefficients[4];
-      if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-          // quadratic
-          if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-            if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-              // The `1` is not attained at any point satisfying the constraints.
-              return Errors.printMessage(S.Maximize, "natt", F.List("maximum"));
-            } else {
-              // linear
-              return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CInfinity), F.list(
-                  F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
-            }
-          } else {
-            return F
-                .List(
-                    F.Piecewise(
-                        F.list(F.list(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))),
-                            F.list(
-                                F.Times(F.C1D4, F.Power(c, -1),
-                                    F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
-                                F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
-                                    F.And(F.Less(d, 0), F.Less(c, 0))))),
-                        F.CInfinity),
-                    F.list(F.Rule(x,
-                        F.Piecewise(
-                            F.list(
-                                F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
-                                    F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
-                                        F.And(F.Less(d, 0), F.Less(c, 0)))),
-                                F.list(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
-                            S.Indeterminate))));
-          }
-        } else {
-          // cubic
-          return F.list(
-              F.Piecewise(
-                  F.list(
-                      F.list(e,
-                          F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
-                      F.list(
-                          F.Times(F.C1D4, F.Power(c, F.CN1),
-                              F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
-                          F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
-                  F.oo),
-              F.list(F.Rule(x,
-                  F.Piecewise(
-                      F.list(
-                          F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
-                              F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
-                          F.list(F.C0,
-                              F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
-                      F.Indeterminate))));
-        }
-      }
-    }
+    return cubicPolynomialExtremum(polynomial, x, true);
+  }
 
-    return F.NIL;
+  /**
+   * The global extremum of a polynomial of degree at most 3, as a piecewise function of its
+   * coefficients.
+   *
+   * @param polynomial the polynomial in <code>x</code>
+   * @param x the variable
+   * @param isMax <code>true</code> for the maximum, <code>false</code> for the minimum
+   * @return {@link F#NIL} if the degree is higher than 3
+   */
+  static IAST cubicPolynomialExtremum(ExprPolynomial polynomial, IExpr x, boolean isMax) {
+    if (polynomial.degree(0) > 3) {
+      return F.NIL;
+    }
+    // solve cubic or quadratic maximize or minimize:
+    IExpr[] coefficients =
+        Minimize.polynomialCoefficients(polynomial, isMax ? "Maximize" : "Minimize");
+    IExpr a = coefficients[0];
+    IExpr b = coefficients[1];
+    IExpr c = coefficients[2];
+    IExpr d = coefficients[3];
+    IExpr e = coefficients[4];
+    if (!a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      return F.NIL;
+    }
+    // the value an unbounded polynomial approaches
+    IExpr unbounded = isMax ? F.CInfinity : F.CNInfinity;
+    // the sign of the quadratic coefficient for which the stationary point is the extremum
+    IExpr cBounded = isMax ? F.Less(c, F.C0) : F.Greater(c, F.C0);
+    IExpr value =
+        F.Times(F.C1D4, F.Power(c, F.CN1), F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e)));
+    IExpr point = F.Times(F.CN1D2, F.Power(c, F.CN1), d);
+    if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      // quadratic
+      if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+          // The `1` is not attained at any point satisfying the constraints.
+          return Errors.printMessage(isMax ? S.Maximize : S.Minimize, "natt",
+              F.List(isMax ? "maximum" : "minimum"));
+        }
+        // linear
+        return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), unbounded), F.list(
+            F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
+      }
+      IExpr constant =
+          F.And(F.Equal(d, F.C0), isMax ? F.LessEqual(c, F.C0) : F.GreaterEqual(c, F.C0));
+      IExpr stationary =
+          F.Or(F.And(F.Greater(d, F.C0), cBounded), F.And(F.Less(d, F.C0), cBounded));
+      return F.list(
+          F.Piecewise(F.list(F.list(e, constant), F.list(value, stationary)), unbounded),
+          F.list(F.Rule(x, F.Piecewise(F.list(F.list(point, stationary), F.list(F.C0, constant)),
+              S.Indeterminate))));
+    }
+    // cubic
+    IExpr constant = F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+        F.And(F.Equal(d, F.C0), cBounded, F.Equal(b, F.C0)));
+    IExpr stationary = F.Or(F.And(F.Greater(d, F.C0), cBounded, F.Equal(b, F.C0)),
+        F.And(F.Less(d, F.C0), cBounded, F.Equal(b, F.C0)));
+    return F.list(
+        F.Piecewise(F.list(F.list(e, constant), F.list(value, stationary)), unbounded),
+        F.list(F.Rule(x, F.Piecewise(F.list(F.list(point, stationary), F.list(F.C0, constant)),
+            F.Indeterminate))));
   }
 
   public static IAST maximizeExprPolynomial(final IExpr expr, IAST varList) {
@@ -4304,45 +4293,90 @@ public class Maximize extends AbstractFunctionEvaluator {
     return F.list(simplifyCriticalValue(bestValue, engine), F.list(F.Rule(x, bestPoint)));
   }
 
+  /**
+   * Test if <code>function</code> is real at the far point <code>x == sample</code>, which stands
+   * for one side of the real line.
+   *
+   * @return <code>false</code> if the value is not known to be real
+   */
+  private static boolean isRealTowards(IExpr function, IExpr x, double sample,
+      EvalEngine engine) {
+    IExpr value = engine.evalQuiet(F.xreplace(function, x, F.num(sample)));
+    return value.isRealResult();
+  }
+
   public static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
+    return extremum(head, function, x, true, engine);
+  }
+
+  /**
+   * The global extremum of a univariate function: closed forms for special shapes first, then the
+   * limits at <code>+/-Infinity</code> and the stationary points which pass the second derivative
+   * test.
+   *
+   * @param head the head of the calling function
+   * @param function the objective
+   * @param x the variable
+   * @param isMax <code>true</code> for the maximum, <code>false</code> for the minimum
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if the extremum is not decided
+   */
+  static IExpr extremum(ISymbol head, IExpr function, IExpr x, boolean isMax,
+      EvalEngine engine) {
     try {
       if (function.isFree(x) && function.isRealResult()) {
         // a constant: attained everywhere
         return F.list(function, F.list(F.Rule(x, F.C0)));
       }
-      IExpr piecewise = absoluteValueExtremum(function, x, true, engine);
+      IExpr piecewise = absoluteValueExtremum(function, x, isMax, engine);
       if (piecewise.isPresent()) {
         return piecewise;
       }
       // bounded linear-trigonometric objective (a*Sin(x) + b*Cos(x) + c)
-      IExpr trig = linearTrigExtremum(function, x, true, engine);
+      IExpr trig = linearTrigExtremum(function, x, isMax, engine);
       if (trig.isPresent()) {
         return trig;
       }
       if (function.isPolynomial(x)) {
         // the objective of `x+1/x` must not be multiplied by `x`
-        IExpr temp = maximizeExprPolynomial(function, F.list(x));
+        IExpr temp = isMax ? maximizeExprPolynomial(function, F.list(x))
+            : Minimize.minimizeExprPolynomial(function, F.list(x));
         if (temp.isPresent()) {
           return temp;
         }
       }
-      IExpr quotient = quotientExtremum(head, function, x, true, engine);
+      IExpr quotient = quotientExtremum(head, function, x, isMax, engine);
       if (quotient.isPresent()) {
         return quotient;
       }
 
+      if (!isRealTowards(function, x, -1.0e100, engine)
+          || !isRealTowards(function, x, 1.0e100, engine)) {
+        // the limits at +/-Infinity only count where the function is real: optimize over the real
+        // domain instead, or leave the problem undecided if that domain isn't known
+        IExpr domain = S.FunctionDomain.of(engine, function, x);
+        if (!domain.isTrue()) {
+          if (domain.isFalse() || domain.isAST(S.FunctionDomain)) {
+            return F.NIL;
+          }
+          return univariateConstrainedExtremum(head, function, domain, x, isMax, engine);
+        }
+      }
+
+      // the value an unbounded function approaches
+      IExpr unbounded = isMax ? F.CInfinity : F.CNInfinity;
       IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
-      if (yNInf.isInfinity()) {
-        return F.list(F.CInfinity, F.list(F.Rule(x, F.CNInfinity)));
+      if (isMax ? yNInf.isInfinity() : yNInf.isNegativeInfinity()) {
+        return F.list(unbounded, F.list(F.Rule(x, F.CNInfinity)));
       }
       IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
-      if (yInf.isInfinity()) {
-        return F.list(F.CInfinity, F.list(F.Rule(x, F.CInfinity)));
+      if (isMax ? yInf.isInfinity() : yInf.isNegativeInfinity()) {
+        return F.list(unbounded, F.list(F.Rule(x, F.CInfinity)));
       }
 
       if (function.isPolynomial(x)) {
-        // bounded above, as the limits show: the largest value at a stationary point
-        IExpr polynomial = polynomialExtremum(function, x, true, engine);
+        // bounded on that side, as the limits show: the best value at a stationary point
+        IExpr polynomial = polynomialExtremum(function, x, isMax, engine);
         if (polynomial.isPresent()) {
           return polynomial;
         }
@@ -4351,9 +4385,9 @@ public class Maximize extends AbstractFunctionEvaluator {
       IExpr second_derivative = S.D.of(engine, first_derivative, x);
       IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
       if (candidates.isFree(S.Solve)) {
-        IExpr maxCandidate = F.NIL;
-        IExpr maxValue = F.CNInfinity;
-        IExpr maxSolution = F.NIL;
+        IExpr bestCandidate = F.NIL;
+        IExpr bestValue = isMax ? F.CNInfinity : F.CInfinity;
+        IExpr bestSolution = F.NIL;
         if (candidates.isListOfLists()) {
           for (int i = 1; i < candidates.size(); i++) {
             IExpr solution = ((IAST) candidates).get(i).first().second();
@@ -4363,29 +4397,31 @@ public class Maximize extends AbstractFunctionEvaluator {
               return F.NIL;
             }
             IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
-            if (value.isNegative()) {
+            // the second derivative test, which may use the assumptions
+            if (isMax ? value.isNegativeResult() : value.isPositiveResult()) {
               IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
-              if (functionValue.greater(maxValue).isTrue()) {
-                maxValue = functionValue;
-                maxCandidate = candidate;
-                maxSolution = solution;
+              if (isMax ? functionValue.greater(bestValue).isTrue()
+                  : S.Less.ofQ(functionValue, bestValue)) {
+                bestValue = functionValue;
+                bestCandidate = candidate;
+                bestSolution = solution;
               }
             }
           }
-          if (maxCandidate.isPresent()) {
-            if (!holdsOverPeriod(function, x, maxSolution, maxValue, true, engine)) {
-              // only a local maximum: the function is larger elsewhere in the period
+          if (bestCandidate.isPresent()) {
+            if (!holdsOverPeriod(function, x, bestSolution, bestValue, isMax, engine)) {
+              // only a local extremum: the function is better elsewhere in the period
               return F.NIL;
             }
-            return F.list(maxValue, F.list(F.Rule(x, maxCandidate)));
+            return F.list(bestValue, F.list(F.Rule(x, bestCandidate)));
           }
         }
-        // no stationary point is recognized as a maximum: nothing is decided
+        // no stationary point is recognized as an extremum: nothing is decided
         return F.NIL;
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      return Errors.printMessage(S.Maximize, rex);
+      return Errors.printMessage(isMax ? S.Maximize : S.Minimize, rex);
     }
     return F.NIL;
   }

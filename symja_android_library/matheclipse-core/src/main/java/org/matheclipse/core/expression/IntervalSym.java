@@ -251,72 +251,17 @@ public class IntervalSym {
   }
 
   public static IAST cos(final IAST ast) {
-    EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(ast, (min, max, result, index) -> {
-      IAST difference = F.Subtract(max, min);
-      if (engine.evalGreaterEqual(difference, F.C2Pi)) {
-        // difference >= 2 * Pi
-        result.append(index, F.list(F.CN1, F.C1));
-      } else {
-        // slope from 1st derivative
-        double dMin = engine.evalDouble(F.Sin(min).negate());
-        double dMax = engine.evalDouble(F.Sin(max).negate());
-        if (engine.evalLessEqual(difference, S.Pi)) {
-          if (dMin >= 0) {
-            if (dMax >= 0) {
-              result.append(index, F.list(F.Cos(min), F.Cos(max)));
-            } else {
-              IExpr minimum = minimum(F.Cos(min), F.Cos(max), engine);
-              if (minimum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(minimum, F.C1));
-            }
-          } else {
-            if (dMax < 0) {
-              result.append(index, F.list(F.Cos(max), F.Cos(min)));
-            } else {
-              IExpr maximum = maximum(F.Cos(min), F.Cos(max), engine);
-              if (maximum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(F.CN1, maximum));
-            }
-          }
-        } else { // difference between {Pi, 2*Pi}
-          if (dMin >= 0) {
-            if (dMax > 0) {
-              result.append(index, F.list(F.CN1, F.C1));
-            } else {
-              IExpr minimum = minimum(F.Cos(min), F.Cos(max), engine);
-              if (minimum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(minimum, F.C1));
-            }
-          } else {
-            if (dMax < 0) {
-              result.append(index, F.list(F.CN1, F.C1));
-            } else {
-              IExpr maximum = maximum(F.Cos(min), F.Cos(max), engine);
-              if (maximum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(F.CN1, maximum));
-            }
-          }
-        }
-      }
-      return true;
-    });
+    return sinOrCos(ast, false);
   }
 
+  // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
   public static IAST cosh(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
       if (min.isRealResult() && max.isRealResult()) {
         if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
           result.append(F.list(F.Cosh(min), F.Cosh(max)));
+          // CPD-ON
         } else if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
           result.append(F.list(F.C1, F.Max(F.Cosh(min), F.Cosh(max))));
         } else if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
@@ -328,6 +273,7 @@ public class IntervalSym {
     });
   }
 
+  // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
   public static IAST cot(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
@@ -336,6 +282,7 @@ public class IntervalSym {
         result.append(F.list(F.CNInfinity, F.CInfinity));
       } else {
         double dMin = engine.evalDouble(F.Cot(min));
+        // CPD-ON
         double dMax = engine.evalDouble(F.Cot(max));
         if (engine.evalLessEqual(difference, F.CPiHalf)) {
           // difference <= 1/2*Pi
@@ -858,7 +805,6 @@ public class IntervalSym {
     }
     return F.NIL;
   }
-  // CPD-ON
 
   public static IExpr plus(final IExpr scalar, final IAST ast2) {
     IAST interval2 = normalize(ast2);
@@ -869,7 +815,6 @@ public class IntervalSym {
         IExpr min2 = list2.arg1();
         IExpr max2 = list2.arg2();
 
-        // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
         IAST list = F.list(scalar.plus(min2), //
             scalar.plus(max2));
         result.append(list);
@@ -1049,12 +994,14 @@ public class IntervalSym {
     return F.NIL;
   }
 
+  // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
   public static IAST sech(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
       if (min.isRealResult() && max.isRealResult()) {
         if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
           result.append(F.list(F.Sech(max), F.Sech(min)));
+          // CPD-ON
         } else if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
           result.append(F.list(F.Min(F.Sech(min), F.Sech(max)), F.C1));
         } else if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
@@ -1102,63 +1049,91 @@ public class IntervalSym {
   }
 
   public static IAST sin(final IAST ast) {
+    return sinOrCos(ast, true);
+  }
+
+  /** <code>Sin</code> or <code>Cos</code> takes every value of <code>[-1, 1]</code>. */
+  static final int SIN_COS_FULL = 0;
+  /** <code>Sin</code> or <code>Cos</code> increases from the lower to the upper bound. */
+  static final int SIN_COS_INCREASING = 1;
+  /** <code>Sin</code> or <code>Cos</code> decreases from the lower to the upper bound. */
+  static final int SIN_COS_DECREASING = 2;
+  /** The maximum <code>1</code> lies inside, the minimum at one of the bounds. */
+  static final int SIN_COS_MAXIMUM_INSIDE = 3;
+  /** The minimum <code>-1</code> lies inside, the maximum at one of the bounds. */
+  static final int SIN_COS_MINIMUM_INSIDE = 4;
+
+  /**
+   * The shape of <code>Sin</code> or <code>Cos</code> between <code>min</code> and
+   * <code>max</code>. Within less than a full period the sign of the slope at the two bounds tells
+   * whether the maximum <code>1</code> or the minimum <code>-1</code> lies inside the interval.
+   *
+   * @param isSin <code>true</code> for <code>Sin</code>, <code>false</code> for <code>Cos</code>
+   * @param fullAtTwoPi whether an interval of length <code>2*Pi</code> already gives the full
+   *        range, rather than only a longer one
+   * @return one of the <code>SIN_COS_...</code> constants
+   */
+  static int sinOrCosShape(IExpr min, IExpr max, boolean isSin, boolean fullAtTwoPi,
+      EvalEngine engine) {
+    IAST difference = F.Subtract(max, min);
+    if (fullAtTwoPi ? engine.evalGreaterEqual(difference, F.C2Pi)
+        : engine.evalGreater(difference, F.C2Pi)) {
+      return SIN_COS_FULL;
+    }
+    // slope from 1st derivative
+    double dMin = engine.evalDouble(isSin ? F.Cos(min) : F.Sin(min).negate());
+    double dMax = engine.evalDouble(isSin ? F.Cos(max) : F.Sin(max).negate());
+    // up to half a period the slopes at the bounds decide monotony; between Pi and 2*Pi the
+    // same slopes mean that both extrema lie inside
+    boolean halfPeriod = engine.evalLessEqual(difference, S.Pi);
+    if (dMin >= 0) {
+      if (halfPeriod ? dMax >= 0 : dMax > 0) {
+        return halfPeriod ? SIN_COS_INCREASING : SIN_COS_FULL;
+      }
+      return SIN_COS_MAXIMUM_INSIDE;
+    }
+    if (dMax < 0) {
+      return halfPeriod ? SIN_COS_DECREASING : SIN_COS_FULL;
+    }
+    return SIN_COS_MINIMUM_INSIDE;
+  }
+
+  /**
+   * <code>Sin</code> or <code>Cos</code> of every interval of <code>ast</code>.
+   *
+   * @param ast the <code>Interval</code>
+   * @param isSin <code>true</code> for <code>Sin</code>, <code>false</code> for <code>Cos</code>
+   */
+  private static IAST sinOrCos(final IAST ast, final boolean isSin) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
-      IAST difference = F.Subtract(max, min);
-      if (engine.evalGreaterEqual(difference, F.C2Pi)) {
-        // difference >= 2 * Pi
-        result.append(index, F.list(F.CN1, F.C1));
-      } else {
-        // slope from 1st derivative
-        double dMin = engine.evalDouble(F.Cos(min));
-        double dMax = engine.evalDouble(F.Cos(max));
-        if (engine.evalLessEqual(difference, S.Pi)) {
-          if (dMin >= 0) {
-            if (dMax >= 0) {
-              result.append(index, F.list(F.Sin(min), F.Sin(max)));
-            } else {
-              IExpr minimum = minimum(F.Sin(min), F.Sin(max), engine);
-              if (minimum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(minimum, F.C1));
-            }
-          } else {
-            if (dMax < 0) {
-              result.append(index, F.list(F.Sin(max), F.Sin(min)));
-            } else {
-              IExpr maximum = maximum(F.Sin(min), F.Sin(max), engine);
-              if (maximum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(F.CN1, maximum));
-            }
+      IAST fMin = isSin ? F.Sin(min) : F.Cos(min);
+      IAST fMax = isSin ? F.Sin(max) : F.Cos(max);
+      switch (sinOrCosShape(min, max, isSin, true, engine)) {
+        case SIN_COS_INCREASING:
+          result.append(index, F.list(fMin, fMax));
+          return true;
+        case SIN_COS_DECREASING:
+          result.append(index, F.list(fMax, fMin));
+          return true;
+        case SIN_COS_MAXIMUM_INSIDE:
+          IExpr minimum = minimum(fMin, fMax, engine);
+          if (minimum.isNIL()) {
+            return false;
           }
-        } else { // difference between {Pi, 2*Pi}
-          if (dMin >= 0) {
-            if (dMax > 0) {
-              result.append(index, F.list(F.CN1, F.C1));
-            } else {
-              IExpr minimum = minimum(F.Sin(min), F.Sin(max), engine);
-              if (minimum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(minimum, F.C1));
-            }
-          } else {
-            if (dMax < 0) {
-              result.append(index, F.list(F.CN1, F.C1));
-            } else {
-              IExpr maximum = maximum(F.Sin(min), F.Sin(max), engine);
-              if (maximum.isNIL()) {
-                return false;
-              }
-              result.append(index, F.list(F.CN1, maximum));
-            }
+          result.append(index, F.list(minimum, F.C1));
+          return true;
+        case SIN_COS_MINIMUM_INSIDE:
+          IExpr maximum = maximum(fMin, fMax, engine);
+          if (maximum.isNIL()) {
+            return false;
           }
-        }
+          result.append(index, F.list(F.CN1, maximum));
+          return true;
+        default:
+          result.append(index, F.list(F.CN1, F.C1));
+          return true;
       }
-      return true;
     });
   }
 
@@ -1172,6 +1147,7 @@ public class IntervalSym {
     });
   }
 
+  // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
   public static IAST tan(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
@@ -1180,6 +1156,7 @@ public class IntervalSym {
         result.append(F.list(F.CNInfinity, F.CInfinity));
       } else {
         double dMin = engine.evalDouble(F.Tan(min));
+        // CPD-ON
         double dMax = engine.evalDouble(F.Tan(max));
         if (engine.evalLessEqual(difference, F.CPiHalf)) {
           // difference <= 1/2*Pi
@@ -1275,7 +1252,6 @@ public class IntervalSym {
     }
     return F.NIL;
   }
-  // CPD-ON
 
   public static IExpr times(final IExpr scalar, final IAST ast2) {
     IAST interval2 = normalize(ast2);
@@ -1285,6 +1261,7 @@ public class IntervalSym {
         IAST list2 = (IAST) interval2.get(j);
         IExpr min2 = list2.arg1();
         IExpr max2 = list2.arg2();
+        // CPD-ON
 
         IExpr min = scalar.times(min2);
         IExpr max = scalar.times(max2);

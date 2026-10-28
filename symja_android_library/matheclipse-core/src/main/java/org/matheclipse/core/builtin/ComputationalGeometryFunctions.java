@@ -477,6 +477,40 @@ public class ComputationalGeometryFunctions {
   }
 
   /**
+   * Test if the points of <code>listOfPoints</code> starting at index <code>from</code> all have
+   * <code>dimension</code> coordinates.
+   *
+   * @param listOfPoints a list of points
+   * @param from the first index to check
+   * @param dimension <code>2</code> or <code>3</code>
+   */
+  private static boolean allPointsOfLength(IAST listOfPoints, int from, int dimension) {
+    for (int i = from; i < listOfPoints.size(); i++) {
+      IExpr point = listOfPoints.get(i);
+      if (dimension == 2 ? !point.isList2() : !point.isList3()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Return the index of the first point of <code>listOfPoints</code> which is different from the
+   * first point, or <code>-1</code> if all points are identical.
+   *
+   * @param listOfPoints a list of at least two points
+   */
+  private static int firstPointDifferentFrom(IAST listOfPoints) {
+    IExpr p1 = listOfPoints.arg1();
+    for (int i = 2; i < listOfPoints.size(); i++) {
+      if (!listOfPoints.get(i).equals(p1)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
    * Test if the three dimensional points <code>p1, p2, p3</code> are on one line, because the cross
    * product of the vectors <code>p2-p1</code> and <code>p3-p1</code> is the zero vector.
    */
@@ -1715,23 +1749,16 @@ public class ComputationalGeometryFunctions {
         }
         if (listOfPoints.arg1().isList2()) {
           // all 2D points lie on the same plane
-          for (int i = 2; i < listOfPoints.size(); i++) {
-            if (listOfPoints.get(i).isList2()) {
-              continue;
-            } else {
-              // `1` should be a non-empty list of points.
-              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
-            }
+          if (!allPointsOfLength(listOfPoints, 2, 2)) {
+            // `1` should be a non-empty list of points.
+            return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
           }
           return S.True;
         } else if (listOfPoints.argSize() > 3 && listOfPoints.arg1().isList3()
             && listOfPoints.arg2().isList3() && listOfPoints.arg3().isList3()) {
-
-          for (int i = 4; i < listOfPoints.size(); i++) {
-            if (!listOfPoints.get(i).isList3()) {
-              // `1` should be a non-empty list of points.
-              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
-            }
+          if (!allPointsOfLength(listOfPoints, 4, 3)) {
+            // `1` should be a non-empty list of points.
+            return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
           }
           return coplanarPoints(listOfPoints, engine);
         }
@@ -1750,13 +1777,7 @@ public class ComputationalGeometryFunctions {
     private static IExpr coplanarPoints(IAST listOfPoints, EvalEngine engine) {
       IAST p1 = (IAST) listOfPoints.arg1();
       // the first point which is different from p1 spans a line together with p1
-      int lineIndex = -1;
-      for (int i = 2; i < listOfPoints.size(); i++) {
-        if (!listOfPoints.get(i).equals(p1)) {
-          lineIndex = i;
-          break;
-        }
-      }
+      int lineIndex = firstPointDifferentFrom(listOfPoints);
       if (lineIndex < 0) {
         // all points are identical
         return S.True;
@@ -1914,22 +1935,16 @@ public class ComputationalGeometryFunctions {
         }
         if (listOfPoints.argSize() > 2 && listOfPoints.arg1().isList2()
             && listOfPoints.arg2().isList2()) {
-
-          for (int i = 3; i < listOfPoints.size(); i++) {
-            if (!listOfPoints.get(i).isList2()) {
-              // `1` should be a non-empty list of points.
-              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
-            }
+          if (!allPointsOfLength(listOfPoints, 3, 2)) {
+            // `1` should be a non-empty list of points.
+            return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
           }
           return collinearPoints(listOfPoints, 2, engine);
         } else if (listOfPoints.argSize() > 2 && listOfPoints.arg1().isList3()
             && listOfPoints.arg2().isList3() && listOfPoints.arg3().isList3()) {
-
-          for (int i = 4; i < listOfPoints.size(); i++) {
-            if (!listOfPoints.get(i).isList3()) {
-              // `1` should be a non-empty list of points.
-              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
-            }
+          if (!allPointsOfLength(listOfPoints, 4, 3)) {
+            // `1` should be a non-empty list of points.
+            return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
           }
           return collinearPoints(listOfPoints, 3, engine);
         }
@@ -1950,13 +1965,7 @@ public class ComputationalGeometryFunctions {
     private static IExpr collinearPoints(IAST listOfPoints, int dimension, EvalEngine engine) {
       IAST p1 = (IAST) listOfPoints.arg1();
       // the first point which is different from p1 defines the line together with p1
-      int lineIndex = -1;
-      for (int i = 2; i < listOfPoints.size(); i++) {
-        if (!listOfPoints.get(i).equals(p1)) {
-          lineIndex = i;
-          break;
-        }
-      }
+      int lineIndex = firstPointDifferentFrom(listOfPoints);
       if (lineIndex < 0) {
         // all points are identical
         return S.True;

@@ -1141,11 +1141,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (expr.isList()) {
       IExpr localColor = currentColor;
       for (IExpr e : (IAST) expr) {
-        if (isColor(e)) {
+        if (GraphicsOptions.isBasicColor(e)) {
           localColor = e;
         } else if (e.isAST(S.Directive)) {
           for (IExpr d : (IAST) e) {
-            if (isColor(d)) {
+            if (GraphicsOptions.isBasicColor(d)) {
               localColor = d;
             }
           }
@@ -1170,7 +1170,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         IExpr newColor = currentColor;
         for (int i = 2; i <= ast.size(); i++) {
           IExpr arg = ast.get(i);
-          if (isColor(arg)) {
+          if (GraphicsOptions.isBasicColor(arg)) {
             newColor = arg;
           }
         }
@@ -1199,13 +1199,6 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
     }
     return false;
-  }
-
-  private static boolean isColor(IExpr e) {
-    return e.isAST(S.RGBColor) || e.isAST(S.Hue) || e.isAST(S.GrayLevel) || e.isAST(S.CMYKColor)
-        || e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue || e == S.Black
-            || e == S.White || e == S.Gray || e == S.Yellow || e == S.Cyan || e == S.Magenta
-            || e == S.Orange || e == S.Pink || e == S.Purple || e == S.Brown);
   }
 
   private static IExpr createStemsToBottom(IAST pts, double yBottom) {

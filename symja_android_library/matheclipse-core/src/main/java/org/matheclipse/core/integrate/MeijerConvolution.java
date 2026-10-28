@@ -111,15 +111,13 @@ final class MeijerConvolution {
     List<Kernel> kernels = new ArrayList<Kernel>();
     for (int i = 1; i <= factors.argSize(); i++) {
       IExpr factor = factors.get(i);
+      IExpr power = IntegralRepresentations.powerOfX(factor, x);
       if (factor.isFree(x)) {
         constant.append(factor);
-      } else if (factor.equals(x)) {
-        alpha = F.Plus(alpha, F.C1);
-      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
-        alpha = F.Plus(alpha, factor.exponent());
+      } else if (power.isPresent()) {
+        alpha = F.Plus(alpha, power);
       } else if (factor.isPower() && factor.base().isE()) {
-        IExpr expanded = ctx.eval(F.Expand(factor.exponent()));
-        IAST terms = expanded.isPlus() ? (IAST) expanded : F.Plus(expanded);
+        IAST terms = IntegralRepresentations.exponentTerms(ctx, factor);
         for (int j = 1; j <= terms.argSize(); j++) {
           IExpr term = terms.get(j);
           if (term.isFree(x)) {

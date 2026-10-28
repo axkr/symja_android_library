@@ -21,40 +21,47 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
     if (ast.argSize() == 3 && ast.arg3().isInteger()) {
       int n = ast.arg3().toIntDefault();
       if (F.isPresent(n)) {
-        IExpr a = ast.arg1();
-        IExpr q = ast.arg2();
-
-        if (n > 0) {
-          // Expansion for positive integers: Product(1 - a*q^k, {k, 0, n-1})
-          IASTAppendable result = F.TimesAlloc();
-          for (int k = 0; k < n; k++) {
-            IExpr term;
-            if (k == 0) {
-              term = a;
-            } else if (k == 1) {
-              term = F.Times(a, q);
-            } else {
-              term = F.Times(a, F.Power(q, F.ZZ(k)));
-            }
-            result.append(F.Subtract(F.C1, term));
-          }
-          return result;
-
-        } else if (n < 0) {
-          // Expansion for negative integers: 1 / Product(1 - a/q^k, {k, 1, -n})
-          int max = -n;
-          IASTAppendable result = F.TimesAlloc();
-          for (int k = 1; k <= max; k++) {
-            IExpr term = k == 1 ? F.Times(a, F.Power(q, F.CN1)) : F.Times(a, F.Power(q, F.ZZ(-k)));
-            result.append(F.Subtract(F.C1, term));
-          }
-          return F.Power(result, F.CN1);
-
-        } else {
-          // n == 0
-          return F.C1;
-        }
+        return finiteProduct(ast.arg1(), ast.arg2(), n);
       }
+    }
+    return F.NIL;
+  }
+
+  /** From this <code>|n|</code> on the product <code>QPochhammer(a, q, n)</code> isn't expanded. */
+  private static final int MAX_EXPANSION = 100000;
+
+  /**
+   * The finite product <code>Product(1 - a*q^k, {k, 0, n-1})</code> for <code>n &gt; 0</code>, its
+   * reciprocal form <code>1 / Product(1 - a/q^k, {k, 1, -n})</code> for <code>n &lt; 0</code> and
+   * <code>1</code> for <code>n == 0</code>.
+   *
+   * @return {@link F#NIL} if <code>|n|</code> is too large
+   */
+  private static IExpr finiteProduct(IExpr a, IExpr q, int n) {
+    if (n > 0 && n < MAX_EXPANSION) {
+      IASTAppendable result = F.TimesAlloc();
+      for (int k = 0; k < n; k++) {
+        IExpr term;
+        if (k == 0) {
+          term = a;
+        } else if (k == 1) {
+          term = F.Times(a, q);
+        } else {
+          term = F.Times(a, F.Power(q, F.ZZ(k)));
+        }
+        result.append(F.Subtract(F.C1, term));
+      }
+      return result;
+    } else if (n < 0 && n > -MAX_EXPANSION) {
+      int max = -n;
+      IASTAppendable result = F.TimesAlloc();
+      for (int k = 1; k <= max; k++) {
+        IExpr term = k == 1 ? F.Times(a, F.Power(q, F.CN1)) : F.Times(a, F.Power(q, F.ZZ(-k)));
+        result.append(F.Subtract(F.C1, term));
+      }
+      return F.Power(result, F.CN1);
+    } else if (n == 0) {
+      return F.C1;
     }
     return F.NIL;
   }
@@ -114,32 +121,8 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
         && a.isNumber() && q.isNumber())) {
       // also the integer which a numeric evaluation has turned into an inexact number
       int nVal = n.toIntDefault();
-
-      // Expansion for positive integers
-      if (nVal > 0 && nVal < 100000) {
-        IASTAppendable result = F.TimesAlloc();
-        for (int k = 0; k < nVal; k++) {
-          IExpr term;
-          if (k == 0) {
-            term = a;
-          } else if (k == 1) {
-            term = F.Times(a, q);
-          } else {
-            term = F.Times(a, F.Power(q, F.ZZ(k)));
-          }
-          result.append(F.Subtract(F.C1, term));
-        }
-        return result;
-
-        // Expansion for negative integers
-      } else if (nVal < 0 && nVal > -100000) {
-        int max = -nVal;
-        IASTAppendable result = F.TimesAlloc();
-        for (int k = 1; k <= max; k++) {
-          IExpr term = k == 1 ? F.Times(a, F.Power(q, F.CN1)) : F.Times(a, F.Power(q, F.ZZ(-k)));
-          result.append(F.Subtract(F.C1, term));
-        }
-        return F.Power(result, F.CN1);
+      if (F.isPresent(nVal)) {
+        return finiteProduct(a, q, nVal);
       }
     }
 

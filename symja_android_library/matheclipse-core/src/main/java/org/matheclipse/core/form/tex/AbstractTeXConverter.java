@@ -29,6 +29,26 @@ public abstract class AbstractTeXConverter {
   public abstract boolean convert(final StringBuilder buffer, final IAST f, final int precedence);
 
   /**
+   * Append <code>parts[0], arg1, parts[1], ..., argN, parts[N]</code> for a function
+   * <code>f</code> with <code>N == parts.length - 1</code> arguments.
+   *
+   * @return <code>false</code> if <code>f</code> has another number of arguments
+   */
+  protected boolean convertSeparated(final StringBuilder buffer, final IAST f,
+      final String[] parts) {
+    if (f.size() != parts.length) {
+      return false;
+    }
+    buffer.append(parts[0]);
+    for (int i = 1; i < parts.length; i++) {
+      fFactory.convertInternal(buffer, f.get(i), Precedence.NO_PRECEDENCE,
+          TeXFormFactory.NO_PLUS_CALL);
+      buffer.append(parts[i]);
+    }
+    return true;
+  }
+
+  /**
    * Append the rows of <code>matrix</code>, the entries separated by <code>&amp;</code> and each
    * row ended by <code>\\\\</code> and a new line.
    */

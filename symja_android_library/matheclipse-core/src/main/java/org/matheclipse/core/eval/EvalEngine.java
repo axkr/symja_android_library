@@ -1188,18 +1188,33 @@ public class EvalEngine implements Serializable {
    */
   public IExpr addEvaluatedTraceStep(int level, IExpr inputExpr, IExpr rewrittenExpr,
       String ruleName) {
+    IASTMutable listOfHints = pushTraceStep(level, inputExpr, rewrittenExpr, ruleName);
+    IExpr evaluatedResult = evaluate(rewrittenExpr);
+    if (listOfHints != null) {
+      listOfHints.set(3, evaluatedResult);
+    }
+    return evaluatedResult;
+  }
+
+  /**
+   * Add the step <code>inputExpr -> rewrittenExpr</code> with the hints
+   * <code>{head, ruleName, #1}</code> to the trace stack, if steps of the given {@link StepLevel}
+   * are recorded.
+   *
+   * @param level see {@link StepLevel}
+   * @return the hints list whose slot <code>3</code> the caller sets to the step's result, or
+   *         <code>null</code> if no step was recorded
+   */
+  private IASTMutable pushTraceStep(int level, IExpr inputExpr, IExpr rewrittenExpr,
+      String ruleName) {
     if (ToggleFeature.SHOW_STEPS && fTraceMode && rewrittenExpr.isPresent()) {
       if (fTraceStack != null && level <= fTraceStack.stepLevel()) {
         IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
-
         fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
-        IExpr evaluatedResult = evaluate(rewrittenExpr);
-        listOfHints.set(3, evaluatedResult);
-        return evaluatedResult;
+        return listOfHints;
       }
-      return evaluate(rewrittenExpr);
     }
-    return evaluate(rewrittenExpr);
+    return null;
   }
 
   /**
@@ -1374,13 +1389,9 @@ public class EvalEngine implements Serializable {
    * @param level see {@link StepLevel}
    */
   public IExpr addTraceStep(int level, IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
-    if (ToggleFeature.SHOW_STEPS && fTraceMode && rewrittenExpr.isPresent()) {
-      if (fTraceStack != null && level <= fTraceStack.stepLevel()) {
-        IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
-
-        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
-        listOfHints.set(3, rewrittenExpr);
-      }
+    IASTMutable listOfHints = pushTraceStep(level, inputExpr, rewrittenExpr, ruleName);
+    if (listOfHints != null) {
+      listOfHints.set(3, rewrittenExpr);
     }
     return rewrittenExpr;
   }
@@ -3079,6 +3090,7 @@ public class EvalEngine implements Serializable {
       if (function != null) {
         expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
       }
+      // CPD-OFF first try without and then with N; a shared helper would need a NaN sentinel
       IExpr result = evalNumericFunction(expr);
       if (result.isReal()) {
         return ((IReal) result).doubleValue();
@@ -3111,6 +3123,7 @@ public class EvalEngine implements Serializable {
             return cc.getRealPart();
           }
         }
+        // CPD-ON
         if (result.isAST(S.Labeled, 3, 4)) {
           return result.first().evalReal().doubleValue();
         }

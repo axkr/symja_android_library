@@ -1008,6 +1008,7 @@ public final class ExpVectorLong implements Serializable {
    * @param V
    * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public int invGradCompareTo(ExpVectorLong V) {
     long[] u = val;
     long[] v = V.val;
@@ -1069,6 +1070,7 @@ public final class ExpVectorLong implements Serializable {
     if (t == 0) {
       return t;
     }
+    // CPD-ON
     long up = 0;
     long vp = 0;
     for (int j = i; j < end; j++) {
@@ -1144,6 +1146,7 @@ public final class ExpVectorLong implements Serializable {
         t = 1;
         break;
       }
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       if (u[i] < v[i]) {
         t = -1;
         break;
@@ -1178,6 +1181,7 @@ public final class ExpVectorLong implements Serializable {
    * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
    */
   public int revInvGradCompareTo(ExpVectorLong V, int begin, int end) {
+  // CPD-ON
     long[] u = val;
     long[] v = V.val;
     int t = 0;
@@ -1228,6 +1232,7 @@ public final class ExpVectorLong implements Serializable {
         t = 1;
         break;
       }
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       if (u[i] > v[i]) {
         t = -1;
         break;
@@ -1262,12 +1267,14 @@ public final class ExpVectorLong implements Serializable {
     long[] u = val;
     long[] v = V.val;
     int t = 0;
+    // CPD-ON
     int i;
     for (i = u.length - 1; i >= 0; i--) {
       if (u[i] < v[i]) {
         t = 1;
         break;
       }
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       if (u[i] > v[i]) {
         t = -1;
         break;
@@ -1322,6 +1329,7 @@ public final class ExpVectorLong implements Serializable {
       long up = 0;
       long vp = 0;
       for (int j = i; j < u.length; j++) {
+      // CPD-ON
         up += wk[j] * u[j];
         vp += wk[j] * v[j];
       }
@@ -1344,6 +1352,7 @@ public final class ExpVectorLong implements Serializable {
    * @param end
    * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public int invWeightCompareTo(long[][] w, ExpVectorLong V, int begin, int end) {
     long[] u = val;
     long[] v = V.val;
@@ -1367,6 +1376,7 @@ public final class ExpVectorLong implements Serializable {
       long up = 0;
       long vp = 0;
       for (int j = i; j < end; j++) {
+      // CPD-ON
         up += wk[j] * u[j];
         vp += wk[j] * v[j];
       }

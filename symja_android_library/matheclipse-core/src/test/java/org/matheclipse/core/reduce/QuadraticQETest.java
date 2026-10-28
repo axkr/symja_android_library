@@ -104,7 +104,7 @@ public class QuadraticQETest extends ExprEvaluatorTestCase {
   public void testDeclined() {
     // degree 3 in the variable which is eliminated
     check("Resolve(Exists(x, x^3+a*x+1==0 && x>b), Reals)", //
-        "Resolve(Exists({x},a*x+x^3==-1&&x>b),Reals)");
+        "Resolve(Exists(x,a*x+x^3==-1&&x>b),Reals)");
   }
 
   /**

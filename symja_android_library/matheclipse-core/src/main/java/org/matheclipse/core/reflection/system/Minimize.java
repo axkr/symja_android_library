@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -143,84 +142,7 @@ public class Minimize extends AbstractFunctionEvaluator {
   }
 
   public static IAST minimizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
-    long varDegree = polynomial.degree(0);
-    IExpr a;
-    IExpr b;
-    IExpr c;
-    IExpr d;
-    IExpr e;
-    if (varDegree <= 3) {
-      // solve cubic or quadratic minimize:
-      IExpr[] coefficients = polynomialCoefficients(polynomial, "Minimize");
-      a = coefficients[0];
-      b = coefficients[1];
-      c = coefficients[2];
-      d = coefficients[3];
-      e = coefficients[4];
-      if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-          // quadratic
-          if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-            if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-              // The `1` is not attained at any point satisfying the constraints.
-              return Errors.printMessage(S.Minimize, "natt", F.List("minimum"));
-            } else {
-              // linear
-              return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CNInfinity), F.list(
-                  F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
-            }
-          } else {
-            return F
-                .List(
-                    F.Piecewise(
-                        F.list(
-                            F.list(e, F.And(F.Equal(d, 0),
-                                F.GreaterEqual(c, 0))),
-                            F.list(
-                                F.Times(
-                                    F.C1D4, F.Power(c, -1), F.Plus(F.Times(-1, F.Power(d, 2)),
-                                        F.Times(4, c, e))),
-                                F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
-                                    F.And(F.Less(d, 0), F.Greater(c, 0))))),
-                        F.CNInfinity),
-                    F.list(F.Rule(x,
-                        F.Piecewise(
-                            F.list(
-                                F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
-                                    F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
-                                        F.And(F.Less(d, 0), F.Greater(c, 0)))),
-                                F.list(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
-                            S.Indeterminate))));
-          }
-        } else {
-          // cubic
-          return F.list(
-              F.Piecewise(
-                  F.list(
-                      F.list(e,
-                          F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
-                      F.list(
-                          F.Times(F.C1D4, F.Power(c, F.CN1),
-                              F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
-                          F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
-                  F.Noo),
-              F.list(F.Rule(x,
-                  F.Piecewise(
-                      F.list(
-                          F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
-                              F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
-                          F.list(F.C0,
-                              F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
-                      F.Indeterminate))));
-        }
-      }
-    }
-
-    return F.NIL;
+    return Maximize.cubicPolynomialExtremum(polynomial, x, false);
   }
 
   public static IAST minimizeExprPolynomial(final IExpr expr, IAST varList) {
@@ -241,88 +163,6 @@ public class Minimize extends AbstractFunctionEvaluator {
   }
 
   public static final IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
-    try {
-      if (function.isFree(x) && function.isRealResult()) {
-        // a constant: attained everywhere
-        return F.list(function, F.list(F.Rule(x, F.C0)));
-      }
-      IExpr piecewise = Maximize.absoluteValueExtremum(function, x, false, engine);
-      if (piecewise.isPresent()) {
-        return piecewise;
-      }
-      // bounded linear-trigonometric objective (a*Sin(x) + b*Cos(x) + c)
-      IExpr trig = Maximize.linearTrigExtremum(function, x, false, engine);
-      if (trig.isPresent()) {
-        return trig;
-      }
-      if (function.isPolynomial(x)) {
-        // the objective of `x+1/x` must not be multiplied by `x`
-        IExpr temp = minimizeExprPolynomial(function, F.list(x));
-        if (temp.isPresent()) {
-          return temp;
-        }
-      }
-      IExpr quotient = Maximize.quotientExtremum(head, function, x, false, engine);
-      if (quotient.isPresent()) {
-        return quotient;
-      }
-
-      IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
-      if (yNInf.isNegativeInfinity()) {
-        return F.list(F.CNInfinity, F.list(F.Rule(x, F.CNInfinity)));
-      }
-      IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
-      if (yInf.isNegativeInfinity()) {
-        return F.list(F.CNInfinity, F.list(F.Rule(x, F.CInfinity)));
-      }
-
-      if (function.isPolynomial(x)) {
-        // bounded below, as the limits show: the least value at a stationary point
-        IExpr polynomial = Maximize.polynomialExtremum(function, x, false, engine);
-        if (polynomial.isPresent()) {
-          return polynomial;
-        }
-      }
-      IExpr first_derivative = S.D.of(engine, function, x);
-      IExpr second_derivative = S.D.of(engine, first_derivative, x);
-      IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
-      if (candidates.isFree(S.Solve)) {
-        IExpr minCandidate = F.NIL;
-        IExpr minValue = F.CInfinity;
-        IExpr minSolution = F.NIL;
-        if (candidates.isListOfLists()) {
-          for (int i = 1; i < candidates.size(); i++) {
-            IExpr solution = ((IAST) candidates).get(i).first().second();
-            IExpr candidate = Maximize.familyMember(function, x, solution, engine);
-            if (candidate.isNIL()) {
-              // a family of stationary points along which the function changes decides nothing
-              return F.NIL;
-            }
-            IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
-            if (value.isPositiveResult()) {
-              IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
-              if (S.Less.ofQ(functionValue, minValue)) {
-                minValue = functionValue;
-                minCandidate = candidate;
-                minSolution = solution;
-              }
-            }
-          }
-          if (minCandidate.isPresent()) {
-            if (!Maximize.holdsOverPeriod(function, x, minSolution, minValue, false, engine)) {
-              // only a local minimum: the function is smaller elsewhere in the period
-              return F.NIL;
-            }
-            return F.list(minValue, F.list(F.Rule(x, minCandidate)));
-          }
-        }
-        // no stationary point is recognized as a minimum: nothing is decided
-        return F.NIL;
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      return Errors.printMessage(S.Minimize, rex);
-    }
-    return F.NIL;
+    return Maximize.extremum(head, function, x, false, engine);
   }
 }

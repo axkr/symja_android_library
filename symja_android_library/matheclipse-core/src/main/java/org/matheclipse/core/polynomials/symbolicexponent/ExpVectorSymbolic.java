@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
 
 /**
  * <code>ExpVectorSymbolic</code> implements exponent vectors for polynomials using arrays of <code>
@@ -1040,24 +1041,7 @@ public final class ExpVectorSymbolic implements Serializable {
    * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
    */
   public int invGradCompareTo(ExpVectorSymbolic V) {
-    IExpr[] u = val;
-    IExpr[] v = V.val;
-    int t = 0;
-    int i;
-    for (i = 0; i < u.length; i++) {
-      if (greaterOrder(u[i], v[i])) {
-        t = 1;
-        break;
-      }
-      if (lessOrder(u[i], v[i])) {
-        t = -1;
-        break;
-      }
-    }
-    if (t == 0) {
-      return t;
-    }
-    return compareSums(u, v, i, u.length, t);
+    return invGradCompareTo(V, 0, val.length);
     // return EVIGLC(this, V);
   }
 
@@ -1072,22 +1056,26 @@ public final class ExpVectorSymbolic implements Serializable {
   public int invGradCompareTo(ExpVectorSymbolic V, int begin, int end) {
     IExpr[] u = val;
     IExpr[] v = V.val;
-    int t = 0;
-    int i;
-    for (i = begin; i < end; i++) {
-      if (greaterOrder(u[i], v[i])) {
-        t = 1;
-        break;
-      }
-      if (lessOrder(u[i], v[i])) {
-        t = -1;
-        break;
+    int i = firstDifference(u, v, begin, end);
+    if (i == end) {
+      return 0;
+    }
+    return compareSums(u, v, i, end, compareExponent(u[i], v[i]));
+  }
+
+  /**
+   * The first index in <code>[begin, end)</code> where the exponents of <code>u</code> and
+   * <code>v</code> differ.
+   *
+   * @return <code>end</code> if all exponents in the range are equal
+   */
+  private static int firstDifference(IExpr[] u, IExpr[] v, int begin, int end) {
+    for (int i = begin; i < end; i++) {
+      if (compareExponent(u[i], v[i]) != 0) {
+        return i;
       }
     }
-    if (t == 0) {
-      return t;
-    }
-    return compareSums(u, v, i, end, t);
+    return end;
   }
 
   /**
@@ -1256,42 +1244,7 @@ public final class ExpVectorSymbolic implements Serializable {
    * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
    */
   public int invWeightCompareTo(IExpr[][] w, ExpVectorSymbolic V) {
-    IExpr[] u = val;
-    IExpr[] v = V.val;
-    int t = 0;
-    int i;
-    for (i = 0; i < u.length; i++) {
-      if (greaterOrder(u[i], v[i])) {
-        t = 1;
-        break;
-      }
-      if (lessOrder(u[i], v[i])) {
-        t = -1;
-        break;
-      }
-    }
-    if (t == 0) {
-      return t;
-    }
-    for (int k = 0; k < w.length; k++) {
-      IExpr[] wk = w[k];
-
-      IASTAppendable up = F.PlusAlloc(i + 1);
-      IASTAppendable vp = F.PlusAlloc(i + 1);
-      for (int j = i; j >= 0; j--) {
-        up.append(F.Times(wk[j], u[j]));
-        vp.append(F.Times(wk[j], v[j]));
-      }
-      IExpr upEvaled = EvalEngine.get().evaluate(up);
-      IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-      if (greaterOrder(upEvaled, vpEvaled)) {
-        return 1;
-      }
-      if (lessOrder(upEvaled, vpEvaled)) {
-        return -1;
-      }
-    }
-    return t;
+    return invWeightCompareTo(w, V, 0, val.length);
     // return EVIWLC(w, this, V);
   }
 
@@ -1307,32 +1260,23 @@ public final class ExpVectorSymbolic implements Serializable {
   public int invWeightCompareTo(IExpr[][] w, ExpVectorSymbolic V, int begin, int end) {
     IExpr[] u = val;
     IExpr[] v = V.val;
-    int t = 0;
-    int i;
-    for (i = begin; i < end; i++) {
-      if (greaterOrder(u[i], v[i])) {
-        t = 1;
-        break;
-      }
-      if (lessOrder(u[i], v[i])) {
-        t = -1;
-        break;
-      }
+    int i = firstDifference(u, v, begin, end);
+    if (i == end) {
+      return 0;
     }
-    if (t == 0) {
-      return t;
-    }
+    int t = compareExponent(u[i], v[i]);
+    EvalEngine engine = EvalEngine.get();
     for (int k = 0; k < w.length; k++) {
       IExpr[] wk = w[k];
 
-      IASTAppendable up = F.PlusAlloc(i - end + 1);
-      IASTAppendable vp = F.PlusAlloc(i - end + 1);
+      IASTAppendable up = F.PlusAlloc(end - i);
+      IASTAppendable vp = F.PlusAlloc(end - i);
       for (int j = i; j < end; j++) {
         up.append(F.Times(wk[j], u[j]));
         vp.append(F.Times(wk[j], v[j]));
       }
-      IExpr upEvaled = EvalEngine.get().evaluate(up);
-      IExpr vpEvaled = EvalEngine.get().evaluate(vp);
+      IExpr upEvaled = engine.evaluate(up);
+      IExpr vpEvaled = engine.evaluate(vp);
       if (greaterOrder(upEvaled, vpEvaled)) {
         return 1;
       }
@@ -1371,12 +1315,6 @@ public final class ExpVectorSymbolic implements Serializable {
    * @return index of x in vars.
    */
   public static int indexVar(IExpr x, final IAST vars) {
-    int len = vars.size();
-    for (int i = 1; i < len; i++) {
-      if (x.equals(vars.get(i))) {
-        return len - i - 1;
-      }
-    }
-    return -1; // not found
+    return ExpVectorLong.indexVar(x, vars);
   }
 }

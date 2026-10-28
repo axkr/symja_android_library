@@ -6,6 +6,7 @@ package org.matheclipse.core.polynomials.symbolicexponent;
 
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
+import org.matheclipse.core.polynomials.longexponent.ExprTermOrderByName;
 
 /**
  * Term order names for ordered polynomials. Defines names for the most used term orders: graded and
@@ -207,36 +208,7 @@ public class SymbolicTermOrderByName {
    * @return weight matrix
    */
   public static final long[][] weightForOrder(int to, int n) {
-    long[][] w = new long[n][];
-    switch (to) {
-      case SymbolicTermOrder.INVLEX:
-      default:
-        for (int i = 0; i < n; i++) {
-          w[i] = new long[n];
-          long[] wi = w[i];
-          for (int j = 0; j < n; j++) {
-            if ((n - 1 - i) == j) {
-              wi[j] = 1L;
-            } else {
-              wi[j] = 0L;
-            }
-          }
-        }
-        break;
-      case SymbolicTermOrder.REVILEX:
-        for (int i = 0; i < n; i++) {
-          w[i] = new long[n];
-          long[] wi = w[i];
-          for (int j = 0; j < n; j++) {
-            if (i == j) {
-              wi[j] = 1L;
-            } else {
-              wi[j] = 0L;
-            }
-          }
-        }
-        break;
-    }
-    return w;
+    // the INVLEX and REVILEX constants agree with the long exponent term orders
+    return ExprTermOrderByName.weightForOrder(to, n);
   }
 }

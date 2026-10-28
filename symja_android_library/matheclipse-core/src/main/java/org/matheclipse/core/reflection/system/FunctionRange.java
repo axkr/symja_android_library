@@ -24,6 +24,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
 
     public FunctionRangeRealsVisitor() {
       super();
+    // CPD-OFF visitor prologue of two unrelated visitors with different Power rules
     }
 
     // @Override
@@ -45,6 +46,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     @Override
     public IExpr visit3(IExpr head, IExpr arg1, IExpr arg2) {
       boolean evaled = false;
+      // CPD-ON
       IExpr x1 = arg1;
       IExpr result = arg1.accept(this);
       if (result.isPresent()) {

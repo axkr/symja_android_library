@@ -39,6 +39,35 @@ public class InverseFunctionExpander {
   }
 
   /**
+   * Whether the function head with this id is a periodic trigonometric or hyperbolic function, so
+   * that the equation <code>head(variable) == value</code> has infinitely many solutions, which
+   * {@link #expandPeriodicInverse(IBuiltInSymbol, IExpr)} writes as periodic branches.
+   *
+   * @param headID the {@link ID} of the function head
+   * @return <code>true</code> for {@link S#Sin}, {@link S#Cos}, {@link S#Tan}, {@link S#Cot},
+   *         {@link S#Sec}, {@link S#Csc} and their hyperbolic counterparts
+   */
+  public static boolean isPeriodicFunction(int headID) {
+    switch (headID) {
+      case ID.Cos:
+      case ID.Cosh:
+      case ID.Cot:
+      case ID.Coth:
+      case ID.Csc:
+      case ID.Csch:
+      case ID.Sec:
+      case ID.Sech:
+      case ID.Sin:
+      case ID.Sinh:
+      case ID.Tan:
+      case ID.Tanh:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Whether <code>value</code> is a value a variable can take. Inverting a function for a value it
    * never takes gives a value which is not finite, so that the equation has no solution at all:
    * <code>Coth(x) == -1</code> gives <code>x == ArcCoth(-1) == -Infinity</code>,

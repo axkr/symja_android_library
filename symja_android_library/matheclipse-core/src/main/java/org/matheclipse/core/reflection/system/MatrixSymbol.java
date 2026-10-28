@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class MatrixSymbol extends AbstractEvaluator {
 
+  // CPD-OFF per-head argument validation with different rank rules
   public MatrixSymbol() {}
 
   @Override
@@ -48,6 +49,7 @@ public class MatrixSymbol extends AbstractEvaluator {
     if (!dimensions.isList()) {
       if (!SymbolicArrayUtil.isValidDimension(dimensions)) {
         return Errors.printMessage(S.MatrixSymbol, "nodim", F.List(dimensions), engine);
+        // CPD-ON
       }
       // MatrixSymbol(a, m) is the square m x m matrix
       dimensions = F.list(dimensions, dimensions);

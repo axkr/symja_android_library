@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.Vec3;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -511,10 +512,10 @@ public class Area extends AbstractFunctionOptionEvaluator {
   /** Two directions at right angles within the plane of the normal. */
   private static double[][] basis(double[] normal) {
     double[] first = Math.abs(normal[0]) < 0.9 ? new double[] {1, 0, 0} : new double[] {0, 1, 0};
-    double[] u = cross(normal, first);
-    normalize(u);
-    double[] v = cross(normal, u);
-    normalize(v);
+    double[] u = Vec3.cross(normal, first);
+    Vec3.normalizeInPlace(u);
+    double[] v = Vec3.cross(normal, u);
+    Vec3.normalizeInPlace(v);
     return new double[][] {u, v};
   }
 
@@ -528,20 +529,6 @@ public class Area extends AbstractFunctionOptionEvaluator {
     return flat;
   }
 
-  private static double[] cross(double[] a, double[] b) {
-    return new double[] {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0]};
-  }
-
-  private static void normalize(double[] vector) {
-    double length = Math.sqrt(
-        vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
-    if (length > 0.0) {
-      for (int i = 0; i < 3; i++) {
-        vector[i] /= length;
-      }
-    }
-  }
 
   /**
    * The closed form area of a two dimensional region primitive.
@@ -558,6 +545,7 @@ public class Area extends AbstractFunctionOptionEvaluator {
         IExpr withHole = BooleanRegions.holeMeasure(geoForm, engine);
         return withHole.isPresent() ? withHole : booleanRegion(geoForm, engine);
       }
+      // CPD-OFF per-measure dispatch over region heads
       case ID.Disk:
       case ID.Ball:
         // in the plane a ball is a disk
@@ -576,6 +564,7 @@ public class Area extends AbstractFunctionOptionEvaluator {
         return annulus(geoForm, engine);
       case ID.Ellipsoid:
         return ellipsoid(geoForm);
+        // CPD-ON
       case ID.RegularPolygon:
         return regularPolygon(geoForm, engine);
       case ID.Sphere:

@@ -151,7 +151,7 @@ public class ArrayPlot extends ListPlot {
         IExpr color = F.NIL;
 
         // 1. Check if explicit color
-        if (isColor(val)) {
+        if (GraphicsOptions.isBasicColor(val)) {
           color = val;
         } else {
           // 2. Numeric Mapping
@@ -216,16 +216,6 @@ public class ArrayPlot extends ListPlot {
     }
     t = t < 0.0 ? 0.0 : t > 1.0 ? 1.0 : t;
     return F.GrayLevel(1.0 - t);
-  }
-
-  private boolean isColor(IExpr e) {
-    if (e.isAST()) {
-      IExpr head = e.head();
-      return head == S.RGBColor || head == S.Hue || head == S.GrayLevel || head == S.CMYKColor;
-    }
-    return e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue || e == S.Black
-        || e == S.White || e == S.Gray || e == S.Yellow || e == S.Cyan || e == S.Magenta
-        || e == S.Orange || e == S.Pink || e == S.Purple || e == S.Brown);
   }
 
   @Override

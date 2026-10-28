@@ -132,13 +132,7 @@ final class DSolveOperatorFactor {
       return F.NIL;
     }
     IAST places = (IAST) factorList;
-    int poles = 0;
-    for (int i = 1; i <= places.argSize(); i++) {
-      IExpr entry = places.get(i);
-      if (entry.isList() && entry.size() > 1 && !entry.first().isFree(xVar)) {
-        poles++;
-      }
-    }
+    int poles = DSolveKovacic.countPoles(places, xVar);
     if (poles > MAX_POLES) {
       return F.NIL;
     }

@@ -78,6 +78,19 @@ class AstAllocationStatsTest {
     });
   }
 
+  /** The appendable copy of a fixed three-argument AST reserves room for all three arguments. */
+  @Test
+  void testCopyAppendableOfThreeArgumentsStaysInsideTheHint() {
+    withStats(() -> {
+      IASTAppendable list = F.list(F.a, F.b, F.c).copyAppendable(2);
+      list.append(F.x);
+      list.append(F.y);
+      assertEquals(0, AstAllocationStats.reallocations(),
+          "the copy with two additional arguments reallocated");
+      assertEquals(6, list.size());
+    });
+  }
+
   /** Above {@link Config#MIN_LIMIT_PERSISTENT_LIST} the hint selects an {@link ASTRRBTree}. */
   @Test
   void testTheRepresentationChoiceIsRecorded() {

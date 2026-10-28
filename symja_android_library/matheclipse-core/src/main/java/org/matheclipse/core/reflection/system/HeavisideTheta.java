@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class HeavisideTheta extends AbstractEvaluator {
 
+  // CPD-OFF UnitStep and HeavisideTheta differ at 0
   public HeavisideTheta() {}
 
   @Override
@@ -32,6 +33,7 @@ public class HeavisideTheta extends AbstractEvaluator {
           }
         } else {
           if (expr.isNegativeResult()) {
+          // CPD-ON
             return F.C0;
           }
           if (expr.isPositiveResult()) {

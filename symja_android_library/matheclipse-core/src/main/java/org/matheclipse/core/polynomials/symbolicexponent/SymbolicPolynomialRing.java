@@ -1320,6 +1320,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
    * @return polynomial comparator.
    */
   public SymbolicPolynomialComparator getComparator(boolean rev) {
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     return new SymbolicPolynomialComparator(tord, rev);
   }
 
@@ -1348,6 +1349,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
    * @return an iterator over all polynomials.
    */
   public Iterator<SymbolicPolynomial> iterator() {
+  // CPD-ON
     if (coFac.isFinite()) {
       return new GenPolynomialIterator(this);
     }
@@ -1416,6 +1418,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
       for (int i = 0; i < ring.nvar; i++) {
         tlist.add(li);
       }
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       CartesianProductInfinite<IExpr> ei = new CartesianProductInfinite<IExpr>(tlist);
       eviter = ei.iterator();
       ExprRingFactory cf = ring.coFac;
@@ -1429,6 +1432,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
       CartesianProduct<IExpr> tuples = new CartesianProduct<IExpr>(coeffiter);
       itercoeff = tuples.iterator();
       powers = new ArrayList<ExpVectorSymbolic>();
+      // CPD-ON
       ExpVectorSymbolic e = ExpVectorSymbolic.create(eviter.next());
       powers.add(e);
       List<IExpr> c = itercoeff.next();

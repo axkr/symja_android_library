@@ -64,30 +64,21 @@ public class ListDensityPlot extends DensityPlot {
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
-    boolean colorFunctionScaling = true;
-    IExpr colorFunctionOpt = S.Automatic;
-    IExpr meshOpt = S.None;
-    IExpr dataRange = S.Automatic;
-    int interpolationOrder = 1;
     // the options array holds resolved values, not the rules the caller wrote,
     // so the option rules are read back off the original call
+    GraphicsOptions.MatrixPlotOptions matrixOptions =
+        GraphicsOptions.readMatrixPlotOptions(originalAST);
+    boolean colorFunctionScaling = matrixOptions.colorFunctionScaling;
+    IExpr colorFunctionOpt = matrixOptions.colorFunction;
+    IExpr meshOpt = matrixOptions.mesh;
+    IExpr dataRange = S.Automatic;
+    int interpolationOrder = 1;
     for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
         IExpr val = ((IAST) opt).arg2();
         if (key.isBuiltInSymbol()) {
           switch (((IBuiltInSymbol) key).ordinal()) {
-            case ID.ColorFunctionScaling:
-              if (val.isFalse()) {
-                colorFunctionScaling = false;
-              }
-              break;
-            case ID.ColorFunction:
-              colorFunctionOpt = val;
-              break;
-            case ID.Mesh:
-              meshOpt = val;
-              break;
             case ID.DataRange:
               dataRange = val;
               break;
@@ -273,15 +264,7 @@ public class ListDensityPlot extends DensityPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
-    defaults[GraphicsOptions.X_FRAME] = S.True;
-    defaults[GraphicsOptions.X_AXES] = S.False;
-    defaults[GraphicsOptions.X_ASPECTRATIO] = F.C1;
-
-    GraphicsOptions.OptionSet optionSet = GraphicsOptions
-        .densityExtras(
-            new GraphicsOptions.OptionSet().add(GraphicsOptions.listPlotDefaultOptionKeys(),
-                defaults))
+    GraphicsOptions.OptionSet optionSet = GraphicsOptions.densityPlotOptions()
         // only the list form takes a data range, an interpolation order and a point limit
         .add(S.Automatic, S.DataRange, S.InterpolationOrder, S.MaxPlotPoints);
     setOptions(newSymbol, optionSet.keys(), optionSet.values());

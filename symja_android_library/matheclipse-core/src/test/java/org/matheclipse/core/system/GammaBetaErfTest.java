@@ -1735,6 +1735,15 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "(1-a)*(1-a*q)*(1-a*q^2)*(1-a*q^3)*(1-a*q^4)*(1-a*q^5)*(1-a*q^6)");
     check("FunctionExpand(QPochhammer(a, q, -7))", //
         "1/((1-a/q^7)*(1-a/q^6)*(1-a/q^5)*(1-a/q^4)*(1-a/q^3)*(1-a/q^2)*(1-a/q))");
+    check("FunctionExpand(QPochhammer(b, r, 2))", //
+        "(1-b)*(1-b*r)");
+    check("FunctionExpand(QPochhammer(b, r, 0))", //
+        "1");
+    // too many factors to expand
+    check("FunctionExpand(QPochhammer(b, r, 250000))", //
+        "QPochhammer(b,r,250000)");
+    check("FunctionExpand(QPochhammer(b, r, -250000))", //
+        "QPochhammer(b,r,-250000)");
 
   }
 

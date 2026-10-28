@@ -99,6 +99,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
    * @see IExpr#head()
    */
   @Override
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   public IExpr arg2() {
     // be compatible with get() contract
     throw new IndexOutOfBoundsException("Index: 2, Size: " + size());
@@ -158,6 +159,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   /** {@inheritDoc} */
   @Override
   public int argSize() {
+  // CPD-ON
     return SIZE - 1;
   }
 
@@ -424,6 +426,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public boolean isSameHead(ISymbol head) {
     return arg0 == head;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /** {@inheritDoc} */
@@ -454,6 +457,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public IExpr last() {
     return arg1();
+    // CPD-ON
   }
 
   /** {@inheritDoc} */

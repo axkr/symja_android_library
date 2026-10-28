@@ -1,6 +1,7 @@
 package org.matheclipse.core.manipulate;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -528,21 +529,38 @@ public class Dynamics {
   public static Set<String> trackedSymbols(IAST dynamic) {
     Set<String> names = new LinkedHashSet<String>();
     IExpr tracked = optionValue(dynamic, S.TrackedSymbols);
-    if (tracked.isPresent() && tracked != S.All && tracked != S.True && tracked != S.Automatic) {
-      if (tracked.isList()) {
-        IAST list = (IAST) tracked;
-        for (int i = 1; i < list.size(); i++) {
-          if (list.get(i).isSymbol()) {
-            names.add(((ISymbol) list.get(i)).getSymbolName());
-          }
-        }
-      } else if (tracked.isSymbol()) {
-        names.add(((ISymbol) tracked).getSymbolName());
-      }
+    if (!tracksAll(tracked)) {
+      addSymbolNames(tracked, names);
       return names;
     }
     collectSymbols(dynamic.arg1(), names);
     return names;
+  }
+
+  /**
+   * <code>true</code> if the <code>TrackedSymbols</code> value <code>tracked</code> asks for every
+   * symbol to be tracked: no value, <code>All</code>, <code>True</code> or <code>Automatic</code>.
+   */
+  static boolean tracksAll(IExpr tracked) {
+    return !tracked.isPresent() || tracked == S.All || tracked == S.True
+        || tracked == S.Automatic;
+  }
+
+  /**
+   * Add the names of the symbols of the <code>TrackedSymbols</code> value <code>tracked</code>, a
+   * list of symbols or a single symbol, to <code>names</code>.
+   */
+  static void addSymbolNames(IExpr tracked, Collection<String> names) {
+    if (tracked.isList()) {
+      IAST list = (IAST) tracked;
+      for (int i = 1; i < list.size(); i++) {
+        if (list.get(i).isSymbol()) {
+          names.add(((ISymbol) list.get(i)).getSymbolName());
+        }
+      }
+    } else if (tracked.isSymbol()) {
+      names.add(((ISymbol) tracked).getSymbolName());
+    }
   }
 
   /**

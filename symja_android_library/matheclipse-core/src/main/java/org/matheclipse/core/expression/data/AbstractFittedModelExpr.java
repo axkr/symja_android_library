@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression.data;
 
 import java.util.Arrays;
+import java.util.function.IntFunction;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hipparchus.distribution.continuous.TDistribution;
 import org.matheclipse.core.eval.Errors;
@@ -144,6 +145,46 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
       }
     }
     return list;
+  }
+
+  /**
+   * The row <code>{estimate, standard error, t, p}</code> of one parameter, with the two-tailed
+   * p-value of Student's t distribution <code>t</code>; without a positive standard error, a
+   * numeric estimate or a distribution everything but the estimate is <code>Indeterminate</code>.
+   */
+  protected static IExpr[] statisticsRow(double estimate, double error, TDistribution t) {
+    IExpr[] row = new IExpr[4];
+    row[0] = F.num(estimate);
+    if (!(error > 0.0) || Double.isNaN(estimate) || t == null) {
+      row[1] = row[2] = row[3] = S.Indeterminate;
+      return row;
+    }
+    double statistic = estimate / error;
+    row[1] = F.num(error);
+    row[2] = F.num(statistic);
+    row[3] = F.num(2.0 * t.cumulativeProbability(-Math.abs(statistic)));
+    return row;
+  }
+
+  /**
+   * The parameter table: a header row and one row per parameter, its label followed by its
+   * statistics.
+   *
+   * @param rows the parameter statistics, one row <code>{estimate, standard error, t, p}</code> per
+   *        parameter
+   * @param label the label of the parameter with the given 0-based index
+   */
+  protected static IExpr parameterTable(IExpr[][] rows, IntFunction<IExpr> label) {
+    IASTAppendable grid = F.ListAlloc(rows.length + 1);
+    grid.append(F.List(F.stringx(""), F.stringx("Estimate"), F.stringx("Standard Error"),
+        F.stringx("t\u2010Statistic"), F.stringx("P\u2010Value")));
+    for (int i = 0; i < rows.length; i++) {
+      IASTAppendable row = F.ListAlloc(5);
+      row.append(label.apply(i));
+      row.appendAll(rows[i], 0, 4);
+      grid.append(row);
+    }
+    return dialogGrid(grid);
   }
 
   /**

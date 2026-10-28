@@ -155,11 +155,7 @@ public class Casoratian extends AbstractFunctionEvaluator {
     if (!head.isSymbol()) {
       return F.NIL;
     }
-    IExpr residual = equation;
-    if (equation.isEqual()) {
-      residual = S.Subtract.of(engine, equation.first(), equation.second());
-    }
-    residual = engine.evaluate(F.ExpandAll(residual));
+    IExpr residual = Wronskian.expandedResidual(equation, engine);
 
     int m = highestShift(residual, head, variable, engine);
     if (m < 1 || m > MAX_ORDER) {

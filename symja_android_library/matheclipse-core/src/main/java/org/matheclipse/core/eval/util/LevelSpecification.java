@@ -108,6 +108,7 @@ public final class LevelSpecification extends LevelSpec {
               fFromDepth = Integer.MIN_VALUE;
               fToDepth = -1;
               fFromLevel = i0.toBigNumerator().intValue();
+              // CPD-OFF count and level specifications fill different fields
               fToLevel = i1.toBigNumerator().intValue();
             }
             return;
@@ -118,6 +119,7 @@ public final class LevelSpecification extends LevelSpec {
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             } else {
+            // CPD-ON
               fFromDepth = Integer.MIN_VALUE;
               fToDepth = -1;
               fFromLevel = i0.toBigNumerator().intValue();

@@ -203,23 +203,39 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
         return F.NIL; // Fallback to top-down due to misaligned null space
       }
 
-      // Sort chains descending by length to match the canonical block format
-      allChains.sort((c1, c2) -> Integer.compare(c2.size(), c1.size()));
-
-      for (List<IExpr> chain : allChains) {
-        for (int i = 0; i < chain.size(); i++) {
-          sCols.append(chain.get(i));
-          ((IASTAppendable) jMatrix.get(currentIndex)).set(currentIndex, lambda);
-          if (i < chain.size() - 1) {
-            ((IASTAppendable) jMatrix.get(currentIndex)).set(currentIndex + 1, F.C1);
-          }
-          currentIndex++;
-        }
-      }
+      currentIndex = appendJordanChains(allChains, lambda, sCols, jMatrix, currentIndex);
     }
 
     IExpr s = engine.evaluate(F.Transpose(sCols));
     return F.List(s, jMatrix);
+  }
+
+  /**
+   * Append the Jordan chains of the eigenvalue <code>lambda</code> as columns of the similarity
+   * matrix and write their Jordan blocks into <code>jMatrix</code>. The chains are sorted
+   * descending by length to match the canonical block format.
+   *
+   * @param chains the chains of generalized eigenvectors of <code>lambda</code>
+   * @param lambda the eigenvalue
+   * @param sCols the columns of the similarity matrix
+   * @param jMatrix the Jordan matrix
+   * @param index the (1-based) row and column of <code>jMatrix</code> where the first block starts
+   * @return the index after the last written block
+   */
+  private static int appendJordanChains(List<List<IExpr>> chains, IExpr lambda,
+      IASTAppendable sCols, IAST jMatrix, int index) {
+    chains.sort((c1, c2) -> Integer.compare(c2.size(), c1.size()));
+    for (List<IExpr> chain : chains) {
+      for (int i = 0; i < chain.size(); i++) {
+        sCols.append(chain.get(i));
+        ((IASTAppendable) jMatrix.get(index)).set(index, lambda);
+        if (i < chain.size() - 1) {
+          ((IASTAppendable) jMatrix.get(index)).set(index + 1, F.C1);
+        }
+        index++;
+      }
+    }
+    return index;
   }
 
   /**
@@ -317,20 +333,9 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
         }
       }
 
-      allChains.sort((c1, c2) -> Integer.compare(c2.size(), c1.size()));
-
-      int vectorsFound = 0;
-      for (List<IExpr> chain : allChains) {
-        vectorsFound += chain.size();
-        for (int i = 0; i < chain.size(); i++) {
-          sCols.append(chain.get(i));
-          ((IASTAppendable) jMatrix.get(currentIndex)).set(currentIndex, lambda);
-          if (i < chain.size() - 1) {
-            ((IASTAppendable) jMatrix.get(currentIndex)).set(currentIndex + 1, F.C1);
-          }
-          currentIndex++;
-        }
-      }
+      int nextIndex = appendJordanChains(allChains, lambda, sCols, jMatrix, currentIndex);
+      int vectorsFound = nextIndex - currentIndex;
+      currentIndex = nextIndex;
 
       if (vectorsFound != algMult) {
         return F.NIL;

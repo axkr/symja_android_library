@@ -1077,19 +1077,7 @@ public class Iterator {
           upperLimit = levelOneParts(evalEngine.evalWithoutNumericReset(list.arg2()));
           step = F.C1;
 
-          if (list.arg1() instanceof ISymbol) {
-            ISymbol sym = (ISymbol) list.arg1();
-            if (!isIteratorVariable(sym)) {
-              // Cannot assign to raw object `1`.
-              throw new ArgumentTypeException(
-                  Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
-            }
-            variable = sym;
-          } else {
-            // Raw object `1` cannot be used as an iterator.
-            throw new ArgumentTypeException(
-                Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
-          }
+          variable = iteratorSymbol(list.arg1());
           if (upperLimit.isListOrAssociation()) {
             return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
           }
@@ -1099,19 +1087,7 @@ public class Iterator {
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg3());
           step = F.C1;
 
-          if (list.arg1().isSymbol()) {
-            ISymbol sym = (ISymbol) list.arg1();
-            if (!isIteratorVariable(sym)) {
-              // Cannot assign to raw object `1`.
-              throw new ArgumentTypeException(
-                  Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
-            }
-            variable = sym;
-          } else {
-            // Raw object `1` cannot be used as an iterator.
-            throw new ArgumentTypeException(
-                Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
-          }
+          variable = iteratorSymbol(list.arg1());
           break;
 
         case 5:
@@ -1119,19 +1095,7 @@ public class Iterator {
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg3());
           step = evalEngine.evalWithoutNumericReset(list.arg4());
           checkNonZeroStep(list, step);
-          if (list.arg1() instanceof ISymbol) {
-            ISymbol sym = (ISymbol) list.arg1();
-            if (!isIteratorVariable(sym)) {
-              // Cannot assign to raw object `1`.
-              throw new ArgumentTypeException(
-                  Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
-            }
-            variable = sym;
-          } else {
-            // Raw object `1` cannot be used as an iterator.
-            throw new ArgumentTypeException(
-                Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
-          }
+          variable = iteratorSymbol(list.arg1());
           break;
         default:
           // Argument `1` at position `2` does not have the correct form for an iterator.
@@ -1440,16 +1404,7 @@ public class Iterator {
           Errors.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get()));
     }
     if (list.size() > 2) {
-      if (!list.arg1().isSymbol()) {
-        // Raw object `1` cannot be used as an iterator.
-        throw new ArgumentTypeException(
-            Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
-      }
-      if (!isIteratorVariable((ISymbol) list.arg1())) {
-        // Cannot assign to raw object `1`.
-        throw new ArgumentTypeException(
-            Errors.getMessage("setraw", F.list(list.arg1()), EvalEngine.get()));
-      }
+      iteratorSymbol(list.arg1());
     }
   }
 
@@ -1624,6 +1579,25 @@ public class Iterator {
       String str = Errors.getMessage("range", F.list(list), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
+  }
+
+  /**
+   * The variable <code>arg1</code> of an iterator specification.
+   *
+   * @throws ArgumentTypeException with the "itraw" message if <code>arg1</code> is no symbol, or
+   *         the "setraw" message if the symbol cannot be assigned to
+   */
+  private static ISymbol iteratorSymbol(IExpr arg1) {
+    if (!(arg1 instanceof ISymbol)) {
+      // Raw object `1` cannot be used as an iterator.
+      throw new ArgumentTypeException(Errors.getMessage("itraw", F.list(arg1), EvalEngine.get()));
+    }
+    ISymbol sym = (ISymbol) arg1;
+    if (!isIteratorVariable(sym)) {
+      // Cannot assign to raw object `1`.
+      throw new ArgumentTypeException(Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
+    }
+    return sym;
   }
 
   /**

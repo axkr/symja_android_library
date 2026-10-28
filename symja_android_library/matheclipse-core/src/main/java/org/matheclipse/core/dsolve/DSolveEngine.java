@@ -138,4 +138,12 @@ public final class DSolveEngine {
   public static void constantsOf(IExpr general, IASTAppendable constants) {
     DSolveUtil.extractCVars(general, constants);
   }
+
+  /**
+   * Whether the conditions, with a solution substituted into them, hold: every <code>Equal</code>
+   * evaluates to <code>True</code> and every other entry is zero.
+   */
+  public static boolean conditionsHold(IAST evaluatedBCs, EvalEngine engine) {
+    return DSolveUtil.conditionsHold(evaluatedBCs, engine);
+  }
 }

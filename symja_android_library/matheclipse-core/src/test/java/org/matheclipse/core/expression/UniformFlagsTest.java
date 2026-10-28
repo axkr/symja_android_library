@@ -236,6 +236,18 @@ class UniformFlagsTest {
     assertFalse(nested.isMember(F.x, false, null));
   }
 
+  /** Only the list implementations which track the argument types report uniform arguments. */
+  @Test
+  void testFixedSizeASTsAreNotUniform() {
+    IAST three = F.list(F.C1, F.C2, F.C3);
+    assertFalse(three.isUniform());
+    assertFalse(three.isUniform(UniformFlags.INTEGER));
+    assertFalse(three.isUniformAny(UniformFlags.INTEGER | UniformFlags.STRING));
+    IAST copy = three.copyAppendable();
+    assertTrue(copy.isUniform(UniformFlags.INTEGER));
+    assertTrue(copy.isUniformAny(UniformFlags.INTEGER | UniformFlags.STRING));
+  }
+
   @Test
   void testAppendArgsFromUniformList() {
     IASTAppendable result = F.ListAlloc(8);

@@ -50,10 +50,7 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
               colorLines(heightLinePlot(F.list(plotAST.arg1()), plotStyle, dataRange, engine, region),
                   options, engine);
           if (heightLinePlot.isPresent()) {
-            return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
-                new IExpr[] {F.Rule(S.Axes, S.True),
-                    F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
-                    F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
+            return Plot3DTools.graphics3D(heightLinePlot, ast, 1, lineDefaults(options));
           }
           return F.NIL;
         }
@@ -68,10 +65,7 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
         return Plot3DTools.graphics3D(
             colorLines(coordinateLinePlot(F.list(plotAST.arg1()), plotStyle, engine, region),
                 options, engine),
-            ast, 1,
-            new IExpr[] {F.Rule(S.Axes, S.True),
-                F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
-                F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
+            ast, 1, lineDefaults(options));
       }
 
       // case 3: multiple line heights
@@ -83,10 +77,7 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
               colorLines(heightLinePlot((IAST) plotAST.arg1(), plotStyle, dataRange, engine, region),
                   options, engine);
           if (heightLinePlot.isPresent()) {
-            return Plot3DTools.graphics3D(heightLinePlot, ast, 1,
-                new IExpr[] {F.Rule(S.Axes, S.True),
-                    F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
-                    F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
+            return Plot3DTools.graphics3D(heightLinePlot, ast, 1, lineDefaults(options));
           }
         }
       }
@@ -99,16 +90,23 @@ public class ListLinePlot3D extends AbstractFunctionOptionEvaluator {
           return Plot3DTools.graphics3D(
               colorLines(coordinateLinePlot((IAST) plotAST.arg1(), plotStyle, engine, region),
                 options, engine),
-            ast, 1,
-              new IExpr[] {F.Rule(S.Axes, S.True),
-                  F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
-                  F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)});
+            ast, 1, lineDefaults(options));
         }
       }
     }
 
     // `1` is not a valid dataset or a list of datasets.
     return Errors.printMessage(ast.topHead(), "ldata", F.list(plotAST.arg1()), engine);
+  }
+
+  /**
+   * The {@code Graphics3D} options every line plot is drawn with: axes, the requested
+   * {@code PlotRange} and flat box ratios.
+   */
+  private static IExpr[] lineDefaults(IExpr[] options) {
+    return new IExpr[] {F.Rule(S.Axes, S.True),
+        F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
+        F.Rule(S.BoxRatios, Plot3DTools.FLAT_BOX_RATIOS)};
   }
 
   /**

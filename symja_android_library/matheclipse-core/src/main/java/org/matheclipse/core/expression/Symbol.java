@@ -831,19 +831,9 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final INumber evalNumber() {
-    if (isNumericFunction(true)) {
-      IExpr result = F.evaln(this);
-      if (result.isNumber()) {
-        return (INumber) result;
-      }
-    } else if (hasAssignedSymbolValue()) {
-      IExpr temp = assignedValue();
-      if (temp != null && temp.isNumericFunction(true)) {
-        IExpr result = F.evaln(this);
-        if (result.isNumber()) {
-          return (INumber) result;
-        }
-      }
+    IExpr result = evalnIfNumeric();
+    if (result != null && result.isNumber()) {
+      return (INumber) result;
     }
     return null;
   }
@@ -851,18 +841,27 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final IReal evalReal() {
+    IExpr result = evalnIfNumeric();
+    if (result != null && result.isReal()) {
+      return (IReal) result;
+    }
+    return null;
+  }
+
+  /**
+   * The numeric value of this symbol, if it is a numeric function itself or has an assigned value
+   * which is a numeric function.
+   *
+   * @return <code>F.evaln(this)</code> or <code>null</code> if this symbol isn't numeric
+   */
+  private IExpr evalnIfNumeric() {
     if (isNumericFunction(true)) {
-      IExpr result = F.evaln(this);
-      if (result.isReal()) {
-        return (IReal) result;
-      }
-    } else if (hasAssignedSymbolValue()) {
+      return F.evaln(this);
+    }
+    if (hasAssignedSymbolValue()) {
       IExpr temp = assignedValue();
       if (temp != null && temp.isNumericFunction(true)) {
-        IExpr result = F.evaln(this);
-        if (result.isReal()) {
-          return (IReal) result;
-        }
+        return F.evaln(this);
       }
     }
     return null;

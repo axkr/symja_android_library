@@ -16,7 +16,6 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -411,15 +410,7 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
       convertComplex(buf, (IComplex) o, precedence, NO_PLUS_CALL);
       return;
     }
-    if (o instanceof ISymbol) {
-      convertSymbol(buf, (ISymbol) o);
-      return;
-    }
-    if (o instanceof IPatternObject) {
-      convertPattern(buf, (IPatternObject) o);
-      return;
-    }
-    convertString(buf, o.toString());
+    convertSymbolOrPattern(buf, o);
   }
 
   @Override
@@ -556,6 +547,28 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
   }
 
   /**
+   * Convert a numeric function to its numeric value.
+   *
+   * @return <code>true</code> if the value was written into <code>buf</code>
+   */
+  protected boolean convertNumericValue(final StringBuilder buf, final IAST function,
+      final int precedence) {
+    if (function.isNumericFunction(true)) {
+      try {
+        INumber value = function.evalNumber();
+        if (value != null) {
+          convertNumber(buf, value, precedence, NO_PLUS_CALL);
+          return true;
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        //
+      }
+    }
+    return false;
+  }
+
+  /**
    * Write a function into the given <code>StringBuilder</code>.
    *
    * @param buf
@@ -565,17 +578,8 @@ public abstract class DoubleFormFactory extends AbstractCodeFormFactory {
    */
   public void convertAST(final StringBuilder buf, final IAST function, final int precedence,
       boolean eval) {
-    if (function.isNumericFunction(true)) {
-      try {
-        INumber value = function.evalNumber();
-        if (value != null) {
-          convertNumber(buf, value, precedence, NO_PLUS_CALL);
-          return;
-        }
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        //
-      }
+    if (convertNumericValue(buf, function, precedence)) {
+      return;
     }
     IExpr head = function.head();
     if (head.isSymbol()) {

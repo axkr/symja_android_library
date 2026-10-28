@@ -130,14 +130,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    IExpr plotRange =
-        F.Rule(S.PlotRange, F.List(F.List(F.num(min[0]), F.num(max[0])),
-            F.List(F.num(min[1]), F.num(max[1])), F.List(F.num(min[2]), F.num(max[2]))));
-    IExpr[] defaults = ownLights
-        ? new IExpr[] {plotRange, F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1)),
-            F.Rule(S.Axes, S.True)}
-        : new IExpr[] {plotRange, F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.C1)),
-            F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)};
+    IExpr[] defaults = Plot3DTools.cubeDefaults(min, max, !ownLights);
     return Plot3DTools.graphics3D(surfaces, originalAST, argSize, defaults);
   }
 

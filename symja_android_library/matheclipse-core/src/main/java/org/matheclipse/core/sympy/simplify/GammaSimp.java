@@ -97,26 +97,34 @@ public class GammaSimp {
    * candidates for a simplification.
    */
   public static boolean isCandidate(IExpr expr) {
-    return countCombinatorial(expr) >= 2;
+    return countCombinatorial(expr, 2) >= 2;
   }
 
-  private static int countCombinatorial(IExpr expr) {
+  /**
+   * Count the gamma and combinatorial functions in <code>expr</code>, but stop counting at
+   * <code>limit</code>.
+   *
+   * @return the number of functions, at most <code>limit</code>
+   */
+  private static int countCombinatorial(IExpr expr, int limit) {
     if (!expr.isAST()) {
       return 0;
     }
     IAST ast = (IAST) expr;
-    IExpr head = ast.head();
-    int result = (head == S.Gamma || head == S.Factorial || head == S.Binomial
-        || head == S.Pochhammer || head == S.Beta || head == S.FactorialPower) ? 1 : 0;
-    for (int i = 1; i < ast.size() && result < 2; i++) {
-      result += countCombinatorial(ast.get(i));
+    int result = isCombinatorialHead(ast.head()) ? 1 : 0;
+    for (int i = 1; i < ast.size() && result < limit; i++) {
+      result += countCombinatorial(ast.get(i), limit - result);
     }
     return result;
   }
 
+  private static boolean isCombinatorialHead(IExpr head) {
+    return head == S.Gamma || head == S.Factorial || head == S.Binomial || head == S.Pochhammer
+        || head == S.Beta || head == S.FactorialPower;
+  }
+
   private static boolean hasCombinatorialFunction(IExpr expr) {
-    return !expr.isFree(x -> x == S.Gamma || x == S.Factorial || x == S.Binomial
-        || x == S.Pochhammer || x == S.Beta || x == S.FactorialPower, true);
+    return !expr.isFree(x -> isCombinatorialHead(x), true);
   }
 
   /**
@@ -205,22 +213,9 @@ public class GammaSimp {
           x -> x.isAST(S.Gamma, 2) ? F.Factorial(F.Plus(F.CN1, x.first())) : F.NIL));
       result = gammaAsComb(result);
     }
-    if (countCombinatorial(result) >= countCombinatorial(expr) && count(result) > count(expr)) {
+    if (countCombinatorial(result, Integer.MAX_VALUE) > countCombinatorial(expr,
+        Integer.MAX_VALUE)) {
       return expr;
-    }
-    return result;
-  }
-
-  private static int count(IExpr expr) {
-    if (!expr.isAST()) {
-      return 0;
-    }
-    IAST ast = (IAST) expr;
-    IExpr head = ast.head();
-    int result = (head == S.Gamma || head == S.Factorial || head == S.Binomial
-        || head == S.Pochhammer || head == S.Beta || head == S.FactorialPower) ? 1 : 0;
-    for (int i = 1; i < ast.size(); i++) {
-      result += count(ast.get(i));
     }
     return result;
   }

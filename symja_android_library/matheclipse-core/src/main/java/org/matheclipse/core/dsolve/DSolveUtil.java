@@ -125,6 +125,24 @@ final class DSolveUtil {
   }
 
   /**
+   * Whether the conditions, after the solution has been substituted into them, hold: every
+   * <code>Equal</code> evaluates to <code>True</code> and every other entry is zero.
+   */
+  static boolean conditionsHold(IAST evaluatedBCs, EvalEngine engine) {
+    for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
+      IExpr bc = evaluatedBCs.get(k);
+      if (bc.isEqual()) {
+        if (!engine.evaluate(bc).isTrue()) {
+          return false;
+        }
+      } else if (!bc.isZero()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Extracts the right-hand side values from a {@code Solve} or {@code DSolve} result. The expected
    * input structure is {@code {{var -> val1}, {var -> val2}, ...}}. This method returns
    * {@code {val1, val2, ...}} after stripping any {@link S#ConditionalExpression} wrappers from
@@ -643,6 +661,22 @@ final class DSolveUtil {
     IExpr rest = engine.evaluate(F.Subtract(lhs, F.Times(coefficient, dyx)));
     return engine.evaluate(
         F.subst(F.Cancel(F.Together(F.Divide(F.Negate(rest), coefficient))), yFunction, yDummy));
+  }
+
+  /**
+   * The first derivative isolated as by
+   * {@link #solveForFirstDerivative(IExpr, IExpr, IExpr, IExpr, EvalEngine)}, or {@link F#NIL} if
+   * the result still contains the unknown function or has more than <code>maxLeafCount</code>
+   * leaves.
+   */
+  static IExpr solveForFirstDerivative(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr yDummy,
+      EvalEngine engine, int maxLeafCount) {
+    IExpr right = solveForFirstDerivative(lhs, yFunction, xVar, yDummy, engine);
+    if (right.isNIL() || !right.isFree(yFunction.head(), true)
+        || right.leafCount() > maxLeafCount) {
+      return F.NIL;
+    }
+    return right;
   }
 
   /**

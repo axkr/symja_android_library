@@ -88,6 +88,7 @@ public final class SetSpecification extends SetSpec {
               fMaxCount = Integer.MAX_VALUE;
             } else {
               fMinCount = i0.toBigNumerator().intValue();
+              // CPD-OFF count and level specifications fill different fields
               fMaxCount = i1.toBigNumerator().intValue();
             }
             return;
@@ -98,6 +99,7 @@ public final class SetSpecification extends SetSpec {
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             } else {
+            // CPD-ON
               fMinCount = i0.toBigNumerator().intValue();
               fMaxCount = Integer.MAX_VALUE;
             }

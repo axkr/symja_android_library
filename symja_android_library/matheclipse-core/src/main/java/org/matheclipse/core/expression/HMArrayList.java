@@ -830,24 +830,6 @@ public abstract class HMArrayList extends AbstractAST
     return -1;
   }
 
-  @Override
-  public boolean isUniform(int typeMask) {
-    // check if the bit (ex: INTEGER) is set in the flags
-    final int flags = uniformTypeFlags();
-    return flags != UniformFlags.NONE && (flags & typeMask) == typeMask;
-  }
-
-  @Override
-  public boolean isUniformAny(int typeMask) {
-    // check if at least one of the bits (ex: NUMBER, STRING) is set in the flags
-    return (uniformTypeFlags() & typeMask) != UniformFlags.NONE;
-  }
-
-  @Override
-  public boolean isUniform() {
-    return uniformTypeFlags() != UniformFlags.NONE;
-  }
-
   /**
    * Get the accumulated type flags of the arguments of this list. If they were not determined yet
    * ({@link UniformFlags#UNKNOWN}) they are computed by iterating over the arguments and cached.
@@ -857,6 +839,7 @@ public abstract class HMArrayList extends AbstractAST
    *
    * @return {@link UniformFlags#NONE} if the arguments have no uniform type
    */
+  @Override
   int uniformTypeFlags() {
     int flags = uniformTypeFlags;
     if (flags == UniformFlags.UNKNOWN) {

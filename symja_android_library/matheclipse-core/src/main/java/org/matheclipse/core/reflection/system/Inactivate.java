@@ -44,15 +44,24 @@ public class Inactivate extends AbstractFunctionOptionEvaluator {
     IExpr expr = ast.arg1();
     boolean heads = option[0].isTrue();
 
-    Predicate<IExpr> matcher;
+    Predicate<IExpr> matcher = patternPredicate(ast, argSize, engine);
+    return inactivate(expr, matcher, heads);
+  }
+
+  /**
+   * The test which symbols are (in)activated: the symbols matching the optional second argument
+   * pattern, or all symbols.
+   *
+   * @param ast <code>Inactivate(expr, patt)</code> or <code>Activate(expr, patt)</code>
+   * @param argSize the number of arguments without options
+   * @param engine the evaluation engine
+   */
+  static Predicate<IExpr> patternPredicate(IAST ast, int argSize, EvalEngine engine) {
     if (argSize == 2) {
       final IPatternMatcher pm = engine.evalPatternMatcher(ast.arg2());
-      matcher = s -> pm.test(s, engine);
-    } else {
-      matcher = s -> true;
+      return s -> pm.test(s, engine);
     }
-
-    return inactivate(expr, matcher, heads);
+    return s -> true;
   }
 
   private IExpr inactivate(IExpr expr, Predicate<IExpr> matcher, boolean heads) {

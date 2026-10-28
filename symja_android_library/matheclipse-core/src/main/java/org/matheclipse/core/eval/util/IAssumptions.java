@@ -14,14 +14,23 @@ public interface IAssumptions {
 
   public static void assign(IExpr arg1, final IAST assumptionExpr, IAssumptions oldAssumptions,
       final EvalEngine engine) {
-    IAssumptions assumptions;
+    engine.setAssumptions(extend(oldAssumptions, assumptionExpr));
+  }
+
+  /**
+   * The assumptions <code>oldAssumptions</code> extended by <code>assumptionExpr</code>. The old
+   * assumptions are copied and not modified.
+   *
+   * @param oldAssumptions the current assumptions, may be <code>null</code>
+   * @param assumptionExpr the assumptions which should be added
+   * @return <code>null</code> if there are no old assumptions and <code>assumptionExpr</code> is
+   *         not a valid assumption
+   */
+  public static IAssumptions extend(IAssumptions oldAssumptions, IExpr assumptionExpr) {
     if (oldAssumptions == null) {
-      assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
-    } else {
-      assumptions = oldAssumptions.copy();
-      assumptions = assumptions.addAssumption(assumptionExpr);
+      return Assumptions.getInstance(assumptionExpr);
     }
-    engine.setAssumptions(assumptions);
+    return oldAssumptions.copy().addAssumption(assumptionExpr);
   }
 
   /**

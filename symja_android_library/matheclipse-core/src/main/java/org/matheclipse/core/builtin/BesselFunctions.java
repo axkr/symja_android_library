@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.apfloat.ApfloatRuntimeException;
@@ -2285,8 +2284,7 @@ public class BesselFunctions {
         return F.num(Math.sqrt(Math.PI / 2.0 / x) * hankel[secondKind ? 1 : 0]);
       }
     }
-    final int digits =
-        arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+    final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
     try {
       Apcomplex order = CarlsonArbitraryPrecision.apcomplex(n, digits);
       Apcomplex argument = CarlsonArbitraryPrecision.apcomplex(z, digits);
@@ -2295,11 +2293,7 @@ public class BesselFunctions {
       boolean real = value.imag().signum() == 0 || (n.isReal() && z.isReal()
           && (z.isPositive() || ((IReal) n).isNumIntValue())
           && value.imag().scale() < value.real().scale() - digits + 4);
-      if (real) {
-        return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
-      }
-      return arbitrary ? F.complexNum(value)
-          : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      return CarlsonArbitraryPrecision.toNumber(value, real, arbitrary);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
       return F.NIL;

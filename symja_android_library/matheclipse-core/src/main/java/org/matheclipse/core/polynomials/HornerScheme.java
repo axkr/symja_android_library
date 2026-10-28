@@ -35,9 +35,9 @@ public class HornerScheme {
 
   public IAST generate(boolean numericMode, IAST poly, IExpr sym) {
     if (numericMode) {
-      poly.forEach(x -> collectTermN(sym, x));
+      poly.forEach(x -> collectTerm(sym, x, true));
       // for (int i = 1; i < poly.size(); i++) {
-      // collectTermN(sym, poly.get(i));
+      // collectTerm(sym, poly.get(i), true);
       // }
       IASTAppendable result = F.PlusAlloc(16);
       IAST startResult = result;
@@ -69,9 +69,9 @@ public class HornerScheme {
       }
       return startResult;
     } else {
-      poly.forEach(x -> collectTerm(sym, x));
+      poly.forEach(x -> collectTerm(sym, x, false));
       // for (int i = 1; i < poly.size(); i++) {
-      // collectTerm(sym, poly.get(i));
+      // collectTerm(sym, poly.get(i), false);
       // }
       IASTAppendable result = F.PlusAlloc(16);
       IAST startResult = result;
@@ -119,14 +119,24 @@ public class HornerScheme {
     return coefficient;
   }
 
-  private void collectTerm(IExpr sym, IExpr expr) {
+  /**
+   * Add the term <code>expr</code> of the polynomial to the map, keyed by its exponent of
+   * <code>sym</code>.
+   *
+   * @param sym the variable of the polynomial
+   * @param expr a term of the polynomial
+   * @param numeric use the machine numbers <code>1.0</code> and <code>0.0</code> as exponents and
+   *        coefficient
+   */
+  private void collectTerm(IExpr sym, IExpr expr, boolean numeric) {
+    final IReal one = numeric ? F.CD1 : F.C1;
     if (expr instanceof IAST) {
       IAST term = (IAST) expr;
       if (term.isTimes()) {
         for (int i = 1; i < term.size(); i++) {
           if (sym.equals(term.get(i))) {
             IAST temp = F.ast(term, S.Times, false, i, i + 1);
-            addToMap(F.C1, temp);
+            addToMap(one, temp);
             return;
           } else if (term.get(i).isPower()) {
             IAST pow = (IAST) term.get(i);
@@ -139,46 +149,15 @@ public class HornerScheme {
         }
       } else if (term.isPower()) {
         if (term.arg1().equals(sym) && term.arg2() instanceof IReal) {
-          addToMap((IReal) term.arg2(), F.C1);
+          addToMap((IReal) term.arg2(), one);
           return;
         }
       }
     } else if (expr instanceof ISymbol && expr.equals(sym)) {
-      addToMap(F.C1, F.C1);
+      addToMap(one, one);
       return;
     }
-    addToMap(F.C0, expr);
-  }
-
-  private void collectTermN(IExpr sym, IExpr expr) {
-    if (expr instanceof IAST) {
-      IAST term = (IAST) expr;
-      if (term.isTimes()) {
-        for (int i = 1; i < term.size(); i++) {
-          if (sym.equals(term.get(i))) {
-            IAST temp = F.ast(term, S.Times, false, i, i + 1);
-            addToMap(F.CD1, temp);
-            return;
-          } else if (term.get(i).isPower()) {
-            IAST pow = (IAST) term.get(i);
-            if (pow.arg1().equals(sym) && pow.arg2().isReal()) {
-              IAST temp = F.ast(term, S.Times, false, i, i + 1);
-              addToMap((IReal) pow.arg2(), temp);
-              return;
-            }
-          }
-        }
-      } else if (term.isPower()) {
-        if (term.arg1().equals(sym) && term.arg2().isReal()) {
-          addToMap((IReal) term.arg2(), F.CD1);
-          return;
-        }
-      }
-    } else if (expr instanceof ISymbol && expr.equals(sym)) {
-      addToMap(F.CD1, F.CD1);
-      return;
-    }
-    addToMap(F.CD0, expr);
+    addToMap(numeric ? F.CD0 : F.C0, expr);
   }
 
   public IAST addToMap(final IReal key, final IExpr value) {

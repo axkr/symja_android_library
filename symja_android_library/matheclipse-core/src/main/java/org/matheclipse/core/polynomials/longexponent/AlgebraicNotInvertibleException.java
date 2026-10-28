@@ -90,6 +90,7 @@ public class AlgebraicNotInvertibleException extends NotInvertibleException {
    * @param f2 polynomial.
    */
   public AlgebraicNotInvertibleException(Throwable t, ExprPolynomial f, ExprPolynomial f1,
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExprPolynomial f2) {
     super("AlgebraicNotInvertibleException", t);
     this.f = f;
@@ -111,3 +112,4 @@ public class AlgebraicNotInvertibleException extends NotInvertibleException {
     return s.toString();
   }
 }
+// CPD-ON

@@ -127,6 +127,7 @@ public class AST2 extends AST1 {
   public IASTAppendable copyAppendable(int additionalCapacity) {
     IASTAppendable result = F.ast(arg0, additionalCapacity + 2);
     result.append(arg1);
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     result.append(arg2);
     return result;
   }
@@ -147,6 +148,7 @@ public class AST2 extends AST1 {
       }
       return arg1.equals(list.arg1()) && arg2.equals(list.arg2())
           && (arg0 instanceof ISymbol || arg0.equals(list.head()));
+          // CPD-ON
     }
     return false;
   }

@@ -570,6 +570,7 @@ public class VectorAnalysisFunctions {
         return F.list(F.D(f, x), F.Times(F.Power(x, F.CN1), F.D(f, y)));
       }
       if (metricStr.equalsIgnoreCase("cylindrical")) {
+        // CPD-OFF per-coordinate-system metric checks
         if (!fitsMetric(S.Grad, "Cylindrical", 3, numberOfVars, null, engine)) {
           return F.NIL;
         }
@@ -580,8 +581,10 @@ public class VectorAnalysisFunctions {
 
         // {D(f,x),D(f,y)/x,D(f,z)}
         return F.list(F.D(f, x), F.Times(F.Power(x, F.CN1), F.D(f, y)), F.D(f, z));
+        // CPD-ON
       }
       if (metricStr.equalsIgnoreCase("spherical")) {
+        // CPD-OFF per-coordinate-system metric checks
         if (!fitsMetric(S.Grad, "Spherical", 3, numberOfVars, null, engine)) {
           return F.NIL;
         }
@@ -592,6 +595,7 @@ public class VectorAnalysisFunctions {
 
         // {D(f,x),D(f,y)/x,(Csc(y)*D(f,z))/x}
         return F.list(F.D(f, x), F.Times(F.Power(x, F.CN1), F.D(f, y)),
+        // CPD-ON
             F.Times(F.Power(x, F.CN1), F.Csc(y), F.D(f, z)));
       }
       return F.NIL;
@@ -914,64 +918,43 @@ public class VectorAnalysisFunctions {
         case POLAR:
           if (arg1.isList()) {
             if (arg1.argSize() != 2) {
-              // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
-              return Errors.printMessage(S.Laplacian, "ndimv",
-                  F.List(F.C2, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+              return vectorDimensionMessage(arg1, 2, engine);
             }
-            if (numberOfVars != 2) {
-              // `1` does not define a metric in `2` dimensions.
-              return Errors.printMessage(S.Laplacian, "bdmtrc",
-                  F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+            if (!fitsMetric(S.Laplacian, "Polar", 2, numberOfVars, null, engine)) {
+              return F.NIL;
             }
             return laplacianPolarVector(fun, variables, engine);
           }
-          if (numberOfVars != 2) {
-            // `1` does not define a metric in `1` dimensions.
-            return Errors.printMessage(S.Laplacian, "bdmtrc",
-                F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Laplacian, "Polar", 2, numberOfVars, null, engine)) {
+            return F.NIL;
           }
           return laplacianPolar(fun, variables);
         case CYLINDRICAL:
           if (arg1.isList()) {
             if (arg1.argSize() != 3) {
-              // // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
-              return Errors.printMessage(S.Laplacian, "ndimv",
-                  F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+              return vectorDimensionMessage(arg1, 3, engine);
             }
-            if (numberOfVars != 3) {
-              // `1` does not define a metric in `2` dimensions.
-              return Errors.printMessage(S.Laplacian, "bdmtrc",
-                  F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+            if (!fitsMetric(S.Laplacian, "Cylindrical", 3, numberOfVars, null, engine)) {
+              return F.NIL;
             }
-            IAST vector = fun;
-            return laplacianCylindricalVector(vector, variables, engine);
+            return laplacianCylindricalVector(fun, variables, engine);
           }
-          if (numberOfVars != 3) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Laplacian, "bdmtrc",
-                F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+          if (!fitsMetric(S.Laplacian, "Cylindrical", 3, numberOfVars, null, engine)) {
+            return F.NIL;
           }
           return laplacianCylindrical(fun, variables);
         case SPHERICAL:
           if (arg1.isList()) {
             if (arg1.argSize() != 3) {
-              // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
-              return Errors.printMessage(S.Laplacian, "ndimv",
-                  F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+              return vectorDimensionMessage(arg1, 3, engine);
             }
-            if (numberOfVars != 3) {
-              // `1` does not define a metric in `2` dimensions.
-              return Errors.printMessage(S.Laplacian, "bdmtrc",
-                  F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+            if (!fitsMetric(S.Laplacian, "Spherical", 3, numberOfVars, null, engine)) {
+              return F.NIL;
             }
-            IAST vector = fun;
-            // if (vector.isFree(variables)) {
-            return laplacianSphericalVector(vector, variables, engine);
+            return laplacianSphericalVector(fun, variables, engine);
           }
           if (arg1.argSize() != 3) {
-            // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
-            return Errors.printMessage(S.Laplacian, "ndimv",
-                F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+            return vectorDimensionMessage(arg1, 3, engine);
           }
           return laplacianSpherical(fun, variables);
         default:
@@ -1424,6 +1407,20 @@ public class VectorAnalysisFunctions {
    * @param dimensions the dimensions of the field, or <code>null</code> to test the variables only
    * @return <code>true</code> if the coordinate system fits
    */
+  /**
+   * Print the message that the vector has not the dimension of the coordinate system.
+   *
+   * @param vector the vector argument of <code>Laplacian</code>
+   * @param expected the dimension of the coordinate system
+   * @param engine the evaluation engine
+   * @return {@link F#NIL}
+   */
+  private static IExpr vectorDimensionMessage(IExpr vector, int expected, EvalEngine engine) {
+    // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
+    return Errors.printMessage(S.Laplacian, "ndimv",
+        F.List(F.ZZ(expected), S.Laplacian, F.ZZ(vector.argSize()), vector), engine);
+  }
+
   private static boolean fitsMetric(ISymbol head, String coordinates, int expected,
       int numberOfVars, IntArrayList dimensions, EvalEngine engine) {
     boolean fits = numberOfVars == expected;

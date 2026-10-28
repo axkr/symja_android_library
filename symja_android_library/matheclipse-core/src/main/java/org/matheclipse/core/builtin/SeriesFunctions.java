@@ -2135,16 +2135,12 @@ public class SeriesFunctions {
                   .Piecewise(F.list(F.list(F.Times(F.Power(b, a), F.Power(F.Factorial(n), F.CN1),
                       F.Power(F.Times(c, F.Log(b)), n)), F.GreaterEqual(n, F.C0))), F.C0);
             } else if (linear[0].isZero() && linear[1].isOne()) {
-              return F.Piecewise(F.list(F.list(
-                  F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
-                  F.GreaterEqual(n, F.C0))), F.C0);
+              return expSeriesCoefficient(b, x0, n);
             }
           }
         } else if (b.equals(exponent) && x0.isZero()) {
           if (exponent.equals(x)) {
-            return F.Piecewise(F.list(F.list(
-                F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
-                F.GreaterEqual(n, F.C0))), F.C0);
+            return expSeriesCoefficient(b, x0, n);
           }
         }
       }
@@ -2158,6 +2154,16 @@ public class SeriesFunctions {
       }
 
       return taylorCoefficient(function, x, x0, n, engine);
+    }
+
+    /**
+     * The coefficient <code>Piecewise({{b^x0*Log(b)^n/n!, n&gt;=0}}, 0)</code> of the
+     * <code>n</code>-th power in the series of <code>b^x</code> around <code>x0</code>.
+     */
+    private static IExpr expSeriesCoefficient(IExpr b, IExpr x0, IExpr n) {
+      return F.Piecewise(F.list(F.list(
+          F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
+          F.GreaterEqual(n, F.C0))), F.C0);
     }
 
     /**

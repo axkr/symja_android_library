@@ -1,14 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
@@ -143,11 +142,7 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     // not Listable: FactorList({x^2-4, x}) has the list as its one factor
-
-    IBuiltInSymbol[] optionKeys =
-        new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers, S.Trig};
-    IExpr[] optionValues = new IExpr[] {F.C0, S.None, S.False, S.False};
-    setOptions(newSymbol, optionKeys, optionValues);
+    setOptions(newSymbol, Algebra.Factor.factorOptionKeys(), Algebra.Factor.factorOptionValues());
   }
 
   /**

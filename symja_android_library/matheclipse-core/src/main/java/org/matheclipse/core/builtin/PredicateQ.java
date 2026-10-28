@@ -439,6 +439,37 @@ public class PredicateQ {
   }
 
   /**
+   * Parity predicate with the <code>GaussianIntegers</code> option: with
+   * <code>GaussianIntegers-&gt;True</code> the real and imaginary parts of a Gaussian integer
+   * decide, otherwise the plain integer test.
+   */
+  private abstract static class GaussianParityQ extends AbstractCorePredicateEvaluator
+      implements Predicate<IExpr>, IPredicate {
+
+    @Override
+    public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
+      IExpr option = options.getOption(S.GaussianIntegers);
+      if (!option.isTrue()) {
+        return evalArg1Boole(arg1, engine);
+      }
+      Optional<IInteger[]> reImParts = arg1.gaussianIntegers();
+      if (reImParts.isEmpty()) {
+        return false;
+      }
+      IInteger[] gaussian = reImParts.get();
+      return gaussianParity(gaussian[0], gaussian[1]);
+    }
+
+    /** The parity test of the Gaussian integer <code>re + I*im</code>. */
+    protected abstract boolean gaussianParity(IInteger re, IInteger im);
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -463,8 +494,7 @@ public class PredicateQ {
    * False
    * </pre>
    */
-  private static final class EvenQ extends AbstractCorePredicateEvaluator
-      implements Predicate<IExpr>, IPredicate {
+  private static final class EvenQ extends GaussianParityQ {
 
     @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -472,23 +502,9 @@ public class PredicateQ {
     }
 
     @Override
-    public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
-      IExpr option = options.getOption(S.GaussianIntegers);
-      if (!option.isTrue()) {
-        return evalArg1Boole(arg1, engine);
-      }
-      Optional<IInteger[]> reImParts = arg1.gaussianIntegers();
-      if (reImParts.isEmpty()) {
-        return false;
-      }
-      IInteger[] gaussian = reImParts.get();
+    protected boolean gaussianParity(IInteger re, IInteger im) {
       // zero is even, so a real or an imaginary Gaussian integer needs no case of its own
-      return gaussian[0].isEven() && gaussian[1].isEven();
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE);
+      return re.isEven() && im.isEven();
     }
 
     @Override
@@ -804,30 +820,19 @@ public class PredicateQ {
         return S.True;
       }
       if (ast.isAST2()) {
-        final IExpr arg2 = engine.evaluate(ast.arg2());
-        if (arg2.isSparseArray()) {
+        final IASTAppendable temp = elementTest(ast, engine);
+        if (temp == null) {
           // TODO SparseArray
           return F.NIL;
         }
-
-        IASTAppendable temp = F.ast(arg2);
-        temp.append(F.Slot1);
         if (arg1.isAST()) {
           IAST matrix = (IAST) arg1;
-          for (int i = 1; i < dims[0]; i++) {
-            if (!((IAST) matrix.get(i)).forAll(x -> {
-              temp.set(1, x);
-              return engine.evalTrue(temp);
-            })) {
-              return S.False;
-            }
-          }
-          return S.True;
+          return F.booleSymbol(matrix.forAll(row -> allElementsTrue((IAST) row, temp, engine)));
         } else {
           FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
           if (matrix != null) {
             for (int i = 0; i < dims[0]; i++) {
-              for (int j = 1; j < dims[1]; j++) {
+              for (int j = 0; j < dims[1]; j++) {
                 IExpr expr = matrix.getEntry(i, j);
                 temp.set(1, expr);
                 if (!engine.evalTrue(temp)) {
@@ -1056,8 +1061,7 @@ public class PredicateQ {
    * False
    * </pre>
    */
-  private static final class OddQ extends AbstractCorePredicateEvaluator
-      implements Predicate<IExpr>, IPredicate {
+  private static final class OddQ extends GaussianParityQ {
 
     @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1065,24 +1069,10 @@ public class PredicateQ {
     }
 
     @Override
-    public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
-      IExpr option = options.getOption(S.GaussianIntegers);
-      if (!option.isTrue()) {
-        return evalArg1Boole(arg1, engine);
-      }
-      Optional<IInteger[]> reImParts = arg1.gaussianIntegers();
-      if (reImParts.isEmpty()) {
-        return false;
-      }
-      IInteger[] gaussian = reImParts.get();
+    protected boolean gaussianParity(IInteger re, IInteger im) {
       // exactly one odd part; zero is even, so a real or an imaginary Gaussian integer needs no
       // case of its own
-      return gaussian[0].isOdd() != gaussian[1].isOdd();
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE);
+      return re.isOdd() != im.isOdd();
     }
 
     @Override
@@ -1921,23 +1911,13 @@ public class PredicateQ {
         return S.True;
       }
       if (ast.isAST2()) {
-        final IExpr arg2 = engine.evaluate(ast.arg2());
-        if (arg2.isSparseArray()) {
+        final IASTAppendable temp = elementTest(ast, engine);
+        if (temp == null) {
           // TODO SparseArray
           return F.NIL;
         }
-        IASTAppendable temp = F.ast(arg2);
-        temp.append(F.Slot1);
-
         if (arg1.isAST()) {
-          IAST vector = (IAST) arg1;
-          if (!vector.forAll(x -> {
-            temp.set(1, x);
-            return engine.evalTrue(temp);
-          })) {
-            return S.False;
-          }
-          return S.True;
+          return F.booleSymbol(allElementsTrue((IAST) arg1, temp, engine));
         } else {
           FieldVector<IExpr> vector = Convert.list2Vector(arg1);
           if (vector != null) {
@@ -1959,6 +1939,31 @@ public class PredicateQ {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+  }
+
+  /**
+   * The test <code>f(#1)</code> of the evaluated second argument <code>f</code> of
+   * <code>ast</code>, or <code>null</code> if <code>f</code> is a <code>SparseArray</code>.
+   */
+  private static IASTAppendable elementTest(IAST ast, EvalEngine engine) {
+    final IExpr arg2 = engine.evaluate(ast.arg2());
+    if (arg2.isSparseArray()) {
+      return null;
+    }
+    IASTAppendable test = F.ast(arg2);
+    test.append(F.Slot1);
+    return test;
+  }
+
+  /**
+   * <code>true</code> if the <code>test</code> from {@link #elementTest(IAST, EvalEngine)} gives
+   * <code>True</code> for every element of <code>list</code>.
+   */
+  private static boolean allElementsTrue(IAST list, IASTAppendable test, EvalEngine engine) {
+    return list.forAll(x -> {
+      test.set(1, x);
+      return engine.evalTrue(test);
+    });
   }
 
   public static boolean isSquareMatrix(IExpr expr) {

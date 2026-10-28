@@ -830,19 +830,9 @@ public final class LayoutSpec {
   }
 
   private void applyImageMargins(IExpr value) {
-    double all = ColorUtil.dbl(value, Double.NaN);
-    if (!Double.isNaN(all)) {
-      imageMargins = new double[] {all, all, all, all};
-      return;
-    }
-    if (value.isList() && ((IAST) value).argSize() >= 2) {
-      IAST list = (IAST) value;
-      if (list.arg1().isList() && list.arg2().isList()) {
-        IAST lr = (IAST) list.arg1();
-        IAST bt = (IAST) list.arg2();
-        imageMargins = new double[] {ColorUtil.dbl(lr.arg1(), 0), ColorUtil.dbl(lr.arg2(), 0),
-            ColorUtil.dbl(bt.arg1(), 0), ColorUtil.dbl(bt.arg2(), 0)};
-      }
+    double[] sides = ColorUtil.sideValues(value);
+    if (sides != null) {
+      imageMargins = sides;
     }
   }
 

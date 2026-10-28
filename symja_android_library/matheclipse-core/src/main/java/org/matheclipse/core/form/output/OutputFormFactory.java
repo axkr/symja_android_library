@@ -719,6 +719,7 @@ public class OutputFormFactory {
     }
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
+        // CPD-OFF form factories without a common base for this conversion
         append(buf, fInputForm ? " + " : "+");
         caller = false;
       }
@@ -733,6 +734,7 @@ public class OutputFormFactory {
     if (realZero && imaginaryZero) {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
     } else {
+    // CPD-ON
       final boolean isNegative = imaginaryPart < 0;
       if (!realZero) {
         append(buf, formatDouble(realPart));
@@ -1411,6 +1413,7 @@ public class OutputFormFactory {
         } else {
           append(buf, "[");
         }
+        // CPD-OFF form factories without a common base for this conversion
         convert(buf, list.arg1(), Precedence.NO_PRECEDENCE, false);
         if (fRelaxedSyntax) {
           append(buf, ")");
@@ -1425,6 +1428,7 @@ public class OutputFormFactory {
         }
         append(buf, "1/");
         if (exp.isMinusOne()) {
+        // CPD-ON
           // the reciprocal of a reciprocal is 1/(1/x), not 1/1/x
           final boolean quotient = isQuotient(list.arg1());
           if (quotient) {

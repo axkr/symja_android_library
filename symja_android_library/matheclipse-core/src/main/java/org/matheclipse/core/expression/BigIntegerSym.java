@@ -344,29 +344,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return fHashValue;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public IReal im() {
-    return F.C0;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger inc() {
-    return add(F.C1);
-  }
-
-  @Override
-  public long integerLength(IInteger radix) {
-    long length = 0L;
-    IInteger ai = this;
-    while (!ai.isZero()) {
-      ai = ai.div(radix);
-      length++;
-    }
-    return length;
-  }
-
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {

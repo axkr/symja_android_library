@@ -1244,20 +1244,9 @@ public class StructureFunctions {
             final IAST ast2 = (IAST) arg2;
             final IExpr arg1 = ast.arg1();
             java.util.function.Function<IExpr, IExpr> function = x -> F.unaryAST1(arg1, x);
-            IExpr arg3 = ast.arg3();
-            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3 == S.All
-                || arg3.isAST(S.Span, 3, 4)) {
-              arg3 = F.list(arg3);
-            }
-            if (arg3.isListOfLists()) {
-              IAST listOfLists = ((IAST) arg3);
-              return MapPositions.mapListOfPositions(function, ast2, listOfLists);
-            } else if (arg3.isList()) {
-              IExpr temp = MapPositions.mapPositions(function, ast2, (IAST) arg3);
-              if (temp.isPresent()) {
-                return temp;
-              }
-              return ast2;
+            IExpr result = applyAtPositions(function, ast2, ast.arg3());
+            if (result != null) {
+              return result;
             }
           } catch (final ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
@@ -1277,6 +1266,33 @@ public class StructureFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3_0;
     }
+  }
+
+  /**
+   * Apply <code>function</code> at the given positions of <code>expr</code>. A single integer,
+   * string, key, <code>All</code> or <code>Span</code> is a position by itself.
+   *
+   * @param function the function which should be applied at the positions
+   * @param expr the expression
+   * @param positions a position, a list of position parts or a list of positions
+   * @return <code>null</code> if <code>positions</code> is not a list after normalisation
+   */
+  private static IExpr applyAtPositions(java.util.function.Function<IExpr, IExpr> function,
+      IAST expr, IExpr positions) {
+    if (positions.isInteger() || positions.isString() || positions.isKey() || positions == S.All
+        || positions.isAST(S.Span, 3, 4)) {
+      positions = F.list(positions);
+    }
+    if (positions.isListOfLists()) {
+      return MapPositions.mapListOfPositions(function, expr, (IAST) positions);
+    } else if (positions.isList()) {
+      IExpr temp = MapPositions.mapPositions(function, expr, (IAST) positions);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      return expr;
+    }
+    return null;
   }
 
   private static class ReplaceAt extends AbstractFunctionEvaluator {
@@ -1302,21 +1318,12 @@ public class StructureFunctions {
           try {
             final IAST ast1 = (IAST) arg1;
             final IExpr arg2 = ast.arg2();
-            java.util.function.Function<IExpr, IExpr> function = Functors.rules(arg2, engine);
-            IExpr arg3 = ast.arg3();
-            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3 == S.All
-                || arg3.isAST(S.Span, 3, 4)) {
-              arg3 = F.list(arg3);
-            }
-            if (arg3.isListOfLists()) {
-              IAST listOfLists = ((IAST) arg3);
-              return MapPositions.mapListOfPositions(function, ast1, listOfLists);
-            } else if (arg3.isList()) {
-              IExpr temp = MapPositions.mapPositions(function, ast1, (IAST) arg3);
-              if (temp.isPresent()) {
-                return temp;
-              }
-              return arg2;
+            java.util.function.Function<IExpr, IExpr> rules = Functors.rules(arg2, engine);
+            // a part which no rule matches stays unchanged
+            java.util.function.Function<IExpr, IExpr> function = x -> rules.apply(x).orElse(x);
+            IExpr result = applyAtPositions(function, ast1, ast.arg3());
+            if (result != null) {
+              return result;
             }
           } catch (final ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);

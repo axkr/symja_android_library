@@ -29,22 +29,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class RSolve extends AbstractFunctionEvaluator {
 
-  private static void extractCVars(IExpr expr, IASTAppendable cVars) {
-    if (expr.isAST(S.C, 2)) {
-      boolean found = false;
-      for (int i = 1; i <= cVars.argSize(); i++) {
-        if (cVars.get(i).equals(expr)) {
-          found = true;
-          break;
-        }
-      }
-      if (!found)
-        cVars.append(expr);
-    } else if (expr.isAST()) {
-      ((IAST) expr).forEach(arg -> extractCVars(arg, cVars));
-    }
-  }
-
   // ====================================================================================
   // Canonical Sequences (Fibonacci & LucasL Mapping)
   // Direct Orthogonal Basis Projection for Golden Ratio polynomials
@@ -116,7 +100,7 @@ public class RSolve extends AbstractFunctionEvaluator {
     }
 
     IASTAppendable cVars = F.ListAlloc();
-    extractCVars(expanded, cVars);
+    DSolveEngine.constantsOf(expanded, cVars);
     if (cVars.argSize() == 0)
       return expr;
 
@@ -338,19 +322,10 @@ public class RSolve extends AbstractFunctionEvaluator {
     }
 
     IASTAppendable cVars = F.ListAlloc();
-    extractCVars(evaluatedBCs, cVars);
+    DSolveEngine.constantsOf(evaluatedBCs, cVars);
 
     if (cVars.argSize() == 0) {
-      for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
-        IExpr bc = evaluatedBCs.get(k);
-        if (bc.isEqual()) {
-          if (!engine.evaluate(bc).isTrue())
-            return F.NIL;
-        } else if (!bc.isZero()) {
-          return F.NIL;
-        }
-      }
-      return root;
+      return DSolveEngine.conditionsHold(evaluatedBCs, engine) ? root : F.NIL;
     }
 
     // Safely filter out Tautologies (like 0 == 0) ensuring Solve doesn't choke

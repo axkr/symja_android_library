@@ -1251,36 +1251,27 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   private static IExpr arcTanCotBranch(boolean isTan, IExpr arg, IExpr x, IExpr x0, int sigma,
       int n, EvalEngine engine) {
     IExpr w = F.Subtract(x, x0); // x - sigma*I
+    // ArcTan: s = 1, ArcCot: s = -1
+    final int s = isTan ? 1 : -1;
     IASTAppendable list = F.ListAlloc(n + 1);
+    // c0 = (Pi + 2*s*I*Log[2] - 2*s*I*Log[w])/4
+    IExpr c0 = F.Times(F.C1D4,
+        F.Plus(S.Pi, F.Times(F.ZZ(2 * s), F.CI, F.Log(F.C2)),
+            F.Times(F.ZZ(-2 * s), F.CI, F.Log(w))));
+    list.append(c0);
+    for (int k = 1; k <= n; k++) {
+      IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
+      // c_k = -s*I^(k+1)/(k*2^(k+1))
+      list.append(engine.evaluate(F.Times(F.ZZ(-s), F.Power(F.CI, F.ZZ(k + 1)), mag)));
+    }
+    ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
     if (isTan) {
-      // ----- ArcTan@(sigma*I) : Pi*Floor[(Pi/2 - Arg[w])/(2 Pi)] + SeriesData[...] -----
-      // c0 = (Pi + 2*I*Log[2] - 2*I*Log[w])/4
-      IExpr c0 = F.Times(F.C1D4,
-          F.Plus(S.Pi, F.Times(F.ZZ(2), F.CI, F.Log(F.C2)), F.Times(F.ZZ(-2), F.CI, F.Log(w))));
-      list.append(c0);
-      for (int k = 1; k <= n; k++) {
-        IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
-        // c_k = -I^(k+1)/(k*2^(k+1))
-        list.append(engine.evaluate(F.Times(F.CN1, F.Power(F.CI, F.ZZ(k + 1)), mag)));
-      }
-      ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
+      // ArcTan@(sigma*I) : Pi*Floor[(Pi/2 - Arg[w])/(2 Pi)] + SeriesData[...]
       IExpr piFloor = F.Times(S.Pi,
           F.Floor(F.Divide(F.Subtract(F.Times(F.C1D2, S.Pi), F.Arg(w)), F.Times(F.C2, S.Pi))));
       return F.Plus(piFloor, series);
     }
-
-    // ----- ArcCot@(sigma*I) :
-    // -(Pi*Floor[(Pi - Arg[1/x] - Arg[w])/(2 Pi)]) + SeriesData[...] -----
-    // c0 = (Pi - 2*I*Log[2] + 2*I*Log[w])/4
-    IExpr c0 = F.Times(F.C1D4,
-        F.Plus(S.Pi, F.Times(F.ZZ(-2), F.CI, F.Log(F.C2)), F.Times(F.ZZ(2), F.CI, F.Log(w))));
-    list.append(c0);
-    for (int k = 1; k <= n; k++) {
-      IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
-      // c_k = +I^(k+1)/(k*2^(k+1))
-      list.append(engine.evaluate(F.Times(F.Power(F.CI, F.ZZ(k + 1)), mag)));
-    }
-    ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
+    // ArcCot@(sigma*I) : -(Pi*Floor[(Pi - Arg[1/x] - Arg[w])/(2 Pi)]) + SeriesData[...]
     IExpr floorArg = F.Divide(F.Plus(S.Pi, F.Negate(F.Arg(F.Power(x, F.CN1))), F.Negate(F.Arg(w))),
         F.Times(F.C2, S.Pi));
     IExpr floorTerm = F.Negate(F.Times(S.Pi, F.Floor(floorArg)));
@@ -2656,6 +2647,14 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   public ASTSeriesData plusPS(ASTSeriesData that) {
+    return plusSubtractPS(that, false);
+  }
+
+  /**
+   * The sum (or, if <code>subtract</code>, the difference) of this series and <code>that</code>
+   * series over the common Puiseux denominator, truncated at the lower truncation order.
+   */
+  private ASTSeriesData plusSubtractPS(ASTSeriesData that, boolean subtract) {
     int newDenominator = ArithmeticUtils.lcm(puiseuxDenominator, that.puiseuxDenominator);
     int scaleA = newDenominator / puiseuxDenominator;
     int scaleB = newDenominator / that.puiseuxDenominator;
@@ -2680,7 +2679,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       if (i % scaleB == 0) {
         cB = that.coefficient(i / scaleB);
       }
-      IExpr sum = F.eval(F.Plus(cA, cB));
+      IExpr sum = F.eval(subtract ? F.Subtract(cA, cB) : F.Plus(cA, cB));
       if (!sum.isZero()) {
         series.setCoeff(i, sum);
       }
@@ -3190,36 +3189,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   public ASTSeriesData subtractPS(ASTSeriesData b) {
-    int newDenominator = ArithmeticUtils.lcm(puiseuxDenominator, b.puiseuxDenominator);
-    int scaleA = newDenominator / puiseuxDenominator;
-    int scaleB = newDenominator / b.puiseuxDenominator;
-
-    int n1 = minExponent * scaleA;
-    int n2 = b.minExponent * scaleB;
-    int minSize = Math.min(n1, n2);
-
-    int t1 = truncateOrder * scaleA;
-    int t2 = b.truncateOrder * scaleB;
-    int newPower = Math.min(t1, t2);
-
-    ASTSeriesData series =
-        new ASTSeriesData(expansionVariable, expansionPoint, minSize, newPower, newDenominator);
-
-    for (int i = minSize; i < newPower; i++) {
-      IExpr cA = F.C0;
-      if (i % scaleA == 0) {
-        cA = this.coefficient(i / scaleA);
-      }
-      IExpr cB = F.C0;
-      if (i % scaleB == 0) {
-        cB = b.coefficient(i / scaleB);
-      }
-      IExpr sum = F.eval(F.Subtract(cA, cB));
-      if (!sum.isZero()) {
-        series.setCoeff(i, sum);
-      }
-    }
-    return series;
+    return plusSubtractPS(b, true);
   }
 
   /**

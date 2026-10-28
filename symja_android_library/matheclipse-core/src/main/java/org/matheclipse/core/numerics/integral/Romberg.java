@@ -304,6 +304,7 @@ public final class Romberg extends Quadrature {
 
         if (Math.abs(4.0 - t[1 - 1][lm1 - 1]) > h2tol) {
           if (t[1 - 1][lm1 - 1] == 0.0) {
+            // CPD-OFF translated Fortran state machine, kept close to the original
             if (errer <= ergoal) {
               slope = (fend - fbeg) * 2.0;
               fbeg2 = fbeg * 2.0;
@@ -319,6 +320,7 @@ public final class Romberg extends Quadrature {
               flag = 380;
             }
           } else if (Math.abs(2.0 - Math.abs(t[1 - 1][lm1 - 1])) < tljump) {
+          // CPD-ON
             if (ergoal < errer) {
               reglar = true;
               flag = 380;
@@ -334,6 +336,7 @@ public final class Romberg extends Quadrature {
               flag = 160;
             } else if (!reglar && l == 4) {
               flag = 40;
+            // CPD-OFF translated Fortran state machine, kept close to the original
             } else if (errer <= ergoal) {
               slope = (fend - fbeg) * 2.0;
               fbeg2 = fbeg * 2.0;
@@ -349,6 +352,7 @@ public final class Romberg extends Quadrature {
               flag = 380;
             }
           }
+          // CPD-ON
           continue;
         } else {
           if (!h2conv) {
@@ -527,6 +531,7 @@ public final class Romberg extends Quadrature {
           ibeg = (ibeg + iend) >> 1;
           ts[ibeg - 1] /= 2.0;
           fbeg = ts[ibeg - 1];
+        // CPD-OFF translated Fortran state machine, kept close to the original
         }
         step = end - beg;
         astep = Math.abs(step);
@@ -539,6 +544,7 @@ public final class Romberg extends Quadrature {
         l = n = 1;
         h2conv = aitken = false;
         flag = 40;
+        // CPD-ON
         continue;
       }
 
@@ -589,6 +595,7 @@ public final class Romberg extends Quadrature {
           est[istage - 1] = vint;
           curest += est[istage - 1];
           right = false;
+        // CPD-OFF translated Fortran state machine, kept close to the original
         }
         step = end - beg;
         astep = Math.abs(step);
@@ -601,6 +608,7 @@ public final class Romberg extends Quadrature {
         l = n = 1;
         h2conv = aitken = false;
         flag = 40;
+        // CPD-ON
       }
     }
   }

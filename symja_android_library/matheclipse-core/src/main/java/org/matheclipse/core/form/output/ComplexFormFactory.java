@@ -8,7 +8,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -97,15 +96,7 @@ public abstract class ComplexFormFactory extends AbstractCodeFormFactory {
       }
       return;
     }
-    if (o instanceof ISymbol) {
-      convertSymbol(buf, (ISymbol) o);
-      return;
-    }
-    if (o instanceof IPatternObject) {
-      convertPattern(buf, (IPatternObject) o);
-      return;
-    }
-    convertString(buf, o.toString());
+    convertSymbolOrPattern(buf, o);
   }
 
   @Override

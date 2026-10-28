@@ -2004,11 +2004,8 @@ public final class Arithmetic {
                 F.Log(z));
           }
           if (F.isExactZero(a)) {
-            // Gamma(0, z_) := -ExpIntegralEi(-z)+(1/2)*(-Log(-(1/z))+Log(-z))-Log(z)
-            return F.Plus(F.Negate(F.ExpIntegralEi(F.Negate(z))),
-                F.Times(F.C1D2,
-                    F.Plus(F.Negate(F.Log(F.Negate(F.Power(z, F.CN1)))), F.Log(F.Negate(z)))),
-                F.Negate(F.Log(z)));
+            // Gamma(0, z) == ExpIntegralE(1, z)
+            return HypergeometricFunctions.expIntegralE1Expanded(z);
           }
         }
       } else if (ast.isAST3()) {
@@ -2429,6 +2426,17 @@ public final class Arithmetic {
       implements IFunctionExpand {
 
     /**
+     * The closed form
+     * <code>(Gamma(n+r)*(PolyGamma(0,n+r)-PolyGamma(0,r)))/(Gamma(r)*Gamma(1+n))</code> of
+     * <code>HyperHarmonicNumber(r, n)</code>.
+     */
+    private static IAST hyperHarmonicGammaForm(IExpr r, IExpr n) {
+      return F.Times(F.Gamma(F.Plus(n, r)),
+          F.Power(F.Times(F.Gamma(r), F.Gamma(F.Plus(F.C1, n))), F.CN1),
+          F.Subtract(F.PolyGamma(F.C0, F.Plus(n, r)), F.PolyGamma(F.C0, r)));
+    }
+
+    /**
      * Hyperharmonic number <code>H(r, n)</code> defined by the iterated sums
      * <code>H(1, n) = HarmonicNumber(n)</code> and
      * <code>H(r, n) = Sum(H(r-1, k), {k, 1, n})</code>.
@@ -2521,12 +2529,7 @@ public final class Arithmetic {
     @Override
     public IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        IExpr r = ast.arg1();
-        IExpr n = ast.arg2();
-        // (Gamma(n+r)*(PolyGamma(0,n+r)-PolyGamma(0,r)))/(Gamma(r)*Gamma(1+n))
-        return F.Times(F.Gamma(F.Plus(n, r)),
-            F.Power(F.Times(F.Gamma(r), F.Gamma(F.Plus(F.C1, n))), F.CN1),
-            F.Subtract(F.PolyGamma(F.C0, F.Plus(n, r)), F.PolyGamma(F.C0, r)));
+        return hyperHarmonicGammaForm(ast.arg1(), ast.arg2());
       }
       return F.NIL;
     }
@@ -2540,10 +2543,7 @@ public final class Arithmetic {
           // the poles of Gamma(r) resp. Gamma(1+n) are not handled by the generic formula
           return F.NIL;
         }
-        // (Gamma(n+r)*(PolyGamma(0,n+r)-PolyGamma(0,r)))/(Gamma(r)*Gamma(1+n))
-        return engine.evaluate(F.Times(F.Gamma(F.Plus(n, r)),
-            F.Power(F.Times(F.Gamma(r), F.Gamma(F.Plus(F.C1, n))), F.CN1),
-            F.Subtract(F.PolyGamma(F.C0, F.Plus(n, r)), F.PolyGamma(F.C0, r))));
+        return engine.evaluate(hyperHarmonicGammaForm(r, n));
       } else if (ast.argSize() == 3) {
         IInexactNumber r = (IInexactNumber) ast.arg1();
         IInexactNumber n = (IInexactNumber) ast.arg2();

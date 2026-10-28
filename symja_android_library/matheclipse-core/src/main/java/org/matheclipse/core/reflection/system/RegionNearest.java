@@ -234,28 +234,45 @@ public class RegionNearest extends AbstractFunctionEvaluator {
     if (reg.argSize() == 1 && reg.arg1().isList()) {
       IAST pts = (IAST) reg.arg1();
       if (pts.argSize() >= 2) {
-        IExpr bestPoint = F.NIL;
-        IExpr minDist2 = F.NIL;
-        for (int i = 1; i < pts.argSize(); i++) {
-          IExpr v = pts.get(i);
-          IExpr w = pts.get(i + 1);
-          IExpr proj = closestPointOnSegment(p, v, w, engine);
-          IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p, proj))));
-          if (minDist2.isNIL()) {
-            minDist2 = dist2;
-            bestPoint = proj;
-          } else {
-            IExpr isLess = engine.evaluate(F.Less(dist2, minDist2));
-            if (isLess.isTrue()) {
-              minDist2 = dist2;
-              bestPoint = proj;
-            }
-          }
-        }
-        return bestPoint;
+        return nearestOnPolyline(pts, false, p, engine);
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The closest projection of <code>p</code> onto the segments between consecutive points of
+   * <code>pts</code>.
+   *
+   * @param pts the vertices
+   * @param closed if <code>true</code> the segment from the last back to the first point is
+   *        included (a polygon boundary)
+   * @param p the point
+   * @param engine the evaluation engine
+   * @return the nearest point
+   */
+  private IExpr nearestOnPolyline(IAST pts, boolean closed, IExpr p, EvalEngine engine) {
+    int n = pts.argSize();
+    int segments = closed ? n : n - 1;
+    IExpr bestPoint = F.NIL;
+    IExpr minDist2 = F.NIL;
+    for (int i = 1; i <= segments; i++) {
+      IExpr v = pts.get(i);
+      IExpr w = pts.get(i % n + 1);
+      IExpr proj = closestPointOnSegment(p, v, w, engine);
+      IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p, proj))));
+      if (minDist2.isNIL()) {
+        minDist2 = dist2;
+        bestPoint = proj;
+      } else {
+        IExpr isLess = engine.evaluate(F.Less(dist2, minDist2));
+        if (isLess.isTrue()) {
+          minDist2 = dist2;
+          bestPoint = proj;
+        }
+      }
+    }
+    return bestPoint;
   }
 
   private IExpr polygonNearest(IAST reg, IExpr p, EvalEngine engine) {
@@ -266,26 +283,7 @@ public class RegionNearest extends AbstractFunctionEvaluator {
 
     IAST pts = extractPolygonPoints(reg);
     if (pts != null && pts.argSize() >= 3) {
-      int n = pts.argSize();
-      IExpr bestPoint = F.NIL;
-      IExpr minDist2 = F.NIL;
-      for (int i = 1; i <= n; i++) {
-        IExpr v = pts.get(i);
-        IExpr w = pts.get(i % n + 1);
-        IExpr proj = closestPointOnSegment(p, v, w, engine);
-        IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p, proj))));
-        if (minDist2.isNIL()) {
-          minDist2 = dist2;
-          bestPoint = proj;
-        } else {
-          IExpr isLess = engine.evaluate(F.Less(dist2, minDist2));
-          if (isLess.isTrue()) {
-            minDist2 = dist2;
-            bestPoint = proj;
-          }
-        }
-      }
-      return bestPoint;
+      return nearestOnPolyline(pts, true, p, engine);
     }
     return F.NIL;
   }

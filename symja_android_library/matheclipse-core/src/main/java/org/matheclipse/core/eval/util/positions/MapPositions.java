@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.util.positions;
 
+import java.util.IdentityHashMap;
 import java.util.function.Function;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -10,6 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class MapPositions extends PositionsVisitor {
   final Function<IExpr, IExpr> f;
@@ -174,6 +176,41 @@ public class MapPositions extends PositionsVisitor {
     IASTMutable mutable = ast.copy();
     mutable.addFlag(Flag.IS_COPIED);
     return mutable;
+  }
+
+  /**
+   * Get the pair of [{@link IASTAppendable}, {@link IntArrayList}] list of already inserted
+   * original position numbers. A not yet copied <code>ast</code> is copied, flagged as
+   * {@link Flag#IS_COPIED} and registered in <code>cache</code> with an empty list.
+   *
+   * @param ast
+   * @param cache the inserted positions of the copied ASTs
+   * @return
+   */
+  static Object[] appendableIntPair(IAST ast, IdentityHashMap<IAST, IntArrayList> cache) {
+    if (ast.hasFlag(Flag.IS_COPIED)) {
+      IntArrayList value = cache.get(ast);
+      return new Object[] {ast, value};
+    }
+    IASTAppendable appendable = ast.copyAppendable();
+    appendable.addFlag(Flag.IS_COPIED);
+    IntArrayList list = new IntArrayList();
+    cache.put(appendable, list);
+    return new Object[] {appendable, list};
+  }
+
+  /**
+   * The part index <code>position</code> as an <code>int</code>.
+   *
+   * @throws ArgumentTypeException "partw" if <code>position</code> is not a machine integer
+   */
+  static int partIndex(IExpr position, IAST positions, IAST originalAST) {
+    int p = position.toIntDefault();
+    if (F.isNotPresent(p)) {
+      // Part `1` of `2` does not exist.
+      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
+    }
+    return p;
   }
 
   protected static void removeIsCopiedRecursive(IAST list) {

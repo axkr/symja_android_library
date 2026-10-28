@@ -210,31 +210,19 @@ public class JASConvert<C extends RingElem<C>> {
     }
     if (expr.isList()) {
       try {
-        IAST list = (IAST) expr;
-        IAST currInRow = (IAST) list.arg1();
-        if (currInRow.isAST0()) {
-          // special case 0-Matrix
-          BigComplex[][] array = new BigComplex[0][0];
-
-          return new GenMatrix<BigComplex>(ring, array);
-
+        final IExpr[][] array = Convert.list2Array(expr, false);
+        if (array == null) {
+          return null;
         }
-        final int rowSize = expr.argSize();
-        final int colSize = currInRow.argSize();
-
-        final BigComplex[][] elements = new BigComplex[rowSize][colSize];
-        for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
-          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-            return null;
-          }
-          for (int j = 1; j < colSize + 1; j++) {
-            IExpr element = currInRow.get(j);
-            if (element instanceof IBigNumber) {
-              elements[i - 1][j - 1] = ((IBigNumber) element).toBigComplex();
-            } else {
+        final BigComplex[][] elements = new BigComplex[array.length][];
+        for (int i = 0; i < array.length; i++) {
+          final IExpr[] row = array[i];
+          elements[i] = new BigComplex[row.length];
+          for (int j = 0; j < row.length; j++) {
+            if (!(row[j] instanceof IBigNumber)) {
               return null;
             }
+            elements[i][j] = ((IBigNumber) row[j]).toBigComplex();
           }
         }
         return new GenMatrix<BigComplex>(ring, elements);
@@ -263,32 +251,19 @@ public class JASConvert<C extends RingElem<C>> {
     }
     if (expr.isList()) {
       try {
-        IAST list = (IAST) expr;
-        IAST currInRow = (IAST) list.arg1();
-        if (currInRow.isAST0()) {
-          // special case 0-Matrix
-          BigRational[][] array = new BigRational[0][0];
-
-          return new GenMatrix<BigRational>(ring, array);
-
+        final IExpr[][] array = Convert.list2Array(expr, false);
+        if (array == null) {
+          return null;
         }
-        final int rowSize = expr.argSize();
-        final int colSize = currInRow.argSize();
-
-        final BigRational[][] elements = new BigRational[rowSize][colSize];
-        for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
-          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-            return null;
-          }
-          for (int j = 1; j < colSize + 1; j++) {
-            IExpr element = currInRow.get(j);
-            if (element instanceof IRational) {
-              IRational rat = ((IRational) element);
-              elements[i - 1][j - 1] = rat.toBigRational();
-            } else {
+        final BigRational[][] elements = new BigRational[array.length][];
+        for (int i = 0; i < array.length; i++) {
+          final IExpr[] row = array[i];
+          elements[i] = new BigRational[row.length];
+          for (int j = 0; j < row.length; j++) {
+            if (!(row[j] instanceof IRational)) {
               return null;
             }
+            elements[i][j] = ((IRational) row[j]).toBigRational();
           }
         }
         return new GenMatrix<BigRational>(ring, elements);
@@ -834,12 +809,15 @@ public class JASConvert<C extends RingElem<C>> {
     return plus;
   }
 
+  /** The complex number <code>re + im*I</code> with normalized rational parts. */
+  private static IComplex complexRational(BigRational re, BigRational im) {
+    return F.CC(F.fraction(re.numerator(), re.denominator()).normalize(),
+        F.fraction(im.numerator(), im.denominator()).normalize());
+  }
+
   public boolean monomialBigComplexToExpr(BigComplex coeff, ExpVector exp,
       IASTAppendable monomTimes) {
-    BigRational re = coeff.getRe();
-    BigRational im = coeff.getIm();
-    monomTimes.append(F.CC(F.fraction(re.numerator(), re.denominator()).normalize(),
-        F.fraction(im.numerator(), im.denominator()).normalize()));
+    monomTimes.append(complexRational(coeff.getRe(), coeff.getIm()));
     return expVectorToExpr(exp, monomTimes);
   }
 
@@ -869,10 +847,7 @@ public class JASConvert<C extends RingElem<C>> {
 
   public boolean monomialToExpr(Complex<BigRational> coeff, ExpVector exp,
       IASTAppendable monomTimes) {
-    BigRational re = coeff.getRe();
-    BigRational im = coeff.getIm();
-    monomTimes.append(F.CC(F.fraction(re.numerator(), re.denominator()).normalize(),
-        F.fraction(im.numerator(), im.denominator()).normalize()));
+    monomTimes.append(complexRational(coeff.getRe(), coeff.getIm()));
     return expVectorToExpr(exp, monomTimes);
   }
 

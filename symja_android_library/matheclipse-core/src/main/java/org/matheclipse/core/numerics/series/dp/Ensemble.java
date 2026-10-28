@@ -239,10 +239,10 @@ public final class Ensemble extends SeriesAlgorithm {
   }
 
   @Override
+  // CPD-OFF double and Complex variants of the same algorithm
   public final SeriesSolution limit(final Iterable<Double> seq, final boolean series,
       final int extrapolateStart) {
     myCheckForSequenceOnly = !series;
-    // CPD-OFF double and Complex variants of the same algorithm
     final SeriesSolution result = super.limit(seq, series, extrapolateStart);
     if (myPrint > 0 && myBestMethod >= 0 && result.converged) {
       System.out.println("Converged at iteration " + myIndex + " with method "
@@ -264,7 +264,6 @@ public final class Ensemble extends SeriesAlgorithm {
         str = "-";
       } else {
         str = Double.toString(myEst[m]);
-        // CPD-ON
       }
       line += "\t" + pad(str, PRINT_DIGITS);
     }
@@ -282,3 +281,4 @@ public final class Ensemble extends SeriesAlgorithm {
     return result;
   }
 }
+// CPD-ON

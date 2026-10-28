@@ -96,15 +96,13 @@ final class IntegralRepresentations {
       IAST factors = distributed.isTimes() ? (IAST) distributed : F.Times(distributed);
       for (int i = 1; i <= factors.argSize(); i++) {
         IExpr factor = factors.get(i);
+        IExpr power = powerOfX(factor, x);
         if (factor.isFree(x)) {
           shape.constant.append(factor);
-        } else if (factor.equals(x)) {
-          shape.power = F.Plus(shape.power, F.C1);
-        } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
-          shape.power = F.Plus(shape.power, factor.exponent());
+        } else if (power.isPresent()) {
+          shape.power = F.Plus(shape.power, power);
         } else if (factor.isPower() && factor.base().isE()) {
-          IExpr expanded = ctx.eval(F.Expand(factor.exponent()));
-          IAST terms = expanded.isPlus() ? (IAST) expanded : F.Plus(expanded);
+          IAST terms = exponentTerms(ctx, factor);
           for (int j = 1; j <= terms.argSize(); j++) {
             IExpr term = terms.get(j);
             IExpr[] monomial = monomial(term, x);
@@ -147,6 +145,26 @@ final class IntegralRepresentations {
     IExpr rate(Context ctx, IExpr degree) {
       return ctx.eval(F.Negate(exponent.get(degree)));
     }
+  }
+
+  /**
+   * The exponent <code>e</code> of a factor <code>x^e</code> with an <code>x</code>-free
+   * <code>e</code>: <code>1</code> for <code>x</code> itself, otherwise {@link F#NIL}.
+   */
+  static IExpr powerOfX(IExpr factor, IExpr x) {
+    if (factor.equals(x)) {
+      return F.C1;
+    }
+    if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
+      return factor.exponent();
+    }
+    return F.NIL;
+  }
+
+  /** The summands of the expanded exponent of a power <code>E^(...)</code>. */
+  static IAST exponentTerms(Context ctx, IExpr power) {
+    IExpr expanded = ctx.eval(F.Expand(power.exponent()));
+    return expanded.isPlus() ? (IAST) expanded : F.Plus(expanded);
   }
 
   /**
@@ -1180,6 +1198,7 @@ final class IntegralRepresentations {
     IExpr g = F.NIL;
     IExpr h = F.NIL;
     IExpr d = F.NIL;
+    // CPD-OFF factor scanners for different integral shapes
     for (int i = 1; i <= factors.argSize(); i++) {
       IExpr factor = factors.get(i);
       if (factor.isFree(x)) {
@@ -1189,6 +1208,7 @@ final class IntegralRepresentations {
       IExpr base = factor.isPower() ? factor.base() : factor;
       IExpr exponent = factor.isPower() ? factor.exponent() : F.C1;
       if (!exponent.isFree(x) || !base.isPolynomialOfMaxDegree(x, 1)) {
+      // CPD-ON
         return null;
       }
       IExpr c0 = ctx.eval(F.Coefficient(base, x, F.C0));
@@ -1232,6 +1252,7 @@ final class IntegralRepresentations {
     IASTAppendable constant = F.TimesAlloc(factors.argSize());
     IExpr a = F.C0;
     IExpr b = F.C0;
+    // CPD-OFF factor scanners for different integral shapes
     for (int i = 1; i <= factors.argSize(); i++) {
       IExpr factor = factors.get(i);
       if (factor.isFree(x)) {
@@ -1241,6 +1262,7 @@ final class IntegralRepresentations {
       IExpr base = factor.isPower() ? factor.base() : factor;
       IExpr exponent = factor.isPower() ? factor.exponent() : F.C1;
       if (!exponent.isFree(x) || !base.isAST1() || !base.first().equals(x)) {
+      // CPD-ON
         return null;
       }
       if (base.isSin()) {

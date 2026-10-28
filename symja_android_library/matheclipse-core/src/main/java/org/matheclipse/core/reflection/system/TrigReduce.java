@@ -189,53 +189,41 @@ public class TrigReduce extends AbstractEvaluator {
     }
 
     private IExpr powerCos(IExpr x, int i) {
-      IInteger n = F.ZZ(i);
-      IExpr result = F.NIL;
-      if (n.isEven()) {
-        int mi = i / 2;
-        IInteger m = F.ZZ(mi);
-        // Sum(Binomial(n,k)*Cos((-2*k+n)*x),{k,0,-1+m})+Binomial(n,m)/2
-        IExpr sum =
-            F.sum(k -> F.Times(F.Binomial(n, k), F.Cos(F.Times(F.Plus(F.Times(F.CN2, k), n), x))),
-                0, mi - 1);
-        result = F.Plus(sum, F.Times(F.C1D2, F.Binomial(n, m)));
-      } else {
-        // odd case
-        int mi = (i - 1) / 2;
-        // Sum(Binomial(n,k)*Cos((-2*k+n)*x),{k,0,m})
-        result = F.sum(
-            k -> F.Times(F.Binomial(n, k), F.Cos(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
-
-      }
-      // result/2^(-1+n)
-      IRational inverse = F.C2.powerRational(i - 1).inverse();
-      return fEngine.evaluate(F.Times(inverse, result));
+      return powerCosLike(S.Cos, x, i);
     }
 
     private IExpr powerCosh(IExpr x, int i) {
+      return powerCosLike(S.Cosh, x, i);
+    }
+
+    /**
+     * Reduce <code>head(x)^i</code> for <code>head</code> {@link S#Cos} or {@link S#Cosh}, which
+     * expand with the same binomial sum.
+     */
+    private IExpr powerCosLike(IBuiltInSymbol head, IExpr x, int i) {
       IInteger n = F.ZZ(i);
       IExpr result = F.NIL;
       if (n.isEven()) {
         int mi = i / 2;
         IInteger m = F.ZZ(mi);
-        // Sum(Binomial(n,k)*Cosh((-2*k+n)*x),{k,0,-1+m})+Binomial(n,m)/2
-        IExpr sum =
-            F.sum(k -> F.Times(F.Binomial(n, k), F.Cosh(F.Times(F.Plus(F.Times(F.CN2, k), n), x))),
-                0, mi - 1);
+        // Sum(Binomial(n,k)*head((-2*k+n)*x),{k,0,-1+m})+Binomial(n,m)/2
+        IExpr sum = F.sum(k -> F.Times(F.Binomial(n, k),
+            F.unaryAST1(head, F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi - 1);
         result = F.Plus(sum, F.Times(F.C1D2, F.Binomial(n, m)));
-
-
       } else {
         // odd case
         int mi = (i - 1) / 2;
-        // Sum(Binomial(n,k)*Cosh((-2*k+n)*x),{k,0,m})
-        result =
-            F.sum(k -> F.Times(F.Binomial(n, k), F.Cosh(F.Times(F.Plus(F.Times(F.CN2, k), n), x))),
-                0, mi);
+        // Sum(Binomial(n,k)*head((-2*k+n)*x),{k,0,m})
+        result = F.sum(k -> F.Times(F.Binomial(n, k),
+            F.unaryAST1(head, F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
       }
-      // result/2^(-1+n)
+      return scaleByPowerOfTwo(result, i);
+    }
+
+    /** <code>sum/2^(i-1)</code>, evaluated. */
+    private IExpr scaleByPowerOfTwo(IExpr sum, int i) {
       IRational inverse = F.C2.powerRational(i - 1).inverse();
-      return fEngine.evaluate(F.Times(inverse, result));
+      return fEngine.evaluate(F.Times(inverse, sum));
     }
 
     private IExpr powerSin(IExpr x, int i) {
@@ -256,9 +244,7 @@ public class TrigReduce extends AbstractEvaluator {
         result = F.sum(k -> F.Times(F.Power(-1, F.Plus(F.Negate(k), m)), F.Binomial(n, k),
             F.Sin(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
       }
-      // result/2^(-1+n)
-      IRational inverse = F.C2.powerRational(i - 1).inverse();
-      return fEngine.evaluate(F.Times(inverse, result));
+      return scaleByPowerOfTwo(result, i);
     }
 
     private IExpr powerSinh(IExpr x, int i) {
@@ -279,9 +265,7 @@ public class TrigReduce extends AbstractEvaluator {
         result = F.sum(k -> F.Times(F.Power(-1, k), F.Binomial(n, k),
             F.Sinh(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
       }
-      // result/2^(-1+n)
-      IRational inverse = F.C2.powerRational(i - 1).inverse();
-      return fEngine.evaluate(F.Times(inverse, result));
+      return scaleByPowerOfTwo(result, i);
     }
 
   }

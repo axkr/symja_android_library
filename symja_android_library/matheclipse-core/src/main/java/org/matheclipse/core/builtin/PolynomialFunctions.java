@@ -2328,8 +2328,7 @@ public class PolynomialFunctions {
       }
       Apcomplex z = ((INumber) value).apcomplexValue();
       if (precision < 0) {
-        return z.imag().signum() == 0 ? F.num(z.real().doubleValue())
-            : F.complexNum(z.real().doubleValue(), z.imag().doubleValue());
+        return CarlsonArbitraryPrecision.toNumber(z, z.imag().signum() == 0, false);
       }
       return CarlsonArbitraryPrecision.round(z, digits);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {
@@ -2666,6 +2665,7 @@ public class PolynomialFunctions {
         }
         if (z.greater(F.CN1).isTrue() && n.isRealResult()) {
           return true;
+        // CPD-OFF numeric dispatch and argument checks per polynomial function
         }
       } else if (ast.argSize() == 3) {
         IExpr n = ast.arg1();
@@ -2673,6 +2673,7 @@ public class PolynomialFunctions {
         if (n.isRealResult() && m.isRealResult()) {
           IExpr z = ast.arg3();
           if (z.greater(F.CN1).isTrue() && z.less(F.C1).isTrue()) {
+          // CPD-ON
             return true;
           }
           // TODO add more conditions
@@ -2935,6 +2936,7 @@ public class PolynomialFunctions {
           if (n.isReal() && !n.isInteger()) {
             return true;
           }
+        // CPD-OFF numeric dispatch and argument checks per polynomial function
         }
       } else if (ast.argSize() == 3) {
         IExpr n = ast.arg1();
@@ -2942,6 +2944,7 @@ public class PolynomialFunctions {
         if (n.isRealResult() && m.isRealResult()) {
           IExpr z = ast.arg3();
           if (z.greater(F.CN1).isTrue() && z.less(F.C1).isTrue()) {
+          // CPD-ON
             IExpr temp = m.plus(n);
             if (temp.isNonNegative()) {
               return true;
@@ -3075,6 +3078,7 @@ public class PolynomialFunctions {
         IExpr t = ast.arg3();
         IExpr z = ast.arg4();
         if (t.isNumEqualInteger(F.C3)) {
+          // CPD-OFF numeric dispatch and argument checks per polynomial function
           return legendreQ(l, m, z, 3, engine);
         }
         // The analytical expansion uses Csc(m*Pi), which is ComplexInfinity for integer m.
@@ -3110,6 +3114,7 @@ public class PolynomialFunctions {
         IExpr temp = F.NIL;
         if (ast.isAST2()) {
           z = (IInexactNumber) ast.arg2();
+          // CPD-ON
           if (z.isZero() && isEvenLegendreDegree(n)) {
             // Q(n, 0) is zero for an even n, which the exact path already answers for
             // LegendreQ(2, 0). The arbitrary precision routine does not converge at exactly this
@@ -3377,18 +3382,10 @@ public class PolynomialFunctions {
         IExpr x = arg3;
         IExpr a = F.evalExpandAll(arg1, engine);
         IExpr b = F.evalExpandAll(arg2, engine);
-        ExprPolynomialRing ring = new ExprPolynomialRing(F.list(x));
-        try {
-          // check if a is a polynomial otherwise check ArithmeticException, ClassCastException
-          ring.create(a);
-        } catch (RuntimeException ex) {
-          Errors.rethrowsInterruptException(ex);
-          // Polynomial expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1), engine);
+        if (!polynomialArguments(ast, a, b, x, engine)) {
+          return F.NIL;
         }
         try {
-          // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
-          ring.create(b);
           IExpr resultant = resultant(a, b, x, engine);
           if (resultant.isPresent()) {
             // The subresultant algorithm divides by the coefficients it accumulated on the way, and
@@ -3525,6 +3522,30 @@ public class PolynomialFunctions {
     }
   }
 
+  /**
+   * Test if <code>a</code> and <code>b</code>, the expanded first two arguments of
+   * <code>ast</code>, are polynomials in <code>x</code>. Otherwise print the message
+   * <code>polynomial</code> for the first one which is none.
+   */
+  private static boolean polynomialArguments(IAST ast, IExpr a, IExpr b, IExpr x,
+      EvalEngine engine) {
+    ExprPolynomialRing ring = new ExprPolynomialRing(F.list(x));
+    int position = 1;
+    try {
+      // create() throws ArithmeticException or ClassCastException for a non-polynomial
+      ring.create(a);
+      position = 2;
+      ring.create(b);
+      return true;
+    } catch (RuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      // Polynomial expected at position `1` in `2`.
+      Errors.printMessage(ast.topHead(), "polynomial",
+          F.list(ast.get(position), F.ZZ(position)), engine);
+      return false;
+    }
+  }
+
   private static class Subresultants extends AbstractFunctionOptionEvaluator {
 
     @Override
@@ -3538,22 +3559,8 @@ public class PolynomialFunctions {
       }
       IExpr a = F.evalExpandAll(arg1, engine);
       IExpr b = F.evalExpandAll(arg2, engine);
-      ExprPolynomialRing ring = new ExprPolynomialRing(F.list(x));
-      try {
-        // check if a is a polynomial otherwise check ArithmeticException, ClassCastException
-        ring.create(a);
-      } catch (RuntimeException ex) {
-        Errors.rethrowsInterruptException(ex);
-        // Polynomial expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1), engine);
-      }
-      try {
-        // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
-        ring.create(b);
-      } catch (RuntimeException ex) {
-        Errors.rethrowsInterruptException(ex);
-        // Polynomial expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2), engine);
+      if (!polynomialArguments(ast, a, b, x, engine)) {
+        return F.NIL;
       }
       IExpr modulus = options[0];
       IExpr result = subresultantList(a, b, x, modulus, engine);

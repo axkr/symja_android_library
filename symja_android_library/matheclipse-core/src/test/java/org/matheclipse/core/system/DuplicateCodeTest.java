@@ -48,7 +48,7 @@ import net.sourceforge.pmd.cpd.Match;
 @Tag(TestTags.SLOW)
 public class DuplicateCodeTest {
 
-  private static final int MINIMUM_TOKENS = 100;
+  private static final int MINIMUM_TOKENS = 80;
 
   private static final Path SOURCE_ROOT = Paths.get("src/main/java");
 
@@ -57,11 +57,12 @@ public class DuplicateCodeTest {
   private static final Path BASELINE = Paths.get("src/test/resources/cpd-baseline.txt");
 
   /**
-   * Generated sources: Rubi IntRules, the rules/*Rules classes, the ID/S/J symbol tables and the
-   * element data tables.
+   * Generated sources: Rubi IntRules, the rules/*Rules and rulesets/*Rules classes, the ID/S/J
+   * symbol tables and the element data tables.
    */
   private static final Pattern EXCLUDES = Pattern.compile(
-      "integrate/rubi/.*|reflection/system/rules/.*|expression/(ID|S|J)\\.java"
+      "integrate/rubi/.*|reflection/system/rules/.*|reflection/system/rulesets/.*"
+          + "|expression/(ID|S|J)\\.java"
           + "|data/ElementData[12]\\.java");
 
   @Test

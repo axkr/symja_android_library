@@ -4039,17 +4039,7 @@ public class F extends S {
     }
     ISymbol symbol = new Symbol(name, org.matheclipse.core.expression.Context.DUMMY);
     if (assumptionAST != null) {
-      IExpr temp = PureFunctions.substituteSlot1(assumptionAST, symbol).orElse(assumptionAST);
-      if (temp.isAST()) {
-        EvalEngine engine = EvalEngine.get();
-        IAssumptions assumptions = engine.getAssumptions();
-        if (assumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
-          engine.setAssumptions(assumptions);
-        } else {
-          assumptions.addAssumption(temp);
-        }
-      }
+      addSymbolAssumptions(symbol, assumptionAST, EvalEngine.get());
     }
     return symbol;
   }
@@ -6119,21 +6109,40 @@ public class F extends S {
       IExpr temp = engine.evaluate(function.apply(ZZ(i)));
       if (temp.isNumber()) {
         number = number.times((INumber) temp);
-        if (number instanceof IInteger //
-            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
-        }
+        checkBitLength(number);
       } else {
-        numberOfLeaves += temp.leafCount() + 1;
-        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-          ASTElementLimitExceeded.throwIt(numberOfLeaves);
-        }
+        numberOfLeaves = checkLeafCount(numberOfLeaves, temp);
         result.append(temp);
       }
     }
     // replace placeholder with evaluated number
     result.set(1, number);
     return result.oneIdentity0();
+  }
+
+  /**
+   * Throws {@link BigIntegerLimitExceeded} if <code>number</code> is an integer with more than
+   * <code>Config.MAX_BIT_LENGTH / 100</code> bits.
+   */
+  private static void checkBitLength(INumber number) {
+    if (number instanceof IInteger //
+        && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+      BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+    }
+  }
+
+  /**
+   * Adds the leaf count of <code>temp</code> (plus one) to <code>numberOfLeaves</code> and throws
+   * {@link ASTElementLimitExceeded} if the sum reaches <code>Config.MAX_AST_SIZE / 2</code>.
+   *
+   * @return the new number of leaves
+   */
+  private static long checkLeafCount(long numberOfLeaves, IExpr temp) {
+    numberOfLeaves += temp.leafCount() + 1;
+    if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+      ASTElementLimitExceeded.throwIt(numberOfLeaves);
+    }
+    return numberOfLeaves;
   }
 
   public static IAST Inset(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
@@ -6185,10 +6194,7 @@ public class F extends S {
           BigIntegerLimitExceeded.throwIt(((IInteger) number).bitLength());
         }
       } else {
-        numberOfLeaves += temp.leafCount() + 1;
-        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-          ASTElementLimitExceeded.throwIt(numberOfLeaves);
-        }
+        numberOfLeaves = checkLeafCount(numberOfLeaves, temp);
         if (expand && temp.isPlusTimesPower()) {
           result.append(F.evalExpand(temp));
         } else {
@@ -6222,15 +6228,9 @@ public class F extends S {
       IExpr temp = engine.evaluate(function.apply(i));
       if (temp.isNumber()) {
         number = number.plus((INumber) temp);
-        if (number instanceof IInteger //
-            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
-        }
+        checkBitLength(number);
       } else {
-        numberOfLeaves += temp.leafCount() + 1;
-        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-          ASTElementLimitExceeded.throwIt(numberOfLeaves);
-        }
+        numberOfLeaves = checkLeafCount(numberOfLeaves, temp);
         result.append(temp);
       }
     }
@@ -6274,10 +6274,7 @@ public class F extends S {
       IExpr temp = engine.evaluate(function.apply(i));
       if (temp.isNumber()) {
         numberPlaceholder = numberPlaceholder.plus((INumber) temp);
-        if (numberPlaceholder instanceof IInteger //
-            && ((IInteger) numberPlaceholder).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
-        }
+        checkBitLength(numberPlaceholder);
       } else {
         numberOfLeaves += temp.leafCount() + 1;
         if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
@@ -9387,6 +9384,7 @@ public class F extends S {
     return new B2.Plus(a1, a2);
   }
 
+  // CPD-OFF Plus and Times factory twins on the hot construction path
   private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2,
       final IExpr a3) {
     final boolean test1 = t.test(a1);
@@ -9416,6 +9414,7 @@ public class F extends S {
       return result;
     }
     IASTMutable result = new B3.Plus(a1, a2, a3);
+    // CPD-ON
     EvalAttributes.sort(result);
     return result;
   }
@@ -11471,6 +11470,24 @@ public class F extends S {
   }
 
   /**
+   * Adds the assumptions <code>assumptionAST</code>, with <code>#1</code> replaced by
+   * <code>symbol</code>, to the global assumptions of the <code>engine</code>.
+   */
+  private static void addSymbolAssumptions(ISymbol symbol, IAST assumptionAST,
+      EvalEngine engine) {
+    IExpr temp = PureFunctions.substituteSlot1(assumptionAST, symbol).orElse(assumptionAST);
+    if (temp.isAST()) {
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions == null) {
+        assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
+        engine.setAssumptions(assumptions);
+      } else {
+        assumptions.addAssumption(temp);
+      }
+    }
+  }
+
+  /**
    * Get or create a user defined symbol which is retrieved from the evaluation engines context
    * path. Additional set assumptions to the engines global assumptions. Use <code>#1</code> or
    * {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
@@ -11485,16 +11502,7 @@ public class F extends S {
     ISymbol symbol =
         engine.getContextPath().symbol(symbolName, engine.getContext(), engine.isRelaxedSyntax());
     if (assumptionAST != null) {
-      IExpr temp = PureFunctions.substituteSlot1(assumptionAST, symbol).orElse(assumptionAST);
-      if (temp.isAST()) {
-        IAssumptions assumptions = engine.getAssumptions();
-        if (assumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
-          engine.setAssumptions(assumptions);
-        } else {
-          assumptions.addAssumption(temp);
-        }
-      }
+      addSymbolAssumptions(symbol, assumptionAST, engine);
     }
     return symbol;
   }
@@ -11527,16 +11535,7 @@ public class F extends S {
     // }
     symbol = ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
     if (assumptionAST != null) {
-      IExpr temp = PureFunctions.substituteSlot1(assumptionAST, symbol).orElse(assumptionAST);
-      if (temp.isAST()) {
-        IAssumptions assumptions = engine.getAssumptions();
-        if (assumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
-          engine.setAssumptions(assumptions);
-        } else {
-          assumptions.addAssumption(temp);
-        }
-      }
+      addSymbolAssumptions(symbol, assumptionAST, engine);
     }
     return symbol;
   }
@@ -12114,6 +12113,7 @@ public class F extends S {
     return new B2.Times(a1, a2);
   }
 
+  // CPD-OFF Plus and Times factory twins on the hot construction path
   private static IASTMutable timesOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2,
       final IExpr a3) {
     final boolean test1 = t.test(a1);
@@ -12143,6 +12143,7 @@ public class F extends S {
       return result;
     }
     IASTMutable result = new B3.Times(a1, a2, a3);
+    // CPD-ON
     EvalAttributes.sort(result);
     return result;
   }

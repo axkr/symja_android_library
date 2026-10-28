@@ -19,7 +19,18 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
   public ColorDataFunction() {}
 
   public static IAST applyGradient(ColorDataGradients gradientDetails, IExpr param) {
-    IExpr result = gradientDetails.apply(param);
+    return rgbColorFrom255(gradientDetails.apply(param));
+  }
+
+  /**
+   * Convert the 4 components <code>{r, g, b, a}</code> in the range <code>[0, 255]</code> of a
+   * gradient value into an unevaluated <code>RGBColor(r/255, g/255, b/255, a/255)</code>.
+   *
+   * @param result the value of a color data gradient
+   * @return {@link F#NIL} if <code>result</code> isn't an AST with 4 arguments
+   */
+  private static IAST rgbColorFrom255(IExpr result) {
+    // Check if result is an AST with 4 arguments (Head + 4 args = size 5)
     if (result.isAST() && result.size() == 5) {
       return F.RGBColor(F.Divide(result.getAt(1), F.num(255)),
           F.Divide(result.getAt(2), F.num(255)), F.Divide(result.getAt(3), F.num(255)),
@@ -29,14 +40,9 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
   }
 
   public static int applyGradientToRGB(ColorDataGradients gradientDetails, IExpr param) {
-    IExpr result = gradientDetails.apply(param);
-
-    // Check if result is an AST with 4 arguments (Head + 4 args = size 5)
-    if (result.isAST() && result.size() == 5) {
-      IExpr rgbColor = EvalEngine.get()
-          .evaluate(F.RGBColor(F.Divide(result.getAt(1), F.num(255)),
-              F.Divide(result.getAt(2), F.num(255)), F.Divide(result.getAt(3), F.num(255)),
-              F.Divide(result.getAt(4), F.num(255))));
+    IAST rgbColorFrom255 = rgbColorFrom255(gradientDetails.apply(param));
+    if (rgbColorFrom255.isPresent()) {
+      IExpr rgbColor = EvalEngine.get().evaluate(rgbColorFrom255);
 
       if (rgbColor.isAST(S.RGBColor)) {
         IAST ast = (IAST) rgbColor;

@@ -17,7 +17,6 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.InverseFunctionExpander;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.expression.S;
@@ -1105,41 +1104,17 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
   private static IExpr invertKernel(IExpr kernel, IExpr root, Predicate<IExpr> predicate,
       IExpr variable, boolean multipleValues, EvalEngine engine) {
     if (multipleValues && kernel.isAST1() && kernel.first().equals(variable)
-        && kernel.head().isBuiltInSymbol()
-        && isPeriodicFunction(((IBuiltInSymbol) kernel.head()).ordinal())) {
-      IExpr periodic =
-          InverseFunctionExpander.expandPeriodicInverse((IBuiltInSymbol) kernel.head(), root);
+        && kernel.head().isBuiltInSymbol()) {
+      IBuiltInSymbol head = (IBuiltInSymbol) kernel.head();
+      IExpr periodic = InverseFunctionExpander.isPeriodicFunction(head.ordinal())
+          ? InverseFunctionExpander.expandPeriodicInverse(head, root)
+          : F.NIL;
       if (periodic.isPresent()) {
         return periodic;
       }
     }
     return extractVariableRecursive(kernel, root, predicate, variable, multipleValues, engine);
   }
-
-  /**
-   * Whether the function head with this id is periodic, so that the equation
-   * <code>head(variable) == value</code> has infinitely many solutions.
-   */
-  private static boolean isPeriodicFunction(int headID) {
-    switch (headID) {
-      case ID.Cos:
-      case ID.Cosh:
-      case ID.Cot:
-      case ID.Coth:
-      case ID.Csc:
-      case ID.Csch:
-      case ID.Sec:
-      case ID.Sech:
-      case ID.Sin:
-      case ID.Sinh:
-      case ID.Tan:
-      case ID.Tanh:
-        return true;
-      default:
-        return false;
-    }
-  }
-
 
   /**
    * Add the inequations of the input, which are no equations to eliminate from, to the result.

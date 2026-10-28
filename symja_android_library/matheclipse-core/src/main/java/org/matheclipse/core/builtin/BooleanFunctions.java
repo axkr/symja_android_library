@@ -1991,45 +1991,60 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * Evaluate the arguments of a held quantifier <code>head(x, expr)</code> or <code>head(x, expr,
+   * cond)</code>. In the two argument form the quantifier is dropped if <code>expr</code> is free
+   * of the variables.
+   *
+   * @param ast the quantifier
+   * @param head {@link S#Exists} or {@link S#ForAll}
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if nothing was evaluated
+   */
+  private static IExpr evaluateQuantifier(final IAST ast, IBuiltInSymbol head,
+      EvalEngine engine) {
+    boolean evaled = false;
+    IExpr x = engine.evaluateNIL(ast.arg1());
+    if (x.isPresent()) {
+      evaled = true;
+    } else {
+      x = ast.arg1();
+    }
+    IAST vars = x.makeList();
+
+    IExpr expr = engine.evaluateNIL(ast.arg2());
+    if (expr.isPresent()) {
+      evaled = true;
+    } else {
+      expr = ast.arg2();
+    }
+
+    if (ast.isAST3()) {
+      IExpr arg3 = engine.evaluateNIL(ast.arg3());
+      if (arg3.isPresent()) {
+        evaled = true;
+      } else {
+        arg3 = ast.arg3();
+      }
+      if (evaled) {
+        return F.ternaryAST3(head, x, expr, arg3);
+      }
+      return F.NIL;
+    }
+
+    if (expr.isFree(v -> vars.contains(v), true)) {
+      return expr;
+    }
+    if (evaled) {
+      return F.binaryAST2(head, x, expr);
+    }
+    return F.NIL;
+  }
+
   private static final class Exists extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      boolean evaled = false;
-      IExpr arg1 = engine.evaluateNIL(ast.arg1());
-      if (arg1.isPresent()) {
-        evaled = true;
-      } else {
-        arg1 = ast.arg1();
-      }
-      IAST vars = arg1.makeList();
-
-      IExpr expr = engine.evaluateNIL(ast.arg2());
-      if (expr.isPresent()) {
-        evaled = true;
-      } else {
-        expr = ast.arg2();
-      }
-
-      if (ast.isAST3()) {
-        IExpr arg3 = engine.evaluateNIL(ast.arg3());
-        if (arg3.isPresent()) {
-          evaled = true;
-        } else {
-          arg3 = ast.arg3();
-        }
-        if (evaled) {
-          return F.Exists(vars, expr, arg3);
-        }
-        return F.NIL;
-      }
-
-      if (expr.isFree(x -> vars.contains(x), true)) {
-        return expr;
-      }
-      if (evaled) {
-        return F.Exists(vars, expr);
-      }
-      return F.NIL;
+      return evaluateQuantifier(ast, S.Exists, engine);
     }
 
     @Override
@@ -2046,42 +2061,7 @@ public final class BooleanFunctions {
   private static final class ForAll extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      boolean evaled = false;
-      IExpr x = engine.evaluateNIL(ast.arg1());
-      if (x.isPresent()) {
-        evaled = true;
-      } else {
-        x = ast.arg1();
-      }
-
-      IExpr expr = engine.evaluateNIL(ast.arg2());
-      if (expr.isPresent()) {
-        evaled = true;
-      } else {
-        expr = ast.arg2();
-      }
-
-      if (ast.isAST3()) {
-        IExpr arg3 = engine.evaluateNIL(ast.arg3());
-        if (arg3.isPresent()) {
-          evaled = true;
-        } else {
-          arg3 = ast.arg3();
-        }
-        if (evaled) {
-          return F.ForAll(x, expr, arg3);
-        }
-        return F.NIL;
-      }
-
-      IAST vars = x.makeList();
-      if (expr.isFree(v -> vars.contains(v), true)) {
-        return expr;
-      }
-      if (evaled) {
-        return F.ForAll(x, expr);
-      }
-      return F.NIL;
+      return evaluateQuantifier(ast, S.ForAll, engine);
     }
 
     @Override
@@ -2097,6 +2077,7 @@ public final class BooleanFunctions {
 
   private static class Greater extends AbstractCoreFunctionEvaluator
       implements ITernaryComparator, IComparatorFunction {
+    // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
     public static final Greater CONST = new Greater();
 
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
@@ -2110,6 +2091,7 @@ public final class BooleanFunctions {
         }
       } else if (arg2.isZero()) {
         if (arg1.isPositiveResult()) {
+        // CPD-ON
           return S.True;
         }
         if (arg1.isNegativeResult()) {
@@ -2624,6 +2606,7 @@ public final class BooleanFunctions {
       return true;
     }
 
+    // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
     public static final GreaterEqual CONST = new GreaterEqual();
 
     @Override
@@ -2637,6 +2620,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       } else if (arg2.isZero()) {
+      // CPD-ON
         if (arg1.isNonNegativeResult()) {
           return S.True;
         }
@@ -2665,6 +2649,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       }
+      // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
       return compareDifference(arg1, arg2, false);
     }
 
@@ -2693,6 +2678,7 @@ public final class BooleanFunctions {
         IExpr comp = DateTimeFunctions.compareDateObject(a0, a1);
         if (comp.isPresent()) {
           return comp.toIntDefault() >= 0 ? IExpr.COMPARE_TERNARY.TRUE
+          // CPD-ON
               : IExpr.COMPARE_TERNARY.FALSE;
         }
       }
@@ -2879,6 +2865,7 @@ public final class BooleanFunctions {
 
   private static final class Less extends Greater {
     @Override
+    // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
     protected boolean isLessRelation() {
       return true;
     }
@@ -2886,7 +2873,6 @@ public final class BooleanFunctions {
     @Override
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
-        // CPD-OFF strict and non-strict comparisons decide assumptions differently
         if (arg1.isPositiveResult()) {
           return S.False;
         }
@@ -2906,7 +2892,6 @@ public final class BooleanFunctions {
       IReal a2 = arg2.evalReal();
       if (a2 != null && !arg1.hasComplexNumber()) {
         if (AbstractAssumptions.assumeLessThan(arg1, arg2)) {
-        // CPD-ON
           return S.True;
         }
         if (AbstractAssumptions.assumeGreaterThan(arg1, arg2)) {
@@ -2916,6 +2901,7 @@ public final class BooleanFunctions {
       IReal a1 = arg1.evalReal();
       if (a1 != null && !arg2.hasComplexNumber()) {
         if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)) {
+        // CPD-ON
           return S.True;
         }
         if (AbstractAssumptions.assumeLessThan(arg2, arg1)) {
@@ -2949,6 +2935,7 @@ public final class BooleanFunctions {
     }
 
     @Override
+    // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
     protected boolean orEqual() {
       return true;
     }
@@ -2956,7 +2943,6 @@ public final class BooleanFunctions {
     @Override
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
-        // CPD-OFF strict and non-strict comparisons decide assumptions differently
         if (arg1.isNonNegativeResult()) {
           return S.False;
         }
@@ -2976,7 +2962,6 @@ public final class BooleanFunctions {
       IReal a2 = arg2.evalReal();
       if (a2 != null && !arg1.hasComplexNumber()) {
         if (AbstractAssumptions.assumeLessEqual(arg1, arg2)) {
-        // CPD-ON
           return S.True;
         }
         if (AbstractAssumptions.assumeGreaterThan(arg1, arg2)) {
@@ -2986,6 +2971,7 @@ public final class BooleanFunctions {
       IReal a1 = arg1.evalReal();
       if (a1 != null && !arg2.hasComplexNumber()) {
         if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)
+        // CPD-ON
             || AbstractAssumptions.assumeGreaterEqual(arg2, arg1)) {
           return S.True;
         }
@@ -2994,6 +2980,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       }
+      // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
       return compareDifference(arg2, arg1, false);
     }
 
@@ -3022,6 +3009,7 @@ public final class BooleanFunctions {
         IExpr comp = DateTimeFunctions.compareDateObject(a0, a1);
         if (comp.isPresent()) {
           return comp.toIntDefault() <= 0 ? IExpr.COMPARE_TERNARY.TRUE
+          // CPD-ON
               : IExpr.COMPARE_TERNARY.FALSE;
         }
       }
@@ -3073,6 +3061,7 @@ public final class BooleanFunctions {
   }
 
   private static class Max extends Min {
+    // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
     private final static ISymbol MAX_DUMMY_SYMBOL = F.Dummy("$Max");
 
     @Override
@@ -3088,6 +3077,7 @@ public final class BooleanFunctions {
       if (dummyEvaled.isAST(getDummySymbol())) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Max);
+        // CPD-ON
         ast = copy;
         if (ast.isAST0()) {
           return F.CNInfinity;
@@ -3211,6 +3201,7 @@ public final class BooleanFunctions {
   }
 
   private static class Min extends AbstractCoreFunctionEvaluator {
+    // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
     private final static ISymbol MIN_DUMMY_SYMBOL = F.Dummy("$Min");
 
     @Override
@@ -3226,6 +3217,7 @@ public final class BooleanFunctions {
       if (dummyEvaled.isAST(getDummySymbol())) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Min);
+        // CPD-ON
         ast = copy;
         if (ast.isAST0()) {
           return F.CInfinity;
@@ -4329,62 +4321,76 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * Reduce <code>Xor(...)</code> or <code>Xnor(...)</code>: every <code>True</code> flips the
+   * parity, <code>False</code> is dropped and identical adjacent arguments cancel (the functions
+   * are <code>Orderless</code>).
+   *
+   * @param ast the <code>Xor</code> or <code>Xnor</code> function
+   * @param negated <code>true</code> for <code>Xnor</code>
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if nothing could be reduced
+   */
+  private static IExpr parityReduce(final IAST ast, boolean negated, EvalEngine engine) {
+    if (ast.isEmpty()) {
+      return negated ? S.True : S.False;
+    }
+    if (ast.isAST1()) {
+      return negated ? S.Not.of(engine, ast.arg1()) : ast.arg1();
+    }
+
+    int size = ast.size();
+    IASTAppendable reduced = F.ast(negated ? S.Xnor : S.Xor, ast.argSize());
+    boolean evaled = false;
+    boolean invert = false;
+
+    IExpr last = null;
+    for (int i = 1; i < size; i++) {
+      final IExpr arg = ast.get(i);
+      if (arg.isTrue()) {
+        invert = !invert;
+        evaled = true;
+      } else if (arg.isFalse()) {
+        evaled = true; // False does not alter the parity
+      } else {
+        // Cancel identical adjacent arguments (works due to ORDERLESS attribute)
+        if (last != null && arg.equals(last)) {
+          reduced.remove(reduced.size() - 1);
+          if (reduced.size() > 1) {
+            last = reduced.get(reduced.size() - 1);
+          } else {
+            last = null;
+          }
+          evaled = true;
+        } else {
+          reduced.append(arg);
+          last = arg;
+        }
+      }
+    }
+
+    if (evaled) {
+      IExpr result;
+      if (reduced.isAST0()) {
+        result = negated ? S.True : S.False;
+      } else if (reduced.isAST1()) {
+        result = negated ? S.Not.of(engine, reduced.arg1()) : reduced.arg1();
+      } else {
+        result = reduced;
+      }
+
+      if (invert) {
+        return S.Not.of(engine, result);
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
   private static class Xnor extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isEmpty()) {
-        return S.True;
-      }
-      if (ast.isAST1()) {
-        return S.Not.of(engine, ast.arg1());
-      }
-
-      int size = ast.size();
-      IASTAppendable xnor = F.ast(S.Xnor, ast.argSize());
-      boolean evaled = false;
-      boolean invert = false;
-
-      IExpr last = null;
-      for (int i = 1; i < size; i++) {
-        final IExpr arg = ast.get(i);
-        if (arg.isTrue()) {
-          invert = !invert;
-          evaled = true;
-        } else if (arg.isFalse()) {
-          evaled = true; // False does not alter parity for Xnor
-        } else {
-          // Cancel identical adjacent arguments (works due to ORDERLESS attribute)
-          if (last != null && arg.equals(last)) {
-            xnor.remove(xnor.size() - 1);
-            if (xnor.size() > 1) {
-              last = xnor.get(xnor.size() - 1);
-            } else {
-              last = null;
-            }
-            evaled = true;
-          } else {
-            xnor.append(arg);
-            last = arg;
-          }
-        }
-      }
-
-      if (evaled) {
-        IExpr result;
-        if (xnor.isAST0()) {
-          result = S.True;
-        } else if (xnor.isAST1()) {
-          result = S.Not.of(engine, xnor.arg1());
-        } else {
-          result = xnor;
-        }
-
-        if (invert) {
-          return S.Not.of(engine, result);
-        }
-        return result;
-      }
-      return F.NIL;
+      return parityReduce(ast, true, engine);
     }
 
     @Override
@@ -4399,59 +4405,7 @@ public final class BooleanFunctions {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
-      if (ast.isEmpty()) {
-        return S.False;
-      }
-      if (ast.isAST1()) {
-        return ast.arg1();
-      }
-
-      int size = ast.size();
-      IASTAppendable xor = F.ast(S.Xor, ast.argSize());
-      boolean evaled = false;
-      boolean invert = false;
-
-      IExpr last = null;
-      for (int i = 1; i < size; i++) {
-        final IExpr arg = ast.get(i);
-        if (arg.isTrue()) {
-          invert = !invert;
-          evaled = true;
-        } else if (arg.isFalse()) {
-          evaled = true;
-        } else {
-          // Cancel identical adjacent arguments (works due to ORDERLESS attribute)
-          if (last != null && arg.equals(last)) {
-            xor.remove(xor.size() - 1);
-            if (xor.size() > 1) {
-              last = xor.get(xor.size() - 1);
-            } else {
-              last = null;
-            }
-            evaled = true;
-          } else {
-            xor.append(arg);
-            last = arg;
-          }
-        }
-      }
-
-      if (evaled) {
-        IExpr result;
-        if (xor.isAST0()) {
-          result = S.False;
-        } else if (xor.isAST1()) {
-          result = xor.arg1();
-        } else {
-          result = xor;
-        }
-
-        if (invert) {
-          return S.Not.of(engine, result);
-        }
-        return result;
-      }
-      return F.NIL;
+      return parityReduce(ast, false, engine);
     }
 
     @Override

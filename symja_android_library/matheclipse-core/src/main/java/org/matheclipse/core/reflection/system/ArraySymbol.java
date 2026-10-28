@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class ArraySymbol extends AbstractEvaluator {
 
+  // CPD-OFF per-head argument validation with different rank rules
   public ArraySymbol() {}
 
   @Override
@@ -48,6 +49,7 @@ public class ArraySymbol extends AbstractEvaluator {
     if (!dimensions.isList()) {
       if (!SymbolicArrayUtil.isValidDimension(dimensions)) {
         return Errors.printMessage(S.ArraySymbol, "dimss", F.List(dimensions, S.ArraySymbol), engine);
+        // CPD-ON
       }
       // ArraySymbol(a, m) is a vector of length m
       dimensions = F.list(dimensions);

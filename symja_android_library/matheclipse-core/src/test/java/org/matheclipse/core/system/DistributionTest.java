@@ -17,6 +17,18 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPoissonDistributionNonPositiveRate() {
+    check("Mean(PoissonDistribution(-7/2))", //
+        "Mean(PoissonDistribution(-7/2))");
+    check("Variance(PoissonDistribution(0))", //
+        "Variance(PoissonDistribution(0))");
+    check("CDF(PoissonDistribution(-2), 3)", //
+        "CDF(PoissonDistribution(-2),3)");
+    check("{Mean(PoissonDistribution(5/3)), Skewness(PoissonDistribution(9))}", //
+        "{5/3,1/3}");
+  }
+
+  @Test
   public void testBernoulliProcess() {
     check("BernoulliProcess(p)[t]", //
         "BernoulliDistribution(p)");

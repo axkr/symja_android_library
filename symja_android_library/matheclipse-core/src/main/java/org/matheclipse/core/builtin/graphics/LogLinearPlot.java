@@ -22,8 +22,17 @@ public class LogLinearPlot extends Plot {
   protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions,
       IAST plotAST) {
     graphicsOptions.addPadding();
-    graphicsOptions.addOption(F.Rule(S.$Scaling, F.List(F.stringx("Log"), S.None)));
+    graphicsOptions.addOption(F.Rule(S.$Scaling, F.List(F.stringx("Log"), yScaling())));
     return super.createGraphicsFunction(graphicsPrimitives, graphicsOptions, plotAST);
+  }
+
+  /**
+   * The scaling of the y-axis; the x-axis is always scaled logarithmically.
+   *
+   * @return {@link S#None} for a linear y-axis
+   */
+  protected IExpr yScaling() {
+    return S.None;
   }
 
   @Override

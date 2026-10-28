@@ -146,6 +146,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   }
 
   private static boolean arrayDoubleRecursive(IAST nestedListsOfValues, int level,
+      // CPD-OFF primitive-array type specialisation
       double[] doubleArr, int[] index) throws RangeException, TypeException {
     level--;
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
@@ -158,6 +159,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (Double.isNaN(value) && !arg.isReal()) {
           return false;
         }
+        // CPD-ON
         doubleArr[index[0]++] = value;
       } else {
         if (!arg.isList() || !arrayDoubleRecursive((IAST) arg, level, doubleArr, index)) {
@@ -168,6 +170,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
+  // CPD-OFF primitive-array type specialisation
   private static boolean arrayFloatRecursive(IAST nestedListsOfValues, int level, float[] floatArr,
       int[] index) throws RangeException, TypeException {
     level--;
@@ -180,6 +183,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         double value = arg.evalfNaN();
         if (Double.isNaN(value) && !arg.isReal()) {
           return false;
+          // CPD-ON
         }
         floatArr[index[0]++] = (float) value;
       } else {
@@ -208,6 +212,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
+  // CPD-OFF primitive-array type specialisation
   private static boolean arrayShortRecursive(IAST nestedListsOfValues, int level, short[] shortArr,
       int[] index) throws RangeException, TypeException {
     level--;
@@ -218,6 +223,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
           throw new TypeException("Not a valid Integers type");
         }
         int value = ((IReal) arg).toInt();
+        // CPD-ON
         if (value < (Short.MIN_VALUE) || value > Short.MAX_VALUE) {
           throw new RangeException("Value " + value + " out of Integer16 range");
         }
@@ -322,6 +328,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return (short) value;
   }
 
+  // CPD-OFF primitive-array type specialisation
   private static boolean arrayUnsignedShortRecursive(IAST nestedListsOfValues, int level,
       short[] shortArr, int[] index) throws RangeException, TypeException {
     level--;
@@ -332,6 +339,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
           throw new TypeException("Not a valid Integers type");
         }
         int value = ((IReal) arg).toInt();
+        // CPD-ON
         shortArr[index[0]++] = checkedCastUnsignedShort(value);
       } else {
         if (!arg.isList() || !arrayUnsignedShortRecursive((IAST) arg, level, shortArr, index)) {

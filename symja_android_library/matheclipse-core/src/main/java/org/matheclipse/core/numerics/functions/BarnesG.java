@@ -302,13 +302,7 @@ public final class BarnesG {
    * of <code>G</code>, where its logarithm has a branch point.
    */
   public static boolean isSupportedLogG(Complex z) {
-    if (z == null || Double.isNaN(z.getReal()) || Double.isNaN(z.getImaginary())) {
-      return false;
-    }
-    if (z.getImaginary() == 0.0 && z.getReal() <= 0.0 && Math.rint(z.getReal()) == z.getReal()) {
-      return false;
-    }
-    return z.norm() <= COMPLEX_MAX_NORM;
+    return ComplexGamma.isRegular(z, COMPLEX_MAX_NORM);
   }
 
   /** Whether {@link #barnesG(Complex)} is trusted here. */

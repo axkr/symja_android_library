@@ -192,6 +192,17 @@ public class ManipulateSpecTest {
   }
 
   @Test
+  public void testTrackedSymbolsAutomaticTracksEverything() {
+    ManipulateSpec spec =
+        parse("Manipulate(c*y, {c, 2, 4}, {y, 0, 1}, TrackedSymbols :> Automatic)");
+    assertNotNull(spec);
+    assertNull(spec.getTrackedSymbols());
+    spec = parse("Manipulate(c*y, {c, 2, 4}, TrackedSymbols :> c)");
+    assertNotNull(spec);
+    assertEquals(List.of("c"), spec.getTrackedSymbols());
+  }
+
+  @Test
   public void testAppearanceNone() {
     ManipulateSpec spec = parse("Manipulate(a, {a, 0, 1}, Appearance -> None)");
     assertNotNull(spec);

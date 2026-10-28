@@ -150,6 +150,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator
     return F.NIL;
   }
 
+  // CPD-OFF default hooks of two parallel evaluator base classes
   public IExpr e2ApcomplexArg(final ApcomplexNum c0, final ApcomplexNum c1) {
     return F.NIL;
   }
@@ -179,6 +180,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator
   }
 
   public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
+  // CPD-ON
     return F.NIL;
   }
 

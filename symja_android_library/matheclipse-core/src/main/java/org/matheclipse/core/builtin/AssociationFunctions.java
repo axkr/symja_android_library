@@ -986,38 +986,7 @@ public class AssociationFunctions {
       if (onRows.isPresent()) {
         return onRows;
       }
-      IExpr arg1 = ast.arg1();
-      final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
-      if (arg1.isAssociation()) {
-        IASTMutable list = ((IAssociation) arg1).keys();
-        return mapHeadIfPresent(list, head);
-      } else if (arg1.isRuleAST()) {
-        if (head.isPresent()) {
-          return F.unaryAST1(head, arg1.first());
-        }
-        return arg1.first();
-      } else if (arg1.isList()) {
-        if (arg1.isListOfRules(true)) {
-          IAST listOfRules = (IAST) arg1;
-          IASTAppendable list = F.ast(S.List, listOfRules.argSize());
-          for (int i = 1; i < listOfRules.size(); i++) {
-            final IExpr rule = listOfRules.get(i);
-            if (rule.isRuleAST()) {
-              list.append(rule.first());
-            } else if (rule.isEmptyList()) {
-              list.append(rule);
-            } else {
-              // The argument `1` is not a vaild Association or list of rules.
-              throw new ArgumentTypeException("invrl", F.list(rule));
-            }
-          }
-          return mapHeadIfPresent(list, head);
-        }
-
-        // thread over Lists in first argument
-        return arg1.mapThread(ast.setAtCopy(1, F.Slot1), 1);
-      }
-      return F.NIL;
+      return keysOrValues(ast, true);
     }
 
     @Override
@@ -1906,34 +1875,7 @@ public class AssociationFunctions {
       if (onRows.isPresent()) {
         return onRows;
       }
-      IExpr arg1 = ast.arg1();
-      final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
-      if (arg1.isAssociation()) {
-        IASTMutable list = ((IAssociation) arg1).values();
-        return mapHeadIfPresent(list, head);
-      } else if (arg1.isRuleAST()) {
-        if (head.isPresent()) {
-          return F.unaryAST1(head, arg1.second());
-        }
-        return arg1.second();
-      } else if (arg1.isList()) {
-        if (arg1.isListOfRules(true)) {
-          IAST listOfRules = (IAST) arg1;
-          IASTAppendable list = F.mapList(listOfRules, rule -> {
-            if (rule.isRuleAST()) {
-              return rule.second();
-            } else if (rule.isEmptyList()) {
-              return rule;
-            }
-            return F.NIL;
-          });
-          return mapHeadIfPresent(list, head);
-        }
-
-        // thread over Lists in first argument
-        return arg1.mapThread(ast.setAtCopy(1, F.Slot1), 1);
-      }
-      return F.NIL;
+      return keysOrValues(ast, false);
     }
 
     @Override
@@ -2002,6 +1944,51 @@ public class AssociationFunctions {
    * @param head
    * @return
    */
+  /**
+   * The common part of <code>Keys</code> and <code>Values</code> after the dataset case: the keys
+   * (or values) of an association, a rule or a list of rules, threaded over other lists.
+   *
+   * @param ast <code>Keys(expr)</code>, <code>Keys(expr, head)</code> or the <code>Values</code>
+   *        variants
+   * @param keys <code>true</code> for the keys, <code>false</code> for the values
+   * @return {@link F#NIL} if the first argument has no keys or values
+   */
+  private static IExpr keysOrValues(final IAST ast, boolean keys) {
+    IExpr arg1 = ast.arg1();
+    final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
+    if (arg1.isAssociation()) {
+      IASTMutable list = keys ? ((IAssociation) arg1).keys() : ((IAssociation) arg1).values();
+      return mapHeadIfPresent(list, head);
+    } else if (arg1.isRuleAST()) {
+      IExpr part = keys ? arg1.first() : arg1.second();
+      if (head.isPresent()) {
+        return F.unaryAST1(head, part);
+      }
+      return part;
+    } else if (arg1.isList()) {
+      if (arg1.isListOfRules(true)) {
+        IAST listOfRules = (IAST) arg1;
+        IASTAppendable list = F.ast(S.List, listOfRules.argSize());
+        for (int i = 1; i < listOfRules.size(); i++) {
+          final IExpr rule = listOfRules.get(i);
+          if (rule.isRuleAST()) {
+            list.append(keys ? rule.first() : rule.second());
+          } else if (rule.isEmptyList()) {
+            list.append(rule);
+          } else {
+            // The argument `1` is not a vaild Association or list of rules.
+            throw new ArgumentTypeException("invrl", F.list(rule));
+          }
+        }
+        return mapHeadIfPresent(list, head);
+      }
+
+      // thread over Lists in first argument
+      return arg1.mapThread(ast.setAtCopy(1, F.Slot1), 1);
+    }
+    return F.NIL;
+  }
+
   private static IExpr mapHeadIfPresent(IASTMutable list, final IExpr head) {
     if (head.isPresent()) {
       return list.mapThread(x -> F.unaryAST1(head, x));

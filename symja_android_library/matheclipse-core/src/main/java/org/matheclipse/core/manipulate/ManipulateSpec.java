@@ -95,20 +95,11 @@ public class ManipulateSpec {
    */
   public List<String> getTrackedSymbols() {
     IExpr tracked = getOption(S.TrackedSymbols);
-    if (!tracked.isPresent() || tracked == S.All || tracked == S.True) {
+    if (Dynamics.tracksAll(tracked)) {
       return null;
     }
     List<String> names = new ArrayList<String>();
-    if (tracked.isList()) {
-      IAST list = (IAST) tracked;
-      for (int i = 1; i < list.size(); i++) {
-        if (list.get(i).isSymbol()) {
-          names.add(((ISymbol) list.get(i)).getSymbolName());
-        }
-      }
-    } else if (tracked.isSymbol()) {
-      names.add(((ISymbol) tracked).getSymbolName());
-    }
+    Dynamics.addSymbolNames(tracked, names);
     return names;
   }
 

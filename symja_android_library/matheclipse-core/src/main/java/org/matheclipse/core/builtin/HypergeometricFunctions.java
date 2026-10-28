@@ -446,11 +446,7 @@ public class HypergeometricFunctions {
         }
         if (v.isOne()) {
           // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0007/
-          // -ExpIntegralEi(-z)+1/2*(-Log(-1/z)+Log(-z))-Log(z)
-          return F.Plus(F.Negate(F.ExpIntegralEi(F.Negate(z))),
-              F.Times(F.C1D2,
-                  F.Plus(F.Negate(F.Log(F.Negate(F.Power(z, F.CN1)))), F.Log(F.Negate(z)))),
-              F.Negate(F.Log(z)));
+          return expIntegralE1Expanded(z);
         }
         if (v.isMinusOne()) {
           // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0011/
@@ -567,6 +563,7 @@ public class HypergeometricFunctions {
           return F.Times(F.CI, S.Pi);
         }
         if (z.isDirectedInfinity(F.CNI)) {
+          // CPD-OFF special-value tables and numeric dispatch per function
           return F.Times(F.CNI, S.Pi);
         }
         if (z.isComplexInfinity()) {
@@ -627,6 +624,7 @@ public class HypergeometricFunctions {
         }
         if (arg1.equals(F.CIInfinity)) {
           return F.Divide(F.CI, F.C2);
+          // CPD-ON
         }
         if (arg1.equals(F.CNIInfinity)) {
           return F.Divide(F.CNI, F.C2);
@@ -642,6 +640,7 @@ public class HypergeometricFunctions {
       IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(arg1);
       if (restExpr.isPresent()) {
         return F.Times(F.CI, F.FresnelC(restExpr));
+      // CPD-OFF special-value tables and numeric dispatch per function
       }
 
       return F.NIL;
@@ -684,6 +683,7 @@ public class HypergeometricFunctions {
           return F.CN1D2;
         }
         if (arg1.equals(F.CIInfinity)) {
+        // CPD-ON
           return F.Divide(F.CNI, F.C2);
         }
         if (arg1.equals(F.CNIInfinity)) {
@@ -922,6 +922,7 @@ public class HypergeometricFunctions {
       if (n.isInteger() && n.isPositive()) {
         negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
         if (negExpr.isPresent()) {
+          // CPD-OFF special-value tables and numeric dispatch per function
           return F.Times(F.Power(-1, n), F.GegenbauerC(n, negExpr));
         }
       }
@@ -957,6 +958,7 @@ public class HypergeometricFunctions {
       // return F.CComplexInfinity;
       // }
       // IInexactNumber z = (IInexactNumber) ast.arg2();
+      // CPD-ON
       // // (2*Cos(n*ArcCos(z)))/n
       // IInexactNumber cos = n.times(z.acos()).cos();
       // return cos.plus(cos).times(n.reciprocal());
@@ -1185,6 +1187,17 @@ public class HypergeometricFunctions {
   }
 
   /**
+   * The expansion <code>-ExpIntegralEi(-z)+1/2*(-Log(-1/z)+Log(-z))-Log(z)</code> of
+   * <code>ExpIntegralE(1, z)</code> (equal to <code>Gamma(0, z)</code>).
+   */
+  static IAST expIntegralE1Expanded(IExpr z) {
+    return F.Plus(F.Negate(F.ExpIntegralEi(F.Negate(z))),
+        F.Times(F.C1D2,
+            F.Plus(F.Negate(F.Log(F.Negate(F.Power(z, F.CN1)))), F.Log(F.Negate(z)))),
+        F.Negate(F.Log(z)));
+  }
+
+  /**
    * Test if <code>Hypergeometric1F1(a, b, z)</code> or its regularized form is real: real
    * <code>a</code> and <code>z</code>, and <code>b</code> positive or a non-integer real.
    */
@@ -1344,9 +1357,11 @@ public class HypergeometricFunctions {
         // b)*(Gamma(-1 + b) - Gamma(-1 + b, z)))
         return F.Times(F.Plus(F.CN1, b),
             F.Plus(F.C1,
+                // CPD-OFF special-value tables and numeric dispatch per function
                 F.Times(F.Plus(F.C2, F.Negate(b)), F.Power(S.E, z),
                     F.Power(z, F.Plus(F.C1, F.Negate(b))),
                     F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z)))),
+                    // CPD-ON
                 F.Times(F.Power(S.E, z), F.Power(z, F.Plus(F.C2, F.Negate(b))),
                     F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
       }
@@ -1465,9 +1480,11 @@ public class HypergeometricFunctions {
       }
       if (a.isOne() && !b.isOne()) {
         // (-1 + b)*E^z*z^(1 - b)*(Gamma(-1 + b) - Gamma(-1 + b, z))
+        // CPD-OFF special-value tables and numeric dispatch per function
         return F.Times(F.Plus(F.CN1, b), F.Power(S.E, z), F.Power(z, F.Plus(F.C1, F.Negate(b))),
             F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))));
       }
+      // CPD-ON
       if (a.isMinusOne()) {
         // 1 - z/b
         return F.Subtract(F.C1, F.Divide(z, b));
@@ -2182,8 +2199,7 @@ public class HypergeometricFunctions {
         return F.NIL;
       }
       final boolean arbitrary = engine.isArbitraryMode();
-      final int digits =
-          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
       try {
         IAST aList = (IAST) a;
         IAST bList = (IAST) b;
@@ -2201,12 +2217,9 @@ public class HypergeometricFunctions {
         Apcomplex z = CarlsonArbitraryPrecision.apcomplex(c, digits);
         Apcomplex value = ApcomplexHypergeometricMath.hypergeometricPFQ(upper, lower, z);
         // real off the cut from 1 along the real axis
-        if (real && (upper.length <= lower.length || z.real().compareTo(Apfloat.ONE) < 0
-            || value.imag().signum() == 0)) {
-          return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
-        }
-        return arbitrary ? F.complexNum(value)
-            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+        real &= upper.length <= lower.length || z.real().compareTo(Apfloat.ONE) < 0
+            || value.imag().signum() == 0;
+        return CarlsonArbitraryPrecision.toNumber(value, real, arbitrary);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         return F.NIL;
@@ -2631,6 +2644,7 @@ public class HypergeometricFunctions {
         }
         if (z.isDirectedInfinity(F.CI)) {
           return z;
+        // CPD-OFF special-value tables and numeric dispatch per function
         }
         if (z.isComplexInfinity()) {
           return S.Indeterminate;
@@ -2648,6 +2662,7 @@ public class HypergeometricFunctions {
           return temp;
         }
         return z.sinIntegral();
+        // CPD-ON
       }
       return F.NIL;
     }
@@ -2734,6 +2749,7 @@ public class HypergeometricFunctions {
           return F.CNInfinity;
         }
         if (z.isDirectedInfinity(F.CI)) {
+          // CPD-OFF special-value tables and numeric dispatch per function
           return F.Times(F.CI, F.CPiHalf);
         }
         if (z.isComplexInfinity()) {
@@ -2752,6 +2768,7 @@ public class HypergeometricFunctions {
           return temp;
         }
         return z.sinhIntegral();
+        // CPD-ON
       }
       return F.NIL;
     }

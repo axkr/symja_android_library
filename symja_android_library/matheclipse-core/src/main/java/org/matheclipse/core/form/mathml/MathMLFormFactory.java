@@ -2251,6 +2251,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   private void convertAST(final StringBuilder buf, final IAST ast, final int precedence) {
     final IAST list = ast;
 
+    // CPD-OFF the same dispatch emitted as TeX and as MathML
     IExpr header = list.head();
     if (!header.isSymbol()) {
       // print expressions like: f(#1, y)& [x]
@@ -2262,6 +2263,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         if (a1Head.isAST1() && headAST.isAST1()
             && (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
           try {
+          // CPD-ON
             int n = a1Head.arg1().toIntDefault();
             if (n == 1 || n == 2) {
               tagStart(buf, "mrow");
@@ -2348,6 +2350,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       convertAssociation(buf, (IAssociation) list);
       return;
     }
+    // CPD-OFF the same dispatch emitted as TeX and as MathML
     int functionID = ((ISymbol) list.head()).ordinal();
     if (functionID > ID.UNKNOWN) {
       switch (functionID) {
@@ -2358,6 +2361,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           break;
         case ID.Quantity:
           if (list.isAST2() && org.matheclipse.core.units.Units.isKnownUnit(list.arg2())) {
+          // CPD-ON
             // magnitude, invisible-times, unit abbreviation as text
             tagStart(buf, "mrow");
             convertInternal(buf, list.arg1(), Precedence.TIMES, false);

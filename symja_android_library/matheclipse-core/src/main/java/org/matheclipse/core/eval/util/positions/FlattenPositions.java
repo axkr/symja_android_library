@@ -5,7 +5,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -70,12 +69,8 @@ public class FlattenPositions {
 
   protected IAST mapAtRecursive(IAST ast) {
     IExpr position = positions.get(level);
-    int p = position.toIntDefault();
-    if (F.isNotPresent(p)) {
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
-    }
-    Object[] pair = getAppendableIntPair(ast);
+    int p = MapPositions.partIndex(position, positions, originalAST);
+    Object[] pair = MapPositions.appendableIntPair(ast, insertASTCache);
     IASTAppendable subResult = (IASTAppendable) pair[0];
     IntArrayList insertedPositions = (IntArrayList) pair[1];
     if (p < 0) {
@@ -155,24 +150,4 @@ public class FlattenPositions {
     }
     return sum;
   }
-
-  /**
-   * Get the pair of [{@link IASTAppendable}, {@link IntArrayList}] list of already inserted
-   * original position numbers.
-   * 
-   * @param ast
-   * @return
-   */
-  protected Object[] getAppendableIntPair(IAST ast) {
-    if (ast.hasFlag(Flag.IS_COPIED)) {
-      IntArrayList value = insertASTCache.get(ast);
-      return new Object[] {ast, value};
-    }
-    IASTAppendable appendable = ast.copyAppendable();
-    appendable.addFlag(Flag.IS_COPIED);
-    IntArrayList list = new IntArrayList();
-    insertASTCache.put(appendable, list);
-    return new Object[] {appendable, list};
-  }
-
 }

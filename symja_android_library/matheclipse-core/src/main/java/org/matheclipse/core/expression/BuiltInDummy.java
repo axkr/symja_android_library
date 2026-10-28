@@ -384,23 +384,29 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   // throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
   // }
 
+  /**
+   * The numeric value of this symbol, if it is a numeric function itself or its assigned value
+   * (which is the value of the global substitute) is a numeric function.
+   *
+   * @return <code>F.evaln(this)</code> or <code>null</code> if this symbol isn't numeric
+   */
+  private IExpr evalnIfNumeric() {
+    if (isNumericFunction(true)) {
+      return F.evaln(this);
+    }
+    IExpr temp = assignedValue();
+    if (temp != null && temp.isNumericFunction(true)) {
+      return F.evaln(this);
+    }
+    return null;
+  }
+
   /** {@inheritDoc} */
   @Override
   public final INumber evalNumber() {
-    if (isNumericFunction(true)) {
-      IExpr result = F.evaln(this);
-      if (result.isNumber()) {
-        return (INumber) result;
-      }
-      // } else if (fValue != null) {
-    } else {
-      IExpr temp = assignedValue();
-      if (temp != null && temp.isNumericFunction(true)) {
-        IExpr result = F.evaln(this);
-        if (result.isNumber()) {
-          return (INumber) result;
-        }
-      }
+    IExpr result = evalnIfNumeric();
+    if (result != null && result.isNumber()) {
+      return (INumber) result;
     }
     return null;
   }
@@ -408,20 +414,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final IReal evalReal() {
-    if (isNumericFunction(true)) {
-      IExpr result = F.evaln(this);
-      if (result.isReal()) {
-        return (IReal) result;
-      }
-      // } else if (fValue != null) {
-    } else {
-      IExpr temp = assignedValue();
-      if (temp != null && temp.isNumericFunction(true)) {
-        IExpr result = F.evaln(this);
-        if (result.isReal()) {
-          return (IReal) result;
-        }
-      }
+    IExpr result = evalnIfNumeric();
+    if (result != null && result.isReal()) {
+      return (IReal) result;
     }
     return null;
   }
@@ -845,17 +840,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
       final IAST leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
-    if (!packageMode) {
-      if (isLocked(packageMode)) {
-        throw new RuleCreationError(leftHandSide);
-      }
-      EvalEngine.get().addModifiedVariable(this);
-    }
-    if (fRulesData == null) {
-      fRulesData = new RulesData();
-    }
-    EvalEngine.incEpoch();
-    return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+    return downRulesForUpdate(leftHandSide, packageMode).putDownRule(setSymbol, equalRule,
+        leftHandSide, rightHandSide, priority);
   }
 
   /** {@inheritDoc} */
@@ -863,6 +849,20 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
       final IPatternObject leftHandSide, final IExpr rightHandSide, final int priority,
       boolean packageMode) {
+    return downRulesForUpdate(leftHandSide, packageMode).putDownRule(setSymbol, equalRule,
+        leftHandSide, rightHandSide, priority);
+  }
+
+  /**
+   * Prepare the down rules of this symbol for a new rule: check the lock and record the
+   * modification (outside package mode), create the rules data on first use and bump the rule
+   * epoch.
+   *
+   * @param leftHandSide the left-hand side of the new rule, reported if this symbol is locked
+   * @param packageMode <code>true</code> if the rule is defined by a package
+   * @return the rules data of this symbol
+   */
+  private RulesData downRulesForUpdate(final IExpr leftHandSide, boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -873,7 +873,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       fRulesData = new RulesData();
     }
     EvalEngine.incEpoch();
-    return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+    return fRulesData;
   }
 
   @Override

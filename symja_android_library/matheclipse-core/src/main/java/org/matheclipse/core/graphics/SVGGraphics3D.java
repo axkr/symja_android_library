@@ -231,6 +231,24 @@ public class SVGGraphics3D {
     }
   }
 
+  /** The mean <code>z</code> coordinate of the projected <code>points</code>. */
+  private static double meanDepth(List<Vector3> points) {
+    double sum = 0;
+    for (Vector3 p : points) {
+      sum += p.z;
+    }
+    return sum / Math.max(1, points.size());
+  }
+
+  /** The SVG <code>points</code> attribute <code>"x1,y1 x2,y2 ..."</code> of the points. */
+  private static String pointsAttr(List<Vector3> points) {
+    StringBuilder path = new StringBuilder();
+    for (Vector3 p : points) {
+      path.append(format(p.x)).append(',').append(format(p.y)).append(' ');
+    }
+    return path.toString().trim();
+  }
+
   private static final class Face extends Renderable {
     final List<Vector3> points;
     final Color color;
@@ -240,22 +258,14 @@ public class SVGGraphics3D {
       this.points = points;
       this.color = color;
       this.opacity = opacity;
-      double sum = 0;
-      for (Vector3 p : points) {
-        sum += p.z;
-      }
-      this.depth = sum / Math.max(1, points.size());
+      this.depth = meanDepth(points);
     }
 
     @Override
     DomContent toSVG() {
-      StringBuilder path = new StringBuilder();
-      for (Vector3 p : points) {
-        path.append(format(p.x)).append(',').append(format(p.y)).append(' ');
-      }
       // the outline a face carries is drawn by the crease pass, as lines of its own along the
       // edges of the shape rather than around every facet the shape was tessellated into
-      DomContent polygon = tag("polygon").attr("points", path.toString().trim())
+      DomContent polygon = tag("polygon").attr("points", pointsAttr(points))
           .attr("fill", hex(color)).attr("fill-opacity", format(opacity)).attr("stroke", "none")
           .attr("stroke-width", "0")
           // hairline seams between neighbouring facets show as a grid of white cracks
@@ -279,20 +289,12 @@ public class SVGGraphics3D {
       this.opacity = opacity;
       this.width = width;
       this.dashArray = dashArray;
-      double sum = 0;
-      for (Vector3 p : points) {
-        sum += p.z;
-      }
-      this.depth = sum / Math.max(1, points.size());
+      this.depth = meanDepth(points);
     }
 
     @Override
     DomContent toSVG() {
-      StringBuilder path = new StringBuilder();
-      for (Vector3 p : points) {
-        path.append(format(p.x)).append(',').append(format(p.y)).append(' ');
-      }
-      DomContent line = tag("polyline").attr("points", path.toString().trim()).attr("fill", "none")
+      DomContent line = tag("polyline").attr("points", pointsAttr(points)).attr("fill", "none")
           .attr("stroke", hex(color)).attr("stroke-opacity", format(opacity))
           .attr("stroke-width", format(width)).attr("stroke-linecap", "round")
           .attr("stroke-linejoin", "round");

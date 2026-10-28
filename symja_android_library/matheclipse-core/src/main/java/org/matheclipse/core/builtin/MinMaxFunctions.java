@@ -1148,6 +1148,7 @@ public class MinMaxFunctions {
               conditions.add(F.Equal(ast.arg1(), F.C0));
               // Branch cut (-inf, 0] => Im(arg) == 0 && Re(arg) <= 0
               conditions
+                  // CPD-OFF branch points and cuts per function
                   .add(F.And(F.Equal(F.Im(ast.arg1()), F.C0), F.LessEqual(F.Re(ast.arg1()), F.C0)));
             } else if (head == S.Tan || head == S.Sec) {
               // Poles when Cos(x) == 0
@@ -1156,12 +1157,15 @@ public class MinMaxFunctions {
               // Poles when Sin(x) == 0
               conditions.add(F.Equal(F.Sin(ast.arg1()), F.C0));
             } else if (head == S.ArcSin || head == S.ArcCos || head == S.ArcTanh) {
+            // CPD-ON
               // Branch points at z == 1, z == -1
+              // CPD-OFF branch points and cuts per function
               IExpr z = ast.arg1();
               conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
               conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
               // Branch cuts: (-inf, -1] U [1, inf)
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.CN1)));
+              // CPD-ON
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.C1)));
             } else if (head == S.ArcTan) {
               // Branch points at z == I, z == -I
@@ -1194,11 +1198,13 @@ public class MinMaxFunctions {
             } else if (head == S.ArcCosh) {
             // CPD-ON
               // Branch points z == 1, z == -1
+              // CPD-OFF branch points and cuts per function
               IExpr z = ast.arg1();
               conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
               conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
               // Branch cut: (-inf, 1]
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.C1)));
+              // CPD-ON
             } else if (head == S.ArcCoth) {
               // Branch points z == 1, z == -1
               // CPD-OFF branch points and cuts per function
@@ -1212,11 +1218,13 @@ public class MinMaxFunctions {
             // CPD-ON
               // ArcSech(z) = ArcCosh(1/z).
               IExpr z = ast.arg1();
+              // CPD-OFF branch points and cuts per function
               conditions.add(F.Equal(z, F.C0));
               conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
               conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
               // Cuts: (-inf, 0] U [1, inf)
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.C0)));
+              // CPD-ON
               conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.C1)));
             } else if (head == S.ArcCsch) {
               // ArcCsch(z) = ArcSinh(1/z).
@@ -1245,6 +1253,7 @@ public class MinMaxFunctions {
 
           if (ast.argSize() == 1) {
             if (head == S.Log) {
+              // CPD-OFF branch points and cuts per function
               conditions.add(F.Equal(ast.arg1(), F.C0));
             } else if (head == S.Tan || head == S.Sec) {
               conditions.add(F.Equal(F.Cos(ast.arg1()), F.C0));
@@ -1253,6 +1262,7 @@ public class MinMaxFunctions {
             } else if (head == S.ArcSec || head == S.ArcCsc || head == S.ArcSech
                 || head == S.ArcCsch) {
               conditions.add(F.Equal(ast.arg1(), F.C0));
+              // CPD-ON
             }
           }
         }

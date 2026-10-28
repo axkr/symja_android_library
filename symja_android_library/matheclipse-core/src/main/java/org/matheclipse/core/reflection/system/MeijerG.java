@@ -809,6 +809,7 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
   }
 
   @Override
+  // CPD-OFF shared entry prologue of evaluate and functionExpand
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() == 3 || ast.argSize() == 4) {
       IExpr arg1 = ast.arg1();
@@ -820,6 +821,7 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
       if (!isParameterLists(arg1, arg2)) {
         return F.NIL;
       }
+      // CPD-ON
       IAST sorted = sortParameters(ast);
       if (sorted.isPresent()) {
         return sorted;
@@ -932,6 +934,7 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
   }
 
   @Override
+  // CPD-OFF shared entry prologue of evaluate and functionExpand
   public IExpr functionExpand(final IAST ast, EvalEngine engine) {
     if (ast.argSize() == 3 || ast.argSize() == 4) {
       IExpr arg1 = ast.arg1();
@@ -943,6 +946,7 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
       if (!isParameterLists(arg1, arg2)) {
         return F.NIL;
       }
+      // CPD-ON
       IExpr r = scale(ast);
       if (r.isNIL()) {
         return F.NIL;

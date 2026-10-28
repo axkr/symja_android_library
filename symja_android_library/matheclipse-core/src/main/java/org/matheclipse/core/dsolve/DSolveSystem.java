@@ -57,16 +57,7 @@ final class DSolveSystem {
     DSolveUtil.extractCVars(evaluatedBCs, cVars);
 
     if (cVars.argSize() == 0) {
-      for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
-        IExpr bc = evaluatedBCs.get(k);
-        if (bc.isEqual()) {
-          if (!engine.evaluate(bc).isTrue())
-            return F.NIL;
-        } else if (!bc.isZero()) {
-          return F.NIL;
-        }
-      }
-      return roots;
+      return DSolveUtil.conditionsHold(evaluatedBCs, engine) ? roots : F.NIL;
     }
 
     // Shield existing Equal expressions from being double-wrapped

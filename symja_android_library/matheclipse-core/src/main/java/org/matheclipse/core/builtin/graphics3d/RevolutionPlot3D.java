@@ -13,6 +13,7 @@ import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
+import org.matheclipse.core.graphics.Vec3;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -134,7 +135,7 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
 
     // an orthonormal frame in the plane the curve is rotated through
     double[] u = perpendicular(axis);
-    double[] w = cross(axis, u);
+    double[] w = Vec3.cross(axis, u);
 
     RegionFunctionFilter region =
         RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
@@ -290,7 +291,7 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     for (int c = 0; c < 3; c++) {
       radial[c] = curve[c] - h * axis[c];
     }
-    double[] turned = cross(axis, radial);
+    double[] turned = Vec3.cross(axis, radial);
     for (int c = 0; c < 3; c++) {
       point[c] = h * axis[c] + cos * radial[c] + sin * turned[c];
     }
@@ -338,14 +339,9 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
   /** Any unit vector perpendicular to {@code axis}. */
   private static double[] perpendicular(double[] axis) {
     double[] candidate = Math.abs(axis[0]) < 0.9 ? new double[] {1, 0, 0} : new double[] {0, 1, 0};
-    double[] p = cross(axis, candidate);
+    double[] p = Vec3.cross(axis, candidate);
     double length = Math.sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
     return new double[] {p[0] / length, p[1] / length, p[2] / length};
-  }
-
-  private static double[] cross(double[] a, double[] b) {
-    return new double[] {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0]};
   }
 
   @Override

@@ -1684,6 +1684,7 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
+  // CPD-OFF evaluate prologues of sibling string builtins with different options
   private static class StringCases extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
@@ -1698,6 +1699,7 @@ public final class StringFunctions {
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
           int overlaps = StringPatternMatcher.overlaps(option[1]);
+          // CPD-ON
           int limit = occurrenceLimit(ast, argSize, 3, engine);
           if (limit < 0) {
             return F.NIL;
@@ -1843,6 +1845,7 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
+  // CPD-OFF evaluate prologues of sibling string builtins with different options
   private static class StringCount extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
@@ -1857,6 +1860,7 @@ public final class StringFunctions {
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
           int overlaps = StringPatternMatcher.overlaps(option[1]);
+          // CPD-ON
           IExpr arg2 = engine.evaluate(ast.arg2());
           StringPatternMatcher.Rules rules =
               StringPatternMatcher.Rules.of(arg2, false, false, ignoreCase, ast, engine);
@@ -2906,6 +2910,7 @@ public final class StringFunctions {
     }
   }
 
+  // CPD-OFF evaluate prologues of sibling string builtins with different options
   private static class StringReplace extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
@@ -2922,6 +2927,7 @@ public final class StringFunctions {
         if (replacements == null) {
           return F.NIL;
         }
+        // CPD-ON
         // the rules are tried together: at each position the first which matches replaces it,
         // and what a replacement inserted is not looked at again
         replacements.rules.reset(arg1.toString());
@@ -3062,6 +3068,7 @@ public final class StringFunctions {
    * <code>StringReplaceList[s, rules, n]</code> - the strings each of which has one match of the
    * rules replaced, the matches taken at every position, overlapping ones included.
    */
+  // CPD-OFF evaluate prologues of sibling string builtins with different options
   private static class StringReplaceList extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
@@ -3078,6 +3085,7 @@ public final class StringFunctions {
           return F.NIL;
         }
         StringPatternMatcher.Rules rules = replacements.rules;
+        // CPD-ON
         int limit = replacements.limit;
         final String str = arg1.toString();
         rules.reset(str);

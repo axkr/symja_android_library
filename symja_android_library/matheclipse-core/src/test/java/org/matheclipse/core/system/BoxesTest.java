@@ -114,6 +114,12 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     // ...but a factor beside another one does
     check("MakeBoxes[(a + b)*c, StandardForm] // InputForm", //
         "RowBox({RowBox({\"(\",RowBox({\"a\",\"+\",\"b\"}),\")\"}),\" \",\"c\"})");
+    // arguments are separated by commas, so a sum inside brackets needs no parentheses
+    check("MakeBoxes[3 g[u + v], StandardForm] // InputForm", //
+        "RowBox({\"3\",\" \",RowBox({\"g\",\"[\",RowBox({RowBox({\"u\",\"+\",\"v\"})}),\"]\"})})");
+    check("MakeBoxes[3 {u + v, w}, StandardForm] // InputForm", //
+        "RowBox({\"3\",\" \",RowBox({\"{\",RowBox({RowBox({\"u\",\"+\",\"v\"}),\",\","
+            + "\"w\"}),\"}\"})})");
   }
 
   @Test

@@ -85,4 +85,56 @@ public class ExpVectorHashCodeTest {
       assertEquals(hash, e2.hashCode());
     }
   }
+
+  private static ExpVectorSymbolic symbolic(long... v) {
+    IExpr[] e = new IExpr[v.length];
+    for (int i = 0; i < v.length; i++) {
+      e[i] = F.ZZ(v[i]);
+    }
+    return new ExpVectorSymbolic(e);
+  }
+
+  /**
+   * The inverse weighted order of symbolic exponent vectors compares the weighted sums from the
+   * first difference to the end, as the order of long exponent vectors does.
+   */
+  @Test
+  public void testInvWeightCompareTo() {
+    long[][] lw = {{1, 1, 1}};
+    IExpr[][] sw = {{F.C1, F.C1, F.C1}};
+    ExpVectorSymbolic su = symbolic(0, 1, 3);
+    ExpVectorSymbolic sv = symbolic(0, 2, 0);
+    // first difference at index 1; the sums 1+3 > 2+0 decide
+    assertEquals(1, new ExpVectorLong(new long[] {0, 1, 3})
+        .invWeightCompareTo(lw, new ExpVectorLong(new long[] {0, 2, 0})));
+    assertEquals(1, su.invWeightCompareTo(sw, sv));
+    assertEquals(-1, sv.invWeightCompareTo(sw, su));
+    assertEquals(1, su.invWeightCompareTo(sw, sv, 0, 3));
+    // only index 1 in the range: 1 < 2
+    assertEquals(-1, su.invWeightCompareTo(sw, sv, 0, 2));
+    assertEquals(0, su.invWeightCompareTo(sw, su));
+
+    long[][] lw2 = {{2, 1, 3}, {1, 2, 1}};
+    IExpr[][] sw2 = {{F.C2, F.C1, F.C3}, {F.C1, F.C2, F.C1}};
+    long[][] vectors = new long[27][];
+    int k = 0;
+    for (long a = 0; a < 3; a++) {
+      for (long b = 0; b < 3; b++) {
+        for (long c = 0; c < 3; c++) {
+          vectors[k++] = new long[] {a, b, c};
+        }
+      }
+    }
+    for (long[] u : vectors) {
+      for (long[] v : vectors) {
+        ExpVectorLong lu = new ExpVectorLong(u);
+        ExpVectorLong lv = new ExpVectorLong(v);
+        assertEquals(lu.invWeightCompareTo(lw2, lv),
+            symbolic(u).invWeightCompareTo(sw2, symbolic(v)));
+        assertEquals(lu.invWeightCompareTo(lw2, lv, 1, 3),
+            symbolic(u).invWeightCompareTo(sw2, symbolic(v), 1, 3));
+        assertEquals(lu.invGradCompareTo(lv), symbolic(u).invGradCompareTo(symbolic(v)));
+      }
+    }
+  }
 }

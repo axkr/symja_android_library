@@ -31,6 +31,14 @@ public class RegionQ extends AbstractFunctionEvaluator {
     return isRegion(arg1) ? S.True : S.False;
   }
 
+  /**
+   * Test if <code>expr</code> is a mesh region or one of the bounded or unbounded geometric region
+   * primitives. This is the one list of region heads; {@link BoundedRegionQ} only separates the
+   * unbounded ones.
+   *
+   * @param expr the expression to test
+   * @return <code>true</code> if <code>expr</code> is a region
+   */
   public static boolean isRegion(IExpr expr) {
     if (!expr.isAST()) {
       return false;
@@ -76,6 +84,7 @@ public class RegionQ extends AbstractFunctionEvaluator {
         case ID.HalfPlane:
         case ID.InfinitePlane:
         case ID.HalfSpace:
+        case ID.FullRegion:
           return true;
       }
     }

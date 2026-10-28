@@ -50,16 +50,11 @@ public class PrimeZetaP extends AbstractFunctionEvaluator {
       final boolean arbitrary = arg instanceof ApfloatNum || arg instanceof ApcomplexNum;
       Complex c = arg.evalfc();
       if (c.getReal() > 1.0 && (arbitrary || (c.getReal() >= 3.0 && Math.abs(c.getImaginary()) <= 5.0))) {
-        final int digits = arbitrary ? (int) engine.getNumericPrecision()
-            : (int) org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + 1;
+        final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
         try {
           Apcomplex value = ApcomplexZetaMath
               .primeZeta(CarlsonArbitraryPrecision.apcomplex(arg, digits));
-          if (arg.isReal()) {
-            return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
-          }
-          return arbitrary ? F.complexNum(value)
-              : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+          return CarlsonArbitraryPrecision.toNumber(value, arg.isReal(), arbitrary);
         } catch (ArithmeticException | ApfloatRuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
         }

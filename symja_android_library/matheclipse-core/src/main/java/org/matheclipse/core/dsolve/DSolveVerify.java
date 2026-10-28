@@ -29,9 +29,25 @@ final class DSolveVerify {
 
   private DSolveVerify() {}
 
+  /**
+   * A new list of the points an answer is put back into the equation at, for
+   * {@link #acceptODEStrictAt}.
+   */
+  static IAST strictSamplePoints() {
+    IASTAppendable samples = F.ListAlloc(STRICT_SAMPLES.length);
+    for (int[] fraction : STRICT_SAMPLES) {
+      samples.append(F.QQ(fraction[0], fraction[1]));
+    }
+    return samples;
+  }
+
   /** The points the residual is sampled at. Positive, to stay off the usual branch cuts. */
   private static final int[][] SAMPLES =
       new int[][] {{3, 10}, {7, 10}, {13, 10}, {23, 10}};
+
+  /** The points an answer is put back into the equation at by the strict acceptance tests. */
+  private static final int[][] STRICT_SAMPLES =
+      new int[][] {{17, 10}, {23, 10}, {23, 20}, {3, 5}, {31, 10}};
 
   /** Relative size a sample has to exceed before it counts as proof of a nonzero residual. */
   private static final double TOLERANCE = 1.0e-6;

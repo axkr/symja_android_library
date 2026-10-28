@@ -1267,6 +1267,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @return polynomial comparator.
    */
   public ExprPolynomialComparator getComparator(boolean rev) {
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     return new ExprPolynomialComparator(tord, rev);
   }
 
@@ -1295,6 +1296,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @return an iterator over all polynomials.
    */
   public Iterator<ExprPolynomial> iterator() {
+  // CPD-ON
     if (coFac.isFinite()) {
       return new GenPolynomialIterator(this);
     }
@@ -1365,6 +1367,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       for (int i = 0; i < ring.nvar; i++) {
         tlist.add(li);
       }
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       CartesianProductInfinite<Long> ei = new CartesianProductInfinite<Long>(tlist);
       eviter = ei.iterator();
       ExprRingFactory cf = ring.coFac;
@@ -1378,6 +1381,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       CartesianProduct<IExpr> tuples = new CartesianProduct<IExpr>(coeffiter);
       itercoeff = tuples.iterator();
       powers = new ArrayList<ExpVectorLong>();
+      // CPD-ON
       ExpVectorLong e = ExpVectorLong.create(eviter.next());
       powers.add(e);
       List<IExpr> c = itercoeff.next();

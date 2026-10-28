@@ -1,5 +1,13 @@
 package org.matheclipse.core.graphics;
 
+import static org.matheclipse.core.graphics.Vec3.add;
+import static org.matheclipse.core.graphics.Vec3.cross;
+import static org.matheclipse.core.graphics.Vec3.dot;
+import static org.matheclipse.core.graphics.Vec3.length;
+import static org.matheclipse.core.graphics.Vec3.normalize;
+import static org.matheclipse.core.graphics.Vec3.scale;
+import static org.matheclipse.core.graphics.Vec3.subtract;
+
 /**
  * The rings of points a tube is built from: one circle round each point of its path.
  *
@@ -40,12 +48,12 @@ public final class TubeRings {
     for (int i = 0; i < n; i++) {
       double[] tangent;
       if (closed) {
-        tangent = normalize(sub(path[(i + 1) % n], path[(i + n - 1) % n]));
+        tangent = normalize(subtract(path[(i + 1) % n], path[(i + n - 1) % n]));
       } else {
-        tangent = normalize(i == 0 ? sub(path[1], path[0]) : sub(path[i], path[i - 1]));
+        tangent = normalize(i == 0 ? subtract(path[1], path[0]) : subtract(path[i], path[i - 1]));
       }
       double[] u = carried == null ? perpendicular(tangent)
-          : sub(carried, scale(tangent, dot(carried, tangent)));
+          : subtract(carried, scale(tangent, dot(carried, tangent)));
       if (length(u) < 1e-9) {
         u = perpendicular(tangent);
       }
@@ -57,7 +65,7 @@ public final class TubeRings {
     double twist = 0;
     if (closed) {
       double[] t0 = tangents[0];
-      double[] back = sub(carried, scale(t0, dot(carried, t0)));
+      double[] back = subtract(carried, scale(t0, dot(carried, t0)));
       if (length(back) > 1e-9) {
         back = normalize(back);
         twist = Math.atan2(dot(cross(us[0], back), t0), dot(us[0], back));
@@ -81,36 +89,6 @@ public final class TubeRings {
   private static double[] perpendicular(double[] axis) {
     double[] candidate = Math.abs(axis[0]) < 0.9 ? new double[] {1, 0, 0} : new double[] {0, 1, 0};
     return normalize(cross(axis, candidate));
-  }
-
-  private static double[] add(double[] a, double[] b) {
-    return new double[] {a[0] + b[0], a[1] + b[1], a[2] + b[2]};
-  }
-
-  private static double[] sub(double[] a, double[] b) {
-    return new double[] {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
-  }
-
-  private static double[] scale(double[] a, double s) {
-    return new double[] {a[0] * s, a[1] * s, a[2] * s};
-  }
-
-  private static double dot(double[] a, double[] b) {
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-  }
-
-  private static double[] cross(double[] a, double[] b) {
-    return new double[] {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0]};
-  }
-
-  private static double length(double[] a) {
-    return Math.sqrt(dot(a, a));
-  }
-
-  private static double[] normalize(double[] a) {
-    double l = length(a);
-    return l > 0 ? scale(a, 1 / l) : a;
   }
 
   private TubeRings() {}

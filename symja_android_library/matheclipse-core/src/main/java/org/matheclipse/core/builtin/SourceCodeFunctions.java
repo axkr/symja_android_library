@@ -97,23 +97,28 @@ public class SourceCodeFunctions {
    * 
    */
   public static String statusAsString(ISymbol builtin) {
-    int ordinal = builtin.ordinal();
-    if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
-      int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
-      if (line > 0) {
-        IEvaluator evaluator = ((IBuiltInSymbol) builtin).getEvaluator();
-        if (evaluator != null //
-            && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
-            && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
-          int implementationStatus = evaluator.status();
-          return ImplementationStatus.STATUS_STRINGS[implementationStatus];
-        }
-      }
+    int implementationStatus = implementationStatus(builtin);
+    if (implementationStatus >= 0) {
+      return ImplementationStatus.STATUS_STRINGS[implementationStatus];
     }
     return null;
   }
 
   public static String statusAsEmoji(ISymbol builtin) {
+    int implementationStatus = implementationStatus(builtin);
+    if (implementationStatus >= 0) {
+      return ImplementationStatus.STATUS_EMOJIS[implementationStatus];
+    }
+    return null;
+  }
+
+  /**
+   * The {@link ImplementationStatus} of a built-in symbol with a Java implementation.
+   *
+   * @param builtin the symbol
+   * @return <code>-1</code> if the symbol has no real evaluator
+   */
+  private static int implementationStatus(ISymbol builtin) {
     int ordinal = builtin.ordinal();
     if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
       int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
@@ -122,12 +127,11 @@ public class SourceCodeFunctions {
         if (evaluator != null //
             && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
             && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
-          int implementationStatus = evaluator.status();
-          return ImplementationStatus.STATUS_EMOJIS[implementationStatus];
+          return evaluator.status();
         }
       }
     }
-    return null;
+    return -1;
   }
 
   public static void initialize() {

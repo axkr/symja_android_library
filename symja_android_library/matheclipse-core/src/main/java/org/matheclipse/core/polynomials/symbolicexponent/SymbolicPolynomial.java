@@ -559,6 +559,7 @@ public class SymbolicPolynomial
       Map.Entry<ExpVectorSymbolic, IExpr> aie = ai.next();
       Map.Entry<ExpVectorSymbolic, IExpr> bie = bi.next();
       ExpVectorSymbolic ae = aie.getKey();
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExpVectorSymbolic be = bie.getKey();
       s = ae.compareTo(be);
       if (s != 0) {
@@ -587,6 +588,7 @@ public class SymbolicPolynomial
    * @deprecated for comparability with JAS only
    */
   @Override
+  // CPD-ON
   @Deprecated
   public int signum() {
     if (this.isZERO()) {
@@ -966,6 +968,7 @@ public class SymbolicPolynomial
     SortedMap<ExpVectorSymbolic, IExpr> nv = this.val;
     SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
     for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExpVectorSymbolic e = me.getKey();
       IExpr y = me.getValue(); // sv.get(e); // assert y != null
       IExpr x = nv.get(e);
@@ -988,6 +991,7 @@ public class SymbolicPolynomial
    * @param a coefficient.
    * @param e exponent.
    */
+   // CPD-ON
   public void doAddTo(IExpr a, ExpVectorSymbolic e) {
     if (a == null || a.isZERO()) {
       return;
@@ -1037,6 +1041,7 @@ public class SymbolicPolynomial
     SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
     SortedMap<ExpVectorSymbolic, IExpr> sv = S.val;
     for (Map.Entry<ExpVectorSymbolic, IExpr> me : sv.entrySet()) {
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExpVectorSymbolic e = me.getKey();
       IExpr y = me.getValue(); // sv.get(e); // assert y != null
       IExpr x = nv.get(e);
@@ -1061,11 +1066,13 @@ public class SymbolicPolynomial
    * @param e exponent.
    * @return this - a x<sup>e</sup>.
    */
+   // CPD-ON
   public SymbolicPolynomial subtract(IExpr a, ExpVectorSymbolic e) {
     if (a == null || a.isZERO()) {
       return this;
     }
     SymbolicPolynomial n = this.copy();
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
     IExpr x = nv.get(e);
     if (x != null) {
@@ -1089,6 +1096,7 @@ public class SymbolicPolynomial
    */
   public SymbolicPolynomial subtract(IExpr a) {
     return subtract(a, ring.evzero);
+    // CPD-ON
   }
 
   /**
@@ -1769,6 +1777,7 @@ public class SymbolicPolynomial
    * @return [ gcd(this,S), a ] with a*this + b*S = gcd(this,S).
    */
   public SymbolicPolynomial[] hegcd(SymbolicPolynomial S) {
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SymbolicPolynomial[] ret = new SymbolicPolynomial[2];
     ret[0] = null;
     ret[1] = null;
@@ -1785,6 +1794,7 @@ public class SymbolicPolynomial
       throw new IllegalArgumentException(
           this.getClass().getName() + " not univariate polynomials" + ring);
     }
+    // CPD-ON
     SymbolicPolynomial[] qr;
     SymbolicPolynomial q = this;
     SymbolicPolynomial r = S;
@@ -1957,6 +1967,7 @@ public class SymbolicPolynomial
    * @param i index of the variable of this polynomial in pfac.
    * @return extended multivariate polynomial.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicPolynomial extendUnivariate(SymbolicPolynomialRing pfac, int i) {
     if (i < 0 || pfac.nvar < i) {
       throw new IllegalArgumentException("index " + i + "out of range " + pfac.nvar);
@@ -1968,6 +1979,7 @@ public class SymbolicPolynomial
       return pfac.getOne();
     }
     int j = pfac.nvar - 1 - i;
+    // CPD-ON
     SymbolicPolynomial Cp = pfac.getZero().copy();
     if (this.isZERO()) {
       return Cp;

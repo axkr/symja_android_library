@@ -1178,6 +1178,7 @@ public class PiecewiseFunctions {
         }
       }
       return 1.0;
+    // CPD-OFF UnitStep and HeavisideTheta differ at 0
     }
 
     /**
@@ -1195,6 +1196,7 @@ public class PiecewiseFunctions {
             if (temp.complexSign() < 0) {
               return F.C0;
             } else {
+            // CPD-ON
               continue;
             }
           } else {

@@ -3885,16 +3885,34 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final IAST[] isDerivative() {
+    return derivativeHeads(false);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final IAST[] isDerivativeAST1() {
+    return derivativeHeads(true);
+  }
+
+  /**
+   * The <code>{Derivative(n...), Derivative(n...)(f), Derivative(n...)(f)(x...)}</code> parts of
+   * this expression, the last one <code>null</code> if this is <code>Derivative(n...)(f)</code>.
+   *
+   * @param exactlyOneOrder if <code>true</code> the <code>Derivative</code> head must have exactly
+   *        one argument, otherwise at least one
+   * @return <code>null</code> if this is no derivative expression
+   */
+  private IAST[] derivativeHeads(boolean exactlyOneOrder) {
     if (head().isAST()) {
       IAST headAST = (IAST) head();
-      if (headAST.isSameHeadSizeGE(S.Derivative, 2)) {
+      if (isDerivativeHead(headAST, exactlyOneOrder)) {
         IAST[] result = new IAST[3];
         result[0] = headAST;
         result[1] = this;
         return result;
       }
 
-      if (headAST.head().isSameHeadSizeGE(S.Derivative, 2)) {
+      if (isDerivativeHead(headAST.head(), exactlyOneOrder)) {
         if (this.size() != ((IAST) headAST.head()).size()) {
           return null;
         }
@@ -3908,30 +3926,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return null;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public final IAST[] isDerivativeAST1() {
-    if (head().isAST()) {
-      IAST headAST = (IAST) head();
-      if (headAST.isAST(S.Derivative, 2)) {
-        IAST[] result = new IAST[3];
-        result[0] = headAST;
-        result[1] = this;
-        return result;
-      }
-
-      if (headAST.head().isAST(S.Derivative, 2)) {
-        if (this.size() != ((IAST) headAST.head()).size()) {
-          return null;
-        }
-        IAST[] result = new IAST[3];
-        result[0] = (IAST) headAST.head();
-        result[1] = headAST;
-        result[2] = this;
-        return result;
-      }
-    }
-    return null;
+  private static boolean isDerivativeHead(IExpr x, boolean exactlyOneOrder) {
+    return exactlyOneOrder ? x.isAST(S.Derivative, 2) : x.isSameHeadSizeGE(S.Derivative, 2);
   }
 
   /** {@inheritDoc} */
@@ -5650,6 +5646,35 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final boolean isUnevaluated() {
     return isSameHead(S.Unevaluated, 2);
+  }
+
+  @Override
+  public boolean isUniform(int typeMask) {
+    // check if the bit (ex: INTEGER) is set in the flags
+    final int flags = uniformTypeFlags();
+    return flags != UniformFlags.NONE && (flags & typeMask) == typeMask;
+  }
+
+  @Override
+  public boolean isUniformAny(int typeMask) {
+    // check if at least one of the bits (ex: NUMBER, STRING) is set in the flags
+    return (uniformTypeFlags() & typeMask) != UniformFlags.NONE;
+  }
+
+  @Override
+  public boolean isUniform() {
+    return uniformTypeFlags() != UniformFlags.NONE;
+  }
+
+  /**
+   * The accumulated {@link UniformFlags} of the arguments, which {@link #isUniform()},
+   * {@link #isUniform(int)} and {@link #isUniformAny(int)} test. Only the list implementations
+   * which track the types of their arguments override this.
+   *
+   * @return {@link UniformFlags#NONE} if the arguments have no uniform type
+   */
+  int uniformTypeFlags() {
+    return UniformFlags.NONE;
   }
 
   /** {@inheritDoc} */

@@ -6,7 +6,6 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.Function;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import static org.matheclipse.core.expression.F.C1;
@@ -2069,19 +2068,15 @@ public class SpecialFunctions {
           // on the branch cut from 1 to infinity
           real = false;
         }
-        final int digits = arbitrary ? (int) engine.getNumericPrecision()
-            : (int) ParserConfig.MACHINE_PRECISION + 1;
+        final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
         try {
           // the sum of z^k/((k+a)^2)^(s/2): the terms with a negative k+a have the base -(k+a)
           Apcomplex value = ApcomplexZetaMath.lerchPhiOfSquares(
               CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
               CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits),
               CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits));
-          if (real || value.imag().signum() == 0) {
-            return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
-          }
-          return arbitrary ? F.complexNum(value)
-              : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+          return CarlsonArbitraryPrecision.toNumber(value, real || value.imag().signum() == 0,
+              arbitrary);
         } catch (ArithmeticException | ApfloatRuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
         }
@@ -2880,10 +2875,8 @@ public class SpecialFunctions {
      * is zero.
      */
     private static IExpr realOrComplexNum(Apcomplex productLog) {
-      if (productLog.imag().signum() == 0) {
-        return F.num(productLog.real().doubleValue());
-      }
-      return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
+      return CarlsonArbitraryPrecision.toNumber(productLog, productLog.imag().signum() == 0,
+          false);
     }
 
     /**
@@ -3088,8 +3081,7 @@ public class SpecialFunctions {
         // the integral representation, at machine precision or the precision of the engine
         final boolean arbitrary =
             a instanceof ApfloatNum || (engine.isArbitraryMode() && !a.isInexactNumber());
-        final int digits = arbitrary ? (int) engine.getNumericPrecision()
-            : (int) ParserConfig.MACHINE_PRECISION + 1;
+        final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
         try {
           Apfloat value = ApcomplexZetaMath.stieltjesGamma(index,
               CarlsonArbitraryPrecision.apcomplex(a, digits).real());
@@ -3174,12 +3166,8 @@ public class SpecialFunctions {
     if (value == null) {
       return F.NIL;
     }
-    if (value.imag().signum() == 0) {
-      return machinePrecision ? F.num(value.real().doubleValue()) : F.num(value.real());
-    }
-    return machinePrecision
-        ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
-        : F.complexNum(value);
+    return CarlsonArbitraryPrecision.toNumber(value, value.imag().signum() == 0,
+        !machinePrecision);
   }
 
   /**

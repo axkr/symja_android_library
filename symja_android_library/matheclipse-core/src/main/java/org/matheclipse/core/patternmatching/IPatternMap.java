@@ -653,6 +653,7 @@ public interface IPatternMap {
         return fValue1 != null ? fValue1 : F.NIL;
       }
       if (symbolOrPatternObject == fSymbol2) {
+        // CPD-OFF per-arity pattern maps, unrolled for speed
         return fValue2 != null ? fValue2 : F.NIL;
       }
       return F.NIL;
@@ -670,6 +671,7 @@ public interface IPatternMap {
           if ((ISymbol) input == fSymbol2) {
             return fValue2 != null ? fValue2 : nilOrEmptySequence;
           }
+          // CPD-ON
         } else if (input.isAST(S.OptionValue, 2, 4)) {
           return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
         }
@@ -993,6 +995,7 @@ public interface IPatternMap {
         return fValue2 != null ? fValue2 : F.NIL;
       }
       if (symbolOrPatternObject == fSymbol3) {
+        // CPD-OFF per-arity pattern maps, unrolled for speed
         return fValue3 != null ? fValue3 : F.NIL;
       }
       return F.NIL;
@@ -1010,6 +1013,7 @@ public interface IPatternMap {
           if ((ISymbol) input == fSymbol2) {
             return fValue2 != null ? fValue2 : nilOrEmptySequence;
           }
+          // CPD-ON
           if ((ISymbol) input == fSymbol3) {
             return fValue3 != null ? fValue3 : nilOrEmptySequence;
           }

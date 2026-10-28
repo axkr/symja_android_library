@@ -53,10 +53,6 @@ final class DSolveIntegratingFactor {
   /** How big any of the expressions along the way may become. */
   private static final int MAX_LEAF_COUNT = 400;
 
-  /** Where the answer is put back into the equation it came from. */
-  private static final int[][] SAMPLES =
-      new int[][] {{17, 10}, {23, 10}, {23, 20}, {3, 5}, {31, 10}};
-
   /**
    * The general solution of the equation, or {@link F#NIL} if no integrating factor of this form
    * exists, or if the first order equation it leaves cannot be solved.
@@ -273,10 +269,7 @@ final class DSolveIntegratingFactor {
     IAST branches = DSolveODE.solveSubODE(equation, xVar, yFunction, ctx.nextConstant(), ctx);
 
     IAST residuals = F.list(lhs);
-    IASTAppendable samples = F.ListAlloc(SAMPLES.length);
-    for (int[] fraction : SAMPLES) {
-      samples.append(F.QQ(fraction[0], fraction[1]));
-    }
+    IAST samples = DSolveVerify.strictSamplePoints();
     IASTAppendable accepted = F.ListAlloc(branches.argSize());
     for (int i = 1; i <= branches.argSize(); i++) {
       IExpr body = branches.get(i);

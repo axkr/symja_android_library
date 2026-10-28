@@ -345,6 +345,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       Map.Entry<ExpVectorLong, IExpr> aie = ai.next();
       Map.Entry<ExpVectorLong, IExpr> bie = bi.next();
       ExpVectorLong ae = aie.getKey();
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExpVectorLong be = bie.getKey();
       s = ae.compareTo(be);
       if (s != 0) {
@@ -373,6 +374,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return the constant coefficient of this polynomial, or zero if none.
    */
   public IExpr constantCoefficient() {
+  // CPD-ON
     IExpr c = val.get(ring.evzero);
     if (c == null) {
       return ring.coFac.getZERO();
@@ -645,6 +647,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     SortedMap<ExpVectorLong, IExpr> nv = this.val;
     SortedMap<ExpVectorLong, IExpr> sv = S.val;
     for (Map.Entry<ExpVectorLong, IExpr> me : sv.entrySet()) {
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExpVectorLong e = me.getKey();
       IExpr y = me.getValue(); // sv.get(e); // assert y != null
       IExpr x = nv.get(e);
@@ -667,6 +670,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @param a coefficient.
    */
   public void doAddTo(IExpr a) {
+  // CPD-ON
     doAddTo(a, ring.evzero);
   }
 
@@ -913,6 +917,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @param i index of the variable of this polynomial in pfac.
    * @return extended multivariate polynomial.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExprPolynomial extendUnivariate(ExprPolynomialRing pfac, int i) {
     if (i < 0 || pfac.nvar < i) {
       throw new IllegalArgumentException("index " + i + "out of range " + pfac.nvar);
@@ -924,6 +929,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       return pfac.getOne();
     }
     int j = pfac.nvar - 1 - i;
+    // CPD-ON
     ExprPolynomial Cp = pfac.getZero().copy();
     if (this.isZERO()) {
       return Cp;
@@ -1059,6 +1065,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return [ gcd(this,S), a ] with a*this + b*S = gcd(this,S).
    */
   public ExprPolynomial[] hegcd(ExprPolynomial S) {
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     ExprPolynomial[] ret = new ExprPolynomial[2];
     ret[0] = null;
     ret[1] = null;
@@ -1075,6 +1082,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       throw new IllegalArgumentException(
           this.getClass().getName() + " not univariate polynomials" + ring);
     }
+    // CPD-ON
     ExprPolynomial[] qr;
     ExprPolynomial q = this;
     ExprPolynomial r = S;
@@ -1941,6 +1949,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     SortedMap<ExpVectorLong, IExpr> nv = n.val;
     SortedMap<ExpVectorLong, IExpr> sv = S.val;
     for (Map.Entry<ExpVectorLong, IExpr> me : sv.entrySet()) {
+      // CPD-OFF parallel implementation for long and for symbolic exponents
       ExpVectorLong e = me.getKey();
       IExpr y = me.getValue(); // sv.get(e); // assert y != null
       IExpr x = nv.get(e);
@@ -1965,6 +1974,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return this + a x<sup>0</sup>.
    */
   public ExprPolynomial subtract(IExpr a) {
+  // CPD-ON
     return subtract(a, ring.evzero);
   }
 
@@ -1980,6 +1990,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       return this;
     }
     ExprPolynomial n = this.copy();
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SortedMap<ExpVectorLong, IExpr> nv = n.val;
     IExpr x = nv.get(e);
     if (x != null) {
@@ -2003,6 +2014,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return this - a S.
    */
   public ExprPolynomial subtractMultiple(IExpr a, ExprPolynomial S) {
+  // CPD-ON
     if (a == null || a.isZERO()) {
       return this;
     }
