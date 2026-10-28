@@ -775,9 +775,9 @@
 						<format>xml</format>
 
 						<!-- The minimum number of duplicated tokens to be
-						reported, the plugin default. Deliberate copies are
-						wrapped in CPD-OFF/CPD-ON comments. -->
-						<minimumTokens>100</minimumTokens>
+						reported. Deliberate copies are wrapped in
+						CPD-OFF/CPD-ON comments. -->
+						<minimumTokens>80</minimumTokens>
 
 						<!-- Literals and identifiers must match exactly. With
 						ignoreLiterals/ignoreIdentifiers every builtin's
