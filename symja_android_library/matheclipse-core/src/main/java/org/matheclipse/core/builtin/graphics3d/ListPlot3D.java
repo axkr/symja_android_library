@@ -68,10 +68,33 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     if (treatAsCoordinates) {
-      return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt, meshOpt, plotStyleOpt,
+      return processCoordinateList(listData, 0, boxRatiosOpt, plotRangeOpt, meshOpt, plotStyleOpt,
           options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
           RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine), Plot3DTools
               .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine));
+    } else if (listData.forAll(ListPlot3D::isCoordinateList)) {
+      // several lists of {x, y, z} triples: one surface for each, in the styles of the datasets
+      IASTAppendable surfaces = F.ListAlloc(listData.argSize());
+      IExpr first = F.NIL;
+      for (int i = 1; i < listData.size(); i++) {
+        IExpr surface = processCoordinateList((IAST) listData.get(i), i - 1, boxRatiosOpt,
+            plotRangeOpt, meshOpt, plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST,
+            argSize, RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
+            Plot3DTools.plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D,
+                engine));
+        if (!surface.isAST(S.Graphics3D) || surface.argSize() == 0) {
+          return F.NIL;
+        }
+        if (surface.first().isList()) {
+          surfaces.appendArgs((IAST) surface.first());
+        } else {
+          surfaces.append(surface.first());
+        }
+        if (first.isNIL()) {
+          first = surface;
+        }
+      }
+      return ((IAST) first).setAtCopy(1, surfaces.argSize() == 1 ? surfaces.first() : surfaces);
     } else {
       if (isRectangularArray(listData)) {
         // InterpolationOrder 2 or more: the data is a smooth surface through the samples, drawn
@@ -154,7 +177,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
    * edges of the triangles the points were joined into, since a triangulation has no grid lines
    * to thin out.
    */
-  private IExpr processCoordinateList(IAST data, IExpr boxRatiosOpt, IExpr plotRangeOpt,
+  private IExpr processCoordinateList(IAST data, int index, IExpr boxRatiosOpt,
+      IExpr plotRangeOpt,
       IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST, int argSize,
       RegionFunctionFilter region, PlotColorFunction.Builder colorBuilder) {
     int n = data.argSize();
@@ -192,7 +216,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
     // 2. Register them with the builder
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, colorMap != null);
-    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(index, plotStyleOpt), meshOpt);
     List<PointXYZ> points = new ArrayList<>(samples.size());
     List<double[]> bars = new ArrayList<>();
     for (int i = 0; i < samples.size(); i++) {
@@ -222,6 +246,12 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
     return Plot3DTools.graphics3D(graphicsComplex, originalAST, argSize,
         surfaceDefaults(plotRangeOpt, boxRatiosOpt));
+  }
+
+  /** Whether <code>expr</code> is a non-empty list of <code>{x, y, z}</code> number triples. */
+  private static boolean isCoordinateList(IExpr expr) {
+    return expr.isList() && expr.argSize() > 0 && ((IAST) expr).forAll(
+        p -> p.isList() && p.argSize() == 3 && ((IAST) p).forAll(x -> x.isNumber()));
   }
 
   /**

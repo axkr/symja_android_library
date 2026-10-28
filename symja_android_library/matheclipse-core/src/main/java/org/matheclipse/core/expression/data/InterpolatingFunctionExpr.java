@@ -56,6 +56,23 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   }
 
   /**
+   * Whether <code>f(x)</code> with a symbolic argument stays unevaluated instead of writing out
+   * the polynomial pieces.
+   */
+  boolean numericArgumentsOnly = false;
+
+  /**
+   * Leaves <code>f(x)</code> with a symbolic argument unevaluated, as for the solution of a
+   * differential equation.
+   *
+   * @return this function
+   */
+  public InterpolatingFunctionExpr<T> withNumericArgumentsOnly() {
+    this.numericArgumentsOnly = true;
+    return this;
+  }
+
+  /**
    * Wrapper for an interpolating function represented as an {@link IAST}. This variant returns the
    * original stored AST via {@link #normal(boolean)}.
    */
@@ -89,6 +106,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       ASTFunctionExpr function = new ASTFunctionExpr(toData(), min, max);
       function.order = order;
       function.exactDomain = exactDomain;
+      function.numericArgumentsOnly = numericArgumentsOnly;
       return function;
     }
   }
@@ -488,6 +506,58 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     return result;
   }
 
+  /**
+   * A function of one variable known at sample points, interpolated by a Hipparchus Akima spline.
+   * Only a numeric argument gives a value; a symbolic one leaves <code>f(x)</code> standing.
+   */
+  private static class SampledFunctionExpr
+      extends InterpolatingFunctionExpr<org.hipparchus.analysis.UnivariateFunction> {
+    private static final long serialVersionUID = 2470558337467213207L;
+
+    public SampledFunctionExpr(final org.hipparchus.analysis.UnivariateFunction function,
+        double min, double max) {
+      super(function, min, max);
+    }
+
+    /** The value at <code>x</code>, a point outside the samples taken from their edge. */
+    public IExpr valueAt(double x) {
+      return F.num(toData().value(Math.max(min, Math.min(max, x))));
+    }
+
+    @Override
+    public IExpr copy() {
+      return new SampledFunctionExpr(toData(), min, max);
+    }
+
+    /** The spline is opaque: shown as its domain and a placeholder for the data. */
+    @Override
+    public String toString() {
+      return "InterpolatingFunction({{" + min + "," + max + "}},<>)";
+    }
+
+    @Override
+    public String fullFormString() {
+      return toString();
+    }
+
+    @Override
+    public String toHTML() {
+      return toString();
+    }
+  }
+
+  /**
+   * A function of one variable from its values at sample points.
+   *
+   * @param xs the sample points, strictly increasing, at least 5 of them
+   * @param ys the values at the sample points
+   */
+  public static InterpolatingFunctionExpr newSampled(double[] xs, double[] ys) {
+    return new SampledFunctionExpr(
+        new org.hipparchus.analysis.interpolation.AkimaSplineInterpolator().interpolate(xs, ys),
+        xs[0], xs[xs.length - 1]);
+  }
+
   /** */
   private static final long serialVersionUID = -3183236658957651705L;
 
@@ -776,6 +846,10 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
         }
         // a symbolic argument leaves y(x) -> InterpolatingFunction(...)(x) standing, which is what
         // the caller asked for: the model cannot be written out as an expression
+      } else if (head instanceof SampledFunctionExpr) {
+        if (evaled) {
+          return ((SampledFunctionExpr) head).valueAt(value);
+        }
       } else if (head instanceof HermiteFunctionExpr) {
         if (evaled) {
           InterpolatingFunctionExpr<IAST> function = (InterpolatingFunctionExpr<IAST>) head;
@@ -792,7 +866,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       } else if (head instanceof ASTFunctionExpr) {
         ASTFunctionExpr function = (ASTFunctionExpr) head;
         Object model = function.toData();
-        if (model instanceof IAST) {
+        if (model instanceof IAST && (evaled || !function.numericArgumentsOnly)) {
           IAST interpolator = (IAST) model;
           return F.unaryAST1(interpolator, arg1);
         }

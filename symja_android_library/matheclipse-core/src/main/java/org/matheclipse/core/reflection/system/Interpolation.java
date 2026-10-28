@@ -487,9 +487,15 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
     if (Double.isNaN(min) || Double.isNaN(max)) {
       return F.NIL;
     }
+    // symbolic values are weighted linearly with machine number weights, as an interpolating
+    // function evaluates numerically
+    final boolean symbolicLinear =
+        order == 1 && !matrix.forAll(row -> row.second().isNumericFunction(true));
     if (rows <= order + 1) {
-      return InterpolatingFunctionExpr
-          .newInstance(F.Function(F.InterpolatingPolynomial(matrix, F.Slot1)), min, max, order);
+      return InterpolatingFunctionExpr.newInstance(
+          F.Function(symbolicLinear ? linearPiece(matrix.getAST(1), matrix.getAST(2))
+              : F.InterpolatingPolynomial(matrix, F.Slot1)),
+          min, max, order);
     }
     IASTAppendable pieces = F.ListAlloc(rows);
     for (int j = 1; j < rows; j++) {
@@ -500,9 +506,20 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
         data.append(matrix.get(k));
       }
       IExpr condition = j < rows - 1 ? F.Less(F.Slot1, matrix.getPart(j + 1, 1)) : S.True;
-      pieces.append(F.list(F.InterpolatingPolynomial(data, F.Slot1), condition));
+      pieces.append(F.list(symbolicLinear ? linearPiece(data.getAST(1), data.getAST(2))
+          : F.InterpolatingPolynomial(data, F.Slot1), condition));
     }
     return InterpolatingFunctionExpr.newInstance(F.Function(F.Piecewise(pieces)), min, max, order);
+  }
+
+  /**
+   * The line through the points <code>{x1, y1}</code> and <code>{x2, y2}</code> as a function of
+   * <code>#</code>: <code>y2 + N((x2 - #)/(x2 - x1))*(y1 - y2)</code>.
+   */
+  private static IExpr linearPiece(IAST point1, IAST point2) {
+    IExpr weight = F.N(F.Divide(F.Subtract(point2.first(), F.Slot1),
+        F.Subtract(point2.first(), point1.first())));
+    return F.Plus(point2.second(), F.Times(weight, F.Subtract(point1.second(), point2.second())));
   }
 
   private IAST createComparator(IAST matrix, int i, int j, int size) {

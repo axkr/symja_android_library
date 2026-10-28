@@ -134,8 +134,10 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr complex = builder.build();
 
     IExpr[] defaults = Plot3DTools.cubeDefaults(min, max, true);
-    IExpr result = Plot3DTools.graphics3D(complex.isPresent() ? F.List(complex) : F.CEmptyList,
-        originalAST, argSize, defaults);
+    // an empty region gives two empty lists of primitives
+    IExpr result = Plot3DTools.graphics3D(
+        complex.isPresent() ? F.List(complex) : F.list(F.CEmptyList, F.CEmptyList), originalAST,
+        argSize, defaults);
     return optionsInAList(result);
   }
 

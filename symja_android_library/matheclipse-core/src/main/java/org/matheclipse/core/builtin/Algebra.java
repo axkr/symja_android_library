@@ -5494,10 +5494,10 @@ public class Algebra {
       }
       if (arg1.isAST()) {
         IExpr together = engine.evaluate(AlgebraUtil.togetherExpr(arg1, engine));
-        if ((arg1.isTimes() || arg1.isPower()) && !engine.evaluate(F.Denominator(arg1)).isPlus()
+        if ((arg1.isTimes() || arg1.isPower())
             && AlgebraUtil.isSameDenominator(arg1, together, engine)) {
-          // one fraction with nothing to cancel keeps the factors of its denominator; a
-          // denominator which is one sum has no factors to keep
+          // one fraction with nothing to cancel keeps the factors of its numerator and
+          // denominator, with their numeric contents merged
           IExpr reduced = AlgebraUtil.reducedFraction(arg1, engine);
           if (reduced.isPresent()) {
             return reduced;

@@ -46,7 +46,7 @@ public class DistributionFitTest extends AbstractFunctionEvaluator {
   static final String AUTOMATIC_TEST = "KolmogorovSmirnov";
 
   /** The smallest sample the Cramér-von Mises test is valid for. */
-  private static final int CRAMER_VON_MISES_MINIMUM = 7;
+  static final int CRAMER_VON_MISES_MINIMUM = 7;
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -179,10 +179,142 @@ public class DistributionFitTest extends AbstractFunctionEvaluator {
   public static double[] kolmogorovSmirnov(double[] u) {
     double[] d = distances(u);
     double statistic = Math.max(d[0], d[1]);
-    // the same p-value KolmogorovSmirnovTest gives
-    double p =
-        1.0 - new org.hipparchus.stat.inference.KolmogorovSmirnovTest().cdf(statistic, u.length);
-    return new double[] {statistic, p};
+    int n = u.length;
+    if (statistic > 0.5) {
+      // D+ >= d and D- >= d exclude each other, the tail is twice the one of D+
+      return new double[] {statistic, Math.min(1.0, 2.0 * oneSidedTail(n, statistic))};
+    }
+    return new double[] {statistic, 1.0 - kolmogorovSmirnovCDF(n, statistic)};
+  }
+
+  /**
+   * <code>Probability(D+ &gt;= d)</code> by the formula of Birnbaum and Tingey (1951)
+   * <code>d*Sum(Binomial(n,j)*(1-d-j/n)^(n-j)*(d+j/n)^(j-1), {j, 0, Floor(n*(1-d))})</code>.
+   */
+  private static double oneSidedTail(int n, double d) {
+    double sum = 0.0;
+    int last = (int) Math.floor(n * (1.0 - d));
+    for (int j = 0; j <= last; j++) {
+      double first = 1.0 - d - (double) j / n;
+      if (first <= 0.0 && j < n) {
+        continue;
+      }
+      double logTerm = logBinomial(n, j) + (j < n ? (n - j) * Math.log(first) : 0.0)
+          + (j - 1) * Math.log(d + (double) j / n);
+      sum += Math.exp(logTerm);
+    }
+    return d * sum;
+  }
+
+  private static double logBinomial(int n, int k) {
+    return Gamma.logGamma(n + 1.0) - Gamma.logGamma(k + 1.0) - Gamma.logGamma(n - k + 1.0);
+  }
+
+  /** The largest matrix order the exact distribution of the statistic is computed with. */
+  private static final int KOLMOGOROV_MAXIMUM_ORDER = 199;
+
+  /**
+   * <code>Probability(D &lt; d)</code> for the statistic <code>D</code> of a sample of size
+   * <code>n</code>: the exact distribution of Marsaglia, Tsang and Wang (2003), "Evaluating
+   * Kolmogorov's Distribution", with their approximation for the far right tail.
+   */
+  static double kolmogorovSmirnovCDF(int n, double d) {
+    if (!(d > 0.0)) {
+      return 0.0;
+    }
+    if (d >= 1.0) {
+      return 1.0;
+    }
+    double s = d * d * n;
+    if (s > 7.24 || (s > 3.76 && n > 99)) {
+      return 1.0 - 2.0 * Math.exp(-(2.000071 + 0.331 / Math.sqrt(n) + 1.409 / n) * s);
+    }
+    int k = (int) (n * d) + 1;
+    int m = 2 * k - 1;
+    if (m > KOLMOGOROV_MAXIMUM_ORDER) {
+      return new org.hipparchus.stat.inference.KolmogorovSmirnovTest().cdf(d, n);
+    }
+    double h = k - n * d;
+    double[][] matrix = new double[m][m];
+    for (int i = 0; i < m; i++) {
+      for (int j = 0; j < m; j++) {
+        matrix[i][j] = (i - j + 1 < 0) ? 0.0 : 1.0;
+      }
+    }
+    for (int i = 0; i < m; i++) {
+      matrix[i][0] -= Math.pow(h, i + 1);
+      matrix[m - 1][i] -= Math.pow(h, m - i);
+    }
+    matrix[m - 1][0] += (2.0 * h - 1.0 > 0.0) ? Math.pow(2.0 * h - 1.0, m) : 0.0;
+    for (int i = 0; i < m; i++) {
+      for (int j = 0; j < m; j++) {
+        if (i - j + 1 > 0) {
+          for (int g = 1; g <= i - j + 1; g++) {
+            matrix[i][j] /= g;
+          }
+        }
+      }
+    }
+    int[] exponent = new int[1];
+    double[][] power = matrixPower(matrix, n, exponent);
+    double result = power[k - 1][k - 1];
+    int e = exponent[0];
+    for (int i = 1; i <= n; i++) {
+      result = result * i / n;
+      if (result < 1e-140) {
+        result *= 1e140;
+        e -= 140;
+      }
+    }
+    return result * Math.pow(10.0, e);
+  }
+
+  /**
+   * <code>matrix^n</code> by repeated squaring, scaled by <code>10^exponent[0]</code> to stay in
+   * range.
+   */
+  private static double[][] matrixPower(double[][] matrix, int n, int[] exponent) {
+    if (n == 1) {
+      exponent[0] = 0;
+      int m = matrix.length;
+      double[][] copy = new double[m][];
+      for (int i = 0; i < m; i++) {
+        copy[i] = matrix[i].clone();
+      }
+      return copy;
+    }
+    double[][] half = matrixPower(matrix, n / 2, exponent);
+    double[][] result = multiply(half, half);
+    int e = 2 * exponent[0];
+    if (n % 2 == 1) {
+      result = multiply(matrix, result);
+    }
+    int m = matrix.length;
+    if (result[m / 2][m / 2] > 1e140) {
+      for (double[] row : result) {
+        for (int j = 0; j < m; j++) {
+          row[j] *= 1e-140;
+        }
+      }
+      e += 140;
+    }
+    exponent[0] = e;
+    return result;
+  }
+
+  private static double[][] multiply(double[][] a, double[][] b) {
+    int m = a.length;
+    double[][] c = new double[m][m];
+    for (int i = 0; i < m; i++) {
+      for (int j = 0; j < m; j++) {
+        double s = 0.0;
+        for (int l = 0; l < m; l++) {
+          s += a[i][l] * b[l][j];
+        }
+        c[i][j] = s;
+      }
+    }
+    return c;
   }
 
   private static double[] kuiper(double[] u) {
@@ -337,6 +469,16 @@ public class DistributionFitTest extends AbstractFunctionEvaluator {
   }
 
   private static double[] pearsonChiSquare(double[] u) {
+    return pearsonChiSquare(u, 0);
+  }
+
+  /**
+   * <code>{statistic, pValue}</code> of the Pearson test over equiprobable bins.
+   *
+   * @param estimated the number of parameters estimated from the data, each of which costs one
+   *        degree of freedom
+   */
+  static double[] pearsonChiSquare(double[] u, int estimated) {
     int n = u.length;
     int bins = Math.max(2, (int) Math.ceil(2.0 * Math.pow(n, 0.4)));
     int[] counts = new int[bins];
@@ -348,7 +490,11 @@ public class DistributionFitTest extends AbstractFunctionEvaluator {
     for (int count : counts) {
       statistic += (count - expected) * (count - expected) / expected;
     }
-    double p = Gamma.regularizedGammaQ(0.5 * (bins - 1), 0.5 * statistic);
+    int degrees = bins - 1 - estimated;
+    if (degrees < 1) {
+      return new double[] {statistic, Double.NaN};
+    }
+    double p = Gamma.regularizedGammaQ(0.5 * degrees, 0.5 * statistic);
     return new double[] {statistic, p};
   }
 

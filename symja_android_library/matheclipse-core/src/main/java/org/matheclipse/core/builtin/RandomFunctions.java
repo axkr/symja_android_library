@@ -242,31 +242,42 @@ public final class RandomFunctions {
 
       IExpr arg1 = ast.arg1();
 
-      if (arg1.isRuleAST() && arg1.first().isList() && arg1.second().isList()
-          && arg1.first().size() == arg1.second().size()) {
-        IAST weights = (IAST) arg1.first();
+      if (arg1.isRuleAST()) {
+        if (!arg1.second().isList() || arg1.second().argSize() == 0) {
+          // The items for choice `1` should be a nonempty list or a rule weights -> choices.
+          return Errors.printMessage(S.RandomChoice, "lrwl", F.list(arg1), engine);
+        }
         IAST items = (IAST) arg1.second();
-        WeightedSampler sampler =
-            WeightedSampler.of(weights, items.argSize(), engine.getRandom());
-        if (sampler != null) {
-          if (ast.isAST1()) {
-            return items.get(sampler.next() + 1);
+        if (arg1.first().isList() && arg1.first().size() != items.size()) {
+          // The weights given on the left-hand side of `1` should have the same length as the data
+          // given on the right-hand side.
+          return Errors.printMessage(S.RandomChoice, "wghtvl", F.list(arg1), engine);
+        }
+        WeightedSampler sampler = arg1.first().isList()
+            ? WeightedSampler.of((IAST) arg1.first(), items.argSize(), engine.getRandom())
+            : null;
+        if (sampler == null) {
+          // The weights given on the left-hand side of `1` should be a list of positive numerical
+          // quantities having the same length as the list given on the right-hand side.
+          return Errors.printMessage(S.RandomChoice, "wghtv", F.list(arg1), engine);
+        }
+        if (ast.isAST1()) {
+          return items.get(sampler.next() + 1);
+        }
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          //
+          if (arg2.isList()) {
+            // n1 x n2 x n3 ... array
+            int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+            if (dimension == null) {
+              return F.NIL;
+            }
+            return Tensors.build(() -> items.get(sampler.next() + 1), dimension);
           }
-          if (ast.isAST2()) {
-            IExpr arg2 = ast.arg2();
-            //
-            if (arg2.isList()) {
-              // n1 x n2 x n3 ... array
-              int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
-              if (dimension == null) {
-                return F.NIL;
-              }
-              return Tensors.build(() -> items.get(sampler.next() + 1), dimension);
-            }
-            int n = arg2.toMachineInt();
-            if (n > 0) {
-              return F.mapRange(0, n, i -> items.get(sampler.next() + 1));
-            }
+          int n = arg2.toMachineInt();
+          if (n > 0) {
+            return F.mapRange(0, n, i -> items.get(sampler.next() + 1));
           }
         }
       } else if (arg1.isList()) {
@@ -274,7 +285,8 @@ public final class RandomFunctions {
         Random random = engine.getRandom();
         final int listSize = list.argSize();
         if (listSize == 0) {
-          return F.NIL;
+          // The items for choice `1` should be a nonempty list or a rule weights -> choices.
+          return Errors.printMessage(S.RandomChoice, "lrwl", F.list(arg1), engine);
         }
         int randomIndex = random.nextInt(listSize);
         if (ast.isAST1()) {

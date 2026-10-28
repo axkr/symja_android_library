@@ -105,9 +105,20 @@ public class StatisticsFunctions {
       S.Covariance.setEvaluator(new Covariance());
       S.DistributionParameterAssumptions.setEvaluator(new DistributionParameterAssumptions());
       S.DistributionParameterQ.setEvaluator(new DistributionParameterQ());
+      S.EstimatedDistribution.setEvaluator(new EstimatedDistribution());
       S.FindDistributionParameters.setEvaluator(new FindDistributionParameters());
       S.DistributionFitTest
           .setEvaluator(new org.matheclipse.core.reflection.system.DistributionFitTest());
+      S.AndersonDarlingTest.setEvaluator(
+          new org.matheclipse.core.reflection.system.GoodnessOfFitTest("AndersonDarling"));
+      S.CramerVonMisesTest.setEvaluator(
+          new org.matheclipse.core.reflection.system.GoodnessOfFitTest("CramerVonMises"));
+      S.KuiperTest
+          .setEvaluator(new org.matheclipse.core.reflection.system.GoodnessOfFitTest("Kuiper"));
+      S.PearsonChiSquareTest.setEvaluator(
+          new org.matheclipse.core.reflection.system.GoodnessOfFitTest("PearsonChiSquare"));
+      S.WatsonUSquareTest.setEvaluator(
+          new org.matheclipse.core.reflection.system.GoodnessOfFitTest("WatsonUSquare"));
       S.HypothesisTestData
           .setEvaluator(new org.matheclipse.core.reflection.system.HypothesisTestData());
       S.Likelihood.setEvaluator(new org.matheclipse.core.reflection.system.Likelihood(false));
@@ -2694,6 +2705,9 @@ public class StatisticsFunctions {
             } else if (str.toString().equals("TestData")) {
               // KolmogorovSmirnovTest(data1, data2, "TestData")
               property = 1;
+            } else if (str.toString().equals("TestStatistic")) {
+              // KolmogorovSmirnovTest(data1, data2, "TestStatistic")
+              property = 2;
             } else {
               return F.NIL;
             }
@@ -2718,6 +2732,8 @@ public class StatisticsFunctions {
                       p = test.kolmogorovSmirnovTest(data1, data2, false);
                       d = test.kolmogorovSmirnovStatistic(data1, data2);
                       return new ASTRealVector(new double[] {d, p}, false);
+                    default:
+                      return F.num(test.kolmogorovSmirnovStatistic(data1, data2));
                   }
                 }
                 return F.NIL;
@@ -2731,6 +2747,9 @@ public class StatisticsFunctions {
               if (u != null) {
                 double[] result =
                     org.matheclipse.core.reflection.system.DistributionFitTest.kolmogorovSmirnov(u);
+                if (property == 2) {
+                  return F.num(result[0]);
+                }
                 return property == 0 ? F.num(result[1])
                     : new ASTRealVector(new double[] {result[0], result[1]}, false);
               }
@@ -3031,59 +3050,38 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.isAST2()) {
-        return F.NIL;
-      }
-      double[] data = ast.arg1().toDoubleVector();
-      if (data == null || data.length == 0) {
-        return F.NIL;
-      }
-      if (ast.arg2().isAST(S.ExponentialDistribution, 2) && ast.arg2().first().isSymbol()) {
-        // maximum likelihood: the rate is the reciprocal of the mean
-        double mean = StatUtils.mean(data);
-        if (!(mean > 0.0)) {
-          return F.NIL;
-        }
-        return F.list(F.Rule(ast.arg2().first(), F.num(1.0 / mean)));
-      }
-      if (!ast.arg2().isAST2()) {
-        return F.NIL;
-      }
-      IAST dist = (IAST) ast.arg2();
-      IExpr firstParameter = dist.arg1();
-      IExpr secondParameter = dist.arg2();
-      if (!firstParameter.isSymbol() || !secondParameter.isSymbol()) {
-        return F.NIL;
-      }
-      if (dist.isAST(S.NormalDistribution, 3)) {
-        double mean = StatUtils.mean(data);
-        double variance = 0.0;
-        for (int i = 0; i < data.length; i++) {
-          variance += (data[i] - mean) * (data[i] - mean);
-        }
-        // maximum likelihood uses the population standard deviation
-        return F.list(F.Rule(firstParameter, F.num(mean)),
-            F.Rule(secondParameter, F.num(Math.sqrt(variance / data.length))));
-      }
-      if (dist.isAST(S.LaplaceDistribution, 3)) {
-        double[] sorted = data.clone();
-        Arrays.sort(sorted);
-        int n = sorted.length;
-        double median = (n % 2 == 1) ? sorted[n / 2] //
-            : (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0;
-        double meanAbsoluteDeviation = 0.0;
-        for (int i = 0; i < n; i++) {
-          meanAbsoluteDeviation += Math.abs(sorted[i] - median);
-        }
-        return F.list(F.Rule(firstParameter, F.num(median)),
-            F.Rule(secondParameter, F.num(meanAbsoluteDeviation / n)));
+      return org.matheclipse.core.reflection.system.MaximumLikelihood.estimate(ast, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    }
+  }
+
+  /**
+   * <code>EstimatedDistribution(data, dist)</code> - <code>dist</code> with the maximum likelihood
+   * estimates of its symbolic parameters.
+   */
+  private static final class EstimatedDistribution extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rules = org.matheclipse.core.reflection.system.MaximumLikelihood.estimate(ast, engine);
+      if (rules.isList()) {
+        return F.subst(ast.arg2(), (IAST) rules);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_4;
     }
 
     @Override

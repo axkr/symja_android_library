@@ -297,13 +297,13 @@ public class TriangleTestCase extends ExprEvaluatorTestCase {
 
     // InfiniteLine constructs
     check("TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}), {\"AngleBisector\", 1})", //
-        "InfiniteLine({{0,0},{12/7,12/7}})");
+        "InfiniteLine({0,0},{1,1})");
     check("TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}), {\"ExteriorAngleBisector\", 1})", //
         "InfiniteLine({{0,0},{1,-1}})");
     check("TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}), {\"PerpendicularBisector\", 1})", //
-        "InfiniteLine({{2,3/2},{5,11/2}})");
+        "InfiniteLine({2,3/2},{3,4})");
     check("TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"EulerLine\")", //
-        "InfiniteLine({{2,3/2},{0,0}})");
+        "InfiniteLine({{4/3,1},{0,0}})");
 
     // Circle constructs
     check("TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"Incircle\")", //
@@ -344,7 +344,7 @@ public class TriangleTestCase extends ExprEvaluatorTestCase {
         "Triangle({{2,3/2,0},{0,3/2,0},{2,0,0}})");
     check(
         "TriangleConstruct(Triangle({{0, 0, 0}, {4, 0, 0}, {0, 3, 0}}), {\"PerpendicularBisector\", 1})", //
-        "InfiniteLine({{2,3/2,0},{14/25,-21/50,0}})");
+        "InfiniteLine({2,3/2,0},{-36/25,-48/25,0})");
     check("TriangleConstruct(Triangle({{0, 0, 0}, {4, 0, 0}, {0, 3, 0}}), \"Circumcircle\")", //
         "TriangleConstruct(Triangle({{0,0,0},{4,0,0},{0,3,0}}),Circumcircle)");
     check("TriangleConstruct(Triangle({{0, 0, 0}, {4, 0, 0}, {0, 3, 0}}), {\"Excircle\", 1})", //
@@ -368,10 +368,9 @@ public class TriangleTestCase extends ExprEvaluatorTestCase {
     // message TriangleConstruct: Foo is not a valid construction specification.
     check("TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}), \"Foo\")", //
         "TriangleConstruct(Triangle({{0,0},{4,0},{0,3}}),Foo)");
-    // message TriangleConstruct: TriangleConstruct called with 1 argument; 2 arguments are
-    // expected.
+    // without a construction the triangle itself
     check("TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}))", //
-        "TriangleConstruct(Triangle({{0,0},{4,0},{0,3}}))");
+        "Triangle({{0,0},{4,0},{0,3}})");
     check("TriangleConstruct(foo, \"Centroid\")", //
         "TriangleConstruct(foo,Centroid)");
   }

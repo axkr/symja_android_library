@@ -221,6 +221,12 @@ public class FilterFunctions {
    * the vector of the one dimensional kernel. The standard deviation is a number for all
    * dimensions, a list of one for each, or <code>ri/2</code> by default.
    * </p>
+   *
+   * <p>
+   * <code>GaussianMatrix(r, {n1, n2})</code> is the matrix of the discrete derivatives of the
+   * orders <code>n1</code> along the rows and <code>n2</code> along the columns;
+   * <code>GaussianMatrix(r, n)</code> means <code>{n, n}</code>.
+   * </p>
    */
   private static class GaussianMatrix extends AbstractEvaluator {
 
@@ -265,15 +271,121 @@ public class FilterFunctions {
           i -> productArray(kernels, dimension + 1, factor * kernel[i]));
     }
 
+    /**
+     * The one dimensional factor of the derivative order <code>n</code>: the normalized kernel for
+     * <code>n == 0</code>, otherwise the central difference applied <code>n</code> times to the
+     * untruncated discrete Gaussian <code>T(k) == Exp(-t)*BesselI(k, t)</code>,
+     * <code>t == sigma^2</code>, i.e. <code>Sum((-1)^i*Binomial(n,i)*T(k+n-2*i), {i,0,n})/2^n</code>.
+     * The factor is even or odd with <code>n</code> and computed for <code>k &gt;= 0</code> only, so
+     * that symmetric entries agree exactly.
+     */
+    private static double[] derivativeFactor(int radius, double sigma, int n, EvalEngine engine) {
+      if (n == 0) {
+        return gaussianKernel(radius, sigma, engine);
+      }
+      final double t = sigma * sigma;
+      final double[] discrete = new double[radius + n + 1];
+      for (int k = 0; k < discrete.length; k++) {
+        discrete[k] = engine.evalN(F.BesselI(F.ZZ(k), F.num(t))).evalf() * Math.exp(-t);
+      }
+      final double scale = Math.pow(2.0, n);
+      final double mirror = n % 2 == 0 ? 1.0 : -1.0;
+      double[] factor = new double[2 * radius + 1];
+      for (int k = 0; k <= radius; k++) {
+        double sum = 0.0;
+        if (k != 0 || n % 2 == 0) {
+          double binomial = 1.0;
+          for (int i = 0; i <= n; i++) {
+            sum += (i % 2 == 0 ? binomial : -binomial) * discrete[Math.abs(k + n - 2 * i)];
+            binomial = binomial * (n - i) / (i + 1);
+          }
+        }
+        factor[radius + k] = sum / scale;
+        factor[radius - k] = mirror * sum / scale;
+      }
+      return factor;
+    }
+
+    /**
+     * The derivative matrix of the orders <code>n1, n2</code>: the outer product of the factors,
+     * less its mean if both orders are even, scaled so that
+     * <code>Sum(m[i,j]*i^n1*j^n2) == (-1)^(n1+n2)*n1!*n2!</code> over the offsets from the centre.
+     * The derivatives of a constant vanish and those of the matching monomial are exact.
+     */
+    private static IExpr derivativeMatrix(int radius, double sigma, int n1, int n2,
+        EvalEngine engine) {
+      final double[] rows = derivativeFactor(radius, sigma, n1, engine);
+      final double[] columns = derivativeFactor(radius, sigma, n2, engine);
+      final int size = 2 * radius + 1;
+      final double[][] m = new double[size][size];
+      double sum = 0.0;
+      for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+          m[i][j] = rows[i] * columns[j];
+          sum += m[i][j];
+        }
+      }
+      if (n1 + n2 > 0) {
+        final double mean = n1 % 2 == 0 && n2 % 2 == 0 ? sum / (size * size) : 0.0;
+        double moment = 0.0;
+        for (int i = 0; i < size; i++) {
+          for (int j = 0; j < size; j++) {
+            m[i][j] -= mean;
+            moment += m[i][j] * Math.pow(i - radius, n1) * Math.pow(j - radius, n2);
+          }
+        }
+        double scale = ((n1 + n2) % 2 == 0 ? 1.0 : -1.0) * factorial(n1) * factorial(n2) / moment;
+        for (int i = 0; i < size; i++) {
+          for (int j = 0; j < size; j++) {
+            m[i][j] *= scale;
+          }
+        }
+      }
+      return F.matrix((i, j) -> F.num(m[i][j]), size, size);
+    }
+
+    private static double factorial(int n) {
+      double result = 1.0;
+      for (int i = 2; i <= n; i++) {
+        result *= i;
+      }
+      return result;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      int n1 = 0;
+      int n2 = 0;
+      if (ast.isAST2()) {
+        IExpr orders = ast.arg2();
+        if (orders.isList() ? !((IAST) orders).forAll(n -> n.toIntDefault() >= 0)
+            : orders.toIntDefault() < 0) {
+          // Single or list of non-negative machine-sized integers expected at position `1` of
+          // `2`.
+          return Errors.printMessage(S.GaussianMatrix, "ilsmn", F.list(F.C2, ast), engine);
+        }
+        if (orders.isList()) {
+          if (orders.argSize() != 2) {
+            // the orders of an array of another rank
+            return F.NIL;
+          }
+          n1 = orders.first().toIntDefault();
+          n2 = orders.second().toIntDefault();
+        } else {
+          n1 = orders.toIntDefault();
+          n2 = n1;
+        }
+      }
       if (arg1.isList() && (arg1.isList1() || arg1.isList2()) && arg1.first().isList()) {
-        return productKernel(arg1, engine);
+        return ast.isAST2() ? F.NIL : productKernel(arg1, engine);
       }
       double[] spec = radiusAndSigma(ast.arg1());
       if (spec == null) {
         return F.NIL;
+      }
+      if (n1 > 0 || n2 > 0) {
+        return derivativeMatrix((int) spec[0], spec[1], n1, n2, engine);
       }
       final double[] kernel = gaussianKernel((int) spec[0], spec[1], engine);
       return F.matrix((i, j) -> F.num(kernel[i] * kernel[j]), kernel.length, kernel.length);
@@ -286,7 +398,7 @@ public class FilterFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 

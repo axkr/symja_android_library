@@ -56,6 +56,12 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
     if (t.equals(s)) {
       return F.NIL;
     }
+    if (a1.isList() || a1.isEqual()) {
+      // a list and the two sides of an equation are transformed one by one:
+      // LaplaceTransform(x'(t) == y(t), t, s) is s*LaplaceTransform(x(t),t,s)-x(0) ==
+      // LaplaceTransform(y(t),t,s)
+      return ((IAST) a1).mapThread(ast, 1);
+    }
     if (t.isList() && s.isList() && t.argSize() == s.argSize() && t.argSize() > 0
         && ((IAST) s).forAll(x -> !x.isNumber())) {
       // LaplaceTransform(f, {t1, t2}, {s1, s2}) is the transform in one variable at a time; the

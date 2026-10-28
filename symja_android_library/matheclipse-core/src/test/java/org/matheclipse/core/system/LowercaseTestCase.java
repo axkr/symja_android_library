@@ -11326,8 +11326,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "KolmogorovSmirnovTest({4.9, 5.1, 5.3, 4.7, 5.0, 5.2, 4.8}, NormalDistribution(5, 1/5)) > 0.9", //
         "True");
+    // D > 1/2: twice the exact tail of D+, 2*(1 - CDF(NormalDistribution(0, 1), 4.7))^7
     check("KolmogorovSmirnovTest({4.9, 5.1, 5.3, 4.7, 5.0, 5.2, 4.8}, NormalDistribution(0, 1))", //
-        "0.0");
+        "1.26044*10^-41");
   }
 
   @Test
@@ -14313,7 +14314,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("GeneralizedLinearModelFit({{0,1},{2,5},{4,9}}, x, x)[3]", //
         "7.0");
     check("GeneralizedLinearModelFit({{0,1},{2,5},{4,9}}, x, x, ExponentialFamily->\"Poisson\")", //
-        "GeneralizedLinearModelFit({{0,1},{2,5},{4,9}},x,x,ExponentialFamily->Poisson)");
+        "FittedModel[E^(0.44807+0.452518*x)]");
   }
 
   @Test
@@ -17668,6 +17669,422 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // infinite support
     check("FourierSequenceTransform(2^n*UnitStep(n), n, w)", //
         "FourierSequenceTransform(2^n*UnitStep(n),n,w)");
+  }
+
+  @Test
+  public void testLinearModelFitDataAndMessages() {
+    // a data point with a Missing() entry is left out; a vector keeps the positions as x values
+    check("LinearModelFit({{1, 2.0}, {2, Missing()}, {3, 5.0}, {5, 8.0}}, x, x)"
+        + "[\"BestFitParameters\"]", //
+        "{0.5,1.5}");
+    check("LinearModelFit({2, Missing(), 6, 9}, x, x)[\"BestFitParameters\"]", //
+        "{-0.428571,2.28571}");
+    // one-element rows are responses
+    check("LinearModelFit({{3}, {5}, {8}}, x, x)", //
+        "FittedModel[0.333333+2.5*x]");
+    // desmat, ivar, fitc and notdata messages leave the call unevaluated
+    check("LinearModelFit({{1, 2}, {2, q}}, x, x)", //
+        "LinearModelFit({{1,2},{2,q}},x,x)");
+    check("LinearModelFit({q, 2, 3}, x, x)", //
+        "LinearModelFit({q,2,3},x,x)");
+    check("LinearModelFit({{1, 2}, {3, 4}}, x, {x, 5})", //
+        "LinearModelFit({{1,2},{3,4}},x,{x,5})");
+    check("LinearModelFit({{1, 2, 3}, {3, 4, 5}}, {u, v}, {u, v, w})", //
+        "LinearModelFit({{1,2,3},{3,4,5}},{u,v},{u,v,w})");
+    check("LinearModelFit({}, x, x)", //
+        "LinearModelFit({},x,x)");
+    // a model takes one value per variable, and a list is not threaded over
+    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+        + "{fm(1, 2), fm({1, 2}), fm(2)}", //
+        "{FittedModel[0.155814+0.995349*x][1,2],FittedModel[0.155814+0.995349*x][{1,2}],2.14651}");
+    // an unknown name in a list of properties leaves the query unevaluated
+    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+        + "Head(Head(fm({\"RSquared\", \"NoProperty\"})))", //
+        "FittedModel");
+    check("fm = LinearModelFit({{1, 2, 3}, {2, 3, 5}, {3, 5, 6}, {4, 4, 9}}, "
+        + "{Subscript(z, 1), Subscript(z, 1)*Subscript(z, 2)}, {Subscript(z, 1), Subscript(z, 2)});"
+        + "fm(\"IndependentVariables\")", //
+        "{Subscript(z,1),Subscript(z,2)}");
+  }
+
+  @Test
+  public void testLinearModelFitCovarianceAndBands() {
+    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+        + "fm(\"CovarianceMatrix\")", //
+        "{{0.0615197,-0.0139445},{-0.0139445,0.00410132}}");
+    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+        + "r = fm(\"ParameterConfidenceRegion\"); {Head(r), r[[1]], r[[2]]}", //
+        "{FittedModels`ParameterEllipsoid,{0.155814,0.995349},{1.11201,0.130684}}");
+    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+        + "{fm(\"SinglePredictionBands\") /. x -> 4, fm(\"MeanPredictionBands\") /. x -> 4}", //
+        "{{3.20324,5.07118},{3.73991,4.53451}}");
+    // no residual degrees of freedom: the variance is 0/0
+    check("LinearModelFit({{1, 2}, {4, 7}}, x, x)[\"ParameterTableEntries\"][[All, 2;;]]", //
+        "{{Indeterminate,Indeterminate,Indeterminate},{Indeterminate,Indeterminate,Indeterminate}}");
+  }
+
+  @Test
+  public void testGeneralizedLinearModelFitFamilies() {
+    check("g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
+        + "ExponentialFamily -> \"Poisson\");"
+        + "{g(\"BestFitParameters\"), g(\"PearsonResiduals\"), g(\"ResidualDeviance\")}", //
+        "{{0.35557,0.379423},{-0.751649,0.545432,-0.215195,0.584194,-0.242196},1.39735}");
+    check("g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
+        + "ExponentialFamily -> \"Poisson\");"
+        + "g(\"AnscombeResiduals\")", //
+        "{-0.839112,0.520378,-0.219028,0.563905,-0.244897}");
+    // the Pearson residuals are (y - mu)/Sqrt(V(mu))
+    check("g = GeneralizedLinearModelFit({{1, 1.5}, {2, 2.}, {3, 4.5}, {5, 6.}}, x, x, "
+        + "ExponentialFamily -> \"Gamma\"); mu = g(\"PredictedResponse\");"
+        + "{g(\"BestFitParameters\"), g(\"EstimatedDispersion\"), "
+        + "Max(Abs(g(\"PearsonResiduals\") - ({1.5, 2., 4.5, 6.} - mu)/mu)) < 10^-12}", //
+        "{{0.601215,-0.0901429},0.163779,True}");
+    // the Gaussian family stays a generalized linear model
+    check("g = GeneralizedLinearModelFit({{1, 3.}, {2, 4.}, {4, 7.5}, {5, 9.}}, x, x);"
+        + "{g(\"BestFitParameters\"), g(\"EstimatedDispersion\"), Head(Head(g(\"RSquared\")))}", //
+        "{{1.225,1.55},0.08125,FittedModel}");
+    // Deviance is not a property
+    check("g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
+        + "ExponentialFamily -> \"Poisson\"); Head(Head(g(\"Deviance\")))", //
+        "FittedModel");
+    check("GeneralizedLinearModelFit({{1., 2, 3}, {2., 4, 1}}, x, x)", //
+        "GeneralizedLinearModelFit({{1.0,2,3},{2.0,4,1}},x,x)");
+    check("{DiscreteIndicator(b, b, {a, b, c}), DiscreteIndicator(c, a, {a, b, c}), "
+        + "DiscreteIndicator(d, a, {a, b, c})}", //
+        "{1,0,DiscreteIndicator(d,a,{a,b,c})}");
+  }
+
+  @Test
+  public void testLogitProbitModelFit() {
+    check("d = {{1, 0}, {2, 1}, {3, 0}, {4, 1}, {5, 1}, {6, 1}, {7, 1}};"
+        + "{LogitModelFit(d, x, x)[\"BestFitParameters\"], "
+        + "ProbitModelFit(d, x, x)[\"BestFitParameters\"], LogitModelFit(d, x, x)[2.5]}", //
+        "{{-2.81264,1.1629},{-1.74502,0.715853},0.523636}");
+    check("d = {{1, 0}, {2, 1}, {3, 0}, {4, 1}, {5, 1}, {6, 1}, {7, 1}};"
+        + "LogitModelFit(d, x, x)[\"BestFitParameters\"] == "
+        + "GeneralizedLinearModelFit(d, x, x, ExponentialFamily -> \"Binomial\")[\"BestFitParameters\"]", //
+        "True");
+    // the responses of a binomial model are probabilities
+    check("LogitModelFit({{1, 0}, {2, 3}}, x, x)", //
+        "LogitModelFit({{1,0},{2,3}},x,x)");
+  }
+
+  @Test
+  public void testFitSymbolicResponses() {
+    // linear in the responses
+    check("Fit({{0, u}, {1, v}, {3, w}}, {1, x}, x)", //
+        "0.57735*(1.23718*u+0.742307*v-0.247436*w)+0.316228*(-0.903508*u-0.225877*v+1.12938*w)*x");
+    check("Expand(Fit({{0, u}, {1, v}, {3, w}}, {1, x}, x)) /. {u -> 1, v -> 2, w -> 5}", //
+        "0.857143+1.35714*x");
+  }
+
+  @Test
+  public void testMachineRankTolerance() {
+    // singular values up to 100 machine epsilons times the largest one are zero
+    check("PseudoInverse({{4., 0.}, {0., 8.*^-14}})", //
+        "{{0.25,0.0},\n" + " {0.0,0.0}}");
+    check("PseudoInverse({{4., 0.}, {0., 1.*^-13}})", //
+        "{{0.25,0.0},\n" + " {0.0,1.*10^13}}");
+    check("SingularValueList({{3., 0.}, {0., 6.*^-14}})", //
+        "{3.0}");
+    check("SingularValueList({{3., 0.}, {0., 9.*^-14}})", //
+        "{3.0,9.*10^-14}");
+    check("SingularValueList({{3., 0.}, {0., 9.*^-14}}, 1)", //
+        "{3.0}");
+  }
+
+  @Test
+  public void testDiffusionPDETerm() {
+    check("DiffusionPDETerm({v(s, t), {s, t}}, 7)", //
+        "Inactive(Div)[\n" //
+            + "{{-7,0},\n" //
+            + " {0,-7}}.Inactive(Grad)[v(s,t),{s,t}],{s,t}]");
+    // the default coefficient 1
+    check("DiffusionPDETerm({v(s), {s}})", //
+        "Inactive(Div)[\n" //
+            + "{{-1}}.Inactive(Grad)[v(s),{s}],{s}]");
+    check("DiffusionPDETerm({w(x, y), {x, y}}, {{a, b}, {c, d}})", //
+        "Inactive(Div)[{{-a,-b},{-c,-d}}.Inactive(Grad)[w(x,y),{x,y}],{x,y}]");
+    // v doesn't depend on y
+    check("DiffusionPDETerm({v, y}, c)", //
+        "0");
+    check("Activate(DiffusionPDETerm({v(s, t), {s, t}}, 7))", //
+        "-7*Derivative(0,2)[v][s,t]-7*Derivative(2,0)[v][s,t]");
+  }
+
+  @Test
+  public void testNDEigenvalues() {
+    // Dirichlet ends: (k*Pi/3)^2
+    checkNumeric("NDEigenvalues({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x), {x, 0, 3}, 3)", //
+        "{1.0966227112321507,4.386490844928603,9.869604401089358}", 1.0e-9);
+    // natural ends: 5*(k*Pi/3)^2 from 0
+    checkNumeric("Chop(NDEigenvalues(DiffusionPDETerm({u(x), {x}}, 5), u,"
+        + " Element({x}, Line({{1}, {4}})), 3), 10^-8)", //
+        "{0,5.483113556160755,21.93245422464302}", 1.0e-9);
+    // one Dirichlet end: ((k-1/2)*Pi)^2
+    checkNumeric("NDEigenvalues({-u''(x), DirichletCondition(u(x) == 0, x == 0)}, u(x), {x, 0, 1}, 3)", //
+        "{2.4674011002723395,22.206609902451056,61.68502750680849}", 1.0e-9);
+    // harmonic oscillator 2*(2*k+1)
+    checkNumeric("NDEigenvalues({-u''(x) + 4*x^2*u(x), DirichletCondition(u(x) == 0, True)}, u(x),"
+        + " {x, -5, 5}, 3)", //
+        "{2.0,6.0,10.0}", 1.0e-9);
+    // -((1 + x)*u'(x))', written out or inactive
+    checkNumeric("{NDEigenvalues({-(1 + x)*u''(x) - u'(x), DirichletCondition(u(x) == 0, True)},"
+        + " u(x), {x, 0, 1}, 2), NDEigenvalues({Inactive(Div)[{{-(1 + x)}} . Inactive(Grad)[u(x), {x}],"
+        + " {x}], DirichletCondition(u(x) == 0, True)}, u(x), {x, 0, 1}, 2)}", //
+        "{{14.337670769823733,57.48028457343679},{14.337670769823733,57.48028457343679}}", 1.0e-9);
+    // not linear
+    check("NDEigenvalues(u(x)^2 - u''(x), u(x), {x, 0, 1}, 2)", //
+        "NDEigenvalues(u(x)^2-u''(x),u(x),{x,0,1},2)");
+  }
+
+  @Test
+  public void testNDEigensystem() {
+    // L^2 normalized eigenfunctions, positive next to the right end
+    checkNumeric("{v, f} = NDEigensystem({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x),"
+        + " {x, 0, 4}, 2); {v, f /. x -> 1, NIntegrate(f[[1]]^2, {x, 0, 4})}", //
+        "{{0.6168502750680849,2.4674011002723395},{0.5,-0.7071067811865476},1.0}", 1.0e-7);
+    // a function head gives functions
+    checkNumeric("{v, f} = NDEigensystem({-w''(y)}, w, {y, 0, 2}, 2); {Chop(v, 10^-8),"
+        + " f[[1]](0.7), f[[2]](0.5)}", //
+        "{{0,2.4674011002723395},0.7071067811865476,-0.7071067811865476}", 1.0e-7);
+    // f(x) with a symbolic x stays unevaluated
+    check("{v, f} = NDEigensystem({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x),"
+        + " {x, 0, 4}, 1); {Head(Head(f[[1]])), First(f[[1]])}", //
+        "{InterpolatingFunction,x}");
+  }
+
+  @Test
+  public void testGaussianMatrixDerivativeOrders() {
+    // the first derivative along the rows: odd, zero in the middle row
+    check("GaussianMatrix({2, 0.8}, {1, 0})[[2]]", //
+        "{0.00862644,0.0548276,0.179963,0.0548276,0.00862644}");
+    check("GaussianMatrix({2, 0.8}, {1, 0})[[3]]", //
+        "{0.0,0.0,0.0,0.0,0.0}");
+    check("GaussianMatrix(1, {0, 1})[[2]]", //
+        "{0.40062,0.0,-0.40062}");
+    // an even order sums to zero, and the moment of the matching monomial is n1!*n2!
+    check("Chop(Total(GaussianMatrix({3, 1.5}, {0, 2}), 2))", //
+        "0");
+    check("Total(Table(GaussianMatrix({2, 0.9}, {2, 0})[[i, j]]*(i - 3)^2, {i, 5}, {j, 5}), 2)", //
+        "2.0");
+    check("m = GaussianMatrix({3, 1.2}, {1, 2}); m == -Reverse(m)", //
+        "True");
+    // a single order n means {n, n}
+    check("GaussianMatrix({1, 0.5}, 2)[[1]]", //
+        "{1.0,0.572276,1.0}");
+    check("GaussianMatrix(2, {0, -2})", //
+        "GaussianMatrix(2,{0,-2})");
+  }
+
+  @Test
+  public void testPlanarAngleKinds() {
+    check("PlanarAngle({{3, 0}, {0, 0}, {0, -2}}, \"Counterclockwise\")", //
+        "3/2*Pi");
+    check("PlanarAngle({{3, 0}, {0, 0}, {0, -2}}, \"Clockwise\")", //
+        "Pi/2");
+    check("PlanarAngle({{1, 1}, {0, 0}, {-1, 0}}, \"Interior\")", //
+        "3/4*Pi");
+    check("PlanarAngle({{1, 1}, {0, 0}, {-1, 0}}, \"Exterior\")", //
+        "Pi/4");
+    check("PlanarAngle({0, 0} -> {{0, 2}, {-3, 0}}, \"Counterclockwise\")", //
+        "Pi/2");
+    check("PlanarAngle({0, 0} -> {{0, 2}, {-3, 0}}, \"Clockwise\")", //
+        "3/2*Pi");
+    check("PlanarAngle({{3, 0}, {0, 0}, {0, -2}}, \"Baz\")", //
+        "PlanarAngle({{3,0},{0,0},{0,-2}},Baz)");
+  }
+
+  @Test
+  public void testTriangleConstructForms() {
+    check("TriangleConstruct({{0, 0}, {8, 0}, {2, 6}})", //
+        "Triangle({{0,0},{8,0},{2,6}})");
+    // the Euler line through the centroid and the orthocenter
+    check("TriangleConstruct({{0, 0}, {8, 0}, {2, 6}}, \"EulerLine\")", //
+        "InfiniteLine({{10/3,2},{2,2}})");
+    // the bisectors through a point in a direction
+    check("TriangleConstruct({{0, 0}, {8, 0}, {2, 6}}, {\"AngleBisector\", 1})", //
+        "InfiniteLine({0,0},{1+1/Sqrt(10),3/Sqrt(10)})");
+    check("TriangleConstruct({{0, 0}, {8, 0}, {2, 6}}, {\"PerpendicularBisector\", 3})", //
+        "InfiniteLine({4,0},{0,-8})");
+    check("TriangleConstruct({{0, 0}, {8, 0}, {2, 6}}, \"Qux\")", //
+        "TriangleConstruct({{0,0},{8,0},{2,6}},Qux)");
+  }
+
+  @Test
+  public void testInterpolationLinearSymbolicValues() {
+    check("Interpolation({{0, a}, {4, b}, {5, c}}, InterpolationOrder -> 1)[1]", //
+        "0.75*(a-b)+b");
+    check("Interpolation({{0, a}, {4, b}, {5, c}}, InterpolationOrder -> 1)[9/2]", //
+        "0.5*(b-c)+c");
+  }
+
+  @Test
+  public void testPlots3DWithoutSurface() {
+    // collinear points span no area
+    check("d = {{0, 1, 2}, {1, 1, 3}, {2, 1, 4}}; g = ListPlot3D({d, d + 1}); "
+        + "{Head(g), Cases(g, _Polygon, Infinity)}", //
+        "{Graphics3D,{}}");
+    check("g = RegionPlot3D(x + y + z < -1, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}); {Head(g), g[[1]]}", //
+        "{Graphics3D,{{},{}}}");
+    check("First(Show(Graphics3D(), Graphics3D(Cuboid())))", //
+        "{Cuboid({0,0,0},{1,1,1})}");
+  }
+
+  @Test
+  public void testSolvePartVariables() {
+    // a part of a symbol without a value is one unknown
+    check("Quiet(Solve({u[[1]] == 7, w[[2]] == u[[1]] - 2}, {u[[1]], w[[2]]}))", //
+        "{{u[[1]]->7,w[[2]]->5}}");
+    check("Quiet(Solve({m[[1]] + 2*m[[3]] == 4, m[[1]] - m[[3]] == 1}, {m[[1]], m[[3]]}))", //
+        "{{m[[1]]->2,m[[3]]->1}}");
+  }
+
+  @Test
+  public void testSolveInexactComponents() {
+    // the values of a subsystem without machine numbers stay exact
+    check("Solve({a == 3, 4.0*b == 1, c == a}, {a, b, c})", //
+        "{{a->3,b->0.25,c->3}}");
+    check("Solve({2.0*a + b == 3, a == 1, c == 2}, {a, b, c})", //
+        "{{a->1.0,b->1.0,c->2}}");
+    check("Solve({a^2 == 3.0, b == 5}, {a, b})", //
+        "{{a->-1.73205,b->5},{a->1.73205,b->5}}");
+  }
+
+  @Test
+  public void testSolveInexactPrincipalValues() {
+    // the principal values of the families of solutions, numericized
+    check("InputForm(Solve(4.0^x == 9, x))", //
+        "{{x->1.5849625007211563`}}");
+    check("InputForm(Solve(7^(x + 2) == 20.0, x))", //
+        "{{x->-0.4604981504370395`}}");
+    check("InputForm(Solve(Exp(2*x) - 7.0*Exp(x) + 12 == 0, x))", //
+        "{{x->1.0986122886681098`},{x->1.3862943611198906`}}");
+    check("Solve(Exp(3*x) == 1.0, x)", //
+        "{{x->0.0}}");
+  }
+
+  @Test
+  public void testFindRootComplexSecant() {
+    // the secant steps from two start values go on through complex values of the logarithm
+    check("FindRoot(Log(x) == -3, {x, 0.1, -0.2})", //
+        "{x->0.0497871}");
+  }
+
+  @Test
+  public void testFindMinimumNewtonSteps() {
+    // MaxIterations counts the steps, and StepMonitor sees each of them
+    check("Length(Reap(FindMinimum((x - 1)^4 + 2*x^2, {x, 4}, MaxIterations -> 2, " //
+        + "StepMonitor :> Sow(x)))[[2, 1]])", //
+        "2");
+    check("FindMinimum((x - 1)^4 + 2*x^2, {x, 4}, StepMonitor :> Sow(x))", //
+        "{0.418588,{x->0.317672}}");
+    // an extremum inside the region of the constraints
+    check("FindMaximum({-(x - 2)^2 - (y + 1)^2, x >= 1 && y <= 3}, {x, 4}, {y, 0})", //
+        "{0.0,{x->2.0,y->-1.0}}");
+  }
+
+  @Test
+  public void testRSolveRiccati() {
+    check("RSolve({y(n + 1) == (y(n) + 4)/(y(n) + 1), y(0) == 0}, y(n), n)", //
+        "{{y(n)->(-(-1)^n+3^n)/((-1)^n/2+3^n/2)}}");
+    check("s = RSolve({y(n + 1) == (y(n) + 4)/(y(n) + 1), y(0) == 0}, y(n), n); " //
+        + "Table(y(n) /. s[[1]], {n, 0, 4})", //
+        "{0,4,8/5,28/13,80/41}");
+    check("s = RSolve({5 + 2*z(n) - 6*z(n + 1) + z(n)*z(n + 1) == 0, z(0) == 3}, z(n), n); " //
+        + "Table(z(n) /. s[[1]], {n, 0, 3})", //
+        "{3,11/3,37/7,109/5}");
+    // a double root of the characteristic polynomial
+    check("RSolve({y(n + 1) == (3*y(n) - 1)/(y(n) + 1), y(0) == 3}, y(n), n)", //
+        "{{y(n)->(3+n)/(1+n)}}");
+  }
+
+  @Test
+  public void testLaplaceTransformEquations() {
+    check("LaplaceTransform(y''(t) + 3*y(t) == Cos(t), t, s)", //
+        "3*LaplaceTransform(y(t),t,s)+s^2*LaplaceTransform(y(t),t,s)-s*y(0)-y'(0)==s/(1+s^\n"
+            + "2)");
+    check("LaplaceTransform({y'(t) == z(t), z'(t) == 2*y(t)}, t, s)", //
+        "{s*LaplaceTransform(y(t),t,s)-y(0)==LaplaceTransform(z(t),t,s),s*LaplaceTransform(z(t),t,s)-z(\n"
+            + "0)==2*LaplaceTransform(y(t),t,s)}");
+  }
+
+  @Test
+  public void testTogetherNumericContentOfProduct() {
+    check("Together(y*(8 + 4*y)/(5 + z))", //
+        "(4*y*(2+y))/(5+z)");
+    check("Together(a*(9*a + 3)/(b + 1))", //
+        "(3*a*(1+3*a))/(1+b)");
+  }
+
+  @Test
+  public void testListableExactElements() {
+    // exact elements stay exact when a listable function threads over a list with machine reals
+    check("Cos({0, 0.25})", //
+        "{1,0.968912}");
+    check("Sin({{0, 1.5}})", //
+        "{{0,0.997495}}");
+    check("Tan({1/3, 0.5})", //
+        "{Tan(1/3),0.546302}");
+  }
+
+  @Test
+  public void testRealDigitsMachineZero() {
+    check("RealDigits(0.)", //
+        "{{0},-323}");
+    check("RealDigits(0., 5)", //
+        "{{0},-462}");
+    check("RealDigits(0., 16, 2)", //
+        "{{Indeterminate,Indeterminate},-268}");
+  }
+
+  @Test
+  public void testInputFormNegativeImaginaryFactor() {
+    check("ToString(-I*z/w, InputForm)", //
+        "((-I)*z)/w");
+    check("ToString(-I/x^2, InputForm)", //
+        "(-I)/x^2");
+    check("ToString(-I*Sin(x), InputForm)", //
+        "(-I)*Sin(x)");
+    check("ToString(-I, InputForm)", //
+        "-I");
+    check("ToString(a - I*b, InputForm)", //
+        "a - I*b");
+  }
+
+  @Test
+  public void testToStringTraditionalForm() {
+    check("ToString(2 - E/5, TraditionalForm) == ToString(TraditionalForm(2 - E/5))", //
+        "True");
+    check("ToString(x/y, TraditionalForm)", //
+        "\\!\\(\\*FormBox[FractionBox[\"x\", \"y\"], TraditionalForm]\\)");
+  }
+
+  @Test
+  public void testRandomChoiceMessages() {
+    check("Block({$MessageList = {}}, RandomChoice({3, -1} -> {p, q}); $MessageList) // FullForm", //
+        "List(HoldForm(MessageName(RandomChoice, \"wghtv\")))");
+    check("Block({$MessageList = {}}, RandomChoice({3, 1} -> {p}); $MessageList) // FullForm", //
+        "List(HoldForm(MessageName(RandomChoice, \"wghtvl\")))");
+    check("Block({$MessageList = {}}, RandomChoice({3} -> q); $MessageList) // FullForm", //
+        "List(HoldForm(MessageName(RandomChoice, \"lrwl\")))");
+    check("RandomChoice({x, 2} -> {p, q})", //
+        "RandomChoice({x,2}->{p,q})");
+    check("{u, v, w}[[2 ;; 9]]", //
+        "{u,v,w}[[2;;9]]");
+    check("Block({$MessageList = {}}, {u, v, w}[[2 ;; 9]]; $MessageList) // FullForm", //
+        "List(HoldForm(MessageName(Part, \"take\")))");
+  }
+
+  @Test
+  public void testNotationHeadUpValues() {
+    // an up-value for a protected notation head is kept by the engine which defines it
+    check("PlusMinus /: k_?NumericQ * PlusMinus(v_, u_) := PlusMinus(k*v, k*u); " //
+        + "{4*PlusMinus(3, 0.25), 4*PlusMinus(3, 0.25) - 2}", //
+        "{12±1.0,-2+12±1.0}");
+    check("CirclePlus /: CirclePlus(a_Integer, b_Integer) + c_Integer := a + b + c; " //
+        + "CirclePlus(1, 2) + 3", //
+        "6");
   }
 
   @Test
@@ -21814,7 +22231,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "FittedModel[0.5+2.5*x]");
 
     check("LinearModelFit({-0.8, -0.2, 0.8, 2.2}, x, x)", //
-        "FittedModel[-2.0+1.0*x]");
+        "FittedModel[-2.0+x]");
 
     // print message: LinearModelFit: The first argument is not a vector or matrix.
     check("LinearModelFit({{0, 1, 2}, {1, 0}, {3, 2}, {5, 4}},x,x)", //

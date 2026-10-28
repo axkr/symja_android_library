@@ -7,12 +7,15 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OptionalDataException;
 import java.util.Arrays;
+import org.hipparchus.distribution.continuous.FDistribution;
 import org.hipparchus.distribution.continuous.TDistribution;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.ArrayFieldVector;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -29,7 +32,13 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   /** */
   private static final long serialVersionUID = -2779698690575246663L;
 
-  private static double[][] designMatrixNumeric(double[][] matrix, IAST basisFunctions,
+  /**
+   * The values of the basis functions at the points of the data, or <code>null</code> if one of
+   * them is not a real number.
+   *
+   * @param matrix the data, one row <code>{x1, ..., xk, y}</code> per point
+   */
+  public static double[][] designMatrixNumeric(double[][] matrix, IAST basisFunctions,
       IAST variables, org.matheclipse.core.eval.EvalEngine engine) {
     int numberOfPoints = matrix.length;
     int numberOfFunctions = basisFunctions.argSize();
@@ -129,7 +138,8 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
         FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
         return FittedModelExpr.newInstance(xm, yv, basis, variables);
       }
-      return F.NIL;
+      // Unable to construct a numeric design matrix.
+      return Errors.printMessage(S.LinearModelFit, "desmat", F.CEmptyList, engine);
     } catch (Exception e) {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
@@ -246,11 +256,13 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
 
   private static final String[] PROPERTIES = {"AdjustedRSquared", "ANOVATable",
       "ANOVATableDegreesOfFreedom", "ANOVATableEntries", "ANOVATableFStatistics",
-      "ANOVATableMeanSquares", "ANOVATablePValues", "ANOVATableSumsOfSquares", "BestFit",
-      "BestFitParameters", "CookDistances", "EstimatedVariance", "FitResiduals", "HatDiagonal",
-      "ParameterConfidenceIntervals",
+      "ANOVATableMeanSquares", "ANOVATablePValues", "ANOVATableSumsOfSquares", "BasisFunctions",
+      "BestFit", "BestFitParameters", "CookDistances", "CovarianceMatrix", "DesignMatrix",
+      "EstimatedVariance", "FitResiduals", "HatDiagonal", "IndependentVariables",
+      "MeanPredictionBands", "ParameterConfidenceIntervals", "ParameterConfidenceRegion",
       "ParameterErrors", "ParameterPValues", "ParameterTStatistics", "ParameterTable",
-      "ParameterTableEntries", "PredictedResponse", "RSquared"};
+      "ParameterTableEntries", "PredictedResponse", "Response", "RSquared",
+      "SinglePredictionBands"};
 
   private FieldMatrix<IExpr> designMatrix;
   private FieldVector<IExpr> responseVector;
@@ -327,8 +339,26 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
         return anovaColumn(1);
       case "AdjustedRSquared":
         return F.num(regression.calculateAdjustedRSquared());
+      case "BasisFunctions":
+        return Convert.vector2List(basisFunctions);
       case "BestFit":
         return normal(false);
+      case "CovarianceMatrix": {
+        double[][] covariance = covarianceMatrix();
+        return covariance == null ? F.NIL : matrixList(covariance);
+      }
+      case "DesignMatrix":
+        return Convert.matrix2List(designMatrix, false);
+      case "IndependentVariables":
+        return variables;
+      case "MeanPredictionBands":
+        return predictionBands(false, engine);
+      case "ParameterConfidenceRegion":
+        return parameterConfidenceRegion(engine);
+      case "Response":
+        return Convert.vector2List(responseVector);
+      case "SinglePredictionBands":
+        return predictionBands(true, engine);
       case "BestFitParameters":
         return F.List(regression.estimateRegressionParameters());
       case "CookDistances":
@@ -616,6 +646,70 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   }
 
   /**
+   * The sum of the squared residuals over the residual degrees of freedom, <code>NaN</code>
+   * without residual degrees of freedom.
+   */
+  private double machineVariance() {
+    final int df = degreesOfFreedom();
+    if (df <= 0) {
+      return Double.NaN;
+    }
+    java.util.List<Integer> columns = new java.util.ArrayList<Integer>();
+    for (int j = 0; j < designMatrix.getColumnDimension(); j++) {
+      columns.add(j);
+    }
+    return residualSumOfSquares(machineDesign(), machineResponse(), columns) / df;
+  }
+
+  /**
+   * The covariance matrix <code>s^2 Inverse(Transpose(X).X)</code> of the parameters, with the
+   * pseudo-inverse for dependent basis functions, or <code>null</code> without residual degrees
+   * of freedom.
+   */
+  private double[][] covarianceMatrix() {
+    final double variance = machineVariance();
+    if (Double.isNaN(variance)) {
+      return null;
+    }
+    RealMatrix inverse = LinearAlgebra
+        .machinePseudoInverse(new org.hipparchus.linear.Array2DRowRealMatrix(machineDesign()));
+    return inverse.multiply(inverse.transpose()).scalarMultiply(variance).getData();
+  }
+
+  /**
+   * The 95% confidence ellipsoid of the parameters, whose radii come from the quantile of the
+   * F-ratio distribution with <code>p</code> and <code>n-p</code> degrees of freedom.
+   */
+  private IExpr parameterConfidenceRegion(EvalEngine engine) {
+    double[][] covariance = covarianceMatrix();
+    if (covariance == null) {
+      return F.NIL;
+    }
+    final int p = designMatrix.getColumnDimension();
+    double quantile =
+        p * new FDistribution(p, degreesOfFreedom()).inverseCumulativeProbability(0.95);
+    IExpr[] estimates = toData().estimateRegressionParameters();
+    double[] center = new double[p];
+    for (int i = 0; i < p; i++) {
+      center[i] = estimates[i].evalf();
+    }
+    return parameterEllipsoid(center, covariance, quantile, engine);
+  }
+
+  /**
+   * The 95% confidence band of a single prediction, or of the mean prediction, as a function of the
+   * independent variables.
+   */
+  private IExpr predictionBands(boolean single, EvalEngine engine) {
+    double[][] covariance = covarianceMatrix();
+    if (covariance == null) {
+      return F.List(S.Indeterminate, S.Indeterminate);
+    }
+    return predictionBands(normal(false), Convert.vector2List(basisFunctions), covariance,
+        single ? machineVariance() : 0.0, degreesOfFreedom(), engine);
+  }
+
+  /**
    * One row <code>{estimate, standard error, t, p}</code> per parameter, with the two-tailed
    * p-value of Student's t distribution. Without residual degrees of freedom only the estimates are
    * known; everything else is <code>Indeterminate</code>.
@@ -623,6 +717,10 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   private IExpr[][] parameterStatistics(ExprOLSLinearRegression regression) {
     IExpr[] estimates = regression.estimateRegressionParameters();
     int df = degreesOfFreedom();
+    if (df == 0) {
+      // the vanishing sum of squared residuals over zero degrees of freedom
+      EvalEngine.get().evaluate(F.Times(F.CD0, F.Power(F.C0, F.CN1)));
+    }
     IExpr[] errors = df > 0 ? regression.estimateRegressionParametersStandardErrors() : null;
     TDistribution t = df > 0 ? new TDistribution(df) : null;
     IExpr[][] rows = new IExpr[estimates.length][];

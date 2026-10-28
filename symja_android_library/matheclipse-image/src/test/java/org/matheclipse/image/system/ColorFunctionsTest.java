@@ -229,4 +229,18 @@ public class ColorFunctionsTest extends AbstractTestCase {
         + "\"<image width=\\\"2\\\" height=\\\"1\\\"\")", //
         "True");
   }
+
+  /** The colour function colours the intensities of a greyscale image, stored in bytes. */
+  @Test
+  public void colorizeOfAGreyscaleImage() {
+    check("c = Colorize(Image({{0.0, 0.25, 1.0}}), ColorFunction -> (RGBColor(#, 1 - #, 0) &)); "
+        + "{ImageData(c), ImageChannels(c), ImageType(c), ImageDimensions(c)}", //
+        "{{{{0.0,1.0,0.0},{0.247059,0.74902,0.0},{1.0,0.0,0.0}}},3,Byte,{3,1}}");
+  }
+
+  @Test
+  public void colorReplaceOfANonImage() {
+    check("ColorReplace({1, 2, 3}, Red -> Blue)", //
+        "ColorReplace({1,2,3},RGBColor(1,0,0)->RGBColor(0,0,1))");
+  }
 }

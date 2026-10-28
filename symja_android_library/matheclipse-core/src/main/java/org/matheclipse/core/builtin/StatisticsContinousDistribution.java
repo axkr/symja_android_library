@@ -2720,6 +2720,7 @@ public class StatisticsContinousDistribution {
       S.GompertzMakehamDistribution.setEvaluator(new GompertzMakehamDistribution());
       S.GumbelDistribution.setEvaluator(new GumbelDistribution());
       S.InverseGammaDistribution.setEvaluator(new InverseGammaDistribution());
+      S.InverseGaussianDistribution.setEvaluator(new InverseGaussianDistribution());
       S.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
       S.MultinormalDistribution.setEvaluator(new MultinormalDistribution());
       S.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
@@ -3094,6 +3095,246 @@ public class StatisticsContinousDistribution {
           // CPD-ON
               F.Sqr(gamma0)), //
           F.Greater(F.Times(a, g), F.C2))), S.Indeterminate);
+    }
+  }
+
+  /**
+   * <code>InverseGaussianDistribution(m, l)</code> - the inverse Gaussian (Wald) distribution with
+   * mean <code>m</code> and shape parameter <code>l</code>.
+   *
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution">Wikipedia - Inverse
+   * Gaussian distribution</a>
+   */
+  private static final class InverseGaussianDistribution extends AbstractEvaluator
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
+
+    private static final double SQRT2 = Math.sqrt(2.0);
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      if (dist.isAST2()) {
+        // 3 + 15*m/l
+        return F.Plus(F.C3, F.Times(F.ZZ(15), F.Divide(dist.arg1(), dist.arg2())));
+      }
+      return F.NIL;
+    }
+
+    /** The density in machine precision, <code>0.0</code> outside of the support. */
+    private static double density(double m, double l, double x) {
+      if (!(x > 0.0) || Double.isInfinite(x)) {
+        return 0.0;
+      }
+      return Math.sqrt(l / (2.0 * Math.PI * x * x * x))
+          * Math.exp(-l * (x - m) * (x - m) / (2.0 * m * m * x));
+    }
+
+    /**
+     * The distribution function
+     * <code>Phi(Sqrt(l/x)*(x/m - 1)) + E^(2*l/m)*Phi(-Sqrt(l/x)*(x/m + 1))</code> in machine
+     * precision; the second term is formed from its exponent when <code>E^(2*l/m)</code> overflows.
+     */
+    private static double distribution(double m, double l, double x) {
+      if (!(x > 0.0)) {
+        return 0.0;
+      }
+      if (Double.isInfinite(x)) {
+        return 1.0;
+      }
+      double r = Math.sqrt(l / x);
+      double first = 0.5 * DMath.erfc(-r * (x / m - 1.0) / SQRT2);
+      double t = r * (x / m + 1.0) / SQRT2;
+      double exponent = 2.0 * l / m;
+      double second;
+      if (exponent < 700.0) {
+        second = 0.5 * Math.exp(exponent) * DMath.erfc(t);
+      } else {
+        // t >= Sqrt(exponent): Erfc(t) == E^(-t^2)/(t*Sqrt(Pi))*(1 - 1/(2*t^2) + 3/(4*t^4) - ...)
+        // and exponent - t^2 == -l*(x - m)^2/(2*m^2*x)
+        double t2 = t * t;
+        double sum = 1.0;
+        double term = 1.0;
+        for (int k = 1; k <= 12; k++) {
+          term *= -(2.0 * k - 1.0) / (2.0 * t2);
+          sum += term;
+        }
+        second = 0.5 * Math.exp(-l * (x - m) * (x - m) / (2.0 * m * m * x))
+            / (t * Math.sqrt(Math.PI)) * sum;
+      }
+      return Math.min(1.0, first + second);
+    }
+
+    /** The quantile in machine precision by bisection of the distribution function. */
+    private static double quantile(double m, double l, double p) {
+      MathUtils.checkRangeInclusive(p, 0, 1);
+      if (!(m > 0.0) || !(l > 0.0)) {
+        return Double.NaN;
+      }
+      if (p == 0.0) {
+        return 0.0;
+      }
+      if (p == 1.0) {
+        return Double.POSITIVE_INFINITY;
+      }
+      double lower = 0.0;
+      double upper = m;
+      while (distribution(m, l, upper) < p) {
+        lower = upper;
+        upper *= 2.0;
+        if (Double.isInfinite(upper)) {
+          return upper;
+        }
+      }
+      for (int i = 0; i < 2000; i++) {
+        double middle = 0.5 * (lower + upper);
+        if (middle <= lower || middle >= upper) {
+          break;
+        }
+        if (distribution(m, l, middle) < p) {
+          lower = middle;
+        } else {
+          upper = middle;
+        }
+      }
+      return 0.5 * (lower + upper);
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr m = dist.arg1();
+        IExpr l = dist.arg2();
+        if (k.isReal() && ((IReal) k).isNegative() || k.isZero()) {
+          return F.C0;
+        }
+        IExpr value = machineValue(m, l, k, engine, InverseGaussianDistribution::distribution);
+        if (value.isPresent()) {
+          return value;
+        }
+        // Piecewise({{(Erfc((Sqrt(l)*(m - #))/(Sqrt(2)*m*Sqrt(#))) +
+        // E^((2*l)/m)*Erfc((Sqrt(l)*(m + #))/(Sqrt(2)*m*Sqrt(#))))/2, # > 0}}, 0) &
+        IExpr denominator = F.Times(F.CSqrt2, m, F.Sqrt(F.Slot1));
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            F.Times(F.C1D2, F.Plus(
+                F.Erfc(F.Divide(F.Times(F.Sqrt(l), F.Subtract(m, F.Slot1)), denominator)),
+                F.Times(F.Exp(F.Divide(F.Times(F.C2, l), m)),
+                    F.Erfc(F.Divide(F.Times(F.Sqrt(l), F.Plus(m, F.Slot1)), denominator))))),
+            F.Greater(F.Slot1, F.C0))), F.C0)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        if (k.isList()) {
+          return ((IAST) k).map(p -> inverseCDF(dist, p, engine), 1);
+        }
+        if (k.isZero()) {
+          return F.C0;
+        }
+        if (k.isOne()) {
+          return F.CInfinity;
+        }
+        return machineValue(dist.arg1(), dist.arg2(), k, engine,
+            InverseGaussianDistribution::quantile);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      return dist.isAST2() ? dist.arg1() : F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr parameterAssumptions(IAST dist) {
+      if (dist.isAST2()) {
+        return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr m = dist.arg1();
+        IExpr l = dist.arg2();
+        IExpr value = machineValue(m, l, k, engine, InverseGaussianDistribution::density);
+        if (value.isPresent()) {
+          return value;
+        }
+        // Piecewise({{(Sqrt(l/(2*Pi))*Sqrt(#^(-3)))/E^((l*(# - m)^2)/(2*m^2*#)), # > 0}}, 0) &
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            F.Times(F.Sqrt(F.Divide(l, F.C2Pi)), F.Sqrt(F.Power(F.Slot1, F.CN3)),
+                F.Exp(F.Negate(F.Divide(F.Times(l, F.Sqr(F.Subtract(F.Slot1, m))),
+                    F.Times(F.C2, F.Sqr(m), F.Slot1))))),
+            F.Greater(F.Slot1, F.C0))), F.C0)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        double m = dist.arg1().evalfNaN();
+        double l = dist.arg2().evalfNaN();
+        if (!(m > 0.0) || !(l > 0.0)) {
+          return F.NIL;
+        }
+        // transformation with multiple roots (Michael, Schucany and Haas 1976)
+        double[] vector = new double[size];
+        for (int i = 0; i < size; i++) {
+          double normal = random.nextGaussian();
+          double y = normal * normal;
+          double my = m * y;
+          double x = m + m * my / (2.0 * l) - m / (2.0 * l) * Math.sqrt(4.0 * l * my + my * my);
+          vector[i] = random.nextDouble() <= m / (m + x) ? x : m * m / x;
+        }
+        return new ASTRealVector(vector, false);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      if (dist.isAST2()) {
+        // 3*Sqrt(m/l)
+        return F.Times(F.C3, F.Sqrt(F.Divide(dist.arg1(), dist.arg2())));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      if (dist.isAST2()) {
+        // m^3/l
+        return F.Divide(F.Power(dist.arg1(), F.C3), dist.arg2());
+      }
+      return F.NIL;
     }
   }
 

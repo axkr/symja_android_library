@@ -2893,6 +2893,14 @@ public final class PatternMatching {
   }
 
   /**
+   * Test if <code>symbol</code> is a built-in head which only stands for a notation, like
+   * <code>PlusMinus</code>.
+   */
+  public static boolean isNotationHead(ISymbol symbol) {
+    return NOTATION_HEADS.contains(symbol);
+  }
+
+  /**
    * The symbol which carries the definitions of a notation: for <code>Subscript(x, 1)</code> and
    * for <code>Subscript(x, 1)[args]</code> the variable <code>x</code>.
    *
@@ -3224,7 +3232,8 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          if (symbol.hasProtectedAttribute()) {
+          final boolean notationUpValue = isNotationUpValue(symbol, leftHandSide);
+          if (!notationUpValue && symbol.hasProtectedAttribute()) {
             // Tag `1` in `2` is Protected.
             Errors.printMessage(S.TagSet, "write", F.list(symbol, leftHandSide), EvalEngine.get());
             throw new FailedException();
@@ -3244,8 +3253,9 @@ public final class PatternMatching {
             }
           }
           try {
-            Object[] result =
-                createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSet, engine);
+            Object[] result = createPatternMatcher(symbol,
+                notationUpValue ? engine.notationRulesSymbol(symbol) : symbol, leftHandSide,
+                rightHandSide, false, S.TagSet, engine);
             return (IExpr) result[1];
           } catch (final ValidateException ve) {
             Errors.printMessage(ast.topHead(), ve, engine);
@@ -3284,6 +3294,25 @@ public final class PatternMatching {
     protected static Object[] createPatternMatcher(ISymbol tagSetSymbol, IExpr leftHandSide,
         IExpr rightHandSide, boolean packageMode, IBuiltInSymbol tagSymbol, EvalEngine engine)
         throws RuleCreationError {
+      return createPatternMatcher(tagSetSymbol, tagSetSymbol, leftHandSide, rightHandSide,
+          packageMode, tagSymbol, engine);
+    }
+
+    /**
+     * Test if <code>tag /: lhs = rhs</code> defines an up-value for a protected notation head
+     * <code>tag</code>, which is kept by {@link EvalEngine#notationRulesSymbol(ISymbol)}.
+     */
+    protected static boolean isNotationUpValue(ISymbol tag, IExpr leftHandSide) {
+      return isNotationHead(tag) && tag.hasProtectedAttribute()
+          && !isDefinitionOfTag(tag, leftHandSide);
+    }
+
+    /**
+     * @param ruleSymbol the symbol which stores an up-value rule for <code>tagSetSymbol</code>
+     */
+    protected static Object[] createPatternMatcher(ISymbol tagSetSymbol, ISymbol ruleSymbol,
+        IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, IBuiltInSymbol tagSymbol,
+        EvalEngine engine) throws RuleCreationError {
       final Object[] result = new Object[2];
 
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
@@ -3327,7 +3356,7 @@ public final class PatternMatching {
       }
       if (found) {
         result[0] =
-            tagSetSymbol.putUpRule(flags[0] | (tagSymbol == S.TagSetDelayed //
+            ruleSymbol.putUpRule(flags[0] | (tagSymbol == S.TagSetDelayed //
                 ? IPatternMatcher.TAGSET_DELAYED
                 : IPatternMatcher.TAGSET), false, lhsAST, rightHandSide);
         return result;
@@ -3538,7 +3567,8 @@ public final class PatternMatching {
           final ISymbol symbol = (ISymbol) arg1;
           final IExpr leftHandSide = ast.arg2();
           final IExpr rightHandSide = ast.arg3();
-          if (symbol.hasProtectedAttribute()) {
+          final boolean notationUpValue = isNotationUpValue(symbol, leftHandSide);
+          if (!notationUpValue && symbol.hasProtectedAttribute()) {
             // Tag `1` in `2` is Protected.
             Errors.printMessage(ast.topHead(), "write", F.list(symbol, leftHandSide),
                 EvalEngine.get());
@@ -3548,7 +3578,9 @@ public final class PatternMatching {
             return engine.evaluate(F.SetDelayed(leftHandSide, rightHandSide));
           }
           try {
-            createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSetDelayed, engine);
+            createPatternMatcher(symbol,
+                notationUpValue ? engine.notationRulesSymbol(symbol) : symbol, leftHandSide,
+                rightHandSide, false, S.TagSetDelayed, engine);
             return S.Null;
           } catch (final ValidateException ve) {
             Errors.printMessage(ast.topHead(), ve, engine);

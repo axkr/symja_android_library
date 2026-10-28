@@ -63,9 +63,11 @@ public class SolveUtils {
       } else if (variable.isAST() && !forward.containsKey(variable)
           && ((variable.head().isAST() && !variable.head().head().isAST(S.Derivative))
               || (indexedVariables && variable.head().isSymbol()
-                  && !variable.head().isBuiltInSymbol()))) {
-        // a call of a call like c(1)(t), or an indexed variable like m(1), is solved for as one
-        // unknown
+                  && !variable.head().isBuiltInSymbol())
+              || (variable.isAST(S.Part) && variable.argSize() >= 2
+                  && variable.first().isSymbol()))) {
+        // a call of a call like c(1)(t), an indexed variable like m(1), or a part like s[[1]] of
+        // a symbol without a value, is solved for as one unknown
         ISymbol dummy = F.Dummy("v" + (forward.size() + 1));
         forward.put(variable, dummy);
         backward.put(dummy, variable);

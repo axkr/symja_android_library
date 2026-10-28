@@ -133,6 +133,8 @@ public class GraphFunctions {
       S.LineGraph.setEvaluator(new LineGraph());
       S.PathGraphQ.setEvaluator(new PathGraphQ());
       S.PlanarGraphQ.setEvaluator(new PlanarGraphQ());
+      S.PropertyValue.setEvaluator(new PropertyValue());
+      S.SetProperty.setEvaluator(new SetProperty());
       S.VertexEccentricity.setEvaluator(new VertexEccentricity());
       S.VertexCount.setEvaluator(new VertexCount());
       S.VertexList.setEvaluator(new VertexList());
@@ -1219,6 +1221,110 @@ public class GraphFunctions {
 
 
   /**
+   * <code>SetProperty(graph, name -&gt; value)</code> - the graph with the property set; a list of
+   * rules sets several. <code>EdgeWeight -&gt; {w1, w2, ...}</code> gives the edges, in the order of
+   * <code>EdgeList</code>, these weights.
+   */
+  private static class SetProperty extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof GraphExpr)) {
+        return F.NIL;
+      }
+      IExpr arg2 = ast.arg2();
+      IAST rules = arg2.isRuleAST() ? F.list(arg2)
+          : (arg2.isList() && ((IAST) arg2).forAll(x -> x.isRuleAST()) ? (IAST) arg2 : F.NIL);
+      if (rules.isNIL()) {
+        return F.NIL;
+      }
+      GraphExpr<?> gex = (GraphExpr<?>) ast.arg1();
+      IExpr weights = F.NIL;
+      IASTAppendable others = F.ListAlloc(rules.argSize());
+      for (IExpr rule : rules) {
+        if (rule.first() == S.EdgeWeight) {
+          weights = rule.second();
+        } else {
+          others.append(rule);
+        }
+      }
+      GraphExpr<?> result = gex;
+      if (weights.isPresent()) {
+        Graph<IExpr, ?> graph = gex.toData();
+        IASTAppendable[] edgeData = GraphExpr.edgesToIExpr(graph);
+        if (!weights.isList() || weights.argSize() != edgeData[0].argSize()) {
+          return F.NIL;
+        }
+        IExpr weighted = engine.evaluate(F.Graph(GraphExpr.vertexToIExpr(graph), edgeData[0],
+            F.list(F.Rule(S.EdgeWeight, weights))));
+        if (!(weighted instanceof GraphExpr)) {
+          return F.NIL;
+        }
+        result = (GraphExpr<?>) weighted.copy();
+        result.setOptions(gex.options());
+      }
+      return others.argSize() == 0 ? result : engine.evaluate(F.Graph(result, others));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>PropertyValue({graph, item}, name)</code> - the value of the property <code>name</code>
+   * of the vertex or edge <code>item</code>; <code>PropertyValue(graph, name)</code> - the value
+   * of the graph option <code>name</code>. An undirected edge matches either way round.
+   */
+  private static class PropertyValue extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr name = ast.arg2();
+      if (arg1 instanceof GraphExpr) {
+        IAST rule = ((GraphExpr<?>) arg1).options().getRule(name);
+        return rule.isPresent() ? rule.second() : F.NIL;
+      }
+      if (!arg1.isList2() || !(arg1.first() instanceof GraphExpr)) {
+        return F.NIL;
+      }
+      GraphExpr<?> gex = (GraphExpr<?>) arg1.first();
+      IExpr item = arg1.second();
+      Graph<IExpr, ?> graph = gex.toData();
+      IAST rule = gex.options().getRule(name);
+      IExpr option = rule.isPresent() ? rule.second() : F.NIL;
+      // a <-> b and a -> b as typed are TwoWayRule and Rule
+      boolean directed = item.isAST(S.DirectedEdge, 3) || item.isRuleAST();
+      if (directed || item.isAST(S.UndirectedEdge, 3) || item.isAST(S.TwoWayRule, 3)) {
+        IExpr source = item.first();
+        IExpr target = item.second();
+        if (directed != graph.getType().isDirected() || !graph.containsEdge(source, target)) {
+          return F.NIL;
+        }
+        if (name == S.EdgeWeight && gex.isWeightedGraph()) {
+          Object edge = graph.getEdge(source, target);
+          if (edge instanceof ExprWeightedEdge) {
+            return ((ExprWeightedEdge) edge).weightExpr();
+          }
+        }
+        return option.isPresent() ? GraphExpr.edgeProperty(option, source, target, directed)
+            : F.NIL;
+      }
+      if (graph.containsVertex(item) && option.isPresent()) {
+        return GraphExpr.vertexProperty(option, item);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -1792,6 +1898,12 @@ public class GraphFunctions {
    * points give an exact length. Up to 12 points the tour is optimal; above that it is found by a
    * deterministic local search. Of the two directions of a closed tour the one whose second point
    * has the higher number is returned.
+   * </p>
+   *
+   * <p>
+   * <code>FindShortestTour(graph)</code> is the shortest closed tour along the edges of an
+   * undirected graph, the length counted by the <code>EdgeWeight</code>s, or <code>{}</code> if the
+   * graph has no closed tour through all of its vertices.
    *
    * <p>
    * See
@@ -1850,6 +1962,10 @@ public class GraphFunctions {
         return Errors.printMessage(S.FindShortestTour, "nonopt",
             F.List(ast.get(4), F.C3, ast), engine);
       }
+      if (argSize == 1 && ast.arg1().head() == S.Graph) {
+        GraphExpr<?> graph = GraphExpr.newInstance(ast.arg1());
+        return graph == null ? F.NIL : graphTour(graph.toData(), engine);
+      }
       if (!ast.arg1().isList()) {
         return F.NIL;
       }
@@ -1888,14 +2004,7 @@ public class GraphFunctions {
           if (order == null) {
             order = TravelingSalesman.tour(metric.dist, s, engine);
           }
-          if (n > 2 && order[1] < order[n - 1]) {
-            // of the two directions take the one whose second stop has the higher number
-            for (int i = 1, j = n - 1; i < j; i++, j--) {
-              int swap = order[i];
-              order[i] = order[j];
-              order[j] = swap;
-            }
-          }
+          orient(order);
         } else {
           order = TravelingSalesman.path(metric.dist, s, t, engine);
         }
@@ -1925,6 +2034,84 @@ public class GraphFunctions {
         Errors.printMessage(S.FindShortestTour, rex, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * Of the two directions of a closed tour take the one whose second stop has the higher
+     * number.
+     */
+    private static void orient(int[] order) {
+      final int n = order.length;
+      if (n > 2 && order[1] < order[n - 1]) {
+        for (int i = 1, j = n - 1; i < j; i++, j--) {
+          int swap = order[i];
+          order[i] = order[j];
+          order[j] = swap;
+        }
+      }
+    }
+
+    /**
+     * The shortest closed tour of an undirected graph along its edges, weighted by their
+     * <code>EdgeWeight</code> or <code>1</code>, as <code>{length, {v1, v2, ..., v1}}</code>, or
+     * <code>{}</code> if no tour through all vertices was found.
+     */
+    private static IExpr graphTour(Graph<IExpr, ?> graph, EvalEngine engine) {
+      if (graph.getType().isDirected()) {
+        return F.NIL;
+      }
+      IAST vertices = GraphExpr.vertexToIExpr(graph);
+      final int n = vertices.argSize();
+      if (n < 3) {
+        return F.CEmptyList;
+      }
+      Map<IExpr, Integer> index = new HashMap<IExpr, Integer>();
+      for (int i = 0; i < n; i++) {
+        index.put(vertices.get(i + 1), i);
+      }
+      // the weight of the lightest edge between two vertices, or null
+      IExpr[][] weights = new IExpr[n][n];
+      double[][] edgeDist = new double[n][n];
+      double total = 0.0;
+      for (Object edge : graph.edgeSet()) {
+        IExprEdge exprEdge = (IExprEdge) edge;
+        int i = index.get(exprEdge.lhs());
+        int j = index.get(exprEdge.rhs());
+        IExpr weight = edge instanceof ExprWeightedEdge ? ((ExprWeightedEdge) edge).weightExpr()
+            : F.C1;
+        double value = edge instanceof ExprWeightedEdge ? ((ExprWeightedEdge) edge).weight() : 1.0;
+        if (i == j || Double.isNaN(value) || value < 0.0) {
+          continue;
+        }
+        if (weights[i][j] == null || value < edgeDist[i][j]) {
+          weights[i][j] = weights[j][i] = weight;
+          edgeDist[i][j] = edgeDist[j][i] = value;
+        }
+        total += value;
+      }
+      // a missing edge is longer than any tour along the edges
+      final double missing = (total + 1.0) * n;
+      double[][] dist = new double[n][n];
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          dist[i][j] = i == j ? 0.0 : (weights[i][j] == null ? missing : edgeDist[i][j]);
+        }
+      }
+      int[] order = TravelingSalesman.tour(dist, 0, engine);
+      orient(order);
+      IASTAppendable tour = F.ListAlloc(n + 1);
+      IASTAppendable length = F.PlusAlloc(n);
+      for (int i = 0; i < n; i++) {
+        int from = order[i];
+        int to = order[(i + 1) % n];
+        if (weights[from][to] == null) {
+          return F.CEmptyList;
+        }
+        tour.append(vertices.get(from + 1));
+        length.append(weights[from][to]);
+      }
+      tour.append(vertices.get(order[0] + 1));
+      return F.list(engine.evaluate(length), tour);
     }
 
     /** The time limit in seconds of the routing search of OR-Tools. */

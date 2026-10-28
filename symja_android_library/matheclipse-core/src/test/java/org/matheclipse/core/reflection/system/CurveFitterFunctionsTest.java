@@ -212,9 +212,11 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("lm(\"Properties\")", //
         "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,"
             + "ANOVATableFStatistics,ANOVATableMeanSquares,ANOVATablePValues,ANOVATableSumsOfSquares,"
-            + "BestFit,BestFitParameters,CookDistances,EstimatedVariance,FitResiduals,HatDiagonal,"
-            + "ParameterConfidenceIntervals,ParameterErrors,ParameterPValues,ParameterTStatistics,"
-            + "ParameterTable,ParameterTableEntries,PredictedResponse,RSquared}");
+            + "BasisFunctions,BestFit,BestFitParameters,CookDistances,CovarianceMatrix,DesignMatrix,"
+            + "EstimatedVariance,FitResiduals,HatDiagonal,IndependentVariables,MeanPredictionBands,"
+            + "ParameterConfidenceIntervals,ParameterConfidenceRegion,ParameterErrors,"
+            + "ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,"
+            + "PredictedResponse,Response,RSquared,SinglePredictionBands}");
   }
 
   /**
@@ -241,7 +243,7 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("nlm(2.5)", //
         "5.0");
     check("nlm(\"Properties\")", //
-        "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,ANOVATableMeanSquares,ANOVATableSumsOfSquares,BestFit,BestFitParameters,EstimatedVariance,FitResiduals,ParameterConfidenceIntervals,ParameterErrors,ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,PredictedResponse,RSquared}");
+        "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,ANOVATableMeanSquares,ANOVATableSumsOfSquares,BestFit,BestFitParameters,CovarianceMatrix,EstimatedVariance,FitResiduals,MeanPredictionBands,ParameterConfidenceIntervals,ParameterConfidenceRegion,ParameterErrors,ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,PredictedResponse,RSquared,SinglePredictionBands}");
     // an exact fit
     check("nlm2=NonlinearModelFit({{1,2},{2,5},{3,10}}, a*x^2+b, {a,b}, x)", //
         "FittedModel[1.0+x^2]");

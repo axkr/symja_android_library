@@ -4721,6 +4721,18 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     if (byPieces.isPresent()) {
       return byPieces;
     }
+    if (isNumericArgument
+        && ast.arg1().isFree(x -> x.isInexactNumber() && !x.isMachineNumber(), false)) {
+      // machine numbers only
+      IExpr byComponents = solveByComponents(ast, engine);
+      if (byComponents.isPresent()) {
+        return byComponents;
+      }
+      IExpr principal = solveByPrincipalValues(ast, engine);
+      if (principal.isPresent()) {
+        return principal;
+      }
+    }
     SolveData sd = new SolveData(SolveOptions.of(SolveOptions.SOLVE_KEYS, options));
     IAST withoutIdentities = dropRationalIdentities(ast, engine);
     if (withoutIdentities.isPresent()) {
@@ -4741,6 +4753,227 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
   /** The largest number of branches of a disjunction which are solved one by one. */
   private static final int MAX_DISJUNCTION_BRANCHES = 64;
+
+  /** The largest number of solutions which {@link #solveByComponents} combines. */
+  private static final int MAX_COMPONENT_SOLUTIONS = 1000;
+
+  /**
+   * A system of equations with machine numbers, which falls apart into subsystems without common
+   * variables, is solved subsystem by subsystem: the values of a subsystem without machine numbers
+   * stay exact. <code>Solve({x == 0, 3.0*y == 2}, {x, y})</code> is <code>{{x->0, y->0.666667}}
+   * </code>.
+   *
+   * @return {@link F#NIL} if the system has no exact subsystem of its own
+   */
+  private static IExpr solveByComponents(IAST ast, EvalEngine engine) {
+    if (ast.argSize() != 2 || !ast.arg2().isList() || !(ast.arg1().isList() || ast.arg1().isAnd())) {
+      return F.NIL;
+    }
+    final IAST variables = (IAST) ast.arg2();
+    final IAST equations = (IAST) ast.arg1();
+    final int n = equations.argSize();
+    if (variables.argSize() < 2 || n < 2 || !variables.forAll(x -> x.isSymbol())
+        || !equations.forAll(x -> x.isEqual())) {
+      return F.NIL;
+    }
+    // the variables of each equation, and the equations joined by a common variable
+    java.util.List<Set<IExpr>> variablesOf = new ArrayList<Set<IExpr>>(n);
+    int[] component = new int[n];
+    for (int i = 0; i < n; i++) {
+      IExpr equation = equations.get(i + 1);
+      Set<IExpr> set = new HashSet<IExpr>();
+      for (IExpr v : variables) {
+        if (!equation.isFree(v)) {
+          set.add(v);
+        }
+      }
+      if (set.isEmpty()) {
+        return F.NIL;
+      }
+      variablesOf.add(set);
+      component[i] = i;
+    }
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        if (component[j] != component[i]
+            && !Collections.disjoint(variablesOf.get(i), variablesOf.get(j))) {
+          int from = component[j];
+          int to = component[i];
+          for (int k = 0; k < n; k++) {
+            if (component[k] == from) {
+              component[k] = to;
+            }
+          }
+        }
+      }
+    }
+    java.util.TreeMap<Integer, IASTAppendable> groups = new java.util.TreeMap<Integer, IASTAppendable>();
+    for (int i = 0; i < n; i++) {
+      groups.computeIfAbsent(component[i], k -> F.ListAlloc()).append(equations.get(i + 1));
+    }
+    if (groups.size() < 2 || groups.values().stream()
+        .allMatch(group -> !group.isFree(x -> x.isInexactNumber(), false))) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc();
+    result.append(F.CEmptyList);
+    Set<IExpr> covered = new HashSet<IExpr>();
+    for (IASTAppendable group : groups.values()) {
+      IASTAppendable groupVariables = F.ListAlloc();
+      for (IExpr v : variables) {
+        if (!group.isFree(v)) {
+          groupVariables.append(v);
+          covered.add(v);
+        }
+      }
+      IExpr solved = engine.evaluate(F.Solve(group, groupVariables));
+      if (solved.isEmptyList()) {
+        return F.CEmptyList;
+      }
+      if (!solved.isListOfLists()
+          || result.argSize() * solved.argSize() > MAX_COMPONENT_SOLUTIONS) {
+        return F.NIL;
+      }
+      IASTAppendable combined = F.ListAlloc(result.argSize() * solved.argSize());
+      for (IExpr partial : result) {
+        for (IExpr solution : (IAST) solved) {
+          IASTAppendable merged = ((IAST) partial).copyAppendable();
+          merged.appendArgs((IAST) solution);
+          combined.append(merged);
+        }
+      }
+      result = combined;
+    }
+    if (covered.size() != variables.argSize()) {
+      return F.NIL;
+    }
+    return inVariableOrder(result, ast);
+  }
+
+  /**
+   * One equation with machine numbers, which has families of solutions like
+   * <code>Log(2)+2*I*Pi*C(1)</code>, is solved with its rationalized numbers, and the values of the
+   * families for <code>C(1) == 0</code> are numericized: <code>Solve(E^(2*x)-5.0*E^x+6 == 0, x)
+   * </code> is <code>{{x->0.693147}, {x->1.09861}}</code>. The values are evaluated with more
+   * digits than a machine number has, so that <code>Solve(5^(x+1) == 12.0, x)</code> is the machine
+   * number nearest to <code>Log(12)/Log(5)-1</code>.
+   *
+   * @return {@link F#NIL} if the equation has no such families of solutions
+   */
+  private static IExpr solveByPrincipalValues(IAST ast, EvalEngine engine) {
+    if (ast.argSize() != 2) {
+      return F.NIL;
+    }
+    IAST variables = ast.arg2().makeList();
+    IExpr equation = ast.arg1().isList() && ast.arg1().argSize() == 1 ? ast.arg1().first() : ast.arg1();
+    if (variables.argSize() != 1 || !variables.arg1().isSymbol() || !equation.isEqual()) {
+      return F.NIL;
+    }
+    final IExpr variable = variables.arg1();
+    if (equation.isFree(x -> !x.isFree(variable) && ((x.isPower() && !x.exponent().isFree(variable))
+        || (x.isAST() && !x.isPlus() && !x.isTimes() && !x.isPower() && !x.isEqual())), true)) {
+      // an algebraic equation has no families of solutions
+      return F.NIL;
+    }
+    IExpr rationalized = engine.evalQuiet(F.Rationalize(equation));
+    if (!rationalized.isFree(x -> x.isInexactNumber(), false)) {
+      rationalized = engine.evalQuiet(F.Rationalize(equation, F.C0));
+    }
+    if (!rationalized.isEqual() || !rationalized.isFree(x -> x.isInexactNumber(), false)) {
+      return F.NIL;
+    }
+    final IAST solve = F.Solve(rationalized, variable);
+    // the exact solution may evaluate numbers with more digits, which sets the digits printed
+    final int figures = engine.getSignificantFigures();
+    IExpr exact;
+    try {
+      exact = TimeLimits.call(engine, () -> engine.evalQuiet(solve),
+          MachineProfile.millis(RATIONALIZED_SOLVE_MILLIS), () -> F.NIL);
+    } finally {
+      engine.setSignificantFigures(figures);
+    }
+    if (!exact.isListOfLists() || exact.argSize() == 0
+        || exact.isFree(x -> x.isAST(S.C, 2), true)) {
+      return F.NIL;
+    }
+    IASTAppendable solutions = F.ListAlloc(exact.argSize());
+    for (IExpr solution : (IAST) exact) {
+      if (solution.argSize() != 1 || !solution.first().isRuleAST()
+          || !solution.first().first().equals(variable)) {
+        return F.NIL;
+      }
+      IExpr value = solution.first().second();
+      value = engine.evalQuiet(value.replaceAll(x -> x.isAST(S.C, 2) ? F.C0 : F.NIL).orElse(value));
+      if (value.isConditionalExpression()) {
+        // the condition isn't decided for C(1) == 0
+        return F.NIL;
+      }
+      IExpr numeric = principalMachineValue(value, engine);
+      if (!numeric.isNumber()) {
+        return F.NIL;
+      }
+      IAST rules = NSolve.withoutImaginaryNoise(F.list(F.Rule(variable, numeric)));
+      if (!solutions.contains(rules)) {
+        solutions.append(rules);
+      }
+    }
+    Errors.printIfunMessage(S.Solve);
+    return solutions;
+  }
+
+  /**
+   * The machine number of an exact solution <code>value</code> of an equation with machine numbers.
+   * A quotient like <code>Log(7)/Log(3)</code>, which inverts <code>3^x == 7.0</code>, is the
+   * quotient of the machine numbers of its numerator and denominator, as the inverse function of
+   * the power gives it, and <code>k+Log(a)/Log(b)</code> is <code>Log(a*b^k)/Log(b)</code> with
+   * the machine number <code>a*b^k</code> there.
+   * Every other value is evaluated with more digits than a machine number has.
+   */
+  private static IExpr principalMachineValue(IExpr value, EvalEngine engine) {
+    if (value.isPlus() && value.argSize() == 2 && value.first().isInteger()) {
+      IExpr term = value.second();
+      IExpr numerator = engine.evalQuiet(F.Numerator(term));
+      IExpr denominator = engine.evalQuiet(F.Denominator(term));
+      if (numerator.isAST(S.Log, 2) && numerator.first().isRational()
+          && numerator.first().isPositive() && denominator.isAST(S.Log, 2)
+          && denominator.first().isRational() && denominator.first().isPositive()) {
+        // b^(x-k) == a is b^x == a*b^k, whose right-hand-side is a machine number
+        int k = value.first().toIntDefault();
+        IExpr divisor = roundedMachineValue(denominator, engine);
+        if (F.isPresent(k) && Math.abs(k) < 64 && divisor.isReal() && !divisor.isZero()) {
+          double a = numerator.first().evalf();
+          double bk = Math.pow(denominator.first().evalf(), Math.abs(k));
+          double argument = k < 0 ? a / bk : a * bk;
+          return F.num(Math.log(argument) / ((IReal) divisor).doubleValue());
+        }
+      }
+    }
+    IExpr denominator = engine.evalQuiet(F.Denominator(value));
+    if (!denominator.isRational() && denominator.isNumericFunction(true)) {
+      IExpr numerator = roundedMachineValue(engine.evalQuiet(F.Numerator(value)), engine);
+      IExpr divisor = roundedMachineValue(denominator, engine);
+      if (numerator.isReal() && divisor.isReal() && !divisor.isZero()) {
+        return F.num(((IReal) numerator).doubleValue() / ((IReal) divisor).doubleValue());
+      }
+    }
+    return roundedMachineValue(value, engine);
+  }
+
+  /** The machine number nearest to the numeric <code>value</code>. */
+  private static IExpr roundedMachineValue(IExpr value, EvalEngine engine) {
+    IExpr number = CompareUtil.evalPrecise(value, 30, engine);
+    if (number.isNumber() && number.isInexactNumber()) {
+      double re = nearestDouble(((INumber) number).re());
+      double im = nearestDouble(((INumber) number).im());
+      return im == 0.0 && number.isReal() ? F.num(re) : F.complexNum(re, im);
+    }
+    return engine.evalQuiet(F.N(number));
+  }
+
+  /** The machine number nearest to <code>x</code>, through its decimal digits. */
+  private static double nearestDouble(IReal x) {
+    return new java.math.BigDecimal(x.apfloatValue().toString(true)).doubleValue();
+  }
 
   /**
    * <code>Solve(eqns, vars, elims)</code>: the unknowns <code>elims</code> are eliminated from the

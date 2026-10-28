@@ -228,6 +228,10 @@ public final class FunctionDefinitions {
       S.SetAccuracy.setEvaluator(new org.matheclipse.core.reflection.system.SetAccuracy());
       S.SetPrecision.setEvaluator(new org.matheclipse.core.reflection.system.SetPrecision());
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
+      S.NDEigensystem
+          .setEvaluator(new org.matheclipse.core.reflection.system.NDEigensystem(true));
+      S.NDEigenvalues
+          .setEvaluator(new org.matheclipse.core.reflection.system.NDEigensystem(false));
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       S.NDSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.NDSolveValue());
       S.WhenEvent.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve.WhenEvent());
@@ -569,6 +573,7 @@ public final class FunctionDefinitions {
     SidesFunctions.initialize();
     MeshFunctions.initialize();
     ComputationalGeometryFunctions.initialize();
+    ControlSystems.initialize();
     PiecewiseFunctions.initialize();
     QuantumPhysicsFunctions.initialize();
     ConstantPhysicsDefinitions.initialize();

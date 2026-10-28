@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
+import org.hipparchus.distribution.continuous.FDistribution;
 import org.hipparchus.distribution.continuous.TDistribution;
 import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -32,10 +34,11 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
 
   private static final String[] PROPERTIES = {"AdjustedRSquared", "ANOVATable",
       "ANOVATableDegreesOfFreedom", "ANOVATableEntries", "ANOVATableMeanSquares",
-      "ANOVATableSumsOfSquares", "BestFit", "BestFitParameters",
-      "EstimatedVariance", "FitResiduals", "ParameterConfidenceIntervals", "ParameterErrors",
-      "ParameterPValues", "ParameterTStatistics", "ParameterTable", "ParameterTableEntries",
-      "PredictedResponse", "RSquared"};
+      "ANOVATableSumsOfSquares", "BestFit", "BestFitParameters", "CovarianceMatrix",
+      "EstimatedVariance", "FitResiduals", "MeanPredictionBands", "ParameterConfidenceIntervals",
+      "ParameterConfidenceRegion", "ParameterErrors", "ParameterPValues", "ParameterTStatistics",
+      "ParameterTable", "ParameterTableEntries", "PredictedResponse", "RSquared",
+      "SinglePredictionBands"};
 
   /** A finished fit: the model, its parameters and their values, and the data it was fitted to. */
   public static final class Fit {
@@ -143,8 +146,26 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
         double p = fit.parameters.argSize();
         return F.num(1.0 - (1.0 - rSquared(predicted(engine))) * n / (n - p));
       }
+      case "CovarianceMatrix": {
+        double[][] covariance = covarianceMatrix(engine);
+        return covariance == null ? F.NIL : matrixList(covariance);
+      }
       case "EstimatedVariance":
         return F.num(estimatedVariance(engine));
+      case "MeanPredictionBands":
+        return predictionBands(false, engine);
+      case "ParameterConfidenceRegion": {
+        double[][] covariance = covarianceMatrix(engine);
+        if (covariance == null) {
+          return F.NIL;
+        }
+        final int p = fit.parameters.argSize();
+        double quantile =
+            p * new FDistribution(p, degreesOfFreedom()).inverseCumulativeProbability(0.95);
+        return parameterEllipsoid(fit.values, covariance, quantile, engine);
+      }
+      case "SinglePredictionBands":
+        return predictionBands(true, engine);
       case "ParameterErrors":
         return parameterColumn(engine, 1);
       case "ParameterTStatistics":
@@ -238,6 +259,34 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
    * @return <code>null</code> if they cannot be computed
    */
   private double[] standardErrors(EvalEngine engine) {
+    double[][] covariance = covarianceMatrix(engine);
+    if (covariance == null) {
+      return null;
+    }
+    double[] errors = new double[covariance.length];
+    for (int k = 0; k < errors.length; k++) {
+      errors[k] = Math.sqrt(covariance[k][k]);
+    }
+    return errors;
+  }
+
+  /** The derivatives of the model by its parameters at the best fit, functions of the variable. */
+  private IAST gradient(EvalEngine engine) {
+    Fit fit = toData();
+    IAST rules = parameterRules();
+    return F.mapRange(1, fit.parameters.size(), j -> engine
+        .evaluate(F.subst(engine.evaluate(F.D(fit.function, fit.parameters.get(j))), rules)));
+  }
+
+  /**
+   * The asymptotic covariance matrix <code>s^2 * Inverse(Transpose(J).J)</code> of the parameters,
+   * with <code>J</code> the derivatives of the model by its parameters at the data points and
+   * <code>s^2</code> the estimated variance. If the parameters cannot all be identified from the
+   * data, <code>Transpose(J).J</code> is singular and its pseudo-inverse is taken.
+   *
+   * @return <code>null</code> if it cannot be computed
+   */
+  private double[][] covarianceMatrix(EvalEngine engine) {
     Fit fit = toData();
     int p = fit.parameters.argSize();
     int n = fit.x.length;
@@ -246,29 +295,34 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
       return null;
     }
     try {
-      IAST rules = parameterRules();
+      IAST gradient = gradient(engine);
       double[][] jacobian = new double[n][p];
       for (int j = 0; j < p; j++) {
-        IExpr derivative =
-            engine.evaluate(F.subst(engine.evaluate(F.D(fit.function, fit.parameters.get(j + 1))),
-                rules));
         for (int i = 0; i < n; i++) {
           jacobian[i][j] =
-              engine.evalDouble(F.subst(derivative, F.Rule(fit.variable, F.num(fit.x[i]))));
+              engine.evalDouble(F.subst(gradient.get(j + 1), F.Rule(fit.variable, F.num(fit.x[i]))));
         }
       }
-      RealMatrix j = new Array2DRowRealMatrix(jacobian, false);
-      RealMatrix covariance =
-          new LUDecomposition(j.transpose().multiply(j)).getSolver().getInverse();
-      double[] errors = new double[p];
-      for (int k = 0; k < p; k++) {
-        errors[k] = Math.sqrt(variance * covariance.getEntry(k, k));
-      }
-      return errors;
+      RealMatrix inverse =
+          LinearAlgebra.machinePseudoInverse(new Array2DRowRealMatrix(jacobian, false));
+      return inverse.multiply(inverse.transpose()).scalarMultiply(variance).getData();
     } catch (RuntimeException rex) {
-      // a singular matrix, or a derivative with no number at a data point
+      // a derivative with no number at a data point
       return null;
     }
+  }
+
+  /**
+   * The 95% confidence band of a single prediction, or of the mean prediction, as a function of the
+   * variable.
+   */
+  private IExpr predictionBands(boolean single, EvalEngine engine) {
+    double[][] covariance = covarianceMatrix(engine);
+    if (covariance == null) {
+      return F.List(S.Indeterminate, S.Indeterminate);
+    }
+    return predictionBands(normal(false), gradient(engine), covariance,
+        single ? estimatedVariance(engine) : 0.0, degreesOfFreedom(), engine);
   }
 
   /**

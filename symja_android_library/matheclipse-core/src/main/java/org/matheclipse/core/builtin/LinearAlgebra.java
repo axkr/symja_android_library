@@ -6038,6 +6038,55 @@ public final class LinearAlgebra {
    * PseudoInverse({1, {2}})
    * </pre>
    */
+  /**
+   * A singular value of a machine matrix which is not larger than this multiple of the largest one
+   * is zero: it is below what the rounding of the entries resolves (100 times the machine epsilon).
+   */
+  private static final double MACHINE_RANK_TOLERANCE = 100.0 * Math.ulp(1.0);
+
+  /**
+   * The singular values of a machine matrix, in decreasing order, without the ones which count as
+   * zero by {@link #MACHINE_RANK_TOLERANCE}.
+   */
+  private static double[] machineSingularValues(
+      org.hipparchus.linear.SingularValueDecomposition svd) {
+    double[] values = svd.getSingularValues();
+    int rank = 0;
+    final double cutoff = values.length > 0 ? MACHINE_RANK_TOLERANCE * values[0] : 0.0;
+    while (rank < values.length && values[rank] > cutoff) {
+      rank++;
+    }
+    return Arrays.copyOf(values, rank);
+  }
+
+  /**
+   * The Moore-Penrose inverse <code>V.Inverse(S).Transpose(U)</code> of a machine matrix, where the
+   * singular values which count as zero by {@link #MACHINE_RANK_TOLERANCE} are left out, so that a
+   * numerically singular matrix doesn't get huge entries.
+   *
+   * @param matrix a real <code>m x n</code> matrix
+   * @return the <code>n x m</code> pseudo-inverse
+   */
+  public static RealMatrix machinePseudoInverse(RealMatrix matrix) {
+    final org.hipparchus.linear.SingularValueDecomposition svd =
+        new org.hipparchus.linear.SingularValueDecomposition(matrix);
+    final double[] values = machineSingularValues(svd);
+    final RealMatrix u = svd.getU();
+    final RealMatrix v = svd.getV();
+    final int rows = matrix.getColumnDimension();
+    final int columns = matrix.getRowDimension();
+    final double[][] result = new double[rows][columns];
+    for (int k = 0; k < values.length; k++) {
+      for (int i = 0; i < rows; i++) {
+        final double factor = v.getEntry(i, k) / values[k];
+        for (int j = 0; j < columns; j++) {
+          result[i][j] += factor * u.getEntry(j, k);
+        }
+      }
+    }
+    return MatrixUtils.createRealMatrix(result);
+  }
+
   private static final class PseudoInverse extends AbstractMatrix1Matrix {
     protected static final PseudoInverse CONST = new PseudoInverse();
 
@@ -6070,9 +6119,7 @@ public final class LinearAlgebra {
 
     @Override
     public RealMatrix realMatrixEval(RealMatrix matrix) {
-      final org.hipparchus.linear.SingularValueDecomposition svd =
-          new org.hipparchus.linear.SingularValueDecomposition(matrix);
-      return svd.getSolver().getInverse();
+      return machinePseudoInverse(matrix);
     }
 
     @Override
@@ -6719,6 +6766,18 @@ public final class LinearAlgebra {
       int[] dim = ast.arg1().isMatrix();
       if (dim != null && dim[0] > 0 && dim[1] > 0) {
         IExpr m = ast.arg1();
+        IAST machineValues = machineSingularValueList((IAST) m.normal(false));
+        if (machineValues.isPresent()) {
+          if (ast.isAST2()) {
+            int n = ast.arg2().toMachineInt();
+            if (n <= 0) {
+              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+            }
+            return S.Take.of(engine, machineValues, F.ZZ(Math.min(n, machineValues.argSize())));
+          }
+          return machineValues;
+        }
         IExpr singularValueList =
             engine.evaluate(F.Sqrt(F.Eigenvalues(F.Dot(F.ConjugateTranspose(m), m))));
         int vectorLength = singularValueList.isVector();
@@ -6759,6 +6818,25 @@ public final class LinearAlgebra {
         return false;
       }
       return true;
+    }
+
+    /**
+     * The singular values of a real matrix with a machine number entry, from the decomposition of
+     * the matrix itself: the eigenvalues of <code>Transpose(m).m</code> are their squares, and lose
+     * the small ones to rounding.
+     *
+     * @return {@link F#NIL} if the matrix isn't a real machine matrix
+     */
+    private static IAST machineSingularValueList(IAST matrix) {
+      if (matrix.exists(row -> ((IAST) row).exists(IExpr::isMachineNumber))) {
+        double[][] doubleMatrix = matrix.toDoubleMatrix(false);
+        if (doubleMatrix != null) {
+          double[] values = machineSingularValues(new org.hipparchus.linear.SingularValueDecomposition(
+              MatrixUtils.createRealMatrix(doubleMatrix)));
+          return F.mapRange(0, values.length, i -> F.num(values[i]));
+        }
+      }
+      return F.NIL;
     }
   }
 

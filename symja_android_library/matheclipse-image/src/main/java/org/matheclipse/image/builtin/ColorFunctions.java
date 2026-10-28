@@ -73,6 +73,9 @@ public class ColorFunctions {
           return F.NIL;
         }
       }
+      if (ast.arg1() instanceof ImageExpr) {
+        return colorizeImage((ImageExpr) ast.arg1(), colorFunction, engine);
+      }
       int[] dimensions = ast.arg1().isMatrix(false);
       if (dimensions == null || dimensions[0] == 0 || dimensions[1] == 0) {
         return F.NIL;
@@ -119,6 +122,39 @@ public class ColorFunctions {
         int[] rgb = palette.get(labels[y][x]);
         return new float[] {rgb[0], rgb[1], rgb[2]};
       });
+      return new ImageExpr(image, null, ImageOptions.DEFAULT);
+    }
+
+    /**
+     * The RGB byte image of the colours <code>f(v)</code> of the intensities <code>v</code> of a
+     * greyscale image.
+     */
+    private static IExpr colorizeImage(ImageExpr imageExpr, IExpr colorFunction,
+        EvalEngine engine) {
+      Raster raster = imageExpr.raster();
+      if (colorFunction.isAutomatic() || raster == null || raster.colorChannels() != 1) {
+        return F.NIL;
+      }
+      java.util.Map<Double, int[]> colors = new java.util.HashMap<Double, int[]>();
+      final int[][][] rgb = new int[raster.height][raster.width][];
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          double value = raster.get(x, y, 0);
+          int[] color = colors.get(value);
+          if (color == null) {
+            float[] rgba =
+                Colors.toRgba(engine.evaluate(F.unaryAST1(colorFunction, F.num(value))));
+            if (rgba == null) {
+              return F.NIL;
+            }
+            color = new int[] {toByte(rgba[0]), toByte(rgba[1]), toByte(rgba[2])};
+            colors.put(value, color);
+          }
+          rgb[y][x] = color;
+        }
+      }
+      BufferedImage image = Pixels.fromPixels(raster.width, raster.height, 3,
+          (x, y) -> new float[] {rgb[y][x][0], rgb[y][x][1], rgb[y][x][2]});
       return new ImageExpr(image, null, ImageOptions.DEFAULT);
     }
 
@@ -852,6 +888,11 @@ public class ColorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
       if (image == null) {
+        if (!(ast.arg1() instanceof ImageExpr) && !ast.arg1().isAST(S.Graphics)
+            && !ast.arg1().isAST(S.Graphics3D)) {
+          // Expecting an image or graphics instead of `1`.
+          return Errors.printMessage(S.ColorReplace, "imginv", F.list(ast.arg1()), engine);
+        }
         return F.NIL;
       }
       IAST rules = ast.arg2().isListOfRules(false) //

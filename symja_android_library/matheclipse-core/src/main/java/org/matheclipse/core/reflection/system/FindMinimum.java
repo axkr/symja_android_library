@@ -381,7 +381,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       // variables localized. Substituting the start values into the symbol itself found no
       // variable.
       return findExtremum(head, engine.evaluate(function), relationList, specs, goalType,
-          maxIterations, method, automaticMethod, options.length > 2 ? options[2] : S.None,
+          maxIterations, !options[0].isAutomatic(), method, automaticMethod,
+          options.length > 2 ? options[2] : S.None,
           options.length > 4 ? options[4] : S.None, engine);
     } finally {
       for (int i = 0; i < n; i++) {
@@ -393,8 +394,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr findExtremum(ISymbol head, IExpr function, IAST relationList,
-      List<VariableSpec> specs, GoalType goalType, int maxIterations, String method,
-      boolean automaticMethod, IExpr evaluationMonitor, IExpr stepMonitor, EvalEngine engine) {
+      List<VariableSpec> specs, GoalType goalType, int maxIterations, boolean explicitIterations,
+      String method, boolean automaticMethod, IExpr evaluationMonitor, IExpr stepMonitor,
+      EvalEngine engine) {
     final int n = specs.size();
     // the one and only order of the variables: the order of the search specifications
     IASTAppendable varsList = F.ListAlloc(n);
@@ -481,7 +483,68 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         initialValues, maxIterations, method, simpleBounds, optimizationData, constrained, engine);
     optimizeSupplier.evaluationMonitor = evaluationMonitor;
     optimizeSupplier.stepMonitor = stepMonitor;
-    return optimizeSupplier.get();
+    optimizeSupplier.newtonSteps = automaticMethod && (stepMonitor != S.None || explicitIterations);
+    IExpr result = optimizeSupplier.get();
+    if (constrained && result.isList2() && result.second().isListOfRules()) {
+      IExpr polished = polishInteriorExtremum(function, constraints, (IAST) result, engine);
+      if (polished.isPresent()) {
+        return polished;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The constrained search only comes close to an extremum which satisfies all constraints as
+   * strict inequalities; there the gradient vanishes, and a root search of the gradient from the
+   * point found gives the extremum to machine precision.
+   *
+   * @param result <code>{value, {x -> x0, ...}}</code> of the constrained search
+   * @return {@link F#NIL} if a constraint is an equation or is active at the point, or the root
+   *         search does not end close to the point
+   */
+  private static IExpr polishInteriorExtremum(IExpr function, IAST constraints, IAST result,
+      EvalEngine engine) {
+    IAST rules = (IAST) result.second();
+    for (IExpr constraint : constraints) {
+      if (!(constraint.isAST(S.Greater, 3) || constraint.isAST(S.GreaterEqual, 3)
+          || constraint.isAST(S.Less, 3) || constraint.isAST(S.LessEqual, 3))) {
+        return F.NIL;
+      }
+      double margin = engine
+          .evalQuiet(F.subst(F.Abs(F.Subtract(constraint.first(), constraint.second())), rules))
+          .evalfNaN();
+      if (!(margin > 1.0e-6)) {
+        return F.NIL;
+      }
+    }
+    IASTAppendable gradient = F.ListAlloc(rules.argSize());
+    IASTAppendable start = F.ListAlloc(rules.argSize());
+    for (IExpr rule : rules) {
+      gradient.append(F.Equal(F.D(function, rule.first()), F.C0));
+      start.append(F.list(rule.first(), rule.second()));
+    }
+    IExpr root = engine.evalQuiet(F.FindRoot(gradient, start));
+    if (!root.isListOfRules() || root.argSize() != rules.argSize()) {
+      return F.NIL;
+    }
+    for (int i = 1; i <= rules.argSize(); i++) {
+      double before = rules.get(i).second().evalfNaN();
+      double after = root.getAt(i).second().evalfNaN();
+      if (!(Math.abs(after - before) <= 1.0e-6 * Math.max(1.0, Math.abs(before)))) {
+        return F.NIL;
+      }
+    }
+    for (IExpr constraint : constraints) {
+      if (!engine.evalQuiet(F.subst(constraint, (IAST) root)).isTrue()) {
+        return F.NIL;
+      }
+    }
+    IExpr value = engine.evalN(F.subst(function, (IAST) root));
+    if (!value.isReal()) {
+      return F.NIL;
+    }
+    return F.list(value, root);
   }
 
   /** Append the conditions of a conjunction or a list of constraints. */
@@ -1202,6 +1265,12 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     /** the expression of the option <code>StepMonitor :> expr</code>, or <code>None</code> */
     IExpr stepMonitor = S.None;
 
+    /**
+     * Search a function of one variable with Newton steps, which are counted by
+     * <code>MaxIterations</code> and shown by <code>StepMonitor</code> one by one.
+     */
+    boolean newtonSteps = false;
+
     public OptimizeSupplier(ISymbol head, GoalType goalType, IExpr function, IAST variableList,
         double[] initialValues, int maxIterations, String method, SimpleBounds simpleBounds,
         OptimizationData[] optimizationData, boolean constrained, EvalEngine engine) {
@@ -1297,6 +1366,13 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           Math.max(MIN_EVALUATIONS, EVALUATIONS_PER_ITERATION * (long) maxIterations));
       final MaxEval maxEval = new MaxEval(maxEvaluations);
       IExpr function = engine.evaluate(originalFunction);
+      if (newtonSteps && initialValues.length == 1 && simpleBounds == null && !constrained
+          && variableList.arg1().isSymbol()) {
+        IExpr newton = univariateNewton(function);
+        if (newton.isPresent()) {
+          return newton;
+        }
+      }
       if (method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
         try {
           // https://github.com/Hipparchus-Math/hipparchus/pull/404
@@ -1462,6 +1538,70 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         return F.list(F.num(value), ruleList);
       }
       return F.NIL;
+    }
+
+    /**
+     * Newton's method for a function of one variable, with the step halved until it decreases the
+     * function, and a step against the gradient where the function isn't convex. Each step is one
+     * iteration of <code>MaxIterations</code> and one evaluation of the <code>StepMonitor</code>;
+     * if the iterations run out the point reached is the result, with the message
+     * <code>cvmit</code>.
+     *
+     * @return {@link F#NIL} if the function or its derivatives have no real values on the way
+     */
+    private IExpr univariateNewton(IExpr function) {
+      final IExpr x = variableList.arg1();
+      final MultiVariateNumerical f = new MultiVariateNumerical(function, variableList);
+      final MultiVariateNumerical d1 =
+          new MultiVariateNumerical(engine.evaluate(F.D(function, x)), variableList);
+      final MultiVariateNumerical d2 =
+          new MultiVariateNumerical(engine.evaluate(F.D(function, F.list(x, F.C2))), variableList);
+      // the maximum of the function is the minimum of its negative
+      final double sign = goalType == GoalType.MAXIMIZE ? -1.0 : 1.0;
+      double[] point = {initialValues[0]};
+      double value = sign * f.value(point);
+      for (int k = 0; k < maxIterations; k++) {
+        double gradient = sign * d1.value(point);
+        double curvature = sign * d2.value(point);
+        if (!Double.isFinite(value) || !Double.isFinite(gradient)
+            || !Double.isFinite(curvature)) {
+          return F.NIL;
+        }
+        if (gradient == 0.0) {
+          return extremum(point, sign * value);
+        }
+        double step = curvature > 0.0 ? -gradient / curvature : -gradient;
+        double[] next = {point[0] + step};
+        double nextValue = sign * f.value(next);
+        for (int halvings = 0; !(nextValue <= value) && halvings < 60; halvings++) {
+          step *= 0.5;
+          next[0] = point[0] + step;
+          nextValue = sign * f.value(next);
+        }
+        if (!(nextValue <= value) || next[0] == point[0]) {
+          // no step decreases the function any more
+          return extremum(point, sign * value);
+        }
+        point = next;
+        value = nextValue;
+        record(point, sign * value);
+        if (stepMonitor != S.None) {
+          monitor(point, stepMonitor);
+        }
+        if (Math.abs(step) <= 1.0e-10 * Math.max(1.0, Math.abs(point[0]))) {
+          return extremum(point, sign * value);
+        }
+      }
+      // Failed to converge to the requested accuracy or precision within `1` iterations.
+      Errors.printMessage(head, "cvmit", F.list(F.ZZ(maxIterations)), engine);
+      return extremum(point, sign * value);
+    }
+
+    /** The result <code>{value, {x -> x0, ...}}</code>. */
+    private IAST extremum(double[] point, double value) {
+      IASTAppendable ruleList = F.mapRange(1, variableList.size(),
+          j -> F.Rule(variableList.get(j), F.num(point[j - 1])));
+      return F.list(F.num(value), ruleList);
     }
 
     /**

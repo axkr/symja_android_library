@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.analysis.ParametricUnivariateFunction;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -7,11 +8,8 @@ import org.hipparchus.fitting.AbstractCurveFitter;
 import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.fitting.WeightedObservedPoints;
-import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
-import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
@@ -22,15 +20,16 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
+import org.matheclipse.core.expression.data.GeneralizedFittedModelExpr;
 import org.matheclipse.core.expression.data.NonlinearFittedModelExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -39,6 +38,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class CurveFitterFunctions {
 
@@ -53,6 +53,9 @@ public class CurveFitterFunctions {
       S.Fit.setEvaluator(new Fit());
       S.GeneralizedLinearModelFit.setEvaluator(new GeneralizedLinearModelFit());
       S.LinearModelFit.setEvaluator(new LinearModelFit());
+      S.LogitModelFit.setEvaluator(new BinomialModelFit("LogitLink"));
+      S.ProbitModelFit.setEvaluator(new BinomialModelFit("ProbitLink"));
+      S.DiscreteIndicator.setEvaluator(new DiscreteIndicator());
       S.NonlinearModelFit.setEvaluator(new NonlinearModelFit());
     }
   }
@@ -607,9 +610,68 @@ public class CurveFitterFunctions {
             return Errors.printMessage(S.Fit, rex, engine);
           }
         }
-
+        if (dataMatrix.isPresent() && dataMatrix.forAll(row -> isResponse(row.last()))) {
+          return symbolicResponseFit(dataMatrix, termList, variables, engine);
+        }
       }
       return F.NIL;
+    }
+
+    /** Whether a value of the data can be a term of a linear combination of the responses. */
+    private static boolean isResponse(IExpr value) {
+      return !(value.isList() || value.isRuleAST() || value.isString());
+    }
+
+    /**
+     * The least squares fit of data whose responses are not all numbers. Each coefficient is a
+     * linear combination of the responses: with the columns of the design matrix scaled to unit
+     * length and <code>P</code> the pseudo-inverse of the scaled matrix, the coefficient of the
+     * basis function <code>j</code> is <code>(P[j,1] y1 + P[j,2] y2 + ...)</code> over the length of
+     * the column <code>j</code>.
+     *
+     * @param dataMatrix the data as <code>{x, y, ..., f}</code> rows with numeric coordinates
+     * @return the fit or {@link F#NIL} if a coordinate or a basis function value is not a number
+     */
+    private static IExpr symbolicResponseFit(IAST dataMatrix, IAST termList, IAST variables,
+        EvalEngine engine) {
+      final int rows = dataMatrix.argSize();
+      final int columns = termList.argSize();
+      final double[][] design = new double[rows][columns];
+      final double[] length = new double[columns];
+      try {
+        for (int i = 0; i < rows; i++) {
+          final IAST rules = pointRules(variables, (IAST) dataMatrix.get(i + 1));
+          for (int j = 0; j < columns; j++) {
+            design[i][j] = engine.evalDouble(engine.evaluate(F.subst(termList.get(j + 1), rules)));
+            length[j] += design[i][j] * design[i][j];
+          }
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
+      for (int j = 0; j < columns; j++) {
+        length[j] = Math.sqrt(length[j]);
+      }
+      for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < columns; j++) {
+          if (length[j] > 0.0) {
+            design[i][j] /= length[j];
+          }
+        }
+      }
+      final double[][] inverse = LinearAlgebra
+          .machinePseudoInverse(MatrixUtils.createRealMatrix(design)).getData();
+      IASTAppendable fit = F.PlusAlloc(columns);
+      for (int j = 0; j < columns; j++) {
+        if (length[j] > 0.0) {
+          final double[] row = inverse[j];
+          IExpr combination = F.mapRange(S.Plus, 0, rows,
+              k -> F.Times(F.num(row[k]), ((IAST) dataMatrix.get(k + 1)).last()));
+          fit.append(F.Times(F.num(1.0 / length[j]), combination, termList.get(j + 1)));
+        }
+      }
+      return engine.evaluate(fit);
     }
 
     /**
@@ -853,6 +915,114 @@ public class CurveFitterFunctions {
     }
   }
 
+  /**
+   * Unable to construct a numeric design matrix. Nominal variables may need to be specified, or
+   * non-numeric entries for numeric variables may need to be replaced.
+   */
+  private static final String DESMAT_MESSAGE =
+      "Unable to construct a numeric design matrix. Nominal variables may need to be specified, "
+          + "or non-numeric entries for numeric variables may need to be replaced.";
+
+  private static final String NOTDATA_MESSAGE =
+      "The first argument is not a vector, a matrix or a list containing a design matrix and "
+          + "response vector.";
+
+  /**
+   * Whether an independent variable of a model can be the given expression: a symbol, or an
+   * expression like <code>Subscript(x, 1)</code>, but not a number, a string or a list.
+   */
+  private static boolean isModelVariable(IExpr variable) {
+    return !(variable.isNumericFunction(true) || variable.isList() || variable.isString());
+  }
+
+  /**
+   * The data of a linear model as machine rows <code>{x1, ..., xk, y}</code>. A vector, or a matrix
+   * of one-element rows, are responses at the positions <code>1, 2, ...</code>. A data point with a
+   * <code>Missing(...)</code> entry is left out.
+   *
+   * @param data the first argument of the fit
+   * @param variables the independent variables
+   * @param head the function which prints the messages
+   * @param responseTag the message for a response which is not a number while the coordinates
+   *        are, or <code>null</code> for the message <code>desmat</code>
+   * @return <code>null</code> after a message if the data cannot be used
+   */
+  private static double[][] modelData(IExpr data, IAST variables, ISymbol head,
+      String responseTag, EvalEngine engine) {
+    if (!variables.forAll(CurveFitterFunctions::isModelVariable)) {
+      // `1` is not a valid variable.
+      Errors.printMessage(head, "ivar", F.list(variables), engine);
+      return null;
+    }
+    if (!data.isList() || data.argSize() == 0 || !((IAST) data).forAll(x -> x.isList())
+        && ((IAST) data).exists(x -> x.isList())) {
+      // The first argument is not a vector, a matrix or a list containing a design matrix and
+      // response vector.
+      Errors.printMessage(head, "notdata", F.CEmptyList, engine);
+      return null;
+    }
+    IAST list = (IAST) data;
+    IASTAppendable rows = F.ListAlloc(list.argSize());
+    int coordinates = 1;
+    if (list.arg1().isList()) {
+      final int length = list.arg1().argSize();
+      if (!list.forAll(row -> row.argSize() == length) || length == 0) {
+        Errors.printMessage(head, "notdata", F.CEmptyList, engine);
+        return null;
+      }
+      if (length > 1) {
+        coordinates = length - 1;
+        rows.appendArgs(list);
+      } else {
+        list.forEach((row, i) -> rows.append(F.List(F.ZZ(i), row.first())));
+      }
+    } else {
+      list.forEach((y, i) -> rows.append(F.List(F.ZZ(i), y)));
+    }
+    if (coordinates != variables.argSize()) {
+      // The number of coordinates (`1`) is not equal to the number of variables (`2`).
+      Errors.printMessage(head, "fitc", F.List(F.ZZ(coordinates), F.ZZ(variables.argSize())),
+          engine);
+      return null;
+    }
+    java.util.List<double[]> points = new java.util.ArrayList<double[]>();
+    for (int i = 1; i < rows.size(); i++) {
+      IAST row = (IAST) rows.get(i);
+      if (row.exists(x -> x.head() == S.Missing || x == S.Missing)) {
+        continue;
+      }
+      double[] point = row.toDoubleVector();
+      if (point == null) {
+        String tag = responseTag != null && row.removeAtCopy(row.argSize()).toDoubleVector() != null
+            ? responseTag
+            : "desmat";
+        Errors.printMessage(head, tag, F.CEmptyList, engine);
+        return null;
+      }
+      points.add(point);
+    }
+    if (points.isEmpty()) {
+      Errors.printMessage(head, "desmat", F.CEmptyList, engine);
+      return null;
+    }
+    return points.toArray(new double[points.size()][]);
+  }
+
+  /**
+   * The basis functions of a model: a constant basis function is added unless the list has one
+   * already, or <code>IncludeConstantBasis -> False</code> asks for a fit through the origin.
+   */
+  private static IAST modelBasis(IExpr functions, IExpr includeConstantBasis) {
+    IAST basisFunctions = functions.makeList();
+    if (!includeConstantBasis.isFalse() && !basisFunctions.exists(f -> f.isOne())) {
+      IASTAppendable temp = F.ListAlloc(basisFunctions.size());
+      temp.append(F.C1);
+      temp.appendArgs(basisFunctions);
+      basisFunctions = temp;
+    }
+    return basisFunctions;
+  }
+
   private static final class LinearModelFit extends AbstractFunctionOptionEvaluator {
 
     @Override
@@ -869,75 +1039,13 @@ public class CurveFitterFunctions {
         return F.NIL;
       }
       if (argSize == 3) {
-        IAST arg2 = ast.arg2().makeList();
-        IAST arg3 = ast.arg3().makeList();
-        if (arg1.isList()) {
-          IAST basisFunctions = arg2;
-          // VariablesSet varSet = new VariablesSet(basisFunctions);
-          IAST variables = arg3;
-
-          // A constant basis function is added unless the list has one already, or
-          // IncludeConstantBasis -> False asks for a fit through the origin.
-          if (!options[0].isFalse() && !basisFunctions.exists(f -> f.isOne())) {
-            IASTAppendable temp = F.ListAlloc(basisFunctions.size());
-            temp.append(F.C1);
-            temp.appendArgs(basisFunctions);
-            basisFunctions = temp;
-          }
-
-          int[] dim = arg1.isMatrix(false);
-          if (dim != null && dim[1] >= 2) {
-            double[][] numericMatrix = arg1.toDoubleMatrix(false);
-            if (numericMatrix != null) {
-              if (dim[1] - 1 != variables.argSize()) {
-                // The number of coordinates (`1`) is not equal to the number of variables (`2`).
-                return Errors.printMessage(S.LinearModelFit, "fitc",
-                    F.List(F.ZZ(dim[1] - 1), F.ZZ(variables.argSize())), engine);
-              }
-              return FittedModelExpr.linearModelFit(numericMatrix, basisFunctions, variables,
-                  engine);
-            }
-            FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
-            FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
-            FieldVector<IExpr> vars = Convert.list2Vector(variables);
-
-            if (matrix != null && basis != null && vars != null) {
-              if (dim[1] - 1 != variables.argSize()) {
-                // The number of coordinates (`1`) is not equal to the number of variables (`2`).
-                return Errors.printMessage(S.LinearModelFit, "fitc",
-                    F.List(F.ZZ(dim[1] - 1), F.ZZ(variables.argSize())), engine);
-              }
-              return FittedModelExpr.linearModelFit(matrix, basis, vars, engine);
-            }
-          } else {
-            int vectorLength = arg1.isVector();
-            if (vectorLength > 1) {
-              FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-              // IExpr vector = arg1.normal(false);
-              // double[] doubleVector = vector.toDoubleVector();
-              if (vector != null) {
-                if (variables.argSize() != 1) {
-                  // The number of coordinates (`1`) is not equal to the number of variables (`2`).
-                  return Errors.printMessage(S.LinearModelFit, "fitc",
-                      F.List(F.C1, F.ZZ(variables.argSize())), engine);
-                }
-                FieldMatrix<IExpr> matrix =
-                    new Array2DRowFieldMatrix<IExpr>(F.EXPR_FIELD, vectorLength, 2);
-                // double[][] matrix = new double[vectorLength][2];
-                for (int i = 0; i < vector.getDimension(); i++) {
-                  matrix.setEntry(i, 0, F.ZZ(i + 1));
-                  matrix.setEntry(i, 1, vector.getEntry(i));
-                }
-                FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
-                FieldVector<IExpr> vars = Convert.list2Vector(variables);
-                // double[][] matrix = arg1.toDoubleMatrix(false);
-                if (basis != null && vars != null) {
-                  return FittedModelExpr.linearModelFit(matrix, basis, vars, engine);
-                }
-              }
-            }
-          }
+        IAST variables = ast.arg3().makeList();
+        double[][] data = modelData(arg1, variables, S.LinearModelFit, null, engine);
+        if (data == null) {
+          return F.NIL;
         }
+        return FittedModelExpr.linearModelFit(data, modelBasis(ast.arg2(), options[0]), variables,
+            engine);
       }
       // The first argument is not a vector or matrix or a list containing a design matrix and
       // response vector.
@@ -952,15 +1060,66 @@ public class CurveFitterFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
+      putModelMessages(newSymbol);
       setOptions(newSymbol, new IBuiltInSymbol[] {S.IncludeConstantBasis},
           new IExpr[] {S.True});
     }
   }
 
   /**
-   * <code>GeneralizedLinearModelFit(data, functions, variables)</code> - a generalized linear model.
-   * The Gaussian family with its identity link is the ordinary least squares model of
-   * <code>LinearModelFit</code>.
+   * Fit a generalized linear model.
+   *
+   * @param ast the call <code>head(data, functions, variables, ...)</code>
+   * @param family the exponential family of the response
+   * @param link the link function
+   * @param includeConstantBasis the value of the option {@link S#IncludeConstantBasis}
+   * @return the model or {@link F#NIL}
+   */
+  private static IExpr generalizedLinearModelFit(IAST ast, String family, String link,
+      IExpr includeConstantBasis, EvalEngine engine) {
+    final ISymbol head = (ISymbol) ast.topHead();
+    IAST variables = ast.arg3().makeList();
+    double[][] data = modelData(ast.arg1(), variables, head,
+        family.equals("Binomial") ? "binrsp" : null, engine);
+    if (data == null) {
+      return F.NIL;
+    }
+    IAST basisFunctions = modelBasis(ast.arg2(), includeConstantBasis);
+    final int k = variables.argSize();
+    double[] response = new double[data.length];
+    for (int i = 0; i < data.length; i++) {
+      response[i] = data[i][k];
+      if (!GeneralizedFittedModelExpr.isResponse(family, response[i])) {
+        if (family.equals("Binomial")) {
+          // The response values are expected to be between 0 and 1 for binomial models.
+          return Errors.printMessage(head, "binrsp", F.CEmptyList, engine);
+        }
+        return F.NIL;
+      }
+    }
+    double[][] design = FittedModelExpr.designMatrixNumeric(data, basisFunctions, variables, engine);
+    if (design == null) {
+      return Errors.printMessage(head, "desmat", F.CEmptyList, engine);
+    }
+    if (design[0].length == 0) {
+      return F.NIL;
+    }
+    GeneralizedFittedModelExpr model = GeneralizedFittedModelExpr.fit(new GeneralizedFittedModelExpr.Fit(
+        family, link, basisFunctions, variables, design, response));
+    return model == null ? F.NIL : model;
+  }
+
+  /** The messages of the linear model fits. */
+  private static void putModelMessages(ISymbol symbol) {
+    symbol.putMessage(IPatternMatcher.SET, "desmat", F.stringx(DESMAT_MESSAGE));
+    symbol.putMessage(IPatternMatcher.SET, "notdata", F.stringx(NOTDATA_MESSAGE));
+    symbol.putMessage(IPatternMatcher.SET, "binrsp",
+        F.stringx("The response values are expected to be between 0 and 1 for binomial models."));
+  }
+
+  /**
+   * <code>GeneralizedLinearModelFit(data, functions, variables)</code> - a generalized linear model
+   * of a response from an exponential family, with the canonical link function of the family.
    */
   private static final class GeneralizedLinearModelFit extends AbstractFunctionOptionEvaluator {
 
@@ -971,11 +1130,16 @@ public class CurveFitterFunctions {
         return F.NIL;
       }
       IExpr family = options[0];
-      if (!family.isAutomatic() && !(family.isString() && family.toString().equals("Gaussian"))) {
+      if (family.isAutomatic()) {
+        family = F.stringx("Gaussian");
+      }
+      if (!family.isString()
+          || Arrays.binarySearch(GeneralizedFittedModelExpr.FAMILIES, family.toString()) < 0) {
         return F.NIL;
       }
-      return engine.evaluate(F.LinearModelFit(ast.arg1(), ast.arg2(), ast.arg3(),
-          F.Rule(S.IncludeConstantBasis, options[1])));
+      String name = family.toString();
+      return generalizedLinearModelFit(ast, name, GeneralizedFittedModelExpr.canonicalLink(name),
+          options[1], engine);
     }
 
     @Override
@@ -985,9 +1149,66 @@ public class CurveFitterFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
+      putModelMessages(newSymbol);
       setOptions(newSymbol,
           new IBuiltInSymbol[] {S.ExponentialFamily, S.IncludeConstantBasis},
           new IExpr[] {F.stringx("Gaussian"), S.True});
+    }
+  }
+
+  /**
+   * <code>LogitModelFit(data, functions, variables)</code> and
+   * <code>ProbitModelFit(data, functions, variables)</code> - the binomial generalized linear model
+   * of probabilities with the logit or the probit link function.
+   */
+  private static final class BinomialModelFit extends AbstractFunctionOptionEvaluator {
+    private final String link;
+
+    BinomialModelFit(String link) {
+      this.link = link;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, final IAST originalAST) {
+      if (argSize != 3) {
+        return F.NIL;
+      }
+      return generalizedLinearModelFit(ast, "Binomial", link, options[0], engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      putModelMessages(newSymbol);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IncludeConstantBasis}, new IExpr[] {S.True});
+    }
+  }
+
+  /**
+   * <code>DiscreteIndicator(x, c, {c1, c2, ...})</code> - <code>1</code> if the level
+   * <code>x</code> is <code>c</code> and <code>0</code> for another level; both must be levels.
+   */
+  private static final class DiscreteIndicator extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg3().isList()) {
+        IAST levels = (IAST) ast.arg3();
+        if (levels.contains(ast.arg1()) && levels.contains(ast.arg2())) {
+          return ast.arg1().equals(ast.arg2()) ? F.C1 : F.C0;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
     }
   }
 

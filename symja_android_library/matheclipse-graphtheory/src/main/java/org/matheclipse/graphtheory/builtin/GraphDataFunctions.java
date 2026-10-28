@@ -419,7 +419,7 @@ public class GraphDataFunctions {
     }
 
     private static IExpr cycleGraph(EvalEngine engine, int order, IASTAppendable optionsList) {
-      // 1<->2, 2<->3, ..., (n-1)<->n and the closing edge 1<->n
+      // edges in sorted order: 1<->2, the closing edge 1<->n, then 2<->3, ..., (n-1)<->n
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
           .edgeClass(ExprEdge.class) //
@@ -427,11 +427,12 @@ public class GraphDataFunctions {
       for (int i = 1; i <= order; i++) {
         target.addVertex(F.ZZ(i));
       }
-      for (int i = 1; i < order; i++) {
-        target.addEdge(F.ZZ(i), F.ZZ(i + 1));
-      }
+      target.addEdge(F.C1, F.C2);
       if (order > 2) {
         target.addEdge(F.C1, F.ZZ(order));
+      }
+      for (int i = 2; i < order; i++) {
+        target.addEdge(F.ZZ(i), F.ZZ(i + 1));
       }
       return GraphExpr.newInstance(target, optionsList);
     }

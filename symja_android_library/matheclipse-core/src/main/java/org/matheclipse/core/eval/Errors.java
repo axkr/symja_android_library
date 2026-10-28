@@ -195,6 +195,8 @@ public class Errors {
       "ctnc", "The constraint `1` is not convex.", //
       "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //
       "date", "Expression `1` cannot be interpreted as a date specification.", //
+      "delaysm",
+      "The system contains time delays. An exact simulation is not possible; try simulating over a time span.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
@@ -294,6 +296,7 @@ public class Errors {
       "ilsmn",
       "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //
       "ilsnn", "Single or list of non-negative integers expected at position `1`.", //
+      "imginv", "Expecting an image or graphics instead of `1`.", //
       "incmp", "The arguments `1` and `2` in `3` are incompatible.", //
       "incom",
       "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
@@ -387,6 +390,7 @@ public class Errors {
       "lpn", "`1` is not a list of numbers or pairs of numbers.", //
       "lpsnf", "No solution can be found that satisfies the constraints.", //
       "lrgexp", "Exponent ist out of bounds for function `1`.", //
+      "lrwl", "The items for choice `1` should be a nonempty list or a rule weights -> choices.", //
       "lslc", "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
       "lstpat", "List or pattern matching a list expected at position `1` in `2`.", //
       "ltype", "Legendre type `1` is expected to be 1, 2, 3.", //
@@ -690,6 +694,10 @@ public class Errors {
       "vector", "Argument `1` at position `2` is not a non-empty vector.", //
       "vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
       "vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
+      "wghtv",
+      "The weights given on the left-hand side of `1` should be a list of positive numerical quantities having the same length as the list given on the right-hand side.", //
+      "wghtvl",
+      "The weights given on the left-hand side of `1` should have the same length as the data given on the right-hand side.", //
       "write", "Tag `1` in `2` is Protected.", //
       "wrsym", "Symbol `1` is Protected.", //
       "wtspec",
