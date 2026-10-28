@@ -140,6 +140,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierDCTMatrix());
       S.FourierDSTMatrix
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierDSTMatrix());
+      S.FourierSequenceTransform
+          .setEvaluator(new org.matheclipse.core.reflection.system.FourierSequenceTransform());
       S.FourierSinTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierSinTransform());
       S.FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());

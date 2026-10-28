@@ -1801,31 +1801,20 @@ public final class BooleanFunctions {
         if (ast.isAST2()) {
           return equalNIL(ast.arg1(), ast.arg2(), engine);
         }
-        boolean evaled = false;
-        IASTAppendable result = ast.copyAppendable();
-        int i = 2;
-        IExpr arg1 = F.expandAll(result.arg1(), true, true);
-        while (i < result.size()) {
-          IExpr arg2 = F.expandAll(result.get(i), true, true);
+        // a chain is True only if every pair is equal; an undecided pair keeps all arguments
+        boolean allTrue = true;
+        IExpr arg1 = F.expandAll(ast.arg1(), true, true);
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr arg2 = F.expandAll(ast.get(i), true, true);
           b = arg1.equalTernary(arg2, engine);
           if (b == IExpr.COMPARE_TERNARY.FALSE) {
             return S.False;
-          } else if (b == IExpr.COMPARE_TERNARY.TRUE) {
-            evaled = true;
-            result.remove(i - 1);
-          } else {
-            result.set(i - 1, arg1);
-            i++;
-            arg1 = arg2;
+          } else if (b != IExpr.COMPARE_TERNARY.TRUE) {
+            allTrue = false;
           }
+          arg1 = arg2;
         }
-        if (evaled) {
-          if (result.isAST1()) {
-            return S.True;
-          }
-          return result;
-        }
-        return F.NIL;
+        return allTrue ? S.True : F.NIL;
       }
       return S.True;
     }

@@ -17451,6 +17451,212 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testImportStringGraph6Elements() {
+    check("ImportString(\"Cs\",{\"Graph6\",\"EdgeRules\"})", //
+        "{{1->2,1->3,1->4}}");
+    check("ImportString(\"B_\\nCs\",{\"Graph6\",\"VertexCount\"})", //
+        "{3,4}");
+    check("ImportString(\"B_\",{\"Graph6\",\"AdjacencyMatrix\"})", //
+        "{\n{{0,1,0},\n {1,0,0},\n {0,0,0}}}");
+    check("ImportString(\">>graph6<<Cs\\nB_\",{\"Graph6\",\"VertexList\"})", //
+        "{{1,2,3,4},{1,2,3}}");
+    // Import: Cannot import data as Graph6 format.
+    check("{ImportString(\"z\",\"Graph6\"),ImportString(\"C\",{\"Graph6\",\"EdgeRules\"})}", //
+        "{$Failed,$Failed}");
+    // an unknown element stays unevaluated
+    check("ImportString(\"Cs\",{\"Graph6\",\"Edges\"})", //
+        "ImportString(Cs,{Graph6,Edges})");
+    // G6 is the short name of the format
+    check("ImportString(\"B_\",{\"G6\",\"EdgeRules\"})", //
+        "{{1->2}}");
+  }
+
+  @Test
+  public void testEqualRepeatedArgumentsUndecided() {
+    // an undecided pair keeps all arguments, also the equal ones
+    check("{Equal({3}, 4, 4), Equal(y, 5, 5), Unequal(y, 5, 5), Equal({2, 3}, {2, 3}, 7)}", //
+        "{{3}==4==4,y==5==5,y!=5!=5,{2,3}=={2,3}==7}");
+    check("{Equal(4, 4, 4), Equal(y, 3, 4)}", //
+        "{True,False}");
+  }
+
+  @Test
+  public void testRealDigitsBaseAbove36() {
+    check("RealDigits(N(Pi, 24), 100)[[1, 1 ;; 4]]", //
+        "{3,14,15,92}");
+    // 30 decimal digits are 10 digits in base 1000
+    check("RealDigits(N(E, 30), 1000)", //
+        "{{2,718,281,828,459,45,235,360,287,471},1}");
+    check("RealDigits(5/7, 40, 4)", //
+        "{{28,22,34,11},0}");
+    check("RealDigits(5/7, 40)", //
+        "{{{28,22,34,11,17,5}},0}");
+    check("RealDigits(123456, 60)", //
+        "{{34,17,36},3}");
+    // an exact number with a length is evaluated with enough digits
+    check("RealDigits(Pi, 10, 20)", //
+        "{{3,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4},1}");
+  }
+
+  @Test
+  public void testDerivativeIncompleteBeta() {
+    check("D(Beta(x, 3, c), x)", //
+        "x^2/(1-x)^(1-c)");
+    check("D(Beta(Sin(x), a, 2), x)", //
+        "(Cos(x)*(1-Sin(x)))/Sin(x)^(1-a)");
+  }
+
+  @Test
+  public void testRSolveFirstOrderAffine() {
+    check("RSolve(a(n + 1) == 5*a(n) + 2, a(n), n)", //
+        "{{a(n)->1/2*5^n*(1-1/5^n)+C(1)/5^(1-n)}}");
+    // with a condition the solution is one fraction
+    check("RSolve({a(n + 1) == 4*a(n) - 1, a(0) == 2}, a(n), n)", //
+        "{{a(n)->1/3*(1+5*4^n)}}");
+    check("RSolve({b(k) == r*b(k - 1) + 2, b(1) == 1}, b(k), k)", //
+        "{{b(k)->(-2*r+r^k+r^(1+k))/((-1+r)*r)}}");
+  }
+
+  @Test
+  public void testSolvePiecewiseByPieces() {
+    check("Solve(Piecewise({{3*x, x < 2}}, x + 1) == 3, x)", //
+        "{{x->1},{x->2}}");
+    check("Solve(Piecewise({{x^2, x < 0}}, 2*x) == 4, x)", //
+        "{{x->-2},{x->2}}");
+    // the conditions of the pieces are not decided for a symbolic right hand side
+    check("Solve(Piecewise({{x, x > 1}}, 3*x) == a, x)", //
+        "{}");
+    check("Solve(Piecewise({{0.2*x + 0.1, x < 1}}, 0) == 0.7 - x, x)", //
+        "{{x->0.5}}");
+  }
+
+  @Test
+  public void testDSolveSystemInitialValueForms() {
+    // the smallest exponential factored out
+    check("DSolve({x'(t) == 3*x(t) + y(t), y'(t) == x(t) + 3*y(t), x(0) == 3, y(0) == 1}, {x, y}, t)", //
+        "{{x->Function({t},E^(2*t)*(1+2*E^(2*t))),y->Function({t},E^(2*t)*(-1+2*E^(2*t)))}}");
+    // a real system with imaginary eigenvalues has a real solution
+    check(
+        "{u(t), v(t)} /. DSolve({u''(t) + 5*u(t) - v(t) == 0, v''(t) + 5*v(t) - u(t) == 0, u(0) == 1, v(0) == 0, u'(0) == 0, v'(0) == 0}, {u, v}, t)", //
+        "{{1/2*(Cos(2*t)+Cos(Sqrt(6)*t)),1/2*(Cos(2*t)-Cos(Sqrt(6)*t))}}");
+    check("DSolve({x'(t) == x(t) - 2*y(t), y'(t) == 2*x(t) + y(t), x(0) == 1, y(0) == 0}, {x, y}, t)", //
+        "{{x->Function({t},E^t*Cos(2*t)),y->Function({t},E^t*Sin(2*t))}}");
+  }
+
+  @Test
+  public void testNDSolveCoupledBoundaryConditions() {
+    // exact value 1.16259249449015...
+    check(
+        "y(0.5) /. First(NDSolve({y''(x) == -y(x), y(0) == 1, y(1) + 2*y'(1) == 0}, y, {x, 0, 1}))", //
+        "1.16259");
+    check(
+        "Module({s = First(NDSolve({v''(x) == v(x)^2, v(0) == 0.2, v(1) + v'(1) == 1}, v, {x, 0, 1}))}, {v(0.5), v(1) + v'(1)} /. s)", //
+        "{0.359634,1.0}");
+    // the dependent variable as a list of applications
+    check(
+        "f(z) /. First(NDSolve({f''(z) == 2*f'(z), f'(1) == 0, f(0) - f'(0) == 3}, {f(z)}, {z, 0, 1})) /. z -> 0.25", //
+        "3.0");
+    // h(0) - h(1) == -1/2 whatever h(0) is
+    check("NDSolve({h''(x) == 1, h'(0) == 0, h(0) == h(1)}, h, {x, 0, 1})", //
+        "NDSolve({h''(x)==1,h'(0)==0,h(0)==h(1)},h,{x,0,1})");
+    // on a short interval the conditions depend on y'(0) by a small factor, but they do
+    check(
+        "10^10*y(3/10^10) /. First(NDSolve({y''(x) == 0, y(0) == 0, y(1/10^9) == 2/10^9}, y, {x, 0, 1/10^9}))", //
+        "6.0");
+  }
+
+  @Test
+  public void testPartSpanUpTo() {
+    // UpTo(k) as an endpoint of a Span stands for Min(k, Length(expr))
+    check(
+        "v={p,q,r,s,t,u}; {v[[3;;UpTo(10)]], v[[UpTo(4);;2;;-1]], v[[;;UpTo(20);;4]], v[[-2;;UpTo(3);;-1]]}", //
+        "{{r,s,t,u},{s,r,q},{p,t},{t,s,r}}");
+    check("g(1,2,3,4)[[3;;UpTo(8)]]", //
+        "g(3,4)");
+    check("<|x->1,y->2,z->3|>[[2;;UpTo(6)]]", //
+        "<|y->2,z->3|>");
+    check("{{1,2,3,4},{5,6,7,8},{9,10,11,12}}[[2;;UpTo(9), 3;;UpTo(5)]]", //
+        "{{7,8},{11,12}}");
+    check("{}[[;;UpTo(5)]]", //
+        "{}");
+    // Part: Cannot take positions 4 through 1 in {p,q,r,s}.
+    check("{p,q,r,s}[[4;;UpTo(1)]]", //
+        "{p,q,r,s}[[4;;UpTo(1)]]");
+    // Part: The expression UpTo(2) cannot be used as a part specification.
+    check("{{1,2},{3,4},{5,6}}[[UpTo(2),2]]", //
+        "{{1,2},{3,4},{5,6}}[[UpTo(2),2]]");
+    check("w={1,2,3,4}; w[[3;;UpTo(7)]]=0; w", //
+        "{1,2,0,0}");
+    // a Span without its first part and with a step
+    check("{a,b,c,d,e,f,g}[[;;5;;2]]", //
+        "{a,c,e}");
+  }
+
+  @Test
+  public void testDownValuesConditionalOrder() {
+    // a rule with a condition on its right-hand side is tried before an unconditional rule
+    // with the same left-hand side
+    check("ClearAll(k); k(y_):=10; k(y_):=20/;y<0; k(y_Real):=30/;y>1; Last /@ DownValues(k)", //
+        "{20/;y<0,30/;y>1,10}");
+    check("First /@ DownValues(k)", //
+        "{HoldPattern(k(y_)),HoldPattern(k(y_Real)),HoldPattern(k(y_))}");
+    check("{k(-1), k(2.5), k(2), k(0.5)}", //
+        "{20,30,10,10}");
+    // conditional rules with the same left-hand side keep the order of their definitions
+    check("ClearAll(m); m(y_):=1/;y>0; m(y_):=2/;y<0; m(y_):=3; Last /@ DownValues(m)", //
+        "{1/;y>0,2/;y<0,3}");
+    check("{m(-4), m(0)}", //
+        "{2,3}");
+    check("ClearAll(s); s(a_)[b_]:=0; s(a_)[b_Integer]:=1/;a>b; s(a_)[b_]:=2/;b>0; " //
+        + "Last /@ SubValues(s)", //
+        "{1/;a>b,2/;b>0,0}");
+    check("First /@ SubValues(s)", //
+        "{HoldPattern(s(a_)[b_Integer]),HoldPattern(s(a_)[b_]),HoldPattern(s(a_)[b_])}");
+    check("{s(5)[3], s(1)[3], s(1)[-3], s(1)[a]}", //
+        "{1,2,1,0}");
+  }
+
+  @Test
+  public void testTraditionalFormLogicBoxes() {
+    check("MakeBoxes(TraditionalForm(Inequality(a, Less, b, GreaterEqual, c, Unequal, d)))", //
+        "TagBox(FormBox(RowBox({a,<,b,≥,c,≠,d}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("MakeBoxes(TraditionalForm(u && (v || w) && !t))", //
+        "TagBox(FormBox(RowBox({u,∧,RowBox({(,RowBox({v,∨,w}),)}),∧,RowBox({¬,t})}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("MakeBoxes(TraditionalForm(!(u || v)))", //
+        "TagBox(FormBox(RowBox({¬,RowBox({(,RowBox({u,∨,v}),)})}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("MakeBoxes(TraditionalForm(u || (v && w)))", //
+        "TagBox(FormBox(RowBox({u,∨,RowBox({(,RowBox({v,∧,w}),)})}),TraditionalForm),TraditionalForm,Editable->True)");
+    // StandardForm keeps the input operators
+    check("MakeBoxes(u && (v || w))", //
+        "RowBox({u,&&,RowBox({(,v,||,w,)})})");
+  }
+
+  @Test
+  public void testFourierSequenceTransform() {
+    check("FourierSequenceTransform(3*KroneckerDelta(n-1) - KroneckerDelta(n+2), n, w)", //
+        "(3-E^(I*3*w))/E^(I*w)");
+    check("FourierSequenceTransform(Boole(-1<=n<=1)*n^2, n, w)", //
+        "(1+E^(I*2*w))/E^(I*w)");
+    check("FourierSequenceTransform(UnitStep(n)*UnitStep(2-n)*a, n, w)", //
+        "(a*(1+E^(I*w)+E^(I*2*w)))/E^(I*2*w)");
+    check("FourierSequenceTransform(Piecewise({{1, n==0}, {-1, n==1}}, 0), n, w)", //
+        "(-1+E^(I*w))/E^(I*w)");
+    check("FourierSequenceTransform(If(Abs(n-1)<2, n, 0), n, w)", //
+        "(2+E^(I*w))/E^(I*2*w)");
+    check("FourierSequenceTransform(KroneckerDelta(n-1), n, w, FourierParameters->{0,2})", //
+        "1/(E^(I*2*w)*Sqrt(Pi))");
+    check("FourierSequenceTransform(Boole(0<=n<=1), n, w, FourierParameters->{0,1})", //
+        "(1+E^(I*w))/(E^(I*w)*Sqrt(2*Pi))");
+    check("FourierSequenceTransform(KroneckerDelta(n-1), n, w, FourierParameters->{1,1/2})", //
+        "E^(-I*1/2*w)");
+    check("FourierSequenceTransform(Boole(2<n<3), n, w)", //
+        "0");
+    // infinite support
+    check("FourierSequenceTransform(2^n*UnitStep(n), n, w)", //
+        "FourierSequenceTransform(2^n*UnitStep(n),n,w)");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

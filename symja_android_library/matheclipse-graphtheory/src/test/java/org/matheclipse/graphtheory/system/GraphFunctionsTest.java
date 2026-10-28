@@ -2983,6 +2983,67 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{True,False,True,True,False}");
   }
 
+  @Test
+  public void testGraphIntegerPairEdges() {
+    // pairs of positive integers are undirected edges, the vertices sorted
+    check("g=Graph({{3,1},{1,4},{4,2}}); {VertexList(g),EdgeList(g),VertexCount(g)}", //
+        "{{1,2,3,4},{3<->1,1<->4,4<->2},4}");
+    check("{EdgeList(Graph({4,5,6},{{4,6},{6,5}})),EdgeList(Graph({{2,2},{2,5}}, VertexLabels->\"Name\"))}", //
+        "{{4<->6,6<->5},{2<->2,2<->5}}");
+    // a list of options after the pairs
+    check("h=Graph({{7,3},{3,9}}, {VertexLabels->\"Name\"}); {EdgeList(h),Options(h)}", //
+        "{{7<->3,3<->9},{VertexLabels->Name}}");
+    // other pairs make no graph; in the vertex position pairs are vertices
+    check("{Graph({{1,x}}), Graph({{-1,2}}), Graph({{1,2},3->4}), VertexList(Graph({{2,1},{5,6}},{}))}", //
+        "{Graph({{1,x}}),Graph({{-1,2}}),Graph({{1,2},3->4}),{{2,1},{5,6}}}");
+  }
+
+  @Test
+  public void testGraphOfGraphOptions() {
+    check("g=StarGraph(3); h=Graph(g, EdgeStyle->Green, ImageSize->30); " //
+        + "{VertexCount(h),EdgeCount(h),Options(h,{EdgeStyle,ImageSize}),Graph(g)===g, h===g}", //
+        "{3,2,{EdgeStyle->RGBColor(0,1,0),ImageSize->30},True,False}");
+    // a later option replaces an earlier one
+    check("Options(Graph(Graph({1<->3}, ImageSize->10, VertexLabels->\"Name\"), ImageSize->20))", //
+        "{ImageSize->20,VertexLabels->Name}");
+    check("Options(Graph(Graph({1<->3}, ImageSize->10), {VertexLabels->\"Name\", ImageSize->20}))", //
+        "{ImageSize->20,VertexLabels->Name}");
+    check("Graph(CycleGraph(3), 7)", //
+        "Graph(Graph({1,2,3},{1<->2,2<->3,1<->3}),7)");
+  }
+
+  @Test
+  public void testGraphEmbeddingVertexCoordinates() {
+    // the given coordinates in vertex order, exact ones stay exact
+    check("GraphEmbedding(Graph({1,2,3},{2<->3},VertexCoordinates->{{1/2,0},{2,7},{-1,1}}))", //
+        "{{1/2,0},{2,7},{-1,1}}");
+    check("GraphEmbedding(Graph({x,y,z},{x<->y},VertexCoordinates->{z->{0,1},x->{3,3},y->{1,2}}))", //
+        "{{3,3},{1,2},{0,1}}");
+    // the coordinates not given come from the layout
+    check("e=GraphEmbedding(Graph({x,y,z},{x<->y},VertexCoordinates->{y->{4,4}})); {Length(e),e[[2]]}", //
+        "{3,{4,4}}");
+  }
+
+  @Test
+  public void testFindPathCountOrder() {
+    check("FindPath(CycleGraph(5),w,2)", //
+        "FindPath(Graph({1,2,3,4,5},{1<->2,2<->3,3<->4,4<->5,1<->5}),w,2)");
+    // the first n paths of the depth first search, the shorter ones first
+    check("{FindPath(GridGraph({2,4}),1,8,5,2), FindPath(CompleteGraph(6),2,5,2,4), " //
+        + "FindPath(GridGraph({3,2}),1,6,{5},All)}", //
+        "{{{1,3,4,6,8},{1,2,4,6,8}},{{2,5},{2,4,5},{2,3,5},{2,1,5}},{{1,4,5,2,3,6}}}");
+  }
+
+  @Test
+  public void testImportStringGraph6() {
+    check("EdgeList(ImportString(\"Cs\",\"Graph6\"))", //
+        "{1<->2,1<->3,1<->4}");
+    // several graphs give a list
+    check("{Head /@ ImportString(\"Cs\\nB_\",\"Graph6\"), " //
+        + "EdgeList /@ ImportString(\"B_\",{\"Graph6\",\"GraphList\"})}", //
+        "{{Graph,Graph},{{1<->2}}}");
+  }
+
   @AfterEach
   public void tearDown() throws Exception {
     // super.tearDown();

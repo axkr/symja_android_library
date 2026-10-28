@@ -1805,8 +1805,8 @@ public class ExprParser extends Scanner {
         return compoundExpression;
       }
     }
-    span.append(parseExpression());
-    return span;
+    // ;;x;;3 is Span(1, x, 3) and not Span(1, Span(x, 3))
+    return parseSpanLastPartAndStep(span);
   }
 
   /**
@@ -1843,10 +1843,20 @@ public class ExprParser extends Scanner {
       // Span(1, Rule(2, b)) rather than Rule(Span(1,2), b). The +1 leaves a following `;;` of
       // equal precedence to the step handling below, so `1;;-1;;2` stays a three-part Span
       // instead of nesting into Span(1, Span(-1, 2)).
-      span.append(parseExpression(parsePrimary(0), Precedence.SPAN + 1));
+      return parseSpanLastPartAndStep(span);
     }
+    return parseSpanStep(span);
+  }
+
+  /** Parse the last part of a {@code Span} and an optional step. */
+  private IExpr parseSpanLastPartAndStep(IASTAppendable span) {
+    span.append(parseExpression(parsePrimary(0), Precedence.SPAN + 1));
+    return parseSpanStep(span);
+  }
+
+  /** Parse the optional step of a {@code Span}, as in {@code a[[1;;10;;2]]}. */
+  private IExpr parseSpanStep(IASTAppendable span) {
     if (fToken == TT_SPAN) {
-      // the step, as in a[[1;;10;;2]]
       getNextToken();
       if (isSpanEnd()) {
         return span;

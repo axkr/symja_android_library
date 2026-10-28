@@ -741,8 +741,9 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "False");
     check("{\"a\",b}=={\"a\",c}", //
         "{a,b}=={a,c}");
+    // an undecided chain keeps all arguments
     check("a==a==b==c", //
-        "a==b==c");
+        "a==a==b==c");
     check("a==a==a==a", //
         "True");
     check("Pi==3", //

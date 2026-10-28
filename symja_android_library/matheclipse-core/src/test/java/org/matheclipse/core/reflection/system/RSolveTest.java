@@ -32,7 +32,7 @@ public class RSolveTest {
   @Test
   public void testFirstOrderConstantCoefficients() {
     check("RSolve(a(n+1) - 2*a(n) == 1, a(n), n)", //
-        "{{a(n)->-1+2^n+C(1)/2^(1-n)}}");
+        "{{a(n)->2^n*(1-1/2^n)+C(1)/2^(1-n)}}");
 
     // a(n+1) - 2*a(n) = 0 => a(n) = C(1) * 2^n
     check("RSolve(a(n+1) - 2*a(n) == 0, a(n), n)", //
@@ -256,9 +256,10 @@ public class RSolveTest {
   @Test
   public void testRSolveFirstOrderCanonicalBounds() {
     // Verifies the lower bound offset (K=0) in the particular solution sum
-    // mathematically maps exactly to the expected 2^n - 1 (without fractional integration offsets)
+    // mathematically maps exactly to the expected 2^n - 1 (without fractional integration offsets),
+    // written as 2^n*(1-2^(-n))
     check("RSolve(a(n+1) - 2*a(n) == 1, a(n), n)", //
-        "{{a(n)->-1+2^n+C(1)/2^(1-n)}}");
+        "{{a(n)->2^n*(1-1/2^n)+C(1)/2^(1-n)}}");
 
     // Verifies fractional Pochhammer index mapping and fraction absorption
     check("RSolve(a(n+1) == 3*(n + 2)*a(n), a(n), n)", //

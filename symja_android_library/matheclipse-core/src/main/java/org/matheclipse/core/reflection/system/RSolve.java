@@ -477,6 +477,12 @@ public class RSolve extends AbstractFunctionEvaluator {
       int startC = engine.incConstantCounter();
       IExpr root = F.NIL;
 
+      IExpr affine =
+          solveFirstOrderAffine(coeffs, f_n, head, nVar, boundaryConditions, engine, startC);
+      if (affine.isPresent()) {
+        return formatResult(arg2, nVar, affine);
+      }
+
       if (hasBCs) {
         IExpr gfSol = methodGF(F.Equal(lhs, F.C0), uFunction1Arg, nVar, boundaryConditions, engine);
         if (gfSol.isPresent()) {
@@ -891,6 +897,74 @@ public class RSolve extends AbstractFunctionEvaluator {
       IExpr a_h_clean = absorbIntegrationConstants(a_h_raw, C1, engine);
       return engine.evaluate(F.ExpandAll(F.Plus(a_h_clean, a_p)));
     }
+  }
+
+  /**
+   * The recurrence <code>a(n+1) == c*a(n) + d</code> with constants <code>c != 0, 1</code> and
+   * <code>d</code>. Without conditions the solution is
+   * <code>d*c^n*(1-c^(-n))/(c-1) + c^(n-1)*C(1)</code>; with one condition
+   * <code>a(n0) == v</code> it is <code>v*c^(n-n0) + d*(c^(n-n0)-1)/(c-1)</code> over one common
+   * denominator.
+   *
+   * @return {@link F#NIL} if the recurrence or the conditions have another form
+   */
+  private IExpr solveFirstOrderAffine(Map<Integer, IExpr> coeffs, IExpr f_n, IExpr head,
+      IExpr nVar, IAST boundaryConditions, EvalEngine engine, int startC) {
+    if (coeffs.size() != 2 || boundaryConditions.argSize() > 1 || !f_n.isFree(nVar)
+        || !f_n.isFree(head)) {
+      return F.NIL;
+    }
+    int max = Collections.max(coeffs.keySet());
+    int min = Collections.min(coeffs.keySet());
+    IExpr c0 = coeffs.get(min);
+    IExpr c1 = coeffs.get(max);
+    if (max - min != 1 || !c0.isFree(nVar) || !c1.isFree(nVar) || c0.isZero() || c1.isZero()) {
+      return F.NIL;
+    }
+    IExpr c = engine.evaluate(F.Negate(F.Divide(c0, c1)));
+    IExpr d = engine.evaluate(F.Divide(f_n, c1));
+    if (c.isOne() || c.isZero() || d.isZero()) {
+      return F.NIL;
+    }
+    IExpr cMinus1 = F.Plus(F.CN1, c);
+    if (boundaryConditions.argSize() == 0) {
+      IExpr particular =
+          F.Times(d, F.Power(c, nVar), F.Plus(F.C1, F.Negate(F.Power(c, F.Negate(nVar)))),
+              F.Power(cMinus1, F.CN1));
+      return absorbArbitraryConstants(engine.evaluate(
+          F.Plus(particular, F.Times(F.Power(c, F.Plus(F.CN1, nVar)), F.C(startC)))), nVar,
+          engine);
+    }
+    IExpr bc = boundaryConditions.arg1();
+    IExpr n0 = F.NIL;
+    IExpr value = F.NIL;
+    if (bc.isEqual()) {
+      if (bc.first().isAST(head, 2) && bc.second().isFree(head)) {
+        n0 = bc.first().first();
+        value = bc.second();
+      } else if (bc.second().isAST(head, 2) && bc.first().isFree(head)) {
+        n0 = bc.second().first();
+        value = bc.first();
+      }
+    }
+    if (n0.isNIL() || !n0.isInteger()) {
+      return F.NIL;
+    }
+    // (v + d/(c-1))*c^(n-n0) - d/(c-1), with the coefficient of the power combined first
+    IExpr dOver = engine.evaluate(F.Together(F.Divide(d, cMinus1)));
+    IExpr coefficient = engine.evaluate(F.Together(F.Plus(value, dOver)));
+    IExpr power = F.Power(c, F.Subtract(nVar, n0));
+    IExpr solution = engine
+        .evaluate(F.Together(F.Plus(F.Times(coefficient, power), F.Negate(dOver))));
+    IExpr denominator = engine.evaluate(F.Denominator(solution));
+    if (denominator.isOne()) {
+      return engine.evaluate(F.Expand(solution));
+    }
+    if (!denominator.isNumber()) {
+      // Together may leave the denominator expanded: -r+r^2 is (-1+r)*r
+      solution = engine.evaluate(F.Divide(F.Numerator(solution), F.Factor(denominator)));
+    }
+    return solution;
   }
 
   /**

@@ -299,8 +299,10 @@ public class PrimitiveTowerIntegration {
       return null;
     }
     IExpr pm = engine.evaluate(F.Cancel(F.Divide(numerator, constantFactor)));
-    // D(t - r) = D(t) - D(r), free of t for a primitive monomial
-    IExpr dv = engine.evaluate(F.Subtract(monomial.derivative, F.D(root, x)));
+    // D(t - r) = D(t) - D(r), free of t for a primitive monomial; over one denominator, because
+    // D(b) of every coefficient b below contains it: the derivative of
+    // Log(e*((a+b*x)^n1/(c+d*x)^n1)^n) as D gives it swells into thousands of terms there
+    IExpr dv = engine.evaluate(F.Together(F.Subtract(monomial.derivative, F.D(root, x))));
     if (dv.isZero()) {
       return null;
     }

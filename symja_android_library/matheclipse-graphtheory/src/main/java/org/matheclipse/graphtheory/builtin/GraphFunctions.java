@@ -708,7 +708,35 @@ public class GraphFunctions {
         embedding = ast.arg2().toString();
       }
       Graph<IExpr, ?> g = gex.toData();
-      return GraphGraphics.vertexCoordinates(g, embedding);
+      IAST layout = GraphGraphics.vertexCoordinates(g, embedding);
+      IAST coordinates = gex.options().getRule(S.VertexCoordinates);
+      if (ast.isAST1() && coordinates.isPresent() && coordinates.second().isList()) {
+        return withGivenCoordinates(g, layout, (IAST) coordinates.second());
+      }
+      return layout;
+    }
+
+    /**
+     * The coordinates of <code>VertexCoordinates -&gt; {p1, p2, ...}</code> or
+     * <code>VertexCoordinates -&gt; {v1 -&gt; p1, ...}</code> in the place of the computed ones.
+     * The given coordinates are returned unchanged, exact ones stay exact.
+     */
+    private static IAST withGivenCoordinates(Graph<IExpr, ?> g, IAST layout, IAST given) {
+      IASTAppendable result = layout.copyAppendable();
+      final boolean rules = given.forAll(x -> x.isRuleAST());
+      int i = 1;
+      for (IExpr vertex : g.vertexSet()) {
+        if (rules) {
+          IAST rule = given.getRule(vertex);
+          if (rule.isPresent() && rule.second().isList()) {
+            result.set(i, rule.second());
+          }
+        } else if (i < given.size() && given.get(i).isList()) {
+          result.set(i, given.get(i));
+        }
+        i++;
+      }
+      return result;
     }
 
     @Override
@@ -1242,8 +1270,15 @@ public class GraphFunctions {
   private static class GraphCTor extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
       try {
+        if (ast.arg1() instanceof GraphExpr) {
+          return withMergedOptions((GraphExpr<?>) ast.arg1(), ast);
+        }
+        IAST pairForm = integerPairEdges(ast, engine);
+        if (pairForm.isPresent()) {
+          ast = pairForm;
+        }
         if (ast.isAST1()) {
           GraphExpr<?> gex = GraphExpr.newInstance(ast);
           if (gex != null) {
@@ -1305,6 +1340,64 @@ public class GraphFunctions {
         Errors.printMessage(S.Graph, rex, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>Graph(g)</code> is <code>g</code> itself; <code>Graph(g, opts)</code> is <code>g</code>
+     * with the options <code>opts</code> added, a new value replacing the old one of the same
+     * name.
+     *
+     * @return {@link F#NIL} if an argument after the graph is not an option
+     */
+    private static IExpr withMergedOptions(GraphExpr<?> gex, IAST ast) {
+      if (ast.isAST1()) {
+        return gex;
+      }
+      IASTAppendable options = gex.options().copyAppendable();
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        IAST rules = arg.isRuleAST() ? F.list(arg) : arg.isList() ? (IAST) arg : F.NIL;
+        if (rules.isNIL() || !rules.forAll(x -> x.isRuleAST())) {
+          return F.NIL;
+        }
+        for (IExpr rule : rules) {
+          int position = options.indexOf(x -> x.first().equals(rule.first()));
+          if (position > 0) {
+            options.set(position, rule);
+          } else {
+            options.append(rule);
+          }
+        }
+      }
+      GraphExpr<?> result = (GraphExpr<?>) gex.copy();
+      result.setOptions(options);
+      return result;
+    }
+
+    /**
+     * An edge list given as pairs of positive integers, <code>{{1, 2}, {2, 3}}</code>, is a list of
+     * undirected edges between these integers. In the edge position of
+     * <code>Graph(vertices, edges)</code> the vertices are the given ones, otherwise the sorted
+     * integers of the pairs.
+     *
+     * @return <code>ast</code> with the pairs replaced by edges, or {@link F#NIL} if there are no
+     *         such pairs
+     */
+    private static IAST integerPairEdges(IAST ast, EvalEngine engine) {
+      // a list of options after the pairs is not the edge position
+      int position = ast.argSize() >= 2 && ast.arg1().isList() && ast.arg2().isList()
+          && !(ast.arg2().argSize() > 0 && ast.arg2().isListOfRules()) ? 2 : 1;
+      IExpr pairs = ast.get(position);
+      if (!pairs.isList() || pairs.argSize() == 0 || !((IAST) pairs).forAll(
+          p -> p.isList2() && ((IAST) p).forAll(x -> x.isInteger() && x.isPositive()))) {
+        return F.NIL;
+      }
+      IAST edges = ((IAST) pairs).map(p -> F.UndirectedEdge(p.first(), p.second()));
+      if (position == 2) {
+        return ast.setAtCopy(2, edges);
+      }
+      IAST vertices = (IAST) engine.evaluate(F.Union(F.Flatten(pairs)));
+      return ast.setAtCopy(1, vertices).appendAtClone(2, edges);
     }
 
     @Override

@@ -267,6 +267,12 @@ public class BoxesFunctions {
           if (function.isPlus()) {
             return plusBox(function, precedence, form, engine);
           }
+          if (form == S.TraditionalForm) {
+            IExpr traditional = traditionalLogicBox(function, precedence, form, engine);
+            if (traditional.isPresent()) {
+              return traditional;
+            }
+          }
           if (function.head().isSymbol()) {
             StandardFormOperator operator = operatorFor((ISymbol) function.head());
             if (operator != null) {
@@ -298,6 +304,112 @@ public class BoxesFunctions {
         return numberBox((INumber) expr, precedence);
       }
       return F.$str(expr.toString());
+    }
+
+    /**
+     * The sign of a comparison in <code>TraditionalForm</code>: <code>≤</code> for
+     * <code>LessEqual</code>, <code>≥</code> for <code>GreaterEqual</code> and
+     * <code>≠</code> for <code>Unequal</code>.
+     *
+     * @return <code>null</code> for a head which isn't a comparison
+     */
+    private static String traditionalComparison(IExpr head) {
+      if (head == S.Less) {
+        return "<";
+      }
+      if (head == S.LessEqual) {
+        return "≤";
+      }
+      if (head == S.Greater) {
+        return ">";
+      }
+      if (head == S.GreaterEqual) {
+        return "≥";
+      }
+      if (head == S.Equal) {
+        return "==";
+      }
+      if (head == S.Unequal) {
+        return "≠";
+      }
+      return null;
+    }
+
+    /**
+     * The boxes of a comparison chain, a conjunction, a disjunction or a negation in
+     * <code>TraditionalForm</code>: <code>Inequality(x, LessEqual, y, Less, z)</code> is the row
+     * <code>x ≤ y &lt; z</code>; <code>And</code>, <code>Or</code> and <code>Not</code> are
+     * written with <code>∧</code>, <code>∨</code> and <code>¬</code>. A
+     * conjunction or a disjunction inside another one is put in parentheses.
+     *
+     * @return {@link F#NIL} if the expression is none of these
+     */
+    private static IExpr traditionalLogicBox(IAST function, int precedence, IExpr form,
+        EvalEngine engine) {
+      final IExpr head = function.head();
+      if (function.isAST(S.Inequality) && function.argSize() >= 3
+          && (function.argSize() & 1) == 1) {
+        IASTAppendable row = F.ListAlloc(function.size());
+        for (int i = 1; i < function.size(); i++) {
+          if ((i & 1) == 0) {
+            String operator = traditionalComparison(function.get(i));
+            if (operator == null) {
+              return F.NIL;
+            }
+            row.append(operator);
+          } else {
+            row.append(standardFormRecursive(function.get(i), Precedence.LESS, form, engine));
+          }
+        }
+        return parenthesizeRow(F.RowBox(row), Precedence.LESS, precedence);
+      }
+      if (function.argSize() >= 2
+          && (head == S.LessEqual || head == S.GreaterEqual || head == S.Unequal)) {
+        return infixRow(function, traditionalComparison(head), Precedence.LESS, precedence, form,
+            engine);
+      }
+      if (function.isNot()) {
+        return parenthesizeRow(
+            F.RowBox(F.list(F.$str("¬"),
+                standardFormRecursive(function.arg1(), Precedence.NOT, form, engine))),
+            Precedence.NOT, precedence);
+      }
+      if ((function.isAnd() || function.isOr()) && function.argSize() >= 2) {
+        return function.isAnd()
+            ? infixRow(function, "∧", Precedence.AND, precedence, form, engine)
+            : infixRow(function, "∨", Precedence.OR, precedence, form, engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The arguments of <code>function</code> with <code>operator</code> in between. A conjunction
+     * or a disjunction among them is put in parentheses.
+     */
+    private static IExpr infixRow(IAST function, String operator, int operatorPrecedence,
+        int precedence, IExpr form, EvalEngine engine) {
+      IASTAppendable row = F.ListAlloc(2 * function.size());
+      for (int i = 1; i < function.size(); i++) {
+        if (i > 1) {
+          row.append(operator);
+        }
+        IExpr arg = function.get(i);
+        if (arg.isAnd() || arg.isOr()) {
+          row.append(F.RowBox(
+              F.list(F.$str("("), standardFormRecursive(arg, 0, form, engine), F.$str(")"))));
+        } else {
+          row.append(standardFormRecursive(arg, operatorPrecedence, form, engine));
+        }
+      }
+      return parenthesizeRow(F.RowBox(row), operatorPrecedence, precedence);
+    }
+
+    /** The row in parentheses if its operator binds less tightly than the surrounding one. */
+    private static IExpr parenthesizeRow(IExpr row, int rowPrecedence, int precedence) {
+      if (precedence > rowPrecedence) {
+        return F.RowBox(F.list(F.$str("("), row, F.$str(")")));
+      }
+      return row;
     }
 
     /**

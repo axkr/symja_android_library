@@ -291,8 +291,9 @@ public class PatternMatchingTestCase {
 
   @Test
   public void testMathicsPMWithCondition() {
-    // TODO make rule ordering more compatible with WMA
-    // see mathics-core #1233
+    // see mathics-core #1233: a rule with a condition is not known to be more general than a
+    // later rule with a more specific left-hand side, so the two keep the order of their
+    // definitions
     check("Bug[n_Integer,_] :={\"Negative\", n} /; (n<0)", //
         "");
     check("Bug[-5,3]", //
@@ -301,7 +302,9 @@ public class PatternMatchingTestCase {
     check("Bug[n_Integer,maxpart_Integer] :={\"Integer\", n}", //
         "");
     check("Bug[-5,3]", //
-        "{Integer,-5}");
+        "{Negative,-5}");
+    check("Bug[5,3]", //
+        "{Integer,5}");
   }
 
   @Test

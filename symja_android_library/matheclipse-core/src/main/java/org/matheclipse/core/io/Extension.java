@@ -2,6 +2,7 @@ package org.matheclipse.core.io;
 
 import java.util.Locale;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * File extensions format.
@@ -32,6 +33,8 @@ public enum Extension {
   GIF, //
   /** graph (theory) format */
   GRAPHML, //
+  /** undirected graphs as printable ASCII adjacency bit vectors, one graph per line */
+  GRAPH6, //
   /** compressed version of another format, for instance csv.gz */
   GZ, //
   /** compressed, lossy image format */
@@ -186,6 +189,9 @@ public enum Extension {
         if (extensionString.equals("JSON")) {
           return JSON;
         }
+        if (extensionString.equals("G6")) {
+          return GRAPH6;
+        }
         if (extensionString.equals("TIF")) {
           return TIFF;
         }
@@ -204,6 +210,42 @@ public enum Extension {
     return STRING;
   }
 
+  /** A format argument of <code>Import</code> or <code>ImportString</code>. */
+  public static final class ImportSpec {
+    public final Extension format;
+
+    /** The element of the format to import, <code>""</code> for its default element. */
+    public final String element;
+
+    private ImportSpec(Extension format, String element) {
+      this.format = format;
+      this.element = element;
+    }
+  }
+
+  /**
+   * The format and the element of a format argument <code>"format"</code> or
+   * <code>{"format", "element"}</code> of <code>Import</code> or <code>ImportString</code>.
+   *
+   * @return <code>null</code> if the argument has another form or the format has no elements
+   */
+  public static ImportSpec importSpec(IExpr formatArg) {
+    String element = "";
+    if (formatArg.isList2() && formatArg.first().isString() && formatArg.second().isString()) {
+      element = formatArg.second().toString();
+      formatArg = formatArg.first();
+    }
+    if (!formatArg.isString()) {
+      return null;
+    }
+    Extension format = importExtension(formatArg.toString());
+    if (!element.isEmpty() && format != GRAPH6) {
+      // only Graph6 has elements
+      return null;
+    }
+    return new ImportSpec(format, element);
+  }
+
   /**
    * Determine <code>Extension</code> format from the extension string. If no <code>Extension</code>
    * can be determined return <code>STRING</code>.
@@ -214,6 +256,9 @@ public enum Extension {
   public static Extension importExtension(String extensionString) {
     try {
       String ucExtension = extensionString.toUpperCase(Locale.US);
+      if (ucExtension.equals("G6")) {
+        return GRAPH6;
+      }
       if (ucExtension.equals("JPG")) {
         return JPEG;
       }

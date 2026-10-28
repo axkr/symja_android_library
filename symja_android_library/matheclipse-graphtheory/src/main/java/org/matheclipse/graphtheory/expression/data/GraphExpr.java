@@ -19,6 +19,7 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.SimpleGraph;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.graphtheory.graphics.GraphGraphics;
@@ -981,6 +982,12 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
    */
   public IAST options() {
     return options;
+  }
+
+  /** The options given to this graph, sorted by their names. */
+  @Override
+  public IAST options(boolean all) {
+    return EvalAttributes.copySort(options.select(x -> x.isRuleAST()));
   }
 
   @Override

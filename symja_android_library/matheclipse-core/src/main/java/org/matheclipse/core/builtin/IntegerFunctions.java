@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.math.BigInteger;
 import java.util.function.Function;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.hipparchus.complex.Complex;
@@ -2050,11 +2051,6 @@ public class IntegerFunctions {
             // Base `1` is not an integer greater than `2`.
             return Errors.printMessage(S.NumberDigit, "ibase", F.List(ast.arg3(), F.C1), engine);
           }
-          if (base > 36) {
-            // `1` currently not supported in `2`.
-            return Errors.printMessage(S.NumberDigit, "unsupported",
-                F.List("Base greater than 36", "NumberDigit"), engine);
-          }
         }
         IExpr realDigits = realDigits(x, base, 1L, n);
         if (realDigits.isList2() && realDigits.first().isList()) {
@@ -2677,11 +2673,6 @@ public class IntegerFunctions {
             // Base `1` is not an integer greater than `2`.
             return Errors.printMessage(S.RealDigits, "ibase", F.List(ast.arg2(), F.C1), engine);
           }
-          if (base > 36) {
-            // `1` currently not supported in `2`.
-            return Errors.printMessage(S.RealDigits, "unsupported",
-                F.List("Base greater than 36", "RealDigits"), engine);
-          }
           if (ast.argSize() >= 3) {
             length = ast.arg3().toLongDefault();
             if (F.isNotPresent(length)) {
@@ -2979,13 +2970,69 @@ public class IntegerFunctions {
     return sign > 0 ? n.inc() : n;
   }
 
+  /**
+   * The digits of a non-negative real number in a base greater than <code>36</code>, which has no
+   * digit characters. An approximate number has as many significant digits in the base as its
+   * precision allows.
+   *
+   * @return <code>null</code> for a number which has no finite value
+   */
+  private static RealDigitsResult realDigitsLargeRadix(IReal realNumber, int radix, long length,
+      long startDigit) {
+    BigInteger num;
+    BigInteger den;
+    long available = Long.MAX_VALUE;
+    if (realNumber.isRational()) {
+      num = ((IRational) realNumber).toBigNumerator();
+      den = ((IRational) realNumber).toBigDenominator();
+    } else if (realNumber instanceof Num) {
+      double d = realNumber.doubleValue();
+      if (!Double.isFinite(d)) {
+        return null;
+      }
+      java.math.BigDecimal exact = new java.math.BigDecimal(d);
+      num = exact.unscaledValue().abs();
+      den = BigInteger.ONE;
+      if (exact.scale() > 0) {
+        den = BigInteger.TEN.pow(exact.scale());
+      } else {
+        num = num.multiply(BigInteger.TEN.pow(-exact.scale()));
+      }
+      available = Math.round(53.0 * Math.log(2.0) / Math.log(radix));
+    } else {
+      Apfloat a = ApfloatMath.abs(realNumber.apfloatValue());
+      BigInteger r = BigInteger.valueOf(a.radix());
+      if (a.isZero()) {
+        num = BigInteger.ZERO;
+        den = BigInteger.ONE;
+      } else {
+        long exponent = a.scale() - a.size();
+        num = ApfloatMath.scale(a, -exponent).truncate().toBigInteger();
+        den = BigInteger.ONE;
+        if (exponent >= 0) {
+          num = num.multiply(RealDigitsResult.power(r, exponent));
+        } else {
+          den = RealDigitsResult.power(r, -exponent);
+        }
+      }
+      if (a.precision() != Apfloat.INFINITE) {
+        available = (long) Math.floor(a.precision() * Math.log(a.radix()) / Math.log(radix));
+      }
+    }
+    return RealDigitsResult.create(num, den, radix, length, startDigit, available);
+  }
+
   public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {
     INumber number = null;
     if (arg1.isReal()) {
       number = (IReal) arg1;
     } else {
       if (F.isPresent(length)) {
-        long precision = length + Math.abs(startDigit);
+        long precision = length + (F.isPresent(startDigit) ? Math.abs(startDigit) : 0);
+        if (radix > 10) {
+          // a digit in a base above 10 needs more than one decimal digit
+          precision = (long) Math.ceil(precision * Math.log10(radix));
+        }
         if (precision <= 0) {
           precision = 1;
         }
@@ -3006,14 +3053,20 @@ public class IntegerFunctions {
       }
 
       Apfloat apfloat;
-      if (realNumber.isInteger()) {
-        apfloat = new Apint(((IInteger) realNumber).toBigNumerator());
-      } else if (realNumber.isFraction() && F.isNotPresent(length) && F.isNotPresent(startDigit)) {
+      if (realNumber.isFraction() && F.isNotPresent(length) && F.isNotPresent(startDigit)) {
         Apint numer = new Apint(((IFraction) realNumber).toBigNumerator());
         Apint denom = new Apint(((IFraction) realNumber).toBigDenominator());
         Aprational aprational = new Aprational(numer, denom);
         RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
         return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
+      } else if (radix > 36) {
+        RealDigitsResult rd = realDigitsLargeRadix(realNumber, radix, length, startDigit);
+        if (rd == null) {
+          return F.NIL;
+        }
+        return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
+      } else if (realNumber.isInteger()) {
+        apfloat = new Apint(((IInteger) realNumber).toBigNumerator());
       } else if (realNumber instanceof Num && Double.isFinite(realNumber.doubleValue())) {
         // a machine number has 53 binary digits, which are 16 decimal digits; more digits asked for
         // are Indeterminate

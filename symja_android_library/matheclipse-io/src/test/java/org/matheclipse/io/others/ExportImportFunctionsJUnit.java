@@ -58,6 +58,17 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
   }
 
   @Test
+  public void testImportGraph6() throws java.io.IOException {
+    Path g6 = directory.resolve("graphs.g6");
+    java.nio.file.Files.writeString(g6, "Cs\nB_\n");
+    String name = file("graphs.g6");
+    check("EdgeList /@ Import(\"" + name + "\")", //
+        "{{1<->2,1<->3,1<->4},{1<->2}}");
+    check("Import(\"" + name + "\", {\"Graph6\", \"VertexCount\"})", //
+        "{4,3}");
+  }
+
+  @Test
   public void testImportExportTable() {
     String table = file("out.dat");
     check("Export(\"" + table + "\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"Table\")", //

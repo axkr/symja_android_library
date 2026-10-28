@@ -1,5 +1,6 @@
 package org.matheclipse.core.dsolve;
 
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.SolveUtils;
@@ -9,6 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * The system-of-equations solvers of {@link DSolve}, including the differential algebraic
@@ -77,7 +79,15 @@ final class DSolveSystem {
     IExpr cSols = engine.evaluate(F.Solve(evaluatedBCsEqualZero, cVars));
     if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
       IAST cSol = (IAST) ((IAST) cSols).arg1();
-      return DSolveUtil.togetherSolution(engine.evaluate(F.subst(roots, cSol)), engine);
+      IExpr fitted =
+          DSolveUtil.togetherSolution(engine.evaluate(F.subst(roots, cSol)), engine);
+      return fitted.isList()
+          ? ((IAST) fitted).map(
+              rule -> rule.isRule()
+                  ? F.Rule(rule.first(), smallestExponentialFactored(rule.second(), xVar, engine))
+                  : rule,
+              1)
+          : fitted;
     } else if (cSols.isEmptyList()) {
       ctx.addMessage("bvfail", F.CEmptyList);
       return F.NIL;
@@ -407,7 +417,7 @@ final class DSolveSystem {
     if (!result.isList()) {
       return F.NIL;
     }
-    return realify(result, engine);
+    return realify(result, xVar, engine);
   }
 
   /**
@@ -419,15 +429,74 @@ final class DSolveSystem {
    * real <code>E^(2*x)</code> into <code>Cosh(2*x) + Sinh(2*x)</code> and would make a real answer
    * worse. The result is kept only if it came out free of complex numbers.
    */
-  private static IExpr realify(IExpr matrix, EvalEngine engine) {
+  private static IExpr realify(IExpr matrix, IExpr xVar, EvalEngine engine) {
+    // the integrations leave exponents as E^(I*6*x-I*2*(2+Sqrt(2))*x), whose terms cancel
+    IExpr expanded = matrix.replaceAll(x -> {
+      if (x.isExp() && x.exponent().isAST()) {
+        IExpr exponent = engine.evaluate(F.Expand(x.exponent()));
+        return exponent.equals(x.exponent()) ? F.NIL : F.Exp(exponent);
+      }
+      return F.NIL;
+    });
+    if (expanded.isPresent()) {
+      matrix = engine.evaluate(expanded);
+    }
     if (!containsComplexNumber(matrix)) {
       return matrix;
     }
-    IExpr trigForm = engine.evaluate(F.Simplify(F.ExpToTrig(matrix)));
+    // with the variable as the only symbol, E^((a+I*b)*x) is E^(a*x)*(Cos(b*x)+I*Sin(b*x))
+    IExpr trigForm = new VariablesSet(matrix).getVarList().equals(F.List(xVar))
+        ? engine.evaluate(F.Simplify(F.ComplexExpand(matrix)))
+        : engine.evaluate(F.Simplify(F.ExpToTrig(matrix)));
     if (trigForm.isPresent() && trigForm.isList() && !containsComplexNumber(trigForm)) {
       return trigForm;
     }
     return matrix;
+  }
+
+  /**
+   * A sum of exponentials <code>c1*E^(a1*x) + c2*E^(a2*x) + ...</code> with real numbers
+   * <code>a1, a2, ...</code> written with the smallest of them factored out:
+   * <code>E^x + E^(3*x)</code> is <code>E^x*(1 + E^(2*x))</code>.
+   *
+   * @return the factored form, or <code>expr</code> itself if it is not such a sum
+   */
+  private static IExpr smallestExponentialFactored(IExpr expr, IExpr xVar, EvalEngine engine) {
+    if (!expr.isPlus()) {
+      return expr;
+    }
+    IAST sum = (IAST) expr;
+    IExpr smallest = F.NIL;
+    for (int i = 1; i <= sum.argSize(); i++) {
+      IExpr term = sum.get(i);
+      IExpr exponential = term;
+      if (term.isTimes()) {
+        exponential = F.NIL;
+        for (IExpr factor : (IAST) term) {
+          if (factor.isExp() && exponential.isNIL()) {
+            exponential = factor;
+          } else if (!factor.isFree(xVar)) {
+            return expr;
+          }
+        }
+      }
+      if (exponential.isNIL() || !exponential.isExp()) {
+        return expr;
+      }
+      IExpr rate = engine.evaluate(F.Divide(exponential.exponent(), xVar));
+      if (!rate.isReal()) {
+        return expr;
+      }
+      if (smallest.isNIL() || ((IReal) rate).isLT((IReal) smallest)) {
+        smallest = rate;
+      }
+    }
+    if (smallest.isZero()) {
+      return expr;
+    }
+    IExpr shift = F.Exp(F.Times(F.Negate(smallest), xVar));
+    IExpr rest = engine.evaluate(F.Expand(F.Times(shift, expr)));
+    return engine.evaluate(F.Times(F.Exp(F.Times(smallest, xVar)), rest));
   }
 
   /**

@@ -1,6 +1,7 @@
 package org.matheclipse.graphtheory.reflection;
 
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -8,6 +9,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.graphtheory.eval.GraphView;
 import org.matheclipse.graphtheory.expression.data.GraphExpr;
@@ -16,8 +19,9 @@ import org.matheclipse.graphtheory.expression.data.GraphExpr;
  * <code>FindPath(g, s, t)</code> - a path from <code>s</code> to <code>t</code>;
  * <code>FindPath(g, s, t, kspec)</code> - one of length <code>k</code> at most, <code>{k}</code>
  * exactly or <code>{kmin, kmax}</code>; <code>FindPath(g, s, t, kspec, n)</code> - at most
- * <code>n</code> paths (<code>All</code>), the shorter ones first. The length of a path in a
- * weighted graph is its weight.
+ * <code>n</code> paths (<code>All</code>): the first <code>n</code> paths of a depth first
+ * search which follows the edges in <code>EdgeList</code> order, the shorter ones first. The length
+ * of a path in a weighted graph is its weight.
  */
 public class FindPath extends AbstractFunctionEvaluator {
 
@@ -33,8 +37,11 @@ public class FindPath extends AbstractFunctionEvaluator {
     GraphView view = GraphView.of(gex.toData());
     Integer s = view.index.get(ast.arg2());
     Integer t = view.index.get(ast.arg3());
-    if (s == null || t == null) {
-      return F.NIL;
+    if (s == null) {
+      return Errors.printMessage(S.FindPath, "inv", F.list(ast, ast.arg2()), engine);
+    }
+    if (t == null) {
+      return Errors.printMessage(S.FindPath, "inv", F.list(ast, ast.arg3()), engine);
     }
     if (s.equals(t)) {
       return F.CEmptyList;
@@ -65,14 +72,10 @@ public class FindPath extends AbstractFunctionEvaluator {
       }
     }
     final boolean weighted = view.weighted && ast.argSize() >= 4;
-    if (count == 1) {
-      // the first path of the depth first search
-      List<int[]> paths = GraphUtil.simplePaths(view, s, t, minLength, maxLength, weighted, 1);
-      return pathList(view, paths, 1);
-    }
-    List<int[]> paths =
-        GraphUtil.simplePaths(view, s, t, minLength, maxLength, weighted, MAX_PATHS);
-    if (paths.size() >= MAX_PATHS) {
+    // the first count paths of the depth first search, or all of them
+    final int limit = count == Integer.MAX_VALUE ? MAX_PATHS : count;
+    List<int[]> paths = GraphUtil.simplePaths(view, s, t, minLength, maxLength, weighted, limit);
+    if (count == Integer.MAX_VALUE && paths.size() >= MAX_PATHS) {
       return F.NIL;
     }
     // order fewer edges first, then descending in the vertex positions
@@ -102,5 +105,12 @@ public class FindPath extends AbstractFunctionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_3_5;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.putMessage(IPatternMatcher.SET, "inv",
+        F.stringx("The argument `2` in `1` is not a valid vertex."));
+    super.setUp(newSymbol);
   }
 }

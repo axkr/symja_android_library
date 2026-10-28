@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.io.Graph6Format;
 import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -38,16 +39,21 @@ public class ImportString extends AbstractEvaluator {
 
     String str1 = ast.arg1().toString();
     Extension format = Extension.TXT;
+    String element = "";
 
     if (ast.size() > 2) {
-      if (!(ast.arg2() instanceof IStringX)) {
+      Extension.ImportSpec spec = Extension.importSpec(ast.arg2());
+      if (spec == null) {
         return F.NIL;
       }
-      format = Extension.importExtension(ast.arg2().toString());
+      format = spec.format;
+      element = spec.element;
     }
 
     try {
       switch (format) {
+        case GRAPH6:
+          return Graph6Format.importString(str1, element.isEmpty() ? "Graph" : element, engine);
         case BASE64:
           byte[] decodedBytes = Base64.getDecoder().decode(str1);
           return F.stringx(new String(decodedBytes));

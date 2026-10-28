@@ -5533,7 +5533,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (isAST3()) {
         step = Validate.checkIntType(this, 3, Config.INVALID_INT);
       }
-      int index1 = Validate.checkIntType(this, 1, Config.INVALID_INT);
+      int index1 = spanEndpoint(1, size);
       int index2;
       if (arg2() == S.All) {
         index2 = size - 1;
@@ -5543,7 +5543,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           index2 = tempIndx;
         }
       } else {
-        index2 = Validate.checkIntType(this, 2, Config.INVALID_INT);
+        index2 = spanEndpoint(2, size);
       }
 
       int start = index1;
@@ -5561,6 +5561,25 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return result;
     }
     return null;
+  }
+
+  /**
+   * The endpoint at <code>position</code> of a <code>Span[...]</code>. <code>UpTo(n)</code> stands
+   * for the position <code>Min(n, size-1)</code>, so that a span never runs past the end.
+   *
+   * @param position the position of the endpoint in this <code>Span[...]</code>
+   * @param size the size of the AST the span is applied to
+   * @return the integer value of the endpoint
+   */
+  private int spanEndpoint(int position, int size) {
+    final IExpr endpoint = get(position);
+    if (endpoint.isAST(S.UpTo, 2)) {
+      final int n = endpoint.first().toIntDefault();
+      if (n >= 0) {
+        return Math.min(n, size - 1);
+      }
+    }
+    return Validate.checkIntType(this, position, Config.INVALID_INT);
   }
 
   /** {@inheritDoc} */

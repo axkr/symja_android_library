@@ -140,6 +140,9 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    */
   protected transient IExpr fLhsExprToMatch;
 
+  /** The cached {@link #getOrderingLHS()}, <code>null</code> before its first use. */
+  private transient IExpr fOrderingLHS;
+
   /**
    * <code>0</code> if this matcher instance is free, <code>1</code> if it is currently used for a
    * pattern-matching evaluation. Updated via {@link #IN_USE_UPDATER} in {@link #tryAcquire()}.
@@ -344,6 +347,33 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    */
   public IExpr getRHS() {
     return F.NIL;
+  }
+
+  /**
+   * The left-hand side by which this rule is ordered among the rules of its symbol. A rule
+   * <code>lhs :&gt; rhs /; test</code> matches less than <code>lhs</code>: it is ordered as
+   * <code>lhs /; test</code>, so it goes before a rule <code>lhs :&gt; value</code> and keeps its
+   * place among rules of which neither is more general.
+   *
+   * @return {@link #getLHS()} itself for a rule without such a condition
+   */
+  public final IExpr getOrderingLHS() {
+    IExpr orderingLHS = fOrderingLHS;
+    if (orderingLHS == null) {
+      // left-hand side, right-hand side and flags don't change after the construction
+      orderingLHS = getLHS();
+      final IExpr rhs = getRHS();
+      if (rhs != null && rhs.isPresent()
+          && (fSetFlags & (SET_DELAYED | UPSET_DELAYED | TAGSET_DELAYED)) != 0) {
+        if (rhs.isCondition()) {
+          orderingLHS = F.Condition(orderingLHS, rhs.second());
+        } else if (rhs.isBlockModuleOrWithCondition()) {
+          orderingLHS = F.Condition(orderingLHS, rhs);
+        }
+      }
+      fOrderingLHS = orderingLHS;
+    }
+    return orderingLHS;
   }
 
   @Override

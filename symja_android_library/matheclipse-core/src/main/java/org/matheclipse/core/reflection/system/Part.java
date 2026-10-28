@@ -839,7 +839,12 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       int start, int last, int step, int p1, ISymbol head, EvalEngine engine) {
 
     final int size = arg1.size();
-    if ((step < 0 && start >= last) || (step > 0 && (last != 1 || start <= last))) {
+    if ((step > 0 && start > last + 1) || (step < 0 && start < last - 1)) {
+      // a span may be empty, as 3;;2, but not run backwards
+      // Cannot take positions `1` through `2` in `3`.
+      return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1), engine);
+    }
+    if (step != 0) {
       IASTAppendable result = arg1.copyHead((last - start) / step + 2);
       for (int i = start; step < 0 ? i >= last : i <= last; i += step) {
         if (p1 >= ast.size()) {

@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 175, 0 };
+  final public static int[] SIZES = { 176, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -371,6 +371,9 @@ public class DerivativeRules {
     // Derivative(1,0)[InverseErf]=E^(InverseErf(#1,#2)^2-#1^2)&
     ISet($(Derivative(C1,C0),InverseErf),
       Function(Exp(Subtract(Sqr(InverseErf(Slot1,Slot2)),Sqr(Slot1)))), true),
+    // Derivative(1,0,0)[Beta]=(1-#1)^(-1+#3)*#1^(-1+#2)&
+    ISet($(Derivative(C1,C0,C0),Beta),
+      Function(Times(Power(Subtract(C1,Slot1),Plus(CN1,Slot(C3))),Power(Slot1,Plus(CN1,Slot2)))), true),
     // Derivative(1,0,0)[InverseBetaRegularized]=Beta(#2,#3)*(1-InverseBetaRegularized(#1,#2,#3))^(1-#3)*InverseBetaRegularized(#1,#2,#3)^(1-#2)&
     ISet($(Derivative(C1,C0,C0),InverseBetaRegularized),
       Function(Times(Beta(Slot2,Slot(C3)),Power(Subtract(C1,InverseBetaRegularized(Slot1,Slot2,Slot(C3))),Subtract(C1,Slot(C3))),Power(InverseBetaRegularized(Slot1,Slot2,Slot(C3)),Subtract(C1,Slot2)))), true),

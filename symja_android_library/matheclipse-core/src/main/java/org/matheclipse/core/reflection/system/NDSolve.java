@@ -1339,9 +1339,20 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     double[] curveDerivatives = new double[numberOfFunctions];
     java.util.Arrays.fill(curveDerivatives, Double.NaN);
     int skipped = 0;
+    // conditions which relate several values, y(1)+y'(1) == 2 or f(0) == f(1)
+    java.util.List<CoupledCondition> coupled = new java.util.ArrayList<CoupledCondition>();
     for (int j = 1; j < initialConditions.size(); j++) {
       IExpr condition = initialConditions.get(j);
       IExpr application = findApplication(condition, functions);
+      if (application.isNIL() && curve == null) {
+        CoupledCondition coupledCondition =
+            CoupledCondition.create(condition, functions, order, offset);
+        if (coupledCondition != null) {
+          coupled.add(coupledCondition);
+          skipped++;
+          continue;
+        }
+      }
       if (application.isNIL()) {
         // Equation or list of equations expected instead of `1` in the first argument `2`.
         Errors.printMessage(S.NDSolve, "deqn", F.List(condition, ast.arg1()), engine);
@@ -1402,6 +1413,16 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         t0 = points[j];
       }
     }
+    if (Double.isNaN(t0)) {
+      // only conditions relating several values: shoot from the first point they name
+      for (CoupledCondition coupledCondition : coupled) {
+        for (double point : coupledCondition.points) {
+          if (Double.isNaN(t0) || point < t0) {
+            t0 = point;
+          }
+        }
+      }
+    }
     // a complex initial value or a complex number in the right hand sides: the system is
     // integrated as the real system of the real and the imaginary parts
     boolean complex = false;
@@ -1434,6 +1455,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         unknowns++;
       }
     }
+    boundaryConditions += coupled.size();
     if (unknowns != boundaryConditions || Double.isNaN(t0)
         || (complex && (boundaryConditions > 0 || curve != null))) {
       // The system is underdetermined.
@@ -1469,7 +1491,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       for (int j = 0; j < conditionCount; j++) {
         numbers[j] = values[j].evalf();
       }
-      if (!shoot(system, isGiven, points, components, numbers, engine)) {
+      int shot = shoot(system, isGiven, points, components, numbers, coupled, engine);
+      if (shot == SHOOTING_SINGULAR) {
+        // Unable to resolve the conditions derived from the given boundary conditions. ...
+        Errors.printMessage(S.NDSolve, "bvls", F.CEmptyList, engine);
+        return null;
+      }
+      if (shot != SHOOTING_SOLVED) {
         // The boundary value problem could not be solved by shooting from `1`.
         Errors.printMessage(S.NDSolve, "bvnc", F.list(F.num(t0)), engine);
         return null;
@@ -1730,20 +1758,88 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   private static final int MAX_STEP_HALVINGS = 10;
 
   /**
+   * The smallest pivot of the Jacobian of the shooting differences on an interval of length
+   * <code>1</code>: below it the conditions do not depend on the unknown initial values, but only on
+   * rounding errors. On a shorter interval a value depends on an initial derivative of order
+   * <code>k</code> by a factor of the length to the power <code>k</code>, and the pivot is scaled
+   * accordingly.
+   */
+  private static final double SHOOTING_SINGULARITY = 1.0e-8;
+
+  /** The results of {@link #shoot}. */
+  private static final int SHOOTING_SOLVED = 0, SHOOTING_FAILED = 1, SHOOTING_SINGULAR = 2;
+
+  /**
+   * A condition which relates several values of the functions, <code>y(1)+y'(1) == 2</code>, as
+   * the expression which should be zero.
+   */
+  private static final class CoupledCondition {
+    final IExpr condition;
+
+    /** The values the condition relates, <code>y(1)</code> and <code>y'(1)</code>. */
+    final IExpr[] applications;
+
+    /** The point of each value. */
+    final double[] points;
+
+    /** The component of the state of each value. */
+    final int[] components;
+
+    private CoupledCondition(IExpr condition, IExpr[] applications, double[] points,
+        int[] components) {
+      this.condition = condition;
+      this.applications = applications;
+      this.points = points;
+      this.components = components;
+    }
+
+    /**
+     * @return <code>null</code> if the condition relates fewer than two values, or a value which is
+     *         not at a numeric point or not a component of the state
+     */
+    static CoupledCondition create(IExpr condition, ISymbol[] functions, int[] order,
+        int[] offset) {
+      java.util.Set<IExpr> found = new java.util.LinkedHashSet<IExpr>();
+      collectApplications(condition, functions, found);
+      if (found.size() < 2) {
+        return null;
+      }
+      IExpr[] applications = found.toArray(new IExpr[found.size()]);
+      double[] points = new double[applications.length];
+      int[] components = new int[applications.length];
+      for (int k = 0; k < applications.length; k++) {
+        int[] derivativeOrder = new int[1];
+        int index = applicationIndex(applications[k], functions, derivativeOrder);
+        points[k] = ((IAST) applications[k]).arg1().evalfNaN();
+        if (index < 0 || derivativeOrder[0] >= order[index] || Double.isNaN(points[k])) {
+          return null;
+        }
+        components[k] = offset[index] + derivativeOrder[0];
+      }
+      return new CoupledCondition(condition, applications, points, components);
+    }
+  }
+
+  /**
    * Find the initial values at <code>system.t0</code> which aren't given, so that the trajectory
    * from there meets the conditions at the other points: Newton's method on the differences at
    * those points, with a Jacobian of finite differences. A step which doesn't reduce the
-   * differences is halved. A linear problem is solved by the first step.
+   * differences is halved. A linear problem is solved by the first step, up to the error of the
+   * finite differences, which further steps remove; differences of a <code>10^-9</code>th of the
+   * values are accepted once no step reduces them.
    *
    * @param system the system whose initial state is completed in place
    * @param isGiven the components of the initial state which are given
    * @param points the points of all conditions
    * @param components the component of the state each condition is about
    * @param values the value of the component each condition requires
-   * @return <code>false</code> if no solution was found
+   * @param coupled the conditions which relate several values
+   * @return {@link #SHOOTING_SOLVED}, {@link #SHOOTING_SINGULAR} if the conditions do not depend
+   *         on the unknown initial values, or {@link #SHOOTING_FAILED}
    */
-  private static boolean shoot(FirstOrderSystem system, boolean[] isGiven, double[] points,
-      int[] components, double[] values, EvalEngine engine) {
+  private static int shoot(FirstOrderSystem system, boolean[] isGiven, double[] points,
+      int[] components, double[] values, java.util.List<CoupledCondition> coupled,
+      EvalEngine engine) {
     final double[] state = system.initialState;
     final int dimension = state.length;
     int[] free = new int[dimension];
@@ -1754,27 +1850,38 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
     }
     double scale = 1.0;
+    double length = 0.0;
     for (int j = 0; j < points.length; j++) {
       scale = Math.max(scale, Math.abs(values[j]));
+      length = Math.max(length, Math.abs(points[j] - system.t0));
     }
-    double[] residual = boundaryResiduals(system, points, components, values, engine);
+    for (CoupledCondition condition : coupled) {
+      for (double point : condition.points) {
+        length = Math.max(length, Math.abs(point - system.t0));
+      }
+    }
+    // the highest derivative order of a state component is below the dimension
+    final double singularity = length >= 1.0 || length == 0.0 ? SHOOTING_SINGULARITY
+        : SHOOTING_SINGULARITY * Math.pow(length, dimension);
+    double[] residual = boundaryResiduals(system, points, components, values, coupled, engine);
     if (residual == null) {
-      return false;
+      return SHOOTING_FAILED;
     }
     double norm = maxNorm(residual);
     for (int step = 0; step < MAX_SHOOTING_STEPS; step++) {
-      if (norm <= 1.0e-9 * scale) {
-        return true;
+      if (norm <= 1.0e-13 * scale) {
+        return SHOOTING_SOLVED;
       }
       double[][] jacobian = new double[n][n];
       for (int j = 0; j < n; j++) {
         final double saved = state[free[j]];
         final double h = 1.0e-6 * Math.max(1.0, Math.abs(saved));
         state[free[j]] = saved + h;
-        double[] shifted = boundaryResiduals(system, points, components, values, engine);
+        double[] shifted =
+            boundaryResiduals(system, points, components, values, coupled, engine);
         state[free[j]] = saved;
         if (shifted == null) {
-          return false;
+          return SHOOTING_FAILED;
         }
         for (int i = 0; i < n; i++) {
           jacobian[i][j] = (shifted[i] - residual[i]) / h;
@@ -1784,12 +1891,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       try {
         org.hipparchus.linear.DecompositionSolver solver =
             new org.hipparchus.linear.LUDecomposition(
-                new org.hipparchus.linear.Array2DRowRealMatrix(jacobian, false)).getSolver();
+                new org.hipparchus.linear.Array2DRowRealMatrix(jacobian, false), singularity)
+                .getSolver();
         delta = solver.solve(new org.hipparchus.linear.ArrayRealVector(residual, false))
             .toArray();
       } catch (MathRuntimeException mre) {
         // the conditions don't depend on the unknown initial values
-        return false;
+        return SHOOTING_SINGULAR;
       }
       double[] start = state.clone();
       double factor = 1.0;
@@ -1798,7 +1906,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         for (int j = 0; j < n; j++) {
           state[free[j]] = start[free[j]] - factor * delta[j];
         }
-        next = boundaryResiduals(system, points, components, values, engine);
+        next = boundaryResiduals(system, points, components, values, coupled, engine);
         if (next != null && maxNorm(next) < norm) {
           break;
         }
@@ -1808,12 +1916,12 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (next == null) {
         // no step along the Newton direction gets closer to the conditions
         System.arraycopy(start, 0, state, 0, dimension);
-        return false;
+        return norm <= 1.0e-9 * scale ? SHOOTING_SOLVED : SHOOTING_FAILED;
       }
       residual = next;
       norm = maxNorm(residual);
     }
-    return norm <= 1.0e-9 * scale;
+    return norm <= 1.0e-9 * scale ? SHOOTING_SOLVED : SHOOTING_FAILED;
   }
 
   private static double maxNorm(double[] vector) {
@@ -1827,48 +1935,79 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   /**
    * The differences between the components of the trajectory from the initial state of
    * <code>system</code> and the values the conditions at the points other than
-   * <code>system.t0</code> require. The trajectory is integrated once to each such point.
+   * <code>system.t0</code> require, followed by the values of the coupled conditions. The
+   * trajectory is integrated once to each such point.
    *
    * @return <code>null</code> if the integration failed
    */
   private static double[] boundaryResiduals(FirstOrderSystem system, double[] points,
-      int[] components, double[] values, EvalEngine engine) {
-    int count = 0;
+      int[] components, double[] values, java.util.List<CoupledCondition> coupled,
+      EvalEngine engine) {
+    int count = coupled.size();
     for (double point : points) {
       if (point != system.t0) {
         count++;
       }
     }
     double[] residual = new double[count];
-    double[][] stateAt = new double[points.length][];
+    java.util.Map<Double, double[]> states = new java.util.HashMap<Double, double[]>();
+    states.put(system.t0, system.initialState);
     FirstODE ode = new FirstODE(engine, system);
     int i = 0;
     for (int j = 0; j < points.length; j++) {
       if (points[j] == system.t0) {
         continue;
       }
-      for (int k = 0; k < j && stateAt[j] == null; k++) {
-        if (points[k] == points[j]) {
-          stateAt[j] = stateAt[k];
-        }
+      double[] state = stateAt(ode, system, points[j], states, engine);
+      if (state == null) {
+        return null;
       }
-      if (stateAt[j] == null) {
-        engine.checkTimeLimit();
-        double distance = Math.abs(points[j] - system.t0);
-        try {
-          DormandPrince853Integrator integrator =
-              new DormandPrince853Integrator(MIN_STEP * distance, distance, 1.0e-12, 1.0e-12);
-          integrator.setMaxEvaluations(MAX_EVALUATIONS);
-          stateAt[j] = integrator
-              .integrate(ode, new ODEState(system.t0, system.initialState.clone()), points[j])
-              .getPrimaryState();
-        } catch (MathRuntimeException mre) {
+      residual[i++] = state[components[j]] - values[j];
+    }
+    for (CoupledCondition condition : coupled) {
+      IASTAppendable rules = F.ListAlloc(condition.applications.length);
+      for (int k = 0; k < condition.applications.length; k++) {
+        double[] state = stateAt(ode, system, condition.points[k], states, engine);
+        if (state == null) {
           return null;
         }
+        rules.append(F.Rule(condition.applications[k], F.num(state[condition.components[k]])));
       }
-      residual[i++] = stateAt[j][components[j]] - values[j];
+      IExpr value = engine.evalN(F.subst(condition.condition, rules));
+      if (!value.isReal() || !Double.isFinite(value.evalf())) {
+        return null;
+      }
+      residual[i++] = value.evalf();
     }
     return residual;
+  }
+
+  /**
+   * The state of the trajectory from the initial state of <code>system</code> at
+   * <code>point</code>, integrated once per point.
+   *
+   * @param states the states which are already known, by their points
+   * @return <code>null</code> if the integration failed
+   */
+  private static double[] stateAt(FirstODE ode, FirstOrderSystem system, double point,
+      java.util.Map<Double, double[]> states, EvalEngine engine) {
+    double[] state = states.get(point);
+    if (state == null) {
+      engine.checkTimeLimit();
+      double distance = Math.abs(point - system.t0);
+      try {
+        DormandPrince853Integrator integrator =
+            new DormandPrince853Integrator(MIN_STEP * distance, distance, 1.0e-12, 1.0e-12);
+        integrator.setMaxEvaluations(MAX_EVALUATIONS);
+        state = integrator
+            .integrate(ode, new ODEState(system.t0, system.initialState.clone()), point)
+            .getPrimaryState();
+      } catch (MathRuntimeException mre) {
+        return null;
+      }
+      states.put(point, state);
+    }
+    return state;
   }
 
   /**
@@ -4105,7 +4244,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     for (IExpr condition : conditions) {
       system.append(F.Equal(F.subst(condition, toUnknowns), F.C0));
     }
-    IAST rules = SolveUtils.firstSolutionRules(engine.evaluate(F.Solve(system, unknowns)));
+    IAST rules = SolveUtils.firstSolutionRules(engine.evalQuiet(F.Solve(system, unknowns)));
     if (rules.isNIL()) {
       return conditions;
     }

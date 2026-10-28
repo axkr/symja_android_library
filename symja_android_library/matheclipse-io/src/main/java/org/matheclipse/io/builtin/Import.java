@@ -31,6 +31,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.FileSandbox;
+import org.matheclipse.core.io.Graph6Format;
 import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.io.tensor.io.ImageFormat;
@@ -55,15 +56,18 @@ public class Import extends AbstractEvaluator {
 
       IStringX arg1 = (IStringX) ast.arg1();
       Extension format = Extension.importFilename(arg1.toString());
+      String element = "";
 
       if (ast.size() > 2) {
-        if (!(ast.arg2() instanceof IStringX)) {
+        Extension.ImportSpec spec = Extension.importSpec(ast.arg2());
+        if (spec == null) {
           return F.NIL;
         }
-        format = Extension.importExtension(ast.arg2().toString());
+        format = spec.format;
+        element = spec.element;
       }
 
-      return importFromPath(arg1, format, null, engine);
+      return importFromPath(arg1, format, element, null, engine);
     }
     return F.NIL;
   }
@@ -80,6 +84,22 @@ public class Import extends AbstractEvaluator {
    */
   public static IExpr importFromPath(IStringX pathName, Extension format, File dataFile,
       EvalEngine engine) {
+    return importFromPath(pathName, format, "", dataFile, engine);
+  }
+
+  /**
+   * Import data from a file or URL specification.
+   *
+   * @param pathName full pathName to a file or URL
+   * @param format the format of the input data
+   * @param element the element of the format to import, or <code>""</code> for its default
+   * @param dataFile if <code>dataFile!=null</code>, ignore pathName and use this {@link File}
+   *        directly
+   * @param engine
+   * @return
+   */
+  private static IExpr importFromPath(IStringX pathName, Extension format, String element,
+      File dataFile, EvalEngine engine) {
     FileReader reader = null;
     String fileName = pathName.toString();
     try {
@@ -151,6 +171,9 @@ public class Import extends AbstractEvaluator {
           // graph Format
           reader = new FileReader(file);
           return org.matheclipse.graphtheory.io.GraphImport.fromReader(reader, format, engine);
+        case GRAPH6:
+          return Graph6Format.importString(ofText(file, engine).toString(),
+              element.isEmpty() ? "Graph" : element, engine);
         case EXPRESSIONJSON:
           return expressionJSONImport(jsonSource(fileName, file, dataFile, engine));
         case FASTA:

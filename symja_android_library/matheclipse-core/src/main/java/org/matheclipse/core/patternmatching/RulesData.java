@@ -1286,6 +1286,8 @@ public final class RulesData implements Serializable {
     final boolean newIsRun = positional && (newPatternMatcher.isArgumentRunRule()
         || newPatternMatcher.isOptionalArgumentRule());
     final int patternHash = newPatternMatcher.getPatternHash();
+    final IExpr newLHS = newPatternMatcher.getOrderingLHS();
+    final boolean newConditional = newLHS != newPatternMatcher.getLHS();
     IPatternMap pmSlotValuesMap = null;
     IExpr pmRHS = null;
     int insertPosition = -1;
@@ -1312,10 +1314,11 @@ public final class RulesData implements Serializable {
         final boolean byGenerality = newIsRun || (positional && matcher instanceof PatternMatcher
             && (((PatternMatcher) matcher).isArgumentRunRule()
                 || ((PatternMatcher) matcher).isOptionalArgumentRule()));
-        if (byGenerality ? RuleGenerality.covers(matcher.getLHS(), newPatternMatcher.getLHS())
-            : lhsPriority < priority && (!positional
-                || (RuleGenerality.mayOverlap(matcher.getLHS(), newPatternMatcher.getLHS())
-                    && comparable(matcher.getLHS(), newPatternMatcher.getLHS())))) {
+        if (byGenerality ? RuleGenerality.covers(matcher.getOrderingLHS(), newLHS)
+            : precedesByPriority(matcher, priority, newLHS, lhsPriority, positional)
+                // a conditional rule goes before an unconditional one which matches more
+                || (newConditional && positional && matcher.getOrderingLHS() == matcher.getLHS()
+                    && RuleGenerality.covers(matcher.getLHS(), newLHS))) {
           insertPosition = i;
         }
       }
@@ -1327,6 +1330,23 @@ public final class RulesData implements Serializable {
     fPriorityDownRules.add(insertPosition, lhsPriority);
     publishPatternDownRules(rules);
     return newPatternMatcher;
+  }
+
+  /**
+   * Is a new rule without a run of arguments tried before <code>matcher</code> because of its lower
+   * priority value? Only if the two rules can match the same expression and one of them is known to
+   * be more general.
+   */
+  private static boolean precedesByPriority(IPatternMatcher matcher, int priority, IExpr newLHS,
+      int lhsPriority, boolean positional) {
+    if (lhsPriority >= priority) {
+      return false;
+    }
+    if (!positional) {
+      return true;
+    }
+    final IExpr lhs = matcher.getOrderingLHS();
+    return RuleGenerality.mayOverlap(lhs, newLHS) && comparable(lhs, newLHS);
   }
 
   /**

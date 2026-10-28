@@ -159,6 +159,8 @@ public class Errors {
       "boxfmt", "`1` is not a box formatting type.", //
       "bdomv", "Warning: `1` is not a valid domain specification.", //
       "bvnc", "The boundary value problem could not be solved by shooting from `1`.", //
+      "bvls",
+      "Unable to resolve the conditions derived from the given boundary conditions. It is possible there is no solution for the given boundary value problem.", //
       "bspec", "`1` is not a valid `2` specification.", //
       "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
       "bvnul",
@@ -241,6 +243,7 @@ public class Errors {
       "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
       "fnand", "The function `1` is not analytic or defined at `2`.", //
       "fname", "`1` is not a valid file name.", //
+      "fmterr", "Cannot import data as `1` format.", //
       "fsandbox", "Cannot open `1`: the path is outside this session's directory.", //
       "cdir", "Cannot set current directory to `1`.", //
       "dtop", "Directory stack is empty.", //
