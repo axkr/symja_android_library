@@ -2351,8 +2351,8 @@ public class EvalEngine implements Serializable {
               return result;
             }
             if (newAST.isAST1() && newAST.arg1() instanceof ApfloatNum) {
-              // a zero of a given accuracy has no digits to calculate with
-              result = SignificanceArithmetic.unevaluatedAtZero(symbol, newAST);
+              // a pole within the error, a zero of a given accuracy without digits
+              result = SignificanceArithmetic.unevaluatedAtSpecialPoint(symbol, newAST);
               if (result.isPresent()) {
                 return result;
               }
@@ -5903,9 +5903,9 @@ public class EvalEngine implements Serializable {
       }
       // the precision of the value from the precision of the arguments
       if (result.isNIL()) {
-        // a zero of a given accuracy has no digits to calculate with
+        // a pole within the error, a zero of a given accuracy without digits
         return ast.isAST1() && ast.arg1() instanceof ApfloatNum
-            ? SignificanceArithmetic.unevaluatedAtZero(symbol, ast)
+            ? SignificanceArithmetic.unevaluatedAtSpecialPoint(symbol, ast)
             : result;
       }
       return SignificanceArithmetic.conditioned(symbol, ast, result);

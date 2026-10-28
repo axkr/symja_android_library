@@ -395,6 +395,28 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPoleWithinTheError() {
+    // the error of the argument covers the pole of ArcTanh and ArcCoth at 1 and -1
+    check("ArcTanh(1.0`15)", //
+        "Indeterminate");
+    check("ArcTanh(-1.0`15)", //
+        "Indeterminate");
+    check("ArcCoth(1.0`15)", //
+        "Indeterminate");
+    // the error 10^-5 of 1.0000001`5 covers 1
+    check("ArcTanh(1.0000001`5)", //
+        "Indeterminate");
+    // exact and machine arguments keep their values
+    check("ArcTanh(1)", //
+        "Infinity");
+    check("ArcTanh(1.0)", //
+        "Infinity");
+    // the condition number 0.999/((1-0.999^2)*ArcTanh(0.999)) is 131.5
+    check("Precision(ArcTanh(0.999`15))", //
+        "12.88105");
+  }
+
+  @Test
   public void testComplexValuesAtRealArguments() {
     check("Precision(ArcSin(3.0`20))", //
         "20.34753");

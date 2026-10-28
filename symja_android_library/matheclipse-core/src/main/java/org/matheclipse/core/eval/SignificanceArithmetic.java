@@ -47,11 +47,18 @@ public final class SignificanceArithmetic {
    *         real number of a function this knows
    */
   public static IExpr conditioned(final ISymbol head, final IAST ast, final IExpr result) {
-    if (!(head instanceof IBuiltInSymbol) || !(result instanceof INumber)) {
+    if (!(head instanceof IBuiltInSymbol)) {
       return result;
     }
     final Function function = functionOf(((IBuiltInSymbol) head).ordinal(), ast.argSize());
     if (function == null) {
+      return result;
+    }
+    final IExpr indeterminate = indeterminatePoint(function, ast);
+    if (indeterminate.isPresent()) {
+      return indeterminate;
+    }
+    if (!(result instanceof INumber)) {
       return result;
     }
     final int argSize = ast.argSize();
@@ -290,22 +297,46 @@ public final class SignificanceArithmetic {
 
   /** Test if <code>number</code> is <code>1</code>, or a number whose error covers <code>1</code>. */
   private static boolean isOrCoversOne(final IExpr number) {
-    if (number.isOne()) {
+    return number.isOne() || coversPoint(number, Apfloat.ONE);
+  }
+
+  /**
+   * Test if the error of a number of a precision of its own covers <code>point</code>: the
+   * distance to it is not more than the error <code>|x|*10^-p</code>, or the accuracy of a zero.
+   */
+  private static boolean coversPoint(final IExpr number, final Apfloat point) {
+    if (!(number instanceof ApfloatNum) || !((ApfloatNum) number).isSignificanceTracked()) {
+      return false;
+    }
+    final ApfloatNum real = (ApfloatNum) number;
+    final double zeroAccuracy = real.zeroAccuracy10();
+    if (!Double.isNaN(zeroAccuracy)) {
+      return point.signum() == 0 || ApfloatSignificance.log10Abs(point) <= -zeroAccuracy;
+    }
+    final Apfloat value = real.extendedValue();
+    final Apfloat distance = ApfloatMath.abs(value.subtract(point));
+    if (distance.signum() == 0) {
       return true;
     }
-    if (number instanceof ApfloatNum && ((ApfloatNum) number).isSignificanceTracked()
-        && !number.isZero()) {
-      final ApfloatNum real = (ApfloatNum) number;
-      final Apfloat value = real.extendedValue();
-      final Apfloat distance = ApfloatMath.abs(value.subtract(new Apfloat(1)));
-      if (distance.signum() == 0) {
-        return true;
-      }
-      // the error |x|*10^-p reaches 1
-      return ApfloatSignificance.log10Abs(distance) <= ApfloatSignificance.log10Abs(value)
-          - real.precision10();
+    return ApfloatSignificance.log10Abs(distance) <= ApfloatSignificance.log10Abs(value)
+        - real.precision10();
+  }
+
+  /**
+   * <code>Indeterminate</code> where the error of the argument covers a point at which the function
+   * has no value, the pole of <code>ArcTanh</code> and <code>ArcCoth</code> at <code>1</code> and
+   * <code>-1</code>: <code>ArcTanh(1.`20)</code>. An exact argument keeps its value,
+   * <code>ArcTanh(1)</code> is <code>Infinity</code>.
+   *
+   * @return {@link F#NIL} if the argument covers no such point
+   */
+  private static IExpr indeterminatePoint(final Function function, final IAST ast) {
+    if ((function == Function.ARCTANH || function == Function.ARCCOTH) && ast.isAST1()
+        && (coversPoint(ast.arg1(), Apfloat.ONE)
+            || coversPoint(ast.arg1(), new Apfloat(-1L)))) {
+      return S.Indeterminate;
     }
-    return false;
+    return F.NIL;
   }
 
   /**
@@ -341,23 +372,29 @@ public final class SignificanceArithmetic {
   }
 
   /**
-   * The value of a function at a zero of a given accuracy, which the function itself cannot
-   * calculate, as <code>ArcCosh(0``20)</code>: the zero has no digits to calculate with.
+   * The value of a function at a special point which the function itself cannot calculate:
+   * <code>Indeterminate</code> where the error of the argument covers a pole,
+   * <code>ArcTanh(1.`20)</code>, and the value at a zero of a given accuracy, which has no digits
+   * to calculate with, <code>ArcCosh(0``20)</code>.
    *
    * @param head the head of <code>ast</code>
    * @param ast the function with its arguments
-   * @return {@link F#NIL} if <code>ast</code> is no such function of such a zero
+   * @return {@link F#NIL} if <code>ast</code> is no such function at such a point
    */
-  public static IExpr unevaluatedAtZero(final ISymbol head, final IAST ast) {
+  public static IExpr unevaluatedAtSpecialPoint(final ISymbol head, final IAST ast) {
     if (!(head instanceof IBuiltInSymbol) || !ast.isAST1() || !(ast.arg1() instanceof ApfloatNum)) {
-      return F.NIL;
-    }
-    final double zeroAccuracy = ((ApfloatNum) ast.arg1()).zeroAccuracy10();
-    if (Double.isNaN(zeroAccuracy)) {
       return F.NIL;
     }
     final Function function = functionOf(((IBuiltInSymbol) head).ordinal(), 1);
     if (function == null || function == Function.POWER) {
+      return F.NIL;
+    }
+    final IExpr indeterminate = indeterminatePoint(function, ast);
+    if (indeterminate.isPresent()) {
+      return indeterminate;
+    }
+    final double zeroAccuracy = ((ApfloatNum) ast.arg1()).zeroAccuracy10();
+    if (Double.isNaN(zeroAccuracy)) {
       return F.NIL;
     }
     return ofZeroArgument(head, function, zeroAccuracy, F.NIL);
