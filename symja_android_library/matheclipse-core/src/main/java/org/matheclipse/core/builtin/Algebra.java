@@ -32,6 +32,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -173,6 +174,21 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 2 && ast.last().isRuleAST()) {
+        // the options with their default values change nothing; other settings are not
+        // implemented
+        IASTAppendable withoutOptions = F.ast(S.Apart);
+        for (IExpr arg : ast) {
+          if (arg.isRuleAST() && (arg.first() == S.Modulus || arg.first() == S.Trig)) {
+            if (!arg.second().isZero() && arg.second() != S.False) {
+              return F.NIL;
+            }
+          } else {
+            withoutOptions.append(arg);
+          }
+        }
+        return withoutOptions.argSize() < ast.argSize() ? withoutOptions : F.NIL;
+      }
       IExpr arg1 = ast.arg1();
       IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
       if (tempAST.isPresent()) {
@@ -271,12 +287,13 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_4;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
+      setOptions(newSymbol, F.list(F.Rule(S.Modulus, F.C0), F.Rule(S.Trig, S.False)));
     }
   }
 
@@ -454,15 +471,51 @@ public class Algebra {
     }
 
     /**
+     * The form of a cancelled fraction of two sums: numerator and denominator multiplied out, the
+     * numeric content of the denominator in front: <code>(x^4-16)/(x^6-64)</code> is
+     * <code>(4+x^2)/(16+4*x^2+x^4)</code>, <code>(2*x^3+x^2+6*x+3)/(4*x+20)</code> is
+     * <code>(3+6*x+x^2+2*x^3)/(4*(5+x))</code>.
+     */
+    private static IExpr expandedFraction(IExpr numerator, IExpr denominator,
+        EvalEngine engine) {
+      IExpr expandedNumerator = engine.evaluate(F.Expand(numerator));
+      IExpr expandedDenominator = engine.evaluate(F.Expand(denominator));
+      if (expandedDenominator.isPlus()) {
+        expandedDenominator = engine.evaluate(F.FactorTerms(expandedDenominator));
+      }
+      return engine.evaluate(F.Divide(expandedNumerator, expandedDenominator));
+    }
+
+    /**
      * @param arg1
      * @param engine
      * @return {@link F#NIL} if no evaluations was possible
      */
     private IExpr cancelNIL(IExpr arg1, EvalEngine engine) {
       try {
+        if ((arg1.isTimes() || arg1.isPower()) && !engine.isTraceLevel(StepLevel.ALGEBRA)) {
+          // a fraction of two polynomials with rational coefficients is divided by their GCD,
+          // without a factorization; the steps of a trace show the factors
+          Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
+          if (parts.isPresent() && parts.get()[0].isPlus() && parts.get()[1].isPlus()) {
+            Optional<IExpr[]> quotients =
+                AlgebraUtil.cancelByGCD(parts.get()[0], parts.get()[1]);
+            if (quotients != null) {
+              return quotients.isPresent() ? expandedFraction(quotients.get()[0],
+                  quotients.get()[1], engine) : F.NIL;
+            }
+          }
+        }
         if (arg1.isTimes() || arg1.isPower()) {
           IExpr result = AlgebraUtil.cancelFractionalParts(arg1);
           if (result.isPresent()) {
+            Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
+            if (parts.isPresent() && parts.get()[0].isPlus() && parts.get()[1].isPlus()
+                && result.isFree(x -> x instanceof IComplex
+                    || (x.isPower() && x.base().isNumber() && !x.exponent().isInteger()), false)) {
+              return expandedFraction(engine.evaluate(F.Numerator(result)),
+                  engine.evaluate(F.Denominator(result)), engine);
+            }
             return result;
           }
         }
@@ -494,7 +547,16 @@ public class Algebra {
           return F.NIL;
         }
         if (!modulus.isZero()) {
-          return togetherModulus(S.Cancel, arg1, modulus, engine);
+          // the quotients by the GCD over GF(p), multiplied out: (x^5-x)/(x^2-x) is 1+x+x^2+x^3
+          IExpr together = togetherModulus(S.Cancel, arg1, modulus, engine);
+          if (together.isPresent()) {
+            IExpr numerator = engine
+                .evaluate(F.PolynomialMod(F.Expand(F.Numerator(together)), modulus));
+            IExpr denominator = engine
+                .evaluate(F.PolynomialMod(F.Expand(F.Denominator(together)), modulus));
+            return engine.evaluate(F.Divide(numerator, denominator));
+          }
+          return together;
         }
       }
       if (arg1.isAtom()) {
@@ -523,6 +585,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
+      setOptions(newSymbol, F.list(F.Rule(S.Extension, S.None), F.Rule(S.Modulus, F.C0), F.Rule(S.Trig, S.False)));
     }
   }
 
@@ -1874,7 +1937,31 @@ public class Algebra {
       for (int i = 2; i < denominator.size(); i++) {
         result.append(F.Power(denominator.get(i), F.CN1));
       }
-      return engine.evaluate(result);
+      return withUnitInFactor(engine.evaluate(result), engine);
+    }
+
+    /**
+     * The unit <code>I</code> of a content <code>r*I</code> with a rational <code>r</code>
+     * multiplied into the first factor which is a sum: <code>I*(-I+y)*(I+y)</code> is
+     * <code>(1+I*y)*(I+y)</code>, <code>2*I*(-I+y)*(I+y)</code> is <code>2*(1+I*y)*(I+y)</code>.
+     * A real content stays in front.
+     */
+    private static IExpr withUnitInFactor(IExpr product, EvalEngine engine) {
+      if (!product.isTimes() || !(product.first() instanceof IComplex)
+          || !((IComplex) product.first()).re().isZero()) {
+        return product;
+      }
+      IRational rational = ((IComplex) product.first()).im();
+      IAST factors = (IAST) product;
+      for (int i = 2; i < factors.size(); i++) {
+        if (factors.get(i).isPlus()) {
+          IASTAppendable result = factors.copyAppendable();
+          result.set(1, rational);
+          result.set(i, engine.evaluate(F.Expand(F.Times(F.CI, factors.get(i)))));
+          return engine.evaluate(result);
+        }
+      }
+      return product;
     }
 
     /**
@@ -2115,9 +2202,23 @@ public class Algebra {
       IExpr extension = options[1];
       IExpr gaussianIntegers = options[2];
       boolean trig = options[3].isTrue();
-      // a modulus which is no integer is ignored - Factor(x^2+1, Modulus->a) is 1+x^2
+      if (modulus.isNumber() && !modulus.isInteger()) {
+        // Modulus 3.5 must be an integer or an irreducible univariate polynomial.
+        return Errors.printMessage(S.Factor, "bmod", F.List(modulus));
+      }
+      // a symbolic modulus is ignored - Factor(x^2+1, Modulus->a) is 1+x^2
       if (!modulus.isInteger()) {
         modulus = F.C0;
+      }
+      if (!modulus.isZero()) {
+        if (extension != S.None) {
+          // Conflicting option setting. If Modulus is not 0, then Extension should be None.
+          return Errors.printMessage(S.Factor, "mext", F.CEmptyList);
+        }
+        if (!arg1.isFree(x -> x instanceof IComplex, false)) {
+          // Factoring noninteger polynomials with respect to a modulus is not implemented.
+          return Errors.printMessage(S.Factor, "facim", F.CEmptyList);
+        }
       }
       // irreducible over Q(I), so the steps below don't factor it again
       boolean gaussianIrreducible = false;
@@ -2245,6 +2346,14 @@ public class Algebra {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       IExpr arg1 = ast.arg1();
+      for (IExpr option : originalAST) {
+        if (option.isRuleAST() && option.first() == S.GaussianIntegers) {
+          // Unknown option GaussianIntegers in FactorSquareFree(...): the square-free factors
+          // don't depend on the field
+          return Errors.printMessage(S.FactorSquareFree, "optx", F.List(option, originalAST),
+              engine);
+        }
+      }
       IAST list = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
       if (list.isPresent()) {
         return list;
@@ -2473,6 +2582,11 @@ public class Algebra {
       }
       VariablesSet eVar = null;
       IAST variableList = F.NIL;
+      if (ast.isAST2() && ast.arg2().isRuleAST() && ast.arg2().first() == S.Modulus
+          && ast.arg2().second().isInteger() && !ast.arg2().second().isZero()) {
+        // over GF(p) no number is taken out: 3*x+9 modulo 7 is 2+3*x
+        return F.PolynomialMod(F.Expand(arg1), ast.arg2().second());
+      }
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
         if (arg2.isSymbol()) {
@@ -2559,6 +2673,44 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr list = factorTermsList(ast, engine);
+      if (list.isList2() && list.second().isPlus() && list.first().isNumber()
+          && hasNegativeLeadingTerm((IAST) list.second(), ast, engine)) {
+        // the leading term positive: b-a is -(a-b)
+        return F.List(list.first().negate(),
+            engine.evaluate(F.Expand(F.Negate(list.second()))));
+      }
+      return list;
+    }
+
+    /**
+     * Whether the leading term of <code>sum</code> is negative, with the variables of the second
+     * argument of <code>ast</code> ranked first: <code>FactorTermsList(y-x, {y,x})</code> leads
+     * with <code>y</code>.
+     */
+    private static boolean hasNegativeLeadingTerm(IAST sum, IAST ast, EvalEngine engine) {
+      IExpr generators = S.Variables.of(engine, sum);
+      if (!generators.isList() || generators.argSize() == 0) {
+        return false;
+      }
+      if (!ast.isAST2() || !(ast.arg2().isSymbol() || ast.arg2().isList())) {
+        return AlgebraUtil.hasNegativeLeadingTerm(sum, (IAST) generators, engine);
+      }
+      IASTAppendable variables = F.ListAlloc(generators.argSize() + 1);
+      if (ast.arg2().isList()) {
+        variables.appendArgs((IAST) ast.arg2());
+      } else {
+        variables.append(ast.arg2());
+      }
+      for (IExpr generator : (IAST) generators) {
+        if (!variables.contains(generator)) {
+          variables.append(generator);
+        }
+      }
+      return AlgebraUtil.hasNegativeLeadingTerm(sum, variables, engine);
+    }
+
+    private static IExpr factorTermsList(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isFree(S.List)) {
         // `1` is not a polynomial.
@@ -2575,12 +2727,18 @@ public class Algebra {
         }
       }
       IExpr expanded = F.evalExpandAll(arg1, engine);
+      if (expanded.isPlus() && variableList.isPresent() && variableList.argSize() == 1) {
+        IExpr list = factorTermsListIn((IAST) expanded, variableList.arg1(), engine);
+        if (list.isPresent()) {
+          return list;
+        }
+      }
       if (expanded.isPlus()) {
         Optional<IRational> gcd = AlgebraUtil.factorTermsGCD((IAST) expanded, engine);
         if (gcd.isPresent()) {
           IRational rationalGCD = gcd.get();
-          return F.List(rationalGCD, F.Expand(F.Times(rationalGCD.inverse(), expanded)))
-              .eval(engine);
+          return F.List(rationalGCD,
+              engine.evaluate(F.Expand(F.Times(rationalGCD.inverse(), expanded))));
         }
       }
       if (variableList.isNIL()) {
@@ -2622,6 +2780,59 @@ public class Algebra {
       } catch (JASConversionException e1) {
       }
       return F.List(F.C1, arg1);
+    }
+
+    /**
+     * <code>{content, factor, rest}</code> for a polynomial in <code>x</code>: the numeric content,
+     * the factor which does not depend on <code>x</code> and the rest, whose coefficient of the
+     * highest power of <code>x</code> has a positive leading term: <code>-5*x^2*z+10*z</code> is
+     * <code>{-5, z, -2+x^2}</code>.
+     *
+     * @return {@link F#NIL} if the coefficients are not found
+     */
+    private static IExpr factorTermsListIn(IAST poly, IExpr x, EvalEngine engine) {
+      IExpr coefficients = engine.evaluate(F.CoefficientList(poly, x));
+      if (!coefficients.isList() || coefficients.argSize() < 1) {
+        return F.NIL;
+      }
+      IASTAppendable nonZero = F.ListAlloc(coefficients.argSize());
+      ((IAST) coefficients).forEach(c -> {
+        if (!c.isZero()) {
+          nonZero.append(c);
+        }
+      });
+      IExpr gcd = nonZero.argSize() == 1 ? nonZero.arg1()
+          : engine.evaluate(nonZero.setAtCopy(0, S.PolynomialGCD));
+      IExpr content = gcd;
+      IExpr factor = F.C1;
+      if (gcd.isTimes() && gcd.first().isNumber()) {
+        // a monomial such as 3*y*z: the number is the content
+        content = gcd.first();
+        factor = ((IAST) gcd).rest().oneIdentity1();
+      } else if (gcd.isPlus()) {
+        IExpr list = engine.evaluate(F.unaryAST1(S.FactorTermsList, gcd));
+        if (!list.isList2()) {
+          return F.NIL;
+        }
+        content = list.first();
+        factor = list.second();
+      } else if (!gcd.isNumber()) {
+        content = F.C1;
+        factor = gcd;
+      }
+      if (!content.isNumber() || content.isZero()) {
+        return F.NIL;
+      }
+      IExpr top = coefficients.last();
+      IExpr scaledTop = engine.evaluate(F.Together(F.Divide(top, F.Times(content, factor))));
+      boolean negative = scaledTop.isNegative()
+          || (scaledTop.isTimes() && scaledTop.first().isNegative())
+          || (scaledTop.isPlus() && AlgebraUtil.hasNegativeLeadingTerm((IAST) scaledTop, engine));
+      if (negative) {
+        content = content.negate();
+      }
+      IExpr rest = engine.evaluate(F.Expand(F.Cancel(F.Divide(poly, F.Times(content, factor)))));
+      return F.List(content, factor, rest);
     }
 
     @Override
@@ -5363,6 +5574,8 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
+      setOptions(newSymbol,
+          F.list(F.Rule(S.Extension, S.None), F.Rule(S.Modulus, F.C0), F.Rule(S.Trig, S.False)));
     }
   }
 
@@ -5532,6 +5745,10 @@ public class Algebra {
     IExpr arg2 = ast.arg2();
     if (arg2.isRuleAST() && arg2.first() == S.Modulus) {
       return arg2.second();
+    }
+    if (arg2.isRuleAST() && (arg2.first() == S.Trig || arg2.first() == S.Extension)) {
+      // the default settings change nothing; other settings are not implemented
+      return arg2.second() == S.False || arg2.second() == S.None ? F.C0 : F.NIL;
     }
     // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or
     // a list of rules.

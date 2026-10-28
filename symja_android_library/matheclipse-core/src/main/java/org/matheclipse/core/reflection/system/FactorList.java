@@ -54,6 +54,11 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    if (arg1.isList()) {
+      // a list is no polynomial: it is the one factor
+      return F.list(F.list(F.C1, F.C1), F.list(arg1, F.C1));
+    }
+
     boolean field = options[1] != S.None || options[2].isTrue();
     if (field && options[0].isZero()) {
       IAST list = org.matheclipse.core.builtin.Algebra.Factor.factorListNumberField(arg1,
@@ -137,7 +142,7 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(Attribute.LISTABLE);
+    // not Listable: FactorList({x^2-4, x}) has the list as its one factor
 
     IBuiltInSymbol[] optionKeys =
         new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers, S.Trig};

@@ -9822,7 +9822,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FactorTermsList(6*a^2 + 9*x^2 + 12*b^2)", //
         "{3,2*a^2+4*b^2+3*x^2}");
     check("FactorTermsList(3 + 3*a + 6*a*x + 6*x + 12*a*x^2 + 12*x^2, x)", //
-        "{3,1+a+2*x+2*a*x+4*x^2+4*a*x^2}");
+        "{3,1+a,1+2*x+4*x^2}");
 
     // FactorTermsList: {g(x,y)} is not a polynomial.
     check("FactorTermsList({g(x,y)})", //

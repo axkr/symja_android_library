@@ -87,8 +87,16 @@ public class FactorNumberFieldTest extends ExprEvaluatorTestCase {
   public void testGaussianCoefficients() {
     check("Factor((3+3*I)*x^2+3+3*I)", //
         "(3+I*3)*(-I+x)*(I+x)");
+    // a unit content I goes into the first factor
     check("Factor(I*y^2+I)", //
-        "I*(-I+y)*(I+y)");
+        "(1+I*y)*(I+y)");
+    check("Factor(I*z^2+4*I)", //
+        "(2+I*z)*(I*2+z)");
+    // the unit I of a content r*I goes into the factor, r stays in front
+    check("Factor(2*I*y^2 + 2*I)", //
+        "2*(1+I*y)*(I+y)");
+    check("Factor(-3*I*z^2 - 12*I)", //
+        "-3*(2+I*z)*(I*2+z)");
     check("Factor((2-I)+(6-2*I)*x+4*x^2)", //
         "(1+2*x)*(2-I+2*x)");
   }
@@ -114,6 +122,48 @@ public class FactorNumberFieldTest extends ExprEvaluatorTestCase {
         "y*(x+2*y)");
     check("Factor(Expand(10*x^3+(x+y)^2*y), Modulus->5)", //
         "y*(x+y)^2");
+  }
+
+  @Test
+  public void testModulusMessages() {
+    // Modulus 2.5 must be an integer or an irreducible univariate polynomial.
+    check("Factor(x^2+3, Modulus->2.5)", //
+        "Factor(3+x^2,Modulus->2.5)");
+    // Conflicting option setting. If Modulus is not 0, then Extension should be None.
+    check("Factor(x^2+3, Modulus->5, Extension->Sqrt(2))", //
+        "Factor(3+x^2,Modulus->5,Extension->Sqrt(2))");
+    // Factoring noninteger polynomials with respect to a modulus is not implemented.
+    check("Factor(x^2+3*I, Modulus->5)", //
+        "Factor(I*3+x^2,Modulus->5)");
+    check("FactorSquareFree(x^2-9, GaussianIntegers->True)", //
+        "FactorSquareFree(-9+x^2,GaussianIntegers->True)");
+  }
+
+  @Test
+  public void testFactorTerms() {
+    // over GF(p) no number is taken out
+    check("FactorTerms(7*x+21, Modulus->7)", //
+        "0");
+    check("FactorTerms(4*x+11, Modulus->5)", //
+        "1+4*x");
+    check("FactorTermsList(c - b)", //
+        "{-1,b-c}");
+    // {content, the factor free of the variable, the rest}
+    check("FactorTermsList(-6*y^3*w + 9*w, {y})", //
+        "{-3,w,-3+2*y^3}");
+    check("FactorTermsList(6*u^2*v+9*u*v^3, {v})", //
+        "{3,u,2*u*v+3*v^3}");
+    // the number of a monomial factor is the content
+    check("FactorTermsList(3*y*z*x^2 + 6*y*z, {x})", //
+        "{3,y*z,2+x^2}");
+    // the leading term follows the order of the given variables
+    check("FactorTermsList(y - x, {y, x})", //
+        "{1,-x+y}");
+    check("FactorTermsList(y - x, {x, y})", //
+        "{-1,x-y}");
+    // FactorList is not Listable
+    check("FactorList({x^2-9, y})", //
+        "{{1,1},{{-9+x^2,y},1}}");
   }
 
   @Test
@@ -164,8 +214,11 @@ public class FactorNumberFieldTest extends ExprEvaluatorTestCase {
         "(3*x)/(2+3*x-x^2)^2");
     check("Cancel((3*x^3)/(2*x+3*x^2-x^3)^2)", //
         "(3*x)/(2+3*x-x^2)^2");
+    // the factors are split by GCDs only, not into irreducibles
     check("Together((4*x^4+2*x^3)/((3*x-x^3+2*x^2)^2*(2*x+1)^2))", //
-        "(2*x)/((3-x)^2*(1+x)^2*(1+2*x))");
+        "(2*x)/((1+2*x)*(3+2*x-x^2)^2)");
+    check("Together((6*x^4+3*x^3)/((2*x-x^3+x^2)^2*(2*x+1)^2))", //
+        "(3*x)/((1+2*x)*(2+x-x^2)^2)");
     check("Together((-1+I)/(x+2/7+I/7))", //
         "(-7+I*7)/(2+I+7*x)");
     check("Apart(x^2/(b*(x+2)),x)", //

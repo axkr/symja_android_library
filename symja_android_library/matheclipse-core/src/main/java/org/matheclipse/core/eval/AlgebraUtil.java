@@ -56,6 +56,7 @@ import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
+import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
 import edu.jas.ps.PolynomialTaylorFunction;
 import edu.jas.ps.TaylorFunction;
@@ -843,6 +844,313 @@ public class AlgebraUtil {
     return expr.isPlus() || (expr.isPower() && expr.base().isPlus());
   }
 
+  /** A sum, or a product with a sum: {@link #cancelCommonFactors(IExpr, IExpr)} factors it. */
+  private static boolean isFactorCandidate(IExpr expr) {
+    return isSumOrPowerOfSum(expr)
+        || (expr.isTimes() && expr.exists(AlgebraUtil::isSumOrPowerOfSum));
+  }
+
+  /**
+   * The degree from which a numerator and a denominator with rational coefficients are divided by
+   * their greatest common divisor instead of being factored: factoring a dense polynomial of degree
+   * 400 did not end in two minutes, its modular GCD takes milliseconds.
+   */
+  private static final int CANCEL_FACTOR_DEGREE = 32;
+
+  /** Numerator and denominator over the integers, see {@link #rationalQuotients(IExpr, IExpr)}. */
+  private static final class RationalQuotients {
+    /** <code>true</code> if nothing cancels, neither a polynomial nor a number */
+    final boolean coprime;
+    /** <code>true</code> if a polynomial has a degree of {@link #CANCEL_FACTOR_DEGREE} or more */
+    final boolean large;
+    private final JASConvert<BigRational> jas;
+    private final IRational content;
+    private final GenPolynomial<BigRational> numeratorQuotient;
+    private final GenPolynomial<BigRational> denominatorQuotient;
+
+    RationalQuotients(boolean coprime, boolean large, JASConvert<BigRational> jas,
+        IRational content, GenPolynomial<BigRational> numeratorQuotient,
+        GenPolynomial<BigRational> denominatorQuotient) {
+      this.coprime = coprime;
+      this.large = large;
+      this.jas = jas;
+      this.content = content;
+      this.numeratorQuotient = numeratorQuotient;
+      this.denominatorQuotient = denominatorQuotient;
+    }
+
+    /** The numerator divided by the GCD, built only when it is used. */
+    IExpr numerator() {
+      return EvalEngine.get().evaluate(
+          F.Times(content.numerator(), jas.rationalPoly2Expr(numeratorQuotient, false)));
+    }
+
+    /** The denominator divided by the GCD, built only when it is used. */
+    IExpr denominator() {
+      return EvalEngine.get().evaluate(
+          F.Times(content.denominator(), jas.rationalPoly2Expr(denominatorQuotient, false)));
+    }
+  }
+
+  /** {@link #rationalQuotients(IExpr, IExpr)} if both sides are factored in a cancellation. */
+  private static RationalQuotients candidateQuotients(IExpr numerator, IExpr denominator) {
+    return isFactorCandidate(numerator) && isFactorCandidate(denominator)
+        ? rationalQuotients(numerator, denominator)
+        : null;
+  }
+
+  /**
+   * Numerator and denominator of a fraction of polynomials with rational coefficients divided by
+   * their greatest common divisor, without a factorization.
+   *
+   * @return <code>null</code> if they are no polynomials with rational coefficients,
+   *         {@link Optional#empty()} if nothing cancels, otherwise the two quotients
+   */
+  public static Optional<IExpr[]> cancelByGCD(IExpr numerator, IExpr denominator) {
+    RationalQuotients quotients = rationalQuotients(numerator, denominator);
+    if (quotients == null) {
+      return null;
+    }
+    return quotients.coprime ? Optional.empty()
+        : Optional.of(new IExpr[] {quotients.numerator(), quotients.denominator()});
+  }
+
+  /**
+   * Numerator and denominator divided by their greatest common divisor, taken by the modular GCD
+   * over the integers.
+   *
+   * @return <code>null</code> if one of them is no polynomial with rational coefficients
+   */
+  private static RationalQuotients rationalQuotients(IExpr numerator, IExpr denominator) {
+    if (!numerator.isFree(x -> x instanceof IComplex || x.isInexactNumber(), false)
+        || !denominator.isFree(x -> x instanceof IComplex || x.isInexactNumber(), false)) {
+      return null;
+    }
+    VariablesSet eVar = new VariablesSet(numerator);
+    eVar.addVarList(denominator);
+    if (eVar.size() == 0) {
+      return null;
+    }
+    try {
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getVarList(),
+          BigRational.ZERO, TermOrderByName.INVLEX);
+      GenPolynomial<BigRational> p1 = jas.expr2JAS(numerator, false);
+      GenPolynomial<BigRational> p2 = p1 == null ? null : jas.expr2JAS(denominator, false);
+      if (p2 == null || p1.isZERO() || p2.isZERO()) {
+        return null;
+      }
+      Object[] terms1 = jas.factorTerms(p1);
+      Object[] terms2 = jas.factorTerms(p2);
+      @SuppressWarnings("unchecked")
+      GenPolynomial<BigInteger> q1 = (GenPolynomial<BigInteger>) terms1[2];
+      @SuppressWarnings("unchecked")
+      GenPolynomial<BigInteger> q2 = (GenPolynomial<BigInteger>) terms2[2];
+      // p_i = (gcd_i/lcm_i)*q_i with primitive integer polynomials q_i
+      java.math.BigInteger gcd1 = (java.math.BigInteger) terms1[0];
+      java.math.BigInteger lcm1 = (java.math.BigInteger) terms1[1];
+      java.math.BigInteger gcd2 = (java.math.BigInteger) terms2[0];
+      java.math.BigInteger lcm2 = (java.math.BigInteger) terms2[1];
+      IRational content =
+          F.fraction(gcd1, lcm1).divideBy(F.fraction(gcd2, lcm2)).normalize();
+      boolean large = p1.degree() >= CANCEL_FACTOR_DEGREE || p2.degree() >= CANCEL_FACTOR_DEGREE;
+      GenPolynomial<BigInteger> gcd = GCDFactory.getImplementation(BigInteger.ONE).gcd(q1, q2);
+      if (gcd.isConstant()) {
+        if (lcm1.equals(java.math.BigInteger.ONE) && lcm2.equals(java.math.BigInteger.ONE)
+            && gcd1.gcd(gcd2).equals(java.math.BigInteger.ONE)) {
+          return new RationalQuotients(true, large, jas, content, null, null);
+        }
+      }
+      // the primitive gcd divides the primitive q_i over the integers, but JAS divides exactly over
+      // the rationals only: a leading coefficient 2 of the gcd is no unit of the integers
+      GenPolynomial<BigRational> g = PolyUtil.<BigRational>fromIntegerCoefficients(p1.ring, gcd);
+      GenPolynomial<BigRational> r1 =
+          PolyUtil.<BigRational>fromIntegerCoefficients(p1.ring, q1).divide(g);
+      GenPolynomial<BigRational> r2 =
+          PolyUtil.<BigRational>fromIntegerCoefficients(p1.ring, q2).divide(g);
+      if (gcd.isConstant() && gcd1.signum() < 0 && gcd2.signum() < 0) {
+        // only numbers cancel: both signs as written, (2-4*x)/(2-2*x) is (1-2*x)/(1-x)
+        r1 = r1.negate();
+        r2 = r2.negate();
+      }
+      return new RationalQuotients(false, large, jas, content, r1, r2);
+    } catch (JASConversionException | ArithmeticException e) {
+      return null;
+    }
+  }
+
+  /** A factor <code>form^exponent</code> of a product, with its polynomial. */
+  private static final class BasisPiece {
+    GenPolynomial<BigRational> polynomial;
+    IExpr form;
+    long exponent;
+
+    BasisPiece(GenPolynomial<BigRational> polynomial, IExpr form, long exponent) {
+      this.polynomial = polynomial;
+      this.form = form;
+      this.exponent = exponent;
+    }
+  }
+
+  /**
+   * Cancel the common factors of two products of polynomials with rational coefficients without a
+   * factorization into irreducibles: a factor of one side which has a GCD with a factor of the
+   * other side is split into the GCD and the quotient, until the factors of the two sides are
+   * equal or coprime. A factor which shares nothing keeps its form:
+   * <code>(4*x^4+2*x^3)/((3*x-x^3+2*x^2)^2*(2*x+1)^2)</code> is
+   * <code>(2*x)/((1+2*x)*(-3-2*x+x^2)^2)</code>.
+   *
+   * @return the pair <code>{numerator, denominator}</code>, {@link F#NIL} if nothing cancels, or
+   *         <code>null</code> if a factor is no polynomial with rational coefficients
+   */
+  private static IAST cancelOverCoprimeBasis(IExpr numerator, IExpr denominator) {
+    VariablesSet eVar = new VariablesSet(numerator);
+    eVar.addVarList(denominator);
+    try {
+      JASConvert<BigRational> jas =
+          new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO, TermOrderByName.INVLEX);
+      BigRational[] content = {BigRational.ONE, BigRational.ONE};
+      List<List<BasisPiece>> sides = new ArrayList<List<BasisPiece>>(2);
+      IExpr[] products = {numerator, denominator};
+      for (int k = 0; k < 2; k++) {
+        List<BasisPiece> pieces = new ArrayList<BasisPiece>();
+        IAST factors = products[k].isTimes() ? (IAST) products[k] : F.Times(products[k]);
+        for (IExpr factor : factors) {
+          IExpr base = factor;
+          long exponent = 1L;
+          if (factor.isPower() && factor.exponent().isInteger()) {
+            exponent = factor.exponent().toLongDefault(-1L);
+            base = factor.base();
+          }
+          GenPolynomial<BigRational> p = exponent < 1L ? null : jas.expr2JAS(base, false);
+          if (p == null) {
+            return null;
+          }
+          if (p.isConstant()) {
+            content[k] = content[k].multiply(p.leadingBaseCoefficient().power(exponent));
+          } else {
+            // a sum with a numeric content is written as its primitive part: 4+2*s^2 is
+            // 2*(2+s^2), so that the content can cancel
+            GenPolynomial<BigRational> primitive = primitivePart(jas, p);
+            if (primitive.equals(p)) {
+              pieces.add(new BasisPiece(p, base, exponent));
+            } else {
+              content[k] = content[k].multiply(p.leadingBaseCoefficient()
+                  .divide(primitive.leadingBaseCoefficient()).power(exponent));
+              pieces.add(new BasisPiece(primitive,
+                  EvalEngine.get().evaluate(jas.rationalPoly2Expr(primitive, false)), exponent));
+            }
+          }
+        }
+        sides.add(pieces);
+      }
+      GreatestCommonDivisor<BigRational> gcdEngine = GCDFactory.getImplementation(BigRational.ONE);
+      boolean split = true;
+      while (split) {
+        split = false;
+        search: for (int i = 0; i < sides.get(0).size(); i++) {
+          for (int j = 0; j < sides.get(1).size(); j++) {
+            EvalEngine.get().checkTimeLimit();
+            BasisPiece a = sides.get(0).get(i);
+            BasisPiece b = sides.get(1).get(j);
+            if (a.polynomial.equals(b.polynomial)) {
+              continue;
+            }
+            GenPolynomial<BigRational> g = gcdEngine.gcd(a.polynomial, b.polynomial);
+            if (g.isConstant()) {
+              continue;
+            }
+            g = primitivePart(jas, g);
+            splitPiece(jas, sides.get(0), i, g, content, 0);
+            splitPiece(jas, sides.get(1), j, g, content, 1);
+            split = true;
+            break search;
+          }
+        }
+      }
+      boolean cancelled = false;
+      for (BasisPiece a : sides.get(0)) {
+        for (BasisPiece b : sides.get(1)) {
+          if (a.exponent > 0 && b.exponent > 0 && a.polynomial.equals(b.polynomial)) {
+            long common = Math.min(a.exponent, b.exponent);
+            a.exponent -= common;
+            b.exponent -= common;
+            cancelled = true;
+          }
+        }
+      }
+      if (!cancelled && (content[0].isONE() || content[1].isONE())) {
+        return F.NIL;
+      }
+      // the numbers of both sides in front of the numerator
+      content[0] = content[0].divide(content[1]);
+      content[1] = BigRational.ONE;
+      IExpr[] result = new IExpr[2];
+      for (int k = 0; k < 2; k++) {
+        IASTAppendable product = F.TimesAlloc(sides.get(k).size() + 1);
+        if (!content[k].isONE()) {
+          product.append(F.QQ(content[k].numerator(), content[k].denominator()));
+        }
+        for (BasisPiece piece : sides.get(k)) {
+          if (piece.exponent > 0) {
+            product.append(
+                piece.exponent == 1L ? piece.form : F.Power(piece.form, F.ZZ(piece.exponent)));
+          }
+        }
+        result[k] = product.oneIdentity1();
+      }
+      return F.pair(result[0], result[1]);
+    } catch (JASConversionException | ArithmeticException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Replace <code>pieces[i]</code>, which the primitive polynomial <code>g</code> divides, by
+   * <code>g</code> and the primitive quotient; their constant goes to <code>content[k]</code>.
+   */
+  private static void splitPiece(JASConvert<BigRational> jas, List<BasisPiece> pieces, int i,
+      GenPolynomial<BigRational> g, BigRational[] content, int k) {
+    BasisPiece piece = pieces.get(i);
+    FactorSplit split = new FactorSplit(jas, piece.polynomial, g);
+    content[k] = content[k].multiply(split.content.power(piece.exponent));
+    EvalEngine engine = EvalEngine.get();
+    pieces.set(i, new BasisPiece(split.divisor,
+        engine.evaluate(jas.rationalPoly2Expr(split.divisor, false)), piece.exponent));
+    if (!split.rest.isConstant()) {
+      pieces.add(new BasisPiece(split.rest,
+          engine.evaluate(jas.rationalPoly2Expr(split.rest, false)), piece.exponent));
+    }
+  }
+
+  /**
+   * A polynomial <code>b</code> as <code>content*divisor*rest</code> with the primitive part of a
+   * divisor <code>g</code> and the primitive quotient, so that the factors are exactly the
+   * polynomials their forms show and the constant is kept.
+   */
+  static final class FactorSplit {
+    final GenPolynomial<BigRational> divisor;
+    final GenPolynomial<BigRational> rest;
+    final BigRational content;
+
+    FactorSplit(JASConvert<BigRational> jas, GenPolynomial<BigRational> b,
+        GenPolynomial<BigRational> g) {
+      divisor = primitivePart(jas, g);
+      rest = primitivePart(jas, b.divide(divisor));
+      content = b.leadingBaseCoefficient()
+          .divide(divisor.multiply(rest).leadingBaseCoefficient());
+    }
+  }
+
+  /** <code>p</code> with coprime integer coefficients and a positive leading coefficient. */
+  static GenPolynomial<BigRational> primitivePart(JASConvert<BigRational> jas,
+      GenPolynomial<BigRational> p) {
+    Object[] terms = jas.factorTerms(p);
+    // p = (gcd/lcm)*q with the primitive integer polynomial q
+    GenPolynomial<BigRational> q = p.multiply(
+        BigRational.reduction((java.math.BigInteger) terms[1], (java.math.BigInteger) terms[0]));
+    return q.leadingBaseCoefficient().signum() < 0 ? q.negate() : q;
+  }
+
   /**
    * Cancel common factors in numerator and denominator.
    * 
@@ -852,10 +1160,35 @@ public class AlgebraUtil {
    *         out or {@link F#NIL} if no cmmon factors were found
    */
   public static IAST cancelCommonFactors(IExpr numerator, IExpr denominator) {
+    return cancelCommonFactors(numerator, denominator,
+        candidateQuotients(numerator, denominator));
+  }
+
+  /**
+   * @param quotients the {@link #candidateQuotients(IExpr, IExpr)} of the two sides, computed
+   *        once by the caller
+   */
+  private static IAST cancelCommonFactors(IExpr numerator, IExpr denominator,
+      RationalQuotients quotients) {
+    // one GCD tells whether anything cancels, before both sides are factored
+    if (quotients != null) {
+      if (quotients.coprime) {
+        return F.NIL;
+      }
+      if (quotients.large) {
+        return F.pair(quotients.numerator(), quotients.denominator());
+      }
+      // products keep their factors, split only as far as GCDs require
+      if (!numerator.isPlus() || !denominator.isPlus()) {
+        IAST cancelled = cancelOverCoprimeBasis(numerator, denominator);
+        if (cancelled != null) {
+          return cancelled;
+        }
+      }
+    }
     IExpr numer = numerator;
     // a power of a sum hides its factors as well: (5*x+5*x^2-x^3)^2 has the factor x^2
-    if (isSumOrPowerOfSum(numerator)
-        || (numerator.isTimes() && numerator.exists(AlgebraUtil::isSumOrPowerOfSum))) {
+    if (isFactorCandidate(numerator)) {
       if (VariablesSet.isMultivariate(numerator, 3) && isRadicalFree(numerator)) {
         numer = powerOfProductFactors(S.Factor.of(numerator));
       }
@@ -865,8 +1198,7 @@ public class AlgebraUtil {
     }
 
     IExpr denom = denominator;
-    if (isSumOrPowerOfSum(denominator)
-        || (denominator.isTimes() && denominator.exists(AlgebraUtil::isSumOrPowerOfSum))) {
+    if (isFactorCandidate(denominator)) {
       if (VariablesSet.isMultivariate(denominator, 3) && isRadicalFree(denominator)) {
         denom = powerOfProductFactors(S.Factor.of(denominator));
       }
@@ -913,9 +1245,13 @@ public class AlgebraUtil {
               commonFactors.append(t0Args[i]);
             }
 
+            // equal numbers alone are no cancellation: they combine in the product anyway, and the
+            // factored sides would replace the forms of the fraction
+            if (!t0Args[i].isNumber() || t0Args[i].isReal()) {
+              evaled = true;
+            }
             t0Args[i] = null;
             t1Args[j] = null;
-            evaled = true;
             break; // completely cancelled, move to next numerator term
           } else if (t0Args[i].isPower() || t1Args[j].isPower()) {
             final IExpr t0Base = t0Args[i].isPower() ? t0Args[i].base() : t0Args[i];
@@ -1012,14 +1348,20 @@ public class AlgebraUtil {
     if (parts.isPresent()) {
       IExpr numerator = parts.get()[0];
       IExpr denominator = parts.get()[1];
+      // the GCD of two polynomials with rational coefficients is taken once: if nothing cancels or
+      // the quotients by it are taken, no GCD below is computed again
+      RationalQuotients quotients = candidateQuotients(numerator, denominator);
       if (numerator.isPlus() || numerator.isTimes() || denominator.isPlus()
           || denominator.isTimes()) {
-        IAST temp = cancelCommonFactors(numerator, denominator);
+        IAST temp = cancelCommonFactors(numerator, denominator, quotients);
         if (temp.isPresent()) {
           numerator = temp.first();
           denominator = temp.second();
           cancelResult = F.Divide(temp.first(), temp.second());
         }
+      }
+      if (quotients != null && (quotients.coprime || quotients.large)) {
+        return cancelResult;
       }
 
       if (numerator.isPlus() && denominator.isPlus()) {
@@ -1121,6 +1463,14 @@ public class AlgebraUtil {
       if (numerator.leafCount() > Config.MAX_CANCEL_GCD_LEAFCOUNT
           || denominator.leafCount() > Config.MAX_CANCEL_GCD_LEAFCOUNT) {
         return Optional.empty();
+      }
+      if (numerator.isPlus() && denominator.isPlus()) {
+        // large polynomials with rational coefficients: the modular GCD over the integers
+        RationalQuotients quotients = rationalQuotients(numerator, denominator);
+        if (quotients != null && quotients.large) {
+          return quotients.coprime ? Optional.empty()
+              : Optional.of(new IExpr[] {F.C1, quotients.numerator(), quotients.denominator()});
+        }
       }
 
       VariablesSet eVar = new VariablesSet(numerator);
@@ -2312,7 +2662,14 @@ public class AlgebraUtil {
     if (!generators.isList() || generators.argSize() == 0) {
       return false;
     }
-    IAST variables = (IAST) generators;
+    return hasNegativeLeadingTerm(sum, (IAST) generators, engine);
+  }
+
+  /**
+   * Whether the lexicographically first term of the sum, with the variables ranked in the given
+   * order, has a negative coefficient.
+   */
+  public static boolean hasNegativeLeadingTerm(IAST sum, IAST variables, EvalEngine engine) {
     IExpr leading = F.NIL;
     int[] best = null;
     for (int i = 1; i <= sum.argSize(); i++) {
@@ -3102,7 +3459,18 @@ public class AlgebraUtil {
       FactorAbstract<BigRational> factorAbstract =
           FactorFactory.getImplementation(BigRational.ZERO);
       SortedMap<GenPolynomial<BigRational>, Long> sfactors =
-          factorAbstract.baseFactors(denominator);
+          factorsOfProduct(parts[1], jas, denominator, factorAbstract);
+      if (sfactors == null) {
+        sfactors = factorAbstract.baseFactors(denominator);
+      } else {
+        // the product of the monic factors differs from the denominator by a constant
+        GenPolynomial<BigRational> product = denominator.ring.getONE();
+        for (Map.Entry<GenPolynomial<BigRational>, Long> entry : sfactors.entrySet()) {
+          product = product.multiply(entry.getKey().power(entry.getValue()));
+        }
+        numerator = numerator.divide(denominator.leadingBaseCoefficient()
+            .divide(product.leadingBaseCoefficient()));
+      }
 
       List<GenPolynomial<BigRational>> D =
           new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
@@ -3138,6 +3506,55 @@ public class AlgebraUtil {
       // LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
     }
     return F.NIL;
+  }
+
+  /**
+   * The irreducible monic factors of a denominator which is written as a product, each factor of
+   * the product factored on its own: <code>(x-1)*(x-2)*...*(x-40)</code> needs no factorization of
+   * the expanded polynomial of degree 40.
+   *
+   * @return <code>null</code> if <code>denominator</code> is no product of two polynomial factors
+   *         at least
+   */
+  private static SortedMap<GenPolynomial<BigRational>, Long> factorsOfProduct(IExpr denominator,
+      JASConvert<BigRational> jas, GenPolynomial<BigRational> expanded,
+      FactorAbstract<BigRational> factorAbstract) {
+    if (!denominator.isTimes()) {
+      return null;
+    }
+    SortedMap<GenPolynomial<BigRational>, Long> result =
+        new java.util.TreeMap<GenPolynomial<BigRational>, Long>();
+    int polynomials = 0;
+    for (IExpr factor : (IAST) denominator) {
+      IExpr base = factor;
+      long exponent = 1L;
+      if (factor.isPower() && factor.exponent().isInteger()) {
+        exponent = factor.exponent().toLongDefault(-1L);
+        if (exponent < 1L) {
+          return null;
+        }
+        base = factor.base();
+      }
+      GenPolynomial<BigRational> p = jas.expr2JAS(F.evalExpandAll(base), false);
+      if (p == null || p.ring.nvar != expanded.ring.nvar) {
+        return null;
+      }
+      if (p.isConstant()) {
+        continue;
+      }
+      polynomials++;
+      if (p.degree() == 1) {
+        result.merge(p.monic(), exponent, Long::sum);
+        continue;
+      }
+      for (Map.Entry<GenPolynomial<BigRational>, Long> entry : factorAbstract.baseFactors(p)
+          .entrySet()) {
+        if (!entry.getKey().isConstant()) {
+          result.merge(entry.getKey().monic(), entry.getValue() * exponent, Long::sum);
+        }
+      }
+    }
+    return polynomials < 2 ? null : result;
   }
 
   /**
@@ -4648,7 +5065,12 @@ public class AlgebraUtil {
    * <code>a-b^(1/3)</code>. Polynomial division and factorization are reliable for these only.
    */
   private static boolean isPolynomialInItsVariables(IExpr expr) {
-    if (expr.isNumber() || !expr.isPolynomialStruct()) {
+    // a denominator or a root of a non-constant is found before the whole expression is walked:
+    // the nested denominators of a continued fraction are tested once per level
+    if (expr.isNumber()
+        || !expr.isFree(x -> x.isPower() && !(x.exponent().isInteger() && x.exponent().isPositive())
+            && !x.isNumericFunction(true), false)
+        || !expr.isPolynomialStruct()) {
       return false;
     }
     IAST variables = new VariablesSet(expr).getVarList();
@@ -4692,6 +5114,30 @@ public class AlgebraUtil {
       return primitiveWithPositiveLead((IAST) base, engine);
     }
     return new IExpr[] {F.C1, base};
+  }
+
+  /**
+   * <code>Expand(expr)</code>, multiplied out with polynomials over the rationals if
+   * <code>expr</code> is a polynomial with rational coefficients: the products of many polynomial
+   * factors of a common denominator are expanded without an evaluation of every partial product.
+   */
+  private static IExpr expandRational(IExpr expr, EvalEngine engine) {
+    if (expr.isAST() && expr.isFree(x -> x instanceof IComplex || x.isInexactNumber(), false)) {
+      VariablesSet eVar = new VariablesSet(expr);
+      if (eVar.size() > 0) {
+        try {
+          JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getVarList(),
+              BigRational.ZERO, TermOrderByName.INVLEX);
+          GenPolynomial<BigRational> p = jas.expr2JAS(expr, false);
+          if (p != null) {
+            return engine.evaluate(jas.rationalPoly2Expr(p, false));
+          }
+        } catch (JASConversionException | ArithmeticException e) {
+          // not a polynomial with rational coefficients
+        }
+      }
+    }
+    return F.evalExpand(expr);
   }
 
   /**
@@ -4817,12 +5263,12 @@ public class AlgebraUtil {
       }
       sum.append(term.oneIdentity1());
     }
-    IExpr expandedNumerator = F.evalExpand(sum.oneIdentity0());
+    IExpr expandedNumerator = expandRational(sum.oneIdentity0(), engine);
     if (expandedNumerator.isZero()) {
       return F.C0;
     }
     IExpr denominator = commonDenominator(factors, numericDenominator);
-    IExpr expandedDenominator = F.evalExpand(denominator);
+    IExpr expandedDenominator = expandRational(denominator, engine);
     try {
       Optional<IExpr[]> cancelled = cancelGCD(expandedNumerator, expandedDenominator);
       if (cancelled.isPresent()) {

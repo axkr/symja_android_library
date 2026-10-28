@@ -156,6 +156,9 @@ public class Errors {
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
       "bfun", "`1` is not a boolean-valued pure function.", //
       "bldim", "The arguments `1` and `2` do not have compatible dimensions.", //
+      "bmod", "Modulus `1` must be an integer or an irreducible univariate polynomial.", //
+      "facim", "Factoring noninteger polynomials with respect to a modulus is not implemented.", //
+      "mext", "Conflicting option setting. If Modulus is not 0, then Extension should be None.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "bdomv", "Warning: `1` is not a valid domain specification.", //
       "bvnc", "The boundary value problem could not be solved by shooting from `1`.", //

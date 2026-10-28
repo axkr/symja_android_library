@@ -595,20 +595,21 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     // regression: a Gaussian integer coefficient makes the JAS BigRational conversion fail, so the
     // denominator was factored through PolynomialHomogenization. That path used to rebalance every
     // factor by x^(-degree/2), which kept the value but shifted all exponents by a half-integer
+    // the linear denominator Gaussian-primitive with a leading coefficient in the first quadrant
     check("Together(1/(1-I*x)-1)", //
-        "(I*x)/(1-I*x)");
+        "-x/(I+x)");
     check("Together(-1+2/(1-I*x))", //
-        "(1+I*x)/(1-I*x)");
+        "(I-x)/(I+x)");
     check("Together(1/(1-I*x^2)-1)", //
-        "(I*x^2)/(1-I*x^2)");
+        "-x^2/(I+x^2)");
     check("Together(1/(1-I*x-x^2)-1)", //
-        "(I*x+x^2)/(1-I*x-x^2)");
+        "(-I*x-x^2)/(-1+I*x+x^2)");
     check("Together(1/(2-I*x)-1)", //
-        "(-1+I*x)/(2-I*x)");
+        "(-I-x)/(I*2+x)");
     check("Together((1+I)/(1-I*x)-1)", //
-        "(I+I*x)/(1-I*x)");
+        "(-1-x)/(I+x)");
     check("Together(1/(1-I*x-x)-1)", //
-        "-x/(-1/2+I*1/2+x)");
+        "((-1-I)*x)/(-1+(1+I)*x)");
     check("Together(1+x/y)", //
         "(x+y)/y");
     check("Together(x*(1/x + 1/y))", //
