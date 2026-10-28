@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -55,11 +56,7 @@ public class FindShortestCurve extends AbstractFunctionEvaluator {
    *         outside it; a membership which does not evaluate to <code>False</code> is accepted
    */
   static IAST memberRegion(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
+    IExpr arg1 = RegionPrimitives.unwrapRegion(ast.arg1());
     if (!arg1.isAST()) {
       return F.NIL;
     }

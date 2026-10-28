@@ -55,6 +55,38 @@ public class MeshFunctions {
   }
 
   /**
+   * The x and the y coordinates of a list of two dimensional points.
+   *
+   * @return <code>{x, y}</code> or <code>null</code> if a point is not a pair of numbers
+   */
+  private static double[][] xyCoordinates(IAST points) {
+    int n = points.argSize();
+    double[] x = new double[n];
+    double[] y = new double[n];
+    for (int i = 1; i <= n; i++) {
+      IExpr point = points.get(i);
+      if (!point.isList2()) {
+        return null;
+      }
+      x[i - 1] = point.first().evalfNaN();
+      y[i - 1] = point.second().evalfNaN();
+      if (Double.isNaN(x[i - 1]) || Double.isNaN(y[i - 1])) {
+        return null;
+      }
+    }
+    return new double[][] {x, y};
+  }
+
+  /**
+   * Twice the signed area of the triangle with the corner indices <code>t</code>, positive if the
+   * corners run counterclockwise.
+   */
+  private static double orientation(int[] t, double[] px, double[] py) {
+    return (px[t[1]] - px[t[0]]) * (py[t[2]] - py[t[0]])
+        - (px[t[2]] - px[t[0]]) * (py[t[1]] - py[t[0]]);
+  }
+
+  /**
    *
    *
    * <pre>
@@ -104,20 +136,13 @@ public class MeshFunctions {
       }
       IAST points = (IAST) arg1;
       int n = points.argSize();
-      double[] x = new double[n];
-      double[] y = new double[n];
-      for (int i = 1; i <= n; i++) {
-        if (!points.get(i).isList2()) {
-          // the points aren't 2D coordinates
-          return F.EmptyRegion(F.C2);
-        }
-        x[i - 1] = points.get(i).first().evalfNaN();
-        y[i - 1] = points.get(i).second().evalfNaN();
-        if (Double.isNaN(x[i - 1]) || Double.isNaN(y[i - 1])) {
-          // the coordinates aren't numeric
-          return F.EmptyRegion(F.C2);
-        }
+      double[][] xy = xyCoordinates(points);
+      if (xy == null) {
+        // the points aren't numeric 2D coordinates
+        return F.EmptyRegion(F.C2);
       }
+      double[] x = xy[0];
+      double[] y = xy[1];
 
       double[] bounds = ast.isAST2() ? boundsOption(ast.arg2()) : boundingBox(x, y);
       if (bounds == null) {
@@ -1752,21 +1777,12 @@ public class MeshFunctions {
         return F.NIL;
       }
       IAST points = (IAST) arg1;
-      int n = points.argSize();
-      double[] x = new double[n];
-      double[] y = new double[n];
-      for (int i = 1; i <= n; i++) {
-        if (!points.get(i).isList2()) {
-          return F.NIL;
-        }
-        x[i - 1] = points.get(i).first().evalfNaN();
-        y[i - 1] = points.get(i).second().evalfNaN();
-        if (Double.isNaN(x[i - 1]) || Double.isNaN(y[i - 1])) {
-          return F.NIL;
-        }
+      double[][] xy = xyCoordinates(points);
+      if (xy == null) {
+        return F.NIL;
       }
 
-      List<int[]> triangles = triangulate(x, y);
+      List<int[]> triangles = triangulate(xy[0], xy[1]);
       if (triangles == null || triangles.isEmpty()) {
         return F.NIL;
       }
@@ -1872,9 +1888,7 @@ public class MeshFunctions {
       for (int[] triangle : triangles) {
         if (triangle[0] < n && triangle[1] < n && triangle[2] < n) {
           // orient the triangle counterclockwise
-          double area = (px[triangle[1]] - px[triangle[0]]) * (py[triangle[2]] - py[triangle[0]])
-              - (px[triangle[2]] - px[triangle[0]]) * (py[triangle[1]] - py[triangle[0]]);
-          if (area < 0.0) {
+          if (orientation(triangle, px, py) < 0.0) {
             int swap = triangle[1];
             triangle[1] = triangle[2];
             triangle[2] = swap;
@@ -1928,9 +1942,7 @@ public class MeshFunctions {
       double determinant = (ax * ax + ay * ay) * (bx * cy - by * cx) //
           - (bx * bx + by * by) * (ax * cy - ay * cx) //
           + (cx * cx + cy * cy) * (ax * by - ay * bx);
-      double orientation = (px[triangle[1]] - px[triangle[0]]) * (py[triangle[2]] - py[triangle[0]])
-          - (px[triangle[2]] - px[triangle[0]]) * (py[triangle[1]] - py[triangle[0]]);
-      return orientation > 0.0 ? determinant > 0.0 : determinant < 0.0;
+      return orientation(triangle, px, py) > 0.0 ? determinant > 0.0 : determinant < 0.0;
     }
 
     @Override

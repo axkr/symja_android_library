@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.regex.Pattern;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -39,6 +40,8 @@ import org.matheclipse.core.patternmatching.RulesData;
  * an empty shell.
  */
 public class DefinitionFunctions {
+  /** The text of a symbol name, optionally with its context. */
+  private static final Pattern SYMBOL_NAME = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$`]*");
 
   private static class Initializer {
 
@@ -112,15 +115,9 @@ public class DefinitionFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isString()) {
-        // the name of a symbol
-        String name = ast.arg1().toString();
-        if (name.matches("[a-zA-Z$][a-zA-Z0-9$`]*")) {
-          IExpr named = engine.parse(name);
-          if (named.isSymbol()) {
-            return engine.evaluate(F.unaryAST1(S.NValues, named));
-          }
-        }
+      IExpr named = symbolOfName(ast.arg1(), engine);
+      if (named.isPresent()) {
+        return engine.evaluate(F.unaryAST1(S.NValues, named));
       }
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isNIL()) {
@@ -295,6 +292,26 @@ public class DefinitionFunctions {
   private static IAST upValues(ISymbol symbol) {
     RulesData rulesData = symbol.getRulesData();
     return rulesData == null ? F.CEmptyList : rulesData.upValues();
+  }
+
+  /**
+   * The symbol named by a string argument; other text is no name and gives <code>F.NIL</code>.
+   *
+   * @param arg the argument which may be a string with the name of a symbol
+   * @param engine the evaluation engine
+   * @return the symbol or <code>F.NIL</code>
+   */
+  static IExpr symbolOfName(IExpr arg, EvalEngine engine) {
+    if (arg.isString()) {
+      String name = arg.toString();
+      if (SYMBOL_NAME.matcher(name).matches()) {
+        IExpr named = engine.parse(name);
+        if (named.isSymbol()) {
+          return named;
+        }
+      }
+    }
+    return F.NIL;
   }
 
   private static IAST nValues(ISymbol symbol) {

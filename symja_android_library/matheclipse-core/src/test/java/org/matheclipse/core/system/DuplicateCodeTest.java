@@ -48,7 +48,7 @@ import net.sourceforge.pmd.cpd.Match;
 @Tag(TestTags.SLOW)
 public class DuplicateCodeTest {
 
-  private static final int MINIMUM_TOKENS = 80;
+  private static final int MINIMUM_TOKENS = 70;
 
   private static final Path SOURCE_ROOT = Paths.get("src/main/java");
 

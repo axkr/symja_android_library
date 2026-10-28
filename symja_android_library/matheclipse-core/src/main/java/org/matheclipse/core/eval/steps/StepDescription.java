@@ -112,6 +112,16 @@ public final class StepDescription {
   }
 
   /**
+   * The sentence which explains one step, with its formulas written as plain text.
+   *
+   * @param step one step of {@link StepsTree}
+   * @return <code>""</code> if no description is known for this step
+   */
+  public static String plainText(IAST step) {
+    return of(step, PLAIN_TEXT, "", "");
+  }
+
+  /**
    * The hints of a Rubi integration step, with what the rule set says the rule does appended: the
    * general shape of the integral it matches at <code>`6`</code>, what it rewrites it to at
    * <code>`7`</code>, and the condition it applies under at <code>`8`</code>.

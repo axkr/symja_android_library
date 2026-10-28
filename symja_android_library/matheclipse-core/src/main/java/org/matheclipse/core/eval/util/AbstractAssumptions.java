@@ -133,6 +133,24 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   /**
+   * <code>False</code> for the transcendental constants <code>E, EulerGamma, Khinchin, Pi</code>
+   * and a <code>DirectedInfinity</code>, which are neither algebraic nor rational;
+   * <code>Undefined</code> for <code>Undefined</code>.
+   *
+   * @return <code>null</code> for every other expression
+   */
+  private static ISymbol constantOrInfinityValue(final IExpr expr) {
+    if (expr == S.E || expr == S.EulerGamma || expr == S.Khinchin || expr == S.Pi
+        || expr.isDirectedInfinity()) {
+      return S.False;
+    }
+    if (expr == S.Undefined) {
+      return S.Undefined;
+    }
+    return null;
+  }
+
+  /**
    * TODO implement algebraic number conditions.
    *
    * @param expr
@@ -149,15 +167,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
     ) {
       return S.False;
     }
-    if (expr == S.E || expr == S.EulerGamma || expr == S.Khinchin || expr == S.Pi) {
-      return S.False;
-    }
-
-    if (expr.isDirectedInfinity()) {
-      return S.False;
-    }
-    if (expr == S.Undefined) {
-      return S.Undefined;
+    ISymbol known = constantOrInfinityValue(expr);
+    if (known != null) {
+      return known;
     }
     if (expr.isSymbol()) {
       if (expr == S.Degree) {
@@ -349,6 +361,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
   public static boolean assumeGreaterEqual(final IExpr expr, final IExpr number) {
     EvalEngine engine = EvalEngine.get();
     if (expr.isNumericFunction(false)) {
+      // CPD-OFF comparison twins with their own sign tests
       boolean evaled = engine.evalGreaterEqual(expr, number);
       if (evaled) {
         return true;
@@ -361,6 +374,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
       double numberDouble = number.evalfNaN();
       return !Double.isNaN(numberDouble)
           && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= numberDouble;
+          // CPD-ON
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -374,6 +388,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
   public static boolean assumeGreaterThan(final IExpr expr, final IExpr number) {
     EvalEngine engine = EvalEngine.get();
     if (expr.isNumericFunction(false)) {
+      // CPD-OFF comparison twins with their own sign tests
       boolean evaled = engine.evalGreater(expr, number);
       if (evaled) {
         return true;
@@ -386,6 +401,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
       double numberDouble = number.evalfNaN();
       return !Double.isNaN(numberDouble)
           && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > numberDouble;
+          // CPD-ON
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -453,6 +469,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
   public static boolean assumeLessEqual(final IExpr expr, final IExpr number) {
     EvalEngine engine = EvalEngine.get();
     if (expr.isNumericFunction(false)) {
+      // CPD-OFF comparison twins with their own sign tests
       boolean evaled = engine.evalLessEqual(expr, number);
       if (evaled) {
         return true;
@@ -465,6 +482,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
       double numberDouble = number.evalfNaN();
       return !Double.isNaN(numberDouble)
           && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() <= numberDouble;
+          // CPD-ON
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -478,6 +496,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
   public static boolean assumeLessThan(final IExpr expr, IExpr number) {
     EvalEngine engine = EvalEngine.get();
     if (expr.isNumericFunction(false)) {
+      // CPD-OFF comparison twins with their own sign tests
       boolean evaled = engine.evalLess(expr, number);
       if (evaled) {
         return true;
@@ -490,6 +509,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
       double numberDouble = number.evalfNaN();
       return !Double.isNaN(numberDouble)
           && ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < numberDouble;
+          // CPD-ON
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -693,14 +713,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isNumber()) {
       return S.False;
     }
-    if (expr == S.E || expr == S.EulerGamma || expr == S.Khinchin || expr == S.Pi) {
-      return S.False;
-    }
-    if (expr.isDirectedInfinity()) {
-      return S.False;
-    }
-    if (expr == S.Undefined) {
-      return S.Undefined;
+    ISymbol known = constantOrInfinityValue(expr);
+    if (known != null) {
+      return known;
     }
     if (expr.isNumericFunction()) {
       try {

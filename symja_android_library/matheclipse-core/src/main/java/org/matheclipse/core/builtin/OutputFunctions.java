@@ -1168,13 +1168,13 @@ public final class OutputFunctions {
         case ID.NumberMultiplier:
           return F.stringx("×");
         case ID.NumberPadding:
-          return numberPaddingDefault();
+          return NumberFormatter.defaultPadding(kind);
         case ID.NumberPoint:
           return kind == NumberFormatter.FormKind.DECIMAL ? S.Automatic : F.stringx(".");
         case ID.NumberSeparator:
           return F.list(F.stringx(","), F.stringx(""));
         case ID.NumberSigns:
-          return numberSignsDefault();
+          return NumberFormatter.defaultSigns(kind);
         case ID.ScientificNotationThreshold:
           return F.list(F.ZZ(-5), F.ZZ(6));
         case ID.SignPadding:
@@ -1183,25 +1183,6 @@ public final class OutputFunctions {
           // DefaultPrintPrecision, ExponentFunction, NumberFormat
           return S.Automatic;
       }
-    }
-
-    private IExpr numberPaddingDefault() {
-      switch (kind) {
-        case PADDED:
-          return F.list(F.stringx(" "), F.stringx("0"));
-        case NUMBER:
-        case DECIMAL:
-          return F.list(F.stringx(""), F.stringx("0"));
-        default:
-          return F.list(F.stringx(""), F.stringx(""));
-      }
-    }
-
-    private IExpr numberSignsDefault() {
-      if (kind == NumberFormatter.FormKind.ACCOUNTING) {
-        return F.list(F.list(F.stringx("("), F.stringx(")")), F.stringx(""));
-      }
-      return F.list(F.stringx("-"), F.stringx(""));
     }
   }
 

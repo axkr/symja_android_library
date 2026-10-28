@@ -76,33 +76,28 @@ public class MagicProcessor {
     }
 
     if (wrtArgumentMising(ques, S.D)) {
-      IExpr fn = getArg1(ques);
-      // Extract variables from equations
-      org.matheclipse.core.convert.VariablesSet eVar =
-          new org.matheclipse.core.convert.VariablesSet(fn);
-      String var = null;
-      if (eVar.isSize(1))
-        var = getVarString(eVar, false);
-      else
-        var = getVarString(eVar, true);
-      outPut = ((Symbol) S.D).toString() + "(" + fn.toString() + "," + var + ")";
+      outPut = callWithVariables(S.D, ques);
     }
     if (wrtArgumentMising(ques, S.Integrate)) {
-      IExpr fn = getArg1(ques);
-      // Extract variables from equations
-      org.matheclipse.core.convert.VariablesSet eVar =
-          new org.matheclipse.core.convert.VariablesSet(fn);
-      String var = null;
-      if (eVar.isSize(1))
-        var = getVarString(eVar, false);
-      else
-        var = getVarString(eVar, true);
-      outPut = ((Symbol) S.Integrate).toString() + "(" + fn.toString() + "," + var + ")";
+      outPut = callWithVariables(S.Integrate, ques);
     }
 
     // LOGGER.debug("Processed q = {}", outPut);
 
     return (err == null) ? outPut : err;
+  }
+
+  /**
+   * The call <code>head(fn, var)</code> as a string, where <code>fn</code> is the first argument of
+   * <code>ques</code> and <code>var</code> its variables.
+   */
+  private String callWithVariables(ISymbol head, IExpr ques) {
+    IExpr fn = getArg1(ques);
+    // Extract variables from equations
+    org.matheclipse.core.convert.VariablesSet eVar =
+        new org.matheclipse.core.convert.VariablesSet(fn);
+    String var = getVarString(eVar, !eVar.isSize(1));
+    return ((Symbol) head).toString() + "(" + fn.toString() + "," + var + ")";
   }
 
   private IExpr getArg1(IExpr ques) {

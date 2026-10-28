@@ -651,6 +651,7 @@ public class EllipticIntegrals {
       if (z.equals(F.CPiHalf)) {
         // EllipticE(Pi/2, m) = EllipticE(m)
         return F.EllipticE(m);
+      // CPD-OFF closed-form special values per function
       }
 
       if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
@@ -660,6 +661,7 @@ public class EllipticIntegrals {
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
             Complex zc = z.evalfc();
             Complex mc = m.evalfc();
+            // CPD-ON
             return F.complexNum(EllipticIntegralsJS.ellipticE(zc, mc));
           } else {
             if (mDouble > 1.0) {
@@ -869,6 +871,7 @@ public class EllipticIntegrals {
           // if (S.Greater.ofQ(engine, temp, F.CPiHalf)) {
           return F.CComplexInfinity;
         }
+      // CPD-OFF closed-form special values per function
       }
 
       if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
@@ -878,6 +881,7 @@ public class EllipticIntegrals {
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
             Complex zc = z.evalfc();
             Complex mc = m.evalfc();
+            // CPD-ON
             Complex ellipticF = EllipticIntegralsJS.ellipticF(zc, mc);
             if (F.isZero(ellipticF.getImaginary())) {
               return F.num(ellipticF.getReal());

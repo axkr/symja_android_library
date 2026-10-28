@@ -513,9 +513,11 @@ public class FunctionExpand extends AbstractEvaluator {
       case ID.ArcCsc: {
         // 1/(Sqrt(2)*x*Sqrt((x^2+Sqrt(x^2)*Sqrt(-1+x^2))/x^2))
         IExpr v1 = F.Sqr(x);
+        // CPD-OFF closed-form half-angle formula table
         return F.Times(F.C1DSqrt2, F.Power(
             F.Times(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, v1)), F.Sqrt(v1)), v1), F.Power(x, F.CN2)),
             F.CN1D2), F.Power(x, F.CN1));
+            // CPD-ON
       }
       case ID.ArcSec: {
         // Sqrt(-1+x)/(Sqrt(2)*Sqrt(x))
@@ -567,9 +569,11 @@ public class FunctionExpand extends AbstractEvaluator {
         // 1/(x*Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))*Sqrt((x^2+Sqrt(x^2)*Sqrt(-1+x^2))/x^2))
         IExpr v1 = F.Sqr(x);
         return F.Times(
+            // CPD-OFF closed-form half-angle formula table
             F.Power(F.Times(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, v1)), F.Sqrt(v1)), v1),
                 F.Power(x, F.CN2)), F.CN1D2),
             F.Power(x, F.CN1),
+            // CPD-ON
             F.Power(F.Plus(F.C1,
                 F.Times(F.Power(v1, F.CN1D2), F.Sqrt(F.Times(F.Plus(F.CN1, x), F.Plus(F.C1, x))))),
                 F.CN1D2));

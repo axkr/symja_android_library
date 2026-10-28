@@ -16,13 +16,8 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() != 2)
       return F.NIL;
-    IExpr arg1 = ast.arg1();
+    IExpr arg1 = RegionPrimitives.unwrapRegion(ast.arg1());
     IExpr p = ast.arg2();
-
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-
     if (arg1.isAST()) {
       IAST reg = (IAST) arg1;
       IExpr head = reg.head();
@@ -124,12 +119,8 @@ public class SignedRegionDistance extends AbstractFunctionEvaluator {
   }
 
   public static IExpr triangleDistance(IAST reg, IExpr p, EvalEngine engine, boolean signed) {
-    IAST pts = F.NIL;
-    if (reg.argSize() == 0) {
-      pts = F.List(F.List(F.C0, F.C0), F.List(F.C1, F.C0), F.List(F.C0, F.C1));
-    } else if (reg.argSize() == 1 && reg.arg1().isList()) {
-      pts = (IAST) reg.arg1();
-    }
+    // reg is a Triangle, so Triangle() is the standard triangle
+    IAST pts = RegionPrimitives.vertices(reg);
 
     if (pts.isPresent() && p.isList()) {
       if (pts.argSize() == 3) {

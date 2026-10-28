@@ -866,7 +866,7 @@ public final class ListFunctions {
    *
    * @return {@link F#NIL} if {@code target} is not an indexed expression with a value
    */
-  private static IExpr assignIndexedTo(IExpr target, Function<IExpr, IExpr> update, IExpr value,
+  private static IExpr assignIndexedTo(IExpr target, Function<IExpr, IExpr> update,
       EvalEngine engine) {
     if (!target.isAST() || !target.head().isSymbol() || target.isBuiltInFunction()) {
       return F.NIL;
@@ -884,70 +884,90 @@ public final class ListFunctions {
     return newValue;
   }
 
-  private static final class AppendTo extends AbstractCoreFunctionEvaluator {
+  /**
+   * The update function of <code>AppendTo</code> and <code>PrependTo</code>: adds the value at the
+   * end or at the start of the old value.
+   */
+  private static final class AppendPrependToFunction implements Function<IExpr, IExpr> {
+    private final IExpr value;
 
-    private static class AppendToFunction implements Function<IExpr, IExpr> {
-      private final IExpr value;
+    /** The <code>AppendTo(...)</code> or <code>PrependTo(...)</code> expression. */
+    private final IAST ast;
 
-      /** The <code>AppendTo(...)</code> expression, for the message. */
-      private final IAST ast;
+    /** <code>true</code> for <code>PrependTo</code>. */
+    private final boolean prepend;
 
-      public AppendToFunction(final IExpr value, final IAST ast) {
-        this.value = value;
-        this.ast = ast;
-      }
-
-      @Override
-      public IExpr apply(final IExpr symbolValue) {
-        if (symbolValue.isAssociation()) {
-          if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
-            IAssociation result = ((IAssociation) symbolValue);
-            result.appendRules((IAST) value);
-            return result;
-          } else {
-            // The argument is not a rule or a list of rules.
-            return Errors.printMessage(S.AppendTo, "invdt", F.CEmptyList, EvalEngine.get());
-          }
-        }
-        if (symbolValue instanceof ISparseArray) {
-          return appendSparse(S.Append, symbolValue, value, EvalEngine.get());
-        }
-        if (!symbolValue.isASTOrAssociation()) {
-          // Nonatomic expression expected at position `1` in `2`.
-          return Errors.printMessage(S.AppendTo, "normal", F.list(F.C1, ast), EvalEngine.get());
-        }
-        return ((IAST) symbolValue).appendClone(value);
-      }
+    AppendPrependToFunction(final IExpr value, final IAST ast, boolean prepend) {
+      this.value = value;
+      this.ast = ast;
+      this.prepend = prepend;
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
-        ISymbol sym = (ISymbol) arg1.first();
-        return assignPartTo(sym, (IAST) arg1, S.Append, ast, engine);
-      }
-      IExpr indexed = assignIndexedTo(arg1, new AppendToFunction(engine.evaluate(ast.arg2()), ast),
-          ast.arg2(), engine);
-      if (indexed.isPresent()) {
-        return indexed;
-      }
-      IExpr definitions = assignDefinitionListTo(arg1,
-          new AppendToFunction(engine.evaluate(ast.arg2()), ast), engine);
-      if (definitions.isPresent()) {
-        return definitions;
-      }
-
-      IExpr sym = Validate.checkIsVariable(ast, 1, engine);
-      if (sym.isSymbol()) {
-        IExpr arg2 = engine.evaluate(ast.arg2());
-        Function<IExpr, IExpr> function = new AppendToFunction(arg2, ast);
-        IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, ast.topHead(), engine);
-        if (results != null) {
-          return results[1];
+    public IExpr apply(final IExpr symbolValue) {
+      final ISymbol head = prepend ? S.PrependTo : S.AppendTo;
+      if (symbolValue.isAssociation()) {
+        if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
+          IAssociation result = ((IAssociation) symbolValue);
+          if (prepend) {
+            result.prependRules((IAST) value);
+          } else {
+            result.appendRules((IAST) value);
+          }
+          return result;
+        } else {
+          // The argument is not a rule or a list of rules.
+          return Errors.printMessage(head, "invdt", F.CEmptyList, EvalEngine.get());
         }
       }
-      return F.NIL;
+      if (symbolValue instanceof ISparseArray) {
+        return appendSparse(prepend ? S.Prepend : S.Append, symbolValue, value, EvalEngine.get());
+      }
+      if (!symbolValue.isASTOrAssociation()) {
+        // Nonatomic expression expected at position `1` in `2`.
+        return Errors.printMessage(head, "normal", F.list(F.C1, ast), EvalEngine.get());
+      }
+      return prepend ? ((IAST) symbolValue).appendAtClone(1, value)
+          : ((IAST) symbolValue).appendClone(value);
+    }
+  }
+
+  /**
+   * Evaluate <code>AppendTo(target, value)</code> or <code>PrependTo(target, value)</code>; the
+   * value is evaluated once.
+   */
+  private static IExpr appendPrependTo(final IAST ast, boolean prepend, EvalEngine engine) {
+    IExpr arg1 = ast.arg1();
+    if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
+      ISymbol sym = (ISymbol) arg1.first();
+      return assignPartTo(sym, (IAST) arg1, prepend ? S.Prepend : S.Append, ast, engine);
+    }
+    IExpr arg2 = engine.evaluate(ast.arg2());
+    Function<IExpr, IExpr> function = new AppendPrependToFunction(arg2, ast, prepend);
+    IExpr indexed = assignIndexedTo(arg1, function, engine);
+    if (indexed.isPresent()) {
+      return indexed;
+    }
+    IExpr definitions = assignDefinitionListTo(arg1, function, engine);
+    if (definitions.isPresent()) {
+      return definitions;
+    }
+
+    IExpr sym = Validate.checkIsVariable(ast, 1, engine);
+    if (sym.isSymbol()) {
+      IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, ast.topHead(), engine);
+      if (results != null) {
+        return results[1];
+      }
+    }
+    return F.NIL;
+  }
+
+  private static final class AppendTo extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return appendPrependTo(ast, false, engine);
     }
 
     @Override
@@ -3221,6 +3241,7 @@ public final class ListFunctions {
       }
       if (arg1.size() == 1) {
         // `1` has zero length and no first element.
+        // CPD-OFF sibling list functions with their own argument checks
         return Errors.printMessage(ast.topHead(), "nofirst", F.list(ast.arg1()), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.
@@ -3239,6 +3260,7 @@ public final class ListFunctions {
   }
 
   private static final class FirstCase extends AbstractFunctionOptionEvaluator {
+  // CPD-ON
 
     private static class FirstCasePatternMatcherFunctor implements Function<IExpr, IExpr> {
       protected final IPatternMatcher matcher;
@@ -4361,6 +4383,7 @@ public final class ListFunctions {
       }
       if (ast.arg1().size() == 1) {
         // `1` has zero length and no last element.
+        // CPD-OFF sibling list functions with their own argument checks
         return Errors.printMessage(ast.topHead(), "nolast", F.list(ast.arg1()), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.
@@ -4379,6 +4402,7 @@ public final class ListFunctions {
   }
 
   /**
+  // CPD-ON
    *
    *
    * <pre>
@@ -4730,6 +4754,7 @@ public final class ListFunctions {
    * Most(x)
    * </pre>
    */
+  // CPD-OFF sibling list functions with their own argument checks
   private static final class Most extends AbstractFunctionEvaluator {
 
     @Override
@@ -4744,6 +4769,7 @@ public final class ListFunctions {
         if (arg1.size() == 1) {
           // Cannot take Most of expression `1` with length zero.
           return Errors.printMessage(ast.topHead(), "nomost", F.list(arg1), engine);
+          // CPD-ON
         }
         IExpr most = arg1.most();
         if (most.isPresent()) {
@@ -5719,69 +5745,9 @@ public final class ListFunctions {
    */
   private static final class PrependTo extends AbstractCoreFunctionEvaluator {
 
-    private static class PrependToFunction implements Function<IExpr, IExpr> {
-      private final IExpr value;
-
-      /** The <code>PrependTo(...)</code> expression, for the message. */
-      private final IAST ast;
-
-      public PrependToFunction(final IExpr value, final IAST ast) {
-        this.value = value;
-        this.ast = ast;
-      }
-
-      @Override
-      public IExpr apply(final IExpr symbolValue) {
-        if (symbolValue.isAssociation()) {
-          if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
-            IAssociation result = ((IAssociation) symbolValue);
-            result.prependRules((IAST) value);
-            return result;
-          } else {
-            // The argument is not a rule or a list of rules.
-            return Errors.printMessage(S.PrependTo, "invdt", F.CEmptyList, EvalEngine.get());
-          }
-        }
-        if (symbolValue instanceof ISparseArray) {
-          return appendSparse(S.Prepend, symbolValue, value, EvalEngine.get());
-        }
-        if (!symbolValue.isASTOrAssociation()) {
-          // Nonatomic expression expected at position `1` in `2`.
-          return Errors.printMessage(S.PrependTo, "normal", F.list(F.C1, ast), EvalEngine.get());
-        }
-        return ((IAST) symbolValue).appendAtClone(1, value);
-      }
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
-        ISymbol sym = (ISymbol) arg1.first();
-        return assignPartTo(sym, (IAST) arg1, S.Prepend, ast, engine);
-      }
-      IExpr indexed = assignIndexedTo(arg1, new PrependToFunction(engine.evaluate(ast.arg2()), ast),
-          ast.arg2(), engine);
-      if (indexed.isPresent()) {
-        return indexed;
-      }
-      IExpr definitions = assignDefinitionListTo(arg1,
-          new PrependToFunction(engine.evaluate(ast.arg2()), ast), engine);
-      if (definitions.isPresent()) {
-        return definitions;
-      }
-
-      IExpr sym = Validate.checkIsVariable(ast, 1, engine);
-      if (sym.isSymbol()) {
-        IExpr arg2 = engine.evaluate(ast.arg2());
-        Function<IExpr, IExpr> function = new PrependToFunction(arg2, ast);
-        IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.PrependTo, engine);
-        if (results != null) {
-          return results[1];
-        }
-      }
-
-      return F.NIL;
+      return appendPrependTo(ast, true, engine);
     }
 
     @Override
@@ -6587,6 +6553,7 @@ public final class ListFunctions {
    * Rest(x)
    * </pre>
    */
+  // CPD-OFF sibling list functions with their own argument checks
   private static final class Rest extends AbstractFunctionEvaluator {
 
     @Override
@@ -6601,6 +6568,7 @@ public final class ListFunctions {
         if (arg1.size() == 1) {
           // Cannot take Rest of expression `1` with length zero.
           return Errors.printMessage(ast.topHead(), "norest", F.list(arg1), engine);
+          // CPD-ON
         }
         IExpr rest = arg1.rest();
         if (rest.isPresent()) {
@@ -7555,6 +7523,33 @@ public final class ListFunctions {
     }
 
     /**
+     * Test if an iterator position of <code>ast</code> holds neither a list, <code>{i, imax}</code>
+     * or <code>{i, imin, imax}</code>, nor a bare symbol. A count like the <code>3</code> in
+     * <code>Table(x, 3)</code> is valid for a table only, not for a sum or product.
+     */
+    protected static boolean hasInvalidIterator(IAST ast) {
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr iterator = ast.get(i);
+        if (!iterator.isList() && !iterator.isSymbol()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Print the <code>reclim2</code> message of <code>head</code> for <code>expr</code>.
+     *
+     * @return {@link F#NIL}
+     */
+    protected static IExpr recursionLimitMessage(ISymbol head, IAST expr, EvalEngine engine) {
+      int recursionLimit = engine.getRecursionLimit();
+      Errors.printMessage(head, "reclim2",
+          F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr), engine);
+      return F.NIL;
+    }
+
+    /**
      * Generate a table from standard iterator notation.
      *
      * @param ast
@@ -8080,22 +8075,6 @@ public final class ListFunctions {
               Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), list), EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
-        // negative step used here
-        for (int i = start; i >= end; i += step) {
-          IExpr arg = list.get(i);
-          if (sequenceSpecifications.length > newLevel) {
-            if (arg.isAssociation()) {
-              resultList.append(take((IAssociation) arg, newLevel, sequenceSpecifications));
-            } else if (arg.isASTOrAssociation()) {
-              resultList.append(take((IAST) arg, newLevel, sequenceSpecifications));
-            } else {
-              throw new ArgumentTypeException(
-                  "cannot execute take for argument: " + arg.toString());
-            }
-          } else {
-            resultList.append(arg);
-          }
-        }
       } else {
         if (start < 0) {
           // Cannot take positions `1` through `2` in `3`.
@@ -8114,21 +8093,22 @@ public final class ListFunctions {
         if (start == 0) {
           return resultList;
         }
-        for (int i = start; i < end; i += step) {
-          IExpr arg = list.get(i);
-          if (sequenceSpecifications.length > newLevel) {
-            if (arg.isAssociation()) {
-              resultList.append(take((IAssociation) arg, newLevel, sequenceSpecifications));
-            } else if (arg.isASTOrAssociation()) {
-              resultList.append(take((IAST) arg, newLevel, sequenceSpecifications));
-            } else {
-              // List expected at position `1` in `2`.
-              String str = Errors.getMessage("list", F.list(F.ZZ(i), list), EvalEngine.get());
-              throw new ArgumentTypeException(str);
-            }
+      }
+      // a negative step runs down to end inclusive, a positive one up to end exclusive
+      for (int i = start; step < 0 ? i >= end : i < end; i += step) {
+        IExpr arg = list.get(i);
+        if (sequenceSpecifications.length > newLevel) {
+          if (arg.isAssociation()) {
+            resultList.append(take((IAssociation) arg, newLevel, sequenceSpecifications));
+          } else if (arg.isASTOrAssociation()) {
+            resultList.append(take((IAST) arg, newLevel, sequenceSpecifications));
           } else {
-            resultList.append(arg);
+            // List expected at position `1` in `2`.
+            String str = Errors.getMessage("list", F.list(F.ZZ(i), list), EvalEngine.get());
+            throw new ArgumentTypeException(str);
           }
+        } else {
+          resultList.append(arg);
         }
       }
       return resultList;

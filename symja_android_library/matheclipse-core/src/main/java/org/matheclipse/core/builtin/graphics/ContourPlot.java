@@ -72,6 +72,7 @@ public class ContourPlot extends ListPlot {
     boolean colorFunctionScaling = matrixOptions.colorFunctionScaling;
     IExpr colorFunctionOpt = matrixOptions.colorFunction;
     IExpr meshOpt = matrixOptions.mesh;
+    // CPD-OFF contour and density plots sample their own grids
     for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
@@ -80,6 +81,7 @@ public class ContourPlot extends ListPlot {
         if (key.isBuiltInSymbol()) {
           switch (((IBuiltInSymbol) key).ordinal()) {
             case ID.Contours:
+            // CPD-ON
               if (val.isInteger())
                 numberOfContours = val.toIntDefault(10);
               break;
@@ -119,6 +121,7 @@ public class ContourPlot extends ListPlot {
     double[] yRange = parseRange(yIter, engine);
     if (yRange == null || !yIter.isList() || !yIter.first().isSymbol()) {
       // Range specification `1` is not of the form {y, ymin, ymax}.
+      // CPD-OFF contour and density plots sample their own grids
       return Errors.printMessage(S.ContourPlot, "pllim", F.list(yIter), engine);
     }
 
@@ -127,6 +130,7 @@ public class ContourPlot extends ListPlot {
     ISymbol xVar = (ISymbol) ((IAST) xIter).arg1();
     ISymbol yVar = (ISymbol) ((IAST) yIter).arg1();
 
+    // CPD-ON
     IASTAppendable primitives = F.ListAlloc();
 
     RegionFunctionFilter region = RegionFunctionFilter.of(
@@ -262,6 +266,7 @@ public class ContourPlot extends ListPlot {
       contourShading = S.None;
     }
 
+    // CPD-OFF contour and density plots sample their own grids
     int gridX = plotPoints;
     int gridY = plotPoints;
     double[][] zGrid = new double[gridX + 1][gridY + 1];
@@ -270,6 +275,7 @@ public class ContourPlot extends ListPlot {
 
     double minZ = Double.MAX_VALUE;
     double maxZ = -Double.MAX_VALUE;
+    // CPD-ON
 
     // 1. Compute Grid
     boolean[][] defined = new boolean[gridX + 1][gridY + 1];
@@ -364,6 +370,7 @@ public class ContourPlot extends ListPlot {
           group.append(F.EdgeForm(S.None));
           group.append(color);
           for (IExpr poly : polygons)
+            // CPD-OFF contour and density plots sample their own grids
             group.append(poly);
           primitives.append(group);
         }
@@ -379,6 +386,7 @@ public class ContourPlot extends ListPlot {
         IExpr currentStyle = contourStyle;
         if (currentStyle == S.Automatic) {
           // Single plot default: Gray
+          // CPD-ON
           // Multi plot default: Passed in via argument (handled in evaluate loop)
           currentStyle = isMulti ? contourStyle : (isEquation ? S.Black : F.GrayLevel(0.5));
         } else if (currentStyle.isList() && !isMulti) {

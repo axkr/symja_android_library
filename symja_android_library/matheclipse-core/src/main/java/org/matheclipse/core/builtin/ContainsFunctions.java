@@ -172,13 +172,7 @@ public class ContainsFunctions {
     @Override
     public IExpr containsFunction(IAST list1, IAST list2, BiPredicate<IExpr, IExpr> sameTest,
         EvalEngine engine) {
-      for (int i = 1; i < list1.size(); i++) {
-        IExpr list1Arg = list1.get(i);
-        if (list2.exists(x -> sameTest.test(list1Arg, x))) {
-          return S.False;
-        }
-      }
-      return S.True;
+      return super.containsFunction(list1, list2, sameTest, engine).isTrue() ? S.False : S.True;
     }
   }
 

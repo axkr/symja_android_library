@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.RegionPrimitives;
@@ -28,13 +27,7 @@ public class ArcLength extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() == 1) {
-      IExpr arg1 = ast.arg1();
-
-      // Unwrap Region display wrapper if present
-      if (arg1.isAST(S.Region, 1)) {
-        arg1 = arg1.first();
-      }
-      arg1 = MeshFunctions.normalizeRegion(arg1);
+      IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
 
       if (arg1.isAST()) {
         IAST reg = (IAST) arg1;
@@ -140,12 +133,14 @@ public class ArcLength extends AbstractFunctionEvaluator {
     return RegionPrimitives.ellipsePerimeter(r, engine);
   }
 
+  // CPD-OFF polyline length kept in each function's own form
   private IExpr lineArcLength(IAST reg, EvalEngine engine) {
     if (reg.argSize() == 1 && reg.arg1().isList()) {
       IAST pts = (IAST) reg.arg1();
       if (pts.argSize() >= 2) {
         IExpr len = F.C0;
         for (int i = 1; i < pts.argSize(); i++) {
+        // CPD-ON
           IExpr diff = engine.evaluate(F.Subtract(pts.get(i), pts.get(i + 1)));
           IExpr dist = engine.evaluate(F.Sqrt(F.Total(F.Sqr(diff))));
           len = engine.evaluate(F.Plus(len, dist));

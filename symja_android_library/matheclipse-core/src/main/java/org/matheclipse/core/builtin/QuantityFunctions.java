@@ -116,17 +116,25 @@ public class QuantityFunctions {
     }
   }
 
+  /**
+   * The {{"LengthUnit",1},...} list of the base dimensions of a unit.
+   *
+   * @return {@link F#NIL} for {@link F#NIL} or a unit without known dimensions
+   */
+  private static IExpr unitDimensionsList(IExpr unit) {
+    if (unit.isNIL()) {
+      return F.NIL;
+    }
+    Map<String, IRational> dims = Units.dimensions(unit);
+    return dims == null ? F.NIL : dimensionsList(dims);
+  }
+
   /** QuantityVariableDimensions(qv) - the base dimensions of the quantity variable. */
   private static final class QuantityVariableDimensions extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr unit = Units.quantityVariableUnit(ast.arg1());
-      if (unit.isNIL()) {
-        return F.NIL;
-      }
-      Map<String, IRational> dims = Units.dimensions(unit);
-      return dims == null ? F.NIL : dimensionsList(dims);
+      return unitDimensionsList(Units.quantityVariableUnit(ast.arg1()));
     }
 
     @Override
@@ -570,12 +578,12 @@ public class QuantityFunctions {
     return expr;
   }
 
-  /** Converts a single-unit QuantityArray to a target unit, element-wise (affine-safe). */
-  private static IExpr convertQuantityArray(IAST quantityArray, IExpr target, EvalEngine engine) {
-    IExpr spec = quantityArray.arg2();
-    if (spec.isList()) {
-      return convertPerPositionArray(quantityArray, (IAST) spec, target, engine);
-    }
+  /**
+   * The evaluated normal form of the target unit of a conversion; the unit of a quantity target.
+   *
+   * @return {@link F#NIL} with an {@code UnitConvert::unkunit} message for an unknown unit
+   */
+  private static IExpr normalizedTargetUnit(IExpr target, EvalEngine engine) {
     if (target.isQuantity()) {
       target = ((IAST) target).arg2();
     }
@@ -583,7 +591,19 @@ public class QuantityFunctions {
     if (norm.isNIL()) {
       return Errors.printMessage(S.UnitConvert, "unkunit", F.list(target), engine);
     }
-    IExpr normalized = engine.evaluate(norm);
+    return engine.evaluate(norm);
+  }
+
+  /** Converts a single-unit QuantityArray to a target unit, element-wise (affine-safe). */
+  private static IExpr convertQuantityArray(IAST quantityArray, IExpr target, EvalEngine engine) {
+    IExpr spec = quantityArray.arg2();
+    if (spec.isList()) {
+      return convertPerPositionArray(quantityArray, (IAST) spec, target, engine);
+    }
+    IExpr normalized = normalizedTargetUnit(target, engine);
+    if (normalized.isNIL()) {
+      return F.NIL;
+    }
     IExpr magnitudes = mapMagnitudes(quantityArray.arg1(), spec, normalized, engine);
     if (magnitudes.isNIL()) {
       Errors.printMessage(S.UnitConvert, "compat", F.list(spec, normalized), engine);
@@ -1119,12 +1139,7 @@ public class QuantityFunctions {
       if (arg1.isList()) {
         return arg1.mapThread(F.UnitDimensions(F.Slot1), 1);
       }
-      IExpr unit = unitOf(arg1);
-      if (unit.isNIL()) {
-        return F.NIL;
-      }
-      Map<String, IRational> dims = Units.dimensions(unit);
-      return dims == null ? F.NIL : dimensionsList(dims);
+      return unitDimensionsList(unitOf(arg1));
     }
 
     @Override
@@ -1717,14 +1732,10 @@ public class QuantityFunctions {
    */
   private static IExpr convertQuantityDistribution(IAST distribution, IExpr target,
       EvalEngine engine) {
-    if (target.isQuantity()) {
-      target = ((IAST) target).arg2();
+    IExpr normalized = normalizedTargetUnit(target, engine);
+    if (normalized.isNIL()) {
+      return F.NIL;
     }
-    IExpr norm = Units.normalize(target);
-    if (norm.isNIL()) {
-      return Errors.printMessage(S.UnitConvert, "unkunit", F.list(target), engine);
-    }
-    IExpr normalized = engine.evaluate(norm);
     IExpr unit = distribution.arg2();
     IExpr factor = Units.convertMagnitude(F.C1, unit, normalized, engine);
     if (factor.isNIL()) {

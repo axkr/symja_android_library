@@ -125,14 +125,8 @@ public final class StepsJSON {
   }
 
   private static void appendPlainText(StringBuilder buf, IAST steps, int indent) {
-    for (int i = 1; i < steps.size(); i++) {
-      IExpr step = steps.get(i);
-      if (!StepsTree.isStep(step)) {
-        continue;
-      }
-      IAST stepAST = (IAST) step;
-      String description =
-          StepDescription.of(stepAST, StepDescription.PLAIN_TEXT, "", "");
+    for (IAST stepAST : StepsTree.stepEntries(steps)) {
+      String description = StepDescription.plainText(stepAST);
       if (!description.isEmpty()) {
         indent(buf, indent).append(description).append('\n');
       }

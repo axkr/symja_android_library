@@ -198,6 +198,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
     final IAST ast = F.D(fUnaryFunction, fVariable);
     // CPD-ON
     IExpr expr = fEngine.evaluate(ast);
+    // CPD-OFF compiled and numerical unary functions differ in their variable
     fFirstDerivative = new UnaryCompiled(expr, fVariable, fEngine, false);
     return fFirstDerivative;
   }
@@ -216,6 +217,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
 
   @Override
   public double applyAsDouble(double value) {
+  // CPD-ON
     return F.subst(fUnaryFunction, fVariable, F.num(value)).evalfNaN();
   }
 }

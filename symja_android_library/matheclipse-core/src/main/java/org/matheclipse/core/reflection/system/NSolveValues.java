@@ -3,12 +3,10 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.eval.util.SolveUtils;
 
 
 /**
@@ -59,22 +57,10 @@ public class NSolveValues extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    if (argSize > 0 && argSize < ast.argSize()) {
-      ast = ast.copyUntil(argSize + 1);
-    }
-    SolveOptions solveOptions = SolveOptions.of(SolveOptions.NSOLVE_KEYS, options);
-    long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
-    if (precision == SolveUtils.INVALID_PRECISION) {
-      return F.NIL;
-    }
-    if (ast.size() == 5) {
-      // the working precision was given as the fourth argument
-      ast = ast.copyUntil(4);
-    }
     // the shape of the result is determined by the variables argument the user wrote down, before
     // Solve turns a single variable into a list of variables
     IExpr variables = ast.arg2();
-    return Solve.solutionValues(NSolve.solveNumeric(solveOptions, ast, precision, engine),
+    return Solve.solutionValues(NSolve.solveWithOptions(ast, argSize, options, engine),
         variables);
   }
 

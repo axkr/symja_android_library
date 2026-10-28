@@ -64,8 +64,8 @@ final class DSolveChangeOfVariable {
     if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero() || ctx.depth() > MAX_DEPTH) {
       return F.NIL;
     }
-    IExpr p = engine.evaluate(F.Cancel(F.Together(F.Divide(lf.a[1], lf.a[2]))));
-    IExpr q = engine.evaluate(F.Cancel(F.Together(F.Divide(lf.a[0], lf.a[2]))));
+    IExpr p = lf.monicCoefficient(1, engine);
+    IExpr q = lf.monicCoefficient(0, engine);
     boolean circular = hasCircular(p, xVar) || hasCircular(q, xVar);
     if (p.leafCount() + q.leafCount() > MAX_LEAF_COUNT) {
       return F.NIL;

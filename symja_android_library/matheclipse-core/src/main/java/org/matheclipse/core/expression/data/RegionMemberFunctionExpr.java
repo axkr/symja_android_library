@@ -1,11 +1,6 @@
 package org.matheclipse.core.expression.data;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,7 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * region so that <code>RegionMember(region)(point)</code> gives the same answer as
  * <code>RegionMember(region, point)</code> without re-parsing the region for every point.
  */
-public class RegionMemberFunctionExpr extends DataExpr<IAST> implements Externalizable {
+public class RegionMemberFunctionExpr extends ASTFunctionDataExpr {
 
   private static final long serialVersionUID = 1L;
 
@@ -61,30 +56,10 @@ public class RegionMemberFunctionExpr extends DataExpr<IAST> implements External
   }
 
   @Override
-  public int hierarchy() {
-    return IExpr.DATAID;
-  }
-
-  @Override
   public IAST normal(boolean nilIfUnevaluated) {
     if (fData == null) {
       return F.NIL;
     }
     return F.RegionMemberFunction(fData);
-  }
-
-  @Override
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    this.fData = (IAST) in.readObject();
-  }
-
-  @Override
-  public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeObject(this.fData);
-  }
-
-  @Override
-  public String toString() {
-    return fHead.toString() + "(" + fData.toString() + ")";
   }
 }

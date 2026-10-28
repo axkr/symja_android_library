@@ -55,6 +55,14 @@ public final class LinearODEForm {
     return a[k];
   }
 
+  /**
+   * The coefficient of the <code>k</code>-th derivative divided by the leading coefficient,
+   * cancelled.
+   */
+  IExpr monicCoefficient(int k, EvalEngine engine) {
+    return engine.evaluate(F.Cancel(F.Together(F.Divide(a[k], a[order]))));
+  }
+
   /** The right hand side, free of the function which is solved for. */
   public IExpr inhomogeneity() {
     return g;

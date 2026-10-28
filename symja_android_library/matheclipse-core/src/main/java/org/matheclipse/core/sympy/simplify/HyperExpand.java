@@ -649,12 +649,14 @@ public final class HyperExpand {
     int order = 0;
     IASTAppendable regular = F.TimesAlloc(numerator.size() + denominator.size() + 1);
     regular.append(F.Exp(F.Times(F.Plus(s0, eps), log)));
+    // CPD-OFF mirrored numerator and denominator Gamma pole loops
     for (IExpr[] gamma : numerator) {
       IExpr c = engine.evaluate(F.Plus(gamma[0], F.Times(gamma[1], s0)));
       IExpr x = F.Times(gamma[1], eps);
       if (c.isInteger() && !c.isPositive()) {
         int pole = -c.toIntDefault();
         order++;
+        // CPD-ON
         regular.append(F.Divide(F.Gamma(F.Plus(F.C1, x)), gamma[1]));
         for (int j = 1; j <= pole; j++) {
           regular.append(F.Power(F.Subtract(x, F.ZZ(j)), F.CN1));
@@ -663,12 +665,14 @@ public final class HyperExpand {
         regular.append(F.Gamma(F.Plus(c, x)));
       }
     }
+    // CPD-OFF mirrored numerator and denominator Gamma pole loops
     for (IExpr[] gamma : denominator) {
       IExpr c = engine.evaluate(F.Plus(gamma[0], F.Times(gamma[1], s0)));
       IExpr x = F.Times(gamma[1], eps);
       if (c.isInteger() && !c.isPositive()) {
         int pole = -c.toIntDefault();
         order--;
+        // CPD-ON
         regular.append(F.Divide(gamma[1], F.Gamma(F.Plus(F.C1, x))));
         for (int j = 1; j <= pole; j++) {
           regular.append(F.Subtract(x, F.ZZ(j)));

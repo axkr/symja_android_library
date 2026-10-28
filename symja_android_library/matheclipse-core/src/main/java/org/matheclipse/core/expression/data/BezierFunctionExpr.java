@@ -1,11 +1,7 @@
 package org.matheclipse.core.expression.data;
 
 import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -23,7 +19,7 @@ import org.matheclipse.core.tensor.itp.LinearBinaryAverage;
  * {@link Externalizable}.
  * </p>
  */
-public class BezierFunctionExpr extends DataExpr<IAST> implements Externalizable {
+public class BezierFunctionExpr extends ASTFunctionDataExpr {
 
   /**
    * Factory method to create a new {@link BezierFunctionExpr}.
@@ -245,39 +241,5 @@ public class BezierFunctionExpr extends DataExpr<IAST> implements Externalizable
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
     return toData();
-  }
-
-
-  /**
-   * Deserialize the stored {@link IAST} data from the provided input stream.
-   *
-   * @param in the input stream to read from
-   * @throws IOException if an I/O error occurs
-   * @throws ClassNotFoundException if the class of a serialized object cannot be found
-   */
-  @Override
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    this.fData = (IAST) in.readObject();
-  }
-
-  /**
-   * Return a human-readable representation of this Bezier function expression.
-   *
-   * @return a string of the form "BezierFunction(fData)"
-   */
-  @Override
-  public String toString() {
-    return fHead.toString() + "(" + fData + ")";
-  }
-
-  /**
-   * Serialize the stored {@link IAST} data to the provided output stream.
-   *
-   * @param output the output stream to write to
-   * @throws IOException if an I/O error occurs
-   */
-  @Override
-  public void writeExternal(ObjectOutput output) throws IOException {
-    output.writeObject(fData);
   }
 }

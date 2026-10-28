@@ -329,13 +329,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       if (!result.isList() || ((IAST) result).argSize() < 3) {
         return null;
       }
-      IAST list = (IAST) result;
-      double x = list.arg1().evalfNaN();
-      double y = list.arg2().evalfNaN();
-      double z = list.arg3().evalfNaN();
-      if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
-        return new double[] {x, y, z};
-      }
+      return Plot3DTools.finitePoint3D((IAST) result);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }
@@ -345,6 +339,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_2_4;
+  // CPD-OFF sibling surface-plot evaluator overrides
   }
 
   @Override
@@ -375,3 +370,4 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     setOptions(newSymbol, options.keys(), options.values());
   }
 }
+// CPD-ON

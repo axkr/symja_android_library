@@ -570,7 +570,8 @@ public class NumberFormatter {
     return value.isPresent() ? value : defaultValue;
   }
 
-  private static IExpr defaultPadding(FormKind kind) {
+  /** The default value of the <code>NumberPadding</code> option for the given form. */
+  public static IExpr defaultPadding(FormKind kind) {
     switch (kind) {
       case PADDED:
         return F.list(F.stringx(" "), F.stringx("0"));
@@ -586,7 +587,8 @@ public class NumberFormatter {
     return kind == FormKind.PADDED || kind == FormKind.NUMBER || kind == FormKind.DECIMAL ? "0" : "";
   }
 
-  private static IExpr defaultSigns(FormKind kind) {
+  /** The default value of the <code>NumberSigns</code> option for the given form. */
+  public static IExpr defaultSigns(FormKind kind) {
     if (kind == FormKind.ACCOUNTING) {
       return F.list(F.list(F.stringx("("), F.stringx(")")), F.stringx(""));
     }

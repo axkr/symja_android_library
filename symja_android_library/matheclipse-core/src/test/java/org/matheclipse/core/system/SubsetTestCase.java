@@ -18,6 +18,9 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
         "{f(a,b),f(c,d)}");
     check("SubsetCases({a,b,c,d},{x_,y_})", //
         "{{a,b},{c,d}}");
+    // a limit beyond the machine integers is reported under SubsetCases
+    check("Check(SubsetCases({p,q,r,s},{u_,v_},10^30), failed, SubsetCases::error)", //
+        "failed");
   }
 
   @Test

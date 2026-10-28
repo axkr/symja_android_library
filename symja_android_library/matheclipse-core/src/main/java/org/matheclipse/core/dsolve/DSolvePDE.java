@@ -121,14 +121,23 @@ final class DSolvePDE {
     return result.argSize() > 0 ? result : F.NIL;
   }
 
+  /** Whether the head of <code>ast</code> is <code>Derivative(n1, n2, ...)(head)</code>. */
+  private static boolean isDerivativeOf(IAST ast, IExpr head) {
+    if (ast.head().isAST()) {
+      IAST derivativeHead = (IAST) ast.head();
+      return derivativeHead.head().isAST(S.Derivative) && derivativeHead.isAST1()
+          && derivativeHead.arg1().equals(head);
+    }
+    return false;
+  }
+
   /** Whether the expression differentiates the given function, i.e. is an equation and not a condition. */
   static boolean differentiates(IExpr expr, IExpr head) {
     if (!expr.isAST()) {
       return false;
     }
     IAST ast = (IAST) expr;
-    if (ast.head().isAST() && ((IAST) ast.head()).head().isAST(S.Derivative)
-        && ((IAST) ast.head()).isAST1() && ((IAST) ast.head()).arg1().equals(head)) {
+    if (isDerivativeOf(ast, head)) {
       return true;
     }
     for (int i = 0; i < ast.size(); i++) {
@@ -254,8 +263,7 @@ final class DSolvePDE {
       return -1;
     }
     IAST ast = (IAST) expr;
-    if (ast.head().isAST() && ((IAST) ast.head()).head().isAST(S.Derivative)
-        && ((IAST) ast.head()).isAST1() && ((IAST) ast.head()).arg1().equals(head)) {
+    if (isDerivativeOf(ast, head)) {
       IAST derivative = (IAST) ((IAST) ast.head()).head();
       int total = 0;
       for (int i = 1; i <= derivative.argSize(); i++) {

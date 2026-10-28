@@ -381,6 +381,22 @@ public class SymbolicArrayUtil {
     }
     IAST dimensions1 = tensorDimensions(arrayDot.arg1(), engine, depth + 1);
     IAST dimensions2 = tensorDimensions(arrayDot.arg2(), engine, depth + 1);
+    return contractedDimensions(dimensions1, dimensions2, k);
+  }
+
+  /**
+   * The dimensions of the contraction of the last <code>k</code> slots of an array with the
+   * dimensions <code>dimensions1</code> and the first <code>k</code> slots of an array with the
+   * dimensions <code>dimensions2</code>.
+   *
+   * @param dimensions1 the dimensions of the first array or {@link F#NIL}
+   * @param dimensions2 the dimensions of the second array or {@link F#NIL}
+   * @param k the number of contracted slots
+   * @return the list <code>{d1 without its last k entries, d2 without its first k entries}</code>
+   *         or {@link F#NIL} if one of the dimensions is {@link F#NIL}, shorter than <code>k
+   *         </code> or the contracted slots differ
+   */
+  public static IAST contractedDimensions(IAST dimensions1, IAST dimensions2, int k) {
     if (dimensions1.isNIL() || dimensions2.isNIL()) {
       return F.NIL;
     }

@@ -318,13 +318,7 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
           return Double.isFinite(r) && Double.isFinite(z) ? new double[] {r, 0.0, z} : null;
         }
         if (list.argSize() >= 3) {
-          double x = list.arg1().evalfNaN();
-          double y = list.arg2().evalfNaN();
-          double z = list.arg3().evalfNaN();
-          if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
-            return new double[] {x, y, z};
-          }
-          return null;
+          return Plot3DTools.finitePoint3D(list);
         }
         return null;
       }

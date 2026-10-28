@@ -4,6 +4,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.builtin.AroundFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -25,14 +26,11 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
     final IExpr arg1 = ast.arg1();
-    if (org.matheclipse.core.builtin.AroundFunctions.isAround(arg1)) {
-      // f(Around(x, delta)) is Around(f(x), Abs(f'(x))*delta) - the first-order propagation of an
-      // uncertainty through any unary function that lands here
-      IExpr aroundResult =
-          org.matheclipse.core.builtin.AroundFunctions.mapFunction(ast.head(), (IAST) arg1, engine);
-      if (aroundResult.isPresent()) {
-        return aroundResult;
-      }
+    // f(Around(x, delta)) is Around(f(x), Abs(f'(x))*delta) - the first-order propagation of an
+    // uncertainty through any unary function that lands here
+    IExpr aroundResult = AroundFunctions.mapUnaryAround(ast, engine);
+    if (aroundResult.isPresent()) {
+      return aroundResult;
     }
     final IExpr result = e1ObjArg(arg1);
     if (result.isPresent()) {
@@ -104,6 +102,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  // CPD-OFF default dispatch hooks of independent base classes
   public IExpr e1ApcomplexArg(final Apcomplex c) {
     return F.NIL;
   }
@@ -127,4 +126,5 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
   public IExpr e1FunArg(final IAST f) {
     return F.NIL;
   }
+  // CPD-ON
 }

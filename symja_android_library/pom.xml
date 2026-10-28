@@ -777,7 +777,7 @@
 						<!-- The minimum number of duplicated tokens to be
 						reported. Deliberate copies are wrapped in
 						CPD-OFF/CPD-ON comments. -->
-						<minimumTokens>80</minimumTokens>
+						<minimumTokens>70</minimumTokens>
 
 						<!-- Literals and identifiers must match exactly. With
 						ignoreLiterals/ignoreIdentifiers every builtin's

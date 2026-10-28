@@ -680,6 +680,7 @@ public class ManipulateSpec {
     boolean explicitRectangle = args.size() >= 2 && args.get(0).isList2() && args.get(1).isList2();
     if (explicitRectangle) {
       IAST low = (IAST) args.get(0);
+      // CPD-OFF corner parsing; each caller reuses the bounds
       IAST high = (IAST) args.get(1);
       xMin = ManipulateControl.toDouble(low.arg1(), 0.0);
       yMin = ManipulateControl.toDouble(low.arg2(), 0.0);
@@ -688,6 +689,7 @@ public class ManipulateSpec {
     }
     control.setRange(xMin, xMax, Double.NaN);
     control.setRangeY(yMin, yMax);
+    // CPD-ON
 
     if (initial.isList2() && !initial.first().isList()) {
       // a single point: the variable is bound to that point, not to a list of one

@@ -197,6 +197,15 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({Csch(2),LessEqual,LessEqual,Csch(1)})");
     check("Csch(IntervalData({0,Less,LessEqual,2}))", //
         "IntervalData({Csch(2),LessEqual,Less,Infinity})");
+    // an end at the pole 0 contributes the one-sided infinite limit only
+    check("Coth(IntervalData({-2,LessEqual,LessEqual,0}))", //
+        "IntervalData({-Infinity,Less,LessEqual,-Coth(2)})");
+    check("Csch(IntervalData({-3,LessEqual,Less,0}))", //
+        "IntervalData({-Infinity,Less,LessEqual,-Csch(3)})");
+    check("ArcCos(IntervalData({-1/2,LessEqual,Less,1/3}))", //
+        "IntervalData({ArcCos(1/3),Less,LessEqual,2/3*Pi})");
+    check("ArcTanh(IntervalData({-1/2,Less,LessEqual,1/3}))", //
+        "IntervalData({-ArcTanh(1/2),Less,LessEqual,ArcTanh(1/3)})");
 
     // Trigonometric
     check("Sin(IntervalData({0,LessEqual,LessEqual,Pi}))", //

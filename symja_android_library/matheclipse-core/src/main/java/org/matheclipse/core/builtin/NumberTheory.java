@@ -5966,6 +5966,7 @@ public final class NumberTheory {
       }
       if (arg1.isInexactNumber()) {
         // Argument `1` in `2` is not an exact number.
+        // CPD-OFF PrimeOmega and PrimeNu preamble with several exits
         return Errors.printMessage(S.PrimeOmega, "exact", F.list(arg1, ast), engine);
       }
       if (!options[0].isTrue() && !options[0].isFalse()) {
@@ -5977,6 +5978,7 @@ public final class NumberTheory {
       if (arg1.isOne() || arg1.isMinusOne()) {
         return F.C0;
       }
+      // CPD-ON
       if (options[0].isTrue() || arg1.isComplex()) {
         IAST factors = F.NIL;
         if (arg1.isInteger()) {

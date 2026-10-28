@@ -26,12 +26,8 @@ public class RegionDistance extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() != 2)
       return F.NIL;
-    IExpr arg1 = ast.arg1();
+    IExpr arg1 = RegionPrimitives.unwrapRegion(ast.arg1());
     IExpr p = ast.arg2();
-
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
     if (arg1.isAST(S.ImplicitRegion, 3)) {
       IExpr nearest = RegionNearest.implicitNearest((IAST) arg1, p, engine);
       return nearest.isPresent() ? engine.evaluate(F.Norm(F.Subtract(p, nearest))) : F.NIL;
@@ -93,20 +89,16 @@ public class RegionDistance extends AbstractFunctionEvaluator {
   }
 
   private IExpr pointDistance(IAST reg, IExpr p, EvalEngine engine) {
-    if (reg.argSize() == 1) {
-      IExpr pt = reg.arg1();
-      if (pt.isList() && pt.argSize() > 0) {
-        if (((IAST) pt).arg1().isList()) {
-          IAST pts = (IAST) pt;
-          IExpr minDist = engine.evaluate(F.Norm(F.Subtract(p, pts.arg1())));
-          for (int i = 2; i <= pts.argSize(); i++) {
-            minDist = engine.evaluate(F.Min(minDist, F.Norm(F.Subtract(p, pts.get(i)))));
-          }
-          return minDist;
-        } else {
-          return engine.evaluate(F.Norm(F.Subtract(p, pt)));
-        }
+    IAST pts = RegionPrimitives.multiPoints(reg);
+    if (pts.isPresent()) {
+      IExpr minDist = engine.evaluate(F.Norm(F.Subtract(p, pts.arg1())));
+      for (int i = 2; i <= pts.argSize(); i++) {
+        minDist = engine.evaluate(F.Min(minDist, F.Norm(F.Subtract(p, pts.get(i)))));
       }
+      return minDist;
+    }
+    if (reg.argSize() == 1 && reg.arg1().isList() && reg.arg1().argSize() > 0) {
+      return engine.evaluate(F.Norm(F.Subtract(p, reg.arg1())));
     }
     return F.NIL;
   }

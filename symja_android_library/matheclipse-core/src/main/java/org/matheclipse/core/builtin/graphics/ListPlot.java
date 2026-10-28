@@ -305,6 +305,29 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The graphics options of a list plot: the positional options, then <code>PlotMarkers</code>,
+   * <code>Mesh</code>, <code>ColorFunction</code>, the plot theme and the pass-through options of
+   * the call.
+   *
+   * @param options the positional option values
+   * @param originalAST the call with all its options
+   * @param engine the evaluation engine
+   */
+  protected GraphicsOptions listPlotGraphicsOptions(final IExpr[] options, IAST originalAST,
+      final EvalEngine engine) {
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+    // PlotMarkers and Mesh are family options appended after the positional block, so they
+    // are read from the call rather than by index
+    graphicsOptions
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
+    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
+    graphicsOptions.readColorFunction(originalAST);
+    graphicsOptions.applyPlotTheme(originalAST);
+    graphicsOptions.readPassThroughOptions(originalAST);
+    return graphicsOptions;
+  }
+
+  /**
    * A list plot on logarithmic axes, for <code>ListLogPlot</code>, <code>ListLogLinearPlot</code>
    * and <code>ListLogLogPlot</code>. The points are generated unscaled; the graphics carries the
    * option <code>$Scaling -&gt; scaling</code>, which the renderers apply.
@@ -320,15 +343,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
 
     // Use standard options initially (no data transformation)
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
-    // PlotMarkers and Mesh are family options appended after the positional block, so they
-    // are read from the call rather than by index
-    graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
-    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
-    graphicsOptions.readColorFunction(originalAST);
-    graphicsOptions.applyPlotTheme(originalAST);
-    graphicsOptions.readPassThroughOptions(originalAST);
+    GraphicsOptions graphicsOptions = listPlotGraphicsOptions(options, originalAST, engine);
 
     // Generate raw points
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
@@ -1214,19 +1229,6 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
     }
     return F.Line(segments);
-  }
-
-  private static IExpr createPolygonToBottom(IAST pts) {
-    if (pts.argSize() < 2)
-      return F.NIL;
-    double xStart = ((IAST) pts.arg1()).arg1().evalDouble();
-    double xEnd = ((IAST) pts.get(pts.argSize())).arg1().evalDouble();
-    double yBottom = 1e-10;
-    IASTAppendable polyPts = F.ListAlloc();
-    polyPts.appendArgs(pts);
-    polyPts.append(F.List(F.num(xEnd), F.num(yBottom)));
-    polyPts.append(F.List(F.num(xStart), F.num(yBottom)));
-    return F.Polygon(polyPts);
   }
 
   private static IExpr createPolygonBetween(IAST pts1, IAST pts2) {

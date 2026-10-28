@@ -373,6 +373,7 @@ public class AST2 extends AST1 {
   @Override
   public boolean isPower() {
     return arg0 == S.Power;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /** {@inheritDoc} */
@@ -396,6 +397,7 @@ public class AST2 extends AST1 {
   /** {@inheritDoc} */
   @Override
   public final boolean isTimes() {
+  // CPD-ON
     return arg0 == S.Times;
   }
 
@@ -429,6 +431,7 @@ public class AST2 extends AST1 {
     if (fromPosition == 2) {
       return new AST1(arg0, arg1);
     }
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     if (fromPosition == 3) {
       return this;
     }
@@ -462,6 +465,7 @@ public class AST2 extends AST1 {
         result = arg2;
         arg2 = object;
         return result;
+        // CPD-ON
       default:
         throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
     }

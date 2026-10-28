@@ -398,6 +398,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     // constructor), so the derivative must be taken with respect to the dummy variable
     final IAST ast = F.D(fUnaryFunction, fDummyVariable);
     IExpr expr = fEngine.evaluate(ast);
+    // CPD-OFF compiled and numerical unary functions differ in their variable
     fFirstDerivative = new UnaryNumerical(expr, fDummyVariable, false, true, Double.NaN, fEngine);
     return fFirstDerivative;
   }
@@ -416,6 +417,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
   }
 
   @Override
+  // CPD-ON
   public double applyAsDouble(double value) {
     fSampleCount++;
     if (fPrecision > 15) {

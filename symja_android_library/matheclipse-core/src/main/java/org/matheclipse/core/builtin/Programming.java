@@ -336,11 +336,7 @@ public final class Programming {
         return F.NIL;
       }
       IAST block = F.Block(variables, F.subst(ast.arg2(), forward));
-      java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
-      for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
-        back.put(entry.getValue(), entry.getKey());
-      }
-      return F.subst(engine.evaluate(block), back);
+      return Iterator.restoreLocalized(engine.evaluate(block), forward);
     }
 
     @Override
@@ -1799,14 +1795,7 @@ public final class Programming {
         // declared `expectedArgSize` has to be enforced here before the arguments are read
         return engine.checkBuiltinArgsSize(ast, this);
       }
-      final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
-      if (moduleVariablesList.isPresent()) {
-        IExpr temp = moduleSubstVariables(moduleVariablesList, ast.arg2(), engine);
-        if (temp.isPresent()) {
-          return engine.evaluate(temp);
-        }
-      }
-      return F.NIL;
+      return evaluateModule(ast, engine);
     }
 
     @Override
@@ -1849,14 +1838,7 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
-      if (moduleVariablesList.isPresent()) {
-        IExpr temp = moduleSubstVariables(moduleVariablesList, ast.arg2(), engine);
-        if (temp.isPresent()) {
-          return engine.evaluate(temp);
-        }
-      }
-      return F.NIL;
+      return evaluateModule(ast, engine);
     }
 
     @Override
@@ -4167,6 +4149,25 @@ public final class Programming {
       }
     }
     return true;
+  }
+
+  /**
+   * Evaluate <code>Module({list_of_local_variables}, expr)</code> (or a <code>DynamicModule</code>
+   * with the same first two arguments) by renaming the local variables.
+   *
+   * @param ast the module expression
+   * @param engine the evaluation engine
+   * @return the evaluated body or {@link F#NIL} if the variable list is invalid
+   */
+  private static IExpr evaluateModule(final IAST ast, EvalEngine engine) {
+    final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
+    if (moduleVariablesList.isPresent()) {
+      IExpr temp = moduleSubstVariables(moduleVariablesList, ast.arg2(), engine);
+      if (temp.isPresent()) {
+        return engine.evaluate(temp);
+      }
+    }
+    return F.NIL;
   }
 
   /**

@@ -399,6 +399,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       return F.evaln(this);
     }
     return null;
+  // CPD-OFF value and rule handling on separate private fields
   }
 
   /** {@inheritDoc} */
@@ -420,6 +421,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
     return null;
   }
+  // CPD-ON
 
   /** {@inheritDoc} */
   @Override

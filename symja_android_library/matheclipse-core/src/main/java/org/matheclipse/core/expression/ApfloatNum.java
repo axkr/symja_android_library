@@ -767,6 +767,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public ApfloatNum abs() {
+    // CPD-OFF numeric special-function dispatch per number type
     return sameSignificance(h().abs(fApfloat), ApfloatMath::abs);
   }
 
@@ -796,6 +797,7 @@ public class ApfloatNum implements INum {
   @Override
   public IInexactNumber acos() {
     if (fApfloat.compareTo(Apfloat.ONE) == 1 //
+    // CPD-ON
         || fApfloat.compareTo(new Apint(-1)) == -1) {
       return F.complexNum(ApcomplexMath.acos(new Apcomplex(fApfloat)));
     }
@@ -1745,6 +1747,7 @@ public class ApfloatNum implements INum {
       return F.CComplexInfinity;
     }
     try {
+      // CPD-OFF numeric special-function dispatch per number type
       return valueOf(gammaOfLarge(fApfloat, h()));
     } catch (OverflowException of) {
       return F.Overflow();
@@ -1761,6 +1764,7 @@ public class ApfloatNum implements INum {
     }
     if (x instanceof IReal) {
       if (!(x.isNegative() && !(isMathematicalIntegerNonNegative() && !isZero()))) {
+      // CPD-ON
         try {
           return valueOf(h().gamma(fApfloat, ((IReal) x).apfloatValue()));
         } catch (ArithmeticException | NumericComputationException e) {
@@ -1777,6 +1781,7 @@ public class ApfloatNum implements INum {
         // second argment zero
         return Errors.printMessage(S.Gamma, are, EvalEngine.get());
       }
+    // CPD-OFF numeric special-function dispatch per number type
     }
     return INum.super.gamma(x);
   }
@@ -1793,6 +1798,7 @@ public class ApfloatNum implements INum {
     }
     if (x0 instanceof IReal && x1 instanceof IReal) {
       try {
+      // CPD-ON
         return valueOf(
             h().gamma(fApfloat, ((IReal) x0).apfloatValue(), ((IReal) x1).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
@@ -2012,6 +2018,7 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
       try {
+        // CPD-OFF numeric special-function dispatch per number type
         return valueOf(h().hypergeometric2F1(fApfloat, ((IReal) arg2).apfloatValue(),
             ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
@@ -2021,6 +2028,7 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
         return F.complexNum(h().hypergeometric2F1(fApfloat, ((INumber) arg2).apcomplexValue(),
+        // CPD-ON
             ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException aex) {
         if (Num.isDivisionByZeroAny(aex)) {
@@ -2035,6 +2043,7 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric2F1Regularized(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
       try {
+        // CPD-OFF numeric special-function dispatch per number type
         return valueOf(h().hypergeometric2F1Regularized(fApfloat, ((IReal) arg2).apfloatValue(),
             ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
@@ -2044,6 +2053,7 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
         return F.complexNum(
+        // CPD-ON
             h().hypergeometric2F1Regularized(fApfloat, ((INumber) arg2).apcomplexValue(),
                 ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
       } catch (NumericComputationException ex) {
@@ -2236,6 +2246,7 @@ public class ApfloatNum implements INum {
   public IExpr jacobiP(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
       try {
+        // CPD-OFF numeric special-function dispatch per number type
         return valueOf(h().jacobiP(fApfloat, ((IReal) arg2).apfloatValue(),
             ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
@@ -2245,6 +2256,7 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
         return F.complexNum(h().jacobiP(fApfloat, ((INumber) arg2).apcomplexValue(),
+        // CPD-ON
             ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
       } catch (OverflowException of) {
         return F.Overflow();

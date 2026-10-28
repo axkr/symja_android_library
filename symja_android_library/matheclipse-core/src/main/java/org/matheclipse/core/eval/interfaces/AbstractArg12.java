@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.AroundFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -85,6 +86,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator
     return F.NIL;
   }
 
+  // CPD-OFF default hooks of two parallel evaluator base classes
   public IExpr e1ApcomplexArg(Apcomplex arg1) {
     return F.NIL;
   }
@@ -108,6 +110,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator
   public IExpr e1FunArg(final IAST f) {
     return F.NIL;
   }
+  // CPD-ON
 
   public IExpr binaryOperator(IAST ast, final IExpr o0, final IExpr o1) {
     IExpr result = e2ObjArg(o0, o1);
@@ -193,13 +196,10 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator
     try {
       if (ast.size() == 2 || ast.size() == 3) {
         if (ast.size() != 3) {
-          if (org.matheclipse.core.builtin.AroundFunctions.isAround(ast.arg1())) {
-            // f(Around(x, delta)) is Around(f(x), Abs(f'(x))*delta)
-            IExpr aroundResult = org.matheclipse.core.builtin.AroundFunctions
-                .mapFunction(ast.head(), (IAST) ast.arg1(), engine);
-            if (aroundResult.isPresent()) {
-              return aroundResult;
-            }
+          // f(Around(x, delta)) is Around(f(x), Abs(f'(x))*delta)
+          IExpr aroundResult = AroundFunctions.mapUnaryAround(ast, engine);
+          if (aroundResult.isPresent()) {
+            return aroundResult;
           }
           return unaryOperator(ast.arg1());
         }

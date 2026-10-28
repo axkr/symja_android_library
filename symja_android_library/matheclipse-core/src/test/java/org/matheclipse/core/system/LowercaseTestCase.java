@@ -484,6 +484,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testAppendTo() {
+    // the appended value is evaluated once
+    check("lst = {7}; cnt = 3; AppendTo(lst, cnt++); {lst, cnt}", //
+        "{{7,3},4}");
+    check("g[2] = {}; cnt = 3; AppendTo(g[2], cnt++); {g[2], cnt}", //
+        "{{3},4}");
     check("d[1] = {}; AppendTo(d[1], 5); d[1]", //
         "{5}");
     check("d[1] = {9}; PrependTo(d[1], 5); d[1]", //
@@ -27707,6 +27712,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialQuotient() {
+    check("PolynomialQuotient(0, y^2-3, y)", //
+        "0");
+    check("PolynomialRemainder(0, y^2-3, y)", //
+        "0");
     check("PolynomialQuotient(x^2+4*x+1,-10,x,Modulus->2)", //
         "PolynomialQuotient(1+4*x+x^2,-10,x,Modulus->2)");
 
@@ -28863,6 +28872,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrependTo() {
+    // the prepended value is evaluated once
+    check("lst = {7}; cnt = 3; PrependTo(lst, cnt++); {lst, cnt}", //
+        "{{3,7},4}");
     check("s = {1, 2, 4, 9}", //
         "{1,2,4,9}");
     check("PrependTo(s, 0)", //
@@ -35378,6 +35390,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTake() {
+    // List expected at position 2 in {{3,4},y}, for both step directions
+    check("Take({{3,4},y},{2,1,-1},1)", //
+        "Take({{3,4},y},{2,1,-1},1)");
+    check("Take({{3,4},y},{1,2},1)", //
+        "Take({{3,4},y},{1,2},1)");
+    check("Take({{3,4,5},{6,7,8}},{2,1,-1},{3,1,-2})", //
+        "{{8,6},{5,3}}");
     // Take: List expected at position 2 in <|a->1,b->2|>.
     check("Take(<|a->1,b->2|>,{2,1,-1},1)", //
         "Take(<|a->1,b->2|>,{2,1,-1},1)");

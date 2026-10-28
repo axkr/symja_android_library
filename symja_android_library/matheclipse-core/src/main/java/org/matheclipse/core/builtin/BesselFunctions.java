@@ -35,6 +35,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
@@ -1464,9 +1465,7 @@ public class BesselFunctions {
           return F.Plus(F.Times(F.CN1, F.C3, F.Power(z, F.CN2), F.Cos(z)),
               F.Times(F.Power(z, F.CN3), F.Subtract(F.C3, F.Sqr(z)), F.Sin(z)));
       }
-      // (Sqrt(Pi/2)*BesselJ(1/2*(1+2*n),z))/Sqrt(z)
-      return F.Times(F.Sqrt(F.CPiHalf), F.Power(z, F.CN1D2),
-          F.BesselJ(F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, n))), z));
+      return sphericalViaBessel(S.BesselJ, n, z);
 
     }
 
@@ -1741,11 +1740,7 @@ public class BesselFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      IExpr z = ast.arg2();
-      // (Sqrt(Pi/2)*BesselY(1/2*(1+2*n),z))/Sqrt(z)
-      return F.Times(F.Sqrt(F.CPiHalf), F.Power(z, F.CN1D2),
-          F.BesselY(F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, n))), z));
+      return sphericalViaBessel(S.BesselY, ast.arg1(), ast.arg2());
 
     }
 
@@ -2261,6 +2256,15 @@ public class BesselFunctions {
       newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
 
+  }
+
+  /**
+   * <code>(Sqrt(Pi/2)*bessel(1/2*(1+2*n),z))/Sqrt(z)</code>, the spherical Bessel function of the
+   * first or second kind written through <code>BesselJ</code> or <code>BesselY</code>.
+   */
+  private static IExpr sphericalViaBessel(IBuiltInSymbol bessel, IExpr n, IExpr z) {
+    return F.Times(F.Sqrt(F.CPiHalf), F.Power(z, F.CN1D2),
+        F.binaryAST2(bessel, F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, n))), z));
   }
 
   /**

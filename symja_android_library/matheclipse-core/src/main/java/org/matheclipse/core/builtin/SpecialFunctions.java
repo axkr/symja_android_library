@@ -239,6 +239,7 @@ public class SpecialFunctions {
             break;
         }
         if (betaSymbolic.isPresent()) {
+          // CPD-OFF closed-form half-integer Struve formulas
           return engine.evaluate(betaSymbolic);
         }
       } catch (ThrowException te) {
@@ -264,6 +265,7 @@ public class SpecialFunctions {
      * @return
      */
     private static IExpr beta(IExpr a, IExpr b) {
+    // CPD-ON
       if (F.isExactZero(a) || F.isExactZero(b)) {
         return F.CComplexInfinity;
       }
@@ -347,6 +349,7 @@ public class SpecialFunctions {
           }
         }
         if (a.isNumber() && b.isNumber() && z.isNumber()) {
+          // CPD-OFF closed-form half-integer Struve formulas
           return functionExpand(F.Beta(z, a, b), engine);
         }
       } catch (ThrowException te) {
@@ -372,6 +375,7 @@ public class SpecialFunctions {
      */
     private IExpr generalizedIncompleteBeta(IExpr z1, IExpr z2, IExpr a, IExpr b) {
       if (F.isExactZero(z2)) {
+      // CPD-ON
         IExpr aRe = a.re();
         if (aRe.isPositive()) {
           // https://functions.wolfram.com/GammaBetaErf/Beta4/03/01/03/0001/
@@ -970,6 +974,7 @@ public class SpecialFunctions {
     }
   }
 
+  // CPD-OFF closed-form half-integer Struve formulas
   private static final class Erfc extends AbstractFunctionEvaluator {
 
     @Override
@@ -986,6 +991,7 @@ public class SpecialFunctions {
       IExpr z = ast.arg1();
       if (F.isExactZero(z)) {
         return F.C1;
+        // CPD-ON
       }
       // the DirectedInfinity cases must be tested OUTSIDE an isReal() guard: Infinity is the AST
       // DirectedInfinity(1), for which isReal() is false. Left inside, Erfc(Infinity) stays
@@ -1054,6 +1060,7 @@ public class SpecialFunctions {
    * Returns the imaginary error function.
    *
    */
+  // CPD-OFF closed-form half-integer Struve formulas
   private static final class Erfi extends AbstractFunctionEvaluator {
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -1070,6 +1077,7 @@ public class SpecialFunctions {
       if (F.isExactZero(z)) {
         return F.C0;
       }
+      // CPD-ON
       if (z.isInfinity()) {
         return F.CInfinity;
       }

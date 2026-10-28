@@ -658,13 +658,13 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, head(), arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, head(), arg1, arg2, arg3);
   }
 
@@ -689,7 +689,6 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
-  // CPD-ON
       final Function<IExpr, IExpr> function) {
     return FixedArity.filterFunction(filterAST, restAST, function, arg1, arg2, arg3);
   }
@@ -698,6 +697,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
     return FixedArity.forAll(predicate, startOffset, head(), arg1, arg2, arg3);
+    // CPD-ON
   }
 
   /** {@inheritDoc} */
@@ -782,6 +782,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   public int headID() {
     final IExpr head = head();
     return head instanceof IBuiltInSymbol ? ((IBuiltInSymbol) head).ordinal() : ID.UNKNOWN;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   @Override
@@ -792,6 +793,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
       hashValue = (hashValue * 16777619) ^ arg1.hashCode();
       hashValue = (hashValue * 16777619) ^ arg2.hashCode();
       hashValue = (hashValue * 16777619) ^ arg3.hashCode();
+      // CPD-ON
     }
     return hashValue;
   }

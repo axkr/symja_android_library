@@ -15,13 +15,7 @@ public class Volume extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
+    IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (MeshFunctions.isMeshRegion(arg1) && MeshFunctions.embeddingDimension((IAST) arg1) == 3) {
       return MeshFunctions.volume3D((IAST) arg1, engine);
     }

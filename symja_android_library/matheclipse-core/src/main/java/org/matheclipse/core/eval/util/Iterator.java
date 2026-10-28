@@ -1724,11 +1724,7 @@ public class Iterator {
         engine.evaluate(F.Set(F.DownValues(entry.getKey()), entry.getValue()));
       }
     }
-    java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
-    for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
-      back.put(entry.getValue(), entry.getKey());
-    }
-    return F.subst(result, back);
+    return restoreLocalized(result, forward);
   }
 
   /**
@@ -1743,6 +1739,22 @@ public class Iterator {
   }
 
   /**
+   * Put the variables back into <code>result</code> which were replaced by the fresh symbols of
+   * <code>forward</code>.
+   *
+   * @param result the result evaluated with the fresh symbols
+   * @param forward maps each variable to the fresh symbol which replaces it
+   * @return <code>result</code> with each fresh symbol replaced by its variable
+   */
+  public static IExpr restoreLocalized(IExpr result, java.util.Map<IExpr, IExpr> forward) {
+    java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+    for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
+      back.put(entry.getValue(), entry.getKey());
+    }
+    return F.subst(result, back);
+  }
+
+  /**
    * Replace the keys of <code>forward</code> by their values throughout <code>ast</code>, evaluate
    * the result, and put the keys back into it.
    *
@@ -1752,12 +1764,8 @@ public class Iterator {
    */
   public static IExpr evaluateRenamed(final IAST ast, java.util.Map<IExpr, IExpr> forward,
       EvalEngine engine) {
-    java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
-    for (java.util.Map.Entry<IExpr, IExpr> entry : forward.entrySet()) {
-      back.put(entry.getValue(), entry.getKey());
-    }
     IExpr renamed = F.subst(ast, forward);
-    IExpr result = F.subst(engine.evaluate(renamed), back);
+    IExpr result = restoreLocalized(engine.evaluate(renamed), forward);
     // an unevaluated call comes back as it went in; answering it would evaluate it again forever
     return result.equals(ast) ? F.NIL : result;
   }

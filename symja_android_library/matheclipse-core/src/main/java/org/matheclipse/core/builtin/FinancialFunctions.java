@@ -116,6 +116,7 @@ public class FinancialFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
+      // CPD-OFF generated annuity formulas
       if (a.isAST(S.Annuity, 3, 4)) {
         // https://en.wikipedia.org/wiki/Annuity
         IAST annuity = (IAST) a;
@@ -131,6 +132,7 @@ public class FinancialFunctions {
             return //
             // [$ -((p - p/((1 + b)^q)^(t/q))/(1 - (1 + b)^q)) $]
             F.Times(F.CN1, F.Power(F.Subtract(F.C1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+            // CPD-ON
                 F.Plus(p,
                     F.Times(F.CN1,
                         F.Power(F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t)),
@@ -154,6 +156,7 @@ public class FinancialFunctions {
           return Errors.printMessage(S.TimeValue, rex, engine);
         }
       }
+      // CPD-OFF generated annuity formulas
       if (a.isAST(S.AnnuityDue, 3, 4)) {
         // https://en.wikipedia.org/wiki/Annuity
         IAST annuity = (IAST) a;
@@ -169,6 +172,7 @@ public class FinancialFunctions {
             return //
             // [$ (p*((1 + b)^q)^(1 - t/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 + b)^q) $]
             F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+            // CPD-ON
                 F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
                 F.Power(F.Power(F.Plus(F.C1, b), q),
                     F.Plus(F.C1, F.Times(F.CN1, F.Power(q, F.CN1), t))),

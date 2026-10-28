@@ -95,7 +95,7 @@ public class SubsetFunctions {
           subsetCounter.subsetCases(arg1, rules, engine);
           return resultList;
         } catch (ArithmeticException ae) {
-          return Errors.printMessage(S.SubsetReplace, ae, engine);
+          return Errors.printMessage(S.SubsetCases, ae, engine);
         }
       }
       return F.NIL;
@@ -128,32 +128,7 @@ public class SubsetFunctions {
 
     private IExpr subsetCases(IAST arg1, IExpr rules, final EvalEngine engine) {
       if (rules.forAll(x -> x.isRuleAST() || x.isList())) {
-        IAST rulesList = (IAST) rules;
-        IAST result = arg1;
-        for (IExpr rule : rulesList) {
-          if (rule.isRuleAST()) {
-            IExpr temp = applyRule((IAST) rule, result, engine);
-            if (temp.isAST()) {
-              result = (IAST) temp;
-            }
-            if (maxNumberOfResult == 0) {
-              return result;
-            }
-          } else if (rule.isList() && rule.size() > 1) {
-            IExpr temp =
-                applyRule(F.Rule(rule, IPatternMatcher.DUMMY_SUBSET_CASES), result, engine);
-            if (temp.isAST()) {
-              result = (IAST) temp;
-            }
-            if (maxNumberOfResult == 0) {
-              return result;
-            }
-          } else {
-            throw new ArgumentTypeException(
-                "rule expressions (x->y) expected instead of " + rule.toString());
-          }
-        }
-        return result;
+        return applyRules((IAST) rules, arg1, true, engine);
       }
 
       if (rules.isRuleAST()) {
@@ -168,23 +143,7 @@ public class SubsetFunctions {
 
     private IExpr subsetReplace(IAST arg1, IExpr rules, final EvalEngine engine) {
       if (rules.isList()) {
-        IAST rulesList = (IAST) rules;
-        IAST result = arg1;
-        for (IExpr rule : rulesList) {
-          if (rule.isRuleAST()) {
-            IExpr temp = applyRule((IAST) rule, result, engine);
-            if (temp.isAST()) {
-              result = (IAST) temp;
-            }
-            if (maxNumberOfResult == 0) {
-              return result;
-            }
-          } else {
-            throw new ArgumentTypeException(
-                "rule expressions (x->y) expected instead of " + rule.toString());
-          }
-        }
-        return result;
+        return applyRules((IAST) rules, arg1, false, engine);
       }
 
       if (rules.isRuleAST()) {
@@ -192,6 +151,36 @@ public class SubsetFunctions {
       }
       throw new ArgumentTypeException(
           "rule expressions (x->y) expected instead of " + rules.toString());
+    }
+
+    /**
+     * Apply the rules of <code>rulesList</code> one after the other, each to the result of the
+     * previous one, until <code>maxNumberOfResult</code> results are collected.
+     *
+     * @param patternLists if <code>true</code> a non-empty list in <code>rulesList</code> is a
+     *        pattern whose matches are collected; otherwise only rules are allowed
+     */
+    private IAST applyRules(IAST rulesList, IAST arg1, boolean patternLists,
+        final EvalEngine engine) {
+      IAST result = arg1;
+      for (IExpr rule : rulesList) {
+        IExpr temp;
+        if (rule.isRuleAST()) {
+          temp = applyRule((IAST) rule, result, engine);
+        } else if (patternLists && rule.isList() && rule.size() > 1) {
+          temp = applyRule(F.Rule(rule, IPatternMatcher.DUMMY_SUBSET_CASES), result, engine);
+        } else {
+          throw new ArgumentTypeException(
+              "rule expressions (x->y) expected instead of " + rule.toString());
+        }
+        if (temp.isAST()) {
+          result = (IAST) temp;
+        }
+        if (maxNumberOfResult == 0) {
+          return result;
+        }
+      }
+      return result;
     }
 
     private IExpr applyRule(IAST rule, IAST result, final EvalEngine engine) {

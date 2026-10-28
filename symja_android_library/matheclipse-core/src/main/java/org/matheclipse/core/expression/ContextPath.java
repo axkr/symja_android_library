@@ -497,7 +497,16 @@ public final class ContextPath implements Iterable<Context> {
    * @return
    */
   public boolean setGlobalContext(Context context) {
-    String contextName = Context.GLOBAL_CONTEXT_NAME;
+    return replaceLast(Context.GLOBAL_CONTEXT_NAME, context);
+  }
+
+  /**
+   * Replace the last context named <code>contextName</code> in this context-path, in the context
+   * map and as the current context.
+   *
+   * @return <code>false</code> if there is no context with this name in the path
+   */
+  private boolean replaceLast(String contextName, Context context) {
     for (int i = path.size() - 1; i >= 0; i--) {
       Context currentContext = path.get(i);
       if (currentContext.getContextName().equals(contextName)) {
@@ -520,17 +529,7 @@ public final class ContextPath implements Iterable<Context> {
    * @return
    */
   public boolean setContext(String contextName, Context context) {
-    for (int i = path.size() - 1; i >= 0; i--) {
-      Context currentContext = path.get(i);
-      if (currentContext.getContextName().equals(contextName)) {
-        path.set(i, context);
-        fContextMap.put(contextName, context);
-        if (fContext.getContextName().equals(contextName)) {
-          fContext = context;
-        }
-        break;
-      }
-    }
+    replaceLast(contextName, context);
     for (int i = 0; i < path.size(); i++) {
       if (path.get(i).getContextName().equals(contextName)) {
         path.set(i, context);

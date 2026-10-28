@@ -119,13 +119,9 @@ public final class NumberFieldUtils {
     if (!coefficients.isList() || coefficients.size() < 3) {
       return null;
     }
-    IAST list = (IAST) coefficients;
-    IRational[] result = new IRational[list.argSize()];
-    for (int i = 1; i < list.size(); i++) {
-      if (!list.get(i).isRational()) {
-        return null;
-      }
-      result[i - 1] = (IRational) list.get(i);
+    IRational[] result = rationalCoefficients(coefficients);
+    if (result == null) {
+      return null;
     }
     IRational leading = result[result.length - 1];
     if (leading.isZero()) {
@@ -201,6 +197,15 @@ public final class NumberFieldUtils {
     ISymbol x = F.Dummy("x");
     IExpr coefficients =
         engine.evaluate(F.CoefficientList(F.binaryAST2(S.Cyclotomic, order, x), x));
+    return rationalCoefficients(coefficients);
+  }
+
+  /**
+   * The entries of a list of rational coefficients.
+   *
+   * @return <code>null</code> if <code>coefficients</code> is no list or has a non-rational entry
+   */
+  private static IRational[] rationalCoefficients(IExpr coefficients) {
     if (!coefficients.isList()) {
       return null;
     }

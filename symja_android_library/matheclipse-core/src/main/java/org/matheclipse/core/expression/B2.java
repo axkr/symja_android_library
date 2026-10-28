@@ -1403,6 +1403,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public IAST getItems(int[] items, int length, int offset) {
     return FixedArity.getItems(this, items, length, offset);
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
 
@@ -1413,6 +1414,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       hashValue = (hashValue * 16777619) ^ head().hashCode();
       hashValue = (hashValue * 16777619) ^ arg1.hashCode();
       hashValue = (hashValue * 16777619) ^ arg2.hashCode();
+      // CPD-ON
     }
     return hashValue;
   }

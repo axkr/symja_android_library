@@ -228,6 +228,7 @@ public class Num implements INum {
       return valueOf(Math.abs(value));
     }
     return this;
+  // CPD-OFF numeric special-function dispatch per number type
   }
 
   /** {@inheritDoc} */
@@ -256,6 +257,7 @@ public class Num implements INum {
 
   @Override
   public IInexactNumber acos() {
+  // CPD-ON
     // https://github.com/Hipparchus-Math/hipparchus/issues/128 - and Complex.acos() puts a real
     // argument greater than 1 on the other side of the cut: ArcCos(2.0) is I*ArcCosh(2.0)
     if (value > 1.0) {
@@ -1230,6 +1232,7 @@ public class Num implements INum {
         return F.num(doubleGamma);
       }
       Apfloat gamma = EvalEngine.getApfloatDouble().gamma(apfloatValue());
+      // CPD-OFF numeric special-function dispatch per number type
       return ApfloatNum.machineOrPromoted(gamma);
     } catch (OverflowException of) {
       return F.Overflow();
@@ -1252,6 +1255,7 @@ public class Num implements INum {
                 EvalEngine.getApfloatDouble().gamma(apfloatValue(), ((IReal) x).apfloatValue());
             return F.num(gamma.doubleValue());
           } catch (ArithmeticException | NumericComputationException e) {
+          // CPD-ON
             // try as computation with complex numbers
             if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
@@ -1275,6 +1279,7 @@ public class Num implements INum {
         are.printStackTrace();
       }
       return Errors.printMessage(S.Gamma, are, EvalEngine.get());
+    // CPD-OFF numeric special-function dispatch per number type
     }
     return INum.super.gamma(x);
   }
@@ -1291,6 +1296,7 @@ public class Num implements INum {
     }
     if (x0 instanceof IReal && x1 instanceof IReal) {
       try {
+      // CPD-ON
         Apfloat gamma = EvalEngine.getApfloatDouble().gamma(apfloatValue(),
             ((IReal) x0).apfloatValue(), ((IReal) x1).apfloatValue());
         return F.num(gamma.doubleValue());
@@ -1780,6 +1786,7 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public IInteger integerPart() {
+    // CPD-OFF numeric special-function dispatch per number type
     return isNegative() ? ceilFraction() : floorFraction();
   }
 
@@ -1795,6 +1802,7 @@ public class Num implements INum {
     String prefix = SourceCodeProperties.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     if (isZero()) {
+    // CPD-ON
       return javaForm.append("CD0");
     } else if (isOne()) {
       return javaForm.append("CD1");

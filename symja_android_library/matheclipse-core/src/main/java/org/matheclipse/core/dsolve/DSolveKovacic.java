@@ -48,8 +48,8 @@ final class DSolveKovacic {
     if (lf.order != 2 || !lf.g.isZero() || lf.a[2].isZero() || lf.constantCoefficients) {
       return F.NIL;
     }
-    IExpr p = engine.evaluate(F.Cancel(F.Together(F.Divide(lf.a[1], lf.a[2]))));
-    IExpr q = engine.evaluate(F.Cancel(F.Together(F.Divide(lf.a[0], lf.a[2]))));
+    IExpr p = lf.monicCoefficient(1, engine);
+    IExpr q = lf.monicCoefficient(0, engine);
 
     // y == w*z takes the first derivative out of the equation and leaves z'' == r*z.
     DSolveNormalForm normalForm = DSolveNormalForm.of(p, q, xVar, MAX_LEAF_COUNT, ctx);
@@ -783,6 +783,7 @@ final class DSolveKovacic {
    * one of order <code>Ceiling(o/2)</code>, because squaring it is what has to produce the pole of
    * <code>r</code>.
    */
+  // CPD-OFF ansatz builders of two solvers with different pole orders
   private static IExpr ansatz(IAST places, IExpr xVar, int degree, IASTAppendable unknowns,
       EvalEngine engine) {
     IASTAppendable terms = F.PlusAlloc(degree + 1);
@@ -801,6 +802,7 @@ final class DSolveKovacic {
       if (placeDegree < 1) {
         continue;
       }
+      // CPD-ON
       int order = entry.second().toIntDefault();
       if (order < 1) {
         order = 1;

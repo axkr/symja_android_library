@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Base64;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.convert.JSONConvert;
 import org.matheclipse.core.eval.Errors;
@@ -16,7 +16,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
@@ -76,18 +75,8 @@ public class ImportString extends AbstractEvaluator {
           final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 
           CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(',');
-          Iterable<CSVRecord> records = csvFormat.parse(new StringReader(str1));
-          IASTAppendable rowList = F.ListAlloc(256);
-          for (CSVRecord record : records) {
-            IASTAppendable columnList = F.ListAlloc(record.size());
-            for (String string : record) {
-              final ASTNode node = parser.parse(string);
-              IExpr temp = ast2Expr.convert(node);
-              columnList.append(temp);
-            }
-            rowList.append(columnList);
-          }
-          return rowList;
+          return Convert.csvRecords2List(csvFormat.parse(new StringReader(str1)), parser,
+              ast2Expr);
         case RAWJSON:
           return JSONConvert.importJSON(str1, true);
         case STRING:

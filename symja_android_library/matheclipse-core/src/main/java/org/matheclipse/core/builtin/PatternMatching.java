@@ -1202,10 +1202,20 @@ public final class PatternMatching {
           if (temp.isNIL() || temp == arg1) {
             return F.NIL;
           }
-          return F.HoldPattern(temp);
+          return wrap(temp);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Wrap the evaluated pattern with the head of this function.
+     *
+     * @param pattern the evaluated pattern
+     * @return <code>HoldPattern(pattern)</code>
+     */
+    protected IExpr wrap(IExpr pattern) {
+      return F.HoldPattern(pattern);
     }
 
     @Override
@@ -1242,18 +1252,8 @@ public final class PatternMatching {
   private static final class Literal extends HoldPattern {
     @Deprecated
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
-        IExpr arg1 = ast.arg1();
-        if (arg1.isAST()) {
-          IExpr temp = engine.evalHoldPattern((IAST) arg1, true, false);
-          if (temp.isNIL() || temp == arg1) {
-            return F.NIL;
-          }
-          return F.Literal(temp);
-        }
-      }
-      return F.NIL;
+    protected IExpr wrap(IExpr pattern) {
+      return F.Literal(pattern);
     }
   }
 
@@ -2679,6 +2679,7 @@ public final class PatternMatching {
               return S.Null;
             }
           }
+          // CPD-OFF Set and SetDelayed keep their own rule flags and messages
           createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 
           return S.Null;
@@ -2696,6 +2697,7 @@ public final class PatternMatching {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+      // CPD-ON
     }
 
     private static void createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
@@ -3069,6 +3071,7 @@ public final class PatternMatching {
         throw new FailedException();
       }
       if (evaledLHS instanceof IPatternObject) {
+        // CPD-OFF Set and SetDelayed keep their own rule flags and messages
         lhsSymbol.putDownRule(flags | IPatternMatcher.SET, false, (IPatternObject) evaledLHS,
             rightHandSide, packageMode);
       } else {
@@ -3082,6 +3085,7 @@ public final class PatternMatching {
           ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
         } else {
           lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) originalLHS, rightHandSide,
+          // CPD-ON
               packageMode);
         }
 
@@ -3158,6 +3162,7 @@ public final class PatternMatching {
       throw new FailedException();
     }
     if (evaledLHS instanceof IPatternObject) {
+      // CPD-OFF Set and SetDelayed keep their own rule flags and messages
       lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IPatternObject) evaledLHS,
           rightHandSide, packageMode);
     } else {
@@ -3171,6 +3176,7 @@ public final class PatternMatching {
         ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
       } else {
         lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) originalLHS,
+        // CPD-ON
             rightHandSide, packageMode);
       }
     }
@@ -3774,6 +3780,7 @@ public final class PatternMatching {
           if (unsetAssociationKey(leftHandSide, engine)) {
             return S.Null;
           }
+          // CPD-OFF Set and SetDelayed keep their own rule flags and messages
           removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
           return S.Null;
         } catch (RuleCreationError rce) {
@@ -3791,6 +3798,7 @@ public final class PatternMatching {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+    // CPD-ON
 
     /**
      * <code>a[key] =.</code> where <code>a</code> holds an association removes <code>key</code>
@@ -4060,15 +4068,10 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isString()) {
-        // the name of a symbol; other text is no name and gets the message of a wrong argument
-        String name = ast.arg1().toString();
-        if (name.matches("[a-zA-Z$][a-zA-Z0-9$`]*")) {
-          IExpr named = engine.parse(name);
-          if (named.isSymbol()) {
-            return engine.evaluate(F.unaryAST1(S.UpValues, named));
-          }
-        }
+      // the name of a symbol; other text is no name and gets the message of a wrong argument
+      IExpr named = DefinitionFunctions.symbolOfName(ast.arg1(), engine);
+      if (named.isPresent()) {
+        return engine.evaluate(F.unaryAST1(S.UpValues, named));
       }
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {

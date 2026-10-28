@@ -170,6 +170,7 @@ public class StatisticsContinousDistribution {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         // Hypergeometric1F1(a, a + b, t)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Hypergeometric1F1(a, F.Plus(a, b), t);
       }
       return F.NIL;
@@ -185,6 +186,7 @@ public class StatisticsContinousDistribution {
             (aDouble, bDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble) //
                 .cumulativeProbability(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -192,6 +194,7 @@ public class StatisticsContinousDistribution {
             // [$ (Piecewise({{BetaRegularized(#, a, b), 0 < # < 1}, {1, # >= 1}}, 0)&) $]
             F.Function(F.Piecewise(
                 F.list(F.list(F.BetaRegularized(F.Slot1, a, b), F.Less(F.C0, F.Slot1, F.C1)),
+                    // CPD-OFF generated distribution formulas with matching boilerplate
                     F.list(F.C1, F.GreaterEqual(F.Slot1, F.C1))),
                 F.C0)); // $$;
         return callFunction(function, k);
@@ -217,6 +220,7 @@ public class StatisticsContinousDistribution {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
+        // CPD-ON
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{InverseBetaRegularized(#, a, b), 0 < # < 1},
             // {0, # <=
@@ -252,6 +256,7 @@ public class StatisticsContinousDistribution {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         // (a,b) => InverseBetaRegularized(1/2, a, b)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.InverseBetaRegularized(F.C1D2, a, b);
       }
       return F.NIL;
@@ -267,6 +272,7 @@ public class StatisticsContinousDistribution {
             (aDouble, bDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.BetaDistribution(aDouble, bDouble) //
                 .density(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -552,6 +558,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
@@ -563,6 +570,7 @@ public class StatisticsContinousDistribution {
         IExpr function =
             // [$ 1/2+ArcTan((-a+#)/b)/Pi & $]
             F.Function(F.Plus(F.C1D2, F.Times(F.Power(F.Pi, F.CN1),
+            // CPD-ON
                 F.ArcTan(F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(a), F.Slot1)))))); // $$;
         return callFunction(function, k);
       }
@@ -589,6 +597,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
@@ -600,6 +609,7 @@ public class StatisticsContinousDistribution {
         IExpr function =
             // [$ ( ConditionalExpression( Piecewise({{a+b*Tan((-(1/2)+#)*Pi), 0 <#< 1},
             // {-Infinity,#<= 0}}, Infinity), 0 <=#<= 1) & ) $]
+            // CPD-ON
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
@@ -644,6 +654,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
@@ -655,6 +666,7 @@ public class StatisticsContinousDistribution {
         IExpr function =
             // [$ 1/(b*Pi*(1+(-a+#)^2/b^2))& $]
             F.Function(
+            // CPD-ON
                 F.Power(
                     F.Times(b, F.Pi,
                         F.Plus(F.C1,
@@ -1154,6 +1166,7 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // (n,m) => InverseGammaRegularized(n, 0, 1/2)/m
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Times(F.Power(m, -1), F.InverseGammaRegularized(n, F.C0, F.C1D2));
       }
       return F.NIL;
@@ -1170,7 +1183,6 @@ public class StatisticsContinousDistribution {
             F.Function(F.Piecewise(F.list(F.list(F.Times(F.Power(m, n),
                 F.Power(F.Times(F.Exp(F.Times(F.Slot1, m)), F.Gamma(n)), F.CN1),
                 F.Power(F.Slot1, F.Plus(F.CN1, n))), F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
-        // CPD-OFF generated distribution formulas with matching boilerplate
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1274,6 +1286,7 @@ public class StatisticsContinousDistribution {
         IExpr function =
             // [$ (Piecewise({{1 - E^((-#)*n), # >= 0}}, 0)) & $]
             F.Function(
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.Piecewise(F.list(F.list(F.Subtract(F.C1, F.Exp(F.Times(F.CN1, F.Slot1, n))),
                     F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -1288,6 +1301,7 @@ public class StatisticsContinousDistribution {
         // Subfactorial(m)/n^m;
         return F.Times(F.Power(F.Power(n, m), F.CN1), F.Subfactorial(m));
       }
+      // CPD-ON
       return F.NIL;
     }
 
@@ -1420,6 +1434,7 @@ public class StatisticsContinousDistribution {
 
 
   private static final class FRatioDistribution extends AbstractEvaluator
+      // CPD-OFF generated distribution formulas with matching boilerplate
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
@@ -1431,6 +1446,7 @@ public class StatisticsContinousDistribution {
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.FDistribution(nDouble, mDouble) //
                 .cumulativeProbability(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -1503,6 +1519,7 @@ public class StatisticsContinousDistribution {
             F.Plus(F.CN1,
                 F.Power(
                     F.InverseBetaRegularized(F.C1, F.CN1D2, F.Times(F.C1D2, m), F.Times(F.C1D2, n)),
+                    // CPD-OFF generated distribution formulas with matching boilerplate
                     F.CN1))); // $$;
       }
       return F.NIL;
@@ -1517,6 +1534,7 @@ public class StatisticsContinousDistribution {
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.FDistribution(nDouble, mDouble) //
                 .density(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -1677,6 +1695,7 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // (n,m) => m/Log(2)^n^(-1)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Times(m, F.Power(F.Log(F.C2), F.Negate(F.Power(n, -1))));
       }
       return F.NIL;
@@ -1693,6 +1712,7 @@ public class StatisticsContinousDistribution {
             F.Function(
                 F.Piecewise(
                     F.list(
+                    // CPD-ON
                         F.list(
                             F.Times(
                                 F.Power(F.Times(
@@ -1948,6 +1968,7 @@ public class StatisticsContinousDistribution {
     public IExpr moment(IAST dist, IExpr n) {
       if (dist.isAST2() && n.isInteger() && !n.isNegative()) {
         // b^n*Pochhammer(a, n)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Times(F.Power(dist.arg2(), n), F.Pochhammer(dist.arg1(), n));
       }
       return F.NIL;
@@ -1963,6 +1984,7 @@ public class StatisticsContinousDistribution {
             (aDouble, bDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.GammaDistribution(aDouble, bDouble) //
                 .cumulativeProbability(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -2140,6 +2162,7 @@ public class StatisticsContinousDistribution {
         IExpr g = dist.arg3();
         IExpr d = dist.arg4();
         // (a,b,g,d) => d + b*InverseGammaRegularized(a, 1/2)^(1/g)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Plus(d, F.Times(b, F.Power(F.InverseGammaRegularized(a, F.C1D2), F.Power(g, -1))));
       }
       return F.NIL;
@@ -2155,6 +2178,7 @@ public class StatisticsContinousDistribution {
             (aDouble, bDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.GammaDistribution(aDouble, bDouble) //
                 .density(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -2255,6 +2279,7 @@ public class StatisticsContinousDistribution {
             // [$ Piecewise({{1 - E^((1 - E^(#*m))*n), # >= 0}}, 0) & $]
             F.Function(F.Piecewise(F.list(F.list(
                 F.Subtract(F.C1, F.Exp(F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))),
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -2279,6 +2304,7 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg2();
         IExpr function =
             // [$ ConditionalExpression( Piecewise({{Log(1 - Log(1 - #)/n)/m, 0 < # < 1}, {0, # <=
+            // CPD-ON
             // 0}},
             // Infinity), 0 <= # <= 1) & $]
             F.Function(
@@ -2772,6 +2798,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null || isInvalid(parameters)) {
@@ -2784,6 +2811,7 @@ public class StatisticsContinousDistribution {
         }
         // GammaRegularized(a, (b/(x - m))^g)
         double z = Math.exp(v[2] * Math.log(v[1] / (v[4] - v[3])));
+        // CPD-ON
         return F.num(z == Double.POSITIVE_INFINITY ? 0.0 : Gamma.regularizedGammaQ(v[0], z));
       }
       IExpr a = parameters[0];
@@ -2936,6 +2964,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null || isInvalid(parameters)) {
@@ -2948,6 +2977,7 @@ public class StatisticsContinousDistribution {
         }
         // in logarithms, so that a large shape does not overflow:
         // Log(g) - Log(b) - LogGamma(a) + (1 + a*g)*Log(z) - z^g with z = b/(x - m)
+        // CPD-ON
         double logZ = Math.log(v[1] / (v[4] - v[3]));
         double logDensity = Math.log(v[2]) - Math.log(v[1]) - Gamma.logGamma(v[0])
             + (1.0 + v[0] * v[2]) * logZ - Math.exp(v[2] * logZ);
@@ -3097,6 +3127,7 @@ public class StatisticsContinousDistribution {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class LogNormalDistribution extends AbstractEvaluator
+      // CPD-OFF generated distribution formulas with matching boilerplate
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
 
     @Override
@@ -3109,6 +3140,7 @@ public class StatisticsContinousDistribution {
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.LogNormalDistribution(nDouble, mDouble) //
                 .cumulativeProbability(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -3207,6 +3239,7 @@ public class StatisticsContinousDistribution {
     public IExpr median(IAST dist) {
       if (dist.isAST2()) {
         // (m,s) -> E^(m+s^2/2)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Power(S.E, dist.arg1());
       }
       return F.NIL;
@@ -3222,6 +3255,7 @@ public class StatisticsContinousDistribution {
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.LogNormalDistribution(nDouble, mDouble) //
                 .density(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -3526,6 +3560,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
@@ -3534,6 +3569,7 @@ public class StatisticsContinousDistribution {
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.NakagamiDistribution(nDouble, mDouble) //
                 .cumulativeProbability(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -3599,6 +3635,7 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // (n,m) -> Sqrt((m*InverseGammaRegularized(n, 0, 1/2))/n)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Sqrt(F.Times(m, F.Power(n, -1), F.InverseGammaRegularized(n, F.C0, F.C1D2)));
       }
       return F.NIL;
@@ -3613,6 +3650,7 @@ public class StatisticsContinousDistribution {
         IExpr value = machineValue(n, m, k, engine, //
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.NakagamiDistribution(nDouble, mDouble) //
+            // CPD-ON
                 .density(kDouble));
         if (value.isPresent()) {
           return value;
@@ -3625,6 +3663,7 @@ public class StatisticsContinousDistribution {
                         F.Power(F.Times(F.Exp(F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
                             F.Gamma(n)), F.CN1),
                         F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C2, n)))),
+                    // CPD-OFF generated distribution formulas with matching boilerplate
                     F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -3636,6 +3675,7 @@ public class StatisticsContinousDistribution {
       if (dist.isAST2()) {
         return randomVariate2(random, dist.arg1(), dist.arg2(), size,
             org.hipparchus.distribution.continuous.NakagamiDistribution::new);
+            // CPD-ON
       }
       return F.NIL;
     }
@@ -3848,6 +3888,7 @@ public class StatisticsContinousDistribution {
       if (dist.isAST0()) {
         IExpr function =
             // [$ ( (1/2)*Erfc(-(#/Sqrt(2))) & ) $]
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.Function(F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, F.Slot1)))); // $$;
         return callFunction(function, k);
       } else if (dist.isAST2()) {
@@ -3858,6 +3899,7 @@ public class StatisticsContinousDistribution {
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.NormalDistribution(nDouble, mDouble) //
                 .cumulativeProbability(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -3940,6 +3982,7 @@ public class StatisticsContinousDistribution {
             // [$ (ConditionalExpression((-Sqrt(2))*InverseErfc(2*#1), 0 <= #1 <= 1) & ) $]
             F.Function(F.ConditionalExpression(
                 F.Times(F.CN1, F.CSqrt2, F.InverseErfc(F.Times(F.C2, F.Slot1))),
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       } else if (dist.isAST2()) {
@@ -3950,6 +3993,7 @@ public class StatisticsContinousDistribution {
             new org.hipparchus.distribution.continuous.NormalDistribution(nDouble, mDouble) //
                 .inverseCumulativeProbability(kDouble));
         if (value.isPresent()) {
+        // CPD-ON
           return value;
         }
         IExpr function =
@@ -3998,6 +4042,7 @@ public class StatisticsContinousDistribution {
         IExpr function =
             // [$ ( 1/(E^(#^2/2)*Sqrt(2*Pi)) & ) $]
             F.Function(
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.Power(F.Times(F.Exp(F.Times(F.C1D2, F.Sqr(F.Slot1))), F.Sqrt(F.C2Pi)), F.CN1)); // $$;
         return callFunction(function, k);
       } else if (dist.isAST2()) {
@@ -4008,6 +4053,7 @@ public class StatisticsContinousDistribution {
             (nDouble, mDouble, kDouble) -> //
             new org.hipparchus.distribution.continuous.NormalDistribution(nDouble, mDouble) //
                 .density(kDouble));
+                // CPD-ON
         if (value.isPresent()) {
           return value;
         }
@@ -4226,6 +4272,7 @@ public class StatisticsContinousDistribution {
                                     F.Times(k,
                                         F.Plus(F.CN1,
                                             F.Power(F.Subtract(F.C1, F.Slot1),
+                                                // CPD-OFF generated distribution formulas
                                                 F.Negate(F.Power(a, F.CN1)))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.list(m, F.LessEqual(F.Slot1, F.C0))),
@@ -4233,6 +4280,7 @@ public class StatisticsContinousDistribution {
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, x);
       } else if (dist.argSize() == 4) {
+      // CPD-ON
         //
         IExpr k = dist.arg1();
         IExpr a = dist.arg2();
@@ -4251,6 +4299,7 @@ public class StatisticsContinousDistribution {
                                         F.Power(F.Plus(F.CN1,
                                             F.Power(F.Subtract(F.C1, F.Slot1),
                                                 F.Negate(F.Power(a, F.CN1)))),
+                                            // CPD-OFF generated distribution formulas
                                             g))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.list(m, F.LessEqual(F.Slot1, F.C0))),
@@ -4258,6 +4307,7 @@ public class StatisticsContinousDistribution {
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, x);
       }
+      // CPD-ON
       return F.NIL;
     }
 
@@ -5023,6 +5073,7 @@ public class StatisticsContinousDistribution {
           return new IExpr[] {l, r};
         }
       } else if (dist.isAST0()) {
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return new IExpr[] {F.C0, F.C1};
       }
       return null;
@@ -5048,6 +5099,7 @@ public class StatisticsContinousDistribution {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
+      // CPD-ON
         return randomVariate2(random, minMax[0], minMax[1], size,
             org.hipparchus.distribution.continuous.UniformRealDistribution::new);
       }
@@ -5359,6 +5411,7 @@ public class StatisticsContinousDistribution {
         IExpr function =
             // [$ Piecewise({{1 - E^(-(#/m)^n),# > 0}}, 0) & $]
             F.Function(F.Piecewise(F.list(F.list(
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.Subtract(F.C1, F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)))),
                 F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -5367,6 +5420,7 @@ public class StatisticsContinousDistribution {
         IExpr scale = dist.arg2();
         IExpr loc = dist.arg3();
         IExpr numeric = numericWeibull(n, scale, loc, k, true, engine);
+        // CPD-ON
         if (numeric.isPresent()) {
           return numeric;
         }
@@ -5524,6 +5578,7 @@ public class StatisticsContinousDistribution {
                                     F.Times(F.Exp(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)),
                                         m),
                                     F.CN1),
+                                // CPD-OFF generated distribution formulas with matching boilerplate
                                 n, F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Plus(F.CN1, n))),
                             F.Greater(F.Slot1, F.C0))),
                     F.C0)); // $$;
@@ -5532,6 +5587,7 @@ public class StatisticsContinousDistribution {
         IExpr n = dist.arg1();
         IExpr scale = dist.arg2();
         IExpr loc = dist.arg3();
+        // CPD-ON
         IExpr numeric = numericWeibull(n, scale, loc, k, false, engine);
         if (numeric.isPresent()) {
           return numeric;
@@ -5550,6 +5606,7 @@ public class StatisticsContinousDistribution {
                                 scale), F.CN1),
                             n, F.Power(F.Times(F.Power(scale, F.CN1), F.Subtract(F.Slot1, loc)),
                                 F.Plus(F.CN1, n))),
+                            // CPD-OFF generated distribution formulas with matching boilerplate
                             F.Greater(F.Slot1, loc))),
                     F.C0)); // $$;
         return callFunction(function, k);
@@ -5561,6 +5618,7 @@ public class StatisticsContinousDistribution {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         return randomVariate2(random, dist.arg1(), dist.arg2(), size,
+        // CPD-ON
             org.hipparchus.distribution.continuous.WeibullDistribution::new);
       } else if (dist.isAST3()) {
         double n = dist.arg1().evalfNaN();
@@ -5652,6 +5710,7 @@ public class StatisticsContinousDistribution {
                 F.Subtract(F.C1, F.Times(F.C1D2, F.Exp(F.Negate(z)))))),
             k);
       }
+      // CPD-OFF generated distribution formulas with matching boilerplate
       return F.NIL;
     }
 
@@ -5670,6 +5729,7 @@ public class StatisticsContinousDistribution {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
+        // CPD-ON
         // Piecewise({{n + m*Log(2*#), 0 < # < 1/2}, {n - m*Log(2 - 2*#), 1/2 <= # < 1}}, Infinity)
         // &
         return callFunction(F.Function(F.Piecewise(F.list(//
@@ -5760,6 +5820,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
@@ -5770,6 +5831,7 @@ public class StatisticsContinousDistribution {
         // {1 - (b - #)^2/((b - a)*(b - c)), c < # <= b}, {1, # > b}}, 0) &
         return callFunction(F.Function(F.Piecewise(F.list(//
             F.list(F.Divide(F.Sqr(F.Subtract(F.Slot1, a)),
+            // CPD-ON
                 F.Times(F.Subtract(b, a), F.Subtract(c, a))), F.LessEqual(a, F.Slot1, c)), //
             F.list(
                 F.Subtract(F.C1,
@@ -5850,6 +5912,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
@@ -5860,6 +5923,7 @@ public class StatisticsContinousDistribution {
         // {(2*(b - #))/((b - a)*(b - c)), c < # <= b}}, 0) &
         return callFunction(F.Function(F.Piecewise(F.list(//
             F.list(F.Divide(F.Times(F.C2, F.Subtract(F.Slot1, a)),
+            // CPD-ON
                 F.Times(F.Subtract(b, a), F.Subtract(c, a))), F.LessEqual(a, F.Slot1, c)), //
             F.list(
                 F.Divide(F.Times(F.C2, F.Subtract(b, F.Slot1)),
@@ -6701,11 +6765,13 @@ public class StatisticsContinousDistribution {
         // Infinity), 0 <= # <= 1) &
         return callFunction(F.Function(F.ConditionalExpression(
             F.Piecewise(F.list(
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.list(F.Log(F.Divide(F.Slot1, F.Subtract(F.C1, F.Slot1))),
                     F.Less(F.C0, F.Slot1, F.C1)),
                 F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
             F.LessEqual(F.C0, F.Slot1, F.C1))), k);
       } else if (dist.isAST2()) {
+      // CPD-ON
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         IExpr value = locationScaleQuantile(a, b, k, engine, p -> Math.log(p / (1.0 - p)));
@@ -6722,11 +6788,13 @@ public class StatisticsContinousDistribution {
                             F.list(
                                 F.Plus(a,
                                     F.Times(b,
+                                        // CPD-OFF generated distribution formulas
                                         F.Log(F.Divide(F.Slot1, F.Subtract(F.C1, F.Slot1))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))),
+                    // CPD-ON
             k);
       }
       return F.NIL;
@@ -6895,6 +6963,7 @@ public class StatisticsContinousDistribution {
         // Piecewise({{(1 + (#/s)^(-g))^(-1), # > 0}}, 0) &
         return callFunction(F.Function(F.Piecewise(F.list(F.list(//
             F.Power(F.Plus(F.C1, F.Power(F.Divide(F.Slot1, s), F.Negate(g))), F.CN1),
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.Greater(F.Slot1, F.C0))), F.C0)), k);
       }
       return F.NIL;
@@ -6914,6 +6983,7 @@ public class StatisticsContinousDistribution {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr g = dist.arg1();
+        // CPD-ON
         IExpr s = dist.arg2();
         // ConditionalExpression(Piecewise({{s*(#/(1 - #))^(1/g), 0 < # < 1}, {0, # <= 0}},
         // Infinity), 0 <= # <= 1) &
@@ -7012,6 +7082,7 @@ public class StatisticsContinousDistribution {
         return callFunction(F.Function(F.Piecewise(F.list(//
             F.list(F.Subtract(F.C1, F.Power(F.Subtract(F.C1, F.Power(F.Slot1, a)), b)),
                 F.Less(F.C0, F.Slot1, F.C1)), //
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.list(F.C1, F.GreaterEqual(F.Slot1, F.C1))), F.C0)), k);
       }
       return F.NIL;
@@ -7035,6 +7106,7 @@ public class StatisticsContinousDistribution {
         // ConditionalExpression((1 - (1 - #)^(1/b))^(1/a), 0 <= # <= 1) &
         return callFunction(F.Function(F.ConditionalExpression(
             F.Power(F.Subtract(F.C1, F.Power(F.Subtract(F.C1, F.Slot1), F.Power(b, F.CN1))),
+            // CPD-ON
                 F.Power(a, F.CN1)),
             F.LessEqual(F.C0, F.Slot1, F.C1))), k);
       }
@@ -7296,6 +7368,7 @@ public class StatisticsContinousDistribution {
         // Piecewise({{1 - (1 + (#/b)^a)^(-q), # > 0}}, 0) &
         return callFunction(F.Function(F.Piecewise(F.list(F.list(//
             F.Subtract(F.C1, F.Power(F.Plus(F.C1, F.Power(F.Divide(F.Slot1, b), a)), F.Negate(q))),
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.Greater(F.Slot1, F.C0))), F.C0)), k);
       }
       return F.NIL;
@@ -7319,6 +7392,7 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr mean(IAST dist) {
       if (dist.isAST3()) {
+      // CPD-ON
         IExpr q = dist.arg1();
         IExpr a = dist.arg2();
         IExpr b = dist.arg3();
@@ -7327,6 +7401,7 @@ public class StatisticsContinousDistribution {
         return F.Piecewise(F.list(F.list(//
             F.Divide(F.Times(b, F.Gamma(F.Plus(F.C1, inverseA)), F.Gamma(F.Subtract(q, inverseA))),
                 F.Gamma(q)),
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.Greater(F.Times(a, q), F.C1))), S.Indeterminate);
       }
       return F.NIL;
@@ -7342,6 +7417,7 @@ public class StatisticsContinousDistribution {
       if (dist.isAST3()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0),
             F.Greater(dist.arg3(), F.C0));
+            // CPD-ON
       }
       return F.NIL;
     }
@@ -8387,12 +8463,14 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null && p[1].isZero() && p[2].isOne()) {
         int n = p[0].toIntDefault();
         if (n > 0 && n <= 32) {
           IASTAppendable branches = F.ListAlloc(n + 1);
+          // CPD-ON
           branches.append(F.list(F.C0, F.Less(F.Slot1, F.C0)));
           for (int j = 0; j < n; j++) {
             branches.append(F.list(distributionBranch(n, j, F.Slot1), branchCondition(n, j)));
@@ -8448,12 +8526,14 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null && p[1].isZero() && p[2].isOne()) {
         int n = p[0].toIntDefault();
         if (n > 0 && n <= 32) {
           IASTAppendable branches = F.ListAlloc(n + 1);
+          // CPD-ON
           if (n > 1) {
             branches.append(F.list(F.C0, F.Less(F.Slot1, F.C0)));
           }

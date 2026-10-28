@@ -64,6 +64,7 @@ final class DSolveSymmetry {
    * The general solution of the equation, or {@link F#NIL} if no symmetry of the kind looked for
    * here reduces it.
    */
+  // CPD-OFF dummy variables used further down; a holder reads worse
   static IExpr solveSecondOrder(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr c_n,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
@@ -71,6 +72,7 @@ final class DSolveSymmetry {
     IExpr pDummy = F.Dummy("p");
     IExpr field =
         DSolveUtil.solveForSecondDerivative(lhs, yFunction, xVar, yDummy, pDummy, engine);
+        // CPD-ON
     if (field.isNIL() || field.leafCount() > MAX_PHI_LEAF_COUNT
         || DSolveUtil.hasUndefinedFunction(field)) {
       return F.NIL;

@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.RegionPrimitives;
@@ -31,11 +30,7 @@ public class MomentOfInertia extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
+    IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (!arg1.isAST()) {
       return F.NIL;
     }

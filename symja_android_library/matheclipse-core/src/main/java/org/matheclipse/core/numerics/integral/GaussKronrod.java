@@ -672,11 +672,13 @@ public final class GaussKronrod extends Quadrature {
     result[0] = resk * hlgth;
     resabs[0] *= dhlgth;
     resasc[0] *= dhlgth;
+    // CPD-OFF QUADPACK port kept close to the source
     abserr[0] = Math.abs((resk - resg) * hlgth);
     if (resasc[0] != 0.0 && abserr[0] != 0.0) {
       abserr[0] = resasc[0] * Math.min(1.0, Math.pow(200.0 * abserr[0] / resasc[0], 1.5));
     }
     if (resabs[0] > UFLOW / (50.0 * EPMACH)) {
+    // CPD-ON
       abserr[0] = Math.max((EPMACH * 50.0) * resabs[0], abserr[0]);
     }
   }
@@ -740,11 +742,13 @@ public final class GaussKronrod extends Quadrature {
     result[0] = resk * hlgth;
     resasc[0] *= hlgth;
     resabs[0] *= hlgth;
+    // CPD-OFF QUADPACK port kept close to the source
     abserr[0] = Math.abs((resk - resg) * hlgth);
     if (resasc[0] != 0.0 && abserr[0] != 0.0) {
       abserr[0] = resasc[0] * Math.min(1.0, Math.pow(200.0 * abserr[0] / resasc[0], 1.5));
     }
     if (resabs[0] > uflow / (50.0 * epmach)) {
+    // CPD-ON
       abserr[0] = Math.max((epmach * 50.0) * resabs[0], abserr[0]);
     }
   }

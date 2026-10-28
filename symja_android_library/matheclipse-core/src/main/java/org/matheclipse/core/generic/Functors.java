@@ -802,10 +802,7 @@ public class Functors {
    * @return the keys of <code>assoc</code> mapped onto their values
    */
   private static Map<IExpr, IExpr> associationRules(IAssociation assoc) {
-    final int argsSize = assoc.argSize();
-    final Map<IExpr, IExpr> equalRules = (argsSize > 0 && argsSize <= 5) //
-        ? new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1)
-        : new HashMap<IExpr, IExpr>();
+    final Map<IExpr, IExpr> equalRules = newRulesMap(assoc.argSize());
     for (int i = 1; i < assoc.size(); i++) {
       IAST rule = assoc.getRule(i);
       if (rule.isPresent()) {
@@ -813,6 +810,16 @@ public class Functors {
       }
     }
     return equalRules;
+  }
+
+  /**
+   * A map for the left-hand sides of <code>argsSize</code> rules: a small open-addressing map for
+   * up to 5 rules, a {@link HashMap} otherwise.
+   */
+  private static Map<IExpr, IExpr> newRulesMap(int argsSize) {
+    return (argsSize > 0 && argsSize <= 5) //
+        ? new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1)
+        : new HashMap<IExpr, IExpr>();
   }
 
   /**
@@ -893,11 +900,7 @@ public class Functors {
       // assuming multiple rules in a list
 
       int argsSize = astRules.argSize();
-      if (argsSize <= 5) {
-        equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
-      } else {
-        equalRules = new HashMap<IExpr, IExpr>();
-      }
+      equalRules = newRulesMap(argsSize);
 
       for (final IExpr expr : astRules) {
         if (expr.isRuleAST()) {
@@ -935,12 +938,7 @@ public class Functors {
       if (astRules.size() > 1) {
         // assuming multiple rules in a list
         IAST rule;
-        int argsSize = astRules.argSize();
-        if (argsSize <= 5) {
-          equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
-        } else {
-          equalRules = new HashMap<IExpr, IExpr>();
-        }
+        equalRules = newRulesMap(astRules.argSize());
 
         for (final IExpr expr : astRules) {
           if (expr.isRuleAST()) {

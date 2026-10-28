@@ -14,13 +14,9 @@ public class KeyComplement extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-    if (!arg1.isList()) {
-      return F.NIL;
-    }
-    IAssociation[] associations = AssociationFunctions.toAssociations((IAST) arg1);
+    IAssociation[] associations = AssociationFunctions.toAssociations(ast.arg1());
     if (associations == null) {
-      // All elements must be associations or lists of rules
+      // a list whose elements are all associations or lists of rules is expected
       return F.NIL;
     }
     if (associations.length == 0) {

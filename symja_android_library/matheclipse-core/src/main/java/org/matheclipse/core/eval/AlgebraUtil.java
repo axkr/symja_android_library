@@ -4426,12 +4426,14 @@ public class AlgebraUtil {
       return true;
     }
     Object[] objects = jas.factorTerms(polyRat);
+    // CPD-OFF integer factor setup with different catch paths
     SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
     try {
       GenPolynomial<edu.jas.arith.BigInteger> poly =
           (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
       FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
           FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+          // CPD-ON
       map = factorAbstract.squarefreeFactors(poly);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);

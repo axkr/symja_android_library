@@ -921,14 +921,37 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class PostOperator extends AbstractTeXConverter {
+  /**
+   * A unary operator written before or after its operand, which is parenthesized if the
+   * surrounding precedence is at least the operator's precedence.
+   */
+  private abstract static class AffixOperator extends AbstractTeXConverter {
     protected int fPrecedence;
     protected String fOperator;
 
-    public PostOperator(final TeXFormFactory factory, final int precedence, final String oper) {
+    public AffixOperator(final TeXFormFactory factory, final int precedence, final String oper) {
       super(factory);
       fPrecedence = precedence;
       fOperator = oper;
+    }
+
+    public void precedenceClose(final StringBuilder buf, final int precedence) {
+      if (precedence >= fPrecedence) {
+        buf.append("\\right) ");
+      }
+    }
+
+    public void precedenceOpen(final StringBuilder buf, final int precedence) {
+      if (precedence >= fPrecedence) {
+        buf.append("\\left( ");
+      }
+    }
+  }
+
+  private static final class PostOperator extends AffixOperator {
+
+    public PostOperator(final TeXFormFactory factory, final int precedence, final String oper) {
+      super(factory, precedence, oper);
     }
 
     /** {@inheritDoc} */
@@ -942,18 +965,6 @@ public class TeXFormFactory {
       buffer.append(fOperator);
       precedenceClose(buffer, precedence);
       return true;
-    }
-
-    public void precedenceClose(final StringBuilder buf, final int precedence) {
-      if (precedence >= fPrecedence) {
-        buf.append("\\right) ");
-      }
-    }
-
-    public void precedenceOpen(final StringBuilder buf, final int precedence) {
-      if (precedence >= fPrecedence) {
-        buf.append("\\left( ");
-      }
     }
   }
 
@@ -1023,14 +1034,10 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class PreOperator extends AbstractTeXConverter {
-    protected int fPrecedence;
-    protected String fOperator;
+  private static final class PreOperator extends AffixOperator {
 
     public PreOperator(final TeXFormFactory factory, final int precedence, final String oper) {
-      super(factory);
-      fPrecedence = precedence;
-      fOperator = oper;
+      super(factory, precedence, oper);
     }
 
     /** {@inheritDoc} */
@@ -1044,18 +1051,6 @@ public class TeXFormFactory {
       fFactory.convertInternal(buffer, f.arg1(), fPrecedence, NO_PLUS_CALL);
       precedenceClose(buffer, precedence);
       return true;
-    }
-
-    public void precedenceClose(final StringBuilder buf, final int precedence) {
-      if (precedence >= fPrecedence) {
-        buf.append("\\right) ");
-      }
-    }
-
-    public void precedenceOpen(final StringBuilder buf, final int precedence) {
-      if (precedence >= fPrecedence) {
-        buf.append("\\left( ");
-      }
     }
   }
 

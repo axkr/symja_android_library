@@ -288,8 +288,8 @@ public class Zeta extends AbstractArg12 {
 
     EvalEngine engine = EvalEngine.get();
     if (engine.isDoubleMode()) {
-      if (a.re().isPositive()) {
-        try {
+      try {
+        if (a.re().isPositive()) {
           double sDouble = s.evalfNaN();
           double aDouble = a.evalfNaN();
           if (aDouble < 0.0 || Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
@@ -301,17 +301,7 @@ public class Zeta extends AbstractArg12 {
               return F.num(ZetaJS.hurwitzZeta(sDouble, aDouble));
             }
           }
-        } catch (ValidateException ve) {
-          return Errors.printMessage(S.Zeta, ve, engine);
-        } catch (ThrowException te) {
-          Errors.printMessage(S.Zeta, te, engine);
-          return te.getValue();
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.Zeta, rex, engine);
-        }
-      } else if (a.re().isNegative()) {
-        try {
+        } else if (a.re().isNegative()) {
           double sDouble = s.evalfNaN();
           double aDouble = a.evalfNaN();
           Complex sc = s.evalfc();
@@ -319,7 +309,7 @@ public class Zeta extends AbstractArg12 {
           double aReal = ac.getReal();
 
           if (!Double.isNaN(aReal)) {
-            // WMA's definition for Zeta[s, a] when Re(a) <= 0:
+            // the definition of Zeta[s, a] when Re(a) <= 0:
             // Zeta[s, a] = Zeta[s, a + m] + Sum[((a + k)^2)^(-s/2), {k, 0, m - 1}]
             // where any term with a + k == 0 is excluded.
             int m = (int) Math.floor(-aReal) + 1;
@@ -353,16 +343,15 @@ public class Zeta extends AbstractArg12 {
               }
             }
           }
-        } catch (ValidateException ve) {
-          return Errors.printMessage(S.Zeta, ve, engine);
-        } catch (ThrowException te) {
-          Errors.printMessage(S.Zeta, te, engine);
-          return te.getValue();
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.Zeta, rex, engine);
         }
-
+      } catch (ValidateException ve) {
+        return Errors.printMessage(S.Zeta, ve, engine);
+      } catch (ThrowException te) {
+        Errors.printMessage(S.Zeta, te, engine);
+        return te.getValue();
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.Zeta, rex, engine);
       }
       return F.NIL;
     }
@@ -379,6 +368,7 @@ public class Zeta extends AbstractArg12 {
         // a real and a complex argument, or a second argument without a positive real part, where
         // the terms with a + k == 0 are left out and the other ones are ((a + k)^2)^(-s/2)
         try {
+          // CPD-OFF parallel apfloat Zeta kernels
           Apcomplex value = ApcomplexZetaMath.generalizedZeta(((INumber) s).apcomplexValue(),
               ((INumber) a).apcomplexValue());
           return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
@@ -386,6 +376,7 @@ public class Zeta extends AbstractArg12 {
           Errors.rethrowsInterruptException(ex);
         }
       }
+      // CPD-ON
     }
     return F.NIL;
   }

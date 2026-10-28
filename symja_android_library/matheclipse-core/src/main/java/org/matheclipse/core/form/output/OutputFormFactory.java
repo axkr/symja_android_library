@@ -511,13 +511,8 @@ public class OutputFormFactory {
 
   private void convertTraceSteps(final Appendable buf, final IAST steps, final int indent)
       throws IOException {
-    for (int i = 1; i < steps.size(); i++) {
-      IExpr step = steps.get(i);
-      if (!StepsTree.isStep(step)) {
-        continue;
-      }
-      IAST stepAST = (IAST) step;
-      String description = StepDescription.of(stepAST, StepDescription.PLAIN_TEXT, "", "");
+    for (IAST stepAST : StepsTree.stepEntries(steps)) {
+      String description = StepDescription.plainText(stepAST);
       if (!description.isEmpty()) {
         newLine(buf);
         appendIndent(buf, indent);
@@ -824,6 +819,7 @@ public class OutputFormFactory {
       throws IOException {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
+        // CPD-OFF form factories without a common base for this conversion
         append(buf, fInputForm ? " + " : "+");
         caller = false;
       }
@@ -836,6 +832,7 @@ public class OutputFormFactory {
     if (realZero && imaginaryZero) {
       convertDoubleString(buf, "0.0", Precedence.PLUS, false);
     } else {
+    // CPD-ON
       final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
       if (!realZero) {
         append(buf, partString(realPart, knownRe));

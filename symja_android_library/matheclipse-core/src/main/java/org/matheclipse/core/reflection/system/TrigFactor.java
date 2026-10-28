@@ -232,10 +232,8 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       return F.NIL;
     }
 
-    SignedTrig sin = first.headID() == ID.Sin ? first : //
-        (second.headID() == ID.Sin ? second : null);
-    SignedTrig cos = first.headID() == ID.Cos ? first : //
-        (second.headID() == ID.Cos ? second : null);
+    SignedTrig sin = withHead(first, second, ID.Sin);
+    SignedTrig cos = withHead(first, second, ID.Cos);
     if (sin != null && cos != null && sin.angle().equals(cos.angle())) {
       // sinSign*Sqrt(2)*Sin(angle+sinSign*cosSign*Pi/4)
       IExpr quarter = sin.negative == cos.negative ? F.CPiQuarter : F.Times(F.CN1, F.CPiQuarter);
@@ -330,6 +328,19 @@ public class TrigFactor extends AbstractFunctionEvaluator {
   }
 
   /**
+   * The first of <code>first</code> and <code>second</code> whose head has the id
+   * <code>headID</code>.
+   *
+   * @return <code>null</code> if neither has that head
+   */
+  private static SignedTrig withHead(SignedTrig first, SignedTrig second, int headID) {
+    if (first.headID() == headID) {
+      return first;
+    }
+    return second.headID() == headID ? second : null;
+  }
+
+  /**
    * <code>Cos(x)^2-Sin(x)^2</code> is <code>Cos(2*x)</code> and <code>Sin(x)^2-Cos(x)^2</code> is
    * <code>-Cos(2*x)</code>, which {@link #cosineDoubleAngle(IExpr)} contracts into a product.
    *
@@ -346,10 +357,8 @@ public class TrigFactor extends AbstractFunctionEvaluator {
     if (second == null || first.negative == second.negative) {
       return F.NIL;
     }
-    SignedTrig sin = first.headID() == ID.Sin ? first : //
-        (second.headID() == ID.Sin ? second : null);
-    SignedTrig cos = first.headID() == ID.Cos ? first : //
-        (second.headID() == ID.Cos ? second : null);
+    SignedTrig sin = withHead(first, second, ID.Sin);
+    SignedTrig cos = withHead(first, second, ID.Cos);
     if (sin == null || cos == null || !sin.angle().equals(cos.angle())) {
       return F.NIL;
     }

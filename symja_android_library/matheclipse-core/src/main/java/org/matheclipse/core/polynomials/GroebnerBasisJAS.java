@@ -140,6 +140,22 @@ public class GroebnerBasisJAS {
   }
 
   /**
+   * The names of the variables in <code>listOfVariables</code>.
+   *
+   * @return <code>null</code> if an element of <code>listOfVariables</code> is not a symbol
+   */
+  private static String[] variableNames(IAST listOfVariables) {
+    String[] pvars = new String[listOfVariables.argSize()];
+    for (int i = 1; i < listOfVariables.size(); i++) {
+      if (!listOfVariables.get(i).isSymbol()) {
+        return null;
+      }
+      pvars[i - 1] = listOfVariables.get(i).toString();
+    }
+    return pvars;
+  }
+
+  /**
    * @param listOfPolynomials a list of polynomials
    * @param listOfVariables a list of variable symbols
    * @param termOrder the term order
@@ -147,12 +163,9 @@ public class GroebnerBasisJAS {
    */
   private static IAST exprPolynomialBasis(IAST listOfPolynomials, IAST listOfVariables,
       TermOrder termOrder) {
-    String[] pvars = new String[listOfVariables.argSize()];
-    for (int i = 1; i < listOfVariables.size(); i++) {
-      if (!listOfVariables.get(i).isSymbol()) {
-        return F.NIL;
-      }
-      pvars[i - 1] = listOfVariables.get(i).toString();
+    String[] pvars = variableNames(listOfVariables);
+    if (pvars == null) {
+      return F.NIL;
     }
     List<IExpr> varList = listOfVariables.asArgsList();
 
@@ -273,12 +286,9 @@ public class GroebnerBasisJAS {
 
   private static <C extends GcdRingElem<C> & Modular> IAST modularBasis(IAST listOfPolynomials,
       IAST listOfVariables, JASModular<C> jas) {
-    String[] pvars = new String[listOfVariables.argSize()];
-    for (int i = 1; i < listOfVariables.size(); i++) {
-      if (!listOfVariables.get(i).isSymbol()) {
-        return F.NIL;
-      }
-      pvars[i - 1] = listOfVariables.get(i).toString();
+    String[] pvars = variableNames(listOfVariables);
+    if (pvars == null) {
+      return F.NIL;
     }
 
     List<GenPolynomial<C>> polyList =

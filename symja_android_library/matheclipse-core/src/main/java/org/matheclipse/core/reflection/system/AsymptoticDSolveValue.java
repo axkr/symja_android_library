@@ -111,6 +111,7 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
 
     // 3. Build the series ansatz up to order + max_d to avoid truncation artifacts
     int ansatzDegree = order + max_d;
+    // CPD-OFF ansatz at infinity and at a finite point
     IASTAppendable polyFull = F.PlusAlloc();
     IASTAppendable polyTrunc = F.PlusAlloc();
     IASTAppendable cVars = F.ListAlloc();
@@ -119,6 +120,7 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
       IExpr c_i = F.Dummy("c" + i);
       cVars.append(c_i);
       IExpr term = i == 0 ? c_i : F.Times(c_i, F.Power(F.Subtract(xVar, x0), F.ZZ(i)));
+      // CPD-ON
       polyFull.append(term);
       if (i <= order) {
         polyTrunc.append(term);
@@ -145,13 +147,8 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
     IASTAppendable algebraicSystem = F.ListAlloc();
 
     for (int i = 1; i <= eqns.argSize(); i++) {
-      IExpr eq = eqns.get(i);
-      IExpr lhs = eq.isEqual() ? F.Subtract(eq.first(), eq.second()) : eq;
-
       // Substitute the polynomial series into the differential equation
-      IExpr subbed = engine.evaluate(F.subst(lhs, rules));
-      // Re-evaluate to strictly execute pure functions spawned from boundary conditions
-      subbed = engine.evaluate(subbed);
+      IExpr subbed = substituteEquation(eqns.get(i), rules, engine);
 
       if (subbed.isFree(xVar)) {
         algebraicSystem.append(F.Equal(subbed, F.C0));
@@ -167,10 +164,7 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
     }
 
     // 6. Solve the algebraic system for the sequence of coefficients
-    IASTAppendable cVarsReversed = F.ListAlloc(cVars.argSize());
-    for (int i = cVars.argSize(); i >= 1; i--) {
-      cVarsReversed.append(cVars.get(i));
-    }
+    IAST cVarsReversed = cVars.reverse(F.NIL);
 
     IAST solve = F.Solve(algebraicSystem, cVarsReversed);
     if (DEBUG) {
@@ -181,6 +175,22 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
       System.out.println("solList: " + solList);
     }
     return seriesFromSolutions(solList, ansatzTrunc, cVars, engine);
+  }
+
+  /**
+   * Substitute the <code>rules</code> into the equation <code>eq</code>, written as
+   * <code>lhs - rhs</code> if it is an {@link S#Equal}.
+   *
+   * @param eq the equation or expression
+   * @param rules the replacement rules
+   * @param engine the evaluation engine
+   * @return the evaluated substitution
+   */
+  static IExpr substituteEquation(IExpr eq, IAST rules, EvalEngine engine) {
+    IExpr lhs = eq.isEqual() ? F.Subtract(eq.first(), eq.second()) : eq;
+    IExpr subbed = engine.evaluate(F.subst(lhs, rules));
+    // Re-evaluate to strictly execute pure functions spawned from boundary conditions
+    return engine.evaluate(subbed);
   }
 
   /**

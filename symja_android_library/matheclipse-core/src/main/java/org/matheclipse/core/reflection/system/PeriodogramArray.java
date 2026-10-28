@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -90,28 +89,12 @@ public class PeriodogramArray extends AbstractFunctionEvaluator {
     }
 
     // Process partitions
-    // FourierParameters -> {1, -1} (Signal Processing convention)
-    IExpr fourierParamsValue = F.List(F.C1, F.CN1);
-    IExpr fourierOptionRule = F.Rule(S.FourierParameters, fourierParamsValue);
-
     IExpr sumOfSpectra = F.NIL;
 
     for (IExpr part : partitionList) {
-      IExpr currentPartition = part;
-
-      // Apply Window
-      if (windowWeights.isPresent()) {
-        currentPartition = F.Times(currentPartition, windowWeights);
-      }
-
-      // Apply Padding (to FFT length m)
-      if (m > n) {
-        currentPartition = F.PadRight(currentPartition, F.ZZ(m), F.C0);
-      }
-
       // Compute Fourier Transform (Numeric)
-      IAST fourierCall = F.Fourier(currentPartition, fourierOptionRule);
-      IExpr fourierResult = engine.evaluate(fourierCall);
+      IExpr fourierResult =
+          engine.evaluate(SpectrogramArray.windowedFourier(part, windowWeights, n, m));
 
       // Compute Squared Magnitude: Abs[fft]^2
       IExpr powerSpectrum = F.Map(F.Function(F.Sqr(F.Abs(F.Slot1))), fourierResult);

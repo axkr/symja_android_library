@@ -31,8 +31,22 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-    if (argSize > 0 && argSize < ast.size()) {
+    return solveWithOptions(ast, argSize, options, engine);
+  }
+
+  /**
+   * Solve the equations of an <code>NSolve(...)</code> / <code>NSolveValues(...)</code> call
+   * numerically with the working precision of its options or of its fourth argument.
+   *
+   * @param ast the call with its options
+   * @param argSize the number of arguments without options
+   * @param options the option values of the call
+   * @param engine the evaluation engine
+   * @return the list of solution lists or {@link F#NIL}
+   */
+  static IExpr solveWithOptions(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
+    if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.NSOLVE_KEYS, options);

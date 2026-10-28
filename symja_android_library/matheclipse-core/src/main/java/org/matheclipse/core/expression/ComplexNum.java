@@ -314,6 +314,7 @@ public class ComplexNum implements IComplexNum {
   /** {@inheritDoc} */
   @Override
   public Num abs() {
+    // CPD-OFF numeric special-function dispatch per number type
     return Num.valueOf(dabs());
   }
 
@@ -343,6 +344,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IInexactNumber acos() {
+  // CPD-ON
     if (fComplex.getImaginary() == 0.0 && Math.abs(fComplex.getReal()) <= 1.0) {
       // on the real segment the value is real; the complex formula leaves rounding noise in the
       // imaginary part
@@ -518,16 +520,33 @@ public class ComplexNum implements IComplexNum {
     return valueOf(fComplex.atan());
   }
 
+  /**
+   * The argument of a machine precision Bessel function evaluation.
+   *
+   * <p>
+   * {@link ComplexBessel} covers a non-integer order; at an integer order its reflection divides
+   * by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
+   *
+   * @param arg2 the argument of the Bessel function
+   * @return <code>null</code> if <code>arg2</code> is neither an {@link IComplexNum} nor an
+   *         {@link IReal}
+   */
+  private static Complex machineArgument(IExpr arg2) {
+    if (arg2 instanceof IComplexNum) {
+      return new Complex(((IComplexNum) arg2).reDoubleValue(),
+          ((IComplexNum) arg2).imDoubleValue());
+    }
+    if (arg2 instanceof IReal) {
+      return new Complex(((IReal) arg2).doubleValue(), 0.0);
+    }
+    return null;
+  }
+
   @Override
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      // ComplexBessel covers a non-integer order; at an integer order its reflection
-      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
-      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
-        Complex argument = (arg2 instanceof IComplexNum)
-            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
-                ((IComplexNum) arg2).imDoubleValue())
-            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+      Complex argument = machineArgument(arg2);
+      if (argument != null) {
         Complex besselIValue = ComplexBessel.besselI(fComplex, argument);
         if (besselIValue != null) {
           return F.complexNum(besselIValue);
@@ -541,13 +560,8 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      // ComplexBessel covers a non-integer order; at an integer order its reflection
-      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
-      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
-        Complex argument = (arg2 instanceof IComplexNum)
-            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
-                ((IComplexNum) arg2).imDoubleValue())
-            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+      Complex argument = machineArgument(arg2);
+      if (argument != null) {
         Complex besselJValue = ComplexBessel.besselJ(fComplex, argument);
         if (besselJValue != null) {
           return F.complexNum(besselJValue);
@@ -561,13 +575,8 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselK(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      // ComplexBessel covers a non-integer order; at an integer order its reflection
-      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
-      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
-        Complex argument = (arg2 instanceof IComplexNum)
-            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
-                ((IComplexNum) arg2).imDoubleValue())
-            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+      Complex argument = machineArgument(arg2);
+      if (argument != null) {
         Complex besselKValue = ComplexBessel.besselK(fComplex, argument);
         if (besselKValue != null) {
           return F.complexNum(besselKValue);
@@ -581,13 +590,8 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselY(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      // ComplexBessel covers a non-integer order; at an integer order its reflection
-      // divides by sin(v*Pi) and it reports that by returning null, so those stay on Apfloat.
-      if (arg2 instanceof IComplexNum || arg2 instanceof IReal) {
-        Complex argument = (arg2 instanceof IComplexNum)
-            ? new Complex(((IComplexNum) arg2).reDoubleValue(),
-                ((IComplexNum) arg2).imDoubleValue())
-            : new Complex(((IReal) arg2).doubleValue(), 0.0);
+      Complex argument = machineArgument(arg2);
+      if (argument != null) {
         Complex besselYValue = ComplexBessel.besselY(fComplex, argument);
         if (besselYValue != null) {
           return F.complexNum(besselYValue);
@@ -1173,6 +1177,7 @@ public class ComplexNum implements IComplexNum {
         return F.complexNum(complexGamma);
       }
       Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue());
+      // CPD-OFF numeric special-function dispatch per number type
       return machine(gamma);
     } catch (OverflowException of) {
       return F.Overflow();
@@ -1190,7 +1195,6 @@ public class ComplexNum implements IComplexNum {
       try {
         Apcomplex gamma =
             EvalEngine.getApfloatDouble().gamma(apcomplexValue(), ((INumber) x).apcomplexValue());
-        // CPD-OFF numeric special-function dispatch per number type
         return machine(gamma);
       } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers

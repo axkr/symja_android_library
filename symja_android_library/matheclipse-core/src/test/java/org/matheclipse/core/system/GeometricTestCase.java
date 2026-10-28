@@ -1284,6 +1284,87 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRegionDisplayWrapper() {
+    // a region wrapped in Region(...) is measured like the region itself
+    check("Area(Region(Disk({0,0},2)))", //
+        "4*Pi");
+    check("Area(Region(Disk({1,-1},3)))", //
+        "9*Pi");
+    check("Perimeter(Region(Rectangle({0,0},{2,3})))", //
+        "10");
+    check("RegionMeasure(Region(Line({{0,0},{3,4}})))", //
+        "5");
+    check("RegionCentroid(Region(Rectangle({0,0},{4,2})))", //
+        "{2,1}");
+    check("RegionDimension(Region(Disk()))", //
+        "2");
+    check("RegionEmbeddingDimension(Region(Ball()))", //
+        "3");
+    check("SurfaceArea(Region(Sphere()))", //
+        "4*Pi");
+    check("Volume(Region(Ball({0,0,0},3)))", //
+        "36*Pi");
+    check("RegionDistance(Region(Disk()), {3,0})", //
+        "2");
+    check("SignedRegionDistance(Region(Disk({0,0},2)), {0,1})", //
+        "-1");
+    check("RegionNearest(Region(Disk({0,0},2)), {0,5})", //
+        "{0,2}");
+    check("RegionQ(Region(Ball()))", //
+        "True");
+    check("BoundedRegionQ(Region(Rectangle()))", //
+        "True");
+    check("ConstantRegionQ(Region(Disk({0,0},3)))", //
+        "True");
+    check("RegionWithin(Region(Disk({0,0},5)), Region(Disk({1,1},1)))", //
+        "True");
+    check("RegionBounds(Region(Rectangle({1,2},{4,7})))", //
+        "{{1,4},{2,7}}");
+
+    // multi-point Point regions
+    check("RegionDistance(Point({{0,0},{5,0}}), {4,0})", //
+        "1");
+    check("RegionNearest(Point({{0,0},{5,0}}), {4,1})", //
+        "{5,0}");
+    check("RegionMeasure(Point({{1,2},{3,4},{5,6}}))", //
+        "3");
+    check("RegionWithin(Disk({0,0},2), Point({{0,0},{1,1}}))", //
+        "True");
+    check("RegionWithin(Disk({0,0},2), Point({{0,0},{3,1}}))", //
+        "False");
+
+    // a planar capsule is a stadium
+    check("Area(CapsuleShape({{0,0},{2,0}},1))", //
+        "4+Pi");
+    check("Perimeter(CapsuleShape({{0,0},{2,0}},1))", //
+        "4+2*Pi");
+    check("Area(StadiumShape({{0,0},{2,0}},1))", //
+        "4+Pi");
+  }
+
+  @Test
+  public void testDelaunayVoronoiPoints() {
+    // the triangles are oriented counterclockwise, smallest index first
+    check("MeshCells(DelaunayMesh({{0,0},{3,0},{0,2}}), 2)", //
+        "{Polygon({1,2,3})}");
+    check("MeshCells(DelaunayMesh({{0,0},{0,2},{3,0}}), 2)", //
+        "{Polygon({1,3,2})}");
+    check("MeshCellCount(DelaunayMesh({{0,0},{4,0},{4,3},{0,3},{2,1}}), 2)", //
+        "4");
+    // non numeric or non planar points
+    check("DelaunayMesh({{0,0},{1,a},{2,0}})", //
+        "DelaunayMesh({{0,0},{1,a},{2,0}})");
+    check("DelaunayMesh({{0,0,0},{1,0,0},{0,1,0}})", //
+        "DelaunayMesh({{0,0,0},{1,0,0},{0,1,0}})");
+    check("VoronoiMesh({{0,0},{1,b},{2,0}})", //
+        "EmptyRegion(2)");
+    check("VoronoiMesh({{0,0},{1,0,0}})", //
+        "EmptyRegion(2)");
+    check("MeshCellCount(VoronoiMesh({{0,0},{3,0},{0,3},{3,3}}), 2)", //
+        "4");
+  }
+
+  @Test
   public void testRegionNearest() {
     check("RegionNearest(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}), {5,1})", //
         "{2,1}");

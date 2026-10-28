@@ -249,6 +249,7 @@ public final class ExprTermOrder implements Serializable {
    *
    * @param w weight array of longs.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExprTermOrder(long[][] w) {
     if (w == null || w.length == 0) {
       throw new IllegalArgumentException("invalid term order weight");
@@ -265,6 +266,7 @@ public final class ExprTermOrder implements Serializable {
 
       @Override
       public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+      // CPD-ON
         return -ExpVectorLong.EVIWLC(weight, e1, e2);
       }
     };

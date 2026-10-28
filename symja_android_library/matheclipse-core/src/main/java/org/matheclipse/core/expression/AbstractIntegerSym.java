@@ -1587,20 +1587,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return valueOf(qr[0]);
   }
 
-  @Override
-  public double reDoubleValue() {
-    return doubleValue();
-  }
-
-  @Override
-  public IRational roundClosest(IReal multiple) {
-    if (!multiple.isRational()) {
-      multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
-    }
-    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
-    return ii.multiply((IRational) multiple);
-  }
-
   /** {@inheritDoc} */
   @Override
   public IInteger[] sqrtAndRemainder() {

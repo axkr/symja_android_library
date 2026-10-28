@@ -10,6 +10,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -97,24 +98,16 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
   public static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead,
       EvalEngine engine) {
-    Function<IExpr, Long> complexityFunction = x -> {
+    if (complexityFunctionHead.isPresent()) {
+      return SimplifyUtil.createComplexityFunction(complexityFunctionHead, engine);
+    }
+    return x -> {
       if (x.isIndeterminate() || x.isComplexInfinity()) {
         // Tan(Pi/2) and similar expressions in some sub-steps, create non-wanted results
         return Long.MAX_VALUE;
       }
       return x.leafCountSimplify();
     };
-    if (complexityFunctionHead.isPresent()) {
-      final IExpr head = complexityFunctionHead;
-      complexityFunction = x -> {
-        IExpr temp = engine.evaluate(F.unaryAST1(head, x));
-        if (temp.isInteger() && !temp.isNegative()) {
-          return ((IInteger) temp).toLong();
-        }
-        return Long.MAX_VALUE;
-      };
-    }
-    return complexityFunction;
   }
 
   private static IExpr ctr1(IExpr rv, Function<IExpr, Long> measure) {
@@ -1448,6 +1441,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       if (isCos.isTrue()) {
         if (n1.equals(n2)) {
           // gcd*n1*2*cos((a + b)/2)*cos((a - b)/2)
+          // CPD-OFF TR9 port kept close to the SymPy source
           return F.eval(F.Times(F.C2, gcd, n1, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
               F.Cos(F.Times(F.C1D2, F.Subtract(a, b)))));
         } else if (n1.isNegative()) {
@@ -1457,10 +1451,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         }
         // -2*gcd*sin((a + b)/2)*sin((a - b)/2)
         return F.eval(F.Times(F.CN2, gcd, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
+        // CPD-ON
             F.Sin(F.Times(F.C1D2, F.Subtract(a, b)))));
       }
       if (n1.equals(n2)) {
         // gcd*n1*2*sin((a + b)/2)*cos((a - b)/2)
+        // CPD-OFF TR9 port kept close to the SymPy source
         return F.eval(F.Times(F.C2, gcd, n1, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
             F.Cos(F.Times(F.C1D2, F.Subtract(a, b)))));
       } else if (n1.isNegative()) {
@@ -1470,6 +1466,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
       // 2*gcd*cos((a + b)/2)*sin((a - b)/2)
       return F.eval(F.Times(F.C2, gcd, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
+      // CPD-ON
           F.Sin(F.Times(F.C1D2, F.Subtract(a, b)))));
     }
     return F.NIL;

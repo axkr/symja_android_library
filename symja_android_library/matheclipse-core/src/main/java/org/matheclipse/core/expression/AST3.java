@@ -160,13 +160,13 @@ public final class AST3 extends AST2 {
   /** {@inheritDoc} */
   @Override
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, arg0, arg1, arg2, arg3);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     return FixedArity.exists(predicate, startOffset, arg0, arg1, arg2, arg3);
   }
 
@@ -191,7 +191,6 @@ public final class AST3 extends AST2 {
   /** {@inheritDoc} */
   @Override
   public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
-  // CPD-ON
       final Function<IExpr, IExpr> function) {
     return FixedArity.filterFunction(filterAST, restAST, function, arg1, arg2, arg3);
   }
@@ -200,6 +199,7 @@ public final class AST3 extends AST2 {
   @Override
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
     return FixedArity.forAll(predicate, startOffset, arg0, arg1, arg2, arg3);
+    // CPD-ON
   }
 
   /** {@inheritDoc} */
@@ -318,6 +318,7 @@ public final class AST3 extends AST2 {
   @Override
   public boolean isPower() {
     return false;
+  // CPD-OFF arity specialization of the AST classes, kept apart for speed
   }
 
   /** {@inheritDoc} */
@@ -341,6 +342,7 @@ public final class AST3 extends AST2 {
   /** {@inheritDoc} */
   @Override
   public final IExpr last() {
+  // CPD-ON
     return arg3;
   }
 
@@ -366,6 +368,7 @@ public final class AST3 extends AST2 {
     if (fromPosition == 3) {
       return new AST2(arg0, arg1, arg2);
     }
+    // CPD-OFF arity specialization of the AST classes, kept apart for speed
     if (fromPosition == 4) {
       return this;
     }
@@ -399,6 +402,7 @@ public final class AST3 extends AST2 {
         result = arg2;
         arg2 = object;
         return result;
+        // CPD-ON
       case 3:
         result = arg3;
         arg3 = object;

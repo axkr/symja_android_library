@@ -336,6 +336,7 @@ public final class ExpVectorLong implements Serializable {
       return this;
     }
     ExpVectorLong result = valueOf(val.length);
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     long[] w = result.val;
     for (int i = 0; i < j; i++) {
       w[i] = val[j - 1 - i];
@@ -347,7 +348,6 @@ public final class ExpVectorLong implements Serializable {
     return result;
   }
 
-  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Combine with ExpVectorLong. Combine this with the other ExpVectorLong V.
    *
@@ -522,7 +522,6 @@ public final class ExpVectorLong implements Serializable {
     }
     return s.toString();
   }
-  // CPD-ON
 
   /**
    * Comparison with any other object.
@@ -532,6 +531,7 @@ public final class ExpVectorLong implements Serializable {
   @Override
   public boolean equals(Object B) {
     if (!(B instanceof ExpVectorLong)) {
+    // CPD-ON
       return false;
     }
     ExpVectorLong b = (ExpVectorLong) B;

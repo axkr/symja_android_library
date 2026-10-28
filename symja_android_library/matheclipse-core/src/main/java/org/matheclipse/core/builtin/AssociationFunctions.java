@@ -1903,6 +1903,18 @@ public class AssociationFunctions {
   }
 
   /**
+   * Convert every element of the list <code>arg</code> into an {@link IAssociation} with
+   * {@link #toAssociation(IExpr)}.
+   *
+   * @param arg
+   * @return <code>null</code> if <code>arg</code> is not a list or an element is neither an
+   *         association nor a list of rules
+   */
+  public static IAssociation[] toAssociations(final IExpr arg) {
+    return arg.isList() ? toAssociations((IAST) arg) : null;
+  }
+
+  /**
    * Convert every element of <code>list</code> into an {@link IAssociation} with
    * {@link #toAssociation(IExpr)}.
    *

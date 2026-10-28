@@ -230,32 +230,13 @@ public class RSolve extends AbstractFunctionEvaluator {
           continue;
 
         if (arg.isPower() && arg.exponent().isPlus()) {
-          IAST plus = (IAST) arg.exponent();
-          IASTAppendable newPlus = F.PlusAlloc();
-          for (IExpr pArg : plus) {
-            if (!pArg.isNumericFunction(true)) {
-              newPlus.append(pArg);
-            }
-          }
-          newPlus.append(F.C1);
-
-          IExpr cleanPower = newPlus.argSize() == 1 ? newPlus.arg1() : newPlus;
-          newCoeff.append(F.Power(arg.base(), cleanPower));
+          newCoeff.append(dropNumericExponent(arg));
           continue;
         }
         newCoeff.append(pochhammerFromOne(arg));
       }
     } else if (coeff.isPower() && coeff.exponent().isPlus()) {
-      IAST plus = (IAST) coeff.exponent();
-      IASTAppendable newPlus = F.PlusAlloc();
-      for (IExpr pArg : plus) {
-        if (!pArg.isNumericFunction(true)) {
-          newPlus.append(pArg);
-        }
-      }
-      newPlus.append(F.C1);
-      IExpr cleanPower = newPlus.argSize() == 1 ? newPlus.arg1() : newPlus;
-      newCoeff.append(F.Power(coeff.base(), cleanPower));
+      newCoeff.append(dropNumericExponent(coeff));
     } else {
       newCoeff.append(pochhammerFromOne(coeff));
     }
@@ -265,6 +246,38 @@ public class RSolve extends AbstractFunctionEvaluator {
       simplifiedCoeff = F.C1;
 
     return engine.evaluate(F.Plus(rest, F.Times(cVar, simplifiedCoeff)));
+  }
+
+  /**
+   * <code>b^(e+1)</code> for the power <code>b^(c+e)</code> with a sum exponent: the numeric terms
+   * <code>c</code> of the exponent are absorbed into the integration constant.
+   */
+  private static IExpr dropNumericExponent(IExpr power) {
+    IAST plus = (IAST) power.exponent();
+    IASTAppendable newPlus = F.PlusAlloc();
+    for (IExpr pArg : plus) {
+      if (!pArg.isNumericFunction(true)) {
+        newPlus.append(pArg);
+      }
+    }
+    newPlus.append(F.C1);
+    IExpr cleanPower = newPlus.argSize() == 1 ? newPlus.arg1() : newPlus;
+    return F.Power(power.base(), cleanPower);
+  }
+
+  /**
+   * The rules <code>lhs -&gt; rhs</code> of the equations <code>lhs == rhs</code> in
+   * <code>boundaryConditions</code>.
+   */
+  private static IAST boundaryRules(IAST boundaryConditions) {
+    IASTAppendable bcRules = F.ListAlloc();
+    for (int i = 1; i <= boundaryConditions.argSize(); i++) {
+      IExpr bc = boundaryConditions.get(i);
+      if (bc.isEqual()) {
+        bcRules.append(F.Rule(bc.first(), bc.second()));
+      }
+    }
+    return bcRules;
   }
 
   /**
@@ -643,14 +656,7 @@ public class RSolve extends AbstractFunctionEvaluator {
     IExpr zEq = F.Equal(zLhs, zRhs);
 
     if (boundaryConditions.argSize() > 0) {
-      IASTAppendable bcRules = F.ListAlloc();
-      for (int i = 1; i <= boundaryConditions.argSize(); i++) {
-        IExpr bc = boundaryConditions.get(i);
-        if (bc.isEqual()) {
-          bcRules.append(F.Rule(bc.first(), bc.second()));
-        }
-      }
-      zEq = engine.evaluate(F.subst(zEq, bcRules));
+      zEq = engine.evaluate(F.subst(zEq, boundaryRules(boundaryConditions)));
     }
 
     // Intercept abstract derivatives spawned by ZTransform(n*a(n)) and map directly to G(z)
@@ -1204,14 +1210,7 @@ public class RSolve extends AbstractFunctionEvaluator {
 
     IExpr evalZEqns = zEqns;
     if (boundaryConditions.argSize() > 0) {
-      IASTAppendable bcRules = F.ListAlloc();
-      for (int i = 1; i <= boundaryConditions.argSize(); i++) {
-        IExpr bc = boundaryConditions.get(i);
-        if (bc.isEqual()) {
-          bcRules.append(F.Rule(bc.first(), bc.second()));
-        }
-      }
-      evalZEqns = engine.evaluate(F.subst(evalZEqns, bcRules));
+      evalZEqns = engine.evaluate(F.subst(evalZEqns, boundaryRules(boundaryConditions)));
     }
 
     IASTAppendable dummyVars = F.ListAlloc(funcs.argSize());

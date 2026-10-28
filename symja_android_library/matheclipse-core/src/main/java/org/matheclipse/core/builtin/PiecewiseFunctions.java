@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import java.util.function.DoubleFunction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
@@ -796,25 +795,6 @@ public class PiecewiseFunctions {
       return false;
     }
 
-    private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
-      final ISymbol symbol;
-
-      public AbsNumericFunction(ISymbol symbol) {
-        this.symbol = symbol;
-      }
-
-      @Override
-      public IExpr apply(double value) {
-        if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-          double result = Math.abs(value);
-          if (result > 0.0) {
-            return symbol;
-          }
-        }
-        return F.NIL;
-      }
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -844,7 +824,7 @@ public class PiecewiseFunctions {
       }
       if (arg1.isSymbol()) {
         ISymbol sym = (ISymbol) arg1;
-        return sym.mapConstantDouble(new AbsNumericFunction(sym));
+        return sym.mapConstantDouble(new Arithmetic.AbsNumericFunction(sym));
       }
 
       if (arg1.isInterval()) {

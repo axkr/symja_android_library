@@ -3347,6 +3347,24 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return null;
   }
 
+  /**
+   * Test if <code>sym</code> has no predefined Java name, so that a function call with this head
+   * is generated as <code>$(head, args...)</code>.
+   *
+   * @param sym the head of the function call
+   */
+  private static boolean isUnknownJavaSymbol(ISymbol sym) {
+    String name = null;
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      name = sym.toString();
+      if (name.length() > 0) {
+        name = name.toLowerCase(Locale.ENGLISH);
+      }
+      name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
+    }
+    return name == null && !Character.isUpperCase(sym.toString().charAt(0));
+  }
+
   /** {@inheritDoc} */
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
@@ -3388,27 +3406,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     }
     StringBuilder text = new StringBuilder(size() * 10);
-    if (temp.isSymbol()) {
-      ISymbol sym = (ISymbol) temp;
-      String name = null;
-      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-        name = sym.toString();
-        if (name.length() > 0) {
-          name = name.toLowerCase(Locale.ENGLISH);
-        }
-        name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
-      }
-      if (name == null && !Character.isUpperCase(sym.toString().charAt(0))) {
-        text.append(prefix).append("$(");
-        for (int i = 0; i < size(); i++) {
-          text.append(get(i).internalJavaString(properties, depth + 1, variables));
-          if (i < argSize()) {
-            text.append(sep);
-          }
-        }
-        return text.append(')');
-      }
-    } else if (temp.isPattern() || temp.isAST()) {
+    if ((temp.isSymbol() && isUnknownJavaSymbol((ISymbol) temp)) || temp.isPattern()
+        || temp.isAST()) {
       text.append(prefix).append("$(");
       for (int i = 0; i < size(); i++) {
         text.append(get(i).internalJavaString(properties, depth + 1, variables));
@@ -4576,9 +4575,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return isSameHead(S.Log, 2);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public int[] isMatrix(boolean setMatrixFormat) {
+  /**
+   * The dimensions of this list if it is flagged as a non-empty matrix.
+   *
+   * @return <code>{rows, columns}</code> or <code>null</code> if this list isn't flagged with
+   *         {@link Flag#IS_MATRIX} or contains no rows
+   */
+  private int[] cachedMatrixDimensions() {
     if (hasFlag(Flag.IS_MATRIX)) {
       final int[] dim = new int[2];
       dim[0] = argSize();
@@ -4586,6 +4589,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         dim[1] = ((IAST) first()).argSize();
         return dim;
       }
+    }
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int[] isMatrix(boolean setMatrixFormat) {
+    int[] cached = cachedMatrixDimensions();
+    if (cached != null) {
+      return cached;
     }
     if (isList()) {
       final int[] dim = matrixDimensions(!isUniform(UniformFlags.ATOM));
@@ -4636,13 +4649,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public int[] isMatrixIgnore() {
-    if (hasFlag(Flag.IS_MATRIX)) {
-      final int[] dim = new int[2];
-      dim[0] = argSize();
-      if (dim[0] > 0) {
-        dim[1] = ((IAST) first()).argSize();
-        return dim;
-      }
+    int[] cached = cachedMatrixDimensions();
+    if (cached != null) {
+      return cached;
     }
     if (isList()) {
       final int[] dim = new int[2];
@@ -5265,29 +5274,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (dim[0] > 0) {
         dim[1] = 0;
         if (arg1().isList()) {
-          IAST row = (IAST) arg1();
-          dim[1] = row.argSize();
+          dim[1] = ((IAST) arg1()).argSize();
           boolean containsNum = false;
-          for (int j = 1; j < row.size(); j++) {
-            if (row.get(j).isReal()) {
-              if (row.get(j) instanceof INum) {
-                if (!(row.get(j) instanceof Num)) {
-                  // Apfloat number
-                  return false;
-                }
-                containsNum = true;
-              }
-            } else {
-              return false;
-            }
-          }
-
-          for (int i = 2; i < size(); i++) {
+          for (int i = 1; i < size(); i++) {
             if (!get(i).isList()) {
               // this row is not a list
               return false;
             }
-            row = (IAST) get(i);
+            IAST row = (IAST) get(i);
             if (dim[1] != row.argSize()) {
               // this row has another dimension
               return false;
@@ -5890,6 +5884,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     if (isPlus()) {
       // a + b + c....
+      // CPD-OFF specialised structural queries on the hot AST path
       IASTAppendable plusClone = copyAppendable();
       IExpr[] subLinear = null;
       int j = 1;
@@ -5901,6 +5896,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             return null;
           }
           subLinear = get(i).linear(variable);
+          // CPD-ON
           if (subLinear != null) {
             counter++;
             plusClone.remove(j);
@@ -5915,6 +5911,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return new IExpr[] {plusClone.oneIdentity0(), F.C0};
     } else if (isTimes()) {
       // a * b * c....
+      // CPD-OFF specialised structural queries on the hot AST path
       IASTAppendable timesClone = copyAppendable();
       int j = 1;
       for (int i = 1; i < size; i++) {
@@ -5927,6 +5924,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             }
             counter++;
             timesClone.remove(j);
+            // CPD-ON
           } else {
             return null;
           }
@@ -5973,6 +5971,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     // a + b + c....
     int size = size();
     int counter = 0;
+    // CPD-OFF specialised structural queries on the hot AST path
     IASTAppendable plusClone = copyAppendable();
     IExpr[] subLinear = null;
     int j = 1;
@@ -5984,6 +5983,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           return null;
         }
         subLinear = get(i).linearPower(variable);
+        // CPD-ON
         if (subLinear != null) {
           counter++;
           plusClone.remove(j);
@@ -6010,6 +6010,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     IInteger exp = F.C1;
     int size = size();
     int counter = 0;
+    // CPD-OFF specialised structural queries on the hot AST path
     IASTAppendable timesClone = copyAppendable();
     int j = 1;
     for (int i = 1; i < size; i++) {
@@ -6022,6 +6023,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           }
           counter++;
           timesClone.remove(j);
+          // CPD-ON
           continue;
         } else if (get(i).isPower()) {
           if (counter > 0) {
@@ -7105,6 +7107,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (dim == null) {
       return null;
     }
+    // CPD-OFF specialised structural queries on the hot AST path
     byte[][] result = new byte[dim[0]][dim[1]];
     int n;
     for (int i = 1; i <= dim[0]; i++) {
@@ -7112,6 +7115,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       for (int j = 1; j <= dim[1]; j++) {
         n = row.get(j).toIntDefault();
         if (n >= 0 && n < 256) {
+        // CPD-ON
           result[i - 1][j - 1] = (byte) n;
         } else {
           return null;
@@ -7317,6 +7321,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (dim == null) {
       return null;
     }
+    // CPD-OFF specialised structural queries on the hot AST path
     int[][] result = new int[dim[0]][dim[1]];
     int n;
     for (int i = 1; i <= dim[0]; i++) {
@@ -7324,6 +7329,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       for (int j = 1; j <= dim[1]; j++) {
         n = row.get(j).toIntDefault();
         if (F.isNotPresent(n)) {
+        // CPD-ON
           return null;
         }
         result[i - 1][j - 1] = n;

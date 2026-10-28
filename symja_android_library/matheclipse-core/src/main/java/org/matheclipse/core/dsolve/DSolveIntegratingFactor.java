@@ -57,6 +57,7 @@ final class DSolveIntegratingFactor {
    * The general solution of the equation, or {@link F#NIL} if no integrating factor of this form
    * exists, or if the first order equation it leaves cannot be solved.
    */
+  // CPD-OFF dummy variables used further down; a holder reads worse
   static IExpr solve(IExpr lhs, IExpr yFunction, IExpr xVar, IExpr c_n, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
     IExpr yDummy = F.Dummy("Y");
@@ -64,6 +65,7 @@ final class DSolveIntegratingFactor {
     IExpr field =
         DSolveUtil.solveForSecondDerivative(lhs, yFunction, xVar, yDummy, pDummy, engine);
     if (field.isNIL() || field.leafCount() > MAX_LEAF_COUNT
+    // CPD-ON
         || DSolveUtil.hasUndefinedFunction(field)) {
       return F.NIL;
     }

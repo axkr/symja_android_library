@@ -114,6 +114,7 @@ public class Plot extends ListPlot {
                     GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic)
                         .toIntDefault(-1),
                     GraphicsOptions.optionValue(originalAST, S.Exclusions, S.Automatic),
+                    // CPD-OFF sibling plot pipelines with different option sets
                     GraphicsOptions.optionValue(originalAST, S.WorkingPrecision, S.MachinePrecision)
                         .toIntDefault(-1),
                     GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
@@ -127,6 +128,7 @@ public class Plot extends ListPlot {
             IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
             if (graphicsPrimitives.isPresent()) {
               // the options the curves are drawn with do not carry the FillingStyle and the
+              // CPD-ON
               // PlotRange of the call
               listPlotOptions.setCallAST(originalAST);
               return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);

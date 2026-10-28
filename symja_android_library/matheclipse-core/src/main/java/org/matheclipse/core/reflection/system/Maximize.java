@@ -1383,11 +1383,10 @@ public class Maximize extends AbstractFunctionEvaluator {
 
     Extremum best = new Extremum(isMax);
     for (int i = 1; i < intervalData.size(); i++) {
-      IExpr entry = intervalData.get(i);
-      if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+      IAST interval = intervalEntry(intervalData, i);
+      if (interval.isNIL()) {
         return F.NIL;
       }
-      IAST interval = (IAST) entry;
       IExpr lo = interval.arg1();
       IExpr hi = interval.arg4();
       boolean loClosed = interval.arg2() == S.LessEqual;
@@ -1664,6 +1663,20 @@ public class Maximize extends AbstractFunctionEvaluator {
   }
 
   /**
+   * The <code>i</code>-th entry <code>{lo, rel, rel, hi}</code> of an
+   * {@link org.matheclipse.core.expression.F#IntervalData} list.
+   *
+   * @return {@link F#NIL} if the entry is not a list of 4 elements
+   */
+  private static IAST intervalEntry(IAST intervalData, int i) {
+    IExpr entry = intervalData.get(i);
+    if (entry.isList() && ((IAST) entry).argSize() == 4) {
+      return (IAST) entry;
+    }
+    return F.NIL;
+  }
+
+  /**
    * Detect an objective-improving unbounded end of the univariate feasible region. For every
    * interval entry <code>{min, minType, maxType, max}</code> with an infinite end, the limit of
    * <code>f(x)</code> towards that end is computed; if it tends to <code>+Infinity</code> (for a
@@ -1681,11 +1694,10 @@ public class Maximize extends AbstractFunctionEvaluator {
   private static IExpr unboundedUnivariateExtremum(IExpr objective, IExpr x, IAST intervalData,
       boolean isMax, EvalEngine engine) {
     for (int i = 1; i < intervalData.size(); i++) {
-      IExpr entry = intervalData.get(i);
-      if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+      IAST sub = intervalEntry(intervalData, i);
+      if (sub.isNIL()) {
         continue;
       }
-      IAST sub = (IAST) entry;
       IExpr min = sub.arg1();
       IExpr max = sub.arg4();
       if (max.isInfinity()) {
@@ -1775,11 +1787,10 @@ public class Maximize extends AbstractFunctionEvaluator {
       }
       // enumerate the integer points of every interval entry
       for (int i = 1; i < intervalData.size(); i++) {
-        IExpr entry = intervalData.get(i);
-        if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+        IAST sub = intervalEntry(intervalData, i);
+        if (sub.isNIL()) {
           continue;
         }
-        IAST sub = (IAST) entry;
         IExpr min = sub.arg1();
         boolean minClosed = sub.arg2() == S.LessEqual;
         boolean maxClosed = sub.arg3() == S.LessEqual;
@@ -3464,6 +3475,8 @@ public class Maximize extends AbstractFunctionEvaluator {
     IExpr value =
         F.Times(F.C1D4, F.Power(c, F.CN1), F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e)));
     IExpr point = F.Times(F.CN1D2, F.Power(c, F.CN1), d);
+    IExpr constant;
+    IExpr stationary;
     if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       // quadratic
       if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
@@ -3476,20 +3489,17 @@ public class Maximize extends AbstractFunctionEvaluator {
         return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), unbounded), F.list(
             F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
       }
-      IExpr constant =
+      constant =
           F.And(F.Equal(d, F.C0), isMax ? F.LessEqual(c, F.C0) : F.GreaterEqual(c, F.C0));
-      IExpr stationary =
+      stationary =
           F.Or(F.And(F.Greater(d, F.C0), cBounded), F.And(F.Less(d, F.C0), cBounded));
-      return F.list(
-          F.Piecewise(F.list(F.list(e, constant), F.list(value, stationary)), unbounded),
-          F.list(F.Rule(x, F.Piecewise(F.list(F.list(point, stationary), F.list(F.C0, constant)),
-              S.Indeterminate))));
+    } else {
+      // cubic
+      constant = F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+          F.And(F.Equal(d, F.C0), cBounded, F.Equal(b, F.C0)));
+      stationary = F.Or(F.And(F.Greater(d, F.C0), cBounded, F.Equal(b, F.C0)),
+          F.And(F.Less(d, F.C0), cBounded, F.Equal(b, F.C0)));
     }
-    // cubic
-    IExpr constant = F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-        F.And(F.Equal(d, F.C0), cBounded, F.Equal(b, F.C0)));
-    IExpr stationary = F.Or(F.And(F.Greater(d, F.C0), cBounded, F.Equal(b, F.C0)),
-        F.And(F.Less(d, F.C0), cBounded, F.Equal(b, F.C0)));
     return F.list(
         F.Piecewise(F.list(F.list(e, constant), F.list(value, stationary)), unbounded),
         F.list(F.Rule(x, F.Piecewise(F.list(F.list(point, stationary), F.list(F.C0, constant)),
@@ -3580,11 +3590,10 @@ public class Maximize extends AbstractFunctionEvaluator {
     IExpr bestPoint = F.NIL;
     boolean bestAttained = false;
     for (int i = 1; i < intervalData.size(); i++) {
-      IExpr entry = intervalData.get(i);
-      if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+      IAST interval = intervalEntry(intervalData, i);
+      if (interval.isNIL()) {
         return F.NIL;
       }
-      IAST interval = (IAST) entry;
       IExpr lo = interval.arg1();
       IExpr hi = interval.arg4();
       if (!(lo.isNegativeInfinity() || lo.isNumericFunction(true))
@@ -3737,12 +3746,12 @@ public class Maximize extends AbstractFunctionEvaluator {
       return null;
     }
     for (int i = 1; i < intervalData.size(); i++) {
-      IExpr entry = intervalData.get(i);
-      if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+      IAST entry = intervalEntry(intervalData, i);
+      if (entry.isNIL()) {
         return null;
       }
-      IExpr lo = entry.first();
-      IExpr hi = ((IAST) entry).arg4();
+      IExpr lo = entry.arg1();
+      IExpr hi = entry.arg4();
       if (!(lo.isNegativeInfinity() || lo.isNumericFunction(true))
           || !(hi.isInfinity() || hi.isNumericFunction(true))) {
         return null;
@@ -3916,6 +3925,25 @@ public class Maximize extends AbstractFunctionEvaluator {
       return simplified;
     }
     return value;
+  }
+
+  /**
+   * Compare a real candidate <code>value</code> with the best value so far.
+   *
+   * @param value the value of the candidate
+   * @param bestValue the best value so far or {@link F#NIL} if there is none yet
+   * @param isMax <code>true</code> for a maximum, <code>false</code> for a minimum
+   * @param engine the evaluation engine
+   * @return the sign of <code>value - bestValue</code> (the improving sign if there is no best
+   *         value yet), or {@link Integer#MIN_VALUE} if <code>value</code> is not real or the
+   *         comparison is undecided
+   */
+  private static int orderAgainstBest(IExpr value, IExpr bestValue, boolean isMax,
+      EvalEngine engine) {
+    if (!isRealValue(value, engine)) {
+      return Integer.MIN_VALUE;
+    }
+    return bestValue.isNIL() ? (isMax ? 1 : -1) : compareValues(value, bestValue, engine);
   }
 
   /**
@@ -4231,10 +4259,7 @@ public class Maximize extends AbstractFunctionEvaluator {
     for (int i = 0; i < candidates.size(); i++) {
       IExpr point = candidates.get(i);
       IExpr value = engine.evaluate(F.xreplace(function, x, point));
-      if (!isRealValue(value, engine)) {
-        return F.NIL;
-      }
-      int order = bestValue.isNIL() ? (isMax ? 1 : -1) : compareValues(value, bestValue, engine);
+      int order = orderAgainstBest(value, bestValue, isMax, engine);
       if (order == Integer.MIN_VALUE) {
         return F.NIL;
       }
@@ -4277,10 +4302,7 @@ public class Maximize extends AbstractFunctionEvaluator {
     IExpr bestPoint = F.NIL;
     for (IExpr point : stationary) {
       IExpr value = engine.evaluate(F.xreplace(function, x, point));
-      if (!isRealValue(value, engine)) {
-        return F.NIL;
-      }
-      int order = bestValue.isNIL() ? (isMax ? 1 : -1) : compareValues(value, bestValue, engine);
+      int order = orderAgainstBest(value, bestValue, isMax, engine);
       if (order == Integer.MIN_VALUE) {
         return F.NIL;
       }

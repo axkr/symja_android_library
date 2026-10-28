@@ -69,6 +69,7 @@ public class Convert {
    * @param matrixFormat if {@code true} the IS_MATRIX flag is set on the result
    * @return {@code F.NIL} if no conversion was possible
    */
+  // CPD-OFF Apcomplex and Apfloat matrix type specialisations
   public static IASTAppendable apcomplexMatrix2List(final FieldMatrix<ApcomplexField> matrix,
       boolean matrixFormat) {
     if (matrix == null) {
@@ -79,6 +80,7 @@ public class Convert {
 
     final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
       return matrix.getEntry(i, j).getApcomplexNum();
+      // CPD-ON
     }));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
@@ -162,6 +164,7 @@ public class Convert {
     return apfloatMatrix2List(matrix, true);
   }
 
+  // CPD-OFF Apcomplex and Apfloat matrix type specialisations
   public static IASTAppendable apfloatMatrix2List(final FieldMatrix<ApfloatField> matrix,
       boolean matrixFormat) {
     if (matrix == null) {
@@ -172,6 +175,7 @@ public class Convert {
 
     final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
       return matrix.getEntry(i, j).getApfloatNum();
+      // CPD-ON
     }));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
@@ -419,7 +423,19 @@ public class Convert {
         .setQuote('"') //
         .get();
     // CSVFormat.RFC4180.withDelimiter(',');
-    Iterable<CSVRecord> records = csvFormat.parse(reader);
+    return csvRecords2List(csvFormat.parse(reader), parser, ast2Expr);
+  }
+
+  /**
+   * Convert CSV records into a list of rows. Every field is parsed as an expression.
+   *
+   * @param records the CSV records
+   * @param parser the parser for the fields
+   * @param ast2Expr the converter from the parsed fields to expressions
+   * @return the list of rows
+   */
+  public static IASTAppendable csvRecords2List(Iterable<CSVRecord> records, Parser parser,
+      AST2Expr ast2Expr) {
     IASTAppendable rowList = F.ListAlloc(256);
     for (CSVRecord record : records) {
       IASTAppendable columnList = F.ListAlloc(record.size());

@@ -130,6 +130,29 @@ import org.matheclipse.parser.client.ParserConfig;
 
 public final class Arithmetic {
   /**
+   * Returns the constant symbol if its numeric value is nonzero and inside the machine integer
+   * range, else {@link F#NIL}; used by <code>Abs</code> and <code>RealAbs</code>.
+   */
+  static final class AbsNumericFunction implements DoubleFunction<IExpr> {
+    final ISymbol symbol;
+
+    public AbsNumericFunction(ISymbol symbol) {
+      this.symbol = symbol;
+    }
+
+    @Override
+    public IExpr apply(double value) {
+      if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+        double result = Math.abs(value);
+        if (result > 0.0) {
+          return symbol;
+        }
+      }
+      return F.NIL;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -160,25 +183,6 @@ public final class Arithmetic {
   private static final class Abs extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 
 
-
-    private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
-      final ISymbol symbol;
-
-      public AbsNumericFunction(ISymbol symbol) {
-        this.symbol = symbol;
-      }
-
-      @Override
-      public IExpr apply(double value) {
-        if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-          double result = Math.abs(value);
-          if (result > 0.0) {
-            return symbol;
-          }
-        }
-        return F.NIL;
-      }
-    }
 
     private static final class AbsTimesFunction implements Function<IExpr, IExpr> {
       @Override

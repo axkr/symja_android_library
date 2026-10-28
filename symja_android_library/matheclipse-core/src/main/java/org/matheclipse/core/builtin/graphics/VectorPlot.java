@@ -187,11 +187,13 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       }
       double[] p = tails[k];
       double[] v = vectors[k];
+      // CPD-OFF the vector plots handle different option keys
       IASTAppendable from = F.ListAlloc(dimension);
       IASTAppendable to = F.ListAlloc(dimension);
       for (int d = 0; d < dimension; d++) {
         from.append(F.num(p[d] - v[d] * factor / 2));
         to.append(F.num(p[d] + v[d] * factor / 2));
+        // CPD-ON
       }
       IAST arrow = arrow(from, to, dimension);
       primitives.append(colored ? F.list(color(norm(v) / longest), arrow) : arrow);
@@ -439,7 +441,8 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         F.num(a[2] + s * (b[2] - a[2])));
   }
 
-  private static boolean hasOption(IAST options, IExpr key) {
+  /** <code>true</code> if <code>options</code> contains a rule with the left-hand side key. */
+  static boolean hasOption(IAST options, IExpr key) {
     for (IExpr option : options) {
       if (option.isRuleAST() && option.first() == key) {
         return true;

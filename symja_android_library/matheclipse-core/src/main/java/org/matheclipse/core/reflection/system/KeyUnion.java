@@ -16,45 +16,41 @@ public class KeyUnion extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
+    IAssociation[] associations = AssociationFunctions.toAssociations(ast.arg1());
+    if (associations == null) {
+      // a list whose elements are all associations or lists of rules is expected
+      return F.NIL;
+    }
     IExpr missing = F.Function(F.Missing(S.KeyAbsent, F.Slot1));
     if (ast.isAST2()) {
       missing = ast.arg2();
     }
-    if (arg1.isList()) {
-      IAssociation[] associations = AssociationFunctions.toAssociations((IAST) arg1);
-      if (associations == null) {
-        // All elements must be associations or lists of rules
-        return F.NIL;
-      }
 
-      // 1. Collect all keys across all associations in first-appearance order
-      Set<IExpr> allKeys = new LinkedHashSet<>();
-      for (int i = 0; i < associations.length; i++) {
-        IAssociation assoc = associations[i];
-        for (int j = 1; j <= assoc.argSize(); j++) {
-          allKeys.add(assoc.getRule(j).arg1());
-        }
+    // 1. Collect all keys across all associations in first-appearance order
+    Set<IExpr> allKeys = new LinkedHashSet<>();
+    for (int i = 0; i < associations.length; i++) {
+      IAssociation assoc = associations[i];
+      for (int j = 1; j <= assoc.argSize(); j++) {
+        allKeys.add(assoc.getRule(j).arg1());
       }
-
-      // 2. Pad each association individually
-      IASTAppendable resultList = F.ListAlloc(associations.length);
-      for (int i = 0; i < associations.length; i++) {
-        IAssociation assoc = associations[i];
-        IAssociation newAssoc = F.assoc();
-        for (IExpr key : allKeys) {
-          IAST rule = assoc.getRule(key);
-          if (rule.isPresent()) {
-            newAssoc.appendRule(rule);
-          } else {
-            newAssoc.appendRule(F.Rule(key, F.unaryAST1(missing, key)));
-          }
-        }
-        resultList.append(newAssoc);
-      }
-      return resultList;
     }
-    return F.NIL;
+
+    // 2. Pad each association individually
+    IASTAppendable resultList = F.ListAlloc(associations.length);
+    for (int i = 0; i < associations.length; i++) {
+      IAssociation assoc = associations[i];
+      IAssociation newAssoc = F.assoc();
+      for (IExpr key : allKeys) {
+        IAST rule = assoc.getRule(key);
+        if (rule.isPresent()) {
+          newAssoc.appendRule(rule);
+        } else {
+          newAssoc.appendRule(F.Rule(key, F.unaryAST1(missing, key)));
+        }
+      }
+      resultList.append(newAssoc);
+    }
+    return resultList;
   }
 
   @Override

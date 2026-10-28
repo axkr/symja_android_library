@@ -177,6 +177,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
       int ansatzDegree = order + 2;
       int seriesDegree = ansatzDegree + 1;
 
+      // CPD-OFF ansatz at infinity and at a finite point
       IASTAppendable polyAnsatz = F.PlusAlloc();
       IASTAppendable polyTrunc = F.PlusAlloc();
       IASTAppendable cVars = F.ListAlloc();
@@ -185,6 +186,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         IExpr c_i = F.Dummy("c" + i);
         cVars.append(c_i);
         IExpr term = i == 0 ? c_i : F.Times(c_i, F.Power(xVar, F.ZZ(-i)));
+        // CPD-ON
         polyAnsatz.append(term);
         if (i <= order) {
           polyTrunc.append(term);
@@ -200,12 +202,8 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
       rules.append(F.Rule(targetSymbol, F.Function(F.List(xVar), ansatzExpr)));
 
       for (int i = 1; i <= eqns.argSize(); i++) {
-        IExpr eq = eqns.get(i);
-        IExpr lhs = eq.isEqual() ? F.Subtract(eq.first(), eq.second()) : eq;
-
         // Substitute the parameterized polynomial scale into the recurrence
-        IExpr subbed = engine.evaluate(F.subst(lhs, rules));
-        subbed = engine.evaluate(subbed);
+        IExpr subbed = AsymptoticDSolveValue.substituteEquation(eqns.get(i), rules, engine);
 
         // NATIVE Infinity Expansion:
         // Avoid mapping to 1/z early to prevent 1/infinity denominator collapse bugs.
@@ -250,10 +248,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      IASTAppendable cVarsReversed = F.ListAlloc(cVars.argSize());
-      for (int i = cVars.argSize(); i >= 1; i--) {
-        cVarsReversed.append(cVars.get(i));
-      }
+      IAST cVarsReversed = cVars.reverse(F.NIL);
 
       IAST solve = F.Solve(algebraicSystem, cVarsReversed);
       IExpr solList = engine.evaluate(solve);

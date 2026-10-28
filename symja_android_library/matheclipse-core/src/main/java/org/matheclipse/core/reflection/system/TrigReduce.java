@@ -208,11 +208,13 @@ public class TrigReduce extends AbstractEvaluator {
         IInteger m = F.ZZ(mi);
         // Sum(Binomial(n,k)*head((-2*k+n)*x),{k,0,-1+m})+Binomial(n,m)/2
         IExpr sum = F.sum(k -> F.Times(F.Binomial(n, k),
+            // CPD-OFF power-reduction formulas differ in sign
             F.unaryAST1(head, F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi - 1);
         result = F.Plus(sum, F.Times(F.C1D2, F.Binomial(n, m)));
       } else {
         // odd case
         int mi = (i - 1) / 2;
+        // CPD-ON
         // Sum(Binomial(n,k)*head((-2*k+n)*x),{k,0,m})
         result = F.sum(k -> F.Times(F.Binomial(n, k),
             F.unaryAST1(head, F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
@@ -234,11 +236,13 @@ public class TrigReduce extends AbstractEvaluator {
         IInteger m = F.ZZ(mi);
         // Sum(Binomial(n,k)/(-1)^(k-m)*Cos((-2*k+n)*x),{k,0,-1+m})+(-1)^m/2*Binomial(n,m)
         IExpr sum = F.sum(k -> F.Times(F.Power(-1, F.Plus(F.Negate(k), m)), F.Binomial(n, k),
+            // CPD-OFF power-reduction formulas differ in sign
             F.Cos(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi - 1);
         result = F.Plus(sum, F.Times(F.C1D2, F.Binomial(n, m)));
       } else {
         // odd case
         int mi = (i - 1) / 2;
+        // CPD-ON
         IInteger m = F.ZZ(mi);
         // Sum(Binomial(n,k)/(-1)^(k-m)*Sin((-2*k+n)*x),{k,0,m})
         result = F.sum(k -> F.Times(F.Power(-1, F.Plus(F.Negate(k), m)), F.Binomial(n, k),

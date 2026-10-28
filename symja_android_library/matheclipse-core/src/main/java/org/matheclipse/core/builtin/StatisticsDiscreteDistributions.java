@@ -894,6 +894,7 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      // CPD-OFF generated distribution formulas with matching boilerplate
       return F.NIL;
     }
 
@@ -912,6 +913,7 @@ public class StatisticsDiscreteDistributions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
+        // CPD-ON
         if (!n.isReal() || !m.isReal() || !k.isReal()) {
           return F.NIL;
         }
@@ -973,6 +975,7 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr median(IAST dist) {
+      // CPD-OFF generated distribution formulas with matching boilerplate
       return F.NIL;
     }
 
@@ -987,6 +990,7 @@ public class StatisticsDiscreteDistributions {
             F.Function(
                 F.Piecewise(F.list(F.list(
                     F.Times(F.Power(F.Subtract(F.C1, m), F.Plus(F.Negate(F.Slot1), n)),
+                    // CPD-ON
                         F.Power(m, F.Slot1), F.Binomial(n, F.Slot1)),
                     F.LessEqual(F.C0, F.Slot1, n))), F.C0)); // $$;
         return callFunction(function, k);
@@ -1194,6 +1198,7 @@ public class StatisticsDiscreteDistributions {
           IExpr min = list.arg1();
           IExpr max = list.arg2();
           return new IExpr[] {min, max};
+        // CPD-OFF generated distribution formulas with matching boilerplate
         }
       }
       return null;
@@ -1219,6 +1224,7 @@ public class StatisticsDiscreteDistributions {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
+      // CPD-ON
         int min = minMax[0].toIntDefault();
         int max = minMax[1].toIntDefault();
         if (min < max && F.isPresent(min)) {
@@ -1307,6 +1313,7 @@ public class StatisticsDiscreteDistributions {
         IExpr function =
             // [$ (Piecewise({{1 - (1 - n)^(1 + Floor(#)), # >= 0}}, 0)) & $]
             F.Function(F.Piecewise(F.list(F.list(
+                // CPD-OFF generated distribution formulas with matching boilerplate
                 F.Subtract(F.C1, F.Power(F.Subtract(F.C1, n), F.Plus(F.C1, F.Floor(F.Slot1)))),
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -1321,6 +1328,7 @@ public class StatisticsDiscreteDistributions {
         // Piecewise({{n*HurwitzLerchPhi(1-n,-m,1-1/n),m>=0}},0)
         return F
             .Piecewise(
+            // CPD-ON
                 F.list(
                     F.list(
                         F.Times(n,
@@ -1546,6 +1554,7 @@ public class StatisticsDiscreteDistributions {
                             F.Less(F.Slot1, ns))),
                     F.list(F.C1, F.Or(F.GreaterEqual(F.Slot1, n), F.GreaterEqual(F.Slot1, ns)))),
                 F.C0)); // $$;
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1569,6 +1578,7 @@ public class StatisticsDiscreteDistributions {
     @Override
     public IExpr mean(IAST dist) {
       if (dist.isAST3()) {
+      // CPD-ON
         int param[] = parameters(dist);
         if (param != null) {
           // N * (n / m_n)
@@ -2564,6 +2574,7 @@ public class StatisticsDiscreteDistributions {
         IExpr b = dist.arg2();
         IExpr n = dist.arg3();
         // (a*n)/(a + b)
+        // CPD-OFF generated distribution formulas with matching boilerplate
         return F.Divide(F.Times(a, n), F.Plus(a, b));
       }
       return F.NIL;
@@ -2579,6 +2590,7 @@ public class StatisticsDiscreteDistributions {
       if (dist.isAST3()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0),
             F.GreaterEqual(dist.arg3(), F.C0));
+            // CPD-ON
       }
       return F.NIL;
     }
@@ -2693,6 +2705,7 @@ public class StatisticsDiscreteDistributions {
           if (q == 1.0) {
             return F.CInfinity;
           }
+          // CPD-OFF generated distribution formulas with matching boilerplate
           return refineAtTie(quantileBySummation(q, n, logProbability, tailRatio(dist)), n, k,
               dist, this, engine);
         }
@@ -2715,6 +2728,7 @@ public class StatisticsDiscreteDistributions {
       if (dist.isAST2()) {
         // n/(1 - a)
         return F.Divide(dist.arg2(), F.Subtract(F.C1, dist.arg1()));
+        // CPD-ON
       }
       return F.NIL;
     }
@@ -3007,6 +3021,7 @@ public class StatisticsDiscreteDistributions {
           if (q == 1.0) {
             return F.CInfinity;
           }
+          // CPD-OFF generated distribution formulas with matching boilerplate
           return refineAtTie(quantileBySummation(q, 0L, logProbability, tailRatio(dist)), 0L, k,
               dist, this, engine);
         }
@@ -3029,6 +3044,7 @@ public class StatisticsDiscreteDistributions {
       if (dist.isAST2()) {
         // m/(1 - lambda)
         return F.Divide(dist.arg1(), F.Subtract(F.C1, dist.arg2()));
+        // CPD-ON
       }
       return F.NIL;
     }
@@ -3296,12 +3312,14 @@ public class StatisticsDiscreteDistributions {
         IExpr r = dist.arg1();
         // Piecewise({{HarmonicNumber(Floor(#), 1 + r)/Zeta(1 + r), # >= 1}}, 0) &
         return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.Divide(F.HarmonicNumber(F.Floor(F.Slot1), F.Plus(F.C1, r)), F.Zeta(F.Plus(F.C1, r))),
             F.GreaterEqual(F.Slot1, F.C1))), F.C0)), k);
       }
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr r = dist.arg2();
+        // CPD-ON
         // Piecewise({{HarmonicNumber(Floor(#), 1 + r)/HarmonicNumber(n, 1 + r), 1 <= # < n},
         // {1, # >= n}}, 0) &
         return callFunction(F.Function(F.Piecewise(F.list(//
@@ -3434,12 +3452,14 @@ public class StatisticsDiscreteDistributions {
         }
         // Piecewise({{#^(-1 - r)/Zeta(1 + r), # >= 1}}, 0) &
         return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            // CPD-OFF generated distribution formulas with matching boilerplate
             F.Divide(F.Power(F.Slot1, F.Subtract(F.CN1, r)), F.Zeta(F.Plus(F.C1, r))),
             F.GreaterEqual(F.Slot1, F.C1))), F.C0)), k);
       }
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr r = dist.arg2();
+        // CPD-ON
         if (isZeroProbability(k)) {
           return F.C0;
         }

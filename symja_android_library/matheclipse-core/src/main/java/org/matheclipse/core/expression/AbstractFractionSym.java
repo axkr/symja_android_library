@@ -1901,20 +1901,6 @@ public abstract class AbstractFractionSym implements IFraction {
     return this;
   }
 
-  @Override
-  public double reDoubleValue() {
-    return doubleValue();
-  }
-
-  @Override
-  public IRational roundClosest(IReal multiple) {
-    if (!multiple.isRational()) {
-      multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
-    }
-    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
-    return ii.multiply((IRational) multiple);
-  }
-
   /**
    * Return a new rational representing <code>this - other</code>.
    *

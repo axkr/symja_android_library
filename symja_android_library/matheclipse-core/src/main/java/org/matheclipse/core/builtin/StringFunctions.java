@@ -1234,6 +1234,7 @@ public final class StringFunctions {
           if (arg2.isList()) {
             return arg2.mapThread(ast, 2);
           }
+          // CPD-OFF evaluate prologues of sibling string builtins with different options
           if (arg2.isString()) {
             String str = ast.arg2().toString();
             alphabet = ALPHABET_MAP.get(str);
@@ -1243,6 +1244,7 @@ public final class StringFunctions {
                 // The alphabet `1` is not known or not available.
                 Errors.printMessage(ast.topHead(), "nalph", F.list(ast.arg2()), engine);
                 return F.Missing(S.NotAvailable);
+                // CPD-ON
               }
               int length = strs.length;
               if (number > 0 && number <= length) {
@@ -1416,6 +1418,7 @@ public final class StringFunctions {
       if (ast.arg1().isString()) {
         String characters = ast.arg1().toString().toLowerCase(Locale.US);
         String alphabet = LATIN_ALPHABET;
+        // CPD-OFF evaluate prologues of sibling string builtins with different options
         if (ast.isAST2()) {
           String str = ast.arg2().toString();
           alphabet = ALPHABET_MAP.get(str);
@@ -1425,6 +1428,7 @@ public final class StringFunctions {
               // The alphabet `1` is not known or not available.
               Errors.printMessage(ast.topHead(), "nalph", F.list(ast.arg2()), engine);
               return F.C0;
+              // CPD-ON
             }
             for (int i = 0; i < strs.length; i++) {
               if (strs[i].equals(characters)) {
@@ -1512,6 +1516,28 @@ public final class StringFunctions {
   }
 
   /**
+   * A predicate with one argument, which must be a string: <code>True</code> or <code>False</code>
+   * from {@link #test(Object)} on that string.
+   */
+  private abstract static class AbstractStringPredicate extends AbstractFunctionEvaluator
+      implements Predicate<IExpr> {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = Validate.checkStringType(ast, 1, engine);
+      if (arg1.isPresent()) {
+        return F.booleSymbol(test(arg1));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -1527,21 +1553,7 @@ public final class StringFunctions {
    *
    * </blockquote>
    */
-  private static class LowerCaseQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = Validate.checkStringType(ast, 1, engine);
-      if (arg1.isPresent()) {
-        return F.booleSymbol(test(arg1));
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
+  private static class LowerCaseQ extends AbstractStringPredicate {
 
     @Override
     public boolean test(final IExpr obj) {
@@ -1581,22 +1593,7 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  private static class PrintableASCIIQ extends AbstractFunctionEvaluator
-      implements Predicate<IExpr> {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = Validate.checkStringType(ast, 1, engine);
-      if (arg1.isPresent()) {
-        return F.booleSymbol(test(arg1));
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
+  private static class PrintableASCIIQ extends AbstractStringPredicate {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -2587,6 +2584,7 @@ public final class StringFunctions {
   private static class StringMatchQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
+    // CPD-OFF evaluate prologues of sibling string builtins with different options
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
@@ -2604,6 +2602,7 @@ public final class StringFunctions {
 
         // only here are * and @ in a literal string wildcards
         StringPatternMatcher matcher =
+        // CPD-ON
             StringPatternMatcher.compile(arg2, true, ignoreCase, ast, engine);
         if (matcher == null) {
           return F.NIL;
@@ -2749,6 +2748,7 @@ public final class StringFunctions {
           return F.NIL;
         }
 
+        // CPD-OFF evaluate prologues of sibling string builtins with different options
         IExpr arg1 = evalStringArg1(ast, engine);
         if (!arg1.isString()) {
           return arg1;
@@ -2760,6 +2760,7 @@ public final class StringFunctions {
         if (rules == null) {
           return F.NIL;
         }
+        // CPD-ON
         String str = arg1.toString();
         CodePointString positions = new CodePointString(str);
         rules.reset(str);
@@ -3032,6 +3033,7 @@ public final class StringFunctions {
   private static class StringDelete extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
+    // CPD-OFF evaluate prologues of sibling string builtins with different options
     protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       if (argSize >= 2) {
@@ -3049,6 +3051,7 @@ public final class StringFunctions {
         rules.reset(arg1.toString());
         return replaceMatches(rules, Integer.MAX_VALUE, F.CEmptyString, engine);
       }
+      // CPD-ON
       return F.NIL;
     }
 
@@ -4730,10 +4733,11 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
-      IExpr temp = Validate.checkStringType(ast, 1, engine);
-      if (temp.isPresent()) {
+      if (arg1.isString()) {
         return F.booleSymbol(test(arg1));
       }
+      // the message shows the evaluated argument
+      Validate.checkStringType(ast.setAtCopy(1, arg1), 1, engine);
       return F.NIL;
     }
 

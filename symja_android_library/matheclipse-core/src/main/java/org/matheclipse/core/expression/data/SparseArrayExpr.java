@@ -477,6 +477,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     @Override
     public SparseExprVector add(FieldVector<IExpr> v) throws MathIllegalArgumentException {
       final int n = v.getDimension();
+      // CPD-OFF element-wise operators and rank specialisations
       checkVectorDimensions(n);
 
       if (v instanceof SparseExprVector) {
@@ -497,6 +498,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           int[] key = entry.getKey();
           if (!array.fData.containsKey(key)) {
             res.setEntry(key[0] - 1, array.fDefaultValue.plus(entry.getValue()));
+            // CPD-ON
           }
         }
         return res;
@@ -626,6 +628,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      */
     @Override
     public SparseExprVector ebeDivide(FieldVector<IExpr> v)
+        // CPD-OFF element-wise operators and rank specialisations
         throws MathIllegalArgumentException, MathRuntimeException {
       checkVectorDimensions(v.getDimension());
 
@@ -647,6 +650,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           int[] key = entry.getKey();
           if (!array.fData.containsKey(key)) {
             res.setEntry(key[0] - 1, array.fDefaultValue.divide(entry.getValue()));
+            // CPD-ON
           }
         }
         return res;
@@ -669,6 +673,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @throws MathIllegalArgumentException if `v` is not the same size as `this`
      */
     @Override
+    // CPD-OFF element-wise operators and rank specialisations
     public SparseExprVector ebeMultiply(FieldVector<IExpr> v) throws MathIllegalArgumentException {
       checkVectorDimensions(v.getDimension());
 
@@ -690,6 +695,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           int[] key = entry.getKey();
           if (!array.fData.containsKey(key)) {
             res.setEntry(key[0] - 1, array.fDefaultValue.times(entry.getValue()));
+            // CPD-ON
           }
         }
         return res;
@@ -3412,6 +3418,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           for (int j = 0; j < fDimension[1]; j++) {
             result.setEntry(i, j, d);
           }
+        // CPD-OFF element-wise operators and rank specialisations
         }
       }
       for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
@@ -3422,6 +3429,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           return null;
         }
         result.setEntry(key[0] - 1, key[1] - 1, d);
+        // CPD-ON
       }
       return result;
     }
@@ -3440,6 +3448,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         for (int i = 0; i < fDimension[0]; i++) {
           result.setEntry(i, d);
+        // CPD-OFF element-wise operators and rank specialisations
         }
       }
       for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
@@ -3450,6 +3459,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           return null;
         }
         result.setEntry(key[0] - 1, d);
+        // CPD-ON
       }
       return result;
     }

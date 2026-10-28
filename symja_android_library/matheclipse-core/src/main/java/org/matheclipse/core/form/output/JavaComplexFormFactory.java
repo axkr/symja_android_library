@@ -288,6 +288,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
         } else {
           // Static CMath Function Calls (e.g. CMath.gamma(x), CMath.acosh(x))
           buf.append(str);
+          // CPD-OFF double and complex Java code generators
           convertArgs(buf, head, function, 1);
           return;
         }
@@ -300,6 +301,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
         }
         // Power never gets here: FUNCTIONS_STR maps it to ".pow", handled above
         if (function.isDirectedInfinity()) {
+        // CPD-ON
           if (function.isInfinity()) {
             buf.append("Complex.INF");
             return;

@@ -190,6 +190,7 @@ public abstract class AbstractCodeFormFactory {
       boolean caller) {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
+        // CPD-OFF form factories without a common base for this conversion
         append(buf, "+");
         caller = false;
       }
@@ -202,6 +203,7 @@ public abstract class AbstractCodeFormFactory {
     if (realZero && imaginaryZero) {
       convertDoubleString(buf, "0.0", Precedence.PLUS, false);
     } else {
+    // CPD-ON
       if (!realZero) {
         append(buf, convertApfloat(realPart));
         if (!imaginaryZero) {

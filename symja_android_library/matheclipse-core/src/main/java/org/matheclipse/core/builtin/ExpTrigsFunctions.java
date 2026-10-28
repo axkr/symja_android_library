@@ -369,6 +369,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
+  // CPD-OFF closed-form tables per function
   private static final class ArcCos extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
     @Override
@@ -383,6 +384,7 @@ public class ExpTrigsFunctions {
     @Override
     public double applyAsDouble(double operand) {
       return Math.acos(operand);
+      // CPD-ON
     }
 
     @Override
@@ -449,6 +451,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      // CPD-OFF closed-form tables per function
       return ast.argSize() == 1 ? ast.arg1().acos() : F.NIL;
     }
 
@@ -464,6 +467,7 @@ public class ExpTrigsFunctions {
       // [$ Pi/2 + I*Log(I*arg1 + Sqrt(1 - arg1^2)) $]
       F.Plus(F.CPiHalf,
           F.Times(F.CI, F.Log(F.Plus(F.Times(F.CI, arg1), F.Sqrt(F.Subtract(F.C1, F.Sqr(arg1))))))); // $$;
+          // CPD-ON
     }
   }
 
@@ -584,6 +588,7 @@ public class ExpTrigsFunctions {
       if (arg1.isIntervalData()) {
         return IntervalDataSym.arccosh((IAST) arg1);
       }
+      // CPD-OFF closed-form tables per function
       if (arg1.isCosh() && arg1.first().isNonNegativeResult()) {
         // Cosh is one-to-one on the non-negative numbers
         return arg1.first();
@@ -602,6 +607,7 @@ public class ExpTrigsFunctions {
       return
       // [$ Log(arg1 + Sqrt(-1 + arg1)*Sqrt(1 + arg1)) $]
       F.Log(F.Plus(arg1, F.Times(F.Sqrt(F.Plus(F.CN1, arg1)), F.Sqrt(F.Plus(F.C1, arg1))))); // $$;
+      // CPD-ON
     }
   }
 
@@ -676,6 +682,7 @@ public class ExpTrigsFunctions {
         return IntervalDataSym.arccot((IAST) arg1);
       }
       return F.NIL;
+    // CPD-OFF closed-form tables per function
     }
 
     @Override
@@ -689,6 +696,7 @@ public class ExpTrigsFunctions {
       return
       // [$ (1/2)*I*Log(1 - I/arg1) - (1/2)*I*Log(1 + I/arg1) $]
       F.Plus(F.Times(F.C1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CNI, F.Power(arg1, F.CN1))))),
+      // CPD-ON
           F.Times(F.CN1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CI, F.Power(arg1, F.CN1)))))); // $$;
     }
   }
@@ -937,6 +945,7 @@ public class ExpTrigsFunctions {
       if (negExpr.isPresent()) {
         return Negate(ArcCsch(negExpr));
       }
+      // CPD-OFF closed-form tables per function
       if (arg1.isAST(S.Csch, 2) && arg1.first().isRealResult()) {
         return arg1.first();
       }
@@ -954,6 +963,7 @@ public class ExpTrigsFunctions {
       return
       // [$ Log(Sqrt(1 + 1/arg1^2) + 1/arg1) $]
       F.Log(F.Plus(F.Sqrt(F.Plus(F.C1, F.Power(arg1, F.CN2))), F.Power(arg1, F.CN1))); // $$;
+      // CPD-ON
     }
   }
 
@@ -1003,6 +1013,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      // CPD-OFF closed-form tables per function
       if (arg1.isAST(S.Sech, 2) && arg1.first().isNonNegativeResult()) {
         // ArcSech(Sech(x)) == x /; x >= 0
         return arg1.first();
@@ -1021,6 +1032,7 @@ public class ExpTrigsFunctions {
       return
       // [$ Log(Sqrt(-1 + 1/arg1)*Sqrt(1 + 1/arg1) + 1/arg1) $]
       F.Log(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, F.Power(arg1, F.CN1))),
+      // CPD-ON
           F.Sqrt(F.Plus(F.C1, F.Power(arg1, F.CN1)))), F.Power(arg1, F.CN1))); // $$;
     }
   }
@@ -1069,6 +1081,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      // CPD-OFF closed-form tables per function
       return F.NIL;
     }
 
@@ -1084,6 +1097,7 @@ public class ExpTrigsFunctions {
       // [$ Pi/2 + I*Log(Sqrt(1 - 1/arg1^2) + I/arg1) $]
       F.Plus(F.CPiHalf, F.Times(F.CI, F.Log(F.Plus(F.Sqrt(F.Subtract(F.C1, F.Power(arg1, F.CN2))),
           F.Times(F.CI, F.Power(arg1, F.CN1)))))); // $$;
+          // CPD-ON
     }
   }
 
@@ -1094,6 +1108,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
+  // CPD-OFF closed-form tables per function
   private static final class ArcSin extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
 
@@ -1108,6 +1123,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public double applyAsDouble(double operand) {
+    // CPD-ON
       return Math.asin(operand);
     }
 
@@ -1269,6 +1285,7 @@ public class ExpTrigsFunctions {
       // if (imPart.isPresent()) {
       // return F.Times(F.CI, F.ArcSin(imPart));
       // }
+      // CPD-OFF closed-form tables per function
       if (arg1.isSinh() && arg1.first().isRealResult()) {
         // Sinh is one-to-one on the real numbers
         return arg1.first();
@@ -1286,6 +1303,7 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Log(arg1 + Sqrt(1 + arg1^2)) $]
+      // CPD-ON
       F.Log(F.Plus(arg1, F.Sqrt(F.Plus(F.C1, F.Sqr(arg1))))); // $$;
     }
 
@@ -1481,6 +1499,7 @@ public class ExpTrigsFunctions {
       }
 
       return Math.atan(stack[top]);
+    // CPD-OFF closed-form tables per function
     }
 
     @Override
@@ -1494,6 +1513,7 @@ public class ExpTrigsFunctions {
       return
       // [$ (1/2)*I*Log(1 - I*arg1) - (1/2)*I*Log(1 + I*arg1) $]
       F.Plus(F.Times(F.C1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CNI, arg1)))),
+      // CPD-ON
           F.Times(F.CN1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CI, arg1))))); // $$;
     }
 
@@ -1513,6 +1533,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
+  // CPD-OFF closed-form tables per function
   private static final class ArcTanh extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
 
@@ -1527,6 +1548,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public double applyAsDouble(double operand) {
+    // CPD-ON
       return FastMath.atanh(operand);
     }
 
@@ -1907,18 +1929,19 @@ public class ExpTrigsFunctions {
             if (t.isLT(F.C0)) {
               // Coth(arg1-I*Pi*IntegerPart(t) + I*Pi )
               return F
-              // CPD-ON
                   .Coth(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // Tanh(arg1-1/2*I*Pi)
               return F.Tanh(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi)));
+              // CPD-ON
             }
             // Coth( arg1 - I*Pi*IntegerPart(t) )
             return F.Coth(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart())));
           } else if (k.isIntegerResult()) {
             // Coth( arg1 - list.arg2() )
+            // CPD-OFF closed-form tables per function
             return F.Coth(F.Subtract(arg1, list.arg2()));
           }
         }
@@ -1930,6 +1953,7 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.coth((IAST) arg1);
+        // CPD-ON
       }
       if (arg1.isIntervalData()) {
         return IntervalDataSym.coth((IAST) arg1);
@@ -2297,6 +2321,7 @@ public class ExpTrigsFunctions {
             return coshResult;
           } else if (imaginaryPart.isOdd()) {
             // https://functions.wolfram.com/ElementaryFunctions/Cosh/04/02/03/0003/
+            // CPD-OFF closed-form tables per function
             return F.Times(F.CN1, coshResult);
           }
         }
@@ -2312,6 +2337,7 @@ public class ExpTrigsFunctions {
           return e1DblArg(((Num) ast.arg1()).doubleValue());
         }
         return ((IInexactNumber) ast.arg1()).cosh();
+        // CPD-ON
       }
       return F.NIL;
     }
@@ -2607,6 +2633,7 @@ public class ExpTrigsFunctions {
                 .Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Csch( arg1 - list.arg2() )
+            // CPD-OFF closed-form tables per function
             return F.Times(F.Power(-1, k), F.Csch(F.Subtract(arg1, list.arg2())));
           }
         }
@@ -2618,6 +2645,7 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.csch((IAST) arg1);
+        // CPD-ON
       }
       if (arg1.isIntervalData()) {
         return IntervalDataSym.csch((IAST) arg1);
@@ -3248,6 +3276,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Sec extends AbstractTrigArg1
+      // CPD-OFF closed-form tables per function
       implements INumeric, IRewrite, DoubleUnaryOperator, IReciprocalTrigonometricFunction {
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -3256,6 +3285,7 @@ public class ExpTrigsFunctions {
         if (x.isRealResult()) {
           IExpr result = F.Plus(F.C1D2, F.Times(x, F.Power(S.Pi, F.CN1))).eval();
           if (result.isNumber() && !result.isInteger()) {
+          // CPD-ON
             return true;
           }
         }
@@ -3535,6 +3565,7 @@ public class ExpTrigsFunctions {
                 .Sech(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sech( arg1 - list.arg2() )
+            // CPD-OFF closed-form tables per function
             return F.Times(F.Power(-1, k), F.Sech(F.Subtract(arg1, list.arg2())));
           }
         }
@@ -3546,6 +3577,7 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.sech((IAST) arg1);
+        // CPD-ON
       }
       if (arg1.isIntervalData()) {
         return IntervalDataSym.sech((IAST) arg1);
@@ -4017,6 +4049,7 @@ public class ExpTrigsFunctions {
                 .Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sinh( arg1 - list.arg2() )
+            // CPD-OFF closed-form tables per function
             return F.Times(F.Power(-1, k), F.Sinh(F.Subtract(arg1, list.arg2())));
           }
         }
@@ -4028,6 +4061,7 @@ public class ExpTrigsFunctions {
       }
 
       if (arg1.isInterval()) {
+      // CPD-ON
         return IntervalSym.sinh((IAST) arg1);
       }
       if (arg1.isIntervalData()) {
@@ -4047,6 +4081,7 @@ public class ExpTrigsFunctions {
             return sinhResult;
           } else if (imaginaryPart.isOdd()) {
             // https://functions.wolfram.com/ElementaryFunctions/Sinh/04/02/03/0003/
+            // CPD-OFF closed-form tables per function
             return F.Times(F.CN1, sinhResult);
           }
         }
@@ -4062,6 +4097,7 @@ public class ExpTrigsFunctions {
     // if (l.isReal() || l.isNegativeInfinity()) {
     // if (u.isReal() || u.isInfinity()) {
     // u = F.Sinh.of(u);
+    // CPD-ON
     // if (u.isReal() || u.isInfinity()) {
     // return F.Interval(F.List(l, u));
     // }
@@ -4078,6 +4114,7 @@ public class ExpTrigsFunctions {
           // Overflow() beyond the exponent of an arbitrary precision number, for either sign
           return e1DblArg(((Num) ast.arg1()).doubleValue());
         }
+        // CPD-OFF closed-form tables per function
         return ((IInexactNumber) ast.arg1()).sinh();
       }
       return F.NIL;
@@ -4094,6 +4131,7 @@ public class ExpTrigsFunctions {
       return
       // [$ -(1/(E^arg1*2)) + E^arg1/2 $]
       F.Plus(F.Negate(F.Power(F.Times(F.Exp(arg1), F.C2), F.CN1)), F.Times(F.C1D2, F.Exp(arg1))); // $$;
+      // CPD-ON
     }
   }
 
@@ -4104,6 +4142,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Tan extends AbstractTrigArg1
+      // CPD-OFF closed-form tables per function
       implements INumeric, IRewrite, DoubleUnaryOperator, ITrigonometricFunction {
 
     @Override
@@ -4112,6 +4151,7 @@ public class ExpTrigsFunctions {
         IExpr x = ast.arg1();
         if (x.isRealResult()) {
           IExpr result = F.Plus(F.C1D2, F.Times(x, F.Power(S.Pi, F.CN1))).eval();
+          // CPD-ON
           if (result.isReal() && !result.isInteger()) {
             return true;
           }
@@ -4358,17 +4398,20 @@ public class ExpTrigsFunctions {
               // Tanh(arg1-I*Pi*IntegerPart(t) + I*Pi )
               // CPD-ON
               return F
+                  // CPD-OFF closed-form tables per function
                   .Tanh(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
               // Coth(arg1-1/2*I*Pi)
               return F.Coth(F.Plus(arg1, F.Times(F.CN1D2, F.CI, S.Pi)));
+              // CPD-ON
             }
             // Tanh( arg1 - I*Pi*IntegerPart(t) )
             return F.Tanh(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart())));
           } else if (k.isIntegerResult()) {
             // Tanh( arg1 - list.arg2() )
+            // CPD-OFF closed-form tables per function
             return F.Tanh(F.Subtract(arg1, list.arg2()));
           }
         }
@@ -4380,6 +4423,7 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.tanh((IAST) arg1);
+        // CPD-ON
       }
       if (arg1.isIntervalData()) {
         return IntervalDataSym.tanh((IAST) arg1);
@@ -4402,6 +4446,7 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
+        // CPD-OFF closed-form tables per function
         return ((IInexactNumber) ast.arg1()).tanh();
       }
       return F.NIL;
@@ -4418,6 +4463,7 @@ public class ExpTrigsFunctions {
       return
       // [$ -(1/(E^arg1*(E^(-arg1) + E^arg1))) + E^arg1/(E^(-arg1) + E^arg1) $]
       F.Plus(
+      // CPD-ON
           F.Negate(
               F.Power(F.Times(F.Exp(arg1), F.Plus(F.Exp(F.Negate(arg1)), F.Exp(arg1))), F.CN1)),
           F.Times(F.Exp(arg1), F.Power(F.Plus(F.Exp(F.Negate(arg1)), F.Exp(arg1)), F.CN1))); // $$;

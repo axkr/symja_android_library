@@ -51,6 +51,7 @@ public class EvalAttributes {
    * @param ast the <code>AST</code> whose elements should be flattened.
    * @return returns the flattened list or <code>F.NIL</code>
    */
+  // CPD-OFF Flat evaluator hot path, deep and one-level twins
   public static IASTAppendable flattenDeep(final IAST ast) {
     if (ast.hasFlag(Flag.IS_FLATTENED)) {
       // already flattened
@@ -64,6 +65,7 @@ public class EvalAttributes {
     final IExpr sym = ast.head();
     if (sym.isSymbol() && ast.isAST(sym)) {
       IASTAppendable result = flattenDeep((ISymbol) sym, ast);
+      // CPD-ON
       if (result.isPresent()) {
         result.addFlag(Flag.IS_FLATTENED);
         return result;
@@ -118,6 +120,7 @@ public class EvalAttributes {
    * @return returns the flattened list or <code>F.NIL</code>
    * @see #flattenDeep(IAST)
    */
+  // CPD-OFF Flat evaluator hot path, deep and one-level twins
   public static IASTAppendable flatten(final IAST ast) {
     if (ast.hasFlag(Flag.IS_FLATTENED)) {
       // already flattened
@@ -131,6 +134,7 @@ public class EvalAttributes {
 
     final IExpr sym = ast.head();
     if (sym.isSymbol() && ast.isAST(sym)) {
+    // CPD-ON
       IASTAppendable result = flatten((ISymbol) sym, ast);
       if (result.isPresent()) {
         result.addFlag(Flag.IS_FLATTENED);

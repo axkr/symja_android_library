@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -24,8 +25,8 @@ public class RegionDifference extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr from = unwrap(ast.arg1());
-    IExpr away = unwrap(ast.arg2());
+    IExpr from = RegionPrimitives.unwrapRegion(ast.arg1());
+    IExpr away = RegionPrimitives.unwrapRegion(ast.arg2());
     List<IExpr> regions = Arrays.asList(from, away);
     int embeddingDimension =
         BooleanRegions.embeddingDimension(S.RegionDifference, regions, engine);
@@ -41,10 +42,6 @@ public class RegionDifference extends AbstractFunctionEvaluator {
     }
     return BooleanRegions.of(regions,
         bodies -> BooleanRegions.junction(S.And, bodies[0], F.Not(bodies[1])));
-  }
-
-  private static IExpr unwrap(IExpr region) {
-    return region.isAST(S.Region, 2) ? region.first() : region;
   }
 
   @Override

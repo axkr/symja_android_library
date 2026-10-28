@@ -89,10 +89,19 @@ public class IntervalDataSym {
   };
 
   public static IExpr arccos(final IAST ast) {
+    return onUnitInterval(ast, S.ArcCos);
+  }
+
+  /**
+   * Map the intervals inside <code>[-1, 1]</code> by the end points; a decreasing
+   * <code>function</code> gets its end points swapped when the result is normalized.
+   */
+  private static IExpr onUnitInterval(final IAST ast, IBuiltInSymbol function) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
-        result.append(index, F.List(F.ArcCos(min), lessMin, lessMax, F.ArcCos(max)));
+        result.append(index, F.List(F.unaryAST1(function, min), lessMin, lessMax,
+            F.unaryAST1(function, max)));
         return true;
       }
       return false;
@@ -135,14 +144,7 @@ public class IntervalDataSym {
   }
 
   public static IExpr arcsin(final IAST ast) {
-    EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
-      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
-        result.append(index, F.List(F.ArcSin(min), lessMin, lessMax, F.ArcSin(max)));
-        return true;
-      }
-      return false;
-    });
+    return onUnitInterval(ast, S.ArcSin);
   }
 
   public static IExpr arcsinh(final IAST ast) {
@@ -166,14 +168,7 @@ public class IntervalDataSym {
   }
 
   public static IExpr arctanh(final IAST ast) {
-    EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
-      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
-        result.append(index, F.List(F.ArcTanh(min), lessMin, lessMax, F.ArcTanh(max)));
-        return true;
-      }
-      return false;
-    });
+    return onUnitInterval(ast, S.ArcTanh);
   }
 
   /**
@@ -320,6 +315,7 @@ public class IntervalDataSym {
             if (dMax < 0) {
               result.append(F.List(F.CNInfinity, S.Less, lessMax, F.Cot(max)));
               result.append(F.List(F.Cot(min), lessMin, S.Less, F.CInfinity));
+            // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
             } else {
               if (dMin < dMax) {
                 result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Cot(min)));
@@ -329,6 +325,7 @@ public class IntervalDataSym {
               }
             }
           } else {
+          // CPD-ON
             if (dMax < 0) {
               if (dMin < dMax) {
                 result.append(F.List(F.Cot(max), lessMax, S.Less, F.CInfinity));
@@ -336,6 +333,7 @@ public class IntervalDataSym {
               } else {
                 result.append(F.List(F.CNInfinity, S.Less, S.Less, F.CInfinity));
               }
+            // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
             } else {
               // dMin < 0 <= dMax: the interval crosses a single pole (Cot is decreasing, so the
               // value can only "increase" across a pole). The image splits into two rays with the
@@ -345,6 +343,7 @@ public class IntervalDataSym {
                 result.append(F.List(F.Cot(max), lessMax, S.Less, F.CInfinity));
               } else {
                 result.append(F.CRealsRange);
+                // CPD-ON
               }
             }
           }
@@ -355,30 +354,44 @@ public class IntervalDataSym {
   }
 
   public static IAST coth(final IAST ast) {
+    return decreasingWithPoleAtZero(ast, S.Coth);
+  }
+
+  /**
+   * Map the intervals by a <code>function</code> like <code>Coth</code> or <code>Csch</code>,
+   * which is decreasing on <code>(-Infinity, 0)</code> and on <code>(0, Infinity)</code>, tends to
+   * <code>-Infinity</code> at <code>0-</code> and to <code>+Infinity</code> at <code>0+</code>.
+   */
+  private static IAST decreasingWithPoleAtZero(final IAST ast, IBuiltInSymbol function) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        // Coth is decreasing on (0, Infinity), so the bounds (and their open/closed flags) swap.
-        // Coth(0+) tends to +Infinity, which is always an open (Less) bound.
+        // decreasing on (0, Infinity), so the bounds (and their open/closed flags) swap.
+        // The value at 0+ tends to +Infinity, which is always an open (Less) bound.
         if (min.isZero()) {
-          result.append(F.List(F.Coth(max), lessMax, S.Less, F.CInfinity));
+          result.append(F.List(F.unaryAST1(function, max), lessMax, S.Less, F.CInfinity));
         } else {
-          result.append(F.List(F.Coth(max), lessMax, lessMin, F.Coth(min)));
+          result.append(F.List(F.unaryAST1(function, max), lessMax, lessMin,
+              F.unaryAST1(function, min)));
         }
         return true;
       }
       return false;
     }, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Coth(min)));
-        result.append(F.List(F.Coth(max), lessMax, S.Less, F.CInfinity));
+        result.append(F.List(F.CNInfinity, S.Less, lessMin, F.unaryAST1(function, min)));
+        if (!max.isZero()) {
+          // an end at 0 only adds the limit -Infinity from the left
+          result.append(F.List(F.unaryAST1(function, max), lessMax, S.Less, F.CInfinity));
+        }
         return true;
       }
       return false;
     }, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
         // decreasing on (-Infinity, 0) as well: bounds swap
-        result.append(F.List(F.Coth(max), lessMax, lessMin, F.Coth(min)));
+        result.append(F.List(F.unaryAST1(function, max), lessMax, lessMin,
+            F.unaryAST1(function, min)));
         return true;
       }
       return false;
@@ -394,33 +407,7 @@ public class IntervalDataSym {
   }
 
   public static IAST csch(final IAST ast) {
-    EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
-      if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        // Csch is decreasing on (0, Infinity): bounds swap, Csch(0+) tends to +Infinity
-        if (min.isZero()) {
-          result.append(F.List(F.Csch(max), lessMax, S.Less, F.CInfinity));
-        } else {
-          result.append(F.List(F.Csch(max), lessMax, lessMin, F.Csch(min)));
-        }
-        return true;
-      }
-      return false;
-    }, (min, lessMin, lessMax, max, result, index) -> {
-      if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Csch(min)));
-        result.append(F.List(F.Csch(max), lessMax, S.Less, F.CInfinity));
-        return true;
-      }
-      return false;
-    }, (min, lessMin, lessMax, max, result, index) -> {
-      if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
-        // decreasing on (-Infinity, 0) as well: bounds swap
-        result.append(F.List(F.Csch(max), lessMax, lessMin, F.Csch(min)));
-        return true;
-      }
-      return false;
-    });
+    return decreasingWithPoleAtZero(ast, S.Csch);
   }
 
   /**

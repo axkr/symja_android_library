@@ -194,6 +194,19 @@ public class Documentation {
    * @return <code>null</code> is no entry was found
    */
   public static String functionURL(ISymbol builtin) {
+    IEvaluator evaluator = implementingEvaluator(builtin);
+    return evaluator == null ? null
+        : buildURL(evaluator.getClass(), ID.LINE_NUMBER_OF_JAVA_CLASS[builtin.ordinal()]);
+  }
+
+  /**
+   * The evaluator which implements the <code>built-in-symbol</code> in a Java class with a known
+   * source line.
+   *
+   * @param builtin the built-in function identifier
+   * @return <code>null</code> if the symbol has no source line or no real evaluator
+   */
+  public static IEvaluator implementingEvaluator(ISymbol builtin) {
     int ordinal = builtin.ordinal();
     if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
       int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
@@ -202,8 +215,7 @@ public class Documentation {
         if (evaluator != null //
             && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
             && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
-          Class<? extends IEvaluator> clazz = evaluator.getClass();
-          return buildURL(clazz, line);
+          return evaluator;
         }
       }
     }

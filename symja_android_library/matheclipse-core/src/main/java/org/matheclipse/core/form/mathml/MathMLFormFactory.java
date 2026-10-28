@@ -392,16 +392,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
 
     private void convertSteps(final StringBuilder buf, final IAST steps, final int indent) {
-      for (int i = 1; i < steps.size(); i++) {
-        IExpr step = steps.get(i);
-        if (!StepsTree.isStep(step)) {
-          continue;
-        }
-        IAST stepAST = (IAST) step;
+      for (IAST stepAST : StepsTree.stepEntries(steps)) {
         // the description is prose, so its formulas are rendered as plain text rather than as a
         // nested <math> element
-        String description =
-            StepDescription.of(stepAST, StepDescription.PLAIN_TEXT, "", "");
+        String description = StepDescription.plainText(stepAST);
         if (!description.isEmpty()) {
           startRow(buf, indent);
           fFactory.tag(buf, "mtext", description);

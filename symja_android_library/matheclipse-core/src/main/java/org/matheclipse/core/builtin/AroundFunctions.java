@@ -514,14 +514,7 @@ public class AroundFunctions {
       if (!isAround(arg)) {
         continue;
       }
-      IASTAppendable others = F.TimesAlloc(timesAST.size());
-      for (int j = 1; j < timesAST.size(); j++) {
-        if (j != i) {
-          IExpr other = timesAST.get(j);
-          others.append(isAround(other) ? ((IAST) other).arg1() : other);
-        }
-      }
-      IExpr partial = engine.evaluate(others);
+      IExpr partial = engine.evaluate(otherFactors(timesAST, i));
       IExpr sign = engine.evaluate(F.Sign(partial));
       if (!sign.isOne() && !sign.isMinusOne() && !sign.isZero()) {
         return F.NIL;
@@ -717,17 +710,25 @@ public class AroundFunctions {
         // the partial derivative of the product with respect to this factor is the product of all
         // the others, which is built directly rather than as product/value so that a zero value
         // cannot divide
-        IASTAppendable others = F.TimesAlloc(timesAST.size());
-        for (int j = 1; j < timesAST.size(); j++) {
-          if (j != i) {
-            IExpr other = timesAST.get(j);
-            others.append(isAround(other) ? ((IAST) other).arg1() : other);
-          }
-        }
-        squares.append(F.Sqr(F.Times(others, ((IAST) arg).arg2())));
+        squares.append(F.Sqr(F.Times(otherFactors(timesAST, i), ((IAST) arg).arg2())));
       }
     }
     return F.binaryAST2(S.Around, product, engine.evaluate(F.Sqrt(squares)));
+  }
+
+  /**
+   * The product of all factors of <code>timesAST</code> except the one at position <code>i</code>,
+   * with every {@link S#Around} factor replaced by its value.
+   */
+  private static IASTAppendable otherFactors(IAST timesAST, int i) {
+    IASTAppendable others = F.TimesAlloc(timesAST.size());
+    for (int j = 1; j < timesAST.size(); j++) {
+      if (j != i) {
+        IExpr other = timesAST.get(j);
+        others.append(isAround(other) ? ((IAST) other).arg1() : other);
+      }
+    }
+    return others;
   }
 
   /**
@@ -744,6 +745,21 @@ public class AroundFunctions {
     // D(RealAbs(x),x) is x/RealAbs(x) - so the slope is taken from that instead.
     IExpr slopeHead = head == S.Abs && around.arg1().isReal() ? S.RealAbs : head;
     return propagate(F.unaryAST1(head, x), F.unaryAST1(slopeHead, x), x, around, engine);
+  }
+
+  /**
+   * <code>f(Around(x, delta))</code> for a unary call <code>ast</code> through
+   * {@link #mapFunction(IExpr, IAST, EvalEngine)}.
+   *
+   * @return {@link F#NIL} if the first argument is not an {@link S#Around}, or the derivative
+   *         cannot be found
+   */
+  public static IExpr mapUnaryAround(IAST ast, EvalEngine engine) {
+    IExpr arg1 = ast.arg1();
+    if (isAround(arg1)) {
+      return mapFunction(ast.head(), (IAST) arg1, engine);
+    }
+    return F.NIL;
   }
 
   /**

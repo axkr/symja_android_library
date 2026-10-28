@@ -826,6 +826,7 @@ public class Symbol implements ISymbol, Serializable {
       }
     }
     return F.NIL;
+  // CPD-OFF value and rule handling on separate private fields
   }
 
   /** {@inheritDoc} */
@@ -847,6 +848,7 @@ public class Symbol implements ISymbol, Serializable {
     }
     return null;
   }
+  // CPD-ON
 
   /**
    * The numeric value of this symbol, if it is a numeric function itself or has an assigned value

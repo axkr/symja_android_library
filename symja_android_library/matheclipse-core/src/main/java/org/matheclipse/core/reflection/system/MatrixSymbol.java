@@ -65,6 +65,7 @@ public class MatrixSymbol extends AbstractEvaluator {
       IExpr dimension = dimensionsList.get(i);
       if (!SymbolicArrayUtil.isValidDimension(dimension)) {
         // Invalid dimension specification `1`.
+        // CPD-OFF per-head argument validation with different rank rules
         return Errors.printMessage(S.MatrixSymbol, "nodim", F.List(dimension), engine);
       }
     }
@@ -83,6 +84,7 @@ public class MatrixSymbol extends AbstractEvaluator {
         if (!SymbolicArrayUtil.isValidSymmetry(arg3, dimensionsList)) {
           // Symmetry specification `1` is incompatible with expression `2`.
           return Errors.printMessage(S.MatrixSymbol, "symmcomp", F.List(arg3, dimensionsList),
+          // CPD-ON
               engine);
         }
         symmetry = arg3;

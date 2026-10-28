@@ -253,6 +253,7 @@ public final class SymbolicTermOrder implements Serializable {
    *
    * @param w weight array of longs.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicTermOrder(IExpr[][] w) {
     if (w == null || w.length == 0) {
       throw new IllegalArgumentException("invalid term order weight");
@@ -269,6 +270,7 @@ public final class SymbolicTermOrder implements Serializable {
 
       @Override
       public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+      // CPD-ON
         return -ExpVectorSymbolic.EVIWLC(weight, e1, e2);
       }
     };

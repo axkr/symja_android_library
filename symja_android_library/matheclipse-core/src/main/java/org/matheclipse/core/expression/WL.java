@@ -260,6 +260,7 @@ public class WL {
     private int parseInteger32() {
       int bits = 0;
       position += 4;
+      // CPD-OFF unrolled little-endian byte decoding
       int pos2 = position - 1;
       bits = (bits | (array[pos2--] & 0xFF)) << 8;
       bits = (bits | (array[pos2--] & 0xFF)) << 8;
@@ -269,8 +270,10 @@ public class WL {
     }
 
     private long parseInteger64() {
+    // CPD-ON
       long bits = 0;
       position += 8;
+      // CPD-OFF unrolled little-endian byte decoding
       int pos2 = position - 1;
       bits = (bits | (array[pos2--] & 0xFF)) << 8;
       bits = (bits | (array[pos2--] & 0xFF)) << 8;
@@ -284,6 +287,7 @@ public class WL {
     }
 
     private int parseInteger8() {
+    // CPD-ON
       byte b = array[position++];
       return b;
     }

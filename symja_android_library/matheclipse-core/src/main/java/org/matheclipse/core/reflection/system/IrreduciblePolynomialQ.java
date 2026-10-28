@@ -187,63 +187,13 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
     }
 
     IExpr factored = engine.evaluate(factorAST);
-
-    int nonConstantFactorsCount = 0;
-
-    if (factored.isAST()) {
-      IAST astFactored = (IAST) factored;
-      IExpr head = astFactored.head();
-      if (head.isBuiltInSymbol()) {
-        switch (astFactored.headID()) {
-          case ID.Factor:
-            // Factor could not evaluate the polynomial (e.g., unsupported extension)
-            return F.NIL;
-          case ID.Times:
-            for (int i = 1; i <= astFactored.argSize(); i++) {
-              IExpr arg = astFactored.get(i);
-              if (hasVariables(arg, variables)) {
-                if (arg.isPower()) {
-                  IExpr exp = arg.getAt(2);
-                  if (exp.isInteger() && !exp.isOne()) {
-                    // A power factor with an integer exponent > 1 means the polynomial is reducible
-                    return S.False;
-                  }
-                }
-                nonConstantFactorsCount++;
-              }
-            }
-            break;
-          case ID.Power:
-            IExpr base = astFactored.getAt(1);
-            IExpr exp = astFactored.getAt(2);
-            if (hasVariables(base, variables)) {
-              if (exp.isInteger() && !exp.isOne()) {
-                return S.False;
-              }
-              nonConstantFactorsCount++;
-            }
-            break;
-          default:
-            // Expressions like Plus[...] fall through here
-            if (hasVariables(astFactored, variables)) {
-              nonConstantFactorsCount++;
-            }
-            break;
-        }
-      } else {
-        if (hasVariables(astFactored, variables)) {
-          nonConstantFactorsCount++;
-        }
-      }
-    } else {
-      // Non-AST expressions (e.g. a single Symbol)
-      if (hasVariables(factored, variables)) {
-        nonConstantFactorsCount++;
-      }
+    int[] info = analyzeFactored(factored, variables);
+    if (info[0] < 0) {
+      // Factor could not evaluate the polynomial (e.g., unsupported extension)
+      return F.NIL;
     }
-
-    // An irreducible polynomial should only have 1 non-constant factor evaluated
-    return nonConstantFactorsCount == 1 ? S.True : S.False;
+    // An irreducible polynomial should only have 1 non-constant square-free factor
+    return info[1] == 1 && info[0] == 1 ? S.True : S.False;
   }
 
   /**

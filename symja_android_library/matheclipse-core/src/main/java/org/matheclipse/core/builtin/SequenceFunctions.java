@@ -170,6 +170,7 @@ public class SequenceFunctions {
     private static IAST sequenceCasesWithoutReplacement(final IAST ast, final IExpr pattern,
         IExpr overlapsOption, IASTAppendable resultAST, EvalEngine engine) {
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      // CPD-OFF matcher and rule-function scan loops kept parallel
       final int maxLength = maxSequenceLength(pattern);
       int i = 1;
       while (i < ast.size()) {
@@ -179,6 +180,7 @@ public class SequenceFunctions {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
             IASTAppendable subSequence = ast.copyFrom(i, k);
+            // CPD-ON
             if (matcher.test(subSequence)) {
               allResults.append(subSequence);
             }
@@ -222,6 +224,7 @@ public class SequenceFunctions {
     private static IAST sequenceCasesWithReplacement(final IAST ast, final IAST patternRule,
         IExpr overlapsOption, IASTAppendable resultAST, EvalEngine engine) {
       Function<IExpr, IExpr> function = Functors.rules(patternRule, engine);
+      // CPD-OFF matcher and rule-function scan loops kept parallel
       final int maxLength = maxSequenceLength(patternRule);
       int i = 1;
       while (i < ast.size()) {
@@ -231,6 +234,7 @@ public class SequenceFunctions {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
             IASTAppendable subSequence = ast.copyFrom(i, k);
+            // CPD-ON
             IExpr temp = function.apply(subSequence);
             if (temp.isPresent()) {
               allResults.append(temp);

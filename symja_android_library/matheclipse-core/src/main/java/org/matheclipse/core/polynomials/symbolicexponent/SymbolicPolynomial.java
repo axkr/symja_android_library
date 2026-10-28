@@ -925,6 +925,7 @@ public class SymbolicPolynomial
       return this;
     }
     SymbolicPolynomial n = this.copy(); // new GenPolynomial(ring, val);
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SortedMap<ExpVectorSymbolic, IExpr> nv = n.val;
     // if ( nv.size() == 0 ) { nv.put(e,a); return n; }
     IExpr x = nv.get(e);
@@ -947,6 +948,7 @@ public class SymbolicPolynomial
    * @param a coefficient.
    * @return this + a x<sup>0</sup>.
    */
+   // CPD-ON
   public SymbolicPolynomial sum(IExpr a) {
     return sum(a, ring.evzero);
   }
@@ -996,6 +998,7 @@ public class SymbolicPolynomial
     if (a == null || a.isZERO()) {
       return;
     }
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SortedMap<ExpVectorSymbolic, IExpr> nv = this.val;
     IExpr x = nv.get(e);
     if (x != null) {
@@ -1019,6 +1022,7 @@ public class SymbolicPolynomial
     doAddTo(a, ring.evzero);
   }
 
+  // CPD-ON
   /**
    * GenPolynomial subtraction.
    *
@@ -1359,6 +1363,7 @@ public class SymbolicPolynomial
         ExpVectorSymbolic e2 = m2.getKey();
         IExpr c = c1.multiply(c2); // check non zero if not domain
         if (!c.isZERO()) {
+          // CPD-OFF parallel implementation for long and for symbolic exponents
           ExpVectorSymbolic e = e1.sum(e2);
           IExpr c0 = pv.get(e);
           if (c0 == null) {
@@ -1384,6 +1389,7 @@ public class SymbolicPolynomial
    * @return this*s.
    */
   public SymbolicPolynomial multiply(IExpr s) {
+  // CPD-ON
     return multiplyTerm(s, null);
   }
 
@@ -1536,6 +1542,7 @@ public class SymbolicPolynomial
    * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicPolynomial[] quotientRemainder(SymbolicPolynomial S) {
     if (S == null || S.isZERO()) {
       throw new ArithmeticException("division by zero");
@@ -1546,6 +1553,7 @@ public class SymbolicPolynomial
     }
     IExpr ci = c.inverse();
     assert (ring.nvar == S.ring.nvar);
+    // CPD-ON
     ExpVectorSymbolic e = S.leadingExpVectorLong();
     SymbolicPolynomial h;
     SymbolicPolynomial q = ring.getZero().copy();
@@ -1621,6 +1629,7 @@ public class SymbolicPolynomial
    * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicPolynomial remainder(SymbolicPolynomial S) {
     // if (this instanceof GenSolvablePolynomial || S instanceof
     // GenSolvablePolynomial) {
@@ -1640,6 +1649,7 @@ public class SymbolicPolynomial
     }
     IExpr ci = c.inverse();
     assert (ring.nvar == S.ring.nvar);
+    // CPD-ON
     ExpVectorSymbolic e = S.leadingExpVectorLong();
     SymbolicPolynomial h;
     SymbolicPolynomial r = this.copy();
@@ -1957,6 +1967,7 @@ public class SymbolicPolynomial
       }
     }
     return c;
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   }
 
   /**
@@ -1967,7 +1978,6 @@ public class SymbolicPolynomial
    * @param i index of the variable of this polynomial in pfac.
    * @return extended multivariate polynomial.
    */
-  // CPD-OFF parallel implementation for long and for symbolic exponents
   public SymbolicPolynomial extendUnivariate(SymbolicPolynomialRing pfac, int i) {
     if (i < 0 || pfac.nvar < i) {
       throw new IllegalArgumentException("index " + i + "out of range " + pfac.nvar);
@@ -1979,7 +1989,6 @@ public class SymbolicPolynomial
       return pfac.getOne();
     }
     int j = pfac.nvar - 1 - i;
-    // CPD-ON
     SymbolicPolynomial Cp = pfac.getZero().copy();
     if (this.isZERO()) {
       return Cp;
@@ -1989,6 +1998,7 @@ public class SymbolicPolynomial
     for (Map.Entry<ExpVectorSymbolic, IExpr> y : A.entrySet()) {
       ExpVectorSymbolic e = y.getKey();
       IExpr n = e.getVal(0);
+      // CPD-ON
       IExpr a = y.getValue();
       ExpVectorSymbolic f = new ExpVectorSymbolic(pfac.nvar, j, n);
       C.put(f, a); // assert not contained
@@ -2033,6 +2043,7 @@ public class SymbolicPolynomial
   public SymbolicPolynomial deHomogenize(SymbolicPolynomialRing pfac) {
     if (ring.equals(pfac)) { // not implemented
       throw new UnsupportedOperationException("case with same ring not implemented");
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     }
     SymbolicPolynomial Cp = pfac.getZero().copy();
     if (this.isZERO()) {
@@ -2065,6 +2076,7 @@ public class SymbolicPolynomial
     }
 
     Map<ExpVectorSymbolic, IExpr> C = Cp.val; // getMap();
+    // CPD-ON
     Map<ExpVectorSymbolic, IExpr> A = val;
     ExpVectorSymbolic f;
     for (Map.Entry<ExpVectorSymbolic, IExpr> y : A.entrySet()) {

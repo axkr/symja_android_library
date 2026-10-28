@@ -171,7 +171,6 @@ public class NumberFieldFunctions {
         return a.isList() ? common((IAST) a, engine) : F.NIL;
       }
       IAST list = a.isList() ? (IAST) a : F.List(a);
-      IASTAppendable result = F.ListAlloc(list.argSize());
       if (theta.isRational()) {
         // the field of rational numbers
         if (!list.forAll(IExpr::isRational)) {
@@ -183,13 +182,9 @@ public class NumberFieldFunctions {
       if (field == null) {
         return F.NIL;
       }
-      for (int i = 1; i < list.size(); i++) {
-        edu.jas.poly.AlgebraicNumber<edu.jas.arith.BigRational> element =
-            field.express(list.get(i), engine);
-        if (element == null) {
-          return F.NIL;
-        }
-        result.append(field.toExpr(element));
+      IAST result = expressAll(field, list, engine);
+      if (result.isNIL()) {
+        return F.NIL;
       }
       return a.isList() ? result : result.arg1();
     }
@@ -203,6 +198,15 @@ public class NumberFieldFunctions {
       if (field == null) {
         return F.NIL;
       }
+      return expressAll(field, list, engine);
+    }
+
+    /**
+     * The numbers of <code>list</code> as objects of <code>field</code>.
+     *
+     * @return {@link F#NIL} if a number is not in the field
+     */
+    private static IAST expressAll(AlgebraicNumberField field, IAST list, EvalEngine engine) {
       IASTAppendable result = F.ListAlloc(list.argSize());
       for (int i = 1; i < list.size(); i++) {
         edu.jas.poly.AlgebraicNumber<edu.jas.arith.BigRational> element =

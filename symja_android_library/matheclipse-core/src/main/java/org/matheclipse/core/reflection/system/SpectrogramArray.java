@@ -86,30 +86,8 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
 
     // Process partitions: Apply Window -> Pad -> Fourier
     IASTAppendable result = F.ListAlloc(partitionList.argSize());
-
-    // FourierParameters -> {1, -1} (Signal Processing convention)
-    IExpr fourierParamsValue = F.List(F.C1, F.CN1);
-    IExpr fourierOptionRule = F.Rule(S.FourierParameters, fourierParamsValue);
-
     for (IExpr part : partitionList) {
-      IExpr currentPartition = part;
-
-      // Apply Window if necessary
-      if (windowWeights.isPresent()) {
-        currentPartition = F.Times(currentPartition, windowWeights);
-      }
-
-      // Apply Padding if m > n (PadRight with 0)
-      // Note: The previous padding was for Partitioning logic (filling the window).
-      // This padding is for FFT size (m), which is usually zero-padded.
-      if (m > n) {
-        currentPartition = F.PadRight(currentPartition, F.ZZ(m), F.C0);
-      }
-
-      // Compute Fourier Transform
-      // Pass the Option Rule
-      IAST fourierCall = F.Fourier(currentPartition, fourierOptionRule);
-      result.append(fourierCall);
+      result.append(windowedFourier(part, windowWeights, n, m));
     }
 
     // Evaluate the final list of Fourier transforms
@@ -149,5 +127,25 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
     }
     IExpr range = F.Subdivide(F.CN1D2, F.C1D2, F.ZZ(n - 1));
     return engine.evaluate(F.N(F.Map(wfun, range)));
+  }
+
+  /**
+   * The unevaluated Fourier transform of one partition: the partition is multiplied by the
+   * {@code windowWeights} (unless they are {@code F.NIL}), padded with zeros to the FFT length
+   * {@code m} if {@code m > n}, and transformed with {@code FourierParameters -> {1, -1}}, the
+   * signal processing convention.
+   *
+   * <p>
+   * The padding is for the FFT length, not the one which filled the last partition.
+   */
+  static IAST windowedFourier(IExpr partition, IExpr windowWeights, int n, int m) {
+    IExpr currentPartition = partition;
+    if (windowWeights.isPresent()) {
+      currentPartition = F.Times(currentPartition, windowWeights);
+    }
+    if (m > n) {
+      currentPartition = F.PadRight(currentPartition, F.ZZ(m), F.C0);
+    }
+    return F.Fourier(currentPartition, F.Rule(S.FourierParameters, F.List(F.C1, F.CN1)));
   }
 }

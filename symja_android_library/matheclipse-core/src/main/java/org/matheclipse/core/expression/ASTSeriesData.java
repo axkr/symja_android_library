@@ -558,6 +558,20 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return null;
   }
 
+  /**
+   * The series of the probed coefficients of <code>ps</code> from its lowest exponent (or
+   * <code>startN</code> if no coefficient was set) up to <code>targetN</code>.
+   */
+  private static ASTSeriesData probedSeries(ASTSeriesData ps, int startN, int targetN) {
+    int finalNMin = ps.coefficientMap.isEmpty() ? startN : ps.minExponent();
+    ASTSeriesData result = new ASTSeriesData(ps.expansionVariable, ps.expansionPoint, finalNMin,
+        targetN + ps.puiseuxDenominator, ps.puiseuxDenominator);
+    for (int i = finalNMin; i <= targetN; i++) {
+      result.setCoeff(i, ps.coefficient(i));
+    }
+    return result;
+  }
+
   private static ASTSeriesData seriesCoefficient(final IExpr function, IExpr x, IExpr x0,
       final int n, final int denominator, VariablesSet varSet, EvalEngine engine) {
     int startN = Math.min(n, -10);
@@ -587,13 +601,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         targetN = n;
       }
 
-      int finalNMin = ps.coefficientMap.isEmpty() ? startN : ps.minExponent();
-      ASTSeriesData result =
-          new ASTSeriesData(x, x0, finalNMin, targetN + denominator, denominator);
-      for (int i = finalNMin; i <= targetN; i++) {
-        result.setCoeff(i, ps.coefficient(i));
-      }
-      return result;
+      return probedSeries(ps, startN, targetN);
 
     } else {
       boolean foundNonZero = false;
@@ -622,13 +630,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         if (!foundNonZero) {
           targetN = n;
         }
-        int finalNMin = ps.coefficientMap.isEmpty() ? startN : ps.minExponent();
-        ASTSeriesData result =
-            new ASTSeriesData(x, x0, finalNMin, targetN + denominator, denominator);
-        for (int i = finalNMin; i <= targetN; i++) {
-          result.setCoeff(i, ps.coefficient(i));
-        }
-        return result;
+        return probedSeries(ps, startN, targetN);
       }
     }
     return null;

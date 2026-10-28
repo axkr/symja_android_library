@@ -169,10 +169,12 @@ public class VectorAnalysisFunctions {
 
             // {{0,D(f,z),-D(f,y)/x},{-D(f,z),0,D(f,x)},{D(f,y)/x,-D(f,x),0}}
             return F.list(F.list(F.C0, F.D(f, z), F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y))),
+                // CPD-OFF per-coordinate-system metric checks
                 F.list(F.Negate(F.D(f, z)), F.C0, F.D(f, x)),
                 F.list(F.Times(F.Power(x, F.CN1), F.D(f, y)), F.Negate(F.D(f, x)), F.C0));
 
           }
+          // CPD-ON
           if (metricStr.equalsIgnoreCase("spherical")) {
             metric = Metric.SPHERICAL;
             if (numberOfVars != 3) {
@@ -189,10 +191,12 @@ public class VectorAnalysisFunctions {
             return F.list(
                 F.list(F.C0, F.Times(F.Power(x, F.CN1), F.Csc(y), F.D(f, z)),
                     F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y))),
+                // CPD-OFF per-coordinate-system metric checks
                 F.list(F.Times(F.CN1, F.Power(x, F.CN1), F.Csc(y), F.D(f, z)), F.C0, F.D(f, x)),
                 F.list(F.Times(F.Power(x, F.CN1), F.D(f, y)), F.Negate(F.D(f, x)), F.C0));
 
           }
+          // CPD-ON
 
           return F.NIL;
         }

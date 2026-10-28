@@ -49,15 +49,9 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return localized;
       }
     }
-    for (int i = 2; i < ast.size(); i++) {
-      IExpr iterator = ast.get(i);
-      if (!iterator.isList() && !iterator.isSymbol()) {
-        // An iterator is either a list, {i, imax} or {i, imin, imax}, or the bare symbol of an
-        // indefinite product. A number is neither: Product inherits its unrolling from Table,
-        // where a count is a valid specification - Table[x, 3] is {x, x, x} - and so answered
-        // Product(x, 3) with x^3.
-        return F.NIL;
-      }
+    if (hasInvalidIterator(ast)) {
+      // a count isn't an iterator, Product(x, 3) stays unevaluated
+      return F.NIL;
     }
     IExpr arg1 = ast.arg1();
     if (arg1.isList()) {
@@ -231,11 +225,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
       } catch (final ValidateException ve) {
         return Errors.printMessage(S.Product, ve, engine);
       } catch (RecursionLimitExceeded rle) {
-        int recursionLimit = engine.getRecursionLimit();
-        Errors.printMessage(S.Product, "reclim2",
-            F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
-            engine);
-        return F.NIL;
+        return recursionLimitMessage(S.Product, preevaledProduct, engine);
       }
 
       // === 3. FINAL MANUAL LOOP EVALUATION ===
@@ -253,11 +243,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         } catch (final ValidateException ve) {
           return Errors.printMessage(S.Product, ve, engine);
         } catch (RecursionLimitExceeded rle) {
-          int recursionLimit = engine.getRecursionLimit();
-          Errors.printMessage(S.Product, "reclim2",
-              F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
-              engine);
-          return F.NIL;
+          return recursionLimitMessage(S.Product, preevaledProduct, engine);
         }
       }
     }

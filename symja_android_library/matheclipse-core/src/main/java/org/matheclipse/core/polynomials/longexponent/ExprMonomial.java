@@ -62,7 +62,6 @@ public final class ExprMonomial implements Comparable<ExprMonomial> {
       return false;
     if (getClass() != obj.getClass())
       return false;
-      // CPD-ON
     ExprMonomial other = (ExprMonomial) obj;
     if (c == null) {
       if (other.c != null)
@@ -76,6 +75,7 @@ public final class ExprMonomial implements Comparable<ExprMonomial> {
       return false;
     return true;
   }
+  // CPD-ON
 
   /**
    * Getter for exponent.

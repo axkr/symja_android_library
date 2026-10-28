@@ -62,7 +62,6 @@ public final class SymbolicMonomial implements Comparable<SymbolicMonomial> {
       return false;
     if (getClass() != obj.getClass())
       return false;
-      // CPD-ON
     SymbolicMonomial other = (SymbolicMonomial) obj;
     if (c == null) {
       if (other.c != null)
@@ -76,6 +75,7 @@ public final class SymbolicMonomial implements Comparable<SymbolicMonomial> {
       return false;
     return true;
   }
+  // CPD-ON
 
   /**
    * Getter for exponent.

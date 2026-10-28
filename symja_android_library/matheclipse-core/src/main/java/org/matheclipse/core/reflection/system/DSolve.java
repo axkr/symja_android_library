@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.dsolve.DSolveEngine;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -60,12 +61,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
   private static boolean checkDSolveEquation(IAST equations, IExpr expr,
       IASTAppendable termsEqualNumberList) {
     if (expr.isASTSizeGE(S.Equal, 3)) {
-      IAST equal = (IAST) expr;
-      IExpr last = equal.last();
-      for (int i = 1; i < equal.argSize(); i++) {
-        IExpr temp = F.evalExpandAll(F.Subtract(equal.get(i), last));
-        termsEqualNumberList.append(temp);
-      }
+      Validate.appendEqualDifferences((IAST) expr, termsEqualNumberList);
       return true;
     }
     // Equation or list of equations expected instead of `1` in the first argument `2`.

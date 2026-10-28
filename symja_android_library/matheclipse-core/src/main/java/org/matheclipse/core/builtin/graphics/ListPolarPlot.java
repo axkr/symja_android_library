@@ -43,15 +43,8 @@ public class ListPolarPlot extends ListPlot {
         // to read a wrapped dataset
         IASTMutable listPlot = ast.setAtCopy(1, outerWrapper.decorate(table));
 
-        GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
-        // PlotMarkers and Mesh are family options appended after the positional block, so they
-        // are read from the call rather than by index
-        graphicsOptions
-            .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
-        graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
-        graphicsOptions.readColorFunction(originalAST);
-        graphicsOptions.applyPlotTheme(originalAST);
-        graphicsOptions.readPassThroughOptions(originalAST);
+        GraphicsOptions graphicsOptions =
+            listPlotGraphicsOptions(options, originalAST, engine);
         IAST graphicsPrimitives = listPlot(listPlot, options, graphicsOptions, engine);
         if (graphicsPrimitives.isPresent()) {
           graphicsOptions.addPadding();

@@ -417,28 +417,30 @@ public class IntegerFunctions {
     }
   }
 
-  private static class BitSet extends AbstractFunctionEvaluator {
+  /**
+   * Base class of the bit functions <code>f(n, k)</code> for an integer <code>n</code> and a
+   * machine integer bit index <code>k</code>.
+   */
+  private abstract static class AbstractBitIndexFunction extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toMachineInt();
-        if (power2_K >= 0) {
-          if ((Config.MAX_BIT_LENGTH) <= power2_K) {
-            BigIntegerLimitExceeded.throwIt(power2_K);
-          }
-          try {
-            IInteger iArg1 = (IInteger) ast.arg1();
-            BigInteger big = iArg1.toBigNumerator();
-            return F.ZZ(big.setBit(power2_K));
-          } catch (ArithmeticException ae) {
-            // BigInteger#setBit() may throw ArithmeticException
-            return Errors.printMessage(S.BitSet, ae, engine);
-          }
+        int k = ast.arg2().toMachineInt();
+        if (F.isPresent(k)) {
+          return evalBit((IInteger) ast.arg1(), k, engine);
         }
       }
       return F.NIL;
     }
+
+    /**
+     * Evaluate the bit function for the integer <code>value</code> and the bit index
+     * <code>k</code>.
+     *
+     * @return {@link F#NIL} if the function stays unevaluated
+     */
+    abstract IExpr evalBit(IInteger value, int k, EvalEngine engine);
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -448,6 +450,26 @@ public class IntegerFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
+    }
+  }
+
+  private static class BitSet extends AbstractBitIndexFunction {
+
+    @Override
+    IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
+      if (power2_K >= 0) {
+        if ((Config.MAX_BIT_LENGTH) <= power2_K) {
+          BigIntegerLimitExceeded.throwIt(power2_K);
+        }
+        try {
+          BigInteger big = value.toBigNumerator();
+          return F.ZZ(big.setBit(power2_K));
+        } catch (ArithmeticException ae) {
+          // BigInteger#setBit() may throw ArithmeticException
+          return Errors.printMessage(S.BitSet, ae, engine);
+        }
+      }
+      return F.NIL;
     }
   }
 
@@ -557,111 +579,53 @@ public class IntegerFunctions {
     }
   }
 
-  private static class BitClear extends AbstractFunctionEvaluator {
+  private static class BitClear extends AbstractBitIndexFunction {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toMachineInt();
-        if (F.isNotPresent(power2_K)) {
-          return F.NIL;
-        }
-        IInteger value = (IInteger) ast.arg1();
-        BigInteger big = value.toBigNumerator();
-        if (power2_K >= 0) {
-          try {
-            return F.ZZ(big.clearBit(power2_K));
-          } catch (ArithmeticException ae) {
-            // BigInteger#clearBit() may throw ArithmeticException
-            return Errors.printMessage(S.BitClear, ae, engine);
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE);
-    }
-  }
-
-  private static class BitFlip extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toMachineInt();
-        if (F.isNotPresent(power2_K)) {
-          return F.NIL;
-        }
-        IInteger value = (IInteger) ast.arg1();
-        BigInteger big = value.toBigNumerator();
-
-        final int bit;
-        if (power2_K >= 0) {
-          bit = power2_K;
-        } else if (power2_K < 0 && power2_K > Config.INVALID_INT) {
-          bit = big.bitLength() + power2_K;
-          if (bit < 0) {
-            return value;
-          }
-        } else {
-          bit = Config.INVALID_INT;
-        }
+    IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
+      if (power2_K >= 0) {
         try {
-          if (bit != Config.INVALID_INT) {
-            return F.ZZ(big.flipBit(bit));
-          }
+          return F.ZZ(value.toBigNumerator().clearBit(power2_K));
         } catch (ArithmeticException ae) {
-          // BigInteger#flipBit() may throw ArithmeticException
-          return Errors.printMessage(S.BitFlip, ae, engine);
+          // BigInteger#clearBit() may throw ArithmeticException
+          return Errors.printMessage(S.BitClear, ae, engine);
         }
       }
       return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 
-  private static class BitGet extends AbstractFunctionEvaluator {
+  private static class BitFlip extends AbstractBitIndexFunction {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isInteger()) {
-        int power2_K = ast.arg2().toMachineInt();
-        if (F.isNotPresent(power2_K)) {
-          return F.NIL;
-        }
-        IInteger value = (IInteger) ast.arg1();
-        if (power2_K >= 0) {
-          return value.isBitSet(power2_K) ? F.C1 : F.C0;
+    IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
+      BigInteger big = value.toBigNumerator();
+      final int bit;
+      if (power2_K >= 0) {
+        bit = power2_K;
+      } else {
+        bit = big.bitLength() + power2_K;
+        if (bit < 0) {
+          return value;
         }
       }
+      try {
+        return F.ZZ(big.flipBit(bit));
+      } catch (ArithmeticException ae) {
+        // BigInteger#flipBit() may throw ArithmeticException
+        return Errors.printMessage(S.BitFlip, ae, engine);
+      }
+    }
+  }
+
+  private static class BitGet extends AbstractBitIndexFunction {
+
+    @Override
+    IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
+      if (power2_K >= 0) {
+        return value.isBitSet(power2_K) ? F.C1 : F.C0;
+      }
       return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
 

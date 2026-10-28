@@ -30,16 +30,25 @@ public class FourierCosTransform extends AbstractFunctionEvaluator {
       return result;
     }
 
+    return halfLineTransform(F.Times(f, F.Cos(F.Times(omega, t))), t, omega, engine);
+  }
+
+  /**
+   * <code>Sqrt(2/Pi) * Integrate(integrand, {t, 0, Infinity}, Assumptions -> omega > 0)</code>.
+   *
+   * @return {@link F#NIL} if the integral cannot be evaluated
+   */
+  static IExpr halfLineTransform(IExpr integrand, IExpr t, IExpr omega, EvalEngine engine) {
     try {
       IExpr assumptions = F.Rule(S.Assumptions, F.Greater(omega, F.C0));
       IAST integral = //
           F.Times(F.Sqrt(F.Divide(F.C2, S.Pi)), //
-              F.Integrate(F.Times(f, F.Cos(F.Times(omega, t))), //
+              F.Integrate(integrand, //
                   F.List(t, F.C0, F.CInfinity), //
                   assumptions));
-      IExpr FF = engine.evaluate(integral);
-      if (FF.isFree(x -> x == S.Integrate, true)) {
-        return FF;
+      IExpr transform = engine.evaluate(integral);
+      if (transform.isFree(x -> x == S.Integrate, true)) {
+        return transform;
       }
     } catch (ArgumentTypeException e) {
       if (Config.SHOW_STACKTRACE) {
@@ -48,6 +57,12 @@ public class FourierCosTransform extends AbstractFunctionEvaluator {
       // Integration failed, return unevaluated
     }
     return F.NIL;
+  }
+
+  /** <code>c * Sqrt(Pi/2) * (1 + Sign(difference)) / 2</code>, evaluated. */
+  static IExpr halfStep(IExpr c, IExpr difference, EvalEngine engine) {
+    return engine.evaluate(
+        F.Times(c, F.Sqrt(F.Divide(S.Pi, F.C2)), F.C1D2, F.Plus(F.C1, F.Sign(difference))));
   }
 
   /**
@@ -69,10 +84,7 @@ public class FourierCosTransform extends AbstractFunctionEvaluator {
     // Sqrt(Pi/2)*(1 + Sign(a-w)) / 2
     IExpr[] match = matchConstTimesTrigOverT(f, t, S.Sin);
     if (match != null) {
-      IExpr c = match[0];
-      IExpr a = match[1];
-      return engine.evaluate(F.Times(c, F.Sqrt(F.Divide(S.Pi, F.C2)), F.C1D2,
-          F.Plus(F.C1, F.Sign(F.Subtract(a, omega)))));
+      return halfStep(match[0], F.Subtract(match[1], omega), engine);
     }
     return F.NIL;
   }

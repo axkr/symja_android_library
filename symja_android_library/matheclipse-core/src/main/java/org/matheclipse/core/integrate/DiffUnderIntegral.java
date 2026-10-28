@@ -226,6 +226,7 @@ public final class DiffUnderIntegral {
   /**
    * <code>Integrate(A*Sec(2*x)*Log(1 + c*Sqrt(1 - Tan(x)^2)), {x,0,Pi/4})</code>.
    */
+  // CPD-OFF both forms are used later; a helper reads worse
   private static IExpr secantRadical(IExpr f, IExpr x, EvalEngine engine) {
     IExpr t = F.Dummy("diuiT");
     IExpr canonical = inTangent(f, x, t, engine);
@@ -237,6 +238,7 @@ public final class DiffUnderIntegral {
       return F.NIL;
     }
     IExpr radical = F.Sqrt(F.Subtract(F.C1, F.Sqr(t)));
+    // CPD-ON
     IExpr factor = engine.evaluate(
         F.Cancel(F.Together(F.Divide(F.Subtract(logarithm.first(), F.C1), radical))));
     if (!factor.isFree(t, true) || factor.isZero()) {
@@ -253,6 +255,7 @@ public final class DiffUnderIntegral {
   /**
    * <code>Integrate(A*Csc(2*x)^2*Log(1 + Tan(x)^a), {x,0,Pi/4})</code>.
    */
+  // CPD-OFF both forms are used later; a helper reads worse
   private static IExpr tangentPower(IExpr f, IExpr x, EvalEngine engine) {
     IExpr t = F.Dummy("diuiT");
     IExpr canonical = inTangent(f, x, t, engine);
@@ -264,6 +267,7 @@ public final class DiffUnderIntegral {
       return F.NIL;
     }
     IExpr inner = engine.evaluate(F.Subtract(logarithm.first(), F.C1));
+    // CPD-ON
     IExpr exponent = monomialExponent(inner, t, engine);
     if (exponent.isNIL()
         || !engine.evaluate(F.Cancel(F.Divide(inner, F.Power(t, exponent)))).isOne()) {

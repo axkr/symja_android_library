@@ -681,10 +681,18 @@ public final class SvgRenderer2D {
     if (prim.filled) {
       d.append("Z");
     }
-    ContainerTag<?> path = tag("path").attr("d", d.toString().trim());
-    paint(path, prim.style, prim.filled ? prim.style.effectiveFill() : null,
-        prim.filled ? edgeStroke(prim.style) : prim.style.strokeColor, prim.filled);
-    parent.with(path);
+    parent.with(filledPath(d.toString(), prim.style, prim.filled));
+  }
+
+  /**
+   * A path which is filled and edged like a polygon if <code>filled</code>, else stroked like a
+   * line.
+   */
+  private ContainerTag<?> filledPath(String d, Style2D style, boolean filled) {
+    ContainerTag<?> path = tag("path").attr("d", d.trim());
+    paint(path, style, filled ? style.effectiveFill() : null,
+        filled ? edgeStroke(style) : style.strokeColor, filled);
+    return path;
   }
 
   private void appendCurve(StringBuilder d, String command, double[]... controls) {
@@ -700,10 +708,7 @@ public final class SvgRenderer2D {
     if (d.length() == 0) {
       return;
     }
-    ContainerTag<?> path = tag("path").attr("d", d.toString().trim());
-    paint(path, prim.style, prim.filled ? prim.style.effectiveFill() : null,
-        prim.filled ? edgeStroke(prim.style) : prim.style.strokeColor, prim.filled);
-    parent.with(path);
+    parent.with(filledPath(d.toString(), prim.style, prim.filled));
   }
 
   // ---------------------------------------------------------------- raster

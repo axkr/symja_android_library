@@ -225,6 +225,7 @@ public class ControlObject {
     double xMin = 0.0, yMin = 0.0, xMax = 1.0, yMax = 1.0;
     if (range.isList2() && range.first().isList2() && ((IAST) range).arg2().isList2()) {
       IAST low = (IAST) range.first();
+      // CPD-OFF corner parsing; each caller reuses the bounds
       IAST high = (IAST) ((IAST) range).arg2();
       xMin = ManipulateControl.toDouble(low.arg1(), 0.0);
       yMin = ManipulateControl.toDouble(low.arg2(), 0.0);
@@ -233,6 +234,7 @@ public class ControlObject {
     }
     control.setRange(xMin, xMax, Double.NaN);
     control.setRangeY(yMin, yMax);
+    // CPD-ON
     control.setInitial(current.isList2() ? current : F.list(F.num(xMin), F.num(yMin)));
     return control;
   }

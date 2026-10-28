@@ -190,21 +190,25 @@ public final class SpecialFunctionIdentities {
     family(S.LucasL, 2, 1, true, (nu, call) -> new IExpr[] {call.arg2(), F.C1, zero});
     // (c-a)*F(a-1) + (2*a-c+(b-a)*z)*F(a) + a*(z-1)*F(a+1) == 0
     family(S.Hypergeometric2F1, 4, 1, true, (nu, call) -> {
+      // CPD-OFF closed-form contiguous relations, mirrored in a and b
       IExpr b = call.arg2();
       IExpr c = call.arg3();
       IExpr z = call.arg4();
       IExpr d = F.Times(nu, F.Subtract(F.C1, z));
       return new IExpr[] {
           frac(F.Plus(F.Times(F.C2, nu), F.Negate(c), F.Times(F.Subtract(b, nu), z)), d),
+          // CPD-ON
           frac(F.Subtract(c, nu), d), zero};
     });
     family(S.Hypergeometric2F1, 4, 2, true, (nu, call) -> {
+      // CPD-OFF closed-form contiguous relations, mirrored in a and b
       IExpr a = call.arg1();
       IExpr c = call.arg3();
       IExpr z = call.arg4();
       IExpr d = F.Times(nu, F.Subtract(F.C1, z));
       return new IExpr[] {
           frac(F.Plus(F.Times(F.C2, nu), F.Negate(c), F.Times(F.Subtract(a, nu), z)), d),
+          // CPD-ON
           frac(F.Subtract(c, nu), d), zero};
     });
     // c*(c-1)*(z-1)*F(c-1) + c*(c-1-(2*c-a-b-1)*z)*F(c) + (c-a)*(c-b)*z*F(c+1) == 0

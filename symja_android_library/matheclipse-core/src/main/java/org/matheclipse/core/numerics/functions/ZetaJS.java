@@ -16,6 +16,7 @@ public class ZetaJS extends JS {
 
   private ZetaJS() {}
 
+  // CPD-OFF Complex and double summation kernels
   public static Complex summation(java.util.function.Function<Complex, Complex> f, int a, int b,
       int iterationLimit) {
 
@@ -26,6 +27,7 @@ public class ZetaJS extends JS {
         IterationLimitExceeded.throwIt(counter, S.Sum);
       }
       s = s.add(f.apply(new Complex(i)));
+      // CPD-ON
     }
 
     return s;
@@ -38,6 +40,7 @@ public class ZetaJS extends JS {
     return arg1.add(arg2).divide(2.0);
   }
 
+  // CPD-OFF Complex and double summation kernels
   public static Complex complexSummation(java.util.function.DoubleFunction<Complex> f, int a, int b,
       int iterationLimit) {
     Complex s = Complex.ZERO;
@@ -48,6 +51,7 @@ public class ZetaJS extends JS {
       }
       s = s.add(f.apply(i));
     }
+    // CPD-ON
     return s;
   }
 

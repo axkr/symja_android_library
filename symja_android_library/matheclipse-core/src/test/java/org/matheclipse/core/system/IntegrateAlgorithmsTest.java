@@ -72,6 +72,15 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
     integrand = engine.parse("Sech(5*x)^2");
     result = IntegralTable.integrate(integrand, x, engine);
     assertAntiderivative(result, integrand, x, engine);
+
+    // 1/(a+b*x^2) for b > 0 and b < 0
+    integrand = engine.parse("1/(3+5*x^2)");
+    result = IntegralTable.integrate(integrand, x, engine);
+    assertAntiderivative(result, integrand, x, engine);
+
+    integrand = engine.parse("1/(7-2*x^2)");
+    result = IntegralTable.integrate(integrand, x, engine);
+    assertAntiderivative(result, integrand, x, engine);
   }
 
   @Test

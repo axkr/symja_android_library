@@ -16,11 +16,7 @@ public class RegionBounds extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
+    IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (MeshFunctions.isMeshRegion(arg1)) {
       return MeshFunctions.bounds((IAST) arg1, engine);
     }

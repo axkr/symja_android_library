@@ -2341,6 +2341,28 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The conjunction with its chained inequalities expanded. <code>And</code> is flat, so evaluating
+   * the expansion of a chained inequality flattens it back into a conjunction of binary relations.
+   *
+   * @return {@link F#NIL} unless the result is an {@link S#And} of binary comparators which all
+   *         contain <code>variable</code>
+   */
+  private static IAST expandedConjunction(IAST conjunction, IExpr variable, EvalEngine engine) {
+    IExpr expanded = engine.evaluate(expandComparators(conjunction));
+    if (!expanded.isAnd()) {
+      return F.NIL;
+    }
+    IAST and = (IAST) expanded;
+    for (int i = 1; i < and.size(); i++) {
+      IExpr arg = and.get(i);
+      if (!arg.isAST2() || !arg.isComparatorFunction() || arg.isFree(variable, true)) {
+        return F.NIL;
+      }
+    }
+    return and;
+  }
+
+  /**
    * Reduce a conjunction of one periodic equation and inequalities which bound the variable, e.g.
    * <code>Sin(x)==1/2 &amp;&amp; 0&lt;x&lt;2*Pi</code> to <code>x==Pi/6||x==5/6*Pi</code>.
    *
@@ -2358,20 +2380,14 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr reducePeriodicRegion(IAST conjunction, IExpr variable, SolveOptions options,
       EvalEngine engine) {
-    // `And` is flat, so evaluating the expansion of a chained inequality flattens it back into a
-    // conjunction of binary relations
-    IExpr expanded = engine.evaluate(expandComparators(conjunction));
-    if (!expanded.isAnd()) {
+    IAST and = expandedConjunction(conjunction, variable, engine);
+    if (and.isNIL()) {
       return F.NIL;
     }
-    IAST and = (IAST) expanded;
     IExpr equation = F.NIL;
     IASTAppendable bounds = F.ast(S.And, and.argSize());
     for (int i = 1; i < and.size(); i++) {
       IExpr arg = and.get(i);
-      if (!arg.isAST2() || !arg.isComparatorFunction() || arg.isFree(variable, true)) {
-        return F.NIL;
-      }
       IExpr difference = engine.evaluate(F.Subtract(arg.first(), arg.second()));
       if (arg.isEqual() && !difference.isPolynomial(variable)) {
         if (equation.isPresent()) {
@@ -2471,19 +2487,15 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr reduceTrigInequalityRegion(IAST conjunction, IExpr variable,
       SolveOptions options, EvalEngine engine) {
-    IExpr expanded = engine.evaluate(expandComparators(conjunction));
-    if (!expanded.isAnd()) {
+    IAST and = expandedConjunction(conjunction, variable, engine);
+    if (and.isNIL()) {
       return F.NIL;
     }
-    IAST and = (IAST) expanded;
     IExpr relation = F.NIL;
     IExpr residual = F.NIL;
     IASTAppendable bounds = F.ast(S.And, and.argSize());
     for (int i = 1; i < and.size(); i++) {
       IExpr arg = and.get(i);
-      if (!arg.isAST2() || !arg.isComparatorFunction() || arg.isFree(variable, true)) {
-        return F.NIL;
-      }
       IExpr f = engine.evaluate(F.Subtract(arg.first(), arg.second()));
       PeriodicTerm term =
           parsePeriodicTerm(f, variable, InverseFunctionExpander::isPeriodicFunction);

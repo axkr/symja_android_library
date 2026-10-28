@@ -215,7 +215,18 @@ public interface IRational extends IReal, IBigNumber {
   }
 
   @Override
-  public IRational roundClosest(IReal factor);
+  default double reDoubleValue() {
+    return doubleValue();
+  }
+
+  @Override
+  default IRational roundClosest(IReal multiple) {
+    if (!multiple.isRational()) {
+      multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
+    }
+    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
+    return ii.multiply((IRational) multiple);
+  }
 
   public IRational subtract(IRational parm1);
 

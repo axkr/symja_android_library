@@ -310,6 +310,36 @@ public final class Plot3DTools {
   }
 
   /**
+   * Whether the arguments 2 to 4 of <code>ast</code> are ranges <code>{var, min, max}</code> with
+   * a symbol <code>var</code>; otherwise print the <code>head::pllim</code> message.
+   */
+  static boolean validRanges3D(IAST ast, ISymbol head, EvalEngine engine) {
+    for (int i = 2; i <= 4; i++) {
+      IExpr range = ast.get(i);
+      if (!range.isList3() || !range.first().isSymbol()) {
+        Errors.printMessage(head, "pllim", F.list(range), engine);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The first three elements of <code>list</code> as a point.
+   *
+   * @return <code>null</code> if a coordinate isn't a finite number
+   */
+  static double[] finitePoint3D(IAST list) {
+    double x = list.arg1().evalfNaN();
+    double y = list.arg2().evalfNaN();
+    double z = list.arg3().evalfNaN();
+    if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
+      return new double[] {x, y, z};
+    }
+    return null;
+  }
+
+  /**
    * Iso lines of a scalar over the sampled grid, as segments between vertices of the surface.
    *
    * <p>

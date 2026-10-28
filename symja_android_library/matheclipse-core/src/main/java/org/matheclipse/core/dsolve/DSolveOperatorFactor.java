@@ -100,7 +100,7 @@ final class DSolveOperatorFactor {
     }
     IExpr[] a = new IExpr[n + 1];
     for (int k = 0; k <= n; k++) {
-      a[k] = engine.evaluate(F.Cancel(F.Together(F.Divide(lf.a[k], lf.a[n]))));
+      a[k] = lf.monicCoefficient(k, engine);
       // A coefficient carrying a symbol of its own would leave the equations for the unknowns of
       // the guess with two kinds of unknown in them, which Solve does not finish.
       if (!engine.evaluate(F.PolynomialQ(F.Numerator(a[k]), xVar)).isTrue()
@@ -154,6 +154,7 @@ final class DSolveOperatorFactor {
   }
 
   /** A polynomial of the given degree plus a part at each place the coefficients become infinite. */
+  // CPD-OFF ansatz builders of two solvers with different pole orders
   private static IExpr ansatz(IAST places, IExpr xVar, int degree, int poleOrder,
       IASTAppendable unknowns, EvalEngine engine) {
     IASTAppendable terms = F.PlusAlloc(degree + 1);
@@ -172,6 +173,7 @@ final class DSolveOperatorFactor {
       if (placeDegree < 1) {
         continue;
       }
+      // CPD-ON
       for (int k = 1; k <= poleOrder; k++) {
         for (int l = 0; l < placeDegree; l++) {
           IExpr unknown = F.Dummy("of" + unknowns.argSize());

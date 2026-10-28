@@ -254,11 +254,6 @@ public class IntegralTable {
             ArcTanh(Times(Sqrt(Times(CN1, b)), x, Power(Sqrt(a), CN1)))),
         And(freeAB, F.Less(b, F.C0)));
 
-    // 1/(a+b*x^2) -> ArcTan(Sqrt(b)*x/Sqrt(a))/(Sqrt(a)*Sqrt(b))
-    rule(matcher, Power(Plus(a_, Times(b_DEFAULT, Sqr(x_))), CN1),
-        Times(Power(Times(Sqrt(a), Sqrt(b)), CN1), ArcTan(Times(Sqrt(b), x, Power(Sqrt(a), CN1)))),
-        freeAB);
-
     return matcher;
   }
 

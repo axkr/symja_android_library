@@ -195,14 +195,14 @@ public class StreamPlot extends AbstractFunctionEvaluator {
 
     IASTAppendable result = F.Graphics(primitives);
     result.appendArgs(graphicsOptions);
-    if (!hasOption(graphicsOptions, S.PlotRange)) {
+    if (!VectorPlot.hasOption(graphicsOptions, S.PlotRange)) {
       result.append(F.Rule(S.PlotRange,
           F.list(F.list(F.num(x0), F.num(x1)), F.list(F.num(y0), F.num(y1)))));
     }
-    if (!hasOption(graphicsOptions, S.Frame)) {
+    if (!VectorPlot.hasOption(graphicsOptions, S.Frame)) {
       result.append(F.Rule(S.Frame, S.True));
     }
-    if (!hasOption(graphicsOptions, S.AspectRatio)) {
+    if (!VectorPlot.hasOption(graphicsOptions, S.AspectRatio)) {
       result.append(F.Rule(S.AspectRatio, F.C1));
     }
     return result;
@@ -350,15 +350,6 @@ public class StreamPlot extends AbstractFunctionEvaluator {
       return null;
     }
     return new double[] {value.first().evalf(), value.second().evalf()};
-  }
-
-  private static boolean hasOption(IAST options, IExpr key) {
-    for (IExpr option : options) {
-      if (option.isRuleAST() && option.first() == key) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override

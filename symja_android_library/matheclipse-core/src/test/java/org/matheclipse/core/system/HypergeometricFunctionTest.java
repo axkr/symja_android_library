@@ -144,6 +144,16 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "1/Gamma(b)");
     check("Hypergeometric1F1Regularized(a, a, z)", //
         "E^z/Gamma(a)");
+
+    // a failing numeric kernel reports under the function that was called
+    check("Check(Hypergeometric1F1Regularized(1.5, 2.0+I, 1.0*10^40), failed, "
+        + "Hypergeometric1F1Regularized::error)", //
+        "failed");
+    check("Check(Hypergeometric1F1Regularized(1.5, 2.0+I, 1.0*10^40), failed, "
+        + "Hypergeometric1F1::error)", //
+        "Hypergeometric1F1Regularized(1.5,2.0+I*1.0,1.*10^40)");
+    check("Check(N(Hypergeometric1F1(3/2, 2+I, 10^40), 30), failed, Hypergeometric1F1::error)", //
+        "failed");
   }
 
   @Test

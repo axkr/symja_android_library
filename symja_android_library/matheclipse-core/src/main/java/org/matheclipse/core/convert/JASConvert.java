@@ -203,6 +203,32 @@ public class JASConvert<C extends RingElem<C>> {
       return null;
     }
     GenMatrixRing<BigComplex> ring = new GenMatrixRing<BigComplex>(BigComplex.I, dim[0], dim[1]);
+    final IExpr[][] array = matrixEntries(expr);
+    if (array == null) {
+      return null;
+    }
+    final BigComplex[][] elements = new BigComplex[array.length][];
+    for (int i = 0; i < array.length; i++) {
+      final IExpr[] row = array[i];
+      elements[i] = new BigComplex[row.length];
+      for (int j = 0; j < row.length; j++) {
+        if (!(row[j] instanceof IBigNumber)) {
+          return null;
+        }
+        elements[i][j] = ((IBigNumber) row[j]).toBigComplex();
+      }
+    }
+    return new GenMatrix<BigComplex>(ring, elements);
+  }
+
+  /**
+   * The entries of a matrix given as a list of lists or as a sparse array.
+   *
+   * @param expr the matrix
+   * @return the rows of the matrix or <code>null</code> if <code>expr</code> is no list after
+   *         normalizing a sparse array or the conversion fails
+   */
+  private static IExpr[][] matrixEntries(IExpr expr) {
     if (expr.isSparseArray()) {
       // TODO optimize for sparse arrays
       // ISparseArray array = (ISparseArray) expr;
@@ -210,22 +236,7 @@ public class JASConvert<C extends RingElem<C>> {
     }
     if (expr.isList()) {
       try {
-        final IExpr[][] array = Convert.list2Array(expr, false);
-        if (array == null) {
-          return null;
-        }
-        final BigComplex[][] elements = new BigComplex[array.length][];
-        for (int i = 0; i < array.length; i++) {
-          final IExpr[] row = array[i];
-          elements[i] = new BigComplex[row.length];
-          for (int j = 0; j < row.length; j++) {
-            if (!(row[j] instanceof IBigNumber)) {
-              return null;
-            }
-            elements[i][j] = ((IBigNumber) row[j]).toBigComplex();
-          }
-        }
-        return new GenMatrix<BigComplex>(ring, elements);
+        return Convert.list2Array(expr, false);
       } catch (ValidateException vex) {
         // pass
       }
@@ -244,34 +255,22 @@ public class JASConvert<C extends RingElem<C>> {
     }
     GenMatrixRing<BigRational> ring =
         new GenMatrixRing<BigRational>(BigRational.ONE, dim[0], dim[1]);
-    if (expr.isSparseArray()) {
-      // TODO optimize for sparse arrays
-      // ISparseArray array = (ISparseArray) expr;
-      expr = ((ISparseArray) expr).normal(false);
+    final IExpr[][] array = matrixEntries(expr);
+    if (array == null) {
+      return null;
     }
-    if (expr.isList()) {
-      try {
-        final IExpr[][] array = Convert.list2Array(expr, false);
-        if (array == null) {
+    final BigRational[][] elements = new BigRational[array.length][];
+    for (int i = 0; i < array.length; i++) {
+      final IExpr[] row = array[i];
+      elements[i] = new BigRational[row.length];
+      for (int j = 0; j < row.length; j++) {
+        if (!(row[j] instanceof IRational)) {
           return null;
         }
-        final BigRational[][] elements = new BigRational[array.length][];
-        for (int i = 0; i < array.length; i++) {
-          final IExpr[] row = array[i];
-          elements[i] = new BigRational[row.length];
-          for (int j = 0; j < row.length; j++) {
-            if (!(row[j] instanceof IRational)) {
-              return null;
-            }
-            elements[i][j] = ((IRational) row[j]).toBigRational();
-          }
-        }
-        return new GenMatrix<BigRational>(ring, elements);
-      } catch (ValidateException vex) {
-        // pass
+        elements[i][j] = ((IRational) row[j]).toBigRational();
       }
     }
-    return null;
+    return new GenMatrix<BigRational>(ring, elements);
   }
 
   // public JASConvert(IAST varList, RingFactory<C> ringFactory) {
@@ -393,15 +392,26 @@ public class JASConvert<C extends RingElem<C>> {
   public JASConvert(IAST varList, RingFactory<C> ringFactory, TermOrder termOrder) {
     this.fRingFactory = ringFactory;
     this.fVariables = varList;
-    String[] vars = new String[fVariables.argSize()];
-    for (int i = 0; i < fVariables.argSize(); i++) {
-      vars[i] = fVariables.get(i + 1).toString();
-    }
+    String[] vars = variableNames(varList);
     this.fTermOrder = termOrder;
     this.fPolyFactory =
         new GenPolynomialRing<C>(fRingFactory, fVariables.argSize(), fTermOrder, vars);
     this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
         edu.jas.arith.BigInteger.ZERO, fVariables.argSize(), fTermOrder, vars);
+  }
+
+  /**
+   * The names of the variables of a polynomial ring.
+   *
+   * @param varList the list of variables
+   * @return the string forms of the variables in the order of <code>varList</code>
+   */
+  static String[] variableNames(IAST varList) {
+    String[] vars = new String[varList.argSize()];
+    for (int i = 0; i < varList.argSize(); i++) {
+      vars[i] = varList.get(i + 1).toString();
+    }
+    return vars;
   }
 
   public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff)

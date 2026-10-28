@@ -479,6 +479,29 @@ public class ArrayDerivative {
   }
 
   /**
+   * The product rule which keeps the factors in their order.
+   *
+   * @param fx a product like {@link S#Dot} or {@link S#TensorProduct}
+   * @param x the variable
+   * @return the sum of the products with one factor differentiated or {@link F#NIL} if all
+   *         factors are free of <code>x</code>
+   */
+  private static IExpr orderedProductRule(IAST fx, IExpr x) {
+    IASTAppendable sum = F.PlusAlloc(fx.argSize());
+    for (int i = 1; i < fx.size(); i++) {
+      if (fx.get(i).isFree(x, true)) {
+        continue;
+      }
+      IASTAppendable term = F.ast(fx.head(), fx.argSize());
+      for (int j = 1; j < fx.size(); j++) {
+        term.append(i == j ? F.D(fx.get(j), x) : fx.get(j));
+      }
+      sum.append(term);
+    }
+    return sum.argSize() == 0 ? F.NIL : sum;
+  }
+
+  /**
    * The derivative of an array valued expression with respect to an ordinary scalar variable.
    *
    * <p>
@@ -490,20 +513,8 @@ public class ArrayDerivative {
    */
   public static IExpr dArrayValuedInScalar(IAST fx, IExpr x, EvalEngine engine) {
     switch (fx.headID()) {
-      case ID.Dot: {
-        IASTAppendable sum = F.PlusAlloc(fx.argSize());
-        for (int i = 1; i < fx.size(); i++) {
-          if (fx.get(i).isFree(x, true)) {
-            continue;
-          }
-          IASTAppendable term = F.ast(S.Dot, fx.argSize());
-          for (int j = 1; j < fx.size(); j++) {
-            term.append(i == j ? F.D(fx.get(j), x) : fx.get(j));
-          }
-          sum.append(term);
-        }
-        return sum.argSize() == 0 ? F.NIL : sum;
-      }
+      case ID.Dot:
+        return orderedProductRule(fx, x);
       case ID.Inverse:
         if (fx.isAST1()) {
           // differentiating Inverse(a).a == identity gives this rule
@@ -540,20 +551,8 @@ public class ArrayDerivative {
               F.D(fx.arg1(), x), F.C2);
         }
         return F.NIL;
-      case ID.TensorProduct: {
-        IASTAppendable sum = F.PlusAlloc(fx.argSize());
-        for (int i = 1; i < fx.size(); i++) {
-          if (fx.get(i).isFree(x, true)) {
-            continue;
-          }
-          IASTAppendable term = F.ast(S.TensorProduct, fx.argSize());
-          for (int j = 1; j < fx.size(); j++) {
-            term.append(i == j ? F.D(fx.get(j), x) : fx.get(j));
-          }
-          sum.append(term);
-        }
-        return sum.argSize() == 0 ? F.NIL : sum;
-      }
+      case ID.TensorProduct:
+        return orderedProductRule(fx, x);
       case ID.MatrixPower: {
         if (!fx.isAST2()) {
           return F.NIL;

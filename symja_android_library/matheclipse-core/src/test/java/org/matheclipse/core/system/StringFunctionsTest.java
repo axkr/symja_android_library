@@ -1030,6 +1030,17 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testUpperCaseQ() {
+    // the string type is checked on the evaluated argument
+    check("strUQ = \"KLM\"; {UpperCaseQ(strUQ), LowerCaseQ(strUQ), UpperCaseQ(\"KlM\")}", //
+        "{True,False,False}");
+    check("UpperCaseQ(7)", //
+        "UpperCaseQ(7)");
+    check("{PrintableASCIIQ(\"x+1\"), LowerCaseQ(\"xyz\"), LowerCaseQ(5)}", //
+        "{True,True,LowerCaseQ(5)}");
+  }
+
+  @Test
   public void testToUpperCase() {
     check("ToUpperCase(\"This is a Test\")", //
         "THIS IS A TEST");

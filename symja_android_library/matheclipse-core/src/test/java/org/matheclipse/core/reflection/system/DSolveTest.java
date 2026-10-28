@@ -11,6 +11,13 @@ import org.matheclipse.core.system.TestTags;
 /** Tests for DSolve */
 public class DSolveTest extends ExprEvaluatorTestCase {
 
+  @Test
+  public void testListValuedEquation() {
+    // an equation between two lists holds componentwise
+    check("DSolve({{p'(s), q'(s)} == {-q(s), p(s)}}, {p(s), q(s)}, s)", //
+        "{{p(s)->C(1)*Cos(s)-C(2)*Sin(s),q(s)->C(2)*Cos(s)+C(1)*Sin(s)}}");
+  }
+
   /** Every DSolve which isn't nested in another one numbers its constants from C(1) on. */
   @Test
   public void testDSolveConstantsStartAtOne() {

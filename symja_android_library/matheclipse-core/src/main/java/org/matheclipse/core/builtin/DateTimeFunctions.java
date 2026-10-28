@@ -1931,6 +1931,7 @@ public class DateTimeFunctions {
     }
   }
 
+  // CPD-OFF DayCount and DayRange date pair preamble
   private static final class DayCount extends AbstractFunctionEvaluator {
 
     @Override
@@ -1943,6 +1944,7 @@ public class DateTimeFunctions {
       LocalDate start = from.instant.toLocalDate();
       LocalDate end = to.instant.toLocalDate();
       if (ast.argSize() >= 3) {
+      // CPD-ON
         DayOfWeek dayOfWeek = DateObjectExpr.toDayOfWeek(ast.arg3());
         String dayType = ast.arg3().isString() ? ast.arg3().toString() : null;
         long count = 0;
@@ -2139,6 +2141,7 @@ public class DateTimeFunctions {
     }
   }
 
+  // CPD-OFF DayCount and DayRange date pair preamble
   private static final class DayRange extends AbstractFunctionEvaluator {
 
     @Override
@@ -2151,6 +2154,7 @@ public class DateTimeFunctions {
       LocalDate start = from.instant.toLocalDate();
       LocalDate end = to.instant.toLocalDate();
       if (start.isAfter(end)) {
+      // CPD-ON
         LocalDate swap = start;
         start = end;
         end = swap;

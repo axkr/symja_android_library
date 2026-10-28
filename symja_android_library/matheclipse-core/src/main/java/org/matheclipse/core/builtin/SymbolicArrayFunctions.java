@@ -505,14 +505,9 @@ public class SymbolicArrayFunctions {
     }
     IAST dimensions1 = SymbolicArrayUtil.tensorDimensions(arg1, engine);
     IAST dimensions2 = SymbolicArrayUtil.tensorDimensions(arg2, engine);
-    if (dimensions1.isNIL() || dimensions2.isNIL() || dimensions1.argSize() < k
-        || dimensions2.argSize() < k) {
+    IAST dimensions = SymbolicArrayUtil.contractedDimensions(dimensions1, dimensions2, k);
+    if (dimensions.isNIL()) {
       return F.NIL;
-    }
-    for (int i = 0; i < k; i++) {
-      if (!dimensions1.get(dimensions1.argSize() - k + i + 1).equals(dimensions2.get(i + 1))) {
-        return F.NIL;
-      }
     }
     // SymbolicIdentityArray({n1,...,nk}) has the dimensions {n1,...,nk,n1,...,nk} and is the
     // identity of the k-fold contraction
@@ -523,10 +518,6 @@ public class SymbolicArrayFunctions {
       return arg1;
     }
     if (arg1.isAST(S.SymbolicZerosArray) || arg2.isAST(S.SymbolicZerosArray)) {
-      IASTAppendable dimensions =
-          F.ListAlloc(dimensions1.argSize() + dimensions2.argSize() - 2 * k);
-      dimensions.appendArgs(dimensions1, dimensions1.argSize() - k + 1);
-      dimensions.appendAll(dimensions2, k + 1, dimensions2.size());
       return SymbolicArrayUtil.zeros(dimensions);
     }
     return F.NIL;

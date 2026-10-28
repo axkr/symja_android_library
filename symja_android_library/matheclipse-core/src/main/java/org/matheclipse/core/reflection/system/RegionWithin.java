@@ -16,13 +16,8 @@ public class RegionWithin extends AbstractFunctionEvaluator {
     if (ast.argSize() != 2)
       return F.NIL;
 
-    IExpr reg1 = ast.arg1();
-    IExpr reg2 = ast.arg2();
-
-    if (reg1.isAST(S.Region, 1))
-      reg1 = reg1.first();
-    if (reg2.isAST(S.Region, 1))
-      reg2 = reg2.first();
+    IExpr reg1 = RegionPrimitives.unwrapRegion(ast.arg1());
+    IExpr reg2 = RegionPrimitives.unwrapRegion(ast.arg2());
 
     if (reg1.equals(reg2))
       return S.True;
@@ -32,21 +27,19 @@ public class RegionWithin extends AbstractFunctionEvaluator {
       IExpr head2 = r2.head();
 
       if (head2 == S.Point) {
-        if (r2.argSize() == 1) {
-          IExpr pt = r2.arg1();
-          if (pt.isList() && pt.argSize() > 0 && ((IAST) pt).arg1().isList()) {
-            IAST pts = (IAST) pt;
-            for (int i = 1; i <= pts.argSize(); i++) {
-              IExpr mem = engine.evaluate(F.RegionMember(reg1, pts.get(i)));
-              if (mem.isFalse())
-                return S.False;
-              if (!mem.isTrue())
-                return F.NIL;
-            }
-            return S.True;
-          } else {
-            return engine.evaluate(F.RegionMember(reg1, pt));
+        IAST pts = RegionPrimitives.multiPoints(r2);
+        if (pts.isPresent()) {
+          for (int i = 1; i <= pts.argSize(); i++) {
+            IExpr mem = engine.evaluate(F.RegionMember(reg1, pts.get(i)));
+            if (mem.isFalse())
+              return S.False;
+            if (!mem.isTrue())
+              return F.NIL;
           }
+          return S.True;
+        }
+        if (r2.argSize() == 1) {
+          return engine.evaluate(F.RegionMember(reg1, r2.arg1()));
         }
       }
     }
@@ -75,8 +68,8 @@ public class RegionWithin extends AbstractFunctionEvaluator {
       }
 
       if (isConvex(h1) && hasVertices(h2)) {
-        IAST vertices = getVertices(r2);
-        if (vertices != null) {
+        IAST vertices = RegionPrimitives.vertices(r2);
+        if (vertices.isPresent()) {
           for (int i = 1; i <= vertices.argSize(); i++) {
             IExpr mem = engine.evaluate(F.RegionMember(reg1, vertices.get(i)));
             if (mem.isFalse())
@@ -98,15 +91,6 @@ public class RegionWithin extends AbstractFunctionEvaluator {
 
   private boolean hasVertices(IExpr head) {
     return head == S.Line || head == S.Triangle || head == S.Polygon || head == S.Simplex;
-  }
-
-  private IAST getVertices(IAST reg) {
-    if (reg.argSize() == 1 && reg.arg1().isList())
-      return (IAST) reg.arg1();
-    if (reg.head() == S.Triangle && reg.argSize() == 0) {
-      return F.List(F.List(F.C0, F.C0), F.List(F.C1, F.C0), F.List(F.C0, F.C1));
-    }
-    return null;
   }
 
   private IExpr ballWithin(IAST r1, IAST r2, EvalEngine engine) {

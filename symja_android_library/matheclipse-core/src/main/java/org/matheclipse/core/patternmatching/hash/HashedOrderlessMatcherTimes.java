@@ -23,6 +23,7 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
     for (int i = 0; i < hashValues.length; i++) {
       IExpr temp = orderlessAST.get(i + 1);
       if (temp.isPower()) { // && temp.exponent().isInteger()) {
+        // CPD-OFF Plus and Times hash variants on the matcher hot path
         hashValues[i] = temp.base().head().hashCode();
       } else {
         hashValues[i] = temp.head().hashCode();
@@ -35,6 +36,7 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
     for (int i = 0; i < hashValues.length; i++) {
       IExpr temp = orderlessAST.get(i + 1);
       if (temp.isPowerInteger()) {
+      // CPD-ON
         hashValues[i] = temp.base().accept(HashValueVisitor.HASH_VALUE_VISITOR);
       } else {
         hashValues[i] = temp.accept(HashValueVisitor.HASH_VALUE_VISITOR);

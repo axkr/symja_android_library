@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.util;
 
+import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -622,6 +623,20 @@ public class RegionPrimitives {
     }
     IAST axis = (IAST) reg.arg1();
     return new StadiumSpec(axis.arg1(), axis.arg2(), reg.arg2());
+  }
+
+  /**
+   * Parse a <code>StadiumShape</code> or a <code>CapsuleShape</code> in standard form. In the plane
+   * a capsule is a stadium: the axis segment and the radius describe both.
+   *
+   * @return <code>null</code> if <code>reg</code> is neither in standard form
+   */
+  public static StadiumSpec parsePlanarStadium(IAST reg) {
+    if (reg.isAST(S.CapsuleShape)) {
+      CapsuleSpec spec = parseCapsuleShape(reg);
+      return spec == null ? null : new StadiumSpec(spec.p1, spec.p2, spec.radius);
+    }
+    return parseStadiumShape(reg);
   }
 
   // ---------------------------------------------------------------- HalfSpace
@@ -1690,5 +1705,54 @@ public class RegionPrimitives {
       return F.list(F.CListC0C0, F.List(F.C1, F.C0), F.List(F.C0, F.C1));
     }
     return F.NIL;
+  }
+
+  /**
+   * The corner points of a region given by an explicit list of vertices, or the standard triangle
+   * for <code>Triangle()</code>.
+   *
+   * @return {@link F#NIL} if the vertices of <code>reg</code> are not available
+   */
+  public static IAST vertices(IAST reg) {
+    if (reg.argSize() == 1 && reg.arg1().isList()) {
+      return (IAST) reg.arg1();
+    }
+    if (reg.head() == S.Triangle && reg.argSize() == 0) {
+      return F.list(F.CListC0C0, F.List(F.C1, F.C0), F.List(F.C0, F.C1));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The list of points of a multi-point <code>Point({{...}, {...}, ...})</code>.
+   *
+   * @return {@link F#NIL} if <code>point</code> is not a list of points
+   */
+  public static IAST multiPoints(IAST point) {
+    if (point.argSize() == 1) {
+      IExpr pt = point.arg1();
+      if (pt.isList() && pt.argSize() > 0 && ((IAST) pt).arg1().isList()) {
+        return (IAST) pt;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Strip a <code>Region(reg)</code> display wrapper.
+   *
+   * @return the wrapped region, or <code>region</code> itself if it is not wrapped
+   */
+  public static IExpr unwrapRegion(IExpr region) {
+    return region.isAST(S.Region, 2) ? region.first() : region;
+  }
+
+  /**
+   * Strip a <code>Region(reg)</code> display wrapper and bring a mesh region into its normal form.
+   *
+   * @see MeshFunctions#normalizeRegion(IExpr)
+   */
+  public static IExpr normalizedRegion(IExpr region) {
+    return MeshFunctions.normalizeRegion(unwrapRegion(region));
   }
 }

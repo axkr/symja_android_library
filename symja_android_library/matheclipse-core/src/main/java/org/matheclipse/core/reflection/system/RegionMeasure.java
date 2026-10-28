@@ -17,13 +17,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
+    IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (MeshFunctions.isMeshRegion(arg1)) {
       int embeddingDimension = MeshFunctions.embeddingDimension((IAST) arg1);
       if (embeddingDimension == 3) {
@@ -148,24 +142,22 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
   }
 
   private IExpr pointMeasure(IAST reg, EvalEngine engine) {
-    if (reg.argSize() == 1) {
-      IExpr p = reg.arg1();
+    IAST pts = RegionPrimitives.multiPoints(reg);
+    if (pts.isPresent()) {
       // Point[{{...}, {...}}] -> count points
-      if (p.isList() && p.argSize() > 0 && ((IAST) p).arg1().isList()) {
-        return F.ZZ(p.argSize());
-      } else {
-        return F.C1;
-      }
+      return F.ZZ(pts.argSize());
     }
-    return F.NIL;
+    return reg.argSize() == 1 ? F.C1 : F.NIL;
   }
 
+  // CPD-OFF polyline length kept in each function's own form
   private IExpr lineMeasure(IAST reg, EvalEngine engine) {
     if (reg.argSize() == 1 && reg.arg1().isList()) {
       IAST pts = (IAST) reg.arg1();
       if (pts.argSize() >= 2) {
         IExpr len = F.C0;
         for (int i = 1; i < pts.argSize(); i++) {
+        // CPD-ON
           len = engine.evaluate(F.Plus(len, F.Norm(F.Subtract(pts.get(i), pts.get(i + 1)))));
         }
         return len;
@@ -247,6 +239,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  // CPD-OFF polyline length kept in each function's own form
   private IExpr ballMeasure(IAST reg, EvalEngine engine) {
     RegionPrimitives.BallSpec ball = RegionPrimitives.parseBall(reg);
     int dim = ball.center.isList() ? ball.center.argSize() : 3;
@@ -255,10 +248,12 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     // Exact N-dimensional volume formulation: V = (Pi^(dim/2) / Gamma(dim/2 + 1)) * r^dim
     IExpr piPow = F.Power(S.Pi, F.QQ(dim, 2));
     IExpr rPow = F.Power(r, F.ZZ(dim));
+    // CPD-ON
     IExpr gamma = F.Gamma(F.Plus(F.QQ(dim, 2), F.C1));
     return engine.evaluate(F.Divide(F.Times(piPow, rPow), gamma));
   }
 
+  // CPD-OFF polyline length kept in each function's own form
   private IExpr sphereMeasure(IAST reg, EvalEngine engine) {
     RegionPrimitives.BallSpec ball = RegionPrimitives.parseBall(reg);
     int dim = ball.center.isList() ? ball.center.argSize() : 3;
@@ -267,6 +262,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     // Exact N-dimensional surface formulation: A = 2 * Pi^(dim/2) / Gamma(dim/2) * r^(dim-1)
     IExpr piPow = F.Power(S.Pi, F.QQ(dim, 2));
     IExpr rPow = F.Power(r, F.ZZ(dim - 1));
+    // CPD-ON
     IExpr gamma = F.Gamma(F.QQ(dim, 2));
     return engine.evaluate(F.Divide(F.Times(F.C2, piPow, rPow), gamma));
   }

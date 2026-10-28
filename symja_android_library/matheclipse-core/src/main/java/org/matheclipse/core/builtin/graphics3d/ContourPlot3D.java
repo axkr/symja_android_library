@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics3d;
 
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -41,14 +40,8 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
     // primitives, reading it from the original call
     ast = PlotWrapper.stripFirstArgument(ast);
-    if (argSize < 4) {
+    if (argSize < 4 || !Plot3DTools.validRanges3D(ast, S.ContourPlot3D, engine)) {
       return F.NIL;
-    }
-    for (int i = 2; i <= 4; i++) {
-      IExpr range = ast.get(i);
-      if (!range.isList3() || !range.first().isSymbol()) {
-        return Errors.printMessage(S.ContourPlot3D, "pllim", F.list(range), engine);
-      }
     }
 
     IExpr expr = ast.arg1();

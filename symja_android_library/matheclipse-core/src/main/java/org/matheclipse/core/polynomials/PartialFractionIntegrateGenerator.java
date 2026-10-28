@@ -85,9 +85,9 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
         if (genPolynomial2.isONE()) {
           GenPolynomial<BigRational> newDi_1 = Di_1.multiply(BigRational.valueOf(lcm));
           isQuadratic(newDi_1, denom);
-          IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
-          IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
-          IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
+          IFraction a = toFraction(denom[2]);
+          IFraction b = toFraction(denom[1]);
+          IFraction c = toFraction(denom[0]);
           if (a.isZero()) {
             // JavaForm[Log[b*x+c]/b]
             result.append(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
@@ -116,11 +116,11 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
         } else {
           // (B*A*x) / (q*p*x)
           isQuadratic(genPolynomial, numer);
-          IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
-          IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
+          IFraction A = toFraction(numer[1]);
+          IFraction B = toFraction(numer[0]);
           isQuadratic(Di_1, denom);
-          IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
-          IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
+          IFraction p = toFraction(denom[1]);
+          IFraction q = toFraction(denom[0]);
           if (A.isZero() && !p.isZero()) {
             // JavaForm[B*Log[p*x+q]/p]
             if (q.isNegative()) {
@@ -141,12 +141,12 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
         }
       } else if (isDegreeLE2 && j > 1L) {
         isQuadratic(genPolynomial, numer);
-        IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
-        IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
+        IFraction A = toFraction(numer[1]);
+        IFraction B = toFraction(numer[0]);
         isQuadratic(Di_1, denom);
-        IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
-        IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
-        IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
+        IFraction a = toFraction(denom[2]);
+        IFraction b = toFraction(denom[1]);
+        IFraction c = toFraction(denom[0]);
         IInteger k = F.ZZ(j);
         if (A.isZero()) {
           // JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
@@ -188,6 +188,11 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
         }
       }
     }
+  }
+
+  /** Convert a JAS rational number into a fraction. */
+  private static IFraction toFraction(BigRational r) {
+    return F.fraction(r.numerator(), r.denominator());
   }
 
   /**

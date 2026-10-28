@@ -41,6 +41,19 @@ import org.matheclipse.parser.trie.Trie;
 
 public class TensorFunctions {
   /**
+   * Test if the 0-based <code>position</code> lies inside a tensor of dimensions
+   * <code>tensorDim</code>.
+   */
+  private static boolean insideTensor(int[] tensorDim, int[] position) {
+    for (int d = 0; d < position.length; d++) {
+      if (position[d] < 0 || position[d] >= tensorDim[d]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
@@ -1191,13 +1204,7 @@ public class TensorFunctions {
      */
     private static int paddedEntry(Flat padding, int[] tensorDim, int[] paddingDim,
         int[] position) {
-      boolean inside = true;
-      for (int d = 0; d < position.length; d++) {
-        if (position[d] < 0 || position[d] >= tensorDim[d]) {
-          inside = false;
-          break;
-        }
-      }
+      boolean inside = insideTensor(tensorDim, position);
       if (padding != null && !inside && paddingDim == null) {
         return -1;
       }
@@ -1589,13 +1596,7 @@ public class TensorFunctions {
      */
     private static IExpr paddedElement(IAST tensor, IExpr padding, int[] tensorDim,
         int[] paddingDim, int[] position) {
-      boolean inside = true;
-      for (int d = 0; d < position.length; d++) {
-        if (position[d] < 0 || position[d] >= tensorDim[d]) {
-          inside = false;
-          break;
-        }
-      }
+      boolean inside = insideTensor(tensorDim, position);
       if (padding != null && !inside && paddingDim == null) {
         return padding;
       }

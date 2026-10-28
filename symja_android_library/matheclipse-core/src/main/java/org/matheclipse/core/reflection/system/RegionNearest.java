@@ -23,12 +23,8 @@ public class RegionNearest extends AbstractFunctionEvaluator {
       return F.NIL;
     }
 
-    IExpr arg1 = ast.arg1();
+    IExpr arg1 = RegionPrimitives.unwrapRegion(ast.arg1());
     IExpr p = ast.arg2();
-
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
     if (arg1.isAST(S.ImplicitRegion, 3)) {
       return implicitNearest((IAST) arg1, p, engine);
     }
@@ -149,32 +145,28 @@ public class RegionNearest extends AbstractFunctionEvaluator {
   }
 
   private IExpr pointNearest(IAST reg, IExpr p, EvalEngine engine) {
-    if (reg.argSize() == 1) {
-      IExpr pt = reg.arg1();
-      if (pt.isList() && pt.argSize() > 0) {
-        if (((IAST) pt).arg1().isList()) {
-          IAST pts = (IAST) pt;
-          IExpr bestPoint = F.NIL;
-          IExpr minDist2 = F.NIL;
-          for (int i = 1; i <= pts.argSize(); i++) {
-            IExpr currentPt = pts.get(i);
-            IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p, currentPt))));
-            if (minDist2.isNIL()) {
-              minDist2 = dist2;
-              bestPoint = currentPt;
-            } else {
-              IExpr isLess = engine.evaluate(F.Less(dist2, minDist2));
-              if (isLess.isTrue()) {
-                minDist2 = dist2;
-                bestPoint = currentPt;
-              }
-            }
-          }
-          return bestPoint;
+    IAST pts = RegionPrimitives.multiPoints(reg);
+    if (pts.isPresent()) {
+      IExpr bestPoint = F.NIL;
+      IExpr minDist2 = F.NIL;
+      for (int i = 1; i <= pts.argSize(); i++) {
+        IExpr currentPt = pts.get(i);
+        IExpr dist2 = engine.evaluate(F.Total(F.Sqr(F.Subtract(p, currentPt))));
+        if (minDist2.isNIL()) {
+          minDist2 = dist2;
+          bestPoint = currentPt;
         } else {
-          return pt;
+          IExpr isLess = engine.evaluate(F.Less(dist2, minDist2));
+          if (isLess.isTrue()) {
+            minDist2 = dist2;
+            bestPoint = currentPt;
+          }
         }
       }
+      return bestPoint;
+    }
+    if (reg.argSize() == 1 && reg.arg1().isList() && reg.arg1().argSize() > 0) {
+      return reg.arg1();
     }
     return F.NIL;
   }
@@ -281,21 +273,11 @@ public class RegionNearest extends AbstractFunctionEvaluator {
       return p;
     }
 
-    IAST pts = extractPolygonPoints(reg);
-    if (pts != null && pts.argSize() >= 3) {
+    IAST pts = RegionPrimitives.vertices(reg);
+    if (pts.argSize() >= 3) {
       return nearestOnPolyline(pts, true, p, engine);
     }
     return F.NIL;
-  }
-
-  private IAST extractPolygonPoints(IAST reg) {
-    if (reg.argSize() == 1 && reg.arg1().isList()) {
-      return (IAST) reg.arg1();
-    }
-    if (reg.head() == S.Triangle && reg.argSize() == 0) {
-      return F.List(F.List(F.C0, F.C0), F.List(F.C1, F.C0), F.List(F.C0, F.C1));
-    }
-    return null;
   }
 
   private IExpr closestPointOnSegment(IExpr p, IExpr v, IExpr w, EvalEngine engine) {

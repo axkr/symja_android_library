@@ -272,18 +272,21 @@ public final class Lowering {
   }
 
   private Formula conjunction(IAST ast, int from) {
-    List<Formula> parts = new ArrayList<Formula>(ast.argSize());
-    for (int i = from; i < ast.size(); i++) {
-      Formula part = formula(ast.get(i));
-      if (part == null) {
-        return null;
-      }
-      parts.add(part);
-    }
-    return Formula.and(parts);
+    List<Formula> parts = formulas(ast, from);
+    return parts == null ? null : Formula.and(parts);
   }
 
   private Formula disjunction(IAST ast, int from) {
+    List<Formula> parts = formulas(ast, from);
+    return parts == null ? null : Formula.or(parts);
+  }
+
+  /**
+   * The formulas of the arguments of <code>ast</code> starting at <code>from</code>.
+   *
+   * @return <code>null</code> if an argument cannot be lowered
+   */
+  private List<Formula> formulas(IAST ast, int from) {
     List<Formula> parts = new ArrayList<Formula>(ast.argSize());
     for (int i = from; i < ast.size(); i++) {
       Formula part = formula(ast.get(i));
@@ -292,7 +295,7 @@ public final class Lowering {
       }
       parts.add(part);
     }
-    return Formula.or(parts);
+    return parts;
   }
 
   private Formula quantified(IAST ast, boolean forAll) {

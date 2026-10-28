@@ -1115,6 +1115,7 @@ public class Primality implements IPrimality {
     return a.multiply(b).divide(gcd);
   }
 
+  // CPD-OFF sibling arithmetic functions with early returns
   public static BigInteger charmichaelLambda(BigInteger value) {
     if (value.signum() == 0) {
       return BigInteger.ZERO;
@@ -1128,6 +1129,7 @@ public class Primality implements IPrimality {
 
     SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(value);
     BigInteger l = BigInteger.ONE;
+    // CPD-ON
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
       BigInteger base = entry.getKey();
       int exponent = entry.getValue();
@@ -1150,6 +1152,7 @@ public class Primality implements IPrimality {
    * @return Euler's totient function
    * @throws ArithmeticException
    */
+  // CPD-OFF sibling arithmetic functions with early returns
   public static BigInteger eulerPhi(BigInteger value) {
     if (value.signum() == 0) {
       return BigInteger.ZERO;
@@ -1163,6 +1166,7 @@ public class Primality implements IPrimality {
     // SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
     SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(value);
     BigInteger phi = BigInteger.ONE;
+    // CPD-ON
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
       BigInteger q = entry.getKey();
       int c = entry.getValue();

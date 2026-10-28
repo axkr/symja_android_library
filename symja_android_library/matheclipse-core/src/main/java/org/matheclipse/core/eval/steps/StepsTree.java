@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.steps;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -55,6 +57,22 @@ public final class StepsTree {
   /** The top level steps. */
   public static IAST steps(IAST traceForm) {
     return (IAST) traceForm.arg2();
+  }
+
+  /**
+   * The well formed steps among the arguments of <code>steps</code>, in their order.
+   *
+   * @see #isStep(IExpr)
+   */
+  public static List<IAST> stepEntries(IAST steps) {
+    List<IAST> result = new ArrayList<IAST>(steps.argSize());
+    for (int i = 1; i < steps.size(); i++) {
+      IExpr step = steps.get(i);
+      if (isStep(step)) {
+        result.add((IAST) step);
+      }
+    }
+    return result;
   }
 
   /** Is this a well formed step? */

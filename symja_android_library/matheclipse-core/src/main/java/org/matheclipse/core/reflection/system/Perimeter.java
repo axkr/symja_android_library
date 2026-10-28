@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.RegionPrimitives;
@@ -21,6 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * That test is done centrally in {@link #evaluate(IAST, EvalEngine)}, so a head which has no closed
  * form perimeter still answers <code>Undefined</code> rather than staying unevaluated.
  */
+// CPD-OFF per-measure dispatch over region heads
 public class Perimeter extends AbstractFunctionOptionEvaluator {
 
   @Override
@@ -36,17 +36,12 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
     // argSize is the number of positional arguments - the trailing options are already stripped
     if (argSize >= 3) {
       return parametricPerimeter(ast, argSize, options, engine);
+      // CPD-ON
     }
     if (argSize != 1) {
       return F.NIL;
     }
-    IExpr arg1 = ast.arg1();
-
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
+    IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
 
     if (arg1.isAST() && arg1.isBuiltInFunction()) {
       IAST geoForm = (IAST) arg1;
@@ -129,10 +124,9 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
       case ID.DiskSegment:
         return diskSegment(geoForm, engine);
       case ID.StadiumShape:
-        return stadiumShape(geoForm, engine);
       case ID.CapsuleShape:
         // in the plane a capsule is a stadium
-        return capsuleShape(geoForm, engine);
+        return stadiumShape(geoForm, engine);
       case ID.Parallelogram:
         return parallelogram(geoForm, engine);
       case ID.EmptyRegion:
@@ -177,22 +171,13 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
 
   /** The two straight sides <code>2*d</code> plus the two semicircular caps <code>2*Pi*r</code>. */
   private static IExpr stadiumShape(IAST geoForm, EvalEngine engine) {
-    RegionPrimitives.StadiumSpec spec = RegionPrimitives.parseStadiumShape(geoForm);
+    RegionPrimitives.StadiumSpec spec = RegionPrimitives.parsePlanarStadium(geoForm);
     if (spec == null) {
       return F.NIL;
     }
-    IExpr d = RegionPrimitives.distance(spec.p1, spec.p2, engine);
-    return engine.evaluate(F.Plus(F.Times(F.C2, d), F.Times(F.C2, S.Pi, spec.radius)));
-  }
-
-  /** A planar capsule is a stadium: two straight sides plus two semicircular caps. */
-  private static IExpr capsuleShape(IAST geoForm, EvalEngine engine) {
-    RegionPrimitives.CapsuleSpec spec = RegionPrimitives.parseCapsuleShape(geoForm);
-    if (spec == null) {
-      return F.NIL;
-    }
-    IExpr d = RegionPrimitives.distance(spec.p1, spec.p2, engine);
-    return engine.evaluate(F.Plus(F.Times(F.C2, d), F.Times(F.C2, S.Pi, spec.radius)));
+    return engine.evaluate(F.Plus(//
+        F.Times(F.C2, RegionPrimitives.distance(spec.p1, spec.p2, engine)), //
+        F.Times(F.C2, S.Pi, spec.radius)));
   }
 
   /**

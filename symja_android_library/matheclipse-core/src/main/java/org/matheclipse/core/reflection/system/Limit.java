@@ -1028,8 +1028,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           engine);
       return fromAbove.equals(fromBelow) ? fromAbove : F.NIL;
     }
-    LeadTerm.Normalized normalized = LeadTerm.normalize(expr, data.variable(), data.limitValue(),
-        data.direction() == Direction.FROM_BELOW);
+    LeadTerm.Normalized normalized = normalize(expr, data);
     if (normalized == null) {
       return F.NIL;
     }
@@ -1038,8 +1037,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     IExpr result = LeadTerm.limitFromLead(lead, engine);
-    if (result.isPresent() && result.isFree(normalized.t()) && result.isFree(S.Limit)
-        && result.isIndeterminateFree()) {
+    if (isCleanLimit(result, normalized.t())) {
       // A series coefficient arrives as the raw sum the expansion produced, so a symbolic answer
       // can be correct but unreduced - the n/2 of the case above comes out as
       // n - n/(2(1+n)) - n^2/(2(1+n)). Reduce over a common denominator; the value is unchanged.
@@ -1065,8 +1063,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // the two-sided splitter above owns this case and compares both one-sided results
       return F.NIL;
     }
-    LeadTerm.Normalized normalized = LeadTerm.normalize(expr, data.variable(), limitValue,
-        data.direction() == Direction.FROM_BELOW);
+    LeadTerm.Normalized normalized = normalize(expr, data);
     if (normalized == null) {
       return F.NIL;
     }
@@ -1075,11 +1072,26 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     IExpr result = LeadTerm.limitFromLead(lead, engine);
-    if (result.isPresent() && result.isFree(normalized.t()) && result.isFree(S.Limit)
-        && result.isIndeterminateFree()) {
-      return result;
-    }
-    return F.NIL;
+    return isCleanLimit(result, normalized.t()) ? result : F.NIL;
+  }
+
+  /**
+   * Rewrite the limit of <code>expr</code> as a limit <code>t -&gt; 0+</code>.
+   *
+   * @return <code>null</code> if the limit point can not be normalized
+   */
+  private static LeadTerm.Normalized normalize(IExpr expr, LimitData data) {
+    return LeadTerm.normalize(expr, data.variable(), data.limitValue(),
+        data.direction() == Direction.FROM_BELOW);
+  }
+
+  /**
+   * Is <code>result</code> a usable limit: present, free of the normalized variable <code>t</code>
+   * and of unevaluated <code>Limit</code> and <code>Indeterminate</code>?
+   */
+  private static boolean isCleanLimit(IExpr result, IExpr t) {
+    return result.isPresent() && result.isFree(t) && result.isFree(S.Limit)
+        && result.isIndeterminateFree();
   }
 
   private static IExpr evalLimitAST(final IExpr expression, final IExpr limitValue, LimitData data,
@@ -2545,24 +2557,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
 
         // Bessel functions BesselJ and BesselY oscillate for real arguments → +Infinity
-        // (they behave like damped sinusoids, but the damping goes to 0, not to a finite value)
-        if (id == ID.BesselJ || id == ID.BesselY) {
+        // (they behave like damped sinusoids, but the damping goes to 0, not to a finite value).
+        // Struve functions StruveH and StruveL: similar oscillatory behaviour to Bessel
+        if (id == ID.BesselJ || id == ID.BesselY || id == ID.StruveH || id == ID.StruveL) {
           if (expr.argSize() == 2) {
             IAST ast = (IAST) expr;
             IExpr arg = ast.arg2(); // second argument is the variable argument
-            IExpr argLim = evalLimitQuiet(arg,
-                new LimitData(symbol, limitValue, data.rule(), data.direction()));
-            if (argLim.isInfinity() || argLim.isNegativeInfinity()) {
-              return true;
-            }
-          }
-        }
-
-        // Struve functions StruveH and StruveL: similar oscillatory behaviour to Bessel
-        if (id == ID.StruveH || id == ID.StruveL) {
-          if (expr.argSize() == 2) {
-            IAST ast = (IAST) expr;
-            IExpr arg = ast.arg2();
             IExpr argLim = evalLimitQuiet(arg,
                 new LimitData(symbol, limitValue, data.rule(), data.direction()));
             if (argLim.isInfinity() || argLim.isNegativeInfinity()) {

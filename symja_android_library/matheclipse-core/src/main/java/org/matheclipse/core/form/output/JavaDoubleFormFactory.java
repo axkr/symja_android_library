@@ -203,6 +203,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
         if (function.isAST(S.ArcTan, 3)) {
           buf.append("2");
         }
+        // CPD-OFF double and complex Java code generators
         convertArgs(buf, head, function);
         return;
       }
@@ -215,6 +216,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
       }
       if (function.isPower()) {
         convertPower(buf, function);
+        // CPD-ON
         return;
       } else if (function.isDirectedInfinity()) {
         if (function.isInfinity()) {

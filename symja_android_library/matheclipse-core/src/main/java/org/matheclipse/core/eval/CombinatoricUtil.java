@@ -204,6 +204,23 @@ public class CombinatoricUtil {
   }
 
   /**
+   * Return <code>cycles</code> unchanged if it was already canonicalized by a built-in function,
+   * otherwise check and canonicalize it with {@link #checkCycles(IAST, boolean, EvalEngine)}.
+   *
+   * @param cycles a <code>Cycles({{...},{...},...})</code> expression
+   * @param quiet if <code>true</code> suppress the output of error messages
+   * @param engine
+   * @return <code>F.NIL</code> if cycles is not a valid <code>Cycles({{...},{...},...})</code>
+   *         expression
+   */
+  public static IAST checkedCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
+    if (cycles.hasFlag(Flag.BUILT_IN_EVALED)) {
+      return cycles;
+    }
+    return checkCycles(cycles, quiet, engine);
+  }
+
+  /**
    * Determine the permutations list length from the Cycles first argument.
    *
    * @param cyclesMainList first arg of Cycles

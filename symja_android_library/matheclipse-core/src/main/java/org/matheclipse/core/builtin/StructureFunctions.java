@@ -1244,6 +1244,7 @@ public class StructureFunctions {
             final IAST ast2 = (IAST) arg2;
             final IExpr arg1 = ast.arg1();
             java.util.function.Function<IExpr, IExpr> function = x -> F.unaryAST1(arg1, x);
+            // CPD-OFF MapAt and ReplaceAt name their own builtin in messages
             IExpr result = applyAtPositions(function, ast2, ast.arg3());
             if (result != null) {
               return result;
@@ -1256,6 +1257,7 @@ public class StructureFunctions {
             }
             Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.MapAt, rex, engine);
+            // CPD-ON
           }
         }
       }
@@ -1321,6 +1323,7 @@ public class StructureFunctions {
             java.util.function.Function<IExpr, IExpr> rules = Functors.rules(arg2, engine);
             // a part which no rule matches stays unchanged
             java.util.function.Function<IExpr, IExpr> function = x -> rules.apply(x).orElse(x);
+            // CPD-OFF MapAt and ReplaceAt name their own builtin in messages
             IExpr result = applyAtPositions(function, ast1, ast.arg3());
             if (result != null) {
               return result;
@@ -1333,6 +1336,7 @@ public class StructureFunctions {
             }
             Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.ReplaceAt, rex, engine);
+            // CPD-ON
           }
         }
       }

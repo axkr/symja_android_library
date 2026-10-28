@@ -1370,6 +1370,7 @@ public class ApcomplexNum implements IComplexNum {
       return F.CComplexInfinity;
     }
     try {
+      // CPD-OFF numeric special-function dispatch per number type
       return valueOf(h().gamma(fApcomplex));
     } catch (OverflowException of) {
       return F.Overflow();
@@ -1393,6 +1394,7 @@ public class ApcomplexNum implements IComplexNum {
     // }
     if (x instanceof INumber) {
       try {
+      // CPD-ON
         return F
             // CPD-OFF numeric special-function dispatch per number type
             .complexNum(h().gamma(fApcomplex, ((INumber) x).apcomplexValue()));

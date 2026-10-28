@@ -66,9 +66,8 @@ public class NumberLinePlot extends ListPlot {
     int numLevels = levels.size();
 
     try {
-      // Calculate finite bounds ---
-      double minFinite = Double.MAX_VALUE;
-      double maxFinite = -Double.MAX_VALUE;
+      // Calculate finite bounds {min, max} ---
+      double[] bounds = {Double.MAX_VALUE, -Double.MAX_VALUE};
       boolean hasData = false;
 
       for (int i = 1; i < numLevels; i++) {
@@ -78,60 +77,26 @@ public class NumberLinePlot extends ListPlot {
 
         for (IExpr item : levelData) {
           if (item.isNumber()) {
-            double val = item.evalfNaN();
-            if (Double.isFinite(val)) {
-              if (val < minFinite)
-                minFinite = val;
-              if (val > maxFinite)
-                maxFinite = val;
-              hasData = true;
-            }
+            hasData |= includeFinite(bounds, item.evalfNaN());
           } else if (item.isAST(S.Interval)) {
             for (int k = 1; k < item.size(); k++) {
               IExpr intervalRange = ((IAST) item).get(k);
               if (intervalRange.isList() && intervalRange.size() >= 3) {
-                checkBounds(intervalRange.get(1), intervalRange.get(2), minFinite, maxFinite);
-                double a = intervalRange.get(1).evalfNaN();
-                double b = intervalRange.get(2).evalfNaN();
-                if (Double.isFinite(a)) {
-                  if (a < minFinite)
-                    minFinite = a;
-                  if (a > maxFinite)
-                    maxFinite = a;
-                  hasData = true;
-                }
-                if (Double.isFinite(b)) {
-                  if (b < minFinite)
-                    minFinite = b;
-                  if (b > maxFinite)
-                    maxFinite = b;
-                  hasData = true;
-                }
+                hasData |= includeFinite(bounds, intervalRange.get(1).evalfNaN());
+                hasData |= includeFinite(bounds, intervalRange.get(2).evalfNaN());
               }
             }
           } else if (item.isIntervalData() && item.argSize() >= 1) {
             IExpr arg1 = ((IAST) item).arg1();
             if (arg1.isList() && arg1.size() >= 5) {
-              double a = ((IAST) arg1).get(1).evalfNaN();
-              double b = ((IAST) arg1).get(4).evalfNaN();
-              if (Double.isFinite(a)) {
-                if (a < minFinite)
-                  minFinite = a;
-                if (a > maxFinite)
-                  maxFinite = a;
-                hasData = true;
-              }
-              if (Double.isFinite(b)) {
-                if (b < minFinite)
-                  minFinite = b;
-                if (b > maxFinite)
-                  maxFinite = b;
-                hasData = true;
-              }
+              hasData |= includeFinite(bounds, ((IAST) arg1).get(1).evalfNaN());
+              hasData |= includeFinite(bounds, ((IAST) arg1).get(4).evalfNaN());
             }
           }
         }
       }
+      double minFinite = bounds[0];
+      double maxFinite = bounds[1];
 
       // Handle case where we only have infinity or no data
       if (!hasData && minFinite == Double.MAX_VALUE) {
@@ -304,8 +269,22 @@ public class NumberLinePlot extends ListPlot {
 
   }
 
-  private void checkBounds(IExpr min, IExpr max, double minFinite, double maxFinite) {
-    // Helper already integrated into main loop logic
+  /**
+   * Extend the <code>bounds = {min, max}</code> by a finite <code>value</code>.
+   *
+   * @return <code>true</code> if <code>value</code> is finite
+   */
+  private static boolean includeFinite(double[] bounds, double value) {
+    if (Double.isFinite(value)) {
+      if (value < bounds[0]) {
+        bounds[0] = value;
+      }
+      if (value > bounds[1]) {
+        bounds[1] = value;
+      }
+      return true;
+    }
+    return false;
   }
 
   @Override

@@ -239,6 +239,7 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     // options are stripped before this is checked, but a plot that declares options must still
     // allow the arguments they occupy, or every option is an argument count error
     return ARGS_3_INFINITY;
+  // CPD-OFF sibling surface-plot evaluator overrides
   }
 
   @Override
@@ -269,3 +270,4 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     setOptions(newSymbol, options.keys(), options.values());
   }
 }
+// CPD-ON

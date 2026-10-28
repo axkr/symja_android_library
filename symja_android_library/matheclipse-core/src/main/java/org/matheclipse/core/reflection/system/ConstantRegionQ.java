@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -22,12 +23,7 @@ public class ConstantRegionQ extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
+    IExpr arg1 = RegionPrimitives.unwrapRegion(ast.arg1());
     if (!arg1.isAST() || RegionEmbeddingDimension.getEmbeddingDimension(arg1) < 0) {
       if (!isFormulaRegion(arg1)) {
         return S.False;

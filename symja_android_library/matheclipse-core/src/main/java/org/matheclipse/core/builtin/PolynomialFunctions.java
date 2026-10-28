@@ -1004,6 +1004,23 @@ public class PolynomialFunctions {
   }
 
   /**
+   * The variables of the polynomial <code>ast.arg1()</code>: all variables of the expression if
+   * there is only one argument, otherwise the variables the second argument names.
+   *
+   * @param ast the function call
+   * @param argSize the number of arguments without options
+   * @param engine the evaluation engine
+   * @return the list of variables or <code>F.NIL</code>
+   */
+  private static IAST polynomialVariableList(IAST ast, int argSize, EvalEngine engine) {
+    if (argSize == 1) {
+      // extract all variables from the polynomial expression
+      return new VariablesSet(ast.arg1()).getVarList();
+    }
+    return variablesOf(ast.arg2(), ast.arg1(), ast, 2, engine);
+  }
+
+  /**
    * The variables a second argument names, with <code>All</code> standing for every symbol in the
    * expression - the coefficients then count as variables too, and every coefficient is 1.
    */
@@ -1062,21 +1079,9 @@ public class PolynomialFunctions {
         return arg1.mapThread(ast, 1);
       }
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-      VariablesSet eVar;
-      IAST symbolList;
-      // IAST varList;
-      if (ast.isAST1()) {
-        // extract all variables from the polynomial expression
-        eVar = new VariablesSet(ast.arg1());
-        // varList = eVar.getVarList();
-        symbolList = eVar.getVarList();
-      } else {
-        symbolList = variablesOf(ast.arg2(), ast.arg1(), ast, 2, engine);
-        if (symbolList.isNIL()) {
-          return F.NIL;
-        }
-        // varList = new ArrayList<IExpr>(symbolList.argSize());
-        // symbolList.forEach(x -> varList.add(x));
+      IAST symbolList = polynomialVariableList(ast, ast.argSize(), engine);
+      if (symbolList.isNIL()) {
+        return F.NIL;
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;
       ExprTermOrder exprTermOrder = null;
@@ -3212,18 +3217,9 @@ public class PolynomialFunctions {
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-      VariablesSet eVar;
-      IAST symbolList;
-      // List<IExpr> varList;
-      if (argSize == 1) {
-        // extract all variables from the polynomial expression
-        eVar = new VariablesSet(ast.arg1());
-        symbolList = eVar.getVarList();
-      } else {
-        symbolList = variablesOf(ast.arg2(), ast.arg1(), ast, 2, engine);
-        if (symbolList.isNIL()) {
-          return F.NIL;
-        }
+      IAST symbolList = polynomialVariableList(ast, argSize, engine);
+      if (symbolList.isNIL()) {
+        return F.NIL;
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;
       ExprTermOrder exprTermOrder = null;

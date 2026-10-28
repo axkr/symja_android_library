@@ -88,11 +88,31 @@ public final class DirichletFunctions {
     return table;
   }
 
+  /** The common attributes, argument count and messages of the Dirichlet character functions. */
+  private abstract static class AbstractDirichletEvaluator extends AbstractFunctionEvaluator {
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDALL);
+      newSymbol.putMessage(IPatternMatcher.SET, "invl", F.stringx(INVL));
+      super.setUp(newSymbol);
+    }
+  }
+
   /**
    * <code>DirichletCharacter(k, j, n)</code>: the Dirichlet character <code>chi_(k,j)</code> at the
    * integer <code>n</code>.
    */
-  private static final class DirichletCharacter extends AbstractFunctionEvaluator {
+  private static final class DirichletCharacter extends AbstractDirichletEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -117,23 +137,6 @@ public final class DirichletFunctions {
       IExpr value = table.value(residue);
       return value == null ? F.NIL : value;
     }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.FULL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDALL);
-      newSymbol.putMessage(IPatternMatcher.SET, "invl", F.stringx(INVL));
-      super.setUp(newSymbol);
-    }
   }
 
   /**
@@ -147,7 +150,7 @@ public final class DirichletFunctions {
    * over the primitive character <code>chi*</code> of conductor <code>f</code> and the primes
    * dividing <code>k</code> but not <code>f</code>.
    */
-  private static final class DirichletL extends AbstractFunctionEvaluator {
+  private static final class DirichletL extends AbstractDirichletEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -202,23 +205,6 @@ public final class DirichletFunctions {
         return exactAtOne(table, engine);
       }
       return null;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.FULL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDALL);
-      newSymbol.putMessage(IPatternMatcher.SET, "invl", F.stringx(INVL));
-      super.setUp(newSymbol);
     }
   }
 

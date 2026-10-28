@@ -336,16 +336,13 @@ public final class LayoutSpec {
         cell.content = item.arg1();
         for (int i = 2; i <= item.argSize(); i++) {
           IExpr arg = item.get(i);
-          if (!arg.isRuleAST()) {
+          int id = optionId(arg);
+          if (id < 0) {
             continue;
           }
-          IExpr key = ((IAST) arg).arg1();
-          IExpr value = ((IAST) arg).arg2();
-          if (!key.isBuiltInSymbol()) {
-            continue;
-          }
+          IExpr value = arg.second();
           try {
-            switch (((IBuiltInSymbol) key).ordinal()) {
+            switch (id) {
               case ID.Background:
                 cell.background = value.isNone() ? null : ColorUtil.parseDirective(value);
                 break;
@@ -396,21 +393,33 @@ public final class LayoutSpec {
 
   // --------------------------------------------------------------------- option reading
 
+  /**
+   * The ordinal of the built-in symbol on the left-hand side of the rule <code>arg</code>.
+   *
+   * @return <code>-1</code> if <code>arg</code> is no rule or its key is no built-in symbol
+   */
+  private static int optionId(IExpr arg) {
+    if (arg.isRuleAST()) {
+      IExpr key = arg.first();
+      if (key.isBuiltInSymbol()) {
+        return ((IBuiltInSymbol) key).ordinal();
+      }
+    }
+    return -1;
+  }
+
   private void readOptions(IAST holder, int firstOptionIndex) {
     IExpr frameValue = null;
     IExpr dividersValue = null;
     for (int i = firstOptionIndex; i <= holder.argSize(); i++) {
       IExpr arg = holder.get(i);
-      if (!arg.isRuleAST()) {
+      int id = optionId(arg);
+      if (id < 0) {
         continue;
       }
-      IExpr key = ((IAST) arg).arg1();
-      IExpr value = ((IAST) arg).arg2();
-      if (!key.isBuiltInSymbol()) {
-        continue;
-      }
+      IExpr value = arg.second();
       try {
-        switch (((IBuiltInSymbol) key).ordinal()) {
+        switch (id) {
           case ID.Frame:
             frameValue = value;
             break;

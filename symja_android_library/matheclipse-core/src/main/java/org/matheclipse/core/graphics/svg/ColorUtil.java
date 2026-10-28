@@ -559,12 +559,14 @@ public final class ColorUtil {
     double all = dbl(value, Double.NaN);
     if (!Double.isNaN(all)) {
       return new double[] {all, all, all, all};
+    // CPD-OFF side specs parsed to doubles and to frame flags
     }
     if (value.isList() && ((IAST) value).argSize() >= 2) {
       IAST list = (IAST) value;
       if (list.arg1().isList() && list.arg2().isList()) {
         IAST lr = (IAST) list.arg1();
         IAST bt = (IAST) list.arg2();
+        // CPD-ON
         return new double[] {dbl(lr.arg1(), 0), dbl(lr.arg2(), 0), dbl(bt.arg1(), 0),
             dbl(bt.arg2(), 0)};
       }

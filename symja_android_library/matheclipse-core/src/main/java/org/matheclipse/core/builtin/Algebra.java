@@ -968,6 +968,7 @@ public class Algebra {
     }
 
     @Override
+    // CPD-OFF Numerator and Denominator read the Trig option alike
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean trig = false;
       if (ast.isAST2()) {
@@ -977,6 +978,7 @@ public class Algebra {
         }
         trig = options.isTrue(S.Trig);
       }
+      // CPD-ON
 
       return fractionalPartsRational(ast.arg1(), trig);
     }
@@ -2451,12 +2453,14 @@ public class Algebra {
       Object[] objects = jas.factorTerms(polyRat);
       java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
       java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+      // CPD-OFF integer factor setup with different catch paths
       SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
       try {
         GenPolynomial<edu.jas.arith.BigInteger> poly =
             (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
         FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
             FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+            // CPD-ON
 
         if (factorSquareFree) {
           map = factorAbstract.squarefreeFactors(poly);
@@ -2902,6 +2906,7 @@ public class Algebra {
   private static class Numerator extends AbstractFunctionEvaluator {
 
     @Override
+    // CPD-OFF Numerator and Denominator read the Trig option alike
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean trig = false;
       if (ast.isAST2()) {
@@ -2911,6 +2916,7 @@ public class Algebra {
         }
         trig = options.isTrue(S.Trig);
       }
+      // CPD-ON
 
       IExpr arg = ast.arg1();
       if (arg.isRational()) {
@@ -2993,6 +2999,22 @@ public class Algebra {
   private static boolean isPolynomialStructure(IExpr expr) {
     return expr.replaceAll(x -> x.isInexactNumber() ? F.C1 : F.NIL).orElse(expr)
         .isPolynomialStruct();
+  }
+
+  /**
+   * Print the &quot;poly&quot; message for the first of <code>p, q</code> which isn't a polynomial.
+   *
+   * @return <code>true</code> if a message was printed
+   */
+  private static boolean notPolynomialMessage(IAST ast, IExpr p, IExpr q, EvalEngine engine) {
+    IExpr notPolynomial =
+        !isPolynomialStructure(p) ? p : !isPolynomialStructure(q) ? q : F.NIL;
+    if (notPolynomial.isNIL()) {
+      return false;
+    }
+    // `1` is not a polynomial.
+    Errors.printMessage(ast.topHead(), "poly", F.list(notPolynomial), engine);
+    return true;
   }
 
   private static class PolynomialExtendedGCD extends AbstractFunctionOptionEvaluator {
@@ -3202,13 +3224,8 @@ public class Algebra {
       }
       IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
       IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
-      if (!isPolynomialStructure(expr1)) {
-        // `1` is not a polynomial.
-        return Errors.printMessage(ast.topHead(), "poly", F.list(expr1), engine);
-      }
-      if (!isPolynomialStructure(expr2)) {
-        // `1` is not a polynomial.
-        return Errors.printMessage(ast.topHead(), "poly", F.list(expr2), engine);
+      if (notPolynomialMessage(ast, expr1, expr2, engine)) {
+        return F.NIL;
       }
 
       if (!options[MODULUS_OPTION].isZero()) {
@@ -4814,16 +4831,8 @@ public class Algebra {
         arg1 = F.ExpandAll.of(engine, arg1);
         arg2 = F.ExpandAll.of(engine, arg2);
 
-        if (arg1.isZero() || arg2.isZero()) {
+        if (arg2.isZero() || notPolynomialMessage(ast, arg1, arg2, engine)) {
           return F.NIL;
-        }
-        if (!isPolynomialStructure(arg1)) {
-          // `1` is not a polynomial.
-          return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
-        }
-        if (!isPolynomialStructure(arg2)) {
-          // `1` is not a polynomial.
-          return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
         }
         IExpr option = options[MODULUS_OPTION];
         if (isModpMessage(S.PolynomialQuotient, option)) {
@@ -5031,13 +5040,8 @@ public class Algebra {
       // IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
-      if (!isPolynomialStructure(arg1)) {
-        // `1` is not a polynomial.
-        return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
-      }
-      if (!isPolynomialStructure(arg2)) {
-        // `1` is not a polynomial.
-        return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
+      if (notPolynomialMessage(ast, arg1, arg2, engine)) {
+        return F.NIL;
       }
 
       try {
@@ -5159,16 +5163,8 @@ public class Algebra {
       }
       IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
       IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
-      if (arg2.isZero()) {
+      if (arg2.isZero() || notPolynomialMessage(ast, arg1, arg2, engine)) {
         return F.NIL;
-      }
-      if (!isPolynomialStructure(arg1)) {
-        // `1` is not a polynomial.
-        return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
-      }
-      if (!isPolynomialStructure(arg2)) {
-        // `1` is not a polynomial.
-        return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
       try {
         IExpr option = options[MODULUS_OPTION];

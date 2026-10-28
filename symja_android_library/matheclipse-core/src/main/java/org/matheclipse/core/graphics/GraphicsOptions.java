@@ -3258,10 +3258,12 @@ public class GraphicsOptions {
     plotRange = expr;
   }
 
+  // CPD-OFF per-plot default option tables
   public static IBuiltInSymbol[] contourPlotDefaultOptionKeys() {
     return new IBuiltInSymbol[] {S.JSForm, S.Filling, S.Axes, S.PlotRange, S.$Scaling, S.Joined,
         S.PlotLegends, S.PlotLabel, S.AxesLabel, S.PlotStyle, S.GridLines, S.PlotLabels,
         S.FillingStyle, S.AspectRatio, S.Frame, S.ContourShading, S.ColorFunctionScaling,
+        // CPD-ON
         S.ContourStyle, S.Background, S.Epilog, //
         S.ImageSize, S.Ticks, S.AxesOrigin, S.AxesStyle, S.FrameStyle, S.FrameLabel,
         S.GridLinesStyle, S.ImagePadding, S.PlotRangePadding, S.Prolog, S.PlotRangeClipping};
@@ -3276,10 +3278,12 @@ public class GraphicsOptions {
         S.Automatic, S.Automatic, F.CEmptyList, S.True};
   }
 
+  // CPD-OFF per-plot default option tables
   public static IBuiltInSymbol[] listPlotDefaultOptionKeys() {
     return new IBuiltInSymbol[] {S.JSForm, S.Filling, S.Axes, S.PlotRange, S.$Scaling, S.Joined,
         S.PlotLegends, S.PlotLabel, S.AxesLabel, S.PlotStyle, S.GridLines, S.PlotLabels,
         S.FillingStyle, S.AspectRatio, S.Frame, S.DataRange, S.ChartLegends, S.FrameTicks,
+        // CPD-ON
         S.Background, S.Epilog, //
         S.ImageSize, S.Ticks, S.AxesOrigin, S.AxesStyle, S.FrameStyle, S.FrameLabel,
         S.GridLinesStyle, S.ImagePadding, S.PlotRangePadding, S.Prolog, S.PlotRangeClipping};

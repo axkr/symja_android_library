@@ -847,6 +847,20 @@ public class ComputationalGeometryFunctions {
   }
 
   /**
+   * Convert the zero-based point indices of a hull into one-based indices.
+   *
+   * @param hullVertices zero-based point indices
+   * @return a new array with every index incremented by one
+   */
+  private static int[] oneBasedIndices(int[] hullVertices) {
+    int[] vertexIndices = new int[hullVertices.length];
+    for (int i = 0; i < hullVertices.length; i++) {
+      vertexIndices[i] = hullVertices[i] + 1;
+    }
+    return vertexIndices;
+  }
+
+  /**
    * The convex hull of a list of three dimensional points as a <code>BoundaryMeshRegion</code> with
    * <code>Polygon</code> boundary cells.
    *
@@ -863,10 +877,7 @@ public class ComputationalGeometryFunctions {
     if (hullVertices.length < 4 || hullFaces.length < 4) {
       return F.NIL;
     }
-    int[] vertexIndices = new int[hullVertices.length];
-    for (int i = 0; i < hullVertices.length; i++) {
-      vertexIndices[i] = hullVertices[i] + 1;
-    }
+    int[] vertexIndices = oneBasedIndices(hullVertices);
     int[] sortedVertexIndices = vertexIndices.clone();
     Arrays.sort(sortedVertexIndices);
     int[] positions = positionsOfVertices(sortedVertexIndices, listOfPoints.argSize());
@@ -1230,10 +1241,7 @@ public class ComputationalGeometryFunctions {
         throw new IllegalArgumentException("degenerate hull");
       }
       // the vertices are listed in the order in which they appear in the input
-      int[] vertexIndices = new int[hullVertices.length];
-      for (int i = 0; i < hullVertices.length; i++) {
-        vertexIndices[i] = hullVertices[i] + 1;
-      }
+      int[] vertexIndices = oneBasedIndices(hullVertices);
       int[] sortedVertexIndices = vertexIndices.clone();
       Arrays.sort(sortedVertexIndices);
       int[] positions = positionsOfVertices(sortedVertexIndices, listOfPoints.argSize());
@@ -1827,6 +1835,7 @@ public class ComputationalGeometryFunctions {
      * @param p4 a point with 3 elements in list form (x,y,z coordinates)
      * @param engine
      */
+    // CPD-OFF short difference components, a helper would read worse
     private static IExpr coplanarPoints3D(IAST p1, IAST p2, IAST p3, IAST p4, EvalEngine engine) {
       IExpr x1 = p1.arg1();
       IExpr y1 = p1.arg2();
@@ -1839,6 +1848,7 @@ public class ComputationalGeometryFunctions {
       IExpr z3 = p3.arg3();
 
       IExpr a1 = z1.subtract(z2);
+      // CPD-ON
       IExpr b1 = y2.subtract(y1);
       IExpr a22 = x1.subtract(x3);
       IExpr b2 = y3.subtract(y1);
@@ -2015,6 +2025,7 @@ public class ComputationalGeometryFunctions {
       return calc;
     }
 
+    // CPD-OFF short difference components, a helper would read worse
     private static IExpr collinearPoints3D(IAST p1, IAST p2, IAST p3, EvalEngine engine) {
       IExpr x1 = p1.arg1();
       IExpr y1 = p1.arg2();
@@ -2027,6 +2038,7 @@ public class ComputationalGeometryFunctions {
       IExpr z3 = p3.arg3();
 
       // vector p2-p1
+      // CPD-ON
       IExpr x21 = x2.subtract(x1);
       IExpr y21 = y2.subtract(y1);
       IExpr z21 = z2.subtract(z1);

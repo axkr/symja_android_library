@@ -60,6 +60,7 @@ public class ListContourPlot extends ContourPlot {
     // Parse Options
     // the options array holds resolved values, not the rules the caller wrote,
     // so the option rules are read back off the original call
+    // CPD-OFF contour and density plots sample their own grids
     for (IExpr opt : originalAST) {
       if (opt.isRuleAST()) {
         IExpr key = ((IAST) opt).arg1();
@@ -68,6 +69,7 @@ public class ListContourPlot extends ContourPlot {
         if (key.isBuiltInSymbol()) {
           switch (((IBuiltInSymbol) key).ordinal()) {
             case ID.Contours:
+            // CPD-ON
               contoursOption = val; // Capture the full value (Integer, List, or Automatic)
               break;
             case ID.ContourStyle:
@@ -453,6 +455,7 @@ public class ListContourPlot extends ContourPlot {
           IASTAppendable group = F.ListAlloc();
           group.append(F.EdgeForm(S.None));
           group.append(color);
+          // CPD-OFF contour and density plots sample their own grids
           group.appendArgs(polygons);
           primitives.append(group);
         }
@@ -468,6 +471,7 @@ public class ListContourPlot extends ContourPlot {
         IExpr currentStyle = contourStyle;
         if (currentStyle == S.Automatic) {
           currentStyle = F.GrayLevel(0.5);
+          // CPD-ON
         } else if (currentStyle.isList()) {
           currentStyle = GraphicsOptions.getPlotStyle(currentStyle, k);
         }

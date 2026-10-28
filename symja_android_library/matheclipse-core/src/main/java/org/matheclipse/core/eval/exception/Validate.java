@@ -195,6 +195,7 @@ public final class Validate {
    */
   public static int[] checkListOfInts(IAST ast, IExpr arg, int minValue, int maxValue,
       EvalEngine engine) {
+    // CPD-OFF range test and message differ per validator
     if (arg.isList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -204,6 +205,7 @@ public final class Validate {
           for (int i = 1; i < list.size(); i++) {
             intValue = list.get(i).toIntDefault();
             if (intValue == Config.INVALID_INT) {
+            // CPD-ON
               // List of Java int numbers expected in `1`.
               Errors.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
               return null;
@@ -331,6 +333,7 @@ public final class Validate {
       if (n > 0) {
         return new int[] {n};
       }
+    // CPD-OFF range test and message differ per validator
     } else if (arg.isList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -340,6 +343,7 @@ public final class Validate {
           for (int i = 1; i < list.size(); i++) {
             intValue = list.get(i).toIntDefault();
             if (intValue <= 0) {
+            // CPD-ON
               // The dimension parameter `1` is expected to be a positive integer or a list of
               // positive integers
               Errors.printMessage(ast.topHead(), "posdim", F.list(arg), engine);
@@ -396,16 +400,6 @@ public final class Validate {
   }
 
   public static int checkNonNegativeIntType(IAST ast, int pos) {
-    if (ast.get(pos) instanceof IntegerSym) {
-      // IntegerSym always fits into an int number
-      int result = ast.get(pos).toIntDefault();
-      if (F.isNotPresent(result) || 0 > result) {
-        // Non-negative machine-sized integer expected at position `2` in `1`.
-        String str = Errors.getMessage("intnm", F.list(ast, F.ZZ(pos)), EvalEngine.get());
-        throw new ArgumentTypeException(str);
-      }
-      return result;
-    }
     if (ast.get(pos).isReal()) {
       int result = ast.get(pos).toIntDefault();
       if (F.isNotPresent(result) || 0 > result) {
@@ -421,16 +415,6 @@ public final class Validate {
   }
 
   public static int checkPositiveIntType(IAST ast, int pos) {
-    if (ast.get(pos) instanceof IntegerSym) {
-      // IntegerSym always fits into an int number
-      int result = ast.get(pos).toIntDefault();
-      if (F.isNotPresent(result) || 0 >= result) {
-        // Positive machine-sized integer expected at position `2` in `1`.
-        String str = Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
-        throw new ArgumentTypeException(str);
-      }
-      return result;
-    }
     if (ast.get(pos).isReal()) {
       int result = ast.get(pos).toIntDefault();
       if (F.isNotPresent(result) || 0 >= result) {
@@ -1111,16 +1095,26 @@ public final class Validate {
    *
    * @param expr the expression which should be an equation
    */
+  /**
+   * Append the expanded differences <code>a - last</code> of the equation
+   * <code>Equal(a, ..., last)</code> to <code>terms</code>. A relation between two lists holds
+   * componentwise, so <code>{x,y} == {1,2}</code> contributes one term per component instead of the
+   * single list <code>{x-1, y-2}</code>.
+   *
+   * @param equal an <code>Equal</code> with at least two arguments
+   * @param terms the expressions which must be <code>0</code>
+   */
+  public static void appendEqualDifferences(IAST equal, IASTAppendable terms) {
+    IExpr last = equal.last();
+    for (int i = 1; i < equal.argSize(); i++) {
+      IExpr temp = F.evalExpandAll(F.Subtract(equal.get(i), last));
+      appendListComponents(temp, terms);
+    }
+  }
+
   private static void checkEquation(IExpr expr, IASTAppendable termsEqualNumberList) {
     if (expr.isASTSizeGE(S.Equal, 3)) {
-      IAST equal = (IAST) expr;
-      IExpr last = equal.last();
-      for (int i = 1; i < equal.argSize(); i++) {
-        IExpr temp = F.evalExpandAll(F.Subtract(equal.get(i), last));
-        // a relation between two lists holds componentwise, so `{x,y} == {1,2}` contributes one
-        // term per component instead of the single list `{x-1, y-2}`
-        appendListComponents(temp, termsEqualNumberList);
-      }
+      appendEqualDifferences((IAST) expr, termsEqualNumberList);
 
     } else if (expr.isTrue()) {
       termsEqualNumberList.append(S.True);
@@ -1167,34 +1161,6 @@ public final class Validate {
       return Config.INVALID_INT;
     }
     return upTo;
-  }
-
-  /**
-   * Test if <code>expr</code> is a symbol or a string which can be converted into a symbol.
-   *
-   * @param expr
-   * @param ast
-   * @param engine
-   * @return {@link F#NIL} if <code>expr</code> cannot be converted into a symbol
-   * @deprecated use {@link #checkIdentifierHoldPattern(IExpr, IAST, EvalEngine)})
-   */
-  @Deprecated
-  public static IExpr checkIdentifier(final IExpr expr, IAST ast, EvalEngine engine) {
-    ISymbol sym = null;
-    if (expr.isString()) {
-      String identifier = expr.toString();
-      if (!Scanner.isIdentifier(identifier)) {
-        // Argument `1` at position `2` is expected to be a symbol.
-        return Errors.printMessage(ast.topHead(), "sym", F.list(expr, F.C1), engine);
-      }
-      sym = F.symbol(identifier, engine);
-    } else if (expr.isSymbol()) {
-      sym = (ISymbol) expr;
-    } else {
-      // Argument `1` at position `2` is expected to be a symbol.
-      return Errors.printMessage(ast.topHead(), "sym", F.list(expr, F.C1), engine);
-    }
-    return sym;
   }
 
   public static IExpr checkIdentifierHoldPattern(final IExpr expr, IAST ast, EvalEngine engine) {

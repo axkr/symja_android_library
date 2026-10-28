@@ -2,10 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
-import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
@@ -119,19 +116,8 @@ public class SourceCodeFunctions {
    * @return <code>-1</code> if the symbol has no real evaluator
    */
   private static int implementationStatus(ISymbol builtin) {
-    int ordinal = builtin.ordinal();
-    if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
-      int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
-      if (line > 0) {
-        IEvaluator evaluator = ((IBuiltInSymbol) builtin).getEvaluator();
-        if (evaluator != null //
-            && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
-            && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
-          return evaluator.status();
-        }
-      }
-    }
-    return -1;
+    IEvaluator evaluator = Documentation.implementingEvaluator(builtin);
+    return evaluator == null ? -1 : evaluator.status();
   }
 
   public static void initialize() {

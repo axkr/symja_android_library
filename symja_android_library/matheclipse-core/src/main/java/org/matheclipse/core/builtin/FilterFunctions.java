@@ -312,6 +312,7 @@ public class FilterFunctions {
       double[] spec = radiusAndSigma(ast.arg2());
       if (spec == null) {
         return F.NIL;
+      // CPD-OFF filter preamble; the caller needs the rank flag
       }
       IAST list = (IAST) ast.arg1();
       IntList dims = LinearAlgebraUtil.dimensions(list);
@@ -321,6 +322,7 @@ public class FilterFunctions {
       final boolean vector = dims.size() == 1;
       double[][] data = numericRows(list, vector);
       if (data == null) {
+      // CPD-ON
         return F.NIL;
       }
       double[] kernel = gaussianKernel((int) spec[0], spec[1], engine);
@@ -444,6 +446,7 @@ public class FilterFunctions {
       if (radius < 0) {
         // `1` is not a valid neighborhood range specification.
         return Errors.printMessage(S.LaplacianFilter, "bdrad", F.list(ast.arg2()), engine);
+      // CPD-OFF filter preamble; the caller needs the rank flag
       }
       IAST list = (IAST) ast.arg1();
       IntList dims = LinearAlgebraUtil.dimensions(list);
@@ -453,6 +456,7 @@ public class FilterFunctions {
       final boolean vector = dims.size() == 1;
       double[][] data = numericRows(list, vector);
       if (data == null || data[0].length == 0) {
+      // CPD-ON
         return F.NIL;
       }
       final double[][] filtered = laplacianFilter(data, radius, vector);

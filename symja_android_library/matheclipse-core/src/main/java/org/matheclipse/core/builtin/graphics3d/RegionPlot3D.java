@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
 import org.matheclipse.core.builtin.graphics.PlotEndpoints;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -44,14 +43,8 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     ast = PlotWrapper.stripFirstArgument(ast);
-    if (argSize < 4) {
+    if (argSize < 4 || !Plot3DTools.validRanges3D(ast, S.RegionPlot3D, engine)) {
       return F.NIL;
-    }
-    for (int i = 2; i <= 4; i++) {
-      IExpr range = ast.get(i);
-      if (!range.isList3() || !range.first().isSymbol()) {
-        return Errors.printMessage(S.RegionPlot3D, "pllim", F.list(range), engine);
-      }
     }
     IExpr field = outsideField(ast.arg1());
     if (field.isNIL()) {

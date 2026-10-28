@@ -453,12 +453,14 @@ public final class GraphicsOptions2D {
     if (value.isFalse() || value.isNone()) {
       java.util.Arrays.fill(frame, false);
       return;
+    // CPD-OFF option-rule loop of the 2D and the 3D option parsers
     }
     if (value.isList() && ((IAST) value).argSize() >= 2) {
       IAST list = (IAST) value;
       if (list.arg1().isList() && list.arg2().isList()) {
         // {{left, right}, {bottom, top}}
         IAST lr = (IAST) list.arg1();
+        // CPD-ON
         IAST bt = (IAST) list.arg2();
         frame[0] = lr.argSize() >= 1 && isEdgeDrawn(lr.arg1());
         frame[1] = lr.argSize() >= 2 && isEdgeDrawn(lr.arg2());

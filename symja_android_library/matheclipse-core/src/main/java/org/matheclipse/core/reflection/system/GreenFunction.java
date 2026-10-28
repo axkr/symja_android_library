@@ -441,15 +441,10 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     }
     IExpr y1 = y[0];
     IExpr y2 = y[1];
-    IExpr casoratian = engine.evaluate(F.Simplify(
-        S.Casoratian.of(engine, F.List(y1, y2), xVar)));
-    if (casoratian.isZero() || !casoratian.isFree(S.Casoratian, true)) {
-      // Proportional solutions mean the homogeneous problem has a solution of its own.
-      return F.NIL;
-    }
-    IExpr denominator = engine.evaluate(
-        F.Times(leading, F.subst(casoratian, xVar, matchPoint)));
-    if (denominator.isZero()) {
+    // Proportional solutions mean the homogeneous problem has a solution of its own.
+    IExpr denominator =
+        casoratianDenominator(F.List(y1, y2), leading, xVar, matchPoint, engine);
+    if (denominator.isNIL()) {
       return F.NIL;
     }
     IExpr below = engine.evaluate(F.Simplify(
@@ -459,6 +454,24 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     return engine.evaluate(F.Plus( //
         F.Times(below, F.UnitStep(F.Subtract(matchPoint, xVar))),
         F.Times(above, F.UnitStep(F.Subtract(xVar, F.Plus(matchPoint, F.C1))))));
+  }
+
+  /**
+   * The leading coefficient times the simplified Casoratian of the <code>solutions</code> at
+   * <code>matchPoint</code>.
+   *
+   * @return {@link F#NIL} if the Casoratian is zero or stays unevaluated, or if the product is
+   *         zero
+   */
+  private static IExpr casoratianDenominator(IAST solutions, IExpr leading, IExpr xVar,
+      IExpr matchPoint, EvalEngine engine) {
+    IExpr casoratian = engine.evaluate(F.Simplify(S.Casoratian.of(engine, solutions, xVar)));
+    if (casoratian.isZero() || !casoratian.isFree(S.Casoratian, true)) {
+      return F.NIL;
+    }
+    IExpr denominator = engine.evaluate(
+        F.Times(leading, F.subst(casoratian, xVar, matchPoint)));
+    return denominator.isZero() ? F.NIL : denominator;
   }
 
   /** The solutions of the homogeneous difference equation. */
@@ -483,13 +496,8 @@ public class GreenFunction extends AbstractFunctionEvaluator {
     for (IExpr element : basis) {
       fundamental.append(element);
     }
-    IExpr casoratian = engine.evaluate(F.Simplify(S.Casoratian.of(engine, fundamental, xVar)));
-    if (casoratian.isZero() || !casoratian.isFree(S.Casoratian, true)) {
-      return F.NIL;
-    }
-    IExpr denominator = engine.evaluate(
-        F.Times(leading, F.subst(casoratian, xVar, matchPoint)));
-    if (denominator.isZero()) {
+    IExpr denominator = casoratianDenominator(fundamental, leading, xVar, matchPoint, engine);
+    if (denominator.isNIL()) {
       return F.NIL;
     }
     IExpr numerator = basis.length == 1 //

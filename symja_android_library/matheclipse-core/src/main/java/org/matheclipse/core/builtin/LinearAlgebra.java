@@ -103,6 +103,14 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.vector.GenMatrix;
 
 public final class LinearAlgebra {
+  /** The options of <code>RowReduce</code> and of the functions built on row reduction. */
+  public static final IBuiltInSymbol[] ROW_REDUCE_OPTIONS =
+      new IBuiltInSymbol[] {S.Method, S.Modulus, S.Tolerance, S.ZeroTest};
+
+  /** The default values of {@link #ROW_REDUCE_OPTIONS}. */
+  public static final IExpr[] ROW_REDUCE_DEFAULTS =
+      new IExpr[] {S.Automatic, F.C0, S.Automatic, S.Automatic};
+
   public static class Adjugate extends AbstractMatrix1Matrix {
 
     public static FieldMatrix<IExpr> adjugateMatrix(FieldMatrix<IExpr> matrix,
@@ -1590,6 +1598,7 @@ public final class LinearAlgebra {
       }
       // switch to numeric calculation
       return numericEval(ast, engine);
+    // CPD-OFF eigen functions share the matrix preamble
     }
 
     @Override
@@ -1605,6 +1614,7 @@ public final class LinearAlgebra {
       }
       try {
         ComplexEigenDecomposition ced = orderedEigenDecomposition(matrix);
+        // CPD-ON
         IAST values = complexToList(ced.getEigenvalues(), maxValues);
         IAST vectors = F.mapRange(0, values.argSize(),
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
@@ -1884,6 +1894,7 @@ public final class LinearAlgebra {
         }
       }
       return true;
+    // CPD-OFF eigen functions share the matrix preamble
     }
 
     @Override
@@ -1899,6 +1910,7 @@ public final class LinearAlgebra {
       }
       try {
         // https://github.com/Hipparchus-Math/hipparchus/issues/337
+        // CPD-ON
         // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
         ComplexEigenDecomposition ced = orderedEigenDecomposition(matrix);
         return complexToList(ced.getEigenvalues(), maxValues);
@@ -3042,8 +3054,7 @@ public final class LinearAlgebra {
     private IExpr fromPolarCoordinates2(IExpr r, IExpr theta, final IAST ast, EvalEngine engine) {
       if (r.lessEqualThan(F.C0).isTrue() //
           || (theta.greaterThan(S.Pi).isTrue() || theta.lessEqualThan(F.CNPi).isTrue())) {
-        // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
-        return Errors.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
+        return badPointMessage(ast, engine);
       }
       return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
     }
@@ -3051,8 +3062,7 @@ public final class LinearAlgebra {
     private IExpr fromPolarCoordinates3(IExpr r, IExpr theta, IExpr phi, final IAST ast,
         EvalEngine engine) {
       if (isBadSphericalPoint(r, theta, phi)) {
-        // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
-        return Errors.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
+        return badPointMessage(ast, engine);
       }
       return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
           F.Times(r, F.Sin(theta), F.Sin(phi)));
@@ -3113,6 +3123,17 @@ public final class LinearAlgebra {
   }
 
   /**
+   * Print the message that the evaluation point <code>ast.arg1()</code> is not a valid set of
+   * polar or hyperspherical coordinates.
+   *
+   * @return <code>F.NIL</code>
+   */
+  private static IExpr badPointMessage(final IAST ast, EvalEngine engine) {
+    // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
+    return Errors.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
+  }
+
+  /**
    * Test if <code>{r, theta, phi}</code> is outside the range <code>r &gt; 0</code>,
    * <code>0 &lt; theta &lt; Pi</code>, <code>-Pi &lt; phi &lt;= Pi</code> of spherical
    * coordinates.
@@ -3136,8 +3157,7 @@ public final class LinearAlgebra {
     private IExpr fromSphericalCoordinates(IExpr r, IExpr theta, IExpr phi, final IAST ast,
         EvalEngine engine) {
       if (isBadSphericalPoint(r, theta, phi)) {
-        // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
-        return Errors.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
+        return badPointMessage(ast, engine);
       }
       return F.list(F.Times(r, F.Sin(theta), F.Cos(phi)), //
           F.Times(r, F.Sin(theta), F.Sin(phi)), //
@@ -5718,8 +5738,7 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.Method, S.Modulus, S.Tolerance, S.ZeroTest},
-          new IExpr[] {S.Automatic, F.C0, S.Automatic, S.Automatic});
+      setOptions(newSymbol, ROW_REDUCE_OPTIONS, ROW_REDUCE_DEFAULTS);
     }
   }
 
@@ -6380,8 +6399,7 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.Method, S.Modulus, S.Tolerance, S.ZeroTest},
-          new IExpr[] {S.Automatic, F.C0, S.Automatic, S.Automatic});
+      setOptions(newSymbol, ROW_REDUCE_OPTIONS, ROW_REDUCE_DEFAULTS);
     }
 
   }

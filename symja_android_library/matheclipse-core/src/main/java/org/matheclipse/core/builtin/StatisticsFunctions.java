@@ -475,6 +475,7 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 1 or 2 arguments
+      // CPD-OFF sibling distribution functions with their own dispatch
       if (ast.size() == 2 || ast.size() == 3) {
         try {
           if (ast.arg1().isAST()) {
@@ -486,6 +487,7 @@ public class StatisticsFunctions {
                 xArg = ast.arg2();
               }
               return evaluator.inverseCDF(dist, xArg, engine);
+              // CPD-ON
             }
           }
         } catch (RuntimeException rex) {
@@ -671,6 +673,7 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // CPD-OFF sibling distribution functions with their own dispatch
       if (ast.isAST1() || ast.isAST2()) {
         // check because of pure function form ?
         try {
@@ -682,6 +685,7 @@ public class StatisticsFunctions {
               if (ast.isAST2()) {
                 xArg = ast.arg2();
               }
+              // CPD-ON
               return evaluator.cdf(dist, xArg, engine);
             }
           }
@@ -1756,6 +1760,7 @@ public class StatisticsFunctions {
   private static class Expectation extends AbstractDistributionQuery {
 
     @Override
+    // CPD-OFF sibling distribution functions with their own dispatch
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize != 2) {
@@ -1767,6 +1772,7 @@ public class StatisticsFunctions {
         if (xExpr.isAST(S.Conditioned, 3)) {
           // E(expr | pred) == E(expr*Boole(pred)) / P(pred)
           return conditionedExpectation(S.Expectation, S.Probability, (IAST) xExpr, arg2, engine);
+          // CPD-ON
         }
         if (xExpr.isFunction() && arg2.isList()) {
           return dataMean(xExpr, (IAST) arg2);
@@ -2097,6 +2103,7 @@ public class StatisticsFunctions {
 
 
     @Override
+    // CPD-OFF sibling distribution functions with their own dispatch
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize != 2) {
@@ -2108,6 +2115,7 @@ public class StatisticsFunctions {
         if (xExpr.isAST(S.Conditioned, 3)) {
           // E(expr | pred) == E(expr*Boole(pred)) / P(pred)
           return conditionedExpectation(S.NExpectation, S.NProbability, (IAST) xExpr, arg2, engine);
+          // CPD-ON
         }
         if (xExpr.isFunction() && arg2.isList()) {
           return engine.evalN(dataMean(xExpr, (IAST) arg2));
@@ -5060,15 +5068,9 @@ public class StatisticsFunctions {
       }
       if (arg1.isAST()) {
         IAST dist = (IAST) arg1;
-        if (dist.head().isSymbol()) {
-          ISymbol head = (ISymbol) dist.head();
-          if (head instanceof IBuiltInSymbol) {
-            IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-            if (evaluator instanceof IStatistics) {
-              IStatistics distribution = (IStatistics) evaluator;
-              return distribution.skewness(dist);
-            }
-          }
+        IStatistics distribution = dist.headInstanceOf(IStatistics.class);
+        if (distribution != null) {
+          return distribution.skewness(dist);
         }
       }
       return F.NIL;
@@ -5526,19 +5528,13 @@ public class StatisticsFunctions {
 
         } else if (arg1.isAST()) {
           IAST dist = (IAST) arg1;
-          if (dist.head().isSymbol()) {
-            ISymbol head = (ISymbol) dist.head();
-            if (head instanceof IBuiltInSymbol) {
-              IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-              if (evaluator instanceof IStatistics) {
-                IStatistics distribution = (IStatistics) evaluator;
-                IExpr variance = distribution.variance(dist);
-                if (variance.isPresent()) {
-                  return variance;
-                }
-                return numericVariance(dist, engine);
-              }
+          IStatistics distribution = dist.headInstanceOf(IStatistics.class);
+          if (distribution != null) {
+            IExpr variance = distribution.variance(dist);
+            if (variance.isPresent()) {
+              return variance;
             }
+            return numericVariance(dist, engine);
           }
         } else if (arg1.isNumber()) {
           // Rectangular array expected at position `1` in `2`.

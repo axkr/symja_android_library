@@ -85,6 +85,7 @@ public class DensityPlot extends ListPlot {
     double[] yRange = parseRange(yIter, engine);
     if (yRange == null || !yIter.isList() || !yIter.first().isSymbol()) {
       // Range specification `1` is not of the form {x, xmin, xmax}.
+      // CPD-OFF contour and density plots sample their own grids
       return Errors.printMessage(S.DensityPlot, "pllim", F.list(yIter), engine);
     }
 
@@ -93,12 +94,14 @@ public class DensityPlot extends ListPlot {
 
     ISymbol xVar = (ISymbol) ((IAST) xIter).arg1();
     ISymbol yVar = (ISymbol) ((IAST) yIter).arg1();
+    // CPD-ON
 
     RegionFunctionFilter region = RegionFunctionFilter.of(
         GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
     IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
 
     // 3. Generate Grid
+    // CPD-OFF contour and density plots sample their own grids
     int gridX = plotPoints;
     int gridY = plotPoints;
     double[][] zGrid = new double[gridX + 1][gridY + 1];
@@ -107,7 +110,6 @@ public class DensityPlot extends ListPlot {
 
     double minZ = Double.MAX_VALUE;
     double maxZ = -Double.MAX_VALUE;
-    // CPD-OFF grid sampling kept per plot, the numeric evaluation differs
     boolean[][] defined = new boolean[gridX + 1][gridY + 1];
 
     for (int i = 0; i <= gridX; i++) {

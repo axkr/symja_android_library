@@ -107,9 +107,8 @@ public class MarginalDistribution extends AbstractFunctionEvaluator implements I
 
     if (indices.length == 1) {
       int k = indices[0];
-      IExpr m_k = (mu == null) ? F.C0 : evaluatePart(mu, engine, k);
-      IExpr var_k = evaluatePart(sigma, engine, k, k);
-      IExpr s_k = engine.evaluate(F.Sqrt(var_k));
+      IExpr m_k = marginalMean(mu, k, engine);
+      IExpr s_k = marginalScale(sigma, k, engine);
 
       // Mathematically, a t-distribution with 1 degree of freedom is a Cauchy distribution.
       if (nu.isOne()) {
@@ -213,9 +212,9 @@ public class MarginalDistribution extends AbstractFunctionEvaluator implements I
 
     if (indices.length == 1) {
       int k = indices[0];
-      IExpr m_k = (mu == null) ? F.C0 : evaluatePart(mu, engine, k);
-      IExpr var_k = evaluatePart(sigma, engine, k, k);
-      IExpr s_k = engine.evaluate(F.Sqrt(var_k)); // NormalDistribution uses standard deviation
+      IExpr m_k = marginalMean(mu, k, engine);
+      // NormalDistribution uses standard deviation
+      IExpr s_k = marginalScale(sigma, k, engine);
       return F.NormalDistribution(m_k, s_k);
     }
 
@@ -256,9 +255,22 @@ public class MarginalDistribution extends AbstractFunctionEvaluator implements I
   }
 
   /**
+   * The <code>k</code>-th element of the location vector <code>mu</code>, <code>0</code> if
+   * <code>mu == null</code>.
+   */
+  private static IExpr marginalMean(IExpr mu, int k, EvalEngine engine) {
+    return (mu == null) ? F.C0 : evaluatePart(mu, engine, k);
+  }
+
+  /** The square root of the <code>k</code>-th diagonal element of the matrix <code>sigma</code>. */
+  private static IExpr marginalScale(IExpr sigma, int k, EvalEngine engine) {
+    return engine.evaluate(F.Sqrt(evaluatePart(sigma, engine, k, k)));
+  }
+
+  /**
    * Helper to safely evaluate the Part of an expression (matrix/vector extraction)
    */
-  private IExpr evaluatePart(IExpr expr, EvalEngine engine, int... indices) {
+  private static IExpr evaluatePart(IExpr expr, EvalEngine engine, int... indices) {
     IASTAppendable partAST = F.ast(S.Part);
     partAST.append(expr);
     for (int idx : indices) {

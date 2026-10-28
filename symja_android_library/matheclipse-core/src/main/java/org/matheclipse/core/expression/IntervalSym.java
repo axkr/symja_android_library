@@ -301,6 +301,7 @@ public class IntervalSym {
             if (dMax < 0) {
               result.append(F.list(F.CNInfinity, F.Cot(max)));
               result.append(F.list(F.Cot(min), F.CInfinity));
+            // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
             } else {
               if (dMin < dMax) {
                 result.append(F.list(F.CNInfinity, F.Cot(min)));
@@ -310,6 +311,7 @@ public class IntervalSym {
               }
             }
           } else {
+          // CPD-ON
             if (dMax < 0) {
               if (dMin < dMax) {
                 result.append(F.list(F.Cot(max), F.CInfinity));
@@ -317,6 +319,7 @@ public class IntervalSym {
               } else {
                 result.append(F.list(F.CNInfinity, F.CInfinity));
               }
+            // CPD-OFF the same interval operation on 2-tuple and on 4-tuple intervals
             } else {
               // dMin < 0 <= dMax: the interval crosses a single pole (Cot is decreasing, so the
               // value can only "increase" across a pole). The image splits into two rays with a
@@ -326,6 +329,7 @@ public class IntervalSym {
                 result.append(F.list(F.Cot(max), F.CInfinity));
               } else {
                 result.append(F.list(F.CNInfinity, F.CInfinity));
+                // CPD-ON
               }
             }
           }
@@ -347,7 +351,10 @@ public class IntervalSym {
     }, (min, max, result, index) -> {
       if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
         result.append(F.list(F.CNInfinity, F.Coth(min)));
-        result.append(F.list(F.Coth(max), F.CInfinity));
+        if (!max.isZero()) {
+          // an end at 0 only adds the limit -Infinity from the left
+          result.append(F.list(F.Coth(max), F.CInfinity));
+        }
         return true;
       }
       return false;
@@ -372,14 +379,18 @@ public class IntervalSym {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
       if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        result.append(F.list(F.Csch(max), F.Csch(min)));
+        // Csch is decreasing on (0, Infinity) with a pole at 0: Csch(0+) -> +Infinity.
+        result.append(F.list(F.Csch(max), min.isZero() ? F.CInfinity : F.Csch(min)));
         return true;
       }
       return false;
     }, (min, max, result, index) -> {
       if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
         result.append(F.list(F.CNInfinity, F.Csch(min)));
-        result.append(F.list(F.Csch(max), F.CInfinity));
+        if (!max.isZero()) {
+          // an end at 0 only adds the limit -Infinity from the left
+          result.append(F.list(F.Csch(max), F.CInfinity));
+        }
         return true;
       }
       return false;

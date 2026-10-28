@@ -443,6 +443,12 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    /** The real part <code>-Arg(1-I*w)/2+Arg(1+I*w)/2</code> of <code>ArcTan(w)</code>. */
+    private static IExpr reArcTan(IExpr w) {
+      return F.Plus(F.Times(F.CN1D2, F.Arg(F.Plus(F.C1, F.Times(F.CNI, w)))),
+          F.Times(F.C1D2, F.Arg(F.Plus(F.C1, F.Times(F.CI, w)))));
+    }
+
     /**
      * Complex expand expressions <code>Re( head(z) )</code>, where <code>x</code> is the real part
      * of <code>z</code> and <code>y</code> is the imaginary part of <code>z</code>.
@@ -463,9 +469,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
         }
         case ID.ArcCot: {
           // -Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2
-          IExpr v1 = F.Power(F.Plus(x, F.Times(F.CI, y)), F.CN1);
-          return F.Plus(F.Times(F.CN1D2, F.Arg(F.Plus(F.C1, F.Times(F.CNI, v1)))),
-              F.Times(F.C1D2, F.Arg(F.Plus(F.C1, F.Times(F.CI, v1)))));
+          return reArcTan(F.Power(F.Plus(x, F.Times(F.CI, y)), F.CN1));
         }
         case ID.ArcCsc: {
           // Arg(Sqrt(1-1/(x+I*y)^2)+I/(x+I*y))
@@ -486,9 +490,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
         }
         case ID.ArcTan: {
           // -Arg(1-I*(x+I*y))/2+Arg(1+I*(x+I*y))/2
-          IExpr v1 = F.Plus(x, F.Times(F.CI, y));
-          return F.Plus(F.Times(F.CN1D2, F.Arg(F.Plus(F.C1, F.Times(F.CNI, v1)))),
-              F.Times(F.C1D2, F.Arg(F.Plus(F.C1, F.Times(F.CI, v1)))));
+          return reArcTan(F.Plus(x, F.Times(F.CI, y)));
         }
         case ID.ArcCosh: {
           return F.Times(F.C1D2, arcCoshParts(x, y)[1]);

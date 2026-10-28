@@ -547,11 +547,16 @@ public final class BooleanFunctions {
       return arr;
     }
 
-    public IAST literals2BooleanList(final SortedSet<Literal> literals, Object2IntMap<String> map) {
-      IASTMutable list = F.astMutable(S.List, map.size());
-      for (int i = 0; i < map.size(); i++) {
+    private static IASTMutable nullList(int size) {
+      IASTMutable list = F.astMutable(S.List, size);
+      for (int i = 0; i < size; i++) {
         list.set(i + 1, S.Null);
       }
+      return list;
+    }
+
+    public IAST literals2BooleanList(final SortedSet<Literal> literals, Object2IntMap<String> map) {
+      IASTMutable list = nullList(map.size());
       for (Literal a : literals) {
         int val = map.getInt(a.name());
         if (val != -1) {
@@ -567,10 +572,7 @@ public final class BooleanFunctions {
 
     public IAST literals2VariableList(final SortedSet<Literal> literals,
         Object2IntMap<String> map) {
-      IASTMutable list = F.astMutable(S.List, map.size());
-      for (int i = 0; i < map.size(); i++) {
-        list.set(i + 1, S.Null);
-      }
+      IASTMutable list = nullList(map.size());
 
       for (Literal a : literals) {
         final int val = map.getInt(a.name());
@@ -777,6 +779,21 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * Evaluate <code>head(x)</code>: return <code>true</code> if the result is <code>True</code>,
+   * otherwise append a result which isn't <code>False</code> to the <code>collector</code>.
+   */
+  private static boolean collectUnlessTrue(IExpr x, IExpr head, IASTAppendable collector,
+      EvalEngine engine) {
+    IExpr temp = engine.evaluate(F.unaryAST1(head, x));
+    if (temp.isTrue()) {
+      return true;
+    } else if (!temp.isFalse()) {
+      collector.append(temp);
+    }
+    return false;
+  }
+
   private static class AnyTrue extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -796,21 +813,10 @@ public final class BooleanFunctions {
 
     public IExpr anyTrue(IAST list, IExpr head, EvalEngine engine) {
       IASTAppendable logicalOr = F.Or();
-      if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine))) {
+      if (list.exists(x -> collectUnlessTrue(x, head, logicalOr, engine))) {
         return S.True;
       }
       return logicalOr.isAST0() ? S.False : logicalOr;
-    }
-
-    private static boolean anyTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector,
-        EvalEngine engine) {
-      IExpr temp = engine.evaluate(F.unaryAST1(head, x));
-      if (temp.isTrue()) {
-        return true;
-      } else if (!temp.isFalse()) {
-        resultCollector.append(temp);
-      }
-      return false;
     }
 
     @Override
@@ -3500,6 +3506,7 @@ public final class BooleanFunctions {
       }
       if (ast.isAST0()) {
         return S.False;
+      // CPD-OFF mirrored logic and comparison evaluators
       }
       if (ast.isAST1()) {
         return F.Not(ast.arg1());
@@ -3510,6 +3517,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = engine.evaluate(ast.get(i));
         if (arg.isFalse()) {
+        // CPD-ON
           return S.True;
         } else if (arg.isTrue()) {
           evaled = true;
@@ -3566,22 +3574,18 @@ public final class BooleanFunctions {
       if (arg1.isInterval()) {
         COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1, x -> x.isNegativeResult(),
             x -> x.isNonNegativeResult());
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       if (arg1.isIntervalData()) {
         COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
             (x, closed) -> closed ? x.isNegativeResult() : (x.isNegativeResult() || x.isZero()), //
             (x, closed) -> x.isNonNegativeResult());
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       return F.NIL;
@@ -3617,21 +3621,10 @@ public final class BooleanFunctions {
 
     public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
       IASTAppendable logicalNor = F.ast(S.Nor);
-      if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine))) {
+      if (list.exists(x -> collectUnlessTrue(x, head, logicalNor, engine))) {
         return S.False;
       }
       return logicalNor.isAST0() ? S.True : logicalNor;
-    }
-
-    private static boolean noneTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector,
-        EvalEngine engine) {
-      IExpr temp = engine.evaluate(F.unaryAST1(head, x));
-      if (temp.isTrue()) {
-        return true;
-      } else if (!temp.isFalse()) {
-        resultCollector.append(temp);
-      }
-      return false;
     }
 
     @Override
@@ -3669,22 +3662,18 @@ public final class BooleanFunctions {
       if (arg1.isInterval()) {
         COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1, x -> x.isNonNegativeResult(),
             x -> x.isNegativeResult() || x.isZero());
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       if (arg1.isIntervalData()) {
         COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
             (x, closed) -> x.isNonNegativeResult(), //
             (x, closed) -> closed ? x.isNegativeResult() : (x.isNegativeResult() || x.isZero()));
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       return F.NIL;
@@ -3730,22 +3719,18 @@ public final class BooleanFunctions {
       if (arg1.isInterval()) {
         COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1,
             x -> x.isNegativeResult() || x.isZero(), x -> x.isNonNegativeResult());
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       if (arg1.isIntervalData()) {
         COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
             (x, closed) -> x.isNegativeResult() || x.isZero(), //
             (x, closed) -> closed ? x.isPositiveResult() : x.isNonNegativeResult());
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       return F.NIL;
@@ -3770,6 +3755,7 @@ public final class BooleanFunctions {
       }
       if (ast.isAST0()) {
         return S.True;
+      // CPD-OFF mirrored logic and comparison evaluators
       }
       if (ast.isAST1()) {
         return F.Not(ast.arg1());
@@ -3780,6 +3766,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = engine.evaluate(ast.get(i));
         if (arg.isTrue()) {
+        // CPD-ON
           return S.False;
         } else if (arg.isFalse()) {
           evaled = true;
@@ -3967,22 +3954,18 @@ public final class BooleanFunctions {
       if (arg1.isInterval()) {
         COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1, x -> x.isPositiveResult(),
             x -> x.isNegativeResult() || x.isZero());
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       if (arg1.isIntervalData()) {
         COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
             (x, closed) -> closed ? x.isPositiveResult() : x.isNonNegativeResult(), //
             (x, closed) -> x.isNegativeResult() || x.isZero());
-        if (forAll == COMPARE_TERNARY.TRUE) {
-          return S.True;
-        }
-        if (forAll == COMPARE_TERNARY.FALSE) {
-          return S.False;
+        IExpr result = IExpr.convertToExpr(forAll);
+        if (result.isPresent()) {
+          return result;
         }
       }
       return F.NIL;
@@ -3999,6 +3982,7 @@ public final class BooleanFunctions {
     }
   }
 
+  // CPD-OFF mirrored logic and comparison evaluators
   private static final class SameQ extends AbstractCoreFunctionEvaluator
       implements IPredicate, IComparatorFunction {
     @Override
@@ -4007,6 +3991,7 @@ public final class BooleanFunctions {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
           return Predicates.isSameQ(temp.arg1(), temp.arg2()) ? S.True : S.False;
+          // CPD-ON
         }
         if (temp.existsLeft((x, y) -> !Predicates.isSameQ(x, y))) {
           return S.False;
@@ -4296,6 +4281,7 @@ public final class BooleanFunctions {
     }
   }
 
+  // CPD-OFF mirrored logic and comparison evaluators
   private static final class UnsameQ extends AbstractCoreFunctionEvaluator
       implements IPredicate, IComparatorFunction {
     @Override
@@ -4304,6 +4290,7 @@ public final class BooleanFunctions {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
           return Predicates.isSameQ(temp.arg1(), temp.arg2()) ? S.False : S.True;
+          // CPD-ON
         }
         int i = 2;
         int j;

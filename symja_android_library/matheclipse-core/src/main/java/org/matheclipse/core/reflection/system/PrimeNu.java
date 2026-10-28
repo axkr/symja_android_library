@@ -43,6 +43,7 @@ public class PrimeNu extends AbstractFunctionOptionEvaluator implements IntUnary
 
     if (arg1.isInexactNumber()) {
       // Argument `1` in `2` is not an exact number.
+      // CPD-OFF PrimeOmega and PrimeNu preamble with several exits
       return Errors.printMessage(S.PrimeNu, "exact", F.list(arg1, ast), engine);
     }
     if (!options[0].isTrue() && !options[0].isFalse()) {
@@ -54,6 +55,7 @@ public class PrimeNu extends AbstractFunctionOptionEvaluator implements IntUnary
     }
 
     if (arg1.isOne() || arg1.isMinusOne()) {
+    // CPD-ON
       return F.C0;
     }
 

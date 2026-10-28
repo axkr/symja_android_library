@@ -58,10 +58,7 @@ public final class JASModular<C extends GcdRingElem<C> & Modular> {
   private JASModular(IAST varList, ModularRingFactory<C> ringFactory, TermOrder termOrder) {
     this.fRingFactory = ringFactory;
     this.fVariables = varList;
-    String[] vars = new String[varList.argSize()];
-    for (int i = 0; i < varList.argSize(); i++) {
-      vars[i] = varList.get(i + 1).toString();
-    }
+    String[] vars = JASConvert.variableNames(varList);
     this.fPolyFactory = new GenPolynomialRing<C>(ringFactory, varList.argSize(), termOrder, vars);
   }
 

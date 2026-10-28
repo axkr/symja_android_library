@@ -176,6 +176,7 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
       if (result.isNIL() && s instanceof INumber && a instanceof INumber) {
         // a real and a complex argument, or a second argument without a positive real part
         try {
+          // CPD-OFF parallel apfloat Zeta kernels
           Apcomplex value = ApcomplexZetaMath.hurwitzZeta(((INumber) s).apcomplexValue(),
               ((INumber) a).apcomplexValue());
           return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
@@ -183,6 +184,7 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
           Errors.rethrowsInterruptException(ex);
         }
       }
+      // CPD-ON
       return result;
     }
     return NIL;

@@ -112,14 +112,7 @@ final class SvgLayout {
     }
     LayoutSpec spec = LayoutSpec.forColumn(expr, items, 2, LayoutSpec.Units.POINTS);
     // GraphicsColumn[{...}, alignment, s]
-    IExpr alignment = positionalArg(expr, 2);
-    if (alignment != null) {
-      double h = LayoutSpec.alignFraction(alignment, 0);
-      if (!Double.isNaN(h)) {
-        Arrays.fill(spec.colAlignH, h);
-      }
-    }
-    applyPositionalSpacing(spec, positionalArg(expr, 3));
+    applyColumnPositionals(spec, expr);
     return render(spec, Mode.COLUMN, withSVGTag);
   }
 
@@ -178,14 +171,7 @@ final class SvgLayout {
       options.parse(expr, new PrimitiveCollector(options.imageSize[0]));
       spec = LayoutSpec.forColumn(expr, (IAST) expr.arg1(), 2, LayoutSpec.Units.POINTS);
       // Column[{...}, alignment, spacing]
-      IExpr alignment = positionalArg(expr, 2);
-      if (alignment != null) {
-        double h = LayoutSpec.alignFraction(alignment, 0);
-        if (!Double.isNaN(h)) {
-          Arrays.fill(spec.colAlignH, h);
-        }
-      }
-      applyPositionalSpacing(spec, positionalArg(expr, 3));
+      applyColumnPositionals(spec, expr);
     } else if (expr.isAST(S.Row)) {
       // Row[{a, b, c}, s] puts s between the items
       IAST items = (IAST) expr.arg1();
@@ -333,6 +319,21 @@ final class SvgLayout {
     }
     IExpr arg = expr.get(index);
     return arg.isRuleAST() ? null : arg;
+  }
+
+  /**
+   * The positional alignment (argument 2) and spacing (argument 3) of a column layout
+   * <code>expr</code>.
+   */
+  private static void applyColumnPositionals(LayoutSpec spec, IAST expr) {
+    IExpr alignment = positionalArg(expr, 2);
+    if (alignment != null) {
+      double h = LayoutSpec.alignFraction(alignment, 0);
+      if (!Double.isNaN(h)) {
+        Arrays.fill(spec.colAlignH, h);
+      }
+    }
+    applyPositionalSpacing(spec, positionalArg(expr, 3));
   }
 
   private static void applyPositionalSpacing(LayoutSpec spec, IExpr value) {

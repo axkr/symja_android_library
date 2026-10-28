@@ -56,6 +56,28 @@ public final class UniformFlags {
   public static final int ALL = (1 << 11) - 1;
 
   /**
+   * Merge the accumulated type flags of appended arguments into the type flags of a list.
+   *
+   * @param current the accumulated type flags of the list before the arguments were appended
+   * @param argFlags the accumulated type flags of the appended arguments or {@link #UNKNOWN} if
+   *        they were not determined
+   * @param sizeBefore the size of the list (including the head) before the arguments were
+   *        appended
+   * @return the new accumulated type flags of the list
+   */
+  static int merge(int current, int argFlags, int sizeBefore) {
+    if (sizeBefore == 1) {
+      // the appended expressions are the first arguments
+      return argFlags;
+    }
+    if (sizeBefore > 1 && current != UNKNOWN && argFlags != UNKNOWN) {
+      // example: (Integer | Rational) & (Fraction | Rational) = Rational
+      return current & argFlags;
+    }
+    return UNKNOWN;
+  }
+
+  /**
    * Get the type mask of the arguments which can never be equal to the given <code>expr</code>.
    * <p>
    * A mask is only derived for the expressions which

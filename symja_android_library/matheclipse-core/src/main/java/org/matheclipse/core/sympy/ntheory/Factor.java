@@ -368,6 +368,18 @@ public class Factor {
     }
   }
 
+  /**
+   * The pair <code>(result * Product(p^(e/g)), g)</code> over the prime factors <code>p^e</code> in
+   * <code>factors</code>.
+   */
+  private static IPair rootPair(BigInteger result, java.util.Map<BigInteger, Long> factors,
+      long g) {
+    for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
+      result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
+    }
+    return F.pair(F.ZZ(result), F.ZZ(g));
+  }
+
   private static IPair done(BigInteger n, java.util.Map<BigInteger, Long> factors, long g,
       long multi) {
     g = BigInteger.valueOf(g).gcd(BigInteger.valueOf(multi)).longValue();
@@ -375,11 +387,7 @@ public class Factor {
       return F.NIL;
     }
     factors.put(n, factors.getOrDefault(n, 0L) + multi);
-    BigInteger result = BigInteger.ONE;
-    for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
-      result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
-    }
-    return F.pair(F.ZZ(result), F.ZZ(g));
+    return rootPair(BigInteger.ONE, factors, g);
   }
 
   /**
@@ -418,11 +426,7 @@ public class Factor {
       if (m > 1) {
         return F.NIL;
       }
-      BigInteger result = BigInteger.ONE;
-      for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
-        result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
-      }
-      return F.pair(F.ZZ(result), F.ZZ(g));
+      return rootPair(BigInteger.ONE, factors, g);
     }
     // divide by 2
     if (nextP < 3) {
@@ -481,21 +485,13 @@ public class Factor {
           }
           factors.put(BigInteger.valueOf(p), t);
           if (n.equals(BigInteger.ONE)) {
-            BigInteger result = BigInteger.ONE;
-            for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
-              result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g1)));
-            }
-            return F.pair(F.ZZ(result), F.ZZ(g1));
+            return rootPair(BigInteger.ONE, factors, g1);
           } else if (g == 0 || g1 < g) {
             // If g is updated
             g = g1;
             BigInteger[] mr = iroot(n.pow((int) multi), (int) g);
             if (mr[1].signum() == 0) {
-              BigInteger result = mr[0];
-              for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
-                result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
-              }
-              return F.pair(F.ZZ(result), F.ZZ(g));
+              return rootPair(mr[0], factors, g);
             } else if (MachinePrime.isPrime(g)) {
               return F.NIL;
             }

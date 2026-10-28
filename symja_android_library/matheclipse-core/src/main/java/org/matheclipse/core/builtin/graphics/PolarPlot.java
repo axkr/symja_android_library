@@ -50,6 +50,7 @@ public class PolarPlot extends Plot {
       final IAST listOfLines = polarPlotToListPoints(function, rangeList, ast, graphicsOptions,
           engine,
           GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic).toIntDefault(-1),
+          // CPD-OFF sibling plot pipelines with different option sets
           GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1),
           GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
 
@@ -63,6 +64,7 @@ public class PolarPlot extends Plot {
       IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
 
       if (graphicsPrimitives.isPresent()) {
+      // CPD-ON
         // the polar scale is drawn first so that it sits behind the curve
         IAST polar = polarScale(GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False),
             GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None),

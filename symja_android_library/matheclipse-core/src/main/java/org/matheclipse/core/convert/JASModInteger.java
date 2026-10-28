@@ -44,10 +44,7 @@ public class JASModInteger {
   public JASModInteger(final IAST varList, ModLongRing ringFactory, TermOrder termOrder) {
     this.fRingFactory = ringFactory;
     this.fVariables = varList;
-    String[] vars = new String[fVariables.argSize()];
-    for (int i = 0; i < fVariables.argSize(); i++) {
-      vars[i] = fVariables.get(i + 1).toString();
-    }
+    String[] vars = JASConvert.variableNames(varList);
     this.fTermOrder = termOrder;
     this.fPolyFactory =
         new GenPolynomialRing<ModLong>(fRingFactory, fVariables.argSize(), fTermOrder, vars);

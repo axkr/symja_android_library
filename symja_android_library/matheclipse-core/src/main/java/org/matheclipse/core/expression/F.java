@@ -9357,6 +9357,7 @@ public class F extends S {
     }
   }
 
+  // CPD-OFF Plus and Times factory twins on the hot construction path
   private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
     final boolean test1 = t.test(a1);
     final boolean test2 = t.test(a2);
@@ -9380,6 +9381,7 @@ public class F extends S {
     if (a1.compareTo(a2) > 0) {
       // swap arguments
       return new B2.Plus(a2, a1);
+      // CPD-ON
     }
     return new B2.Plus(a1, a2);
   }
@@ -12086,6 +12088,7 @@ public class F extends S {
     return ast(Times, initialCapacity);
   }
 
+  // CPD-OFF Plus and Times factory twins on the hot construction path
   private static IASTMutable timesOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
     final boolean test1 = t.test(a1);
     final boolean test2 = t.test(a2);
@@ -12109,6 +12112,7 @@ public class F extends S {
     if (a1.compareTo(a2) > 0) {
       // swap arguments
       return new B2.Times(a2, a1);
+      // CPD-ON
     }
     return new B2.Times(a1, a2);
   }

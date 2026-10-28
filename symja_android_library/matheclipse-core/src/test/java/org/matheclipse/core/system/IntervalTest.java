@@ -1104,6 +1104,10 @@ public class IntervalTest extends ExprEvaluatorTestCase {
     check("Coth(Interval({-1,2}))", "Interval({-Infinity,-Coth(1)},{Coth(2),Infinity})");
     check("Csch(Interval({-1,1}))", "Interval({-Infinity,-Csch(1)},{Csch(1),Infinity})");
     check("Coth(Interval({0,2}))", "Interval({Coth(2),Infinity})");
+    // an end at the pole 0 contributes the one-sided infinite limit only
+    check("Csch(Interval({0,3}))", "Interval({Csch(3),Infinity})");
+    check("Coth(Interval({-2,0}))", "Interval({-Infinity,-Coth(2)})");
+    check("Csch(Interval({-3,0}))", "Interval({-Infinity,-Csch(3)})");
     check("ArcTanh(Interval({0,2}))", "ArcTanh(Interval({0,2}))");
 
     // Trigonometric & Inverse Trigonometric

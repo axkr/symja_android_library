@@ -92,6 +92,31 @@ public enum Extension {
   }
 
   /**
+   * The format of an upper case extension: the common aliases <code>JPG, TIF, PBM, PGM, PPM, XLS
+   * </code> map to their format, every other name to the constant of the same name.
+   *
+   * @param ucExtension the upper case extension
+   * @return the format
+   * @throws IllegalArgumentException if there is no format of this name
+   */
+  private static Extension aliasOrValueOf(String ucExtension) {
+    switch (ucExtension) {
+      case "JPG":
+        return JPEG;
+      case "TIF":
+        return TIFF;
+      case "PBM":
+      case "PGM":
+      case "PPM":
+        return PNM;
+      case "XLS":
+        return XLSX;
+      default:
+        return valueOf(ucExtension);
+    }
+  }
+
+  /**
    * Determine <code>Extension</code> format from the filename's extension. If no <code>Extension
    * </code> can be determined return <code>DAT</code>.
    *
@@ -106,22 +131,7 @@ public enum Extension {
         if (ucExtension.equals("DATA")) {
           return DAT;
         }
-        if (ucExtension.equals("ExpressionJSON")) {
-          return EXPRESSIONJSON;
-        }
-        if (ucExtension.equals("JPG")) {
-          return JPEG;
-        }
-        if (ucExtension.equals("TIF")) {
-          return TIFF;
-        }
-        if (ucExtension.equals("PBM") || ucExtension.equals("PGM") || ucExtension.equals("PPM")) {
-          return PNM;
-        }
-        if (ucExtension.equals("XLS")) {
-          return XLSX;
-        }
-        return valueOf(ucExtension);
+        return aliasOrValueOf(ucExtension);
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -149,19 +159,7 @@ public enum Extension {
         // "Text" is what the script language calls this format; TXT is the file name it uses
         return TXT;
       }
-      if (ucExtension.equals("JPG")) {
-        return JPEG;
-      }
-      if (ucExtension.equals("TIF")) {
-        return TIFF;
-      }
-      if (ucExtension.equals("PBM") || ucExtension.equals("PGM") || ucExtension.equals("PPM")) {
-        return PNM;
-      }
-      if (ucExtension.equals("XLS")) {
-        return XLSX;
-      }
-      return valueOf(extensionString.toUpperCase(Locale.US));
+      return aliasOrValueOf(ucExtension);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }
@@ -183,26 +181,13 @@ public enum Extension {
         if (extensionString.equals("TEXT")) {
           return TXT;
         }
-        if (extensionString.equals("JPG")) {
-          return JPEG;
-        }
         if (extensionString.equals("JSON")) {
           return JSON;
         }
         if (extensionString.equals("G6")) {
           return GRAPH6;
         }
-        if (extensionString.equals("TIF")) {
-          return TIFF;
-        }
-        if (extensionString.equals("PBM") || extensionString.equals("PGM")
-            || extensionString.equals("PPM")) {
-          return PNM;
-        }
-        if (extensionString.equals("XLS")) {
-          return XLSX;
-        }
-        return valueOf(extensionString);
+        return aliasOrValueOf(extensionString);
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -259,19 +244,7 @@ public enum Extension {
       if (ucExtension.equals("G6")) {
         return GRAPH6;
       }
-      if (ucExtension.equals("JPG")) {
-        return JPEG;
-      }
-      if (ucExtension.equals("TIF")) {
-        return TIFF;
-      }
-      if (ucExtension.equals("PBM") || ucExtension.equals("PGM") || ucExtension.equals("PPM")) {
-        return PNM;
-      }
-      if (ucExtension.equals("XLS")) {
-        return XLSX;
-      }
-      return valueOf(ucExtension);
+      return aliasOrValueOf(ucExtension);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }

@@ -237,6 +237,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
+  // CPD-OFF primitive-array type specialisation
   private static boolean arrayIntRecursive(IAST nestedListsOfValues, int level, int[] intArr,
       int[] index) throws RangeException, TypeException {
     level--;
@@ -246,6 +247,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
+        // CPD-ON
         intArr[index[0]++] = ((IReal) arg).toInt();
       } else {
         if (!arg.isList() || !arrayIntRecursive((IAST) arg, level, intArr, index)) {
@@ -256,6 +258,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
+  // CPD-OFF primitive-array type specialisation
   private static boolean arrayLongRecursive(IAST nestedListsOfValues, int level, long[] longArr,
       int[] index) throws RangeException, TypeException {
     level--;
@@ -265,6 +268,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
+        // CPD-ON
         longArr[index[0]++] = ((IReal) arg).toLong();
       } else {
         if (!arg.isList() || !arrayLongRecursive((IAST) arg, level, longArr, index)) {
@@ -350,6 +354,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
+  // CPD-OFF primitive-array type specialisation
   private static boolean arrayUnsignedIntRecursive(IAST nestedListsOfValues, int level,
       int[] intArr, int[] index) throws RangeException, TypeException {
     level--;
@@ -359,6 +364,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
+        // CPD-ON
         long value = ((IReal) arg).toLong();
         intArr[index[0]++] = UnsignedInts.checkedCast(value);
       } else {
@@ -370,6 +376,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return true;
   }
 
+  // CPD-OFF primitive-array type specialisation
   private static boolean arrayUnsignedLongRecursive(IAST nestedListsOfValues, int level,
       long[] longArr, int[] index) throws RangeException, TypeException {
     level--;
@@ -379,6 +386,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
+        // CPD-ON
         BigInteger value = ((IInteger) arg).toBigNumerator();
         UnsignedLong uint64 = UnsignedLong.valueOf(value);
         longArr[index[0]++] = uint64.longValue();

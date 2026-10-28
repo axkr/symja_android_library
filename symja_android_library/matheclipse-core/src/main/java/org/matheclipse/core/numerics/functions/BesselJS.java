@@ -134,6 +134,25 @@ public class BesselJS extends JS {
     // x)).divide(Math.sin(n * Math.PI));
   }
 
+  /**
+   * The numerical derivatives of <code>head(nu, x)</code> with respect to the order <code>nu
+   * </code> at <code>nu = n</code> and at <code>nu = -n</code>.
+   *
+   * @param head {@link S#BesselJ} or {@link S#BesselI}
+   * @param n the order
+   * @param x the argument
+   * @return <code>{d/dnu at n, d/dnu at -n}</code>
+   */
+  private static double[] orderDerivatives(ISymbol head, double n, double x) {
+    FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(15, 0.01);
+    ISymbol nSymbol = F.Dummy("n");
+    UnivariateDifferentiableFunction f = differentiator.differentiate(new UnaryNumerical(
+        F.binaryAST2(head, nSymbol, F.num(x)), nSymbol, Double.NaN, EvalEngine.get()));
+    DSFactory factory = new DSFactory(1, 1);
+    return new double[] {f.value(factory.variable(0, n)).getPartialDerivative(1),
+        f.value(factory.variable(0, -n)).getPartialDerivative(1)};
+  }
+
   public static double besselYDouble(double n, double x) {
     // for averaging over integer orders until write code for limit
     // double delta = 1e-5;
@@ -143,14 +162,9 @@ public class BesselJS extends JS {
 
     // dlmf.nist.gov/10.2#E3
     if (F.isNumIntValue(n)) {
-      FiniteDifferencesDifferentiator differentiator =
-          new FiniteDifferencesDifferentiator(15, 0.01);
-      ISymbol nSymbol = F.Dummy("n");
-      UnivariateDifferentiableFunction f = differentiator.differentiate(
-          new UnaryNumerical(F.BesselJ(nSymbol, F.num(x)), nSymbol, Double.NaN, EvalEngine.get()));
-      DSFactory factory = new DSFactory(1, 1);
-      double d1 = f.value(factory.variable(0, n)).getPartialDerivative(1);
-      double d2 = f.value(factory.variable(0, -n)).getPartialDerivative(1);
+      double[] d = orderDerivatives(S.BesselJ, n, x);
+      double d1 = d[0];
+      double d2 = d[1];
 
       return (d1 + Math.pow(-1.0, Math.rint(n)) * d2) / Math.PI;
       // return ( diff( n => besselJ(n,x), n ) + (-1)**n * diff( n => besselJ(n,x), -n ) ) / pi;
@@ -300,14 +314,9 @@ public class BesselJS extends JS {
     }
     // based on dlmf.nist.gov/10.2.3
     if (F.isNumIntValue(n)) {
-      FiniteDifferencesDifferentiator differentiator =
-          new FiniteDifferencesDifferentiator(15, 0.01);
-      ISymbol nSymbol = F.Dummy("n");
-      UnivariateDifferentiableFunction f = differentiator.differentiate(
-          new UnaryNumerical(F.BesselI(nSymbol, F.num(x)), nSymbol, Double.NaN, EvalEngine.get()));
-      DSFactory factory = new DSFactory(1, 1);
-      double d1 = f.value(factory.variable(0, n)).getPartialDerivative(1);
-      double d2 = f.value(factory.variable(0, -n)).getPartialDerivative(1);
+      double[] d = orderDerivatives(S.BesselI, n, x);
+      double d1 = d[0];
+      double d2 = d[1];
 
       return ((d1 + d2) / 2.0) * Math.pow(-1.0, Math.rint(n + 1));
     }
@@ -601,12 +610,14 @@ public class BesselJS extends JS {
         HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, (-0.25) * x * x);
   }
 
+  // CPD-OFF mirrored Hankel asymptotic series, kept as in the ported source
   public static Complex struveH(Complex n, Complex x) {
     // can also evaluate from hypergeometric0F1
     // could use to test hypergeometricPFQ
     return mul(pow(x, add(n, 1)), inv(mul(pow(2.0, n), sqrt(Math.PI), gamma(add(n, 1.5)))),
         HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), add(1.5, n),
             mul(-0.25, pow(x, 2.0))));
+            // CPD-ON
   }
 
   public static double struveL(double n, double x) {
@@ -616,10 +627,12 @@ public class BesselJS extends JS {
         HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, 0.25 * x * x);
   }
 
+  // CPD-OFF mirrored Hankel asymptotic series, kept as in the ported source
   public static Complex struveL(Complex n, Complex x) {
     // one sign different in 0.25 from struveH
     return mul(pow(x, add(n, 1)), inv(mul(pow(2.0, n), sqrt(Math.PI), gamma(add(n, 1.5)))),
         HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), add(1.5, n),
             mul(0.25, pow(x, 2.0))));
   }
+  // CPD-ON
 }

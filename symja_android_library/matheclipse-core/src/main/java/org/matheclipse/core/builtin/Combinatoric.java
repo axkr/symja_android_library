@@ -774,11 +774,7 @@ public final class Combinatoric {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1() && arg1.isAST(S.Cycles, 2)) {
-        IAST cycles = (IAST) arg1;
-        if (cycles.hasFlag(Flag.BUILT_IN_EVALED)) {
-          return cycles;
-        }
-        return CombinatoricUtil.checkCycles(cycles, false, engine);
+        return CombinatoricUtil.checkedCycles((IAST) arg1, false, engine);
       }
 
       IExpr head = S.Cycles;
@@ -912,12 +908,7 @@ public final class Combinatoric {
         return result;
       }
       if (arg1.isAST(S.Cycles, 2)) {
-        IAST cycles;
-        if (arg1.hasFlag(Flag.BUILT_IN_EVALED)) {
-          cycles = (IAST) arg1;
-        } else {
-          cycles = CombinatoricUtil.checkCycles((IAST) arg1, false, engine);
-        }
+        IAST cycles = CombinatoricUtil.checkedCycles((IAST) arg1, false, engine);
         if (cycles.isPresent()) {
           IAST cyclesList = (IAST) cycles.arg1();
           if (cyclesList.isEmptyList()) {
@@ -1062,12 +1053,7 @@ public final class Combinatoric {
         return arg2.mapThread(ast, 2);
       }
       if (arg2.isAST(S.Cycles, 2)) {
-        IAST cycles;
-        if (arg2.hasFlag(Flag.BUILT_IN_EVALED)) {
-          cycles = (IAST) arg2;
-        } else {
-          cycles = CombinatoricUtil.checkCycles((IAST) arg2, false, engine);
-        }
+        IAST cycles = CombinatoricUtil.checkedCycles((IAST) arg2, false, engine);
         if (cycles.isPresent()) {
           IAST mainList = (IAST) cycles.arg1();
           if (arg1.isInteger()) {
@@ -1177,12 +1163,7 @@ public final class Combinatoric {
         if (arg2.isList()) {
           return permuteCycles((IAST) arg1, (IAST) arg2, ast);
         } else if (arg2.isAST(S.Cycles, 2)) {
-          IAST cycles;
-          if (arg2.hasFlag(Flag.BUILT_IN_EVALED)) {
-            cycles = (IAST) arg2;
-          } else {
-            cycles = CombinatoricUtil.checkCycles((IAST) arg2, false, engine);
-          }
+          IAST cycles = CombinatoricUtil.checkedCycles((IAST) arg2, false, engine);
           if (cycles.isPresent()) {
             IAST mainList = (IAST) cycles.arg1();
             return CombinatoricUtil.permute((IAST) arg1, mainList, ast);

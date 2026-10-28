@@ -74,12 +74,7 @@ public class QuarticSolver {
   private final static int QUADRATIC_INTERVAL_DATA = 5;
 
   public static IASTMutable solve(IExpr exprPoly, IExpr x) throws ArithmeticException {
-    IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
-    if (convert2Coefficients(exprPoly, x, coefficients)) {
-      return quarticSolve(coefficients[4], coefficients[3], coefficients[2], coefficients[1],
-          coefficients[0], true, true);
-    }
-    return F.NIL;
+    return solve(exprPoly, x, true, true);
   }
 
   public static IAST quadraticIntervalData(IBuiltInSymbol symbol, IExpr exprPoly, IExpr x) {

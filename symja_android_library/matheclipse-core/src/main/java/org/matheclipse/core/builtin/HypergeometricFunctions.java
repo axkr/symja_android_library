@@ -1487,6 +1487,7 @@ public class HypergeometricFunctions {
       // CPD-ON
       if (a.isMinusOne()) {
         // 1 - z/b
+        // CPD-OFF special-value tables and numeric dispatch per function
         return F.Subtract(F.C1, F.Divide(z, b));
       }
       return F.NIL;
@@ -1499,6 +1500,7 @@ public class HypergeometricFunctions {
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
         IExpr result = basicRewrite(a, b, z, false).eval(engine);
+        // CPD-ON
         if (result.isPresent()) {
           return result;
         }
@@ -1508,7 +1510,8 @@ public class HypergeometricFunctions {
             return result;
           }
         } catch (ArithmeticException e) {
-          Errors.printMessage(S.Hypergeometric2F1, e, engine);
+          // CPD-OFF special-value tables and numeric dispatch per function
+          Errors.printMessage(S.Hypergeometric1F1, e, engine);
           if (Num.isDivisionByZero(e)) {
             return F.ComplexInfinity;
           }
@@ -1532,6 +1535,7 @@ public class HypergeometricFunctions {
 
 
   private static class Hypergeometric1F1Regularized extends AbstractFunctionEvaluator
+  // CPD-ON
       implements IFunctionExpand {
 
     @Override
@@ -1578,6 +1582,7 @@ public class HypergeometricFunctions {
       }
       if (a.equals(b)) {
         // E^z/Gamma(a)
+        // CPD-OFF special-value tables and numeric dispatch per function
         return F.Times(F.Exp(z), F.Power(F.Gamma(a), F.CN1));
       }
       // if (engine.isNumericMode()) {
@@ -1590,6 +1595,7 @@ public class HypergeometricFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
+      // CPD-ON
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
@@ -1601,7 +1607,8 @@ public class HypergeometricFunctions {
           return a.hypergeometric1F1Regularized(b, z);
         } catch (ArithmeticException | NumericComputationException e) {
           // java.lang.ArithmeticException: Gamma of zero
-          Errors.printMessage(S.Hypergeometric1F1, e, engine);
+          // CPD-OFF special-value tables and numeric dispatch per function
+          Errors.printMessage(S.Hypergeometric1F1Regularized, e, engine);
           if (Num.isDivisionByZero(e)) {
             return F.ComplexInfinity;
           }
@@ -1625,6 +1632,7 @@ public class HypergeometricFunctions {
     }
 
   }
+  // CPD-ON
 
 
   private static class Hypergeometric2F1 extends AbstractFunctionEvaluator {
@@ -2324,8 +2332,10 @@ public class HypergeometricFunctions {
       IInteger m = F.ZZ(mi);
       // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/04/07/0005/
       // (-1)^(m+n)*Gamma(1/2-n)*E^z*LaguerreL(-m+n,-1/2+m,-z)+(z^(1/2-m)*2^(2*n)/(-1)^(1-m)*m!)/(2*n)!*(Sqrt(Pi)/Sqrt(z)*E^z*Erf(Sqrt(z))*Sum((k+n)!/k!*LaguerreL(-k+m,1/2+k-m,z)*LaguerreL(k+n,-1/2-k,-z),{k,0,m})+Sum((k+n)!/k!*LaguerreL(-k+m,1/2+k-m,z)*Sum(LaguerreL(k+n-p,-1/2-k+p,-z)/p*LaguerreL(-1+p,1/2-p,z),{p,1,k+n}),{k,0,m}))
+      // CPD-OFF special-value tables and numeric dispatch per function
       IExpr sum1 = F.sum(k -> F.Times(F.Power(F.Factorial(k), F.CN1), F.Factorial(F.Plus(k, n)),
           F.LaguerreL(F.Plus(F.Negate(k), m), F.Plus(F.C1D2, k, F.Negate(m)), z),
+          // CPD-ON
           F.LaguerreL(F.Plus(k, n), F.Subtract(F.CN1D2, k), F.Negate(z))), 0, mi);
       IExpr sum2 = F.sum(k -> {
         IExpr nestdSumP = F.sum(
@@ -2334,8 +2344,10 @@ public class HypergeometricFunctions {
                     F.Negate(z)),
                 F.LaguerreL(F.Plus(F.CN1, p), F.Subtract(F.C1D2, p), z)),
             1, k.toIntDefault() + ni);
+        // CPD-OFF special-value tables and numeric dispatch per function
         return F.Times(F.Power(F.Factorial(k), F.CN1), F.Factorial(F.Plus(k, n)),
             F.LaguerreL(F.Plus(F.Negate(k), m), F.Plus(F.C1D2, k, F.Negate(m)), z), nestdSumP);
+            // CPD-ON
       }, 0, mi);
       return F.Plus(
           F.Times(F.Power(-1, F.Plus(m, n)), F.Gamma(F.Subtract(F.C1D2, n)), F.Exp(z),
@@ -2402,19 +2414,7 @@ public class HypergeometricFunctions {
             }
           }
         }
-        if (engine.isArbitraryMode()) {
-          try {
-            IExpr res = a.hypergeometricU(b, z);
-            if (res.isNumber()) {
-              return res;
-            }
-          } catch (ValidateException ve) {
-            return Errors.printMessage(S.HypergeometricU, ve, engine);
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            Errors.printMessage(S.HypergeometricU, rex, engine);
-          }
-        } else if (engine.isDoubleMode()) {
+        if (engine.isArbitraryMode() || engine.isDoubleMode()) {
           try {
             IExpr res = a.hypergeometricU(b, z);
             if (res.isNumber()) {

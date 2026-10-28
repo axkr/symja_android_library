@@ -50,8 +50,8 @@ public class RootSum extends AbstractFunctionEvaluator {
     ISymbol r = F.Dummy("r");
 
     // The polynomial whose roots are summed over.
-    IExpr px = engine.evaluate(F.ExpandAll(engine.evaluate(F.unaryAST1(f, r))));
-    if (!px.isPolynomial(F.list(r))) {
+    IExpr px = rootPolynomial(f, r, engine);
+    if (px.isNIL()) {
       return F.NIL;
     }
     IExpr degreeExpr = engine.evaluate(F.Exponent(px, r));
@@ -158,6 +158,16 @@ public class RootSum extends AbstractFunctionEvaluator {
   }
 
   /**
+   * The expanded polynomial <code>f(r)</code> whose roots are summed over.
+   *
+   * @return {@link F#NIL} if <code>f(r)</code> isn't a polynomial in <code>r</code>
+   */
+  private static IExpr rootPolynomial(IExpr f, ISymbol r, EvalEngine engine) {
+    IExpr px = engine.evaluate(F.ExpandAll(engine.evaluate(F.unaryAST1(f, r))));
+    return px.isPolynomial(F.list(r)) ? px : F.NIL;
+  }
+
+  /**
    * @param simplify if <code>true</code> try to condense the explicit sum with
    *        {@link S#FullSimplify}. The automatic degree <code>&lt;= 2</code> expansion passes
    *        <code>false</code>, because the expected answer there is the plain sum over the roots.
@@ -170,8 +180,8 @@ public class RootSum extends AbstractFunctionEvaluator {
     IExpr f = rootSumAST.arg1();
     IExpr form = rootSumAST.arg2();
     ISymbol r = F.Dummy("r");
-    IExpr px = engine.evaluate(F.ExpandAll(engine.evaluate(F.unaryAST1(f, r))));
-    if (!px.isPolynomial(F.list(r))) {
+    IExpr px = rootPolynomial(f, r, engine);
+    if (px.isNIL()) {
       return F.NIL;
     }
     IExpr degreeExpr = engine.evaluate(F.Exponent(px, r));

@@ -65,6 +65,7 @@ public class ArraySymbol extends AbstractEvaluator {
       IExpr dimension = dimensionsList.get(i);
       if (!SymbolicArrayUtil.isValidDimension(dimension)) {
         // `1` is not a valid dimension specification for `2`.
+        // CPD-OFF per-head argument validation with different rank rules
         return Errors.printMessage(S.ArraySymbol, "dimss", F.List(dimension, S.ArraySymbol),
             engine);
       }
@@ -83,6 +84,7 @@ public class ArraySymbol extends AbstractEvaluator {
         if (!SymbolicArrayUtil.isValidSymmetry(arg3, dimensionsList)) {
           // Symmetry specification `1` is incompatible with expression `2`.
           return Errors.printMessage(S.ArraySymbol, "symmcomp", F.List(arg3, dimensionsList),
+          // CPD-ON
               engine);
         }
         symmetry = arg3;

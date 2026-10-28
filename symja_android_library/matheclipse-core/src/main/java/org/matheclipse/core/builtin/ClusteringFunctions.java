@@ -45,6 +45,7 @@ public class ClusteringFunctions {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
 
+      // CPD-OFF per-metric closed form
       int dim1 = arg1.isVector();
       if (dim1 > (-1)) {
         int dim2 = arg2.isVector();
@@ -55,6 +56,7 @@ public class ClusteringFunctions {
           }
           if (dim1 != 0) {
             return vectorDistance(arg1, arg2, engine);
+            // CPD-ON
           }
         }
         return F.NIL;
@@ -700,6 +702,7 @@ public class ClusteringFunctions {
         return F.ZZ(hammingDistance.apply(str1, str2));
       }
 
+      // CPD-OFF per-metric closed form
       int dim1 = arg1.isVector();
       if (dim1 > (-1)) {
         int dim2 = arg2.isVector();
@@ -710,6 +713,7 @@ public class ClusteringFunctions {
           }
           if (dim1 != 0) {
             return distance(arg1, arg2, engine);
+            // CPD-ON
           }
         }
       }

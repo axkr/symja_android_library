@@ -757,6 +757,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
                 minX = i;
               if (i > maxX)
                 maxX = i;
+            // CPD-OFF int and expression states are filled and trimmed separately
             }
           }
         }
@@ -769,6 +770,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       if (hIdx >= 0 && hIdx < history.size()) {
         int[] state = history.get(hIdx);
         IASTAppendable row = F.ListAlloc(maxX - minX + 1);
+        // CPD-ON
         for (int i = minX; i <= maxX; i++) {
           row.append(F.ZZ(state[i]));
         }
@@ -1083,6 +1085,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           int b = bgHistory.get(hIdx);
           for (int y = 0; y < gridY; y++) {
             for (int x = 0; x < gridX; x++) {
+              // CPD-OFF int and expression states are filled and trimmed separately
               if (state[y * gridX + x] != b) {
                 if (y < minY)
                   minY = y;
@@ -1105,6 +1108,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       if (hIdx >= 0 && hIdx < history.size()) {
         int[] state = history.get(hIdx);
         IASTAppendable matrix = F.ListAlloc(maxY - minY + 1);
+        // CPD-ON
         for (int y = minY; y <= maxY; y++) {
           IASTAppendable row = F.ListAlloc(maxX - minX + 1);
           for (int x = minX; x <= maxX; x++) {
@@ -1378,6 +1382,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
                   min[2] = Math.min(min[2], x);
                   max[2] = Math.max(max[2], x);
                 }
+              // CPD-OFF int and expression states are filled and trimmed separately
               }
             }
           }
@@ -1391,6 +1396,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       if (hIdx >= 0 && hIdx < history.size()) {
         int[] state = history.get(hIdx);
         IASTAppendable array = F.ListAlloc(max[0] - min[0] + 1);
+        // CPD-ON
         for (int z = min[0]; z <= max[0]; z++) {
           IASTAppendable matrix = F.ListAlloc(max[1] - min[1] + 1);
           for (int y = min[1]; y <= max[1]; y++) {
@@ -1938,6 +1944,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           IExpr b = bgHistory.get(tIdx);
           for (int y = 0; y < gridY; y++) {
             for (int x = 0; x < gridX; x++) {
+              // CPD-OFF int and expression states are filled and trimmed separately
               if (!state[y * gridX + x].equals(b)) {
                 if (y < minY)
                   minY = y;
@@ -1956,6 +1963,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
 
     IASTAppendable resultList = F.ListAlloc();
     for (int tIdx = tStart; (localDt > 0 ? tIdx <= tEnd : tIdx >= tEnd); tIdx += localDt) {
+    // CPD-ON
       if (tIdx >= 0 && tIdx < history.size()) {
         IExpr[] state = history.get(tIdx);
         IASTAppendable matrix = F.ListAlloc(maxY - minY + 1);

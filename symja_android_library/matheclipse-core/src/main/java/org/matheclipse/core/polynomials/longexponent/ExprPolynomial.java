@@ -513,6 +513,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
   public ExprPolynomial deHomogenize(ExprPolynomialRing pfac) {
     if (ring.equals(pfac)) { // not implemented
       throw new UnsupportedOperationException("case with same ring not implemented");
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     }
     ExprPolynomial Cp = pfac.getZero().copy();
     if (this.isZERO()) {
@@ -522,6 +523,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     Map<ExpVectorLong, IExpr> A = val;
     for (Map.Entry<ExpVectorLong, IExpr> y : A.entrySet()) {
       ExpVectorLong e = y.getKey();
+      // CPD-ON
       IExpr a = y.getValue();
       ExpVectorLong f = e.contract(1, pfac.nvar);
       C.put(f, a);
@@ -684,6 +686,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     if (a == null || a.isZERO()) {
       return;
     }
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SortedMap<ExpVectorLong, IExpr> nv = this.val;
     IExpr x = nv.get(e);
     if (x != null) {
@@ -707,6 +710,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @param e exponent.
    */
   public void doPutToMap(ExpVectorLong e, IExpr c) {
+  // CPD-ON
     if (DEBUG) {
       IExpr a = val.get(e);
       if (a != null) {
@@ -907,6 +911,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       C.put(lower ? e.extendLower(i, j, k) : e.extend(i, j, k), y.getValue());
     }
     return Cp;
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   }
 
   /**
@@ -916,6 +921,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @param pfac extended polynomial ring factory.
    * @param i index of the variable of this polynomial in pfac.
    * @return extended multivariate polynomial.
+   // CPD-ON
    */
   // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExprPolynomial extendUnivariate(ExprPolynomialRing pfac, int i) {
@@ -1482,6 +1488,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
         ExpVectorLong e2 = m2.getKey();
         IExpr c = c1.multiply(c2); // check non zero if not domain
         if (!c.isZERO()) {
+          // CPD-OFF parallel implementation for long and for symbolic exponents
           ExpVectorLong e = e1.sum(e2);
           IExpr c0 = pv.get(e);
           if (c0 == null) {
@@ -1507,6 +1514,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return this * x<sup>e</sup>.
    */
   public ExprPolynomial multiply(ExpVectorLong e) {
+  // CPD-ON
     // assert e != null. This is never allowed.
     if (this.isZERO()) {
       return this;
@@ -1658,6 +1666,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExprPolynomial[] quotientRemainder(ExprPolynomial S) {
     if (S == null || S.isZERO()) {
       throw new ArithmeticException("division by zero");
@@ -1668,6 +1677,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
     IExpr ci = c.inverse();
     assert (ring.nvar == S.ring.nvar);
+    // CPD-ON
     ExpVectorLong e = S.leadingExpVectorLong();
     ExprPolynomial h;
     ExprPolynomial q = ring.getZero().copy();
@@ -1724,6 +1734,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExprPolynomial remainder(ExprPolynomial S) {
     // if (this instanceof GenSolvablePolynomial || S instanceof
     // GenSolvablePolynomial) {
@@ -1743,6 +1754,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
     IExpr ci = c.inverse();
     assert (ring.nvar == S.ring.nvar);
+    // CPD-ON
     ExpVectorLong e = S.leadingExpVectorLong();
     ExprPolynomial h;
     ExprPolynomial r = this.copy();
@@ -2100,6 +2112,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       return this;
     }
     ExprPolynomial n = this.copy(); // new GenPolynomial(ring, val);
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     SortedMap<ExpVectorLong, IExpr> nv = n.val;
     // if ( nv.size() == 0 ) { nv.put(e,a); return n; }
     IExpr x = nv.get(e);
@@ -2122,6 +2135,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return sum of all absolute values of coefficients.
    */
   public IExpr sumNorm() {
+  // CPD-ON
     IExpr n = ring.getZEROCoefficient();
     for (IExpr c : val.values()) {
       IExpr x = c.abs();

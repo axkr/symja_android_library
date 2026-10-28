@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.Predicate;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
@@ -8,7 +9,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -110,7 +110,6 @@ public class RangeSpace extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, new IBuiltInSymbol[] {S.Method, S.Modulus, S.Tolerance, S.ZeroTest},
-        new IExpr[] {S.Automatic, F.C0, S.Automatic, S.Automatic});
+    setOptions(newSymbol, LinearAlgebra.ROW_REDUCE_OPTIONS, LinearAlgebra.ROW_REDUCE_DEFAULTS);
   }
 }

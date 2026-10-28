@@ -36,13 +36,8 @@ public class RegionMember extends AbstractFunctionEvaluator {
     if (ast.argSize() != 2) {
       return F.NIL;
     }
-    IExpr arg1 = ast.arg1();
+    IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     IExpr point = ast.arg2();
-
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
     if (MeshFunctions.isMeshRegion(arg1)) {
       int embeddingDimension = MeshFunctions.embeddingDimension((IAST) arg1);
       if (embeddingDimension == 3) {

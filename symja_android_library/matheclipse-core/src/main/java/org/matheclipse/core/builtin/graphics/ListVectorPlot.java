@@ -163,11 +163,13 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     for (int k = 0; k < vectors.size(); k++) {
       double[] p = tails.get(k);
       double[] v = vectors.get(k);
+      // CPD-OFF the vector plots handle different option keys
       IASTAppendable from = F.ListAlloc(dimension);
       IASTAppendable to = F.ListAlloc(dimension);
       for (int d = 0; d < dimension; d++) {
         from.append(F.num(p[d] - v[d] * factor / 2));
         to.append(F.num(p[d] + v[d] * factor / 2));
+        // CPD-ON
         min[d] = Math.min(min[d], p[d]);
         max[d] = Math.max(max[d], p[d]);
       }
@@ -178,7 +180,7 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
 
     IASTAppendable result = dimension == 3 ? F.Graphics3D(primitives) : F.Graphics(primitives);
     result.appendArgs(graphicsOptions);
-    if (!vectors.isEmpty() && !hasOption(graphicsOptions, S.PlotRange)) {
+    if (!vectors.isEmpty() && !VectorPlot.hasOption(graphicsOptions, S.PlotRange)) {
       double pad = spacing / 2;
       IASTAppendable range = F.ListAlloc(dimension);
       for (int d = 0; d < dimension; d++) {
@@ -192,10 +194,10 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       result.append(F.Rule(S.PlotRange, range));
     }
     if (dimension == 2) {
-      if (!hasOption(graphicsOptions, S.Frame)) {
+      if (!VectorPlot.hasOption(graphicsOptions, S.Frame)) {
         result.append(F.Rule(S.Frame, S.True));
       }
-    } else if (!hasOption(graphicsOptions, S.Axes)) {
+    } else if (!VectorPlot.hasOption(graphicsOptions, S.Axes)) {
       result.append(F.Rule(S.Axes, S.True));
     }
     return result;
@@ -322,15 +324,6 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       spacing = 1.0;
     }
     return spacing > 0 ? spacing : 1.0;
-  }
-
-  private static boolean hasOption(IAST options, IExpr key) {
-    for (IExpr option : options) {
-      if (option.isRuleAST() && option.first() == key) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override

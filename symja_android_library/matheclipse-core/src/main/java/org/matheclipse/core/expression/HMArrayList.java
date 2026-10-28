@@ -872,16 +872,7 @@ public abstract class HMArrayList extends AbstractAST
    * @param sizeBefore the {@link #size()} of this list before the arguments were appended
    */
   private void mergeUniformTypeFlags(int argFlags, int sizeBefore) {
-    if (sizeBefore == 1) {
-      // the appended expressions are the first arguments
-      uniformTypeFlags = argFlags;
-    } else if (sizeBefore > 1 && uniformTypeFlags != UniformFlags.UNKNOWN
-        && argFlags != UniformFlags.UNKNOWN) {
-      // example: (Integer | Rational) & (Fraction | Rational) = Rational
-      uniformTypeFlags &= argFlags;
-    } else {
-      uniformTypeFlags = UniformFlags.UNKNOWN;
-    }
+    uniformTypeFlags = UniformFlags.merge(uniformTypeFlags, argFlags, sizeBefore);
   }
 
   /**

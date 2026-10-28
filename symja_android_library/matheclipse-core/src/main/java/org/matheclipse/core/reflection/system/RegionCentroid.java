@@ -34,13 +34,7 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
 
   /** The centroid of the region, computed without looking at the options. */
   private IExpr centroid(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
+    IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (MeshFunctions.isMeshRegion(arg1)) {
       int embeddingDimension = MeshFunctions.embeddingDimension((IAST) arg1);
       if (embeddingDimension == 3) {

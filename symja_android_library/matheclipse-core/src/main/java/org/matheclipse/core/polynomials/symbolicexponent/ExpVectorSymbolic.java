@@ -299,6 +299,7 @@ public final class ExpVectorSymbolic implements Serializable {
       return this;
     }
     ExpVectorSymbolic result = valueOf(val.length);
+    // CPD-OFF parallel implementation for long and for symbolic exponents
     IExpr[] w = result.val;
     for (int i = 0; i < j; i++) {
       w[i] = val[j - 1 - i];
@@ -310,7 +311,6 @@ public final class ExpVectorSymbolic implements Serializable {
     return result;
   }
 
-  // CPD-OFF parallel implementation for long and for symbolic exponents
   /**
    * Combine with ExpVectorLong. Combine this with the other ExpVectorLong V.
    *
@@ -484,7 +484,6 @@ public final class ExpVectorSymbolic implements Serializable {
     }
     return s.toString();
   }
-  // CPD-ON
 
   /**
    * Comparison with any other object.
@@ -495,6 +494,7 @@ public final class ExpVectorSymbolic implements Serializable {
   public boolean equals(Object B) {
     if (!(B instanceof ExpVectorSymbolic)) {
       return false;
+      // CPD-ON
     }
     IExpr[] u = val;
     IExpr[] v = ((ExpVectorSymbolic) B).val;
@@ -568,6 +568,7 @@ public final class ExpVectorSymbolic implements Serializable {
    * @param V
    * @return this+V.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExpVectorSymbolic sum(ExpVectorSymbolic V) {
     IExpr[] u = val;
     IExpr[] v = V.val;
@@ -575,6 +576,7 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
       w[i] = S.Plus.of(u[i], v[i]);
+      // CPD-ON
     }
     return result;
   }
@@ -585,6 +587,7 @@ public final class ExpVectorSymbolic implements Serializable {
    * @param V
    * @return this-V.
    */
+  // CPD-OFF parallel implementation for long and for symbolic exponents
   public ExpVectorSymbolic subtract(ExpVectorSymbolic V) {
     IExpr[] u = val;
     IExpr[] v = V.val;
@@ -592,6 +595,7 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
       w[i] = S.Plus.of(u[i], v[i].negate());
+      // CPD-ON
     }
     return result;
   }

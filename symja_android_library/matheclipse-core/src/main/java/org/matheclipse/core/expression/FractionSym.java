@@ -400,6 +400,7 @@ public class FractionSym extends AbstractFractionSym {
   /** {@inheritDoc} */
   @Override
   public IRational inc() {
+    // CPD-OFF per-type Java string prologue
     return add(F.C1);
   }
 
@@ -415,6 +416,7 @@ public class FractionSym extends AbstractFractionSym {
     String prefix = SourceCodeProperties.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     if (fNumerator == 1) {
+    // CPD-ON
       switch (fDenominator) {
         case 2:
           return javaForm.append("C1D2");

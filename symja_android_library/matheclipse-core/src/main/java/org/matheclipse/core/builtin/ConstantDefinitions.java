@@ -1483,6 +1483,30 @@ public class ConstantDefinitions {
     }
   }
 
+  /** A real, irrational and transcendental constant with attribute <code>Constant</code>. */
+  private abstract static class TranscendentalConstant extends AbstractSymbolEvaluator
+      implements IRealConstant {
+    @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.TRUE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.FALSE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.TRUE;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.CONSTANT);
+    }
+  }
+
   /**
    *
    *
@@ -1507,27 +1531,7 @@ public class ConstantDefinitions {
    * 2.718281828459045
    * </pre>
    */
-  private static class E extends AbstractSymbolEvaluator implements IRealConstant {
-    @Override
-    public COMPARE_TERNARY isIrrational() {
-      return COMPARE_TERNARY.TRUE;
-    }
-
-    @Override
-    public COMPARE_TERNARY isAlgebraic() {
-      return COMPARE_TERNARY.FALSE;
-    }
-
-    @Override
-    public COMPARE_TERNARY isTranscendental() {
-      return COMPARE_TERNARY.TRUE;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.CONSTANT);
-    }
-
+  private static class E extends TranscendentalConstant {
     @Override
     public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(Math.E);
@@ -1649,34 +1653,14 @@ public class ConstantDefinitions {
     }
   }
 
-  private static class GoldenAngle extends AbstractSymbolEvaluator implements IRealConstant {
+  private static class GoldenAngle extends TranscendentalConstant {
     public static final double GOLDEN_ANGLE = 2.3999632297286533222315555066336138531249990110581;
-
-    @Override
-    public COMPARE_TERNARY isIrrational() {
-      return COMPARE_TERNARY.TRUE;
-    }
-
-    @Override
-    public COMPARE_TERNARY isAlgebraic() {
-      return COMPARE_TERNARY.FALSE;
-    }
-
-    @Override
-    public COMPARE_TERNARY isTranscendental() {
-      return COMPARE_TERNARY.TRUE;
-    }
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       // (3-Sqrt(5))*Pi
       // return F.Times(F.Subtract(F.C3, F.Sqrt(F.C5)), F.Pi);
       return F.NIL;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.CONSTANT);
     }
 
     @Override
@@ -2001,27 +1985,7 @@ public class ConstantDefinitions {
    * 3.141592653589793
    * </pre>
    */
-  private static class Pi extends AbstractSymbolEvaluator implements IRealConstant {
-    @Override
-    public COMPARE_TERNARY isIrrational() {
-      return COMPARE_TERNARY.TRUE;
-    }
-
-    @Override
-    public COMPARE_TERNARY isAlgebraic() {
-      return COMPARE_TERNARY.FALSE;
-    }
-
-    @Override
-    public COMPARE_TERNARY isTranscendental() {
-      return COMPARE_TERNARY.TRUE;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.CONSTANT);
-    }
-
+  private static class Pi extends TranscendentalConstant {
     @Override
     public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.num(Math.PI);

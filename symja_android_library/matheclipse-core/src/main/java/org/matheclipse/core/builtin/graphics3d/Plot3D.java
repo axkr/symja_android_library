@@ -675,41 +675,36 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       return true; // nothing finite to resolve
     }
     double span = max > min ? max - min : 1.0;
+    double tolerance = FLATNESS_TOLERANCE * span;
 
     for (int i = 0; i < nx - 1; i++) {
       for (int j = 0; j < ny; j++) {
-        double a = coarse[i][j];
-        double b = coarse[i + 1][j];
-        double actual = fine[2 * i + 1][2 * j];
-        if (!Double.isFinite(a) || !Double.isFinite(b) || !Double.isFinite(actual)) {
-          // a hole appearing between two samples is exactly what refinement is for
-          if (Double.isFinite(a) != Double.isFinite(actual)) {
-            return false;
-          }
-          continue;
-        }
-        if (Math.abs(actual - (a + b) / 2.0) > FLATNESS_TOLERANCE * span) {
+        if (!midpointFits(coarse[i][j], coarse[i + 1][j], fine[2 * i + 1][2 * j], tolerance)) {
           return false;
         }
       }
     }
     for (int i = 0; i < nx; i++) {
       for (int j = 0; j < ny - 1; j++) {
-        double a = coarse[i][j];
-        double b = coarse[i][j + 1];
-        double actual = fine[2 * i][2 * j + 1];
-        if (!Double.isFinite(a) || !Double.isFinite(b) || !Double.isFinite(actual)) {
-          if (Double.isFinite(a) != Double.isFinite(actual)) {
-            return false;
-          }
-          continue;
-        }
-        if (Math.abs(actual - (a + b) / 2.0) > FLATNESS_TOLERANCE * span) {
+        if (!midpointFits(coarse[i][j], coarse[i][j + 1], fine[2 * i][2 * j + 1], tolerance)) {
           return false;
         }
       }
     }
     return true;
+  }
+
+  /**
+   * <code>true</code> if the fine sample <code>actual</code> between the coarse samples
+   * <code>a</code> and <code>b</code> lies within <code>tolerance</code> of their midpoint. Where a
+   * value is not finite only a hole appearing or disappearing between the samples counts.
+   */
+  private static boolean midpointFits(double a, double b, double actual, double tolerance) {
+    if (!Double.isFinite(a) || !Double.isFinite(b) || !Double.isFinite(actual)) {
+      // a hole appearing between two samples is exactly what refinement is for
+      return Double.isFinite(a) == Double.isFinite(actual);
+    }
+    return Math.abs(actual - (a + b) / 2.0) <= tolerance;
   }
 
   /**

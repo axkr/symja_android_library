@@ -428,6 +428,7 @@ public class TranscendentalRisch {
   /** {@code Integrate(c*PolyLog(n, a*x)/x, x) = c*PolyLog(n+1, a*x)} (the polylogarithm ladder). */
   private static IExpr integratePolyLogLadder(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr c = F.C1;
+    // CPD-OFF kernel scans over x and over the tower
     IExpr polylogFactor = F.NIL;
     boolean hasReciprocalX = false;
     IAST factors = factorsOf(integrand);
@@ -436,6 +437,7 @@ public class TranscendentalRisch {
       if (factor.isFree(x, true)) {
         c = F.Times(c, factor);
       } else if (factor.isAST(S.PolyLog, 3)) {
+      // CPD-ON
         if (polylogFactor.isPresent()) {
           return F.NIL;
         }
@@ -536,6 +538,7 @@ public class TranscendentalRisch {
    */
   private static IExpr integrateLogOverX(IExpr integrand, IExpr x, EvalEngine engine) {
     IExpr c = F.C1;
+    // CPD-OFF kernel scans over x and over the tower
     IExpr logFactor = F.NIL;
     boolean hasReciprocalX = false;
     IAST factors = factorsOf(integrand);
@@ -544,6 +547,7 @@ public class TranscendentalRisch {
       if (factor.isFree(x, true)) {
         c = F.Times(c, factor);
       } else if (factor.isAST(S.Log, 2)) {
+      // CPD-ON
         if (logFactor.isPresent()) {
           return F.NIL;
         }
@@ -595,11 +599,8 @@ public class TranscendentalRisch {
     IExpr logU = mono.original;
     IExpr eta = mono.derivative;
     IExpr p = tower.towerForm();
-    if (!engine.evaluate(F.PolynomialQ(p, t)).isTrue()) {
-      return F.NIL;
-    }
-    int m = engine.evaluate(F.Exponent(p, t)).toIntDefault(-1);
-    if (m < 0 || m > 32) {
+    int m = towerDegree(p, t, engine);
+    if (m < 0) {
       return F.NIL;
     }
     IExpr[] q = new IExpr[m + 2];
@@ -643,6 +644,20 @@ public class TranscendentalRisch {
     return verifyAntiderivative(result, integrand, x, engine) ? result : F.NIL;
   }
 
+  /**
+   * The degree of <code>p</code> as a polynomial in the tower monomial <code>t</code>.
+   *
+   * @return <code>-1</code> if <code>p</code> is no polynomial in <code>t</code> or its degree is
+   *         greater than 32
+   */
+  private static int towerDegree(IExpr p, ISymbol t, EvalEngine engine) {
+    if (!engine.evaluate(F.PolynomialQ(p, t)).isTrue()) {
+      return -1;
+    }
+    int m = engine.evaluate(F.Exponent(p, t)).toIntDefault(-1);
+    return m > 32 ? -1 : m;
+  }
+
   private static boolean isRationalInX(IExpr e, IExpr x, EvalEngine engine) {
     return engine.evaluate(F.PolynomialQ(F.Numerator(e), x)).isTrue()
         && engine.evaluate(F.PolynomialQ(F.Denominator(e), x)).isTrue();
@@ -671,11 +686,8 @@ public class TranscendentalRisch {
       return F.NIL; // need u linear in x
     }
     IExpr p = tower.towerForm();
-    if (!engine.evaluate(F.PolynomialQ(p, t)).isTrue()) {
-      return F.NIL;
-    }
-    int m = engine.evaluate(F.Exponent(p, t)).toIntDefault(-1);
-    if (m < 0 || m > 32) {
+    int m = towerDegree(p, t, engine);
+    if (m < 0) {
       return F.NIL;
     }
     IExpr[] coefficient = new IExpr[m + 1];
@@ -745,11 +757,8 @@ public class TranscendentalRisch {
       inT = F.subst(inT, mono.original, F.Times(F.Exp(constant), F.Power(t, power)));
     }
     inT = engine.evaluate(inT);
-    if (!engine.evaluate(F.PolynomialQ(inT, t)).isTrue()) {
-      return F.NIL;
-    }
-    int m = engine.evaluate(F.Exponent(inT, t)).toIntDefault(-1);
-    if (m < 1 || m > 32) {
+    int m = towerDegree(inT, t, engine);
+    if (m < 1) {
       return F.NIL; // m < 1 would be a plain rational integrand (not our case)
     }
     IASTAppendable sum = F.PlusAlloc(m + 1);

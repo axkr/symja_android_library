@@ -38,15 +38,8 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
 
   @Override
   public IExpr covariance(IAST dist, EvalEngine engine) {
-    IExpr sigma = F.NIL;
-    IExpr nu = F.NIL;
-    if (dist.isAST2()) {
-      sigma = dist.arg1();
-      nu = dist.arg2();
-    } else if (dist.isAST3()) {
-      sigma = dist.arg2();
-      nu = dist.arg3();
-    }
+    IExpr sigma = sigma(dist);
+    IExpr nu = nu(dist);
     if (sigma.isPresent() && nu.isPresent()) {
       // (nu / (nu - 2)) * sigma for nu > 2
       IExpr cov = F.Times(F.Divide(nu, F.Subtract(nu, F.C2)), sigma);
@@ -104,6 +97,14 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
   /** The degrees of freedom <code>nu</code>, the last argument of the distribution. */
   private static IExpr nu(IAST dist) {
     return dist.isAST2() || dist.isAST3() ? dist.last() : F.NIL;
+  }
+
+  /** The scale matrix <code>sigma</code>, the argument before <code>nu</code>. */
+  private static IExpr sigma(IAST dist) {
+    if (dist.isAST2()) {
+      return dist.arg1();
+    }
+    return dist.isAST3() ? dist.arg2() : F.NIL;
   }
 
   @Override
@@ -271,15 +272,8 @@ public class MultivariateTDistribution extends AbstractEvaluator implements ICon
 
   @Override
   public IExpr variance(IAST dist) {
-    IExpr sigma = F.NIL;
-    IExpr nu = F.NIL;
-    if (dist.isAST2()) {
-      sigma = dist.arg1();
-      nu = dist.arg2();
-    } else if (dist.isAST3()) {
-      sigma = dist.arg2();
-      nu = dist.arg3();
-    }
+    IExpr sigma = sigma(dist);
+    IExpr nu = nu(dist);
     if (sigma.isPresent() && nu.isPresent()) {
       IExpr varianceVec = StatisticsContinousDistribution.diagonalOfSquareMatrix(sigma);
       if (varianceVec.isPresent()) {

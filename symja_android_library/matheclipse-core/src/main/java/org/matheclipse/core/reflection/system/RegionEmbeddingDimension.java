@@ -3,9 +3,9 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -14,17 +14,8 @@ public class RegionEmbeddingDimension extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-    // Unwrap Region display wrapper if present
-    if (arg1.isAST(S.Region, 1)) {
-      arg1 = arg1.first();
-    }
-
-    int dim = getEmbeddingDimension(arg1);
-    if (dim >= 0) {
-      return F.ZZ(dim);
-    }
-    return F.NIL;
+    int dim = getEmbeddingDimension(RegionPrimitives.unwrapRegion(ast.arg1()));
+    return dim >= 0 ? F.ZZ(dim) : F.NIL;
   }
 
   public static int getEmbeddingDimension(IExpr reg) {

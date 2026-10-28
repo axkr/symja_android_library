@@ -1221,13 +1221,7 @@ public class RootsFunctions {
         }
         IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1(), false, true);
         if (quarticResultList.isPresent()) {
-          for (int j = 1; j < quarticResultList.size(); j++) {
-            if (numericSolutions) {
-              newResult.append(chopRoot(engine.evalN(quarticResultList.get(j))));
-            } else {
-              newResult.append(quarticResultList.get(j));
-            }
-          }
+          appendRoots(newResult, quarticResultList, numericSolutions, engine);
         } else {
           polyRat = jas.expr2JAS(temp, numericSolutions);
           if (polyRat == null) {
@@ -1246,13 +1240,7 @@ public class RootsFunctions {
             temp = F.evalExpand(factorComplex.get(k));
             quarticResultList = QuarticSolver.solve(temp, variables.arg1());
             if (quarticResultList.isPresent()) {
-              for (int j = 1; j < quarticResultList.size(); j++) {
-                if (numericSolutions) {
-                  newResult.append(chopRoot(engine.evalN(quarticResultList.get(j))));
-                } else {
-                  newResult.append(quarticResultList.get(j));
-                }
-              }
+              appendRoots(newResult, quarticResultList, numericSolutions, engine);
             } else {
               IAST rootObjects = allowRootObjects //
                   ? rootObjects(temp, variables.arg1(), numericSolutions, engine)
@@ -1428,6 +1416,21 @@ public class RootsFunctions {
           ? F.num(root.getReal()) //
           : F.complexNum(root.getReal(), root.getImaginary());
     });
+  }
+
+  /**
+   * Append the <code>roots</code> to <code>result</code>, numerically evaluated and chopped if
+   * <code>numericSolutions</code> is set.
+   */
+  private static void appendRoots(IASTAppendable result, IAST roots, boolean numericSolutions,
+      EvalEngine engine) {
+    for (int j = 1; j < roots.size(); j++) {
+      if (numericSolutions) {
+        result.append(chopRoot(engine.evalN(roots.get(j))));
+      } else {
+        result.append(roots.get(j));
+      }
+    }
   }
 
   /**
