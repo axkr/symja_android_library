@@ -8628,6 +8628,16 @@ public class S {
       S.initFinalSymbol("FindClusters", ID.FindClusters);
 
   /**
+   * FindCurvePath(x) - TODO describe `FindCurvePath`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindCurvePath.md">FindCurvePath
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindCurvePath =
+      S.initFinalSymbol("FindCurvePath", ID.FindCurvePath);
+
+  /**
    * FindCycle(graph) - Find a cycle in the given `graph`.
    * 
    * @see <a href=
@@ -20465,6 +20475,15 @@ public class S {
   public final static IBuiltInSymbol RandomGraph = S.initFinalSymbol("RandomGraph", ID.RandomGraph);
 
   /**
+   * RandomImage(x) - TODO describe `RandomImage`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomImage.md">RandomImage
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RandomImage = S.initFinalSymbol("RandomImage", ID.RandomImage);
+
+  /**
    * RandomInteger(n) - create a random integer number between `0` and `n`.
    * 
    * @see <a href=
@@ -25748,6 +25767,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol TuranGraph = S.initFinalSymbol("TuranGraph", ID.TuranGraph);
+
+  /**
+   * TuringMachine(x) - TODO describe `TuringMachine`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TuringMachine.md">TuringMachine
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TuringMachine =
+      S.initFinalSymbol("TuringMachine", ID.TuringMachine);
 
   public final static IBuiltInSymbol TwoWayRule = S.initFinalSymbol("TwoWayRule", ID.TwoWayRule);
 
