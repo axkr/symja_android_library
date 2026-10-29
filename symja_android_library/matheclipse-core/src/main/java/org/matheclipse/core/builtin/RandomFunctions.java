@@ -275,7 +275,7 @@ public final class RandomFunctions {
             }
             return Tensors.build(() -> items.get(sampler.next() + 1), dimension);
           }
-          int n = arg2.toMachineInt();
+          int n = arg2.toIntDefault();
           if (n > 0) {
             return F.mapRange(0, n, i -> items.get(sampler.next() + 1));
           }
@@ -307,7 +307,7 @@ public final class RandomFunctions {
               return list.get(randomValue[0] + 1);
             }, dimension);
           }
-          int n = arg2.toMachineInt();
+          int n = arg2.toIntDefault();
           if (n > 0) {
             IASTAppendable result = F.ListAlloc(n);
             for (int i = 0; i < n; i++) {
@@ -340,43 +340,42 @@ public final class RandomFunctions {
           double im = tlr.nextDouble();
           return F.complexNum(re, im);
         } else if (ast.isAST1()) {
-          if (ast.arg1().isList2()) {
-            Complex min = engine.evalComplex(ast.arg1().first());
-            Complex max = engine.evalComplex(ast.arg1().second());
-            double minRe = min.getReal();
-            double minIm = min.getImaginary();
-            double maxRe = max.getReal();
-            double maxIm = max.getImaginary();
-            // the two corners span a rectangle in the complex plane
-            if (minRe > maxRe) {
-              double temp = minRe;
-              minRe = maxRe;
-              maxRe = temp;
-            }
-            if (minIm > maxIm) {
-              double temp = minIm;
-              minIm = maxIm;
-              maxIm = temp;
-            }
-            if (F.isEqual(minIm, maxIm) && F.isEqual(minRe, maxRe)) {
-              return F.complexNum(minRe, minIm);
-            }
-            Random tlr = engine.getRandom();
-            // a degenerate rectangle (a line segment) keeps its fixed coordinate
-            double re = minRe < maxRe ? boundedNextDouble(tlr, minRe, maxRe) : minRe;
-            double im = minIm < maxIm ? boundedNextDouble(tlr, minIm, maxIm) : minIm;
-            return F.complexNum(re, im);
-          } else {
-            Complex max = engine.evalComplex(ast.arg1());
-            Random tlr = engine.getRandom();
-            return F.complexNum(boundedNextDouble(tlr, max.getReal()),
-                boundedNextDouble(tlr, max.getImaginary()));
+          final boolean corners = ast.arg1().isList2();
+          // a single bound is the corner opposite to 0
+          Complex min = corners ? engine.evalComplex(ast.arg1().first()) : Complex.ZERO;
+          Complex max = engine.evalComplex(corners ? ast.arg1().second() : ast.arg1());
+          double minRe = min.getReal();
+          double minIm = min.getImaginary();
+          double maxRe = max.getReal();
+          double maxIm = max.getImaginary();
+          // the two corners span a rectangle in the complex plane
+          if (minRe > maxRe) {
+            double temp = minRe;
+            minRe = maxRe;
+            maxRe = temp;
           }
+          if (minIm > maxIm) {
+            double temp = minIm;
+            minIm = maxIm;
+            maxIm = temp;
+          }
+          if (F.isEqual(minIm, maxIm) && F.isEqual(minRe, maxRe)) {
+            return F.complexNum(minRe, minIm);
+          }
+          Random tlr = engine.getRandom();
+          // a degenerate rectangle (a line segment) keeps its fixed coordinate
+          double re = minRe < maxRe ? boundedNextDouble(tlr, minRe, maxRe) : minRe;
+          double im = minIm < maxIm ? boundedNextDouble(tlr, minIm, maxIm) : minIm;
+          return F.complexNum(re, im);
         } else if (ast.isAST2()) {
           IExpr spec = ast.arg2();
-          if (spec.isInteger()) {
-            // RandomComplex(range, n) gives a list of n numbers
-            spec = F.list(spec);
+          if (spec.isInteger() || spec.isReal()) {
+            // RandomComplex(range, n) gives a list of n numbers; a whole-valued real n is a count
+            int n = spec.toIntDefault();
+            if (n < 0) {
+              return F.NIL;
+            }
+            spec = F.list(F.ZZ(n));
           }
           if (spec.isList()) {
             IAST list = (IAST) spec;
@@ -492,7 +491,7 @@ public final class RandomFunctions {
               final int max2 = max;
               return Tensors.build(() -> F.ZZ(tlr.nextInt((max2 - min2) + 1) + min2), dimension);
             }
-            int size = arg2.toMachineInt();
+            int size = arg2.toIntDefault();
             if (size >= 0) {
               final int minimum = min;
               final int randomBound = (max - minimum) + 1;
@@ -527,7 +526,7 @@ public final class RandomFunctions {
             final boolean negative2 = negative;
             return Tensors.build(() -> randomBigInteger(upperLimit2, negative2, tlr), dimension);
           }
-          int size = arg2.toMachineInt();
+          int size = arg2.toIntDefault();
           if (size >= 0) {
             BigInteger limit = upperLimit;
             return F.mapRange(0, size, i -> randomBigInteger(limit, negative, tlr));
@@ -755,7 +754,7 @@ public final class RandomFunctions {
         } else if (ast.isAST2()) {
           if (ast.arg2().isList()) {
             if (ast.arg2().argSize() == 1) {
-              int n = ast.arg2().first().toMachineInt();
+              int n = ast.arg2().first().toIntDefault();
               if (n <= 0) {
                 return F.NIL;
               }
@@ -768,7 +767,7 @@ public final class RandomFunctions {
             }
             return Tensors.build(() -> randomReal(arg1, engine), dimension);
           }
-          int n = ast.arg2().toMachineInt();
+          int n = ast.arg2().toIntDefault();
           if (n > 0) {
             return randomASTRealVector(arg1, n, engine);
           }

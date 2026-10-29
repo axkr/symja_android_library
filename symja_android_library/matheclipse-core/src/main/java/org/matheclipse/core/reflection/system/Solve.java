@@ -3689,8 +3689,64 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    */
   static IExpr withRationalizedSolutions(IAST ast, IExpr result,
       boolean bareExpressionsAreEquations, boolean exactFirst, EvalEngine engine) {
+    return numeratorSolutions(ast, result, bareExpressionsAreEquations, exactFirst, true, false,
+        engine);
+  }
+
+  /**
+   * A system of two or more exact rational equations, with variables in a denominator, is solved
+   * by its numerators: the solutions at which a denominator vanishes are dropped. A system with
+   * machine numbers is rationalized, solved the same way, and the solutions are numericized.
+   * Elimination with the fractions themselves gets stuck on them.
+   *
+   * @return {@link F#NIL} if the system has no variable in a denominator, isn't of this kind or
+   *         its numerators aren't solved
+   */
+  private static IExpr solveRationalSystem(IAST ast, boolean isNumericArgument,
+      EvalEngine engine) {
+    if (ast.argSize() != 2 || !ast.arg2().isList()) {
+      return F.NIL;
+    }
+    final IAST variables = (IAST) ast.arg2();
+    try {
+      IAST terms = Validate.checkEquationsAndInequations(ast, 1, false);
+      boolean denominator = false;
+      for (IExpr term : terms) {
+        if (!term.isEqual()) {
+          return F.NIL;
+        }
+        IExpr difference = engine.evaluate(F.Subtract(term.first(), term.second()));
+        IExpr together = S.Together.of(engine, difference);
+        denominator |=
+            !S.Denominator.of(engine, together).isFree(x -> variables.contains(x), true);
+      }
+      if (!denominator) {
+        return F.NIL;
+      }
+    } catch (LimitException le) {
+      throw le;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+    IExpr result =
+        numeratorSolutions(ast, F.NIL, false, true, isNumericArgument, true, engine);
+    return result.isListOfLists() && result.argSize() > 0 ? result : F.NIL;
+  }
+
+  /**
+   * See {@link #withRationalizedSolutions(IAST, IExpr, boolean, boolean, EvalEngine)}.
+   *
+   * @param numericize <code>false</code> if the exact solutions of the numerators are the
+   *        solutions
+   * @param arbitraryPrecision <code>true</code> if numbers with more digits than machine numbers are
+   *        rationalized too, and the solutions numericized with their precision
+   */
+  private static IExpr numeratorSolutions(IAST ast, IExpr result,
+      boolean bareExpressionsAreEquations, boolean exactFirst, boolean numericize,
+      boolean arbitraryPrecision, EvalEngine engine) {
     if (ast.argSize() < 2 || ast.argSize() > 3 || !ast.arg2().isList()
-        || engine.isArbitraryMode()) {
+        || (engine.isArbitraryMode() && !arbitraryPrecision)) {
       return result;
     }
     if (result.isPresent() && !result.isEmptyList() && !result.isListOfLists()) {
@@ -3779,6 +3835,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
         }
         if (pole) {
+          continue;
+        }
+        if (!numericize) {
+          if (!completed.contains(ordered)) {
+            completed.append(ordered);
+          }
           continue;
         }
         IASTAppendable numeric = F.ListAlloc(n);
@@ -4740,6 +4802,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         return withoutIdentities;
       }
       ast = withoutIdentities;
+    }
+    IExpr rationalSystem = solveRationalSystem(ast, isNumericArgument, engine);
+    if (rationalSystem.isPresent()) {
+      return dropIndeterminateSolutions(ast.arg1(), inVariableOrder(rationalSystem, ast), engine);
     }
     IExpr result = dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
     if (isNumericArgument) {

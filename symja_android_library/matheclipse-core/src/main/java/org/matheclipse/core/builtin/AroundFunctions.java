@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -752,12 +753,17 @@ public class AroundFunctions {
    * {@link #mapFunction(IExpr, IAST, EvalEngine)}.
    *
    * @return {@link F#NIL} if the first argument is not an {@link S#Around}, or the derivative
-   *         cannot be found
+   *         cannot be found; a first argument which is a series is passed on to
+   *         {@link ASTSeriesData#unaryFunction(IExpr, ASTSeriesData, EvalEngine)}
    */
   public static IExpr mapUnaryAround(IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (isAround(arg1)) {
       return mapFunction(ast.head(), (IAST) arg1, engine);
+    }
+    if (arg1 instanceof ASTSeriesData) {
+      // an elementary function of a series is a series as well
+      return ASTSeriesData.unaryFunction(ast.head(), (ASTSeriesData) arg1, engine);
     }
     return F.NIL;
   }

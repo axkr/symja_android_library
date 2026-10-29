@@ -38,7 +38,8 @@ public class ListContourPlot extends ContourPlot {
 
     IExpr dataArg = ast.arg1();
     if (!dataArg.isList()) {
-      return F.NIL;
+      // `1` must be a valid array.
+      return Errors.printMessage(S.ListContourPlot, "arrayerr", F.list(dataArg), engine);
     }
     // MaxPlotPoints contours a sample of a large grid rather than every point of it
     IAST thinnedData = GraphicsOptions.downsampleMatrix((IAST) dataArg,

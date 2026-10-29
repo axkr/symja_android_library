@@ -62,6 +62,8 @@ import org.matheclipse.core.interfaces.statistics.IDistribution;
 import org.matheclipse.core.interfaces.statistics.IPDF;
 import org.matheclipse.core.interfaces.statistics.IRandomVariate;
 import org.matheclipse.core.interfaces.statistics.IStatistics;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.reflection.system.BinLists;
 import org.matheclipse.core.reflection.system.NSum;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.external.fastutil.ints.IntList;
@@ -922,6 +924,9 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (BinLists.isNonPositiveStep(ast, engine)) {
+        return F.NIL;
+      }
       try {
         if (ast.argSize() >= 3) {
           return binCountsND(ast);
@@ -944,6 +949,12 @@ public class StatisticsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.putMessage(IPatternMatcher.SET, "step", F.stringx(BinLists.STEP_MESSAGE));
+      super.setUp(newSymbol);
     }
 
     /**
@@ -1071,78 +1082,75 @@ public class StatisticsFunctions {
       if (arg2.isList1() && arg2.first().isList()) {
         return binCountsEdges(vector, (IAST) arg2.first(), engine);
       }
-      INum dxNum = F.CD1;
-      int dx = 1;
-      int xMin = 0;
-      int xMax = Integer.MIN_VALUE;
       if (arg2.isList()) {
         IAST list = (IAST) arg2;
-        if (list.size() == 4) {
-          dx = list.arg3().toIntDefault();
-          if (F.isNotPresent(dx)) {
-            return F.NIL;
-          }
-          if (dx < 0) {
-            // The step size `1` is expected to be positive
-            return Errors.printMessage(ast.topHead(), "step", F.list(list.arg3()), engine);
-          }
-          xMin = list.arg1().toIntDefault();
-          if (F.isNotPresent(xMin)) {
-            return F.NIL;
-          }
-          xMax = list.arg2().toIntDefault();
-          if (F.isNotPresent(xMax)) {
-            return F.NIL;
-          }
-          if (xMax <= xMin) {
-            return F.CEmptyList;
-          }
-          xMin = xMin / dx;
-          xMax = xMax / dx;
-        }
-      } else {
-        dx = Integer.MIN_VALUE;
-        double dxDouble = arg2.evalfNaN();
-        if (Double.isNaN(dxDouble)) {
+        if (list.size() != 4) {
           return F.NIL;
         }
-        dxNum = F.num(dxDouble);
-        IExpr dXMax = S.Max.of(engine, vector);
-        xMax = S.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault();
-        if (xMax < 0) {
+        int dx = list.arg3().toIntDefault();
+        int xMin = list.arg1().toIntDefault();
+        int xMax = list.arg2().toIntDefault();
+        if (F.isNotPresent(dx) || dx <= 0 || F.isNotPresent(xMin) || F.isNotPresent(xMax)) {
           return F.NIL;
         }
-      }
-      if (xMax >= xMin) {
-        final int capacity = xMax - xMin;
-        if (capacity > Config.MAX_AST_SIZE) {
-          ASTElementLimitExceeded.throwIt(capacity);
+        if (xMax <= xMin) {
+          return F.CEmptyList;
         }
-        int[] res = new int[capacity];
-        for (int i = 1; i < vector.size(); i++) {
-          IExpr temp = vector.get(i);
-          int index = -1;
-          if (F.isPresent(dx)) {
-            index = (((IReal) temp).floorFraction()).div(dx).toIntDefault();
-            if ((dx > 1) && temp.isInteger() && ((IInteger) temp).mod(dx).isZero()) {
-              index--;
-            }
-          } else {
-            index = S.Floor.of(engine, (((IReal) temp).divide(dxNum))).toIntDefault();
-          }
-          if (F.isNotPresent(index)) {
-            return F.NIL;
-          }
-          int binIndex = index - xMin;
-          if (binIndex < 0 || binIndex >= res.length) {
-            continue;
-          }
-          res[binIndex]++;
-        }
-        return F.mapRange(0, res.length, i -> F.ZZ(res[i]));
+        // the bins [xMin+k*dx, xMin+(k+1)*dx) which lie completely below xMax
+        return binCountsSteps(vector, xMin, (int) (((long) xMax - xMin) / dx), dx);
       }
+      double dxDouble = arg2.evalfNaN();
+      if (Double.isNaN(dxDouble)) {
+        return F.NIL;
+      }
+      INum dxNum = F.num(dxDouble);
+      IExpr dXMax = S.Max.of(engine, vector);
+      int xMax = S.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault();
+      if (xMax < 0) {
+        return F.NIL;
+      }
+      final int capacity = xMax;
+      if (capacity > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(capacity);
+      }
+      int[] res = new int[capacity];
+      for (int i = 1; i < vector.size(); i++) {
+        IExpr temp = vector.get(i);
+        int index = S.Floor.of(engine, (((IReal) temp).divide(dxNum))).toIntDefault();
+        if (F.isNotPresent(index)) {
+          return F.NIL;
+        }
+        if (index < 0 || index >= res.length) {
+          continue;
+        }
+        res[index]++;
+      }
+      return F.mapRange(0, res.length, i -> F.ZZ(res[i]));
+    }
 
-      return F.NIL;
+    /**
+     * The counts of the real numbers of <code>vector</code> in the <code>bins</code> bins
+     * <code>[xMin+k*dx, xMin+(k+1)*dx)</code>.
+     */
+    private static IExpr binCountsSteps(IAST vector, int xMin, int bins, int dx) {
+      if (bins > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(bins);
+      }
+      int[] res = new int[bins];
+      final IInteger min = F.ZZ(xMin);
+      for (int i = 1; i < vector.size(); i++) {
+        // floor((x-xMin)/dx) is floor(floor(x-xMin)/dx) for an integer dx > 0
+        IReal x = (IReal) ((IReal) vector.get(i)).subtract(min);
+        long shifted = x.floorFraction().toLongDefault();
+        if (shifted == Config.INVALID_LONG) {
+          continue;
+        }
+        long index = Math.floorDiv(shifted, dx);
+        if (index >= 0 && index < bins) {
+          res[(int) index]++;
+        }
+      }
+      return F.mapRange(0, res.length, i -> F.ZZ(res[i]));
     }
 
     /**
@@ -4645,7 +4653,7 @@ public class StatisticsFunctions {
               } else if (evaluator instanceof ICDF) {
                 variate = inverseTransform((ICDF) evaluator, dist, engine);
                 if (variate == null) {
-                  return F.NIL;
+                  return parameterMessage(evaluator, dist, engine);
                 }
               }
               if (variate != null) {
@@ -4669,22 +4677,31 @@ public class StatisticsFunctions {
                     }
                     if (dimension.length == 1) {
                       // create a list
-                      return variate.randomVariate(random, dist, dimension[0]);
+                      return sampleList(variate, random, dist, dimension[0], evaluator, engine);
                     }
                     // create a tensor recursively
                     int sampleSize = dimension[dimension.length - 1];
                     System.arraycopy(dimension, 0, dimension, 1, dimension.length - 1);
                     IASTAppendable list = F.ListAlloc(dimension[0]);
                     final IRandomVariate sampler = variate;
-                    return createTensorRecursive(dimension, 1, list,
-                        () -> sampler.randomVariate(random, dist, sampleSize));
+                    try {
+                      return createTensorRecursive(dimension, 1, list, () -> {
+                        IExpr sample = sampler.randomVariate(random, dist, sampleSize);
+                        if (sample.isNIL()) {
+                          throw new NoSampleException();
+                        }
+                        return sample;
+                      });
+                    } catch (NoSampleException nse) {
+                      return parameterMessage(evaluator, dist, engine);
+                    }
                   } else {
-                    int n = arg2.toMachineInt();
+                    int n = arg2.toIntDefault();
                     if (n >= 0) {
                       if (n >= Config.MAX_AST_SIZE) {
                         ASTElementLimitExceeded.throwIt(n);
                       }
-                      return variate.randomVariate(random, dist, n);
+                      return sampleList(variate, random, dist, n, evaluator, engine);
                     }
                   }
                   return F.NIL;
@@ -4696,7 +4713,7 @@ public class StatisticsFunctions {
                 // a univariate distribution returns a number and a multivariate one a vector.
                 IExpr sample = variate.randomVariate(random, dist, 1);
                 if (sample.isNIL()) {
-                  return F.NIL;
+                  return parameterMessage(evaluator, dist, engine);
                 }
                 return sample.isList1() ? sample.first() : sample;
               } else if (!(evaluator instanceof IDistribution)) {
@@ -4719,7 +4736,102 @@ public class StatisticsFunctions {
       return F.NIL;
     }
 
-    /** Thrown by {@link #inverseTransform} if a quantile is not a real number. */
+    /**
+     * Print a message for the first parameter of <code>dist</code> which is no number and so can't
+     * be sampled, e.g. <code>RandomVariate::posprm</code> for the <code>s</code> of
+     * <code>NormalDistribution(m, s)</code>. The scale is tested before the location. Some
+     * distributions report the message under their own name.
+     *
+     * @return <code>true</code> if a message was printed
+     */
+    private static boolean isSymbolicParameter(IAST dist, EvalEngine engine) {
+      // {position, kind} pairs in the order of the tests: kind 0 real, 1 positive,
+      // 2 non-negative integer, 3 probability
+      final int[] tests;
+      ISymbol messageHead = S.RandomVariate;
+      if (dist.isAST(S.NormalDistribution, 3)) {
+        tests = new int[] {2, 1, 1, 0};
+      } else if (dist.isAST(S.ExponentialDistribution, 2)
+          || dist.isAST(S.PoissonDistribution, 2)) {
+        tests = new int[] {1, 1};
+      } else if (dist.isAST(S.GammaDistribution, 3)) {
+        tests = new int[] {1, 1, 2, 1};
+        messageHead = S.GammaDistribution;
+      } else if (dist.isAST(S.BinomialDistribution, 3)) {
+        tests = new int[] {1, 2, 2, 3};
+        messageHead = S.BinomialDistribution;
+      } else if (dist.isAST(S.BernoulliDistribution, 2)) {
+        tests = new int[] {1, 3};
+        messageHead = S.BernoulliDistribution;
+      } else if (dist.isAST(S.UniformDistribution, 2) && dist.arg1().isList2()) {
+        IAST bounds = (IAST) dist.arg1();
+        if (isSymbolic(bounds.arg1(), engine) || isSymbolic(bounds.arg2(), engine)) {
+          // The bounds of `1` are expected to be real numbers.
+          Errors.printMessage(S.RandomVariate, "unifr", F.list(dist), engine);
+          return true;
+        }
+        return false;
+      } else {
+        return false;
+      }
+      for (int i = 0; i < tests.length; i += 2) {
+        IExpr parameter = dist.get(tests[i]);
+        if (isSymbolic(parameter, engine)) {
+          final String[] messages = {"realprm", "posprm", "nnintprm", "probprm"};
+          Errors.printMessage(messageHead, messages[tests[i + 1]],
+              F.list(parameter, F.ZZ(tests[i]), dist), engine);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /** <code>true</code> if <code>parameter</code> has no real numeric value. */
+    private static boolean isSymbolic(IExpr parameter, EvalEngine engine) {
+      if (parameter.isReal()) {
+        return false;
+      }
+      return !parameter.isNumericFunction(true) || !engine.evalN(parameter).isReal();
+    }
+
+    /** A list of <code>n</code> samples, or {@link F#NIL} if the distribution has none. */
+    private static IExpr sampleList(IRandomVariate variate, Random random, IAST dist, int n,
+        IEvaluator evaluator, EvalEngine engine) {
+      IExpr sample = variate.randomVariate(random, dist, n);
+      return sample.isPresent() ? sample : parameterMessage(evaluator, dist, engine);
+    }
+
+    /**
+     * Print the <code>posprm</code> message for the first parameter of <code>dist</code> which
+     * isn't a number although the distribution requires it to be positive, or the message of
+     * {@link #isSymbolicParameter}. A distribution with such a symbolic parameter has nothing to
+     * sample.
+     *
+     * @return {@link F#NIL}
+     */
+    private static IExpr parameterMessage(IEvaluator evaluator, IAST dist, EvalEngine engine) {
+      if (isSymbolicParameter(dist, engine)) {
+        return F.NIL;
+      }
+      if (evaluator instanceof IDistribution) {
+        IExpr assumptions = ((IDistribution) evaluator).parameterAssumptions(dist);
+        if (assumptions.isPresent()) {
+          IAST conditions = assumptions.isAnd() ? (IAST) assumptions : F.list(assumptions);
+          for (int i = 1; i < dist.size(); i++) {
+            IExpr parameter = dist.get(i);
+            if (!parameter.isNumericFunction(true)
+                && conditions.exists(c -> c.equals(F.Greater(parameter, F.C0)))) {
+              // Parameter `1` at position `2` in `3` is expected to be positive.
+              return Errors.printMessage(S.RandomVariate, "posprm",
+                  F.list(parameter, F.ZZ(i), dist), engine);
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    /** Thrown if a quantile is not a real number or a sampler has no sample. */
     private static final class NoSampleException extends RuntimeException {
       private static final long serialVersionUID = 1L;
 

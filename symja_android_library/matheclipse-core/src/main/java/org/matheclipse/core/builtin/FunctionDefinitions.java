@@ -69,6 +69,7 @@ public final class FunctionDefinitions {
       S.BoxMatrix.setEvaluator(new org.matheclipse.core.reflection.system.BoxMatrix());
       S.CellularAutomaton
           .setEvaluator(new org.matheclipse.core.reflection.system.CellularAutomaton());
+      S.TuringMachine.setEvaluator(new org.matheclipse.core.reflection.system.TuringMachine());
       S.CirclePoints.setEvaluator(new org.matheclipse.core.reflection.system.CirclePoints());
       S.CentralFeature.setEvaluator(new org.matheclipse.core.reflection.system.CentralFeature());
       S.ColorData.setEvaluator(new org.matheclipse.core.reflection.system.ColorData());
@@ -130,6 +131,7 @@ public final class FunctionDefinitions {
       S.FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
       S.FindSequenceFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.FindSequenceFunction());
+      S.FindCurvePath.setEvaluator(new org.matheclipse.core.reflection.system.FindCurvePath());
       S.FindShortestCurve
           .setEvaluator(new org.matheclipse.core.reflection.system.FindShortestCurve());
       S.FiniteGroupCount

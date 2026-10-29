@@ -1205,6 +1205,10 @@ public class ExprParser extends Scanner {
                 // 0`20 is the exact zero
                 return F.C0;
               }
+              if (isIntegerZero(numberStr.replace(".", ""))) {
+                // a zero has no significant digits: 0.`20 is the machine zero
+                return F.CD0;
+              }
               return F.num(mantissaStr, doublePrecision);
               // long precision = getJavaLong();
               // if (precision < ParserConfig.MACHINE_PRECISION) {

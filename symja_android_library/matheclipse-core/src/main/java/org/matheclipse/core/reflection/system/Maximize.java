@@ -601,7 +601,8 @@ public class Maximize extends AbstractFunctionEvaluator {
    * Whether the answer <code>{value, {x->x0, ...}}</code> of a numeric search can stand for the
    * extremum: a finite value at a finite point, which no feasible point near it, or a little
    * further away along one variable, improves. <code>NMaximize({-1.0+Tanh(x), x>0}, x)</code>
-   * gives a point next to <code>x==0</code>, where the function is smallest; and an
+   * stops where the function is flat up to rounding, and a point far away is still a little better;
+   * and an
    * "unbounded" <code>{-Infinity, {x->Indeterminate}}</code> of a bounded function is no
    * minimum either. The point itself is not tested against the constraints: the search reads a
    * strict inequality as non-strict.
@@ -633,6 +634,9 @@ public class Maximize extends AbstractFunctionEvaluator {
         }
         double c = coordinate.evalf();
         double scale = Math.max(1.0, Math.abs(c));
+        // the values next to the point are the same: the function is flat up to rounding there
+        boolean flat = true;
+        boolean near = false;
         for (double step : steps) {
           for (int sign = -1; sign <= 1; sign += 2) {
             IExpr shifted = F.num(c + sign * step * scale);
@@ -643,7 +647,18 @@ public class Maximize extends AbstractFunctionEvaluator {
             IExpr f = engine.evalN(objective.replaceAll(moved).orElse(objective));
             if (f.isReal()) {
               double fv = f.evalf();
-              if (isMax ? fv > best + tolerance : fv < best - tolerance) {
+              if (step == steps[0]) {
+                flat &= fv == best;
+                near = true;
+              }
+              if (step >= 1.0) {
+                // a point far away which is better at all, or as good where the function is flat:
+                // the search stopped on an asymptote
+                if (isMax ? fv > best || (flat && near && fv == best)
+                    : fv < best || (flat && near && fv == best)) {
+                  return false;
+                }
+              } else if (isMax ? fv > best + tolerance : fv < best - tolerance) {
                 return false;
               }
             }

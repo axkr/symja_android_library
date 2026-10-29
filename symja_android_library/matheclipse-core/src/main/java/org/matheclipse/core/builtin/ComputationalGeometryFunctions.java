@@ -3305,14 +3305,15 @@ public class ComputationalGeometryFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0() || (ast.isAST1() && ast.arg1() == S.All)) {
-        return names(SOLIDS);
+        return entities();
       }
-      if (ast.arg1().isList2() && ast.arg1().first().isString()
-          && ast.arg1().second().isInteger()) {
-        return family(ast, ast.arg1().first().toString(), ast.arg1().second().toIntDefault(),
-            engine);
+      if (ast.isAST1() && ast.arg1().isInteger() && ast.arg1().isPositive()) {
+        return withFaceCount(ast.arg1().toIntDefault());
       }
       IExpr arg1 = Entities.nameOf(ast.arg1(), POLYHEDRON);
+      if (arg1.isList2() && arg1.first().isString() && arg1.second().isInteger()) {
+        return family(ast, arg1.first().toString(), arg1.second().toIntDefault(), engine);
+      }
       if (!arg1.isString()) {
         return F.NIL;
       }
@@ -3375,6 +3376,71 @@ public class ComputationalGeometryFunctions {
         return F.Missing(S.NotAvailable);
       }
       return combinatorialProperty(property, exactVertices(name), vertices, faces);
+    }
+
+    /**
+     * <code>PolyhedronData()</code>: the named solids and the members <code>{kind, n}</code> of the
+     * families which have no name of their own here, sorted by their names. The square pyramid is
+     * listed as <code>{"Pyramid", 4}</code>.
+     */
+    private static IAST entities() {
+      List<IExpr> entities = new ArrayList<IExpr>();
+      for (String solid : SOLIDS) {
+        if (!"SquarePyramid".equals(solid)) {
+          entities.add(F.stringx(solid));
+        }
+      }
+      for (int n = 3; n <= MAX_PRISM_SIDES; n++) {
+        if (n != 3) {
+          entities.add(F.list(F.stringx(ANTIPRISM), F.ZZ(n)));
+        }
+        if (n != 4) {
+          entities.add(F.list(F.stringx(PRISM), F.ZZ(n)));
+        }
+        if (n == 4 || n == 5) {
+          entities.add(F.list(F.stringx(PYRAMID), F.ZZ(n)));
+        }
+      }
+      entities.sort(Comparator.comparing((IExpr e) -> (e.isList() ? e.first() : e).toString(),
+          String.CASE_INSENSITIVE_ORDER)
+          .thenComparingInt(e -> e.isList() ? e.second().toIntDefault() : 0));
+      return F.ListAlloc(entities);
+    }
+
+    /**
+     * <code>PolyhedronData(f)</code>: the solids of {@link #entities()} with <code>f</code> faces,
+     * <code>{}</code> if there is none.
+     */
+    private static IExpr withFaceCount(int faceCount) {
+      IASTAppendable result = F.ListAlloc();
+      if (faceCount < 4) {
+        return result;
+      }
+      for (IExpr entity : entities()) {
+        if (faceCount(entity) == faceCount) {
+          result.append(entity);
+        }
+      }
+      return result;
+    }
+
+    /** The number of faces of an entry of {@link #entities()}, or -1 if it is not known. */
+    private static int faceCount(IExpr entity) {
+      if (entity.isList()) {
+        int n = entity.second().toIntDefault();
+        switch (entity.first().toString()) {
+          case ANTIPRISM:
+            return 2 * n + 2;
+          case PRISM:
+            return n + 2;
+          default:
+            return n + 1;
+        }
+      }
+      String name = entity.toString();
+      double[][] vertices = vertices(name);
+      List<int[]> faces = vertices == null ? null : faces(name, vertices);
+      return faces == null ? -1 : faces.size();
     }
 
     /**

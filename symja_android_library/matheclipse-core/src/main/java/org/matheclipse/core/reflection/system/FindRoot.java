@@ -595,6 +595,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    IExpr functionRoot = functionRoot(ast, originalAST, engine);
+    if (functionRoot.isPresent()) {
+      return functionRoot;
+    }
     ast = threadVectorEquations(ast);
     ast = flattenNestedEquations(ast);
     ast = unwrapSingleResidual(ast);
@@ -638,6 +642,36 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * <code>FindRoot(f, {x0})</code> for a function <code>f</code> - a symbol like <code>Cos</code>
+   * or a pure function - searches a root of <code>f</code> itself from the start value
+   * <code>x0</code> and gives the plain list <code>{x}</code> of the root.
+   *
+   * @return {@link F#NIL} if the arguments have not this form or no root is found
+   */
+  private static IExpr functionRoot(IAST ast, IAST originalAST, EvalEngine engine) {
+    if (ast.argSize() != 2 || !ast.arg2().isList() || ast.arg2().argSize() != 1) {
+      return F.NIL;
+    }
+    IExpr function = ast.arg1();
+    IExpr start = ast.arg2().first();
+    if (!(function.isSymbol() || function.isFunction()) || !start.isNumericFunction(true)) {
+      return F.NIL;
+    }
+    ISymbol x = F.Dummy("x");
+    IASTAppendable findRoot = F.ast(S.FindRoot, originalAST.size() + 1);
+    findRoot.append(F.unaryAST1(function, x));
+    findRoot.append(F.list(x, start));
+    for (int i = 3; i < originalAST.size(); i++) {
+      findRoot.append(originalAST.get(i));
+    }
+    IExpr result = engine.evaluate(findRoot);
+    if (result.isListOfRules() && result.argSize() == 1) {
+      return F.list(result.first().second());
+    }
+    return F.NIL;
   }
 
   /**

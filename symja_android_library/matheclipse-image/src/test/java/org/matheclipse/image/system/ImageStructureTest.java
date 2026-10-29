@@ -73,6 +73,66 @@ public class ImageStructureTest extends AbstractTestCase {
         "ImageApply");
   }
 
+  /** <code>Interleaving -&gt; False</code> hands the function every channel value on its own. */
+  @Test
+  public void imageApplyInterleavingFalse() {
+    check("ImageData(ImageApply(1-#&, Image({{{0.25,0.5,1.0}}}), Interleaving->False))", //
+        "{{{0.75,0.5,0.0}}}");
+    // the alpha channel is carried through
+    check("ImageData(ImageApply(2*#&, Image({{{0.2,0.4,0.1,0.5}}}), Interleaving->False))", //
+        "{{{0.4,0.8,0.2,0.5}}}");
+    check("ImageData(ImageApply(1-#&, Image({{{0.25,0.5,1.0},{0.0,0.0,0.0}}}), "
+        + "Interleaving->False, Masking->{{1,0}}))", //
+        "{{{0.75,0.5,0.0},{0.0,0.0,0.0}}}");
+    // a gray image is the same either way
+    check("ImageData(ImageApply(1-#&, Image({{0.25, 0.5}}), Interleaving->False))", //
+        "{{0.75,0.5}}");
+    check("ImageData(ImageApply(Max, Image({{{0.2,0.4,0.1}}}), Interleaving->True))", //
+        "{{0.4}}");
+  }
+
+  @Test
+  public void imageApplyInterpolatingFunction() {
+    check("f = Interpolation({{0., 1.}, {1., 0.}}, InterpolationOrder->1); "
+        + "ImageData(ImageApply(f, Image({{0.25, 0.75}})))", //
+        "{{0.75,0.25}}");
+    check("f = Interpolation({{0., 0.}, {0.5, 0.25}, {1., 1.}}, InterpolationOrder->1); "
+        + "ImageData(ImageApply(f, Image({{{0.25, 0.75, 0.5}}}), Interleaving->False))", //
+        "{{{0.125,0.625,0.25}}}");
+  }
+
+  /** <code>RandomImage(spec, size)</code> - a Real32 image of random samples. */
+  @Test
+  public void randomImage() {
+    check("img = RandomImage(2, {4, 3}); {ImageDimensions(img), ImageType(img), "
+        + "ImageChannels(img)}", //
+        "{{4,3},Real32,1}");
+    check("d = ImageData(RandomImage({-1, 1}, {5, 4})); {Dimensions(d), -1 <= Min(d), "
+        + "Max(d) <= 1}", //
+        "{{4,5},True,True}");
+    check("ImageData(RandomImage({0.5, 0.5}, {2, 1}))", //
+        "{{0.5,0.5}}");
+    check("ImageDimensions(RandomImage(1, 3))", //
+        "{3,3}");
+    check("d = ImageData(RandomImage(NormalDistribution(10, 0.01), {3, 2})); "
+        + "{Dimensions(d), 9 < Min(d), Max(d) < 11}", //
+        "{{2,3},True,True}");
+    check("img = RandomImage(1, {3, 2}, ColorSpace -> \"RGB\"); "
+        + "{Dimensions(ImageData(img)), ImageChannels(img), ImageColorSpace(img)}", //
+        "{{2,3,3},3,RGB}");
+    // RandomVariate: Parameter y at position 1 in PoissonDistribution(y) is expected to be
+    // positive.
+    check("RandomImage(PoissonDistribution(y), {3, 3})", //
+        "RandomImage(PoissonDistribution(y),{3,3})");
+    check("RandomImage(a, {2, 2})", //
+        "RandomImage(a,{2,2})");
+    check("RandomImage(1, {0, 2})", //
+        "RandomImage(1,{0,2})");
+    // RandomImage: Unknown option foo->1 in RandomImage(1,{2,2},foo->1).
+    check("RandomImage(1, {2, 2}, Foo -> 1)", //
+        "RandomImage(1,{2,2},foo->1)");
+  }
+
   /** <code>ConstantImage(v, size)</code> - every pixel the same, grey or coloured. */
   @Test
   public void constantImage() {

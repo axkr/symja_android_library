@@ -662,7 +662,14 @@ public class Iterator {
         final double next = Math.ceil(steps);
         // the end test of Range is one bit stricter than the one of Table, Sum or Do
         final int fuzzBits = range ? END_FUZZ_BITS - 1 : END_FUZZ_BITS;
-        this.last = (long) (next - steps < Math.scalb(next, fuzzBits) ? next : Math.floor(steps));
+        // the fuzz is relative to the size of the limits, not to the width of the range: the
+        // difference of the limits of {x, 2.*^-15, 2.04*^-15, 1.*^-17} carries the rounding
+        // error of numbers of the size 2.*^-15
+        final double magnitude = Math.max(Math.max(Math.abs(lowerLimit), Math.abs(upperLimit)),
+            next * Math.abs(step));
+        this.last = (long) ((next - steps) * Math.abs(step) < Math.scalb(magnitude, fuzzBits)
+            ? next
+            : Math.floor(steps));
       } else {
         this.last = -1L;
       }

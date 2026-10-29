@@ -1169,6 +1169,9 @@ public class Algebra {
           matcher = Predicates.toFreeQ(ast.arg2());
         }
         IExpr result = AlgebraUtil.expand(ast1, matcher, false, true, true).orElse(ast1);
+        if (result.isPlus()) {
+          result = mergeLikeRadicals((IAST) result, engine);
+        }
         // Apply TrigExpand if Trig->True
         if (options[0].isTrue()) {
           result = TrigExpand.trigExpand(result, engine);
@@ -1182,6 +1185,86 @@ public class Algebra {
       }
       return ast.arg1();
     }
+  }
+
+  /**
+   * Merge the terms of a sum which differ only in a rational number and an integer power of the
+   * same radical of an integer: <code>Sqrt(3) + 2/Sqrt(3)</code> is <code>5/Sqrt(3)</code> and
+   * <code>a*3^(1/3) + a/3^(2/3)</code> is <code>4*a/3^(2/3)</code>. The merged term keeps the
+   * lowest power of the radical.
+   *
+   * @return <code>sum</code> if there are no such terms
+   */
+  private static IExpr mergeLikeRadicals(IAST sum, EvalEngine engine) {
+    // the key of a term: the base, the exponent modulo 1 and the factors which are no numbers
+    java.util.Map<IAST, java.util.List<Integer>> groups = new java.util.LinkedHashMap<>();
+    IExpr[] coefficients = new IExpr[sum.size()];
+    IRational[] exponents = new IRational[sum.size()];
+    for (int i = 1; i < sum.size(); i++) {
+      IExpr term = sum.get(i);
+      IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+      IExpr coefficient = F.C1;
+      IExpr radical = F.NIL;
+      IASTAppendable rest = F.TimesAlloc(factors.argSize());
+      for (IExpr factor : factors) {
+        if (factor.isRational() || (factor.isComplex() && factor.re().isRational())) {
+          coefficient = factor;
+        } else if (radical.isNIL() && factor.isPower() && factor.base().isInteger()
+            && factor.base().greaterThan(F.C1).isTrue() && factor.exponent().isFraction()) {
+          radical = factor;
+        } else {
+          rest.append(factor);
+        }
+      }
+      if (radical.isNIL()) {
+        continue;
+      }
+      IRational exponent = (IRational) radical.exponent();
+      IRational fractionalPart = exponent.subtract(exponent.floorFraction());
+      IAST key = F.list(radical.base(), fractionalPart, rest);
+      coefficients[i] = coefficient;
+      exponents[i] = exponent;
+      groups.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(i);
+    }
+    boolean merged = false;
+    IASTAppendable result = F.PlusAlloc(sum.argSize());
+    java.util.Set<Integer> done = new java.util.HashSet<>();
+    for (int i = 1; i < sum.size(); i++) {
+      if (done.contains(i)) {
+        continue;
+      }
+      if (exponents[i] == null) {
+        result.append(sum.get(i));
+        continue;
+      }
+      IAST key = null;
+      for (java.util.Map.Entry<IAST, java.util.List<Integer>> entry : groups.entrySet()) {
+        if (entry.getValue().contains(i)) {
+          key = entry.getKey();
+          break;
+        }
+      }
+      java.util.List<Integer> group = groups.get(key);
+      if (group.size() < 2) {
+        result.append(sum.get(i));
+        continue;
+      }
+      IRational lowest = exponents[group.get(0)];
+      for (int j : group) {
+        if (exponents[j].isLT(lowest)) {
+          lowest = exponents[j];
+        }
+      }
+      IASTAppendable merge = F.PlusAlloc(group.size());
+      for (int j : group) {
+        // c*p^r == c*p^(r-lowest)*p^lowest with an integer r-lowest
+        merge.append(F.Times(coefficients[j], F.Power(key.arg1(), exponents[j].subtract(lowest))));
+        done.add(j);
+      }
+      result.append(F.Times(engine.evaluate(merge), F.Power(key.arg1(), lowest), key.arg3()));
+      merged = true;
+    }
+    return merged ? engine.evaluate(result) : sum;
   }
 
   /**

@@ -446,6 +446,8 @@ public class Errors {
       "nmet", "Unable to find the domain with the available methods.", //
       "nmod", "`1` is not valid modulo `2`.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
+      "nnintprm",
+      "Parameter `1` at position `2` in `3` is expected to be a non-negative integer.", //
       "nnumeq",
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
@@ -470,6 +472,8 @@ public class Errors {
       "noawt",
       "`1` needs AWT, which this runtime does not provide (a native image on macOS has none); use SVG output instead.", //
       "noopen", "Cannot open `1`.", //
+      "noopmon",
+      "The optimization was solved by an algorithm that does not provide monitoring information. Choose a specific iterative method if this information is necessary.", //
       "noprime", "There are no primes in the specified interval.", //
       "notprop",
       "`1` is not a known property or size specification for `2`. Use `2`(\"Properties\") for a list of properties.", //
@@ -569,6 +573,8 @@ public class Errors {
       "posr", "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
       "post", "The threshold `1` should be positive.", //
       "ppnt", "The value `1` of argument `2`  must be a positive integer.", //
+      "probprm",
+      "Parameter `1` at position `2` in `3` is expected to be between 0 and 1 inclusive.", //
       "preal", "The parameter `1` should be real-valued.", //
       "precbd", "Requested precision `1` is not a machine-sized real number.", //
       "precsm", "Requested precision `1` is smaller than `2`.", //
@@ -595,6 +601,7 @@ public class Errors {
       "symmcomp", "Symmetry specification `1` is incompatible with expression `2`.", //
       "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
+      "realprm", "Parameter `1` at position `2` in `3` is expected to be real.", //
       "realx", "The value `1` is not a real number.", //
       "reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //
       "rect", "Nonrectangular tensor encountered", //
@@ -679,6 +686,7 @@ public class Errors {
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "underdet", "The system is underdetermined.", //
       "unfl", "Underflow occurred in computation.", //
+      "unifr", "The bounds of `1` are expected to be real numbers.", //
       "unitsys", "Cannot set `1` to `2`; value must be \"Metric\" or \"Imperial\".", //
       "unkds",
       "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //

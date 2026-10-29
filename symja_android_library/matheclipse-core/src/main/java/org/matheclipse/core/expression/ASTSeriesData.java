@@ -3113,6 +3113,116 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
   }
 
+  /** The elementary functions which {@link #unaryFunction} maps over a series. */
+  private static final java.util.Set<IExpr> UNARY_SERIES_FUNCTIONS = java.util.Set.of(S.Sin,
+      S.Cos, S.Tan, S.Cot, S.Sec, S.Csc, S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch,
+      S.ArcSin, S.ArcTan, S.ArcSinh, S.ArcTanh, S.Log, S.Erf, S.Sinc);
+
+  /**
+   * An elementary function <code>f(s)</code> of the series <code>s</code>, which is a series in the
+   * same variable: with <code>s == s0 + t</code> and <code>t</code> of a positive order,
+   * <code>f(s) == Sum(f^(k)(s0)/k!*t^k)</code>. The order of the result is the lowest order of the
+   * terms <code>t^k</code> with a non-zero coefficient, so <code>Cos(x + 2*x^2 + O(x)^4)</code>
+   * is known up to <code>O(x)^5</code>. <code>Log</code> of a series with a leading term
+   * <code>c*x^m</code> has <code>Log(c) + m*Log(x)</code> in its constant coefficient.
+   *
+   * @return {@link F#NIL} if <code>head</code> isn't one of the elementary functions, or the
+   *         series has a pole at the expansion point
+   */
+  public static IExpr unaryFunction(IExpr head, ASTSeriesData series, EvalEngine engine) {
+    if (!UNARY_SERIES_FUNCTIONS.contains(head)) {
+      return F.NIL;
+    }
+    int lead = series.minExponent;
+    while (lead < series.truncateOrder && series.coefficient(lead).isZero()) {
+      lead++;
+    }
+    if (lead >= series.truncateOrder) {
+      // nothing is known about the series
+      return F.NIL;
+    }
+    IExpr logTerm = F.C0;
+    ASTSeriesData s = series;
+    if (head == S.Log && lead != 0) {
+      // Log(c*x^m*(1+u)) == Log(c) + m*Log(x) + Log(1+u)
+      IExpr c = series.coefficient(lead);
+      IExpr x = series.expansionVariable;
+      IExpr x0 = series.expansionPoint;
+      IRational m = F.QQ(lead, series.puiseuxDenominator);
+      IExpr logX;
+      if (x0.isZero()) {
+        logX = F.Log(x);
+      } else if (x0.isInfinity()) {
+        logX = F.Log(x);
+        m = m.negate();
+      } else if (x0.isDirectedInfinity()) {
+        return F.NIL;
+      } else {
+        logX = F.Log(F.Subtract(x, x0));
+      }
+      logTerm = F.Times(m, logX);
+      s = series.shift(-lead).times(F.Power(c, F.CN1));
+      s.setCoeff(0, F.C1);
+      logTerm = F.Plus(F.Log(c), logTerm);
+      lead = 0;
+    }
+    if (lead < 0) {
+      return F.NIL;
+    }
+    final IExpr s0 = s.coefficient(0);
+    // t = s - s0 from its leading index v on
+    int v = 1;
+    while (v < s.truncateOrder && s.coefficient(v).isZero()) {
+      v++;
+    }
+    final IExpr y = F.Dummy("y");
+    if (v >= s.truncateOrder) {
+      ASTSeriesData constant =
+          new ASTSeriesData(s.expansionVariable, s.expansionPoint, 0, s.truncateOrder,
+              s.puiseuxDenominator);
+      IExpr value = engine.evaluate(F.Plus(logTerm, F.unaryAST1(head, s0)));
+      if (!value.isZero()) {
+        constant.setCoeff(0, value);
+      }
+      return constant;
+    }
+    ASTSeriesData t = new ASTSeriesData(s.expansionVariable, s.expansionPoint, v,
+        s.truncateOrder, s.puiseuxDenominator);
+    for (int i = v; i < s.truncateOrder; i++) {
+      IExpr coefficient = s.coefficient(i);
+      if (!coefficient.isZero()) {
+        t.setCoeff(i, coefficient);
+      }
+    }
+    // the terms t^k with (k+1)*v beyond the order of t can't change the result
+    final int outerN = (s.truncateOrder + v - 1) / v + 1;
+    ASTSeriesData outer =
+        seriesDataRecursive(F.unaryAST1(head, y), y, s0, outerN, 0, engine);
+    if (outer == null || outer.puiseuxDenominator != 1 || outer.minExponent < 0
+        || outer.truncateOrder <= outerN) {
+      return F.NIL;
+    }
+    // the first neglected term of the outer series
+    ASTSeriesData result = new ASTSeriesData(s.expansionVariable, s.expansionPoint, 0,
+        (outerN + 1) * v, s.puiseuxDenominator);
+    IExpr c0 = engine.evaluate(F.Plus(logTerm, outer.coefficient(0)));
+    if (!c0.isZero()) {
+      result.setCoeff(0, c0);
+    }
+    ASTSeriesData power = t;
+    for (int k = 1; k <= outerN; k++) {
+      engine.checkTimeLimit();
+      if (k > 1) {
+        power = power.timesPS(t);
+      }
+      IExpr a = outer.coefficient(k);
+      if (!a.isZero()) {
+        result = result.plusPS(power.times(a));
+      }
+    }
+    return result;
+  }
+
   public ASTSeriesData shift(int shift) {
     ASTSeriesData series = new ASTSeriesData(this.expansionVariable, this.expansionPoint,
         this.minExponent + shift, truncateOrder + shift, puiseuxDenominator);

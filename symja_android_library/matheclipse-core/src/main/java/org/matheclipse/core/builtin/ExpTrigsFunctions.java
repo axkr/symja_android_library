@@ -3919,6 +3919,10 @@ public class ExpTrigsFunctions {
       if (negExpr.isPresent()) {
         return Sinc(negExpr);
       }
+      if (arg1.isComplex() || (arg1.isTimes() && arg1.first().isComplex())) {
+        // an exact complex argument stays symbolic: Sinc(I), Sinc(1+I), Sinc(2*I*Pi)
+        return F.NIL;
+      }
       IExpr sin = S.Sin.ofNIL(engine, arg1);
       if (sin.isPresent() && !sin.isSin()) {
         return sin.divide(arg1);

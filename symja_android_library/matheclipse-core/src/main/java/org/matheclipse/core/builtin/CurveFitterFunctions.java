@@ -13,6 +13,7 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.linear.SingularValueDecomposition;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
@@ -333,6 +334,50 @@ public class CurveFitterFunctions {
     }
 
     /**
+     * A model which is linear in the parameters and whose parameters are not determined by the
+     * data - there are fewer points than parameters, or the basis functions depend on each other
+     * at the points - has the parameters of the least squares solution with the smallest norm in
+     * the coordinates of the basis functions scaled to unit length, whatever the start values.
+     *
+     * @return <code>null</code> if the model is not linear in the parameters, the data are not
+     *         numeric or the parameters are determined by the data
+     */
+    private static double[] minimumNormLinearFit(IAST data, IExpr model, IAST symbols,
+        IAST variables, EvalEngine engine) {
+      IASTAppendable basis = F.ListAlloc(symbols.argSize());
+      for (IExpr parameter : symbols) {
+        IExpr derivative = engine.evaluate(F.D(model, parameter));
+        if (!derivative.isFree(x -> symbols.contains(x), false)) {
+          return null;
+        }
+        basis.append(derivative);
+      }
+      IAST dataMatrix = Fit.buildDataMatrix(data, variables.argSize());
+      if (dataMatrix.isNIL()) {
+        return null;
+      }
+      final double[][] points = dataMatrix.toDoubleMatrix(false);
+      if (points == null) {
+        return null;
+      }
+      final int n = variables.argSize();
+      IExpr offset = engine.evaluate(F.subst(model, F.mapList(symbols, p -> F.Rule(p, F.C0))));
+      double[] response = new double[points.length];
+      try {
+        for (int i = 0; i < points.length; i++) {
+          response[i] = points[i][n] - engine.evalDouble(engine.evaluate(
+              F.subst(offset, Fit.pointRules(variables, (IAST) dataMatrix.get(i + 1)))));
+        }
+        return Fit.scaledLeastSquares(Fit.designMatrix(dataMatrix, basis, variables, engine),
+            response, true);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        // a basis function without a numeric value: the iteration reports it
+        return null;
+      }
+    }
+
+    /**
      * The model variables <code>x</code> or <code>{x, y, ...}</code> as a list.
      *
      * @return {@link F#NIL} if <code>arg</code> is no variable and no list of variables
@@ -442,9 +487,13 @@ public class CurveFitterFunctions {
           try {
             final IAST symbols = listOfSymbols;
             final IExpr model = function;
-            double[] values = variables.argSize() == 1
-                ? fit(data, model, symbols, variables.arg1(), initialGuess, null, engine)
-                : fitMultivariate(data, model, symbols, variables, initialGuess, engine);
+            double[] linear = workingPrecision == S.Automatic
+                ? minimumNormLinearFit(data, model, symbols, variables, engine)
+                : null;
+            final double[] values = linear != null ? linear
+                : variables.argSize() == 1
+                    ? fit(data, model, symbols, variables.arg1(), initialGuess, null, engine)
+                    : fitMultivariate(data, model, symbols, variables, initialGuess, engine);
             if (values != null) {
               IAST rules =
                   F.mapList(symbols, (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
@@ -636,21 +685,18 @@ public class CurveFitterFunctions {
         EvalEngine engine) {
       final int rows = dataMatrix.argSize();
       final int columns = termList.argSize();
-      final double[][] design = new double[rows][columns];
-      final double[] length = new double[columns];
+      final double[][] design;
       try {
-        for (int i = 0; i < rows; i++) {
-          final IAST rules = pointRules(variables, (IAST) dataMatrix.get(i + 1));
-          for (int j = 0; j < columns; j++) {
-            design[i][j] = engine.evalDouble(engine.evaluate(F.subst(termList.get(j + 1), rules)));
-            length[j] += design[i][j] * design[i][j];
-          }
-        }
+        design = designMatrix(dataMatrix, termList, variables, engine);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return F.NIL;
       }
+      final double[] length = new double[columns];
       for (int j = 0; j < columns; j++) {
+        for (int i = 0; i < rows; i++) {
+          length[j] += design[i][j] * design[i][j];
+        }
         length[j] = Math.sqrt(length[j]);
       }
       for (int i = 0; i < rows; i++) {
@@ -685,12 +731,7 @@ public class CurveFitterFunctions {
      * There is one coefficient for each function, and no constant which is not in the basis.
      *
      * <p>
-     * The problem is linear. The columns of the design matrix are scaled to unit length, so that
-     * <code>1</code> and <code>x^5</code> count alike, and the matrix is solved by its QR
-     * decomposition. If the functions depend on each other at the points of the data, or if
-     * there are more functions than points, the singular values of the matrix as it is give the
-     * solution with the smallest coefficients. A function which is zero at every point gets the
-     * coefficient 0. An iteration from a first guess ran away with such functions.
+     * The problem is linear, see {@link #scaledLeastSquares(double[][], double[], boolean)}.
      *
      * @param dataMatrix the data as <code>{x, y, ..., f}</code> rows; the basis functions are
      *        evaluated at these <code>x, y, ...</code>, so that <code>Sin(2*x)</code> is zero at
@@ -702,19 +743,56 @@ public class CurveFitterFunctions {
      */
     private static double[] linearLeastSquares(IAST dataMatrix, double[][] points,
         IAST termList, IAST variables, EvalEngine engine) {
-      final int rows = points.length;
-      final int columns = termList.argSize();
       final int n = variables.argSize();
-      final double[][] design = new double[rows][columns];
-      final double[] response = new double[rows];
-      for (int i = 0; i < rows; i++) {
+      final double[] response = new double[points.length];
+      for (int i = 0; i < points.length; i++) {
         response[i] = points[i][n];
+      }
+      return scaledLeastSquares(designMatrix(dataMatrix, termList, variables, engine), response,
+          false);
+    }
+
+    /**
+     * The values of the basis functions at the points of the data.
+     *
+     * @param dataMatrix the data as <code>{x, y, ..., f}</code> rows
+     */
+    private static double[][] designMatrix(IAST dataMatrix, IAST termList, IAST variables,
+        EvalEngine engine) {
+      final int rows = dataMatrix.argSize();
+      final int columns = termList.argSize();
+      final double[][] design = new double[rows][columns];
+      for (int i = 0; i < rows; i++) {
         final IAST rules = pointRules(variables, (IAST) dataMatrix.get(i + 1));
         for (int j = 0; j < columns; j++) {
           // the exact value first: Sin(2*x) is 0 at Pi, and not the sine of 6.283185307179586
           design[i][j] = engine.evalDouble(engine.evaluate(F.subst(termList.get(j + 1), rules)));
         }
       }
+      return design;
+    }
+
+    /**
+     * The coefficients which minimize the sum of the squared residuals of
+     * <code>design.c == response</code>.
+     *
+     * <p>
+     * The columns of the design matrix are scaled to unit length, so that <code>1</code> and
+     * <code>x^5</code> count alike, and the matrix is solved by its QR decomposition. If the
+     * columns depend on each other, or if there are more columns than rows, the singular values of
+     * the scaled matrix give the solution with the smallest coefficients in the scaled coordinates.
+     * A column which is zero at every point gets the coefficient 0. An iteration from a first guess
+     * ran away with such functions.
+     *
+     * @param minimumNormOnly if <code>true</code> only a problem without a unique solution is
+     *        solved
+     * @return <code>null</code> if <code>minimumNormOnly</code> is set and the problem has a unique
+     *         solution
+     */
+    private static double[] scaledLeastSquares(double[][] design, double[] response,
+        boolean minimumNormOnly) {
+      final int rows = design.length;
+      final int columns = rows == 0 ? 0 : design[0].length;
       // the columns which are not zero, and their lengths
       final double[] length = new double[columns];
       final int[] column = new int[columns];
@@ -733,12 +811,10 @@ public class CurveFitterFunctions {
       if (size == 0) {
         return coefficients;
       }
-      final double[][] plain = new double[rows][size];
       final double[][] scaled = new double[rows][size];
       for (int i = 0; i < rows; i++) {
         for (int k = 0; k < size; k++) {
-          plain[i][k] = design[i][column[k]];
-          scaled[i][k] = plain[i][k] / length[column[k]];
+          scaled[i][k] = design[i][column[k]] / length[column[k]];
         }
       }
       final RealVector vector = new ArrayRealVector(response, false);
@@ -747,6 +823,9 @@ public class CurveFitterFunctions {
             new QRDecomposition(MatrixUtils.createRealMatrix(scaled), DEPENDENT_COLUMN)
                 .getSolver();
         if (solver.isNonSingular()) {
+          if (minimumNormOnly && size == columns) {
+            return null;
+          }
           final double[] solution = solver.solve(vector).toArray();
           for (int k = 0; k < size; k++) {
             coefficients[column[k]] = solution[k] / length[column[k]];
@@ -754,11 +833,16 @@ public class CurveFitterFunctions {
           return coefficients;
         }
       }
-      final double[] solution =
-          new SingularValueDecomposition(MatrixUtils.createRealMatrix(plain)).getSolver()
-              .solve(vector).toArray();
+      final RealMatrix matrix = MatrixUtils.createRealMatrix(scaled);
+      final DecompositionSolver svd = new SingularValueDecomposition(matrix).getSolver();
+      RealVector solution = svd.solve(vector);
+      for (int refinement = 0; refinement < 2; refinement++) {
+        // an ill-conditioned matrix amplifies the rounding errors of the singular vectors: the
+        // solution of the residual corrects them, and keeps the solution the one of smallest norm
+        solution = solution.add(svd.solve(vector.subtract(matrix.operate(solution))));
+      }
       for (int k = 0; k < size; k++) {
-        coefficients[column[k]] = solution[k];
+        coefficients[column[k]] = solution.getEntry(k) / length[column[k]];
       }
       return coefficients;
     }

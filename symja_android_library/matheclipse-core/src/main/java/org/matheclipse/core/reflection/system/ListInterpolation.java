@@ -1,17 +1,20 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.GridInterpolatingFunctionExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 /**
  * <code>ListInterpolation(list)</code>, <code>ListInterpolation(list, {{xmin, xmax}})</code>,
@@ -24,7 +27,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * A list is interpolated as <code>Interpolation</code> interpolates the points
  * <code>{{x1, f1}, ...}</code>. A matrix is interpolated by a bicubic spline for
  * <code>InterpolationOrder -&gt; 3</code>, the default, where there are at least 5 values along
- * each axis, and bilinearly otherwise.
+ * each axis, and bilinearly otherwise. An array of three or more dimensions, and a matrix with a
+ * single row or column, is interpolated by local polynomials along each axis.
  */
 public class ListInterpolation extends AbstractFunctionOptionEvaluator {
 
@@ -33,13 +37,22 @@ public class ListInterpolation extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
-    IExpr data = engine.evalN(ast.arg1());
-    if (!data.isList() || data.argSize() < 2) {
-      return F.NIL;
-    }
     int order = options[0].toIntDefault();
     if (order < 0) {
       order = 3;
+    }
+    IExpr array = engine.evaluate(ast.arg1());
+    IntArrayList arrayDimensions =
+        LinearAlgebraUtil.dimensions(array, S.List, Integer.MAX_VALUE, false);
+    if (arrayDimensions.size() > 2 || (arrayDimensions.size() == 2
+        && Math.min(arrayDimensions.getInt(0), arrayDimensions.getInt(1)) == 1)) {
+      // an array of three or more dimensions, or a matrix with a single row or column
+      return localGrid((IAST) array, arrayDimensions.toIntArray(),
+          argSize >= 2 ? engine.evaluate(ast.arg2()) : F.NIL, order, engine);
+    }
+    IExpr data = engine.evalN(ast.arg1());
+    if (!data.isList() || data.argSize() < 2) {
+      return F.NIL;
     }
     IExpr domain = argSize >= 2 ? engine.evalN(ast.arg2()) : F.NIL;
 
@@ -79,6 +92,53 @@ public class ListInterpolation extends AbstractFunctionOptionEvaluator {
       points.append(F.List(F.num(xs[i - 1]), list.get(i)));
     }
     return engine.evaluate(F.unaryAST1(S.Interpolation, points));
+  }
+
+  /**
+   * The local polynomial interpolation through the values of an array with the dimensions
+   * <code>dims</code>, the grid points <code>1 .. n</code> along each axis or evenly spaced in the
+   * domain. An axis with a single point has the order 0. Exact values on an exact grid give exact
+   * values of the function.
+   */
+  private static IExpr localGrid(IAST array, int[] dims, IExpr domain, int order,
+      EvalEngine engine) {
+    IAST flat = (IAST) engine.evaluate(F.Flatten(array));
+    boolean exact = true;
+    for (IExpr value : flat) {
+      if (!value.isReal()) {
+        return F.NIL;
+      }
+      exact &= !value.isInexactNumber();
+    }
+    IExpr[][] coordinates = new IExpr[dims.length][];
+    for (int k = 0; k < dims.length; k++) {
+      IExpr min = F.C1;
+      IExpr max = F.ZZ(dims[k]);
+      if (domain.isPresent()) {
+        if (!domain.isList() || domain.argSize() != dims.length
+            || !domain.getAt(k + 1).isList2()) {
+          return F.NIL;
+        }
+        min = domain.getAt(k + 1).first();
+        max = domain.getAt(k + 1).second();
+        if (!min.isReal() || !max.isReal() || !max.greater(min).isTrue()) {
+          return F.NIL;
+        }
+      }
+      coordinates[k] = new IExpr[dims[k]];
+      for (int i = 0; i < dims[k]; i++) {
+        IExpr x = dims[k] == 1 ? min
+            : engine.evaluate(F.Plus(min, F.Times(F.Subtract(max, min), F.QQ(i, dims[k] - 1))));
+        coordinates[k][i] = exact ? x : engine.evalN(x);
+      }
+    }
+    IExpr[][] data = new IExpr[flat.argSize()][];
+    for (int i = 0; i < data.length; i++) {
+      data[i] = new IExpr[] {flat.get(i + 1)};
+    }
+    int[] orders = new int[dims.length];
+    java.util.Arrays.fill(orders, order);
+    return GridInterpolatingFunctionExpr.newLocal(coordinates, data, orders, engine);
   }
 
   /**

@@ -18299,6 +18299,392 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSeriesStirlingProduct() {
+    // the growing terms of Gamma and of its Stirling approximation cancel in the exponent
+    check("Series(Gamma(x+1)/(E^(-x)*x^(x+1/2)*Sqrt(2*Pi)), {x,Infinity,3}) // InputForm", //
+        "SeriesData(x,Infinity,{1,1/12,1/288,-139/51840},0,4,1)");
+    check("Normal(Series(Gamma(x+2)/(E^(-x)*x^(x+3/2)), {x,Infinity,1}))", //
+        "Sqrt(2*Pi)+13/12*Sqrt(2*Pi)/x");
+    check("Series(LogGamma(x+1) - (x+1/2)*Log(x) + x, {x,Infinity,3}) // InputForm", //
+        "SeriesData(x,Infinity,{Log(2*Pi)/2,1/12,0,-1/360},0,4,1)");
+    // no expansion in powers of 1/x, and no endless search for one
+    check("Series(Gamma(x^3+1), {x,Infinity,2})", //
+        "Series(Gamma(1+x^3),{x,Infinity,2})");
+  }
+
+  @Test
+  public void testSeriesLogCoefficient() {
+    check("Series(x^3*Log(x) - x, {x,Infinity,1}) // InputForm", //
+        "SeriesData(x,Infinity,{Log(x),0,-1},-3,2,1)");
+    check("Series(Log(x)/(2 + x^2), {x,Infinity,4}) // InputForm", //
+        "SeriesData(x,Infinity,{Log(x),0,-2*Log(x)},2,5,1)");
+    check("Series(Log(x)*(1-x)^2, {x,0,3}) // InputForm", //
+        "SeriesData(x,0,{Log(x),-2*Log(x),Log(x)},0,4,1)");
+  }
+
+  @Test
+  public void testSeriesToRequestedOrder() {
+    // no terms beyond the requested order, and a leading term beyond it is an order term
+    check("Series(x^5/(1-x^2), {x,0,3}) // InputForm", //
+        "SeriesData(x,0,{},5,5,1)");
+    check("Series(Sin(x)^2*Cos(x), {x,0,3}) // InputForm", //
+        "SeriesData(x,0,{1},2,4,1)");
+    check("Series(1/x^3, {x,0,-4}) // InputForm", //
+        "SeriesData(x,0,{},-3,-3,1)");
+    check("7 + SeriesData(y,0,{},-3,-3,1) // InputForm", //
+        "SeriesData(y,0,{},-3,-3,1)");
+  }
+
+  @Test
+  public void testFunctionOfSeriesData() {
+    check("Sin(SeriesData(x,0,{1,3},1,4,1)) // InputForm", //
+        "SeriesData(x,0,{1,3,-1/6},1,4,1)");
+    check("Log(SeriesData(x,0,{1,2},0,3,1)) // InputForm", //
+        "SeriesData(x,0,{2,-2},1,3,1)");
+    check("Cosh(SeriesData(x,0,{2,1},1,3,1)) // InputForm", //
+        "SeriesData(x,0,{1,0,2,2},0,4,1)");
+    check("Log(SeriesData(x,0,{3,1},2,4,1)) // InputForm", //
+        "SeriesData(x,0,{Log(3)+2*Log(x),1/3},0,2,1)");
+  }
+
+  @Test
+  public void testExpandLikeRadicals() {
+    check("Expand(Sqrt(2) + 5/Sqrt(2))", //
+        "7/Sqrt(2)");
+    check("Expand(5^(1/3) + 5^(-2/3))", //
+        "6/5^(2/3)");
+    check("Expand(d*Sqrt(11) + e/Sqrt(11))", //
+        "Sqrt(11)*d+e/Sqrt(11)");
+    check("Expand(z*7^(1/4) + 2*z*7^(-3/4))", //
+        "(9*z)/7^(3/4)");
+    // without Expand the terms stay apart
+    check("Sqrt(2) + 5/Sqrt(2)", //
+        "5/Sqrt(2)+Sqrt(2)");
+  }
+
+  @Test
+  public void testSincExactComplex() {
+    check("{Sinc(3*I), Sinc(2+I), Sinc(-I)}", //
+        "{Sinc(I*3),Sinc(2+I),Sinc(I)}");
+    check("Sinc(1.5*I)", //
+        "1.41952");
+  }
+
+  @Test
+  public void testNIntegrateIteratorMessages() {
+    check("NIntegrate(z, {z, 2})", //
+        "NIntegrate(z,{z,2})");
+    check("NIntegrate(z, bar)", //
+        "NIntegrate(z,bar)");
+    check("NIntegrate(z, {3, 0, 1})", //
+        "NIntegrate(z,{3,0,1})");
+  }
+
+  @Test
+  public void testRandomVariateParameterMessages() {
+    check("RandomVariate(NormalDistribution(u, 2))", //
+        "RandomVariate(NormalDistribution(u,2))");
+    check("RandomVariate(NormalDistribution(1, w))", //
+        "RandomVariate(NormalDistribution(1,w))");
+    check("RandomVariate(ExponentialDistribution(r))", //
+        "RandomVariate(ExponentialDistribution(r))");
+    check("RandomVariate(BernoulliDistribution(q))", //
+        "RandomVariate(BernoulliDistribution(q))");
+    check("RandomVariate(BinomialDistribution(k, 1/2))", //
+        "RandomVariate(BinomialDistribution(k,1/2))");
+    check("RandomVariate(UniformDistribution({0, c}))", //
+        "RandomVariate(UniformDistribution({0,c}))");
+  }
+
+  @Test
+  public void testRandomWholeRealCounts() {
+    check("Dimensions /@ {RandomVariate(NormalDistribution(), 4.), RandomChoice({1, 2, 3}, 2.),"
+        + " RandomComplex(2, 5.), RandomComplex({0, 1+I}, {3., 2}), RandomInteger(9, 6.),"
+        + " RandomPoint(Disk(), 2.)}", //
+        "{{4},{2},{5},{3,2},{6},{2,2}}");
+    // a count which isn't whole stays unevaluated
+    check("RandomChoice({1, 2, 3}, 3.5)", //
+        "RandomChoice({1,2,3},3.5)");
+    check("Head(RandomComplex(2))", //
+        "Complex");
+  }
+
+  @Test
+  public void testTinyRealIteratorSteps() {
+    // the end of the range is compared relative to the size of the limits
+    check("Length(Table(t, {t, 3.*^-16, 3.03*^-16, 1.*^-18}))", //
+        "4");
+    check("m = 0; Do(m++, {t, 5.*^-20, 5.05*^-20, 1.*^-22}); m", //
+        "6");
+    check("Length(Range(0.15, 0.85, 0.05))", //
+        "15");
+  }
+
+  @Test
+  public void testZeroWithPrecisionMark() {
+    // a zero has no significant digits: a precision mark gives the machine zero
+    check("{0.`25, Precision(0.`25), Accuracy(0.`25)}", //
+        "{0.0,16,323.6072}");
+  }
+
+  @Test
+  public void testListInterpolationArray() {
+    check("f = ListInterpolation(Table(x*y + z^2, {x, 4}, {y, 4}, {z, 4}));"
+        + " {f(1.5, 2.5, 3.5), D(f(a, b, c), c) /. {a -> 2., b -> 3., c -> 1.5}, f(\"Domain\")}", //
+        "{16.0,3.0,{{1,4},{1,4},{1,4}}}");
+    check("g = ListInterpolation(Table(x - y*z, {x, 0, 2, 0.5}, {y, 0, 1, 0.25}, {z, 3}),"
+        + " {{0, 2}, {0, 1}, {1, 2}}); {g(1.25, 0.5, 1.5), g(\"Domain\")}", //
+        "{0.25,{{0.0,2.0},{0.0,1.0},{1.0,2.0}}}");
+    // a single row has the order 0 along its axis
+    check("Quiet(ListInterpolation({{2, 4, 8, 16}})[1, 5/2])", //
+        "45/8");
+  }
+
+  @Test
+  public void testRandomVariateSymbolicPositiveParameter() {
+    // RandomVariate: Parameter y at position 1 in PoissonDistribution(y) is expected to be
+    // positive.
+    check("RandomVariate(PoissonDistribution(y), {2, 3})", //
+        "RandomVariate(PoissonDistribution(y),{2,3})");
+    check("RandomVariate(PoissonDistribution(y), 4)", //
+        "RandomVariate(PoissonDistribution(y),4)");
+    check("RandomVariate(ExponentialDistribution(y))", //
+        "RandomVariate(ExponentialDistribution(y))");
+    check("Dimensions(RandomVariate(PoissonDistribution(3), {2, 3}))", //
+        "{2,3}");
+  }
+
+  @Test
+  public void testListPlotsOfNoArray() {
+    // ListPlot3D: bar must be a valid array or a list of valid arrays.
+    check("ListPlot3D(bar, PlotRange -> All)", //
+        "ListPlot3D(bar,PlotRange->All)");
+    // ListDensityPlot: 7 must be a valid array.
+    check("ListDensityPlot(7)", //
+        "ListDensityPlot(7)");
+    // ListContourPlot: bar must be a valid array.
+    check("ListContourPlot(bar)", //
+        "ListContourPlot(bar)");
+  }
+
+  @Test
+  public void testBezierFunctionSplineDegreeOption() {
+    // the curve keeps the degree its points give it
+    check("BezierFunction({{0, 0}, {1, 1}, {2, 0}}, SplineDegree -> 1)[0.5]", //
+        "{1.0,0.5}");
+    check("BezierFunction({{0, 0}, {1, 1}, {2, 0}}, SplineDegree -> 1)[s]", //
+        "BezierFunction({{0,0},{1,1},{2,0}})[s]");
+    check("bz = BezierFunction({{0, 0}, {2, 4}, {4, 0}}, SplineDegree -> 2)[s]; "
+        + "Table(bz, {s, 0, 1, 0.25})", //
+        "{{0.0,0.0},{1.0,1.5},{2.0,2.0},{3.0,1.5},{4.0,0.0}}");
+    check("BezierFunction({{0, 0}, {1, 1}, {2, 0}}, Foo -> 1)", //
+        "BezierFunction({{0,0},{1,1},{2,0}},foo->1)");
+  }
+
+  @Test
+  public void testParametricPlot3DPointOnlyAtNumbers() {
+    // the body is a point only for a numeric t: symbolically Part takes the Piecewise apart
+    check("q(x_) := Piecewise({{{x, 0}, x < 0.5}, {{1 - x, 1}, x >= 0.5}}); "
+        + "Cases(ParametricPlot3D(With({s = q(t)}, Flatten@{s[[1]], s[[2]], t}), {t, 0, 1}, "
+        + "PlotPoints -> 3), GraphicsComplex(v_, ___) :> v, Infinity)", //
+        "{{{0.0,0.0,0.0},{0.5,1.0,0.5},{0.0,1.0,1.0}}}");
+    check("q(x_) := Piecewise({{{x, 0}, x < 0.5}, {{1 - x, 1}, x >= 0.5}}); "
+        + "Cases(ParametricPlot3D(With({s = q(u)}, Flatten@{s[[1]], s[[2]], v}), {u, 0, 1}, "
+        + "{v, 0, 1}, PlotPoints -> 2), GraphicsComplex(v_, ___) :> v, Infinity)", //
+        "{{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0},{0.0,1.0,1.0}}}");
+  }
+
+  @Test
+  public void testTuringMachineRuleNumbers() {
+    // an infinite tape of zeros: the reported tape grows with the cells the head visits
+    check("TuringMachine({31415, 2, 3}, {1, {{}, 0}}, 4)", //
+        "{{{1,2,0},{0,0,0,0}},{{2,1,-1},{0,0,0,0}},{{2,2,0},{2,0,0,0}},{{2,3,1},{2,2,0,0}},{{\n"
+            + "2,4,2},{2,2,2,0}}}");
+    // {n, s} has two colors; the head starts two cells left of the given cells
+    check("TuringMachine({777, 3}, {{3, -1}, {{1, 1}, 0}}, 3)", //
+        "{{{3,1,0},{0,0,1,1}},{{3,2,1},{0,0,1,1}},{{3,3,2},{0,0,1,1}},{{2,2,1},{0,0,0,1}}}");
+    // a cyclic tape: the head wraps round, a start position off the cells counts round it too
+    check("TuringMachine(3018, {{2, 2}, {1, 0, 0, 1}}, 4)", //
+        "{{{2,2,0},{1,0,0,1}},{{1,1,-1},{1,1,0,1}},{{2,2,0},{0,1,0,1}},{{1,3,1},{0,0,0,1}},{{\n"
+            + "2,4,2},{0,0,1,1}}}");
+    check("TuringMachine(3018, {{2, 6}, {1, 0, 0, 1}}, 2)", //
+        "{{{2,2,0},{1,0,0,1}},{{1,1,-1},{1,1,0,1}},{{2,2,0},{0,1,0,1}}}");
+    // one step, also in operator form; an infinite tape keeps its background
+    check("TuringMachine({31415, 2, 3}, {1, {{}, 0}})", //
+        "{{2,1,-1},{{0,0},0}}");
+    check("TuringMachine({31415, 2, 3})[{1, {0, 0, 0}}]", //
+        "{{2,3,-1},{0,0,0}}");
+    // a time which is no non-negative integer
+    check("TuringMachine(2506, {1, {0, 0}}, -1)", //
+        "TuringMachine(2506,{1,{0,0}},-1)");
+  }
+
+  @Test
+  public void testTuringMachineExplicitRules() {
+    check("TuringMachine({{1, 0} -> {1, 1, -1}, {1, 1} -> {2, 0, 1}, {2, _} -> {1, 1, 1}}, "
+        + "{1, {{1}, 0}}, 4)", //
+        "{{{1,1,0},{1,0,0}},{{2,2,1},{0,0,0}},{{1,3,2},{0,1,0}},{{1,2,1},{0,1,1}},{{2,3,2},{\n"
+            + "0,0,1}}}");
+    // without a matching rule the machine stays where it is
+    check("TuringMachine({{1, 0} -> {2, 1, 1}}, {1, {0, 0, 0}}, 3)", //
+        "{{{1,1,0},{0,0,0}},{{2,2,1},{1,0,0}},{{2,2,1},{1,0,0}},{{2,2,1},{1,0,0}}}");
+  }
+
+  @Test
+  public void testFindCurvePath() {
+    // closed: from the predecessor of point 1 round to it again
+    check("FindCurvePath({{2, 0}, {0, 2}, {-2, 0}, {0, -2}, {1.5, 1.4}})", //
+        "{{4,1,5,2,3,4}}");
+    check("FindCurvePath(Table({Cos(t), Sin(t), 0}, {t, 0, 5, 1/2}))", //
+        "{{2,1,11,10,9,8,7,6,5,4,3,2}}");
+    // open: from the lower-numbered end
+    check("FindCurvePath({{3, 1}, {0, 0}, {1, 0.2}, {2, 0.5}})", //
+        "{{1,4,3,2}}");
+    check("With({c = First(FindCurvePath(Table({t, Exp(-t)}, {t, 0, 5, 0.1})))}, "
+        + "{Length(c), OrderedQ(c)})", //
+        "{51,True}");
+    check("FindCurvePath({{1, 2}, {3, 4}})", //
+        "{{1,2}}");
+    check("FindCurvePath({{x, 1}, {2, 3}, {4, 5}})", //
+        "FindCurvePath({{x,1},{2,3},{4,5}})");
+  }
+
+  @Test
+  public void testPolyhedronDataFaceCount() {
+    // an integer selects the solids with that many faces
+    check("PolyhedronData(6)", //
+        "{Cube,{Pyramid,5}}");
+    check("PolyhedronData(12)", //
+        "{{Antiprism,5},Dodecahedron,{Prism,10},RhombicDodecahedron}");
+    check("PolyhedronData(13)", //
+        "{}");
+    check("PolyhedronData() === PolyhedronData(All)", //
+        "True");
+    check("Take(PolyhedronData(), {7, 9})", //
+        "{{Antiprism,10},Cube,Cuboctahedron}");
+  }
+
+  @Test
+  public void testBinCountsNonPositiveStep() {
+    check("BinCounts::step", //
+        "The bin step size `1` is expected to be positive.");
+    check("Check(BinCounts({4, 5, 6}, {0, 8, -3}), failed)", //
+        "failed");
+    check("BinCounts({4, 5, 6}, {0, 8, -3})", //
+        "BinCounts({4,5,6},{0,8,-3})");
+    check("BinCounts({4, 5, 6}, -1)", //
+        "BinCounts({4,5,6},-1)");
+    check("BinCounts({{1, 2}}, {0, 4, 1}, {0, 4, -1/2})", //
+        "BinCounts({{1,2}},{0,4,1},{0,4,-1/2})");
+    check("BinLists({4, 5, 6}, {0, 8, 0})", //
+        "BinLists({4,5,6},{0,8,0})");
+    check("Check(BinLists({{1, 2}}, {0, 4, 1}, {0, 4, -0.5}), failed)", //
+        "failed");
+  }
+
+  @Test
+  public void testFindRootOfFunction() {
+    // a symbol or a pure function and a start value: the root of the function itself
+    check("{FindRoot(Sin, {3}), FindRoot(#^2 - 2 &, {1}), FindRoot(Cos, {1.})}", //
+        "{{3.14159},{1.41421},{1.5708}}");
+    check("Round(10^12*FindRoot(Cos(#) - #^3 &, {1}))", //
+        "{865474033102}");
+  }
+
+  @Test
+  public void testFindMinimumLocalConstrained() {
+    // a linear equation eliminates a variable; the logarithms never see a negative argument
+    check("Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMinimum({x*Log(x) + 2*y*Log(y), "
+        + "x + y == 1, x > 0, y > 0}, {{x, 0.4}, {y, 0.6}})])", //
+        "{-104746733,{55013118,44986882}}");
+    check("FindMinimum({(x - 1)^2 + (y - 2)^2 + (z - 3)^2, x + y + z == 3, x - z == 1}, "
+        + "{{x, 0}, {y, 0}, {z, 0}})", //
+        "{7.5,{x->1.5,y->1.0,z->0.5}}");
+    // a nonlinear equation determines one variable
+    check("Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMinimum({2*x + y, x^2 + y^2 == 4}, "
+        + "{{x, -1}, {y, -1}})])", //
+        "{-447213595,{-178885438,-89442719}}");
+    check("Round(10^8*{#[[1]], {x, y, z} /. #[[2]]} &[FindMinimum({(x - 1)^2 + Sin(y) + z^2, "
+        + "x + y + z == 1, z^3 + y - 2 == 0}, {{x, 0.5}, {y, 1.5}, {z, 0.5}})])", //
+        "{373876828,{-62042799,214138906,-52096107}}");
+    // the bound of the search specification is active
+    check("Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMaximum({x + 2*y, x^2 + y^2 == 1}, "
+        + "{{x, 0.5, 0.5, 0.9}, {y, 0.5}})])", //
+        "{223205081,{50000000,86602540}}");
+  }
+
+  @Test
+  public void testFindMinimumConstrainedStepMonitor() {
+    // an active inequality or an equation: no monitoring information
+    check("Reap(FindMinimum({Exp(x) + (y - 1)^2, x >= 2}, {{x, 3}, {y, 3}}, "
+        + "StepMonitor :> Sow({x, y})))", //
+        "{{7.38906,{x->2.0,y->1.0}},{}}");
+    check("Reap(FindMinimum({x^2 + y^2, x + y == 2}, {{x, 0}, {y, 0}}, "
+        + "StepMonitor :> Sow({x, y})))", //
+        "{{2.0,{x->1.0,y->1.0}},{}}");
+    check("Reap(FindMinimum({xx*Log(xx) + yy*Log(yy), xx + yy == 1, xx > 0, yy > 0}, "
+        + "{{xx, 0.3}, {yy, 0.7}}, StepMonitor :> Sow({xx, yy})))[[2]]", //
+        "{}");
+    // a search inside the bounds to a stationary point reports its steps, the first is the start
+    check("r = Reap(FindMaximum({Cos(x) + Sin(y), -1 < x < 2 && 0 < y < 3}, {{x, 1}, {y, 1}}, "
+        + "StepMonitor :> Sow({x, y}))); {Round(r[[1, 1]], 10^-6), r[[2, 1, 1]], "
+        + "Length(r[[2, 1]]) > 2}", //
+        "{2,{1.0,1.0},True}");
+  }
+
+  @Test
+  public void testFitMinimumNorm() {
+    // the basis functions don't determine the fit: the coefficients of the smallest norm for the
+    // functions scaled to unit length at the points
+    check("Fit({{3, 1}, {3, 4}}, {1, x}, x)", //
+        "1.25+0.416667*x");
+    check("Fit({{2, 3}, {2, 7}, {2, 5}}, {1, x}, x)", //
+        "2.5+1.25*x");
+    check("Fit({{1, 2}, {2, 5}}, {1, x, x^2}, x)", //
+        "0.4+0.9*x+0.7*x^2");
+    check("Round(10^8*CoefficientList(Fit({{1, 1}, {2, 2}, {4, 4}}, {1, x, x^2, x^3}, x), x))", //
+        "{10766273,81159022,9420489,-1345784}");
+    // a model which is linear in the parameters: the same fit, whatever the start values
+    check("FindFit({{1, 3}, {2, 1}}, p + q*x + r*x^2, {{p, 7}, {q, -3}, {r, 2}}, x)", //
+        "{p->3.57143,q->0.142857,r->-0.714286}");
+    check("FindFit({{1, 3}, {2, 1}}, 1 + q*x + r*x^2, {q, r}, x)", //
+        "{q->4.0,r->-2.0}");
+  }
+
+  @Test
+  public void testSolveRationalSystemByNumerators() {
+    check("Solve({-2/a^3 + 5/a - 1/(a*b^2) == 0, -3/b^3 + 4/b - 1/(a^2*b) == 0}, {a, b})", //
+        "{{a->-Sqrt(5/11),b->-Sqrt(5/3)},{a->-Sqrt(5/11),b->Sqrt(5/3)},{a->Sqrt(5/11),b->-Sqrt(\n"
+            + "5/3)},{a->Sqrt(5/11),b->Sqrt(5/3)}}");
+    check("Solve({-2.5/a^3 + 5.25/a - 1.5/(a*b^2) == 0, -3.75/b^3 + 4.5/b - 1.25/(a^2*b) == 0}, "
+        + "{a, b})", //
+        "{{a->-0.761387,b->-1.26491},{a->-0.761387,b->1.26491},{a->0.761387,b->-1.26491},{a->"
+            + "0.761387,b->1.26491}}");
+  }
+
+  @Test
+  public void testNSolveRadicalSystemMultiStart() {
+    // the five equilibrium points of the restricted three body problem
+    check("mu = 0.3; s = NSolve({-x == -((1 - mu)*(x + mu)/Sqrt((x + mu)^2 + y^2)^3) "
+        + "- mu*(x - 1 + mu)/Sqrt((x - 1 + mu)^2 + y^2)^3, -y == -((1 - mu)/Sqrt((x + mu)^2 + "
+        + "y^2)^3 + mu/Sqrt((x - 1 + mu)^2 + y^2)^3)*y}, {x, y}); "
+        + "{Length(s), Sort(Round({x, y} /. s, 10^-6))}", //
+        "{5,{{-561603/500000,0},{1/5,-34641/40000},{1/5,34641/40000},{28613/100000,0},{\n"
+            + "251347/200000,0}}}");
+  }
+
+  @Test
+  public void testBinCountsWholeBins() {
+    // only the bins [xmin+k*dx, xmin+(k+1)*dx) which end at or below xmax
+    check("BinCounts({2, 7, 9, 10, 11}, {1, 11, 3})", //
+        "{1,0,2}");
+    check("BinCounts({5, 6, 8}, {2, 9, 3})", //
+        "{0,2}");
+    check("BinCounts({4, 5/2, 6.5, -1}, {-1, 7, 2})", //
+        "{1,1,1,1}");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //
@@ -34454,8 +34840,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "5/2*Sqrt(5/8+Sqrt(5)/8)/Pi");
     check("Sinc(3/10*Pi)", //
         "5/6*(1+Sqrt(5))/Pi");
+    // an exact complex argument stays unevaluated
     check("Sinc(I)", //
-        "Sinh(1)");
+        "Sinc(I)");
     check("Sinc(ArcSin(x))", //
         "x/ArcSin(x)");
     check("Sinc(ArcCos(x))", //

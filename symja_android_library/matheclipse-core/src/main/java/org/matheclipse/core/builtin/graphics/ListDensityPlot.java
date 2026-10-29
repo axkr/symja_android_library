@@ -59,7 +59,8 @@ public class ListDensityPlot extends DensityPlot {
 
     IExpr dataArg = GraphicsOptions.matrixPlotData(ast.arg1(), originalAST, engine);
     if (dataArg.isNIL()) {
-      return F.NIL;
+      // `1` must be a valid array.
+      return Errors.printMessage(S.ListDensityPlot, "arrayerr", F.list(ast.arg1()), engine);
     }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);

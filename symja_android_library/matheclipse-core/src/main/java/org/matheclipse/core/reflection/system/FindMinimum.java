@@ -68,6 +68,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.optim.LocalConstrainedMinimizer;
 
 /**
  * <pre>
@@ -116,10 +117,14 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  *
  * <p>
- * searches for a local numerical minimum subject to the <code>constraints</code>. Bounds of a
- * single variable like <code>x&gt;=1</code> are taken by the methods &quot;CMAES&quot; and
+ * searches for a local numerical minimum subject to the <code>constraints</code>. Without a
+ * <code>Method</code> the search starts at the start values: the linear equations are solved for
+ * some of the variables, every other equation determines one more variable implicitly, and the
+ * search over the remaining variables stays strictly inside the inequalities; an inequality the
+ * search ends up at is then imposed as an equation. With a <code>Method</code>, bounds of a single
+ * variable like <code>x&gt;=1</code> are taken by the methods &quot;CMAES&quot; and
  * &quot;BOBYQA&quot;; other equations and inequalities like <code>x+y&gt;=4</code> or
- * <code>x^2+y^2&lt;3</code> select the &quot;SequentialQuadratic&quot; method and must be
+ * <code>x^2+y^2&lt;3</code> need the &quot;SequentialQuadratic&quot; method and must be
  * symbolically differentiable. <code>&lt;</code> and <code>&gt;</code> are read as
  * <code>&lt;=</code> and <code>&gt;=</code>.
  * </p>
@@ -427,6 +432,14 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         return linear;
       }
     }
+    if (automaticMethod && (specBounds || constraints.argSize() > 0)) {
+      IExpr local = localConstrainedSearch(head, function, constraints, varsList, initialValues,
+          lowerBounds, upperBounds, goalType, maxIterations, explicitIterations,
+          evaluationMonitor, stepMonitor, engine);
+      if (local.isPresent()) {
+        return local;
+      }
+    }
     if (constraints.argSize() > 0 && !method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
       IASTAppendable remaining = constraints.copyAppendable();
       SimpleBounds relationBounds = createSimpleBounds(remaining, varsList, engine);
@@ -485,7 +498,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     optimizeSupplier.stepMonitor = stepMonitor;
     optimizeSupplier.newtonSteps = automaticMethod && (stepMonitor != S.None || explicitIterations);
     IExpr result = optimizeSupplier.get();
-    if (constrained && result.isList2() && result.second().isListOfRules()) {
+    if ((constrained || (automaticMethod && simpleBounds == null)) && result.isList2()
+        && result.second().isListOfRules()) {
       IExpr polished = polishInteriorExtremum(function, constraints, (IAST) result, engine);
       if (polished.isPresent()) {
         return polished;
@@ -545,6 +559,241 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     return F.list(value, root);
+  }
+
+  /**
+   * Evaluate the <code>EvaluationMonitor</code> or <code>StepMonitor</code> expression with the
+   * variables set to the point the function was just evaluated at or the step reached. The
+   * variables are localized by <code>FindMinimum</code>, so their values are free to be set and
+   * cleared here.
+   */
+  private static void monitorAt(IAST variableList, double[] point, IExpr monitorExpr,
+      EvalEngine engine) {
+    for (int i = 1; i < variableList.size(); i++) {
+      if (variableList.get(i).isSymbol()) {
+        ((ISymbol) variableList.get(i)).assignValue(F.num(point[i - 1]), false);
+      }
+    }
+    try {
+      engine.evaluate(monitorExpr);
+    } finally {
+      for (int i = 1; i < variableList.size(); i++) {
+        if (variableList.get(i).isSymbol()) {
+          ((ISymbol) variableList.get(i)).clearValue();
+        }
+      }
+    }
+  }
+
+  /**
+   * An expression of the variables of the search as a function of the point, with the gradient
+   * from the symbolic partial derivatives if they have numeric values at the start point.
+   */
+  private static final class SymbolicFunction implements LocalConstrainedMinimizer.Function {
+    final MultiVariateNumerical function;
+    MultiVariateNumerical[] partials;
+
+    SymbolicFunction(IExpr expr, IAST varsList, double[] start, EvalEngine engine) {
+      function = new MultiVariateNumerical(expr, varsList);
+      partials = new MultiVariateNumerical[varsList.argSize()];
+      for (int i = 0; i < partials.length; i++) {
+        IExpr derivative = engine.evalQuiet(F.D(expr, varsList.get(i + 1)));
+        partials[i] = new MultiVariateNumerical(derivative, varsList);
+        if (!Double.isFinite(partials[i].value(start))) {
+          partials = null;
+          break;
+        }
+      }
+    }
+
+    @Override
+    public double value(double[] x) {
+      return function.value(x);
+    }
+
+    @Override
+    public double[] gradient(double[] x) {
+      if (partials == null) {
+        return null;
+      }
+      double[] result = new double[partials.length];
+      for (int i = 0; i < result.length; i++) {
+        result[i] = partials[i].value(x);
+      }
+      return result;
+    }
+  }
+
+  /**
+   * A local search from the start values which keeps the equations and stays strictly inside the
+   * inequalities, see {@link LocalConstrainedMinimizer}.
+   * <p>
+   * The search reports its steps to a <code>StepMonitor</code> only if the problem has no
+   * equations, is no quadratic objective with linear inequalities, and the search ran to a
+   * stationary point without an inequality becoming active; otherwise the monitor stays silent
+   * and the message <code>noopmon</code> is printed.
+   *
+   * @return {@link F#NIL} if a constraint is no equation or inequality, has no real value at the
+   *         start values or the search fails
+   */
+  private static IExpr localConstrainedSearch(ISymbol head, IExpr function, IAST constraints,
+      IAST varsList, double[] initialValues, double[] lowerBounds, double[] upperBounds,
+      GoalType goalType, int maxIterations, boolean explicitIterations, IExpr evaluationMonitor,
+      IExpr stepMonitor, EvalEngine engine) {
+    final int n = varsList.argSize();
+    List<double[]> linearRows = new ArrayList<double[]>();
+    List<LocalConstrainedMinimizer.Function> equations =
+        new ArrayList<LocalConstrainedMinimizer.Function>();
+    List<LocalConstrainedMinimizer.Inequality> inequalities =
+        new ArrayList<LocalConstrainedMinimizer.Inequality>();
+    boolean[] bounded = new boolean[n];
+    double[] start = initialValues.clone();
+    for (int i = 0; i < n; i++) {
+      if (!Double.isInfinite(lowerBounds[i]) || !Double.isInfinite(upperBounds[i])) {
+        bounded[i] = true;
+        start[i] = Math.min(Math.max(start[i], lowerBounds[i]), upperBounds[i]);
+      }
+      for (int j = 0; j < 2; j++) {
+        double bound = j == 0 ? lowerBounds[i] : upperBounds[i];
+        if (!Double.isInfinite(bound)) {
+          double[] coefficients = new double[n];
+          coefficients[i] = j == 0 ? 1.0 : -1.0;
+          final int index = i;
+          final double sign = coefficients[i];
+          LocalConstrainedMinimizer.Function g = new LocalConstrainedMinimizer.Function() {
+            @Override
+            public double value(double[] x) {
+              return sign * (x[index] - bound);
+            }
+
+            @Override
+            public double[] gradient(double[] x) {
+              return coefficients.clone();
+            }
+          };
+          inequalities.add(new LocalConstrainedMinimizer.Inequality(g, false, coefficients,
+              -sign * bound));
+        }
+      }
+    }
+    boolean hasEquations = false;
+    boolean linearInequalities = true;
+    for (IExpr constraint : constraints) {
+      if (!constraint.isAST() || constraint.argSize() < 2) {
+        return F.NIL;
+      }
+      final boolean equal = constraint.isAST(S.Equal);
+      final boolean less = constraint.isAST(S.Less) || constraint.isAST(S.LessEqual);
+      final boolean strict = constraint.isAST(S.Less) || constraint.isAST(S.Greater);
+      if (!equal && !less && !constraint.isAST(S.Greater) && !constraint.isAST(S.GreaterEqual)) {
+        return F.NIL;
+      }
+      for (int j = 1; j < constraint.argSize(); j++) {
+        // a < b < c are two inequalities
+        IExpr lhs = ((IAST) constraint).get(j);
+        IExpr rhs = ((IAST) constraint).get(j + 1);
+        IExpr difference = engine.evaluate(less ? F.Subtract(rhs, lhs) : F.Subtract(lhs, rhs));
+        SymbolicFunction g = new SymbolicFunction(difference, varsList, start, engine);
+        if (!Double.isFinite(g.value(start))) {
+          return F.NIL;
+        }
+        double[] coefficients = null;
+        double constant = 0.0;
+        if (isLinear(difference, varsList, engine)) {
+          coefficients = new double[n];
+          for (int i = 0; i < n; i++) {
+            coefficients[i] = engine.evalN(F.D(difference, varsList.get(i + 1))).evalf();
+          }
+          constant = engine
+              .evalN(F.subst(difference, F.mapList(varsList, v -> F.Rule(v, F.C0)))).evalf();
+          int nonzero = 0;
+          int variable = -1;
+          for (int i = 0; i < n; i++) {
+            if (coefficients[i] != 0.0) {
+              nonzero++;
+              variable = i;
+            }
+          }
+          if (!equal && nonzero == 1) {
+            bounded[variable] = true;
+          }
+        }
+        if (equal) {
+          hasEquations = true;
+          if (coefficients != null) {
+            double[] row = Arrays.copyOf(coefficients, n + 1);
+            row[n] = -constant;
+            linearRows.add(row);
+          } else {
+            equations.add(g);
+          }
+        } else {
+          linearInequalities &= coefficients != null;
+          inequalities.add(
+              new LocalConstrainedMinimizer.Inequality(g, strict, coefficients, constant));
+        }
+      }
+    }
+    final boolean maximize = goalType == GoalType.MAXIMIZE;
+    final SymbolicFunction objective = new SymbolicFunction(function, varsList, start, engine);
+    LocalConstrainedMinimizer.Function signedObjective = new LocalConstrainedMinimizer.Function() {
+      @Override
+      public double value(double[] x) {
+        if (evaluationMonitor != S.None) {
+          monitorAt(varsList, x, evaluationMonitor, engine);
+        }
+        double value = objective.value(x);
+        return maximize ? -value : value;
+      }
+
+      @Override
+      public double[] gradient(double[] x) {
+        double[] gradient = objective.gradient(x);
+        if (gradient != null && maximize) {
+          for (int i = 0; i < gradient.length; i++) {
+            gradient[i] = -gradient[i];
+          }
+        }
+        return gradient;
+      }
+    };
+    LocalConstrainedMinimizer.Result result;
+    try {
+      result = new LocalConstrainedMinimizer(n, signedObjective, linearRows, equations,
+          inequalities, bounded, explicitIterations ? maxIterations : Math.max(500, maxIterations),
+          engine::checkTimeLimit).minimize(start);
+    } catch (MathRuntimeException | ArithmeticException e) {
+      return F.NIL;
+    }
+    if (result == null) {
+      return F.NIL;
+    }
+    if (stepMonitor != S.None) {
+      boolean quadratic = false;
+      if (linearInequalities && function.isPolynomial(varsList)) {
+        ISymbol t = F.Dummy("t");
+        IExpr degree = engine.evalQuiet(F.Exponent(
+            F.subst(function, F.mapList(varsList, v -> F.Rule(v, F.Times(t, v)))), t));
+        quadratic = degree.isInteger() && degree.toIntDefault() <= 2;
+      }
+      if (!hasEquations && !quadratic && result.stationary) {
+        for (double[] point : result.steps) {
+          monitorAt(varsList, point, stepMonitor, engine);
+        }
+      } else {
+        // The optimization was solved by an algorithm that does not provide monitoring
+        // information. Choose a specific iterative method if this information is necessary.
+        Errors.printMessage(head, "noopmon", F.CEmptyList, engine);
+      }
+    }
+    if (!result.converged) {
+      // Failed to converge to the requested accuracy or precision within `1` iterations.
+      Errors.printMessage(head, "cvmit", F.list(F.ZZ(maxIterations)), engine);
+    }
+    final double[] point = result.point;
+    IASTAppendable ruleList =
+        F.mapRange(1, varsList.size(), j -> F.Rule(varsList.get(j), F.num(point[j - 1])));
+    return F.list(F.num(maximize ? -result.value : result.value), ruleList);
   }
 
   /** Append the conditions of a conjunction or a list of constraints. */
@@ -1316,20 +1565,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
      * cleared here.
      */
     private void monitor(double[] point, IExpr monitorExpr) {
-      for (int i = 1; i < variableList.size(); i++) {
-        if (variableList.get(i).isSymbol()) {
-          ((ISymbol) variableList.get(i)).assignValue(F.num(point[i - 1]), false);
-        }
-      }
-      try {
-        engine.evaluate(monitorExpr);
-      } finally {
-        for (int i = 1; i < variableList.size(); i++) {
-          if (variableList.get(i).isSymbol()) {
-            ((ISymbol) variableList.get(i)).clearValue();
-          }
-        }
-      }
+      monitorAt(variableList, point, monitorExpr, engine);
     }
 
     /**

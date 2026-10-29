@@ -267,12 +267,12 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,0,{1,0,-1/2},3,6,1)");
 
     check("Series(Sin(x) ,{x,0,-2})//InputForm", //
-        "SeriesData(x,0,{1},1,2,1)");
+        "SeriesData(x,0,{},1,1,1)");
     check("Series(b*Sin(x) ,{x,0,-2})//InputForm", //
-        "SeriesData(x,0,{b},1,2,1)");
+        "SeriesData(x,0,{},1,1,1)");
 
     check("Series(b*x ,{x,0,-2})//InputForm", //
-        "SeriesData(x,0,{b},1,2,1)");
+        "SeriesData(x,0,{},1,1,1)");
     check("Series(b*x ,{x,0,5})//InputForm", //
         "SeriesData(x,0,{b},1,6,1)");
 
@@ -1504,6 +1504,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // x^2 + 2xy + y^2 + (higher order terms are dropped)
     check("Expand(Normal(Series((x+y)^3, {x, 0, 2}, {y, 0, 2})))", //
         "3*x^2*y+3*x*y^2+y^3");
+    // a coefficient keeps its leading term beyond the order in y
+    check("Series((x+2*y)^3, {x, 0, 2}, {y, 0, 2})//InputForm", //
+        "SeriesData(x,0,{SeriesData(y,0,{8},3,4,1),SeriesData(y,0,{12},2,3,1),SeriesData(y,\n"
+            + "0,{6},1,3,1)},0,3,1)");
   }
 
   @Test

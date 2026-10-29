@@ -38,6 +38,13 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     if (PlotEndpoints.degenerate(S.ParametricPlot3D, ast, 2, 3, false, engine)) {
       return F.NIL;
     }
+    // the body arrives as written. It is evaluated with the variables still symbolic, which is
+    // what tells the curves of a list apart; one which takes the shape of a point only for a number,
+    // a Piecewise of points taken apart with Part, say, is sampled as written instead
+    final IExpr heldBody = ast.arg1();
+    if (argSize >= 1) {
+      ast = ast.setAtCopy(1, engine.evaluate(heldBody));
+    }
     // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
     // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
     // primitives, reading it from the original call
@@ -69,10 +76,11 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
       IAST uRange = (IAST) ast.arg2();
       IAST vRange = (IAST) ast.arg3();
-      functions = PlotShapeProbe.split(functions, PlotShapeProbe.rangeProbes(
-          new IExpr[] {uRange.arg1(), vRange.arg1()},
+      List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {uRange.arg1(), vRange.arg1()},
           new double[] {uRange.arg2().evalfNaN(), vRange.arg2().evalfNaN()},
-          new double[] {uRange.arg3().evalfNaN(), vRange.arg3().evalfNaN()}), 3, false, engine);
+          new double[] {uRange.arg3().evalfNaN(), vRange.arg3().evalfNaN()});
+      functions = PlotShapeProbe.split(
+          bodyAsSampled(functions, ast.arg1(), heldBody, probes, engine), probes, 3, false, engine);
       PlotColorFunction.Builder colorBuilder = Plot3DTools.plotColors(
           PlotColorFunction.Family.PARAMETRIC_3D_UV, options, S.ParametricPlot3D, engine);
 
@@ -105,10 +113,10 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       if (!range.isList3() || !range.first().isSymbol()) {
         return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(range), engine);
       }
-      functions = PlotShapeProbe.split(functions,
-          PlotShapeProbe.rangeProbes(new IExpr[] {range.arg1()},
-              new double[] {range.arg2().evalfNaN()}, new double[] {range.arg3().evalfNaN()}),
-          3, false, engine);
+      List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {range.arg1()},
+          new double[] {range.arg2().evalfNaN()}, new double[] {range.arg3().evalfNaN()});
+      functions = PlotShapeProbe.split(
+          bodyAsSampled(functions, ast.arg1(), heldBody, probes, engine), probes, 3, false, engine);
       for (int i = 0; i < functions.size(); i++) {
         // a curve wrapped in Tooltip or Style is sampled bare: the style goes into the curve and
         // the tooltip back around the finished primitive, the way Plot3D labels one of several
@@ -132,6 +140,25 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     // every curve was empty, or no sample had a numeric value - pos(t) of an undefined pos: an
     // empty picture, not a call that could not be read, the way Plot3D answers for f(x, y)
     return Plot3DTools.surfaceGraphics3D(graphicsList, originalAST, argSize, options);
+  }
+
+  /**
+   * The functions to sample: the ones of the evaluated body, unless no probe of it reads as a curve
+   * and a probe of the body as written does.
+   *
+   * @param functions the curves collected from the evaluated body
+   * @param body the evaluated body
+   * @param heldBody the body as written
+   */
+  private static List<IExpr> bodyAsSampled(List<IExpr> functions, IExpr body, IExpr heldBody,
+      List<IAST> probes, EvalEngine engine) {
+    if (heldBody.equals(body) || PlotShapeProbe.readsAsCurves(body, probes, 3, engine)
+        || !PlotShapeProbe.readsAsCurves(heldBody, probes, 3, engine)) {
+      return functions;
+    }
+    List<IExpr> held = new ArrayList<>(1);
+    held.add(heldBody);
+    return held;
   }
 
   private void createCurveGeometry(IExpr func, IAST range, int pointsCount, EvalEngine engine,
@@ -350,6 +377,12 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   protected int dependentRangeOffset() {
     return 3;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    // evaluated in evaluate(), which also keeps the body as written
+    return true;
   }
 
   @Override

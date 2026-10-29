@@ -42,8 +42,9 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2}, x)", //
         "0.678392-0.266332*x+0.190955*x^2");
     // five functions for four points: the fit through the points with the smallest coefficients
+    // of the functions scaled to unit length at the points
     check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2,x^4,x^5}, x)", //
-        "1.0-0.632261*x-0.525089*x^2+0.188973*x^4-0.0316222*x^5");
+        "1.0-1.75183*x+0.753488*x^2+0.000755607*x^4-0.0024161*x^5");
 
     check("Fit({{1,1},{2,4},{3,9},{4,16}},{1,x,x^2},x) // Chop", //
         "1.0*x^2");
@@ -80,7 +81,7 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
         "-0.1+2.19*x-0.05*x^2");
     // three functions for two points
     check("Fit({{1,2.1},{2,3.9}},{1,x,x^2},x)", //
-        "0.985714+0.771429*x+0.342857*x^2");
+        "1.03714+0.694286*x+0.368571*x^2");
     // two points at the same place
     check("Fit({{1,2},{1,3}},{1,x},x)", //
         "1.25+1.25*x");

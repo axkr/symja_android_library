@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -18,6 +19,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /**
  * Implementation of ListPlot3D. Supports: 1. Regular Data: {{z11, z12...}, ...} (Height Map) 2.
@@ -36,7 +38,12 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     ast = PlotWrapper.stripFirstArgument(ast);
     IExpr data = ast.arg1();
     if (!data.isList()) {
-      return F.NIL;
+      // a SparseArray or a packed numeric array is not a list until it is expanded into one
+      data = data.normal(false);
+      if (!data.isList()) {
+        // `1` must be a valid array or a list of valid arrays.
+        return Errors.printMessage(S.ListPlot3D, "arrayerr", F.list(ast.arg1()), engine);
+      }
     }
 
     IExpr plotRangeOpt = options[Plot3DTools.X_PLOT_RANGE];
@@ -602,6 +609,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
+    newSymbol.putMessage(IPatternMatcher.SET, "arrayerr",
+        F.stringx("`1` must be a valid array or a list of valid arrays."));
     GraphicsOptions.OptionSet options = Plot3DTools.listPlot();
     setOptions(newSymbol, options.keys(), options.values());
   }
