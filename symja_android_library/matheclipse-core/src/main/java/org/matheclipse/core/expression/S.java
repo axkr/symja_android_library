@@ -25919,6 +25919,16 @@ public class S {
    */
   public final static IBuiltInSymbol URLEncode = S.initFinalSymbol("URLEncode", ID.URLEncode);
 
+  /**
+   * URLExecute("url") - read the web address `url` and import what it answers with: JSON as nested
+   * lists of rules, anything else as a string.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/URLExecute.md">URLExecute
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol URLExecute = S.initFinalSymbol("URLExecute", ID.URLExecute);
+
   public final static IBuiltInSymbol URLFetch = S.initFinalSymbol("URLFetch", ID.URLFetch);
 
   /**
