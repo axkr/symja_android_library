@@ -382,11 +382,23 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       } catch (RuntimeException rex) {
       }
     }
+    graphicsPrimitives = withoutHiddenCurves(graphicsPrimitives);
 
     IASTAppendable result = F.Graphics(labelledContent(graphicsPrimitives, plotAST));
     result.appendArgs(graphicsOptions.getGraphicsRules());
     // System.out.println(result);
     return GraphicsOptions.legended(result);
+  }
+
+  /**
+   * The primitives without the curves {@link #plot} kept only for the fillings, which are marked
+   * <code>Invisible(...)</code> at the top level.
+   */
+  private static IAST withoutHiddenCurves(IAST graphicsPrimitives) {
+    if (graphicsPrimitives.isList() && graphicsPrimitives.exists(x -> x.isAST(S.Invisible, 2))) {
+      return graphicsPrimitives.select(x -> !x.isAST(S.Invisible, 2));
+    }
+    return graphicsPrimitives;
   }
 
   protected static IAST plot(IAST plot, IExpr[] options, GraphicsOptions graphicsOptions,
@@ -431,18 +443,23 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         IAST curveData = (IAST) listOfLists.get(j);
         PlotWrapper curveWrapper =
             curveWrappers != null && j < curveWrappers.length ? curveWrappers[j] : null;
-        // when this curve carries a tooltip its primitives are gathered so the label can enclose
-        // them; without one they go straight into the shared list, as they always did
-        final IASTAppendable curvePrimitives =
-            curveWrapper != null && curveWrapper.hasTooltip() ? F.ListAlloc() : graphicsPrimitives;
-
         IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
             F.NIL, graphicsOptions.curveThickness());
         IExpr style = defaultColor;
+        // a curve styled None isn't drawn, but a filling toward it still is
+        boolean hidden = false;
         if (!plotStyle.isNone()) {
           IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, j - 1);
-          style = F.Directive(defaultColor, userStyle);
+          hidden = userStyle.isNone();
+          if (!hidden) {
+            style = F.Directive(defaultColor, userStyle);
+          }
         }
+        // when this curve carries a tooltip or is hidden its primitives are gathered so the label
+        // can enclose them; otherwise they go straight into the shared list, as they always did
+        final IASTAppendable curvePrimitives =
+            hidden || (curveWrapper != null && curveWrapper.hasTooltip()) ? F.ListAlloc()
+                : graphicsPrimitives;
 
         Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
         Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
@@ -470,7 +487,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           }
         }
         if (curvePrimitives != graphicsPrimitives && curvePrimitives.argSize() > 0) {
-          graphicsPrimitives.append(F.binaryAST2(S.Tooltip, curvePrimitives, curveWrapper.tooltip));
+          // the hidden curve stays in place, so the fillings can still find it by its number;
+          // createGraphicsFunction removes it afterwards
+          graphicsPrimitives.append(hidden ? F.unaryAST1(S.Invisible, curvePrimitives)
+              : F.binaryAST2(S.Tooltip, curvePrimitives, curveWrapper.tooltip));
         }
       }
       return graphicsPrimitives;
@@ -1159,11 +1179,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         if (GraphicsOptions.isBasicColor(e)) {
           localColor = e;
         } else if (e.isAST(S.Directive)) {
-          for (IExpr d : (IAST) e) {
-            if (GraphicsOptions.isBasicColor(d)) {
-              localColor = d;
-            }
-          }
+          localColor = directiveColor((IAST) e, localColor);
         } else {
           extractCurvesRecursive(e, curves, localColor);
         }
@@ -1190,7 +1206,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           }
         }
         extractCurvesRecursive(ast.arg1(), curves, newColor);
-      } else if (head == S.GraphicsGroup || head == S.Annotation || head == S.Tooltip) {
+      } else if (head == S.GraphicsGroup || head == S.Annotation || head == S.Tooltip
+          || head == S.Invisible) {
         // a fully transparent group is a hover target rather than something drawn, so it has no
         // curve to fill under; without this the mark over a tooltipped point becomes a spurious
         // one point curve and the fill goes down to the axis beneath it
@@ -1199,6 +1216,22 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         }
       }
     }
+  }
+
+  /**
+   * The last colour of a directive, looking into nested directives too, or
+   * <code>currentColor</code> if it has none.
+   */
+  private static IExpr directiveColor(IAST directive, IExpr currentColor) {
+    IExpr color = currentColor;
+    for (IExpr d : directive) {
+      if (GraphicsOptions.isBasicColor(d)) {
+        color = d;
+      } else if (d.isAST(S.Directive)) {
+        color = directiveColor((IAST) d, color);
+      }
+    }
+    return color;
   }
 
   /** Whether these primitives are drawn with no ink at all, and so describe no curve. */

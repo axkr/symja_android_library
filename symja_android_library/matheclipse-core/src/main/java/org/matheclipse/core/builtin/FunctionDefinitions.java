@@ -21,6 +21,9 @@ public final class FunctionDefinitions {
       S.ArcLength.setEvaluator(new org.matheclipse.core.reflection.system.ArcLength());
       S.Area.setEvaluator(new org.matheclipse.core.reflection.system.Area());
       S.ArrayDot.setEvaluator(new org.matheclipse.core.reflection.system.ArrayDot());
+      // the serialized form only; matheclipse-compile registers its own evaluator over this one
+      S.CompiledFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.CompiledFunctionForm());
       S.AlgebraicIntegerQ
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicIntegerQ());
       S.AlgebraicNumberQ
@@ -106,6 +109,7 @@ public final class FunctionDefinitions {
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
       org.matheclipse.core.data.Entities.register("Element", S.ElementData);
+      S.LatticeData.setEvaluator(new org.matheclipse.core.data.LatticeData());
       S.Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
       S.EntityList.setEvaluator(new org.matheclipse.core.reflection.system.EntityList());
       S.EntityValue.setEvaluator(new org.matheclipse.core.reflection.system.EntityValue());
@@ -568,7 +572,8 @@ public final class FunctionDefinitions {
     NumericArrayFunctions.initialize();
     GraphicsFunctions.initialize();
     // Compile / CompiledFunction / CompilePrint live in the matheclipse-compile module and
-    // are registered by org.matheclipse.compile.CompileInit#init().
+    // are registered by org.matheclipse.compile.CompileInit#init(); only the serialized form of
+    // CompiledFunction is evaluated without it, see CompiledFunctionForm.
     JavaFunctions.initialize();
     SidesFunctions.initialize();
     MeshFunctions.initialize();

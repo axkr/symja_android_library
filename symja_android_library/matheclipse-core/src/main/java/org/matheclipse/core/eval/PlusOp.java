@@ -409,6 +409,7 @@ public final class PlusOp {
         if (numberValue.isNumber()) {
           IExpr temp = ((INumber) numberValue).plusExpr((INumber) arg);
           if (temp.isNumber()) {
+            PrecisionLoss.machineSum(numberValue, arg, temp);
             numberValue = temp;
             evaled = true;
             return F.NIL;

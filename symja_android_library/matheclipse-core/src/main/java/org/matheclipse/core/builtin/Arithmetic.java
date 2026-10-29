@@ -58,6 +58,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -246,14 +247,16 @@ public final class Arithmetic {
       }
       IExpr temp = engine.evalNumericFunctionNIL(arg1);
       if (temp.isReal()) {
-        if (((IReal) temp).complexSign() == 0 && !arg1.isNumber()
-            && arg1.isFree(x -> x.isInexactNumber(), false)) {
-          // the machine value is zero, the exact value may be not: Abs(1-Sqrt(1+Pi^(-1000)))
-          int sign = CompareUtil.numericSign(arg1, engine);
+        if (!arg1.isNumber() && arg1.isFree(x -> x.isInexactNumber(), false)) {
+          // the machine value may be a rounding error, the sign of the exact value is decided with
+          // extra precision: Abs(Sqrt(2)+Sqrt(3)-Sqrt(5+2*Sqrt(6))-10^(-30))
+          int sign = CompareUtil.absSign(arg1, (IReal) temp, engine);
           if (sign == CompareUtil.UNCERTAIN) {
-            return F.NIL;
+            return CompareUtil.printSignUncertain(arg1, engine);
           }
-          return sign < 0 ? arg1.negate() : arg1;
+          if (sign != CompareUtil.NOT_COMPARABLE) {
+            return sign < 0 ? arg1.negate() : arg1;
+          }
         }
         return arg1.copySign((IReal) temp);
       }
@@ -3344,14 +3347,20 @@ public final class Arithmetic {
         if (ast.isUniform(UniformFlags.REAL)) {
           INum numResult = (INum) ast.arg1();
           for (int i = 2; i < ast.size(); i++) {
-            numResult = numResult.add((INum) ast.get(i));
+            final INum summand = (INum) ast.get(i);
+            final INum sum = numResult.add(summand);
+            PrecisionLoss.machineSum(engine, numResult, summand, sum);
+            numResult = sum;
           }
           return numResult;
         }
         if (ast.isUniform(UniformFlags.NUMBER)) {
           INumber numResult = (INumber) ast.arg1();
           for (int i = 2; i < ast.size(); i++) {
-            numResult = numResult.plus((INumber) ast.get(i));
+            final INumber summand = (INumber) ast.get(i);
+            final INumber sum = numResult.plus(summand);
+            PrecisionLoss.machineSum(engine, numResult, summand, sum);
+            numResult = sum;
           }
           return numResult;
         }
@@ -3419,7 +3428,10 @@ public final class Arithmetic {
       if (size > 1) {
         IInexactNumber num = (IInexactNumber) ast.arg1();
         for (int i = 2; i < size; i++) {
-          num = num.plus((IInexactNumber) ast.get(i));
+          final IInexactNumber summand = (IInexactNumber) ast.get(i);
+          final IInexactNumber sum = num.plus(summand);
+          PrecisionLoss.machineSum(engine, num, summand, sum);
+          num = sum;
         }
         return num;
       }
@@ -6226,10 +6238,7 @@ public final class Arithmetic {
             // decided with as much precision as needed and without General::munfl
             int sign = CompareUtil.numericSign(arg1, engine);
             if (sign == CompareUtil.UNCERTAIN) {
-              // Internal precision limit `1` reached while evaluating `2`.
-              Errors.printMessage(S.N, "meprec",
-                  F.List(F.stringx("$MaxExtraPrecision = " + MAX_EXTRA_PRECISION + "."), arg1),
-                  engine);
+              CompareUtil.printSignUncertain(arg1, engine);
               return result;
             }
             if (sign != CompareUtil.NOT_COMPARABLE) {
@@ -6389,9 +6398,6 @@ public final class Arithmetic {
       }
       return result;
     }
-
-    /** Extra digits for deciding the sign of an exact value, similar to $MaxExtraPrecision */
-    private static final int MAX_EXTRA_PRECISION = 50;
 
     @Override
     public int[] expectedArgSize(IAST ast) {

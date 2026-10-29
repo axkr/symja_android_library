@@ -285,7 +285,7 @@ public class Num implements INum {
   @Override
   public IReal add(final IReal val) {
     if (val instanceof INum) {
-      return multiply((INum) val);
+      return add((INum) val);
     }
     return val.add(this);
   }

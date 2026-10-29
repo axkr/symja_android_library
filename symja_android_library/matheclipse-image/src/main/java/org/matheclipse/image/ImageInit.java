@@ -5,6 +5,7 @@ import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.image.builtin.ColorFunctions;
 import org.matheclipse.image.builtin.ImageAdjustFunctions;
 import org.matheclipse.image.builtin.ImageArithmeticFunctions;
+import org.matheclipse.image.builtin.ImageFeatureFunctions;
 import org.matheclipse.image.builtin.ImageFilterFunctions;
 import org.matheclipse.image.builtin.ImageGeometryFunctions;
 import org.matheclipse.image.builtin.ImageFunctions;
@@ -32,6 +33,7 @@ public class ImageInit {
     ImageAdjustFunctions.initialize();
     ImageGeometryFunctions.initialize();
     ImageFilterFunctions.initialize();
+    ImageFeatureFunctions.initialize();
 
     // The plots are not installed from here. This module used to replace ArrayPlot and
     // ListDensityPlot with versions that drew a JFreeChart bitmap, which meant a plot looked

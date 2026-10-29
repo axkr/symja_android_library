@@ -3543,6 +3543,28 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * The sign of an exact real numeric argument of <code>Positive, Negative, NonNegative</code> or
+   * <code>NonPositive</code>, decided as <code>Sign</code> decides it, so that a difference of
+   * nearly equal numbers is not taken for its machine value: <code>Pi-314159265358979323846/10^20
+   * </code> is positive.
+   *
+   * @return <code>-1, 0, 1</code>, {@link CompareUtil#NOT_COMPARABLE} for any other argument, or
+   *         {@link CompareUtil#UNCERTAIN} after the message <code>N::meprec</code>, if the sign
+   *         can't be told
+   */
+  private static int exactArgumentSign(final IExpr arg1, EvalEngine engine) {
+    if (!arg1.isAST() || !arg1.isNumericFunction(true)
+        || !arg1.isFree(x -> x.isInexactNumber(), false)) {
+      return CompareUtil.NOT_COMPARABLE;
+    }
+    final int sign = CompareUtil.numericSign(arg1, engine);
+    if (sign == CompareUtil.UNCERTAIN) {
+      CompareUtil.printSignUncertain(arg1, engine);
+    }
+    return sign;
+  }
+
   private static class Negative extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3551,6 +3573,10 @@ public final class BooleanFunctions {
         // the sign of a quantity is the sign of its magnitude
         return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.Negative,
             engine);
+      }
+      final int sign = exactArgumentSign(arg1, engine);
+      if (sign != CompareUtil.NOT_COMPARABLE) {
+        return sign == CompareUtil.UNCERTAIN ? F.NIL : F.booleSymbol(sign < 0);
       }
       if (arg1.isNegativeResult()) {
         return S.True;
@@ -3640,6 +3666,10 @@ public final class BooleanFunctions {
         return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.NonNegative,
             engine);
       }
+      final int sign = exactArgumentSign(arg1, engine);
+      if (sign != CompareUtil.NOT_COMPARABLE) {
+        return sign == CompareUtil.UNCERTAIN ? F.NIL : F.booleSymbol(sign >= 0);
+      }
       if (arg1.isNonNegativeResult()) {
         return S.True;
       }
@@ -3702,6 +3732,10 @@ public final class BooleanFunctions {
       if (arg1.isReal()) {
         // a number by its sign: isZero() takes a small machine number like 3.*^-20 for zero
         return F.booleSymbol(!((IReal) arg1).isPositive());
+      }
+      final int sign = exactArgumentSign(arg1, engine);
+      if (sign != CompareUtil.NOT_COMPARABLE) {
+        return sign == CompareUtil.UNCERTAIN ? F.NIL : F.booleSymbol(sign <= 0);
       }
       if (arg1.isNegativeResult() || arg1.isZero() || arg1.isNonPositiveResult()) {
         return S.True;
@@ -3931,6 +3965,10 @@ public final class BooleanFunctions {
         // the sign of a quantity is the sign of its magnitude
         return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.Positive,
             engine);
+      }
+      final int sign = exactArgumentSign(arg1, engine);
+      if (sign != CompareUtil.NOT_COMPARABLE) {
+        return sign == CompareUtil.UNCERTAIN ? F.NIL : F.booleSymbol(sign > 0);
       }
       if (arg1.isPositiveResult()) {
         return S.True;

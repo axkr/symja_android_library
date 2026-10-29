@@ -175,8 +175,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
       }
       // an exact expression: lost working digits are calculated again, they are no errors of the
       // input
-      final boolean exactInput = nDigitPrecision > ParserConfig.MACHINE_PRECISION
-          && arg1.isFree(IExpr::isInexactNumber, false);
+      final boolean exactInput = arg1.isFree(IExpr::isInexactNumber, false);
       IExpr result;
       if (exactInput) {
         engine.suspendSignificance();
@@ -188,7 +187,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
       } else {
         result = org.matheclipse.core.reflection.system.N.evalN2(arg1, nDigitPrecision, engine);
       }
-      if (nDigitPrecision > ParserConfig.MACHINE_PRECISION && !Double.isNaN(requestedPrecision)) {
+      if (!Double.isNaN(requestedPrecision) && (nDigitPrecision > ParserConfig.MACHINE_PRECISION
+          || (exactInput && result.has(x -> x instanceof ApfloatNum, true)))) {
+        // below the machine precision: the arbitrary precision numbers of a cancellation
         result = withPrecision(result, requestedPrecision);
       }
       return result;
@@ -485,10 +486,11 @@ public final class N extends AbstractCoreFunctionEvaluator {
         } finally {
           engine.setNumericMode(true, working, significantFigures);
         }
-      }, lostExactly, nPrecision, significantFigures, engine);
+      }, lostExactly, nPrecision, nDigitPrecision, significantFigures, engine);
     }
     final IExpr exact = expr;
-    return evalExact(expr, working -> exact, 0L, nPrecision, significantFigures, engine);
+    return evalExact(expr, working -> exact, 0L, nPrecision, nDigitPrecision, significantFigures,
+        engine);
   }
 
   /**
@@ -526,21 +528,35 @@ public final class N extends AbstractCoreFunctionEvaluator {
    * and bring its own working digits. So the result of the second evaluation is compared with the
    * first one, which is returned as it is if both agree.
    *
+   * <p>
+   * A precision below the machine precision is calculated with machine numbers. If their sums
+   * cancel more digits than leave the precision asked for, the expression is evaluated again with
+   * arbitrary precision as for a larger precision, and the result has the precision asked for:
+   * <code>N(E-271828182845904523536/10^20, 10)</code> is <code>2.874713527*10^-22</code>.
+   *
    * @param expr an expression without inexact numbers
    * @param exactAt the expression which is evaluated with a working precision: <code>expr</code>,
    *        or the exact evaluation of the input with that precision of the engine
    * @param lostExactly the digits which the exact evaluation of the input has lost already
-   * @param precision the precision of the result
+   * @param machinePrecision the precision of the result, at least the machine precision
+   * @param requested the precision asked for, which may be below the machine precision
    * @param significantFigures the digits which output forms display
    */
   private static IExpr evalExact(IExpr expr, LongFunction<IExpr> exactAt, final long lostExactly,
-      final long precision, int significantFigures, EvalEngine engine) {
-    final long maxPrecision = precision + Config.MAX_EXTRA_PRECISION;
+      final long machinePrecision, final long requested, int significantFigures,
+      EvalEngine engine) {
+    long precision = machinePrecision;
+    long maxPrecision = precision + Config.MAX_EXTRA_PRECISION;
     // A function calculated with the digits of the precision has no digits beyond them to round
     // its last digit with: the first evaluation has guard digits, which the result keeps beyond
     // its precision. At machine precision the evaluation stays one with doubles.
     long working =
         precision > ParserConfig.MACHINE_PRECISION ? precision + GUARD_DIGITS : precision;
+    // the cancellations of machine sums are tracked in the first evaluation
+    boolean machine = working == ParserConfig.MACHINE_PRECISION
+        && requested < ParserConfig.MACHINE_PRECISION;
+    // the machine numbers had too few right digits: arbitrary precision for a lower precision
+    boolean belowMachine = false;
     boolean first = true;
     if (working > precision) {
       engine.setNumericMode(true, working, significantFigures);
@@ -550,6 +566,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
     // a result which was zero, because every digit was lost
     IExpr zero = null;
     final long before = PrecisionLoss.start(engine);
+    final long beforeMachine = machine ? PrecisionLoss.startMachine(engine) : 0L;
     try {
       while (true) {
         PrecisionLoss.reset(engine);
@@ -570,9 +587,22 @@ public final class N extends AbstractCoreFunctionEvaluator {
             engine.setMessageShortcut(shortcut);
           }
         }
-        final long lost =
+        long lost =
             first ? Math.max(PrecisionLoss.lost(engine), lostExactly) : PrecisionLoss.lost(engine);
         first = false;
+        if (machine) {
+          machine = false;
+          final long machineLost = PrecisionLoss.machineLost(engine);
+          PrecisionLoss.stopMachine(engine, beforeMachine);
+          if (machineLost >= PrecisionLoss.THRESHOLD
+              && ParserConfig.MACHINE_PRECISION - machineLost < requested) {
+            // fewer right digits than asked for
+            belowMachine = true;
+            precision = requested;
+            maxPrecision = precision + Config.MAX_EXTRA_PRECISION;
+            lost = Math.max(lost, machineLost);
+          }
+        }
         long needed = working;
         if (lost >= PrecisionLoss.THRESHOLD) {
           // every digit lost: twice the digits; else the digits which were lost in addition
@@ -589,7 +619,8 @@ public final class N extends AbstractCoreFunctionEvaluator {
             // the loss did not reach the result: the one of the evaluation before is as good
             result = previous;
           } else if (working < maxPrecision) {
-            previous = rounded;
+            // a machine number is no result for a precision whose digits it lost
+            previous = belowMachine && working <= ParserConfig.MACHINE_PRECISION ? null : rounded;
             working = Math.min(needed, maxPrecision);
             engine.setNumericMode(true, working, significantFigures);
             continue;
@@ -606,12 +637,15 @@ public final class N extends AbstractCoreFunctionEvaluator {
         } else {
           result = rounded;
         }
-        if (working > precision) {
+        if (working > precision && !belowMachine) {
           engine.setNumericMode(true, precision, significantFigures);
         }
         if (messages && !quiet) {
           // the messages of the last evaluation are wanted: once more, aloud
-          engine.evalWithoutNumericReset(exactAt.apply(precision));
+          engine.evalWithoutNumericReset(exactAt.apply(belowMachine ? working : precision));
+        }
+        if (belowMachine) {
+          engine.setNumericMode(true, machinePrecision, significantFigures);
         }
         if (limit && !PrecisionLoss.isLimitQuiet(engine)) {
           // Internal precision limit `1` reached while evaluating `2`.
@@ -622,6 +656,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
         return result;
       }
     } finally {
+      if (machine) {
+        PrecisionLoss.stopMachine(engine, beforeMachine);
+      }
       PrecisionLoss.stop(engine, before);
     }
   }

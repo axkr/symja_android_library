@@ -173,6 +173,7 @@ public class Errors {
       "Value of option CompilationOptions -> `1` should be Automatic, a rule or a list of rules.", //
       "cfct", "The number of arguments `1` does not match the length `2` of the argument template.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
+      "cfnv", "CompiledFunction object is invalid and cannot be used.", //
       "cfrec", "The compiled function `1` calls itself; the call is not expanded.", //
       "cfro",
       "Value of option RuntimeOptions -> `1` should be Automatic, \"Speed\", \"Quality\", a rule or a list of rules.", //
@@ -612,6 +613,8 @@ public class Errors {
       "rspec",
       "Rotation specification `1` should be a machine-sized integer or list of machine-sized integers.", //
       "row", "Expecting images of the same height in one row.", //
+      "rtnc",
+      "The number of constraints or initial conditions given, `1`, should be the same as the total order of the system, `2`.", //
       "rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
       "rvec", "Input `1` is not a vector of reals or integers.", //
       "rvec2", "Input `1` is not a real-valued vector.", //

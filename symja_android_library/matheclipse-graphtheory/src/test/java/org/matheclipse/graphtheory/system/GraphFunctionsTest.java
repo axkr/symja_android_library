@@ -848,12 +848,34 @@ public class GraphFunctionsTest extends AbstractTestCase {
   @Test
   public void testGraphData() {
     check("GraphData()", //
-        "{{PappusGraph}}");
+        "{{DodecahedralGraph},{IcosahedralGraph},{PappusGraph}}");
     check("GraphData(\"PappusGraph\")", //
         "Graph({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}," //
             + "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n" + //
             "10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n"
             + "14})");
+  }
+
+  @Test
+  public void testGraphDataPlatonicGraphs() {
+    check("EdgeList(GraphData(\"IcosahedralGraph\"))[[;;8]]", //
+        "{1<->3,1<->5,1<->6,1<->9,1<->10,2<->4,2<->7,2<->8}");
+    check("EdgeList(GraphData(\"DodecahedralGraph\"))[[-6;;]]", //
+        "{10<->18,11<->12,13<->17,13<->18,17<->19,18<->20}");
+    check("Union(VertexDegree(GraphData(\"IcosahedralGraph\")))", //
+        "{5}");
+    check("Normal(GraphData(\"DodecahedralGraph\", \"AdjacencyMatrix\"))[[{1,20}]]", //
+        "{{0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0},{0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,\n"
+            + "0,0}}");
+    check("{GraphData(\"DodecahedralGraph\", \"Name\"), GraphData(\"IcosahedralGraph\", \"VertexCount\"), "
+        + "GraphData(\"DodecahedralGraph\", \"EdgeCount\"), GraphData(\"PappusGraph\", \"StandardName\")}", //
+        "{dodecahedral graph,12,30,PappusGraph}");
+    // the icosahedron and the dodecahedron are dual: 12 faces of five edges, 20 of three
+    check("{Length(FindCycle(GraphData(\"DodecahedralGraph\"), {5}, All)), "
+        + "Length(FindCycle(GraphData(\"IcosahedralGraph\"), {3}, All))}", //
+        "{12,20}");
+    check("GraphData(\"IcosahedralGraph\", \"Diameter2\")", //
+        "GraphData(IcosahedralGraph,Diameter2)");
   }
 
   @Test

@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
@@ -349,8 +350,11 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
       if (arg3.isNumberLike() && arg2.isNumberLike() && arg1.isNumberLike()) {
         if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
           IExpr plusExpr = ((INumber) arg1).plusExpr((INumber) arg2);
+          PrecisionLoss.machineSum(engine, arg1, arg2, plusExpr);
           if (plusExpr.isNumber()) {
-            return ((INumber) plusExpr).plusExpr((INumber) arg3);
+            final IExpr sum = ((INumber) plusExpr).plusExpr((INumber) arg3);
+            PrecisionLoss.machineSum(engine, plusExpr, arg3, sum);
+            return sum;
           }
           return plusExpr.plus(arg3);
         }

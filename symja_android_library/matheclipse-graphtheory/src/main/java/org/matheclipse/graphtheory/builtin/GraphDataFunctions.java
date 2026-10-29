@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 import org.jgrapht.Graph;
 import org.jgrapht.generate.CompleteGraphGenerator;
@@ -47,6 +48,34 @@ public class GraphDataFunctions {
   private static Map<String, Supplier<Graph<IExpr, ?>>> GRAPH_MAP =
       TRIE_STRING2GRAPH_BUILDER.withMatch(TrieMatch.EXACT).build();
 
+  /** The readable names of the graphs in {@link #GRAPH_MAP}. */
+  private static final Map<String, String> GRAPH_NAMES = Map.of( //
+      "PappusGraph", "Pappus graph", //
+      "IcosahedralGraph", "icosahedral graph", //
+      "DodecahedralGraph", "dodecahedral graph");
+
+  /** The properties <code>GraphData(name, property)</code> knows, in alphabetical order. */
+  private static final String[] GRAPH_PROPERTIES = {"AdjacencyMatrix", "EdgeCount", "EdgeList",
+      "EdgeRules", "Graph", "Name", "StandardName", "VertexCount", "VertexList"};
+
+  /**
+   * The skeleton of the icosahedron: every vertex is joined to five others; the edges are sorted
+   * pairs.
+   */
+  private static final int[][] ICOSAHEDRAL_EDGES = {{1, 3}, {1, 5}, {1, 6}, {1, 9}, {1, 10},
+      {2, 4}, {2, 7}, {2, 8}, {2, 11}, {2, 12}, {3, 7}, {3, 8}, {3, 9}, {3, 10}, {4, 5}, {4, 6},
+      {4, 11}, {4, 12}, {5, 6}, {5, 9}, {5, 11}, {6, 10}, {6, 12}, {7, 8}, {7, 9}, {7, 11}, {8, 10},
+      {8, 12}, {9, 11}, {10, 12}};
+
+  /**
+   * The skeleton of the dodecahedron: every vertex is joined to three others; the edges are sorted
+   * pairs.
+   */
+  private static final int[][] DODECAHEDRAL_EDGES = {{1, 14}, {1, 15}, {1, 16}, {2, 5}, {2, 6},
+      {2, 13}, {3, 7}, {3, 14}, {3, 19}, {4, 8}, {4, 15}, {4, 20}, {5, 11}, {5, 19}, {6, 12},
+      {6, 20}, {7, 11}, {7, 16}, {8, 12}, {8, 16}, {9, 10}, {9, 14}, {9, 17}, {10, 15}, {10, 18},
+      {11, 12}, {13, 17}, {13, 18}, {17, 19}, {18, 20}};
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -56,6 +85,8 @@ public class GraphDataFunctions {
     private static void init() {
       // GRAPH_MAP.put("PetersenGraph", () -> petersenGraph());
       GRAPH_MAP.put("PappusGraph", () -> pappusGraph());
+      GRAPH_MAP.put("IcosahedralGraph", () -> namedGraph(12, ICOSAHEDRAL_EDGES));
+      GRAPH_MAP.put("DodecahedralGraph", () -> namedGraph(20, DODECAHEDRAL_EDGES));
       S.GraphData.setEvaluator(new GraphData());
 
       S.CompleteGraph.setEvaluator(new CompleteGraph());
@@ -185,27 +216,72 @@ public class GraphDataFunctions {
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
       if (ast.isAST0()) {
-        Set<String> keySet = GRAPH_MAP.keySet();
+        Set<String> keySet = new TreeSet<String>(GRAPH_MAP.keySet());
         IASTAppendable result = F.ListAlloc(keySet.size());
         for (String name : keySet) {
           result.append(F.List(name));
         }
         return result;
       }
-      if (ast.isAST1()) {
-        IExpr arg1 = ast.arg1();
-        if (arg1.isString()) {
-          String graphName = arg1.toString();
-          Supplier<Graph<IExpr, ?>> supplier = GRAPH_MAP.get(graphName);
-          if (supplier != null) {
-            return GraphExpr.newInstance(supplier.get());
-          }
-        }
-        // `1` is not a known entity, class or tag for GraphData. Use GraphData for a list of
-        // entities.
-        return Errors.printMessage(S.GraphData, "notent", F.List(arg1, S.GraphData), engine);
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST1() && arg1.isString("Properties")) {
+        return F.mapRange(0, GRAPH_PROPERTIES.length, i -> F.stringx(GRAPH_PROPERTIES[i]));
       }
-      return F.NIL;
+      if (arg1.isString()) {
+        String graphName = arg1.toString();
+        Supplier<Graph<IExpr, ?>> supplier = GRAPH_MAP.get(graphName);
+        if (supplier != null) {
+          IExpr graph = GraphExpr.newInstance(supplier.get());
+          if (ast.isAST1()) {
+            return graph;
+          }
+          IExpr value = property(graphName, graph, ast.arg2(), engine);
+          if (value.isPresent()) {
+            return value;
+          }
+          // `1` is not a known property or size specification for `2`. Use `2`("Properties") for
+          // a list of properties.
+          return Errors.printMessage(S.GraphData, "notprop", F.List(ast.arg2(), S.GraphData),
+              engine);
+        }
+      }
+      // `1` is not a known entity, class or tag for GraphData. Use GraphData for a list of
+      // entities.
+      return Errors.printMessage(S.GraphData, "notent", F.List(arg1, S.GraphData), engine);
+    }
+
+    /**
+     * The value of a property of a named graph.
+     *
+     * @return {@link F#NIL} if the property isn't known
+     */
+    private static IExpr property(String graphName, IExpr graph, IExpr property,
+        EvalEngine engine) {
+      if (!property.isString()) {
+        return F.NIL;
+      }
+      switch (property.toString()) {
+        case "AdjacencyMatrix":
+          return engine.evaluate(F.unaryAST1(S.AdjacencyMatrix, graph));
+        case "EdgeCount":
+          return engine.evaluate(F.unaryAST1(S.EdgeCount, graph));
+        case "EdgeList":
+          return engine.evaluate(F.unaryAST1(S.EdgeList, graph));
+        case "EdgeRules":
+          return engine.evaluate(F.unaryAST1(S.EdgeRules, graph));
+        case "Graph":
+          return graph;
+        case "Name":
+          return F.stringx(GRAPH_NAMES.getOrDefault(graphName, graphName));
+        case "StandardName":
+          return F.stringx(graphName);
+        case "VertexCount":
+          return engine.evaluate(F.unaryAST1(S.VertexCount, graph));
+        case "VertexList":
+          return engine.evaluate(F.unaryAST1(S.VertexList, graph));
+        default:
+          return F.NIL;
+      }
     }
 
     @Override
@@ -221,7 +297,7 @@ public class GraphDataFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_2;
     }
   }
 
@@ -1140,6 +1216,25 @@ public class GraphDataFunctions {
         {10, 15}, {10, 17}, {11, 12}, {11, 16}, {12, 15}, {13, 16}, {14, 17}};
     for (int[] edge : edges) {
       addEdge(vertexMap, g, edge[0], edge[1]);
+    }
+    return g;
+  }
+
+  /**
+   * A graph on the vertices <code>1..vertexCount</code> with the given edges, in their order.
+   *
+   * @param edges the pairs of vertices which are joined
+   */
+  private static Graph<IExpr, ExprEdge> namedGraph(int vertexCount, int[][] edges) {
+    Graph<IExpr, ExprEdge> g = GraphTypeBuilder //
+        .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+        .edgeClass(ExprEdge.class) //
+        .buildGraph();
+    for (int i = 1; i <= vertexCount; i++) {
+      g.addVertex(F.ZZ(i));
+    }
+    for (int[] edge : edges) {
+      g.addEdge(F.ZZ(edge[0]), F.ZZ(edge[1]));
     }
     return g;
   }

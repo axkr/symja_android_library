@@ -13,7 +13,8 @@ import org.matheclipse.core.compile.IExprCompiler;
  * <p>
  * <code>matheclipse-core</code> owns the <code>Compile</code>, <code>CompiledFunction</code> and
  * <code>CompilePrint</code> symbols but no longer implements them: without this module they stay
- * unevaluated, exactly as <code>Molecule</code> does without <code>matheclipse-chem</code>. That is
+ * unevaluated - except for the serialized form of a compiled function, which core applies through
+ * its uncompiled <code>Function</code> - exactly as <code>Molecule</code> does without <code>matheclipse-chem</code>. That is
  * deliberate for <code>matheclipse-api</code> and <code>matheclipse-discord</code>, which take
  * untrusted input and do not depend on this module.
  *

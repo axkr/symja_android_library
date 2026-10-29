@@ -27,6 +27,7 @@ import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 import edu.jas.structure.GcdRingElem;
+import edu.jas.structure.Power;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 import edu.jas.ufd.GCDFactory;
@@ -218,8 +219,29 @@ public final class JASModular<C extends GcdRingElem<C> & Modular> {
    *         rational coefficients, or a denominator is a multiple of the modulus
    */
   public GenPolynomial<C> expr2JAS(final IExpr exprPoly) throws JASConversionException {
+    return expr2JAS(exprPoly, null);
+  }
+
+  /**
+   * Convert the expression into a JAS polynomial reduced modulo <code>divisor</code>. Sums,
+   * products and powers are converted as they stand, without expanding the expression over the
+   * integers first: every product is reduced at once and a power <code>b^k</code> is taken by
+   * repeated squaring modulo <code>divisor</code>, so <code>(x^3+x+1)^2047</code> modulo a
+   * polynomial of degree 23 never has a degree above 44. Without a divisor a power is still taken
+   * over <code>GF(p)</code>, where its coefficients can't grow.
+   *
+   * @param divisor the polynomial to reduce with, or <code>null</code> for no reduction
+   * @throws JASConversionException if the expression is no polynomial in the variables with
+   *         rational coefficients, or a denominator is a multiple of the modulus
+   */
+  public GenPolynomial<C> expr2JAS(final IExpr exprPoly, GenPolynomial<C> divisor)
+      throws JASConversionException {
+    if (divisor != null && divisor.isZERO()) {
+      divisor = null;
+    }
     try {
-      return expr2Poly(exprPoly);
+      GenPolynomial<C> poly = expr2Poly(exprPoly, divisor);
+      return divisor == null ? poly : poly.remainder(divisor);
     } catch (Exception ae) {
       if (Config.SHOW_STACKTRACE) {
         ae.printStackTrace();
@@ -236,34 +258,41 @@ public final class JASModular<C extends GcdRingElem<C> & Modular> {
     return fPolyFactory.valueOf(ExpVector.create(fVariables.argSize(), jasIndex, exponent));
   }
 
-  private GenPolynomial<C> expr2Poly(final IExpr exprPoly)
+  private GenPolynomial<C> expr2Poly(final IExpr exprPoly, GenPolynomial<C> divisor)
       throws ArithmeticException, ClassCastException {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isPlus()) {
-        GenPolynomial<C> result = expr2Poly(ast.arg1());
+        GenPolynomial<C> result = expr2Poly(ast.arg1(), divisor);
         for (int i = 2; i < ast.size(); i++) {
-          result = result.sum(expr2Poly(ast.get(i)));
+          result = result.sum(expr2Poly(ast.get(i), divisor));
         }
         return result;
       } else if (ast.isTimes()) {
-        GenPolynomial<C> result = expr2Poly(ast.arg1());
+        GenPolynomial<C> result = expr2Poly(ast.arg1(), divisor);
         for (int i = 2; i < ast.size(); i++) {
-          result = result.multiply(expr2Poly(ast.get(i)));
+          result = result.multiply(expr2Poly(ast.get(i), divisor));
+          if (divisor != null) {
+            result = result.remainder(divisor);
+          }
         }
         return result;
       } else if (ast.isPower()) {
         final IExpr base = ast.base();
+        final IExpr exponent = ast.exponent();
+        if (!exponent.isInteger() || exponent.isNegative()) {
+          throw new ArithmeticException(
+              "JASModular:expr2Poly - invalid exponent: " + exponent.toString());
+        }
         for (int i = 0; i < fVariables.argSize(); i++) {
           if (fVariables.get(i + 1).equals(base)) {
-            int exponent = ast.exponent().toIntDefault();
-            if (exponent < 0) {
-              throw new ArithmeticException(
-                  "JASModular:expr2Poly - invalid exponent: " + ast.exponent().toString());
+            int n = exponent.toIntDefault();
+            if (n >= 0 && (divisor == null || n < divisor.degree())) {
+              return variable(i, n);
             }
-            return variable(i, exponent);
           }
         }
+        return power(expr2Poly(base, divisor), ((IInteger) exponent).toBigNumerator(), divisor);
       }
     } else if (exprPoly instanceof ISymbol) {
       for (int i = 0; i < fVariables.argSize(); i++) {
@@ -286,6 +315,25 @@ public final class JASModular<C extends GcdRingElem<C> & Modular> {
       return new GenPolynomial<C>(fPolyFactory, numerator.divide(denominator));
     }
     throw new ClassCastException(exprPoly.toString());
+  }
+
+  /**
+   * <code>base^n</code> by repeated squaring, every square reduced modulo <code>divisor</code>
+   * unless it is <code>null</code>.
+   */
+  private GenPolynomial<C> power(GenPolynomial<C> base, BigInteger n, GenPolynomial<C> divisor) {
+    if (n.signum() == 0) {
+      return fPolyFactory.getONE();
+    }
+    if (divisor != null) {
+      return Power.modPositivePower(base, n, divisor);
+    }
+    long degree = base.degree();
+    if (degree > 0
+        && (n.bitLength() > 31 || degree * n.longValue() > Config.MAX_POLYNOMIAL_DEGREE)) {
+      throw new ArithmeticException("JASModular:expr2Poly - degree too large");
+    }
+    return Power.positivePower(base, n);
   }
 
   /** Convert a JAS polynomial into an expression; the coefficients are <code>0 ... p-1</code>. */

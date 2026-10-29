@@ -12986,7 +12986,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFourierOfAnArray() {
     check("Fourier({{1, 2}, {3, 4}}) // InputForm", //
-        "{{5.0`,-1.0`},{-2.0`,0.0}}");
+        "{{5.0`,-1.0`},{-2.0`,0.0`}}");
     check("InverseFourier(Fourier({{1, 2}, {3, 4}})) // InputForm", //
         "{{1.0`,2.0`},{3.0`,4.0`}}");
     check("Fourier({{1, 2}, {3}})", //
@@ -18085,6 +18085,217 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("CirclePlus /: CirclePlus(a_Integer, b_Integer) + c_Integer := a + b + c; " //
         + "CirclePlus(1, 2) + 3", //
         "6");
+  }
+
+  @Test
+  public void testPolynomialDivisionModularPower() {
+    // a^(p^d) == a modulo an irreducible polynomial of degree d over GF(p): the powers are taken
+    // by repeated squaring modulo the divisor, without expanding them over the integers
+    check("PolynomialRemainder((x^2+x+1)^(2^20), x^5+x^2+1, x, Modulus->2)", //
+        "1+x+x^2");
+    check("PolynomialRemainder((2*x+1)^(3^6), x^2+1, x, Modulus->3)", //
+        "1+2*x");
+    // 1/2 is 3 modulo 5
+    check("PolynomialRemainder((x/2+1)^(5^4), x^2+2, x, Modulus->5)", //
+        "1+3*x");
+    check("PolynomialQuotient((x+1)^5, x^2+1, x, Modulus->5)", //
+        "4*x+x^3");
+    check("PolynomialQuotientRemainder((x+1)^5, x^2+1, x, Modulus->5)", //
+        "{4*x+x^3,1+x}");
+    check("PolynomialMod((x+3)^49, {x^2+1, 7})", //
+        "3+x");
+    check("PolynomialMod((x+3)^49, x^2+1, Modulus->7)", //
+        "3+x");
+    check("PolynomialGCD((x^2+1)^500, (x+2)^3*(x+4), Modulus->5)", //
+        "(2+x)^3");
+    check("PolynomialGCD((x+1)^(10^4), x^3+1, Modulus->2)", //
+        "1+x");
+  }
+
+  @Test
+  public void testRecurrenceTableSystems() {
+    // an initial value which refers to another one
+    check("RecurrenceTable({f(k+1)==f(k)+f(k-1)+1, f(1)==0, f(2)==f(1)+2}, f, {k, 1, 6})", //
+        "{0,2,3,6,10,17}");
+    check("RecurrenceTable({p(k+1)==2*p(k)-q(k), q(k+1)==p(k)+q(k), p(0)==q(0)+1, q(0)==1}, " //
+        + "{p,q}, {k,0,3})", //
+        "{{2,1},{3,3},{3,6},{0,9}}");
+    check("RecurrenceTable({p(k+1)==p(k)+0.1*Cos(q(k)), q(k+1)==q(k)+p(k), p(0)==0, q(0)==1}, " //
+        + "{p,q}, {k,0,2})", //
+        "{{0.0,1.0},{0.0540302,1.0},{0.10806,1.05403}}");
+    check("Dimensions(RecurrenceTable({w(k+1)==w(k)+0.001*Sin(z(k)), z(k+1)==z(k)+w(k), " //
+        + "w(0)==1, z(0)==0}, {w,z}, {k,1,5000}))", //
+        "{5000,2}");
+    // RecurrenceTable: The number of constraints or initial conditions given, 2, should be the
+    // same as the total order of the system, 1.
+    check("RecurrenceTable({h(k+1)==2*h(k), h(0)==1, h(1)==2}, h, {k,0,3})", //
+        "RecurrenceTable({h(1+k)==2*h(k),h(0)==1,h(1)==2},h,{k,0,3})");
+  }
+
+  @Test
+  public void testNDSolveTimeConditions() {
+    // the conditions of If and Piecewise switch at break points, where the integration restarts
+    check("Round(10^6*NDSolveValue({x'(t) == If(t < 2, -1, 1)*x(t), x(0)==1}, x, {t, 0, 3})[3])", //
+        "367879");
+    check("NDSolveValue({x'(t) == Piecewise({{3, 1 < t < 2}}, 0), x(0)==0}, x, {t, 0, 3})[3]", //
+        "3.0");
+    // a parameter of a held branch takes its value from Block
+    check("Block({c = 0.5}, " //
+        + "Round(10^6*NDSolveValue({x'(t) == If(t > 1, c*x(t), x(t)), x(0)==1}, x, {t, 0, 2})[2]))", //
+        "4481689");
+    // an algebraic equation solved numerically for y while integrating, y==t before t==1 and
+    // y==2 after it
+    check("Round(10^6*({x(2), y(1.5), y(0.5)} /. First(NDSolve({x'(t) == y(t), " //
+        + "y(t)^3 + y(t) == If(t < 1, t^3 + t, 10), x(0) == 0}, {x, y}, {t, 0, 2}))))", //
+        "{2500000,2000000,500000}");
+    // where the equation can't be solved for y any more (dy/dt infinite at y == 0) the
+    // integration ends
+    check("Round(10^6*({x(0.5), y(0.5)} /. First(NDSolve({x'(t) == -1, y(t)^3 == 8*x(t), "
+        + "x(0) == 1}, {x, y}, {t, 0, 2}))))", //
+        "{500000,1587401}");
+    // a chain whose last comparison depends on the solution isn't frozen
+    check("Round(10^6*NDSolveValue({x'(t) == If(0 < t < x(t), 1, 0), x(0) == 0.25}, x, "
+        + "{t, 0, 2})[2])", //
+        "2250000");
+  }
+
+  @Test
+  public void testLatticeData() {
+    check("LatticeData()", //
+        "{BodyCenteredCubic,FaceCenteredCubic,SimpleCubic}");
+    check("{Length(LatticeData(\"Properties\")), Take(LatticeData(\"Properties\"), 4)}", //
+        "{38,{AlternateNames,AutomorphismGroupOrder,Basis,CenterDensity}}");
+    check("Table(LatticeData(l, p), {p, {\"KissingNumber\", \"Dimension\"}}, "
+        + "{l, {\"FaceCenteredCubic\", \"SimpleCubic\", \"BodyCenteredCubic\"}})", //
+        "{{12,6,8},{3,3,3}}");
+    // the metric properties follow from the basis
+    check("Table(LatticeData(\"BodyCenteredCubic\", p), "
+        + "{p, {\"Basis\", \"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
+        "{{{2,0,0},{0,2,0},{1,1,1}},{{4,0,2},{0,4,2},{2,2,3}},16,4,Sqrt(3)/2}");
+    check("Table(LatticeData(\"FaceCenteredCubic\", p), "
+        + "{p, {\"Basis\", \"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
+        "{{{-1,-1,0},{1,-1,0},{0,1,-1}},{{2,0,-1},{0,2,-1},{-1,-1,2}},4,2,1/Sqrt(2)}");
+    check("Table(LatticeData(\"SimpleCubic\", p), "
+        + "{p, {\"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
+        "{{{1,0,0},{0,1,0},{0,0,1}},1,1,1/2}");
+    // the identity basis is a sparse array
+    check("{Head(LatticeData(\"SimpleCubic\", \"Basis\")), "
+        + "Normal(LatticeData(\"SimpleCubic\", \"GeneratorMatrix\")) == IdentityMatrix(3)}", //
+        "{SparseArray,True}");
+    check("{LatticeData(\"SimpleCubic\", \"Density\"), N(LatticeData(\"FaceCenteredCubic\", \"Density\")), "
+        + "LatticeData(\"BodyCenteredCubic\", \"GeneratorMatrix\") == LatticeData(\"BodyCenteredCubic\", \"Basis\")}", //
+        "{Pi/6,0.74048,True}");
+    check("{LatticeData(\"FaceCenteredCubic\", \"Name\"), LatticeData(\"SimpleCubic\", \"StandardName\"), "
+        + "LatticeData(\"BodyCenteredCubic\", \"AlternateNames\"), LatticeData(\"SimpleCubic\", \"Genus\")}", //
+        "{face-centered cubic,SimpleCubic,{bcc},Missing(NotAvailable)}");
+    // the unit cell: 12 edges and its lattice points
+    check("{Head(#), Count(#, _Line, Infinity), Length(Cases(#, Point(p_) :> p, Infinity)[[1]])}& /@ "
+        + "{LatticeData(\"SimpleCubic\", \"Image\"), LatticeData(\"FaceCenteredCubic\", \"Image\")}", //
+        "{{Graphics3D,12,8},{Graphics3D,12,14}}");
+    check("Check(LatticeData(\"Cubic\"), failed)", //
+        "failed");
+    check("LatticeData(\"SimpleCubic\")", //
+        "LatticeData(SimpleCubic)");
+    // an unknown property is reported before an unknown lattice
+    check("{Check(LatticeData(\"SimpleCubic\", \"Coordination\"), failed), "
+        + "Check(LatticeData(\"Cubic\", \"Name\"), failed), Quiet(LatticeData(\"Cubic\", \"Bogus\"))}", //
+        "{failed,failed,LatticeData(Cubic,Bogus)}");
+    check("LatticeData(\"Cubic\", \"Bogus\")", //
+        "LatticeData(Cubic,Bogus)");
+  }
+
+  @Test
+  public void testPlotStyleNoneKeepsFilling() {
+    // a curve styled None isn't drawn, but the filling toward it is
+    check("Count(Plot({x^2, 1 - x}, {x, 0, 2}, PlotStyle -> {None, Red}), _Line, Infinity)", //
+        "1");
+    check("p = Plot({x^2, 1 - x}, {x, 0, 2}, PlotStyle -> {None, Red}, Filling -> {1 -> Axis}); "
+        + "{Count(p, _Line, Infinity), Count(p, _Polygon, Infinity), Count(p, _Invisible, Infinity)}", //
+        "{1,1,0}");
+    // the filling between two curves of which one is hidden
+    check("Count(Plot({Sin(x), Cos(x), x/3}, {x, 0, 2}, PlotStyle -> {Automatic, None, Automatic}, "
+        + "Filling -> {1 -> {2}}), _Line | _Polygon, Infinity)", //
+        "3");
+  }
+
+  @Test
+  public void testZeroWithPrecisionMarkIsExact() {
+    // a zero without a decimal point keeps no precision mark
+    check("{Head(0`5), 0`7 + 2, Head(-0`12), Precision(0`3), Head(7`25)}", //
+        "{Integer,2,Integer,Infinity,Real}");
+  }
+
+  @Test
+  public void testSignPredicatesOfNearZeroExactValues() {
+    // the machine value of the difference is zero, the exact one is positive
+    check("{Positive(Pi - 31415926535897932384/10^19), Negative(Pi - 31415926535897932384/10^19),"
+        + " NonPositive(Pi - 31415926535897932384/10^19), NonNegative(Pi - 31415926535897932384/10^19),"
+        + " Negative(E - 27182818284590452354/10^19)}", //
+        "{True,False,False,True,True}");
+    // an exact zero: no sign can be told
+    check("Positive(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)))", //
+        "Positive(Sqrt(2)+Sqrt(7)-Sqrt(9+2*Sqrt(14)))");
+    check("NonPositive(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)))", //
+        "NonPositive(Sqrt(2)+Sqrt(7)-Sqrt(9+2*Sqrt(14)))");
+    check("{Sign(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) + 10^(-38)),"
+        + " Positive(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) + 10^(-55))}", //
+        "{1,True}");
+  }
+
+  @Test
+  public void testAbsOfNearZeroExactValues() {
+    check("Abs(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) - 10^(-25))", //
+        "1/10000000000000000000000000-Sqrt(2)-Sqrt(7)+Sqrt(9+2*Sqrt(14))");
+    // Abs works with less extra precision than Sign
+    check("Abs(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) + 10^(-38))", //
+        "Abs(1/100000000000000000000000000000000000000+Sqrt(2)+Sqrt(7)-Sqrt(9+2*Sqrt(14)))");
+    check("Abs(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)))", //
+        "Abs(Sqrt(2)+Sqrt(7)-Sqrt(9+2*Sqrt(14)))");
+  }
+
+  @Test
+  public void testNCancellationBelowMachinePrecision() {
+    // the machine numbers cancel all digits: arbitrary precision with the digits asked for
+    check("N(Pi - 31415926535897932384/10^19, 8) // InputForm", //
+        "6.2643383`8*^-20");
+    check("N(Log(Pi - 31415926535897932384/10^19), 6)", //
+        "-44.2168");
+    check("N(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)), 10)", //
+        "0.0*10^-60");
+    // a sum which keeps enough digits stays a machine number
+    check("N(Sin(1) - 1/2, 10)", //
+        "0.3414709848");
+    // without a precision the machine value is the answer
+    check("N(Pi - 31415926535897932384/10^19)", //
+        "0.0");
+  }
+
+  @Test
+  public void testFourierRealOrComplexResult() {
+    // the inverse transform of a conjugate symmetric list is real
+    check("Head /@ InverseFourier({4., -1. + I, -2., -1. - I})", //
+        "{Real,Real,Real,Real}");
+    check("Fourier({1., 1.})", //
+        "{1.41421,0.0}");
+    // one imaginary part which is no rounding error: every number is complex
+    check("Head /@ Fourier({1., 3., 2.})", //
+        "{Complex,Complex,Complex}");
+    check("Head /@ InverseFourier({2., 1. + 2. I})", //
+        "{Complex,Complex}");
+  }
+
+  @Test
+  public void testCompiledFunctionSerializedFormCoercion() {
+    // the arguments of the types _Real and _Integer, then the embedded Function
+    check("cf = CompiledFunction({11, 15., 5470}, {_Real, _Integer}, {{3, 0, 0}, {2, 0, 0}}, {{}},"
+        + " {0, 1, 2, 0, 0}, {{1}}, Function({s, k}, s*k - 1), Evaluate);"
+        + " {cf(1/4, 8), cf(b, 2), cf(2., 3/2), cf(3)}", //
+        "{1.0,-1+2*b,2.0,CompiledFunction({11,15.0,5470},{_Real,_Integer},{{3,0,0},{2,0,0}},{{}},{\n"
+            + "0,1,2,0,0},{{1}},Function({s,k},-1+s*k),Evaluate)[3]}");
+    // a form with 6 arguments is invalid
+    check("CompiledFunction({_Integer}, {{2, 0, 0}}, {0, 1, 0, 0, 0}, {{1}}, Function({k}, k + 1),"
+        + " Evaluate)[5]", //
+        "CompiledFunction({_Integer},{{2,0,0}},{0,1,0,0,0},{{1}},Function({k},k+1),Evaluate)[\n5]");
   }
 
   @Test

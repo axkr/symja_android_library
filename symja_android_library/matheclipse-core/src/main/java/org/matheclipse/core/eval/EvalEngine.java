@@ -3935,6 +3935,13 @@ public class EvalEngine implements Serializable {
    */
   transient long fPrecisionLoss = -1L;
 
+  /**
+   * The digits which sums of machine numbers have lost in the numeric evaluation in progress, or
+   * <code>-1</code> while none is tracked - see {@link PrecisionLoss#machineSum(EvalEngine, IExpr,
+   * IExpr, IExpr)}.
+   */
+  transient long fMachineLoss = -1L;
+
   /** No <code>N::meprec</code> message, while a numeric value is calculated for internal use. */
   transient boolean fPrecisionLimitQuiet = false;
 

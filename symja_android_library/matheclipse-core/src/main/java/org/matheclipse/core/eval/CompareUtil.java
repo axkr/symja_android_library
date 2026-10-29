@@ -97,6 +97,88 @@ public class CompareUtil {
   }
 
   /**
+   * The sign of an exact real numeric expression for <code>Abs</code>: by its machine value, if
+   * that is clearly no rounding error, otherwise by one evaluation with {@link #SIGN_DIGITS}
+   * digits, whose value has to keep {@link #SIGN_KEPT_DIGITS} of them after the digits which the
+   * cancellations of the evaluation lose. So the difference of two nearly equal numbers is told
+   * from zero, as long as it is not smaller than the numbers by more than 34 orders of magnitude.
+   * <code>Abs</code> works with less extra precision than {@link #numericSign(IExpr, EvalEngine)},
+   * which decides <code>Sign</code> and <code>Positive</code>: <code>Abs(x)</code> of
+   * <code>x=Sqrt(3)+Sqrt(5)-Sqrt(8+2*Sqrt(15))+10^(-35)</code> stays unevaluated, while
+   * <code>Sign(x)</code> is <code>1</code>.
+   *
+   * @param x an expression without inexact numbers
+   * @param value the machine value of <code>x</code>
+   * @return <code>-1, 0, 1</code>, {@link #NOT_COMPARABLE} if the arbitrary precision value of
+   *         <code>x</code> isn't a real number, or {@link #UNCERTAIN} if its sign can't be told
+   *         with the extra precision
+   */
+  public static int absSign(final IExpr x, final IReal value, EvalEngine engine) {
+    final int sign = value.complexSign();
+    if (sign != 0 && (value instanceof ApfloatNum
+        || !isResidue(x, true, value, F.C0, false, F.C0, engine))) {
+      // an arbitrary precision value is the one of an underflow, calculated with enough digits
+      return sign;
+    }
+    return extraPrecisionSign(x, engine);
+  }
+
+  /** The digits of the evaluation which decides a sign the machine value cannot tell. */
+  private static final long SIGN_DIGITS = 50;
+
+  /**
+   * The digits of that evaluation which have to remain after its cancellations: those of a machine
+   * number.
+   */
+  private static final long SIGN_KEPT_DIGITS = ParserConfig.MACHINE_PRECISION;
+
+  /**
+   * The sign of <code>x</code> from one evaluation with {@link #SIGN_DIGITS} digits, which tracks
+   * the digits its sums lose.
+   */
+  private static int extraPrecisionSign(final IExpr x, EvalEngine engine) {
+    final boolean oldNumericMode = engine.isNumericMode();
+    final long oldPrecision = engine.getNumericPrecision();
+    final int oldSignificantFigures = engine.getSignificantFigures();
+    final boolean quiet = engine.isQuietMode();
+    final long tracked = PrecisionLoss.start(engine);
+    engine.suspendSignificance();
+    try {
+      engine.setQuietMode(true);
+      engine.setNumericMode(true, SIGN_DIGITS, (int) SIGN_DIGITS);
+      final IExpr value = engine.evalWithoutNumericReset(x);
+      if (value.isRational()) {
+        return ((IRational) value).complexSign();
+      }
+      if (!(value instanceof ApfloatNum)) {
+        return NOT_COMPARABLE;
+      }
+      if (value.isZero() || PrecisionLoss.lost(engine) > SIGN_DIGITS - SIGN_KEPT_DIGITS) {
+        return UNCERTAIN;
+      }
+      return ((ApfloatNum) value).complexSign();
+    } finally {
+      engine.resumeSignificance();
+      PrecisionLoss.stop(engine, tracked);
+      engine.setQuietMode(quiet);
+      engine.setNumericMode(oldNumericMode, oldPrecision, oldSignificantFigures);
+    }
+  }
+
+  /**
+   * Print <code>N::meprec</code> for an expression whose sign can't be told with the extra
+   * precision.
+   *
+   * @return {@link F#NIL}
+   */
+  public static IExpr printSignUncertain(final IExpr x, EvalEngine engine) {
+    // Internal precision limit `1` reached while evaluating `2`.
+    return Errors.printMessage(S.N, "meprec",
+        F.list(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."), x),
+        engine);
+  }
+
+  /**
    * The order of two real numeric operands for a selection like <code>Min</code> or
    * <code>Max</code>: as {@link #compareNumeric(IExpr, IExpr, EvalEngine)}, but two numbers are
    * ordered by their value without a tolerance, so that the smaller one of two nearly equal numbers

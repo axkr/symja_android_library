@@ -13,7 +13,10 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -88,9 +91,10 @@ public abstract class AbstractFourier extends AbstractFunctionOptionEvaluator {
         IExpr transformed = computeRecursive(listExpr, direction(), paramB);
         double scale =
             1.0 / Math.pow(countElements(listExpr), (1.0 - direction() * paramA) / 2.0);
-        return scale == 1.0 ? transformed : engine.evaluate(F.Times(F.num(scale), transformed));
+        return realOrComplex(
+            scale == 1.0 ? transformed : engine.evaluate(F.Times(F.num(scale), transformed)));
       }
-      return computeRecursive(listExpr, paramA, paramB);
+      return realOrComplex(computeRecursive(listExpr, paramA, paramB));
 
     } catch (RuntimeException rex) {
       // Likely numeric errors or interrupt
@@ -143,6 +147,71 @@ public abstract class AbstractFourier extends AbstractFunctionOptionEvaluator {
       result.append(F.complexNum(term[0], term[1]));
     }
     return result;
+  }
+
+  /**
+   * The imaginary parts which are rounding errors: at most this many units of the last place of the
+   * largest number per element of the transform.
+   */
+  private static final double ROUNDING_ULPS = 8.0;
+
+  /**
+   * A transform whose imaginary parts are all rounding errors in the scale of its numbers is real,
+   * as the inverse transform of a conjugate symmetric list. Otherwise every number of it is
+   * complex, also one whose imaginary part is zero.
+   *
+   * @param transform a list or an array of machine numbers, or {@link F#NIL}
+   */
+  private static IExpr realOrComplex(IExpr transform) {
+    if (!transform.isList()) {
+      return transform;
+    }
+    // the largest absolute value, the largest imaginary part and the number of elements
+    final double[] bounds = new double[3];
+    if (!bounds(transform, bounds)) {
+      return transform;
+    }
+    final boolean real = bounds[1] <= ROUNDING_ULPS * bounds[2] * Math.ulp(1.0) * bounds[0];
+    return transform.replaceAll(x -> {
+      if (!x.isNumber()) {
+        return F.NIL;
+      }
+      if (real) {
+        final double re = ((INumber) x).reDoubleValue();
+        if (re == 0.0) {
+          // also a negative zero
+          return F.CD0;
+        }
+        return x.isReal() ? F.NIL : F.num(re);
+      }
+      return x.isReal() ? F.complexNum(((INumber) x).reDoubleValue(), 0.0) : F.NIL;
+    }).orElse(transform);
+  }
+
+  /**
+   * Collect the largest absolute value, the largest absolute imaginary part and the number of the
+   * machine numbers of a list or an array.
+   *
+   * @return <code>false</code> if an element is no machine number
+   */
+  private static boolean bounds(IExpr expr, double[] bounds) {
+    if (expr.isList()) {
+      for (IExpr element : (IAST) expr) {
+        if (!bounds(element, bounds)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (!(expr instanceof INum) && !(expr instanceof IComplexNum)) {
+      return false;
+    }
+    final INumber number = (INumber) expr;
+    final double im = Math.abs(number.imDoubleValue());
+    bounds[0] = Math.max(bounds[0], Math.hypot(number.reDoubleValue(), im));
+    bounds[1] = Math.max(bounds[1], im);
+    bounds[2]++;
+    return true;
   }
 
   /**
