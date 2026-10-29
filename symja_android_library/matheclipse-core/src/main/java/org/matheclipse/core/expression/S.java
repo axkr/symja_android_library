@@ -11113,6 +11113,16 @@ public class S {
       S.initFinalSymbol("HighlightGraph", ID.HighlightGraph);
 
   /**
+   * HighlightImage(x) - TODO describe `HighlightImage`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HighlightImage.md">HighlightImage
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HighlightImage =
+      S.initFinalSymbol("HighlightImage", ID.HighlightImage);
+
+  /**
    * HighlightMesh(x) - TODO describe `HighlightMesh`.
    * 
    * @see <a href=
@@ -13640,6 +13650,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Last = S.initFinalSymbol("Last", ID.Last);
+
+  /**
+   * LatticeData(x) - TODO describe `LatticeData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LatticeData.md">LatticeData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LatticeData = S.initFinalSymbol("LatticeData", ID.LatticeData);
 
   /**
    * LatticeReduce(x) - TODO describe `LatticeReduce`.
