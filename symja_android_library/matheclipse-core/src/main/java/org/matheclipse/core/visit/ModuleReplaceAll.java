@@ -47,6 +47,13 @@ public class ModuleReplaceAll extends VisitorExpr {
    */
   private final Map<String, IExpr> reachedScopeNames;
 
+  /**
+   * Which substitutable symbols occur in a subtree of the body, shared by all visitors of one
+   * <code>Module</code> or <code>With</code> evaluation; <code>null</code> outside
+   * {@link #scopingConstruct(Map, EvalEngine, String)}.
+   */
+  private final ScopeIndex scopeIndex;
+
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter) {
     this(moduleVariables, engine, moduleCounter, 0);
@@ -64,8 +71,17 @@ public class ModuleReplaceAll extends VisitorExpr {
    */
   public static ModuleReplaceAll scopingConstruct(Map<ISymbol, ? extends IExpr> moduleVariables,
       EvalEngine engine, String moduleCounter) {
+    return scopingConstruct(moduleVariables, engine, moduleCounter, true);
+  }
+
+  /**
+   * @param useScopeIndex <code>false</code> to answer the scope checks by walking the subtrees,
+   *        which gives the same result
+   */
+  static ModuleReplaceAll scopingConstruct(Map<ISymbol, ? extends IExpr> moduleVariables,
+      EvalEngine engine, String moduleCounter, boolean useScopeIndex) {
     return new ModuleReplaceAll(moduleVariables, engine, moduleCounter, 0, true, true,
-        new java.util.HashMap<String, IExpr>());
+        new java.util.HashMap<String, IExpr>(), useScopeIndex ? new ScopeIndex() : null);
   }
 
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
@@ -79,12 +95,13 @@ public class ModuleReplaceAll extends VisitorExpr {
    */
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter, int offset, boolean renameFunctionParameters) {
-    this(moduleVariables, engine, moduleCounter, offset, renameFunctionParameters, false, null);
+    this(moduleVariables, engine, moduleCounter, offset, renameFunctionParameters, false, null,
+        null);
   }
 
   private ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter, int offset, boolean renameFunctionParameters,
-      boolean renameReachedScopes, Map<String, IExpr> reachedScopeNames) {
+      boolean renameReachedScopes, Map<String, IExpr> reachedScopeNames, ScopeIndex scopeIndex) {
     this.fModuleVariables = moduleVariables;
     this.fOffset = offset;
     this.fEngine = engine;
@@ -92,6 +109,7 @@ public class ModuleReplaceAll extends VisitorExpr {
     this.renameFunctionParameters = renameFunctionParameters;
     this.renameReachedScopes = renameReachedScopes;
     this.reachedScopeNames = reachedScopeNames;
+    this.scopeIndex = scopeIndex;
   }
 
   private IExpr apply(final ISymbol arg) {
@@ -204,7 +222,7 @@ public class ModuleReplaceAll extends VisitorExpr {
       variables.put(symbol, reachedScopeName(symbol));
     }
     return visitAST(ast, new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
-        renameFunctionParameters, true, reachedScopeNames), fOffset);
+        renameFunctionParameters, true, reachedScopeNames, scopeIndex), fOffset);
   }
 
   /**
@@ -273,6 +291,12 @@ public class ModuleReplaceAll extends VisitorExpr {
    * <code>locals</code> - occurs in <code>expr</code>.
    */
   private boolean isReachedBySubstitution(IExpr expr, java.util.Set<? extends IExpr> locals) {
+    if (scopeIndex != null) {
+      IExpr.COMPARE_TERNARY reached = scopeIndex.isReached(expr, locals, fModuleVariables);
+      if (reached != IExpr.COMPARE_TERNARY.UNDECIDABLE) {
+        return reached == IExpr.COMPARE_TERNARY.TRUE;
+      }
+    }
     return !expr.isFree(x -> {
       if (x.isSymbol() && !locals.contains(x)) {
         IExpr value = fModuleVariables.get(x);
@@ -320,7 +344,7 @@ public class ModuleReplaceAll extends VisitorExpr {
       }
       if (variables != null) {
         visitor = new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
-            renameFunctionParameters, renameReachedScopes, reachedScopeNames);
+            renameFunctionParameters, renameReachedScopes, reachedScopeNames, scopeIndex);
       }
     }
     return visitAST(ast, visitor, fOffset);
@@ -429,5 +453,107 @@ public class ModuleReplaceAll extends VisitorExpr {
       }
     }
     return variables;
+  }
+
+  /**
+   * Answers {@link #isReachedBySubstitution(IExpr, java.util.Set)} without walking a subtree again
+   * for every rule or <code>Function</code> nested in it.
+   *
+   * <p>
+   * The nodes of a checked subtree are numbered in the order
+   * {@link IExpr#isFree(java.util.function.Predicate, boolean)} visits them, heads included, so that
+   * each subtree below it is an interval of numbers. Each symbol keeps the sorted numbers of its
+   * occurrences, and a symbol occurs in a subtree if one of them lies in the subtree's interval. A
+   * subtree is numbered when it is checked for the first time and is not inside a numbered one, so
+   * the numbering costs no more than the walks it replaces, and the checks of <code>d</code> nested
+   * rules no longer walk their subtree <code>d</code> times.
+   */
+  private static final class ScopeIndex {
+
+    /** The sorted numbers of the occurrences of one symbol. */
+    private static final class Positions {
+      int[] numbers = new int[4];
+      int size;
+
+      void add(int number) {
+        if (size == numbers.length) {
+          numbers = java.util.Arrays.copyOf(numbers, size * 2);
+        }
+        numbers[size++] = number;
+      }
+
+      /** Is one of the numbers in <code>[from, to)</code>? */
+      boolean containsIn(int from, int to) {
+        int index = java.util.Arrays.binarySearch(numbers, 0, size, from);
+        if (index < 0) {
+          index = -index - 1;
+        }
+        return index < size && numbers[index] < to;
+      }
+    }
+
+    /** <code>{first, last + 1}</code> of the numbers of the nodes of a subtree */
+    private final IdentityHashMap<IAST, int[]> intervals = new IdentityHashMap<IAST, int[]>();
+
+    /** The occurrences of the symbols which are not built-in symbols. */
+    private final IdentityHashMap<ISymbol, Positions> occurrences =
+        new IdentityHashMap<ISymbol, Positions>();
+
+    private int counter;
+
+    /**
+     * Does a symbol other than the <code>locals</code> which has a value in <code>variables</code>
+     * occur in <code>expr</code>, heads included?
+     *
+     * @return {@link IExpr.COMPARE_TERNARY#UNDECIDABLE} if walking the subtree is cheaper
+     */
+    IExpr.COMPARE_TERNARY isReached(IExpr expr, java.util.Set<? extends IExpr> locals,
+        Map<ISymbol, ? extends IExpr> variables) {
+      if (!expr.isAST()) {
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
+      int[] interval = intervals.get(expr);
+      if (interval == null) {
+        number(expr);
+        interval = intervals.get(expr);
+      }
+      if (interval[1] - interval[0] <= variables.size()) {
+        // fewer nodes than variables to look up
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
+      for (Map.Entry<ISymbol, ? extends IExpr> entry : variables.entrySet()) {
+        IExpr value = entry.getValue();
+        ISymbol symbol = entry.getKey();
+        if (value != null && value.isPresent() && !locals.contains(symbol)) {
+          if (symbol.isBuiltInSymbol()) {
+            // not numbered
+            return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+          }
+          Positions positions = occurrences.get(symbol);
+          if (positions != null && positions.containsIn(interval[0], interval[1])) {
+            return IExpr.COMPARE_TERNARY.TRUE;
+          }
+        }
+      }
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+
+    private void number(IExpr expr) {
+      int first = counter++;
+      if (expr.isSymbol()) {
+        if (!expr.isBuiltInSymbol()) {
+          occurrences.computeIfAbsent((ISymbol) expr, s -> new Positions()).add(first);
+        }
+      } else if (expr.isAST()) {
+        IAST ast = (IAST) expr;
+        // get(i) as in AbstractAST.has(): the values of an association
+        for (int i = 0; i < ast.size(); i++) {
+          number(ast.get(i));
+        }
+        // a subtree which occurs twice, or which was numbered before, has the same symbols in
+        // both places
+        intervals.putIfAbsent(ast, new int[] {first, counter});
+      }
+    }
   }
 }
