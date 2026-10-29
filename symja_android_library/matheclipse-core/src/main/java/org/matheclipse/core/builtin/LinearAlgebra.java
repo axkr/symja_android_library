@@ -62,6 +62,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
+import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.FractionFreeElimination;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
@@ -1104,7 +1105,26 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // null: a sparse array for a sparse array input, a list otherwise
+      Boolean sparse = null;
+      IExpr last = ast.last();
+      if (ast.argSize() > 1 && last.isRuleAST() && last.first() == S.TargetStructure) {
+        IExpr structure = last.second();
+        if (structure.isString("Sparse")) {
+          sparse = Boolean.TRUE;
+        } else if (structure.isString("Dense")) {
+          sparse = Boolean.FALSE;
+        } else if (structure != S.Automatic) {
+          // `1` currently not supported in `2`.
+          return Errors.printMessage(S.DiagonalMatrix, "unsupported",
+              F.list(last, S.DiagonalMatrix), engine);
+        }
+        ast = ast.removeAtCopy(ast.argSize());
+      }
+      if (ast.argSize() > 3) {
+        return F.NIL;
+      }
       IExpr arg1 = ast.arg1();
       final int offset = ast.size() > 2 ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
       int dimension = arg1.isVector();
@@ -1115,10 +1135,12 @@ public final class LinearAlgebra {
           ISparseArray sparseArray = (ISparseArray) arg1;
           final int length = sparseArray.getDimension()[0];
           int size = matrixSize(ast, length, offset);
-          return F.sparseMatrix((i, j) -> {
+          BiIntFunction<IExpr> entry = (i, j) -> {
             int index = diagonalIndex(i, j, offset, length);
             return index < 0 ? F.C0 : sparseArray.get(index);
-          }, size, size);
+          };
+          return sparse == Boolean.FALSE ? F.matrix(entry, size, size)
+              : F.sparseMatrix(entry, size, size);
         }
         IExpr normal = arg1.normal(false);
         if (normal.isAST()) {
@@ -1136,17 +1158,19 @@ public final class LinearAlgebra {
         int size = matrixSize(ast, length, offset);
         // a diagonal with an inexact number is padded with inexact zeroes
         final IExpr zero = vector.exists(x -> x.isInexactNumber()) ? F.CD0 : F.C0;
-        return F.matrix((i, j) -> {
+        BiIntFunction<IExpr> entry = (i, j) -> {
           int index = diagonalIndex(i, j, offset, length);
           return index < 0 ? zero : vector.get(index);
-        }, size, size);
+        };
+        return sparse == Boolean.TRUE ? F.sparseMatrix(entry, size, size)
+            : F.matrix(entry, size, size);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
 
     @Override
@@ -4914,7 +4938,8 @@ public final class LinearAlgebra {
         final IExpr arg1 = ast.arg1();
         final IExpr arg2 = ast.arg2();
         if (SymbolicArrayUtil.isArrayValued(arg1)) {
-          return SymbolicArrayFunctions.matrixPowerSymbolic(arg1, arg2, engine);
+          return ast.isAST3() ? F.NIL
+              : SymbolicArrayFunctions.matrixPowerSymbolic(arg1, arg2, engine);
         }
         int[] dimensions = arg1.isMatrix(false);
         if (dimensions != null && dimensions[1] > 0 && dimensions[0] > 0) {
@@ -4926,6 +4951,9 @@ public final class LinearAlgebra {
           int p = arg2.toMachineInt();
           if (F.isNotPresent(p)) {
             return F.NIL;
+          }
+          if (ast.isAST3()) {
+            return matrixPowerApply(matrix, p, ast, engine);
           }
           if (p == 1) {
             ((IAST) arg1).addFlag(Flag.IS_MATRIX);
@@ -4974,9 +5002,51 @@ public final class LinearAlgebra {
       }
     }
 
+    /**
+     * <code>MatrixPower(m, p, v)</code>: the <code>p</code>-th power of the square matrix
+     * <code>m</code> applied to the vector <code>v</code>, by <code>|p|</code> matrix-vector
+     * products instead of matrix products.
+     */
+    private static IExpr matrixPowerApply(FieldMatrix<IExpr> matrix, int p, final IAST ast,
+        EvalEngine engine) {
+      if (matrix.getRowDimension() != matrix.getColumnDimension()) {
+        // Argument `1` at position `2` is not a non-empty square matrix.
+        return Errors.printMessage(ast.topHead(), "matsq", F.list(ast.arg1(), F.C1), engine);
+      }
+      final IExpr arg3 = ast.arg3();
+      if (arg3.isMatrix(false) != null) {
+        IExpr power = engine.evaluate(F.MatrixPower(ast.arg1(), ast.arg2()));
+        return power.isList() ? F.Dot(power, arg3) : F.NIL;
+      }
+      FieldVector<IExpr> vector = Convert.list2Vector(arg3);
+      if (vector == null || vector.getDimension() != matrix.getColumnDimension()) {
+        return F.NIL;
+      }
+      if (p < 0) {
+        matrix = inverseMatrix(matrix,
+            x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
+        if (matrix == null) {
+          return F.NIL;
+        }
+        p = -p;
+      }
+      // repeated squaring: the vector picks up the squares of the set bits of p
+      while (p > 0) {
+        engine.checkTimeLimit();
+        if ((p & 1) != 0) {
+          vector = matrix.operate(vector);
+        }
+        p >>= 1;
+        if (p > 0) {
+          matrix = matrix.multiply(matrix);
+        }
+      }
+      return Convert.vector2List(vector);
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
   }
 

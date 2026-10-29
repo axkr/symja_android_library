@@ -1139,9 +1139,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ArcTan(17, 0)", //
         "0");
     check("arctan(Infinity,y)", //
-        "0");
+        "ArcTan(Infinity,y)");
     check("arctan(-Infinity,y)", //
-        "Pi*(-1+2*UnitStep(Re(y)))");
+        "ArcTan(-Infinity,y)");
 
     check("Abs( ArcTan(ComplexInfinity) )", //
         "Indeterminate");
@@ -18684,6 +18684,422 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,1,1,1}");
   }
 
+  /**
+   * The third argument of Thread selects the argument positions: All, None, n, -n, {n}, {m, n} or
+   * {m, n, s}. Positions beyond the arguments are a message and the call stays unevaluated.
+   */
+  @Test
+  public void testThreadPositionSpecifications() {
+    check("Thread(g({1, 2}, {3, 4}, {5, 6}, {7, 8}), List, All)", //
+        "{g(1,3,5,7),g(2,4,6,8)}");
+    check("Thread(g({1, 2}, {3, 4}, {5, 6}, {7, 8}), List, None)", //
+        "g({1,2},{3,4},{5,6},{7,8})");
+    check("Thread(g({1, 2}, {3, 4}, {5, 6}, {7, 8}), List, -3)", //
+        "{g({1,2},3,5,7),g({1,2},4,6,8)}");
+    check("Thread(g({1, 2}, {3, 4}, {5, 6}, {7, 8}), List, {2, -1, 2})", //
+        "{g({1,2},3,{5,6},7),g({1,2},4,{5,6},8)}");
+    check("Thread(g({1, 2}, {3, 4}, {5, 6}, {7, 8}), List, 0)", //
+        "g({1,2},{3,4},{5,6},{7,8})");
+
+    java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+    java.io.PrintStream messages = new java.io.PrintStream(bytes);
+    java.io.PrintStream previous = evaluator.getEvalEngine().getErrorPrintStream();
+    evaluator.getEvalEngine().setErrorPrintStream(messages);
+    try {
+      check("Thread(h({p, q}, {s, t}, {u, v}), List, 5)", //
+          "Thread(h({p,q},{s,t},{u,v}),List,5)");
+      messages.flush();
+      assertEquals("Thread: Cannot thread over positions 1 through 5 in h({p,q},{s,t},{u,v}).",
+          bytes.toString().trim());
+      bytes.reset();
+      check("Thread(h({p, q}, {s, t}), List, {-4})", //
+          "Thread(h({p,q},{s,t}),List,{-4})");
+      messages.flush();
+      assertEquals("Thread: Cannot thread over positions -4 through -4 in h({p,q},{s,t}).",
+          bytes.toString().trim());
+    } finally {
+      evaluator.getEvalEngine().setErrorPrintStream(previous);
+    }
+  }
+
+  /** Do counts towards an infinite upper limit until Return or Break leaves the loop. */
+  @Test
+  public void testDoInfiniteUpperLimit() {
+    check("Do(If(2^k > 1000, Return(k)), {k, Infinity})", //
+        "10");
+    check("Do(If(k >= 5/2, Return(k)), {k, 1/3, Infinity, 1/3})", //
+        "8/3");
+    check("Do(If(k < -7/2, Return(k)), {k, 0, -Infinity, -3/2})", //
+        "-9/2");
+    check("cnt = 0; Do(cnt = cnt + k; If(cnt > 20, Break()), {k, Infinity}); cnt", //
+        "21");
+    // a negative step never reaches Infinity: no iteration
+    check("Do(Return(k), {k, 1, Infinity, -1})", //
+        "");
+    // a table can't be infinite
+    check("Table(k^2, {k, 2, Infinity})", //
+        "Table(k^2,{k,2,Infinity})");
+    check("TimeConstrained(Do(k^2, {k, Infinity}), 1/2)", //
+        "$Aborted");
+  }
+
+  /** Do with symbolic bounds steps through the symbolic values while the span is numeric. */
+  @Test
+  public void testDoSymbolicBoundsPrint() {
+    java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+    java.io.PrintStream out = new java.io.PrintStream(bytes);
+    java.io.PrintStream previous = evaluator.getEvalEngine().getOutPrintStream();
+    evaluator.getEvalEngine().setOutPrintStream(out);
+    try {
+      check("Do(Print(m), {m, a, a + 2*b, b})", //
+          "");
+      out.flush();
+      assertEquals("a\na+b\na+2*b", bytes.toString().trim().replace("\r", ""));
+      bytes.reset();
+      check("Do(Print(m), {m, c, c + 3/2})", //
+          "");
+      out.flush();
+      assertEquals("c\n1+c", bytes.toString().trim().replace("\r", ""));
+    } finally {
+      evaluator.getEvalEngine().setOutPrintStream(previous);
+    }
+  }
+
+  /** The operator forms KeyExistsQ(key)[data] and StringReplacePart(snew, spec)[s]. */
+  @Test
+  public void testKeyExistsQStringReplacePartOperatorForms() {
+    check("KeyExistsQ(z)[<|y -> 1, z -> 2|>]", //
+        "True");
+    check("KeyExistsQ(w)[<|y -> 1|>]", //
+        "False");
+    // a single rule is a one element list of rules
+    check("Map(KeyExistsQ(\"k\"), {\"k\" -> 0, \"m\" -> 1, {\"m\" -> 2, \"k\" -> 3}})", //
+        "{True,False,True}");
+    check("StringReplacePart(\"XY\", {1, 3})[\"mnopq\"]", //
+        "XYpq");
+    check("StringReplacePart(\"--\", 2)[\"hello\"]", //
+        "--llo");
+    check("StringReplacePart(\"--\", 2)", //
+        "StringReplacePart(--,2)");
+  }
+
+  /**
+   * MinimalBy, MaximalBy, TakeSmallestBy and TakeLargestBy with an ordering function as fourth
+   * argument, which may answer True/False or 1/-1 like Order and NumericalOrder.
+   */
+  @Test
+  public void testExtremalByOrderingFunction() {
+    check("MinimalBy({DateObject({2020,5,1}), DateObject({2019,1,7}), DateObject({2021,3,3})}, "
+        + "Identity, 1, NumericalOrder) === {DateObject({2019,1,7})}", //
+        "True");
+    check("MaximalBy({DateObject({2020,5,1}), DateObject({2019,1,7}), DateObject({2021,3,3})}, "
+        + "Identity, 2, NumericalOrder) === {DateObject({2021,3,3}), DateObject({2020,5,1})}", //
+        "True");
+    check("MinimalBy({4, -1, 7, 2}, Identity, 2, Order)", //
+        "{-1,2}");
+    check("MaximalBy({4, -1, 7, 2}, Identity, 2, Order)", //
+        "{7,4}");
+    check("TakeSmallestBy({8, 2, 6, 4}, Minus, 2, Order)", //
+        "{8,6}");
+    check("TakeLargestBy({8, 2, 6, 4}, Minus, 2, Order)", //
+        "{2,4}");
+    // equal values keep their order
+    check("TakeLargestBy({\"b\", \"dd\", \"a\"}, StringLength, 2, Order)", //
+        "{dd,b}");
+    check("TakeSmallestBy({\"b\", \"dd\", \"a\"}, StringLength, 2, Greater)", //
+        "{dd,b}");
+  }
+
+  /** ParentDirectory of a File is a File; Uncompress(s, h) wraps the result before evaluation. */
+  @Test
+  public void testParentDirectoryFileUncompressWrapper() {
+    check("ParentDirectory(File(\"/p/q/r\"), 2) === File(ParentDirectory(\"/p/q/r\", 2))", //
+        "True");
+    check("ParentDirectory(File(\"/p/q/r\")) === File(ParentDirectory(\"/p/q/r\"))", //
+        "True");
+    check("Uncompress(Compress(Unevaluated(2*3)), Hold)", //
+        "Hold(2*3)");
+    check("Uncompress(Compress(Unevaluated(Sin(0))), Hold)", //
+        "Hold(Sin(0))");
+    check("Uncompress(Compress(Unevaluated(2*3)))", //
+        "6");
+  }
+
+  /** The logarithmic list plots report data which is no list and stay unevaluated. */
+  @Test
+  public void testListLogPlotsNonListData() {
+    java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+    java.io.PrintStream messages = new java.io.PrintStream(bytes);
+    java.io.PrintStream previous = evaluator.getEvalEngine().getErrorPrintStream();
+    evaluator.getEvalEngine().setErrorPrintStream(messages);
+    try {
+      for (String head : new String[] {"ListLogPlot", "ListLogLogPlot", "ListLogLinearPlot"}) {
+        bytes.reset();
+        check(head + "(bar)", //
+            head + "(bar)");
+        messages.flush();
+        assertEquals(head + ": bar is not a list of numbers or pairs of numbers.",
+            bytes.toString().trim());
+      }
+    } finally {
+      evaluator.getEvalEngine().setErrorPrintStream(previous);
+    }
+    check("Head(ListLogLogPlot({{1, 2}, {3, 5}}))", //
+        "Graphics");
+  }
+
+  @Test
+  public void testSolveModulusPrimePowers() {
+    // roots modulo the prime lifted to the prime power and combined by the CRT
+    check("Solve(11*x-5==0, {x}, Modulus->3^15)", //
+        "{{x->7826677}}");
+    check("Solve(x^2==9, x, Modulus->63)", //
+        "{{x->3},{x->18},{x->24},{x->39},{x->45},{x->60}}");
+    check("Solve(x^2+1==0, x, Modulus->5^20*13)", //
+        "{{x->365855836217682},{x->587818480188568},{x->651958131139557},{x->\n"
+            + "873920775110443}}");
+    check("Solve(x^2==0, x, Modulus->2^6)", //
+        "{{x->0},{x->8},{x->16},{x->24},{x->32},{x->40},{x->48},{x->56}}");
+    // multiple roots modulo the prime lift to several roots or none
+    check("Solve(x^2+3*x==0, x, Modulus->9)", //
+        "{{x->0},{x->3},{x->6}}");
+    check("Reduce(x^3+9*x==0, x, Modulus->27)", //
+        "x==0||x==3||x==6||x==9||x==12||x==15||x==18||x==21||x==24");
+    check("Solve({x^2==9, x^3==27}, x, Modulus->63)", //
+        "{{x->3},{x->24},{x->45}}");
+  }
+
+  @Test
+  public void testCoefficientModulus() {
+    check("Coefficient((x+3)^4, x, 2, Modulus->5)", //
+        "4");
+    check("Coefficient((x+a)^3, x, 1, Modulus->2)", //
+        "a^2");
+    check("Coefficient((x+1)^4, x, Modulus->3)", //
+        "1");
+    check("CoefficientList((x+2)^3, x, Modulus->3)", //
+        "{2,0,0,1}");
+    check("CoefficientList((3*x+1)^2, x, Modulus->9)", //
+        "{1,6}");
+    check("CoefficientList((x+y+1)^2, {x, y}, Modulus->2)", //
+        "{{1,0,1},{0,0,0},{1,0,0}}");
+  }
+
+  @Test
+  public void testMatrixPowerVector() {
+    check("MatrixPower({{1,2},{0,1}}, 5, {1,1})", //
+        "{11,1}");
+    check("MatrixPower({{2,1},{1,1}}, -2, {1,2})", //
+        "{-4,7}");
+    check("MatrixPower({{2,1},{1,1}}, 0, {a,b})", //
+        "{a,b}");
+    check("MatrixPower({{p,q},{r,s}}, k, {1,0})", //
+        "MatrixPower({{p,q},{r,s}},k,{1,0})");
+  }
+
+  @Test
+  public void testDiagonalMatrixTargetStructure() {
+    check("DiagonalMatrix({a,b}, TargetStructure->\"Dense\")", //
+        "{{a,0},\n" //
+            + " {0,b}}");
+    check("Normal(DiagonalMatrix({4,5}, -1, TargetStructure->\"Sparse\"))", //
+        "{{0,0,0},{4,0,0},{0,5,0}}");
+    check("Head(DiagonalMatrix({4,5,6}, TargetStructure->\"Sparse\"))", //
+        "SparseArray");
+    check("Head(DiagonalMatrix(SparseArray({4,5}), TargetStructure->\"Dense\"))", //
+        "List");
+  }
+
+  @Test
+  public void testSquareFreeQVariable() {
+    // square-free as a polynomial in x with coefficients in the other variables
+    check("SquareFreeQ(x*y^3, x)", //
+        "True");
+    check("SquareFreeQ(x^3*y, x)", //
+        "False");
+    check("SquareFreeQ((x+y)^2*z, x)", //
+        "False");
+    check("SquareFreeQ((x-2)*(x+y), x)", //
+        "True");
+  }
+
+  @Test
+  public void testGroupSupport() {
+    check("GroupSupport(PermutationGroup({Cycles({{2,5}}),Cycles({{3,6,8}})}))", //
+        "{2,3,5,6,8}");
+    check("GroupSupport(SymmetricGroup(3))", //
+        "{1,2,3}");
+    check("GroupOrbits(PermutationGroup({Cycles({{1,3}})}),{1,2,3})", //
+        "{{1,3},{2}}");
+  }
+
+  @Test
+  public void testRandomColor() {
+    check("SeedRandom(11);{Head(RandomColor()), Length(RandomColor(5)), "
+        + "Dimensions(RandomColor({3,2})), Head(RandomColor(Hue(_,1,1))), "
+        + "Head(RandomColor(GrayLevel(_)))}", //
+        "{RGBColor,5,{3,2},Hue,GrayLevel}");
+    check("Rest(RandomColor(RGBColor(_,0,1)))", //
+        "RGBColor(0,1)");
+    check("Dimensions(RandomColor(Hue(_,1,1), {2,4}))", //
+        "{2,4}");
+    check("c=RandomColor(RGBColor(_,_,_), 6);And@@Map(0<=#<=1&, Flatten(c/.RGBColor->List))", //
+        "True");
+  }
+
+  @Test
+  public void testRandomIntegerBigRange() {
+    check("SeedRandom(5);m=RandomInteger({-10^30,10^25},{3,2});"
+        + "{Dimensions(m), And@@Flatten(Map(-10^30<=#<=10^25&, m, {2}))}", //
+        "{{3,2},True}");
+    check("RandomInteger({10^20,10^20}, 2)", //
+        "{100000000000000000000,100000000000000000000}");
+    check("0<=RandomInteger({0,2147483647})<=2147483647", //
+        "True");
+  }
+
+  @Test
+  public void testArcTanInfiniteAbscissa() {
+    // the direction is only known for a finite real ordinate
+    check("ArcTan(Infinity, yy)", //
+        "ArcTan(Infinity,yy)");
+    check("ArcTan(-Infinity, yy)", //
+        "ArcTan(-Infinity,yy)");
+    check("ArcTan(xx, Infinity)", //
+        "ArcTan(xx,Infinity)");
+    check("ArcTan(Infinity, 2)", //
+        "0");
+    check("ArcTan(-Infinity, 7/3)", //
+        "Pi");
+    check("ArcTan(-Infinity, -E)", //
+        "-Pi");
+  }
+
+  @Test
+  public void testOverflowUnderflowAlgebra() {
+    check("{2.^Overflow(), 3*Overflow(), Overflow() - Overflow(), Overflow()/Overflow(), "
+        + "Log(Overflow()), Underflow()*Overflow(), 2*Underflow(), Sqrt(Overflow())}", //
+        "{Overflow(),Overflow(),Overflow(),Indeterminate,Overflow(),Indeterminate,Underflow(),Overflow()}");
+    check("{2.5^Overflow(), E^Overflow(), 0.25^Underflow(), Overflow() - 7, -Overflow()}", //
+        "{Overflow(),Overflow(),1.0,Overflow(),Overflow()}");
+    // an exact constant has no approximate value to grow
+    check("{Pi^Overflow(), Sqrt(3)^Overflow()}", //
+        "{Indeterminate,Indeterminate}");
+    check("{1^Overflow(), x^Overflow()}", //
+        "{1,x^Overflow()}");
+    // a tower of machine powers leaving the range collapses to Overflow()
+    check("Quiet(Block({x = 1.6}, Nest(x^#1 &, x, 60)))", //
+        "Overflow()");
+  }
+
+  @Test
+  public void testUnitBoxExactConstants() {
+    check("{UnitBox(Sqrt(3)/2), UnitBox(1/2), UnitTriangle(E/5), HeavisideLambda(1/3, 1), "
+        + "UnitBox(2, 1/3), UnitBox(x, 0)}", //
+        "{0,1,1-E/5,0,0,UnitBox(x)}");
+    check("{UnitBox(Pi/7), UnitTriangle(-Pi/5), HeavisidePi(Pi/7), UnitBox(Sqrt(5)/3)}", //
+        "{1,1-Pi/5,1,0}");
+    // several arguments give the product of the one argument values
+    check("{HeavisideLambda(1/4, -1/3), HeavisideLambda(E/3), UnitTriangle(Sqrt(2)/2, 1/2)}", //
+        "{1/2,1-E/3,1/2*(1-1/Sqrt(2))}");
+    check("HeavisideLambda(x, 1/2)", //
+        "HeavisideLambda(1/2,x)");
+  }
+
+  @Test
+  public void testInverseErfTwoArguments() {
+    check("InverseErf(b, Erf(b, w))", //
+        "w");
+    check("InverseErf(0.3, 0.1) - InverseErf(0.1 + Erf(0.3))", //
+        "0.0");
+    check("InverseErf(c, 0)", //
+        "c");
+    check("InverseErf(0, t)", //
+        "InverseErf(t)");
+  }
+
+  @Test
+  public void testDSolveValueInferredUnknowns() {
+    check("DSolveValue(f'(t) == 2*f(t))", //
+        "E^(2*t)*C(1)");
+    check("DSolveValue({u'(t) == v(t), v'(t) == -u(t)})", //
+        "{C(1)*Cos(t)+C(2)*Sin(t),C(2)*Cos(t)-C(1)*Sin(t)}");
+  }
+
+  @Test
+  public void testDSolveBinomialRootOrder() {
+    // the growing exponential of the roots +-s of A*r^2 + C takes the first constant
+    check("DSolve(y''(x) - 4*b*y(x) == 0, y, x)", //
+        "{{y->Function({x},E^(2*Sqrt(b)*x)*C(1)+C(2)/E^(2*Sqrt(b)*x))}}");
+    check("DSolve(y''(t) - k*y(t) == 0, y(t), t)", //
+        "{{y(t)->E^(Sqrt(k)*t)*C(1)+C(2)/E^(Sqrt(k)*t)}}");
+  }
+
+  @Test
+  public void testInternalRealValuedNumericQ() {
+    check("{Internal`RealValuedNumericQ(Pi), Internal`RealValuedNumericQ(1+I), "
+        + "MatrixQ({{1, Sqrt(3)}, {0, 2}}, Internal`RealValuedNumericQ), "
+        + "VectorQ({2, yy}, Internal`RealValuedNumericQ)}", //
+        "{True,False,True,False}");
+  }
+
+  @Test
+  public void testOTwoArguments() {
+    check("FullForm(Cos(x) + O(x, 2)^3)", //
+        "SeriesData(x,2,List(Cos(2), Times(-1, Sin(2)), Times(Rational(-1,2), Cos(2))),0,3,1)");
+    check("Normal(Cos(x) + O(x, 2)^3)", //
+        "Cos(2)-1/2*(2-x)^2*Cos(2)+(2-x)*Sin(2)");
+  }
+
+  @Test
+  public void testPowerOfPowerBoxes() {
+    check("ToBoxes(HoldForm((p^q)^r))", //
+        "TagBox(SuperscriptBox(RowBox({(,SuperscriptBox(p,q),)}),r),HoldForm)");
+  }
+
+  @Test
+  public void testLegendrePTypeAndNielsenPolyLog() {
+    check("{LegendreP(2, 1, 1, z), LegendreP(2, 1, 2, z), LegendreP(3, 2, 1, z)}", //
+        "{-3*z*Sqrt(1-z^2),-3*Sqrt(1-z)*z*Sqrt(1+z),15*z*(1-z^2)}");
+    check("LegendreP(2, 1, 3, z)", //
+        "(-3*(1-z)*z*Sqrt(1+z))/Sqrt(-1+z)");
+    check("{PolyLog(2, 2, z), PolyLog(0, 3, z), PolyLog(3, 1, z)}", //
+        "{PolyLog(2,2,z),-Log(1-z)^3/6,PolyLog(4,z)}");
+    check("PolyLog(1, 2, z)", //
+        "1/2*Log(1-z)^2*Log(z)+Log(1-z)*PolyLog(2,1-z)-PolyLog(3,1-z)+Zeta(3)");
+  }
+
+  @Test
+  public void testHeavisideLambdaSymbolicFactor() {
+    // an argument outside (-1,1) makes the product 0 whatever the other arguments are
+    check("{HeavisideLambda(y, 3/2), HeavisideLambda(-2, y)}", //
+        "{0,0}");
+    check("HeavisideLambda(y, 1/4)", //
+        "HeavisideLambda(1/4,y)");
+  }
+
+  @Test
+  public void testOverflowPowersOfE() {
+    check("{(E^3)^Overflow(), E^Overflow(), (Pi/2)^Overflow()}", //
+        "{Overflow(),Overflow(),Indeterminate}");
+  }
+
+  @Test
+  public void testTakeByNonStrictOrdering() {
+    // a non-strict ordering predicate selects the first elements without a sort
+    check("TakeLargestBy({4, 2, 4, 1, 2}, Identity, 2, LessEqual)", //
+        "{4,4}");
+    check("MinimalBy({4, 2, 4, 1, 2}, Identity, 2, GreaterEqual)", //
+        "{4,4}");
+  }
+
+  @Test
+  public void testMatrixPowerVectorLargeExponent() {
+    // repeated squaring: the 2000th power applied to a vector
+    check("Length(IntegerDigits(First(MatrixPower({{1, 1}, {1, 0}}, 2000, {1, 0}))))", //
+        "418");
+  }
+
   @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
@@ -20358,11 +20774,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHeavisideLambda() {
-    // TODO implement for multiple args
+    // several arguments give the product of the one argument values
     check("HeavisideLambda(1/4, 1/3, 1/8)", //
-        "HeavisideLambda(1/8,1/4,1/3)");
+        "7/16");
     check("HeavisideLambda(0.8,0.6)", //
-        "HeavisideLambda(0.6,0.8)");
+        "0.08");
 
 
     check("Table(HeavisideLambda(n), {n, -1, 1, 1/3})", //
@@ -31218,8 +31634,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("SeedRandom[987654321]; RandomReal[]", //
         "0.30594");
 
-    check("RandomInteger({0,2147483647})", //
-        "RandomInteger({0,2147483647})");
     check("RandomReal(7,{5,4,2,3})", //
         "{{{{5.73144,0.319728,4.94061},{0.0679933,4.72926,0.116555}},{{0.773992,6.94591,2.30291},{3.52974,5.42991,1.12177}},{{3.32875,2.72358,6.15825},{0.697204,2.29928,5.89195}},{{1.10541,6.22831,2.3344},{4.18358,5.5935,0.736481}}},{{{1.67449,0.906546,6.79422},{6.84396,2.51322,5.9361}},{{5.04364,6.46733,4.64001},{1.04158,2.70263,0.215921}},{{3.81838,3.23419,6.47141},{4.44989,5.12608,3.21665}},{{5.41254,5.85401,5.62645},{1.58933,6.62786,4.3783}}},{{{1.72772,3.63391,0.568468},{2.48554,5.41832,1.25711}},{{0.335168,2.82838,6.24056},{3.03068,4.04821,1.75494}},{{2.38406,0.212825,0.430829},{4.4122,0.642352,1.1778}},{{2.16,0.679996,0.182249},{4.81619,4.29105,0.726369}}},{{{2.1253,2.19809,6.15916},{4.62626,4.83428,4.11445}},{{6.60144,5.23054,5.53491},{5.02889,3.12733,6.31147}},{{1.48409,5.48308,5.79296},{5.94312,1.32072,4.10319}},{{0.00705484,4.10168,0.503736},{0.053271,2.31095,0.590767}}},{{{2.85435,6.07331,2.33489},{4.61071,0.175366,1.12545}},{{2.63546,0.598288,4.72051},{0.151525,1.9658,5.36484}},{{1.93,6.51802,2.72058},{4.05592,5.33617,3.3918}},{{0.832009,4.04422,5.87361},{3.55061,3.27097,2.55045}}}}");
     check("RandomReal({0,4},{5,4,2,3})", //
@@ -35295,12 +35709,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("SquareFreeQ(2+I)", //
         "True");
 
-    // message: SquareFreeQ: Currently not supported: number of variables in expression (2) unequals
-    // number of user variables (1).
+    // square-free as a polynomial in the given variable
     check("SquareFreeQ(x*y^2, x)", //
-        "SquareFreeQ(x*y^2,x)");
+        "True");
     check("SquareFreeQ(x*y^2, y)", //
-        "SquareFreeQ(x*y^2,y)");
+        "False");
 
     check("SquareFreeQ(5/6)", //
         "True");

@@ -1508,6 +1508,15 @@ public class SpecialFunctions {
         } else if (arg1.isInfinity()) {
           return F.InverseErfc(arg2.negate());
         }
+        if (arg2.isAST(S.Erf, 3) && arg2.first().equals(arg1)) {
+          // InverseErf(a, Erf(a, z)) => z
+          return arg2.second();
+        }
+        if (arg1.isNumber() && arg2.isNumber()
+            && (arg1.isInexactNumber() || arg2.isInexactNumber())) {
+          // Erf(a, z) == Erf(z) - Erf(a)
+          return F.InverseErf(F.Plus(arg2, F.Erf(arg1)));
+        }
         if (arg2.isZero()) {
           if (arg1.isOne()) {
             return F.C1;

@@ -3756,8 +3756,9 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (!arg1.isString()) {
-        // a list of strings is not threaded over
+      if (!ast.isAST3() || !arg1.isString()) {
+        // StringReplacePart(snew, spec) is the operator form; a list of strings is not threaded
+        // over
         return F.NIL;
       }
       CodePointString str = new CodePointString(arg1.toString());
@@ -3867,7 +3868,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_2_3_1;
     }
   }
 

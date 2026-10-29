@@ -1405,11 +1405,14 @@ public class ExpTrigsFunctions {
           return F.ArcTan(F.Divide(y, x));
         }
       }
-      if (x.isInfinity()) {
-        return F.C0;
-      }
-      if (x.isNegativeInfinity()) {
-        return F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(F.Re(y))), F.C1), S.Pi);
+      if (x.isInfinite() && y.isNumericFunction(true) && y.isRealResult()) {
+        // the direction of a point at an infinite abscissa is known for a finite real ordinate
+        if (x.isInfinity()) {
+          return F.C0;
+        }
+        if (x.isNegativeInfinity()) {
+          return F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(y)), F.C1), S.Pi);
+        }
       }
       EvalEngine engine = EvalEngine.get();
       if (engine.isNumericMode()) {

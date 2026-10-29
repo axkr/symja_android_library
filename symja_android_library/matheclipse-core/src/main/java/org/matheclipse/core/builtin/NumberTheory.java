@@ -6687,6 +6687,10 @@ public final class NumberTheory {
       if (argSize == 2) {
         eVar = new VariablesSet(ast.arg2());
         final VariablesSet exprVariables = new VariablesSet(ast.arg1());
+        if (eVar.isSize(1) && exprVariables.size() > 1
+            && exprVariables.contains(eVar.getVarList().arg1())) {
+          return isSquarefreeIn(ast.arg1(), eVar.getVarList().arg1(), engine);
+        }
         if (eVar.size() != exprVariables.size()) {
           // `1`
           Errors.printMessage(S.SquareFreeQ, "error",
@@ -6776,6 +6780,27 @@ public final class NumberTheory {
       setOptions(newSymbol, //
           new IBuiltInSymbol[] {S.Modulus, S.GaussianIntegers}, //
           new IExpr[] {F.C0, S.Automatic});
+    }
+
+    /**
+     * Test if <code>expr</code> is square-free as a polynomial in <code>variable</code>, whose
+     * coefficients are polynomials in the other variables: <code>x*y^2</code> is square-free in
+     * <code>x</code>. That is the case if the greatest common divisor of the polynomial and its
+     * derivative with respect to <code>variable</code> doesn't contain <code>variable</code>.
+     *
+     * @return {@link F#NIL} if <code>expr</code> is no polynomial in <code>variable</code>
+     */
+    private static IExpr isSquarefreeIn(IExpr expr, IExpr variable, EvalEngine engine) {
+      IExpr polynomial = F.evalExpandAll(expr, engine);
+      if (polynomial.isZero() || !polynomial.isPolynomial(F.list(variable))) {
+        return F.NIL;
+      }
+      IExpr derivative = engine.evaluate(F.D(polynomial, variable));
+      IExpr gcd = engine.evaluate(F.PolynomialGCD(polynomial, derivative));
+      if (!gcd.isFree(S.PolynomialGCD)) {
+        return F.NIL;
+      }
+      return F.booleSymbol(gcd.isFree(variable));
     }
 
     private static boolean isSquarefree(IExpr expr, IAST varList) throws JASConversionException {

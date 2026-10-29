@@ -4273,6 +4273,7 @@ final class DSolveODE {
     for (int f = 1; f <= factors.argSize(); f++) {
       IExpr solved = engine.evaluate(F.Roots(F.Equal(factors.get(f), F.C0), r));
       IAST equations = solved.isOr() ? (IAST) solved : F.Or(solved);
+      equations = principalRootFirst(factors.get(f), equations, r, engine);
       for (int i = 1; i <= equations.argSize(); i++) {
         IExpr equation = equations.get(i);
         if (!equation.isEqual() || !equation.first().equals(r)) {
@@ -4345,6 +4346,29 @@ final class DSolveODE {
       }
     }
     return basis.toArray(new IExpr[0]);
+  }
+
+  /**
+   * The roots <code>r == +-s</code> of a quadratic factor <code>A*r^2 + C</code> with symbolic
+   * coefficients in the order <code>s, -s</code>, so that the first constant goes with the growing
+   * exponential <code>E^(s*x)</code>; the roots of a factor with a linear term keep the order
+   * <code>(-B - Sqrt(D))/(2*A), (-B + Sqrt(D))/(2*A)</code>.
+   */
+  private static IAST principalRootFirst(IExpr factor, IAST equations, IExpr r,
+      EvalEngine engine) {
+    if (equations.argSize() != 2 || !equations.arg1().isEqual() || !equations.arg2().isEqual()) {
+      return equations;
+    }
+    IExpr coefficients = engine.evaluate(F.CoefficientList(factor, r));
+    if (coefficients.argSize() != 3 || !coefficients.second().isZero()
+        || ((IAST) coefficients).forAll(x -> x.isNumber())) {
+      return equations;
+    }
+    if (equations.arg1().second().isNegativeSigned()
+        && !equations.arg2().second().isNegativeSigned()) {
+      return F.Or(equations.arg2(), equations.arg1());
+    }
+    return equations;
   }
 
   /**

@@ -4412,6 +4412,23 @@ public final class Arithmetic {
       if (base.isAST(S.Surd, 3)) {
         return powerSurd(base, exponent);
       }
+      if (exponent.isOverflow()) {
+        // an approximate positive number other than 1, or E, raised to an exponent beyond the
+        // range; an exact constant like Pi has no approximate value to grow
+        if (base.isInexactNumber() && !base.isOne() && base.isPositiveResult() || base == S.E
+            || (base.isPower() && base.base() == S.E && base.exponent().isPositiveResult())) {
+          return F.Overflow();
+        }
+        if (!base.isInexactNumber() && base.isNumericFunction() && !base.isRational()
+            && !(base.isPower() && base.base() == S.E) && base.isPositiveResult()) {
+          return S.Indeterminate;
+        }
+      } else if (exponent.isUnderflow()) {
+        // an exponent too small to represent acts as 0. for an approximate positive base
+        if (base.isInexactNumber() && base.isPositiveResult()) {
+          return F.CD1;
+        }
+      }
       if (base.isReal() || exponent.isReal()) {
         IExpr temp = powerRealBaseOrRealExponent(base, exponent);
         if (temp.isPresent()) {

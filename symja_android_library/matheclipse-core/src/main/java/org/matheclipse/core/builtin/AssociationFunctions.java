@@ -897,6 +897,10 @@ public class AssociationFunctions {
         if (arg1.isAssociation()) {
           return ((IAssociation) arg1).isKey(arg2) ? S.True : S.False;
         }
+        if (arg1.isRuleAST()) {
+          // a single rule is a one element list of rules
+          return F.booleSymbol(arg2.equals(arg1.first()));
+        }
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
           for (int i = 1; i < listOfRules.size(); i++) {
@@ -915,7 +919,8 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2_2;
+      // the operator form KeyExistsQ(key)[assoc] tests the key in the association it's applied to
+      return ARGS_1_2_1;
     }
   }
 

@@ -741,6 +741,14 @@ public class SeriesFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST2()) {
+        // O(x, x0) is O(x - x0)
+        IExpr x0 = ast.arg2();
+        if (arg1.isVariable() && x0.isFree(arg1) && !x0.isInfinite()) {
+          return new ASTSeriesData(arg1, x0, 1, 1, 1);
+        }
+        return F.NIL;
+      }
       if (arg1.isVariable()) {
         return new ASTSeriesData(arg1, F.C0, 1, 1, 1);
       }
@@ -762,7 +770,7 @@ public class SeriesFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override

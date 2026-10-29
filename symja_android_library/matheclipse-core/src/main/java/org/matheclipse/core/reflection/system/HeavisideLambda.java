@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -41,28 +42,23 @@ public class HeavisideLambda extends AbstractEvaluator implements IFunctionExpan
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     int size = ast.size();
     if (size > 1) {
-      IExpr result = F.NIL;
+      // several arguments give the product of the one-argument values
+      IASTAppendable result = F.TimesAlloc(size);
+      boolean symbolic = false;
       for (int i = 1; i < size; i++) {
         IExpr expr = ast.get(i);
         IReal temp = expr.evalReal();
-        if (temp != null) {
-          if (temp.isGE(F.C1) || temp.isLE(F.CN1)) {
-            return F.C0;
-          }
-          if (temp.isZero()) {
-            result = F.C1;
-            continue;
-          }
-
-          IExpr heavisideLambda = heavisideLambda(expr, engine);
-          if (heavisideLambda.isPresent()) {
-            result = heavisideLambda;
-            continue;
-          }
+        if (temp == null) {
+          // an argument outside (-1,1) further on still makes the product 0
+          symbolic = true;
+          continue;
         }
-        return F.NIL;
+        if (temp.isGE(F.C1) || temp.isLE(F.CN1)) {
+          return F.C0;
+        }
+        result.append(F.Subtract(F.C1, F.Abs(expr)));
       }
-      return result;
+      return symbolic ? F.NIL : engine.evaluate(result.oneIdentity1());
     }
     return F.C1;
   }
@@ -74,8 +70,7 @@ public class HeavisideLambda extends AbstractEvaluator implements IFunctionExpan
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    // TODO implement for more than 1 argument
-    return ARGS_1_1;
+    return ARGS_1_INFINITY;
   }
 
   @Override

@@ -8264,7 +8264,7 @@ public final class ListFunctions {
       if (onRows.isPresent()) {
         return onRows;
       }
-      if (ast.isAST3()) {
+      if (ast.isAST3() || ast.argSize() == 4) {
         try {
           if (ast.arg1().isASTOrAssociation()) {
             IAST cleanedList = cleanList((IAST) ast.arg1());
@@ -8276,6 +8276,9 @@ public final class ListFunctions {
                     F.List(n, cleanedList.argSize()), engine);
               }
               IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
+              if (ast.argSize() == 4) {
+                return takeByOrdering(cleanedList, engine.evaluate(list), n, ast.arg4(), engine);
+              }
               IExpr temp = engine.evalN(list);
               if (temp.isListOrAssociation()) {
                 list = (IAST) temp;
@@ -8298,12 +8301,33 @@ public final class ListFunctions {
       return F.NIL;
     }
 
+    /**
+     * <code>TakeLargestBy(list, f, n, p)</code> and <code>TakeSmallestBy(list, f, n, p)</code>:
+     * the elements of <code>list</code> with the <code>n</code> last (or first) <code>values</code>
+     * in the ordering <code>p</code>, the largest (or smallest) first. Elements with equal values
+     * keep their order.
+     */
+    private IExpr takeByOrdering(IAST list, IExpr values, int n, IExpr p, EvalEngine engine) {
+      if (!values.isListOrAssociation() || values.argSize() != list.argSize()) {
+        return F.NIL;
+      }
+      final IAST valueList = (IAST) values;
+      final Comparator<IExpr> ordering = new Predicates.IsBinaryFalse(p, engine);
+      int[] firstIndexes = Comparators.firstIndexes(valueList.argSize(), n,
+          (i, j) -> smallest ? ordering.compare(valueList.get(i + 1), valueList.get(j + 1))
+              : ordering.compare(valueList.get(j + 1), valueList.get(i + 1)));
+      for (int i = 0; i < firstIndexes.length; i++) {
+        firstIndexes[i]++;
+      }
+      return list.getItems(firstIndexes, n);
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       // the third entry declares the operator form: TakeLargestBy[f, n][list] becomes
       // TakeLargestBy[list, f, n], rewritten by EvalEngine#checkBuiltinArguments. The guard that
       // used to stand in for this asked isAST2(), which F#operatorForm1Append can never accept
-      return ARGS_2_3_1;
+      return ARGS_2_4_1;
     }
 
     @Override

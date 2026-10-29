@@ -678,6 +678,7 @@ public class Errors {
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
       "tllen", "Lists of unequal length in `1` cannot be added.", //
+      "tpos", "Cannot thread over positions `1` through `2` in `3`.", //
       "timesys", "`1` is not a known time system.", //
       "toggle", "ToggleFeature `1` is disabled.", //
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //

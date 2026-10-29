@@ -2365,7 +2365,7 @@ public class FileFunctions {
       // the wire format: "1:" and a zlib-compressed token stream
       IExpr wolframLanguage = WMACompress.uncompress(compressedString, engine);
       if (wolframLanguage != null) {
-        return wolframLanguage;
+        return wrapUncompressed(ast, wolframLanguage);
       }
 
       try {
@@ -2392,7 +2392,8 @@ public class FileFunctions {
 
           String inputFormStr = output.toString();
           // Parse string in InputForm back to IExpr
-          return engine.evaluate(inputFormStr);
+          IExpr parsed = engine.parse(inputFormStr);
+          return ast.isAST2() ? wrapUncompressed(ast, parsed) : engine.evaluate(parsed);
         }
       } catch (IOException e) {
         Errors.printMessage(S.Uncompress, e, engine);
@@ -2403,6 +2404,14 @@ public class FileFunctions {
         Errors.printMessage(S.Uncompress, "corrupt", F.List(ast.arg1()), engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>Uncompress(s, h)</code> wraps the expression in <code>h</code> before it is evaluated,
+     * so that a head like <code>Hold</code> keeps it unevaluated.
+     */
+    private static IExpr wrapUncompressed(final IAST ast, IExpr expr) {
+      return ast.isAST2() ? F.unaryAST1(ast.arg2(), expr) : expr;
     }
 
     @Override

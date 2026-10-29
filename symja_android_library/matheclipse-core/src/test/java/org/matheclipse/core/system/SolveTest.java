@@ -149,9 +149,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // the equations contain a symbol which isn't solved for
     check("Solve(x + a == 2, x, Modulus -> 5)", //
         "Solve(a+x==2,x,Modulus->5)");
-    // the complete residue system is too large to be enumerated
+    // 2 is no quadratic residue modulo the prime 1000003 = 3 (mod 8)
     check("Solve(x^2 == 2, x, Modulus -> 1000003)", //
-        "Solve(x^2==2,x,Modulus->1000003)");
+        "{}");
   }
 
   @Test

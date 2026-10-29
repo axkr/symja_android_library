@@ -781,8 +781,20 @@ public class BoxesFunctions {
         return F.FractionBox(F.$str("1"), reciprocalBox(power, form, engine));
       }
       return F.binaryAST2(S.SuperscriptBox, //
-          standardFormRecursive(base, Precedence.POWER, form, engine),
+          powerBaseBox(base, form, engine),
           standardFormRecursive(exponent, 0, form, engine));
+    }
+
+    /**
+     * The base of a superscript. A base which is itself a superscript is put in parentheses, since
+     * <code>(a^b)^c</code> would otherwise read as <code>a^(b^c)</code>.
+     */
+    private static IExpr powerBaseBox(IExpr base, IExpr form, EvalEngine engine) {
+      IExpr box = standardFormRecursive(base, Precedence.POWER, form, engine);
+      if (box.isAST(S.SuperscriptBox)) {
+        return F.RowBox(F.list(F.$str("("), box, F.$str(")")));
+      }
+      return box;
     }
 
     /** What <code>a^-n</code> reads as once it stands under the line of a fraction. */
@@ -796,7 +808,7 @@ public class BoxesFunctions {
         return F.unaryAST1(S.SqrtBox, standardFormRecursive(base, 0, form, engine));
       }
       return F.binaryAST2(S.SuperscriptBox, //
-          standardFormRecursive(base, Precedence.POWER, form, engine),
+          powerBaseBox(base, form, engine),
           standardFormRecursive(positive, 0, form, engine));
     }
 

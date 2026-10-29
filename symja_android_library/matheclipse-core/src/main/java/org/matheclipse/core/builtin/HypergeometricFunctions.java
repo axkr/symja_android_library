@@ -13,9 +13,12 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
+import org.apfloat.Aprational;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.external.apfloat.ApcomplexHypergeometricMath;
+import org.matheclipse.external.apfloat.ApcomplexOrthogonalPolynomialMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -720,6 +723,28 @@ public class HypergeometricFunctions {
   private static final class GegenbauerC extends AbstractFunctionEvaluator
       implements IFunctionExpand {
 
+    /**
+     * The recurrence relation of <code>GegenbauerC(n, l, z)</code> for an integer degree
+     * <code>n &gt;= 0</code> and <code>l != 0</code>, and of
+     * <code>GegenbauerC(n, z) == 2/n*ChebyshevT(n, z)</code> for <code>n &gt;= 1</code>, or
+     * <code>null</code>.
+     */
+    private static PolynomialFunctions.ApcomplexFunction recurrence(IAST ast) {
+      final int n = PolynomialFunctions.inexactIntegerDegree(ast.arg1());
+      if (ast.argSize() == 2 && n >= 1) {
+        return precision -> ApcomplexOrthogonalPolynomialMath
+            .chebyshevT(n, PolynomialFunctions.apcomplex(ast.arg2()), precision)
+            .multiply(new Aprational(new Apint(2), new Apint(n)));
+      }
+      if (ast.argSize() != 3 || n < 0 || ast.arg2().isZero()) {
+        return null;
+      }
+      return precision -> ApcomplexOrthogonalPolynomialMath.gegenbauerC(n,
+          PolynomialFunctions.apcomplex(ast.arg2()), PolynomialFunctions.apcomplex(ast.arg3()),
+          precision);
+    }
+
+
     @Override
     public boolean evalIsReal(IAST ast) {
       if (ast.argSize() == 2) {
@@ -796,7 +821,7 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -931,7 +956,7 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }

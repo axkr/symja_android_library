@@ -341,6 +341,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    if (ast.argSize() >= 1 && ast.arg1().isAtom() && !ast.arg1().isAssociation()
+        && !ast.arg1().isSparseArray()) {
+      // `1` is not a list of numbers or pairs of numbers.
+      return Errors.printMessage(ast.topHead(), "lpn", F.List(ast.arg1()), engine);
+    }
 
     // Use standard options initially (no data transformation)
     GraphicsOptions graphicsOptions = listPlotGraphicsOptions(options, originalAST, engine);

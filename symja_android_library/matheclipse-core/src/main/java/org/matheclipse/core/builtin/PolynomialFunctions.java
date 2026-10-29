@@ -45,11 +45,14 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
+import org.matheclipse.external.apfloat.ApcomplexOrthogonalPolynomialMath;
 import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.GroebnerBasisJAS;
@@ -119,7 +122,7 @@ public class PolynomialFunctions {
    * The degree of a polynomial function at inexact arguments: an inexact real with an integer
    * value, as the numeric evaluation makes of an integer degree, or <code>Integer.MIN_VALUE</code>.
    */
-  private static int inexactIntegerDegree(IExpr n) {
+  static int inexactIntegerDegree(IExpr n) {
     if (n.isReal()) {
       double d = n.evalf();
       if (d == Math.rint(d) && Math.abs(d) <= 100000.0) {
@@ -127,6 +130,67 @@ public class PolynomialFunctions {
       }
     }
     return Integer.MIN_VALUE;
+  }
+
+  /** The value of a function at a working precision. */
+  @FunctionalInterface
+  interface ApcomplexFunction {
+    Apcomplex apply(long precision);
+  }
+
+  /**
+   * The value of an orthogonal polynomial of an integer degree at number arguments with an inexact
+   * one, from the recurrence relation in the degree of {@link ApcomplexOrthogonalPolynomialMath}:
+   * the explicit sums of these polynomials cancel catastrophically for a large degree, and so do
+   * their hypergeometric forms.
+   *
+   * @param ast the function call
+   * @param function the value at the precision of the inexact arguments
+   * @return a machine number if an argument is one, otherwise an arbitrary precision number of the
+   *         lowest precision of the arguments; {@link F#NIL} if an argument isn't a number, all are
+   *         exact or the recurrence isn't defined
+   */
+  static IExpr recurrenceValue(IAST ast, ApcomplexFunction function) {
+    boolean machine = false;
+    boolean inexact = false;
+    long precision = Long.MAX_VALUE;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (!arg.isNumber()) {
+        return F.NIL;
+      }
+      if (arg.isInexactNumber()) {
+        inexact = true;
+        if (arg.isMachineNumber()) {
+          machine = true;
+        } else if (arg instanceof INum) {
+          precision = Math.min(precision, ((INum) arg).precision());
+        } else if (arg instanceof IComplexNum) {
+          precision = Math.min(precision, ((IComplexNum) arg).precision());
+        }
+      }
+    }
+    if (!inexact) {
+      return F.NIL;
+    }
+    final long workingPrecision = machine ? ParserConfig.MACHINE_PRECISION : precision;
+    final Apcomplex value;
+    try {
+      value = function.apply(workingPrecision);
+    } catch (ArithmeticException | ApfloatRuntimeException e) {
+      return F.NIL;
+    }
+    if (value.imag().signum() == 0) {
+      return machine ? ApfloatNum.machineOrPromoted(value.real())
+          : ApfloatNum.valueOf(value.real().precision(workingPrecision));
+    }
+    return machine ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
+        : ApcomplexNum.valueOf(value.precision(workingPrecision));
+  }
+
+  /** The {@link Apcomplex} value of the number <code>z</code>. */
+  static Apcomplex apcomplex(IExpr z) {
+    return ((INumber) z).apcomplexValue();
   }
 
   private static IExpr inexactRecurrence(int n, IExpr z, int first, boolean hermite) {
@@ -427,6 +491,10 @@ public class PolynomialFunctions {
       if (cached != null) {
         return cached;
       }
+      IExpr modulusResult = evaluateModulus(ast, engine);
+      if (modulusResult != null) {
+        return modulusResult;
+      }
 
       IExpr arg2 = ast.arg2();
       if (arg2.isSymbol() && ast.arg1().isFree(arg2, true)) {
@@ -513,7 +581,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_4;
     }
 
     // private boolean setExponent(IAST list, IExpr expr, long[] exponents, long value) {
@@ -930,6 +998,10 @@ public class PolynomialFunctions {
       if (ast.arg1().isList()) {
         return arg1.mapThread(ast, 1);
       }
+      IExpr modulusResult = evaluateModulus(ast, engine);
+      if (modulusResult != null) {
+        return modulusResult;
+      }
       IAST list = ast.arg2().makeList();
       if (arg1 instanceof ASTSeriesData && list.argSize() == 1) {
         ASTSeriesData series = (ASTSeriesData) arg1;
@@ -949,8 +1021,38 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
+  }
+
+  /**
+   * Evaluate <code>Coefficient(...)</code> or <code>CoefficientList(...)</code> with a trailing
+   * option <code>Modulus -&gt; m</code>: the coefficients of the polynomial with its coefficients
+   * reduced modulo <code>m</code> into <code>{0, 1, ..., m-1}</code>, so that coefficients which
+   * vanish modulo <code>m</code> disappear.
+   *
+   * @return <code>null</code> if the last argument is no {@link S#Modulus} option, {@link F#NIL}
+   *         if the call stays unevaluated, the result otherwise
+   */
+  private static IExpr evaluateModulus(final IAST ast, EvalEngine engine) {
+    IExpr last = ast.last();
+    if (!last.isRuleAST() || last.first() != S.Modulus) {
+      return ast.argSize() > (ast.isAST(S.Coefficient) ? 3 : 2) ? F.NIL : null;
+    }
+    IExpr modulus = last.second();
+    IAST withoutOption = ast.removeAtCopy(ast.argSize());
+    if (modulus.isZero()) {
+      return withoutOption;
+    }
+    if (!modulus.isInteger() || !modulus.isPositive()) {
+      // The value of the option `1` should be a prime number or zero.
+      return Errors.printMessage(ast.topHead(), "modp", F.List(last), engine);
+    }
+    IExpr reduced = engine.evaluate(F.PolynomialMod(F.evalExpandAll(ast.arg1(), engine), modulus));
+    if (!reduced.isFree(S.PolynomialMod)) {
+      return F.NIL;
+    }
+    return withoutOption.setAtCopy(1, reduced);
   }
 
   /**
@@ -2124,9 +2226,20 @@ public class PolynomialFunctions {
 
   private static final class JacobiP extends AbstractFunctionEvaluator {
 
+    /** The recurrence relation of an integer degree <code>n &gt;= 0</code>, or <code>null</code>. */
+    private static ApcomplexFunction recurrence(IAST ast) {
+      final int n = inexactIntegerDegree(ast.arg1());
+      if (ast.argSize() != 4 || n < 0) {
+        return null;
+      }
+      return precision -> ApcomplexOrthogonalPolynomialMath.jacobiP(n, apcomplex(ast.arg2()),
+          apcomplex(ast.arg3()), apcomplex(ast.arg4()), precision);
+    }
+
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -2208,7 +2321,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -2282,6 +2395,26 @@ public class PolynomialFunctions {
   private static final int EXACT_ARGUMENTS_DEGREE = 16;
 
   /**
+   * A polynomial function of an integer degree at inexact numbers: the value of
+   * {@link #exactArguments(IAST, EvalEngine)}, which is correctly rounded and whose precision
+   * accounts for the digits which the polynomial cancels, and from the degree
+   * {@link #EXACT_ARGUMENTS_DEGREE} on the value from the recurrence relation in the degree where
+   * that would need more than the largest precision.
+   *
+   * @param recurrence the value at a precision, or <code>null</code> if the degree, the order or
+   *        the type has no recurrence relation
+   */
+  static IExpr numericArguments(IAST ast, EvalEngine engine, ApcomplexFunction recurrence) {
+    IExpr value = exactArguments(ast, engine);
+    if (value.isPresent() || recurrence == null
+        || Math.abs(inexactIntegerDegree(ast.arg1())) < EXACT_ARGUMENTS_DEGREE) {
+      // a small degree: the explicit sum in the precision of the arguments
+      return value;
+    }
+    return recurrenceValue(ast, recurrence);
+  }
+
+  /**
    * A function which is a polynomial of the integer degree <code>ast.arg1()</code>, at inexact
    * numbers. The terms of such a polynomial are larger than its value - by a factor which grows
    * exponentially with the degree - so that the sum of them in the precision of the arguments has
@@ -2320,6 +2453,10 @@ public class PolynomialFunctions {
       return F.NIL;
     }
     final long digits = precision < 0 ? ParserConfig.MACHINE_PRECISION + 1 : precision;
+    if (digits + degree + 20 > Config.MAX_PRECISION_APFLOAT) {
+      // the rounding below can't have the digits the polynomial cancels
+      return F.NIL;
+    }
     try {
       IExpr value = engine.evaluateNonNumeric(exact);
       if (value.isAST(ast.head())) {
@@ -2620,6 +2757,29 @@ public class PolynomialFunctions {
    */
   private static final class LegendreP extends AbstractFunctionEvaluator
       implements IFunctionExpand {
+
+    /**
+     * The recurrence relation of an integer degree and order, and of the type 1, 2 or 3, or
+     * <code>null</code>.
+     */
+    private static ApcomplexFunction recurrence(IAST ast) {
+      final int n = inexactIntegerDegree(ast.arg1());
+      if (n == Integer.MIN_VALUE) {
+        return null;
+      }
+      if (ast.argSize() == 2) {
+        return precision -> ApcomplexOrthogonalPolynomialMath.legendreP(n, apcomplex(ast.arg2()),
+            precision);
+      }
+      final int m = inexactIntegerDegree(ast.arg2());
+      final int type = ast.argSize() == 4 ? inexactIntegerDegree(ast.arg3()) : 1;
+      if (m == Integer.MIN_VALUE || type < 1 || type > 3) {
+        return null;
+      }
+      return precision -> ApcomplexOrthogonalPolynomialMath.legendreP(n, m, type,
+          apcomplex(ast.last()), precision);
+    }
+
     private static IExpr legendreP(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
       int ni = n.toIntDefault();
       if (F.isPresent(ni)) {
@@ -2689,7 +2849,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -2785,7 +2945,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -2859,6 +3019,25 @@ public class PolynomialFunctions {
    * </pre>
    */
   static final class LegendreQ extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    /**
+     * The recurrence relation of <code>LegendreQ(n, z)</code> for an integer degree
+     * <code>n &gt;= 0</code> and a real <code>-1 &lt; z &lt; 1</code>, where it is stable, or
+     * <code>null</code>.
+     */
+    private static ApcomplexFunction recurrence(IAST ast) {
+      final int n = inexactIntegerDegree(ast.arg1());
+      if (ast.argSize() != 2 || n < 0 || !ast.arg2().isReal()) {
+        return null;
+      }
+      double z = ast.arg2().evalf();
+      if (!(Math.abs(z) < 1.0)) {
+        return null;
+      }
+      return precision -> ApcomplexOrthogonalPolynomialMath.legendreQ(n, 2, apcomplex(ast.arg2()),
+          precision);
+    }
+
     /**
      * @param n a Legendre degree, whatever numeric type it arrived as
      * @return {@code true} if it is an even integer
@@ -2966,7 +3145,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -3109,7 +3288,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -3743,12 +3922,24 @@ public class PolynomialFunctions {
 
 
   private static final class SphericalHarmonicY extends AbstractFunctionEvaluator {
+
+    /** The recurrence relation of an integer degree and order, or <code>null</code>. */
+    private static ApcomplexFunction recurrence(IAST ast) {
+      final int l = inexactIntegerDegree(ast.arg1());
+      final int m = inexactIntegerDegree(ast.arg2());
+      if (ast.argSize() != 4 || l == Integer.MIN_VALUE || m == Integer.MIN_VALUE) {
+        return null;
+      }
+      return precision -> ApcomplexOrthogonalPolynomialMath.sphericalHarmonicY(l, m,
+          apcomplex(ast.arg3()), apcomplex(ast.arg4()), precision);
+    }
+
     /** Highest degree summed over; 5000 already takes five seconds. */
     private static final int MAX_SPHERICAL_DEGREE = 5000;
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -3822,7 +4013,8 @@ public class PolynomialFunctions {
                         F.Gamma(F.Plus(F.Times(F.CN2, k), plusSubexpr))), F.CN1)), //
                 0, n);
             IAST exp = conjugate ? F.Exp(F.Times(F.CNI, p, m)) : F.Exp(F.Times(F.CI, p, m));
-            IExpr condonShortlyPhase = engine.evaluate(F.Power(-1, m));
+            // Y(l,-m) == (-1)^m*Conjugate(Y(l,m)): the phase (-1)^m of Y(l,m) cancels
+            IExpr condonShortlyPhase = conjugate ? F.C1 : engine.evaluate(F.Power(-1, m));
             IAST sphericalHarmonicY = F.Times(condonShortlyPhase, F.Power(F.C2, F.Plus(F.CN1, ll)),
                 exp, F.Power(F.Times(F.Pi, F.Power(cosT, m)), F.CN1),
                 F.Sqrt(F.Times(F.Plus(F.Times(F.C2, ll), F.C1), F.Factorial(F.Subtract(ll, m)),
@@ -3838,7 +4030,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
       }
@@ -3924,12 +4116,31 @@ public class PolynomialFunctions {
           F.JacobiP(degree, m, F.C0, F.Plus(F.C1, F.Times(F.CN2, F.Sqr(r))))));
     }
 
+    /**
+     * The value from the recurrence relation of the Jacobi polynomial for integers
+     * <code>0 &lt;= m &lt;= n</code> and an inexact number <code>r</code>, or {@link F#NIL}.
+     */
+    private static IExpr recurrenceValue(IAST ast) {
+      final int n = inexactIntegerDegree(ast.arg1());
+      final int m = inexactIntegerDegree(ast.arg2());
+      if (m < 0 || m > n) {
+        return F.NIL;
+      }
+      return PolynomialFunctions.recurrenceValue(ast,
+          precision -> ApcomplexOrthogonalPolynomialMath.zernikeR(n, m, apcomplex(ast.arg3()),
+              precision));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr m = ast.arg2();
       IExpr r = ast.arg3();
 
+      IExpr value = recurrenceValue(ast);
+      if (value.isPresent()) {
+        return value;
+      }
       if (n.isInteger() && m.isInteger()) {
         IExpr polynomial = radialPolynomial(n, m, r);
         if (!polynomial.isFree(S.JacobiP, true)) {
@@ -3960,6 +4171,10 @@ public class PolynomialFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
+        IExpr value = recurrenceValue(ast);
+        if (value.isPresent()) {
+          return value;
+        }
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber m = (IInexactNumber) ast.arg2();
         IInexactNumber r = (IInexactNumber) ast.arg3();

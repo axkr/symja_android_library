@@ -77,9 +77,6 @@ public class ArcTanRules {
     // ArcTan(x_,Undefined):=Undefined
     ISetDelayed(ArcTan(x_,Undefined),
       Undefined),
-    // ArcTan(Infinity,y_):=0
-    ISetDelayed(ArcTan(oo,y_),
-      C0),
     // ArcTan(Infinity)=Pi/2
     ISet(ArcTan(oo),
       CPiHalf, true),

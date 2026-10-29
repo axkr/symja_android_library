@@ -1,8 +1,16 @@
 package org.matheclipse.core.eval.util;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.SortedMap;
+import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AbstractFractionSym;
@@ -17,6 +25,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
+import edu.jas.arith.Modular;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.structure.GcdRingElem;
 
 public class SolveUtils {
 
@@ -433,10 +444,13 @@ public class SolveUtils {
    * modulo <code>modulus</code>.
    *
    * <p>
-   * The complete residue system is enumerated, so the result is exact for arbitrary (also
-   * non-prime) moduli, as long as the search space <code>modulus ^ numberOfVariables</code> stays
-   * below {@link #MAX_MODULUS_SEARCH_SPACE}. Only polynomial equations with rational coefficients
-   * are solved, all other systems are returned unevaluated.
+   * Equations in one variable are solved modulo the prime powers of the modulus and combined with
+   * the Chinese remainder theorem, see
+   * {@link #solveModulusUnivariate(IAST, IAST, IExpr, IInteger, EvalEngine)}. Otherwise the
+   * complete residue system is enumerated, so the result is exact for arbitrary (also non-prime)
+   * moduli, as long as the search space <code>modulus ^ numberOfVariables</code> stays below
+   * {@link #MAX_MODULUS_SEARCH_SPACE}. Only polynomial equations with rational coefficients are
+   * solved, all other systems are returned unevaluated.
    *
    * @param ast the <code>Solve(...)</code> ast
    * @param userDefinedVariables the variables the user asked to solve for
@@ -447,8 +461,7 @@ public class SolveUtils {
    */
   public static IExpr solveModulus(IAST termsList, IAST userDefinedVariables, IExpr modulusOption,
       ISymbol reportingSymbol, EvalEngine engine) {
-    int modulus = modulusOption.toIntDefault();
-    if (!modulusOption.isInteger() || modulus < 1) {
+    if (!modulusOption.isInteger() || !modulusOption.isPositive()) {
       // The value of the option `1` should be a prime number or zero.
       return Errors.printMessage(reportingSymbol, "modp", F.List(F.Rule(S.Modulus, modulusOption)),
           engine);
@@ -495,16 +508,26 @@ public class SolveUtils {
     }
 
     IASTAppendable searchVariables = F.ListAlloc(userDefinedVariables.argSize());
-    long searchSpace = 1L;
     for (int i = 1; i < userDefinedVariables.size(); i++) {
       IExpr variable = userDefinedVariables.get(i);
       if (equationVariables.contains(variable)) {
         searchVariables.append(variable);
-        searchSpace *= modulus;
-        if (searchSpace > MAX_MODULUS_SEARCH_SPACE) {
-          // The system cannot be solved with the methods available to Solve.
-          return Errors.printMessage(reportingSymbol, "nsmet", F.list(reportingSymbol), engine);
-        }
+      }
+    }
+    if (searchVariables.isList1()) {
+      IExpr result = solveModulusUnivariate(numerators, denominators, searchVariables.arg1(),
+          modulusValue, engine);
+      if (result.isPresent()) {
+        return result;
+      }
+    }
+    int modulus = modulusValue.toIntDefault();
+    long searchSpace = 1L;
+    for (int i = 1; i < searchVariables.size(); i++) {
+      searchSpace *= modulus;
+      if (modulus <= 0 || searchSpace > MAX_MODULUS_SEARCH_SPACE) {
+        // The system cannot be solved with the methods available to Solve.
+        return Errors.printMessage(reportingSymbol, "nsmet", F.list(reportingSymbol), engine);
       }
     }
 
@@ -599,5 +622,210 @@ public class SolveUtils {
       residues[i] = 0;
     }
     return false;
+  }
+
+  /**
+   * The maximum number of residues which are determined for a univariate system modulo a large
+   * modulus.
+   */
+  private static final int MAX_MODULAR_ROOTS = 100_000;
+
+  /** The time budget for factoring the modulus of a univariate system. */
+  private static final long MODULUS_FACTORIZATION_MILLIS = 2000;
+
+  /**
+   * Solve univariate equations modulo <code>modulus</code> without enumerating the residues: the
+   * roots of the first numerator are determined modulo every prime power of the factorization of
+   * <code>modulus</code> (the roots modulo the prime by factoring over <code>GF(p)</code>, lifted
+   * to the prime power digit by digit) and combined with the Chinese remainder theorem. The other
+   * equations and the denominators are checked for each root.
+   *
+   * @return the list of solution lists in ascending order of the residues or {@link F#NIL} if the
+   *         numerator has non integer coefficients or there are too many roots
+   */
+  private static IExpr solveModulusUnivariate(IAST numerators, IAST denominators,
+      IExpr variable, IInteger modulus, EvalEngine engine) {
+    IExpr coefficientList = S.CoefficientList.of(engine, numerators.arg1(), variable);
+    if (!coefficientList.isList() || !((IAST) coefficientList).forAll(IExpr::isInteger)) {
+      return F.NIL;
+    }
+    IAST coefficientAST = (IAST) coefficientList;
+    BigInteger[] coefficients = new BigInteger[coefficientAST.argSize()];
+    for (int i = 0; i < coefficients.length; i++) {
+      coefficients[i] = ((IInteger) coefficientAST.get(i + 1)).toBigNumerator();
+    }
+    List<BigInteger> roots = modularRoots(coefficients, numerators.arg1(), variable, modulus,
+        engine);
+    if (roots == null) {
+      return F.NIL;
+    }
+    boolean verify = numerators.argSize() > 1 || denominators.exists(d -> !d.isOne());
+    IASTAppendable result = F.ListAlloc(roots.size());
+    for (BigInteger root : roots) {
+      IAST rules = F.list(F.Rule(variable, F.ZZ(root)));
+      if (!verify || isModulusSolution(numerators, denominators, rules, modulus, engine)) {
+        result.append(rules);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The roots of the integer polynomial with the <code>coefficients</code> (in ascending order of
+   * the degree) modulo <code>modulus</code>, sorted ascending.
+   *
+   * @param polynomial the polynomial as an expression in <code>variable</code>
+   * @return <code>null</code> if there are too many roots or the factorization failed
+   */
+  private static List<BigInteger> modularRoots(BigInteger[] coefficients, IExpr polynomial,
+      IExpr variable, IInteger modulus, EvalEngine engine) {
+    List<BigInteger> combined = new ArrayList<BigInteger>();
+    combined.add(BigInteger.ZERO);
+    if (modulus.isOne()) {
+      return combined;
+    }
+    BigInteger combinedModulus = BigInteger.ONE;
+    // a modulus with large prime factors isn't factored within the budget: give up instead of
+    // spending the whole time limit of the evaluation
+    IExpr factorization = TimeLimits.call(engine, () -> modulus.factorInteger(),
+        MachineProfile.millis(MODULUS_FACTORIZATION_MILLIS), () -> F.NIL);
+    if (!factorization.isList()) {
+      return null;
+    }
+    IAST factors = (IAST) factorization;
+    for (int i = 1; i < factors.size(); i++) {
+      IAST primePower = (IAST) factors.get(i);
+      BigInteger p = ((IInteger) primePower.arg1()).toBigNumerator();
+      int k = primePower.arg2().toIntDefault();
+      List<BigInteger> roots = primePowerRoots(coefficients, polynomial, variable, p, k, engine);
+      if (roots == null || (long) combined.size() * roots.size() > MAX_MODULAR_ROOTS) {
+        return null;
+      }
+      // Chinese remainder theorem: x == a mod combinedModulus and x == b mod p^k
+      BigInteger pk = p.pow(k);
+      BigInteger inverse = combinedModulus.modInverse(pk);
+      List<BigInteger> next = new ArrayList<BigInteger>(combined.size() * roots.size());
+      for (BigInteger a : combined) {
+        for (BigInteger b : roots) {
+          next.add(a.add(combinedModulus.multiply(b.subtract(a).multiply(inverse).mod(pk))));
+        }
+      }
+      combined = next;
+      combinedModulus = combinedModulus.multiply(pk);
+    }
+    Collections.sort(combined);
+    return combined;
+  }
+
+  /**
+   * The roots of the integer polynomial modulo the prime power <code>p^k</code>. A root
+   * <code>r</code> modulo <code>q=p^j</code> lifts to the roots <code>r+t*q</code> modulo
+   * <code>q*p</code> with <code>f(r)+t*q*f'(r) == 0</code> modulo <code>q*p</code>: a single one if
+   * <code>f'(r)</code> isn't divisible by <code>p</code>, all <code>p</code> of them or none
+   * otherwise.
+   *
+   * @return <code>null</code> if there are too many roots or the factorization failed
+   */
+  private static List<BigInteger> primePowerRoots(BigInteger[] coefficients, IExpr polynomial,
+      IExpr variable, BigInteger p, int k, EvalEngine engine) {
+    BigInteger pk = p.pow(k);
+    if (isZeroModulo(coefficients, pk)) {
+      // every residue is a root
+      return pk.compareTo(BigInteger.valueOf(MAX_MODULAR_ROOTS)) > 0 ? null : allResidues(pk);
+    }
+    List<BigInteger> roots = isZeroModulo(coefficients, p) //
+        ? (p.compareTo(BigInteger.valueOf(MAX_MODULAR_ROOTS)) > 0 ? null : allResidues(p)) //
+        : primeRoots(polynomial, variable, p);
+    if (roots == null) {
+      return null;
+    }
+    BigInteger[] derivative = new BigInteger[Math.max(coefficients.length - 1, 0)];
+    for (int i = 0; i < derivative.length; i++) {
+      derivative[i] = coefficients[i + 1].multiply(BigInteger.valueOf(i + 1L));
+    }
+    BigInteger q = p;
+    for (int j = 1; j < k; j++) {
+      engine.checkTimeLimit();
+      BigInteger qp = q.multiply(p);
+      List<BigInteger> lifted = new ArrayList<BigInteger>();
+      for (BigInteger r : roots) {
+        BigInteger value = evaluateModulo(coefficients, r, qp);
+        BigInteger slope = evaluateModulo(derivative, r, p);
+        if (slope.signum() != 0) {
+          BigInteger t = value.divide(q).negate().multiply(slope.modInverse(p)).mod(p);
+          lifted.add(r.add(t.multiply(q)));
+        } else if (value.signum() == 0) {
+          if (lifted.size() + p.longValue() > MAX_MODULAR_ROOTS
+              || p.bitLength() > Integer.SIZE - 2) {
+            return null;
+          }
+          for (BigInteger t = BigInteger.ZERO; t.compareTo(p) < 0; t = t.add(BigInteger.ONE)) {
+            lifted.add(r.add(t.multiply(q)));
+          }
+        }
+      }
+      roots = lifted;
+      q = qp;
+    }
+    return roots;
+  }
+
+  /**
+   * The roots of the polynomial modulo the prime <code>p</code>, which isn't the zero polynomial
+   * modulo <code>p</code>: the linear factors of its factorization over <code>GF(p)</code>.
+   *
+   * @return <code>null</code> if the factorization failed
+   */
+  private static List<BigInteger> primeRoots(IExpr polynomial, IExpr variable, BigInteger p) {
+    return primeRoots(JASModular.of(F.ZZ(p), F.list(variable)), polynomial);
+  }
+
+  private static <C extends GcdRingElem<C> & Modular> List<BigInteger> primeRoots(
+      JASModular<C> jas, IExpr polynomial) {
+    SortedMap<GenPolynomial<C>, Long> factors;
+    try {
+      factors = jas.factors(jas.expr2JAS(polynomial), false);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return null;
+    }
+    List<BigInteger> roots = new ArrayList<BigInteger>();
+    for (GenPolynomial<C> factor : factors.keySet()) {
+      if (factor.degree() == 1) {
+        GenPolynomial<C> monic = factor.monic();
+        C constant = monic.coefficient(monic.ring.evzero);
+        roots.add(constant.negate().getInteger().getVal());
+      }
+    }
+    Collections.sort(roots);
+    return roots;
+  }
+
+  private static boolean isZeroModulo(BigInteger[] coefficients, BigInteger modulus) {
+    for (BigInteger coefficient : coefficients) {
+      if (coefficient.mod(modulus).signum() != 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static List<BigInteger> allResidues(BigInteger modulus) {
+    int size = modulus.intValue();
+    List<BigInteger> residues = new ArrayList<BigInteger>(size);
+    for (int i = 0; i < size; i++) {
+      residues.add(BigInteger.valueOf(i));
+    }
+    return residues;
+  }
+
+  /** Horner's scheme modulo <code>modulus</code>. */
+  private static BigInteger evaluateModulo(BigInteger[] coefficients, BigInteger x,
+      BigInteger modulus) {
+    BigInteger result = BigInteger.ZERO;
+    for (int i = coefficients.length - 1; i >= 0; i--) {
+      result = result.multiply(x).add(coefficients[i]).mod(modulus);
+    }
+    return result;
   }
 }
