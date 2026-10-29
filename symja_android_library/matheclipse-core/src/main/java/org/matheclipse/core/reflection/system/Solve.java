@@ -4870,9 +4870,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     final IExpr variable = variables.arg1();
-    if (equation.isFree(x -> !x.isFree(variable) && ((x.isPower() && !x.exponent().isFree(variable))
-        || (x.isAST() && !x.isPlus() && !x.isTimes() && !x.isPower() && !x.isEqual())), true)) {
+    if (equation.isFree(x -> x.isPower() && !x.exponent().isFree(variable), true)) {
       // an algebraic equation has no families of solutions
+      return F.NIL;
+    }
+    if (!equation.isFree(x -> !x.isFree(variable) && x.isAST() && !x.isPlus() && !x.isTimes()
+        && !x.isPower() && !x.isEqual(), true)) {
+      // the variable inside another function, like Sin(x) == 0.0, keeps its families of solutions
       return F.NIL;
     }
     IExpr rationalized = engine.evalQuiet(F.Rationalize(equation));
