@@ -7207,9 +7207,13 @@ public final class NumberTheory {
 
       int counter = nSubtractm.toIntDefault();
       if (counter > Integer.MIN_VALUE) {
-        // the integer terms are folded into one number
-        // the integer terms are added pairwise
         final EvalEngine engine = EvalEngine.get();
+        int iterationLimit = engine.getIterationLimit();
+        if (iterationLimit >= 0 && iterationLimit <= counter) {
+          // too many terms for the exact sum; unevaluated
+          return F.NIL;
+        }
+        // the integer terms are added pairwise
         return F.sumRational(i -> {
           IInteger value = F.ZZ(i);
           IInteger k = value.add(nSubtractm);
