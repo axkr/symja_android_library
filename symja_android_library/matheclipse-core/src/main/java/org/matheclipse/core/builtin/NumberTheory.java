@@ -2965,11 +2965,11 @@ public final class NumberTheory {
             if (iterationLimit >= 0 && iterationLimit <= k) {
               IterationLimitExceeded.throwIt(k, ast);
             }
-            IASTAppendable product = F.TimesAlloc(k);
-            for (int i = 1; i <= k; i++) {
-              product.append(F.Plus(v, F.ZZ(i)));
+            final IExpr base = v;
+            if (base.isRational()) {
+              return F.productRational(i -> ((IRational) base).add(F.ZZ(i)), 1, k, 1).inverse();
             }
-            return F.Power(product, F.CN1);
+            return F.Power(F.product(i -> F.Plus(base, i), 1, k), F.CN1);
           }
           return F.NIL;
         }
@@ -7207,28 +7207,17 @@ public final class NumberTheory {
 
       int counter = nSubtractm.toIntDefault();
       if (counter > Integer.MIN_VALUE) {
-        counter++;
-        IInteger value;
-        IASTAppendable temp = F.PlusAlloc(counter >= 0 ? counter : 0);
-        long leafCount = 0;
-        for (int i = 0; i < counter; i++) {
-          value = F.ZZ(i);
-          if ((i & 1) == 1) { // isOdd(i) ?
-            factorPlusMinus1 = F.CN1;
-          } else {
-            factorPlusMinus1 = F.C1;
-          }
+        // the integer terms are folded into one number
+        // the integer terms are added pairwise
+        final EvalEngine engine = EvalEngine.get();
+        return F.sumRational(i -> {
+          IInteger value = F.ZZ(i);
           IInteger k = value.add(nSubtractm);
-          temp.append(
-              F.Times(factorPlusMinus1, AbstractIntegerSym.binomial(value.add(nSubtract1), k),
-                  AbstractIntegerSym.binomial(nTimes2Subtractm, nSubtractm.subtract(value)),
-                  F.StirlingS2(k, value)));
-          leafCount += temp.leafCount();
-          if (leafCount > Config.MAX_AST_SIZE) {
-            ASTElementLimitExceeded.throwIt(leafCount);
-          }
-        }
-        return temp;
+          IInteger term = AbstractIntegerSym.binomial(value.add(nSubtract1), k)
+              .multiply(AbstractIntegerSym.binomial(nTimes2Subtractm, nSubtractm.subtract(value)))
+              .multiply((IInteger) engine.evaluate(F.StirlingS2(k, value)));
+          return value.isOdd() ? term.negate() : term;
+        }, 0, counter, 1);
       }
       // Machine-sized integer expected at position `2` in `1`.
       throw new ArgumentTypeException("intm", F.list(F.ZZ(1), F.StirlingS1(n, m)));

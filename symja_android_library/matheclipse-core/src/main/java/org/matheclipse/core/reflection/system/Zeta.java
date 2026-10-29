@@ -28,6 +28,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.CompensatedSum;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
@@ -314,7 +315,8 @@ public class Zeta extends AbstractArg12 {
             // where any term with a + k == 0 is excluded.
             int m = (int) Math.floor(-aReal) + 1;
             if (m > 0 && m <= engine.getIterationLimit()) {
-              Complex sum = Complex.ZERO;
+              final CompensatedSum re = new CompensatedSum();
+              final CompensatedSum im = new CompensatedSum();
               // Equivalent to -s/2
               Complex negSHalf = sc.divide(new Complex(-2.0));
 
@@ -326,8 +328,10 @@ public class Zeta extends AbstractArg12 {
                 }
                 // ((a + k)^2)^(-s/2)
                 Complex term = ak.multiply(ak).pow(negSHalf);
-                sum = sum.add(term);
+                re.add(term.getReal());
+                im.add(term.getImaginary());
               }
+              Complex sum = new Complex(re.value(), im.value());
 
               Complex z = ZetaJS.hurwitzZeta(sc, ac.add(m));
               Complex result = z.add(sum);

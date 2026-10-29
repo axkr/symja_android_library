@@ -53,6 +53,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
       // a count isn't an iterator, Product(x, 3) stays unevaluated
       return F.NIL;
     }
+    IExpr numericProduct = Sum.numericIteration(ast, Times(), engine);
+    if (numericProduct.isPresent()) {
+      return numericProduct;
+    }
     IExpr arg1 = ast.arg1();
     if (arg1.isList()) {
       // Product({f,g},{i,1,n}) is the list of the two products

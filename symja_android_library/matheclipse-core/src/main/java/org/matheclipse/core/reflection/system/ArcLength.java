@@ -138,14 +138,12 @@ public class ArcLength extends AbstractFunctionEvaluator {
     if (reg.argSize() == 1 && reg.arg1().isList()) {
       IAST pts = (IAST) reg.arg1();
       if (pts.argSize() >= 2) {
-        IExpr len = F.C0;
-        for (int i = 1; i < pts.argSize(); i++) {
         // CPD-ON
+        // the segment lengths are added up once
+        return engine.evaluate(F.intSum(i -> {
           IExpr diff = engine.evaluate(F.Subtract(pts.get(i), pts.get(i + 1)));
-          IExpr dist = engine.evaluate(F.Sqrt(F.Total(F.Sqr(diff))));
-          len = engine.evaluate(F.Plus(len, dist));
-        }
-        return len;
+          return F.Sqrt(F.Total(F.Sqr(diff)));
+        }, 1, pts.argSize() - 1, false));
       }
     }
     return F.NIL;

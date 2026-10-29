@@ -18,6 +18,7 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -50,13 +51,13 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.eval.util.NumberAccumulator;
 import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
@@ -6086,63 +6087,48 @@ public class F extends S {
   }
 
   /**
-   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
-   * evaluate the {@link S#Product}
-   * 
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step</code> and
+   * evaluate the {@link S#Product}. A negative <code>step</code> iterates downwards
+   * <code>from >= i >= to</code>.
+   *
    * @param function the function which should be applied on each iterator value
    * @param from from this position (included)
    * @param to to this position (included)
-   * @param step
+   * @param step the step, which must not be <code>0</code>
+   * @return the product with the numbers folded into one number; the {@link S#Times} of the
+   *         factors which aren't numbers isn't evaluated
    */
   public static IExpr intProduct(final Function<IInteger, IExpr> function, final int from,
       final int to, final int step) {
-    if (from > to && step > 0) {
-      return F.C1;
-    }
-    IASTAppendable result = F.TimesAlloc(F.allocMin32(to - from + 2));
-    long numberOfLeaves = 0;
-    INumber number = F.C1;
-    // insert number as placeholder
-    result.append(number);
+    NumberAccumulator product = NumberAccumulator.product(F.TimesAlloc(8), true);
     EvalEngine engine = EvalEngine.get();
-    for (int i = from; i <= to; i += step) {
-      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
-      if (temp.isNumber()) {
-        number = number.times((INumber) temp);
-        checkBitLength(number);
-      } else {
-        numberOfLeaves = checkLeafCount(numberOfLeaves, temp);
-        result.append(temp);
+    forEachIndex(from, to, step, i -> product.add(evaluateTerm(function.apply(ZZ(i)), engine)));
+    return product.result();
+  }
+
+  /**
+   * Call <code>action</code> for <code>from, from + step, ...</code> up to <code>to</code>
+   * (included), or down to <code>to</code> for a negative <code>step</code>. The index is a
+   * <code>long</code>, so a range which ends at <code>Integer.MAX_VALUE</code> terminates.
+   */
+  private static void forEachIndex(final int from, final int to, final int step,
+      final IntConsumer action) {
+    if (step > 0) {
+      for (long i = from; i <= to; i += step) {
+        action.accept((int) i);
       }
-    }
-    // replace placeholder with evaluated number
-    result.set(1, number);
-    return result.oneIdentity0();
-  }
-
-  /**
-   * Throws {@link BigIntegerLimitExceeded} if <code>number</code> is an integer with more than
-   * <code>Config.MAX_BIT_LENGTH / 100</code> bits.
-   */
-  private static void checkBitLength(INumber number) {
-    if (number instanceof IInteger //
-        && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-      BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+    } else if (step < 0) {
+      for (long i = from; i >= to; i += step) {
+        action.accept((int) i);
+      }
+    } else {
+      throw new IllegalArgumentException("Iteration step 0");
     }
   }
 
-  /**
-   * Adds the leaf count of <code>temp</code> (plus one) to <code>numberOfLeaves</code> and throws
-   * {@link ASTElementLimitExceeded} if the sum reaches <code>Config.MAX_AST_SIZE / 2</code>.
-   *
-   * @return the new number of leaves
-   */
-  private static long checkLeafCount(long numberOfLeaves, IExpr temp) {
-    numberOfLeaves += temp.leafCount() + 1;
-    if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-      ASTElementLimitExceeded.throwIt(numberOfLeaves);
-    }
-    return numberOfLeaves;
+  /** A term which is already a number needs no evaluation. */
+  private static IExpr evaluateTerm(final IExpr term, final EvalEngine engine) {
+    return term.isNumber() ? term : engine.evaluate(term);
   }
 
   public static IAST Inset(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
@@ -6150,14 +6136,15 @@ public class F extends S {
   }
 
   /**
-   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step</code> and
    * evaluate the {@link S#Sum}
    *
    * @param function the function which should be applied on each iterator value
    * @param from from this position (included)
    * @param to to this position (included)
-   * @param step
-   * @return
+   * @param step the step, which must not be <code>0</code>
+   * @return the sum with the numbers folded into one number; the {@link S#Plus} of the terms which
+   *         aren't numbers isn't evaluated
    */
   public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
       final int step) {
@@ -6165,78 +6152,65 @@ public class F extends S {
   }
 
   /**
-   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
-   * evaluate the {@link S#Sum}
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step</code> and
+   * evaluate the {@link S#Sum}. A negative <code>step</code> iterates downwards
+   * <code>from >= i >= to</code>.
    *
    * @param function the function which should be applied on each iterator value
    * @param from from this position (included)
    * @param to to this position (included)
-   * @param step
+   * @param step the step, which must not be <code>0</code>
    * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
+   * @return the sum with the numbers folded into one number; the {@link S#Plus} of the terms which
+   *         aren't numbers isn't evaluated
    */
   public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
       final int step, boolean expand) {
-    if (from > to && step > 0) {
-      return F.C0;
-    }
-    IASTAppendable result = F.PlusAlloc(F.allocMin32(to - from + 2));
-    long numberOfLeaves = 0;
-    INumber number = F.C0;
-    // insert number as placeholder
-    result.append(number);
+    NumberAccumulator sum = NumberAccumulator.sum(F.PlusAlloc(8), true);
     EvalEngine engine = EvalEngine.get();
-    for (int i = from; i <= to; i += step) {
-      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
-      if (temp.isNumber()) {
-        number = number.plus((INumber) temp);
-        if (number instanceof IInteger //
-            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(((IInteger) number).bitLength());
-        }
-      } else {
-        numberOfLeaves = checkLeafCount(numberOfLeaves, temp);
-        if (expand && temp.isPlusTimesPower()) {
-          result.append(F.evalExpand(temp));
-        } else {
-          result.append(temp);
-        }
+    forEachIndex(from, to, step, i -> {
+      IExpr temp = evaluateTerm(function.apply(ZZ(i)), engine);
+      if (expand && temp.isPlusTimesPower()) {
+        temp = F.evalExpand(temp);
       }
-    }
-    // replace placeholder position 1 with evaluated number
-    result.set(1, number);
-    return result.oneIdentity0();
+      sum.add(temp);
+    });
+    return sum.result();
   }
 
   /**
    * Calculate <code>Sum(function(k), {k, iMin, iMax})</code>
-   * 
+   *
    * @param function
    * @param iMin from this position (included)
    * @param iMax to this position (included)
+   * @return the sum with the numbers folded into one number; the {@link S#Plus} of the terms which
+   *         aren't numbers isn't evaluated
    */
   public static IExpr intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
-    if (iMin > iMax) {
-      return F.C0;
-    }
-    IASTAppendable result = F.PlusAlloc(F.allocMin32(iMax - iMin + 2));
-    long numberOfLeaves = 0;
+    return intSum(function, iMin, iMax, true);
+  }
+
+  /**
+   * Calculate <code>Sum(function(k), {k, iMin, iMax})</code>
+   *
+   * @param function
+   * @param iMin from this position (included)
+   * @param iMax to this position (included)
+   * @param limited if <code>true</code> the exact integer part is limited to
+   *        <code>Config.MAX_BIT_LENGTH / 100</code> bits and the collected terms to
+   *        <code>Config.MAX_AST_SIZE / 2</code> leaves; if <code>false</code> only the global
+   *        <code>Config.MAX_BIT_LENGTH</code> applies, like for an evaluated <code>Plus</code>
+   * @return the sum with the numbers folded into one number; the {@link S#Plus} of the terms which
+   *         aren't numbers isn't evaluated
+   */
+  public static IExpr intSum(final IntFunction<IExpr> function, final int iMin, final int iMax,
+      boolean limited) {
+    NumberAccumulator sum =
+        NumberAccumulator.sum(F.PlusAlloc(allocMin32(iMax - iMin + 1)), limited);
     EvalEngine engine = EvalEngine.get();
-    INumber number = F.C0;
-    // insert number as placeholder
-    result.append(number);
-    for (int i = iMin; i <= iMax; i += 1) {
-      IExpr temp = engine.evaluate(function.apply(i));
-      if (temp.isNumber()) {
-        number = number.plus((INumber) temp);
-        checkBitLength(number);
-      } else {
-        numberOfLeaves = checkLeafCount(numberOfLeaves, temp);
-        result.append(temp);
-      }
-    }
-    // replace placeholder with evaluated number
-    result.set(1, number);
-    return result.oneIdentity0();
+    forEachIndex(iMin, iMax, 1, i -> sum.add(evaluateTerm(function.apply(i), engine)));
+    return sum.result();
   }
 
   /**
@@ -6274,7 +6248,7 @@ public class F extends S {
       IExpr temp = engine.evaluate(function.apply(i));
       if (temp.isNumber()) {
         numberPlaceholder = numberPlaceholder.plus((INumber) temp);
-        checkBitLength(numberPlaceholder);
+        NumberAccumulator.checkLimitedBitLength(numberPlaceholder);
       } else {
         numberOfLeaves += temp.leafCount() + 1;
         if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
@@ -9729,13 +9703,23 @@ public class F extends S {
     return new AST2(ProductLog, a0, a1);
   }
 
+  /**
+   * The exact product of <code>function(i)</code> for <code>i = from, from + step, ...</code> up to
+   * <code>to</code> (down to <code>to</code> for a negative <code>step</code>). The factors are
+   * multiplied pairwise, so the operands of each multiplication have about the same size.
+   */
   public static IRational productRational(final IntFunction<IRational> function, final int from,
       final int to, final int step) {
-    IRational result = C1;
-    for (int i = from; i <= to; i += step) {
-      result = result.multiply(function.apply(i));
-    }
-    return result;
+    return rationalFold(NumberAccumulator.product(F.TimesAlloc(1), false), function, from, to,
+        step, C1);
+  }
+
+  private static IRational rationalFold(NumberAccumulator accumulator,
+      final IntFunction<IRational> function, final int from, final int to, final int step,
+      IRational neutral) {
+    forEachIndex(from, to, step, i -> accumulator.add(function.apply(i)));
+    INumber result = accumulator.number();
+    return result == null ? neutral : (IRational) result;
   }
 
   public static IAST PseudoInverse(final IExpr a0) {
@@ -11400,13 +11384,15 @@ public class F extends S {
     return sumRational(function, iMin, iMax, 1);
   }
 
+  /**
+   * The exact sum of <code>function(i)</code> for <code>i = from, from + step, ...</code> up to
+   * <code>to</code> (down to <code>to</code> for a negative <code>step</code>). The terms are added
+   * pairwise, so the operands of each addition have about the same size.
+   */
   public static IRational sumRational(final IntFunction<IRational> function, final int from,
       final int to, final int step) {
-    IRational result = C0;
-    for (int i = from; i <= to; i += step) {
-      result = result.add(function.apply(i));
-    }
-    return result;
+    return rationalFold(NumberAccumulator.sum(F.PlusAlloc(1), false), function, from, to, step,
+        C0);
   }
 
   public static IAST Superscript(final IExpr x, final IExpr y) {

@@ -294,19 +294,18 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
         return engine.evaluate(F.Mean(pts));
       } else if (pts.argSize() > 2) {
         // Weighted average for polyline
-        IExpr totalLen = F.C0;
+        // the sums are added up once
+        IASTAppendable totalLen = F.PlusAlloc(pts.argSize());
         IASTAppendable sum = F.PlusAlloc(pts.argSize());
-        sum.append(F.C0);
         for (int i = 1; i < pts.argSize(); i++) {
           IExpr p1 = pts.get(i);
           IExpr p2 = pts.get(i + 1);
           IExpr len = engine.evaluate(F.Norm(F.Subtract(p1, p2)));
           IExpr mid = engine.evaluate(F.Times(F.C1D2, F.Plus(p1, p2)));
-          totalLen = engine.evaluate(F.Plus(totalLen, len));
+          totalLen.append(len);
           sum.append(F.Times(len, mid));
         }
-        sum.remove(1);
-        return engine.evaluate(F.Divide(F.Plus(sum), totalLen));
+        return engine.evaluate(F.Divide(sum, engine.evaluate(totalLen)));
       }
     }
     return F.NIL;
@@ -320,7 +319,7 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
         // Exact area-weighted formula (Shoelace method) for 2D Polygons
         if (pts.arg1().isList2()) {
           IASTAppendable sum = F.PlusAlloc(n);
-          IExpr areaSum = F.C0;
+          IASTAppendable areaSum = F.PlusAlloc(n);
           for (int i = 1; i <= n; i++) {
             IExpr p1 = pts.get(i);
             IExpr p2 = pts.get(i % n + 1);
@@ -329,7 +328,7 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
             IExpr x2 = ((IAST) p2).arg1();
             IExpr y2 = ((IAST) p2).arg2();
             IExpr cross = engine.evaluate(F.Subtract(F.Times(x1, y2), F.Times(x2, y1)));
-            areaSum = engine.evaluate(F.Plus(areaSum, cross));
+            areaSum.append(cross);
             sum.append(F.Times(cross, F.Plus(p1, p2)));
           }
           IExpr factor = engine.evaluate(F.Times(F.C3, areaSum));

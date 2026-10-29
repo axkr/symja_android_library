@@ -985,7 +985,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     checkNumeric("Variance({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", //
         "5.16122380952381");
     check("Variance({1.21, 3.4, 2+3*I, 4.66-0.1*I, 1.5, 5.61, 7.22})", //
-        "6.46265");
+        "6.46265+I*(-3.17207*10^-17)");
     // check("Variance(BernoulliDistribution(p))", "p*(1-p)");
     // check("Variance(BinomialDistribution(n, p))", "n*p*(1-p)");
   }

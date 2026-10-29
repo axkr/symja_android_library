@@ -101,11 +101,10 @@ public class ShortestCurveDistance extends AbstractFunctionEvaluator {
         IExpr isClosed = engine.evaluate(F.PossibleZeroQ(F.Subtract(firstPt, lastPt)));
 
         if (isClosed.isTrue()) {
-          IExpr totalLength = F.C0;
-          for (int i = 1; i < pts.argSize(); i++) {
-            IExpr segmentLen = engine.evaluate(F.Norm(F.Subtract(pts.get(i), pts.get(i + 1))));
-            totalLength = engine.evaluate(F.Plus(totalLength, segmentLen));
-          }
+          // the segment lengths are added up once
+          IExpr totalLength = engine.evaluate(
+              F.intSum(i -> F.Norm(F.Subtract(pts.get(i), pts.get(i + 1))), 1, pts.argSize() - 1,
+                  false));
           for (IExpr s1 : s1List) {
             for (IExpr s2 : s2List) {
               IExpr dist = engine.evaluate(F.Abs(F.Subtract(s1, s2)));

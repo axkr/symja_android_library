@@ -2326,15 +2326,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       if (i == 0) {
         result.setCoeff(newNMin, d);
       } else {
-        IExpr c = F.C0;
-        for (int k = 0; k < i; k++) {
-          IExpr coeffK = result.coefficient(newNMin + k);
-          int sourceIndex = actualNMin + i - k;
-          if (sourceIndex < truncateOrder) {
-            IExpr m = coeffK.multiply(coefficient(sourceIndex));
-            c = c.sum(m);
-          }
-        }
+        final int row = i;
+        // the terms are collected and added up once
+        final int lowest = actualNMin;
+        IExpr c = F.eval(F.intSum(k -> {
+          int sourceIndex = lowest + row - k;
+          return sourceIndex < truncateOrder
+              ? result.coefficient(newNMin + k).multiply(coefficient(sourceIndex))
+              : F.C0;
+        }, 0, i - 1, false));
         c = c.multiply(d.negate());
         int targetIndex = newNMin + i;
         if (targetIndex < newTruncate) {
@@ -2753,17 +2753,21 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     IExpr[] c = new IExpr[numTerms];
     c[0] = F.C1;
 
+    // the normalized coefficients a(j)/a(0) of the series, computed once
+    IExpr[] normalized = new IExpr[numTerms];
+    for (int j = 1; j < numTerms; j++) {
+      IExpr coeff = getCoeffSafe(actualNMin + j);
+      normalized[j] = coeff.isZero() ? F.C0 : engine.evaluate(F.Divide(coeff, cMin));
+    }
+    final IExpr exponent = p;
     for (int k = 1; k < numTerms; k++) {
-      IExpr ck = F.C0;
-      for (int j = 1; j <= k; j++) {
-        IExpr coeff = getCoeffSafe(actualNMin + j);
-        if (!coeff.isZero()) {
-          IExpr bj = engine.evaluate(F.Divide(coeff, cMin));
-          IExpr termWeight = engine.evaluate(F.Subtract(F.Times(p, F.ZZ(j)), F.ZZ(k - j)));
-          IExpr term = engine.evaluate(F.Times(termWeight, bj, c[k - j]));
-          ck = engine.evaluate(F.Plus(ck, term));
-        }
-      }
+      final int order = k;
+      // the terms are collected and added up once
+      IExpr ck = F.intSum(j -> normalized[j].isZero() //
+          ? F.C0
+          : F.Times(F.Subtract(F.Times(exponent, F.ZZ(j)), F.ZZ(order - j)), normalized[j],
+              c[order - j]),
+          1, k, false);
       c[k] = engine.evaluate(F.Divide(ck, F.ZZ(k)));
     }
 

@@ -2284,16 +2284,13 @@ public final class Arithmetic {
           }
           int intArg2 = r.toIntDefault();
           if (F.isPresent(intArg2)) {
-            int exponent = intArg2;
-            if (intArg2 < 0) {
-              exponent *= -1;
-            }
-            IRational result = F.C0;
-            for (int i = 1; i <= nInt; i++) {
+            final int exponent = Math.abs(intArg2);
+            // added pairwise: the operands of each addition have about the same size
+            IRational result = F.sumRational(i -> {
               final IInteger pow = F.ZZ(i).powerRational(exponent);
-              result = result.add(intArg2 < 0 ? pow : pow.inverse());
-              result.checkBitLength();
-            }
+              return intArg2 < 0 ? pow : pow.inverse();
+            }, 1, nInt);
+            result.checkBitLength();
             return result;
           }
 
@@ -3490,7 +3487,8 @@ public final class Arithmetic {
       }
       int ni = n.toIntDefault();
       if (ni > Integer.MIN_VALUE) {
-        if (ni > 0 && ni < BinomialCache.MAX_N) {
+        if (ni > 0 && ni < BinomialCache.MAX_N && a.isInteger()) {
+          // only an exact integer: a machine integer like 10.0 keeps its machine product
           int ai = a.toIntDefault();
           if (ai > 0 && ai < BinomialCache.MAX_N) {
             long maxBin = ai + ni - 1L;

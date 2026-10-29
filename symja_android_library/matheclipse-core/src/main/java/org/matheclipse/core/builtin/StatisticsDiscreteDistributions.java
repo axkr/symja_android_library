@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.util.CompensatedSum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -345,8 +346,7 @@ public class StatisticsDiscreteDistributions {
    */
   private static long sumProbabilities(long lo, long count, LongToDoubleFunction logProbability,
       double tailRatio, double q, double[] result) {
-    double sum = 0.0;
-    double compensation = 0.0;
+    final CompensatedSum sum = new CompensatedSum();
     double previous = 0.0;
     for (long i = 0; i < count; i++) {
       if ((i & 0xFFFFL) == 0xFFFFL && Thread.currentThread().isInterrupted()) {
@@ -357,13 +357,11 @@ public class StatisticsDiscreteDistributions {
       if (Double.isNaN(term)) {
         return -1L;
       }
-      double t = sum + term;
-      compensation += Math.abs(sum) >= Math.abs(term) ? (sum - t) + term : (term - t) + sum;
-      sum = t;
+      sum.add(term);
       if (result != null) {
-        result[0] = sum + compensation;
+        result[0] = sum.value();
       }
-      if (sum + compensation >= q) {
+      if (sum.value() >= q) {
         return x;
       }
       if (i > 0 && term < previous) {
@@ -409,11 +407,10 @@ public class StatisticsDiscreteDistributions {
       if (last - lo >= EXACT_CDF_TERMS) {
         return F.NIL;
       }
-      IASTAppendable sum = F.PlusAlloc((int) (last - lo + 1));
-      for (long j = lo; j <= last; j++) {
-        sum.append(ipdf.pdf(dist, F.ZZ(j), engine));
-      }
-      return engine.evaluate(sum.oneIdentity0());
+      final long first = lo;
+      return engine
+          .evaluate(F.intSum(i -> ipdf.pdf(dist, F.ZZ(first + i), engine), 0, (int) (last - lo),
+              false));
     }
     double cdf = cdfBySummation(last, lo, logProbability, tailRatio);
     return Double.isNaN(cdf) ? F.NIL : F.num(cdf);
@@ -2501,11 +2498,7 @@ public class StatisticsDiscreteDistributions {
             if (floor.isInteger() && n.isInteger()) {
               int last = ((IInteger) floor).toIntDefault();
               if (last >= 0 && last < Config.MAX_AST_SIZE) {
-                IASTAppendable sum = F.PlusAlloc(last + 1);
-                for (int i = 0; i <= last; i++) {
-                  sum.append(probability(a, b, n, F.ZZ(i)));
-                }
-                return sum;
+                return F.sum(i -> probability(a, b, n, i), 0, last);
               }
             }
           }

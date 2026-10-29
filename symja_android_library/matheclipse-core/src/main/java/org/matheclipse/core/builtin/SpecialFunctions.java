@@ -44,6 +44,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.CompensatedSum;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
@@ -171,11 +172,10 @@ public class SpecialFunctions {
           if (a.isInteger() && a.isPositive()) {
             IInteger n = (IInteger) a;
             int ni = n.toIntDefault();
-            IASTAppendable timsAST = F.TimesAlloc(ni + 1);
-            for (int i = 0; i < ni; i++) {
-              timsAST.append(F.Plus(F.ZZ(i), b));
-            }
-            return F.Divide(F.Factorial(F.Plus(F.CN1, n)), timsAST);
+            IExpr product = b.isRational()
+                ? F.productRational(i -> ((IRational) b).add(F.ZZ(i)), 0, ni - 1, 1)
+                : F.product(i -> F.Plus(i, b), 0, ni - 1);
+            return F.Divide(F.Factorial(F.Plus(F.CN1, n)), product);
           }
           // (Gamma(a)*Gamma(b))/Gamma(a+b)
           return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), F.CN1));
@@ -2114,21 +2114,21 @@ public class SpecialFunctions {
       // For z = 1, this is the Hurwitz zeta: Sum(1/(k+a)^s)
       // Use Euler-Maclaurin to add tail correction for better convergence
       int nTerms = Math.abs(z - 1.0) < 1e-14 ? 200 : 1000;
-      double sum = 0.0;
+      final CompensatedSum sum = new CompensatedSum();
       double zPow = 1.0; // z^k
 
       for (int k = 0; k < nTerms; k++) {
         double denom = Math.pow(k + a, s);
         if (Math.abs(denom) > 1e-300) {
           double term = zPow / denom;
-          sum += term;
-          if (Math.abs(term) < 1e-15 * Math.abs(sum) && k > 5) {
-            return sum;
+          sum.add(term);
+          if (Math.abs(term) < 1e-15 * Math.abs(sum.value()) && k > 5) {
+            return sum.value();
           }
         }
         zPow *= z;
         if (Math.abs(zPow) < 1e-300) {
-          return sum;
+          return sum.value();
         }
       }
 
@@ -2145,10 +2145,10 @@ public class SpecialFunctions {
         double em2 = s / (12.0 * Math.pow(na, s + 1.0));
         // f'''(N)/720 = -s(s+1)(s+2) / (720 (N+a)^(s+3))
         double em3 = -s * (s + 1.0) * (s + 2.0) / (720.0 * Math.pow(na, s + 3.0));
-        sum += tail + f_n / 2.0 + em2 + em3;
+        sum.add(tail + f_n / 2.0 + em2 + em3);
       }
 
-      return sum;
+      return sum.value();
     }
 
     @Override
@@ -2285,12 +2285,12 @@ public class SpecialFunctions {
         if (m == 0 || !F.isPresent(m) || Math.abs(m) > 1000) {
           return F.NIL;
         }
-        IASTAppendable sum = F.PlusAlloc(Math.abs(m));
-        for (int k = 0; k < Math.abs(m); k++) {
+        // the exact terms are added pairwise
+        IRational sum = F.sumRational(k -> {
           // the steps between 1/2 and x
           IRational step = m > 0 ? F.C1D2.add(F.ZZ(k)) : F.C1D2.subtract(F.ZZ(k + 1));
-          sum.append(F.Power(step, F.ZZ(-(n + 1))));
-        }
+          return step.inverse().powerRational(n + 1);
+        }, 0, Math.abs(m) - 1);
         IExpr steps = F.Times(sign, F.Factorial(F.ZZ(n)), sum);
         return engine.evaluate(F.Plus(F.PolyGamma(F.ZZ(n), F.C1D2),
             m > 0 ? steps : F.Times(F.CN1, steps)));
