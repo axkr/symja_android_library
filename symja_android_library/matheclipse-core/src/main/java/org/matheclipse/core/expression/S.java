@@ -10751,6 +10751,16 @@ public class S {
       S.initFinalSymbol("GroupStabilizer", ID.GroupStabilizer);
 
   /**
+   * GroupSupport(x) - TODO describe `GroupSupport`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GroupSupport.md">GroupSupport
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GroupSupport =
+      S.initFinalSymbol("GroupSupport", ID.GroupSupport);
+
+  /**
    * Gudermannian(expr) - computes the gudermannian function.
    * 
    * @see <a href=
@@ -20442,6 +20452,15 @@ public class S {
    */
   public final static IBuiltInSymbol RandomChoice =
       S.initFinalSymbol("RandomChoice", ID.RandomChoice);
+
+  /**
+   * RandomColor(x) - TODO describe `RandomColor`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomColor.md">RandomColor
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RandomColor = S.initFinalSymbol("RandomColor", ID.RandomColor);
 
   /**
    * RandomComplex[{z_min, z_max}] - yields a pseudo-random complex number in the rectangle with
