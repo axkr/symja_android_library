@@ -489,8 +489,11 @@ function notebookFileChosen(event) {
 		}
 		loadNotebook(notebook, file.name, function(loaded) {
 			// the user chose this notebook, so it is the worksheet to keep from now on
-			if (loaded)
+			if (loaded) {
 				autosaveEnabled = true;
+				autosaveId = null;
+				autosaveBase = null;
+			}
 		});
 	};
 	reader.onerror = function() {
@@ -554,6 +557,17 @@ function insertNotebook(notebook, fileName, onDone) {
 		onDone(true);
 }
 
+/** Remove all cells of the page; a Manipulate or a live Dynamic has state on the server. */
+function clearCells() {
+	var queries = notebookQueries();
+	if (typeof disposeManipulatesIn == 'function')
+		disposeManipulatesIn(queries);
+	if (typeof disposeDynamicsIn == 'function')
+		disposeDynamicsIn(queries);
+	hideNotebookNotice();
+	queries.deleteChildNodes();
+}
+
 /**
  * Replace the cells of the page with the cells of a notebook, without evaluating them.
  *
@@ -561,8 +575,7 @@ function insertNotebook(notebook, fileName, onDone) {
  *     an unknown type which were skipped
  */
 function insertCells(notebook) {
-	hideNotebookNotice();
-	notebookQueries().deleteChildNodes();
+	clearCells();
 	if ($('welcomeContainer'))
 		$('welcomeContainer').hide();
 	lastFocus = null;
@@ -662,6 +675,21 @@ var AUTOSAVE_DELAY = 1000;
 var autosaveEnabled = false;
 var autosaveTimer = null;
 
+/**
+ * The sources of the cells when they were last read from or written to the browser. A page
+ * which still shows them has nothing to keep, and must not write over what another tab kept.
+ */
+var autosaveCells = null;
+
+/** The name of the kept worksheet, which a link made from it carries to find it again. */
+var autosaveId = null;
+
+/** The hash of the -notebook notebook the kept worksheet was edited from, or null. */
+var autosaveBase = null;
+
+var autosaveFailed = false;
+var autosaveOtherTabNoticed = false;
+
 /** The pages with Symja syntax and with Mathematica syntax each keep a worksheet of their own. */
 function autosaveKey() {
 	return 'symja.worksheet.' + symjaSyntax();
@@ -676,6 +704,20 @@ function worksheetStorage() {
 	}
 }
 
+/** The sources of the cells of a notebook, to compare two states of the page. */
+function worksheetCells(notebook) {
+	return JSON.stringify(notebook.cells.map(function(cell) {
+		return [cell.cell_type, cell.source];
+	}));
+}
+
+function textHash(text) {
+	var hash = 0;
+	for (var index = 0; index < text.length; ++index)
+		hash = (Math.imul(hash, 31) + text.charCodeAt(index)) | 0;
+	return hash;
+}
+
 /**
  * Write the worksheet whenever the user has typed something and when the page goes away;
  * deleting or moving a cell is not an input event, but it is kept by the latter.
@@ -684,9 +726,11 @@ function worksheetStorage() {
  */
 function startAutosave(enabled) {
 	autosaveEnabled = enabled;
+	autosaveCells = worksheetCells(buildNotebook(true));
 	document.addEventListener('input', function(event) {
-		// typing into the documentation search or a dialog does not change the worksheet
-		if (!notebookQueries() || !notebookQueries().contains(event.target))
+		// a control in an output, the documentation search or a dialog does not change the worksheet
+		var cell = event.target.li;
+		if (!cell || cell.textarea != event.target)
 			return;
 		autosaveEnabled = true;
 		if (autosaveTimer)
@@ -699,6 +743,13 @@ function startAutosave(enabled) {
 		if (document.visibilityState == 'hidden')
 			saveWorksheet();
 	});
+	window.addEventListener('storage', function(event) {
+		if (autosaveEnabled && !autosaveOtherTabNoticed && event.key == autosaveKey()) {
+			autosaveOtherTabNoticed = true;
+			showNotebookNotice("This worksheet was changed in another tab. Reload this page to see " +
+				"that version; changing a cell here replaces it.");
+		}
+	});
 }
 
 function saveWorksheet() {
@@ -710,23 +761,32 @@ function saveWorksheet() {
 	if (!autosaveEnabled || !storage || !notebookQueries())
 		return;
 	var notebook = buildNotebook(true);
+	var cells = worksheetCells(notebook);
+	if (cells == autosaveCells)
+		return;
 	try {
-		if (notebook.cells.length == 0)
+		if (notebook.cells.length == 0) {
 			storage.removeItem(autosaveKey());
-		else
-			storage.setItem(autosaveKey(),
-				JSON.stringify({'name': notebookFileName, 'notebook': notebook}));
+			autosaveId = null;
+		} else {
+			autosaveId = autosaveId || newCellId();
+			storage.setItem(autosaveKey(), JSON.stringify({'id': autosaveId, 'base': autosaveBase,
+				'name': notebookFileName, 'notebook': notebook}));
+		}
+		autosaveCells = cells;
+		autosaveFailed = false;
 	} catch (e) {
 		// the storage is full; the worksheet written last time stays
+		if (!autosaveFailed) {
+			autosaveFailed = true;
+			showNotebookNotice("This worksheet is too large to be kept in the browser. " +
+				"Save it as a notebook to keep your changes.");
+		}
 	}
 }
 
-/**
- * Show the worksheet kept from the last visit, without evaluating it.
- *
- * @return true if a worksheet was shown
- */
-function restoreWorksheet() {
+/** The worksheet kept in the browser, or null if there is none or it is damaged. */
+function readWorksheet() {
 	var storage = worksheetStorage();
 	var saved = null;
 	try {
@@ -736,35 +796,100 @@ function restoreWorksheet() {
 	}
 	if (!saved || !saved.notebook || !Object.isArray(saved.notebook.cells) ||
 			saved.notebook.cells.length == 0)
+		return null;
+	return saved.notebook.cells.any(function(cell) { return !cell; }) ? null : saved;
+}
+
+/**
+ * Show the worksheet kept from the last visit, without evaluating it.
+ *
+ * @return true if a worksheet was shown
+ */
+function restoreWorksheet() {
+	var saved = readWorksheet();
+	if (!saved)
 		return false;
 
 	var counts = insertCells(saved.notebook);
 	notebookFileName = Object.isString(saved.name) ? saved.name : null;
+	autosaveId = saved.id || null;
+	autosaveBase = saved.base || null;
 	showNotebookNotice("Restored the worksheet of your last visit with " + counts.codeCells +
 		(counts.codeCells == 1 ? " code cell" : " code cells") + "." +
 		" Nothing has been evaluated yet - press Run all to evaluate it in this session.");
 	return true;
 }
 
+/**
+ * Fill a page which has no link to show.
+ *
+ * @param startupLoaded whether the -notebook notebook is on the page. It stays there unless the
+ *     kept worksheet was edited from this very notebook; then these are the user's changes.
+ */
+function startWorksheet(startupLoaded) {
+	if (!startupLoaded) {
+		if (!restoreWorksheet())
+			createQuery();
+		startAutosave(true);
+		return;
+	}
+	var base = textHash(worksheetCells(buildNotebook(true)));
+	var saved = readWorksheet();
+	var edited = saved != null && saved.base == base && restoreWorksheet();
+	autosaveBase = base;
+	startAutosave(edited);
+}
+
+/** The parameter which leads a link of the kept worksheet back to it, or null. */
+function worksheetLinkParameter() {
+	if (!autosaveEnabled)
+		return null;
+	if (!autosaveId)
+		autosaveCells = null; // a worksheet needs its name written, even if it didn't change
+	saveWorksheet();
+	return autosaveId ? 'worksheet=' + autosaveId : null;
+}
+
+/**
+ * A link made from the kept worksheet has its code cells only, and it may be older than the
+ * worksheet, so the page which made it shows the worksheet again, not the link.
+ *
+ * @return true if a worksheet was shown
+ */
+function restoreOwnLink() {
+	var linked = null;
+	try {
+		linked = /(?:^|&)worksheet=([^&]*)/.exec(atob(location.hash.slice(1)));
+	} catch (e) {
+		return false;
+	}
+	var saved = linked ? readWorksheet() : null;
+	return saved != null && saved.id == linked[1] && restoreWorksheet();
+}
+
 /** Discard all cells, also the copy kept in the browser, and start with an empty worksheet. */
 function newNotebook() {
 	if (!notebookQueries())
 		return;
+	if (runningAll || notebookQueries().select('li.loading').length > 0) {
+		showNotebookNotice("Cells are still being evaluated. " +
+			"Start a new notebook when they have finished.");
+		return;
+	}
 	showDialog("New notebook",
 		"Discard all cells of this worksheet? Definitions made by evaluating them stay in this session.",
 		"Discard", "Cancel",
 		function() {
-			// a Manipulate or a live Dynamic has state on the server; let it go with its cell
-			if (typeof disposeManipulatesIn == 'function')
-				disposeManipulatesIn(notebookQueries());
-			if (typeof disposeDynamicsIn == 'function')
-				disposeDynamicsIn(notebookQueries());
-			hideNotebookNotice();
-			notebookQueries().deleteChildNodes();
+			clearCells();
 			notebookFileName = null;
 			lastFocus = null;
 			createQuery();
-			autosaveEnabled = true;
+			// a reload must not bring the cells of a link back
+			if (location.hash)
+				history.replaceState(null, '', location.pathname + location.search);
+			// a page which only shows a link leaves the kept worksheet alone
+			autosaveId = null;
+			autosaveBase = null;
 			saveWorksheet();
 		});
 }

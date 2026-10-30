@@ -585,15 +585,13 @@ function domLoaded() {
 		
 //		$(document).observe('keyup', globalKeyUp.bindAsEventListener($('document')));
 		
-		if (!loadLink()) {
-			if (typeof loadStartupNotebook == 'function')
+		if (typeof restoreOwnLink == 'function' && restoreOwnLink())
+			startAutosave(true);
+		else if (!loadLink()) {
+			if (typeof startWorksheet == 'function')
 				// a notebook named with the -notebook argument is shown, never evaluated; without
 				// one the worksheet kept from the last visit is shown, also without evaluating it
-				loadStartupNotebook(function(loaded) {
-					if (!loaded && !restoreWorksheet())
-						createQuery();
-					startAutosave(!loaded);
-				});
+				loadStartupNotebook(startWorksheet);
 			else
 				createQuery();
 		} else if (typeof startAutosave == 'function')

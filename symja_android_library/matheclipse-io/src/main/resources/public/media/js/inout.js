@@ -160,6 +160,9 @@ function createLink() {
 		var text = query.select('textarea.request')[0].getText();
 		queries[queries.length] = 'queries=' + encodeURIComponent(text);
 	});
+	var worksheet = typeof worksheetLinkParameter == 'function' ? worksheetLinkParameter() : null;
+	if (worksheet)
+		queries[queries.length] = worksheet;
 	var query = queries.join('&');
 	location.hash = '#' + btoa(query); //encodeURI(query);
 }
