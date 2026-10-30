@@ -42,6 +42,11 @@ public class RootReduce extends AbstractFunctionEvaluator {
       return arg1;
     }
 
+    IExpr withoutPoles = withoutHiddenPoles(arg1, engine);
+    if (withoutPoles.isPresent()) {
+      return withoutPoles;
+    }
+
     // Existing special-case: 1/(p1 + p2) where terms are sqrt-like
     // e.g. 1/(1 + Sqrt[2]) → (1 - Sqrt[2]) / (1 - 2) = -(1 - Sqrt[2])
     if (arg1.isPowerReciprocal()) {
@@ -105,6 +110,29 @@ public class RootReduce extends AbstractFunctionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
     }
+  }
+
+  /**
+   * The expression with its negative powers of a base which is 0 only after it is reduced, as
+   * <code>1/((1+Sqrt(5))^2-6-2*Sqrt(5))</code>: there is no algebraic number for it.
+   *
+   * @return {@link F#NIL} if there is no such power
+   */
+  private static IExpr withoutHiddenPoles(IExpr expr, EvalEngine engine) {
+    boolean[] found = new boolean[1];
+    IExpr replaced = expr.replaceAll(x -> {
+      if (x.isPower() && x.exponent().isNegative() && x.base().isPlus()
+          && x.base().isNumericFunction(true)
+          && Math.abs(engine.evalQuiet(F.N(F.Abs(x.base()))).evalfNaN()) < 1.0e-10
+          && engine.evaluate(F.RootReduce(x.base())).isZero()) {
+        found[0] = true;
+        // Infinite expression `1` encountered.
+        Errors.printMessage(S.Power, "infy", F.List(x), engine);
+        return S.ComplexInfinity;
+      }
+      return F.NIL;
+    }).orElse(expr);
+    return found[0] ? engine.evaluate(replaced) : F.NIL;
   }
 
   /**

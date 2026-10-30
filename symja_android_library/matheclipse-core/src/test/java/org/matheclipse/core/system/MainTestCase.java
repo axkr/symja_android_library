@@ -3715,7 +3715,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2)", //
         "-1+x^2");
     check("PolynomialGCD(2*x^5-2*x,(x^2-1)^2,Modulus->2)", //
-        "(1+x)^4");
+        "1+x^4");
     check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x)", //
         "{-1+x^2,{x/4,1/2*(-2-x^2)}}");
     check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x, Modulus->2)", //

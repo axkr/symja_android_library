@@ -73,11 +73,6 @@ public class BivariateReduceTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testDeclined() {
-    // degree 2 in the second variable
-    check("Reduce(x^2+y^2<1, {x,y}, Reals)", //
-        "Reduce(x^2+y^2<1,{x,y},Reals)");
-    check("Reduce(x*y^2>1, {x,y}, Reals)", //
-        "Reduce(x*y^2>1,{x,y},Reals)");
     // a parameter
     check("Reduce(x/y>a, {x,y}, Reals)", //
         "Reduce(x/y>a,{x,y},Reals)");

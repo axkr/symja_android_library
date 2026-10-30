@@ -157,6 +157,9 @@ public class Errors {
       "bfun", "`1` is not a boolean-valued pure function.", //
       "bldim", "The arguments `1` and `2` do not have compatible dimensions.", //
       "bmod", "Modulus `1` must be an integer or an irreducible univariate polynomial.", //
+      "cadop", "`1` is not a valid CylindricalDecomposition output specification.", //
+      "nrtpi",
+      "`1` is not a logical formula consisting of polynomial equations and inequalities in `2` with rational number coefficients.", //
       "facim", "Factoring noninteger polynomials with respect to a modulus is not implemented.", //
       "mext", "Conflicting option setting. If Modulus is not 0, then Extension should be None.", //
       "boxfmt", "`1` is not a box formatting type.", //

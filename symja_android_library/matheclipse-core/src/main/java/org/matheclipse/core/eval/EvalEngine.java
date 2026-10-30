@@ -2281,7 +2281,8 @@ public class EvalEngine implements Serializable {
         // evaluation then initializing rules for predefined symbols
         // (i.e. Sin, Cos,...)
         if (!(symbol == S.Set || symbol == S.SetDelayed || symbol == S.UpSet
-            || symbol == S.UpSetDelayed)) {
+            || symbol == S.UpSetDelayed)
+            && !(fEvalPatternMatcherMode && buildsPattern(symbol))) {
           return F.NIL;
         }
         // } else {
@@ -4419,6 +4420,33 @@ public class EvalEngine implements Serializable {
     }
   }
 
+  /**
+   * Whether a call of <code>head</code> computes the pattern a matcher is built from, as in
+   * <code>MatchQ(u, Table(_, 3))</code>: for a matcher it is evaluated, whatever its hold
+   * attributes say. A definition keeps its left-hand side as it is written.
+   */
+  private static boolean buildsPattern(IExpr head) {
+    if (!head.isBuiltInSymbol()) {
+      return false;
+    }
+    switch (((IBuiltInSymbol) head).ordinal()) {
+      case ID.Append:
+      case ID.Block:
+      case ID.ConstantArray:
+      case ID.Flatten:
+      case ID.If:
+      case ID.Join:
+      case ID.Module:
+      case ID.Prepend:
+      case ID.Reverse:
+      case ID.Table:
+      case ID.With:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   private IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation,
       boolean evalNumericFunction, int level) {
     // final ISymbol symbol = ast.topHead();
@@ -4602,7 +4630,7 @@ public class EvalEngine implements Serializable {
         }
       }
     }
-    if (level > 0 && !noEvaluation) {
+    if ((level > 0 || (fEvalPatternMatcherMode && buildsPattern(ast.head()))) && !noEvaluation) {
       if (!ast.head().isBuiltInSymbol()) {
         // the rules of a package function are ordinary code: Options[f] in their body evaluates
         final boolean evalLHSMode = suspendEvalLHSMode();

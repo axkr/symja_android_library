@@ -383,13 +383,30 @@ public class Predicates {
       }
       // the whole pattern is still tested on its own, because a default value like x_. in
       // x_.*y_f may stand for a missing factor: f(1) contains x_.*y_f
-      final IPatternMatcher matcher = new PatternMatcher(pattern);
-      final IExpr head = pattern.head();
-      final int argSize = pattern.argSize();
-      return x -> matcher.test(x)
-          || (x.isAST() && x.head().equals(head) && x.argSize() > argSize && partsMatcher.test(x));
+      return wholeOrParts((IAST) pattern, partsMatcher);
+    }
+    if (pattern.isFlatAST()) {
+      // only consecutive arguments are parts of a Flat expression: d**a**b**c contains a**b
+      IAST form = (IAST) pattern;
+      IASTAppendable newPattern = F.ast(form.head(), form.argSize() + 2);
+      newPattern.append(F.$ps(null, true));
+      newPattern.appendArgs(form);
+      newPattern.append(F.$ps(null, true));
+      return wholeOrParts(form, new PatternMatcher(newPattern));
     }
     return new PatternMatcher(pattern);
+  }
+
+  /**
+   * The test for <code>form</code> itself, or with <code>partsMatcher</code> for an expression with
+   * the head of <code>form</code> and more arguments.
+   */
+  private static Predicate<IExpr> wholeOrParts(IAST form, IPatternMatcher partsMatcher) {
+    final IPatternMatcher matcher = new PatternMatcher(form);
+    final IExpr head = form.head();
+    final int argSize = form.argSize();
+    return x -> matcher.test(x)
+        || (x.isAST() && x.head().equals(head) && x.argSize() > argSize && partsMatcher.test(x));
   }
 
   /**

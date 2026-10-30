@@ -61,10 +61,7 @@ public class JASQuotient {
     this.parameterJAS = new JASConvert<BigRational>(parameters, BigRational.ZERO);
     this.coefficientRing =
         new QuotientRing<BigRational>(parameterJAS.getPolynomialRingFactory());
-    String[] variableNames = new String[variables.argSize()];
-    for (int i = 1; i <= variables.argSize(); i++) {
-      variableNames[i - 1] = variables.get(i).toString();
-    }
+    String[] variableNames = JASConvert.variableNames(variables);
     this.polyRing = termOrder == null
         ? new GenPolynomialRing<Quotient<BigRational>>(coefficientRing, variableNames.length,
             variableNames)

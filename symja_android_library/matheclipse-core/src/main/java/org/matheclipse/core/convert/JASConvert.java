@@ -385,6 +385,9 @@ public class JASConvert<C extends RingElem<C>> {
 
   private final IAST fVariables;
 
+  /** The names of the {@link #fVariables} in the ring, at the index of the variable minus 1. */
+  private final String[] fVariableNames;
+
   public JASConvert(IAST varList, RingFactory<C> ringFactory) {
     this(varList, ringFactory, TermOrderByName.INVLEX);
   }
@@ -393,6 +396,7 @@ public class JASConvert<C extends RingElem<C>> {
     this.fRingFactory = ringFactory;
     this.fVariables = varList;
     String[] vars = variableNames(varList);
+    this.fVariableNames = vars;
     this.fTermOrder = termOrder;
     this.fPolyFactory =
         new GenPolynomialRing<C>(fRingFactory, fVariables.argSize(), fTermOrder, vars);
@@ -405,11 +409,32 @@ public class JASConvert<C extends RingElem<C>> {
    *
    * @param varList the list of variables
    * @return the string forms of the variables in the order of <code>varList</code>
+   * @see #variableNames(List)
    */
-  static String[] variableNames(IAST varList) {
-    String[] vars = new String[varList.argSize()];
-    for (int i = 0; i < varList.argSize(); i++) {
-      vars[i] = varList.get(i + 1).toString();
+  public static String[] variableNames(IAST varList) {
+    return variableNames(varList.asArgsList());
+  }
+
+  /**
+   * The names of the variables of a polynomial ring: their string forms, and different names for
+   * different variables. The ring knows its variables by name only, and two different symbols can
+   * have the same string form, a dummy symbol <code>x</code> beside the <code>x</code> of the
+   * user. With one name they would be one variable, and <code>1/x+1/x</code> of the two would be
+   * <code>2/x</code>.
+   *
+   * @param varList the list of variables
+   * @return the names in the order of <code>varList</code>
+   */
+  public static String[] variableNames(List<? extends IExpr> varList) {
+    String[] vars = new String[varList.size()];
+    java.util.Set<String> names = new java.util.HashSet<String>();
+    for (int i = 0; i < vars.length; i++) {
+      String name = varList.get(i).toString();
+      String unique = name;
+      for (int n = 1; !names.add(unique); n++) {
+        unique = name + "$" + n;
+      }
+      vars[i] = unique;
     }
     return vars;
   }
@@ -558,9 +583,7 @@ public class JASConvert<C extends RingElem<C>> {
           try {
             int indexOf = fVariables.indexOf(base);
             if (indexOf >= 1) {
-              // the ring's variables are named by toString(), see the constructor
-              GenPolynomial<C> v =
-                  fPolyFactory.univariate(fVariables.get(indexOf).toString(), 1L);
+              GenPolynomial<C> v = fPolyFactory.univariate(fVariableNames[indexOf - 1], 1L);
               return v.power(exponent);
             }
           } catch (IllegalArgumentException iae) {
@@ -597,7 +620,7 @@ public class JASConvert<C extends RingElem<C>> {
         }
         int indexOf = fVariables.indexOf(symbol);
         if (indexOf >= 1) {
-          return fPolyFactory.univariate(fVariables.get(indexOf).toString(), 1L);
+          return fPolyFactory.univariate(fVariableNames[indexOf - 1], 1L);
         }
       } catch (IllegalArgumentException iae) {
         // java.lang.IllegalArgumentException: variable 'XXX' not defined in polynomial ring

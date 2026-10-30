@@ -66,6 +66,7 @@ import org.matheclipse.core.polynomials.AlgebraicCoefficientGCD;
 import org.matheclipse.core.polynomials.NumberFieldFactor;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
+import org.matheclipse.core.polynomials.UnivariateModularGCD;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
@@ -75,6 +76,7 @@ import org.matheclipse.core.visit.VisitorExpr;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Modular;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.PolyUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
@@ -181,7 +183,9 @@ public class Algebra {
         for (IExpr arg : ast) {
           if (arg.isRuleAST() && (arg.first() == S.Modulus || arg.first() == S.Trig)) {
             if (!arg.second().isZero() && arg.second() != S.False) {
-              return F.NIL;
+              return arg.first() == S.Modulus && ast.arg1().isRational()
+                  ? residue((IRational) ast.arg1(), arg.second(), S.Apart, engine)
+                  : F.NIL;
             }
           } else {
             withoutOptions.append(arg);
@@ -546,6 +550,9 @@ public class Algebra {
           return F.NIL;
         }
         if (!modulus.isZero()) {
+          if (arg1.isRational()) {
+            return residue((IRational) arg1, modulus, S.Cancel, engine);
+          }
           // the quotients by the GCD over GF(p), multiplied out: (x^5-x)/(x^2-x) is 1+x+x^2+x^3
           IExpr together = togetherModulus(S.Cancel, arg1, modulus, engine);
           if (together.isPresent()) {
@@ -553,7 +560,8 @@ public class Algebra {
                 .evaluate(F.PolynomialMod(F.Expand(F.Numerator(together)), modulus));
             IExpr denominator = engine
                 .evaluate(F.PolynomialMod(F.Expand(F.Denominator(together)), modulus));
-            return engine.evaluate(F.Divide(numerator, denominator));
+            return engine.evaluate(
+                F.Divide(numerator, modulusBasis(arg1, denominator, modulus, engine)));
           }
           return together;
         }
@@ -3428,7 +3436,70 @@ public class Algebra {
     }));
   }
 
-  /** Test if <code>expr</code> is free of the variables of the polynomial arguments of ast. */
+  /**
+   * The call of <code>ast</code> for arguments which are polynomials in other expressions than
+   * symbols: <code>E^(2*x)-1</code> and <code>E^x-1</code> are polynomials in <code>E^x</code>, and
+   * their GCD is <code>-1+E^x</code>.
+   *
+   * @return {@link F#NIL} if the arguments are polynomials in symbols, or no generators are found
+   */
+  private static IExpr overGenerators(IAST ast, int argSize, EvalEngine engine) {
+    IAST arguments = ast.copyUntil(argSize + 1).setAtCopy(0, S.List);
+    IAST symbols = new VariablesSet(arguments).getVarList();
+    if (arguments.forAll(x -> x.isPolynomial(symbols))
+        || !arguments.isFree(
+            x -> x.isInexactNumber() || (x.isAST() && !x.head().isBuiltInSymbol()), false)) {
+      return F.NIL;
+    }
+    try {
+      // trigonometric functions are generators of their own: Cos(x)^2 stays a power of Cos(x), the
+      // common factor of Sin(x)^2-Cos(x)^2 and Sin(x)-Cos(x) is lost in 1-2*Sin(x)^2
+      java.util.Map<IExpr, IExpr> functions = new java.util.HashMap<IExpr, IExpr>();
+      IExpr withoutFunctions = arguments.replaceAll(x -> {
+        if (x.isTrigFunction()) {
+          return functions.computeIfAbsent(x, key -> F.Dummy());
+        }
+        return F.NIL;
+      }).orElse(arguments);
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
+      IAST forward = substitutions.replaceForwardList((IAST) withoutFunctions);
+      if (forward.isNIL() || (substitutions.size() == 0 && functions.isEmpty())) {
+        return F.NIL;
+      }
+      IAST generators = new VariablesSet(forward).getVarList();
+      if (!forward.forAll(x -> x.isPolynomial(generators))) {
+        return F.NIL;
+      }
+      IASTMutable call = ast.copy();
+      for (int i = 1; i <= argSize; i++) {
+        call.set(i, forward.get(i));
+      }
+      IExpr result = engine.evaluate(call);
+      if (result.isAST(ast.head())) {
+        return F.NIL;
+      }
+      IExpr backward = substitutions.replaceBackward(result);
+      for (java.util.Map.Entry<IExpr, IExpr> entry : functions.entrySet()) {
+        backward = F.subst(backward, entry.getValue(), entry.getKey());
+      }
+      backward = engine.evaluate(backward);
+      if (backward.isPlus() && ast.isAST(S.PolynomialGCD) && !functions.isEmpty()) {
+        // the leading term in the order of the functions is positive: Cos(x)-Sin(x)
+        IASTAppendable order = F.ListAlloc(functions.size());
+        functions.keySet().forEach(order::append);
+        order.sortInplace(org.matheclipse.core.generic.Comparators.CANONICAL_COMPARATOR);
+        if (AlgebraUtil.hasNegativeLeadingTerm((IAST) backward, order, engine)) {
+          return engine.evaluate(F.Negate(backward));
+        }
+      }
+      return backward;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /** Test if <code>expr</code> is free of the variables ofthe polynomial arguments of ast. */
   private static boolean isConstantIn(IExpr expr, IAST ast, int argSize) {
     VariablesSet eVar = new VariablesSet();
     for (int i = 1; i <= argSize; i++) {
@@ -3534,7 +3605,8 @@ public class Algebra {
             GenPolynomial<BigRational> poly = polyList.get(0);
             for (int i = 1; i < polyList.size(); i++) {
               GenPolynomial<BigRational> temp = polyList.get(i);
-              poly = factory.gcd(poly, temp);
+              GenPolynomial<BigRational> gcd = univariateGCD(jas, poly, temp, engine);
+              poly = gcd != null ? gcd : factory.gcd(poly, temp);
             }
             polyExpr = jas.rationalPoly2Expr(poly, false);
             if (exprList.argSize() == 0) {
@@ -3554,6 +3626,36 @@ public class Algebra {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The GCD of two polynomials in one variable with rational coefficients: the GCD of the
+     * contents times the GCD of the primitive parts over the integers.
+     *
+     * @return <code>null</code> if they are no such polynomials
+     */
+    @SuppressWarnings("unchecked")
+    private static GenPolynomial<BigRational> univariateGCD(JASConvert<BigRational> jas,
+        GenPolynomial<BigRational> p, GenPolynomial<BigRational> q, EvalEngine engine) {
+      if (p.ring.nvar != 1 || p.isZERO() || q.isZERO()) {
+        return null;
+      }
+      Object[] terms1 = jas.factorTerms(p);
+      Object[] terms2 = jas.factorTerms(q);
+      GenPolynomial<edu.jas.arith.BigInteger> gcd = UnivariateModularGCD.gcd(
+          (GenPolynomial<edu.jas.arith.BigInteger>) terms1[2],
+          (GenPolynomial<edu.jas.arith.BigInteger>) terms2[2], engine);
+      if (gcd == null) {
+        return null;
+      }
+      java.math.BigInteger numerator =
+          ((java.math.BigInteger) terms1[0]).gcd((java.math.BigInteger) terms2[0]);
+      java.math.BigInteger lcm1 = (java.math.BigInteger) terms1[1];
+      java.math.BigInteger lcm2 = (java.math.BigInteger) terms2[1];
+      java.math.BigInteger denominator = lcm1.multiply(lcm2.divide(lcm1.gcd(lcm2)));
+      return PolyUtil.<BigRational>fromIntegerCoefficients(p.ring, gcd)
+          .multiply(new BigRational(new edu.jas.arith.BigInteger(numerator),
+              new edu.jas.arith.BigInteger(denominator)));
     }
 
     private static IExpr polynomialGCDExpr(final IAST ast, VariablesSet eVar, EvalEngine engine) {
@@ -3689,6 +3791,10 @@ public class Algebra {
             generatorGCD = result;
           }
         }
+        result = overGenerators(ast, argSize, engine);
+        if (result.isPresent()) {
+          return result;
+        }
       }
       if (checkPolyStruct(ast, engine)) {
         if (argSize == 1) {
@@ -3807,13 +3913,6 @@ public class Algebra {
      */
     private static <C extends GcdRingElem<C> & Modular> IExpr polynomialGCDModulus(
         JASModular<C> jas, final IAST ast, int argSize) throws JASConversionException {
-      for (int i = 2; i <= argSize; i++) {
-        VariablesSet eVar = new VariablesSet(ast.get(i));
-        if (!eVar.isSize(1)) {
-          // gcd only possible for univariate polynomials
-          return F.NIL;
-        }
-      }
       boolean univariate = jas.getPolynomialRingFactory().nvar == 1;
       java.util.List<IExpr> args = new ArrayList<IExpr>(argSize);
       for (int i = 1; i <= argSize; i++) {
@@ -3829,7 +3928,8 @@ public class Algebra {
           poly = factory.gcd(poly, jas.expr2JAS(arg, univariate ? poly : null));
         }
       }
-      return AlgebraUtil.factorModulus(jas, poly, false);
+      // monic and multiplied out, with the residues as coefficients
+      return jas.poly2Expr(poly.isZERO() ? poly : poly.monic());
     }
 
     @Override
@@ -3952,13 +4052,16 @@ public class Algebra {
             GenPolynomial<edu.jas.arith.BigInteger> poly = polyList.get(0);
             for (int i = 1; i < polyList.size(); i++) {
               GenPolynomial<edu.jas.arith.BigInteger> temp = polyList.get(i);
-              if (!evaled) {
+              gcd = UnivariateModularGCD.gcd(poly, temp, engine);
+              if (gcd == null) {
                 gcd = factory.gcd(poly, temp);
-                if (!gcd.isONE()) {
-                  evaled = true;
-                }
+                poly = factory.lcm(poly, temp);
+              } else {
+                poly = UnivariateModularGCD.lcm(poly, temp, gcd, engine);
               }
-              poly = factory.lcm(poly, temp);
+              if (!gcd.isONE()) {
+                evaled = true;
+              }
             }
             polyExpr = jas.integerPoly2Expr(poly);
           }
@@ -4033,6 +4136,29 @@ public class Algebra {
       } catch (ClassCastException | JASConversionException e) {
         return F.NIL;
       }
+    }
+
+    /**
+     * The LCM of more than two arguments whose later arguments have no common factor with the LCM
+     * of the ones before: the factors stay as they are, <code>PolynomialLCM(x^2-1, x-1, x+2)</code>
+     * is <code>(-1+x)*(1+x)*(2+x)</code>.
+     *
+     * @return {@link F#NIL} if there aren't that many arguments, or a later one has a common factor
+     */
+    private static IExpr productOfCoprimeLCMs(IAST ast, int argSize, EvalEngine engine) {
+      if (argSize < 3) {
+        return F.NIL;
+      }
+      IExpr product = engine.evaluate(F.binaryAST2(S.PolynomialLCM, ast.arg1(), ast.arg2()));
+      for (int i = 3; i <= argSize; i++) {
+        if (product.isAST(S.PolynomialLCM)
+            || !engine.evaluate(F.PolynomialGCD(engine.evaluate(F.Expand(product)), ast.get(i)))
+                .isOne()) {
+          return F.NIL;
+        }
+        product = engine.evaluate(F.Times(product, ast.get(i)));
+      }
+      return product;
     }
 
     private static IExpr polynomialLCMExpr(final IAST ast, int argSize, VariablesSet eVar,
@@ -4244,6 +4370,22 @@ public class Algebra {
           }
         }
 
+        if (options[MODULUS_OPTION].isZero()) {
+          IExpr coprimeProduct = productOfCoprimeLCMs(ast, argSize, engine);
+          if (coprimeProduct.isPresent()) {
+            return coprimeProduct;
+          }
+          // only a factor which the arguments share in their generators changes the result
+          IExpr common =
+              overGenerators(ast.copyUntil(argSize + 1).setAtCopy(0, S.PolynomialGCD), argSize,
+                  engine);
+          if (common.isPresent() && !common.isNumber()) {
+            IExpr generators = overGenerators(ast, argSize, engine);
+            if (generators.isPresent()) {
+              return generators;
+            }
+          }
+        }
         VariablesSet eVar = new VariablesSet();
         eVar.addVarList(ast, 1);
 
@@ -5705,6 +5847,9 @@ public class Algebra {
           return F.NIL;
         }
         if (!modulus.isZero()) {
+          if (arg1.isRational()) {
+            return residue((IRational) arg1, modulus, S.Together, engine);
+          }
           return togetherModulus(S.Together, arg1, modulus, engine);
         }
       }
@@ -5957,6 +6102,61 @@ public class Algebra {
     // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or
     // a list of rules.
     return Errors.printMessage(ast.topHead(), "nonopt", F.List(arg2, F.C1, ast), engine);
+  }
+
+  /**
+   * The denominator of a cancelled fraction over <code>GF(p)</code>, when one polynomial was
+   * written as denominator and a factor of it cancelled: the factors which the cancelled GCD
+   * separates, without multiple factors in them, and no complete factorization.
+   * <code>(x+3)/(x^3+7*x^2+15*x+9)</code> modulo 11 has <code>(1+x)*(3+x)</code>.
+   *
+   * @param fraction the fraction as it was written
+   * @param denominator the denominator after the cancellation
+   */
+  private static IExpr modulusBasis(IExpr fraction, IExpr denominator, IExpr modulus,
+      EvalEngine engine) {
+    IExpr written = engine.evaluate(F.Denominator(fraction));
+    IAST variables = new VariablesSet(written).getVarList();
+    if (!written.isPlus() || !denominator.isPlus() || variables.argSize() != 1) {
+      return denominator;
+    }
+    IExpr option = F.Rule(S.Modulus, modulus);
+    IExpr full = engine.evaluate(F.PolynomialMod(F.Expand(written), modulus));
+    IExpr x = variables.arg1();
+    IExpr cancelled = engine.evaluate(F.ternaryAST3(S.PolynomialGCD, full,
+        engine.evaluate(F.PolynomialMod(F.Expand(F.Numerator(fraction)), modulus)), option));
+    if (cancelled.isNumber()) {
+      return denominator;
+    }
+    IExpr common = engine.evaluate(F.ternaryAST3(S.PolynomialGCD, denominator, cancelled, option));
+    IExpr rest = denominator;
+    if (!common.isNumber()) {
+      rest = engine.evaluate(F.quaternary(S.PolynomialQuotient, denominator, common, x, option));
+    }
+    IExpr factors = engine.evaluate(F.binaryAST2(S.FactorSquareFree, rest, option));
+    return common.isNumber() ? factors : engine.evaluate(F.Times(common, factors));
+  }
+
+  /**
+   * A rational number as an element of <code>GF(p)</code>: <code>1/3</code> is <code>5</code>
+   * modulo 7. A number whose denominator is a multiple of <code>p</code> has no residue and stays
+   * as it is.
+   *
+   * @return {@link F#NIL} if the modulus is no prime number
+   */
+  private static IExpr residue(IRational number, IExpr modulus, IBuiltInSymbol head,
+      EvalEngine engine) {
+    if (JASModular.isModpMessage(head, modulus)) {
+      return F.NIL;
+    }
+    java.math.BigInteger p = ((IInteger) modulus).toBigNumerator();
+    java.math.BigInteger denominator = number.toBigDenominator();
+    if (denominator.mod(p).signum() == 0) {
+      // `1` is not valid modulo `2`.
+      Errors.printMessage(S.PolynomialMod, "nmod", F.List(number, modulus), engine);
+      return number;
+    }
+    return F.ZZ(number.toBigNumerator().multiply(denominator.modInverse(p)).mod(p));
   }
 
   /**

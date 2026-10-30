@@ -80,6 +80,8 @@ public final class FunctionDefinitions {
       S.CountsBy.setEvaluator(new org.matheclipse.core.reflection.system.CountsBy());
       S.CrossMatrix.setEvaluator(new org.matheclipse.core.reflection.system.CrossMatrix());
 
+      S.CylindricalDecomposition
+          .setEvaluator(new org.matheclipse.core.reflection.system.CylindricalDecomposition());
       S.D.setEvaluator(new org.matheclipse.core.reflection.system.D());
       S.Dt.setEvaluator(new org.matheclipse.core.reflection.system.Dt());
       S.DeBruijnSequence

@@ -18107,7 +18107,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialMod((x+3)^49, x^2+1, Modulus->7)", //
         "3+x");
     check("PolynomialGCD((x^2+1)^500, (x+2)^3*(x+4), Modulus->5)", //
-        "(2+x)^3");
+        "3+2*x+x^2+x^3");
     check("PolynomialGCD((x+1)^(10^4), x^3+1, Modulus->2)", //
         "1+x");
   }
@@ -19132,6 +19132,129 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("FreeQ(f(x), f(x), Infinity)", //
         "True");
+  }
+
+  @Test
+  public void testFreeQFlatRuns() {
+    // only consecutive arguments of a Flat expression are its parts
+    check("SetAttributes(fl, Flat); {FreeQ(fl(p,q,r,s), fl(q,r)), FreeQ(fl(p,q,r,s), fl(p,r)), "
+        + "FreeQ(k(fl(p,q,r)), fl(p,q), {1}), FreeQ(p**q**r, q**r), FreeQ(p**q**r, r**q)}", //
+        "{False,True,False,False,True}");
+    check("{FreeQ(p&&q&&r, q&&r), FreeQ(p&&q&&r, p&&r), FreeQ(p||q||r, p||q), "
+        + "FreeQ(u.v.w, u.v), FreeQ(u.v.w, u.w)}", //
+        "{False,True,False,False,True}");
+    // no parts without Flat
+    check("{FreeQ(h(p,q,r), h(p,q)), FreeQ({p,q,r}, {q,r})}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testMatchQComputedPattern() {
+    // a pattern which a function computes is evaluated, also with hold attributes
+    check("{MatchQ({1,2,3}, Table(_,3)), MatchQ(h(1,2,3,4), h @@ Table(_Integer,4)), "
+        + "MatchQ({1,2}, Join({_},{_})), MatchQ({1,2,3}, Table(_,2))}", //
+        "{True,True,True,False}");
+    check("{Cases({{1,2},{3}}, Table(_,2)), Count({{1,2},{3}}, Table(_,1)), "
+        + "FreeQ(k(h @@ Range(30)), h @@ Table(_,30)), MatchQ(h @@ Range(300), h @@ Table(_,300))}", //
+        "{{{1,2}},1,False,True}");
+    // a definition keeps its left-hand side as it is written
+    check("ff(Table(_,3)) := 7; {ff({1,2,3}), ff(Table(_,3))}", //
+        "{ff({1,2,3}),ff({_,_,_})}");
+  }
+
+  @Test
+  public void testPolynomialGCDOverGenerators() {
+    check("{PolynomialGCD(E^(4*t)-1, E^(2*t)-1), PolynomialGCD(Log(t)^2-4, Log(t)-2), "
+        + "PolynomialGCD(Cos(t)^3-1, Cos(t)-1), PolynomialGCD(3^(2*t)-1, 3^t+1)}", //
+        "{-1+E^(2*t),-2+Log(t),-1+Cos(t),1+3^t}");
+    // Sin(t) and Cos(t) are two generators: no identity between them is applied
+    check("PolynomialGCD(Sin(t)^2-Cos(t)^2, Sin(t)-Cos(t))", //
+        "Cos(t)-Sin(t)");
+    check("{PolynomialLCM(E^(2*t)-1, E^t+1), PolynomialLCM(Log(t)+1, Log(t)+2)}", //
+        "{(-1+E^t)*(1+E^t),(1+Log(t))*(2+Log(t))}");
+    // no generators in an unknown function or with inexact numbers
+    check("{PolynomialGCD(g(t), t), PolynomialGCD(g(1.5*t), t)}", //
+        "{1,PolynomialGCD(g(1.5*t),t)}");
+  }
+
+  @Test
+  public void testPolynomialGCDModulusMultivariate() {
+    check("{PolynomialGCD(u^2+2*u*v+v^2, 5*u+5*v, Modulus->11), "
+        + "PolynomialGCD((u+2*v)^4*(w+1), (u+2*v)^2*(w-1), Modulus->13), "
+        + "PolynomialGCD(u*v+1, u+3, Modulus->7)}", //
+        "{u+v,u^2+4*u*v+4*v^2,1}");
+  }
+
+  @Test
+  public void testCancelModulusDenominator() {
+    // the denominator as one polynomial: split by the cancelled factor, without multiple factors,
+    // and not factored otherwise
+    check("Cancel((t+4)/(t^3+6*t^2+9*t+4), Modulus->7)", //
+        "1/(1+t)^2");
+    check("Cancel((t+5)/(t^3+11*t^2+35*t+25), Modulus->13)", //
+        "1/((1+t)*(5+t))");
+    check("Cancel((t^4-1)/(t^6-1), Modulus->7)", //
+        "(1+t^2)/(1+t^2+t^4)");
+    // the denominator as a product keeps its factors
+    check("Cancel((t+4)/((t+4)*(t^2+2*t+1)), Modulus->7)", //
+        "1/(1+2*t+t^2)");
+  }
+
+  @Test
+  public void testPolynomialGCDModulusForm() {
+    // monic and multiplied out, in one variable as in several
+    check("PolynomialGCD((t+1)*(t+3)*(t+4), (t+1)*(t+3)*(t+6), Modulus->11)", //
+        "3+4*t+t^2");
+    check("PolynomialGCD(3*t^2+3, 5*t^2+5, Modulus->11)", //
+        "1+t^2");
+  }
+
+  @Test
+  public void testPolynomialLCMKeepsCoprimeFactors() {
+    check("PolynomialLCM(t^2-4, t-2, t+5)", //
+        "(-2+t)*(2+t)*(5+t)");
+    check("PolynomialLCM(E^(3*t)-1, E^t-1)", //
+        "(-1+E^t)*(1+E^t+E^(2*t))");
+  }
+
+  @Test
+  public void testRootReduceHiddenZeroBase() {
+    check("RootReduce(((Sqrt(3)+Sqrt(5))^2-8-2*Sqrt(15))^(-1))", //
+        "ComplexInfinity");
+    check("RootReduce(1+((Sqrt(7)+1)^2-8-2*Sqrt(7))^(-2))", //
+        "ComplexInfinity");
+    // a base which isn't 0 stays a number
+    check("RootReduce(1/(Sqrt(2)+1))", //
+        "-1+Sqrt(2)");
+  }
+
+  @Test
+  public void testRationalNumbersModulus() {
+    check("{Together(12, Modulus->5), Cancel(1/2, Modulus->5), Together(1/5, Modulus->5), "
+        + "Cancel(-3/4, Modulus->11), Apart(8, t, Modulus->3)}", //
+        "{2,3,1/5,2,2}");
+    // no residue for a modulus which is no prime
+    check("Together(1/3, Modulus->6)", //
+        "Together(1/3,Modulus->6)");
+  }
+
+  @Test
+  public void testPossibleZeroQDeepCancellation() {
+    // a difference of nearly equal terms inside: at large t the machine value of the first term
+    // is noise, and more digits show the zero. A nonzero function of the same shape stays nonzero
+    check("Table(PossibleZeroQ(1/(t^2+Sqrt(1+t^4))-(Sqrt(1+t^4)-t^2)), {4})//Union", //
+        "{True}");
+    check("Table(PossibleZeroQ(1/(t^2+Sqrt(1+t^4))-(Sqrt(1+t^4)-t^2)+1/10^8), {4})//Union", //
+        "{False}");
+  }
+
+  @Test
+  public void testPossibleZeroQRealCut() {
+    // holds off the real axis, but not on the cut t<-2
+    check("Table(PossibleZeroQ(Sqrt((2-t)/(2+t))*(2+t)-Sqrt(4-t^2)), {12})//Union", //
+        "{False}");
+    check("{PossibleZeroQ(Sqrt(1-t)*Sqrt(1+t)-Sqrt(1-t^2)), PossibleZeroQ(Sqrt(t^2)-t)}", //
+        "{True,False}");
   }
 
   @Test
@@ -28764,7 +28887,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
 
     check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", //
-        "(1+x)^2");
+        "1+x^2");
 
     // TODO https://github.com/kredel/java-algebra-system/issues/15
     check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //

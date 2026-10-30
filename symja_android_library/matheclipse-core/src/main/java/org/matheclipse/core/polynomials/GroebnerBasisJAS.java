@@ -22,13 +22,14 @@ import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Modular;
 import edu.jas.gb.EGroebnerBaseSeq;
-import edu.jas.gb.GroebnerBaseSeq;
+import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.OptimizedPolynomialList;
 import edu.jas.poly.OrderedPolynomialList;
 import edu.jas.poly.TermOrder;
+import edu.jas.poly.TermOrderByName;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.ufd.Quotient;
 
@@ -58,6 +59,14 @@ public class GroebnerBasisJAS {
       IAST quotientBasis = quotientBasis(listOfPolynomials, listOfVariables, parameters, termOrder);
       if (quotientBasis.isPresent()) {
         return quotientBasis;
+      }
+    } else if (listOfVariables.argSize() > 1
+        && termOrder.getEvord() == TermOrderByName.Lexicographic.getEvord()) {
+      // a zero-dimensional ideal gets its lexicographic basis from the graded one
+      IAST lexicographicBasis =
+          FGLMConversion.lexicographicBasis(listOfPolynomials, listOfVariables);
+      if (lexicographicBasis.isPresent()) {
+        return lexicographicBasis;
       }
     }
     return exprPolynomialBasis(listOfPolynomials, listOfVariables, termOrder);
@@ -100,7 +109,8 @@ public class GroebnerBasisJAS {
         return F.NIL;
       }
 
-      GroebnerBaseSeq<Quotient<BigRational>> gb = new GroebnerBaseSeq<Quotient<BigRational>>();
+      GroebnerBaseAbstract<Quotient<BigRational>> gb =
+          TimeLimitedReduction.<Quotient<BigRational>>groebnerBase();
       List<GenPolynomial<Quotient<BigRational>>> basis = gb.GB(polyList);
       IASTAppendable resultList = F.ListAlloc(basis.size());
       for (int i = 0; i < basis.size(); i++) {
@@ -145,14 +155,8 @@ public class GroebnerBasisJAS {
    * @return <code>null</code> if an element of <code>listOfVariables</code> is not a symbol
    */
   private static String[] variableNames(IAST listOfVariables) {
-    String[] pvars = new String[listOfVariables.argSize()];
-    for (int i = 1; i < listOfVariables.size(); i++) {
-      if (!listOfVariables.get(i).isSymbol()) {
-        return null;
-      }
-      pvars[i - 1] = listOfVariables.get(i).toString();
-    }
-    return pvars;
+    return listOfVariables.forAll(x -> x.isSymbol()) ? JASConvert.variableNames(listOfVariables)
+        : null;
   }
 
   /**
@@ -198,7 +202,8 @@ public class GroebnerBasisJAS {
       return F.NIL;
     }
 
-    GroebnerBasePartial<IExpr> gbp = new GroebnerBasePartial<IExpr>();
+    GroebnerBasePartial<IExpr> gbp =
+        new GroebnerBasePartial<IExpr>(TimeLimitedReduction.<IExpr>groebnerBase(), null);
     OptimizedPolynomialList<IExpr> opl = gbp.partialGB(polyList, pvars);
     List<GenPolynomial<IExpr>> list = OrderedPolynomialList.sort(opl.list);
 
@@ -318,7 +323,8 @@ public class GroebnerBasisJAS {
 
     List<GenPolynomial<C>> list;
     try {
-      GroebnerBasePartial<C> gbp = new GroebnerBasePartial<C>();
+      GroebnerBasePartial<C> gbp =
+          new GroebnerBasePartial<C>(TimeLimitedReduction.<C>groebnerBase(), null);
       OptimizedPolynomialList<C> opl = gbp.partialGB(polyList, pvars);
       list = OrderedPolynomialList.sort(opl.list);
     } catch (RuntimeException rex) {
@@ -358,14 +364,9 @@ public class GroebnerBasisJAS {
         + eliminatedVariables.argSize());
     allVariables.appendArgs(listOfVariables);
     allVariables.appendArgs(eliminatedVariables);
-    String[] pvars = new String[listOfVariables.argSize()];
-    for (int i = 1; i <= listOfVariables.argSize(); i++) {
-      pvars[i - 1] = listOfVariables.get(i).toString();
-    }
-    String[] evars = new String[eliminatedVariables.argSize()];
-    for (int i = 1; i <= eliminatedVariables.argSize(); i++) {
-      evars[i - 1] = eliminatedVariables.get(i).toString();
-    }
+    String[] names = JASConvert.variableNames(allVariables);
+    String[] pvars = java.util.Arrays.copyOfRange(names, 0, listOfVariables.argSize());
+    String[] evars = java.util.Arrays.copyOfRange(names, listOfVariables.argSize(), names.length);
 
     JASIExpr jas =
         new JASIExpr(allVariables.asArgsList(), ExprRingFactory.CONST_FIELD, termOrder, false);
@@ -387,7 +388,8 @@ public class GroebnerBasisJAS {
       }
     }
 
-    GroebnerBasePartial<IExpr> gbp = new GroebnerBasePartial<IExpr>();
+    GroebnerBasePartial<IExpr> gbp =
+        new GroebnerBasePartial<IExpr>(TimeLimitedReduction.<IExpr>groebnerBase(), null);
     OptimizedPolynomialList<IExpr> opl = gbp.elimPartialGB(polyList, evars, pvars);
     List<GenPolynomial<IExpr>> list = OrderedPolynomialList.sort(opl.list);
     IASTAppendable resultList = F.ListAlloc(list.size());

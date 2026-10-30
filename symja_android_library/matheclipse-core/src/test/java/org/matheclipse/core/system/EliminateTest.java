@@ -10,6 +10,21 @@ import org.junit.jupiter.api.Tag;
 public class EliminateTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testEliminatePolynomialIdeal() {
+    // a value of the variable would be one branch of a root
+    check("Eliminate({p == r^2, s == r^3}, r)", //
+        "p^3-s^2==0");
+    check("Eliminate({p == r^2+1, s == r^3-r}, r)", //
+        "8*p-5*p^2+p^3-s^2==4");
+    // several steps keep how often a factor of the eliminant occurs
+    check("Eliminate({a^2+b+c == 1, a+b^2+c == 1, a+b+c^2 == 1}, {b, c})", //
+        "-a^2+4*a^3-4*a^4+a^6==0");
+    // more than one equation: the graded basis of the ideal
+    check("Eliminate({r^2 == p, r^3 == s, r^5 == t}, r)", //
+        "p*s-t==0&&s^3-p^2*t==0&&p^3-s^2==0");
+  }
+
+  @Test
   public void testEliminate() {
     check("Eliminate({f == x^5 + y^5, a == x + y, b == x*y}, {x, y})", //
         "a^5-5*a^3*b+5*a*b^2-f==0");
@@ -34,8 +49,9 @@ public class EliminateTest extends ExprEvaluatorTestCase {
     check("Eliminate({2*x + 3*y + 4*z == 1, 9*x + 8*y + 7*z == 2}, z)", //
         "11/2*x+11/4*y==1/4");
 
+    // no root of z: y has two values
     check("Eliminate({x == 2 + y^3, y^2 == z}, y)", //
-        "x-z^(3/2)==2");
+        "-4*x+x^2-z^3==-4");
 
     // use evaluation step: Cos(ArcSin(y)) => Sqrt(1-y^2)
     check("Eliminate({Sin(x)==y, Cos(x) == z}, x)", //

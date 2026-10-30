@@ -2508,8 +2508,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testDSolveUnknownNamedLikeADummy() {
+    // the names of the unknown and its variable change nothing
     check("DSolve(p''(Y) + p'(Y)^2/p(Y) - p'(Y)/Y == 0, p(Y), Y)", //
-        "{{p(Y)->-Sqrt(Y^2*C(1)-C(2))},{p(Y)->Sqrt(Y^2*C(1)-C(2))}}");
+        "{{p(Y)->E^C(1)*Sqrt(Y^2+C(2))}}");
     check("DSolve(q''(t) + q'(t)^2/q(t) - q'(t)/t == 0, q(t), t)", //
         "{{q(t)->E^C(1)*Sqrt(t^2+C(2))}}");
   }

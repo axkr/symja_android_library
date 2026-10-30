@@ -48,6 +48,9 @@ public class JASIExpr {
   /** The variables used in the polynomials. */
   private final List<? extends IExpr> fVariables;
 
+  /** The names of the {@link #fVariables} in the ring, at the index of the variable. */
+  private final String[] fVariableNames;
+
   /**
    * "numeric function" flag to allow numeric functions on input in method <code>
    * expr2IExprJAS(IExpr)</code>
@@ -74,10 +77,8 @@ public class JASIExpr {
     varList.add(variable);
     this.fRingFactory = ringFactory;
     this.fVariables = varList;
-    String[] vars = new String[fVariables.size()];
-    for (int i = 0; i < fVariables.size(); i++) {
-      vars[i] = fVariables.get(i).toString();
-    }
+    String[] vars = JASConvert.variableNames(fVariables);
+    this.fVariableNames = vars;
     this.fTermOrder = TermOrderByName.INVLEX;
     this.fPolyFactory =
         new GenPolynomialRing<IExpr>(fRingFactory, fVariables.size(), fTermOrder, vars);
@@ -114,11 +115,8 @@ public class JASIExpr {
     this.fNumericFunction = numericFunction;
     this.fRingFactory = ringFactory;
     this.fVariables = variablesList;
-    final int size = fVariables.size();
-    String[] vars = new String[size];
-    for (int i = 0; i < size; i++) {
-      vars[i] = fVariables.get(i).toString();
-    }
+    String[] vars = JASConvert.variableNames(fVariables);
+    this.fVariableNames = vars;
     this.fTermOrder = termOrder;
     this.fPolyFactory =
         new GenPolynomialRing<IExpr>(fRingFactory, fVariables.size(), fTermOrder, vars);
@@ -160,6 +158,12 @@ public class JASIExpr {
     return result;
   }
 
+  /** The name of a variable in the ring; a string which is no variable for anything else. */
+  private String ringName(IExpr variable) {
+    int index = fVariables.indexOf(variable);
+    return index >= 0 ? fVariableNames[index] : "";
+  }
+
   private GenPolynomial<IExpr> expr2IExprPoly(final IExpr exprPoly)
       throws ArithmeticException, ClassCastException {
     if (exprPoly instanceof IAST) {
@@ -170,7 +174,7 @@ public class JASIExpr {
         final IExpr base = ast.base();
         if (base instanceof ISymbol) {
           ExpVector leer = fPolyFactory.evzero;
-          int ix = leer.indexVar(base.toString(), fPolyFactory.getVars());
+          int ix = leer.indexVar(ringName(base), fPolyFactory.getVars());
           if (ix >= 0) {
             int exponent = ast.exponent().toIntDefault();
             if (exponent < 0) {
@@ -188,7 +192,7 @@ public class JASIExpr {
       }
     } else if (exprPoly instanceof ISymbol) {
       ExpVector leer = fPolyFactory.evzero;
-      int ix = leer.indexVar(exprPoly.toString(), fPolyFactory.getVars());
+      int ix = leer.indexVar(ringName(exprPoly), fPolyFactory.getVars());
       if (ix >= 0) {
         ExpVector e = ExpVector.create(fVariables.size(), ix, 1L);
         return fPolyFactory.getONE().multiply(e);

@@ -44,6 +44,7 @@ import org.matheclipse.core.polynomials.AlgebraicCoefficientGCD;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
+import org.matheclipse.core.polynomials.UnivariateModularGCD;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -855,7 +856,7 @@ public class AlgebraUtil {
    * their greatest common divisor instead of being factored: factoring a dense polynomial of degree
    * 400 did not end in two minutes, its modular GCD takes milliseconds.
    */
-  private static final int CANCEL_FACTOR_DEGREE = 32;
+  public static final int CANCEL_FACTOR_DEGREE = 32;
 
   /** Numerator and denominator over the integers, see {@link #rationalQuotients(IExpr, IExpr)}. */
   private static final class RationalQuotients {
@@ -953,7 +954,10 @@ public class AlgebraUtil {
       IRational content =
           F.fraction(gcd1, lcm1).divideBy(F.fraction(gcd2, lcm2)).normalize();
       boolean large = p1.degree() >= CANCEL_FACTOR_DEGREE || p2.degree() >= CANCEL_FACTOR_DEGREE;
-      GenPolynomial<BigInteger> gcd = GCDFactory.getImplementation(BigInteger.ONE).gcd(q1, q2);
+      GenPolynomial<BigInteger> gcd = UnivariateModularGCD.gcd(q1, q2, EvalEngine.get());
+      if (gcd == null) {
+        gcd = GCDFactory.getImplementation(BigInteger.ONE).gcd(q1, q2);
+      }
       if (gcd.isConstant()) {
         if (lcm1.equals(java.math.BigInteger.ONE) && lcm2.equals(java.math.BigInteger.ONE)
             && gcd1.gcd(gcd2).equals(java.math.BigInteger.ONE)) {

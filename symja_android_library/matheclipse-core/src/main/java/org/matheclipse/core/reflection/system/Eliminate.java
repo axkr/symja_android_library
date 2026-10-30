@@ -37,10 +37,12 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
+import org.matheclipse.core.polynomials.GroebnerBasisJAS;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.reflection.system.rulesets.EliminateRules;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import com.google.common.base.Suppliers;
+import edu.jas.poly.TermOrderByName;
 
 /**
  *
@@ -2001,6 +2003,130 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
     return false;
   }
 
+  /** Whether two equations differ by a number only. */
+  private static boolean isMultipleOf(IExpr equation, IExpr other, EvalEngine engine) {
+    if (!equation.isEqual()) {
+      return false;
+    }
+    IExpr quotient = engine.evaluate(F.Cancel(F.Together(F.Divide(
+        F.Subtract(equation.first(), equation.second()), F.Subtract(other.first(), other.second())))));
+    return quotient.isNumber();
+  }
+
+  /** Whether every equation is of degree 1 at most in the variables. */
+  private static boolean isLinear(IAST equations, IAST vars, EvalEngine engine) {
+    return equations.forAll(equation -> {
+      if (!equation.isEqual()) {
+        return true;
+      }
+      IExpr polynomial = F.evalExpandAll(F.Subtract(equation.first(), equation.second()), engine);
+      return vars.forAll(variable -> polynomial.isFree(variable)
+          || (polynomial.isPolynomial(variable)
+              && engine.evaluate(F.Exponent(polynomial, variable)).isOne()));
+    });
+  }
+
+  /**
+   * Whether every variable has one equation of degree 1 in it with a number as coefficient, which
+   * gives its value without a root or a division by something that may vanish.
+   */
+  private static boolean solvesForEveryVariable(IAST equations, IAST vars, EvalEngine engine) {
+    return vars.forAll(variable -> equations.isFree(variable) || equations.exists(equation -> {
+      if (!equation.isEqual()) {
+        return true;
+      }
+      IExpr polynomial = F.evalExpandAll(F.Subtract(equation.first(), equation.second()), engine);
+      if (polynomial.isFree(variable) || !polynomial.isPolynomial(variable)) {
+        return false;
+      }
+      return engine.evaluate(F.Exponent(polynomial, variable)).isOne()
+          && engine.evaluate(F.Coefficient(polynomial, variable, F.C1)).isNumber();
+    }));
+  }
+
+  /**
+   * The elimination ideal of a polynomial system with rational coefficients, as equations. A
+   * polynomial system needs no inverse functions: <code>{x==t^2, y==t^3}</code> eliminates to
+   * <code>y^2==x^3</code>, where a value <code>t==Sqrt(x)</code> would keep one branch only.
+   *
+   * @return {@link F#NIL} if the system is not of that kind
+   */
+  private static IExpr eliminateByGroebnerBasis(IAST equations, IAST vars, EvalEngine engine) {
+    IASTAppendable polynomials = F.ListAlloc(equations.size());
+    for (int i = 1; i < equations.size(); i++) {
+      IExpr equation = equations.get(i);
+      if (!equation.isEqual()) {
+        return F.NIL;
+      }
+      polynomials.append(
+          F.evalExpandAll(F.Subtract(equation.first(), equation.second()), engine));
+    }
+    IAST symbols = new VariablesSet(polynomials).getVarList();
+    for (int i = 1; i < polynomials.size(); i++) {
+      IExpr polynomial = polynomials.get(i);
+      if (!polynomial.isPolynomial(symbols) || !polynomial.isFree(
+          x -> x.isInexactNumber() || x.isComplex() || (x.isPower() && !x.exponent().isInteger())
+              || (x.isSymbol() && !symbols.contains(x)),
+          false)) {
+        return F.NIL;
+      }
+    }
+    IAST eliminated = vars.select(symbols::contains);
+    IAST kept = symbols.select(x -> !vars.contains(x));
+    if (eliminated.argSize() == 0 || kept.argSize() == 0) {
+      return F.NIL;
+    }
+    IAST basis = GroebnerBasisJAS.eliminationBasis(polynomials, kept, eliminated,
+        TermOrderByName.Lexicographic);
+    if (basis.isNIL()) {
+      return F.NIL;
+    }
+    if (basis.argSize() > 1) {
+      // more equations than one are the small graded basis of the same ideal, with its signs
+      IAST graded =
+          GroebnerBasisJAS.basis(basis, kept, TermOrderByName.DegreeReverseLexicographic);
+      if (graded.isPresent() && graded.argSize() > 1) {
+        return graded.mapThread(F.Equal(F.Slot1, F.C0), 1).apply(S.And);
+      }
+    }
+    IASTAppendable result = F.ListAlloc(basis.size());
+    for (int i = 1; i < basis.size(); i++) {
+      IExpr polynomial = engine.evaluate(F.Numerator(F.Together(basis.get(i))));
+      if (polynomial.isNumber()) {
+        return S.False;
+      }
+      result.append(asEquation(polynomial, kept, engine));
+    }
+    return resultAsAndEquations(result);
+  }
+
+  /**
+   * <code>polynomial==0</code>, without a common factor and with a positive leading term in the
+   * order of the variables: <code>x^3-y^2==0</code>.
+   */
+  private static IExpr asEquation(IExpr polynomial, IAST variables, EvalEngine engine) {
+    IExpr primitive = engine.evaluate(F.Last(F.unaryAST1(S.FactorTermsList, polynomial)));
+    if (!primitive.isPlus()) {
+      return F.Equal(primitive, F.C0);
+    }
+    return F.Equal(AlgebraUtil.hasNegativeLeadingTerm((IAST) primitive, variables, engine)
+        ? engine.evaluate(F.Negate(primitive))
+        : primitive, F.C0);
+  }
+
+  /** The equations after the variables are eliminated one by one, as far as that goes. */
+  private static IAST substitutions(IAST equations, IAST vars, EvalEngine engine) {
+    IAST result = equations;
+    for (int i = 1; i < vars.size(); i++) {
+      IAST[] temp = eliminateOneVariable(result, vars.get(i), false, engine);
+      if (temp == null) {
+        break;
+      }
+      result = temp[0];
+    }
+    return result;
+  }
+
   private static IExpr eliminate(final IAST ast, EvalEngine engine) {
     try {
       IASTAppendable constraints = F.ListAlloc();
@@ -2016,17 +2142,23 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
         return F.NIL;
       }
 
-      IAST result = termsEqualZeroList;
-      IAST[] temp;
-      ISymbol variable;
-      for (int i = 1; i < vars.size(); i++) {
-        variable = (ISymbol) vars.get(i);
-
-        temp = eliminateOneVariable(result, variable, false, engine);
-        if (temp != null) {
-          result = temp[0];
-        } else {
-          return withConstraints(resultAsAndEquations(result), constraints, engine);
+      // a value of a variable may be one branch of a root: the ideal decides
+      IExpr ideal = solvesForEveryVariable(termsEqualZeroList, vars, engine) ? F.NIL
+          : eliminateByGroebnerBasis(termsEqualZeroList, vars, engine);
+      IAST result = ideal.isPresent()
+          ? (IAST) engine.withQuietMode(() -> substitutions(termsEqualZeroList, vars, engine))
+          : substitutions(termsEqualZeroList, vars, engine);
+      if (ideal.isNIL() && (!result.isFree(x -> vars.contains(x), false)
+          || (vars.argSize() > 1 && result.argSize() == 1
+              && !isLinear(termsEqualZeroList, vars, engine)))) {
+        // a variable is left, or resultants in several steps lost how often a factor occurs
+        ideal = eliminateByGroebnerBasis(termsEqualZeroList, vars, engine);
+      }
+      if (ideal.isPresent()) {
+        ideal = engine.evaluate(ideal);
+        if (!(ideal.isEqual() && result.argSize() == 1
+            && isMultipleOf(result.arg1(), ideal, engine))) {
+          return withConstraints(ideal, constraints, engine);
         }
       }
       return withConstraints(resultAsAndEquations(result), constraints, engine);

@@ -974,7 +974,11 @@ public class CompareUtil {
     int zeros = 0;
     int samples = 0;
     for (INumber number : new INumber[] {F.C0, F.C1, F.CN1, F.CI, F.CNI}) {
-      COMPARE_TERNARY zero = isPossibeZeroFixedValues(number, function, variables, engine);
+      IExpr sample = function.replaceAll(F.mapList(variables, t -> F.Rule(t, number)));
+      COMPARE_TERNARY zero = isPossibleZeroExact(sample, engine);
+      if (zero == IExpr.COMPARE_TERNARY.UNDECIDABLE) {
+        zero = isZeroAtSample(sample, engine);
+      }
       if (zero == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
@@ -983,17 +987,61 @@ public class CompareUtil {
         zeros++;
       }
     }
+    final ThreadLocalRandom tlr = ThreadLocalRandom.current();
     for (int i = 0; i < 36; i++) {
-      COMPARE_TERNARY zero = isPossibeZero(function, variables, engine);
+      IExpr sample = function.replaceAll(F.mapList(variables,
+          t -> F.Rule(t, F.complex(exactNumber(tlr.nextDouble(-100, 100)),
+              exactNumber(tlr.nextDouble(-100, 100))))));
+      COMPARE_TERNARY zero = isZeroAtSample(sample, engine);
       if (zero == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
       samples++;
       if (zero == IExpr.COMPARE_TERNARY.TRUE) {
         zeros++;
+      }
+    }
+    // real points of both signs and of small and large size: an identity may fail on the branch
+    // cut of a root only, which the complex points never hit. A point where the function has no
+    // value says nothing here.
+    for (int i = 0; i < REAL_SAMPLES; i++) {
+      // the sign alternates and the size runs through [1/8, 64], so that no part is left out
+      final double slice = (i + tlr.nextDouble()) / REAL_SAMPLES;
+      final double magnitude = 0.125 * Math.pow(512.0, slice);
+      final double value = i % 2 == 0 ? magnitude : -magnitude;
+      IExpr sample = function.replaceAll(F.mapList(variables, t -> F.Rule(t, exactNumber(value))));
+      if (isZeroAtSample(sample, engine) == IExpr.COMPARE_TERNARY.FALSE) {
+        return false;
       }
     }
     return zeros >= samples - 3;
+  }
+
+  /** The number of real points {@link #isZeroAtEverySample(IAST, IAST, EvalEngine)} tests. */
+  private static final int REAL_SAMPLES = 8;
+
+  /** Below this leaf count a machine value of a sample isn't checked with more digits. */
+  private static final int DEEP_CANCELLATION_LEAFCOUNT = 30;
+
+  /** The rational number next to <code>value</code> with the denominator 1024. */
+  private static IRational exactNumber(double value) {
+    return F.QQ(Math.round(value * 1024.0), 1024L);
+  }
+
+  /**
+   * The zero test of a function at an exact sample point. A machine value which is not 0 proves
+   * nothing, because terms may cancel far below the size of the sum: the residual of an
+   * antiderivative lands above any tolerance when a subterm of a logarithm loses its digits, and a
+   * denominator which cancels to 0.0 looks like a pole. More digits decide.
+   */
+  private static COMPARE_TERNARY isZeroAtSample(IExpr sample, EvalEngine engine) {
+    COMPARE_TERNARY zero = isPossibleZeroApproximate(sample, engine);
+    if (zero != IExpr.COMPARE_TERNARY.TRUE && sample.isAST()
+        && sample.leafCount() >= DEEP_CANCELLATION_LEAFCOUNT
+        && isZeroWithRisingPrecision((IAST) sample, false, engine)) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    }
+    return zero;
   }
 
   public static boolean isSpecialNumericFunction(IExpr head) {

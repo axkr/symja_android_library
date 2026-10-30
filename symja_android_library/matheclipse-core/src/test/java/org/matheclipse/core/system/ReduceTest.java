@@ -1462,7 +1462,7 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(w*x + y*z == 0 && w*z - x*y == 0, {w, x, y, z}, Reals)", //
         "Reduce(w*x+y*z==0&&-x*y+w*z==0,{w,x,y,z},Reals)");
     check("Reduce(x^3 + y^3 == 1 && x > 0 && y > 0, {x, y}, Reals)", //
-        "Reduce(x^3+y^3==1&&x>0&&y>0,{x,y},Reals)");
+        "0<x<1&&y==Root(-1+#1^3+x^3&,1,0)");
   }
 
   /** Domain and variables are checked before any method runs. */
