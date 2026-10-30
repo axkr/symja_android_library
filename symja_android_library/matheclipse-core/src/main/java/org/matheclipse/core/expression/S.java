@@ -12867,6 +12867,15 @@ public class S {
       S.initFinalSymbol("IntervalUnion", ID.IntervalUnion);
 
   /**
+   * Into(x) - TODO describe `Into`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Into.md">Into
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Into = S.initFinalSymbol("Into", ID.Into);
+
+  /**
    * Inverse(matrix) - computes the inverse of the `matrix`.
    * 
    * @see <a href=
@@ -13880,6 +13889,15 @@ public class S {
       S.initFinalSymbol("LambdaComponents", ID.LambdaComponents);
 
   public final static IBuiltInSymbol LambertW = S.initFinalSymbol("LambertW", ID.LambertW);
+
+  /**
+   * Language(x) - TODO describe `Language`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Language.md">Language
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Language = S.initFinalSymbol("Language", ID.Language);
 
   /**
    * LaplaceDistribution(x) - TODO describe `LaplaceDistribution`.
@@ -17489,6 +17507,16 @@ public class S {
   public final static IBuiltInSymbol NonPositive = S.initFinalSymbol("NonPositive", ID.NonPositive);
 
   /**
+   * NonPositiveReals(x) - TODO describe `NonPositiveReals`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NonPositiveReals.md">NonPositiveReals
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NonPositiveReals =
+      S.initFinalSymbol("NonPositiveReals", ID.NonPositiveReals);
+
+  /**
    * NonThreadable - is an attribute which indicates that a symbol `f` and `f(arg1, arg2, ...)`
    * stand for a non-scalar quantity and are therefore not combined with the elements of a list.
    * 
@@ -19065,6 +19093,15 @@ public class S {
    */
   public final static IBuiltInSymbol ParallelTable =
       S.initFinalSymbol("ParallelTable", ID.ParallelTable);
+
+  /**
+   * Parameter(x) - TODO describe `Parameter`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Parameter.md">Parameter
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Parameter = S.initFinalSymbol("Parameter", ID.Parameter);
 
   /**
    * ParameterMixtureDistribution(x) - TODO describe `ParameterMixtureDistribution`.
