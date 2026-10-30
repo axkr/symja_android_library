@@ -48,7 +48,20 @@ public class ImportString extends AbstractEvaluator {
       format = spec.format;
       element = spec.element;
     }
+    return importString(str1, format, element, engine);
+  }
 
+  /**
+   * Import data from a string.
+   *
+   * @param str1 the data
+   * @param format the format of the data
+   * @param element the element of the format to import, or <code>""</code> for its default
+   * @param engine
+   * @return {@link F#NIL} if the data cannot be imported in this format
+   */
+  public static IExpr importString(String str1, Extension format, String element,
+      EvalEngine engine) {
     try {
       switch (format) {
         case GRAPH6:

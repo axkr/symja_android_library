@@ -67,9 +67,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.io.OutputStreamMethods;
+import org.matheclipse.core.io.WebFetch;
 import org.matheclipse.core.io.net.SocketEntry;
 import org.matheclipse.core.io.paclet.PackageResolver;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.core.reflection.system.ImportString;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
@@ -119,6 +121,7 @@ public class FileFunctions {
         S.Uncompress.setEvaluator(new Uncompress());
         S.URLDecode.setEvaluator(new URLDecode());
         S.URLEncode.setEvaluator(new URLEncode());
+        S.URLExecute.setEvaluator(new URLExecute());
         S.URLParse.setEvaluator(new URLParse());
         S.URLBuild.setEvaluator(new URLBuild());
         S.URLFetch.setEvaluator(new URLFetch());
@@ -2734,6 +2737,168 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+
+  /**
+   * <code>URLExecute(url)</code>, <code>URLExecute(url, parameters)</code> and
+   * <code>URLExecute(url, parameters, format)</code>: read a web address and import what it answers
+   * with.
+   *
+   * <p>
+   * Without a format the <code>Content-Type</code> of the answer decides: JSON is imported as nested
+   * lists of rules, anything else is returned as a string.
+   */
+  private static final class URLExecute extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof IStringX)) {
+        // String expected at position `1` in `2`.
+        return Errors.printMessage(S.URLExecute, "string", F.List(F.C1, ast), engine);
+      }
+      String address = ast.arg1().toString();
+      if (ast.argSize() >= 2) {
+        IExpr parameters = ast.arg2();
+        if (!parameters.isListOfRulesOrAssociation(false)) {
+          // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
+          // used for replacing.
+          return Errors.printMessage(S.URLExecute, "reps", F.list(parameters), engine);
+        }
+        IAST rules = parameters.isAssociation() ? ((IAssociation) parameters).normal(false)
+            : (IAST) parameters;
+        address = withQuery(address, queryString(rules));
+      }
+      Extension.ImportSpec spec = null;
+      if (ast.argSize() == 3) {
+        spec = Extension.importSpec(ast.arg3());
+        // these make an expression of the answer, which would then be evaluated: a server must not
+        // be able to run code here. STRING is also what an unknown format name ends up as.
+        if (spec == null || spec.format == Extension.STRING
+            || spec.format == Extension.EXPRESSIONJSON) {
+          // Cannot import data as `1` format.
+          return Errors.printMessage(S.URLExecute, "fmterr", F.list(ast.arg3()), engine);
+        }
+      }
+      if (!address.startsWith("https://") && !address.startsWith("http://")) {
+        // Cannot open `1`.
+        return Errors.printMessage(S.URLExecute, "noopen", F.list(F.stringx(address)), engine);
+      }
+
+      String text;
+      String contentType;
+      try {
+        WebFetch.Response response = WebFetch.connect(address, engine);
+        contentType = response.contentType;
+        try (java.io.InputStream in = response.in) {
+          text = new String(in.readAllBytes(), charset(contentType));
+        }
+      } catch (IOException ex) {
+        // Cannot open `1`.
+        return Errors.printMessage(S.URLExecute, "noopen", F.list(F.stringx(address)), engine);
+      }
+
+      Extension format;
+      String element = "";
+      if (spec != null) {
+        format = spec.format;
+        element = spec.element;
+      } else {
+        format = isJSON(contentType) ? Extension.JSON : Extension.TXT;
+      }
+      IExpr result = ImportString.importString(text, format, element, engine);
+      if (result.isNIL()) {
+        IExpr formatName = spec != null ? ast.arg3() : F.stringx("JSON");
+        // Cannot import data as `1` format.
+        return Errors.printMessage(S.URLExecute, "fmterr", F.list(formatName), engine);
+      }
+      return result;
+    }
+
+    /** The rules <code>{"key" -> value, ...}</code> as a query <code>key=value&amp;...</code>. */
+    private static String queryString(IAST rules) {
+      StringBuilder query = new StringBuilder();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr rule = rules.get(i);
+        if (query.length() > 0) {
+          query.append('&');
+        }
+        query.append(encode(rule.first())).append('=').append(encode(rule.second()));
+      }
+      return query.toString();
+    }
+
+    private static String encode(IExpr expr) {
+      // a string without its quotes, anything else in the form it prints in
+      return URLEncoder.encode(expr.toString(), StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    /** The address with the query appended to the one it may already have, before a fragment. */
+    private static String withQuery(String address, String query) {
+      if (query.isEmpty()) {
+        return address;
+      }
+      String fragment = "";
+      int hash = address.indexOf('#');
+      if (hash >= 0) {
+        fragment = address.substring(hash);
+        address = address.substring(0, hash);
+      }
+      String separator;
+      if (address.indexOf('?') < 0) {
+        separator = "?";
+      } else if (address.endsWith("?") || address.endsWith("&")) {
+        separator = "";
+      } else {
+        separator = "&";
+      }
+      return address + separator + query + fragment;
+    }
+
+    /** The media type of a <code>Content-Type</code>, lower case and without its parameters. */
+    private static String mediaType(String contentType) {
+      int semicolon = contentType.indexOf(';');
+      String mediaType = semicolon < 0 ? contentType : contentType.substring(0, semicolon);
+      return mediaType.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private static boolean isJSON(String contentType) {
+      if (contentType == null) {
+        return false;
+      }
+      String mediaType = mediaType(contentType);
+      return mediaType.equals("application/json") || mediaType.equals("text/json")
+          || mediaType.endsWith("+json");
+    }
+
+    /** The <code>charset</code> parameter of a <code>Content-Type</code>, UTF-8 if there is none. */
+    private static Charset charset(String contentType) {
+      if (contentType != null) {
+        for (String parameter : contentType.split(";")) {
+          int equals = parameter.indexOf('=');
+          if (equals > 0 && parameter.substring(0, equals).trim().equalsIgnoreCase("charset")) {
+            String name = parameter.substring(equals + 1).trim().replace("\"", "");
+            try {
+              return Charset.forName(name);
+            } catch (IllegalArgumentException iae) {
+              // an unknown or malformed name
+              break;
+            }
+          }
+        }
+      }
+      return StandardCharsets.UTF_8;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
   }
 

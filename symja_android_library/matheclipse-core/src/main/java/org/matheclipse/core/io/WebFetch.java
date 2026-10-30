@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /**
@@ -44,6 +45,12 @@ public final class WebFetch {
 
   private static final int MAX_REDIRECTS = 5;
 
+  /**
+   * Who is asking. Without it the JVM sends <code>Java/&lt;version&gt;</code>, which some servers
+   * refuse - the Wikipedia API answers it with 403 Forbidden.
+   */
+  private static final String USER_AGENT = userAgent();
+
   private WebFetch() {}
 
   /**
@@ -51,9 +58,21 @@ public final class WebFetch {
    * @throws IOException if the address cannot be read, or may not be read from this kernel
    */
   public static InputStream open(String address, EvalEngine engine) throws IOException {
+    return connect(address, engine).in;
+  }
+
+  /**
+   * Like {@link #open(String, EvalEngine)}, and also tells what the server said it answered with.
+   *
+   * @param address the address as the user wrote it
+   * @throws IOException if the address cannot be read, or may not be read from this kernel
+   */
+  public static Response connect(String address, EvalEngine engine) throws IOException {
     URL url = new URL(address);
     if (FileSandbox.isHostVisible(engine)) {
-      return url.openStream();
+      URLConnection connection = url.openConnection();
+      connection.setRequestProperty("User-Agent", USER_AGENT);
+      return new Response(connection.getInputStream(), connection.getContentType());
     }
     for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
       String protocol = url.getProtocol();
@@ -69,6 +88,7 @@ public final class WebFetch {
         throw new IOException("Only http and https addresses can be read here.");
       }
       HttpURLConnection connection = (HttpURLConnection) opened;
+      connection.setRequestProperty("User-Agent", USER_AGENT);
       connection.setInstanceFollowRedirects(false);
       connection.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
       connection.setReadTimeout(READ_TIMEOUT_MILLIS);
@@ -86,9 +106,33 @@ public final class WebFetch {
         connection.disconnect();
         throw new IOException("The server answered " + status + ".");
       }
-      return new Limited(connection.getInputStream(), MAX_BYTES);
+      return new Response(new Limited(connection.getInputStream(), MAX_BYTES),
+          connection.getContentType());
     }
     throw new IOException("Too many redirects.");
+  }
+
+  /** What an address answered with. */
+  public static final class Response {
+    /** The body of the answer; the caller closes it. */
+    public final InputStream in;
+
+    /**
+     * The <code>Content-Type</code> the server gave, like <code>application/json; charset=utf-8
+     * </code>, or <code>null</code> if it gave none.
+     */
+    public final String contentType;
+
+    Response(InputStream in, String contentType) {
+      this.in = in;
+      this.contentType = contentType;
+    }
+  }
+
+  private static String userAgent() {
+    String version = Config.getVersion();
+    return (version == null ? "Symja" : "Symja/" + version)
+        + " (+https://github.com/axkr/symja_android_library)";
   }
 
   /**
