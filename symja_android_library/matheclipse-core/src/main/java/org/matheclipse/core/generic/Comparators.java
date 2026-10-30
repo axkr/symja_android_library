@@ -391,5 +391,27 @@ public final class Comparators {
     return new BinaryEqualsComparator(test);
   }
 
+  /**
+   * The first <code>n</code> of the <code>size</code> indexes <code>0, 1, ..., size-1</code> in the
+   * order of <code>comparator</code>, which compares two indexes; of equal indexes the smaller one
+   * comes first. Unlike a sort this selection needs no transitive comparator, so an ordering
+   * predicate like <code>LessEqual</code> can't make it fail.
+   */
+  public static int[] firstIndexes(int size, int n, java.util.function.IntBinaryOperator comparator) {
+    boolean[] taken = new boolean[size];
+    int[] result = new int[Math.min(n, size)];
+    for (int k = 0; k < result.length; k++) {
+      int best = -1;
+      for (int i = 0; i < size; i++) {
+        if (!taken[i] && (best < 0 || comparator.applyAsInt(i, best) < 0)) {
+          best = i;
+        }
+      }
+      taken[best] = true;
+      result[k] = best;
+    }
+    return result;
+  }
+
   private Comparators() {}
 }

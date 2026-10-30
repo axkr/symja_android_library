@@ -799,6 +799,12 @@ public class FileSystemFunctions {
   private static class ParentDirectory extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 1 && ast.arg1().isAST(S.File, 2)
+          && ast.arg1().first() instanceof IStringX) {
+        // the parent of File(name) is a File as well
+        IExpr parent = evaluate(ast.setAtCopy(1, ast.arg1().first()), engine);
+        return parent.isString() ? F.unaryAST1(S.File, parent) : F.NIL;
+      }
       Path path;
       int levels = 1;
       if (ast.isAST0()) {

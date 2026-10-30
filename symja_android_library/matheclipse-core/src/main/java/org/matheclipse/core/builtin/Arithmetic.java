@@ -58,6 +58,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -246,14 +247,16 @@ public final class Arithmetic {
       }
       IExpr temp = engine.evalNumericFunctionNIL(arg1);
       if (temp.isReal()) {
-        if (((IReal) temp).complexSign() == 0 && !arg1.isNumber()
-            && arg1.isFree(x -> x.isInexactNumber(), false)) {
-          // the machine value is zero, the exact value may be not: Abs(1-Sqrt(1+Pi^(-1000)))
-          int sign = CompareUtil.numericSign(arg1, engine);
+        if (!arg1.isNumber() && arg1.isFree(x -> x.isInexactNumber(), false)) {
+          // the machine value may be a rounding error, the sign of the exact value is decided with
+          // extra precision: Abs(Sqrt(2)+Sqrt(3)-Sqrt(5+2*Sqrt(6))-10^(-30))
+          int sign = CompareUtil.absSign(arg1, (IReal) temp, engine);
           if (sign == CompareUtil.UNCERTAIN) {
-            return F.NIL;
+            return CompareUtil.printSignUncertain(arg1, engine);
           }
-          return sign < 0 ? arg1.negate() : arg1;
+          if (sign != CompareUtil.NOT_COMPARABLE) {
+            return sign < 0 ? arg1.negate() : arg1;
+          }
         }
         return arg1.copySign((IReal) temp);
       }
@@ -2281,16 +2284,13 @@ public final class Arithmetic {
           }
           int intArg2 = r.toIntDefault();
           if (F.isPresent(intArg2)) {
-            int exponent = intArg2;
-            if (intArg2 < 0) {
-              exponent *= -1;
-            }
-            IRational result = F.C0;
-            for (int i = 1; i <= nInt; i++) {
+            final int exponent = Math.abs(intArg2);
+            // added pairwise: the operands of each addition have about the same size
+            IRational result = F.sumRational(i -> {
               final IInteger pow = F.ZZ(i).powerRational(exponent);
-              result = result.add(intArg2 < 0 ? pow : pow.inverse());
-              result.checkBitLength();
-            }
+              return intArg2 < 0 ? pow : pow.inverse();
+            }, 1, nInt);
+            result.checkBitLength();
             return result;
           }
 
@@ -3344,14 +3344,20 @@ public final class Arithmetic {
         if (ast.isUniform(UniformFlags.REAL)) {
           INum numResult = (INum) ast.arg1();
           for (int i = 2; i < ast.size(); i++) {
-            numResult = numResult.add((INum) ast.get(i));
+            final INum summand = (INum) ast.get(i);
+            final INum sum = numResult.add(summand);
+            PrecisionLoss.machineSum(engine, numResult, summand, sum);
+            numResult = sum;
           }
           return numResult;
         }
         if (ast.isUniform(UniformFlags.NUMBER)) {
           INumber numResult = (INumber) ast.arg1();
           for (int i = 2; i < ast.size(); i++) {
-            numResult = numResult.plus((INumber) ast.get(i));
+            final INumber summand = (INumber) ast.get(i);
+            final INumber sum = numResult.plus(summand);
+            PrecisionLoss.machineSum(engine, numResult, summand, sum);
+            numResult = sum;
           }
           return numResult;
         }
@@ -3419,7 +3425,10 @@ public final class Arithmetic {
       if (size > 1) {
         IInexactNumber num = (IInexactNumber) ast.arg1();
         for (int i = 2; i < size; i++) {
-          num = num.plus((IInexactNumber) ast.get(i));
+          final IInexactNumber summand = (IInexactNumber) ast.get(i);
+          final IInexactNumber sum = num.plus(summand);
+          PrecisionLoss.machineSum(engine, num, summand, sum);
+          num = sum;
         }
         return num;
       }
@@ -3478,7 +3487,8 @@ public final class Arithmetic {
       }
       int ni = n.toIntDefault();
       if (ni > Integer.MIN_VALUE) {
-        if (ni > 0 && ni < BinomialCache.MAX_N) {
+        if (ni > 0 && ni < BinomialCache.MAX_N && a.isInteger()) {
+          // only an exact integer: a machine integer like 10.0 keeps its machine product
           int ai = a.toIntDefault();
           if (ai > 0 && ai < BinomialCache.MAX_N) {
             long maxBin = ai + ni - 1L;
@@ -4401,6 +4411,23 @@ public final class Arithmetic {
     private static IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr exponent) {
       if (base.isAST(S.Surd, 3)) {
         return powerSurd(base, exponent);
+      }
+      if (exponent.isOverflow()) {
+        // an approximate positive number other than 1, or E, raised to an exponent beyond the
+        // range; an exact constant like Pi has no approximate value to grow
+        if (base.isInexactNumber() && !base.isOne() && base.isPositiveResult() || base == S.E
+            || (base.isPower() && base.base() == S.E && base.exponent().isPositiveResult())) {
+          return F.Overflow();
+        }
+        if (!base.isInexactNumber() && base.isNumericFunction() && !base.isRational()
+            && !(base.isPower() && base.base() == S.E) && base.isPositiveResult()) {
+          return S.Indeterminate;
+        }
+      } else if (exponent.isUnderflow()) {
+        // an exponent too small to represent acts as 0. for an approximate positive base
+        if (base.isInexactNumber() && base.isPositiveResult()) {
+          return F.CD1;
+        }
       }
       if (base.isReal() || exponent.isReal()) {
         IExpr temp = powerRealBaseOrRealExponent(base, exponent);
@@ -6226,10 +6253,7 @@ public final class Arithmetic {
             // decided with as much precision as needed and without General::munfl
             int sign = CompareUtil.numericSign(arg1, engine);
             if (sign == CompareUtil.UNCERTAIN) {
-              // Internal precision limit `1` reached while evaluating `2`.
-              Errors.printMessage(S.N, "meprec",
-                  F.List(F.stringx("$MaxExtraPrecision = " + MAX_EXTRA_PRECISION + "."), arg1),
-                  engine);
+              CompareUtil.printSignUncertain(arg1, engine);
               return result;
             }
             if (sign != CompareUtil.NOT_COMPARABLE) {
@@ -6389,9 +6413,6 @@ public final class Arithmetic {
       }
       return result;
     }
-
-    /** Extra digits for deciding the sign of an exact value, similar to $MaxExtraPrecision */
-    private static final int MAX_EXTRA_PRECISION = 50;
 
     @Override
     public int[] expectedArgSize(IAST ast) {

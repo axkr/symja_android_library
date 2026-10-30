@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -63,17 +64,8 @@ public class MinimalBy extends AbstractFunctionEvaluator {
     // argSize >= 3: f(data, f, n) or f(data, f, n, p)
     final Comparator<IExpr> comparator;
     if (argSize >= 4) {
-      IExpr p = ast.arg4();
-      comparator = (a, b) -> {
-        IExpr res = engine.evaluate(F.binaryAST2(p, a, b));
-        if (res.isTrue()) {
-          return -1;
-        }
-        if (res.isFalse()) {
-          return 1;
-        }
-        return 0;
-      };
+      // p(a, b) is True or 1 if a comes first, False or -1 if b comes first, as for Sort(list, p)
+      comparator = new Predicates.IsBinaryFalse(ast.arg4(), engine);
     } else {
       comparator = Comparators.CANONICAL_COMPARATOR;
     }
@@ -95,6 +87,16 @@ public class MinimalBy extends AbstractFunctionEvaluator {
     }
     final List<IExpr> fVals = fValues;
     final Comparator<IExpr> comp = comparator;
+    if (argSize >= 4) {
+      // a user ordering needn't be transitive: select the first n instead of sorting
+      int[] first = Comparators.firstIndexes(size, n,
+          (a, b) -> max ? comp.compare(fVals.get(b), fVals.get(a))
+              : comp.compare(fVals.get(a), fVals.get(b)));
+      for (int i = 0; i < first.length; i++) {
+        indices[i] = first[i];
+      }
+      return buildResult(data, indices, n, isAssociation);
+    }
     Arrays.sort(indices, (a, b) -> {
       int c = max ? comp.compare(fVals.get(b), fVals.get(a))
           : comp.compare(fVals.get(a), fVals.get(b));

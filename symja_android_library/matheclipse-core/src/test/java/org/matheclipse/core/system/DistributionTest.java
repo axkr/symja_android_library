@@ -1855,4 +1855,40 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("PDF(SkewNormalDistribution(0, -1, 1), x)", //
         "PDF(SkewNormalDistribution(0,-1,1),x)");
   }
+
+  @Test
+  public void testInverseGaussianDistribution() {
+    check("PDF(InverseGaussianDistribution(1, 4), x)", //
+        "Piecewise({{(Sqrt(2/Pi)*Sqrt(1/x^3))/E^((2*(1-x)^2)/x),x>0}},0)");
+    check("CDF(InverseGaussianDistribution(1, 4), x)", //
+        "Piecewise({{1/2*(Erfc((Sqrt(2)*(1-x))/Sqrt(x))+E^8*Erfc((Sqrt(2)*(1+x))/Sqrt(x))),x>\n"
+            + "0}},0)");
+    // the machine value and the exact form agree
+    checkNumeric("{CDF(InverseGaussianDistribution(1, 4), 0.7), N(CDF(InverseGaussianDistribution(1, 4), 7/10)),"
+        + " PDF(InverseGaussianDistribution(1, 4), 0.7)}", //
+        "{0.3086123662056899,0.30861236620568966,1.0534581261650413}");
+    checkNumeric("NIntegrate(PDF(InverseGaussianDistribution(1, 4), x), {x, 0, 0.7})", //
+        "0.3086123662056896");
+    // E^(2*l/m) overflows: the second term from its exponent
+    checkNumeric("CDF(InverseGaussianDistribution(1., 2000.), 1.05)", //
+        "0.9858640712899996");
+    check("{Mean(InverseGaussianDistribution(m, l)), Variance(InverseGaussianDistribution(m, l)),"
+        + " Skewness(InverseGaussianDistribution(m, l)), Kurtosis(InverseGaussianDistribution(m, l))}", //
+        "{m,m^3/l,3*Sqrt(m/l),3+(15*m)/l}");
+    check("Expectation(x^2, x \\[Distributed] InverseGaussianDistribution(1, 4))", //
+        "5/4");
+    // outside of the support, without evaluating the density at 0
+    check("{PDF(InverseGaussianDistribution(1, 4), 0), PDF(InverseGaussianDistribution(1, 4), -2.),"
+        + " CDF(InverseGaussianDistribution(1, 4), -2.), CDF(InverseGaussianDistribution(1, 4), 0.)}", //
+        "{0,0.0,0,0}");
+    checkNumeric("Quantile(InverseGaussianDistribution(1, 4), {0.25, 0.5, 0.75})", //
+        "{0.644190837561728,0.8904967267002923,1.2355139068256054}");
+    check("Quantile(InverseGaussianDistribution(1, 4), {0, 1})", //
+        "{0,Infinity}");
+    check("SeedRandom(42); r = RandomVariate(InverseGaussianDistribution(1, 4), 10^4);"
+        + " {Min(r) > 0, Abs(Mean(r) - 1) < 0.05, Abs(Variance(r) - 1/4) < 0.05}", //
+        "{True,True,True}");
+    check("SeedRandom(7); Length(RandomReal(InverseGaussianDistribution(0.2, 6), 5))", //
+        "5");
+  }
 }

@@ -247,12 +247,14 @@ final class DSolveOperatorFactor {
    */
   private static IExpr riccatiResidual(IExpr[] a, int n, IExpr r, IExpr xVar, EvalEngine engine) {
     IExpr p = F.C1;
-    IExpr residual = a[0];
+    // the terms are added up once
+    IASTAppendable residual = F.PlusAlloc(n + 1);
+    residual.append(a[0]);
     for (int k = 1; k <= n; k++) {
       p = engine.evaluate(F.Plus(F.D(p, xVar), F.Times(r, p)));
-      residual = engine.evaluate(F.Plus(residual, F.Times(a[k], p)));
+      residual.append(F.Times(a[k], p));
     }
-    return residual;
+    return engine.evaluate(residual);
   }
 
   /** The operator divided by <code>D - r</code> from the right, which is of one order less. */

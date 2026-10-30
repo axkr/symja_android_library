@@ -220,6 +220,7 @@ public final class ContextPath implements Iterable<Context> {
         }));
     // the WLJS notebook shows an image only when Image`ValidImageQHold holds for it
     aliases.put("Image`ValidImageQHold", S.ImageQ);
+    aliases.put("Internal`RealValuedNumericQ", S.RealValuedNumericQ);
     // does the expression print with a leading minus sign? FeynCalc tests it on sums of terms
     aliases.put("Internal`SyntacticNegativeQ",
         F.localFunction("SyntacticNegativeQ", //

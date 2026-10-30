@@ -6,12 +6,14 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hipparchus.distribution.continuous.TDistribution;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * What every <code>FittedModel</code> answers, whichever kind of fit produced it.
@@ -57,17 +59,43 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
       if (value.isPresent()) {
         return value;
       }
+      String nearest = nearestProperty(name);
+      if (nearest == null) {
+        // `1` is not a known property for FittedModel[...].
+        return Errors.printMessage(S.FittedModel, "notprop", F.list(ast.arg1()), engine);
+      }
       // "`1`" is not an available property. Did you mean "`2`" instead?
       return Errors.printMessage(S.FittedModel, "elmntavs",
-          F.list(ast.arg1(), F.stringx(nearestProperty(name))), engine);
+          F.list(ast.arg1(), F.stringx(nearest)), engine);
     }
     if (ast.isAST1() && ast.arg1().isList() && ((IAST) ast.arg1()).argSize() > 0
         && ((IAST) ast.arg1()).forAll(x -> x.isString())) {
-      // a list of properties
-      return ((IAST) ast.arg1()).map(name -> evaluate(F.unaryAST1(ast.head(), name), engine));
+      // a list of properties; one which is not known leaves the whole query unevaluated
+      IAST names = (IAST) ast.arg1();
+      IASTAppendable values = F.ListAlloc(names.argSize());
+      for (int i = 1; i <= names.argSize(); i++) {
+        String name = names.get(i).toString();
+        IExpr value = "Properties".equals(name) ? evaluate(F.unaryAST1(ast.head(), names.get(i)), engine)
+            : property(name, engine);
+        if (value.isNIL()) {
+          // "`1`" is not an available property.
+          return Errors.printMessage(S.FittedModel, "elmntav", F.list(names.get(i)), engine);
+        }
+        values.append(value);
+      }
+      return values;
     }
     IAST variables = fitVariables();
-    if (variables.isPresent() && ast.argSize() == variables.argSize()) {
+    if (variables.isPresent() && !ast.arg1().isString()) {
+      if (ast.exists(x -> x.isList())) {
+        // a list of values is not threaded over
+        return F.NIL;
+      }
+      if (ast.argSize() != variables.argSize()) {
+        // `1` called with `2` arguments; `3` arguments are expected.
+        return Errors.printMessage(S.FittedModel, "argrx", F.list(F.stringx("FittedModel[…]"),
+            F.ZZ(ast.argSize()), F.ZZ(variables.argSize())), engine);
+      }
       // the best fit function at a point
       IASTAppendable rules = F.ListAlloc(variables.argSize());
       for (int i = 1; i <= variables.argSize(); i++) {
@@ -80,7 +108,8 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
 
   /**
    * The property name closest to one that was not recognised - <code>"Properties"</code> itself
-   * included, which is what a misspelt request for the list of names most likely was.
+   * included, which is what a misspelt request for the list of names most likely was - or
+   * <code>null</code> if more than a third of its letters would have to change.
    */
   private String nearestProperty(String name) {
     String[] names = Arrays.copyOf(propertyNames(), propertyNames().length + 1);
@@ -95,7 +124,68 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
         nearest = candidate;
       }
     }
-    return nearest;
+    return 3 * best <= name.length() ? nearest : null;
+  }
+
+  /** A machine matrix as a nested list. */
+  protected static IAST matrixList(double[][] matrix) {
+    return F.mapRange(0, matrix.length,
+        i -> F.mapRange(0, matrix[i].length, j -> F.num(matrix[i][j])));
+  }
+
+  /**
+   * The confidence region of the parameters: <code>FittedModels`ParameterEllipsoid(center, radii,
+   * directions)</code>, the axes of the ellipsoid along the eigenvectors of the covariance matrix
+   * and the radii the square roots of its eigenvalues times <code>quantile</code>.
+   *
+   * @param center the estimates of the parameters
+   * @param covariance the covariance matrix of the estimates
+   * @param quantile the square of the radius of the region in standard deviations
+   */
+  protected static IExpr parameterEllipsoid(double[] center, double[][] covariance,
+      double quantile, EvalEngine engine) {
+    IExpr system = S.Eigensystem.of(engine, matrixList(covariance));
+    if (!system.isList2() || !system.first().isList()) {
+      return F.NIL;
+    }
+    IAST values = (IAST) system.first();
+    IAST radii = F.mapRange(1, values.size(),
+        i -> F.num(Math.sqrt(Math.max(0.0, values.get(i).evalf()) * quantile)));
+    ISymbol ellipsoid = ContextPath.getSymbol("ParameterEllipsoid",
+        engine.getContextPath().getContext("FittedModels`"), false);
+    return F.ternaryAST3(ellipsoid, F.List(center), radii, system.second());
+  }
+
+  /**
+   * The confidence band <code>{f - q Sqrt(v), f + q Sqrt(v)}</code> of a prediction, where the
+   * variance <code>v = s2 + g.covariance.g</code> of a single prediction (or of the mean prediction
+   * without <code>s2</code>) is a function of the independent variables through the gradient
+   * <code>g</code> of the model by its parameters.
+   *
+   * @param bestFit the best fit function <code>f</code>
+   * @param gradient the derivatives of the model by its parameters, at the best fit
+   * @param covariance the covariance matrix of the parameters
+   * @param variance <code>s2</code>, or <code>0</code> for the mean prediction
+   * @param df the residual degrees of freedom for the quantile <code>q</code> of Student's t
+   *        distribution at the 95% level
+   */
+  protected static IExpr predictionBands(IExpr bestFit, IAST gradient, double[][] covariance,
+      double variance, int df, EvalEngine engine) {
+    if (df <= 0) {
+      return F.List(S.Indeterminate, S.Indeterminate);
+    }
+    IASTAppendable sum = F.PlusAlloc(gradient.argSize() * gradient.argSize() + 1);
+    if (variance != 0.0) {
+      sum.append(F.num(variance));
+    }
+    for (int i = 0; i < gradient.argSize(); i++) {
+      for (int j = 0; j < gradient.argSize(); j++) {
+        sum.append(F.Times(F.num(covariance[i][j]), gradient.get(i + 1), gradient.get(j + 1)));
+      }
+    }
+    double q = new TDistribution(df).inverseCumulativeProbability(0.975);
+    IExpr halfWidth = engine.evaluate(F.Times(F.num(q), F.Sqrt(engine.evaluate(sum))));
+    return engine.evaluate(F.List(F.Subtract(bestFit, halfWidth), F.Plus(bestFit, halfWidth)));
   }
 
   @Override
@@ -175,9 +265,19 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
    * @param label the label of the parameter with the given 0-based index
    */
   protected static IExpr parameterTable(IExpr[][] rows, IntFunction<IExpr> label) {
+    return parameterTable(rows, label, "t\u2010Statistic");
+  }
+
+  /**
+   * The parameter table with the given header of the test statistic column.
+   *
+   * @see #parameterTable(IExpr[][], IntFunction)
+   */
+  protected static IExpr parameterTable(IExpr[][] rows, IntFunction<IExpr> label,
+      String statistic) {
     IASTAppendable grid = F.ListAlloc(rows.length + 1);
     grid.append(F.List(F.stringx(""), F.stringx("Estimate"), F.stringx("Standard Error"),
-        F.stringx("t\u2010Statistic"), F.stringx("P\u2010Value")));
+        F.stringx(statistic), F.stringx("P\u2010Value")));
     for (int i = 0; i < rows.length; i++) {
       IASTAppendable row = F.ListAlloc(5);
       row.append(label.apply(i));

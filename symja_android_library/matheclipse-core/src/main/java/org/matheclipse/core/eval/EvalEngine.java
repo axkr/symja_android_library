@@ -971,6 +971,12 @@ public class EvalEngine implements Serializable {
   private transient Set<ISymbol> fModifiedVariablesList;
 
   /**
+   * The context of the symbols which carry the up-values defined for a protected notation head like
+   * <code>PlusMinus</code> in this engine; <code>null</code> as long as no such definition exists.
+   */
+  private transient Context fNotationContext = null;
+
+  /**
    * Greater than zero while a <code>Block</code> gives its variables local values or puts the outer
    * ones back: the value functions of the variables are called once all of them are done, see
    * {@link #deferValueFunction(Runnable)}.
@@ -1665,6 +1671,7 @@ public class EvalEngine implements Serializable {
     engine.fCurrentDirectory = fCurrentDirectory;
     engine.fIterationLimit = fIterationLimit;
     engine.fModifiedVariablesList = fModifiedVariablesList;
+    engine.fNotationContext = fNotationContext;
     engine.fNumericMode = fNumericMode;
     // engine.fNumericPrecision = fNumericPrecision;
     engine.fApfloatHelper = new FixedPrecisionApfloatHelper(getNumericPrecision());
@@ -2135,6 +2142,21 @@ public class EvalEngine implements Serializable {
     return result;
   }
 
+  /**
+   * Test if every element of the real vector or real matrix <code>arg</code> is a machine real.
+   * Exact elements must stay exact when a listable function threads over the list, so the double
+   * fast path is only allowed if no exact element is present.
+   *
+   * @param arg a real vector or real matrix
+   * @return <code>true</code> if no element is an exact number
+   */
+  private static boolean isMachineRealArray(IExpr arg) {
+    if (arg instanceof ASTRealVector || arg instanceof ASTRealMatrix) {
+      return true;
+    }
+    return ((IAST) arg).forAll(x -> x.isList() ? isMachineRealArray(x) : x instanceof Num);
+  }
+
   private IExpr evalASTArg1(final IAST ast) {
     // special case ast.isAST1()
     // head == ast[0] --- arg1 == ast[1]
@@ -2181,7 +2203,7 @@ public class EvalEngine implements Serializable {
 
     if (Attribute.LISTABLE.isSetIn(attributes)) {
       if (ast.isBuiltInFunction()) {
-        if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
+        if (arg1.isRealVector() && ((IAST) arg1).size() > 1 && isMachineRealArray(arg1)) {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
           if (module instanceof DoubleUnaryOperator) {
             DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
@@ -2190,7 +2212,7 @@ public class EvalEngine implements Serializable {
               return mapped;
             }
           }
-        } else if (arg1.isRealMatrix()) {
+        } else if (arg1.isRealMatrix() && isMachineRealArray(arg1)) {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
           if (module instanceof DoubleUnaryOperator) {
             DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
@@ -3913,6 +3935,13 @@ public class EvalEngine implements Serializable {
    */
   transient long fPrecisionLoss = -1L;
 
+  /**
+   * The digits which sums of machine numbers have lost in the numeric evaluation in progress, or
+   * <code>-1</code> while none is tracked - see {@link PrecisionLoss#machineSum(EvalEngine, IExpr,
+   * IExpr, IExpr)}.
+   */
+  transient long fMachineLoss = -1L;
+
   /** No <code>N::meprec</code> message, while a numeric value is calculated for internal use. */
   transient boolean fPrecisionLimitQuiet = false;
 
@@ -5027,6 +5056,8 @@ public class EvalEngine implements Serializable {
         result = head.evalUpRules(ast, this);
         if (result.isPresent()) {
           return result;
+        } else if ((result = evalNotationUpRules(head, ast)).isPresent()) {
+          return result;
         } else {
           if (head instanceof BuiltInSymbol) {
             int requiredMask = UniformFlags.uniformMask((BuiltInSymbol) head);
@@ -5052,9 +5083,43 @@ public class EvalEngine implements Serializable {
         if (result.isPresent()) {
           return result;
         }
+        result = evalNotationUpRules(symbol, ast);
+        if (result.isPresent()) {
+          return result;
+        }
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The up-values which this engine defined for the protected built-in <code>head</code>, see
+   * {@link #notationRulesSymbol(ISymbol)}.
+   */
+  private IExpr evalNotationUpRules(ISymbol head, IAST ast) {
+    if (fNotationContext != null && head instanceof IBuiltInSymbol) {
+      ISymbol rules = fNotationContext.get(head.getSymbolName());
+      if (rules != null) {
+        return rules.evalUpRules(ast, this);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The symbol which carries the up-values defined in this engine for the protected built-in
+   * notation head <code>head</code>, like <code>PlusMinus /: k_?NumericQ*PlusMinus(v_, u_) :=
+   * ...</code>. The built-in symbol is shared by all engines, so the rules are kept with a symbol
+   * of the same name in a context of this engine.
+   *
+   * @param head a built-in notation head
+   * @return the symbol which carries the rules
+   */
+  public ISymbol notationRulesSymbol(ISymbol head) {
+    if (fNotationContext == null) {
+      fNotationContext = fContextPath.getContext("Notation`");
+    }
+    return ContextPath.getSymbol(head.getSymbolName(), fNotationContext, false);
   }
 
   /**

@@ -103,6 +103,125 @@ public final class RandomFunctions {
       S.RandomPermutation.setEvaluator(new RandomPermutation());
       S.RandomReal.setEvaluator(new RandomReal());
       S.RandomSample.setEvaluator(new RandomSample());
+      S.RandomColor.setEvaluator(new RandomColor());
+    }
+  }
+
+  /**
+   * <code>RandomColor()</code> - a random <code>RGBColor</code>; <code>RandomColor(n)</code> and
+   * <code>RandomColor({n1, n2, ...})</code> - lists and arrays of random colors;
+   * <code>RandomColor(model)</code> and <code>RandomColor(model, spec)</code> - colors like the
+   * <code>model</code>, e.g. <code>Hue(_, 1, 1)</code>, whose blanks are filled with uniformly
+   * distributed reals from <code>[0, 1]</code>; a color space name like <code>"Hue"</code> stands
+   * for the color with a blank for each component.
+   */
+  /**
+   * Throws {@link ASTElementLimitExceeded} if an array of the <code>dimension</code> has more
+   * elements than an expression may have.
+   */
+  private static void checkElementCount(int[] dimension) {
+    long count = 1L;
+    for (int d : dimension) {
+      count *= d;
+      if (count > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(count);
+      }
+    }
+  }
+
+  private static final class RandomColor extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr model = F.RGBColor(F.$b(), F.$b(), F.$b());
+      IExpr spec = F.NIL;
+      if (ast.isAST1()) {
+        if (isSpecification(ast.arg1())) {
+          spec = ast.arg1();
+        } else {
+          model = colorModel(ast.arg1());
+        }
+      } else if (ast.isAST2()) {
+        model = colorModel(ast.arg1());
+        spec = ast.arg2();
+        if (!isSpecification(spec)) {
+          return F.NIL;
+        }
+      }
+      if (model.isNIL()) {
+        return F.NIL;
+      }
+      final IAST colorModel = (IAST) model;
+      final Random random = engine.getRandom();
+      if (spec.isNIL()) {
+        return randomColor(colorModel, random);
+      }
+      if (spec.isList()) {
+        int[] dimension = Validate.checkListOfInts(ast, spec, 0, Integer.MAX_VALUE, engine);
+        if (dimension == null) {
+          return F.NIL;
+        }
+        checkElementCount(dimension);
+        return Tensors.build(() -> randomColor(colorModel, random), dimension);
+      }
+      int n = spec.toIntDefault();
+      checkElementCount(new int[] {n});
+      return F.mapRange(0, n, i -> randomColor(colorModel, random));
+    }
+
+    /** A non-negative integer or a list of them. */
+    private static boolean isSpecification(IExpr spec) {
+      if (spec.isList()) {
+        return ((IAST) spec).forAll(x -> x.isInteger() && !x.isNegative());
+      }
+      return spec.isInteger() && !spec.isNegative() && F.isPresent(spec.toIntDefault());
+    }
+
+    /**
+     * The color expression with blanks for <code>expr</code>, or {@link F#NIL} if it is no color
+     * model.
+     */
+    private static IExpr colorModel(IExpr expr) {
+      if (expr.isString()) {
+        switch (expr.toString()) {
+          case "RGB":
+            return F.RGBColor(F.$b(), F.$b(), F.$b());
+          case "Hue":
+          case "HSB":
+            return F.Hue(F.$b(), F.$b(), F.$b());
+          case "Gray":
+          case "GrayLevel":
+            return F.GrayLevel(F.$b());
+          case "CMYK":
+            return F.function(S.CMYKColor, F.$b(), F.$b(), F.$b(), F.$b());
+          default:
+            return F.NIL;
+        }
+      }
+      if (expr.isAST() && expr.argSize() > 0 && expr.head().isBuiltInSymbol()) {
+        switch (((IBuiltInSymbol) expr.head()).ordinal()) {
+          case ID.RGBColor:
+          case ID.Hue:
+          case ID.GrayLevel:
+          case ID.CMYKColor:
+          case ID.LABColor:
+          case ID.LCHColor:
+          case ID.LUVColor:
+          case ID.XYZColor:
+            return expr;
+          default:
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr randomColor(IAST model, Random random) {
+      return model.map(x -> x.isBlank() ? F.num(random.nextDouble()) : x, 1);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
     }
   }
 
@@ -242,31 +361,42 @@ public final class RandomFunctions {
 
       IExpr arg1 = ast.arg1();
 
-      if (arg1.isRuleAST() && arg1.first().isList() && arg1.second().isList()
-          && arg1.first().size() == arg1.second().size()) {
-        IAST weights = (IAST) arg1.first();
+      if (arg1.isRuleAST()) {
+        if (!arg1.second().isList() || arg1.second().argSize() == 0) {
+          // The items for choice `1` should be a nonempty list or a rule weights -> choices.
+          return Errors.printMessage(S.RandomChoice, "lrwl", F.list(arg1), engine);
+        }
         IAST items = (IAST) arg1.second();
-        WeightedSampler sampler =
-            WeightedSampler.of(weights, items.argSize(), engine.getRandom());
-        if (sampler != null) {
-          if (ast.isAST1()) {
-            return items.get(sampler.next() + 1);
+        if (arg1.first().isList() && arg1.first().size() != items.size()) {
+          // The weights given on the left-hand side of `1` should have the same length as the data
+          // given on the right-hand side.
+          return Errors.printMessage(S.RandomChoice, "wghtvl", F.list(arg1), engine);
+        }
+        WeightedSampler sampler = arg1.first().isList()
+            ? WeightedSampler.of((IAST) arg1.first(), items.argSize(), engine.getRandom())
+            : null;
+        if (sampler == null) {
+          // The weights given on the left-hand side of `1` should be a list of positive numerical
+          // quantities having the same length as the list given on the right-hand side.
+          return Errors.printMessage(S.RandomChoice, "wghtv", F.list(arg1), engine);
+        }
+        if (ast.isAST1()) {
+          return items.get(sampler.next() + 1);
+        }
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          //
+          if (arg2.isList()) {
+            // n1 x n2 x n3 ... array
+            int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+            if (dimension == null) {
+              return F.NIL;
+            }
+            return Tensors.build(() -> items.get(sampler.next() + 1), dimension);
           }
-          if (ast.isAST2()) {
-            IExpr arg2 = ast.arg2();
-            //
-            if (arg2.isList()) {
-              // n1 x n2 x n3 ... array
-              int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
-              if (dimension == null) {
-                return F.NIL;
-              }
-              return Tensors.build(() -> items.get(sampler.next() + 1), dimension);
-            }
-            int n = arg2.toMachineInt();
-            if (n > 0) {
-              return F.mapRange(0, n, i -> items.get(sampler.next() + 1));
-            }
+          int n = arg2.toIntDefault();
+          if (n > 0) {
+            return F.mapRange(0, n, i -> items.get(sampler.next() + 1));
           }
         }
       } else if (arg1.isList()) {
@@ -274,7 +404,8 @@ public final class RandomFunctions {
         Random random = engine.getRandom();
         final int listSize = list.argSize();
         if (listSize == 0) {
-          return F.NIL;
+          // The items for choice `1` should be a nonempty list or a rule weights -> choices.
+          return Errors.printMessage(S.RandomChoice, "lrwl", F.list(arg1), engine);
         }
         int randomIndex = random.nextInt(listSize);
         if (ast.isAST1()) {
@@ -295,7 +426,7 @@ public final class RandomFunctions {
               return list.get(randomValue[0] + 1);
             }, dimension);
           }
-          int n = arg2.toMachineInt();
+          int n = arg2.toIntDefault();
           if (n > 0) {
             IASTAppendable result = F.ListAlloc(n);
             for (int i = 0; i < n; i++) {
@@ -328,43 +459,42 @@ public final class RandomFunctions {
           double im = tlr.nextDouble();
           return F.complexNum(re, im);
         } else if (ast.isAST1()) {
-          if (ast.arg1().isList2()) {
-            Complex min = engine.evalComplex(ast.arg1().first());
-            Complex max = engine.evalComplex(ast.arg1().second());
-            double minRe = min.getReal();
-            double minIm = min.getImaginary();
-            double maxRe = max.getReal();
-            double maxIm = max.getImaginary();
-            // the two corners span a rectangle in the complex plane
-            if (minRe > maxRe) {
-              double temp = minRe;
-              minRe = maxRe;
-              maxRe = temp;
-            }
-            if (minIm > maxIm) {
-              double temp = minIm;
-              minIm = maxIm;
-              maxIm = temp;
-            }
-            if (F.isEqual(minIm, maxIm) && F.isEqual(minRe, maxRe)) {
-              return F.complexNum(minRe, minIm);
-            }
-            Random tlr = engine.getRandom();
-            // a degenerate rectangle (a line segment) keeps its fixed coordinate
-            double re = minRe < maxRe ? boundedNextDouble(tlr, minRe, maxRe) : minRe;
-            double im = minIm < maxIm ? boundedNextDouble(tlr, minIm, maxIm) : minIm;
-            return F.complexNum(re, im);
-          } else {
-            Complex max = engine.evalComplex(ast.arg1());
-            Random tlr = engine.getRandom();
-            return F.complexNum(boundedNextDouble(tlr, max.getReal()),
-                boundedNextDouble(tlr, max.getImaginary()));
+          final boolean corners = ast.arg1().isList2();
+          // a single bound is the corner opposite to 0
+          Complex min = corners ? engine.evalComplex(ast.arg1().first()) : Complex.ZERO;
+          Complex max = engine.evalComplex(corners ? ast.arg1().second() : ast.arg1());
+          double minRe = min.getReal();
+          double minIm = min.getImaginary();
+          double maxRe = max.getReal();
+          double maxIm = max.getImaginary();
+          // the two corners span a rectangle in the complex plane
+          if (minRe > maxRe) {
+            double temp = minRe;
+            minRe = maxRe;
+            maxRe = temp;
           }
+          if (minIm > maxIm) {
+            double temp = minIm;
+            minIm = maxIm;
+            maxIm = temp;
+          }
+          if (F.isEqual(minIm, maxIm) && F.isEqual(minRe, maxRe)) {
+            return F.complexNum(minRe, minIm);
+          }
+          Random tlr = engine.getRandom();
+          // a degenerate rectangle (a line segment) keeps its fixed coordinate
+          double re = minRe < maxRe ? boundedNextDouble(tlr, minRe, maxRe) : minRe;
+          double im = minIm < maxIm ? boundedNextDouble(tlr, minIm, maxIm) : minIm;
+          return F.complexNum(re, im);
         } else if (ast.isAST2()) {
           IExpr spec = ast.arg2();
-          if (spec.isInteger()) {
-            // RandomComplex(range, n) gives a list of n numbers
-            spec = F.list(spec);
+          if (spec.isInteger() || spec.isReal()) {
+            // RandomComplex(range, n) gives a list of n numbers; a whole-valued real n is a count
+            int n = spec.toIntDefault();
+            if (n < 0) {
+              return F.NIL;
+            }
+            spec = F.list(F.ZZ(n));
           }
           if (spec.isList()) {
             IAST list = (IAST) spec;
@@ -465,7 +595,7 @@ public final class RandomFunctions {
             }
           }
           if (max == Integer.MAX_VALUE) {
-            return F.NIL;
+            return randomBigIntegerRange(ast, engine);
           }
           Random tlr = engine.getRandom();
           if (ast.isAST2()) {
@@ -480,7 +610,7 @@ public final class RandomFunctions {
               final int max2 = max;
               return Tensors.build(() -> F.ZZ(tlr.nextInt((max2 - min2) + 1) + min2), dimension);
             }
-            int size = arg2.toMachineInt();
+            int size = arg2.toIntDefault();
             if (size >= 0) {
               final int minimum = min;
               final int randomBound = (max - minimum) + 1;
@@ -490,7 +620,7 @@ public final class RandomFunctions {
           }
           return F.ZZ(tlr.nextInt((max - min) + 1) + min);
         }
-        return F.NIL;
+        return randomBigIntegerRange(ast, engine);
       }
       if (ast.arg1().isInteger()) {
         // RandomInteger(100) gives an integer between 0 and 100
@@ -515,7 +645,7 @@ public final class RandomFunctions {
             final boolean negative2 = negative;
             return Tensors.build(() -> randomBigInteger(upperLimit2, negative2, tlr), dimension);
           }
-          int size = arg2.toMachineInt();
+          int size = arg2.toIntDefault();
           if (size >= 0) {
             BigInteger limit = upperLimit;
             return F.mapRange(0, size, i -> randomBigInteger(limit, negative, tlr));
@@ -529,13 +659,62 @@ public final class RandomFunctions {
       return F.NIL;
     }
 
+    /**
+     * <code>RandomInteger({min, max})</code>, <code>RandomInteger({min, max}, n)</code> and
+     * <code>RandomInteger({min, max}, {n1, n2, ...})</code> for bounds which aren't both machine
+     * integers.
+     */
+    private IExpr randomBigIntegerRange(final IAST ast, EvalEngine engine) {
+      IExpr lower = ast.arg1().first();
+      IExpr upper = ast.arg1().second();
+      if (!lower.isInteger() || !upper.isInteger()) {
+        return F.NIL;
+      }
+      BigInteger min = ((IInteger) lower).toBigNumerator();
+      BigInteger max = ((IInteger) upper).toBigNumerator();
+      if (min.compareTo(max) > 0) {
+        BigInteger temp = min;
+        min = max;
+        max = temp;
+      }
+      final BigInteger minimum = min;
+      final BigInteger range = max.subtract(min);
+      final Random tlr = engine.getRandom();
+      if (ast.isAST1()) {
+        return F.ZZ(randomBigIntegerValue(range, tlr).add(minimum));
+      }
+      IExpr arg2 = ast.arg2();
+      if (arg2.isList()) {
+        // n1 x n2 x n3 ... array
+        int[] dimension = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
+        if (dimension == null) {
+          return F.NIL;
+        }
+        checkElementCount(dimension);
+        return Tensors.build(() -> F.ZZ(randomBigIntegerValue(range, tlr).add(minimum)),
+            dimension);
+      }
+      int size = arg2.toIntDefault();
+      if (size >= 0) {
+        checkElementCount(new int[] {size});
+        return F.mapRange(0, size, i -> F.ZZ(randomBigIntegerValue(range, tlr).add(minimum)));
+      }
+      return F.NIL;
+    }
+
     private IExpr randomBigInteger(BigInteger upperLimit, boolean negative, Random tlr) {
+      BigInteger r = randomBigIntegerValue(upperLimit, tlr);
+      return F.ZZ(negative ? r.negate() : r);
+    }
+
+    /** A uniformly distributed random integer from <code>0</code> to <code>upperLimit</code>. */
+    private static BigInteger randomBigIntegerValue(BigInteger upperLimit, Random tlr) {
       BigInteger r;
       final int nlen = upperLimit.bitLength();
       do {
         r = new BigInteger(nlen, tlr);
       } while (r.compareTo(upperLimit) > 0);
-      return F.ZZ(negative ? r.negate() : r);
+      return r;
     }
 
     @Override
@@ -743,7 +922,7 @@ public final class RandomFunctions {
         } else if (ast.isAST2()) {
           if (ast.arg2().isList()) {
             if (ast.arg2().argSize() == 1) {
-              int n = ast.arg2().first().toMachineInt();
+              int n = ast.arg2().first().toIntDefault();
               if (n <= 0) {
                 return F.NIL;
               }
@@ -756,7 +935,7 @@ public final class RandomFunctions {
             }
             return Tensors.build(() -> randomReal(arg1, engine), dimension);
           }
-          int n = ast.arg2().toMachineInt();
+          int n = ast.arg2().toIntDefault();
           if (n > 0) {
             return randomASTRealVector(arg1, n, engine);
           }

@@ -10,8 +10,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -39,31 +39,28 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
    */
   private static IExpr finiteProduct(IExpr a, IExpr q, int n) {
     if (n > 0 && n < MAX_EXPANSION) {
-      IASTAppendable result = F.TimesAlloc();
-      for (int k = 0; k < n; k++) {
-        IExpr term;
-        if (k == 0) {
-          term = a;
-        } else if (k == 1) {
-          term = F.Times(a, q);
-        } else {
-          term = F.Times(a, F.Power(q, F.ZZ(k)));
-        }
-        result.append(F.Subtract(F.C1, term));
-      }
-      return result;
+      return factors(a, q, 0, n - 1, 1);
     } else if (n < 0 && n > -MAX_EXPANSION) {
-      int max = -n;
-      IASTAppendable result = F.TimesAlloc();
-      for (int k = 1; k <= max; k++) {
-        IExpr term = k == 1 ? F.Times(a, F.Power(q, F.CN1)) : F.Times(a, F.Power(q, F.ZZ(-k)));
-        result.append(F.Subtract(F.C1, term));
-      }
-      return F.Power(result, F.CN1);
+      return F.Power(factors(a, q, 1, -n, -1), F.CN1);
     } else if (n == 0) {
       return F.C1;
     }
     return F.NIL;
+  }
+
+  /**
+   * The product of <code>1 - a*q^(sign*k)</code> for <code>k = from..to</code>, multiplied
+   * pairwise and exactly if <code>a</code> and <code>q</code> are rational numbers.
+   */
+  private static IExpr factors(IExpr a, IExpr q, int from, int to, int sign) {
+    if (a.isRational() && q.isRational() && !q.isZero()) {
+      IRational ra = (IRational) a;
+      IRational rq = sign < 0 ? ((IRational) q).inverse() : (IRational) q;
+      return F.productRational(k -> ra.multiply(rq.powerRational(k)).negate().add(F.C1), from, to,
+          1);
+    }
+    return F.product(k -> F.Subtract(F.C1, F.Times(a, F.Power(q, sign < 0 ? k.negate() : k))),
+        from, to);
   }
 
   public QPochhammer() {}

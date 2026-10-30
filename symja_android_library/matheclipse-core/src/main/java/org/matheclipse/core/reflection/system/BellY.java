@@ -65,7 +65,6 @@ public class BellY extends AbstractFunctionEvaluator {
         }
       }
 
-      IExpr s = F.C0;
       int max = n - k + 2;
 
       int iterationLimit = engine.getIterationLimit();
@@ -73,19 +72,20 @@ public class BellY extends AbstractFunctionEvaluator {
         IterationLimitExceeded.throwIt(max, originalAST);
       }
 
-      for (int m = 1; m < max; m++) {
-        if ((m < symbols.size()) && !symbols.get(m).isZero()) {
-          IExpr subBell = bellY(n - m, k - 1, symbols, originalAST, engine, cache, expand);
-
-          if (!subBell.isZero()) {
-            // Exact arbitrary-precision Binomial Coefficient
-            IExpr binom = engine.evaluate(F.Binomial(F.ZZ(n - 1), F.ZZ(m - 1)));
-            IExpr product = F.Times(binom, subBell, symbols.get(m));
-            IExpr term = engine.evaluate(expand ? F.Expand(product) : product);
-            s = engine.evaluate(F.Plus(s, term));
-          }
+      // the terms are collected and added up once
+      IExpr s = engine.evaluate(F.intSum(m -> {
+        if (m >= symbols.size() || symbols.get(m).isZero()) {
+          return F.C0;
         }
-      }
+        IExpr subBell = bellY(n - m, k - 1, symbols, originalAST, engine, cache, expand);
+        if (subBell.isZero()) {
+          return F.C0;
+        }
+        // Exact arbitrary-precision Binomial Coefficient
+        IExpr binom = engine.evaluate(F.Binomial(F.ZZ(n - 1), F.ZZ(m - 1)));
+        IExpr product = F.Times(binom, subBell, symbols.get(m));
+        return engine.evaluate(expand ? F.Expand(product) : product);
+      }, 1, max - 1, false));
 
       // DP Cache save
       if (cache != null) {
@@ -129,24 +129,24 @@ public class BellY extends AbstractFunctionEvaluator {
     for (int j = cols - 1; j >= 1; j--) {
       IExpr[] gNext = new IExpr[n + 1];
       for (int i = 1; i <= n; i++) {
-        IExpr sum = F.C0;
-        for (int k = 1; k <= i; k++) {
-          IExpr fk = matrix.getPart(k, j);
-          if (!fk.isZero()) {
-            int varsSize = i - k + 1;
-            IASTAppendable vars = F.ListAlloc(varsSize);
-            for (int t = 1; t <= varsSize; t++) {
-              vars.append(g[t]);
-            }
-            // Keep the factored structure of the inner composition (no expansion)
-            IExpr bell = bellY(i, k, vars, originalAST, engine, new IExpr[i + 1][k + 1], false);
-            if (!bell.isZero()) {
-              IExpr term = engine.evaluate(F.Times(fk, bell));
-              sum = engine.evaluate(F.Plus(sum, term));
-            }
+        final int row = i;
+        final IExpr[] inner = g;
+        final int column = j;
+        // the terms are collected and added up once
+        gNext[i] = engine.evaluate(F.intSum(k -> {
+          IExpr fk = matrix.getPart(k, column);
+          if (fk.isZero()) {
+            return F.C0;
           }
-        }
-        gNext[i] = sum;
+          int varsSize = row - k + 1;
+          IASTAppendable vars = F.ListAlloc(varsSize);
+          for (int t = 1; t <= varsSize; t++) {
+            vars.append(inner[t]);
+          }
+          // Keep the factored structure of the inner composition (no expansion)
+          IExpr bell = bellY(row, k, vars, originalAST, engine, new IExpr[row + 1][k + 1], false);
+          return bell.isZero() ? F.C0 : engine.evaluate(F.Times(fk, bell));
+        }, 1, i, false));
       }
       g = gNext;
     }

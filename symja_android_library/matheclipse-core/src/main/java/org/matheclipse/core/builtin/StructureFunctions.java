@@ -2716,9 +2716,71 @@ public class StructureFunctions {
             1);
       }
       if (list.size() > 1) {
-        return threadList(list, head, list.head(), seqSpec).orElse(list);
+        boolean[] mask = threadMask(list, seqSpec, engine);
+        if (mask == null) {
+          return F.NIL;
+        }
+        return threadList(list, head, list.head(), mask).orElse(list);
       }
       return F.NIL;
+    }
+
+    /**
+     * Mark the argument positions of <code>list</code> selected by the sequence specification.
+     *
+     * @param list the expression whose arguments are threaded over
+     * @param seqSpec the sequence specification (<code>null</code>, <code>All</code>,
+     *        <code>None</code>, <code>n</code>, <code>-n</code>, <code>{n}</code>,
+     *        <code>{m,n}</code> or <code>{m,n,s}</code>)
+     * @param engine the evaluation engine
+     * @return the mask indexed by argument position, or <code>null</code> if the specification is
+     *         invalid or selects positions beyond the arguments (a message is printed then)
+     */
+    private static boolean[] threadMask(final IAST list, IExpr seqSpec, EvalEngine engine) {
+      final int argSize = list.argSize();
+      boolean[] mask = new boolean[list.size()];
+      if (seqSpec == null || seqSpec == S.All) {
+        Arrays.fill(mask, 1, mask.length, true);
+        return mask;
+      }
+      if (seqSpec == S.None) {
+        return mask;
+      }
+      int from;
+      int to;
+      int step = 1;
+      if (seqSpec.isInteger()) {
+        int n = seqSpec.toIntDefault();
+        if (n == Integer.MIN_VALUE) {
+          return null;
+        }
+        from = n >= 0 ? 1 : n;
+        to = n >= 0 ? n : -1;
+      } else if (seqSpec.isList() && seqSpec.argSize() >= 1 && seqSpec.argSize() <= 3) {
+        IAST seqList = (IAST) seqSpec;
+        from = seqList.arg1().toIntDefault();
+        to = seqList.isAST1() ? from : seqList.arg2().toIntDefault();
+        if (seqList.isAST3()) {
+          step = seqList.arg3().toIntDefault();
+        }
+        if (from == Integer.MIN_VALUE || to == Integer.MIN_VALUE || step == Integer.MIN_VALUE
+            || step <= 0) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+      int start = from < 0 ? argSize + from + 1 : from;
+      int end = to < 0 ? argSize + to + 1 : to;
+      if (start < 1 || end > argSize || start > end + 1) {
+        // Cannot thread over positions `1` through `2` in `3`.
+        Errors.printMessage(S.Thread, "tpos", F.List(F.ZZ(from), F.ZZ(to), list), engine);
+        return null;
+      }
+      for (int i = start; i <= end; i += step) {
+        mask[i] = true;
+      }
+      return mask;
     }
 
     @Override
@@ -2733,53 +2795,11 @@ public class StructureFunctions {
      * @param list the arguments
      * @param head the head over which to thread
      * @param mapHead the arguments head (typically <code>ast.head()</code>)
-     * @param seqSpec the sequence specification (e.g. n, {n}, {m,n})
+     * @param mask the argument positions to thread over, indexed by argument position
      * @return
      */
-    public static IExpr threadList(final IAST list, IExpr head, IExpr mapHead, IExpr seqSpec) {
+    private static IExpr threadList(final IAST list, IExpr head, IExpr mapHead, boolean[] mask) {
       int argSize = list.argSize();
-      boolean[] mask = new boolean[list.size()];
-
-      // Build the thread mask based on the sequence specification
-      if (seqSpec == null) {
-        for (int i = 1; i <= argSize; i++) {
-          mask[i] = true;
-        }
-      } else {
-        if (seqSpec.isInteger()) {
-          int n = seqSpec.toIntDefault();
-          if (n > 0) {
-            for (int i = 1; i <= Math.min(n, argSize); i++)
-              mask[i] = true;
-          } else if (n < 0) {
-            for (int i = Math.max(1, argSize + n + 1); i <= argSize; i++)
-              mask[i] = true;
-          }
-        } else if (seqSpec.isList()) {
-          IAST seqList = (IAST) seqSpec;
-          if (seqList.isAST1() && seqList.arg1().isInteger()) {
-            int n = seqList.arg1().toIntDefault();
-            if (n < 0)
-              n = argSize + n + 1;
-            if (n >= 1 && n <= argSize)
-              mask[n] = true;
-          } else if (seqList.isAST2() && seqList.arg1().isInteger() && seqList.arg2().isInteger()) {
-            int m = seqList.arg1().toIntDefault();
-            int n = seqList.arg2().toIntDefault();
-            if (m < 0)
-              m = argSize + m + 1;
-            if (n < 0)
-              n = argSize + n + 1;
-            for (int i = Math.max(1, m); i <= Math.min(n, argSize); i++) {
-              mask[i] = true;
-            }
-          }
-        } else {
-          // Unrecognized sequence spec
-          return F.NIL;
-        }
-      }
-
       int listLength = -1;
       for (int i = 1; i <= argSize; i++) {
         if (mask[i] && list.get(i).isAST() && list.get(i).head().equals(head)) {

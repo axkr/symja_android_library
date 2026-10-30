@@ -1148,7 +1148,8 @@ public class ExprParser extends Scanner {
       if (negative) {
         numberStr = '-' + numberStr;
       }
-      if (numFormat == 10 && fCurrentChar == '`') {
+      final boolean integerMantissa = numFormat == 10 && fCurrentChar == '`';
+      if (integerMantissa) {
         numFormat = -1;
       }
       if (numFormat < 0) {
@@ -1200,6 +1201,14 @@ public class ExprParser extends Scanner {
               // a precision below the machine precision is kept: 1.5`5.497 has the precision 5.497
               String mantissaStr = withExponent(numberStr);
               getNextToken();
+              if (integerMantissa && isIntegerZero(numberStr)) {
+                // 0`20 is the exact zero
+                return F.C0;
+              }
+              if (isIntegerZero(numberStr.replace(".", ""))) {
+                // a zero has no significant digits: 0.`20 is the machine zero
+                return F.CD0;
+              }
               return F.num(mantissaStr, doublePrecision);
               // long precision = getJavaLong();
               // if (precision < ParserConfig.MACHINE_PRECISION) {

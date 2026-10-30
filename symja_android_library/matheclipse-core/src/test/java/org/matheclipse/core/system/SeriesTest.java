@@ -161,11 +161,11 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   @Test
   public void testSeriesArc() {
     check("Series(ArcTan(x),  {x, I, 3})  // InputForm", //
-        "Pi*Floor((Pi/2 - Arg( - I + x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+I*2*Log(2)+(-2)*I*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1)");
+        "Pi*Floor((Pi/2 - Arg(-I + x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+I*2*Log(2)+(-2)*I*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1)");
     check("Series(ArcCot(x),  {x, I, 3})  // InputForm", //
-        "-Pi*Floor((Pi - Arg( - I + x) - Arg(1/x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+(-2)*I*Log(2)+I*2*Log(-I+x)),-1/4,-I*1/16,1/48},0,4,1)");
+        "-Pi*Floor((Pi - Arg(-I + x) - Arg(1/x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+(-2)*I*Log(2)+I*2*Log(-I+x)),-1/4,-I*1/16,1/48},0,4,1)");
     check("Series(ArcCoth(x), {x, -1, 3}) // InputForm", //
-        " - I*(-Pi*Floor((Pi - Arg(1/x) - Arg(1 + x))/(2*Pi)) - Pi*Floor(Arg((1 + x)/x)/(2*Pi)) + SeriesData(x,-1,{1/2*(-Pi-I*Log(2)+I*Log(1+x)),I*1/4,I*1/16,I*1/48},0,4,1))");
+        "(-I)*(-Pi*Floor((Pi - Arg(1/x) - Arg(1 + x))/(2*Pi)) - Pi*Floor(Arg((1 + x)/x)/(2*Pi)) + SeriesData(x,-1,{1/2*(-Pi-I*Log(2)+I*Log(1+x)),I*1/4,I*1/16,I*1/48},0,4,1))");
 
     check("Series(ArcSin(x), {x, 1, 1})//InputForm", //
         "SeriesData(x,1,{Pi/2,(-Sqrt(2)*Sqrt(1-x))/Sqrt(-1+x)},0,3,2)");
@@ -175,10 +175,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,-1,{Pi,-Sqrt(2)},0,3,2)");
 
     check("Series(ArcSinh(x), {x, I, 3})//InputForm", //
-        " - I*((-1)^Floor((Pi/2 - Arg( - I + x))/(2*Pi))*SeriesData(x,I,{1+I,0,-1/12+I*1/12,0,-3/160-I*3/160},1,7,2) - Pi/2)");
+        "(-I)*((-1)^Floor((Pi/2 - Arg(-I + x))/(2*Pi))*SeriesData(x,I,{1+I,0,-1/12+I*1/12,0,-3/160-I*3/160},1,7,2) - Pi/2)");
 
     check("Series(ArcTanh(x), {x, 1, 3})//InputForm", //
-        " - I*(-Pi*Ceiling(Arg(-1 + x)/(2*Pi)) + SeriesData(x,1,{1/2*(Pi+I*Log(2)-I*Log(-1+x)),I*1/4,-I*1/16,I*1/48},0,4,1))");
+        "(-I)*(-Pi*Ceiling(Arg(-1 + x)/(2*Pi)) + SeriesData(x,1,{1/2*(Pi+I*Log(2)-I*Log(-1+x)),I*1/4,-I*1/16,I*1/48},0,4,1))");
 
     check("Series(ArcCosh(x+1), {x, 0, 5})//InputForm", //
         "SeriesData(x,0,{Sqrt(2),0,-1/(6*Sqrt(2)),0,3/(80*Sqrt(2)),0,-5/(448*Sqrt(2)),0,\n"
@@ -267,12 +267,12 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,0,{1,0,-1/2},3,6,1)");
 
     check("Series(Sin(x) ,{x,0,-2})//InputForm", //
-        "SeriesData(x,0,{1},1,2,1)");
+        "SeriesData(x,0,{},1,1,1)");
     check("Series(b*Sin(x) ,{x,0,-2})//InputForm", //
-        "SeriesData(x,0,{b},1,2,1)");
+        "SeriesData(x,0,{},1,1,1)");
 
     check("Series(b*x ,{x,0,-2})//InputForm", //
-        "SeriesData(x,0,{b},1,2,1)");
+        "SeriesData(x,0,{},1,1,1)");
     check("Series(b*x ,{x,0,5})//InputForm", //
         "SeriesData(x,0,{b},1,6,1)");
 
@@ -1504,6 +1504,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // x^2 + 2xy + y^2 + (higher order terms are dropped)
     check("Expand(Normal(Series((x+y)^3, {x, 0, 2}, {y, 0, 2})))", //
         "3*x^2*y+3*x*y^2+y^3");
+    // a coefficient keeps its leading term beyond the order in y
+    check("Series((x+2*y)^3, {x, 0, 2}, {y, 0, 2})//InputForm", //
+        "SeriesData(x,0,{SeriesData(y,0,{8},3,4,1),SeriesData(y,0,{12},2,3,1),SeriesData(y,\n"
+            + "0,{6},1,3,1)},0,3,1)");
   }
 
   @Test
@@ -2025,7 +2029,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // a branch discriminator is piecewise constant: expanding it would collapse it to its value at
     // the expansion point and lose the branch, so it stays an explicit summand
     check("1 + Series(ArcTan(x), {x, I, 3}) // InputForm", //
-        "SeriesData(x,I,{1+1/4*(Pi+I*2*Log(2)-I*2*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1) + Pi*Floor((Pi/2 - Arg( - I + x))/(2*Pi))");
+        "SeriesData(x,I,{1+1/4*(Pi+I*2*Log(2)-I*2*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1) + Pi*Floor((Pi/2 - Arg(-I + x))/(2*Pi))");
     // at an infinite expansion point x is expanded in 1/x and absorbed, like in WMA
     check("x + Series(Exp(1/x), {x, Infinity, 3}) // InputForm", //
         "SeriesData(x,Infinity,{1,1,1,1/2,1/6},-1,4,1)");

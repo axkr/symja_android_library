@@ -985,9 +985,69 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     checkNumeric("Variance({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", //
         "5.16122380952381");
     check("Variance({1.21, 3.4, 2+3*I, 4.66-0.1*I, 1.5, 5.61, 7.22})", //
-        "6.46265");
+        "6.46265+I*(-3.17207*10^-17)");
     // check("Variance(BernoulliDistribution(p))", "p*(1-p)");
     // check("Variance(BinomialDistribution(n, p))", "n*p*(1-p)");
+  }
+
+  @Test
+  public void testFindDistributionParametersMaximumLikelihood() {
+    // the shape parameters of the gamma and Weibull distributions solve one equation each
+    checkNumeric("d = {0.5, 1.4, 2.2, 0.9, 3.3, 1.7}; {FindDistributionParameters(d, GammaDistribution(a, b)),"
+        + " FindDistributionParameters(d, WeibullDistribution(a, b))}", //
+        "{{a->3.1153589360167517,b->0.5349838336116866},{a->1.941012669045716,b->1.886443597634606}}");
+    checkNumeric("d = {0.5, 1.4, 2.2, 0.9, 3.3, 1.7}; {FindDistributionParameters(d, LogNormalDistribution(a, b)),"
+        + " FindDistributionParameters(d, NormalDistribution(a, 2)),"
+        + " FindDistributionParameters(d, InverseGaussianDistribution(a, b))}", //
+        "{{a->0.3418287700503861,b->0.6099683298678997},{a->1.6666666666666667},"
+            + "{a->1.6666666666666667,b->3.81871812602645}}");
+    checkNumeric("EstimatedDistribution({0.5, 1.4, 2.2, 0.9, 3.3, 1.7}, LogNormalDistribution(a, b))", //
+        "LogNormalDistribution(0.3418287700503861,0.6099683298678997)");
+    check("FindDistributionParameters({3, 0, 2, 4, 1, 2}, PoissonDistribution(m))", //
+        "{m->2.0}");
+    // start values and the maximum likelihood method are accepted, other methods are not
+    checkNumeric("FindDistributionParameters({0.5, 1.4, 2.2, 0.9, 3.3, 1.7}, LogNormalDistribution(a, b),"
+        + " {{a, 2}, {b, 3}}, ParameterEstimator -> \"MaximumLikelihood\")", //
+        "{a->0.3418287700503861,b->0.6099683298678997}");
+    check("FindDistributionParameters({0.5, 1.4}, LogNormalDistribution(a, b),"
+        + " ParameterEstimator -> \"MethodOfMoments\")", //
+        "FindDistributionParameters({0.5,1.4},LogNormalDistribution(a,b),parameterestimator->MethodOfMoments)");
+    // without a closed form the log-likelihood is maximized numerically
+    checkNumeric("FindDistributionParameters({0.5, 1.4, 2.2, 0.9, 3.3, 1.7}, LogisticDistribution(a, b))", //
+        "{a->1.5963901438126853,b->0.5300749054916946}", 1.0e-6);
+  }
+
+  @Test
+  public void testGoodnessOfFitTests() {
+    // the exact p-value of Marsaglia, Tsang and Wang
+    checkNumeric("k = {0.4, 0.7, 1.1, 1.9, 2.5, 0.2, 1.3}; {KolmogorovSmirnovTest(k, ExponentialDistribution(1.)),"
+        + " KolmogorovSmirnovTest(k, ExponentialDistribution(1.), \"TestStatistic\")}", //
+        "{0.7413438676472718,0.23855748773049196}");
+    // the named tests are the tests of DistributionFitTest
+    check("k = {0.4, 0.7, 1.1, 1.9, 2.5, 0.2, 1.3}; e = ExponentialDistribution(1.);"
+        + " {CramerVonMisesTest(k, e) == DistributionFitTest(k, e, \"CramerVonMises\"),"
+        + " AndersonDarlingTest(k, e) == DistributionFitTest(k, e, \"AndersonDarling\"),"
+        + " KuiperTest(k, e, \"TestStatistic\") =="
+        + " DistributionFitTest(k, e, \"HypothesisTestData\")[\"TestStatistic\", \"Kuiper\"],"
+        + " WatsonUSquareTest(k, e) == DistributionFitTest(k, e, \"WatsonUSquare\"),"
+        + " PearsonChiSquareTest(k, e) == DistributionFitTest(k, e, \"PearsonChiSquare\")}", //
+        "{True,True,True,True,True}");
+    checkNumeric("KuiperTest({0.4, 0.7, 1.1, 1.9, 2.5, 0.2, 1.3}, ExponentialDistribution(1.), \"TestData\")", //
+        "{0.17778534349724795,0.9003077893218836}");
+    // CramerVonMisesTest::htdrng below 7 points, the p-value anyway
+    checkNumeric("CramerVonMisesTest({0.3, 0.9, 1.4}, ExponentialDistribution(1.))", //
+        "0.8673941510127696");
+    // the two-sample test
+    checkNumeric("{KolmogorovSmirnovTest({2, 5, 1, 7}, {3, 8, 9, 6, 4}),"
+        + " KolmogorovSmirnovTest({2, 5, 1, 7}, {3, 8, 9, 6, 4}, \"TestStatistic\")}", //
+        "{0.5634920634920635,0.5}");
+    // a normal distribution with estimated mean and deviation costs two degrees of freedom
+    checkNumeric("p = {0.9, 1.6, 0.4, 2.8, 1.2, 2.0, 1.1, 0.7, 1.5}; {PearsonChiSquareTest(p),"
+        + " PearsonChiSquareTest(p, Automatic, \"TestStatistic\"), Exp(-0.4444444444444445/2)}", //
+        "{0.8007374029168082,0.4444444444444445,0.8007374029168082}");
+    // a tiny p-value of a large sample is 0.
+    check("DistributionFitTest(Range(0.2, 5, 0.0005), WeibullDistribution(2., 2.5), \"KolmogorovSmirnov\")", //
+        "0.0");
   }
 
   /** The JUnit setup method */

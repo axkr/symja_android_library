@@ -1234,6 +1234,24 @@ public class PiecewiseFunctions {
     }
   }
 
+  /**
+   * The absolute value of a real number or of an exact real constant like <code>Pi/10</code>, whose
+   * position relative to a bound is then decided by comparison.
+   *
+   * @param x the argument
+   * @param engine the evaluation engine
+   * @return <code>F.NIL</code> if <code>x</code> is not a real constant
+   */
+  private static IExpr absOfRealConstant(IExpr x, EvalEngine engine) {
+    if (x.isReal()) {
+      return x.abs();
+    }
+    if (x.isNumericFunction(true) && x.isRealResult()) {
+      return engine.evaluate(F.Abs(x));
+    }
+    return F.NIL;
+  }
+
   private static class UnitBox extends AbstractEvaluator {
 
     @Override
@@ -1248,10 +1266,10 @@ public class PiecewiseFunctions {
       // single argument UnitBox(x)
       IExpr arg1 = ast.arg1();
 
-      // Numeric Evaluation for Reals (Doubles, Rationals, Integers)
+      // Numeric Evaluation for Reals (Doubles, Rationals, Integers) and real constants
       // Definition: 1 for Abs(x) <= 1/2, 0 for Abs(x) > 1/2
-      if (arg1.isReal()) {
-        IExpr absArg = arg1.abs();
+      IExpr absArg = absOfRealConstant(arg1, engine);
+      if (absArg.isPresent()) {
 
         // If |x| > 1/2, the result is 0
         if (absArg.greater(F.C1D2).isTrue()) {
@@ -1292,10 +1310,10 @@ public class PiecewiseFunctions {
       // single argument UnitTriangle(x)
       IExpr arg1 = ast.arg1();
 
-      // Numeric Evaluation for Reals (Doubles, Rationals, Integers)
+      // Numeric Evaluation for Reals (Doubles, Rationals, Integers) and real constants
       // Definition: Max(0, 1 - Abs(x))
-      if (arg1.isReal()) {
-        IExpr absArg = arg1.abs();
+      IExpr absArg = absOfRealConstant(arg1, engine);
+      if (absArg.isPresent()) {
 
         // If |x| >= 1, the result is 0
         if (absArg.greaterEqual(F.C1).isTrue()) {

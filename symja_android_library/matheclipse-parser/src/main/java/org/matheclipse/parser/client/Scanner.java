@@ -924,6 +924,26 @@ public abstract class Scanner {
   }
 
   /**
+   * Whether the digits of a number without a decimal point, perhaps with a sign, are all zeros. A
+   * zero written without a decimal point keeps no precision mark: <code>0`20</code> is the exact
+   * integer <code>0</code>, where <code>0.`20</code> is a real zero.
+   *
+   * @param numberStr the digits of the number
+   */
+  protected static boolean isIntegerZero(String numberStr) {
+    int start = numberStr.startsWith("-") ? 1 : 0;
+    if (start == numberStr.length()) {
+      return false;
+    }
+    for (int i = start; i < numberStr.length(); i++) {
+      if (numberStr.charAt(i) != '0') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Parse a Java <code>string</code> from the digits <code>0,1,2,3,4,5,6,7,8,9</code>.
    *
    * @return

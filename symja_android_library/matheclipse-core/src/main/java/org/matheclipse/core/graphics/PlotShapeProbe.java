@@ -176,6 +176,25 @@ public final class PlotShapeProbe {
     return curves;
   }
 
+  /**
+   * Whether the value of <code>function</code> at one of the probes is a curve, or a list holding
+   * curves.
+   *
+   * @param dimension {@link #SCALAR} for a function of one value, otherwise the number of
+   *        coordinates of one point
+   */
+  public static boolean readsAsCurves(IExpr function, List<IAST> probes, int dimension,
+      EvalEngine engine) {
+    for (IAST rules : probes) {
+      IExpr value = probe(function, rules, engine);
+      if (value.isPresent()
+          && curvesOfValue(function, value, dimension, false, new ArrayList<>())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** The function's value at one probe, or {@link F#NIL}; its messages are not the user's. */
   private static IExpr probe(IExpr function, IAST rules, EvalEngine engine) {
     boolean quiet = engine.isQuietMode();

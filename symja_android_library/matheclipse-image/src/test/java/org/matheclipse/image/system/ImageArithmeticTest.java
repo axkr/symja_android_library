@@ -34,13 +34,6 @@ public class ImageArithmeticTest extends AbstractTestCase {
         "{{64,64}}");
   }
 
-  /** Two images of different sizes have no sample by sample meaning. */
-  @Test
-  public void imagesOfDifferentSizesDoNotCombine() {
-    check("ImageAdd(Image({{0.5}}),Image({{0.5,0.5}}))", //
-        "ImageAdd(Image(Dimensions: 1,1 Transparency: 1),Image(Dimensions: 2,1 Transparency: 1))");
-  }
-
   @Test
   public void aColorImageTakesOneOperandPerChannel() {
     check("ImageData(ImageAdd(Image({{{0.0,0.0,0.0}}}),{0.25,0.5,1.0}),\"Byte\")", //
@@ -152,5 +145,28 @@ public class ImageArithmeticTest extends AbstractTestCase {
         "Times");
     check("Head(Image({{0.5}})^n)", //
         "Power");
+  }
+
+  /**
+   * An image of another size is centred on the first one, half a pixel to the top left when the
+   * sizes differ by an odd number; the samples it doesn't cover keep their values.
+   */
+  @Test
+  public void imagesOfDifferentSizesAreCentred() {
+    check("ImageData(ImageAdd(Image({{0.25, 0.5, 0.75, 1.0, 0.0}}), Image({{0.125, 0.25, 0.375}})))", //
+        "{{0.25,0.625,1.0,1.375,0.0}}");
+    check("ImageData(ImageSubtract(Image({{0.5, 0.5}}), Image({{0.25, 0.125, 0.0625, 0.5}})))", //
+        "{{0.375,0.4375}}");
+    check("ImageData(ImageAdd(Image({{0.5}}),Image({{0.5,0.5}})))", //
+        "{{1.0}}");
+    check("ImageData(ImageAdd(Image(ConstantArray(0.25, {2, 4})), Image({{0.5}})))", //
+        "{{0.25,0.75,0.25,0.25},\n" //
+            + " {0.25,0.25,0.25,0.25}}");
+    // a colour image makes a greyscale one a colour image
+    check("ImageData(ImageMultiply(Image({{0.5, 0.25}}), Image({{{0.5, 1.0, 0.25}}})))", //
+        "{{{0.25,0.5,0.125},{0.25,0.25,0.25}}}");
+    // the difference needs images of one size
+    check("Head(ImageDifference(Image({{0.5, 0.25}}), Image({{0.5}})))", //
+        "ImageDifference");
   }
 }

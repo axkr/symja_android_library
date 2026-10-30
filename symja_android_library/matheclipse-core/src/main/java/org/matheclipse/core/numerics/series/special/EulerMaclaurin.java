@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import org.matheclipse.core.eval.util.CompensatedSum;
 import org.matheclipse.core.numerics.integral.Quadrature;
 import org.matheclipse.core.numerics.series.dp.SeriesAlgorithm;
 import org.matheclipse.core.numerics.utils.Sequences;
@@ -166,12 +167,12 @@ public final class EulerMaclaurin {
 
   private final double finiteSum(final Function<? super Double, Double> f, final long start,
       final long end) {
-    double sum = 0.0;
+    final CompensatedSum sum = new CompensatedSum();
     for (long k = start; k <= end; ++k) {
-      sum += f.apply((double) k);
+      sum.add(f.apply((double) k));
     }
     myFEvals += end - start + 1;
-    return sum;
+    return sum.value();
   }
 
   private final long determineLowerBound(final Function<? super Double, Double> f,

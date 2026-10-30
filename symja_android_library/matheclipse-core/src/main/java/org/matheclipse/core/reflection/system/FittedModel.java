@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.data.AbstractFittedModelExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class FittedModel extends AbstractEvaluator {
 
@@ -40,5 +41,10 @@ public class FittedModel extends AbstractEvaluator {
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {}
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.putMessage(IPatternMatcher.SET, "elmntav",
+        F.stringx("\"`1`\" is not an available property."));
+    newSymbol.putMessage(IPatternMatcher.SET, "notprop", F.stringx(
+        "`1` is not a known property for FittedModel[\u2026]. Use FittedModel[\u2026][\"Properties\"] for a list of properties."));
+  }
 }

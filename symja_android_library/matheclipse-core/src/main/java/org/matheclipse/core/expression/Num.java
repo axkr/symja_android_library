@@ -49,6 +49,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.math.DoubleMath;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * <code>INum</code> implementation which wraps a <code>double</code> value to represent a numeric
@@ -284,7 +285,7 @@ public class Num implements INum {
   @Override
   public IReal add(final IReal val) {
     if (val instanceof INum) {
-      return multiply((INum) val);
+      return add((INum) val);
     }
     return val.add(this);
   }
@@ -460,6 +461,8 @@ public class Num implements INum {
    *
    * @return {@link F#NIL} if the argument is no negative machine number, or the order an integer
    */
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "exact zeros of Cos(Pi*v) and Sin(Pi*v) at half-integer v")
   private IExpr besselReflected(IExpr arg2, boolean modified) {
     if (!(arg2 instanceof Num) || !(((Num) arg2).value < 0.0) || value == Math.rint(value)
         || !Double.isFinite(value)) {

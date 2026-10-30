@@ -97,7 +97,8 @@ public class RandomPoint extends AbstractFunctionEvaluator {
    *         them
    */
   private static int[] countSpecification(IExpr spec) {
-    if (spec.isInteger()) {
+    if (spec.isInteger() || spec.isReal()) {
+      // a whole-valued real like 3. counts as well
       int n = spec.toIntDefault();
       return n >= 0 ? new int[] {n} : null;
     }
@@ -105,7 +106,7 @@ public class RandomPoint extends AbstractFunctionEvaluator {
       int[] dimensions = new int[spec.argSize()];
       for (int i = 1; i <= spec.argSize(); i++) {
         IExpr n = ((IAST) spec).get(i);
-        dimensions[i - 1] = n.isInteger() ? n.toIntDefault() : -1;
+        dimensions[i - 1] = n.isInteger() || n.isReal() ? n.toIntDefault() : -1;
         if (dimensions[i - 1] < 0) {
           return null;
         }

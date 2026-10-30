@@ -42,8 +42,9 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2}, x)", //
         "0.678392-0.266332*x+0.190955*x^2");
     // five functions for four points: the fit through the points with the smallest coefficients
+    // of the functions scaled to unit length at the points
     check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2,x^4,x^5}, x)", //
-        "1.0-0.632261*x-0.525089*x^2+0.188973*x^4-0.0316222*x^5");
+        "1.0-1.75183*x+0.753488*x^2+0.000755607*x^4-0.0024161*x^5");
 
     check("Fit({{1,1},{2,4},{3,9},{4,16}},{1,x,x^2},x) // Chop", //
         "1.0*x^2");
@@ -80,7 +81,7 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
         "-0.1+2.19*x-0.05*x^2");
     // three functions for two points
     check("Fit({{1,2.1},{2,3.9}},{1,x,x^2},x)", //
-        "0.985714+0.771429*x+0.342857*x^2");
+        "1.03714+0.694286*x+0.368571*x^2");
     // two points at the same place
     check("Fit({{1,2},{1,3}},{1,x},x)", //
         "1.25+1.25*x");
@@ -212,9 +213,11 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("lm(\"Properties\")", //
         "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,"
             + "ANOVATableFStatistics,ANOVATableMeanSquares,ANOVATablePValues,ANOVATableSumsOfSquares,"
-            + "BestFit,BestFitParameters,CookDistances,EstimatedVariance,FitResiduals,HatDiagonal,"
-            + "ParameterConfidenceIntervals,ParameterErrors,ParameterPValues,ParameterTStatistics,"
-            + "ParameterTable,ParameterTableEntries,PredictedResponse,RSquared}");
+            + "BasisFunctions,BestFit,BestFitParameters,CookDistances,CovarianceMatrix,DesignMatrix,"
+            + "EstimatedVariance,FitResiduals,HatDiagonal,IndependentVariables,MeanPredictionBands,"
+            + "ParameterConfidenceIntervals,ParameterConfidenceRegion,ParameterErrors,"
+            + "ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,"
+            + "PredictedResponse,Response,RSquared,SinglePredictionBands}");
   }
 
   /**
@@ -241,7 +244,7 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("nlm(2.5)", //
         "5.0");
     check("nlm(\"Properties\")", //
-        "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,ANOVATableMeanSquares,ANOVATableSumsOfSquares,BestFit,BestFitParameters,EstimatedVariance,FitResiduals,ParameterConfidenceIntervals,ParameterErrors,ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,PredictedResponse,RSquared}");
+        "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,ANOVATableMeanSquares,ANOVATableSumsOfSquares,BestFit,BestFitParameters,CovarianceMatrix,EstimatedVariance,FitResiduals,MeanPredictionBands,ParameterConfidenceIntervals,ParameterConfidenceRegion,ParameterErrors,ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,PredictedResponse,RSquared,SinglePredictionBands}");
     // an exact fit
     check("nlm2=NonlinearModelFit({{1,2},{2,5},{3,10}}, a*x^2+b, {a,b}, x)", //
         "FittedModel[1.0+x^2]");

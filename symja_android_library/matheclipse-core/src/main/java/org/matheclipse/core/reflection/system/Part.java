@@ -878,6 +878,12 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       // Cannot take positions `1` through `2` in `3`.
       return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1), engine);
     }
+    if ((step > 0 && start <= last && (start < 1 || last >= size))
+        || (step < 0 && start >= last && (last < 1 || start >= size))) {
+      // a non-empty span which runs past either end
+      // Cannot take positions `1` through `2` in `3`.
+      return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1), engine);
+    }
     if (step != 0) {
       IASTAppendable result = arg1.copyHead((last - start) / step + 2);
       for (int i = start; step < 0 ? i >= last : i <= last; i += step) {

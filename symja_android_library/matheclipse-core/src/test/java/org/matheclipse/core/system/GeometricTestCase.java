@@ -1718,10 +1718,12 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "{0,1,GoldenRatio}");
     check("Head(PolyhedronData(\"Icosahedron\"))", //
         "Graphics3D");
+    // the named solids and the family members, sorted by name; the square pyramid is {Pyramid,4}
     check("PolyhedronData()", //
-        "{Cube,Cuboctahedron,Dodecahedron,Icosahedron,Icosidodecahedron,Octahedron,"
-            + "RhombicDodecahedron,RhombicTriacontahedron,SquarePyramid,Tetrahedron,"
-            + "TruncatedIcosahedron}");
+        "{{Antiprism,4},{Antiprism,5},{Antiprism,6},{Antiprism,7},{Antiprism,8},{Antiprism,\n"
+            + "9},{Antiprism,10},Cube,Cuboctahedron,Dodecahedron,Icosahedron,Icosidodecahedron,Octahedron,{Prism,\n"
+            + "3},{Prism,5},{Prism,6},{Prism,7},{Prism,8},{Prism,9},{Prism,10},{Pyramid,4},{Pyramid,\n"
+            + "5},RhombicDodecahedron,RhombicTriacontahedron,Tetrahedron,TruncatedIcosahedron}");
     check("PolyhedronData(\"Properties\")", //
         "{Circumradius,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Name,StandardName,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
@@ -1845,12 +1847,11 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "{{1,2},{2,3},{1,3}}");
     check("Union(Flatten(PolyhedronData(\"Icosahedron\", \"Edges\"))) == Range(12)", //
         "True");
-    check("EntityList(\"Polyhedron\")", //
-        "{Entity(Polyhedron,Cube),Entity(Polyhedron,Cuboctahedron),Entity(Polyhedron,Dodecahedron),"
-            + "Entity(Polyhedron,Icosahedron),Entity(Polyhedron,Icosidodecahedron),"
-            + "Entity(Polyhedron,Octahedron),Entity(Polyhedron,RhombicDodecahedron),"
-            + "Entity(Polyhedron,RhombicTriacontahedron),Entity(Polyhedron,SquarePyramid),"
-            + "Entity(Polyhedron,Tetrahedron),Entity(Polyhedron,TruncatedIcosahedron)}");
+    check("Take(EntityList(\"Polyhedron\"), {6, 9})", //
+        "{Entity(Polyhedron,{Antiprism,9}),Entity(Polyhedron,{Antiprism,10}),"
+            + "Entity(Polyhedron,Cube),Entity(Polyhedron,Cuboctahedron)}");
+    check("EntityValue(Entity(\"Polyhedron\", {\"Antiprism\", 7}), \"FaceCount\")", //
+        "16");
     // which half of the question was not understood
     check("EntityValue(Entity(\"Polyhedron\", \"Nonesuch\"), \"FaceCount\")", //
         "Missing(UnknownEntity,{Polyhedron,Nonesuch})");

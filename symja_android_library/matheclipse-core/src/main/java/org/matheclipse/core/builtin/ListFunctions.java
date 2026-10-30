@@ -15,7 +15,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -41,10 +40,12 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.util.CompensatedSum;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
+import org.matheclipse.core.eval.util.NumberAccumulator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.PerLevelIntSpec;
 import org.matheclipse.core.eval.util.Sequence;
@@ -82,7 +83,6 @@ import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
@@ -534,18 +534,7 @@ public final class ListFunctions {
         try {
           if (fPrototypeList.head() == S.Plus || fPrototypeList.head() == S.Times) {
             if (iter.hasNext()) {
-              fCurrentIndex[index] = iter.next();
-              fCurrentVariable[index] = iter.getVariable();
-              IExpr temp = tableRecursive();
-              if (temp == null || temp.isNIL()) {
-                temp = fDefaultValue;
-              }
-              if (temp.isNumber()) {
-                return fPrototypeList.head() == S.Plus //
-                    ? tableAccumulate((INumber) temp, iter, index, IExpr::plus, F.NIL)
-                    : tableAccumulate((INumber) temp, iter, index, IExpr::times, F.C0);
-              }
-              return createGenericTable(iter, index, iter.allocHint(), temp, null);
+              return tableAccumulate(iter, index, fPrototypeList.head() == S.Times);
             }
             if (iter.isInvalidNumeric()) {
               return fDefaultValue;
@@ -563,23 +552,23 @@ public final class ListFunctions {
     }
 
     /**
-     * Fold the remaining elements of <code>iter</code> into <code>num</code> with
-     * <code>operator</code>, the accumulating tail shared by <code>Sum()</code> and
-     * <code>Product()</code>. As soon as an element is not a numeric function the fold is abandoned
-     * and the rest is collected symbolically by
-     * {@link #createGenericTable(IIterator, int, int, IExpr, IExpr)}.
+     * The elements of <code>iter</code> as the sum or product of <code>Sum()</code> and
+     * <code>Product()</code>: the numbers are folded into one number by a
+     * {@link NumberAccumulator}, the other elements are collected in a <code>Plus</code> or
+     * <code>Times</code> which isn't evaluated, so the total isn't evaluated again for every element.
+     * All factors of a product are evaluated, also after an exact <code>0</code>: a pole after it
+     * makes the product <code>Indeterminate</code>.
      *
-     * @param num the value accumulated so far
      * @param iter the iterator to consume
      * @param index the position of <code>iter</code> in the iterator list
-     * @param operator {@link IExpr#plus(IExpr)} for a sum, {@link IExpr#times(IExpr)} for a product
-     * @param absorbing the absorbing element which ends the fold early ({@link F#C0} for a
-     *        product), or {@link F#NIL} if the operator has none
+     * @param product <code>true</code> for a product, <code>false</code> for a sum
      */
-    private IExpr tableAccumulate(INumber num, final IIterator<IExpr> iter, final int index,
-        BinaryOperator<IExpr> operator, IExpr absorbing) {
-      int counter = 0;
-      IExpr result = num;
+    private IExpr tableAccumulate(final IIterator<IExpr> iter, final int index, boolean product) {
+      final IASTAppendable expressions = fPrototypeList.copyHead(fPrototypeList.size() + 8);
+      expressions.appendArgs(fPrototypeList);
+      final NumberAccumulator accumulator = product //
+          ? NumberAccumulator.product(expressions, false)
+          : NumberAccumulator.sum(expressions, false);
       while (iter.hasNext()) {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
@@ -587,17 +576,9 @@ public final class ListFunctions {
         if (temp == null || temp.isNIL()) {
           temp = fDefaultValue;
         }
-        if (temp.isNumericFunction(true)) {
-          if (absorbing.isPresent() && temp.equals(absorbing)) {
-            return absorbing;
-          }
-          result = operator.apply(result, temp);
-        } else {
-          return createGenericTable(iter, index, iter.allocHint() - counter, result, temp);
-        }
-        counter++;
+        accumulator.add(temp);
       }
-      return result;
+      return accumulator.result();
     }
 
     /**
@@ -8283,7 +8264,7 @@ public final class ListFunctions {
       if (onRows.isPresent()) {
         return onRows;
       }
-      if (ast.isAST3()) {
+      if (ast.isAST3() || ast.argSize() == 4) {
         try {
           if (ast.arg1().isASTOrAssociation()) {
             IAST cleanedList = cleanList((IAST) ast.arg1());
@@ -8295,6 +8276,9 @@ public final class ListFunctions {
                     F.List(n, cleanedList.argSize()), engine);
               }
               IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
+              if (ast.argSize() == 4) {
+                return takeByOrdering(cleanedList, engine.evaluate(list), n, ast.arg4(), engine);
+              }
               IExpr temp = engine.evalN(list);
               if (temp.isListOrAssociation()) {
                 list = (IAST) temp;
@@ -8317,12 +8301,33 @@ public final class ListFunctions {
       return F.NIL;
     }
 
+    /**
+     * <code>TakeLargestBy(list, f, n, p)</code> and <code>TakeSmallestBy(list, f, n, p)</code>:
+     * the elements of <code>list</code> with the <code>n</code> last (or first) <code>values</code>
+     * in the ordering <code>p</code>, the largest (or smallest) first. Elements with equal values
+     * keep their order.
+     */
+    private IExpr takeByOrdering(IAST list, IExpr values, int n, IExpr p, EvalEngine engine) {
+      if (!values.isListOrAssociation() || values.argSize() != list.argSize()) {
+        return F.NIL;
+      }
+      final IAST valueList = (IAST) values;
+      final Comparator<IExpr> ordering = new Predicates.IsBinaryFalse(p, engine);
+      int[] firstIndexes = Comparators.firstIndexes(valueList.argSize(), n,
+          (i, j) -> smallest ? ordering.compare(valueList.get(i + 1), valueList.get(j + 1))
+              : ordering.compare(valueList.get(j + 1), valueList.get(i + 1)));
+      for (int i = 0; i < firstIndexes.length; i++) {
+        firstIndexes[i]++;
+      }
+      return list.getItems(firstIndexes, n);
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       // the third entry declares the operator form: TakeLargestBy[f, n][list] becomes
       // TakeLargestBy[list, f, n], rewritten by EvalEngine#checkBuiltinArguments. The guard that
       // used to stand in for this asked isAST2(), which F#operatorForm1Append can never accept
-      return ARGS_2_3_1;
+      return ARGS_2_4_1;
     }
 
     @Override
@@ -8763,15 +8768,11 @@ public final class ListFunctions {
           return F.NIL;
         }
       }
-      double sum = 0.0;
-      double compensation = 0.0;
+      final CompensatedSum compensatedSum = new CompensatedSum();
       for (int i = 1; i <= size; i++) {
-        final double value = ((Num) list.get(i)).doubleValue();
-        final double t = sum + value;
-        compensation += Math.abs(sum) >= Math.abs(value) ? (sum - t) + value : (value - t) + sum;
-        sum = t;
+        compensatedSum.add(((Num) list.get(i)).doubleValue());
       }
-      sum += compensation;
+      final double sum = compensatedSum.value();
       if (!Double.isFinite(sum)) {
         // overflow, or infinite and NaN elements: the plain sum knows what to do with them
         return F.NIL;

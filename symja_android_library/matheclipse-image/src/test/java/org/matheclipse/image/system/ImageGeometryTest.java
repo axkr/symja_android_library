@@ -303,4 +303,21 @@ public class ImageGeometryTest extends AbstractTestCase {
     check("Head(ImageCompose(Image(ConstantArray(0.5, {20, 20})), Graphics(Circle())))", //
         "Image");
   }
+
+  /**
+   * A colour padding makes a greyscale image a colour image, a translucent one adds an alpha
+   * channel; a real width counts the whole pixels of it.
+   */
+  @Test
+  public void imagePadPromotesChannelsAndTruncatesWidths() {
+    check("{ImageChannels(ImagePad(Image({{0.25, 0.75}}), 1, Green)), "
+        + "ImageData(ImagePad(Image({{0.25}}), {{1, 0}, {0, 0}}, Red))}", //
+        "{3,{{{1.0,0.0,0.0},{0.25,0.25,0.25}}}}");
+    check("ImageData(ImagePad(Image({{0.5}}), {{0, 1}, {0, 0}}, GrayLevel(0.25, 0.5)))", //
+        "{{{0.5,0.5,0.5,1.0},{0.25,0.25,0.25,0.5}}}");
+    check("ImageDimensions(ImagePad(Image(ConstantArray(0, {2, 3})), {{1.7, 0}, {0, 2.2}}))", //
+        "{4,4}");
+    check("ImageDimensions(ImagePad(Image(ConstantArray(0, {2, 3})), {{-1.6, 0}, {0, 7/3}}))", //
+        "{2,4}");
+  }
 }

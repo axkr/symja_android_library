@@ -17,7 +17,8 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <blockquote>
  * <p>
- * gives the specified construct <code>type</code> for the triangle <code>tri</code>.
+ * gives the specified construct <code>type</code> for the triangle <code>tri</code>;
+ * <code>TriangleConstruct(tri)</code> gives the triangle itself.
  * </p>
  * </blockquote>
  *
@@ -34,6 +35,10 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
     IAST points = TriangleGeometry.vertices(ast.arg1(), engine);
     if (points.isNIL()) {
       return F.NIL;
+    }
+    if (ast.isAST1()) {
+      // the triangle itself
+      return F.Triangle(points);
     }
 
     IExpr arg2 = ast.arg2();
@@ -123,8 +128,7 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
         return F.Line(F.List(points.arg1(), points.arg2(), points.arg3(), points.arg1()));
 
       case "AngleBisector":
-        return infiniteLine(vertex, TriangleGeometry.center("AngleBisectingCevianEndpoint", F.NIL,
-            points, vertexIndex, engine));
+        return angleBisector(points, vertexIndex, engine);
       case "ExteriorAngleBisector":
         return exteriorAngleBisector(points, vertexIndex, engine);
       case "PerpendicularBisector":
@@ -178,6 +182,28 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
    * normalized edge directions, which is perpendicular to the interior angle bisector.
    */
   private static IExpr exteriorAngleBisector(IAST points, int vertexIndex, EvalEngine engine) {
+    IExpr vertex = points.get(vertexIndex);
+    IExpr direction = bisectorDirection(points, vertexIndex, false, engine);
+    return direction.isNIL() ? F.NIL
+        : infiniteLine(vertex, engine.evaluate(F.Plus(vertex, direction)));
+  }
+
+  /**
+   * The bisector of the interior angle at the vertex, through the vertex in the direction of the
+   * sum of the two normalized edge directions.
+   */
+  private static IExpr angleBisector(IAST points, int vertexIndex, EvalEngine engine) {
+    IExpr direction = bisectorDirection(points, vertexIndex, true, engine);
+    return direction.isNIL() ? F.NIL
+        : F.binaryAST2(S.InfiniteLine, points.get(vertexIndex), direction);
+  }
+
+  /**
+   * The sum (<code>interior == true</code>) or the difference of the two normalized edge
+   * directions at the vertex, or {@link F#NIL} if it is the zero vector.
+   */
+  private static IExpr bisectorDirection(IAST points, int vertexIndex, boolean interior,
+      EvalEngine engine) {
     int[] opposite = otherVertices(vertexIndex);
     IExpr vertex = points.get(vertexIndex);
     IExpr edge1 =
@@ -187,11 +213,9 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
     if (edge1.isNIL() || edge2.isNIL()) {
       return F.NIL;
     }
-    IExpr direction = engine.evaluate(F.Subtract(edge1, edge2));
-    if (isZeroVector(direction, engine)) {
-      return F.NIL;
-    }
-    return infiniteLine(vertex, engine.evaluate(F.Plus(vertex, direction)));
+    IExpr direction =
+        engine.evaluate(interior ? F.Plus(edge1, edge2) : F.Subtract(edge1, edge2));
+    return isZeroVector(direction, engine) ? F.NIL : direction;
   }
 
   /**
@@ -216,18 +240,18 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
     if (direction.isNIL() || isZeroVector(direction, engine)) {
       return F.NIL;
     }
-    return infiniteLine(midpoint, engine.evaluate(F.Plus(midpoint, direction)));
+    return F.binaryAST2(S.InfiniteLine, midpoint, direction);
   }
 
-  /** The line through circumcenter, centroid, orthocenter and nine-point center. */
+  /** The line through centroid, circumcenter, orthocenter and nine-point center. */
   private static IExpr eulerLine(IAST points, EvalEngine engine) {
-    IExpr circumcenter = TriangleGeometry.center("Circumcenter", F.NIL, points, 2, engine);
+    IExpr centroid = TriangleGeometry.center("Centroid", F.NIL, points, 2, engine);
     IExpr orthocenter = TriangleGeometry.center("Orthocenter", F.NIL, points, 2, engine);
-    if (circumcenter.isNIL() || orthocenter.isNIL() || circumcenter.equals(orthocenter)) {
+    if (centroid.isNIL() || orthocenter.isNIL() || centroid.equals(orthocenter)) {
       // all centers coincide in an equilateral triangle - the Euler line is not defined
       return F.NIL;
     }
-    return infiniteLine(circumcenter, orthocenter);
+    return infiniteLine(centroid, orthocenter);
   }
 
   /** The triangle formed by the midpoints of the three sides. */
@@ -292,6 +316,6 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_2;
+    return ARGS_1_2;
   }
 }

@@ -866,7 +866,8 @@ public class Parser extends Scanner {
       if (negative) {
         numberStr = '-' + numberStr;
       }
-      if (numFormat == 10 && fCurrentChar == '`') {
+      final boolean integerMantissa = numFormat == 10 && fCurrentChar == '`';
+      if (integerMantissa) {
         // an integer mantissa carrying a precision suffix is still a float - 8`30 - and without
         // this the backtick falls through to the identifier scanner, which reports it as the start
         // of a named unicode character. ExprParser in matheclipse-core already does this.
@@ -916,6 +917,10 @@ public class Parser extends Scanner {
               // a precision below the machine precision is kept: 1.5`5.497 has the precision 5.497
               String mantissaStr = withExponent(numberStr);
               getNextToken();
+              if (integerMantissa && isIntegerZero(numberStr)) {
+                // 0`20 is the exact zero
+                return fFactory.createInteger(0);
+              }
               return fFactory.createDouble(mantissaStr + "`" + precisionStr);
             } else {
               getNextToken();

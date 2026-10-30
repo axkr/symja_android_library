@@ -3031,6 +3031,13 @@ public class IntegerFunctions {
         return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
       } else if (realNumber.isInteger()) {
         apfloat = new Apint(((IInteger) realNumber).toBigNumerator());
+      } else if (realNumber instanceof Num && realNumber.isZero() && F.isNotPresent(startDigit)) {
+        // a machine zero has no known digits; its exponent is the one of 2^-1075 in the given base
+        IExpr exponent = F.ZZ((long) Math.ceil(-1075.0 * Math.log(2.0) / Math.log(radix)));
+        if (F.isNotPresent(length)) {
+          return F.list(F.list(F.C0), exponent);
+        }
+        return F.list(F.constantArray(S.Indeterminate, (int) length), exponent);
       } else if (realNumber instanceof Num && Double.isFinite(realNumber.doubleValue())) {
         // a machine number has 53 binary digits, which are 16 decimal digits; more digits asked for
         // are Indeterminate

@@ -12,6 +12,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.CompensatedSum;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -137,9 +138,14 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
             // the Euler-Maclaurin sum takes Abs(a) Bernoulli numbers, seconds for a = -700.5
             final int terms = (int) Math.ceil(-aDouble);
             final Complex exponent = sc.negate();
+            final CompensatedSum re = new CompensatedSum();
+            final CompensatedSum im = new CompensatedSum();
             for (int k = 0; k < terms; k++) {
-              shifted = shifted.add(new Complex(k + aDouble).pow(exponent));
+              Complex term = new Complex(k + aDouble).pow(exponent);
+              re.add(term.getReal());
+              im.add(term.getImaginary());
             }
+            shifted = new Complex(re.value(), im.value());
             ac = new Complex(aDouble + terms);
           }
           Complex result = shifted.add(ZetaJS.hurwitzZeta(sc, ac));

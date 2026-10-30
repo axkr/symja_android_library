@@ -13,7 +13,7 @@ public class SincRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 18, 3 };
+  final public static int[] SIZES = { 17, 3 };
 
   final public static IAST RULES = List(
     IInit(Sinc, SIZES),
@@ -56,9 +56,6 @@ public class SincRules {
     // Sinc(3/10*Pi)=(5*(1+Sqrt(5)))/(6*Pi)
     ISet(Sinc(Times(QQ(3L,10L),Pi)),
       Times(QQ(5L,6L),Plus(C1,CSqrt5),Power(Pi,CN1)), true),
-    // Sinc(I)=Sinh(1)
-    ISet(Sinc(CI),
-      Sinh(C1), true),
     // Sinc(ArcSin(x_)):=x/ArcSin(x)
     ISetDelayed(Sinc(ArcSin(x_)),
       Times(x,Power(ArcSin(x),CN1))),

@@ -714,7 +714,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine,
       IAST originalAST) {
     if (!ast.arg2().isList()) {
-      return F.NIL;
+      // Invalid integration variable or limit(s) in `1`.
+      return Errors.printMessage(ast.topHead(), "ilim", F.List(ast.arg2()), engine);
     }
     IAST list = (IAST) ast.arg2();
     IExpr function = ast.arg1();
@@ -781,6 +782,14 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
       return sum;
     } else if (!list.isAST3() || !list.arg1().isSymbol()) {
+      if (list.argSize() > 0 && (list.arg1().isNumber() || list.arg1().isString())) {
+        // Raw object `1` cannot be used as an iterator.
+        return Errors.printMessage(ast.topHead(), "itraw", F.List(list.arg1()), engine);
+      }
+      if (list.argSize() < 3 || !list.arg1().isVariable()) {
+        // Invalid integration variable or limit(s) in `1`.
+        return Errors.printMessage(ast.topHead(), "ilim", F.List(list), engine);
+      }
       return F.NIL;
     }
 

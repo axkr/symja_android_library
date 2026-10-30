@@ -442,6 +442,11 @@ public class RSolve extends AbstractFunctionEvaluator {
       }
 
       if (isNonLinear) {
+        IExpr riccati =
+            solveRiccati(lhs, uFunction1Arg, nVar, shiftMap, boundaryConditions, engine);
+        if (riccati.isPresent()) {
+          return formatResult(arg2, nVar, riccati);
+        }
         IExpr logTransformSol = methodLogarithmicTransform(lhs, uFunction1Arg, nVar, engine);
         if (logTransformSol.isPresent()) {
           logTransformSol = applyFibonacciLucas(logTransformSol, nVar, engine);
@@ -549,6 +554,101 @@ public class RSolve extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The first order Riccati recurrence <code>y(n+1) == (a*y(n)+b)/(c*y(n)+d)</code> with constants
+   * <code>a, b, c != 0, d</code>, given as <code>A*y(n)*y(n+1) + B*y(n+1) + C*y(n) + D == 0</code>.
+   * With <code>c*y(n)+d == u(n+1)/u(n)</code> it is the linear recurrence
+   * <code>u(n+2) - (a+d)*u(n+1) + (a*d-b*c)*u(n) == 0</code> with <code>u(0) == 1</code> and
+   * <code>u(1) == c*y(0)+d</code>.
+   *
+   * @return the solution <code>y(n)</code>, or {@link F#NIL} if the recurrence has another form
+   */
+  private IExpr solveRiccati(IExpr lhs, IAST uFunction1Arg, IExpr nVar,
+      Map<Integer, IExpr> shiftMap, IAST boundaryConditions, EvalEngine engine) {
+    if (shiftMap.size() != 2 || !shiftMap.containsKey(0) || !shiftMap.containsKey(1)) {
+      return F.NIL;
+    }
+    final IExpr head = uFunction1Arg.head();
+    // y(n) is v and y(n+1) is w in the polynomial A*v*w + B*w + C*v + D
+    final ISymbol v = F.Dummy("v");
+    final ISymbol w = F.Dummy("w");
+    IExpr poly = F.subst(lhs, x -> {
+      if (x.equals(shiftMap.get(0))) {
+        return v;
+      }
+      return x.equals(shiftMap.get(1)) ? w : F.NIL;
+    });
+    poly = engine.evaluate(F.Expand(F.Numerator(F.Together(poly))));
+    if (!poly.isFree(head) || !poly.isFree(nVar) || !poly.isPolynomial(F.list(v, w))) {
+      return F.NIL;
+    }
+    IExpr pq = engine.evaluate(F.Coefficient(poly, F.Times(v, w)));
+    IExpr qTerm = engine.evaluate(F.ReplaceAll(F.Coefficient(poly, w, F.C1), F.Rule(v, F.C0)));
+    IExpr pTerm = engine.evaluate(F.ReplaceAll(F.Coefficient(poly, v, F.C1), F.Rule(w, F.C0)));
+    IExpr absolute =
+        engine.evaluate(F.ReplaceAll(poly, F.list(F.Rule(v, F.C0), F.Rule(w, F.C0))));
+    IExpr remainder = engine.evaluate(F.Expand(F.Subtract(poly, F.Plus(F.Times(pq, v, w),
+        F.Times(qTerm, w), F.Times(pTerm, v), absolute))));
+    if (pq.isZero() || !remainder.isZero()) {
+      return F.NIL;
+    }
+    final IExpr a = engine.evaluate(F.Negate(pTerm));
+    final IExpr b = engine.evaluate(F.Negate(absolute));
+    final IExpr c = pq;
+    final IExpr d = qTerm;
+    IExpr determinant = engine.evaluate(F.Subtract(F.Times(a, d), F.Times(b, c)));
+    if (determinant.isZero()) {
+      return F.NIL;
+    }
+    // the initial value y(0), or a constant which the conditions determine
+    IExpr y0 = F.NIL;
+    if (boundaryConditions.argSize() == 1 && boundaryConditions.arg1().isEqual()
+        && boundaryConditions.arg1().first().equals(F.unaryAST1(head, F.C0))
+        && boundaryConditions.arg1().second().isFree(head)) {
+      y0 = boundaryConditions.arg1().second();
+    }
+    final boolean constantStart = y0.isNIL();
+    final IExpr constant = constantStart ? F.C(engine.incConstantCounter()) : F.NIL;
+    // u(1)/u(0) with u(0) == 1
+    final IExpr u1 = constantStart ? F.NIL : engine.evaluate(F.Plus(F.Times(c, y0), d));
+    final IExpr sum = engine.evaluate(F.Plus(a, d));
+    final IExpr discriminant =
+        engine.evaluate(F.Subtract(F.Sqr(sum), F.Times(F.C4, determinant)));
+    IExpr root;
+    if (discriminant.isZero()) {
+      // u(n) == (1 + k*n)*r^n for the double root r of the characteristic polynomial
+      IExpr r = engine.evaluate(F.Times(F.C1D2, sum));
+      IExpr k = constantStart ? constant : engine.evaluate(F.Subtract(F.Divide(u1, r), F.C1));
+      root = engine.evaluate(F.Together(F.Divide(F.Subtract(
+          F.Divide(F.Times(r, F.Plus(F.C1, F.Times(k, F.Plus(nVar, F.C1)))),
+              F.Plus(F.C1, F.Times(k, nVar))),
+          d), c)));
+    } else {
+      // u(n) == p*r1^n + q*r2^n for the two roots of the characteristic polynomial; without an
+      // initial value it is r1^(n+1) + C(1)*r2^(n+1)
+      IExpr sqrt = engine.evaluate(F.Sqrt(discriminant));
+      IExpr r1 = engine.evaluate(F.Times(F.C1D2, F.Plus(sum, sqrt)));
+      IExpr r2 = engine.evaluate(F.Times(F.C1D2, F.Subtract(sum, sqrt)));
+      IExpr p = constantStart ? r1 : engine.evaluate(F.Divide(F.Subtract(u1, r2), sqrt));
+      IExpr q = constantStart ? engine.evaluate(F.Times(constant, r2))
+          : engine.evaluate(F.Divide(F.Subtract(r1, u1), sqrt));
+      // (u(n+1)/u(n) - d)/c as one quotient
+      IExpr numerator =
+          F.Plus(F.Times(engine.evaluate(F.Simplify(F.Times(p, F.Subtract(r1, d)))),
+              F.Power(r1, nVar)),
+              F.Times(engine.evaluate(F.Simplify(F.Times(q, F.Subtract(r2, d)))),
+                  F.Power(r2, nVar)));
+      IExpr denominator = F.Times(c,
+          F.Plus(F.Times(engine.evaluate(F.Simplify(p)), F.Power(r1, nVar)),
+              F.Times(engine.evaluate(F.Simplify(q)), F.Power(r2, nVar))));
+      root = engine.evaluate(F.Divide(numerator, denominator));
+    }
+    if (constantStart && boundaryConditions.argSize() > 0) {
+      return applyUnaryBCs(root, uFunction1Arg, nVar, boundaryConditions, engine);
+    }
+    return root;
   }
 
   private IExpr expandTrigsInVar(IExpr expr, EvalEngine engine) {

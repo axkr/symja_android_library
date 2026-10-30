@@ -741,6 +741,14 @@ public class SeriesFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST2()) {
+        // O(x, x0) is O(x - x0)
+        IExpr x0 = ast.arg2();
+        if (arg1.isVariable() && x0.isFree(arg1) && !x0.isInfinite()) {
+          return new ASTSeriesData(arg1, x0, 1, 1, 1);
+        }
+        return F.NIL;
+      }
       if (arg1.isVariable()) {
         return new ASTSeriesData(arg1, F.C0, 1, 1, 1);
       }
@@ -762,7 +770,7 @@ public class SeriesFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
@@ -808,7 +816,11 @@ public class SeriesFunctions {
       IAST coefficients = outerSeries.arg3();
       IASTAppendable newCoeffs = F.ListAlloc(coefficients.argSize());
       for (int j = 1; j <= coefficients.argSize(); j++) {
-        newCoeffs.append(engine.evaluate(F.Series(coefficients.get(j), iterator)));
+        IAST coefficientSeries = F.Series(coefficients.get(j), iterator);
+        // a coefficient keeps its leading term even beyond the order: y^3 is y^3+O(y)^4
+        newCoeffs.append(iterator.isList3()
+            ? seriesToOrder(coefficientSeries, true, engine).orElse(coefficientSeries)
+            : engine.evaluate(coefficientSeries));
       }
       return new ASTSeriesData(outerSeries.expansionVariable(), outerSeries.expansionPoint(),
           newCoeffs, outerSeries.minExponent(), outerSeries.truncateOrder(),
@@ -880,7 +892,7 @@ public class SeriesFunctions {
       }
       IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
       if (!assumptionExpr.isPresent() || !assumptionExpr.isAST()) {
-        return withoutAbsDerivatives(evaluateSeries(seriesAST, engine), seriesAST);
+        return withoutAbsDerivatives(seriesToOrder(seriesAST, engine), seriesAST);
       }
       IAssumptions oldAssumptions = engine.getAssumptions();
       try {
@@ -890,7 +902,7 @@ public class SeriesFunctions {
         if (assumptions != null) {
           engine.setAssumptions(assumptions);
         }
-        IExpr series = withoutAbsDerivatives(evaluateSeries(seriesAST, engine), seriesAST);
+        IExpr series = withoutAbsDerivatives(seriesToOrder(seriesAST, engine), seriesAST);
         if (series instanceof ASTSeriesData && assumptions != null) {
           // the assumptions also decide the coefficients: Sqrt(a^2) is a for a > 0
           ASTSeriesData data = (ASTSeriesData) series;
@@ -912,6 +924,80 @@ public class SeriesFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
+    }
+
+    /** The largest number of orders {@link #seriesToOrder} looks ahead for a leading term. */
+    private static final int MAX_LOOK_AHEAD = 32;
+
+    /**
+     * The expansion of <code>Series(f, {x, x0, n})</code> to the order <code>n</code>: terms
+     * beyond <code>(x-x0)^n</code> are dropped, and a series whose leading term lies beyond the
+     * order is the order term of that leading term, like <code>O(x)^4</code> for
+     * <code>Series(x^4/(1+x), {x, 0, 2})</code>.
+     *
+     * @param keepLeadingTerm <code>true</code> for a coefficient of a multivariate series, which
+     *        keeps a leading term beyond the order: <code>y^3+O(y)^4</code> instead of
+     *        <code>O(y)^4</code>
+     */
+    private static IExpr seriesToOrder(IAST seriesAST, EvalEngine engine) {
+      return seriesToOrder(seriesAST, false, engine);
+    }
+
+    private static IExpr seriesToOrder(IAST seriesAST, boolean keepLeadingTerm,
+        EvalEngine engine) {
+      IExpr result = evaluateSeries(seriesAST, engine);
+      if (!(result instanceof ASTSeriesData) || seriesAST.argSize() != 2
+          || !seriesAST.arg2().isList3()) {
+        return result;
+      }
+      ASTSeriesData series = (ASTSeriesData) result;
+      final IAST iterator = (IAST) seriesAST.arg2();
+      final int n = iterator.arg3().toIntDefault();
+      if (n == Integer.MIN_VALUE || n > Integer.MAX_VALUE / 2
+          || series.puiseuxDenominator() != 1
+          || !series.expansionVariable().equals(iterator.arg1())
+          || !series.expansionPoint().equals(iterator.arg2())) {
+        return result;
+      }
+      final int target = n + 1;
+      int leadIndex = firstNonZeroIndex(series);
+      if (leadIndex == Integer.MAX_VALUE) {
+        // no term up to the order: look further ahead for the leading term
+        for (int order = Math.max(n + 4, 1); order <= n + MAX_LOOK_AHEAD; order *= 2) {
+          engine.checkTimeLimit();
+          IExpr ahead = evaluateSeries(seriesAST.setAtCopy(2,
+              F.list(iterator.arg1(), iterator.arg2(), F.ZZ(order))), engine);
+          if (!(ahead instanceof ASTSeriesData)
+              || ((ASTSeriesData) ahead).puiseuxDenominator() != 1) {
+            break;
+          }
+          leadIndex = firstNonZeroIndex((ASTSeriesData) ahead);
+          if (leadIndex != Integer.MAX_VALUE) {
+            series = (ASTSeriesData) ahead;
+            break;
+          }
+        }
+        if (leadIndex == Integer.MAX_VALUE) {
+          leadIndex = series.truncateOrder();
+        }
+      }
+      if (leadIndex >= target || leadIndex >= series.truncateOrder()) {
+        if (keepLeadingTerm && leadIndex < series.truncateOrder()) {
+          return new ASTSeriesData(series.expansionVariable(), series.expansionPoint(),
+              F.list(series.coefficient(leadIndex)), leadIndex, leadIndex + 1, 1);
+        }
+        return new ASTSeriesData(series.expansionVariable(), series.expansionPoint(), F.CEmptyList,
+            leadIndex, leadIndex, 1);
+      }
+      if (series.truncateOrder() > target) {
+        IASTAppendable coefficients = F.ListAlloc(target - series.minExponent());
+        for (int j = series.minExponent(); j < target; j++) {
+          coefficients.append(series.coefficient(j));
+        }
+        return new ASTSeriesData(series.expansionVariable(), series.expansionPoint(), coefficients,
+            series.minExponent(), target, 1);
+      }
+      return series;
     }
 
     /**
@@ -1346,11 +1432,31 @@ public class SeriesFunctions {
               currentExpr = erfc;
               continue;
             }
+            IExpr stirlingProduct = stirlingProductSeries(currentExpr, x, n, engine);
+            if (stirlingProduct.isPresent()) {
+              currentExpr = stirlingProduct;
+              continue;
+            }
+            currentExpr = logGammaAsymptotic(currentExpr, x, n, engine);
             IExpr asymptotic = asymptoticAtInfinity(currentExpr, x, n, engine);
             if (asymptotic.isPresent()) {
               currentExpr = asymptotic;
               continue;
             }
+          }
+          if (currentExpr.has(y -> isGammaAtInfinity(y, x), true)) {
+            // an essential singularity at infinity: there is no expansion in powers of 1/x, and
+            // the Taylor coefficients of Gamma(1/x) at 0 can't be computed
+            return F.NIL;
+          }
+        }
+
+        if (!leadingTermMode && (x0.isZero() || x0.isInfinity())
+            && currentExpr.has(y -> y.isLog() && !y.first().isFree(x), true)) {
+          IExpr logSeries = logCoefficientSeries(currentExpr, x, (IAST) iterator, engine);
+          if (logSeries.isPresent()) {
+            currentExpr = logSeries;
+            continue;
           }
         }
 
@@ -1581,6 +1687,270 @@ public class SeriesFunctions {
       ASTSeriesData exponent =
           new ASTSeriesData(x, F.CInfinity, F.list(xTimesLogPart), -1, n + 1, 1);
       return F.Times(F.Power(S.E, exponent), series);
+    }
+
+    /**
+     * <code>Log(x)</code> as a coefficient: the logarithms of powers of <code>x</code> become
+     * multiples of a constant, the rest is expanded as usual, and <code>Log(x)</code> is put back
+     * into the coefficients, as in <code>SeriesData(x, Infinity, {Log(x), 0, 1}, -1, 3, 1)</code>
+     * for <code>x*Log(x) + 1/x</code>.
+     *
+     * @return {@link F#NIL} if the logarithms aren't all of powers of <code>x</code> or the rest
+     *         has no expansion
+     */
+    private static IExpr logCoefficientSeries(IExpr expr, IExpr x, IAST iterator,
+        EvalEngine engine) {
+      final ISymbol logX = F.Dummy("logx");
+      final boolean[] failed = new boolean[] {false};
+      IExpr replaced = expr.replaceAll(y -> {
+        if (y.isLog() && !y.first().isFree(x)) {
+          IExpr log = logOfPower(y.first(), x, logX);
+          if (log.isNIL()) {
+            failed[0] = true;
+          }
+          return log;
+        }
+        return F.NIL;
+      });
+      if (failed[0] || replaced.isNIL()) {
+        return F.NIL;
+      }
+      IExpr series = engine.evaluate(F.Series(engine.evaluate(replaced), iterator));
+      if (!(series instanceof ASTSeriesData)) {
+        return F.NIL;
+      }
+      ASTSeriesData data = (ASTSeriesData) series;
+      IExpr coefficients = engine.evaluate(F.subst(data.arg3(), logX, F.Log(x)));
+      return new ASTSeriesData(data.expansionVariable(), data.expansionPoint(), (IAST) coefficients,
+          data.minExponent(), data.truncateOrder(), data.puiseuxDenominator());
+    }
+
+    /**
+     * The logarithm of <code>c*x^k</code> for a positive constant <code>c</code> and a real
+     * <code>k</code> free of <code>x</code>, as <code>Log(c) + k*logX</code>.
+     *
+     * @return {@link F#NIL} for any other argument
+     */
+    private static IExpr logOfPower(IExpr arg, IExpr x, IExpr logX) {
+      IExpr constant = F.C1;
+      IExpr power = arg;
+      if (arg.isTimes()) {
+        IAST times = (IAST) arg;
+        IASTAppendable constants = F.TimesAlloc(times.argSize());
+        power = F.NIL;
+        for (IExpr factor : times) {
+          if (factor.isFree(x)) {
+            constants.append(factor);
+          } else if (power.isNIL()) {
+            power = factor;
+          } else {
+            return F.NIL;
+          }
+        }
+        constant = constants.oneIdentity1();
+        if (power.isNIL() || !constant.isPositiveResult()) {
+          return F.NIL;
+        }
+      }
+      IExpr k;
+      if (power.equals(x)) {
+        k = F.C1;
+      } else if (power.isPower() && power.base().equals(x) && power.exponent().isRealResult()) {
+        k = power.exponent();
+      } else {
+        return F.NIL;
+      }
+      return F.Plus(F.Log(constant), F.Times(k, logX));
+    }
+
+    /**
+     * <code>Gamma</code>, <code>LogGamma</code>, <code>Factorial</code>, <code>PolyGamma</code> or
+     * <code>HarmonicNumber</code> of a polynomial in <code>x</code> of a positive degree, which
+     * grows beyond all bounds at infinity.
+     */
+    private static boolean isGammaAtInfinity(IExpr y, IExpr x) {
+      if (!y.isAST() || y.isFree(x)) {
+        return false;
+      }
+      IExpr head = y.head();
+      if (head != S.Gamma && head != S.LogGamma && head != S.Factorial && head != S.PolyGamma
+          && head != S.HarmonicNumber) {
+        return false;
+      }
+      IExpr arg = ((IAST) y).last();
+      return !arg.isFree(x) && arg.isPolynomial(F.list(x));
+    }
+
+    /** The argument <code>x+a</code> of a function as the rational shift <code>a</code>. */
+    private static IRational rationalShift(IExpr arg, IExpr x, EvalEngine engine) {
+      IExpr shift = engine.evaluate(F.Subtract(arg, x));
+      return shift.isRational() ? (IRational) shift : null;
+    }
+
+    /**
+     * The asymptotic expansion of <code>LogGamma(x+a)</code> at infinity with the terms up to
+     * <code>(1/x)^terms</code>:
+     * <code>(x+a-1/2)*Log(x) - x + Log(2*Pi)/2 + Sum(c(k)/x^k, {k, 1, terms})</code> with the
+     * coefficients of {@link #stirlingCoefficient}.
+     */
+    private static IExpr logGammaExpansion(IRational a, IExpr x, int terms) {
+      IASTAppendable sum = F.PlusAlloc(terms + 3);
+      sum.append(F.Times(F.Plus(x, a, F.CN1D2), F.Log(x)));
+      sum.append(F.Negate(x));
+      sum.append(F.Times(F.C1D2, F.Log(F.Times(F.C2, S.Pi))));
+      for (int k = 1; k <= terms; k++) {
+        sum.append(F.Times(stirlingCoefficient(a, k), F.Power(x, F.ZZ(-k))));
+      }
+      return sum;
+    }
+
+    /** The largest order for which the asymptotic expansion of LogGamma is written out. */
+    private static final int MAX_STIRLING_ORDER = 200;
+
+    /**
+     * Replace <code>LogGamma(x+a)</code> for a rational <code>a</code> by its asymptotic expansion,
+     * so that a sum like <code>LogGamma(x) - (x-1/2)*Log(x) + x</code> cancels before it is
+     * expanded.
+     *
+     * @return <code>expr</code> if there is no such <code>LogGamma</code>
+     */
+    private static IExpr logGammaAsymptotic(IExpr expr, IExpr x, int n, EvalEngine engine) {
+      if (n < 0 || n > MAX_STIRLING_ORDER) {
+        return expr;
+      }
+      IExpr replaced = expr.replaceAll(y -> {
+        if (y.isAST(S.LogGamma, 2)) {
+          IRational a = rationalShift(y.first(), x, engine);
+          if (a != null) {
+            return logGammaExpansion(a, x, n + 2);
+          }
+        }
+        return F.NIL;
+      });
+      return replaced.isPresent() ? engine.evaluate(F.Expand(replaced)) : expr;
+    }
+
+    /**
+     * The asymptotic series of a product of powers of <code>Gamma(x+a)</code> or
+     * <code>Factorial(x+a)</code> (<code>a</code> rational), <code>E^u</code> and
+     * <code>x^p</code>, like the quotient <code>Gamma(x)/(E^(-x)*x^(x-1/2))</code> of
+     * <code>Gamma</code> and its Stirling approximation. The logarithms of these factors are added
+     * up with the asymptotic expansion of <code>LogGamma</code>, which cancels the terms that grow
+     * with <code>x</code>; what is left over goes into a factor <code>E^(...)</code> in front of
+     * the series, as for <code>Gamma(x)</code> alone. The other factors are expanded as usual.
+     *
+     * @return {@link F#NIL} if <code>expr</code> has no such factor
+     */
+    private static IExpr stirlingProductSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+      if (n < 0 || n > MAX_STIRLING_ORDER || !(expr.isTimes() || expr.isPower())) {
+        return F.NIL;
+      }
+      IAST factors = expr.isTimes() ? (IAST) expr : F.Times(expr);
+      // a margin of terms for powers of x in front of the vanishing part
+      final int terms = n + 12;
+      IASTAppendable exponent = F.PlusAlloc(factors.argSize());
+      IASTAppendable rest = F.TimesAlloc(factors.argSize());
+      boolean gamma = false;
+      for (IExpr factor : factors) {
+        if (factor.isFree(x)) {
+          rest.append(factor);
+          continue;
+        }
+        IExpr base = factor.isPower() ? factor.base() : factor;
+        IExpr e = factor.isPower() ? factor.exponent() : F.C1;
+        if ((base.isAST(S.Gamma, 2) || base.isAST(S.Factorial, 2)) && e.isRational()) {
+          IRational a = rationalShift(base.first(), x, engine);
+          if (a != null) {
+            if (base.isAST(S.Factorial, 2)) {
+              a = a.add(F.C1);
+            }
+            exponent.append(F.Times(e, logGammaExpansion(a, x, terms)));
+            gamma = true;
+            continue;
+          }
+        }
+        if (base.isE()) {
+          exponent.append(e);
+        } else if (base.equals(x)) {
+          exponent.append(F.Times(e, F.Log(x)));
+        } else if (base.isFree(x) && base.isPositiveResult()) {
+          exponent.append(F.Times(e, F.Log(base)));
+        } else {
+          rest.append(factor);
+        }
+      }
+      if (!gamma) {
+        return F.NIL;
+      }
+      // split the exponent into the terms which vanish at infinity, the multiple of Log(x) and
+      // the terms which grow with x
+      final ISymbol logX = F.Dummy("logx");
+      IExpr expanded =
+          engine.evaluate(F.Expand(F.subst(exponent.oneIdentity0(), F.Log(x), logX)));
+      IAST summands = expanded.isPlus() ? (IAST) expanded : F.Plus(expanded);
+      IASTAppendable vanishing = F.PlusAlloc(summands.argSize());
+      IASTAppendable logPower = F.PlusAlloc(2);
+      IASTAppendable growing = F.PlusAlloc(summands.argSize());
+      for (IExpr term : summands) {
+        if (term.isFree(x)) {
+          // c + k*logX
+          IExpr k = engine.evaluate(F.D(term, logX));
+          if (!k.isFree(logX)) {
+            return F.NIL;
+          }
+          logPower.append(k);
+          growing.append(engine.evaluate(F.subst(term, logX, F.C0)));
+        } else if (term.isFree(logX) && isVanishingMonomial(term, x)) {
+          vanishing.append(term);
+        } else {
+          growing.append(term);
+        }
+      }
+      IExpr p = engine.evaluate(logPower.oneIdentity0());
+      IExpr inner = engine.evaluate(
+          F.Times(rest.oneIdentity1(), F.Power(x, p), F.Exp(vanishing.oneIdentity0())));
+      IExpr series = engine.evaluate(F.Series(inner, F.list(x, F.CInfinity, F.ZZ(n))));
+      if (!(series instanceof ASTSeriesData)) {
+        return F.NIL;
+      }
+      IExpr g = engine.evaluate(growing.oneIdentity0());
+      if (g.isFree(x)) {
+        return engine.evaluate(F.Times(F.Exp(F.subst(g, logX, F.Log(x))), series));
+      }
+      // the growing part as a series in 1/x with Log(x) in the coefficients, as for Gamma(x)
+      if (!g.isPolynomial(F.list(x))) {
+        return F.NIL;
+      }
+      IExpr coefficientList = engine.evaluate(F.CoefficientList(g, x));
+      if (!coefficientList.isList() || coefficientList.argSize() < 2) {
+        return F.NIL;
+      }
+      IAST list = (IAST) coefficientList;
+      int degree = list.argSize() - 1;
+      IASTAppendable coefficients = F.ListAlloc(degree + 1);
+      for (int j = list.argSize(); j >= 1; j--) {
+        coefficients.append(F.subst(list.get(j), logX, F.Log(x)));
+      }
+      ASTSeriesData exponentSeries = new ASTSeriesData(x, F.CInfinity,
+          (IAST) engine.evaluate(coefficients), -degree, n + 1, 1);
+      return F.Times(F.Power(S.E, exponentSeries), series);
+    }
+
+    /** A term <code>c*x^k</code> with a negative <code>k</code>, which vanishes at infinity. */
+    private static boolean isVanishingMonomial(IExpr term, IExpr x) {
+      IExpr power = term;
+      if (term.isTimes()) {
+        power = F.NIL;
+        for (IExpr factor : (IAST) term) {
+          if (!factor.isFree(x)) {
+            if (power.isPresent()) {
+              return false;
+            }
+            power = factor;
+          }
+        }
+      }
+      return power.isPower() && power.base().equals(x) && power.exponent().isNegativeResult();
     }
 
     /**

@@ -49,6 +49,8 @@ public class ImageStructureFunctions {
    * every other pixel through unchanged: an image or a matrix of the same size, or a smaller one
    * centred on the image, or a <code>Graphics</code> drawn at the image's size, whose drawn pixels
    * are the ones included. <code>All</code> and <code>None</code> apply <code>f</code> everywhere.
+   * <code>Interleaving -&gt; False</code> hands <code>f</code> every channel value of a colour image
+   * on its own instead of the list of channel values of a pixel.
    */
   private static class ImageApply extends AbstractEvaluator {
 
@@ -67,10 +69,18 @@ public class ImageStructureFunctions {
         return F.NIL;
       }
       IExpr maskSpec = S.All;
+      boolean interleaving = true;
       for (int i = 3; i < ast.size(); i++) {
         IExpr option = ast.get(i);
         if (option.isRuleAST() && option.first() == S.Masking) {
           maskSpec = option.second();
+          continue;
+        }
+        if (option.isRuleAST() && option.first() == S.Interleaving && option.second().isTrue()) {
+          continue;
+        }
+        if (option.isRuleAST() && option.first() == S.Interleaving && option.second().isFalse()) {
+          interleaving = false;
           continue;
         }
         // Unknown option `1` in `2`.
@@ -84,6 +94,9 @@ public class ImageStructureFunctions {
       boolean[][] mask = Masks.of(maskSpec, width, height);
       if (mask == Masks.UNREADABLE) {
         return F.NIL;
+      }
+      if (!interleaving && colorChannels > 1) {
+        return applyToEachChannel(function, source, image, colorChannels, mask, engine);
       }
 
       // the number of channels of the result is the length of what f returns, as in the
@@ -129,6 +142,34 @@ public class ImageStructureFunctions {
         }
       }
       return imageOf(result, width, height, outChannels, source);
+    }
+
+    /**
+     * <code>Interleaving -&gt; False</code>: <code>f</code> maps every colour sample on its own to a
+     * number, so the image keeps its channels. The alpha channel is carried through.
+     */
+    private static IExpr applyToEachChannel(IExpr function, ImageExpr source, Raster image,
+        int colorChannels, boolean[][] mask, EvalEngine engine) {
+      int width = image.width;
+      int height = image.height;
+      double[][] result = new double[width * height][];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          double[] values = pixel(image, x, y);
+          if (mask == null || mask[y][x]) {
+            for (int c = 0; c < colorChannels; c++) {
+              double value =
+                  engine.evaluate(F.unaryAST1(function, F.num(values[c]))).evalfNaN();
+              if (Double.isNaN(value)) {
+                return F.NIL;
+              }
+              values[c] = value;
+            }
+          }
+          result[y * width + x] = values;
+        }
+      }
+      return imageOf(result, width, height, image.channels, source);
     }
 
     @Override

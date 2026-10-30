@@ -3756,8 +3756,9 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (!arg1.isString()) {
-        // a list of strings is not threaded over
+      if (!ast.isAST3() || !arg1.isString()) {
+        // StringReplacePart(snew, spec) is the operator form; a list of strings is not threaded
+        // over
         return F.NIL;
       }
       CodePointString str = new CodePointString(arg1.toString());
@@ -3867,7 +3868,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_2_3_1;
     }
   }
 
@@ -4508,11 +4509,9 @@ public final class StringFunctions {
         }
       }
       if (arg1.isAST(S.TraditionalForm, 2)) {
-        // a traditional form is typeset: the box escape \!\(\*FormBox[..., TraditionalForm]\)
-        IExpr boxes = engine
-            .evaluate(F.binaryAST2(S.ToBoxes, F.Unevaluated(arg1.first()), S.TraditionalForm));
-        if (BoxNotation.isBox(boxes) || boxes.isString()) {
-          return F.stringx(BoxNotation.toBoxString(boxes));
+        IExpr traditional = traditionalForm(arg1.first(), engine);
+        if (traditional.isPresent()) {
+          return traditional;
         }
       }
       // ToString(expr) is ToString(expr, OutputForm) - the display wrappers Style, Row and
@@ -4549,6 +4548,21 @@ public final class StringFunctions {
       }).orElse(ast);
     }
 
+    /**
+     * A traditional form is typeset: the box escape <code>\!\(\*FormBox[..., TraditionalForm]\)
+     * </code>.
+     *
+     * @return {@link F#NIL} if no boxes were created
+     */
+    private static IExpr traditionalForm(IExpr expr, EvalEngine engine) {
+      IExpr boxes =
+          engine.evaluate(F.binaryAST2(S.ToBoxes, F.Unevaluated(expr), S.TraditionalForm));
+      if (BoxNotation.isBox(boxes) || boxes.isString()) {
+        return F.stringx(BoxNotation.toBoxString(boxes));
+      }
+      return F.NIL;
+    }
+
     /** Print <code>expr</code> the way the console shows it. */
     private static String outputForm(IExpr expr) {
       StringBuilder buf = new StringBuilder();
@@ -4575,6 +4589,12 @@ public final class StringFunctions {
         IExpr boxes = engine.evaluate(F.unaryAST1(S.ToBoxes, F.Unevaluated(expr)));
         if (BoxNotation.isBox(boxes) || boxes.isString()) {
           return F.stringx(BoxNotation.toBoxString(boxes));
+        }
+      }
+      if (form == S.TraditionalForm && !expr.isString()) {
+        IExpr traditional = traditionalForm(expr, engine);
+        if (traditional.isPresent()) {
+          return traditional;
         }
       }
       if (form.isBuiltInSymbol()) {

@@ -62,6 +62,10 @@ public class ImageArithmeticFunctions {
       }
       // ImageAdd(image, a, b, ...) folds left, the way Plus does
       for (int i = 2; i < ast.size(); i++) {
+        if (sameSizeOnly() && ast.get(i) instanceof ImageExpr
+            && !sameSize(result, ((ImageExpr) ast.get(i)).raster())) {
+          return F.NIL;
+        }
         result = combine(result, ast.get(i), this::apply);
         if (result == null) {
           return F.NIL;
@@ -72,6 +76,11 @@ public class ImageArithmeticFunctions {
       String type = Pixels.BIT.equals(image.sampleType()) ? Pixels.REAL32 : image.sampleType();
       ImageExpr combined = ImageExpr.fromRaster(result, image.getOptions(), type);
       return combined == null ? F.NIL : combined;
+    }
+
+    /** Whether an image operand must have the size of the first image. */
+    boolean sameSizeOnly() {
+      return false;
     }
 
     @Override
@@ -125,6 +134,11 @@ public class ImageArithmeticFunctions {
     @Override
     double apply(double left, double right) {
       return Math.abs(left - right);
+    }
+
+    @Override
+    boolean sameSizeOnly() {
+      return true;
     }
 
     @Override
@@ -282,14 +296,26 @@ public class ImageArithmeticFunctions {
     Raster result = left.copy();
     if (operand instanceof ImageExpr) {
       Raster right = ((ImageExpr) operand).raster();
-      if (right == null || right.width != left.width || right.height != left.height) {
+      if (right == null) {
         return null;
       }
       int rightColors = right.colorChannels();
-      for (int y = 0; y < left.height; y++) {
-        for (int x = 0; x < left.width; x++) {
+      if (colorChannels == 1 && rightColors == 3) {
+        // a colour image on a greyscale one makes it a colour image
+        left = toColor(left);
+        result = left.copy();
+        colorChannels = 3;
+      }
+      // an image of another size is centred on the left one, the smaller of the two placed half
+      // a pixel to the top left of the centre when the sizes differ by an odd number; the samples
+      // it doesn't cover keep their values
+      final int dx = centringOffset(left.width, right.width);
+      final int dy = centringOffset(left.height, right.height);
+      for (int y = Math.max(0, dy); y < Math.min(left.height, dy + right.height); y++) {
+        for (int x = Math.max(0, dx); x < Math.min(left.width, dx + right.width); x++) {
           for (int c = 0; c < colorChannels; c++) {
-            double rightSample = right.get(x, y, rightColors == 1 ? 0 : Math.min(c, rightColors - 1));
+            double rightSample = right.get(x - dx, y - dy,
+                rightColors == 1 ? 0 : Math.min(c, rightColors - 1));
             result.set(x, y, c, operator.applyAsDouble(left.get(x, y, c), rightSample));
           }
         }
@@ -314,6 +340,18 @@ public class ImageArithmeticFunctions {
       }
     }
     return result;
+  }
+
+  /**
+   * The position of the first sample of an image of the length <code>other</code> centred on one
+   * of the length <code>length</code>.
+   */
+  private static boolean sameSize(Raster left, Raster right) {
+    return right != null && right.width == left.width && right.height == left.height;
+  }
+
+  private static int centringOffset(int length, int other) {
+    return length >= other ? (length - other) / 2 : -((other - length) / 2);
   }
 
   /**

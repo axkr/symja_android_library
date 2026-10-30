@@ -26,7 +26,7 @@ public class BezierFunction extends AbstractEvaluator {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.BezierFunction, rex, engine);
       }
-    } else if (head == S.BezierFunction && ast.isAST1()) {
+    } else if (head == S.BezierFunction && ast.argSize() >= 1 && isOptions(ast)) {
       final IExpr arg1 = ast.arg1();
       final int[] dim = arg1.isMatrix(false);
       // Allow matrices of any positive dimensions (e.g., 3x1 for 1D points)
@@ -48,6 +48,19 @@ public class BezierFunction extends AbstractEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>true</code> if every argument after the points is a <code>SplineDegree</code> option. A
+   * Bezier curve has the degree its points give it, so the option is accepted and ignored.
+   */
+  private static boolean isOptions(final IAST ast) {
+    for (int i = 2; i < ast.size(); i++) {
+      if (!ast.get(i).isRuleAST() || ast.get(i).first() != S.SplineDegree) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override

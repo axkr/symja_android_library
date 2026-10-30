@@ -155,12 +155,11 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     if (reg.argSize() == 1 && reg.arg1().isList()) {
       IAST pts = (IAST) reg.arg1();
       if (pts.argSize() >= 2) {
-        IExpr len = F.C0;
-        for (int i = 1; i < pts.argSize(); i++) {
         // CPD-ON
-          len = engine.evaluate(F.Plus(len, F.Norm(F.Subtract(pts.get(i), pts.get(i + 1)))));
-        }
-        return len;
+        // the segment lengths are added up once
+        return engine.evaluate(
+            F.intSum(i -> F.Norm(F.Subtract(pts.get(i), pts.get(i + 1))), 1, pts.argSize() - 1,
+                false));
       }
     }
     return F.NIL;

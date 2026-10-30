@@ -48,6 +48,7 @@ public class PermutationGroupFunctions {
       S.GroupGenerators.setEvaluator(new GroupFunction(GroupFunction.GENERATORS));
       S.GroupOrbits.setEvaluator(new GroupFunction(GroupFunction.ORBITS));
       S.GroupStabilizer.setEvaluator(new GroupFunction(GroupFunction.STABILIZER));
+      S.GroupSupport.setEvaluator(new GroupFunction(GroupFunction.SUPPORT));
       S.GroupElementQ.setEvaluator(new GroupFunction(GroupFunction.ELEMENTQ));
       S.GroupMultiplicationTable.setEvaluator(new GroupFunction(GroupFunction.TABLE));
     }
@@ -252,6 +253,7 @@ public class PermutationGroupFunctions {
     static final int STABILIZER = 4;
     static final int ELEMENTQ = 5;
     static final int TABLE = 6;
+    static final int SUPPORT = 7;
 
     private final int kind;
 
@@ -330,6 +332,8 @@ public class PermutationGroupFunctions {
             return orbits(ast, group);
           case STABILIZER:
             return stabilizer(ast, group, engine);
+          case SUPPORT:
+            return support(group);
           case ELEMENTQ: {
             int[] permutation = toPermutation(ast.arg2(), engine);
             if (permutation == null) {
@@ -408,6 +412,25 @@ public class PermutationGroupFunctions {
       for (int[] orbit : orbits) {
         // WMA also lists the fixed points up to the largest moved point
         result.append(toOrbit(orbit));
+      }
+      return result;
+    }
+
+    /** The sorted list of the points which are moved by at least one generator. */
+    private static IExpr support(PermGroups group) {
+      boolean[] moved = new boolean[group.degree()];
+      for (int[] generator : group.generators()) {
+        for (int i = 0; i < generator.length && i < moved.length; i++) {
+          if (generator[i] != i) {
+            moved[i] = true;
+          }
+        }
+      }
+      IASTAppendable result = F.ListAlloc();
+      for (int i = 0; i < moved.length; i++) {
+        if (moved[i]) {
+          result.append(F.ZZ(i + 1));
+        }
       }
       return result;
     }

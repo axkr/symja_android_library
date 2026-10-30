@@ -474,6 +474,13 @@ public class ImageGeometryFunctions {
       if (width <= 0 || height <= 0) {
         return F.NIL;
       }
+      if (padding != null && ast.arg1() instanceof ImageExpr) {
+        IExpr promoted =
+            padPromoted((ImageExpr) ast.arg1(), ast.arg3(), left, top, width, height);
+        if (promoted.isPresent()) {
+          return promoted;
+        }
+      }
       int channels = Boof.channels(image);
       final int sourceWidth = image.getWidth();
       final int sourceHeight = image.getHeight();
@@ -537,6 +544,67 @@ public class ImageGeometryFunctions {
       }), null);
     }
 
+    /**
+     * The padding of a greyscale image with a colour other than a grey, which makes it a colour
+     * image, or of an image without an alpha channel with a translucent colour, which adds an
+     * alpha channel.
+     *
+     * @return {@link F#NIL} if the padding keeps the channels of the image
+     */
+    private static IExpr padPromoted(ImageExpr source, IExpr colorExpr, int left, int top,
+        int width, int height) {
+      Raster raster = source.raster();
+      double[] rgba = Colors.toRgbaDouble(colorExpr);
+      if (raster == null || rgba == null) {
+        return F.NIL;
+      }
+      final int sourceColors = raster.colorChannels();
+      final boolean sourceAlpha = raster.channels != sourceColors;
+      final boolean color = sourceColors == 1 && colorExpr.isAST() && !colorExpr.isList()
+          && !colorExpr.isAST(S.GrayLevel);
+      final boolean alpha = !sourceAlpha && rgba[3] < 1.0;
+      if (!color && !alpha) {
+        return F.NIL;
+      }
+      // a greyscale image with an alpha channel has no representation here, so a translucent
+      // padding of a greyscale image makes it an RGBA image, as SetAlphaChannel does
+      final int colors = color || alpha ? Math.max(3, sourceColors) : sourceColors;
+      final int channels = colors + (sourceAlpha || alpha ? 1 : 0);
+      double[] outside = new double[channels];
+      for (int c = 0; c < colors; c++) {
+        outside[c] = colors == 1
+            ? (rgba[0] == rgba[1] && rgba[1] == rgba[2] ? rgba[0]
+                : Colors.grayLevel(rgba[0], rgba[1], rgba[2]))
+            : rgba[c];
+      }
+      if (channels > colors) {
+        outside[colors] = rgba[3];
+      }
+      Raster result = new Raster(width, height, channels);
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          int sourceX = x - left;
+          int sourceY = y - top;
+          boolean inside = sourceX >= 0 && sourceY >= 0 && sourceX < raster.width
+              && sourceY < raster.height;
+          for (int c = 0; c < channels; c++) {
+            double value;
+            if (!inside) {
+              value = outside[c];
+            } else if (c < colors) {
+              value = raster.get(sourceX, sourceY, Math.min(c, sourceColors - 1));
+            } else {
+              value = sourceAlpha ? raster.get(sourceX, sourceY, sourceColors) : 1.0;
+            }
+            result.set(x, y, c, value);
+          }
+        }
+      }
+      String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
+      ImageExpr padded = ImageExpr.fromRaster(result, source.getOptions(), type);
+      return padded == null ? F.NIL : padded;
+    }
+
     /** <code>{left, right, bottom, top}</code> from the several shapes the argument may have. */
     private static int[] margins(IExpr spec) {
       if (spec.isList()) {
@@ -562,7 +630,12 @@ public class ImageGeometryFunctions {
       for (int i = 0; i < values.length; i++) {
         result[i] = values[i].toIntDefault();
         if (result[i] == Config.INVALID_INT) {
-          return null;
+          // a real width counts the whole pixels of it
+          double value = values[i].isReal() ? values[i].evalfNaN() : Double.NaN;
+          if (Double.isNaN(value) || Math.abs(value) >= Integer.MAX_VALUE) {
+            return null;
+          }
+          result[i] = (int) value;
         }
       }
       return result;

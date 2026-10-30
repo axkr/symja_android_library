@@ -294,6 +294,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
       // a count isn't an iterator, Sum(x, 3) stays unevaluated
       return F.NIL;
     }
+    if (forcedMethod == null) {
+      IExpr numericSum = numericIteration(ast, Plus(), engine);
+      if (numericSum.isPresent()) {
+        return numericSum;
+      }
+    }
     IExpr arg1 = ast.arg1();
     if (arg1.isList()) {
       // Sum({f,g},{i,1,n}) is the list of the two sums
@@ -341,6 +347,37 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
     }
     return evaluateSum(preevaledSum, forcedMethod, engine);
+  }
+
+  /**
+   * A summand (or factor) with a machine number makes the sum (or product) over numeric iterators
+   * a machine number: <code>Sum(1.0/k^2, {k,1,10})</code> is <code>1.54977</code>. Since
+   * <code>1.0*f</code> evaluates to <code>f</code> for a symbolic <code>f</code>, the summand
+   * isn't evaluated with symbolic iterator variables first: it's evaluated term by term as it is
+   * written, where <code>1.0*f</code> is a machine number. A number which is still exact, like
+   * <code>1.0*Sqrt(2)</code>, becomes a machine number at the end.
+   *
+   * @param ast <code>Sum(f, iter1, ...)</code> or <code>Product(f, iter1, ...)</code>
+   * @param prototype the empty <code>Plus()</code> or <code>Times()</code>
+   * @return the sum or product, or {@link F#NIL} if the summand has no machine number or the
+   *         iterators aren't numeric
+   */
+  static IExpr numericIteration(IAST ast, IAST prototype, EvalEngine engine) {
+    if (ast.size() > 2 && !engine.isNumericMode()
+        && ast.arg1().has(x -> x.isInexactNumber() && x.isMachineNumber(), false)
+        && hasNumericIterators(ast)) {
+      IExpr result = evaluateTableThrow(ast, prototype, prototype, engine);
+      if (result.isPresent()) {
+        result = engine.evaluate(result);
+        // an exact 0 stays exact: 0*1.5 is 0
+        if (!result.isZero() && result.isNumericFunction(true)
+            && result.isFree(x -> x.isInexactNumber(), false)) {
+          return engine.evalN(result);
+        }
+        return result;
+      }
+    }
+    return F.NIL;
   }
 
   /**

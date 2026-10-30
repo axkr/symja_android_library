@@ -1,7 +1,10 @@
 package org.matheclipse.image.builtin;
 
 import java.awt.image.BufferedImage;
+import java.util.Random;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -15,6 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.Image3DExpr;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.image.expression.data.ImageOptions;
@@ -31,6 +35,7 @@ public class ImageFunctions {
       S.Image3DSlices.setEvaluator(new Image3DSlices());
       S.ImageData.setEvaluator(new ImageData());
       S.ImageDimensions.setEvaluator(new ImageDimensions());
+      S.RandomImage.setEvaluator(new RandomImage());
     }
   }
 
@@ -391,6 +396,154 @@ public class ImageFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   * <code>RandomImage(spec, size)</code> - a <code>"Real32"</code> image of random samples.
+   *
+   * <p>
+   * The samples are uniformly distributed reals between <code>0</code> and <code>max</code> for
+   * <code>RandomImage(max)</code>, between <code>min</code> and <code>max</code> for
+   * <code>RandomImage({min, max})</code>, and drawn from the distribution for
+   * <code>RandomImage(dist)</code>; <code>RandomImage()</code> is <code>RandomImage(1)</code>. The
+   * size is <code>{width, height}</code> or one number for a square and defaults to
+   * <code>150 x 150</code>. <code>ColorSpace -&gt; "RGB"</code> (also <code>"HSB"</code> or
+   * <code>"CMYK"</code>) draws every channel of a colour image.
+   */
+  private static class RandomImage extends AbstractEvaluator {
+    private static final int DEFAULT_SIZE = 150;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr colorSpace = S.Automatic;
+      int argSize = ast.argSize();
+      while (argSize > 0 && ast.get(argSize).isRuleAST()) {
+        IExpr option = ast.get(argSize);
+        if (option.first() != S.ColorSpace) {
+          // Unknown option `1` in `2`.
+          return Errors.printMessage(S.RandomImage, "optx", F.list(option, ast), engine);
+        }
+        colorSpace = option.second();
+        argSize--;
+      }
+      if (argSize > 2) {
+        return F.NIL;
+      }
+      int channels = channelsOf(colorSpace);
+      int width = DEFAULT_SIZE;
+      int height = DEFAULT_SIZE;
+      if (argSize == 2) {
+        IExpr size = ast.arg2();
+        if (size.isList2()) {
+          width = size.first().toIntDefault();
+          height = size.second().toIntDefault();
+        } else {
+          width = size.toIntDefault();
+          height = width;
+        }
+      }
+      if (channels < 1 || width < 1 || height < 1) {
+        return F.NIL;
+      }
+      long total = (long) width * height * channels;
+      if (total >= Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(total);
+      }
+      IExpr spec = argSize >= 1 ? ast.arg1() : F.C1;
+      Raster raster = new Raster(width, height, channels);
+      if (spec.isAST() && !spec.isList()) {
+        IAST dimensions = channels == 1 ? F.list(F.ZZ(height), F.ZZ(width))
+            : F.list(F.ZZ(height), F.ZZ(width), F.ZZ(channels));
+        if (!fill(raster, engine.evaluate(F.RandomVariate(spec, dimensions)))) {
+          return F.NIL;
+        }
+      } else {
+        double min = 0.0;
+        double max;
+        if (spec.isList2()) {
+          min = spec.first().evalfNaN();
+          max = spec.second().evalfNaN();
+        } else {
+          max = spec.evalfNaN();
+        }
+        if (Double.isNaN(min) || Double.isNaN(max)) {
+          return F.NIL;
+        }
+        Random random = engine.getRandom();
+        for (int y = 0; y < height; y++) {
+          for (int x = 0; x < width; x++) {
+            for (int c = 0; c < channels; c++) {
+              raster.set(x, y, c, min + (max - min) * random.nextDouble());
+            }
+          }
+        }
+      }
+      ImageExpr image = ImageExpr.fromRaster(raster, ImageOptions.DEFAULT.withColorSpace(colorSpace),
+          Pixels.REAL32);
+      return image == null ? F.NIL : image;
+    }
+
+    /** The number of channels of the colour space, or <code>0</code> if it isn't known. */
+    private static int channelsOf(IExpr colorSpace) {
+      if (colorSpace == S.Automatic) {
+        return 1;
+      }
+      if (colorSpace.isString()) {
+        String name = colorSpace.toString();
+        if ("Grayscale".equalsIgnoreCase(name)) {
+          return 1;
+        }
+        if ("RGB".equalsIgnoreCase(name) || "HSB".equalsIgnoreCase(name)) {
+          return 3;
+        }
+        if ("CMYK".equalsIgnoreCase(name)) {
+          return 4;
+        }
+      }
+      return 0;
+    }
+
+    /**
+     * Copy the samples drawn from a distribution, rows of pixels of <code>raster.channels</code>
+     * values each, into <code>raster</code>.
+     *
+     * @return <code>false</code> if the samples are not an array of real numbers of that shape
+     */
+    private static boolean fill(Raster raster, IExpr samples) {
+      if (!samples.isList() || samples.argSize() != raster.height) {
+        return false;
+      }
+      for (int y = 0; y < raster.height; y++) {
+        IExpr row = samples.getAt(y + 1);
+        if (!row.isList() || row.argSize() != raster.width) {
+          return false;
+        }
+        for (int x = 0; x < raster.width; x++) {
+          IExpr pixel = row.getAt(x + 1);
+          if (raster.channels > 1 && !(pixel.isList() && pixel.argSize() == raster.channels)) {
+            return false;
+          }
+          for (int c = 0; c < raster.channels; c++) {
+            IExpr sample = raster.channels == 1 ? pixel : pixel.getAt(c + 1);
+            if (!sample.isReal()) {
+              return false;
+            }
+            raster.set(x, y, c, sample.evalf());
+          }
+        }
+      }
+      return true;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_3;
     }
 
     @Override

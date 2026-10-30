@@ -4,6 +4,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.DenseOutputModel;
@@ -227,6 +229,12 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     ImplicitCurve curve = null;
 
     /**
+     * The algebraic equations which determine the functions that are never differentiated, or
+     * <code>null</code>.
+     */
+    AlgebraicConstraints constraints = null;
+
+    /**
      * This system started at <code>start</code> from <code>state</code>, with the right hand
      * sides <code>derivatives</code>.
      */
@@ -237,6 +245,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       system.highestComponents = highestComponents;
       system.curve = curve;
       system.layout = layout;
+      system.constraints = constraints;
       return system;
     }
 
@@ -376,6 +385,17 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         return stateDot;
       }
       final int dimension = fSystem.dimension();
+      final AlgebraicConstraints constraints = fSystem.constraints;
+      if (constraints != null) {
+        // the algebraic functions take the values which solve their equations, found from the
+        // values the state carries
+        state = state.clone();
+        constraints.solve(t, state);
+        double[] stateDot = fMachine != null ? evaluate(t, state)
+            : evaluate(fSystem.substitutions(t, state));
+        constraints.derivatives(t, state, stateDot);
+        return stateDot;
+      }
       if (fMachine != null) {
         return evaluate(t, state);
       }
@@ -470,6 +490,412 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         }
       }
     }
+  }
+
+  /**
+   * The algebraic equations <code>g(t, x, y) == 0</code> of a semi-explicit system of index 1, like
+   * <code>y(t)+y(t)^3 == x(t)</code> beside <code>x'(t) == -y(t)</code>, which determine the
+   * functions <code>y</code> that are never differentiated.
+   *
+   * <p>
+   * The functions <code>y</code> are components of the state like the others, so that they get
+   * an interpolating function of their own; the system is reduced with <code>y'(t) == 0</code> in
+   * place of the algebraic equations. At every evaluation of the right hand sides the values of
+   * <code>y</code> are found from the algebraic equations by Newton's method, started from the
+   * values the state carries, and their derivatives from the derivatives of the equations,
+   * <code>g_y.y' == -(g_t + g_x.x')</code>.
+   */
+  private static final class AlgebraicConstraints {
+    /** The most Newton steps for the values of the algebraic functions. */
+    private static final int MAX_NEWTON_STEPS = 50;
+
+    /** The largest relative Newton step which is still taken as converged. */
+    private static final double NEWTON_TOLERANCE = 1.0e-10;
+
+    /** The guess for an algebraic function at the initial point without a condition of its own. */
+    private static final double INITIAL_GUESS = 1.0;
+
+    private final EvalEngine fEngine;
+    private final ISymbol fTimeVar;
+    /** The algebraic functions. */
+    private final ISymbol[] fFunctions;
+    /** The expressions <code>g</code> of the equations <code>g == 0</code>, in the calls f(t). */
+    private final IExpr[] fEquations;
+    /** The equations with the algebraic ones replaced, which are reduced to a first order system. */
+    final IAST reduced;
+
+    /** The state components of the algebraic functions. */
+    private int[] fComponents;
+    /** The symbols in place of the state components. */
+    private ISymbol[] fVariables;
+    /** <code>g</code> in {@link #fVariables}. */
+    private IExpr[] fValues;
+    /** <code>dg_j/du_i</code> of the state components <code>u_i</code>. */
+    private IExpr[][] fStateDerivatives;
+    /** <code>dg_j/dt</code>. */
+    private IExpr[] fTimeDerivatives;
+    private MachineExpression[] fMachineValues;
+    private MachineExpression[][] fMachineState;
+    private MachineExpression[] fMachineTime;
+
+    private AlgebraicConstraints(EvalEngine engine, ISymbol timeVar, ISymbol[] functions,
+        IExpr[] equations, IAST reduced) {
+      this.fEngine = engine;
+      this.fTimeVar = timeVar;
+      this.fFunctions = functions;
+      this.fEquations = equations;
+      this.reduced = reduced;
+    }
+
+    /**
+     * The algebraic equations of the functions in <code>ast</code> which are never differentiated,
+     * and the equations to reduce in their place: <code>y'(t) == 0</code> for each of them and the
+     * initial value <code>y(t0)</code> which solves its equation where the other functions have
+     * their initial values.
+     *
+     * @return <code>null</code> if every function or none is differentiated, an algebraic function
+     *         has no equation of its own, or the initial values can't be found
+     */
+    static AlgebraicConstraints create(IAST ast, ISymbol timeVar, EvalEngine engine) {
+      ISymbol[] functions = functionSymbols(ast.arg2().makeList(), timeVar);
+      if (functions == null) {
+        return null;
+      }
+      IASTAppendable equations = F.ListAlloc();
+      IASTAppendable conditions = F.ListAlloc();
+      for (IExpr equation : SolveUtils.toEquationList(ast.arg1()).makeList()) {
+        if (!equation.isEqual() || equation.argSize() != 2) {
+          return null;
+        }
+        (equation.isFree(timeVar) ? conditions : equations).append(equation);
+      }
+      java.util.List<ISymbol> algebraic = new java.util.ArrayList<ISymbol>();
+      java.util.List<IExpr> algebraicEquations = new java.util.ArrayList<IExpr>();
+      boolean[] used = new boolean[equations.size()];
+      for (ISymbol function : functions) {
+        IExpr call = F.unaryAST1(function, timeVar);
+        if (equations.isFree(call) || !equations.isFree(
+            x -> x.isAST1() && x.head().isAST(S.Derivative) && x.first().equals(function), true)) {
+          continue;
+        }
+        int found = -1;
+        for (int i = 1; i < equations.size() && found < 0; i++) {
+          IExpr equation = equations.get(i);
+          if (!used[i] && !equation.isFree(call)
+              && equation.isFree(x -> x.isAST(S.Derivative), true)) {
+            found = i;
+          }
+        }
+        if (found < 0) {
+          return null;
+        }
+        used[found] = true;
+        algebraic.add(function);
+        algebraicEquations.add(engine.evaluate(F.Subtract(equations.get(found).first(),
+            equations.get(found).second())));
+      }
+      if (algebraic.isEmpty() || algebraic.size() == functions.length) {
+        return null;
+      }
+      final int m = algebraic.size();
+      // the initial values of the other functions, and guesses for the algebraic ones
+      IExpr point = F.NIL;
+      IASTAppendable valueRules = F.ListAlloc();
+      double[] guesses = new double[m];
+      java.util.Arrays.fill(guesses, INITIAL_GUESS);
+      IASTAppendable reducedEquations = F.ListAlloc(equations.argSize() + conditions.argSize());
+      for (IExpr condition : conditions) {
+        IExpr lhs = condition.first();
+        IExpr rhs = condition.second();
+        int index = lhs.isAST1() ? algebraic.indexOf(lhs.head()) : -1;
+        if (index >= 0 && rhs.isNumber()) {
+          guesses[index] = rhs.evalfNaN();
+          continue;
+        }
+        if (lhs.isAST1() && lhs.head().isSymbol() && lhs.first().isNumber()) {
+          if (point.isNIL()) {
+            point = lhs.first();
+          }
+          valueRules.append(F.Rule(lhs, rhs));
+        }
+        reducedEquations.append(condition);
+      }
+      if (point.isNIL()) {
+        return null;
+      }
+      ISymbol[] unknowns = new ISymbol[m];
+      IASTAppendable toUnknowns = F.ListAlloc(m);
+      IASTAppendable starts = F.ListAlloc(m);
+      for (int k = 0; k < m; k++) {
+        unknowns[k] = F.Dummy("NDSolve$" + algebraic.get(k).getSymbolName());
+        toUnknowns.append(F.Rule(F.unaryAST1(algebraic.get(k), point), unknowns[k]));
+        starts.append(F.list(unknowns[k], F.num(guesses[k])));
+      }
+      IASTAppendable initialEquations = F.ListAlloc(m);
+      for (IExpr g : algebraicEquations) {
+        IExpr atStart = F.subst(F.subst(F.subst(g, F.Rule(timeVar, point)), valueRules), toUnknowns);
+        initialEquations.append(F.Equal(atStart, F.C0));
+      }
+      IExpr roots = engine.evalQuiet(F.FindRoot(initialEquations, starts));
+      if (!roots.isList() || roots.argSize() != m) {
+        return null;
+      }
+      for (int k = 0; k < m; k++) {
+        IExpr rule = roots.get(k + 1);
+        if (!rule.isRuleAST() || !rule.first().equals(unknowns[k]) || !rule.second().isReal()) {
+          return null;
+        }
+        reducedEquations.append(F.Equal(F.unaryAST1(algebraic.get(k), point), rule.second()));
+      }
+      for (int i = 1; i < equations.size(); i++) {
+        if (!used[i]) {
+          reducedEquations.append(equations.get(i));
+        }
+      }
+      for (ISymbol function : algebraic) {
+        reducedEquations.append(F.Equal(ODEUtils.derivative(function, 1, timeVar), F.C0));
+      }
+      return new AlgebraicConstraints(engine, timeVar, algebraic.toArray(new ISymbol[m]),
+          algebraicEquations.toArray(new IExpr[m]), ast.setAtCopy(1, reducedEquations));
+    }
+
+    /**
+     * Attach the equations to the system reduced from {@link #reduced}.
+     *
+     * @return <code>false</code> if the equations can't be written in the components of its state
+     *         and differentiated
+     */
+    boolean attach(FirstOrderSystem system) {
+      if (system.layout != null || system.curve != null) {
+        return false;
+      }
+      final int n = system.dimension();
+      final int m = fFunctions.length;
+      int[] components = new int[m];
+      for (int k = 0; k < m; k++) {
+        components[k] = system.componentIndex(F.unaryAST1(fFunctions[k], fTimeVar));
+        if (components[k] < 0) {
+          return false;
+        }
+      }
+      ISymbol[] variables = new ISymbol[n];
+      IASTAppendable rules = F.ListAlloc(n);
+      for (int i = 0; i < n; i++) {
+        variables[i] = F.Dummy();
+        rules.append(F.Rule(system.stateExpressions[i], variables[i]));
+      }
+      IExpr[] values = new IExpr[m];
+      IExpr[][] stateDerivatives = new IExpr[m][n];
+      IExpr[] timeDerivatives = new IExpr[m];
+      for (int j = 0; j < m; j++) {
+        values[j] = F.subst(fEquations[j], rules);
+        for (ISymbol function : system.functions) {
+          if (!values[j].isFree(function)) {
+            return false;
+          }
+        }
+        for (int i = 0; i < n; i++) {
+          stateDerivatives[j][i] =
+              SymbolicJacobian.differentiate(values[j], variables[i], system, fEngine);
+          if (stateDerivatives[j][i].isNIL()) {
+            return false;
+          }
+        }
+        timeDerivatives[j] =
+            SymbolicJacobian.differentiate(values[j], fTimeVar, system, fEngine);
+        if (timeDerivatives[j].isNIL()) {
+          return false;
+        }
+      }
+      fComponents = components;
+      fVariables = variables;
+      set(values, stateDerivatives, timeDerivatives);
+      system.constraints = this;
+      return true;
+    }
+
+    private void set(IExpr[] values, IExpr[][] stateDerivatives, IExpr[] timeDerivatives) {
+      fValues = values;
+      fStateDerivatives = stateDerivatives;
+      fTimeDerivatives = timeDerivatives;
+      final int m = values.length;
+      final int n = fVariables.length;
+      IExpr[] point = java.util.Arrays.copyOf(fVariables, n + 1, IExpr[].class);
+      point[n] = fTimeVar;
+      fMachineValues = new MachineExpression[m];
+      fMachineState = new MachineExpression[m][n];
+      fMachineTime = new MachineExpression[m];
+      for (int j = 0; j < m; j++) {
+        fMachineValues[j] = MachineExpression.compile(values[j], point, fEngine);
+        for (int i = 0; i < n; i++) {
+          fMachineState[j][i] = MachineExpression.compile(stateDerivatives[j][i], point, fEngine);
+        }
+        fMachineTime[j] = MachineExpression.compile(timeDerivatives[j], point, fEngine);
+      }
+    }
+
+    /** The equations, in the symbols of the state components, which may hold jumping terms. */
+    IExpr[] values() {
+      return fValues;
+    }
+
+    /**
+     * These equations with the jumping terms of a stretch replaced by their values there.
+     *
+     * @param frozen the rules of the jumping terms
+     */
+    AlgebraicConstraints freeze(IAST frozen) {
+      final int m = fValues.length;
+      final int n = fVariables.length;
+      IExpr[] values = new IExpr[m];
+      IExpr[][] stateDerivatives = new IExpr[m][n];
+      IExpr[] timeDerivatives = new IExpr[m];
+      for (int j = 0; j < m; j++) {
+        values[j] = fEngine.evaluate(F.subst(fValues[j], frozen));
+        for (int i = 0; i < n; i++) {
+          stateDerivatives[j][i] = fEngine.evaluate(F.subst(fStateDerivatives[j][i], frozen));
+        }
+        timeDerivatives[j] = fEngine.evaluate(F.subst(fTimeDerivatives[j], frozen));
+      }
+      AlgebraicConstraints result =
+          new AlgebraicConstraints(fEngine, fTimeVar, fFunctions, fEquations, reduced);
+      result.fComponents = fComponents;
+      result.fVariables = fVariables;
+      result.set(values, stateDerivatives, timeDerivatives);
+      return result;
+    }
+
+    /** <code>dg_j/dy_k</code> at <code>point</code>. */
+    private double[][] jacobian(double[] point, IAST[] rules) {
+      final int m = fComponents.length;
+      double[][] jacobian = new double[m][m];
+      for (int j = 0; j < m; j++) {
+        for (int k = 0; k < m; k++) {
+          int i = fComponents[k];
+          jacobian[j][k] =
+              value(fMachineState[j][i], fStateDerivatives[j][i], point, rules);
+        }
+      }
+      return jacobian;
+    }
+
+    private double value(MachineExpression machine, IExpr expr, double[] point, IAST[] rules) {
+      return machineValue(machine, expr, point, rules, fVariables, fTimeVar, fEngine);
+    }
+
+    /**
+     * The solution <code>x</code> of <code>a.x == b</code>, overwriting <code>b</code>.
+     *
+     * @throws MathRuntimeException if <code>a</code> is singular or the solution isn't finite,
+     *         which ends the integration at the last step like a collapsing step size
+     */
+    private static double[] linearSolve(double[][] a, double[] b) {
+      double[] x;
+      if (b.length == 1) {
+        b[0] /= a[0][0];
+        x = b;
+      } else {
+        x = new org.hipparchus.linear.LUDecomposition(
+            new org.hipparchus.linear.Array2DRowRealMatrix(a, false)).getSolver()
+                .solve(new org.hipparchus.linear.ArrayRealVector(b, false)).toArray();
+      }
+      for (double value : x) {
+        if (!Double.isFinite(value)) {
+          throw new MathIllegalStateException(LocalizedCoreFormats.SINGULAR_MATRIX);
+        }
+      }
+      return x;
+    }
+
+    /**
+     * Replace the values of the algebraic functions in <code>state</code> by the solution of
+     * their equations at <code>t</code>, found by Newton's method from the values there.
+     *
+     * @throws MathRuntimeException if the equations can't be solved there, where the derivative
+     *         of an equation by its function vanishes or Newton's method doesn't converge
+     */
+    void solve(double t, double[] state) {
+      final int m = fComponents.length;
+      final int n = fVariables.length;
+      double[] point = java.util.Arrays.copyOf(state, n + 1);
+      point[n] = t;
+      // the largest step of the last iteration relative to the values
+      double lastStep = Double.POSITIVE_INFINITY;
+      for (int step = 0; step < MAX_NEWTON_STEPS; step++) {
+        IAST[] rules = new IAST[] {F.NIL};
+        double[] residual = new double[m];
+        for (int j = 0; j < m; j++) {
+          residual[j] = value(fMachineValues[j], fValues[j], point, rules);
+        }
+        double[] delta = linearSolve(jacobian(point, rules), residual);
+        lastStep = 0.0;
+        for (int k = 0; k < m; k++) {
+          int i = fComponents[k];
+          point[i] -= delta[k];
+          lastStep = Math.max(lastStep, Math.abs(delta[k]) / Math.max(1.0, Math.abs(point[i])));
+        }
+        if (lastStep <= 1.0e-15) {
+          break;
+        }
+      }
+      if (!(lastStep <= NEWTON_TOLERANCE)) {
+        // rounding may keep the last digits moving, but no more than that
+        throw new MathIllegalStateException(LocalizedCoreFormats.CONVERGENCE_FAILED);
+      }
+      for (int k = 0; k < m; k++) {
+        state[fComponents[k]] = point[fComponents[k]];
+      }
+    }
+
+    /**
+     * Store the derivatives of the algebraic functions in <code>stateDot</code>, which holds those
+     * of the other components, at a state which solves the equations.
+     */
+    void derivatives(double t, double[] state, double[] stateDot) {
+      final int m = fComponents.length;
+      final int n = fVariables.length;
+      double[] point = java.util.Arrays.copyOf(state, n + 1);
+      point[n] = t;
+      IAST[] rules = new IAST[] {F.NIL};
+      for (int k = 0; k < m; k++) {
+        stateDot[fComponents[k]] = 0.0;
+      }
+      double[] rates = new double[m];
+      for (int j = 0; j < m; j++) {
+        double rate = value(fMachineTime[j], fTimeDerivatives[j], point, rules);
+        for (int i = 0; i < n; i++) {
+          if (stateDot[i] != 0.0) {
+            rate += value(fMachineState[j][i], fStateDerivatives[j][i], point, rules) * stateDot[i];
+          }
+        }
+        rates[j] = -rate;
+      }
+      double[] solved = linearSolve(jacobian(point, rules), rates);
+      for (int k = 0; k < m; k++) {
+        stateDot[fComponents[k]] = solved[k];
+      }
+    }
+  }
+
+  /**
+   * The dependent functions <code>y</code> or <code>y(t)</code> of a list as symbols.
+   *
+   * @return <code>null</code> if one is neither
+   */
+  private static ISymbol[] functionSymbols(IAST functionList, ISymbol timeVar) {
+    ISymbol[] functions = new ISymbol[functionList.argSize()];
+    for (int j = 0; j < functions.length; j++) {
+      IExpr function = functionList.get(j + 1);
+      if (function.isSymbol()) {
+        functions[j] = (ISymbol) function;
+      } else if (function.isAST1() && function.head().isSymbol()
+          && function.first().equals(timeVar)) {
+        functions[j] = (ISymbol) function.head();
+      } else {
+        return null;
+      }
+    }
+    return functions;
   }
 
   /**
@@ -610,37 +1036,45 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       return true;
     }
 
-    /**
-     * The value of the entry <code>derivative</code> at <code>point</code>, from its machine number
-     * operations <code>machine</code> if they give a finite real number.
-     *
-     * @param rules holds the substitution rules of the point at index 0 once they were needed
-     */
     private double value(MachineExpression machine, IExpr derivative, double[] point,
         IAST[] rules) {
-      if (derivative.isZero()) {
-        return 0.0;
-      }
-      if (derivative.isNumber()) {
-        return derivative.evalfNaN();
-      }
-      if (machine != null) {
-        double value = machine.value(point);
-        if (!Double.isNaN(value)) {
-          return value;
-        }
-      }
-      if (rules[0].isNIL()) {
-        final int n = fVariables.length;
-        IASTAppendable substitutions = F.ListAlloc(n + 1);
-        for (int i = 0; i < n; i++) {
-          substitutions.append(F.Rule(fVariables[i], F.num(point[i])));
-        }
-        substitutions.append(F.Rule(fSystem.timeVar, F.num(point[n])));
-        rules[0] = substitutions;
-      }
-      return fEngine.evalN(F.subst(derivative, rules[0])).evalfNaN();
+      return machineValue(machine, derivative, point, rules, fVariables, fSystem.timeVar, fEngine);
     }
+  }
+
+  /**
+   * The value of <code>expr</code>, an expression in the symbols <code>variables</code> and the
+   * time <code>timeVar</code>, at <code>point</code>, which holds their numbers in this order. It
+   * is taken from the machine number operations <code>machine</code> if they give a finite real
+   * number.
+   *
+   * @param machine the translation of <code>expr</code> or <code>null</code>
+   * @param rules holds the substitution rules of the point at index 0 once they were needed
+   */
+  private static double machineValue(MachineExpression machine, IExpr expr, double[] point,
+      IAST[] rules, ISymbol[] variables, ISymbol timeVar, EvalEngine engine) {
+    if (expr.isZero()) {
+      return 0.0;
+    }
+    if (expr.isNumber()) {
+      return expr.evalfNaN();
+    }
+    if (machine != null) {
+      double value = machine.value(point);
+      if (!Double.isNaN(value)) {
+        return value;
+      }
+    }
+    if (rules[0].isNIL()) {
+      final int n = variables.length;
+      IASTAppendable substitutions = F.ListAlloc(n + 1);
+      for (int i = 0; i < n; i++) {
+        substitutions.append(F.Rule(variables[i], F.num(point[i])));
+      }
+      substitutions.append(F.Rule(timeVar, F.num(point[n])));
+      rules[0] = substitutions;
+    }
+    return engine.evalN(F.subst(expr, rules[0])).evalfNaN();
   }
 
   /**
@@ -851,9 +1285,17 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (eliminated.isPresent()) {
         return eliminated;
       }
-      FirstOrderSystem system = reduceToFirstOrder(ast, timeVar, engine);
+      // algebraic equations which can't be solved for their functions in closed form are solved
+      // numerically while integrating
+      AlgebraicConstraints constraints = AlgebraicConstraints.create(ast, timeVar, engine);
+      FirstOrderSystem system =
+          reduceToFirstOrder(constraints != null ? constraints.reduced : ast, timeVar, engine);
       if (system == null) {
         return F.NIL;
+      }
+      if (constraints != null && !constraints.attach(system)) {
+        // The system is underdetermined.
+        return Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
       }
       MethodSettings method = MethodSettings.parse(options, ast, tMax - tMin, engine);
       if (method == null) {
@@ -885,17 +1327,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       ISymbol timeVar, IExpr[] options, EvalEngine engine, boolean ruleForm) {
     IAST functionList = ast.arg2().makeList();
     int numberOfFunctions = functionList.argSize();
-    ISymbol[] functions = new ISymbol[numberOfFunctions];
-    for (int j = 0; j < numberOfFunctions; j++) {
-      IExpr function = functionList.get(j + 1);
-      if (function.isSymbol()) {
-        functions[j] = (ISymbol) function;
-      } else if (function.isAST1() && function.head().isSymbol()
-          && function.first().equals(timeVar)) {
-        functions[j] = (ISymbol) function.head();
-      } else {
-        return F.NIL;
-      }
+    ISymbol[] functions = functionSymbols(functionList, timeVar);
+    if (functions == null) {
+      return F.NIL;
     }
     IASTAppendable equations = F.ListAlloc();
     IASTAppendable conditions = F.ListAlloc();
@@ -2135,9 +2569,28 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
       IExpr[] derivatives = new IExpr[system.derivatives.length];
       for (int i = 0; i < derivatives.length; i++) {
+        // If(True, a, b) and Piecewise({{a, False}}, b) with a frozen condition are evaluated to
+        // their branch, so that the machine number translation sees the branch alone
         derivatives[i] = F.subst(system.derivatives[i], frozen);
+        if (derivatives[i] != system.derivatives[i]) {
+          derivatives[i] = engine.evaluate(derivatives[i]);
+        }
       }
       FirstOrderSystem stretch = system.restart(derivatives, from, state);
+      if (system.constraints != null) {
+        stretch.constraints = system.constraints.freeze(frozen);
+        // where the algebraic equations jump, their functions jump with them
+        try {
+          stretch.constraints.solve(from, state);
+        } catch (MathRuntimeException mre) {
+          if (whole == null) {
+            throw mre;
+          }
+          // At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.
+          Errors.printMessage(head, "ndsz", F.list(system.timeVar, F.num(from)), engine);
+          break;
+        }
+      }
       double[][] end = new double[1][];
       DenseOutputModel model = propagateSmooth(head, stretch, to, method, engine, end);
       if (whole == null) {
@@ -2169,6 +2622,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     for (IExpr derivative : system.derivatives) {
       collectJumps(derivative, system, from, to, jumps, times, engine);
     }
+    if (system.constraints != null) {
+      for (IExpr equation : system.constraints.values()) {
+        collectJumps(equation, system, from, to, jumps, times, engine);
+      }
+    }
     double[] result = new double[times.size()];
     int i = 0;
     for (double t : (to >= from ? times : times.descendingSet())) {
@@ -2185,29 +2643,78 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     IAST ast = (IAST) expr;
     if ((ast.isAST(S.HeavisideTheta, 2) || ast.isAST(S.UnitStep, 2) || ast.isAST(S.Sign, 2))
         && !ast.arg1().isFree(system.timeVar)) {
-      IExpr argument = ast.arg1();
-      boolean stateFree = true;
-      for (ISymbol function : system.functions) {
-        stateFree &= argument.isFree(function);
+      if (addJump(ast, F.List(ast.arg1()), system, from, to, jumps, times, engine)) {
+        return;
       }
-      if (stateFree && argument.isPolynomialOfMaxDegree(system.timeVar, 1)) {
-        double a = engine.evalN(F.subst(argument, F.Rule(system.timeVar, F.C0))).evalfNaN();
-        double b = engine.evalN(F.subst(argument, F.Rule(system.timeVar, F.C1))).evalfNaN() - a;
-        double zero = -a / b;
-        if (Double.isFinite(zero)) {
-          if (!jumps.contains(ast)) {
-            jumps.add(ast);
-          }
-          if (zero > Math.min(from, to) && zero < Math.max(from, to)) {
-            times.add(zero);
-          }
-        }
+    }
+    if ((ast.isAST(S.Less) || ast.isAST(S.LessEqual) || ast.isAST(S.Greater)
+        || ast.isAST(S.GreaterEqual)) && ast.argSize() >= 2 && !ast.isFree(system.timeVar)) {
+      // the condition t < 1 of If(t < 1, a, b) or Piecewise({{a, t < 1}}, b) changes its value
+      // where the difference of two neighbouring sides changes its sign; it is frozen to True or
+      // False inside a stretch, which makes the If or Piecewise evaluate to one branch
+      if (addJump(ast, F.ListAlloc(ast.argSize() - 1).appendArgs(1, ast.argSize(),
+          i -> F.Subtract(ast.get(i), ast.get(i + 1))), system, from, to, jumps, times, engine)) {
         return;
       }
     }
     for (int i = 0; i < ast.size(); i++) {
       collectJumps(ast.get(i), system, from, to, jumps, times, engine);
     }
+  }
+
+  /**
+   * Add <code>jump</code> to the jumping terms and the zeros of the <code>arguments</code> to the
+   * break points, if every one of them is free of the unknown functions and linear in the
+   * independent variable. Nothing is added unless all of them are.
+   *
+   * @param arguments the argument of a step function, or the list of the differences of the
+   *        neighbouring sides of a comparison
+   * @return <code>false</code> if an argument doesn't have this form
+   */
+  private static boolean addJump(IAST jump, IAST arguments, FirstOrderSystem system, double from,
+      double to, java.util.List<IExpr> jumps, java.util.Set<Double> times, EvalEngine engine) {
+    double[] zeros = new double[arguments.argSize()];
+    for (int i = 1; i <= zeros.length; i++) {
+      zeros[i - 1] = jumpZero(arguments.get(i), system, engine);
+      if (Double.isNaN(zeros[i - 1])) {
+        return false;
+      }
+    }
+    if (!jumps.contains(jump)) {
+      jumps.add(jump);
+    }
+    for (double zero : zeros) {
+      if (zero > Math.min(from, to) && zero < Math.max(from, to)) {
+        times.add(zero);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The zero of <code>argument</code> in the independent variable.
+   *
+   * @return {@link Double#NaN} if <code>argument</code> isn't free of the unknown functions and
+   *         linear in the independent variable, {@link Double#POSITIVE_INFINITY} if it is a
+   *         constant
+   */
+  private static double jumpZero(IExpr argument, FirstOrderSystem system, EvalEngine engine) {
+    for (ISymbol function : system.functions) {
+      if (!argument.isFree(function)) {
+        return Double.NaN;
+      }
+    }
+    argument = engine.evaluate(argument);
+    if (!argument.isPolynomialOfMaxDegree(system.timeVar, 1)) {
+      return Double.NaN;
+    }
+    double a = engine.evalN(F.subst(argument, F.Rule(system.timeVar, F.C0))).evalfNaN();
+    double b = engine.evalN(F.subst(argument, F.Rule(system.timeVar, F.C1))).evalfNaN() - a;
+    double zero = -a / b;
+    if (!Double.isFinite(zero)) {
+      return Double.isFinite(a) && b == 0.0 ? Double.POSITIVE_INFINITY : Double.NaN;
+    }
+    return zero;
   }
 
   /**
@@ -2228,7 +2735,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     final FirstODE ode = new FirstODE(engine, system);
     // the curve of algebraic equations is followed by its own tangent, which a linearly implicit
     // method cannot differentiate
-    final boolean stiffCapable = system.curve == null;
+    final boolean stiffCapable = system.curve == null && system.constraints == null;
     boolean stiff = stiffCapable && method.stiffMethod && !method.stiffnessSwitching;
     AbstractIntegrator integrator =
         stiff ? method.createStiffIntegrator(system, target, engine) : method.createIntegrator();
@@ -2575,7 +3082,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
      *         component
      */
     static Switching create(FirstOrderSystem system, boolean forward, EvalEngine engine) {
-      if (system.layout != null || system.curve != null) {
+      if (system.layout != null || system.curve != null || system.constraints != null) {
         return null;
       }
       java.util.List<IAST> terms = new java.util.ArrayList<IAST>();

@@ -498,11 +498,10 @@ public class Algebra {
           // without a factorization; the steps of a trace show the factors
           Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
           if (parts.isPresent() && parts.get()[0].isPlus() && parts.get()[1].isPlus()) {
-            Optional<IExpr[]> quotients =
-                AlgebraUtil.cancelByGCD(parts.get()[0], parts.get()[1]);
+            IExpr[] quotients = AlgebraUtil.cancelByGCD(parts.get()[0], parts.get()[1]);
             if (quotients != null) {
-              return quotients.isPresent() ? expandedFraction(quotients.get()[0],
-                  quotients.get()[1], engine) : F.NIL;
+              return quotients.length == 2 ? expandedFraction(quotients[0], quotients[1], engine)
+                  : F.NIL;
             }
           }
         }
@@ -1170,6 +1169,9 @@ public class Algebra {
           matcher = Predicates.toFreeQ(ast.arg2());
         }
         IExpr result = AlgebraUtil.expand(ast1, matcher, false, true, true).orElse(ast1);
+        if (result.isPlus()) {
+          result = mergeLikeRadicals((IAST) result, engine);
+        }
         // Apply TrigExpand if Trig->True
         if (options[0].isTrue()) {
           result = TrigExpand.trigExpand(result, engine);
@@ -1183,6 +1185,86 @@ public class Algebra {
       }
       return ast.arg1();
     }
+  }
+
+  /**
+   * Merge the terms of a sum which differ only in a rational number and an integer power of the
+   * same radical of an integer: <code>Sqrt(3) + 2/Sqrt(3)</code> is <code>5/Sqrt(3)</code> and
+   * <code>a*3^(1/3) + a/3^(2/3)</code> is <code>4*a/3^(2/3)</code>. The merged term keeps the
+   * lowest power of the radical.
+   *
+   * @return <code>sum</code> if there are no such terms
+   */
+  private static IExpr mergeLikeRadicals(IAST sum, EvalEngine engine) {
+    // the key of a term: the base, the exponent modulo 1 and the factors which are no numbers
+    java.util.Map<IAST, java.util.List<Integer>> groups = new java.util.LinkedHashMap<>();
+    IExpr[] coefficients = new IExpr[sum.size()];
+    IRational[] exponents = new IRational[sum.size()];
+    for (int i = 1; i < sum.size(); i++) {
+      IExpr term = sum.get(i);
+      IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+      IExpr coefficient = F.C1;
+      IExpr radical = F.NIL;
+      IASTAppendable rest = F.TimesAlloc(factors.argSize());
+      for (IExpr factor : factors) {
+        if (factor.isRational() || (factor.isComplex() && factor.re().isRational())) {
+          coefficient = factor;
+        } else if (radical.isNIL() && factor.isPower() && factor.base().isInteger()
+            && factor.base().greaterThan(F.C1).isTrue() && factor.exponent().isFraction()) {
+          radical = factor;
+        } else {
+          rest.append(factor);
+        }
+      }
+      if (radical.isNIL()) {
+        continue;
+      }
+      IRational exponent = (IRational) radical.exponent();
+      IRational fractionalPart = exponent.subtract(exponent.floorFraction());
+      IAST key = F.list(radical.base(), fractionalPart, rest);
+      coefficients[i] = coefficient;
+      exponents[i] = exponent;
+      groups.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(i);
+    }
+    boolean merged = false;
+    IASTAppendable result = F.PlusAlloc(sum.argSize());
+    java.util.Set<Integer> done = new java.util.HashSet<>();
+    for (int i = 1; i < sum.size(); i++) {
+      if (done.contains(i)) {
+        continue;
+      }
+      if (exponents[i] == null) {
+        result.append(sum.get(i));
+        continue;
+      }
+      IAST key = null;
+      for (java.util.Map.Entry<IAST, java.util.List<Integer>> entry : groups.entrySet()) {
+        if (entry.getValue().contains(i)) {
+          key = entry.getKey();
+          break;
+        }
+      }
+      java.util.List<Integer> group = groups.get(key);
+      if (group.size() < 2) {
+        result.append(sum.get(i));
+        continue;
+      }
+      IRational lowest = exponents[group.get(0)];
+      for (int j : group) {
+        if (exponents[j].isLT(lowest)) {
+          lowest = exponents[j];
+        }
+      }
+      IASTAppendable merge = F.PlusAlloc(group.size());
+      for (int j : group) {
+        // c*p^r == c*p^(r-lowest)*p^lowest with an integer r-lowest
+        merge.append(F.Times(coefficients[j], F.Power(key.arg1(), exponents[j].subtract(lowest))));
+        done.add(j);
+      }
+      result.append(F.Times(engine.evaluate(merge), F.Power(key.arg1(), lowest), key.arg3()));
+      merged = true;
+    }
+    return merged ? engine.evaluate(result) : sum;
   }
 
   /**
@@ -3618,9 +3700,8 @@ public class Algebra {
         }
         VariablesSet eVar = new VariablesSet();
         eVar.addVarList(ast, 1);
-        IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
         if (!options[MODULUS_OPTION].isZero()) {
-          return gcdWithOption(ast, arg1, eVar.getVarList(), options[MODULUS_OPTION], engine);
+          return gcdWithOption(ast, argSize, eVar.getVarList(), options[MODULUS_OPTION], engine);
         }
 
         IExpr result = polynomialGCD(ast, argSize, eVar, engine);
@@ -3678,13 +3759,13 @@ public class Algebra {
       return F.NIL;
     }
 
-    private IExpr gcdWithOption(final IAST ast, IExpr arg1, IAST variables, IExpr option,
+    private IExpr gcdWithOption(final IAST ast, int argSize, IAST variables, IExpr option,
         final EvalEngine engine) {
       if (JASModular.isModpMessage(S.PolynomialGCD, option)) {
         return F.NIL;
       }
       try {
-        return polynomialGCDModulus(JASModular.of((IInteger) option, variables), ast, arg1);
+        return polynomialGCDModulus(JASModular.of((IInteger) option, variables), ast, argSize);
       } catch (JASConversionException e) {
         // LOGGER.debug("PolynomialGCD.modulusGCD() failed", e);
       } catch (ArithmeticException aex) {
@@ -3693,18 +3774,60 @@ public class Algebra {
       return F.NIL;
     }
 
+    /**
+     * An upper bound of the total degree of the polynomial <code>expr</code>, without expanding
+     * it.
+     */
+    private static double degreeBound(IExpr expr) {
+      if (expr.isPlus()) {
+        double max = 0.0;
+        for (IExpr arg : (IAST) expr) {
+          max = Math.max(max, degreeBound(arg));
+        }
+        return max;
+      }
+      if (expr.isTimes()) {
+        double sum = 0.0;
+        for (IExpr arg : (IAST) expr) {
+          sum += degreeBound(arg);
+        }
+        return sum;
+      }
+      if (expr.isPower()) {
+        return degreeBound(expr.base()) * expr.exponent().evalfNaN();
+      }
+      return expr.isNumber() ? 0.0 : 1.0;
+    }
+
+    /**
+     * The GCD over <code>GF(p)</code>. The arguments aren't expanded over the integers: in one
+     * variable the argument of the smallest degree comes first, and every further argument is
+     * converted modulo the GCD so far, <code>gcd(a^k, b) = gcd(a^k mod b, b)</code>, which takes its
+     * powers by repeated squaring.
+     */
     private static <C extends GcdRingElem<C> & Modular> IExpr polynomialGCDModulus(
-        JASModular<C> jas, final IAST ast, IExpr arg1) throws JASConversionException {
-      GenPolynomial<C> poly = jas.expr2JAS(arg1);
-      GreatestCommonDivisorAbstract<C> factory = jas.gcd();
-      for (int i = 2; i < ast.argSize(); i++) {
-        final IExpr arg = ast.get(i);
-        VariablesSet eVar = new VariablesSet(arg);
+        JASModular<C> jas, final IAST ast, int argSize) throws JASConversionException {
+      for (int i = 2; i <= argSize; i++) {
+        VariablesSet eVar = new VariablesSet(ast.get(i));
         if (!eVar.isSize(1)) {
           // gcd only possible for univariate polynomials
           return F.NIL;
         }
-        poly = factory.gcd(poly, jas.expr2JAS(F.evalExpandAll(arg)));
+      }
+      boolean univariate = jas.getPolynomialRingFactory().nvar == 1;
+      java.util.List<IExpr> args = new ArrayList<IExpr>(argSize);
+      for (int i = 1; i <= argSize; i++) {
+        args.add(ast.get(i));
+      }
+      args.sort(java.util.Comparator.comparingDouble(PolynomialGCD::degreeBound));
+      GreatestCommonDivisorAbstract<C> factory = jas.gcd();
+      GenPolynomial<C> poly = null;
+      for (IExpr arg : args) {
+        if (poly == null) {
+          poly = jas.expr2JAS(arg);
+        } else {
+          poly = factory.gcd(poly, jas.expr2JAS(arg, univariate ? poly : null));
+        }
       }
       return AlgebraUtil.factorModulus(jas, poly, false);
     }
@@ -4401,6 +4524,36 @@ public class Algebra {
     }
 
     /**
+     * The remainder of <code>poly</code> divided by the univariate polynomial <code>m</code> over
+     * <code>GF(p)</code>, without expanding <code>poly</code> over the integers: its powers are
+     * taken by repeated squaring modulo <code>m</code>.
+     *
+     * @param unitLeadingCoefficient if <code>true</code> the leading coefficient of <code>m</code>
+     *        must be an integer which isn't a multiple of <code>p</code>
+     * @return {@link F#NIL} if the arguments don't have this form
+     */
+    private static IExpr remainderModPrime(IExpr poly, IExpr m, IInteger p,
+        boolean unitLeadingCoefficient, EvalEngine engine) {
+      if (!JASModular.isPrimeModulus(p) || !m.isPolynomialStruct()) {
+        return F.NIL;
+      }
+      IAST vars = new VariablesSet(F.List(poly, m)).getVarList();
+      if (vars.argSize() != 1) {
+        return F.NIL;
+      }
+      IExpr var = vars.arg1();
+      if (unitLeadingCoefficient) {
+        IExpr lc = engine.evaluate(F.Coefficient(m, var, F.Exponent(m, var)));
+        if (!lc.isInteger() || ((IInteger) lc).mod(p).isZero()) {
+          return F.NIL;
+        }
+      }
+      Optional<IExpr[]> qr =
+          PolynomialQuotientRemainder.quotientRemainderModPrime(poly, m, var, p, true);
+      return qr.isPresent() ? qr.get()[1] : F.NIL;
+    }
+
+    /**
      * <code>PolynomialMod(poly, {m1, m2, ...})</code> with a polynomial modulus in more than one
      * variable, in lexicographic order of <code>Variables({poly, m1, ...})</code>:
      * <ul>
@@ -4551,6 +4704,16 @@ public class Algebra {
       // PolynomialMod[poly, {m1, m2, ...}] -> apply sequentially.
       if (m.isList()) {
         IAST mList = (IAST) m;
+        if (modulus.isZero() && mList.argSize() == 2 && mList.arg2().isInteger()
+            && !mList.arg1().isNumber()) {
+          // {m1, p}: the remainder over the rationals reduced modulo p is the remainder over GF(p)
+          // if the leading coefficient of m1 is a unit modulo p
+          IInteger p = ((IInteger) mList.arg2()).abs();
+          IExpr result = remainderModPrime(poly, mList.arg1(), p, true, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
         IExpr multivariate = polynomialModList(poly, mList, engine);
         if (multivariate.isPresent()) {
           return multivariate;
@@ -4566,16 +4729,22 @@ public class Algebra {
         return result;
       }
 
-      IExpr expanded = F.evalExpandAll(poly, engine);
-      if (!expanded.isPresent()) {
-        expanded = poly;
-      }
-
       // Resolve options.
       boolean useModulus = modulus.isInteger() && !modulus.isZero();
       IInteger pOption = useModulus ? ((IInteger) modulus).abs() : null;
       if (useModulus && pOption.isOne()) {
         return F.C0;
+      }
+      if (useModulus && !m.isNumber()) {
+        IExpr result = remainderModPrime(poly, m, pOption, false, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+
+      IExpr expanded = F.evalExpandAll(poly, engine);
+      if (!expanded.isPresent()) {
+        expanded = poly;
       }
       boolean integerDomain = coefficientDomain == S.Integers;
 
@@ -4824,6 +4993,10 @@ public class Algebra {
       if (variable.isNIL()) {
         return F.NIL;
       }
+      IExpr quotient = modularPart(ast, variable, options[MODULUS_OPTION], 0);
+      if (quotient.isPresent()) {
+        return quotient;
+      }
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
 
@@ -5043,6 +5216,13 @@ public class Algebra {
       if (notPolynomialMessage(ast, arg1, arg2, engine)) {
         return F.NIL;
       }
+      Optional<IExpr[]> modular =
+          quotientRemainderModPrime(arg1, arg2, variable, options[MODULUS_OPTION], false);
+      if (modular.isPresent()) {
+        IExpr result = F.list(modular.get()[0], modular.get()[1]);
+        engine.putCache(ast, result);
+        return result;
+      }
 
       try {
         arg1 = F.ExpandAll.of(engine, arg1);
@@ -5090,11 +5270,40 @@ public class Algebra {
 
     public Optional<IExpr[]> quotientRemainderModInteger(IExpr arg1, IExpr arg2, IExpr variable,
         IExpr option) {
+      return quotientRemainderModPrime(arg1, arg2, variable, option, false);
+    }
+
+    /**
+     * The quotient (<code>part</code> 0) or the remainder (<code>part</code> 1) of the unexpanded
+     * arguments over <code>GF(p)</code> for the prime <code>option</code>.
+     *
+     * @return {@link F#NIL} if the modulus is no prime or the arguments are no polynomials
+     */
+    static IExpr modularPart(IAST ast, IExpr variable, IExpr option, int part) {
+      Optional<IExpr[]> modular =
+          quotientRemainderModPrime(ast.arg1(), ast.arg2(), variable, option, part == 1);
+      return modular.isPresent() ? modular.get()[part] : F.NIL;
+    }
+
+    /**
+     * The quotient and the remainder over <code>GF(p)</code> for the prime <code>option</code>. The
+     * arguments need not be expanded: a power is taken over <code>GF(p)</code>, and for the
+     * remainder alone by repeated squaring modulo <code>arg2</code>, so
+     * <code>PolynomialRemainder((x^3+x+1)^2047, x^23+1, x, Modulus-&gt;2)</code> never expands the
+     * power over the integers.
+     *
+     * @param remainderOnly if <code>true</code> the quotient isn't computed and is {@link F#NIL}
+     * @return {@link Optional#empty()} if the modulus is no prime or the arguments are no
+     *         polynomials in <code>variable</code> with rational coefficients
+     */
+    static Optional<IExpr[]> quotientRemainderModPrime(IExpr arg1, IExpr arg2, IExpr variable,
+        IExpr option, boolean remainderOnly) {
       try {
         if (!JASModular.isPrimeModulus(option)) {
           return Optional.empty();
         }
-        return quotientRemainder(JASModular.of((IInteger) option, variable.makeList()), arg1, arg2);
+        return quotientRemainder(JASModular.of((IInteger) option, variable.makeList()), arg1, arg2,
+            remainderOnly);
       } catch (JASConversionException e) {
         // LOGGER.debug("PolynomialQuotientRemainder.quotientRemainderModInteger() failed", e);
       }
@@ -5102,13 +5311,16 @@ public class Algebra {
     }
 
     private static <C extends GcdRingElem<C> & Modular> Optional<IExpr[]> quotientRemainder(
-        JASModular<C> jas, IExpr arg1, IExpr arg2) throws JASConversionException {
-      GenPolynomial<C> poly1 = jas.expr2JAS(arg1);
+        JASModular<C> jas, IExpr arg1, IExpr arg2, boolean remainderOnly)
+        throws JASConversionException {
       GenPolynomial<C> poly2 = jas.expr2JAS(arg2);
       if (poly2.isZERO()) {
         return Optional.empty();
       }
-      GenPolynomial<C>[] divRem = poly1.quotientRemainder(poly2);
+      if (remainderOnly) {
+        return Optional.of(new IExpr[] {F.NIL, jas.poly2Expr(jas.expr2JAS(arg1, poly2))});
+      }
+      GenPolynomial<C>[] divRem = jas.expr2JAS(arg1).quotientRemainder(poly2);
       return Optional.of(new IExpr[] {jas.poly2Expr(divRem[0]), jas.poly2Expr(divRem[1])});
     }
 
@@ -5160,6 +5372,10 @@ public class Algebra {
       IExpr variable = polynomialVariable(ast, engine);
       if (variable.isNIL()) {
         return F.NIL;
+      }
+      IExpr remainder = modularPart(ast, variable, options[MODULUS_OPTION], 1);
+      if (remainder.isPresent()) {
+        return remainder;
       }
       IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
       IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
@@ -5494,10 +5710,10 @@ public class Algebra {
       }
       if (arg1.isAST()) {
         IExpr together = engine.evaluate(AlgebraUtil.togetherExpr(arg1, engine));
-        if ((arg1.isTimes() || arg1.isPower()) && !engine.evaluate(F.Denominator(arg1)).isPlus()
+        if ((arg1.isTimes() || arg1.isPower())
             && AlgebraUtil.isSameDenominator(arg1, together, engine)) {
-          // one fraction with nothing to cancel keeps the factors of its denominator; a
-          // denominator which is one sum has no factors to keep
+          // one fraction with nothing to cancel keeps the factors of its numerator and
+          // denominator, with their numeric contents merged
           IExpr reduced = AlgebraUtil.reducedFraction(arg1, engine);
           if (reduced.isPresent()) {
             return reduced;

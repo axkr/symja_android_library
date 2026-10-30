@@ -35,6 +35,9 @@ public class DSolveValue extends AbstractFunctionEvaluator {
    * @return the value, a list of values for several solutions, or {@link F#NIL}
    */
   static IExpr solveValue(IBuiltInSymbol solver, final IAST ast, EvalEngine engine) {
+    if (ast.argSize() == 1) {
+      return solveValueOfInferredUnknowns(solver, ast.arg1(), engine);
+    }
     if (ast.argSize() != 3) {
       return F.NIL;
     }
@@ -122,9 +125,34 @@ public class DSolveValue extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * <code>DSolveValue(eqns)</code>: the solver determines the unknown functions and the variable
+   * itself, and the value is the right-hand side of each solution rule.
+   *
+   * @return the value, a list of values for several unknowns or solutions, or {@link F#NIL}
+   */
+  private static IExpr solveValueOfInferredUnknowns(IBuiltInSymbol solver, IExpr eqns,
+      EvalEngine engine) {
+    IExpr solution = engine.evaluate(F.unaryAST1(solver, eqns));
+    if (!solution.isListOfLists()) {
+      return F.NIL;
+    }
+    IAST solutionList = (IAST) solution;
+    IASTAppendable values = F.ListAlloc(solutionList.argSize());
+    for (int i = 1; i <= solutionList.argSize(); i++) {
+      IAST rules = (IAST) solutionList.get(i);
+      if (!rules.isListOfRules(false)) {
+        return F.NIL;
+      }
+      IAST rightHandSides = rules.map(r -> r.second());
+      values.append(rightHandSides.argSize() == 1 ? rightHandSides.arg1() : rightHandSides);
+    }
+    return values.argSize() == 1 ? values.arg1() : values;
+  }
+
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_3_3;
+    return ARGS_1_3;
   }
 
   @Override

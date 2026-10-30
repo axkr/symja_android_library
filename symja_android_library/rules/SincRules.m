@@ -12,7 +12,6 @@
  Sinc(Pi/10)=(5*(-1 + Sqrt(5)))/(2*Pi),
  Sinc(2/5*Pi)=(5*Sqrt(5/8 + Sqrt(5)/8))/(2*Pi),
  Sinc(3/10*Pi)=(5*(1 + Sqrt(5)))/(6*Pi),
- Sinc(I)=Sinh(1),
  Sinc(ArcSin(x_)):=x/ArcSin(x),
  Sinc(ArcCos(x_)):=((1-x^2)^(1/2))/ArcCos(x),
  Sinc(ArcTan(x_)):=(x/(1+x^2)^(1/2))/ArcTan(x),

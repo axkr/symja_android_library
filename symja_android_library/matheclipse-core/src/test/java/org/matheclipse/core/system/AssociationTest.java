@@ -892,7 +892,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     check("KeyExistsQ(<|1->U,2->V|>, V)", //
         "False");
 
-    check("KeyExistsQ(<|a -> x, b -> y, c -> z|>)[a]", //
+    check("KeyExistsQ(a)[<|a -> x, b -> y, c -> z|>]", //
         "True");
     check("KeyExistsQ(<|a -> x, b -> y, c -> z|>, a)", //
         "True");

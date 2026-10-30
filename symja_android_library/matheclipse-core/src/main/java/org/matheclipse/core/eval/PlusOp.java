@@ -409,6 +409,7 @@ public final class PlusOp {
         if (numberValue.isNumber()) {
           IExpr temp = ((INumber) numberValue).plusExpr((INumber) arg);
           if (temp.isNumber()) {
+            PrecisionLoss.machineSum(numberValue, arg, temp);
             numberValue = temp;
             evaled = true;
             return F.NIL;
@@ -614,7 +615,8 @@ public final class PlusOp {
                 if (numberValue.isNIL()) {
                   numberValue = arg;
                   return F.NIL;
-                } else if (numberValue.isUnderflow()) {
+                } else if (numberValue.isUnderflow() || numberValue.isOverflow()) {
+                  // a sum of magnitudes beyond the range is beyond it as well
                   numberValue = arg;
                   evaled = true;
                   return F.NIL;

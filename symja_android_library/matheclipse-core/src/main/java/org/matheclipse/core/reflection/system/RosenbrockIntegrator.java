@@ -9,6 +9,7 @@ import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.sampling.AbstractODEStateInterpolator;
 import org.hipparchus.util.FastMath;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * An adaptive Rosenbrock (linearly implicit Runge-Kutta) integrator for stiff systems: the RODAS
@@ -94,6 +95,8 @@ final class RosenbrockIntegrator extends AdaptiveStepsizeIntegrator {
   }
 
   @Override
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "an event handler which stopped the step returns a different time")
   public ODEStateAndDerivative integrate(final ExpandableODE equations,
       final ODEState initialState, final double finalTime) {
     sanityChecks(initialState, finalTime);

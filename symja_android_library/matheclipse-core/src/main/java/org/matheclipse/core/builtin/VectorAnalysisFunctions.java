@@ -30,6 +30,7 @@ public class VectorAnalysisFunctions {
 
     private static void init() {
       S.Curl.setEvaluator(new Curl());
+      S.DiffusionPDETerm.setEvaluator(new DiffusionPDETerm());
       S.Div.setEvaluator(new Div());
       S.Grad.setEvaluator(new Grad());
       S.HessianMatrix.setEvaluator(new HessianMatrix());
@@ -828,6 +829,62 @@ public class VectorAnalysisFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+  }
+
+  /**
+   * <code>DiffusionPDETerm({u, {x1, x2, ...}}, c)</code> - the inactive diffusion operator
+   * <code>-Div(c . Grad(u))</code>; a scalar coefficient <code>c</code> (default <code>1</code>)
+   * stands for <code>c</code> times the identity matrix.
+   */
+  private static final class DiffusionPDETerm extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList2()) {
+        return F.NIL;
+      }
+      IExpr u = ast.arg1().first();
+      IExpr variables = ast.arg1().second();
+      IAST vars = variables.isList() ? (IAST) variables : F.list(variables);
+      if (vars.isEmpty() || !vars.forAll(x -> x.isVariable())) {
+        return F.NIL;
+      }
+      if (vars.forAll(x -> u.isFree(x))) {
+        // u doesn't depend on the variables
+        return F.C0;
+      }
+      if (!variables.isList()) {
+        return F.NIL;
+      }
+      IExpr c = ast.argSize() >= 2 ? ast.arg2() : F.C1;
+      int n = vars.argSize();
+      IExpr matrix;
+      int[] dimensions = c.isMatrix();
+      if (dimensions != null) {
+        if (dimensions[0] != n || dimensions[1] != n) {
+          return F.NIL;
+        }
+        matrix = ((IAST) c).map(row -> ((IAST) row).map(F::Negate));
+      } else if (c.isList()) {
+        return F.NIL;
+      } else {
+        IExpr diagonal = F.Negate(c);
+        matrix = F.matrix((i, j) -> i == j ? diagonal : F.C0, n, n);
+      }
+      IAST grad = F.binaryAST2(F.Inactive(S.Grad), u, vars);
+      return F.binaryAST2(F.Inactive(S.Div),
+          F.binaryAST2(S.Dot, engine.evaluate(matrix), grad), vars);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
   }
 

@@ -942,8 +942,9 @@ public final class Programming {
       try {
         // a bare count is a valid specification, as it is for Table: Do(expr, 3) runs three
         // times. Anything else is reported (nliter) instead of silently doing nothing.
+        // An upper limit Infinity runs until Return or Break leaves the loop.
         final DoIterator generator =
-            new DoIterator(Iterator.createIterators(ast, false, engine), engine);
+            new DoIterator(Iterator.createIterators(ast, false, true, engine), engine);
         return generator.doIt(ast.arg1());
       } catch (final ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);

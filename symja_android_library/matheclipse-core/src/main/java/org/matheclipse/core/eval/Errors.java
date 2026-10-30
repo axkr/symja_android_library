@@ -173,6 +173,7 @@ public class Errors {
       "Value of option CompilationOptions -> `1` should be Automatic, a rule or a list of rules.", //
       "cfct", "The number of arguments `1` does not match the length `2` of the argument template.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
+      "cfnv", "CompiledFunction object is invalid and cannot be used.", //
       "cfrec", "The compiled function `1` calls itself; the call is not expanded.", //
       "cfro",
       "Value of option RuntimeOptions -> `1` should be Automatic, \"Speed\", \"Quality\", a rule or a list of rules.", //
@@ -195,6 +196,8 @@ public class Errors {
       "ctnc", "The constraint `1` is not convex.", //
       "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //
       "date", "Expression `1` cannot be interpreted as a date specification.", //
+      "delaysm",
+      "The system contains time delays. An exact simulation is not possible; try simulating over a time span.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
@@ -294,6 +297,7 @@ public class Errors {
       "ilsmn",
       "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //
       "ilsnn", "Single or list of non-negative integers expected at position `1`.", //
+      "imginv", "Expecting an image or graphics instead of `1`.", //
       "incmp", "The arguments `1` and `2` in `3` are incompatible.", //
       "incom",
       "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
@@ -387,6 +391,7 @@ public class Errors {
       "lpn", "`1` is not a list of numbers or pairs of numbers.", //
       "lpsnf", "No solution can be found that satisfies the constraints.", //
       "lrgexp", "Exponent ist out of bounds for function `1`.", //
+      "lrwl", "The items for choice `1` should be a nonempty list or a rule weights -> choices.", //
       "lslc", "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
       "lstpat", "List or pattern matching a list expected at position `1` in `2`.", //
       "ltype", "Legendre type `1` is expected to be 1, 2, 3.", //
@@ -441,6 +446,8 @@ public class Errors {
       "nmet", "Unable to find the domain with the available methods.", //
       "nmod", "`1` is not valid modulo `2`.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
+      "nnintprm",
+      "Parameter `1` at position `2` in `3` is expected to be a non-negative integer.", //
       "nnumeq",
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
@@ -465,6 +472,8 @@ public class Errors {
       "noawt",
       "`1` needs AWT, which this runtime does not provide (a native image on macOS has none); use SVG output instead.", //
       "noopen", "Cannot open `1`.", //
+      "noopmon",
+      "The optimization was solved by an algorithm that does not provide monitoring information. Choose a specific iterative method if this information is necessary.", //
       "noprime", "There are no primes in the specified interval.", //
       "notprop",
       "`1` is not a known property or size specification for `2`. Use `2`(\"Properties\") for a list of properties.", //
@@ -564,6 +573,8 @@ public class Errors {
       "posr", "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
       "post", "The threshold `1` should be positive.", //
       "ppnt", "The value `1` of argument `2`  must be a positive integer.", //
+      "probprm",
+      "Parameter `1` at position `2` in `3` is expected to be between 0 and 1 inclusive.", //
       "preal", "The parameter `1` should be real-valued.", //
       "precbd", "Requested precision `1` is not a machine-sized real number.", //
       "precsm", "Requested precision `1` is smaller than `2`.", //
@@ -590,6 +601,7 @@ public class Errors {
       "symmcomp", "Symmetry specification `1` is incompatible with expression `2`.", //
       "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
+      "realprm", "Parameter `1` at position `2` in `3` is expected to be real.", //
       "realx", "The value `1` is not a real number.", //
       "reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //
       "rect", "Nonrectangular tensor encountered", //
@@ -608,6 +620,8 @@ public class Errors {
       "rspec",
       "Rotation specification `1` should be a machine-sized integer or list of machine-sized integers.", //
       "row", "Expecting images of the same height in one row.", //
+      "rtnc",
+      "The number of constraints or initial conditions given, `1`, should be the same as the total order of the system, `2`.", //
       "rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
       "rvec", "Input `1` is not a vector of reals or integers.", //
       "rvec2", "Input `1` is not a real-valued vector.", //
@@ -664,6 +678,7 @@ public class Errors {
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
       "tllen", "Lists of unequal length in `1` cannot be added.", //
+      "tpos", "Cannot thread over positions `1` through `2` in `3`.", //
       "timesys", "`1` is not a known time system.", //
       "toggle", "ToggleFeature `1` is disabled.", //
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //
@@ -672,6 +687,7 @@ public class Errors {
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "underdet", "The system is underdetermined.", //
       "unfl", "Underflow occurred in computation.", //
+      "unifr", "The bounds of `1` are expected to be real numbers.", //
       "unitsys", "Cannot set `1` to `2`; value must be \"Metric\" or \"Imperial\".", //
       "unkds",
       "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //
@@ -690,6 +706,10 @@ public class Errors {
       "vector", "Argument `1` at position `2` is not a non-empty vector.", //
       "vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
       "vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
+      "wghtv",
+      "The weights given on the left-hand side of `1` should be a list of positive numerical quantities having the same length as the list given on the right-hand side.", //
+      "wghtvl",
+      "The weights given on the left-hand side of `1` should have the same length as the data given on the right-hand side.", //
       "write", "Tag `1` in `2` is Protected.", //
       "wrsym", "Symbol `1` is Protected.", //
       "wtspec",

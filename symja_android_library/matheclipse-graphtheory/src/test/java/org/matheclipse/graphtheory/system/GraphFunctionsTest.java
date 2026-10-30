@@ -557,6 +557,58 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  public void testFindShortestTourOfAGraph() {
+    // along the edges, weighted by EdgeWeight
+    check("FindShortestTour(Graph({a, b, c, d}, {a <-> b, b <-> c, c <-> d, d <-> a, a <-> c, b <-> d}, "
+        + "EdgeWeight -> {1, 5, 1, 5, 2, 2}))", //
+        "{6,{a,c,d,b,a}}");
+    check("FindShortestTour(SetProperty(CycleGraph(4), EdgeWeight -> {3, 4, 5, 6}))", //
+        "{18,{1,4,3,2,1}}");
+    // no closed tour through all vertices
+    check("FindShortestTour(StarGraph(4))", //
+        "{}");
+  }
+
+  @Test
+  public void testSetPropertyEdgeWeight() {
+    check("Normal(WeightedAdjacencyMatrix(SetProperty(Graph({1, 2, 3}, {1 <-> 2, 2 <-> 3}), "
+        + "EdgeWeight -> {7, 8})))", //
+        "{{0,7,0},{7,0,8},{0,8,0}}");
+  }
+
+  @Test
+  public void testPropertyValue() {
+    // EdgeWeight follows the sorted edge order of CycleGraph: 1<->2, 1<->4, 2<->3, 3<->4
+    check("g = SetProperty(CycleGraph(4), EdgeWeight -> {11, 1/2, 13, 14}); "
+        + "{PropertyValue({g, 2 <-> 3}, EdgeWeight), PropertyValue({g, 4 <-> 1}, EdgeWeight)}", //
+        "{13,1/2}");
+    check("PropertyValue({Graph({a -> b, b -> c}, EdgeWeight -> {2.5, 4}), a -> b}, EdgeWeight)", //
+        "2.5");
+    check("g = Graph({p, q, r}, {p <-> q, q <-> r}, VertexStyle -> {q -> Red}); "
+        + "{PropertyValue({g, q}, VertexStyle), PropertyValue(g, VertexStyle)}", //
+        "{RGBColor(1,0,0),{q->RGBColor(1,0,0)}}");
+    // no such edge, or no such property
+    check("PropertyValue({CycleGraph(3), 1 <-> 5}, EdgeWeight)", //
+        "PropertyValue({Graph({1,2,3},{1<->2,1<->3,2<->3}),1<->5},EdgeWeight)");
+  }
+
+  @Test
+  public void testTreePlotAutomaticPosition() {
+    check("Head(TreePlot({3 -> 1, 3 -> 2}, Automatic, 3))", //
+        "Graphics");
+    check("StringCount(ExportString(TreePlot({{1 -> 2, \"ab\"}, {2 -> 3, \"ab\"}}, Automatic, 1), "
+        + "\"SVG\"), \">ab<\")", //
+        "2");
+  }
+
+  @Test
+  public void testShowOfEmptyGraphics3DAndGraph3D() {
+    check("StringContainsQ(ExportString(Show(Graphics3D(), Graph3D({1, 2}, {1 <-> 2}, "
+        + "VertexCoordinates -> {{0, 0, 0}, {1, 1, 0}})), \"SVG\"), \"<polygon\")", //
+        "True");
+  }
+
+  @Test
   public void testFindShortestTour() {
     check("FindShortestTour({{1,2},{2,3},{3,1}})", //
         "{Sqrt(2)+2*Sqrt(5),{1,3,2,1}}");
@@ -796,12 +848,34 @@ public class GraphFunctionsTest extends AbstractTestCase {
   @Test
   public void testGraphData() {
     check("GraphData()", //
-        "{{PappusGraph}}");
+        "{{DodecahedralGraph},{IcosahedralGraph},{PappusGraph}}");
     check("GraphData(\"PappusGraph\")", //
         "Graph({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}," //
             + "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n" + //
             "10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n"
             + "14})");
+  }
+
+  @Test
+  public void testGraphDataPlatonicGraphs() {
+    check("EdgeList(GraphData(\"IcosahedralGraph\"))[[;;8]]", //
+        "{1<->3,1<->5,1<->6,1<->9,1<->10,2<->4,2<->7,2<->8}");
+    check("EdgeList(GraphData(\"DodecahedralGraph\"))[[-6;;]]", //
+        "{10<->18,11<->12,13<->17,13<->18,17<->19,18<->20}");
+    check("Union(VertexDegree(GraphData(\"IcosahedralGraph\")))", //
+        "{5}");
+    check("Normal(GraphData(\"DodecahedralGraph\", \"AdjacencyMatrix\"))[[{1,20}]]", //
+        "{{0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0},{0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,\n"
+            + "0,0}}");
+    check("{GraphData(\"DodecahedralGraph\", \"Name\"), GraphData(\"IcosahedralGraph\", \"VertexCount\"), "
+        + "GraphData(\"DodecahedralGraph\", \"EdgeCount\"), GraphData(\"PappusGraph\", \"StandardName\")}", //
+        "{dodecahedral graph,12,30,PappusGraph}");
+    // the icosahedron and the dodecahedron are dual: 12 faces of five edges, 20 of three
+    check("{Length(FindCycle(GraphData(\"DodecahedralGraph\"), {5}, All)), "
+        + "Length(FindCycle(GraphData(\"IcosahedralGraph\"), {3}, All))}", //
+        "{12,20}");
+    check("GraphData(\"IcosahedralGraph\", \"Diameter2\")", //
+        "GraphData(IcosahedralGraph,Diameter2)");
   }
 
   @Test
@@ -1393,7 +1467,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
     check("EdgeCount(CycleGraph(5))", "5");
     check("VertexDegree(CycleGraph(5))", "{2,2,2,2,2}");
-    check("EdgeList(CycleGraph(4))", "{1<->2,2<->3,3<->4,1<->4}");
+    check("EdgeList(CycleGraph(4))", "{1<->2,1<->4,2<->3,3<->4}");
 
     check("EdgeCount(PathGraph({a,b,c,d}))", "3");
     check("VertexDegree(PathGraph({a,b,c,d,e}))", "{1,2,2,2,1}");
@@ -1645,8 +1719,8 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testFindEdgeColoring() {
-    check("FindEdgeColoring(CycleGraph(4))", "{1,2,1,2}");
-    check("FindEdgeColoring(CycleGraph(5))", "{1,2,1,2,3}");
+    check("FindEdgeColoring(CycleGraph(4))", "{1,2,2,1}");
+    check("FindEdgeColoring(CycleGraph(5))", "{1,2,2,1,3}");
     check("FindEdgeColoring(PathGraph({1,2,3,4}))", "{1,2,1}");
     check("FindEdgeColoring({1<->2,2<->3})", "{1,2}");
     check("FindEdgeColoring(Graph({1,2,3},{}))", "{}");
@@ -1668,12 +1742,12 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "True");
 
     // FindEdgeColoring(g, l) uses the colors 1, 2, ..., l
-    check("FindEdgeColoring(CycleGraph(4), 2)", "{1,2,1,2}");
+    check("FindEdgeColoring(CycleGraph(4), 2)", "{1,2,2,1}");
     check("Head(FindEdgeColoring(CycleGraph(5), 2))", "FindEdgeColoring");
     check("Head(FindEdgeColoring(CompleteGraph(5), 4))", "FindEdgeColoring");
 
     // FindEdgeColoring(g, {c1, c2, ...}) uses the given colors
-    check("FindEdgeColoring(CycleGraph(4), {a,b})", "{a,b,a,b}");
+    check("FindEdgeColoring(CycleGraph(4), {a,b})", "{a,b,b,a}");
     check("FindEdgeColoring(CompleteGraph(3), {a,b,c})", "{a,b,c}");
     check("Head(FindEdgeColoring(CompleteGraph(3), {a,b}))", "FindEdgeColoring");
 
@@ -1730,7 +1804,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testFindPostmanTour() {
     // an Eulerian graph walks each edge exactly once
     check("EulerianGraphQ(CycleGraph(4))", "True");
-    check("FindPostmanTour(CycleGraph(4))", "{{4->1,1->2,2->3,3->4}}");
+    check("FindPostmanTour(CycleGraph(4))", "{{3->4,4->1,1->2,2->3}}");
     check("Length(FindPostmanTour(CompleteGraph(5))[[1]])===EdgeCount(CompleteGraph(5))", "True");
     check("Length(FindPostmanTour(CycleGraph(5))[[1]])===EdgeCount(CycleGraph(5))", "True");
 
@@ -3009,7 +3083,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("Options(Graph(Graph({1<->3}, ImageSize->10), {VertexLabels->\"Name\", ImageSize->20}))", //
         "{ImageSize->20,VertexLabels->Name}");
     check("Graph(CycleGraph(3), 7)", //
-        "Graph(Graph({1,2,3},{1<->2,2<->3,1<->3}),7)");
+        "Graph(Graph({1,2,3},{1<->2,1<->3,2<->3}),7)");
   }
 
   @Test
@@ -3027,7 +3101,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
   @Test
   public void testFindPathCountOrder() {
     check("FindPath(CycleGraph(5),w,2)", //
-        "FindPath(Graph({1,2,3,4,5},{1<->2,2<->3,3<->4,4<->5,1<->5}),w,2)");
+        "FindPath(Graph({1,2,3,4,5},{1<->2,1<->5,2<->3,3<->4,4<->5}),w,2)");
     // the first n paths of the depth first search, the shorter ones first
     check("{FindPath(GridGraph({2,4}),1,8,5,2), FindPath(CompleteGraph(6),2,5,2,4), " //
         + "FindPath(GridGraph({3,2}),1,6,{5},All)}", //

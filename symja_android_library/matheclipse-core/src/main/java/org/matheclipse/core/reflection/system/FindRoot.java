@@ -35,6 +35,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * <pre>
@@ -297,6 +298,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
      * accuracy, which leaves the last digits of a simple root off by a few units. At a multiple
      * root the steps stay large and the root is left as the requested accuracy found it.
      */
+    @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+        justification = "a zero slope or an unchanged point ends the Newton steps")
     private static double polish(UnaryNumerical f, double x) {
       double fx = Math.abs(f.value(x));
       for (int i = 0; i < 3 && fx > 0.0; i++) {
@@ -314,6 +317,69 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         fx = fNext;
       }
       return x;
+    }
+
+    /**
+     * The secant method from the start values <code>x0</code> and <code>x1</code> in complex
+     * arithmetic: <code>FindRoot(Log(x) == -2, {x, 0.3, -0.4})</code> reaches the root through
+     * values where the logarithm is complex.
+     *
+     * @return {@link F#NIL} if the iteration doesn't converge
+     */
+    private IExpr complexSecant(IExpr function, ISymbol xVar, double x0, double x1) {
+      Complex previous = new Complex(x0);
+      Complex current = new Complex(x1);
+      Complex fPrevious = complexValue(function, xVar, previous);
+      Complex fCurrent = complexValue(function, xVar, current);
+      for (int i = 0; i < maxIterations; i++) {
+        if (fPrevious == null || fCurrent == null) {
+          return F.NIL;
+        }
+        Complex slope = fCurrent.subtract(fPrevious);
+        if (slope.isZero()) {
+          return F.NIL;
+        }
+        Complex next =
+            current.subtract(fCurrent.multiply(current.subtract(previous)).divide(slope));
+        previous = current;
+        fPrevious = fCurrent;
+        current = next;
+        fCurrent = complexValue(function, xVar, current);
+        if (current.subtract(previous).norm() <= accuracy * Math.max(1.0, current.norm())) {
+          if (fCurrent == null) {
+            return F.NIL;
+          }
+          // a few more steps while they make the residual smaller fix the last digits
+          for (int j = 0; j < 5; j++) {
+            slope = fCurrent.subtract(fPrevious);
+            if (slope.isZero() || fCurrent.isZero()) {
+              break;
+            }
+            next = current.subtract(fCurrent.multiply(current.subtract(previous)).divide(slope));
+            Complex fNext = complexValue(function, xVar, next);
+            if (fNext == null || !(fNext.norm() < fCurrent.norm())) {
+              break;
+            }
+            previous = current;
+            fPrevious = fCurrent;
+            current = next;
+            fCurrent = fNext;
+          }
+          return current.getImaginary() == 0.0 ? F.num(current.getReal())
+              : F.complexNum(current.getReal(), current.getImaginary());
+        }
+      }
+      return F.NIL;
+    }
+
+    /** @return <code>null</code> if the function has no finite value at <code>z</code> */
+    private Complex complexValue(IExpr function, ISymbol xVar, Complex z) {
+      IExpr value = engine.evalQuiet(F.N(F.subst(function, xVar, F.complexNum(z))));
+      if (!value.isNumber()) {
+        return null;
+      }
+      Complex c = value.evalfc();
+      return c.isNaN() || c.isInfinite() ? null : c;
     }
 
     @Override
@@ -377,8 +443,19 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           if (maxMaybeNull == null) {
             return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
           }
-          return F.num(polish(f,
-              nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue())));
+          try {
+            return F.num(polish(f,
+                nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue())));
+          } catch (MathIllegalStateException mise) {
+            // the two start values of a secant step, which goes on with complex numbers where the
+            // function has no real value
+            IExpr root =
+                complexSecant(function, xVar, min.doubleValue(), maxMaybeNull.doubleValue());
+            if (root.isPresent()) {
+              return root;
+            }
+            throw mise;
+          }
           // } catch (MathRuntimeException mex) {
           // // switch to BracketingNthOrderBrentSolver
           // solver = new BracketingNthOrderBrentSolver(accuracy, 5);
@@ -518,6 +595,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    IExpr functionRoot = functionRoot(ast, originalAST, engine);
+    if (functionRoot.isPresent()) {
+      return functionRoot;
+    }
     ast = threadVectorEquations(ast);
     ast = flattenNestedEquations(ast);
     ast = unwrapSingleResidual(ast);
@@ -561,6 +642,36 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * <code>FindRoot(f, {x0})</code> for a function <code>f</code> - a symbol like <code>Cos</code>
+   * or a pure function - searches a root of <code>f</code> itself from the start value
+   * <code>x0</code> and gives the plain list <code>{x}</code> of the root.
+   *
+   * @return {@link F#NIL} if the arguments have not this form or no root is found
+   */
+  private static IExpr functionRoot(IAST ast, IAST originalAST, EvalEngine engine) {
+    if (ast.argSize() != 2 || !ast.arg2().isList() || ast.arg2().argSize() != 1) {
+      return F.NIL;
+    }
+    IExpr function = ast.arg1();
+    IExpr start = ast.arg2().first();
+    if (!(function.isSymbol() || function.isFunction()) || !start.isNumericFunction(true)) {
+      return F.NIL;
+    }
+    ISymbol x = F.Dummy("x");
+    IASTAppendable findRoot = F.ast(S.FindRoot, originalAST.size() + 1);
+    findRoot.append(F.unaryAST1(function, x));
+    findRoot.append(F.list(x, start));
+    for (int i = 3; i < originalAST.size(); i++) {
+      findRoot.append(originalAST.get(i));
+    }
+    IExpr result = engine.evaluate(findRoot);
+    if (result.isListOfRules() && result.argSize() == 1) {
+      return F.list(result.first().second());
+    }
+    return F.NIL;
   }
 
   /**

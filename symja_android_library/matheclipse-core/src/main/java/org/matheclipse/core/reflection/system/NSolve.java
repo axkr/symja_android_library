@@ -7,6 +7,7 @@ import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -87,7 +88,30 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
         return bounded;
       }
       SolveData solveData = new SolveData(options);
-      IExpr result = solveData.of(ast, true, true, engine);
+      IAST radicalSystem = realRadicalSystem(ast, engine);
+      IExpr result;
+      if (radicalSystem.isPresent()) {
+        // the elimination often fails on such a system: its message only if the search fails too
+        boolean quiet = engine.isQuietMode();
+        engine.setQuietMode(true);
+        try {
+          result = solveData.of(ast, true, true, engine);
+        } finally {
+          engine.setQuietMode(quiet);
+        }
+        if (!result.isListOfLists()) {
+          IExpr roots = multiStartRealRoots(radicalSystem, (IAST) ast.arg2(), engine);
+          if (roots.isPresent()) {
+            return roots;
+          }
+          if (result.isNIL()) {
+            // The system cannot be solved with the methods available to NSolve.
+            return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
+          }
+        }
+      } else {
+        result = solveData.of(ast, true, true, engine);
+      }
       if (!solveData.isCompleteSolutions()) {
         result = Solve.withRationalizedSolutions(ast, result, true, false, engine);
       }
@@ -103,6 +127,231 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
     }
     return Solve.sortNumericSolutions(Solve.withNumericValues(result,
         value -> engine.evaluate(F.N(value, precision))));
+  }
+
+  /** The number of start points per variable of {@link #multiStartRealRoots}. */
+  private static final int[] GRID_POINTS = {0, 0, 16, 8};
+
+  /**
+   * A system of as many equations as variables, two or three of them, whose functions are built
+   * from the variables and real numbers by sums, products and powers with rational exponents, one
+   * of them a radical.
+   *
+   * @return the functions <code>lhs - rhs</code> of the equations, or {@link F#NIL} if the system
+   *         isn't of this kind
+   */
+  private static IAST realRadicalSystem(IAST ast, EvalEngine engine) {
+    if (ast.argSize() < 2 || ast.argSize() > 3 || (ast.argSize() == 3 && ast.arg3() != S.Reals)
+        || !ast.arg2().isList()) {
+      return F.NIL;
+    }
+    final IAST variables = (IAST) ast.arg2();
+    final int n = variables.argSize();
+    if (n < 2 || n >= GRID_POINTS.length || !variables.forAll(x -> x.isSymbol())) {
+      return F.NIL;
+    }
+    IExpr system = ast.arg1();
+    if (!system.isList() || system.argSize() != n) {
+      return F.NIL;
+    }
+    IASTAppendable functions = F.ListAlloc(n);
+    boolean[] radical = new boolean[1];
+    for (IExpr equation : (IAST) system) {
+      if (!equation.isEqual()) {
+        return F.NIL;
+      }
+      IExpr function = engine.evaluate(F.Subtract(equation.first(), equation.second()));
+      if (!isRadicalExpression(function, variables, radical)) {
+        return F.NIL;
+      }
+      functions.append(function);
+    }
+    return radical[0] ? functions : F.NIL;
+  }
+
+  /**
+   * Whether the expression is built from the variables and real numbers by sums, products and
+   * powers with rational exponents; <code>radical[0]</code> is set if a variable is under a
+   * radical.
+   */
+  private static boolean isRadicalExpression(IExpr expr, IAST variables, boolean[] radical) {
+    if (expr.isReal()) {
+      return true;
+    }
+    if (expr.isSymbol()) {
+      return variables.contains(expr);
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      return ((IAST) expr).forAll(x -> isRadicalExpression(x, variables, radical));
+    }
+    if (expr.isPower() && expr.exponent().isRational()) {
+      if (!expr.exponent().isInteger() && !expr.base().isFree(x -> variables.contains(x), true)) {
+        radical[0] = true;
+      }
+      return isRadicalExpression(expr.base(), variables, radical);
+    }
+    return false;
+  }
+
+  /**
+   * The real roots of a system of radical equations by Newton's method from the points of a grid
+   * in a box, which is twice as large as the largest number of the system. Each root found is
+   * refined until the residuals vanish to machine precision, and the distinct ones are the
+   * solutions. The search is a completion for the systems the elimination doesn't solve; a root
+   * outside the box may be missed.
+   *
+   * @param functions the functions of the equations <code>f == 0</code>
+   * @return the solutions or {@link F#NIL} if no root is found
+   */
+  private static IExpr multiStartRealRoots(IAST functions, IAST variables, EvalEngine engine) {
+    final int n = variables.argSize();
+    final org.matheclipse.core.generic.MultiVariateNumerical[] f =
+        new org.matheclipse.core.generic.MultiVariateNumerical[n];
+    final org.matheclipse.core.generic.MultiVariateNumerical[][] jacobian =
+        new org.matheclipse.core.generic.MultiVariateNumerical[n][n];
+    double[] largest = {1.0};
+    for (int i = 0; i < n; i++) {
+      IExpr function = functions.get(i + 1);
+      function.isFree(x -> {
+        if (x.isReal()) {
+          largest[0] = Math.max(largest[0], Math.abs(x.evalf()));
+        }
+        return false;
+      }, false);
+      f[i] = new org.matheclipse.core.generic.MultiVariateNumerical(function, variables);
+      for (int j = 0; j < n; j++) {
+        jacobian[i][j] = new org.matheclipse.core.generic.MultiVariateNumerical(
+            engine.evaluate(F.D(function, variables.get(j + 1))), variables);
+      }
+    }
+    final double box = 2.0 * largest[0];
+    final int grid = GRID_POINTS[n];
+    java.util.List<double[]> roots = new java.util.ArrayList<double[]>();
+    int[] index = new int[n];
+    for (int start = 0; start < Math.pow(grid, n); start++) {
+      engine.checkTimeLimit();
+      double[] x = new double[n];
+      for (int k = 0, rest = start; k < n; k++, rest /= grid) {
+        index[k] = rest % grid;
+        // the points of the grid are off the symmetry planes of the system
+        x[k] = -box + (2 * box) * (index[k] + 0.5) / grid + 1.0e-3 * box * (k + 1) / grid;
+      }
+      double[] root = newton(f, jacobian, x, box);
+      if (root == null) {
+        continue;
+      }
+      boolean known = false;
+      for (double[] other : roots) {
+        double distance = 0.0;
+        for (int k = 0; k < n; k++) {
+          distance = Math.max(distance, Math.abs(other[k] - root[k]));
+        }
+        known |= distance <= 1.0e-7 * Math.max(1.0, box);
+      }
+      if (!known) {
+        roots.add(root);
+      }
+    }
+    if (roots.isEmpty()) {
+      return F.NIL;
+    }
+    roots.sort((a, b) -> {
+      for (int k = 0; k < n; k++) {
+        int c = Double.compare(a[k], b[k]);
+        if (c != 0) {
+          return c;
+        }
+      }
+      return 0;
+    });
+    IASTAppendable solutions = F.ListAlloc(roots.size());
+    for (double[] root : roots) {
+      solutions.append(F.mapRange(1, n + 1, k -> F.Rule(variables.get(k),
+          F.num(Math.abs(root[k - 1]) < 1.0e-12 * box ? 0.0 : root[k - 1]))));
+    }
+    return solutions;
+  }
+
+  /**
+   * Newton's method with halved steps where the residuals don't decrease.
+   *
+   * @return the root, or <code>null</code> if the iteration doesn't converge to a point where the
+   *         residuals vanish
+   */
+  private static double[] newton(org.matheclipse.core.generic.MultiVariateNumerical[] f,
+      org.matheclipse.core.generic.MultiVariateNumerical[][] jacobian, double[] x, double box) {
+    final int n = x.length;
+    double[] value = values(f, x);
+    double norm = norm(value);
+    for (int iteration = 0; iteration < 100; iteration++) {
+      if (!Double.isFinite(norm)) {
+        return null;
+      }
+      double[][] matrix = new double[n][n];
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          matrix[i][j] = jacobian[i][j].value(x);
+        }
+      }
+      double[] step;
+      try {
+        step = new org.hipparchus.linear.LUDecomposition(
+            new org.hipparchus.linear.Array2DRowRealMatrix(matrix, false)).getSolver()
+                .solve(new org.hipparchus.linear.ArrayRealVector(value, false)).toArray();
+      } catch (MathRuntimeException mre) {
+        return null;
+      }
+      double factor = 1.0;
+      double[] next = new double[n];
+      double nextNorm = Double.NaN;
+      for (int halvings = 0; halvings < 30; halvings++) {
+        for (int k = 0; k < n; k++) {
+          next[k] = x[k] - factor * step[k];
+        }
+        nextNorm = norm(values(f, next));
+        if (nextNorm < norm || nextNorm == 0.0) {
+          break;
+        }
+        factor *= 0.5;
+      }
+      if (!(nextNorm < norm || nextNorm == 0.0)) {
+        // no step decreases the residuals: a root if they vanish to machine precision
+        return norm <= 1.0e-10 ? x : null;
+      }
+      double stepSize = 0.0;
+      double size = 1.0;
+      for (int k = 0; k < n; k++) {
+        stepSize = Math.max(stepSize, Math.abs(next[k] - x[k]));
+        size = Math.max(size, Math.abs(next[k]));
+      }
+      x = next.clone();
+      value = values(f, x);
+      norm = nextNorm;
+      if (size > 10.0 * box) {
+        return null;
+      }
+      if (stepSize <= 1.0e-14 * size && norm <= 1.0e-10) {
+        return x;
+      }
+    }
+    return norm <= 1.0e-10 ? x : null;
+  }
+
+  private static double[] values(org.matheclipse.core.generic.MultiVariateNumerical[] f,
+      double[] x) {
+    double[] result = new double[f.length];
+    for (int i = 0; i < f.length; i++) {
+      result[i] = f[i].value(x);
+    }
+    return result;
+  }
+
+  private static double norm(double[] values) {
+    double sum = 0.0;
+    for (double v : values) {
+      sum += v * v;
+    }
+    return Math.sqrt(sum);
   }
 
   /** The first number of equidistant samples of the sign change search in a bounded interval. */

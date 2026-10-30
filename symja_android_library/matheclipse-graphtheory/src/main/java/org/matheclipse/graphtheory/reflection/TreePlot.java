@@ -66,11 +66,12 @@ public class TreePlot extends AbstractFunctionOptionEvaluator {
         orientation = second;
       } else if (graph.containsVertex(second)) {
         root = second;
-      } else if (!second.isInteger() || argSize == 3) {
+      } else if (second != S.Automatic && (!second.isInteger() || argSize == 3)) {
         // The second argument `1` of TreePlot must be one of Top, Bottom, Left, Right or Center.
         return Errors.printMessage(S.TreePlot, "rp", F.List(second), engine);
       }
-      // an integer which is no vertex is ignored, as in the reference implementation
+      // Automatic is the default position, at the top; an integer which is no vertex is
+      // ignored, as in the reference implementation
     }
     if (argSize == 3 && graph.containsVertex(ast.arg3())) {
       root = ast.arg3();

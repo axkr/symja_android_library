@@ -13,6 +13,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /**
  * Group elements of a list into successive bins. Supports 1D and multi-dimensional nested data.
@@ -26,8 +28,14 @@ import org.matheclipse.core.interfaces.IReal;
  */
 public class BinLists extends AbstractFunctionEvaluator {
 
+  /** The message <code>step</code> of the binning functions. */
+  public static final String STEP_MESSAGE = "The bin step size `1` is expected to be positive.";
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (isNonPositiveStep(ast, engine)) {
+      return F.NIL;
+    }
     try {
       IExpr arg1 = ast.arg1();
 
@@ -61,6 +69,32 @@ public class BinLists extends AbstractFunctionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_1_INFINITY;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.putMessage(IPatternMatcher.SET, "step", F.stringx(STEP_MESSAGE));
+    super.setUp(newSymbol);
+  }
+
+  /**
+   * Print the message <code>step</code> if one of the binning specifications <code>dx</code> or
+   * <code>{xmin, xmax, dx}</code> from the second argument of <code>ast</code> on has a step size
+   * <code>dx</code> which is a real number &lt;= 0.
+   *
+   * @return <code>true</code> if the message was printed and the call has to stay unevaluated
+   */
+  public static boolean isNonPositiveStep(IAST ast, EvalEngine engine) {
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr spec = ast.get(i);
+      IExpr step = spec.isList3() ? ((IAST) spec).arg3() : spec.isList() ? F.NIL : spec;
+      if (step.isPresent() && step.evalfNaN() <= 0.0) {
+        // The bin step size `1` is expected to be positive.
+        Errors.printMessage(ast.topHead(), "step", F.list(step), engine);
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

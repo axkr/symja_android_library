@@ -140,6 +140,9 @@ public class Iterator {
     /** The local value of {@link #variable}, or <code>null</code> without a variable. */
     private final IterationVariable local;
 
+    /** The upper limit is infinite in the direction of the step: the iteration never ends. */
+    boolean unbounded = false;
+
     public ExprIterator(final ISymbol symbol, final IExpr originalStart,
         final IExpr originalMaxCount, final IExpr originalStep, boolean numericMode,
         final EvalEngine engine) {
@@ -187,6 +190,9 @@ public class Iterator {
     public boolean hasNext() {
       if (maxCounterOrList == null) { // || (illegalIterator)) {
         throw NoEvalException.CONST;
+      }
+      if (unbounded) {
+        return true;
       }
       if ((maxCounterOrList.isDirectedInfinity()) || count.isDirectedInfinity()) {
         throw NoEvalException.CONST;
@@ -662,7 +668,14 @@ public class Iterator {
         final double next = Math.ceil(steps);
         // the end test of Range is one bit stricter than the one of Table, Sum or Do
         final int fuzzBits = range ? END_FUZZ_BITS - 1 : END_FUZZ_BITS;
-        this.last = (long) (next - steps < Math.scalb(next, fuzzBits) ? next : Math.floor(steps));
+        // the fuzz is relative to the size of the limits, not to the width of the range: the
+        // difference of the limits of {x, 2.*^-15, 2.04*^-15, 1.*^-17} carries the rounding
+        // error of numbers of the size 2.*^-15
+        final double magnitude = Math.max(Math.max(Math.abs(lowerLimit), Math.abs(upperLimit)),
+            next * Math.abs(step));
+        this.last = (long) ((next - steps) * Math.abs(step) < Math.scalb(magnitude, fuzzBits)
+            ? next
+            : Math.floor(steps));
       } else {
         this.last = -1L;
       }
@@ -1032,6 +1045,24 @@ public class Iterator {
    * @return the iterator
    */
   public static IIterator<IExpr> create(final IAST list, int position, final EvalEngine engine) {
+    return create(list, position, false, engine);
+  }
+
+  /**
+   * Iterator specification for functions like <code>Table()</code>, <code>Do()</code> or
+   * <code>Sum()</code>.
+   *
+   * @param list a list representing an iterator specification
+   * @param position the position of the list in the argument sequence, for printing an error if
+   *        list cannot be converted into an iterator form
+   * @param unbounded if <code>true</code> an upper limit <code>Infinity</code> (with a positive
+   *        step) or <code>-Infinity</code> (with a negative step) gives an iterator which never
+   *        ends by itself; the caller has to stop it, for example by <code>Return</code>
+   * @param engine the evaluation engine
+   * @return the iterator
+   */
+  private static IIterator<IExpr> create(final IAST list, int position, boolean unbounded,
+      final EvalEngine engine) {
 
     EvalEngine evalEngine = engine;
     IExpr lowerLimit;
@@ -1059,6 +1090,13 @@ public class Iterator {
             // {{e1, e2,...}} iterate over the elements of the list without assigning them to a
             // variable; the number of elements determines the number of iterations
             return new ExprListIterator(null, (IAST) upperLimit, evalEngine);
+          }
+          if (unbounded) {
+            IIterator<IExpr> endless = unboundedIterator(variable, lowerLimit, upperLimit, step,
+                fNumericMode, evalEngine);
+            if (endless != null) {
+              return endless;
+            }
           }
           IIterator<IExpr> countIterator = rangeIterator(variable, null, upperLimit, null, true, false);
           if (countIterator != null) {
@@ -1110,6 +1148,13 @@ public class Iterator {
         lowerLimit = limits[0];
         upperLimit = limits[1];
         step = limits[2];
+      }
+      if (unbounded) {
+        IIterator<IExpr> endless =
+            unboundedIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
+        if (endless != null) {
+          return endless;
+        }
       }
       if (list.size() > 2) {
         // {max} was tried above; a limit the specification leaves out is not tested
@@ -1253,17 +1298,21 @@ public class Iterator {
 
     private final EvalEngine engine;
 
+    /** An infinite upper limit gives an endless iterator */
+    private final boolean unbounded;
+
     /** The iterator for the current values of the outer iterator variables */
     private IIterator<IExpr> delegate;
 
-    private LazyIterator(IAST spec, int position, EvalEngine engine) {
+    private LazyIterator(IAST spec, int position, boolean unbounded, EvalEngine engine) {
       this.spec = spec;
       this.position = position;
+      this.unbounded = unbounded;
       this.engine = engine;
     }
 
     private IIterator<IExpr> newDelegate() {
-      delegate = create(spec, position, engine);
+      delegate = create(spec, position, unbounded, engine);
       return delegate;
     }
 
@@ -1363,6 +1412,18 @@ public class Iterator {
    */
   public static java.util.List<IIterator<IExpr>> createIterators(final IAST ast, boolean makeList,
       final EvalEngine engine) {
+    return createIterators(ast, makeList, false, engine);
+  }
+
+  /**
+   * Like {@link #createIterators(IAST, boolean, EvalEngine)}, but if <code>unbounded</code> is
+   * <code>true</code> a list specification with an upper limit <code>Infinity</code> (or
+   * <code>-Infinity</code> with a negative step) gives an iterator which never ends by itself, as
+   * <code>Do</code> needs it for a loop which is left by <code>Return</code> or
+   * <code>Break</code>.
+   */
+  public static java.util.List<IIterator<IExpr>> createIterators(final IAST ast, boolean makeList,
+      boolean unbounded, final EvalEngine engine) {
     java.util.List<IIterator<IExpr>> iterList = new java.util.ArrayList<IIterator<IExpr>>();
     for (int i = 2; i < ast.size(); i++) {
       IExpr spec = ast.get(i);
@@ -1371,7 +1432,7 @@ public class Iterator {
       }
       if (spec.isList()) {
         checkIteratorForm((IAST) spec, i);
-        iterList.add(new LazyIterator((IAST) spec, i, engine));
+        iterList.add(new LazyIterator((IAST) spec, i, unbounded, engine));
       } else {
         // a bare count is evaluated before the iteration starts, as in Mathematica:
         // Table(x, {i, 2}, i) reports nliter
@@ -1559,6 +1620,24 @@ public class Iterator {
     if ((lower == null || lower.isReal()) && upper.isReal() && (step == null || step.isReal())) {
       return new RealIterator(variable, lower == null ? F.C1 : (IReal) lower, (IReal) upper,
           step == null ? F.C1 : (IReal) step);
+    }
+    return null;
+  }
+
+  /**
+   * An iterator which counts from a real <code>lower</code> limit towards an infinite
+   * <code>upper</code> limit in the direction of the real <code>step</code> and never ends by
+   * itself.
+   *
+   * @return <code>null</code> if the limits and step do not describe such an endless range
+   */
+  private static IIterator<IExpr> unboundedIterator(ISymbol variable, IExpr lower, IExpr upper,
+      IExpr step, boolean numericMode, EvalEngine engine) {
+    if (lower.isReal() && step.isReal() && ((upper.isInfinity() && step.isPositive())
+        || (upper.isNegativeInfinity() && step.isNegative()))) {
+      ExprIterator iterator = new ExprIterator(variable, lower, upper, step, numericMode, engine);
+      iterator.unbounded = true;
+      return iterator;
     }
     return null;
   }

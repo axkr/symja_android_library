@@ -1029,20 +1029,31 @@ public class OutputFormFactory {
         append(buf, fInputForm ? " + I" : "+I");
       }
     } else if (isImMinusOne) {
-      append(buf, fInputForm ? " - I" : "-I");
+      if (fInputForm && isReZero && caller != PLUS_CALL) {
+        // a negative imaginary unit as a factor: (-I)*x, (-I)/Sqrt[3]
+        append(buf, Precedence.TIMES <= precedence ? "(-I)" : "-I");
+      } else {
+        append(buf, fInputForm ? " - I" : "-I");
+      }
     } else {
       IRational im = c.getImaginaryPart();
+      // a negative imaginary number as a factor in input form: (-2*I)*x
+      final boolean negativeFactor = fInputForm && isReZero && caller != PLUS_CALL
+          && im.isNegative() && Precedence.TIMES <= precedence;
+      // the minus sign is an infix operator only after a real part or another summand
+      final boolean infixMinus = fInputForm
+          && (!isReZero || (caller == PLUS_CALL && precedence <= Precedence.TIMES));
       int oldColumnCounter = fColumnCounter;
       StringBuilder imagBuf = new StringBuilder();
       try {
         if (im.isNegative()) {
-          if (isReZero && (Precedence.TIMES < precedence)) {
+          if (isReZero && (Precedence.TIMES < precedence || negativeFactor)) {
             if (caller == PLUS_CALL) {
               append(buf, fInputForm ? " + " : "+");
             }
             append(buf, "(");
           }
-          append(buf, fInputForm ? " - " : "-");
+          append(buf, infixMinus ? " - " : "-");
           im = im.negate();
         } else if (isReZero) {
           if (caller == PLUS_CALL) {
@@ -1071,7 +1082,7 @@ public class OutputFormFactory {
         newLine(buf);
       }
       append(buf, str);
-      if (isReZero && (Precedence.TIMES < precedence)) {
+      if (isReZero && (Precedence.TIMES < precedence || negativeFactor)) {
         append(buf, ")");
       }
     }

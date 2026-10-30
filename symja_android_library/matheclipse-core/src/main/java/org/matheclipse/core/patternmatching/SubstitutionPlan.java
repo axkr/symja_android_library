@@ -187,9 +187,13 @@ final class SubstitutionPlan {
    *         state at every level
    */
   static boolean equalWithFlags(IExpr planned, IExpr generic) {
-    if (!planned.equals(generic)) {
-      return false;
-    }
+    // equal expressions have equal subexpressions, so the flags are compared without comparing
+    // every subtree again
+    return planned.equals(generic) && sameFlags(planned, generic);
+  }
+
+  /** Whether two equal expressions agree on their flattened/sorted state at every level. */
+  private static boolean sameFlags(IExpr planned, IExpr generic) {
     if (!planned.isAST() || !generic.isAST()) {
       return true;
     }
@@ -198,11 +202,8 @@ final class SubstitutionPlan {
     if (!left.sameFlags(right, Group.FLATTENED_OR_SORTED)) {
       return false;
     }
-    if (left.size() != right.size()) {
-      return false;
-    }
     for (int i = 0; i < left.size(); i++) {
-      if (!equalWithFlags(left.get(i), right.get(i))) {
+      if (!sameFlags(left.get(i), right.get(i))) {
         return false;
       }
     }

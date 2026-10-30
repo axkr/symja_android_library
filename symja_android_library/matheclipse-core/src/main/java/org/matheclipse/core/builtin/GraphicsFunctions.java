@@ -333,7 +333,10 @@ public class GraphicsFunctions {
       }
       IASTAppendable primitives = F.ListAlloc(graphics.argSize());
       for (IExpr g : graphics) {
-        primitives.append(((IAST) g).arg1());
+        if (((IAST) g).argSize() > 0) {
+          // an empty Graphics() or Graphics3D() adds no primitives
+          primitives.append(((IAST) g).arg1());
+        }
         for (int i = 2; i < ((IAST) g).size(); i++) {
           addOptions(((IAST) g).get(i), options);
         }

@@ -881,6 +881,16 @@ public class S {
    */
   public final static IBuiltInSymbol And = S.initFinalSymbol("And", ID.And);
 
+  /**
+   * AndersonDarlingTest(x) - TODO describe `AndersonDarlingTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AndersonDarlingTest.md">AndersonDarlingTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AndersonDarlingTest =
+      S.initFinalSymbol("AndersonDarlingTest", ID.AndersonDarlingTest);
+
   public final static IBuiltInSymbol AngerJ = S.initFinalSymbol("AngerJ", ID.AngerJ);
 
   /**
@@ -2560,6 +2570,15 @@ public class S {
    */
   public final static IBuiltInSymbol Blur = S.initFinalSymbol("Blur", ID.Blur);
 
+  /**
+   * BodePlot(x) - TODO describe `BodePlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BodePlot.md">BodePlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BodePlot = S.initFinalSymbol("BodePlot", ID.BodePlot);
+
   public final static IBuiltInSymbol BohrRadius = S.initFinalSymbol("BohrRadius", ID.BohrRadius);
 
   /**
@@ -2784,6 +2803,15 @@ public class S {
 
   public final static IBuiltInSymbol BoundingRegion =
       S.initFinalSymbol("BoundingRegion", ID.BoundingRegion);
+
+  /**
+   * BoxData(x) - TODO describe `BoxData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BoxData.md">BoxData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BoxData = S.initFinalSymbol("BoxData", ID.BoxData);
 
   public final static IBuiltInSymbol Boxed = S.initFinalSymbol("Boxed", ID.Boxed);
 
@@ -5011,6 +5039,16 @@ public class S {
   public final static IBuiltInSymbol Covariance = S.initFinalSymbol("Covariance", ID.Covariance);
 
   /**
+   * CramerVonMisesTest(x) - TODO describe `CramerVonMisesTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CramerVonMisesTest.md">CramerVonMisesTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CramerVonMisesTest =
+      S.initFinalSymbol("CramerVonMisesTest", ID.CramerVonMisesTest);
+
+  /**
    * CreateArchive(x) - TODO describe `CreateArchive`.
    * 
    * @see <a href=
@@ -6148,6 +6186,16 @@ public class S {
       S.initFinalSymbol("DifferentialD", ID.DifferentialD);
 
   /**
+   * DiffusionPDETerm(x) - TODO describe `DiffusionPDETerm`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiffusionPDETerm.md">DiffusionPDETerm
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DiffusionPDETerm =
+      S.initFinalSymbol("DiffusionPDETerm", ID.DiffusionPDETerm);
+
+  /**
    * DigitBlock(x) - TODO describe `DigitBlock`.
    * 
    * @see <a href=
@@ -6385,6 +6433,16 @@ public class S {
    */
   public final static IBuiltInSymbol DiscreteDelta =
       S.initFinalSymbol("DiscreteDelta", ID.DiscreteDelta);
+
+  /**
+   * DiscreteIndicator(x) - TODO describe `DiscreteIndicator`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiscreteIndicator.md">DiscreteIndicator
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DiscreteIndicator =
+      S.initFinalSymbol("DiscreteIndicator", ID.DiscreteIndicator);
 
   /**
    * DiscreteLimit(f, n -> Infinity) - computes the limit of the sequence `f` as the integer
@@ -7687,6 +7745,16 @@ public class S {
   public final static IBuiltInSymbol Erosion = S.initFinalSymbol("Erosion", ID.Erosion);
 
   /**
+   * EstimatedDistribution(x) - TODO describe `EstimatedDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EstimatedDistribution.md">EstimatedDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EstimatedDistribution =
+      S.initFinalSymbol("EstimatedDistribution", ID.EstimatedDistribution);
+
+  /**
    * EuclideanDistance(u, v) - returns the euclidean distance between `u` and `v`.
    * 
    * @see <a href=
@@ -8558,6 +8626,16 @@ public class S {
    */
   public final static IBuiltInSymbol FindClusters =
       S.initFinalSymbol("FindClusters", ID.FindClusters);
+
+  /**
+   * FindCurvePath(x) - TODO describe `FindCurvePath`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindCurvePath.md">FindCurvePath
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindCurvePath =
+      S.initFinalSymbol("FindCurvePath", ID.FindCurvePath);
 
   /**
    * FindCycle(graph) - Find a cycle in the given `graph`.
@@ -10673,6 +10751,16 @@ public class S {
       S.initFinalSymbol("GroupStabilizer", ID.GroupStabilizer);
 
   /**
+   * GroupSupport(x) - TODO describe `GroupSupport`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GroupSupport.md">GroupSupport
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GroupSupport =
+      S.initFinalSymbol("GroupSupport", ID.GroupSupport);
+
+  /**
    * Gudermannian(expr) - computes the gudermannian function.
    * 
    * @see <a href=
@@ -11043,6 +11131,16 @@ public class S {
    */
   public final static IBuiltInSymbol HighlightGraph =
       S.initFinalSymbol("HighlightGraph", ID.HighlightGraph);
+
+  /**
+   * HighlightImage(x) - TODO describe `HighlightImage`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HighlightImage.md">HighlightImage
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HighlightImage =
+      S.initFinalSymbol("HighlightImage", ID.HighlightImage);
 
   /**
    * HighlightMesh(x) - TODO describe `HighlightMesh`.
@@ -12591,6 +12689,16 @@ public class S {
       S.initFinalSymbol("InverseGammaRegularized", ID.InverseGammaRegularized);
 
   /**
+   * InverseGaussianDistribution(x) - TODO describe `InverseGaussianDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseGaussianDistribution.md">InverseGaussianDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol InverseGaussianDistribution =
+      S.initFinalSymbol("InverseGaussianDistribution", ID.InverseGaussianDistribution);
+
+  /**
    * InverseGudermannian(expr) - computes the inverse gudermannian function.
    * 
    * @see <a href=
@@ -13431,6 +13539,15 @@ public class S {
       S.initFinalSymbol("KroneckerSymbol", ID.KroneckerSymbol);
 
   /**
+   * KuiperTest(x) - TODO describe `KuiperTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KuiperTest.md">KuiperTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KuiperTest = S.initFinalSymbol("KuiperTest", ID.KuiperTest);
+
+  /**
    * KumaraswamyDistribution(x) - TODO describe `KumaraswamyDistribution`.
    * 
    * @see <a href=
@@ -13553,6 +13670,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Last = S.initFinalSymbol("Last", ID.Last);
+
+  /**
+   * LatticeData(x) - TODO describe `LatticeData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LatticeData.md">LatticeData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LatticeData = S.initFinalSymbol("LatticeData", ID.LatticeData);
 
   /**
    * LatticeReduce(x) - TODO describe `LatticeReduce`.
@@ -14849,6 +14975,16 @@ public class S {
    */
   public final static IBuiltInSymbol LogisticSigmoid =
       S.initFinalSymbol("LogisticSigmoid", ID.LogisticSigmoid);
+
+  /**
+   * LogitModelFit(x) - TODO describe `LogitModelFit`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LogitModelFit.md">LogitModelFit
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LogitModelFit =
+      S.initFinalSymbol("LogitModelFit", ID.LogitModelFit);
 
   /**
    * LogLikelihood(x) - TODO describe `LogLikelihood`.
@@ -16615,6 +16751,26 @@ public class S {
   public final static IBuiltInSymbol ND = S.initFinalSymbol("ND", ID.ND);
 
   /**
+   * NDEigensystem(x) - TODO describe `NDEigensystem`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NDEigensystem.md">NDEigensystem
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NDEigensystem =
+      S.initFinalSymbol("NDEigensystem", ID.NDEigensystem);
+
+  /**
+   * NDEigenvalues(x) - TODO describe `NDEigenvalues`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NDEigenvalues.md">NDEigenvalues
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NDEigenvalues =
+      S.initFinalSymbol("NDEigenvalues", ID.NDEigenvalues);
+
+  /**
    * NDSolve({equation-list}, functions, t) - attempts to solve the linear differential
    * `equation-list` for the `functions` and the time-dependent-variable `t`. Returns an
    * `InterpolatingFunction` function object.
@@ -16868,6 +17024,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol NHoldRest = S.initFinalSymbol("NHoldRest", ID.NHoldRest);
+
+  /**
+   * NicholsPlot(x) - TODO describe `NicholsPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NicholsPlot.md">NicholsPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NicholsPlot = S.initFinalSymbol("NicholsPlot", ID.NicholsPlot);
 
   /**
    * NightHemisphere(x) - TODO describe `NightHemisphere`.
@@ -17944,6 +18109,15 @@ public class S {
    */
   public final static IBuiltInSymbol NValues = S.initFinalSymbol("NValues", ID.NValues);
 
+  /**
+   * NyquistPlot(x) - TODO describe `NyquistPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NyquistPlot.md">NyquistPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NyquistPlot = S.initFinalSymbol("NyquistPlot", ID.NyquistPlot);
+
   public final static IBuiltInSymbol O = S.initFinalSymbol("O", ID.O);
 
   public final static IBuiltInSymbol Octahedron = S.initFinalSymbol("Octahedron", ID.Octahedron);
@@ -18242,6 +18416,16 @@ public class S {
    */
   public final static IBuiltInSymbol OutputNamePacket =
       S.initFinalSymbol("OutputNamePacket", ID.OutputNamePacket);
+
+  /**
+   * OutputResponse(x) - TODO describe `OutputResponse`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OutputResponse.md">OutputResponse
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol OutputResponse =
+      S.initFinalSymbol("OutputResponse", ID.OutputResponse);
 
   /**
    * OutputStream("file-name") - opens a file and returns an OutputStream.
@@ -19804,6 +19988,16 @@ public class S {
       S.initFinalSymbol("ProbabilityScalePlot", ID.ProbabilityScalePlot);
 
   /**
+   * ProbitModelFit(x) - TODO describe `ProbitModelFit`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ProbitModelFit.md">ProbitModelFit
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ProbitModelFit =
+      S.initFinalSymbol("ProbitModelFit", ID.ProbitModelFit);
+
+  /**
    * ProcessConnection(x) - TODO describe `ProcessConnection`.
    * 
    * @see <a href=
@@ -19922,6 +20116,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Properties = S.initFinalSymbol("Properties", ID.Properties);
+
+  /**
+   * PropertyValue(x) - TODO describe `PropertyValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PropertyValue.md">PropertyValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PropertyValue =
+      S.initFinalSymbol("PropertyValue", ID.PropertyValue);
 
   public final static IBuiltInSymbol Proportion = S.initFinalSymbol("Proportion", ID.Proportion);
 
@@ -20250,6 +20454,15 @@ public class S {
       S.initFinalSymbol("RandomChoice", ID.RandomChoice);
 
   /**
+   * RandomColor(x) - TODO describe `RandomColor`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomColor.md">RandomColor
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RandomColor = S.initFinalSymbol("RandomColor", ID.RandomColor);
+
+  /**
    * RandomComplex[{z_min, z_max}] - yields a pseudo-random complex number in the rectangle with
    * complex corners `z_min` and `z_max`.
    * 
@@ -20279,6 +20492,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol RandomGraph = S.initFinalSymbol("RandomGraph", ID.RandomGraph);
+
+  /**
+   * RandomImage(x) - TODO describe `RandomImage`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomImage.md">RandomImage
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RandomImage = S.initFinalSymbol("RandomImage", ID.RandomImage);
 
   /**
    * RandomInteger(n) - create a random integer number between `0` and `n`.
@@ -21633,6 +21855,16 @@ public class S {
   public final static IBuiltInSymbol SameTest = S.initFinalSymbol("SameTest", ID.SameTest);
 
   /**
+   * SamplingPeriod(x) - TODO describe `SamplingPeriod`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SamplingPeriod.md">SamplingPeriod
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SamplingPeriod =
+      S.initFinalSymbol("SamplingPeriod", ID.SamplingPeriod);
+
+  /**
    * SASTriangle(a, gamma, b) - returns a triangle from 2 sides `a`, `b` and angle `gamma` (which is
    * between the sides).
    * 
@@ -22129,6 +22361,15 @@ public class S {
    */
   public final static IBuiltInSymbol SetPrecision =
       S.initFinalSymbol("SetPrecision", ID.SetPrecision);
+
+  /**
+   * SetProperty(x) - TODO describe `SetProperty`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetProperty.md">SetProperty
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SetProperty = S.initFinalSymbol("SetProperty", ID.SetProperty);
 
   /**
    * SetSharedFunction(x) - TODO describe `SetSharedFunction`.
@@ -24200,6 +24441,16 @@ public class S {
       S.initFinalSymbol("SystemOptions", ID.SystemOptions);
 
   /**
+   * SystemsModelDelay(x) - TODO describe `SystemsModelDelay`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SystemsModelDelay.md">SystemsModelDelay
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SystemsModelDelay =
+      S.initFinalSymbol("SystemsModelDelay", ID.SystemsModelDelay);
+
+  /**
    * Table(expr, {i, n}) - evaluates `expr` with `i` ranging from `1` to `n`, returning a list of
    * the results.
    * 
@@ -24573,6 +24824,15 @@ public class S {
 
   public final static IBuiltInSymbol TextCell = S.initFinalSymbol("TextCell", ID.TextCell);
 
+  /**
+   * TextData(x) - TODO describe `TextData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TextData.md">TextData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TextData = S.initFinalSymbol("TextData", ID.TextData);
+
   public final static IBuiltInSymbol TextElement = S.initFinalSymbol("TextElement", ID.TextElement);
 
   /**
@@ -24915,6 +25175,16 @@ public class S {
   public final static IBuiltInSymbol ToColor = S.initFinalSymbol("ToColor", ID.ToColor);
 
   /**
+   * ToContinuousTimeModel(x) - TODO describe `ToContinuousTimeModel`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToContinuousTimeModel.md">ToContinuousTimeModel
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ToContinuousTimeModel =
+      S.initFinalSymbol("ToContinuousTimeModel", ID.ToContinuousTimeModel);
+
+  /**
    * ToDataset(x) - TODO describe `ToDataset`.
    * 
    * @see <a href=
@@ -24924,6 +25194,16 @@ public class S {
   public final static IBuiltInSymbol ToDataset = S.initFinalSymbol("ToDataset", ID.ToDataset);
 
   public final static IBuiltInSymbol Today = S.initFinalSymbol("Today", ID.Today);
+
+  /**
+   * ToDiscreteTimeModel(x) - TODO describe `ToDiscreteTimeModel`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToDiscreteTimeModel.md">ToDiscreteTimeModel
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ToDiscreteTimeModel =
+      S.initFinalSymbol("ToDiscreteTimeModel", ID.ToDiscreteTimeModel);
 
   /**
    * ToeplitzMatrix(n) - gives a toeplitz matrix with the dimension `n`.
@@ -25180,6 +25460,36 @@ public class S {
 
   public final static IBuiltInSymbol TraditionalForm =
       S.initFinalSymbol("TraditionalForm", ID.TraditionalForm);
+
+  /**
+   * TransferFunctionModel(x) - TODO describe `TransferFunctionModel`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TransferFunctionModel.md">TransferFunctionModel
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TransferFunctionModel =
+      S.initFinalSymbol("TransferFunctionModel", ID.TransferFunctionModel);
+
+  /**
+   * TransferFunctionPoles(x) - TODO describe `TransferFunctionPoles`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TransferFunctionPoles.md">TransferFunctionPoles
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TransferFunctionPoles =
+      S.initFinalSymbol("TransferFunctionPoles", ID.TransferFunctionPoles);
+
+  /**
+   * TransferFunctionZeros(x) - TODO describe `TransferFunctionZeros`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TransferFunctionZeros.md">TransferFunctionZeros
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TransferFunctionZeros =
+      S.initFinalSymbol("TransferFunctionZeros", ID.TransferFunctionZeros);
 
   /**
    * TransformationClass(x) - TODO describe `TransformationClass`.
@@ -25476,6 +25786,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol TuranGraph = S.initFinalSymbol("TuranGraph", ID.TuranGraph);
+
+  /**
+   * TuringMachine(x) - TODO describe `TuringMachine`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TuringMachine.md">TuringMachine
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TuringMachine =
+      S.initFinalSymbol("TuringMachine", ID.TuringMachine);
 
   public final static IBuiltInSymbol TwoWayRule = S.initFinalSymbol("TwoWayRule", ID.TwoWayRule);
 
@@ -26615,6 +26935,16 @@ public class S {
    */
   public final static IBuiltInSymbol WatershedComponents =
       S.initFinalSymbol("WatershedComponents", ID.WatershedComponents);
+
+  /**
+   * WatsonUSquareTest(x) - TODO describe `WatsonUSquareTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WatsonUSquareTest.md">WatsonUSquareTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WatsonUSquareTest =
+      S.initFinalSymbol("WatsonUSquareTest", ID.WatsonUSquareTest);
 
   /**
    * WattsStrogatzGraphDistribution(x) - TODO describe `WattsStrogatzGraphDistribution`.

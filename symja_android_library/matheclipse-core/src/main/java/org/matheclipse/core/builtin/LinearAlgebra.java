@@ -62,6 +62,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
+import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.FractionFreeElimination;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
@@ -1104,7 +1105,26 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // null: a sparse array for a sparse array input, a list otherwise
+      Boolean sparse = null;
+      IExpr last = ast.last();
+      if (ast.argSize() > 1 && last.isRuleAST() && last.first() == S.TargetStructure) {
+        IExpr structure = last.second();
+        if (structure.isString("Sparse")) {
+          sparse = Boolean.TRUE;
+        } else if (structure.isString("Dense")) {
+          sparse = Boolean.FALSE;
+        } else if (structure != S.Automatic) {
+          // `1` currently not supported in `2`.
+          return Errors.printMessage(S.DiagonalMatrix, "unsupported",
+              F.list(last, S.DiagonalMatrix), engine);
+        }
+        ast = ast.removeAtCopy(ast.argSize());
+      }
+      if (ast.argSize() > 3) {
+        return F.NIL;
+      }
       IExpr arg1 = ast.arg1();
       final int offset = ast.size() > 2 ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
       int dimension = arg1.isVector();
@@ -1115,10 +1135,12 @@ public final class LinearAlgebra {
           ISparseArray sparseArray = (ISparseArray) arg1;
           final int length = sparseArray.getDimension()[0];
           int size = matrixSize(ast, length, offset);
-          return F.sparseMatrix((i, j) -> {
+          BiIntFunction<IExpr> entry = (i, j) -> {
             int index = diagonalIndex(i, j, offset, length);
             return index < 0 ? F.C0 : sparseArray.get(index);
-          }, size, size);
+          };
+          return sparse == Boolean.FALSE ? F.matrix(entry, size, size)
+              : F.sparseMatrix(entry, size, size);
         }
         IExpr normal = arg1.normal(false);
         if (normal.isAST()) {
@@ -1136,17 +1158,19 @@ public final class LinearAlgebra {
         int size = matrixSize(ast, length, offset);
         // a diagonal with an inexact number is padded with inexact zeroes
         final IExpr zero = vector.exists(x -> x.isInexactNumber()) ? F.CD0 : F.C0;
-        return F.matrix((i, j) -> {
+        BiIntFunction<IExpr> entry = (i, j) -> {
           int index = diagonalIndex(i, j, offset, length);
           return index < 0 ? zero : vector.get(index);
-        }, size, size);
+        };
+        return sparse == Boolean.TRUE ? F.sparseMatrix(entry, size, size)
+            : F.matrix(entry, size, size);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
 
     @Override
@@ -4914,7 +4938,8 @@ public final class LinearAlgebra {
         final IExpr arg1 = ast.arg1();
         final IExpr arg2 = ast.arg2();
         if (SymbolicArrayUtil.isArrayValued(arg1)) {
-          return SymbolicArrayFunctions.matrixPowerSymbolic(arg1, arg2, engine);
+          return ast.isAST3() ? F.NIL
+              : SymbolicArrayFunctions.matrixPowerSymbolic(arg1, arg2, engine);
         }
         int[] dimensions = arg1.isMatrix(false);
         if (dimensions != null && dimensions[1] > 0 && dimensions[0] > 0) {
@@ -4926,6 +4951,9 @@ public final class LinearAlgebra {
           int p = arg2.toMachineInt();
           if (F.isNotPresent(p)) {
             return F.NIL;
+          }
+          if (ast.isAST3()) {
+            return matrixPowerApply(matrix, p, ast, engine);
           }
           if (p == 1) {
             ((IAST) arg1).addFlag(Flag.IS_MATRIX);
@@ -4974,9 +5002,51 @@ public final class LinearAlgebra {
       }
     }
 
+    /**
+     * <code>MatrixPower(m, p, v)</code>: the <code>p</code>-th power of the square matrix
+     * <code>m</code> applied to the vector <code>v</code>, by <code>|p|</code> matrix-vector
+     * products instead of matrix products.
+     */
+    private static IExpr matrixPowerApply(FieldMatrix<IExpr> matrix, int p, final IAST ast,
+        EvalEngine engine) {
+      if (matrix.getRowDimension() != matrix.getColumnDimension()) {
+        // Argument `1` at position `2` is not a non-empty square matrix.
+        return Errors.printMessage(ast.topHead(), "matsq", F.list(ast.arg1(), F.C1), engine);
+      }
+      final IExpr arg3 = ast.arg3();
+      if (arg3.isMatrix(false) != null) {
+        IExpr power = engine.evaluate(F.MatrixPower(ast.arg1(), ast.arg2()));
+        return power.isList() ? F.Dot(power, arg3) : F.NIL;
+      }
+      FieldVector<IExpr> vector = Convert.list2Vector(arg3);
+      if (vector == null || vector.getDimension() != matrix.getColumnDimension()) {
+        return F.NIL;
+      }
+      if (p < 0) {
+        matrix = inverseMatrix(matrix,
+            x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
+        if (matrix == null) {
+          return F.NIL;
+        }
+        p = -p;
+      }
+      // repeated squaring: the vector picks up the squares of the set bits of p
+      while (p > 0) {
+        engine.checkTimeLimit();
+        if ((p & 1) != 0) {
+          vector = matrix.operate(vector);
+        }
+        p >>= 1;
+        if (p > 0) {
+          matrix = matrix.multiply(matrix);
+        }
+      }
+      return Convert.vector2List(vector);
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
   }
 
@@ -6038,6 +6108,55 @@ public final class LinearAlgebra {
    * PseudoInverse({1, {2}})
    * </pre>
    */
+  /**
+   * A singular value of a machine matrix which is not larger than this multiple of the largest one
+   * is zero: it is below what the rounding of the entries resolves (100 times the machine epsilon).
+   */
+  private static final double MACHINE_RANK_TOLERANCE = 100.0 * Math.ulp(1.0);
+
+  /**
+   * The singular values of a machine matrix, in decreasing order, without the ones which count as
+   * zero by {@link #MACHINE_RANK_TOLERANCE}.
+   */
+  private static double[] machineSingularValues(
+      org.hipparchus.linear.SingularValueDecomposition svd) {
+    double[] values = svd.getSingularValues();
+    int rank = 0;
+    final double cutoff = values.length > 0 ? MACHINE_RANK_TOLERANCE * values[0] : 0.0;
+    while (rank < values.length && values[rank] > cutoff) {
+      rank++;
+    }
+    return Arrays.copyOf(values, rank);
+  }
+
+  /**
+   * The Moore-Penrose inverse <code>V.Inverse(S).Transpose(U)</code> of a machine matrix, where the
+   * singular values which count as zero by {@link #MACHINE_RANK_TOLERANCE} are left out, so that a
+   * numerically singular matrix doesn't get huge entries.
+   *
+   * @param matrix a real <code>m x n</code> matrix
+   * @return the <code>n x m</code> pseudo-inverse
+   */
+  public static RealMatrix machinePseudoInverse(RealMatrix matrix) {
+    final org.hipparchus.linear.SingularValueDecomposition svd =
+        new org.hipparchus.linear.SingularValueDecomposition(matrix);
+    final double[] values = machineSingularValues(svd);
+    final RealMatrix u = svd.getU();
+    final RealMatrix v = svd.getV();
+    final int rows = matrix.getColumnDimension();
+    final int columns = matrix.getRowDimension();
+    final double[][] result = new double[rows][columns];
+    for (int k = 0; k < values.length; k++) {
+      for (int i = 0; i < rows; i++) {
+        final double factor = v.getEntry(i, k) / values[k];
+        for (int j = 0; j < columns; j++) {
+          result[i][j] += factor * u.getEntry(j, k);
+        }
+      }
+    }
+    return MatrixUtils.createRealMatrix(result);
+  }
+
   private static final class PseudoInverse extends AbstractMatrix1Matrix {
     protected static final PseudoInverse CONST = new PseudoInverse();
 
@@ -6070,9 +6189,7 @@ public final class LinearAlgebra {
 
     @Override
     public RealMatrix realMatrixEval(RealMatrix matrix) {
-      final org.hipparchus.linear.SingularValueDecomposition svd =
-          new org.hipparchus.linear.SingularValueDecomposition(matrix);
-      return svd.getSolver().getInverse();
+      return machinePseudoInverse(matrix);
     }
 
     @Override
@@ -6719,6 +6836,18 @@ public final class LinearAlgebra {
       int[] dim = ast.arg1().isMatrix();
       if (dim != null && dim[0] > 0 && dim[1] > 0) {
         IExpr m = ast.arg1();
+        IAST machineValues = machineSingularValueList((IAST) m.normal(false));
+        if (machineValues.isPresent()) {
+          if (ast.isAST2()) {
+            int n = ast.arg2().toMachineInt();
+            if (n <= 0) {
+              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+            }
+            return S.Take.of(engine, machineValues, F.ZZ(Math.min(n, machineValues.argSize())));
+          }
+          return machineValues;
+        }
         IExpr singularValueList =
             engine.evaluate(F.Sqrt(F.Eigenvalues(F.Dot(F.ConjugateTranspose(m), m))));
         int vectorLength = singularValueList.isVector();
@@ -6759,6 +6888,25 @@ public final class LinearAlgebra {
         return false;
       }
       return true;
+    }
+
+    /**
+     * The singular values of a real matrix with a machine number entry, from the decomposition of
+     * the matrix itself: the eigenvalues of <code>Transpose(m).m</code> are their squares, and lose
+     * the small ones to rounding.
+     *
+     * @return {@link F#NIL} if the matrix isn't a real machine matrix
+     */
+    private static IAST machineSingularValueList(IAST matrix) {
+      if (matrix.exists(row -> ((IAST) row).exists(IExpr::isMachineNumber))) {
+        double[][] doubleMatrix = matrix.toDoubleMatrix(false);
+        if (doubleMatrix != null) {
+          double[] values = machineSingularValues(new org.hipparchus.linear.SingularValueDecomposition(
+              MatrixUtils.createRealMatrix(doubleMatrix)));
+          return F.mapRange(0, values.length, i -> F.num(values[i]));
+        }
+      }
+      return F.NIL;
     }
   }
 

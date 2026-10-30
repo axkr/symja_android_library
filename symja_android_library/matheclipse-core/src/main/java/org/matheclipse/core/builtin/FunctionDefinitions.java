@@ -21,6 +21,9 @@ public final class FunctionDefinitions {
       S.ArcLength.setEvaluator(new org.matheclipse.core.reflection.system.ArcLength());
       S.Area.setEvaluator(new org.matheclipse.core.reflection.system.Area());
       S.ArrayDot.setEvaluator(new org.matheclipse.core.reflection.system.ArrayDot());
+      // the serialized form only; matheclipse-compile registers its own evaluator over this one
+      S.CompiledFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.CompiledFunctionForm());
       S.AlgebraicIntegerQ
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicIntegerQ());
       S.AlgebraicNumberQ
@@ -66,6 +69,7 @@ public final class FunctionDefinitions {
       S.BoxMatrix.setEvaluator(new org.matheclipse.core.reflection.system.BoxMatrix());
       S.CellularAutomaton
           .setEvaluator(new org.matheclipse.core.reflection.system.CellularAutomaton());
+      S.TuringMachine.setEvaluator(new org.matheclipse.core.reflection.system.TuringMachine());
       S.CirclePoints.setEvaluator(new org.matheclipse.core.reflection.system.CirclePoints());
       S.CentralFeature.setEvaluator(new org.matheclipse.core.reflection.system.CentralFeature());
       S.ColorData.setEvaluator(new org.matheclipse.core.reflection.system.ColorData());
@@ -106,6 +110,7 @@ public final class FunctionDefinitions {
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
       org.matheclipse.core.data.Entities.register("Element", S.ElementData);
+      S.LatticeData.setEvaluator(new org.matheclipse.core.data.LatticeData());
       S.Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
       S.EntityList.setEvaluator(new org.matheclipse.core.reflection.system.EntityList());
       S.EntityValue.setEvaluator(new org.matheclipse.core.reflection.system.EntityValue());
@@ -126,6 +131,7 @@ public final class FunctionDefinitions {
       S.FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
       S.FindSequenceFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.FindSequenceFunction());
+      S.FindCurvePath.setEvaluator(new org.matheclipse.core.reflection.system.FindCurvePath());
       S.FindShortestCurve
           .setEvaluator(new org.matheclipse.core.reflection.system.FindShortestCurve());
       S.FiniteGroupCount
@@ -228,6 +234,10 @@ public final class FunctionDefinitions {
       S.SetAccuracy.setEvaluator(new org.matheclipse.core.reflection.system.SetAccuracy());
       S.SetPrecision.setEvaluator(new org.matheclipse.core.reflection.system.SetPrecision());
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
+      S.NDEigensystem
+          .setEvaluator(new org.matheclipse.core.reflection.system.NDEigensystem(true));
+      S.NDEigenvalues
+          .setEvaluator(new org.matheclipse.core.reflection.system.NDEigensystem(false));
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       S.NDSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.NDSolveValue());
       S.WhenEvent.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve.WhenEvent());
@@ -564,11 +574,13 @@ public final class FunctionDefinitions {
     NumericArrayFunctions.initialize();
     GraphicsFunctions.initialize();
     // Compile / CompiledFunction / CompilePrint live in the matheclipse-compile module and
-    // are registered by org.matheclipse.compile.CompileInit#init().
+    // are registered by org.matheclipse.compile.CompileInit#init(); only the serialized form of
+    // CompiledFunction is evaluated without it, see CompiledFunctionForm.
     JavaFunctions.initialize();
     SidesFunctions.initialize();
     MeshFunctions.initialize();
     ComputationalGeometryFunctions.initialize();
+    ControlSystems.initialize();
     PiecewiseFunctions.initialize();
     QuantumPhysicsFunctions.initialize();
     ConstantPhysicsDefinitions.initialize();
