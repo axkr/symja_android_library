@@ -825,7 +825,8 @@ public class FileFunctions {
       String input = engine.get$Input();
       String inputFileName = engine.get$InputFileName();
       try {
-        engine.setPackageMode(true);
+        // a package may change built-ins, but not those of the other users of a JVM
+        engine.setPackageMode(!Config.SHARED_JVM);
         engine.set$Input(arg1Str);
         engine.set$InputFileName(
             FileSandbox.displayName(file, file.toAbsolutePath().toString(), engine));
@@ -846,7 +847,8 @@ public class FileFunctions {
       String input = engine.get$Input();
       String inputFileName = engine.get$InputFileName();
       try (java.io.InputStream in = org.matheclipse.core.io.WebFetch.open(arg1Str, engine)) {
-        engine.setPackageMode(true);
+        // a package may change built-ins, but not those of the other users of a JVM
+        engine.setPackageMode(!Config.SHARED_JVM);
         engine.set$Input(arg1Str);
         engine.set$InputFileName(url.getPath());
         String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
@@ -1234,14 +1236,14 @@ public class FileFunctions {
         // A built-in package still has to bring its names into being before its context can be
         // searched for them.
         PackageResolver.loadBuiltinPackage(contextName, engine);
-        ContextPath.PACKAGES.add(contextName);
+        engine.getContextPath().addPackage(contextName);
         ContextPath contextPathOfBuiltin = engine.getContextPath();
         Context builtinContext = contextPathOfBuiltin.getContext(contextName);
         if (!aliasForm && !contextPathOfBuiltin.contains(builtinContext)) {
           contextPathOfBuiltin.add(builtinContext);
         }
         if (alias != null) {
-          ContextPath.setContextAlias(alias, contextName);
+          engine.getContextPath().setContextAlias(alias, contextName);
         }
         return S.Null;
       }
@@ -1272,7 +1274,7 @@ public class FileFunctions {
           Errors.printMessage(S.Needs, "nocont", F.list(F.stringx(contextName)), engine);
           return S.$Failed;
         }
-        ContextPath.PACKAGES.add(contextName);
+        engine.getContextPath().addPackage(contextName);
       }
       // the context is on $ContextPath afterwards however it got loaded, so that
       // BeginPackage["B`", {"A`"}] can see it - but only for the plain form. Needs["A`" -> "a`"]
@@ -1292,7 +1294,7 @@ public class FileFunctions {
         contextPath.add(context);
       }
       if (alias != null) {
-        ContextPath.setContextAlias(alias, contextName);
+        engine.getContextPath().setContextAlias(alias, contextName);
       }
       return S.Null;
     }
@@ -1307,7 +1309,7 @@ public class FileFunctions {
      * defined.
      */
     private static boolean isLoadedInThisSession(String contextName, EvalEngine engine) {
-      if (!ContextPath.PACKAGES.contains(contextName)) {
+      if (!engine.getContextPath().isPackage(contextName)) {
         return false;
       }
       Context context = engine.getContextPath().getContextMap().get(contextName);
@@ -1326,7 +1328,7 @@ public class FileFunctions {
      * nothing left to read.
      */
     private static boolean wasReadFromAFile(String contextName, EvalEngine engine) {
-      if (!ContextPath.PACKAGES.contains(contextName)
+      if (!engine.getContextPath().isPackage(contextName)
           || engine.getContextPath().getContextMap().get(contextName) == null) {
         return false;
       }

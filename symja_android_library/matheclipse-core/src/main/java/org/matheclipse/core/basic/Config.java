@@ -435,6 +435,27 @@ public class Config {
    */
   public static boolean UNPROTECT_ALLOWED = true;
 
+  /**
+   * <code>true</code> if one JVM serves several users, each with an
+   * {@link org.matheclipse.core.eval.EvalEngine} of their own, as a servlet does. The built-in
+   * symbols are one instance for all of them, so nothing evaluated in one engine may change what
+   * another one computes: engines start locked (see {@link #PACKAGE_MODE}) and stay locked while a
+   * file is read, <code>Unprotect</code> is refused, <code>Derivative</code> and the
+   * <code>$</code> symbols count as protected, <code>SetOptions</code> of a built-in holds for its
+   * engine only, and no value can be assigned to a <code>System`</code> or <code>Rubi`</code>
+   * symbol.
+   *
+   * <p>
+   * <code>false</code> if one JVM is one kernel, as in <code>symjascript</code>: a package may
+   * unprotect and change a built-in, <code>Sin' = Tan</code> is a definition, and all of this holds
+   * for the whole kernel with its worker threads, because one user owns it.
+   *
+   * <p>
+   * Set this at the end of the initialization of a server, because creating the built-in symbols
+   * needs an engine which isn't locked.
+   */
+  public static boolean SHARED_JVM = false;
+
   /** See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia: Machine epsilon</a> */
   public static double DOUBLE_EPSILON = Precision.EPSILON;
 
@@ -777,7 +798,11 @@ public class Config {
   /** Do time consuming JUnit tests. For example for <code>FactorInteger</code> function */
   public static boolean EXPENSIVE_JUNIT_TESTS = false;
 
-  /** Default package mode with which the EvalEngines initially can be started */
+  /**
+   * Default package mode with which the EvalEngines initially can be started. An engine in package
+   * mode may change the rules of the <code>System`</code> symbols, which all engines of a JVM share,
+   * if they aren't protected. {@link #SHARED_JVM} overrides this.
+   */
   public static boolean PACKAGE_MODE = true;
 
   /**

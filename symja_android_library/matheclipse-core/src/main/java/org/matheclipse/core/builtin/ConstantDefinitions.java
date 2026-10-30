@@ -220,7 +220,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       IASTAppendable association = F.ast(S.Association);
-      for (java.util.Map.Entry<String, String> alias : ContextPath.contextAliases().entrySet()) {
+      for (java.util.Map.Entry<String, String> alias : engine.getContextPath().contextAliases()
+          .entrySet()) {
         association.append(F.Rule(F.stringx(alias.getKey()), F.stringx(alias.getValue())));
       }
       return engine.evaluate(association);
@@ -234,7 +235,7 @@ public class ConstantDefinitions {
       if (ast.argSize() == 1) {
         IExpr key = ast.arg1();
         if (key.isString()) {
-          String context = ContextPath.contextAliases().get(key.toString());
+          String context = engine.getContextPath().contextAliases().get(key.toString());
           return context != null ? F.stringx(context)
               : F.binaryAST2(S.Missing, F.stringx("KeyAbsent"), key);
         }
@@ -256,7 +257,7 @@ public class ConstantDefinitions {
           aliases.put(alias.endsWith("`") ? alias : alias + "`", rule.second().toString());
         }
       }
-      ContextPath.setContextAliases(aliases);
+      engine.getContextPath().setContextAliases(aliases);
       return rightHandSide;
     }
 
@@ -268,7 +269,7 @@ public class ConstantDefinitions {
         IExpr alias = engine.evaluate(leftHandSide.first());
         IExpr context = engine.evaluate(rightHandSide);
         if (alias.isString() && context.isString()) {
-          ContextPath.setContextAlias(alias.toString(), context.toString());
+          engine.getContextPath().setContextAlias(alias.toString(), context.toString());
           return context;
         }
       }
@@ -763,7 +764,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return ContextPath.getContexts();
+      return engine.getContextPath().getContexts();
     }
   }
 

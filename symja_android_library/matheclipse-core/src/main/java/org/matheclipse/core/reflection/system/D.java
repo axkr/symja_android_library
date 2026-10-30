@@ -238,12 +238,13 @@ public class D extends AbstractFunctionOptionEvaluator {
     IExpr arg1 = functionArg1.arg1();
     IAST fDerivParam = Derivative.createDerivative(1, header, arg1);
     IAST dDxArgFunction = F.D(functionArg1, x);
+    IAST derivative = Derivative.withBuiltinRule(fDerivParam);
     if (x.equals(arg1)) {
-      IExpr evaluated = engine.evaluate(fDerivParam);
+      IExpr evaluated = engine.evaluate(derivative);
       return engine.addTraceStep(dDxArgFunction, evaluated, S.D, FUNCTION_RULE_STR, header,
           fDerivParam.head().first());
     }
-    IExpr formula = F.Times(F.D(arg1, x), fDerivParam);
+    IExpr formula = F.Times(F.D(arg1, x), derivative);
     return engine.addEvaluatedTraceStep(dDxArgFunction, formula, "ChainRule");
   }
 
@@ -288,7 +289,8 @@ public class D extends AbstractFunctionOptionEvaluator {
     if (isFunctionHead(head, x)) {
       IASTAppendable plus = F.PlusAlloc(size);
       ast.forEach(size, (expr, i) -> {
-        plus.append(F.Times(F.D(expr, x), createDerivative(i, head, ast)));
+        IAST derivative = Derivative.withBuiltinRule(createDerivative(i, head, ast));
+        plus.append(F.Times(F.D(expr, x), derivative));
       });
       return engine.addTraceStep(ast, plus, "ChainRule");
     }

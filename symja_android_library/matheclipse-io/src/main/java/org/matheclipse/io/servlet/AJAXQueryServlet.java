@@ -1003,6 +1003,8 @@ public class AJAXQueryServlet extends HttpServlet {
 
       // Config.JAS_NO_THREADS = true;
       // AJAXQueryServlet.log.info(servlet + " initialized");
+      // last: creating the built-in symbols needs an engine which isn't locked
+      Config.SHARED_JVM = true;
       INITIALIZED = true;
       System.out.println("Symja version " + Config.VERSION + " initialized");
     }

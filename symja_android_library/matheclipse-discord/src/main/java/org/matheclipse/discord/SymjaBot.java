@@ -76,6 +76,8 @@ public class SymjaBot {
       Config.PRIME_FACTORS = new Primality();
       EvalEngine.get().setPackageMode(true);
       F.initSymbols();
+      // last: creating the built-in symbols needs an engine which isn't locked
+      Config.SHARED_JVM = true;
       System.out.println("Symja Version: " + Config.VERSION + " initialized");
       String theDiscordToken = args[0];
       // ReactorResources reactor = ReactorResources.builder() //

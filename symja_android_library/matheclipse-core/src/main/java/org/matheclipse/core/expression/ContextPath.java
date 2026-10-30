@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,21 +17,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 
 public final class ContextPath implements Iterable<Context> {
-
-  public static Set<String> PACKAGES = new TreeSet<>();
-
-  /**
-   * The short names contexts may be written under - what <code>$ContextAliases</code> holds and
-   * <code>Needs["A`" -&gt; "a`"]</code> adds. A name whose first segment is a key here is read as
-   * though the full context had been written: <code>a`x</code> is <code>A`x</code>.
-   */
-  private static final Map<String, String> CONTEXT_ALIASES = new java.util.LinkedHashMap<>();
-
-  static {
-    PACKAGES.add(Context.RUBI_STR);
-    PACKAGES.add(Context.GLOBAL_CONTEXT_NAME);
-    PACKAGES.add(Context.SYSTEM_CONTEXT_NAME);
-  }
 
   /**
    * Get the initial context(s) for an evaluation engine.
@@ -51,11 +35,36 @@ public final class ContextPath implements Iterable<Context> {
     cp.path.add(global);
     cp.fContextMap.put(Context.GLOBAL_CONTEXT_NAME, global);
     cp.fContext = global;
+    cp.fPackages = initialPackages();
+    cp.fContextAliases = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
     return cp;
+  }
+
+  private static Set<String> initialPackages() {
+    Set<String> packages = new java.util.concurrent.ConcurrentSkipListSet<>();
+    packages.add(Context.RUBI_STR);
+    packages.add(Context.GLOBAL_CONTEXT_NAME);
+    packages.add(Context.SYSTEM_CONTEXT_NAME);
+    return packages;
   }
 
   private Map<String, Context> fContextMap;
   private List<Context> path = new ArrayList<>();
+
+  /**
+   * The contexts of the loaded packages, for <code>$Packages</code>. One set for an engine and the
+   * copies which work for it, so that a kernel has one answer, and another engine in the JVM has
+   * its own.
+   */
+  private Set<String> fPackages;
+
+  /**
+   * The short names contexts may be written under - what <code>$ContextAliases</code> holds and
+   * <code>Needs["A`" -&gt; "a`"]</code> adds. A name whose first segment is a key here is read as
+   * though the full context had been written: <code>a`x</code> is <code>A`x</code>. Shared like
+   * {@link #fPackages}.
+   */
+  private Map<String, String> fContextAliases;
 
   private Context fContext;
 
@@ -82,6 +91,10 @@ public final class ContextPath implements Iterable<Context> {
    */
   public ContextPath(Context context, ContextPath outer) {
     fContextMap = outer == null ? new HashMap<>(17) : new HashMap<>(outer.fContextMap);
+    fPackages = outer == null ? initialPackages() : outer.fPackages;
+    fContextAliases = outer == null
+        ? java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>())
+        : outer.fContextAliases;
     path.add(context);
     path.add(Context.SYSTEM);
     fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
@@ -108,6 +121,8 @@ public final class ContextPath implements Iterable<Context> {
     cp.fContextMap = new HashMap<>(fContextMap);
     cp.path = new ArrayList<>(path);
     cp.fContext = fContext;
+    cp.fPackages = fPackages;
+    cp.fContextAliases = fContextAliases;
     return cp;
   }
 
@@ -156,7 +171,7 @@ public final class ContextPath implements Iterable<Context> {
       return contextName;
     }
     if (contextName.charAt(0) != '`') {
-      return expandAlias(contextName);
+      return engine.getContextPath().expandAlias(contextName);
     }
     String currentContext = engine.getContext().completeContextName();
     if (currentContext.endsWith("`")) {
@@ -353,27 +368,31 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   /** Add a short name for a context, as <code>Needs["A`" -&gt; "a`"]</code> does. */
-  public static synchronized void setContextAlias(String alias, String contextName) {
-    CONTEXT_ALIASES.put(alias.endsWith("`") ? alias : alias + "`", contextName);
+  public void setContextAlias(String alias, String contextName) {
+    fContextAliases.put(alias.endsWith("`") ? alias : alias + "`", contextName);
   }
 
   /** The aliases in force, for <code>$ContextAliases</code>. */
-  public static synchronized Map<String, String> contextAliases() {
-    return new java.util.LinkedHashMap<>(CONTEXT_ALIASES);
+  public Map<String, String> contextAliases() {
+    synchronized (fContextAliases) {
+      return new java.util.LinkedHashMap<>(fContextAliases);
+    }
   }
 
   /** Replace every alias, for a fresh <code>$ContextAliases</code> assignment. */
-  public static synchronized void setContextAliases(Map<String, String> aliases) {
-    CONTEXT_ALIASES.clear();
-    CONTEXT_ALIASES.putAll(aliases);
+  public void setContextAliases(Map<String, String> aliases) {
+    synchronized (fContextAliases) {
+      fContextAliases.clear();
+      fContextAliases.putAll(aliases);
+    }
   }
 
   /**
    * <code>a`Sub`x</code> written under the alias <code>a`</code> for <code>Actual`</code> is
    * <code>Actual`Sub`x</code>. Only the first segment is an alias.
    */
-  private static synchronized String expandAlias(String contextName) {
-    if (CONTEXT_ALIASES.isEmpty()) {
+  private String expandAlias(String contextName) {
+    if (fContextAliases.isEmpty()) {
       return contextName;
     }
     int firstBacktick = contextName.indexOf('`');
@@ -381,7 +400,7 @@ public final class ContextPath implements Iterable<Context> {
       return contextName;
     }
     String head = contextName.substring(0, firstBacktick + 1);
-    String expanded = CONTEXT_ALIASES.get(head);
+    String expanded = fContextAliases.get(head);
     return expanded == null ? contextName : expanded + contextName.substring(firstBacktick + 1);
   }
 
@@ -413,9 +432,18 @@ public final class ContextPath implements Iterable<Context> {
     return fContextMap.computeIfAbsent(name, n -> new Context(contextName, parentContext));
   }
 
-  public static IAST getContexts() {
-    IASTAppendable result = F.ListAlloc(ContextPath.PACKAGES.size());
-    for (String str : ContextPath.PACKAGES) {
+  /** Note the context of a package, for <code>$Packages</code>. */
+  public void addPackage(String contextName) {
+    fPackages.add(contextName);
+  }
+
+  public boolean isPackage(String contextName) {
+    return fPackages.contains(contextName);
+  }
+
+  public IAST getContexts() {
+    IASTAppendable result = F.ListAlloc(fPackages.size());
+    for (String str : fPackages) {
       result.append(F.$str(str));
     }
     return result;

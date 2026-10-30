@@ -96,7 +96,10 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   public boolean hasProtectedAttribute() {
     final int attributes = getAttributes();
     if ((attributes & PROTECTED) != PROTECTED) {
-      return false;
+      // these two take definitions in a kernel. The value of a $ symbol is kept per engine, but its
+      // rules and attributes are not, and Derivative holds the derivatives of the built-ins. This
+      // is no attribute, because the symbol exists before a server sets Config.SHARED_JVM
+      return Config.SHARED_JVM && (isDollarSymbol() || this == S.Derivative);
     }
     return (attributes & CONSTANT) != CONSTANT || !EvalEngine.isBlockUnprotected(this);
   }
@@ -363,6 +366,9 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     fDeferredRulesLoader = Thread.currentThread();
     try {
       Class.forName(className, true, BuiltInSymbol.class.getClassLoader());
+      if (this == S.Derivative) {
+        org.matheclipse.core.reflection.system.Derivative.rulesInstalled(fRulesData);
+      }
     } catch (ClassNotFoundException | LinkageError e) {
       throw new IllegalStateException(
           "Cannot load the built-in rules " + className + " of symbol " + fSymbolName, e);

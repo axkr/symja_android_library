@@ -141,6 +141,8 @@ public class SymjaServer {
     // this one is asked back for.
     org.matheclipse.core.builtin.Programming.initTraceForm();
     FuzzyParserFactory.initialize();
+    // last: creating the built-in symbols needs an engine which isn't locked
+    Config.SHARED_JVM = true;
     System.out.println("Symja version " + Config.VERSION + " initialized");
   }
 

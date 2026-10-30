@@ -260,6 +260,20 @@ public final class RulesData implements Serializable {
    */
   private boolean fNValues;
 
+  /**
+   * A copy of the down rules and messages, which stays as it is when these rules change.
+   */
+  public synchronized RulesData copy() {
+    RulesData copy = new RulesData();
+    copy.fMessages = fMessages == null ? null : new java.util.HashMap<>(fMessages);
+    copy.fEqualDownRules = fEqualDownRules == null ? null : new ConcurrentHashMap<>(fEqualDownRules);
+    // a list of rules is replaced, not changed, when a rule is added or removed
+    copy.fPatternDownRules = fPatternDownRules;
+    copy.fPriorityDownRules =
+        fPriorityDownRules == null ? null : new IntArrayList(fPriorityDownRules);
+    return copy;
+  }
+
   public RulesData() {
     clear();
   }

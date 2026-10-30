@@ -1,27 +1,30 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apfloat.Apcomplex;
-import org.apfloat.ApfloatRuntimeException;
-import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
-import org.matheclipse.external.apfloat.ApcomplexZetaMath;
-import org.matheclipse.parser.client.ParserConfig;
 import java.util.ArrayList;
 import java.util.List;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherEquals;
+import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  *
@@ -95,6 +98,70 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class Derivative extends AbstractFunctionEvaluator {
+
+  /**
+   * The rules of this symbol as they were installed. <code>Derivative</code> isn't protected, so
+   * <code>Sin' = Tan</code> changes its rules; <code>D</code> goes on with these ones, and they
+   * bring back what <code>Sin' =.</code> or <code>Clear(Derivative)</code> took away.
+   */
+  private static volatile RulesData builtinRules = null;
+
+  /** Was a definition made which isn't one for a function of the user? */
+  private static volatile boolean builtinRulesChanged = false;
+
+  /** Keep the built-in <code>rules</code> of this symbol, when they were just installed. */
+  public static void rulesInstalled(RulesData rules) {
+    builtinRules = rules.copy();
+  }
+
+  /** Note that a definition may hide the built-in rules from now on. */
+  public static void setBuiltinRulesChanged() {
+    builtinRulesChanged = true;
+  }
+
+  /**
+   * <code>derivative</code> is <code>Derivative(n1, n2, ...)[f][x1, x2, ...]</code>. <code>D</code>
+   * doesn't use definitions like <code>Sin' = Tan</code>, only <code>Sin'</code> itself does.
+   *
+   * @return <code>derivative</code> with the head a built-in rule gives for it, or
+   *         <code>derivative</code> itself
+   */
+  public static IAST withBuiltinRule(IAST derivative) {
+    final RulesData rules = builtinRules;
+    if (!builtinRulesChanged || rules == null || !derivative.head().first().isBuiltInSymbol()) {
+      return derivative;
+    }
+    IExpr function = rules.evalDownRule(derivative.head(), EvalEngine.get());
+    return function.isPresent() ? derivative.setAtCopy(0, function) : derivative;
+  }
+
+  /**
+   * <code>lhs =.</code> for the left side <code>lhs</code> of a built-in rule: such a rule stays, or
+   * comes back if a definition replaced it.
+   *
+   * @return <code>false</code> if <code>lhs</code> isn't the left side of a built-in rule
+   */
+  public static boolean restoreBuiltinRule(IExpr lhs) {
+    final RulesData rules = builtinRules;
+    if (rules == null) {
+      return false;
+    }
+    PatternMatcherEquals rule = rules.getEqualDownRules().get(lhs);
+    if (rule != null) {
+      S.Derivative.putDownRule(IPatternMatcher.SET, true, (IAST) lhs, rule.getRHS(), true);
+      return true;
+    }
+    return rules.copy().removeRule(IPatternMatcher.SET, false, lhs);
+  }
+
+  /** <code>Clear(Derivative)</code> removes the definitions, not the built-in rules. */
+  public static void restoreBuiltinRules() {
+    final RulesData rules = builtinRules;
+    if (rules != null) {
+      S.Derivative.setRulesData(rules.copy());
+      builtinRulesChanged = false;
+    }
+  }
 
   public Derivative() {}
 
@@ -710,7 +777,8 @@ public class Derivative extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(Attribute.NHOLDALL);
-    // not protected: f'[x_] := ... and Derivative[1, 0][f][x_, y_] := ... define derivatives
+    // not protected: f'[x_] := ... and Derivative[1, 0][f][x_, y_] := ... define derivatives. In a
+    // Config.SHARED_JVM it counts as protected all the same, see BuiltInSymbol#hasProtectedAttribute
     newSymbol.clearAttributes(ISymbol.PROTECTED);
     super.setUp(newSymbol);
   }

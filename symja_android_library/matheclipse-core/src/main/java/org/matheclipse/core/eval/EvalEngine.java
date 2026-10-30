@@ -912,6 +912,13 @@ public class EvalEngine implements Serializable {
 
   transient ContextPath fContextPath;
 
+  /**
+   * The options <code>SetOptions</code> gave to built-in symbols in a {@link Config#SHARED_JVM}. A
+   * built-in symbol is one instance for all engines, so they can't be kept with its rules. The
+   * copies of this engine share the map.
+   */
+  private transient java.util.Map<ISymbol, IAST> fBuiltinOptions;
+
   transient int fConstantCounter;
 
   /**
@@ -948,7 +955,7 @@ public class EvalEngine implements Serializable {
 
   protected int fIterationLimit;
 
-  protected boolean fPackageMode = Config.PACKAGE_MODE;
+  protected boolean fPackageMode = Config.PACKAGE_MODE && !Config.SHARED_JVM;
 
   /**
    * If <code>true</code> this engine doesn't distinguish between lower and upper case identifiers,
@@ -1527,7 +1534,7 @@ public class EvalEngine implements Serializable {
     // the package knows the contexts that were known before it, so a name means the same symbol
     // inside it as outside
     setContextPath(new ContextPath(packageContext, fContextPath));
-    ContextPath.PACKAGES.add(contextName);
+    fContextPath.addPackage(contextName);
     return packageContext;
   }
 
@@ -1662,6 +1669,7 @@ public class EvalEngine implements Serializable {
     engine.fAnswer = fAnswer;
     engine.fAssumptions = fAssumptions;
     engine.fContextPath = fContextPath.copy();
+    engine.fBuiltinOptions = fBuiltinOptions;
     engine.fErrorPrintStream = fErrorPrintStream;
     engine.fEvalLHSMode = fEvalLHSMode;
     engine.fEvalRHSMode = fEvalRHSMode;
@@ -5256,6 +5264,26 @@ public class EvalEngine implements Serializable {
    * @param dollarSymbol
    * @return {@link F#NIL} if no value is assigned.
    */
+  /**
+   * The options this engine gave to the built-in <code>symbol</code>.
+   *
+   * @return <code>null</code> if <code>SetOptions</code> wasn't used for the symbol
+   * @see Config#SHARED_JVM
+   */
+  public IAST getBuiltinOptions(ISymbol symbol) {
+    return fBuiltinOptions.get(symbol);
+  }
+
+  /**
+   * Give the built-in <code>symbol</code> the options <code>options</code> in this engine.
+   *
+   * @see Config#SHARED_JVM
+   */
+  public void setBuiltinOptions(ISymbol symbol, IAST options) {
+    fBuiltinOptions.put(symbol, options);
+    incEpoch();
+  }
+
   public IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
     if (fDollarSymbolMap != null) {
       IExpr expr = fDollarSymbolMap.get(dollarSymbol);
@@ -5607,6 +5635,7 @@ public class EvalEngine implements Serializable {
     fDollarSymbolMap = null;
     fContextPathStack = new ArrayDeque<ContextPath>();
     fContextPath = ContextPath.initialContext();
+    fBuiltinOptions = new java.util.concurrent.ConcurrentHashMap<ISymbol, IAST>(4);
     f$Input = "";
     f$InputFileName = "";
     globalASTCache.invalidateAll();

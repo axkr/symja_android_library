@@ -283,7 +283,7 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (Config.UNPROTECT_ALLOWED) {
+      if (Config.UNPROTECT_ALLOWED && !Config.SHARED_JVM) {
         IASTMutable mutable = checkIdentifiers(ast, engine);
         if (mutable.isNIL()) {
           return F.NIL;

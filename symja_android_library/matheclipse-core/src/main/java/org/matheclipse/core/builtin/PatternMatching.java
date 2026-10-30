@@ -283,7 +283,12 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return clearSymbols(ast, engine, x -> x.clear(engine));
+      return clearSymbols(ast, engine, x -> {
+        x.clear(engine);
+        if (x == S.Derivative) {
+          org.matheclipse.core.reflection.system.Derivative.restoreBuiltinRules();
+        }
+      });
     }
 
     @Override
@@ -482,7 +487,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return ContextPath.getContexts();
+      return engine.getContextPath().getContexts();
     }
 
     @Override
@@ -1697,6 +1702,11 @@ public final class PatternMatching {
           continue;
         }
         result.set(position, F.binaryAST2(result.get(position).head(), name, rule.second()));
+      }
+      if (Config.SHARED_JVM && symbol.isBuiltInSymbol()) {
+        // all engines of the JVM share the symbol
+        engine.setBuiltinOptions(symbol, result);
+        return result;
       }
       try {
         symbol.putDownRule(IPatternMatcher.SET, true, F.Options(symbol), result, true);
@@ -2982,6 +2992,41 @@ public final class PatternMatching {
   }
 
   /**
+   * <code>f'</code> or <code>f'[x_]</code> for a function <code>f</code> of the user? Its rule can
+   * only match the <code>f</code> of the engine which made it, and leaves the built-in functions
+   * alone.
+   */
+  private static boolean isUserDerivative(IExpr lhs) {
+    while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2) || lhs.isAST(S.Verbatim, 2)) {
+      lhs = lhs.first();
+    }
+    while (lhs.isAST() && lhs.head().isAST() && !lhs.head().isAST(S.Derivative)) {
+      // f'[x_]: go on with the operator f'
+      lhs = lhs.head();
+    }
+    if (lhs.isAST1() && lhs.head().isAST(S.Derivative) && lhs.first().isSymbol()) {
+      ISymbol function = (ISymbol) lhs.first();
+      return !function.isBuiltInSymbol() && !function.hasProtectedAttribute();
+    }
+    return false;
+  }
+
+  /** <code>D</code> has to leave a definition like <code>Sin' = Tan</code> out. */
+  private static void noteDerivativeDefinition(ISymbol lhsSymbol, IExpr lhs) {
+    if (lhsSymbol == S.Derivative && !isUserDerivative(lhs)) {
+      org.matheclipse.core.reflection.system.Derivative.setBuiltinRulesChanged();
+    }
+  }
+
+  /**
+   * Would a value assigned to <code>symbol</code> reach all engines of the JVM? A <code>$</code>
+   * symbol keeps its value in the engine.
+   */
+  private static boolean isLockedValue(ISymbol symbol, boolean packageMode) {
+    return symbol.isLocked(packageMode) && !symbol.isDollarSymbol();
+  }
+
+  /**
    * The first head of <code>expr</code> which may carry a definition: a symbol of the user (or a
    * package) before a built-in one, so <code>pref_. * f[...]</code> is kept with <code>f</code>,
    * not with <code>Times</code>. Pattern names are no heads.
@@ -3067,17 +3112,14 @@ public final class PatternMatching {
       Errors.printMessage(S.Set, "nosym", F.list(originalLHS), EvalEngine.get());
       return rightHandSide;
     }
-    if (lhsSymbol.hasProtectedAttribute()) {
+    if (lhsSymbol.hasProtectedAttribute()
+        || (evaledLHS.isSymbol() && isLockedValue(lhsSymbol, packageMode))) {
       // Symbol `1` is Protected.
       Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
       return rightHandSide;
     }
+    noteDerivativeDefinition(lhsSymbol, evaledLHS);
     if (originalLHS.isAST()) {
-      if (lhsSymbol.hasProtectedAttribute()) {
-        // Tag `1` in `2` is Protected.
-        Errors.printMessage(S.Set, "write", F.list(lhsSymbol, originalLHS), EvalEngine.get());
-        throw new FailedException();
-      }
       if (evaledLHS instanceof IPatternObject) {
         // CPD-OFF Set and SetDelayed keep their own rule flags and messages
         lhsSymbol.putDownRule(flags | IPatternMatcher.SET, false, (IPatternObject) evaledLHS,
@@ -3158,17 +3200,14 @@ public final class PatternMatching {
       Errors.printMessage(S.SetDelayed, "nosym", F.list(originalLHS), EvalEngine.get());
       throw new FailedException();
     }
-    if (lhsSymbol.hasProtectedAttribute()) {
+    if (lhsSymbol.hasProtectedAttribute()
+        || (evaledLHS.isSymbol() && isLockedValue(lhsSymbol, packageMode))) {
       // Symbol `1` is Protected.
       Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
       throw new FailedException();
     }
+    noteDerivativeDefinition(lhsSymbol, evaledLHS);
     // if (evaledLHS.isAST()) {
-    if (lhsSymbol.hasProtectedAttribute()) {
-      // Tag `1` in `2` is Protected.
-      Errors.printMessage(S.SetDelayed, "write", F.list(lhsSymbol, originalLHS), EvalEngine.get());
-      throw new FailedException();
-    }
     if (evaledLHS instanceof IPatternObject) {
       // CPD-OFF Set and SetDelayed keep their own rule flags and messages
       lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IPatternObject) evaledLHS,
@@ -3876,6 +3915,10 @@ public final class PatternMatching {
     private static void removeRule(IExpr leftHandSide, boolean packageMode) {
       if (leftHandSide.isAST()) {
         final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+        if (lhsSymbol == S.Derivative
+            && org.matheclipse.core.reflection.system.Derivative.restoreBuiltinRule(leftHandSide)) {
+          return;
+        }
         if (!lhsSymbol.removeRule(IPatternMatcher.SET, false, leftHandSide, packageMode)) {
           printAssignmentNotFound(lhsSymbol, leftHandSide);
         }

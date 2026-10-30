@@ -2,8 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import org.matheclipse.core.basic.RuleConfig;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
@@ -105,21 +105,24 @@ public class OptionsPattern extends AbstractPatternSequence {
    * @return
    */
   public static IAST optionsList(ISymbol symbol, boolean optionValueRules) {
-    RulesData rules = symbol.getRulesData();
-    if (rules != null) {
-      Map<IExpr, PatternMatcherEquals> map = rules.getEqualDownRules();
-      PatternMatcherEquals matcher = map.get(F.Options(symbol));
-      if (matcher != null) {
-        IExpr temp = matcher.getRHS();
-        if (optionValueRules) {
-          IASTAppendable result = F.ListAlloc(10);
-          extractRules(temp, result);
-          return result;
-        }
-        return temp.makeList();
+    IExpr options = Config.SHARED_JVM && symbol.isBuiltInSymbol()
+        ? EvalEngine.get().getBuiltinOptions(symbol)
+        : null;
+    if (options == null) {
+      RulesData rules = symbol.getRulesData();
+      PatternMatcherEquals matcher =
+          rules == null ? null : rules.getEqualDownRules().get(F.Options(symbol));
+      if (matcher == null) {
+        return F.CEmptyList;
       }
+      options = matcher.getRHS();
     }
-    return F.CEmptyList;
+    if (optionValueRules) {
+      IASTAppendable result = F.ListAlloc(10);
+      extractRules(options, result);
+      return result;
+    }
+    return options.makeList();
   }
 
   public static OptionsPattern valueOf(final ISymbol symbol) {
