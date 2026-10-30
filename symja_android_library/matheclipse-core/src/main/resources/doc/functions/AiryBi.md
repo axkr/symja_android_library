@@ -10,6 +10,27 @@ See
 * [Wikipedia - Airy function](https://en.wikipedia.org/wiki/Airy_function)
 * [Fungrim - Airy functions](http://fungrim.org/topic/Airy_functions/)
 
+### Examples
+
+```
+>> AiryBi(1.8)
+2.59587
+```
+
+`AiryBi(0)` has a closed form:
+
+```
+>> AiryBi(0)
+1/(3^(1/6)*Gamma(2/3))
+```
+
+The derivative is the `AiryBiPrime` function:
+
+```
+>> D(AiryBi(x),x)
+AiryBiPrime(x)
+```
+
 
 
 

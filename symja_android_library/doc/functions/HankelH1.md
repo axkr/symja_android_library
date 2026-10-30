@@ -9,6 +9,11 @@ HankelH1(n, x)
 ### Examples
 
 ```
+>> HankelH1(0, 1.5)
+0.511828+I*0.382449
+
+>> HankelH1(1, 2.0+I)
+0.191217+I*(-0.0962481)
 ```
 
 ### Implementation status

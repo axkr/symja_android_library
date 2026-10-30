@@ -10,6 +10,30 @@ See
 * [Wikipedia - Airy function](https://en.wikipedia.org/wiki/Airy_function)
 * [Fungrim - Airy functions](http://fungrim.org/topic/Airy_functions/)
 
+### Examples
+
+```
+>> AiryAi(1.8)
+0.0470362
+
+>> AiryAi(2.5+I)
+-0.00191209+I*(-0.0180329)
+```
+
+`AiryAi(0)` has a closed form:
+
+```
+>> AiryAi(0)
+1/(3^(2/3)*Gamma(2/3))
+```
+
+The derivative is the `AiryAiPrime` function:
+
+```
+>> D(AiryAi(x),x)
+AiryAiPrime(x)
+```
+
 
 
 

@@ -11,6 +11,23 @@ See:
 * [Wikipedia - Generalized hypergeometric function](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)
 * [Fungrim - Confluent hypergeometric functions](http://fungrim.org/topic/Confluent_hypergeometric_functions/)
 
+### Examples
+
+```
+>> Hypergeometric1F1(1, 2, 0.5)
+1.29744
+
+>> Hypergeometric1F1(1, 2, x)
+(-1+E^x)/x
+```
+
+For a negative integer `a` the series ends, and the result is a polynomial:
+
+```
+>> Hypergeometric1F1(-2, 1, x)
+1-2*x+x^2/2
+```
+
 
 
 
