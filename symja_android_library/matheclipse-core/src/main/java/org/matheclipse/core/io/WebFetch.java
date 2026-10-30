@@ -72,6 +72,9 @@ public final class WebFetch {
     if (FileSandbox.isHostVisible(engine)) {
       URLConnection connection = url.openConnection();
       connection.setRequestProperty("User-Agent", USER_AGENT);
+      // without them a server that stops answering blocks the kernel for good
+      connection.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
+      connection.setReadTimeout(READ_TIMEOUT_MILLIS);
       return new Response(connection.getInputStream(), connection.getContentType());
     }
     for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
@@ -127,6 +130,25 @@ public final class WebFetch {
       this.in = in;
       this.contentType = contentType;
     }
+  }
+
+  /**
+   * Read an answer whole, as an answer that is kept in memory: at most {@link #MAX_BYTES} on any
+   * kernel, and between two reads the engine's time limits are checked, so that
+   * <code>TimeConstrained</code> can stop a server that sends slowly.
+   *
+   * @throws IOException if the answer cannot be read or is longer than {@link #MAX_BYTES}
+   */
+  public static byte[] readAll(InputStream in, EvalEngine engine) throws IOException {
+    InputStream limited = new Limited(in, MAX_BYTES);
+    java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+    byte[] buffer = new byte[8192];
+    int n;
+    while ((n = limited.read(buffer, 0, buffer.length)) >= 0) {
+      bytes.write(buffer, 0, n);
+      engine.checkTimeLimit();
+    }
+    return bytes.toByteArray();
   }
 
   private static String userAgent() {

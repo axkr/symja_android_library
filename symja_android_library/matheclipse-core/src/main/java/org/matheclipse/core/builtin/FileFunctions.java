@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -75,7 +74,6 @@ import org.matheclipse.core.reflection.system.ImportString;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
-import com.google.common.io.CharStreams;
 
 public class FileFunctions {
 
@@ -251,7 +249,8 @@ public class FileFunctions {
           DataOutput dataOutput = null;
           if (arg1 instanceof FileExpr) {
             File file = ((FileExpr) arg1).toData();
-            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false, streamName(file, engine));
+            OutputStreamExpr out =
+                OutputStreamExpr.newInstance(file, false, streamName(file, engine));
             dataOutput = out.getDataOutput();
           }
           if (arg1 instanceof OutputStreamExpr) {
@@ -1152,7 +1151,8 @@ public class FileFunctions {
           }
           File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite, name.toString(),
               engine);
-          return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append, streamName(file, engine));
+          return file == null ? F.NIL
+              : OutputStreamExpr.newInstance(file, append, streamName(file, engine));
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OpenWrite, ex);
         }
@@ -1180,7 +1180,8 @@ public class FileFunctions {
           IExpr arg1 = ast.arg1();
           if (arg1.isString()) {
             File file = FileSandbox.resolveWrite(S.OutputStream, arg1.toString(), engine);
-            return file == null ? F.NIL : OutputStreamExpr.newInstance(file, false, streamName(file, engine));
+            return file == null ? F.NIL
+                : OutputStreamExpr.newInstance(file, false, streamName(file, engine));
           }
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OutputStream, ex);
@@ -1460,8 +1461,8 @@ public class FileFunctions {
      * Read one expression: everything up to a line break which ends a complete expression. A line
      * break inside a comment, a string or a bracket does not end it. A comment with no expression
      * before the line break or the end of the input which ends it is the statement
-     * <code>Null</code>, as an empty statement is; empty lines are skipped. When the input ends with
-     * nothing but white space left, the result is <code>EndOfFile</code>.
+     * <code>Null</code>, as an empty statement is; empty lines are skipped. When the input ends
+     * with nothing but white space left, the result is <code>EndOfFile</code>.
      */
     private static IExpr readExpression(Reader reader, EvalEngine engine) throws IOException {
       StringBuilder buf = new StringBuilder();
@@ -2031,8 +2032,8 @@ public class FileFunctions {
   }
 
   /**
-   * The text of a terminator made of strings only, as <code>"--"</code> or
-   * <code>"-" ~~ "-"</code>; <code>null</code> for any other pattern.
+   * The text of a terminator made of strings only, as <code>"--"</code> or <code>"-" ~~ "-"</code>;
+   * <code>null</code> for any other pattern.
    */
   private static String literalTerminator(IExpr terminator) {
     if (terminator.isString()) {
@@ -2345,8 +2346,8 @@ public class FileFunctions {
 
 
   /**
-   * What a stream to a file answers to <code>Streams</code> and prints as: the file's path, or in
-   * a session confined to a directory its name there.
+   * What a stream to a file answers to <code>Streams</code> and prints as: the file's path, or in a
+   * session confined to a directory its name there.
    */
   private static String streamName(File file, EvalEngine engine) throws IOException {
     return FileSandbox.displayName(file.toPath(), file.getCanonicalPath(), engine);
@@ -2388,8 +2389,8 @@ public class FileFunctions {
             output.append(line);
             if (output.length() > MAX_UNCOMPRESSED_CHARS) {
               // a compressed string is input of a user, and a short one can stand for gigabytes
-              throw new IOException("the string inflates to more than " + MAX_UNCOMPRESSED_CHARS
-                  + " characters");
+              throw new IOException(
+                  "the string inflates to more than " + MAX_UNCOMPRESSED_CHARS + " characters");
             }
           }
 
@@ -2747,8 +2748,8 @@ public class FileFunctions {
    * with.
    *
    * <p>
-   * Without a format the <code>Content-Type</code> of the answer decides: JSON is imported as nested
-   * lists of rules, anything else is returned as a string.
+   * Without a format the <code>Content-Type</code> of the answer decides: JSON is imported as
+   * nested lists of rules, anything else is returned as a string.
    */
   private static final class URLExecute extends AbstractFunctionEvaluator {
 
@@ -2761,7 +2762,8 @@ public class FileFunctions {
       String address = ast.arg1().toString();
       if (ast.argSize() >= 2) {
         IExpr parameters = ast.arg2();
-        if (!parameters.isListOfRulesOrAssociation(false)) {
+        if (!parameters.isAssociation()
+            && !(parameters.isList() && ((IAST) parameters).forAll((IExpr x) -> x.isRuleAST()))) {
           // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
           // used for replacing.
           return Errors.printMessage(S.URLExecute, "reps", F.list(parameters), engine);
@@ -2773,10 +2775,7 @@ public class FileFunctions {
       Extension.ImportSpec spec = null;
       if (ast.argSize() == 3) {
         spec = Extension.importSpec(ast.arg3());
-        // these make an expression of the answer, which would then be evaluated: a server must not
-        // be able to run code here. STRING is also what an unknown format name ends up as.
-        if (spec == null || spec.format == Extension.STRING
-            || spec.format == Extension.EXPRESSIONJSON) {
+        if (spec == null || !isDataFormat(spec.format)) {
           // Cannot import data as `1` format.
           return Errors.printMessage(S.URLExecute, "fmterr", F.list(ast.arg3()), engine);
         }
@@ -2792,7 +2791,7 @@ public class FileFunctions {
         WebFetch.Response response = WebFetch.connect(address, engine);
         contentType = response.contentType;
         try (java.io.InputStream in = response.in) {
-          text = new String(in.readAllBytes(), charset(contentType));
+          text = new String(WebFetch.readAll(in, engine), charset(contentType));
         }
       } catch (IOException ex) {
         // Cannot open `1`.
@@ -2814,6 +2813,25 @@ public class FileFunctions {
         return Errors.printMessage(S.URLExecute, "fmterr", F.list(formatName), engine);
       }
       return result;
+    }
+
+    /**
+     * Whether <code>format</code> imports an answer as data only. The others make expressions of
+     * it, which would then be evaluated, and a server must not be able to run code here: String,
+     * ExpressionJSON, Table, and CSV and TSV, whose dataset columns parse and evaluate their cells.
+     * STRING is also what an unknown format name ends up as.
+     */
+    private static boolean isDataFormat(Extension format) {
+      switch (format) {
+        case JSON:
+        case RAWJSON:
+        case TXT:
+        case BASE64:
+        case GRAPH6:
+          return true;
+        default:
+          return false;
+      }
     }
 
     /** The rules <code>{"key" -> value, ...}</code> as a query <code>key=value&amp;...</code>. */
@@ -2872,7 +2890,9 @@ public class FileFunctions {
           || mediaType.endsWith("+json");
     }
 
-    /** The <code>charset</code> parameter of a <code>Content-Type</code>, UTF-8 if there is none. */
+    /**
+     * The <code>charset</code> parameter of a <code>Content-Type</code>, UTF-8 if there is none.
+     */
     private static Charset charset(String contentType) {
       if (contentType != null) {
         for (String parameter : contentType.split(";")) {
@@ -2951,7 +2971,8 @@ public class FileFunctions {
           Writer writer = null;
           if (arg1 instanceof FileExpr) {
             File file = ((FileExpr) arg1).toData();
-            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false, streamName(file, engine));
+            OutputStreamExpr out =
+                OutputStreamExpr.newInstance(file, false, streamName(file, engine));
             writer = out.getWriter();;
           }
           if (arg1 instanceof OutputStreamExpr) {

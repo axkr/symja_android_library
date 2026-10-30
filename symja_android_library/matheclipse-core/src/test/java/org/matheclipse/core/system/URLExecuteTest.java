@@ -45,6 +45,22 @@ public class URLExecuteTest extends ExprEvaluatorTestCase {
         "text/plain; charset=ISO-8859-1", "Café", StandardCharsets.ISO_8859_1));
     server.createContext("/code", exchange -> respond(exchange, 200, "text/plain",
         "Print(\"evaluated\")", StandardCharsets.UTF_8));
+    server.createContext("/base64", exchange -> respond(exchange, 200, "text/plain",
+        "RXVsZXI=", StandardCharsets.UTF_8));
+    // sends a byte every 100 milliseconds for 10 seconds
+    server.createContext("/slow", exchange -> {
+      exchange.getResponseHeaders().set("Content-Type", "text/plain");
+      exchange.sendResponseHeaders(200, 0);
+      try (OutputStream out = exchange.getResponseBody()) {
+        for (int i = 0; i < 100; i++) {
+          out.write('x');
+          out.flush();
+          Thread.sleep(100);
+        }
+      } catch (InterruptedException | IOException e) {
+        // the client went away
+      }
+    });
     // answers with the query it was asked, so that the encoding of parameters can be checked
     server.createContext("/echo", exchange -> {
       String query = exchange.getRequestURI().getRawQuery();
@@ -120,6 +136,29 @@ public class URLExecuteTest extends ExprEvaluatorTestCase {
     // URLExecute: Cannot import data as ExpressionJSON format.
     check("Head(URLExecute(" + base + "/json\", {}, \"ExpressionJSON\"))", //
         "URLExecute");
+    // "Table" parses every field into an expression, and the dataset columns of "CSV" and "TSV"
+    // parse and evaluate their cells
+    // URLExecute: Cannot import data as Table format.
+    check("Head(URLExecute(" + base + "/code\", {}, \"Table\"))", //
+        "URLExecute");
+    // URLExecute: Cannot import data as CSV format.
+    check("Head(URLExecute(" + base + "/code\", {}, \"CSV\"))", //
+        "URLExecute");
+    // URLExecute: Cannot import data as TSV format.
+    check("Head(URLExecute(" + base + "/code\", {}, \"TSV\"))", //
+        "URLExecute");
+    // a data format is still allowed
+    check("URLExecute(" + base + "/base64\", {}, \"Base64\")", //
+        "Euler");
+  }
+
+  @Test
+  public void testTimeConstrainedStopsASlowServer() {
+    long start = System.nanoTime();
+    check("TimeConstrained(URLExecute(" + base + "/slow\"), 1, \"stopped\")", //
+        "stopped");
+    long seconds = (System.nanoTime() - start) / 1_000_000_000L;
+    org.junit.jupiter.api.Assertions.assertTrue(seconds < 5, "took " + seconds + " seconds");
   }
 
   @Test
@@ -156,6 +195,11 @@ public class URLExecuteTest extends ExprEvaluatorTestCase {
     // URLExecute: (42) is neither a list of replacement rules nor a valid dispatch table and cannot
     // be used for replacing.
     check("Head(URLExecute(" + base + "/echo\", 42))", //
+        "URLExecute");
+    // an association inside the list is no rule
+    // URLExecute: ({<|a->1,b->2|>}) is neither a list of replacement rules nor a valid dispatch
+    // table and cannot be used for replacing.
+    check("Head(URLExecute(" + base + "/echo\", {<|\"a\" -> 1, \"b\" -> 2|>}))", //
         "URLExecute");
     // URLExecute: Cannot open ftp://127.0.0.1/.
     check("URLExecute(\"ftp://127.0.0.1/\")", //

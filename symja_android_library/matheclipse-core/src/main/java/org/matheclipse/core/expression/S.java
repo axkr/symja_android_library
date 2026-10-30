@@ -7142,7 +7142,9 @@ public class S {
   public final static IBuiltInSymbol EasterSunday =
       S.initFinalSymbol("EasterSunday", ID.EasterSunday);
 
-  /** Render a 2D graphic with the Apache ECharts JavaScript library (module matheclipse-jsgraphics). */
+  /**
+   * Render a 2D graphic with the Apache ECharts JavaScript library (module matheclipse-jsgraphics).
+   */
   /**
    * EccentricityCentrality(x) - TODO describe `EccentricityCentrality`.
    * 
@@ -9923,8 +9925,8 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GaussianOrthogonalMatrixDistribution.md">GaussianOrthogonalMatrixDistribution
    *      documentation</a>
    */
-  public final static IBuiltInSymbol GaussianOrthogonalMatrixDistribution =
-      S.initFinalSymbol("GaussianOrthogonalMatrixDistribution", ID.GaussianOrthogonalMatrixDistribution);
+  public final static IBuiltInSymbol GaussianOrthogonalMatrixDistribution = S.initFinalSymbol(
+      "GaussianOrthogonalMatrixDistribution", ID.GaussianOrthogonalMatrixDistribution);
 
   /**
    * GaussianUnitaryMatrixDistribution(x) - TODO describe `GaussianUnitaryMatrixDistribution`.
@@ -13475,8 +13477,8 @@ public class S {
 
   /**
    * KnapsackSolve({item1, item2, ...}, maxCost) - the number of times each item is taken so that
-   * the total value is largest and the total cost is at most <code>maxCost</code>. Needs the
-   * module <code>matheclipse-or-tools</code>.
+   * the total value is largest and the total cost is at most <code>maxCost</code>. Needs the module
+   * <code>matheclipse-or-tools</code>.
    *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KnapsackSolve.md">KnapsackSolve
@@ -15034,9 +15036,11 @@ public class S {
       S.initFinalSymbol("LogSeriesDistribution", ID.LogSeriesDistribution);
 
   public final static IBuiltInSymbol Longest = S.initFinalSymbol("Longest", ID.Longest);
-  public final static IBuiltInSymbol LongestCommonSubsequence = S.initFinalSymbol("LongestCommonSubsequence", ID.LongestCommonSubsequence);
+  public final static IBuiltInSymbol LongestCommonSubsequence =
+      S.initFinalSymbol("LongestCommonSubsequence", ID.LongestCommonSubsequence);
 
-  public final static IBuiltInSymbol LongestCommonSequence = S.initFinalSymbol("LongestCommonSequence", ID.LongestCommonSequence);
+  public final static IBuiltInSymbol LongestCommonSequence =
+      S.initFinalSymbol("LongestCommonSequence", ID.LongestCommonSequence);
 
 
   public final static IBuiltInSymbol LongForm = S.initFinalSymbol("LongForm", ID.LongForm);
@@ -15393,31 +15397,37 @@ public class S {
   public final static IBuiltInSymbol MathieuC = S.initFinalSymbol("MathieuC", ID.MathieuC);
 
   /**
-   * MathieuCharacteristicA(r, q) - the characteristic value `a` of the even Mathieu function with characteristic exponent `r` and parameter `q`.
+   * MathieuCharacteristicA(r, q) - the characteristic value `a` of the even Mathieu function with
+   * characteristic exponent `r` and parameter `q`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicA.md">MathieuCharacteristicA
    *      documentation</a>
    */
-  public final static IBuiltInSymbol MathieuCharacteristicA = S.initFinalSymbol("MathieuCharacteristicA", ID.MathieuCharacteristicA);
+  public final static IBuiltInSymbol MathieuCharacteristicA =
+      S.initFinalSymbol("MathieuCharacteristicA", ID.MathieuCharacteristicA);
 
   /**
-   * MathieuCharacteristicB(r, q) - the characteristic value `b` of the odd Mathieu function with characteristic exponent `r` and parameter `q`.
+   * MathieuCharacteristicB(r, q) - the characteristic value `b` of the odd Mathieu function with
+   * characteristic exponent `r` and parameter `q`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicB.md">MathieuCharacteristicB
    *      documentation</a>
    */
-  public final static IBuiltInSymbol MathieuCharacteristicB = S.initFinalSymbol("MathieuCharacteristicB", ID.MathieuCharacteristicB);
+  public final static IBuiltInSymbol MathieuCharacteristicB =
+      S.initFinalSymbol("MathieuCharacteristicB", ID.MathieuCharacteristicB);
 
   /**
-   * MathieuCharacteristicExponent(a, q) - the characteristic exponent `r` of the Mathieu functions with characteristic value `a` and parameter `q`.
+   * MathieuCharacteristicExponent(a, q) - the characteristic exponent `r` of the Mathieu functions
+   * with characteristic value `a` and parameter `q`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicExponent.md">MathieuCharacteristicExponent
    *      documentation</a>
    */
-  public final static IBuiltInSymbol MathieuCharacteristicExponent = S.initFinalSymbol("MathieuCharacteristicExponent", ID.MathieuCharacteristicExponent);
+  public final static IBuiltInSymbol MathieuCharacteristicExponent =
+      S.initFinalSymbol("MathieuCharacteristicExponent", ID.MathieuCharacteristicExponent);
 
   /**
    * MathieuCPrime(a, q, z) - the derivative with respect to `z` of the even Mathieu function.
@@ -15426,7 +15436,8 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCPrime.md">MathieuCPrime
    *      documentation</a>
    */
-  public final static IBuiltInSymbol MathieuCPrime = S.initFinalSymbol("MathieuCPrime", ID.MathieuCPrime);
+  public final static IBuiltInSymbol MathieuCPrime =
+      S.initFinalSymbol("MathieuCPrime", ID.MathieuCPrime);
 
   /**
    * MathieuS(a, q, z) - the odd Mathieu function with characteristic value `a` and parameter `q`.
@@ -15444,7 +15455,8 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuSPrime.md">MathieuSPrime
    *      documentation</a>
    */
-  public final static IBuiltInSymbol MathieuSPrime = S.initFinalSymbol("MathieuSPrime", ID.MathieuSPrime);
+  public final static IBuiltInSymbol MathieuSPrime =
+      S.initFinalSymbol("MathieuSPrime", ID.MathieuSPrime);
 
   /**
    * MathMLForm(expr) - returns the MathML form of the evaluated `expr`.
@@ -26239,14 +26251,6 @@ public class S {
    */
   public final static IBuiltInSymbol URLEncode = S.initFinalSymbol("URLEncode", ID.URLEncode);
 
-  /**
-   * URLExecute("url") - read the web address `url` and import what it answers with: JSON as nested
-   * lists of rules, anything else as a string.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/URLExecute.md">URLExecute
-   *      documentation</a>
-   */
   public final static IBuiltInSymbol URLExecute = S.initFinalSymbol("URLExecute", ID.URLExecute);
 
   public final static IBuiltInSymbol URLFetch = S.initFinalSymbol("URLFetch", ID.URLFetch);
@@ -27499,7 +27503,7 @@ public class S {
   public static final ISymbol BSymbol = initFormalSymbol("B");
   /** The formal symbol <code>\[FormalCapitalC]</code>, printed as <code>C</code>. */
   public static final ISymbol CSymbol = initFormalSymbol("C"); // don't use constant
-                                                                    // BuiltinSymbol 'C' here
+                                                               // BuiltinSymbol 'C' here
   /** The formal symbol <code>\[FormalCapitalF]</code>, printed as <code>F</code>. */
   public static final ISymbol FSymbol = initFormalSymbol("F");
   /** The formal symbol <code>\[FormalCapitalG]</code>, printed as <code>G</code>. */
@@ -27510,8 +27514,8 @@ public class S {
   public static final ISymbol QSymbol = initFormalSymbol("Q");
 
   /**
-   * The formal symbols <code>\[FormalCapitalA]</code> ... <code>\[FormalCapitalZ]</code> which
-   * have no field of their own. They exist so that the parser reads every Latin formal symbol as a
+   * The formal symbols <code>\[FormalCapitalA]</code> ... <code>\[FormalCapitalZ]</code> which have
+   * no field of their own. They exist so that the parser reads every Latin formal symbol as a
    * formal symbol.
    */
   private static final ISymbol[] FORMAL_CAPITALS = initFormalCapitals();
@@ -27570,8 +27574,8 @@ public class S {
 
   /**
    * Get or create a formal symbol. A single Latin letter gives the formal symbol of that letter,
-   * e.g. <code>\[FormalCapitalK]</code> for <code>"K"</code>, which the parser also reads; any other
-   * name gives a formal symbol which can not be entered by the user.
+   * e.g. <code>\[FormalCapitalK]</code> for <code>"K"</code>, which the parser also reads; any
+   * other name gives a formal symbol which can not be entered by the user.
    *
    * @param symbolName the name of the symbol
    * @return the formal symbol, which is Protected and can never hold a value or a rule
