@@ -1,0 +1,510 @@
+{
+  "reflection": [
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.AutomaticRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.AbsRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcCosRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcCoshRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcCotRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcCothRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcCscRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcCschRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcSecRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcSechRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcSinRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcSinhRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcTanRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ArcTanhRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.BesselIRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.BesselJRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.BesselKRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.BesselYRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ConjugateRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.CosRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.CoshRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.CotRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.CothRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.CscRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.CschRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.DRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.DerivativeRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.GammaRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.GudermannianRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.HurwitzLerchPhiRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.Hypergeometric1F1Rules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.Hypergeometric2F1RegularizedRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.HypergeometricPFQRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.HypergeometricURules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.InterquartileRangeRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.InverseZTransformRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.JacobiSCRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.KleinInvariantJRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.LaplaceTransformRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.LerchPhiRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.LimitRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.LogRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.PolyGammaRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.PolyLogRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.PowerRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ProductLogRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.QuantileRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.RGBColorRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SecRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SechRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SinRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SincRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SinhRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SphericalBesselJRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SphericalBesselYRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.SphericalHarmonicYRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.StandardDeviationRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.StieltjesGammaRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.StruveHRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.StruveLRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.TanRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.TanhRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.WhittakerMRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.WhittakerWRules"
+    },
+    {
+      "type": "org.matheclipse.core.reflection.system.rules.ZTransformRules"
+    },
+    {
+      "type": "org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel",
+      "methods": [
+        {
+          "name": "level",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "high",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "low",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.apfloat.internal.LongBuilderFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apfloat.internal.IntBuilderFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apfloat.internal.DoubleBuilderFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apfloat.internal.FloatBuilderFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Boolean",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getBoolean",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.ProcessBuilder$RedirectPipeImpl",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "fd"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.ProcessHandle",
+      "methods": [
+        {
+          "name": "current",
+          "parameterTypes": []
+        },
+        {
+          "name": "info",
+          "parameterTypes": []
+        },
+        {
+          "name": "parent",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.ProcessHandle$Info",
+      "methods": [
+        {
+          "name": "command",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.Buffer"
+    },
+    {
+      "type": "org.apache.logging.log4j.util.EnvironmentPropertySource"
+    },
+    {
+      "type": "org.apache.logging.log4j.util.SystemPropertiesPropertySource"
+    },
+    {
+      "type": "org.matheclipse.core.interfaces.IExpr[]"
+    },
+    {
+      "type": "org.matheclipse.core.interfaces.IExpr[][]"
+    },
+    {
+      "type": "org.matheclipse.core.patternmatching.IPatternMatcher"
+    },
+    {
+      "type": "org.organicdesign.fp.collections.RrbTree$Node[]"
+    },
+    {
+      "type": "org.osgi.framework.FrameworkUtil"
+    },
+    {
+      "type": "sun.management.VMManagementImpl",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "compTimeMonitoringSupport"
+        },
+        {
+          "name": "currentThreadCpuTimeSupport"
+        },
+        {
+          "name": "objectMonitorUsageSupport"
+        },
+        {
+          "name": "otherThreadCpuTimeSupport"
+        },
+        {
+          "name": "remoteDiagnosticCommandsSupport"
+        },
+        {
+          "name": "synchronizerUsageSupport"
+        },
+        {
+          "name": "threadAllocatedMemorySupport"
+        },
+        {
+          "name": "threadContentionMonitoringSupport"
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.NativePRNG",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.security.SecureRandomParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.text.resources.CollationData"
+    },
+    {
+      "type": "sun.text.resources.FormatData"
+    },
+    {
+      "type": "sun.text.resources.FormatData_en"
+    },
+    {
+      "type": "sun.text.resources.FormatData_en_US"
+    },
+    {
+      "type": "sun.text.resources.JavaTimeSupplementary"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData_en"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData_en_US"
+    },
+    {
+      "type": "sun.util.resources.cldr.CalendarData"
+    }
+  ],
+  "resources": [
+    {
+      "glob": "version.properties"
+    },
+    {
+      "glob": "i18n/en.json"
+    },
+    {
+      "glob": "units/*.json"
+    },
+    {
+      "glob": "tz/zone.tab"
+    },
+    {
+      "glob": "unit/si.properties"
+    },
+    {
+      "glob": "img/colorscheme/*.csv"
+    },
+    {
+      "glob": "img/colorlist/*.csv"
+    },
+    {
+      "glob": "public/media/js/symja_webgl.js"
+    },
+    {
+      "glob": "doc/*.md"
+    },
+    {
+      "glob": "doc/functions/*.md"
+    },
+    {
+      "glob": "uk/ac/ed/ph/snuggletex/*"
+    },
+    {
+      "glob": "apfloat.properties"
+    },
+    {
+      "bundle": "org.apfloat.apfloat-exceptions"
+    },
+    {
+      "glob": "META-INF/log4j-provider.properties"
+    },
+    {
+      "glob": "META-INF/services/java.nio.charset.spi.CharsetProvider"
+    },
+    {
+      "glob": "META-INF/services/java.time.zone.ZoneRulesProvider"
+    },
+    {
+      "glob": "META-INF/services/java.util.spi.ResourceBundleControlProvider"
+    },
+    {
+      "glob": "META-INF/services/org.apache.logging.log4j.spi.Provider"
+    },
+    {
+      "glob": "META-INF/services/org.apache.logging.log4j.util.PropertySource"
+    },
+    {
+      "glob": "apfloat_en.properties"
+    },
+    {
+      "glob": "apfloat_en_US.properties"
+    },
+    {
+      "glob": "log4j2.StatusLogger.properties"
+    },
+    {
+      "glob": "log4j2.component.properties"
+    },
+    {
+      "glob": "log4j2.simplelog.properties"
+    },
+    {
+      "glob": "log4j2.system.properties"
+    },
+    {
+      "module": "java.base",
+      "glob": "jdk/internal/icu/impl/data/icudt76b/nfc.nrm"
+    },
+    {
+      "module": "java.logging",
+      "glob": "sun/util/logging/resources/logging_en.properties"
+    },
+    {
+      "module": "java.logging",
+      "glob": "sun/util/logging/resources/logging_en_US.properties"
+    },
+    {
+      "bundle": "apfloat"
+    },
+    {
+      "bundle": "sun.util.logging.resources.logging"
+    }
+  ]
+}
