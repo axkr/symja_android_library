@@ -16,7 +16,9 @@ URLExecute("url", {"param1" -> value1, "param2" -> value2, ...})
 URLExecute("url", {"param1" -> value1, ...}, "format")
 ```
 
-> import the answer in `"format"`, one of the formats of `ImportString` like `"JSON"`, `"RawJSON"`, `"Table"` or `"Text"`, whatever the server says it answers with. The `"String"` and `"ExpressionJSON"` formats are not supported, because they would evaluate the answer as Symja code.
+> import the answer in `"format"`, whatever the server says it answers with: `"JSON"`, `"RawJSON"`, `"Text"`, `"Base64"` or `"Graph6"`. Formats which parse the answer into Symja expressions, like `"String"`, `"ExpressionJSON"`, `"Table"`, `"CSV"` and `"TSV"`, are not supported, because the server could make the session evaluate code.
+
+The answer is read into memory, so it may be at most 16 MB long.
 
 In a session which is confined to a directory or which has no file system access, only `http` and `https` addresses on the public internet can be read.
 
