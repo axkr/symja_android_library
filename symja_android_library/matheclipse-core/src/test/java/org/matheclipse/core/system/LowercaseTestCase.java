@@ -754,7 +754,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ArcCosh(-x)", //
         "ArcCosh(-x)");
     check("D(ArcCosh(x),x)", //
-        "1/Sqrt(-1+x^2)");
+        "1/(Sqrt(-1+x)*Sqrt(1+x))");
+    // the derivative of the function below -1 too, where 1/Sqrt(-1+x^2) has the other sign
+    check("D(ArcCosh(x),x) /. x -> -5/3", //
+        "-3/4");
+    check("With({h=1/10^8}, N((ArcCosh(-5/3+h)-ArcCosh(-5/3-h))/(2*h), 30)) // Round[#*1000]&", //
+        "-750");
     check("ArcCosh(-Infinity)", //
         "Infinity");
     check("ArcCosh(I*Infinity)", //

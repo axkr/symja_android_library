@@ -32,9 +32,9 @@ public class DerivativeRules {
     // Derivative(1)[ArcCos]=-1/Sqrt(1-#1^2)&
     ISet($(Derivative(C1),ArcCos),
       Function(Negate(Power(Subtract(C1,Sqr(Slot1)),CN1D2))), true),
-    // Derivative(1)[ArcCosh]=1/Sqrt(-1+#1^2)&
+    // Derivative(1)[ArcCosh]=1/(Sqrt(-1+#1)*Sqrt(1+#1))&
     ISet($(Derivative(C1),ArcCosh),
-      Function(Power(Plus(CN1,Sqr(Slot1)),CN1D2)), true),
+      Function(Times(Power(Plus(CN1,Slot1),CN1D2),Power(Plus(C1,Slot1),CN1D2))), true),
     // Derivative(1)[ArcCot]=-1/(1+#1^2)&
     ISet($(Derivative(C1),ArcCot),
       Function(Negate(Power(Plus(C1,Sqr(Slot1)),CN1))), true),
