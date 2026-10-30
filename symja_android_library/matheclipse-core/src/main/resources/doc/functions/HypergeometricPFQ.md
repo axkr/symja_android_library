@@ -9,6 +9,23 @@ HypergeometricPFQ({a,...}, {b,...}, c)
 See:
 * [Wikipedia - Generalized hypergeometric function](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)
 
+### Examples
+
+```
+>> HypergeometricPFQ({1,2,3},{4,5},0.5)
+1.18987
+
+>> HypergeometricPFQ({1,1},{2},x)
+-Log(1-x)/x
+```
+
+With no parameters the series is the exponential function:
+
+```
+>> HypergeometricPFQ({}, {}, x)
+E^x
+```
+
 
 
 

@@ -8,8 +8,25 @@ Hypergeometric0F1(b, z)
 
 See: 
 * [Wikipedia - Generalized hypergeometric function](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)
-* [Wikipedia - Bessel function - Relation to hypergeometric series](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function)https://en.wikipedia.org/wiki/Bessel_function#Relation_to_hypergeometric_series)
+* [Wikipedia - Bessel function - Relation to hypergeometric series](https://en.wikipedia.org/wiki/Bessel_function#Relation_to_hypergeometric_series)
 * [Fungrim - Confluent hypergeometric functions](http://fungrim.org/topic/Confluent_hypergeometric_functions/)
+
+### Examples
+
+```
+>> Hypergeometric0F1(2, 1.0)
+1.59064
+```
+
+Some parameters give elementary functions:
+
+```
+>> Hypergeometric0F1(1/2, x)
+Cosh(2*Sqrt(x))
+
+>> Hypergeometric0F1(3/2, -x^2/4)
+Sin(x)/x
+```
 
 
 

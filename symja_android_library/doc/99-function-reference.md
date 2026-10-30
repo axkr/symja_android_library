@@ -709,6 +709,7 @@ Functions in alphabetical order:
 * &#x2705; [KeyValueMap](functions/KeyValueMap.md)
 * [KeyValuePattern](functions/KeyValuePattern.md)
 * &#x2705; [Khinchin](functions/Khinchin.md)
+* &#x2611; [KleinInvariantJ](functions/KleinInvariantJ.md)
 * &#x2705; [KolmogorovSmirnovTest](functions/KolmogorovSmirnovTest.md)
 * &#x2705; [KroneckerDelta](functions/KroneckerDelta.md)
 * &#x2611; [KroneckerProduct](functions/KroneckerProduct.md)
