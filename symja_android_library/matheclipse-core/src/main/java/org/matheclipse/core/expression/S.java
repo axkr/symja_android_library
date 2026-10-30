@@ -5303,6 +5303,16 @@ public class S {
   public final static IBuiltInSymbol Cylinder = S.initFinalSymbol("Cylinder", ID.Cylinder);
 
   /**
+   * CylindricalDecomposition(x) - TODO describe `CylindricalDecomposition`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CylindricalDecomposition.md">CylindricalDecomposition
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CylindricalDecomposition =
+      S.initFinalSymbol("CylindricalDecomposition", ID.CylindricalDecomposition);
+
+  /**
    * D(f, x) - gives the partial derivative of `f` with respect to `x`.
    * 
    * @see <a href=
