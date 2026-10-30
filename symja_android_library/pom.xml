@@ -385,7 +385,7 @@
 			<dependency>
 				<groupId>org.roaringbitmap</groupId>
 				<artifactId>RoaringBitmap</artifactId>
-				<version>1.6.25</version>
+				<version>1.6.27</version>
 			</dependency>
 			<dependency>
 				<groupId>org.biojava</groupId>
