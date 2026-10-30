@@ -587,14 +587,17 @@ function domLoaded() {
 		
 		if (!loadLink()) {
 			if (typeof loadStartupNotebook == 'function')
-				// a notebook named with the -notebook argument is shown, never evaluated
+				// a notebook named with the -notebook argument is shown, never evaluated; without
+				// one the worksheet kept from the last visit is shown, also without evaluating it
 				loadStartupNotebook(function(loaded) {
-					if (!loaded)
+					if (!loaded && !restoreWorksheet())
 						createQuery();
+					startAutosave(!loaded);
 				});
 			else
 				createQuery();
-		}
+		} else if (typeof startAutosave == 'function')
+			startAutosave(false);
 	}
 }
 

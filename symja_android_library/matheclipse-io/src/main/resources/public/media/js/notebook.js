@@ -9,6 +9,9 @@
     output is raw HTML which createLine() hands to Prototype's update(), which executes
     any <script> in it; a notebook from somebody else would then be running code in this
     page, with the evaluation engine of this server one request away.
+
+    The worksheet is also kept in the browser's localStorage, so that it survives a reload
+    of the page or a restart of the server; see "keeping the worksheet in the browser".
 **/
 
 /** nbformat version written by saveNotebook(). 4.5 requires an "id" on every cell. */
@@ -359,7 +362,12 @@ function resultsToOutputs(results, executionCount) {
 	return outputs;
 }
 
-function buildNotebook() {
+/**
+ * The page as an nbformat notebook.
+ *
+ * @param sourcesOnly leave out the outputs and the execution counts
+ */
+function buildNotebook(sourcesOnly) {
 	var cells = [];
 	var executionCount = 0;
 	notebookQueries().childElements().each(function(li) {
@@ -382,7 +390,7 @@ function buildNotebook() {
 			return; // the trailing empty input is not a cell
 		var count = null;
 		var outputs = [];
-		if (textarea.results) {
+		if (textarea.results && !sourcesOnly) {
 			count = ++executionCount;
 			outputs = resultsToOutputs(textarea.results, count);
 		}
@@ -479,7 +487,11 @@ function notebookFileChosen(event) {
 			window.alert("'" + file.name + "' is not a valid notebook: " + e.message);
 			return;
 		}
-		loadNotebook(notebook, file.name);
+		loadNotebook(notebook, file.name, function(loaded) {
+			// the user chose this notebook, so it is the worksheet to keep from now on
+			if (loaded)
+				autosaveEnabled = true;
+		});
 	};
 	reader.onerror = function() {
 		window.alert("Cannot read '" + file.name + "'.");
@@ -527,15 +539,35 @@ function loadNotebook(notebook, fileName, onDone) {
 
 function insertNotebook(notebook, fileName, onDone) {
 	notebookFileName = fileName;
+	var counts = insertCells(notebook);
+
+	var notice = "Opened '" + fileName + "' with " + counts.codeCells +
+		(counts.codeCells == 1 ? " code cell" : " code cells") + ".";
+	if (counts.droppedOutputs > 0)
+		notice += " Saved outputs were not restored.";
+	notice += " Nothing has been evaluated yet - press Run all to evaluate the notebook in this session.";
+	if (counts.skipped > 0)
+		notice += " " + counts.skipped + " cell(s) of an unknown type were skipped.";
+	showNotebookNotice(notice);
+
+	if (onDone)
+		onDone(true);
+}
+
+/**
+ * Replace the cells of the page with the cells of a notebook, without evaluating them.
+ *
+ * @return the number of code cells, of code cells whose outputs were dropped, and of cells of
+ *     an unknown type which were skipped
+ */
+function insertCells(notebook) {
 	hideNotebookNotice();
 	notebookQueries().deleteChildNodes();
 	if ($('welcomeContainer'))
 		$('welcomeContainer').hide();
 	lastFocus = null;
 
-	var codeCells = 0;
-	var droppedOutputs = 0;
-	var skipped = 0;
+	var counts = {'codeCells': 0, 'droppedOutputs': 0, 'skipped': 0};
 	var pendingCells = [];
 	var pendingSources = [];
 
@@ -545,9 +577,9 @@ function insertNotebook(notebook, fileName, onDone) {
 			var li = createQuery(null, true, true);
 			li.textarea.value = source;
 			li.addClassName('notrun');
-			codeCells++;
+			counts.codeCells++;
 			if (cell.outputs && cell.outputs.length > 0)
-				droppedOutputs++;
+				counts.droppedOutputs++;
 		} else if (cell.cell_type == 'markdown' || cell.cell_type == 'raw') {
 			var textLi = createTextCell(null, source, cell.cell_type, cell.metadata);
 			if (textLi.cellType == 'markdown') {
@@ -557,7 +589,7 @@ function insertNotebook(notebook, fileName, onDone) {
 				renderTextCell(textLi);
 			}
 		} else {
-			skipped++;
+			counts.skipped++;
 		}
 	});
 
@@ -578,18 +610,7 @@ function insertNotebook(notebook, fileName, onDone) {
 			}
 		});
 	}
-
-	var notice = "Opened '" + fileName + "' with " + codeCells +
-		(codeCells == 1 ? " code cell" : " code cells") + ".";
-	if (droppedOutputs > 0)
-		notice += " Saved outputs were not restored.";
-	notice += " Nothing has been evaluated yet - press Run all to evaluate the notebook in this session.";
-	if (skipped > 0)
-		notice += " " + skipped + " cell(s) of an unknown type were skipped.";
-	showNotebookNotice(notice);
-
-	if (onDone)
-		onDone(true);
+	return counts;
 }
 
 /**
@@ -619,6 +640,133 @@ function loadStartupNotebook(onDone) {
 			onDone(false);
 		}
 	});
+}
+
+// ---------------------------------------------------------------- keeping the worksheet in the browser
+
+/*
+ * The cells of the page are kept in the browser's localStorage and shown again when the page
+ * is opened the next time. Only the sources are kept: outputs would not be restored anyway (see
+ * the note at the top of this file), and a few graphics would fill the space a browser allows.
+ * As with an opened notebook, nothing of a restored worksheet is evaluated.
+ */
+
+/** Milliseconds without typing after which the worksheet is written. */
+var AUTOSAVE_DELAY = 1000;
+
+/**
+ * Whether the page is the worksheet to keep. A page that started with the queries of a link or
+ * with the -notebook argument only becomes it once the user changes it, so that just opening a
+ * link does not throw away the worksheet of the last visit.
+ */
+var autosaveEnabled = false;
+var autosaveTimer = null;
+
+/** The pages with Symja syntax and with Mathematica syntax each keep a worksheet of their own. */
+function autosaveKey() {
+	return 'symja.worksheet.' + symjaSyntax();
+}
+
+/** The browser's localStorage, or null where it is refused, e.g. with cookies blocked. */
+function worksheetStorage() {
+	try {
+		return window.localStorage || null;
+	} catch (e) {
+		return null;
+	}
+}
+
+/**
+ * Write the worksheet whenever the user has typed something and when the page goes away;
+ * deleting or moving a cell is not an input event, but it is kept by the latter.
+ *
+ * @param enabled whether the page already is the worksheet to keep
+ */
+function startAutosave(enabled) {
+	autosaveEnabled = enabled;
+	document.addEventListener('input', function(event) {
+		// typing into the documentation search or a dialog does not change the worksheet
+		if (!notebookQueries() || !notebookQueries().contains(event.target))
+			return;
+		autosaveEnabled = true;
+		if (autosaveTimer)
+			window.clearTimeout(autosaveTimer);
+		autosaveTimer = window.setTimeout(saveWorksheet, AUTOSAVE_DELAY);
+	});
+	window.addEventListener('pagehide', saveWorksheet);
+	// a mobile browser may discard a page in the background without a pagehide event
+	document.addEventListener('visibilitychange', function() {
+		if (document.visibilityState == 'hidden')
+			saveWorksheet();
+	});
+}
+
+function saveWorksheet() {
+	if (autosaveTimer) {
+		window.clearTimeout(autosaveTimer);
+		autosaveTimer = null;
+	}
+	var storage = worksheetStorage();
+	if (!autosaveEnabled || !storage || !notebookQueries())
+		return;
+	var notebook = buildNotebook(true);
+	try {
+		if (notebook.cells.length == 0)
+			storage.removeItem(autosaveKey());
+		else
+			storage.setItem(autosaveKey(),
+				JSON.stringify({'name': notebookFileName, 'notebook': notebook}));
+	} catch (e) {
+		// the storage is full; the worksheet written last time stays
+	}
+}
+
+/**
+ * Show the worksheet kept from the last visit, without evaluating it.
+ *
+ * @return true if a worksheet was shown
+ */
+function restoreWorksheet() {
+	var storage = worksheetStorage();
+	var saved = null;
+	try {
+		saved = storage ? JSON.parse(storage.getItem(autosaveKey())) : null;
+	} catch (e) {
+		saved = null;
+	}
+	if (!saved || !saved.notebook || !Object.isArray(saved.notebook.cells) ||
+			saved.notebook.cells.length == 0)
+		return false;
+
+	var counts = insertCells(saved.notebook);
+	notebookFileName = Object.isString(saved.name) ? saved.name : null;
+	showNotebookNotice("Restored the worksheet of your last visit with " + counts.codeCells +
+		(counts.codeCells == 1 ? " code cell" : " code cells") + "." +
+		" Nothing has been evaluated yet - press Run all to evaluate it in this session.");
+	return true;
+}
+
+/** Discard all cells, also the copy kept in the browser, and start with an empty worksheet. */
+function newNotebook() {
+	if (!notebookQueries())
+		return;
+	showDialog("New notebook",
+		"Discard all cells of this worksheet? Definitions made by evaluating them stay in this session.",
+		"Discard", "Cancel",
+		function() {
+			// a Manipulate or a live Dynamic has state on the server; let it go with its cell
+			if (typeof disposeManipulatesIn == 'function')
+				disposeManipulatesIn(notebookQueries());
+			if (typeof disposeDynamicsIn == 'function')
+				disposeDynamicsIn(notebookQueries());
+			hideNotebookNotice();
+			notebookQueries().deleteChildNodes();
+			notebookFileName = null;
+			lastFocus = null;
+			createQuery();
+			autosaveEnabled = true;
+			saveWorksheet();
+		});
 }
 
 // ---------------------------------------------------------------- run all
