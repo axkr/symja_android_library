@@ -41,6 +41,12 @@ import xml.etree.ElementTree as ET
 # actually matter - the ones tagged @Tag(TestTags.SLOW) run 20-90s here.
 MAX_METHOD_SECONDS = 15.0
 
+# ArchUnit imports the classes once per JVM and every rule shares the result, so whichever rule
+# runs first pays for all of them, and the order differs between machines. That one rule is not
+# a slow test: tagging it only hands the cost to the next one. Observed on a runner: 16s.
+ARCHUNIT_SUITES = "org.matheclipse.io.archunit."
+MAX_ARCHUNIT_SECONDS = 60.0
+
 # MAX_TOTAL_SECONDS is the backstop against death by a thousand fast-but-not-free tests.
 MAX_TOTAL_SECONDS = 600.0
 
@@ -67,7 +73,9 @@ def main() -> int:
             seconds = float(case.get("time") or 0.0)
             total += seconds
             count += 1
-            if seconds > MAX_METHOD_SECONDS:
+            limit = (MAX_ARCHUNIT_SECONDS if suite.startswith(ARCHUNIT_SUITES)
+                     else MAX_METHOD_SECONDS)
+            if seconds > limit:
                 offenders.append((seconds, suite, case.get("name")))
 
     print(f"fast tier: {count} tests in {total:.1f}s "
@@ -83,6 +91,7 @@ def main() -> int:
         for seconds, suite, name in offenders:
             print(f"::error::  {seconds:7.2f}s  {suite}#{name}")
         print("::error::Add @Tag(TestTags.SLOW) to each of them, or make them faster. "
+              "An ArchUnit rule takes @ArchTag(\"slow\"). "
               "The slow tier runs with: mvn verify -Pall-tests")
 
     if total > MAX_TOTAL_SECONDS:
