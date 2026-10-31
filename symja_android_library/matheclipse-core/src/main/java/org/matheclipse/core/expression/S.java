@@ -2034,6 +2034,16 @@ public class S {
   public final static IBuiltInSymbol BaseStyle = S.initFinalSymbol("BaseStyle", ID.BaseStyle);
 
   /**
+   * BatesDistribution(x) - TODO describe `BatesDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BatesDistribution.md">BatesDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BatesDistribution =
+      S.initFinalSymbol("BatesDistribution", ID.BatesDistribution);
+
+  /**
    * Because(x) - TODO describe `Because`.
    * 
    * @see <a href=
@@ -5761,6 +5771,16 @@ public class S {
   public final static IBuiltInSymbol DaubechiesWavelet =
       S.initFinalSymbol("DaubechiesWavelet", ID.DaubechiesWavelet);
 
+  /**
+   * DavisDistribution(x) - TODO describe `DavisDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DavisDistribution.md">DavisDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DavisDistribution =
+      S.initFinalSymbol("DavisDistribution", ID.DavisDistribution);
+
   public final static IBuiltInSymbol DawsonF = S.initFinalSymbol("DawsonF", ID.DawsonF);
 
   /**
@@ -6009,6 +6029,16 @@ public class S {
    */
   public final static IBuiltInSymbol DegreeCentrality =
       S.initFinalSymbol("DegreeCentrality", ID.DegreeCentrality);
+
+  /**
+   * DegreeGraphDistribution(x) - TODO describe `DegreeGraphDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DegreeGraphDistribution.md">DegreeGraphDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DegreeGraphDistribution =
+      S.initFinalSymbol("DegreeGraphDistribution", ID.DegreeGraphDistribution);
 
   public final static IBuiltInSymbol DegreeLexicographic =
       S.initFinalSymbol("DegreeLexicographic", ID.DegreeLexicographic);
@@ -6770,6 +6800,16 @@ public class S {
   public final static IBuiltInSymbol Distributed = S.initFinalSymbol("Distributed", ID.Distributed);
 
   /**
+   * DistributedContexts(x) - TODO describe `DistributedContexts`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DistributedContexts.md">DistributedContexts
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DistributedContexts =
+      S.initFinalSymbol("DistributedContexts", ID.DistributedContexts);
+
+  /**
    * DistributionChart(x) - TODO describe `DistributionChart`.
    * 
    * @see <a href=
@@ -7268,6 +7308,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Dt = S.initFinalSymbol("Dt", ID.Dt);
+
+  /**
+   * DualLinearProgramming(x) - TODO describe `DualLinearProgramming`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DualLinearProgramming.md">DualLinearProgramming
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DualLinearProgramming =
+      S.initFinalSymbol("DualLinearProgramming", ID.DualLinearProgramming);
 
   /**
    * DualPlanarGraph(graph) - gives the dual of the planar `graph`: one vertex for each face, and an
@@ -8946,6 +8996,16 @@ public class S {
   public final static IBuiltInSymbol FindGeoLocation =
       S.initFinalSymbol("FindGeoLocation", ID.FindGeoLocation);
 
+  /**
+   * FindGeometricTransform(x) - TODO describe `FindGeometricTransform`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindGeometricTransform.md">FindGeometricTransform
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindGeometricTransform =
+      S.initFinalSymbol("FindGeometricTransform", ID.FindGeometricTransform);
+
   public final static IBuiltInSymbol FindGraphCommunities =
       S.initFinalSymbol("FindGraphCommunities", ID.FindGraphCommunities);
 
@@ -9351,6 +9411,16 @@ public class S {
    */
   public final static IBuiltInSymbol FirstPosition =
       S.initFinalSymbol("FirstPosition", ID.FirstPosition);
+
+  /**
+   * FisherZDistribution(x) - TODO describe `FisherZDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FisherZDistribution.md">FisherZDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FisherZDistribution =
+      S.initFinalSymbol("FisherZDistribution", ID.FisherZDistribution);
 
   /**
    * Fit(list-of-data-points, terms-list, variable) - solve a least squares problem using the
@@ -13533,6 +13603,16 @@ public class S {
   public final static IBuiltInSymbol KCoreComponents =
       S.initFinalSymbol("KCoreComponents", ID.KCoreComponents);
 
+  /**
+   * KDistribution(x) - TODO describe `KDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KDistribution.md">KDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KDistribution =
+      S.initFinalSymbol("KDistribution", ID.KDistribution);
+
   public final static IBuiltInSymbol KelvinBei = S.initFinalSymbol("KelvinBei", ID.KelvinBei);
 
   public final static IBuiltInSymbol KelvinBer = S.initFinalSymbol("KelvinBer", ID.KelvinBer);
@@ -16009,6 +16089,15 @@ public class S {
       S.initFinalSymbol("MaxStableDistribution", ID.MaxStableDistribution);
 
   /**
+   * MaxSteps(x) - TODO describe `MaxSteps`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MaxSteps.md">MaxSteps
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MaxSteps = S.initFinalSymbol("MaxSteps", ID.MaxSteps);
+
+  /**
    * MaxValue(x) - TODO describe `MaxValue`.
    * 
    * @see <a href=
@@ -17009,6 +17098,16 @@ public class S {
       S.initFinalSymbol("MultiplicativeOrder", ID.MultiplicativeOrder);
 
   /**
+   * Multiplicity(x) - TODO describe `Multiplicity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Multiplicity.md">Multiplicity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Multiplicity =
+      S.initFinalSymbol("Multiplicity", ID.Multiplicity);
+
+  /**
    * MultiplySides(compare-expr, value) - multiplies `value` with all elements of the
    * `compare-expr`. `compare-expr` can be `True`, `False` or a comparison expression with head
    * `Equal, Unequal, Less, LessEqual, Greater, GreaterEqual`.
@@ -17573,6 +17672,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Normalize = S.initFinalSymbol("Normalize", ID.Normalize);
+
+  /**
+   * Normalized(x) - TODO describe `Normalized`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Normalized.md">Normalized
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Normalized = S.initFinalSymbol("Normalized", ID.Normalized);
 
   public final static IBuiltInSymbol NormalMatrixQ =
       S.initFinalSymbol("NormalMatrixQ", ID.NormalMatrixQ);
@@ -18676,6 +18784,16 @@ public class S {
   public final static IBuiltInSymbol Order = S.initFinalSymbol("Order", ID.Order);
 
   /**
+   * OrderDistribution(x) - TODO describe `OrderDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OrderDistribution.md">OrderDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol OrderDistribution =
+      S.initFinalSymbol("OrderDistribution", ID.OrderDistribution);
+
+  /**
    * OrderedQ({a, b,...}) - is `True` if `a` sorts before `b` according to canonical ordering for
    * all adjacent elements.
    * 
@@ -19069,10 +19187,29 @@ public class S {
   public final static IBuiltInSymbol Parallelization =
       S.initFinalSymbol("Parallelization", ID.Parallelization);
 
+  /**
+   * Parallelize(x) - TODO describe `Parallelize`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Parallelize.md">Parallelize
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Parallelize = S.initFinalSymbol("Parallelize", ID.Parallelize);
+
   public final static IBuiltInSymbol ParallelMap = S.initFinalSymbol("ParallelMap", ID.ParallelMap);
 
   public final static IBuiltInSymbol Parallelogram =
       S.initFinalSymbol("Parallelogram", ID.Parallelogram);
+
+  /**
+   * ParallelSelect(x) - TODO describe `ParallelSelect`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParallelSelect.md">ParallelSelect
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ParallelSelect =
+      S.initFinalSymbol("ParallelSelect", ID.ParallelSelect);
 
   /**
    * ParallelSubmit(x) - TODO describe `ParallelSubmit`.
@@ -20505,6 +20642,16 @@ public class S {
       S.initFinalSymbol("ProgressIndicator", ID.ProgressIndicator);
 
   /**
+   * ProgressReporting(x) - TODO describe `ProgressReporting`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ProgressReporting.md">ProgressReporting
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ProgressReporting =
+      S.initFinalSymbol("ProgressReporting", ID.ProgressReporting);
+
+  /**
    * Projection(vector1, vector2) - Find the orthogonal projection of `vector1` onto another
    * `vector2`.
    * 
@@ -20515,6 +20662,16 @@ public class S {
   public final static IBuiltInSymbol Projection = S.initFinalSymbol("Projection", ID.Projection);
 
   public final static IBuiltInSymbol Prolog = S.initFinalSymbol("Prolog", ID.Prolog);
+
+  /**
+   * PropagateAborts(x) - TODO describe `PropagateAborts`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PropagateAborts.md">PropagateAborts
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PropagateAborts =
+      S.initFinalSymbol("PropagateAborts", ID.PropagateAborts);
 
   /**
    * Properties(x) - TODO describe `Properties`.
@@ -20821,6 +20978,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Radius = S.initFinalSymbol("Radius", ID.Radius);
+
+  /**
+   * RamanujanTau(x) - TODO describe `RamanujanTau`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RamanujanTau.md">RamanujanTau
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RamanujanTau =
+      S.initFinalSymbol("RamanujanTau", ID.RamanujanTau);
 
   /**
    * Ramp(z) - The `Ramp` function is a unary real function, whose graph is shaped like a ramp.
@@ -21387,6 +21554,16 @@ public class S {
       S.initFinalSymbol("RegionCentroid", ID.RegionCentroid);
 
   /**
+   * RegionConvert(x) - TODO describe `RegionConvert`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegionConvert.md">RegionConvert
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RegionConvert =
+      S.initFinalSymbol("RegionConvert", ID.RegionConvert);
+
+  /**
    * RegionDifference(x) - TODO describe `RegionDifference`.
    * 
    * @see <a href=
@@ -21608,6 +21785,16 @@ public class S {
    */
   public final static IBuiltInSymbol RemoveDiacritics =
       S.initFinalSymbol("RemoveDiacritics", ID.RemoveDiacritics);
+
+  /**
+   * RemoveEmptyQueries(x) - TODO describe `RemoveEmptyQueries`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RemoveEmptyQueries.md">RemoveEmptyQueries
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RemoveEmptyQueries =
+      S.initFinalSymbol("RemoveEmptyQueries", ID.RemoveEmptyQueries);
 
   /**
    * RenameDirectory(x) - TODO describe `RenameDirectory`.
@@ -23007,6 +23194,15 @@ public class S {
       S.initFinalSymbol("SimilarityRules", ID.SimilarityRules);
 
   /**
+   * SimpleGraph(x) - TODO describe `SimpleGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SimpleGraph.md">SimpleGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SimpleGraph = S.initFinalSymbol("SimpleGraph", ID.SimpleGraph);
+
+  /**
    * SimpleGraphQ(x) - TODO describe `SimpleGraphQ`.
    * 
    * @see <a href=
@@ -23422,6 +23618,15 @@ public class S {
   public final static IBuiltInSymbol SortBy = S.initFinalSymbol("SortBy", ID.SortBy);
 
   /**
+   * SortQueries(x) - TODO describe `SortQueries`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SortQueries.md">SortQueries
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SortQueries = S.initFinalSymbol("SortQueries", ID.SortQueries);
+
+  /**
    * Sound(x) - TODO describe `Sound`.
    * 
    * @see <a href=
@@ -23502,6 +23707,16 @@ public class S {
    */
   public final static IBuiltInSymbol SparseArrayQ =
       S.initFinalSymbol("SparseArrayQ", ID.SparseArrayQ);
+
+  /**
+   * SpatialGraphDistribution(x) - TODO describe `SpatialGraphDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SpatialGraphDistribution.md">SpatialGraphDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SpatialGraphDistribution =
+      S.initFinalSymbol("SpatialGraphDistribution", ID.SpatialGraphDistribution);
 
   public final static IBuiltInSymbol SpearmanRho = S.initFinalSymbol("SpearmanRho", ID.SpearmanRho);
 
@@ -26756,6 +26971,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol URLParse = S.initFinalSymbol("URLParse", ID.URLParse);
+
+  /**
+   * URLQueryEncode(x) - TODO describe `URLQueryEncode`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/URLQueryEncode.md">URLQueryEncode
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol URLQueryEncode =
+      S.initFinalSymbol("URLQueryEncode", ID.URLQueryEncode);
 
   /**
    * URLRead(x) - TODO describe `URLRead`.
