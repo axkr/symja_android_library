@@ -350,20 +350,21 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       final int[] positions = new int[list.argSize()];
       for (int i = 1; i < list.size(); i++) {
         final IExpr index = list.get(i);
-        final int position = index.isInteger() ? partPosition(ast, index, engine) : -1;
+        if (!index.isInteger()) {
+          // The expression `1` cannot be used as a part specification.
+          Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
+          return null;
+        }
+        final int position = partPosition(ast, index, engine);
         if (position < 0) {
-          if (!index.isInteger()) {
-            // Part `1` of `2` does not exist.
-            Errors.printMessage(S.Part, "partw", F.list(index, ast), engine);
-          }
           return null;
         }
         positions[i - 1] = position;
       }
       return positions;
     }
-    // Part `1` of `2` does not exist.
-    Errors.printMessage(S.Part, "partw", F.list(spec, ast), engine);
+    // The expression `1` cannot be used as a part specification.
+    Errors.printMessage(S.Part, "pkspec1", F.list(spec), engine);
     return null;
   }
 
@@ -374,14 +375,10 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * @return <code>-1</code> if a message was printed
    */
   private static int partPosition(IAST ast, IExpr index, EvalEngine engine) {
-    int position = index.toIntDefault();
-    if (position != Integer.MIN_VALUE && position < 0) {
-      position = ast.size() + position;
-    }
-    if (position < 0 || position >= ast.size()) {
+    final int position = checkedPosition(ast, index.toIntDefault());
+    if (position < 0) {
       // Part `1` of `2` does not exist.
       Errors.printMessage(S.Part, "partw", F.list(index, ast), engine);
-      return -1;
     }
     return position;
   }
@@ -546,7 +543,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
   /**
    * The index of the part <code>pos</code> of <code>ast</code>; a negative <code>pos</code> counts
-   * from the end.
+   * from the end and never reaches the head at index <code>0</code>.
    *
    * @return <code>-1</code> if the part does not exist
    */
@@ -554,6 +551,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     int position = pos;
     if (position < 0) {
       position = ast.size() + position;
+      if (position == 0) {
+        return -1;
+      }
     }
     if ((position < 0) || (position >= ast.size())) {
       return -1;
@@ -869,20 +869,28 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     return arg1.getItems(positions, positions.length, 0);
   }
 
+  /** The message for a span; integer bounds as they are written, not resolved to the length. */
+  private static IExpr takeMessage(IExpr span, int start, int last, IAST arg1, ISymbol head,
+      EvalEngine engine) {
+    final boolean written =
+        span.isAST(S.Span) && span.first().isInteger() && span.second().isInteger();
+    // Cannot take positions `1` through `2` in `3`.
+    return Errors.printMessage(head, "take", F.list(written ? span.first() : F.ZZ(start),
+        written ? span.second() : F.ZZ(last), arg1), engine);
+  }
+
   private static IExpr spanPart(final IAST ast, int pos, final IAST arg1, final IExpr arg2,
       int start, int last, int step, int p1, ISymbol head, EvalEngine engine) {
 
     final int size = arg1.size();
     if ((step > 0 && start > last + 1) || (step < 0 && start < last - 1)) {
       // a span may be empty, as 3;;2, but not run backwards
-      // Cannot take positions `1` through `2` in `3`.
-      return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1), engine);
+      return takeMessage(arg2, start, last, arg1, head, engine);
     }
     if ((step > 0 && start <= last && (start < 1 || last >= size))
         || (step < 0 && start >= last && (last < 1 || start >= size))) {
       // a non-empty span which runs past either end
-      // Cannot take positions `1` through `2` in `3`.
-      return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1), engine);
+      return takeMessage(arg2, start, last, arg1, head, engine);
     }
     if (step != 0) {
       IASTAppendable result = arg1.copyHead((last - start) / step + 2);
@@ -898,9 +906,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
         if (i >= size || i < 0) {
           // tested before the element is read: a span which runs past the end is an error message
           // and not an IndexOutOfBoundsException
-          // Cannot take positions `1` through `2` in `3`.
-          return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
-              engine);
+          return takeMessage(arg2, start, last, arg1, head, engine);
         }
         IAST target = partTarget(arg1.get(i));
         if (target.isPresent()) {
@@ -966,7 +972,8 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           return sparseArray;
         }
       }
-      // return temp;
+      // an element, or NIL if part() printed its message
+      return res;
     }
 
     // The expression `1` cannot be used as a part specification.

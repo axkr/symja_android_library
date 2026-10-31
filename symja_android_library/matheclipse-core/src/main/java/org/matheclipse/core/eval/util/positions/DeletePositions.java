@@ -57,6 +57,11 @@ public class DeletePositions extends PositionsVisitor {
 
   // Note: `All` and `Span` cannot be used in Delete and Insert
 
+  @Override
+  protected boolean reachesHeadFromEnd() {
+    return false;
+  }
+
   /** Mark the value of the rule as deleted. */
   @Override
   protected IAST keyLeaf(IAST ast, int index, IAST rule) {

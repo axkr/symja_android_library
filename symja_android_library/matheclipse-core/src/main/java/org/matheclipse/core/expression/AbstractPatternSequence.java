@@ -131,10 +131,14 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
     if (this == patternExpr2) {
       return true;
     }
-    if (patternExpr2 instanceof PatternSequence) {
+    if (patternExpr2.getClass() == getClass()) {
       // test if the pattern indices are equal
       final IPatternSequence p2 = (IPatternSequence) patternExpr2;
       if (getIndex(pm1) != p2.getIndex(pm2)) {
+        return false;
+      }
+      // x__ needs an element which x___ doesn't: the rules are different ones
+      if (isNullSequence() != p2.isNullSequence() || isLongest() != p2.isLongest()) {
         return false;
       }
       // test if the "check" expressions are equal

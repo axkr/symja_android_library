@@ -204,6 +204,16 @@ public class FixedPatternSequence extends AbstractPatternSequence {
   }
 
   @Override
+  public boolean equivalent(final IPatternObject patternExpr2, final IPatternMap pm1,
+      IPatternMap pm2) {
+    if (!super.equivalent(patternExpr2, pm1, pm2)) {
+      return false;
+    }
+    final FixedPatternSequence other = (FixedPatternSequence) patternExpr2;
+    return fOrderless == other.fOrderless && fPatterns.equals(other.fPatterns);
+  }
+
+  @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
       return true;

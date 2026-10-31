@@ -346,9 +346,15 @@ public class PatternSequence extends AbstractPatternSequence {
       } else {
         if (((PatternSequence) expr).fHeadTest == null) {
           return 1;
-        } else {
-          return fHeadTest.compareTo(((PatternSequence) expr).fHeadTest);
         }
+        int cp = fHeadTest.compareTo(((PatternSequence) expr).fHeadTest);
+        if (cp != 0) {
+          return cp;
+        }
+      }
+      // BlankNullSequence before BlankSequence
+      if (fZeroArgsAllowed != ((PatternSequence) expr).fZeroArgsAllowed) {
+        return fZeroArgsAllowed ? -1 : 1;
       }
       return 0;
     }

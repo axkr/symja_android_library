@@ -267,7 +267,7 @@ public class PackageSupportTest extends ExprEvaluatorTestCase {
   public void testSetOptions() {
     check("Options(psfpol) = {Tr -> False, Q -> 1}; {SetOptions(psfpol, Tr -> True), "
         + "SetOptions(psfpol, {Q -> 2}), Options(psfpol)}", //
-        "{{Tr->True,Q->1},{Tr->True,Q->2},{Q->2,Tr->True}}");
+        "{{Tr->True,Q->1},{Tr->True,Q->2},{Tr->True,Q->2}}");
   }
 
   /** A rule which replaces some terms of a sum decides with its condition rhs /; test. */

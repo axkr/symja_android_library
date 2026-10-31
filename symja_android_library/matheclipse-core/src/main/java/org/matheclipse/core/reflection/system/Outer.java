@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -132,42 +133,47 @@ public class Outer extends AbstractFunctionEvaluator {
     IExpr head = null;
     IExpr f = ast.arg1();
     IExpr arg2 = ast.arg2();
-    if (arg2.isAST()) {
-      head = arg2.head();
-    } else if (arg2.isSparseArray()) {
+    if (arg2.isSparseArray()) {
       head = S.SparseArray;
+    } else if (isList(arg2)) {
+      head = arg2.head();
     } else {
-      return F.NIL;
+      // Nonatomic expression expected at position `1` in `2`.
+      return Errors.printMessage(S.Outer, "normal", F.list(F.C2, ast), engine);
     }
-    for (int i = 3; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
-      if (arg.isSparseArray()) {
+    // Outer(f, list1, list2, ..., n) or Outer(f, list1, list2, ..., n1, n2, ...): everything from
+    // the first atom on is a level, and the parts at level n of a list are the elements which are
+    // combined
+    int end = 3;
+    while (end < ast.size() && isList(ast.get(end))) {
+      if (ast.get(end).isSparseArray()) {
         head = S.SparseArray;
       }
-    }
-    // Outer(f, list1, list2, ..., n) or Outer(f, list1, list2, ..., n1, n2, ...): the parts at
-    // level n of each list are the elements which are combined
-    int end = ast.size();
-    while (end > 3 && ast.get(end - 1).isInteger()) {
-      end--;
+      end++;
     }
     int listCount = end - 2;
     int levelCount = ast.size() - end;
     int[] levels = new int[listCount];
+    // a list without a level of its own is taken apart completely, levels without a list are
+    // ignored
     java.util.Arrays.fill(levels, Integer.MAX_VALUE);
-    if (levelCount > 0) {
-      if (levelCount != 1 && levelCount != listCount) {
-        return F.NIL;
+    boolean limited = false;
+    for (int i = end; i < ast.size(); i++) {
+      IExpr level = ast.get(i);
+      int n = level.isInfinity() ? Integer.MAX_VALUE
+          : level.isInteger() ? level.toIntDefault() : -1;
+      if (n <= 0) {
+        // Positive machine-sized integer or Infinity expected at position `1` in `2`.
+        return Errors.printMessage(S.Outer, "ipnfm", F.list(F.ZZ(i), ast), engine);
       }
-      for (int i = 0; i < listCount; i++) {
-        int n = ast.get(levelCount == 1 ? end : end + i).toIntDefault();
-        if (n <= 0) {
-          return F.NIL;
-        }
-        levels[i] = n;
+      limited |= n != Integer.MAX_VALUE;
+      if (levelCount == 1) {
+        java.util.Arrays.fill(levels, n);
+      } else if (i - end < listCount) {
+        levels[i - end] = n;
       }
     }
-    if (head != S.SparseArray || f != S.Times || levelCount > 0) {
+    if (head != S.SparseArray || f != S.Times || limited) {
       OuterAlgorithm algorithm =
           new OuterAlgorithm(ast, head == S.SparseArray ? S.List : head, end, levels);
       return algorithm.outer(3, arg2.normal(false), F.ListAlloc(ast.argSize()), 0);
@@ -176,7 +182,7 @@ public class Outer extends AbstractFunctionEvaluator {
       // Only support f=Times with default value 0 for now
 
       // Collect all arguments as SparseArrayExpr (converting dense lists if needed)
-      int argCount = ast.argSize(); // number of tensor arguments (ast args 2..end)
+      int argCount = end - 1; // number of tensor arguments (ast args 2..end-1)
       SparseArrayExpr[] sparseArgs = new SparseArrayExpr[argCount - 1];
       for (int i = 2; i <= argCount; i++) {
         IExpr arg = ast.get(i);
@@ -221,6 +227,11 @@ public class Outer extends AbstractFunctionEvaluator {
     }
   }
 
+  /** The arguments up to the first atom or <code>Infinity</code> are the lists of Outer. */
+  private static boolean isList(IExpr arg) {
+    return arg.isSparseArray() || (arg.isAST() && !arg.isInfinity());
+  }
+
   private static void outerSparse(IExpr f, SparseArrayExpr[] args, int argIdx, int[] keyPrefix,
       IExpr valuePrefix, IExpr resultDefault, Trie<int[], IExpr> resultTrie, EvalEngine engine) {
 
@@ -259,6 +270,6 @@ public class Outer extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_3_INFINITY;
+    return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 }

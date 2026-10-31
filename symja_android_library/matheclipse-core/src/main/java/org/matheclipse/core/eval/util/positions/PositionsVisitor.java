@@ -57,6 +57,14 @@ abstract class PositionsVisitor {
    */
   protected abstract IAST indexLeaf(IAST ast, int p);
 
+  /**
+   * Is the head of an expression with <code>n</code> arguments also at position
+   * <code>-(n+1)</code>, and not only at position <code>0</code>?
+   */
+  protected boolean reachesHeadFromEnd() {
+    return true;
+  }
+
   protected IAST mapAtRecursive(IAST ast) {
     IExpr position = positions.get(level);
     IAST other = visitOther(ast, position);
@@ -101,6 +109,9 @@ abstract class PositionsVisitor {
     }
     if (p < 0) {
       p = ast.size() + p;
+      if (p == 0 && !reachesHeadFromEnd()) {
+        p = -1;
+      }
     }
 
     if (p >= 0 && p < ast.size()) {

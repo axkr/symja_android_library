@@ -12,10 +12,12 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FixedPatternSequence;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.OptionsPattern;
+import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
@@ -875,7 +877,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, thisMap, otherMap)) {
       return 0;
     }
-    return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
+    // left-hand sides which are ordered alike aren't the same rule
+    final int order = fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
+    return order != 0 ? order : 1;
   }
 
   @Override
@@ -2249,6 +2253,26 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return false;
   }
 
+  /**
+   * Test if each argument of <code>patterns</code> matches exactly one element: an atom, a list, or
+   * a plain <code>_</code> or <code>x_</code>. An <code>Optional</code>, a
+   * <code>PatternSequence</code> or the head of a <code>Flat</code> function make no such promise.
+   */
+  private static boolean hasOneElementPatterns(IAST patterns) {
+    final IExpr head = patterns.head();
+    if (head.isSymbol() && (((ISymbol) head).hasFlatAttribute()
+        || ((ISymbol) head).hasOrderlessAttribute())) {
+      return false;
+    }
+    return patterns.forAll(x -> {
+      if (x instanceof IPatternObject) {
+        return (x.getClass() == Blank.class || x.getClass() == Pattern.class)
+            && !x.isPatternDefault();
+      }
+      return x.isAtom() || x.isList();
+    });
+  }
+
   private boolean matchBlankSequence(final IPatternSequence patternSequence,
       final IAST lhsPatternAST, final int position, final IAST lhsEvalAST, EvalEngine engine,
       StackMatcher stackMatcher) {
@@ -2292,8 +2316,17 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     // `Longest(p)` wants the last candidate this loop would otherwise reach, so it walks the same
     // range in the opposite direction and takes the first match it finds there
     final boolean longest = patternSequence.isLongest();
-    final int firstIndex = longest ? lhsEvalSize : lhsEvalIndex;
-    final int lastIndex = longest ? lhsEvalIndex : lhsEvalSize;
+    int firstIndex = longest ? lhsEvalSize : lhsEvalIndex;
+    int lastIndex = longest ? lhsEvalIndex : lhsEvalSize;
+    if (hasOneElementPatterns(reducedLHSPatternAST)) {
+      // the patterns behind the sequence leave it only one length
+      final int onlyIndex = lhsEvalSize - reducedLHSPatternAST.argSize();
+      if (onlyIndex < lhsEvalIndex) {
+        return false;
+      }
+      firstIndex = onlyIndex;
+      lastIndex = onlyIndex;
+    }
     lhsEvalIndex = firstIndex;
     while (longest ? lhsEvalIndex >= lastIndex : lhsEvalIndex <= lastIndex) {
       try {

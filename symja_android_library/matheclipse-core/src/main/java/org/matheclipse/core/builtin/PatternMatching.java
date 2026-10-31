@@ -1730,8 +1730,11 @@ public final class PatternMatching {
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST options;
       if (arg1.isSymbol()) {
-        options = EvalAttributes.copySort(
-            org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, false));
+        // the options of a user symbol stay in the order they were set in, for Take(Options(f), n)
+        options = org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, false);
+        if (arg1.isBuiltInSymbol()) {
+          options = EvalAttributes.copySort(options);
+        }
       } else if (arg1 instanceof IDataExpr) {
         // an image carries its options inside; a name is looked up among all of them, so that
         // one left at its default is reported too

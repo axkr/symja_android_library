@@ -2940,8 +2940,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{toobig,5}");
     // an indexed iterator variable is bound in each step, also where it is used indirectly, and
     // keeps its old value afterwards
-    check("idx(1) = 9; idv := {idx(1), idx(2)}; acc = {}; "
-        + "Do(AppendTo(acc, idv), {idx(1), 1, 2}, {idx(2), 0, idx(1) - 1}); {acc, idx(1)}", //
+    check(
+        "idx(1) = 9; idv := {idx(1), idx(2)}; acc = {}; "
+            + "Do(AppendTo(acc, idv), {idx(1), 1, 2}, {idx(2), 0, idx(1) - 1}); {acc, idx(1)}", //
         "{{{1,0},{2,0},{2,1}},9}");
     check("Table(idx(3)^2, {idx(3), 3})", //
         "{1,4,9}");
@@ -3302,7 +3303,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Clip(2-3*I)", //
         "Clip(2-I*3)");
     // a sparse array stays sparse
-    check("{Head(Clip(SparseArray({1->5,3->-4},{5}))), Normal(Clip(SparseArray({1->5,3->-4},{5})))}", //
+    check(
+        "{Head(Clip(SparseArray({1->5,3->-4},{5}))), Normal(Clip(SparseArray({1->5,3->-4},{5})))}", //
         "{SparseArray,{1,0,-1,0,0}}");
   }
 
@@ -9389,8 +9391,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // github #121
     System.out.print('.');
     check("Factor(x^(12)-y^(12), GaussianIntegers->True)", //
-        "(x-y)*(x-I*y)*(x+I*y)*(x+y)*(x^2-I*x*y-y^2)*(x^2+I*x*y-y^2)*(x^2+x*y+y^2)*(x^2-x*y+y^\n"
-            + //
+        "(x-y)*(x-I*y)*(x+I*y)*(x+y)*(x^2-I*x*y-y^2)*(x^2+I*x*y-y^2)*(x^2+x*y+y^2)*(x^2-x*y+y^\n" + //
             "2)");
     System.out.print('.');
     check("Factor(x^(2)+y^(2), GaussianIntegers->True)", //
@@ -14128,12 +14129,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNSolveMixedPrecisionDuplicates() {
     // the radicals of the exact coefficients don't leave copies of the solutions behind
-    check("Length(NSolve(x == s*Sqrt(5)*Cos(Pi/12) + Sin(Pi/12) && y == s - Cos(Pi/12) "
-        + "&& (x - 0.3)^2 + (y - 0.5)^2 == 0.2, {x, y, s}))", //
+    check(
+        "Length(NSolve(x == s*Sqrt(5)*Cos(Pi/12) + Sin(Pi/12) && y == s - Cos(Pi/12) "
+            + "&& (x - 0.3)^2 + (y - 0.5)^2 == 0.2, {x, y, s}))", //
         "2");
     // the rules are in the order of the variables
-    check("Map(First, NSolve(x == s*Sqrt(5)*Cos(Pi/12) + Sin(Pi/12) && y == s - Cos(Pi/12) "
-        + "&& (x - 0.3)^2 + (y - 0.5)^2 == 0.2, {x, y, s})[[1]])", //
+    check(
+        "Map(First, NSolve(x == s*Sqrt(5)*Cos(Pi/12) + Sin(Pi/12) && y == s - Cos(Pi/12) "
+            + "&& (x - 0.3)^2 + (y - 0.5)^2 == 0.2, {x, y, s})[[1]])", //
         "{x,y,s}");
     // one variable keeps the multiplicity of a root
     check("NSolve(x^2 == 0, x)", //
@@ -14142,7 +14145,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSparseArrayPositionListRule() {
-    check("{Normal(SparseArray({{2, 1}, {1, 3}} -> 7)), Normal(SparseArray({{1, 1}, {2, 2}} -> 4, {2, 3}, z))}", //
+    check(
+        "{Normal(SparseArray({{2, 1}, {1, 3}} -> 7)), Normal(SparseArray({{1, 1}, {2, 2}} -> 4, {2, 3}, z))}", //
         "{{{0,0,7},{7,0,0}},{{4,z,z},{z,4,z}}}");
   }
 
@@ -14172,29 +14176,34 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveCurriedVariables() {
-    check("{Solve({g(2)[s] + h == 4, g(2)[s] - h == 2}, {g(2)[s], h}), Solve(w(1)[z]^2 == 9, w(1)[z])}", //
+    check(
+        "{Solve({g(2)[s] + h == 4, g(2)[s] - h == 2}, {g(2)[s], h}), Solve(w(1)[z]^2 == 9, w(1)[z])}", //
         "{{{g(2)[s]->3,h->1}},{{w(1)[z]->-3},{w(1)[z]->3}}}");
   }
 
   @Test
   public void testFindRootVectorEquationsAndBounds() {
-    check("{FindRoot({u, v} + {1, 2} == {4, 4}, {{u, 0}, {v, 0}}), "
-        + "FindRoot({u + v == 5, u - v == 1}, {{u, 1, 0, 10}, {v, 1, 0, 10}})}", //
+    check(
+        "{FindRoot({u, v} + {1, 2} == {4, 4}, {{u, 0}, {v, 0}}), "
+            + "FindRoot({u + v == 5, u - v == 1}, {{u, 1, 0, 10}, {v, 1, 0, 10}})}", //
         "{{u->3.0,v->2.0},{u->3.0,v->2.0}}");
   }
 
   @Test
   public void testNDSolveDerivatives() {
-    check("s = NDSolve({w''(t) == -4*w(t), w(0) == 1, w'(0) == 0}, {w'(t), w(t)}, {t, 0, 1}); "
-        + "Round({w'(t), w(t)} /. First(s) /. t -> 0.5, 0.0001)", //
+    check(
+        "s = NDSolve({w''(t) == -4*w(t), w(0) == 1, w'(0) == 0}, {w'(t), w(t)}, {t, 0, 1}); "
+            + "Round({w'(t), w(t)} /. First(s) /. t -> 0.5, 0.0001)", //
         "{-1.6829,0.5403}");
     // the derivatives of a numerical solution
-    check("sol = NDSolve({y''(x) == -9*y(x), y(0) == 0, y'(0) == 3}, y, {x, 0, 1}); "
-        + "{Abs(y'(0.5) - 3*Cos(1.5)) < 10^-6, Abs(y''(0.5) + 9*y(0.5)) < 10^-6} /. sol[[1]]", //
+    check(
+        "sol = NDSolve({y''(x) == -9*y(x), y(0) == 0, y'(0) == 3}, y, {x, 0, 1}); "
+            + "{Abs(y'(0.5) - 3*Cos(1.5)) < 10^-6, Abs(y''(0.5) + 9*y(0.5)) < 10^-6} /. sol[[1]]", //
         "{True,True}");
     // the same derivative of the same solution is the same function
-    check("f = y /. First(NDSolve({y''(x) == -y(x), y(0) == 0, y'(0) == 1}, y, {x, 0, 1})); "
-        + "{Derivative(1)[f] === Derivative(1)[f], Derivative(1)[f] === f}", //
+    check(
+        "f = y /. First(NDSolve({y''(x) == -y(x), y(0) == 0, y'(0) == 1}, y, {x, 0, 1})); "
+            + "{Derivative(1)[f] === Derivative(1)[f], Derivative(1)[f] === f}", //
         "{True,False}");
   }
 
@@ -14211,7 +14220,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testHistogramList() {
     // the cumulative shares are numeric
-    check("{HistogramList({2, 3, 5, 9}, {0, 10, 5}, \"PDF\"), HistogramList({1, 4, 6}, {0, 8, 4}, \"CDF\")}", //
+    check(
+        "{HistogramList({2, 3, 5, 9}, {0, 10, 5}, \"PDF\"), HistogramList({1, 4, 6}, {0, 8, 4}, \"CDF\")}", //
         "{{{0,5,10},{1/10,1/10}},{{0,4,8},{0.333333,1.0}}}");
     // the last bin is a whole one
     check("HistogramList({0.5, 4.5}, {0, 5, 2})", //
@@ -14229,8 +14239,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPlotRangeOfGraphics() {
-    check("{PlotRange(Graphics(Line({{1, -2}, {4, 5}}))), "
-        + "PlotRange(Graphics(Point({0, 0}), PlotRange -> {{-3, 3}, {-1, 2}}))}", //
+    check(
+        "{PlotRange(Graphics(Line({{1, -2}, {4, 5}}))), "
+            + "PlotRange(Graphics(Point({0, 0}), PlotRange -> {{-3, 3}, {-1, 2}}))}", //
         "{{{1.0,4.0},{-2.0,5.0}},{{-3.0,3.0},{-1.0,2.0}}}");
   }
 
@@ -14363,28 +14374,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
 
     // every point lies in its region
-    check("SeedRandom(11);pts=RandomPoint(Disk({0,0}, 2, {Pi/2, Pi}), 40);"
-        + "And @@ ((#[[1]]<=0 && #[[2]]>=0 && Norm(#)<=2)& /@ pts)", //
+    check(
+        "SeedRandom(11);pts=RandomPoint(Disk({0,0}, 2, {Pi/2, Pi}), 40);"
+            + "And @@ ((#[[1]]<=0 && #[[2]]>=0 && Norm(#)<=2)& /@ pts)", //
         "True");
-    check("SeedRandom(12);reg=Polygon({{0,0},{3,0},{3,1},{1,1},{1,3},{0,3}});"
-        + "pts=RandomPoint(reg, 40);And @@ (RegionMember(reg, #)& /@ pts)", //
+    check(
+        "SeedRandom(12);reg=Polygon({{0,0},{3,0},{3,1},{1,1},{1,3},{0,3}});"
+            + "pts=RandomPoint(reg, 40);And @@ (RegionMember(reg, #)& /@ pts)", //
         "True");
-    check("SeedRandom(13);pts=RandomPoint(Circle({-1,2}, 1/2), 40);"
-        + "Max(Abs(Norm(#-{-1,2})-1/2)& /@ pts) < 10^(-12)", //
+    check(
+        "SeedRandom(13);pts=RandomPoint(Circle({-1,2}, 1/2), 40);"
+            + "Max(Abs(Norm(#-{-1,2})-1/2)& /@ pts) < 10^(-12)", //
         "True");
-    check("SeedRandom(14);pts=RandomPoint(Line({{0,0},{0,2},{2,2}}), 40);"
-        + "And @@ ((#[[1]]==0 || #[[2]]==2)& /@ pts)", //
+    check(
+        "SeedRandom(14);pts=RandomPoint(Line({{0,0},{0,2},{2,2}}), 40);"
+            + "And @@ ((#[[1]]==0 || #[[2]]==2)& /@ pts)", //
         "True");
-    check("SeedRandom(15);"
-        + "pts=RandomPoint(RegionDifference(Rectangle({0,0},{2,2}), Disk({1,1},1/2)), 40);"
-        + "And @@ ((0<=#[[1]]<=2 && 0<=#[[2]]<=2 && Norm(#-{1,1})>=1/2)& /@ pts)", //
+    check(
+        "SeedRandom(15);"
+            + "pts=RandomPoint(RegionDifference(Rectangle({0,0},{2,2}), Disk({1,1},1/2)), 40);"
+            + "And @@ ((0<=#[[1]]<=2 && 0<=#[[2]]<=2 && Norm(#-{1,1})>=1/2)& /@ pts)", //
         "True");
-    check("SeedRandom(16);pts=RandomPoint(Ellipsoid({1,0,0},{3,2,1}), 40);"
-        + "And @@ (RegionMember(Ellipsoid({1,0,0},{3,2,1}), #)& /@ pts)", //
+    check(
+        "SeedRandom(16);pts=RandomPoint(Ellipsoid({1,0,0},{3,2,1}), 40);"
+            + "And @@ (RegionMember(Ellipsoid({1,0,0},{3,2,1}), #)& /@ pts)", //
         "True");
     // a polygon in space stays in its plane z == x
-    check("SeedRandom(17);pts=RandomPoint(Polygon({{0,0,0},{2,0,2},{2,1,2},{0,1,0}}), 20);"
-        + "Max(Abs(#[[3]]-#[[1]])& /@ pts) < 10^(-12)", //
+    check(
+        "SeedRandom(17);pts=RandomPoint(Polygon({{0,0,0},{2,0,2},{2,1,2},{0,1,0}}), 20);"
+            + "Max(Abs(#[[3]]-#[[1]])& /@ pts) < 10^(-12)", //
         "True");
     // uniform by measure
     check("SeedRandom(18);Norm(Mean(RandomPoint(Simplex(3), 4000))-{1/4,1/4,1/4}) < 0.02", //
@@ -14395,9 +14413,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "Abs(Mean(Norm /@ pts)-14/9) < 0.03", //
         "True");
     // on the uniformly covered unit sphere |z| is uniform in [0,1]
-    check("SeedRandom(20);pts=RandomPoint(ParametricRegion("
-        + "{Sin(p)*Cos(q), Sin(p)*Sin(q), Cos(p)}, {{p, 0, Pi}, {q, 0, 2*Pi}}), 3000);"
-        + "{Max(Abs(Norm /@ pts - 1)) < 10^(-12), Abs(Mean(Abs(#[[3]])& /@ pts)-1/2) < 0.03}", //
+    check(
+        "SeedRandom(20);pts=RandomPoint(ParametricRegion("
+            + "{Sin(p)*Cos(q), Sin(p)*Sin(q), Cos(p)}, {{p, 0, Pi}, {q, 0, 2*Pi}}), 3000);"
+            + "{Max(Abs(Norm /@ pts - 1)) < 10^(-12), Abs(Mean(Abs(#[[3]])& /@ pts)-1/2) < 0.03}", //
         "{True,True}");
     // the parameter condition is respected
     check("SeedRandom(21);"
@@ -14435,8 +14454,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the canonical form is stable
     check("ParametricRegion({{p, q}, Inequality(0, LessEqual, p, LessEqual, 1)}, {p, q})", //
         "ParametricRegion({{p,q},0<=p<=1},{p,q})");
-    check("{RegionDimension(#), RegionEmbeddingDimension(#), ConstantRegionQ(#)}&("
-        + "ParametricRegion({Cos(u), Sin(u), v}, {{u, 0, 2*Pi}, {v, -1, 1}}))", //
+    check(
+        "{RegionDimension(#), RegionEmbeddingDimension(#), ConstantRegionQ(#)}&("
+            + "ParametricRegion({Cos(u), Sin(u), v}, {{u, 0, 2*Pi}, {v, -1, 1}}))", //
         "{2,3,True}");
   }
 
@@ -14445,36 +14465,43 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Cases(RectangleChart({{3, 2}}), _Rectangle, Infinity)", //
         "{Rectangle({0.0,0.0},{3.0,2.0},RoundingRadius->0)}");
     // bars of the given widths and heights side by side, a narrow gap between them
-    check("Cases(RectangleChart({{3, 2}, {2, 5}, {1, 1}, {4, 3}}), "
-        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+    check(
+        "Cases(RectangleChart({{3, 2}, {2, 5}, {1, 1}, {4, 3}}), "
+            + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
         "{{0.0,3.0,2.0},{3.096,5.096,5.0},{5.192,6.192,1.0},{6.288,10.288,3.0}}");
-    check("Cases(RectangleChart({{3, 2}, {1/2, 5}}, BarSpacing -> 1/4), "
-        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+    check(
+        "Cases(RectangleChart({{3, 2}, {1/2, 5}}, BarSpacing -> 1/4), "
+            + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
         "{{0.0,3.0,2.0},{3.25,3.75,5.0}}");
-    check("Cases(RectangleChart({{3, 2}, {1/2, 5}}, BarSpacing -> None), "
-        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+    check(
+        "Cases(RectangleChart({{3, 2}, {1/2, 5}}, BarSpacing -> None), "
+            + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
         "{{0.0,3.0,2.0},{3.0,3.5,5.0}}");
-    check("Cases(RectangleChart({{3, 2}, {1, -2}}), "
-        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+    check(
+        "Cases(RectangleChart({{3, 2}, {1, -2}}), "
+            + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
         "{{0.0,3.0,2.0},{3.098,4.098,-2.0}}");
     // one dataset is drawn in one colour
     check("Length(Union(Cases(RectangleChart({{3, 2}, {2, 5}, {1, 1}}), _RGBColor, Infinity)))", //
         "1");
     // several datasets: a wider gap between them, and a colour for each position
-    check("Cases(RectangleChart({{{2, 1}, {1, 2}}, {{3, 3}}}), "
-        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+    check(
+        "Cases(RectangleChart({{{2, 1}, {1, 2}}, {{3, 3}}}), "
+            + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
         "{{0.1,2.1,1.0},{2.197,3.197,2.0},{3.397,6.397,3.0}}");
     check("c = Cases(RectangleChart({{{2, 1}, {1, 2}}, {{3, 3}, {1, 1}}}), "
         + "{s_RGBColor, _Rectangle} :> s, Infinity); {c[[1]] === c[[3]], c[[2]] === c[[4]], c[[1]] === c[[2]]}", //
         "{True,True,False}");
-    check("Cases(RectangleChart({{2, 1}, {1, 2}}, ChartStyle -> {Green, {Opacity(0.25), Red}}), "
-        + "{s_, _Rectangle} :> s, Infinity)", //
+    check(
+        "Cases(RectangleChart({{2, 1}, {1, 2}}, ChartStyle -> {Green, {Opacity(0.25), Red}}), "
+            + "{s_, _Rectangle} :> s, Infinity)", //
         "{RGBColor(0,1,0),Directive(Opacity(0.25),RGBColor(1,0,0))}");
     check("Head(RectangleChart({{2, 1}, {1, 2}}, ChartLegends -> {\"u\", \"v\"}))", //
         "Legended");
     // an entry which is not a pair of numbers is left out
-    check("Cases(RectangleChart({{2, 1}, y, {1, b}, {1, 2}}), "
-        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+    check(
+        "Cases(RectangleChart({{2, 1}, y, {1, b}, {1, 2}}), "
+            + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
         "{{0.0,2.0,1.0},{2.098,3.098,2.0}}");
     check("StringContainsQ(ExportString(RectangleChart({{2, 1}, {1, 2}}), \"SVG\"), \"<rect\")", //
         "True");
@@ -14488,8 +14515,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testInterpolationHermiteAndGrid() {
     // a cubic Hermite piece between two points with values and first derivatives
-    check("f = Interpolation({{{0}, 2, -1}, {{1}, 0, 1}, {{3}, 4, 0}}); "
-        + "{f(1/2), f'(1/2), f(2), f(1), f(0.25), D(f(x), x) /. x -> 1/2}", //
+    check(
+        "f = Interpolation({{{0}, 2, -1}, {{1}, 0, 1}, {{3}, 4, 0}}); "
+            + "{f(1/2), f'(1/2), f(2), f(1), f(0.25), D(f(x), x) /. x -> 1/2}", //
         "{3/4,-3,9/4,0,1.5,-3}");
     // a point without derivative: the piece takes the whole neighbouring point
     check("f = Interpolation({{{0}, 1, 1}, {{2}, 5}, {{3}, 2, 0}}); {f(1), f(5/2), f'(3)}", //
@@ -14501,38 +14529,48 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("g = Interpolation(Flatten(Table({x, y, 2*x - y + x*y}, {x, 0, 3}, {y, 0, 3}), 1)); "
         + "{g(1.5, 0.5), Chop(Derivative(1, 0)[g][1.5, 0.5] - 2.5), Derivative(0, 1)[g][1.5, 0.5], g(1, 2)}", //
         "{3.25,0,0.5,2}");
-    check("g = Interpolation(Flatten(Table({{x, y}, x^2 - y}, {x, 0, 2}, {y, 0, 1}), 1)); "
-        + "{g(1/2, 1/2), g(\"InterpolationOrder\")}", //
+    check(
+        "g = Interpolation(Flatten(Table({{x, y}, x^2 - y}, {x, 0, 2}, {y, 0, 1}), 1)); "
+            + "{g(1/2, 1/2), g(\"InterpolationOrder\")}", //
         "{-1/4,{2,1}}");
-    check("v = Interpolation(Flatten(Table({{x, y}, {x*y, x - y}}, {x, 0, 2}, {y, 0, 2}), 1)); v(1/2, 3/2)", //
+    check(
+        "v = Interpolation(Flatten(Table({{x, y}, {x*y, x - y}}, {x, 0, 2}, {y, 0, 2}), 1)); v(1/2, 3/2)", //
         "{3/4,-1}");
-    check("k = Interpolation(Flatten(Table({x, y, x + y^3}, {x, 0, 3}, {y, 0, 3}), 1), InterpolationOrder -> {1, 3}); "
-        + "{k(0.5, 1.5), k(\"InterpolationOrder\"), k(\"Coordinates\")}", //
+    check(
+        "k = Interpolation(Flatten(Table({x, y, x + y^3}, {x, 0, 3}, {y, 0, 3}), 1), InterpolationOrder -> {1, 3}); "
+            + "{k(0.5, 1.5), k(\"InterpolationOrder\"), k(\"Coordinates\")}", //
         "{3.875,{1,3},{{0,1,2,3},{0,1,2,3}}}");
-    check("h = Interpolation(Flatten(Table({x, y, z, x*y*z}, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}), 2), InterpolationOrder -> 1); "
-        + "{h(0.5, 0.5, 0.5), h(\"Domain\")}", //
+    check(
+        "h = Interpolation(Flatten(Table({x, y, z, x*y*z}, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}), 2), InterpolationOrder -> 1); "
+            + "{h(0.5, 0.5, 0.5), h(\"Domain\")}", //
         "{0.125,{{0,1},{0,1},{0,1}}}");
-    check("f = Interpolation(Flatten(Table({x, y, x - y}, {x, 0, 1}, {y, 0, 2}), 1), InterpolationOrder -> 1); "
-        + "{f(\"Grid\"), f(\"ValuesOnGrid\")}", //
+    check(
+        "f = Interpolation(Flatten(Table({x, y, x - y}, {x, 0, 1}, {y, 0, 2}), 1), InterpolationOrder -> 1); "
+            + "{f(\"Grid\"), f(\"ValuesOnGrid\")}", //
         "{{{{0,0},{0,1},{0,2}},{{1,0},{1,1},{1,2}}},{{0,-1,-2},{1,0,-1}}}");
   }
 
   @Test
   public void testInterpolationSpline() {
     // a cubic spline reproduces a cubic polynomial
-    check("xs = {0, 1, 2, 4, 5, 7}; f = Interpolation(Table({x, x^3 - 2*x}, {x, xs}), Method -> \"Spline\"); "
-        + "{f(3), f'(3), f''(3), f /@ xs, f(\"InterpolationOrder\")}", //
+    check(
+        "xs = {0, 1, 2, 4, 5, 7}; f = Interpolation(Table({x, x^3 - 2*x}, {x, xs}), Method -> \"Spline\"); "
+            + "{f(3), f'(3), f''(3), f /@ xs, f(\"InterpolationOrder\")}", //
         "{21,25,18,{0,-1,4,56,115,329},{3}}");
     // of degree 1 it is linear between the points
-    check("f = Interpolation({{0, 1}, {1, 2}, {3, 0}, {4, 3}, {6, 1}}, Method -> \"Spline\", InterpolationOrder -> 1); "
-        + "{f(2), f(5.5), f'(2)}", //
+    check(
+        "f = Interpolation({{0, 1}, {1, 2}, {3, 0}, {4, 3}, {6, 1}}, Method -> \"Spline\", InterpolationOrder -> 1); "
+            + "{f(2), f(5.5), f'(2)}", //
         "{1,1.5,-1}");
-    check("f = Interpolation(Table({x, {x^2, x}}, {x, 0, 4}), Method -> \"Spline\", InterpolationOrder -> 2); f(5/2)", //
+    check(
+        "f = Interpolation(Table({x, {x^2, x}}, {x, 0, 4}), Method -> \"Spline\", InterpolationOrder -> 2); f(5/2)", //
         "{25/4,5/2}");
-    check("f = Interpolation({{1, 4}, {2, 0}, {4, 1}}, Method -> \"Spline\"); {f(\"InterpolationOrder\"), f(3)}", //
+    check(
+        "f = Interpolation({{1, 4}, {2, 0}, {4, 1}}, Method -> \"Spline\"); {f(\"InterpolationOrder\"), f(3)}", //
         "{{2},-1}");
-    check("f = Interpolation({{0, 1}, {1, 2}, {3, 0}, {4, 3}, {6, 1}}, Method -> \"Spline\"); "
-        + "{f /@ {0, 1, 3, 4, 6}, f({2, 5})}", //
+    check(
+        "f = Interpolation({{0, 1}, {1, 2}, {3, 0}, {4, 3}, {6, 1}}, Method -> \"Spline\"); "
+            + "{f /@ {0, 1, 3, 4, 6}, f({2, 5})}", //
         "{{1,2,0,3,1},{13/159,7771/1590}}");
   }
 
@@ -14545,7 +14583,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("p = InterpolatingPolynomial({{{-1}, 4, -2}, {{1}, 0, 1, 6}}, x); "
         + "{p /. x -> -1, D(p, x) /. x -> -1, p /. x -> 1, D(p, x) /. x -> 1, D(p, {x, 2}) /. x -> 1}", //
         "{4,-2,0,1,6}");
-    check("InterpolatingPolynomial({{{0}, 1}, {{1}, 3}, {{3}, 2}}, {x}) - InterpolatingPolynomial({{0, 1}, {1, 3}, {3, 2}}, x)", //
+    check(
+        "InterpolatingPolynomial({{{0}, 1}, {{1}, 3}, {{3}, 2}}, {x}) - InterpolatingPolynomial({{0, 1}, {1, 3}, {3, 2}}, x)", //
         "0");
   }
 
@@ -14557,12 +14596,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{6.0,{x->3,y->0}}");
     check("NMaximize({x + y, 2*x + y <= 7/2, x >= 0, y >= 0, Element(x | y, Integers)}, {x, y})", //
         "{3.0,{x->0,y->3}}");
-    check("NMinimize({3*x(1) + x(2), x(1) + x(2) == 2, 0 <= x(1) <= 2, 0 <= x(2) <= 2, "
-        + "Element(x(1) | x(2), Integers)}, {x(1), x(2)})", //
+    check(
+        "NMinimize({3*x(1) + x(2), x(1) + x(2) == 2, 0 <= x(1) <= 2, 0 <= x(2) <= 2, "
+            + "Element(x(1) | x(2), Integers)}, {x(1), x(2)})", //
         "{2.0,{x(1)->0,x(2)->2}}");
     // a nested list of constraints
-    check("NMaximize({5*a + 4*b + 3*c, {2*a + 3*b + c <= 5, {0 <= a <= 1, 0 <= b <= 1, "
-        + "0 <= c <= 1}, Element({a, b, c}, Integers)}}, {a, b, c})", //
+    check(
+        "NMaximize({5*a + 4*b + 3*c, {2*a + 3*b + c <= 5, {0 <= a <= 1, 0 <= b <= 1, "
+            + "0 <= c <= 1}, Element({a, b, c}, Integers)}}, {a, b, c})", //
         "{9.0,{a->1,b->1,c->0}}");
     // the exact optimum by the rational simplex method and branch and bound
     check("Minimize({4*x + 3*y, 2*x + y >= 7/2, x >= 0, y >= 0, Element(x | y, Integers)}, {x, y})", //
@@ -14726,14 +14767,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   /** A plot of functions without a numeric value draws nothing, but is still a picture. */
   @Test
   public void testParametricPlotUndefinedFunction() {
-    check("{Head(ParametricPlot({uf1(s), uf2(s)}, {s, -1, 2})), "
-        + "Head(ParametricPlot3D(uf3(s), {s, 1, 3})), "
-        + "Head(ParametricPlot3D({uf1(s), s, uf2(s)}, {s, 0, 2})), "
-        + "Head(ParametricPlot3D(uf3(s, w), {s, 0, 1}, {w, 0, 1}))}", //
+    check(
+        "{Head(ParametricPlot({uf1(s), uf2(s)}, {s, -1, 2})), "
+            + "Head(ParametricPlot3D(uf3(s), {s, 1, 3})), "
+            + "Head(ParametricPlot3D({uf1(s), s, uf2(s)}, {s, 0, 2})), "
+            + "Head(ParametricPlot3D(uf3(s, w), {s, 0, 1}, {w, 0, 1}))}", //
         "{Graphics,Graphics3D,Graphics3D,Graphics3D}");
     // nothing is drawn
-    check("{Count(ParametricPlot({uf1(s), uf2(s)}, {s, -1, 2}), _Line, Infinity), "
-        + "Count(ParametricPlot3D(uf3(s), {s, 1, 3}), _Line, Infinity)}", //
+    check(
+        "{Count(ParametricPlot({uf1(s), uf2(s)}, {s, -1, 2}), _Line, Infinity), "
+            + "Count(ParametricPlot3D(uf3(s), {s, 1, 3}), _Line, Infinity)}", //
         "{0,0}");
   }
 
@@ -14766,14 +14809,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the root 2.302585 is outside of the bounds
     check("Quiet(FindRoot(Exp(x) - 10, {x, 1, 1.5, 0, 2}))", //
         "FindRoot(-10+E^x,{x,1,1.5,0,2})");
-    check("Chop(({x, y} /. FindRoot({x + y == 3, x - y == 1}, {{x, 0, 1, -5, 5}, {y, 0, 1, -5, "
-        + "5}})) - {2, 1}, 10^-10)", //
+    check(
+        "Chop(({x, y} /. FindRoot({x + y == 3, x - y == 1}, {{x, 0, 1, -5, 5}, {y, 0, 1, -5, "
+            + "5}})) - {2, 1}, 10^-10)", //
         "{0,0}");
     // equations in nested lists
     check("Chop((x /. FindRoot({{x^3}} == 27, {x, 2})) - 3, 10^-10)", //
         "0");
-    check("Chop(({x, y} /. FindRoot({{x + y}, {x - y}} == {{4}, {2}}, {{x, 0}, {y, 0}})) - {3, 1},"
-        + " 10^-10)", //
+    check(
+        "Chop(({x, y} /. FindRoot({{x + y}, {x - y}} == {{4}, {2}}, {{x, 0}, {y, 0}})) - {3, 1},"
+            + " 10^-10)", //
         "{0,0}");
   }
 
@@ -14781,16 +14826,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testFitVariableLists() {
     check("Chop((k /. FindFit({{1, 3.2}, {2, 5.9}, {3, 9.1}}, k*x, {k}, {x})) - 423/140, 10^-10)", //
         "0");
-    check("Chop(({p, q} /. FindFit({{1, 0, 2.1}, {0, 1, 2.9}, {1, 1, 5.2}, {2, 1, 6.8}}, "
-        + "p*x + q*y, {p, q}, {x, y})) - {2, 89/30}, 10^-10)", //
+    check(
+        "Chop(({p, q} /. FindFit({{1, 0, 2.1}, {0, 1, 2.9}, {1, 1, 5.2}, {2, 1, 6.8}}, "
+            + "p*x + q*y, {p, q}, {x, y})) - {2, 89/30}, 10^-10)", //
         "{0,0}");
     check("Chop(Expand(Fit({{1, 3}, {2, 5}, {3, 6}}, {1, x}, {x}) - (5/3 + 3/2*x)), 10^-10)", //
         "0");
-    check("Chop(Expand(Fit({{0, 0, 1}, {1, 0, 3}, {0, 1, 4}, {1, 1, 6}}, {1, x, y}, {x, y}) "
-        + "- (1 + 2*x + 3*y)), 10^-10)", //
+    check(
+        "Chop(Expand(Fit({{0, 0, 1}, {1, 0, 3}, {0, 1, 4}, {1, 1, 6}}, {1, x, y}, {x, y}) "
+            + "- (1 + 2*x + 3*y)), 10^-10)", //
         "0");
-    check("Fit({{0, 0, 1}, {1, 0, 3}, {0, 1, 4}, {1, 1, 6}}, {1, x, y}, {x, y}, "
-        + "WorkingPrecision -> Infinity)", //
+    check(
+        "Fit({{0, 0, 1}, {1, 0, 3}, {0, 1, 4}, {1, 1, 6}}, {1, x, y}, {x, y}, "
+            + "WorkingPrecision -> Infinity)", //
         "1+2*x+3*y");
     // three columns for one variable
     check("Fit({{1, 2, 3}, {2, 3, 4}}, {1, x}, {x})", //
@@ -14847,13 +14895,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{1-(1-x^3)^2,0<x<1},{1,x>=1}},0)");
     check("PDF(KumaraswamyDistribution(3,2), x)", //
         "Piecewise({{6*x^2*(1-x^3),0<x<1}},0)");
-    check("{Mean(KumaraswamyDistribution(1,2)), Variance(KumaraswamyDistribution(1,1)), "
-        + "Median(KumaraswamyDistribution(1,1))}", //
+    check(
+        "{Mean(KumaraswamyDistribution(1,2)), Variance(KumaraswamyDistribution(1,1)), "
+            + "Median(KumaraswamyDistribution(1,1))}", //
         "{1/3,1/12,1/2}");
     check("Mean(KumaraswamyDistribution(a,b))", //
         "(b*Gamma(1+1/a)*Gamma(b))/Gamma(1+1/a+b)");
-    check("N(Mean(KumaraswamyDistribution(3,2))) - "
-        + "NIntegrate(x*PDF(KumaraswamyDistribution(3,2), x), {x,0,1}) // Chop", //
+    check(
+        "N(Mean(KumaraswamyDistribution(3,2))) - "
+            + "NIntegrate(x*PDF(KumaraswamyDistribution(3,2), x), {x,0,1}) // Chop", //
         "0");
     // log-logistic
     check("Quantile(LogLogisticDistribution(4,3), {0.8, 4/5, 1/2, 0, 1})", //
@@ -14861,7 +14911,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // Wigner semicircle: the exact ends and center, a numeric root of the CDF otherwise
     check("Quantile(WignerSemicircleDistribution(3,2), {0, 1/2, 1, 0.75})", //
         "{1,3,5,3.80795}");
-    check("CDF(WignerSemicircleDistribution(3,2), Quantile(WignerSemicircleDistribution(3,2), 0.1))", //
+    check(
+        "CDF(WignerSemicircleDistribution(3,2), Quantile(WignerSemicircleDistribution(3,2), 0.1))", //
         "0.1");
     check("Quantile(WignerSemicircleDistribution(2), 0.6)", //
         "0.315472");
@@ -14894,18 +14945,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{u,w}");
     check("MemberQ({p,q,r}, RandomVariate(CategoricalDistribution({p,q,r})))", //
         "True");
-    check("SeedRandom(17); s1=RandomVariate(CategoricalDistribution({u,v,w}, {1,2,3}), 20);"
-        + "SeedRandom(17); s1===RandomVariate(CategoricalDistribution({u,v,w}, {1,2,3}), 20)", //
+    check(
+        "SeedRandom(17); s1=RandomVariate(CategoricalDistribution({u,v,w}, {1,2,3}), 20);"
+            + "SeedRandom(17); s1===RandomVariate(CategoricalDistribution({u,v,w}, {1,2,3}), 20)", //
         "True");
   }
 
   @Test
   public void testRandomVariateByQuantile() {
     // distributions without a sampler of their own are sampled by their quantile
-    check("Map((s=RandomVariate(#,150); {Length(s), VectorQ(s,NumericQ)})&, "
-        + "{LaplaceDistribution(1,2), TriangularDistribution({0,2},1.5), "
-        + "KumaraswamyDistribution(2,5), LogLogisticDistribution(3,1), "
-        + "WignerSemicircleDistribution(4,3), ErlangDistribution(3,0.5)})", //
+    check(
+        "Map((s=RandomVariate(#,150); {Length(s), VectorQ(s,NumericQ)})&, "
+            + "{LaplaceDistribution(1,2), TriangularDistribution({0,2},1.5), "
+            + "KumaraswamyDistribution(2,5), LogLogisticDistribution(3,1), "
+            + "WignerSemicircleDistribution(4,3), ErlangDistribution(3,0.5)})", //
         "{{150,True},{150,True},{150,True},{150,True},{150,True},{150,True}}");
     check("s=RandomVariate(KumaraswamyDistribution(2,5), 200); 0<Min(s)&&Max(s)<1", //
         "True");
@@ -14913,19 +14966,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("Dimensions(RandomVariate(TriangularDistribution({0,2},1.5), {3,4}))", //
         "{3,4}");
-    check("SeedRandom(5); r=RandomVariate(LaplaceDistribution(1,2), 4);"
-        + "SeedRandom(5); r===RandomVariate(LaplaceDistribution(1,2), 4)", //
+    check(
+        "SeedRandom(5); r=RandomVariate(LaplaceDistribution(1,2), 4);"
+            + "SeedRandom(5); r===RandomVariate(LaplaceDistribution(1,2), 4)", //
         "True");
     // symbolic parameters
     check("RandomVariate(KumaraswamyDistribution(a,5), 3)", //
         "RandomVariate(KumaraswamyDistribution(a,5),3)");
     // a histogram distribution samples its bins
-    check("s=RandomVariate(HistogramDistribution({1,2,2,3,3,3}), 100);"
-        + "{Length(s), 0.5<=Min(s), Max(s)<=3.5}", //
+    check(
+        "s=RandomVariate(HistogramDistribution({1,2,2,3,3,3}), 100);"
+            + "{Length(s), 0.5<=Min(s), Max(s)<=3.5}", //
         "{100,True,True}");
     // a discrete distribution samples integers
-    check("s=RandomVariate(TruncatedDistribution({1,6}, PoissonDistribution(3)), 100);"
-        + "{VectorQ(s, IntegerQ), Min(s)>=1, Max(s)<=6}", //
+    check(
+        "s=RandomVariate(TruncatedDistribution({1,6}, PoissonDistribution(3)), 100);"
+            + "{VectorQ(s, IntegerQ), Min(s)>=1, Max(s)<=6}", //
         "{True,True,True}");
   }
 
@@ -15029,11 +15085,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNDSolveImplicitCurve() {
     // an ellipse followed at unit speed, past the points where a coordinate turns, both ways
-    check(
-        "ClearAll(p,q,s);s = NDSolve({p(t)^2 + 4*q(t)^2 == 4, p'(t)^2 + q'(t)^2 == 1, p(0) == 2, "
-            + "q(0) == 0, p'(0) == 0, q'(0) == 1}, {p, q}, {t, -2, 3});"
-            + "Chop(({p(t)^2 + 4*q(t)^2, p'(t)^2 + q'(t)^2} /. s[[1]] /. t -> {-1.5, 2.5}) - {4, 1}, "
-            + "10^-8)", //
+    check("ClearAll(p,q,s);s = NDSolve({p(t)^2 + 4*q(t)^2 == 4, p'(t)^2 + q'(t)^2 == 1, p(0) == 2, "
+        + "q(0) == 0, p'(0) == 0, q'(0) == 1}, {p, q}, {t, -2, 3});"
+        + "Chop(({p(t)^2 + 4*q(t)^2, p'(t)^2 + q'(t)^2} /. s[[1]] /. t -> {-1.5, 2.5}) - {4, 1}, "
+        + "10^-8)", //
         "{{0,0},{0,0}}");
     // a circle of radius 2 at unit speed, followed clockwise
     check(
@@ -15042,41 +15097,37 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Chop(({p(4), q(4)} /. s[[1]]) - {2*Cos(2), -2*Sin(2)}, 10^-8)", //
         "{0,0}");
     // a line, three unknowns
-    check(
-        "ClearAll(p,q,r,s);s = NDSolve({p(t) + q(t) == 2, r(t) == p(t) - q(t), p'(t)^2 + q'(t)^2 "
-            + "+ r'(t)^2 == 6, p(0) == 0, q(0) == 2, r(0) == -2, p'(0) == 1}, {p, q, r}, {t, 0, 1});"
-            + "Chop(({p(1), q(1), r(1)} /. s[[1]]) - {1, 1, 0}, 10^-8)", //
+    check("ClearAll(p,q,r,s);s = NDSolve({p(t) + q(t) == 2, r(t) == p(t) - q(t), p'(t)^2 + q'(t)^2 "
+        + "+ r'(t)^2 == 6, p(0) == 0, q(0) == 2, r(0) == -2, p'(0) == 1}, {p, q, r}, {t, 0, 1});"
+        + "Chop(({p(1), q(1), r(1)} /. s[[1]]) - {1, 1, 0}, 10^-8)", //
         "{0,0,0}");
   }
 
   @Test
   public void testNDSolveMassMatrix() {
     // a cyclic coupling of the derivatives, solved with the factored matrix
-    check(
-        "ClearAll(g,s,m,mat,e);m = 7;"
-            + "s = NDSolve(Join(Table(3*g(k)'[t] - g(Mod(k, m) + 1)'[t] == Cos(t) - g(k)[t], {k, m}), "
-            + "Table(g(k)[0] == k/10, {k, m})), Table(g(k), {k, m}), {t, 0, 2});"
-            + "mat = Table(3*KroneckerDelta(i, j) - KroneckerDelta(Mod(i, m) + 1, j), {i, m}, {j, m});"
-            + "e = NDSolve(Join(Thread(Table(g(k)'[t], {k, m}) == "
-            + "Inverse(mat) . Table(Cos(t) - g(k)[t], {k, m})), Table(g(k)[0] == k/10, {k, m})), "
-            + "Table(g(k), {k, m}), {t, 0, 2});"
-            + "Chop((Table(g(k)[2], {k, m}) /. s[[1]]) - (Table(g(k)[2], {k, m}) /. e[[1]]), 10^-8)", //
+    check("ClearAll(g,s,m,mat,e);m = 7;"
+        + "s = NDSolve(Join(Table(3*g(k)'[t] - g(Mod(k, m) + 1)'[t] == Cos(t) - g(k)[t], {k, m}), "
+        + "Table(g(k)[0] == k/10, {k, m})), Table(g(k), {k, m}), {t, 0, 2});"
+        + "mat = Table(3*KroneckerDelta(i, j) - KroneckerDelta(Mod(i, m) + 1, j), {i, m}, {j, m});"
+        + "e = NDSolve(Join(Thread(Table(g(k)'[t], {k, m}) == "
+        + "Inverse(mat) . Table(Cos(t) - g(k)[t], {k, m})), Table(g(k)[0] == k/10, {k, m})), "
+        + "Table(g(k), {k, m}), {t, 0, 2});"
+        + "Chop((Table(g(k)[2], {k, m}) /. s[[1]]) - (Table(g(k)[2], {k, m}) /. e[[1]]), 10^-8)", //
         "{0,0,0,0,0,0,0}");
   }
 
   @Test
   public void testNDSolveStepSizeOptions() {
     // the Euler, midpoint and classical Runge-Kutta formulas with ten steps of 1/10
-    check(
-        "ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
-            + "Method -> {\"FixedStep\", Method -> {\"ExplicitRungeKutta\", \"DifferenceOrder\" -> 1}}, "
-            + "StartingStepSize -> 1/10))) - 0.9^10, 10^-12)", //
+    check("ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
+        + "Method -> {\"FixedStep\", Method -> {\"ExplicitRungeKutta\", \"DifferenceOrder\" -> 1}}, "
+        + "StartingStepSize -> 1/10))) - 0.9^10, 10^-12)", //
         "0");
-    check(
-        "ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
-            + "StartingStepSize -> 1/10, "
-            + "Method -> {\"FixedStep\", Method -> {\"ExplicitRungeKutta\", \"DifferenceOrder\" -> 2}}))"
-            + ") - 0.905^10, 10^-12)", //
+    check("ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
+        + "StartingStepSize -> 1/10, "
+        + "Method -> {\"FixedStep\", Method -> {\"ExplicitRungeKutta\", \"DifferenceOrder\" -> 2}}))"
+        + ") - 0.905^10, 10^-12)", //
         "0");
     check(
         "ClearAll(y);Chop((y(1) /. First(NDSolve({y'(t) == -y(t), y(0) == 1}, y, {t, 0, 1}, "
@@ -15106,11 +15157,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFindRootStepMonitor() {
     // the monitor runs after every accepted step; the last run sees the reported root
-    check("r = Reap(FindRoot(x^2 - 5, {x, 2}, StepMonitor :> Sow(x))); "
-        + "{Length(r[[2, 1]]), Last(r[[2, 1]]) == (x /. r[[1]])}", //
+    check(
+        "r = Reap(FindRoot(x^2 - 5, {x, 2}, StepMonitor :> Sow(x))); "
+            + "{Length(r[[2, 1]]), Last(r[[2, 1]]) == (x /. r[[1]])}", //
         "{4,True}");
-    check("w = {p, q}; r = Reap(FindRoot({p^2 + q^2 == 4, p == q^2}, Transpose({w, {1.0, 1.0}}), "
-        + "StepMonitor :> Sow(w))); {Length(r[[2, 1]]) > 2, Last(r[[2, 1]]) == (w /. r[[1]])}", //
+    check(
+        "w = {p, q}; r = Reap(FindRoot({p^2 + q^2 == 4, p == q^2}, Transpose({w, {1.0, 1.0}}), "
+            + "StepMonitor :> Sow(w))); {Length(r[[2, 1]]) > 2, Last(r[[2, 1]]) == (w /. r[[1]])}", //
         "{True,True}");
     check("Options(FindRoot, StepMonitor)", //
         "{StepMonitor->None}");
@@ -15131,8 +15184,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the generalized eigenvalues of Det(a - l*b) == 0
     check("Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}})", //
         "{3,-1}");
-    check("{Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}}, 1), "
-        + "Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}}, -1)}", //
+    check(
+        "{Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}}, 1), "
+            + "Eigenvalues({{{4, 5}, {5, 4}}, {{2, 1}, {1, 2}}}, -1)}", //
         "{{3},{-1}}");
     check("Chop(Eigenvalues({{{4., 5.}, {5., 4.}}, {{2., 1.}, {1., 2.}}}) - {3., -1.})", //
         "{0,0}");
@@ -15145,8 +15199,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testGaussianMatrix1D() {
     check("GaussianMatrix({{1}, 0.8})", //
         "{0.18931,0.62138,0.18931}");
-    check("{Length(GaussianMatrix({{3}})), Total(GaussianMatrix({{3}})), "
-        + "GaussianMatrix({{3}}) == Reverse(GaussianMatrix({{3}}))}", //
+    check(
+        "{Length(GaussianMatrix({{3}})), Total(GaussianMatrix({{3}})), "
+            + "GaussianMatrix({{3}}) == Reverse(GaussianMatrix({{3}}))}", //
         "{7,1.0,True}");
     // the product of the kernels of the radii
     check("{Dimensions(GaussianMatrix({{1, 2}})), "
@@ -15168,7 +15223,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTotalCompensated() {
     // compensated summation of machine numbers; Dot adds them up one after the other
-    check("{Total(Table(0.2, 15)), Table(0.2, 15) . Table(1.0, 15), Total({0.3, 0.2, 0.1})} // InputForm", //
+    check(
+        "{Total(Table(0.2, 15)), Table(0.2, 15) . Table(1.0, 15), Total({0.3, 0.2, 0.1})} // InputForm", //
         "{3.0`,3.0000000000000004`,0.6`}");
     check("{Total({1.0, 1.0*^100, 1.0, -1.0*^100}), Total({1, 0.5}), Total({x, 0.5, 0.25})}", //
         "{2.0,1.5,0.75+x}");
@@ -15176,12 +15232,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testKendallTauTest() {
-    check("{KendallTau({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}), "
-        + "KendallTau({4., 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6})}", //
+    check(
+        "{KendallTau({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}), "
+            + "KendallTau({4., 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6})}", //
         "{1/3,0.333333}");
-    check("{KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}), "
-        + "KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}, \"TestStatistic\"), "
-        + "KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}, \"TestData\")}", //
+    check(
+        "{KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}), "
+            + "KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}, \"TestStatistic\"), "
+            + "KendallTauTest({4, 1, 3, 2, 6, 5}, {3, 2, 1, 5, 4, 6}, \"TestData\")}", //
         "{0.347558,0.333333,{0.333333,0.347558}}");
     // ties: tau-b
     check("{KendallTau({1, 1, 2, 3}, {2, 1, 3, 3}), KendallTau({{1, 2}, {1, 1}, {2, 3}, {3, 3}})}", //
@@ -15193,8 +15251,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a cubic and a circle meet in 6 points, 4 of them complex
     check("Length(NSolve({x^2+y^2==4, x^3-y==1/3}, {x,y}))", //
         "6");
-    check("s=NSolve({x^2+y^2==4, x^3-y==1/3}, {x,y});"
-        + "Max(Abs(Flatten({x^2+y^2-4, x^3-y-1/3} /. s))) < 10^-10", //
+    check(
+        "s=NSolve({x^2+y^2==4, x^3-y==1/3}, {x,y});"
+            + "Max(Abs(Flatten({x^2+y^2-4, x^3-y-1/3} /. s))) < 10^-10", //
         "True");
     check("NSolve({x^2+y^2==2, x^3-y==1/5},{x,y},Reals)", //
         "{{x->-0.947292,y->-1.05007},{x->1.04767,y->0.94994}}");
@@ -15207,8 +15266,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // two values of y for some of the values of x
     check("Length(NSolve({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} == 0, {x, y}))", //
         "9");
-    check("s=NSolve({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} == 0, {x, y});"
-        + "Max(Abs(Flatten({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} /. s))) < 10^-10", //
+    check(
+        "s=NSolve({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} == 0, {x, y});"
+            + "Max(Abs(Flatten({x^3-3*x*y^2+x+2, 3*x^2*y-y^3+y} /. s))) < 10^-10", //
         "True");
     check("NSolve({x^2+y^2==1, x^2+y^2==3},{x,y})", //
         "{}");
@@ -15253,8 +15313,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a background block of one cell {b} is the background b
     check("CellularAutomaton({Mod(Total(#), 2) &, {}, 1}, {{1, 0, 1}, {0}}, 2)", //
         "{{0,0,1,0,1,0,0},{0,1,1,0,1,1,0},{1,0,0,0,0,0,1}}");
-    check("CellularAutomaton({Max(#) &, {}, 1}, {{1, 1}, {0}}, 3) === "
-        + "CellularAutomaton({Max(#) &, {}, 1}, {{1, 1}, 0}, 3)", //
+    check(
+        "CellularAutomaton({Max(#) &, {}, 1}, {{1, 1}, {0}}, 3) === "
+            + "CellularAutomaton({Max(#) &, {}, 1}, {{1, 1}, 0}, 3)", //
         "True");
     // {f, {}, {ry, rx}} on an array with a background {{b}}: f gets the 3 x 3 block
     check("CellularAutomaton({Mod(Total(Flatten(#)), 2) &, {}, {1, 1}}, {{{1}}, {{0}}}, {{{1}}})", //
@@ -15266,24 +15327,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRevolutionAxis() {
     // about the x axis the profile {t, 0, f} keeps its x coordinate and turns at the radius f
-    check("pts = First(RevolutionPlot3D(3, {t, 0, 2}, RevolutionAxis -> {1, 0, 0}))[[1]]; "
-        + "{Round(MinMax(pts[[All, 1]]), 0.01), Round(Max(pts[[All, 2]]), 0.01), "
-        + "Round(Max(pts[[All, 3]]), 0.01)}", //
+    check(
+        "pts = First(RevolutionPlot3D(3, {t, 0, 2}, RevolutionAxis -> {1, 0, 0}))[[1]]; "
+            + "{Round(MinMax(pts[[All, 1]]), 0.01), Round(Max(pts[[All, 2]]), 0.01), "
+            + "Round(Max(pts[[All, 3]]), 0.01)}", //
         "{{0.0,2.0},3.0,3.0}");
     // a pair {fx, fz} is the profile point {fx, 0, fz}
     check("pts = First(RevolutionPlot3D({1, t}, {t, 0, 2}, RevolutionAxis -> {1, 0, 0}))[[1]]; "
         + "{Union(Round(pts[[All, 1]], 0.01)), Round(Max(Sqrt(pts[[All, 2]]^2 + pts[[All, 3]]^2)), 0.01)}", //
         "{{1.0},2.0}");
     // the z axis is the default
-    check("First(RevolutionPlot3D(t^2, {t, 0, 1}, RevolutionAxis -> {0, 0, 1})) === "
-        + "First(RevolutionPlot3D(t^2, {t, 0, 1}))", //
+    check(
+        "First(RevolutionPlot3D(t^2, {t, 0, 1}, RevolutionAxis -> {0, 0, 1})) === "
+            + "First(RevolutionPlot3D(t^2, {t, 0, 1}))", //
         "True");
   }
 
   @Test
   public void testVectorDensityPlot() {
-    check("g = VectorDensityPlot({x, y^2}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 3, PlotPoints -> 5); "
-        + "{Head(g), Length(Cases(g, _Raster, Infinity)), Length(Cases(g, _Arrow, Infinity))}", //
+    check(
+        "g = VectorDensityPlot({x, y^2}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 3, PlotPoints -> 5); "
+            + "{Head(g), Length(Cases(g, _Raster, Infinity)), Length(Cases(g, _Arrow, Infinity))}", //
         "{Graphics,1,8}");
   }
 
@@ -15293,18 +15357,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("BSplineFunction({{0, 2, 4}, {1, 3, 5}}, 2, SplineDegree -> 1)[0.5, 0.25]", //
         "1.5");
     // a closed linear spline runs once around the control points
-    check("BSplineFunction({{0, 0}, {2, 0}, {2, 2}, {0, 2}}, SplineDegree -> 1, "
-        + "SplineClosed -> True)[5/8]", //
+    check(
+        "BSplineFunction({{0, 0}, {2, 0}, {2, 2}, {0, 2}}, SplineDegree -> 1, "
+            + "SplineClosed -> True)[5/8]", //
         "{1.0,2.0}");
-    check("BSplineFunction({{0, 2, 4}, {1, 3, 5}}, 2, SplineDegree -> 1, "
-        + "SplineClosed -> {True, False})[0.75, 0.5]", //
+    check(
+        "BSplineFunction({{0, 2, 4}, {1, 3, 5}}, 2, SplineDegree -> 1, "
+            + "SplineClosed -> {True, False})[0.75, 0.5]", //
         "2.5");
     // a closed cubic spline weights the nearest control points 1/6, 2/3, 1/6
     check("BSplineFunction({0, 6, 12, 6}, SplineClosed -> True)[0.25]", //
         "6.0");
     // a parameter beyond 0 ... 1 is clamped only when asked for
-    check("BSplineFunction({1, 2, 5}, SplineDegree -> 1, "
-        + "Method -> {\"Extrapolation\" -> \"Clamp\"})[-0.5]", //
+    check(
+        "BSplineFunction({1, 2, 5}, SplineDegree -> 1, "
+            + "Method -> {\"Extrapolation\" -> \"Clamp\"})[-0.5]", //
         "1.0");
     check("BSplineFunction({1, 2, 5}, SplineDegree -> 1)[-0.5]", //
         "BSplineFunction({1,2,5},SplineDegree->1)[-0.5]");
@@ -15312,17 +15379,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyhedronFamilies() {
-    check("Table({PolyhedronData({\"Prism\", n}, \"VertexCount\"), "
-        + "PolyhedronData({\"Prism\", n}, \"EdgeCount\"), "
-        + "PolyhedronData({\"Prism\", n}, \"FaceCountRules\")}, {n, 4, 5})", //
+    check(
+        "Table({PolyhedronData({\"Prism\", n}, \"VertexCount\"), "
+            + "PolyhedronData({\"Prism\", n}, \"EdgeCount\"), "
+            + "PolyhedronData({\"Prism\", n}, \"FaceCountRules\")}, {n, 4, 5})", //
         "{{8,12,{4->6}},{10,15,{4->5,5->2}}}");
-    check("{PolyhedronData({\"Prism\", 4}, \"Volume\"), PolyhedronData({\"Pyramid\", 3}, \"Volume\"), "
-        + "PolyhedronData({\"Dipyramid\", 4}, \"Volume\")}", //
+    check(
+        "{PolyhedronData({\"Prism\", 4}, \"Volume\"), PolyhedronData({\"Pyramid\", 3}, \"Volume\"), "
+            + "PolyhedronData({\"Dipyramid\", 4}, \"Volume\")}", //
         "{1,1/(6*Sqrt(2)),Sqrt(2)/3}");
     // every edge of an antiprism has the length 1
-    check("v = PolyhedronData({\"Antiprism\", 6}, \"VertexCoordinates\"); "
-        + "Union(Round(Map(Norm(v[[#[[1]]]] - v[[#[[2]]]]) &, "
-        + "PolyhedronData({\"Antiprism\", 6}, \"Edges\")), 10^-9))", //
+    check(
+        "v = PolyhedronData({\"Antiprism\", 6}, \"VertexCoordinates\"); "
+            + "Union(Round(Map(Norm(v[[#[[1]]]] - v[[#[[2]]]]) &, "
+            + "PolyhedronData({\"Antiprism\", 6}, \"Edges\")), 10^-9))", //
         "{1}");
     check("PolyhedronData({\"Dipyramid\", 4}, \"VertexCoordinates\")", //
         "{{0,0,-1/Sqrt(2)},{0,0,1/Sqrt(2)},{1/2,1/2,0},{-1/2,1/2,0},{-1/2,-1/2,0},{1/2,-1/\n" //
@@ -15340,15 +15410,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "5))},{Cuboctahedron,{3->8,4->6},5/3*Sqrt(2)},{RhombicDodecahedron,{4->12},16/(3*Sqrt(\n" //
             + "3))}}");
     // Euler's formula for every convex solid of the table
-    check("Union(Table(PolyhedronData(s, \"VertexCount\") - PolyhedronData(s, \"EdgeCount\") "
-        + "+ PolyhedronData(s, \"FaceCount\"), {s, PolyhedronData(\"Convex\")}))", //
+    check(
+        "Union(Table(PolyhedronData(s, \"VertexCount\") - PolyhedronData(s, \"EdgeCount\") "
+            + "+ PolyhedronData(s, \"FaceCount\"), {s, PolyhedronData(\"Convex\")}))", //
         "{2}");
   }
 
   @Test
   public void testSumUnevaluatedSummand() {
     // the summand of a sum without closed form is evaluated, the value of hs is used
-    check("hs = Sin(Pi*y); Sum((hs /. y -> j/m)*Binomial(m, j)*y^j, {j, 0, m}) /. {y -> 1/3, m -> 3}", //
+    check(
+        "hs = Sin(Pi*y); Sum((hs /. y -> j/m)*Binomial(m, j)*y^j, {j, 0, m}) /. {y -> 1/3, m -> 3}", //
         "1/(2*Sqrt(3))+Sqrt(3)/2");
     check("Hold(Evaluate(Sum((hs /. y -> j/m)*f(j), {j, 0, m})))", //
         "Hold(Sum(f(j)*Sin((j*Pi)/m),{j,0,m}))");
@@ -15372,8 +15444,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // more subsets than the iteration limit
     check("Length(Subsets(Range(60), {2}))", //
         "1770");
-    check("vals = Range(48); near(l_)[p_, q_] := Abs(l[[p]] - l[[q]]) == 1; "
-        + "Length(Cases(Subsets(Range(48), {2}), {p_, q_} /; near(vals)[p, q]))", //
+    check(
+        "vals = Range(48); near(l_)[p_, q_] := Abs(l[[p]] - l[[q]]) == 1; "
+            + "Length(Cases(Subsets(Range(48), {2}), {p_, q_} /; near(vals)[p, q]))", //
         "47");
     check("ClearAll(vals, near)", //
         "");
@@ -15419,8 +15492,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ClearAll(r)", //
         "");
     // two rules of one body which bind the same name get the same renamed variable
-    check("SameQ @@ Cases(Module({a = 2}, Hold({f(x_) := a*x, g(x_) := a+x})), "
-        + "HoldPattern(Pattern(v_, _)) :> v, Infinity, Heads -> True)", //
+    check(
+        "SameQ @@ Cases(Module({a = 2}, Hold({f(x_) := a*x, g(x_) := a+x})), "
+            + "HoldPattern(Pattern(v_, _)) :> v, Infinity, Heads -> True)", //
         "True");
   }
 
@@ -15461,8 +15535,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testFullFormStringLiterals() {
     check("FullForm({\"p\\\"q\", \"r\\\\s\", \"t\\nu\"})", //
         "List(\"p\\\"q\", \"r\\\\s\", \"t\\nu\")");
-    check("FullForm({FromCharacterCode(946), FromCharacterCode(26085), FromCharacterCode(128513), "
-        + "FromCharacterCode(252), FromCharacterCode(7)})", //
+    check(
+        "FullForm({FromCharacterCode(946), FromCharacterCode(26085), FromCharacterCode(128513), "
+            + "FromCharacterCode(252), FromCharacterCode(7)})", //
         "List(\"\\[Beta]\", \"\\:65e5\", \"\\|01f601\", \"\\[UDoubleDot]\", \"\\.07\")");
     check("FullForm(Hold(\\[Gamma] + 5*^3))", //
         "Hold(Plus(\\[Gamma], 5000))");
@@ -15471,8 +15546,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testBSplineBasis() {
     // exact Cox-de Boor values on explicit knot vectors
-    check("{BSplineBasis({1, {0, 1, 2}}, 0, 1/2), BSplineBasis({1, {0, 1, 2}}, 0, 3/2), "
-        + "BSplineBasis({2, {0, 1, 2, 3}}, 0, 3/2), BSplineBasis({1, {0, 1, 2}}, 0, -1)}", //
+    check(
+        "{BSplineBasis({1, {0, 1, 2}}, 0, 1/2), BSplineBasis({1, {0, 1, 2}}, 0, 3/2), "
+            + "BSplineBasis({2, {0, 1, 2, 3}}, 0, 3/2), BSplineBasis({1, {0, 1, 2}}, 0, -1)}", //
         "{1/2,1/2,3/4,0}");
     check("Table(BSplineBasis({2, {0, 0, 0, 1/3, 2/3, 1, 1, 1}}, j, 1/2), {j, 0, 4})", //
         "{0,1/8,3/4,1/8,0}");
@@ -15480,7 +15556,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sum(BSplineBasis({2, {0, 0, 0, 1/3, 2/3, 1, 1, 1}}, j, 1/5), {j, 0, 4})", //
         "1");
     // both ends of a clamped knot vector
-    check("{BSplineBasis({2, {0, 0, 0, 1, 1, 1}}, 0, 0), BSplineBasis({2, {0, 0, 0, 1, 1, 1}}, 2, 1.0)}", //
+    check(
+        "{BSplineBasis({2, {0, 0, 0, 1, 1, 1}}, 0, 0), BSplineBasis({2, {0, 0, 0, 1, 1, 1}}, 2, 1.0)}", //
         "{1,1.0}");
     check("BSplineBasis({2, {0, 0, 0, 1, 1, 1}}, 1, 0.6)", //
         "0.48");
@@ -15494,39 +15571,46 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "BSplineBasis({2,{0,0,0,1,1,1}},1,y)");
     // a BSplineCurve drawn with explicit numeric SplineKnots; the clamped uniform knots are the
     // default, a knot vector of the wrong length is ignored
-    check("pts = {{0, 0}, {2, 3}, {3, -1}, {5, 2}, {6, 1}}; svg(k_) := ExportString(Graphics(BSplineCurve(pts, SplineKnots -> k)), \"SVG\"); "
-        + "{svg({0, 0, 0, 0, 1, 2, 2, 2, 2}) == svg(Automatic), svg({0, 0, 0, 0, 0.2, 1, 1, 1, 1}) == svg(Automatic), "
-        + "svg({0, 1}) == svg(Automatic)}", //
+    check(
+        "pts = {{0, 0}, {2, 3}, {3, -1}, {5, 2}, {6, 1}}; svg(k_) := ExportString(Graphics(BSplineCurve(pts, SplineKnots -> k)), \"SVG\"); "
+            + "{svg({0, 0, 0, 0, 1, 2, 2, 2, 2}) == svg(Automatic), svg({0, 0, 0, 0, 0.2, 1, 1, 1, 1}) == svg(Automatic), "
+            + "svg({0, 1}) == svg(Automatic)}", //
         "{True,False,True}");
   }
 
   @Test
   public void testWaveletPhiPsi() {
     // the Daubechies scaling function at the integers is ((1+Sqrt(3))/2, (1-Sqrt(3))/2)
-    check("{WaveletPhi(DaubechiesWavelet(2), 1.0), WaveletPhi(DaubechiesWavelet(2), 2.0), "
-        + "WaveletPsi(DaubechiesWavelet(2), 0.5)}", //
+    check(
+        "{WaveletPhi(DaubechiesWavelet(2), 1.0), WaveletPhi(DaubechiesWavelet(2), 2.0), "
+            + "WaveletPsi(DaubechiesWavelet(2), 0.5)}", //
         "{1.36603,-0.366025,1.73205}");
     check("N(WaveletPhi(DaubechiesWavelet(2), 1))", //
         "1.36603");
     // the least asymmetric filter, with its energy in the first half; of order 2 it is the
     // Daubechies filter
-    check("{WaveletPhi(SymletWavelet(4), 2.625), WaveletPhi(SymletWavelet(4), 4.375), "
-        + "WaveletPhi(SymletWavelet(2), 2.0)}", //
+    check(
+        "{WaveletPhi(SymletWavelet(4), 2.625), WaveletPhi(SymletWavelet(4), 4.375), "
+            + "WaveletPhi(SymletWavelet(2), 2.0)}", //
         "{0.928477,-0.0240048,-0.366025}");
-    check("{WaveletPhi(HaarWavelet(), 2/5), WaveletPsi(HaarWavelet(), 3/5), WaveletPsi(HaarWavelet(), 1), "
-        + "WaveletPhi(HaarWavelet(), -0.5), WaveletPsi(DaubechiesWavelet(3), 3.0)}", //
+    check(
+        "{WaveletPhi(HaarWavelet(), 2/5), WaveletPsi(HaarWavelet(), 3/5), WaveletPsi(HaarWavelet(), 1), "
+            + "WaveletPhi(HaarWavelet(), -0.5), WaveletPsi(DaubechiesWavelet(3), 3.0)}", //
         "{1,-1,0,0.0,0.0}");
     check("WaveletPhi(DaubechiesWavelet(2), x)", //
         "WaveletPhi(DaubechiesWavelet(2),x)");
     // partition of unity
-    check("Chop(Total(Table(WaveletPhi(DaubechiesWavelet(4), 0.71 - k), {k, -10, 10})) - 1, 10^-10)", //
+    check(
+        "Chop(Total(Table(WaveletPhi(DaubechiesWavelet(4), 0.71 - k), {k, -10, 10})) - 1, 10^-10)", //
         "0");
     check("Chop(Total(Table(WaveletPhi(SymletWavelet(5), 0.29 + k), {k, -12, 12})) - 1, 10^-10)", //
         "0");
     // orthonormality, by Riemann sums over the support
-    check("Chop(Total(Table(WaveletPsi(DaubechiesWavelet(4), x)^2, {x, -3, 4, 1/256.}))/256 - 1, 10^-6)", //
+    check(
+        "Chop(Total(Table(WaveletPsi(DaubechiesWavelet(4), x)^2, {x, -3, 4, 1/256.}))/256 - 1, 10^-6)", //
         "0");
-    check("Chop(Total(Table(WaveletPsi(SymletWavelet(4), x)*WaveletPhi(SymletWavelet(4), x), {x, -3, 7, 1/256.}))/256, 10^-6)", //
+    check(
+        "Chop(Total(Table(WaveletPsi(SymletWavelet(4), x)*WaveletPhi(SymletWavelet(4), x), {x, -3, 7, 1/256.}))/256, 10^-6)", //
         "0");
   }
 
@@ -15538,15 +15622,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PDF(SmoothKernelDistribution({0.5, 1.5, 4.}, 0.8), {0, 2})", //
         "{0.165395,0.172698}");
     // the kernels are scaled to the standard deviation bw
-    check("{CDF(SmoothKernelDistribution({0., 2.}, 1., \"Rectangular\"), 0), "
-        + "PDF(SmoothKernelDistribution({0.}, 1., \"Epanechnikov\"), 0), "
-        + "CDF(SmoothKernelDistribution({1., 3.}, 0.5, \"Triangular\"), 2.), "
-        + "Variance(SmoothKernelDistribution({1., 3.}, 0.5, \"Biweight\"))}", //
+    check(
+        "{CDF(SmoothKernelDistribution({0., 2.}, 1., \"Rectangular\"), 0), "
+            + "PDF(SmoothKernelDistribution({0.}, 1., \"Epanechnikov\"), 0), "
+            + "CDF(SmoothKernelDistribution({1., 3.}, 0.5, \"Triangular\"), 2.), "
+            + "Variance(SmoothKernelDistribution({1., 3.}, 0.5, \"Biweight\"))}", //
         "{0.25,0.33541,0.5,1.25}");
     // Silverman's rule as the default bandwidth
     check("PDF(SmoothKernelDistribution({1., 2., 4., 8., 9.}), 3.)", //
         "0.0909093");
-    check("{Mean(SmoothKernelDistribution({1, 2, 6})), Skewness(SmoothKernelDistribution({0., 0., 3.}, 1.))}", //
+    check(
+        "{Mean(SmoothKernelDistribution({1, 2, 6})), Skewness(SmoothKernelDistribution({0., 0., 3.}, 1.))}", //
         "{3.0,0.3849}");
     check("PDF(SmoothKernelDistribution({1., 2.}, 1., \"Unknown\"), 1)", //
         "PDF(SmoothKernelDistribution({1.0,2.0},1.0,Unknown),1)");
@@ -15577,7 +15663,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "1,1,1,1,1,1,1}");
     check("Convergents({1,2,3,4,5})", //
         "{1,3/2,10/7,43/30,225/157}");
-    check("c=Convergents(ContinuedFraction(N(Sqrt(11), 60))); {Take(c,4), Abs(N(Last(c)-Sqrt(11), 30)) < 10^-50}", //
+    check(
+        "c=Convergents(ContinuedFraction(N(Sqrt(11), 60))); {Take(c,4), Abs(N(Last(c)-Sqrt(11), 30)) < 10^-50}", //
         "{{3,10/3,63/19,199/60},True}");
   }
 
@@ -15607,19 +15694,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRandomComplexCorners() {
-    check("SeedRandom(7); z=RandomComplex({-2-3*I, 1+I}, 30); "
-        + "{Head(z[[1]]), Length(z), And @@ (-2<=Re(#)<=1 && -3<=Im(#)<=1& /@ z)}", //
+    check(
+        "SeedRandom(7); z=RandomComplex({-2-3*I, 1+I}, 30); "
+            + "{Head(z[[1]]), Length(z), And @@ (-2<=Re(#)<=1 && -3<=Im(#)<=1& /@ z)}", //
         "{Complex,30,True}");
     // corners in any order
-    check("SeedRandom(7); z=RandomComplex({1+I, -1-2*I}, {2,3}); "
-        + "{Dimensions(z), And @@ (-1<=Re(#)<=1 && -2<=Im(#)<=1& /@ Flatten(z))}", //
+    check(
+        "SeedRandom(7); z=RandomComplex({1+I, -1-2*I}, {2,3}); "
+            + "{Dimensions(z), And @@ (-1<=Re(#)<=1 && -2<=Im(#)<=1& /@ Flatten(z))}", //
         "{{2,3},True}");
   }
 
   @Test
   public void testLinearModelFitDiagnostics() {
-    check("lm=LinearModelFit({3,1,2,6,5}, x, x); "
-        + "Round(10^6*{lm(\"EstimatedVariance\"), lm(\"HatDiagonal\"), lm(\"CookDistances\")})", //
+    check(
+        "lm=LinearModelFit({3,1,2,6,5}, x, x); "
+            + "Round(10^6*{lm(\"EstimatedVariance\"), lm(\"HatDiagonal\"), lm(\"CookDistances\")})", //
         "{3033333,{600000,300000,200000,300000,600000},{1211538,227069,100962,291657,\n"
             + "24725}}");
   }
@@ -15680,11 +15770,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRandomVariateProbabilityDistribution() {
-    check("SeedRandom(42); s=RandomVariate(ProbabilityDistribution(2*x, {x,0,1}), 10000); "
-        + "{Min(s)>=0, Max(s)<=1, Abs(Mean(s)-2/3)<0.02}", //
+    check(
+        "SeedRandom(42); s=RandomVariate(ProbabilityDistribution(2*x, {x,0,1}), 10000); "
+            + "{Min(s)>=0, Max(s)<=1, Abs(Mean(s)-2/3)<0.02}", //
         "{True,True,True}");
-    check("SeedRandom(42); s=RandomVariate(ProbabilityDistribution(Exp(-Abs(x))/2, {x,-Infinity,Infinity}), 10000); "
-        + "{Abs(Mean(s))<0.1, Abs(Variance(s)-2)<0.2}", //
+    check(
+        "SeedRandom(42); s=RandomVariate(ProbabilityDistribution(Exp(-Abs(x))/2, {x,-Infinity,Infinity}), 10000); "
+            + "{Abs(Mean(s))<0.1, Abs(Variance(s)-2)<0.2}", //
         "{True,True}");
   }
 
@@ -15850,8 +15942,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTakeHugeSparseArray() {
     // only the stored entries are visited
-    check("s = SparseArray({{3, 5} -> a, {10^7, 10^7} -> b}, {10^7, 10^7}); "
-        + "Normal(Take(s, {2, 4}, {4, 6}))", //
+    check(
+        "s = SparseArray({{3, 5} -> a, {10^7, 10^7} -> b}, {10^7, 10^7}); "
+            + "Normal(Take(s, {2, 4}, {4, 6}))", //
         "{{0,0,0},{0,a,0},{0,0,0}}");
     check("Normal(Take(s, -1, -1))", //
         "{{b}}");
@@ -15900,8 +15993,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testListPlotHighlighted() {
     // the slice is a vertical line through the point of the data
-    check("Cases(ListPlot(Highlighted({2, 3, 5, 7}, Placed(\"XSlice\", {{3}}))), _InfiniteLine, "
-        + "Infinity)", //
+    check(
+        "Cases(ListPlot(Highlighted({2, 3, 5, 7}, Placed(\"XSlice\", {{3}}))), _InfiniteLine, "
+            + "Infinity)", //
         "{InfiniteLine({3,5},{0,1})}");
     check("Head(ListPlot(Highlighted({{0, 1}, {2, 3}})))", //
         "Graphics");
@@ -15928,15 +16022,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolyhedronData({\"Prism\", 6}, \"FaceIndices\")", //
         "{{7,3,1,5,9,11},{12,10,6,2,4,8},{11,9,10,12},{9,5,6,10},{5,1,2,6},{1,3,4,2},{3,7,\n"
             + "8,4},{7,11,12,8}}");
-    check("v = N(PolyhedronData({\"Antiprism\", 8}, \"VertexCoordinates\")); "
-        + "Union(Round(Norm(v[[#[[1]]]] - v[[#[[2]]]]) & /@ "
-        + "PolyhedronData({\"Antiprism\", 8}, \"EdgeIndices\"), 10^-9))", //
+    check(
+        "v = N(PolyhedronData({\"Antiprism\", 8}, \"VertexCoordinates\")); "
+            + "Union(Round(Norm(v[[#[[1]]]] - v[[#[[2]]]]) & /@ "
+            + "PolyhedronData({\"Antiprism\", 8}, \"EdgeIndices\"), 10^-9))", //
         "{1}");
-    check("{PolyhedronData({\"Prism\", 9}, \"Name\"), "
-        + "PolyhedronData({\"Antiprism\", 10}, \"StandardName\"), "
-        + "PolyhedronData({\"Dipyramid\", 4}, \"StandardName\"), "
-        + "PolyhedronData(\"SquarePyramid\", \"Name\"), "
-        + "PolyhedronData({\"Dipyramid\", 5}, \"Name\")}", //
+    check(
+        "{PolyhedronData({\"Prism\", 9}, \"Name\"), "
+            + "PolyhedronData({\"Antiprism\", 10}, \"StandardName\"), "
+            + "PolyhedronData({\"Dipyramid\", 4}, \"StandardName\"), "
+            + "PolyhedronData(\"SquarePyramid\", \"Name\"), "
+            + "PolyhedronData({\"Dipyramid\", 5}, \"Name\")}", //
         "{nonagonal prism,{Antiprism,10},Octahedron,square pyramid,equilateral pentagonal dipyramid}");
     // the degenerate members are the cube and the octahedron
     check("PolyhedronData({\"Prism\", 4}, \"FaceCountRules\")", //
@@ -15950,8 +16046,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testCellularAutomaton3D() {
     // a radius 0 in the first direction evolves every slice like the two-dimensional rule
-    check("CellularAutomaton({10, {2, 1}, {0, 1, 1}}, {{{{1, 1}}}, 0}, 2)[[All, 1]] == "
-        + "CellularAutomaton({10, {2, 1}, {1, 1}}, {{{1, 1}}, 0}, 2)", //
+    check(
+        "CellularAutomaton({10, {2, 1}, {0, 1, 1}}, {{{{1, 1}}}, 0}, 2)[[All, 1]] == "
+            + "CellularAutomaton({10, {2, 1}, {1, 1}}, {{{1, 1}}, 0}, 2)", //
         "True");
     check("CellularAutomaton({6, {2, 1}, {0, 0, 1}}, {{{0, 1, 0}}, {{1, 0, 1}}}, 1)", //
         "{{{{0,1,0}},{{1,0,1}}},{{{1,1,1}},{{1,1,1}}}}");
@@ -15960,8 +16057,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("CellularAutomaton({2, {2, 1}, {1, 1, 1}}, {{{{1}}}, 0}, {{{1}}})", //
         "{{{1,1,1},{1,1,1},{1,1,1}},{{1,1,1},{1,1,1},{1,1,1}},{{1,1,1},{1,1,1},{1,1,1}}}");
     // weights of the cells of the block
-    check("CellularAutomaton({30, {2, {{{4, 2, 1}}}}, {0, 0, 1}}, {{{0, 0, 1, 0, 0}}}, 2)"
-        + "[[All, 1, 1]] == CellularAutomaton(30, {0, 0, 1, 0, 0}, 2)", //
+    check(
+        "CellularAutomaton({30, {2, {{{4, 2, 1}}}}, {0, 0, 1}}, {{{0, 0, 1, 0, 0}}}, 2)"
+            + "[[All, 1, 1]] == CellularAutomaton(30, {0, 0, 1, 0, 0}, 2)", //
         "True");
   }
 
@@ -15987,8 +16085,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{5,9}");
     check("{Cases({5, 2, 5}, 5 :> q /; 1 < 0), Cases({5, 2, 5}, 5 :> q /; 0 < 1)}", //
         "{{},{q,q}}");
-    check("{ReplaceList(5, {5 :> 6 /; False, 5 :> 7}), ReplaceList(5, 5 :> 6 /; True), "
-        + "ReplaceList(5, 5 :> 6)}", //
+    check(
+        "{ReplaceList(5, {5 :> 6 /; False, 5 :> 7}), ReplaceList(5, 5 :> 6 /; True), "
+            + "ReplaceList(5, 5 :> 6)}", //
         "{{7},{6},{6}}");
     check("{u + v /. u + v :> w /; False, u + v /. u + v :> w /; True}", //
         "{u+v,w}");
@@ -16007,8 +16106,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ClearAll(w, v); Module({g}, w = 3*v; g(v_) = w; g(5))", //
         "15");
     // a name which ends with $ is not renamed again, and the renamed name is the global one
-    check("k(x_) := Module({lst = {a$, b$}}, Function({a, c, b$}, Evaluate(lst))); "
-        + "{k(1), k(1)[p, q, r]}", //
+    check(
+        "k(x_) := Module({lst = {a$, b$}}, Function({a, c, b$}, Evaluate(lst))); "
+            + "{k(1), k(1)[p, q, r]}", //
         "{Function({a$,c$,b$},{a$,b$}),{p,r}}");
     // an iterator variable which is a local of a nested scope is not replaced inside it
     check("Module({v = {7, 8, 9}}, Table(With({j = j}, v[[j]]), {j, 3}))", //
@@ -16179,10 +16279,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNDSolveMatrixVectorUnknown() {
     // a sparse matrix times a vector unknown, in fixed Euler steps
-    check(
-        "ClearAll(y,m,s);m=SparseArray({{1,2}->2,{3,3}->-1},{5,5});"
-            + "s=NDSolve({y'(t)==m.y(t),y(0)=={0,1,1,1,1}},y,{t,0,1},StartingStepSize->0.25,"
-            + "Method->{\"FixedStep\",Method->\"ExplicitEuler\"});Round(10^8*(y(1)/.First(s))[[{1,3,5}]])", //
+    check("ClearAll(y,m,s);m=SparseArray({{1,2}->2,{3,3}->-1},{5,5});"
+        + "s=NDSolve({y'(t)==m.y(t),y(0)=={0,1,1,1,1}},y,{t,0,1},StartingStepSize->0.25,"
+        + "Method->{\"FixedStep\",Method->\"ExplicitEuler\"});Round(10^8*(y(1)/.First(s))[[{1,3,5}]])", //
         "{200000000,31640625,100000000}");
     // a dense matrix
     check(
@@ -16235,8 +16334,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindRootIndexedVariableMonitor() {
-    check("rr = Reap(FindRoot(w(2)^3 - 5, {w(2), 2}, StepMonitor :> Sow(w(2)))); "
-        + "Abs(Last(rr[[2, 1]]) - (w(2) /. rr[[1]])) < 10^-12", //
+    check(
+        "rr = Reap(FindRoot(w(2)^3 - 5, {w(2), 2}, StepMonitor :> Sow(w(2)))); "
+            + "Abs(Last(rr[[2, 1]]) - (w(2) /. rr[[1]])) < 10^-12", //
         "True");
   }
 
@@ -16354,25 +16454,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // parameters which are no symbols
     check("FindFit({{1, 3}, {2, 5.2}, {3, 6.8}}, c(1)*x + c(2), {{c(1), 1}, {c(2), 0}}, x)", //
         "{c(1)->1.9,c(2)->1.2}");
-    check("NonlinearModelFit({{1, 1.1}, {2, 1.9}, {3, 3.2}}, k(1)*x, {k(1)}, x)"
-        + "[\"BestFitParameters\"]", //
+    check(
+        "NonlinearModelFit({{1, 1.1}, {2, 1.9}, {3, 3.2}}, k(1)*x, {k(1)}, x)"
+            + "[\"BestFitParameters\"]", //
         "{k(1)->1.03571}");
     // a model {form} without constraints
     check("FindFit({{0, 2}, {1, 4.1}, {2, 5.9}}, {p*x + q}, {p, q}, x)", //
         "{p->1.95,q->2.05}");
-    check("NonlinearModelFit({{0, 2}, {1, 4.1}, {2, 5.9}}, {p*x + q}, {p, q}, x)"
-        + "[\"BestFitParameters\"]", //
+    check(
+        "NonlinearModelFit({{0, 2}, {1, 4.1}, {2, 5.9}}, {p*x + q}, {p, q}, x)"
+            + "[\"BestFitParameters\"]", //
         "{p->1.95,q->2.05}");
   }
 
   @Test
   public void testNonlinearModelFitANOVA() {
-    check("fm = NonlinearModelFit({{1, 2.2}, {2, 8.1}, {3, 17.9}, {4, 32.3}}, a*x^b, {a, b}, x);"
-        + "{fm(\"ANOVATableDegreesOfFreedom\"), fm(\"ANOVATableSumsOfSquares\"), "
-        + "fm(\"ANOVATableMeanSquares\")}", //
+    check(
+        "fm = NonlinearModelFit({{1, 2.2}, {2, 8.1}, {3, 17.9}, {4, 32.3}}, a*x^b, {a, b}, x);"
+            + "{fm(\"ANOVATableDegreesOfFreedom\"), fm(\"ANOVATableSumsOfSquares\"), "
+            + "fm(\"ANOVATableMeanSquares\")}", //
         "{{2,2,4,3},{1434.059,0.0907685,1434.15,519.0875},{717.0296,0.0453842}}");
-    check("fm = NonlinearModelFit({{1, 1.1}, {2, 1.9}, {3, 3.2}}, k*x, {k}, x);"
-        + "fm(\"ANOVATableEntries\")", //
+    check(
+        "fm = NonlinearModelFit({{1, 1.1}, {2, 1.9}, {3, 3.2}}, k*x, {k}, x);"
+            + "fm(\"ANOVATableEntries\")", //
         "{{1,15.01786,15.01786},{2,0.0421429,0.0210714},{3,15.06},{2,2.24667}}");
   }
 
@@ -16386,20 +16490,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPlotCompoundVariable() {
-    check("{Head(Plot(z(2)^3, {z(2), 0, 1})), "
-        + "Head(Plot3D(Subscript(u, 1)*v, {Subscript(u, 1), 0, 1}, {v, 0, 1})), "
-        + "Head(ParametricPlot({Cos(q(0)), Sin(q(0))}, {q(0), 0, Pi}))}", //
+    check(
+        "{Head(Plot(z(2)^3, {z(2), 0, 1})), "
+            + "Head(Plot3D(Subscript(u, 1)*v, {Subscript(u, 1), 0, 1}, {v, 0, 1})), "
+            + "Head(ParametricPlot({Cos(q(0)), Sin(q(0))}, {q(0), 0, Pi}))}", //
         "{Graphics,Graphics3D,Graphics}");
     // a value of z(2) doesn't reach the plot
-    check("z(2) = 5; Round(Max(Cases(Plot(3*z(2), {z(2), 0, 2}), Line(p_) :> Max(p[[All, 2]]), "
-        + "Infinity)))", //
+    check(
+        "z(2) = 5; Round(Max(Cases(Plot(3*z(2), {z(2), 0, 2}), Line(p_) :> Max(p[[All, 2]]), "
+            + "Infinity)))", //
         "6");
   }
 
   @Test
   public void testListPlotDataRangeScalar() {
-    check("ExportString(ListPlot({4, 5, 6}, DataRange -> 3), \"SVG\") === "
-        + "ExportString(ListPlot({4, 5, 6}, DataRange -> {0, 3}), \"SVG\")", //
+    check(
+        "ExportString(ListPlot({4, 5, 6}, DataRange -> 3), \"SVG\") === "
+            + "ExportString(ListPlot({4, 5, 6}, DataRange -> {0, 3}), \"SVG\")", //
         "True");
   }
 
@@ -16473,10 +16580,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "f=NDSolveValue({y'(t)==-10^6*(y(t)-Cos(t)),y(0)==1},y,{t,0,4},Method->\"BDF\");"
             + "Max(Table(Abs(f(t)-ex(t)),{t,0.01,4,0.0577}))<10^-7", //
         "True");
-    check(
-        "ClearAll(y,f,ex);ex(t_):=10^6*(10^6*Cos(t)+Sin(t))/(10^12+1);"
-            + "f=NDSolveValue({y'(t)==-10^6*(y(t)-Cos(t)),y(0)==1},y,{t,0,4},Method->\"StiffnessSwitching\");"
-            + "Max(Table(Abs(f(t)-ex(t)),{t,0.01,4,0.0577}))<10^-7", //
+    check("ClearAll(y,f,ex);ex(t_):=10^6*(10^6*Cos(t)+Sin(t))/(10^12+1);"
+        + "f=NDSolveValue({y'(t)==-10^6*(y(t)-Cos(t)),y(0)==1},y,{t,0,4},Method->\"StiffnessSwitching\");"
+        + "Max(Table(Abs(f(t)-ex(t)),{t,0.01,4,0.0577}))<10^-7", //
         "True");
     check(
         "ClearAll(y,f,ex);ex(t_):=10^6*(10^6*Cos(t)+Sin(t))/(10^12+1);"
@@ -16494,8 +16600,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testGaussianMatrixEnsembles() {
     // a real symmetric and a Hermitian matrix of machine numbers
-    check("With({m=RandomVariate(GaussianOrthogonalMatrixDistribution(7))},"
-        + "{Dimensions(m), m==Transpose(m), MatrixQ(m, MachineNumberQ)})", //
+    check(
+        "With({m=RandomVariate(GaussianOrthogonalMatrixDistribution(7))},"
+            + "{Dimensions(m), m==Transpose(m), MatrixQ(m, MachineNumberQ)})", //
         "{{7,7},True,True}");
     check("With({m=RandomVariate(GaussianUnitaryMatrixDistribution(0.5, 3))},"
         + "{Dimensions(m), m==ConjugateTranspose(m), VectorQ(Eigenvalues(m), Element(#, Reals)&)})", //
@@ -16508,16 +16615,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,1}");
     // diagonal entries of variance sigma^2, off-diagonal ones (and their real and imaginary
     // parts) of variance sigma^2/2
-    check("With({m=RandomVariate(GaussianOrthogonalMatrixDistribution(2, 2), 4000)},"
-        + "{Abs(Variance(m[[All,2,2]])-4)<0.5, Abs(Variance(m[[All,1,2]])-2)<0.25,"
-        + " Abs(Mean(m[[All,2,1]]))<0.12})", //
+    check(
+        "With({m=RandomVariate(GaussianOrthogonalMatrixDistribution(2, 2), 4000)},"
+            + "{Abs(Variance(m[[All,2,2]])-4)<0.5, Abs(Variance(m[[All,1,2]])-2)<0.25,"
+            + " Abs(Mean(m[[All,2,1]]))<0.12})", //
         "{True,True,True}");
-    check("With({m=RandomVariate(GaussianUnitaryMatrixDistribution(2, 2), 4000)},"
-        + "{Abs(Variance(m[[All,1,1]])-4)<0.5, Abs(Variance(Re(m[[All,1,2]]))-2)<0.25,"
-        + " Abs(Variance(Im(m[[All,1,2]]))-2)<0.25, m[[All,2,1]]==Conjugate(m[[All,1,2]])})", //
+    check(
+        "With({m=RandomVariate(GaussianUnitaryMatrixDistribution(2, 2), 4000)},"
+            + "{Abs(Variance(m[[All,1,1]])-4)<0.5, Abs(Variance(Re(m[[All,1,2]]))-2)<0.25,"
+            + " Abs(Variance(Im(m[[All,1,2]]))-2)<0.25, m[[All,2,1]]==Conjugate(m[[All,1,2]])})", //
         "{True,True,True,True}");
-    check("SeedRandom(7); a=RandomVariate(GaussianUnitaryMatrixDistribution(3));"
-        + " SeedRandom(7); a==RandomVariate(GaussianUnitaryMatrixDistribution(3))", //
+    check(
+        "SeedRandom(7); a=RandomVariate(GaussianUnitaryMatrixDistribution(3));"
+            + " SeedRandom(7); a==RandomVariate(GaussianUnitaryMatrixDistribution(3))", //
         "True");
     // no sample for a size which is no positive integer or a scale which is not positive
     check("RandomVariate(GaussianOrthogonalMatrixDistribution(0))", //
@@ -16528,10 +16638,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "RandomVariate(GaussianUnitaryMatrixDistribution(-1.5,2))");
     check("RandomVariate(GaussianUnitaryMatrixDistribution(s, 2))", //
         "RandomVariate(GaussianUnitaryMatrixDistribution(s,2))");
-    check("{DistributionParameterQ(GaussianOrthogonalMatrixDistribution(3)),"
-        + " DistributionParameterQ(GaussianUnitaryMatrixDistribution(0.5, 2)),"
-        + " DistributionParameterQ(GaussianUnitaryMatrixDistribution(-2, 2)),"
-        + " DistributionParameterQ(GaussianOrthogonalMatrixDistribution(1.5))}", //
+    check(
+        "{DistributionParameterQ(GaussianOrthogonalMatrixDistribution(3)),"
+            + " DistributionParameterQ(GaussianUnitaryMatrixDistribution(0.5, 2)),"
+            + " DistributionParameterQ(GaussianUnitaryMatrixDistribution(-2, 2)),"
+            + " DistributionParameterQ(GaussianOrthogonalMatrixDistribution(1.5))}", //
         "{True,True,False,False}");
     check("Mean(GaussianOrthogonalMatrixDistribution(3, 2))", //
         "{{0,0},{0,0}}");
@@ -16542,26 +16653,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Attributes(MatrixPropertyDistribution)", //
         "{HoldAll,Protected}");
     // the random variable stays a symbol although it has a value
-    check("ClearAll(w);w = 7; Dimensions(RandomVariate(MatrixPropertyDistribution(Eigenvalues(w),"
-        + " Distributed(w, GaussianOrthogonalMatrixDistribution(2))), 5))", //
+    check(
+        "ClearAll(w);w = 7; Dimensions(RandomVariate(MatrixPropertyDistribution(Eigenvalues(w),"
+            + " Distributed(w, GaussianOrthogonalMatrixDistribution(2))), 5))", //
         "{5,2}");
-    check("Dimensions(RandomVariate(MatrixPropertyDistribution(Eigenvalues(x),"
-        + " Distributed(x, GaussianOrthogonalMatrixDistribution(4))), 3))", //
+    check(
+        "Dimensions(RandomVariate(MatrixPropertyDistribution(Eigenvalues(x),"
+            + " Distributed(x, GaussianOrthogonalMatrixDistribution(4))), 3))", //
         "{3,4}");
-    check("Dimensions(RandomVariate(MatrixPropertyDistribution(Take(Sort(Eigenvalues(y)), 2),"
-        + " Distributed(y, GaussianUnitaryMatrixDistribution(5))), {2,3}))", //
+    check(
+        "Dimensions(RandomVariate(MatrixPropertyDistribution(Take(Sort(Eigenvalues(y)), 2),"
+            + " Distributed(y, GaussianUnitaryMatrixDistribution(5))), {2,3}))", //
         "{2,3,2}");
-    check("Length(RandomVariate(MatrixPropertyDistribution(Eigenvalues(x),"
-        + " Distributed(x, GaussianUnitaryMatrixDistribution(6)))))", //
+    check(
+        "Length(RandomVariate(MatrixPropertyDistribution(Eigenvalues(x),"
+            + " Distributed(x, GaussianUnitaryMatrixDistribution(6)))))", //
         "6");
     // a scalar property gives a number for a single sample
-    check("MachineNumberQ(RandomVariate(MatrixPropertyDistribution(Tr(x),"
-        + " Distributed(x, GaussianOrthogonalMatrixDistribution(3)))))", //
+    check(
+        "MachineNumberQ(RandomVariate(MatrixPropertyDistribution(Tr(x),"
+            + " Distributed(x, GaussianOrthogonalMatrixDistribution(3)))))", //
         "True");
     // several random matrices
-    check("Dimensions(RandomVariate(MatrixPropertyDistribution(a.b,"
-        + " {Distributed(a, GaussianOrthogonalMatrixDistribution(2)),"
-        + " Distributed(b, GaussianUnitaryMatrixDistribution(2))}), 4))", //
+    check(
+        "Dimensions(RandomVariate(MatrixPropertyDistribution(a.b,"
+            + " {Distributed(a, GaussianOrthogonalMatrixDistribution(2)),"
+            + " Distributed(b, GaussianUnitaryMatrixDistribution(2))}), 4))", //
         "{4,2,2}");
     check("RandomVariate(MatrixPropertyDistribution(Tr(x), 7), 3)", //
         "RandomVariate(MatrixPropertyDistribution(Tr(x),7),3)");
@@ -16569,8 +16686,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvaluesHermitianAreReal() {
-    check("VectorQ(Eigenvalues({{2.0, 1.0+I, 0.0}, {1.0-I, 3.0, 0.5*I}, {0.0, -0.5*I, 1.0}}),"
-        + " Element(#, Reals)&)", //
+    check(
+        "VectorQ(Eigenvalues({{2.0, 1.0+I, 0.0}, {1.0-I, 3.0, 0.5*I}, {0.0, -0.5*I, 1.0}}),"
+            + " Element(#, Reals)&)", //
         "True");
     // not Hermitian
     check("VectorQ(Eigenvalues({{2.0, 1.0+I}, {1.0+I, 3.0}}), Element(#, Reals)&)", //
@@ -16587,7 +16705,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveRadicalSystemVariableOrder() {
-    check("Solve({Sqrt((x-2)^2+y^2)+Sqrt((x+2)^2+y^2)==5, Sqrt(x^2+(y-2)^2)+Sqrt(x^2+(y+2)^2)==5}, {x,y})", //
+    check(
+        "Solve({Sqrt((x-2)^2+y^2)+Sqrt((x+2)^2+y^2)==5, Sqrt(x^2+(y-2)^2)+Sqrt(x^2+(y+2)^2)==5}, {x,y})", //
         "{{x->-15/(2*Sqrt(34)),y->-15/(2*Sqrt(34))},{x->-15/(2*Sqrt(34)),y->15/(2*Sqrt(34))},{x->\n"
             + "15/(2*Sqrt(34)),y->-15/(2*Sqrt(34))},{x->15/(2*Sqrt(34)),y->15/(2*Sqrt(34))}}");
     check("Solve({u+v==3, u-v==1}, {v,u})", //
@@ -16611,17 +16730,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNSolveSquareRootSystem() {
     // the sums of the distances to two points: two real and two complex solutions
-    check("s = NSolve({Sqrt(x^2+y^2)+Sqrt((x-4)^2+y^2)==6, "
-        + "Sqrt(x^2+(y-1)^2)+Sqrt((x-4)^2+(y+2)^2)==7}, {x,y}); "
-        + "{Length(s), Max(Abs({Sqrt(x^2+y^2)+Sqrt((x-4)^2+y^2)-6, "
-        + "Sqrt(x^2+(y-1)^2)+Sqrt((x-4)^2+(y+2)^2)-7} /. s)) < 10^(-8)}", //
+    check(
+        "s = NSolve({Sqrt(x^2+y^2)+Sqrt((x-4)^2+y^2)==6, "
+            + "Sqrt(x^2+(y-1)^2)+Sqrt((x-4)^2+(y+2)^2)==7}, {x,y}); "
+            + "{Length(s), Max(Abs({Sqrt(x^2+y^2)+Sqrt((x-4)^2+y^2)-6, "
+            + "Sqrt(x^2+(y-1)^2)+Sqrt((x-4)^2+(y+2)^2)-7} /. s)) < 10^(-8)}", //
         "{4,True}");
-    check("s = NSolve({9.25 == Sqrt((x-1.5)^2+y^2)+Sqrt((x+3.)^2+(y-2.)^2), "
-        + "8.5 == Sqrt(x^2+(y+4.)^2)+Sqrt((x-2.)^2+(y-1.)^2)}, {x,y}); "
-        + "Round(Cases({x,y} /. s, {_Real,_Real}), 0.001)", //
+    check(
+        "s = NSolve({9.25 == Sqrt((x-1.5)^2+y^2)+Sqrt((x+3.)^2+(y-2.)^2), "
+            + "8.5 == Sqrt(x^2+(y+4.)^2)+Sqrt((x-2.)^2+(y-1.)^2)}, {x,y}); "
+            + "Round(Cases({x,y} /. s, {_Real,_Real}), 0.001)", //
         "{{-2.427,-2.538},{3.541,1.776}}");
-    check("Max(Abs({Sqrt((x-1.5)^2+y^2)+Sqrt((x+3.)^2+(y-2.)^2)-9.25, "
-        + "Sqrt(x^2+(y+4.)^2)+Sqrt((x-2.)^2+(y-1.)^2)-8.5} /. s)) < 10^(-8)", //
+    check(
+        "Max(Abs({Sqrt((x-1.5)^2+y^2)+Sqrt((x+3.)^2+(y-2.)^2)-9.25, "
+            + "Sqrt(x^2+(y+4.)^2)+Sqrt((x-2.)^2+(y-1.)^2)-8.5} /. s)) < 10^(-8)", //
         "True");
   }
 
@@ -16683,28 +16805,33 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNDSolveMachineRightHandSides() {
     // coefficients beyond the range of machine numbers keep their precision
-    check("s = NDSolve({y'(t) == 2.*^320*y(t)/4.*^320, y(0) == 1}, y, {t, 0, 2});"
-        + " Abs((y(2) /. First(s)) - E) < 10^-6", //
+    check(
+        "s = NDSolve({y'(t) == 2.*^320*y(t)/4.*^320, y(0) == 1}, y, {t, 0, 2});"
+            + " Abs((y(2) /. First(s)) - E) < 10^-6", //
         "True");
     // a coefficient of 20 digits is integrated in machine numbers
-    check("s = NDSolve({y'(t) == -0.50000000000000000000*y(t), y(0) == 1}, y, {t, 0, 2});"
-        + " Abs((y(2) /. First(s)) - Exp(-1.0)) < 10^-9", //
+    check(
+        "s = NDSolve({y'(t) == -0.50000000000000000000*y(t), y(0) == 1}, y, {t, 0, 2});"
+            + " Abs((y(2) /. First(s)) - Exp(-1.0)) < 10^-9", //
         "True");
     // a long integration whose right hand sides are evaluated by their machine number operations
-    check("s = NDSolve({x'(t) == y(t), y'(t) == -x(t), x(0) == 1, y(0) == 0}, {x, y}, "
-        + "{t, 0, 4000}); Abs((x(4000) /. First(s)) - Cos(4000.0)) < 10^-6", //
+    check(
+        "s = NDSolve({x'(t) == y(t), y'(t) == -x(t), x(0) == 1, y(0) == 0}, {x, y}, "
+            + "{t, 0, 4000}); Abs((x(4000) /. First(s)) - Cos(4000.0)) < 10^-6", //
         "True");
     // a right hand side which isn't a real number is evaluated symbolically
-    check("s = NDSolve({y'(t) == Sqrt(y(t)-2), y(0) == 1}, y, {t, 0, 1});"
-        + " Chop((y(1) /. First(s)) - (5/4 + I))", //
+    check(
+        "s = NDSolve({y'(t) == Sqrt(y(t)-2), y(0) == 1}, y, {t, 0, 1});"
+            + " Chop((y(1) /. First(s)) - (5/4 + I))", //
         "0");
   }
 
   @Test
   public void testTimeSeries() {
     // a path needs one time for each of its values
-    check("TemporalData(TimeSeries, {{{7, 8, 9}}, {{{1, 2}}}, 1, {\"Continuous\", 1}, "
-        + "{\"Discrete\", 1}, 1, {}}, False, 15.0)[\"Path\"] // Head", //
+    check(
+        "TemporalData(TimeSeries, {{{7, 8, 9}}, {{{1, 2}}}, 1, {\"Continuous\", 1}, "
+            + "{\"Discrete\", 1}, 1, {}}, False, 15.0)[\"Path\"] // Head", //
         "TemporalData(TimeSeries,{{{7,8,9}},{{{1,2}}},1,{Continuous,1},{Discrete,1},1,{}},False,15.0)");
     check("TimeSeries({4, 5, 6}, {0, 4, 2})[\"Path\"]", //
         "{{0,4},{2,5},{4,6}}");
@@ -16713,14 +16840,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,5},{3,6},{5,4}}");
     check("Normal(TimeSeries({{2, b}, {1, a}}))", //
         "{{1,a},{2,b}}");
-    check("ts = TimeSeries({4, 5, 6}, {0, 1}); {ts[\"Times\"], ts[\"Values\"], "
-        + "ts[\"FirstTime\"], ts[\"LastTime\"], ts[\"PathLength\"], ts[\"LastValue\"]}", //
+    check(
+        "ts = TimeSeries({4, 5, 6}, {0, 1}); {ts[\"Times\"], ts[\"Values\"], "
+            + "ts[\"FirstTime\"], ts[\"LastTime\"], ts[\"PathLength\"], ts[\"LastValue\"]}", //
         "{{0,1/2,1},{4,5,6},0,1,3,6}");
     // the times don't fit the values
     check("TimeSeries({4, 5}, {0, 4, 2})", //
         "TimeSeries({4,5},{0,4,2})");
-    check("Normal(TemporalData(TimeSeries, {{{8, 9}}, {{0, 1/2, 1/2}}, 1, {\"Continuous\", 1}, "
-        + "{\"Discrete\", 1}, 1, {}}, False, 15.0))", //
+    check(
+        "Normal(TemporalData(TimeSeries, {{{8, 9}}, {{0, 1/2, 1/2}}, 1, {\"Continuous\", 1}, "
+            + "{\"Discrete\", 1}, 1, {}}, False, 15.0))", //
         "{{0,8},{1/2,9}}");
   }
 
@@ -16737,14 +16866,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Normal(GraphicsComplex({{1,2},{3,4}}, {Disk(1, 1/2), Text(\"p\", 2)}))", //
         "{Disk({1,2},1/2),Text(p,{3,4})}");
     // faces given by indices take the point table along
-    check("Normal(GraphicsComplex({{0,0,0},{2,0,0},{0,2,0},{0,0,2}}, "
-        + "Polyhedron({{1,3,2},{1,2,4},{1,4,3},{2,3,4}})))", //
+    check(
+        "Normal(GraphicsComplex({{0,0,0},{2,0,0},{0,2,0},{0,0,2}}, "
+            + "Polyhedron({{1,3,2},{1,2,4},{1,4,3},{2,3,4}})))", //
         "{Polyhedron({{0,0,0},{2,0,0},{0,2,0},{0,0,2}},{{1,3,2},{1,2,4},{1,4,3},{2,3,4}})}");
     // a GraphicsComplex anywhere inside the argument
     check("Normal({7, h(GraphicsComplex({{2,2},{4,4}}, Line({2,1})))})", //
         "{7,h({Line({{4,4},{2,2}})})}");
-    check("List @@ Normal(Graphics({Green, GraphicsComplex({{2,2},{4,4}}, Point(2))}, "
-        + "Frame->True))", //
+    check(
+        "List @@ Normal(Graphics({Green, GraphicsComplex({{2,2},{4,4}}, Point(2))}, "
+            + "Frame->True))", //
         "{{RGBColor(0,1,0),{{Point({4,4})}}},Frame->True}");
     check("List @@ Normal(Graphics(GraphicsComplex({{2,2},{4,4}}, Line({1,2}))))", //
         "{{Line({{2,2},{4,4}})}}");
@@ -16752,8 +16883,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "g({Line({{2,2},{4,4}})})");
     check("Normal(g(GraphicsComplex({{2,2},{4,4}}, Line({1,2}))), {SeriesData})", //
         "g(GraphicsComplex({{2,2},{4,4}},Line({1,2})))");
-    check("Normal({SeriesData(t, 0, {2, 3}, 0, 2, 1), "
-        + "GraphicsComplex({{2,2},{4,4}}, Line({1,2}))})", //
+    check(
+        "Normal({SeriesData(t, 0, {2, 3}, 0, 2, 1), "
+            + "GraphicsComplex({{2,2},{4,4}}, Line({1,2}))})", //
         "{2+3*t,{Line({{2,2},{4,4}})}}");
   }
 
@@ -16764,20 +16896,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "{y, -0.003, 0.003}); Length(Union(Round(cp[[1, 1, 1, All, 1]] - 5*10^5, 10^-5))) > 10", //
         "True");
     // the curves of an equation are kept in a GraphicsComplex, with nothing else beside it
-    check("cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
-        + "{Head(cp[[1]]), Head(cp[[1, 1]]), Length(cp[[1]]), cp[[1, 2]]}", //
+    check(
+        "cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
+            + "{Head(cp[[1]]), Head(cp[[1, 1]]), Length(cp[[1]]), cp[[1, 2]]}", //
         "{List,GraphicsComplex,2,{}}");
     // the lines refer to the point table by index
-    check("cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
-        + "AllTrue(Cases(cp[[1, 1, 2]], Line(l_) :> l, Infinity), VectorQ(#, IntegerQ) &)", //
+    check(
+        "cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
+            + "AllTrue(Cases(cp[[1, 1, 2]], Line(l_) :> l, Infinity), VectorQ(#, IntegerQ) &)", //
         "True");
     // and the points they stand for lie on the curve
     check("cp = ContourPlot(x^2 - y == 0, {x, -2, 2}, {y, -1, 3}); "
         + "Max(Abs(#[[1]]^2 - #[[2]]) & /@ Flatten(Cases(Normal(cp), Line(l_) :> l, Infinity), 1))"
         + " < 0.05", //
         "True");
-    check("cp = ContourPlot(x + y == 1, {x, 0, 2}, {y, 0, 2}, ContourStyle -> {Orange}); "
-        + "{Head(cp[[1, 1]]), Cases(cp[[1]], _RGBColor, Infinity)}", //
+    check(
+        "cp = ContourPlot(x + y == 1, {x, 0, 2}, {y, 0, 2}, ContourStyle -> {Orange}); "
+            + "{Head(cp[[1, 1]]), Cases(cp[[1]], _RGBColor, Infinity)}", //
         "{GraphicsComplex,{RGBColor(1.0,0.5,0.0)}}");
     // shaded contours of a function too; the mesh is drawn beside the complex
     check("cp = ContourPlot(x - y, {x, 0, 1}, {y, 0, 1}, PlotPoints -> 4, Contours -> 1, "
@@ -16811,16 +16946,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{Floor(1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)), Floor(-1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)), "
         + "Ceiling(1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)), Ceiling(-1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5))}", //
         "{6,5,7,6}");
-    check("{IntegerPart(-1/10^20-(Sqrt(5)+1)^2+2*Sqrt(5)), "
-        + "Round(1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)-1/2), "
-        + "Round(-1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)-1/2)}", //
+    check(
+        "{IntegerPart(-1/10^20-(Sqrt(5)+1)^2+2*Sqrt(5)), "
+            + "Round(1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)-1/2), "
+            + "Round(-1/10^20+(Sqrt(5)+1)^2-2*Sqrt(5)-1/2)}", //
         "{-6,6,5}");
-    check("{Floor(-E), Ceiling(-E), Round(E), IntegerPart(-Pi), FractionalPart(-Pi), "
-        + "Floor(E*10^25), Ceiling(2+E^(-60)), Floor(2-E^(-60))}", //
+    check(
+        "{Floor(-E), Ceiling(-E), Round(E), IntegerPart(-Pi), FractionalPart(-Pi), "
+            + "Floor(E*10^25), Ceiling(2+E^(-60)), Floor(2-E^(-60))}", //
         "{-3,-2,3,-3,3-Pi,27182818284590452353602874,3,1}");
     // the ends of the range are rescaled to the ends of the target range exactly
-    check("v = {3, 2, 1}*Log(600/{7, 11, 500}); "
-        + "Floor(Rescale(v, {Min(v), Max(v)}, {4, 20}))", //
+    check("v = {3, 2, 1}*Log(600/{7, 11, 500}); " + "Floor(Rescale(v, {Min(v), Max(v)}, {4, 20}))", //
         "{20,13,4}");
   }
 
@@ -16868,7 +17004,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToString(1+y^3, StandardForm)", //
         "\\!\\(\\*RowBox[{\"1\", \"+\", SuperscriptBox[\"y\", \"3\"]}]\\)");
     // boxes which are text are that text
-    check("{ToString(p+q, StandardForm), ToString(\"pq\", StandardForm), ToString(17, StandardForm)}", //
+    check(
+        "{ToString(p+q, StandardForm), ToString(\"pq\", StandardForm), ToString(17, StandardForm)}", //
         "{p+q,pq,17}");
     // the string reads back as the expression
     check("ToExpression(ToString(y^3+2, StandardForm))", //
@@ -16908,27 +17045,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBSplineFunctionDerivative() {
-    check("f = BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}}); "
-        + "{f'(0.5), f''(0.2), Derivative(3)[f][0.7], Derivative(4)[f][0.7]}", //
+    check(
+        "f = BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}}); "
+            + "{f'(0.5), f''(0.2), Derivative(3)[f][0.7], Derivative(4)[f][0.7]}", //
         "{{5.25,-1.5},{-1.2,-18.0},{-6.0,60.0},{0.0,0.0}}");
     // beyond the ends a clamped spline is constant
-    check("f = BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}}, "
-        + "Method -> {\"Extrapolation\" -> \"Clamp\"}); {f'(1.25), f'(-0.5), f'(0.5)}", //
+    check(
+        "f = BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}}, "
+            + "Method -> {\"Extrapolation\" -> \"Clamp\"}); {f'(1.25), f'(-0.5), f'(0.5)}", //
         "{{0.0,0.0},{0.0,0.0},{5.25,-1.5}}");
     // a symbolic parameter stays unevaluated
     check("Head(Derivative(1)[BSplineFunction({{0, 1}, {2, 3}, {4, 0}, {5, 2}})][x])", //
         "Derivative(1)[BSplineFunction({{0,1},{2,3},{4,0},{5,2}})]");
     // a scalar spline with inner knots, and its slopes at the ends
-    check("k = BSplineFunction({0, 2, 1, 4, 3, 5, 1}); "
-        + "{k'(0.45), k''(0.45), k'(1.0), k'(0.0), Derivative(4)[k][0.3]}", //
+    check(
+        "k = BSplineFunction({0, 2, 1, 4, 3, 5, 1}); "
+            + "{k'(0.45), k''(0.45), k'(1.0), k'(0.0), Derivative(4)[k][0.3]}", //
         "{6.52,-36.8,-48.0,24.0,0.0}");
     // a closed spline and a surface
-    check("c = BSplineFunction({{0., 0.}, {1., 2.}, {2., 1.}, {3., 3.}}, SplineClosed -> True); "
-        + "{c'(0.3), c''(0.3)}", //
+    check(
+        "c = BSplineFunction({{0., 0.}, {1., 2.}, {2., 1.}, {3., 3.}}, SplineClosed -> True); "
+            + "{c'(0.3), c''(0.3)}", //
         "{{4.0,0.08},{0.0,-28.8}}");
-    check("s = BSplineFunction({{0, 1, 2}, {1, 3, 2}, {2, 0, 1}}, 2); "
-        + "{Derivative(1, 0)[s][0.3, 0.6], Derivative(1, 1)[s][0.3, 0.6], "
-        + "Derivative(0, 3)[s][0.3, 0.6]}", //
+    check(
+        "s = BSplineFunction({{0, 1, 2}, {1, 3, 2}, {2, 0, 1}}, 2); "
+            + "{Derivative(1, 0)[s][0.3, 0.6], Derivative(1, 1)[s][0.3, 0.6], "
+            + "Derivative(0, 3)[s][0.3, 0.6]}", //
         "{0.584,-2.72,0.0}");
   }
 
@@ -16940,11 +17082,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("b = NumericArray({{5, 6, 7}, {8, 9, 10}}, \"Integer32\"); "
         + "{b[[2, 3]], b[[-1, 1]], Normal(b[[All, 3]]), Head(b[[2]]), b[[0]], Total(b), Total(b, 2)}", //
         "{10,8,{7,10},NumericArray,NumericArray,{13,15,17},45}");
-    check("b = NumericArray({{5, 6, 7}, {8, 9, 10}}, \"Integer32\"); "
-        + "{NumericArrayType(Transpose(b)), Normal(Transpose(b)), Normal(Join(b, b))}", //
+    check(
+        "b = NumericArray({{5, 6, 7}, {8, 9, 10}}, \"Integer32\"); "
+            + "{NumericArrayType(Transpose(b)), Normal(Transpose(b)), Normal(Join(b, b))}", //
         "{Integer32,{{5,8},{6,9},{7,10}},{{5,6,7},{8,9,10},{5,6,7},{8,9,10}}}");
-    check("r = NumericArray({{1.5, -2.0}, {0.25, 3.0}}, \"Real64\"); "
-        + "{NumericArrayType(Reverse(r)), Normal(Reverse(r)), Total(r), Max(r), r[[2, 1]]}", //
+    check(
+        "r = NumericArray({{1.5, -2.0}, {0.25, 3.0}}, \"Real64\"); "
+            + "{NumericArrayType(Reverse(r)), Normal(Reverse(r)), Total(r), Max(r), r[[2, 1]]}", //
         "{Real64,{{0.25,3.0},{1.5,-2.0}},{1.75,1.0},3.0,0.25}");
   }
 
@@ -17155,45 +17299,54 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   /** A Dynamic among the primitives of a picture is drawn with its current value. */
   @Test
   public void testDynamicPrimitivesInSVG() {
-    check("Module({n = 3}, StringCount(ExportString(Graphics({Dynamic(Table(Disk({j, 0}, 0.4), "
-        + "{j, n}))}), \"SVG\"), \"<ellipse\"))", //
+    check(
+        "Module({n = 3}, StringCount(ExportString(Graphics({Dynamic(Table(Disk({j, 0}, 0.4), "
+            + "{j, n}))}), \"SVG\"), \"<ellipse\"))", //
         "3");
-    check("Module({n = 4}, StringCount(ExportString(Graphics3D(Dynamic(Table(Point({j, j, j}), "
-        + "{j, n}))), \"SVG\"), \"<circle\"))", //
+    check(
+        "Module({n = 4}, StringCount(ExportString(Graphics3D(Dynamic(Table(Point({j, j, j}), "
+            + "{j, n}))), \"SVG\"), \"<circle\"))", //
         "4");
   }
 
   /** FrameTicksStyle and TicksStyle style the tick marks and tick labels in SVG. */
   @Test
   public void testTicksStyleInSVG() {
-    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
-        + "FrameTicksStyle -> Red), \"SVG\"), \"fill:rgb(255,0,0)\") > 0", //
+    check(
+        "StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
+            + "FrameTicksStyle -> Red), \"SVG\"), \"fill:rgb(255,0,0)\") > 0", //
         "True");
-    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True), \"SVG\"), "
-        + "\"fill:rgb(255,0,0)\")", //
+    check(
+        "StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True), \"SVG\"), "
+            + "\"fill:rgb(255,0,0)\")", //
         "0");
     // a number inside a directive is the font size of the labels
-    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
-        + "FrameTicksStyle -> Directive(Green, 7)), \"SVG\"), \"font-size:7px\") > 0", //
+    check(
+        "StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
+            + "FrameTicksStyle -> Directive(Green, 7)), \"SVG\"), \"font-size:7px\") > 0", //
         "True");
     // the ticks style goes on top of LabelStyle
-    check("StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
-        + "FrameTicksStyle -> {Red, 14}, LabelStyle -> Bold), \"SVG\"), "
-        + "\"fill:rgb(255,0,0);font-family:sans-serif;font-size:14px;font-weight:bold\") > 0", //
+    check(
+        "StringCount(ExportString(ListPlot({{1, 3}, {2, 5}}, Frame -> True, "
+            + "FrameTicksStyle -> {Red, 14}, LabelStyle -> Bold), \"SVG\"), "
+            + "\"fill:rgb(255,0,0);font-family:sans-serif;font-size:14px;font-weight:bold\") > 0", //
         "True");
-    check("StringCount(ExportString(Plot(x, {x, 0, 2}, TicksStyle -> Red), \"SVG\"), "
-        + "\"fill:rgb(255,0,0)\") > 0", //
+    check(
+        "StringCount(ExportString(Plot(x, {x, 0, 2}, TicksStyle -> Red), \"SVG\"), "
+            + "\"fill:rgb(255,0,0)\") > 0", //
         "True");
   }
 
   /** LABColor and XYZColor, relative to the D50 white point, are colour directives in SVG. */
   @Test
   public void testLabXyzColorDirectivesInSVG() {
-    check("StringCases(ExportString(Graphics({XYZColor(0.2, 0.1, 0.5), Disk()}), \"SVG\"), "
-        + "\"rgb(\" ~~ Shortest(x__) ~~ \")\")", //
+    check(
+        "StringCases(ExportString(Graphics({XYZColor(0.2, 0.1, 0.5), Disk()}), \"SVG\"), "
+            + "\"rgb(\" ~~ Shortest(x__) ~~ \")\")", //
         "{rgb(129,29,217)}");
-    check("StringCases(ExportString(Graphics({LABColor(0.4, 0.15, 0.1), Disk()}), \"SVG\"), "
-        + "\"rgb(\" ~~ Shortest(x__) ~~ \")\")", //
+    check(
+        "StringCases(ExportString(Graphics({LABColor(0.4, 0.15, 0.1), Disk()}), \"SVG\"), "
+            + "\"rgb(\" ~~ Shortest(x__) ~~ \")\")", //
         "{rgb(121,85,79)}");
   }
 
@@ -17237,8 +17390,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a real number with an integer value is that integer in a sequence specification
     check("{Take({p,q,r,s,t}, 2.0), Drop({p,q,r,s,t}, -3.0), Take({p,q,r,s,t}, -2.0)}", //
         "{{p,q},{p,q},{s,t}}");
-    check("{Take({p,q,r,s,t}, {2.0, 4.0}), Take({p,q,r,s,t,u}, {2.0, 6.0, 2.0}), "
-        + "Drop({p,q,r,s}, {3.0}), Drop({p,q,r,s,t,u}, {1.0, -1.0, 2.0})}", //
+    check(
+        "{Take({p,q,r,s,t}, {2.0, 4.0}), Take({p,q,r,s,t,u}, {2.0, 6.0, 2.0}), "
+            + "Drop({p,q,r,s}, {3.0}), Drop({p,q,r,s,t,u}, {1.0, -1.0, 2.0})}", //
         "{{q,r,s},{q,s,u},{p,q,s},{q,s,u}}");
     check("{Take({p,q,r}, 0.0), Drop({p,q,r}, 0.0)}", //
         "{{},{p,q,r}}");
@@ -17280,7 +17434,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,1,2,1,2,1}");
     check("ContinuedFraction(1/3+Sqrt(6)/4, 4)", //
         "{0,1,17,2}");
-    check("FromContinuedFraction(ContinuedFraction(5/11-2*Sqrt(15)/9)) == 5/11-2*Sqrt(15)/9 // Simplify", //
+    check(
+        "FromContinuedFraction(ContinuedFraction(5/11-2*Sqrt(15)/9)) == 5/11-2*Sqrt(15)/9 // Simplify", //
         "True");
   }
 
@@ -17380,15 +17535,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testSvgTextNumberFormLabel() {
     // the exponent of a number in scientific notation is drawn in superscript digits
-    check("StringCases(ExportString(Graphics({Text(Row({\"F = \", NumberForm(4.5*^9, {3, 1}), \" N\"}), {0, 0})}), \"SVG\"), "
-        + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
+    check(
+        "StringCases(ExportString(Graphics({Text(Row({\"F = \", NumberForm(4.5*^9, {3, 1}), \" N\"}), {0, 0})}), \"SVG\"), "
+            + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
         "{F = 4.5 × 10⁹ N}");
-    check("StringCases(ExportString(Graphics({Text(NumberForm(-2.5*^-12, {3, 2}), {0, 0})}), \"SVG\"), "
-        + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
+    check(
+        "StringCases(ExportString(Graphics({Text(NumberForm(-2.5*^-12, {3, 2}), {0, 0})}), \"SVG\"), "
+            + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
         "{-2.50 × 10⁻¹²}");
     // a box escape in a label is drawn as the text it typesets
-    check("StringCases(ExportString(Graphics({Text(Row({\"r = \", ToString(TraditionalForm(NumberForm(2.2360679775, {5, 2})))}))}), \"SVG\"), "
-        + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
+    check(
+        "StringCases(ExportString(Graphics({Text(Row({\"r = \", ToString(TraditionalForm(NumberForm(2.2360679775, {5, 2})))}))}), \"SVG\"), "
+            + "RegularExpression(\">([^<]*)</text>\") -> \"$1\")", //
         "{r = 2.24}");
   }
 
@@ -17553,13 +17711,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testDSolveSystemInitialValueForms() {
     // the smallest exponential factored out
-    check("DSolve({x'(t) == 3*x(t) + y(t), y'(t) == x(t) + 3*y(t), x(0) == 3, y(0) == 1}, {x, y}, t)", //
+    check(
+        "DSolve({x'(t) == 3*x(t) + y(t), y'(t) == x(t) + 3*y(t), x(0) == 3, y(0) == 1}, {x, y}, t)", //
         "{{x->Function({t},E^(2*t)*(1+2*E^(2*t))),y->Function({t},E^(2*t)*(-1+2*E^(2*t)))}}");
     // a real system with imaginary eigenvalues has a real solution
     check(
         "{u(t), v(t)} /. DSolve({u''(t) + 5*u(t) - v(t) == 0, v''(t) + 5*v(t) - u(t) == 0, u(0) == 1, v(0) == 0, u'(0) == 0, v'(0) == 0}, {u, v}, t)", //
         "{{1/2*(Cos(2*t)+Cos(Sqrt(6)*t)),1/2*(Cos(2*t)-Cos(Sqrt(6)*t))}}");
-    check("DSolve({x'(t) == x(t) - 2*y(t), y'(t) == 2*x(t) + y(t), x(0) == 1, y(0) == 0}, {x, y}, t)", //
+    check(
+        "DSolve({x'(t) == x(t) - 2*y(t), y'(t) == 2*x(t) + y(t), x(0) == 1, y(0) == 0}, {x, y}, t)", //
         "{{x->Function({t},E^t*Cos(2*t)),y->Function({t},E^t*Sin(2*t))}}");
   }
 
@@ -17679,8 +17839,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testLinearModelFitDataAndMessages() {
     // a data point with a Missing() entry is left out; a vector keeps the positions as x values
-    check("LinearModelFit({{1, 2.0}, {2, Missing()}, {3, 5.0}, {5, 8.0}}, x, x)"
-        + "[\"BestFitParameters\"]", //
+    check(
+        "LinearModelFit({{1, 2.0}, {2, Missing()}, {3, 5.0}, {5, 8.0}}, x, x)"
+            + "[\"BestFitParameters\"]", //
         "{0.5,1.5}");
     check("LinearModelFit({2, Missing(), 6, 9}, x, x)[\"BestFitParameters\"]", //
         "{-0.428571,2.28571}");
@@ -17699,12 +17860,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("LinearModelFit({}, x, x)", //
         "LinearModelFit({},x,x)");
     // a model takes one value per variable, and a list is not threaded over
-    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
-        + "{fm(1, 2), fm({1, 2}), fm(2)}", //
+    check(
+        "fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+            + "{fm(1, 2), fm({1, 2}), fm(2)}", //
         "{FittedModel[0.155814+0.995349*x][1,2],FittedModel[0.155814+0.995349*x][{1,2}],2.14651}");
     // an unknown name in a list of properties leaves the query unevaluated
-    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
-        + "Head(Head(fm({\"RSquared\", \"NoProperty\"})))", //
+    check(
+        "fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+            + "Head(Head(fm({\"RSquared\", \"NoProperty\"})))", //
         "FittedModel");
     check("fm = LinearModelFit({{1, 2, 3}, {2, 3, 5}, {3, 5, 6}, {4, 4, 9}}, "
         + "{Subscript(z, 1), Subscript(z, 1)*Subscript(z, 2)}, {Subscript(z, 1), Subscript(z, 2)});"
@@ -17714,14 +17877,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLinearModelFitCovarianceAndBands() {
-    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
-        + "fm(\"CovarianceMatrix\")", //
+    check(
+        "fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+            + "fm(\"CovarianceMatrix\")", //
         "{{0.0615197,-0.0139445},{-0.0139445,0.00410132}}");
-    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
-        + "r = fm(\"ParameterConfidenceRegion\"); {Head(r), r[[1]], r[[2]]}", //
+    check(
+        "fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+            + "r = fm(\"ParameterConfidenceRegion\"); {Head(r), r[[1]], r[[2]]}", //
         "{FittedModels`ParameterEllipsoid,{0.155814,0.995349},{1.11201,0.130684}}");
-    check("fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
-        + "{fm(\"SinglePredictionBands\") /. x -> 4, fm(\"MeanPredictionBands\") /. x -> 4}", //
+    check(
+        "fm = LinearModelFit({{1, 1.0}, {2, 2.5}, {3, 2.9}, {5, 5.2}, {6, 6.1}}, x, x);"
+            + "{fm(\"SinglePredictionBands\") /. x -> 4, fm(\"MeanPredictionBands\") /. x -> 4}", //
         "{{3.20324,5.07118},{3.73991,4.53451}}");
     // no residual degrees of freedom: the variance is 0/0
     check("LinearModelFit({{1, 2}, {4, 7}}, x, x)[\"ParameterTableEntries\"][[All, 2;;]]", //
@@ -17730,40 +17896,46 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGeneralizedLinearModelFitFamilies() {
-    check("g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
-        + "ExponentialFamily -> \"Poisson\");"
-        + "{g(\"BestFitParameters\"), g(\"PearsonResiduals\"), g(\"ResidualDeviance\")}", //
+    check(
+        "g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
+            + "ExponentialFamily -> \"Poisson\");"
+            + "{g(\"BestFitParameters\"), g(\"PearsonResiduals\"), g(\"ResidualDeviance\")}", //
         "{{0.35557,0.379423},{-0.751649,0.545432,-0.215195,0.584194,-0.242196},1.39735}");
-    check("g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
-        + "ExponentialFamily -> \"Poisson\");"
-        + "g(\"AnscombeResiduals\")", //
+    check(
+        "g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
+            + "ExponentialFamily -> \"Poisson\");" + "g(\"AnscombeResiduals\")", //
         "{-0.839112,0.520378,-0.219028,0.563905,-0.244897}");
     // the Pearson residuals are (y - mu)/Sqrt(V(mu))
-    check("g = GeneralizedLinearModelFit({{1, 1.5}, {2, 2.}, {3, 4.5}, {5, 6.}}, x, x, "
-        + "ExponentialFamily -> \"Gamma\"); mu = g(\"PredictedResponse\");"
-        + "{g(\"BestFitParameters\"), g(\"EstimatedDispersion\"), "
-        + "Max(Abs(g(\"PearsonResiduals\") - ({1.5, 2., 4.5, 6.} - mu)/mu)) < 10^-12}", //
+    check(
+        "g = GeneralizedLinearModelFit({{1, 1.5}, {2, 2.}, {3, 4.5}, {5, 6.}}, x, x, "
+            + "ExponentialFamily -> \"Gamma\"); mu = g(\"PredictedResponse\");"
+            + "{g(\"BestFitParameters\"), g(\"EstimatedDispersion\"), "
+            + "Max(Abs(g(\"PearsonResiduals\") - ({1.5, 2., 4.5, 6.} - mu)/mu)) < 10^-12}", //
         "{{0.601215,-0.0901429},0.163779,True}");
     // the Gaussian family stays a generalized linear model
-    check("g = GeneralizedLinearModelFit({{1, 3.}, {2, 4.}, {4, 7.5}, {5, 9.}}, x, x);"
-        + "{g(\"BestFitParameters\"), g(\"EstimatedDispersion\"), Head(Head(g(\"RSquared\")))}", //
+    check(
+        "g = GeneralizedLinearModelFit({{1, 3.}, {2, 4.}, {4, 7.5}, {5, 9.}}, x, x);"
+            + "{g(\"BestFitParameters\"), g(\"EstimatedDispersion\"), Head(Head(g(\"RSquared\")))}", //
         "{{1.225,1.55},0.08125,FittedModel}");
     // Deviance is not a property
-    check("g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
-        + "ExponentialFamily -> \"Poisson\"); Head(Head(g(\"Deviance\")))", //
+    check(
+        "g = GeneralizedLinearModelFit({{1, 1}, {2, 4}, {3, 4}, {4, 8}, {6, 13}}, x, x, "
+            + "ExponentialFamily -> \"Poisson\"); Head(Head(g(\"Deviance\")))", //
         "FittedModel");
     check("GeneralizedLinearModelFit({{1., 2, 3}, {2., 4, 1}}, x, x)", //
         "GeneralizedLinearModelFit({{1.0,2,3},{2.0,4,1}},x,x)");
-    check("{DiscreteIndicator(b, b, {a, b, c}), DiscreteIndicator(c, a, {a, b, c}), "
-        + "DiscreteIndicator(d, a, {a, b, c})}", //
+    check(
+        "{DiscreteIndicator(b, b, {a, b, c}), DiscreteIndicator(c, a, {a, b, c}), "
+            + "DiscreteIndicator(d, a, {a, b, c})}", //
         "{1,0,DiscreteIndicator(d,a,{a,b,c})}");
   }
 
   @Test
   public void testLogitProbitModelFit() {
-    check("d = {{1, 0}, {2, 1}, {3, 0}, {4, 1}, {5, 1}, {6, 1}, {7, 1}};"
-        + "{LogitModelFit(d, x, x)[\"BestFitParameters\"], "
-        + "ProbitModelFit(d, x, x)[\"BestFitParameters\"], LogitModelFit(d, x, x)[2.5]}", //
+    check(
+        "d = {{1, 0}, {2, 1}, {3, 0}, {4, 1}, {5, 1}, {6, 1}, {7, 1}};"
+            + "{LogitModelFit(d, x, x)[\"BestFitParameters\"], "
+            + "ProbitModelFit(d, x, x)[\"BestFitParameters\"], LogitModelFit(d, x, x)[2.5]}", //
         "{{-2.81264,1.1629},{-1.74502,0.715853},0.523636}");
     check("d = {{1, 0}, {2, 1}, {3, 0}, {4, 1}, {5, 1}, {6, 1}, {7, 1}};"
         + "LogitModelFit(d, x, x)[\"BestFitParameters\"] == "
@@ -17820,18 +17992,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNDEigenvalues() {
     // Dirichlet ends: (k*Pi/3)^2
-    checkNumeric("NDEigenvalues({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x), {x, 0, 3}, 3)", //
+    checkNumeric(
+        "NDEigenvalues({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x), {x, 0, 3}, 3)", //
         "{1.0966227112321507,4.386490844928603,9.869604401089358}", 1.0e-9);
     // natural ends: 5*(k*Pi/3)^2 from 0
-    checkNumeric("Chop(NDEigenvalues(DiffusionPDETerm({u(x), {x}}, 5), u,"
-        + " Element({x}, Line({{1}, {4}})), 3), 10^-8)", //
+    checkNumeric(
+        "Chop(NDEigenvalues(DiffusionPDETerm({u(x), {x}}, 5), u,"
+            + " Element({x}, Line({{1}, {4}})), 3), 10^-8)", //
         "{0,5.483113556160755,21.93245422464302}", 1.0e-9);
     // one Dirichlet end: ((k-1/2)*Pi)^2
-    checkNumeric("NDEigenvalues({-u''(x), DirichletCondition(u(x) == 0, x == 0)}, u(x), {x, 0, 1}, 3)", //
+    checkNumeric(
+        "NDEigenvalues({-u''(x), DirichletCondition(u(x) == 0, x == 0)}, u(x), {x, 0, 1}, 3)", //
         "{2.4674011002723395,22.206609902451056,61.68502750680849}", 1.0e-9);
     // harmonic oscillator 2*(2*k+1)
-    checkNumeric("NDEigenvalues({-u''(x) + 4*x^2*u(x), DirichletCondition(u(x) == 0, True)}, u(x),"
-        + " {x, -5, 5}, 3)", //
+    checkNumeric(
+        "NDEigenvalues({-u''(x) + 4*x^2*u(x), DirichletCondition(u(x) == 0, True)}, u(x),"
+            + " {x, -5, 5}, 3)", //
         "{2.0,6.0,10.0}", 1.0e-9);
     // -((1 + x)*u'(x))', written out or inactive
     checkNumeric("{NDEigenvalues({-(1 + x)*u''(x) - u'(x), DirichletCondition(u(x) == 0, True)},"
@@ -17846,16 +18022,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNDEigensystem() {
     // L^2 normalized eigenfunctions, positive next to the right end
-    checkNumeric("{v, f} = NDEigensystem({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x),"
-        + " {x, 0, 4}, 2); {v, f /. x -> 1, NIntegrate(f[[1]]^2, {x, 0, 4})}", //
+    checkNumeric(
+        "{v, f} = NDEigensystem({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x),"
+            + " {x, 0, 4}, 2); {v, f /. x -> 1, NIntegrate(f[[1]]^2, {x, 0, 4})}", //
         "{{0.6168502750680849,2.4674011002723395},{0.5,-0.7071067811865476},1.0}", 1.0e-7);
     // a function head gives functions
-    checkNumeric("{v, f} = NDEigensystem({-w''(y)}, w, {y, 0, 2}, 2); {Chop(v, 10^-8),"
-        + " f[[1]](0.7), f[[2]](0.5)}", //
+    checkNumeric(
+        "{v, f} = NDEigensystem({-w''(y)}, w, {y, 0, 2}, 2); {Chop(v, 10^-8),"
+            + " f[[1]](0.7), f[[2]](0.5)}", //
         "{{0,2.4674011002723395},0.7071067811865476,-0.7071067811865476}", 1.0e-7);
     // f(x) with a symbolic x stays unevaluated
-    check("{v, f} = NDEigensystem({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x),"
-        + " {x, 0, 4}, 1); {Head(Head(f[[1]])), First(f[[1]])}", //
+    check(
+        "{v, f} = NDEigensystem({-u''(x), DirichletCondition(u(x) == 0, True)}, u(x),"
+            + " {x, 0, 4}, 1); {Head(Head(f[[1]])), First(f[[1]])}", //
         "{InterpolatingFunction,x}");
   }
 
@@ -17927,8 +18106,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPlots3DWithoutSurface() {
     // collinear points span no area
-    check("d = {{0, 1, 2}, {1, 1, 3}, {2, 1, 4}}; g = ListPlot3D({d, d + 1}); "
-        + "{Head(g), Cases(g, _Polygon, Infinity)}", //
+    check(
+        "d = {{0, 1, 2}, {1, 1, 3}, {2, 1, 4}}; g = ListPlot3D({d, d + 1}); "
+            + "{Head(g), Cases(g, _Polygon, Infinity)}", //
         "{Graphics3D,{}}");
     check("g = RegionPlot3D(x + y + z < -1, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}); {Head(g), g[[1]]}", //
         "{Graphics3D,{{},{}}}");
@@ -18155,12 +18335,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2500000,2000000,500000}");
     // where the equation can't be solved for y any more (dy/dt infinite at y == 0) the
     // integration ends
-    check("Round(10^6*({x(0.5), y(0.5)} /. First(NDSolve({x'(t) == -1, y(t)^3 == 8*x(t), "
-        + "x(0) == 1}, {x, y}, {t, 0, 2}))))", //
+    check(
+        "Round(10^6*({x(0.5), y(0.5)} /. First(NDSolve({x'(t) == -1, y(t)^3 == 8*x(t), "
+            + "x(0) == 1}, {x, y}, {t, 0, 2}))))", //
         "{500000,1587401}");
     // a chain whose last comparison depends on the solution isn't frozen
-    check("Round(10^6*NDSolveValue({x'(t) == If(0 < t < x(t), 1, 0), x(0) == 0.25}, x, "
-        + "{t, 0, 2})[2])", //
+    check(
+        "Round(10^6*NDSolveValue({x'(t) == If(0 < t < x(t), 1, 0), x(0) == 0.25}, x, "
+            + "{t, 0, 2})[2])", //
         "2250000");
   }
 
@@ -18170,32 +18352,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{BodyCenteredCubic,FaceCenteredCubic,SimpleCubic}");
     check("{Length(LatticeData(\"Properties\")), Take(LatticeData(\"Properties\"), 4)}", //
         "{38,{AlternateNames,AutomorphismGroupOrder,Basis,CenterDensity}}");
-    check("Table(LatticeData(l, p), {p, {\"KissingNumber\", \"Dimension\"}}, "
-        + "{l, {\"FaceCenteredCubic\", \"SimpleCubic\", \"BodyCenteredCubic\"}})", //
+    check(
+        "Table(LatticeData(l, p), {p, {\"KissingNumber\", \"Dimension\"}}, "
+            + "{l, {\"FaceCenteredCubic\", \"SimpleCubic\", \"BodyCenteredCubic\"}})", //
         "{{12,6,8},{3,3,3}}");
     // the metric properties follow from the basis
-    check("Table(LatticeData(\"BodyCenteredCubic\", p), "
-        + "{p, {\"Basis\", \"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
+    check(
+        "Table(LatticeData(\"BodyCenteredCubic\", p), "
+            + "{p, {\"Basis\", \"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
         "{{{2,0,0},{0,2,0},{1,1,1}},{{4,0,2},{0,4,2},{2,2,3}},16,4,Sqrt(3)/2}");
-    check("Table(LatticeData(\"FaceCenteredCubic\", p), "
-        + "{p, {\"Basis\", \"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
+    check(
+        "Table(LatticeData(\"FaceCenteredCubic\", p), "
+            + "{p, {\"Basis\", \"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
         "{{{-1,-1,0},{1,-1,0},{0,1,-1}},{{2,0,-1},{0,2,-1},{-1,-1,2}},4,2,1/Sqrt(2)}");
-    check("Table(LatticeData(\"SimpleCubic\", p), "
-        + "{p, {\"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
+    check(
+        "Table(LatticeData(\"SimpleCubic\", p), "
+            + "{p, {\"GramMatrix\", \"Determinant\", \"Volume\", \"PackingRadius\"}})", //
         "{{{1,0,0},{0,1,0},{0,0,1}},1,1,1/2}");
     // the identity basis is a sparse array
-    check("{Head(LatticeData(\"SimpleCubic\", \"Basis\")), "
-        + "Normal(LatticeData(\"SimpleCubic\", \"GeneratorMatrix\")) == IdentityMatrix(3)}", //
+    check(
+        "{Head(LatticeData(\"SimpleCubic\", \"Basis\")), "
+            + "Normal(LatticeData(\"SimpleCubic\", \"GeneratorMatrix\")) == IdentityMatrix(3)}", //
         "{SparseArray,True}");
-    check("{LatticeData(\"SimpleCubic\", \"Density\"), N(LatticeData(\"FaceCenteredCubic\", \"Density\")), "
-        + "LatticeData(\"BodyCenteredCubic\", \"GeneratorMatrix\") == LatticeData(\"BodyCenteredCubic\", \"Basis\")}", //
+    check(
+        "{LatticeData(\"SimpleCubic\", \"Density\"), N(LatticeData(\"FaceCenteredCubic\", \"Density\")), "
+            + "LatticeData(\"BodyCenteredCubic\", \"GeneratorMatrix\") == LatticeData(\"BodyCenteredCubic\", \"Basis\")}", //
         "{Pi/6,0.74048,True}");
-    check("{LatticeData(\"FaceCenteredCubic\", \"Name\"), LatticeData(\"SimpleCubic\", \"StandardName\"), "
-        + "LatticeData(\"BodyCenteredCubic\", \"AlternateNames\"), LatticeData(\"SimpleCubic\", \"Genus\")}", //
+    check(
+        "{LatticeData(\"FaceCenteredCubic\", \"Name\"), LatticeData(\"SimpleCubic\", \"StandardName\"), "
+            + "LatticeData(\"BodyCenteredCubic\", \"AlternateNames\"), LatticeData(\"SimpleCubic\", \"Genus\")}", //
         "{face-centered cubic,SimpleCubic,{bcc},Missing(NotAvailable)}");
     // the unit cell: 12 edges and its lattice points
-    check("{Head(#), Count(#, _Line, Infinity), Length(Cases(#, Point(p_) :> p, Infinity)[[1]])}& /@ "
-        + "{LatticeData(\"SimpleCubic\", \"Image\"), LatticeData(\"FaceCenteredCubic\", \"Image\")}", //
+    check(
+        "{Head(#), Count(#, _Line, Infinity), Length(Cases(#, Point(p_) :> p, Infinity)[[1]])}& /@ "
+            + "{LatticeData(\"SimpleCubic\", \"Image\"), LatticeData(\"FaceCenteredCubic\", \"Image\")}", //
         "{{Graphics3D,12,8},{Graphics3D,12,14}}");
     check("Check(LatticeData(\"Cubic\"), failed)", //
         "failed");
@@ -18218,8 +18408,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "{Count(p, _Line, Infinity), Count(p, _Polygon, Infinity), Count(p, _Invisible, Infinity)}", //
         "{1,1,0}");
     // the filling between two curves of which one is hidden
-    check("Count(Plot({Sin(x), Cos(x), x/3}, {x, 0, 2}, PlotStyle -> {Automatic, None, Automatic}, "
-        + "Filling -> {1 -> {2}}), _Line | _Polygon, Infinity)", //
+    check(
+        "Count(Plot({Sin(x), Cos(x), x/3}, {x, 0, 2}, PlotStyle -> {Automatic, None, Automatic}, "
+            + "Filling -> {1 -> {2}}), _Line | _Polygon, Infinity)", //
         "3");
   }
 
@@ -18242,8 +18433,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Positive(Sqrt(2)+Sqrt(7)-Sqrt(9+2*Sqrt(14)))");
     check("NonPositive(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)))", //
         "NonPositive(Sqrt(2)+Sqrt(7)-Sqrt(9+2*Sqrt(14)))");
-    check("{Sign(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) + 10^(-38)),"
-        + " Positive(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) + 10^(-55))}", //
+    check(
+        "{Sign(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) + 10^(-38)),"
+            + " Positive(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)) + 10^(-55))}", //
         "{1,True}");
   }
 
@@ -18292,14 +18484,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testCompiledFunctionSerializedFormCoercion() {
     // the arguments of the types _Real and _Integer, then the embedded Function
-    check("cf = CompiledFunction({11, 15., 5470}, {_Real, _Integer}, {{3, 0, 0}, {2, 0, 0}}, {{}},"
-        + " {0, 1, 2, 0, 0}, {{1}}, Function({s, k}, s*k - 1), Evaluate);"
-        + " {cf(1/4, 8), cf(b, 2), cf(2., 3/2), cf(3)}", //
+    check(
+        "cf = CompiledFunction({11, 15., 5470}, {_Real, _Integer}, {{3, 0, 0}, {2, 0, 0}}, {{}},"
+            + " {0, 1, 2, 0, 0}, {{1}}, Function({s, k}, s*k - 1), Evaluate);"
+            + " {cf(1/4, 8), cf(b, 2), cf(2., 3/2), cf(3)}", //
         "{1.0,-1+2*b,2.0,CompiledFunction({11,15.0,5470},{_Real,_Integer},{{3,0,0},{2,0,0}},{{}},{\n"
             + "0,1,2,0,0},{{1}},Function({s,k},-1+s*k),Evaluate)[3]}");
     // a form with 6 arguments is invalid
-    check("CompiledFunction({_Integer}, {{2, 0, 0}}, {0, 1, 0, 0, 0}, {{1}}, Function({k}, k + 1),"
-        + " Evaluate)[5]", //
+    check(
+        "CompiledFunction({_Integer}, {{2, 0, 0}}, {0, 1, 0, 0, 0}, {{1}}, Function({k}, k + 1),"
+            + " Evaluate)[5]", //
         "CompiledFunction({_Integer},{{2,0,0}},{0,1,0,0,0},{{1}},Function({k},k+1),Evaluate)[\n5]");
   }
 
@@ -18403,9 +18597,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRandomWholeRealCounts() {
-    check("Dimensions /@ {RandomVariate(NormalDistribution(), 4.), RandomChoice({1, 2, 3}, 2.),"
-        + " RandomComplex(2, 5.), RandomComplex({0, 1+I}, {3., 2}), RandomInteger(9, 6.),"
-        + " RandomPoint(Disk(), 2.)}", //
+    check(
+        "Dimensions /@ {RandomVariate(NormalDistribution(), 4.), RandomChoice({1, 2, 3}, 2.),"
+            + " RandomComplex(2, 5.), RandomComplex({0, 1+I}, {3., 2}), RandomInteger(9, 6.),"
+            + " RandomPoint(Disk(), 2.)}", //
         "{{4},{2},{5},{3,2},{6},{2,2}}");
     // a count which isn't whole stays unevaluated
     check("RandomChoice({1, 2, 3}, 3.5)", //
@@ -18437,8 +18632,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("f = ListInterpolation(Table(x*y + z^2, {x, 4}, {y, 4}, {z, 4}));"
         + " {f(1.5, 2.5, 3.5), D(f(a, b, c), c) /. {a -> 2., b -> 3., c -> 1.5}, f(\"Domain\")}", //
         "{16.0,3.0,{{1,4},{1,4},{1,4}}}");
-    check("g = ListInterpolation(Table(x - y*z, {x, 0, 2, 0.5}, {y, 0, 1, 0.25}, {z, 3}),"
-        + " {{0, 2}, {0, 1}, {1, 2}}); {g(1.25, 0.5, 1.5), g(\"Domain\")}", //
+    check(
+        "g = ListInterpolation(Table(x - y*z, {x, 0, 2, 0.5}, {y, 0, 1, 0.25}, {z, 3}),"
+            + " {{0, 2}, {0, 1}, {1, 2}}); {g(1.25, 0.5, 1.5), g(\"Domain\")}", //
         "{0.25,{{0.0,2.0},{0.0,1.0},{1.0,2.0}}}");
     // a single row has the order 0 along its axis
     check("Quiet(ListInterpolation({{2, 4, 8, 16}})[1, 5/2])", //
@@ -18479,8 +18675,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.0,0.5}");
     check("BezierFunction({{0, 0}, {1, 1}, {2, 0}}, SplineDegree -> 1)[s]", //
         "BezierFunction({{0,0},{1,1},{2,0}})[s]");
-    check("bz = BezierFunction({{0, 0}, {2, 4}, {4, 0}}, SplineDegree -> 2)[s]; "
-        + "Table(bz, {s, 0, 1, 0.25})", //
+    check(
+        "bz = BezierFunction({{0, 0}, {2, 4}, {4, 0}}, SplineDegree -> 2)[s]; "
+            + "Table(bz, {s, 0, 1, 0.25})", //
         "{{0.0,0.0},{1.0,1.5},{2.0,2.0},{3.0,1.5},{4.0,0.0}}");
     check("BezierFunction({{0, 0}, {1, 1}, {2, 0}}, Foo -> 1)", //
         "BezierFunction({{0,0},{1,1},{2,0}},foo->1)");
@@ -18489,13 +18686,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testParametricPlot3DPointOnlyAtNumbers() {
     // the body is a point only for a numeric t: symbolically Part takes the Piecewise apart
-    check("q(x_) := Piecewise({{{x, 0}, x < 0.5}, {{1 - x, 1}, x >= 0.5}}); "
-        + "Cases(ParametricPlot3D(With({s = q(t)}, Flatten@{s[[1]], s[[2]], t}), {t, 0, 1}, "
-        + "PlotPoints -> 3), GraphicsComplex(v_, ___) :> v, Infinity)", //
+    check(
+        "q(x_) := Piecewise({{{x, 0}, x < 0.5}, {{1 - x, 1}, x >= 0.5}}); "
+            + "Cases(ParametricPlot3D(With({s = q(t)}, Flatten@{s[[1]], s[[2]], t}), {t, 0, 1}, "
+            + "PlotPoints -> 3), GraphicsComplex(v_, ___) :> v, Infinity)", //
         "{{{0.0,0.0,0.0},{0.5,1.0,0.5},{0.0,1.0,1.0}}}");
-    check("q(x_) := Piecewise({{{x, 0}, x < 0.5}, {{1 - x, 1}, x >= 0.5}}); "
-        + "Cases(ParametricPlot3D(With({s = q(u)}, Flatten@{s[[1]], s[[2]], v}), {u, 0, 1}, "
-        + "{v, 0, 1}, PlotPoints -> 2), GraphicsComplex(v_, ___) :> v, Infinity)", //
+    check(
+        "q(x_) := Piecewise({{{x, 0}, x < 0.5}, {{1 - x, 1}, x >= 0.5}}); "
+            + "Cases(ParametricPlot3D(With({s = q(u)}, Flatten@{s[[1]], s[[2]], v}), {u, 0, 1}, "
+            + "{v, 0, 1}, PlotPoints -> 2), GraphicsComplex(v_, ___) :> v, Infinity)", //
         "{{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0},{0.0,1.0,1.0}}}");
   }
 
@@ -18526,8 +18725,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTuringMachineExplicitRules() {
-    check("TuringMachine({{1, 0} -> {1, 1, -1}, {1, 1} -> {2, 0, 1}, {2, _} -> {1, 1, 1}}, "
-        + "{1, {{1}, 0}}, 4)", //
+    check(
+        "TuringMachine({{1, 0} -> {1, 1, -1}, {1, 1} -> {2, 0, 1}, {2, _} -> {1, 1, 1}}, "
+            + "{1, {{1}, 0}}, 4)", //
         "{{{1,1,0},{1,0,0}},{{2,2,1},{0,0,0}},{{1,3,2},{0,1,0}},{{1,2,1},{0,1,1}},{{2,3,2},{\n"
             + "0,0,1}}}");
     // without a matching rule the machine stays where it is
@@ -18545,8 +18745,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // open: from the lower-numbered end
     check("FindCurvePath({{3, 1}, {0, 0}, {1, 0.2}, {2, 0.5}})", //
         "{{1,4,3,2}}");
-    check("With({c = First(FindCurvePath(Table({t, Exp(-t)}, {t, 0, 5, 0.1})))}, "
-        + "{Length(c), OrderedQ(c)})", //
+    check(
+        "With({c = First(FindCurvePath(Table({t, Exp(-t)}, {t, 0, 5, 0.1})))}, "
+            + "{Length(c), OrderedQ(c)})", //
         "{51,True}");
     check("FindCurvePath({{1, 2}, {3, 4}})", //
         "{{1,2}}");
@@ -18599,41 +18800,50 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFindMinimumLocalConstrained() {
     // a linear equation eliminates a variable; the logarithms never see a negative argument
-    check("Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMinimum({x*Log(x) + 2*y*Log(y), "
-        + "x + y == 1, x > 0, y > 0}, {{x, 0.4}, {y, 0.6}})])", //
+    check(
+        "Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMinimum({x*Log(x) + 2*y*Log(y), "
+            + "x + y == 1, x > 0, y > 0}, {{x, 0.4}, {y, 0.6}})])", //
         "{-104746733,{55013118,44986882}}");
-    check("FindMinimum({(x - 1)^2 + (y - 2)^2 + (z - 3)^2, x + y + z == 3, x - z == 1}, "
-        + "{{x, 0}, {y, 0}, {z, 0}})", //
+    check(
+        "FindMinimum({(x - 1)^2 + (y - 2)^2 + (z - 3)^2, x + y + z == 3, x - z == 1}, "
+            + "{{x, 0}, {y, 0}, {z, 0}})", //
         "{7.5,{x->1.5,y->1.0,z->0.5}}");
     // a nonlinear equation determines one variable
-    check("Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMinimum({2*x + y, x^2 + y^2 == 4}, "
-        + "{{x, -1}, {y, -1}})])", //
+    check(
+        "Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMinimum({2*x + y, x^2 + y^2 == 4}, "
+            + "{{x, -1}, {y, -1}})])", //
         "{-447213595,{-178885438,-89442719}}");
-    check("Round(10^8*{#[[1]], {x, y, z} /. #[[2]]} &[FindMinimum({(x - 1)^2 + Sin(y) + z^2, "
-        + "x + y + z == 1, z^3 + y - 2 == 0}, {{x, 0.5}, {y, 1.5}, {z, 0.5}})])", //
+    check(
+        "Round(10^8*{#[[1]], {x, y, z} /. #[[2]]} &[FindMinimum({(x - 1)^2 + Sin(y) + z^2, "
+            + "x + y + z == 1, z^3 + y - 2 == 0}, {{x, 0.5}, {y, 1.5}, {z, 0.5}})])", //
         "{373876828,{-62042799,214138906,-52096107}}");
     // the bound of the search specification is active
-    check("Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMaximum({x + 2*y, x^2 + y^2 == 1}, "
-        + "{{x, 0.5, 0.5, 0.9}, {y, 0.5}})])", //
+    check(
+        "Round(10^8*{#[[1]], {x, y} /. #[[2]]} &[FindMaximum({x + 2*y, x^2 + y^2 == 1}, "
+            + "{{x, 0.5, 0.5, 0.9}, {y, 0.5}})])", //
         "{223205081,{50000000,86602540}}");
   }
 
   @Test
   public void testFindMinimumConstrainedStepMonitor() {
     // an active inequality or an equation: no monitoring information
-    check("Reap(FindMinimum({Exp(x) + (y - 1)^2, x >= 2}, {{x, 3}, {y, 3}}, "
-        + "StepMonitor :> Sow({x, y})))", //
+    check(
+        "Reap(FindMinimum({Exp(x) + (y - 1)^2, x >= 2}, {{x, 3}, {y, 3}}, "
+            + "StepMonitor :> Sow({x, y})))", //
         "{{7.38906,{x->2.0,y->1.0}},{}}");
-    check("Reap(FindMinimum({x^2 + y^2, x + y == 2}, {{x, 0}, {y, 0}}, "
-        + "StepMonitor :> Sow({x, y})))", //
+    check(
+        "Reap(FindMinimum({x^2 + y^2, x + y == 2}, {{x, 0}, {y, 0}}, "
+            + "StepMonitor :> Sow({x, y})))", //
         "{{2.0,{x->1.0,y->1.0}},{}}");
-    check("Reap(FindMinimum({xx*Log(xx) + yy*Log(yy), xx + yy == 1, xx > 0, yy > 0}, "
-        + "{{xx, 0.3}, {yy, 0.7}}, StepMonitor :> Sow({xx, yy})))[[2]]", //
+    check(
+        "Reap(FindMinimum({xx*Log(xx) + yy*Log(yy), xx + yy == 1, xx > 0, yy > 0}, "
+            + "{{xx, 0.3}, {yy, 0.7}}, StepMonitor :> Sow({xx, yy})))[[2]]", //
         "{}");
     // a search inside the bounds to a stationary point reports its steps, the first is the start
-    check("r = Reap(FindMaximum({Cos(x) + Sin(y), -1 < x < 2 && 0 < y < 3}, {{x, 1}, {y, 1}}, "
-        + "StepMonitor :> Sow({x, y}))); {Round(r[[1, 1]], 10^-6), r[[2, 1, 1]], "
-        + "Length(r[[2, 1]]) > 2}", //
+    check(
+        "r = Reap(FindMaximum({Cos(x) + Sin(y), -1 < x < 2 && 0 < y < 3}, {{x, 1}, {y, 1}}, "
+            + "StepMonitor :> Sow({x, y}))); {Round(r[[1, 1]], 10^-6), r[[2, 1, 1]], "
+            + "Length(r[[2, 1]]) > 2}", //
         "{2,{1.0,1.0},True}");
   }
 
@@ -18661,8 +18871,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Solve({-2/a^3 + 5/a - 1/(a*b^2) == 0, -3/b^3 + 4/b - 1/(a^2*b) == 0}, {a, b})", //
         "{{a->-Sqrt(5/11),b->-Sqrt(5/3)},{a->-Sqrt(5/11),b->Sqrt(5/3)},{a->Sqrt(5/11),b->-Sqrt(\n"
             + "5/3)},{a->Sqrt(5/11),b->Sqrt(5/3)}}");
-    check("Solve({-2.5/a^3 + 5.25/a - 1.5/(a*b^2) == 0, -3.75/b^3 + 4.5/b - 1.25/(a^2*b) == 0}, "
-        + "{a, b})", //
+    check(
+        "Solve({-2.5/a^3 + 5.25/a - 1.5/(a*b^2) == 0, -3.75/b^3 + 4.5/b - 1.25/(a^2*b) == 0}, "
+            + "{a, b})", //
         "{{a->-0.761387,b->-1.26491},{a->-0.761387,b->1.26491},{a->0.761387,b->-1.26491},{a->"
             + "0.761387,b->1.26491}}");
   }
@@ -18670,10 +18881,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNSolveRadicalSystemMultiStart() {
     // the five equilibrium points of the restricted three body problem
-    check("mu = 0.3; s = NSolve({-x == -((1 - mu)*(x + mu)/Sqrt((x + mu)^2 + y^2)^3) "
-        + "- mu*(x - 1 + mu)/Sqrt((x - 1 + mu)^2 + y^2)^3, -y == -((1 - mu)/Sqrt((x + mu)^2 + "
-        + "y^2)^3 + mu/Sqrt((x - 1 + mu)^2 + y^2)^3)*y}, {x, y}); "
-        + "{Length(s), Sort(Round({x, y} /. s, 10^-6))}", //
+    check(
+        "mu = 0.3; s = NSolve({-x == -((1 - mu)*(x + mu)/Sqrt((x + mu)^2 + y^2)^3) "
+            + "- mu*(x - 1 + mu)/Sqrt((x - 1 + mu)^2 + y^2)^3, -y == -((1 - mu)/Sqrt((x + mu)^2 + "
+            + "y^2)^3 + mu/Sqrt((x - 1 + mu)^2 + y^2)^3)*y}, {x, y}); "
+            + "{Length(s), Sort(Round({x, y} /. s, 10^-6))}", //
         "{5,{{-561603/500000,0},{1/5,-34641/40000},{1/5,34641/40000},{28613/100000,0},{\n"
             + "251347/200000,0}}}");
   }
@@ -18794,11 +19006,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    */
   @Test
   public void testExtremalByOrderingFunction() {
-    check("MinimalBy({DateObject({2020,5,1}), DateObject({2019,1,7}), DateObject({2021,3,3})}, "
-        + "Identity, 1, NumericalOrder) === {DateObject({2019,1,7})}", //
+    check(
+        "MinimalBy({DateObject({2020,5,1}), DateObject({2019,1,7}), DateObject({2021,3,3})}, "
+            + "Identity, 1, NumericalOrder) === {DateObject({2019,1,7})}", //
         "True");
-    check("MaximalBy({DateObject({2020,5,1}), DateObject({2019,1,7}), DateObject({2021,3,3})}, "
-        + "Identity, 2, NumericalOrder) === {DateObject({2021,3,3}), DateObject({2020,5,1})}", //
+    check(
+        "MaximalBy({DateObject({2020,5,1}), DateObject({2019,1,7}), DateObject({2021,3,3})}, "
+            + "Identity, 2, NumericalOrder) === {DateObject({2021,3,3}), DateObject({2020,5,1})}", //
         "True");
     check("MinimalBy({4, -1, 7, 2}, Identity, 2, Order)", //
         "{-1,2}");
@@ -18940,9 +19154,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRandomColor() {
-    check("SeedRandom(11);{Head(RandomColor()), Length(RandomColor(5)), "
-        + "Dimensions(RandomColor({3,2})), Head(RandomColor(Hue(_,1,1))), "
-        + "Head(RandomColor(GrayLevel(_)))}", //
+    check(
+        "SeedRandom(11);{Head(RandomColor()), Length(RandomColor(5)), "
+            + "Dimensions(RandomColor({3,2})), Head(RandomColor(Hue(_,1,1))), "
+            + "Head(RandomColor(GrayLevel(_)))}", //
         "{RGBColor,5,{3,2},Hue,GrayLevel}");
     check("Rest(RandomColor(RGBColor(_,0,1)))", //
         "RGBColor(0,1)");
@@ -18954,8 +19169,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRandomIntegerBigRange() {
-    check("SeedRandom(5);m=RandomInteger({-10^30,10^25},{3,2});"
-        + "{Dimensions(m), And@@Flatten(Map(-10^30<=#<=10^25&, m, {2}))}", //
+    check(
+        "SeedRandom(5);m=RandomInteger({-10^30,10^25},{3,2});"
+            + "{Dimensions(m), And@@Flatten(Map(-10^30<=#<=10^25&, m, {2}))}", //
         "{{3,2},True}");
     check("RandomInteger({10^20,10^20}, 2)", //
         "{100000000000000000000,100000000000000000000}");
@@ -18982,8 +19198,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testOverflowUnderflowAlgebra() {
-    check("{2.^Overflow(), 3*Overflow(), Overflow() - Overflow(), Overflow()/Overflow(), "
-        + "Log(Overflow()), Underflow()*Overflow(), 2*Underflow(), Sqrt(Overflow())}", //
+    check(
+        "{2.^Overflow(), 3*Overflow(), Overflow() - Overflow(), Overflow()/Overflow(), "
+            + "Log(Overflow()), Underflow()*Overflow(), 2*Underflow(), Sqrt(Overflow())}", //
         "{Overflow(),Overflow(),Overflow(),Indeterminate,Overflow(),Indeterminate,Underflow(),Overflow()}");
     check("{2.5^Overflow(), E^Overflow(), 0.25^Underflow(), Overflow() - 7, -Overflow()}", //
         "{Overflow(),Overflow(),1.0,Overflow(),Overflow()}");
@@ -18999,8 +19216,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnitBoxExactConstants() {
-    check("{UnitBox(Sqrt(3)/2), UnitBox(1/2), UnitTriangle(E/5), HeavisideLambda(1/3, 1), "
-        + "UnitBox(2, 1/3), UnitBox(x, 0)}", //
+    check(
+        "{UnitBox(Sqrt(3)/2), UnitBox(1/2), UnitTriangle(E/5), HeavisideLambda(1/3, 1), "
+            + "UnitBox(2, 1/3), UnitBox(x, 0)}", //
         "{0,1,1-E/5,0,0,UnitBox(x)}");
     check("{UnitBox(Pi/7), UnitTriangle(-Pi/5), HeavisidePi(Pi/7), UnitBox(Sqrt(5)/3)}", //
         "{1,1-Pi/5,1,0}");
@@ -19042,9 +19260,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInternalRealValuedNumericQ() {
-    check("{Internal`RealValuedNumericQ(Pi), Internal`RealValuedNumericQ(1+I), "
-        + "MatrixQ({{1, Sqrt(3)}, {0, 2}}, Internal`RealValuedNumericQ), "
-        + "VectorQ({2, yy}, Internal`RealValuedNumericQ)}", //
+    check(
+        "{Internal`RealValuedNumericQ(Pi), Internal`RealValuedNumericQ(1+I), "
+            + "MatrixQ({{1, Sqrt(3)}, {0, 2}}, Internal`RealValuedNumericQ), "
+            + "VectorQ({2, yy}, Internal`RealValuedNumericQ)}", //
         "{True,False,True,False}");
   }
 
@@ -19142,11 +19361,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFreeQFlatRuns() {
     // only consecutive arguments of a Flat expression are its parts
-    check("SetAttributes(fl, Flat); {FreeQ(fl(p,q,r,s), fl(q,r)), FreeQ(fl(p,q,r,s), fl(p,r)), "
-        + "FreeQ(k(fl(p,q,r)), fl(p,q), {1}), FreeQ(p**q**r, q**r), FreeQ(p**q**r, r**q)}", //
+    check(
+        "SetAttributes(fl, Flat); {FreeQ(fl(p,q,r,s), fl(q,r)), FreeQ(fl(p,q,r,s), fl(p,r)), "
+            + "FreeQ(k(fl(p,q,r)), fl(p,q), {1}), FreeQ(p**q**r, q**r), FreeQ(p**q**r, r**q)}", //
         "{False,True,False,False,True}");
-    check("{FreeQ(p&&q&&r, q&&r), FreeQ(p&&q&&r, p&&r), FreeQ(p||q||r, p||q), "
-        + "FreeQ(u.v.w, u.v), FreeQ(u.v.w, u.w)}", //
+    check(
+        "{FreeQ(p&&q&&r, q&&r), FreeQ(p&&q&&r, p&&r), FreeQ(p||q||r, p||q), "
+            + "FreeQ(u.v.w, u.v), FreeQ(u.v.w, u.w)}", //
         "{False,True,False,False,True}");
     // no parts without Flat
     check("{FreeQ(h(p,q,r), h(p,q)), FreeQ({p,q,r}, {q,r})}", //
@@ -19156,8 +19377,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testMatchQComputedPattern() {
     // a pattern which a function computes is evaluated, also with hold attributes
-    check("{MatchQ({1,2,3}, Table(_,3)), MatchQ(h(1,2,3,4), h @@ Table(_Integer,4)), "
-        + "MatchQ({1,2}, Join({_},{_})), MatchQ({1,2,3}, Table(_,2))}", //
+    check(
+        "{MatchQ({1,2,3}, Table(_,3)), MatchQ(h(1,2,3,4), h @@ Table(_Integer,4)), "
+            + "MatchQ({1,2}, Join({_},{_})), MatchQ({1,2,3}, Table(_,2))}", //
         "{True,True,True,False}");
     check("{Cases({{1,2},{3}}, Table(_,2)), Count({{1,2},{3}}, Table(_,1)), "
         + "FreeQ(k(h @@ Range(30)), h @@ Table(_,30)), MatchQ(h @@ Range(300), h @@ Table(_,300))}", //
@@ -19169,8 +19391,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialGCDOverGenerators() {
-    check("{PolynomialGCD(E^(4*t)-1, E^(2*t)-1), PolynomialGCD(Log(t)^2-4, Log(t)-2), "
-        + "PolynomialGCD(Cos(t)^3-1, Cos(t)-1), PolynomialGCD(3^(2*t)-1, 3^t+1)}", //
+    check(
+        "{PolynomialGCD(E^(4*t)-1, E^(2*t)-1), PolynomialGCD(Log(t)^2-4, Log(t)-2), "
+            + "PolynomialGCD(Cos(t)^3-1, Cos(t)-1), PolynomialGCD(3^(2*t)-1, 3^t+1)}", //
         "{-1+E^(2*t),-2+Log(t),-1+Cos(t),1+3^t}");
     // Sin(t) and Cos(t) are two generators: no identity between them is applied
     check("PolynomialGCD(Sin(t)^2-Cos(t)^2, Sin(t)-Cos(t))", //
@@ -19184,9 +19407,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialGCDModulusMultivariate() {
-    check("{PolynomialGCD(u^2+2*u*v+v^2, 5*u+5*v, Modulus->11), "
-        + "PolynomialGCD((u+2*v)^4*(w+1), (u+2*v)^2*(w-1), Modulus->13), "
-        + "PolynomialGCD(u*v+1, u+3, Modulus->7)}", //
+    check(
+        "{PolynomialGCD(u^2+2*u*v+v^2, 5*u+5*v, Modulus->11), "
+            + "PolynomialGCD((u+2*v)^4*(w+1), (u+2*v)^2*(w-1), Modulus->13), "
+            + "PolynomialGCD(u*v+1, u+3, Modulus->7)}", //
         "{u+v,u^2+4*u*v+4*v^2,1}");
   }
 
@@ -19235,8 +19459,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRationalNumbersModulus() {
-    check("{Together(12, Modulus->5), Cancel(1/2, Modulus->5), Together(1/5, Modulus->5), "
-        + "Cancel(-3/4, Modulus->11), Apart(8, t, Modulus->3)}", //
+    check(
+        "{Together(12, Modulus->5), Cancel(1/2, Modulus->5), Together(1/5, Modulus->5), "
+            + "Cancel(-3/4, Modulus->11), Apart(8, t, Modulus->3)}", //
         "{2,3,1/5,2,2}");
     // no residue for a modulus which is no prime
     check("Together(1/3, Modulus->6)", //
@@ -19265,11 +19490,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFreeQOrderlessParts() {
     // the parts of an Orderless expression match a pattern, also with a level specification
-    check("{FreeQ(c*g(3)*g(5), u_g*v_g), FreeQ(c*g(3)*g(5), u_g*v_g, {0}), "
-        + "FreeQ(c*g(3)*g(5), u_g*v_g, {0,Infinity}), FreeQ(b+g(3)+g(5), u_g+v_g)}", //
+    check(
+        "{FreeQ(c*g(3)*g(5), u_g*v_g), FreeQ(c*g(3)*g(5), u_g*v_g, {0}), "
+            + "FreeQ(c*g(3)*g(5), u_g*v_g, {0,Infinity}), FreeQ(b+g(3)+g(5), u_g+v_g)}", //
         "{False,False,False,False}");
-    check("{FreeQ(p*q*r, p*r, {0}), FreeQ(p*q*r, p*r, {1}), FreeQ(h(c*g(3)*g(5)), u_g*v_g, {1}), "
-        + "FreeQ(h(c*g(3)*g(5)), u_g*v_g, {2})}", //
+    check(
+        "{FreeQ(p*q*r, p*r, {0}), FreeQ(p*q*r, p*r, {1}), FreeQ(h(c*g(3)*g(5)), u_g*v_g, {1}), "
+            + "FreeQ(h(c*g(3)*g(5)), u_g*v_g, {2})}", //
         "{False,True,False,True}");
     check("{FreeQ(c*g(3)*k(5), u_g*v_g), FreeQ(b+c, u_+v_+w_), FreeQ(g(3), u_.*v_g)}", //
         "{True,True,False}");
@@ -25988,7 +26215,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\"Sow\",\"Sum\",\"Tan\",\"Top\",\"URL\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString,Integrate,Interleaving,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,Interpretation,InterpretationBox,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString,Integrate,Interleaving,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,Interpretation,InterpretationBox,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion,Into}");
     check("Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString}");
     check("Names(\"IntegerPart\" )", //
@@ -32546,7 +32773,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     result = exprEvaluator.eval(F.Divide(IntegerSym.valueOf(1), (result)));
     // the literals are machine numbers, which Rationalize() makes exact
-    assertEquals(result.toString(), "100000000000000000/3*Sqrt(5/61813891928014989)"); // speed of light
+    assertEquals(result.toString(), "100000000000000000/3*Sqrt(5/61813891928014989)"); // speed of
+                                                                                       // light
   }
 
   /**
@@ -36335,8 +36563,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2.71828182845904523536," //
             + "2.16371137134428392652+I*0.21650635094610966169,"
             + "1.60914091422952261768+I*0.43301270189221932338,"
-            + "1.0545704571147613088+I*0.64951905283832898507,"
-            + "0.5+I*0.86602540378443864676}");
+            + "1.0545704571147613088+I*0.64951905283832898507," + "0.5+I*0.86602540378443864676}");
     check("Subdivide(10,  4)", //
         "{0,5/2,5,15/2,10}");
     check("Subdivide({10,5},  4)", //
@@ -38218,7 +38445,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToExpression(g(zq), InputForm)", //
         "ToExpression(g(zq),InputForm)");
     // a sum reads by its first term, a complex number by its imaginary part
-    check("Internal`SyntacticNegativeQ /@ {-u - v, -2 + u, 3 - u, Complex(-2, 5), Complex(2, -5), -7}",
+    check(
+        "Internal`SyntacticNegativeQ /@ {-u - v, -2 + u, 3 - u, Complex(-2, 5), Complex(2, -5), -7}",
         "{True,True,False,False,True,True}");
     // with a head, the statements on separate lines are its arguments
     check("FullForm(ToExpression(\"u = 7\\n v = u + 2\", InputForm, Hold))", //

@@ -30,6 +30,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.statistics.IDistribution;
 import org.matheclipse.core.interfaces.statistics.IRandomVariate;
 import org.matheclipse.parser.client.ParserConfig;
 
@@ -242,8 +243,12 @@ public final class RandomFunctions {
             case ID.Real:
               return S.RandomReal.evalBuiltinStep(F.RandomReal(), engine);
             case ID.Complex:
-              return S.RandomReal.evalBuiltinStep(F.RandomComplex(), engine);
+              return S.RandomComplex.evalBuiltinStep(F.RandomComplex(), engine);
           }
+        }
+        if (arg1.isAST() && arg1.head().isBuiltInSymbol()
+            && ((IBuiltInSymbol) arg1.head()).getEvaluator() instanceof IDistribution) {
+          return F.RandomVariate(arg1);
         }
         return F.NIL;
       }
@@ -257,7 +262,7 @@ public final class RandomFunctions {
             case ID.Real:
               return S.RandomReal.evalBuiltinStep(F.RandomReal(arg2), engine);
             case ID.Complex:
-              return S.RandomReal.evalBuiltinStep(F.RandomComplex(arg2), engine);
+              return S.RandomComplex.evalBuiltinStep(F.RandomComplex(arg2), engine);
           }
         }
       }

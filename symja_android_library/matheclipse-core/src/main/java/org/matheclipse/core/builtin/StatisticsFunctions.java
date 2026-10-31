@@ -4658,10 +4658,13 @@ public class StatisticsFunctions {
               }
               if (variate != null) {
                 Random random = engine.getRandom();
-                if (ast.size() == 3) {
+                if (ast.size() == 3 && !ast.arg2().isEmptyList()) {
                   IExpr arg2 = ast.arg2();
                   if (arg2.isList()) {
                     // n1 x n2 x n3 ... array
+                    if (((IAST) arg2).exists(d -> d.toIntDefault() < 0)) {
+                      return arraySizeMessage(ast, engine);
+                    }
                     int[] dimension =
                         Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
                     if (dimension == null || dimension.length == 0) {
@@ -4704,7 +4707,7 @@ public class StatisticsFunctions {
                       return sampleList(variate, random, dist, n, evaluator, engine);
                     }
                   }
-                  return F.NIL;
+                  return arraySizeMessage(ast, engine);
                 }
                 // RandomVariate(dist) without a size specification.
                 // Dimensions(RandomVariate(dist,spec)) == Join(spec,componentShape), with
@@ -4794,6 +4797,12 @@ public class StatisticsFunctions {
       return !parameter.isNumericFunction(true) || !engine.evalN(parameter).isReal();
     }
 
+    private static IExpr arraySizeMessage(IAST ast, EvalEngine engine) {
+      // The array dimensions `1` given in position 2 of `2` should be a list of non-negative
+      // machine-sized integers giving the dimensions for the result.
+      return Errors.printMessage(S.RandomVariate, "array", F.list(ast.arg2(), ast), engine);
+    }
+
     /** A list of <code>n</code> samples, or {@link F#NIL} if the distribution has none. */
     private static IExpr sampleList(IRandomVariate variate, Random random, IAST dist, int n,
         IEvaluator evaluator, EvalEngine engine) {
@@ -4811,6 +4820,20 @@ public class StatisticsFunctions {
      */
     private static IExpr parameterMessage(IEvaluator evaluator, IAST dist, EvalEngine engine) {
       if (isSymbolicParameter(dist, engine)) {
+        return F.NIL;
+      }
+      if (dist.isAST(S.BinomialDistribution, 3)) {
+        if (dist.arg1().toIntDefault() < 0) {
+          // Parameter `1` at position `2` in `3` is expected to be a non-negative integer.
+          return Errors.printMessage(S.BinomialDistribution, "nnintprm",
+              F.list(dist.arg1(), F.C1, dist), engine);
+        }
+        double p = dist.arg2().evalfNaN();
+        if (!(0.0 <= p && p <= 1.0)) {
+          // Parameter `1` at position `2` in `3` is expected to be between 0 and 1 inclusive.
+          return Errors.printMessage(S.BinomialDistribution, "probprm",
+              F.list(dist.arg2(), F.C2, dist), engine);
+        }
         return F.NIL;
       }
       if (evaluator instanceof IDistribution) {

@@ -667,15 +667,16 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         for (int i = start; i < pointList.size(); i++) {
           IExpr arg = pointList.get(i);
           IAST point = getPoint2D(arg);
-          if (!point.isPresent() || isNonReal(point)) {
+          if (!point.isPresent() || isNonReal(point.arg1(), point.arg2())) {
             // If lastPoint was isolated, render it now before breaking
             if (!isConnected && lastPoint.isPresent()) {
               addPoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
                   engine, lastPoint, lastArg, xFunction, yFunction);
             }
 
-            if (pointPrimitives.argSize() > 0) {
-              graphicsPrimitives.append(graphicsOptions.addPoints(pointPrimitives));
+            // a gap splits a line, the points stay one primitive
+            if (graphicsOptions.isJoined()) {
+              appendPoints(graphicsPrimitives, pointPrimitives, graphicsOptions);
               pointPrimitives = F.ListAlloc();
             }
             isConnected = false;
@@ -711,13 +712,19 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
               lastPoint, lastArg, xFunction, yFunction);
         }
 
-        if (pointPrimitives.argSize() > 0) {
-          graphicsPrimitives.append(graphicsOptions.addPoints(pointPrimitives));
-        }
+        appendPoints(graphicsPrimitives, pointPrimitives, graphicsOptions);
         if (graphicsExtraPrimitives.argSize() > 0) {
           graphicsPrimitives.append(graphicsExtraPrimitives);
         }
       }
+    }
+  }
+
+  /** Append the points as one primitive; a point alone in joined data isn't drawn. */
+  private static void appendPoints(IASTAppendable graphicsPrimitives, IASTAppendable points,
+      GraphicsOptions graphicsOptions) {
+    if (points.argSize() > (graphicsOptions.isJoined() ? 1 : 0)) {
+      graphicsPrimitives.append(graphicsOptions.addPoints(points));
     }
   }
 
@@ -826,8 +833,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
                 xFunction.apply(F.num(xPrevRaw)), yFunction.apply(lastPoint), lastArg);
           }
 
-          if (pointPrimitives.argSize() > 0) {
-            graphicsPrimitives.append(graphicsOptions.addPoints(pointPrimitives));
+          // a gap splits a line, the points stay one primitive
+          if (graphicsOptions.isJoined()) {
+            appendPoints(graphicsPrimitives, pointPrimitives, graphicsOptions);
             pointPrimitives = F.ListAlloc();
           }
           lastArg = F.NIL;
@@ -858,13 +866,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
                 : lastPosition;
         addIndexedYPoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
             xFunction.apply(F.num(xLastRaw)), yFunction.apply(lastPoint), lastArg);
-        addIndexedYPoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
-            xFunction.apply(F.num(xLastRaw)), yFunction.apply(lastPoint), lastArg);
       }
 
-      if (pointPrimitives.argSize() > 0) {
-        graphicsPrimitives.append(graphicsOptions.addPoints(pointPrimitives));
-      }
+      appendPoints(graphicsPrimitives, pointPrimitives, graphicsOptions);
       if (graphicsExtraPrimitives.argSize() > 0) {
         graphicsPrimitives.append(graphicsExtraPrimitives);
       }
@@ -964,7 +968,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   protected static boolean isNonReal(IExpr point) {
     return point.isComplex() || point.isComplexNumeric() || point.isDirectedInfinity()
-        || point.isIndeterminate() || point.isNone() || point.isAST(S.Missing);
+        || point.isIndeterminate() || point.isNone() || point.isAST(S.Missing)
+        || realOrUncertain(point) == null;
   }
 
   protected static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {

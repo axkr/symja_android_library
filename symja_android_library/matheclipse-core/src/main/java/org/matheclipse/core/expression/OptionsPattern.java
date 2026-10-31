@@ -206,6 +206,13 @@ public class OptionsPattern extends AbstractPatternSequence {
   }
 
   @Override
+  public boolean equivalent(final IPatternObject patternExpr2, final IPatternMap pm1,
+      IPatternMap pm2) {
+    return super.equivalent(patternExpr2, pm1, pm2)
+        && fDefaultOptions.equals(((OptionsPattern) patternExpr2).fDefaultOptions);
+  }
+
+  @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
       return true;

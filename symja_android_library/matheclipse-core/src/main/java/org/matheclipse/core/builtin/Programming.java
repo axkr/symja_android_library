@@ -945,13 +945,16 @@ public final class Programming {
         // An upper limit Infinity runs until Return or Break leaves the loop.
         final DoIterator generator =
             new DoIterator(Iterator.createIterators(ast, false, true, engine), engine);
-        return generator.doIt(ast.arg1());
+        try {
+          return generator.doIt(ast.arg1());
+        } catch (final NoEvalException e) {
+          // Iterator `1` does not have appropriate bounds.
+          return Errors.printMessage(ast.topHead(), "iterb",
+              F.list(ast.get(generator.fInvalidIterator + 2)), engine);
+        }
       } catch (final ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
-      } catch (final NoEvalException e) {
-        // the iterator has no appropriate bounds
       }
-      return F.NIL;
     }
 
     @Override
@@ -970,6 +973,8 @@ public final class Programming {
     final java.util.List<? extends IIterator<IExpr>> fIterList;
     final EvalEngine fEngine;
     int fIndex;
+    /** The position of the iterator which didn't determine its values, or <code>-1</code>. */
+    int fInvalidIterator = -1;
 
     public DoIterator(final java.util.List<? extends IIterator<IExpr>> iterList,
         EvalEngine engine) {
@@ -980,7 +985,8 @@ public final class Programming {
 
     public IExpr doIt(IExpr input) {
       if (fIndex < fIterList.size()) {
-        final IIterator<IExpr> iter = fIterList.get(fIndex);
+        final int position = fIndex;
+        final IIterator<IExpr> iter = fIterList.get(position);
         try {
           // setUp() may have given the variable its first value when it fails, so tearDown() has
           // to run then as well; it leaves an iteration alone which never started
@@ -1008,6 +1014,11 @@ public final class Programming {
               --fIndex;
             }
           }
+        } catch (final NoEvalException nee) {
+          if (fInvalidIterator < 0) {
+            fInvalidIterator = position;
+          }
+          throw nee;
         } finally {
           iter.tearDown();
         }

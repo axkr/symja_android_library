@@ -2663,7 +2663,8 @@ public class IntegerFunctions {
         return Errors.printMessage(S.RealDigits, atex, engine);
       }
 
-      if (arg1.isNumber()) {
+      final INumber value = arg1.isNumericFunction(true) ? arg1.evalNumber() : null;
+      if (arg1.isNumber() || (value != null && !value.isReal())) {
         // The value `1` is not a real number.
         return Errors.printMessage(S.RealDigits, "realx", F.list(arg1), engine);
       }
@@ -2934,6 +2935,9 @@ public class IntegerFunctions {
     return sign > 0 ? n.inc() : n;
   }
 
+  /** The fewest digits a value is evaluated with to read digits of it. */
+  private static final long MIN_REAL_DIGITS = 20;
+
   /**
    * The digits of a non-negative real number in a base greater than <code>36</code>, which has no
    * digit characters. An approximate number has as many significant digits in the base as its
@@ -2990,79 +2994,118 @@ public class IntegerFunctions {
     INumber number = null;
     if (arg1.isReal()) {
       number = (IReal) arg1;
+    } else if (F.isPresent(length)) {
+      return truncatedDigits(arg1, radix, length, startDigit);
     } else {
-      if (F.isPresent(length)) {
-        long precision = length + (F.isPresent(startDigit) ? Math.abs(startDigit) : 0);
-        if (radix > 10) {
-          // a digit in a base above 10 needs more than one decimal digit
-          precision = (long) Math.ceil(precision * Math.log10(radix));
-        }
-        if (precision <= 0) {
-          precision = 1;
-        }
-        // digits beyond the last one asked for: N rounds its last digit, and a digit of the number
-        // is not rounded
-        IExpr expr = EvalEngine.get().evaluate(F.N(arg1, precision + 10));
-        if (expr.isReal()) {
-          number = (IReal) expr;
-        }
-      } else {
-        number = arg1.evalNumber();
+      final EvalEngine engine = EvalEngine.get();
+      if (arg1.isNumericFunction(true) && engine.evaluate(F.N(arg1, MIN_REAL_DIGITS)).isZero()) {
+        // The value `1` did not evaluate to a sufficiently precise finite number.
+        return Errors.printMessage(S.RealDigits, "fnumx", F.list(arg1), engine);
       }
+      number = arg1.evalNumber();
     }
     if (number != null && number.isReal()) {
-      IReal realNumber = (IReal) number;
-      if (realNumber.isNegative()) {
-        realNumber = realNumber.abs();
-      }
+      return digitsOfReal((IReal) number, radix, length, startDigit);
+    }
+    return F.NIL;
+  }
 
-      Apfloat apfloat;
-      if (realNumber.isFraction() && F.isNotPresent(length) && F.isNotPresent(startDigit)) {
-        Apint numer = new Apint(((IFraction) realNumber).toBigNumerator());
-        Apint denom = new Apint(((IFraction) realNumber).toBigDenominator());
-        Aprational aprational = new Aprational(numer, denom);
-        RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
-        return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
-      } else if (radix > 36) {
-        RealDigitsResult rd = realDigitsLargeRadix(realNumber, radix, length, startDigit);
-        if (rd == null) {
-          return F.NIL;
-        }
-        return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
-      } else if (realNumber.isInteger()) {
-        apfloat = new Apint(((IInteger) realNumber).toBigNumerator());
-      } else if (realNumber instanceof Num && realNumber.isZero() && F.isNotPresent(startDigit)) {
-        // a machine zero has no known digits; its exponent is the one of 2^-1075 in the given base
-        IExpr exponent = F.ZZ((long) Math.ceil(-1075.0 * Math.log(2.0) / Math.log(radix)));
+  /**
+   * The digits of the real value of the expression <code>x</code>, cut off and not rounded. A value
+   * within the error of its last digits from a boundary between two digit strings is that boundary:
+   * <code>(Sqrt(2)+Sqrt(3))^2-2*Sqrt(6)</code> has the digits of <code>5</code>.
+   *
+   * @return {@link F#NIL} if <code>x</code> has no real value, or a message was printed because it
+   *         cannot be told from <code>0</code>
+   */
+  private static IExpr truncatedDigits(IExpr x, int radix, long length, long startDigit) {
+    final double digitsPerPlace = Math.max(1.0, Math.log10(radix));
+    long needed = (long) Math
+        .ceil((length + (F.isPresent(startDigit) ? Math.abs(startDigit) : 0)) * digitsPerPlace);
+    // digits beyond the last one asked for: N rounds its last digit
+    long digits = Math.max(needed + 10, MIN_REAL_DIGITS);
+    final EvalEngine engine = EvalEngine.get();
+    IExpr value = engine.evaluate(F.N(x, digits));
+    if (value.isReal() && F.isPresent(startDigit)) {
+      // a position far below the leading digit is that many digits away from it
+      final long reach = ((IReal) value).apfloatValue().scale()
+          + (long) Math.ceil((length - startDigit) * digitsPerPlace);
+      if (reach + 10 > digits && digits < Config.MAX_PRECISION_APFLOAT) {
+        digits = Math.min(reach + 10, Config.MAX_PRECISION_APFLOAT);
+        value = engine.evaluate(F.N(x, digits));
+      }
+    }
+    if (!value.isReal()) {
+      return F.NIL;
+    }
+    if (value.isZero()) {
+      // The value `1` did not evaluate to a sufficiently precise finite number.
+      return Errors.printMessage(S.RealDigits, "fnumx", F.list(x), engine);
+    }
+    final Apfloat center = ((IReal) value).apfloatValue().precision(digits + 5);
+    final Apfloat high = center.add(ApfloatMath.scale(center, 2 - digits));
+    return digitsOfReal(F.num(high), radix, length, startDigit);
+  }
+
+  /**
+   * The digits of the real number <code>number</code>.
+   *
+   * @return {@link F#NIL} if the digits cannot be determined
+   */
+  private static IExpr digitsOfReal(IReal number, int radix, long length, long startDigit) {
+    IReal realNumber = number;
+    if (realNumber.isNegative()) {
+      realNumber = realNumber.abs();
+    }
+
+    if (realNumber.isInteger() && realNumber.isZero() && F.isPresent(length)
+        && F.isNotPresent(startDigit)) {
+      return F.list(F.constantArray(F.C0, (int) length), F.C0);
+    }
+    Apfloat apfloat;
+    if (realNumber.isFraction() && F.isNotPresent(length) && F.isNotPresent(startDigit)) {
+      Apint numer = new Apint(((IFraction) realNumber).toBigNumerator());
+      Apint denom = new Apint(((IFraction) realNumber).toBigDenominator());
+      Aprational aprational = new Aprational(numer, denom);
+      RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
+      return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
+    } else if (radix > 36) {
+      RealDigitsResult rd = realDigitsLargeRadix(realNumber, radix, length, startDigit);
+      if (rd == null) {
+        return F.NIL;
+      }
+      return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
+    } else if (realNumber.isInteger()) {
+      apfloat = new Apint(((IInteger) realNumber).toBigNumerator());
+    } else if (realNumber instanceof Num && realNumber.isZero() && F.isNotPresent(startDigit)) {
+      // a machine zero has no known digits; its exponent is the one of 2^-1075 in the given base
+      IExpr exponent = F.ZZ((long) Math.ceil(-1075.0 * Math.log(2.0) / Math.log(radix)));
+      if (F.isNotPresent(length)) {
+        return F.list(F.list(F.C0), exponent);
+      }
+      return F.list(F.constantArray(S.Indeterminate, (int) length), exponent);
+    } else if (realNumber instanceof Num && Double.isFinite(realNumber.doubleValue())) {
+      // a machine number has 53 binary digits, which are 16 decimal digits; more digits asked for
+      // are Indeterminate
+      java.math.BigDecimal exact = new java.math.BigDecimal(realNumber.doubleValue());
+      if (radix == 10) {
         if (F.isNotPresent(length)) {
-          return F.list(F.list(F.C0), exponent);
+          length = 16;
         }
-        return F.list(F.constantArray(S.Indeterminate, (int) length), exponent);
-      } else if (realNumber instanceof Num && Double.isFinite(realNumber.doubleValue())) {
-        // a machine number has 53 binary digits, which are 16 decimal digits; more digits asked for
-        // are Indeterminate
-        java.math.BigDecimal exact = new java.math.BigDecimal(realNumber.doubleValue());
-        if (radix == 10) {
-          if (F.isNotPresent(length)) {
-            length = 16;
-          }
-          apfloat = new Apfloat(exact.round(new java.math.MathContext(16)), 16);
-        } else {
-          if (F.isNotPresent(length)) {
-            length = Math.round(53.0 * Math.log(2.0) / Math.log(radix));
-          }
-          apfloat = new Apfloat(exact, 60);
-        }
+        apfloat = new Apfloat(exact.round(new java.math.MathContext(16)), 16);
       } else {
-        apfloat = realNumber.apfloatValue();
+        if (F.isNotPresent(length)) {
+          length = Math.round(53.0 * Math.log(2.0) / Math.log(radix));
+        }
+        apfloat = new Apfloat(exact, 60);
       }
+    } else {
+      apfloat = realNumber.apfloatValue();
+    }
 
-
-      RealDigitsResult rd = RealDigitsResult.create(apfloat, radix, length, startDigit);
-      if (rd != null) {
-        return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
-      }
-
+    RealDigitsResult rd = RealDigitsResult.create(apfloat, radix, length, startDigit);
+    if (rd != null) {
+      return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
     }
     return F.NIL;
   }

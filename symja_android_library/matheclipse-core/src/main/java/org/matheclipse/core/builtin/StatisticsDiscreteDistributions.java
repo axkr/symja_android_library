@@ -999,7 +999,7 @@ public class StatisticsDiscreteDistributions {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         int n = dist.arg1().toIntDefault(-1);
-        if (n > 0) {
+        if (n >= 0) {
           // see exception handling in RandonmVariate() function
           double p = dist.arg2().evalfNaN();
           if (0 <= p && p <= 1) {

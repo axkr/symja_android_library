@@ -30,6 +30,16 @@ public class VisitorReplacePart extends AbstractVisitor {
    */
   private boolean[] positionListPattern;
 
+  /**
+   * <code>true</code> at index <code>j</code> if the matcher <code>patternMatcherList[j]</code> has
+   * a negative position: <code>-(n+1)</code> is the head of an expression with <code>n</code>
+   * arguments, also if {@link #startOffset} is <code>1</code>.
+   */
+  private boolean[] negativePosition;
+
+  /** <code>true</code> if one of the {@link #negativePosition} entries is set. */
+  private boolean negativeHead;
+
   private int listLength;
   /**
    * <code>0</code> or <code>1</code>, depending if option <code>Heads->True</code> is set or the
@@ -59,6 +69,7 @@ public class VisitorReplacePart extends AbstractVisitor {
       IAST list = rule;
       this.patternMatcherList = new IPatternMatcher[list.argSize()];
       this.positionListPattern = new boolean[list.argSize()];
+      this.negativePosition = new boolean[list.argSize()];
 
       for (int i = 1; i < list.size(); i++) {
         rule = (IAST) list.get(i);
@@ -68,6 +79,7 @@ public class VisitorReplacePart extends AbstractVisitor {
         // if set explicitly to FALSE, then startOffset is always 1, otherwise startOffset may be
         // changed in initPatternMatcher()
         startOffset = 1;
+        negativeHead = false;
       }
     }
   }
@@ -81,10 +93,12 @@ public class VisitorReplacePart extends AbstractVisitor {
       this.patternMatcherList = new IPatternMatcher[1];
     }
     this.positionListPattern = new boolean[patternMatcherList.length];
+    this.negativePosition = new boolean[patternMatcherList.length];
     startOffset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
     initPatternMatcher(lhs, rhs, heads);
     if (heads == COMPARE_TERNARY.FALSE) {
       startOffset = 1;
+      negativeHead = false;
     }
   }
 
@@ -123,9 +137,7 @@ public class VisitorReplacePart extends AbstractVisitor {
                 startOffset = 0;
               }
             }
-            IPatternMatcher evalPatternMatcher =
-                engine.evalPatternMatcher(F.Sequence(positions), rhs);
-            this.patternMatcherList[listLength++] = evalPatternMatcher;
+            addPositions(positions, rhs);
           }
         } else {
           if (list.argSize() > 0) {
@@ -140,9 +152,7 @@ public class VisitorReplacePart extends AbstractVisitor {
                 startOffset = 0;
               }
             }
-            IPatternMatcher evalPatternMatcher =
-                engine.evalPatternMatcher(F.Sequence(positions), rhs);
-            this.patternMatcherList[listLength++] = evalPatternMatcher;
+            addPositions(positions, rhs);
           }
         }
       } else {
@@ -153,9 +163,7 @@ public class VisitorReplacePart extends AbstractVisitor {
         if (positions[0] == 0) {
           startOffset = 0;
         }
-        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(F.Sequence(positions), rhs);
-        this.patternMatcherList[listLength++] = evalPatternMatcher;
-
+        addPositions(positions, rhs);
       }
     } catch (ReturnException rex) {
       if (fromPositions.isList()) {
@@ -167,6 +175,17 @@ public class VisitorReplacePart extends AbstractVisitor {
         this.patternMatcherList[listLength++] = evalPatternMatcher;
       }
     }
+  }
+
+  /** Add the matcher for the literal position <code>positions</code>. */
+  private void addPositions(int[] positions, IExpr rhs) {
+    for (int position : positions) {
+      if (position < 0) {
+        negativePosition[listLength] = true;
+        negativeHead = true;
+      }
+    }
+    this.patternMatcherList[listLength++] = engine.evalPatternMatcher(F.Sequence(positions), rhs);
   }
 
   /**
@@ -186,11 +205,15 @@ public class VisitorReplacePart extends AbstractVisitor {
 
   private IExpr visitPatternIndexList(IAST ast, IASTAppendable positions) {
     IASTAppendable result = F.NIL;
-    for (int i = startOffset; i < ast.size(); i++) {
+    for (int i = negativeHead ? 0 : startOffset; i < ast.size(); i++) {
       final IInteger position = F.ZZ(i);
       for (int j = 0; j < listLength; j++) {
         IPatternMatcher matcher = patternMatcherList[j];
         if (matcher == null) {
+          continue;
+        }
+        if (i < startOffset && !negativePosition[j]) {
+          // only a literal negative position reaches the head here
           continue;
         }
 

@@ -465,6 +465,9 @@ public final class ListFunctions {
 
     private int fIndex;
 
+    /** The position of the iterator which didn't determine its values, or <code>-1</code>. */
+    private int fInvalidIterator = -1;
+
     private final IExpr[] fCurrentIndex;
 
     private final ISymbol[] fCurrentVariable;
@@ -523,7 +526,8 @@ public final class ListFunctions {
           return e.getValue();
         }
       }
-      final IIterator<IExpr> iter = fIterList.get(fIndex);
+      final int position = fIndex;
+      final IIterator<IExpr> iter = fIterList.get(position);
       try {
         // setUp() saves the value the iterator variable had before the iteration, so tearDown()
         // has to run even when the set up fails
@@ -546,6 +550,11 @@ public final class ListFunctions {
           // only decrement what was incremented above
           --fIndex;
         }
+      } catch (final NoEvalException nee) {
+        if (fInvalidIterator < 0) {
+          fInvalidIterator = position;
+        }
+        throw nee;
       } finally {
         iter.tearDown();
       }
@@ -1208,6 +1217,10 @@ public final class ListFunctions {
             int indx1 = Validate.checkIntType(dimIter, i);
             iterList.add(new ArrayIterator(indx1));
           }
+        } else {
+          // Single or list of non-negative machine-sized integers expected at position `1` of
+          // `2`.
+          return Errors.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
         }
 
         if (iterList.size() > 0) {
@@ -7544,7 +7557,7 @@ public final class ListFunctions {
       if (ast.size() <= 2) {
         return F.NIL;
       }
-      return generate(ast.topHead(), Iterator.createIterators(ast, false, engine), resultList,
+      return generate(ast.topHead(), ast, Iterator.createIterators(ast, false, engine), resultList,
           ast.arg1(), defaultValue, false, engine);
     }
 
@@ -7561,7 +7574,7 @@ public final class ListFunctions {
       if (ast.size() <= 2) {
         return F.NIL;
       }
-      return generate(ast.topHead(), Iterator.createIterators(ast, true, engine), resultList,
+      return generate(ast.topHead(), ast, Iterator.createIterators(ast, true, engine), resultList,
           ast.arg1(), defaultValue, true, engine);
     }
 
@@ -7582,7 +7595,8 @@ public final class ListFunctions {
         final IAST resultList, IExpr defaultValue, ISymbol head) {
       final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
       iterList.add(iter);
-      return generate(head, iterList, resultList, expr, defaultValue, false, EvalEngine.get());
+      return generate(head, F.NIL, iterList, resultList, expr, defaultValue, false,
+          EvalEngine.get());
     }
 
     /**
@@ -7592,21 +7606,28 @@ public final class ListFunctions {
      * {@link #evaluateLast(IExpr, IIterator, IAST, IExpr)}.
      *
      * @param head the head to report a message for
+     * @param ast the function call with the iterators, or {@link F#NIL}
      * @param throwOnInvalidIterator abort on an iterator which does not determine its values
      * @return {@link F#NIL} if no evaluation is possible
      */
-    private static IExpr generate(ISymbol head, List<IIterator<IExpr>> iterList,
+    private static IExpr generate(ISymbol head, IAST ast, List<IIterator<IExpr>> iterList,
         final IAST resultList, IExpr expr, IExpr defaultValue, boolean throwOnInvalidIterator,
         EvalEngine engine) {
+      final TableGenerator generator =
+          new TableGenerator(iterList, resultList, new TableFunction(engine, expr), defaultValue);
       try {
-        final TableGenerator generator =
-            new TableGenerator(iterList, resultList, new TableFunction(engine, expr), defaultValue);
         return throwOnInvalidIterator ? generator.tableThrowRecursive()
             : generator.tableRecursive();
       } catch (final ArrayIndexOutOfBoundsException e) {
         return Errors.printMessage(head, e, engine);
-      } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
-        // NoEvalException: an iterator which does not determine the values it iterates over
+      } catch (final NoEvalException e) {
+        // an iterator which does not determine the values it iterates over
+        if (head == S.Table && ast.isPresent()) {
+          // Iterator `1` does not have appropriate bounds.
+          return Errors.printMessage(head, "iterb",
+              F.list(ast.get(generator.fInvalidIterator + 2)), engine);
+        }
+      } catch (final ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
       }
@@ -8038,6 +8059,18 @@ public final class ListFunctions {
      * @param sequenceSpecifications one or more ISequence specifications
      * @return
      */
+    /** A negative start of <code>sequ</code> must lie in <code>list</code>, not in front of it. */
+    private static void checkTakeStart(ISequence sequ, IAST list) {
+      final int start = sequ.getStart();
+      if (start < 0 || (start == 0 && sequ.getStartOffset() < 0)) {
+        final int last = sequ.getEndOffset() == Integer.MAX_VALUE ? -1 : sequ.getEndOffset();
+        // Cannot take positions `1` through `2` in `3`.
+        String str = Errors.getMessage("take",
+            F.list(F.ZZ(sequ.getStartOffset()), F.ZZ(last), list), EvalEngine.get());
+        throw new ArgumentTypeException(str);
+      }
+    }
+
     private static IAST take(final IAST list, final int level,
         final ISequence[] sequenceSpecifications) {
       ISequence sequ = sequenceSpecifications[level];
@@ -8057,12 +8090,7 @@ public final class ListFunctions {
           throw new ArgumentTypeException(str);
         }
       } else {
-        if (start < 0) {
-          // Cannot take positions `1` through `2` in `3`.
-          String str = Errors.getMessage("take",
-              F.list(F.ZZ(sequ.getStartOffset()), F.ZZ(-1), list), EvalEngine.get());
-          throw new ArgumentTypeException(str);
-        }
+        checkTakeStart(sequ, list);
         final int endOffset = sequ.getEndOffset();
         if (endOffset != Integer.MAX_VALUE && endOffset > size - 1) {
           // requested end position exceeds the number of elements: Take does not silently truncate
@@ -8119,6 +8147,7 @@ public final class ListFunctions {
           appendTaken(resultAssoc, assoc2, i, newLevel, sequenceSpecifications);
         }
       } else {
+        checkTakeStart(sequ, assoc2);
         if (start == 0) {
           return resultAssoc;
         }

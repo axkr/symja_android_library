@@ -147,6 +147,10 @@ public class RepeatedPattern extends AbstractPatternSequence {
       if (cp != 0) {
         return cp;
       }
+      // Repeated before RepeatedNull
+      if (fZeroArgsAllowed != ((RepeatedPattern) expr).fZeroArgsAllowed) {
+        return fZeroArgsAllowed ? 1 : -1;
+      }
     }
     return super.compareTo(expr);
   }
@@ -154,6 +158,18 @@ public class RepeatedPattern extends AbstractPatternSequence {
   @Override
   public IExpr copy() {
     return this;
+  }
+
+  @Override
+  public boolean equivalent(final IPatternObject patternExpr2, final IPatternMap pm1,
+      IPatternMap pm2) {
+    if (!super.equivalent(patternExpr2, pm1, pm2)) {
+      return false;
+    }
+    final RepeatedPattern repeated = (RepeatedPattern) patternExpr2;
+    return fMin == repeated.fMin && fMax == repeated.fMax
+        && org.matheclipse.core.patternmatching.PatternMatcher.equivalent(fRepeatedExpr,
+            repeated.fRepeatedExpr, pm1, pm2);
   }
 
   @Override
@@ -317,7 +333,7 @@ public class RepeatedPattern extends AbstractPatternSequence {
     final IPatternMatcher[] matchers = units ? unitMatchers(engine) : elementMatcher(engine);
     final int[] widths = units ? fUnitWidths : new int[] {1};
     List<IExpr[]> splits = new java.util.ArrayList<IExpr[]>();
-    splitNamed(sequence, 0, 0, matchers, widths, values, splits, limit, engine);
+    splitNamed(sequence, matchers, widths, values, splits, limit, engine);
     return splits;
   }
 
@@ -363,63 +379,115 @@ public class RepeatedPattern extends AbstractPatternSequence {
         new org.matheclipse.core.patternmatching.PatternMatcher(fElementPattern)};
   }
 
+  /** A step of the search in {@link #splitNamed}: the unit which starts behind <code>from</code>. */
+  private static final class SplitStep {
+    /** the arguments in front of the unit */
+    final int from;
+    /** the values of the names in front of the unit */
+    final IExpr[] values;
+    /** the length of the unit which is tried next */
+    int width = 1;
+    /** the index of the matcher which is tried next */
+    int matcher = 0;
+
+    SplitStep(int from, IExpr[] values) {
+      this.from = from;
+      this.values = values;
+    }
+  }
+
   /**
-   * The depth first search of {@link #namedSplits} from argument <code>from</code>; it stops when
-   * <code>splits</code> holds <code>limit</code> splits.
-   *
-   * @return <code>true</code> if the search is to stop
+   * The depth first search of {@link #namedSplits}; it stops when <code>splits</code> holds
+   * <code>limit</code> splits. The steps are kept on a stack of their own: a sequence has more
+   * units than the Java stack has frames.
    */
-  private boolean splitNamed(IAST sequence, int from, int count, IPatternMatcher[] matchers,
-      int[] widths, IExpr[] values, List<IExpr[]> splits, int limit, EvalEngine engine) {
+  private void splitNamed(IAST sequence, IPatternMatcher[] matchers, int[] widths, IExpr[] values,
+      List<IExpr[]> splits, int limit, EvalEngine engine) {
     final int n = sequence.argSize();
-    if (from == n) {
-      if (count >= fMin) {
-        splits.add(values.clone());
+    int maxWidth = n;
+    if (widths != null) {
+      maxWidth = 0;
+      for (int width : widths) {
+        maxWidth = Math.max(maxWidth, width);
       }
-      return splits.size() >= limit;
     }
-    if (count >= fMax) {
-      return false;
-    }
-    engine.checkTimeLimit();
-    final List<IPatternObject> inner = innerPatterns();
-    for (int j = from + 1; j <= n; j++) {
-      if (widths != null && !hasWidth(widths, j - from)) {
+    final java.util.ArrayList<SplitStep> steps = new java.util.ArrayList<SplitStep>();
+    steps.add(new SplitStep(0, values));
+    while (!steps.isEmpty()) {
+      final int count = steps.size() - 1;
+      final SplitStep step = steps.get(count);
+      if (step.from == n) {
+        if (count >= fMin) {
+          splits.add(step.values.clone());
+          if (splits.size() >= limit) {
+            return;
+          }
+        }
+        steps.remove(count);
         continue;
       }
-      IASTAppendable run = F.ListAlloc(j - from);
-      for (int k = from + 1; k <= j; k++) {
-        run.append(sequence.get(k));
-      }
-      for (IPatternMatcher matcher : matchers) {
-        if (!matcher.test(run, engine)) {
-          continue;
-        }
-        // the values this unit gives the names, compared with the earlier ones
-        IPatternMap unitMap = matcher.getPatternMap();
-        IExpr[] saved = values.clone();
-        boolean consistent = true;
-        for (int i = 0; i < values.length; i++) {
-          int index = unitMap.indexOf(inner.get(i).getSymbol());
-          IExpr value = index >= 0 ? unitMap.getValue(index) : null;
-          if (value == null) {
-            continue;
-          }
-          if (values[i] == null) {
-            values[i] = value;
-          } else if (!values[i].equals(value)) {
-            consistent = false;
-            break;
-          }
-        }
-        if (consistent && splitNamed(sequence, j, count + 1, matchers, widths, values, splits,
-            limit, engine)) {
-          return true;
-        }
-        System.arraycopy(saved, 0, values, 0, values.length);
+      final IExpr[] next =
+          count < fMax ? nextUnit(sequence, step, matchers, widths, maxWidth, engine) : null;
+      if (next == null) {
+        steps.remove(count);
+      } else {
+        steps.add(new SplitStep(step.from + step.width, next));
       }
     }
-    return false;
+  }
+
+  /**
+   * Move <code>step</code> to the next unit which matches and gives the names the same values as
+   * the units in front of it.
+   *
+   * @return the values of the names with this unit, or <code>null</code> if there is no such unit
+   */
+  private IExpr[] nextUnit(IAST sequence, SplitStep step, IPatternMatcher[] matchers, int[] widths,
+      int maxWidth, EvalEngine engine) {
+    engine.checkTimeLimit();
+    final int last = Math.min(maxWidth, sequence.argSize() - step.from);
+    for (; step.width <= last; step.width++, step.matcher = 0) {
+      if (widths != null && !hasWidth(widths, step.width)) {
+        continue;
+      }
+      IASTAppendable run = F.ListAlloc(step.width);
+      for (int k = step.from + 1; k <= step.from + step.width; k++) {
+        run.append(sequence.get(k));
+      }
+      while (step.matcher < matchers.length) {
+        IPatternMatcher matcher = matchers[step.matcher++];
+        if (matcher.test(run, engine)) {
+          IExpr[] values = unitValues(matcher.getPatternMap(), step.values);
+          if (values != null) {
+            return values;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * The values of the names with the values the matcher of a unit found.
+   *
+   * @return <code>null</code> if a value differs from the one in <code>values</code>
+   */
+  private IExpr[] unitValues(IPatternMap unitMap, IExpr[] values) {
+    final List<IPatternObject> inner = innerPatterns();
+    final IExpr[] result = values.clone();
+    for (int i = 0; i < result.length; i++) {
+      int index = unitMap.indexOf(inner.get(i).getSymbol());
+      IExpr value = index >= 0 ? unitMap.getValue(index) : null;
+      if (value == null) {
+        continue;
+      }
+      if (result[i] == null) {
+        result[i] = value;
+      } else if (!result[i].equals(value)) {
+        return null;
+      }
+    }
+    return result;
   }
 
   /**

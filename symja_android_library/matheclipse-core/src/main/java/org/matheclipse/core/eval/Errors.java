@@ -91,6 +91,9 @@ public class Errors {
       "sysname", "`1` is not a known SystemOption.", //
       "args", "`1` called with invalid parameters.", //
       "argt", "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
+      "array",
+      "The array dimensions `1` given in position 2 of `2` should be a list of non-negative "
+          + "machine-sized integers giving the dimensions for the result.", //
       "arrayerr", "`1` must be a valid array.", //
       "argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
       "argtype",
@@ -251,6 +254,7 @@ public class Errors {
       "filetype",
       "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
       "fnand", "The function `1` is not analytic or defined at `2`.", //
+      "fnumx", "The value `1` did not evaluate to a sufficiently precise finite number.", //
       "fname", "`1` is not a valid file name.", //
       "fmterr", "Cannot import data as `1` format.", //
       "fsandbox", "Cannot open `1`: the path is outside this session's directory.", //
@@ -328,6 +332,7 @@ public class Errors {
       "intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
       "intnn", "Non-negative integer expected.", //
       "intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
+      "ipnfm", "Positive machine-sized integer or Infinity expected at position `1` in `2`.", //
       "intm", "Machine-sized integer expected at position `2` in `1`.", //
       "intp", "Positive integer expected at position `2` in `1`.", //
       "intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
@@ -353,7 +358,7 @@ public class Errors {
       "The value of the option MaxIterations -> `1` should be a positive integer, Infinity or Automatic.", //
       "ipnf", "Positive integer or Infinity expected at position `1` in `2`.", //
       "iseqs", "Cannot take list `1` of sequence specifications at level `2` of `3`.", //
-      "iterb", "Iterator does not have appropriate bounds.", //
+      "iterb", "Iterator `1` does not have appropriate bounds.", //
       "itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
       "itlim", "Iteration limit of `1` exceeded for `2`.", //
       "itlimpartial", "Iteration limit of `1` exceeded. Returning partial results.", //
