@@ -1821,7 +1821,7 @@ public class Solver {
   // ----- search -----
 
   /** One running search: the decision builder, the monitors and the choice point stack. */
-  private final class Search {
+  private static final class Search {
     final DecisionBuilder db;
 
     final SearchMonitor[] monitors;

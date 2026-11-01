@@ -7,7 +7,6 @@ import static org.matheclipse.ortools.testutil.OutputCapture.assertContains;
 import static org.matheclipse.ortools.testutil.OutputCapture.assertFind;
 import static org.matheclipse.ortools.testutil.OutputCapture.count;
 import static org.matheclipse.ortools.testutil.OutputCapture.numberAfter;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,6 +34,10 @@ public class SatSamplesTest {
   private static final Pattern ASSIGNED =
       Pattern.compile("Worker (\\d+) assigned to task (\\d+)\\.  Cost: (\\d+)");
 
+  private static final Pattern DAY_PATTERN = Pattern.compile("^Day (\\d)");
+
+  private static final Pattern NURSE_WORK_SHIFT = Pattern.compile("Nurse (\\d) work shift (\\d)");
+
   // ---------------------------------------------------------------------------- assignment family
 
   /** Parses the "Worker w assigned to task t" lines and checks cost and the total. */
@@ -49,7 +52,7 @@ public class SatSamplesTest {
       total += costs[w][t];
       result.add(new int[] {w, t});
     }
-    assertEquals((double) total, numberAfter(out, "Total cost:"), 1e-9);
+    assertEquals(total, numberAfter(out, "Total cost:"), 1e-9);
     return result;
   }
 
@@ -130,7 +133,7 @@ public class SatSamplesTest {
     }
     assertEquals(250, best);
     String out = OutputCapture.run(() -> AssignmentTeamsSat.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Total cost:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Total cost:"), 1e-9);
     List<int[]> as = assignments(out, costs);
     assertDistinctWorkersAndTasks(as, 4);
   }
@@ -164,7 +167,7 @@ public class SatSamplesTest {
     }
     assertEquals(239, best);
     String out = OutputCapture.run(() -> AssignmentGroupsSat.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Total cost:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Total cost:"), 1e-9);
     List<int[]> as = assignments(out, costs);
     assertDistinctWorkersAndTasks(as, 6);
     // the working workers form an allowed pattern in every group
@@ -228,7 +231,7 @@ public class SatSamplesTest {
     taskSizes(costs, sizes, order, 0, new int[costs.length], 0, minCostFrom);
     assertEquals(326, bestTaskSizes);
     String out = OutputCapture.run(() -> AssignmentTaskSizesSat.main(new String[0]));
-    assertEquals((double) bestTaskSizes, numberAfter(out, "Total cost:"), 1e-9);
+    assertEquals(bestTaskSizes, numberAfter(out, "Total cost:"), 1e-9);
     List<int[]> as = assignments(out, costs);
     int[] load = new int[costs.length];
     Set<Integer> tasks = new HashSet<>();
@@ -286,7 +289,7 @@ public class SatSamplesTest {
     }
     assertEquals(1, maxSlack);
     assertContains(out, "Solve status: OPTIMAL");
-    assertEquals((double) maxSlack, numberAfter(out, "Optimal objective value:"), 1e-9);
+    assertEquals(maxSlack, numberAfter(out, "Optimal objective value:"), 1e-9);
     // the printed packing is feasible and has exactly one bin with load <= 80
     int[] copies = new int[items.length];
     int slackBins = 0;
@@ -364,8 +367,8 @@ public class SatSamplesTest {
     }
     assertEquals(11, best);
     assertEquals(8, bestClone);
-    assertEquals((double) best, numberAfter(out, "Optimal value of the original model:"), 1e-9);
-    assertEquals((double) bestClone, numberAfter(out, "Optimal value of the cloned model:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Optimal value of the original model:"), 1e-9);
+    assertEquals(bestClone, numberAfter(out, "Optimal value of the cloned model:"), 1e-9);
   }
 
   private int cpIsFunCount;
@@ -406,7 +409,7 @@ public class SatSamplesTest {
     cpIsFun(new int[10], 0, new boolean[10]);
     assertEquals(72, cpIsFunCount);
     String out = OutputCapture.run(() -> CpIsFunSat.main(new String[0]));
-    assertEquals((double) cpIsFunCount, numberAfter(out, "- solutions :"), 1e-9);
+    assertEquals(cpIsFunCount, numberAfter(out, "- solutions :"), 1e-9);
     Matcher m = Pattern.compile("C = (\\d)  P = (\\d)  I = (\\d)  S = (\\d)  F = (\\d)  U = (\\d)"
         + "  N = (\\d)  T = (\\d)  R = (\\d)  E = (\\d)").matcher(out);
     Set<String> seen = new HashSet<>();
@@ -438,7 +441,7 @@ public class SatSamplesTest {
     }
     assertEquals(35, best);
     String out = OutputCapture.run(() -> CpSatExample.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Maximum of objective function:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Maximum of objective function:"), 1e-9);
     long x = (long) numberAfter(out, "x =");
     long y = (long) numberAfter(out, "y =");
     long z = (long) numberAfter(out, "z =");
@@ -469,7 +472,7 @@ public class SatSamplesTest {
     long best = jobshopOptimum(jobs);
     assertEquals(11, best);
     String out = OutputCapture.run(() -> MinimalJobshopSat.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Optimal Schedule Length:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Optimal Schedule Length:"), 1e-9);
     // the printed schedule: tasks of a machine do not overlap and follow the job order
     Map<String, long[]> slots = new HashMap<>();
     for (String line : out.split("\n")) {
@@ -609,7 +612,7 @@ public class SatSamplesTest {
     long best = multipleKnapsack(weights, values, 5, 100);
     assertEquals(395, best);
     String out = OutputCapture.run(() -> MultipleKnapsackSat.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Total packed value:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Total packed value:"), 1e-9);
     Matcher m = Pattern.compile("Item (\\d+) weight: (\\d+) value: (\\d+)").matcher(out);
     Set<Integer> items = new HashSet<>();
     long value = 0;
@@ -694,7 +697,7 @@ public class SatSamplesTest {
     int expected = countQueens(new int[8], 0);
     assertEquals(92, expected);
     String out = OutputCapture.run(() -> NQueensSat.main(new String[0]));
-    assertEquals((double) expected, numberAfter(out, "solutions :"), 1e-9);
+    assertEquals(expected, numberAfter(out, "solutions :"), 1e-9);
     String[] lines = out.split("\n");
     Set<String> boards = new HashSet<>();
     for (int k = 0; k < lines.length; k++) {
@@ -734,7 +737,7 @@ public class SatSamplesTest {
     }
     assertEquals(11, best);
     String out = OutputCapture.run(() -> NoOverlapSampleSat.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Optimal Schedule Length:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Optimal Schedule Length:"), 1e-9);
     long s0 = (long) numberAfter(out, "Task 0 starts at");
     long s1 = (long) numberAfter(out, "Task 1 starts at");
     long s2 = (long) numberAfter(out, "Task 2 starts at");
@@ -795,11 +798,11 @@ public class SatSamplesTest {
       }
       int day = -1;
       for (String line : part.split("\n")) {
-        Matcher dm = Pattern.compile("^Day (\\d)").matcher(line);
+        Matcher dm = DAY_PATTERN.matcher(line);
         if (dm.find()) {
           day = Integer.parseInt(dm.group(1));
         }
-        Matcher wm = Pattern.compile("Nurse (\\d) work shift (\\d)").matcher(line);
+        Matcher wm = NURSE_WORK_SHIFT.matcher(line);
         if (wm.find()) {
           int n = Integer.parseInt(wm.group(1));
           assertEquals(-1, shift[n][day], "two shifts on a day");
@@ -862,7 +865,7 @@ public class SatSamplesTest {
     }
     assertEquals(-9, best);
     String out = OutputCapture.run(() -> RankingSampleSat.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Optimal cost:"), 1e-9);
+    assertEquals(best, numberAfter(out, "Optimal cost:"), 1e-9);
     long makespan = (long) numberAfter(out, "Makespan:");
     Matcher m = Pattern.compile("Task (\\d) starts at (\\d+) with rank (\\d+)").matcher(out);
     List<long[]> performed = new ArrayList<>();
@@ -934,7 +937,7 @@ public class SatSamplesTest {
     }
     assertEquals(13, best);
     String out = OutputCapture.run(() -> ScheduleRequestsSat.main(new String[0]));
-    assertEquals((double) best, numberAfter(out, "Number of shift requests met ="), 1e-9);
+    assertEquals(best, numberAfter(out, "Number of shift requests met ="), 1e-9);
     assertContains(out, "(out of 20)");
     Matcher m = Pattern.compile("Nurse (\\d) works shift (\\d) \\((not requested|requested)\\)")
         .matcher(out);
@@ -1038,7 +1041,7 @@ public class SatSamplesTest {
     String out = OutputCapture.run(() -> SolutionHintingSampleSat.main(new String[0]));
     List<Double> objectives = OutputCapture.numbersAfter(out, "objective value =");
     assertFalse(objectives.isEmpty());
-    assertEquals((double) bestXyz(), objectives.get(objectives.size() - 1), 1e-9);
+    assertEquals(bestXyz(), objectives.get(objectives.size() - 1), 1e-9);
     assertXyzSolutionsValid(out, true);
   }
 
@@ -1051,8 +1054,8 @@ public class SatSamplesTest {
     for (int i = 1; i < objectives.size(); i++) {
       assertTrue(objectives.get(i) > objectives.get(i - 1), "solutions improve");
     }
-    assertEquals((double) bestXyz(), objectives.get(objectives.size() - 1), 1e-9);
-    assertEquals((double) objectives.size(), numberAfter(out, "solution count:"), 1e-9);
+    assertEquals(bestXyz(), objectives.get(objectives.size() - 1), 1e-9);
+    assertEquals(objectives.size(), numberAfter(out, "solution count:"), 1e-9);
     assertTrue(numberAfter(out, "best bound count:") >= 1);
     assertXyzSolutionsValid(out, true);
   }

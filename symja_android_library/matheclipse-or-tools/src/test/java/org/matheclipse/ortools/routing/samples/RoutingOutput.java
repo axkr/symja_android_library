@@ -3,7 +3,6 @@ package org.matheclipse.ortools.routing.samples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +61,8 @@ public final class RoutingOutput {
 
   private static final Pattern HEADER = Pattern.compile("^Route(?: for [Vv]ehicle (\\d+))?:\\s*$");
 
+  private static final Pattern NODE_NUMBER = Pattern.compile("^(\\d+)");
+
   private static final Pattern LOAD = Pattern.compile("Load\\((-?\\d+)\\)");
 
   private static final Pattern TIME = Pattern.compile("Time\\((-?\\d+)(?:,\\s*(-?\\d+))?\\)");
@@ -80,7 +81,7 @@ public final class RoutingOutput {
       Route r = new Route(h.group(1) == null ? -1 : Integer.parseInt(h.group(1)));
       for (String token : lines[i + 1].split(" -> ")) {
         String t = token.trim();
-        Matcher num = Pattern.compile("^(\\d+)").matcher(t);
+        Matcher num = NODE_NUMBER.matcher(t);
         if (!num.find()) {
           fail("can't parse route token <" + t + "> in:\n" + output);
         }

@@ -195,7 +195,7 @@ final class FirstSolutions {
           continue;
         }
         // mandatory units first, then by cost
-        long score = penalty == Long.MAX_VALUE ? ins.cost : ins.cost;
+        long score = penalty = ins.cost;
         boolean mandatory = penalty == Long.MAX_VALUE;
         boolean bestMandatory = bestUnit >= 0 && unitPenalty(units.get(bestUnit)) == Long.MAX_VALUE;
         if (best == null || (mandatory && !bestMandatory)
