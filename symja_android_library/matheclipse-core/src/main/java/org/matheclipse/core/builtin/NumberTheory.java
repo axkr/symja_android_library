@@ -2529,7 +2529,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        return F.NIL;
+        return ast.arg1().isInteger() ? signedExtendedGCD(ast, engine) : F.NIL;
       }
       if (ast.exists(GaussianInteger::isGaussianInteger)
           && ast.forAll(x -> x.isInteger() || GaussianInteger.isGaussianInteger(x))) {
