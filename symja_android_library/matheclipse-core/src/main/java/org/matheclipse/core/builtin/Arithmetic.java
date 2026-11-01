@@ -5234,6 +5234,14 @@ public final class Arithmetic {
             evaled = true;
             continue;
           }
+          if (arg instanceof IComplex && ((IComplex) arg).getRealPart().isZero()) {
+            // the size of a pure imaginary number is positive: Sqrt(4*I*u) == 2*Sqrt(I*u)
+            IRational imaginary = ((IComplex) arg).getImaginaryPart();
+            result.append(F.Power(imaginary.abs(), exponent));
+            rest.append(imaginary.isNegative() ? F.CNI : F.CI);
+            evaled = true;
+            continue;
+          }
           if (arg.isFraction()) {
             IInteger numerator = ((IFraction) arg).numerator();
             IExpr n = F.NIL;
@@ -5250,7 +5258,10 @@ public final class Arithmetic {
               evaled = true;
               continue;
             }
-          } else if (!phaseInRest) {
+          } else if (!phaseInRest && (!arg.isNumericFunction() || arg.isPositiveResult())) {
+            // a number which isn't positive has a phase of its own, even if its root is closed:
+            // Sqrt((3+4*I)*u) is not (2+I)*Sqrt(u), and Sqrt((2-Sqrt(5))*u) is not
+            // I*Sqrt(-2+Sqrt(5))*Sqrt(u), for every u
             IExpr temp = engine.evaluateNIL(F.Power(arg, exponent));
             if (temp.isPresent()) {
               if (temp.isTimes()) {

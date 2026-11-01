@@ -45,6 +45,7 @@ import org.matheclipse.core.integrate.ExponentialPolyLogIntegration;
 import org.matheclipse.core.integrate.HolonomicIntegration;
 import org.matheclipse.core.integrate.IntegralTable;
 import org.matheclipse.core.integrate.IntegrateTimeBudget;
+import org.matheclipse.core.integrate.NestedRootEuler;
 import org.matheclipse.core.integrate.PiecewiseIntegration;
 import org.matheclipse.core.integrate.PrimitiveTowerIntegration;
 import org.matheclipse.core.integrate.ProductPowerIntegration;
@@ -1028,6 +1029,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               return result;
             }
           }
+          // A root over Sqrt(quadratic), like Sqrt(2*x^2+x*Sqrt(4*x^2+3)): an Euler substitution
+          // rationalizes the conic and leaves a root the rules can integrate.
+          result = quietStage(engine, fx, x, "rationalising the conic under a root",
+              () -> IntegrateTimeBudget.runWithin(
+                  () -> RischNorman
+                      .withoutRadicalTower(() -> NestedRootEuler.integrate(fx, x, engine)),
+                  MachineProfile.millis(NESTED_ROOT_TIMELIMIT_MILLIS)));
+          if (result.isPresent()) {
+            return result;
+          }
           // Conjugate rationalization of a denominator containing a single square root, e.g.
           // x^2/(x^2+Sqrt(1-x^2)) -> x^2*(x^2-Sqrt(1-x^2))/(x^4+x^2-1). Post-Rubi because it only
           // rewrites the integrand and re-enters Integrate: whenever Rubi has an answer for the
@@ -1570,6 +1581,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   /** The time for the partial fractions in an exponential and their polylogarithm ladder. */
   private static final long POLYLOG_LADDER_TIMELIMIT_MILLIS = 8000L;
+
+  /** The time for the Euler substitution of a conic under a root and the integral it leaves. */
+  private static final long NESTED_ROOT_TIMELIMIT_MILLIS = 10000L;
 
   /**
    * The Cauchy principal value of <code>Integrate(f, {x, a, b})</code> from an antiderivative

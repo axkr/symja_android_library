@@ -19488,6 +19488,45 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPowerOfProductKeepsNumberWithPhase() {
+    // only a positive number comes out of a fractional power, also if its root is closed
+    check("{Sqrt((3+4*I)*z), Sqrt((-3-4*I)*z), Sqrt((1-Sqrt(3))*(2-Sqrt(5)))}", //
+        "{Sqrt((3+I*4)*z),Sqrt((-3-I*4)*z),Sqrt((1-Sqrt(3))*(2-Sqrt(5)))}");
+    check("{Sqrt(4*z), Sqrt(-4*z), Sqrt((1+Sqrt(2))^2*z), Sqrt(5/9*z)}", //
+        "{2*Sqrt(z),2*Sqrt(-z),(1+Sqrt(2))*Sqrt(z),1/3*Sqrt(5)*Sqrt(z)}");
+    // the size of a pure imaginary number is positive
+    check("{(8*I*z)^(1/3), Sqrt(4*I*z), Sqrt(-9*I*z)}", //
+        "{2*(I*z)^(1/3),2*Sqrt(I*z),3*Sqrt(-I*z)}");
+    check("Module({u=(1-Sqrt(2+I))^2}, Map(Chop(N(Sqrt(#*u))-Sqrt(N(#*u)))&, {4*I, -9*I, 2*I}))", //
+        "{0,0,0}");
+    // the exact value and the value of the number under the root have one sign
+    check("Module({u=(1-Sqrt(2+I))^2}, Map(Chop(N(Sqrt(#*u))-Sqrt(N(#*u)))&, "
+        + "{3+4*I, -3-4*I, 2*I, (150+315*I)^2/541^2, 1-Sqrt(3), 2-Sqrt(5)}))", //
+        "{0,0,0,0,0,0}");
+    check("Chop(N(Sqrt((2-Sqrt(5))*(2+I)))-Sqrt(N((2-Sqrt(5))*(2+I))))", //
+        "0");
+  }
+
+  @Test
+  public void testPossibleZeroQRealCutOfSeveralVariables() {
+    // the cut is t/s<-1: t and s of opposite sign, never at equal values of t and s
+    check("Table(PossibleZeroQ(Sqrt((1-t/s)/(1+t/s))*(1+t/s)-Sqrt(1-t^2/s^2)), {12})//Union", //
+        "{False}");
+    // three variables, and one sign combination of the pair (t,s) again
+    check("Table(PossibleZeroQ(Sqrt((1-t/s)/(1+t/s))*(1+t/s)-Sqrt(1-t^2/s^2)"
+        + "+Sqrt(1-r)*Sqrt(1+r)-Sqrt(1-r^2)), {12})//Union", //
+        "{False}");
+    // identities for all values stay zero
+    check("Table(PossibleZeroQ(Sqrt(1-t/s)*Sqrt(1+t/s)-Sqrt(1-t^2/s^2)), {12})//Union", //
+        "{True}");
+    check("Table(PossibleZeroQ(Sqrt(1-t/s)*Sqrt(1+t/s)-Sqrt(1-t^2/s^2)"
+        + "+Sqrt(1-u/r)*Sqrt(1+u/r)-Sqrt(1-u^2/r^2)), {12})//Union", //
+        "{True}");
+    check("PossibleZeroQ(s*(r/s)^(4/3)-r*(r/s)^(1/3))", //
+        "True");
+  }
+
+  @Test
   public void testFreeQOrderlessParts() {
     // the parts of an Orderless expression match a pattern, also with a level specification
     check(
