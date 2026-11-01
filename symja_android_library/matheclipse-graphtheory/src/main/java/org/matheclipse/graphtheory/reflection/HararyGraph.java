@@ -34,9 +34,8 @@ public class HararyGraph extends AbstractFunctionEvaluator {
         pairs.add(new int[] {i + 1, (i + j) % n + 1});
       }
     }
-    if (k % 2 == 1) {
-      if (n % 2 == 0) {
-        // and to the opposite vertex
+    if ((k & 1) == 1) {
+      if ((n & 1) == 0) {
         for (int i = 0; i < n / 2; i++) {
           pairs.add(new int[] {i + 1, i + n / 2 + 1});
         }

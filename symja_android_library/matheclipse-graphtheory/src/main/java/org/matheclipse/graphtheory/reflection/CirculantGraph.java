@@ -26,7 +26,7 @@ public class CirculantGraph extends AbstractFunctionEvaluator {
     List<int[]> pairs = new ArrayList<int[]>();
     for (IExpr jump : jumps) {
       int j = jump.toIntDefault();
-      if (j < 0 || j == Integer.MIN_VALUE) {
+      if (j < 0) {
         return F.NIL;
       }
       for (int i = 1; i <= n; i++) {

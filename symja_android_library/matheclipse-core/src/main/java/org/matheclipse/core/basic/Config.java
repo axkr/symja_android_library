@@ -143,8 +143,8 @@ public class Config {
   public static final int MAX_CANCEL_GCD_LEAFCOUNT = 4000;
 
   /**
-   * Maximum product of the term counts of numerator and denominator for which the polynomial GCD
-   * of {@link org.matheclipse.core.eval.AlgebraUtil#cancelGCD(IExpr, IExpr)} is attempted over
+   * Maximum product of the term counts of numerator and denominator for which the polynomial GCD of
+   * {@link org.matheclipse.core.eval.AlgebraUtil#cancelGCD(IExpr, IExpr)} is attempted over
    * <code>IExpr</code> coefficients that are not all numbers and generate no number field. Has to
    * be an int value greater 0.
    *
@@ -152,8 +152,7 @@ public class Config {
    * Coefficients built from radicals are cancelled in their number field instead, where the GCD is
    * exact rational arithmetic. Only the remaining symbolic coefficients take the <code>IExpr</code>
    * GCD, whose every coefficient product is a full evaluation; above this limit the expression is
-   * left uncancelled, a correct but less reduced result, as for
-   * {@link #MAX_CANCEL_GCD_LEAFCOUNT}.
+   * left uncancelled, a correct but less reduced result, as for {@link #MAX_CANCEL_GCD_LEAFCOUNT}.
    */
   public static final int MAX_CANCEL_GCD_TERM_PRODUCT = 256;
 
@@ -299,8 +298,8 @@ public class Config {
   /**
    * Set to <code>true</code> to check every use of a fixed point stamp: the expression is evaluated
    * anyway, and a result is a stamp which should not have been trusted. Those are reported on
-   * <code>System.err</code> and counted in
-   * {@link org.matheclipse.core.eval.EvalEpochValidation}. Slow - for testing only.
+   * <code>System.err</code> and counted in {@link org.matheclipse.core.eval.EvalEpochValidation}.
+   * Slow - for testing only.
    */
   public static boolean EVAL_EPOCH_VALIDATE = Boolean.getBoolean("symja.evalEpoch.validate");
 
@@ -440,10 +439,9 @@ public class Config {
    * {@link org.matheclipse.core.eval.EvalEngine} of their own, as a servlet does. The built-in
    * symbols are one instance for all of them, so nothing evaluated in one engine may change what
    * another one computes: engines start locked (see {@link #PACKAGE_MODE}) and stay locked while a
-   * file is read, <code>Unprotect</code> is refused, <code>Derivative</code> and the
-   * <code>$</code> symbols count as protected, <code>SetOptions</code> of a built-in holds for its
-   * engine only, and no value can be assigned to a <code>System`</code> or <code>Rubi`</code>
-   * symbol.
+   * file is read, <code>Unprotect</code> is refused, <code>Derivative</code> and the <code>$</code>
+   * symbols count as protected, <code>SetOptions</code> of a built-in holds for its engine only,
+   * and no value can be assigned to a <code>System`</code> or <code>Rubi`</code> symbol.
    *
    * <p>
    * <code>false</code> if one JVM is one kernel, as in <code>symjascript</code>: a package may
@@ -669,8 +667,8 @@ public class Config {
   public static long INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS = 2000L;
 
   /**
-   * Time limit of the Risch-Norman method over a tower with a radical in it, whose linear systems are
-   * larger than the purely transcendental ones.
+   * Time limit of the Risch-Norman method over a tower with a radical in it, whose linear systems
+   * are larger than the purely transcendental ones.
    */
   public static long INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS = 8000L;
 
@@ -800,8 +798,8 @@ public class Config {
 
   /**
    * Default package mode with which the EvalEngines initially can be started. An engine in package
-   * mode may change the rules of the <code>System`</code> symbols, which all engines of a JVM share,
-   * if they aren't protected. {@link #SHARED_JVM} overrides this.
+   * mode may change the rules of the <code>System`</code> symbols, which all engines of a JVM
+   * share, if they aren't protected. {@link #SHARED_JVM} overrides this.
    */
   public static boolean PACKAGE_MODE = true;
 
@@ -907,7 +905,8 @@ public class Config {
   public static RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
   /**
-   * The default invalid integer value, defined as {@link Integer#MIN_VALUE}.
+   * The default invalid integer value, defined as {@link Integer#MIN_VALUE}. The system assumes
+   * that <code>INVALID_INT</code> is a negative number.
    * 
    * @see IExpr#toIntDefault()
    * @see F#isPresent(int)
@@ -916,7 +915,8 @@ public class Config {
   public static final int INVALID_INT = Integer.MIN_VALUE;
 
   /**
-   * The default invalid long value, defined as {@link Long#MIN_VALUE}.
+   * The default invalid long value, defined as {@link Long#MIN_VALUE}.The system assumes that
+   * <code>INVALID_LONG</code> is a negative number.
    * 
    * @see IExpr#toLongDefault()
    * @see F#isPresent(long)

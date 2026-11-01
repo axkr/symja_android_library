@@ -23,8 +23,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class FindFormula extends AbstractFunctionOptionEvaluator {
 
-  private static IBuiltInSymbol[] TARGET_FUNCTIONS =
-      {S.Power, S.Sin, S.Cos, S.Tan, S.Cot, S.Log, S.Sqrt, S.Csc, S.Sec, S.Abs, S.Exp};
+  private static final IBuiltInSymbol[] BASE_TARGET_FUNCTIONS =
+      {S.Power, S.Sin, S.Cos, S.Exp, S.Log, S.Abs, S.Sqrt};
+
+  private static final IBuiltInSymbol[] NON_NEGATIVE_TARGET_FUNCTIONS =
+      {S.Power, S.Sin, S.Cos, S.Exp, S.Log, S.Sqrt};
 
   /**
    * A simple wrapper to hold a model template. It stores the symbolic expression, the list of
@@ -71,14 +74,11 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
       return String.format("Model: %s\nFormula: %s\nAIC: %.4f\nRules: %s", model.name,
           fittedExpression.toString(), aic, rules.toString());
     }
-
-
   }
 
   public FindFormula() {
     // empty constructor
   }
-
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
@@ -137,9 +137,9 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
     }
     if (functionSymbol == S.Power) {
       if (numParams == 1) {
-        product.append(F.Times(params.get(numParams), F.C1));
+        product.append(F.Times(params.get(numParams), var));
       } else {
-        product.append(F.Times(params.get(numParams), F.Power(var, F.ZZ(numParams - 1))));
+        product.append(F.Times(params.get(numParams), F.Power(var, F.ZZ(numParams))));
       }
     } else {
       IExpr term = F.unaryAST1(functionSymbol, F.Times(params.get(numParams), var));
@@ -149,8 +149,7 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * 
-   * Generates a polynomial model of the form: #1 + #2*f(x) + #3*f(x)^2 + ... + #n*f(x)^(n-1).
+   * Generates a sum model of the form: #1 + #2*f(x) + #3*f(x)^2 + ... + #n*f(x)^(n-1).
    * 
    * @param numParams the number of {@link S#Slot}s to use
    * @param var the independent variable
@@ -197,14 +196,10 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
     if (numParams < 1) {
       return null;
     }
-    // Use p1, p2, ... as parameter names to avoid conflict and allow for more params
-    // IAST params = F.List();
-
     IASTAppendable params = F.ListAlloc(numParams);
     for (int i = 1; i <= numParams; i++) {
       params.append(F.Slot(i));
     }
-    params.append(F.Slot(numParams));
 
     IASTAppendable sum = F.PlusAlloc(numParams);
     // #1
@@ -229,17 +224,29 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr generateModels(IAST dataList, double[][] matrix, IExpr var,
       int maxParameters, EvalEngine engine) {
+    boolean allNonNegative = true;
+    for (double[] point : matrix) {
+      if (point[0] < 0.0) {
+        allNonNegative = false;
+        break;
+      }
+    }
+
+    IBuiltInSymbol[] targetFunctions =
+        allNonNegative ? NON_NEGATIVE_TARGET_FUNCTIONS : BASE_TARGET_FUNCTIONS;
+
     ArrayList<ModelTemplate> modelLibrary = new ArrayList<>();
     List<ModelTemplate> tempLibrary = null;
     ModelTemplate polyModel = null;
+
     for (int j = 1; j <= maxParameters; j++) {
       int takeBestN = 3;
       if (j != 1) {
         ArrayList<ModelTemplate> library = new ArrayList<>();
         for (int k = 0; k < tempLibrary.size(); k++) {
           polyModel = tempLibrary.get(k);
-          for (int i = 0; i < TARGET_FUNCTIONS.length; i++) {
-            ModelTemplate newModel = generatePlusModel(j, var, TARGET_FUNCTIONS[i], polyModel);
+          for (int i = 0; i < targetFunctions.length; i++) {
+            ModelTemplate newModel = generatePlusModel(j, var, targetFunctions[i], polyModel);
             if (newModel != null) {
               library.add(newModel);
             }
@@ -247,40 +254,50 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
         }
         for (int k = 0; k < tempLibrary.size(); k++) {
           polyModel = tempLibrary.get(k);
-          for (int i = 0; i < TARGET_FUNCTIONS.length; i++) {
-            ModelTemplate newModel = generateTimesModel(j, var, TARGET_FUNCTIONS[i], polyModel);
+          for (int i = 0; i < targetFunctions.length; i++) {
+            ModelTemplate newModel = generateTimesModel(j, var, targetFunctions[i], polyModel);
             if (newModel != null) {
               library.add(newModel);
             }
           }
         }
-        library.add(generatePolynomialModel(j, var));// one extra polynomial model
+        library.add(generatePolynomialModel(j, var)); // one extra polynomial model
         tempLibrary = library;
-        takeBestN = Math.min(2, tempLibrary.size());
+        takeBestN = Math.min(3, tempLibrary.size());
       } else {
         tempLibrary = new ArrayList<>();
-        for (int i = 0; i < TARGET_FUNCTIONS.length; i++) {
-          ModelTemplate newModel = generatePlusModel(j, var, TARGET_FUNCTIONS[i], polyModel);
+        for (int i = 0; i < targetFunctions.length; i++) {
+          ModelTemplate newModel = generatePlusModel(j, var, targetFunctions[i], polyModel);
           if (newModel != null) {
             tempLibrary.add(newModel);
           }
         }
-        for (int i = 0; i < TARGET_FUNCTIONS.length; i++) {
-          ModelTemplate newModel = generateTimesModel(j, var, TARGET_FUNCTIONS[i], polyModel);
+        for (int i = 0; i < targetFunctions.length; i++) {
+          ModelTemplate newModel = generateTimesModel(j, var, targetFunctions[i], polyModel);
           if (newModel != null) {
             tempLibrary.add(newModel);
           }
         }
-        tempLibrary.add(generatePolynomialModel(j, var));// one extra polynomial model
+        tempLibrary.add(generatePolynomialModel(j, var)); // one extra polynomial model
         takeBestN = Math.min(3, tempLibrary.size());
       }
       findFormulaParallelOptimized(dataList, matrix, var, tempLibrary, engine);
       tempLibrary = bestDistinctModels(tempLibrary, takeBestN);
       modelLibrary.addAll(tempLibrary);
+
+      // Stop searching higher parameters if an exact or near-exact fit is found
+      if (!tempLibrary.isEmpty() && tempLibrary.get(0).aic < -100.0) {
+        break;
+      }
     }
+
     if (modelLibrary.size() > 0) {
       modelLibrary.sort((a, b) -> a.aic > b.aic ? 1 : a.aic < b.aic ? -1 : 0);
-      return modelLibrary.get(0).fittedExpression;
+      IExpr bestExpr = modelLibrary.get(0).fittedExpression;
+      if (allNonNegative) {
+        bestExpr = F.subst(bestExpr, F.Rule(F.Abs(var), var));
+      }
+      return bestExpr;
     }
     return F.NIL;
   }
@@ -349,33 +366,18 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
             IAST fitRules = (IAST) fitResult;
             IExpr fittedExpr = F.subst(modelWithVar, fitRules);
 
-            // Compute RSS with early bail-out using current best BIC
+            // Compute RSS
             double rss = 0.0;
-            int k = template.params.size();
-            // derive a current max RSS threshold from bestBicRef if available
-            Double currentBestBic = bestBicRef.get();
-            Double maxRssThreshold = null;
-            if (!currentBestBic.isInfinite()) {
-              // invert BIC = n * ln(RSS/n) + k * ln(n)
-              // => ln(RSS/n) <= (bestBic - k*ln(n)) / n
-              double rhs = (currentBestBic - k * Math.log(length)) / length;
-              maxRssThreshold = Math.exp(rhs) * length;
-            }
+            int k = template.params.argSize();
 
             for (double[] point : matrix) {
               IExpr exprWithX = F.subst(fittedExpr, e -> e.equals(var), F.num(point[0]));
               double yFitted = exprWithX.evalfNaN();
               if (Double.isNaN(yFitted)) {
-                // invalid evaluation for this model -> discard
                 return;
               }
               double residual = yFitted - point[1];
               rss += residual * residual;
-
-              if (maxRssThreshold != null && rss > maxRssThreshold) {
-                // can't beat current best BIC; early stop
-                return;
-              }
             }
 
             if (rss <= 1e-10) {
@@ -383,20 +385,16 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
             }
             double bic = length * Math.log(rss / length) + k * Math.log(length);
 
-            // publish results atomically: update template and possibly bestBicRef
             synchronized (template) {
-              // Only set if better than previously set for this template (rare)
               if (template.fittedExpression == null || bic < template.aic) {
                 template.aic = bic;
                 template.fittedExpression = fittedExpr;
                 template.rules = fitRules;
               }
             }
-            // update global best bic if improved
             bestBicRef.getAndUpdate(prev -> bic < prev ? bic : prev);
           }
         } catch (RuntimeException rex) {
-          // Respect interrupt exceptions
           Errors.rethrowsInterruptException(rex);
         }
       }));
@@ -410,13 +408,12 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
         Thread.currentThread().interrupt();
         break;
       } catch (ExecutionException ee) {
-        // ignore per-task exceptions (they were handled above)
+        // ignore per-task exceptions
       }
     }
 
     pool.shutdownNow();
 
-    // pick best result
     return modelLibrary.stream().filter(m -> m.fittedExpression != null)
         .min(ModelTemplate::compareTo)
         .map(m -> new FittedResult(m, m.fittedExpression, m.aic, m.rules)).orElse(null);

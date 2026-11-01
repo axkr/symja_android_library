@@ -225,10 +225,19 @@ final class IntegerFormWriter {
     if (base == null) {
       return null;
     }
-    String acc = base;
-    for (int i = 1; i < k; i++) {
-      acc = checked ? "Math.multiplyExact(" + acc + ", " + base + ")" : "(" + acc + " * " + base + ")";
+    if (k == 1) {
+      return base;
     }
-    return acc;
+    StringBuilder sb = new StringBuilder();
+    String prefix = checked ? "Math.multiplyExact(" : "(";
+    String suffix = checked ? ", " + base + ")" : " * " + base + ")";
+    for (int i = 1; i < k; i++) {
+      sb.append(prefix);
+    }
+    sb.append(base);
+    for (int i = 1; i < k; i++) {
+      sb.append(suffix);
+    }
+    return sb.toString();
   }
 }

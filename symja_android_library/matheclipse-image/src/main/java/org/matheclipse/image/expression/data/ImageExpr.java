@@ -546,9 +546,6 @@ final public class ImageExpr extends DataExpr<byte[]> {
     }
     String type = sampleType != null ? sampleType : Pixels.REAL32;
     BufferedImage bufferedImage = Pixels.toBufferedImage(samples, space, Pixels.scaleOf(type));
-    if (bufferedImage == null) {
-      return null;
-    }
     if (!Pixels.describesPixels(space, samples.channels())) {
       return new ImageExpr(bufferedImage, null, options, sampleType);
     }

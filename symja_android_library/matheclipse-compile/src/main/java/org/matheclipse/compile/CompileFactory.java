@@ -8,7 +8,6 @@ import java.util.function.Function;
 import javax.lang.model.element.Modifier;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -1068,6 +1067,8 @@ public class CompileFactory {
           case ID.Length:
             converted = convertLength(this, sb, ast);
             break;
+          default:
+            break;
         }
 
         if (converted) {
@@ -1113,6 +1114,8 @@ public class CompileFactory {
             break;
           case ID.Unequal:
             op = "!=";
+            break;
+          default:
             break;
         }
 

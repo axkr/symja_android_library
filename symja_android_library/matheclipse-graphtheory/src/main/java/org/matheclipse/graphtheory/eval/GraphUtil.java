@@ -701,29 +701,31 @@ public class GraphUtil {
       }
       path[0] = start;
       onPath[start] = true;
-      Boolean found = hamiltonianPathSearch(view, t, path, 1, onPath, nodes, maxNodes);
+      IExpr.COMPARE_TERNARY found =
+          hamiltonianPathSearch(view, t, path, 1, onPath, nodes, maxNodes);
       onPath[start] = false;
-      if (found == null) {
+      if (found == IExpr.COMPARE_TERNARY.UNDECIDABLE) {
         return null;
       }
-      if (found) {
+      if (found == IExpr.COMPARE_TERNARY.TRUE) {
         return path;
       }
     }
     return new int[0];
   }
 
-  private static Boolean hamiltonianPathSearch(GraphView view, int t, int[] path, int size,
+  private static IExpr.COMPARE_TERNARY hamiltonianPathSearch(GraphView view, int t, int[] path,
+      int size,
       boolean[] onPath, long[] nodes, long maxNodes) {
     if (++nodes[0] > maxNodes) {
-      return null;
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
     int v = path[size - 1];
     if (size == view.n) {
-      return t < 0 || v == t;
+      return t < 0 || v == t ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
     }
     if (v == t) {
-      return false;
+      return IExpr.COMPARE_TERNARY.FALSE;
     }
     if ((nodes[0] & 0xFFF) == 0) {
       org.matheclipse.core.basic.OperationSystem.checkInterrupt();
@@ -735,13 +737,14 @@ public class GraphUtil {
       }
       onPath[w] = true;
       path[size] = w;
-      Boolean found = hamiltonianPathSearch(view, t, path, size + 1, onPath, nodes, maxNodes);
+      IExpr.COMPARE_TERNARY found =
+          hamiltonianPathSearch(view, t, path, size + 1, onPath, nodes, maxNodes);
       onPath[w] = false;
-      if (found == null || found) {
+      if (found != IExpr.COMPARE_TERNARY.FALSE) {
         return found;
       }
     }
-    return false;
+    return IExpr.COMPARE_TERNARY.FALSE;
   }
 
   /**

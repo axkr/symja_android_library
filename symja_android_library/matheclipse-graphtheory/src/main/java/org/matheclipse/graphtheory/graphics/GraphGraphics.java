@@ -45,7 +45,7 @@ import org.matheclipse.graphtheory.expression.data.GraphExpr;
  * "LayeredDigraphEmbedding", "LayeredEmbedding", "Tree", "CircularEmbedding", "StarEmbedding".</li>
  * </ul>
  */
-public class GraphGraphics {
+final public class GraphGraphics {
 
   // Helper class for Tree Layout
   private static class LayoutNode {

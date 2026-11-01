@@ -1,5 +1,6 @@
 package org.matheclipse.compile;
 
+import java.io.Serializable;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -73,7 +74,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * exists yet. A value written for them is therefore accepted and has no effect. The other four
  * settings are honoured in {@link org.matheclipse.compile.builtin.CompilerFunctions}.
  */
-public final class RuntimeOptions {
+public final class RuntimeOptions implements Serializable {
 
   private static final String CATCH_MACHINE_INTEGER_OVERFLOW = "CatchMachineIntegerOverflow";
   private static final String CATCH_MACHINE_OVERFLOW = "CatchMachineOverflow";

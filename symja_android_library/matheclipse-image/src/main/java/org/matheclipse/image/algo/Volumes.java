@@ -228,6 +228,9 @@ public final class Volumes {
   /** The longer side of the picture of a volume, in pixels, if the volume is small enough. */
   private static final int PICTURE_SIZE = 360;
 
+  /** The step size along the line of sight for volume rendering. */
+  private static final double STEP = 0.5;
+
   private static double[] normalize(double[] v) {
     double norm = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     return new double[] {v[0] / norm, v[1] / norm, v[2] / norm};
@@ -307,8 +310,7 @@ public final class Volumes {
       graphics.dispose();
     }
 
-    final double step = 0.5;
-    final int steps = (int) Math.ceil(2.0 * halfW / step) + 1;
+    final int steps = (int) Math.ceil(2.0 * halfW / STEP) + 1;
     double[] brightest = new double[color ? 3 : 1];
     for (int py = 0; py < pictureHeight; py++) {
       double v = (pictureHeight / 2.0 - (py + 0.5)) / scale;
@@ -316,7 +318,7 @@ public final class Volumes {
         double u = ((px + 0.5) - pictureWidth / 2.0) / scale;
         Arrays.fill(brightest, 0.0);
         for (int i = 0; i < steps; i++) {
-          double w = -halfW + i * step;
+          double w = -halfW + i * STEP;
           // the point of the line of sight, in the coordinates of the box
           double x = u * right[0] + v * up[0] + w * toEye[0] + width / 2.0;
           double y = u * right[1] + v * up[1] + w * toEye[1] + height / 2.0;

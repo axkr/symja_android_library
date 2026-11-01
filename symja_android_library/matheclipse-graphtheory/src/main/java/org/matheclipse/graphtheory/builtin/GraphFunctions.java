@@ -22,7 +22,6 @@ import org.jgrapht.alg.flow.mincost.CapacityScalingMinimumCostFlow;
 import org.jgrapht.alg.flow.mincost.MinimumCostFlowProblem;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.MaximumFlowAlgorithm;
-import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm;
 import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm.MinimumCostFlow;
 import org.jgrapht.alg.interfaces.PlanarityTestingAlgorithm;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
@@ -38,7 +37,6 @@ import org.jgrapht.generate.ComplementGraphGenerator;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
-import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.basic.Config;
@@ -58,17 +56,17 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EdgeListType;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.geodesy.GeodesicSolver;
+import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import org.matheclipse.core.optimization.IGraphFlowSolver;
 import org.matheclipse.core.optimization.IRoutingSolver;
 import org.matheclipse.core.optimization.OptimizationMethod;
-import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.graphtheory.eval.CanonicalLabeling;
 import org.matheclipse.graphtheory.eval.GraphUtil;
@@ -1651,18 +1649,6 @@ public class GraphFunctions {
         if (gex == null) {
           return F.NIL;
         }
-        Graph<IExpr, ?> g = gex.toData();
-        // boolean pseudoDiameter = false;
-        // if (ast.isAST2()) {
-        // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-        // IExpr option = options.getOption(F.Method);
-        //
-        // if (option.isPresent() && option.toString().equals("PseudoDiameter")) {
-        // pseudoDiameter = true;
-        // } else if (option.isNIL()) {
-        // return engine.printMessage("GraphPeriphery: Option PseudoDiameter expected!");
-        // }
-        // }
 
         return eccentricityVertices(gex, false);
       } catch (RuntimeException rex) {

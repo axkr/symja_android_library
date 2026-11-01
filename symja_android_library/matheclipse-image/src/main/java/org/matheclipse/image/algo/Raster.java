@@ -22,7 +22,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * The samples are kept interleaved, row by row from the top: channel <code>c</code> of the pixel
  * in column <code>x</code> and row <code>y</code> is at <code>(y * width + x) * channels + c</code>.
  */
-public final class Raster {
+public final class Raster implements Comparable<Raster> {
 
   public final int width;
   public final int height;
@@ -194,10 +194,25 @@ public final class Raster {
     return result;
   }
 
-  /**
-   * Order two rasters by their shape - width, height, channels - and then sample by sample, row by
-   * row from the top.
-   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Raster)) {
+      return false;
+    }
+    Raster other = (Raster) obj;
+    return width == other.width && height == other.height && channels == other.channels
+        && java.util.Arrays.equals(samples, other.samples);
+  }
+
+  @Override
+  public int hashCode() {
+    return samplesHashCode();
+  }
+
+  @Override
   public int compareTo(Raster other) {
     int cmp = Integer.compare(width, other.width);
     if (cmp != 0) {

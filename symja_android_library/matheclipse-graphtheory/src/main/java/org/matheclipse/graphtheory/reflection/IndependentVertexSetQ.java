@@ -1,7 +1,5 @@
 package org.matheclipse.graphtheory.reflection;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.jgrapht.Graph;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -38,14 +36,14 @@ public class IndependentVertexSetQ extends AbstractFunctionEvaluator {
     Graph<IExpr, ?> g = gex.toData();
 
     IAST vertices = (IAST) arg2;
-    Set<IExpr> seen = new HashSet<IExpr>();
+    // Set<IExpr> seen = new HashSet<IExpr>();
     for (int i = 1; i < vertices.size(); i++) {
       IExpr vertex = vertices.get(i);
       if (!g.containsVertex(vertex)) {
         return S.False;
       }
       // accept a vertex given more than once
-      seen.add(vertex);
+      // seen.add(vertex);
     }
     for (int i = 1; i < vertices.size(); i++) {
       for (int j = i + 1; j < vertices.size(); j++) {

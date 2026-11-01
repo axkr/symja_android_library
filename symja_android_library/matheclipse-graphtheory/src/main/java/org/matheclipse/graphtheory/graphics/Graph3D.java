@@ -2,8 +2,8 @@ package org.matheclipse.graphtheory.graphics;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
+import java.util.SplittableRandom;
 import org.jgrapht.Graph;
 import org.matheclipse.core.builtin.graphics3d.Plot3DTools;
 import org.matheclipse.core.eval.EvalEngine;
@@ -417,7 +417,7 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
       return;
 
     // Initialize random positions if not present
-    Random rand = new Random(12345);
+    SplittableRandom rand = new SplittableRandom(12345L);
     for (IExpr v : vertices) {
       if (!coordinates.containsKey(v)) {
         coordinates.put(v, new Vector3D(rand.nextDouble() * 2.0 - 1.0,
