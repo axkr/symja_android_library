@@ -7925,6 +7925,15 @@ public class S {
   public final static IBuiltInSymbol EqualTo = S.initFinalSymbol("EqualTo", ID.EqualTo);
 
   /**
+   * EquatedTo(x) - TODO describe `EquatedTo`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EquatedTo.md">EquatedTo
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EquatedTo = S.initFinalSymbol("EquatedTo", ID.EquatedTo);
+
+  /**
    * Equilibrium(x) - TODO describe `Equilibrium`.
    * 
    * @see <a href=
@@ -26993,6 +27002,15 @@ public class S {
 
   public final static IBuiltInSymbol UseTypeChecking =
       S.initFinalSymbol("UseTypeChecking", ID.UseTypeChecking);
+
+  /**
+   * Using(x) - TODO describe `Using`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Using.md">Using
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Using = S.initFinalSymbol("Using", ID.Using);
 
   /**
    * ValenceErrorHandling(x) - TODO describe `ValenceErrorHandling`.
