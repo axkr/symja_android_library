@@ -166,7 +166,7 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
     // 6. Solve the algebraic system for the sequence of coefficients
     IAST cVarsReversed = cVars.reverse(F.NIL);
 
-    IAST solve = F.Solve(algebraicSystem, cVarsReversed);
+    IAST solve = F.SolveDistinct(algebraicSystem, cVarsReversed);
     if (DEBUG) {
       System.out.println("solve: " + solve);
     }

@@ -94,4 +94,29 @@ public class ImageAdjustTest extends AbstractTestCase {
         + "{0.2, 0.6})) - {{0.2, 0.4}, {0.6, 0.8}})) < 10^-7", //
         "True");
   }
+
+  /** Reals in 256 bins over their own range, in single precision unless they are "Real64". */
+  @Test
+  public void findThresholdOfReals() {
+    // three levels: the threshold is the level of the dark class
+    check("FindThreshold(Image({{0.0, 0.7, 1.0}}))", "0.0");
+    check("InputForm /@ {FindThreshold(Image({{0.3, 0.4, 0.8}})), "
+        + "FindThreshold(Image({{0.3, 0.4, 0.8}}, \"Real64\")), "
+        + "FindThreshold({{0.3, 0.4}, {0.8, 0.8}}), FindThreshold(Image({{0.4, 0.5}}))}", //
+        "{0.39960938692092896`,0.399609375`,0.39960938692092896`,0.44980469049187377`}");
+  }
+
+  /** Integers in a bin each; of two levels the middle, of one level 1. */
+  @Test
+  public void findThresholdOfIntegersAndConstants() {
+    check("InputForm /@ {FindThreshold(Image({{30, 220}}, \"Byte\")), "
+        + "FindThreshold(Image({{30, 40, 220}}, \"Byte\")), "
+        + "FindThreshold(Image({{500, 700, 50000}}, \"Bit16\")), "
+        + "FindThreshold(Image({{1, 0, 0}}, \"Bit\")), FindThreshold(Image({{0.6, 0.6}}))}", //
+        "{0.49019607843137253`,0.1568627450980392`,0.010681315327687495`,1/2,1.0`}");
+    check("FindThreshold({1, a})", //
+        "FindThreshold({1,a})");
+    check("{ImageData(Binarize(Image({{0.6, 0.6}}))), ImageData(Binarize(Image({{30, 40, 220}}, \"Byte\")))}", //
+        "{{{0,0}},{{0,0,1}}}");
+  }
 }

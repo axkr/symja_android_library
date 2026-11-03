@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.LongFunction;
+import java.util.function.UnaryOperator;
 import org.matheclipse.core.interfaces.INumber;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apfloat;
@@ -18,7 +19,9 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -93,6 +96,39 @@ public final class N extends AbstractCoreFunctionEvaluator {
   }
 
   /**
+   * Replace the exact numbers and the constants of <code>expr</code> by their numeric values
+   * without evaluating anything else. The arguments which the <code>NHold...</code> attributes of
+   * their head protect are skipped, as in <code>Slot(1)</code> or the indices of <code>Part</code>.
+   *
+   * @param expr a held expression
+   * @param numeric the numeric value of a number or constant
+   */
+  private static IExpr heldNumbers(IExpr expr, UnaryOperator<IExpr> numeric) {
+    if (expr.isNumber() ? !expr.isInexactNumber() : expr.isConstantAttribute()) {
+      return numeric.apply(expr);
+    }
+    if (!expr.isAST()) {
+      return expr;
+    }
+    final IAST ast = (IAST) expr;
+    final int attributes =
+        ast.head().isSymbol() ? ((ISymbol) ast.head()).getAttributes() : ISymbol.NOATTRIBUTE;
+    if (Attribute.NHOLDALL.isSetIn(attributes)) {
+      return expr;
+    }
+    final IASTMutable result = ast.copy();
+    // an integer exponent stays exact, as in the numeric value of an expression
+    final int size = ast.isPower() && ast.exponent().isInteger() ? 2 : ast.size();
+    for (int i = 1; i < size; i++) {
+      if (!Attribute.NHOLDFIRST.isAnySetIn(attributes) && i == 1
+          || !Attribute.NHOLDREST.isAnySetIn(attributes) && i > 1) {
+        result.set(i, heldNumbers(ast.get(i), numeric));
+      }
+    }
+    return result;
+  }
+
+  /**
    * The call an N-value of <code>N(x, precision)</code> is looked up with: <code>N(x)</code> for
    * machine precision, <code>N(x, p.)</code> for a precision <code>p</code>, <code>N(x, {p.,
    * a.})</code> for a precision and an accuracy.
@@ -138,6 +174,13 @@ public final class N extends AbstractCoreFunctionEvaluator {
     IExpr arg1 = ast.arg1();
     if (arg1.isListOrAssociation() || arg1.isRuleAST()) {
       return ((IAST) arg1).mapThread(ast, 1);
+    }
+    if (arg1.isFunction() && arg1.argSize() >= 1) {
+      // the body of a pure function is held: only its numbers are reached
+      final IAST function = (IAST) arg1;
+      final int body = function.isAST1() ? 1 : 2;
+      final UnaryOperator<IExpr> numeric = x -> engine.evaluate(ast.setAtCopy(1, x));
+      return function.setAtCopy(body, heldNumbers(function.get(body), numeric));
     }
     if (ast.isAST1()) {
       return org.matheclipse.core.reflection.system.N.evalN1(arg1, engine);

@@ -1490,6 +1490,13 @@ public class Parser extends Scanner {
       }
     } else {
       rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+      if ("Function".equals(infixOperator.getFunctionName()) && fToken == TT_OPERATOR) {
+        // x |-> y = 1 has the assignment in its body
+        final InfixOperator next = determineBinaryOperator();
+        if (next != null && next.getPrecedence() == Precedence.SET) {
+          rhs = climbOperators(rhs, Precedence.SET, false);
+        }
+      }
     }
     lhs = infixOperator.createFunction(fFactory, lhs, rhs);
     if (lhs instanceof FunctionNode) {

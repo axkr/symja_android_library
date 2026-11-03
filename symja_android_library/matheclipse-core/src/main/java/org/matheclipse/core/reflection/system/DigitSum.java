@@ -14,12 +14,32 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class DigitSum extends AbstractFunctionEvaluator {
 
+  /**
+   * The sum of the first <code>k</code> digits of <code>n</code> in base <code>radix</code>, for a
+   * negative <code>k</code> the sum of the last <code>|k|</code> digits. All digits are summed if
+   * there are fewer than <code>|k|</code>.
+   */
+  private static IExpr partialDigitSum(IInteger n, IInteger radix, IInteger k, EvalEngine engine) {
+    IExpr digits = engine.evaluate(F.binaryAST2(S.IntegerDigits, n, radix));
+    if (!digits.isList()) {
+      return F.NIL;
+    }
+    int size = digits.argSize();
+    int count = k.abs().isGE(F.ZZ(size)) ? size : k.abs().toIntDefault();
+    int start = k.isNegative() ? size - count + 1 : 1;
+    IInteger sum = F.C0;
+    for (int i = start; i < start + count; i++) {
+      sum = sum.add((IInteger) ((IAST) digits).get(i));
+    }
+    return sum;
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.arg1().isInteger()) {
       IInteger radix = F.C10;
 
-      if (ast.isAST2()) {
+      if (ast.argSize() >= 2) {
         if (ast.arg2().isInteger()) {
           radix = (IInteger) ast.arg2();
         } else {
@@ -32,7 +52,14 @@ public class DigitSum extends AbstractFunctionEvaluator {
         return Errors.printMessage(S.DigitSum, "ibase", F.List(radix, F.C1), engine);
       }
 
+      if (ast.isAST3() && !ast.arg3().isInteger()) {
+        return F.NIL;
+      }
+
       IInteger iArg1 = ((IInteger) ast.arg1()).abs();
+      if (ast.isAST3()) {
+        return partialDigitSum(iArg1, radix, (IInteger) ast.arg3(), engine);
+      }
       if (iArg1.isZero()) {
         return F.C0;
       }
@@ -81,7 +108,7 @@ public class DigitSum extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
+    return ARGS_1_3;
   }
 
   @Override

@@ -345,6 +345,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testEdgeCount() {
+    // two opposite directed edges are two edges
+    check("{EdgeCount(Graph({3->4,4->3})), EdgeCount(Graph({3->4,4->3,4->5})), EdgeCount(Graph({3<->4,4->5}))}", //
+        "{2,3,2}");
     check("EdgeCount(CompleteGraph(4))", //
         "6");
   }
@@ -479,6 +482,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
         + "Sort(Union(Flatten(List@@@c)))===Sort(VertexList(g)))", "True");
 
     check("FindHamiltonianCycle(CycleGraph(4), 1)===FindHamiltonianCycle(CycleGraph(4))", "True");
+    // an undirected cycle runs towards the smaller neighbour of its first vertex
+    check("Sort(FindHamiltonianCycle(Graph({1<->2, 3<->4, 2<->4, 1<->4, 2<->3, 1<->3}), All))", //
+        "{{1<->2,2<->3,3<->4,4<->1},{1<->2,2<->4,4<->3,3<->1},{1<->3,3<->2,2<->4,4<->1}}");
     check("Head(FindHamiltonianCycle(CycleGraph(4), 0))", "FindHamiltonianCycle");
   }
 
@@ -1508,14 +1514,19 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testGraphComplementAdvanced() {
-    // check("EdgeCount(GraphComplement(Graph({1,2,3},{1->2})))", //
-    // "5");
+    check("EdgeCount(GraphComplement(Graph({1,2,3},{1->2})))", //
+        "5");
 
     check("GraphComplement(Graph({1,2,3},{})) // InputForm", //
-        "Graph({1,2,3},{1->2,1->3,2->1,2->3,3->1,3->2})");
+        "Graph({1,2,3},{1<->2,1<->3,2<->3})");
 
     check("EdgeCount(GraphComplement(Graph({1,2,3},{})))", //
         "3");
+    // a graph without edges is directed and undirected, its complement undirected
+    check("{DirectedGraphQ(#),UndirectedGraphQ(#)}&(Graph({3,4},{}))", //
+        "{True,True}");
+    check("GraphComplement(Graph({3,4},{},DirectedEdges->True)) // InputForm", //
+        "Graph({3,4},{3<->4})");
     check("EdgeCount(GraphComplement(CompleteGraph(4)))", //
         "0");
     check("GraphComplement(CycleGraph(4)) // InputForm", //
@@ -3116,6 +3127,18 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("{Head /@ ImportString(\"Cs\\nB_\",\"Graph6\"), " //
         + "EdgeList /@ ImportString(\"B_\",{\"Graph6\",\"GraphList\"})}", //
         "{{Graph,Graph},{{1<->2}}}");
+  }
+
+  @Test
+  public void testCayleyGraph() {
+    check("EdgeList(CayleyGraph(CyclicGroup(3)))", //
+        "{1->2,2->3,3->1}");
+    check("VertexCount(CayleyGraph(AbelianGroup({2, 5})))", //
+        "10");
+    check("Length(EdgeList(CayleyGraph(DihedralGroup(3))))", //
+        "12");
+    check("CayleyGraph(x)", //
+        "CayleyGraph(x)");
   }
 
   @AfterEach

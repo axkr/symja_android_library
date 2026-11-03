@@ -1842,6 +1842,11 @@ public class TensorFunctions {
         int n = indexes.length;
         if (ast.size() >= 3) {
           IExpr arg2 = ast.arg2();
+          if (arg2.isList()) {
+            // a sequence specification {m, n} or {m, n, s} of the whole ordering
+            IExpr taken = engine.evaluate(F.Take(F.tensorList(n, indexes), arg2));
+            return taken.isList() ? taken : F.NIL;
+          }
           if (arg2 != S.All) {
             if (!arg2.isReal()) {
               // neither All nor a number of elements; do not silently fall back to All

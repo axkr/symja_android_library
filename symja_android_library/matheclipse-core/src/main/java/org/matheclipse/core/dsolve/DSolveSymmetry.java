@@ -328,7 +328,7 @@ final class DSolveSymmetry {
       }
       IExpr constant = ctx.nextConstant();
       IExpr relation = F.Equal(s, engine.evaluate(F.subst(F.Plus(integral, constant), rSymbol, r)));
-      IExpr solutions = ctx.evalTimeConstrained(F.Solve(relation, yDummy), STEP_SECONDS);
+      IExpr solutions = ctx.evalTimeConstrained(F.SolveDistinct(relation, yDummy), STEP_SECONDS);
       if (solutions.isNIL()) {
         continue;
       }
@@ -349,7 +349,7 @@ final class DSolveSymmetry {
 
   /** The first solution of one equation for one unknown. */
   private static IExpr solveFor(IExpr equation, IExpr unknown, DSolveContext ctx) {
-    IExpr solutions = ctx.evalTimeConstrained(F.Solve(equation, unknown), STEP_SECONDS);
+    IExpr solutions = ctx.evalTimeConstrained(F.SolveDistinct(equation, unknown), STEP_SECONDS);
     if (solutions.isNIL()) {
       return F.NIL;
     }

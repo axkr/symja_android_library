@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -132,18 +133,18 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
         arg = ast.get(0);
         if (arg.isAST()) {
           arg = ((IAST) arg).copyAppendable();
+          ast.set(0, arg);
         }
         temp = arg.accept(this);
         if (temp.isPresent()) {
-          ast.remove(0);
+          // without its head the arguments of the expression go into the enclosing expression
+          ast.set(0, S.Sequence);
           removedCounter++;
           if (maximumRemoved >= 0) {
             if (removedCounter >= maximumRemoved) {
               throw new StopException();
             }
           }
-        } else {
-          ast.set(0, arg);
         }
         // the head is visited to test/remove its parts, but its depth must not contribute to this
         // expression's depth: negative levels ignore the head chain (like `Depth`).
@@ -152,7 +153,9 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
       while (i < ast.size()) {
         arg = ast.get(i);
         if (arg.isAST()) {
+          // in place before it is visited: the StopException leaves the removals in it behind
           arg = ((IAST) arg).copyAppendable();
+          ast.set(i, arg);
         }
         temp = arg.accept(this);
         if (temp.isPresent()) {
@@ -164,8 +167,6 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
             }
           }
           continue;
-        } else {
-          ast.set(i, arg);
         }
         i++;
         if (fCurrentDepth < minDepth) {

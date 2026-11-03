@@ -139,6 +139,15 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
    * The padding is for the FFT length, not the one which filled the last partition.
    */
   static IAST windowedFourier(IExpr partition, IExpr windowWeights, int n, int m) {
+    return windowedFourier(partition, windowWeights, n, m, F.CN1);
+  }
+
+  /**
+   * The unevaluated Fourier transform of one partition like
+   * {@link #windowedFourier(IExpr, IExpr, int, int)}, with the Fourier parameters
+   * <code>{1, b}</code>.
+   */
+  static IAST windowedFourier(IExpr partition, IExpr windowWeights, int n, int m, IExpr b) {
     IExpr currentPartition = partition;
     if (windowWeights.isPresent()) {
       currentPartition = F.Times(currentPartition, windowWeights);
@@ -146,6 +155,6 @@ public class SpectrogramArray extends AbstractFunctionEvaluator {
     if (m > n) {
       currentPartition = F.PadRight(currentPartition, F.ZZ(m), F.C0);
     }
-    return F.Fourier(currentPartition, F.Rule(S.FourierParameters, F.List(F.C1, F.CN1)));
+    return F.Fourier(currentPartition, F.Rule(S.FourierParameters, F.List(F.C1, b)));
   }
 }

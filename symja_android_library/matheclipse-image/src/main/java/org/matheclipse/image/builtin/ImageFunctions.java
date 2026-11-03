@@ -336,47 +336,94 @@ public class ImageFunctions {
   }
 
   /**
+   * The image type in the third argument of <code>f(v, size, type)</code>.
+   *
+   * @param argSize the number of arguments without the options
+   * @return <code>"Real32"</code> if there is none, <code>null</code> if it is not a type
+   */
+  private static String imageTypeOf(IAST ast, int argSize) {
+    if (argSize < 3) {
+      return Pixels.REAL32;
+    }
+    if (argSize > 3 || !ast.arg3().isString()) {
+      return null;
+    }
+    String type = Pixels.imageType(ast.arg3().toString());
+    return Pixels.isImageType(type) ? type : null;
+  }
+
+  /**
+   * The size of an image: <code>{width, height}</code> or one number for a square.
+   *
+   * @return <code>null</code> if it is no size
+   */
+  private static int[] sizeOf(IExpr size) {
+    int width = size.isList2() ? size.first().toIntDefault() : size.toIntDefault();
+    int height = size.isList2() ? size.second().toIntDefault() : width;
+    return width < 1 || height < 1 ? null : new int[] {width, height};
+  }
+
+  /**
    * <code>ConstantImage(v, size)</code> - an image whose every pixel is <code>v</code>: a number
    * for a greyscale image, a list of channel values or a colour for a colour one. The size is a
-   * width and a height, or one number for a square.
+   * width and a height, or one number for a square. <code>ConstantImage(v, size, type)</code>
+   * stores it in the type, by default <code>"Real32"</code>.
    */
   private static class ConstantImage extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int width;
-      int height;
-      IExpr size = ast.arg2();
-      if (size.isList2()) {
-        width = size.first().toIntDefault();
-        height = size.second().toIntDefault();
-      } else {
-        width = size.toIntDefault();
-        height = width;
+      int argSize = ast.argSize();
+      ImageOptions options = ImageOptions.DEFAULT;
+      while (argSize > 2 && ast.get(argSize).isRuleAST()) {
+        IExpr option = ast.get(argSize);
+        if (option.first() == S.ImageSize) {
+          options = options.withImageSize(option.second());
+        } else if (option.first() != S.ColorSpace) {
+          // Unknown option `1` in `2`.
+          return Errors.printMessage(S.ConstantImage, "optx", F.list(option, ast), engine);
+        }
+        argSize--;
       }
-      if (width < 1 || height < 1) {
+      String type = imageTypeOf(ast, argSize);
+      int[] size = sizeOf(ast.arg2());
+      double[] pixel = pixelOf(ast.arg1());
+      if (type == null || size == null || pixel == null) {
         return F.NIL;
       }
-      float[] pixel = pixelOf(ast.arg1());
-      if (pixel == null) {
-        return F.NIL;
+      long total = (long) size[0] * size[1] * pixel.length;
+      if (total >= Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(total);
       }
-      return new ImageExpr(Pixels.fromPixels(width, height, pixel.length, (x, y) -> pixel), null);
+      Raster raster = new Raster(size[0], size[1], pixel.length);
+      for (int y = 0; y < size[1]; y++) {
+        for (int x = 0; x < size[0]; x++) {
+          for (int c = 0; c < pixel.length; c++) {
+            raster.set(x, y, c, pixel[c]);
+          }
+        }
+      }
+      ImageExpr image = ImageExpr.fromRaster(raster, options, type);
+      return image == null ? F.NIL : image;
     }
 
-    /** The channel values of the constant, on <code>0 ... 255</code>, or <code>null</code>. */
-    private static float[] pixelOf(IExpr value) {
+    /** The channel values of the constant, on <code>0 ... 1</code>, or <code>null</code>. */
+    private static double[] pixelOf(IExpr value) {
       if (value.isReal()) {
-        return new float[] {(float) (255.0 * clamp(value.evalf()))};
+        return new double[] {clamp(value.evalf())};
       }
-      if (value.isList() && (value.argSize() == 3 || value.argSize() == 4)) {
-        float[] channels = new float[value.argSize()];
+      if (value.isAST(S.GrayLevel, 2)) {
+        return pixelOf(value.first());
+      }
+      if ((value.isList() || value.head() == S.RGBColor)
+          && (value.argSize() == 3 || value.argSize() == 4)) {
+        double[] channels = new double[value.argSize()];
         for (int i = 0; i < channels.length; i++) {
           double c = value.getAt(i + 1).evalfNaN();
           if (Double.isNaN(c)) {
             return null;
           }
-          channels[i] = (float) (255.0 * clamp(c));
+          channels[i] = clamp(c);
         }
         return channels;
       }
@@ -384,9 +431,13 @@ public class ImageFunctions {
       if (color == null) {
         return null;
       }
-      return color.getAlpha() < 255
-          ? new float[] {color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()}
-          : new float[] {color.getRed(), color.getGreen(), color.getBlue()};
+      double[] channels = color.getAlpha() < 255
+          ? new double[] {color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()}
+          : new double[] {color.getRed(), color.getGreen(), color.getBlue()};
+      for (int i = 0; i < channels.length; i++) {
+        channels[i] /= 255.0;
+      }
+      return channels;
     }
 
     private static double clamp(double v) {
@@ -395,7 +446,7 @@ public class ImageFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
 
     @Override
@@ -415,6 +466,7 @@ public class ImageFunctions {
    * size is <code>{width, height}</code> or one number for a square and defaults to
    * <code>150 x 150</code>. <code>ColorSpace -&gt; "RGB"</code> (also <code>"HSB"</code> or
    * <code>"CMYK"</code>) draws every channel of a colour image.
+   * <code>RandomImage(spec, size, type)</code> stores the samples in the type.
    */
   private static class RandomImage extends AbstractEvaluator {
     private static final int DEFAULT_SIZE = 150;
@@ -432,25 +484,14 @@ public class ImageFunctions {
         colorSpace = option.second();
         argSize--;
       }
-      if (argSize > 2) {
-        return F.NIL;
-      }
+      String type = imageTypeOf(ast, argSize);
+      int[] size = argSize >= 2 ? sizeOf(ast.arg2()) : new int[] {DEFAULT_SIZE, DEFAULT_SIZE};
       int channels = channelsOf(colorSpace);
-      int width = DEFAULT_SIZE;
-      int height = DEFAULT_SIZE;
-      if (argSize == 2) {
-        IExpr size = ast.arg2();
-        if (size.isList2()) {
-          width = size.first().toIntDefault();
-          height = size.second().toIntDefault();
-        } else {
-          width = size.toIntDefault();
-          height = width;
-        }
-      }
-      if (channels < 1 || width < 1 || height < 1) {
+      if (type == null || size == null || channels < 1) {
         return F.NIL;
       }
+      final int width = size[0];
+      final int height = size[1];
       long total = (long) width * height * channels;
       if (total >= Config.MAX_AST_SIZE) {
         ASTElementLimitExceeded.throwIt(total);
@@ -484,8 +525,8 @@ public class ImageFunctions {
           }
         }
       }
-      ImageExpr image = ImageExpr.fromRaster(raster, ImageOptions.DEFAULT.withColorSpace(colorSpace),
-          Pixels.REAL32);
+      ImageExpr image =
+          ImageExpr.fromRaster(raster, ImageOptions.DEFAULT.withColorSpace(colorSpace), type);
       return image == null ? F.NIL : image;
     }
 
@@ -617,7 +658,11 @@ public class ImageFunctions {
         if (!Pixels.isImageType(newType)) {
           return Errors.printMessage(S.Image, "imgtype", F.list(ast.arg2()), engine);
         }
-        IExpr pixels = Pixels.toData(picture, newType, true, false);
+        // only the matrix knows the samples of channels the picture has no place for
+        int channels = image.channels();
+        boolean inPicture = channels == 1 || channels == 3 || channels == 4;
+        IExpr pixels = inPicture ? Pixels.toData(picture, newType, true, false)
+            : image.raster().toMatrix(newType);
         if (!pixels.isAST()) {
           return F.NIL;
         }
@@ -692,7 +737,7 @@ public class ImageFunctions {
           if (coerced == null) {
             return F.NIL;
           }
-          // null for data of no image shape - a vector, a ragged matrix, 2 channels - which
+          // null for data of no image shape - a vector, a ragged matrix - which
           // leaves Image unevaluated, as the untyped path does
           ImageExpr typedImage = ImageExpr.toImageExpr(coerced, imageOptions, type);
           return typedImage == null ? F.NIL : typedImage;
@@ -788,7 +833,7 @@ public class ImageFunctions {
    * <code>Interleaving -&gt; True</code>, which is the default, gives a matrix of scalars for a
    * greyscale image and a matrix of channel lists otherwise, even for an image whose own data was
    * written the other way round. <code>Interleaving -&gt; False</code> gives one matrix per
-   * channel, and <code>Interleaving -&gt; Automatic</code> is the only setting that hands back the
+   * channel, which for one channel is the matrix of scalars, and <code>Interleaving -&gt; Automatic</code> is the only setting that hands back the
    * form the image actually stores.
    *
    * <p>
@@ -825,8 +870,12 @@ public class ImageFunctions {
         argSize = 1;
       }
 
-      String type = Pixels.REAL32;
-      if (argSize >= 2) {
+      // a bit image is read as its zeros and ones
+      String type = Pixels.BIT.equals(imageExpr.sampleType()) ? Pixels.BIT : Pixels.REAL32;
+      if (argSize >= 2 && ast.arg2() == S.Automatic) {
+        // the type the image is stored in
+        type = imageExpr.sampleType();
+      } else if (argSize >= 2) {
         if (!ast.arg2().isString()) {
           return F.NIL;
         }
@@ -852,6 +901,10 @@ public class ImageFunctions {
         return Errors.printMessage(S.ImageData, "opttfa", F.list(S.Interleaving, interleavingValue),
             engine);
       }
+      if (!interleaved && engine.evaluate(F.unaryAST1(S.ImageChannels, arg1)).isOne()) {
+        // the only plane of one channel is the matrix itself
+        interleaved = true;
+      }
 
       // an image built from a matrix hands that matrix straight back, but only when it is the
       // answer to what was asked: on the requested scale - the Byte matrix of a colour gradient is
@@ -873,7 +926,7 @@ public class ImageFunctions {
         // another scale, or upside down: from the exact samples, which a real type keeps outside
         // of 0 ... 1 and an integer type clips
         org.matheclipse.image.algo.Raster raster = imageExpr.raster();
-        if (raster != null && raster.channels != 2) {
+        if (raster != null) {
           IAST data = raster.toMatrix(type);
           if (dataReversed) {
             // the rows bottom to top

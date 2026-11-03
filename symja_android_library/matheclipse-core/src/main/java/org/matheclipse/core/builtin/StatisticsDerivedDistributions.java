@@ -48,6 +48,7 @@ public class StatisticsDerivedDistributions {
       S.DataDistribution.setEvaluator(new DataDistribution());
       S.EmpiricalDistribution.setEvaluator(new EmpiricalDistribution());
       S.HistogramDistribution.setEvaluator(new HistogramDistribution());
+      S.KernelMixtureDistribution.setEvaluator(new KernelMixtureDistribution());
       S.SmoothKernelDistribution.setEvaluator(new SmoothKernelDistribution());
     }
   }
@@ -1454,6 +1455,9 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.cdf(dist, k, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         if (k.isNIL()) {
@@ -1511,6 +1515,9 @@ public class StatisticsDerivedDistributions {
     @Override
     public IExpr mean(IAST dist) {
       EvalEngine engine = EvalEngine.get();
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.mean(dist, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         return engine.evaluate(weightedSum(e[0], e[1], 1));
@@ -1552,6 +1559,9 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.pdf(dist, k, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         if (k.isNIL()) {
@@ -1588,6 +1598,9 @@ public class StatisticsDerivedDistributions {
     private static IExpr quantile(IAST dist, IExpr q, EvalEngine engine) {
       if (q.isNIL()) {
         return F.NIL;
+      }
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.quantile(dist, q, engine);
       }
       IAST[] h = histogram(dist);
       if (h != null) {
@@ -1651,6 +1664,9 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.randomVariate(random, dist, size);
+      }
       IAST[] h = histogram(dist);
       if (h != null) {
         EvalEngine engine = EvalEngine.get();
@@ -1704,6 +1720,9 @@ public class StatisticsDerivedDistributions {
     @Override
     public IExpr variance(IAST dist) {
       EvalEngine engine = EvalEngine.get();
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.variance(dist, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         IExpr mean = engine.evaluate(weightedSum(e[0], e[1], 1));

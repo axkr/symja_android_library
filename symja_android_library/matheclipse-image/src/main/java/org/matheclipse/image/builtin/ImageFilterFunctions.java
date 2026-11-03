@@ -65,6 +65,7 @@ public class ImageFilterFunctions {
       install(S.MedianFilter, new RankFilter(RankFilter.MEDIAN));
       install(S.MinFilter, new RankFilter(RankFilter.MIN));
       install(S.MaxFilter, new RankFilter(RankFilter.MAX));
+      install(S.CommonestFilter, new CommonestFilter());
       S.ImageConvolve.setEvaluator(new ImageConvolve(true));
       S.ImageCorrelate.setEvaluator(new ImageConvolve(false));
       S.DerivativeFilter.setEvaluator(new DerivativeFilter());
@@ -73,10 +74,13 @@ public class ImageFilterFunctions {
       S.Erosion.setEvaluator(new Morphology(false, false));
       S.Opening.setEvaluator(new Morphology(false, true));
       S.Closing.setEvaluator(new Morphology(true, true));
+      S.CrossingDetect.setEvaluator(new CrossingDetect());
       S.MorphologicalComponents.setEvaluator(new MorphologicalComponents());
       S.WatershedComponents.setEvaluator(new WatershedComponents());
       S.MorphologicalGraph.setEvaluator(new MorphologicalGraph());
       S.ComponentMeasurements.setEvaluator(new ComponentMeasurements());
+      S.DeleteSmallComponents.setEvaluator(new DeleteSmallComponents());
+      S.MorphologicalBinarize.setEvaluator(new MorphologicalBinarize());
       S.DistanceTransform.setEvaluator(new DistanceTransform());
       S.Inpaint.setEvaluator(new Inpaint());
       S.ImageEffect.setEvaluator(new ImageEffect());
@@ -623,6 +627,63 @@ public class ImageFilterFunctions {
   }
 
   /**
+   * <code>CommonestFilter(image, r)</code>: the commonest sample of the part of the
+   * <code>(2r+1) x (2r+1)</code> block which lies inside of the image, channel by channel. Of
+   * several equally common samples the one of the pixel itself is taken if it is among them, else
+   * the first one row by row. The range rounds up and its sign doesn't matter.
+   */
+  private static class CommonestFilter extends ImageFilter {
+
+    @Override
+    double[][] filter(double[][] channel, IAST ast, EvalEngine engine) {
+      double range = ast.arg2().evalfNaN();
+      if (Double.isNaN(range)) {
+        return null;
+      }
+      final int radius = (int) Math.ceil(Math.abs(range));
+      final boolean single = Pixels.REAL32.equals(((ImageExpr) ast.arg1()).sampleType());
+      final int height = channel.length;
+      final int width = channel[0].length;
+      double[][] result = new double[height][width];
+      for (int y = 0; y < height; y++) {
+        engine.checkTimeLimit();
+        for (int x = 0; x < width; x++) {
+          double commonest = commonest(channel, x, y, radius);
+          result[y][x] = single ? (float) commonest : commonest;
+        }
+      }
+      return result;
+    }
+
+    private static double commonest(double[][] channel, int x, int y, int radius) {
+      int lastRow = Math.min(channel.length - 1, y + radius);
+      int lastColumn = Math.min(channel[0].length - 1, x + radius);
+      java.util.Map<Double, int[]> counts = new java.util.LinkedHashMap<Double, int[]>();
+      int most = 0;
+      for (int row = Math.max(0, y - radius); row <= lastRow; row++) {
+        for (int column = Math.max(0, x - radius); column <= lastColumn; column++) {
+          int[] count = counts.computeIfAbsent(channel[row][column], key -> new int[1]);
+          most = Math.max(most, ++count[0]);
+        }
+      }
+      if (counts.get(channel[y][x])[0] == most) {
+        return channel[y][x];
+      }
+      for (java.util.Map.Entry<Double, int[]> entry : counts.entrySet()) {
+        if (entry.getValue()[0] == most) {
+          return entry.getKey();
+        }
+      }
+      return channel[y][x];
+    }
+
+    @Override
+    boolean keepsType() {
+      return true;
+    }
+  }
+
+  /**
    * <code>ImageConvolve(image, kernel)</code> and <code>ImageCorrelate(image, kernel)</code>. The
    * convolution reflects the kernel, the correlation doesn't. The correlation centres a kernel of
    * <code>k</code> elements on its element <code>Floor(k/2)</code> (counted from 0), and the
@@ -698,13 +759,59 @@ public class ImageFilterFunctions {
     }
 
     @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList()) {
+        return ast.isAST2() ? super.evaluate(ast, engine) : F.NIL;
+      }
+      double padding = Double.NaN;
+      if (ast.isAST3()) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+        if (options.isInvalidPosition(2)) {
+          return options.printNonopt(ast, 2, engine);
+        }
+        padding = options.getOption(S.Padding).evalfNaN();
+        if (Double.isNaN(padding)) {
+          return F.NIL;
+        }
+      }
+      return evaluateArray(ast, padding);
+    }
+
+    /** The filter of a vector or a matrix of real numbers, the integers stay integers. */
+    private IExpr evaluateArray(IAST ast, double padding) {
+      IExpr array = ast.arg1();
+      boolean vector = array.isVector() >= 0;
+      double[][] channel =
+          vector ? new double[][] {array.toDoubleVector()} : array.toDoubleMatrix();
+      boolean[][] element = element(ast.arg2());
+      if (!ast.arg2().isList() && vector) {
+        // the radius of a vector has one row
+        element = element == null ? null : new boolean[][] {element[0]};
+      }
+      if (channel == null || channel.length == 0 || channel[0] == null || channel[0].length == 0
+          || element == null) {
+        return F.NIL;
+      }
+      double[][] result = apply(channel, element, dilateFirst, padding);
+      if (both) {
+        result = apply(result, element, !dilateFirst, padding);
+      }
+      boolean exact = array.isList() && array.isFree(x -> x.isNumber() && !x.isInteger(), true)
+          && (Double.isNaN(padding) || padding == Math.rint(padding));
+      final double[][] values = result;
+      IAST rows = F.mapRange(0, values.length, i -> F.mapRange(0, values[i].length,
+          j -> exact ? F.ZZ(Math.round(values[i][j])) : F.num(values[i][j])));
+      return vector ? rows.arg1() : rows;
+    }
+
+    @Override
     double[][] filter(double[][] channel, IAST ast, EvalEngine engine) {
       boolean[][] element = element(ast.arg2());
       if (element == null) {
         return null;
       }
-      double[][] result = apply(channel, element, dilateFirst);
-      return both ? apply(result, element, !dilateFirst) : result;
+      double[][] result = apply(channel, element, dilateFirst, Double.NaN);
+      return both ? apply(result, element, !dilateFirst, Double.NaN) : result;
     }
 
     @Override
@@ -790,7 +897,12 @@ public class ImageFilterFunctions {
       return element;
     }
 
-    private static double[][] apply(double[][] channel, boolean[][] element, boolean dilate) {
+    /**
+     * @param padding the value of the elements outside of the channel, <code>NaN</code> if the
+     *        structuring element is cut off there
+     */
+    private static double[][] apply(double[][] channel, boolean[][] element, boolean dilate,
+        double padding) {
       final int height = channel.length;
       final int width = channel[0].length;
       final int centerRow = element.length / 2;
@@ -801,14 +913,14 @@ public class ImageFilterFunctions {
           double value = dilate ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
           for (int a = 0; a < element.length; a++) {
             int row = y + a - centerRow;
-            if (row < 0 || row >= height) {
-              continue;
-            }
             for (int b = 0; b < element[0].length; b++) {
               int column = x + b - centerColumn;
-              if (element[a][b] && column >= 0 && column < width) {
-                value = dilate ? Math.max(value, channel[row][column])
-                    : Math.min(value, channel[row][column]);
+              if (element[a][b]) {
+                boolean inside = row >= 0 && row < height && column >= 0 && column < width;
+                double sample = inside ? channel[row][column] : padding;
+                if (!Double.isNaN(sample)) {
+                  value = dilate ? Math.max(value, sample) : Math.min(value, sample);
+                }
               }
             }
           }
@@ -822,6 +934,112 @@ public class ImageFilterFunctions {
     @Override
     boolean keepsType() {
       return true;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final org.matheclipse.core.interfaces.ISymbol newSymbol) {
+      setOptions(newSymbol, F.list(F.Rule(S.Padding, S.Automatic)));
+    }
+  }
+
+  /**
+   * <code>CrossingDetect(array)</code> and <code>CrossingDetect(image)</code> mark the positive
+   * elements with a negative neighbor, as a <code>SparseArray</code> or a <code>"Bit"</code> image.
+   * <code>CrossingDetect(data, delta)</code> counts the magnitudes below <code>delta</code> as
+   * zero, and <code>CornerNeighbors-&gt;False</code> or <code>None</code> leaves out the diagonal
+   * neighbors.
+   */
+  private static class CrossingDetect extends AbstractEvaluator {
+
+    private static boolean[][] crossings(double[][] grid, double delta, boolean corners) {
+      final int height = grid.length;
+      final int width = grid[0].length;
+      boolean[][] result = new boolean[height][width];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          if (grid[y][x] > 0.0 && grid[y][x] >= delta) {
+            result[y][x] = hasNegativeNeighbor(grid, x, y, delta, corners);
+          }
+        }
+      }
+      return result;
+    }
+
+    private static boolean hasNegativeNeighbor(double[][] grid, int x, int y, double delta,
+        boolean corners) {
+      for (int row = Math.max(0, y - 1); row <= Math.min(grid.length - 1, y + 1); row++) {
+        for (int column = Math.max(0, x - 1); column <= Math.min(grid[0].length - 1, x + 1);
+            column++) {
+          boolean diagonal = row != y && column != x;
+          if ((corners || !diagonal) && grid[row][column] < 0.0 && -grid[row][column] >= delta) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      boolean corners = true;
+      if (ast.last().isRuleAST()) {
+        IExpr rule = ast.last();
+        if (rule.first() != S.CornerNeighbors) {
+          return F.NIL;
+        }
+        corners = rule.second().isTrue() || rule.second() == S.Automatic;
+        if (!corners && !rule.second().isFalse() && rule.second() != S.None) {
+          return F.NIL;
+        }
+        argSize--;
+      }
+      double delta = argSize == 2 ? ast.arg2().evalfNaN() : 0.0;
+      if (argSize < 1 || argSize > 2 || !(delta >= 0.0)) {
+        return F.NIL;
+      }
+      IExpr data = ast.arg1();
+      if (data instanceof ImageExpr) {
+        Raster raster = ((ImageExpr) data).raster();
+        if (raster == null || raster.channels != 1) {
+          return F.NIL;
+        }
+        boolean[][] marks = crossings(raster.toChannels()[0], delta, corners);
+        Raster bits = new Raster(raster.width, raster.height, 1);
+        for (int y = 0; y < raster.height; y++) {
+          for (int x = 0; x < raster.width; x++) {
+            bits.set(x, y, 0, marks[y][x] ? 1.0 : 0.0);
+          }
+        }
+        ImageExpr image = ImageExpr.fromRaster(bits, ImageOptions.DEFAULT, Pixels.BIT);
+        return image == null ? F.NIL : image;
+      }
+      IExpr array = data.isList() ? data : data.normal(false);
+      boolean vector = array.isVector() >= 0;
+      double[][] grid = !array.isList() ? null
+          : vector ? new double[][] {array.toDoubleVector()} : array.toDoubleMatrix();
+      if (grid == null || grid.length == 0 || grid[0] == null || grid[0].length == 0) {
+        return F.NIL;
+      }
+      boolean[][] marks = crossings(grid, delta, corners);
+      IAST rows = F.mapRange(0, marks.length, i -> F.mapRange(0, marks[i].length,
+          j -> marks[i][j] ? F.C1 : F.C0));
+      return F.unaryAST1(S.SparseArray, vector ? rows.arg1() : rows);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -1448,10 +1666,190 @@ public class ImageFilterFunctions {
   }
 
   /**
+   * <code>DeleteSmallComponents(image)</code> - the image with its small components set to black:
+   * those smaller than the mean size of its components, or
+   * <code>DeleteSmallComponents(image, n)</code> those of at most <code>n</code> pixels.
+   * <code>DeleteSmallComponents(labels, n)</code> sets the small components of a matrix of integer
+   * labels to <code>0</code>; without <code>n</code> it stays as it is.
+   */
+  private static class DeleteSmallComponents extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 1, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
+      int limit = -1;
+      if (ast.argSize() >= 2) {
+        limit = ast.arg2().toIntDefault();
+        if (limit < 0) {
+          return F.NIL;
+        }
+      }
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return deleteLabels(ast.arg1(), Math.max(limit, 0));
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster raster = image.raster();
+      boolean[][] foreground = foreground(image, 0.0, engine);
+      if (raster == null || foreground == null) {
+        return F.NIL;
+      }
+      int[][] labels = labels(new boolean[][][] {foreground}, true)[0];
+      java.util.Map<Integer, int[]> counts = labelCounts(new int[][][] {labels});
+      if (counts.isEmpty()) {
+        return image;
+      }
+      int pixels = 0;
+      for (int[] count : counts.values()) {
+        pixels += count[0];
+      }
+      double mean = (double) pixels / counts.size();
+      Raster result = raster.copy();
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          if (labels[y][x] != 0) {
+            int size = counts.get(labels[y][x])[0];
+            if (limit >= 0 ? size <= limit : size < mean) {
+              for (int c = 0; c < raster.channels; c++) {
+                result.set(x, y, c, 0.0);
+              }
+            }
+          }
+        }
+      }
+      ImageExpr deleted = ImageExpr.fromRaster(result, image.getOptions(), image.sampleType());
+      return deleted == null ? F.NIL : deleted;
+    }
+
+    private static IExpr deleteLabels(IExpr matrix, int limit) {
+      int[][][] labels = ComponentMeasurements.labelArray(matrix);
+      if (labels == null || labels.length != 1 || matrix.isMatrix() == null) {
+        return F.NIL;
+      }
+      final int[][] rows = labels[0];
+      final java.util.Map<Integer, int[]> counts = labelCounts(labels);
+      return F.matrix((i, j) -> {
+        int label = rows[i][j];
+        return F.ZZ(label != 0 && counts.get(label)[0] > limit ? label : 0);
+      }, rows.length, rows[0].length);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /** The number of elements of each label above 0, ordered by the label. */
+  private static java.util.TreeMap<Integer, int[]> labelCounts(int[][][] labels) {
+    java.util.TreeMap<Integer, int[]> counts = new java.util.TreeMap<Integer, int[]>();
+    for (int[][] slice : labels) {
+      for (int[] row : slice) {
+        for (int label : row) {
+          if (label > 0) {
+            counts.computeIfAbsent(label, k -> new int[1])[0]++;
+          }
+        }
+      }
+    }
+    return counts;
+  }
+
+  /**
+   * <code>MorphologicalBinarize(image, {t1, t2})</code> - the black and white image in which the
+   * pixels above <code>t2</code> are white and so are those above <code>t1</code> connected to them,
+   * corners included. A single <code>t</code> stands for <code>{0.8*t, t}</code>,
+   * <code>{t}</code> for <code>{t, t}</code>. Without thresholds <code>t</code> is Otsu's threshold
+   * of the image with its levels binned over <code>0 ... 1</code>, not over their own range as for
+   * <code>FindThreshold</code>.
+   */
+  private static class MorphologicalBinarize extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 1, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        // Expecting an image or graphics instead of `1`.
+        return Errors.printMessage(S.MorphologicalBinarize, "imginv", F.list(ast.arg1()), engine);
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster raster = image.raster();
+      if (raster == null) {
+        return F.NIL;
+      }
+      final double[] levels = ImageAdjustFunctions.levels(raster, image.sampleType());
+      double low;
+      double high;
+      if (ast.argSize() < 2) {
+        high = ImageAdjustFunctions.otsu(levels, image.sampleType(), true, false);
+        low = 0.8 * high;
+      } else if (ast.arg2().isList() && ast.arg2().argSize() >= 1 && ast.arg2().argSize() <= 2) {
+        low = ast.arg2().first().evalfNaN();
+        high = ((IAST) ast.arg2()).last().evalfNaN();
+      } else {
+        high = ast.arg2().evalfNaN();
+        low = 0.8 * high;
+      }
+      if (Double.isNaN(low) || Double.isNaN(high)) {
+        return F.NIL;
+      }
+      final int width = raster.width;
+      final int height = raster.height;
+      Raster binary = new Raster(width, height, 1);
+      ArrayDeque<int[]> pending = new ArrayDeque<int[]>();
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          if (levels[y * width + x] > high) {
+            binary.set(x, y, 0, 1.0);
+            pending.add(new int[] {x, y});
+          }
+        }
+      }
+      while (!pending.isEmpty()) {
+        int[] pixel = pending.poll();
+        for (int row = Math.max(0, pixel[1] - 1); row <= Math.min(height - 1, pixel[1] + 1); row++) {
+          for (int column = Math.max(0, pixel[0] - 1); column <= Math.min(width - 1,
+              pixel[0] + 1); column++) {
+            if (binary.get(column, row, 0) == 0.0 && levels[row * width + column] > low) {
+              binary.set(column, row, 0, 1.0);
+              pending.add(new int[] {column, row});
+            }
+          }
+        }
+      }
+      ImageExpr result = ImageExpr.fromRaster(binary,
+          image.getOptions().withColorSpace(S.Automatic), Pixels.BIT);
+      return result == null ? F.NIL : result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
    * <code>ComponentMeasurements(labels, "Count")</code> - the rules <code>k -> n</code> of the
    * labels <code>k > 0</code> of a label matrix or a label array of rank 3 and the number
-   * <code>n</code> of their elements, ordered by the label. An image (or a 3D image) is labelled
-   * by its components first. A list of properties gives the list of their values in each rule.
+   * <code>n</code> of their elements, ordered by the label; <code>"Area"</code> is that number as a
+   * real and <code>"EquivalentDiskRadius"</code> the radius of the disk of that area. An image (or a
+   * 3D image) is labelled by its components first. A list of properties gives the list of their
+   * values in each rule.
    */
   private static class ComponentMeasurements extends AbstractEvaluator {
 
@@ -1478,41 +1876,42 @@ public class ImageFilterFunctions {
       IExpr properties = ast.arg2();
       IAST propertyList = properties.isList() ? (IAST) properties : F.list(properties);
       for (IExpr property : propertyList) {
-        if (!property.isString("Count")) {
+        if (measurement(property, 1).isNIL()) {
           return F.NIL;
         }
       }
-      java.util.TreeMap<Integer, int[]> counts = new java.util.TreeMap<Integer, int[]>();
-      for (int[][] slice : labels) {
-        for (int[] row : slice) {
-          for (int label : row) {
-            if (label > 0) {
-              counts.computeIfAbsent(label, k -> new int[1])[0]++;
-            }
-          }
-        }
-      }
+      java.util.TreeMap<Integer, int[]> counts = labelCounts(labels);
       IASTAppendable result = F.ListAlloc(counts.size());
       for (java.util.Map.Entry<Integer, int[]> entry : counts.entrySet()) {
-        IExpr count = F.ZZ(entry.getValue()[0]);
-        IExpr value = count;
-        if (properties.isList()) {
-          IASTAppendable values = F.ListAlloc(propertyList.argSize());
-          for (int i = 0; i < propertyList.argSize(); i++) {
-            values.append(count);
-          }
-          value = values;
+        int count = entry.getValue()[0];
+        IASTAppendable values = F.ListAlloc(propertyList.argSize());
+        for (IExpr property : propertyList) {
+          values.append(measurement(property, count));
         }
-        result.append(F.Rule(F.ZZ(entry.getKey()), value));
+        result.append(F.Rule(F.ZZ(entry.getKey()), properties.isList() ? values : values.arg1()));
       }
       return result;
+    }
+
+    /** The value of a property for a component of <code>count</code> elements. */
+    private static IExpr measurement(IExpr property, int count) {
+      if (property.isString("Count")) {
+        return F.ZZ(count);
+      }
+      if (property.isString("Area")) {
+        return F.num(count);
+      }
+      if (property.isString("EquivalentDiskRadius")) {
+        return F.num(Math.sqrt(count / Math.PI));
+      }
+      return F.NIL;
     }
 
     /**
      * A label matrix or a label array of rank 3 of integers as
      * <code>[slice][row][column]</code>.
      */
-    private static int[][][] labelArray(IExpr arg) {
+    static int[][][] labelArray(IExpr arg) {
       if (!arg.isList()) {
         return null;
       }

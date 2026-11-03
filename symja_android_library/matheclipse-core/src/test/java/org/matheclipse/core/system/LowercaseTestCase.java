@@ -11461,7 +11461,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Solve(2.0*x^2-1.0*^10*x+3.0==0,x)", //
         "{{x->3.*10^-10},{x->5.*10^9}}");
     check("{NRoots(x^2-10^10*x+1==0,x),Roots(1.0*^-20*x^2+x-1==0,x)}", //
-        "{{1.*10^-10,1.*10^10},x==-1.*10^20||x==1.0}");
+        "{x==1.*10^-10||x==1.*10^10,x==-1.*10^20||x==1.0}");
     check("Solve(x^2-1000*x+0.001==0,x)", //
         "{{x->1.*10^-6},{x->1000.0}}");
     // a quotient with inexact coefficients cancels in its rational form: the roots are -2 and 0,
@@ -11582,7 +11582,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check(
         "r = RandomFunction(OrnsteinUhlenbeckProcess(0, 1, 2, 5), {0, 2, 0.5}, 3);"
-            + " {r(\"PathCount\"), Dimensions(r(\"Values\")), r(\"FirstValue\")}", //
+            + " {r(\"PathCount\"), Dimensions(r(\"ValueList\")), r(\"FirstValue\")}", //
         "{3,{3,5},{5.0,5.0,5.0}}");
     check(
         "SeedRandom(11); Abs(Mean(RandomFunction(OrnsteinUhlenbeckProcess(0, 1, 1),"
@@ -13335,7 +13335,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testMachineComplexIntegerPower() {
     // multiplied, not taken through the logarithm
     check("{(0.3 + 0.2*I)^3, (0.3 + 0.2*I)^-2, (1.1 + 0.7*I)^7} // InputForm", //
-        "{-0.009000000000000005`+I*0.046`,2.9585798816568047`+I*(-7.100591715976332`),-4.344269600000003`+I*(-4.7075672`)}");
+        "{-0.009000000000000005` + 0.046`*I,2.9585798816568047` - 7.100591715976332`*I,-4.344269600000003` - 4.7075672`*I}");
     // a product which overflows is left to the logarithm: the power is tiny, not NaN
     check("(1.*^200 + 1.*^200*I)^-2", //
         "0.0");
@@ -14229,6 +14229,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // integer data gets bins around the integers
     check("HistogramList({2, 3, 3, 4, 4, 4})", //
         "{{1.5,2.5,3.5,4.5},{1,2,3}}");
+    // automatic bins have an exact round width, and only bins one wide are shifted for integers
+    check("HistogramList({0.25, 1.5, 2.25, 3.75, 6.5, 8.75, 11.5})", //
+        "{{0,5,10,15},{4,2,1}}");
+    check("HistogramList({15, 25, 25, 35, 35, 40, 55, 80})", //
+        "{{0,20,40,60,80,100},{1,4,2,0,1}}");
+    check("HistogramList({0.011, 0.012, 0.0125, 0.014, 0.0171})", //
+        "{{1/100,3/200,1/50},{4,1}}");
+    // an exact width gives exact edges, a number of bins asks for a width of at least the range
+    // divided by it
+    check("HistogramList({1, 2, 3, 5, 8}, {2})", //
+        "{{0,2,4,6,8,10},{1,2,1,0,1}}");
+    check("HistogramList({1.5, 2.5, 3.5, 9.5}, 3)", //
+        "{{0,5,10},{3,1}}");
+    // the shares of machine data are machine numbers, its densities aren't
+    check("HistogramList({0.25, 0.5, 0.75, 1.5, 2.75}, Automatic, \"Probability\")", //
+        "{{0,2,4},{0.8,0.2}}");
+    check("HistogramList({0.25, 0.5, 0.75, 1.5, 2.75}, Automatic, \"PDF\")", //
+        "{{0,2,4},{2/5,1/10}}");
+    // too many bins for an outlier
+    check("HistogramList({1, 3, 4, 6, 7, 9, 10, 12, 13, 2.0*^25})", //
+        "HistogramList({1,3,4,6,7,9,10,12,13,2.*10^25})");
   }
 
   @Test
@@ -14920,9 +14941,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "InverseCDF(WignerSemicircleDistribution(2),3/5)");
     // histogram: bins of a round width by the Freedman-Diaconis rule
     check("HistogramDistribution({0.5, 1.2, 1.9, 2.4, 3.3})", //
-        "DataDistribution(Histogram,{{0.2,0.4,0.2,0.2},{0.0,1.0,2.0,3.0,4.0}},1,5)");
+        "DataDistribution(Histogram,{{0.3,0.2},{0.0,2.0,4.0}},1,5)");
     check("Quantile(HistogramDistribution({0.5, 1.2, 1.9, 2.4, 3.3}), {0, 0.25, 0.5, 1})", //
-        "{0.0,1.125,1.75,4.0}");
+        "{0.0,0.833333,1.66667,4.0}");
     check("Quantile(HistogramDistribution({2, 4, 4, 6, 6, 6, 8}), 0.9)", //
         "7.6");
   }
@@ -15431,7 +15452,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sum(c*b(j),{j,1,m})");
     // and are pulled out if the remaining sum can be evaluated
     check("Sum(c*j^2, {j, 1, m})", //
-        "c*(m/6+m^2/2+m^3/3)");
+        "1/6*c*m*(1+m)*(1+2*m)");
     check("ClearAll(hs)", //
         "");
     // a bound with a value makes a numeric sum
@@ -15459,7 +15480,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToString(NumberForm(7654321.25, {Infinity, 3}, DigitBlock -> 3))", //
         "7,654,321.250");
     check("ToString(NumberForm(7654321.25, {9, 2}))", //
-        "6\n7.65×10");
+        "         6\n7.65 × 10");
     check("ToString(NumberForm(45, {Infinity, 2}))", //
         "45");
     check("ToString(NumberForm(-0.875, {Infinity, 2}))", //
@@ -16779,7 +16800,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.2,1.6}");
     // x <= 1 is no lower bound for x: unbounded
     check("LinearProgramming({1, 1}, {{1, 2}}, {{3, 0}}, {{-Infinity, 1}, {0, Infinity}})", //
-        "LinearProgramming({1,1},{{1,2}},{{3,0}},{{-Infinity,1},{0,Infinity}})");
+        "{Indeterminate,Indeterminate}");
   }
 
   @Test
@@ -17461,7 +17482,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sum(h(n)*t, {n, 2}, {t, s})", //
         "1/2*s*(1+s)*h(1)+1/2*s*(1+s)*h(2)");
     check("Sum(n^3+2*n, {n, q})", //
-        "q^2/4+q^3/2+q^4/4+q*(1+q)");
+        "q*(1+q)+1/4*q^2*(1+q)^2");
     check("Sum(b*n, {n, q})", //
         "1/2*b*q*(1+q)");
     check("Sum(n*t, {n, q}, {t, s})", //
@@ -17510,7 +17531,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("NumberForm(3.4567*^-8, {3, 2})", //
         "3.46×10^-8");
     check("ToString(NumberForm(456789123.4, {5, 2}))", //
-        "8\n4.57×10");
+        "         8\n4.57 × 10");
     // n Infinity keeps all integer digits
     check("NumberForm(2345678.9, {Infinity, 1})", //
         "2345678.9");
@@ -18113,7 +18134,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("g = RegionPlot3D(x + y + z < -1, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}); {Head(g), g[[1]]}", //
         "{Graphics3D,{{},{}}}");
     check("First(Show(Graphics3D(), Graphics3D(Cuboid())))", //
-        "{Cuboid({0,0,0},{1,1,1})}");
+        "{Cuboid({0,0,0})}");
   }
 
   @Test
@@ -19322,6 +19343,3126 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // repeated squaring: the 2000th power applied to a vector
     check("Length(IntegerDigits(First(MatrixPower({{1, 1}, {1, 0}}, 2000, {1, 0}))))", //
         "418");
+  }
+
+  @Test
+  public void testRSolveFactoredCharacteristic() {
+    // the roots of a characteristic polynomial with symbolic coefficients come from its factors
+    check("RSolve(m*a(n+2)-(1+m)*a(n+1)+a(n)==0,a(n),n)", //
+        "{{a(n)->(1/m)^n*C(1)+C(2)}}");
+    check("RSolve(a(n+2)==(u+v)*a(n+1)-u*v*a(n),a(n),n)", //
+        "{{a(n)->v^n*C(1)+u^n*C(2)}}");
+    check("RSolve({a(n+2)==(u+v)*a(n+1)-u*v*a(n),a(0)==0,a(1)==1},a(n),n)", //
+        "{{a(n)->(u^n-v^n)/(u-v)}}");
+    check("RSolve({h(0)==0,h(m)==1,h(j)==(1-w)*h(j-1)+w*h(j+1)},h(j),j)", //
+        "{{h(j)->(-1+((1-w)/w)^j)/(-1+((1-w)/w)^m)}}");
+    check("RSolve({g(0)==0,g(m)==0,g(j)==(1-w)*(2+g(j-1))+w*(2+g(j+1))},g(j),j)", //
+        "{{g(j)->(2*(j-m+m*((1-w)/w)^j-j*((1-w)/w)^m))/((-1+((1-w)/w)^m)*(-1+2*w))}}");
+    // an irreducible factor keeps the quadratic formula
+    check("RSolve(a(n+2)+u^2*a(n)==0,a(n),n)", //
+        "{{a(n)->(-I*u)^n*C(1)+(I*u)^n*C(2)}}");
+  }
+
+  @Test
+  public void testRSolveConstantInhomogeneity() {
+    // no root 1, a simple root 1 and a root 1 of multiplicity four
+    check("RSolve(a(n+2)==5*a(n+1)-6*a(n)+d,a(n),n)", //
+        "{{a(n)->d/2+2^n*C(1)+3^n*C(2)}}");
+    check("RSolve(a(n+2)==4*a(n+1)-3*a(n)+d,a(n),n)", //
+        "{{a(n)->-1/2*d*n+C(1)+3^n*C(2)}}");
+    check("RSolve(a(n+4)==4*a(n+3)-6*a(n+2)+4*a(n+1)-a(n)+d,a(n),n)", //
+        "{{a(n)->1/24*d*n^4+C(1)+n*C(2)+n^2*C(3)+n^3*C(4)}}");
+    check("RSolve({a(n+2)==4*a(n+1)-3*a(n)+d,a(0)==1,a(1)==2},a(n),n)", //
+        "{{a(n)->1/4*(2+2*3^n-d+3^n*d-2*d*n)}}");
+    // the roots of an irreducible factor
+    check("RSolve(a(n+2)==a(n+1)+a(n)+d,a(n),n)", //
+        "{{a(n)->-d+(1/2*(1-Sqrt(5)))^n*C(1)+(1/2*(1+Sqrt(5)))^n*C(2)}}");
+    check("RSolve(a(n+3)==2*a(n+2)-a(n)+d,a(n),n)", //
+        "{{a(n)->-d*n+C(1)+(1/2*(1-Sqrt(5)))^n*C(2)+(1/2*(1+Sqrt(5)))^n*C(3)}}");
+  }
+
+  @Test
+  public void testRecurrenceTableTwoIndices() {
+    // rows as initial conditions
+    check("RecurrenceTable({p(n,k)==p(n-1,k)+2*p(n-1,k-1),p(0,k)==KroneckerDelta(k)},p,{n,0,3},{k,0,2})", //
+        "{{1,0,0},{1,2,0},{1,4,4},{1,6,12}}");
+    check("RecurrenceTable({d(n,k)==d(n-1,k)+d(n-2,k-1),d(0,k)==1,d(1,k)==k},d,{n,0,3},{k,1,2})", //
+        "{{1,1},{1,2},{2,3},{2,4}}");
+    // rows and columns, a term in the same row and a shift of the largest term
+    check("RecurrenceTable({c(n,k)==c(n,k-1)+c(n-1,k),c(n,0)==1,c(0,k)==1},c,{n,0,3},{k,0,3})", //
+        "{{1,1,1,1},{1,2,3,4},{1,3,6,10},{1,4,10,20}}");
+    check("RecurrenceTable({c(n+1,k+1)==c(n,k)+c(n,k+1),c(0,k)==If(k==0,1,0),c(n,0)==1},c(n,k),{n,0,3},{k,0,3})", //
+        "{{1,0,0,0},{1,1,0,0},{1,2,1,0},{1,3,3,1}}");
+    // only the needed values of a condition are asked for
+    check("RecurrenceTable({e(n,k)==e(n-1,k),e(0,k)==1/k},e,{n,0,2},{k,1,2})", //
+        "{{1,1/2},{1,1/2},{1,1/2}}");
+    // an implicit equation and machine numbers
+    check("RecurrenceTable({2*e(n,k)==e(n-1,k),e(0,k)==k},e,{n,0,2},{k,1,2})", //
+        "{{1,2},{1/2,1},{1/4,1/2}}");
+    check("RecurrenceTable({e(n,k)==0.5*e(n-1,k),e(0,k)==k},e,{n,0,2},{k,1,2})", //
+        "{{1.0,2.0},{0.5,1.0},{0.25,0.5}}");
+    // no initial conditions
+    check("RecurrenceTable({e(n,k)==e(n-1,k)},e,{n,0,2},{k,1,2})", //
+        "RecurrenceTable({e(n,k)==e(-1+n,k)},e,{n,0,2},{k,1,2})");
+  }
+
+  @Test
+  public void testRecurrenceTableDependentVariables() {
+    check("RecurrenceTable({p(n+1)==q(n),q(n+2)==2*p(n),p(0)==1,q(0)==2,q(1)==3},{q,p},{n,0,3},DependentVariables->{p,q})", //
+        "{{2,1},{3,2},{2,3},{4,2}}");
+    check("RecurrenceTable({p(n+1)==q(n),q(n+2)==2*p(n),p(0)==1,q(0)==2,q(1)==3},p,{n,0,3},DependentVariables->{p,q})", //
+        "{1,2,3,2}");
+  }
+
+  @Test
+  public void testSumStepToInfinity() {
+    check("Sum(x^k/k!,{k,3,Infinity,2})", //
+        "-x+Sinh(x)");
+    check("Sum(2^k/k!,{k,1,Infinity,2})", //
+        "Sinh(2)");
+    check("Sum(1/k^2,{k,1,Infinity,2})", //
+        "Pi^2/8");
+    check("Sum(1/k^2,{k,3,Infinity,3})", //
+        "Pi^2/54");
+    check("Sum(1/k^2,{k,1,Infinity,1/2})", //
+        "-4+2/3*Pi^2");
+    // the root of unity filter
+    check("Sum(y^k/k!,{k,2,Infinity,3})", //
+        "E^y/3-2/3*Sin(1/6*(Pi+3*Sqrt(3)*y))/E^(y/2)");
+    check("Sum(y^k/k!,{k,0,Infinity,4})", //
+        "1/2*(Cos(y)+Cosh(y))");
+    check("N(Sum(y^k/k!,{k,2,Infinity,3})/.y->1.5)-Sum(1.5^k/k!,{k,2,80,3})", //
+        "0.0");
+    check("Sum(y^k/k^2,{k,1,Infinity,2})", //
+        "1/2*(-PolyLog(2,-y)+PolyLog(2,y))");
+    // the seventh roots of unity have no exact Cartesian form
+    check("Sum(y^k/k!,{k,1,Infinity,7})", //
+        "Sum(y^k/k!,{k,1,Infinity,7})");
+    check("Sum(g(k),{k,1,Infinity,2})", //
+        "Sum(g(k),{k,1,Infinity,2})");
+  }
+
+  @Test
+  public void testFunctionExpandPolyGammaInteger() {
+    check("FunctionExpand(PolyGamma(1,3))", //
+        "-5/4+Pi^2/6");
+    check("FunctionExpand(PolyGamma(2,3))", //
+        "-2*(-9/8+Zeta(3))");
+    check("FunctionExpand(PolyGamma(1,1))", //
+        "Pi^2/6");
+  }
+
+  @Test
+  public void testDSolveMathieuEquation() {
+    check("DSolve(y''(t)+(5-4*Cos(2*t))*y(t)==0,y(t),t)", //
+        "{{y(t)->C(1)*MathieuC(5,2,t)+C(2)*MathieuS(5,2,t)}}");
+    check("DSolve(y''(t)+(b-2*r*Cos(2*t))*y(t)==0,y,t)", //
+        "{{y->Function({t},C(1)*MathieuC(b,r,t)+C(2)*MathieuS(b,r,t))}}");
+    // rescaled, with a factor in front and with a phase
+    check("DSolve(3*y''(x)+(6-9*Cos(3*x))*y(x)==0,y(x),x)", //
+        "{{y(x)->C(1)*MathieuC(8/9,2/3,3/2*x)+C(2)*MathieuS(8/9,2/3,3/2*x)}}");
+    check("DSolve(y''(t)+(3+Sin(2*t))*y(t)==0,y(t),t)", //
+        "{{y(t)->C(1)*MathieuC(3,-1/2,Pi/4-t)-C(2)*MathieuS(3,-1/2,Pi/4-t)}}");
+    // a coefficient which isn't linear in Cos
+    check("DSolve(y''(x)+Cos(x^2)*y(x)==0,y(x),x)", //
+        "DSolve(Cos(x^2)*y(x)+y''(x)==0,y(x),x)");
+  }
+
+  @Test
+  public void testDSolvePDEOneVariable() {
+    check("DSolve(D(u(x,y),y,y)==x,u(x,y),{x,y})", //
+        "{{u(x,y)->1/2*x*y^2+C(1)[x]+y*C(2)[x]}}");
+    check("DSolve(D(u(x,y),x,x,x)==y,u(x,y),{x,y})", //
+        "{{u(x,y)->1/6*x^3*y+C(1)[y]+x*C(2)[y]+x^2*C(3)[y]}}");
+    check("DSolve(D(u(x,y),x,x)+u(x,y)==0,u(x,y),{x,y})", //
+        "{{u(x,y)->Cos(x)*C(1)[y]+Sin(x)*C(2)[y]}}");
+    // a mixed derivative is no equation in one variable
+    check("DSolve(D(u(x,y),x,y)==1,u(x,y),{x,y})", //
+        "DSolve(Derivative(1,1)[u][x,y]==1,u(x,y),{x,y})");
+  }
+
+  @Test
+  public void testDSolveVariableRanges() {
+    check("DSolve(D(u(x,y),x)==2*x*y,u,{x,0,1},{y,0,1})", //
+        "{{u->Function({x,y},x^2*y+C(1)[y])}}");
+    check("DSolveValue({D(u(x,y),x)==2*x*y},u,{x,-1,1},{y,0,5})", //
+        "Function({x,y},x^2*y+C(1)[y])");
+    check("DSolve(y'(x)==2*x,y,{x,0,1})", //
+        "{{y->Function({x},x^2+C(1))}}");
+    check("DSolveValue(y'(x)==2*x,y(x),{x,0,1})", //
+        "x^2+C(1)");
+  }
+
+  @Test
+  public void testNDSolveDiracDelta() {
+    // the state jumps at the zero of the argument, with the weight of a scaled argument
+    check("Round(NDSolve({w'(t)==2*DiracDelta(3*t-3),w(0)==1},w,{t,0,2})[[1,1,2]][2],10.0^(-6))", //
+        "1.66667");
+    // on top of a smooth right hand side
+    check("Round(NDSolve({w'(t)==-w(t)+2*DiracDelta(t-1/2),w(0)==1},w,{t,0,2})[[1,1,2]][2],10.0^(-4))", //
+        "0.5816");
+    // a coefficient in the state, and the state before the jump in both equations
+    check("Round(NDSolve({w'(t)==3*DiracDelta(t-1)*w(t),w(0)==2},w,{t,0,2})[[1,1,2]][2],10.0^(-6))", //
+        "8.0");
+    check("Round({p(2),q(2)}/.First(NDSolve({p'(t)==DiracDelta(t-1)*q(t),q'(t)==DiracDelta(t-1)*p(t),p(0)==1,q(0)==3},{p,q},{t,0,2})),10.0^(-6))", //
+        "{4.0,4.0}");
+    // second order, a factor in front of the derivative
+    check("Round(NDSolve({w''(t)==DiracDelta(t-1),w(0)==0,w'(0)==0},w,{t,0,3})[[1,1,2]][3],10.0^(-6))", //
+        "2.0");
+    check("Round(NDSolve({4*w'(t)+DiracDelta(t-1)==0,w(0)==0},w,{t,0,3})[[1,1,2]][3],10.0^(-6))", //
+        "-0.25");
+    // towards smaller times, and at the ends of the range
+    check("Round(NDSolve({w'(t)==2*DiracDelta(t-1),w(2)==5},w,{t,0,2})[[1,1,2]][1/2],10.0^(-6))", //
+        "3.0");
+    check("Round(NDSolve({w'(t)==DiracDelta(t-3),w(0)==1},w,{t,0,3})[[1,1,2]][3],10.0^(-6))", //
+        "1.0");
+    check("Round(NDSolve({w'(t)==DiracDelta(t),w(0)==1},w,{t,0,3})[[1,1,2]][3],10.0^(-6))", //
+        "1.0");
+  }
+
+  @Test
+  public void testNDSolveUnitListCondition() {
+    // a one element list is the value of a scalar function
+    check("Round(NDSolve({r'(t)==-r(t),r(0)=={1}},r,{t,0,1})[[1,1,2]][1],10.0^(-4))", //
+        "0.3679");
+    check("Round(NDSolve({r''(t)==-r(t),r(0)=={1},r'(0)=={0}},r,{t,0,1})[[1,1,2]][1],10.0^(-4))", //
+        "0.5403");
+    check("Round(r(t)/.First(NDSolve({r'(t)==0,w'(t)==1,r(0)=={4.0},w(0)=={1.0}},{r(t),w(t)},{t,0,1}))/.t->1,0.01)", //
+        "4.0");
+    // a list in the equation makes it a vector
+    check("Round(NDSolve({r'(t)=={{-1}}.r(t),r(0)=={1}},r,{t,0,1})[[1,1,2]][1],10.0^(-4))", //
+        "{0.3679}");
+  }
+
+  @Test
+  public void testInterpolationSplineExtrapolation() {
+    // a spline continues its end pieces without a message
+    check("g=Interpolation({{0.2,0.1},{0.4,0.3},{0.6,0.6},{0.8,0.7},{1.0,1.0}},Method->\"Spline\");Check(g(1.1)>0,False)", //
+        "True");
+    check("g=Interpolation({{0.2,0.1},{0.4,0.3},{0.6,0.6},{0.8,0.7},{1.0,1.0}});Check(g(1.1)>0,False)", //
+        "False");
+  }
+
+  @Test
+  public void testDiscreteLimitOption() {
+    check("DiscreteLimit((2*n+3)/(5*n-1),n->Infinity,Method->Automatic)", //
+        "2/5");
+    check("DiscreteLimit((2*n+3)/(5*n-1),n->Infinity,3)", //
+        "DiscreteLimit((3+2*n)/(-1+5*n),n->Infinity,3)");
+  }
+
+  @Test
+  public void testDifferenceQuotientAssumptions() {
+    check("DifferenceQuotient(Abs(y),{y,s},Assumptions->y<0&&s<0)", //
+        "-1");
+    check("DifferenceQuotient(Abs(y),{y,s},Assumptions->y>0&&s>0)", //
+        "1");
+    check("DifferenceQuotient(y^2,{y,s},Assumptions->s>0)", //
+        "s+2*y");
+  }
+
+  @Test
+  public void testTargetStructureMatrixGenerators() {
+    check("upperTriangularize({{5,6},{7,8}},TargetStructure->\"Dense\")", //
+        "{{5,6},\n {0,8}}");
+    check("lowerTriangularize({{5,6},{7,8}},TargetStructure->Automatic)", //
+        "{{5,0},\n {7,8}}");
+    check("Head(lowerTriangularize({{5,6},{7,8}},TargetStructure->\"Sparse\"))", //
+        "SparseArray");
+    check("Normal(upperTriangularize({{5,6},{7,8}},1,TargetStructure->\"Sparse\"))", //
+        "{{0,6},{0,0}}");
+    check("toeplitzMatrix(2,TargetStructure->\"Dense\")", //
+        "{{1,2},\n {2,1}}");
+    check("Normal(toeplitzMatrix({1,5},{1,7},TargetStructure->\"Sparse\"))", //
+        "{{1,7},{5,1}}");
+    check("hankelMatrix(2,TargetStructure->\"Dense\")", //
+        "{{1,2},\n {2,0}}");
+    check("Head(hankelMatrix({1,5},{5,7},TargetStructure->\"Sparse\"))", //
+        "SparseArray");
+    check("vandermondeMatrix({2,3},TargetStructure->\"Dense\")", //
+        "{{1,2},\n {1,3}}");
+    check("rotationMatrix(Pi,TargetStructure->\"Dense\")", //
+        "{{-1,0},{0,-1}}");
+    check("Head(rotationMatrix(Pi,TargetStructure->\"Sparse\"))", //
+        "SparseArray");
+    check("Normal(rotationMatrix(a,{1,0,0},TargetStructure->\"Sparse\"))", //
+        "{{1,0,0},{0,Cos(a),-Sin(a)},{0,Sin(a),Cos(a)}}");
+    check("diagonalMatrix({5,6},TargetStructure->\"Dense\")", //
+        "{{5,0},\n {0,6}}");
+    check("Head(diagonalMatrix({5,6},1,TargetStructure->\"Sparse\"))", //
+        "SparseArray");
+    check("Normal(diagonalMatrix(SparseArray({5,6}),TargetStructure->\"Dense\"))", //
+        "{{5,0},{0,6}}");
+    check("Head(companionMatrix({7,8},TargetStructure->\"Sparse\"))", //
+        "SparseArray");
+    check("upperTriangularize({{5,6},{7,8}},TargetStructure->\"Foo\")", //
+        "UpperTriangularize({{5,6},{7,8}},TargetStructure->Foo)");
+    check("Options(toeplitzMatrix)", //
+        "{TargetStructure->Automatic}");
+  }
+
+  @Test
+  public void testMatrixPredicateOptions() {
+    check("upperTriangularMatrixQ({{1.0,5.0},{3.0*^-15,2.0}},Tolerance->10^-13)", //
+        "True");
+    check("upperTriangularMatrixQ({{1.0,5.0},{3.0*^-9,2.0}},Tolerance->10^-13)", //
+        "False");
+    check("lowerTriangularMatrixQ({{1,0,3.0*^-15},{5,1,0}},1,Tolerance->10^-13)", //
+        "True");
+    check("diagonalMatrixQ({{2.0,0.0},{3.0*^-15,2.0}},Tolerance->10^-13)", //
+        "True");
+    check("diagonalMatrixQ({{2.0,0.0},{3.0*^-9,2.0}},Tolerance->10^-13)", //
+        "False");
+    check("diagonalMatrixQ({{1,z-z^2/z},{0,1}},SameTest->(Simplify(#1-#2)==0&))", //
+        "True");
+    check("diagonalMatrixQ({{1,0},{0,1}},Foo->1)", //
+        "DiagonalMatrixQ(\n{{1,0},\n {0,1}},foo->1)");
+    check("symmetricMatrixQ({{1.0,2.0},{2.0000000001,1.0}},Tolerance->10^-6)", //
+        "True");
+    check("symmetricMatrixQ({{1.0,2.0},{2.0001,1.0}},Tolerance->10^-6)", //
+        "False");
+    check("symmetricMatrixQ({{1,Sqrt(y^2)},{y,1}},SameTest->(Simplify(#1-#2,y>0)==0&))", //
+        "True");
+    check("hermitianMatrixQ({{1,Sqrt(y^2)},{y,1}},SameTest->(Simplify(#1-#2,y>0)==0&))", //
+        "True");
+    check("hermitianMatrixQ({{1.0,2.0+I},{2.0000001-I,1.0}},Tolerance->10^-3)", //
+        "True");
+    check("antisymmetricMatrixQ({{0,1.0},{-0.9999999,0}},Tolerance->10^-3)", //
+        "True");
+    check("orthogonalMatrixQ({{Cosh(y),I*Sinh(y)},{-I*Sinh(y),Cosh(y)}},"
+        + "SameTest->(Simplify(#1-#2)==0&))", //
+        "True");
+    check("orthogonalMatrixQ({{1.0,1.0*^-15},{0.0,1.0}},Tolerance->10^-12)", //
+        "True");
+    check("orthogonalMatrixQ({{1.0,1.0*^-3},{0.0,1.0}},Tolerance->10^-12)", //
+        "False");
+    check("unitaryMatrixQ({{0.28,0.96},{-0.96,0.2800000000001}},Tolerance->10^-12)", //
+        "True");
+    check("unitaryMatrixQ({{0.28,0.96},{-0.96,0.2800000001}},Tolerance->10^-12)", //
+        "False");
+    check("unitaryMatrixQ({{Cos(y),Sin(y)},{-Sin(y),Cos(y)}},"
+        + "SameTest->(Simplify(#1-#2,y>0)==0&))", //
+        "True");
+    check("normalMatrixQ({{3.0,1.0},{1.0,2.9999999999999}},Tolerance->10^-12)", //
+        "True");
+    check("normalMatrixQ({{5,6},{7,8}},Tolerance->10^-13)", //
+        "False");
+    check("normalMatrixQ({{y,2},{2,y}},SameTest->(FullSimplify(#1-#2,y>0)==0&))", //
+        "True");
+    check("negativeSemidefiniteMatrixQ({{-3,0},{0,-5}},Tolerance->10^-12)", //
+        "True");
+    check("positiveDefiniteMatrixQ({{2,0},{0,1.0*^-14}},Tolerance->10^-12)", //
+        "False");
+    check("positiveSemidefiniteMatrixQ({{2,0},{0,-1.0*^-14}},Tolerance->10^-12)", //
+        "True");
+    check("Options(diagonalMatrixQ)", //
+        "{SameTest->Automatic,Tolerance->Automatic}");
+  }
+
+  @Test
+  public void testIndefiniteMatrixQ() {
+    check("indefiniteMatrixQ({{3,0},{0,-7}})", //
+        "True");
+    check("indefiniteMatrixQ({{3,0},{0,7}})", //
+        "False");
+    check("indefiniteMatrixQ({{-3,0},{0,-7}})", //
+        "False");
+    check("indefiniteMatrixQ({{3,0},{0,0}})", //
+        "False");
+    check("indefiniteMatrixQ({{5,6},{7,8}})", //
+        "True");
+    check("indefiniteMatrixQ({{0,3},{0,0}})", //
+        "True");
+    check("indefiniteMatrixQ({{0,-3},{3,0}})", //
+        "False");
+    check("indefiniteMatrixQ({{2.5,0},{0,-3.5}})", //
+        "True");
+    check("indefiniteMatrixQ({{1,2,3},{4,5,6}})", //
+        "False");
+    check("indefiniteMatrixQ({{b,0},{0,1}})", //
+        "False");
+    check("indefiniteMatrixQ({{3,0},{0,-7}},Tolerance->10^-12)", //
+        "True");
+    check("indefiniteMatrixQ({{3,0},{0,-1.0*^-14}},Tolerance->10^-12)", //
+        "False");
+  }
+
+  @Test
+  public void testPermutationMatrix() {
+    check("permutationMatrix({3,1,2})", //
+        "{{0,0,1},\n {1,0,0},\n {0,1,0}}");
+    check("permutationMatrix({3,1,2},4)", //
+        "{{0,0,1,0},\n {1,0,0,0},\n {0,1,0,0},\n {0,0,0,1}}");
+    check("permutationMatrix(Cycles({{2,3}}))", //
+        "{{1,0,0},\n {0,0,1},\n {0,1,0}}");
+    check("permutationMatrix(Cycles({{2,3}}),4)", //
+        "{{1,0,0,0},\n {0,0,1,0},\n {0,1,0,0},\n {0,0,0,1}}");
+    check("permutationMatrix({1,1})", //
+        "PermutationMatrix({1,1})");
+    check("permutationMatrix({2,1},1)", //
+        "PermutationMatrix({2,1},1)");
+    check("Head(permutationMatrix({2,1},TargetStructure->\"Sparse\"))", //
+        "SparseArray");
+  }
+
+  @Test
+  public void testCompanionMatrix() {
+    check("companionMatrix({7,8,9})", //
+        "{{0,0,-7},\n {1,0,-8},\n {0,1,-9}}");
+    check("companionMatrix({7})", //
+        "{{-7}}");
+    check("companionMatrix({a,b})", //
+        "{{0,-a},\n {1,-b}}");
+    check("companionMatrix(6+5*y+y^2,y)", //
+        "{{0,-6},\n {1,-5}}");
+    check("companionMatrix(4*y^2+2*y+1,y)", //
+        "{{0,-1/4},\n {1,-1/2}}");
+    check("companionMatrix({7,8,9},Right)", //
+        "{{0,0,-7},\n {1,0,-8},\n {0,1,-9}}");
+    check("companionMatrix({7,8,9},Bottom)", //
+        "{{0,1,0},\n {0,0,1},\n {-7,-8,-9}}");
+    check("companionMatrix({7,8,9},Left)", //
+        "{{-9,1,0},\n {-8,0,1},\n {-7,0,0}}");
+    check("companionMatrix(y^3+7*y^2+8*y+9,y,Top)", //
+        "{{-7,-8,-9},\n {1,0,0},\n {0,1,0}}");
+    check("companionMatrix({7,8},foo)", //
+        "CompanionMatrix({7,8},foo)");
+    check("companionMatrix(Cos(y),y)", //
+        "CompanionMatrix(Cos(y),y)");
+    check("CharacteristicPolynomial(companionMatrix({7,8}),y)", //
+        "7+8*y+y^2");
+  }
+
+  @Test
+  public void testSavitzkyGolayMatrix() {
+    check("savitzkyGolayMatrix({3},2,WorkingPrecision->Infinity)", //
+        "{-2/21,1/7,2/7,1/3,2/7,1/7,-2/21}");
+    check("savitzkyGolayMatrix({3},0,WorkingPrecision->Infinity)", //
+        "{1/7,1/7,1/7,1/7,1/7,1/7,1/7}");
+    check("savitzkyGolayMatrix(1,0,WorkingPrecision->Infinity)", //
+        "{{1/9,1/9,1/9},{1/9,1/9,1/9},{1/9,1/9,1/9}}");
+    check("savitzkyGolayMatrix({1,0},{1,0},WorkingPrecision->Infinity)", //
+        "{{1/3},{1/3},{1/3}}");
+    check("savitzkyGolayMatrix({1},1)", //
+        "{0.333333,0.333333,0.333333}");
+    check("savitzkyGolayMatrix({4},2)[[5]]", //
+        "0.255411");
+    check("savitzkyGolayMatrix(-1,1)", //
+        "SavitzkyGolayMatrix(-1,1)");
+  }
+
+  @Test
+  public void testEulerMatrixAngles() {
+    check("eulerMatrix({Pi,0,0})", //
+        "{{-1,0,0},\n {0,-1,0},\n {0,0,1}}");
+    check("eulerMatrix({0,Pi/2,0})", //
+        "{{0,0,1},\n {0,1,0},\n {-1,0,0}}");
+    check("eulerMatrix({u,0,0},{1,2,3})", //
+        "{{1,0,0},\n {0,Cos(u),-Sin(u)},\n {0,Sin(u),Cos(u)}}");
+    check("eulerMatrix({u,v,w},{1,2,4})", //
+        "EulerMatrix({u,v,w},{1,2,4})");
+    check("eulerAngles(IdentityMatrix(3))", //
+        "{0,0,0}");
+    check("eulerAngles(eulerMatrix({Pi/4,Pi/3,Pi/6}))", //
+        "{Pi/4,Pi/3,Pi/6}");
+    check("eulerAngles(eulerMatrix({Pi/2,0,0}))", //
+        "{Pi/2,0,0}");
+    check("Table(Max(Abs(eulerAngles(eulerMatrix({0.25,0.75,-1.5},s),s)-{0.25,0.75,-1.5}))<10^-12,"
+        + "{s,{{3,2,3},{3,1,3},{1,2,1},{2,3,2},{1,2,3},{3,2,1},{2,1,3},{1,3,2}}})", //
+        "{True,True,True,True,True,True,True,True}");
+    check("eulerAngles({{u,0,1},{0,1,0},{-1,0,0}})", //
+        "EulerAngles(\n{{u,0,1},\n {0,1,0},\n {-1,0,0}})");
+    check("eulerAngles(IdentityMatrix(3),{1,1,2})", //
+        "EulerAngles(\n{{1,0,0},\n {0,1,0},\n {0,0,1}},{1,1,2})");
+  }
+
+  @Test
+  public void testAngleBisector() {
+    check("angleBisector({{3,0},{0,0},{0,5}})", //
+        "InfiniteLine({0,0},{1,1})");
+    check("angleBisector({{3,3},{1,1},{3,-1}})", //
+        "InfiniteLine({1,1},{Sqrt(2),0})");
+    check("angleBisector({{3,0},{0,0},{0,5}},\"Interior\")", //
+        "InfiniteLine({0,0},{1,1})");
+    check("angleBisector({{3,0},{0,0},{0,5}},\"Exterior\")", //
+        "InfiniteLine({0,0},{1,-1})");
+    check("angleBisector({{3,0,0},{0,0,0},{0,5,0}})", //
+        "AngleBisector({{3,0,0},{0,0,0},{0,5,0}})");
+    check("angleBisector({{3,0},{0,0}})", //
+        "AngleBisector({{3,0},{0,0}})");
+  }
+
+  @Test
+  public void testCoordinateBoundsArray() {
+    check("coordinateBoundsArray({{1,2},{5,6}})", //
+        "{{{1,5},{1,6}},{{2,5},{2,6}}}");
+    check("coordinateBoundsArray({{0,3}},3/2)", //
+        "{{0},{3/2},{3}}");
+    check("coordinateBoundsArray({{0,1}},0.5)", //
+        "{{0.0},{0.5},{1.0}}");
+    check("coordinateBoundsArray({{0,3}},Into(3))", //
+        "{{0},{1},{2},{3}}");
+    check("coordinateBoundsArray({{0,6}},3,1)", //
+        "{{1},{4}}");
+    check("coordinateBoundsArray({{0,6}},3,-1)", //
+        "{{2},{5}}");
+    check("coordinateBoundsArray({{0,3},{0,2}},1,Center)", //
+        "{{{1/2,1/2},{1/2,3/2}},{{3/2,1/2},{3/2,3/2}},{{5/2,1/2},{5/2,3/2}}}");
+    check("coordinateBoundsArray({{0,2}},2,0,1)", //
+        "{{-2},{0},{2},{4}}");
+    check("coordinateBoundsArray({{0,2}},1,0,{{1,-1}})", //
+        "{{-1},{0},{1}}");
+    check("coordinateBoundsArray({{0,2}},-1)", //
+        "{}");
+    check("coordinateBoundsArray({0,2})", //
+        "CoordinateBoundsArray({0,2})");
+    check("coordinateBoundsArray({{0,2}},2,Automatic)", //
+        "CoordinateBoundsArray({{0,2}},2,Automatic)");
+    check("coordinateBoundingBoxArray({{0,5},{1,6}})", //
+        "{{{0,5},{0,6}},{{1,5},{1,6}}}");
+    check("coordinateBoundingBoxArray({{0,0},{2,4}},{1,2},0,{0,{1,0}})==" //
+        + "coordinateBoundsArray({{0,2},{0,4}},{1,2},0,{0,{1,0}})", //
+        "True");
+    check("coordinateBoundingBoxArray({0,2})", //
+        "CoordinateBoundingBoxArray({0,2})");
+  }
+
+  @Test
+  public void testCoordinateTransformData() {
+    check("coordinateTransformData(\"Polar\"->\"Cartesian\",\"Mapping\",{5,0})", //
+        "{5,0}");
+    check("coordinateTransformData(\"Polar\"->\"Cartesian\",\"Mapping\")[{4,Pi/6}]", //
+        "{2*Sqrt(3),2}");
+    check("coordinateTransformData(\"Cartesian\"->\"Polar\",\"Mapping\")[{3,4}]", //
+        "{5,ArcTan(4/3)}");
+    check("coordinateTransformData(\"Cartesian\"->\"Polar\",\"Mapping\")", //
+        "{Sqrt(#1[[1]]^2+#1[[2]]^2),ArcTan(#1[[1]],#1[[2]])}&");
+    check("coordinateTransformData(\"Cylindrical\"->\"Cartesian\",\"Mapping\",{u,v,w})", //
+        "{u*Cos(v),u*Sin(v),w}");
+    check("coordinateTransformData(\"Polar\"->\"Cartesian\",\"MappingJacobian\",{u,v})", //
+        "{{Cos(v),-u*Sin(v)},{Sin(v),u*Cos(v)}}");
+    check("coordinateTransformData(\"Cylindrical\"->\"Cartesian\","
+        + "\"MappingJacobianDeterminant\",{u,v,w})", //
+        "u");
+    check("coordinateTransformData(\"Spherical\"->\"Cartesian\","
+        + "\"MappingJacobianDeterminant\",{u,v,w})", //
+        "u^2*Sin(v)");
+    check("coordinateTransformData(\"Polar\"->\"Cartesian\",\"MappingJacobianDeterminant\")[{7,1}]", //
+        "7");
+    check("coordinateTransformData(\"Foo\"->\"Cartesian\",\"Mapping\")", //
+        "CoordinateTransformData(Foo->Cartesian,Mapping)");
+    check("coordinateTransformData(\"Polar\"->\"Cartesian\",\"Foo\")", //
+        "CoordinateTransformData(Polar->Cartesian,Foo)");
+    check("coordinateTransformData(\"Polar\"->\"Cartesian\",\"Mapping\",{1,2,3})", //
+        "CoordinateTransformData(Polar->Cartesian,Mapping,{1,2,3})");
+  }
+
+  @Test
+  public void testVandermondeMatrixColumns() {
+    check("vandermondeMatrix({0,2},3)", //
+        "{{1,0,0},\n {1,2,4}}");
+    check("vandermondeMatrix({u,v,w},1)", //
+        "{{1},\n {1},\n {1}}");
+    check("Dimensions(vandermondeMatrix({1,2,3},9))", //
+        "{3,9}");
+    check("vandermondeMatrix({0,1})", //
+        "{{1,0},\n {1,1}}");
+    check("vandermondeMatrix({u,v},0)", //
+        "VandermondeMatrix({u,v},0)");
+  }
+
+  @Test
+  public void testMatrixExpParameter() {
+    check("matrixExp({{0,5},{0,0}},Parameter->s)", //
+        "{{1,5*s},{0,1}}");
+    check("matrixExp({{0,5},{0,0}},{2,3},Parameter->s)", //
+        "{2+15*s,3}");
+    check("matrixExp({{2,0},{0,3}},Parameter->s)", //
+        "{{E^(2*s),0},\n {0,E^(3*s)}}");
+    check("matrixExp({{0,5},{0,0}},Parameter->1)", //
+        "{{1,5},{0,1}}");
+    check("matrixExp({{0,5},{0,0}},Method->Automatic)", //
+        "{{1,5},{0,1}}");
+    check("matrixExp({{0,5},{0,0}},Foo->1)", //
+        "MatrixExp({{0,5},{0,0}},foo->1)");
+  }
+
+  @Test
+  public void testSingularValueListTolerance() {
+    check("singularValueList({{2,0},{0,0.02}},Tolerance->0.1)", //
+        "{2.0}");
+    check("singularValueList({{5,0,0},{0,4,0},{0,0,1/10}},Tolerance->1/5)", //
+        "{5,4}");
+    check("singularValueList({{5,0,0},{0,4,0},{0,0,1/10}},3,Tolerance->1/5)", //
+        "{5,4}");
+    check("singularValueList({{5,0,0},{0,4,0},{0,0,1/10}},1,Tolerance->1/5)", //
+        "{5}");
+    check("singularValueList({{5,0},{0,4}},7)", //
+        "{5,4}");
+    check("Options(singularValueList)", //
+        "{Tolerance->Automatic}");
+  }
+
+  @Test
+  public void testOrthogonalizeMethod() {
+    check("Sign(Chop(orthogonalize({{2.0,1,0},{0,1,1},{1,0,2}},Method->\"Householder\")))", //
+        "{{-1,-1,0},{1,-1,-1},{1,-1,1}}");
+    check("Chop(#.Transpose(#)-IdentityMatrix(3))&("
+        + "orthogonalize({{2.0,1,0},{0,1,1},{1,0,2}},Method->\"Householder\"))", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
+    check("Dimensions(orthogonalize({{2.0,1,0},{0,1,1}},Method->\"Householder\"))", //
+        "{2,3}");
+    check("orthogonalize({{1,0},{1,1}},Method->\"Bar\")", //
+        "Orthogonalize(\n{{1,0},\n {1,1}},Method->Bar)");
+    check("orthogonalize({{1,0},{1,1}},Method->\"GramSchmidt\")", //
+        "{{1,0},{0,1}}");
+    check("orthogonalize({{1,0},{1,1}},Method->\"ModifiedGramSchmidt\")", //
+        "{{1,0},{0,1}}");
+  }
+
+  @Test
+  public void testComplexMachineEigenvectors() {
+    check("Round(1000*eigenvectors({{1.0,I},{I,1.0}}/Sqrt(2)))", //
+        "{{707,-707},{707,707}}");
+    check("Round(1000*eigenvectors({{3.0,I},{-I,3.0}}))", //
+        "{{707,-I*707},{707,I*707}}");
+    check("With({m={{2.0,I,0},{1,3.0*I,1},{0,1-I,1.0}}},"
+        + "es=eigensystem(m);Chop(Table(Norm(m.es[[2,k]]-es[[1,k]]*es[[2,k]]),{k,3}),10^-9))", //
+        "{0,0,0}");
+    check("With({m={{5.0,I,0},{1,3.0*I,1},{0,1-I,1.0}}},eigenvectors(m,2)//Length)", //
+        "2");
+    // a repeated eigenvalue of a normal matrix gets independent eigenvectors
+    check("With({q=Orthogonalize(N({{1,I,0},{I,1,1},{0,1,I}})),d=DiagonalMatrix(N(Exp(I*{1,1,2})))},"
+        + "With({m=q.d.ConjugateTranspose(q)},es=eigensystem(m);"
+        + "{Chop(Table(Norm(m.es[[2,k]]-es[[1,k]]*es[[2,k]]),{k,3}),10^-9),MatrixRank(es[[2]])}))", //
+        "{{0,0,0},3}");
+  }
+
+  @Test
+  public void testLinearSolveRectangularMachine() {
+    check("Chop(linearSolve({{2.0,1},{1,3},{1,1}},{3,4,2})-{1,1},10^-12)", //
+        "{0,0}");
+    check("Chop(linearSolve({{3.0,3,0},{1,1,0}},{6,2})-{1,1,0},10^-12)", //
+        "{0,0,0}");
+    check("linearSolve({{3,3,0},{1,1,0}},{6,2})", //
+        "{2,0,0}");
+  }
+
+  @Test
+  public void testSparseArrayFlattenJoinLevels() {
+    check("sa=SparseArray({{1,1}->7},{2,2});Flatten({{sa,sa}},{{1,3},{2,4}})", //
+        "{{7,0,7,0},{0,0,0,0}}");
+    check("sa=SparseArray({{1,1}->7},{2,2});Normal(Join(sa,sa,2))", //
+        "{{7,0,7,0},{0,0,0,0}}");
+    check("sa=SparseArray({{1,1}->7},{2,2});Head(Join(sa,sa,2))", //
+        "SparseArray");
+    check("sa=SparseArray({{1,1}->7},{2,2});Normal(Join(sa,{{1,2},{3,4}},2))", //
+        "{{7,0,1,2},{0,0,3,4}}");
+    check("Join({{1},{2}},{{3},{4}},2)", //
+        "{{1,3},{2,4}}");
+    check("Join({{{1}}},{{{2}}},3)", //
+        "{{{1,2}}}");
+    check("Join({1},{2},1)", //
+        "{1,2}");
+    check("Join({{1}},{{2},{3}},2)", //
+        "Join({{1}},{{2},{3}},2)");
+    check("sa=SparseArray({{1,1}->7,{2,1}->1+I},{2,2});Normal(Conjugate(sa))", //
+        "{{7,0},{1-I,0}}");
+    check("sa=SparseArray({{1,1}->7,{2,1}->8},{2,2});Normal(sa[[All,1]])", //
+        "{7,8}");
+    check("sa=SparseArray({{1,1}->7,{2,1}->8},{2,2});Normal(sa[[2;;2]])", //
+        "{{8,0}}");
+    check("sa=SparseArray({{1,1}->7},{1,1});Normal(ArrayFlatten({{sa,sa}}))", //
+        "{{7,7}}");
+  }
+
+  @Test
+  public void testPartitionArrayAlignment() {
+    check("Partition({{a,b},{c,d}},{2,2},2,-1)", //
+        "{{{{d,c},{b,a}}}}");
+    check("Partition({{a}},{1,2},1,-1)", //
+        "{{{{a,a}}}}");
+    check("Partition({{1,2},{3,4}},{2,2},1,{1,1},z)", //
+        "{{{{1,2},{3,4}},{{2,z},{4,z}}},{{{3,4},{z,z}},{{4,z},{z,z}}}}");
+    check("Partition({{1,2},{3,4}},{2,2},1,{{1,1},{1,-1}},z)", //
+        "{{{{1,2},{3,4}}},{{{3,4},{z,z}}}}");
+    check("Partition({{1,2,3},{4,5,6}},{2,2},2,{1,1},{})", //
+        "{{{{1,2},{4,5}},{{3},{6}}}}");
+    check("Partition({{1,2,3},{4,5,6}},{2,2},2,{1,1},{u,v})", //
+        "{{{{1,2},{4,5}},{{3,v},{6,v}}}}");
+    check("Partition({{1,2,3},{4,5,6}},{2,2},1)", //
+        "{{{{1,2},{4,5}},{{2,3},{5,6}}}}");
+  }
+
+  @Test
+  public void testPadAutomaticLevels() {
+    check("PadRight({{5},{6,7}},{Automatic,4})", //
+        "{{5,0,0,0},{6,7,0,0}}");
+    check("PadLeft({{5},{6,7}},{Automatic,3},y)", //
+        "{{y,y,5},{y,6,7}}");
+    check("PadRight({{5},{6,7,8}},{2,Automatic})", //
+        "{{5,0,0},{6,7,8}}");
+    check("PadLeft({{5},{6,7}},{Automatic,Automatic})", //
+        "{{0,5},{6,7}}");
+  }
+
+  @Test
+  public void testElementArrayAndSignDomains() {
+    check("Element({u,2},Vectors(2,Reals))", //
+        "u∈Reals");
+    check("Element({u,I},Vectors(2,Reals))", //
+        "False");
+    check("Element({{u,2}},Matrices({1,2},Reals))", //
+        "u∈Reals");
+    check("Element(Sqrt(7),PositiveReals)", //
+        "True");
+    check("Element(3-Pi,NegativeReals)", //
+        "True");
+    check("Element(-1/2,NegativeReals)", //
+        "True");
+    check("Element(0,NonNegativeReals)", //
+        "True");
+    check("Element(0,PositiveReals)", //
+        "False");
+    check("Element(2+I,PositiveReals)", //
+        "False");
+    check("Element(-2.5,NonNegativeReals)", //
+        "False");
+    check("Element(u,PositiveReals)", //
+        "u∈PositiveReals");
+  }
+
+  @Test
+  public void testVariablesModulus() {
+    check("Variables(3*a+4*b+5*c, Modulus->3)", //
+        "{b,c}");
+    check("Variables({2*a+b, 4*c+d}, Modulus->2)", //
+        "{b,d}");
+    check("Variables(a+b, Modulus->0)", //
+        "{a,b}");
+  }
+
+  @Test
+  public void testNumeratorDenominatorFunction() {
+    check("NumeratorDenominator({Tan(y), (p+1)/q}, Trig->True)", //
+        "{{Sin(y),Cos(y)},{1+p,q}}");
+    check("NumeratorDenominator(2/3)", //
+        "{2,3}");
+  }
+
+  @Test
+  public void testApartModulus() {
+    check("Apart((x^2+3)/(x+1), Modulus->2)", //
+        "1+x");
+    check("Apart(2/(x^2-1), Modulus->5)", //
+        "4/(1+x)+1/(4+x)");
+    check("Apart(1/(x^2+1), Modulus->3)", //
+        "1/(1+x^2)");
+  }
+
+  @Test
+  public void testApartSquareFree() {
+    check("ApartSquareFree(1/(x^2-4))", //
+        "1/(-4+x^2)");
+    check("ApartSquareFree(1/((x-2)*(x+3)^2))", //
+        "1/(25*(-2+x))-1/(5*(3+x)^2)-1/(25*(3+x))");
+    check("ApartSquareFree((x^2+2)/(x^2-2))", //
+        "1+4/(-2+x^2)");
+    check("ApartSquareFree(Cos(x)/(x^2-2))", //
+        "Cos(x)/(-2+x^2)");
+    check("ApartSquareFree(1/(x^2*(x+1)), Modulus->3)", //
+        "1/x^2+2/x+1/(1+x)");
+  }
+
+  @Test
+  public void testFactorSquareFreeListModulusParts() {
+    check("FactorSquareFreeList(y^2*(y+1)^2*(y+3), Modulus->5)", //
+        "{{1,1},{3+y,1},{y+y^2,2}}");
+    check("FactorSquareFree(y^2*(y+1)^2*(y+3), Modulus->5)", //
+        "(3+y)*(y+y^2)^2");
+  }
+
+  @Test
+  public void testExpandNumeratorDenominatorOptions() {
+    check("ExpandNumerator((a+b)^5/c, Modulus->5)", //
+        "(a^5+b^5)/c");
+    check("ExpandDenominator(c/(a+b)^2, Modulus->2)", //
+        "c/(a^2+b^2)");
+    check("ExpandNumerator(Cos(u+v)/w, Trig->True)", //
+        "(Cos(u)*Cos(v)-Sin(u)*Sin(v))/w");
+    check("ExpandDenominator(w/(2+Cos(u+v)), Trig->True)", //
+        "w/(2+Cos(u)*Cos(v)-Sin(u)*Sin(v))");
+  }
+
+  @Test
+  public void testToRadicalsOptions() {
+    check("ToRadicals(Root(#^3-#-1&,1), Cubics->False)", //
+        "Root(-1-#1+#1^3&,1,0)");
+    check("ToRadicals(Root(#^4-#-1&,1), Quartics->False)", //
+        "Root(-1-#1+#1^4&,1,0)");
+    check("ToRadicals(Root(#^3-5&,1), Quartics->False)", //
+        "5^(1/3)");
+    check("ToRadicals({Root(#^3-#-1&,1), 1+x}, Cubics->False)", //
+        "{Root(-1-#1+#1^3&,1,0),1+x}");
+  }
+
+  @Test
+  public void testDigitSumLeadingDigits() {
+    check("DigitSum(58274, 10, {1, 2, 3, 5, 9, 0})", //
+        "{5,13,15,26,26,0}");
+    check("DigitSum(13, 2, 2)", //
+        "2");
+    check("DigitSum(58274, 10, -1)", //
+        "4");
+    check("DigitSum(58274, 10, q)", //
+        "DigitSum(58274,10,q)");
+  }
+
+  @Test
+  public void testMultipleHarmonicNumber() {
+    check("MultipleHarmonicNumber(4, {1, 1})", //
+        "35/24");
+    check("MultipleHarmonicNumber(4, {1, 1}, {1, 1})", //
+        "35/24");
+    check("MultipleHarmonicNumber(2, {3, 1}, {x, y})", //
+        "1/8*x^2*y");
+    check("MultipleHarmonicNumber(5, {2})", //
+        "5269/3600");
+    check("MultipleHarmonicNumber(1, {1, 1})", //
+        "0");
+  }
+
+  @Test
+  public void testListFourierSequenceTransform() {
+    check("ListFourierSequenceTransform({2, 3}, z, 1)", //
+        "3/E^(I*2*z)+2/E^(I*z)");
+    check("ListFourierSequenceTransform({2, 3}, z)", //
+        "2+3/E^(I*z)");
+    check("ListFourierSequenceTransform(q, z)", //
+        "ListFourierSequenceTransform(q,z)");
+  }
+
+  @Test
+  public void testEllipticThetaPrimeNumbers() {
+    check("Chop(EllipticThetaPrime(1,0.2)-EllipticTheta(2,0.2)*EllipticTheta(3,0.2)*EllipticTheta(4,0.2))", //
+        "0");
+    check("ToString(EllipticThetaPrime(1, 0.4, 0.25), InputForm)", //
+        "1.2057744871042293`");
+    check("EllipticThetaPrime(1, 0.2) == EllipticThetaPrime(1, 0, 0.2)", //
+        "True");
+    check("EllipticThetaPrime(2, q)", //
+        "EllipticThetaPrime(2,q)");
+  }
+
+  @Test
+  public void testLegendreQFourArguments() {
+    check("LegendreQ(3, 0.25, 1, 0.4) == LegendreQ(3, 0.25, 0.4)", //
+        "True");
+    check("LegendreQ(1, 0, 1, y) == LegendreQ(1, 0, y)", //
+        "True");
+  }
+
+  @Test
+  public void testWeierstrassDerivatives() {
+    check("D(WeierstrassP(t^2, {g, h}), t)", //
+        "2*t*WeierstrassPPrime(t^2,{g,h})");
+    check("D(WeierstrassPPrime(t, {g, h}), t)", //
+        "-g/2+6*WeierstrassP(t,{g,h})^2");
+    check("D(WeierstrassZeta(2*t, {g, h}), t)", //
+        "-2*WeierstrassP(2*t,{g,h})");
+    check("D(WeierstrassSigma(t, {g, h}), t)", //
+        "WeierstrassSigma(t,{g,h})*WeierstrassZeta(t,{g,h})");
+  }
+
+  @Test
+  public void testHurwitzLerchPhiPole() {
+    check("HurwitzLerchPhi(0.25, 1.5, 0)", //
+        "ComplexInfinity");
+    check("HurwitzLerchPhi(0.25, 1.5, -2)", //
+        "ComplexInfinity");
+  }
+
+  @Test
+  public void testErfcMachineDigits() {
+    check("ToString(Erfc(0.5), InputForm)", //
+        "0.4795001221869535`");
+    check("ToString(Erfc(1.75), InputForm)", //
+        "0.013328328780817557`");
+    check("ToString(Erfc(-0.75), InputForm)", //
+        "1.7111556336535152`");
+    check("ToString(Erfc(3.25), InputForm)", //
+        "4.302779463675122`*^-6");
+  }
+
+  @Test
+  public void testParametricMeasures() {
+    check("ArcLength({2, t}, {t, 0, Pi}, \"Polar\")", //
+        "2*Pi");
+    check("ArcLength({3, t, 0}, {t, 0, 2*Pi}, \"Cylindrical\")", //
+        "6*Pi");
+    check("ArcLength({2, Pi/2, t}, {t, 0, Pi}, \"Spherical\")", //
+        "2*Pi");
+    check("Volume({2*r*Cos(t), 2*r*Sin(t), z}, {r, 0, 1}, {t, 0, 2*Pi}, {z, 0, 3})", //
+        "12*Pi");
+    check("RegionMeasure({r*Cos(t), r*Sin(t)}, {{r, 0, 2}, {t, 0, Pi}})", //
+        "2*Pi");
+    check("RegionMeasure({r, t}, {{r, 0, a}, {t, 0, Pi}}, \"Polar\")", //
+        "1/2*a^2*Pi");
+    check("RegionMeasure({2*Sin(u)*Cos(v), 2*Sin(u)*Sin(v), 2*Cos(u)}, {{u, 0, Pi}, {v, 0, 2*Pi}})", //
+        "16*Pi");
+    check("ArcLength({2, t}, {t, 0, Pi}, \"Unknown\")", //
+        "ArcLength({2,t},{t,0,Pi},Unknown)");
+  }
+
+  @Test
+  public void testGaussianIntegersOptions() {
+    check("CompositeQ({13, 7, 1, 2+2*I}, GaussianIntegers->True)", //
+        "{True,False,False,True}");
+    check("CompositeQ(13, GaussianIntegers->False)", //
+        "False");
+    check("LiouvilleLambda({13, 7, 6}, GaussianIntegers->True)", //
+        "{1,-1,-1}");
+  }
+
+  @Test
+  public void testDistributionCorrelations() {
+    check("Correlation(BinormalDistribution({0, 1}, {2, 5}, c), 1, 2)", //
+        "c");
+    check("Covariance(BinormalDistribution({0, 1}, {2, 5}, c), 2, 1)", //
+        "10*c");
+    check("AbsoluteCorrelation(MultinormalDistribution({1, 3}, {{2, 1}, {1, 2}}))", //
+        "{{3,4},{4,11}}");
+    check("AbsoluteCorrelation(MultinormalDistribution({1, 3}, {{2, 1}, {1, 2}}), 2, 1)", //
+        "4");
+    check("Correlation(MultinormalDistribution({0, 0}, {{4, 1}, {1, 9}}), 1, 2)", //
+        "1/6");
+    check("Covariance(BinormalDistribution(c), 3, 1)", //
+        "Covariance(BinormalDistribution(c),3,1)");
+  }
+
+  @Test
+  public void testSpearmanRhoExactData() {
+    check("SpearmanRho({{1, 3}, {2, 2}, {3, 4}, {4, 1}})", //
+        "{{1,-2/5},{-2/5,1}}");
+    check("SpearmanRho({1, 2, 2}, {3, 1, 2})", //
+        "-Sqrt(3)/2");
+    check("SpearmanRho({1., 2., 3.}, {3., 1., 2.})", //
+        "-0.5");
+  }
+
+  @Test
+  public void testRandomWorkingPrecision() {
+    check("Precision(RandomReal(2, WorkingPrecision->35))", //
+        "35");
+    check("Dimensions(RandomReal({1, 2}, {3, 2}, WorkingPrecision->20))", //
+        "{3,2}");
+    check("Precision(RandomComplex(WorkingPrecision->25))", //
+        "25");
+    check("Map(Precision, RandomComplex({-2-I, 2+I}, 2, WorkingPrecision->22))", //
+        "{22,22}");
+    check("SeedRandom(77); r=RandomReal(1, WorkingPrecision->30); SeedRandom(77); "
+        + "r==RandomReal(1, WorkingPrecision->30)", //
+        "True");
+    check("SeedRandom(9); a=RandomVariate(ExponentialDistribution(3), 2); SeedRandom(9); "
+        + "a==RandomVariate(ExponentialDistribution(3), 2, WorkingPrecision->MachinePrecision)", //
+        "True");
+  }
+
+  @Test
+  public void testRealDigitsRealBase() {
+    check("RealDigits(2, GoldenRatio, 6)", //
+        "{{1,0,0,1,0,0},2}");
+    check("RealDigits(5, Pi, 3)", //
+        "{{1,1,2},2}");
+    check("RealDigits(7/2000)", //
+        "{{3,5},-2}");
+    check("FromDigits({{{2}, 1, {0}}, 0})", //
+        "{21/100}");
+  }
+
+  @Test
+  public void testTimeValueTwoArguments() {
+    check("TimeValue(Annuity(50, 4), 0.1) == TimeValue(Annuity(50, 4), 0.1, 0)", //
+        "True");
+  }
+
+  @Test
+  public void testNumericArrayClipping() {
+    check("Normal(NumericArray({-1, 300}, \"UnsignedInteger8\", \"ClipAndRound\"))", //
+        "{0,255}");
+    check("Normal(NumericArray({1.5, -70000}, \"Integer16\", \"ClipAndCoerce\"))", //
+        "{1,-32768}");
+  }
+
+  @Test
+  public void testPeriodogramArrayFourierParameters() {
+    check("PeriodogramArray({2, 1, 3, 2})", //
+        "{16.0,0.5,1.0,0.5}");
+    check("PeriodogramArray({2, 1, 3, 2}, FourierParameters -> {1, -1})", //
+        "{64.0,2.0,4.0,2.0}");
+    check("PeriodogramArray({{2, 1}, {1, 4}})", //
+        "{{16.0,1.0},{1.0,4.0}}");
+    check("PeriodogramArray({{2, 1}, {1, 4}}, FourierParameters -> {1, 1})", //
+        "{{64.0,4.0},{4.0,16.0}}");
+  }
+
+  @Test
+  public void testKernelMixtureDistribution() {
+    check("KernelMixtureDistribution({3, 1, 7})[[2]]", //
+        "{1/3,Gaussian,{1,3,7},3/5*3^(3/10)*Sqrt(7)}");
+    check("KernelMixtureDistribution({8, 9, 9, 8, 7})[[2, 4]]", //
+        "1/2");
+    check("KernelMixtureDistribution({2.0, 2.0, 2.0, 3.0})[[2, 4]]", //
+        "0.5");
+    check("KernelMixtureDistribution({1, 2, 4}, 1/4)[[2, 4]]", //
+        "1/4");
+    check("KernelMixtureDistribution({1, 2}, 1, \"Epanechnikov\")", //
+        "KernelMixtureDistribution({1,2},1,Epanechnikov)");
+    check("{Mean(KernelMixtureDistribution({2, 3, 7})), "
+        + "Variance(KernelMixtureDistribution({2, 4, 6}, 1/2))}", //
+        "{4,35/12}");
+    check("PDF(KernelMixtureDistribution({1, 3}, 1), 1) - "
+        + "(1/2/Sqrt(2*Pi) + 1/2*Exp(-2)/Sqrt(2*Pi)) // Simplify", //
+        "0");
+    check("N(CDF(KernelMixtureDistribution({1, 3}, 1), 2))", //
+        "0.5");
+    check("Quantile(KernelMixtureDistribution({1, 3}, 1), 0.5)", //
+        "2.0");
+    check("InverseCDF(KernelMixtureDistribution({1, 3}, 1), 1)", //
+        "Infinity");
+  }
+
+  @Test
+  public void testLocationTest() {
+    check("LocationTest({2.0, 3.0, 5.0, 6.0}, 4, \"TestStatistic\")", //
+        "0.0");
+    check("LocationTest({2.0, 3.0, 5.0, 6.0}, 4)", //
+        "1.0");
+    check("LocationTest({1, 2, 3}, 0, \"TestStatistic\")", //
+        "3.4641");
+    check("LocationTest({1, 2, 3}, 1, \"T\", VerifyTestAssumptions -> None) =="
+        + " LocationTest({1, 2, 3}, 1, \"T\")", //
+        "True");
+    check("LocationTest({{1, 2, 3}, {2, 4, 6}}, 0, \"DegreesOfFreedom\")", //
+        "4.0");
+    check("LocationTest({{1.0, 1.1, 0.9, 1.0}, {10, 90, 200, 400}}, 0, \"DegreesOfFreedom\") < 6", //
+        "True");
+  }
+
+  @Test
+  public void testButterworthFilterModel() {
+    check("ButterworthFilterModel({\"Highpass\", 1, 3}, t)", //
+        "TransferFunctionModel({{{t}},{{3+t}}},t)");
+    check("ButterworthFilterModel({\"Bandstop\", 1, {1, 3}}, t)", //
+        "TransferFunctionModel({{{3+t^2}},{{3+2*t+t^2}}},t)");
+    check("ButterworthFilterModel({\"Bandpass\", 1, {1, 3}}, t)", //
+        "TransferFunctionModel({{{2*t}},{{3+2*t+t^2}}},t)");
+    check("ButterworthFilterModel({1, 2}, t)", //
+        "TransferFunctionModel({{{2}},{{2+t}}},t)");
+    check("ButterworthFilterModel({\"Sidepass\", 1, 2}, t)", //
+        "ButterworthFilterModel({Sidepass,1,2},t)");
+    check("RecurrenceFilter({{2, -1}, {2}}, {4, 0, 0})", //
+        "{4,2,1}");
+    check("RecurrenceFilter({{1, 0}, {1, 1}}, {1, 2, 3})", //
+        "{1,3,5}");
+    check("RecurrenceFilter(TransferFunctionModel((z + 1)/(2*z), z, SamplingPeriod -> 1),"
+        + " {4, 2, 6})", //
+        "{2,3,4}");
+  }
+
+  @Test
+  public void testTemporalDataPaths() {
+    check("td = TemporalData({{7, 8}, {9, 10}}, {2}); {td(\"Paths\"), td(\"Path\"),"
+        + " td(\"Values\"), td(\"Times\"), td(\"PathLength\"), td(\"PathCount\"),"
+        + " td(\"ValueList\"), td(\"TimeList\")}", //
+        "{{{{2,7},{3,8}},{{2,9},{3,10}}},{{2,7},{3,8}},{7,8},{2,3},2,2,{{7,8},{9,10}},{{2,\n"
+            + "3},{2,3}}}");
+    check("TemporalData({{7, 8}, {9, 10}}, {2})[3]", //
+        "DataDistribution(Empirical,{{1/2,1/2},{8,10},False},1,2)");
+    check("TemporalData({{0, 2}, {4, 4}}, {0, 2})[1]", //
+        "DataDistribution(Empirical,{{1/2,1/2},{1,4},False},1,2)");
+    check("TemporalData({1, 2, 4}, {{0, 1, 3}})[2]", //
+        "3");
+    check("TemporalData({{1, 2}, {4, 5}}, {0})[9] // Head // Head", //
+        "TemporalData");
+  }
+
+  @Test
+  public void testRandomFunctionLinearProcesses() {
+    check("r = RandomFunction(ARProcess({0.5}, 0.3), {2, 5}); {r(\"Times\"), Dimensions(r(\"Path\"))}", //
+        "{{2,3,4,5},{4,2}}");
+    check("r = RandomFunction(MAProcess({0.2}, 2), {4}, 3); {r(\"PathCount\"),"
+        + " Dimensions(r(\"Paths\")), Dimensions(r(\"Path\")), Length(r(\"Values\"))}", //
+        "{3,{3,5,2},{5,2},5}");
+    check("Dimensions(RandomFunction(ARIMAProcess({0.4}, 2, {0.1}, 1.), {0, 7})[\"Path\"])", //
+        "{8,2}");
+    check("Dimensions(RandomFunction(SARMAProcess({0.1}, {0.2}, {4, {0.3}, {0.1}}, 1), {6})"
+        + "[\"Path\"])", //
+        "{7,2}");
+    check("Dimensions(RandomFunction(SARIMAProcess({0.1}, 1, {0.2}, {4, {0.3}, 1, {0.1}}, 1),"
+        + " {6})[\"Path\"])", //
+        "{7,2}");
+    check("RandomFunction(WhiteNoiseProcess(0.5), {3})[\"PathLength\"]", //
+        "4");
+    check("RandomFunction(WhiteNoiseProcess(), {1, 2})[\"PathLength\"]", //
+        "2");
+    check("v = RandomFunction(WhiteNoiseProcess(PoissonDistribution(2)), {4})[\"Values\"];"
+        + " And @@ IntegerQ /@ v", //
+        "True");
+    check("SeedRandom(4); Abs(Mean(RandomFunction(ARProcess(2, {0.5}, 0.1), {1, 3000})"
+        + "[\"Values\"]) - 4) < 0.2", //
+        "True");
+    check("RandomFunction(ARProcess({a}, 1), {3})", //
+        "RandomFunction(ARProcess({a},1),{3})");
+  }
+
+  @Test
+  public void testWeakStationarity() {
+    check("WeakStationarity(ARProcess({0.5, 0.3}, 1))", //
+        "True");
+    check("WeakStationarity(MAProcess({7}, 1))", //
+        "True");
+    check("WeakStationarity(WhiteNoiseProcess())", //
+        "True");
+    check("WeakStationarity(ARMAProcess({1/4}, {5}, 1))", //
+        "True");
+    check("WeakStationarity(ARProcess({1.0}, 1))", //
+        "False");
+    check("WeakStationarity(ARProcess({1.5, -0.2}, 1))", //
+        "False");
+    check("WeakStationarity(ARIMAProcess({0.1}, 2, {}, 1))", //
+        "False");
+    check("WeakStationarity(SARIMAProcess({0.1}, 0, {}, {6, {0.1}, 1, {}}, 1))", //
+        "False");
+    check("WeakStationarity(SARMAProcess({0.1}, {}, {6, {0.2}, {}}, 1))", //
+        "True");
+    check("WeakStationarity(ARProcess({a}, 1))", //
+        "WeakStationarity(ARProcess({a},1))");
+  }
+
+  @Test
+  public void testCellularAutomatonOffsetBlocks() {
+    check("CellularAutomaton(204, {{{{1}, {-1}}, {{1, 1}, {2}}}, 0}, 1)", //
+        "{{1,0,0,1,1},{1,0,0,1,1}}");
+    check("CellularAutomaton(90, {{{{1}, {2}}, {{1}, {0}}}, 0}, 1)", //
+        "{{0,1,0,1,0},{1,0,0,0,1}}");
+    check("CellularAutomaton(204, {0, 0, 1, 0}, {{1}, {2}})", //
+        "{{1}}");
+    check("CellularAutomaton(204, {0, 0, 1, 0}, {{1}, {1, 2}})", //
+        "{{0,1}}");
+    check("CellularAutomaton(204, {0, 0, 1, 0}, {{1}, {-2}})", //
+        "{{1}}");
+  }
+
+  @Test
+  public void testColorDataNamedSchemes() {
+    check("ColorData(\"Atoms\", \"C\") == ColorData(\"Atoms\", 6)", //
+        "True");
+    check("Round(255 * List @@ ColorData(\"Atoms\", \"N\"))", //
+        "{48,80,248}");
+    check("ColorData(\"Atoms\", \"Xx\")", //
+        "ColorData(Atoms,Xx)");
+    check("ColorData(\"HTML\", \"Blue\")", //
+        "RGBColor(0,0,1.0)");
+    check("ColorData(\"HTML\", \"seagreen\") == ColorData(\"HTML\", \"SeaGreen\")", //
+        "True");
+    check("Length(ColorData(\"HTML\", \"ColorRules\"))", //
+        "140");
+    check("ColorData(\"Legacy\", \"Orange\")", //
+        "RGBColor(1,0.5,0)");
+    check("Length(ColorData(\"Legacy\", \"ColorRules\"))", //
+        "193");
+  }
+
+  @Test
+  public void testKnotDataImage() {
+    check("Head(KnotData(\"FigureEight\", \"Image\"))", //
+        "KnotData");
+    check("Head(KnotData({3, 1}, \"Image\"))", //
+        "Graphics3D");
+    check("Head(First(First(KnotData({\"TorusKnot\", {2, 7}}, \"Image\"))))", //
+        "GraphicsComplex");
+  }
+
+  @Test
+  public void testDiscretizeRegionMesh() {
+    check("Head(DiscretizeRegion(Disk({1, 1}, 2)))", //
+        "MeshRegion");
+    check("Head(DiscretizeRegion(Disk({a, 1}, 2)))", //
+        "DiscretizeRegion");
+    check("m = DiscretizeRegion(Polygon({{0, 0}, {3, 0}, {3, 3}, {2, 3}, {2, 1}, {0, 1}}));"
+        + " {RegionMember(m, {2.5, 2}), RegionMember(m, {1, 2}), Area(m)}", //
+        "{True,False,5.0}");
+    check("m = DiscretizeRegion(Annulus({1, 0}, {1, 2})); {RegionMember(m, {1.5, 0}),"
+        + " RegionMember(m, {2.5, 0}), RegionMember(m, {4, 0})}", //
+        "{False,True,False}");
+    check("MeshCellCount(DiscretizeRegion(Rectangle({0, 0}, {2, 1})))", //
+        "{4,5,2}");
+    check("m = DiscretizeRegion(Line({{0, 0}, {1, 0}, {1, 1}})); MeshCoordinates(m)", //
+        "{{0.0,0.0},{1.0,0.0},{1.0,1.0}}");
+    check("m = DiscretizeRegion(DiskSegment({0, 0}, 1, {0, Pi})); {RegionMember(m, {0, 0.5}),"
+        + " RegionMember(m, {0, -0.5})}", //
+        "{True,False}");
+    check("MeshCellCount(DiscretizeRegion(RegularPolygon(5)), 2)", //
+        "3");
+    check("m = DelaunayMesh({{0, 0}, {1, 0}, {0, 1}}); m === DiscretizeRegion(m)", //
+        "True");
+  }
+
+  @Test
+  public void testRegionMemberSegmentAndRegularPolygon() {
+    check("RegionMember(DiskSegment({1, 1}, 2, {0, Pi}), {{1, 2}, {1, 0}, {1, 4}})", //
+        "RegionMember(DiskSegment({1,1},2,{0,Pi}),{{1,2},{1,0},{1,4}})");
+    check("{RegionMember(DiskSegment({1, 1}, 2, {0, Pi}), {1, 2}),"
+        + " RegionMember(DiskSegment({1, 1}, 2, {0, Pi}), {1, 0}),"
+        + " RegionMember(DiskSegment({1, 1}, 2, {0, Pi}), {1, 3.5}),"
+        + " RegionMember(DiskSegment({0, 0}, {2, 1}, {-Pi/2, Pi/2}), {1.5, 0})}", //
+        "{True,False,False,True}");
+    check("{RegionMember(RegularPolygon({1, 1}, 2, 3), {1, 1}),"
+        + " RegionMember(RegularPolygon({1, 1}, 2, 3), {1, -0.5}),"
+        + " RegionMember(RegularPolygon({2, 1/4*Pi}, 4), {1.5, 0}),"
+        + " RegionMember(RegularPolygon(4), {0.6, 0})}", //
+        "{True,False,False,True}");
+    check("RegionBounds(Annulus({1, 0}, {1, 3}))", //
+        "{{-2,4},{-3,3}}");
+  }
+
+  @Test
+  public void testMeshCellsByLocation() {
+    check("m = MeshRegion({{0, 0}, {1, 0}, {2, 0}, {0, 1}, {1, 1}, {2, 1}, {0, 2}, {1, 2}, {2,"
+        + " 2}}, {Polygon({1, 2, 5, 4}), Polygon({2, 3, 6, 5}), Polygon({4, 5, 8, 7}), Polygon({5,"
+        + " 6, 9, 8})}); {MeshCells(m, {0, \"Interior\"}), Length(MeshCells(m, {0, \"Boundary\"})),"
+        + " Length(MeshCells(m, {1, \"Boundary\"})), Length(MeshCells(m, {1, \"Interior\"})),"
+        + " MeshCells(m, {2, \"Boundary\"}), MeshPrimitives(m, {0, \"Interior\"})}", //
+        "{{Point({5})},8,8,0,{},{Point({1,1})}}");
+  }
+
+  @Test
+  public void testContourPlotOverRegion() {
+    check("Head(ContourPlot(x + y, Element({x, y}, Annulus({0, 0}, {1, 2})), PlotPoints -> 8))", //
+        "Graphics");
+    check("Head(ContourPlot(x + y, Element({x, y}, foo), PlotPoints -> 8))", //
+        "ContourPlot");
+  }
+
+  @Test
+  public void testContourPlot3DList() {
+    check("Head(ContourPlot3D({x + y + z, x - z == 0.25}, {x, 0, 1}, {y, 0, 1}, {z, 0, 1},"
+        + " PlotPoints -> 5))", //
+        "Graphics3D");
+    check("Length(Cases(ContourPlot3D({x + y + z - 1, x - z == 0.25}, {x, 0, 1}, {y, 0, 1},"
+        + " {z, 0, 1}, PlotPoints -> 5), _GraphicsComplex, Infinity))", //
+        "2");
+  }
+
+  @Test
+  public void testRectangleChartFrameAndLabels() {
+    check("Cases(RectangleChart({{1, 1}, {2, 3}}, Frame -> True), HoldPattern(Axes -> a_) :> a,"
+        + " Infinity)", //
+        "{False}");
+    check("Cases(RectangleChart({{1, 1}, {2, 3}}), HoldPattern(Axes -> a_) :> a, Infinity)", //
+        "{{False,True}}");
+    check("Cases(RectangleChart({{1, 1}, {2, 3}}, ChartLabels -> {\"p\", \"q\"}),"
+        + " Text(s_, __) :> s, Infinity)", //
+        "{p,q}");
+  }
+
+  @Test
+  public void testPairedCharts() {
+    check("Cases(First(PairedBarChart({2, 1}, {1, 4})), Rectangle(a_, b_) :> {a[[2]], b[[2]]},"
+        + " Infinity)", //
+        "{{0.543,1.457},{1.543,2.457},{0.543,1.457},{1.543,2.457}}");
+    check("Cases(First(PairedHistogram({1, 1, 2, 2}, {2, 2, 1, 3})),"
+        + " Rectangle(a_, b_) :> {a[[2]], b[[2]]}, Infinity)", //
+        "{{0.5,1.5},{1.5,2.5},{0.5,1.5},{1.5,2.5},{2.5,3.5}}");
+    check("PairedBarChart(a, {1})", //
+        "PairedBarChart(a,{1})");
+    check("HistogramList({1, 1, 1, 2, 2, 2, 3, 3, 3, 4})", //
+        "{{0.5,1.5,2.5,3.5,4.5},{3,3,3,1}}");
+  }
+
+  @Test
+  public void testSmoothHistograms() {
+    check("Head(SmoothHistogram({1, 2, 4, 7}))", //
+        "Graphics");
+    check("Head(SmoothHistogram({{1, 2, 4}, {2, 3, 5.5}}, 0.25, \"SF\"))", //
+        "Graphics");
+    check("p = Cases(First(SmoothHistogram({2., 3., 4.}, 1)), Line(q_) :> q, Infinity)[[1]];"
+        + " {p[[1, 1]] < -1, p[[-1, 1]] > 7}", //
+        "{True,True}");
+    check("SmoothHistogram(a)", //
+        "SmoothHistogram(a)");
+    check("Head(SmoothHistogram3D({{1, 1}, {2, 3}, {4, 2}}))", //
+        "Graphics3D");
+    check("Head(SmoothHistogram3D({{1, 1}, {2, 3}, {4, 2}}, {0.5, 1}))", //
+        "Graphics3D");
+    check("Head(Histogram3D({{1, 1}, {1, 1}, {2, 3}}))", //
+        "Graphics3D");
+    check("Histogram3D({a, b})", //
+        "Histogram3D({a,b})");
+  }
+
+  @Test
+  public void testClockGauge() {
+    check("Head(ClockGauge({6, 30}))", //
+        "Graphics");
+    check("Head(ClockGauge(3600, ScaleRanges -> {}))", //
+        "Graphics");
+    check("Head(ClockGauge())", //
+        "Graphics");
+    check("ClockGauge({6, 30}) === ClockGauge(23400)", //
+        "True");
+    check("ClockGauge(a)", //
+        "ClockGauge(a)");
+  }
+
+  @Test
+  public void testImageSizeRange() {
+    check("StringContainsQ(ExportString(Graphics(Disk(), ImageSize -> {{100, 200}, {150, 200}}),"
+        + " \"SVG\"), \"width=\\\"200\\\"\")", //
+        "True");
+  }
+
+  @Test
+  public void testUniqueAttributes() {
+    check("u1 = Unique(w, Temporary); Attributes(Evaluate(u1))", //
+        "{Temporary}");
+    check("Attributes(Evaluate(Unique(w, {Listable, Orderless})))", //
+        "{Listable,Orderless}");
+    check("Map(Attributes, Unique({v, w}, {Temporary}))", //
+        "{{Temporary},{Temporary}}");
+    check("Length(Unique({v, \"str\", w}))", //
+        "3");
+    check("SetAttributes(tmpAttr, Temporary); Attributes(tmpAttr)", //
+        "{Temporary}");
+    check("ClearAttributes(tmpAttr, Temporary); Attributes(tmpAttr)", //
+        "{}");
+  }
+
+  @Test
+  public void testUpsample() {
+    check("Upsample({u, v, w}, 3)", //
+        "{u,0,0,v,0,0,w,0,0}");
+    check("Upsample({7, 8}, 4, 3)", //
+        "{0,0,7,0,0,0,8,0}");
+    check("Upsample({}, 2)", //
+        "{}");
+    check("Upsample({7, 8}, 0)", //
+        "Upsample({7,8},0)");
+    check("Upsample({7, 8}, 2, 3)", //
+        "Upsample({7,8},2,3)");
+  }
+
+  @Test
+  public void testPositionLargestSmallest() {
+    check("PositionLargest({7, 2, 7, 3})", //
+        "{1,3}");
+    check("PositionSmallest({7, 2, 7, 2})", //
+        "{2,4}");
+    check("PositionLargest({6, 2, 6, 2, 9}, 2)", //
+        "{{5},{3,1}}");
+    check("PositionLargest({6, 6}, 1)", //
+        "{{1,2}}");
+    check("PositionSmallest({6, 2, 6, 2, 9}, 2)", //
+        "{{2,4},{1,3}}");
+    check("PositionSmallest({6, 2}, 10)", //
+        "{{2},{1}}");
+    check("PositionLargest({6, 2}, 0)", //
+        "{}");
+    check("PositionLargest({6, 2, 8}, Automatic)", //
+        "{3}");
+    check("PositionLargest({2, Pi, 3.5})", //
+        "{3}");
+    check("PositionLargest({1/4, 0.25, 1/8}, 2)", //
+        "{{2,1},{3}}");
+    // an ordering function gives 1, 0 or -1
+    check("PositionSmallest({6, 2, 2, 7}, 2, Order)", //
+        "{{2,3},{1}}");
+    check("PositionLargest({6, 2, 2, 7}, 2, Order(#2, #1) &)", //
+        "{{3,2},{1}}");
+    check("PositionSmallest({\"pear\", \"Apple\", \"fig\"}, 2, AlphabeticOrder)", //
+        "{{2},{3}}");
+    check("PositionLargest({6, 2}, 1, Less)", //
+        "PositionLargest({6,2},1,Less)");
+    check("PositionLargest({6, 2}, -2)", //
+        "PositionLargest({6,2},-2)");
+    check("PositionLargest({v, w})", //
+        "PositionLargest({v,w})");
+    check("PositionSmallest({})", //
+        "PositionSmallest({})");
+  }
+
+  @Test
+  public void testSymmetricDifference() {
+    check("SymmetricDifference({5, 6, 6, 7}, {6, 7, 8})", //
+        "{5,8}");
+    check("SymmetricDifference({5, 6, 7}, {6, 7, 8}, {7, 8, 9})", //
+        "{5,7,9}");
+    check("SymmetricDifference({4, 2, 2})", //
+        "{2,4}");
+    check("SymmetricDifference(h(u, v), h(v, w))", //
+        "h(u,w)");
+    check("SymmetricDifference({5, 6}, {6., 7.}, SameTest -> Equal)", //
+        "{5,7.0}");
+    check("SymmetricDifference({5, 6}, {5, 6}, SameTest -> Equal)", //
+        "{}");
+    check("SymmetricDifference({5}, h(6))", //
+        "SymmetricDifference({5},h(6))");
+    check("SymmetricDifference(5, 6)", //
+        "SymmetricDifference(5,6)");
+  }
+
+  @Test
+  public void testAllSameBy() {
+    check("AllSameBy({1, 3, 5}, OddQ)", //
+        "True");
+    check("AllSameBy({1, 3, 6}, OddQ)", //
+        "False");
+    check("AllSameBy(OddQ)[{2, 4, 6}]", //
+        "True");
+    check("AllSameBy(StringLength)[{\"ab\", \"cde\"}]", //
+        "False");
+    check("AllSameBy({}, OddQ)", //
+        "True");
+    check("AllSameBy(<|u -> 1, v -> 3|>, OddQ)", //
+        "True");
+    check("AllSameBy(u, OddQ)", //
+        "AllSameBy(u,OddQ)");
+  }
+
+  @Test
+  public void testComapApply() {
+    check("ComapApply({f, g}, {u, v})", //
+        "{f(u,v),g(u,v)}");
+    check("ComapApply({f, g})[{u}]", //
+        "{f(u),g(u)}");
+    check("ComapApply(h(f), {u, v}, Heads -> True)", //
+        "h(u,v)[f(u,v)]");
+    check("ComapApply(h(f), {u}, Heads -> False)", //
+        "h(f(u))");
+    check("ComapApply(<|a -> f|>, {u})", //
+        "<|a->f(u)|>");
+  }
+
+  @Test
+  public void testFindRepeat() {
+    check("FindRepeat({4, 5, 4, 5})", //
+        "{4,5}");
+    check("FindRepeat({4, 5, 6, 4})", //
+        "{4,5,6}");
+    check("FindRepeat({4, 5, 6})", //
+        "{4,5,6}");
+    check("FindRepeat({4, 5, 4, 5}, 3)", //
+        "{}");
+    check("FindRepeat(\"xyzxyz\")", //
+        "xyz");
+    check("FindRepeat(<|a -> 1, b -> 2, c -> 1|>)", //
+        "<|a->1,b->2|>");
+    check("FindRepeat({})", //
+        "{}");
+    check("FindRepeat({1, -2, -1, 2}, SameTest -> (Abs(#1) == Abs(#2) &))", //
+        "{1,-2}");
+    check("FindRepeat(u)", //
+        "FindRepeat(u)");
+    check("FindRepeat({4, 5}, 0)", //
+        "FindRepeat({4,5},0)");
+  }
+
+  @Test
+  public void testFindTransientRepeat() {
+    check("FindTransientRepeat({8, 9, 5, 6, 5, 6}, 2)", //
+        "{{8,9},{5,6}}");
+    check("FindTransientRepeat({8, 9, 7, 7, 7}, 3)", //
+        "{{8,9},{7}}");
+    check("FindTransientRepeat({8, 9}, 4)", //
+        "{{8,9},{}}");
+    check("FindTransientRepeat(\"xyzz\", 2)", //
+        "{xy,z}");
+    check("FindTransientRepeat({9, 5, -5, 5}, 2, SameTest -> (Abs(#1) == Abs(#2) &))", //
+        "{{9},{5}}");
+    check("FindTransientRepeat({8, 9}, 0)", //
+        "FindTransientRepeat({8,9},0)");
+  }
+
+  @Test
+  public void testPalindromeQ() {
+    check("PalindromeQ(\"level\")", //
+        "True");
+    check("PalindromeQ(\"levels\")", //
+        "False");
+    check("PalindromeQ(\"\")", //
+        "True");
+    check("PalindromeQ(\"Otto\")", //
+        "False");
+    check("PalindromeQ(\"Otto\", IgnoreCase -> True)", //
+        "True");
+    check("PalindromeQ(\"étalé\", IgnoreDiacritics -> True)", //
+        "False");
+    check("PalindromeQ(\"élé\", IgnoreDiacritics -> False)", //
+        "True");
+    check("PalindromeQ(\"éle\", IgnoreDiacritics -> True)", //
+        "True");
+    check("PalindromeQ(\"éle\")", //
+        "False");
+    check("PalindromeQ({u, v, u})", //
+        "True");
+    check("PalindromeQ({u, v})", //
+        "False");
+    check("PalindromeQ(4554)", //
+        "True");
+    check("PalindromeQ(4556)", //
+        "False");
+    check("PalindromeQ(u)", //
+        "PalindromeQ(u)");
+  }
+
+  @Test
+  public void testCharacterCounts() {
+    check("CharacterCounts(\"apple\")", //
+        "<|p->2,e->1,l->1,a->1|>");
+    check("CharacterCounts(\"a b\")", //
+        "<|b->1, ->1,a->1|>");
+    check("CharacterCounts(\"pepper\", 2)", //
+        "<|pe->2,ep->1,pp->1,er->1|>");
+    check("CharacterCounts(\"ab\", 3)", //
+        "<||>");
+    check("CharacterCounts({\"xx\", \"y\"})", //
+        "{<|x->2|>,<|y->1|>}");
+    check("CharacterCounts(\"xXy\", IgnoreCase -> True)", //
+        "<|x->2,y->1|>");
+    check("CharacterCounts(\"xy\", 0)", //
+        "CharacterCounts(xy,0)");
+  }
+
+  @Test
+  public void testLetterCountsOptions() {
+    check("LetterCounts(\"a-b a\")", //
+        "<|a->2,b->1|>");
+    check("LetterCounts(\"aAb\", IgnoreCase -> True)", //
+        "<|a->2,b->1|>");
+    check("LetterCounts(\"aAb\", IgnoreCase -> False)", //
+        "<|b->1,A->1,a->1|>");
+    check("LetterCounts(\"ab-ab c\", 2)", //
+        "<|ab->2|>");
+    check("LetterCounts({\"zz\", \"y\"})", //
+        "{<|z->2|>,<|y->1|>}");
+  }
+
+  @Test
+  public void testCountsKeys() {
+    check("Counts({u, v, v}, {w, v})", //
+        "<|w->0,v->2|>");
+    check("Counts({7, 7, 8}, {})", //
+        "<||>");
+    check("Counts({u, v}, 3)", //
+        "Counts({u,v},3)");
+  }
+
+  @Test
+  public void testSubsequencesLimit() {
+    check("Subsequences({1, 2, 3, 4}, {2}, 2)", //
+        "{{1,2},{2,3}}");
+    check("Subsequences({1, 2, 3}, {0, 1}, 3)", //
+        "{{},{1},{2}}");
+    check("Subsequences({1, 2}, {1}, 5)", //
+        "{{1},{2}}");
+    check("Subsequences({1, 2}, {1}, All)", //
+        "{{1},{2}}");
+    check("Subsequences({1, 2}, {1}, 0)", //
+        "{}");
+    check("Subsequences({1, 2}, {1}, -1)", //
+        "Subsequences({1,2},{1},-1)");
+  }
+
+  @Test
+  public void testHeadsOptionOfLevelFunctions() {
+    check("MapIndexed(f, u(v)[w], Infinity, Heads -> True)", //
+        "f(f(u,{0,0})[f(v,{0,1})],{0})[f(w,{1})]");
+    check("MapIndexed(f, {w}, Infinity, Heads -> True)", //
+        "f(List,{0})[f(w,{1})]");
+    check("MapIndexed(f, u(v)[w], Infinity, Heads -> False)", //
+        "u(v)[f(w,{1})]");
+    check("MapAll(f, u(v), Heads -> True)", //
+        "f(f(u)[f(v)])");
+    check("MapAll(f, u(v), Heads -> False)", //
+        "f(u(f(v)))");
+    check("DeleteCases({7, h(8, 9)}, h, {2}, Heads -> True)", //
+        "{7,8,9}");
+    check("DeleteCases({7, h(8, 9)}, h, {2}, Heads -> False)", //
+        "{7,h(8,9)}");
+    check("DeleteCases({h(8), g(9)}, h | g, {2}, 1, Heads -> True)", //
+        "{8,g(9)}");
+    check("DeleteCases({h(8), h}, h, Heads -> True)", //
+        "{h(8)}");
+    // the removals of a nested expression survive the end of the search
+    check("DeleteCases({{u, v}, {u, w}}, u, {2}, 1)", //
+        "{{v},{u,w}}");
+    check("Reap(Scan(Sow, {u, v}, Heads -> True))[[2, 1]]", //
+        "{List,u,v}");
+    check("Reap(Scan(Sow, h(g(u)), {2}, Heads -> True))[[2, 1]]", //
+        "{g,u}");
+  }
+
+  @Test
+  public void testSubsetReplaceCount() {
+    check("SubsetReplace({u, v, u, v, u, v}, {u, v} -> w, 2)", //
+        "{w,w,u,v}");
+    check("SubsetReplace({u, v, u, v}, {u, v} -> w, 0)", //
+        "{u,v,u,v}");
+    check("SubsetReplace({u, v, u, v}, {u, v} -> w, Infinity)", //
+        "{w,w}");
+    check("SubsetCases({u, v, u, v}, {u, v}, 1)", //
+        "{{u,v}}");
+  }
+
+  @Test
+  public void testStringTemplateOptions() {
+    check("StringTemplate(\"<`1`, `2`>\", InsertionFunction -> ToUpperCase)[\"u\", \"v\"]", //
+        "<U, V>");
+    check("StringTemplate(\"`` and ``\", InsertionFunction -> (2*# &))[3, 4]", //
+        "6 and 8");
+    check("StringTemplate(\"`x`!\", InsertionFunction -> ToUpperCase)[<|\"x\" -> \"u\"|>]", //
+        "U!");
+    check("StringTemplate(\"a `1`\", CombinerFunction -> (ToUpperCase(StringJoin(#)) &))[\"b\"]", //
+        "A B");
+    check("StringTemplate(\"`1`-`2`\", CombinerFunction -> Length)[\"u\", \"v\"]", //
+        "3");
+    check("TemplateApply(StringTemplate(\"`1`?\", InsertionFunction -> ToUpperCase), {\"u\"})", //
+        "U?");
+  }
+
+  @Test
+  public void testDateFunctionOptions() {
+    check("Abs(AbsoluteTime(TimeZone -> -3) - AbsoluteTime(TimeZone -> 1) + 14400) < 1", //
+        "True");
+    check("AbsoluteTime(TimeZone -> u)", //
+        "AbsoluteTime(TimeZone->u)");
+    check("FromUnixTime(86400, TimeZone -> 0, DateGranularity -> \"Day\")", //
+        "DateObject({1970,1,2},Day,Gregorian,0.0)");
+    check("FromUnixTime(3600, TimeZone -> 2, DateGranularity -> \"Hour\")", //
+        "DateObject({1970,1,1,3},Hour,Gregorian,2.0)");
+    check("FromUnixTime(86400, DateGranularity -> \"Unknown\")", //
+        "FromUnixTime(86400,DateGranularity->Unknown)");
+    check("FromJulianDate(\"Modified\", 40587, TimeZone -> 0)", //
+        "DateObject({1970,1,1,0,0,0},Instant,Gregorian,0.0)");
+    check("FromJulianDate(\"Reduced\", 2)", //
+        "DateObject({1858,11,18,12,0,0},Instant,Gregorian,0.0)");
+    check("FromJulianDate(2415021, TimeZone -> 2)", //
+        "DateObject({1900,1,1,14,0,0},Instant,Gregorian,2.0)");
+    check("FromJulianDate(\"Unknown\", 1)", //
+        "FromJulianDate(Unknown,1)");
+    check("DateSelect(DateValue(#, \"Year\") == 2021 &)[{DateObject({2020, 5, 1}), "
+        + "DateObject({2021, 5, 1})}]", //
+        "{DateObject({2021,5,1},Day)}");
+    check("DateSelect({DateObject({2020, 5, 1}), DateObject({2021, 6, 1})}, #Month == 6 &)", //
+        "{DateObject({2021,6,1},Day)}");
+  }
+
+  @Test
+  public void testAlphabeticOrder() {
+    check("AlphabeticOrder(\"pear\", \"plum\")", //
+        "1");
+    check("AlphabeticOrder(\"plum\", \"pear\")", //
+        "-1");
+    check("AlphabeticOrder(\"plum\", \"plum\")", //
+        "0");
+    check("AlphabeticOrder(\"Plum\", \"apple\")", //
+        "-1");
+    check("AlphabeticOrder(\"plum\", \"plumb\")", //
+        "1");
+    check("AlphabeticOrder()[\"B\", \"a\"]", //
+        "-1");
+    check("AlphabeticOrder(\"ñu\", \"oz\", \"Spanish\")", //
+        "1");
+    check("AlphabeticOrder(\"ñ\", \"m\", \"Spanish\")", //
+        "-1");
+    check("AlphabeticOrder(\"Spanish\")[\"n\", \"ñ\"]", //
+        "1");
+    check("AlphabeticOrder(\"u\", \"v\", \"UnknownLanguage\")", //
+        "AlphabeticOrder(u,v,UnknownLanguage)");
+    check("AlphabeticOrder(5, 6)", //
+        "AlphabeticOrder(5,6)");
+    check("Sort({\"zebra\", \"Ant\", \"bee\"}, AlphabeticOrder)", //
+        "{Ant,bee,zebra}");
+  }
+
+  @Test
+  public void testRemoveDiacritics() {
+    check("RemoveDiacritics(\"àéö\")", //
+        "aeo");
+    check("RemoveDiacritics({\"ü\", \"x\"})", //
+        "{u,x}");
+    check("RemoveDiacritics(\"ñoñó\", Language -> \"Spanish\")", //
+        "ñoño");
+    check("RemoveDiacritics(\"ñ\", Language -> \"English\")", //
+        "n");
+    check("RemoveDiacritics(\"ñ\", Language -> \"UnknownLanguage\")", //
+        "RemoveDiacritics(ñ,Language->UnknownLanguage)");
+    check("RemoveDiacritics(5)", //
+        "RemoveDiacritics(5)");
+  }
+
+  @Test
+  public void testSequenceAlignmentSimilarity() {
+    // a match counts 1, a mismatch -1 and a gap of n elements -(GapPenalty + n)
+    check("NeedlemanWunschSimilarity(\"kitten\", \"kitten\")", //
+        "6.0");
+    check("NeedlemanWunschSimilarity(\"pqrs\", \"prs\")", //
+        "2.0");
+    check("NeedlemanWunschSimilarity(\"pqrs\", \"prs\", GapPenalty -> 4)", //
+        "-2.0");
+    check("NeedlemanWunschSimilarity(\"klmn\", \"kxylmn\")", //
+        "2.0");
+    check("NeedlemanWunschSimilarity(\"klmn\", \"kxylmn\", GapPenalty -> 3)", //
+        "-1.0");
+    // an empty input
+    check("{NeedlemanWunschSimilarity(\"pqr\", \"\", GapPenalty -> 2), "
+        + "NeedlemanWunschSimilarity(\"\", \"pqrs\", GapPenalty -> 1), "
+        + "NeedlemanWunschSimilarity(\"\", \"\"), SmithWatermanSimilarity(\"pq\", \"\", GapPenalty -> 2)}", //
+        "{5.0,5.0,0.0,0.0}");
+    check("Options(NeedlemanWunschSimilarity)", //
+        "{GapPenalty->0,IgnoreCase->False,SimilarityRules->Automatic}");
+    check("NeedlemanWunschSimilarity(\"pq\", \"pq\", SimilarityRules -> {1, -2})", //
+        "NeedlemanWunschSimilarity(pq,pq,SimilarityRules->{1,-2})");
+    check("NeedlemanWunschSimilarity(\"PQ\", \"pq\")", //
+        "-2.0");
+    check("NeedlemanWunschSimilarity(\"PQ\", \"pq\", IgnoreCase -> True)", //
+        "2.0");
+    check("NeedlemanWunschSimilarity({1, 2, 3}, {1, 3})", //
+        "1.0");
+    check("NeedlemanWunschSimilarity(\"pq\", \"\")", //
+        "2.0");
+    check("SmithWatermanSimilarity(\"xxpqrxx\", \"pqr\")", //
+        "3.0");
+    check("SmithWatermanSimilarity(\"pqrs\", \"pqzrs\")", //
+        "3.0");
+    check("SmithWatermanSimilarity(\"pqrs\", \"pqzrs\", GapPenalty -> 1)", //
+        "2.0");
+    check("SmithWatermanSimilarity(\"pqrs\", \"pqzrs\", GapPenalty -> 2)", //
+        "2.0");
+    check("SmithWatermanSimilarity(\"abc\", \"xyz\")", //
+        "0.0");
+    check("SmithWatermanSimilarity(\"PQ\", \"pq\", IgnoreCase -> True)", //
+        "2.0");
+    check("SmithWatermanSimilarity(\"pq\", u)", //
+        "SmithWatermanSimilarity(pq,u)");
+  }
+
+  @Test
+  public void testNameQValueQOptions() {
+    check("NameQ(\"Sin\", ResolveContextAliases -> True)", //
+        "True");
+    check("NameQ(\"noSuch`symbolName\", ResolveContextAliases -> False)", //
+        "False");
+    check("NameQ(\"Sin\", u -> 1)", //
+        "NameQ(Sin,u->1)");
+    check("ValueQ(Cos(1.5), Method -> \"TrialEvaluation\")", //
+        "True");
+    check("ValueQ(Cos(1.5))", //
+        "True");
+    check("ValueQ(Cos(u), Method -> \"TrialEvaluation\")", //
+        "False");
+  }
+
+  @Test
+  public void testBooleanTermsForm() {
+    check("BooleanMinterms({2, 6}, {u, v, w}, \"DNF\") === BooleanMinterms({2, 6}, {u, v, w})", //
+        "True");
+    check("BooleanMaxterms({2, 6}, {u, v, w}, \"CNF\") === BooleanMaxterms({2, 6}, {u, v, w})", //
+        "True");
+    check("TautologyQ(Equivalent(BooleanMinterms({1, 4}, {u, v, w}, \"CNF\"), "
+        + "BooleanMinterms({1, 4}, {u, v, w})), {u, v, w})", //
+        "True");
+  }
+
+  @Test
+  public void testOrderingSequenceSpecification() {
+    check("Ordering({9, 7, 8, 6, 5}, {1, 2})", //
+        "{5,4}");
+    check("Ordering({9, 7, 8, 6, 5}, {-2, -1})", //
+        "{3,1}");
+    check("Ordering({9, 7, 8, 6, 5}, {1, 5, 2})", //
+        "{5,2,1}");
+    check("Ordering({2.5, 1.5}, {2})", //
+        "{1}");
+    check("Ordering({9, 7}, {3})", //
+        "Ordering({9,7},{3})");
+  }
+
+  @Test
+  public void testPermuteNamedGroups() {
+    check("Permute({u, v, w}, CyclicGroup(3))", //
+        "{{u,v,w},{v,w,u},{w,u,v}}");
+    check("Permute(h(u, v, w, x), AlternatingGroup(4)) // Length", //
+        "12");
+    check("Permute({u, v, w}, SymmetricGroup(3)) // Length", //
+        "6");
+    check("Length(Permute({1, 2, 3, 4, 5}, DihedralGroup(5)))", //
+        "10");
+  }
+
+  @Test
+  public void testNearestFunctionStored() {
+    check("nf = NearestFunction(1, {2, 1}, 1, {10, 20}, Automatic, "
+        + "Hold(Nearest({10, 20} -> {u, v}))); {nf(11.5), nf(18.5)}", //
+        "{{u},{v}}");
+    check("nf = NearestFunction(1, {2, 1}, 1, {10, 20}, Automatic, "
+        + "Hold(Nearest({10, 20} -> {u, v}))); nf(18.5, 2)", //
+        "{v,u}");
+  }
+
+  @Test
+  public void testBinsWithoutStep() {
+    check("BinCounts({2, 4, 5}, {2, 6})", //
+        "{1,0,1,1}");
+    check("BinCounts({1.5, 3}, {1.5, 4})", //
+        "{1,1}");
+    check("BinCounts({1.5, 3.5}, {1.5, 4})", //
+        "{1,0}");
+    check("BinCounts({1.25, 2.25}, {1, 3, 1/2})", //
+        "{1,0,1,0}");
+    check("BinLists({2, 3, 4}, {1, 4})", //
+        "{{},{2},{3}}");
+    check("BinLists({2, 3, 4}, {1, 4, 2})", //
+        "{{2}}");
+    check("BinLists({6.5, 7.5}, {6, 8, 1/2})", //
+        "{{},{6.5},{},{7.5}}");
+    check("BinCounts::vectmat", //
+        "The first argument is expected to be a unit-compatible vector or a matrix with unit-compatible columns.");
+    check("Check(BinCounts({}, 1), failed)", //
+        "failed");
+    check("Check(BinCounts(u, 3), failed)", //
+        "failed");
+    check("Check(BinCounts({u, v}, 3), failed)", //
+        "failed");
+    check("Check(BinLists({}, 3), failed)", //
+        "failed");
+    check("BinCounts({5, u, 6}, 3)", //
+        "{0,1,1}");
+  }
+
+  @Test
+  public void testTableSymbolicRangeRounding() {
+    check("Length(Table(i, {i, Pi + u, 3.7699111843077517 + u, Pi/10}))", //
+        "3");
+    check("Table(i, {i, u, 2 + u, 3/4})", //
+        "{u,3/4+u,3/2+u}");
+  }
+
+  @Test
+  public void testSolveRootMultiplicity() {
+    check("Solve((u+5)^3==0,u)", //
+        "{{u->-5},{u->-5},{u->-5}}");
+    check("Solve(3*u^2-12*u+12==0,u)", //
+        "{{u->2},{u->2}}");
+    check("Solve((u^2+9)^2==0,u)", //
+        "{{u->-I*3},{u->-I*3},{u->I*3},{u->I*3}}");
+    check("Solve((u-1)^2*(u+4)==0,u)", //
+        "{{u->-4},{u->1},{u->1}}");
+    check("Solve((u-Sqrt(3))^2==0,u)", //
+        "{{u->Sqrt(3)},{u->Sqrt(3)}}");
+    check("Solve(u^2-2*k*u+k^2==0,u)", //
+        "{{u->k},{u->k}}");
+    check("SolveValues((u-7)^2==0,u)", //
+        "{7,7}");
+    check("NSolve((u-7)^2==0,u)", //
+        "{{u->7.0},{u->7.0}}");
+    check("NSolve((u^2+4)^2*(u-1)==0,u)", //
+        "{{u->I*(-2.0)},{u->I*(-2.0)},{u->I*2.0},{u->I*2.0},{u->1.0}}");
+    // Reduce gives the set of the roots, and so do the internal callers of Solve
+    check("Reduce((u-7)^2==0,u)", //
+        "u==7");
+    check("Solve(u^2==4,u,Method->\"DistinctRoots\")", //
+        "{{u->-2},{u->2}}");
+    check("Solve((u-7)^2==0,u,Method->\"DistinctRoots\")", //
+        "{{u->7}}");
+    check("Integrate(1/(u^2-6*u+9),{u,0,1})", //
+        "1/6");
+  }
+
+  @Test
+  public void testSolveSymbolicFactors() {
+    check("Solve(k*u^2+(k+m)*u+m==0,u)", //
+        "{{u->-1},{u->-m/k}}");
+    check("Solve(u^3-(4+m)*u^2+4*m*u==0,u)", //
+        "{{u->0},{u->4},{u->m}}");
+    check("Solve(u^2-(k+m)*u+k*m==0,u)", //
+        "{{u->k},{u->m}}");
+    check("Solve(u^2==s/w,u)", //
+        "{{u->-Sqrt(s)/Sqrt(w)},{u->Sqrt(s)/Sqrt(w)}}");
+    check("Solve(u^3==s^3*w,u)", //
+        "{{u->s*w^(1/3)},{u->-(-1)^(1/3)*s*w^(1/3)},{u->(-1)^(2/3)*s*w^(1/3)}}");
+    check("Solve(u^3==-27*s^3,u)", //
+        "{{u->-3*s},{u->3*(-1)^(1/3)*s},{u->-3*(-1)^(2/3)*s}}");
+  }
+
+  @Test
+  public void testSolveInterpolatingFunction() {
+    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Round(t/.First(NSolve(h(t)==1,t)),10^(-6)))", //
+        "2");
+    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Round(t/.First(Solve(h(t)==1,t)),10^(-6)))", //
+        "2");
+    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Solve(h(t)==20,t))", //
+        "{}");
+    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Round(h'(1.1),10^(-6))", //
+        "-11/5");
+    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Round(D(h(z),z)/.z->1.5,10^(-6))", //
+        "-3");
+  }
+
+  @Test
+  public void testReduceIntegersPolynomialBox() {
+    check("Reduce(u*v==10&&u>0,{u,v},Integers)", //
+        "(u==1&&v==10)||(u==2&&v==5)||(u==5&&v==2)||(u==10&&v==1)");
+    check("Reduce(u^2*v==20,{u,v},Integers)", //
+        "(u==-2&&v==5)||(u==-1&&v==20)||(u==1&&v==20)||(u==2&&v==5)");
+    check("Length(Reduce(u^2+v^2+w^2==625,{u,v,w},Integers))", //
+        "150");
+    check("Reduce(u^2+v^2+w^2==3,{u,v,w},Integers)", //
+        "(u==-1&&v==-1&&w==-1)||(u==-1&&v==-1&&w==1)||(u==-1&&v==1&&w==-1)||(u==-1&&v==1&&w==\n"
+            + "1)||(u==1&&v==-1&&w==-1)||(u==1&&v==-1&&w==1)||(u==1&&v==1&&w==-1)||(u==1&&v==1&&w==\n"
+            + "1)");
+  }
+
+  @Test
+  public void testExtremumParametricQuadratic() {
+    check("Maximize(-3*u^2+k*u,u)", //
+        "{k^2/12,{u->k/6}}");
+    check("Minimize((u+m)^2-k,u)", //
+        "{-k,{u->-m}}");
+    check("Maximize({k*u^2+m*u,k<-3},u)", //
+        "{Piecewise({{-m^2/(4*k),k<-3}},-Infinity),{u->Piecewise({{-m/(2*k),k<-3}},Indeterminate)}}");
+    check("Minimize({k*u^2+m*u+1,k>2},u)", //
+        "{Piecewise({{(4*k-m^2)/(4*k),k>2}},Infinity),{u->Piecewise({{-m/(2*k),k>2}},Indeterminate)}}");
+    check("Maximize({-2*u^2+m*u,m>1},u)", //
+        "{Piecewise({{m^2/8,m>1}},-Infinity),{u->Piecewise({{m/4,m>1}},Indeterminate)}}");
+  }
+
+  @Test
+  public void testMinimizeRadicalQuadratic() {
+    check("Minimize(Sqrt((u-3)^2+(v+1)^2+(u+v-1)^2),{u,v})", //
+        "{1/Sqrt(3),{u->8/3,v->-4/3}}");
+    check("Minimize({EuclideanDistance({u,v,w},{2,0,1}),u+v+w==0},{u,v,w})", //
+        "{Sqrt(3),{u->1,v->-1,w->0}}");
+  }
+
+  @Test
+  public void testLinearProgrammingFreeVariables() {
+    check("LinearProgramming({1,1},{{1,0},{0,1}},{-3,-2},None)", //
+        "{-3,-2}");
+    check("LinearProgramming({2,1},{{1,-1}},{3},None)", //
+        "{Indeterminate,Indeterminate}");
+  }
+
+  @Test
+  public void testNMinimizeObjectiveWithoutNumber() {
+    check("NMinimize({k(u),0<u<2},u)", //
+        "NMinimize({k(u),0<u<2},u)");
+    check("NMaximize({m*u,0<u<2},u)", //
+        "NMaximize({m*u,0<u<2},u)");
+  }
+
+  @Test
+  public void testRefinePowerOfConstant() {
+    check("Refine((E^v)^(2/3),v<0)", //
+        "E^(2/3*v)");
+    check("Simplify(Sqrt(3^v),Element(v,Reals))", //
+        "3^(v/2)");
+    check("Refine(Sqrt(E^(I*v)),v>0)", //
+        "Sqrt(E^(I*v))");
+  }
+
+  @Test
+  public void testPureFunctionSplicesComputedSequence() {
+    check("Function({u,v,w},{w,v,u})[7,Sequence@@{8,9}]", //
+        "{9,8,7}");
+    check("Function({u,v},u-v)[Sequence@@{9,4}]", //
+        "5");
+    check("(#3&)[Sequence@@{4,5},6]", //
+        "6");
+    check("gs={1,2};(#1+#2&)[Sequence@@gs]", //
+        "3");
+  }
+
+  @Test
+  public void testDefinitionWithComputedPatternArgument() {
+    check("dfp1(Map(Pattern(#,Blank())&,{u1,v1}))=u1*v1;DownValues(dfp1)", //
+        "{HoldPattern(dfp1({u1_,v1_})):>u1*v1}");
+    check("dfp1({3,4})", //
+        "12");
+    check("dfp2(Map(Pattern(#,Blank())&,{{u2,v2},{w2,z2}},{2}))=u2+z2;dfp2({{1,2},{3,4}})", //
+        "5");
+  }
+
+  @Test
+  public void testSetDelayedThreadsOverWrittenLists() {
+    check("{dfp3(u_),dfp4(u_)}:={u^2,u^3};{dfp3(2),dfp4(2)}", //
+        "{4,8}");
+    check("{dfp5,dfp6}:={1+1,2+2}", //
+        "{Null,Null}");
+    check("{dfp5,dfp6}", //
+        "{2,4}");
+    check("{dfp7,dfp8}:={1,2,3}", //
+        "$Failed");
+    check("dfp9={1,2};Quiet({dfp10,dfp11}:=dfp9);{dfp10,dfp11}", //
+        "{dfp10,dfp11}");
+  }
+
+  @Test
+  public void testReplaceListOrderlessSequences() {
+    check("SetAttributes(rlo,Orderless);ReplaceList(rlo(p,q,r),rlo(u_,v_,w__):>{u,v})", //
+        "{{p,q},{p,r},{q,p},{q,r},{r,p},{r,q}}");
+    check("Length(ReplaceList(rlo(p,q,r,s,t),rlo(u_,v_,w__):>{u,v}))", //
+        "20");
+    check("ReplaceList(rlo(p,q,r),rlo(u__,v__):>{{u},{v}})", //
+        "{{{p},{q,r}},{{q},{p,r}},{{r},{p,q}},{{p,q},{r}},{{p,r},{q}},{{q,r},{p}}}");
+    check("Length(ReplaceList(rlo(p,q,r,s,t),rlo(u__,v__):>{{u},{v}}))", //
+        "30");
+    check("ReplaceList(rlo(p,q),rlo(u_,v__):>7)", //
+        "{7,7}");
+  }
+
+  @Test
+  public void testPatternTestOfPatternSequenceElements() {
+    check("MatchQ({2,4,x},{PatternSequence(_,_)?EvenQ,_})", //
+        "True");
+    check("MatchQ({2,3,x},{PatternSequence(_,_)?EvenQ,_})", //
+        "False");
+    check("{2,4,x}/.{PatternSequence(u_,v_)?EvenQ,w_}:>{u*v,w}", //
+        "{8,x}");
+  }
+
+  @Test
+  public void testUpSetWithConditionAndPatternTest() {
+    check("Dot(u_upc,v___upc)/;Length({v})===1^:=\"dotted\";"
+        + "a_*v_upc/;Head(a)=!=upc^:=\"scaled\";"
+        + "upt(_):=True;Sin(r_upc?upt)^:=\"sine\";"
+        + "{Dot(upc(1),upc(2)),5*upc(1),Sin(upc(1)),Length(UpValues(upc))}", //
+        "{dotted,scaled,sine,3}");
+    check("Dot(upc(1))", //
+        "upc(1)");
+  }
+
+  @Test
+  public void testFunctionArrowBodyWithAssignment() {
+    check("FullForm(Hold(p=u\\[Function]v=1))", //
+        "Hold(Set(p, Function(u, Set(v, 1))))");
+    check("FullForm(Hold(p=u\\[Function]v))", //
+        "Hold(Set(p, Function(u, v)))");
+    check("FullForm(Hold(p->u\\[Function]v))", //
+        "Hold(Function(Rule(p, u), v))");
+    check("FullForm(Hold(p\\[Function]u\\[Function]v:=2))", //
+        "Hold(Function(p, Function(u, SetDelayed(v, 2))))");
+  }
+
+  @Test
+  public void testAssignmentOperatorGrouping() {
+    check("Hold((p:=q)=r,(p=q):=r,(p:=q):=r,p=(q:=r))", //
+        "Hold((p:=q)=r,(p=q):=r,(p:=q):=r,p=q:=r)");
+    check("ToString(Hold((p:>q)->r),InputForm)", //
+        "Hold((p:>q)->r)");
+  }
+
+  @Test
+  public void testDivideIsATrueDivision() {
+    check("Divide(0.9,10)", //
+        "0.09");
+    check("Divide(3.0,10)", //
+        "0.3");
+    check("InputForm(3.7/10)", //
+        "0.37000000000000005`");
+    check("InputForm(Divide(3.7,10))", //
+        "0.37`");
+    check("Divide(3,10.0)", //
+        "0.3");
+    check("Divide({3.0,7.0},10)", //
+        "{0.3,0.7}");
+    check("ds=3.0;Divide(ds,10)", //
+        "0.3");
+    check("Divide(0.5,0)", //
+        "ComplexInfinity");
+    check("Attributes(Subtract)", //
+        "{Listable,NumericFunction,Protected}");
+    check("Attributes(Divide)", //
+        "{Listable,NumericFunction,Protected}");
+    check("Attributes(HeavisideTheta)", //
+        "{Listable,Orderless,Protected}");
+  }
+
+  @Test
+  public void testMachineHalfIntegerPower() {
+    check("InputForm({3.0^(-5/2),7.0^(-3/2),6.0^(5/2)})", //
+        "{0.06415002990995843`,0.05399492471560388`,88.18163074019441`}");
+    check("hp=3.0;InputForm(hp^(-5/2))", //
+        "0.06415002990995843`");
+    check("InputForm((-4.0)^(-3/2))", //
+        "0.0` + 0.125`*I");
+    check("InputForm((-4.0)^(3/2))", //
+        "0.0` - 8.0`*I");
+  }
+
+  @Test
+  public void testDefinitionForSameRealReplacesRule() {
+    check("dsr(0.1+0.2)=1;dsr(0.1+0.1+0.1+0.0)=2;Length(DownValues(dsr))", //
+        "1");
+    check("dsr(0.3)", //
+        "2");
+    check("dsr(0.1+0.2)", //
+        "2");
+    check("dsr(0.5)", //
+        "dsr(0.5)");
+    check("dsr2(0.3,1.5)=3;{dsr2(0.1+0.2,1.5),dsr2(0.1+0.2,1.25)}", //
+        "{3,dsr2(0.3,1.25)}");
+  }
+
+  @Test
+  public void testComplexKeepsMachineZeroImaginaryPart() {
+    check("Head(Complex(3,0.0))", //
+        "Complex");
+    check("Head(Complex(3.0,0))", //
+        "Real");
+    check("InputForm({Complex(3,0.0),Complex(3.0,0),2.5+0.0*I})", //
+        "{3.0` + 0.0`*I,3.0`,2.5` + 0.0`*I}");
+    check("Head(Complex(1/2,0.0))", //
+        "Complex");
+  }
+
+  @Test
+  public void testInputFormComplexCoefficients() {
+    check("ToString(a+(-3-5*I)*b,InputForm)", //
+        "a - (3 + 5*I)*b");
+    check("ToString(a+(-3+5*I)*b,InputForm)", //
+        "a - (3 - 5*I)*b");
+    check("ToString(a+(3-5*I)*b,InputForm)", //
+        "a + (3 - 5*I)*b");
+    check("ToString({3*(1+I)*c,(5*I)*c,I*c/3,(2+I+d)*(1-I+d)},InputForm)", //
+        "{(3 + 3*I)*c,(5*I)*c,(I/3)*c,((1 - I) + d)*((2 + I) + d)}");
+    check("ToString({(1+I)/2,3/2*I,1/3-2/3*I},InputForm)", //
+        "{1/2 + I/2,(3*I)/2,1/3 - (2*I)/3}");
+    check("ToString({1+I+c,2+(4+I)*c,3-(1+2*I)/Sqrt(7)},InputForm)", //
+        "{(1 + I) + c,2 + (4 + I)*c,3 - (1 + 2*I)/Sqrt(7)}");
+    check("ToString(3/2*c,InputForm)", //
+        "(3*c)/2");
+    check("ToString(a-3/2*c,InputForm)", //
+        "a - (3*c)/2");
+  }
+
+  @Test
+  public void testNumericRadicalsSharingAPrimeMerge() {
+    check("ToString({Sqrt(5/3)*5^(1/7),Sqrt(10)*2^(1/3),6^(1/5)*15^(1/3)},InputForm)", //
+        "{5^(9/14)/Sqrt(3),2^(5/6)*Sqrt(5),2^(1/5)*3^(8/15)*5^(1/3)}");
+    check("ToString({Sqrt(10)*7^(1/5),Sqrt(5/7)*3^(1/5),2*6^(1/5)},InputForm)", //
+        "{7^(1/5)*Sqrt(10),Sqrt(5/7)*3^(1/5),2*6^(1/5)}");
+  }
+
+  @Test
+  public void testToStringCharacterEncoding() {
+    check("ToString(\"\\[Beta]\",InputForm,CharacterEncoding->\"ASCII\")", //
+        "\"\\[Beta]\"");
+    check("ToCharacterCode(ToString(\"\\:00e4\",InputForm,CharacterEncoding->None))", //
+        "{34,92,91,65,68,111,117,98,108,101,68,111,116,93,34}");
+    check("ToCharacterCode(ToString(\"\\:00e4\",InputForm,CharacterEncoding->\"UTF8\"))", //
+        "{34,195,164,34}");
+    check("ToCharacterCode(ToString(\"\\:00e4\",InputForm,CharacterEncoding->\"Unicode\"))", //
+        "{34,228,34}");
+    check("ToString(\"abc\",InputForm,CharacterEncoding->\"ASCII\")", //
+        "\"abc\"");
+  }
+
+  @Test
+  public void testAnnulusDefaults() {
+    check("{Annulus(), RegionBounds(Annulus()), RegionMember(Annulus(), {3/4, 0})}", //
+        "{Annulus({0,0},{1/2,1}),{{-1,1},{-1,1}},True}");
+  }
+
+  @Test
+  public void testPositionLargestRealVector() {
+    // PositionSmallest: Input {u,v} is not a real-valued vector.
+    check("PositionSmallest({u, v})", //
+        "PositionSmallest({u,v})");
+    check("PositionLargest({3, 4}, 1, Greater)", //
+        "PositionLargest({3,4},1,Greater)");
+    check("{PalindromeQ(-353), PalindromeQ(353)}", //
+        "{False,True}");
+  }
+
+  @Test
+  public void testSolveDistinctStaysUnevaluatedWithoutItsOption() {
+    check("Solve(u^u+Sin(u)==3,u,Method->\"DistinctRoots\")", //
+        "Solve(u^u+Sin(u)==3,u)");
+    check("Solve(u^u+Sin(u)==3,u,Reals,Method->\"DistinctRoots\")", //
+        "Solve(u^u+Sin(u)==3,u,Reals)");
+  }
+
+  @Test
+  public void testSolveRootMultiplicityInSystems() {
+    check("Solve((u+3)^2==0,u,Reals)", //
+        "{{u->-3},{u->-3}}");
+    check("Solve((u+3)^2*(u^2+1)==0,u,Reals)", //
+        "{{u->-3},{u->-3}}");
+    check("Solve(u^3/(u+1)==0,u)", //
+        "{{u->0},{u->0},{u->0}}");
+    check("Solve({(u+3)^2==0,v==5},{u,v})", //
+        "{{u->-3,v->5},{u->-3,v->5}}");
+    check("Solve((u+3)^2==0&&u<0,u)", //
+        "{{u->-3},{u->-3}}");
+    check("Solve((u+3)^2==0&&u>0,u)", //
+        "{}");
+    // a variable without an equation: the solution stays single
+    check("Quiet(Solve((u+3)^2==0,{u,v}))", //
+        "{{u->-3}}");
+    // the internal callers keep the distinct roots
+    check("Solve((u+3)^2==0,u,Reals,Method->\"DistinctRoots\")", //
+        "{{u->-3}}");
+  }
+
+  @Test
+  public void testSolveInterpolatingFunctionBesideDomain() {
+    check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Round(t/.First(Solve(h(t)==20,t)),10^(-6)))", //
+        "-1");
+    check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Round(t/.First(NSolve(h(t)==20,t)),10^(-6)))", //
+        "-1");
+    check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Solve(h(t)==-20,t))", //
+        "{}");
+  }
+
+  @Test
+  public void testLinearProgrammingUnboundedMessage() {
+    check("LinearProgramming({1,-2},{{1,1}},{3},{{0,Infinity},{-Infinity,Infinity}})", //
+        "{Indeterminate,Indeterminate}");
+    check("LinearProgramming({-2,0},{{1,-1}},{4})", //
+        "{Indeterminate,Indeterminate}");
+  }
+
+  @Test
+  public void testIteratorEndOfExactStepCount() {
+    // the upper limit lies below the second value by less than a machine number can tell
+    check("Table(u, {u, Pi, Pi + 2 - 10^(-500), 2})", //
+        "{Pi}");
+  }
+
+  @Test
+  public void testReduceIntegersIdenticalInLastVariable() {
+    // the equation holds for all v at u == 0: too many points to list, so both factors are ranges
+    check("Reduce(u*v == 0 && -10^7 < u < 10^7 && -10^7 < v < 10^7, {u, v}, Integers)", //
+        "(C(1)∈Integers&&-9999999<=C(1)<=9999999&&u==0&&v==C(1))||(C(1)∈Integers&&-\n" + //
+        "9999999<=C(1)<=9999999&&u==C(1)&&v==0)");
+  }
+
+  @Test
+  public void testReplaceListOrderlessEmptySequences() {
+    check("SetAttributes(hOr, Orderless); ReplaceList(hOr(p, q), hOr(u___, v___) :> {{u}, {v}})", //
+        "{{{p},{q}},{{q},{p}},{{},{p,q}},{{p,q},{}}}");
+    check("Length(ReplaceList(hOr(p, q, r), hOr(u___, v___) :> {{u}, {v}}))", //
+        "8");
+  }
+
+  @Test
+  public void testPatternWithSameReal() {
+    check("hreal(0.7, y_) := y; {hreal(0.1 + 0.6, 2), hreal(0.71, 2)}", //
+        "{2,hreal(0.71,2)}");
+    check("MatchQ(0.1 + 0.6, 0.7)", //
+        "True");
+  }
+
+  @Test
+  public void testUniqueInvalidName() {
+    // Unique: 7 is not a symbol or a valid symbol name.
+    check("Unique(7)", //
+        "Unique(7)");
+    check("Unique({u, 7}, Listable)", //
+        "Unique({u,7},Listable)");
+  }
+
+  @Test
+  public void testNonPositiveReals() {
+    check("{Element(-2, NonPositiveReals), Element(0, NonPositiveReals), "
+        + "Element(3, NonPositiveReals), Element(I, NonPositiveReals), "
+        + "Element(-Pi, NonPositiveReals)}", //
+        "{True,True,False,False,True}");
+  }
+
+  @Test
+  public void testParameterIntoLanguageOptions() {
+    check("Options(MatrixExp)", //
+        "{Method->Automatic,Parameter->1}");
+    check("MatrixExp({{0, 3}, {0, 0}}, Parameter -> u)", //
+        "{{1,3*u},{0,1}}");
+    check("CoordinateBoundsArray({{0, 1}}, Into(2))", //
+        "{{0},{1/2},{1}}");
+    check("RemoveDiacritics(\"\u00d1and\u00fa\", Language -> \"Spanish\")", //
+        "\u00d1andu");
+  }
+
+  @Test
+  public void testReduceIntegersFactoredEquationBox() {
+    // a factor without a value in the box or without an integer root has no branch
+    check("Reduce(p*(q + 4) == 0 && 2 < p < 3*10^6 && -5*10^6 < q < 5*10^6, {p, q}, Integers)", //
+        "C(1)∈Integers&&3<=C(1)<=2999999&&p==C(1)&&q==-4");
+    check("Reduce((3*p - 1)*q == 0 && 0 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "C(1)∈Integers&&1<=C(1)<=999999&&p==C(1)&&q==0");
+    check("Reduce(p*(q - 7) == 0 && 3 < p < 10^6 && 7 < q < 10^6, {p, q}, Integers)", //
+        "False");
+    // a repeated factor is one branch, a factor with two roots two branches
+    check("Reduce(p^3*(q - 2)^2 == 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "(C(1)∈Integers&&-999999<=C(1)<=999999&&p==0&&q==C(1))||(C(1)∈Integers&&-999999<=C(\n" + //
+        "1)<=999999&&p==C(1)&&q==2)");
+    check("Reduce((p^2 - 9)*q == 0 && -10^6 < p < 10^6 && 0 <= q < 10^6, {p, q}, Integers)", //
+        "(C(1)∈Integers&&0<=C(1)<=999999&&p==3&&q==C(1))||(C(1)∈Integers&&0<=C(1)<=999999&&p==-\n" + //
+        "3&&q==C(1))||(C(1)∈Integers&&-999999<=C(1)<=999999&&p==C(1)&&q==0)");
+    // a range of one value is a point
+    check("Reduce(p*q == 0 && 4 < p < 6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "p==5&&q==0");
+    // a short range is listed, and the branches follow the canonical order of the factors
+    check("Reduce((p - 4)*q == 0 && 0 < p < 3 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "(p==1&&q==0)||(p==2&&q==0)");
+    check("Reduce(p*(p - 3)*q == 0 && 0 <= p <= 3 && 0 <= q < 10^6, {p, q}, Integers)", //
+        "(C(1)∈Integers&&0<=C(1)<=999999&&p==3&&q==C(1))||(C(1)∈Integers&&0<=C(1)<=999999&&p==\n" + //
+        "0&&q==C(1))||(p==0&&q==0)||(p==1&&q==0)||(p==2&&q==0)||(p==3&&q==0)");
+    // ten values are listed, eleven are a range
+    check("Reduce((p - 20)*q == 0 && 0 < p <= 10 && 0 <= q < 10^6, {p, q}, Integers)", //
+        "(p==1&&q==0)||(p==2&&q==0)||(p==3&&q==0)||(p==4&&q==0)||(p==5&&q==0)||(p==6&&q==\n" + //
+        "0)||(p==7&&q==0)||(p==8&&q==0)||(p==9&&q==0)||(p==10&&q==0)");
+    check("Reduce((p - 20)*q == 0 && 0 <= p <= 10 && 0 <= q < 10^6, {p, q}, Integers)", //
+        "C(1)∈Integers&&0<=C(1)<=10&&p==C(1)&&q==0");
+    // a variable with a value needs no membership
+    check("Reduce(p == 3 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "q∈Integers&&p==3&&q>=-999999&&q<=999999");
+    // the other relations bound the parameter or fix it
+    check("Reduce(p*q == p && p + q >= 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "(C(1)∈Integers&&0<=C(1)<=999999&&p==0&&q==C(1))||(C(1)∈Integers&&-1<=C(1)<=\n" + //
+        "999999&&p==C(1)&&q==1)");
+    check("Reduce(p*q == 0 && p - q == 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "p==0&&q==0");
+    check("Reduce(p*q == 0 && (p - 2)*(q - 3) == 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "(p==0&&q==3)||(p==2&&q==0)");
+    // three variables with one degree of freedom
+    check("Reduce(p*q == 0 && r == p + 1 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q, r}, Integers)", //
+        "(C(1)∈Integers&&-999999<=C(1)<=999999&&p==0&&q==C(1)&&r==1)||(C(1)∈Integers&&-\n" + //
+        "999999<=C(1)<=999999&&p==C(1)&&q==0&&r==1+C(1))");
+    // the exponent is no obstacle for a product
+    check("Reduce(p^200*q == 0 && 0 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "C(1)∈Integers&&1<=C(1)<=999999&&p==C(1)&&q==0");
+  }
+
+  @Test
+  public void testReduceIntegersFactoredEquationBoxDeclines() {
+    // no partial answers: these stay unevaluated
+    // two free variables
+    check("Reduce(p*q*r == 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6 && -10^6 < r < 10^6, {p, q, r}, Integers)", //
+        "Reduce(p*q*r==0&&-1000000<p<1000000&&-1000000<q<1000000&&-1000000<r<1000000,{p,q,r},Integers)");
+    // a factor in two variables or without a linear form
+    check("Reduce((p + q)*(p - q) == 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "Reduce((p-q)*(p+q)==0&&-1000000<p<1000000&&-1000000<q<1000000,{p,q},Integers)");
+    check("Reduce((p^2 + 1)*q == 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "Reduce((1+p^2)*q==0&&-1000000<p<1000000&&-1000000<q<1000000,{p,q},Integers)");
+    // a parameter without a bound
+    check("Reduce(p*q == 0 && -10^6 < p < 10^6, {p, q}, Integers)", //
+        "Reduce(p*q==0&&-1000000<p<1000000,{p,q},Integers)");
+    // a hole in the range
+    check("Reduce(p*q == 0 && q != 5 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "Reduce(p*q==0&&q!=5&&-1000000<p<1000000&&-1000000<q<1000000,{p,q},Integers)");
+    // a sum of large exponents isn't factored
+    check("Reduce(p^40*q - p*q^40 + p + 1 == 0 && -10^6 < p < 10^6 && -10^6 < q < 10^6, {p, q}, Integers)", //
+        "Reduce(p+p^40*q-p*q^40==-1&&-1000000<p<1000000&&-1000000<q<1000000,{p,q},Integers)");
+  }
+
+  @Test
+  public void testReduceIntegersInequalityOperatorsAreNoParameters() {
+    check("Variables(Inequality(1, Less, w, LessEqual, 9))", //
+        "{}");
+    check("Reduce(2 <= n < 6, {n}, Integers)", //
+        "n==2||n==3||n==4||n==5");
+    check("Reduce(2 < n <= 6, n, Primes)", //
+        "n==3||n==5");
+    check("Reduce(n == 1 && 2 <= m < 4, {n, m}, Integers)", //
+        "(n==1&&m==2)||(n==1&&m==3)");
+    check("Reduce(p*q == 0 && -10^6 <= p < 10^6 && -10^6 < q <= 10^6, {p, q}, Integers)", //
+        "(C(1)∈Integers&&-999999<=C(1)<=1000000&&p==0&&q==C(1))||(C(1)∈Integers&&-1000000<=C(\n" + //
+        "1)<=999999&&p==C(1)&&q==0)");
+  }
+
+  @Test
+  public void testExponentExponentialTerms() {
+    check("{Exponent(5^x*x^3+x,x),Exponent(E^(3*x)*x^2,x)}", //
+        "{3,2}");
+    check("Exponent(7^x+x^3,x)", //
+        "Exponent(7^x+x^3,x)");
+    check("Exponent(2^(x+1),x)", //
+        "Exponent(2^(1+x),x)");
+  }
+
+  @Test
+  public void testNRootsOrOfEquations() {
+    check("NRoots((w+2)^2*(w^2+4)==0,w)", //
+        "w==-2.0||w==-2.0||w==I*(-2.0)||w==I*2.0");
+    check("NRoots(w^3-3*w+2,w)", //
+        "w==-2.0||w==1.0||w==1.0");
+    check("List @@ Part(NRoots(w^3-3*w+2,w),All,2)", //
+        "{-2.0,1.0,1.0}");
+    // without a variable the list of the values
+    check("NRoots(w^2-4)", //
+        "{-2.0,2.0}");
+  }
+
+  @Test
+  public void testRootsOptions() {
+    check("Roots(w^4-5*w^2+3==0,w,Quartics->False)==Roots(w^4-5*w^2+3==0,w)", //
+        "True");
+    check("Roots(w^4+w+3==0,w,Quartics->False)", //
+        "w==Root(3+#1+#1^4&,1,0)||w==Root(3+#1+#1^4&,2,0)||w==Root(3+#1+#1^4&,3,0)||w==Root(\n"
+            + "3+#1+#1^4&,4,0)");
+    check("Roots((w-c)^2*(w-d)==0,w,Multiplicity->3)", //
+        "w==c||w==c||w==c||w==c||w==c||w==c||w==d||w==d||w==d");
+    check("Roots((w-c)^2*(w-d)==0,w)", //
+        "w==c||w==c||w==d");
+    check("Roots((w-3)^2==0,w,Multiplicity->2)", //
+        "w==3||w==3||w==3||w==3");
+    check("Roots(w^2+w==0,w,Modulus->6)", //
+        "w==0||w==2||w==3||w==5");
+    // an unknown option is ignored
+    check("Roots(w^2==4,w,Bar->1)", //
+        "w==-2||w==2");
+  }
+
+  @Test
+  public void testRootSpecificationMessages() {
+    check("Root(y_)", //
+        "Root(y_)");
+    check("Root(y)", //
+        "Root(y)");
+    check("Root({Sin(#)-#+1&,3.0})", //
+        "Root({Sin(#1)-#1+1&,3.0})");
+  }
+
+  @Test
+  public void testDualLinearProgramming() {
+    check("DualLinearProgramming({2,3},{{1,1},{2,1}},{2,3})", //
+        "{{2,0},{2,0},{0,1},{0,0}}");
+    check("DualLinearProgramming({1,3},{{1,1},{1,-2}},{{3,0},{1,-1}})", //
+        "{{7/3,2/3},{5/3,-2/3},{0,0},{0,0}}");
+    check("DualLinearProgramming({-2,-1},{{1,1}},{{3,-1}},{{0,2},{0,2}})", //
+        "{{2,1},{-1},{0,0},{1,0}}");
+    check("DualLinearProgramming({2,3},SparseArray({{1,1}}),{1},{{1/3,1},{0,Infinity}})", //
+        "{{1,0},{2},{0,1},{0,0}}");
+    check("DualLinearProgramming({2,3},{{1,1},{2,1}},{2,3},Method->\"InteriorPoint\")", //
+        "{{2.0,0.0},{2.0,0.0},{0.0,1.0},{0.0,0.0}}");
+  }
+
+  @Test
+  public void testSolveSymbolicCubic() {
+    check("Solve(y^3+6*y^2+12*y+t==0,y)", //
+        "{{y->-2+(8-t)^(1/3)},{y->-2+1/2*(-1+I*Sqrt(3))*(8-t)^(1/3)},{y->-2+1/2*(-1-I*Sqrt(\n"
+            + "3))*(8-t)^(1/3)}}");
+    check("Solve(y^3+r*y+s==0,y)[[1,1,2]]", //
+        "(-(2/3)^(1/3)*r)/(-9*s+Sqrt(3)*Sqrt(4*r^3+27*s^2))^(1/3)+(-9*s+Sqrt(3)*Sqrt(4*r^\n"
+            + "3+27*s^2))^(1/3)/(2^(1/3)*3^(2/3))");
+    check("polys={m*y^3+n*y^2+o*y+p,y^3-y^2+o,2*y^3+o*y^2+1,y^3+m*y^2+n,m*y^3+y+1,"
+        + "y^3+(m+2)*y+1};" //
+        + "vals={m->1.7,n->-0.9,o->2.3,p->0.6};" //
+        + "Union(Table(Max(Abs((poly/.vals)/.(Solve(poly==0,y)/.vals)))<10^-9,{poly,polys}))", //
+        "{True}");
+    // a factor keeps the path of the factorization
+    check("Solve(y^3-(3+k)*y^2+3*k*y==0,y)", //
+        "{{y->0},{y->3},{y->k}}");
+  }
+
+  @Test
+  public void testSolveExponentialPolynomialReals() {
+    check("Solve(2^x+5^x==7,x,Reals)", //
+        "{{x->1}}");
+    check("Solve(2^x+5^x==12,x,Reals)", //
+        "{{x->Root({-12+2^#1+5^#1&,1.390763747974537})}}");
+    check("Solve(3^x+7^x==10*x,x,Reals)", //
+        "{{x->1},{x->Root({3^#1+7^#1-10*#1&,0.3380095084620843})}}");
+    check("Solve(E^x+3^x==-1,x,Reals)", //
+        "{}");
+    check("N(x/.Solve(2^x+5^x==12,x,Reals))", //
+        "{1.390763747974537}");
+    check("Solve(2^x+Sin(x)==3,x,Reals)", //
+        "Solve(2^x+Sin(x)==3,x,Reals)");
+    check("Solve(x*E^x==-1/5,x,Reals)", //
+        "{{x->ProductLog(-1/5)},{x->ProductLog(-1,-1/5)}}");
+    check("Solve(x*E^x==-2,x,Reals)", //
+        "{}");
+  }
+
+  @Test
+  public void testPiecewiseFold() {
+    check("PiecewiseExpand(y*Piecewise({{1,y>1}},0)+Piecewise({{3,y<1}},0))", //
+        "Piecewise({{3,y<1},{y,y>1}},0)");
+    check("PiecewiseExpand(Piecewise({{2,y<0}},1)+Piecewise({{4,y>3}},6))", //
+        "Piecewise({{5,y>3},{8,y<0}},7)");
+    check("PiecewiseExpand(Piecewise({{y,1<y<=2}},0)^3)", //
+        "Piecewise({{y^3,1<y<=2}},0)");
+    check("PiecewiseExpand(Piecewise({{2,y==2}},0)+Piecewise({{1,y>=2}},0))", //
+        "Piecewise({{1,y>2},{3,y==2}},0)");
+    check("Simplify(-(-2+v)*Piecewise({{1,0<=v<2}},0))", //
+        "Piecewise({{2-v,0<=v<2}},0)");
+    check("Simplify(v^2*Piecewise({{1,0<=v<1}},0)+2*v*Piecewise({{1,1<=v<3}},0)"
+        + "+v*Piecewise({{1,1<=v<3}},0))", //
+        "Piecewise({{3*v,1<=v<3},{v^2,0<=v<1}},0)");
+    // a condition in two variables isn't folded
+    check("PiecewiseExpand(k*Piecewise({{1,y>w}},0)+1)", //
+        "Piecewise({{1+k,y>w}},1)");
+  }
+
+  @Test
+  public void testTrigOptionOfAlgebraicFunctions() {
+    check("Factor(Cos(a)+Cos(b),Trig->True)", //
+        "2*Cos(a/2-b/2)*Cos(a/2+b/2)");
+    check("FactorList(Sin(a)-Sin(b),Trig->True)", //
+        "{{2,1},{Cos(a/2+b/2),1},{Sin(a/2-b/2),1}}");
+    check("FactorSquareFree(1+Cos(2*a),Trig->True)", //
+        "2*Cos(a)^2");
+    check("FactorSquareFreeList(1+Cos(2*a),Trig->True)", //
+        "{{2,1},{Cos(a),2}}");
+    check("Cancel(Sin(2*a)/Cos(a),Trig->True)", //
+        "2*Sin(a)");
+    check("Together(1/Cos(a)+Tan(a),Trig->True)", //
+        "Sec(a)*(1+Sin(a))");
+    check("Together(Sech(a)+Tanh(a),Trig->True)", //
+        "Sech(a)*(1+Sinh(a))");
+    check("Factor(a^2-4,Trig->False)", //
+        "(-2+a)*(2+a)");
+  }
+
+  @Test
+  public void testLeastSquaresTolerance() {
+    check("LeastSquares({{1,1},{1,2},{1,3}},{1,2,2},Tolerance->0)", //
+        "{2/3,1/2}");
+  }
+
+  @Test
+  public void testNOfPureFunctionBody() {
+    check("{N(g(3, #1, 1/4) &), N(#1 + Pi &), N(Function(u, 3*u)), N(#1[[2]]/8 &)}", //
+        "{g(3.0,#1,0.25)&,#1+3.14159&,Function(u,3.0*u),0.125*#1[[2]]&}");
+    check("N(Function({u, v}, h(5, u, v), Listable))", //
+        "Function({u,v},h(5.0,u,v),Listable)");
+    check("N(h(1/3, #1) &, 20)", //
+        "h(0.33333333333333333333,#1)&");
+  }
+
+  @Test
+  public void testNDSolveWhenEventListAndBackward() {
+    // a list of conditions fires on any of them
+    check("ClearAll(y);f=NDSolveValue({y(0)==0,y'(0)==0,y''(t)==-2,"
+        + "WhenEvent({y(t)==-1,y(t)==1},y'(t)->-y'(t))},y,{t,0,2.9});Round(1000*f(2.5))", //
+        "-250");
+    // the periodic event Mod(t, p) == c, on both legs and the way back first
+    check("ClearAll(y);Round(Reap(NDSolve({y'(t)==2,y(0)==0,"
+        + "WhenEvent(Mod(t,1/2)==0,Sow(t))},y,{t,-1.2,1.2}))[[2,1]],0.001)", //
+        "{-0.5,-1.0,0.5,1.0}");
+    check("ClearAll(y);Round(Reap(NDSolve({y'(t)==1,y(0)==0,"
+        + "WhenEvent(Mod(t,2)==1,Sow(y(t)))},y,{t,0,6}))[[2,1]],0.001)", //
+        "{1.0,3.0,5.0}");
+  }
+
+  @Test
+  public void testFindExtremumTwoStartValues() {
+    // the search from the first start value goes to the wrong side
+    check("Round(1000*(u/.Last(FindMaximum(Abs(Sin(u)*Exp(-u/4)),{u,0,3}))))", //
+        "1326");
+    check("FindMinimum(Abs(u-0.7),{u,0,1})", //
+        "{0.0,{u->0.7}}");
+  }
+
+  @Test
+  public void testFindRootComplexStart() {
+    // no real value of the function at the start, which is a real root in the end
+    check("Round(10^6*Re(u/.FindRoot(Sqrt(3.0-u^2)==1.0,{u,2.5})))", //
+        "1414214");
+  }
+
+  @Test
+  public void testSolveDerivativeValues() {
+    check("Solve(4+2*Derivative(1)[w][1]==0&&Derivative(1)[w][1]+Derivative(2)[w][1]==5)", //
+        "{{w'(1)->-2,w''(1)->7}}");
+    check("Solve({Derivative(1)[w][1]+Derivative(2)[w][1]+Derivative(3)[w][1]==6,"
+        + "Derivative(1)[w][1]-Derivative(2)[w][1]==1,Derivative(2)[w][1]-Derivative(3)[w][1]==1})", //
+        "{{w'(1)->3,w''(1)->2,Derivative(3)[w][1]->1}}");
+    check("NSolve(4.+2.*Derivative(1)[w][1]==0&&Derivative(1)[w][1]+Derivative(2)[w][1]==5.)", //
+        "{{w'(1)->-2.0,w''(1)->7.0}}");
+    check("Solve(Derivative(1)[w][1]^2==9,Derivative(1)[w][1])", //
+        "{{w'(1)->-3},{w'(1)->3}}");
+  }
+
+  @Test
+  public void testInverseLaplaceTransformShiftedForms() {
+    check("InverseLaplaceTransform(Exp(-3*s)/(s*(5*s+1)), s, t)", //
+        "(1-E^(3/5-t/5))*HeavisideTheta(-3+t)");
+    check("InverseLaplaceTransform(Exp(-a*s)/(s+b), s, t)", //
+        "E^(a*b-b*t)*HeavisideTheta(-a+t)");
+    check("InverseLaplaceTransform(Exp(-0.5*s)/(s*(4.0*s+1)), s, t)", //
+        "(1-1.13315/E^(0.25*t))*HeavisideTheta(-0.5+t)");
+  }
+
+  @Test
+  public void testSumProductIndexDependentValues() {
+    check("ClearAll(w,j,m);w=j^3;{Sum(w,{j,1,2}),Product(w,{j,1,2}),Sum(w,{j,1,m})}", //
+        "{9,8,1/4*m^2*(1+m)^2}");
+    check("w:=2*j;Sum(w+1,{j,1,m})", //
+        "m+m*(1+m)");
+    check("w=7;Sum(w,{j,1,m})", //
+        "7*m");
+    check("ClearAll(w);Sum(j^4,{j,1,m})", //
+        "1/30*m*(1+m)*(1+2*m)*(-1+3*m+3*m^2)");
+  }
+
+  @Test
+  public void testSparseArrayBandsOfAnyRank() {
+    check("Normal(SparseArray(Band({1, 1}, {4, 4}) -> {{1, 2}, {7, 8}}))", //
+        "{{1,2,1,2},{7,8,7,8},{1,2,1,2},{7,8,7,8}}");
+    check("Normal(SparseArray(Band({1, 1}, {5, 5}) -> {{{9}}, {{4, 5}}}, {5, 5}))", //
+        "{{9,0,0,0,0},{0,4,5,0,0},{0,0,0,9,0},{0,0,0,0,4},{0,0,0,0,0}}");
+    check("Normal(SparseArray({Band({1, 1, 1}) -> {{2, 3}, {4, 5}}}))", //
+        "{{{2,0,0},{0,3,0}},{{0,4,0},{0,0,5}}}");
+    check("Normal(SparseArray({Band({1, 1, 1, 1}) -> {{{2, 3}}}, Band({2, 2, 1, 1}) -> {{{4, 5}}}}))", //
+        "{{{{2,0},{0,3}},{{0,0},{0,0}}},{{{0,0},{0,0}},{{4,0},{0,5}}}}");
+    check("Normal(SparseArray({2} -> {8}))", //
+        "{0,8}");
+    check("Normal(SparseArray({2, 3} -> {8, 9}, 3))", //
+        "{0,8,9}");
+    check("Normal(SparseArray({2, 3} -> 7))", //
+        "{{0,0,0},{0,0,7}}");
+  }
+
+  @Test
+  public void testSparseArrayLevelOneParts() {
+    check("s = SparseArray({{5, 0}, {0, 6}}); Head /@ {First(s), MapIndexed(g, s)[[2, 1]]}", //
+        "{SparseArray,SparseArray}");
+    check("Map(g, SparseArray({{5, 0}, {0, 6}}), {2})", //
+        "{{g(5),g(0)},{g(0),g(6)}}");
+    check("Select(SparseArray({0, 4, 0, 9}), #1 > 5 &)", //
+        "{9}");
+    check("MapIndexed(g, SparseArray({0, 4}))", //
+        "{g(0,{1}),g(4,{2})}");
+    check("InputForm(N(SparseArray({{1, 1} -> 3}, {1, 1}), 30))", //
+        "SparseArray(Automatic,{1,1},0,{1,{{0,1},{{1}}},{3`30}})");
+  }
+
+  @Test
+  public void testEigenCallForms() {
+    check("{Eigenvalues({{5, 0}, {0, 7}}, {2}), Eigenvalues({{5, 0}, {0, 7}}, {2, 1, -1}), "
+        + "Eigenvectors({{5, 0}, {0, 7}}, {-1}), Eigensystem({{5, 0}, {0, 7}}, -1), "
+        + "Eigenvalues({{5, 0}, {0, 7}}, 1.0), Eigenvalues({{5, 0}, {0, 7}}, {3, 2})}", //
+        "{{5},{5,7},{{1,0}},{{5},{{1,0}}},{7},{}}");
+    check("Check(Eigenvalues({{5, 0}, {0, 7}}, {1, 4}), \"cannot take\")", //
+        "cannot take");
+    check("Check(Eigenvalues({{5, 0}, {0, 7}}, y), \"no sequence\")", //
+        "no sequence");
+    check("{Eigenvalues({{{5, 0}, {0, 7}}}), Eigenvectors({{{5, 0}, {0, 7}}}), "
+        + "Eigensystem({{{5, 0}, {0, 7}}}, 1)}", //
+        "{{7,5},{{0,1},{1,0}},{{7},{{0,1}}}}");
+    check("{Eigenvalues({{5, 0}, {0, 7}}, Method -> \"Arnoldi\"), "
+        + "Eigensystem({{5, 0}, {0, 7}}, 1, Method -> \"Arnoldi\")}", //
+        "{{7,5},{{7},{{0,1}}}}");
+    check("Eigensystem({{{5, 0}, {0, 8}}, {{1, 0}, {0, 2}}})", //
+        "{{5,4},{{1,0},{0,1}}}");
+    check("Eigenvectors({{{5, 0}, {0, 8}}, {{1, 0}, {0, 2}}}, 1)", //
+        "{{1,0}}");
+    check("First(Eigensystem({{{2., 0}, {0, 3.}}, {{1., 0}, {0, 0}}}))", //
+        "{Infinity,2.0}");
+    check("Check(Eigenvectors({{1, {2}}, {0, 0}}), \"nomatrix\")", //
+        "nomatrix");
+    check("Check(Eigensystem({{1, {2}}, {0, 0}}, y), \"nomatrix\")", //
+        "nomatrix");
+  }
+
+  @Test
+  public void testEigenvectorsOfRealMatrixWithComplexEigenvalues() {
+    check("Chop(Eigenvectors({{0.0, -2.0}, {2.0, 0.0}}) - "
+        + "{{0.7071067811865475, -0.7071067811865475*I}, "
+        + "{0.7071067811865475, 0.7071067811865475*I}})", //
+        "{{0,0},{0,0}}");
+    // the numbers of 17 digits make the evaluation an arbitrary precision one
+    check("Round(Eigenvectors({{0.0, -2.0}, {2.0, 0.0}}), 10.0^-9) == "
+        + "Round({{0.70710678118654752, -0.70710678118654752*I}, "
+        + "{0.70710678118654752, 0.70710678118654752*I}}, 10.0^-9)", //
+        "True");
+  }
+
+  @Test
+  public void testArrayPadSchemesAtAnyRank() {
+    check("ArrayPad({4, 5, 6}, 2, \"Fixed\")", //
+        "{4,4,4,5,6,6,6}");
+    check("ArrayPad({4, 5, 6}, 2, \"Reversed\")", //
+        "{5,4,4,5,6,6,5}");
+    check("ArrayPad({4, 5, 6}, 2, \"Reflected\")", //
+        "{6,5,4,5,6,5,4}");
+    check("ArrayPad({4, 5, 6}, {1, 2}, \"Periodic\")", //
+        "{6,4,5,6,4,5}");
+    check("ArrayPad({{5, 6}, {7, 8}}, 1, \"Reversed\")", //
+        "{{5,5,6,6},{5,5,6,6},{7,7,8,8},{7,7,8,8}}");
+    check("ArrayPad({{5, 6}, {7, 8}}, {{0, 1}, {2, 0}}, \"Periodic\")", //
+        "{{5,6,5,6},{7,8,7,8},{5,6,5,6}}");
+    check("ArrayPad({{5, 6}, {7, 8}}, {{1, 0}, {0, 1}}, u)", //
+        "{{u,u,u},{5,6,u},{7,8,u}}");
+    check("ArrayPad({{{7}}}, 1, \"Fixed\")", //
+        "{{{7,7,7},{7,7,7},{7,7,7}},{{7,7,7},{7,7,7},{7,7,7}},{{7,7,7},{7,7,7},{7,7,7}}}");
+    check("ArrayPad({{{7}}}, {{1, 0}, {0, 0}, {0, 1}}, 0)", //
+        "{{{0,0}},{{7,0}}}");
+  }
+
+  @Test
+  public void testLeafCountHeads() {
+    check("{LeafCount(p(q)[r], Heads -> True), LeafCount(p(q)[r], Heads -> False), "
+        + "LeafCount(p(q)[r])}", //
+        "{3,1,3}");
+    check("LeafCount({u, v(w)}, Heads -> False)", //
+        "2");
+  }
+
+  @Test
+  public void testInactivateHeads() {
+    check("Inactivate(p(q)[r], Heads -> True)", //
+        "Inactive(p)[q][r]");
+    check("Inactivate(p(q)[r], Heads -> False)", //
+        "p(q)[r]");
+    check("Inactivate(p(q)[r])", //
+        "Inactive(p)[q][r]");
+  }
+
+  @Test
+  public void testMatrixQNormalized() {
+    check("OrthogonalMatrixQ({{u, v}, {-v, u}}, Normalized -> False)", //
+        "True");
+    check("{OrthogonalMatrixQ({{1, 2}, {1, -1/2}}, Normalized -> False), "
+        + "OrthogonalMatrixQ({{1, 1}, {2, -1/2}}, Normalized -> False), "
+        + "OrthogonalMatrixQ({{1, 2}, {1, -1/2}})}", //
+        "{False,True,False}");
+    check("{UnitaryMatrixQ({{1, I}, {I, 1}}, Normalized -> False), "
+        + "UnitaryMatrixQ({{1, 1}, {1, 2}}, Normalized -> False)}", //
+        "{True,False}");
+  }
+
+  @Test
+  public void testSingularValueListAllValues() {
+    check("Length(SingularValueList(N(HilbertMatrix(14)), Tolerance -> 0))", //
+        "14");
+    check("Length(SingularValueList(N(HilbertMatrix(8)), Tolerance -> 0.01))", //
+        "3");
+    check("Length(SingularValueList(HilbertMatrix(12)))", //
+        "12");
+    check("FreeQ(SingularValueList(HilbertMatrix(12)), _Complex)", //
+        "True");
+  }
+
+  @Test
+  public void testSubsetPosition() {
+    check("SubsetPosition({u, 7, v, 8}, {_Integer, _Symbol})", //
+        "{{2,1},{4,1},{2,3},{4,3}}");
+    check("SubsetPosition({u, 7, v, 8}, {_Symbol, _Integer}, Overlaps -> False)", //
+        "{{1,2},{3,4}}");
+    check("SubsetPosition({u, v, w}, {_, _}, 2)", //
+        "{{1,2},{1,3}}");
+    check("SubsetPosition({u, v, u}, {z_, z_})", //
+        "{{1,3}}");
+    check("SubsetPosition({u}, {_, _})", //
+        "{}");
+  }
+
+  @Test
+  public void testFindRepeatOneLevel() {
+    check("FindRepeat({3, 4, 3, 4, 3}, {2})", //
+        "{3,4}");
+    check("FindRepeat({{1, 5}, {2, 4}, {3, 3}}, {1}, SameTest -> (Total(#1) == Total(#2) &))", //
+        "{{1,5}}");
+  }
+
+  @Test
+  public void testRamanujanTau() {
+    check("Table(RamanujanTau(n), {n, 11, 16})", //
+        "{534612,-370944,-577738,401856,1217160,987136}");
+    check("{RamanujanTau(0), RamanujanTau(1), RamanujanTau(121)}", //
+        "{0,1,498319933}");
+    check("RamanujanTau(77) == RamanujanTau(7)*RamanujanTau(11)", //
+        "True");
+    check("RamanujanTau(1/2)", //
+        "RamanujanTau(1/2)");
+  }
+
+  @Test
+  public void testLinearRecurrenceBeforeTheInitialValues() {
+    check("LinearRecurrence({2, 1}, {1, 3}, {-3, 3})", //
+        "{-7,3,-1,1,1,3,7}");
+    check("LinearRecurrence({3, 2}, {1, 1}, {-1})", //
+        "{2}");
+    check("LinearRecurrence({1, u}, {1, 1}, {0, 2})", //
+        "{0,1,1}");
+    check("LinearRecurrence({1, 0}, {1, 1}, {0})", //
+        "LinearRecurrence({1,0},{1,1},{0})");
+  }
+
+  @Test
+  public void testDeleteMissingLevels() {
+    check("DeleteMissing({1, {Missing(), {2, Missing()}}}, 2)", //
+        "{1,{{2,Missing()}}}");
+    check("DeleteMissing({1, {Missing(), {2, Missing()}}}, Infinity)", //
+        "{1,{{2}}}");
+    check("DeleteMissing({1, {Missing(), {2, Missing()}}}, {2})", //
+        "{1,{{2,Missing()}}}");
+    check("DeleteMissing({{1, Missing()}, {2, {Missing()}}, {3}}, 1, 1)", //
+        "{{2,{Missing()}},{3}}");
+    check("DeleteMissing({{1, Missing()}, {2, {Missing()}}, {3}}, 1, 2)", //
+        "{{3}}");
+  }
+
+  @Test
+  public void testBSplineFunctionSplineKnots() {
+    check("BSplineFunction({{0, 0}, {2, 4}, {4, 0}}, SplineKnots -> {0, 0, 0, 2, 2, 2})[1.0]", //
+        "{2.0,2.0}");
+    check("BSplineFunction({0, 8, 0, 8}, SplineKnots -> {0, 0, 1, 2, 3, 3})[3.0]", //
+        "8.0");
+    check("BSplineFunction({0, 8, 0}, SplineKnots -> {0, 0, 0, 1, 1, 1})[1.5]", //
+        "BSplineFunction({0,8,0},SplineKnots->{0,0,0,1,1,1})[1.5]");
+    check("BSplineFunction({0, 8, 0}, SplineKnots -> {0, 1, 0, 1, 1, 1})[0.5]", //
+        "BSplineFunction({0,8,0},SplineKnots->{0,1,0,1,1,1})[0.5]");
+  }
+
+  @Test
+  public void testParallelizeAndParallelSelect() {
+    check("Parallelize(Table(p(n), {n, 2}), Method -> \"FinestGrained\")", //
+        "{p(1),p(2)}");
+    check("Parallelize(Map(p, {3, 4}))", //
+        "{p(3),p(4)}");
+    check("Parallelize(Select({1, 2, 3, 4}, EvenQ))", //
+        "{2,4}");
+    check("Parallelize(2 + 3)", //
+        "5");
+    check("ParallelSelect({4, 5, 6, 8}, EvenQ, DistributedContexts -> None)", //
+        "{4,6,8}");
+    check("ParallelSelect({4, 5, 6, 8}, EvenQ, 2, ProgressReporting -> False)", //
+        "{4,6}");
+  }
+
+  @Test
+  public void testColorDataNamedTables() {
+    check("ColorData(\"Named\")", //
+        "{Atoms,Crayola,GeologicAges,HTML,Legacy,WebSafe}");
+    check("ColorData(\"Physical\")", //
+        "{BlackBodySpectrum,HypsometricTints,VisibleSpectrum}");
+    check("Length /@ (ColorData(#, \"ColorRules\") & /@ {\"Crayola\", \"WebSafe\", \"GeologicAges\"})", //
+        "{134,216,70}");
+    check("ColorData(\"Crayola\", \"apricot\")", //
+        "RGBColor(0.992157,0.85098,0.709804)");
+    check("ColorData(\"GeologicAges\", \"Holocene\")", //
+        "RGBColor(1.0,1.0,0.701961)");
+    check("ColorData(\"Crayola\", \"NoColor\")", //
+        "ColorData(Crayola,NoColor)");
+    check("First(ColorData(\"WebSafe\", \"ColorRules\"))", //
+        "#FFFFFF->RGBColor(1.0,1.0,1.0)");
+    check("Last(ColorData(\"WebSafe\", \"ColorRules\"))", //
+        "#000000->RGBColor(0.0,0.0,0.0)");
+  }
+
+  @Test
+  public void testCuboidImpliedCorner() {
+    check("Cuboid()", //
+        "Cuboid({0,0,0})");
+    check("Cuboid({2,3,4})", //
+        "Cuboid({2,3,4})");
+    check("s = Show(Graphics3D(Sphere()), Graphics3D(Cuboid()), Boxed -> False); "
+        + "{Head(Insert(s, Blue, {1, 1})), Insert(s, Blue, {1, 1})[[1]], Delete(s, {1, 2})[[1]]}", //
+        "{Graphics3D,{RGBColor(0,0,1),Sphere({0,0,0}),Cuboid({0,0,0})},{Sphere({0,0,0})}}");
+    check("{Volume(Cuboid({2,3,4})), RegionCentroid(Cuboid({2,3,4})), "
+        + "RegionMember(Cuboid({2,3,4}), {2.5,3.5,4.5})}", //
+        "{1,{5/2,7/2,9/2},True}");
+    check("Length(First(ConvexHullRegion(Cuboid({2,3,4}))))", //
+        "8");
+  }
+
+  @Test
+  public void testScopeLocalsAvoidArgumentSymbols() {
+    // the head of an argument is a symbol of it as well
+    check("ff1(u_) := Module({p}, p = u; p); ff1(p(2))", //
+        "p(2)");
+    check("ff2(u_) := With({p = 3}, {u, p}); ff2(p(1))", //
+        "{p(1),3}");
+    // the pattern of an inner definition isn't the symbol of the argument
+    check("hh1(v_) := (kk1(t_) := t + v); hh1(t); kk1(5)", //
+        "5+t");
+    check("hh2(v_) := (kk2(s_, t_) := {s, t, v}); hh2(s - t); kk2(1, 2)", //
+        "{1,2,s-t}");
+    check("gg1(vl_) := Module({f, e}, e = t^3; f(t_) = e /. {vl[[1]] -> t}; f(b)); gg1({t})", //
+        "b^3");
+  }
+
+  @Test
+  public void testConditionalOwnValues() {
+    check("cc = 3; own1 := {}; own1 := {a} /; cc == 1; own1 := {b} /; cc == 3; own1", //
+        "{b}");
+    check("cc = 7; own1", //
+        "{}");
+    check("OwnValues(own1)", //
+        "{HoldPattern(own1):>{a}/;cc==1,HoldPattern(own1):>{b}/;cc==3,HoldPattern(own1):>{}}");
+    // the same test replaces the old definition, an unconditional one the fallback
+    check("own1 := {c} /; cc == 3; own1 := {d}; cc = 3; own1", //
+        "{c}");
+    check("OwnValues(own1)", //
+        "{HoldPattern(own1):>{a}/;cc==1,HoldPattern(own1):>{c}/;cc==3,HoldPattern(own1):>{d}}");
+    // Set replaces all of them
+    check("own1 = 9; OwnValues(own1)", //
+        "{HoldPattern(own1):>9}");
+    // a value of Set isn't kept beside a conditional definition
+    check("own2 = 5; own2 := {a} /; cc == 4; {own2, OwnValues(own2)}", //
+        "{own2,{HoldPattern(own2):>{a}/;cc==4}}");
+    check("Module({v}, v := {}; v := {a} /; cc == 3; v := {b} /; cc == 4; v)", //
+        "{a}");
+    check("own3 := 1; own3 := 2 /; cc == 3; Block({own3 = 4}, own3) + own3", //
+        "6");
+  }
+
+  @Test
+  public void testOptionsPatternSymbolDefaults() {
+    check("Options(opt1) = {uu -> 1, vv -> 2}; ff3(m_, OptionsPattern({opt1, Graphics3D})) := "
+        + "{m, OptionValue(uu), OptionValue(vv), OptionValue(Axes)}; ff3(0, vv -> 5)", //
+        "{0,1,5,False}");
+    // read when the rule applies
+    check("Options(opt2) = {uu -> 1}; ff4(OptionsPattern(opt2)) := OptionValue(uu); "
+        + "Options(opt2) = {uu -> 3}; {ff4(), ff4(uu -> 4)}", //
+        "{3,4}");
+    check("{Boxed,ViewPoint} /. Options(Graphics3D)", //
+        "{True,{1.3,-2.4,2.0}}");
+  }
+
+  @Test
+  public void testContextAliasNames() {
+    check("$ContextAliases(\"shrt`\") = \"LongContext`\"", //
+        "LongContext`");
+    check("shrt`aliased;", //
+        "");
+    check("Names(\"shrt`aliased\")", //
+        "{LongContext`aliased}");
+    check("Names(\"shrt`aliased\", ResolveContextAliases -> False)", //
+        "{}");
+    check("Contexts(\"shrt`\")", //
+        "{LongContext`}");
+    check("Contexts(\"shrt`\", ResolveContextAliases -> False)", //
+        "{}");
+    check("Contexts(\"System`\")", //
+        "{System`}");
+  }
+
+  @Test
+  public void testTimeZoneOption() {
+    check("AbsoluteTime({2023, 7, 1, 12, 0, 0}, TimeZone -> \"Europe/Berlin\") "
+        + "- AbsoluteTime({2023, 7, 1, 12, 0, 0}, TimeZone -> 2)", //
+        "0");
+    check("AbsoluteTime({2023, 12, 1, 12, 0, 0}, TimeZone -> \"Europe/Berlin\") "
+        + "- AbsoluteTime({2023, 12, 1, 12, 0, 0}, TimeZone -> 1)", //
+        "0");
+    check("AbsoluteTime({2023, 3, 2}, TimeZone -> 3) - AbsoluteTime({2023, 3, 2}, TimeZone -> 5)", //
+        "7200");
+    check("AbsoluteTime({2023, 3, 2}, TimeZone -> 5.5) - AbsoluteTime({2023, 3, 2}, TimeZone -> 5)", //
+        "-1800");
+    check("Block({$TimeZone = 0}, DateList(3900000000, TimeZone -> \"Asia/Kolkata\"))", //
+        "{2023,8,3,2,50,0.0}");
+    check("Block({$TimeZone = 0}, DateList(3900000000, TimeZone -> 5.5))", //
+        "{2023,8,3,2,50,0.0}");
+    check("DateList(3900000000, TimeZone -> \"Not/AZone\")", //
+        "DateList(3900000000,TimeZone->Not/AZone)");
+    check("AbsoluteTime({2023, 3, 2}, Foo -> 1)", //
+        "AbsoluteTime({2023,3,2},foo->1)");
+  }
+
+  @Test
+  public void testSimilarityRules() {
+    check("SmithWatermanSimilarity(\"KLMNOP\", \"KLMXOP\", SimilarityRules -> {{\"N\", \"X\"} -> 0.25})", //
+        "5.25");
+    check("NeedlemanWunschSimilarity(\"KLMNOP\", \"KLMXOP\", SimilarityRules -> {{\"X\", \"N\"} -> 2})", //
+        "7.0");
+    check("NeedlemanWunschSimilarity({a, b, c}, {a, d, c}, SimilarityRules -> {{b, d} -> 3})", //
+        "5.0");
+    // the gap model stays
+    check("NeedlemanWunschSimilarity(\"KLM\", \"KM\", SimilarityRules -> {{\"L\", \"Q\"} -> 3})", //
+        "1.0");
+    check("NeedlemanWunschSimilarity(\"kN\", \"KX\", IgnoreCase -> True, "
+        + "SimilarityRules -> {{\"N\", \"X\"} -> 4})", //
+        "5.0");
+    check("SmithWatermanSimilarity(\"KLM\", \"KLM\", SimilarityRules -> 7)", //
+        "SmithWatermanSimilarity(KLM,KLM,SimilarityRules->7)");
+  }
+
+  @Test
+  public void testSidesAssumptions() {
+    check("DivideSides(p*x > q, p, Assumptions -> p > 0)", //
+        "x>q/p");
+    check("DivideSides(p*x > q, p, Assumptions -> p < 0)", //
+        "q/p>x");
+    check("MultiplySides(x < q, p, Assumptions -> p > 1)", //
+        "p*x<p*q");
+    check("MultiplySides(x < q, p, Assumptions -> p < -1)", //
+        "p*q<p*x");
+    check("DivideSides(u == v, w, Assumptions -> w > 0)", //
+        "u/w==v/w");
+    check("DivideSides(x > q, p, Foo -> 1)", //
+        "DivideSides(x>q,p,foo->1)");
+    // the sides change places and the relation stays
+    check("DivideSides(x > 3, -4)", //
+        "-3/4>-x/4");
+    check("MultiplySides(x <= 3, -4)", //
+        "-12<=-4*x");
+    check("{DivideSides(y > 2, -3), MultiplySides(y >= 2, -3)}", //
+        "{-2/3>-y/3,-6>=-3*y}");
+    check("DivideSides(y > 2, 4)", //
+        "y/4>1/2");
+    check("DivideSides(6 > 2, -3)", //
+        "True");
+  }
+
+  @Test
+  public void testURLCharacterEncoding() {
+    check("URLDecode(\"caf%8E+%96\", CharacterEncoding -> \"MacintoshRoman\")", //
+        "café ñ");
+    check("URLEncode(\"Größe\", CharacterEncoding -> \"ISOLatin1\")", //
+        "Gr%F6%DFe");
+    check("URLEncode(\"Größe\", CharacterEncoding -> \"NoSuchEncoding\")", //
+        "URLEncode(Größe,CharacterEncoding->NoSuchEncoding)");
+    check("URLQueryEncode({\"name\" -> \"café ñ\"}, CharacterEncoding -> \"MacintoshRoman\")", //
+        "name=caf%8E+%96");
+    check("URLQueryEncode(<|\"p\" -> 2, \"q\" -> \"u v\", \"r\" -> True|>)", //
+        "p=2&q=u+v&r=true");
+    check("URLQueryEncode({\"k\" -> \"1+2/3?4=5&6\"})", //
+        "k=1%2B2%2F3%3F4%3D5%266");
+    check("URLQueryEncode({\"k\" -> \"~-_.*\"})", //
+        "k=~-_.%2A");
+    check("URLQueryEncode(<||>)", //
+        "");
+    check("URLQueryEncode(\"k=1\")", //
+        "URLQueryEncode(k=1)");
+    check("URLQueryEncode({\"z\" -> \"1\", \"c\" -> \"2\"}, \"SortQueries\" -> True)", //
+        "c=2&z=1");
+    check("URLQueryEncode({\"z\" -> \"1\", \"c\" -> \"2\"}, SortQueries -> True)", //
+        "c=2&z=1");
+    check("URLQueryEncode({\"z\" -> \"\", \"c\" -> \"2\"}, \"RemoveEmptyQueries\" -> True)", //
+        "c=2");
+    check("Options(URLQueryEncode) // InputForm", //
+        "{\"RemoveEmptyQueries\"->False,\"SortQueries\"->False,CharacterEncoding->\"UTF-8\"}");
+    check("URLBuild(\"http://example.org\", {\"s\" -> \"p q&r\"})", //
+        "http://example.org?s=p+q%26r");
+    check("URLBuild(\"http://example.org\", {\"n\" -> \"Größe\"}, "
+        + "CharacterEncoding -> \"ISOLatin1\")", //
+        "http://example.org?n=Gr%F6%DFe");
+    check("URLBuild(7, CharacterEncoding -> \"ASCII\")", //
+        "URLBuild(7,CharacterEncoding->ASCII)");
+  }
+
+  @Test
+  public void testCheckAbortPropagateAborts() {
+    check("{CheckAbort(Abort(), 3, PropagateAborts -> False), 4}", //
+        "{3,4}");
+    check("{CheckAbort(Abort(), 3, PropagateAborts -> Automatic), 4}", //
+        "{3,4}");
+    check("{CheckAbort(2, 3, PropagateAborts -> True), 4}", //
+        "{2,4}");
+    check("CheckAbort(Abort(), 3, PropagateAborts -> True); 4", //
+        "$Aborted");
+    // the fail expression still runs
+    check("mark = 0; CheckAbort(Abort(), mark = 1, PropagateAborts -> True); 4", //
+        "$Aborted");
+    check("mark", //
+        "1");
+    check("CheckAbort(1, 2, PropagateAborts -> Foo)", //
+        "CheckAbort(1,2,PropagateAborts->foo)");
+  }
+
+  @Test
+  public void testSuperscriptDigitsInSymbolNames() {
+    check("u²(k_) := k + 1; u²(2)", //
+        "3");
+    check("v³ = 4; v¹ = 5; v³ * v¹", //
+        "20");
+    check("Head(w²)", //
+        "Symbol");
+    check("Names(\"Global`v³\")", //
+        "{v³}");
+  }
+
+  @Test
+  public void testNumberFormToStringLayout() {
+    check("ToString(NumberForm(6.7891*10^15, {3, 3}))", //
+        "          15\n6.790 × 10");
+    check("ToString(NumberForm(-6.7891*10^15, {5, 2}))", //
+        "          15\n-6.79 × 10");
+    check("ToString(NumberForm(2.5*10^-9, {4, 1}))", //
+        "        -9\n2.5 × 10");
+  }
+
+  @Test
+  public void testInputFormFactorsInParentheses() {
+    check("ToString({-(u -> 3)/4, 5 (u -> 3)/4, (u == v)/4, (u -> 3) y/4}, InputForm)", //
+        "{-1/4*(u->3),(5*(u->3))/4,(u==v)/4,(y*(u->3))/4}");
+    check("ToString({-y/4, 1 - y/4, -y/(4 z), -1/(4 y), -3 y/4}, InputForm)", //
+        "{-1/4*y,1 - y/4,-y/(4*z),-1/(4*y),(-3*y)/4}");
+    check("ToString({3 (u <-> v), 1 + (u <-> v), u <-> v}, InputForm)", //
+        "{3*(u<->v),1 + (u<->v),u<->v}");
+    check("ToString({3 (u < v <= w), u < v <= w}, InputForm)", //
+        "{3*Inequality(u,Less,v,LessEqual,w),u<v<=w}");
+    check("ToString({3 u_, 3 u__, 3 _, u_^2, f(u_), u_ + 1, 3 u_?EvenQ, u_ -> 1}, InputForm)", //
+        "{3*(u_),3*(u__),3*_,(u_)^2,f(u_),1 + u_,3*u_?EvenQ,u_->1}");
+  }
+
+  @Test
+  public void testExponentialPolynomialRootsAreComplete() {
+    // a root far outside the range where one term looks dominant
+    check("Length(Solve(E^x + E^(2*x)/10^8 == x^2/500, x, Reals))", //
+        "1");
+    check("N(x /. Solve(E^x + E^(2*x)/10^8 == x^2/500, x, Reals))", //
+        "{-3.6339614017154993}");
+    // both ProductLog branches once
+    check("Length(Solve(E^x == 200*x, x, Reals))", //
+        "2");
+    check("Length(Solve(E^(-x/50) == x^2/40, x, Reals))", //
+        "3");
+  }
+
+  @Test
+  public void testSumHeldSummandAndLargePowers() {
+    check("rv = iv^2; Sum(Hold(rv), {iv, 1, 2})", //
+        "2*Hold(rv)");
+    check("rv = iv^2; Sum(rv, {iv, 1, m})", //
+        "1/6*m*(1+m)*(1+2*m)");
+    // too large to be factored in a short time
+    check("Head(Sum(i^150, {i, 1, m}))", //
+        "Plus");
+  }
+
+  @Test
+  public void testNOfPureFunctionKeepsIntegerExponents() {
+    check("N(Function({v}, v^3 + 1/4))", //
+        "Function({v},v^3+0.25)");
+    check("N(#^3 + 1/4 &, 20)", //
+        "#1^3+0.25&");
+  }
+
+  @Test
+  public void testRootsMultiplicityLimit() {
+    check("Roots(y == 3, y, Multiplicity -> 2)", //
+        "y==3||y==3");
+    // a repeated root is repeated
+    check("Roots((y - 5)^2 == 0, y, Multiplicity -> 1)", //
+        "y==5||y==5");
+    check("Roots((y - 5)^3 == 0, y)", //
+        "y==5||y==5||y==5");
+    check("Roots(y == 3, y, Multiplicity -> 2^30)", //
+        "Roots(y==3,y,Multiplicity->1073741824)");
+  }
+
+  @Test
+  public void testOptionsOfTheRound() {
+    check("Options(Inactivate)", //
+        "{Heads->True}");
+    check("{RamanujanTau(-7), RamanujanTau(0), RamanujanTau(2)}", //
+        "{0,0,-24}");
+  }
+
+  @Test
+  public void testConditionalOwnValuesWithSet() {
+    check("ClearAll(ova, ovc); ova = 8; ova := 2 /; ovc == 3; {ova, OwnValues(ova)}", //
+        "{ova,{HoldPattern(ova):>2/;ovc==3}}");
+    check("ClearAll(ovb, ovd); ovb := 2 /; ovd == 3; ovb = 8; {ovb, OwnValues(ovb)}", //
+        "{8,{HoldPattern(ovb):>8}}");
   }
 
   @Test
@@ -23428,7 +26569,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testLetterCounts() {
     check("LetterCounts(\"The quick brown fox jumps over the lazy dog\") // InputForm", //
-        "<|\"T\"->1,\" \"->8,\"a\"->1,\"b\"->1,\"c\"->1,\"d\"->1,\"e\"->3,\"f\"->1,\"g\"->1,\"h\"->2,\"i\"->1,\"j\"->1,\"k\"->1,\"l\"->1,\"m\"->1,\"n\"->1,\"o\"->4,\"p\"->1,\"q\"->1,\"r\"->2,\"s\"->1,\"t\"->1,\"u\"->2,\"v\"->1,\"w\"->1,\"x\"->1,\"y\"->1,\"z\"->1|>");
+        "<|\"o\"->4,\"e\"->3,\"r\"->2,\"u\"->2,\"h\"->2,\"g\"->1,\"d\"->1,\"y\"->1,\"z\"->1,\"a\"->1,\"l\"->1,\"t\"->1,\"v\"->1,\"s\"->1,\"p\"->1,\"m\"->1,\"j\"->1,\"x\"->1,\"f\"->1,\"n\"->1,\"w\"->1,\"b\"->1,\"k\"->1,\"c\"->1,\"i\"->1,\"q\"->1,\"T\"->1|>");
   }
 
   @Test
@@ -37052,8 +40193,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Table(f(x),s)");
 
     check("Table(Sum(k^n, {k, 0, m}), {n, 1, 5, 1})", //
-        "{1/2*m*(1+m),m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n"
-            + "12*m^4+m^5/2+m^6/6}");
+        "{1/2*m*(1+m),1/6*m*(1+m)*(1+2*m),1/4*m^2*(1+m)^2,1/30*m*(1+m)*(1+2*m)*(-1+3*m+3*m^\n"
+            + "2),1/12*m^2*(1+m)^2*(-1+2*m+2*m^2)}");
     check("Table(f(x), {x, a, a+1})", //
         "{f(a),f(1+a)}");
     check("s=0;Table(s=i+s, {i, 0, 7})", //

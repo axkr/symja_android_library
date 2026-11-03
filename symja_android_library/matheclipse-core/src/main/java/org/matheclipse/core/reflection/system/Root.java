@@ -94,6 +94,10 @@ public class Root extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (ast.isAST1() && !ast.arg1().isList2() && !ast.arg1().isPatternExpr()) {
+      // Nonpolynomial root specification `1` is not a list with two elements.
+      return Errors.printMessage(S.Root, "trsp", F.List(ast.arg1()), engine);
+    }
     // Root[{f, c}] — near-float approximation form. Represents a root of f[x]==0 near x = c
     // (used for transcendental equations whose roots cannot be expressed in closed algebraic form).
     if (ast.isAST1() && ast.arg1().isList2()) {
@@ -841,7 +845,7 @@ public class Root extends AbstractFunctionEvaluator {
    * @param engine the evaluation engine
    * @return the refined numeric root value, or {@link F#NIL} if {@code FindRoot} fails
    */
-  private static IExpr refineNumerically(IExpr f, IExpr c, long precision, EvalEngine engine) {
+  static IExpr refineNumerically(IExpr f, IExpr c, long precision, EvalEngine engine) {
     if (!c.isNumber() && !c.isNumericFunction(true)) {
       return F.NIL;
     }

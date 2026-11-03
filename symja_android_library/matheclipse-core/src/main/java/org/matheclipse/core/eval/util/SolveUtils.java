@@ -37,8 +37,8 @@ public class SolveUtils {
    * variable: <code>Reduce({X*C==1}, {X, C})</code> is <code>X != 0 &amp;&amp; C == 1/X</code>.
    * Symja's algorithms take a built-in symbol for a constant, so it is renamed on the way in and
    * back in the result. A numeric constant like <code>Pi</code>, and <code>True, False,
-   * Null</code>, are not renamed. A variable which is a call of a call, like <code>c(1)(t)</code>,
-   * is renamed as well, so that it is one unknown.
+   * Null</code>, are not renamed. A variable which is a call of a call, like <code>c(1)(t)</code>
+   * or the derivative value <code>f'(0)</code>, is renamed as well, so that it is one unknown.
    *
    * @param ast <code>Solve(eqns, vars, ...)</code> or <code>Reduce(eqns, vars, ...)</code> with its
    *        options
@@ -72,7 +72,8 @@ public class SolveUtils {
         forward.put(variable, dummy);
         backward.put(dummy, variable);
       } else if (variable.isAST() && !forward.containsKey(variable)
-          && ((variable.head().isAST() && !variable.head().head().isAST(S.Derivative))
+          && ((variable.head().isAST() && (!variable.head().head().isAST(S.Derivative)
+              || ((IAST) variable).forAll(IExpr::isNumber)))
               || (indexedVariables && variable.head().isSymbol()
                   && !variable.head().isBuiltInSymbol())
               || (variable.isAST(S.Part) && variable.argSize() >= 2

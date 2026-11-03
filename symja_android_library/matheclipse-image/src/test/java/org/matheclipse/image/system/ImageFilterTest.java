@@ -73,9 +73,9 @@ public class ImageFilterTest extends AbstractTestCase {
   public void testBinarizeFunctionAndDistanceTransformGraphics() {
     // the function gets the value of a gray pixel and the channels of a colour pixel
     check("ImageData(Binarize(Image({{0.2, 0.5, 0.7}}), # >= 0.5 &))", //
-        "{{0.0,1.0,1.0}}");
+        "{{0,1,1}}");
     check("ImageData(Binarize(Image({{{0.2, 0.9, 0}, {0.8, 0.1, 0}}}), #[[2]] > 0.5 &))", //
-        "{{1.0,0.0}}");
+        "{{1,0}}");
     // graphics are rasterized first
     check("g = Graphics({Black, Rectangle()}); "
         + "ImageDimensions(DistanceTransform(g)) == ImageDimensions(Rasterize(g))", //
@@ -253,5 +253,27 @@ public class ImageFilterTest extends AbstractTestCase {
     // the known pixels stay
     check("ImageData(Inpaint(img, m, Method -> \"Diffusion\"))[[1]] == ImageData(img)[[1]]", //
         "True");
+  }
+
+  /** Of equally common samples that of the pixel itself, else the first one row by row. */
+  @Test
+  public void commonestFilter() {
+    check("ImageData(CommonestFilter(Image({{0.5, 0.25, 0.25, 0.75, 0.75}}), -1.5))", //
+        "{{0.25,0.25,0.25,0.75,0.75}}");
+    check("ImageData(CommonestFilter(Image({{0.5, 0.25, 0.75}}), 1))", //
+        "{{0.5,0.25,0.75}}");
+    check("ImageData(CommonestFilter(Image({{0.25, 0.25, 0.5}}), 1), Real32) === "
+        + "ImageData(CommonestFilter(Image({{0.25, 0.25, 0.5}}), 0.5), Real32)", //
+        "True");
+    check("{ImageData(CommonestFilter(Image({{10, 10, 20, 30, 30}}, \"Byte\"), 1), \"Byte\"), "
+        + "ImageType(CommonestFilter(Image({{10, 10}}, \"Byte\"), 1))}", //
+        "{{{10,10,20,30,30}},Byte}");
+  }
+
+  /** The samples of an image of reals are single precision ones. */
+  @Test
+  public void commonestFilterIsSinglePrecision() {
+    check("InputForm(ImageData(CommonestFilter(Image({{0.3, 0.3}}), 1)))", //
+        "{{0.30000001192092896`,0.30000001192092896`}}");
   }
 }

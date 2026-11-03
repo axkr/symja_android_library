@@ -4412,9 +4412,8 @@ public final class NumberTheory {
         if (arg3.isList1() && arg3.first().isReal()) {
           int n = arg3.first().toMachineInt();
           if (F.isPresent(n)) {
-            if (n < 0) {
-              // Positive integer expected at position `2` in `1`.
-              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
+            if (n < 1) {
+              return termsFromBefore(list1, list2, n, n, ast, engine);
             }
             IAST result = linearRecurrence(list1, list2, n, ast, engine);
             if (result.isPresent()) {
@@ -4427,12 +4426,12 @@ public final class NumberTheory {
         if (arg3.isList2() && arg3.first().isReal() && arg3.second().isReal()) {
           int nmin = arg3.first().toMachineInt();
           if (F.isPresent(nmin)) {
-            if (nmin < 0) {
-              // Positive integer expected at position `2` in `1`.
-              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
-            }
             int nmax = arg3.second().toMachineInt();
             if (F.isPresent(nmax)) {
+              if (nmin < 1) {
+                return nmin <= nmax ? termsFromBefore(list1, list2, nmin, nmax, ast, engine)
+                    : F.NIL;
+              }
               if (nmax < 0) {
                 // Positive integer expected at position `2` in `1`.
                 return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C2), engine);
@@ -4452,6 +4451,56 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
+    }
+
+    /**
+     * The terms <code>nmin..nmax</code> with <code>nmin &lt; 1</code>: those before the initial
+     * values solve the recurrence for its oldest term,
+     * <code>a(n-k) = (a(n) - c1*a(n-1) - ... - c(k-1)*a(n-k+1)) / ck</code>, which needs a last
+     * kernel coefficient which isn't zero.
+     *
+     * @return {@link F#NIL} if the terms can't be computed
+     */
+    private IExpr termsFromBefore(IAST list1, IAST list2, int nmin, int nmax, IAST ast,
+        EvalEngine engine) {
+      final int k = list1.argSize();
+      long size = (long) nmax - nmin + 1L;
+      if (k == 0 || list2.argSize() < k || list1.last().isZero()) {
+        return F.NIL;
+      }
+      if (Config.MAX_AST_SIZE < size || Config.MAX_AST_SIZE < 1L - (long) nmin) {
+        ASTElementLimitExceeded.throwIt(Math.max(size, 1L - (long) nmin));
+      }
+      // window[i] is a(1 - steps + i) of the terms in front of a(1)
+      IExpr[] before = new IExpr[1 - nmin];
+      IExpr[] window = new IExpr[k];
+      for (int i = 0; i < k; i++) {
+        window[i] = list2.get(list2.argSize() - k + 1 + i);
+      }
+      for (int i = before.length - 1; i >= 0; i--) {
+        engine.checkTimeLimit();
+        IASTAppendable rest = F.PlusAlloc(k);
+        rest.append(window[k - 1]);
+        for (int j = 1; j < k; j++) {
+          rest.append(F.Times(F.CN1, list1.get(j), window[k - 1 - j]));
+        }
+        IExpr older = engine.evaluate(F.Expand(F.Divide(rest, list1.last())));
+        System.arraycopy(window, 0, window, 1, k - 1);
+        window[0] = older;
+        before[i] = older;
+      }
+      IASTAppendable result = F.ListAlloc((int) size);
+      for (int i = 0; i < before.length && nmin + i <= nmax; i++) {
+        result.append(before[i]);
+      }
+      if (nmax >= 1) {
+        IAST positive = linearRecurrence(list1, list2, nmax, ast, engine);
+        if (positive.isNIL()) {
+          return F.NIL;
+        }
+        result.appendArgs(positive);
+      }
+      return result;
     }
 
     private IAST linearRecurrence(IAST list1, IAST list2, int n, IAST ast, EvalEngine engine) {
@@ -4541,6 +4590,26 @@ public final class NumberTheory {
 
   private static class LiouvilleLambda extends AbstractFunctionEvaluator
       implements IntUnaryOperator {
+
+    /** The parity of the number of the Gaussian prime factors, the units don't count. */
+    private static IExpr gaussianLambda(IExpr n, EvalEngine engine) {
+      if (n.isZero() || !n.isNumber() || !n.isExactNumber()) {
+        return F.NIL;
+      }
+      IExpr factors =
+          engine.evaluate(F.binaryAST2(S.FactorInteger, n, F.Rule(S.GaussianIntegers, S.True)));
+      if (!factors.isList()) {
+        return F.NIL;
+      }
+      long count = 0L;
+      for (IExpr factor : (IAST) factors) {
+        if (!engine.evaluate(F.Abs(factor.first())).isOne()) {
+          count += factor.second().toLongDefault();
+        }
+      }
+      return count % 2L == 0L ? F.C1 : F.CN1;
+    }
+
     @Override
     public int applyAsInt(int arg) {
       if (arg <= 0) {
@@ -4562,6 +4631,14 @@ public final class NumberTheory {
       }
       if (arg1.isOne()) {
         return F.C1;
+      }
+      if (ast.isAST2()) {
+        if (!ast.arg2().isRuleAST() || ast.arg2().first() != S.GaussianIntegers) {
+          return F.NIL;
+        }
+        if (ast.arg2().second().isTrue()) {
+          return gaussianLambda(arg1, engine);
+        }
       }
       if (arg1.isInteger() && arg1.isPositive()) {
         IExpr expr = S.FactorInteger.of(engine, arg1);
@@ -4596,7 +4673,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -7519,6 +7596,98 @@ public final class NumberTheory {
 
 
   /**
+   * <code>RamanujanTau(n)</code> - the coefficient of <code>q^n</code> in
+   * <code>q * Product((1 - q^k)^24, {k, 1, Infinity})</code>.
+   *
+   * <p>
+   * The function is multiplicative and <code>tau(p^(k+1)) = tau(p)*tau(p^k) -
+   * p^11*tau(p^(k-1))</code>; the values at primes come from Niebur's formula
+   * <code>tau(n) = n^4*sigma(n) - 24*Sum(i^2*(35*i^2 - 52*i*n + 18*n^2)*sigma(i)*sigma(n-i), {i,
+   * 1, n-1})</code>.
+   */
+  private static final class RamanujanTau extends AbstractFunctionEvaluator {
+    /** The largest prime factor of an argument; the formula needs a table of this size. */
+    private static final int MAX_PRIME = 20_000_000;
+
+    private static final BigInteger TWENTY_FOUR = BigInteger.valueOf(24L);
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isInteger()) {
+        return F.NIL;
+      }
+      IInteger n = (IInteger) ast.arg1();
+      if (n.isZero() || n.isNegative()) {
+        return F.C0;
+      }
+      if (n.isOne()) {
+        return F.C1;
+      }
+      IAST factors = n.factorInteger();
+      BigInteger tau = BigInteger.ONE;
+      for (int i = 1; i < factors.size(); i++) {
+        IAST factor = (IAST) factors.get(i);
+        int p = factor.arg1().toIntDefault();
+        if (F.isNotPresent(p) || p > MAX_PRIME) {
+          return F.NIL;
+        }
+        tau = tau.multiply(primePowerTau(p, factor.arg2().toIntDefault(), engine));
+      }
+      return F.ZZ(tau);
+    }
+
+    private static BigInteger primePowerTau(int p, int k, EvalEngine engine) {
+      BigInteger tauP = primeTau(p, engine);
+      BigInteger p11 = BigInteger.valueOf(p).pow(11);
+      BigInteger previous = BigInteger.ONE;
+      BigInteger current = tauP;
+      for (int i = 2; i <= k; i++) {
+        BigInteger next = tauP.multiply(current).subtract(p11.multiply(previous));
+        previous = current;
+        current = next;
+      }
+      return current;
+    }
+
+    private static BigInteger primeTau(int n, EvalEngine engine) {
+      int[] sigma = new int[n];
+      for (int d = 1; d < n; d++) {
+        if ((d & 0xFFFF) == 0) {
+          engine.checkTimeLimit();
+        }
+        for (int m = d; m < n; m += d) {
+          sigma[m] += d;
+        }
+      }
+      BigInteger bigN = BigInteger.valueOf(n);
+      BigInteger sum = BigInteger.ZERO;
+      for (int i = 1; i < n; i++) {
+        if ((i & 0xFFFF) == 0) {
+          engine.checkTimeLimit();
+        }
+        BigInteger bigI = BigInteger.valueOf(i);
+        BigInteger weight = bigI.multiply(bigI)
+            .multiply(BigInteger.valueOf(35L).multiply(bigI).multiply(bigI)
+                .subtract(BigInteger.valueOf(52L).multiply(bigI).multiply(bigN))
+                .add(BigInteger.valueOf(18L).multiply(bigN).multiply(bigN)));
+        sum = sum.add(weight.multiply(BigInteger.valueOf((long) sigma[i] * sigma[n - i])));
+      }
+      // the sum of the divisors of the prime n is n + 1
+      return bigN.pow(4).multiply(bigN.add(BigInteger.ONE)).subtract(TWENTY_FOUR.multiply(sum));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+    }
+  }
+
+  /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
@@ -7571,6 +7740,7 @@ public final class NumberTheory {
       S.PerfectNumberQ.setEvaluator(new PerfectNumberQ());
       S.PowersRepresentations.setEvaluator(new PowersRepresentations());
       S.Prime.setEvaluator(new Prime());
+      S.RamanujanTau.setEvaluator(new RamanujanTau());
       S.PrimeOmega.setEvaluator(new PrimeOmega());
       S.PrimePowerQ.setEvaluator(new PrimePowerQ());
       S.PrimitiveRoot.setEvaluator(new PrimitiveRoot());

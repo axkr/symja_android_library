@@ -39,6 +39,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.reduce.BivariateReduce;
 import org.matheclipse.core.reduce.CylindricalAlgebraicDecomposition;
+import org.matheclipse.core.reduce.FactoredEquationBox;
 import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.Lowering;
@@ -3601,7 +3602,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   private static IExpr rootsOf(IExpr equation, IExpr variable, SolveOptions options,
       EvalEngine engine) {
     IExpr[] rootsOptions = options.rootsOptions();
-    return S.Roots.ofNIL(engine, equation, variable, rootsOptions[0], rootsOptions[1]);
+    return S.Roots.ofNIL(engine, equation, variable, rootsOptions[0], rootsOptions[1],
+        F.Rule(S.Multiplicity, F.C0));
   }
 
   /**
@@ -4916,6 +4918,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return branchesToOr(points, vars, engine);
       }
     }
+    if (domain == S.Integers) {
+      // a box too large to list: every factor of an equation is a branch with a parameter range
+      IExpr factored = FactoredEquationBox.reduce(expr, vars, engine);
+      if (factored.isPresent()) {
+        return factored;
+      }
+    }
     return reduceIntegerSystem(expr, vars, domain, engine);
   }
 
@@ -5027,7 +5036,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       IExpr difference = engine.evaluate(F.Subtract(expr.first(), expr.second()));
       IExpr roots;
       if (difference.isPolynomial(variable)) {
-        roots = S.Roots.ofNIL(engine, expr, variable);
+        roots = S.Roots.ofNIL(engine, expr, variable, F.Rule(S.Multiplicity, F.C0));
       } else {
         // `Roots` answers `False` for every equation it cannot solve, e.g. `Sqrt(x)==2`; the
         // reduction over the complexes declines instead

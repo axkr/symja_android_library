@@ -400,7 +400,7 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
         "{11,3/5,6,11,10}");
     // an exact complex number sorts before the machine number of the same value
     check("{Order(1.+I,1+I), Order(1+I,1.+I), Sort({1.+I,1+I,1-I,1.-I})} // InputForm", //
-        "{-1,1,{1 - I,1 + I,1.0`+I*(-1.0`),1.0`+I*1.0`}}");
+        "{-1,1,{1 - I,1 + I,1.0` - 1.0`*I,1.0` + 1.0`*I}}");
   }
 
   @Test
@@ -519,7 +519,7 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
         "{10,10,10,11,10,10,11,11}");
     // an exact number plus a small machine number
     check("Block({z=2.^-51}, {1-z, 1/2-z, I*z}) // InputForm", //
-        "{0.9999999999999996`,0.49999999999999956`,I*4.440892098500626`*^-16}");
+        "{0.9999999999999996`,0.49999999999999956`,0.0` + 4.440892098500626`*^-16*I}");
     // Floor, Ceiling and Round to a multiple: one machine division, the multiple keeps its type
     check("{Ceiling(0.6,1/5), Floor(0.6,1/5), Ceiling(3/5,0.2), Floor(3/5,0.2), Ceiling(0.7,1/10), Floor(0.7,1/10), " //
         + "Ceiling(7/10,0.1), Floor(7/10,0.1)} // InputForm", //

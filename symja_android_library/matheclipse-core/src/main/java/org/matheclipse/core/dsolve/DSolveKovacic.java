@@ -893,7 +893,7 @@ final class DSolveKovacic {
     if (equations.argSize() == 0) {
       return F.NIL;
     }
-    IExpr solutions = ctx.evalTimeConstrained(F.Solve(equations, unknowns), STEP_SECONDS);
+    IExpr solutions = ctx.evalTimeConstrained(F.SolveDistinct(equations, unknowns), STEP_SECONDS);
     if (solutions.isNIL() || !solutions.isList() || ((IAST) solutions).argSize() == 0) {
       return F.NIL;
     }

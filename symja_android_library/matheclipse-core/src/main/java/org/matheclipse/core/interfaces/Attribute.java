@@ -105,7 +105,10 @@ public enum Attribute {
   READPROTECTED(ISymbol.READPROTECTED, ID.ReadProtected),
 
   /** A function whose {@link S#Sequence} arguments are not flattened out. */
-  SEQUENCEHOLD(ISymbol.SEQUENCEHOLD, ID.SequenceHold);
+  SEQUENCEHOLD(ISymbol.SEQUENCEHOLD, ID.SequenceHold),
+
+  /** A local symbol, which is removed as soon as it is no longer referenced. */
+  TEMPORARY(ISymbol.TEMPORARY, ID.Temporary);
 
   /**
    * Cached because {@link #values()} clones its array on every call, and {@link #toList(int)}
@@ -264,6 +267,8 @@ public enum Attribute {
         return READPROTECTED;
       case ID.SequenceHold:
         return SEQUENCEHOLD;
+      case ID.Temporary:
+        return TEMPORARY;
       default:
         return null;
     }

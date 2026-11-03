@@ -2153,6 +2153,13 @@ public class ExprParser extends Scanner {
       }
     } else {
       rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+      if (infixOperator.headSymbol() == S.Function && fToken == TT_OPERATOR) {
+        // x |-> y = 1 has the assignment in its body
+        final InfixExprOperator next = determineBinaryOperator();
+        if (next != null && next.getPrecedence() == Precedence.SET) {
+          rhs = climbOperators(rhs, Precedence.SET, false);
+        }
+      }
     }
     lhs = createInfixFunction(infixOperator, lhs, rhs);
     if (lhs instanceof IASTAppendable) {

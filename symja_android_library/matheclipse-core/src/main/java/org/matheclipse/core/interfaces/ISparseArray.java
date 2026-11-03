@@ -10,6 +10,14 @@ import org.matheclipse.parser.trie.Trie;
 public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAccess {
 
   /**
+   * The parts on level 1 as <code>Part</code> gives them: the elements of a vector, or the rows,
+   * themselves sparse arrays, of an array of a higher rank.
+   */
+  default IAST parts() {
+    return F.mapRange(1, getDimension()[0] + 1, i -> getPart(i));
+  }
+
+  /**
    * Get the dimensions of the sparse array.
    *
    * @return

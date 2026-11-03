@@ -391,7 +391,7 @@ public final class ContextPath implements Iterable<Context> {
    * <code>a`Sub`x</code> written under the alias <code>a`</code> for <code>Actual`</code> is
    * <code>Actual`Sub`x</code>. Only the first segment is an alias.
    */
-  private String expandAlias(String contextName) {
+  public String expandAlias(String contextName) {
     if (fContextAliases.isEmpty()) {
       return contextName;
     }

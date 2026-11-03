@@ -587,7 +587,7 @@ final class DSolveUtil {
       if (multiplicity < 1) {
         return null;
       }
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(entry.first(), F.C0), xVar));
+      IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(entry.first(), F.C0), xVar));
       IAST roots = extractSolveResults(solutions);
       if (roots.argSize() == 0) {
         return null;

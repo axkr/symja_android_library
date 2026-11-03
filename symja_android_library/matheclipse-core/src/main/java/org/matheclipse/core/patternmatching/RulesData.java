@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -177,6 +178,12 @@ public final class RulesData implements Serializable {
    */
   private volatile Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
+  /** At most this many machine real arguments of a rule are compared like <code>SameQ</code>. */
+  private static final int MAX_SAME_REAL_ARGUMENTS = 4;
+
+  /** Is there a rule in {@link #fEqualDownRules} with a machine real argument? */
+  private volatile boolean fRealEqualDownRules;
+
   /**
    * List of pattern matchers which are defined with {@link S#Set} or {@link S#SetDelayed} function.
    * The corresponding priority is stored in <code>fPriorityDownRules
@@ -267,6 +274,7 @@ public final class RulesData implements Serializable {
     RulesData copy = new RulesData();
     copy.fMessages = fMessages == null ? null : new java.util.HashMap<>(fMessages);
     copy.fEqualDownRules = fEqualDownRules == null ? null : new ConcurrentHashMap<>(fEqualDownRules);
+    copy.fRealEqualDownRules = fRealEqualDownRules;
     // a list of rules is replaced, not changed, when a rule is added or removed
     copy.fPatternDownRules = fPatternDownRules;
     copy.fPriorityDownRules =
@@ -753,6 +761,9 @@ public final class RulesData implements Serializable {
     final Map<IExpr, PatternMatcherEquals> equalRules = fEqualDownRules;
     if (equalRules != null) {
       PatternMatcherEquals res = equalRules.get(expr);
+      if (res == null && fRealEqualDownRules) {
+        res = sameRealRule(equalRules, expr);
+      }
       if (res != null) {
         if (res.getRHS().equals(expr)) {
           // f(1) = f(1): a rule without a pattern which gives back its own left-hand side is a
@@ -1140,6 +1151,66 @@ public final class RulesData implements Serializable {
     return fEqualUpRules;
   }
 
+  /**
+   * Store a rule without patterns. A definition for a machine real replaces the one for a real
+   * which is the same up to the tolerance of <code>SameQ</code>.
+   */
+  private PatternMatcherEquals putEqualDownRule(final int setSymbol, final IExpr leftHandSide,
+      final IExpr rightHandSide) {
+    fEqualDownRules = getEqualDownRules();
+    if (hasMachineRealArgument(leftHandSide)) {
+      fRealEqualDownRules = true;
+      PatternMatcherEquals same = sameRealRule(fEqualDownRules, leftHandSide);
+      if (same != null) {
+        fEqualDownRules.remove(same.getLHS());
+      }
+    }
+    PatternMatcherEquals pmEquals =
+        new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
+    fEqualDownRules.put(leftHandSide, pmEquals);
+    return pmEquals;
+  }
+
+  private static boolean hasMachineRealArgument(IExpr leftHandSide) {
+    return leftHandSide.isAST() && ((IAST) leftHandSide).exists(x -> x instanceof Num);
+  }
+
+  /**
+   * The rule without patterns whose left-hand side differs from <code>expr</code> only in the last
+   * bit of machine real arguments, which are the same for <code>SameQ</code>.
+   *
+   * @return <code>null</code> if there is no such rule
+   */
+  private static PatternMatcherEquals sameRealRule(Map<IExpr, PatternMatcherEquals> equalRules,
+      IExpr expr) {
+    if (!hasMachineRealArgument(expr)
+        || ((IAST) expr).count(x -> x instanceof Num) > MAX_SAME_REAL_ARGUMENTS) {
+      return null;
+    }
+    return sameRealRule(equalRules, (IAST) expr, 1);
+  }
+
+  /** Vary the machine real arguments from the position <code>start</code> on by one bit. */
+  private static PatternMatcherEquals sameRealRule(Map<IExpr, PatternMatcherEquals> equalRules,
+      IAST expr, int start) {
+    for (int i = start; i < expr.size(); i++) {
+      if (expr.get(i) instanceof Num) {
+        final double value = expr.get(i).evalf();
+        for (double neighbour : new double[] {Math.nextDown(value), Math.nextUp(value)}) {
+          IAST changed = expr.setAtCopy(i, F.num(neighbour));
+          PatternMatcherEquals rule = equalRules.get(changed);
+          if (rule == null) {
+            rule = sameRealRule(equalRules, changed, i + 1);
+          }
+          if (rule != null) {
+            return rule;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
     return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY);
@@ -1149,21 +1220,13 @@ public final class RulesData implements Serializable {
       final boolean equalRule, final IExpr leftHandSide, final IExpr rightHandSide,
       final int priority) {
     if (equalRule || leftHandSide.isSymbol()) {
-      fEqualDownRules = getEqualDownRules();
-      PatternMatcherEquals pmEquals =
-          new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-      fEqualDownRules.put(leftHandSide, pmEquals);
-      return pmEquals;
+      return putEqualDownRule(setSymbol, leftHandSide, rightHandSide);
     }
 
     final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(setSymbol,
         leftHandSide, rightHandSide, true, recomputePatternHash(leftHandSide));
     if (pmEvaluator.isRuleWithoutPatterns()) {
-      fEqualDownRules = getEqualDownRules();
-      PatternMatcherEquals pmEquals =
-          new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-      fEqualDownRules.put(leftHandSide, pmEquals);
-      return pmEquals;
+      return putEqualDownRule(setSymbol, leftHandSide, rightHandSide);
     }
 
     if (IPatternMap.DEFAULT_RULE_PRIORITY != priority) {

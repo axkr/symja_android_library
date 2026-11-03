@@ -85,6 +85,7 @@ public class GraphUtil {
     }
     CycleSearch search = new CycleSearch(view, view.n, view.n, limit, result);
     search.maxNodes = maxNodes;
+    search.towardsSmallerNeighbour = true;
     search.run(0, false);
     if (search.exhausted && result.size() < limit) {
       // Plain backtracking in EdgeList order is lost on graphs like the knight's graph of a
@@ -94,6 +95,7 @@ public class GraphUtil {
       CycleSearch warnsdorff = new CycleSearch(view, view.n, view.n, limit, found);
       warnsdorff.maxNodes = maxNodes;
       warnsdorff.fewestFirst = true;
+      warnsdorff.towardsSmallerNeighbour = true;
       // one cycle is asked for: either direction of it is an answer
       warnsdorff.anyDirection = limit == 1;
       warnsdorff.run(0, false);
@@ -124,6 +126,8 @@ public class GraphUtil {
     boolean fewestFirst = false;
     /** report a cycle of undirected edges in the direction it was found in */
     boolean anyDirection = false;
+    /** report a cycle of undirected edges towards the smaller neighbour of its start vertex */
+    boolean towardsSmallerNeighbour = false;
 
     CycleSearch(GraphView view, int minLength, int maxLength, int limit, List<int[][]> result) {
       this.view = view;
@@ -257,7 +261,13 @@ public class GraphUtil {
         if (first == last) {
           return;
         }
-        if (first > last) {
+        int nextVertex = pathVertices[1];
+        int previousVertex = pathVertices[length - 1];
+        if (towardsSmallerNeighbour && nextVertex != previousVertex) {
+          if (nextVertex > previousVertex) {
+            return;
+          }
+        } else if (first > last) {
           return;
         }
       }

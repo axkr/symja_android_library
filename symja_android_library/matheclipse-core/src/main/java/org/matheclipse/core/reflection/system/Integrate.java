@@ -1743,8 +1743,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
     // without the domain Reals: a symbolic zero like x == a is real by the assumptions, which
     // the real solver does not see
-    IExpr solved = numericLimits ? engine.evalQuiet(F.Solve(constraints, x, S.Reals))
-        : engine.evalQuiet(F.Solve(constraints, x));
+    IExpr solved = numericLimits ? engine.evalQuiet(F.SolveDistinct(constraints, x, S.Reals))
+        : engine.evalQuiet(F.SolveDistinct(constraints, x));
     if (!solved.isList()) {
       return F.NIL;
     }
@@ -2408,7 +2408,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // Solve({eq, x >= lower, x <= upper}, x) - quiet, its messages (InverseFunction::ifun for
         // Sin(x)==0) are about a search the caller never sees
         IExpr solved = engine
-            .evalQuiet(F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+            .evalQuiet(F.SolveDistinct(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
         if (solved.isList()) {
           singularities.appendArgs((IAST) solved);
         }

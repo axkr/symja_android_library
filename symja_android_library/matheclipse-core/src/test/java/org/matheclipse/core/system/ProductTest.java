@@ -287,7 +287,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
 
     // Product(2^(k^2), {k, 1, n}) -> 2^(1/6*n*(1+n)*(1+2*n))
     check("Product(2^(k^2), {k, 1, n})", //
-        "2^(1/6*n*(1+3*n+2*n^2))");
+        "2^(1/6*n*(1+n)*(1+2*n))");
   }
 
   @Test

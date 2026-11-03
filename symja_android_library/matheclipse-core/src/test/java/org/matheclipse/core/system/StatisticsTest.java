@@ -750,14 +750,14 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
   public void testSpearmanRho() {
     // Perfect positive correlation
     check("SpearmanRho({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5})", //
-        "1.0");
+        "1");
 
     // Perfect negative correlation
-    check("SpearmanRho({1, 2, 3, 4, 5}, {5, 4, 3, 2, 1})", "-1.0");
+    check("SpearmanRho({1, 2, 3, 4, 5}, {5, 4, 3, 2, 1})", "-1");
 
     // Known partial correlation
     check("SpearmanRho({10, 20, 30, 40, 50}, {10, 30, 20, 40, 50})", //
-        "0.9");
+        "9/10");
 
     // Test with ties in the dataset
     checkNumeric("SpearmanRho({1, 2, 2, 4}, {1, 2, 3, 4})", //
@@ -766,13 +766,11 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     // 2x2 matrix correlation (columns against columns)
     // Column 1: {1, 3, 5}, Column 2: {2, 4, 6}
     check("SpearmanRho({{1, 2}, {3, 4}, {5, 6}})", //
-        "{{1.0,1.0},\n" //
-            + " {1.0,1.0}}");
+        "{{1,1},{1,1}}");
 
     // Matrix with inverse correlation
     check("SpearmanRho({{1, 6}, {3, 4}, {5, 2}})", //
-        "{{1.0,-1.0},\n" //
-            + " {-1.0,1.0}}");
+        "{{1,-1},{-1,1}}");
 
     // Unequal length vectors should remain unevaluated
     check("SpearmanRho({1, 2, 3}, {1, 2})", //

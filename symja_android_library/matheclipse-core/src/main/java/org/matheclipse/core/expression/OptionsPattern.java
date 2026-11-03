@@ -376,15 +376,21 @@ public class OptionsPattern extends AbstractPatternSequence {
     }
     IExpr defaultOptions = getDefaultOptions();
     if (defaultOptions.isPresent()) {
-      IAST optionsList = null;
-      if (defaultOptions.isSymbol()) {
-        optionsList = OptionsPattern.optionsList((ISymbol) defaultOptions, true);
-        extractRules(optionsList, list);
-      } else if (defaultOptions.isList()) {
-        extractRules(defaultOptions, list);
-      } else if (defaultOptions.isRuleAST()) {
-        extractRules(defaultOptions, list);
-      }
+      extractDefaults(defaultOptions, list);
+    }
+  }
+
+  /**
+   * Append the defaults of <code>OptionsPattern(spec)</code>. A symbol in <code>spec</code> stands
+   * for its current <code>Options</code>, read when the rule applies.
+   */
+  private static void extractDefaults(IExpr spec, IASTAppendable list) {
+    if (spec.isSymbol()) {
+      extractRules(optionsList((ISymbol) spec, true), list);
+    } else if (spec.isList()) {
+      ((IAST) spec).forEach(arg -> extractDefaults(arg, list));
+    } else if (spec.isRuleAST()) {
+      extractRules(spec, list);
     }
   }
 

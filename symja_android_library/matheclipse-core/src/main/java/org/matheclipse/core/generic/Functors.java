@@ -691,6 +691,7 @@ public class Functors {
     private final List<PatternMatcherAndEvaluator> fMatchers;
     private IExpr[] fSubstitutedMatches;
     private final EvalEngine fEngine;
+    private int fMaxMatches = Integer.MAX_VALUE;
 
     /**
      * @param matchers
@@ -714,7 +715,7 @@ public class Functors {
         int[] allRemovePositions = new int[argSize];
         this.fSubstitutedMatches = new IExpr[argSize];
         boolean evaled = false;
-        for (int i = 0; i < fMatchers.size(); i++) {
+        for (int i = 0; i < fMatchers.size() && fMaxMatches > 0; i++) {
           PatternMatcherAndEvaluator matcher = fMatchers.get(i);
           if (matcher != null) {
             IExpr lhs = matcher.getLHS();
@@ -730,8 +731,9 @@ public class Functors {
                 this.fSubstitutedMatches[allReplaceIndex[0]++] = matcher.getSubstitutedMatch();
 
                 evaled = true;
-                matched = matcher.matchASTSubset(lhsPatternExpr, arg, allReplacePositions,
-                    allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
+                matched = --fMaxMatches > 0
+                    && matcher.matchASTSubset(lhsPatternExpr, arg, allReplacePositions,
+                        allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
               }
             }
           }
@@ -746,6 +748,16 @@ public class Functors {
 
     public IExpr[] getSubstitutedMatches() {
       return fSubstitutedMatches;
+    }
+
+    /** The number of matches which may still be found. */
+    public int getMaxMatches() {
+      return fMaxMatches;
+    }
+
+    /** Set the number of matches after which {@link #apply(IAST)} stops. */
+    public void setMaxMatches(int maxMatches) {
+      fMaxMatches = maxMatches;
     }
 
   }
