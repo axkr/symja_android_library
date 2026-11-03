@@ -2139,6 +2139,10 @@ public final class NumberTheory {
         IInteger n = (IInteger) arg2;
         return divisorSigma(arg1, n);
       }
+      if (arg2.isInteger() && arg2.isNegative()) {
+        // -n has the same positive divisors as n
+        return divisorSigma(arg1, ((IInteger) arg2).negate());
+      }
       return F.NIL;
     }
 
@@ -4632,6 +4636,10 @@ public final class NumberTheory {
       if (arg1.isOne()) {
         return F.C1;
       }
+      if (arg1.isComplex() && arg1.gaussianInteger().isPresent()) {
+        // a Gaussian integer factors over the Gaussian integers without the option
+        return gaussianLambda(arg1, engine);
+      }
       if (ast.isAST2()) {
         if (!ast.arg2().isRuleAST() || ast.arg2().first() != S.GaussianIntegers) {
           return F.NIL;
@@ -5088,11 +5096,39 @@ public final class NumberTheory {
           return Errors.printMessage(S.ModularInverse, "ninv", F.List(arg1, arg2), engine);
         }
       }
-      // TODO add gaussian integers
+      if ((arg1.isComplex() || arg2.isComplex())
+          && (arg1.isInteger() || arg1.gaussianInteger().isPresent())
+          && (arg2.isInteger() || arg2.gaussianInteger().isPresent())) {
+        // an integer is a Gaussian integer too
+        return gaussianInverse(arg1, arg2, engine);
+      }
       // The `1` arguments to `2` must be ordinary integers.
       return Errors.printMessage(S.ModularInverse, "minv", F.List(F.C2, S.ModularInverse), engine);
     }
 
+
+    /**
+     * The inverse of the Gaussian integer <code>k</code> modulo the Gaussian integer <code>n</code>
+     * from their extended GCD, reduced with {@link S#Mod}.
+     */
+    private static IExpr gaussianInverse(IExpr k, IExpr n, EvalEngine engine) {
+      if (n.isZero()) {
+        // Nonzero integer expected at position `1` in `2`.
+        return Errors.printMessage(S.ModularInverse, "intnz", F.List(F.C2, F.binaryAST2(S.ModularInverse, k, n)),
+            engine);
+      }
+      IExpr extendedGCD = S.ExtendedGCD.of(engine, k, n);
+      if (extendedGCD.isList() && extendedGCD.argSize() == 2 && extendedGCD.second().isList()) {
+        IExpr gcd = extendedGCD.first();
+        if (!engine.evaluate(F.Abs(gcd)).isOne()) {
+          // `1` is not invertible modulo `2`.
+          return Errors.printMessage(S.ModularInverse, "ninv", F.List(k, n), engine);
+        }
+        IExpr s = extendedGCD.second().first();
+        return S.Mod.of(engine, F.Divide(s, gcd), n);
+      }
+      return F.NIL;
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -6824,6 +6860,20 @@ public final class NumberTheory {
         // return S.False;
         // }
         return F.False;
+      }
+      if (!eVar.isSize(1) && !hasOption) {
+        // a multivariate polynomial is square-free if no non-constant factor of its square-free
+        // factorization has a multiplicity above 1
+        IExpr factors = S.FactorSquareFreeList.of(engine, ast.arg1());
+        if (factors.isListOfLists()) {
+          for (IExpr factor : (IAST) factors) {
+            if (factor.argSize() == 2 && !factor.first().isNumber()
+                && !factor.second().isOne()) {
+              return S.False;
+            }
+          }
+          return S.True;
+        }
       }
       if (!eVar.isSize(1)) {
         // `1` currently not supported in `2`.

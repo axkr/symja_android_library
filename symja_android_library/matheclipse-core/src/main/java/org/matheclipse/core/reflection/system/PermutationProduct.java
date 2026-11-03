@@ -69,6 +69,12 @@ public class PermutationProduct extends AbstractFunctionEvaluator {
       }
     }
 
+    IAST combined = combinePowers(resultBuilder);
+    if (combined.isPresent()) {
+      isEvaled = true;
+      resultBuilder = combined.copyAppendable();
+    }
+
     // If everything was stripped out because they evaluated to identity cycles, return identity
     if (resultBuilder.isEmpty()) {
       return F.Cycles(F.CEmptyList);
@@ -80,6 +86,59 @@ public class PermutationProduct extends AbstractFunctionEvaluator {
     }
 
     return isEvaled ? resultBuilder : F.NIL;
+  }
+
+  /**
+   * Combine neighbouring factors of the same base: <code>a, a</code> is
+   * <code>PermutationPower(a, 2)</code>, and <code>a, InversePermutation(a)</code> cancels.
+   *
+   * @return {@link F#NIL} if no factors could be combined
+   */
+  private static IAST combinePowers(IAST product) {
+    List<IExpr> bases = new ArrayList<>();
+    List<Long> exponents = new ArrayList<>();
+    boolean combined = false;
+    for (int i = 1; i < product.size(); i++) {
+      IExpr factor = product.get(i);
+      IExpr base = factor;
+      long exponent = 1L;
+      if (factor.isAST(S.InversePermutation, 2)) {
+        base = factor.first();
+        exponent = -1L;
+      } else if (factor.isAST(S.PermutationPower, 3) && factor.second().isInteger()) {
+        long n = factor.second().toLongDefault();
+        if (F.isPresent(n)) {
+          base = factor.first();
+          exponent = n;
+        }
+      }
+      int last = bases.size() - 1;
+      if (last >= 0 && bases.get(last).equals(base)) {
+        combined = true;
+        long sum = exponents.get(last) + exponent;
+        if (sum == 0L) {
+          bases.remove(last);
+          exponents.remove(last);
+        } else {
+          exponents.set(last, sum);
+        }
+      } else {
+        bases.add(base);
+        exponents.add(exponent);
+      }
+    }
+    if (!combined) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ast(S.PermutationProduct, bases.size());
+    for (int i = 0; i < bases.size(); i++) {
+      IExpr base = bases.get(i);
+      long exponent = exponents.get(i);
+      result.append(exponent == 1L ? base
+          : exponent == -1L ? F.unaryAST1(S.InversePermutation, base)
+              : F.binaryAST2(S.PermutationPower, base, F.ZZ(exponent)));
+    }
+    return result;
   }
 
   private boolean isValidPermutation(IExpr arg, EvalEngine engine) {

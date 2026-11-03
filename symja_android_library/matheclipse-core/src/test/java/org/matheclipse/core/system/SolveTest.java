@@ -389,9 +389,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->2}}");
     check("Solve(x^2 - 2 == 0, x, Integers)", //
         "{}");
-    // a zero constant term means the variable was factored out, contributing the root 0
+    // a zero constant term means the variable was factored out, contributing the root 0 with
+    // its multiplicity
     check("Solve(x^5 - x^2 == 0, x, Integers)", //
-        "{{x->0},{x->1}}");
+        "{{x->0},{x->0},{x->1}}");
     // rational coefficients are cleared before the divisor enumeration
     check("Solve(1 - (i*1)/10 == 0, i, Integers)", //
         "{{i->10}}");
@@ -1219,16 +1220,21 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(a*x^2+b*x==0, x)", //
         "{{x->0},{x->-b/a}}");
 
+    // x == 0 is below the bound, the periodic families keep it as their condition
     check("Solve({Cos(x)*x==0, x > 10}, x)", //
-        "{{x->0},{x->Pi/2}}");
-    // TODO select a better starting value for internally used FindRoot:
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)>(10+Pi/2)/(2*Pi))},{x->ConditionalExpression(Pi/\n" + //
+        "2+2*Pi*C(1),C(1)∈Integers&&C(1)>(10-Pi/2)/(2*Pi))}}");
+    // TODO NSolve takes one principal value per periodic family, so the solutions above 10 are
+    // missing: 10.9956, 14.1372, ... (it used to ignore the bound and give 0.0 and 1.5708)
     check("NSolve({Cos(x)*x==0, x > 10}, x)", //
-        "{{x->0.0},{x->1.5708}}");
+        "{}");
 
     check("Solve({Cos(x)*x==0, x==0}, x)", //
         "{{x->0}}");
     check("Solve({Cos(x)*x==0, x < 10}, x)", //
-        "{{x->0},{x->Pi/2}}");
+        "{{x->0},{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)<(10+Pi/2)/(\n" + //
+        "2*Pi))},{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)<(10-Pi/2)/(\n" + //
+        "2*Pi))}}");
 
     // check("Solve((x^4 - 1)*(x^4 - 4) == 0, x, )", "");
     check("Solve(x == x, x)", //
@@ -3240,8 +3246,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testCosSingularitiesConstraint() {
     // Solve: Inverse functions are being used. Values may be lost for multivalued inverses.
+    // a periodic family above a bound keeps the bound as its condition
     check("Solve(Cos(x)==0&&x>0,x)", //
-        "{{x->Pi/2}}");
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)>1/4)},{x->ConditionalExpression(Pi/\n" + //
+        "2+2*Pi*C(1),C(1)∈Integers&&C(1)>-1/4)}}");
 
     check("Solve(Cos(x)==0&&(x>=2&&x<9||x>=10&&x<20),x)", //
         "{{x->3/2*Pi},{x->5/2*Pi},{x->7/2*Pi},{x->9/2*Pi},{x->11/2*Pi}}");

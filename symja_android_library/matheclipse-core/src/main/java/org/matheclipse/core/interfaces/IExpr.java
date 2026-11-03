@@ -7521,7 +7521,8 @@ public interface IExpr
     if (that.isZero()) {
       return F.C0;
     }
-    if (that.isOne()) {
+    if (that.isOne() && !that.isInexactNumber()) {
+      // an inexact one makes a numeric constant like Sqrt(2) inexact
       return this;
     }
     IExpr basicTimes = TimesOp.numberLikeTimes(this, that, returnNilIfUnevaluated);

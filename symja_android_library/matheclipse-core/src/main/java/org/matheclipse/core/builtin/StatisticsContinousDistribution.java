@@ -2262,6 +2262,19 @@ public class StatisticsContinousDistribution {
         // m^2*n
         return F.Times(F.Sqr(m), n);
       }
+      if (dist.size() == 5) {
+        double[] moments = generalizedGammaMachineMoments(dist, 1);
+        if (moments != null) {
+          return machineMoment(moments, 1);
+        }
+        IExpr a = dist.arg1();
+        IExpr b = dist.arg2();
+        IExpr g = dist.arg3();
+        // (b^2*(-Gamma(a + 1/g)^2 + Gamma(a)*Gamma(a + 2/g)))/Gamma(a)^2
+        return F.Times(F.Sqr(b), F.Power(F.Gamma(a), F.CN2),
+            F.Plus(F.Negate(F.Sqr(F.Gamma(F.Plus(a, F.Power(g, F.CN1))))),
+                F.Times(F.Gamma(a), F.Gamma(F.Plus(a, F.Times(F.C2, F.Power(g, F.CN1)))))));
+      }
       return F.NIL;
     }
   }
@@ -2283,6 +2296,12 @@ public class StatisticsContinousDistribution {
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
+      if (dist.argSize() == 4) {
+        // Piecewise({{1 - E^(-hazard(#)), # >= 0}}, 0) & with the cumulative hazard of the four
+        // parameter form
+        return onNonNegativeAxis(
+            F.Subtract(F.C1, F.Exp(F.Negate(cumulativeHazard(dist, F.Slot1)))), k);
+      }
       return F.NIL;
     }
 
@@ -2294,7 +2313,24 @@ public class StatisticsContinousDistribution {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_4;
+    }
+
+    /** <code>Piecewise({{value, # &gt;= 0}}, 0) &amp;</code> applied to <code>k</code>. */
+    private IExpr onNonNegativeAxis(IExpr value, IExpr k) {
+      return callFunction(
+          F.Function(F.Piecewise(F.list(F.list(value, F.GreaterEqual(F.Slot1, F.C0))), F.C0)), k);
+    }
+
+    /**
+     * The cumulative hazard <code>xi*(E^(lambda*t) - 1 + theta*lambda*t + alpha*lambda^2*t^2)</code>
+     * of <code>GompertzMakehamDistribution(lambda, xi, theta, alpha)</code>.
+     */
+    private static IExpr cumulativeHazard(IAST dist, IExpr t) {
+      IExpr lambda = dist.arg1();
+      IExpr lambdaT = F.Times(t, lambda);
+      return F.Times(F.Plus(F.CN1, F.Exp(lambdaT), F.Times(dist.arg3(), lambdaT),
+          F.Times(dist.arg4(), F.Sqr(lambdaT))), dist.arg2());
     }
 
     @Override
@@ -2364,11 +2400,49 @@ public class StatisticsContinousDistribution {
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
+      if (dist.argSize() == 4) {
+        // Piecewise({{(l*(E^(#*l) + t + 2*#*a*l)*x)/E^((-1 + E^(#*l) + #*t*l + #^2*a*l^2)*x),
+        // # >= 0}}, 0) &
+        IExpr l = dist.arg1();
+        IExpr hazardRate = F.Times(l, dist.arg2(), F.Plus(F.Exp(F.Times(F.Slot1, l)), dist.arg3(),
+            F.Times(F.C2, F.Slot1, dist.arg4(), l)));
+        return onNonNegativeAxis(
+            F.Times(hazardRate, F.Exp(F.Negate(cumulativeHazard(dist, F.Slot1)))), k);
+      }
       return F.NIL;
     }
 
     @Override
     public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.argSize() == 4) {
+        double lambda = dist.arg1().evalfNaN();
+        double xi = dist.arg2().evalfNaN();
+        double theta = dist.arg3().evalfNaN();
+        double alpha = dist.arg4().evalfNaN();
+        if (!(lambda > 0.0 && xi > 0.0 && theta >= 0.0 && alpha >= 0.0)) {
+          return F.NIL;
+        }
+        // invert the increasing cumulative hazard at -Log(uniform) by bisection
+        double[] vector = new double[size];
+        for (int i = 0; i < size; i++) {
+          double target = -Math.log(Math.nextUp(random.nextDouble())) / xi;
+          double low = 0.0;
+          double high = 1.0 / lambda;
+          while (hazard(high, lambda, theta, alpha) < target && high < 1.0e300) {
+            high *= 2.0;
+          }
+          for (int k = 0; k < 200 && high - low > 1.0e-15 * high; k++) {
+            double middle = 0.5 * (low + high);
+            if (hazard(middle, lambda, theta, alpha) < target) {
+              low = middle;
+            } else {
+              high = middle;
+            }
+          }
+          vector[i] = 0.5 * (low + high);
+        }
+        return new ASTRealVector(vector, false);
+      }
       if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
         double lambda = dist.arg1().evalfNaN();
@@ -2387,6 +2461,12 @@ public class StatisticsContinousDistribution {
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
+    }
+
+    /** The cumulative hazard divided by <code>xi</code> in machine precision. */
+    private static double hazard(double t, double lambda, double theta, double alpha) {
+      double lambdaT = lambda * t;
+      return Math.expm1(lambdaT) + theta * lambdaT + alpha * lambdaT * lambdaT;
     }
 
     @Override
@@ -3259,6 +3339,13 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr mean(IAST dist) {
+      if (dist.isAST3()) {
+        // (m*BesselK(1 + t, l/m))/BesselK(t, l/m)
+        IExpr m = dist.arg1();
+        IExpr t = dist.arg3();
+        IExpr z = F.Divide(dist.arg2(), m);
+        return F.Times(m, F.BesselK(F.Plus(F.C1, t), z), F.Power(F.BesselK(t, z), F.CN1));
+      }
       return dist.isAST2() ? dist.arg1() : F.NIL;
     }
 
@@ -3277,6 +3364,20 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST3()) {
+        // the generalized inverse Gaussian distribution
+        IExpr m = dist.arg1();
+        IExpr l = dist.arg2();
+        IExpr t = dist.arg3();
+        // Piecewise({{#^(-1 + t)/(2*E^((l*(1 + #^2/m^2))/(2*#))*m^t*BesselK(t, l/m)), # > 0}}, 0) &
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            F.Times(F.Power(F.Slot1, F.Plus(F.CN1, t)),
+                F.Power(F.Times(F.C2,
+                    F.Exp(F.Times(F.C1D2, l, F.Plus(F.C1, F.Times(F.Sqr(F.Slot1), F.Power(m, F.CN2))),
+                        F.Power(F.Slot1, F.CN1))),
+                    F.Power(m, t), F.BesselK(t, F.Divide(l, m))), F.CN1)),
+            F.Greater(F.Slot1, F.C0))), F.C0)), k);
+      }
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr l = dist.arg2();
@@ -3330,6 +3431,15 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr variance(IAST dist) {
+      if (dist.isAST3()) {
+        // (m^2*(-BesselK(1 + t, l/m)^2 + BesselK(t, l/m)*BesselK(2 + t, l/m)))/BesselK(t, l/m)^2
+        IExpr m = dist.arg1();
+        IExpr t = dist.arg3();
+        IExpr z = F.Divide(dist.arg2(), m);
+        return F.Times(F.Sqr(m), F.Power(F.BesselK(t, z), F.CN2),
+            F.Plus(F.Negate(F.Sqr(F.BesselK(F.Plus(F.C1, t), z))),
+                F.Times(F.BesselK(t, z), F.BesselK(F.Plus(F.C2, t), z))));
+      }
       if (dist.isAST2()) {
         // m^3/l
         return F.Divide(F.Power(dist.arg1(), F.C3), dist.arg2());
@@ -4208,7 +4318,8 @@ public class StatisticsContinousDistribution {
         return Errors.printMessage(ast.topHead(), "argr", F.List(S.NormalDistribution, F.C2),
             engine);
       }
-      return F.NIL;
+      // quantities of one unit as mean and deviation
+      return StatisticsNumericDistributions.quantityDistribution(ast, 1, 2);
     }
 
     @Override
@@ -4475,7 +4586,9 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 2 up to 4 args are allowed
-      return F.NIL;
+      // quantities of one unit as minimum and location
+      return ast.argSize() == 2 ? StatisticsNumericDistributions.quantityDistribution(ast, 1)
+          : StatisticsNumericDistributions.quantityDistribution(ast, 1, ast.argSize());
     }
 
     @Override
@@ -5243,7 +5356,8 @@ public class StatisticsContinousDistribution {
       if (ast.isAST0()) {
         return F.UniformDistribution(F.List(F.C0, F.C1));
       }
-      return F.NIL;
+      // an interval of quantities of one unit
+      return StatisticsNumericDistributions.quantityDistribution(ast, 1);
     }
 
     @Override
@@ -5683,7 +5797,8 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 2 or 3 args
-      return F.NIL;
+      // quantities of one unit as scale and location
+      return StatisticsNumericDistributions.quantityDistribution(ast, 2, 3);
     }
 
     @Override
@@ -8965,6 +9080,10 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        // the default scale 1
+        return F.binaryAST2(ast.head(), F.C1, ast.arg1());
+      }
       return F.NIL;
     }
 

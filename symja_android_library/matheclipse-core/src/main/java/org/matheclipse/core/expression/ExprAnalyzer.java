@@ -580,6 +580,26 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
             }
             return fEngine.evaluate(F.InverseGammaRegularized(function.arg1(), temp.negate()));
           }
+          if (position < 0 && function.arg1().isFree(fListOfVariables)
+              && temp.isFree(fListOfVariables)) {
+            // GammaRegularized(a, z) == s with an expression z of the variables
+            if (!Errors.allowInverseFunctions(S.InverseFunction, fEngine)) {
+              return F.NIL;
+            }
+            return fEngine.evaluate(F.Subtract(function.arg2(),
+                F.InverseGammaRegularized(function.arg1(), temp.oneIdentity0().negate())));
+          }
+        } else if (function.isAST(S.GammaRegularized, 4) && function.arg2().isZero()
+            && function.arg1().isFree(fListOfVariables)) {
+          // GammaRegularized(a, 0, z) == s
+          IAST temp = plusAST.removeAtCopy(i);
+          if (temp.isFree(fListOfVariables)) {
+            if (!Errors.allowInverseFunctions(S.InverseFunction, fEngine)) {
+              return F.NIL;
+            }
+            return fEngine.evaluate(F.Subtract(function.arg3(), F.InverseGammaRegularized(
+                function.arg1(), F.C0, temp.oneIdentity0().negate())));
+          }
         }
       }
     }

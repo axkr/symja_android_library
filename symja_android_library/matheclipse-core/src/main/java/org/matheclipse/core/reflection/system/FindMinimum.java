@@ -1496,6 +1496,11 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       }
       IReal realNumber = initialResult.evalReal();
       if (realNumber == null) {
+        // a complex value with a vanishing imaginary part, as Sqrt(-2.0)*Sqrt(-0.5), is real
+        double value = engine.evalDoubleNaN(initialResult);
+        if (!Double.isNaN(value)) {
+          return F.num(value);
+        }
         // The Function value `1` is not a real number at `2`=`3`.
         return Errors.printMessage(goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
             "nrnum", F.List(initialResult, variableList, initialStartValues), engine);

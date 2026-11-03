@@ -5239,6 +5239,21 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
     IExpr arg1 = ast.arg1();
     IExpr arg2 = ast.arg2();
+    if (arg2.isList() && arg2.argSize() > 0 && ((IAST) arg2).forAll(r -> r.isRuleAST())) {
+      // the nested limit: the last rule is taken first
+      IAST rules = (IAST) arg2;
+      IExpr result = arg1;
+      for (int i = rules.argSize(); i >= 1; i--) {
+        IASTMutable limit = originalAST.copy();
+        limit.set(1, result);
+        limit.set(2, rules.get(i));
+        result = engine.evaluate(limit);
+        if (!result.isFree(S.Limit, true)) {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
     if (!arg2.isRuleAST()) {
       // Limit specification `1` is not of the form x->x0.
       return Errors.printMessage(S.Limit, "lim", F.List(arg2), engine);

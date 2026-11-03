@@ -138,6 +138,19 @@ public final class StringFunctions {
     return language.isString() ? ALPHABET_MAP.get(language.toString()) : null;
   }
 
+  /** The string without the marks of the letters which are not in the alphabet of a language. */
+  private static String stripDiacritics(String str, String letters) {
+    StringBuilder buf = new StringBuilder();
+    str.codePoints().forEach(c -> {
+      if (letters.indexOf(Character.toLowerCase(c)) >= 0) {
+        buf.appendCodePoint(c);
+      } else {
+        buf.append(stripDiacritics(new String(Character.toChars(c))));
+      }
+    });
+    return buf.toString();
+  }
+
   /** The string without the marks of its letters. */
   private static String stripDiacritics(String str) {
     return Normalizer.normalize(str, Normalizer.Form.NFD).replaceAll("\\p{Mn}+", "");
@@ -215,6 +228,139 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ast.head() == S.AlphabeticOrder ? ARGS_0_3 : null;
+    }
+  }
+
+  /**
+   * <code>LongestOrderedSequence(list)</code> - the longest subsequence whose neighbouring
+   * elements are in canonical order; <code>LongestOrderedSequence(list, p)</code> the longest one
+   * with <code>p(a, b)</code> true for neighbours. Of several of the longest one the one ending
+   * last wins, and a string is treated as the list of its characters. With
+   * <code>IgnoreCase -&gt; True</code> a string is compared, and answered, in lower case.
+   */
+  private static final class LongestOrderedSequence extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST call = ast;
+      boolean ignoreCase = false;
+      if (ast.last().isRuleAST() && ast.last().first() == S.IgnoreCase) {
+        IExpr value = ast.last().second();
+        if (ast.argSize() != 2 || !(value.isTrue() || value.isFalse())) {
+          return F.NIL;
+        }
+        ignoreCase = value.isTrue();
+        call = ast.removeAtCopy(ast.argSize());
+      }
+      IExpr arg1 = call.arg1();
+      boolean string = arg1.isString() && call.isAST1();
+      if (ignoreCase && !string) {
+        return F.NIL;
+      }
+      IAST elements;
+      if (string) {
+        String str = arg1.toString();
+        if (ignoreCase) {
+          str = str.toLowerCase(Locale.ROOT);
+        }
+        IASTAppendable characters = F.ListAlloc(str.length());
+        str.codePoints()
+            .forEach(c -> characters.append(F.stringx(new String(Character.toChars(c)))));
+        elements = characters;
+      } else if (arg1.isList()) {
+        elements = (IAST) arg1;
+      } else {
+        // List expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "list", F.list(F.C1, ast), engine);
+      }
+      IExpr order = call.isAST2() ? call.arg2() : F.NIL;
+      int n = elements.argSize();
+      int[] length = new int[n + 1];
+      int[] predecessor = new int[n + 1];
+      int best = 0;
+      for (int i = 1; i <= n; i++) {
+        engine.checkTimeLimit();
+        length[i] = 1;
+        for (int j = 1; j < i; j++) {
+          if (length[j] + 1 >= length[i]
+              && inOrder(elements.get(j), elements.get(i), order, engine)) {
+            length[i] = length[j] + 1;
+            predecessor[i] = j;
+          }
+        }
+        if (best == 0 || length[i] >= length[best]) {
+          best = i;
+        }
+      }
+      int size = best == 0 ? 0 : length[best];
+      IExpr[] chain = new IExpr[size];
+      for (int i = best, k = size - 1; i > 0; i = predecessor[i], k--) {
+        chain[k] = elements.get(i);
+      }
+      IASTAppendable result = F.ListAlloc(chain);
+      if (string) {
+        StringBuilder buf = new StringBuilder();
+        result.forEach(c -> buf.append(c.toString()));
+        return F.stringx(buf.toString());
+      }
+      return result;
+    }
+
+    private static boolean inOrder(IExpr x, IExpr y, IExpr order, EvalEngine engine) {
+      if (order.isNIL()) {
+        return x.compareTo(y) <= 0;
+      }
+      return engine.evalTrue(F.binaryAST2(order, x, y));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <code>AlphabeticSort(list)</code> and <code>AlphabeticSort(list, language)</code> - the strings
+   * in the alphabetic order of the language, English if none is given: a lower case letter comes
+   * before its upper case one, and a letter of the language's alphabet takes its place there.
+   */
+  private static final class AlphabeticSort extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isListOfStrings()) {
+        return F.NIL;
+      }
+      String language = "English";
+      if (ast.isAST2()) {
+        if (!ast.arg2().isString()) {
+          return F.NIL;
+        }
+        language = ast.arg2().toString();
+      }
+      String code = null;
+      for (int i = 0; i < LANGUAGES.length; i += 2) {
+        if (LANGUAGES[i].equals(language)) {
+          code = LANGUAGES[i + 1];
+          break;
+        }
+      }
+      if (code == null) {
+        return F.NIL;
+      }
+      java.text.Collator collator = java.text.Collator.getInstance(Locale.forLanguageTag(code));
+      collator.setStrength(java.text.Collator.TERTIARY);
+      IASTAppendable result = ((IAST) ast.arg1()).copyAppendable();
+      result.sortInplace((x, y) -> {
+        int order = collator.compare(x.toString(), y.toString());
+        return order != 0 ? order : x.toString().compareTo(y.toString());
+      });
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -384,7 +530,12 @@ public final class StringFunctions {
       }
       String str;
       if (arg1.isString()) {
-        str = option[1].isTrue() ? stripDiacritics(arg1.toString()) : arg1.toString();
+        str = arg1.toString();
+        if (option[1].isTrue()) {
+          // a letter of the language's alphabet keeps its marks: in Spanish ñ is not n
+          String letters = option[2].isString() ? lettersOfLanguage(option[2]) : null;
+          str = letters == null ? stripDiacritics(str) : stripDiacritics(str, letters);
+        }
         if (option[0].isTrue()) {
           str = str.toLowerCase(Locale.ROOT);
         }
@@ -404,8 +555,8 @@ public final class StringFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.IgnoreDiacritics},
-          new IExpr[] {S.False, S.False});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.IgnoreDiacritics, S.Language},
+          new IExpr[] {S.False, S.False, S.Automatic});
     }
   }
 
@@ -432,15 +583,7 @@ public final class StringFunctions {
       if (letters == null) {
         return F.NIL;
       }
-      StringBuilder buf = new StringBuilder();
-      arg1.toString().codePoints().forEach(c -> {
-        if (letters.indexOf(Character.toLowerCase(c)) >= 0) {
-          buf.appendCodePoint(c);
-        } else {
-          buf.append(stripDiacritics(new String(Character.toChars(c))));
-        }
-      });
-      return F.stringx(buf.toString());
+      return F.stringx(stripDiacritics(arg1.toString(), letters));
     }
 
     /**
@@ -779,7 +922,41 @@ public final class StringFunctions {
         }
         return F.ZZ(levenshteinDistance.apply(arg1.toString(), arg2.toString()));
       }
+      if (arg1.isList() && arg2.isList()) {
+        return F.ZZ(listDistance((IAST) arg1, (IAST) arg2, option[0].isTrue(), engine));
+      }
       return F.NIL;
+    }
+
+    /**
+     * The number of insertions, deletions and substitutions of elements which turn one list into
+     * the other.
+     */
+    private static int listDistance(IAST list1, IAST list2, boolean ignoreCase,
+        EvalEngine engine) {
+      int m = list2.argSize();
+      int[] previous = new int[m + 1];
+      int[] current = new int[m + 1];
+      for (int j = 0; j <= m; j++) {
+        previous[j] = j;
+      }
+      for (int i = 1; i < list1.size(); i++) {
+        engine.checkTimeLimit();
+        IExpr x = list1.get(i);
+        current[0] = i;
+        for (int j = 1; j <= m; j++) {
+          IExpr y = list2.get(j);
+          boolean equal = ignoreCase && x.isString() && y.isString()
+              ? x.toString().equalsIgnoreCase(y.toString())
+              : x.equals(y);
+          current[j] = Math.min(Math.min(current[j - 1], previous[j]) + 1,
+              previous[j - 1] + (equal ? 0 : 1));
+        }
+        int[] swap = previous;
+        previous = current;
+        current = swap;
+      }
+      return previous[m];
     }
 
     @Override
@@ -1627,6 +1804,8 @@ public final class StringFunctions {
       }
       S.Alphabet.setEvaluator(new Alphabet());
       S.AlphabeticOrder.setEvaluator(new AlphabeticOrder());
+      S.AlphabeticSort.setEvaluator(new AlphabeticSort());
+      S.LongestOrderedSequence.setEvaluator(new LongestOrderedSequence());
       S.BaseDecode.setEvaluator(new BaseDecode());
       S.BaseEncode.setEvaluator(new BaseEncode());
       S.ByteArrayToString.setEvaluator(new ByteArrayToString());
@@ -1677,7 +1856,8 @@ public final class StringFunctions {
       S.StringRotateRight.setEvaluator(new StringRotate(false));
       S.StringRiffle.setEvaluator(new StringRiffle());
       S.StringSplit.setEvaluator(new StringSplit());
-      S.StringStartsQ.setEvaluator(new StringStartsQ());
+      S.StringStartsQ.setEvaluator(new StringStartsQ(true));
+      S.StringEndsQ.setEvaluator(new StringStartsQ(false));
       S.StringTake.setEvaluator(new StringTake());
       S.StringTakeDrop.setEvaluator(new StringTakeDrop());
       S.StringReplacePart.setEvaluator(new StringReplacePart());
@@ -1960,6 +2140,9 @@ public final class StringFunctions {
     if (arg1.isList()) {
       return arg1.mapThread(ast, 1);
     }
+    if (arg1.head() == S.BioSequence) {
+      return BioSequenceStrings.evaluate(ast, arg1, engine);
+    }
     if (!arg1.isString()) {
       // String or list of strings expected at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
@@ -1982,13 +2165,24 @@ public final class StringFunctions {
     }
     IExpr arg1 = ast.arg1();
     if (!arg1.isString()) {
-      if (arg1.isListOfStrings()) {
-        return arg1.mapThread(ast, 1);
-      }
-      // String or list of strings expected at position `1` in `2`.
-      return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+      return nonStringArg1(ast, arg1, engine);
     }
     return null;
+  }
+
+  /**
+   * A string function whose first argument is no string: threaded over a list of strings, applied
+   * to the letters of a biomolecular sequence, or else a message.
+   */
+  private static IExpr nonStringArg1(final IAST ast, IExpr arg1, EvalEngine engine) {
+    if (arg1.isListOfStrings()) {
+      return arg1.mapThread(ast, 1);
+    }
+    if (arg1.head() == S.BioSequence) {
+      return BioSequenceStrings.evaluate(ast, arg1, engine);
+    }
+    // String or list of strings expected at position `1` in `2`.
+    return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
   }
 
   /**
@@ -2031,6 +2225,9 @@ public final class StringFunctions {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           return arg1.mapThread(ast, 1);
+        }
+        if (arg1.head() == S.BioSequence) {
+          return BioSequenceStrings.evaluate(ast, arg1, engine);
         }
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
@@ -2116,6 +2313,9 @@ public final class StringFunctions {
     if (arg1.isList()) {
       return arg1.mapThread(ast, 1);
     }
+    if (arg1.head() == S.BioSequence) {
+      return BioSequenceStrings.evaluate(ast, arg1, engine);
+    }
     // a core evaluator gets its arguments unevaluated, and a string pattern is often
     // built rather than written out: a RegularExpression joined from pieces, or a
     // list of alternatives kept in a variable
@@ -2192,6 +2392,9 @@ public final class StringFunctions {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           return arg1.mapThread(ast, 1);
+        }
+        if (arg1.head() == S.BioSequence) {
+          return BioSequenceStrings.evaluate(ast, arg1, engine);
         }
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
@@ -2520,7 +2723,7 @@ public final class StringFunctions {
         return arg1.mapThread(ast, 1);
       }
       if (!arg1.isString()) {
-        return F.NIL;
+        return BioSequenceStrings.evaluate(ast, arg1, engine);
       }
       IExpr arg2 = ast.arg2();
       if (!arg2.isString()) {
@@ -2617,6 +2820,12 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.arg1().isString()) {
         return ast.arg1();
+      }
+      if (ast.argSize() > 0 && ast.arg1().head() == S.BioSequence) {
+        IExpr joined = BioSequenceStrings.join(ast, engine);
+        if (joined.isPresent()) {
+          return joined;
+        }
       }
       // the strings may stand in lists, nested ones too; nothing joined is the empty string -
       // a notebook joins the strings of an empty row this way
@@ -2782,6 +2991,9 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.head() == S.BioSequence) {
+        return BioSequenceStrings.evaluate(ast, arg1, engine);
+      }
       String padding = " ";
       if (ast.argSize() >= 3) {
         if (!ast.arg3().isString() || ast.arg3().toString().isEmpty()) {
@@ -2870,6 +3082,9 @@ public final class StringFunctions {
       if (ast.arg1().isString()) {
         String str = ast.arg1().toString();
         return F.ZZ(str.codePointCount(0, str.length()));
+      }
+      if (ast.arg1().head() == S.BioSequence) {
+        return BioSequenceStrings.evaluate(ast, ast.arg1(), engine);
       }
       // String expected at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
@@ -3016,7 +3231,7 @@ public final class StringFunctions {
         if (arg1.isListOfStrings()) {
           return arg1.mapThread(ast, 1);
         }
-        return F.NIL;
+        return BioSequenceStrings.evaluate(ast, arg1, engine);
       }
       CodePointString str = new CodePointString(arg1.toString());
       int length = str.length();
@@ -3136,6 +3351,9 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().head() == S.BioSequence) {
+        return BioSequenceStrings.evaluate(ast, ast.arg1(), engine);
+      }
       if (ast.arg1().isString()) {
         String str = ast.arg1().toString();
         int n = ast.arg2().toMachineInt();
@@ -3608,12 +3826,8 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isListOfStrings()) {
-        return arg1.mapThread(ast, 1);
-      }
       if (!arg1.isString()) {
-        // String or list of strings expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+        return nonStringArg1(ast, arg1, engine);
       }
       IExpr taken = engine.evaluate(F.binaryAST2(S.StringTake, arg1, ast.arg2()));
       if (!taken.isString()) {
@@ -3650,7 +3864,7 @@ public final class StringFunctions {
         return arg1.mapThread(ast, 1);
       }
       if (!arg1.isString()) {
-        return F.NIL;
+        return BioSequenceStrings.evaluate(ast, arg1, engine);
       }
       long n = 1;
       if (ast.isAST2()) {
@@ -3722,8 +3936,14 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      String str = arg1.toString();
-      return F.stringx(new StringBuilder(str).reverse().toString());
+      if (arg1.isString()) {
+        return F.stringx(new StringBuilder(arg1.toString()).reverse().toString());
+      }
+      if (arg1.head() == S.BioSequence) {
+        return BioSequenceStrings.evaluate(ast, arg1, engine);
+      }
+      // String or list of strings expected at position `1` in `2`.
+      return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -3978,11 +4198,7 @@ public final class StringFunctions {
         final EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isString()) {
-        if (arg1.isListOfStrings()) {
-          return arg1.mapThread(ast, 1);
-        }
-        // String or list of strings expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+        return nonStringArg1(ast, arg1, engine);
       }
       boolean ignoreCase = option[0].isTrue();
       // without a delimiter the pieces are separated by whitespace
@@ -4058,13 +4274,23 @@ public final class StringFunctions {
     }
   }
 
+  /**
+   * <code>StringStartsQ(s, p)</code> and <code>StringEndsQ(s, p)</code> - whether a beginning or an
+   * end of the string matches the pattern.
+   */
   private static class StringStartsQ extends AbstractFunctionOptionEvaluator {
+    private final boolean start;
+
+    StringStartsQ(boolean start) {
+      this.start = start;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2) {
-        return stringPatternQ(ast, options[0].isTrue(), engine, StringPatternMatcher::lookingAt);
+        return stringPatternQ(ast, options[0].isTrue(), engine,
+            start ? StringPatternMatcher::lookingAt : matcher -> matcher.findSuffix(0));
       }
       return F.NIL;
     }
@@ -4095,6 +4321,9 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST3() && arg1.head() == S.BioSequence) {
+        return BioSequenceStrings.evaluate(ast, arg1, engine);
+      }
       if (!ast.isAST3() || !arg1.isString()) {
         // StringReplacePart(snew, spec) is the operator form; a list of strings is not threaded
         // over
@@ -4462,11 +4691,23 @@ public final class StringFunctions {
             IExpr rhs = rule.arg2();
             context.put(lhs, rhs);
           }
+          // the association is also the one positional argument
+          context.putIfAbsent(F.C1, args);
         } else if (args.isList()) {
           IAST list = (IAST) args;
           for (int i = 1; i < list.size(); i++) {
             IExpr expr = list.get(i);
             context.put(F.ZZ(i), expr);
+          }
+          // a named slot takes the first matching key of an association among the arguments
+          for (int i = 1; i < list.size(); i++) {
+            if (list.get(i).isAssociation()) {
+              IAssociation assoc = (IAssociation) list.get(i);
+              for (int j = 1; j < assoc.size(); j++) {
+                IAST rule = assoc.getRule(j);
+                context.putIfAbsent(rule.arg1(), rule.arg2());
+              }
+            }
           }
         }
       } else if (args.isPresent()) {
@@ -4487,6 +4728,9 @@ public final class StringFunctions {
         return Errors.templateApply(arg1.toString(), arg2);
       } else if (arg1.isAST(S.StringTemplate, 2) && arg1.first().isString()) {
         return Errors.templateApply(arg1.first().toString(), arg2);
+      } else if (arg1.isAST(S.StringTemplate, 3) && arg1.first().isString()
+          && arg1.second().isAssociation() && (arg2.isNIL() || arg2.isAssociation())) {
+        return templateWithDefaults((IAST) arg1, arg2, engine);
       } else if (arg1.isAST(S.StringTemplate) && arg1.argSize() > 1 && arg1.first().isString()) {
         return templateWithOptions((IAST) arg1, arg2, engine);
       }
@@ -4524,6 +4768,37 @@ public final class StringFunctions {
       }
       return combiner.isPresent() ? F.unaryAST1(combiner, pieces)
           : pieces.setAtCopy(0, S.StringJoin);
+    }
+
+    /**
+     * Fill the template <code>StringTemplate(str, defaults)</code> with the association
+     * <code>args</code>: the values of the association <code>defaults</code> take precedence, a
+     * delayed value is evaluated each time, and a slot without a value stays empty.
+     */
+    private static IExpr templateWithDefaults(IAST template, IExpr args, EvalEngine engine) {
+      IAssociation values = args.isAssociation() ? ((IAssociation) args).copy() : F.assoc();
+      IAssociation defaults = (IAssociation) template.second();
+      for (int i = 1; i < defaults.size(); i++) {
+        IAST rule = defaults.getRule(i);
+        values.appendRule(F.Rule(rule.first(), engine.evaluate(rule.second())));
+      }
+      StringBuilder buf = new StringBuilder();
+      String str = template.first().toString();
+      int slotCounter = 0;
+      int position = 0;
+      java.util.regex.Matcher slots = TEMPLATE_SLOT.matcher(str);
+      while (slots.find()) {
+        buf.append(str, position, slots.start());
+        position = slots.end();
+        String name = slots.group(1);
+        IExpr value = templateValue(name.isEmpty() ? Integer.toString(++slotCounter) : name,
+            values);
+        if (!value.isAST(S.Missing)) {
+          buf.append(value.toString());
+        }
+      }
+      buf.append(str.substring(position));
+      return F.stringx(buf.toString());
     }
 
     /** The value of the named slot in a list, an association or a single value. */
@@ -4601,15 +4876,127 @@ public final class StringFunctions {
       buf.append(arg1.toString());
     }
 
+    /** The formats of lists, associations, truth values, missing values and elided forms. */
+    private static final class TextFormat {
+      String[] list = {"{", ", ", "}"};
+      String[] association = {"<|", ", ", "|>", " -> "};
+      String[] booleans = null;
+      /** The text of <code>Missing(...)</code>; <code>null</code> for its reason. */
+      String missing = "";
+      /** The heads whose arguments are elided; <code>null</code> elides all of them. */
+      java.util.Set<IExpr> elided = new java.util.HashSet<IExpr>(
+          java.util.Arrays.asList(S.Graphics, S.Graphics3D));
+    }
+
+    /** The strings of a list of strings, or <code>null</code>. */
+    private static String[] strings(IExpr value, int length) {
+      if (!value.isList() || value.argSize() != length
+          || !((IAST) value).forAll(x -> x.isString())) {
+        return null;
+      }
+      String[] result = new String[length];
+      for (int i = 0; i < length; i++) {
+        result[i] = ((IAST) value).get(i + 1).toString();
+      }
+      return result;
+    }
+
+    private static void text(IExpr expr, TextFormat format, StringBuilder buf) {
+      if (expr.isString()) {
+        buf.append(expr.toString());
+      } else if (format.booleans != null && (expr.isTrue() || expr.isFalse())) {
+        buf.append(expr.isTrue() ? format.booleans[0] : format.booleans[1]);
+      } else if (expr.isAST(S.Missing)) {
+        if (format.missing != null) {
+          buf.append(format.missing);
+        } else if (expr.argSize() >= 1 && expr.first().isString()) {
+          buf.append(expr.first().toString());
+        }
+      } else if (expr.isAssociation()) {
+        IAssociation assoc = (IAssociation) expr;
+        buf.append(format.association[0]);
+        for (int i = 1; i < assoc.size(); i++) {
+          if (i > 1) {
+            buf.append(format.association[1]);
+          }
+          IAST rule = assoc.getRule(i);
+          text(rule.first(), format, buf);
+          buf.append(format.association[3]);
+          text(rule.second(), format, buf);
+        }
+        buf.append(format.association[2]);
+      } else if (expr.isList()) {
+        IAST list = (IAST) expr;
+        buf.append(format.list[0]);
+        for (int i = 1; i < list.size(); i++) {
+          if (i > 1) {
+            buf.append(format.list[1]);
+          }
+          text(list.get(i), format, buf);
+        }
+        buf.append(format.list[2]);
+      } else if (expr.isAST() && expr.head().isSymbol()
+          && (format.elided == null || format.elided.contains(expr.head()))) {
+        buf.append(expr.head().toString()).append("[\u2026]");
+      } else {
+        buf.append(expr.toString());
+      }
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      return of(arg1);
+      TextFormat format = new TextFormat();
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (!option.isRuleAST()) {
+          return F.NIL;
+        }
+        IExpr name = option.first();
+        IExpr value = option.second();
+        if (name == S.BooleanStrings) {
+          format.booleans = value.isAutomatic() ? null : strings(value, 2);
+        } else if (name == S.ListFormat) {
+          if (!value.isAutomatic()) {
+            String[] list = strings(value, 3);
+            if (list != null) {
+              format.list = list;
+            }
+          }
+        } else if (name == S.AssociationFormat) {
+          if (!value.isAutomatic()) {
+            String[] association = strings(value, 4);
+            if (association != null) {
+              format.association = association;
+            }
+          }
+        } else if (name == S.ElidedForms) {
+          if (value == S.All) {
+            format.elided = null;
+          } else if (value == S.None) {
+            format.elided = new java.util.HashSet<IExpr>();
+          } else {
+            format.elided = new java.util.HashSet<IExpr>();
+            for (IExpr head : value.makeList()) {
+              format.elided.add(head);
+            }
+          }
+        } else if (name == S.MissingString) {
+          format.missing = value.isString() ? value.toString() : null;
+        }
+        // other options don't change the text
+      }
+      if (arg1.isString()) {
+        return arg1;
+      }
+      StringBuilder buf = new StringBuilder();
+      text(arg1, format, buf);
+      return F.stringx(buf.toString());
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
   }
 

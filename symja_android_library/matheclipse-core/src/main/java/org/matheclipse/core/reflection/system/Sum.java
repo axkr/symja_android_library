@@ -917,6 +917,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return F.NIL;
   }
 
+  /** The maximal number of terms of a sum from a negative lower limit to 0 written out. */
+  private static final int NEGATIVE_LOWER_LIMIT_TERMS = 1000;
+
   /**
    * Evaluate the definite sum: <code>Sum(arg1, {var, from, to})</code>
    *
@@ -1011,6 +1014,17 @@ public class Sum extends ListFunctions.Table implements SumRules {
         }
       } catch (RecursionLimitExceeded rle) {
         return Errors.printMessage(S.Sum, rle, engine);
+      }
+    }
+    if (from.isInteger() && from.isNegative() && !to.isNumber() && to.isFree(var, true)
+        && ((IInteger) from).isGE(F.ZZ(-NEGATIVE_LOWER_LIMIT_TERMS))) {
+      // the terms from a negative lower limit up to 0 are written out
+      IExpr finite = engine.evalQuiet(F.Sum(expr, F.list(var, from, C0)));
+      if (finite.isFreeAST(S.Sum) && !finite.isComplexInfinity() && !finite.isIndeterminate()) {
+        IExpr rest = engine.evalQuietNIL(F.Sum(expr, F.list(var, C1, to)));
+        if (rest.isPresent() && rest.isFreeAST(S.Sum) && !rest.isComplexInfinity()) {
+          return F.Plus(finite, rest);
+        }
       }
     }
     if (from.isPositive() && !isRationalInVar(expr, var, true, engine)) {

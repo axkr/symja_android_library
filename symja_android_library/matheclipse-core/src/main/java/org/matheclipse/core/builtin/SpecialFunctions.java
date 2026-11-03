@@ -1924,6 +1924,18 @@ public class SpecialFunctions {
       IExpr z = ast.arg1();
       IExpr s = ast.arg2();
       IExpr a = ast.arg3();
+      if (ast.argSize() == 4) {
+        IExpr option = ast.arg4();
+        if (!option.isRuleAST() || option.first() != S.IncludeSingularTerm) {
+          return F.NIL;
+        }
+        if (option.second().isTrue() && a.isInteger() && !a.isPositive()) {
+          // the term z^k/(k+a)^s of k = -a, where the denominator is 0
+          return F.Plus(F.LerchPhi(z, s, a), F.Times(F.Power(z, a.negate()), //
+              F.Power(F.C0, s.negate())));
+        }
+        return F.LerchPhi(z, s, a);
+      }
       return evaluateSymbolic(z, s, a, engine);
     }
 
@@ -2042,10 +2054,11 @@ public class SpecialFunctions {
         if (n <= 0) {
           n = -n;
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0002/
-          // z^n*(PolyLog(s, z)+Sum(1/(z^k*k^s), {k, 1, n}))
-          return F.Times(F.Power(z, n), //
-              F.Plus(polyLog, //
-                  F.sum(k -> F.Power(F.Times(F.Power(z, k), F.Power(k, s)), F.CN1), 1, n)));
+          // z^n*PolyLog(s, z)+Sum(z^(n-k)/k^s, {k, 1, n})
+          final int shift = n;
+          return F.Plus(F.Times(F.Power(z, n), polyLog), //
+              F.sum(k -> F.Times(F.Power(z, F.ZZ(shift).subtract(k)), F.Power(k, s.negate())), 1,
+                  n));
         } else {
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0009/
           // (PolyLog(s, z)-Sum(z^k/k^s, {k, 1, -1+n}))/z^n
@@ -2167,7 +2180,7 @@ public class SpecialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_3_4;
     }
 
     @Override
@@ -2848,9 +2861,26 @@ public class SpecialFunctions {
           return F.Times(F.Power(F.Gamma(F.Plus(p, F.C1)), F.CN1),
               F.Power(F.Negate(F.Log(F.Subtract(F.C1, z))), p));
         }
+        int order = n.toIntDefault();
+        int pInt = p.toIntDefault();
+        if (order < 0 && order >= -MAX_NIELSEN_NEGATIVE_ORDER && pInt > 1) {
+          // PolyLog(n-1, p, z) == z * D(PolyLog(n, p, z), z), starting at
+          // PolyLog(0, p, z) == (-Log(1-z))^p/p!
+          EvalEngine engine = EvalEngine.get();
+          ISymbol x = F.Dummy("x");
+          IExpr result = F.Times(F.Power(F.Factorial(p), F.CN1),
+              F.Power(F.Negate(F.Log(F.Subtract(F.C1, x))), p));
+          for (int i = order; i < 0; i++) {
+            result = engine.evaluate(F.Expand(F.Times(x, F.D(result, x))));
+          }
+          return F.subst(result, x, z);
+        }
       }
       return F.NIL;
     }
+
+    /** The largest <code>-n</code> of <code>PolyLog(n, p, z)</code> written out for a negative n. */
+    private static final int MAX_NIELSEN_NEGATIVE_ORDER = 8;
 
     @Override
     public int[] expectedArgSize(IAST ast) {

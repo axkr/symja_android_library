@@ -66,6 +66,15 @@ public final class MaximumLikelihood {
       return F.NIL;
     }
     IAST dist = (IAST) ast.arg2();
+    if (dist.isAST(S.UniformDistribution, 2) && dist.arg1().isList2()
+        && dist.arg1().first().isVariable() && dist.arg1().second().isVariable()
+        && !dist.arg1().first().equals(dist.arg1().second())) {
+      // the smallest interval which holds the data
+      double min = Arrays.stream(data).min().getAsDouble();
+      double max = Arrays.stream(data).max().getAsDouble();
+      return F.list(F.Rule(dist.arg1().first(), F.num(min)),
+          F.Rule(dist.arg1().second(), F.num(max)));
+    }
     // the parameters to estimate are the arguments of dist which are variables
     IASTAppendable parameters = F.ListAlloc(dist.argSize());
     for (IExpr arg : dist) {

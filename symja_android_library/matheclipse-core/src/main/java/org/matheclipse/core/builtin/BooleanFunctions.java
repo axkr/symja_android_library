@@ -829,6 +829,15 @@ public final class BooleanFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
+      if (arg1.isAST(S.CenteredInterval, 3) || arg2.isAST(S.CenteredInterval, 3)) {
+        // a real centered interval is the interval {c - r, c + r}
+        IAST interval1 = IntervalSym.centeredToInterval(arg1, true, engine);
+        IAST interval2 = IntervalSym.centeredToInterval(arg2, true, engine);
+        if (interval1.isPresent() || interval2.isPresent()) {
+          return F.binaryAST2(S.Between, interval1.orElse(arg1), interval2.orElse(arg2));
+        }
+        return F.NIL;
+      }
       if (arg2.isListOfLists()) {
         if (arg2.argSize() > 0) {
           IAST listOfPairs = (IAST) arg2;
@@ -846,6 +855,15 @@ public final class BooleanFunctions {
         }
         IAST intervalOfPairs = (IAST) arg2;
         if (intervalOfPairs.forAll(IExpr::isList2)) {
+          if (intervalOfPairs.argSize() == 1) {
+            IExpr min = intervalOfPairs.first().first();
+            IExpr max = intervalOfPairs.first().second();
+            if (!min.isRealResult() || !max.isRealResult()) {
+              // the bounds of a symbolic interval may come in either order
+              return F.Or(F.And(F.LessEqual(min, arg1), F.LessEqual(arg1, max)),
+                  F.And(F.LessEqual(max, arg1), F.LessEqual(arg1, min)));
+            }
+          }
           return betweenPairs(arg1, intervalOfPairs);
         }
       }

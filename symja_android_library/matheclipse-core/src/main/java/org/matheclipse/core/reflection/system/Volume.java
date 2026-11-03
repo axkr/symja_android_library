@@ -16,6 +16,13 @@ public class Volume extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.argSize() > 1 && ast.last().isRuleAST()) {
+      // the options AccuracyGoal, Assumptions, PrecisionGoal, WorkingPrecision, ...
+      IExpr measure = RegionPrimitives.measureWithOptions(ast, engine);
+      if (measure.isPresent()) {
+        return measure;
+      }
+    }
     if (ast.argSize() > 1) {
       // Volume(f, {u,umin,umax}, {v,vmin,vmax}, ...) and a chart as last argument
       final boolean chart = ast.last().isString();

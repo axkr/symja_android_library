@@ -561,6 +561,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         IExpr arg2 = engine.evaluate(holdallAST.arg2());
         if (arg2.isList3() && arg2.second().isNumericFunction(true)
             && arg2.getAt(3).isNumericFunction(true)) {
+          if (!arg2.isInexactNumber() && arg2.isFree(IExpr::isInexactNumber, true)) {
+            // the interpolation of exact data is a piecewise polynomial with exact coefficients,
+            // whose integral between exact limits is exact
+            IExpr integrand = engine.evalQuiet(arg1Holdall);
+            if (!hasInterpolatingFunction(integrand, engine)
+                && integrand.isFree(e -> e instanceof InterpolatingFunctionExpr
+                    || e instanceof GridInterpolatingFunctionExpr || e.isInexactNumber(), true)) {
+              IExpr exact = engine.evalQuiet(F.Integrate(integrand, arg2));
+              if (exact.isFreeAST(S.Integrate)) {
+                return exact;
+              }
+            }
+          }
           IExpr temp = engine.evaluate(F.NIntegrate(arg1Holdall, arg2));
           if (temp.isFreeAST(S.NIntegrate)) {
             return temp;
@@ -706,6 +719,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           IExpr temp = engine.evaluate(copy);
           boolean antiderivative = temp.isFreeAST(h -> h == S.Integrate || h == S.Boole) //
               && temp.isSpecialsFree();
+          if (antiderivative && hasPiecewiseCondition(temp, xList.arg1())) {
+            // the antiderivative of each piece jumps where the condition changes: its values at
+            // the limits don't give the integral
+            return F.NIL;
+          }
           if (antiderivative) {
             IExpr value = definiteIntegral(temp, arg1, xList, holdallAST, engine);
             if (value.isPresent()) {
@@ -1510,6 +1528,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return POWER_TIMES_FUNCTION_MATCHER.apply(list);
     }
     return F.NIL;
+  }
+
+  /** Whether <code>expr</code> has a <code>Piecewise</code> with a condition depending on x. */
+  private static boolean hasPiecewiseCondition(IExpr expr, IExpr x) {
+    return expr.has(e -> e.isAST(S.Piecewise) && e.first().isList()
+        && !((IAST) e.first()).forAll(row -> row.isList2() && row.second().isFree(x, true)), true);
   }
 
   private static IExpr integratePiecewise(int[] dim, final IAST piecewiseFunction,

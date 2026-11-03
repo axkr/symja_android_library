@@ -111,6 +111,10 @@ public class ColorData extends AbstractFunctionEvaluator {
       if (ast.isAST2()) {
         String prop = ast.arg2().toString();
         if (prop.equals("Name")) {
+          if (ast.arg1().isString()) {
+            // the name as the scheme is called
+            return ast.arg1();
+          }
           if (colorDataFunction.argSize() >= 1) {
             return ((IAST) colorDataFunction).arg1();
           }

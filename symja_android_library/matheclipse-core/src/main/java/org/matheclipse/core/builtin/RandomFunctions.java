@@ -208,7 +208,8 @@ public final class RandomFunctions {
           case ID.LCHColor:
           case ID.LUVColor:
           case ID.XYZColor:
-            return expr;
+            // a template: the blanks are random, the other components fixed real numbers
+            return ((IAST) expr).forAll(x -> x.isBlank() || x.isRealResult()) ? expr : F.NIL;
           default:
         }
       }
@@ -216,7 +217,7 @@ public final class RandomFunctions {
     }
 
     private static IExpr randomColor(IAST model, Random random) {
-      return model.map(x -> x.isBlank() ? F.num(random.nextDouble()) : x, 1);
+      return model.map(x -> x.isBlank() ? F.num(random.nextDouble()) : F.num(x.evalf()), 1);
     }
 
     @Override
@@ -364,6 +365,15 @@ public final class RandomFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.Span) && (arg1.argSize() == 2 || arg1.argSize() == 3)
+          && ((IAST) arg1).forAll(x -> x.isInteger())) {
+        // the integers of the span m;;n or m;;n;;s
+        IExpr range = engine.evaluate(((IAST) arg1).apply(S.Range));
+        if (range.isList() && range.argSize() > 0) {
+          return ast.setAtCopy(1, range);
+        }
+        return F.NIL;
+      }
 
       if (arg1.isRuleAST()) {
         if (!arg1.second().isList() || arg1.second().argSize() == 0) {

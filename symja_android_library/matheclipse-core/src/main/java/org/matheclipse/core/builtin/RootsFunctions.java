@@ -365,7 +365,10 @@ public class RootsFunctions {
       boolean cubicsInRadicals = options[0].isTrue();
       boolean quarticsInRadicals = options[1].isTrue();
       IExpr modulus = options[2];
-      int multiplicity = options[3].toIntDefault();
+      // a multiplicity which is not an integer is the default 1
+      int multiplicity = options[3].isInteger() ? options[3].toIntDefault() : 1;
+      // the left-hand side of the equations of the roots
+      final IExpr equatedTo = options[4];
       if (multiplicity < 0 || multiplicity > MAX_MULTIPLICITY) {
         return F.NIL;
       }
@@ -418,7 +421,8 @@ public class RootsFunctions {
             engine);
       }
       if (list.isPresent()) {
-        return F.mapFunction(S.Or, list, t -> F.Equal(variable, t));
+        final IExpr lhs = equatedTo == S.Null ? variable : equatedTo;
+        return F.mapFunction(S.Or, list, t -> F.Equal(lhs, t));
       }
       return F.NIL;
     }
@@ -456,8 +460,8 @@ public class RootsFunctions {
       // `Cubics` and `Quartics` default to `True` here: `Roots` is the radical solver, and the
       // callers which want the inert form ask for it explicitly
       setOptions(newSymbol, //
-          new IBuiltInSymbol[] {S.Cubics, S.Quartics, S.Modulus, S.Multiplicity}, //
-          new IExpr[] {S.True, S.True, F.C0, F.C1});
+          new IBuiltInSymbol[] {S.Cubics, S.Quartics, S.Modulus, S.Multiplicity, S.EquatedTo}, //
+          new IExpr[] {S.True, S.True, F.C0, F.C1, S.Null});
     }
   }
 

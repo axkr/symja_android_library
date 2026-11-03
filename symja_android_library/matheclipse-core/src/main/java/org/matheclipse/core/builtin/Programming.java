@@ -1709,6 +1709,18 @@ public final class Programming {
         long freeMemory = Runtime.getRuntime().totalMemory();
         return F.ZZ(freeMemory);
       }
+      if (ast.isAST1()) {
+        // MaxMemoryUsed(expr) evaluates expr; the memory is estimated as the larger of the heap
+        // growth during the evaluation and the bytes of the result
+        boolean hostVisible = FileSandbox.isHostVisible(engine);
+        Runtime runtime = Runtime.getRuntime();
+        long before = runtime.totalMemory() - runtime.freeMemory();
+        IExpr result = engine.evaluate(ast.arg1());
+        long used = hostVisible ? runtime.totalMemory() - runtime.freeMemory() - before : 0L;
+        IExpr byteCount = S.ByteCount.of(engine, result);
+        long bytes = byteCount.isInteger() ? byteCount.toLongDefault() : 0L;
+        return F.ZZ(Math.max(Math.max(used, bytes), 1L));
+      }
       return engine.checkBuiltinArgsSize(ast, this);
     }
 
@@ -1719,7 +1731,12 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_0;
+      return ARGS_0_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 

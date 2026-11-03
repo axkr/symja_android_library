@@ -14,7 +14,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 180, 0 };
+  final public static int[] SIZES = { 198, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -36,6 +36,42 @@ public class DerivativeRules {
     // Derivative(1)[ArcCosh]=1/(Sqrt(-1+#1)*Sqrt(1+#1))&
     ISet($(Derivative(C1),ArcCosh),
       Function(Times(Power(Plus(CN1,Slot1),CN1D2),Power(Plus(C1,Slot1),CN1D2))), true),
+    // Derivative(1)[SinDegrees]=(Pi*CosDegrees(#1))/180&
+    ISet($(Derivative(C1),S.SinDegrees),
+      Function(Times(QQ(1L,180L),Pi,unaryAST1(S.CosDegrees,Slot1))), true),
+    // Derivative(1)[CosDegrees]=-(Pi*SinDegrees(#1))/180&
+    ISet($(Derivative(C1),S.CosDegrees),
+      Function(Times(QQ(-1L,180L),Pi,unaryAST1(S.SinDegrees,Slot1))), true),
+    // Derivative(1)[TanDegrees]=(Pi*SecDegrees(#1)^2)/180&
+    ISet($(Derivative(C1),S.TanDegrees),
+      Function(Times(QQ(1L,180L),Pi,Sqr(unaryAST1(S.SecDegrees,Slot1)))), true),
+    // Derivative(1)[CotDegrees]=-(Pi*CscDegrees(#1)^2)/180&
+    ISet($(Derivative(C1),S.CotDegrees),
+      Function(Times(QQ(-1L,180L),Pi,Sqr(unaryAST1(S.CscDegrees,Slot1)))), true),
+    // Derivative(1)[SecDegrees]=(Pi*SecDegrees(#1)*TanDegrees(#1))/180&
+    ISet($(Derivative(C1),S.SecDegrees),
+      Function(Times(QQ(1L,180L),Pi,unaryAST1(S.SecDegrees,Slot1),unaryAST1(S.TanDegrees,Slot1))), true),
+    // Derivative(1)[CscDegrees]=-(Pi*CotDegrees(#1)*CscDegrees(#1))/180&
+    ISet($(Derivative(C1),S.CscDegrees),
+      Function(Times(QQ(-1L,180L),Pi,unaryAST1(S.CotDegrees,Slot1),unaryAST1(S.CscDegrees,Slot1))), true),
+    // Derivative(1)[ArcSinDegrees]=180/(Pi*Sqrt(1-#1^2))&
+    ISet($(Derivative(C1),S.ArcSinDegrees),
+      Function(Times(ZZ(180L),Power(Pi,CN1),Power(Subtract(C1,Sqr(Slot1)),CN1D2))), true),
+    // Derivative(1)[ArcCosDegrees]=-180/(Pi*Sqrt(1-#1^2))&
+    ISet($(Derivative(C1),S.ArcCosDegrees),
+      Function(Times(ZZ(-180L),Power(Pi,CN1),Power(Subtract(C1,Sqr(Slot1)),CN1D2))), true),
+    // Derivative(1)[ArcTanDegrees]=180/(Pi*(1+#1^2))&
+    ISet($(Derivative(C1),S.ArcTanDegrees),
+      Function(Times(ZZ(180L),Power(Pi,CN1),Power(Plus(C1,Sqr(Slot1)),CN1))), true),
+    // Derivative(1)[ArcCotDegrees]=-180/(Pi*(1+#1^2))&
+    ISet($(Derivative(C1),S.ArcCotDegrees),
+      Function(Times(ZZ(-180L),Power(Pi,CN1),Power(Plus(C1,Sqr(Slot1)),CN1))), true),
+    // Derivative(1)[ArcSecDegrees]=180/(Pi*#1^2*Sqrt(1-1/#1^2))&
+    ISet($(Derivative(C1),S.ArcSecDegrees),
+      Function(Times(ZZ(180L),Power(Pi,CN1),Power(Slot1,CN2),Power(Subtract(C1,Power(Slot1,CN2)),CN1D2))), true),
+    // Derivative(1)[ArcCscDegrees]=-180/(Pi*#1^2*Sqrt(1-1/#1^2))&
+    ISet($(Derivative(C1),S.ArcCscDegrees),
+      Function(Times(ZZ(-180L),Power(Pi,CN1),Power(Slot1,CN2),Power(Subtract(C1,Power(Slot1,CN2)),CN1D2))), true),
     // Derivative(1)[ArcCot]=-1/(1+#1^2)&
     ISet($(Derivative(C1),ArcCot),
       Function(Negate(Power(Plus(C1,Sqr(Slot1)),CN1))), true),
@@ -375,9 +411,27 @@ public class DerivativeRules {
     // Derivative(1,0,0)[Beta]=(1-#1)^(-1+#3)*#1^(-1+#2)&
     ISet($(Derivative(C1,C0,C0),Beta),
       Function(Times(Power(Subtract(C1,Slot1),Plus(CN1,Slot(C3))),Power(Slot1,Plus(CN1,Slot2)))), true),
+    // Derivative(1,0,0)[BetaRegularized]=(1-#1)^(-1+#3)*#1^(-1+#2)/Beta(#2,#3)&
+    ISet($(Derivative(C1,C0,C0),BetaRegularized),
+      Function(Times(Power(Subtract(C1,Slot1),Plus(CN1,Slot(C3))),Power(Slot1,Plus(CN1,Slot2)),Power(Beta(Slot2,Slot(C3)),CN1))), true),
+    // Derivative(1,0,0,0)[BetaRegularized]=-(1-#1)^(-1+#4)*#1^(-1+#3)/Beta(#3,#4)&
+    ISet($(Derivative(C1,C0,C0,C0),BetaRegularized),
+      Function(Times(CN1,Power(Subtract(C1,Slot1),Plus(CN1,Slot(C4))),Power(Slot1,Plus(CN1,Slot(C3))),Power(Beta(Slot(C3),Slot(C4)),CN1))), true),
+    // Derivative(0,1,0,0)[BetaRegularized]=(1-#2)^(-1+#4)*#2^(-1+#3)/Beta(#3,#4)&
+    ISet($(Derivative(C0,C1,C0,C0),BetaRegularized),
+      Function(Times(Power(Subtract(C1,Slot2),Plus(CN1,Slot(C4))),Power(Slot2,Plus(CN1,Slot(C3))),Power(Beta(Slot(C3),Slot(C4)),CN1))), true),
     // Derivative(1,0,0)[InverseBetaRegularized]=Beta(#2,#3)*(1-InverseBetaRegularized(#1,#2,#3))^(1-#3)*InverseBetaRegularized(#1,#2,#3)^(1-#2)&
     ISet($(Derivative(C1,C0,C0),InverseBetaRegularized),
       Function(Times(Beta(Slot2,Slot(C3)),Power(Subtract(C1,InverseBetaRegularized(Slot1,Slot2,Slot(C3))),Subtract(C1,Slot(C3))),Power(InverseBetaRegularized(Slot1,Slot2,Slot(C3)),Subtract(C1,Slot2)))), true),
+    // Derivative(0,1)[GammaRegularized]=-E^(-#2)*#2^(-1+#1)/Gamma(#1)&
+    ISet($(Derivative(C0,C1),GammaRegularized),
+      Function(Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)),Power(Gamma(Slot1),CN1))), true),
+    // Derivative(0,1,0)[GammaRegularized]=-E^(-#2)*#2^(-1+#1)/Gamma(#1)&
+    ISet($(Derivative(C0,C1,C0),GammaRegularized),
+      Function(Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)),Power(Gamma(Slot1),CN1))), true),
+    // Derivative(0,0,1)[GammaRegularized]=#3^(-1+#1)/(E^#3*Gamma(#1))&
+    ISet($(Derivative(C0,C0,C1),GammaRegularized),
+      Function(Times(Exp(Negate(Slot(C3))),Power(Slot(C3),Plus(CN1,Slot1)),Power(Gamma(Slot1),CN1))), true),
     // Derivative(0,1)[InverseGammaRegularized]=-E^InverseGammaRegularized(#1,#2)*Gamma(#1)*InverseGammaRegularized(#1,#2)^(1-#1)&
     ISet($(Derivative(C0,C1),InverseGammaRegularized),
       Function(Times(CN1,Exp(InverseGammaRegularized(Slot1,Slot2)),Gamma(Slot1),Power(InverseGammaRegularized(Slot1,Slot2),Subtract(C1,Slot1)))), true),

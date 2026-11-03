@@ -2043,13 +2043,23 @@ public class OutputFormFactory {
               }
               break;
             case ID.Row:
-              if (!fInputForm && list.isAST1() && list.arg1().isList()) {
-                // Row places its elements side by side without a separator
-                IAST row = (IAST) list.arg1();
-                for (int i = 1; i < row.size(); i++) {
-                  convert(buf, row.get(i), Integer.MIN_VALUE, false);
+              if (!fInputForm && list.argSize() >= 1 && list.arg1().isList()) {
+                // Row places its elements side by side, with an optional separator; style options
+                // at the end don't change the text
+                int args = list.argSize();
+                while (args > 1 && list.get(args).isRuleAST()) {
+                  args--;
                 }
-                return;
+                if (args <= 2) {
+                  IAST row = (IAST) list.arg1();
+                  for (int i = 1; i < row.size(); i++) {
+                    if (i > 1 && args == 2) {
+                      convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+                    }
+                    convert(buf, row.get(i), Integer.MIN_VALUE, false);
+                  }
+                  return;
+                }
               }
               break;
             case ID.TableForm:

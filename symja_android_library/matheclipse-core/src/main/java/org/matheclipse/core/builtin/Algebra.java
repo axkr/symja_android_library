@@ -616,8 +616,9 @@ public class Algebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
-        if (isTrigTrue(ast.arg2())) {
-          return trigRationalFunction(S.Cancel, arg1, engine);
+        IExpr byOption = trigOrExtension(S.Cancel, arg1, ast.arg2(), engine);
+        if (byOption != null) {
+          return byOption;
         }
         IExpr modulus = modulusOption(ast, engine);
         if (modulus.isNIL()) {
@@ -2587,6 +2588,12 @@ public class Algebra {
         if (!options[MODULUS_OPTION].isInteger()) {
           options[MODULUS_OPTION] = F.C0;
         }
+        if (options[MODULUS_OPTION].isZero() && options[1] != S.None) {
+          IAST pairs = FactorSquareFreeList.squareFreeByExtension(arg1, engine);
+          if (pairs.isPresent()) {
+            return engine.evaluate(pairs.map(S.Times, x -> F.Power(x.first(), x.second())));
+          }
+        }
         if (options[MODULUS_OPTION].isZero() && options[1] == S.None && options[2].isFalse()) {
           // structure-preserving square-free factorization (see AlgebraUtil#factorSquareFree)
           IExpr temp = AlgebraUtil.factorSquareFree(arg1, eVar, engine);
@@ -2658,6 +2665,37 @@ public class Algebra {
       }
       if (!result.arg1().first().isNumber()) {
         result.append(1, F.list(F.C1, F.C1));
+      }
+      return result;
+    }
+
+    /**
+     * The square-free parts <code>{{c, 1}, {p1, 1}, {p2, 2}, ...}</code> of a polynomial over the
+     * field of its algebraic coefficients: the factors of the same multiplicity are multiplied out.
+     *
+     * @return {@link F#NIL} if the polynomial doesn't factor
+     */
+    static IAST squareFreeByExtension(IExpr polynomial, EvalEngine engine) {
+      IExpr factored =
+          engine.evaluate(F.binaryAST2(S.Factor, polynomial, F.Rule(S.Extension, S.Automatic)));
+      if (factored.isAST(S.Factor)) {
+        return F.NIL;
+      }
+      IAST pairs = basesAndExponents(factored);
+      java.util.TreeMap<Integer, IASTAppendable> groups = new java.util.TreeMap<>();
+      for (int i = 2; i < pairs.size(); i++) {
+        int k = pairs.get(i).second().toIntDefault();
+        if (k <= 0) {
+          return F.NIL;
+        }
+        groups.computeIfAbsent(k, key -> F.TimesAlloc(2)).append(pairs.get(i).first());
+      }
+      IASTAppendable result = F.ListAlloc(groups.size() + 1);
+      result.append(pairs.arg1());
+      for (java.util.Map.Entry<Integer, IASTAppendable> group : groups.entrySet()) {
+        IASTAppendable product = group.getValue();
+        IExpr base = product.isAST1() ? product.arg1() : engine.evaluate(F.Expand(product));
+        result.append(F.list(base, F.ZZ(group.getKey())));
       }
       return result;
     }
@@ -2762,14 +2800,21 @@ public class Algebra {
           return byMultiplicity(basesAndExponents(trig));
         }
       }
+      if (options[1] != S.None
+          && !(options[MODULUS_OPTION].isInteger() && !options[MODULUS_OPTION].isZero())) {
+        IAST pairs = squareFreeByExtension(ast.arg1(), engine);
+        if (pairs.isPresent()) {
+          return pairs;
+        }
+      }
       if (options[MODULUS_OPTION].isInteger() && !options[MODULUS_OPTION].isZero()) {
-        // the square-free parts over GF(p), as the list of their bases and exponents
-        IExpr factored = Factor.factorModulus(S.FactorSquareFreeList, ast.arg1(), eVar, true,
+        // over GF(p) the list holds the irreducible factors with their multiplicities
+        IExpr factored = Factor.factorModulus(S.FactorSquareFreeList, ast.arg1(), eVar, false,
             options[MODULUS_OPTION], engine);
         if (factored.isNIL()) {
           return F.NIL;
         }
-        return byMultiplicity(basesAndExponents(factored));
+        return basesAndExponents(engine.evaluate(factored));
       }
       try {
         // the factors of a product which is written out are kept apart
@@ -6037,18 +6082,17 @@ public class Algebra {
         return list;
       }
       if (ast.isAST2()) {
-        if (isTrigTrue(ast.arg2())) {
-          return trigRationalFunction(S.Together, arg1, engine);
+        IExpr byOption = trigOrExtension(S.Together, arg1, ast.arg2(), engine);
+        if (byOption != null) {
+          return byOption;
         }
         IExpr modulus = modulusOption(ast, engine);
         if (modulus.isNIL()) {
           return F.NIL;
         }
         if (!modulus.isZero()) {
-          if (arg1.isRational()) {
-            return residue((IRational) arg1, modulus, S.Together, engine);
-          }
-          return togetherModulus(S.Together, arg1, modulus, engine);
+          return arg1.isRational() ? residue((IRational) arg1, modulus, S.Together, engine)
+              : togetherModulus(S.Together, arg1, modulus, engine);
         }
       }
       if (arg1.isAST()) {
@@ -6437,6 +6481,46 @@ public class Algebra {
     }).orElse(expanded);
     IExpr rational = engine.evaluate(F.unaryAST1(head, masked));
     return engine.evaluate(F.ReplaceAll(rational, backward));
+  }
+
+  /**
+   * <code>Cancel</code> or <code>Together</code> with the option <code>Trig -&gt; True</code> or
+   * <code>Extension -&gt; ext</code>.
+   *
+   * @return <code>null</code> if <code>option</code> is neither of them
+   */
+  private static IExpr trigOrExtension(IBuiltInSymbol head, IExpr expr, IExpr option,
+      EvalEngine engine) {
+    if (isTrigTrue(option)) {
+      return trigRationalFunction(head, expr, engine);
+    }
+    if (isExtension(option)) {
+      return cancelOverExtension(expr, option.second(), engine);
+    }
+    return null;
+  }
+
+  /** An option <code>Extension -&gt; ext</code> with an extension other than None. */
+  private static boolean isExtension(IExpr option) {
+    return option.isRuleAST() && option.first() == S.Extension && option.second() != S.None
+        && !option.second().isFalse();
+  }
+
+  /**
+   * The fraction with the common factors of numerator and denominator over the field extended by
+   * <code>extension</code> cancelled, numerator and denominator multiplied out.
+   * <code>(x^2-2)/(x-Sqrt(2))</code> is <code>Sqrt(2)+x</code>.
+   */
+  private static IExpr cancelOverExtension(IExpr expr, IExpr extension, EvalEngine engine) {
+    IExpr together = engine.evaluate(F.Together(expr));
+    IExpr factored =
+        engine.evaluate(F.binaryAST2(S.Factor, together, F.Rule(S.Extension, extension)));
+    if (factored.isAST(S.Factor)) {
+      return F.NIL;
+    }
+    IExpr numerator = engine.evaluate(F.Expand(F.Numerator(factored)));
+    IExpr denominator = engine.evaluate(F.Expand(F.Denominator(factored)));
+    return engine.evaluate(F.Divide(numerator, denominator));
   }
 
   /**

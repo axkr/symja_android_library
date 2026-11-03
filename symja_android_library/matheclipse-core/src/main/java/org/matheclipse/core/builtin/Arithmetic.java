@@ -2315,6 +2315,36 @@ public final class Arithmetic {
       }
     }
 
+    /** The largest index for which <code>HarmonicNumber(n, r, s)</code> is written out. */
+    private static final int MAX_HARMONIC_TERMS = 1000;
+
+    /**
+     * The harmonic number <code>HarmonicNumber(n, r, s) = Sum(s^k/k^r, {k, 1, n})</code>, which
+     * is <code>PolyLog(r, s)</code> for <code>n = Infinity</code>.
+     */
+    private static IExpr harmonic(IExpr n, IExpr r, IExpr s, EvalEngine engine) {
+      if (s.isOne()) {
+        return F.HarmonicNumber(n, r);
+      }
+      if (n.isInfinity()) {
+        // the series converges inside the unit disk only
+        if (s.isNumber() && !engine.evalTrue(F.LessEqual(F.Abs(s), F.C1))) {
+          return F.NIL;
+        }
+        return F.PolyLog(r, s);
+      }
+      if (n.isInteger() && !n.isNegative()) {
+        int nInt = n.toIntDefault();
+        if (nInt >= 0 && nInt <= MAX_HARMONIC_TERMS) {
+          if (nInt == 0) {
+            return F.C0;
+          }
+          return F.sum(k -> F.Times(F.Power(s, k), F.Power(k, r.negate())), 1, nInt);
+        }
+      }
+      return F.NIL;
+    }
+
     /**
      * The Harmonic number at the index specified
      *
@@ -2343,6 +2373,9 @@ public final class Arithmetic {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       try {
+        if (ast.isAST3()) {
+          return harmonic(arg1, ast.arg2(), ast.arg3(), engine);
+        }
         if (ast.isAST2()) {
           IExpr arg2 = ast.arg2();
           return harmonic(arg1, arg2, ast, engine);
@@ -2356,7 +2389,7 @@ public final class Arithmetic {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override
@@ -2400,6 +2433,17 @@ public final class Arithmetic {
           return F.CComplexInfinity;
         }
         return n.harmonicNumber(r);
+      } else if (ast.argSize() == 3) {
+        IExpr n = ast.arg1();
+        if (n.isMathematicalIntegerNonNegative()) {
+          int nInt = n.toIntDefault();
+          if (nInt >= 0 && nInt <= MAX_HARMONIC_TERMS) {
+            IExpr r = ast.arg2();
+            IExpr s = ast.arg3();
+            return engine.evaluate(
+                F.sum(k -> F.Times(F.Power(s, k), F.Power(k, r.negate())), 1, nInt));
+          }
+        }
       }
       return F.NIL;
     }
@@ -6410,6 +6454,12 @@ public final class Arithmetic {
             return F.C1;
           } else if (list.first().isZero() && list.second().isZero()) {
             return F.C0;
+          }
+        } else if (arg1.size() > 2) {
+          // all spans on one side of zero give one sign
+          int sign = IntervalSym.sign((IAST) arg1, engine);
+          if (sign == 1 || sign == -1) {
+            return F.ZZ(sign);
           }
         }
         return IntervalSym.mapSymbol(S.Sign, (IAST) arg1);

@@ -89,7 +89,6 @@ public class ExpTrigsFunctions {
    */
   private static final double HYPERBOLIC_OVERFLOW = 4.0e9;
 
-
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -134,6 +133,7 @@ public class ExpTrigsFunctions {
       S.Sinh.setEvaluator(new Sinh());
       S.Tan.setEvaluator(new Tan());
       S.Tanh.setEvaluator(new Tanh());
+
     }
   }
 
@@ -769,6 +769,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcTanh, (IAST) arg1, engine);
+      }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(ArcCoth(negExpr));
@@ -851,6 +854,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcSin, (IAST) arg1, engine);
+      }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.ArcCsch(imPart));
@@ -937,6 +943,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcSinh, (IAST) arg1, engine);
+      }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.ArcCsc(imPart));
@@ -1081,6 +1090,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcCos, (IAST) arg1, engine);
+      }
       // CPD-OFF closed-form tables per function
       return F.NIL;
     }
@@ -1620,7 +1632,6 @@ public class ExpTrigsFunctions {
       }
       return F.NIL;
     }
-
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -2174,7 +2185,6 @@ public class ExpTrigsFunctions {
       }
       return F.NIL;
     }
-
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
@@ -2760,9 +2770,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      return F.NIL;
+      // Gudermannian(Around(x, delta))
+      return AroundFunctions.mapUnaryAround(ast, engine);
     }
-
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
@@ -2871,10 +2881,10 @@ public class ExpTrigsFunctions {
       if (ast.argSize() == 1) {
         try {
           IInexactNumber z = (IInexactNumber) ast.arg1();
-          // see https://github.com/paulmasson/math/issues/24
-
-          // 2*ArcTanh( Tan( z/2 )
-          return z.times(F.C1D2).tan().atanh().times(F.C2);
+          // Log(Tan(Pi/4 + z/2)); this branch is continuous through the real poles of Sec(z),
+          // e.g. a real z in (Pi/2, 3*Pi/2) gets the imaginary part +Pi
+          return engine.evaluate(
+              F.Log(F.Tan(F.Plus(F.Times(F.C1D4, F.Pi), F.Times(F.C1D2, z)))));
 
         // CPD-OFF closed-form tables per function
         } catch (ValidateException ve) {
@@ -4308,7 +4318,6 @@ public class ExpTrigsFunctions {
       }
       return F.NIL;
     }
-
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {

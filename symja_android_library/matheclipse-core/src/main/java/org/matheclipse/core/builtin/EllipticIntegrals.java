@@ -68,7 +68,7 @@ public class EllipticIntegrals {
       S.EllipticTheta.setEvaluator(new EllipticTheta());
       S.EllipticThetaPrime.setEvaluator(new EllipticThetaPrime());
 
-      // S.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
+      S.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
       S.InverseJacobiCD.setEvaluator(new InverseJacobiCD());
       S.InverseJacobiCN.setEvaluator(new InverseJacobiCN());
       S.InverseJacobiDN.setEvaluator(new InverseJacobiDN());
@@ -1673,6 +1673,25 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
+    /**
+     * <code>EllipticTheta(1, k*Pi, q)</code> is <code>0</code> for an integer <code>k</code> and a
+     * nome inside the unit disk; for a symbolic nome only <code>EllipticTheta(1, 0, q)</code> is
+     * known to be <code>0</code>. A number outside the unit disk leaves it unevaluated.
+     */
+    private static IExpr theta1AtPiMultiple(IExpr x, IExpr q, EvalEngine engine) {
+      IExpr k = x.isZero() ? F.C0 : engine.evaluate(F.Times(x, F.Power(S.Pi, F.CN1)));
+      if (!k.isInteger()) {
+        return F.NIL;
+      }
+      if (q.isNumber()) {
+        return engine.evalTrue(F.Less(F.Abs(q), F.C1)) ? F.C0 : F.NIL;
+      }
+      if (x.isZero() && !q.isNumericFunction(true)) {
+        return F.C0;
+      }
+      return F.NIL;
+    }
+
     private static IExpr ellipticTheta3(int a, IExpr x, IExpr m, EvalEngine engine) {
       if (a >= 1 && a <= 4) {
         if (m.isZero()) {
@@ -1685,8 +1704,9 @@ public class EllipticIntegrals {
               return F.C1;
           }
         } else if (a == 1) {
-          if (x.isZero() || (x.isPi() && m.isNumEqualRational(F.C1D2))) {
-            return F.C0;
+          IExpr zero = theta1AtPiMultiple(x, m, engine);
+          if (zero.isPresent()) {
+            return zero;
           }
         }
         if (engine.isDoubleMode() && x.isNumber() && m.isNumber()) {
@@ -1722,6 +1742,36 @@ public class EllipticIntegrals {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDFIRST, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   * <code>InverseWeierstrassP(u, {g2, g3})</code> - so far only the value at infinity of the
+   * degenerate case <code>g2 == g3 == 0</code>, where <code>WeierstrassP(z) == 1/z^2</code> never
+   * takes the value <code>0</code>.
+   */
+  private static class InverseWeierstrassP extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr u = ast.arg1();
+      IExpr invariants = ast.arg2();
+      if (u.isZero() && invariants.isList2() && invariants.first().isZero()
+          && invariants.second().isZero()) {
+        return F.CComplexInfinity;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1976,7 +2026,8 @@ public class EllipticIntegrals {
       if (z.isMinusOne()) {
         return F.Negate(F.EllipticK(m));
       }
-      if (z.isZero() || z.isInfinity() || z.isNegativeInfinity()) {
+      if (z.isZero() || z.isInfinity() || z.isNegativeInfinity() || m.isInfinity()) {
+        // sn(u|m) oscillates ever faster for m -> Infinity
         return F.C0;
       }
       if (z.isOne()) {
@@ -2340,6 +2391,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      if (m.isInfinity() && kind.equals("NC")) {
+        // cn(u|m) oscillates ever faster for m -> Infinity
+        return F.C0;
+      }
       if (m.isZero()) {
         // sn == Sin, cn == Cos; nd == 1 has no inverse
         switch (kind) {

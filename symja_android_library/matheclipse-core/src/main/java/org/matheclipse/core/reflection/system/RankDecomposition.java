@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -20,11 +21,20 @@ public class RankDecomposition extends AbstractFunctionEvaluator {
     IExpr arg1 = ast.arg1();
     int[] dims = arg1.isMatrix(false);
 
+    IExpr modulus = F.NIL;
+    if (ast.isAST2()) {
+      // RankDecomposition(m, Modulus -> p) reduces the rows modulo p
+      if (!ast.arg2().isRuleAST() || ast.arg2().first() != S.Modulus) {
+        return F.NIL;
+      }
+      modulus = ast.arg2();
+    }
     if (dims != null) {
       int rows = dims[0];
 
       // Calculate the Reduced Row Echelon Form (RREF)
-      IExpr rrefExpr = engine.evaluate(F.RowReduce(arg1));
+      IExpr rrefExpr = engine.evaluate(
+          modulus.isPresent() ? F.binaryAST2(S.RowReduce, arg1, modulus) : F.RowReduce(arg1));
 
       if (rrefExpr.isMatrix(false) != null) {
         IAST rref = (IAST) rrefExpr.normal(false);
@@ -79,7 +89,7 @@ public class RankDecomposition extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_1;
+    return ARGS_1_2;
   }
 
   @Override

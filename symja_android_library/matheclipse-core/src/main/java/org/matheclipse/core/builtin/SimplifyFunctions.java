@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.PiecewiseFold;
 import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -186,6 +187,11 @@ public class SimplifyFunctions {
             engine.setAssumptions(assumptions);
             arg1 = AssumptionFunctions.refineAssumptions(arg1, assumptions, engine);
             count = complexityFunction.apply(arg1);
+            IExpr complementary = complementaryRoots(arg1);
+            if (complementary.isPresent()) {
+              arg1 = engine.evaluate(complementary);
+              count = complexityFunction.apply(arg1);
+            }
             IExpr halved = halfAngleRadicands(arg1);
             if (halved.isPresent()) {
               // the root of a square can be taken with the assumptions
@@ -335,6 +341,79 @@ public class SimplifyFunctions {
       return complexityFunction.apply(rewritten) < complexityFunction.apply(relation) //
           ? rewritten
           : F.NIL;
+    }
+
+    /**
+     * <code>ArcCos(Sqrt(1-u^2))</code> is <code>ArcSin(u)</code> and <code>ArcSin(Sqrt(1-u^2))</code>
+     * is <code>ArcCos(u)</code> for <code>0 &lt;= u &lt;= 1</code>; <code>ArcSec</code> and
+     * <code>ArcCsc</code> of the reciprocal root and the functions in degrees likewise.
+     *
+     * @return {@link F#NIL} if there is no such inverse function or <code>u</code> isn't known to be
+     *         in <code>[0, 1]</code>
+     */
+    private static IExpr complementaryRoots(IExpr expr) {
+      return expr.replaceAll(x -> {
+        if (!x.isAST1() || !x.first().isPower()) {
+          return F.NIL;
+        }
+        IExpr root = x.first();
+        IExpr exponent = root.exponent();
+        IExpr radicand = root.base();
+        if (radicand.isPower() && radicand.exponent().isMinusOne() && exponent.equals(F.C1D2)) {
+          // Sqrt(1/(1-u^2))
+          radicand = radicand.base();
+          exponent = F.CN1D2;
+        }
+        boolean reciprocal = exponent.equals(F.CN1D2);
+        if (!reciprocal && !exponent.equals(F.C1D2)) {
+          return F.NIL;
+        }
+        ISymbol complement = null;
+        switch (x.headID()) {
+          case ID.ArcCos:
+            complement = reciprocal ? null : S.ArcSin;
+            break;
+          case ID.ArcSin:
+            complement = reciprocal ? null : S.ArcCos;
+            break;
+          case ID.ArcSec:
+            complement = reciprocal ? S.ArcSin : null;
+            break;
+          case ID.ArcCsc:
+            complement = reciprocal ? S.ArcCos : null;
+            break;
+          case ID.ArcCosDegrees:
+            complement = reciprocal ? null : S.ArcSinDegrees;
+            break;
+          case ID.ArcSinDegrees:
+            complement = reciprocal ? null : S.ArcCosDegrees;
+            break;
+          case ID.ArcSecDegrees:
+            complement = reciprocal ? S.ArcSinDegrees : null;
+            break;
+          case ID.ArcCscDegrees:
+            complement = reciprocal ? S.ArcCosDegrees : null;
+            break;
+          default:
+            break;
+        }
+        if (complement == null || !radicand.isPlus() || radicand.argSize() != 2
+            || !radicand.first().isOne()) {
+          return F.NIL;
+        }
+        // 1-u^2
+        IExpr square = radicand.second();
+        if (!square.isTimes() || square.argSize() != 2 || !square.first().isMinusOne()
+            || !square.second().isPower() || !square.second().exponent().equals(F.C2)) {
+          return F.NIL;
+        }
+        IExpr u = square.second().base();
+        if (AbstractAssumptions.assumeNonNegative(u)
+            && AbstractAssumptions.assumeLessEqual(u, F.C1)) {
+          return F.unaryAST1(complement, u);
+        }
+        return F.NIL;
+      });
     }
 
     /**
@@ -512,7 +591,7 @@ public class SimplifyFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_INFINITY;
     }
 
     @Override

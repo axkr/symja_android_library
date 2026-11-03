@@ -268,6 +268,20 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     return true;
   }
 
+  /**
+   * The values of the initial conditions of every head.
+   *
+   * @return <code>null</code> if the conditions don't determine their terms
+   */
+  private static List<Map<Integer, IExpr>> initialValues(List<IExpr> conditions, IAST heads,
+      EvalEngine engine) {
+    List<Map<Integer, IExpr>> values = new ArrayList<Map<Integer, IExpr>>(heads.argSize());
+    for (int h = 0; h < heads.argSize(); h++) {
+      values.add(new HashMap<Integer, IExpr>());
+    }
+    return initialValues(conditions, heads, values, engine) ? values : null;
+  }
+
   /** Append the distinct terms <code>a(k)</code> of the heads in <code>expr</code>. */
   private static void collectTerms(IExpr expr, IAST heads, IASTAppendable terms) {
     if (headIndex(expr, heads) >= 0) {
@@ -712,7 +726,8 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     boolean[] assigned = new boolean[headCount];
     for (Recurrence recurrence : recurrences) {
       if (!assignHead(recurrence, assigned)) {
-        return F.NIL;
+        return jointTable(recurrences, conditions, heads, n, columnCount, function.isList(), arg1,
+            nMin, nMax, engine);
       }
     }
     // the order of a head: its shift in its own recurrence minus its smallest shift anywhere
@@ -734,6 +749,13 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
       order[h] = byHead[h].top - min;
       totalOrder += order[h];
     }
+    if (conditions.size() != totalOrder && hasAlgebraicConstraint(recurrences)) {
+      IExpr joint = jointTable(recurrences, conditions, heads, n, columnCount, function.isList(),
+          arg1, nMin, nMax, engine);
+      if (joint.isPresent()) {
+        return joint;
+      }
+    }
     if (conditions.size() != totalOrder) {
       // The number of constraints or initial conditions given, `1`, should be the same as the
       // total order of the system, `2`.
@@ -742,11 +764,8 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     }
 
     try {
-      List<Map<Integer, IExpr>> values = new ArrayList<Map<Integer, IExpr>>(headCount);
-      for (int h = 0; h < headCount; h++) {
-        values.add(new HashMap<Integer, IExpr>());
-      }
-      if (!initialValues(conditions, heads, values, engine)) {
+      List<Map<Integer, IExpr>> values = initialValues(conditions, heads, engine);
+      if (values == null) {
         return F.NIL;
       }
       int[] next = new int[headCount];
@@ -789,23 +808,154 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
           }
         }
       }
-      IASTAppendable result = F.ListAlloc(nMax - nMin + 1);
-      for (int index = nMin; index <= nMax; index++) {
-        IASTAppendable row = F.ListAlloc(columnCount);
-        for (int h = 0; h < columnCount; h++) {
-          IExpr value = values.get(h).get(index);
-          if (value == null) {
+      IExpr result = table(values, columnCount, function.isList(), arg1, nMin, nMax, engine);
+      if (result.isPresent()) {
+        return result;
+      }
+      // the recurrences determine the heads only together
+      return jointTable(recurrences, conditions, heads, n, columnCount, function.isList(), arg1,
+          nMin, nMax, engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Whether a recurrence relates the heads at one index only, as <code>y(n) + 2*z(n) == 1</code>:
+   * such a constraint doesn't add to the order, the initial conditions of all heads then exceed
+   * it.
+   */
+  private static boolean hasAlgebraicConstraint(List<Recurrence> recurrences) {
+    for (Recurrence recurrence : recurrences) {
+      int shift = Integer.MIN_VALUE;
+      boolean single = true;
+      for (Term term : recurrence.terms) {
+        if (term.relative) {
+          if (shift != Integer.MIN_VALUE && shift != term.k) {
+            single = false;
+          }
+          shift = term.k;
+        }
+      }
+      if (single && shift != Integer.MIN_VALUE) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The rows <code>nMin..nMax</code> of the first <code>columnCount</code> heads.
+   *
+   * @return {@link F#NIL} if a value is missing
+   */
+  private static IExpr table(List<Map<Integer, IExpr>> values, int columnCount, boolean rows,
+      IExpr equations, int nMin, int nMax, EvalEngine engine) {
+    IASTAppendable result = F.ListAlloc(nMax - nMin + 1);
+    for (int index = nMin; index <= nMax; index++) {
+      IASTAppendable row = F.ListAlloc(columnCount);
+      for (int h = 0; h < columnCount; h++) {
+        IExpr value = values.get(h).get(index);
+        if (value == null) {
+          return F.NIL;
+        }
+        row.append(value);
+      }
+      result.append(rows ? row : row.arg1());
+    }
+    if (!equations.isFree(x -> x.isInexactNumber(), false)) {
+      // inexact coefficients or initial values give inexact table entries
+      return engine.evalN(result);
+    }
+    return result;
+  }
+
+  /**
+   * A system whose recurrences don't each determine one head, as an algebraic constraint
+   * <code>y(n) + 2*z(n) == 1</code> beside <code>y(n+1) + z(n+1) == y(n) - 3*z(n) + 7</code>: the
+   * values of all heads at the next index are solved from all recurrences together. Every
+   * recurrence is taken at its largest shift; the initial conditions give the values of all heads
+   * up to the first index.
+   *
+   * @return {@link F#NIL} if the system can't be stepped this way
+   */
+  private static IExpr jointTable(List<Recurrence> recurrences, List<IExpr> conditions,
+      IAST heads, IExpr n, int columnCount, boolean rows, IExpr equations, int nMin, int nMax,
+      EvalEngine engine) {
+    final int headCount = heads.argSize();
+    try {
+      List<Map<Integer, IExpr>> values = initialValues(conditions, heads, engine);
+      if (values == null) {
+        return F.NIL;
+      }
+      // the first index where no head has a value; every head is known from nMin to there
+      int start = Integer.MIN_VALUE;
+      for (Integer index : values.get(0).keySet()) {
+        start = Math.max(start, index + 1);
+      }
+      if (start == Integer.MIN_VALUE || (long) nMax - nMin > MAX_VALUES) {
+        return F.NIL;
+      }
+      for (int h = 0; h < headCount; h++) {
+        for (int index = Math.min(nMin, start - 1); index < start; index++) {
+          if (!values.get(h).containsKey(index)) {
             return F.NIL;
           }
-          row.append(value);
         }
-        result.append(function.isList() ? row : row.arg1());
       }
-      if (!arg1.isFree(x -> x.isInexactNumber(), false)) {
-        // inexact coefficients or initial values give inexact table entries
-        return engine.evalN(result);
+      int[] tops = new int[recurrences.size()];
+      for (int r = 0; r < tops.length; r++) {
+        tops[r] = Integer.MIN_VALUE;
+        for (Term term : recurrences.get(r).terms) {
+          if (term.relative) {
+            tops[r] = Math.max(tops[r], term.k);
+          }
+        }
       }
-      return result;
+      ISymbol[] unknowns = new ISymbol[headCount];
+      IASTAppendable unknownList = F.ListAlloc(headCount);
+      for (int h = 0; h < headCount; h++) {
+        unknowns[h] = F.Dummy("u" + h);
+        unknownList.append(unknowns[h]);
+      }
+      for (int index = start; index <= nMax; index++) {
+        engine.checkTimeLimit();
+        IASTAppendable system = F.ListAlloc(recurrences.size());
+        for (int r = 0; r < tops.length; r++) {
+          Recurrence recurrence = recurrences.get(r);
+          int nValue = index - tops[r];
+          Map<IExpr, IExpr> substitution = new HashMap<IExpr, IExpr>();
+          substitution.put(n, F.ZZ(nValue));
+          for (Term term : recurrence.terms) {
+            int j = term.index(nValue);
+            if (j == index) {
+              substitution.put(term.dummy, unknowns[term.head]);
+            } else {
+              IExpr value = values.get(term.head).get(j);
+              if (value == null) {
+                return F.NIL;
+              }
+              substitution.put(term.dummy, value);
+            }
+          }
+          system.append(F.subst(recurrence.equation, substitution));
+        }
+        IExpr solution = engine.evaluate(F.SolveDistinct(system, unknownList));
+        if (!solution.isListOfLists() || solution.argSize() < 1
+            || solution.first().argSize() != headCount) {
+          return F.NIL;
+        }
+        IExpr rules = solution.first();
+        for (int h = 0; h < headCount; h++) {
+          IExpr value = engine.evaluate(F.subst(unknowns[h], (IAST) rules));
+          if (!value.isFree(x -> x.isSymbol() && unknownList.contains(x), true)) {
+            return F.NIL;
+          }
+          values.get(h).put(index, value);
+        }
+      }
+      return table(values, columnCount, rows, equations, nMin, nMax, engine);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }

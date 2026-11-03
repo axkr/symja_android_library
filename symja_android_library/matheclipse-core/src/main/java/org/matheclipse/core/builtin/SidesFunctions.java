@@ -9,6 +9,8 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class SidesFunctions {
@@ -57,9 +59,25 @@ public class SidesFunctions {
     protected abstract IExpr sides(IAST comparator, IExpr operand, IExpr assumptions,
         EvalEngine engine);
 
+    /**
+     * The scaling of a side by the operand, for the operations which scale the sides.
+     *
+     * @return <code>null</code> if the operation doesn't scale the sides
+     */
+    protected Function<IExpr, IExpr> scaling(IExpr operand) {
+      return null;
+    }
+
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr assumptions = F.NIL;
+      IExpr generateConditions = F.NIL;
+      if (scaled && ast.argSize() >= 2 && ast.last().isRuleAST()
+          && ast.last().first() == S.GenerateConditions) {
+        // GenerateConditions -> True, Automatic or False
+        generateConditions = ast.last().second();
+        ast = ast.removeAtClone(ast.argSize());
+      }
       if (ast.isAST3()) {
         IExpr option = engine.evaluate(ast.arg3());
         if (!scaled || !option.isRuleAST() || option.first() != S.Assumptions) {
@@ -101,13 +119,25 @@ public class SidesFunctions {
             }
             return F.ConditionalExpression(temp, arg1.second());
           }
-        } else if (arg1.isComparatorFunction()) {
+        } else if (arg1.isComparatorFunction() || isInequalityChain(arg1)) {
           if (divisor && arg2.isZero()) {
             // Cannot divide sides of an equation or inequality by 0.
             return Errors.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
           } else if (!arg2.isComparatorFunction()) {
+            if (generateConditions.isPresent()) {
+              IExpr temp = conditionalSides((IAST) arg1, arg2, assumptions, generateConditions,
+                  engine);
+              if (temp.isPresent()) {
+                return temp;
+              }
+            }
             IExpr temp = sides((IAST) arg1, arg2, assumptions, engine);
             if (temp.isPresent()) {
+              if (divisor && arg1.isEqual() && !arg2.isNumber()
+                  && !isSign(arg2, F.Unequal(arg2, F.C0), assumptions, engine)) {
+                // the equation divided by a divisor which may be 0
+                return F.Piecewise(F.list(F.list(temp, F.Unequal(arg2, F.C0))), arg1);
+              }
               return temp;
             }
           }
@@ -117,10 +147,52 @@ public class SidesFunctions {
       return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
+    /**
+     * Scale the sides with the option <code>GenerateConditions</code>: <code>False</code> scales
+     * an inequality as if the operand were positive, <code>True</code> adds the condition that the
+     * operand is nonzero (for an equation) or positive (for an inequality of an operand with an
+     * unknown sign), <code>Automatic</code> only adds the condition of an inequality.
+     *
+     * @return {@link F#NIL} if the option has another value
+     */
+    private IExpr conditionalSides(IAST comparator, IExpr operand, IExpr assumptions,
+        IExpr generateConditions, EvalEngine engine) {
+      Function<IExpr, IExpr> f = scaling(operand);
+      if (f == null || !(generateConditions.isTrue() || generateConditions.isFalse()
+          || generateConditions == S.Automatic)) {
+        return F.NIL;
+      }
+      switch (comparator.headID()) {
+        case ID.Equal:
+        case ID.Unequal: {
+          IExpr result = engine.evaluate(comparator.map(f));
+          if (generateConditions.isTrue() && !operand.isNumber()) {
+            return F.ConditionalExpression(result, F.Unequal(operand, F.C0));
+          }
+          return result;
+        }
+        case ID.Less:
+        case ID.LessEqual:
+        case ID.Greater:
+        case ID.GreaterEqual:
+          if (isSign(operand, F.Less(operand, F.C0), assumptions, engine)
+              || isSign(operand, F.Greater(operand, F.C0), assumptions, engine)) {
+            return F.NIL;
+          }
+          IAST result = keepSides(comparator.map(f), engine);
+          if (generateConditions.isFalse()) {
+            return result;
+          }
+          return F.ConditionalExpression(result, F.Greater(operand, F.C0));
+        default:
+          return F.NIL;
+      }
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       if (scaled) {
-        return operandFirst ? ARGS_2_3 : ARGS_1_3;
+        return operandFirst ? ARGS_2_4 : ARGS_1_4;
       }
       return operandFirst ? ARGS_2_2 : ARGS_1_2;
     }
@@ -195,6 +267,9 @@ public class SidesFunctions {
    * @return {@link F#NIL} if <code>comparator</code> is no equation or inequality
    */
   private static IExpr shiftSides(IAST comparator, Function<IExpr, IExpr> f) {
+    if (isInequalityChain(comparator)) {
+      return mapChainValues(comparator, f);
+    }
     switch (comparator.headID()) {
       case ID.Equal:
       case ID.Unequal:
@@ -218,6 +293,21 @@ public class SidesFunctions {
    */
   private static IExpr scaleSides(IAST comparator, IExpr c, IExpr assumptions,
       Function<IExpr, IExpr> f, EvalEngine engine) {
+    if (isInequalityChain(comparator)) {
+      // a chain a < b <= c: a negative factor reverses it
+      if (isSign(c, F.Less(c, F.C0), assumptions, engine)) {
+        IASTAppendable result = F.ast(S.Inequality, comparator.argSize());
+        for (int i = comparator.argSize(); i >= 1; i--) {
+          IExpr x = comparator.get(i);
+          result.append(i % 2 == 0 ? x : engine.evaluate(f.apply(x)));
+        }
+        return result;
+      }
+      if (isSign(c, F.Greater(c, F.C0), assumptions, engine)) {
+        return mapChainValues(comparator, x -> engine.evaluate(f.apply(x)));
+      }
+      return F.NIL;
+    }
     switch (comparator.headID()) {
       case ID.Equal:
       case ID.Unequal:
@@ -236,6 +326,20 @@ public class SidesFunctions {
       default:
         return F.NIL;
     }
+  }
+
+  /** Apply <code>f</code> to the values at the odd positions of an inequality chain. */
+  private static IAST mapChainValues(IAST chain, Function<IExpr, IExpr> f) {
+    IASTMutable result = chain.copy();
+    for (int i = 1; i < chain.size(); i += 2) {
+      result.set(i, f.apply(chain.get(i)));
+    }
+    return result;
+  }
+
+  /** <code>Inequality(a, op1, b, op2, c, ...)</code> with the operators at the even positions. */
+  private static boolean isInequalityChain(IExpr expr) {
+    return expr.isAST(S.Inequality) && expr.argSize() >= 3 && expr.argSize() % 2 == 1;
   }
 
   /** Whether <code>condition</code>, a sign of the operand <code>c</code>, is known to hold. */
@@ -310,6 +414,11 @@ public class SidesFunctions {
     }
 
     @Override
+    protected Function<IExpr, IExpr> scaling(IExpr operand) {
+      return x -> F.Divide(x, operand);
+    }
+
+    @Override
     protected IExpr sides(IAST comparator, IExpr operand, IExpr assumptions, EvalEngine engine) {
       return scaleSides(comparator, operand, assumptions, x -> F.Divide(x, operand), engine);
     }
@@ -319,6 +428,11 @@ public class SidesFunctions {
 
     MultiplySides() {
       super(true, true, false);
+    }
+
+    @Override
+    protected Function<IExpr, IExpr> scaling(IExpr operand) {
+      return x -> F.Times(x, operand);
     }
 
     @Override

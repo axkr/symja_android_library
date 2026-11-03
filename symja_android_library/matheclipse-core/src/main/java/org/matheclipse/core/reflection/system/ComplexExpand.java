@@ -27,6 +27,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 
@@ -167,6 +168,12 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
 
         IExpr x = base.re();
         IExpr y = base.im();
+        if (exp.isInteger() && exp.isNegative() && ((IInteger) exp).isGE(F.ZZ(-8))
+            && !y.isZero()) {
+          // (x+I*y)^(-n) == (x-I*y)^n/(x^2+y^2)^n for a small integer n
+          return F.Expand(F.Times(F.Power(F.Plus(x, F.Times(F.CNI, y)), exp.negate()),
+              F.Power(F.Plus(F.Sqr(x), F.Sqr(y)), exp)));
+        }
         IExpr arg = SimplifyUtil.argReXImY(x, y, fEngine);
         if (exp.isRealResult()) {
           IExpr n = exp;

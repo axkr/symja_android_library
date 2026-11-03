@@ -1548,7 +1548,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Unprotect[ByteArray]; ByteArray /: MakeBoxes[b_ByteArray, StandardForm] := \"bytes\"", //
         "");
     check("{ToBoxes[ByteArray[{1, 2}], StandardForm], ToBoxes[{ByteArray[{1, 2}]}, StandardForm]}", //
-        "{bytes,RowBox[{{,RowBox[{bytes}],}}]}");
+        "{bytes,RowBox[{{,bytes,}}]}");
     check(
         "ByteArray /: MakeBoxes[b_ByteArray, StandardForm] =.; "
             + "ToBoxes[ByteArray[{1, 2}], StandardForm] === \"bytes\"", //

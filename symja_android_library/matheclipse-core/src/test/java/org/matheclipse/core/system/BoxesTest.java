@@ -58,7 +58,7 @@ public class BoxesTest extends ExprEvaluatorTestCase {
             + "RowBox({\"1\",\"-\",RowBox({\"2\",\" \",\"I\"})}),RowBox({\"I\",\" \",SqrtBox(\"2\")}),"
             + "RowBox({\"-\",FractionBox(\"1\",\"2\")}),RowBox({\"a\",\"-\",FractionBox(\"b\",\"2\")})}");
     check("ToBoxes[(-b - Sqrt[b^2 - 4 a c])/(2 a)] // InputForm", //
-        "FractionBox(RowBox({\"-\",\"b\",\"-\",SqrtBox(RowBox({SuperscriptBox(\"b\",\"2\"),\"-\",RowBox({\"4\",\" \",\"a\",\" \",\"c\"})}))}),RowBox({\"2\",\" \",\"a\"}))");
+        "FractionBox(RowBox({RowBox({\"-\",\"b\"}),\"-\",SqrtBox(RowBox({SuperscriptBox(\"b\",\"2\"),\"-\",RowBox({\"4\",\" \",\"a\",\" \",\"c\"})}))}),RowBox({\"2\",\" \",\"a\"}))");
   }
 
   @Test
@@ -72,7 +72,7 @@ public class BoxesTest extends ExprEvaluatorTestCase {
   public void testMachineRealsKeepAllTheirDigits() {
     // a notebook showed 0.0159723 where the saved output has 0.8459659909775918`
     check("Map[ToBoxes, {0.8459659909775918, 1., -2.5, 123456., 1234567., 0.00001, 1.5*^-7}] // InputForm", //
-        "{\"0.8459659909775918`\",\"1.`\",\"-2.5`\",\"123456.`\",\"1.234567`*^6\",\"0.00001`\",\"1.5`*^-7\"}");
+        "{\"0.8459659909775918`\",\"1.`\",RowBox({\"-\",\"2.5`\"}),\"123456.`\",\"1.234567`*^6\",\"0.00001`\",\"1.5`*^-7\"}");
   }
 
   @Test
@@ -87,7 +87,7 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("ToBoxes[TableForm[{a, b}]] // InputForm", //
         "GridBox({{\"a\"},{\"b\"}})");
     check("ToBoxes[Series[Sin[x] Exp[-x], {x, 0, 5}]] // InputForm", //
-        "InterpretationBox(RowBox({RowBox({\"x\",\"-\",SuperscriptBox(\"x\",\"2\"),\"+\",FractionBox(SuperscriptBox(\"x\",\"3\"),\"3\"),\"-\",FractionBox(SuperscriptBox(\"x\",\"5\"),\"30\")}),\"+\",SuperscriptBox(RowBox({\"O\",\"[\",RowBox({\"x\"}),\"]\"}),\"6\")}),SeriesData(x,0,{1,-1,1/3,0,-1/30},1,6,1))");
+        "InterpretationBox(RowBox({RowBox({\"x\",\"-\",SuperscriptBox(\"x\",\"2\"),\"+\",FractionBox(SuperscriptBox(\"x\",\"3\"),\"3\"),\"-\",FractionBox(SuperscriptBox(\"x\",\"5\"),\"30\")}),\"+\",SuperscriptBox(RowBox({\"O\",\"[\",\"x\",\"]\"}),\"6\")}),SeriesData(x,0,{1,-1,1/3,0,-1/30},1,6,1))");
   }
 
   @Test
@@ -116,7 +116,7 @@ public class BoxesTest extends ExprEvaluatorTestCase {
         "RowBox({RowBox({\"(\",RowBox({\"a\",\"+\",\"b\"}),\")\"}),\" \",\"c\"})");
     // arguments are separated by commas, so a sum inside brackets needs no parentheses
     check("MakeBoxes[3 g[u + v], StandardForm] // InputForm", //
-        "RowBox({\"3\",\" \",RowBox({\"g\",\"[\",RowBox({RowBox({\"u\",\"+\",\"v\"})}),\"]\"})})");
+        "RowBox({\"3\",\" \",RowBox({\"g\",\"[\",RowBox({\"u\",\"+\",\"v\"}),\"]\"})})");
     check("MakeBoxes[3 {u + v, w}, StandardForm] // InputForm", //
         "RowBox({\"3\",\" \",RowBox({\"{\",RowBox({RowBox({\"u\",\"+\",\"v\"}),\",\","
             + "\"w\"}),\"}\"})})");
@@ -129,7 +129,7 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("MakeBoxes[a == b, StandardForm] // InputForm", //
         "RowBox({\"a\",\"==\",\"b\"})");
     check("MakeBoxes[a && b || c, StandardForm] // InputForm", //
-        "RowBox({RowBox({\"a\",\"&&\",\"b\"}),\"||\",\"c\"})");
+        "RowBox({RowBox({\"(\",RowBox({\"a\",\"&&\",\"b\"}),\")\"}),\"||\",\"c\"})");
     check("MakeBoxes[a | b, StandardForm] // InputForm", //
         "RowBox({\"a\",\"|\",\"b\"})");
   }

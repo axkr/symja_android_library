@@ -2116,7 +2116,8 @@ public final class PatternMatching {
 
         IASTMutable result = F.NIL;
         IAST list = holdAST;
-        for (int i = 1; i < list.size(); i++) {
+        // the head is released too: ReleaseHold(Hold(f)(x)) is f(x)
+        for (int i = 0; i < list.size(); i++) {
           IExpr arg = list.get(i);
           if (arg.isAST()) {
             IExpr temp = arg.replaceAll(ReleaseHold::releaseHold);

@@ -269,9 +269,9 @@ public class DRules {
     // D(AppellF1(a_,b_,c_,d_,f_,g_),x_?NotListQ):=(a*b*AppellF1(1+a,1+b,c,1+d,f,g)*D(f,x))/d+(a*c*AppellF1(1+a,b,1+c,1+d,f,g)*D(g,x))/d/;FreeQ({a,b,c,d},x)
     ISetDelayed(D(AppellF1(a_,b_,c_,d_,f_,g_),PatternTest(x_,NotListQ)),
       Condition(Plus(Times(a,b,Power(d,CN1),AppellF1(Plus(C1,a),Plus(C1,b),c,Plus(C1,d),f,g),D(f,x)),Times(a,c,Power(d,CN1),AppellF1(Plus(C1,a),b,Plus(C1,c),Plus(C1,d),f,g),D(g,x))),FreeQ(List(a,b,c,d),x))),
-    // D(If(c_,f_,g_),x_?NotListQ):=With({u=D(f,x),v=D(g,x)},If(c,u,v))
+    // D(If(c_,f_,g_),x_?NotListQ):=With({u=D(f,x),v=D(g,x)},If(u===v,u,If(c,u,v)))
     ISetDelayed(D(If(c_,f_,g_),PatternTest(x_,NotListQ)),
-      With(list(Set(u,D(f,x)),Set(v,D(g,x))),If(c,u,v))),
+      With(list(Set(u,D(f,x)),Set(v,D(g,x))),If(SameQ(u,v),u,If(c,u,v)))),
     // D(If(c_,f_),x_?NotListQ):=With({u=D(f,x)},If(c,u))
     ISetDelayed(D(If(c_,f_),PatternTest(x_,NotListQ)),
       With(list(Set(u,D(f,x))),If(c,u))),

@@ -225,8 +225,9 @@ public class AssumptionFunctions {
             if (arg1AST.size() == 2) {
               return F.Element(arg1AST.first(), domain);
             }
-            IASTAppendable result = F.ast(arg1.head(), arg1AST.size());
-            boolean evaled = false;
+            // Element({a, b}, dom) is Element(a | b, dom)
+            IASTAppendable result = F.ast(S.Alternatives, arg1AST.size());
+            boolean evaled = arg1.isList();
             for (int i = 1; i < arg1AST.size(); i++) {
               final IExpr arg = arg1AST.get(i);
               IExpr assumeDomain = assumeDomain(arg, domain, engine);
