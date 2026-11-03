@@ -36,9 +36,38 @@ public class ContourPlot extends ListPlot {
 
   public ContourPlot() {}
 
+  /**
+   * <code>ContourPlot(f, Element({x, y}, region))</code>: the plot over the bounding box of the
+   * region, restricted to the region by a region function.
+   */
+  private static IExpr overRegion(IAST ast, EvalEngine engine) {
+    IExpr variables = ast.arg2().first();
+    IExpr region = engine.evaluate(ast.arg2().second());
+    if (!variables.isList2() || !variables.first().isVariable()
+        || !variables.second().isVariable()) {
+      return F.NIL;
+    }
+    IExpr bounds = engine.evaluate(F.unaryAST1(S.RegionBounds, region));
+    if (!bounds.isList2() || !bounds.first().isList2() || !bounds.second().isList2()) {
+      return F.NIL;
+    }
+    IASTAppendable plot = F.ast(S.ContourPlot);
+    plot.append(ast.arg1());
+    plot.append(F.List(variables.first(), bounds.first().first(), bounds.first().second()));
+    plot.append(F.List(variables.second(), bounds.second().first(), bounds.second().second()));
+    for (int i = 3; i < ast.size(); i++) {
+      plot.append(ast.get(i));
+    }
+    plot.append(F.Rule(S.RegionFunction, F.Function(variables, F.RegionMember(region, variables))));
+    return plot;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (argSize >= 2 && ast.arg2().isAST(S.Element, 3)) {
+      return overRegion(originalAST, engine);
+    }
     if (PlotEndpoints.degenerate(S.ContourPlot, ast, 2, 3, false, engine)) {
       return F.NIL;
     }

@@ -190,15 +190,15 @@ public class AttributeTest {
   @Test
   public void testEngineGateExcludesExactlyTheNonDispatchingAttributes() {
     int excluded = ISymbol.PROTECTED | ISymbol.READPROTECTED | ISymbol.LOCKED
-        | ISymbol.NONTHREADABLE | ISymbol.SEQUENCEHOLD;
+        | ISymbol.NONTHREADABLE | ISymbol.SEQUENCEHOLD | ISymbol.TEMPORARY;
     assertEquals(excluded, ISymbol.ALL_ATTRIBUTES & ~ISymbol.EVAL_ENGINE_ATTRIBUTES,
         "the derived engine gate excludes a different set than documented");
 
     // it differs from the hand-written 0xFFF077FF it replaced only by the bit freed with
     // PACKAGE_LOADED, and including a free bit is the conservative direction: an unknown
-    // attribute takes the slow path
-    assertEquals(0x00000800, ISymbol.EVAL_ENGINE_ATTRIBUTES ^ 0xFFF077FF,
-        "the engine gate changed by more than the freed PACKAGE_LOADED bit");
+    // attribute takes the slow path. TEMPORARY was added later and is excluded.
+    assertEquals(0x00000800 | ISymbol.TEMPORARY, ISymbol.EVAL_ENGINE_ATTRIBUTES ^ 0xFFF077FF,
+        "the engine gate changed by more than the freed PACKAGE_LOADED and the TEMPORARY bit");
   }
 
   private static int wordOf(int combination) {
@@ -212,10 +212,12 @@ public class AttributeTest {
   }
 
   private static int[] attributeBits() {
-    int[] bits = new int[Integer.bitCount(ISymbol.ALL_ATTRIBUTES)];
+    // TEMPORARY is younger than the reference implementation
+    final int attributes = ISymbol.ALL_ATTRIBUTES & ~ISymbol.TEMPORARY;
+    int[] bits = new int[Integer.bitCount(attributes)];
     int index = 0;
     for (int bit = 0; bit < 32; bit++) {
-      if ((ISymbol.ALL_ATTRIBUTES & (1 << bit)) != 0) {
+      if ((attributes & (1 << bit)) != 0) {
         bits[index++] = 1 << bit;
       }
     }

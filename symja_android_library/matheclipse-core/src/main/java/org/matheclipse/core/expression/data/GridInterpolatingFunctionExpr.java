@@ -332,7 +332,8 @@ public class GridInterpolatingFunctionExpr
         outside = true;
       }
     }
-    if (outside) {
+    if (outside && model.knots == null) {
+      // a spline continues its end pieces without a message
       // Input value `1` lies outside the range of data in the interpolating function.
       // Extrapolation will be used.
       Errors.printMessage(S.InterpolatingFunction, "dmval", F.list(F.List(x)), engine);

@@ -40,6 +40,10 @@ public class RegionBounds extends AbstractFunctionEvaluator {
           case ID.Ball:
           case ID.Sphere:
             return ballBounds(reg, engine);
+          case ID.Annulus: {
+            RegionPrimitives.AnnulusSpec spec = RegionPrimitives.parseAnnulus(reg, engine);
+            return spec == null ? F.NIL : ballBounds(F.binaryAST2(S.Disk, spec.center, spec.outerRadius), engine);
+          }
           case ID.Rectangle:
           case ID.Cuboid:
             return boxBounds(reg, engine);

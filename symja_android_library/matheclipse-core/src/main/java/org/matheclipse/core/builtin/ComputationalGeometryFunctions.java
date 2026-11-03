@@ -10,10 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.RegionPrimitives;
@@ -45,6 +47,7 @@ public class ComputationalGeometryFunctions {
       S.SSSTriangle.setEvaluator(new SSSTriangle());
 
 
+      S.AngleBisector.setEvaluator(new AngleBisector());
       S.ConvexHull.setEvaluator(new ConvexHull());
       S.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
       S.ConvexHullRegion.setEvaluator(new ConvexHullRegion());
@@ -57,7 +60,9 @@ public class ComputationalGeometryFunctions {
       S.StadiumShape.setEvaluator(new StadiumShape());
       S.CollinearPoints.setEvaluator(new CollinearPoints());
       S.CoordinateBoundingBox.setEvaluator(new CoordinateBoundingBox());
+      S.CoordinateBoundingBoxArray.setEvaluator(new CoordinateBoundingBoxArray());
       S.CoordinateBounds.setEvaluator(new CoordinateBounds());
+      S.CoordinateBoundsArray.setEvaluator(new CoordinateBoundsArray());
       S.CoplanarPoints.setEvaluator(new CoplanarPoints());
 
       S.GeometricTest.setEvaluator(new GeometricTest());
@@ -1525,6 +1530,251 @@ public class ComputationalGeometryFunctions {
     }
   }
 
+
+  /**
+   * <pre>
+   * AngleBisector({q1, p, q2})
+   * AngleBisector({q1, p, q2}, "Exterior")
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the line which bisects the interior (or exterior) angle at the point <code>p</code> of
+   * the plane.
+   *
+   * </blockquote>
+   */
+  private static final class AngleBisector extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr points = ast.arg1();
+      if (!points.isList() || points.argSize() != 3
+          || !((IAST) points).forAll(point -> point.isVector() == 2)) {
+        return F.NIL;
+      }
+      boolean interior = true;
+      if (ast.isAST2()) {
+        interior = ast.arg2().isString("Interior");
+        if (!interior && !ast.arg2().isString("Exterior")) {
+          return F.NIL;
+        }
+      }
+      return org.matheclipse.core.reflection.system.TriangleConstruct
+          .angleBisector((IAST) points.normal(false), interior, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <pre>
+   * CoordinateBoundsArray({{xmin, xmax}, {ymin, ymax}, ...}, d, offset, padding)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the array of the coordinates of a grid over the ranges. The step size <code>d</code>
+   * defaults to <code>1</code> and can be <code>Into(n)</code> for <code>n</code> equal parts, the
+   * <code>offset</code> shifts the grid by its value modulo the step size and is half a step for
+   * <code>Center</code>, the <code>padding</code> gives the number of steps which are added to the
+   * ranges. Each of the three values can be given for all dimensions or as a list with one value
+   * for each dimension; the padding of a dimension can be a list <code>{low, high}</code>.
+   *
+   * </blockquote>
+   */
+  private static class CoordinateBoundsArray extends AbstractEvaluator {
+
+    /**
+     * The list of the ranges <code>{min, max}</code> given by the first argument.
+     *
+     * @return {@link F#NIL} if the argument doesn't describe ranges of real numbers
+     */
+    protected IAST ranges(IExpr bounds, EvalEngine engine) {
+      if (bounds.isList() && bounds.argSize() > 0 && ((IAST) bounds).forAll(
+          range -> range.isList2() && isRealValue(range.first()) && isRealValue(range.second()))) {
+        return (IAST) bounds;
+      }
+      return F.NIL;
+    }
+
+    /** Print the message for an invalid first argument. */
+    protected IExpr invalidBounds(IExpr bounds, EvalEngine engine) {
+      // Invalid bounds specification `1`.
+      return Errors.printMessage(S.CoordinateBoundsArray, "bound", F.list(bounds), engine);
+    }
+
+    private static boolean isRealValue(IExpr expr) {
+      return expr.isNumericFunction() && expr.isRealResult();
+    }
+
+    /**
+     * The value of a specification for the dimension <code>index</code>.
+     *
+     * @return <code>spec</code> or the element of the list <code>spec</code>; {@link F#NIL} for a
+     *         list which hasn't one element for each dimension
+     */
+    private static IExpr dimensionValue(IExpr spec, int index, int rank) {
+      if (spec.isList()) {
+        return spec.argSize() == rank ? ((IAST) spec).get(index) : F.NIL;
+      }
+      return spec;
+    }
+
+    /** The step size for <code>spec</code> or {@link F#NIL} if the specification is invalid. */
+    private static IExpr step(IExpr spec, IExpr min, IExpr max, EvalEngine engine) {
+      if (spec.isAST(S.Into, 2)) {
+        int parts = spec.first().toIntDefault();
+        return parts > 0 ? engine.evaluate(F.Divide(F.Subtract(max, min), F.ZZ(parts))) : F.NIL;
+      }
+      return spec.isPresent() && isRealValue(spec) ? spec : F.NIL;
+    }
+
+    /** The offset for <code>spec</code> or {@link F#NIL} if the specification is invalid. */
+    private static IExpr offset(IExpr spec, IExpr step, EvalEngine engine) {
+      if (spec == S.Center) {
+        return engine.evaluate(F.Times(F.C1D2, step));
+      }
+      return spec.isPresent() && isRealValue(spec) ? spec : F.NIL;
+    }
+
+    /**
+     * The number of additional steps below (<code>low == true</code>) or above the range.
+     *
+     * @return {@link Integer#MIN_VALUE} if the specification is invalid
+     */
+    private static int padding(IExpr spec, boolean low) {
+      if (spec.isList()) {
+        return spec.isList2() ? (low ? spec.first() : spec.second()).toIntDefault()
+            : Integer.MIN_VALUE;
+      }
+      return spec.toIntDefault();
+    }
+
+    /** The coordinates of the grid in one dimension. */
+    private static IAST coordinates(IExpr start, IExpr step, IExpr max, EvalEngine engine) {
+      IASTAppendable values = F.ListAlloc();
+      if (engine.evalTrue(F.Greater(step, F.C0))) {
+        for (int i = 0;; i++) {
+          engine.checkTimeLimit();
+          IExpr value = engine.evaluate(F.Plus(start, F.Times(F.ZZ(i), step)));
+          if (!engine.evalTrue(F.LessEqual(value, max))) {
+            break;
+          }
+          if (i >= Config.MAX_AST_SIZE) {
+            ASTElementLimitExceeded.throwIt(i);
+          }
+          values.append(value);
+        }
+      }
+      return values;
+    }
+
+    /** The nested list of all the coordinate tuples which start with <code>prefix</code>. */
+    private static IAST grid(IAST values, int level, IExpr[] prefix) {
+      IAST dimension = (IAST) values.get(level + 1);
+      IASTAppendable result = F.ListAlloc(dimension.argSize());
+      for (int i = 1; i < dimension.size(); i++) {
+        prefix[level] = dimension.get(i);
+        result.append(level + 1 == prefix.length ? F.List(prefix.clone())
+            : grid(values, level + 1, prefix));
+      }
+      return result;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST ranges = ranges(ast.arg1(), engine);
+      if (ranges.isNIL()) {
+        return invalidBounds(ast.arg1(), engine);
+      }
+      final int rank = ranges.argSize();
+      IExpr stepSpec = ast.argSize() >= 2 ? ast.arg2() : F.C1;
+      IExpr offsetSpec = ast.argSize() >= 3 ? ast.arg3() : F.C0;
+      IExpr paddingSpec = ast.argSize() >= 4 ? ast.arg4() : F.C0;
+      IASTAppendable values = F.ListAlloc(rank);
+      long size = 1L;
+      for (int i = 1; i <= rank; i++) {
+        IExpr min = ranges.get(i).first();
+        IExpr max = ranges.get(i).second();
+        IExpr step = step(dimensionValue(stepSpec, i, rank), min, max, engine);
+        if (step.isNIL()) {
+          return F.NIL;
+        }
+        IExpr offset = offset(dimensionValue(offsetSpec, i, rank), step, engine);
+        if (offset.isNIL()) {
+          // Invalid offset specification `1`.
+          return Errors.printMessage(ast.topHead(), "offs", F.list(offsetSpec), engine);
+        }
+        IExpr padding = dimensionValue(paddingSpec, i, rank);
+        if (padding.isNIL()) {
+          return F.NIL;
+        }
+        int low = padding(padding, true);
+        int high = padding(padding, false);
+        if (low == Integer.MIN_VALUE || high == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        // a machine number in a dimension makes the whole dimension inexact
+        IAST numbers = F.List(min, max, step, offset);
+        if (numbers.exists(x -> x.isInexactNumber())) {
+          numbers = (IAST) engine.evaluate(F.N(numbers));
+        }
+        step = numbers.arg3();
+        IExpr start = engine.evaluate(F.Plus(numbers.arg1(), F.Times(F.ZZ(-low), step),
+            F.Mod(numbers.arg4(), step)));
+        IExpr end = engine.evaluate(F.Plus(numbers.arg2(), F.Times(F.ZZ(high), step)));
+        IAST coordinates = coordinates(start, step, end, engine);
+        size *= coordinates.argSize();
+        if (size > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(size);
+        }
+        values.append(coordinates);
+      }
+      return grid(values, 0, new IExpr[rank]);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
+    }
+  }
+
+  /**
+   * <pre>
+   * CoordinateBoundingBoxArray({{xmin, ymin, ...}, {xmax, ymax, ...}}, d, offset, padding)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the array of the coordinates of a grid over the box with the two given corners, see
+   * <code>CoordinateBoundsArray</code>.
+   *
+   * </blockquote>
+   */
+  private static final class CoordinateBoundingBoxArray extends CoordinateBoundsArray {
+
+    @Override
+    protected IAST ranges(IExpr bounds, EvalEngine engine) {
+      if (bounds.isList2() && bounds.first().isVector() > 0
+          && bounds.first().isVector() == bounds.second().isVector()) {
+        return super.ranges(engine.evaluate(F.Transpose(bounds)), engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    protected IExpr invalidBounds(IExpr bounds, EvalEngine engine) {
+      // Invalid bounding box specification `1`.
+      return Errors.printMessage(S.CoordinateBoundingBoxArray, "bbox", F.list(bounds), engine);
+    }
+  }
 
   private static class CoordinateBoundingBox extends AbstractEvaluator {
 

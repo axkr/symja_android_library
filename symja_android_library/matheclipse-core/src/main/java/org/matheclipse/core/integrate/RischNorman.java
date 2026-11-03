@@ -252,7 +252,7 @@ public class RischNorman {
     }
 
     // 7. solve the linear system
-    IExpr solution = engine.evaluateNIL(F.Solve(equations, unknownsList));
+    IExpr solution = engine.evaluateNIL(F.SolveDistinct(equations, unknownsList));
     if (solution.isNIL() || !solution.isListOfLists() || solution.argSize() == 0) {
       return F.NIL;
     }

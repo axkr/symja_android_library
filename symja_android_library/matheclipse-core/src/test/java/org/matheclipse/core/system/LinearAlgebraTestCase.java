@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.apfloat.Apint;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -10,7 +11,6 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.junit.jupiter.api.Tag;
 
 /** Tests built-in functions */
 public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
@@ -98,8 +98,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + "{{1,2},\n" //
             + " {2,4}},{1,3},Modulus->5)");
     // the message is LinearSolve::nosol, so a package can switch it off by that name
-    check("Off(LinearSolve::nosol); u=LinearSolve({{1,2},{2,4}},{1,3}, Modulus->5); "
-        + "On(LinearSolve::nosol); Head(u)", //
+    check(
+        "Off(LinearSolve::nosol); u=LinearSolve({{1,2},{2,4}},{1,3}, Modulus->5); "
+            + "On(LinearSolve::nosol); Head(u)", //
         "LinearSolve");
     check("Check(LinearSolve({{1,2},{2,4}},{1,3}, Modulus->5), failed, LinearSolve::nosol)", //
         "failed");
@@ -1021,11 +1022,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testDot() {
     check("{{a,2}}.{{a},{3}}", //
         "{{6+a^2}}");
-    check("{{3,4}}.{{a},{3}}",
-            "{{12+3*a}}");
-    check("{{a,2},{3,4}}.{{a,2},{3,4}}",
-            "{{6+a^2,8+2*a},\n" //
-                + " {12+3*a,22}}");
+    check("{{3,4}}.{{a},{3}}", "{{12+3*a}}");
+    check("{{a,2},{3,4}}.{{a,2},{3,4}}", "{{6+a^2,8+2*a},\n" //
+        + " {12+3*a,22}}");
 
     check("{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}.{-11/4,33/4,-5/4}", //
         "{10,11,12}");
@@ -1935,8 +1934,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // coefficients two of those GCDs took several seconds each. Now they run in the number field.
     // Roots from a 50 digit solve: 0.63991519622033242272, 0.75145976466452541197,
     // 1.1478791808063615053
-    check("N(LinearSolve({{Cos(7/36*Pi),-Cos(Pi/9),1},{1/Sqrt(2),-Cos(7/36*Pi),1},"
-        + "{1/2,-Cos(5/18*Pi),1}},{(1+Sqrt(3))/(2*Sqrt(2)),Cos(Pi/18),Cos(Pi/18)}))", //
+    check(
+        "N(LinearSolve({{Cos(7/36*Pi),-Cos(Pi/9),1},{1/Sqrt(2),-Cos(7/36*Pi),1},"
+            + "{1/2,-Cos(5/18*Pi),1}},{(1+Sqrt(3))/(2*Sqrt(2)),Cos(Pi/18),Cos(Pi/18)}))", //
         "{0.639915,0.75146,1.14788}");
   }
 
@@ -2103,9 +2103,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixPower() {
-    check("MatrixPower({{a,2},{3,4}},3)",
-            "{{24+12*a+a^3,44+8*a+2*a^2},\n" //
-                + " {66+12*a+3*a^2,112+6*a}}");
+    check("MatrixPower({{a,2},{3,4}},3)", "{{24+12*a+a^3,44+8*a+2*a^2},\n" //
+        + " {66+12*a+3*a^2,112+6*a}}");
 
 
     // github #121 - print error
@@ -2453,7 +2452,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // the output form leaves out a part below the machine epsilon: Im shows it
     check("Im(Det({{1.0*^-20*I,0.0},{0.0,1.0}}))", //
         "1.*10^-20");
-    check("Im(Det({{1.0*^-20*I,0.0,0.0,0.0},{0.0,1.0,0.0,0.0},{0.0,0.0,1.0,0.0},{0.0,0.0,0.0,1.0}}))", //
+    check(
+        "Im(Det({{1.0*^-20*I,0.0,0.0,0.0},{0.0,1.0,0.0,0.0},{0.0,0.0,1.0,0.0},{0.0,0.0,0.0,1.0}}))", //
         "1.*10^-20");
     check("MatrixRank({{1.0*^-20*I,0.0},{0.0,1.0*^-20}})", //
         "2");
@@ -2464,8 +2464,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{1.00000000000000000000000000000*10^40,0},\n"
             + " {0,1.00000000000000000000000000000*10^40}}");
     // what the arithmetic leaves of a zero stays zero
-    check("{MatrixRank({{1.0,2.0,3.0},{4.0,5.0,6.0},{7.0,8.0,9.0}}),"
-        + "MatrixRank({{0.1,0.7,0.3},{0.2,1.4,0.6},{0.3,2.1,0.9}})}", //
+    check(
+        "{MatrixRank({{1.0,2.0,3.0},{4.0,5.0,6.0},{7.0,8.0,9.0}}),"
+            + "MatrixRank({{0.1,0.7,0.3},{0.2,1.4,0.6},{0.3,2.1,0.9}})}", //
         "{2,1}");
     check("Det({{1.0,2.0,3.0},{4.0,5.0,6.0},{7.0,8.0,9.0}})", //
         "0.0");
@@ -2477,6 +2478,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNullSpace() {
     // Mathematica's options and answers
     check("Options(NullSpace)", //
@@ -3383,19 +3385,22 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExactRationalMatrices() {
     // rational matrices are reduced fraction-free over the integers
-    check("RowReduce({{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}})", //
+    check(
+        "RowReduce({{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}})", //
         "{{1,0,0,0,0,-39,-299/24,-329/24},\n" //
             + " {0,1,0,0,0,19,51/8,49/8},\n" //
             + " {0,0,1,0,0,-73/3,-55/8,-199/24},\n" //
             + " {0,0,0,1,0,37/3,89/24,33/8},\n" //
             + " {0,0,0,0,1,28/3,17/4,29/12}}");
-    check("m58={{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}};NullSpace(m58)", //
+    check(
+        "m58={{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}};NullSpace(m58)", //
         "{{329,-147,199,-99,-58,0,0,24},\n" //
             + " {299,-153,165,-89,-102,0,24,0},\n" //
             + " {117,-57,73,-37,-28,3,0,0}}");
     check("m58.Transpose(NullSpace(m58))==ConstantArray(0,{5,3})", //
         "True");
-    check("m6={{-2,-3/4,4,3,4/3,-4},{1/4,-2/3,-1,0,1,2/3},{-3/4,-5/3,-4,5/3,1/3,-2},{-4/3,2/3,3,4/3,1/4,3},{-2/3,-5/3,1/2,-5,1,-1/4},{5,5,-3,-3/4,5/4,4/3}};Det(m6)", //
+    check(
+        "m6={{-2,-3/4,4,3,4/3,-4},{1/4,-2/3,-1,0,1,2/3},{-3/4,-5/3,-4,5/3,1/3,-2},{-4/3,2/3,3,4/3,1/4,3},{-2/3,-5/3,1/2,-5,1,-1/4},{5,5,-3,-3/4,5/4,4/3}};Det(m6)", //
         "468430955/248832");
     check("Det(m6)*Det(Inverse(m6))", //
         "1");
@@ -3923,8 +3928,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testUpperTriangularize() {
     // an offset beyond the size keeps all or nothing
-    check("{UpperTriangularize({{5, 6}, {7, 8}}, -2^70), UpperTriangularize({{5, 6}, {7, 8}}, 2^70), "
-        + "LowerTriangularize({{5, 6}, {7, 8}}, 2^70)}", //
+    check(
+        "{UpperTriangularize({{5, 6}, {7, 8}}, -2^70), UpperTriangularize({{5, 6}, {7, 8}}, 2^70), "
+            + "LowerTriangularize({{5, 6}, {7, 8}}, 2^70)}", //
         "{\n{{5,6},\n {7,8}},\n{{0,0},\n {0,0}},\n{{5,6},\n {7,8}}}");
     // every column, also the ones where j - k leaves the int range
     check("t3 = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 1, 2, 3}}; "

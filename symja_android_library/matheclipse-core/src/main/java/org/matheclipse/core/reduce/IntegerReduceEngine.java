@@ -143,13 +143,7 @@ public final class IntegerReduceEngine {
     }
     List<AffineTerm> equations = new ArrayList<AffineTerm>();
     List<Formula> residualAtoms = new ArrayList<Formula>();
-    for (Atom atom : atoms) {
-      if (atom.isRelation() && atom.relation() == Relation.EQUAL) {
-        equations.add(atom.term());
-      } else {
-        residualAtoms.add(Formula.atom(atom));
-      }
-    }
+    splitEquations(atoms, equations, residualAtoms);
     if (equations.isEmpty() || residualAtoms.isEmpty()) {
       // a pure system and a system without equations are handled by their own routes
       return F.NIL;
@@ -346,8 +340,20 @@ public final class IntegerReduceEngine {
     return IntegerSolveResult.parametric(solution, untouched);
   }
 
+  /** Sort the atoms of a conjunction into the equations and the other constraints. */
+  static void splitEquations(List<Atom> atoms, List<AffineTerm> equations,
+      List<Formula> residualAtoms) {
+    for (Atom atom : atoms) {
+      if (atom.isRelation() && atom.relation() == Relation.EQUAL) {
+        equations.add(atom.term());
+      } else {
+        residualAtoms.add(Formula.atom(atom));
+      }
+    }
+  }
+
   /** The atoms of a conjunction, or <code>null</code> if the formula is not one. */
-  private static List<Atom> conjunctionAtoms(Formula formula) {
+  static List<Atom> conjunctionAtoms(Formula formula) {
     List<Atom> atoms = new ArrayList<Atom>();
     if (formula.kind() == Formula.Kind.ATOM) {
       atoms.add(formula.atom());

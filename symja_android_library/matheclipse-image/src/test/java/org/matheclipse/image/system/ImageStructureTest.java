@@ -133,6 +133,42 @@ public class ImageStructureTest extends AbstractTestCase {
         "RandomImage(1,{2,2},foo->1)");
   }
 
+  /** The type of <code>ConstantImage</code> and <code>RandomImage</code>, and its options. */
+  @Test
+  public void imageTypeArguments() {
+    check("ImageType(ConstantImage(Green, {4, 4}, \"Byte\"))", //
+        "Byte");
+    check("ImageType(ConstantImage(0.25, {4, 4}))", //
+        "Real32");
+    check("ImageDimensions(ConstantImage(0.25, {5, 3}, ImageSize->40))", //
+        "{5,3}");
+    check("ImageType(RandomImage(1, 6, \"Byte\"))", //
+        "Byte");
+    check("ImageDimensions(RandomImage(1, {2, 5}, \"Bit\"))", //
+        "{2,5}");
+    check("ImageData(ConstantImage(RGBColor(0, 0.25, 1), {2, 1}), Automatic, Interleaving->False)", //
+        "{{{0.0,0.0}},{{0.25,0.25}},{{1.0,1.0}}}");
+  }
+
+  /** The morphological filters of arrays and <code>CrossingDetect</code>. */
+  @Test
+  public void morphologyOfArrays() {
+    check("Dilation({2, 7, 1}, 1, Padding->9)", //
+        "{9,7,9}");
+    check("Erosion({2, 7, 1}, 1, Padding->-1)", //
+        "{-1,1,-1}");
+    check("Dilation({2, 7, 1, 1}, 1)", //
+        "{7,7,7,1}");
+    check("Normal(CrossingDetect({2, -3, 0, 5}))", //
+        "{1,0,0,0}");
+    check("Normal(CrossingDetect({{1, 1}, {1, -1}}))", //
+        "{{1,1},{1,0}}");
+    check("Normal(CrossingDetect({{1, 1}, {1, -1}}, CornerNeighbors->False))", //
+        "{{0,1},{1,0}}");
+    check("ImageType(CrossingDetect(Image({{0.25, -0.25}})))", //
+        "Bit");
+  }
+
   /** <code>ConstantImage(v, size)</code> - every pixel the same, grey or coloured. */
   @Test
   public void constantImage() {

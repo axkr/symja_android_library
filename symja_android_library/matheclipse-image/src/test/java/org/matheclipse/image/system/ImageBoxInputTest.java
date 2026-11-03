@@ -25,19 +25,19 @@ public class ImageBoxInputTest extends AbstractTestCase {
   public void testPastedImage() {
     check("img = " + CELL + "; "
         + "{ImageDimensions(img), ImageType(img), ImageChannels(img), Total(Flatten(ImageData(img)))}", //
-        "{{20,16},Bit,1,63.0}");
+        "{{20,16},Bit,1,63}");
     check("ImageData(img)[[3]] == {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0}", //
         "True");
     // the image is an argument like any other one; the closing shuts the gap of the ring
     check(
         "c = Closing(" + CELL + ", DiskMatrix(2)); "
             + "{ImageDimensions(c), ImageType(c), Total(Flatten(ImageData(c)))}", //
-        "{{20,16},Bit,109.0}");
+        "{{20,16},Bit,109}");
     check(
         "{Total(Flatten(ImageData(Dilation(img, DiskMatrix(2))))), "
             + "Total(Flatten(ImageData(Erosion(img, {{1, 1}})))), "
             + "Total(Flatten(ImageData(Opening(img, {{1, 1}, {1, 1}}))))}", //
-        "{260.0,44.0,58.0}");
+        "{260,44,58}");
   }
 
   @Test

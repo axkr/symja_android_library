@@ -70,6 +70,7 @@ import org.matheclipse.core.polynomials.UnivariateModularGCD;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.reflection.system.ApartSquareFree;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
 import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.visit.VisitorExpr;
@@ -183,9 +184,12 @@ public class Algebra {
         for (IExpr arg : ast) {
           if (arg.isRuleAST() && (arg.first() == S.Modulus || arg.first() == S.Trig)) {
             if (!arg.second().isZero() && arg.second() != S.False) {
-              return arg.first() == S.Modulus && ast.arg1().isRational()
+              if (arg.first() != S.Modulus) {
+                return F.NIL;
+              }
+              return ast.arg1().isRational()
                   ? residue((IRational) ast.arg1(), arg.second(), S.Apart, engine)
-                  : F.NIL;
+                  : ApartSquareFree.apartModulus(ast.arg1(), arg.second(), false, S.Apart, engine);
             }
           } else {
             withoutOptions.append(arg);
@@ -545,6 +549,9 @@ public class Algebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
+        if (isTrigTrue(ast.arg2())) {
+          return trigRationalFunction(S.Cancel, arg1, engine);
+        }
         IExpr modulus = modulusOption(ast, engine);
         if (modulus.isNIL()) {
           return F.NIL;
@@ -1399,22 +1406,28 @@ public class Algebra {
     }
     if (arg1.isAST()) {
       if (arg1.isPlus()) {
-        final IExpr head = ast.topHead();
-        return ((IAST) arg1).mapThread(x -> F.unaryAST1(head, x));
+        return ((IAST) arg1).mapThread(ast, 1);
       }
       Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
       if (parts.isPresent() && parts.get()[part].isAST()) {
         IExpr numerator = parts.get()[0];
         IExpr denominator = parts.get()[1];
+        // the options of the call are the options of the expansion
+        IAST expand = ast.apply(S.Expand);
         if (part == 0) {
-          numerator = engine.evaluate(F.Expand(numerator));
+          numerator = engine.evaluate(expand.setAtCopy(1, numerator));
         } else {
-          denominator = engine.evaluate(F.Expand(denominator));
+          denominator = engine.evaluate(expand.setAtCopy(1, denominator));
         }
         return F.Divide(numerator, denominator);
       }
     }
     return arg1;
+  }
+
+  /** The default options of <code>ExpandNumerator</code> and <code>ExpandDenominator</code>. */
+  private static IAST expandPartOptions() {
+    return F.list(F.Rule(S.Modulus, F.C0), F.Rule(S.Trig, S.False));
   }
 
   private static class ExpandDenominator extends AbstractFunctionEvaluator {
@@ -1426,9 +1439,13 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_3;
     }
 
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, expandPartOptions());
+    }
   }
 
   private static class ExpandNumerator extends AbstractFunctionEvaluator {
@@ -1440,9 +1457,13 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_3;
     }
 
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, expandPartOptions());
+    }
   }
 
   /**
@@ -1844,7 +1865,7 @@ public class Algebra {
           }
           if (subList.isPresent()) {
             for (int j = 1; j < subList.size(); j++) {
-              IAST solveFunction = F.Solve(
+              IAST solveFunction = F.SolveDistinct(
                   F.Equal(F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
                       F.C0), //
                   originalVarList.arg1(), //
@@ -2268,9 +2289,31 @@ public class Algebra {
       return F.NIL;
     }
 
+    /**
+     * The factors of a sum of trigonometric functions which is no polynomial in them, through the
+     * sum-to-product identities: <code>Sin(x)+Sin(y)</code>, <code>1-Cos(2*x)</code>.
+     *
+     * @return {@link F#NIL} if there is no such product
+     */
+    protected static IExpr trigFactored(IExpr arg1, EvalEngine engine) {
+      if (!arg1.isPlus()) {
+        return F.NIL;
+      }
+      IExpr factored = engine.evaluate(F.TrigFactor(arg1));
+      return factored.isTimes() || factored.isPower() ? factored : F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
+      IExpr result = factorArgument(ast, options, engine);
+      if (options[3].isTrue() && (result.isNIL() || engine.evaluate(result).isPlus())) {
+        return trigFactored(ast.arg1(), engine).orElse(result);
+      }
+      return result;
+    }
+
+    private IExpr factorArgument(final IAST ast, final IExpr[] options, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IAST list = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
       if (list.isPresent()) {
@@ -2459,6 +2502,12 @@ public class Algebra {
       if (list.isPresent()) {
         return list;
       }
+      if (options[3].isTrue()) {
+        IExpr trig = trigFactored(arg1, engine);
+        if (trig.isPresent()) {
+          return trig;
+        }
+      }
       VariablesSet eVar = new VariablesSet(arg1);
       IExpr result = engine.getCache(ast);
       if (result != null) {
@@ -2526,6 +2575,40 @@ public class Algebra {
    * </blockquote>
    */
   private static class FactorSquareFreeList extends Factor {
+
+    /** The pairs of the base and the exponent of a product, starting with the constant. */
+    private static IAST basesAndExponents(IExpr factored) {
+      IASTAppendable result = F.ListAlloc(factored.argSize() + 1);
+      if (factored.isAST() && factored.head() == S.Times) {
+        for (IExpr factor : (IAST) factored) {
+          result.append(
+              factor.isPower() ? F.list(factor.base(), factor.exponent()) : F.list(factor, F.C1));
+        }
+      } else if (factored.isPower()) {
+        result.append(F.list(factored.base(), factored.exponent()));
+      } else {
+        result.append(F.list(factored, F.C1));
+      }
+      if (!result.arg1().first().isNumber()) {
+        result.append(1, F.list(F.C1, F.C1));
+      }
+      return result;
+    }
+
+    /** The list with the constant in front, and then the parts by increasing multiplicity. */
+    private static IAST byMultiplicity(IAST factors) {
+      java.util.List<IExpr> parts = new java.util.ArrayList<IExpr>();
+      for (int i = 2; i < factors.size(); i++) {
+        parts.add(factors.get(i));
+      }
+      parts.sort((a, b) -> a.second().compareTo(b.second()));
+      IASTAppendable result = F.ListAlloc(factors.argSize());
+      result.append(factors.arg1());
+      for (IExpr part : parts) {
+        result.append(part);
+      }
+      return result;
+    }
 
     private static IExpr factorList(IExpr expr, IAST varList, boolean factorSquareFree)
         throws JASConversionException {
@@ -2606,6 +2689,12 @@ public class Algebra {
         final EvalEngine engine, IAST originalAST) {
 
       VariablesSet eVar = new VariablesSet(ast.arg1());
+      if (options[3].isTrue()) {
+        IExpr trig = trigFactored(ast.arg1(), engine);
+        if (trig.isPresent()) {
+          return byMultiplicity(basesAndExponents(trig));
+        }
+      }
       if (options[MODULUS_OPTION].isInteger() && !options[MODULUS_OPTION].isZero()) {
         // the square-free parts over GF(p), as the list of their bases and exponents
         IExpr factored = Factor.factorModulus(S.FactorSquareFreeList, ast.arg1(), eVar, true,
@@ -2613,19 +2702,7 @@ public class Algebra {
         if (factored.isNIL()) {
           return F.NIL;
         }
-        IASTAppendable result = F.ListAlloc(factored.argSize() + 1);
-        if (factored.isAST() && factored.head() == S.Times) {
-          for (IExpr factor : (IAST) factored) {
-            result.append(
-                factor.isPower() ? F.list(factor.base(), factor.exponent()) : F.list(factor, F.C1));
-          }
-        } else {
-          result.append(F.list(factored, F.C1));
-        }
-        if (!result.arg1().first().isNumber()) {
-          result.append(1, F.list(F.C1, F.C1));
-        }
-        return result;
+        return byMultiplicity(basesAndExponents(factored));
       }
       try {
         // the factors of a product which is written out are kept apart
@@ -2943,6 +3020,7 @@ public class Algebra {
       S.ExpandAll.setEvaluator(new ExpandAll());
       S.ExpandDenominator.setEvaluator(new ExpandDenominator());
       S.ExpandNumerator.setEvaluator(new ExpandNumerator());
+      S.NumeratorDenominator.setEvaluator(new NumeratorDenominator());
       S.Factor.setEvaluator(new Factor());
       S.FactorSquareFree.setEvaluator(new FactorSquareFree());
       S.FactorSquareFreeList.setEvaluator(new FactorSquareFreeList());
@@ -3032,6 +3110,29 @@ public class Algebra {
     }
 
 
+  }
+
+  /**
+   * <code>NumeratorDenominator(expr)</code> gives the list of the numerator and the denominator of
+   * <code>expr</code>, the option <code>Trig-&gt;True</code> is the one of these two functions.
+   */
+  private static class NumeratorDenominator extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.list(ast.apply(S.Numerator), ast.apply(S.Denominator));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+      setOptions(newSymbol, F.list(F.Rule(S.Trig, S.False)));
+    }
   }
 
   /**
@@ -5842,6 +5943,9 @@ public class Algebra {
         return list;
       }
       if (ast.isAST2()) {
+        if (isTrigTrue(ast.arg2())) {
+          return trigRationalFunction(S.Together, arg1, engine);
+        }
         IExpr modulus = modulusOption(ast, engine);
         if (modulus.isNIL()) {
           return F.NIL;
@@ -5961,9 +6065,41 @@ public class Algebra {
    */
   private static class Variables extends AbstractFunctionEvaluator {
 
+    /**
+     * The expression with the numbers of its polynomial parts reduced modulo <code>modulus</code>,
+     * so that a term with a vanishing coefficient doesn't count.
+     */
+    private static IExpr reduced(IExpr expr, IInteger modulus, EvalEngine engine) {
+      if (expr.isList()) {
+        return ((IAST) expr).map(x -> reduced(x, modulus, engine));
+      }
+      try {
+        IAST varList = VariablesSet.getAlgebraicVariables(expr);
+        if (varList.argSize() > 0) {
+          return JASModular.ofRing(modulus.abs(), varList).reduce(F.evalExpandAll(expr, engine));
+        }
+      } catch (JASConversionException | ArithmeticException e) {
+        // not a polynomial in the variables
+      }
+      return expr;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST variables = VariablesSet.getAlgebraicVariables(ast.arg1());
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST2()) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        if (options.isInvalidPosition(1)) {
+          return options.printNonopt(ast, 1, engine);
+        }
+        IExpr modulus = options.getOption(S.Modulus);
+        if (modulus.isInteger() && !modulus.isZero()) {
+          arg1 = reduced(arg1, (IInteger) modulus, engine);
+        } else if (!modulus.isZero()) {
+          return F.NIL;
+        }
+      }
+      IAST variables = VariablesSet.getAlgebraicVariables(arg1);
       if (!variables.exists(x -> x.isPower() && !x.exponent().isNumber())) {
         return variables;
       }
@@ -5994,11 +6130,13 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, F.list(F.Rule(S.Modulus, F.C0)));
+    }
 
   }
 
@@ -6082,6 +6220,48 @@ public class Algebra {
    */
   private static boolean isModpMessage(IBuiltInSymbol symbol, IExpr option) {
     return JASModular.isModpMessage(symbol, option);
+  }
+
+  /** Whether <code>option</code> is the rule <code>Trig-&gt;True</code>. */
+  private static boolean isTrigTrue(IExpr option) {
+    return option.isRuleAST() && option.first() == S.Trig && option.second().isTrue();
+  }
+
+  /**
+   * <code>Cancel</code> or <code>Together</code> with <code>Trig-&gt;True</code>: the multiple
+   * angles are expanded and the expression is treated as a rational function of the sine and the
+   * cosine of each angle, which are symbols during the operation so that <code>1/Sin(x)</code>
+   * stays a fraction.
+   */
+  private static IExpr trigRationalFunction(IBuiltInSymbol head, IExpr arg1, EvalEngine engine) {
+    // the heads with the powers of the sine and the cosine they are; the hyperbolic ones last
+    final IExpr[][] powers = {//
+        {S.Sin, F.C1, F.C0}, {S.Cos, F.C0, F.C1}, {S.Tan, F.C1, F.CN1}, {S.Cot, F.CN1, F.C1},
+        {S.Sec, F.C0, F.CN1}, {S.Csc, F.CN1, F.C0}, //
+        {S.Sinh, F.C1, F.C0}, {S.Cosh, F.C0, F.C1}, {S.Tanh, F.C1, F.CN1}, {S.Coth, F.CN1, F.C1},
+        {S.Sech, F.C0, F.CN1}, {S.Csch, F.CN1, F.C0}};
+    IExpr expanded = TrigExpand.trigExpand(arg1, engine);
+    java.util.Map<IExpr, IExpr> forward = new java.util.HashMap<IExpr, IExpr>();
+    IASTAppendable backward = F.ListAlloc(4);
+    java.util.function.Function<IExpr, IExpr> mask = kernel -> forward.computeIfAbsent(kernel, k -> {
+      IExpr dummy = F.Dummy("$t" + (forward.size() + 1));
+      backward.append(F.Rule(dummy, k));
+      return dummy;
+    });
+    IExpr masked = expanded.replaceAll(x -> {
+      if (x.isAST1()) {
+        for (int i = 0; i < powers.length; i++) {
+          if (x.head() == powers[i][0]) {
+            IExpr sin = mask.apply(F.unaryAST1(i < 6 ? S.Sin : S.Sinh, x.first()));
+            IExpr cos = mask.apply(F.unaryAST1(i < 6 ? S.Cos : S.Cosh, x.first()));
+            return F.Times(F.Power(sin, powers[i][1]), F.Power(cos, powers[i][2]));
+          }
+        }
+      }
+      return F.NIL;
+    }).orElse(expanded);
+    IExpr rational = engine.evaluate(F.unaryAST1(head, masked));
+    return engine.evaluate(F.ReplaceAll(rational, backward));
   }
 
   /**

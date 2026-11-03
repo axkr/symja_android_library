@@ -205,6 +205,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
       S.LatticeReduce.setEvaluator(new org.matheclipse.core.reflection.system.LatticeReduce());
       S.Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
+      S.DualLinearProgramming
+          .setEvaluator(new org.matheclipse.core.reflection.system.DualLinearProgramming());
       S.LinearOptimization
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearOptimization());
       S.LinearProgramming
@@ -423,6 +425,11 @@ public final class FunctionDefinitions {
       S.TensorProduct.setEvaluator(new org.matheclipse.core.reflection.system.TensorProduct());
       S.TensorTranspose.setEvaluator(new org.matheclipse.core.reflection.system.TensorTranspose());
       S.ToRadicals.setEvaluator(new org.matheclipse.core.reflection.system.ToRadicals());
+      S.ApartSquareFree.setEvaluator(new org.matheclipse.core.reflection.system.ApartSquareFree());
+      S.ListFourierSequenceTransform
+          .setEvaluator(new org.matheclipse.core.reflection.system.ListFourierSequenceTransform());
+      S.MultipleHarmonicNumber
+          .setEvaluator(new org.matheclipse.core.reflection.system.MultipleHarmonicNumber());
       S.Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());
       S.ZetaZero.setEvaluator(new org.matheclipse.core.reflection.system.ZetaZero());
 
@@ -464,6 +471,16 @@ public final class FunctionDefinitions {
       S.PieChart.setEvaluator(new org.matheclipse.core.builtin.graphics.PieChart());
       S.SectorChart.setEvaluator(new org.matheclipse.core.builtin.graphics.SectorChart());
       S.RectangleChart.setEvaluator(new org.matheclipse.core.builtin.graphics.RectangleChart());
+      S.PairedBarChart
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.PairedChart(false));
+      S.PairedHistogram
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.PairedChart(true));
+      S.Histogram3D.setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.Histogram3D());
+      S.SmoothHistogram
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.SmoothHistogram());
+      S.SmoothHistogram3D
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.SmoothHistogram3D());
+      S.ClockGauge.setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.ClockGauge());
       S.RectangleChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.RectangleChart3D());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
       S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());

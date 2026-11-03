@@ -200,7 +200,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // M = 2x + y^2, N = 2xy. dM/dy = 2y = dN/dx.
     // Implicit solution is x^2 + x*y^2 = C. Solving for y extracts the first root.
     check("DSolve(2*x + y(x)^2 + 2*x*y(x)*y'(x) == 0, y(x), x)", //
-        "{{y(x)->Sqrt(-x^2+C(1))/Sqrt(x)},{y(x)->-Sqrt(-x^2+C(1))/Sqrt(x)}}");
+        "{{y(x)->-Sqrt(-x^2+C(1))/Sqrt(x)},{y(x)->Sqrt(-x^2+C(1))/Sqrt(x)}}");
 
     // Exact ODE (Non-separable, non-linear): (y^2 + 2xy) + (2xy + x^2)y' = 0
     // M = y^2 + 2xy, N = 2xy + x^2. dM/dy = 2y + 2x = dN/dx.
@@ -246,7 +246,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // Exact equation becomes: (x^3 + x*y^2 + x^2) + (x^2*y)*y' = 0
     // Result implicit: 1/2*x^2*y^2 + 1/4*x^4 + 1/3*x^3 = C_1
     check("DSolve(x^2 + y(x)^2 + x + x * y(x) * y'(x) == 0, y(x), x)", //
-        "{{y(x)->Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(6)*x)},{y(x)->-Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(\n" //
+        "{{y(x)->-Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(6)*x)},{y(x)->Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(\n" //
             + "6)*x)}}");
 
     // Integrating factor depending only on y: mu(y) = 1/y^2
@@ -1576,10 +1576,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
           "{C(1)->7/5, C(2)->3/4, x->13/10}");
     }
 
-    // Nothing of this kind makes these coefficients rational, so it declines rather than spending
-    // the time on every equation with a sine in it.
+    // Nothing of this kind makes these coefficients rational, but z == Pi/4-x/2 turns the equation
+    // into a Mathieu equation with a == 0 and q == -2.
     check("DSolve(y''(x) + Sin(x)*y(x) == 0, y(x), x)", //
-        "DSolve(Sin(x)*y(x)+y''(x)==0,y(x),x)");
+        "{{y(x)->C(1)*MathieuC(0,-2,Pi/4-x/2)-C(2)*MathieuS(0,-2,Pi/4-x/2)}}");
 
     // Under t == E^x the coefficients are rational in t and the equation is then Liouvillian, so
     // Kovacic's method finds it; one solution is E^(-E^x) and the other carries ExpIntegralEi.

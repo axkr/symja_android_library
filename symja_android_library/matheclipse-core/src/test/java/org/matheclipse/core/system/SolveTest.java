@@ -474,7 +474,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^5 - 1 == 0, x)", //
         "{{x->1},{x->-(-1)^(1/5)},{x->(-1)^(2/5)},{x->-(-1)^(3/5)},{x->(-1)^(4/5)}}");
     check("Solve(x^5 - x^2 == 0, x)", //
-        "{{x->0},{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
+        "{{x->0},{x->0},{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
   }
 
   @Test
@@ -638,7 +638,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-1},{x->0},{x->(-1)^(1/3)},{x->-(-1)^(2/3)}}");
     // x^5 - x^2 == x^2*(x^3 - 1): degree 5, previously not handled by the quartic solver
     check("Solve(x^5 - x^2 == 0, x)", //
-        "{{x->0},{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
+        "{{x->0},{x->0},{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
   }
 
   @Test
@@ -1067,9 +1067,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^y+8==a*b,x)", //
         "{{x->(-8+a*b)^(1/y)}}");
     check("Solve(x^2==0,x)", //
-        "{{x->0}}");
+        "{{x->0},{x->0}}");
     check("Solve(x^3==0,x)", //
-        "{{x->0}}");
+        "{{x->0},{x->0},{x->0}}");
     check("Solve(x+1==0,x)", //
         "{{x->-1}}");
     check("Solve(x^2+1==0,x)", //
@@ -1083,7 +1083,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(a*x^2+b==0,x)", //
         "{{x->(-I*Sqrt(b))/Sqrt(a)},{x->(I*Sqrt(b))/Sqrt(a)}}");
     check("Solve(x^2+2*x+1==0,x)", //
-        "{{x->-1}}");
+        "{{x->-1},{x->-1}}");
     // TODO simplify result
     check("Solve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
         "{{x->(-5*Sqrt(14)-I*Sqrt(-350+560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+I*Sqrt(-\n"
@@ -1287,7 +1287,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^2+1==0, x)", //
         "{{x->-I},{x->I}}");
     check("Solve((k*Q*q)/r^2==E,r)", //
-        "{{r->Sqrt(k*q*Q)/Sqrt(E)},{r->-Sqrt(k*q*Q)/Sqrt(E)}}");
+        "{{r->-Sqrt(k*q*Q)/Sqrt(E)},{r->Sqrt(k*q*Q)/Sqrt(E)}}");
     check("Solve((k*Q*q)/r^2+1/r^4==0,r)", //
         "{{r->-I/Sqrt(k*q*Q)},{r->I/Sqrt(k*q*Q)}}");
     check("Solve(Abs(x-1) ==1,{x})", //
@@ -1337,7 +1337,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^2+a*x+1 == 0, x)", //
         "{{x->1/2*(-a-Sqrt(-4+a^2))},{x->1/2*(-a+Sqrt(-4+a^2))}}");
     check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
-        "{{x->1},{x->4/3}}");
+        "{{x->1},{x->1},{x->4/3}}");
 
     checkNumeric("Solve(x^2+50*x-2500.00==0,x)", //
         "{{x->-80.90169943749474},{x->30.90169943749474}}");
@@ -2479,7 +2479,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->6,y->2}}");
     check("Solve(x^2==0,{x,y,z})", //
         "{{x->0}}");
-    check("Solve(x^2==0,x)", "{{x->0}}");
+    check("Solve(x^2==0,x)", "{{x->0},{x->0}}");
     check("Solve(x^2==4,x)", "{{x->-2},{x->2}}");
     check("Solve({x^2==4,x+y==10},{x,y})", "{{x->-2,y->12},{x->2,y->8}}");
 
@@ -2810,7 +2810,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveReciprocal() {
     check("Solve(x+1/x==2, x)", //
-        "{{x->1}}");
+        "{{x->1},{x->1}}");
 
   }
 
@@ -3249,7 +3249,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Expanded: x^3 - 6*x^2 + 12*x - 8 == 0
     // Both the discriminant and delta0 are exactly 0.
     check("Solve(x^3 - 6*x^2 + 12*x - 8 == 0, x)", //
-        "{{x->2}}");
+        "{{x->2},{x->2},{x->2}}");
   }
 
   @Test
@@ -3259,7 +3259,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Discriminant is 0, but delta0 is NOT 0.
     // Triggers the branch that calculates a double root and a distinct simple root.
     check("Solve(x^3 - 3*x + 2 == 0, x)", //
-        "{{x->-2},{x->1}}");
+        "{{x->-2},{x->1},{x->1}}");
   }
 
   @Test
@@ -3342,7 +3342,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Expanded: x^4 - 4*x^3 + 6*x^2 - 4*x + 1 == 0
     // The discriminant of the quartic and its resolvent cubic are both completely 0.
     check("Solve(x^4 - 4*x^3 + 6*x^2 - 4*x + 1 == 0, x)", //
-        "{{x->1}}");
+        "{{x->1},{x->1},{x->1},{x->1}}");
   }
 
   @Test
@@ -3351,7 +3351,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Expanded: x^4 - 4*x^2 + 4 == 0
     // Resolvent roots will collapse, requiring fallback to depressed quadratic handling.
     check("Solve(x^4 - 4*x^2 + 4 == 0, x)", //
-        "{{x->-Sqrt(2)},{x->Sqrt(2)}}");
+        "{{x->-Sqrt(2)},{x->-Sqrt(2)},{x->Sqrt(2)},{x->Sqrt(2)}}");
   }
 
   @Test
@@ -3385,7 +3385,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Checks if the solver correctly switches domains without throwing exceptions in the linear
     // branch.
     check("Solve(x^4 + x^2 == 0, x)", //
-        "{{x->-I},{x->0},{x->I}}");
+        "{{x->-I},{x->0},{x->0},{x->I}}");
   }
 
   @Test

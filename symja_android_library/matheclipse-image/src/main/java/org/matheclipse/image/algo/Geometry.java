@@ -165,6 +165,36 @@ public final class Geometry {
   }
 
   /**
+   * Rotate counterclockwise by <code>radians</code> onto the whole-pixel bounding box of the turned
+   * image. Every pixel takes the source pixel under its centre, scaled from the whole-pixel canvas
+   * to the exact box; what lies outside of the source is <code>0</code>.
+   */
+  public static Raster rotateOntoBoundingBox(Raster source, double radians) {
+    double sin = Math.sin(radians);
+    double cos = Math.cos(radians);
+    double boxWidth = source.width * Math.abs(cos) + source.height * Math.abs(sin);
+    double boxHeight = source.width * Math.abs(sin) + source.height * Math.abs(cos);
+    int width = (int) Math.max(1.0, Math.ceil(boxWidth - 1.0e-9));
+    int height = (int) Math.max(1.0, Math.ceil(boxHeight - 1.0e-9));
+    Raster result = new Raster(width, height, source.channels);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        // the centre of the pixel from the centre of the canvas, with y pointing up
+        double dx = (x + 0.5 - width / 2.0) * boxWidth / width;
+        double dy = (height / 2.0 - (y + 0.5)) * boxHeight / height;
+        double column = Math.floor(dx * cos + dy * sin + source.width / 2.0);
+        double row = Math.floor(source.height - (-dx * sin + dy * cos + source.height / 2.0));
+        if (column >= 0.0 && row >= 0.0 && column < source.width && row < source.height) {
+          for (int c = 0; c < source.channels; c++) {
+            result.set(x, y, c, source.get((int) column, (int) row, c));
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
    * Rotate counterclockwise by <code>radians</code> about the centre.
    *
    * @param width the output size, or <code>-1</code> for the size that fits the whole rotated image

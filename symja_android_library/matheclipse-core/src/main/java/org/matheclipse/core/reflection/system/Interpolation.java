@@ -34,6 +34,10 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       if (domain != null) {
         ((InterpolatingFunctionExpr<?>) result).withExactDomain(domain[0], domain[1]);
       }
+      if (ast.arg1().has(x -> x.isInexactNumber(), false)) {
+        // the pieces of machine numbers are no closed form of the function
+        ((InterpolatingFunctionExpr<?>) result).withNumericArgumentsOnly();
+      }
     }
     return result;
   }

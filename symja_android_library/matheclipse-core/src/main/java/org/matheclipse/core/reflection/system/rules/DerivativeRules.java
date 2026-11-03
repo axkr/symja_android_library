@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system.rules;
 
 import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 
 /**
@@ -13,7 +14,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 176, 0 };
+  final public static int[] SIZES = { 180, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -395,6 +396,18 @@ public class DerivativeRules {
     // Derivative(1,0,0)[Gamma]=Gamma(#1,#2)*Log(#2)-Gamma(#1,#3)*Log(#3)+MeijerG({{},{1,1}},{{0,0,#1},{}},#2)-MeijerG({{},{1,1}},{{0,0,#1},{}},#3)&
     ISet($(Derivative(C1,C0,C0),Gamma),
       Function(Plus(Times(Gamma(Slot1,Slot2),Log(Slot2)),Times(CN1,Gamma(Slot1,Slot(C3)),Log(Slot(C3))),MeijerG(list(List(),list(C1,C1)),list(list(C0,C0,Slot1),List()),Slot2),Negate(MeijerG(list(List(),list(C1,C1)),list(list(C0,C0,Slot1),List()),Slot(C3))))), true),
+    // Derivative(1,0)[WeierstrassP]=WeierstrassPPrime(#1,#2)&
+    ISet($(Derivative(C1,C0),S.WeierstrassP),
+      Function(binaryAST2(S.WeierstrassPPrime,Slot1,Slot2)), true),
+    // Derivative(1,0)[WeierstrassPPrime]=6*WeierstrassP(#1,#2)^2-#2[[1]]/2&
+    ISet($(Derivative(C1,C0),S.WeierstrassPPrime),
+      Function(Plus(Times(CN1D2,Part(Slot2,C1)),Times(C6,Sqr(binaryAST2(S.WeierstrassP,Slot1,Slot2))))), true),
+    // Derivative(1,0)[WeierstrassSigma]=WeierstrassSigma(#1,#2)*WeierstrassZeta(#1,#2)&
+    ISet($(Derivative(C1,C0),S.WeierstrassSigma),
+      Function(Times(binaryAST2(S.WeierstrassSigma,Slot1,Slot2),binaryAST2(S.WeierstrassZeta,Slot1,Slot2))), true),
+    // Derivative(1,0)[WeierstrassZeta]=-WeierstrassP(#1,#2)&
+    ISet($(Derivative(C1,C0),S.WeierstrassZeta),
+      Function(Negate(binaryAST2(S.WeierstrassP,Slot1,Slot2))), true),
     // Derivative(1,0)[HarmonicNumber]=#2*(-HarmonicNumber(#1,#2+1)+Zeta(#2+1))&
     ISet($(Derivative(C1,C0),HarmonicNumber),
       Function(Times(Slot2,Plus(Negate(HarmonicNumber(Slot1,Plus(Slot2,C1))),Zeta(Plus(Slot2,C1))))), true),

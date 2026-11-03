@@ -495,8 +495,11 @@ public final class GraphicsOptions2D {
     }
     if (value.isList() && ((IAST) value).argSize() >= 2) {
       IAST list = (IAST) value;
-      double w = namedImageSize(list.arg1(), Double.NaN);
-      double h = namedImageSize(list.arg2(), Double.NaN);
+      // {{wmin, wmax}, {hmin, hmax}} allows a range of sizes: the largest of each is taken
+      double w = namedImageSize(list.arg1().isList2() ? list.arg1().second() : list.arg1(),
+          Double.NaN);
+      double h = namedImageSize(list.arg2().isList2() ? list.arg2().second() : list.arg2(),
+          Double.NaN);
       if (!Double.isNaN(w) && w > 0) {
         imageSize[0] = w;
       }

@@ -160,7 +160,7 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
       int direction, Map<Integer, IExpr> initialValues, EvalEngine engine) {
     IExpr term = (shift == 0) ? F.unary(dY, dN) : F.unary(dY, F.Plus(dN, F.ZZ(shift)));
 
-    IAST solveRes = (IAST) engine.evaluate(F.Solve(safeEq, term));
+    IAST solveRes = (IAST) engine.evaluate(F.SolveDistinct(safeEq, term));
     if (solveRes.size() < 2 || !solveRes.arg1().isList()) {
       return false;
     }

@@ -301,7 +301,7 @@ public class Plot extends ListPlot {
     }
     // an equation names the positions by their solutions
     try {
-      IExpr solutions = S.Solve.of(engine, spec, xVar);
+      IExpr solutions = engine.evaluate(F.SolveDistinct(spec, xVar));
       if (solutions.isList()) {
         IAST list = (IAST) solutions;
         for (int i = 1; i < list.size(); i++) {

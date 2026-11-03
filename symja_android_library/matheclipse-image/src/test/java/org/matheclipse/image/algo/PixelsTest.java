@@ -134,16 +134,22 @@ public class PixelsTest {
 
   /**
    * The channel count is read from a different axis in each layout: the last one interleaved, the
-   * first one planar. Two channels - greyscale with alpha - has no <code>BufferedImage</code> type
-   * and no colour space name, so it is refused rather than turned into something else.
+   * first one planar. Any count is an image; two channels have the picture of a grey level with an
+   * alpha channel.
    */
   @Test
-  public void twoChannelsAreRefused() {
+  public void twoChannelsAreAnImage() {
     // {2,1,2}: interleaved that is two rows of one pixel with two channels
     IAST data = F.list(F.list(F.list(F.C0, F.C1)), F.list(F.list(F.C1, F.C0)));
-    assertNull(Pixels.samplesOf(data, true));
+    Samples interleaved = Pixels.samplesOf(data, true);
+    assertEquals(2, interleaved.channels());
+    assertEquals(1, interleaved.width());
+    assertEquals(2, interleaved.height());
     // and planar it is two planes of a 1x2 image, which is the same two channels
-    assertNull(Pixels.samplesOf(data, false));
+    Samples planar = Pixels.samplesOf(data, false);
+    assertEquals(2, planar.channels());
+    assertEquals(2, planar.width());
+    assertEquals(1, planar.height());
   }
 
   /** Rank 4 is not a picture in either layout, and neither is rank 1. */
@@ -180,8 +186,8 @@ public class PixelsTest {
   }
 
   /**
-   * Three planes of a 2x2 image is a picture read as planar, and two channels - so refused - read
-   * as interleaved. The layout is what decides, not the data.
+   * Three planes of a 2x2 image read as planar, and 3 rows of 2 pixels with two channels read as
+   * interleaved. The layout is what decides, not the data.
    */
   @Test
   public void theSameDataMeansDifferentThingsInTheTwoLayouts() {
@@ -195,7 +201,10 @@ public class PixelsTest {
     assertEquals(2, planar.width());
     assertEquals(2, planar.height());
     // read as interleaved the same data is 3 rows of 2 pixels with 2 channels each
-    assertNull(Pixels.samplesOf(data, true));
+    Samples interleaved = Pixels.samplesOf(data, true);
+    assertEquals(2, interleaved.channels());
+    assertEquals(2, interleaved.width());
+    assertEquals(3, interleaved.height());
   }
 
   // ------------------------------------------------------------------ image -> IAST

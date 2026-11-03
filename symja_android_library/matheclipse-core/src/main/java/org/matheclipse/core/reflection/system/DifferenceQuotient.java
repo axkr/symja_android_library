@@ -27,8 +27,14 @@ public class DifferenceQuotient extends AbstractFunctionEvaluator {
       return f.mapThread(ast.setAtCopy(1, F.Slot1), 1);
     }
 
+    // a trailing Assumptions option is passed on to the simplification of the quotient
+    IExpr last = ast.last();
+    final boolean hasAssumptions =
+        ast.size() > 2 && last.isRuleAST() && last.first().equals(S.Assumptions);
+    final int end = hasAssumptions ? ast.size() - 1 : ast.size();
+
     // Iterate over the variable specifications (x, {x}, {x, n}, {x, n, h}, etc.)
-    for (int i = 2; i < ast.size(); i++) {
+    for (int i = 2; i < end; i++) {
       IExpr arg = ast.get(i);
       IExpr x;
       IExpr n = F.C1; // Default order
@@ -57,8 +63,8 @@ public class DifferenceQuotient extends AbstractFunctionEvaluator {
       }
       // Result = DifferenceDelta / h^n
       // We update 'f' so the next iteration applies to the result of the previous one (threading)
-      f = engine.evaluate(//
-          F.Simplify(F.Times(differenceDelta, F.Power(h, n.negate()))));
+      IExpr quotient = F.Times(differenceDelta, F.Power(h, n.negate()));
+      f = engine.evaluate(hasAssumptions ? F.Simplify(quotient, last) : F.Simplify(quotient));
     }
 
     return f;

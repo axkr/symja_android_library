@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
@@ -44,6 +45,10 @@ public class VariablesSet {
 
     @Override
     public boolean visit(IAST list) {
+      if (list.isAST(S.Inequality)) {
+        // no polynomial, and its even arguments are operators
+        return false;
+      }
       if (list.isList() || list.isPlus() || list.isTimes() || list.isRelational()
           || list.isBooleanFunction()) {
         list.forEach(x -> x.accept(this));
@@ -224,6 +229,14 @@ public class VariablesSet {
       if (list instanceof ASTSeriesData) {
         fCollection.add(((ASTSeriesData) list).expansionVariable());
         return true;
+      }
+      if (list.isAST(S.Inequality)) {
+        // the even arguments are the comparison operators
+        boolean found = false;
+        for (int i = 1; i < list.size(); i += 2) {
+          found |= list.get(i).accept(this);
+        }
+        return found;
       }
       IExpr head = list.head();
       if (head.isVariable()

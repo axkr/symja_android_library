@@ -84,8 +84,12 @@ public class ImageDataOptionsTest extends AbstractTestCase {
   public void aGreyscaleImageIsOnePlane() {
     check("ImageData(Image({{0.0,1.0}}),\"Byte\")=={{0,255}}", //
         "True");
-    check("ImageData(Image({{0.0,1.0}}),\"Byte\",Interleaving->False)=={{{0,255}}}", //
+    check("ImageData(Image({{0.0,1.0}}),\"Byte\",Interleaving->False)=={{0,255}}", //
         "True");
+    check("ImageData(Image({{0.25,0.75}}),Interleaving->False)", //
+        "{{0.25,0.75}}");
+    check("ImageData(Image({{0,1}},\"Bit\"))", //
+        "{{0,1}}");
   }
 
   /** Data written one way and read back the same way is the picture it started as. */
@@ -132,7 +136,7 @@ public class ImageDataOptionsTest extends AbstractTestCase {
     check("ImageData(Image({{0.0,1.0},{1.0,0.0}}),DataReversed->True)", //
         "{{1.0,0.0},{0.0,1.0}}");
     check("ImageData(Image({{0.0,1.0},{1.0,0.0}}),Interleaving->False)", //
-        "{{{0.0,1.0},{1.0,0.0}}}");
+        "{{0.0,1.0},\n {1.0,0.0}}");
   }
 
   // -------------------------------------------------------------------- refusals

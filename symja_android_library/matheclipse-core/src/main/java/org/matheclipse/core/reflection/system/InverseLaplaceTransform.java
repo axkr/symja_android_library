@@ -164,7 +164,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
         IExpr c = consts.argSize() == 1 ? consts.arg1() : consts;
         IExpr nc = nonConsts.argSize() == 0 ? F.C1
             : (nonConsts.argSize() == 1 ? nonConsts.arg1() : nonConsts);
-        return engine.evaluate(F.Times(c, F.InverseLaplaceTransform(nc, s, t)));
+        return timesShifted(c, engine.evaluate(F.InverseLaplaceTransform(nc, s, t)), engine);
       }
     }
 
@@ -371,6 +371,40 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
 
 
   // =====================================================================
+  /**
+   * The product of a constant and a transform. A machine number multiplies out the sum of a shifted
+   * original <code>(a+b)*HeavisideTheta(t+c)</code>.
+   */
+  private static IExpr timesShifted(IExpr c, IExpr transform, EvalEngine engine) {
+    if (c.isInexactNumber() && transform.isTimes() && transform.isAST2()
+        && transform.first().isPlus() && transform.second().isAST(S.HeavisideTheta)) {
+      return engine.evaluate(
+          F.Times(F.Expand(F.Times(c, transform.first())), transform.second()));
+    }
+    return engine.evaluate(F.Times(c, transform));
+  }
+
+  /**
+   * The exponents of a shifted original are expanded, and a machine number in an exponent becomes a
+   * factor: <code>E^(1/3*(2-t))</code> is <code>E^(2/3-t/3)</code> and <code>E^(0.5-t)</code> is
+   * <code>1.6487/E^t</code>.
+   */
+  private static IExpr expandedExponents(IExpr shifted, EvalEngine engine) {
+    IExpr result = engine.evaluate(F.subst(shifted, x -> {
+      if (!x.isExp()) {
+        return F.NIL;
+      }
+      IExpr exponent = engine.evaluate(F.Expand(x.exponent()));
+      if (exponent.isPlus() && exponent.first().isReal() && exponent.first().isInexactNumber()) {
+        IAST sum = (IAST) exponent;
+        return F.Times(F.Exp(sum.arg1()), F.Exp(sum.rest().oneIdentity0()));
+      }
+      // a negative constant term would turn the exponential over: E^(3*(-2+t)) stays
+      return exponent.isPlus() && exponent.first().isNegative() ? F.NIL : F.Exp(exponent);
+    }));
+    return result.has(IExpr::isInexactNumber, false) ? engine.evaluate(F.Expand(result)) : result;
+  }
+
   // Time shift rule: L^{-1}{ E^(a*s) * G(s) }
   // a < 0 => HeavisideTheta(t + a) * L^{-1}{G(s)}(t + a)
   // E^(a*s) alone => DiracDelta(t + a)
@@ -416,7 +450,8 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
           // Could not resolve inner transform
           return F.NIL;
         }
-        IExpr shifted = engine.evaluate(F.subst(innerILT, t, F.Plus(t, expShift)));
+        IExpr shifted = expandedExponents(engine.evaluate(F.subst(innerILT, t, F.Plus(t, expShift))),
+            engine);
         if (shifted.isPresent()) {
           return F.Times(F.HeavisideTheta(F.Plus(t, expShift)), shifted);
         }

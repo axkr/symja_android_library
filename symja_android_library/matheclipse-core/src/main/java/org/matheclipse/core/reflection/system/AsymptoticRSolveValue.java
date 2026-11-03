@@ -250,7 +250,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
 
       IAST cVarsReversed = cVars.reverse(F.NIL);
 
-      IAST solve = F.Solve(algebraicSystem, cVarsReversed);
+      IAST solve = F.SolveDistinct(algebraicSystem, cVarsReversed);
       IExpr solList = engine.evaluate(solve);
 
       IExpr series =
