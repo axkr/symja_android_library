@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class SparseArrayFunctions {
@@ -313,7 +314,11 @@ public class SparseArrayFunctions {
 
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.putMessage(IPatternMatcher.SET, "bndtr",
+          F.stringx("There are insufficient positions available in the `1` to fit all the values "
+              + "`2` so some of the values will be omitted in the specification `3`."));
+    }
 
     @Override
     public int status() {

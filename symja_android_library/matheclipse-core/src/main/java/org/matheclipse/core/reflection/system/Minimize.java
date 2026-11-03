@@ -98,6 +98,10 @@ public class Minimize extends AbstractFunctionEvaluator {
       }
     }
     if (x.isSymbol() || (x.isAST() && !x.isList())) {
+      IExpr quadratic = Maximize.parametricQuadraticExtremum(function, x, false, engine);
+      if (quadratic.isPresent()) {
+        return quadratic;
+      }
       if (function.isList2()) {
         // single variable with a constraint: optimize over the feasible real interval
         IExpr result = Maximize.univariateConstrainedExtremum(head, function.first(),

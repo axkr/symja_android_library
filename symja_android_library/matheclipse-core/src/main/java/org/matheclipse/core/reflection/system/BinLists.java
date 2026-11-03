@@ -31,6 +31,11 @@ public class BinLists extends AbstractFunctionEvaluator {
   /** The message <code>step</code> of the binning functions. */
   public static final String STEP_MESSAGE = "The bin step size `1` is expected to be positive.";
 
+  /** The message <code>vectmat</code> of the binning functions. */
+  public static final String VECTMAT_MESSAGE =
+      "The first argument is expected to be a unit-compatible vector or a matrix with "
+          + "unit-compatible columns.";
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (isNonPositiveStep(ast, engine)) {
@@ -44,6 +49,12 @@ public class BinLists extends AbstractFunctionEvaluator {
         arg1 = arg1.normal(false);
       }
 
+      if (!arg1.isList()
+          || !((IAST) arg1).exists(x -> x.isList() || !Double.isNaN(extractDouble(x, engine)))) {
+        // The first argument is expected to be a unit-compatible vector or a matrix with
+        // unit-compatible columns.
+        return Errors.printMessage(ast.topHead(), "vectmat", F.CEmptyList, engine);
+      }
       if (arg1.isList()) {
         IAST data = (IAST) arg1;
         int[] dims = data.isMatrix();
@@ -74,7 +85,30 @@ public class BinLists extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.putMessage(IPatternMatcher.SET, "step", F.stringx(STEP_MESSAGE));
+    newSymbol.putMessage(IPatternMatcher.SET, "vectmat", F.stringx(VECTMAT_MESSAGE));
     super.setUp(newSymbol);
+  }
+
+  /**
+   * The number of bins of width <code>dx</code> from <code>xMin</code> on which end at or below
+   * <code>xMax</code>. A last bin which reaches <code>xMax</code> up to rounding errors is one of
+   * them.
+   *
+   * @return <code>-1</code> if the arguments give no bins
+   * @throws ASTElementLimitExceeded if there are too many bins
+   */
+  public static int wholeBins(double xMin, double xMax, double dx) {
+    if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(dx) || dx <= 0.0) {
+      return -1;
+    }
+    if (xMax <= xMin) {
+      return 0;
+    }
+    double bins = Math.floor((xMax - xMin) / dx + 1.0e-9);
+    if (bins > Config.MAX_AST_SIZE) {
+      ASTElementLimitExceeded.throwIt(Long.MAX_VALUE);
+    }
+    return (int) bins;
   }
 
   /**
@@ -184,20 +218,12 @@ public class BinLists extends AbstractFunctionEvaluator {
         }
         return -1;
       } else {
-        if (d < xMin || d > xMax) {
+        // a bin contains its lower bound but not its upper bound
+        if (d < xMin || d >= xMax) {
           return -1;
         }
         int idx = (int) Math.floor((d - xMin) / dx);
-        if (idx >= capacity) {
-          if (d <= xMax && idx == capacity) {
-            return capacity - 1;
-          }
-          return -1;
-        }
-        if (idx >= 0 && idx < capacity) {
-          return idx;
-        }
-        return -1;
+        return idx >= 0 && idx < capacity ? idx : -1;
       }
     }
   }
@@ -254,7 +280,8 @@ public class BinLists extends AbstractFunctionEvaluator {
 
         spec.dx = dx;
         spec.xMin = xMin;
-        spec.capacity = (int) Math.ceil((xMax - xMin) / dx);
+        // only whole bins: the rest of the range up to xMax is outside
+        spec.capacity = wholeBins(xMin, xMax, dx);
         spec.xMax = xMin + spec.capacity * dx;
         return spec;
       }

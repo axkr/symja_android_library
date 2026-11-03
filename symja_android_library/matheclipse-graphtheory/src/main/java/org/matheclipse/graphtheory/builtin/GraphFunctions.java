@@ -1041,7 +1041,8 @@ public class GraphFunctions {
         Graph<IExpr, ExprEdge> resultGraph;
         GraphType t = graph.getType();
         if (t != null) {
-          if (t.isDirected()) {
+          // the complement of a graph without edges is undirected, whatever was declared
+          if (t.isDirected() && !graph.edgeSet().isEmpty()) {
             resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
           } else {
             resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
@@ -2424,40 +2425,7 @@ public class GraphFunctions {
         return F.ZZ(GraphFunctions.countMatches(edges, ast.arg2(), engine));
       }
       if (ast.argSize() == 1) {
-        GraphType type = g.getType();
-
-        if (GraphExpr.isMixedGraph(g)) {
-          // a mixed graph keeps the orientation per edge, no pair of anti parallel edges is
-          // merged into a single undirected edge
-          return F.ZZ(g.edgeSet().size());
-        }
-        if (type.isDirected()) {
-          // Count edges, but treat 1->2 and 2->1 as a single undirected pair
-          Set<Set<IExpr>> uniquePairs = new HashSet<>();
-          int directedOnlyCount = 0;
-
-          for (IExprEdge edge : (Set<IExprEdge>) g.edgeSet()) {
-            IExpr u = edge.lhs();
-            IExpr v = edge.rhs();
-
-            // Check if the reverse edge exists
-            if (g.containsEdge(v, u)) {
-              // Canonicalize as a pair to count 1->2 and 2->1 as 1
-              Set<IExpr> pair = new HashSet<IExpr>();
-              pair.add(u);
-              pair.add(v);
-              // System.out.println(pair);
-              uniquePairs.add(pair);
-            } else {
-              // No reverse edge, count as a single directed edge
-              directedOnlyCount++;
-            }
-          }
-          return F.ZZ(uniquePairs.size() + directedOnlyCount);
-        } else {
-          // Standard undirected case (normalize JGraphT internal directed representation)
-          return F.ZZ(g.edgeSet().size());
-        }
+        return F.ZZ(g.edgeSet().size());
       }
       return F.NIL;
     }
@@ -3266,7 +3234,7 @@ public class GraphFunctions {
    * find an hamiltonian cycle in the <code>graph</code> - a cycle visiting every vertex exactly
    * once. The result is a list of cycles, holding the one that was found, and <code>{}</code> when
    * the graph has none. <code>FindHamiltonianCycle(graph, k)</code> asks for at most <code>k</code>
-   * of them; only one is produced.
+   * of them and <code>FindHamiltonianCycle(graph, All)</code> for all of them.
    *
    * </blockquote>
    *

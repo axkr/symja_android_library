@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ConditionalOwnValues;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -270,8 +271,7 @@ public class DefinitionFunctions {
   }
 
   private static IAST ownValues(ISymbol symbol) {
-    IExpr value = symbol.assignedValue();
-    return value == null ? F.CEmptyList : F.list(F.RuleDelayed(F.HoldPattern(symbol), value));
+    return ConditionalOwnValues.ownValues(symbol);
   }
 
   private static IAST downValues(ISymbol symbol, boolean subValues) {

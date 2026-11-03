@@ -365,11 +365,60 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
             current = next;
             fCurrent = fNext;
           }
-          return current.getImaginary() == 0.0 ? F.num(current.getReal())
-              : F.complexNum(current.getReal(), current.getImaginary());
+          return complexRoot(current);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Newton's method from the start value <code>x0</code> in complex arithmetic. A step which
+     * doesn't make the residual smaller, or leaves the domain of the function, is halved. Near the
+     * root the residual is rounding noise, so the size of the step ends the iteration, and the
+     * imaginary part of a real root is rounding noise too.
+     *
+     * @return {@link F#NIL} if the function has a real value at <code>x0</code>, the iteration
+     *         doesn't converge or the root is not real
+     */
+    private IExpr complexNewton(IExpr function, ISymbol xVar, double x0) {
+      final IExpr derivative = engine.evalQuiet(F.D(function, xVar));
+      Complex current = new Complex(x0);
+      Complex fCurrent = complexValue(function, xVar, current);
+      if (fCurrent == null || fCurrent.getImaginary() == 0.0) {
+        return F.NIL;
+      }
+      for (int i = 0; i < maxIterations && fCurrent != null; i++) {
+        engine.checkTimeLimit();
+        Complex slope = complexValue(derivative, xVar, current);
+        if (slope == null || slope.isZero()) {
+          return F.NIL;
+        }
+        Complex step = fCurrent.divide(slope);
+        if (step.norm() <= accuracy * Math.max(1.0, current.norm())) {
+          Complex root = current.subtract(step);
+          return Math.abs(root.getImaginary()) <= CHOP * Math.max(1.0, root.norm())
+              ? F.num(root.getReal())
+              : F.NIL;
+        }
+        Complex next = null;
+        Complex fNext = null;
+        for (int j = 0; j < MAX_BACKTRACK_STEPS && fNext == null; j++) {
+          next = current.subtract(step);
+          fNext = complexValue(function, xVar, next);
+          if (fNext != null && !(fNext.norm() < fCurrent.norm())) {
+            fNext = null;
+          }
+          step = step.multiply(0.5);
+        }
+        current = next;
+        fCurrent = fNext;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr complexRoot(Complex root) {
+      return root.getImaginary() == 0.0 ? F.num(root.getReal())
+          : F.complexNum(root.getReal(), root.getImaginary());
     }
 
     /** @return <code>null</code> if the function has no finite value at <code>z</code> */
@@ -441,7 +490,17 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
               : new MonitoredNewtonSolver(accuracy,
                   x -> monitor.step(F.list(xVar), new double[] {x}));
           if (maxMaybeNull == null) {
-            return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
+            try {
+              return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
+            } catch (MathIllegalStateException mise) {
+              // a start value where the function has no real value: the iteration goes on with
+              // complex numbers
+              IExpr root = complexNewton(function, xVar, min.doubleValue());
+              if (root.isPresent()) {
+                return root;
+              }
+              throw mise;
+            }
           }
           try {
             return F.num(polish(f,
@@ -578,6 +637,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
   }
+
+  /** An imaginary part of the root of a complex iteration below this, relative to it, is zero. */
+  private static final double CHOP = 1.0e-12;
 
   /** The number of iterations a search takes when <code>MaxIterations</code> is not given. */
   private static final int DEFAULT_MAX_ITERATIONS = 100;

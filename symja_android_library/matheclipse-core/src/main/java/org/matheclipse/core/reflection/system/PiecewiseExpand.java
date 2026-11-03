@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PiecewiseFold;
 import org.matheclipse.core.eval.PiecewiseUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
@@ -67,6 +68,10 @@ public final class PiecewiseExpand extends AbstractFunctionOptionEvaluator {
       try {
         if (assumptions != null) {
           engine.setAssumptions(assumptions);
+        }
+        IExpr folded = PiecewiseFold.fold(arg1, false, engine);
+        if (folded.isPresent()) {
+          return folded;
         }
         return arg1.accept(visitor).evaluateOrElse(engine, arg1);
       } finally {

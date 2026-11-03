@@ -43,7 +43,7 @@ public class TagSetUpValuesTest extends ExprEvaluatorTestCase {
         "{HoldPattern(md(a_,p_)+md(b_,p_)):>md(Mod(a+b,p),p),HoldPattern(md(a_,p_)*i_Integer):>md(Mod(i*a,p),p)}");
     // an up-value is printed with its tag: lhs ^:= rhs would attach it to every symbol
     check("Definition(md)", //
-        "md /: md(a_,p_) + md(b_,p_):=md(Mod(a + b,p),p)\n\nmd /: md(a_,p_)*i_Integer:=md(Mod(i*a,p),p)");
+        "md /: md(a_,p_) + md(b_,p_):=md(Mod(a + b,p),p)\n\nmd /: md(a_,p_)*(i_Integer):=md(Mod(i*a,p),p)");
     check("areaD(squareD) ^= s^2; Definition(squareD)", //
         "aread(squared)^=s^2");
   }

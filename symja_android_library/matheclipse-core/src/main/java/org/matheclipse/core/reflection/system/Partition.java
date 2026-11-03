@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.PerLevelIntSpec;
 import org.matheclipse.core.expression.F;
@@ -85,12 +86,185 @@ public class Partition extends AbstractFunctionEvaluator {
     }
 
     try {
+      if (nSpec.levels() > 1 && ast.argSize() >= 4 && !isUpTo) {
+        IExpr array = partitionArray(list, nSpec, dSpec, ast.arg4(), pad, engine);
+        if (array.isPresent()) {
+          return array;
+        }
+      }
       return partitionRec(list, nSpec, 1, dSpec, kList, pad, engine);
     } catch (RuntimeException e) {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }
       return F.NIL;
+    }
+  }
+
+  /**
+   * The alignments <code>{kL, kR}</code> of each level for a single <code>k</code>, for one pair
+   * <code>{kL, kR}</code> and for a list with one pair for each level.
+   *
+   * @return <code>null</code> if the specification is invalid
+   */
+  private static int[][] alignments(IExpr spec, int levels) {
+    int[][] result = new int[levels][];
+    for (int i = 0; i < levels; i++) {
+      IExpr levelSpec = spec;
+      if (spec.isList() && spec.exists(x -> x.isList())) {
+        if (spec.argSize() != levels) {
+          return null;
+        }
+        levelSpec = ((IAST) spec).get(i + 1);
+      }
+      int left;
+      int right;
+      if (levelSpec.isList()) {
+        if (levelSpec.argSize() < 1 || levelSpec.argSize() > 2) {
+          return null;
+        }
+        left = levelSpec.first().toIntDefault();
+        right = levelSpec.argSize() == 2 ? levelSpec.second().toIntDefault() : left;
+      } else {
+        left = levelSpec.toIntDefault();
+        right = left;
+      }
+      if (F.isNotPresent(left) || F.isNotPresent(right)) {
+        return null;
+      }
+      result[i] = new int[] {left, right};
+    }
+    return result;
+  }
+
+  /** The cyclic position of the 0-based <code>index</code> in a list of <code>size</code>. */
+  private static int cyclicPosition(long index, int size) {
+    return (int) Math.floorMod(index, (long) size) + 1;
+  }
+
+  /**
+   * The partition of a full array at several levels, with the padding outside of the array. The
+   * blocks start at the positions <code>start + i * offset</code> of each level.
+   *
+   * @return {@link F#NIL} if <code>list</code> isn't a full array at these levels or if the
+   *         alignment is invalid
+   */
+  private static IExpr partitionArray(IAST list, PerLevelIntSpec nSpec, PerLevelIntSpec dSpec,
+      IExpr alignment, IExpr pad, EvalEngine engine) {
+    final int levels = nSpec.levels();
+    int[][] alignments = alignments(alignment, levels);
+    IExpr dimensionList = engine.evaluate(F.Dimensions(list));
+    if (alignments == null || !dimensionList.isList() || dimensionList.argSize() < levels) {
+      return F.NIL;
+    }
+    int[] dimensions = new int[levels];
+    int[] sizes = new int[levels];
+    int[] offsets = new int[levels];
+    long[] first = new long[levels];
+    long[] last = new long[levels];
+    long elements = 1L;
+    for (int i = 0; i < levels; i++) {
+      dimensions[i] = dimensionList.getAt(i + 1).toIntDefault();
+      if (dimensions[i] <= 0) {
+        return F.NIL;
+      }
+      sizes[i] = nSpec.get(i + 1);
+      offsets[i] = dSpec == null ? sizes[i]
+          : dSpec.levels() == 1 ? dSpec.get(1) : dSpec.get(i + 1, sizes[i]);
+      int left = alignments[i][0] > 0 ? alignments[i][0] : sizes[i] + alignments[i][0] + 1;
+      int right = alignments[i][1] > 0 ? alignments[i][1] : sizes[i] + alignments[i][1] + 1;
+      first[i] = 1L - left;
+      last[i] = (long) dimensions[i] - right;
+      elements *= sizes[i] * Math.max(1L, (last[i] - first[i]) / offsets[i] + 1L);
+      if (elements > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(elements);
+      }
+    }
+    return new ArrayPartition(list, dimensions, sizes, offsets, pad, engine).blocks(first, last);
+  }
+
+  /** The blocks of a multi-dimensional partition. */
+  private static final class ArrayPartition {
+    private final IAST array;
+    private final int[] dimensions;
+    private final int[] sizes;
+    private final int[] offsets;
+    private final IExpr pad;
+    private final EvalEngine engine;
+    private final long[] origin;
+    private final long[] index;
+
+    ArrayPartition(IAST array, int[] dimensions, int[] sizes, int[] offsets, IExpr pad,
+        EvalEngine engine) {
+      this.array = array;
+      this.dimensions = dimensions;
+      this.sizes = sizes;
+      this.offsets = offsets;
+      this.pad = pad;
+      this.engine = engine;
+      this.origin = new long[sizes.length];
+      this.index = new long[sizes.length];
+    }
+
+    IExpr blocks(long[] first, long[] last) {
+      return blocks(first, last, 0);
+    }
+
+    private IExpr blocks(long[] first, long[] last, int level) {
+      IASTAppendable result = F.ast(array.head());
+      for (long start = first[level]; start <= last[level]; start += offsets[level]) {
+        engine.checkTimeLimit();
+        origin[level] = start;
+        result.append(level + 1 == sizes.length ? block(0) : blocks(first, last, level + 1));
+      }
+      return result;
+    }
+
+    private IExpr block(int level) {
+      if (level == sizes.length) {
+        return element();
+      }
+      IASTAppendable result = F.ast(array.head(), sizes[level]);
+      for (int i = 0; i < sizes[level]; i++) {
+        index[level] = origin[level] + i;
+        IExpr element = block(level + 1);
+        if (element.isPresent()) {
+          result.append(element);
+        }
+      }
+      return result.argSize() > 0 ? result : F.NIL;
+    }
+
+    /** The element at the positions in {@link #index}, {@link F#NIL} if it is left out. */
+    private IExpr element() {
+      boolean inside = true;
+      for (int i = 0; i < index.length; i++) {
+        inside &= index[i] >= 0 && index[i] < dimensions[i];
+      }
+      if (inside || pad.isNIL()) {
+        // outside of the array the cyclic continuation of the array is the default
+        IExpr element = array;
+        for (int i = 0; i < index.length; i++) {
+          element = element.getAt(cyclicPosition(index[i], dimensions[i]));
+        }
+        return element;
+      }
+      if (!pad.isList()) {
+        return pad;
+      }
+      if (pad.isEmpty()) {
+        return F.NIL;
+      }
+      // the innermost levels address a nested padding list
+      IExpr element = pad;
+      int depth = 0;
+      for (IExpr level = pad; level.isList() && level.argSize() > 0; level = level.first()) {
+        depth++;
+      }
+      for (int i = Math.max(0, index.length - depth); i < index.length; i++) {
+        element = element.getAt(cyclicPosition(index[i], element.argSize()));
+      }
+      return element;
     }
   }
 

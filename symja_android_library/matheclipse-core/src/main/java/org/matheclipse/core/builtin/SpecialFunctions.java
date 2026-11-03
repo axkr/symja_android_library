@@ -1417,6 +1417,11 @@ public class SpecialFunctions {
         // special for numeric values
         return F.C1;
       }
+      if (a.isReal() && !a.isPositive() && ((IReal) a).isNumIntValue() && s.isReal()
+          && s.isPositive() && !z.isZero()) {
+        // the term of the sum with k+a==0
+        return F.CComplexInfinity;
+      }
       return numericFunction(ast, engine);
     }
 
@@ -2369,6 +2374,14 @@ public class SpecialFunctions {
         if (arg1.isMathematicalIntegerNonNegative()) {
           int n = arg1.toIntDefault();
           if (F.isPresent(n)) {
+            int zInt = z.isPositive() && z.isInteger() ? z.toIntDefault() : -1;
+            if (n >= 1 && zInt >= 1 && zInt <= 1000) {
+              // (-1)^(n+1)*n!*(Zeta(n+1) - 1/1^(n+1) - ... - 1/(z-1)^(n+1))
+              IRational head =
+                  F.sumRational(j -> F.QQ(1, j + 1).powerRational(n + 1), 0, zInt - 2);
+              return F.Times(F.ZZ((n & 1) == 0 ? -1 : 1), F.Factorial(F.ZZ(n)),
+                  F.Subtract(F.Zeta(F.ZZ(n + 1)), head));
+            }
             // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/functions/special/gamma_functions.py#L790
 
             // if (z.isPlus()) {

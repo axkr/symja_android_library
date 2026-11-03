@@ -2,6 +2,7 @@ package org.matheclipse.image.builtin;
 
 import java.awt.image.BufferedImage;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -17,6 +18,7 @@ import org.matheclipse.image.algo.Geometry;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.ImageExpr;
+import org.matheclipse.image.expression.data.ImageOptions;
 
 /**
  * Where the pixels are rather than what colour they are: <code>ImageResize</code>,
@@ -183,8 +185,9 @@ public class ImageGeometryFunctions {
 
   /**
    * <code>ImageRotate(image)</code> - the image turned a quarter turn counterclockwise.
-   * <code>ImageRotate(image, theta)</code> turns it by <code>theta</code> radians, growing the
-   * canvas so that nothing is cut off, and a third argument fixes the output size instead.
+   * <code>ImageRotate(image, theta)</code> turns it by <code>theta</code> radians onto the
+   * whole-pixel bounding box, each pixel taking the source pixel under its centre and black
+   * outside, and a third argument fixes the output size instead.
    */
   private static class ImageRotate extends AbstractEvaluator {
 
@@ -213,6 +216,15 @@ public class ImageGeometryFunctions {
       double quarters = radians / (Math.PI / 2.0);
       if (ast.argSize() == 2 && Math.abs(quarters - Math.rint(quarters)) < 1e-12) {
         return quarterTurns(ast.arg1(), image, (int) Math.rint(quarters));
+      }
+      if (ast.argSize() == 2 && ast.arg1() instanceof ImageExpr) {
+        ImageExpr source = (ImageExpr) ast.arg1();
+        Raster raster = source.raster();
+        if (raster != null) {
+          ImageExpr rotated = ImageExpr.fromRaster(Geometry.rotateOntoBoundingBox(raster, radians),
+              source.getOptions(), source.sampleType());
+          return rotated == null ? F.NIL : rotated;
+        }
       }
       int width = -1;
       int height = -1;
@@ -781,8 +793,16 @@ public class ImageGeometryFunctions {
 
   /**
    * <code>ImageCompose(background, overlay)</code> - the overlay drawn on the background, centred.
-   * A third argument places the centre of the overlay at a position in image coordinates, and
+   * A third argument places the centre of the overlay at a position in image coordinates, a fourth
+   * names the point of the overlay which goes there, and
    * <code>ImageCompose(background, {overlay, alpha})</code> makes the overlay partly transparent.
+   *
+   * <p>
+   * <code>ImageCompose(background, overlay, pos, opos, {a, b, c})</code> composes by the weights of
+   * the parts where only the overlay, only the background, and both of them are opaque:
+   * <code>{1, 1, 1}</code> draws the overlay over the background. The alpha channels of both images
+   * take part, an alpha channel of either gives the result one, and the result is
+   * <code>"Real32"</code>.
    */
   private static class ImageCompose extends AbstractEvaluator {
 
@@ -804,8 +824,7 @@ public class ImageGeometryFunctions {
       if (rasterized.isPresent()) {
         return rasterized;
       }
-      BufferedImage background = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (background == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
         return F.NIL;
       }
       IExpr overlayArgument = ast.arg2();
@@ -818,65 +837,109 @@ public class ImageGeometryFunctions {
           return F.NIL;
         }
       }
-      BufferedImage overlay = ImagePropertyFunctions.bufferedImage(overlayArgument);
-      if (overlay == null) {
+      if (!(overlayArgument instanceof ImageExpr)) {
         return F.NIL;
       }
-
-      int backgroundHeight = background.getHeight();
-      // the position in the background, in image coordinates, on which the overlay's own position
-      // lands; both are the centre unless they are given
-      double[] position = {background.getWidth() / 2.0, backgroundHeight / 2.0};
-      double[] overlayPosition = {overlay.getWidth() / 2.0, overlay.getHeight() / 2.0};
+      double[] weights = {1.0, 1.0, 1.0};
+      if (ast.argSize() >= 5) {
+        weights = ast.arg5().isList3() ? ast.arg5().toDoubleVector() : null;
+        if (weights == null) {
+          return F.NIL;
+        }
+      }
+      ImageExpr backgroundImage = (ImageExpr) ast.arg1();
+      ImageExpr overlayImage = (ImageExpr) overlayArgument;
+      Raster background = ColorFunctions.rgbOrGray(backgroundImage);
+      Raster overlay = ColorFunctions.rgbOrGray(overlayImage);
+      if (background == null || overlay == null) {
+        return F.NIL;
+      }
+      // the top left corner of the overlay in raster coordinates
+      int offsetX = background.width / 2 - overlay.width / 2;
+      int offsetY = (background.height + 1) / 2 - (overlay.height + 1) / 2;
       if (ast.argSize() >= 3) {
-        position = anchor(ast.arg3(), background.getWidth(), backgroundHeight);
-        if (position == null) {
+        // the position in the background, in image coordinates, on which the overlay's own
+        // position lands; the centre unless it is given
+        double[] position = anchor(ast.arg3(), background.width, background.height);
+        double[] overlayPosition = ast.argSize() >= 4 //
+            ? anchor(ast.arg4(), overlay.width, overlay.height)
+            : new double[] {overlay.width / 2.0, overlay.height / 2.0};
+        if (position == null || overlayPosition == null) {
           return F.NIL;
         }
+        offsetX = roundHalfAway(position[0] - overlayPosition[0]);
+        offsetY = roundHalfAway(background.height - (position[1] - overlayPosition[1])
+            - overlay.height);
       }
-      if (ast.argSize() >= 4) {
-        overlayPosition = anchor(ast.arg4(), overlay.getWidth(), overlay.getHeight());
-        if (overlayPosition == null) {
-          return F.NIL;
-        }
-      }
-      // to raster coordinates: the top left corner of the overlay
-      final int offsetX = (int) Math.round(position[0] - overlayPosition[0]);
-      final int offsetY = (int) Math.round(
-          backgroundHeight - position[1] - (overlay.getHeight() - overlayPosition[1]));
+      return compose(background, ColorFunctions.hasAlpha(backgroundImage), overlay,
+          ColorFunctions.hasAlpha(overlayImage), offsetX, offsetY, opacity, weights);
+    }
 
-      int backgroundChannels = Boof.channels(background);
-      int overlayChannels = Boof.channels(overlay);
-      int channels = Math.max(backgroundChannels, Math.min(overlayChannels, 3));
-      final double alpha = opacity;
-      return new ImageExpr(
-          Pixels.fromPixels(background.getWidth(), backgroundHeight, channels, (x, y) -> {
-            float[] under = spread(Pixels.pixel(background, x, y, backgroundChannels),
-                backgroundChannels, channels);
-            int overlayX = x - offsetX;
-            int overlayY = y - offsetY;
-            if (overlayX < 0 || overlayY < 0 || overlayX >= overlay.getWidth()
-                || overlayY >= overlay.getHeight()) {
-              return under;
+    private static int roundHalfAway(double value) {
+      return (int) (Math.signum(value) * Math.floor(Math.abs(value) + 0.5));
+    }
+
+    /**
+     * Compose on the samples in single precision. With the opacities <code>ai</code> of the image
+     * and <code>ao</code> of the overlay, the opacity of a pixel is
+     * <code>a*ao*(1-ai) + b*ai*(1-ao) + c*ai*ao</code> and its colour is weighted the same way, the
+     * part of both showing the overlay. Without an alpha channel the weighted colour is the pixel.
+     * A greyscale image goes with a colour one by repeating its grey level.
+     */
+    private static IExpr compose(Raster background, boolean backgroundAlpha, Raster overlay,
+        boolean overlayAlpha, int offsetX, int offsetY, double opacity, double[] weights) {
+      int backgroundColors = backgroundAlpha ? background.channels - 1 : background.channels;
+      int overlayColors = overlayAlpha ? overlay.channels - 1 : overlay.channels;
+      int colors = Math.max(backgroundColors, overlayColors);
+      boolean alpha = backgroundAlpha || overlayAlpha;
+      Raster result = new Raster(background.width, background.height, colors + (alpha ? 1 : 0));
+      for (int y = 0; y < background.height; y++) {
+        for (int x = 0; x < background.width; x++) {
+          int overX = x - offsetX;
+          int overY = y - offsetY;
+          boolean inside =
+              overX >= 0 && overY >= 0 && overX < overlay.width && overY < overlay.height;
+          double ai = backgroundAlpha ? (float) background.get(x, y, backgroundColors) : 1.0;
+          double ao = !inside ? 0.0
+              : opacity * (overlayAlpha ? (float) overlay.get(overX, overY, overlayColors) : 1.0);
+          double onlyOverlay = weights[0] * ao * (1.0 - ai);
+          double onlyBackground = weights[1] * ai * (1.0 - ao);
+          double both = weights[2] * ai * ao;
+          double opaque = onlyOverlay + onlyBackground + both;
+          for (int c = 0; c < colors; c++) {
+            double under = (float) background.get(x, y, Math.min(c, backgroundColors - 1));
+            double over =
+                inside ? (float) overlay.get(overX, overY, Math.min(c, overlayColors - 1)) : 0.0;
+            double value = over * (onlyOverlay + both) + under * onlyBackground;
+            if (alpha) {
+              value = opaque > 0.0 ? value / opaque : 0.0;
             }
-            float[] over = Pixels.pixel(overlay, overlayX, overlayY, overlayChannels);
-            double weight = alpha * (overlayChannels == 4 ? over[3] / 255.0 : 1.0);
-            float[] result = under.clone();
-            float[] spreadOver = spread(over, overlayChannels, channels);
-            for (int c = 0; c < Math.min(3, channels); c++) {
-              result[c] = (float) (spreadOver[c] * weight + under[c] * (1.0 - weight));
-            }
-            return result;
-          }), null);
+            result.set(x, y, c, value);
+          }
+          if (alpha) {
+            result.set(x, y, colors, opaque);
+          }
+        }
+      }
+      ImageOptions options = alpha //
+          ? ImageOptions.DEFAULT.withColorSpace(ColorFunctions.alphaSpace(colors))
+          : ImageOptions.DEFAULT;
+      return ColorFunctions.realImage(result, options);
     }
 
     /**
      * A position in an image of the given size: <code>{x, y}</code>, where each of the two may be
-     * the name of a side or <code>Center</code>, or one such name alone.
+     * the name of a side or <code>Center</code>, or one such name alone, or
+     * <code>Scaled({sx, sy})</code>, fractions of the width and the height.
      *
      * @return <code>null</code> if it is no position
      */
     private static double[] anchor(IExpr spec, int width, int height) {
+      if (spec.isAST(S.Scaled, 2) && spec.first().isList2()) {
+        double x = spec.first().first().evalfNaN();
+        double y = spec.first().second().evalfNaN();
+        return Double.isNaN(x) || Double.isNaN(y) ? null : new double[] {x * width, y * height};
+      }
       if (spec.isList2()) {
         double x = anchorCoordinate(spec.first(), width, true);
         double y = anchorCoordinate(spec.second(), height, false);
@@ -907,24 +970,9 @@ public class ImageGeometryFunctions {
       return spec.isSymbol() ? Double.NaN : spec.evalfNaN();
     }
 
-    /** Widen a greyscale pixel to the channel count of the composed image. */
-    private static float[] spread(float[] values, int from, int to) {
-      if (from == to) {
-        return values.clone();
-      }
-      float[] result = new float[to];
-      for (int c = 0; c < Math.min(3, to); c++) {
-        result[c] = from == 1 ? values[0] : values[Math.min(c, from - 1)];
-      }
-      if (to == 4) {
-        result[3] = from == 4 ? values[3] : 255.0f;
-      }
-      return result;
-    }
-
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_4;
+      return ARGS_2_5;
     }
 
     @Override
@@ -972,13 +1020,25 @@ public class ImageGeometryFunctions {
   }
 
   /**
-   * <code>Rasterize(graphics)</code> - a graphics object drawn into an image. An image rasterizes
-   * to itself.
+   * <code>Rasterize(graphics)</code> - a graphics object drawn into an image, 360 pixels wide unless
+   * its size is given. An image rasterizes to itself.
+   *
+   * <p>
+   * <code>Rasterize(expr, element)</code> gives one element of that image: <code>"Image"</code>,
+   * <code>"Data"</code>, the bytes of its colour channels, <code>"RasterSize"</code>, its width and
+   * height, or <code>"BoundingBox"</code>, its width, its height and the distance of the baseline
+   * from the top.
    */
   private static class Rasterize extends AbstractEvaluator {
 
+    /** The width of a graphic which doesn't state its size. */
+    private static final int GRAPHICS_WIDTH = 360;
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 2 && ast.arg2().isString()) {
+        return element(ast, ast.arg2().toString(), engine);
+      }
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof ImageExpr) {
         return arg1;
@@ -992,7 +1052,7 @@ public class ImageGeometryFunctions {
         return F.NIL;
       }
       BufferedImage drawn = image.getBufferedImage();
-      int[] size = rasterSize(ast, drawn.getWidth(), drawn.getHeight());
+      int[] size = rasterSize(ast, drawn.getWidth(), drawn.getHeight(), graphics == arg1);
       if (size == null) {
         return F.NIL;
       }
@@ -1011,13 +1071,47 @@ public class ImageGeometryFunctions {
       return new ImageExpr(rgb, null);
     }
 
+    /** One element of the image of the first argument, the options being passed on. */
+    private static IExpr element(IAST ast, String element, EvalEngine engine) {
+      IExpr image = engine.evaluate(ast.removeAtClone(2));
+      if (!(image instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      switch (element) {
+        case "Image":
+          return image;
+        case "Data":
+          return engine.evaluate(F.binaryAST2(S.ImageData, F.unaryAST1(S.RemoveAlphaChannel, image),
+              F.stringx("Byte")));
+        case "RasterSize":
+          return engine.evaluate(F.unaryAST1(S.ImageDimensions, image));
+        case "BoundingBox":
+          BufferedImage picture = ((ImageExpr) image).getBufferedImage();
+          int height = picture.getHeight();
+          // a graphic sits on its axis, a line of text on its ascent
+          int baseline = ast.arg1().isAST(S.Graphics) || ast.arg1().isAST(S.Graphics3D)
+              ? (height + 1) / 2
+              : (int) Math.round(0.75 * height);
+          return F.List(F.ZZ(picture.getWidth()), F.ZZ(height), F.ZZ(baseline));
+        default:
+          // "`1`" is not an available element. Possible elements include `2`.
+          Errors.printMessage(S.Rasterize, "elmntavl", F.List(F.stringx(element),
+              F.stringx("\"BoundingBox\", \"Data\", \"Graphics\", \"RasterSize\", "
+                  + "\"Regions\", and \"Image\"")),
+              engine);
+          return S.$Failed;
+      }
+    }
+
     /**
      * The size of the image: <code>RasterSize -> w</code> scales the drawing to the width
      * <code>w</code>, <code>RasterSize -> {w, h}</code> to both.
      *
+     * @param graphic whether the drawing is a graphic, which has a width of
+     *        {@value #GRAPHICS_WIDTH} pixels unless it states its <code>ImageSize</code>
      * @return <code>null</code> for an invalid size
      */
-    private static int[] rasterSize(IAST ast, int width, int height) {
+    private static int[] rasterSize(IAST ast, int width, int height, boolean graphic) {
       for (int i = 2; i < ast.size(); i++) {
         IExpr option = ast.get(i);
         if (option.isRuleAST() && option.first() == S.RasterSize) {
@@ -1034,12 +1128,25 @@ public class ImageGeometryFunctions {
           return new int[] {w, Math.max(1, (int) Math.round((double) w * height / width))};
         }
       }
+      if (graphic && !hasImageSize((IAST) ast.arg1())) {
+        return new int[] {GRAPHICS_WIDTH,
+            Math.max(1, (int) Math.round((double) GRAPHICS_WIDTH * height / width))};
+      }
       return new int[] {width, height};
+    }
+
+    private static boolean hasImageSize(IAST graphics) {
+      for (int i = 2; i < graphics.size(); i++) {
+        if (graphics.get(i).isRuleAST() && graphics.get(i).first() == S.ImageSize) {
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override

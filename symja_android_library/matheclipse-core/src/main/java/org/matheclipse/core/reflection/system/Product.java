@@ -49,6 +49,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return localized;
       }
     }
+    IAST withValues = Sum.withIndexDependentValues(ast);
+    if (withValues.isPresent()) {
+      return withValues;
+    }
     if (hasInvalidIterator(ast)) {
       // a count isn't an iterator, Product(x, 3) stays unevaluated
       return F.NIL;
@@ -446,7 +450,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
       return F.NIL;
     }
     IExpr leadingCoefficient = engine.evaluate(F.Coefficient(p, k, degreeExpr));
-    IExpr solved = engine.evalQuiet(F.Solve(F.Equal(p, F.C0), k));
+    IExpr solved = engine.evalQuiet(F.SolveDistinct(F.Equal(p, F.C0), k));
     if (!solved.isList() || ((IAST) solved).argSize() != degree) {
       // no multiple roots: an irreducible polynomial is square free
       return F.NIL;

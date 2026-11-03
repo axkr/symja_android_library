@@ -1,6 +1,7 @@
 package org.matheclipse.core.convert;
 
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.matheclipse.core.basic.Config;
@@ -162,7 +163,8 @@ public final class JASModular<C extends GcdRingElem<C> & Modular> {
   public SortedMap<GenPolynomial<C>, Long> factors(GenPolynomial<C> poly, boolean squareFreeOnly) {
     FactorAbstract<C> engine = factorization();
     if (fRingFactory.getIntegerModul().getVal().bitLength() < 64) {
-      return squareFreeOnly ? engine.squarefreeFactors(poly) : engine.factors(poly);
+      return squareFreeOnly ? byMultiplicity(engine.squarefreeFactors(poly))
+          : engine.factors(poly);
     }
     if (fPolyFactory.nvar != 1) {
       throw new UnsupportedOperationException("multivariate polynomial over a large prime");
@@ -197,6 +199,27 @@ public final class JASModular<C extends GcdRingElem<C> & Modular> {
           result.put(factor.monic(), multiplicity);
         }
       }
+    }
+    return result;
+  }
+
+  /**
+   * The factors of a polynomial with the same multiplicity multiplied together. These are the
+   * square-free parts; the engine for a small characteristic gives some of them split up.
+   */
+  private SortedMap<GenPolynomial<C>, Long> byMultiplicity(
+      SortedMap<GenPolynomial<C>, Long> factors) {
+    Map<Long, GenPolynomial<C>> parts = new TreeMap<Long, GenPolynomial<C>>();
+    SortedMap<GenPolynomial<C>, Long> result = new TreeMap<GenPolynomial<C>, Long>();
+    for (Map.Entry<GenPolynomial<C>, Long> entry : factors.entrySet()) {
+      if (entry.getKey().isConstant()) {
+        result.put(entry.getKey(), entry.getValue());
+      } else {
+        parts.merge(entry.getValue(), entry.getKey(), GenPolynomial::multiply);
+      }
+    }
+    for (Map.Entry<Long, GenPolynomial<C>> entry : parts.entrySet()) {
+      result.put(entry.getValue(), entry.getKey());
     }
     return result;
   }

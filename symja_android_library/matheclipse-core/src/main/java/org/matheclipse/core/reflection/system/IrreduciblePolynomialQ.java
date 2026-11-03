@@ -93,7 +93,7 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
         allGens = extensionGenerators;
       }
       IExpr variable = variables.arg1();
-      IExpr solveResult = engine.evaluate(F.Solve(F.Equal(poly, F.C0), variable));
+      IExpr solveResult = engine.evaluate(F.SolveDistinct(F.Equal(poly, F.C0), variable));
       if (solveResult.isList()) {
         IAST solutions = (IAST) solveResult;
         for (int i = 1; i <= solutions.argSize(); i++) {

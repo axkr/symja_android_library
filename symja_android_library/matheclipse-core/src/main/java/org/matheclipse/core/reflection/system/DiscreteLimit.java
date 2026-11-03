@@ -55,6 +55,10 @@ public class DiscreteLimit extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+    if (ast.isAST3() && !ast.arg3().isRuleAST() && !ast.arg3().isListOfRules()) {
+      // Options expected (instead of `1`) beyond position `2` in `3`.
+      return Errors.printMessage(S.DiscreteLimit, "nonopt", F.List(ast.arg3(), F.C2, ast), engine);
+    }
     List<IAST> limitSpecs = limitSpecifications(ast, engine);
     if (limitSpecs == null) {
       return F.NIL;
@@ -302,7 +306,9 @@ public class DiscreteLimit extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_2;
+    // the optional third argument holds options like Method; the sequence is always handled by
+    // the rewrites above and Limit
+    return ARGS_2_3;
   }
 
   @Override

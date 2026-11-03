@@ -51,6 +51,8 @@ public class ControlSystems {
       S.BodePlot.setEvaluator(new FrequencyResponsePlot(BODE));
       S.NyquistPlot.setEvaluator(new FrequencyResponsePlot(NYQUIST));
       S.NicholsPlot.setEvaluator(new FrequencyResponsePlot(NICHOLS));
+      S.ButterworthFilterModel.setEvaluator(new FilterDesign.ButterworthFilterModel());
+      S.RecurrenceFilter.setEvaluator(new FilterDesign.RecurrenceFilter());
     }
   }
 
@@ -143,6 +145,19 @@ public class ControlSystems {
       result.set(2, var);
       return result;
     }
+  }
+
+  /**
+   * Numerator, denominator and variable of a model with one input and one output and no delay.
+   *
+   * @return <code>null</code> if <code>expr</code> isn't such a model
+   */
+  static IExpr[] singleElement(IExpr expr, EvalEngine engine) {
+    Model model = Model.of(expr, engine);
+    if (model == null || model.rows() != 1 || model.cols() != 1 || model.hasDelay()) {
+      return null;
+    }
+    return new IExpr[] {model.num[0][0], model.den[0][0], model.var};
   }
 
   /**
@@ -277,7 +292,7 @@ public class ControlSystems {
       if (!factor.isList2() || factor.first().isFree(s)) {
         continue;
       }
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(factor.first(), F.C0), s));
+      IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(factor.first(), F.C0), s));
       if (!solutions.isListOfLists()) {
         return null;
       }

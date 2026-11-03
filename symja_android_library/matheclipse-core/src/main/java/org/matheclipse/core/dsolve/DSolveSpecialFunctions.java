@@ -90,6 +90,9 @@ final class DSolveSpecialFunctions {
       // equations - Weber's among them - write it with shorter functions than Whittaker's.
       basis = generalizedPowerPotential(p, q, yFunction, xVar, engine);
     }
+    if (basis == null) {
+      basis = mathieu(p, q, xVar, engine);
+    }
     return generalSolution(basis, c_n, ctx);
   }
 
@@ -621,7 +624,7 @@ final class DSolveSpecialFunctions {
     for (IExpr coefficient : (IAST) coefficients) {
       equations.append(F.Equal(coefficient, F.C0));
     }
-    IExpr solution = engine.evalQuiet(F.Solve(equations, unknowns));
+    IExpr solution = engine.evalQuiet(F.SolveDistinct(equations, unknowns));
     if (!solution.isList() || ((IAST) solution).argSize() == 0 || !solution.first().isList()) {
       return null;
     }
@@ -1248,6 +1251,49 @@ final class DSolveSpecialFunctions {
     return !expr
         .isFree(x -> x.isAST1() && x.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc)
             && !x.first().isFree(xVar), true);
+  }
+
+  /**
+   * <code>y'' + (A + B*Cos(w*x+c))*y == 0</code> is Mathieu's equation in the variable
+   * <code>z == (w*x+c)/2</code>, with the characteristic value <code>4*A/w^2</code> and the
+   * parameter <code>-2*B/w^2</code>. A sine is a cosine whose phase is smaller by
+   * <code>Pi/2</code>.
+   */
+  private static IExpr[] mathieu(IExpr p, IExpr q, IExpr xVar, EvalEngine engine) {
+    if (!p.isZero() || !hasCircular(q, xVar)) {
+      return null;
+    }
+    IExpr[] circular = new IExpr[1];
+    boolean[] single = new boolean[] {true};
+    final IExpr c = F.Dummy("c");
+    IExpr polynomial = F.subst(engine.evaluate(F.Expand(q)), x -> {
+      if (!x.isAST1() || !x.isFunctionID(ID.Sin, ID.Cos) || x.first().isFree(xVar)) {
+        return F.NIL;
+      }
+      single[0] &= circular[0] == null || circular[0].equals(x);
+      circular[0] = x;
+      return c;
+    });
+    polynomial = engine.evaluate(polynomial);
+    if (!single[0] || circular[0] == null || !polynomial.isFree(xVar)) {
+      return null;
+    }
+    IExpr a = engine.evaluate(F.Coefficient(polynomial, c, F.C0));
+    IExpr b = engine.evaluate(F.Coefficient(polynomial, c, F.C1));
+    IExpr rest =
+        engine.evaluate(F.Expand(F.Subtract(polynomial, F.Plus(a, F.Times(b, c)))));
+    IExpr argument = circular[0].first();
+    IExpr rate = engine.evaluate(F.D(argument, xVar));
+    if (!rest.isZero() || b.isZero() || rate.isZero() || !rate.isFree(xVar)) {
+      return null;
+    }
+    if (circular[0].isSin()) {
+      argument = F.Subtract(argument, F.CPiHalf);
+    }
+    IExpr z = engine.evaluate(F.Times(F.C1D2, argument));
+    IExpr value = engine.evaluate(F.Times(F.C4, a, F.Power(rate, F.CN2)));
+    IExpr parameter = engine.evaluate(F.Times(F.CN2, b, F.Power(rate, F.CN2)));
+    return new IExpr[] {F.MathieuC(value, parameter, z), F.MathieuS(value, parameter, z)};
   }
 
   /** The exponent <code>t</code> with <code>t*(t-1) == -c</code>, taking the larger root. */

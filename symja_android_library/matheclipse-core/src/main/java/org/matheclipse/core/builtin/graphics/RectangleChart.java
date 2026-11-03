@@ -89,6 +89,7 @@ public class RectangleChart extends AbstractChart {
     double xMax = 0.0;
     double yMin = 0.0;
     double yMax = 0.0;
+    boolean framed = false;
     for (Box box : boxes) {
       PlotWrapper wrapper = PlotWrapper.of(box.item);
       IExpr color =
@@ -109,6 +110,21 @@ public class RectangleChart extends AbstractChart {
       yMin = Math.min(yMin, box.sizes[1]);
       yMax = Math.max(yMax, box.sizes[1]);
     }
+    IExpr chartLabels = GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None);
+    if (chartLabels.isList() && datasets.argSize() == 1) {
+      // the labels of the bars sit below them, in place of the ticks of the horizontal axis
+      for (int i = 0; i < boxes.size() && i < chartLabels.argSize(); i++) {
+        Box box = boxes.get(i);
+        primitives.append(F.List(F.GrayLevel(F.C0), F.ternaryAST3(S.Text, chartLabels.getAt(i + 1),
+            F.List(F.num((box.from + box.to()) / 2.0), F.C0), F.List(F.C0, F.C1))));
+      }
+    }
+    IExpr frame = GraphicsOptions.optionValue(originalAST, S.Frame, S.False);
+    if (!frame.isFalse() && !frame.isNone()) {
+      // a frame replaces the axes
+      graphicsOptions.setAxes(S.False);
+      framed = true;
+    }
     if (datasets.argSize() > 1) {
       // the half gap in front of the first dataset is matched by one after the last
       xMax += gaps(barSpacing, boxes.size())[1] / 2.0;
@@ -117,7 +133,17 @@ public class RectangleChart extends AbstractChart {
     double pad = (yMax - yMin) * 0.05;
     graphicsOptions.setBoundingBox(new double[] {xMin, xMax, yMin < 0 ? yMin - pad : yMin,
         yMax > 0 ? yMax + pad : yMax});
-    return createGraphicsFunction(primitives, graphicsOptions, ast);
+    IExpr chart = createGraphicsFunction(primitives, graphicsOptions, ast);
+    return framed && !GraphicsOptions.optionValue(originalAST, S.FrameTicks, F.NIL).isPresent()
+        ? withoutBottomTicks(chart)
+        : chart;
+  }
+
+  /** The chart with ticks only on the left and right of its frame. */
+  private static IExpr withoutBottomTicks(IExpr chart) {
+    IAST ticks = F.List(F.List(S.Automatic, S.Automatic), F.List(S.None, S.None));
+    return chart.replaceAll(F.Rule(F.Rule(S.FrameTicks, S.Automatic), F.Rule(S.FrameTicks, ticks)))
+        .orElse(chart);
   }
 
   /** The colour of the bar at <code>index</code>; a list of styles is one directive. */

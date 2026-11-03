@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.BuiltinUsage;
+import org.matheclipse.core.expression.ConditionalOwnValues;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -34,6 +35,7 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -487,18 +489,46 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return engine.getContextPath().getContexts();
+      ContextPath contextPath = engine.getContextPath();
+      if (ast.isAST0()) {
+        return contextPath.getContexts();
+      }
+      if (!ast.arg1().isString()) {
+        return F.NIL;
+      }
+      if (ast.isAST2() && !ast.arg2().isRuleAST()) {
+        return F.NIL;
+      }
+      String pattern = ast.arg1().toString();
+      if (!ast.isAST2()
+          || !new OptionArgs(ast.topHead(), ast, 2, engine, true)
+              .getOption(S.ResolveContextAliases).isFalse()) {
+        pattern = contextPath.expandAlias(pattern);
+      }
+      java.util.regex.Pattern regex = IStringX.toRegexPattern(F.$str(pattern), true, false, ast,
+          new java.util.IdentityHashMap<ISymbol, String>(), engine);
+      if (regex == null) {
+        return F.NIL;
+      }
+      java.util.TreeSet<String> names =
+          new java.util.TreeSet<String>(contextPath.getContextMap().keySet());
+      contextPath.getContexts().forEach(x -> names.add(x.toString()));
+      IASTAppendable result = F.ListAlloc(names.size());
+      for (String name : names) {
+        if (regex.matcher(name).matches()) {
+          result.append(F.$str(name));
+        }
+      }
+      return result;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_0;
+      return ARGS_0_2;
     }
 
     @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
-    }
+    public void setUp(ISymbol newSymbol) {}
   }
 
   /**
@@ -1881,12 +1911,7 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
-        ISymbol symbol = (ISymbol) arg1;
-        IExpr value = symbol.assignedValue();
-        if (value == null) {
-          return F.CEmptyList;
-        }
-        return F.list(F.RuleDelayed(F.HoldPattern(symbol), value));
+        return ConditionalOwnValues.ownValues((ISymbol) arg1);
       }
       return F.NIL;
     }
@@ -3223,7 +3248,8 @@ public final class PatternMatching {
       }
 
       if (evaledLHS.isSymbol()) {
-        ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
+        ISymbol symbol = (ISymbol) evaledLHS;
+        symbol.assignValue(ConditionalOwnValues.merge(symbol, rightHandSide), true);
       } else {
         lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) originalLHS,
         // CPD-ON
@@ -3692,22 +3718,55 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        if (ast.arg1().isSymbol()) {
-          final String varAppend = ast.arg1().toString() + EvalEngine.uniqueName("$");
-          return F.symbol(varAppend, engine);
-        } else if (ast.arg1() instanceof IStringX) {
-          // TODO start counter by 1....
-          final String varAppend = EvalEngine.uniqueName(ast.arg1().toString());
-          return F.symbol(varAppend, engine);
+      if (ast.isAST0()) {
+        return F.symbol(EvalEngine.uniqueName("$"), engine);
+      }
+      IExpr result = uniqueSymbols(ast.arg1(), engine);
+      if (result.isNIL()) {
+        return F.NIL;
+      }
+      if (ast.isAST2()) {
+        IExpr attributes = engine.evaluate(ast.arg2());
+        for (IExpr symbol : result.makeList()) {
+          engine.evaluate(F.SetAttributes(symbol, attributes));
         }
       }
-      return F.symbol(EvalEngine.uniqueName("$"), engine);
+      return result;
+    }
+
+    /**
+     * A new symbol for a symbol or a string and, element by element, a list of new symbols for a
+     * list of them.
+     */
+    private static IExpr uniqueSymbols(IExpr expr, EvalEngine engine) {
+      if (expr.isList()) {
+        IAST list = (IAST) expr;
+        IASTAppendable symbols = F.ListAlloc(list.size());
+        for (int i = 1; i < list.size(); i++) {
+          IExpr symbol = uniqueSymbols(list.get(i), engine);
+          if (symbol.isNIL()) {
+            return F.NIL;
+          }
+          symbols.append(symbol);
+        }
+        return symbols;
+      }
+      if (expr.isSymbol()) {
+        final String varAppend = expr.toString() + EvalEngine.uniqueName("$");
+        return F.symbol(varAppend, engine);
+      }
+      if (expr instanceof IStringX) {
+        // TODO start counter by 1....
+        final String varAppend = EvalEngine.uniqueName(expr.toString());
+        return F.symbol(varAppend, engine);
+      }
+      // `1` is not a symbol or a valid symbol name.
+      return Errors.printMessage(S.Unique, "usym", F.list(expr), engine);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_2;
     }
 
     @Override
@@ -3965,9 +4024,14 @@ public final class PatternMatching {
   private static void putUpRules(IBuiltInSymbol head, IExpr leftHandSide, IExpr rightHandSide,
       int flag, boolean failOnProtected, EvalEngine engine) {
     IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide, head);
+    // the arguments of lhs in lhs /; test get the rule
+    IAST arguments = lhsAST;
+    while (arguments.isCondition() && arguments.first().isAST()) {
+      arguments = (IAST) arguments.first();
+    }
     IPatternMatcher lastRule = null;
-    for (int i = 1; i < lhsAST.size(); i++) {
-      ISymbol lhsSymbol = getLookupReferenceName(lhsAST.get(i));
+    for (int i = 1; i < arguments.size(); i++) {
+      ISymbol lhsSymbol = getLookupReferenceName(arguments.get(i));
       if (lhsSymbol == null) {
         continue;
       }
@@ -4222,7 +4286,8 @@ public final class PatternMatching {
       return getLookupName(leftHandSide.first());
     } else if (leftHandSide.isFunctionID(ID.Condition, ID.HoldPattern, ID.PatternTest)
         && leftHandSide.argSize() >= 1) {
-      return getReferenceExpression(leftHandSide.first());
+      // u_h?test takes the name from the pattern object, which is no reference expression
+      return getLookupReferenceName(leftHandSide.first());
     }
     return leftHandSide.topHead();
   }

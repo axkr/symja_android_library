@@ -104,11 +104,9 @@ public class ImageRealSamplesTest extends AbstractTestCase {
 
   @Test
   public void testAlphaChannel() {
-    // has an image of 2 channels here, {{{1., 0.5}, {1., 0.5}}}; an image with an alpha
-    // channel has the three colour channels in Symja
     check(
         "half = SetAlphaChannel(Image({{1., 1.}}), 0.5); "
-            + "{ImageType(half), ImageData(half) == {{{1., 1., 1., 0.5}, {1., 1., 1., 0.5}}}}", //
+            + "{ImageType(half), ImageData(half) == {{{1., 0.5}, {1., 0.5}}}}", //
         "{Real32,True}");
     // RemoveAlphaChannel::invcolor - a number is no colour
     check("RemoveAlphaChannel(half, 0.)", //

@@ -40,12 +40,26 @@ public class ColorData extends AbstractFunctionEvaluator {
         return getAllGradients();
       } else if (name.equalsIgnoreCase("Indexed")) {
         return getAllIndexed();
+      } else if (name.equalsIgnoreCase("Named") && ast.isAST1()) {
+        return F.List(F.stringx("Atoms"), F.stringx("Crayola"), F.stringx("GeologicAges"),
+            F.stringx("HTML"), F.stringx("Legacy"), F.stringx("WebSafe"));
+      } else if (name.equalsIgnoreCase("Physical") && ast.isAST1()) {
+        return F.List(F.stringx("BlackBodySpectrum"), F.stringx("HypsometricTints"),
+            F.stringx("VisibleSpectrum"));
       } else if (name.equalsIgnoreCase("WebSafe")) {
         // the colors named by their hex codes
         if (ast.isAST2()) {
-          return webSafe(ast.arg2());
+          return ast.arg2().isString("ColorRules") ? NamedColorSchemes.webSafeRules()
+              : webSafe(ast.arg2());
         }
         return createColorDataFunction("WebSafe", "Named", F.CEmptyList);
+      }
+
+      if (ast.isAST2()) {
+        IExpr named = NamedColorSchemes.of(name, ast.arg2());
+        if (named.isPresent()) {
+          return named;
+        }
       }
 
       // Try to find scheme

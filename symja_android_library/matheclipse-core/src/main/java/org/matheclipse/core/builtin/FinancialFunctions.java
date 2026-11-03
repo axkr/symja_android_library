@@ -115,7 +115,7 @@ public class FinancialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
-      IExpr c = ast.arg3();
+      IExpr c = ast.argSize() >= 3 ? ast.arg3() : F.C0;
       // CPD-OFF generated annuity formulas
       if (a.isAST(S.Annuity, 3, 4)) {
         // https://en.wikipedia.org/wiki/Annuity
@@ -212,7 +212,7 @@ public class FinancialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_2_3;
     }
   }
 

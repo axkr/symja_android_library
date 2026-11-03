@@ -178,16 +178,21 @@ public class ImageCharacterizationTest extends AbstractTestCase {
         "1/3");
   }
 
-  /** Data a <code>BufferedImage</code> has no type for is refused rather than coerced. */
+  /** Any number of channels is an image, also one a <code>BufferedImage</code> has no type for. */
   @Test
-  public void onlyOneThreeOrFourChannelsAreAccepted() {
-    // two channels - greyscale with alpha has no BufferedImage type and no colour space name
-    check("Image({{{0.0,1.0}}})", //
-        "Image({{{0.0,1.0}}})");
-    // read as height 3, width 2, channels 2 - which is the planar layout Interleaving->False
-    // is going to have to make sense of
-    check("Image({{{1.0,1.0},{1.0,1.0}},{{0.0,0.0},{0.0,0.0}},{{0.0,0.0},{0.0,0.0}}})", //
-        "Image({{{1.0,1.0},{1.0,1.0}},{{0.0,0.0},{0.0,0.0}},{{0.0,0.0},{0.0,0.0}}})");
+  public void anyNumberOfChannelsIsAccepted() {
+    check("i = Image({{{0.0,1.0}}}); {ImageChannels(i), ImageDimensions(i), ImageData(i)}", //
+        "{2,{1,1},{{{0.0,1.0}}}}");
+    // read as height 3, width 2, channels 2
+    check("i = Image({{{1.0,1.0},{1.0,1.0}},{{0.0,0.0},{0.0,0.0}},{{0.0,0.0},{0.0,0.0}}}); "
+        + "{ImageChannels(i), ImageDimensions(i)}", //
+        "{2,{2,3}}");
+    check("i = Image(ConstantArray(0.5, {4, 5, 7})); "
+        + "{ImageChannels(i), ImageDimensions(i), Dimensions(ImageData(i))}", //
+        "{7,{5,4},{4,5,7}}");
+    check("i = Image(ConstantArray(0.5, {6, 2, 5}), Interleaving -> False); "
+        + "{ImageChannels(i), ImageDimensions(i)}", //
+        "{6,{5,2}}");
   }
 
   @Test

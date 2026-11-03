@@ -900,6 +900,10 @@ public final class Arithmetic {
             return F.complexNum(((INum) realExpr).doubleValue(),
                 ((INum) imaginaryExpr).doubleValue());
           }
+          if (realExpr.isRational() && imaginaryExpr instanceof Num) {
+            // the machine imaginary part keeps a machine complex number, also if it is 0.
+            return F.complexNum(realExpr.evalf(), imaginaryExpr.evalf());
+          }
           if (realExpr.isNumber() && imaginaryExpr.isNumber()) {
             return F.Plus(realExpr, F.Times(F.CI, imaginaryExpr));
           }
@@ -1621,12 +1625,23 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg2().isZero()) {
+      final IExpr numerator = ast.arg1();
+      final IExpr denominator = ast.arg2();
+      if (denominator.isZero()) {
         // Power decides: a nonzero numerator gives ComplexInfinity, 0/0 Indeterminate
-        return F.Times(ast.arg1(), F.Power(ast.arg2(), F.CN1));
+        return F.Times(numerator, F.Power(denominator, F.CN1));
+      }
+      if (denominator.isReal() && numerator.isReal()
+          && (denominator instanceof Num || numerator instanceof Num)
+          && !(denominator instanceof ApfloatNum || numerator instanceof ApfloatNum)) {
+        // a true division: 3.*(1/10) would multiply with the rounded reciprocal
+        final double quotient = numerator.evalf() / denominator.evalf();
+        if (Double.isFinite(quotient) && quotient != 0.0) {
+          return F.num(quotient);
+        }
       }
       // rewrite to arg1 * arg2^(-1)
-      return F.Divide(ast.arg1(), ast.arg2());
+      return F.Divide(numerator, denominator);
     }
 
     @Override
@@ -1636,7 +1651,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -4324,6 +4339,37 @@ public final class Arithmetic {
       return F.NIL;
     }
 
+    /**
+     * A machine real to an exact half-integer power is a power times a square root:
+     * <code>x^(n+1/2) = x^n*Sqrt(x)</code> and <code>x^-(n+1/2) = (1/x^n)*(1/Sqrt(x))</code>, which
+     * differs from <code>Math.pow()</code> in the last bit. The root of a negative base is
+     * imaginary.
+     *
+     * @return {@link F#NIL} if <code>exponent</code> is no half-integer of a small size
+     */
+    public static IExpr machineHalfPower(final Num base, final IFraction exponent) {
+      if (!exponent.denominator().equals(F.C2)) {
+        return F.NIL;
+      }
+      final int twice = exponent.numerator().toIntDefault();
+      final double x = base.doubleValue();
+      if (F.isNotPresent(twice) || Math.abs(twice) > 1024 || x == 0.0 || !Double.isFinite(x)) {
+        return F.NIL;
+      }
+      final double magnitude = Math.abs(x);
+      final double power = Math.pow(magnitude, (Math.abs(twice) - 1) / 2);
+      final double root = Math.sqrt(magnitude);
+      final double result = twice > 0 ? power * root : (1.0 / power) * (1.0 / root);
+      if (!Double.isFinite(result) || MachineUnderflow.isBelowNormal(result)) {
+        return F.NIL;
+      }
+      if (x > 0.0) {
+        return F.num(result);
+      }
+      // (-x)^(p/2) = x^(p/2)*I^p for an odd p
+      return F.complexNum(0.0, (twice & 3) == 1 ? result : -result);
+    }
+
     /** 1 for the exponent 1/2, -1 for -1/2 - exact or as an inexact number - and 0 otherwise. */
     private static int halfExponent(IReal exponent) {
       if (exponent instanceof Num) {
@@ -4793,6 +4839,13 @@ public final class Arithmetic {
           // (a^b)^c => a^(b*c) for exact constants a > 0 and b real, e.g. (Pi^2)^x is Pi^(2*x)
           return F.Power(baseBase, F.Times(baseExponent, exponent));
         }
+        if (baseBase.isNumericFunction(true) && !baseBase.isInexactNumber()
+            && baseBase.isPositiveResult() && EvalEngine.get().getAssumptions() != null
+            && baseExponent.isRealResult()) {
+          // (a^b)^c => a^(b*c) for an exact constant a > 0 and an assumed real b, e.g.
+          // Refine(Sqrt(E^x), x>0) is E^(x/2)
+          return F.Power(baseBase, F.Times(baseExponent, exponent));
+        }
       } else if (base.isAbs() && base.isAST1()) {
         // Abs(u)^n => u^n for a real valued u and an even integer n
         IExpr u = base.first();
@@ -5234,6 +5287,14 @@ public final class Arithmetic {
             evaled = true;
             continue;
           }
+          if (arg instanceof IComplex && ((IComplex) arg).getRealPart().isZero()) {
+            // the size of a pure imaginary number is positive: Sqrt(4*I*u) == 2*Sqrt(I*u)
+            IRational imaginary = ((IComplex) arg).getImaginaryPart();
+            result.append(F.Power(imaginary.abs(), exponent));
+            rest.append(imaginary.isNegative() ? F.CNI : F.CI);
+            evaled = true;
+            continue;
+          }
           if (arg.isFraction()) {
             IInteger numerator = ((IFraction) arg).numerator();
             IExpr n = F.NIL;
@@ -5250,7 +5311,10 @@ public final class Arithmetic {
               evaled = true;
               continue;
             }
-          } else if (!phaseInRest) {
+          } else if (!phaseInRest && (!arg.isNumericFunction() || arg.isPositiveResult())) {
+            // a number which isn't positive has a phase of its own, even if its root is closed:
+            // Sqrt((3+4*I)*u) is not (2+I)*Sqrt(u), and Sqrt((2-Sqrt(5))*u) is not
+            // I*Sqrt(-2+Sqrt(5))*Sqrt(u), for every u
             IExpr temp = engine.evaluateNIL(F.Power(arg, exponent));
             if (temp.isPresent()) {
               if (temp.isTimes()) {
@@ -6579,7 +6643,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 
@@ -8631,7 +8695,9 @@ public final class Arithmetic {
             evaled[0] = true;
             break;
           }
-          if (isSignToCollect(base, exp1, exp2) || (exp1.isInteger() && exp2.isInteger())) {
+          if (isSignToCollect(base, exp1, exp2) || (exp1.isInteger() && exp2.isInteger())
+              // roots which share a prime merge it: Sqrt(6)*2^(1/3) is 2^(5/6)*Sqrt(3)
+              || (base > 1 && exp1.isFraction() && exp2.isFraction())) {
             evaled[0] = true;
             break;
           }

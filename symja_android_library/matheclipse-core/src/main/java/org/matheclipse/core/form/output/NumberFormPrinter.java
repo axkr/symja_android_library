@@ -19,7 +19,7 @@ import org.matheclipse.parser.client.ParserConfig;
  * <p>
  * Like <code>OutputForm</code> this is a three line form: a factored out exponent is written above
  * the mantissa and a fraction above and below its fraction bar, so that
- * <code>ToString(ScientificForm(1234.5))</code> is <code>"3\n1.2345×10"</code>. Everything
+ * <code>ToString(ScientificForm(1234.5))</code> is <code>"          3\n1.2345 × 10"</code>. Everything
  * which is not a number itself is handed to {@link OutputFormFactory}, which installs the same
  * {@link NumberFormatter} for the wrapped subtree.
  *
@@ -97,8 +97,8 @@ public class NumberFormPrinter {
     if (!formatted.scientific) {
       return new String[] {"", formatted.mantissa, ""};
     }
-    return new String[] {Integer.toString(formatted.exponent),
-        formatted.mantissa + formatter.getMultiplier() + "10", ""};
+    String number = formatted.mantissa + " " + formatter.getMultiplier() + " 10";
+    return new String[] {" ".repeat(number.length()) + formatted.exponent, number, ""};
   }
 
   private static FormattedNumber format(NumberFormatter formatter, IExpr expr,

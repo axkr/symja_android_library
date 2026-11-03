@@ -49,6 +49,9 @@ import org.matheclipse.core.interfaces.IExpr;
 public final class PatternMatcherList extends PatternMatcherAndEvaluator {
   IASTAppendable fReplaceList;
 
+  /** Results of the in-order match only count if they aren't in {@link #fReplaceList} yet. */
+  private boolean fInOrderMatches = false;
+
   public IASTAppendable getReplaceList() {
     return fReplaceList;
   }
@@ -72,9 +75,20 @@ public final class PatternMatcherList extends PatternMatcherAndEvaluator {
     return v;
   }
 
+  @Override
+  protected boolean collectsAllMatches() {
+    return true;
+  }
+
+  @Override
+  protected void startInOrderMatches() {
+    fInOrderMatches = true;
+  }
+
   /** Forget the results collected so far. */
   public void resetReplaceList() {
     fReplaceList = F.ListAlloc();
+    fInOrderMatches = false;
   }
 
   @Override
@@ -122,7 +136,9 @@ public final class PatternMatcherList extends PatternMatcherAndEvaluator {
             engine.setEvalRHSMode(oldEvalRHSMode);
           }
         }
-        fReplaceList.append(result);
+        if (!fInOrderMatches || !fReplaceList.contains(result)) {
+          fReplaceList.append(result);
+        }
         return false;
       }
     }

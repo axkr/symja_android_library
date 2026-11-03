@@ -101,11 +101,11 @@ public class ImageGeometryTest extends AbstractTestCase {
   @Test
   public void composePutsAPointOfTheOverlayOnAPosition() {
     check("ImageData(ImageCompose(Image(ConstantArray(0,{3,3})),Image({{1}}),{0.5,2.5}))", //
-        "{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+        "{{1.0,0.0,0.0},\n {0.0,0.0,0.0},\n {0.0,0.0,0.0}}");
     check("ImageData(ImageCompose(Image(ConstantArray(0,{3,3})),Image({{1}}),{Right,Top},{Right,Top}))", //
-        "{{0.0,0.0,1.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+        "{{0.0,0.0,1.0},\n {0.0,0.0,0.0},\n {0.0,0.0,0.0}}");
     check("ImageData(ImageCompose(Image(ConstantArray(0,{3,3})),Image({{1}}),{Left,Bottom},{Left,Bottom}))", //
-        "{{0.0,0.0,0.0},{0.0,0.0,0.0},{1.0,0.0,0.0}}");
+        "{{0.0,0.0,0.0},\n {0.0,0.0,0.0},\n {1.0,0.0,0.0}}");
   }
 
   /** Scaled with a pair scales the two directions on their own. */
@@ -319,5 +319,66 @@ public class ImageGeometryTest extends AbstractTestCase {
         "{4,4}");
     check("ImageDimensions(ImagePad(Image(ConstantArray(0, {2, 3})), {{-1.6, 0}, {0, 7/3}}))", //
         "{2,4}");
+  }
+
+  /** Any other angle: the source pixel under each centre, black outside of the turned image. */
+  @Test
+  public void rotateResamplesOntoTheBoundingBox() {
+    check("ImageData(ImageRotate(Image({{1., 1., 1.}}), 45 Degree))", //
+        "{{0.0,0.0,1.0},\n {0.0,1.0,0.0},\n {1.0,0.0,0.0}}");
+    check("ImageData(ImageRotate(Image({{0.25, 0.75}, {0.5, 1.}}), 20 Degree))", //
+        "{{0.0,0.75,0.0},\n {0.25,1.0,1.0},\n {0.0,0.5,0.0}}");
+    check("{ImageType(ImageRotate(Image({{0, 200}}, \"Byte\"), 1)), "
+        + "ImageDimensions(ImageRotate(Image(ConstantArray(0.5, {2, 6})), 20 Degree)), "
+        + "ImageChannels(ImageRotate(Image({{{1., 0., 0.}}}), 1))}", //
+        "{Byte,{7,4},3}");
+  }
+
+  /** The weights of the parts where only the overlay, only the image, or both are opaque. */
+  @Test
+  public void composeByWeights() {
+    check("a = Image({{{0.25, 0.5}}}, ColorSpace -> \"Grayscale\"); "
+        + "b = Image({{{0.75, 0.5}}}, ColorSpace -> \"Grayscale\"); "
+        + "Table(ImageData(ImageCompose(a, b, Center, Center, v)), "
+        + "{v, {{1, 0, 0}, {0, 1, 0}, {1, 1, 1}, {1, 1, 0}}})", //
+        "{{{{0.75,0.25}}},{{{0.25,0.25}}},{{{0.583333,0.75}}},{{{0.5,0.5}}}}");
+    // without an alpha channel the part of neither weight is black
+    check("ImageData(ImageCompose(Image({{0.25}}), Image({{0.5}}), Center, Center, {1, 0, 0}))", //
+        "{{0.0}}");
+  }
+
+  @Test
+  public void composeAtAScaledPosition() {
+    check("ImageData(ImageCompose(Image({{0.25, 0.5, 0.75, 1.}}), Image({{0.}}), "
+        + "Scaled({0.625, 0.5})))", //
+        "{{0.25,0.5,0.0,1.0}}");
+  }
+
+  /** The result is "Real32", and an alpha channel of the overlay gives it one. */
+  @Test
+  public void composeType() {
+    check("ImageType(ImageCompose(Image({{10, 20}}, \"Byte\"), Image({{0.25}})))", //
+        "Real32");
+    check("ImageChannels(ImageCompose(Image({{0.25}}), "
+        + "Image({{{1., 0., 0., 0.5}}}, ColorSpace -> \"RGB\")))", //
+        "4");
+    check("ImageData(ImageCompose(Image({{0.5}}), Image({{{1., 0., 0.}}})))", //
+        "{{{1.0,0.0,0.0}}}");
+  }
+
+  @Test
+  public void rasterizeElements() {
+    check("{Dimensions(Rasterize(Graphics(Circle()), \"Data\", RasterSize -> 10)), "
+        + "Rasterize(Graphics(Circle()), \"RasterSize\", RasterSize -> {7, 9}), "
+        + "Rasterize(Graphics(Circle()), \"BoundingBox\", RasterSize -> {6, 9}), "
+        + "Rasterize(\"ab\", \"BoundingBox\", RasterSize -> {6, 8}), "
+        + "Head(Rasterize(Graphics(Circle()), \"Image\")), "
+        + "ImageDimensions(Rasterize(Graphics(Circle())))}", //
+        "{{10,10,3},{7,9},{6,9,5},{6,8,6},Image,{360,360}}");
+    check("Union(Head /@ Flatten(Rasterize(Graphics(Circle()), \"Data\", RasterSize -> 4)))", //
+        "{Integer}");
+    // Rasterize::elmntavl
+    check("Rasterize(Graphics(Circle()), \"Bar\")", //
+        "$Failed");
   }
 }

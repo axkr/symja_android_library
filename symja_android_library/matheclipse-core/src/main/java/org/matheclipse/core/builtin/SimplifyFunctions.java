@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PiecewiseFold;
 import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -138,6 +139,13 @@ public class SimplifyFunctions {
               return F.Rule(ast.setAtClone(1, list1.arg1()), ast.setAtClone(1, list1.arg2()));
             }
             break;
+        }
+      }
+
+      if (ast.isAST1()) {
+        IExpr folded = PiecewiseFold.fold(arg1, true, engine);
+        if (folded.isPresent()) {
+          return folded;
         }
       }
 

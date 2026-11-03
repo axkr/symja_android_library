@@ -135,6 +135,9 @@ public class StatisticsFunctions {
           new org.matheclipse.core.builtin.StochasticProcesses.OrnsteinUhlenbeckProcess());
       S.ARMAProcess.setEvaluator(
           new org.matheclipse.core.builtin.StochasticProcesses.ARMAProcess());
+      S.WeakStationarity.setEvaluator(
+          new org.matheclipse.core.builtin.StochasticProcesses.WeakStationarity());
+      S.LocationTest.setEvaluator(new org.matheclipse.core.reflection.system.LocationTest());
       S.Expectation.setEvaluator(new Expectation());
       S.HazardFunction.setEvaluator(new HazardFunction());
       S.InverseSurvivalFunction.setEvaluator(new InverseSurvivalFunction());
@@ -463,11 +466,62 @@ public class StatisticsFunctions {
     return result.isFree(integrateHead, true) ? result : F.NIL;
   }
 
+  /**
+   * The covariance matrix of a distribution.
+   *
+   * @return {@link F#NIL} if <code>dist</code> is no distribution with a covariance matrix
+   */
+  private static IExpr distributionCovariance(IExpr dist, EvalEngine engine) {
+    if (dist.isAST() && dist.head() instanceof IBuiltInSymbol) {
+      IEvaluator evaluator = ((IBuiltInSymbol) dist.head()).getEvaluator();
+      if (evaluator instanceof ICovariance) {
+        return ((ICovariance) evaluator).covariance((IAST) dist, engine);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The moments of a pair of marginals of a distribution: the whole matrix for
+   * <code>f(dist)</code>, the entry <code>{i,j}</code> for <code>f(dist,i,j)</code>.
+   *
+   * @return {@link F#NIL} if the matrix is unknown or an index is out of range
+   */
+  private static IExpr matrixOrEntry(IAST ast, IExpr matrix, EvalEngine engine) {
+    IExpr evaluated = engine.evaluate(matrix);
+    if (!evaluated.isList() || ast.isAST1()) {
+      return evaluated.isList() ? evaluated : F.NIL;
+    }
+    int i = ast.arg2().toIntDefault();
+    int j = ast.arg3().toIntDefault();
+    int size = evaluated.argSize();
+    if (i < 1 || j < 1 || i > size || j > size) {
+      return F.NIL;
+    }
+    return evaluated.getAt(i).getAt(j);
+  }
+
   private static final class AbsoluteCorrelation extends AbstractFunctionEvaluator {
+
+    /** The matrix of the expectations of the products of two marginals. */
+    private static IExpr momentMatrix(IExpr dist, EvalEngine engine) {
+      IExpr covariance = engine.evaluate(distributionCovariance(dist, engine));
+      IExpr mean = engine.evaluate(F.Mean(dist));
+      if (!covariance.isList() || !mean.isList() || mean.argSize() != covariance.argSize()) {
+        return F.NIL;
+      }
+      return F.Plus(covariance, F.ternaryAST3(S.Outer, S.Times, mean, mean));
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
+      if (a.isDistribution() && !ast.isAST2()) {
+        return matrixOrEntry(ast, momentMatrix(a, engine), engine);
+      }
+      if (!ast.isAST2()) {
+        return F.NIL;
+      }
       IExpr b = ast.arg2();
       int dim1 = a.isVector();
       int dim2 = b.isVector();
@@ -479,7 +533,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_1_3;
     }
   }
 
@@ -849,9 +903,10 @@ public class StatisticsFunctions {
         heights.append(height);
       }
       IExpr result = engine.evaluate(F.list(edges, heights));
-      // the cumulative shares are numeric, and so are the shares and densities of numeric bins;
-      // counts stay integers
+      // the cumulative shares are numeric, and so are the shares of numeric data and the shares
+      // and densities of numeric bins; counts stay integers
       return hspec.equals("CDF")
+          || (hspec.equals("Probability") && data.exists(IExpr::isInexactNumber))
           || (!hspec.equals("Count") && edges.exists(IExpr::isInexactNumber))
           ? F.list(edges, engine.evalN(((IAST) result).arg2()))
           : result;
@@ -889,7 +944,7 @@ public class StatisticsFunctions {
         width = bspec.first().evalf();
       } else if (bspec.isInteger() && bspec.toIntDefault() > 0) {
         width = org.matheclipse.core.builtin.graphics.Histogram
-            .roundNumber(max > min ? (max - min) / bspec.toIntDefault() : 1.0);
+            .roundNumberAbove(max > min ? (max - min) / bspec.toIntDefault() : 1.0);
       } else if (bspec == S.Automatic) {
         width = org.matheclipse.core.builtin.graphics.Histogram.binWidth(values, min, max);
       } else {
@@ -898,20 +953,50 @@ public class StatisticsFunctions {
       if (!(width > 0)) {
         return F.NIL;
       }
-      // the edges are multiples of the width; for integer data and an integer width they lie
-      // halfway between the integers, so that each integer has a bin of its own
-      double offset = 0.0;
-      if (data.forAll(IExpr::isInteger) && width == Math.rint(width)) {
-        offset = 0.5;
+      boolean integerData = data.forAll(IExpr::isInteger);
+      IExpr exactWidth = bspec.isList()
+          ? (bspec.first().isRational() ? bspec.first() : F.NIL)
+          : org.matheclipse.core.builtin.graphics.Histogram.exactWidth(width);
+      if (exactWidth.isPresent() && !(integerData && width == 1.0)
+          && Math.max(Math.abs(min), Math.abs(max)) / width < 1.0e15) {
+        return exactEdges((IRational) exactWidth, width, min, max);
       }
-      double start = Math.floor((min - offset) / width) * width + offset;
-      int bins = (int) Math.floor((max - start) / width) + 1;
+      double start =
+          org.matheclipse.core.builtin.graphics.Histogram.binOrigin(min, width, integerData);
+      double bins = Math.floor((max - start) / width) + 1.0;
       if (bins > Config.MAX_AST_SIZE || bins > 100_000) {
         return F.NIL;
       }
-      final double first = start;
-      final double step = width;
-      return F.mapRange(0, bins + 1, i -> F.num(first + i * step));
+      return F.mapRange(0, (int) bins + 1, i -> F.num(start + i * width));
+    }
+
+    /**
+     * The exact multiples of a round width which enclose <code>min</code> and <code>max</code>. The
+     * quotients of the machine numbers are rounded, so that the edges they give are checked against
+     * the data.
+     */
+    private static IAST exactEdges(IRational width, double approximateWidth, double min,
+        double max) {
+      long first = (long) Math.floor(min / approximateWidth);
+      while (width.multiply(F.ZZ(first)).evalf() > min) {
+        first--;
+      }
+      while (width.multiply(F.ZZ(first + 1)).evalf() <= min) {
+        first++;
+      }
+      long last = (long) Math.floor(max / approximateWidth) + 1;
+      while (width.multiply(F.ZZ(last)).evalf() <= max) {
+        last++;
+      }
+      while (width.multiply(F.ZZ(last - 1)).evalf() > max) {
+        last--;
+      }
+      long bins = last - first;
+      if (bins > Config.MAX_AST_SIZE || bins > 100_000) {
+        return F.NIL;
+      }
+      final long start = first;
+      return F.mapRange(0, (int) bins + 1, i -> width.multiply(F.ZZ(start + i)));
     }
 
     @Override
@@ -934,16 +1019,20 @@ public class StatisticsFunctions {
         if (ast.arg1().isList()) {
           IAST vector = (IAST) ast.arg1();
           vector = dropNonReals(engine, vector);
-          if (ast.size() == 3) {
-            return binCounts(ast, vector, ast.arg2(), engine);
-          } else if (ast.size() == 2) {
-            return binCounts(ast, vector, F.C1, engine);
+          if (vector.argSize() > 0 || ast.arg1().isListOfLists()) {
+            if (ast.size() == 3) {
+              return binCounts(ast, vector, ast.arg2(), engine);
+            } else if (ast.size() == 2) {
+              return binCounts(ast, vector, F.C1, engine);
+            }
           }
         }
+        // The first argument is expected to be a unit-compatible vector or a matrix with
+        // unit-compatible columns.
+        return Errors.printMessage(S.BinCounts, "vectmat", F.CEmptyList, engine);
       } catch (ArithmeticException aex) {
         return Errors.printMessage(S.BinCounts, aex, engine);
       }
-      return F.NIL;
     }
 
     @Override
@@ -954,6 +1043,7 @@ public class StatisticsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.putMessage(IPatternMatcher.SET, "step", F.stringx(BinLists.STEP_MESSAGE));
+      newSymbol.putMessage(IPatternMatcher.SET, "vectmat", F.stringx(BinLists.VECTMAT_MESSAGE));
       super.setUp(newSymbol);
     }
 
@@ -1084,14 +1174,16 @@ public class StatisticsFunctions {
       }
       if (arg2.isList()) {
         IAST list = (IAST) arg2;
-        if (list.size() != 4) {
+        if (list.size() != 3 && list.size() != 4) {
           return F.NIL;
         }
-        int dx = list.arg3().toIntDefault();
+        // {xmin, xmax} has bins of width 1
+        IExpr step = list.isList3() ? list.arg3() : F.C1;
+        int dx = step.toIntDefault();
         int xMin = list.arg1().toIntDefault();
         int xMax = list.arg2().toIntDefault();
         if (F.isNotPresent(dx) || dx <= 0 || F.isNotPresent(xMin) || F.isNotPresent(xMax)) {
-          return F.NIL;
+          return binCountsRealSteps(vector, list.arg1(), list.arg2(), step);
         }
         if (xMax <= xMin) {
           return F.CEmptyList;
@@ -1124,6 +1216,28 @@ public class StatisticsFunctions {
           continue;
         }
         res[index]++;
+      }
+      return F.mapRange(0, res.length, i -> F.ZZ(res[i]));
+    }
+
+    /**
+     * The counts of the real numbers of <code>vector</code> in the bins
+     * <code>[xMin+k*dx, xMin+(k+1)*dx)</code> which end at or below <code>xMax</code>, for bounds
+     * which aren't all machine integers.
+     */
+    private static IExpr binCountsRealSteps(IAST vector, IExpr xMin, IExpr xMax, IExpr step) {
+      double min = xMin.evalfNaN();
+      double dx = step.evalfNaN();
+      int bins = BinLists.wholeBins(min, xMax.evalfNaN(), dx);
+      if (Double.isNaN(min) || Double.isNaN(dx) || bins < 0) {
+        return F.NIL;
+      }
+      int[] res = new int[bins];
+      for (int i = 1; i < vector.size(); i++) {
+        double index = Math.floor((((IReal) vector.get(i)).doubleValue() - min) / dx);
+        if (index >= 0 && index < bins) {
+          res[(int) index]++;
+        }
       }
       return F.mapRange(0, res.length, i -> F.ZZ(res[i]));
     }
@@ -1283,9 +1397,31 @@ public class StatisticsFunctions {
    */
   private static final class Correlation extends AbstractFunctionEvaluator {
 
+    /** The correlation matrix of a distribution. */
+    private static IExpr correlationMatrix(IExpr dist, EvalEngine engine) {
+      if (dist.head() == S.BinormalDistribution) {
+        IExpr rho = dist.argSize() > 0 ? ((IAST) dist).last() : F.C0;
+        return F.list(F.list(F.C1, rho), F.list(rho, F.C1));
+      }
+      IExpr covariance = engine.evaluate(distributionCovariance(dist, engine));
+      if (!covariance.isList()) {
+        return F.NIL;
+      }
+      int size = covariance.argSize();
+      return F.mapRange(1, size + 1, i -> F.mapRange(1, size + 1, j -> i == j ? F.C1
+          : F.Times(covariance.getAt(i).getAt(j), F.Power(covariance.getAt(i).getAt(i), F.CN1D2),
+              F.Power(covariance.getAt(j).getAt(j), F.CN1D2))));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        if (ast.arg1().isDistribution() && !ast.isAST2()) {
+          return matrixOrEntry(ast, correlationMatrix(ast.arg1(), engine), engine);
+        }
+        if (ast.isAST3()) {
+          return F.NIL;
+        }
         if (ast.isAST1()) {
           if (ast.arg1() instanceof ASTRealMatrix) {
             PearsonsCorrelation pc =
@@ -1328,7 +1464,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
   }
 
@@ -1552,25 +1688,19 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        return ast.arg1().isDistribution()
+            ? matrixOrEntry(ast, distributionCovariance(ast.arg1(), engine), engine)
+            : F.NIL;
+      }
       if (ast.isAST1()) {
         try {
-          if (ast.arg1().isAST()) {
-            IAST dist = (IAST) ast.arg1();
-            if (dist.head().isSymbol()) {
-              ISymbol head = (ISymbol) dist.head();
-
-              if (dist.head().isSymbol()) {
-                if (head instanceof IBuiltInSymbol) {
-                  IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-                  if (evaluator instanceof ICovariance) {
-                    ICovariance covariance = (ICovariance) evaluator;
-                    return covariance.covariance(dist, engine);
-                  }
-                }
-              }
-            }
+          IExpr covariance = distributionCovariance(ast.arg1(), engine);
+          if (covariance.isPresent()) {
+            return covariance;
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
         }
         int[] dimension = ast.arg1().isMatrix();
         if (dimension != null && dimension[0] > 1 && dimension[1] > 0
@@ -1602,7 +1732,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     private static IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
@@ -4640,6 +4770,12 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.size() >= 3 && ast.last().isRuleAST() && ast.last().first() == S.WorkingPrecision) {
+        // only the machine numbers of the samplers exist, they don't get more digits by a cast
+        return RandomFunctions.workingPrecisionDigits(ast.last().second()) == 0
+            ? ast.removeFromEnd(ast.size() - 1)
+            : F.NIL;
+      }
       if (ast.arg1().isAST()) {
         IAST dist = (IAST) ast.arg1();
         if (dist.head().isSymbol()) {
@@ -4960,7 +5096,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     private static IAST createTensorRecursive(int[] indx, int offset, IASTAppendable list,

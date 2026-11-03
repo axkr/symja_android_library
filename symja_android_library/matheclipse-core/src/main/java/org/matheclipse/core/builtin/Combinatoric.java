@@ -1142,7 +1142,9 @@ public final class Combinatoric {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isAST()) {
-        if (arg2.isAST(S.PermutationGroup, 2)) {
+        if (arg2.isAST(S.PermutationGroup, 2) || arg2.isAST(S.CyclicGroup, 2)
+            || arg2.isAST(S.DihedralGroup, 2) || arg2.isAST(S.AlternatingGroup, 2)
+            || arg2.isAST(S.SymmetricGroup, 2)) {
           // the expression permuted by every element g of the group: the parts taken in the
           // order of the image list of g
           IExpr elements = engine.evaluate(F.unaryAST1(S.GroupElements, arg2));

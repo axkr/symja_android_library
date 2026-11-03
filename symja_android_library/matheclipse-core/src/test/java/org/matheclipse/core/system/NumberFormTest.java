@@ -241,10 +241,10 @@ public class NumberFormTest extends ExprEvaluatorTestCase {
     check("ToString(PaddedForm(Pi, 5))", "Pi");
     check("ToString(NumberForm(3/4))", "3\n-\n4");
     check("ToString(PaddedForm(1234.5678, 3))", "1230.");
-    check("ToString(ScientificForm(1234.5, NumberPoint -> \",\"))", "3\n1,2345×10");
-    check("ToString(EngineeringForm(1234.5, NumberPoint -> \",\"))", "3\n1,2345×10");
-    check("ToString(ScientificForm(1234567.8, 8, DigitBlock -> 3))", "6\n1.2345678×10");
+    check("ToString(ScientificForm(1234.5, NumberPoint -> \",\"))", "           3\n1,2345 × 10");
+    check("ToString(EngineeringForm(1234.5, NumberPoint -> \",\"))", "           3\n1,2345 × 10");
+    check("ToString(ScientificForm(1234567.8, 8, DigitBlock -> 3))", "              6\n1.2345678 × 10");
     check("ToString(NumberForm(1234567.8, 8, DigitBlock -> 3, NumberPoint -> \",\"))",
-        "6\n1,2345678×10");
+        "              6\n1,2345678 × 10");
   }
 }

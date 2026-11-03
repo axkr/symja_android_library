@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -505,8 +506,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             IExpr subEquation = F.Equal(layerEq, targetValue);
 
             // Invoke the internal solver on the reduced-degree/simplified equation layer
-            IExpr solver = numericFlag ? F.Solve(subEquation, F.List(dummyY))
-                : F.Solve(subEquation, F.List(dummyY));
+            IExpr solver = numericFlag ? F.SolveDistinct(subEquation, F.List(dummyY))
+                : F.SolveDistinct(subEquation, F.List(dummyY));
             IExpr subSolutionsEval = engine.evaluate(solver);
 
             // Extract the roots from the rules (e.g. {{y -> r1}, {y -> r2}})
@@ -900,6 +901,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IExpr variable, boolean numericFlag, EvalEngine engine) {
       IExpr temp = F.NIL;
 
+      if (!numericFlag) {
+        IAST factorRoots = rootsOfSymbolicFactors(numerator, denominator, variable, engine);
+        if (factorRoots.isPresent()) {
+          return factorRoots;
+        }
+      }
       if (numerator.isNumericMode() && denominator.isOne()) {
         temp = RootsFunctions.complexRoots(numerator, F.list(variable), engine);
       }
@@ -915,6 +922,86 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The two opposite solutions of one variable are given with the negative one first, also if
+     * the sign is one factor of a product:
+     * <code>{{x->-Sqrt(a)/Sqrt(b)}, {x->Sqrt(a)/Sqrt(b)}}</code>.
+     */
+    private static IASTMutable withNegativeSolutionFirst(IASTMutable solutions,
+        EvalEngine engine) {
+      if (solutions.argSize() == 2 && solutions.arg2().isList1()
+          && solutions.arg2().first().isRuleAST()
+          && solutions.arg2().first().second().isNegativeSigned()
+          && hasOppositeValues(solutions, engine)) {
+        IASTMutable swapped = solutions.copy();
+        swapped.set(1, solutions.arg2());
+        swapped.set(2, solutions.arg1());
+        return swapped;
+      }
+      return solutions;
+    }
+
+    /** The largest number of terms of a polynomial which {@link #rootsOfSymbolicFactors} factors. */
+    private static final int MAX_FACTORED_TERMS = 64;
+
+    /**
+     * A polynomial with symbolic coefficients is solved factor by factor if it splits over the
+     * rational functions of its parameters: <code>x^2-(a+b)*x+a*b</code> has the roots
+     * <code>a</code> and <code>b</code> and not the radicals of the formula of a quadratic, whose
+     * discriminant is a perfect square. A binomial like <code>x^3-a^3</code> is left to the roots
+     * of unity.
+     *
+     * @return the rules of the roots, or {@link F#NIL} if the polynomial isn't of this kind or
+     *         doesn't split
+     */
+    private static IAST rootsOfSymbolicFactors(IExpr numerator, IExpr denominator, IExpr variable,
+        EvalEngine engine) {
+      if (!variable.isSymbol() || !numerator.isPlus() || numerator.argSize() < 3
+          || numerator.argSize() > MAX_FACTORED_TERMS || numerator.isNumericMode()
+          || numerator.has(x -> x.isInexactNumber() || x.isComplex(), false)) {
+        return F.NIL;
+      }
+      final IAST parameters = new VariablesSet(numerator).getVarList();
+      if (parameters.argSize() < 2 || !parameters.contains(variable)
+          || !numerator.isPolynomial(parameters)) {
+        return F.NIL;
+      }
+      IAST powers = engine.evaluate(F.Exponent(numerator, variable, S.List)).makeList();
+      if (powers.argSize() < 3) {
+        return F.NIL;
+      }
+      IExpr factored = engine.evalQuiet(F.Factor(numerator));
+      IAST factors = factored.isTimes() ? (IAST) factored : F.list(factored);
+      int splits = 0;
+      for (IExpr factor : factors) {
+        if (!factor.isFree(variable)) {
+          splits += factor.isPower() ? 2 : 1;
+        }
+      }
+      if (splits < 2) {
+        return F.NIL;
+      }
+      IASTAppendable rules = F.ListAlloc();
+      for (IExpr factor : factors) {
+        final IExpr base = factor.isPower() ? factor.base() : factor;
+        if (base.isFree(variable)) {
+          continue;
+        }
+        IAST roots = rootsOfUnivariatePolynomial(engine.evaluate(F.Expand(base)), F.C1, variable,
+            false, engine);
+        if (roots.isNIL()) {
+          return F.NIL;
+        }
+        for (IExpr rule : roots) {
+          if (!rules.contains(rule)
+              && !engine.evaluate(F.subst(denominator, (IAST) rule)).isZero()) {
+            rules.append(rule);
+          }
+        }
+      }
+      return QuarticSolver.sortASTArguments(rules);
     }
 
     /**
@@ -941,7 +1028,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (!numericFlag) {
           temp = simplifyRadicands(temp, engine);
         }
-        return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
+        return solveNumeric(withNegativeSolutionFirst(QuarticSolver.sortASTArguments(temp), engine),
+            numericFlag, engine);
       }
 
       // Kernel homogenization for systems in which every variable occurs only under a single
@@ -1484,7 +1572,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         // 3. Solve the polynomial system for the kernel dummies. This cannot re-enter this method
         // because the dummy system contains neither radicals nor trig/hyperbolic kernels.
         IAST kernelEquations = polyTerms.mapThread(F.Equal(F.Slot1, F.C0), 1);
-        IExpr kernelSolution = engine.evalQuiet(F.Solve(kernelEquations, dummyVarList));
+        IExpr kernelSolution = engine.evalQuiet(F.SolveDistinct(kernelEquations, dummyVarList));
         if (!kernelSolution.isListOfLists()) {
           return F.NIL;
         }
@@ -1516,7 +1604,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           if (!valid || decoupled.argSize() != variables.argSize()) {
             continue;
           }
-          IExpr decoupledSolution = engine.evalQuiet(F.Solve(decoupled, variables));
+          IExpr decoupledSolution = engine.evalQuiet(F.SolveDistinct(decoupled, variables));
           if (decoupledSolution.isList()) {
             anyDecoupledPresent = true;
             if (decoupledSolution.isListOfLists()) {
@@ -2581,6 +2669,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               if (isolated.isPresent()) {
                 return isolated;
               }
+              IExpr cubic = symbolicCubicSolutions(
+                  engine.evaluate(F.Subtract(equation.first(), equation.second())),
+                  variables.arg1(), engine);
+              if (cubic.isPresent()) {
+                return cubic;
+              }
             }
           }
           if (!numericFlag && domain == S.Reals && termsEqualZeroList.argSize() == 1
@@ -2608,6 +2702,16 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             // Sin(A) == Sin(B), Cos(A) == Cos(B): the families A - B and A + B are linear
             result = equalSinCosFamilies(termsEqualZeroList.arg1(), variables.arg1(), engine);
           }
+          if (result.isNIL() && !numericFlag && domain == S.Reals
+              && termsEqualZeroList.argSize() == 1 && variables.argSize() == 1
+              && inequationsList.isEmpty() && intervalDataMap.isEmpty()) {
+            // a Root({f, x0}) is real, which the domain check below cannot tell
+            IExpr realRoots = ExponentialPolynomialRoots.solve(termsEqualZeroList.arg1(),
+                variables.arg1(), engine);
+            if (realRoots.isPresent()) {
+              return realRoots;
+            }
+          }
           if (result.isNIL() && !numericFlag && domain == S.Complexes
               && termsEqualZeroList.argSize() == 1 && variables.argSize() == 1
               && inequationsList.isEmpty() && intervalDataMap.isEmpty()) {
@@ -2629,6 +2733,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               && intervalDataMap.isEmpty()) {
             inDomain = withAllRealRoots(inDomain, termsEqualZeroList.arg1(), variables.arg1(),
                 maxRoots, engine);
+            inDomain = ExponentialPolynomialRoots.withLowerProductLogBranch(inDomain,
+                termsEqualZeroList.arg1(), variables.arg1(), engine);
           }
           result = appendExtraConditionSolutions(inDomain, ast, variables,
               options.maxExtraConditions(), engine);
@@ -2655,6 +2761,37 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+  }
+
+  /**
+   * The solutions of an irreducible cubic with symbolic coefficients by Cardano's formula, whose
+   * order of the roots is kept.
+   *
+   * @return the list of solutions or {@link F#NIL} if the equation isn't of this form
+   */
+  private static IExpr symbolicCubicSolutions(IExpr term, IExpr variable, EvalEngine engine) {
+    IExpr expanded = engine.evaluate(F.Expand(term));
+    if (!variable.isSymbol() || !expanded.isPolynomial(F.list(variable))) {
+      return F.NIL;
+    }
+    IExpr coefficients = engine.evaluate(F.CoefficientList(expanded, variable));
+    if (!coefficients.isList() || coefficients.argSize() != 4 || !coefficients.isFree(variable)) {
+      return F.NIL;
+    }
+    IExpr a = coefficients.getAt(4);
+    IExpr b = coefficients.getAt(3);
+    IExpr c = coefficients.getAt(2);
+    IExpr d = coefficients.getAt(1);
+    if (d.isZero() || !QuarticSolver.isSymbolicCubic(a, b, c, d)) {
+      return F.NIL;
+    }
+    IExpr factors = engine.evalQuiet(F.FactorList(expanded));
+    if (!factors.isList() || ((IAST) factors)
+        .exists(factor -> !factor.first().equals(expanded) && !factor.first().isFree(variable))) {
+      return F.NIL;
+    }
+    return QuarticSolver.symbolicCubicRoots(a, b, c, d).map(S.List,
+        root -> F.list(F.Rule(variable, root)));
   }
 
   /**
@@ -2718,7 +2855,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     IExpr rest = plus.splice(position).oneIdentity0();
     // the roots of variable^n == -rest/coefficient are the values of the base
-    IExpr roots = engine.evalQuiet(F.Solve(
+    IExpr roots = engine.evalQuiet(F.SolveDistinct(
         F.Equal(F.Power(variable, power.exponent()), F.Divide(F.Negate(rest), coefficient)),
         variable));
     if (!roots.isListOfLists()) {
@@ -2886,8 +3023,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     IExpr roots;
     if (polynomial.isPolynomial(F.list(variable)) && !polynomial.isFree(variable)) {
       roots = engine.evalQuiet(domain == S.Reals //
-          ? F.Solve(F.Equal(polynomial, F.C0), variable, S.Reals)
-          : F.Solve(F.Equal(polynomial, F.C0), variable));
+          ? F.SolveDistinct(F.Equal(polynomial, F.C0), variable, S.Reals)
+          : F.SolveDistinct(F.Equal(polynomial, F.C0), variable));
     } else {
       // an algebraic equation in u, with radicals: the roots of the equation squared out are
       // checked in the equation itself, which keeps only those of the principal branches
@@ -2895,7 +3032,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       if (!isAlgebraicIn(algebraic, variable)) {
         return F.NIL;
       }
-      IExpr candidates = engine.evalQuiet(F.Solve(F.Equal(algebraic, F.C0), variable));
+      IExpr candidates = engine.evalQuiet(F.SolveDistinct(F.Equal(algebraic, F.C0), variable));
       if (!candidates.isList() || !(candidates.isEmptyList() || candidates.isListOfLists())) {
         return F.NIL;
       }
@@ -3133,7 +3270,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     // the solutions in radicals which are recognized as real
-    IExpr radicals = engine.evalQuiet(F.Solve(F.Equal(polynomial, F.C0), variable));
+    IExpr radicals = engine.evalQuiet(F.SolveDistinct(F.Equal(polynomial, F.C0), variable));
     if (radicals.isListOfLists()) {
       int recognized = 0;
       for (IExpr rules : (IAST) radicals) {
@@ -3810,8 +3947,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         // as many solutions as the system can have
         return result;
       }
-      IAST solve = domain == S.Reals ? F.Solve(numerators, variables, S.Reals)
-          : F.Solve(numerators, variables);
+      IAST solve = domain == S.Reals ? F.SolveDistinct(numerators, variables, S.Reals)
+          : F.SolveDistinct(numerators, variables);
       IExpr exact = TimeLimits.call(engine, () -> engine.evalQuiet(solve),
           MachineProfile.millis(RATIONALIZED_SOLVE_MILLIS), () -> F.NIL);
       if (!exact.isList() || !(exact.isEmptyList() || exact.isListOfLists())) {
@@ -4747,6 +4884,231 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    final IAST withVariables = withCallVariables(ast, argSize);
+    if (withVariables.isPresent()) {
+      return withVariables;
+    }
+    final IAST unsolved = UNSOLVED_CALL.get();
+    if (unsolved != null) {
+      UNSOLVED_CALL.remove();
+      if (unsolved.equals(originalAST)) {
+        return F.NIL;
+      }
+    }
+    final SolveOptions solveOptions = SolveOptions.of(SolveOptions.SOLVE_KEYS, options);
+    if (solveOptions.method().isString(DISTINCT_ROOTS)) {
+      IExpr[] automaticMethod = options.clone();
+      automaticMethod[Arrays.asList(SolveOptions.SOLVE_KEYS).indexOf(S.Method)] = S.Automatic;
+      IExpr solved = solve(ast, argSize, automaticMethod, engine, originalAST);
+      if (solved.isPresent()) {
+        return solved;
+      }
+      IAST plainCall = originalAST.removeIf(
+          x -> x.isRuleAST() && x.first() == S.Method && x.second().isString(DISTINCT_ROOTS));
+      UNSOLVED_CALL.set(plainCall);
+      return plainCall;
+    }
+    IAST call = argSize > 0 && argSize < ast.argSize() ? ast.copyUntil(argSize + 1) : ast;
+    return withRootMultiplicities(call, solve(ast, argSize, options, engine, originalAST),
+        solveOptions, engine);
+  }
+
+  /**
+   * A call which names no variables and whose equations have an unknown with a compound head, like
+   * the value <code>Derivative(2)[f][0]</code>: the methods which collect the variables on their
+   * own only see the symbols of such an unknown, so the call gets the variables of its equations.
+   *
+   * @param ast the call of {@link S#Solve} or {@link S#NSolve}
+   * @param argSize the number of arguments without options
+   * @return {@link F#NIL} if the call needs no variables
+   */
+  static IAST withCallVariables(IAST ast, int argSize) {
+    if ((argSize > 0 ? argSize : ast.argSize()) != 1) {
+      return F.NIL;
+    }
+    IAST variables = VariablesSet.getAlgebraicVariables(ast.arg1(), false);
+    if (!variables.exists(x -> x.isAST() && !x.head().isSymbol())) {
+      return F.NIL;
+    }
+    IASTAppendable result = ast.copyAppendable();
+    result.append(2, variables);
+    return result;
+  }
+
+  /**
+   * The call without its internal option which was just left unsolved. The evaluator takes it up
+   * again at once, also as a copy, and that step must not solve the equations a second time. The
+   * next <code>Solve</code> on this thread clears it in any case.
+   */
+  private static final ThreadLocal<IAST> UNSOLVED_CALL = new ThreadLocal<IAST>();
+
+  /** The value of the {@link S#Method} option of {@link F#SolveDistinct(IExpr, IExpr)}. */
+  private static final String DISTINCT_ROOTS = "DistinctRoots";
+
+  /** The largest degree of a polynomial whose roots {@link #withRootMultiplicities} repeats. */
+  private static final int MAX_MULTIPLICITY_DEGREE = 256;
+
+  /**
+   * Repeat a solution by the multiplicity of its values as roots of the polynomial equations in one
+   * variable with exact coefficients: <code>Solve((x-2)^2 == 0, x)</code> gives
+   * <code>{{x->2},{x->2}}</code>, and <code>Solve({(x-1)^2 == 0, y == 2}, {x, y})</code> gives
+   * <code>{{x->1,y->2},{x->1,y->2}}</code>. A rational equation counts with its numerator.
+   *
+   * <p>
+   * The multiplicity of a root is the order of the first derivative which doesn't vanish there.
+   * Nothing is repeated if a requested variable has no value in a solution. The multiplicities of
+   * the roots of one equation may add up to the degree of its polynomial at most, and for a single
+   * equation over the complex numbers to exactly that degree; otherwise the <code>solutions</code>
+   * are returned as they are.
+   *
+   * @param ast the <code>Solve(...)</code> call without its options
+   * @param solutions the solutions, every root once
+   * @param options the options of the call
+   * @param engine the evaluation engine
+   * @return the solutions with the repeated roots
+   */
+  static IExpr withRootMultiplicities(IAST ast, IExpr solutions, SolveOptions options,
+      EvalEngine engine) {
+    if (!solutions.isListOfLists() || solutions.isEmptyList() || !options.modulus().isZero()
+        || !options.maxRoots().equals(SolveOptions.DEFAULT_MAX_ROOTS) || ast.argSize() > 3
+        || (ast.argSize() == 3 && ast.arg3() != S.Complexes && ast.arg3() != S.Reals)) {
+      return solutions;
+    }
+    final IAST list = (IAST) solutions;
+    final IAST variables = solvedVariables(ast, list);
+    final IExpr system = ast.arg1();
+    final IAST relations = system.isList() || system.isAnd() ? (IAST) system : F.list(system);
+    if (variables.isNIL() || !relations.forAll(Solve::isEquationOrInequality)) {
+      return solutions;
+    }
+    final boolean allRoots =
+        relations.argSize() == 1 && (ast.argSize() < 3 || ast.arg3() == S.Complexes);
+    int[] copies = new int[list.size()];
+    Arrays.fill(copies, 1);
+    Set<IExpr> solved = new HashSet<IExpr>();
+    for (IExpr relation : relations) {
+      if (!relation.isEqual()) {
+        continue;
+      }
+      IExpr function = engine.evaluate(F.Subtract(relation.first(), relation.second()));
+      IAST inFunction = variables.select(v -> !function.isFree(v, true));
+      if (inFunction.argSize() != 1) {
+        continue;
+      }
+      final IExpr variable = inFunction.arg1();
+      IExpr polynomial = exactNumerator(function, variable, engine);
+      if (polynomial.isNIL()) {
+        continue;
+      }
+      if (!solved.add(variable)) {
+        // the multiplicities of two equations for one variable aren't compared
+        return solutions;
+      }
+      final int degree = engine.evaluate(F.Exponent(polynomial, variable)).toIntDefault();
+      Map<IExpr, Integer> multiplicities = new HashMap<IExpr, Integer>();
+      int total = 0;
+      for (int i = 1; i < list.size(); i++) {
+        final IExpr root = variable.replaceAll((IAST) list.get(i)).orElse(variable);
+        Integer multiplicity = multiplicities.get(root);
+        if (multiplicity == null) {
+          multiplicity = rootMultiplicity(polynomial, variable, root, degree, engine);
+          multiplicities.put(root, multiplicity);
+          total += multiplicity;
+        }
+        copies[i] *= multiplicity;
+      }
+      if (total > degree || (allRoots && total != degree)) {
+        return solutions;
+      }
+    }
+    IASTAppendable result = F.ListAlloc(list.size());
+    for (int i = 1; i < list.size(); i++) {
+      if (result.argSize() + copies[i] > MAX_MULTIPLICITY_DEGREE) {
+        return solutions;
+      }
+      for (int k = 0; k < copies[i]; k++) {
+        result.append(list.get(i));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The variables of the call, or the ones of the first solution if it names none.
+   *
+   * @return {@link F#NIL} if a solution has a variable without a value, or a value which depends on
+   *         a variable or on a condition
+   */
+  private static IAST solvedVariables(IAST ast, IAST solutions) {
+    final IAST first = (IAST) solutions.arg1();
+    final IAST variables =
+        ast.argSize() >= 2 ? ast.arg2().makeList() : first.map(r -> r.first(), 1);
+    for (IExpr solution : solutions) {
+      if (solution.argSize() != variables.argSize()) {
+        return F.NIL;
+      }
+      for (IExpr rule : (IAST) solution) {
+        if (!rule.isRuleAST() || !variables.contains(rule.first()) || !rule.first().isSymbol()
+            || !rule.second().isFree(x -> x.isAST(S.ConditionalExpression) || variables.contains(x),
+                true)) {
+          return F.NIL;
+        }
+      }
+    }
+    return variables;
+  }
+
+  private static boolean isEquationOrInequality(IExpr relation) {
+    return (relation.isEqual() && relation.argSize() == 2) || relation.isAST(S.Unequal)
+        || relation.isAST(S.Less) || relation.isAST(S.LessEqual) || relation.isAST(S.Greater)
+        || relation.isAST(S.GreaterEqual) || relation.isAST(S.Inequality);
+  }
+
+  /**
+   * The expanded polynomial in <code>variable</code> with exact coefficients of a polynomial or the
+   * numerator of a rational function, or {@link F#NIL} for any other function.
+   */
+  private static IExpr exactNumerator(IExpr function, IExpr variable, EvalEngine engine) {
+    final IAST variableList = F.list(variable);
+    IExpr polynomial = function.isPolynomial(variableList) ? function
+        : engine.evaluate(F.Numerator(F.Together(function)));
+    if (polynomial.isFree(variable, true) || !polynomial.isPolynomial(variableList)
+        || !polynomial.isPolynomialOfMaxDegree(variable, MAX_MULTIPLICITY_DEGREE)
+        || polynomial.has(x -> x.isInexactNumber(), false)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Expand(polynomial));
+  }
+
+  /** The order of the first derivative of <code>polynomial</code> which isn't 0 at the root. */
+  private static int rootMultiplicity(IExpr polynomial, IExpr variable, IExpr root, int degree,
+      EvalEngine engine) {
+    IExpr derivative = polynomial;
+    int multiplicity = 0;
+    do {
+      engine.checkTimeLimit();
+      derivative = engine.evaluate(F.D(derivative, variable));
+      multiplicity++;
+    } while (multiplicity < degree && isZeroAt(derivative, variable, root, engine));
+    return multiplicity;
+  }
+
+  /** Whether <code>function</code> vanishes at <code>variable == value</code>. */
+  private static boolean isZeroAt(IExpr function, IExpr variable, IExpr value, EvalEngine engine) {
+    IExpr atValue = engine.evalQuiet(F.subst(function, variable, value));
+    return atValue.isZero() || engine.evalTrue(F.PossibleZeroQ(atValue));
+  }
+
+  /**
+   * The solutions of the equations of a <code>Solve(...)</code> call, every root of a polynomial
+   * once.
+   */
+  private static IExpr solve(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine, IAST originalAST) {
+    IExpr inverted = NSolve.firstRootOfInterpolatingFunction(ast, engine);
+    if (inverted.isPresent()) {
+      return inverted;
+    }
     IExpr withRenamedVariables = SolveUtils.solveWithRenamedBuiltinVariables(originalAST, engine);
     if (withRenamedVariables.isPresent()) {
       // solved with the renamed variables, or unsolved there - which isn't tried a second time
@@ -4892,7 +5254,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           covered.add(v);
         }
       }
-      IExpr solved = engine.evaluate(F.Solve(group, groupVariables));
+      IExpr solved = engine.evaluate(F.SolveDistinct(group, groupVariables));
       if (solved.isEmptyList()) {
         return F.CEmptyList;
       }
@@ -4952,7 +5314,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     if (!rationalized.isEqual() || !rationalized.isFree(x -> x.isInexactNumber(), false)) {
       return F.NIL;
     }
-    final IAST solve = F.Solve(rationalized, variable);
+    final IAST solve = F.SolveDistinct(rationalized, variable);
     // the exact solution may evaluate numbers with more digits, which sets the digits printed
     final int figures = engine.getSignificantFigures();
     IExpr exact;

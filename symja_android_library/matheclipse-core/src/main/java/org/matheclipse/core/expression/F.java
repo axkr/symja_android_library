@@ -10230,6 +10230,14 @@ public class F extends S {
     return new AST1(Roots, a0);
   }
 
+  /**
+   * <code>Roots(equation, variable)</code> for the internal callers, which read the roots as a set
+   * of values: a root of a polynomial is given once, whatever its multiplicity.
+   */
+  public static IAST RootsDistinct(final IExpr equation, final IExpr variable) {
+    return new AST3(Roots, equation, variable, Rule(Multiplicity, C0));
+  }
+
   public static IAST Roots(final IExpr a0, final IExpr a1) {
     return new AST2(Roots, a0, a1);
   }
@@ -10739,6 +10747,23 @@ public class F extends S {
 
   public static IAST Solve(final IExpr a0, final IExpr a1, IExpr options) {
     return new AST3(Solve, a0, a1, options);
+  }
+
+  /**
+   * <code>Solve(equations, variables)</code> for the internal callers, which read the solutions as
+   * a set of values: a root of a polynomial is given once, whatever its multiplicity.
+   */
+  public static IAST SolveDistinct(final IExpr equations, final IExpr variables) {
+    return new AST3(Solve, equations, variables, Rule(Method, "DistinctRoots"));
+  }
+
+  /**
+   * <code>Solve(equations, variables, domain)</code> for the internal callers, which read the
+   * solutions as a set of values: a root of a polynomial is given once, whatever its multiplicity.
+   */
+  public static IAST SolveDistinct(final IExpr equations, final IExpr variables,
+      final IExpr domain) {
+    return quaternary(Solve, equations, variables, domain, Rule(Method, "DistinctRoots"));
   }
 
   public static IAST Sort(final IExpr a0) {

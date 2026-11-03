@@ -234,7 +234,7 @@ public final class BivariateReduce {
   /** The real roots of the polynomial as exact numbers. */
   private List<IExpr> realRoots(IExpr polynomial, IExpr variable) {
     List<IExpr> roots = new ArrayList<IExpr>();
-    IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(polynomial, F.C0), variable, S.Reals));
+    IExpr solutions = engine.evalQuiet(F.SolveDistinct(F.Equal(polynomial, F.C0), variable, S.Reals));
     if (!solutions.isList()) {
       throw new Declined();
     }
