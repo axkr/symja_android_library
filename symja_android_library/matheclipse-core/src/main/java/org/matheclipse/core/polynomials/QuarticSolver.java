@@ -190,6 +190,33 @@ public class QuarticSolver {
         F.List(roots.second(), bound, S.Less, F.CInfinity));
   }
 
+  /**
+   * The roots <code>(-1)^(2*k/d)</code>, <code>k</code> coprime to <code>d</code>, of a polynomial
+   * which is the <code>d</code>-th cyclotomic polynomial up to a rational factor: the roots of
+   * <code>z^2+z+1</code> are <code>-(-1)^(1/3)</code> and <code>(-1)^(2/3)</code>.
+   *
+   * @return {@link F#NIL} if <code>polynomial</code> is no cyclotomic polynomial of an index
+   *         greater than 2
+   */
+  public static IASTMutable cyclotomicRoots(IExpr polynomial, IExpr x) {
+    if (!polynomial.isFree(y -> y.isInexactNumber() || y.isComplex()
+        || (y.isSymbol() && !y.equals(x)), false)) {
+      return F.NIL;
+    }
+    long d = NumberFieldFactor.cyclotomicIndex(polynomial, x);
+    if (d <= 2 || d > Integer.MAX_VALUE) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc((int) d);
+    for (long k = 1; k < d; k++) {
+      if (java.math.BigInteger.valueOf(k).gcd(java.math.BigInteger.valueOf(d))
+          .equals(java.math.BigInteger.ONE)) {
+        result.append(EvalEngine.get().evaluate(F.Power(F.CN1, F.QQ(2 * k, d))));
+      }
+    }
+    return result;
+  }
+
   public static IASTMutable solve(IExpr exprPoly, IExpr x, boolean createSet, boolean sort)
       throws ArithmeticException {
     IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
@@ -835,7 +862,12 @@ public class QuarticSolver {
       }
     } else {
       if (!isZeroCoefficient(b)) {
-        result.append(Times(CN1, c, Power(b, -1L)));
+        if (b.isPlus() && ((IAST) b).forAll(x -> x.isNegativeSigned())) {
+          // -b/(-1-a) is b/(1+a)
+          result.append(Times(c, Power(F.evalExpand(F.Negate(b)), -1L)));
+        } else {
+          result.append(Times(CN1, c, Power(b, -1L)));
+        }
       }
     }
     if (createSet) {

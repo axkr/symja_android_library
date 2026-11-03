@@ -927,6 +927,29 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveCyclotomicFactors() {
+    check("Solve(z^2-z+1==0,z)", //
+        "{{z->(-1)^(1/3)},{z->-(-1)^(2/3)}}");
+    check("Solve(z^6+z^3+1==0,z)", //
+        "{{z->-(-1)^(1/9)},{z->(-1)^(2/9)},{z->(-1)^(4/9)},{z->-(-1)^(5/9)},{z->-(-1)^(7/\n"
+            + "9)},{z->(-1)^(8/9)}}");
+    // the other factors as before, a double root twice
+    check("Solve((z^2+z+1)*(z-2)^2==0,z)", //
+        "{{z->2},{z->2},{z->-(-1)^(1/3)},{z->(-1)^(2/3)}}");
+    // Roots keeps the radicals
+    check("Roots(z^2-z+1==0,z)", //
+        "z==1/2*(1-I*Sqrt(3))||z==1/2*(1+I*Sqrt(3))");
+  }
+
+  @Test
+  public void testSolveLinearNegativeDenominator() {
+    check("Solve(-u-c*u==d,u)", //
+        "{{u->-d/(1+c)}}");
+    check("Solve({p+q==r,p-c*q==0},{p,q})", //
+        "{{p->(c*r)/(1+c),q->r/(1+c)}}");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testSolve() {
     check("Solve(3*(x+a)*(x-b)==0,x)", //
@@ -1038,7 +1061,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "Solve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})", //
         "{{v1->u1,v2->u2},{v1->(m1*u1-m2*u1+2*m2*u2)/(m1+m2),v2->(2*m1*u1-m1*u2+m2*u2)/(m1+m2)}}");
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
-        "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
+        "{{v1->u1,v2->u2}}");
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
         "{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
     // github #201 end
@@ -1380,9 +1403,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-80.90169943749474},{x->30.90169943749474}}");
 
     check("Solve(a*x + y == 7 && b*x - y == 1, {x, y})", //
-        "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+        "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
     check("Solve({a*x + y == 7, b*x - y == 1}, {x, y})", //
-        "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+        "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
 
     check("Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", //
         "Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
@@ -1458,7 +1481,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         // (m1*u1+m2*u2+(m2*(-2.0*m1*u1+m1*u2-m2*u2))/(m1+m2))/m1 is the same value
         "{{v1->u1,v2->u2},{v1->(m1*u1-m2*u1+2.0*m2*u2)/(m1+m2),v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2)}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
-        "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
+        "{{v1->u1,v2->u2}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
         "{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
     // github #201 end
@@ -1791,9 +1814,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // "{{x->-80.90169943749474},{x->30.90169943749474}}");
     //
     // check("NSolve(a*x + y == 7 && b*x - y == 1, {x, y})", //
-    // "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+    // "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
     // check("NSolve({a*x + y == 7, b*x - y == 1}, {x, y})", //
-    // "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+    // "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
     //
     // check("NSolve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", //
     // "NSolve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
@@ -2085,7 +2108,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
-        "{{x->-(-Log(2)+Log(3)+2*Log(5))/(-5*Log(2)-Log(3)-Log(5))}}");
+        "{{x->(-Log(2)+Log(3)+2*Log(5))/(5*Log(2)+Log(3)+Log(5))}}");
   }
 
   @Test
@@ -3334,9 +3357,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveDecompose() {
+    // the product of the 3rd and the 6th cyclotomic polynomial: roots of unity
     check("Solve(x^4 + x^2 + 1 == 0, x)", //
-        "{{x->Sqrt(-1-I*Sqrt(3))/Sqrt(2)},{x->-Sqrt(-1-I*Sqrt(3))/Sqrt(2)},{x->Sqrt(-1+I*Sqrt(\n"
-            + "3))/Sqrt(2)},{x->-Sqrt(-1+I*Sqrt(3))/Sqrt(2)}}");
+        "{{x->-(-1)^(1/3)},{x->(-1)^(1/3)},{x->-(-1)^(2/3)},{x->(-1)^(2/3)}}");
 
     check("Solve(x^8+4*x^7+2*x^6-8*x^5-5*x^4+8*x^3+2*x^2-4*x+8==0, x)", //
         "{{x->1/2*(-1-Sqrt(5-4*(-7)^(1/4)))},{x->1/2*(-1+Sqrt(5-4*(-7)^(1/4)))},{x->1/2*(-\n"

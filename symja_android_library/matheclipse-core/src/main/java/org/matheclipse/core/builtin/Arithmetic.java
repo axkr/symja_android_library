@@ -5242,6 +5242,12 @@ public final class Arithmetic {
           }
         }
       } else {
+        if (base.isRational() && exponent.isTimes() && exponent.first().isFraction()) {
+          IExpr split = powerRationalBaseRootExponent((IRational) base, (IAST) exponent);
+          if (split.isPresent()) {
+            return split;
+          }
+        }
         if (base.isFraction() && base.isPositive() && ((IFraction) base).isLT(F.C1)) {
           IExpr o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(exponent, true);
           if (o1negExpr.isPresent()) {
@@ -5258,6 +5264,42 @@ public final class Arithmetic {
         return F.Times(F.CNI, F.Power(F.Negate(base), exponent));
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>b^(n/q*s)</code> for a rational <code>b</code> with a <code>q</code>-th power in its
+     * numerator or denominator: <code>b = c^q*d</code> gives <code>c^(n*s)*d^(n/q*s)</code>,
+     * <code>18^(d/2)</code> is <code>2^(d/2)*3^d</code>, and <code>(-1)^(x/2)</code> is
+     * <code>I^x</code>.
+     *
+     * @param exponent a product whose first factor is a fraction <code>n/q</code>
+     * @return {@link F#NIL} if there is no such power
+     */
+    private static IExpr powerRationalBaseRootExponent(IRational base, IAST exponent) {
+      IFraction fraction = (IFraction) exponent.first();
+      IInteger q = fraction.denominator();
+      IExpr rest = exponent.rest().oneIdentity1();
+      if (base.isMinusOne()) {
+        // (-1)^(n/2*s) is I^(n*s)
+        return q.equals(F.C2) ? F.Power(F.CI, F.Times(fraction.numerator(), rest)) : F.NIL;
+      }
+      int root = q.toIntDefault();
+      if (root < 2 || root > 64 || base.isZero()) {
+        return F.NIL;
+      }
+      IInteger[] numeratorSplit = base.numerator().abs().nthRootSplit(root);
+      IInteger[] denominatorSplit = base.denominator().nthRootSplit(root);
+      if (numeratorSplit[0].isOne() && denominatorSplit[0].isOne()) {
+        return F.NIL;
+      }
+      IExpr rootPart = F.Power(F.QQ(numeratorSplit[0], denominatorSplit[0]),
+          F.Times(fraction.numerator(), rest));
+      IExpr remainder = F.Power(F.QQ(numeratorSplit[1], denominatorSplit[1]), exponent);
+      if (base.isNegative()) {
+        // (-8)^(x/3) is (-1)^(x/3)*2^x
+        return F.Times(F.Power(F.CN1, exponent), rootPart, remainder);
+      }
+      return F.Times(rootPart, remainder);
     }
 
     public static IExpr powerSurd(final IExpr surdAST, final IExpr exponent) {

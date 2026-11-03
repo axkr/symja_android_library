@@ -1807,7 +1807,30 @@ public final class NumberTheory {
             }
           }
           // 3. DiracDelta(a * x + b) -> 1/Abs(a) * DiracDelta(x + b/a)
-          else if (arg.isPlus()) {
+          else if (arg.isPlus() && ((IAST) arg).forAll(t -> rationalCoefficient(t) != null)) {
+            // rational coefficients: the content c is taken out, DiracDelta(6*x+9*y) is
+            // DiracDelta(2*x+3*y)/3, and a sum with more negative than positive terms is negated
+            IAST plus = (IAST) arg;
+            IRational content = F.C0;
+            int negatives = 0;
+            for (IExpr term : plus) {
+              IRational coefficient = rationalCoefficient(term);
+              content = content.gcd(coefficient.abs());
+              if (coefficient.isNegative()) {
+                negatives++;
+              }
+            }
+            IRational divisor = F.C1;
+            if (!content.isOne() && !content.isZero()) {
+              divisor = rationalCoefficient(plus.last()).isNegative() ? content.negate() : content;
+              currentMultiplier = content.inverse();
+            } else if (2 * negatives > plus.argSize()) {
+              divisor = F.CN1;
+            }
+            if (!divisor.isOne()) {
+              newArg = engine.evaluate(F.Expand(F.Divide(plus, divisor)));
+            }
+          } else if (arg.isPlus()) {
             IAST plus = (IAST) arg;
             IExpr lastTerm = plus.last();
 
@@ -1841,6 +1864,28 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The rational coefficient of a term of a sum, <code>-2</code> of <code>-2*x</code>, or
+     * <code>null</code> if it has another one.
+     */
+    private static IRational rationalCoefficient(IExpr term) {
+      if (term.isRational()) {
+        return (IRational) term;
+      }
+      if (term.isNumericFunction(true)) {
+        // Pi or Sqrt(2): a constant term which isn't rational
+        return null;
+      }
+      if (term.isTimes()) {
+        IExpr first = term.first();
+        if (first.isRational()) {
+          return ((IAST) term).rest().exists(x -> x.isNumber()) ? null : (IRational) first;
+        }
+        return term.exists(x -> x.isNumber()) ? null : F.C1;
+      }
+      return term.isNumber() ? null : F.C1;
     }
 
     @Override

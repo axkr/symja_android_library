@@ -377,6 +377,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // 1. Intercept high-degree polynomials or nested transcendental functions via Decompose
       if (exprAnalyzer.getVariableSet().size() == 1) {
         IExpr variable = exprAnalyzer.getVariableSet().iterator().next();
+        if (!numericFlag && exprAnalyzer.getDenominator().isOne()) {
+          // roots of unity before the decomposition writes them as nested radicals
+          IAST unityRoots =
+              rootsOfCyclotomicFactors(exprAnalyzer.getNumerator(), variable, engine);
+          if (unityRoots.isPresent()) {
+            return unityRoots;
+          }
+        }
         IAST decompRules =
             solveViaDecomposition(exprAnalyzer.getNumerator(), variable, numericFlag, engine);
 
@@ -901,6 +909,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IExpr variable, boolean numericFlag, EvalEngine engine) {
       IExpr temp = F.NIL;
 
+      if (!numericFlag && denominator.isOne()) {
+        IAST unityRoots = rootsOfCyclotomicFactors(numerator, variable, engine);
+        if (unityRoots.isPresent()) {
+          return unityRoots;
+        }
+      }
       if (!numericFlag) {
         IAST factorRoots = rootsOfSymbolicFactors(numerator, denominator, variable, engine);
         if (factorRoots.isPresent()) {
@@ -922,6 +936,48 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The solutions of a polynomial with rational coefficients which has a cyclotomic factor: its
+     * roots are written as roots of unity, <code>(-1)^(2*k/d)</code>, the roots of the other factors
+     * as usual, each root once.
+     *
+     * @return {@link F#NIL} if no factor of an index greater than 2 is cyclotomic
+     */
+    private static IAST rootsOfCyclotomicFactors(IExpr polynomial, IExpr variable,
+        EvalEngine engine) {
+      if (!polynomial.isPolynomial(F.list(variable))
+          || !polynomial.isFree(y -> y.isSymbol() && !y.equals(variable), false)
+          || !polynomial.isFree(y -> y.isInexactNumber() || y.isComplex(), true)) {
+        return F.NIL;
+      }
+      IExpr factors = engine.evalQuiet(F.FactorList(polynomial));
+      if (!factors.isList() || !((IAST) factors).exists(
+          factor -> QuarticSolver.cyclotomicRoots(factor.first(), variable).isPresent())) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(8);
+      for (IExpr factor : (IAST) factors) {
+        int exponent = factor.second().toIntDefault();
+        if (factor.first().isFree(variable)) {
+          continue;
+        }
+        if (exponent < 1) {
+          return F.NIL;
+        }
+        IAST roots = QuarticSolver.cyclotomicRoots(factor.first(), variable);
+        if (roots.isNIL()) {
+          IAST rules = rootsOfUnivariatePolynomial(factor.first(), F.C1, variable, false, engine);
+          if (rules.isNIL()) {
+            return F.NIL;
+          }
+          roots = rules.map(rule -> rule.isRuleAST() ? rule.second() : F.NIL);
+        }
+        // each root once: the solutions are repeated by their multiplicities afterwards
+        roots.forEach(root -> result.append(F.Rule(variable, root)));
+      }
+      return QuarticSolver.sortASTArguments(result);
     }
 
     /**
@@ -1983,6 +2039,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           // no solution
           subSolutionList = F.ListAlloc();
         } else {
+          for (int i = 1; i < solutions.size(); i++) {
+            if (solutions.get(i).isList()) {
+              solutions.set(i, ((IAST) solutions.get(i)).map(
+                  rule -> rule.isRuleAST() ? F.Rule(rule.first(), negativeDenominator(rule.second()))
+                      : rule));
+            }
+          }
           resultList.appendArgs(solutions);
           subSolutionList = resultList;
         }
@@ -2074,6 +2137,26 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         result.append(solution);
       }
       return result;
+    }
+
+    /**
+     * A quotient whose denominator is a sum of negative terms only with numerator and denominator
+     * negated: <code>(-b-a*e)/(-1-a*c)</code> is <code>(b+a*e)/(1+a*c)</code>.
+     */
+    private static IExpr negativeDenominator(IExpr value) {
+      if (!value.isTimes()) {
+        return value;
+      }
+      int index = ((IAST) value).indexOf(x -> x.isPower() && x.exponent().isMinusOne()
+          && x.base().isPlus() && ((IAST) x.base()).forAll(y -> y.isNegativeSigned()));
+      if (index < 0) {
+        return value;
+      }
+      IExpr denominator = value.getAt(index).base();
+      IExpr numerator = ((IAST) value).splice(index).oneIdentity1();
+      // Together cancels a common factor which the negation brings out
+      return EvalEngine.get().evaluate(F.Together(
+          F.Times(F.Expand(F.Negate(numerator)), F.Power(F.Expand(F.Negate(denominator)), F.CN1))));
     }
 
     protected IASTAppendable solveInequations(IASTMutable subSolutionList, IAST inequationsList,

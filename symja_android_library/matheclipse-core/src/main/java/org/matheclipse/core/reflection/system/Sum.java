@@ -1212,8 +1212,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
     IExpr term = engine.evaluate(F.Refine(rewritten, F.Element(index, S.Integers)));
     IExpr result = engine.evalQuietNIL(F.Sum(term, F.list(index, F.C0, F.CInfinity)));
     if (isClosedSum(result)) {
-      return result.isFreeAST(S.PolyGamma) ? result
-          : engine.evaluate(F.Expand(F.FunctionExpand(result)));
+      // PolyGamma(1,2) is -1+Pi^2/6 already: 4*(-1+Pi^2/6) is expanded as well
+      return engine.evaluate(
+          F.Expand(result.isFreeAST(S.PolyGamma) ? result : F.FunctionExpand(result)));
     }
     return rootOfUnityFilter(expr, var, from, step, engine);
   }

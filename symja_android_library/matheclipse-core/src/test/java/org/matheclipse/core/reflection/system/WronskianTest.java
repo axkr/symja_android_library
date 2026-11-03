@@ -19,7 +19,7 @@ public class WronskianTest extends ExprEvaluatorTestCase {
     check("Wronskian({ChebyshevT(1, x), ChebyshevT(2, x)}, x)", //
         "1+2*x^2");
     check("Wronskian({3^x, x*3^x}, x)", //
-        "3^(2*x)");
+        "9^x");
 
     // A determinant of rational functions is put over a common denominator, which is what shows
     // that the numerator cancels.

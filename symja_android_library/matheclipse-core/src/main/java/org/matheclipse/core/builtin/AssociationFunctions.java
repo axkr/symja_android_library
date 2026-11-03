@@ -807,6 +807,10 @@ public class AssociationFunctions {
               F.mapRange(1, list1.size(), i -> F.binaryAST2(symbol, list1.get(i), list2.get(i)));
           return F.assoc(listOfRules);
         }
+      } else if (arg1.isList() && !arg2.isList()) {
+        // one value for every key
+        final IAST list1 = (IAST) arg1;
+        return F.assoc(F.mapRange(1, list1.size(), i -> F.binaryAST2(symbol, list1.get(i), arg2)));
       }
       return F.NIL;
     }

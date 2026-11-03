@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 
@@ -661,6 +662,9 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
       if (temp.isPresent()) {
         result = engine.evaluate(temp);
       }
+      if (arg2.isNIL()) {
+        result = realPlusImaginary(result, engine);
+      }
       if (!dummyToCall.isEmpty()) {
         engine.setAssumptions(oldAssumptions);
         result = engine.evaluate(F.subst(result, dummyToCall));
@@ -669,6 +673,47 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
     } finally {
       engine.setAssumptions(oldAssumptions);
     }
+  }
+
+  /**
+   * <code>re + I*im</code> of an expanded sum whose terms are complex numbers times real factors:
+   * <code>(2+3*I)*x+(1+5*I)*y</code> is <code>2*x+y+I*(3*x+5*y)</code>. Any other expression is
+   * returned unchanged.
+   */
+  private static IExpr realPlusImaginary(IExpr expr, EvalEngine engine) {
+    if (expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false)) {
+      return expr;
+    }
+    IExpr expanded = engine.evaluate(F.Expand(expr));
+    IAST terms = expanded.isPlus() ? (IAST) expanded : F.list(expanded);
+    IASTAppendable real = F.PlusAlloc(terms.size());
+    IASTAppendable imaginary = F.PlusAlloc(terms.size());
+    for (IExpr term : terms) {
+      IExpr coefficient = F.C1;
+      IExpr rest = term;
+      if (term.isNumber()) {
+        coefficient = term;
+        rest = F.C1;
+      } else if (term.isTimes() && term.first().isNumber()) {
+        coefficient = term.first();
+        rest = ((IAST) term).rest().oneIdentity1();
+      }
+      if (!rest.isFree(x -> x.isComplex() || x.isComplexNumeric(), false)) {
+        return expr;
+      }
+      INumber number = (INumber) coefficient;
+      if (!number.re().isZero()) {
+        real.append(F.Times(number.re(), rest));
+      }
+      if (!number.im().isZero()) {
+        imaginary.append(F.Times(number.im(), rest));
+      }
+    }
+    if (imaginary.argSize() == 0 || (real.argSize() == 0 && imaginary.argSize() == 1)) {
+      return expr;
+    }
+    IExpr im = engine.evaluate(imaginary.oneIdentity0());
+    return engine.evaluate(F.Plus(real.oneIdentity0(), F.Times(F.CI, im)));
   }
 
   /**

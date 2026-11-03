@@ -123,9 +123,9 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
         "{{x->-80.90169943749474}}");
 
     check("FindInstance(a*x + y == 7 && b*x - y == 1, {x, y})", //
-        "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+        "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
     check("FindInstance({a*x + y == 7, b*x - y == 1}, {x, y})", //
-        "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+        "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
   }
 
   @Test

@@ -562,7 +562,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "False");
     // all points are tested against the plane through the first three points
     check("CoplanarPoints({{1, a, 1}, {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c}})", //
-        "(1-a)*(-2+a)==0&&(1-a)*(-2+a)*(-1+c)==0");
+        "(-2+a)*(-1+a)==0&&(2-a)*(-1+a)*(-1+c)==0");
     check("CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c} })", //
         "(-1+a)*(-5+3*b-c)==0");
     check("CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {a, b, c}, {2, 3, 4}})", //

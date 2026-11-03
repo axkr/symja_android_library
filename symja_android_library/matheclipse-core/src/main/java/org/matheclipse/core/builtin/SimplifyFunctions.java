@@ -16,8 +16,10 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.TrigSimplifyFu;
 
@@ -123,6 +125,118 @@ public class SimplifyFunctions {
    */
   static class Simplify extends AbstractFunctionEvaluator {
 
+    /**
+     * The remainder of the polynomial <code>expr</code> modulo the polynomial equations among the
+     * <code>assumptions</code>, <code>x^3+x</code> is <code>4*x</code> for <code>x^2==3</code>, or
+     * {@link F#NIL}.
+     */
+    private static IExpr reduceByEquations(IExpr expr, IExpr assumptions, EvalEngine engine) {
+      if (!expr.isAST()) {
+        return F.NIL;
+      }
+      IASTAppendable polynomials = F.ListAlloc();
+      collectEquations(assumptions, polynomials, engine);
+      if (polynomials.isEmpty()) {
+        return F.NIL;
+      }
+      IExpr variables = engine.evaluate(F.unaryAST1(S.Variables, polynomials));
+      if (!variables.isList() || variables.isEmpty()
+          || !((IAST) variables).forAll(x -> x.isSymbol())) {
+        return F.NIL;
+      }
+      IAST variableList = (IAST) variables;
+      if (!polynomials.forAll(p -> p.isPolynomial(variableList))
+          || expr.isFree(x -> x.isSymbol() && variableList.contains(x), true)) {
+        return F.NIL;
+      }
+      IExpr numerator = expr;
+      IExpr denominator = F.C1;
+      if (!expr.isPolynomial(variableList)) {
+        IExpr together = engine.evaluate(F.Together(expr));
+        numerator = engine.evaluate(F.Numerator(together));
+        denominator = engine.evaluate(F.Denominator(together));
+        if (!numerator.isPolynomial(variableList) || !denominator.isPolynomial(variableList)) {
+          return F.NIL;
+        }
+      }
+      IExpr basis = engine.evaluate(F.GroebnerBasis(polynomials, variableList));
+      if (!basis.isList() || basis.isEmpty() || ((IAST) basis).exists(x -> x.isNumber())) {
+        // no equations left, or inconsistent ones
+        return F.NIL;
+      }
+      IExpr reducedNumerator = remainder(numerator, (IAST) basis, variableList, engine);
+      IExpr reducedDenominator = remainder(denominator, (IAST) basis, variableList, engine);
+      if (reducedNumerator.isNIL() || reducedDenominator.isNIL()
+          || reducedDenominator.isZero()) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Together(F.Divide(reducedNumerator, reducedDenominator)));
+    }
+
+    /** The remainder of the polynomial <code>p</code> modulo the Groebner <code>basis</code>. */
+    private static IExpr remainder(IExpr p, IAST basis, IAST variables, EvalEngine engine) {
+      if (p.isNumber()) {
+        return p;
+      }
+      IExpr reduce = engine.evaluate(F.ternaryAST3(S.PolynomialReduce, p, basis, variables));
+      return reduce.isList2() ? reduce.second() : F.NIL;
+    }
+
+    /**
+     * The integer factor of an exponent moved into an integer base, <code>3^(2*k)</code> is
+     * <code>9^k</code> and <code>10^(3*x)</code> is <code>1000^x</code>, or into a base with a
+     * positive integer factor, <code>(3*t)^(2*k)</code> is <code>9^k*t^(2*k)</code>; or
+     * {@link F#NIL}.
+     */
+    private static IExpr integerExponentIntoBase(IExpr expr, EvalEngine engine) {
+      if (!expr.isAST()) {
+        return F.NIL;
+      }
+      IExpr replaced = expr.replaceAll(x -> {
+        if (x.isPower() && x.base().isInteger() && x.exponent().isTimes()
+            && x.exponent().first().isInteger()) {
+          IInteger base = (IInteger) x.base();
+          IInteger factor = ((IInteger) x.exponent().first()).abs();
+          int n = factor.toIntDefault();
+          if (n >= 2 && n <= 64 && base.bitLength() * n <= 128 && !base.isMinusOne()
+              && !base.isZero() && !base.isOne()) {
+            IExpr rest = x.exponent().first().isNegative()
+                ? F.Times(F.CN1, ((IAST) x.exponent()).rest().oneIdentity1())
+                : ((IAST) x.exponent()).rest().oneIdentity1();
+            return F.Power(base.powerRational(n), rest);
+          }
+        }
+        if (x.isPower() && x.base().isTimes() && x.base().first().isInteger()
+            && x.base().first().isPositive() && x.exponent().isTimes()
+            && x.exponent().first().isInteger()) {
+          // (3*t)^(2*k) is 9^k*t^(2*k): a positive factor of the base splits off
+          IInteger factor = (IInteger) x.base().first();
+          int n = x.exponent().first().toIntDefault();
+          if (n >= 2 && n <= 64 && factor.bitLength() * n <= 128 && !factor.isOne()) {
+            return F.Times(
+                F.Power(factor.powerRational(n), ((IAST) x.exponent()).rest().oneIdentity1()),
+                F.Power(((IAST) x.base()).rest().oneIdentity1(), x.exponent()));
+          }
+        }
+        return F.NIL;
+      });
+      return replaced.isPresent() ? engine.evaluate(replaced) : F.NIL;
+    }
+
+    /** Append <code>lhs-rhs</code> of every equation of the assumptions to <code>result</code>. */
+    private static void collectEquations(IExpr assumptions, IASTAppendable result,
+        EvalEngine engine) {
+      if (assumptions.isAnd() || assumptions.isList()) {
+        ((IAST) assumptions).forEach(x -> collectEquations(x, result, engine));
+      } else if (assumptions.isEqual() && assumptions.argSize() == 2) {
+        IExpr difference =
+            engine.evaluate(F.Expand(F.Subtract(assumptions.first(), assumptions.second())));
+        if (!difference.isZero() && !difference.isNumber()) {
+          result.append(difference);
+        }
+      }
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -207,6 +321,15 @@ public class SimplifyFunctions {
               defaultResult = arg1;
             }
           }
+          IExpr reduced = reduceByEquations(arg1, assumptionExpr, engine);
+          if (reduced.isPresent()) {
+            long reducedCount = complexityFunction.apply(reduced);
+            if (reducedCount < minCounter) {
+              arg1 = reduced;
+              minCounter = reducedCount;
+              defaultResult = reduced;
+            }
+          }
         }
 
         if (arg1.isPlus() && org.matheclipse.core.eval.ZeroIdentity.isZero((IAST) arg1,
@@ -283,6 +406,16 @@ public class SimplifyFunctions {
           } catch (LimitException le) {
             // the trigonometric candidate hit an evaluation limit; keep what the pipeline found
           }
+        }
+
+        IExpr best = temp.isPresent() ? temp : defaultResult;
+        IExpr powers = integerExponentIntoBase(best, engine);
+        if (powers.isPresent() && engine.getAssumptions() != null) {
+          powers = AssumptionFunctions.refineAssumptions(powers, engine.getAssumptions(), engine);
+        }
+        if (powers.isPresent()
+            && complexityFunction.apply(powers) <= complexityFunction.apply(best)) {
+          temp = powers;
         }
 
         if (temp.isPresent()) {

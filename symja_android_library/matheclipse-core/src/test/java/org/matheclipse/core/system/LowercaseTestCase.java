@@ -12918,7 +12918,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FactorSquareFreeList((x - 3)^2*(x + 5)^3*(2*x - 1))", //
         "{{1,1},{-3+x,2},{5+x,3},{-1+2*x,1}}");
     check("{FactorList(y - x), FactorList(x^2 - 1), FactorList(b*c - a)}", //
-        "{{{-1,1},{x-y,1}},{{1,1},{-1+x,1},{1+x,1}},{{-1,1},{a-b*c,1}}}");
+        "{{{1,1},{-x+y,1}},{{1,1},{-1+x,1},{1+x,1}},{{1,1},{-a+b*c,1}}}");
   }
 
   @Test
@@ -19450,7 +19450,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FunctionExpand(PolyGamma(1,3))", //
         "-5/4+Pi^2/6");
     check("FunctionExpand(PolyGamma(2,3))", //
-        "-2*(-9/8+Zeta(3))");
+        "2*(9/8-Zeta(3))");
     check("FunctionExpand(PolyGamma(1,1))", //
         "Pi^2/6");
   }
@@ -42638,6 +42638,101 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{q+p*u^2,u*(q+p*u),(q+p*u)/p}");
     check("PolynomialLCM(u^2/p-1/p,u/q-1/q)", //
         "(-1+u)*(1+u)");
+  }
+
+  @Test
+  public void testIntegrateHyperbolicTimesTrig() {
+    check("Integrate(Cosh(5*x)*Sin(3*x),x)", //
+        "-3/34*Cos(3*x)*Cosh(5*x)+5/34*Sin(3*x)*Sinh(5*x)");
+    check("Integrate(Sinh(x)*Cos(2*x),x)", //
+        "1/5*Cos(2*x)*Cosh(x)+2/5*Sin(2*x)*Sinh(x)");
+    check("Simplify(D(Integrate(Sinh(2*x)^2*Cos(3*x),x),x)-Sinh(2*x)^2*Cos(3*x))", //
+        "0");
+  }
+
+  @Test
+  public void testHoldPatternOfSequence() {
+    check("{MatchQ({4,5,6},{HoldPattern(__)}), MatchQ(g(4),g(HoldPattern(__),HoldPattern(__)))}", //
+        "{True,False}");
+    check("Cases({h(7,8,9)},h(HoldPattern(u__)):>{u})", //
+        "{{7,8,9}}");
+  }
+
+  @Test
+  public void testOptionsPatternOrderless() {
+    check("SetAttributes(ko,Orderless); Options(ko)={Scale->1};" //
+        + "ko(p_,q_,OptionsPattern())={p,q,OptionValue(Scale)};" //
+        + "{ko(c,d,Scale->7), ko(Scale->5,c,d), ko(c,d)}", //
+        "{{c,d,7},{c,d,5},{c,d,1}}");
+  }
+
+  @Test
+  public void testPatternedHeadBacktracks() {
+    // the guard rejects the first split of i___,m__; the head tries the next one
+    check("cw(i___,m__)[t_]:={{i},{m}}/;First({m})===t;{cw(5,6,7,8)[7], cw(5,6)[9]}", //
+        "{{{5,6},{7,8}},cw(5,6)[9]}");
+  }
+
+  @Test
+  public void testSimplifyEquationAssumptions() {
+    check("Simplify(w^3-w,w^2==5)", //
+        "4*w");
+    check("Simplify((w^4+1)/(w^2+2),w^2==3)", //
+        "2");
+  }
+
+  @Test
+  public void testAssociationThreadScalar() {
+    check("AssociationThread({u,v}->7)", //
+        "<|u->7,v->7|>");
+  }
+
+  @Test
+  public void testPolyGammaAtIntegers() {
+    // an odd order is a power of Pi, an even order stays
+    check("{PolyGamma(1,5), PolyGamma(3,2), PolyGamma(2,5)}", //
+        "{-205/144+Pi^2/6,6*(-1+Pi^4/90),PolyGamma(2,5)}");
+    check("{FunctionExpand(PolyGamma(0,3/4)), FunctionExpand(PolyGamma(2,2))}", //
+        "{-EulerGamma+Pi/2-Log(8),2*(1-Zeta(3))}");
+  }
+
+  @Test
+  public void testAlgebraThreadsIntoRules() {
+    check("{Factor(y->c^2-9), Together(y->1/p+1/q), Cancel(z->(t^2-4)/(t-2))}", //
+        "{y->(-3+c)*(3+c),y->(p+q)/(p*q),z->2+t}");
+    check("Apart(w->1/(t*(t+3)),t)", //
+        "w->1/(3*t)-1/(3*(3+t))");
+  }
+
+  @Test
+  public void testDiracDeltaContent() {
+    check("{DiracDelta(10*x+15*y), DiracDelta(3-3*x), DiracDelta(4-u-w), DiracDelta(1-3*x)}", //
+        "{DiracDelta(2*x+3*y)/5,DiracDelta(-1+x)/3,DiracDelta(-4+u+w),DiracDelta(1-3*x)}");
+  }
+
+  @Test
+  public void testComplexExpandRealPlusImaginary() {
+    check("ComplexExpand((p+I*q)*(r-I*s))", //
+        "p*r+q*s+I*(q*r-p*s)");
+  }
+
+  @Test
+  public void testPowerRationalBaseRootExponent() {
+    check("{25^(x/2), 27^(x/3), 50^(d/2), (-27)^(x/3), (-1)^(3*x/2), (1/16)^(x/4), 10^(x/2)}", //
+        "{5^x,3^x,2^(d/2)*5^d,(-1)^(x/3)*3^x,I^(3*x),2^(-x),10^(x/2)}");
+    check("{Simplify(2^(2*x)*7^(2*x)), Simplify(5^(2*m)*(s^2)^m+25^m*(s^2)^m, s>0)}", //
+        "{196^x,2*25^m*s^(2*m)}");
+  }
+
+  @Test
+  public void testFactorApproximateAndSigns() {
+    check("{Factor(1.+4.*x), Factor(x^2+7.*x+12.), Factor(3.*x^2-3.)}", //
+        "{4.0*(0.25+x),(3.0+x)*(4.0+x),3.0*(-1.0+x)*(1.0+x)}");
+    // Cancel keeps the coefficients
+    check("Cancel((x+1.0*^-20*x^2)/x)", //
+        "1+1.*10^-20*x");
+    check("{Factor(5-5*x^2), FactorList(-2*p*q+2*r), Factor((2-x)^3*(1+x))}", //
+        "{-5*(-1+x)*(1+x),{{2,1},{-p*q+r,1}},-(-2+x)^3*(1+x)}");
   }
 
   @Test

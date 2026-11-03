@@ -2371,6 +2371,51 @@ public class SpecialFunctions {
      * worse than the input. A <code>Plus</code> therefore only counts when EVERY summand is
      * negative (<code>-1-x</code>), not just the first.
      */
+    /**
+     * The terms <code>c*Log(a)</code> of a sum with rational <code>c</code> and numeric
+     * <code>a</code> merged into one logarithm, if the product of the <code>a^c</code> is rational
+     * or a power of a prime: <code>-Log(6)-Log(Sqrt(3)/2)</code> is <code>-3/2*Log(3)</code>.
+     */
+    private static IExpr mergeLogs(IExpr sum, EvalEngine engine) {
+      if (!sum.isPlus()) {
+        return sum;
+      }
+      IASTAppendable rest = F.PlusAlloc(sum.size());
+      IASTAppendable product = F.TimesAlloc(sum.size());
+      for (IExpr term : (IAST) sum) {
+        IExpr coefficient = F.C1;
+        IExpr log = term;
+        if (term.isTimes() && term.argSize() == 2 && term.first().isRational()) {
+          coefficient = term.first();
+          log = term.second();
+        }
+        if (log.isLog() && log.first().isNumericFunction(true)) {
+          product.append(F.Power(log.first(), coefficient));
+        } else {
+          rest.append(term);
+        }
+      }
+      if (product.argSize() < 2) {
+        return sum;
+      }
+      IExpr argument = engine.evaluate(product);
+      IExpr merged;
+      if (argument.isRational() && argument.isPositive()) {
+        merged = F.Log(argument);
+      } else {
+        // 1/(3*Sqrt(3)) is 3^(-3/2)
+        merged = engine.evaluate(F.PowerExpand(F.Log(argument)));
+        boolean oneLog = merged.isLog()
+            || (merged.isTimes() && merged.argSize() == 2 && merged.first().isRational()
+                && merged.second().isLog());
+        if (!oneLog) {
+          return sum;
+        }
+      }
+      rest.append(merged);
+      return engine.evaluate(rest);
+    }
+
     private static boolean isWhollyNegated(IExpr z) {
       if (z.isPlus()) {
         return ((IAST) z).forAll(
@@ -2392,8 +2437,10 @@ public class SpecialFunctions {
               // (-1)^(n+1)*n!*(Zeta(n+1) - 1/1^(n+1) - ... - 1/(z-1)^(n+1))
               IRational head =
                   F.sumRational(j -> F.QQ(1, j + 1).powerRational(n + 1), 0, zInt - 2);
-              return F.Times(F.ZZ((n & 1) == 0 ? -1 : 1), F.Factorial(F.ZZ(n)),
-                  F.Subtract(F.Zeta(F.ZZ(n + 1)), head));
+              // an even order as n!*(head - Zeta(n+1))
+              return (n & 1) == 0 //
+                  ? F.Times(F.Factorial(F.ZZ(n)), F.Subtract(head, F.Zeta(F.ZZ(n + 1))))
+                  : F.Times(F.Factorial(F.ZZ(n)), F.Subtract(F.Zeta(F.ZZ(n + 1)), head));
             }
             // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/functions/special/gamma_functions.py#L790
 
@@ -2430,9 +2477,10 @@ public class SpecialFunctions {
                             F.Cos(F.Times(zr.multiply(2 * k), S.Pi)),
                             F.Log(F.Sin(F.Times(F.QQ(k, q), S.Pi))))//
                         , 1, (q - 1) / 2);
-                    return engine
+                    return mergeLogs(engine
                         .evaluate(F.Plus(kSum, F.Times(F.CN1D2, S.Pi, F.Cot(F.Times(zr, S.Pi))),
-                            F.Negate(F.Log(2 * q)), F.Negate(S.EulerGamma)));
+                            F.Negate(F.Log(2 * q)), F.Negate(S.EulerGamma))),
+                        engine);
                   }
                 }
               }
@@ -2471,6 +2519,15 @@ public class SpecialFunctions {
           int n = arg1.toIntDefault();
           if (n > 0 && (n & 0x0001) == 0x0001) {
             return F.Times(Factorial(F.ZZ(n)), F.Zeta(F.ZZ(n + 1)));
+          }
+        }
+        if (arg2.isInteger() && arg2.isPositive()) {
+          // an odd order, where Zeta(n+1) is a power of Pi: n!*(Zeta(n+1) - 1 - ... - 1/(z-1)^(n+1))
+          int n = arg1.toIntDefault();
+          int z = arg2.toIntDefault();
+          if (n > 0 && (n & 0x0001) == 0x0001 && z >= 2 && z <= 1000) {
+            IRational head = F.sumRational(j -> F.QQ(1, j + 1).powerRational(n + 1), 0, z - 2);
+            return F.Times(Factorial(F.ZZ(n)), F.Subtract(F.Zeta(F.ZZ(n + 1)), head));
           }
         }
         if (arg2.isMathematicalIntegerNegative()) {

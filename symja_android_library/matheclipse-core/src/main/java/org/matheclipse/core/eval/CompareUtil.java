@@ -1163,6 +1163,19 @@ public class CompareUtil {
    * @param position
    * @return
    */
+  /**
+   * Like {@link #threadListLogicEquationOperators(IExpr, IAST, int)}, and into both sides of a
+   * <code>Rule</code> or <code>RuleDelayed</code>: <code>Factor(x-&gt;b^2-4)</code> is
+   * <code>x-&gt;(b-2)*(b+2)</code>.
+   */
+  public static IAST threadListLogicEquationRuleOperators(IExpr expr, IAST replacement,
+      int position) {
+    if (expr.isRuleAST()) {
+      return ((IAST) expr).mapThread(replacement, position);
+    }
+    return threadListLogicEquationOperators(expr, replacement, position);
+  }
+
   public static IAST threadListLogicEquationOperators(IExpr expr, IAST replacement, int position) {
     if (expr.size() > 1 && expr.isAST()) {
       IAST ast = (IAST) expr;
