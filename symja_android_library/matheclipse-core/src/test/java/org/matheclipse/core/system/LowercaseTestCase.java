@@ -407,11 +407,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Apart((a + b)^3)", //
         "a^3+3*a^2*b+3*a*b^2+b^3");
 
+    // without a variable: decomposed in the last one of Variables()
     check("Apart(1 / (x^2 - y^2))", //
-        "1/(x^2-y^2)");
+        "1/(2*x*(x-y))+1/(2*x*(x+y))");
 
     check("Apart(x/(2*x + a^2))", //
-        "x/(a^2+2*x)");
+        "1/2-a^2/(2*(a^2+2*x))");
 
     check("Apart(y/(x + 2)/(x + 1),x)", //
         "y/(1+x)-y/(2+x)");
@@ -22649,6 +22650,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPossibleZeroQRealSegmentOfOneVariable() {
+    // not zero for 0<w<1 only, and for 0<w<2 in the second one
+    check("Table(PossibleZeroQ(Sqrt((1+1/w)/(1-1/w))*(1-1/w)-Sqrt(1-1/w^2)), {12})//Union", //
+        "{False}");
+    check("Table(PossibleZeroQ(Sqrt((1+2/w)/(1-2/w))*(1-2/w)-Sqrt(1-4/w^2)), {12})//Union", //
+        "{False}");
+  }
+
+  @Test
   public void testPossibleZeroQRealCutOfSeveralVariables() {
     // the cut is t/s<-1: t and s of opposite sign, never at equal values of t and s
     check("Table(PossibleZeroQ(Sqrt((1-t/s)/(1+t/s))*(1+t/s)-Sqrt(1-t^2/s^2)), {12})//Union", //
@@ -42578,6 +42588,78 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x$2");
     check("Unique(\"x\")", //
         "x3");
+    // the symbols of a list share a number, a name which occurs again takes the next one
+    check("Unique({x,x,y})", //
+        "{x$4,x$5,y$4}");
+    check("Unique({})", //
+        "{}");
+    check("Unique({\"x\",y})", //
+        "{x8,y$7}");
+  }
+
+  @Test
+  public void testTogetherCommonPowers() {
+    // powers which every term has, with exponents which differ by an integer
+    check("{Together(5^k+5^(k+1)), Together(7^k+7^(k+3)), Together(z^k+z^(k+2))}", //
+        "{6*5^k,344*7^k,z^k*(1+z^2)}");
+    check("{Together(5^(k/3)+5^(k/3+1)), Together(5^k/2+5^(k+1)/7)}", //
+        "{6*5^(k/3),17/14*5^k}");
+    // not for different bases, and Cancel leaves the sum
+    check("{Together(5^k+7^k), Cancel(5^k+5^(k+1)), Together(5^k+5^(k+1/2))}", //
+        "{5^k+7^k,5^k+5^(1+k),5^(1/2+k)+5^k}");
+    check("Simplify(5^k+5^(k+1))", //
+        "6*5^k");
+  }
+
+  @Test
+  public void testApartLastVariableAndKernels() {
+    // without a variable: the last one of Variables(), a term free of it stays as it is
+    check("Apart(1/((u-2)*(u+5))+v)", //
+        "1/((-2+u)*(5+u))+v");
+    check("Apart(v/((u-2)*(u+5)))", //
+        "v/((-2+u)*(5+u))");
+    check("Apart(1/((g(2)-2)*(g(2)+5))+u)", //
+        "u+1/(7*(-2+g(2)))-1/(7*(5+g(2)))");
+    // a kernel as the variable
+    check("Apart(1/((Cos(t)-2)*(Cos(t)+5)))", //
+        "1/(7*(-2+Cos(t)))-1/(7*(5+Cos(t)))");
+    check("Apart(1/((Exp(t)-2)*(Exp(t)+5)),Exp(t))", //
+        "1/(7*(-2+E^t))-1/(7*(5+E^t))");
+    check("Apart(u/((u-2)*(u+5))+Log(u))", //
+        "u/((-2+u)*(5+u))+Log(u)");
+  }
+
+  @Test
+  public void testPolynomialLCMOverDenominators() {
+    // the LCM of the numerators over the GCD of the denominators
+    check("{PolynomialLCM(1,q/p+u^2), PolynomialLCM(u,q/p+u), PolynomialLCM(q/p+u,q/p+u)}", //
+        "{q+p*u^2,u*(q+p*u),(q+p*u)/p}");
+    check("PolynomialLCM(u^2/p-1/p,u/q-1/q)", //
+        "(-1+u)*(1+u)");
+  }
+
+  @Test
+  public void testPowerSplitsPositiveFactor() {
+    check("Refine((p*q)^s, p>0)", //
+        "p^s*q^s");
+    check("Refine((-p^4)^s, p>0)", //
+        "(-1)^s*p^(4*s)");
+    check("Simplify((p*q)^s*p^(-s), Assumptions->p>0)", //
+        "q^s");
+    check("Simplify((-p^4)^s*p^(-4*s), Assumptions->p>0)", //
+        "(-1)^s");
+    check("Simplify((-3*p^4)^s*p^(-4*s), Assumptions->p>0)", //
+        "(-3)^s");
+    check("Simplify((-p^2*q)^s*p^(-2*s), Assumptions->p>0)", //
+        "(-q)^s");
+    // not without the assumption, and no loop with Times, which joins p^s*q^s
+    check("Simplify((-p^4)^s*p^(-4*s))", //
+        "(-p^4)^s/p^(4*s)");
+    check("Simplify((p*q)^s, Assumptions->p>0&&q>0)", //
+        "(p*q)^s");
+    // an exponent of p which isn't real
+    check("Refine((p^r*q)^s, p>0)", //
+        "(p^r*q)^s");
   }
 
   @Test

@@ -73,6 +73,9 @@ public class QuarticSolver {
   private final static int QUADRATIC_ROOTS = 4;
   private final static int QUADRATIC_INTERVAL_DATA = 5;
 
+  /** A larger discriminant isn't factored to look for a square. */
+  private final static int MAX_SQUARE_LEAFCOUNT = 100;
+
   public static IASTMutable solve(IExpr exprPoly, IExpr x) throws ArithmeticException {
     return solve(exprPoly, x, true, true);
   }
@@ -790,6 +793,15 @@ public class QuarticSolver {
           result.append(F.eval(F.Divide(c, q)));
         } else {
           IExpr discriminant = quadraticDiscriminant(a, b, c);
+          IExpr polynomialRoot = polynomialSquareRoot(discriminant);
+          if (polynomialRoot.isPresent()) {
+            // both roots are rational in the parameters, and no branch of the root matters
+            IExpr minusB = b.negate();
+            IExpr denominator = a.times(F.C2);
+            result.append(F.Together(F.Divide(Plus(minusB, polynomialRoot), denominator)));
+            result.append(F.Together(F.Divide(Plus(minusB, polynomialRoot.negate()), denominator)));
+            return createSet ? createSet(result) : evalAndSort(result, sort);
+          }
           discriminant = discriminant.sqrt();
           IExpr power = a.times(F.C2).inverse();
           IExpr t2 = F.NIL;
@@ -879,6 +891,38 @@ public class QuarticSolver {
 
   private static IExpr quadraticDiscriminant(IExpr a, IExpr b, IExpr c) {
     return F.evalExpand(Plus(F.Sqr(b), a.times(c).times(F.C4).negate()));
+  }
+
+  /**
+   * The polynomial <code>r</code> with <code>r^2 == discriminant</code> for a discriminant in
+   * parameters, like <code>2*a-b</code> for <code>4*a^2-4*a*b+b^2</code>.
+   *
+   * @return {@link F#NIL} if the discriminant isn't such a square
+   */
+  private static IExpr polynomialSquareRoot(IExpr discriminant) {
+    if (!discriminant.isPlus() || discriminant.leafCount() > MAX_SQUARE_LEAFCOUNT
+        || discriminant.isNumericFunction(true) || !discriminant.isPolynomialStruct()) {
+      return F.NIL;
+    }
+    IExpr factored = S.Factor.of(discriminant);
+    IAST factors = factored.isTimes() ? (IAST) factored : F.Times(factored);
+    IASTAppendable root = F.TimesAlloc(factors.argSize());
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isRational() && factor.isPositive()) {
+        IExpr numberRoot = F.eval(F.Sqrt(factor));
+        if (!numberRoot.isRational()) {
+          return F.NIL;
+        }
+        root.append(numberRoot);
+      } else if (factor.isPower() && factor.exponent().isInteger()
+          && ((IInteger) factor.exponent()).isEven() && factor.exponent().isPositive()) {
+        root.append(F.Power(factor.base(), ((IInteger) factor.exponent()).div(F.C2)));
+      } else {
+        return F.NIL;
+      }
+    }
+    return F.eval(root);
   }
 
   private static IExpr surdSqrt(IExpr arg) {

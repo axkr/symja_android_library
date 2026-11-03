@@ -895,6 +895,37 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveQuadraticSquareDiscriminant() {
+    // both roots are rational in the parameters
+    check("Solve(p+(3*p+2*q)*r+6*q*r^2==0,r)", //
+        "{{r->-1/3},{r->-p/(2*q)}}");
+    check("Solve(x^2-(p+q)*x+p*q==0,x)", //
+        "{{x->p},{x->q}}");
+    check("Solve(x^2+2*p*x+p^2==0,x)", //
+        "{{x->-p},{x->-p}}");
+    check("Solve(4*x^2+12*p*x+9*p^2-q^2==0,x)", //
+        "{{x->1/2*(-3*p-q)},{x->1/2*(-3*p+q)}}");
+    // no square: the roots stay
+    check("Solve(p*x^2+q*x+r==0,x)", //
+        "{{x->(-q-Sqrt(q^2-4*p*r))/(2*p)},{x->(-q+Sqrt(q^2-4*p*r))/(2*p)}}");
+  }
+
+  @Test
+  public void testSolveProductWithParameters() {
+    // u*v==0 is not linear in u: the branch v==0 has solutions as well
+    check("Solve({u^2==p^2*(1+r),2*u*v==0,v^2+2*u*w==2*p*q*r,2*v*w==0,w^2==q^2*(1+r)},{u,v,w,r})", //
+        "{{u->0,v->-I*Sqrt(2)*Sqrt(p*q),w->0,r->-1},{u->0,v->I*Sqrt(2)*Sqrt(p*q),w->0,r->-\n"
+            + "1},{u->p/Sqrt(2),v->0,w->-q/Sqrt(2),r->-1/2},{u->-p/Sqrt(2),v->0,w->q/Sqrt(2),r->-\n"
+            + "1/2}}");
+    check("Solve({x*y==0,x+y==p},{x,y})", //
+        "{{x->0,y->p},{x->p,y->0}}");
+    check("Solve({x*y*z==0,x+y==p,y+z==q},{x,y,z})", //
+        "{{x->0,y->p,z->-p+q},{x->p,y->0,z->q},{x->p-q,y->q,z->0}}");
+    check("Solve({(x-p)*(y-q)==0,x+y==r},{x,y})", //
+        "{{x->p,y->-p+r},{x->-q+r,y->q}}");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testSolve() {
     check("Solve(3*(x+a)*(x-b)==0,x)", //

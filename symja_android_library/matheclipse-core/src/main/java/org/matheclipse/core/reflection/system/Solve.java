@@ -2200,11 +2200,115 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param engine the evaluation engine
      * @return
      */
+    /**
+     * A system with parameters doesn't reach the Groebner basis, which would keep every branch, and
+     * <code>u*v==0</code> would be read as linear in <code>u</code> and lose <code>v==0</code>. Each
+     * factor of such a product with two factors in the variables is solved as a branch of its own.
+     *
+     * @return the solutions of all branches, or {@link F#NIL} if the system isn't of this kind or
+     *         no branch has a solution
+     */
+    private IASTMutable solveProductBranches(IASTMutable termsEqualZero, IAST inequationsList,
+        boolean numericFlag, IAST variables, boolean multipleValues, EvalEngine engine) {
+      if (termsEqualZero.argSize() < 2 || !hasParameters(termsEqualZero, variables)) {
+        return F.NIL;
+      }
+      java.util.function.Predicate<IExpr> dependent =
+          factor -> !factor.isFree(Predicates.in(variables), true);
+      for (int i = 1; i < termsEqualZero.size(); i++) {
+        IExpr term = termsEqualZero.get(i);
+        if (term.isTimes() && ((IAST) term).count(dependent) >= 2) {
+          Set<IExpr> solutions = new TreeSet<IExpr>();
+          IAST factors = (IAST) term;
+          for (int j = 1; j < factors.size(); j++) {
+            IExpr factor = factors.get(j);
+            if (dependent.test(factor)) {
+              IExpr base = factor.isPower() && factor.exponent().isPositive() ? factor.base() : factor;
+              IAST branch = base.isVariable() && variables.exists(base::equals)
+                  && inequationsList.isEmpty()
+                      ? solveWithZeroVariable(base, i, termsEqualZero, numericFlag, variables,
+                          engine)
+                      : solveTimesEquationsRecursively(termsEqualZero.setAtCopy(i, factor),
+                          inequationsList, numericFlag, variables, multipleValues, engine);
+              if (branch.isListOfLists()) {
+                branch.forEach(solutions::add);
+              }
+            }
+          }
+          return solutions.isEmpty() ? F.NIL : crossChecking(termsEqualZero, solutions, engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The branch <code>variable==0</code> of the product at <code>position</code>: the zero goes into
+     * the other equations, because a term like <code>v*w</code> would otherwise divide by it.
+     *
+     * @return the solutions, with their rules in the order of <code>variables</code>
+     */
+    private IAST solveWithZeroVariable(IExpr variable, int position, IAST termsEqualZero,
+        boolean numericFlag, IAST variables, EvalEngine engine) {
+      IExpr zeroRule = F.Rule(variable, F.C0);
+      IASTAppendable rest = F.ListAlloc(termsEqualZero.argSize());
+      for (int i = 1; i < termsEqualZero.size(); i++) {
+        if (i != position) {
+          IExpr term = engine.evaluate(F.subst(termsEqualZero.get(i), variable, F.C0));
+          if (term.isFree(Predicates.in(variables), true)) {
+            if (!term.isZero()) {
+              return F.NIL;
+            }
+          } else {
+            rest.append(term);
+          }
+        }
+      }
+      if (rest.isEmpty()) {
+        return F.list(F.list(zeroRule));
+      }
+      IASTMutable restVariables = variables.removeIf(variable::equals).copy();
+      IExpr solved = solveRecursive(rest, F.CEmptyList, numericFlag, restVariables, engine);
+      if (!solved.isListOfLists()) {
+        return F.NIL;
+      }
+      IAST solutions = (IAST) solved;
+      IASTAppendable result = F.ListAlloc(solutions.argSize());
+      for (int i = 1; i < solutions.size(); i++) {
+        IAST solution = (IAST) solutions.get(i);
+        IASTAppendable rules = F.ListAlloc(variables.argSize());
+        for (int j = 1; j < variables.size(); j++) {
+          IExpr current = variables.get(j);
+          if (current.equals(variable)) {
+            rules.append(zeroRule);
+          } else {
+            solution.forEach(rule -> {
+              if (rule.isRuleAST() && rule.first().equals(current)) {
+                rules.append(rule);
+              }
+            });
+          }
+        }
+        result.append(rules);
+      }
+      return result;
+    }
+
+    /** <code>true</code> if the terms have a symbol which isn't one of the variables. */
+    private static boolean hasParameters(IAST termsEqualZero, IAST variables) {
+      IAST symbols = new VariablesSet(termsEqualZero).getVarList();
+      return symbols.exists(symbol -> !variables.exists(symbol::equals));
+    }
+
     private IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZero,
         IAST inequationsList, boolean numericFlag, IAST variables, boolean multipleValues,
         EvalEngine engine) {
       IASTMutable originalTermsEqualZero = termsEqualZero.copy();
       try {
+        IASTMutable branches = solveProductBranches(termsEqualZero, inequationsList, numericFlag,
+            variables, multipleValues, engine);
+        if (branches.isPresent()) {
+          return branches;
+        }
         IASTMutable resultList =
             solveEquations(termsEqualZero, inequationsList, variables, 0, numericFlag, engine);
         if (resultList.isPresent() && !resultList.isEmpty()) {

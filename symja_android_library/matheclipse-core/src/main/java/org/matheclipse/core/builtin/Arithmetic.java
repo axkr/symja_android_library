@@ -4756,18 +4756,31 @@ public final class Arithmetic {
           && (x.isPositiveResult() || AbstractAssumptions.assumePositive(x));
     }
 
+    /** A symbol, or its real power, which the assumptions make positive. */
+    private static boolean isAssumedPositiveFactor(IExpr x) {
+      return x.isPower() ? isAssumedPositiveSymbolic(x.base()) && x.exponent().isRealResult()
+          : x.isVariable() && isAssumedPositiveSymbolic(x);
+    }
+
     private static IExpr powerASTBase(final IAST base, final IExpr exponent) {
       if (base.isTimes()) {
         final IAST baseTimes = base;
         if (exponent.isInteger() || exponent.isMinusOne()) {
           return baseTimes.mapThread(F.Power(F.Slot1, exponent), 1);
         }
-        if (exponent.isReal() && baseTimes.exists(x -> x.isPower())
-            && baseTimes.forAll(x -> (x.isRational() && x.isPositive()) || (x.isPower()
-                && isAssumedPositiveSymbolic(x.base()) && x.exponent().isRealResult()))) {
-          // (a^m * b^n)^r => (a^m)^r * (b^n)^r /; a > 0 && b > 0, e.g.
-          // Refine(Sqrt(x^2*y^2), x>0 && y>0) is x*y
-          return baseTimes.mapThread(F.Power(F.Slot1, exponent), 1);
+        IAST[] assumedPositive = baseTimes.filter(x -> isAssumedPositiveFactor(x));
+        if (assumedPositive[0].argSize() > 0
+            && ((exponent.isReal() && assumedPositive[0].exists(x -> x.isPower()))
+                || assumedPositive[1].exists(x -> !x.isRational() || !x.isPositive()))) {
+          // (a^m * u)^c => (a^m)^c * u^c /; a > 0, for every u and c, e.g.
+          // Refine(Sqrt(x^2*y^2), x>0 && y>0) is x*y. A product of positive factors stays as it
+          // is otherwise: Times() would join Sqrt(a)*Sqrt(b) again, and (b/a)^c is the short form.
+          IASTAppendable result = F.TimesAlloc(baseTimes.argSize());
+          assumedPositive[0].forEach(x -> result.append(F.Power(x, exponent)));
+          if (assumedPositive[1].argSize() > 0) {
+            result.append(F.Power(assumedPositive[1].oneIdentity1(), exponent));
+          }
+          return result;
         }
         if (exponent.isFraction()) {
           // (a * b * c)^n => a^n * b^n * c^n => result * (rest ^ exponent)

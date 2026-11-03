@@ -2452,6 +2452,14 @@ public class SimplifyUtil extends VisitorExpr {
       }), //
       new Step("TogetherAndFractionParts", CatchPolicy.VALIDATE, ctx -> {
         ctx.together = ctx.expr;
+        if (ctx.expr.isPlus() && ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+          // powers which every term has: 2^n+2^(n+1) is 3*2^n
+          IExpr factored =
+              org.matheclipse.core.builtin.Algebra.Together.commonPowers(ctx.expr, ctx.util.fEngine);
+          if (factored != ctx.expr) {
+            ctx.result.checkLess(factored);
+          }
+        }
         if (ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
             && isTogetherCandidate(ctx.expr)) {
           // the form with the denominator multiplied out, which the steps after this one cancel

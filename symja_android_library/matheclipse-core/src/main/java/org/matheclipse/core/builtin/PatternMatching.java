@@ -3742,8 +3742,14 @@ public final class PatternMatching {
       if (expr.isList()) {
         IAST list = (IAST) expr;
         IASTAppendable symbols = F.ListAlloc(list.size());
+        // the symbols of a list share one number; a name which occurs again takes the next one
+        final String number = EvalEngine.uniqueName("$");
+        java.util.Set<String> names = new java.util.HashSet<String>();
         for (int i = 1; i < list.size(); i++) {
-          IExpr symbol = uniqueSymbols(list.get(i), engine);
+          IExpr arg = list.get(i);
+          IExpr symbol = arg.isSymbol() && names.add(arg.toString())
+              ? F.symbol(arg.toString() + number, engine)
+              : uniqueSymbols(arg, engine);
           if (symbol.isNIL()) {
             return F.NIL;
           }
