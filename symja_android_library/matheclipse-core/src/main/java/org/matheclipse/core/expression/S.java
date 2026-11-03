@@ -1996,6 +1996,15 @@ public class S {
    */
   public final static IBuiltInSymbol AutoAction = S.initFinalSymbol("AutoAction", ID.AutoAction);
 
+  /**
+   * AutoDelete(x) - TODO describe `AutoDelete`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AutoDelete.md">AutoDelete
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AutoDelete = S.initFinalSymbol("AutoDelete", ID.AutoDelete);
+
   public final static IBuiltInSymbol Automatic = S.initFinalSymbol("Automatic", ID.Automatic);
 
   /**
@@ -4370,6 +4379,26 @@ public class S {
       S.initFinalSymbol("ColumnAlignments", ID.ColumnAlignments);
 
   /**
+   * ColumnSpacings(x) - TODO describe `ColumnSpacings`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ColumnSpacings.md">ColumnSpacings
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ColumnSpacings =
+      S.initFinalSymbol("ColumnSpacings", ID.ColumnSpacings);
+
+  /**
+   * ColumnWidths(x) - TODO describe `ColumnWidths`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ColumnWidths.md">ColumnWidths
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ColumnWidths =
+      S.initFinalSymbol("ColumnWidths", ID.ColumnWidths);
+
+  /**
    * ComapApply(x) - TODO describe `ComapApply`.
    * 
    * @see <a href=
@@ -6497,6 +6526,16 @@ public class S {
    */
   public final static IBuiltInSymbol DeleteSmallComponents =
       S.initFinalSymbol("DeleteSmallComponents", ID.DeleteSmallComponents);
+
+  /**
+   * DeleteWithContents(x) - TODO describe `DeleteWithContents`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DeleteWithContents.md">DeleteWithContents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DeleteWithContents =
+      S.initFinalSymbol("DeleteWithContents", ID.DeleteWithContents);
 
   /**
    * Delimiter(x) - TODO describe `Delimiter`.
@@ -20677,6 +20716,15 @@ public class S {
 
   public final static IBuiltInSymbol PlotLabels = S.initFinalSymbol("PlotLabels", ID.PlotLabels);
 
+  /**
+   * PlotLayout(x) - TODO describe `PlotLayout`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlotLayout.md">PlotLayout
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PlotLayout = S.initFinalSymbol("PlotLayout", ID.PlotLayout);
+
   public final static IBuiltInSymbol PlotLegends = S.initFinalSymbol("PlotLegends", ID.PlotLegends);
 
   /**
@@ -23755,6 +23803,16 @@ public class S {
   public final static IBuiltInSymbol SelectFirst = S.initFinalSymbol("SelectFirst", ID.SelectFirst);
 
   /**
+   * SelectWithContents(x) - TODO describe `SelectWithContents`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SelectWithContents.md">SelectWithContents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SelectWithContents =
+      S.initFinalSymbol("SelectWithContents", ID.SelectWithContents);
+
+  /**
    * SemanticImport("path-to-filename") - if the file system is enabled, import the data from CSV
    * files and do a semantic interpretation of the columns.
    * 
@@ -25639,6 +25697,16 @@ public class S {
    */
   public final static IBuiltInSymbol StripOnInput =
       S.initFinalSymbol("StripOnInput", ID.StripOnInput);
+
+  /**
+   * StripWrapperBoxes(x) - TODO describe `StripWrapperBoxes`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StripWrapperBoxes.md">StripWrapperBoxes
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StripWrapperBoxes =
+      S.initFinalSymbol("StripWrapperBoxes", ID.StripWrapperBoxes);
 
   public final static IBuiltInSymbol Structure = S.initFinalSymbol("Structure", ID.Structure);
 
