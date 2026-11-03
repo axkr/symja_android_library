@@ -1951,6 +1951,24 @@ public class S {
   public final static IBuiltInSymbol Attributes = S.initFinalSymbol("Attributes", ID.Attributes);
 
   /**
+   * Audio(x) - TODO describe `Audio`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Audio.md">Audio
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Audio = S.initFinalSymbol("Audio", ID.Audio);
+
+  /**
+   * AudioLength(x) - TODO describe `AudioLength`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AudioLength.md">AudioLength
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AudioLength = S.initFinalSymbol("AudioLength", ID.AudioLength);
+
+  /**
    * AudioOverlay(x) - TODO describe `AudioOverlay`.
    * 
    * @see <a href=
@@ -3924,6 +3942,15 @@ public class S {
       S.initFinalSymbol("Circumsphere", ID.Circumsphere);
 
   /**
+   * CityData(x) - TODO describe `CityData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CityData.md">CityData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CityData = S.initFinalSymbol("CityData", ID.CityData);
+
+  /**
    * Clear(symbol1, symbol2,...) - clears all values of the given symbols.
    * 
    * @see <a href=
@@ -4251,6 +4278,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ColorOutput = S.initFinalSymbol("ColorOutput", ID.ColorOutput);
+
+  /**
+   * ColorProfileData(x) - TODO describe `ColorProfileData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ColorProfileData.md">ColorProfileData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ColorProfileData =
+      S.initFinalSymbol("ColorProfileData", ID.ColorProfileData);
 
   /**
    * ColorQ(x) - TODO describe `ColorQ`.
@@ -6651,6 +6688,26 @@ public class S {
       S.initFinalSymbol("DiceDissimilarity", ID.DiceDissimilarity);
 
   /**
+   * DictionaryLookup(x) - TODO describe `DictionaryLookup`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DictionaryLookup.md">DictionaryLookup
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DictionaryLookup =
+      S.initFinalSymbol("DictionaryLookup", ID.DictionaryLookup);
+
+  /**
+   * DictionaryWordQ(x) - TODO describe `DictionaryWordQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DictionaryWordQ.md">DictionaryWordQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DictionaryWordQ =
+      S.initFinalSymbol("DictionaryWordQ", ID.DictionaryWordQ);
+
+  /**
    * DifferenceDelta(f(x), x) - generates a forward difference `f(x+1) - f(x)`
    * 
    * @see <a href=
@@ -8553,6 +8610,15 @@ public class S {
    */
   public final static IBuiltInSymbol ExactNumberQ =
       S.initFinalSymbol("ExactNumberQ", ID.ExactNumberQ);
+
+  /**
+   * ExampleData(x) - TODO describe `ExampleData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExampleData.md">ExampleData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ExampleData = S.initFinalSymbol("ExampleData", ID.ExampleData);
 
   /**
    * Except(c) - represents a pattern object that matches any expression except those matching `c`.
@@ -27276,6 +27342,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Transpose = S.initFinalSymbol("Transpose", ID.Transpose);
+
+  /**
+   * Tree(x) - TODO describe `Tree`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tree.md">Tree
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Tree = S.initFinalSymbol("Tree", ID.Tree);
 
   /**
    * TreeForm(expr) - create a tree visualization from the given expression `expr`.
