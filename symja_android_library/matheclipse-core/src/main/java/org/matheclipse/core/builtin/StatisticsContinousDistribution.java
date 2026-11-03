@@ -8879,7 +8879,7 @@ public class StatisticsContinousDistribution {
         }
         survival.append(F.Times(coefficient, F.Power(u, rate)));
       }
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(survival, F.C1D2), u));
+      IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(survival, F.C1D2), u));
       if (!solutions.isListOfLists()) {
         return F.NIL;
       }

@@ -30,6 +30,7 @@ import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.convert.ApcomplexField;
 import org.matheclipse.core.convert.ApfloatField;
 import org.matheclipse.core.convert.VariablesSet;
@@ -84,6 +85,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
@@ -1915,6 +1917,15 @@ public class EvalEngine implements Serializable {
         // one function, one result and one message for both
         return F.unaryAST1(S.Exp, ast.exponent());
       }
+      if (isNumericArgument && ast.isPower() && ast.base() instanceof Num
+          && ast.exponent() instanceof IFraction && !isArbitraryMode()) {
+        // while the exponent is still exact
+        IExpr temp =
+            Arithmetic.Power.machineHalfPower((Num) ast.base(), (IFraction) ast.exponent());
+        if (temp.isPresent()) {
+          return F.unaryAST1(S.Power, temp);
+        }
+      }
       if (!fNumericMode) {
         if (isNumericFunction && isNumericArgument) {
           localNumericMode = true;
@@ -2282,7 +2293,9 @@ public class EvalEngine implements Serializable {
         // (i.e. Sin, Cos,...)
         if (!(symbol == S.Set || symbol == S.SetDelayed || symbol == S.UpSet
             || symbol == S.UpSetDelayed)
-            && !(fEvalPatternMatcherMode && buildsPattern(symbol))) {
+            && !(fEvalPatternMatcherMode && buildsPattern(symbol))
+            // an application of a pure function computes a part of the left-hand side
+            && !(symbol == S.Function && ast.head().isFunction())) {
           return F.NIL;
         }
         // } else {

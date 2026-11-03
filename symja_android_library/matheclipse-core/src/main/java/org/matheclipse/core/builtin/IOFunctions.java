@@ -440,10 +440,20 @@ public class IOFunctions {
         if (option.isTrue()) {
           ignoreCase = true;
         }
+        if (arg1.isString() && options.getOption(S.ResolveContextAliases).isFalse()) {
+          return sortedNames(Documentation.getNamesByPattern(arg1, ignoreCase, ast, engine));
+        }
       }
-      IAST names = Documentation.getContextNamesByPattern(arg1, ignoreCase, ast, engine);
+      if (arg1.isString()) {
+        // a pattern may name a context by its $ContextAliases alias
+        arg1 = F.$str(engine.getContextPath().expandAlias(arg1.toString()));
+      }
+      return sortedNames(Documentation.getContextNamesByPattern(arg1, ignoreCase, ast, engine));
+    }
+
+    /** The contexts are hash tables; give the names in a fixed order. */
+    private static IAST sortedNames(IAST names) {
       if (names.isList() && names.argSize() > 1) {
-        // the contexts are hash tables; give the names in a fixed order
         IASTMutable sorted = names.copy();
         EvalAttributes.sort(sorted);
         return sorted;

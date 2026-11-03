@@ -42,6 +42,7 @@ public class Inactivate extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
     IExpr expr = ast.arg1();
+    // Heads -> True, the default, goes into the compound heads as well
     boolean heads = option[0].isTrue();
 
     Predicate<IExpr> matcher = patternPredicate(ast, argSize, engine);
@@ -76,6 +77,8 @@ public class Inactivate extends AbstractFunctionOptionEvaluator {
         } else if (matcher.test(sym)) {
           newHead = F.Inactive(sym);
         }
+      } else if (heads) {
+        newHead = inactivate(head, matcher, heads);
       }
 
       IASTAppendable result = F.ast(newHead, ast.size());

@@ -151,6 +151,7 @@ public class Errors {
       "chemsmarts", "`1` is not a valid SMARTS pattern.", //
       "elemdent", "`1` does not name a chemical element or a class of elements.", //
       "elemdprop", "`1` is not a known ElementData property.", //
+      "elmntavl", "\"`1`\" is not an available element. Possible elements include `2`.", //
       "elmntavs", "\"`1`\" is not an available property. Did you mean \"`2`\" instead?", //
       "elemdrepl", "The ElementData property `1` was replaced by `2`.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
@@ -397,7 +398,10 @@ public class Errors {
       "lpbb", "The search for an integer solution stopped after `1` subproblems.", //
       "lpdom", "`1` is not a valid domain specification; Reals is used instead.", //
       "lpn", "`1` is not a list of numbers or pairs of numbers.", //
+      "lpipp",
+      "Warning: Method -> InteriorPoint specified for non-machine-precision problem. A machine-precision result will be given. If a non-machine-precision result is needed, set the option to Method -> Simplex.", //
       "lpsnf", "No solution can be found that satisfies the constraints.", //
+      "lpsub", "This problem is unbounded.", //
       "lrgexp", "Exponent ist out of bounds for function `1`.", //
       "lrwl", "The items for choice `1` should be a nonempty list or a rule weights -> choices.", //
       "lslc", "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
@@ -456,6 +460,7 @@ public class Errors {
       "nmtx", "The first two levels of `1` cannot be transposed.", //
       "nnintprm",
       "Parameter `1` at position `2` in `3` is expected to be a non-negative integer.", //
+      "nnum", "The function value `1` is not a number at `2` = `3`.", //
       "nnumeq",
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
@@ -474,6 +479,7 @@ public class Errors {
       "nojoin", "The datasets have no column in common to join on.", //
       "nonn1",
       "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
+      "nonwkst", "The process is not weakly stationary.", //
       "nonopt",
       "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
       "nocont", "Context `1` was not created when Needs was evaluated.", //
@@ -602,6 +608,7 @@ public class Errors {
       "range", "Range specification in `1` does not have appropriate bounds.", //
       "rapp", "Root approximation `1` is not a number.", //
       "invrt", "`1` is not equal to a root of `2`.", //
+      "trsp", "Nonpolynomial root specification `1` is not a list with two elements.", //
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions `3` must have length `2`.", //
@@ -653,6 +660,7 @@ public class Errors {
       "setraw", "Cannot assign to raw object `1`.", //
       "setps", "`1` in the part assignment is not a symbol.", //
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
+      "shape", "Lists `1` and `2` are not the same shape.", //
       "shapespec", "Shape specification `1` is invalid.", //
       "slota", "Named slot `1` in `2` cannot be filled from `3`.", //
       "slotn", "Slot number `1` in `2` cannot be filled from `3`.", //
@@ -685,6 +693,7 @@ public class Errors {
       "tbnval",
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
+      "usym", "`1` is not a symbol or a valid symbol name.", //
       "tllen", "Lists of unequal length in `1` cannot be added.", //
       "tpos", "Cannot thread over positions `1` through `2` in `3`.", //
       "timesys", "`1` is not a known time system.", //
@@ -699,6 +708,16 @@ public class Errors {
       "unitsys", "Cannot set `1` to `2`; value must be \"Metric\" or \"Imperial\".", //
       "unkds",
       "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //
+      "bbox", "Invalid bounding box specification `1`.", //
+      "bound", "Invalid bounds specification `1`.", //
+      "clorpoly",
+      "Argument `1` is neither a non-empty list of coefficients nor an explicit polynomial in a given variable.", //
+      "offs", "Invalid offset specification `1`.", //
+      "orbop", "`1` is not a valid value for the Method option.", //
+      "ornex",
+      "The option Method -> `1` cannot be used with exact precision vectors. It is replaced with Method -> GramSchmidt.", //
+      "plspecc",
+      "Specification `1` for placement of coefficients must be Top, Bottom, Left or Right.", //
       "uform", "Invalid hash format `1`.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
       "unsdst", "The first argument `1` is not a valid distribution.", //

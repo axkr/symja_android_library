@@ -1183,6 +1183,36 @@ public class DateTimeFunctions {
     return 0.0;
   }
 
+  /**
+   * The offset from GMT in hours of the value of a <code>TimeZone</code> option at
+   * <code>date</code>: a real number stands for itself, a named zone such as
+   * <code>"America/New_York"</code> gives the offset in force then.
+   *
+   * @param zone the value of the option
+   * @param date a date
+   * @param localDate <code>true</code> if <code>date</code> is a wall clock time of the zone,
+   *        <code>false</code> if it is GMT
+   * @return {@link Double#NaN} if <code>zone</code> names no time zone
+   */
+  private static double zoneHours(IExpr zone, LocalDateTime date, boolean localDate) {
+    if (zone.isReal()) {
+      double hours = zone.evalf();
+      return Double.isFinite(hours) ? hours : Double.NaN;
+    }
+    if (zone.isString()) {
+      try {
+        java.time.zone.ZoneRules rules = java.time.ZoneId.of(zone.toString()).getRules();
+        ZoneOffset offset =
+            localDate ? rules.getValidOffsets(date).stream().findFirst().orElse(rules.getOffset(date))
+                : rules.getOffset(date.toInstant(ZoneOffset.UTC));
+        return offset.getTotalSeconds() / 3600.0;
+      } catch (java.time.DateTimeException ex) {
+        return Double.NaN;
+      }
+    }
+    return Double.NaN;
+  }
+
   /** <code>Yesterday</code> - the previous day as a day granularity date object. */
   private static final class Yesterday extends AbstractSymbolEvaluator {
 
@@ -1281,6 +1311,20 @@ public class DateTimeFunctions {
         return F.num(absoluteTime(LocalDateTime.now(), true).evalf());
       }
       IExpr arg1 = ast.arg1();
+      if (ast.isAST1() && arg1.isRuleAST() && arg1.first() == S.TimeZone) {
+        // the current time as seen in the time zone
+        LocalDateTime utc = LocalDateTime.now(java.time.ZoneOffset.UTC);
+        double hours = zoneHours(arg1.second(), utc, false);
+        if (Double.isNaN(hours)) {
+          return F.NIL;
+        }
+        return F.num(absoluteTime(utc, true).evalf() + hours * 3600.0);
+      }
+      boolean timeZoneOption =
+          ast.isAST2() && ast.arg2().isRuleAST() && ast.arg2().first() == S.TimeZone;
+      if (ast.isAST2() && !timeZoneOption) {
+        return F.NIL;
+      }
       if (arg1.isNumber() && arg1.isReal()) {
         // AbsoluteTime of a number of seconds is the identity
         return arg1;
@@ -1293,7 +1337,19 @@ public class DateTimeFunctions {
       if (arg1.isList() && ((IAST) arg1).argSize() == 2 && ((IAST) arg1).arg1().isString()) {
         real = true;
       }
-      return absoluteTime(spec.instant, real);
+      IExpr seconds = absoluteTime(spec.instant, real);
+      if (timeZoneOption) {
+        // the date is read in the given zone, and the result counts in $TimeZone
+        double hours = zoneHours(ast.arg2().second(), spec.instant, true);
+        if (Double.isNaN(hours)) {
+          return F.NIL;
+        }
+        double shift = (hours - timeZoneHours(engine)) * 3600.0;
+        return seconds.isInteger() && shift == Math.rint(shift)
+            ? seconds.subtract(F.ZZ((long) shift))
+            : F.num(seconds.evalf() - shift);
+      }
+      return seconds;
     }
 
     @Override
@@ -1303,7 +1359,7 @@ public class DateTimeFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_2;
     }
   }
 
@@ -1369,6 +1425,15 @@ public class DateTimeFunctions {
     }
   }
 
+  /**
+   * The value of the option <code>TimeZone</code> as a machine real number, by default
+   * <code>0.0</code>.
+   */
+  private static IExpr timeZoneOption(OptionArgs options) {
+    IExpr option = options.getOption(S.TimeZone);
+    return option.isPresent() && option.isReal() ? F.num(option.evalf()) : F.CD0;
+  }
+
   private static final class FromUnixTime extends AbstractFunctionEvaluator {
 
     @Override
@@ -1378,19 +1443,24 @@ public class DateTimeFunctions {
         return F.NIL;
       }
       IExpr timeZone = F.CD0;
+      DateGranularity granularity = DateGranularity.INSTANT;
       if (ast.argSize() > 1) {
         OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-        IExpr option = options.getOption(S.TimeZone);
-        if (option.isPresent() && option.isReal()) {
-          timeZone = F.num(option.evalf());
+        timeZone = timeZoneOption(options);
+        IExpr option = options.getOption(S.DateGranularity);
+        if (option.isPresent()) {
+          granularity = toGranularity(option);
+          if (granularity == null) {
+            return F.NIL;
+          }
         }
       }
-      double offsetSeconds = timeZone.isReal() ? timeZone.evalf() * 3600.0 : 0.0;
-      LocalDateTime date = plusSecondsOrNull(EPOCH_1970, arg1.evalf() + offsetSeconds);
+      LocalDateTime date = plusSecondsOrNull(EPOCH_1970, arg1.evalf() + timeZone.evalf() * 3600.0);
       if (date == null) {
         return F.NIL;
       }
-      return instantObject(date, timeZone, arg1.isInexactNumber());
+      return DateObjectExpr.newInstance(granularity.truncate(date), granularity,
+          DateObjectExpr.GREGORIAN, timeZone, arg1.isInexactNumber());
     }
 
     @Override
@@ -1400,7 +1470,7 @@ public class DateTimeFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
   }
 
@@ -1431,15 +1501,40 @@ public class DateTimeFunctions {
 
   private static final class FromJulianDate extends AbstractFunctionEvaluator {
 
+    /** The Julian date of day 0 of a kind of Julian date, or <code>NaN</code> if it is unknown. */
+    private static double epochOfKind(String kind) {
+      switch (kind) {
+        case "Julian":
+          return 0.0;
+        case "Modified":
+          return 2400000.5;
+        case "Reduced":
+          return 2400000.0;
+        default:
+          return Double.NaN;
+      }
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      double epoch = 0.0;
+      int optionStart = 2;
+      if (arg1.isString() && ast.argSize() >= 2) {
+        epoch = epochOfKind(arg1.toString());
+        arg1 = ast.arg2();
+        optionStart = 3;
+      }
       if (!arg1.isNumber() || !arg1.isReal()) {
         return F.NIL;
       }
-      double julianDate = arg1.evalf();
+      double julianDate = arg1.evalf() + epoch;
       if (!Double.isFinite(julianDate)) {
         return F.NIL;
+      }
+      IExpr timeZone = F.CD0;
+      if (ast.argSize() >= optionStart) {
+        timeZone = timeZoneOption(new OptionArgs(ast.topHead(), ast, optionStart, engine));
       }
       double days = julianDate - JULIAN_DATE_EPOCH_1970;
       long epochDay = (long) Math.floor(days);
@@ -1456,7 +1551,8 @@ public class DateTimeFunctions {
         // until there is one.
         return F.NIL;
       }
-      return instantObject(date, F.CD0, arg1.isInexactNumber());
+      LocalDateTime zoned = plusSecondsOrNull(date, timeZone.evalf() * 3600.0);
+      return zoned == null ? F.NIL : instantObject(zoned, timeZone, arg1.isInexactNumber());
     }
 
     @Override
@@ -1466,7 +1562,7 @@ public class DateTimeFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
   }
 
@@ -1506,13 +1602,11 @@ public class DateTimeFunctions {
         // DateList(date, TimeZone -> tz): the date, read in its own zone or in $TimeZone, as the
         // local time of the zone tz
         IExpr zone = last.second();
-        if (!zone.isReal() || !Double.isFinite(zone.evalf())) {
-          return F.NIL;
-        }
-        double targetHours = zone.evalf();
         if (ast.isAST1()) {
           LocalDateTime utc = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
-          LocalDateTime date = plusSecondsOrNull(utc, targetHours * 3600.0);
+          double targetHours = zoneHours(zone, utc, false);
+          LocalDateTime date =
+              Double.isNaN(targetHours) ? null : plusSecondsOrNull(utc, targetHours * 3600.0);
           return date == null ? F.NIL : dateListOf(date);
         }
         if (!ast.isAST2()) {
@@ -1526,7 +1620,14 @@ public class DateTimeFunctions {
         double sourceHours = ast.arg1() instanceof DateObjectExpr && ownZone.isReal()
             ? ownZone.evalf()
             : timeZoneHours(engine);
-        LocalDateTime date = plusSecondsOrNull(spec.instant, (targetHours - sourceHours) * 3600.0);
+        // a named zone has the offset in force at that instant
+        LocalDateTime utc = plusSecondsOrNull(spec.instant, -sourceHours * 3600.0);
+        if (utc == null) {
+          return F.NIL;
+        }
+        double targetHours = zoneHours(zone, utc, false);
+        LocalDateTime date =
+            Double.isNaN(targetHours) ? null : plusSecondsOrNull(utc, targetHours * 3600.0);
         return date == null ? F.NIL : dateListOf(date);
       }
       DateSpec spec = dateSpec(ast.arg1());
@@ -3110,14 +3211,31 @@ public class DateTimeFunctions {
       } else {
         return F.NIL;
       }
+      // a criterion with named slots like #Month reads the properties of a date
+      boolean namedSlots =
+          !criterion.isFree(x -> x.isAST(S.Slot, 2) && x.first().isString(), true);
       IASTAppendable result = F.ListAlloc(dates.size());
       for (int i = 1; i < dates.size(); i++) {
-        IExpr test = engine.evaluate(F.unaryAST1(criterion, dates.get(i)));
+        IExpr date = dates.get(i);
+        IExpr argument =
+            namedSlots && date instanceof DateObjectExpr ? dateProperties(date, engine) : date;
+        IExpr test = engine.evaluate(F.unaryAST1(criterion, argument));
         if (test.isTrue()) {
-          result.append(dates.get(i));
+          result.append(date);
         }
       }
       return result;
+    }
+
+    /** The calendar properties of a date as an association. */
+    private static IExpr dateProperties(IExpr date, EvalEngine engine) {
+      IAssociation properties = F.assoc();
+      for (String name : new String[] {"Year", "Month", "Day", "Hour", "Minute", "Second",
+          "DayName"}) {
+        IExpr value = engine.evaluate(F.unaryAST1(date, F.stringx(name)));
+        properties.appendRule(F.Rule(F.stringx(name), value));
+      }
+      return properties;
     }
 
     @Override
@@ -3127,7 +3245,7 @@ public class DateTimeFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_2_1;
     }
   }
 

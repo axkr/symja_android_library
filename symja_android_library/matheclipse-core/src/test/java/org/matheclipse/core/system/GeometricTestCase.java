@@ -162,7 +162,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("Area(Annulus({0,0},{1,2}))", //
         "3*Pi");
     check("Area(Annulus())", //
-        "3*Pi");
+        "3/4*Pi");
     check("Area(Ball({0,0},5))", //
         "25*Pi");
     check("Area(Cuboid({0,0},{3,4}))", //
@@ -382,7 +382,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
     // Unsupported region unevaluated
     check("FindShortestCurve(Annulus(), {1, 0}, {-0.8, 0.4})", //
-        "FindShortestCurve(Annulus(),{1,0},{-0.8,0.4})");
+        "FindShortestCurve(Annulus({0,0},{1/2,1}),{1,0},{-0.8,0.4})");
   }
 
   @Test
@@ -1802,7 +1802,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("KnotData(\"Trefoil\", \"NoSuchProperty\")", //
         "KnotData(Trefoil,NoSuchProperty)");
     check("KnotData(\"Properties\")", //
-        "{AlexanderBriggsList,AlexanderBriggsNotation,CrossingNumber,ImageData,Name,SpaceCurve,StandardName}");
+        "{AlexanderBriggsList,AlexanderBriggsNotation,CrossingNumber,Image,ImageData,Name,SpaceCurve,StandardName}");
     // ImageData is the tube as one closed surface: a list of one GraphicsComplex whose rings are
     // centred on the space curve at t = 2 Pi k/96
     check("{Head(#), Length(#), Head(First(#))}&(KnotData(\"Trefoil\", \"ImageData\"))", //

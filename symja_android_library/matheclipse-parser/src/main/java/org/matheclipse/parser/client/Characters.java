@@ -702,7 +702,13 @@ public class Characters {
     }
     return (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`') // context name
                                                                               // separator character
-        || isFormalLatinLetter(ch) || isLetterLike(ch) || isUnnamedPrivateUse(ch);
+        || isLatinSuperscriptDigit(ch) || isFormalLatinLetter(ch) || isLetterLike(ch)
+        || isUnnamedPrivateUse(ch);
+  }
+
+  /** The Latin-1 superscript digits continue a symbol name, as in <code>x²</code>. */
+  private static boolean isLatinSuperscriptDigit(char ch) {
+    return ch == '\u00B2' || ch == '\u00B3' || ch == '\u00B9';
   }
 
   /**

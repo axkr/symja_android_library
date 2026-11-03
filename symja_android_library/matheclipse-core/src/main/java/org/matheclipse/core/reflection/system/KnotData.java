@@ -59,7 +59,7 @@ public class KnotData extends AbstractEvaluator {
 
   /** The properties a knot answers for, in the order <code>KnotData("Properties")</code> gives. */
   private static final String[] PROPERTIES = {"AlexanderBriggsList", "AlexanderBriggsNotation",
-      "CrossingNumber", "ImageData", "Name", "SpaceCurve", "StandardName"};
+      "CrossingNumber", "Image", "ImageData", "Name", "SpaceCurve", "StandardName"};
 
   /** How many rings round the curve the tube of a knot is built from. */
   private static final int RINGS = 96;
@@ -178,6 +178,8 @@ public class KnotData extends AbstractEvaluator {
       }
       case "SpaceCurve":
         return knot.hasCurve() ? spaceCurve(knot) : F.NIL;
+      case "Image":
+        return knot.hasCurve() ? F.Graphics3D(imageData(knot), F.Rule(S.Boxed, S.False)) : F.NIL;
       case "ImageData":
         return knot.hasCurve() ? imageData(knot) : F.NIL;
       default:

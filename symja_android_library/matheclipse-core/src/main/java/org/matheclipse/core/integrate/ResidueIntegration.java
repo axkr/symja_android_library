@@ -855,7 +855,7 @@ public final class ResidueIntegration {
       if (exponent < 1 || !factor.isPolynomial(z)) {
         return null;
       }
-      IExpr solutions = ctx.eval(F.Solve(F.Equal(factor, F.C0), z));
+      IExpr solutions = ctx.eval(F.SolveDistinct(F.Equal(factor, F.C0), z));
       if (!solutions.isListOfLists()) {
         return null;
       }

@@ -59,6 +59,7 @@ import org.matheclipse.core.expression.data.BDDParser;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1360,12 +1361,23 @@ public final class BooleanFunctions {
   private static class BooleanMinterms extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return minMaxtermsEval(ast, engine, true);
+      return inForm(ast, minMaxtermsEval(ast, engine, true), "DNF");
+    }
+
+    /**
+     * The result of a call <code>BooleanMinterms(spec, vars, form)</code> in the given form. No
+     * conversion is needed for the <code>nativeForm</code> of the function.
+     */
+    protected static IExpr inForm(IAST ast, IExpr result, String nativeForm) {
+      if (!ast.isAST3() || result.isNIL() || ast.arg3().isString(nativeForm)) {
+        return result;
+      }
+      return F.BooleanConvert(result, ast.arg3());
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     /**
@@ -1533,12 +1545,12 @@ public final class BooleanFunctions {
   private static class BooleanMaxterms extends BooleanMinterms {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return minMaxtermsEval(ast, engine, false);
+      return inForm(ast, minMaxtermsEval(ast, engine, false), "CNF");
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override
@@ -2393,7 +2405,8 @@ public final class BooleanFunctions {
         if (ternaryCompare == IExpr.COMPARE_TERNARY.TRUE) {
           return S.True;
         }
-        IExpr result = simplifyCompare(arg1, arg2);
+        // the sides of DivideSides and MultiplySides stay as they were computed
+        IExpr result = ast.hasFlag(Flag.BUILT_IN_EVALED) ? F.NIL : simplifyCompare(arg1, arg2);
         if (result.isPresent()) {
           return result;
         }

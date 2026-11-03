@@ -1,7 +1,11 @@
 package org.matheclipse.core.builtin;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -11,6 +15,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.MutableInt;
@@ -27,6 +32,7 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class AssociationFunctions {
 
@@ -43,6 +49,7 @@ public class AssociationFunctions {
       S.AssociationMap.setEvaluator(new AssociationMap());
       S.JoinAcross.setEvaluator(new JoinAcross());
       S.AssociationThread.setEvaluator(new AssociationThread());
+      S.CharacterCounts.setEvaluator(new CharacterCounts(false));
       S.Counts.setEvaluator(new Counts());
       S.KeyDrop.setEvaluator(new KeyDrop());
       S.KeyExistsQ.setEvaluator(new KeyExistsQ());
@@ -52,7 +59,7 @@ public class AssociationFunctions {
       S.KeySort.setEvaluator(new KeySort());
       S.KeyTake.setEvaluator(new KeyTake());
       S.KeyValueMap.setEvaluator(new KeyValueMap());
-      S.LetterCounts.setEvaluator(new LetterCounts());
+      S.LetterCounts.setEvaluator(new CharacterCounts(true));
       S.Lookup.setEvaluator(new Lookup());
       S.Merge.setEvaluator(new Merge());
       S.Query.setEvaluator(new Query());
@@ -830,6 +837,18 @@ public class AssociationFunctions {
         IAST list = (IAST) arg1;
         Map<IExpr, MutableInt> histogram = MutableInt.createHistogram(list);
         IAssociation assoc = F.assoc();
+        if (ast.isAST2()) {
+          if (!ast.arg2().isList()) {
+            // The argument `1` is not a list.
+            return Errors.printMessage(ast.topHead(), "invl", F.list(ast.arg2()), engine);
+          }
+          // only the given keys are counted, in their given order
+          for (IExpr key : (IAST) ast.arg2()) {
+            MutableInt count = histogram.get(key);
+            assoc.appendRule(F.Rule(key, F.ZZ(count == null ? 0 : count.value())));
+          }
+          return assoc;
+        }
         for (Map.Entry<IExpr, MutableInt> elem : histogram.entrySet()) {
           assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
         }
@@ -840,7 +859,7 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -1182,30 +1201,65 @@ public class AssociationFunctions {
    * </code>
    * </pre>
    */
-  private static class LetterCounts extends AbstractEvaluator {
+  private static final class CharacterCounts extends AbstractFunctionOptionEvaluator {
+    private final boolean lettersOnly;
+
+    /**
+     * @param lettersOnly count only letters, as <code>LetterCounts</code> does
+     */
+    CharacterCounts(boolean lettersOnly) {
+      this.lettersOnly = lettersOnly;
+    }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isString()) {
-        String str = arg1.toString();
-        HashMap<Character, MutableInt> map = new HashMap<Character, MutableInt>();
-        for (int i = 0; i < str.length(); i++) {
-          map.compute(str.charAt(i), //
+      if (arg1.isList()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+      int n = argSize == 2 ? ast.arg2().toIntDefault() : 1;
+      if (n < 1) {
+        // Positive integer expected in position 2.
+        return Errors.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
+      }
+      String str = option[0].isTrue() ? arg1.toString().toLowerCase(Locale.ROOT) : arg1.toString();
+      int[] characters = str.codePoints().toArray();
+      Map<String, MutableInt> counts = new LinkedHashMap<>();
+      int run = 0;
+      for (int i = 0; i < characters.length; i++) {
+        run = !lettersOnly || Character.isLetter(characters[i]) ? run + 1 : 0;
+        if (run >= n) {
+          counts.compute(new String(characters, i - n + 1, n), //
               (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
         }
-        IAssociation assoc = F.assoc();
-        for (Map.Entry<Character, MutableInt> elem : map.entrySet()) {
-          assoc.appendRule(F.Rule(F.$str(elem.getKey()), F.ZZ(elem.getValue().value())));
-        }
-        return assoc;
       }
-      return F.NIL;
+      List<Map.Entry<String, MutableInt>> entries = new ArrayList<>(counts.entrySet());
+      if (n == 1) {
+        // the most frequent ones first; the character seen last comes first in a tie
+        Collections.reverse(entries);
+        entries.sort((x, y) -> Integer.compare(y.getValue().value(), x.getValue().value()));
+      }
+      IAssociation assoc = F.assoc();
+      for (Map.Entry<String, MutableInt> elem : entries) {
+        assoc.appendRule(F.Rule(F.stringx(elem.getKey()), F.ZZ(elem.getValue().value())));
+      }
+      return assoc;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.putMessage(IPatternMatcher.SET, "arg2",
+          F.stringx("Positive integer expected in position 2."));
+      setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
 

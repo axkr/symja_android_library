@@ -3,13 +3,9 @@ package org.matheclipse.core.reflection.system;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.KPermutationsIterable;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IntRangeSpec;
 import org.matheclipse.core.expression.F;
@@ -20,75 +16,60 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class Permutations extends AbstractFunctionEvaluator {
 
-  private static final class KPermutationsList implements Iterable<IAST> {
-
-    private class KPermutationsIterator implements Iterator<IAST> {
-
-      private final Iterator<int[]> fIterable;
-
-      private KPermutationsIterator() {
-        this.fIterable = new KPermutationsIterable(fList, fParts, fOffset).iterator();
-      }
-
-      @Override
-      public boolean hasNext() {
-        return fIterable.hasNext();
-      }
-
-      @Override
-      public IAST next() {
-        int[] permutationsIndex = fIterable.next();
-        if (permutationsIndex == null) {
-          return null;
-        }
-        IASTAppendable temp = fResultList.copyAppendable();
-        for (int i = 0; i < fParts; i++) {
-          temp.append(fList.get(permutationsIndex[i] + fOffset));
-        }
-        return temp;
-      }
-    }
-
-    private final IAST fList;
-    private final IAST fResultList;
-    private final int fOffset;
-    private final int fParts;
-
-    public KPermutationsList(final IAST list, final int parts, IAST resultList, final int offset) {
-      fList = list;
-      fResultList = resultList;
-      fOffset = offset;
-      fParts = parts;
-    }
-
-    @Override
-    public Iterator<IAST> iterator() {
-      return new KPermutationsIterator();
-    }
-  }
-
-  private IAST createPermutationsWithNParts(final IAST list, int parts,
-      final IASTAppendable result) {
+  /**
+   * Append the distinct permutations of <code>parts</code> elements of <code>list</code> to
+   * <code>result</code>, in the order of their first positional occurrence. Only these are built:
+   * a list with repeated elements has far fewer of them than orderings of its positions.
+   *
+   * <p>
+   * Of equal elements the first unused one stands for all of them, so a position is tried only if
+   * the position before it with an equal element is used. The search keeps its positions in an
+   * array, because <code>parts</code> can be larger than the Java stack is deep.
+   */
+  private static IAST createPermutationsWithNParts(final IAST list, int parts,
+      final IASTAppendable result, EvalEngine engine) {
     if (parts == 0) {
       result.append(F.List());
       return result;
     }
-    if (list.size() <= 2) {
-      if (list.isAST1()) {
-        result.append(list);
-      }
-      return result;
+    final int n = list.argSize();
+    // the position of the previous equal element, or -1
+    final int[] previous = new int[n];
+    final Map<IExpr, Integer> lastPosition = new HashMap<IExpr, Integer>();
+    for (int i = 0; i < n; i++) {
+      Integer last = lastPosition.put(list.get(i + 1), i);
+      previous[i] = last == null ? -1 : last;
     }
-
-    final KPermutationsList perm = new KPermutationsList(list, parts, F.ast(list.head()), 1);
-    Set<IAST> set = new HashSet<IAST>();
-    for (IAST temp : perm) {
-      if (!set.contains(temp)) {
-        result.append(temp);
-        set.add(temp);
+    final boolean[] used = new boolean[n];
+    final int[] chosen = new int[parts];
+    int depth = 0;
+    int position = 0;
+    while (true) {
+      while (position < n
+          && (used[position] || (previous[position] >= 0 && !used[previous[position]]))) {
+        position++;
       }
+      if (position < n) {
+        used[position] = true;
+        chosen[depth++] = position;
+        position = 0;
+        if (depth < parts) {
+          continue;
+        }
+        IASTAppendable permutation = F.ast(list.head(), parts);
+        for (int i = 0; i < parts; i++) {
+          permutation.append(list.get(chosen[i] + 1));
+        }
+        result.append(permutation);
+        engine.checkTimeLimit();
+      } else if (depth == 0) {
+        return result;
+      }
+      // the next position after the one chosen last
+      position = chosen[--depth];
+      used[position] = false;
+      position++;
     }
-    return result;
   }
 
   /** The number of distinct elements from which a permutation of that length is not countable. */
@@ -213,13 +194,13 @@ public class Permutations extends AbstractFunctionEvaluator {
       if (step > 0) {
         for (int i = min; i <= max; i += step) {
           if (i >= 0 && i <= n) {
-            createPermutationsWithNParts(list, i, result);
+            createPermutationsWithNParts(list, i, result, engine);
           }
         }
       } else if (step < 0) {
         for (int i = min; i >= max; i += step) {
           if (i >= 0 && i <= n) {
-            createPermutationsWithNParts(list, i, result);
+            createPermutationsWithNParts(list, i, result, engine);
           }
         }
       }

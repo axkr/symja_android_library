@@ -38,13 +38,16 @@ public class DSolveValue extends AbstractFunctionEvaluator {
     if (ast.argSize() == 1) {
       return solveValueOfInferredUnknowns(solver, ast.arg1(), engine);
     }
-    if (ast.argSize() != 3) {
+    if (ast.argSize() != 3 && ast.argSize() != 4) {
       return F.NIL;
     }
 
     IExpr eqns = ast.arg1();
     IExpr expr = ast.arg2();
-    IExpr xVar = ast.arg3();
+    IExpr xVar = DSolve.rangeVariables(ast, ast.argSize());
+    if (xVar.isNIL()) {
+      return F.NIL;
+    }
 
     // Intelligently extract dependent variables from the target expression
     IExpr dependentVars = expr;
@@ -152,7 +155,7 @@ public class DSolveValue extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_3;
+    return ARGS_1_4;
   }
 
   @Override

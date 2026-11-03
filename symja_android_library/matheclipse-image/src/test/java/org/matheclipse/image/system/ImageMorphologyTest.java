@@ -250,4 +250,40 @@ public class ImageMorphologyTest extends AbstractTestCase {
             + "ImageType /@ {DerivativeFilter(b, {0, 1}), GradientFilter(b, 1)}", //
         "{Real32,Real32}");
   }
+
+  @Test
+  public void deleteSmallComponents() {
+    // smaller than the mean size of the components
+    check("ImageData(DeleteSmallComponents(Image({{1, 1, 1, 0, 1}})))", //
+        "{{1.0,1.0,1.0,0.0,0.0}}");
+    check("ImageData(DeleteSmallComponents(Image({{1, 1, 0, 1}, {0, 0, 0, 0}, {1, 1, 1, 1}}), 2))", //
+        "{{0.0,0.0,0.0,0.0},\n {0.0,0.0,0.0,0.0},\n {1.0,1.0,1.0,1.0}}");
+    check("ImageType(DeleteSmallComponents(Image({{1, 0, 1, 1}}, \"Bit\")))", //
+        "Bit");
+    check("{DeleteSmallComponents({{1, 1, 0, 2}}, 1), DeleteSmallComponents({{1, 1, 0, 2}})}", //
+        "{\n{{1,1,0,0}},\n{{1,1,0,2}}}");
+  }
+
+  @Test
+  public void morphologicalBinarize() {
+    check("ImageData(MorphologicalBinarize(Image({{0.9, 0.5, 0.2, 0.5}}), {0.4, 0.8}))", //
+        "{{1,1,0,0}}");
+    check("ImageData(MorphologicalBinarize(Image({{0.9, 0.5, 0.2, 0.5}}), {0.4}))", //
+        "{{1,1,0,1}}");
+    check("ImageData(MorphologicalBinarize(Image({{0.9, 0.75, 0.2, 0.75}}), 0.8))", //
+        "{{1,1,0,0}}");
+    check("ImageType(MorphologicalBinarize(Image({{0.9, 0.1}})))", //
+        "Bit");
+    check("ImageData(MorphologicalBinarize("
+        + "Image({{0.16, 0.11, 0.02}, {0.9, 0.13, 0.01}, {0.05, 0.47, 0.03}})))", //
+        "{{1,0,0},{1,1,0},{0,1,0}}");
+  }
+
+  @Test
+  public void componentMeasurementsOfArea() {
+    check("ComponentMeasurements({{1, 1, 0, 2}}, {\"Count\", \"Area\", \"EquivalentDiskRadius\"})", //
+        "{1->{2,2.0,0.797885},2->{1,1.0,0.56419}}");
+    check("ComponentMeasurements({{1, 1, 0, 2}}, \"EquivalentDiskRadius\")", //
+        "{1->0.797885,2->0.56419}");
+  }
 }

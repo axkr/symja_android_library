@@ -35,7 +35,7 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
     check("Sphere({1,2,3})", //
         "Sphere({1,2,3})");
     check("Sphere( ) /. Sphere -> Cuboid", //
-        "Cuboid({0,0,0},{1,1,1})");
+        "Cuboid({0,0,0})");
     check("{Area(Sphere({a,b,c})), RegionMeasure(Sphere( ))}", //
         "{4*Pi,4*Pi}");
   }

@@ -1004,21 +1004,52 @@ public class CompareUtil {
     // real points of both signs and of small and large size: an identity may fail on the branch
     // cut of a root only, which the complex points never hit. A point where the function has no
     // value says nothing here.
-    for (int i = 0; i < REAL_SAMPLES; i++) {
-      // the sign alternates and the size runs through [1/8, 64], so that no part is left out
-      final double slice = (i + tlr.nextDouble()) / REAL_SAMPLES;
-      final double magnitude = 0.125 * Math.pow(512.0, slice);
-      final double value = i % 2 == 0 ? magnitude : -magnitude;
-      IExpr sample = function.replaceAll(F.mapList(variables, t -> F.Rule(t, exactNumber(value))));
-      if (isZeroAtSample(sample, engine) == IExpr.COMPARE_TERNARY.FALSE) {
+    final int n = variables.argSize();
+    final int signBits = Math.min(n, MAX_SIGN_BITS);
+    final int realSamples = n == 1 ? REAL_SAMPLES
+        : Math.min(REAL_SAMPLES << signBits, MAX_REAL_SAMPLES);
+    final int sizes = n == 1 ? realSamples : Math.max(realSamples >> signBits, 1);
+    int ladders = 0;
+    for (int i = 0; i < realSamples; i++) {
+      engine.checkTimeLimit();
+      final int visit = n == 1 ? i : i >> signBits;
+      IASTAppendable rules = F.ListAlloc(n);
+      for (int j = 0; j < n; j++) {
+        // a variable of its own value and sign: a cut may lie in one sign combination only, Sqrt(x/a)
+        // sees none of them while x and a are equal. Each sign combination runs through the sizes
+        // in [1/8, 64], so that no part is left out, in another order for each variable: x small
+        // and a large is a part as well.
+        final int size = (visit * (2 * j + 1) + j) % sizes;
+        final double magnitude = 0.125 * Math.pow(512.0, (size + tlr.nextDouble()) / sizes);
+        final boolean negative = j < signBits ? (i >> j & 1) != 0 : tlr.nextBoolean();
+        rules.append(F.Rule(variables.get(j + 1), exactNumber(negative ? -magnitude : magnitude)));
+      }
+      IExpr sample = function.replaceAll(rules);
+      // only a machine value which isn't 0 asks for more digits, and a few of them have the answer
+      if (isPossibleZeroApproximate(sample, engine) == IExpr.COMPARE_TERNARY.FALSE
+          && ladders++ < MAX_REAL_LADDERS
+          && isZeroAtSample(sample, engine) == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
     }
     return zeros >= samples - 3;
   }
 
-  /** The number of real points {@link #isZeroAtEverySample(IAST, IAST, EvalEngine)} tests. */
+  /**
+   * The number of real points {@link #isZeroAtEverySample(IAST, IAST, EvalEngine)} tests for one
+   * variable, and for each sign combination of several variables, up to
+   * {@link #MAX_REAL_SAMPLES}.
+   */
   private static final int REAL_SAMPLES = 8;
+
+  /** The upper limit of the real points. Only a true zero pays for all of them. */
+  private static final int MAX_REAL_SAMPLES = 128;
+
+  /** The sign of a variable beyond this number isn't stratified. */
+  private static final int MAX_SIGN_BITS = 7;
+
+  /** The real points whose machine value is checked with more digits. */
+  private static final int MAX_REAL_LADDERS = 8;
 
   /** Below this leaf count a machine value of a sample isn't checked with more digits. */
   private static final int DEEP_CANCELLATION_LEAFCOUNT = 30;
