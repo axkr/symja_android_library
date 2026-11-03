@@ -288,14 +288,27 @@ public class ImageAdjustFunctions {
       }
 
       if (ast.argSize() == 1) {
-        // the range of the samples as they are, also beyond 0 ... 1, onto 0 ... 1
-        double[] range = raster.colorRange();
-        if (range[1] <= range[0]) {
-          return ast.arg1();
+        // the range of the samples of each colour channel as they are, also beyond 0 ... 1, onto
+        // 0 ... 1; a channel of a single value becomes 0
+        Raster result = raster.copy();
+        final int colorChannels = raster.colorChannels();
+        for (int c = 0; c < colorChannels; c++) {
+          double minimum = Double.POSITIVE_INFINITY;
+          double maximum = Double.NEGATIVE_INFINITY;
+          for (int y = 0; y < raster.height; y++) {
+            for (int x = 0; x < raster.width; x++) {
+              minimum = Math.min(minimum, raster.get(x, y, c));
+              maximum = Math.max(maximum, raster.get(x, y, c));
+            }
+          }
+          double width = maximum - minimum;
+          for (int y = 0; y < raster.height; y++) {
+            for (int x = 0; x < raster.width; x++) {
+              result.set(x, y, c, width > 0.0 ? (raster.get(x, y, c) - minimum) / width : 0.0);
+            }
+          }
         }
-        final double minimum = range[0];
-        final double width = range[1] - range[0];
-        return imageOf(raster.mapColor(value -> (value - minimum) / width), image);
+        return imageOf(result, image);
       }
 
       double contrast = 0.0;

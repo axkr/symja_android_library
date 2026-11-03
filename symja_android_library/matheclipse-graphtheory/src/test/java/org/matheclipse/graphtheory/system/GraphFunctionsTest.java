@@ -1438,8 +1438,8 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("VertexInDegree(" + g + ", 1)", "1");
     check("VertexOutDegree(" + g + ", 1)", "1");
     check("VertexDegree(" + g + ")", "{2,2,2,2}");
-    check("AdjacencyList(" + g + ", 1)", "{2}");
-    check("AdjacencyList(" + g + ")", "{{2},{3},{4},{1}}");
+    check("AdjacencyList(" + g + ", 1)", "{2,4}");
+    check("AdjacencyList(" + g + ")", "{{2,4},{1,3},{2,4},{1,3}}");
     check("DirectedGraphQ(" + g + ")", "True");
   }
 
@@ -2226,25 +2226,26 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testFindIndependentVertexSetSeveralSets() {
-    // the third argument asks for more than one set, largest first
-    check("FindIndependentVertexSet(PathGraph({1,2,3,4}), Infinity, All)", "{{1,3},{1,4},{2,4}}");
-    check("FindIndependentVertexSet(CycleGraph(4), Infinity, All)", "{{1,3},{2,4}}");
+    // the third argument asks for more than one set, largest first; all sets of one size come
+    // with the latest vertices first
+    check("FindIndependentVertexSet(PathGraph({1,2,3,4}), Infinity, All)", "{{2,4},{1,4},{1,3}}");
+    check("FindIndependentVertexSet(CycleGraph(4), Infinity, All)", "{{2,4},{1,3}}");
     check("FindIndependentVertexSet(CycleGraph(5), Infinity, All)",
-        "{{1,3},{1,4},{2,4},{2,5},{3,5}}");
+        "{{3,5},{2,5},{2,4},{1,4},{1,3}}");
     check("FindIndependentVertexSet(CycleGraph(5), Infinity, 2)", "{{1,3},{1,4}}");
     // a complete graph has nothing but singletons; a star has its leaves and its centre
-    check("FindIndependentVertexSet(CompleteGraph(4), Infinity, All)", "{{1},{2},{3},{4}}");
+    check("FindIndependentVertexSet(CompleteGraph(4), Infinity, All)", "{{4},{3},{2},{1}}");
     check("FindIndependentVertexSet(StarGraph(5), Infinity, All)", "{{2,3,4,5},{1}}");
     check("FindIndependentVertexSet(Graph({1,2,3},{}), Infinity, All)", "{{1,2,3}}");
     // and one of them is what the shorter forms report
-    check("FindIndependentVertexSet(CycleGraph(4), Infinity, All)[[1]]"
-        + "===FindIndependentVertexSet(CycleGraph(4))[[1]]", "True");
+    check("MemberQ(FindIndependentVertexSet(CycleGraph(4), Infinity, All),"
+        + "FindIndependentVertexSet(CycleGraph(4))[[1]])", "True");
 
     // an independent set of a graph is a clique of its complement - set for set, not just in size
-    check("FindIndependentVertexSet(CycleGraph(5), Infinity, All)"
-        + "===FindClique(GraphComplement(CycleGraph(5)), Infinity, All)", "True");
-    check("FindIndependentVertexSet(PetersenGraph(), Infinity, All)"
-        + "===FindClique(GraphComplement(PetersenGraph()), Infinity, All)", "True");
+    check("Sort(FindIndependentVertexSet(CycleGraph(5), Infinity, All))"
+        + "===Sort(FindClique(GraphComplement(CycleGraph(5)), Infinity, All))", "True");
+    check("Sort(FindIndependentVertexSet(PetersenGraph(), Infinity, All))"
+        + "===Sort(FindClique(GraphComplement(PetersenGraph()), Infinity, All))", "True");
     // and the predicate agrees with every one of them
     check("AllTrue(FindIndependentVertexSet(PetersenGraph(), Infinity, All),"
         + "IndependentVertexSetQ(PetersenGraph(), #)&)", "True");

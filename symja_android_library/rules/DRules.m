@@ -157,7 +157,7 @@
   D(AppellF1(a_,b_,c_,d_,f_,g_),x_?NotListQ) :=  (a*b*AppellF1(1+a,1+b,c,1+d,f,g)*D(f,x))/d+(a*c*AppellF1(1+a,b,1+c,1+d,f,g)*D(g,x))/d
     /; FreeQ({a,b,c,d},x),
     
-  D(If(c_, f_, g_),x_?NotListQ) := With({u=D(f,x), v=D(g,x)}, If(c, u, v)),
+  D(If(c_, f_, g_),x_?NotListQ) := With({u=D(f,x), v=D(g,x)}, If(u===v, u, If(c, u, v))),
   D(If(c_, f_),x_?NotListQ) := With({u=D(f,x)}, If(c, u)),
    
   D(UnitStep(f_),x_?NotListQ) :=  Piecewise({{Indeterminate, f == 0}}, 0)*D(f,x),

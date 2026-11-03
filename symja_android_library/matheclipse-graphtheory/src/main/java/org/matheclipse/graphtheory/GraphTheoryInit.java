@@ -55,6 +55,8 @@ public class GraphTheoryInit {
     S.FindHamiltonianPath.setEvaluator(new org.matheclipse.graphtheory.reflection.FindHamiltonianPath());
     S.AdjacencyGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.AdjacencyGraph());
     S.AdjacencyList.setEvaluator(new org.matheclipse.graphtheory.reflection.AdjacencyList());
+    S.GraphHub.setEvaluator(new org.matheclipse.graphtheory.reflection.GraphHub());
+    S.IncidenceList.setEvaluator(new org.matheclipse.graphtheory.reflection.IncidenceList());
     S.VertexComponent
         .setEvaluator(new org.matheclipse.graphtheory.reflection.VertexComponent(false));
     S.VertexInComponent

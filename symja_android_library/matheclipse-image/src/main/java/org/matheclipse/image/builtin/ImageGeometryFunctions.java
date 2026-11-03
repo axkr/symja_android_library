@@ -445,8 +445,9 @@ public class ImageGeometryFunctions {
    * <code>ImagePad(image, m)</code> - the image with <code>m</code> pixels added on every side.
    * <code>{left, right}</code> pads horizontally, <code>{{left, right}, {bottom, top}}</code> gives
    * all four, and a negative amount trims instead. A third argument is the colour to pad with, or
-   * <code>"Fixed"</code> to repeat the pixels of the border and <code>"Periodic"</code> to repeat
-   * the image.
+   * <code>"Fixed"</code> to repeat the pixels of the border, <code>"Periodic"</code> to repeat
+   * the image, <code>"Reflected"</code> to mirror it at the border pixels and
+   * <code>"Reversed"</code> to mirror it at its edges.
    */
   private static class ImagePad extends AbstractEvaluator {
 
@@ -461,13 +462,12 @@ public class ImageGeometryFunctions {
         return F.NIL;
       }
       float[] padding = null;
-      boolean fixed = false;
-      boolean periodic = false;
+      // how the image is continued beyond its border, or null for a colour
+      String continuation = null;
       if (ast.argSize() >= 3) {
         if (ast.arg3().isString()) {
-          fixed = "Fixed".equals(ast.arg3().toString());
-          periodic = "Periodic".equals(ast.arg3().toString());
-          if (!fixed && !periodic) {
+          continuation = ast.arg3().toString();
+          if (!CONTINUATIONS.contains(continuation)) {
             return F.NIL;
           }
         } else {
@@ -496,8 +496,7 @@ public class ImageGeometryFunctions {
       int channels = Boof.channels(image);
       final int sourceWidth = image.getWidth();
       final int sourceHeight = image.getHeight();
-      final boolean repeatBorder = fixed;
-      final boolean repeatImage = periodic;
+      final String continued = continuation;
       // the matrix an image was built from is padded with it
       IAST matrix = PixelMatrix.of(ast.arg1());
       if (matrix != null && PixelMatrix.width(matrix) == sourceWidth
@@ -511,18 +510,15 @@ public class ImageGeometryFunctions {
             colour[c] = c < 3 && !Double.isNaN(gray) ? gray : padding[c];
           }
         }
-        final IExpr outside = repeatBorder || repeatImage ? null
+        final IExpr outside = continued != null ? null
             : PixelMatrix.constant(colour, PixelMatrix.channels(matrix), source.sampleType());
-        if (outside != null || repeatBorder || repeatImage) {
+        if (outside != null || continued != null) {
           IExpr result = PixelMatrix.image(source, width, height, (x, y) -> {
             int sourceX = x - left;
             int sourceY = y - top;
-            if (repeatBorder) {
-              sourceX = clamp(sourceX, sourceWidth);
-              sourceY = clamp(sourceY, sourceHeight);
-            } else if (repeatImage) {
-              sourceX = Math.floorMod(sourceX, sourceWidth);
-              sourceY = Math.floorMod(sourceY, sourceHeight);
+            if (continued != null) {
+              sourceX = continued(sourceX, sourceWidth, continued);
+              sourceY = continued(sourceY, sourceHeight, continued);
             } else if (sourceX < 0 || sourceY < 0 || sourceX >= sourceWidth
                 || sourceY >= sourceHeight) {
               return outside;
@@ -542,12 +538,9 @@ public class ImageGeometryFunctions {
       return new ImageExpr(Pixels.fromPixels(width, height, channels, (x, y) -> {
         int sourceX = x - left;
         int sourceY = y - top;
-        if (repeatBorder) {
-          sourceX = clamp(sourceX, sourceWidth);
-          sourceY = clamp(sourceY, sourceHeight);
-        } else if (repeatImage) {
-          sourceX = Math.floorMod(sourceX, sourceWidth);
-          sourceY = Math.floorMod(sourceY, sourceHeight);
+        if (continued != null) {
+          sourceX = continued(sourceX, sourceWidth, continued);
+          sourceY = continued(sourceY, sourceHeight, continued);
         } else if (sourceX < 0 || sourceY < 0 || sourceX >= sourceWidth
             || sourceY >= sourceHeight) {
           return background.outside(channels);
@@ -1421,7 +1414,7 @@ public class ImageGeometryFunctions {
   }
 
   /** The string values of <code>Padding</code> which continue the image. */
-  private static final java.util.Set<String> CONTINUATIONS =
+  static final java.util.Set<String> CONTINUATIONS =
       java.util.Set.of("Fixed", "Periodic", "Reflected", "Reversed");
 
   /**
@@ -1429,7 +1422,7 @@ public class ImageGeometryFunctions {
    * <code>"Fixed"</code> repeats the border, <code>"Periodic"</code> the image,
    * <code>"Reflected"</code> mirrors it at the border pixel and <code>"Reversed"</code> at the edge.
    */
-  private static int continued(int index, int n, String continuation) {
+  static int continued(int index, int n, String continuation) {
     switch (continuation) {
       case "Fixed":
         return clamp(index, n);
