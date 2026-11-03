@@ -98,13 +98,11 @@ public class IndexedLevel extends AbstractLevelVisitor {
       if (fIncludeHeads) {
         newIndx[size] = F.C0;
         IExpr element = ast.get(0);
-        if (element.isAST()) {
-          IExpr temp = visitAST((IAST) element, newIndx);
-          if (temp.isPresent()) {
-            element = temp;
-          }
+        // a compound head is mapped by visitAST and is its own new value
+        IExpr temp = element.isAST() ? visitAST((IAST) element, newIndx) : F.NIL;
+        if (temp.isNIL()) {
+          temp = visitAtom(element, newIndx);
         }
-        final IExpr temp = visitAtom(element, newIndx);
         if (temp.isPresent()) {
           if (result[0].isNIL()) {
             result[0] = createResult(ast, temp);

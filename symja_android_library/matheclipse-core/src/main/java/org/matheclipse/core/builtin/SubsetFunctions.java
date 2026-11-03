@@ -3,7 +3,9 @@ package org.matheclipse.core.builtin;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -12,6 +14,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class SubsetFunctions {
@@ -20,6 +23,7 @@ public class SubsetFunctions {
 
     private static void init() {
       S.SubsetCases.setEvaluator(new SubsetCases());
+      S.SubsetPosition.setEvaluator(new SubsetPosition());
       S.SubsetReplace.setEvaluator(new SubsetReplace());
     }
   }
@@ -113,6 +117,136 @@ public class SubsetFunctions {
 
   }
 
+  /**
+   * <code>SubsetPosition(list, sublist)</code> - the positions of the subsets of
+   * <code>list</code> which match the pattern <code>sublist</code> in any order, each in the order
+   * of <code>sublist</code>; <code>SubsetPosition(list, sublist, n)</code> gives the first
+   * <code>n</code> of them. With <code>Overlaps -&gt; False</code> a subset shares no position with
+   * those found before.
+   */
+  private static final class SubsetPosition extends AbstractFunctionOptionEvaluator {
+    /** The largest number of tested arrangements. */
+    private static final long MAX_ARRANGEMENTS = 20_000_000L;
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      if (!ast.arg1().isList() || !ast.arg2().isList()) {
+        return F.NIL;
+      }
+      int maxResults = Integer.MAX_VALUE;
+      if (argSize == 3 && !ast.arg3().isInfinity()) {
+        maxResults = ast.arg3().toIntDefault(-1);
+        if (maxResults < 0) {
+          // Non-negative integer or Infinity expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
+        }
+      }
+      IAST list = (IAST) ast.arg1();
+      int k = ast.arg2().argSize();
+      long arrangements = 1L;
+      for (int i = 0; i < k; i++) {
+        arrangements *= list.argSize() - i;
+        if (arrangements > MAX_ARRANGEMENTS) {
+          ASTElementLimitExceeded.throwIt(arrangements);
+        }
+      }
+      if (k > list.argSize() || maxResults == 0) {
+        return F.CEmptyList;
+      }
+      Search search = new Search(list, k, engine.evalPatternMatcher(ast.arg2()), !option[0].isFalse(),
+          maxResults, engine);
+      search.subsets(1, 0);
+      return search.results;
+    }
+
+    /** The search for the matching subsets, in the lexicographic order of their positions. */
+    private static final class Search {
+      final IAST list;
+      final int[] subset;
+      final IPatternMatcher matcher;
+      final boolean overlaps;
+      final int maxResults;
+      final EvalEngine engine;
+      final boolean[] used;
+      final IASTAppendable results = F.ListAlloc();
+
+      Search(IAST list, int k, IPatternMatcher matcher, boolean overlaps, int maxResults,
+          EvalEngine engine) {
+        this.list = list;
+        this.subset = new int[k];
+        this.matcher = matcher;
+        this.overlaps = overlaps;
+        this.maxResults = maxResults;
+        this.engine = engine;
+        this.used = new boolean[list.size()];
+      }
+
+      void subsets(int from, int count) {
+        if (count == subset.length) {
+          engine.checkTimeLimit();
+          if (!overlaps && hasUsedPosition()) {
+            return;
+          }
+          int[] order = arrangement(new int[count], new boolean[count], 0);
+          if (order != null) {
+            results.append(F.mapRange(0, count, i -> F.ZZ(order[i])));
+            for (int position : order) {
+              used[position] = true;
+            }
+          }
+          return;
+        }
+        for (int i = from; i < list.size() && results.argSize() < maxResults; i++) {
+          subset[count] = i;
+          subsets(i + 1, count + 1);
+        }
+      }
+
+      private boolean hasUsedPosition() {
+        for (int position : subset) {
+          if (used[position]) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      /** The first order of the subset which matches the pattern, or <code>null</code>. */
+      private int[] arrangement(int[] order, boolean[] taken, int count) {
+        if (count == order.length) {
+          IASTAppendable candidate = F.ListAlloc(count);
+          for (int position : order) {
+            candidate.append(list.get(position));
+          }
+          return matcher.test(candidate, engine) ? order : null;
+        }
+        for (int i = 0; i < order.length; i++) {
+          if (!taken[i]) {
+            taken[i] = true;
+            order[count] = subset[i];
+            int[] found = arrangement(order, taken, count + 1);
+            if (found != null) {
+              return found;
+            }
+            taken[i] = false;
+          }
+        }
+        return null;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Overlaps, S.True);
+    }
+  }
+
   private static final class SubsetMatchManager {
     int maxNumberOfResult;
     IASTAppendable casesList;
@@ -188,7 +322,9 @@ public class SubsetFunctions {
         return F.NIL;
       }
       Functors.SubsetPatternFunctor function = Functors.subsetRules(rule, engine);
+      function.setMaxMatches(maxNumberOfResult);
       IExpr temp = function.apply(result);
+      maxNumberOfResult = function.getMaxMatches();
       if (temp.isPresent()) {
         result = (IAST) temp;
 
@@ -204,7 +340,7 @@ public class SubsetFunctions {
           }
         }
 
-        if (--maxNumberOfResult == 0) {
+        if (maxNumberOfResult == 0) {
           return result;
         }
       }
@@ -265,6 +401,9 @@ public class SubsetFunctions {
           IExpr rules = ast.arg2();
           if (ast.isAST3()) {
             IExpr arg3 = engine.evaluate(ast.arg3());
+            if (arg3.isZero()) {
+              return arg1;
+            }
             if (arg3.isReal()) {
               maxNumberOfResults = ((IReal) arg3).toInt();
             }

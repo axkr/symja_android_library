@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.Arrays;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.correlation.SpearmansCorrelation;
@@ -12,6 +13,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -59,6 +61,75 @@ public class SpearmanRho extends AbstractFunctionEvaluator {
 
   public SpearmanRho() {}
 
+  /** The ranks of the rational numbers of a vector, tied numbers share their mean rank. */
+  private static IRational[] ranks(IAST vector) {
+    int n = vector.argSize();
+    Integer[] order = new Integer[n];
+    for (int i = 0; i < n; i++) {
+      order[i] = i;
+    }
+    Arrays.sort(order, (a, b) -> ((IRational) vector.get(a + 1))
+        .compareTo((IRational) vector.get(b + 1)));
+    IRational[] result = new IRational[n];
+    int start = 0;
+    while (start < n) {
+      int end = start + 1;
+      while (end < n && vector.get(order[end] + 1).equals(vector.get(order[start] + 1))) {
+        end++;
+      }
+      IRational rank = F.QQ(start + end + 1, 2);
+      for (int i = start; i < end; i++) {
+        result[order[i]] = rank;
+      }
+      start = end;
+    }
+    return result;
+  }
+
+  /** The sum of the products of the deviations of two lists of ranks from their mean. */
+  private static IRational rankProducts(IRational[] x, IRational[] y) {
+    IRational mean = F.QQ(x.length + 1, 2);
+    IRational sum = F.C0;
+    for (int i = 0; i < x.length; i++) {
+      sum = sum.add(x[i].subtract(mean).multiply(y[i].subtract(mean)));
+    }
+    return sum;
+  }
+
+  /** The exact rank correlation, the correlation of the ranks of two rational vectors. */
+  private static IExpr rankCorrelation(IAST x, IAST y, EvalEngine engine) {
+    IRational[] rankX = ranks(x);
+    IRational[] rankY = ranks(y);
+    IRational varianceX = rankProducts(rankX, rankX);
+    IRational varianceY = rankProducts(rankY, rankY);
+    if (varianceX.isZero() || varianceY.isZero()) {
+      return S.Indeterminate;
+    }
+    return engine.evaluate(
+        F.Times(rankProducts(rankX, rankY), F.Power(varianceX.multiply(varianceY), F.CN1D2)));
+  }
+
+  private static boolean isRationalVector(IExpr expr) {
+    return expr.isList() && ((IAST) expr).forAll(IExpr::isRational);
+  }
+
+  /**
+   * The matrix of the rank correlations of the columns of a matrix of rational numbers.
+   *
+   * @return {@link F#NIL} if there is another entry
+   */
+  private static IExpr exactRankMatrix(IExpr matrix, EvalEngine engine) {
+    IExpr transposed = engine.evaluate(F.Transpose(matrix.normal(false)));
+    if (!transposed.isList() || !((IAST) transposed).forAll(SpearmanRho::isRationalVector)) {
+      return F.NIL;
+    }
+    IAST columns = (IAST) transposed;
+    int size = columns.argSize();
+    return F.mapRange(1, size + 1,
+        i -> F.mapRange(1, size + 1, j -> i == j && !((IAST) columns.get(i)).isEmpty() ? F.C1
+            : rankCorrelation((IAST) columns.get(i), (IAST) columns.get(j), engine)));
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     try {
@@ -74,6 +145,10 @@ public class SpearmanRho extends AbstractFunctionEvaluator {
 
         int[] dim = arg1.isMatrix(false);
         if (dim != null && dim[0] > 1 && dim[1] > 1) {
+          IExpr exact = exactRankMatrix(arg1, engine);
+          if (exact.isPresent()) {
+            return exact;
+          }
           RealMatrix matrix = arg1.toRealMatrix();
           if (matrix != null) {
             SpearmansCorrelation sc = new SpearmansCorrelation(matrix);
@@ -98,6 +173,11 @@ public class SpearmanRho extends AbstractFunctionEvaluator {
         int dim2 = arg2.isVector();
 
         if (dim1 >= 0 && dim1 == dim2) {
+          IExpr vector1 = arg1.normal(false);
+          IExpr vector2 = arg2.normal(false);
+          if (dim1 > 1 && isRationalVector(vector1) && isRationalVector(vector2)) {
+            return rankCorrelation((IAST) vector1, (IAST) vector2, engine);
+          }
           // Perform numerical evaluation if the engine is in double mode or inputs are numeric
           double[] a = arg1.toDoubleVector();
           if (a != null) {

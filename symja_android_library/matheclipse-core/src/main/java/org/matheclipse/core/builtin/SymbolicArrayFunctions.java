@@ -536,10 +536,14 @@ public class SymbolicArrayFunctions {
     }
     if (requested == S.Reals) {
       return declared == S.Integers || declared == S.NonNegativeReals
-          || declared == S.PositiveReals;
+          || declared == S.PositiveReals || declared == S.NonPositiveReals
+          || declared == S.NegativeReals;
     }
     if (requested == S.NonNegativeReals) {
       return declared == S.PositiveReals;
+    }
+    if (requested == S.NonPositiveReals) {
+      return declared == S.NegativeReals;
     }
     return false;
   }
@@ -592,10 +596,7 @@ public class SymbolicArrayFunctions {
       // an explicit array belongs to the domain when every one of its entries does
       IExpr elements = engine
           .evaluate(F.Element(F.Apply(S.Alternatives, F.Flatten(expr)), requestedElementDomain));
-      if (elements.isTrue() || elements.isFalse()) {
-        return elements;
-      }
-      return F.NIL;
+      return elements;
     }
     return F.NIL;
   }

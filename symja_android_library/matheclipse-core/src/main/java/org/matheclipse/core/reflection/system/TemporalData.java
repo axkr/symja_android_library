@@ -6,16 +6,25 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <code>TemporalData(...)["property"]</code> - a property of the paths {@link RandomFunction}
- * simulated or of a {@link TimeSeries}: <code>"PathCount"</code>, <code>"Times"</code>,
- * <code>"Values"</code> (or <code>"States"</code>), <code>"Paths"</code>, <code>"Path"</code>,
- * <code>"PathLength"</code>, <code>"FirstTime"</code>, <code>"LastTime"</code>,
- * <code>"FirstValue"</code> and <code>"LastValue"</code>. The values of one path are a list, of
- * several paths a list of lists.
+ * simulated or of a {@link TimeSeries}: <code>"PathCount"</code>, <code>"PathLength"</code>,
+ * <code>"Paths"</code>, <code>"ValueList"</code> (or <code>"States"</code>),
+ * <code>"TimeList"</code>, <code>"FirstTime"</code>, <code>"LastTime"</code>,
+ * <code>"FirstValue"</code> and <code>"LastValue"</code>. <code>"Path"</code>,
+ * <code>"Times"</code> and <code>"Values"</code> belong to the first path.
+ *
+ * <p>
+ * <code>TemporalData(...)[t]</code> - the value of a path at the time <code>t</code>, between two
+ * times by linear interpolation; for several paths the empirical distribution of their values.
+ *
+ * <p>
+ * <code>TemporalData({path1, path2, ...}, tspec)</code> - the object of the paths at the times of
+ * <code>tspec</code>, which has the forms of {@link TimeSeries}.
  *
  * <p>
  * The object's layout, <code>TemporalData(type, {{path1, ...}, {tspec1, ...}, pathCount,
@@ -27,15 +36,52 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class TemporalData extends AbstractEvaluator {
 
   private static final String[] PROPERTIES = {"FirstTime", "FirstValue", "LastTime", "LastValue",
-      "Path", "PathCount", "PathLength", "Paths", "States", "Times", "Values"};
+      "Path", "PathCount", "PathLength", "Paths", "States", "TimeList", "Times", "ValueList",
+      "Values"};
 
   /** The <code>TemporalData</code> object of equally spaced paths. */
-  static IAST of(IAST paths, IAST timeSpec, int pathCount, boolean discrete) {
+  static IAST of(IAST paths, IAST timeSpec, boolean discrete) {
+    return ofTimeSpecs(paths, F.List(timeSpec), discrete);
+  }
+
+  /**
+   * The object of <code>TemporalData(paths, tspec)</code>: <code>paths</code> is one path or a
+   * list of paths.
+   *
+   * @return {@link F#NIL} if the arguments don't have this form
+   */
+  private static IExpr construct(IAST paths, IExpr timeSpec, EvalEngine engine) {
+    if (paths.isEmpty()) {
+      return F.NIL;
+    }
+    IAST all = paths.forAll(x -> x.isList()) ? paths : F.List(paths);
+    IASTAppendable timeSpecs = F.ListAlloc(all.argSize());
+    boolean equal = true;
+    for (IExpr path : all) {
+      IExpr spec = F.NIL;
+      if (timeSpec.isList1() && timeSpec.first().isList()) {
+        if (timeSpec.first().argSize() == path.argSize()) {
+          spec = timeSpec;
+        }
+      } else {
+        spec = TimeSeries.regularTimes(timeSpec, path.argSize(), engine);
+      }
+      if (spec.isNIL()) {
+        return F.NIL;
+      }
+      equal &= spec.equals(timeSpecs.isEmpty() ? spec : timeSpecs.arg1());
+      timeSpecs.append(spec);
+    }
+    return ofTimeSpecs(all, equal ? F.List(timeSpecs.arg1()) : timeSpecs, false);
+  }
+
+  /** The <code>TemporalData</code> object of paths with their list of time specifications. */
+  private static IAST ofTimeSpecs(IAST paths, IAST timeSpecs, boolean discrete) {
     IAST kind = F.List(F.stringx(discrete ? "Discrete" : "Continuous"), F.C1);
     IAST options =
         F.List(F.Rule(F.symbol("ValueDimensions"), F.C1), F.Rule(F.symbol("ResamplingMethod"),
             F.List(F.stringx("Interpolation"), F.Rule(S.InterpolationOrder, F.C1))));
-    IAST data = F.List(paths, F.List(timeSpec), F.ZZ(pathCount), kind, kind, F.C1, options);
+    IAST data = F.List(paths, timeSpecs, F.ZZ(paths.argSize()), kind, kind, F.C1, options);
     return F.function(S.TemporalData, S.Automatic, data, S.False, F.num(15.0));
   }
 
@@ -91,12 +137,23 @@ public class TemporalData extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.head() == S.TemporalData) {
+      return ast.isAST2() && ast.arg1().isList() && ast.arg2().isList()
+          ? construct((IAST) ast.arg1(), ast.arg2(), engine)
+          : F.NIL;
+    }
     // td(property), where td = TemporalData(type, {...}, False, version)
-    if (!ast.isAST1() || !ast.arg1().isString()) {
+    if (!ast.isAST1()) {
       return F.NIL;
     }
     IAST[][] pathsAndTimes = pathsAndTimes(ast.head(), engine);
     if (pathsAndTimes == null) {
+      return F.NIL;
+    }
+    if (ast.arg1().isReal()) {
+      return slice(pathsAndTimes, ast.arg1(), engine);
+    }
+    if (!ast.arg1().isString()) {
       return F.NIL;
     }
     final IAST[] paths = pathsAndTimes[0];
@@ -115,14 +172,19 @@ public class TemporalData extends AbstractEvaluator {
             : lengths;
       }
       case "Times":
-        return perPath(pathCount, i -> times[i - 1]);
+        return pathCount > 0 ? times[0] : F.Missing(S.NotAvailable);
+      case "TimeList":
+        return F.mapRange(1, pathCount + 1, i -> times[i - 1]);
       case "Values":
+        return pathCount > 0 ? paths[0] : F.Missing(S.NotAvailable);
+      case "ValueList":
+        return F.mapRange(1, pathCount + 1, i -> paths[i - 1]);
       case "States":
         return perPath(pathCount, i -> paths[i - 1]);
       case "Paths":
         return F.mapRange(1, pathCount + 1, i -> path(times[i - 1], paths[i - 1]));
       case "Path":
-        return perPath(pathCount, i -> path(times[i - 1], paths[i - 1]));
+        return pathCount > 0 ? path(times[0], paths[0]) : F.Missing(S.NotAvailable);
       case "FirstTime":
         return extremeTime(times, true, engine);
       case "LastTime":
@@ -136,6 +198,44 @@ public class TemporalData extends AbstractEvaluator {
       default:
         return F.Missing(S.NotAvailable, ast.arg1());
     }
+  }
+
+  /**
+   * The value of the path at the time <code>t</code> by linear interpolation of its neighbours,
+   * or {@link F#NIL} if the path doesn't reach <code>t</code>.
+   */
+  private static IExpr valueAt(IAST times, IAST values, IExpr t, EvalEngine engine) {
+    double time = t.evalfNaN();
+    for (int i = 1; i < times.size(); i++) {
+      double right = times.get(i).evalfNaN();
+      if (right == time) {
+        return values.get(i);
+      }
+      if (i > 1 && times.get(i - 1).evalfNaN() < time && time < right) {
+        IExpr fraction = engine.evaluate(F.Divide(F.Subtract(t, times.get(i - 1)),
+            F.Subtract(times.get(i), times.get(i - 1))));
+        return engine.evaluate(F.Plus(values.get(i - 1),
+            F.Times(fraction, F.Subtract(values.get(i), values.get(i - 1)))));
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The value of one path at the time <code>t</code>, the empirical distribution of the values of
+   * several paths.
+   */
+  private static IExpr slice(IAST[][] pathsAndTimes, IExpr t, EvalEngine engine) {
+    final int pathCount = pathsAndTimes[0].length;
+    IASTAppendable values = F.ListAlloc(pathCount);
+    for (int i = 0; i < pathCount; i++) {
+      IExpr value = valueAt(pathsAndTimes[1][i], pathsAndTimes[0][i], t, engine);
+      if (value.isNIL()) {
+        return F.NIL;
+      }
+      values.append(value);
+    }
+    return pathCount == 1 ? values.arg1() : F.unaryAST1(S.EmpiricalDistribution, values);
   }
 
   /** The first time of all paths if <code>first</code>, else the last time of all paths. */

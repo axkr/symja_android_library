@@ -199,6 +199,19 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
   }
 
   /**
+   * The bisector of the angle at the second of the three <code>points</code>.
+   *
+   * @param interior <code>true</code> for the bisector of the interior angle, <code>false</code>
+   *        for the bisector of the exterior angle
+   * @return {@link F#NIL} if the bisector isn't determined
+   */
+  public static IExpr angleBisector(IAST points, boolean interior, EvalEngine engine) {
+    IExpr direction = bisectorDirection(points, 2, interior, engine);
+    return direction.isNIL() ? F.NIL
+        : F.binaryAST2(S.InfiniteLine, points.arg2(), engine.evaluate(F.Simplify(direction)));
+  }
+
+  /**
    * The sum (<code>interior == true</code>) or the difference of the two normalized edge
    * directions at the vertex, or {@link F#NIL} if it is the zero vector.
    */

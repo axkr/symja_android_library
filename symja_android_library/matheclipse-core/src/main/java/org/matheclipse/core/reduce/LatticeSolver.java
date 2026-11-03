@@ -78,6 +78,15 @@ public final class LatticeSolver {
           projectedBasis);
     }
 
+    /** The single point of a solution set with one parameter at the given value. */
+    Solution fixParameter(BigInteger value) {
+      BigInteger[] point = new BigInteger[offset.length];
+      for (int index = 0; index < point.length; index++) {
+        point[index] = offset[index].add(value.multiply(basis[0][index]));
+      }
+      return new Solution(variables, point, new BigInteger[0][]);
+    }
+
     /**
      * The value of one variable as an affine term in the given parameters.
      *

@@ -444,12 +444,127 @@ public class QuarticSolver {
       if (additionalSolution != null) {
         result.append(additionalSolution);
       }
+      if (isSymbolicCubic(a, b, c, d)) {
+        // the order of the roots of the formula is kept
+        result.appendArgs(symbolicCubicRoots(a, b, c, d));
+        return result;
+      }
       appendCubicRoots(result, a, b, c, d, cubicInvariants(a, b, c, d), true);
       if (createSet) {
         return createSet(result);
       }
       return evalAndSort(result, sort);
     }
+  }
+
+  /**
+   * Test if the cubic has symbolic exact coefficients and is more than a binomial
+   * <code>a*x^3 + d</code>, whose roots are solved by isolating the power.
+   */
+  public static boolean isSymbolicCubic(IExpr a, IExpr b, IExpr c, IExpr d) {
+    if (b.isZero() && c.isZero()) {
+      return false;
+    }
+    IAST coefficients = F.List(a, b, c, d);
+    return coefficients.exists(x -> !x.isNumericFunction())
+        && coefficients.isFree(x -> x.isInexactNumber(), true);
+  }
+
+  /**
+   * The integer content <code>k</code> of an expanded polynomial and the polynomial divided by it.
+   *
+   * @return <code>{k, rest}</code>, or {@link F#NIL} if the content is a unit or
+   *         <code>polynomial</code> is no sum
+   */
+  private static IAST integerContent(IExpr polynomial, EvalEngine engine) {
+    IExpr terms = engine.evaluate(F.FactorTerms(polynomial));
+    if (!terms.isTimes() || !terms.first().isInteger()
+        || ((IInteger) terms.first()).abs().isOne()) {
+      return F.NIL;
+    }
+    return F.List(terms.first(), engine.evaluate(F.Expand(((IAST) terms).rest().oneIdentity1())));
+  }
+
+  /**
+   * The roots of the cubic <code>a*x^3 + b*x^2 + c*x + d</code> with symbolic coefficients by
+   * Cardano's formula: with <code>p = 3*a*c - b^2</code>,
+   * <code>q = -2*b^3 + 9*a*b*c - 27*a^2*d</code> and
+   * <code>C = (q + Sqrt(4*p^3 + q^2))^(1/3)</code>
+   *
+   * <pre>
+   * x1 = -b/(3*a) - 2^(1/3)*p/(3*a*C) + C/(3*2^(1/3)*a)
+   * x2 = -b/(3*a) + (1 + I*Sqrt(3))*p/(3*2^(2/3)*a*C) - (1 - I*Sqrt(3))*C/(6*2^(1/3)*a)
+   * x3 = -b/(3*a) + (1 - I*Sqrt(3))*p/(3*2^(2/3)*a*C) - (1 + I*Sqrt(3))*C/(6*2^(1/3)*a)
+   * </pre>
+   *
+   * <p>
+   * A radicand with an integer content <code>k</code> is written
+   * <code>m*Sqrt(s)*Sqrt(rest)</code> with <code>k = m^2*s</code>, and the common factor of
+   * <code>q</code> and <code>m</code> leaves the cube root. If <code>p</code> vanishes the cubic is
+   * a shifted cube and <code>C</code> is the cube root of <code>2*q</code>.
+   */
+  public static IAST symbolicCubicRoots(IExpr a, IExpr b, IExpr c, IExpr d) {
+    final EvalEngine engine = EvalEngine.get();
+    IExpr p = engine.evaluate(F.Expand(Plus(Times(C3, a, c), Times(CN1, Power(b, C2)))));
+    IExpr q = engine.evaluate(F.Expand(Plus(Times(ZZ(-2L), Power(b, C3)), Times(ZZ(9L), a, b, c),
+        Times(ZZ(-27L), Power(a, C2), d))));
+    IExpr cubeRoot;
+    if (p.isZero()) {
+      IExpr twice = engine.evaluate(F.Expand(Times(C2, q)));
+      IAST content = integerContent(twice, engine);
+      if (content.isNIL()) {
+        cubeRoot = Power(twice, C1D3);
+      } else {
+        IInteger k = (IInteger) content.arg1();
+        IExpr rest = k.isNegative() ? F.Negate(content.arg2()) : content.arg2();
+        cubeRoot = Times(Power(k.abs(), C1D3), Power(engine.evaluate(F.Expand(rest)), C1D3));
+      }
+    } else {
+      cubeRoot = cardanoRadical(p, q, engine);
+    }
+    IExpr shift = Times(CN1, b, Power(Times(C3, a), CN1));
+    IExpr minusISqrt3 = Plus(C1, Times(CN1, CI, Sqrt(C3)));
+    IExpr plusISqrt3 = Plus(C1, Times(CI, Sqrt(C3)));
+    IExpr denominatorCube = Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1);
+    IExpr denominatorP = Power(Times(C3, Power(C2, F.QQ(2L, 3L)), a, cubeRoot), CN1);
+    return F.List(
+        engine.evaluate(Plus(shift, Times(CN1, Power(C2, C1D3), p, Power(Times(C3, a, cubeRoot), CN1)),
+            Times(cubeRoot, Power(Times(C3, Power(C2, C1D3), a), CN1)))),
+        engine.evaluate(Plus(shift, Times(plusISqrt3, p, denominatorP),
+            Times(CN1, minusISqrt3, cubeRoot, denominatorCube))),
+        engine.evaluate(Plus(shift, Times(minusISqrt3, p, denominatorP),
+            Times(CN1, plusISqrt3, cubeRoot, denominatorCube))));
+  }
+
+  /** The cube root <code>C = (q + Sqrt(4*p^3 + q^2))^(1/3)</code> of Cardano's formula. */
+  private static IExpr cardanoRadical(IExpr p, IExpr q, EvalEngine engine) {
+    IExpr radicand = engine.evaluate(Plus(Times(C4, Power(p, C3)), Power(q, C2)));
+    // the radicand is expanded unless that makes it clearly bigger
+    IExpr expanded = engine.evaluate(F.Expand(radicand));
+    boolean expand = expanded.leafCount() - radicand.leafCount() <= 2;
+    IExpr radical = Sqrt(expand ? expanded : radicand);
+    long scale = 1L;
+    IAST content = expand ? integerContent(expanded, engine) : F.NIL;
+    long k = content.isPresent() ? content.arg1().toLongDefault() : Config.INVALID_LONG;
+    if (k != Config.INVALID_LONG) {
+      long squareFree = Math.abs(k);
+      for (long f = 2L; f <= 1000L && f * f <= squareFree; f++) {
+        while (squareFree % (f * f) == 0L) {
+          squareFree /= f * f;
+          scale *= f;
+        }
+      }
+      IExpr rest = k < 0L ? Times(CN1, content.arg2()) : content.arg2();
+      radical = Times(Sqrt(ZZ(squareFree)), Sqrt(rest));
+    }
+    // the factor of q and of the scale of the radical leaves the cube root
+    IAST qContent = q.isInteger() ? F.List(q) : integerContent(q, engine);
+    long common = qContent.isNIL() ? 1L
+        : java.math.BigInteger.valueOf(scale)
+            .gcd(((IInteger) qContent.arg1()).toBigNumerator()).longValue();
+    IExpr inner = engine.evaluate(Plus(F.Expand(Times(q, F.QQ(1L, common))),
+        Times(ZZ(scale / common), radical)));
+    return engine.evaluate(Times(Power(ZZ(common), C1D3), Power(inner, C1D3)));
   }
 
   /**

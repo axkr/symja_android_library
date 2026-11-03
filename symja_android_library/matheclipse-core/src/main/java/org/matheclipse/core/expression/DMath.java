@@ -1031,8 +1031,96 @@ public class DMath {
     return org.hipparchus.special.Erf.erf(value);
   }
 
+  /** The absolute value below which the error function is summed in double-double arithmetic. */
+  private static final double ERFC_SERIES_LIMIT = 4.0;
+
+  /** The argument from which on the complementary error function is below the double range. */
+  private static final double ERFC_UNDERFLOW = 27.3;
+
+  /**
+   * The complementary error function, correctly rounded up to rare halfway cases below
+   * <code>|x|=4</code> and within an ulp beyond. The incomplete gamma functions of the library lose
+   * the last two digits.
+   */
   public static double erfc(double value) {
-    return org.hipparchus.special.Erf.erfc(value);
+    double x = Math.abs(value);
+    if (x >= ERFC_UNDERFLOW || Double.isNaN(value)) {
+      return org.hipparchus.special.Erf.erfc(value);
+    }
+    if (x <= ERFC_SERIES_LIMIT) {
+      return erfcSeries(value);
+    }
+    double tail = erfcContinuedFraction(x);
+    return value > 0.0 ? tail : 2.0 - tail;
+  }
+
+  /** The continued fraction of the tail of the error function for <code>x &gt;= 4</code>. */
+  private static double erfcContinuedFraction(double x) {
+    double denominator = x;
+    for (int k = 80; k >= 1; k--) {
+      denominator = x + 0.5 * k / denominator;
+    }
+    double square = x * x;
+    // Math.exp of the rounded square, corrected by the rounding error of the square
+    double exponential = Math.exp(-square) * (1.0 - Math.fma(x, x, -square));
+    return exponential / (denominator * 1.772453850905516);
+  }
+
+  /**
+   * <code>1-2/Sqrt(Pi)*Sum((-1)^n*x^(2n+1)/(n!*(2n+1)))</code> with about 32 digits: the terms of
+   * at most <code>|x|=4</code> and the cancellation against the small result cost less than 15 of
+   * them.
+   */
+  private static double erfcSeries(double x) {
+    // twoOverSqrtPi = 2/Sqrt(Pi) as a double-double number
+    final double twoOverSqrtPiHigh = 1.1283791670955126;
+    final double twoOverSqrtPiLow = 1.533545961316588E-17;
+    double x2High = x * x;
+    double x2Low = Math.fma(x, x, -x2High);
+    double termHigh = x;
+    double termLow = 0.0;
+    double sumHigh = x;
+    double sumLow = 0.0;
+    for (int n = 1; n < 200; n++) {
+      // term = -term*x^2/n
+      double productHigh = termHigh * x2High;
+      double productLow =
+          Math.fma(termHigh, x2High, -productHigh) + termHigh * x2Low + termLow * x2High;
+      double[] quotient = divide(productHigh, productLow, n);
+      termHigh = -quotient[0];
+      termLow = -quotient[1];
+      // sum += term/(2n+1)
+      double[] part = divide(termHigh, termLow, 2.0 * n + 1.0);
+      double[] sum = add(sumHigh, sumLow, part[0], part[1]);
+      sumHigh = sum[0];
+      sumLow = sum[1];
+      if (Math.abs(part[0]) < 1.0e-34) {
+        break;
+      }
+    }
+    double high = sumHigh * twoOverSqrtPiHigh;
+    double low = Math.fma(sumHigh, twoOverSqrtPiHigh, -high) + sumHigh * twoOverSqrtPiLow
+        + sumLow * twoOverSqrtPiHigh;
+    double[] result = add(1.0, 0.0, -high, -low);
+    return result[0] + result[1];
+  }
+
+  /** The double-double number <code>(aHigh+aLow)/b</code>. */
+  private static double[] divide(double aHigh, double aLow, double b) {
+    double q1 = aHigh / b;
+    double remainder = Math.fma(-q1, b, aHigh) + aLow;
+    double q2 = remainder / b;
+    double high = q1 + q2;
+    return new double[] {high, q2 - (high - q1)};
+  }
+
+  /** The double-double number <code>(aHigh+aLow)+(bHigh+bLow)</code>. */
+  private static double[] add(double aHigh, double aLow, double bHigh, double bLow) {
+    double sum = aHigh + bHigh;
+    double virtual = sum - aHigh;
+    double error = (aHigh - (sum - virtual)) + (bHigh - virtual) + aLow + bLow;
+    double high = sum + error;
+    return new double[] {high, error - (high - sum)};
   }
 
   public static double erfi(double value) {

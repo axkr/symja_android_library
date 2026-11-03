@@ -3,8 +3,7 @@ package org.matheclipse.core.builtin;
 import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.Random;
-import org.apfloat.Apfloat;
-import org.apfloat.FixedPrecisionApfloatHelper;
+import java.util.function.Supplier;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -452,11 +451,99 @@ public final class RandomFunctions {
     }
   }
 
+  /** The largest number of digits of the random numbers. */
+  private static final int MAX_RANDOM_DIGITS = 1000000;
+
+  /**
+   * The digits requested by the value of a <code>WorkingPrecision</code> option.
+   *
+   * @return <code>0</code> for machine numbers and <code>-1</code> for an invalid value
+   */
+  public static int workingPrecisionDigits(IExpr option) {
+    if (option == S.Automatic || option == S.MachinePrecision) {
+      return 0;
+    }
+    if (!option.isReal()) {
+      return -1;
+    }
+    double digits = option.evalf();
+    if (digits <= 0.0 || digits > MAX_RANDOM_DIGITS) {
+      return -1;
+    }
+    return digits < ParserConfig.MACHINE_PRECISION ? 0 : (int) Math.round(digits);
+  }
+
+  /** A fraction in the unit interval with the bits for the digits, from the random generator. */
+  private static IExpr randomUnit(int digits, EvalEngine engine) {
+    int bits = (int) Math.ceil(digits * 3.33) + 16;
+    return F.QQ(new BigInteger(bits, engine.getRandom()), BigInteger.ONE.shiftLeft(bits));
+  }
+
+  /** An exact bound of a range, the numbers in it are given with the working precision. */
+  private static IExpr exactBound(IExpr bound, EvalEngine engine) {
+    IExpr exact = bound.isInexactNumber() ? engine.evaluate(F.Rationalize(bound, F.C0)) : bound;
+    if (!engine.evaluate(F.NumericQ(exact)).isTrue()) {
+      throw new ArgumentTypeException("number expected instead of " + bound);
+    }
+    return exact;
+  }
+
+  /** The number <code>min+(max-min)*random</code> as an expression. */
+  private static IExpr randomBetween(IExpr min, IExpr max, int digits, EvalEngine engine) {
+    return F.Plus(min, F.Times(F.Subtract(max, min), randomUnit(digits, engine)));
+  }
+
+  /**
+   * An array of random numbers.
+   *
+   * @param spec the number or the list of the dimensions, or {@link F#NIL} for a single number
+   * @return {@link F#NIL} if the specification is invalid
+   */
+  private static IExpr randomArray(IAST ast, IExpr spec, Supplier<IExpr> number,
+      EvalEngine engine) {
+    if (spec.isNIL()) {
+      return number.get();
+    }
+    IAST list = spec.isList() ? (IAST) spec : F.list(spec);
+    int[] dimension = Validate.checkListOfInts(ast, list, 1, Integer.MAX_VALUE, engine);
+    return dimension == null ? F.NIL : Tensors.build(number, dimension);
+  }
+
   private static final class RandomComplex extends AbstractFunctionEvaluator {
+
+    /** A random number in the rectangle of a range, with the given number of digits. */
+    private static IExpr randomComplex(IExpr range, int digits, EvalEngine engine) {
+      final boolean corners = range.isList2();
+      IExpr min = range.isNIL() ? F.C0 : exactBound(corners ? range.first() : F.C0, engine);
+      IExpr max = range.isNIL() ? F.CC(1L, 1L, 1L, 1L)
+          : exactBound(corners ? range.second() : range, engine);
+      IExpr re = randomBetween(F.Re(min), F.Re(max), digits, engine);
+      IExpr im = randomBetween(F.Im(min), F.Im(max), digits, engine);
+      return engine.evaluate(F.N(F.Plus(re, F.Times(F.CI, im)), F.ZZ(digits)));
+    }
+
+    /** The form with a <code>WorkingPrecision</code> option as the last argument. */
+    private static IExpr evaluateWorkingPrecision(IAST ast, EvalEngine engine) {
+      int digits = workingPrecisionDigits(ast.last().second());
+      if (digits < 0 || ast.argSize() > 3) {
+        return F.NIL;
+      }
+      IAST arguments = ast.removeFromEnd(ast.size() - 1);
+      if (digits == 0) {
+        return arguments;
+      }
+      IExpr range = arguments.argSize() >= 1 ? arguments.arg1() : F.NIL;
+      IExpr spec = arguments.argSize() == 2 ? arguments.arg2() : F.NIL;
+      return randomArray(ast, spec, () -> randomComplex(range, digits, engine), engine);
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        if (ast.argSize() > 0 && ast.last().isRuleAST()
+            && ast.last().first() == S.WorkingPrecision) {
+          return evaluateWorkingPrecision(ast, engine);
+        }
         if (ast.isAST0()) {
           // RandomReal() gives a double value between 0.0 and 1.0
           Random tlr = engine.getRandom();
@@ -526,7 +613,12 @@ public final class RandomFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_2;
+      return ARGS_0_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, F.list(F.Rule(S.WorkingPrecision, S.MachinePrecision)));
     }
   }
 
@@ -892,27 +984,17 @@ public final class RandomFunctions {
         // RandomReal(dist) and RandomReal(dist, spec) are the legacy forms of RandomVariate
         return randomVariate(ast, engine);
       }
-      if (options[0].isReal()) {
-        int workingPrecision = options[0].toIntDefault();
-        if (workingPrecision <= 0) {
-          return F.NIL;
-        }
-        if (ParserConfig.MACHINE_PRECISION <= workingPrecision) {
-          // WorkingPrecision
-          if (ast.isAST0()) {
-            // RandomReal() gives a value between 0.0 and 1.0
-            long oldPrecision = engine.getNumericPrecision();
-            try {
-              FixedPrecisionApfloatHelper apfloat = engine.setNumericPrecision(workingPrecision);
-              Apfloat random = apfloat.random();
-              return F.num(random);
-            } finally {
-              engine.setNumericPrecision(oldPrecision);
-            }
-          }
-          return F.NIL;
-        }
-
+      final int digits = workingPrecisionDigits(options[0]);
+      if (digits < 0) {
+        return F.NIL;
+      }
+      if (digits > 0) {
+        final IExpr range = ast.argSize() >= 1 ? ast.arg1() : F.C1;
+        final IExpr min = exactBound(range.isList2() ? range.first() : F.C0, engine);
+        final IExpr max = exactBound(range.isList2() ? range.second() : range, engine);
+        return randomArray(ast, ast.isAST2() ? ast.arg2() : F.NIL,
+            () -> engine.evaluate(F.N(randomBetween(min, max, digits, engine), F.ZZ(digits))),
+            engine);
       }
 
       if (ast.isAST0()) {

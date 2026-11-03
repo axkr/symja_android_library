@@ -67,7 +67,7 @@ final class DSolveSystem {
       return F.Equal(t, F.C0);
     });
 
-    IExpr cSols = engine.evaluate(F.Solve(evaluatedBCsEqualZero, cVars));
+    IExpr cSols = engine.evaluate(F.SolveDistinct(evaluatedBCsEqualZero, cVars));
     if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
       IAST cSol = (IAST) ((IAST) cSols).arg1();
       IExpr fitted =
@@ -240,7 +240,7 @@ final class DSolveSystem {
       solveVars.appendArgs(aVars);
       IAST equationsEqualZero = equations.map(x -> F.Equal(x, F.C0));
 
-      IExpr solveRes = engine.evaluate(F.Solve(equationsEqualZero, solveVars));
+      IExpr solveRes = engine.evaluate(F.SolveDistinct(equationsEqualZero, solveVars));
       if (solveRes.isList() && ((IAST) solveRes).argSize() > 0) {
         IAST ruleList = (IAST) ((IAST) solveRes).arg1();
         IASTAppendable newOdeSys = F.ListAlloc();
@@ -960,7 +960,7 @@ final class DSolveSystem {
         return F.NIL;
       }
     }
-    IExpr solved = engine.evaluate(F.Solve(equations, F.List(firstRate, secondRate)));
+    IExpr solved = engine.evaluate(F.SolveDistinct(equations, F.List(firstRate, secondRate)));
     if (!solved.isList() || ((IAST) solved).argSize() == 0
         || !((IAST) solved).arg1().isList()) {
       return F.NIL;

@@ -5,8 +5,10 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.CholeskyDecomposition;
 import org.hipparchus.linear.RealMatrix;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -16,14 +18,22 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.RandomFunction;
 
 /**
- * The random processes <code>WienerProcess</code>, <code>OrnsteinUhlenbeckProcess</code> and
- * <code>ARMAProcess</code>: <code>proc(t)</code> is the distribution of the process at time
+ * The random processes <code>WienerProcess</code>, <code>OrnsteinUhlenbeckProcess</code>,
+ * <code>WhiteNoiseProcess</code> and the ARMA family, <code>ARProcess</code>, <code>MAProcess</code>,
+ * <code>ARMAProcess</code>, <code>ARIMAProcess</code>, <code>SARMAProcess</code> and
+ * <code>SARIMAProcess</code>: <code>proc(t)</code> is the distribution of the process at time
  * <code>t</code>, and {@link RandomFunction} simulates their paths.
  */
 public final class StochasticProcesses {
 
   /** The number of moving average weights summed for an autocovariance at most. */
   private static final int MAX_WEIGHTS = 100_000;
+
+  /** The largest order of differencing of a process. */
+  private static final int MAX_DIFFERENCES = 64;
+
+  /** The largest seasonal period of a process. */
+  private static final int MAX_SEASON = 100_000;
 
   private StochasticProcesses() {}
 
@@ -131,34 +141,182 @@ public final class StochasticProcesses {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  /** The numeric parameters of an <code>ARMAProcess</code>. */
+  /**
+   * <code>WeakStationarity(proc)</code> - whether the process with numeric parameters is weakly
+   * stationary: its autoregressive part has all roots outside the unit circle and it isn't
+   * integrated. A process which isn't reports the message <code>nonwkst</code>.
+   */
+  public static final class WeakStationarity extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr process = ast.arg1();
+      if (process.isAST(S.WhiteNoiseProcess)) {
+        return isWhiteNoise(process) ? S.True : F.NIL;
+      }
+      if (!process.isAST()) {
+        return F.NIL;
+      }
+      Arma arma = Arma.of((IAST) process);
+      if (arma == null) {
+        return F.NIL;
+      }
+      if (arma.d > 0 || arma.seasonalD > 0) {
+        return S.False;
+      }
+      if (arma.isStationary()) {
+        return S.True;
+      }
+      Errors.printMessage((ISymbol) process.head(), "nonwkst", F.CEmptyList, engine);
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+  }
+
+  /**
+   * The numeric parameters of a process of the ARMA family, in the form
+   * <code>x(t) = c + a1 x(t-1) + ... + ap x(t-p) + e(t) + b1 e(t-1) + ... + bq e(t-q)</code> of the
+   * series differenced <code>d</code> times and <code>seasonalD</code> times at lag
+   * <code>season</code>, with the seasonal factors multiplied out.
+   */
   static final class Arma {
     final double c;
     final double[] a;
     final double[] b;
     final double v;
+    final int d;
+    final int season;
+    final int seasonalD;
 
-    private Arma(double c, double[] a, double[] b, double v) {
+    private Arma(double c, double[] a, double[] b, double v, int d, int season, int seasonalD) {
       this.c = c;
       this.a = a;
       this.b = b;
       this.v = v;
+      this.d = d;
+      this.season = season;
+      this.seasonalD = seasonalD;
+    }
+
+    /** The number of arguments of the process without its constant, 0 for another expression. */
+    private static int arity(IExpr head) {
+      if (head == S.ARProcess || head == S.MAProcess) {
+        return 2;
+      }
+      if (head == S.ARMAProcess) {
+        return 3;
+      }
+      if (head == S.ARIMAProcess || head == S.SARMAProcess) {
+        return 4;
+      }
+      return head == S.SARIMAProcess ? 5 : 0;
     }
 
     /** The parameters, or <code>null</code> if they are not numbers. */
     static Arma of(IAST process) {
-      int offset = process.argSize() == 4 ? 1 : 0;
-      if (process.argSize() != 3 + offset) {
+      final IExpr head = process.head();
+      int arity = arity(head);
+      if (arity == 0) {
+        return null;
+      }
+      int offset = process.argSize() == arity + 1 && !process.arg1().isList() ? 1 : 0;
+      if (process.argSize() != arity + offset) {
         return null;
       }
       double c = offset == 1 ? process.arg1().evalfNaN() : 0.0;
-      double[] a = vector(process.get(1 + offset));
-      double[] b = vector(process.get(2 + offset));
-      double v = process.get(3 + offset).evalfNaN();
-      if (a == null || b == null || !Double.isFinite(c) || !(v > 0.0)) {
+      double v = process.last().evalfNaN();
+      if (!Double.isFinite(c) || !(v > 0.0)) {
         return null;
       }
-      return new Arma(c, a, b, v);
+      if (head == S.ARProcess || head == S.MAProcess) {
+        double[] weights = vector(process.get(1 + offset));
+        if (weights == null) {
+          return null;
+        }
+        return head == S.ARProcess ? new Arma(c, weights, new double[0], v, 0, 1, 0)
+            : new Arma(c, new double[0], weights, v, 0, 1, 0);
+      }
+      double[] a = vector(process.get(1 + offset));
+      if (a == null) {
+        return null;
+      }
+      final boolean integrated = head == S.ARIMAProcess || head == S.SARIMAProcess;
+      int d = integrated ? process.get(2 + offset).toIntDefault() : 0;
+      double[] b = vector(process.get((integrated ? 3 : 2) + offset));
+      if (b == null || d < 0 || d > MAX_DIFFERENCES) {
+        return null;
+      }
+      if (head == S.ARMAProcess || head == S.ARIMAProcess) {
+        return new Arma(c, a, b, v, d, 1, 0);
+      }
+      // {s, {sar}, {sma}} or {s, {sar}, sd, {sma}}
+      IExpr seasonal = process.get((integrated ? 4 : 3) + offset);
+      if (!seasonal.isList() || seasonal.argSize() != (integrated ? 4 : 3)) {
+        return null;
+      }
+      int season = seasonal.first().toIntDefault();
+      int seasonalD = integrated ? seasonal.getAt(3).toIntDefault() : 0;
+      double[] seasonalA = vector(seasonal.second());
+      double[] seasonalB = vector(seasonal.getAt(integrated ? 4 : 3));
+      if (season < 1 || season > MAX_SEASON || seasonalD < 0 || seasonalD > MAX_DIFFERENCES
+          || seasonalA == null || seasonalB == null) {
+        return null;
+      }
+      return new Arma(c, seasonalProduct(a, seasonalA, season, -1.0),
+          seasonalProduct(b, seasonalB, season, 1.0), v, d, season, seasonalD);
+    }
+
+    /**
+     * The coefficients of <code>L, L^2, ...</code> in
+     * <code>(1 + sign Sum(a(i) L^i)) (1 + sign Sum(b(j) L^(s j)))</code>, multiplied by
+     * <code>sign</code>. The sign <code>-1</code> is for autoregressive polynomials.
+     */
+    private static double[] seasonalProduct(double[] a, double[] b, int s, double sign) {
+      double[] left = new double[a.length + 1];
+      left[0] = 1.0;
+      for (int i = 0; i < a.length; i++) {
+        left[i + 1] = sign * a[i];
+      }
+      double[] product = new double[a.length + s * b.length + 1];
+      for (int i = 0; i < left.length; i++) {
+        product[i] += left[i];
+        for (int j = 0; j < b.length; j++) {
+          product[i + s * (j + 1)] += left[i] * sign * b[j];
+        }
+      }
+      double[] result = new double[product.length - 1];
+      for (int i = 0; i < result.length; i++) {
+        result[i] = sign * product[i + 1];
+      }
+      return result;
+    }
+
+    /**
+     * Whether all roots of <code>1 - a1 z - ... - ap z^p</code> lie outside the unit circle: the
+     * reflection coefficients of the step-down recursion are all smaller than 1 in magnitude.
+     */
+    boolean isStationary() {
+      double[] w = a.clone();
+      for (int m = w.length; m >= 1; m--) {
+        double k = w[m - 1];
+        if (Math.abs(k) >= 1.0) {
+          return false;
+        }
+        double[] next = new double[m - 1];
+        for (int i = 0; i < m - 1; i++) {
+          next[i] = (w[i] + k * w[m - 2 - i]) / (1.0 - k * k);
+        }
+        w = next;
+      }
+      return true;
     }
 
     private static double[] vector(IExpr list) {
@@ -222,6 +380,45 @@ public final class StochasticProcesses {
       }
       return gamma;
     }
+
+    /**
+     * One path of <code>n</code> values. A stationary recursion is run in from its mean, so the
+     * path is drawn from the stationary process; otherwise it starts from a zero history, and so
+     * does the integration of a differenced series.
+     */
+    double[] simulate(int n, Random random) {
+      int p = a.length;
+      int q = b.length;
+      boolean stationary = isStationary();
+      int burnIn = stationary ? 1000 + 50 * (p + q) : 0;
+      double sigma = Math.sqrt(v);
+      double start = stationary ? mean() : 0.0;
+      double[] history = new double[burnIn + n];
+      double[] noise = new double[burnIn + n];
+      for (int t = 0; t < history.length; t++) {
+        noise[t] = sigma * random.nextGaussian();
+        double value = c + noise[t];
+        for (int i = 1; i <= p; i++) {
+          value += a[i - 1] * (t - i >= 0 ? history[t - i] : start);
+        }
+        for (int j = 1; j <= q; j++) {
+          value += b[j - 1] * (t - j >= 0 ? noise[t - j] : 0.0);
+        }
+        history[t] = value;
+      }
+      double[] x = java.util.Arrays.copyOfRange(history, burnIn, burnIn + n);
+      for (int k = 0; k < d; k++) {
+        for (int t = 1; t < n; t++) {
+          x[t] += x[t - 1];
+        }
+      }
+      for (int k = 0; k < seasonalD; k++) {
+        for (int t = season; t < n; t++) {
+          x[t] += x[t - season];
+        }
+      }
+      return x;
+    }
   }
 
   /**
@@ -282,8 +479,12 @@ public final class StochasticProcesses {
    *         {@link IExpr.COMPARE_TERNARY#UNDECIDABLE} for a process that cannot be simulated
    */
   public static IExpr.COMPARE_TERNARY isDiscrete(IExpr process) {
-    if (process.isAST(S.ARMAProcess)) {
+    if (process.isAST() && Arma.arity(process.head()) > 0) {
       return Arma.of((IAST) process) != null ? IExpr.COMPARE_TERNARY.TRUE
+          : IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+    if (process.isAST(S.WhiteNoiseProcess)) {
+      return isWhiteNoise(process) ? IExpr.COMPARE_TERNARY.TRUE
           : IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
     if (process.isAST(S.WienerProcess, 1) || process.isAST(S.WienerProcess, 3)
@@ -302,6 +503,36 @@ public final class StochasticProcesses {
           : IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
     return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  /**
+   * Whether <code>process</code> is <code>WhiteNoiseProcess()</code>,
+   * <code>WhiteNoiseProcess(sigma)</code>, <code>WhiteNoiseProcess(mu, sigma)</code> or
+   * <code>WhiteNoiseProcess(dist)</code> with numeric parameters.
+   */
+  private static boolean isWhiteNoise(IExpr process) {
+    if (process.argSize() == 0) {
+      return true;
+    }
+    if (whiteNoiseDistribution(process).isPresent()) {
+      return true;
+    }
+    if (process.argSize() > 2) {
+      return false;
+    }
+    double mu = process.argSize() == 2 ? process.first().evalfNaN() : 0.0;
+    double sigma = ((IAST) process).last().evalfNaN();
+    return Double.isFinite(mu) && sigma >= 0.0 && Double.isFinite(sigma);
+  }
+
+  /**
+   * The distribution <code>dist</code> of <code>WhiteNoiseProcess(dist)</code>, otherwise
+   * {@link F#NIL}. Its values are drawn with <code>RandomVariate</code>.
+   */
+  public static IExpr whiteNoiseDistribution(IExpr process) {
+    return process.isAST(S.WhiteNoiseProcess, 2) && process.first().isDistribution()
+        ? process.first()
+        : F.NIL;
   }
 
   /** Whether the values of the process are integers: a counting process. */
@@ -333,29 +564,17 @@ public final class StochasticProcesses {
       }
       return x;
     }
-    if (process.isAST(S.ARMAProcess)) {
-      Arma arma = Arma.of(process);
-      int p = arma.a.length;
-      int q = arma.b.length;
-      // start from the mean and run in, so the path is drawn from the stationary process
-      int burnIn = 1000;
-      double sigma = Math.sqrt(arma.v);
-      double mean = arma.mean();
-      double[] history = new double[burnIn + n];
-      double[] noise = new double[burnIn + n];
-      for (int t = 0; t < history.length; t++) {
-        noise[t] = sigma * random.nextGaussian();
-        double value = arma.c + noise[t];
-        for (int i = 1; i <= p; i++) {
-          value += arma.a[i - 1] * (t - i >= 0 ? history[t - i] : mean);
-        }
-        for (int j = 1; j <= q; j++) {
-          value += arma.b[j - 1] * (t - j >= 0 ? noise[t - j] : 0.0);
-        }
-        history[t] = value;
+    if (process.isAST(S.WhiteNoiseProcess)) {
+      double mu = process.argSize() == 2 ? process.first().evalf() : 0.0;
+      double sigma = process.argSize() == 0 ? 1.0 : process.last().evalf();
+      for (int i = 0; i < n; i++) {
+        x[i] = mu + sigma * random.nextGaussian();
       }
-      System.arraycopy(history, burnIn, x, 0, n);
       return x;
+    }
+    Arma arma = Arma.of(process);
+    if (arma != null) {
+      return arma.simulate(n, random);
     }
     double[] parameters = new double[process.argSize()];
     for (int i = 0; i < parameters.length; i++) {

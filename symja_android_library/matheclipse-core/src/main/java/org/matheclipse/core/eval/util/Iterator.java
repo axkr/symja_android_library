@@ -110,6 +110,8 @@ public class Iterator {
   }
 
   private static class ExprIterator implements IIterator<IExpr> {
+    /** The distance in steps from the upper limit which is taken as having reached it. */
+    private static final double ROUNDING_TOLERANCE = 1.0e-12;
 
     IExpr count;
 
@@ -222,17 +224,21 @@ public class Iterator {
           }
         }
         IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
-        if (sub.isReal()) {
+        if (sub.isRational()) {
+          // the sign of a tiny exact number gets lost in a machine number
           return !sub.isNegative();
+        }
+        if (sub.isReal()) {
+          return reachesLimit(sub, sub.evalf());
         }
         double d = sub.evalfNaN();
         if (!Double.isNaN(d)) {
-          return !(d < 0.0);
+          return reachesLimit(sub, d);
         }
         IExpr together = evalEngine.evaluate(F.Together(sub));
         d = together.evalfNaN();
         if (!Double.isNaN(d)) {
-          return !(d < 0.0);
+          return reachesLimit(together, d);
         }
         // Whether the iteration is over cannot be decided, e.g. for {i,1,n} with a symbolic n.
         // Answering "no more elements" would silently produce an empty table for a range whose
@@ -240,6 +246,18 @@ public class Iterator {
         throw NoEvalException.CONST;
       }
       return false;
+    }
+
+    /**
+     * Whether the number of steps up to the upper limit isn't negative. Inexact bounds of a
+     * symbolic range end at the last step only up to rounding errors.
+     *
+     * @param stepsLeft the number of steps as an expression
+     * @param value the numeric value of <code>stepsLeft</code>
+     */
+    private static boolean reachesLimit(IExpr stepsLeft, double value) {
+      boolean inexact = !stepsLeft.isFree(x -> x.isInexactNumber(), false);
+      return !(value < (inexact ? -ROUNDING_TOLERANCE : 0.0));
     }
 
     @Override

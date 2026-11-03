@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.numbertheory.AlgebraicNumberField;
 
 import org.matheclipse.core.convert.VariablesSet;
@@ -159,11 +160,10 @@ public class RootReduce extends AbstractFunctionEvaluator {
       IExpr numericValue, double tolerance, EvalEngine engine) {
     try {
       // Step 4: compute numerical roots of the polynomial
-      IExpr nrootsResult = S.NRoots.of(engine, polyInX, x);
-      if (!nrootsResult.isList()) {
+      IAST rootsList = RootsFunctions.numericRoots(polyInX, F.list(x), engine);
+      if (rootsList.isNIL()) {
         return F.NIL;
       }
-      IAST rootsList = (IAST) nrootsResult;
 
       // Step 4b: reorder roots to match WMA's k-indexing used by Root[f, k, 0]:
       // real roots first (ascending), then complex roots (Re ascending, Im ascending).

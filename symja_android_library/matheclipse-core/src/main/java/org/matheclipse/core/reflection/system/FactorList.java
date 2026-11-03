@@ -46,7 +46,11 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
 
     // Apply TrigExpand if Trig->True
     if (options[3].isTrue()) {
-      arg1 = TrigExpand.trigExpand(arg1, engine);
+      IExpr expanded = TrigExpand.trigExpand(arg1, engine);
+      // a sum which is no polynomial in the trigonometric functions: the sum-to-product identities
+      arg1 = engine.evaluate(F.Factor(expanded)).isPlus()
+          ? engine.evaluate(F.binaryAST2(S.Factor, arg1, F.Rule(S.Trig, S.True)))
+          : expanded;
     }
 
     if (options[0].isInteger() && JASModular.isModpMessage(S.FactorList, options[0])) {

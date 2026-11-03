@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -45,6 +46,7 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -124,6 +126,338 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
+    }
+  }
+
+  /**
+   * The letters of a language in their alphabetic order.
+   *
+   * @return <code>null</code> if the language is not known
+   */
+  private static String lettersOfLanguage(IExpr language) {
+    return language.isString() ? ALPHABET_MAP.get(language.toString()) : null;
+  }
+
+  /** The string without the marks of its letters. */
+  private static String stripDiacritics(String str) {
+    return Normalizer.normalize(str, Normalizer.Form.NFD).replaceAll("\\p{Mn}+", "");
+  }
+
+  /**
+   * <code>AlphabeticOrder(s1, s2)</code> - <code>1</code> if the string <code>s1</code> comes
+   * before <code>s2</code> in the alphabet, <code>-1</code> if it comes after it and <code>0</code>
+   * if they are the same. <code>AlphabeticOrder(s1, s2, language)</code> uses the alphabet of the
+   * language, <code>AlphabeticOrder()</code> and <code>AlphabeticOrder(language)</code> are
+   * operators on two strings.
+   */
+  private static final class AlphabeticOrder extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr language = F.NIL;
+      if (ast.head().isAST(S.AlphabeticOrder)) {
+        IAST operator = (IAST) ast.head();
+        if (operator.argSize() > 1 || ast.argSize() != 2) {
+          return F.NIL;
+        }
+        language = operator.argSize() == 1 ? operator.arg1() : F.NIL;
+      } else if (ast.argSize() < 2) {
+        return F.NIL;
+      } else if (ast.isAST3()) {
+        language = ast.arg3();
+      }
+      if (!ast.arg1().isString() || !ast.arg2().isString()) {
+        return F.NIL;
+      }
+      String letters = language.isNIL() ? LATIN_ALPHABET : lettersOfLanguage(language);
+      if (letters == null) {
+        return F.NIL;
+      }
+      String s1 = ast.arg1().toString();
+      String s2 = ast.arg2().toString();
+      int order = compareLetters(s1, s2, letters);
+      if (order == 0) {
+        order = s1.toLowerCase(Locale.ROOT).compareTo(s2.toLowerCase(Locale.ROOT));
+      }
+      if (order == 0) {
+        // a lower case letter comes first
+        order = s2.compareTo(s1);
+      }
+      return F.ZZ(-Integer.signum(order));
+    }
+
+    /** Compare the letters of two strings by their position in the alphabet. */
+    private static int compareLetters(String s1, String s2, String letters) {
+      int[] c1 = s1.toLowerCase(Locale.ROOT).codePoints().toArray();
+      int[] c2 = s2.toLowerCase(Locale.ROOT).codePoints().toArray();
+      for (int i = 0; i < Math.min(c1.length, c2.length); i++) {
+        int order = Long.compare(sortKey(c1[i], letters), sortKey(c2[i], letters));
+        if (order != 0) {
+          return order;
+        }
+      }
+      return Integer.compare(c1.length, c2.length);
+    }
+
+    /**
+     * A letter of the alphabet by its position, a letter which is not in the alphabet with its base
+     * letter. Every other character comes before the letters.
+     */
+    private static long sortKey(int character, String letters) {
+      int index = letters.indexOf(character);
+      if (index < 0) {
+        String base = stripDiacritics(new String(Character.toChars(character)));
+        index = base.isEmpty() ? -1 : letters.indexOf(base.codePointAt(0));
+      }
+      return index < 0 ? (long) character - Integer.MAX_VALUE : index;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ast.head() == S.AlphabeticOrder ? ARGS_0_3 : null;
+    }
+  }
+
+  /**
+   * <code>NeedlemanWunschSimilarity(a, b)</code> - the score of the best global alignment of two
+   * strings or lists, and <code>SmithWatermanSimilarity(a, b)</code> the score of the best local
+   * one, with a score of <code>1</code> for a match, <code>-1</code> for a mismatch and
+   * <code>-(GapPenalty + n)</code> for a gap of <code>n</code> elements. The option
+   * <code>SimilarityRules -&gt; {{a, b} -&gt; s, ...}</code> gives other scores for aligning
+   * <code>a</code> with <code>b</code>, in either order.
+   */
+  private static final class AlignmentSimilarity extends AbstractFunctionOptionEvaluator {
+    private final boolean global;
+
+    /**
+     * @param global align the whole inputs and not only their best matching parts
+     */
+    AlignmentSimilarity(boolean global) {
+      this.global = global;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      double gap = option[0].evalfNaN();
+      Map<IExpr, Double> similarity = similarityRules(option[2], option[1].isTrue());
+      if (similarity == null) {
+        return Errors.printMessage(ast.topHead(), "unsupported",
+            F.list(F.Rule(S.SimilarityRules, option[2]), ast.topHead()), engine);
+      }
+      if (argSize != 2 || Double.isNaN(gap)) {
+        return F.NIL;
+      }
+      IExpr[] a = alignmentTokens(ast.arg1(), option[1].isTrue());
+      IExpr[] b = alignmentTokens(ast.arg2(), option[1].isTrue());
+      if (a == null || b == null) {
+        return F.NIL;
+      }
+      if (global && (a.length == 0 || b.length == 0)) {
+        // the single gap is counted as its size here
+        int length = Math.max(a.length, b.length);
+        return F.num(length == 0 ? 0.0 : length + gap);
+      }
+      double[] previous = new double[b.length + 1];
+      double[] current = new double[b.length + 1];
+      // the best scores which end with a gap in b, one for each position of b
+      double[] gapInB = new double[b.length + 1];
+      Arrays.fill(gapInB, Double.NEGATIVE_INFINITY);
+      for (int j = 1; global && j <= b.length; j++) {
+        previous[j] = -(gap + j);
+      }
+      double best = 0.0;
+      for (int i = 1; i <= a.length; i++) {
+        engine.checkTimeLimit();
+        current[0] = global ? -(gap + i) : 0.0;
+        double gapInA = Double.NEGATIVE_INFINITY;
+        for (int j = 1; j <= b.length; j++) {
+          gapInB[j] = Math.max(previous[j] - gap, gapInB[j]) - 1.0;
+          gapInA = Math.max(current[j - 1] - gap, gapInA) - 1.0;
+          double score = previous[j - 1] + alignmentScore(a[i - 1], b[j - 1], similarity);
+          score = Math.max(score, Math.max(gapInB[j], gapInA));
+          current[j] = global ? score : Math.max(score, 0.0);
+          best = Math.max(best, current[j]);
+        }
+        double[] swap = previous;
+        previous = current;
+        current = swap;
+      }
+      return F.num(global ? previous[b.length] : best);
+    }
+
+    /** The score of aligning two elements. */
+    private static double alignmentScore(IExpr x, IExpr y, Map<IExpr, Double> similarity) {
+      if (!similarity.isEmpty()) {
+        Double score = similarity.get(F.list(x, y));
+        if (score == null) {
+          score = similarity.get(F.list(y, x));
+        }
+        if (score != null) {
+          return score;
+        }
+      }
+      return x.equals(y) ? 1.0 : -1.0;
+    }
+
+    /**
+     * The scores of <code>SimilarityRules -&gt; {{a, b} -&gt; s, ...}</code>, by
+     * <code>{a, b}</code>; empty for <code>Automatic</code>.
+     *
+     * @return <code>null</code> if <code>rules</code> has another form
+     */
+    private static Map<IExpr, Double> similarityRules(IExpr rules, boolean ignoreCase) {
+      Map<IExpr, Double> scores = new HashMap<IExpr, Double>();
+      if (rules.isAutomatic()) {
+        return scores;
+      }
+      if (!rules.isList()) {
+        return null;
+      }
+      for (IExpr rule : (IAST) rules) {
+        if (!rule.isRuleAST() || !rule.first().isList2()) {
+          return null;
+        }
+        double score = rule.second().evalfNaN();
+        if (Double.isNaN(score)) {
+          return null;
+        }
+        IAST pair = (IAST) rule.first();
+        scores.put(ignoreCase ? pair.map(x -> lowerCaseString(x)) : pair, score);
+      }
+      return scores;
+    }
+
+    private static IExpr lowerCaseString(IExpr x) {
+      return x.isString() ? F.stringx(x.toString().toLowerCase(Locale.ROOT)) : x;
+    }
+
+    /**
+     * The characters of a string or the elements of a list.
+     *
+     * @return <code>null</code> if <code>expr</code> is neither of them
+     */
+    private static IExpr[] alignmentTokens(IExpr expr, boolean ignoreCase) {
+      if (expr.isList()) {
+        return ((IAST) expr).toArray(1);
+      }
+      if (!expr.isString()) {
+        return null;
+      }
+      String str = ignoreCase ? expr.toString().toLowerCase(Locale.ROOT) : expr.toString();
+      return str.codePoints().mapToObj(c -> F.stringx(new String(Character.toChars(c))))
+          .toArray(IExpr[]::new);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.GapPenalty, S.IgnoreCase, S.SimilarityRules},
+          new IExpr[] {F.C0, S.False, S.Automatic});
+    }
+  }
+
+  /**
+   * <code>PalindromeQ(expr)</code> - test if a string, a list or the digits of an integer read the
+   * same in both directions. The options <code>IgnoreCase</code> and <code>IgnoreDiacritics</code>
+   * apply to strings.
+   */
+  private static final class PalindromeQ extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST()) {
+        IAST list = (IAST) arg1;
+        int size = list.size();
+        for (int i = 1; i <= size / 2; i++) {
+          if (!list.get(i).isSame(list.get(size - i))) {
+            return S.False;
+          }
+        }
+        return S.True;
+      }
+      String str;
+      if (arg1.isString()) {
+        str = option[1].isTrue() ? stripDiacritics(arg1.toString()) : arg1.toString();
+        if (option[0].isTrue()) {
+          str = str.toLowerCase(Locale.ROOT);
+        }
+      } else if (arg1.isInteger()) {
+        // a negative number is no palindrome: its sign has no counterpart at the end
+        str = arg1.toString();
+      } else {
+        return F.NIL;
+      }
+      return F.booleSymbol(new StringBuilder(str).reverse().toString().equals(str));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.IgnoreDiacritics},
+          new IExpr[] {S.False, S.False});
+    }
+  }
+
+  /**
+   * <code>RemoveDiacritics(string)</code> - remove the marks from the letters of a string.
+   * <code>RemoveDiacritics(string, Language -&gt; lang)</code> keeps the letters of the alphabet of
+   * the language.
+   */
+  private static final class RemoveDiacritics extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+      if (ast.isAST1()) {
+        return F.stringx(stripDiacritics(arg1.toString()));
+      }
+      String letters = languageOption(ast.arg2());
+      if (letters == null) {
+        return F.NIL;
+      }
+      StringBuilder buf = new StringBuilder();
+      arg1.toString().codePoints().forEach(c -> {
+        if (letters.indexOf(Character.toLowerCase(c)) >= 0) {
+          buf.appendCodePoint(c);
+        } else {
+          buf.append(stripDiacritics(new String(Character.toChars(c))));
+        }
+      });
+      return F.stringx(buf.toString());
+    }
+
+    /**
+     * The letters of the language of the rule <code>Language -&gt; lang</code>.
+     *
+     * @return <code>null</code> if <code>option</code> is no such rule
+     */
+    private static String languageOption(IExpr option) {
+      if (option.isRuleAST() && option.first() == S.Language) {
+        return lettersOfLanguage(option.second());
+      }
+      return null;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -1292,6 +1626,7 @@ public final class StringFunctions {
         ALPHABET_CSV_MAP.put(ALPHABETS_CSV[i], result);
       }
       S.Alphabet.setEvaluator(new Alphabet());
+      S.AlphabeticOrder.setEvaluator(new AlphabeticOrder());
       S.BaseDecode.setEvaluator(new BaseDecode());
       S.BaseEncode.setEvaluator(new BaseEncode());
       S.ByteArrayToString.setEvaluator(new ByteArrayToString());
@@ -1347,6 +1682,10 @@ public final class StringFunctions {
       S.StringTakeDrop.setEvaluator(new StringTakeDrop());
       S.StringReplacePart.setEvaluator(new StringReplacePart());
       S.StringTemplate.setEvaluator(new StringTemplate());
+      S.NeedlemanWunschSimilarity.setEvaluator(new AlignmentSimilarity(true));
+      S.PalindromeQ.setEvaluator(new PalindromeQ());
+      S.RemoveDiacritics.setEvaluator(new RemoveDiacritics());
+      S.SmithWatermanSimilarity.setEvaluator(new AlignmentSimilarity(false));
       S.StringToByteArray.setEvaluator(new StringToByteArray());
       S.StringTrim.setEvaluator(new StringTrim());
       S.SyntaxLength.setEvaluator(new SyntaxLength());
@@ -3918,7 +4257,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       final IExpr head = ast.head();
-      if (head.isAST(S.StringTemplate, 2)) {
+      if (head.isAST(S.StringTemplate) && head.argSize() >= 1) {
         if (ast.isAST1()) {
           return S.TemplateApply.of(engine, head, ast.arg1());
         }
@@ -4045,6 +4384,10 @@ public final class StringFunctions {
 
   private static class TemplateApply extends AbstractFunctionEvaluator {
 
+    /** A slot of a string template: its name, which may be empty, between two backquotes. */
+    private static final java.util.regex.Pattern TEMPLATE_SLOT =
+        java.util.regex.Pattern.compile("`([^`]*)`");
+
     private static IExpr replaceSingleTemplateSlot(final Map<IExpr, IExpr> map, IAST templateSlot) {
       IExpr defaultValue = F.Missing(S.SlotAbsent, templateSlot.first());
       if (templateSlot.size() > 2) {
@@ -4144,8 +4487,59 @@ public final class StringFunctions {
         return Errors.templateApply(arg1.toString(), arg2);
       } else if (arg1.isAST(S.StringTemplate, 2) && arg1.first().isString()) {
         return Errors.templateApply(arg1.first().toString(), arg2);
+      } else if (arg1.isAST(S.StringTemplate) && arg1.argSize() > 1 && arg1.first().isString()) {
+        return templateWithOptions((IAST) arg1, arg2, engine);
       }
       return templateApplyTemplateSlot(arg1, arg2);
+    }
+
+    /**
+     * Fill the template <code>StringTemplate(str, options)</code>: the option
+     * <code>InsertionFunction</code> is applied to the value of each slot, and the option
+     * <code>CombinerFunction</code> to the list of the pieces of the result.
+     */
+    private static IExpr templateWithOptions(IAST template, IExpr args, EvalEngine engine) {
+      OptionArgs options = new OptionArgs(S.StringTemplate, template, 2, engine);
+      IExpr insertion = options.getOption(S.InsertionFunction);
+      IExpr combiner = options.getOption(S.CombinerFunction);
+      IASTAppendable pieces = F.ListAlloc();
+      String str = template.first().toString();
+      int slotCounter = 0;
+      int position = 0;
+      java.util.regex.Matcher slots = TEMPLATE_SLOT.matcher(str);
+      while (slots.find()) {
+        if (slots.start() > position) {
+          pieces.append(F.stringx(str.substring(position, slots.start())));
+        }
+        position = slots.end();
+        String name = slots.group(1);
+        IExpr value = templateValue(name.isEmpty() ? Integer.toString(++slotCounter) : name, args);
+        if (insertion.isPresent()) {
+          value = engine.evaluate(F.unaryAST1(insertion, value));
+        }
+        pieces.append(value.isString() ? value : F.stringx(value.toString()));
+      }
+      if (position < str.length()) {
+        pieces.append(F.stringx(str.substring(position)));
+      }
+      return combiner.isPresent() ? F.unaryAST1(combiner, pieces)
+          : pieces.setAtCopy(0, S.StringJoin);
+    }
+
+    /** The value of the named slot in a list, an association or a single value. */
+    private static IExpr templateValue(String name, IExpr args) {
+      int index = name.matches("\\d{1,9}") ? Integer.parseInt(name) : -1;
+      if (args.isAssociation()) {
+        IExpr value = ((IAssociation) args).getValue(F.stringx(name));
+        if (value.isPresent()) {
+          return value;
+        }
+      } else if (args.isList() && index >= 1 && index < args.size()) {
+        return ((IAST) args).get(index);
+      } else if (args.isPresent() && !args.isList() && index == 1) {
+        return args;
+      }
+      return F.Missing(S.SlotAbsent, index >= 0 ? F.ZZ(index) : F.stringx(name));
     }
 
     @Override
@@ -4483,13 +4877,19 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.last().isRuleAST()) {
-        // options like CharacterEncoding -> "Unicode" or PageWidth -> Infinity: the string is
-        // written in Unicode on one line anyway
+        // options like PageWidth -> Infinity: the string is written on one line anyway
         int end = ast.size();
+        IExpr encoding = F.NIL;
         while (end > 2 && ast.get(end - 1).isRuleAST()) {
           end--;
+          if (ast.get(end).first() == S.CharacterEncoding) {
+            encoding = ast.get(end).second();
+          }
         }
-        ast = ast.subList(1, end);
+        IExpr result = evaluate(ast.subList(1, end), engine);
+        return encoding.isPresent() && result.isString()
+            ? F.stringx(encodeCharacters(result.toString(), encoding))
+            : result;
       }
       if (ast.isAST2()) {
         return toStringForm(ast.arg1(), ast.arg2(), engine);
@@ -4517,6 +4917,21 @@ public final class StringFunctions {
       // ToString(expr) is ToString(expr, OutputForm) - the display wrappers Style, Row and
       // Graphics show what they format rather than themselves
       return F.stringx(outputForm(formatValues(arg1, engine, 0)));
+    }
+
+    /**
+     * The text of <code>str</code> in the character encoding <code>encoding</code>: with no
+     * encoding or an ASCII one the other characters are written as escape sequences, in UTF-8 each
+     * byte is a character.
+     */
+    private static String encodeCharacters(String str, IExpr encoding) {
+      if (encoding == S.None || encoding.isString("ASCII") || encoding.isString("PrintableASCII")) {
+        return org.matheclipse.parser.client.Characters.toASCIIEscapes(str);
+      }
+      if (encoding.isString("UTF8") || encoding.isString("UTF-8")) {
+        return new String(str.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+      }
+      return str;
     }
 
     /**

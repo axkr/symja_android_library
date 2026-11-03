@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.evalExpandAll;
+import java.util.function.Function;
 import java.util.List;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.exception.MathRuntimeException;
@@ -221,13 +222,12 @@ public class RootsFunctions {
         }
       }
 
-      IExpr temp = complexRoots(arg1, variables, engine);
-      if (!temp.isList()) {
-        return F.NIL;
+      IAST values = numericRoots(arg1, variables, engine);
+      if (values.isNIL() || ast.isAST1()) {
+        return values;
       }
-      IAST list = (IAST) temp;
-      int size = list.size();
-      return F.mapRange(1, size, i -> engine.evalN(list.get(i)));
+      IExpr variable = variables.arg1();
+      return F.mapFunction(S.Or, values, t -> F.Equal(variable, t));
     }
 
     @Override
@@ -235,6 +235,95 @@ public class RootsFunctions {
       return ARGS_1_2;
     }
 
+  }
+
+  /** The largest value of the option <code>Multiplicity</code>. */
+  private static final int MAX_MULTIPLICITY = 1 << 16;
+
+  /** The highest degree of an exact polynomial which is factored before its roots are computed. */
+  private static final int MAX_FACTORED_DEGREE = 32;
+
+  /**
+   * The numerical roots of a polynomial, each with its multiplicity. An exact polynomial is split
+   * into its factors first: <code>(z-1)^3*(z^2+1)</code> has the root <code>1.0</code> three times,
+   * which the numerical root finders only reach approximately.
+   *
+   * @param polynomial the polynomial or a rational function of it
+   * @param variables the list of the variable
+   * @return the list of the numbers or {@link F#NIL}
+   */
+  public static IAST numericRoots(IExpr polynomial, IAST variables, EvalEngine engine) {
+    IExpr roots = factoredComplexRoots(polynomial, variables, engine);
+    if (roots.isNIL()) {
+      roots = complexRoots(polynomial, variables, engine);
+    }
+    if (!roots.isList()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) roots;
+    return F.mapRange(1, list.size(), i -> engine.evalN(list.get(i)));
+  }
+
+  /**
+   * The roots of each factor of a polynomial with rational coefficients.
+   *
+   * @return {@link F#NIL} if <code>polynomial</code> isn't such a polynomial or doesn't split
+   */
+  private static IAST factoredComplexRoots(IExpr polynomial, IAST variables, EvalEngine engine) {
+    if (variables.argSize() != 1 || !variables.arg1().isSymbol()) {
+      return F.NIL;
+    }
+    IExpr variable = variables.arg1();
+    IExpr expanded = evalExpandAll(polynomial, engine);
+    if (!expanded.isPolynomial(variables)
+        || S.Exponent.of(engine, expanded, variable).toIntDefault() > MAX_FACTORED_DEGREE) {
+      return F.NIL;
+    }
+    IExpr[] coefficients = Root.polynomialCoefficients(F.subst(expanded, variable, F.Slot1));
+    if (coefficients == null || !isRationalCoefficients(coefficients)) {
+      return F.NIL;
+    }
+    return rootsByFactors(expanded, variable, 1, factor -> complexRoots(factor, variables, engine),
+        engine);
+  }
+
+  /**
+   * The roots of each factor of a polynomial, repeated with the multiplicity of the factor times
+   * <code>multiplicity</code>, or once for a <code>multiplicity</code> of 0.
+   *
+   * @param expanded the expanded polynomial
+   * @param factorRoots the roots of one factor
+   * @return {@link F#NIL} if the roots of a factor are unknown, or if <code>multiplicity</code> is
+   *         at most 1 and the polynomial doesn't split
+   */
+  private static IAST rootsByFactors(IExpr expanded, IExpr variable, int multiplicity,
+      Function<IExpr, IExpr> factorRoots, EvalEngine engine) {
+    IExpr factors = engine.evalQuiet(F.FactorList(expanded));
+    if (!factors.isList()) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc(8);
+    int parts = 0;
+    for (IExpr factor : (IAST) factors) {
+      int exponent = factor.second().toIntDefault();
+      if (factor.first().isFree(variable)) {
+        continue;
+      }
+      IExpr roots = factorRoots.apply(factor.first());
+      if (!roots.isList() || exponent < 1) {
+        return F.NIL;
+      }
+      parts += exponent;
+      for (long i = multiplicity == 0 ? 1L : (long) exponent * multiplicity; i > 0; i--) {
+        engine.checkTimeLimit();
+        result.appendArgs((IAST) roots);
+      }
+    }
+    if (multiplicity <= 1 && parts < 2) {
+      return F.NIL;
+    }
+    EvalAttributes.sort(result);
+    return result;
   }
 
   /**
@@ -275,6 +364,11 @@ public class RootsFunctions {
         final EvalEngine engine, IAST originalAST) {
       boolean cubicsInRadicals = options[0].isTrue();
       boolean quarticsInRadicals = options[1].isTrue();
+      IExpr modulus = options[2];
+      int multiplicity = options[3].toIntDefault();
+      if (multiplicity < 0 || multiplicity > MAX_MULTIPLICITY) {
+        return F.NIL;
+      }
       if (argSize > 0 && argSize < ast.argSize()) {
         ast = ast.copyUntil(argSize + 1);
       }
@@ -307,12 +401,49 @@ public class RootsFunctions {
       }
       IAST variables = eVar.getVarList();
       IExpr variable = variables.arg1();
-      IAST list =
-          roots(arg1, false, variables, true, true, cubicsInRadicals, quarticsInRadicals, engine);
+      if (options[1].isFalse() && isQuadraticInSquare(arg1, variable, engine)) {
+        // a quartic of this form has a very simple form
+        quarticsInRadicals = true;
+      }
+      if (modulus.isInteger() && !modulus.isZero()) {
+        // the residues which solve the equation; a composite modulus has no field of residues
+        IExpr residues =
+            engine.evaluate(F.Reduce(F.Equal(arg1, F.C0), variable, F.Rule(S.Modulus, modulus)));
+        return residues.isAST(S.Reduce) ? F.NIL : residues;
+      }
+      IAST list = rootsOfFactors(arg1, variables, multiplicity, cubicsInRadicals,
+          quarticsInRadicals, engine);
+      if (list.isNIL()) {
+        list = roots(arg1, false, variables, true, true, cubicsInRadicals, quarticsInRadicals,
+            engine);
+      }
       if (list.isPresent()) {
         return F.mapFunction(S.Or, list, t -> F.Equal(variable, t));
       }
       return F.NIL;
+    }
+
+    /**
+     * The roots of a product factor by factor, each repeated with its multiplicity times
+     * <code>multiplicity</code>. The factors of a polynomial with symbolic coefficients are of low
+     * degree, where the expanded product would be solved by the general formulas.
+     *
+     * @return {@link F#NIL} if <code>multiplicity</code> is 1 and the polynomial has numeric
+     *         coefficients or doesn't split
+     */
+    private static IAST rootsOfFactors(IExpr polynomial, IAST variables, int multiplicity,
+        boolean cubicsInRadicals, boolean quarticsInRadicals, EvalEngine engine) {
+      IExpr variable = variables.arg1();
+      IExpr expanded = evalExpandAll(polynomial, engine);
+      if (!expanded.isPolynomial(variables)
+          || (multiplicity <= 1 && new VariablesSet(expanded).isSize(1)
+              && (multiplicity == 0 || !hasRepeatedFactor(expanded, engine)))) {
+        return F.NIL;
+      }
+      return rootsByFactors(expanded, variable, multiplicity,
+          factor -> roots(factor, false, variables, true, true, cubicsInRadicals,
+              quarticsInRadicals, engine),
+          engine);
     }
 
     @Override
@@ -325,8 +456,8 @@ public class RootsFunctions {
       // `Cubics` and `Quartics` default to `True` here: `Roots` is the radical solver, and the
       // callers which want the inert form ask for it explicitly
       setOptions(newSymbol, //
-          new IBuiltInSymbol[] {S.Cubics, S.Quartics}, //
-          new IExpr[] {S.True, S.True});
+          new IBuiltInSymbol[] {S.Cubics, S.Quartics, S.Modulus, S.Multiplicity}, //
+          new IExpr[] {S.True, S.True, F.C0, F.C1});
     }
   }
 
@@ -506,6 +637,23 @@ public class RootsFunctions {
       return true;
     }
     return polynomial.argSize() <= 2;
+  }
+
+  /** Test if an exact <code>polynomial</code> has a factor of a power above 1. */
+  private static boolean hasRepeatedFactor(IExpr polynomial, EvalEngine engine) {
+    if (!polynomial.isFree(IExpr::isInexactNumber, false)) {
+      return false;
+    }
+    IExpr factors = engine.evalQuiet(F.FactorList(polynomial));
+    return factors.isList() && ((IAST) factors)
+        .exists(factor -> factor.isList2() && factor.second().toIntDefault() > 1);
+  }
+
+  /** Test if <code>polynomial</code> is a quartic with only even powers of <code>variable</code>. */
+  private static boolean isQuadraticInSquare(IExpr polynomial, IExpr variable, EvalEngine engine) {
+    IExpr coefficients = engine.evaluate(F.CoefficientList(polynomial, variable));
+    return coefficients.isList() && coefficients.argSize() == 5 && coefficients.getAt(2).isZero()
+        && coefficients.getAt(4).isZero();
   }
 
   /**
@@ -978,18 +1126,18 @@ public class RootsFunctions {
       // odd
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IASTMutable temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, reducedDegree)), 1);
-        if (rhsNumerator.first().isNegative()) {
+        IAST numerator = (IAST) rhsNumerator;
+        if (numerator.first().isNegative()) {
           isNegative = true;
-          temp.set(1, rhsNumerator.first().negate());
+          numerator = numerator.setAtCopy(1, numerator.first().negate());
         }
-        zNumerator = engine.evaluate(temp);
+        zNumerator = engine.evaluate(numerator.map(x -> powerOrExprMapper(x, 1, reducedDegree)));
       } else {
         if (rhsNumerator.isNegative()) {
           isNegative = true;
           rhsNumerator = rhsNumerator.negate();
         }
-        zNumerator = engine.evaluate(F.Power(rhsNumerator, F.QQ(1, reducedDegree)));
+        zNumerator = engine.evaluate(powerOrExprMapper(rhsNumerator, 1, reducedDegree));
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
@@ -997,14 +1145,14 @@ public class RootsFunctions {
           isNegative = !isNegative;
           rhsDenominator = ((IAST) rhsDenominator).setAtCopy(1, rhsDenominator.first().negate());
         }
-        IASTMutable temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, reducedDegree)), 1);
-        zDenominator = engine.evaluate(temp);
+        zDenominator = engine
+            .evaluate(((IAST) rhsDenominator).map(x -> powerOrExprMapper(x, -1, reducedDegree)));
       } else {
         if (rhsDenominator.isNegative()) {
           isNegative = !isNegative;
           rhsDenominator = rhsDenominator.negate();
         }
-        zDenominator = engine.evaluate(F.Power(rhsDenominator, F.QQ(-1, reducedDegree)));
+        zDenominator = engine.evaluate(powerOrExprMapper(rhsDenominator, -1, reducedDegree));
       }
       final int increment = isNegative ? 1 : 0;
       result = F.mapRange(0, reducedDegree, i -> //

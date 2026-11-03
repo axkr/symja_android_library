@@ -37,8 +37,10 @@ public final class SolveOptions {
    * to {@link S#Automatic}, i.e. to the assumptions the engine already carries - the global
    * <code>$Assumptions</code> and the ones an enclosing <code>Assuming(...)</code> established.
    */
+  static final IExpr DEFAULT_MAX_ROOTS = F.C1000;
+
   static final IExpr[] SOLVE_DEFAULTS =
-      new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, F.C1000, S.Automatic, F.C0};
+      new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, DEFAULT_MAX_ROOTS, S.Automatic, F.C0};
 
   /** The option keys of {@link S#Eliminate}. */
   public static final IBuiltInSymbol[] ELIMINATE_KEYS =
@@ -304,9 +306,11 @@ public final class SolveOptions {
 
   /**
    * The {@link S#Cubics} and {@link S#Quartics} option rules, to be appended to a call of
-   * {@link S#Roots}.
+   * {@link S#Roots}. The value <code>False</code> of <code>Roots</code> still solves a quadratic in
+   * <code>x^2</code> in radicals; {@link S#None} gives every quartic as {@link S#Root} objects.
    */
   public IExpr[] rootsOptions() {
-    return new IExpr[] {F.Rule(S.Cubics, cubics), F.Rule(S.Quartics, quartics)};
+    return new IExpr[] {F.Rule(S.Cubics, cubics),
+        F.Rule(S.Quartics, quartics.isFalse() ? S.None : quartics)};
   }
 }

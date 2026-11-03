@@ -140,7 +140,7 @@ public class RischDifferentialEquation {
     if (resultant.isZero()) {
       return F.C1;
     }
-    IExpr solution = engine.evaluate(F.Solve(F.Equal(resultant, F.C0), z));
+    IExpr solution = engine.evaluate(F.SolveDistinct(F.Equal(resultant, F.C0), z));
     if (!solution.isList()) {
       return F.C1;
     }
@@ -240,7 +240,7 @@ public class RischDifferentialEquation {
     for (ISymbol cSym : coefficientSymbols) {
       variables.append(cSym);
     }
-    IExpr solution = engine.evaluate(F.Solve(equations, variables));
+    IExpr solution = engine.evaluate(F.SolveDistinct(equations, variables));
     if (!solution.isList() || ((IAST) solution).argSize() == 0) {
       return F.NIL;
     }

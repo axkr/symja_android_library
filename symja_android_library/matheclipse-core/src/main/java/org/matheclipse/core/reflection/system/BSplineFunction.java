@@ -26,6 +26,10 @@ import org.matheclipse.core.interfaces.IExpr;
  * with <code>n = 2</code> is a surface of numbers. The function itself stays as it is written, and
  * so does a call with a parameter which is no number in <code>0..1</code>, unless
  * <code>Method -> {"Extrapolation" -> "Clamp"}</code> moves such a parameter to the nearest end.
+ * <code>SplineKnots -> knots</code> or <code>{knotsU, knotsV}</code> gives the knots of a direction:
+ * with <code>n</code> control points they determine the degree, their length minus
+ * <code>n + 1</code>, and the parameter runs from <code>knots[degree + 1]</code> to
+ * <code>knots[n + 1]</code>.
  * <code>Derivative(n)[BSplineFunction(points)][u]</code> is the derivative with respect to the
  * parameter, from the derivatives of the basis functions.
  */
@@ -81,6 +85,7 @@ public class BSplineFunction extends AbstractEvaluator {
     int[] degrees = {3, 3};
     boolean[] closed = {false, false};
     boolean clamp = false;
+    double[][] knots = new double[2][];
     int firstOption = 2;
     if (function.size() > 2 && function.arg2().isInteger()) {
       // BSplineFunction(array, n): the net has n directions
@@ -118,9 +123,32 @@ public class BSplineFunction extends AbstractEvaluator {
         if (degrees[0] < 1 || degrees[1] < 1) {
           return F.NIL;
         }
+      } else if (option.first() == S.SplineKnots) {
+        if (value != S.Automatic && !readKnots(value, directions, knots)) {
+          return F.NIL;
+        }
       } else if (!(value == S.Automatic || value.isFalse())) {
-        // SplineKnots and SplineWeights are not read
+        // SplineWeights are not read
         return F.NIL;
+      }
+    }
+
+    double[][][] net = controlNet(function.arg1(), directions);
+    if (net == null) {
+      return F.NIL;
+    }
+    int[] counts = {net.length, net[0].length};
+    double[] low = {0.0, 0.0};
+    double[] high = {1.0, 1.0};
+    for (int i = 0; i < directions; i++) {
+      if (knots[i] != null) {
+        degrees[i] = knots[i].length - counts[i] - 1;
+        if (degrees[i] < 1) {
+          return F.NIL;
+        }
+        closed[i] = false;
+        low[i] = knots[i][degrees[i]];
+        high[i] = knots[i][counts[i]];
       }
     }
 
@@ -133,26 +161,21 @@ public class BSplineFunction extends AbstractEvaluator {
       }
       parameters[i] = parameter.evalf();
       if (clamp) {
-        double clamped = Math.max(0.0, Math.min(1.0, parameters[i]));
+        double clamped = Math.max(low[i], Math.min(high[i], parameters[i]));
         // beyond its ends the clamped spline is constant in this direction
         constant |= orders != null && orders[i] > 0 && clamped != parameters[i];
         parameters[i] = clamped;
       }
-      if (!(parameters[i] >= 0.0 && parameters[i] <= 1.0)) {
+      if (!(parameters[i] >= low[i] && parameters[i] <= high[i])) {
         return F.NIL;
       }
     }
 
-    double[][][] net = controlNet(function.arg1(), directions);
-    if (net == null) {
-      return F.NIL;
-    }
     int[] order = orders != null ? orders : new int[directions];
-    double[] basisU = closed[0] ? periodicBasis(net.length, degrees[0], order[0], parameters[0])
-        : basis(net.length, degrees[0], order[0], parameters[0]);
+    double[] basisU = directionBasis(counts[0], degrees[0], closed[0], knots[0], order[0],
+        parameters[0]);
     double[] basisV = directions == 2
-        ? (closed[1] ? periodicBasis(net[0].length, degrees[1], order[1], parameters[1])
-            : basis(net[0].length, degrees[1], order[1], parameters[1]))
+        ? directionBasis(counts[1], degrees[1], closed[1], knots[1], order[1], parameters[1])
         : new double[] {1.0};
     int dimension = net[0][0].length;
     double[] point = new double[dimension];
@@ -176,6 +199,71 @@ public class BSplineFunction extends AbstractEvaluator {
       result.append(F.num(coordinate));
     }
     return result;
+  }
+
+  /** The values of the basis functions of a direction. */
+  private static double[] directionBasis(int n, int degree, boolean closed, double[] knots,
+      int order, double u) {
+    if (closed) {
+      return periodicBasis(n, degree, order, u);
+    }
+    return knots != null ? basis(n, degree, order, u, knots)
+        : basis(n, Math.min(degree, n - 1), order, u, uniformKnots(n, Math.min(degree, n - 1)));
+  }
+
+  /**
+   * Read the value of <code>SplineKnots</code>: the knots of the only direction of a curve, or a
+   * list with the knots of the two directions of a surface, where <code>Automatic</code> leaves a
+   * direction uniform.
+   *
+   * @return <code>false</code> if the value has another form or the knots decrease
+   */
+  private static boolean readKnots(IExpr value, int directions, double[][] knots) {
+    if (!value.isList()) {
+      return false;
+    }
+    IAST list = (IAST) value;
+    if (directions == 1) {
+      knots[0] = knotVector(list);
+      return knots[0] != null;
+    }
+    if (list.argSize() != 2) {
+      return false;
+    }
+    for (int i = 0; i < 2; i++) {
+      IExpr direction = list.get(i + 1);
+      if (direction != S.Automatic) {
+        knots[i] = direction.isList() ? knotVector((IAST) direction) : null;
+        if (knots[i] == null) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** The numbers of <code>list</code> if they don't decrease, <code>null</code> otherwise. */
+  private static double[] knotVector(IAST list) {
+    double[] vector = list.toDoubleVector();
+    if (vector == null) {
+      return null;
+    }
+    for (int i = 1; i < vector.length; i++) {
+      if (vector[i] < vector[i - 1]) {
+        return null;
+      }
+    }
+    return vector;
+  }
+
+  /** <code>d + 1</code> knots at 0, the inner knots, <code>d + 1</code> knots at 1. */
+  private static double[] uniformKnots(int n, int d) {
+    double[] knots = new double[n + d + 1];
+    int spans = n - d;
+    for (int i = 0; i < knots.length; i++) {
+      knots[i] = i <= d ? 0.0 : i >= n ? 1.0 : (double) (i - d) / spans;
+    }
+    return knots;
   }
 
   /**
@@ -215,18 +303,11 @@ public class BSplineFunction extends AbstractEvaluator {
 
   /**
    * The values at <code>u</code> of the derivatives of the given order of the <code>n</code> basis
-   * functions of a clamped B-spline with uniform knots.
+   * functions of the degree <code>d</code> of a B-spline with the given knots.
    */
-  private static double[] basis(int n, int degree, int order, double u) {
-    int d = Math.min(degree, n - 1);
+  private static double[] basis(int n, int d, int order, double u, double[] knots) {
     if (order > d) {
       return new double[n];
-    }
-    // d + 1 knots at 0, the inner knots, d + 1 knots at 1
-    double[] knots = new double[n + d + 1];
-    int spans = n - d;
-    for (int i = 0; i < knots.length; i++) {
-      knots[i] = i <= d ? 0.0 : i >= n ? 1.0 : (double) (i - d) / spans;
     }
     // the basis functions of the degree d - order on all knot intervals (Cox - de Boor
     // recursion) ...

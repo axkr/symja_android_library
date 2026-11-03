@@ -89,6 +89,14 @@ final class DSolvePDE {
       } else if (order == 2) {
         body = pdeSecondOrderConstant(lhs, uApplied, x, y, ctx);
       }
+      if (body.isNIL() && order >= 2) {
+        engine.setConstantCounter(counter);
+        body = pdeSingleDerivative(lhs, uApplied, x, y, ctx);
+        if (body.isNIL()) {
+          engine.setConstantCounter(counter);
+          body = pdeSingleDerivative(lhs, uApplied, y, x, ctx);
+        }
+      }
     }
     if (body.isNIL()) {
       return F.NIL;
@@ -209,7 +217,7 @@ final class DSolvePDE {
 
     IExpr s = F.Dummy("s");
     IExpr argumentOnLine = engine.evaluate(F.subst(argument, fixedVariable, fixedValue));
-    IExpr inverted = engine.evaluate(F.Solve(F.Equal(argumentOnLine, s), F.List(freeVariable)));
+    IExpr inverted = engine.evaluate(F.SolveDistinct(F.Equal(argumentOnLine, s), F.List(freeVariable)));
     IAST invertedValues = DSolveUtil.extractSolveResults(inverted);
     if (invertedValues.argSize() == 0) {
       return F.NIL;
@@ -229,7 +237,7 @@ final class DSolvePDE {
     if (!residual.isFree(constant, true)) {
       return F.NIL;
     }
-    IExpr solved = engine.evaluate(F.Solve(F.Equal(residual, F.C0), F.List(unknown)));
+    IExpr solved = engine.evaluate(F.SolveDistinct(F.Equal(residual, F.C0), F.List(unknown)));
     IAST values = DSolveUtil.extractSolveResults(solved);
     if (values.argSize() == 0 || !values.arg1().isFree(unknown, true)) {
       return F.NIL;
@@ -319,8 +327,8 @@ final class DSolvePDE {
    * variable as a parameter and solving the resulting ordinary differential equation.
    *
    * <p>
-   * The constant of that integration is a constant along the characteristic only, so it becomes an
-   * arbitrary function of the parameter: <code>D(u(x,y),x) == 1</code> has the general solution
+   * The constants of that integration are constant along the characteristic only, so they become
+   * arbitrary functions of the parameter: <code>D(u(x,y),x) == 1</code> has the general solution
    * <code>x + C(1)(y)</code>, not <code>x + C(1)</code>.
    *
    * @param solveVar the variable which is differentiated
@@ -329,16 +337,24 @@ final class DSolvePDE {
   private static IExpr pdeSingleDerivative(IExpr lhs, IExpr uApplied, IExpr solveVar,
       IExpr paramVar, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    IExpr otherDerivative = engine.evaluate(F.D(uApplied, paramVar));
-    if (!lhs.isFree(otherDerivative, true)) {
-      return F.NIL;
-    }
+    final IExpr head = uApplied.head();
+    final int position = solveVar.equals(uApplied.first()) ? 1 : 2;
     IExpr wDummy = F.Dummy("w");
     IExpr w = F.unaryAST1(wDummy, solveVar);
-    IExpr converted = F.subst(lhs, engine.evaluate(F.D(uApplied, solveVar)),
-        engine.evaluate(F.D(w, solveVar)));
-    converted = F.subst(converted, uApplied, w);
-    if (!converted.isFree(uApplied.head(), true)) {
+    IExpr converted = engine.evaluate(F.subst(lhs, e -> {
+      if (e.equals(uApplied)) {
+        return w;
+      }
+      if (e.isAST2() && isDerivativeOf((IAST) e, head) && e.first().equals(uApplied.first())
+          && e.second().equals(uApplied.second())) {
+        IAST derivative = (IAST) ((IAST) e.head()).head();
+        if (derivative.isAST2() && derivative.get(3 - position).isZero()) {
+          return F.D(w, F.List(solveVar, derivative.get(position)));
+        }
+      }
+      return F.NIL;
+    }));
+    if (!converted.isFree(head, true)) {
       return F.NIL;
     }
     IExpr constant = ctx.nextConstant();
@@ -354,10 +370,16 @@ final class DSolvePDE {
     if (body.isRule()) {
       body = ((IAST) body).second();
     }
-    if (body.isFree(constant, true)) {
+    IASTAppendable constants = F.ListAlloc();
+    DSolveEngine.constantsOf(body, constants);
+    if (constants.isEmpty()) {
       return F.NIL;
     }
-    return engine.evaluate(F.subst(body, constant, F.unaryAST1(constant, paramVar)));
+    IASTAppendable rules = F.ListAlloc(constants.argSize());
+    for (IExpr c : constants) {
+      rules.append(F.Rule(c, F.unaryAST1(c, paramVar)));
+    }
+    return engine.evaluate(F.subst(body, rules));
   }
 
   /**
@@ -436,7 +458,7 @@ final class DSolvePDE {
     IExpr c1 = ctx.nextConstant();
     IExpr c2 = ctx.nextConstant();
     IExpr substituted = engine.evaluate(F.subst(f, symbols[P], c1));
-    IExpr solutions = engine.evaluate(F.Solve(F.Equal(substituted, F.C0), F.List(symbols[Q])));
+    IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(substituted, F.C0), F.List(symbols[Q])));
     IAST values = DSolveUtil.extractSolveResults(solutions);
     IASTAppendable branches = F.ListAlloc(values.argSize());
     for (int i = 1; i <= values.argSize(); i++) {
@@ -463,7 +485,7 @@ final class DSolvePDE {
     IExpr c1 = ctx.nextConstant();
     IExpr c2 = ctx.nextConstant();
     IExpr substituted = engine.evaluate(F.subst(f, symbols[Q], F.Times(c1, symbols[P])));
-    IExpr solutions = engine.evaluate(F.Solve(F.Equal(substituted, F.C0), F.List(symbols[P])));
+    IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(substituted, F.C0), F.List(symbols[P])));
     IAST values = DSolveUtil.extractSolveResults(solutions);
     for (int i = 1; i <= values.argSize(); i++) {
       IExpr p = values.get(i);
@@ -476,7 +498,7 @@ final class DSolvePDE {
       }
       // Integrate(1/P, u) == x + C(1)*y + C(2) is the complete integral in implicit form.
       IExpr relation = F.Equal(integral, F.Plus(x, F.Times(c1, y), c2));
-      IExpr explicit = engine.evaluate(F.Solve(relation, F.List(symbols[U])));
+      IExpr explicit = engine.evaluate(F.SolveDistinct(relation, F.List(symbols[U])));
       IAST explicitValues = DSolveUtil.extractSolveResults(explicit);
       if (explicitValues.argSize() > 0 && explicitValues.arg1().isFree(symbols[U], true)) {
         return explicitValues.arg1();
@@ -512,9 +534,9 @@ final class DSolvePDE {
 
     IExpr c1 = ctx.nextConstant();
     IExpr c2 = ctx.nextConstant();
-    IExpr pSolutions = engine.evaluate(F.Solve(F.Equal(fPart, c1), F.List(symbols[P])));
+    IExpr pSolutions = engine.evaluate(F.SolveDistinct(F.Equal(fPart, c1), F.List(symbols[P])));
     IExpr qSolutions = engine
-        .evaluate(F.Solve(F.Equal(gPart, F.Subtract(reference, c1)), F.List(symbols[Q])));
+        .evaluate(F.SolveDistinct(F.Equal(gPart, F.Subtract(reference, c1)), F.List(symbols[Q])));
     IAST pValues = DSolveUtil.extractSolveResults(pSolutions);
     IAST qValues = DSolveUtil.extractSolveResults(qSolutions);
     if (pValues.argSize() == 0 || qValues.argSize() == 0) {
@@ -625,7 +647,7 @@ final class DSolvePDE {
     EvalEngine engine = ctx.engine;
     IExpr lambda = F.Dummy("lambda");
     IExpr characteristic = F.Plus(F.Times(a, F.Sqr(lambda)), F.Times(b, lambda), c);
-    IExpr solved = engine.evaluate(F.Roots(F.Equal(characteristic, F.C0), lambda));
+    IExpr solved = engine.evaluate(F.RootsDistinct(F.Equal(characteristic, F.C0), lambda));
     IAST equations = solved.isOr() ? (IAST) solved : F.Or(solved);
     IASTAppendable roots = F.ListAlloc(2);
     for (int i = 1; i <= equations.argSize(); i++) {
@@ -657,7 +679,7 @@ final class DSolvePDE {
       }
       IExpr m = F.Dummy("m");
       IExpr inner = F.Plus(F.Sqr(m), F.Times(F.Negate(F.Divide(d, a)), m), F.Divide(g, a));
-      IExpr innerSolved = engine.evaluate(F.Roots(F.Equal(inner, F.C0), m));
+      IExpr innerSolved = engine.evaluate(F.RootsDistinct(F.Equal(inner, F.C0), m));
       IAST innerEquations = innerSolved.isOr() ? (IAST) innerSolved : F.Or(innerSolved);
       if (innerEquations.argSize() != 1 || !innerEquations.arg1().isEqual()) {
         return F.NIL;
@@ -736,7 +758,7 @@ final class DSolvePDE {
 
       // Solve for the characteristic constant: C_1 = g(x,y)
       IExpr eqForC1 = F.Equal(y, yxExpr);
-      IExpr c1Sol = engine.evaluate(F.Solve(eqForC1, F.List(C_1)));
+      IExpr c1Sol = engine.evaluate(F.SolveDistinct(eqForC1, F.List(C_1)));
       IAST c1Results = DSolveUtil.extractSolveResults(c1Sol);
       if (c1Results.argSize() > 0) {
         IExpr g_xy = c1Results.arg1();

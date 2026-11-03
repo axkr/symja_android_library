@@ -49,6 +49,18 @@ public class TimeSeries extends AbstractFunctionEvaluator {
       IAST times = (IAST) timeSpec.first();
       return times.argSize() == n ? explicitTimes(times, values, engine) : F.NIL;
     }
+    IAST regular = regularTimes(timeSpec, n, engine);
+    return regular.isPresent() ? temporalData(values, regular) : F.NIL;
+  }
+
+  /**
+   * The equally spaced times <code>{tmin, tmax, dt}</code> of <code>n</code> values given by
+   * <code>{tmin}</code>, <code>{tmin, tmax}</code> or <code>{tmin, tmax, dt}</code>.
+   *
+   * @return {@link F#NIL} if <code>timeSpec</code> has none of these forms or doesn't give
+   *         <code>n</code> times
+   */
+  static IAST regularTimes(IExpr timeSpec, int n, EvalEngine engine) {
     if (n == 0 || !timeSpec.isList() || timeSpec.argSize() < 1 || timeSpec.argSize() > 3) {
       return F.NIL;
     }
@@ -70,10 +82,7 @@ public class TimeSeries extends AbstractFunctionEvaluator {
     }
     IAST regular = F.List(tmin, tmax, dt);
     IAST times = TemporalData.times(regular, engine);
-    if (times.isNIL() || times.argSize() != n) {
-      return F.NIL;
-    }
-    return temporalData(values, regular);
+    return times.isPresent() && times.argSize() == n ? regular : F.NIL;
   }
 
   /**

@@ -356,7 +356,7 @@ public class RSolve extends AbstractFunctionEvaluator {
     if (cleanBCs.argSize() == 0)
       return root;
 
-    IExpr cSols = engine.evaluate(F.Solve(cleanBCs, cVars));
+    IExpr cSols = engine.evaluate(F.SolveDistinct(cleanBCs, cVars));
 
     if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
       IAST cSol = (IAST) ((IAST) cSols).arg1();
@@ -474,6 +474,12 @@ public class RSolve extends AbstractFunctionEvaluator {
           solveFirstOrderAffine(coeffs, f_n, head, nVar, boundaryConditions, engine, startC);
       if (affine.isPresent()) {
         return formatResult(arg2, nVar, affine);
+      }
+
+      IExpr factored = solveLinearFactors(coeffs, f_n, head, nVar, uFunction1Arg,
+          boundaryConditions, engine, startC);
+      if (factored.isPresent()) {
+        return formatResult(arg2, nVar, factored);
       }
 
       if (hasBCs) {
@@ -795,7 +801,7 @@ public class RSolve extends AbstractFunctionEvaluator {
         engine.setConstantCounter(savedCounter);
       }
     } else {
-      IExpr gSolList = engine.evaluate(F.Solve(zEq, F.List(gDummy)));
+      IExpr gSolList = engine.evaluate(F.SolveDistinct(zEq, F.List(gDummy)));
       if (gSolList.isList() && ((IAST) gSolList).argSize() > 0) {
         IAST firstSol = (IAST) ((IAST) gSolList).arg1();
         for (int j = 1; j <= firstSol.argSize(); j++) {
@@ -1049,6 +1055,163 @@ public class RSolve extends AbstractFunctionEvaluator {
   }
 
   /**
+   * The roots of <code>characteristic</code> from its factors, which all have to be linear in
+   * <code>x</code>: a factorization keeps the roots of a polynomial with symbolic coefficients
+   * rational, where the quadratic formula leaves the square root of a perfect square. The last
+   * factor comes first.
+   *
+   * @return the distinct roots with their multiplicities or <code>null</code> if a factor has a
+   *         higher degree or a root is <code>0</code>
+   */
+  private static Map<IExpr, Integer> linearFactorRoots(IExpr characteristic, ISymbol x,
+      EvalEngine engine) {
+    IExpr factored = engine.evaluate(F.Factor(characteristic));
+    IAST factors = factored.isTimes() ? (IAST) factored : F.Times(factored);
+    Map<IExpr, Integer> roots = new LinkedHashMap<>();
+    for (int i = factors.argSize(); i >= 1; i--) {
+      IExpr factor = factors.get(i);
+      int multiplicity = 1;
+      if (factor.isPower() && factor.exponent().isInteger()) {
+        multiplicity = factor.exponent().toIntDefault();
+        factor = factor.base();
+      }
+      if (factor.isFree(x)) {
+        continue;
+      }
+      if (multiplicity <= 0 || !engine.evaluate(F.Exponent(factor, x)).isOne()) {
+        return null;
+      }
+      IExpr c1 = engine.evaluate(F.Coefficient(factor, x, F.C1));
+      IExpr c0 = engine.evaluate(F.Coefficient(factor, x, F.C0));
+      if (c0.isZero()) {
+        return null;
+      }
+      IExpr root = engine.evaluate(F.Together(F.Divide(F.Negate(c0), c1)));
+      roots.merge(root, multiplicity, Integer::sum);
+    }
+    return roots;
+  }
+
+  /**
+   * One quotient with a factored denominator for an expression in powers with symbolic exponents.
+   * Every power <code>r^e</code> becomes a symbol for the combination, so <code>r^k</code> and
+   * <code>r^n</code> don't merge into <code>r^(k+n)</code>, which hides a common factor.
+   *
+   * @param backSubstitution the rules from these symbols to the powers are appended
+   */
+  private static IExpr togetherOverPowers(IExpr expr, IASTAppendable backSubstitution,
+      EvalEngine engine) {
+    Map<IExpr, IExpr> symbols = new HashMap<>();
+    IExpr polynomial = F.subst(expr, x -> {
+      if (!x.isPower() || x.exponent().isNumber()) {
+        return F.NIL;
+      }
+      boolean inverse = x.exponent().isTimes() && x.exponent().first().isMinusOne();
+      IExpr power = inverse ? F.Power(x.base(), engine.evaluate(F.Negate(x.exponent()))) : x;
+      IExpr symbol = symbols.computeIfAbsent(power, p -> F.Dummy("p"));
+      return inverse ? F.Power(symbol, F.CN1) : symbol;
+    });
+    IExpr together = engine.evaluate(F.Together(polynomial));
+    IExpr denominator = engine.evaluate(F.Denominator(together));
+    if (!denominator.isNumber()) {
+      together = engine.evaluate(F.Divide(F.Numerator(together), F.Factor(denominator)));
+    }
+    symbols.forEach((power, symbol) -> backSubstitution.append(F.Rule(symbol, power)));
+    return together;
+  }
+
+  /**
+   * Constant coefficients and a constant right-hand side <code>f</code>, with a characteristic
+   * polynomial <code>p(x)</code> which splits into linear factors and either has symbolic
+   * coefficients or belongs to an inhomogeneous equation. The general solution is the sum of the
+   * terms <code>C(j)*n^m*r^n</code> for the roots <code>r</code> and, for a root <code>1</code> of
+   * multiplicity <code>m</code>, the particular solution <code>f*n^m/p^(m)(1)</code>. Boundary
+   * values are solved with the symbolic roots replaced by symbols, which keeps their powers apart
+   * in the common denominator.
+   *
+   * @return {@link F#NIL} if the recurrence has another form or the conditions can't be met
+   */
+  private IExpr solveLinearFactors(Map<Integer, IExpr> coeffs, IExpr f_n, IExpr head, IExpr nVar,
+      IAST uFunction1Arg, IAST boundaryConditions, EvalEngine engine, int startC) {
+    final int minShift = Collections.min(coeffs.keySet());
+    final int order = Collections.max(coeffs.keySet()) - minShift;
+    if (order < 2 || !f_n.isFree(nVar) || !f_n.isFree(head)) {
+      return F.NIL;
+    }
+    boolean numeric = true;
+    for (IExpr c : coeffs.values()) {
+      if (!c.isFree(nVar)) {
+        return F.NIL;
+      }
+      numeric &= c.isNumber();
+    }
+    if (numeric && f_n.isZero()) {
+      return F.NIL;
+    }
+    final ISymbol x = F.Dummy("x");
+    IASTAppendable poly = F.PlusAlloc(coeffs.size());
+    for (Map.Entry<Integer, IExpr> entry : coeffs.entrySet()) {
+      poly.append(F.Times(entry.getValue(), F.Power(x, F.ZZ(entry.getKey() - minShift))));
+    }
+    IExpr characteristic = engine.evaluate(poly);
+    Map<IExpr, Integer> roots =
+        linearFactorRoots(engine.evaluate(F.Numerator(F.Together(characteristic))), x, engine);
+    final boolean split =
+        roots != null && roots.values().stream().mapToInt(Integer::intValue).sum() == order;
+    if (!split && (f_n.isZero() || boundaryConditions.argSize() > 0)) {
+      return F.NIL;
+    }
+    IASTAppendable backSubstitution = F.ListAlloc();
+    IASTAppendable general = F.PlusAlloc();
+    if (split) {
+      int cIndex = startC;
+      for (Map.Entry<IExpr, Integer> entry : roots.entrySet()) {
+        IExpr root = entry.getKey();
+        IExpr base = root;
+        if (!root.isNumber() && !root.isSymbol()) {
+          base = F.Dummy("r");
+          backSubstitution.append(F.Rule(base, root));
+        }
+        for (int m = 0; m < entry.getValue(); m++) {
+          general.append(F.Times(F.C(cIndex++), F.Power(nVar, F.ZZ(m)), F.Power(base, nVar)));
+        }
+      }
+    } else {
+      IExpr homogeneous = solveConstantCoefficientsGeneric(coeffs, nVar, engine, startC);
+      if (homogeneous.isNIL()) {
+        return F.NIL;
+      }
+      general.append(homogeneous);
+    }
+    if (!f_n.isZero()) {
+      // the multiplicity m of the root 1 and p^(m)(1)
+      int m = 0;
+      IExpr derivative = characteristic;
+      IExpr value = engine.evaluate(F.Together(F.subst(derivative, x, F.C1)));
+      while (value.isZero() && m < order) {
+        m++;
+        derivative = engine.evaluate(F.D(derivative, x));
+        value = engine.evaluate(F.Together(F.subst(derivative, x, F.C1)));
+      }
+      if (value.isZero()) {
+        return F.NIL;
+      }
+      general.append(F.Times(f_n, F.Power(value, F.CN1), F.Power(nVar, F.ZZ(m))));
+    }
+    IExpr solution = engine.evaluate(general);
+    if (boundaryConditions.argSize() > 0) {
+      solution = applyUnaryBCs(solution, uFunction1Arg, nVar, boundaryConditions, engine);
+      if (solution.isNIL()) {
+        return F.NIL;
+      }
+      solution = togetherOverPowers(solution, backSubstitution, engine);
+    }
+    solution = engine.evaluate(F.subst(F.subst(solution, backSubstitution), backSubstitution));
+    return boundaryConditions.argSize() > 0 ? solution
+        : absorbArbitraryConstants(solution, nVar, engine);
+  }
+
+  /**
    * Order-2 constant-coefficient closed form via the shared generalized Binet formula. Returns the
    * specific solution anchored at {@code y(0)=0, y(1)=1} (no arbitrary constants), or {@link F#NIL}
    * if the recurrence is not a homogeneous order-2 constant-coefficient equation.
@@ -1100,7 +1263,7 @@ public class RSolve extends AbstractFunctionEvaluator {
       poly.append(term);
     }
 
-    IExpr rootsList = engine.evaluate(F.Solve(F.Equal(poly, F.C0), F.List(xDummy)));
+    IExpr rootsList = engine.evaluate(F.SolveDistinct(F.Equal(poly, F.C0), F.List(xDummy)));
     if (!rootsList.isList()) {
       return F.NIL;
     }
@@ -1201,7 +1364,7 @@ public class RSolve extends AbstractFunctionEvaluator {
     } else {
       IExpr cDummy = F.Dummy("c");
       IExpr charEq = F.Plus(F.Times(P, F.Sqr(cDummy)), F.Times(Q, cDummy), R);
-      IExpr cSols = engine.evaluate(F.Solve(F.Equal(charEq, F.C0), F.List(cDummy)));
+      IExpr cSols = engine.evaluate(F.SolveDistinct(F.Equal(charEq, F.C0), F.List(cDummy)));
       if (cSols.isList() && ((IAST) cSols).argSize() > 0) {
         IAST firstSol = (IAST) ((IAST) cSols).arg1();
         if (firstSol.argSize() > 0 && firstSol.arg1().isRule()) {
@@ -1327,7 +1490,7 @@ public class RSolve extends AbstractFunctionEvaluator {
     }
 
     IExpr algebraicSystem = engine.evaluate(F.subst(evalZEqns, subRules));
-    IExpr gSols = engine.evaluate(F.Solve(algebraicSystem, dummyVars));
+    IExpr gSols = engine.evaluate(F.SolveDistinct(algebraicSystem, dummyVars));
 
     if (gSols.isList() && ((IAST) gSols).argSize() > 0) {
       IAST firstSol = (IAST) ((IAST) gSols).arg1();

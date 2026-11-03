@@ -25,8 +25,9 @@ import org.matheclipse.external.fastutil.ints.IntArrayList;
  * <b>Channels are counted from the data.</b> A matrix of scalars is greyscale, a matrix of triples
  * is RGB, a matrix of quadruples is RGB with alpha. The {@link BufferedImage} type follows from
  * that - greyscale becomes <code>TYPE_BYTE_GRAY</code>, RGB becomes <code>TYPE_INT_RGB</code> and
- * only RGBA becomes <code>TYPE_INT_ARGB</code> - so that <code>ImageChannels</code> can answer from
- * the bitmap alone.
+ * only RGBA becomes <code>TYPE_INT_ARGB</code>. Any other number of channels is an image as well:
+ * two channels are shown as a grey level with an alpha channel, more than four from the first
+ * three, and only the matrix knows how many there are - see {@link org.matheclipse.image.expression.data.ImageExpr#channels()}.
  *
  * <p>
  * <b>The channels can be laid out two ways.</b> Interleaved data - the default, and what
@@ -109,12 +110,7 @@ public final class Pixels {
       width = dimensions.getInt(1);
       channels = dimensions.size() == 2 ? 1 : dimensions.getInt(2);
     }
-    if (height <= 0 || width <= 0) {
-      return null;
-    }
-    if (channels != 1 && channels != 3 && channels != 4) {
-      // greyscale with an alpha channel has no BufferedImage type of its own and no colour space
-      // name in ImageColorSpace, so it is rejected rather than silently turned into RGB
+    if (height <= 0 || width <= 0 || channels <= 0) {
       return null;
     }
     return planar //
@@ -165,6 +161,9 @@ public final class Pixels {
   public static BufferedImage toBufferedImage(Samples samples, String colorSpace, double scale) {
     boolean forceGray =
         "Grayscale".equalsIgnoreCase(colorSpace) || "Gray".equalsIgnoreCase(colorSpace);
+    if (samples.channels() == 2) {
+      return grayAlphaImage(samples, scale);
+    }
     if (samples.channels() == 1 || forceGray) {
       return grayImage(samples, scale);
     }
@@ -181,8 +180,8 @@ public final class Pixels {
    * them alone, and so do <code>"HSB"</code> for three and <code>"CMYK"</code> for four channels:
    * such an image keeps its samples in that space and only the picture it is shown from is RGB.
    * <code>"Grayscale"</code> is the one that depends on the data: it leaves a single intensity
-   * alone but weighs three colour channels into one, and the three channel matrix is then not what
-   * the image holds.
+   * alone, with or without an alpha channel, but weighs three colour channels into one, and the
+   * three channel matrix is then not what the image holds.
    *
    * @param colorSpace the <code>ColorSpace</code> name, or <code>null</code> for
    *        <code>Automatic</code>
@@ -193,7 +192,7 @@ public final class Pixels {
       return true;
     }
     if ("Grayscale".equalsIgnoreCase(colorSpace) || "Gray".equalsIgnoreCase(colorSpace)) {
-      return dataChannels == 1;
+      return dataChannels == 1 || dataChannels == 2;
     }
     if ("HSB".equalsIgnoreCase(colorSpace)) {
       return dataChannels == 3;
@@ -583,6 +582,21 @@ public final class Pixels {
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         raster.setSample(x, y, 0, clamp((float) (intensityOf(samples, x, y) * scale)));
+      }
+    }
+    return image;
+  }
+
+  /** The picture of a grey level and an alpha channel. */
+  private static BufferedImage grayAlphaImage(Samples samples, double scale) {
+    int width = samples.width();
+    int height = samples.height();
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        int gray = clamp((float) (samples.at(0, x, y).evalfNaN() * scale));
+        int alpha = clamp((float) (samples.at(1, x, y).evalfNaN() * scale));
+        image.setRGB(x, y, (alpha << 24) | (gray << 16) | (gray << 8) | gray);
       }
     }
     return image;
