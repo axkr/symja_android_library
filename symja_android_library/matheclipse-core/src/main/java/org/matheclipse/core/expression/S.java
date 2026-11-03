@@ -627,6 +627,15 @@ public class S {
       S.initFinalSymbol("AffineTransform", ID.AffineTransform);
 
   /**
+   * After(x) - TODO describe `After`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/After.md">After
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol After = S.initFinalSymbol("After", ID.After);
+
+  /**
    * AggregateBy(x) - TODO describe `AggregateBy`.
    * 
    * @see <a href=
@@ -2189,6 +2198,15 @@ public class S {
       S.initFinalSymbol("BeckmannDistribution", ID.BeckmannDistribution);
 
   public final static IBuiltInSymbol Beep = S.initFinalSymbol("Beep", ID.Beep);
+
+  /**
+   * Before(x) - TODO describe `Before`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Before.md">Before
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Before = S.initFinalSymbol("Before", ID.Before);
 
   /**
    * Begin("<context-name>") - start a new context definition
