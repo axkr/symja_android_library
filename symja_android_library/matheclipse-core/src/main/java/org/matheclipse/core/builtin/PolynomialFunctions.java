@@ -1616,6 +1616,31 @@ public class PolynomialFunctions {
    */
   private static class Exponent extends AbstractFunctionEvaluator {
 
+    /** Test if <code>expr</code> is an exponential <code>b^f(x)</code> of <code>form</code>. */
+    private static boolean isExponential(IExpr expr, IExpr form) {
+      return expr.isPower() && expr.base().isFree(form) && !expr.exponent().isFree(form);
+    }
+
+    /**
+     * Test if a term depends on <code>form</code> through exponentials only, like
+     * <code>3^x</code>: it has no degree. Next to a power of <code>form</code> an exponential
+     * counts as a coefficient: <code>3^x*x^2</code> has the degree <code>2</code>.
+     */
+    private static boolean hasNoDegree(IExpr term, IExpr form) {
+      if (term.isTimes()) {
+        boolean exponential = false;
+        for (IExpr factor : (IAST) term) {
+          if (isExponential(factor, form)) {
+            exponential = true;
+          } else if (!factor.isFree(form)) {
+            return false;
+          }
+        }
+        return exponential;
+      }
+      return isExponential(term, form);
+    }
+
     private static IExpr powerExponent(IAST powerAST, final IExpr form,
         final IPatternMatcher matcher, EvalEngine engine) {
       if (matcher.test(powerAST.base(), engine)) {
@@ -1682,6 +1707,13 @@ public class PolynomialFunctions {
         expr = F.evalExpandAll(subst.arg1(), engine).normal(false);
         form = subst.arg2().first();
 
+        if (form.isSymbol()) {
+          final IExpr symbol = form;
+          if (expr.isPlus() ? ((IAST) expr).exists(term -> hasNoDegree(term, symbol))
+              : hasNoDegree(expr, symbol)) {
+            return F.NIL;
+          }
+        }
         if (expr.isZero()) {
           collector.add(F.CNInfinity);
         } else if (expr.isAST()) {
@@ -3195,11 +3227,12 @@ public class PolynomialFunctions {
     }
 
     private IExpr legendreQ4(IExpr n, IExpr m, IExpr arg3, IExpr z, EvalEngine engine) {
+      if (arg3.isOne()) {
+        // the type of the form with three arguments
+        return F.ternaryAST3(S.LegendreQ, n, m, z);
+      }
       int ni = n.toIntDefault();
       if (ni >= 0) {
-        if (arg3.isOne()) {
-          return legendreQ(n, m, z, 1, engine);
-        }
         if (arg3.isNumEqualInteger(F.C2)) {
           return legendreQ(n, m, z, 2, engine);
         }

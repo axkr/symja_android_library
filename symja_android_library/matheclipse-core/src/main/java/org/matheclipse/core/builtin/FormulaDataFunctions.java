@@ -183,7 +183,7 @@ public class FormulaDataFunctions {
 
       IExpr unknown = unknowns.arg1();
       ISymbol x = F.Dummy("x");
-      IExpr solutions = engine.evaluate(F.Solve(F.subst(substituted, unknown, x), x));
+      IExpr solutions = engine.evaluate(F.SolveDistinct(F.subst(substituted, unknown, x), x));
       if (!solutions.isListOfLists() || solutions.argSize() != 1) {
         return substituted;
       }

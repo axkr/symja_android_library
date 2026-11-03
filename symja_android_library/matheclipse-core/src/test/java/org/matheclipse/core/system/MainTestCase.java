@@ -3792,11 +3792,11 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("-5/2+I*1/2*Sqrt(15)", //
         "-5/2+I*1/2*Sqrt(15)");
     check("Roots(Expand((x-1)^3)==0, x)", //
-        "x==1");
+        "x==1||x==1||x==1");
     check("-1/2*(-I*3^(1/2)+1)", //
         "1/2*(-1+I*Sqrt(3))");
     check("Roots(x^3-3*x-2==0, x)", //
-        "x==-1||x==2");
+        "x==-1||x==-1||x==2");
 
     check("Roots((x^2-1)/(x-1)==0, x)", //
         "x==-1");

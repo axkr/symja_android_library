@@ -18,6 +18,7 @@ import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.algo.Raster;
 
@@ -259,8 +260,8 @@ final public class ImageExpr extends DataExpr<byte[]> {
       resultOptions = resultOptions.withColorSpace(S.Automatic);
     }
     boolean rgbSamples = colorSpaceOf(resultOptions, raster.channels) == null;
-    if ((Pixels.BYTE.equals(type) || Pixels.BIT.equals(type)) && raster.channels != 2
-        && rgbSamples) {
+    boolean inPicture = raster.channels == 1 || raster.channels == 3 || raster.channels == 4;
+    if ((Pixels.BYTE.equals(type) || Pixels.BIT.equals(type)) && inPicture && rgbSamples) {
       // 8 bits hold these samples exactly, so the picture is written directly, without a matrix
       final double max = Raster.maxOf(type);
       final double toByte = 255.0 / max;
@@ -276,6 +277,15 @@ final public class ImageExpr extends DataExpr<byte[]> {
     }
     IAST data = raster.toMatrix(type);
     return toImageExpr(data, resultOptions, type);
+  }
+
+  /**
+   * The number of channels: those of the matrix the image was built from, which the 8 bit picture
+   * can't hold unless they are one, three or four.
+   */
+  public int channels() {
+    Raster samples = matrix == null ? null : raster();
+    return samples != null ? samples.channels : Boof.channels(getBufferedImage());
   }
 
   /**

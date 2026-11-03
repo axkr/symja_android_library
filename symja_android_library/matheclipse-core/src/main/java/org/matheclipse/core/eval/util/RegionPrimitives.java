@@ -1423,7 +1423,7 @@ public class RegionPrimitives {
       IAST lower = (IAST) reg.arg1();
       IASTAppendable upper = F.ListAlloc(lower.argSize());
       for (int i = 1; i <= lower.argSize(); i++) {
-        upper.append(F.Plus(lower.get(i), F.C1));
+        upper.append(lower.get(i).plus(F.C1));
       }
       return F.list(lower, upper);
     }
@@ -1518,8 +1518,8 @@ public class RegionPrimitives {
    */
   public static AnnulusSpec parseAnnulus(IAST reg, EvalEngine engine) {
     IExpr center = F.CListC0C0;
-    IExpr innerRadius = F.C1;
-    IExpr outerRadius = F.C2;
+    IExpr innerRadius = F.C1D2;
+    IExpr outerRadius = F.C1;
     IExpr angle = F.C2Pi;
     if (reg.argSize() >= 1) {
       if (!reg.arg1().isList() || reg.arg1().argSize() < 2) {

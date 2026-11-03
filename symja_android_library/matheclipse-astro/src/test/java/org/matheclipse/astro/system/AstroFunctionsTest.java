@@ -247,6 +247,21 @@ public class AstroFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  public void testMoonPhaseOptions() {
+    check("DateValue(FullMoon(DateObject({2025,3,1}), TimeDirection -> -1), {\"Year\", \"Month\", \"Day\"})", //
+        "{2025,2,12}");
+    check("DateValue(NewMoon(DateObject({2025,3,1})), {\"Year\", \"Month\", \"Day\"})", //
+        "{2025,3,29}");
+    // the date may come first
+    check("DateValue(MoonPhaseDate(DateObject({2025,3,1}), \"LastQuarter\", TimeDirection -> -1), {\"Year\", \"Month\", \"Day\"})", //
+        "{2025,2,20}");
+    check("FullMoon(DateObject({2025,3,1}), TimeZone -> 3, DateGranularity -> \"Day\")", //
+        "DateObject({2025,3,14},Day,Gregorian,3.0)");
+    check("FullMoon(DateObject({2024,1,1}), TimeZone -> 2, DateGranularity -> \"Day\")", //
+        "DateObject({2024,1,25},Day,Gregorian,2.0)");
+  }
+
+  @Test
   public void testLunationNumber() {
     check("LunationNumber(DateObject({2026,6,21}))", //
         "1280");

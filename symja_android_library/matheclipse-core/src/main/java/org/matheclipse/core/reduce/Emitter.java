@@ -175,7 +175,7 @@ public final class Emitter {
     }
     IASTAppendable conditions = F.ast(S.And, targets.size() + 1);
     for (Variable target : targets) {
-      if (!expression.isFree(target.symbol())) {
+      if (!expression.isFree(target.symbol()) && !isFixed(expression, target)) {
         conditions.append(F.Element(target.symbol(), domain.symbol()));
       }
     }
@@ -188,6 +188,13 @@ public final class Emitter {
       conditions.append(expression);
     }
     return conditions;
+  }
+
+  /** Whether a conjunct of the solution set gives the target an integer value. */
+  private static boolean isFixed(IExpr expression, Variable target) {
+    return (expression.isAnd() ? (IAST) expression : F.And(expression)).exists(
+        conjunct -> conjunct.isEqual() && conjunct.first().equals(target.symbol())
+            && conjunct.second().isInteger());
   }
 
   /**

@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.ParametricMeasure;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
@@ -57,6 +58,10 @@ public class ArcLength extends AbstractFunctionEvaluator {
           }
         }
       }
+    } else if (ast.argSize() == 3) {
+      return ast.arg2().isList3() && ast.arg3().isString()
+          ? ParametricMeasure.measure(ast.arg1(), F.list(ast.arg2()), ast.arg3(), engine)
+          : F.NIL;
     } else if (ast.argSize() == 2) {
       IExpr curve = ast.arg1();
       IExpr iter = ast.arg2();
@@ -151,6 +156,6 @@ public class ArcLength extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
+    return ARGS_1_3;
   }
 }

@@ -1599,6 +1599,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           && ((IAST) rule.first()).forAll(p -> p.isList() && ((IAST) p).forAll(IExpr::isInteger));
       boolean valueList = positionList && rule.second().isList()
           && rule.first().argSize() == rule.second().argSize();
+      if (rule.isRuleAST() && rule.first().isList() && rule.first().argSize() > 0
+          && ((IAST) rule.first()).forAll(IExpr::isInteger) && rule.second().isList()
+          && rule.first().argSize() == rule.second().argSize()) {
+        // {i1, i2, ...} -> {v1, v2, ...}: the positions of a vector
+        positionList = true;
+        valueList = true;
+      }
       if (rule.isRuleAST() && rule.first().isEmptyList()) {
         // an empty list of positions: no entry, the array keeps its default value
         if (expanded == null) {
@@ -1935,7 +1942,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     boolean containsNumericArg = false;
     boolean evaled = false;
     IExpr newDefaultValue = fDefaultValue;
-    IExpr temp = engine.evaluateNIL(fDefaultValue);
+    // in arbitrary precision an exact 0 stays exact
+    IExpr temp = engine.isArbitraryMode() && fDefaultValue.isZero() ? F.NIL
+        : engine.evaluateNIL(fDefaultValue);
     if (temp.isPresent()) {
       evaled = true;
       if (temp.isNumericArgument(true)) {
@@ -2689,8 +2698,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    *
    * <p>
    * The value may be a scalar (repeated along the band), a list of scalars (one per band position,
-   * repeated only up to an explicit end), a single array block of the band's rank (placed once at
-   * the start) or a list of such blocks (placed one after the other along the diagonal).
+   * repeated only up to an explicit end), a single array block of a rank from 2 to the band's rank
+   * (placed once at the start, or tiled over the box up to an explicit end) or a list of such
+   * blocks (placed one after the other along the diagonal, cycling up to an explicit end). A block
+   * of a lower rank spreads over the further axes as {@link #bandBlockExtent(int[], int)} tells.
    *
    * @param trie the internal trie structure
    * @param band the Band AST
@@ -2798,11 +2809,17 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
 
     if (depth >= 2 && rhs.isList()) {
       IAST rhsList = (IAST) rhs;
+      // without explicit dimensions a block lets the array grow also for a later rule
+      int[] blockEnd = end.clone();
+      for (int i = 0; i < depth && !fixedDimension; i++) {
+        if (endAutomatic[i]) {
+          blockEnd[i] = Integer.MAX_VALUE;
+        }
+      }
       int[] blockDims = rhsList.isEmpty() ? null : arrayDimensions(rhsList, depth);
       if (blockDims != null) {
-        // a single block of the band's rank, placed once
-        putBandBlock(trie, rhsList, blockDims, start, dimension, determineDimension,
-            fixedDimension, isFirstRule);
+        putTiledBandBlock(trie, band, rhsList, blockDims, start, blockEnd, endAst != null, dimension,
+            determineDimension, fixedDimension, isFirstRule);
         return true;
       }
       if (rhsList.argSize() > 0) {
@@ -2818,13 +2835,21 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         if (blocks != null) {
           // a list of blocks, placed one after the other along the diagonal
           int[] current = start.clone();
-          for (int k = 1; k < rhsList.size(); k++) {
-            int[] blockDims1 = blocks[k - 1];
-            putBandBlock(trie, (IAST) rhsList.get(k), blockDims1, current, dimension,
-                determineDimension, fixedDimension, isFirstRule);
-            for (int i = 0; i < depth; i++) {
-              current[i] += blockDims1[i];
+          boolean more = true;
+          while (more) {
+            for (int k = 1; k < rhsList.size() && more; k++) {
+              more = isWithin(current, blockEnd);
+              if (more) {
+                putBandBlock(trie, (IAST) rhsList.get(k), blocks[k - 1], current, blockEnd,
+                    dimension, determineDimension, fixedDimension, isFirstRule);
+                int[] extent = bandBlockExtent(blocks[k - 1], depth);
+                for (int i = 0; i < depth; i++) {
+                  current[i] += extent[i];
+                }
+              }
             }
+            // only an explicit end makes the blocks start over
+            more &= endAst != null;
           }
           return true;
         }
@@ -2889,32 +2914,107 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   }
 
   /**
-   * The dimensions of <code>list</code> if it is a full (rectangular) array of exactly
-   * <code>depth</code> levels, <code>null</code> otherwise.
+   * The dimensions of <code>list</code> if it is a full (rectangular) array of a rank from 2 to
+   * <code>depth</code> and without lists as its elements, <code>null</code> otherwise.
    */
   private static int[] arrayDimensions(IAST list, int depth) {
     IntList dims = LinearAlgebraUtil.dimensions(list, S.List, Integer.MAX_VALUE, false);
-    if (dims.size() != depth) {
+    if (dims.size() < 2 || dims.size() > depth) {
       return null;
     }
-    int[] result = new int[depth];
-    for (int i = 0; i < depth; i++) {
+    int[] result = new int[dims.size()];
+    for (int i = 0; i < result.length; i++) {
       result[i] = dims.getInt(i);
       if (result[i] <= 0) {
         return null;
       }
     }
-    return result;
+    return hasListElements(list, result.length) ? null : result;
+  }
+
+  private static boolean hasListElements(IAST list, int levels) {
+    return list.exists(x -> levels == 1 ? x.isList() : hasListElements((IAST) x, levels - 1));
+  }
+
+  /**
+   * The extent of a band block of the given shape over all <code>rank</code> axes. The levels of
+   * the block span the first axes, and every further axis advances with all of them:
+   * <code>Band({1, 1, 1}) -&gt; {{1, 2}, {3, 4}}</code> puts 3 at <code>{2, 1, 2}</code> and 4 at
+   * <code>{2, 2, 3}</code>.
+   */
+  private static int[] bandBlockExtent(int[] shape, int rank) {
+    int diagonal = 1;
+    for (int n : shape) {
+      diagonal += n - 1;
+    }
+    int[] extent = new int[rank];
+    for (int i = 0; i < rank; i++) {
+      extent[i] = i < shape.length ? shape[i] : diagonal;
+    }
+    return extent;
+  }
+
+  private static boolean isWithin(int[] position, int[] end) {
+    for (int i = 0; i < position.length; i++) {
+      if (position[i] > end[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Put a single block at <code>start</code>, repeated over the box up to an explicit end. A block
+   * which reaches past the box is cut.
+   */
+  private static void putTiledBandBlock(final Trie<int[], IExpr> trie, IAST band, IAST block,
+      int[] blockDims, int[] start, int[] end, boolean explicitEnd, int[] dimension,
+      boolean determineDimension, boolean fixedDimension, boolean isFirstRule) {
+    int rank = start.length;
+    int[] extent = bandBlockExtent(blockDims, rank);
+    int[] tiles = new int[rank];
+    long total = 1L;
+    boolean fits = true;
+    for (int i = 0; i < rank; i++) {
+      long span = (long) end[i] - start[i] + 1L;
+      fits &= extent[i] <= span;
+      tiles[i] = explicitEnd && end[i] != Integer.MAX_VALUE
+          ? (int) Math.min(Config.MAX_AST_SIZE + 1L, (span + extent[i] - 1L) / extent[i])
+          : 1;
+      total *= tiles[i];
+      if (total > Config.MAX_AST_SIZE) {
+        org.matheclipse.core.eval.exception.ASTElementLimitExceeded.throwIt(total);
+      }
+    }
+    if (!fits) {
+      // There are insufficient positions available in the `1` to fit all the values `2` so some of
+      // the values will be omitted in the specification `3`.
+      Errors.printMessage(S.SparseArray, "bndtr", F.list(band, block, F.Rule(band, block)),
+          EvalEngine.get());
+    }
+    int[] tile = new int[rank];
+    Arrays.fill(tile, 1);
+    for (long n = 0; n < total; n++) {
+      int[] origin = new int[rank];
+      for (int i = 0; i < rank; i++) {
+        origin[i] = start[i] + (tile[i] - 1) * extent[i];
+      }
+      putBandBlock(trie, block, blockDims, origin, end, dimension, determineDimension,
+          fixedDimension, isFirstRule);
+      incrementKey(tile, tiles);
+    }
   }
 
   /**
    * Put all entries of the rectangular array <code>block</code> with the upper left corner at
-   * <code>origin</code>. Entries outside of fixed dimensions are dropped.
+   * <code>origin</code>. Entries behind <code>end</code> or outside of fixed dimensions are
+   * dropped.
    */
   private static void putBandBlock(final Trie<int[], IExpr> trie, IAST block, int[] blockDims,
-      int[] origin, int[] dimension, boolean determineDimension, boolean fixedDimension,
-      boolean isFirstRule) {
+      int[] origin, int[] end, int[] dimension, boolean determineDimension,
+      boolean fixedDimension, boolean isFirstRule) {
     int depth = blockDims.length;
+    int rank = origin.length;
     long size = 1;
     for (int d : blockDims) {
       size *= d;
@@ -2925,11 +3025,19 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     int[] offset = new int[depth];
     Arrays.fill(offset, 1);
     for (long n = 0; n < size; n++) {
-      int[] position = new int[depth];
-      boolean inside = true;
+      int[] position = new int[rank];
+      int diagonal = 0;
       for (int i = 0; i < depth; i++) {
         position[i] = origin[i] + offset[i] - 1;
-        if (fixedDimension && dimension != null && position[i] > dimension[i]) {
+        diagonal += offset[i] - 1;
+      }
+      boolean inside = true;
+      for (int i = 0; i < rank; i++) {
+        if (i >= depth) {
+          position[i] = origin[i] + diagonal;
+        }
+        if (position[i] > end[i] || (fixedDimension && dimension != null
+            && position[i] > dimension[i])) {
           inside = false;
         }
       }

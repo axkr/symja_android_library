@@ -581,12 +581,33 @@ public final class Programming {
       if (ast.isAST2()) {
         return engine.evalCheckAbort(ast.arg1(), ast.arg2());
       }
+      if (ast.isAST3()) {
+        IExpr option = engine.evaluate(ast.arg3());
+        if (!option.isRuleAST() || option.first() != S.PropagateAborts) {
+          return F.NIL;
+        }
+        IExpr propagate = option.second();
+        if (propagate.isTrue()) {
+          // the fail expression runs and the abort goes on past CheckAbort
+          IExpr aborted = F.headAST0(S.Abort);
+          IExpr result = engine.evalCheckAbort(ast.arg1(), aborted);
+          if (result == aborted) {
+            engine.evaluate(ast.arg2());
+            throw new AbortException();
+          }
+          return result;
+        }
+        if (propagate.isFalse() || propagate.isAutomatic()) {
+          return engine.evalCheckAbort(ast.arg1(), ast.arg2());
+        }
+        return F.NIL;
+      }
       return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
 
     @Override
@@ -1646,6 +1667,9 @@ public final class Programming {
     public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isList()) {
+        if (builtinSymbol == S.SetDelayed) {
+          return threadSetDelayed((IAST) leftHandSide, rightHandSide, engine);
+        }
         // thread over lists
         IExpr temp =
             engine.threadASTListArgs(F.Set(leftHandSide, rightHandSide), S.Thread, "tdlen");
@@ -1654,6 +1678,21 @@ public final class Programming {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>{a, b} := {1, 2}</code> defines each element with the unevaluated element of the
+     * right-hand side. The right-hand side stays held, so it has to be a written list.
+     */
+    private static IExpr threadSetDelayed(IAST leftHandSide, IExpr rightHandSide,
+        EvalEngine engine) {
+      if (!rightHandSide.isList() || ((IAST) rightHandSide).size() != leftHandSide.size()) {
+        // Lists `1` and `2` are not the same shape.
+        Errors.printMessage(S.SetDelayed, "shape", F.list(leftHandSide, rightHandSide), engine);
+        return S.$Failed;
+      }
+      IAST values = (IAST) rightHandSide;
+      return leftHandSide.mapThread(values, (x, y) -> engine.evaluate(F.SetDelayed(x, y)));
     }
   }
 

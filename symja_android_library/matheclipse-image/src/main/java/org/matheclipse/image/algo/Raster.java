@@ -247,6 +247,22 @@ public final class Raster implements Comparable<Raster> {
     return new Raster(width, height, channels, rounded);
   }
 
+  /** The samples an image of <code>type</code> holds: a <code>"Real32"</code> one, single ones. */
+  public Raster storedAs(String type) {
+    return Pixels.REAL32.equals(type) ? toSinglePrecision() : this;
+  }
+
+  /** One channel as a raster of its own. */
+  public Raster channel(int channel) {
+    Raster result = new Raster(width, height, 1);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        result.set(x, y, 0, get(x, y, channel));
+      }
+    }
+    return result;
+  }
+
   /** A hash of the shape and the samples, equal for two rasters {@link #compareTo} finds equal. */
   public int samplesHashCode() {
     return 31 * (31 * (31 * width + height) + channels) + java.util.Arrays.hashCode(samples);

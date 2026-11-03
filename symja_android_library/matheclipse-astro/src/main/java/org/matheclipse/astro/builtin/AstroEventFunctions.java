@@ -17,6 +17,8 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.DateGranularity;
+import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -597,12 +599,41 @@ public class AstroEventFunctions {
       return 1;
     }
 
+    /** The call with its arguments in the order the other methods read them. */
+    protected IAST normalized(IAST ast, int argSize) {
+      return ast;
+    }
+
+    /**
+     * The date object of the instant found, in the zone of the option <code>TimeZone</code> and
+     * truncated to the option <code>DateGranularity</code>; a UTC instant by default.
+     */
+    private static IExpr phaseDate(AbsoluteDate found, IExpr timeZone, IExpr granularity) {
+      DateObjectExpr date;
+      if (timeZone != null && timeZone.isReal()) {
+        double hours = timeZone.evalf();
+        date = (DateObjectExpr) AstroConvert.toDateObject(found.shiftedBy(hours * 3600.0));
+        date = date.withTimeZone(F.num(hours));
+      } else {
+        date = (DateObjectExpr) AstroConvert.toDateObject(found);
+      }
+      if (granularity != null && granularity.isString()) {
+        DateGranularity truncated = DateGranularity.of(granularity.toString());
+        if (truncated != null) {
+          return date.withGranularity(truncated);
+        }
+      }
+      return date;
+    }
+
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public IExpr evaluate(IAST unordered, int unorderedSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       if (!AstroDataContext.checkAvailable(symbol(), engine)) {
         return F.NIL;
       }
+      IAST ast = normalized(unordered, unorderedSize);
+      int argSize = ast == unordered ? unorderedSize : ast.argSize();
       Arguments arguments = Arguments.of(ast, dateArgumentFrom(), argSize, engine);
       if (arguments.rejected != null) {
         return AstroConvert.reportUnreadableArgument(symbol(), arguments.rejected, ast, engine);
@@ -614,7 +645,7 @@ public class AstroEventFunctions {
       int direction = options[0] != null && options[0].isReal() && options[0].evalf() < 0 ? -1 : 1;
       try {
         AbsoluteDate found = findPhase(arguments.date, target, direction);
-        return found == null ? S.Missing : AstroConvert.toDateObject(found);
+        return found == null ? S.Missing : phaseDate(found, options[1], options[2]);
       } catch (ArithmeticException | OrekitException oex) {
         return Errors.printMessage(symbol(), "orekitdata", F.List(F.stringx(oex.getMessage())),
             engine);
@@ -624,8 +655,8 @@ public class AstroEventFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          new IBuiltInSymbol[] {S.TimeDirection, S.TimeZone}, //
-          new IExpr[] {F.C1, S.Automatic});
+          new IBuiltInSymbol[] {S.TimeDirection, S.TimeZone, S.DateGranularity}, //
+          new IExpr[] {F.C1, S.Automatic, S.Automatic});
     }
   }
 
@@ -668,14 +699,27 @@ public class AstroEventFunctions {
   }
 
   /**
-   * <code>MoonPhaseDate(phase, date)</code> where <code>phase</code> is a fraction of the lunation
-   * between <code>0</code> and <code>1</code> or one of the quarter names.
+   * <code>MoonPhaseDate(date, phase)</code>, also written <code>MoonPhaseDate(phase, date)</code>,
+   * where <code>phase</code> is a fraction of the lunation between <code>0</code> and
+   * <code>1</code> or one of the quarter names, by default the new moon.
    */
   private static final class MoonPhaseDate extends AbstractPhaseDate {
 
     @Override
     protected int dateArgumentFrom() {
       return 2;
+    }
+
+    @Override
+    protected IAST normalized(IAST ast, int argSize) {
+      if (argSize == 1 && !ast.arg1().isString() && !ast.arg1().isReal()) {
+        return F.binaryAST2(S.MoonPhaseDate, F.C0, ast.arg1());
+      }
+      if (argSize == 2 && (ast.arg2().isString() || !ast.arg1().isReal())
+          && !ast.arg1().isString()) {
+        return F.binaryAST2(S.MoonPhaseDate, ast.arg2(), ast.arg1());
+      }
+      return ast;
     }
 
     @Override
@@ -713,7 +757,7 @@ public class AstroEventFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_0_2;
     }
   }
 

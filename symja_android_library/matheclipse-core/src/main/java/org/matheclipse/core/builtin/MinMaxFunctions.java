@@ -1656,6 +1656,27 @@ public class MinMaxFunctions {
       }
     }
 
+    /**
+     * The value of the objective at a sample point, if it is no number but an expression which
+     * keeps a symbol or an undefined function, which is reported.
+     *
+     * @return {@link F#NIL} if the objective has a numeric value there
+     */
+    private static IExpr sampleWithoutNumber(ISymbol head, IExpr function, IAST variables,
+        EvalEngine engine) {
+      final IAST point = variables.map(v -> F.num(0.7390851332151607), 1);
+      final IAST rules = F.mapRange(1, variables.size(),
+          i -> F.Rule(variables.get(i), point.get(i)));
+      IExpr value = engine.evalQuiet(F.N(F.subst(function, rules)));
+      if (value.isNumericFunction(true) || value.isIndeterminate() || value.isDirectedInfinity()
+          || !value.isAST()) {
+        return F.NIL;
+      }
+      // The function value `1` is not a number at `2` = `3`.
+      Errors.printMessage(head, "nnum", F.List(value, variables, point), engine);
+      return value;
+    }
+
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
       for (int i = 3; i < ast.size(); i++) {
@@ -1687,6 +1708,10 @@ public class MinMaxFunctions {
         VariablesSet vars = new VariablesSet(listOfVariables);
         if (list1.argSize() > 0 && vars.size() > 0) {
           IExpr function = list1.first();
+          IExpr noNumber = sampleWithoutNumber(ast.topHead(), function, listOfVariables, engine);
+          if (noNumber.isPresent()) {
+            return F.NIL;
+          }
           // {f, c1, c2, ...} and {f, c1 && c2 && ...} are the same problem
           IExpr constraints = S.True;
           if (list1.argSize() == 2) {

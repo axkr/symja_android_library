@@ -307,6 +307,14 @@ public class AssumptionFunctions {
             }
             // structural test for a compound expression, e.g. x+Gamma(x) is real if x is real
             return expr.isRealResult() ? S.True : F.NIL;
+          case ID.NegativeReals:
+            return signDomain(expr, -1, false, engine);
+          case ID.NonNegativeReals:
+            return signDomain(expr, 1, true, engine);
+          case ID.NonPositiveReals:
+            return signDomain(expr, -1, true, engine);
+          case ID.PositiveReals:
+            return signDomain(expr, 1, false, engine);
           default:
             break;
         }
@@ -329,6 +337,29 @@ public class AssumptionFunctions {
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * Test if the numeric <code>expr</code> has the given sign or, if allowed, is zero.
+   *
+   * @param sign <code>1</code> or <code>-1</code>
+   * @param zero whether <code>0</code> belongs to the domain
+   * @return {@link S#True}, {@link S#False}, or {@link F#NIL} if the membership is undecided
+   */
+  private static IExpr signDomain(IExpr expr, int sign, boolean zero, EvalEngine engine) {
+    if (expr.isZero()) {
+      return F.booleSymbol(zero);
+    }
+    if (expr.isNumber() && !expr.isReal()) {
+      return S.False;
+    }
+    if (expr.isNumericFunction()) {
+      IExpr value = engine.evaluate(F.N(expr));
+      if (value.isReal() && !value.isZero()) {
+        return F.booleSymbol(value.isPositive() == sign > 0);
+      }
+    }
+    return F.NIL;
   }
 
   private static class NotElement extends AbstractFunctionEvaluator {

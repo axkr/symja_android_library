@@ -664,7 +664,7 @@ public final class PiecewiseIntegration {
       constraints = constraints.appendClone(F.Less(x, upper));
     }
     // quiet - the messages are about a search the caller never sees
-    IExpr solved = engine.evalQuiet(F.Solve(constraints, x, S.Reals));
+    IExpr solved = engine.evalQuiet(F.SolveDistinct(constraints, x, S.Reals));
     if (!solved.isList()) {
       return false;
     }

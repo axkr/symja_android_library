@@ -48,6 +48,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           // {cells, background} with the cells given as a sparse array
           init = ((IAST) init).setAtCopy(1, ((ISparseArray) init.first()).normal(false));
         }
+        init = offsetBlocks(init);
 
         // Resolve Named Rules (e.g., "Rule30" -> 30)
         if (rule instanceof IStringX) {
@@ -78,10 +79,12 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
             tEnd = tSpec.toIntDefault(-1);
           } else if (tSpec.isList()) {
             IAST tList = (IAST) tSpec;
-            if (tList.argSize() >= 2 && tList.arg2().isList2()
-                && tList.arg2().first().isInteger() && tList.arg2().second().isInteger()) {
+            if (tList.argSize() >= 2 && tList.arg2().isList()
+                && (tList.arg2().argSize() == 1 || tList.arg2().argSize() == 2)
+                && ((IAST) tList.arg2()).forAll(IExpr::isInteger)) {
+              // {x} is the window of the single cell x
               xWindow = new int[] {tList.arg2().first().toIntDefault(),
-                  tList.arg2().second().toIntDefault()};
+                  ((IAST) tList.arg2()).last().toIntDefault()};
               if (F.isNotPresent(xWindow[0]) || F.isNotPresent(xWindow[1])
                   || xWindow[1] - xWindow[0] > Config.MAX_AST_SIZE) {
                 return F.NIL;
@@ -351,6 +354,9 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
               result = evaluateInteger1D(baseRule, k, r, s, isTotalistic, explicitWeights,
                   (IAST) init, stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm,
                   xWindow);
+              if (xWindow != null && result.isPresent() && !init.exists(x -> x.isList())) {
+                result = cyclicWindow(result, xWindow);
+              }
             }
           }
 
@@ -390,6 +396,86 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /** The rows of an evolution on a cycle restricted to the cells of the window. */
+  private static IExpr cyclicWindow(IExpr rows, int[] window) {
+    if (!rows.first().isList()) {
+      // a single step
+      return F.mapRange(window[0], window[1] + 1,
+          x -> rows.getAt(Math.floorMod(x, rows.argSize()) + 1));
+    }
+    return ((IAST) rows).map(row -> cyclicWindow(row, window));
+  }
+
+  /**
+   * The initial condition <code>{cells, background}</code> equivalent to
+   * <code>{{{cells1, {offset1}}, {cells2, {offset2}}, ...}, background}</code>: the blocks of cells
+   * are placed at their offsets on the background, where a later block wins. The same with the
+   * offsets <code>{y, x}</code> for blocks of a two-dimensional grid.
+   *
+   * @return <code>init</code> if it has another form
+   */
+  private static IExpr offsetBlocks(IExpr init) {
+    if (!init.isList2() || !init.first().isList() || init.first().isEmpty()
+        || init.second().isList()) {
+      return init;
+    }
+    IAST blocks = (IAST) init.first();
+    int dimension = blocks.first().isList2() ? blocks.first().second().argSize() : 0;
+    if (dimension != 1 && dimension != 2) {
+      return init;
+    }
+    int[] low = {Integer.MAX_VALUE, Integer.MAX_VALUE};
+    int[] high = {Integer.MIN_VALUE, Integer.MIN_VALUE};
+    for (IExpr block : blocks) {
+      if (!block.isList2() || !block.first().isList() || !block.second().isList()
+          || block.second().argSize() != dimension
+          || !((IAST) block.second()).forAll(IExpr::isInteger)) {
+        return init;
+      }
+      int[] extent = dimension == 1 ? new int[] {block.first().argSize()}
+          : block.first().isMatrix(false);
+      if (extent == null || (dimension == 1 && ((IAST) block.first()).exists(x -> x.isList()))) {
+        return init;
+      }
+      for (int d = 0; d < dimension; d++) {
+        int offset = block.second().getAt(d + 1).toIntDefault();
+        if (F.isNotPresent(offset)) {
+          return init;
+        }
+        low[d] = Math.min(low[d], offset);
+        high[d] = Math.max(high[d], offset + extent[d] - 1);
+      }
+    }
+    final int rows = dimension == 1 ? 1 : high[0] - low[0] + 1;
+    final int columns = high[dimension - 1] - low[dimension - 1] + 1;
+    if ((long) rows * columns > Config.MAX_AST_SIZE) {
+      return init;
+    }
+    IExpr[][] cells = new IExpr[rows][columns];
+    for (IExpr[] row : cells) {
+      java.util.Arrays.fill(row, init.second());
+    }
+    for (IExpr block : blocks) {
+      if (dimension == 1) {
+        int offset = block.second().first().toIntDefault() - low[0];
+        for (int j = 0; j < block.first().argSize(); j++) {
+          cells[0][offset + j] = block.first().getAt(j + 1);
+        }
+      } else {
+        int offsetY = block.second().first().toIntDefault() - low[0];
+        int offsetX = block.second().second().toIntDefault() - low[1];
+        for (int i = 0; i < block.first().argSize(); i++) {
+          IExpr row = block.first().getAt(i + 1);
+          for (int j = 0; j < row.argSize(); j++) {
+            cells[offsetY + i][offsetX + j] = row.getAt(j + 1);
+          }
+        }
+      }
+    }
+    IAST grid = F.mapRange(0, rows, i -> F.mapRange(0, columns, j -> cells[i][j]));
+    return F.List(dimension == 1 ? grid.arg1() : grid, init.second());
   }
 
   /**

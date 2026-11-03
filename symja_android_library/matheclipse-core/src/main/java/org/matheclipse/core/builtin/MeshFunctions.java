@@ -1,7 +1,9 @@
 package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -51,6 +53,8 @@ public class MeshFunctions {
       S.CantorMesh.setEvaluator(new CantorMesh());
       S.DelaunayMesh.setEvaluator(new DelaunayMesh());
       S.VoronoiMesh.setEvaluator(new VoronoiMesh());
+      S.DiscretizeRegion
+          .setEvaluator(new org.matheclipse.core.reflection.system.DiscretizeRegion());
     }
   }
 
@@ -791,16 +795,14 @@ public class MeshFunctions {
     IASTAppendable result = F.ListAlloc(polygons.argSize() * 3);
     LongOpenHashSet seen = new LongOpenHashSet();
     for (int i = 1; i < polygons.size(); i++) {
-      IAST indices = (IAST) polygons.get(i).first();
-      int size = indices.argSize();
-      for (int j = 1; j <= size; j++) {
-        int from = indices.get(j).toIntDefault();
-        int to = indices.get(j == size ? 1 : j + 1).toIntDefault();
-        if (from < 1 || to < 1) {
-          return F.NIL;
-        }
-        long key = from < to ? (((long) from) << 32) | to : (((long) to) << 32) | from;
-        if (seen.add(key)) {
+      int[] cycle = vertexCycle(polygons.get(i));
+      if (cycle == null) {
+        return F.NIL;
+      }
+      for (int j = 0; j < cycle.length; j++) {
+        int from = cycle[j];
+        int to = cycle[(j + 1) % cycle.length];
+        if (seen.add(edgeKey(from, to))) {
           result.append(F.Line(F.list(F.ZZ(from), F.ZZ(to))));
         }
       }
@@ -862,6 +864,117 @@ public class MeshFunctions {
       return edgeCells(meshRegion);
     }
     return boundaryCells(meshRegion, dimension);
+  }
+
+  /** The vertex indices of a polygon cell, or <code>null</code> if one isn't a valid index. */
+  private static int[] vertexCycle(IExpr polygon) {
+    IExpr indices = polygon.first();
+    int[] cycle = new int[indices.argSize()];
+    for (int j = 0; j < cycle.length; j++) {
+      cycle[j] = indices.getAt(j + 1).toIntDefault();
+      if (cycle[j] < 1) {
+        return null;
+      }
+    }
+    return cycle;
+  }
+
+  /** The key of the undirected edge of two vertex indices. */
+  private static long edgeKey(int from, int to) {
+    return from < to ? (((long) from) << 32) | to : (((long) to) << 32) | from;
+  }
+
+  /**
+   * The edges of a region of faces which belong to exactly one face, the stored lines of any other
+   * mesh region, as edge keys.
+   *
+   * @return <code>null</code> if a cell doesn't hold vertex indices
+   */
+  private static Set<Long> boundaryEdges(IAST meshRegion) {
+    Set<Long> result = new HashSet<Long>();
+    IAST faces = boundaryCells(meshRegion, 2);
+    if (faces.isPresent() && faces.argSize() > 0) {
+      for (int i = 1; i < faces.size(); i++) {
+        int[] cycle = vertexCycle(faces.get(i));
+        if (cycle == null) {
+          return null;
+        }
+        for (int j = 0; j < cycle.length; j++) {
+          long key = edgeKey(cycle[j], cycle[(j + 1) % cycle.length]);
+          if (!result.add(key)) {
+            result.remove(key);
+          }
+        }
+      }
+      return result;
+    }
+    IAST lines = boundaryCells(meshRegion, 1);
+    if (lines.isNIL()) {
+      return null;
+    }
+    for (IExpr line : lines) {
+      IAST indices = (IAST) line.first();
+      for (int j = 1; j < indices.argSize(); j++) {
+        result.add(edgeKey(indices.get(j).toIntDefault(), indices.get(j + 1).toIntDefault()));
+      }
+    }
+    return result;
+  }
+
+  /** The vertex indices of a cell: <code>Point(i)</code> or <code>head({i1, i2, ...})</code>. */
+  private static IAST cellIndices(IExpr cell) {
+    IExpr indices = cell.first();
+    return indices.isList() ? (IAST) indices : F.List(indices);
+  }
+
+  /**
+   * The cells of geometric dimension <code>dimension</code> which don't touch the boundary of the
+   * region in any vertex if <code>interior</code>, otherwise the cells which lie on the boundary.
+   *
+   * @return {@link F#NIL} if the region has no such cells
+   */
+  private static IAST cellsByLocation(IAST meshRegion, int dimension, boolean interior) {
+    IAST cells = meshCells(meshRegion, dimension);
+    Set<Long> edges = boundaryEdges(meshRegion);
+    if (cells.isNIL() || edges == null) {
+      return F.NIL;
+    }
+    Set<Integer> boundaryVertices = new HashSet<Integer>();
+    for (long key : edges) {
+      boundaryVertices.add((int) (key >>> 32));
+      boundaryVertices.add((int) key);
+    }
+    IASTAppendable result = F.ListAlloc(cells.argSize());
+    for (IExpr cell : cells) {
+      IAST indices = cellIndices(cell);
+      boolean keep;
+      if (interior) {
+        keep = !indices.exists(i -> boundaryVertices.contains(i.toIntDefault()));
+      } else if (dimension == 0) {
+        keep = boundaryVertices.contains(indices.arg1().toIntDefault());
+      } else {
+        keep = dimension == 1 && indices.argSize() == 2
+            && edges.contains(edgeKey(indices.arg1().toIntDefault(), indices.arg2().toIntDefault()));
+      }
+      if (keep) {
+        result.append(cell);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The cells of <code>{d, "Interior"}</code> and <code>{d, "Boundary"}</code>.
+   *
+   * @return <code>null</code> if <code>spec</code> doesn't have one of these forms
+   */
+  private static IAST locatedCells(IAST meshRegion, IExpr spec) {
+    if (spec.isList2() && (spec.second().isString("Interior") || spec.second().isString("Boundary"))
+        && spec.first().toIntDefault() >= 0) {
+      return cellsByLocation(meshRegion, spec.first().toIntDefault(),
+          spec.second().isString("Interior"));
+    }
+    return null;
   }
 
   /**
@@ -1427,6 +1540,10 @@ public class MeshFunctions {
         return meshCells(meshRegion, dimension);
       }
       if (spec.isList2()) {
+        IAST located = locatedCells(meshRegion, spec);
+        if (located != null) {
+          return located;
+        }
         dimension = ((IAST) spec).arg1().toIntDefault();
         if (dimension < 0) {
           return F.NIL;
@@ -1514,11 +1631,12 @@ public class MeshFunctions {
         return F.NIL;
       }
       IAST meshRegion = (IAST) arg1;
-      int dimension = ast.arg2().toIntDefault();
+      IAST located = locatedCells(meshRegion, ast.arg2());
+      int dimension = located != null ? ast.arg2().first().toIntDefault() : ast.arg2().toIntDefault();
       if (dimension < 0) {
         return F.NIL;
       }
-      IAST cells = meshCells(meshRegion, dimension);
+      IAST cells = located != null ? located : meshCells(meshRegion, dimension);
       if (cells.isNIL()) {
         return F.NIL;
       }
@@ -1526,7 +1644,7 @@ public class MeshFunctions {
       IASTAppendable result = F.ListAlloc(cells.argSize());
       for (int i = 1; i < cells.size(); i++) {
         IAST cell = (IAST) cells.get(i);
-        IAST indices = (IAST) cell.first();
+        IAST indices = cellIndices(cell);
         IASTAppendable points = F.ListAlloc(indices.argSize());
         for (int j = 1; j < indices.size(); j++) {
           int index = indices.get(j).toIntDefault();

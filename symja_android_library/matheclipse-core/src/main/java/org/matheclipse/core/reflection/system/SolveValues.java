@@ -64,8 +64,10 @@ public class SolveValues extends AbstractFunctionOptionEvaluator {
     // the shape of the result is determined by the variables argument the user wrote down, before
     // Solve turns a single variable into a list of variables
     IExpr variables = ast.arg2();
-    SolveData sd = new SolveData(SolveOptions.of(SolveOptions.SOLVE_KEYS, options));
-    return Solve.solutionValues(sd.of(ast, isNumericArgument, engine), variables);
+    SolveOptions solveOptions = SolveOptions.of(SolveOptions.SOLVE_KEYS, options);
+    IExpr solutions = new SolveData(solveOptions).of(ast, isNumericArgument, engine);
+    return Solve.solutionValues(Solve.withRootMultiplicities(ast, solutions, solveOptions, engine),
+        variables);
   }
 
   @Override

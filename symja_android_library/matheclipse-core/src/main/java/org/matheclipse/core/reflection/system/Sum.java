@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DifferenceRootExpr;
@@ -197,7 +198,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
       IExpr p = poly;
       // a polynomial Solve can't split only means the method doesn't apply: no message
-      IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(poly, F.C0), var));
+      IExpr solutions = engine.evalQuiet(F.SolveDistinct(F.Equal(poly, F.C0), var));
       if (!solutions.isList()) {
         return null;
       }
@@ -264,10 +265,79 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
   private static com.google.common.base.Supplier<Matcher> MATCHER1;
 
+  /** The largest step for which the root of unity filter is tried. */
+  private static final int ROOT_FILTER_MAX_STEP = 12;
+
   public Sum() {}
 
   private static Matcher matcher1() {
     return MATCHER1.get();
+  }
+
+  /** The largest exponent of a power sum which is factored in a short time. */
+  private static final int MAX_FACTORED_POWER = 32;
+
+  /**
+   * The summand evaluates with the indices bound, so a symbol whose value mentions an index, as
+   * <code>r</code> in <code>r = n^2; Sum(r, {n, 1, k})</code>, means that value. The symbolic
+   * methods take the held summand as it is and would read such a symbol as a constant, so its value
+   * is written into the summand. A summand with a held call, such as an assignment or local
+   * variables, is left alone.
+   *
+   * @param ast a call of {@link S#Sum} or {@link S#Product}
+   * @return {@link F#NIL} if the summand has no such symbol
+   */
+  static IAST withIndexDependentValues(IAST ast) {
+    if (ast.argSize() < 2) {
+      return F.NIL;
+    }
+    final IExpr summand = ast.arg1();
+    final Predicate<IExpr> dependent = x -> x.isSymbol() && x.isVariable()
+        && ((ISymbol) x).hasAssignedSymbolValue()
+        && mentionsIndex(((ISymbol) x).assignedValue(), ast);
+    if (summand.isFree(dependent, false) || !summand.isFree(Sum::isHeldCall, true)) {
+      return F.NIL;
+    }
+    return ast.setAtCopy(1,
+        F.subst(summand, x -> dependent.test(x) ? ((ISymbol) x).assignedValue() : F.NIL));
+  }
+
+  /** A call which doesn't evaluate all its arguments, a nested sum or product aside. */
+  private static boolean isHeldCall(IExpr x) {
+    return x.isAST() && x.head().isSymbol() && !x.isAST(S.Sum) && !x.isAST(S.Product)
+        && (((ISymbol) x.head()).getAttributes() & ISymbol.HOLDALL) != 0;
+  }
+
+  /**
+   * The sum of the powers <code>i^p</code> of the integers up to a symbol is a polynomial in that
+   * symbol, given with its factors: <code>Sum(i^2, {i, 1, n})</code> is
+   * <code>1/6*n*(1+n)*(1+2*n)</code>.
+   *
+   * @param summand the summand
+   * @param iterator <code>{i, from, to}</code>
+   * @return {@link F#NIL} if the sum has not this form
+   */
+  private static IExpr factoredPowerSum(IExpr summand, IAST iterator) {
+    if (iterator.isAST3() && summand.isPower() && summand.base().equals(iterator.arg1())
+        && iterator.arg1().isSymbol() && summand.exponent().isInteger()
+        && summand.exponent().isPositive()
+        && summand.exponent().toIntDefault() <= MAX_FACTORED_POWER
+        && (iterator.arg2().isZero() || iterator.arg2().isOne())
+        && iterator.arg3().isVariable()) {
+      return F.Factor(sumPowerFormula((ISymbol) iterator.arg1(), (IInteger) summand.exponent(),
+          iterator.arg2(), iterator.arg3()));
+    }
+    return F.NIL;
+  }
+
+  private static boolean mentionsIndex(IExpr value, IAST ast) {
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr index = ast.get(i).isList() && ast.get(i).argSize() >= 1 ? ast.get(i).first() : ast.get(i);
+      if (index.isSymbol() && !value.isFree(index)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -279,6 +349,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
       if (localized != null) {
         return localized;
       }
+    }
+    IAST withValues = withIndexDependentValues(ast);
+    if (withValues.isPresent()) {
+      return withValues;
     }
     // Optional Method -> "Polynomial" | "Geometric" | "Gosper" as last argument forces one
     // summation algorithm strictly.
@@ -589,6 +663,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
             return hasUnevaluatedSum(outerResult, preevaledSum.arg1()) ? F.NIL : outerResult;
           }
         } else if (!isSmallSymbolicRange(sumForm.arg1(), lastList, engine)) {
+          IExpr powerSum = factoredPowerSum(sumForm.arg1(), lastList);
+          if (powerSum.isPresent()) {
+            return powerSum;
+          }
           IExpr result = matcher1().apply(sumForm);
           if (result.isPresent()) {
             return result;
@@ -1089,6 +1167,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * @return the closed form or {@link F#NIL} if the reindexed sum has none either
    */
   private static IExpr steppedSum(IExpr expr, IIterator<IExpr> iterator, EvalEngine engine) {
+    if (iterator.getUpperLimit().isInfinity() && !iterator.getLowerLimit().isDirectedInfinity()
+        && iterator.getStep().isPositiveResult()) {
+      return steppedSumToInfinity(expr, iterator, engine);
+    }
     IAST reindexed = reindexStepIterator(expr, iterator);
     if (reindexed.isNIL()) {
       return F.NIL;
@@ -1098,6 +1180,131 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return result;
     }
     return F.NIL;
+  }
+
+  /**
+   * The sum <code>Sum(f(n), {n, a, Infinity, s})</code> over <code>k</code> with
+   * <code>n == a + s*k</code>, or by the root of unity filter if that has no closed form.
+   *
+   * @return the closed form or {@link F#NIL}
+   */
+  private static IExpr steppedSumToInfinity(IExpr expr, IIterator<IExpr> iterator,
+      EvalEngine engine) {
+    final ISymbol var = iterator.getVariable();
+    final IExpr from = iterator.getLowerLimit();
+    final IExpr step = iterator.getStep();
+    ISymbol index = F.Dummy(EvalEngine.uniqueName("step$" + var.getSymbolName()));
+    IExpr rewritten = F.subst(expr, x -> x.equals(var), F.Plus(from, F.Times(step, index)));
+    IExpr term = engine.evaluate(F.Refine(rewritten, F.Element(index, S.Integers)));
+    IExpr result = engine.evalQuietNIL(F.Sum(term, F.list(index, F.C0, F.CInfinity)));
+    if (isClosedSum(result)) {
+      return result.isFreeAST(S.PolyGamma) ? result
+          : engine.evaluate(F.Expand(F.FunctionExpand(result)));
+    }
+    return rootOfUnityFilter(expr, var, from, step, engine);
+  }
+
+  private static boolean isClosedSum(IExpr result) {
+    return result.isPresent() && result.isFreeAST(S.Sum) && result.isFreeAST(S.DifferenceRoot);
+  }
+
+  /**
+   * <code>Sum(f(n), {n, a, Infinity, s})</code> for integers <code>a</code> and <code>s</code>: with
+   * <code>T(w) == Sum(f(n)*w^n, {n, a, Infinity})</code> it is the mean of
+   * <code>w^(-a)*T(w)</code> over the <code>s</code>-th roots of unity <code>w</code>. The two terms
+   * of a pair of complex conjugate roots are combined into their real part if that is free of
+   * functions which aren't analytic.
+   *
+   * @return the closed form or {@link F#NIL} if there is no closed form for <code>T</code> or a
+   *         root has no exact Cartesian form
+   */
+  private static IExpr rootOfUnityFilter(IExpr expr, ISymbol var, IExpr from, IExpr step,
+      EvalEngine engine) {
+    final int s = step.toIntDefault();
+    if (s < 2 || s > ROOT_FILTER_MAX_STEP || !from.isInteger()) {
+      return F.NIL;
+    }
+    final ISymbol w = F.Dummy("w");
+    IExpr closed = engine
+        .evalQuietNIL(F.Sum(F.Times(expr, F.Power(w, var)), F.list(var, from, F.CInfinity)));
+    if (!isClosedSum(closed)) {
+      return F.NIL;
+    }
+    final IExpr transform = engine.evaluate(F.Expand(F.FunctionExpand(closed)));
+    IASTAppendable sum = F.PlusAlloc(s);
+    sum.append(F.subst(transform, w, F.C1));
+    for (int j = 1; 2 * j <= s; j++) {
+      engine.checkTimeLimit();
+      IExpr angle = F.Times(F.QQ(2 * j, s), S.Pi);
+      IExpr root = engine.evaluate(F.Plus(F.Cos(angle), F.Times(F.CI, F.Sin(angle))));
+      if (!root.isFreeAST(S.Cos) || !root.isFreeAST(S.Sin)) {
+        return F.NIL;
+      }
+      IExpr term = F.Times(F.Power(root, from.negate()), F.subst(transform, w, root));
+      if (2 * j == s) {
+        sum.append(term);
+        continue;
+      }
+      IExpr real = engine.evaluate(F.ComplexExpand(F.Re(term)));
+      if (real.isFree(x -> x.isFunctionID(ID.Re, ID.Im, ID.Abs, ID.Arg, ID.Conjugate, ID.Sign,
+          ID.ComplexExpand), true) && real.isFree(x -> x.isComplex(), false)) {
+        sum.append(F.Times(F.C2, singleSine(real, engine)));
+      } else {
+        IExpr conjugate = engine.evaluate(F.Conjugate(root));
+        sum.append(term);
+        sum.append(F.Times(F.Power(conjugate, from.negate()), F.subst(transform, w, conjugate)));
+      }
+    }
+    IExpr result = engine.evaluate(F.Expand(F.Times(F.QQ(1, s), sum)));
+    // the pairs of real roots of an even step give hyperbolic functions
+    return (s & 1) == 0 ? engine.evaluate(F.Simplify(F.ExpToTrig(result))) : result;
+  }
+
+  /**
+   * Combine <code>a*Cos(t) + b*Sin(t) + c</code>, which has a numeric quotient <code>a/b</code>
+   * with a known <code>ArcTan</code>, into one sine with a positive constant in its argument.
+   *
+   * @return the combined expression or <code>expr</code> if it has another form
+   */
+  private static IExpr singleSine(IExpr expr, EvalEngine engine) {
+    IExpr expanded = engine.evaluate(F.Expand(expr));
+    java.util.Set<IExpr> arguments = new java.util.HashSet<IExpr>();
+    expanded.isFree(x -> {
+      if (x.isAST1() && x.isFunctionID(ID.Cos, ID.Sin)) {
+        arguments.add(x.first());
+      }
+      return false;
+    }, true);
+    if (arguments.size() != 1) {
+      return expr;
+    }
+    final IExpr t = arguments.iterator().next();
+    final ISymbol cos = F.Dummy("c");
+    final ISymbol sin = F.Dummy("s");
+    IExpr poly = F.subst(expanded, x -> {
+      if (x.isAST1() && x.first().equals(t)) {
+        return x.isFunctionID(ID.Cos) ? cos : x.isFunctionID(ID.Sin) ? sin : F.NIL;
+      }
+      return F.NIL;
+    });
+    poly = engine.evaluate(poly);
+    IExpr a = engine.evaluate(F.Coefficient(poly, cos));
+    IExpr b = engine.evaluate(F.Coefficient(poly, sin));
+    IExpr rest =
+        engine.evaluate(F.Expand(F.Subtract(poly, F.Plus(F.Times(a, cos), F.Times(b, sin)))));
+    if (!rest.isFree(cos) || !rest.isFree(sin) || a.isZero() || b.isZero()) {
+      return expr;
+    }
+    IExpr phi = engine.evaluate(F.ArcTan(F.Simplify(F.Divide(a, b))));
+    if (!phi.isFreeAST(S.ArcTan) || !phi.isNumericFunction()) {
+      return expr;
+    }
+    IExpr amplitude = engine.evaluate(F.Simplify(F.Divide(b, F.Cos(phi))));
+    if (phi.isNegativeResult()) {
+      return F.Plus(rest,
+          F.Times(F.CN1, amplitude, F.Sin(F.Together(F.Subtract(phi.negate(), t)))));
+    }
+    return F.Plus(rest, F.Times(amplitude, F.Sin(F.Together(F.Plus(t, phi)))));
   }
 
   // ---------------------------------------------------------------------------
@@ -1951,7 +2158,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     for (IExpr cf : coeffList) {
       equations.append(F.Equal(cf, F.C0));
     }
-    IExpr solutions = engine.evalQuiet(F.Solve(equations, unknowns));
+    IExpr solutions = engine.evalQuiet(F.SolveDistinct(equations, unknowns));
     if (solutions.isList() && solutions.size() >= 2 && solutions.first().isList()) {
       return solutions.first();
     }
@@ -2017,7 +2224,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     java.util.TreeSet<Integer> roots = new java.util.TreeSet<>();
     roots.add(0);
     if (!poly.isZero() && !poly.isFree(h, true)) {
-      IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(poly, F.C0), h));
+      IExpr solutions = engine.evalQuiet(F.SolveDistinct(F.Equal(poly, F.C0), h));
       if (solutions.isList()) {
         for (IExpr s : (IAST) solutions) {
           if (s.isList() && s.size() >= 2 && s.first().isRuleAST()) {

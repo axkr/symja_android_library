@@ -266,6 +266,13 @@ public class D extends AbstractFunctionOptionEvaluator {
           || id == ID.InverseZTransform) {
         return F.NIL;
       }
+      if ((id == ID.WeierstrassP || id == ID.WeierstrassPPrime || id == ID.WeierstrassSigma
+          || id == ID.WeierstrassZeta) && ast.isAST2() && ast.arg2().isList()
+          && ast.arg2().isFree(x)) {
+        // the invariants are constants
+        return F.Times(F.D(ast.arg1(), x),
+            Derivative.withBuiltinRule(createDerivative(1, head, ast)));
+      }
       if (ast.exists(arg -> arg.isList())) {
         // an iterator or option list like in Table(f, {k, 1, n}) has no partial derivative
         return F.NIL;

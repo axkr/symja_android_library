@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -50,12 +51,22 @@ public class SidesFunctions {
     /**
      * Apply the operation with <code>operand</code> to both sides of <code>comparator</code>.
      *
+     * @param assumptions the value of the option <code>Assumptions</code> or {@link F#NIL}
      * @return {@link F#NIL} if <code>comparator</code> is no equation or inequality
      */
-    protected abstract IExpr sides(IAST comparator, IExpr operand);
+    protected abstract IExpr sides(IAST comparator, IExpr operand, IExpr assumptions,
+        EvalEngine engine);
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr assumptions = F.NIL;
+      if (ast.isAST3()) {
+        IExpr option = engine.evaluate(ast.arg3());
+        if (!scaled || !option.isRuleAST() || option.first() != S.Assumptions) {
+          return F.NIL;
+        }
+        assumptions = option.second();
+      }
       IExpr arg1 = ast.arg1();
       IExpr arg2;
       if (operandFirst) {
@@ -82,7 +93,7 @@ public class SidesFunctions {
       if (arg2.isPresent()) {
         if (arg1.isConditionalExpression() && arg1.first().isAST()) {
           IAST a1 = (IAST) arg1.first();
-          IExpr temp = sides(a1, arg2);
+          IExpr temp = sides(a1, arg2, assumptions, engine);
           if (temp.isPresent()) {
             if (scaled) {
               temp = engine.evaluate(temp);
@@ -95,7 +106,7 @@ public class SidesFunctions {
             // Cannot divide sides of an equation or inequality by 0.
             return Errors.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
           } else if (!arg2.isComparatorFunction()) {
-            IExpr temp = sides((IAST) arg1, arg2);
+            IExpr temp = sides((IAST) arg1, arg2, assumptions, engine);
             if (temp.isPresent()) {
               return temp;
             }
@@ -108,6 +119,9 @@ public class SidesFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
+      if (scaled) {
+        return operandFirst ? ARGS_2_3 : ARGS_1_3;
+      }
       return operandFirst ? ARGS_2_2 : ARGS_1_2;
     }
   }
@@ -119,7 +133,7 @@ public class SidesFunctions {
     }
 
     @Override
-    protected IExpr sides(IAST comparator, IExpr operand) {
+    protected IExpr sides(IAST comparator, IExpr operand, IExpr assumptions, EvalEngine engine) {
       return shiftSides(comparator, x -> F.Plus(x, operand));
     }
   }
@@ -196,12 +210,14 @@ public class SidesFunctions {
 
   /**
    * Apply <code>f</code>, a multiplication or division by <code>c</code>, to both sides of an
-   * equation or inequality. An inequality is reversed for a negative <code>c</code> and becomes a
-   * <code>Piecewise</code> for a <code>c</code> of unknown sign.
+   * equation or inequality. For a negative <code>c</code> an inequality swaps its sides and keeps
+   * its head; it becomes a <code>Piecewise</code> for a <code>c</code> of unknown sign.
    *
+   * @param assumptions the value of the option <code>Assumptions</code> or {@link F#NIL}
    * @return {@link F#NIL} if <code>comparator</code> is no equation or inequality
    */
-  private static IExpr scaleSides(IAST comparator, IExpr c, Function<IExpr, IExpr> f) {
+  private static IExpr scaleSides(IAST comparator, IExpr c, IExpr assumptions,
+      Function<IExpr, IExpr> f, EvalEngine engine) {
     switch (comparator.headID()) {
       case ID.Equal:
       case ID.Unequal:
@@ -210,16 +226,36 @@ public class SidesFunctions {
       case ID.LessEqual:
       case ID.Greater:
       case ID.GreaterEqual:
-        if (c.isNegative()) {
-          return comparator.mapReverse(f);
+        if (isSign(c, F.Less(c, F.C0), assumptions, engine)) {
+          return keepSides(comparator.mapReverse(f), engine);
         }
-        if (c.isPositive()) {
-          return comparator.map(f);
+        if (isSign(c, F.Greater(c, F.C0), assumptions, engine)) {
+          return keepSides(comparator.map(f), engine);
         }
         return piecewiseComparator(comparator, c, f);
       default:
         return F.NIL;
     }
+  }
+
+  /** Whether <code>condition</code>, a sign of the operand <code>c</code>, is known to hold. */
+  private static boolean isSign(IExpr c, IAST condition, IExpr assumptions, EvalEngine engine) {
+    if (c.isReal()) {
+      return engine.evalTrue(condition);
+    }
+    return assumptions.isPresent() && engine.evalTrue(F.Refine(condition, assumptions));
+  }
+
+  /**
+   * The inequality with its evaluated sides, which an evaluation doesn't normalize to a variable on
+   * the left and a number on the right: <code>-1/2 &gt; -x/2</code> stays as it is.
+   */
+  private static IAST keepSides(IAST comparator, EvalEngine engine) {
+    IAST result = comparator.map(x -> engine.evaluate(x));
+    if (result.isAST2()) {
+      result.addFlag(Flag.BUILT_IN_EVALED);
+    }
+    return result;
   }
 
   /**
@@ -274,8 +310,8 @@ public class SidesFunctions {
     }
 
     @Override
-    protected IExpr sides(IAST comparator, IExpr operand) {
-      return scaleSides(comparator, operand, x -> F.Divide(x, operand));
+    protected IExpr sides(IAST comparator, IExpr operand, IExpr assumptions, EvalEngine engine) {
+      return scaleSides(comparator, operand, assumptions, x -> F.Divide(x, operand), engine);
     }
   }
 
@@ -286,8 +322,8 @@ public class SidesFunctions {
     }
 
     @Override
-    protected IExpr sides(IAST comparator, IExpr operand) {
-      return scaleSides(comparator, operand, x -> F.Times(x, operand));
+    protected IExpr sides(IAST comparator, IExpr operand, IExpr assumptions, EvalEngine engine) {
+      return scaleSides(comparator, operand, assumptions, x -> F.Times(x, operand), engine);
     }
   }
 
@@ -298,7 +334,7 @@ public class SidesFunctions {
     }
 
     @Override
-    protected IExpr sides(IAST comparator, IExpr operand) {
+    protected IExpr sides(IAST comparator, IExpr operand, IExpr assumptions, EvalEngine engine) {
       return shiftSides(comparator, x -> F.Subtract(x, operand));
     }
   }

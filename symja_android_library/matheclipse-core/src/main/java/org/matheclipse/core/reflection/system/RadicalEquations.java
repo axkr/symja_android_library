@@ -111,7 +111,7 @@ final class RadicalEquations {
       polynomials.append(F.Equal(norm, F.C0));
     }
     IExpr candidates = numeric ? numericSolutions(polynomials, variables, engine)
-        : engine.evalQuiet(F.Solve(polynomials, variables));
+        : engine.evalQuiet(F.SolveDistinct(polynomials, variables));
     if (candidates.isEmptyList()) {
       return F.CEmptyList;
     }

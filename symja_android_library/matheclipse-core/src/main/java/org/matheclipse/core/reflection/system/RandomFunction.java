@@ -79,7 +79,16 @@ public class RandomFunction extends AbstractFunctionEvaluator {
     }
     Random random = engine.getRandom();
     IASTAppendable paths = F.ListAlloc(pathCount);
+    IExpr noise = StochasticProcesses.whiteNoiseDistribution(process);
     for (int k = 0; k < pathCount; k++) {
+      if (noise.isPresent()) {
+        IExpr draws = engine.evaluate(F.RandomVariate(noise, F.ZZ(points)));
+        if (!draws.isList()) {
+          return F.NIL;
+        }
+        paths.append(draws);
+        continue;
+      }
       double[] values = StochasticProcesses.simulate((IAST) process, times, random);
       if (StochasticProcesses.isIntegerValued(process)) {
         paths.append(F.mapRange(0, values.length, i -> F.ZZ((long) values[i])));
@@ -91,7 +100,7 @@ public class RandomFunction extends AbstractFunctionEvaluator {
     IExpr last = Math.abs(times[points - 1] - max) <= 1.0e-9 * Math.max(1.0, Math.abs(max)) ? tmax
         : engine.evaluate(F.Plus(tmin, F.Times(F.ZZ(points - 1), dt)));
     IAST timeSpec = F.List(tmin, last, dt);
-    return TemporalData.of(paths, timeSpec, pathCount, discrete);
+    return TemporalData.of(paths, timeSpec, discrete);
   }
 
   @Override

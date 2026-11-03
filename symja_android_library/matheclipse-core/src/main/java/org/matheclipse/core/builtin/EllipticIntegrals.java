@@ -66,6 +66,7 @@ public class EllipticIntegrals {
       S.EllipticLog.setEvaluator(new EllipticLog());
       S.EllipticPi.setEvaluator(new EllipticPi());
       S.EllipticTheta.setEvaluator(new EllipticTheta());
+      S.EllipticThetaPrime.setEvaluator(new EllipticThetaPrime());
 
       // S.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
       S.InverseJacobiCD.setEvaluator(new InverseJacobiCD());
@@ -1501,6 +1502,96 @@ public class EllipticIntegrals {
     }
   }
 
+  /** Whether the numbers <code>z</code> and <code>q</code> ask for arbitrary precision. */
+  private static boolean isArbitraryTheta(IExpr z, IExpr q, EvalEngine engine) {
+    return z instanceof ApfloatNum || z instanceof ApcomplexNum || q instanceof ApfloatNum
+        || q instanceof ApcomplexNum
+        || (engine.isArbitraryMode() && !z.isInexactNumber() && !q.isInexactNumber());
+  }
+
+  /**
+   * <code>EllipticThetaPrime(a, z, q)</code> is the derivative of <code>EllipticTheta(a, z, q)</code>
+   * with respect to <code>z</code>, and <code>EllipticThetaPrime(a, q)</code> its value at
+   * <code>z=0</code>. Numbers are summed termwise.
+   */
+  private static class EllipticThetaPrime extends AbstractFunctionEvaluator {
+
+    /** The largest number of terms, for a nome next to the unit circle. */
+    private static final int MAX_TERMS = 5000;
+
+    /**
+     * The series of the derivative: <code>2*Sum((-1)^n*m*q^(m^2/4)*Cos(m*z))</code> with
+     * <code>m=2n+1</code> for <code>a=1</code>, <code>-2*Sum(m*q^(m^2/4)*Sin(m*z))</code> for
+     * <code>a=2</code>, and with <code>m=2n</code>, <code>n&gt;=1</code>, the sums of the same
+     * forms with <code>Sin</code> for <code>a=3,4</code>.
+     *
+     * @return <code>null</code> if the series doesn't converge in time
+     */
+    private static Apcomplex series(int a, Apcomplex z, Apcomplex q, int digits,
+        EvalEngine engine) {
+      double logQ = Math.log(ApcomplexMath.abs(q).doubleValue());
+      if (!(logQ < 0.0)) {
+        return null;
+      }
+      double growth = Math.abs(z.imag().doubleValue());
+      org.apfloat.FixedPrecisionApcomplexHelper h =
+          new org.apfloat.FixedPrecisionApcomplexHelper(digits);
+      boolean half = a <= 2;
+      boolean alternating = a == 1 || a == 4;
+      Apcomplex front = half ? h.pow(q, new Apfloat("0.25", digits)) : Apcomplex.ONE;
+      Apcomplex sum = Apcomplex.ZERO;
+      for (long n = half ? 0L : 1L; n < MAX_TERMS; n++) {
+        engine.checkTimeLimit();
+        long m = half ? 2L * n + 1L : 2L * n;
+        long power = half ? n * (n + 1L) : n * n;
+        Apfloat factor = new Apfloat(m, digits);
+        Apcomplex angle = h.multiply(factor, z);
+        Apcomplex term = h.multiply(h.multiply(factor, h.multiply(front, h.pow(q, power))),
+            a == 1 ? h.cos(angle) : h.sin(angle));
+        sum = alternating && n % 2L == 1L ? h.subtract(sum, term) : h.add(sum, term);
+        if ((power * logQ + growth * m) / Math.log(10.0) < -digits - 5.0) {
+          return h.multiply(new Apfloat(a == 1 ? 2L : -2L, digits), sum);
+        }
+      }
+      return null;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      int a = ast.arg1().toIntDefault();
+      IExpr z = ast.isAST3() ? ast.arg2() : F.C0;
+      IExpr q = ast.last();
+      if (a < 1 || a > 4 || !z.isNumber() || !q.isNumber()
+          || !(z.isInexactNumber() || q.isInexactNumber() || engine.isNumericMode())) {
+        return F.NIL;
+      }
+      if (q.isZero()) {
+        return F.C0;
+      }
+      final boolean arbitrary = isArbitraryTheta(z, q, engine);
+      final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
+      try {
+        Apcomplex value = series(a, CarlsonArbitraryPrecision.apcomplex(z, digits),
+            CarlsonArbitraryPrecision.apcomplex(q, digits), digits, engine);
+        return value == null ? F.NIL
+            : CarlsonArbitraryPrecision.toNumber(value, value.imag().signum() == 0, arbitrary);
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        return F.NIL;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+    }
+  }
+
   private static class EllipticTheta extends AbstractFunctionEvaluator {
 
     @Override
@@ -1535,9 +1626,7 @@ public class EllipticIntegrals {
           || !(z.isInexactNumber() || q.isInexactNumber() || engine.isNumericMode())) {
         return F.NIL;
       }
-      final boolean arbitrary = z instanceof ApfloatNum || z instanceof ApcomplexNum
-          || q instanceof ApfloatNum || q instanceof ApcomplexNum
-          || (engine.isArbitraryMode() && !z.isInexactNumber() && !q.isInexactNumber());
+      final boolean arbitrary = isArbitraryTheta(z, q, engine);
       final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
       try {
         Apcomplex argument = CarlsonArbitraryPrecision.apcomplex(z, digits);

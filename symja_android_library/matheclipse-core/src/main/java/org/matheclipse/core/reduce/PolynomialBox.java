@@ -24,7 +24,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * for it, so <code>x^e</code> and <code>x</code> are bounded; an even power is not negative. The
  * propagation runs over all terms until no interval shrinks. The intervals are computed with
  * machine numbers and widened by a margin before they are rounded to integers, so that they are
- * never too narrow; the points of the box are tested with the exact condition one by one.
+ * never too narrow; the points of the box are tested with the exact condition one by one. An
+ * equation of degree one or two in the last variable gives the values of that variable directly,
+ * so that only the other variables are enumerated if the whole box has too many points.
  */
 public final class PolynomialBox {
 
@@ -43,11 +45,77 @@ public final class PolynomialBox {
     final int[][] exponents;
     /** <code>true</code> for <code>p == 0</code>, <code>false</code> for <code>p &lt;= 0</code> */
     final boolean equation;
+    /** The coefficients times a common denominator, <code>null</code> if one isn't rational. */
+    final BigInteger[] integerCoefficients;
 
-    Relation(double[] coefficients, int[][] exponents, boolean equation) {
+    Relation(double[] coefficients, int[][] exponents, boolean equation,
+        BigInteger[] integerCoefficients) {
       this.coefficients = coefficients;
       this.exponents = exponents;
       this.equation = equation;
+      this.integerCoefficients = integerCoefficients;
+    }
+
+    /** Whether this is an equation of degree one or two in the variable <code>j</code>. */
+    boolean isSolvableFor(int j) {
+      if (!equation || integerCoefficients == null) {
+        return false;
+      }
+      int degree = 0;
+      for (int[] term : exponents) {
+        degree = Math.max(degree, term[j]);
+      }
+      return degree == 1 || degree == 2;
+    }
+
+    /**
+     * The integer values in <code>[from, to]</code> of the last variable, which solve the equation
+     * at the values <code>point</code> of the other variables, in ascending order.
+     */
+    long[] valuesOfLast(long[] point, long from, long to) {
+      final int last = point.length - 1;
+      BigInteger[] powers = {BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO};
+      for (int k = 0; k < exponents.length; k++) {
+        BigInteger term = integerCoefficients[k];
+        for (int j = 0; j < last; j++) {
+          term = term.multiply(BigInteger.valueOf(point[j]).pow(exponents[k][j]));
+        }
+        powers[exponents[k][last]] = powers[exponents[k][last]].add(term);
+      }
+      final BigInteger a = powers[2];
+      final BigInteger b = powers[1];
+      final BigInteger c = powers[0];
+      java.util.TreeSet<Long> values = new java.util.TreeSet<Long>();
+      if (a.signum() != 0) {
+        BigInteger discriminant = b.multiply(b).subtract(a.multiply(c).shiftLeft(2));
+        if (discriminant.signum() >= 0) {
+          BigInteger root = discriminant.sqrt();
+          if (root.multiply(root).equals(discriminant)) {
+            addQuotient(root.subtract(b), a.shiftLeft(1), from, to, values);
+            addQuotient(root.negate().subtract(b), a.shiftLeft(1), from, to, values);
+          }
+        }
+      } else if (b.signum() != 0) {
+        addQuotient(c.negate(), b, from, to, values);
+      } else if (c.signum() == 0) {
+        if (to - from >= MAX_POINTS) {
+          // the equation holds for the whole range: too many points to list
+          return null;
+        }
+        for (long value = from; value <= to; value++) {
+          values.add(value);
+        }
+      }
+      return values.stream().mapToLong(Long::longValue).toArray();
+    }
+
+    private static void addQuotient(BigInteger numerator, BigInteger denominator, long from,
+        long to, java.util.Set<Long> values) {
+      BigInteger[] quotient = numerator.divideAndRemainder(denominator);
+      if (quotient[1].signum() == 0 && quotient[0].compareTo(BigInteger.valueOf(from)) >= 0
+          && quotient[0].compareTo(BigInteger.valueOf(to)) <= 0) {
+        values.add(quotient[0].longValue());
+      }
     }
   }
 
@@ -83,6 +151,9 @@ public final class PolynomialBox {
       if (domain == S.Primes) {
         java.util.Arrays.fill(lower, 2.0);
       }
+      for (Relation relation : relations) {
+        boundFactors(relation, lower, upper);
+      }
       for (int round = 0; round < MAX_ROUNDS; round++) {
         boolean changed = false;
         for (Relation relation : relations) {
@@ -108,31 +179,32 @@ public final class PolynomialBox {
         from[j] = (long) lower[j];
         to[j] = (long) upper[j];
         points *= to[j] - from[j] + 1;
-        if (points > MAX_POINTS) {
+      }
+      Relation solver = null;
+      if (points > MAX_POINTS) {
+        points /= to[n - 1] - from[n - 1] + 1;
+        solver = points > MAX_POINTS ? null : solverOfLast(relations, n - 1);
+        if (solver == null) {
           return F.NIL;
         }
       }
       IASTAppendable solutions = F.ListAlloc();
       long[] point = from.clone();
       while (true) {
-        IASTAppendable rules = F.ListAlloc(n);
-        boolean member = true;
-        for (int j = 0; j < n; j++) {
-          IInteger value = F.ZZ(point[j]);
-          if (domain == S.Primes && !(value.isPositive() && value.isProbablePrime())) {
-            member = false;
-          }
-          rules.append(F.Rule(vars.get(j + 1), value));
+        engine.checkTimeLimit();
+        long[] lastValues = solver == null ? new long[] {point[n - 1]}
+            : solver.valuesOfLast(point, from[n - 1], to[n - 1]);
+        if (lastValues == null || solutions.argSize() + (long) lastValues.length > MAX_POINTS) {
+          return F.NIL;
         }
-        if (member) {
-          IExpr value = engine.evalQuiet(F.subst(condition, rules));
-          if (value.isTrue()) {
-            solutions.append(rules.map(r -> F.Equal(r.first(), r.second())));
-          } else if (!value.isFalse()) {
+        for (long lastValue : lastValues) {
+          engine.checkTimeLimit();
+          point[n - 1] = lastValue;
+          if (!addPoint(condition, vars, point, domain, solutions, engine)) {
             return F.NIL;
           }
         }
-        int j = n - 1;
+        int j = solver == null ? n - 1 : n - 2;
         while (j >= 0 && point[j] == to[j]) {
           point[j] = from[j];
           j--;
@@ -146,6 +218,72 @@ public final class PolynomialBox {
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
+    }
+  }
+
+  /**
+   * Test the integer point with the exact condition and add it to the solutions.
+   *
+   * @return <code>false</code> if the condition isn't decided at the point
+   */
+  private static boolean addPoint(IExpr condition, IAST vars, long[] point, ISymbol domain,
+      IASTAppendable solutions, EvalEngine engine) {
+    IASTAppendable rules = F.ListAlloc(point.length);
+    for (int j = 0; j < point.length; j++) {
+      IInteger value = F.ZZ(point[j]);
+      if (domain == S.Primes && !(value.isPositive() && value.isProbablePrime())) {
+        return true;
+      }
+      rules.append(F.Rule(vars.get(j + 1), value));
+    }
+    IExpr value = engine.evalQuiet(F.subst(condition, rules));
+    if (value.isTrue()) {
+      solutions.append(rules.map(r -> F.Equal(r.first(), r.second())));
+      return true;
+    }
+    return value.isFalse();
+  }
+
+  /** The first equation which gives the values of the variable <code>last</code>. */
+  private static Relation solverOfLast(List<Relation> relations, int last) {
+    for (Relation relation : relations) {
+      if (relation.isSolvableFor(last)) {
+        return relation;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * A product of integers which equals a number <code>k != 0</code>, as <code>c*x^2*y + k == 0</code>,
+   * has no factor <code>0</code>, so every factor is at most as large as <code>k/c</code>.
+   */
+  private static void boundFactors(Relation relation, double[] lower, double[] upper) {
+    if (!relation.equation) {
+      return;
+    }
+    int product = -1;
+    double constant = 0.0;
+    for (int k = 0; k < relation.coefficients.length; k++) {
+      if (java.util.Arrays.stream(relation.exponents[k]).allMatch(e -> e == 0)) {
+        constant += relation.coefficients[k];
+      } else if (product >= 0) {
+        return;
+      } else {
+        product = k;
+      }
+    }
+    if (product < 0 || constant == 0.0) {
+      return;
+    }
+    final double bound = Math.abs(constant / relation.coefficients[product]);
+    int[] exponents = relation.exponents[product];
+    for (int j = 0; j < exponents.length; j++) {
+      if (exponents[j] > 0) {
+        double r = Math.floor(Math.pow(bound, 1.0 / exponents[j]) * (1.0 + MARGIN) + MARGIN);
+        lower[j] = Math.max(lower[j], -r);
+        upper[j] = Math.min(upper[j], r);
+      }
     }
   }
 
@@ -212,11 +350,7 @@ public final class PolynomialBox {
     double[] values = new double[coefficients.length];
     if (rational && strict) {
       // over the integers p < 0 with integer coefficients is p + 1 <= 0
-      BigInteger scale = BigInteger.ONE;
-      for (IExpr c : coefficients) {
-        BigInteger d = ((IRational) c).denominator().toBigNumerator();
-        scale = scale.divide(scale.gcd(d)).multiply(d);
-      }
+      BigInteger scale = commonDenominator(coefficients);
       boolean constant = false;
       for (int k = 0; k < coefficients.length; k++) {
         IRational c = ((IRational) coefficients[k]).multiply(F.ZZ(scale));
@@ -236,7 +370,7 @@ public final class PolynomialBox {
         exponents = java.util.Arrays.copyOf(exponents, exponents.length + 1);
         exponents[exponents.length - 1] = new int[n];
       }
-      return new Relation(values, exponents, false);
+      return new Relation(values, exponents, false, null);
     }
     for (int k = 0; k < coefficients.length; k++) {
       values[k] = coefficients[k].evalf();
@@ -244,7 +378,26 @@ public final class PolynomialBox {
         return null;
       }
     }
-    return new Relation(values, exponents, equation);
+    return new Relation(values, exponents, equation, rational ? integers(coefficients) : null);
+  }
+
+  /** The rational <code>coefficients</code> times their common denominator. */
+  private static BigInteger[] integers(IExpr[] coefficients) {
+    BigInteger scale = commonDenominator(coefficients);
+    BigInteger[] integers = new BigInteger[coefficients.length];
+    for (int k = 0; k < coefficients.length; k++) {
+      integers[k] = ((IRational) coefficients[k]).multiply(F.ZZ(scale)).numerator().toBigNumerator();
+    }
+    return integers;
+  }
+
+  private static BigInteger commonDenominator(IExpr[] coefficients) {
+    BigInteger scale = BigInteger.ONE;
+    for (IExpr c : coefficients) {
+      BigInteger d = ((IRational) c).denominator().toBigNumerator();
+      scale = scale.divide(scale.gcd(d)).multiply(d);
+    }
+    return scale;
   }
 
   /**

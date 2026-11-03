@@ -1300,7 +1300,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     if (denominator.isFree(x, true) || !denominator.isPolynomial(x)) {
       return true;
     }
-    IExpr poles = engine.evalQuiet(F.Solve(F.Equal(denominator, F.C0), x, S.Reals));
+    IExpr poles = engine.evalQuiet(F.SolveDistinct(F.Equal(denominator, F.C0), x, S.Reals));
     if (!poles.isListOfLists()) {
       return true;
     }
