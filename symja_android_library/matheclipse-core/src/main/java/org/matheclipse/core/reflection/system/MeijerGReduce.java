@@ -9,7 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.sympy.core.Traversal;
+import org.matheclipse.core.sympy.core.traversal.Traversal;
 
 /**
  * <pre>
