@@ -59,8 +59,6 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
-import edu.jas.ps.PolynomialTaylorFunction;
-import edu.jas.ps.TaylorFunction;
 import edu.jas.ps.UnivPowerSeries;
 import edu.jas.ps.UnivPowerSeriesRing;
 import edu.jas.structure.RingElem;
@@ -4062,27 +4060,23 @@ public class AlgebraUtil {
     final UnivPowerSeries<BigRational> ps;
     BigRational cfac = BigRational.ONE;
     UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(cfac);
-    TaylorFunction<BigRational> FN = new PolynomialTaylorFunction<BigRational>(numerator);
+    // the series of a polynomial at 0 are its coefficients; the Taylor expansion would divide by
+    // factorials in a long, which overflows from the degree 21 on
     if (exprNumerator.isOne()) {
       GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
       if (denominator == null) {
         return null;
       }
-      TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
-      UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
-      ps = psD.inverse();
+      ps = fac.fromPolynomial(denominator).inverse();
     } else {
       if (exprDenominator.isOne()) {
-        ps = fac.seriesOfTaylor(FN, BigRational.ZERO);
+        ps = fac.fromPolynomial(numerator);
       } else {
         GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
         if (denominator == null) {
           return null;
         }
-        TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
-        UnivPowerSeries<BigRational> psN = fac.seriesOfTaylor(FN, BigRational.ZERO);
-        UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
-        ps = psN.divide(psD);
+        ps = fac.fromPolynomial(numerator).divide(fac.fromPolynomial(denominator));
       }
     }
     return ps;

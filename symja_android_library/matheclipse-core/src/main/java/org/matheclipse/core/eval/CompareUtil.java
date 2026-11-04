@@ -1006,13 +1006,12 @@ public class CompareUtil {
     // value says nothing here.
     final int n = variables.argSize();
     final int signBits = Math.min(n, MAX_SIGN_BITS);
-    final int realSamples = n == 1 ? REAL_SAMPLES
-        : Math.min(REAL_SAMPLES << signBits, MAX_REAL_SAMPLES);
-    final int sizes = n == 1 ? realSamples : Math.max(realSamples >> signBits, 1);
+    final int realSamples = Math.min(REAL_SAMPLES << signBits, MAX_REAL_SAMPLES);
+    final int sizes = Math.max(realSamples >> signBits, 1);
     int ladders = 0;
     for (int i = 0; i < realSamples; i++) {
       engine.checkTimeLimit();
-      final int visit = n == 1 ? i : i >> signBits;
+      final int visit = i >> signBits;
       IASTAppendable rules = F.ListAlloc(n);
       for (int j = 0; j < n; j++) {
         // a variable of its own value and sign: a cut may lie in one sign combination only, Sqrt(x/a)
@@ -1036,9 +1035,8 @@ public class CompareUtil {
   }
 
   /**
-   * The number of real points {@link #isZeroAtEverySample(IAST, IAST, EvalEngine)} tests for one
-   * variable, and for each sign combination of several variables, up to
-   * {@link #MAX_REAL_SAMPLES}.
+   * The number of real points {@link #isZeroAtEverySample(IAST, IAST, EvalEngine)} tests for each
+   * sign combination of the variables, up to {@link #MAX_REAL_SAMPLES} in all.
    */
   private static final int REAL_SAMPLES = 8;
 
@@ -1165,6 +1163,19 @@ public class CompareUtil {
    * @param position
    * @return
    */
+  /**
+   * Like {@link #threadListLogicEquationOperators(IExpr, IAST, int)}, and into both sides of a
+   * <code>Rule</code> or <code>RuleDelayed</code>: <code>Factor(x-&gt;b^2-4)</code> is
+   * <code>x-&gt;(b-2)*(b+2)</code>.
+   */
+  public static IAST threadListLogicEquationRuleOperators(IExpr expr, IAST replacement,
+      int position) {
+    if (expr.isRuleAST()) {
+      return ((IAST) expr).mapThread(replacement, position);
+    }
+    return threadListLogicEquationOperators(expr, replacement, position);
+  }
+
   public static IAST threadListLogicEquationOperators(IExpr expr, IAST replacement, int position) {
     if (expr.size() > 1 && expr.isAST()) {
       IAST ast = (IAST) expr;

@@ -44,7 +44,8 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
  *
  * <p>
  * The initial condition is <code>{state, tape}</code>, where the state may be given as
- * <code>{state}</code> or <code>{state, position}</code>. A plain list of cells is a cyclic tape;
+ * <code>{state}</code>, <code>{state, position}</code> or <code>{state, position, offset}</code>
+ * with the offset the head starts with. A plain list of cells is a cyclic tape;
  * <code>{cells, background}</code> is an infinite tape with the cells to the right of the head's
  * start (counted from <code>position</code>) on a constant or periodic background, and the reported
  * tape is the region the head visited together with the given cells.
@@ -160,33 +161,42 @@ public class TuringMachine extends AbstractFunctionEvaluator {
     IExpr stateSpec = init.first();
     IExpr state = stateSpec;
     int start = 1;
+    // the offset the head starts with; {state, position, offset} gives one
+    long offset = 0;
     if (stateSpec.isList1()) {
       state = stateSpec.first();
-    } else if (stateSpec.isList2() && stateSpec.second().isInteger()) {
+    } else if ((stateSpec.isList2() || stateSpec.isList3()) && stateSpec.second().isInteger()) {
       state = stateSpec.first();
       start = stateSpec.second().toIntDefault();
       if (F.isNotPresent(start)) {
         return F.NIL;
       }
+      if (stateSpec.isList3()) {
+        offset = ((IAST) stateSpec).arg3().toIntDefault();
+        if (!((IAST) stateSpec).arg3().isInteger() || F.isNotPresent((int) offset)) {
+          return F.NIL;
+        }
+      }
     }
     IExpr tape = init.second();
     if (background(init).isPresent()) {
-      return runInfinite(rule, state, start, (IAST) tape.first(), tape.second(), steps, engine);
+      return runInfinite(rule, state, start, offset, (IAST) tape.first(), tape.second(), steps,
+          engine);
     }
     if (!tape.isList() || tape.argSize() == 0) {
       return F.NIL;
     }
-    return runCyclic(rule, state, start, (IAST) tape, steps, engine);
+    return runCyclic(rule, state, start, offset, (IAST) tape, steps, engine);
   }
 
   /** A cyclic tape: the head wraps round at either end. */
-  private static IExpr runCyclic(MachineRule rule, IExpr state, int start, IAST cells, int steps,
-      EvalEngine engine) {
+  private static IExpr runCyclic(MachineRule rule, IExpr state, int start, long startOffset,
+      IAST cells, int steps, EvalEngine engine) {
     final int length = cells.argSize();
     checkSize((steps + 1L) * (length + 4L));
     IASTAppendable tape = cells.copyAppendable();
     int position = Math.floorMod(start - 1, length) + 1;
-    long offset = 0;
+    long offset = startOffset;
     IASTAppendable result = F.ListAlloc(steps + 1);
     result.append(row(state, position, offset, tape.copy()));
     for (int i = 0; i < steps; i++) {
@@ -208,8 +218,8 @@ public class TuringMachine extends AbstractFunctionEvaluator {
    * An infinite tape. Cells are addressed by their offset from the head's starting cell; the
    * reported window spans every offset the head reached and the given cells.
    */
-  private static IExpr runInfinite(MachineRule rule, IExpr state, int start, IAST cells,
-      IExpr background, int steps, EvalEngine engine) {
+  private static IExpr runInfinite(MachineRule rule, IExpr state, int start, long startOffset,
+      IAST cells, IExpr background, int steps, EvalEngine engine) {
     final IAST pattern = background.isList() ? (IAST) background : F.list(background);
     // the index in cells of the cell at offset 0
     final long origin = start - 1L;
@@ -255,7 +265,8 @@ public class TuringMachine extends AbstractFunctionEvaluator {
       if (writeColor[i] != null) {
         window.set((int) (writeAt[i] - lo) + 1, writeColor[i]);
       }
-      result.append(row(states.get(i), (int) (offsets[i] - lo) + 1, offsets[i], window.copy()));
+      result.append(row(states.get(i), (int) (offsets[i] - lo) + 1, offsets[i] + startOffset,
+          window.copy()));
     }
     return result;
   }

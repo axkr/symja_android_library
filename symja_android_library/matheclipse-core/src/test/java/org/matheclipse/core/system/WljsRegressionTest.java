@@ -1438,12 +1438,13 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // Symja's own renderer still draws the legend: the label can only reach the SVG from the
     // PlotLegends it decoded out of Method, since that is now the only place the legend is kept
     check("lg = Plot[{Sin[x], Cos[x]}, {x, 0, 3}, PlotLegends -> {\"sine\", \"cosine\"}]; "
-        + "{Head[lg], Head[lg[[2]]], lg[[2, 2]], " + "FreeQ[lg, PlotLegends | PlotStyle | Joined], "
+        + "{Head[lg], lg[[2, 0]], lg[[2, 2]], Head[lg[[2, 1]]], lg[[2, 1, 2]], "
+        + "FreeQ[lg, PlotLegends | PlotStyle | Joined], "
         + "StringContainsQ[ExportString[lg, \"SVG\"], \"cosine\"]}", //
-        "{Legended,LineLegend,{sine,cosine},True,True}");
+        "{Legended,Placed,After,LineLegend,{sine,cosine},True,True}");
     check(
         "MatchQ[ComplexPlot[z, {z, -1 - I, 1 + I}, PlotLegends -> Automatic], "
-            + "Legended[_Graphics, BarLegend[{_, {_, _}}]]]", //
+            + "Legended[_Graphics, Placed[BarLegend[{_, {_, _}}], After]]]", //
         "True");
   }
 
@@ -1548,7 +1549,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Unprotect[ByteArray]; ByteArray /: MakeBoxes[b_ByteArray, StandardForm] := \"bytes\"", //
         "");
     check("{ToBoxes[ByteArray[{1, 2}], StandardForm], ToBoxes[{ByteArray[{1, 2}]}, StandardForm]}", //
-        "{bytes,RowBox[{{,RowBox[{bytes}],}}]}");
+        "{bytes,RowBox[{{,bytes,}}]}");
     check(
         "ByteArray /: MakeBoxes[b_ByteArray, StandardForm] =.; "
             + "ToBoxes[ByteArray[{1, 2}], StandardForm] === \"bytes\"", //

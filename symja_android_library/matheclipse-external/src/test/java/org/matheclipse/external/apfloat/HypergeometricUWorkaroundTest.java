@@ -6,6 +6,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Tests of {@link HypergeometricUWorkaround}. The expected values were calculated with mpmath.
@@ -31,6 +32,7 @@ public class HypergeometricUWorkaroundTest
     }
 
     @Test
+    @Tag("slow")
     public void testIntegerBLargeArgument()
     {
         // apfloat 1.16.0 divides by zero for these

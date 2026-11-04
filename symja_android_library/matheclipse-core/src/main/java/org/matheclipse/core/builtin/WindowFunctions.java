@@ -1,8 +1,11 @@
 package org.matheclipse.core.builtin;
 
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
@@ -28,8 +31,6 @@ public class WindowFunctions {
       new WindowFunction(WindowFunctions::gaussianWindow, "GaussianWindow");
   public static final WindowFunction HAMMING =
       new WindowFunction(WindowFunctions::hammingWindow, "HammingWindow");
-  public static final WindowFunction HANN =
-      new WindowFunction(WindowFunctions::hannWindow, "HannWindow");
   public static final WindowFunction NUTTALL =
       new WindowFunction(WindowFunctions::nuttallWindow, "NuttallWindow");
   public static final WindowFunction PARZEN =
@@ -52,7 +53,33 @@ public class WindowFunctions {
       S.FlatTopWindow.setEvaluator(FLAT_TOP);
       S.GaussianWindow.setEvaluator(GAUSSIAN);
       S.HammingWindow.setEvaluator(HAMMING);
-      S.HannWindow.setEvaluator(HANN);
+      // windows with an optional parameter: the value inside -1/2 <= x <= 1/2 and the default
+      S.HannWindow.setEvaluator(new ParametricWindow(
+          (x, a) -> F.Plus(a, F.Cos(F.Times(F.C2, S.Pi, x)),
+              F.Times(F.CN1, a, F.Cos(F.Times(F.C2, S.Pi, x)))),
+          F.C1D2));
+      S.CosineWindow.setEvaluator(
+          new ParametricWindow((x, a) -> F.Power(F.Cos(F.Times(S.Pi, x)), a), F.C1));
+      S.CauchyWindow.setEvaluator(new ParametricWindow(
+          (x, a) -> F.Power(F.Plus(F.C1, F.Times(F.C4, F.Sqr(a), F.Sqr(x))), F.CN1), F.C3));
+      S.ConnesWindow.setEvaluator(new ParametricWindow((x, a) -> F
+          .Times(F.Power(a, F.CN4), F.Sqr(F.Subtract(F.Sqr(a), F.Times(F.C4, F.Sqr(x))))), F.C1));
+      S.WelchWindow.setEvaluator(new ParametricWindow(
+          (x, a) -> F.Times(F.Power(a, F.CN2), F.Subtract(F.Sqr(a), F.Times(F.C4, F.Sqr(x)))),
+          F.C1));
+      S.KaiserWindow.setEvaluator(new ParametricWindow((x, a) -> F.Times(
+          F.BesselI(F.C0,
+              F.Times(a, F.Sqrt(F.Subtract(F.C1, F.Times(F.C2, x))),
+                  F.Sqrt(F.Plus(F.C1, F.Times(F.C2, x))))),
+          F.Power(F.BesselI(F.C0, a), F.CN1)), F.C3));
+      S.KaiserBesselWindow.setEvaluator(new ParametricWindow((x, a) -> F.Times(F.QQ(1L, 1000L),
+          F.Plus(F.ZZ(402L), F.Times(F.ZZ(498L), F.Cos(F.Times(F.C2, S.Pi, x))),
+              F.Times(F.ZZ(99L), F.Cos(F.Times(F.C4, S.Pi, x))), F.Cos(F.Times(F.C6, S.Pi, x)))),
+          null));
+      S.LanczosWindow.setEvaluator(new ParametricWindow(
+          (x, a) -> F.Times(F.Power(F.Times(F.C2, S.Pi, x), F.CN1),
+              F.Sin(F.Times(F.C2, S.Pi, x))),
+          null));
       S.NuttallWindow.setEvaluator(NUTTALL);
       S.ParzenWindow.setEvaluator(PARZEN);
       S.TukeyWindow.setEvaluator(TUKEY);
@@ -93,6 +120,55 @@ public class WindowFunctions {
         return function.apply(arg1);
       }
       return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   * A window function <code>w(x)</code> or <code>w(x, a)</code> with an optional parameter
+   * <code>a</code>, which is <code>0</code> outside of <code>-1/2 &lt;= x &lt;= 1/2</code>.
+   */
+  private static final class ParametricWindow extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+    /** the value inside <code>-1/2 &lt;= x &lt;= 1/2</code> for the parameter <code>a</code> */
+    private final BinaryOperator<IExpr> function;
+
+    /** the default parameter or <code>null</code> if the window has no parameter */
+    private final IExpr defaultParameter;
+
+    private ParametricWindow(BinaryOperator<IExpr> function, IExpr defaultParameter) {
+      this.function = function;
+      this.defaultParameter = defaultParameter;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.arg1().isRealResult() && (ast.argSize() == 1 || ast.arg2().isRealResult())) {
+        return piecewise(ast);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      return piecewise(ast);
+    }
+
+    private IExpr piecewise(IAST ast) {
+      IExpr x = ast.arg1();
+      IExpr a = ast.argSize() == 2 ? ast.arg2() : defaultParameter;
+      return F.Piecewise(F.list(F.list(function.apply(x, a), F.LessEqual(F.CN1D2, x, F.C1D2))),
+          F.C0);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return defaultParameter == null ? ARGS_1_1 : ARGS_1_2;
     }
 
     @Override

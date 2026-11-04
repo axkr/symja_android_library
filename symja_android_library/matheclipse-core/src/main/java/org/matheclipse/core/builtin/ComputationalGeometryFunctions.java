@@ -69,6 +69,7 @@ public class ComputationalGeometryFunctions {
       S.ConvexPolyhedronQ.setEvaluator(new ConvexPolyhedronQ());
       S.RegionProduct.setEvaluator(new RegionProduct());
       S.Circumsphere.setEvaluator(new Circumsphere());
+      S.CircleThrough.setEvaluator(new CircleThrough());
       S.Insphere.setEvaluator(new Insphere());
       S.PolyhedronData.setEvaluator(new PolyhedronData());
       Entities.register(PolyhedronData.POLYHEDRON, S.PolyhedronData);
@@ -3285,6 +3286,59 @@ public class ComputationalGeometryFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <code>CircleThrough({p1, p2, p3})</code> - the circle through three points in the plane.
+   *
+   * <p>
+   * <code>CircleThrough({p1, ...}, q)</code> and <code>CircleThrough({p1, ...}, q, r)</code> - the
+   * circle with center <code>q</code> (and radius <code>r</code>) through the points; it stays
+   * unevaluated if the points aren't all on that circle.
+   */
+  private static class CircleThrough extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr points = ast.arg1();
+      if (!points.isListOfLists() || points.argSize() < 1) {
+        return F.NIL;
+      }
+      for (IExpr point : (IAST) points) {
+        if (!point.isList2()) {
+          return F.NIL;
+        }
+      }
+      if (ast.isAST1()) {
+        IExpr sphere = points.argSize() == 3 ? Circumsphere.circumsphere((IAST) points, engine)
+            : F.NIL;
+        return sphere.isPresent() ? ((IAST) sphere).setAtCopy(0, S.Circle) : F.NIL;
+      }
+      IExpr center = ast.arg2();
+      if (!center.isList2()) {
+        return F.NIL;
+      }
+      IExpr radiusSquared = ast.isAST3() ? engine.evaluate(F.Sqr(ast.arg3()))
+          : squaredDistance(center, points.first(), engine);
+      for (IExpr point : (IAST) points) {
+        if (!S.PossibleZeroQ.ofQ(engine,
+            F.Subtract(squaredDistance(center, point, engine), radiusSquared))) {
+          return F.NIL;
+        }
+      }
+      IExpr radius = ast.isAST3() ? ast.arg3() : engine.evaluate(F.Sqrt(radiusSquared));
+      return F.binaryAST2(S.Circle, center, radius);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
   }
 

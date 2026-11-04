@@ -830,17 +830,19 @@ public class IntegerFunctions {
           return F.NIL;
         }
       }
-      if (ast.isAST3() && ast.arg3().isList()) {
+      if (ast.argSize() >= 3 && ast.arg3().isList()) {
         return ast.arg3().mapThread(ast, 3);
       }
       IAST digits;
       if (arg1.isInteger()) {
-        IExpr result = S.IntegerDigits.of(engine, arg1, base);
+        // DigitCount(n, b, d, len) counts in the last len digits, padded with zeros on the left
+        IExpr result = ast.argSize() == 4 ? S.IntegerDigits.of(engine, arg1, base, ast.arg4())
+            : S.IntegerDigits.of(engine, arg1, base);
         if (!result.isList()) {
           return F.NIL;
         }
         digits = (IAST) result;
-      } else if (arg1.isReal() && !arg1.isRational()) {
+      } else if (arg1.isReal() && !arg1.isRational() && ast.argSize() < 4) {
         IExpr result = S.RealDigits.of(engine, arg1, base);
         if (!result.isList() || !result.first().isList()) {
           return F.NIL;
@@ -854,7 +856,7 @@ public class IntegerFunctions {
         return F.NIL;
       }
 
-      if (ast.isAST3()) {
+      if (ast.argSize() >= 3) {
         int d = ast.arg3().toIntDefault();
         if (d < 0 || d >= radix) {
           return F.NIL;
@@ -889,7 +891,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
   }
 

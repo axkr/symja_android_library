@@ -52,7 +52,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICDF;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
@@ -137,6 +136,8 @@ public class StatisticsFunctions {
           new org.matheclipse.core.builtin.StochasticProcesses.ARMAProcess());
       S.WeakStationarity.setEvaluator(
           new org.matheclipse.core.builtin.StochasticProcesses.WeakStationarity());
+      S.CovarianceFunction
+          .setEvaluator(new org.matheclipse.core.builtin.StochasticProcesses.CovarianceFunction());
       S.LocationTest.setEvaluator(new org.matheclipse.core.reflection.system.LocationTest());
       S.Expectation.setEvaluator(new Expectation());
       S.HazardFunction.setEvaluator(new HazardFunction());
@@ -2602,8 +2603,10 @@ public class StatisticsFunctions {
       }
       IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
       if (pdf.isPresent()) {
-        return engine.evaluate(
+        IExpr result = engine.evaluate(
             F.NIntegrate(F.Times(F.Boole(predicate), pdf), F.List(x, F.CNInfinity, F.CInfinity)));
+        // a predicate with a parameter can't be integrated numerically
+        return result.isFree(S.NIntegrate, true) ? result : F.NIL;
       }
       return F.NIL;
     }
@@ -2816,6 +2819,9 @@ public class StatisticsFunctions {
    */
   private static final class KolmogorovSmirnovTest extends AbstractFunctionEvaluator {
 
+    /** The supported properties of the test. */
+    private static final String[] PROPERTIES = {"PValue", "TestData", "TestStatistic"};
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
@@ -2830,51 +2836,26 @@ public class StatisticsFunctions {
             return F.num(d);
           }
         } else if (ast.size() == 3 || ast.size() == 4) {
-          int property = 0;
-          if (ast.size() == 4) {
-            IExpr arg3 = ast.arg3();
-            if (!arg3.isString()) {
-              return F.NIL;
-            }
-            IStringX str = (IStringX) arg3;
-            if (str.toString().equals("PValue")) {
-              // KolmogorovSmirnovTest(data1, data2, "PValue")
-              property = 0;
-            } else if (str.toString().equals("TestData")) {
-              // KolmogorovSmirnovTest(data1, data2, "TestData")
-              property = 1;
-            } else if (str.toString().equals("TestStatistic")) {
-              // KolmogorovSmirnovTest(data1, data2, "TestStatistic")
-              property = 2;
-            } else {
-              return F.NIL;
-            }
+          IExpr properties = ast.size() == 4 ? ast.arg3() : F.stringx("PValue");
+          if (!isPropertySpecification(properties)) {
+            return F.NIL;
           }
           int len1 = ast.arg1().isVector();
           if (len1 > 0) {
             double[] data1 = ast.arg1().toDoubleVector();
             if (data1 != null) {
-              double d, p;
               int len2 = ast.arg2().isVector();
               if (len2 > 0) {
                 double[] data2 = ast.arg2().toDoubleVector();
-                if (data2 != null) {
-                  // KolmogorovSmirnovTest(data1, data2)
-                  org.hipparchus.stat.inference.KolmogorovSmirnovTest test =
-                      new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
-                  switch (property) {
-                    case 0:
-                      p = test.kolmogorovSmirnovTest(data1, data2, false);
-                      return F.num(p);
-                    case 1:
-                      p = test.kolmogorovSmirnovTest(data1, data2, false);
-                      d = test.kolmogorovSmirnovStatistic(data1, data2);
-                      return new ASTRealVector(new double[] {d, p}, false);
-                    default:
-                      return F.num(test.kolmogorovSmirnovStatistic(data1, data2));
-                  }
+                if (data2 == null) {
+                  return F.NIL;
                 }
-                return F.NIL;
+                // KolmogorovSmirnovTest(data1, data2)
+                IExpr statistic = twoSampleStatistic(data1, data2,
+                    ast.arg1().normal(false).isFree(x -> x.isInexactNumber(), false)
+                        && ast.arg2().normal(false).isFree(x -> x.isInexactNumber(), false));
+                double p = twoSamplePValue(data1, data2);
+                return properties(properties, statistic, F.num(p));
               }
               // KolmogorovSmirnovTest(data1, dist): the data are read through the CDF of the
               // distribution with its parameters - IDistribution.dist() is the distribution with
@@ -2885,11 +2866,7 @@ public class StatisticsFunctions {
               if (u != null) {
                 double[] result =
                     org.matheclipse.core.reflection.system.DistributionFitTest.kolmogorovSmirnov(u);
-                if (property == 2) {
-                  return F.num(result[0]);
-                }
-                return property == 0 ? F.num(result[1])
-                    : new ASTRealVector(new double[] {result[0], result[1]}, false);
+                return properties(properties, F.num(result[0]), F.num(result[1]));
               }
             }
           }
@@ -2898,6 +2875,135 @@ public class StatisticsFunctions {
         return Errors.printMessage(S.KolmogorovSmirnovTest, mrex, engine);
       }
       return F.NIL;
+    }
+
+    /** A property name or a list of property names. */
+    private static boolean isPropertySpecification(IExpr properties) {
+      if (properties.isList()) {
+        return ((IAST) properties).forAll(p -> p.isString()
+            && Arrays.asList(PROPERTIES).contains(p.toString()));
+      }
+      return properties.isString() && Arrays.asList(PROPERTIES).contains(properties.toString());
+    }
+
+    /** The value of a property name or the list of the values of a list of property names. */
+    private static IExpr properties(IExpr properties, IExpr statistic, IExpr pValue) {
+      if (properties.isList()) {
+        return ((IAST) properties).map(p -> properties(p, statistic, pValue));
+      }
+      switch (properties.toString()) {
+        case "TestStatistic":
+          return statistic;
+        case "TestData":
+          return F.list(statistic, pValue);
+        default:
+          return pValue;
+      }
+    }
+
+    /**
+     * The sorted pooled sample: the values in <code>[0]</code> and <code>1</code> in
+     * <code>[1]</code> for the elements of the first sample.
+     */
+    private static double[][] pooled(double[] data1, double[] data2) {
+      int n = data1.length;
+      int total = n + data2.length;
+      Integer[] index = new Integer[total];
+      for (int i = 0; i < total; i++) {
+        index[i] = i;
+      }
+      Arrays.sort(index, Comparator
+          .comparingDouble(i -> i < n ? data1[i] : data2[i - n]));
+      double[][] result = new double[2][total];
+      for (int k = 0; k < total; k++) {
+        int i = index[k];
+        result[0][k] = i < n ? data1[i] : data2[i - n];
+        result[1][k] = i < n ? 1.0 : 0.0;
+      }
+      return result;
+    }
+
+    /**
+     * <code>n*m</code> times the two sample statistic, the largest distance of the empirical
+     * distribution functions, measured after each group of equal values.
+     */
+    private static long scaledStatistic(double[] data1, double[] data2) {
+      double[][] pooled = pooled(data1, data2);
+      int n = data1.length;
+      int m = data2.length;
+      long i = 0;
+      long j = 0;
+      long max = 0;
+      for (int k = 0; k < pooled[0].length; k++) {
+        if (pooled[1][k] > 0.0) {
+          i++;
+        } else {
+          j++;
+        }
+        if (k + 1 == pooled[0].length || pooled[0][k + 1] != pooled[0][k]) {
+          max = Math.max(max, Math.abs(i * m - j * n));
+        }
+      }
+      return max;
+    }
+
+    private static IExpr twoSampleStatistic(double[] data1, double[] data2, boolean exact) {
+      long scaled = scaledStatistic(data1, data2);
+      long nm = (long) data1.length * data2.length;
+      return exact ? F.QQ(scaled, nm) : F.num((double) scaled / nm);
+    }
+
+    /**
+     * The probability that the statistic of a random split of the pooled sample into two samples
+     * of the given sizes is at least the observed one. Equal values stay in one group, so ties are
+     * handled exactly. Large samples use the asymptotic distribution.
+     */
+    private static double twoSamplePValue(double[] data1, double[] data2) {
+      int n = data1.length;
+      int m = data2.length;
+      int total = n + m;
+      if ((long) total * n > 20_000_000L) {
+        return new org.hipparchus.stat.inference.KolmogorovSmirnovTest()
+            .kolmogorovSmirnovTest(data1, data2, false);
+      }
+      long observed = scaledStatistic(data1, data2);
+      if (observed == 0) {
+        return 1.0;
+      }
+      double[] values = pooled(data1, data2)[0];
+      // probability[i]: the first k pooled values hold i values of the first sample and the
+      // statistic stayed below the observed one
+      double[] probability = new double[n + 1];
+      probability[0] = 1.0;
+      double reached = 0.0;
+      EvalEngine engine = EvalEngine.get();
+      for (int k = 0; k < total; k++) {
+        if ((k & 0xFF) == 0) {
+          engine.checkTimeLimit();
+        }
+        int remaining = total - k;
+        for (int i = Math.min(k, n); i >= 0; i--) {
+          double p = probability[i];
+          if (p != 0.0) {
+            double first = (double) (n - i) / remaining;
+            probability[i] = p * (1.0 - first);
+            if (i < n) {
+              probability[i + 1] += p * first;
+            }
+          }
+        }
+        if (k + 1 == total || values[k + 1] != values[k]) {
+          long count = k + 1;
+          for (int i = 0; i <= Math.min(count, n); i++) {
+            long j = count - i;
+            if (j <= m && probability[i] != 0.0 && Math.abs(i * (long) m - j * n) >= observed) {
+              reached += probability[i];
+              probability[i] = 0.0;
+            }
+          }
+        }
+      }
+      return Math.min(1.0, reached);
     }
   }
 
@@ -3850,6 +3956,8 @@ public class StatisticsFunctions {
           if (distribution.isList()) {
             IAST data = (IAST) distribution;
             return dataProbability(data, e -> engine.evalTrue(F.subst(predicate, x, e)));
+          } else if (isEmpiricalDistribution(distribution)) {
+            return empiricalProbability(predicate, x, (IAST) distribution, engine);
           } else if (distribution.isDiscreteDistribution()) {
             IExpr result = probabilityDiscrete(predicate, x, distribution, engine);
             if (result.isPresent()) {
@@ -3867,8 +3975,10 @@ public class StatisticsFunctions {
             }
             IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
             if (pdf.isPresent()) {
-              return engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
+              IExpr result = engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
                   F.List(x, F.CNInfinity, F.CInfinity)));
+              // an integral which can't be computed leaves the probability unevaluated
+              return result.isFree(S.Integrate, true) ? result : F.NIL;
             }
           }
         }
@@ -3884,6 +3994,40 @@ public class StatisticsFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Test for the univariate <code>DataDistribution("Empirical", {weights, values, False}, 1, n)
+     * </code> of an <code>EmpiricalDistribution</code>.
+     */
+    private static boolean isEmpiricalDistribution(IExpr distribution) {
+      return distribution.isAST(S.DataDistribution, 5) && distribution.first().isString("Empirical")
+          && distribution.second().isList() && distribution.second().argSize() >= 2
+          && distribution.second().first().isList() && distribution.second().second().isList()
+          && distribution.second().first().argSize() == distribution.second().second().argSize()
+          && ((IAST) distribution).arg3().isOne();
+    }
+
+    /**
+     * The sum of the weights of the values of an empirical distribution which satisfy the
+     * predicate.
+     *
+     * @return {@link F#NIL} if the predicate isn't decided for a value
+     */
+    private static IExpr empiricalProbability(IExpr predicate, IExpr x, IAST distribution,
+        EvalEngine engine) {
+      IAST weights = (IAST) distribution.second().first();
+      IAST values = (IAST) distribution.second().second();
+      IASTAppendable sum = F.PlusAlloc(weights.argSize());
+      for (int i = 1; i < values.size(); i++) {
+        IExpr test = engine.evaluate(F.subst(predicate, x, values.get(i)));
+        if (test.isTrue()) {
+          sum.append(weights.get(i));
+        } else if (!test.isFalse()) {
+          return F.NIL;
+        }
+      }
+      return engine.evaluate(sum.oneIdentity0());
     }
 
     /**
@@ -4339,20 +4483,12 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      String property = "PValue";
-      if (ast.isAST3()) {
-        // a property given as a string or as a symbol of the same name
-        if (ast.arg3().isString()) {
-          property = ast.arg3().toString();
-        } else if (ast.arg3().isSymbol()) {
-          property = ((ISymbol) ast.arg3()).getSymbolName();
-        } else {
-          return F.NIL;
-        }
-        if (!property.equals("PValue") && !property.equals("TestStatistic")
-            && !property.equals("TestData")) {
-          return F.NIL;
-        }
+      // a property name or a list of them
+      IExpr property = ast.isAST3() ? ast.arg3() : F.stringx("PValue");
+      IAST propertyList = property.isList() ? (IAST) property : F.list(property);
+      if (!propertyList.forAll(p -> p.isString() && (p.isString("PValue")
+          || p.isString("TestStatistic") || p.isString("TestData")))) {
+        return F.NIL;
       }
       KendallCounts counts = KendallCounts.of(ast.arg1(), ast.arg2());
       if (counts == null) {
@@ -4367,14 +4503,13 @@ public class StatisticsFunctions {
       final double tau = counts.s / Math.sqrt((double) a * (double) b);
       final double z = Math.abs(counts.s) / Math.sqrt(variance);
       final double pValue = org.hipparchus.special.Erf.erfc(z / Math.sqrt(2.0));
-      switch (property) {
-        case "TestStatistic":
+      IAST values = propertyList.map(p -> {
+        if (p.isString("TestStatistic")) {
           return F.num(tau);
-        case "TestData":
-          return F.list(F.num(tau), F.num(pValue));
-        default:
-          return F.num(pValue);
-      }
+        }
+        return p.isString("TestData") ? F.list(F.num(tau), F.num(pValue)) : F.num(pValue);
+      });
+      return property.isList() ? values : values.arg1();
     }
 
     @Override
@@ -4673,7 +4808,9 @@ public class StatisticsFunctions {
           if (ast.arg2().isList()) {
             return ast.arg2().mapThread(ast, 2);
           }
-          return F.InverseCDF(arg1, ast.arg2());
+          // a quantile which can't be computed stays unevaluated
+          IExpr quantile = engine.evaluate(F.InverseCDF(arg1, ast.arg2()));
+          return quantile.isAST(S.InverseCDF, 3) ? F.NIL : quantile;
         }
       }
       return F.NIL;

@@ -782,7 +782,8 @@ public class Maximize extends AbstractFunctionEvaluator {
     boolean changed = function.argSize() > 2;
     for (IExpr c : conjuncts) {
       if (c.isAST(S.Element, 3) && (c.second() == S.Integers || c.second() == S.Reals)) {
-        IAST named = c.first().isList() ? (IAST) c.first() : F.List(c.first());
+        IAST named = c.first().isList() || c.first().isAlternatives() ? (IAST) c.first()
+            : F.List(c.first());
         for (IExpr v : named) {
           if (!variables.contains(v)) {
             return F.NIL;

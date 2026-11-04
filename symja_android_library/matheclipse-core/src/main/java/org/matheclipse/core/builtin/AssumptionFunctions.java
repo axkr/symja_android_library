@@ -225,8 +225,9 @@ public class AssumptionFunctions {
             if (arg1AST.size() == 2) {
               return F.Element(arg1AST.first(), domain);
             }
-            IASTAppendable result = F.ast(arg1.head(), arg1AST.size());
-            boolean evaled = false;
+            // Element({a, b}, dom) is Element(a | b, dom)
+            IASTAppendable result = F.ast(S.Alternatives, arg1AST.size());
+            boolean evaled = arg1.isList();
             for (int i = 1; i < arg1AST.size(); i++) {
               final IExpr arg = arg1AST.get(i);
               IExpr assumeDomain = assumeDomain(arg, domain, engine);
@@ -482,7 +483,7 @@ public class AssumptionFunctions {
       IAssumptions oldAssumptions = engine.getAssumptions();
       try {
         engine.setAssumptions(assumptions);
-        IExpr result = engine.evalWithoutNumericReset(expr);
+        IExpr result = engine.evalWithoutNumericReset(unevaluatedCopy(expr));
         IAST pointValues = assumptions.pointValues();
         if (pointValues.argSize() > 0) {
           // a variable which is assumed to be equal to a number, e.g. Refine(x, x==0) -> 0
@@ -502,6 +503,21 @@ public class AssumptionFunctions {
       }
     }
     return engine.evalWithoutNumericReset(expr);
+  }
+
+  /**
+   * A copy of the tree without the marks of an earlier evaluation: the evaluator would otherwise
+   * skip an expression which it evaluated before the assumptions were known.
+   */
+  private static IExpr unevaluatedCopy(IExpr expr) {
+    if (!expr.isAST() || expr.isAssociation()) {
+      return expr;
+    }
+    IASTMutable copy = ((IAST) expr).copy();
+    for (int i = 1; i < copy.size(); i++) {
+      copy.set(i, unevaluatedCopy(copy.get(i)));
+    }
+    return copy;
   }
 
   /**

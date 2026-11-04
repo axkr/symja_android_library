@@ -50,7 +50,8 @@ public class CirclePoints extends AbstractFunctionEvaluator {
         // Argument `1` should be a real non-negative number.
         return Errors.printMessage(ast.topHead(), "noneg", F.list(nExpr), engine);
       }
-      int n = nExpr.toIntDefault();
+      // a non-integer n gives the first Floor(n) of the points spaced by the angle 2*Pi/n
+      int n = nExpr.isInteger() ? nExpr.toIntDefault() : nExpr.floor().toIntDefault();
       if (n > 0) {
         IExpr cx = F.C0;
         IExpr cy = F.C0;
@@ -71,11 +72,12 @@ public class CirclePoints extends AbstractFunctionEvaluator {
         // If the starting angle isn't explicitly provided, use the default: Pi/n - Pi/2
         IExpr startAngle = theta;
         if (!startAngle.isPresent()) {
-          startAngle = engine.evaluate(F.Plus(F.Times(F.QQ(1, n), S.Pi), F.Times(F.CN1D2, S.Pi)));
+          startAngle = engine.evaluate(
+              F.Plus(F.Times(F.Power(nExpr, F.CN1), S.Pi), F.Times(F.CN1D2, S.Pi)));
         }
 
         // The angle step between each point is (2/n)*Pi
-        final IExpr angleStep = engine.evaluate(F.Times(F.QQ(2, n), S.Pi));
+        final IExpr angleStep = engine.evaluate(F.Times(F.C2, F.Power(nExpr, F.CN1), S.Pi));
 
         // Create effectively final variables to pass into the lambda scope
         final IExpr finalCx = cx;
@@ -119,7 +121,7 @@ public class CirclePoints extends AbstractFunctionEvaluator {
     if (!cx.isReal() || !cy.isReal() || !r.isReal() || (theta.isPresent() && !theta.isReal())) {
       return F.NIL;
     }
-    final double nd = n;
+    final double nd = nExpr.evalf();
     final double x0 = cx.evalf();
     final double y0 = cy.evalf();
     final double radius = r.evalf();

@@ -1079,6 +1079,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDiscreteLimit() {
     // an unresolvable sequence stays unevaluated. Clear(f) because testLimitPiecewise002 defines a
     // downvalue f(x_):=Piecewise(...) that outlives its test method - without it f(n) is already

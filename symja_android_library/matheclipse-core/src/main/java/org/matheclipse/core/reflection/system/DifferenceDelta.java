@@ -76,6 +76,11 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
       if (arg2.isList2() || arg2.isList3()) {
         IExpr symbolX = arg2.first();
         if (!arg1.isFree(symbolX, true)) {
+          if (!arg2.second().isNumber() && arg2.second().isFree(symbolX)) {
+            // a symbolic order
+            IExpr stepH = arg2.isList3() ? arg2.getAt(3) : F.C1;
+            return exponentialDifference(arg1, symbolX, arg2.second(), stepH);
+          }
           if (arg2.second().isInteger() && arg2.second().isNonNegativeResult()) {
             int n = arg2.second().toIntDefault();
             if (n == 0) {
@@ -193,45 +198,38 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
           }
         }
       }
-    } else if (f.isPower()) {
-      IExpr base = f.base();
-      IExpr arg = f.exponent();
-      if (base.isFree(x, true)) {
-        IExpr[] linear = arg.linear(x);
-        if (linear != null) {
-          IExpr a = linear[1];
-          IExpr nExpr = F.ZZ(n);
+    } else if (f.isPower() || f.isTimes()) {
+      return exponentialDifference(f, x, F.ZZ(n), h);
+    }
+    return F.NIL;
+  }
 
-          // base^(c + a*x) * (base^(a*h) - 1)^n -> f * (base^(a*h) - 1)^n
-          return F.Times(f, F.Power(F.Subtract(F.Power(base, F.Times(a, h)), F.C1), nExpr));
-        }
+  /**
+   * The difference of order <code>n</code>, also a symbolic one, of an exponential
+   * <code>const*base^(c + a*x)</code>: <code>f*(base^(a*h) - 1)^n</code>. The antidifference
+   * <code>a^i/(-1+a)</code> of a geometric sum differences back to <code>a^i</code>.
+   *
+   * @return {@link F#NIL} if <code>f</code> isn't such an exponential
+   */
+  private static IExpr exponentialDifference(IExpr f, IExpr x, IExpr n, IExpr h) {
+    IExpr base = F.NIL;
+    IExpr a = F.NIL;
+    for (IExpr factor : f.isTimes() ? (IAST) f : F.list(f)) {
+      if (factor.isFree(x, true)) {
+        continue;
       }
-    } else if (f.isTimes()) {
-      // const * base^(c + a*x) with all remaining factors free of x:
-      // delta = f * (base^(a*h) - 1)^n
-      // (e.g. the antidifference a^i/(-1+a) of a geometric sum differences back to a^i)
-      IExpr base = F.NIL;
-      IExpr a = F.NIL;
-      boolean valid = true;
-      for (IExpr factor : (IAST) f) {
-        if (factor.isFree(x, true)) {
+      if (base.isNIL() && factor.isPower() && factor.base().isFree(x, true)) {
+        IExpr[] linear = factor.exponent().linear(x);
+        if (linear != null && !linear[1].isZero()) {
+          base = factor.base();
+          a = linear[1];
           continue;
         }
-        if (base.isNIL() && factor.isPower() && factor.base().isFree(x, true)) {
-          IExpr[] linear = factor.exponent().linear(x);
-          if (linear != null && !linear[1].isZero()) {
-            base = factor.base();
-            a = linear[1];
-            continue;
-          }
-        }
-        valid = false;
-        break;
       }
-      if (valid && base.isPresent()) {
-        IExpr nExpr = F.ZZ(n);
-        return F.Times(f, F.Power(F.Subtract(F.Power(base, F.Times(a, h)), F.C1), nExpr));
-      }
+      return F.NIL;
+    }
+    if (base.isPresent()) {
+      return F.Times(f, F.Power(F.Subtract(F.Power(base, F.Times(a, h)), F.C1), n));
     }
     return F.NIL;
   }

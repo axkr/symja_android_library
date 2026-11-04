@@ -841,6 +841,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveConditionAtASingularPoint() {
     // The general solution of these is written with ExpIntegralEi(t), which does not reach t == 0:
     // putting the point in gives Indeterminate from 0*(-Infinity). That is not the condition
@@ -2809,6 +2810,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRiccatiParticularSolutions() {
     // a polynomial particular solution: x^2-2 (and x^2+2)
     check("DSolve(y'(x)==4+2*x-x^4+2*x^2*y(x)-y(x)^2, y(x), x)", //
@@ -2827,6 +2829,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testVariationOfParametersWithASquaredDenominator() {
     // the integrand x*E^x/(2+E^x)^2 integrates factored, not expanded
     check("DSolve(y''(x)-2*y'(x)+y(x)==E^(2*x)/(2+E^x)^2, y(x), x)", //
@@ -2834,6 +2837,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveInertIntegrals() {
     // the integrating factor and the forcing are free functions: both integrals stay inert
     check("DSolve(y'(x)==u(x)*y(x)+v(x), y(x), x)", //
@@ -2868,6 +2872,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * ExpIntegralEi, also with the argument scaled.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveDegenerateKummer() {
     check("DSolve(x*y''(x) + (2 - x)*y'(x) + 3*y(x) == 0, y(x), x)", //
         "{{y(x)->C(1)-3/2*x*C(1)+1/2*x^2*C(1)-1/24*x^3*C(1)+13/12*E^x*C(2)+(-E^x*C(2))/(4*x)-\n"

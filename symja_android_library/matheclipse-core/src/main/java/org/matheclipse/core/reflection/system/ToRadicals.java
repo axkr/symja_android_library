@@ -4,7 +4,6 @@ import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.C0;
 import java.util.ArrayList;
 import java.util.List;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -106,6 +105,9 @@ public class ToRadicals extends AbstractFunctionEvaluator {
         F.list(F.Rule(S.Cubics, S.Automatic), F.Rule(S.Quartics, S.Automatic)));
   }
 
+  /** The largest distance of a closed form root from the start value <code>c</code>. */
+  private static final double NEAR_ROOT_DISTANCE = 1.0e-6;
+
   private static IExpr rootNearFloatNumber(EvalEngine engine, IExpr f, IExpr c) {
     double targetC = c.evalfNaN();
     if (Double.isNaN(targetC)) {
@@ -119,8 +121,10 @@ public class ToRadicals extends AbstractFunctionEvaluator {
 
     try {
       // Attempt to find exact symbolic solutions using Solve(eq, x)
-      double cmin = targetC - Config.DEFAULT_CHOP_DELTA;
-      double cmax = targetC + Config.DEFAULT_CHOP_DELTA;
+      // the interval of the roots which are accepted as near c below; Solve keeps only the
+      // solutions in it
+      double cmin = targetC - NEAR_ROOT_DISTANCE;
+      double cmax = targetC + NEAR_ROOT_DISTANCE;
       IAST solve = F.SolveDistinct(F.List(eq,
           F.LessEqual(x, org.matheclipse.core.builtin.NumberTheory.Rationalize.exact(F.num(cmax))),
           F.GreaterEqual(x,
@@ -145,7 +149,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
             double diff = Math.abs(val - targetC);
 
             // Define a reasonable threshold for "near" x = c, e.g., 1e-6
-            if (diff < minDiff && diff < 1e-6) {
+            if (diff < minDiff && diff < NEAR_ROOT_DISTANCE) {
               minDiff = diff;
               bestExactRoot = exactVal;
             }

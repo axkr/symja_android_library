@@ -58,6 +58,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -198,7 +199,7 @@ public class Algebra {
         return withoutOptions.argSize() < ast.argSize() ? withoutOptions : F.NIL;
       }
       IExpr arg1 = ast.arg1();
-      IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
+      IAST tempAST = CompareUtil.threadListLogicEquationRuleOperators(arg1, ast, 1);
       if (tempAST.isPresent()) {
         return tempAST;
       }
@@ -218,26 +219,90 @@ public class Algebra {
       }
       IAST variableList = null;
       if (ast.isAST2()) {
+        if (isKernel(ast.arg2())) {
+          return apartInKernel(arg1, ast.arg2(), engine);
+        }
         variableList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (variableList.isNIL()) {
           return F.NIL;
         }
       } else {
+        IExpr kernels = engine.evaluate(F.Variables(arg1));
+        if (kernels.isList() && ((IAST) kernels).argSize() > 0) {
+          // the last variable in the order of Variables(); a term free of it stays as it is, like
+          // the coefficient 1/((x-1)*(x+2)) of y^0 in 1/((x-1)*(x+2))+y
+          IExpr last = ((IAST) kernels).last();
+          if (isKernel(last)) {
+            return apartInKernel(arg1, last, engine);
+          }
+          if (((IAST) kernels).argSize() > 1) {
+            return apartTermwise(arg1, last, false, engine);
+          }
+        }
         if (!eVar.isSize(1)) {
           // partial fraction only possible for univariate polynomials
           return F.evalExpandAll(arg1, engine);
         }
         variableList = eVar.getVarList();
       }
+      if (variableList.size() != 2) {
+        return F.evalExpandAll(arg1, engine);
+      }
+      return apartTerm(arg1, variableList.arg1(), engine);
+    }
 
-      if (variableList.size() == 2 && (arg1.isTimes() || arg1.isPower())
+    /** A function of <code>Sin(z)</code> or <code>y(3)</code> is decomposed in a symbol for it. */
+    private static boolean isKernel(IExpr variable) {
+      return variable.isAST() && !variable.isNumericFunction(true);
+    }
+
+    private static IExpr apartInKernel(IExpr arg1, IExpr kernel, EvalEngine engine) {
+      ISymbol t = F.Dummy("ap$t");
+      IExpr inT = engine.evaluate(F.subst(arg1, kernel, t));
+      IExpr result = apartTermwise(inT, t, true, engine);
+      return engine.evaluate(F.subst(result, t, kernel));
+    }
+
+    /**
+     * Each term with the variable in a denominator is decomposed. A term with another denominator
+     * stays as it is; a polynomial is multiplied out, but not in a kernel, where nothing is to be
+     * decomposed.
+     */
+    private static IExpr apartTermwise(IExpr arg1, IExpr variable, boolean kernel,
+        EvalEngine engine) {
+      if (arg1.isPlus()) {
+        return engine.evaluate(
+            ((IAST) arg1).map(term -> apartTermOrKeep(term, variable, kernel, engine)));
+      }
+      return apartTermOrKeep(arg1, variable, kernel, engine);
+    }
+
+    private static IExpr apartTermOrKeep(IExpr term, IExpr variable, boolean kernel,
+        EvalEngine engine) {
+      if (hasDenominatorIn(term, variable)) {
+        return apartTerm(term, variable, engine);
+      }
+      return kernel || hasDenominatorIn(term, x -> true) ? term : F.evalExpandAll(term, engine);
+    }
+
+    private static boolean hasDenominatorIn(IExpr term, IExpr variable) {
+      return hasDenominatorIn(term, base -> !base.isFree(variable));
+    }
+
+    private static boolean hasDenominatorIn(IExpr term,
+        java.util.function.Predicate<IExpr> base) {
+      return !term.isFree(
+          x -> x.isPower() && x.exponent().isNegativeResult() && base.test(x.base()), true);
+    }
+
+    private static IExpr apartTerm(IExpr arg1, IExpr variable, EvalEngine engine) {
+      if ((arg1.isTimes() || arg1.isPower())
           && !arg1.isFree(x -> x instanceof INum || x instanceof IComplexNum, true)
           && arg1.isFree(x -> x instanceof ApfloatNum || x instanceof ApcomplexNum, true)) {
         // Machine numbers: the denominator is not factored, and common factors do not cancel.
         // The rational form is decomposed, and its numbers are given back as machine numbers.
         IExpr rationalized = AbstractFractionSym.rationalize(arg1, false);
         if (rationalized.isPresent() && rationalized.isFree(x -> x.isInexactNumber(), true)) {
-          final IExpr variable = variableList.arg1();
           IExpr exact = engine.evaluate(F.Apart(rationalized, variable));
           // a linear factor of a denominator with the coefficient 1 for the variable:
           // 1.33333/(-0.5+x) and not 2.66667/(-1.0+2.0*x)
@@ -258,10 +323,9 @@ public class Algebra {
           return engine.evaluate(machineCoefficients(engine.evaluate(exact), engine));
         }
       }
-      if (variableList.size() == 2 && (arg1.isTimes() || arg1.isPower())) {
+      if (arg1.isTimes() || arg1.isPower()) {
         Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
         if (parts.isPresent()) {
-          IExpr variable = variableList.arg1();
           IExpr denominator = parts.get()[1];
           if (denominator.isTimes()) {
             // factors free of the variable divide every term: x^2/(a*(x-1)) is
@@ -273,6 +337,10 @@ public class Algebra {
               IExpr temp =
                   AlgebraUtil.partsApart(new IExpr[] {parts.get()[0], rest}, variable, engine);
               if (temp.isPresent()) {
+                if (!temp.isPlus()) {
+                  // one fraction: nothing to decompose, the factored form stays
+                  return arg1;
+                }
                 IExpr inverse = F.Power(constant, F.CN1);
                 return engine.evaluate(
                     temp.isPlus() ? ((IAST) temp).map(t -> F.Expand(F.Times(inverse, t)))
@@ -284,7 +352,7 @@ public class Algebra {
           if (temp.isPresent()) {
             return temp;
           }
-        } else if (arg1.isPolynomial(variableList)) {
+        } else if (arg1.isPolynomial(variable)) {
           // a polynomial has no fractions to separate, it is multiplied out
           return F.evalExpandAll(arg1, engine);
         }
@@ -549,8 +617,9 @@ public class Algebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
-        if (isTrigTrue(ast.arg2())) {
-          return trigRationalFunction(S.Cancel, arg1, engine);
+        IExpr byOption = trigOrExtension(S.Cancel, arg1, ast.arg2(), engine);
+        if (byOption != null) {
+          return byOption;
         }
         IExpr modulus = modulusOption(ast, engine);
         if (modulus.isNIL()) {
@@ -575,6 +644,9 @@ public class Algebra {
       }
       if (arg1.isAtom()) {
         return arg1;
+      }
+      if (arg1.isRuleAST()) {
+        return ((IAST) arg1).mapThread(ast, 1);
       }
       IExpr temp = CompareUtil.threadPlusLogicEquationOperators(arg1, ast, 1);
       if (temp.isPresent()) {
@@ -2310,12 +2382,200 @@ public class Algebra {
       if (options[3].isTrue() && (result.isNIL() || engine.evaluate(result).isPlus())) {
         return trigFactored(ast.arg1(), engine).orElse(result);
       }
+      if (options[0].isZero() && options[1] == S.None && ast.head() == S.Factor) {
+        // an input which is a product already is no result of its own
+        IExpr normalized =
+            positiveLeadingCoefficients(result.orElse(ast.arg1()), ast.arg1(), engine);
+        return normalized == ast.arg1() ? result : normalized;
+      }
       return result;
+    }
+
+    /**
+     * A product of two or more factors with a positive leading coefficient in each factor of one
+     * variable, the sign going into the numeric content: <code>3-3*x^2</code> is
+     * <code>-3*(-1+x)*(1+x)</code>. A single factor keeps its form.
+     */
+    protected static IExpr positiveLeadingCoefficients(IExpr factors, IExpr input,
+        EvalEngine engine) {
+      IExpr evaluated = engine.evaluate(factors);
+      if (!(evaluated.isTimes() || evaluated.isPower())
+          || !evaluated.isFree(x -> x.isComplex() || x.isInexactNumber()
+          || x.isComplexNumeric(), false)) {
+        return factors;
+      }
+      IAST product = evaluated.isTimes() ? (IAST) evaluated : F.unaryAST1(S.Times, evaluated);
+      java.util.LinkedHashSet<IExpr> order = new java.util.LinkedHashSet<IExpr>();
+      collectVariables(input, order);
+      IAST variables = F.List(order.toArray(new IExpr[0]));
+      if (!input.isPolynomial(variables)) {
+        // a polynomial in kernels like Sin(a) keeps its signs, the trigonometric search relies on
+        // them
+        return factors;
+      }
+      int count = 0;
+      for (IExpr factor : (IAST) product) {
+        if (!factor.isNumber()) {
+          // (1-x)^2 counts as two factors
+          count += factor.isPower() ? 2 : 1;
+        }
+      }
+      if (count < 2) {
+        return positiveContent(product, factors, input, engine);
+      }
+      boolean negate = false;
+      boolean changed = false;
+      IASTAppendable result = F.TimesAlloc(product.size());
+      for (IExpr factor : (IAST) product) {
+        IExpr base = factor.isPower() ? factor.base() : factor;
+        IExpr exponent = factor.isPower() ? factor.exponent() : F.C1;
+        // only a factor in one variable has an unambiguous leading term
+        if (base.isPlus() && exponent.isInteger() && exponent.isPositive()
+            && new VariablesSet(base).size() == 1
+            && isNegativeLeadingCoefficient(base, variables, engine)) {
+          base = engine.evaluate(F.Expand(F.Negate(base)));
+          if (((IInteger) exponent).isOdd()) {
+            negate = !negate;
+          }
+          changed = true;
+          result.append(exponent.isOne() ? base : F.Power(base, exponent));
+        } else {
+          result.append(factor);
+        }
+      }
+      if (!changed) {
+        return factors;
+      }
+      if (negate) {
+        result.append(F.CN1);
+      }
+      return result;
+    }
+
+    /**
+     * A negative content times a single sum, of an input with positive and negative terms, with the
+     * content made positive: <code>-2*p*q+2*r</code> is <code>2*(r-p*q)</code>.
+     */
+    private static IExpr positiveContent(IAST product, IExpr factors, IExpr input,
+        EvalEngine engine) {
+      if (product.isAST2() && product.arg1().isRational() && product.arg1().isNegative()
+          && product.arg2().isPlus() && input.isPlus()
+          && ((IAST) input).exists(term -> !term.isNegativeSigned())) {
+        return F.Times(product.arg1().negate(),
+            engine.evaluate(F.Expand(F.Negate(product.arg2()))));
+      }
+      return factors;
+    }
+
+    /** The symbols of <code>expr</code> which aren't constants, in the order they occur. */
+    private static void collectVariables(IExpr expr, java.util.Set<IExpr> order) {
+      if (expr.isSymbol()) {
+        if (expr.isVariable()) {
+          order.add(expr);
+        }
+      } else if (expr.isAST()) {
+        ((IAST) expr).forEach(x -> collectVariables(x, order));
+      }
+    }
+
+    /**
+     * Whether the coefficient of the lexicographically first term of the polynomial
+     * <code>p</code> in <code>variables</code> is negative.
+     */
+    private static boolean isNegativeLeadingCoefficient(IExpr p, IAST variables,
+        EvalEngine engine) {
+      IExpr rules = engine.evaluate(F.CoefficientRules(p, variables));
+      if (!rules.isList() || rules.isEmpty() || !rules.first().isRuleAST()) {
+        return false;
+      }
+      IExpr leading = rules.first().second();
+      return leading.isRational() && leading.isNegative();
+    }
+
+    /**
+     * A polynomial in <code>x</code> with inexact real coefficients as its leading coefficient
+     * times monic factors: a linear factor <code>x-r</code> for every real root and a quadratic one
+     * for every pair of complex roots, <code>2.5*x+1.0</code> is <code>2.5*(0.4+x)</code>.
+     *
+     * @return {@link F#NIL} if <code>polynomial</code> isn't of that kind
+     */
+    private static IExpr factorApproximate(IExpr polynomial, IExpr x, EvalEngine engine) {
+      if (!x.isSymbol() || !polynomial.isPolynomial(F.list(x))) {
+        return F.NIL;
+      }
+      java.util.Deque<IExpr> stack = engine.getStack();
+      if (stack != null && stack.stream().anyMatch(e -> e.isAST(S.Together) || e.isAST(S.Cancel)
+          || e.isAST(S.Apart) || e.isAST(S.Simplify) || e.isAST(S.FullSimplify))) {
+        // the rational functions keep their coefficients: Cancel((1.0*^-20*x^2+x)/x) is
+        // 1+1.0*^-20*x
+        return F.NIL;
+      }
+      IExpr coefficientList = engine.evaluate(F.CoefficientList(polynomial, x));
+      if (!coefficientList.isList() || coefficientList.argSize() < 2
+          || !((IAST) coefficientList).forAll(c -> c.isReal())) {
+        return F.NIL;
+      }
+      IAST coefficients = (IAST) coefficientList;
+      IExpr leading = coefficients.last();
+      if (leading.isZero()) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.TimesAlloc(coefficients.argSize());
+      result.append(leading);
+      if (coefficients.argSize() == 2) {
+        // exact arithmetic keeps the precision of the coefficients
+        result.append(F.Plus(engine.evaluate(F.Divide(coefficients.arg1(), leading)), x));
+        return engine.evaluate(result);
+      }
+      // the exact rational roots of the coefficients as binary fractions, then the others
+      IExpr exact = engine.evaluate(F.Rationalize(polynomial, F.C0));
+      IExpr factorList = engine.evalQuiet(F.FactorList(exact));
+      if (!factorList.isList()) {
+        return F.NIL;
+      }
+      IASTAppendable roots = F.ListAlloc(coefficients.argSize());
+      for (IExpr factor : (IAST) factorList) {
+        IExpr f = factor.first();
+        int multiplicity = factor.second().toIntDefault();
+        if (f.isFree(x) || multiplicity < 1) {
+          continue;
+        }
+        IAST factorRoots;
+        IExpr fCoefficients = engine.evaluate(F.CoefficientList(f, x));
+        if (fCoefficients.isList() && fCoefficients.argSize() == 2) {
+          factorRoots = F.list(engine.evaluate(F.N(
+              F.Negate(F.Divide(fCoefficients.first(), fCoefficients.second())))));
+        } else {
+          factorRoots = RootsFunctions.allNumericRoots(engine.evaluate(F.N(f)), (ISymbol) x, engine);
+          if (factorRoots.isNIL()) {
+            return F.NIL;
+          }
+        }
+        for (int i = 0; i < multiplicity; i++) {
+          roots.appendArgs(factorRoots);
+        }
+      }
+      if (roots.argSize() != coefficients.argSize() - 1) {
+        return F.NIL;
+      }
+      for (IExpr root : roots) {
+        if (root.isReal()) {
+          result.append(F.Plus(engine.evaluate(F.Negate(root)), x));
+        } else if (root.isNumber() && ((INumber) root).im().isPositive()) {
+          // the conjugate root gives the same quadratic factor
+          INumber z = (INumber) root;
+          result.append(F.Plus(engine.evaluate(F.Sqr(F.Abs(z))),
+              F.Times(engine.evaluate(F.Times(F.CN2, z.re())), x), F.Sqr(x)));
+        } else if (!root.isNumber()) {
+          return F.NIL;
+        }
+      }
+      return engine.evaluate(result);
     }
 
     private IExpr factorArgument(final IAST ast, final IExpr[] options, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IAST list = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
+      IAST list = CompareUtil.threadListLogicEquationRuleOperators(arg1, ast, 1);
       if (list.isPresent()) {
         return list;
       }
@@ -2348,6 +2608,14 @@ public class Algebra {
         if (!arg1.isFree(x -> x instanceof IComplex, false)) {
           // Factoring noninteger polynomials with respect to a modulus is not implemented.
           return Errors.printMessage(S.Factor, "facim", F.CEmptyList);
+        }
+      }
+      if (modulus.isZero() && extension == S.None && gaussianIntegers.isFalse()
+          && eVar.size() == 1 && !arg1.isFree(x -> x.isInexactNumber(), false)) {
+        IExpr factorization = factorApproximate(arg1, eVar.getVarList().arg1(), engine);
+        if (factorization.isPresent()) {
+          engine.putCache(ast, factorization);
+          return factorization;
         }
       }
       // irreducible over Q(I), so the steps below don't factor it again
@@ -2520,6 +2788,12 @@ public class Algebra {
         if (!options[MODULUS_OPTION].isInteger()) {
           options[MODULUS_OPTION] = F.C0;
         }
+        if (options[MODULUS_OPTION].isZero() && options[1] != S.None) {
+          IAST pairs = FactorSquareFreeList.squareFreeByExtension(arg1, engine);
+          if (pairs.isPresent()) {
+            return engine.evaluate(pairs.map(S.Times, x -> F.Power(x.first(), x.second())));
+          }
+        }
         if (options[MODULUS_OPTION].isZero() && options[1] == S.None && options[2].isFalse()) {
           // structure-preserving square-free factorization (see AlgebraUtil#factorSquareFree)
           IExpr temp = AlgebraUtil.factorSquareFree(arg1, eVar, engine);
@@ -2591,6 +2865,37 @@ public class Algebra {
       }
       if (!result.arg1().first().isNumber()) {
         result.append(1, F.list(F.C1, F.C1));
+      }
+      return result;
+    }
+
+    /**
+     * The square-free parts <code>{{c, 1}, {p1, 1}, {p2, 2}, ...}</code> of a polynomial over the
+     * field of its algebraic coefficients: the factors of the same multiplicity are multiplied out.
+     *
+     * @return {@link F#NIL} if the polynomial doesn't factor
+     */
+    static IAST squareFreeByExtension(IExpr polynomial, EvalEngine engine) {
+      IExpr factored =
+          engine.evaluate(F.binaryAST2(S.Factor, polynomial, F.Rule(S.Extension, S.Automatic)));
+      if (factored.isAST(S.Factor)) {
+        return F.NIL;
+      }
+      IAST pairs = basesAndExponents(factored);
+      java.util.TreeMap<Integer, IASTAppendable> groups = new java.util.TreeMap<>();
+      for (int i = 2; i < pairs.size(); i++) {
+        int k = pairs.get(i).second().toIntDefault();
+        if (k <= 0) {
+          return F.NIL;
+        }
+        groups.computeIfAbsent(k, key -> F.TimesAlloc(2)).append(pairs.get(i).first());
+      }
+      IASTAppendable result = F.ListAlloc(groups.size() + 1);
+      result.append(pairs.arg1());
+      for (java.util.Map.Entry<Integer, IASTAppendable> group : groups.entrySet()) {
+        IASTAppendable product = group.getValue();
+        IExpr base = product.isAST1() ? product.arg1() : engine.evaluate(F.Expand(product));
+        result.append(F.list(base, F.ZZ(group.getKey())));
       }
       return result;
     }
@@ -2695,14 +3000,21 @@ public class Algebra {
           return byMultiplicity(basesAndExponents(trig));
         }
       }
+      if (options[1] != S.None
+          && !(options[MODULUS_OPTION].isInteger() && !options[MODULUS_OPTION].isZero())) {
+        IAST pairs = squareFreeByExtension(ast.arg1(), engine);
+        if (pairs.isPresent()) {
+          return pairs;
+        }
+      }
       if (options[MODULUS_OPTION].isInteger() && !options[MODULUS_OPTION].isZero()) {
-        // the square-free parts over GF(p), as the list of their bases and exponents
-        IExpr factored = Factor.factorModulus(S.FactorSquareFreeList, ast.arg1(), eVar, true,
+        // over GF(p) the list holds the irreducible factors with their multiplicities
+        IExpr factored = Factor.factorModulus(S.FactorSquareFreeList, ast.arg1(), eVar, false,
             options[MODULUS_OPTION], engine);
         if (factored.isNIL()) {
           return F.NIL;
         }
-        return byMultiplicity(basesAndExponents(factored));
+        return basesAndExponents(engine.evaluate(factored));
       }
       try {
         // the factors of a product which is written out are kept apart
@@ -4446,6 +4758,29 @@ public class Algebra {
       return F.Times(jas.poly2Expr(cofactor), jas.poly2Expr(temp));
     }
 
+    /**
+     * The LCM of polynomials with symbols in a denominator, <code>b/a+x</code>: the LCM of the
+     * numerators over the GCD of the denominators.
+     *
+     * @return {@link F#NIL} if every denominator is a number
+     */
+    private static IExpr lcmOfQuotients(IAST ast, int argSize, EvalEngine engine) {
+      IASTAppendable numerators = F.ast(S.PolynomialLCM, argSize);
+      IASTAppendable denominators = F.ast(S.PolynomialGCD, argSize);
+      boolean symbolicDenominator = false;
+      for (int i = 1; i <= argSize; i++) {
+        IExpr together = engine.evaluate(F.Together(ast.get(i)));
+        IExpr denominator = engine.evaluate(F.Denominator(together));
+        symbolicDenominator |= !denominator.isNumber();
+        numerators.append(engine.evaluate(F.Numerator(together)));
+        denominators.append(denominator);
+      }
+      if (!symbolicDenominator) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Divide(numerators, denominators));
+    }
+
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -4472,6 +4807,10 @@ public class Algebra {
         }
 
         if (options[MODULUS_OPTION].isZero()) {
+          IExpr overDenominators = lcmOfQuotients(ast, argSize, engine);
+          if (overDenominators.isPresent()) {
+            return overDenominators;
+          }
           IExpr coprimeProduct = productOfCoprimeLCMs(ast, argSize, engine);
           if (coprimeProduct.isPresent()) {
             return coprimeProduct;
@@ -5938,23 +6277,22 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IAST list = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
+      IAST list = CompareUtil.threadListLogicEquationRuleOperators(arg1, ast, 1);
       if (list.isPresent()) {
         return list;
       }
       if (ast.isAST2()) {
-        if (isTrigTrue(ast.arg2())) {
-          return trigRationalFunction(S.Together, arg1, engine);
+        IExpr byOption = trigOrExtension(S.Together, arg1, ast.arg2(), engine);
+        if (byOption != null) {
+          return byOption;
         }
         IExpr modulus = modulusOption(ast, engine);
         if (modulus.isNIL()) {
           return F.NIL;
         }
         if (!modulus.isZero()) {
-          if (arg1.isRational()) {
-            return residue((IRational) arg1, modulus, S.Together, engine);
-          }
-          return togetherModulus(S.Together, arg1, modulus, engine);
+          return arg1.isRational() ? residue((IRational) arg1, modulus, S.Together, engine)
+              : togetherModulus(S.Together, arg1, modulus, engine);
         }
       }
       if (arg1.isAST()) {
@@ -5975,6 +6313,7 @@ public class Algebra {
             return rationalized;
           }
         }
+        together = commonPowers(together, engine);
         // every other fraction gets the same form as a reduced fraction which is given directly
         if (together.isTimes() || together.isPower()) {
           return AlgebraUtil.reducedFraction(together, engine).orElse(together);
@@ -5982,6 +6321,86 @@ public class Algebra {
         return together;
       }
       return arg1;
+    }
+
+    /**
+     * Takes the powers out of a sum which all its terms have, with exponents which differ by an
+     * integer: <code>2^n+2^(n+1)</code> is <code>3*2^n</code>, <code>x^n+x^(n+1)</code> is
+     * <code>x^n*(1+x)</code>. A sum which is a factor of a product is treated alike.
+     */
+    public static IExpr commonPowers(IExpr expr, EvalEngine engine) {
+      if (expr.isPlus()) {
+        return commonPowersOfSum((IAST) expr, engine).orElse(expr);
+      }
+      if (expr.isTimes()) {
+        IAST times = (IAST) expr;
+        IASTMutable result = F.NIL;
+        for (int i = 1; i < times.size(); i++) {
+          if (times.get(i).isPlus()) {
+            IExpr factored = commonPowersOfSum((IAST) times.get(i), engine);
+            if (factored.isPresent()) {
+              if (result.isNIL()) {
+                result = times.copy();
+              }
+              result.set(i, factored);
+            }
+          }
+        }
+        return result.isPresent() ? engine.evaluate(result) : expr;
+      }
+      return expr;
+    }
+
+    private static IExpr commonPowersOfSum(IAST sum, EvalEngine engine) {
+      java.util.Map<IExpr, IRational> common = null;
+      final java.util.Set<IExpr> varying = new java.util.HashSet<IExpr>();
+      for (IExpr term : sum) {
+        java.util.Map<IExpr, IRational> powers = new java.util.HashMap<IExpr, IRational>();
+        for (IExpr factor : term.isTimes() ? (IAST) term : F.List(term)) {
+          if (factor.isPower() && !factor.exponent().isNumber()) {
+            IExpr exponent = factor.exponent();
+            IRational offset = F.C0;
+            IExpr symbolic = exponent;
+            if (exponent.isPlus() && exponent.first().isRational()) {
+              offset = (IRational) exponent.first();
+              symbolic = ((IAST) exponent).rest().oneIdentity0();
+            }
+            powers.put(F.List(factor.base(), symbolic), offset);
+          }
+        }
+        if (common == null) {
+          common = powers;
+        } else {
+          final java.util.Map<IExpr, IRational> next = powers;
+          common.entrySet().removeIf(entry -> {
+            IRational other = next.get(entry.getKey());
+            return other == null || !entry.getValue().subtract(other).isInteger();
+          });
+          common.forEach((key, offset) -> {
+            if (!next.get(key).equals(offset)) {
+              varying.add(key);
+            }
+          });
+          common.replaceAll((key, offset) -> {
+            IRational other = next.get(key);
+            return other.isLT(offset) ? other : offset;
+          });
+        }
+        if (common.isEmpty()) {
+          return F.NIL;
+        }
+      }
+      // with equal exponents in every term it is a common factor, which Together leaves alone
+      if (!common.keySet().stream().anyMatch(varying::contains)) {
+        return F.NIL;
+      }
+      IASTAppendable factor = F.TimesAlloc(common.size());
+      common.forEach((key, offset) -> factor.append(
+          F.Power(key.first(), F.Plus(key.second(), offset))));
+      IExpr g = engine.evaluate(factor.oneIdentity1());
+      IExpr inverse = engine.evaluate(F.Power(g, F.CN1));
+      IExpr rest = engine.evaluate(sum.map(term -> F.Times(term, inverse)));
+      return engine.evaluate(F.Times(g, rest));
     }
 
     /**
@@ -6262,6 +6681,46 @@ public class Algebra {
     }).orElse(expanded);
     IExpr rational = engine.evaluate(F.unaryAST1(head, masked));
     return engine.evaluate(F.ReplaceAll(rational, backward));
+  }
+
+  /**
+   * <code>Cancel</code> or <code>Together</code> with the option <code>Trig -&gt; True</code> or
+   * <code>Extension -&gt; ext</code>.
+   *
+   * @return <code>null</code> if <code>option</code> is neither of them
+   */
+  private static IExpr trigOrExtension(IBuiltInSymbol head, IExpr expr, IExpr option,
+      EvalEngine engine) {
+    if (isTrigTrue(option)) {
+      return trigRationalFunction(head, expr, engine);
+    }
+    if (isExtension(option)) {
+      return cancelOverExtension(expr, option.second(), engine);
+    }
+    return null;
+  }
+
+  /** An option <code>Extension -&gt; ext</code> with an extension other than None. */
+  private static boolean isExtension(IExpr option) {
+    return option.isRuleAST() && option.first() == S.Extension && option.second() != S.None
+        && !option.second().isFalse();
+  }
+
+  /**
+   * The fraction with the common factors of numerator and denominator over the field extended by
+   * <code>extension</code> cancelled, numerator and denominator multiplied out.
+   * <code>(x^2-2)/(x-Sqrt(2))</code> is <code>Sqrt(2)+x</code>.
+   */
+  private static IExpr cancelOverExtension(IExpr expr, IExpr extension, EvalEngine engine) {
+    IExpr together = engine.evaluate(F.Together(expr));
+    IExpr factored =
+        engine.evaluate(F.binaryAST2(S.Factor, together, F.Rule(S.Extension, extension)));
+    if (factored.isAST(S.Factor)) {
+      return F.NIL;
+    }
+    IExpr numerator = engine.evaluate(F.Expand(F.Numerator(factored)));
+    IExpr denominator = engine.evaluate(F.Expand(F.Denominator(factored)));
+    return engine.evaluate(F.Divide(numerator, denominator));
   }
 
   /**

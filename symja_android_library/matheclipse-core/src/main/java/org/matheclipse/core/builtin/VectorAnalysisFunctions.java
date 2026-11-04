@@ -138,6 +138,17 @@ public class VectorAnalysisFunctions {
                 curlVector.append(F.Subtract(F.D(f.arg2(), v.arg1()), F.D(f.arg1(), v.arg2())));
                 return curlVector;
               }
+            } else if (dimensions.size() == 2 && dimensions.getInt(0) == 3
+                && dimensions.getInt(1) == 3 && variables.argSize() == 3) {
+              // the scalar 1/2*Sum(Signature({d,j,k})*D(f(j,k), v(d)), {d,j,k}) of a 3x3 array
+              IASTAppendable sum = F.PlusAlloc(6);
+              for (int d = 1; d <= 3; d++) {
+                int j = d % 3 + 1;
+                int k = j % 3 + 1;
+                sum.append(F.Subtract(F.D(list.getPart(j, k), variables.get(d)),
+                    F.D(list.getPart(k, j), variables.get(d))));
+              }
+              return F.Times(F.C1D2, sum);
             }
           }
         }

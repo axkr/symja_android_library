@@ -18,6 +18,13 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.argSize() > 1 && ast.last().isRuleAST()) {
+      // the options AccuracyGoal, Assumptions, PrecisionGoal, WorkingPrecision, ...
+      IExpr measure = RegionPrimitives.measureWithOptions(ast, engine);
+      if (measure.isPresent()) {
+        return measure;
+      }
+    }
     if (ast.argSize() >= 2 && ast.arg2().isListOfLists()) {
       // RegionMeasure(f, {{u,umin,umax}, ...}) and a chart as third argument
       return ParametricMeasure.measure(ast.arg1(), (IAST) ast.arg2(),

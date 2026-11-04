@@ -389,9 +389,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->2}}");
     check("Solve(x^2 - 2 == 0, x, Integers)", //
         "{}");
-    // a zero constant term means the variable was factored out, contributing the root 0
+    // a zero constant term means the variable was factored out, contributing the root 0 with
+    // its multiplicity
     check("Solve(x^5 - x^2 == 0, x, Integers)", //
-        "{{x->0},{x->1}}");
+        "{{x->0},{x->0},{x->1}}");
     // rational coefficients are cleared before the divisor enumeration
     check("Solve(1 - (i*1)/10 == 0, i, Integers)", //
         "{{i->10}}");
@@ -895,6 +896,60 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveQuadraticSquareDiscriminant() {
+    // both roots are rational in the parameters
+    check("Solve(p+(3*p+2*q)*r+6*q*r^2==0,r)", //
+        "{{r->-1/3},{r->-p/(2*q)}}");
+    check("Solve(x^2-(p+q)*x+p*q==0,x)", //
+        "{{x->p},{x->q}}");
+    check("Solve(x^2+2*p*x+p^2==0,x)", //
+        "{{x->-p},{x->-p}}");
+    check("Solve(4*x^2+12*p*x+9*p^2-q^2==0,x)", //
+        "{{x->1/2*(-3*p-q)},{x->1/2*(-3*p+q)}}");
+    // no square: the roots stay
+    check("Solve(p*x^2+q*x+r==0,x)", //
+        "{{x->(-q-Sqrt(q^2-4*p*r))/(2*p)},{x->(-q+Sqrt(q^2-4*p*r))/(2*p)}}");
+  }
+
+  @Test
+  public void testSolveProductWithParameters() {
+    // u*v==0 is not linear in u: the branch v==0 has solutions as well
+    check("Solve({u^2==p^2*(1+r),2*u*v==0,v^2+2*u*w==2*p*q*r,2*v*w==0,w^2==q^2*(1+r)},{u,v,w,r})", //
+        "{{u->0,v->-I*Sqrt(2)*Sqrt(p*q),w->0,r->-1},{u->0,v->I*Sqrt(2)*Sqrt(p*q),w->0,r->-\n"
+            + "1},{u->p/Sqrt(2),v->0,w->-q/Sqrt(2),r->-1/2},{u->-p/Sqrt(2),v->0,w->q/Sqrt(2),r->-\n"
+            + "1/2}}");
+    check("Solve({x*y==0,x+y==p},{x,y})", //
+        "{{x->0,y->p},{x->p,y->0}}");
+    check("Solve({x*y*z==0,x+y==p,y+z==q},{x,y,z})", //
+        "{{x->0,y->p,z->-p+q},{x->p,y->0,z->q},{x->p-q,y->q,z->0}}");
+    check("Solve({(x-p)*(y-q)==0,x+y==r},{x,y})", //
+        "{{x->p,y->-p+r},{x->-q+r,y->q}}");
+  }
+
+  @Test
+  public void testSolveCyclotomicFactors() {
+    check("Solve(z^2-z+1==0,z)", //
+        "{{z->(-1)^(1/3)},{z->-(-1)^(2/3)}}");
+    check("Solve(z^6+z^3+1==0,z)", //
+        "{{z->-(-1)^(1/9)},{z->(-1)^(2/9)},{z->(-1)^(4/9)},{z->-(-1)^(5/9)},{z->-(-1)^(7/\n"
+            + "9)},{z->(-1)^(8/9)}}");
+    // the other factors as before, a double root twice
+    check("Solve((z^2+z+1)*(z-2)^2==0,z)", //
+        "{{z->2},{z->2},{z->-(-1)^(1/3)},{z->(-1)^(2/3)}}");
+    // Roots keeps the radicals
+    check("Roots(z^2-z+1==0,z)", //
+        "z==1/2*(1-I*Sqrt(3))||z==1/2*(1+I*Sqrt(3))");
+  }
+
+  @Test
+  public void testSolveLinearNegativeDenominator() {
+    check("Solve(-u-c*u==d,u)", //
+        "{{u->-d/(1+c)}}");
+    check("Solve({p+q==r,p-c*q==0},{p,q})", //
+        "{{p->(c*r)/(1+c),q->r/(1+c)}}");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testSolve() {
     check("Solve(3*(x+a)*(x-b)==0,x)", //
@@ -1006,7 +1061,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "Solve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})", //
         "{{v1->u1,v2->u2},{v1->(m1*u1-m2*u1+2*m2*u2)/(m1+m2),v2->(2*m1*u1-m1*u2+m2*u2)/(m1+m2)}}");
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
-        "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
+        "{{v1->u1,v2->u2}}");
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
         "{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
     // github #201 end
@@ -1188,16 +1243,21 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(a*x^2+b*x==0, x)", //
         "{{x->0},{x->-b/a}}");
 
+    // x == 0 is below the bound, the periodic families keep it as their condition
     check("Solve({Cos(x)*x==0, x > 10}, x)", //
-        "{{x->0},{x->Pi/2}}");
-    // TODO select a better starting value for internally used FindRoot:
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)>(10+Pi/2)/(2*Pi))},{x->ConditionalExpression(Pi/\n" + //
+        "2+2*Pi*C(1),C(1)∈Integers&&C(1)>(10-Pi/2)/(2*Pi))}}");
+    // TODO NSolve takes one principal value per periodic family, so the solutions above 10 are
+    // missing: 10.9956, 14.1372, ... (it used to ignore the bound and give 0.0 and 1.5708)
     check("NSolve({Cos(x)*x==0, x > 10}, x)", //
-        "{{x->0.0},{x->1.5708}}");
+        "{}");
 
     check("Solve({Cos(x)*x==0, x==0}, x)", //
         "{{x->0}}");
     check("Solve({Cos(x)*x==0, x < 10}, x)", //
-        "{{x->0},{x->Pi/2}}");
+        "{{x->0},{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)<(10+Pi/2)/(\n" + //
+        "2*Pi))},{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)<(10-Pi/2)/(\n" + //
+        "2*Pi))}}");
 
     // check("Solve((x^4 - 1)*(x^4 - 4) == 0, x, )", "");
     check("Solve(x == x, x)", //
@@ -1343,9 +1403,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-80.90169943749474},{x->30.90169943749474}}");
 
     check("Solve(a*x + y == 7 && b*x - y == 1, {x, y})", //
-        "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+        "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
     check("Solve({a*x + y == 7, b*x - y == 1}, {x, y})", //
-        "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+        "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
 
     check("Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", //
         "Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
@@ -1421,7 +1481,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         // (m1*u1+m2*u2+(m2*(-2.0*m1*u1+m1*u2-m2*u2))/(m1+m2))/m1 is the same value
         "{{v1->u1,v2->u2},{v1->(m1*u1-m2*u1+2.0*m2*u2)/(m1+m2),v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2)}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
-        "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
+        "{{v1->u1,v2->u2}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
         "{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
     // github #201 end
@@ -1754,9 +1814,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // "{{x->-80.90169943749474},{x->30.90169943749474}}");
     //
     // check("NSolve(a*x + y == 7 && b*x - y == 1, {x, y})", //
-    // "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+    // "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
     // check("NSolve({a*x + y == 7, b*x - y == 1}, {x, y})", //
-    // "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+    // "{{x->8/(a+b),y->(-a+7*b)/(a+b)}}");
     //
     // check("NSolve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", //
     // "NSolve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
@@ -2048,7 +2108,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
-        "{{x->-(-Log(2)+Log(3)+2*Log(5))/(-5*Log(2)-Log(3)-Log(5))}}");
+        "{{x->(-Log(2)+Log(3)+2*Log(5))/(5*Log(2)+Log(3)+Log(5))}}");
   }
 
   @Test
@@ -2850,6 +2910,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSystemCannotBeSolved() {
     // Solve: The system cannot be solved with the methods available to Solve.
     check(
@@ -3209,8 +3270,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testCosSingularitiesConstraint() {
     // Solve: Inverse functions are being used. Values may be lost for multivalued inverses.
+    // a periodic family above a bound keeps the bound as its condition
     check("Solve(Cos(x)==0&&x>0,x)", //
-        "{{x->Pi/2}}");
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers&&C(1)>1/4)},{x->ConditionalExpression(Pi/\n" + //
+        "2+2*Pi*C(1),C(1)∈Integers&&C(1)>-1/4)}}");
 
     check("Solve(Cos(x)==0&&(x>=2&&x<9||x>=10&&x<20),x)", //
         "{{x->3/2*Pi},{x->5/2*Pi},{x->7/2*Pi},{x->9/2*Pi},{x->11/2*Pi}}");
@@ -3295,9 +3358,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveDecompose() {
+    // the product of the 3rd and the 6th cyclotomic polynomial: roots of unity
     check("Solve(x^4 + x^2 + 1 == 0, x)", //
-        "{{x->Sqrt(-1-I*Sqrt(3))/Sqrt(2)},{x->-Sqrt(-1-I*Sqrt(3))/Sqrt(2)},{x->Sqrt(-1+I*Sqrt(\n"
-            + "3))/Sqrt(2)},{x->-Sqrt(-1+I*Sqrt(3))/Sqrt(2)}}");
+        "{{x->-(-1)^(1/3)},{x->(-1)^(1/3)},{x->-(-1)^(2/3)},{x->(-1)^(2/3)}}");
 
     check("Solve(x^8+4*x^7+2*x^6-8*x^5-5*x^4+8*x^3+2*x^2-4*x+8==0, x)", //
         "{{x->1/2*(-1-Sqrt(5-4*(-7)^(1/4)))},{x->1/2*(-1+Sqrt(5-4*(-7)^(1/4)))},{x->1/2*(-\n"
@@ -3886,6 +3949,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
    * never reduced to <code>(-1)^(1/6)</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolveIssue1556() {
     check("Solve(Cot(x)==Tan(2*x),x)", //
         "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"

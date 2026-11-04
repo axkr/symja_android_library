@@ -220,12 +220,47 @@ public class IntervalFunctions {
    * <a href="Interval.md">Interval</a>, <a href="IntervalIntersection.md">IntervalIntersection</a>,
    * <a href="IntervalUnion.md">IntervalUnion</a>
    */
+  /**
+   * Replace the <code>CenteredInterval(c, r)</code> arguments of <code>ast</code> by their part on
+   * the real axis.
+   *
+   * @param ast the function call
+   * @param realOnly if <code>true</code> only centered intervals without imaginary extent are
+   *        converted
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if no argument was replaced
+   */
+  private static IAST centeredArgsToIntervals(final IAST ast, boolean realOnly,
+      EvalEngine engine) {
+    IASTAppendable result = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IAST interval = IntervalSym.centeredToInterval(ast.get(i), realOnly, engine);
+      if (interval.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copyAppendable();
+        }
+        result.set(i, interval);
+      }
+    }
+    return result;
+  }
+
   private static final class IntervalMemberQ extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isIntervalData()) {
         return evaluateIntervalData(ast, engine);
+      }
+      if (ast.arg1().isAST(S.CenteredInterval, 3)
+          || ast.arg2().isAST(S.CenteredInterval, 3)) {
+        // a centered interval covers a rectangle in the complex plane
+        IExpr[] outer = IntervalSym.rectangle(ast.arg1(), engine);
+        IExpr[] inner = IntervalSym.rectangle(ast.arg2(), engine);
+        if (outer == null || inner == null) {
+          return F.NIL;
+        }
+        return F.booleSymbol(IntervalSym.rectangleContains(outer, inner, engine));
       }
       if (ast.arg1().isInterval()) {
         IAST interval1 = IntervalSym.normalize((IAST) ast.arg1());
@@ -340,7 +375,7 @@ public class IntervalFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_2_2;
     }
 
     @Override
@@ -391,6 +426,10 @@ public class IntervalFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST centered = centeredArgsToIntervals(ast, false, engine);
+      if (centered.isPresent()) {
+        return centered;
+      }
       int indexOf = ast.indexOf(x -> x.isIntervalData());
       if (indexOf > 0) {
         return IntervalDataSym.intervalDataIntersection(ast, engine);
@@ -497,6 +536,10 @@ public class IntervalFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST centered = centeredArgsToIntervals(ast, true, engine);
+      if (centered.isPresent()) {
+        return centered;
+      }
       int indexOf = ast.indexOf(x -> x.isIntervalData());
       if (indexOf > 0) {
         return IntervalDataSym.intervalDataUnion(ast, engine);

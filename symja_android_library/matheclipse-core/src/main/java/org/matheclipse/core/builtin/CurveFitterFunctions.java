@@ -1107,6 +1107,34 @@ public class CurveFitterFunctions {
     return basisFunctions;
   }
 
+  /**
+   * Data given as rules <code>{x1 -> y1, ...}</code> or <code>{x1, ...} -> {y1, ...}</code> as the
+   * list of points <code>{{x1, y1}, ...}</code>; a point <code>x</code> may be a vector.
+   *
+   * @return the data unchanged if it has neither form
+   */
+  private static IExpr ruleData(IExpr data) {
+    IAST rules = F.NIL;
+    if (data.isRuleAST() && data.first().isList() && data.second().isList()
+        && data.first().argSize() == data.second().argSize()) {
+      IAST x = (IAST) data.first();
+      IAST y = (IAST) data.second();
+      rules = F.mapRange(1, x.size(), i -> F.Rule(x.get(i), y.get(i)));
+    } else if (data.isList() && data.argSize() > 0 && ((IAST) data).forAll(r -> r.isRuleAST())) {
+      rules = (IAST) data;
+    }
+    if (rules.isNIL()) {
+      return data;
+    }
+    return rules.map(r -> {
+      IExpr x = r.first();
+      if (x.isList()) {
+        return ((IAST) x).appendClone(r.second());
+      }
+      return F.list(x, r.second());
+    }, 1);
+  }
+
   private static final class LinearModelFit extends AbstractFunctionOptionEvaluator {
 
     @Override
@@ -1124,12 +1152,21 @@ public class CurveFitterFunctions {
       }
       if (argSize == 3) {
         IAST variables = ast.arg3().makeList();
+        arg1 = ruleData(arg1);
         double[][] data = modelData(arg1, variables, S.LinearModelFit, null, engine);
         if (data == null) {
           return F.NIL;
         }
-        return FittedModelExpr.linearModelFit(data, modelBasis(ast.arg2(), options[0]), variables,
-            engine);
+        double[] weights = null;
+        if (!isUnitWeights(options[1], data.length)) {
+          weights = positiveWeights(options[1], data.length);
+          if (weights == null) {
+            // weights which are not a list of positive numbers for the data
+            return F.NIL;
+          }
+        }
+        return FittedModelExpr.linearModelFit(data, weights, modelBasis(ast.arg2(), options[0]),
+            variables, engine);
       }
       // The first argument is not a vector or matrix or a list containing a design matrix and
       // response vector.
@@ -1145,8 +1182,44 @@ public class CurveFitterFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       putModelMessages(newSymbol);
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.IncludeConstantBasis},
-          new IExpr[] {S.True});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IncludeConstantBasis, S.Weights},
+          new IExpr[] {S.True, S.Automatic});
+    }
+
+    /**
+     * Test if <code>weights</code> is <code>Automatic</code> or a list of <code>n</code> equal
+     * positive numbers.
+     */
+    private static boolean isUnitWeights(IExpr weights, int n) {
+      if (weights == S.Automatic) {
+        return true;
+      }
+      if (!weights.isList() || weights.argSize() != n || n == 0) {
+        return false;
+      }
+      IExpr first = weights.first();
+      return first.isReal() && first.isPositiveResult()
+          && ((IAST) weights).forAll(w -> w.equals(first));
+    }
+
+    /**
+     * The weights as machine numbers, or <code>null</code> if <code>weights</code> is not a list of
+     * <code>n</code> positive real numbers.
+     */
+    private static double[] positiveWeights(IExpr weights, int n) {
+      if (!weights.isList() || weights.argSize() != n) {
+        return null;
+      }
+      double[] result = weights.toDoubleVector();
+      if (result == null) {
+        return null;
+      }
+      for (double w : result) {
+        if (!(w > 0.0) || Double.isInfinite(w)) {
+          return null;
+        }
+      }
+      return result;
     }
   }
 
@@ -1309,10 +1382,11 @@ public class CurveFitterFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.arg1().isList() || !ast.arg3().isList() || !ast.arg4().isVariable()) {
+      IExpr arg1 = ruleData(ast.arg1());
+      if (!arg1.isList() || !ast.arg3().isList() || !ast.arg4().isVariable()) {
         return F.NIL;
       }
-      IAST data = (IAST) ast.arg1();
+      IAST data = (IAST) arg1;
       IExpr function = FindFit.modelForm(ast.arg2());
       IExpr x = ast.arg4();
       IASTAppendable renamed = F.ListAlloc();

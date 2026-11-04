@@ -60,10 +60,15 @@ public class LinearOptimization extends LinearProgramming {
    *
    * @return {@link F#NIL} if <code>spec</code> has none of these forms
    */
+  /** The variables <code>{x, y}</code>, <code>x | y</code> or <code>x</code> as a list. */
+  private static IAST variableList(IExpr variables) {
+    return variables.isAlternatives() ? ((IAST) variables).apply(S.List) : variables.makeList();
+  }
+
   private static IAST variablesOfSpecification(IExpr spec, List<Boolean> integer,
       EvalEngine engine) {
     if (spec.isAST(S.Element, 3)) {
-      IAST vars = spec.first().makeList();
+      IAST vars = variableList(spec.first());
       Boolean isInteger = integerDomain(spec.second(), engine);
       for (int i = 1; i < vars.size(); i++) {
         integer.add(isInteger);
@@ -78,7 +83,7 @@ public class LinearOptimization extends LinearProgramming {
     for (IExpr v : list) {
       if (v.isAST(S.Element, 3)) {
         Boolean isInteger = integerDomain(v.second(), engine);
-        IAST elements = v.first().makeList();
+        IAST elements = variableList(v.first());
         for (int i = 1; i < elements.size(); i++) {
           vars.append(elements.get(i));
           integer.add(isInteger);

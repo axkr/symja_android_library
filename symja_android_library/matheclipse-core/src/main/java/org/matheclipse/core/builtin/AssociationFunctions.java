@@ -3,10 +3,12 @@ package org.matheclipse.core.builtin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.Errors;
@@ -571,7 +573,7 @@ public class AssociationFunctions {
           if (valuesA.equals(joinValues(assocB, keysB))) {
             matched = true;
             matchedB[j] = true;
-            result.append(merge(assocA, assocB, keysB, collision, engine));
+            result.append(merge(assocA, assocB, keysA, keysB, collision, engine));
           }
         }
         if (!matched && left) {
@@ -634,19 +636,30 @@ public class AssociationFunctions {
       return result;
     }
 
-    /** The rules of a, then the rules of b which a hasn't; keys of both keep a's value. */
-    private static IAssociation merge(IAssociation a, IAssociation b, IAST keysB, IExpr collision,
-        EvalEngine engine) {
+    /**
+     * The rules of a, then the rules of b which a hasn't; keys of both keep a's value. The
+     * <code>KeyCollisionFunction</code> <code>Right</code> takes b's value instead,
+     * <code>None</code> drops the key and a function renames the two keys. A join key of b which
+     * has another name than the join key of a is kept.
+     */
+    private static IAssociation merge(IAssociation a, IAssociation b, IAST keysA, IAST keysB,
+        IExpr collision, EvalEngine engine) {
       IAssociation result = F.assoc();
       java.util.List<IAST> appended = new java.util.ArrayList<IAST>();
       java.util.Map<IExpr, IExpr> renamedA = new java.util.HashMap<IExpr, IExpr>();
+      java.util.Map<IExpr, IExpr> replacedA = new java.util.HashMap<IExpr, IExpr>();
+      java.util.Set<IExpr> droppedA = new java.util.HashSet<IExpr>();
       for (IAST rule : rules(b)) {
         IExpr key = rule.first();
-        if (keysB.contains(key)) {
+        if (keysB.contains(key) && keysA.contains(key)) {
           continue;
         }
         if (a.isKey(key)) {
-          if (collision.isPresent()) {
+          if (collision == S.Right) {
+            replacedA.put(key, rule.second());
+          } else if (collision == S.None) {
+            droppedA.add(key);
+          } else if (collision.isPresent() && collision != S.Left) {
             IExpr names = engine.evaluate(F.unaryAST1(collision, key));
             if (names.isList2()) {
               renamedA.put(key, names.first());
@@ -658,8 +671,14 @@ public class AssociationFunctions {
         }
       }
       for (IAST rule : rules(a)) {
-        IExpr newKey = renamedA.get(rule.first());
-        result.appendRule(newKey != null ? F.Rule(newKey, rule.second()) : rule);
+        IExpr key = rule.first();
+        if (droppedA.contains(key)) {
+          continue;
+        }
+        IExpr newKey = renamedA.get(key);
+        IExpr newValue = replacedA.get(key);
+        result.appendRule(newKey != null ? F.Rule(newKey, rule.second())
+            : newValue != null ? F.Rule(key, newValue) : rule);
       }
       for (IAST rule : appended) {
         result.appendRule(rule);
@@ -788,6 +807,10 @@ public class AssociationFunctions {
               F.mapRange(1, list1.size(), i -> F.binaryAST2(symbol, list1.get(i), list2.get(i)));
           return F.assoc(listOfRules);
         }
+      } else if (arg1.isList() && !arg2.isList()) {
+        // one value for every key
+        final IAST list1 = (IAST) arg1;
+        return F.assoc(F.mapRange(1, list1.size(), i -> F.binaryAST2(symbol, list1.get(i), arg2)));
       }
       return F.NIL;
     }
@@ -1221,17 +1244,28 @@ public class AssociationFunctions {
       if (!arg1.isString()) {
         return F.NIL;
       }
-      int n = argSize == 2 ? ast.arg2().toIntDefault() : 1;
+      int n = argSize >= 2 ? ast.arg2().toIntDefault() : 1;
       if (n < 1) {
         // Positive integer expected in position 2.
         return Errors.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
+      }
+      // LetterCounts(s, n, {c1, c2, ...}) counts the characters c1, c2, ... as letters too
+      Set<Integer> extraLetters = new HashSet<Integer>();
+      if (argSize == 3) {
+        if (!lettersOnly || !ast.arg3().isListOfStrings()) {
+          return F.NIL;
+        }
+        for (IExpr c : (IAST) ast.arg3()) {
+          c.toString().codePoints().forEach(extraLetters::add);
+        }
       }
       String str = option[0].isTrue() ? arg1.toString().toLowerCase(Locale.ROOT) : arg1.toString();
       int[] characters = str.codePoints().toArray();
       Map<String, MutableInt> counts = new LinkedHashMap<>();
       int run = 0;
       for (int i = 0; i < characters.length; i++) {
-        run = !lettersOnly || Character.isLetter(characters[i]) ? run + 1 : 0;
+        run = !lettersOnly || Character.isLetter(characters[i])
+            || extraLetters.contains(characters[i]) ? run + 1 : 0;
         if (run >= n) {
           counts.compute(new String(characters, i - n + 1, n), //
               (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
@@ -1252,7 +1286,7 @@ public class AssociationFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override

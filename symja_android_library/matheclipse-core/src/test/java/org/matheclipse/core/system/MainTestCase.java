@@ -355,8 +355,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
     check("-0.1*(-10. + 1.*i)", //
         "-0.1*(-10.0+i)");
+    // the leading coefficient in front of a monic factor
     check("Factor(1.0-0.1*i)", //
-        "0.1*(10.0-i)");
+        "-0.1*(-10.0+i)");
     check("Apart((1-0.1*i)/(1.0-0.1*i))", //
         "1.0");
     check("Together(1.0-0.1*i)", //

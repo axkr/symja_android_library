@@ -122,6 +122,18 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
    */
   public static IExpr linearModelFit(double[][] matrix, IAST basisFunctions, IAST variables,
       EvalEngine engine) {
+    return linearModelFit(matrix, null, basisFunctions, variables, engine);
+  }
+
+  /**
+   * Perform a weighted linear model fitting: the weighted least squares fit is the ordinary fit of
+   * the rows of the design matrix and the responses multiplied by the square roots of the weights.
+   *
+   * @param weights the positive weights of the data points, or <code>null</code> for the ordinary
+   *        fit
+   */
+  public static IExpr linearModelFit(double[][] matrix, double[] weights, IAST basisFunctions,
+      IAST variables, EvalEngine engine) {
     try {
       int numberOfPoints = matrix.length;
       double[] y = new double[numberOfPoints];
@@ -133,10 +145,21 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
 
       double[][] x = designMatrixNumeric(matrix, basisFunctions, variables, engine);
       if (x != null) {
+        if (weights != null) {
+          for (int i = 0; i < numberOfPoints; i++) {
+            double factor = Math.sqrt(weights[i]);
+            y[i] *= factor;
+            for (int j = 0; j < x[i].length; j++) {
+              x[i][j] *= factor;
+            }
+          }
+        }
         FieldVector<IExpr> yv = Convert.list2Vector(y);
         FieldMatrix<IExpr> xm = Convert.list2Matrix(x);
         FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
-        return FittedModelExpr.newInstance(xm, yv, basis, variables);
+        FittedModelExpr model = FittedModelExpr.newInstance(xm, yv, basis, variables);
+        model.weighted = weights != null;
+        return model;
       }
       // Unable to construct a numeric design matrix.
       return Errors.printMessage(S.LinearModelFit, "desmat", F.CEmptyList, engine);
@@ -264,6 +287,13 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
       "ParameterTableEntries", "PredictedResponse", "Response", "RSquared",
       "SinglePredictionBands"};
 
+  /**
+   * The properties of a weighted fit: its design matrix and responses are held multiplied by the
+   * square roots of the weights, which leaves the parameters as they are.
+   */
+  private static final String[] WEIGHTED_PROPERTIES =
+      {"BasisFunctions", "BestFit", "BestFitParameters", "IndependentVariables"};
+
   private FieldMatrix<IExpr> designMatrix;
   private FieldVector<IExpr> responseVector;
   private FieldVector<IExpr> basisFunctions;
@@ -271,6 +301,8 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   private transient double[][] anovaRows;
   /** The variables a point is given in, or {@link F#NIL} for a model read from an older stream. */
   private IAST variables = F.NIL;
+  /** Whether the model is a weighted fit, see {@link #WEIGHTED_PROPERTIES}. */
+  private boolean weighted = false;
 
   /**
    * No-argument constructor required for {@link Externalizable} deserialization. Initializes the
@@ -291,7 +323,10 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
 
   @Override
   public IExpr copy() {
-    return new FittedModelExpr(fData, designMatrix, responseVector, basisFunctions, variables);
+    FittedModelExpr model =
+        new FittedModelExpr(fData, designMatrix, responseVector, basisFunctions, variables);
+    model.weighted = weighted;
+    return model;
   }
 
   /**
@@ -309,18 +344,21 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     if (obj instanceof FittedModelExpr) {
       FittedModelExpr other = (FittedModelExpr) obj;
       return designMatrix.equals(other.designMatrix) && responseVector.equals(other.responseVector)
-          && basisFunctions.equals(other.basisFunctions);
+          && basisFunctions.equals(other.basisFunctions) && weighted == other.weighted;
     }
     return false;
   }
 
   @Override
   protected String[] propertyNames() {
-    return PROPERTIES;
+    return weighted ? WEIGHTED_PROPERTIES : PROPERTIES;
   }
 
   @Override
   protected IExpr property(String name, EvalEngine engine) {
+    if (weighted && Arrays.binarySearch(WEIGHTED_PROPERTIES, name) < 0) {
+      return F.NIL;
+    }
     ExprOLSLinearRegression regression = toData();
     switch (name) {
       case "ANOVATable":
@@ -818,6 +856,12 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
       // property, it only cannot be evaluated at a point
       variables = F.NIL;
     }
+    try {
+      weighted = in.readBoolean();
+    } catch (EOFException e) {
+      // a stream written before weighted fits
+      weighted = false;
+    }
     fData = regression(designMatrix, responseVector);
   }
 
@@ -830,5 +874,6 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     IExpr b = Convert.vector2Expr(basisFunctions);
     output.writeObject(b);
     output.writeObject(variables.isPresent() ? variables : F.CEmptyList);
+    output.writeBoolean(weighted);
   }
 }

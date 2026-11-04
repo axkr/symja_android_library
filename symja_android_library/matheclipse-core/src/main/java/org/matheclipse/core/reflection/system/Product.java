@@ -466,8 +466,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
           || !root.isFree(h -> h == S.Root || h == S.RootSum, true)) {
         return F.NIL;
       }
-      // Solve returns 1/2*(-1+I*Sqrt(3)); the real and imaginary parts are needed below
-      root = engine.evaluate(F.Expand(root));
+      // Solve returns (-1)^(2/3); the real and imaginary parts are needed below
+      root = engine.evaluate(F.Expand(F.ComplexExpand(root)));
       IExpr start = engine.evaluate(F.Subtract(lower, root));
       if (start.isInteger() && !start.isPositive()) {
         // Gamma(lower - root) is singular: the integer root is inside the range

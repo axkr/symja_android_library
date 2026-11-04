@@ -1038,6 +1038,11 @@ public class GraphicsFunctions {
             new IExpr[] {directive.arg1(), directive.arg2(), directive.arg3()},
             n == 4 ? directive.arg4() : null);
       }
+      if (directive.isAST(S.LABColor) && (n == 3 || n == 4)) {
+        return new ColorValue(S.LABColor,
+            new IExpr[] {directive.arg1(), directive.arg2(), directive.arg3()},
+            n == 4 ? directive.arg4() : null);
+      }
       if (directive.isAST(S.GrayLevel) && n <= 2) {
         return new ColorValue(S.GrayLevel, new IExpr[] {directive.arg1()},
             n == 2 ? directive.arg2() : null);
@@ -1072,6 +1077,12 @@ public class GraphicsFunctions {
         return this;
       } else if (space == S.GrayLevel) {
         rgb = new IExpr[] {components[0], components[0], components[0]};
+      } else if (space == S.LABColor) {
+        double[] xyz = org.matheclipse.core.graphics.svg.ColorUtil.labToXyz(
+            components[0].evalf(), components[1].evalf(), components[2].evalf());
+        double[] channels = org.matheclipse.core.graphics.svg.ColorUtil.xyzToRgb(xyz[0], xyz[1],
+            xyz[2]);
+        rgb = new IExpr[] {F.num(channels[0]), F.num(channels[1]), F.num(channels[2])};
       } else if (space == S.CMYKColor) {
         IExpr white = F.Subtract(F.C1, components[3]);
         rgb = new IExpr[3];

@@ -78,6 +78,7 @@ public class TestFourier extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFourierSeries2() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = parse("x");

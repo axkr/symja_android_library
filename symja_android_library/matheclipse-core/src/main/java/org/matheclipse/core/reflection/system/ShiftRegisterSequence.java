@@ -92,6 +92,14 @@ public class ShiftRegisterSequence extends AbstractFunctionOptionEvaluator {
         tapPositions = td[0];
         tapCoeffs = td[1];
         integerSpec = true;
+        if (p == 2 && argSize < 3) {
+          // the same sequence as the default primitive polynomial of degree n
+          polyMask = defaultPolynomialMask(n);
+          if (polyMask != null) {
+            integerSpec = false;
+            polynomialSpec = true;
+          }
+        }
       } else if (spec.isList()) {
         IAST specList = (IAST) spec;
         if (specList.argSize() >= 2) {
@@ -467,6 +475,116 @@ public class ShiftRegisterSequence extends AbstractFunctionOptionEvaluator {
    *
    * @throws ArgumentTypeException when <code>n &lt; 1</code> or <code>n &gt; MAX_DEFAULT_N</code>.
    */
+  /** The largest degree for which the default polynomial is searched. */
+  private static final int MAX_SEARCH_DEGREE = 32;
+
+  /**
+   * The coefficients <code>c_0, ..., c_{n-1}</code> of the default binary primitive polynomial of
+   * degree <code>n</code>: the one with the fewest terms whose middle exponents come first in
+   * lexicographic order.
+   *
+   * @return <code>null</code> if <code>n</code> is out of the searched range
+   */
+  private static int[] defaultPolynomialMask(int n) {
+    if (n < 2 || n > MAX_SEARCH_DEGREE) {
+      return null;
+    }
+    final long order = (1L << n) - 1L;
+    final long[] factors = primeFactors(order);
+    for (int middle = 1; middle < n; middle += 2) {
+      int[] exponents = new int[middle];
+      if (searchPrimitive(exponents, 0, 1, n, order, factors)) {
+        int[] mask = new int[n];
+        mask[0] = 1;
+        for (int e : exponents) {
+          mask[e] = 1;
+        }
+        return mask;
+      }
+    }
+    return null;
+  }
+
+  /** Fill <code>exponents[index...]</code> with increasing exponents from <code>start</code>. */
+  private static boolean searchPrimitive(int[] exponents, int index, int start, int n, long order,
+      long[] factors) {
+    if (index == exponents.length) {
+      long poly = 1L | (1L << n);
+      for (int e : exponents) {
+        poly |= 1L << e;
+      }
+      return isPrimitiveGF2(poly, n, order, factors);
+    }
+    for (int e = start; e < n; e++) {
+      exponents[index] = e;
+      if (searchPrimitive(exponents, index + 1, e + 1, n, order, factors)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** <code>x</code> has the order <code>2^n - 1</code> modulo the GF(2) polynomial. */
+  private static boolean isPrimitiveGF2(long poly, int n, long order, long[] factors) {
+    if (powerOfX(order, poly, n) != 1L) {
+      return false;
+    }
+    for (long q : factors) {
+      if (powerOfX(order / q, poly, n) == 1L) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static long mulModGF2(long a, long b, long poly, int n) {
+    long r = 0L;
+    while (b != 0L) {
+      if ((b & 1L) == 1L) {
+        r ^= a;
+      }
+      b >>>= 1;
+      a <<= 1;
+      if (((a >>> n) & 1L) == 1L) {
+        a ^= poly;
+      }
+    }
+    return r;
+  }
+
+  private static long powerOfX(long exponent, long poly, int n) {
+    long result = 1L;
+    long base = 2L;
+    while (exponent > 0L) {
+      if ((exponent & 1L) == 1L) {
+        result = mulModGF2(result, base, poly, n);
+      }
+      base = mulModGF2(base, base, poly, n);
+      exponent >>>= 1;
+    }
+    return result;
+  }
+
+  private static long[] primeFactors(long v) {
+    java.util.List<Long> out = new java.util.ArrayList<Long>();
+    for (long f = 2L; f * f <= v; f++) {
+      if (v % f == 0L) {
+        out.add(f);
+        while (v % f == 0L) {
+          v /= f;
+        }
+      }
+    }
+    if (v > 1L) {
+      out.add(v);
+    }
+    long[] result = new long[out.size()];
+    for (int i = 0; i < result.length; i++) {
+      result[i] = out.get(i);
+    }
+    return result;
+  }
+
   private static int[][] defaultTapsFor(int n) {
     if (n < 1 || n > MAX_DEFAULT_N) {
       throw new ArgumentTypeException(

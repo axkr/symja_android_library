@@ -1320,6 +1320,39 @@ public class RegionPrimitives {
    * @param result the measure which was computed without looking at the options
    */
   public static IExpr applyMeasureOptions(IExpr result, IExpr[] options, EvalEngine engine) {
+    return applyMeasureOptionsTo(result, options, engine);
+  }
+
+  /**
+   * The measure <code>f(region, ..., options)</code> of a function which reads no options itself:
+   * the measure without the trailing options of {@link #MEASURE_OPTION_KEYS}, to which the
+   * options are applied as by {@link #applyMeasureOptions(IExpr, IExpr[], EvalEngine)}.
+   *
+   * @return {@link F#NIL} if <code>ast</code> has no such options or the measure isn't known
+   */
+  public static IExpr measureWithOptions(IAST ast, EvalEngine engine) {
+    int argSize = ast.argSize();
+    IExpr[] options = MEASURE_OPTION_DEFAULTS.clone();
+    while (argSize > 1 && ast.get(argSize).isRuleAST()) {
+      IExpr option = ast.get(argSize);
+      int index = java.util.Arrays.asList(MEASURE_OPTION_KEYS).indexOf(option.first());
+      if (index < 0) {
+        return F.NIL;
+      }
+      options[index] = option.second();
+      argSize--;
+    }
+    if (argSize == ast.argSize()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(ast.copyUntil(argSize + 1));
+    if (result.isAST(ast.head())) {
+      return F.NIL;
+    }
+    return applyMeasureOptionsTo(result, options, engine);
+  }
+
+  private static IExpr applyMeasureOptionsTo(IExpr result, IExpr[] options, EvalEngine engine) {
     if (result.isNIL() || options == null) {
       return result;
     }

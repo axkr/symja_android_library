@@ -16,7 +16,37 @@ public class RegionBounds extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    boolean finite = false;
+    if (ast.isAST2()) {
+      if (!ast.arg2().isString()) {
+        return F.NIL;
+      }
+      switch (ast.arg2().toString()) {
+        case "Finite":
+          // the bounds of the points which define an unbounded region
+          finite = true;
+          break;
+        case "Minimal":
+        case "Sufficient":
+          break;
+        default:
+          return F.NIL;
+      }
+    }
     IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
+    if (arg1.isAST(S.InfiniteLine, 3) || arg1.isAST(S.HalfLine, 3)) {
+      // the point and direction form {p, v} is the line through p and p+v
+      arg1 = F.unaryAST1(arg1.head(),
+          engine.evaluate(F.List(arg1.first(), F.Plus(arg1.first(), arg1.second()))));
+    } else if (arg1.isAST(S.InfinitePlane, 3) && arg1.second().isList2()) {
+      IExpr p = arg1.first();
+      arg1 = F.unaryAST1(S.InfinitePlane, engine.evaluate(F.List(p,
+          F.Plus(p, arg1.second().first()), F.Plus(p, arg1.second().second()))));
+    }
+    if (finite && (arg1.isAST(S.InfiniteLine, 2) || arg1.isAST(S.HalfLine, 2)
+        || arg1.isAST(S.InfinitePlane, 2)) && arg1.first().isListOfLists()) {
+      return engine.evaluate(F.CoordinateBounds(arg1.first()));
+    }
     if (MeshFunctions.isMeshRegion(arg1)) {
       return MeshFunctions.bounds((IAST) arg1, engine);
     }
@@ -30,7 +60,13 @@ public class RegionBounds extends AbstractFunctionEvaluator {
           case ID.Triangle:
           case ID.Polygon:
           case ID.Simplex:
+          case ID.Tetrahedron:
+          case ID.Hexahedron:
+          case ID.Pyramid:
+          case ID.Prism:
             return pointBounds(reg, engine);
+          case ID.InfinitePlane:
+            return planeBounds(reg, engine);
           case ID.HalfLine:
             return lineBounds(reg, engine, true);
           case ID.InfiniteLine:
@@ -179,8 +215,37 @@ public class RegionBounds extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * The bounds of <code>InfinitePlane({p1, p2, p3})</code>: per coordinate the point itself where
+   * neither spanning direction changes it, otherwise unbounded on both sides.
+   */
+  private IExpr planeBounds(IAST reg, EvalEngine engine) {
+    if (reg.argSize() == 1 && reg.arg1().isList() && reg.arg1().argSize() == 3) {
+      IAST pts = (IAST) reg.arg1();
+      int[] dim = pts.isMatrix();
+      if (dim == null) {
+        return F.NIL;
+      }
+      IAST p1 = (IAST) pts.arg1();
+      IAST p2 = (IAST) pts.arg2();
+      IAST p3 = (IAST) pts.arg3();
+      IASTAppendable res = F.ListAlloc(dim[1]);
+      for (int i = 1; i <= dim[1]; i++) {
+        IExpr d1 = engine.evaluate(F.Subtract(p2.get(i), p1.get(i)));
+        IExpr d2 = engine.evaluate(F.Subtract(p3.get(i), p1.get(i)));
+        if (d1.isZero() && d2.isZero()) {
+          res.append(F.List(p1.get(i), p1.get(i)));
+        } else {
+          res.append(F.List(F.CNInfinity, S.Infinity));
+        }
+      }
+      return res;
+    }
+    return F.NIL;
+  }
+
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_1;
+    return ARGS_1_2;
   }
 }

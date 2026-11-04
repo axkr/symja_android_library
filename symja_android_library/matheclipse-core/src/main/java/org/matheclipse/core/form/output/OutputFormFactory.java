@@ -302,11 +302,15 @@ public class OutputFormFactory {
       return;
     }
     if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
-      if (fInputForm) {
-        convertDoubleString(buf, d.fullFormString(), precedence, false);
-      } else {
-        convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
+      final String zero = fInputForm ? d.fullFormString() : convertDoubleToFormattedString(0.0);
+      // A summand needs the "+" that the code below writes for a non-negative number. The output
+      // form prints a zero as 0.0 whatever its sign, so the sign of the printed string decides,
+      // not d.isNegative(): -1.0E-200*y prints as +0.0*y. The input form keeps the sign in
+      // fullFormString(), and a leading "-" separates the summand by itself.
+      if (caller == PLUS_CALL && !zero.startsWith("-")) {
+        append(buf, fInputForm ? " + " : "+");
       }
+      convertDoubleString(buf, zero, precedence, false);
       return;
     }
 
@@ -1341,7 +1345,9 @@ public class OutputFormFactory {
       convert(buf, plusArg, Precedence.PLUS, false);
       append(buf, ")");
     } else {
-      if (plusArg.isNegativeSigned()) {
+      // a negative number separates itself with its own "-"; one that prints as an unsigned 0.0
+      // has none, so it takes the "+" of a non-negative summand
+      if (plusArg.isNegativeSigned() && !printsAsUnsignedZero(plusArg)) {
         // special case negative number or -Infinity...
         convert(buf, plusArg, Integer.MIN_VALUE, false);
       } else {
@@ -1351,6 +1357,17 @@ public class OutputFormFactory {
         convert(buf, plusArg, Precedence.PLUS, false);
       }
     }
+  }
+
+  /**
+   * Whether <code>expr</code> is a machine number which {@link #convertDouble} prints as
+   * <code>0.0</code> without a sign: in the output form, any double within
+   * {@link Config#ZERO_IN_OUTPUT_FORMAT} of zero, a negative one included. The input form prints
+   * {@code fullFormString()}, which keeps the sign.
+   */
+  private boolean printsAsUnsignedZero(IExpr expr) {
+    return !fInputForm && expr instanceof INum && !(expr instanceof ApfloatNum)
+        && F.isZero(((INum) expr).doubleValue(), Config.ZERO_IN_OUTPUT_FORMAT);
   }
 
   private static boolean isComplexWithRealPart(IExpr expr) {
@@ -2043,13 +2060,23 @@ public class OutputFormFactory {
               }
               break;
             case ID.Row:
-              if (!fInputForm && list.isAST1() && list.arg1().isList()) {
-                // Row places its elements side by side without a separator
-                IAST row = (IAST) list.arg1();
-                for (int i = 1; i < row.size(); i++) {
-                  convert(buf, row.get(i), Integer.MIN_VALUE, false);
+              if (!fInputForm && list.argSize() >= 1 && list.arg1().isList()) {
+                // Row places its elements side by side, with an optional separator; style options
+                // at the end don't change the text
+                int args = list.argSize();
+                while (args > 1 && list.get(args).isRuleAST()) {
+                  args--;
                 }
-                return;
+                if (args <= 2) {
+                  IAST row = (IAST) list.arg1();
+                  for (int i = 1; i < row.size(); i++) {
+                    if (i > 1 && args == 2) {
+                      convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+                    }
+                    convert(buf, row.get(i), Integer.MIN_VALUE, false);
+                  }
+                  return;
+                }
               }
               break;
             case ID.TableForm:

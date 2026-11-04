@@ -5,12 +5,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -61,6 +63,12 @@ public class WaveletFunctions {
     Scaling(double[] c) {
       this.c = c;
       this.integerValues = integerValues(c);
+    }
+
+    /** A filter only, without the values of the scaling function. */
+    Scaling(double[] c, boolean values) {
+      this.c = c;
+      this.integerValues = values ? integerValues(c) : null;
     }
 
     /** The order <code>n</code> of the wavelet, half the filter length. */
@@ -446,10 +454,364 @@ public class WaveletFunctions {
     return symlet ? symlet(n) : daubechies(n);
   }
 
+
+  /** The largest order of a Battle-Lemarie wavelet. */
+  private static final int MAX_BATTLE_LEMARIE_ORDER = 14;
+
+  /** The largest half length of a Battle-Lemarie filter. */
+  private static final int MAX_BATTLE_LEMARIE_LIMIT = 200;
+
+  /**
+   * The order <code>n</code> and the filter half length <code>lim</code> of
+   * <code>BattleLemarieWavelet(n, lim)</code> (defaults <code>3</code> and <code>10</code>).
+   *
+   * @return <code>null</code> if <code>wave</code> is no valid Battle-Lemarie wavelet
+   */
+  private static int[] battleLemarie(IExpr wave) {
+    if (!wave.isAST(S.BattleLemarieWavelet) || wave.argSize() > 2) {
+      return null;
+    }
+    int n = wave.argSize() >= 1 ? wave.first().toIntDefault() : 3;
+    int lim = 10;
+    if (wave.argSize() == 2) {
+      double limit = wave.second().evalfNaN();
+      if (!(limit > 0.0) || limit > MAX_BATTLE_LEMARIE_LIMIT) {
+        return null;
+      }
+      lim = (int) Math.floor(limit);
+    }
+    if (n < 1 || n > MAX_BATTLE_LEMARIE_ORDER) {
+      return null;
+    }
+    return new int[] {n, lim};
+  }
+
+  /**
+   * The low pass filter <code>h_(-lim), ..., h_lim</code> (with <code>Total(h) == 1</code> for the
+   * untruncated filter) of the Battle-Lemarie wavelet of order <code>n</code>, the orthonormalized
+   * B-spline of degree <code>n</code>:
+   * <code>m0(w) == Exp(-I*eps*w/2)*Cos(w/2)^(n+1)*Sqrt(S(w)/S(2*w))</code> with
+   * <code>S(w) == Sum(Sinc((w+2*Pi*k)/2)^(2*(n+1)), {k, -60, 60})</code> and
+   * <code>eps == Mod(n+1, 2)</code>, by numerical integration of
+   * <code>m0(w)*Exp(I*k*w)/(2*Pi)</code> over <code>[-Pi, Pi]</code>.
+   */
+  private static double[] battleLemarieFilter(int n, int lim) {
+    return CACHE.computeIfAbsent("B" + n + "_" + lim, key -> {
+      int p = 2 * (n + 1);
+      java.util.function.DoubleUnaryOperator sum = w -> {
+        double acc = 0.0;
+        for (int k = -60; k <= 60; k++) {
+          double x = 0.5 * (w + 2.0 * Math.PI * k);
+          double sinc = Math.abs(x) < 1.0e-12 ? 1.0 : Math.sin(x) / x;
+          acc += Math.pow(sinc, p);
+        }
+        return acc;
+      };
+      double eps = (n + 1) % 2;
+      int steps = 4096;
+      double dw = 2.0 * Math.PI / steps;
+      double[] magnitude = new double[steps];
+      double[] nodes = new double[steps];
+      for (int i = 0; i < steps; i++) {
+        double w = -Math.PI + (i + 0.5) * dw;
+        nodes[i] = w;
+        magnitude[i] = Math.pow(Math.abs(Math.cos(w / 2.0)), n + 1)
+            * Math.sqrt(sum.applyAsDouble(w) / sum.applyAsDouble(2.0 * w));
+      }
+      double[] h = new double[2 * lim + 1];
+      for (int k = -lim; k <= lim; k++) {
+        double acc = 0.0;
+        for (int i = 0; i < steps; i++) {
+          acc += magnitude[i] * Math.cos(-eps * nodes[i] / 2.0 + k * nodes[i]);
+        }
+        h[k + lim] = acc * dw / (2.0 * Math.PI);
+      }
+      return new Scaling(h, false);
+    }).c;
+  }
+
+  /**
+   * The scaling data of the truncated Battle-Lemarie filter, its even and its odd coefficients
+   * scaled to the sum <code>1</code> each, so that the refinement equation has a solution.
+   */
+  private static Scaling battleLemarieScaling(int n, int lim) {
+    return CACHE.computeIfAbsent("BS" + n + "_" + lim, key -> {
+      double[] h = battleLemarieFilter(n, lim);
+      double even = 0.0;
+      double odd = 0.0;
+      for (int i = 0; i < h.length; i++) {
+        if (i % 2 == 0) {
+          even += h[i];
+        } else {
+          odd += h[i];
+        }
+      }
+      double[] c = new double[h.length];
+      for (int i = 0; i < h.length; i++) {
+        c[i] = h[i] / (i % 2 == 0 ? even : odd);
+      }
+      return new Scaling(c);
+    });
+  }
+
+  /**
+   * The B-spline low pass filter <code>u^eps*Cos(w/2)^n</code> and its shortest biorthogonal
+   * complement <code>u^eps*Cos(w/2)^m*Sum(Binomial(q-1+j, j)*Sin(w/2)^(2*j), {j, 0, q-1})</code>
+   * with <code>q == (n+m)/2</code>, <code>u == Exp(-I*w)</code> and <code>eps == Mod(n, 2)</code>,
+   * as maps from the index to the exact coefficient.
+   */
+  private static java.util.TreeMap<Integer, BigFraction>[] biorthogonalSpline(int n, int m) {
+    int eps = n % 2;
+    // Laurent polynomials in u^(1/2): the keys are twice the exponents
+    java.util.TreeMap<Integer, BigFraction> cosHalf = new java.util.TreeMap<>();
+    cosHalf.put(-1, new BigFraction(1, 2));
+    cosHalf.put(1, new BigFraction(1, 2));
+    java.util.TreeMap<Integer, BigFraction> sin2Half = new java.util.TreeMap<>();
+    sin2Half.put(-2, new BigFraction(-1, 4));
+    sin2Half.put(0, new BigFraction(1, 2));
+    sin2Half.put(2, new BigFraction(-1, 4));
+    java.util.TreeMap<Integer, BigFraction> shift = new java.util.TreeMap<>();
+    shift.put(2 * eps, BigFraction.ONE);
+    java.util.TreeMap<Integer, BigFraction> primal = multiply(shift, power(cosHalf, n));
+    int q = (n + m) / 2;
+    java.util.TreeMap<Integer, BigFraction> series = new java.util.TreeMap<>();
+    java.util.TreeMap<Integer, BigFraction> sinPower = new java.util.TreeMap<>();
+    sinPower.put(0, BigFraction.ONE);
+    for (int j = 0; j < q; j++) {
+      BigFraction binomial = new BigFraction(
+          org.hipparchus.util.CombinatoricsUtils.binomialCoefficient(q - 1 + j, j));
+      for (Map.Entry<Integer, BigFraction> term : sinPower.entrySet()) {
+        series.merge(term.getKey(), term.getValue().multiply(binomial), BigFraction::add);
+      }
+      sinPower = multiply(sinPower, sin2Half);
+    }
+    java.util.TreeMap<Integer, BigFraction> dual =
+        multiply(multiply(shift, power(cosHalf, m)), series);
+    @SuppressWarnings("unchecked")
+    java.util.TreeMap<Integer, BigFraction>[] result = new java.util.TreeMap[] {
+        halveExponents(primal), halveExponents(dual)};
+    return result;
+  }
+
+  private static java.util.TreeMap<Integer, BigFraction> multiply(
+      java.util.TreeMap<Integer, BigFraction> a, java.util.TreeMap<Integer, BigFraction> b) {
+    java.util.TreeMap<Integer, BigFraction> result = new java.util.TreeMap<>();
+    for (Map.Entry<Integer, BigFraction> x : a.entrySet()) {
+      for (Map.Entry<Integer, BigFraction> y : b.entrySet()) {
+        result.merge(x.getKey() + y.getKey(), x.getValue().multiply(y.getValue()),
+            BigFraction::add);
+      }
+    }
+    return result;
+  }
+
+  private static java.util.TreeMap<Integer, BigFraction> power(
+      java.util.TreeMap<Integer, BigFraction> a, int n) {
+    java.util.TreeMap<Integer, BigFraction> result = new java.util.TreeMap<>();
+    result.put(0, BigFraction.ONE);
+    for (int i = 0; i < n; i++) {
+      result = multiply(result, a);
+    }
+    return result;
+  }
+
+  /** The polynomial in <code>u</code> of a polynomial in <code>u^(1/2)</code>, without zeros. */
+  private static java.util.TreeMap<Integer, BigFraction> halveExponents(
+      java.util.TreeMap<Integer, BigFraction> a) {
+    java.util.TreeMap<Integer, BigFraction> result = new java.util.TreeMap<>();
+    for (Map.Entry<Integer, BigFraction> term : a.entrySet()) {
+      if (term.getValue().signum() != 0) {
+        result.put(term.getKey() / 2, term.getValue());
+      }
+    }
+    return result;
+  }
+
+  /**
+   * <code>WaveletFilterCoefficients(wave)</code>, <code>WaveletFilterCoefficients(wave, filter)
+   * </code> - the coefficients <code>{{k, h_k}, ...}</code> of the filter
+   * <code>"PrimalLowpass"</code> (default), <code>"PrimalHighpass"</code>,
+   * <code>"DualLowpass"</code> or <code>"DualHighpass"</code> of the wavelet, or a list of them.
+   * <code>"Properties"</code> lists the filters of the wavelet.
+   *
+   * <p>
+   * The low pass filters are normalized to the sum <code>1</code>. The high pass filters are the
+   * quadrature mirrors <code>g_k == (-1)^k*h_(1-k)</code> of the low pass filter of the other kind.
+   * The wavelets are <code>HaarWavelet()</code>, <code>DaubechiesWavelet(n)</code>,
+   * <code>SymletWavelet(n)</code>, <code>BattleLemarieWavelet(n, lim)</code> and
+   * <code>BiorthogonalSplineWavelet(n, m)</code>, whose longer filter is the primal one. The option
+   * <code>WorkingPrecision -> Infinity</code> gives exact coefficients for the Haar and the
+   * biorthogonal spline wavelets.
+   */
+  public static final class WaveletFilterCoefficients extends AbstractFunctionEvaluator {
+
+    private static final String[] FILTERS =
+        {"PrimalLowpass", "PrimalHighpass", "DualLowpass", "DualHighpass"};
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      boolean exact = false;
+      if (argSize >= 2 && ast.get(argSize).isRuleAST()) {
+        IExpr option = ast.get(argSize);
+        if (option.first() != S.WorkingPrecision) {
+          return F.NIL;
+        }
+        exact = option.second().isInfinity();
+        argSize--;
+      }
+      if (argSize < 1 || argSize > 2) {
+        return F.NIL;
+      }
+      IExpr wave = ast.arg1();
+      IExpr spec = argSize == 2 ? ast.arg2() : F.stringx("PrimalLowpass");
+      if (spec.isList()) {
+        IASTAppendable result = F.ListAlloc(spec.argSize());
+        for (IExpr each : (IAST) spec) {
+          IExpr value = filter(wave, each, exact);
+          if (value.isNIL()) {
+            return F.NIL;
+          }
+          result.append(value);
+        }
+        return result;
+      }
+      return filter(wave, spec, exact);
+    }
+
+    /** One filter of the wavelet, or the list of the filters for <code>"Properties"</code>. */
+    private static IExpr filter(IExpr wave, IExpr spec, boolean exact) {
+      if (!spec.isString()) {
+        return F.NIL;
+      }
+      boolean biorthogonal = wave.isAST(S.BiorthogonalSplineWavelet);
+      String name = spec.toString();
+      if (name.equals("Properties")) {
+        if (!isWavelet(wave)) {
+          return F.NIL;
+        }
+        IASTAppendable properties = F.ListAlloc(7);
+        properties.append(F.stringx("PrimalLowpass"));
+        properties.append(F.stringx("PrimalHighpass"));
+        if (biorthogonal) {
+          properties.append(F.stringx("DualLowpass"));
+          properties.append(F.stringx("DualHighpass"));
+        }
+        if (!wave.isAST(S.BattleLemarieWavelet)) {
+          // the compactly supported wavelets have lifting filters
+          properties.append(F.stringx("LiftingFilter"));
+          properties.append(F.stringx("AllLiftingFilter"));
+          properties.append(F.stringx("BestLiftingFilter"));
+        }
+        return properties;
+      }
+      int kind = java.util.Arrays.asList(FILTERS).indexOf(name);
+      if (kind < 0) {
+        return F.NIL;
+      }
+      boolean dual = kind >= 2;
+      boolean highpass = kind % 2 == 1;
+      if (biorthogonal) {
+        int[] nm = biorthogonalOrders(wave);
+        if (nm == null) {
+          return F.NIL;
+        }
+        java.util.TreeMap<Integer, BigFraction>[] filters = biorthogonalSpline(nm[0], nm[1]);
+        // the longer complementary filter is the primal one; a high pass filter mirrors the low
+        // pass filter of the other kind, with the opposite sign
+        java.util.TreeMap<Integer, BigFraction> lowpass = filters[dual == highpass ? 1 : 0];
+        IASTAppendable result = F.ListAlloc(lowpass.size());
+        java.util.TreeMap<Integer, BigFraction> coefficients = new java.util.TreeMap<>();
+        for (Map.Entry<Integer, BigFraction> term : lowpass.entrySet()) {
+          if (highpass) {
+            int k = 1 - term.getKey();
+            coefficients.put(k, (k & 1) == 0 ? term.getValue().negate() : term.getValue());
+          } else {
+            coefficients.put(term.getKey(), term.getValue());
+          }
+        }
+        for (Map.Entry<Integer, BigFraction> term : coefficients.entrySet()) {
+          IExpr value = F.QQ(term.getValue().getNumerator(), term.getValue().getDenominator());
+          result.append(F.list(F.ZZ(term.getKey()),
+              exact ? value : F.num(term.getValue().doubleValue())));
+        }
+        return result;
+      }
+      if (dual) {
+        // an orthogonal wavelet has no dual filters
+        return F.NIL;
+      }
+      double[] h;
+      int first;
+      int[] battleLemarie = battleLemarie(wave);
+      if (battleLemarie != null) {
+        h = battleLemarieFilter(battleLemarie[0], battleLemarie[1]);
+        first = -battleLemarie[1];
+      } else {
+        Scaling scaling = scaling(wave);
+        if (scaling == null) {
+          return F.NIL;
+        }
+        h = new double[scaling.c.length];
+        for (int i = 0; i < h.length; i++) {
+          h[i] = scaling.c[i] / 2.0;
+        }
+        first = 0;
+      }
+      boolean exactHaar = exact && wave.isAST(S.HaarWavelet);
+      IASTAppendable result = F.ListAlloc(h.length);
+      for (int i = 0; i < h.length; i++) {
+        int k = highpass ? 1 - (first + h.length - 1 - i) : first + i;
+        double value = highpass ? h[h.length - 1 - i] : h[i];
+        if (highpass && (k & 1) != 0) {
+          value = -value;
+        }
+        IExpr coefficient = exactHaar ? (value < 0 ? F.CN1D2 : F.C1D2) : F.num(value);
+        result.append(F.list(F.ZZ(k), coefficient));
+      }
+      return result;
+    }
+
+    private static boolean isWavelet(IExpr wave) {
+      return scaling(wave) != null || battleLemarie(wave) != null
+          || (wave.isAST(S.BiorthogonalSplineWavelet) && biorthogonalOrders(wave) != null);
+    }
+
+    /** The orders of <code>BiorthogonalSplineWavelet(n, m)</code>, default <code>(4, 2)</code>. */
+    private static int[] biorthogonalOrders(IExpr wave) {
+      if (wave.argSize() == 0) {
+        return new int[] {4, 2};
+      }
+      if (wave.argSize() != 2) {
+        return null;
+      }
+      int n = wave.first().toIntDefault();
+      int m = wave.second().toIntDefault();
+      if (n < 1 || m < 1 || n > 9 || m > 9 || (n + m) % 2 != 0) {
+        return null;
+      }
+      return new int[] {n, m};
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
   private abstract static class AbstractWaveletFunction extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int[] battleLemarie = battleLemarie(ast.arg1());
+      if (battleLemarie != null) {
+        return battleLemarieValue(battleLemarie[0], battleLemarie[1], ast.arg2());
+      }
       Scaling scaling = scaling(ast.arg1());
       IExpr x = ast.arg2();
       if (scaling == null || !x.isReal()) {
@@ -466,6 +828,14 @@ public class WaveletFunctions {
       if (scaling.order() == 1) {
         return exactHaar((IReal) x);
       }
+      return F.NIL;
+    }
+
+    /**
+     * The value of the function of <code>BattleLemarieWavelet(n, lim)</code> at a machine number
+     * <code>x</code>.
+     */
+    IExpr battleLemarieValue(int n, int lim, IExpr x) {
       return F.NIL;
     }
 
@@ -495,6 +865,22 @@ public class WaveletFunctions {
 
   /** <code>WaveletPhi(wave, x)</code> - the scaling function of the wavelet at <code>x</code>. */
   public static final class WaveletPhi extends AbstractWaveletFunction {
+    /**
+     * The scaling function of the truncated filter <code>h_(-lim), ..., h_lim</code> lives on
+     * <code>[-lim, lim]</code>.
+     */
+    @Override
+    IExpr battleLemarieValue(int n, int lim, IExpr x) {
+      if (!x.isReal() || !x.isInexactNumber()) {
+        return F.NIL;
+      }
+      double value = x.evalf();
+      if (value < -lim || value >= lim) {
+        return F.CD0;
+      }
+      return F.num(battleLemarieScaling(n, lim).phi(value + lim));
+    }
+
     @Override
     double[] support(int n) {
       return new double[] {0.0, 2.0 * n - 1.0};
