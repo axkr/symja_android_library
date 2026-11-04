@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -1020,10 +1021,7 @@ public class SvgGraphics2D {
     if (graphicsExpr.isAST(S.Legended, 3) && graphicsExpr.arg1().isAST(S.Graphics)) {
       // a plot given PlotLegends comes back as Legended[Graphics[...], legend]; the
       // legend goes back to the renderer the way it reads one, as the PlotLegends of the picture
-      IExpr legend = graphicsExpr.arg2();
-      if (legend.isAST(S.Placed) && legend.argSize() >= 1) {
-        legend = legend.first();
-      }
+      IExpr legend = GraphicsOptions.bareLegend(graphicsExpr.arg2());
       IASTAppendable picture = ((IAST) graphicsExpr.arg1()).copyAppendable();
       picture.append(F.Rule(S.PlotLegends, legend));
       return picture;

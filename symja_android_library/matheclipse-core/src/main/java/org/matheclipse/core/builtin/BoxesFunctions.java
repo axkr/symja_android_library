@@ -233,6 +233,10 @@ public class BoxesFunctions {
         // \[ImaginaryI]
         return F.$str("");
       }
+      if (form == S.TraditionalForm && expr == S.E) {
+        // \[ExponentialE]
+        return F.$str("");
+      }
       IExpr special = specialSymbolBox(expr);
       if (special.isPresent()) {
         return special;
@@ -293,6 +297,13 @@ public class BoxesFunctions {
               }
             }
           }
+          if (form == S.TraditionalForm) {
+            IExpr head = function.head();
+            return traditionalCallBox(function,
+                head.isSymbol() ? F.$str(traditionalName((ISymbol) head))
+                    : standardFormRecursive(head, Precedence.POWER, form, engine),
+                form, engine);
+          }
           IASTAppendable list = F.ListAlloc(4);
           list.append(standardFormRecursive(function.head(), precedence, form, engine));
           list.append("[");
@@ -333,6 +344,104 @@ public class BoxesFunctions {
         }
         list.append(F.RowBox(argsList));
       }
+    }
+
+    /**
+     * <code>Piecewise({{v1, c1}, ...}, default)</code> as a brace in front of a grid with one row
+     * <code>{v, c}</code> per case and the default in a last row with the condition
+     * <code>True</code>.
+     *
+     * @return {@link F#NIL} if the cases are not a list of pairs
+     */
+    private static IExpr piecewiseBox(IAST piecewise, IExpr form, EvalEngine engine) {
+      if (!piecewise.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST cases = (IAST) piecewise.arg1();
+      IASTAppendable rows = F.ListAlloc(cases.size() + 1);
+      for (IExpr pair : cases) {
+        if (!pair.isList2()) {
+          return F.NIL;
+        }
+        rows.append(F.list(standardFormRecursive(pair.first(), 0, form, engine),
+            standardFormRecursive(pair.second(), 0, form, engine)));
+      }
+      if (piecewise.isAST2()) {
+        rows.append(F.list(standardFormRecursive(piecewise.arg2(), 0, form, engine),
+            F.ternaryAST3(S.TagBox, F.$str("True"), F.$str("PiecewiseDefault"),
+                F.Rule(S.AutoDelete, S.True))));
+      }
+      IAST grid = F.ast(new IExpr[] {rows, //
+          F.Rule(S.ColumnAlignments, F.list(S.Left)), //
+          F.Rule(S.ColumnSpacings, F.num(1.2)), //
+          F.Rule(S.ColumnWidths, S.Automatic), //
+          F.Rule(S.AllowedDimensions, F.list(F.C2, S.Automatic)), //
+          F.Rule(S.Selectable, S.True), //
+          F.Rule(S.Editable, S.True)}, S.GridBox);
+      IAST brace = F.ast(new IExpr[] {F.list(F.list(F.$str(""), grid)), //
+          F.Rule(S.ColumnAlignments, F.list(S.Left)), //
+          F.Rule(S.ColumnSpacings, F.num(0.5)), //
+          F.Rule(S.ColumnWidths, S.Automatic)}, S.GridBox);
+      return F.ast(new IExpr[] {brace, F.$str("Piecewise"), //
+          F.Rule(S.SyntaxForm, S.Equal), //
+          F.Rule(S.SelectWithContents, S.True), //
+          F.Rule(S.StripWrapperBoxes, S.True), //
+          F.Rule(S.Selectable, S.False), //
+          F.Rule(S.Editable, S.False), //
+          F.Rule(S.DeleteWithContents, S.True)}, S.TagBox);
+    }
+
+    /** The elementary functions <code>TraditionalForm</code> writes in lower case. */
+    private static final Map<ISymbol, String> TRADITIONAL_NAMES = new IdentityHashMap<>();
+
+    static {
+      ISymbol[] lowerCase = {S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc, S.Sinh, S.Cosh, S.Tanh,
+          S.Coth, S.Sech, S.Csch, S.Log};
+      for (ISymbol symbol : lowerCase) {
+        TRADITIONAL_NAMES.put(symbol, symbol.toString().toLowerCase(java.util.Locale.ROOT));
+      }
+    }
+
+    /** The name of a function in <code>TraditionalForm</code>: <code>sin</code> for <code>Sin</code>. */
+    private static String traditionalName(ISymbol head) {
+      String name = TRADITIONAL_NAMES.get(head);
+      return name != null ? name : head.toString();
+    }
+
+    /**
+     * A function call in <code>TraditionalForm</code>: the name followed by the arguments in
+     * parentheses, <code>RowBox({"sin", "(", "x", ")"})</code>.
+     *
+     * @param name the box of the function name, which may carry an exponent
+     */
+    private static IExpr traditionalCallBox(IAST function, IExpr name, IExpr form,
+        EvalEngine engine) {
+      IASTAppendable list = F.ListAlloc(4);
+      list.append(name);
+      list.append("(");
+      appendArgumentRow(list, function, form, engine);
+      list.append(")");
+      return F.RowBox(list);
+    }
+
+    /**
+     * <code>sin^n(x)</code>: in <code>TraditionalForm</code> an integer or symbolic power of a
+     * function written in lower case goes on the function name.
+     *
+     * @return {@link F#NIL} for any other power or form
+     */
+    private static IExpr traditionalPowerBox(IExpr base, IExpr exponent, IExpr form,
+        EvalEngine engine) {
+      if (form != S.TraditionalForm || !base.isAST()
+          || !(exponent.isInteger() || exponent.isSymbol())) {
+        return F.NIL;
+      }
+      String name = TRADITIONAL_NAMES.get(base.head());
+      if (name == null) {
+        return F.NIL;
+      }
+      return traditionalCallBox((IAST) base, F.binaryAST2(S.SuperscriptBox, F.$str(name),
+          standardFormRecursive(exponent, 0, form, engine)), form, engine);
     }
 
     /**
@@ -648,6 +757,12 @@ public class BoxesFunctions {
         }
         return F.NIL;
       }
+      if (ast.isAST(S.Piecewise, 2, 3)) {
+        IExpr piecewise = piecewiseBox(ast, form, engine);
+        if (piecewise.isPresent()) {
+          return piecewise;
+        }
+      }
       if (ast.isAST(S.Style) && ast.argSize() >= 2) {
         // Style(expr, styles...): the boxes of expr with the styles
         IASTAppendable styleBox = F.ast(S.StyleBox, ast.size() + 1);
@@ -813,6 +928,10 @@ public class BoxesFunctions {
       if (exponent.isNumber() && exponent.isNegative()) {
         return F.FractionBox(F.$str("1"), reciprocalBox(power, form, engine));
       }
+      IExpr traditional = traditionalPowerBox(base, exponent, form, engine);
+      if (traditional.isPresent()) {
+        return traditional;
+      }
       return F.binaryAST2(S.SuperscriptBox, //
           powerBaseBox(base, form, engine),
           standardFormRecursive(exponent, 0, form, engine));
@@ -839,6 +958,10 @@ public class BoxesFunctions {
       }
       if (positive.equals(F.C1D2)) {
         return F.unaryAST1(S.SqrtBox, standardFormRecursive(base, 0, form, engine));
+      }
+      IExpr traditional = traditionalPowerBox(base, positive, form, engine);
+      if (traditional.isPresent()) {
+        return traditional;
       }
       return F.binaryAST2(S.SuperscriptBox, //
           powerBaseBox(base, form, engine),

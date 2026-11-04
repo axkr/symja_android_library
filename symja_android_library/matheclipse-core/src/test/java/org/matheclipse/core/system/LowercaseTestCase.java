@@ -13301,7 +13301,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {-1, 2}, ColorFunction -> \"Rainbow\", "
             + "PlotLegends -> Automatic); {Head(d), d[[2]]}", //
-        "{Legended,BarLegend({Rainbow,{-1.0,2.0}})}");
+        "{Legended,Placed(BarLegend({Rainbow,{-1.0,2.0}}),After)}");
     check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotLegends -> Automatic); "
         + "s = Show(d, Graphics(Circle({0.5, 0.5}, 0.2))); {Head(s), s[[2]] === d[[2]], Head(First(s))}", //
         "{Legended,True,Graphics}");

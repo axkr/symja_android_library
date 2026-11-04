@@ -2554,7 +2554,7 @@ public class GraphicsOptions {
     if (spec.isAST(S.Placed) && spec.argSize() >= 1) {
       // a placement the caller asked for is kept, around the legend it places
       IExpr inner = toLegend(spec.first(), plotStyle, joined);
-      return inner.isPresent() ? ((IAST) spec).setAtCopy(1, inner) : F.NIL;
+      return inner.isPresent() ? ((IAST) spec).setAtCopy(1, bareLegend(inner)) : F.NIL;
     }
     IExpr legend;
     if (spec.isList() && spec.argSize() > 0) {
@@ -2576,6 +2576,22 @@ public class GraphicsOptions {
           : spec;
     } else {
       return F.NIL;
+    }
+    // a legend is placed after the plot unless the caller placed it
+    return F.binaryAST2(S.Placed, legend, S.After);
+  }
+
+  /**
+   * The legend of a <code>Legended</code> without its placement: <code>Placed(legend, pos)</code>
+   * is <code>legend</code>, and the list of legends <code>Show</code> combines, nested as deep as
+   * the <code>Show</code> calls were, is the list of the bare legends.
+   */
+  public static IExpr bareLegend(IExpr legend) {
+    if (legend.isAST(S.Placed) && legend.argSize() >= 1) {
+      return bareLegend(legend.first());
+    }
+    if (legend.isList()) {
+      return ((IAST) legend).map(GraphicsOptions::bareLegend, 1);
     }
     return legend;
   }

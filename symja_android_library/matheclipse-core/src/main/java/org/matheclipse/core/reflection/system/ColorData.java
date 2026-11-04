@@ -4,6 +4,7 @@ import java.util.Locale;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -53,6 +54,11 @@ public class ColorData extends AbstractFunctionEvaluator {
               : webSafe(ast.arg2());
         }
         return createColorDataFunction("WebSafe", "Named", F.CEmptyList);
+      }
+
+      IAST blendArgument = themeGradient(name);
+      if (blendArgument != null) {
+        return themeGradientProperty(ast, name, blendArgument, engine);
       }
 
       if (ast.isAST2()) {
@@ -145,6 +151,63 @@ public class ColorData extends AbstractFunctionEvaluator {
       // }
     }
 
+    return F.NIL;
+  }
+
+  /** The name of the default gradient of density plots in the 2014 plot theme. */
+  private static final String WL14_DENSITY = "WL14DefaultDensityGradient";
+
+  /** The colors <code>WL14DefaultDensityGradient</code> blends, from dark blue to light yellow. */
+  private static final IAST WL14_DENSITY_COLORS = F.List(//
+      F.ternaryAST3(S.LABColor, F.num(0.2374577454874495), F.num(0.4502326479674301),
+          F.num(-0.29344758919909575)), //
+      F.ternaryAST3(S.LABColor, F.num(0.48288891610929785), F.num(0.7019509501984089),
+          F.num(0.1585008503354124)), //
+      F.ternaryAST3(S.LABColor, F.num(0.7226680127694958), F.num(0.3783642915277907),
+          F.num(0.4813038070805067)), //
+      F.ternaryAST3(S.LABColor, F.num(0.9735241229755421), F.num(-0.05249018370661607),
+          F.num(0.31994142972937545)));
+
+  /**
+   * The colors a theme gradient blends evenly over <code>{0, 1}</code>.
+   *
+   * @return <code>null</code> if <code>name</code> is no theme gradient
+   */
+  public static IAST themeGradient(String name) {
+    return WL14_DENSITY.equals(name) ? WL14_DENSITY_COLORS : null;
+  }
+
+  /** The description <code>ColorData(name, "Name")</code> gives for a theme gradient. */
+  private static String themeGradientTitle(String name) {
+    return WL14_DENSITY.equals(name) ? "WL14 default density gradient" : name;
+  }
+
+  /**
+   * <code>ColorData(name, ...)</code> of a theme gradient: the gradient function, the color at a
+   * value, or one of the properties <code>"BlendArgument", "Name", "Range"</code>.
+   */
+  private static IExpr themeGradientProperty(IAST ast, String name, IAST blendArgument,
+      EvalEngine engine) {
+    if (ast.isAST1()) {
+      return F.quaternary(S.ColorDataFunction, F.stringx(name), F.stringx("ThemeGradients"),
+          F.list(F.C0, F.C1), F.Function(F.binaryAST2(S.Blend, F.stringx(name), F.Slot1)));
+    }
+    if (!ast.isAST2()) {
+      return F.NIL;
+    }
+    IExpr arg2 = ast.arg2();
+    if (arg2.isReal()) {
+      return engine.evaluate(F.binaryAST2(S.Blend, blendArgument, arg2));
+    }
+    if (arg2.isString("BlendArgument")) {
+      return blendArgument;
+    }
+    if (arg2.isString("Name")) {
+      return F.stringx(themeGradientTitle(name));
+    }
+    if (arg2.isString("Range")) {
+      return F.list(F.C0, F.C1);
+    }
     return F.NIL;
   }
 
