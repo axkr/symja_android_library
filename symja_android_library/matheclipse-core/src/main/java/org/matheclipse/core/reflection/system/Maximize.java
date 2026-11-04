@@ -1779,9 +1779,11 @@ public class Maximize extends AbstractFunctionEvaluator {
       return best.consider(limit, infinity, false, engine);
     }
     IExpr value = engine.evalQuiet(F.xreplace(objective, x, end));
-    if (closed) {
+    if (closed && !value.isIndeterminate()) {
       return best.consider(value, end, true, engine);
     }
+    // an open end, or a closed end where the objective is undefined - 0^0 of x^x at x==0, which
+    // FunctionDomain(x^x,x) gives as x>=0: the end is not attained, and its limit bounds the values
     if (value.isRealResult() && !value.isDirectedInfinity() && !value.isIndeterminate()) {
       return best.consider(value, end, false, engine);
     }
