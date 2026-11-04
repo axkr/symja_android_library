@@ -64,10 +64,10 @@ public class ImageAdjustTest extends AbstractTestCase {
         "{{89,153,217}}");
   }
 
-  /** An image that is already flat has nothing to stretch. */
+  /** An image that is already flat has nothing to stretch and becomes black. */
   @Test
   public void imageAdjustOfAFlatImageIsTheIdentity() {
-    check("ImageData(ImageAdjust(Image({{0.5,0.5}})),\"Byte\")", "{{128,128}}");
+    check("ImageData(ImageAdjust(Image({{0.5,0.5}})),\"Byte\")", "{{0,0}}");
   }
 
   @Test

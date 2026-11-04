@@ -216,6 +216,22 @@ public final class NumberFieldFactor {
   }
 
   /**
+   * The index <code>d</code> of a polynomial in <code>x</code> with rational coefficients which is
+   * the <code>d</code>-th cyclotomic polynomial up to a rational factor, or <code>0</code>.
+   */
+  public static long cyclotomicIndex(IExpr polynomial, IExpr x) {
+    try {
+      org.matheclipse.core.convert.JASConvert<BigRational> jas =
+          new org.matheclipse.core.convert.JASConvert<BigRational>(F.list(x), BigRational.ZERO);
+      GenPolynomial<BigRational> f = jas.expr2JAS(polynomial, false);
+      return f.degree(0) > 0 ? cyclotomicIndex(f) : 0;
+    } catch (RuntimeException e) {
+      // not a polynomial with rational coefficients
+      return 0;
+    }
+  }
+
+  /**
    * The index <code>d</code> of a univariate polynomial which is the <code>d</code>-th cyclotomic
    * polynomial up to a rational factor, or <code>0</code>.
    */

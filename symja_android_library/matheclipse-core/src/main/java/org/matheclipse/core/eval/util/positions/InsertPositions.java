@@ -94,15 +94,15 @@ public class InsertPositions {
 
     if (position.isString() || position.isKey()) {
       if (ast.isAssociation()) {
-        if (!element.isRuleAST() && !element.isListOfRules()) {
-          // The argument `1` is not a rule or a list of rules.
-          throw new ArgumentTypeStopException("invdt2", F.list(element, ast));
-        }
         IExpr key = position.isString() ? position : position.first();
         final Object[] pair = MapPositions.appendableIntPair(ast, insertASTCache);
         final IAssociation association = (IAssociation) pair[0];
         // IntArrayList insertedPositions = (IntArrayList) pair[1];
         if (level == positions.argSize()) {
+          if (!element.isRuleAST() && !element.isListOfRules()) {
+            // The argument `1` is not a rule or a list of rules.
+            throw new ArgumentTypeStopException("invdt2", F.list(element, ast));
+          }
           int keyPosition = ((IAssociation) ast).getRulePosition(key);
           if (keyPosition > 0) {
             return appendElement(association, keyPosition);
@@ -156,17 +156,9 @@ public class InsertPositions {
             } else {
               throw new ArgumentTypeException("ins", F.list(F.ZZ(p), ast));
             }
-          } else if (p == 1) {
-            if (element.isListOfRules()) {
-              IAST list = (IAST) element;
-              for (int i = 1; i < list.size(); i++) {
-                IExpr rule = list.getRule(i);
-                subResult.appendRule(rule);
-              }
-            } else {
-              subResult.appendRule(element);
-            }
-            return subResult;
+          } else if (p == ast.size()) {
+            // insert after the last rule
+            return appendElement((IAssociation) subResult, p);
           }
           throw new ArgumentTypeException("ins", F.list(F.ZZ(p), ast));
         }
@@ -175,14 +167,16 @@ public class InsertPositions {
         insertedPositions.add(p);
         return subResult;
       } else {
-        IExpr arg = ast.get(p);
+        // the index of the original part p after the elements inserted before it
+        final int index = getInsertPosition(insertedPositions, p);
+        IExpr arg = index < subResult.size() ? subResult.get(index) : F.NIL;
         if (arg.isASTOrAssociation()) {
           // subResult = getAppendableAST(ast);
           level++;
           IExpr temp = mapAtRecursive((IAST) arg);
           if (temp.isPresent()) {
             level--;
-            subResult.set(p, temp);
+            subResult.set(index, temp);
             return subResult;
           }
           level--;
@@ -206,12 +200,30 @@ public class InsertPositions {
       IAST list = (IAST) element;
       for (int i = list.argSize(); i > 0; i--) {
         IExpr rule = list.getRule(i);
-        result.append(p, rule);
+        p = insertRule(result, p, rule);
       }
       return result;
     }
-    result.append(p, element);
+    insertRule(result, p, element);
     return result;
+  }
+
+  /**
+   * Insert the rule at position <code>p</code>; a rule whose key is already in the association
+   * removes the old rule of that key first, so that the keys stay unique.
+   *
+   * @return the position where the rule was inserted
+   */
+  private static int insertRule(IAssociation result, int p, IExpr rule) {
+    int keyPosition = result.getRulePosition(rule.first());
+    if (keyPosition > 0) {
+      result.remove(keyPosition);
+      if (keyPosition < p) {
+        p--;
+      }
+    }
+    result.append(p, rule);
+    return p;
   }
 
   /**

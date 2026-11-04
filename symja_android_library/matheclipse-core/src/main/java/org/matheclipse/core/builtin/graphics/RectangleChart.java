@@ -58,7 +58,7 @@ public class RectangleChart extends AbstractChart {
     if (argSize < 1) {
       return F.NIL;
     }
-    IExpr dataArg = engine.evaluate(ast.arg1());
+    IExpr dataArg = chartData(engine.evaluate(ast.arg1()), engine);
     IAST datasets = datasets(dataArg, 2);
     if (datasets == null) {
       if (dataArg.isList()) {
@@ -111,6 +111,12 @@ public class RectangleChart extends AbstractChart {
       yMax = Math.max(yMax, box.sizes[1]);
     }
     IExpr chartLabels = GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None);
+    IExpr data = engine.evaluate(ast.arg1());
+    if (data.isAssociation() && chartLabels.isNone()
+        && GraphicsOptions.optionValue(originalAST, S.PlotLabels, S.None).isAutomatic()) {
+      // the keys of an association label the bars
+      chartLabels = engine.evaluate(F.unaryAST1(S.Keys, data));
+    }
     if (chartLabels.isList() && datasets.argSize() == 1) {
       // the labels of the bars sit below them, in place of the ticks of the horizontal axis
       for (int i = 0; i < boxes.size() && i < chartLabels.argSize(); i++) {
@@ -155,6 +161,22 @@ public class RectangleChart extends AbstractChart {
       return directive;
     }
     return color;
+  }
+
+  /**
+   * The data of a chart: the values of an association or of a time series, with the magnitudes of
+   * its quantities in place of the quantities.
+   */
+  public static IExpr chartData(IExpr data, EvalEngine engine) {
+    if (data.isAssociation()) {
+      data = engine.evaluate(F.unaryAST1(S.Values, data));
+    } else if (data.isAST(S.TemporalData)) {
+      data = engine.evaluate(F.unaryAST1(data, F.stringx("Values")));
+    }
+    if (data.has(x -> x.isAST(S.Quantity, 3), false)) {
+      data = data.replaceAll(x -> x.isAST(S.Quantity, 3) ? x.first() : F.NIL).orElse(data);
+    }
+    return data;
   }
 
   /**

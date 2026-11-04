@@ -965,6 +965,12 @@ public class SequenceFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.arg1().isAssociation() && ast.arg1().argSize() > 0) {
+        // the positions of the values of an association
+        IAssociation association = (IAssociation) ast.arg1();
+        return ast.setAtCopy(1,
+            F.mapRange(1, association.size(), i -> association.getValue(i)));
+      }
       if (!ast.arg1().isList() || ast.arg1().isEmptyList()) {
         return F.NIL;
       }
@@ -1180,7 +1186,9 @@ public class SequenceFunctions {
         // Positive machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
       }
-      int offset = ast.isAST3() ? ast.arg3().toIntDefault() : 1;
+      int offset = ast.argSize() >= 3 ? ast.arg3().toIntDefault() : 1;
+      // the value of the inserted elements
+      final IExpr padding = ast.argSize() == 4 ? ast.arg4() : F.C0;
       if (offset <= 0 || offset > n) {
         return F.NIL;
       }
@@ -1191,7 +1199,7 @@ public class SequenceFunctions {
       IASTAppendable result = F.ListAlloc((int) size);
       for (int i = 1; i < list.size(); i++) {
         for (int j = 1; j <= n; j++) {
-          result.append(j == offset ? list.get(i) : F.C0);
+          result.append(j == offset ? list.get(i) : padding);
         }
       }
       return result;
@@ -1199,7 +1207,7 @@ public class SequenceFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_4;
     }
   }
 

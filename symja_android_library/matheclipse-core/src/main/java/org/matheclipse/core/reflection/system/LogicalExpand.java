@@ -47,12 +47,87 @@ public class LogicalExpand extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (arg1.isAST()) {
+      IExpr equations = normalizeEquations(arg1);
+      if (equations != arg1) {
+        arg1 = engine.evaluate(equations);
+        if (!arg1.isAST()) {
+          return arg1;
+        }
+      }
       IExpr result = F.subst(arg1, logicalExpand(engine));
       if (result.isPresent() && !result.equals(arg1)) {
         return result;
       }
     }
     return arg1;
+  }
+
+  /**
+   * The equations of a logical combination in a normal form: an equation of lists is threaded
+   * over the elements, a chain of equations equates each side to the least side, and a number on
+   * the left of an equation goes on the right.
+   *
+   * @return <code>expr</code> itself if nothing changed
+   */
+  private static IExpr normalizeEquations(IExpr expr) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isAnd() || ast.isOr() || ast.isNot()) {
+      IASTMutable result = null;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = normalizeEquations(ast.get(i));
+        if (arg != ast.get(i)) {
+          if (result == null) {
+            result = ast.copy();
+          }
+          result.set(i, arg);
+        }
+      }
+      return result == null ? expr : result;
+    }
+    boolean equal = ast.isAST(S.Equal);
+    if (!(equal || ast.isAST(S.Unequal, 3)) || ast.argSize() < 2) {
+      return expr;
+    }
+    if (equal && ast.argSize() > 2) {
+      // a chain: every other side equals the least side
+      int least = 1;
+      for (int i = 2; i < ast.size(); i++) {
+        if (ast.get(i).compareTo(ast.get(least)) < 0) {
+          least = i;
+        }
+      }
+      IASTAppendable result = F.AndAlloc(ast.argSize());
+      for (int i = 1; i < ast.size(); i++) {
+        if (i != least) {
+          result.append(normalizeEquations(F.Equal(ast.get(i), ast.get(least))));
+        }
+      }
+      return result;
+    }
+    IExpr lhs = ast.arg1();
+    IExpr rhs = ast.arg2();
+    if (lhs.isList() && rhs.isList()) {
+      if (lhs.argSize() != rhs.argSize()) {
+        return F.booleSymbol(!equal);
+      }
+      IASTAppendable result = equal ? F.AndAlloc(lhs.argSize()) : F.OrAlloc(lhs.argSize());
+      for (int i = 1; i < lhs.size(); i++) {
+        result.append(normalizeEquations(
+            F.binaryAST2(ast.head(), ((IAST) lhs).get(i), ((IAST) rhs).get(i))));
+      }
+      return result;
+    }
+    if (lhs.isList() || rhs.isList()) {
+      return expr;
+    }
+    if (lhs.isNumber() && !rhs.isNumber()) {
+      // a number goes on the right
+      return F.binaryAST2(ast.head(), rhs, lhs);
+    }
+    return expr;
   }
 
   private static Function<IExpr, IExpr> logicalExpand(EvalEngine engine) {

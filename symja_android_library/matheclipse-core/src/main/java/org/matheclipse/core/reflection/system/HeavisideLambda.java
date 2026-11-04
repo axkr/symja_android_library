@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.PiecewiseFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
@@ -41,6 +42,10 @@ public class HeavisideLambda extends AbstractEvaluator implements IFunctionExpan
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     int size = ast.size();
+    IExpr rewritten = HeavisidePi.rewriteArguments(ast);
+    if (rewritten.isPresent()) {
+      return rewritten;
+    }
     if (size > 1) {
       // several arguments give the product of the one-argument values
       IASTAppendable result = F.TimesAlloc(size);

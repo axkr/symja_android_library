@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 public class ProductTest extends ExprEvaluatorTestCase {
 
@@ -295,7 +296,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
     // Factored polynomials and powers
     // Product((2*k + 3)^2, {k, 1, n}) -> (2^n * Pochhammer(5/2, n))^2 -> 4^n * Pochhammer(5/2, n)^2
     check("Product((2*k + 3)^2, {k, 1, n})", //
-        "(2^(2*(2+n))*Gamma(5/2+n)^2)/(9*Pi)");
+        "(4^(2+n)*Gamma(5/2+n)^2)/(9*Pi)");
 
     // Product((k + 1/2) * (k + 3/2), {k, 1, n})
     // Resolves independently and multiplies: Pochhammer(3/2, n) * Pochhammer(5/2, n)
@@ -390,7 +391,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
     check("Product(k, {k,1,n,2})", //
         "(2^(1+Floor(1/2*(-1+n)))*Gamma(3/2+Floor(1/2*(-1+n))))/Sqrt(Pi)");
     check("Product(k^2, {k,1,n,2})", //
-        "(2^(2*(1+Floor(1/2*(-1+n))))*Gamma(3/2+Floor(1/2*(-1+n)))^2)/Pi");
+        "(4^(1+Floor(1/2*(-1+n)))*Gamma(3/2+Floor(1/2*(-1+n)))^2)/Pi");
     // the closed form has to agree with the unrolled product 1*3*5*7 == 105
     check("Product(k, {k,1,7,2})", //
         "105");
@@ -431,6 +432,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testProductRationalFunctionGamma() {
     // Product(p(i), {i,a,n}) over the exact complex roots r of p: Gamma(n+1-r)/Gamma(a-r);
     // the constant Gammas of root pairs are combined by the reflection formula

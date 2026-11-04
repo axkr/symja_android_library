@@ -562,7 +562,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "False");
     // all points are tested against the plane through the first three points
     check("CoplanarPoints({{1, a, 1}, {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c}})", //
-        "(1-a)*(-2+a)==0&&(1-a)*(-2+a)*(-1+c)==0");
+        "(-2+a)*(-1+a)==0&&(2-a)*(-1+a)*(-1+c)==0");
     check("CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {2, 3, 4}, {a, b, c} })", //
         "(-1+a)*(-5+3*b-c)==0");
     check("CoplanarPoints({ {a, 2, 1}, {1, 2, 1}, {a, b, c}, {2, 3, 4}})", //
@@ -2894,11 +2894,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testQRDecomposition() {
     check("QRDecomposition({{1, 2, 3}, {4, 5, 6}})", //
-        "{\n" //
-            + "{{-1/Sqrt(17),-4/Sqrt(17)},\n" //
-            + " {4/Sqrt(17),-1/Sqrt(17)}},\n" //
-            + "{{-Sqrt(17),-22/Sqrt(17),-27/Sqrt(17)},\n" //
-            + " {0,3/Sqrt(17),6/Sqrt(17)}}}");
+        "{{{1/Sqrt(17),4/Sqrt(17)},{4/Sqrt(17),-1/Sqrt(17)}},{{Sqrt(17),22/Sqrt(17),27/Sqrt(\n" //
+            + "17)},{0,3/Sqrt(17),6/Sqrt(17)}}}");
     // check(
     // "N(QRDecomposition({{1, 2}, {3, 4}, {5, 6}}), 50)", //
     // "{\n" //
@@ -2943,17 +2940,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "QRDecomposition(Indeterminate)");
     check("-3/35*Sqrt(35)", //
         "-3/Sqrt(35)");
-    // TODO MMA gives 2x3 and 2x2 matrices
+    // the reduced decomposition: 2x3 and 2x2 matrices
     check("QRDecomposition({{1, 2}, {3, 4}, {5, 6}}) // N", //
-        "{{{-0.169031,-0.507093,-0.845154},{0.897085,0.276026,-0.345033},{0.408248,-0.816497,0.408248}},{{-5.91608,-7.43736},{0.0,0.828079},{0.0,0.0}}}");//
+        "{{{0.169031,0.507093,0.845154},{0.897085,0.276026,-0.345033}},{{5.91608,7.43736},{0.0,0.828079}}}");
 
     check("QRDecomposition({{12, -51, 4}, {6, 167, -68}, {-4, 24, -41}})", //
-        "{\n" + "{{-6/7,-3/7,2/7},\n" //
-            + " {69/175,-158/175,-6/35},\n" //
-            + " {-58/175,6/175,-33/35}},\n" //
-            + "{{-14,-21,14},\n" //
-            + " {0,-175,70},\n" //
-            + " {0,0,35}}}");
+        "{{{6/7,3/7,-2/7},{-69/175,158/175,6/35},{-58/175,6/175,-33/35}},{{14,21,-14},{0,\n" //
+        + "175,-70},{0,0,35}}}");
 
 
   }

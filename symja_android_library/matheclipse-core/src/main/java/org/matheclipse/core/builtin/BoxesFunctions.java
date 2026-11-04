@@ -36,6 +36,28 @@ public class BoxesFunctions {
     private static void init() {
       S.MakeBoxes.setEvaluator(new MakeBoxes());
       S.ToBoxes.setEvaluator(new ToBoxes());
+      S.MakeExpression.setEvaluator(new MakeExpression());
+    }
+  }
+
+  /**
+   * <code>MakeExpression(boxes, form)</code> - the expression the boxes stand for, wrapped in
+   * <code>HoldComplete</code>; the inverse of <code>MakeBoxes</code>.
+   */
+  private static class MakeExpression extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr form = ast.isAST2() ? ast.arg2() : S.StandardForm;
+      if (form != S.StandardForm && form != S.TraditionalForm) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.ternaryAST3(S.ToExpression, ast.arg1(), form, S.HoldComplete));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -68,29 +90,30 @@ public class BoxesFunctions {
        */
       public boolean convert(final IASTAppendable list, final IAST f, final int precedence,
           final IExpr form, final EvalEngine engine) {
-        precedenceOpen(list, precedence);
+        // the operator row is put in brackets as a whole: RowBox({"(", RowBox({a, "||", b}),
+        // ")"})
+        IASTAppendable row = precedence > fPrecedence ? F.ListAlloc(f.size() * 2) : list;
         for (int i = 1; i < f.size(); i++) {
-          list.append(standardFormRecursive(f.get(i), fPrecedence, form, engine));
+          IExpr arg = f.get(i);
+          if (f.isOr() && arg.isAnd()) {
+            // a && b || c is written (a && b) || c
+            row.append(F.RowBox(F.list(F.$str("("),
+                standardFormRecursive(arg, 0, form, engine), F.$str(")"))));
+          } else {
+            row.append(standardFormRecursive(arg, fPrecedence, form, engine));
+          }
           if (i < f.argSize()) {
             if (fOperator.compareTo("") != 0) {
-              list.append(fOperator);
+              row.append(fOperator);
             }
           }
         }
-        precedenceClose(list, precedence);
-        return true;
-      }
-
-      public void precedenceClose(final IASTAppendable list, final int precedence) {
-        if (precedence > fPrecedence) {
+        if (row != list) {
+          list.append("(");
+          list.append(F.RowBox(row));
           list.append(")");
         }
-      }
-
-      public void precedenceOpen(final IASTAppendable list, final int precedence) {
-        if (precedence > fPrecedence) {
-          list.append("(");
-        }
+        return true;
       }
     }
 
@@ -210,6 +233,10 @@ public class BoxesFunctions {
         // \[ImaginaryI]
         return F.$str("");
       }
+      if (form == S.TraditionalForm && expr == S.E) {
+        // \[ExponentialE]
+        return F.$str("");
+      }
       IExpr special = specialSymbolBox(expr);
       if (special.isPresent()) {
         return special;
@@ -255,6 +282,12 @@ public class BoxesFunctions {
               return traditional;
             }
           }
+          if (function.isNot() && function.argSize() == 1) {
+            return parenthesizeRow(
+                F.RowBox(F.list(F.$str("!"),
+                    standardFormRecursive(function.arg1(), Precedence.NOT, form, engine))),
+                Precedence.NOT, precedence);
+          }
           if (function.head().isSymbol()) {
             StandardFormOperator operator = operatorFor((ISymbol) function.head());
             if (operator != null) {
@@ -263,6 +296,13 @@ public class BoxesFunctions {
                 return F.RowBox(argsList);
               }
             }
+          }
+          if (form == S.TraditionalForm) {
+            IExpr head = function.head();
+            return traditionalCallBox(function,
+                head.isSymbol() ? F.$str(traditionalName((ISymbol) head))
+                    : standardFormRecursive(head, Precedence.POWER, form, engine),
+                form, engine);
           }
           IASTAppendable list = F.ListAlloc(4);
           list.append(standardFormRecursive(function.head(), precedence, form, engine));
@@ -291,7 +331,10 @@ public class BoxesFunctions {
      */
     private static void appendArgumentRow(IASTAppendable list, IAST function, IExpr form,
         EvalEngine engine) {
-      if (function.argSize() > 0) {
+      if (function.argSize() == 1) {
+        // a single argument is no row of its own: RowBox({"f", "[", "x", "]"})
+        list.append(standardFormRecursive(function.getRule(1), 0, form, engine));
+      } else if (function.argSize() > 0) {
         IASTAppendable argsList = F.ListAlloc(function.size());
         for (int i = 1; i < function.size(); i++) {
           argsList.append(standardFormRecursive(function.getRule(i), 0, form, engine));
@@ -301,6 +344,104 @@ public class BoxesFunctions {
         }
         list.append(F.RowBox(argsList));
       }
+    }
+
+    /**
+     * <code>Piecewise({{v1, c1}, ...}, default)</code> as a brace in front of a grid with one row
+     * <code>{v, c}</code> per case and the default in a last row with the condition
+     * <code>True</code>.
+     *
+     * @return {@link F#NIL} if the cases are not a list of pairs
+     */
+    private static IExpr piecewiseBox(IAST piecewise, IExpr form, EvalEngine engine) {
+      if (!piecewise.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST cases = (IAST) piecewise.arg1();
+      IASTAppendable rows = F.ListAlloc(cases.size() + 1);
+      for (IExpr pair : cases) {
+        if (!pair.isList2()) {
+          return F.NIL;
+        }
+        rows.append(F.list(standardFormRecursive(pair.first(), 0, form, engine),
+            standardFormRecursive(pair.second(), 0, form, engine)));
+      }
+      if (piecewise.isAST2()) {
+        rows.append(F.list(standardFormRecursive(piecewise.arg2(), 0, form, engine),
+            F.ternaryAST3(S.TagBox, F.$str("True"), F.$str("PiecewiseDefault"),
+                F.Rule(S.AutoDelete, S.True))));
+      }
+      IAST grid = F.ast(new IExpr[] {rows, //
+          F.Rule(S.ColumnAlignments, F.list(S.Left)), //
+          F.Rule(S.ColumnSpacings, F.num(1.2)), //
+          F.Rule(S.ColumnWidths, S.Automatic), //
+          F.Rule(S.AllowedDimensions, F.list(F.C2, S.Automatic)), //
+          F.Rule(S.Selectable, S.True), //
+          F.Rule(S.Editable, S.True)}, S.GridBox);
+      IAST brace = F.ast(new IExpr[] {F.list(F.list(F.$str(""), grid)), //
+          F.Rule(S.ColumnAlignments, F.list(S.Left)), //
+          F.Rule(S.ColumnSpacings, F.num(0.5)), //
+          F.Rule(S.ColumnWidths, S.Automatic)}, S.GridBox);
+      return F.ast(new IExpr[] {brace, F.$str("Piecewise"), //
+          F.Rule(S.SyntaxForm, S.Equal), //
+          F.Rule(S.SelectWithContents, S.True), //
+          F.Rule(S.StripWrapperBoxes, S.True), //
+          F.Rule(S.Selectable, S.False), //
+          F.Rule(S.Editable, S.False), //
+          F.Rule(S.DeleteWithContents, S.True)}, S.TagBox);
+    }
+
+    /** The elementary functions <code>TraditionalForm</code> writes in lower case. */
+    private static final Map<ISymbol, String> TRADITIONAL_NAMES = new IdentityHashMap<>();
+
+    static {
+      ISymbol[] lowerCase = {S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc, S.Sinh, S.Cosh, S.Tanh,
+          S.Coth, S.Sech, S.Csch, S.Log};
+      for (ISymbol symbol : lowerCase) {
+        TRADITIONAL_NAMES.put(symbol, symbol.toString().toLowerCase(java.util.Locale.ROOT));
+      }
+    }
+
+    /** The name of a function in <code>TraditionalForm</code>: <code>sin</code> for <code>Sin</code>. */
+    private static String traditionalName(ISymbol head) {
+      String name = TRADITIONAL_NAMES.get(head);
+      return name != null ? name : head.toString();
+    }
+
+    /**
+     * A function call in <code>TraditionalForm</code>: the name followed by the arguments in
+     * parentheses, <code>RowBox({"sin", "(", "x", ")"})</code>.
+     *
+     * @param name the box of the function name, which may carry an exponent
+     */
+    private static IExpr traditionalCallBox(IAST function, IExpr name, IExpr form,
+        EvalEngine engine) {
+      IASTAppendable list = F.ListAlloc(4);
+      list.append(name);
+      list.append("(");
+      appendArgumentRow(list, function, form, engine);
+      list.append(")");
+      return F.RowBox(list);
+    }
+
+    /**
+     * <code>sin^n(x)</code>: in <code>TraditionalForm</code> an integer or symbolic power of a
+     * function written in lower case goes on the function name.
+     *
+     * @return {@link F#NIL} for any other power or form
+     */
+    private static IExpr traditionalPowerBox(IExpr base, IExpr exponent, IExpr form,
+        EvalEngine engine) {
+      if (form != S.TraditionalForm || !base.isAST()
+          || !(exponent.isInteger() || exponent.isSymbol())) {
+        return F.NIL;
+      }
+      String name = TRADITIONAL_NAMES.get(base.head());
+      if (name == null) {
+        return F.NIL;
+      }
+      return traditionalCallBox((IAST) base, F.binaryAST2(S.SuperscriptBox, F.$str(name),
+          standardFormRecursive(exponent, 0, form, engine)), form, engine);
     }
 
     /**
@@ -337,7 +478,7 @@ public class BoxesFunctions {
      * <code>TraditionalForm</code>: <code>Inequality(x, LessEqual, y, Less, z)</code> is the row
      * <code>x ≤ y &lt; z</code>; <code>And</code>, <code>Or</code> and <code>Not</code> are
      * written with <code>∧</code>, <code>∨</code> and <code>¬</code>. A
-     * conjunction or a disjunction inside another one is put in parentheses.
+     * logical connective inside a conjunction or a disjunction is put in parentheses.
      *
      * @return {@link F#NIL} if the expression is none of these
      */
@@ -380,8 +521,8 @@ public class BoxesFunctions {
     }
 
     /**
-     * The arguments of <code>function</code> with <code>operator</code> in between. A conjunction
-     * or a disjunction among them is put in parentheses.
+     * The arguments of <code>function</code> with <code>operator</code> in between. A logical
+     * connective among them is put in parentheses.
      */
     private static IExpr infixRow(IAST function, String operator, int operatorPrecedence,
         int precedence, IExpr form, EvalEngine engine) {
@@ -391,7 +532,8 @@ public class BoxesFunctions {
           row.append(operator);
         }
         IExpr arg = function.get(i);
-        if (arg.isAnd() || arg.isOr()) {
+        if (arg.isAnd() || arg.isOr() || arg.isAST(S.Xor) || arg.isAST(S.Nand) || arg.isAST(S.Nor)
+            || arg.isAST(S.Implies) || arg.isAST(S.Equivalent)) {
           row.append(F.RowBox(
               F.list(F.$str("("), standardFormRecursive(arg, 0, form, engine), F.$str(")"))));
         } else {
@@ -512,7 +654,8 @@ public class BoxesFunctions {
             F.$str(im.isNegative() ? "-" : "+"), imaginaryBox(im.isNegative() ? im.negate() : im)));
         return parenthesize(sum, Precedence.PLUS, precedence);
       }
-      if (number.isNegative() && number.isRational() && !number.isInteger()) {
+      if (number.isNegative()) {
+        // -2 is the row RowBox({"-", "2"}), as the minus is written in front of any other factor
         IExpr positive = numberBox(number.negate(), Precedence.TIMES);
         return parenthesize(F.RowBox(F.list(F.$str("-"), positive)), Precedence.TIMES, precedence);
       }
@@ -521,10 +664,9 @@ public class BoxesFunctions {
         return F.FractionBox(F.$str(rational.numerator().toString()),
             F.$str(rational.denominator().toString()));
       }
-      IExpr box = number instanceof org.matheclipse.core.expression.Num
+      return number instanceof org.matheclipse.core.expression.Num
           ? F.$str(machineReal(number.reDoubleValue()))
           : F.$str(number.toString());
-      return number.isNegative() ? parenthesize(box, Precedence.TIMES, precedence) : box;
     }
 
     /** <code>I</code>, <code>2 I</code> or <code>(1/2) I</code> for a positive imaginary part. */
@@ -614,6 +756,12 @@ public class BoxesFunctions {
               F.$str(template));
         }
         return F.NIL;
+      }
+      if (ast.isAST(S.Piecewise, 2, 3)) {
+        IExpr piecewise = piecewiseBox(ast, form, engine);
+        if (piecewise.isPresent()) {
+          return piecewise;
+        }
       }
       if (ast.isAST(S.Style) && ast.argSize() >= 2) {
         // Style(expr, styles...): the boxes of expr with the styles
@@ -780,6 +928,10 @@ public class BoxesFunctions {
       if (exponent.isNumber() && exponent.isNegative()) {
         return F.FractionBox(F.$str("1"), reciprocalBox(power, form, engine));
       }
+      IExpr traditional = traditionalPowerBox(base, exponent, form, engine);
+      if (traditional.isPresent()) {
+        return traditional;
+      }
       return F.binaryAST2(S.SuperscriptBox, //
           powerBaseBox(base, form, engine),
           standardFormRecursive(exponent, 0, form, engine));
@@ -807,6 +959,10 @@ public class BoxesFunctions {
       if (positive.equals(F.C1D2)) {
         return F.unaryAST1(S.SqrtBox, standardFormRecursive(base, 0, form, engine));
       }
+      IExpr traditional = traditionalPowerBox(base, positive, form, engine);
+      if (traditional.isPresent()) {
+        return traditional;
+      }
       return F.binaryAST2(S.SuperscriptBox, //
           powerBaseBox(base, form, engine),
           standardFormRecursive(positive, 0, form, engine));
@@ -814,6 +970,24 @@ public class BoxesFunctions {
 
     private static IExpr timesBox(IAST times, int precedence, IExpr form, EvalEngine engine) {
       IExpr positive = withoutMinus(times);
+      if (positive.isPresent() && isProductWithoutFraction(times)) {
+        // -x y is the product of -x and y: the minus goes with the first factor, and -2 x is
+        // the product of -2 and x
+        IExpr coefficient = times.arg1();
+        IASTAppendable factors = F.ListAlloc(times.size());
+        int start = 2;
+        if (coefficient.isMinusOne()) {
+          factors.append(F.RowBox(F.list(F.$str("-"),
+              standardFormRecursive(times.arg2(), Precedence.TIMES, form, engine))));
+          start = 3;
+        } else {
+          factors.append(numberBox((INumber) coefficient, Precedence.TIMES));
+        }
+        for (int i = start; i < times.size(); i++) {
+          factors.append(standardFormRecursive(times.get(i), Precedence.TIMES, form, engine));
+        }
+        return parenthesize(riffle(factors, " "), Precedence.TIMES, precedence);
+      }
       if (positive.isPresent()) {
         // -x and -(b/2) carry their sign in front, as a sum writes it between its terms
         IExpr negated = F.RowBox(
@@ -865,6 +1039,24 @@ public class BoxesFunctions {
       return F.FractionBox(above, riffle(belowBoxes, " "));
     }
 
+    /**
+     * Whether the product has a negative integer or real coefficient and no factor which stands
+     * under the line of a fraction.
+     */
+    private static boolean isProductWithoutFraction(IAST times) {
+      IExpr coefficient = times.arg1();
+      if (!(coefficient.isInteger() || coefficient.isReal() && !coefficient.isRational())) {
+        return false;
+      }
+      for (int i = 2; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        if (factor.isPower() && factor.exponent().isNumber() && factor.exponent().isNegative()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     /** Each of the expressions as boxes, read at the given precedence. */
     private static IAST boxes(IAST expressions, int precedence, IExpr form, EvalEngine engine) {
       IASTAppendable result = F.ListAlloc(expressions.size());
@@ -878,10 +1070,11 @@ public class BoxesFunctions {
       IASTAppendable row = F.ListAlloc(plus.size() * 2);
       for (int i = 1; i < plus.size(); i++) {
         IExpr term = plus.get(i);
-        IExpr positive = withoutMinus(term);
+        // the first term carries its own sign: -a b - c d starts with the product of -a and b
+        IExpr positive = i > 1 ? withoutMinus(term) : F.NIL;
         boolean negative = positive.isPresent();
         if (negative) {
-          row.append(F.$str(i > 1 ? "-" : "-"));
+          row.append(F.$str("-"));
         } else if (i > 1) {
           row.append(F.$str("+"));
         }
@@ -903,7 +1096,9 @@ public class BoxesFunctions {
       if (term.isTimes()) {
         IAST times = (IAST) term;
         IExpr first = times.arg1();
-        if (isNegativeNumber(first)) {
+        // a + (-2 + I) x is written a - (2 - I) x
+        if (isNegativeNumber(first) || (first.isComplex() || first.isComplexNumeric())
+            && ((INumber) first).re().isNegative()) {
           IExpr positive = ((INumber) first).negate();
           return positive.isOne() //
               ? (times.size() == 3 ? times.arg2() : times.rest())

@@ -202,9 +202,9 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     // the answer is a day list because there is no time of day to carry.
     check("DatePlus({2020}, {0.5, \"Year\"})", "{2020,7,2}");
     // half of the 365 days of 2021 is 182.5 days, which does land at noon
-    check("DatePlus({2021}, {0.5, \"Year\"})", "{2021,7,2,12,0,0.0}");
-    check("DatePlus({2020, 1, 1}, {1.5, \"Month\"})", "{2020,2,15,12,0,0.0}");
-    check("DatePlus({2020, 1, 1}, {-0.5, \"Year\"})", "{2019,7,2,12,0,0.0}");
+    check("DatePlus({2021}, {0.5, \"Year\"})", "{2021,7,2,12}");
+    check("DatePlus({2020, 1, 1}, {1.5, \"Month\"})", "{2020,2,15,12}");
+    check("DatePlus({2020, 1, 1}, {-0.5, \"Year\"})", "{2019,7,2,12}");
     // a whole count still moves by whole calendar units, keeping the day of the month
     check("DatePlus({2020, 1, 31}, {1.0, \"Month\"})", "{2020,2,29}");
     check("DatePlus({2020, 1, 1}, {1.0, \"Quarter\"})", "{2020,4,1}");

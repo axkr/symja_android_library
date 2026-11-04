@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /** The double precision kernel of <code>HypergeometricU(a, b, z)</code>. */
 public class TricomiUTest {
@@ -51,6 +53,7 @@ public class TricomiUTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAgainstArbitraryPrecision() {
     FixedPrecisionApfloatHelper helper = new FixedPrecisionApfloatHelper(30);
     java.util.Random random = new java.util.Random(20261016L);

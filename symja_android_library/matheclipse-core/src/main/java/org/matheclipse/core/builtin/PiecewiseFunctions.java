@@ -468,6 +468,14 @@ public class PiecewiseFunctions {
   }
 
 
+  /** <code>true</code> for a (nested) list whose leaves are all numbers. */
+  private static boolean isNumberArray(IExpr expr) {
+    if (!expr.isList()) {
+      return false;
+    }
+    return ((IAST) expr).forAll(x -> x.isNumber() || isNumberArray(x));
+  }
+
   /**
    *
    *
@@ -530,9 +538,16 @@ public class PiecewiseFunctions {
           if (expr.equals(arg1)) {
             continue;
           }
+          if (isNumberArray(arg1) && isNumberArray(expr)) {
+            // arrays of numbers: different shapes or a differing entry give 0
+            if (engine.evaluate(F.Equal(arg1, expr)).isTrue()) {
+              continue;
+            }
+            return F.C0;
+          }
           temp = expr.evalNumber();
           if (temp == null) {
-            return F.NIL;
+            return hasDifferentSigns(ast, engine) ? F.C0 : F.NIL;
           } else {
             // the arguments are equal as Equal sees them: KroneckerDelta(0.1+0.2, 0.3) is 1
             if (temp.equals(arg1) || (arg1.isNumber()
@@ -545,6 +560,24 @@ public class PiecewiseFunctions {
         return F.C1;
       }
       return F.NIL;
+    }
+
+    /**
+     * Test if two of the arguments are known to be different, because one is negative and the
+     * other one non-negative (for example from the assumptions).
+     */
+    private static boolean hasDifferentSigns(final IAST ast, EvalEngine engine) {
+      boolean negative = false;
+      boolean nonNegative = false;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr expr = engine.evaluate(ast.get(i));
+        if (expr.isNegativeResult()) {
+          negative = true;
+        } else if (expr.isNonNegativeResult()) {
+          nonNegative = true;
+        }
+      }
+      return negative && nonNegative;
     }
 
     @Override
@@ -1252,15 +1285,44 @@ public class PiecewiseFunctions {
     return F.NIL;
   }
 
+  /**
+   * <code>f(a1, a2, ...)</code> of a function which is the product of its one-argument values: the
+   * numeric arguments are split off as factors <code>f(a)</code>, the other arguments stay together
+   * in one call.
+   *
+   * @param ast the function call with at least two arguments
+   * @return {@link F#NIL} if all or none of the arguments are numeric
+   */
+  public static IExpr splitNumericArguments(IAST ast) {
+    IASTAppendable factors = F.TimesAlloc(ast.size());
+    IASTAppendable rest = F.ast(ast.head(), ast.argSize());
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isNumericFunction(true)) {
+        factors.append(F.unaryAST1(ast.head(), arg));
+      } else {
+        rest.append(arg);
+      }
+    }
+    if (factors.argSize() == 0 || rest.argSize() == 0) {
+      return F.NIL;
+    }
+    factors.append(rest);
+    return factors;
+  }
+
   private static class UnitBox extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       // multiple arguments are treated as a Product
-      // UnitBox(x, y) becomes UnitBox(x) * UnitBox(y)
+      // UnitBox(x, y, 1/4) becomes UnitBox(1/4) * UnitBox(x, y)
       if (ast.size() > 2) {
-        IAST result = ast.mapThread(x -> F.UnitBox(x));
-        return result.apply(S.Times);
+        if (ast.forAll(x -> x.isNumericFunction(true))) {
+          IAST result = ast.mapThread(x -> F.UnitBox(x));
+          return result.apply(S.Times);
+        }
+        return splitNumericArguments(ast);
       }
 
       // single argument UnitBox(x)
@@ -1301,10 +1363,13 @@ public class PiecewiseFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       // multiple arguments are treated as a Product
-      // UnitTriangle(x, y) becomes UnitTriangle(x) * UnitTriangle(y)
+      // UnitTriangle(x, y, 1/4) becomes UnitTriangle(1/4) * UnitTriangle(x, y)
       if (ast.size() > 2) {
-        IAST result = ast.mapThread(x -> F.UnitTriangle(x));
-        return result.apply(S.Times);
+        if (ast.forAll(x -> x.isNumericFunction(true))) {
+          IAST result = ast.mapThread(x -> F.UnitTriangle(x));
+          return result.apply(S.Times);
+        }
+        return splitNumericArguments(ast);
       }
 
       // single argument UnitTriangle(x)

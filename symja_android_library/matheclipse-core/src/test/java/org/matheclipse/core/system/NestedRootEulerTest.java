@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.integrate.AntiderivativeCheck;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
 
 /**
  * A root nested on <code>Sqrt(quadratic)</code>: the Euler substitution rationalizes the conic, and
@@ -23,6 +24,7 @@ public class NestedRootEulerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSquareLeadingCoefficient() {
     checkAntiderivative("Sqrt(9*x^2+7)/Sqrt(3*x^2+x*Sqrt(9*x^2+7))", "{1/4,5/4,7/2}");
     checkAntiderivative("Sqrt(3*x+Sqrt(9*x^2+2*x+7))/((2*x+7)*Sqrt(9*x^2+2*x+7))",
@@ -31,11 +33,13 @@ public class NestedRootEulerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRootOnRootOnConic() {
     checkAntiderivative("Sqrt(Sqrt(Sqrt(9*x^2+7)+3*x)+2)", "{1/4,5/4,-7/2}");
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSquareConstantCoefficient() {
     checkAntiderivative("Sqrt(Sqrt(3*x^2+16)+4)/Sqrt(3*x^2+16)", "{1/4,5/4,-7/2}");
     checkAntiderivative("Sqrt(1-x^2)/Sqrt(1-Sqrt(1-x^2))", "{1/4,1/2,-3/4,3/2*I-1/4}");
@@ -51,17 +55,20 @@ public class NestedRootEulerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testConicInRootOfVariable() {
     checkAntiderivative("Sqrt(5+2*Sqrt(x)+Sqrt(3*Sqrt(x)+4*x+7))", "{1/4,5/4,7/2}");
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testConicInRootOfVariableAtNegativeVariable() {
     // Sqrt(x) is imaginary for x<0, where the answer in x has to hold as well
     checkAntiderivative("Sqrt(5+2*Sqrt(x)+Sqrt(3*Sqrt(x)+4*x+7))", "{-1/4,-5/4,-7/2}");
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNoSingularityAtZero() {
     // the substitution variable (y-c)/x is 0/0 at x=0, written differently it is not
     check("Module({g=Integrate(Sqrt(Sqrt(3*x^2+16)+4)/Sqrt(3*x^2+16),x)}, "

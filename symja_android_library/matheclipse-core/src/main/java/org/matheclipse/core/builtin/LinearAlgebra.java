@@ -1080,6 +1080,16 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
+      if (m.isVector() > 0 && ast.arg3().isSymbol()) {
+        // the values y1, y2, ... are the points {1, y1}, {2, y2}, ...
+        IAST vector = (IAST) m.normal(false);
+        IExpr points = F.mapRange(1, vector.size(), i -> F.list(F.ZZ(i), vector.get(i)));
+        IExpr designMatrix = engine.evaluate(ast.setAtCopy(1, points));
+        if (designMatrix.isList() && vector.exists(x -> x.isInexactNumber())) {
+          return engine.evalN(designMatrix);
+        }
+        return designMatrix;
+      }
       int[] dim = m.isMatrix(false);
       if (dim != null && dim[1] >= 2) {
         // double[][] matrix = m.toDoubleMatrix(false);
@@ -4281,10 +4291,22 @@ public final class LinearAlgebra {
         return Errors.printMessage(S.IdentityMatrix, "intpm", F.list(ast, F.C1), engine);
       }
       if (ast.isAST2()) {
-        if (ast.arg2() == S.SparseArray) {
+        IExpr structure = ast.arg2();
+        if (structure.isRuleAST() && structure.first() == S.TargetStructure) {
+          // TargetStructure -> "Dense" or "Sparse"
+          IExpr value = structure.second();
+          if (value.isString("Dense")) {
+            structure = S.List;
+          } else if (value.isString("Sparse")) {
+            structure = S.SparseArray;
+          } else {
+            return F.NIL;
+          }
+        }
+        if (structure == S.SparseArray) {
           return F.sparseMatrix((i, j) -> i == j ? F.C1 : F.C0, dimension[0], dimension[1]);
         }
-        if (ast.arg2() != S.List) {
+        if (structure != S.List) {
           // Argument `1` at position `2` is not List or SparseArray.
           return Errors.printMessage(S.IdentityMatrix, "targ", F.list(ast, F.C1), engine);
         }
@@ -5500,6 +5522,9 @@ public final class LinearAlgebra {
         int[] dim = ast.arg1().isMatrix();
         if (dim != null && dim[0] > 0 && dim[1] > 0) {
           if (dim[0] != dim[1]) {
+            if (ast.isAST1() && ast.arg1().isFree(x -> x.isInexactNumber(), false)) {
+              return rectangularLU((IAST) ast.arg1(), dim[0], dim[1], engine);
+            }
             // Argument `1` at position `2` is not a non-empty square matrix.
             return Errors.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
           }
@@ -5529,6 +5554,77 @@ public final class LinearAlgebra {
         engine.setTogetherMode(togetherMode);
       }
       return F.NIL;
+    }
+
+    /**
+     * The decomposition <code>{l, u, p, 0}</code> of an exact <code>rows x cols</code> matrix
+     * <code>m</code> which isn't square: the unit lower triangular <code>rows x rows</code> matrix
+     * <code>l</code>, the row echelon matrix <code>u</code> with the shape of <code>m</code> and
+     * the permutation matrix <code>p</code> with <code>l.u == p.m</code>. The pivot of a column is
+     * its first non-zero entry.
+     */
+    private static IExpr rectangularLU(IAST m, int rows, int cols, EvalEngine engine) {
+      IExpr[][] u = new IExpr[rows][cols];
+      IExpr[][] l = new IExpr[rows][rows];
+      int[] perm = new int[rows];
+      for (int i = 0; i < rows; i++) {
+        perm[i] = i;
+        IAST row = (IAST) m.get(i + 1);
+        for (int j = 0; j < cols; j++) {
+          u[i][j] = row.get(j + 1);
+        }
+        for (int j = 0; j < rows; j++) {
+          l[i][j] = i == j ? F.C1 : F.C0;
+        }
+      }
+      int r = 0;
+      for (int c = 0; c < cols && r < rows; c++) {
+        engine.checkTimeLimit();
+        int pivot = -1;
+        for (int i = r; i < rows; i++) {
+          if (!u[i][c].isPossibleZero(true)) {
+            pivot = i;
+            break;
+          }
+        }
+        if (pivot < 0) {
+          continue;
+        }
+        if (pivot != r) {
+          IExpr[] tempRow = u[pivot];
+          u[pivot] = u[r];
+          u[r] = tempRow;
+          int tempIndex = perm[pivot];
+          perm[pivot] = perm[r];
+          perm[r] = tempIndex;
+          for (int j = 0; j < r; j++) {
+            IExpr temp = l[pivot][j];
+            l[pivot][j] = l[r][j];
+            l[r][j] = temp;
+          }
+        }
+        for (int i = r + 1; i < rows; i++) {
+          if (u[i][c].isPossibleZero(true)) {
+            u[i][c] = F.C0;
+            continue;
+          }
+          IExpr factor = engine.evaluate(F.Together(F.Divide(u[i][c], u[r][c])));
+          l[i][r] = factor;
+          u[i][c] = F.C0;
+          for (int j = c + 1; j < cols; j++) {
+            u[i][j] = engine.evaluate(F.Together(F.Subtract(u[i][j], F.Times(factor, u[r][j]))));
+          }
+        }
+        r++;
+      }
+      IASTAppendable p = F.ListAlloc(rows);
+      for (int i = 0; i < rows; i++) {
+        final int column = perm[i];
+        p.append(F.mapRange(0, rows, j -> j == column ? F.C1 : F.C0));
+      }
+      IAST lMatrix = F.mapRange(0, rows, i -> F.List(l[i]));
+      IAST uMatrix = F.mapRange(0, rows, i -> F.List(u[i]));
+      return F.List(lMatrix, uMatrix, p, F.C0);
     }
 
     @Override
@@ -5671,7 +5767,7 @@ public final class LinearAlgebra {
 
           int p = arg2.toMachineInt();
           if (F.isNotPresent(p)) {
-            return F.NIL;
+            return matrixPowerFunction(ast, dimensions, engine);
           }
           if (ast.isAST3()) {
             return matrixPowerApply(matrix, p, ast, engine);
@@ -5721,6 +5817,29 @@ public final class LinearAlgebra {
       } finally {
         engine.setTogetherMode(togetherMode);
       }
+    }
+
+    /**
+     * <code>MatrixPower(m, p)</code> or <code>MatrixPower(m, p, v)</code> for a symbolic or
+     * non-integer exponent <code>p</code>: the power function <code>#^p&amp;</code> applied to the
+     * square matrix <code>m</code> through its eigen or Jordan decomposition.
+     */
+    private static IExpr matrixPowerFunction(final IAST ast, int[] dimensions,
+        EvalEngine engine) {
+      final IExpr exponent = ast.arg2();
+      if (dimensions[0] != dimensions[1] || exponent.isInteger() || exponent.isList()
+          || exponent.isInterval() || exponent.isString()) {
+        return F.NIL;
+      }
+      IExpr power = engine.evaluate(F.MatrixFunction(F.Function(F.Power(F.Slot1, exponent)), //
+          ast.arg1()));
+      if (!power.isList()) {
+        return F.NIL;
+      }
+      if (ast.isAST3()) {
+        return engine.evaluate(F.Dot(power, ast.arg3()));
+      }
+      return power;
     }
 
     /**
@@ -6632,9 +6751,45 @@ public final class LinearAlgebra {
       }
     }
 
+    /**
+     * Gram-Schmidt orthonormalization of the elements of <code>list</code> with the inner product
+     * <code>f(u, v)</code>: <code>w_k = e_k - Sum(f(e_k, w_j) / f(w_j, w_j) * w_j)</code> is
+     * normalized to <code>w_k / Sqrt(f(w_k, w_k))</code>; a dependent element gives
+     * <code>0</code>.
+     */
+    private static IExpr gramSchmidt(IAST list, IExpr f, EvalEngine engine) {
+      java.util.List<IExpr> orthogonal = new ArrayList<IExpr>();
+      java.util.List<IExpr> squares = new ArrayList<IExpr>();
+      IASTAppendable result = F.ListAlloc(list.argSize());
+      for (int k = 1; k < list.size(); k++) {
+        engine.checkTimeLimit();
+        IExpr e = list.get(k);
+        IASTAppendable w = F.PlusAlloc(orthogonal.size() + 1);
+        w.append(e);
+        for (int j = 0; j < orthogonal.size(); j++) {
+          IExpr wj = orthogonal.get(j);
+          w.append(F.Times(F.CN1, F.binaryAST2(f, e, wj), F.Power(squares.get(j), F.CN1), wj));
+        }
+        IExpr wk = engine.evaluate(w);
+        IExpr square = engine.evaluate(F.binaryAST2(f, wk, wk));
+        if (engine.evaluate(F.PossibleZeroQ(square)).isTrue()) {
+          result.append(engine.evaluate(F.Times(F.C0, wk)));
+          continue;
+        }
+        orthogonal.add(wk);
+        squares.add(square);
+        result.append(engine.evaluate(F.Times(F.Power(square, F.CN1D2), wk)));
+      }
+      return result;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST2() && !ast.arg2().isRuleAST() && arg1.isList()) {
+        // an inner product function
+        return gramSchmidt((IAST) arg1, ast.arg2(), engine);
+      }
       int[] dim = arg1.isMatrix();
       if (dim != null) {
         final String method = method(ast, engine);
@@ -6830,6 +6985,12 @@ public final class LinearAlgebra {
         IExpr v = arg2;
         return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
       }
+      if (dim1 > 0 && dim2 < 0) {
+        int[] dims = arg2.isMatrix(false);
+        if (dims != null && dims[1] == dim1) {
+          return projectionOnSpan((IAST) arg1, (IAST) arg2, engine);
+        }
+      }
       if (dim1 >= 0) {
         if (dim1 != dim2) {
           // The vectors `1` and `2` have different lengths.
@@ -6850,6 +7011,35 @@ public final class LinearAlgebra {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * The orthogonal projection of the vector <code>u</code> onto the space spanned by the rows of
+     * <code>matrix</code>: the rows are orthogonalized with the inner product
+     * <code>a . Conjugate(b)</code>, rows which depend on the earlier ones are dropped, and the
+     * projections onto the orthogonal rows are added.
+     */
+    private static IExpr projectionOnSpan(IAST u, IAST matrix, EvalEngine engine) {
+      java.util.List<IExpr> basis = new java.util.ArrayList<IExpr>();
+      java.util.List<IExpr> norms = new java.util.ArrayList<IExpr>();
+      IExpr result = F.constantArray(F.C0, u.argSize());
+      for (int i = 1; i < matrix.size(); i++) {
+        engine.checkTimeLimit();
+        IExpr w = matrix.get(i);
+        for (int k = 0; k < basis.size(); k++) {
+          IExpr b = basis.get(k);
+          w = engine.evaluate(F.Subtract(w,
+              F.Times(F.Divide(F.Dot(w, F.Conjugate(b)), norms.get(k)), b)));
+        }
+        IExpr norm = engine.evaluate(F.Together(F.Dot(w, F.Conjugate(w))));
+        if (norm.isZero()) {
+          continue;
+        }
+        basis.add(w);
+        norms.add(norm);
+        result = F.Plus(result, F.Times(F.Divide(F.Dot(u, F.Conjugate(w)), norm), w));
+      }
+      return engine.evaluate(F.Together(result));
     }
 
     @Override
@@ -7056,12 +7246,30 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        return ast.arg2() == S.Full ? fullDecomposition(ast.arg1(), engine) : F.NIL;
+      }
       boolean togetherMode = engine.isTogetherMode();
 
       try {
         final IExpr arg1 = ast.arg1();
         int[] dim = arg1.isMatrix();
         if (dim != null) {
+          if (dim[0] > 0 && dim[1] > 0 && engine.isSymbolicMode(S.QRDecomposition.getAttributes())
+              && ((IAST) arg1).forAll(row -> ((IAST) row)
+                  .forAll(x -> x.isNumericFunction(true) && !x.isInexactNumber()))) {
+            IExpr gramSchmidt = exactQR((IAST) arg1, dim, engine);
+            if (gramSchmidt.isPresent()) {
+              return gramSchmidt;
+            }
+          }
+          if (!engine.isArbitraryMode() && ((IAST) arg1)
+              .exists(row -> ((IAST) row).exists(x -> x.isInexactNumber()))) {
+            final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
+            if (complexMatrix != null) {
+              return householderQR(complexMatrix);
+            }
+          }
           if (engine.isSymbolicMode(S.QRDecomposition.getAttributes())) {
             // TODO improve for symbolic calculations
             // TODO https://github.com/Hipparchus-Math/hipparchus/issues/137
@@ -7102,15 +7310,7 @@ public final class LinearAlgebra {
           }
           final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
           if (complexMatrix != null) {
-            FieldQRDecomposition<Complex> ed = new FieldQRDecomposition<Complex>(complexMatrix);
-            FieldMatrix<Complex> q = ed.getQ();
-            if (Convert.complexMatrix2List(q) != null) {
-              FieldMatrix<Complex> r = ed.getR();
-              if (Convert.complexMatrix2List(r) != null) {
-                return F.list(Convert.complexMatrix2List(q), Convert.complexMatrix2List(r));
-              }
-            }
-            return F.NIL;
+            return householderQR(complexMatrix);
           }
         }
 
@@ -7123,9 +7323,203 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
+    /**
+     * <code>QRDecomposition(m, Full)</code> - the square matrix <code>q</code>, whose additional
+     * rows are an orthonormal basis of the orthogonal complement of the rows of the reduced
+     * <code>q</code>, and <code>r</code> padded with rows of zeros.
+     */
+    private static IExpr fullDecomposition(IExpr m, EvalEngine engine) {
+      int[] dim = m.isMatrix();
+      if (dim == null || dim[0] < dim[1]) {
+        return F.NIL;
+      }
+      if (!m.isFree(x -> x.isInexactNumber(), false)) {
+        IExpr qr = engine.evaluate(F.QRDecomposition(m));
+        return qr.isList2() && qr.first().argSize() == dim[0] ? qr : F.NIL;
+      }
+      // Gram-Schmidt on the columns: the rows of q are orthonormal and r == q.m
+      IExpr transposed = engine.evaluate(F.Transpose(m));
+      IExpr q = engine.evaluate(F.Orthogonalize(transposed));
+      if (!q.isList() || q.argSize() != dim[1]
+          || ((IAST) q).exists(row -> row.isList() && ((IAST) row).forAll(IExpr::isZero))) {
+        // the columns are linearly dependent
+        return F.NIL;
+      }
+      IExpr r = engine.evaluate(F.Map(F.Function(F.Map(S.Simplify, F.Slot1)), F.Dot(q, m)));
+      IExpr complement = engine.evaluate(F.Orthogonalize(F.NullSpace(transposed)));
+      if (!r.isList() || !complement.isList() || dim[1] + complement.argSize() != dim[0]) {
+        return F.NIL;
+      }
+      IASTAppendable fullQ = ((IAST) q).copyAppendable();
+      fullQ.appendArgs((IAST) complement);
+      IASTAppendable fullR = ((IAST) r).copyAppendable();
+      while (fullR.argSize() < dim[0]) {
+        fullR.append(F.constantArray(F.C0, dim[1]));
+      }
+      return F.list(fullQ, fullR);
+    }
+
+    /**
+     * The reduced decomposition of a machine number matrix by Householder reflections, in the
+     * conventions of the LAPACK routines <code>zgeqr2</code> and <code>zung2r</code>: a column
+     * which has only zeros below the diagonal (and a real diagonal entry) is not reflected. The
+     * rows of <code>q</code> are the conjugated first <code>Min(m, n)</code> columns of the
+     * unitary factor, <code>r</code> has <code>Min(m, n)</code> rows.
+     */
+    private static IAST householderQR(FieldMatrix<Complex> matrix) {
+      final int m = matrix.getRowDimension();
+      final int n = matrix.getColumnDimension();
+      final int k = Math.min(m, n);
+      Complex[][] a = matrix.getData();
+      Complex[] tau = new Complex[k];
+      for (int j = 0; j < k; j++) {
+        Complex alpha = a[j][j];
+        double xnorm = 0.0;
+        for (int i = j + 1; i < m; i++) {
+          xnorm = Math.hypot(xnorm, Math.hypot(a[i][j].getReal(), a[i][j].getImaginary()));
+        }
+        if (xnorm == 0.0 && alpha.getImaginary() == 0.0) {
+          tau[j] = Complex.ZERO;
+          continue;
+        }
+        double beta = -Math.copySign(
+            Math.hypot(Math.hypot(alpha.getReal(), alpha.getImaginary()), xnorm),
+            alpha.getReal());
+        tau[j] = new Complex((beta - alpha.getReal()) / beta, -alpha.getImaginary() / beta);
+        Complex scale = Complex.ONE.divide(alpha.subtract(beta));
+        for (int i = j + 1; i < m; i++) {
+          a[i][j] = a[i][j].multiply(scale);
+        }
+        a[j][j] = Complex.ONE;
+        // apply the conjugated reflection to the remaining columns
+        Complex conjTau = tau[j].conjugate();
+        for (int c = j + 1; c < n; c++) {
+          Complex w = Complex.ZERO;
+          for (int i = j; i < m; i++) {
+            w = w.add(a[i][j].conjugate().multiply(a[i][c]));
+          }
+          w = w.multiply(conjTau);
+          for (int i = j; i < m; i++) {
+            a[i][c] = a[i][c].subtract(a[i][j].multiply(w));
+          }
+        }
+        a[j][j] = new Complex(beta);
+      }
+      // the first k columns of the product of the reflections
+      Complex[][] q = new Complex[m][k];
+      for (int i = 0; i < m; i++) {
+        for (int c = 0; c < k; c++) {
+          q[i][c] = i == c ? Complex.ONE : Complex.ZERO;
+        }
+      }
+      for (int j = k - 1; j >= 0; j--) {
+        if (tau[j].isZero()) {
+          continue;
+        }
+        for (int c = 0; c < k; c++) {
+          // v = {1, a[j+1][j], ..., a[m-1][j]}
+          Complex w = q[j][c];
+          for (int i = j + 1; i < m; i++) {
+            w = w.add(a[i][j].conjugate().multiply(q[i][c]));
+          }
+          w = w.multiply(tau[j]);
+          q[j][c] = q[j][c].subtract(w);
+          for (int i = j + 1; i < m; i++) {
+            q[i][c] = q[i][c].subtract(a[i][j].multiply(w));
+          }
+        }
+      }
+      return F.list(F.matrix((i, c) -> complexOrReal(q[c][i].conjugate()), k, m),
+          F.matrix((i, c) -> c < i ? F.CD0 : complexOrReal(a[i][c]), k, n));
+    }
+
+    private static IExpr complexOrReal(Complex c) {
+      return c.getImaginary() == 0.0 ? F.num(c.getReal()) : F.complexNum(c);
+    }
+
+    /**
+     * The reduced decomposition of an exact matrix by Gram-Schmidt orthogonalization of its
+     * columns: the rows of <code>q</code> are the orthonormal vectors of the linearly independent
+     * columns and <code>r = Conjugate(q) . m</code> is upper triangular. A zero matrix gives the
+     * first unit vector as <code>q</code>.
+     *
+     * @return {@link F#NIL} if a coefficient can't be decided to be zero
+     */
+    private static IExpr exactQR(IAST matrix, int[] dim, EvalEngine engine) {
+      final int m = dim[0];
+      final int n = dim[1];
+      // the orthogonal (not normalized) vectors, their squared norms and their pivot columns
+      List<IExpr[]> basis = new ArrayList<IExpr[]>();
+      List<IExpr> norms = new ArrayList<IExpr>();
+      List<Integer> pivots = new ArrayList<Integer>();
+      for (int j = 1; j <= n; j++) {
+        engine.checkTimeLimit();
+        final int column = j;
+        IExpr[] v = new IExpr[m];
+        for (int i = 0; i < m; i++) {
+          v[i] = matrix.getPart(i + 1, column);
+        }
+        for (int b = 0; b < basis.size(); b++) {
+          IExpr coefficient =
+              engine.evaluate(F.Together(F.Times(conjugateDot(basis.get(b), v, engine),
+                  F.Power(norms.get(b), F.CN1))));
+          for (int i = 0; i < m; i++) {
+            v[i] = engine.evaluate(
+                F.Together(F.Subtract(v[i], F.Times(coefficient, basis.get(b)[i]))));
+          }
+        }
+        IExpr norm = engine.evaluate(F.Together(conjugateDot(v, v, engine)));
+        if (norm.isZero()) {
+          continue;
+        }
+        if (!norm.isNumber() && engine.evalTrue(F.PossibleZeroQ(norm))) {
+          continue;
+        }
+        if (!norm.isNumber() && !norm.isNumericFunction(true)) {
+          return F.NIL;
+        }
+        basis.add(v);
+        norms.add(norm);
+        pivots.add(column);
+      }
+      if (basis.isEmpty()) {
+        return F.list(F.matrix((i, j) -> j == 0 ? F.C1 : F.C0, 1, m),
+            F.matrix((i, j) -> F.C0, 1, n));
+      }
+      final int k = basis.size();
+      IASTAppendable q = F.ListAlloc(k);
+      IASTAppendable r = F.ListAlloc(k);
+      for (int b = 0; b < k; b++) {
+        final IExpr[] v = basis.get(b);
+        final IExpr scale = F.Power(norms.get(b), F.CN1D2);
+        q.append(F.mapRange(0, m, i -> engine.evaluate(F.Times(scale, v[i]))));
+        final int pivot = pivots.get(b);
+        r.append(F.mapRange(1, n + 1, j -> {
+          if (j < pivot) {
+            return F.C0;
+          }
+          IExpr[] c = new IExpr[m];
+          for (int i = 0; i < m; i++) {
+            c[i] = matrix.getPart(i + 1, j);
+          }
+          return engine.evaluate(F.Times(scale, F.Together(conjugateDot(v, c, engine))));
+        }));
+      }
+      return F.list(q, r);
+    }
+
+    /** <code>Conjugate(u) . v</code> */
+    private static IExpr conjugateDot(IExpr[] u, IExpr[] v, EvalEngine engine) {
+      IASTAppendable sum = F.PlusAlloc(u.length);
+      for (int i = 0; i < u.length; i++) {
+        sum.append(F.Times(F.Conjugate(u[i]), v[i]));
+      }
+      return engine.evaluate(sum);
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
     // @Override
     // public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
@@ -7671,12 +8065,7 @@ public final class LinearAlgebra {
         if (machineValues.isPresent()) {
           machineValues = dropSmallValues(machineValues, tolerance, engine);
           if (ast.isAST2()) {
-            int n = ast.arg2().toMachineInt();
-            if (n <= 0) {
-              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
-            }
-            return S.Take.of(engine, machineValues, F.ZZ(Math.min(n, machineValues.argSize())));
+            return takeValues(ast, machineValues, Math.min(dim[0], dim[1]), F.CD0, engine);
           }
           return machineValues;
         }
@@ -7688,8 +8077,9 @@ public final class LinearAlgebra {
           IAST exact = rationalSingularValues((IAST) m.normal(false), engine);
           if (exact.isPresent()) {
             exact = dropSmallValues(exact, tolerance, engine);
-            return ast.isAST2() ? exact.copyUntil(Math.min(exact.size(),
-                Math.max(1, ast.arg2().toIntDefault(1)) + 1)) : exact;
+            return ast.isAST2()
+                ? takeValues(ast, exact, Math.min(dim[0], dim[1]), F.CD0, engine)
+                : exact;
           }
           if (singularValueList.isNIL()) {
             singularValueList =
@@ -7702,19 +8092,54 @@ public final class LinearAlgebra {
               ((IAST) singularValueList).filter(x -> keepSingularValue(x, engine))[0], tolerance,
               engine);
           int n = singularValueList.argSize();
+          IExpr sorted = S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
           if (ast.isAST2()) {
-            int k = ast.arg2().toMachineInt();
-            if (k <= 0) {
-              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+            if (!sorted.isList()) {
+              return F.NIL;
             }
-            n = Math.min(n, k);
+            IExpr zero = singularValueList.isFree(x -> x.isInexactNumber(), false) ? F.C0 : F.CD0;
+            return takeValues(ast, (IAST) sorted, Math.min(dim[0], dim[1]), zero, engine);
           }
-
-          return S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
+          return sorted;
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The singular values selected by the second argument <code>n</code>, <code>-n</code> or
+     * <code>{n}</code> from all <code>Min(rows, columns)</code> singular values, the dropped ones
+     * counted as zero.
+     *
+     * @param ast <code>SingularValueList(m, spec)</code>
+     * @param values the non-zero singular values in decreasing order
+     * @param size the number of all singular values
+     * @param zero the value of a zero singular value
+     * @param engine the evaluation engine
+     */
+    private static IExpr takeValues(IAST ast, IAST values, int size, IExpr zero,
+        EvalEngine engine) {
+      IASTAppendable all = values.copyAppendable();
+      while (all.argSize() < size) {
+        all.append(zero);
+      }
+      IExpr spec = ast.arg2();
+      if (spec.isList1()) {
+        int k = spec.first().toIntDefault();
+        if (k >= 1 && k <= size) {
+          return F.list(all.get(k));
+        }
+        return F.NIL;
+      }
+      int n = spec.toIntDefault();
+      if (n == 0 || F.isNotPresent(n)) {
+        // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+        return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+      }
+      if (n > 0) {
+        return all.copyUntil(Math.min(n, size) + 1);
+      }
+      return S.Take.of(engine, all, F.ZZ(-Math.min(-n, size)));
     }
 
     @Override
@@ -8505,9 +8930,33 @@ public final class LinearAlgebra {
         if (columns <= 0) {
           return F.NIL;
         }
+        // the k-th repetition of a node gives the k-th derivative of its row (confluent
+        // Vandermonde matrix)
+        final int[] order = new int[list.argSize()];
+        for (int i = 1; i < list.argSize(); i++) {
+          for (int k = 0; k < i; k++) {
+            if (list.get(k + 1).equals(list.get(i + 1))) {
+              order[i]++;
+            }
+          }
+        }
         // the first column is 1 for each element, also for the element 0
-        return F.matrix((i, j) -> j == 0 ? F.C1 : F.Power(list.get(i + 1), F.ZZ(j)),
-            list.argSize(), columns);
+        return F.matrix((i, j) -> {
+          final int d = order[i];
+          if (j < d) {
+            return F.C0;
+          }
+          // D(x^j, {x, d}) == j!/(j-d)! * x^(j-d)
+          IExpr power = j == d ? F.C1 : F.Power(list.get(i + 1), F.ZZ(j - d));
+          if (d == 0) {
+            return power;
+          }
+          java.math.BigInteger falling = java.math.BigInteger.ONE;
+          for (int t = j - d + 1; t <= j; t++) {
+            falling = falling.multiply(java.math.BigInteger.valueOf(t));
+          }
+          return F.Times(F.ZZ(falling), power);
+        }, list.argSize(), columns);
       }
       return F.NIL;
     }
@@ -8929,6 +9378,7 @@ public final class LinearAlgebra {
 
           IASTAppendable sortedEigenvalues = F.ListAlloc(n);
           IASTAppendable eigenvectors = F.ListAlloc(n);
+          IAST genericEigenvector = null;
 
           // 3. Evaluate NullSpace for each unique Eigenvalue in mathematically sorted order
           for (int i = 1; i <= sortedUniqueRoots.argSize(); i++) {
@@ -8944,6 +9394,17 @@ public final class LinearAlgebra {
               continue;
             }
 
+            if (algMult == 1 && lambda.leafCount() > LARGE_EIGENVALUE_LEAFCOUNT) {
+              // the null space of A - lambda * I with a large radical eigenvalue doesn't finish:
+              // the eigenvector of A - x * I for a symbolic x is evaluated at x = lambda instead
+              if (genericEigenvector == null) {
+                genericEigenvector = genericEigenvector(matrix, n, x, engine);
+              }
+              if (genericEigenvector.isPresent()) {
+                eigenvectors.append(engine.evaluate(F.subst(genericEigenvector, x, lambda)));
+                continue;
+              }
+            }
             // Compute NullSpace(A - lambda * I)
             IExpr identity = engine.evaluate(F.IdentityMatrix(n));
             IExpr aMinusLambdaI = engine.evaluate(F.Subtract(matrix, F.Times(lambda, identity)));
@@ -8997,6 +9458,50 @@ public final class LinearAlgebra {
       }
     }
     return F.NIL;
+  }
+
+  /** An eigenvalue with more leaves than this gets its eigenvector from the generic one. */
+  private static final int LARGE_EIGENVALUE_LEAFCOUNT = 60;
+
+  /** The largest dimension for the generic eigenvector of a symbolic matrix. */
+  private static final int MAX_GENERIC_EIGENVECTOR_DIMENSION = 4;
+
+  /**
+   * The eigenvector of <code>A - x * I</code> for a symbolic <code>x</code> which belongs to a
+   * simple eigenvalue: the signed minors of the first <code>n-1</code> rows span their null space,
+   * and the vector is scaled to a last non-zero entry <code>1</code>.
+   *
+   * @return {@link F#NIL} if the first <code>n-1</code> rows are dependent for every
+   *         <code>x</code> or the matrix is too large
+   */
+  private static IAST genericEigenvector(IAST matrix, int n, ISymbol x, EvalEngine engine) {
+    if (n < 2 || n > MAX_GENERIC_EIGENVECTOR_DIMENSION) {
+      return F.NIL;
+    }
+    IASTAppendable vector = F.ListAlloc(n);
+    for (int j = 1; j <= n; j++) {
+      final int column = j;
+      // the rows 1..n-1 of A - x*I without the column j
+      IAST minor = F.matrix((r, c) -> {
+        int col = c + 1 < column ? c + 1 : c + 2;
+        IExpr entry = matrix.getPart(r + 1, col);
+        return r + 1 == col ? F.Subtract(entry, x) : entry;
+      }, n - 1, n - 1);
+      IExpr det = engine.evaluate(F.Expand(F.Det(minor)));
+      vector.append((j + n) % 2 == 0 ? det : engine.evaluate(F.Negate(det)));
+    }
+    int last = n;
+    while (last >= 1 && engine.evalTrue(F.PossibleZeroQ(vector.get(last)))) {
+      last--;
+    }
+    if (last < 1) {
+      return F.NIL;
+    }
+    final int pivotIndex = last;
+    final IExpr pivot = vector.get(last);
+    return F.mapRange(1, n + 1, j -> j == pivotIndex ? F.C1
+        : j > pivotIndex ? F.C0
+            : engine.evaluate(F.Together(F.Divide(vector.get(j), pivot))));
   }
 
   /**

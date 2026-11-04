@@ -780,6 +780,11 @@ public final class Combinatoric {
       IExpr head = S.Cycles;
       if (ast.isAST2()) {
         head = ast.arg2();
+        if (arg1.isAST(S.Cycles, 2)) {
+          // the cycles of the permutation list, with the fixed points below the largest moved
+          // point
+          arg1 = S.PermutationList.of(engine, arg1);
+        }
       }
       if (arg1.isList()) {
         return CombinatoricUtil.permutationCycles((IAST) arg1, head);

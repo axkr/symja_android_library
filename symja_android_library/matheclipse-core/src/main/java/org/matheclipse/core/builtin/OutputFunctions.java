@@ -31,6 +31,7 @@ import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -488,6 +489,10 @@ public final class OutputFunctions {
             IExpr variable = variables.arg1();
             IExpr temp = hornerScheme(arg1, variable, engine);
             if (temp.isPresent()) {
+              if (ast.isAST2() && variables.argSize() > 1) {
+                // the coefficients get the horner scheme in the other variables
+                return hornerCoefficients(temp, variable, variables.rest(), engine);
+              }
               return temp;
             }
             // generate the horner scheme for the numerator and denominator separately
@@ -508,6 +513,45 @@ public final class OutputFunctions {
         }
       }
       return arg1;
+    }
+
+    /**
+     * Replace the coefficients of the powers of <code>variable</code> in the horner scheme
+     * <code>scheme</code> by their horner schemes in the <code>otherVariables</code>.
+     */
+    private static IExpr hornerCoefficients(IExpr scheme, IExpr variable, IAST otherVariables,
+        EvalEngine engine) {
+      if (scheme.isFree(variable)) {
+        // the scheme may hold a coefficient in a Plus() of one argument
+        if (scheme.isAST(S.Plus)) {
+          return engine.evaluate(
+              F.binaryAST2(S.HornerForm, engine.evaluate(scheme), otherVariables));
+        }
+        return scheme;
+      }
+      if (scheme.isAST(S.Plus)) {
+        // the summands without the variable are the coefficient of its power 0
+        IAST plus = (IAST) scheme;
+        IASTAppendable coefficient = F.PlusAlloc(plus.argSize());
+        IASTAppendable result = F.PlusAlloc(plus.argSize());
+        for (IExpr summand : plus) {
+          if (summand.isFree(variable)) {
+            coefficient.append(summand);
+          } else {
+            result.append(hornerCoefficients(summand, variable, otherVariables, engine));
+          }
+        }
+        if (coefficient.argSize() > 0) {
+          result.append(
+              hornerCoefficients(coefficient.oneIdentity0(), variable, otherVariables, engine));
+        }
+        return result.oneIdentity0();
+      }
+      if (scheme.isAST()) {
+        return ((IAST) scheme)
+            .map(x -> hornerCoefficients(x, variable, otherVariables, engine), 1);
+      }
+      return scheme;
     }
 
     /**
@@ -843,6 +887,12 @@ public final class OutputFunctions {
       if (ast.isAST1()) {
         return F.NIL;
       }
+      for (int i = 3; i < ast.size(); i++) {
+        if (!ast.get(i).isRuleAST()) {
+          // only options may follow the separator
+          return Errors.printArgMessage(ast, ARGS_1_2, engine);
+        }
+      }
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isList() && arg2.isString()) {
@@ -868,7 +918,7 @@ public final class OutputFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_INFINITY;
     }
   }
 

@@ -439,6 +439,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateRuleCycleAndZeroCondition() {
     // a rule's Integrate(Rubi`ExpandToSum(u,x)^w*Rubi`ExpandToSum(v,x)^1,x) asked for the integral
     // it came from and was returned with its unevaluated integrand
@@ -1058,6 +1059,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   // }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSystem172() {
     check("Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))", //
         "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
@@ -1701,6 +1703,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * principal values from an antiderivative.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFrullaniGaussianPrincipalValue() {
     // was 0
     check("Integrate((ArcTan(4*x)-ArcTan(5*x))/x, {x,0,Infinity})", //
@@ -1736,6 +1739,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegratePowersOfTwoLinearFactors() {
     // the partial fractions have coefficients over powers of q*r-p*s, which the common
     // denominator of their sums keeps as a power (a sum of such fractions with the expanded
@@ -1755,6 +1759,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateBranchCutJump() {
     // the antiderivative has a derivative which is right, but jumps between the limits: the
     // difference of its limits is off by a constant and is not returned
@@ -1832,6 +1837,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   /** A polynomial times a rational function of E^(b*x): partial fractions and PolyLog ladders. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegratePolyLogLadder() {
     check("Chop(N(D(Integrate(x*Cos(x)/(Cos(x)+Sin(x)),x),x)-x*Cos(x)/(Cos(x)+Sin(x)) /. x->7/10))", //
         "0");
@@ -1849,6 +1855,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * integral of a real integrand in real form.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateLogSineDefinite() {
     check("Integrate(Log(Sin(x)),{x,0,Pi})", //
         "-Pi*Log(2)");

@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /** Tests forSolve and Roots functions */
 public class ZTransformTest extends ExprEvaluatorTestCase {
@@ -73,6 +75,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testZTransform002() {
     check("ZTransform((-1)^n*n^2,n,z)", //
         "((1-z)*z)/(1+z)^3");

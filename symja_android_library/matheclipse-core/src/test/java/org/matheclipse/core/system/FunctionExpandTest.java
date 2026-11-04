@@ -370,7 +370,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   @Test
   public void testFunctionExpandHarmonicNumber() {
     check("FunctionExpand(HarmonicNumber(1/3-1))", //
-        "-Pi/(2*Sqrt(3))-Log(6)-Log(Sqrt(3)/2)");
+        "-Pi/(2*Sqrt(3))-3/2*Log(3)");
   }
 
   @Test
@@ -525,7 +525,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(PolyGamma(0,1/2))", //
         "-EulerGamma-Log(4)");
     check("FunctionExpand(PolyGamma(0,1/3))", //
-        "-EulerGamma-Pi/(2*Sqrt(3))-Log(6)-Log(Sqrt(3)/2)");
+        "-EulerGamma-Pi/(2*Sqrt(3))-3/2*Log(3)");
     check("FunctionExpand(PolyGamma(0,1/5))", //
         "-EulerGamma-1/2*Sqrt(1+2/Sqrt(5))*Pi-Log(10)+1/4*(-1+Sqrt(5))*Log(5/8-Sqrt(5)/8)+\n"
             + "1/4*(-1-Sqrt(5))*Log(5/8+Sqrt(5)/8)");

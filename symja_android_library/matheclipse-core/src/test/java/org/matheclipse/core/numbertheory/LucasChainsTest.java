@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /** Tests for {@link LucasChains}. */
 public class LucasChainsTest {
@@ -55,6 +57,7 @@ public class LucasChainsTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testEveryPrimeChain() {
     long chainCost = 0;
     long ladderCost = 0;

@@ -207,6 +207,10 @@ public class TriangleConstruct extends AbstractFunctionEvaluator {
    */
   public static IExpr angleBisector(IAST points, boolean interior, EvalEngine engine) {
     IExpr direction = bisectorDirection(points, 2, interior, engine);
+    if (direction.isPresent() && !interior) {
+      // the exterior bisector points from the first edge direction towards the second one
+      direction = engine.evaluate(F.Negate(direction));
+    }
     return direction.isNIL() ? F.NIL
         : F.binaryAST2(S.InfiniteLine, points.arg2(), engine.evaluate(F.Simplify(direction)));
   }

@@ -200,6 +200,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSimplify() {
     // E^(y + I*Pi*k) for an integer k: (-1)^k*E^y, and E^y for an even multiple
     check("Simplify(E^(6*I*k*Pi + w), Element(k, Integers))", //
@@ -960,6 +961,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
    * where the assumptions make the quotient positive.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFullSimplifyLogOfTrigQuotient() {
     check("FullSimplify(Log(Sec(3*x)+Tan(3*x)), -Pi/6<x<Pi/6)", //
         "ArcTanh(Sin(3*x))");

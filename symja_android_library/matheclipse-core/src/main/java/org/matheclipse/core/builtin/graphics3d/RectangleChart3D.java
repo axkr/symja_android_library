@@ -26,7 +26,7 @@ public class RectangleChart3D extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IAST datasets = RectangleChart.datasets(ast.arg1(), 3);
+    IAST datasets = RectangleChart.datasets(RectangleChart.chartData(ast.arg1(), engine), 3);
     if (datasets == null) {
       if (ast.arg1().isList()) {
         // `1` is not a valid dataset or a list of datasets.

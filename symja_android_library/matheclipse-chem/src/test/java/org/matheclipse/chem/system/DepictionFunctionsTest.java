@@ -201,10 +201,10 @@ public class DepictionFunctionsTest extends AbstractTestCase {
     // an association names each highlight, and the names become the legend of the graphics
     check("MoleculePlot3D(\"O=C(C1CCC1)S[C@@H]1CCC1(C)C\", "
         + "<|\"carbonyl\" -> Bond({\"C\",\"O\"},\"Double\"), "
-        + "\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[2,2]]", //
+        + "\"ring carbons\" -> Atom(\"C\", \"RingAtomQ\" -> True)|>)[[2,1,2]]", //
         "{carbonyl,ring carbons}");
     // ... paired with the colours those labels stand for, from the shared chart cycle
-    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> \"CO\"|>)[[2,1]]", //
+    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> \"CO\"|>)[[2,1,1]]", //
         "{RGBColor(0.985248,0.676238,0.0398315)}");
     // highlighted parts are split into their own primitive groups so each keeps one colour
     check("Length(MoleculePlot3D(\"O=C(C1CCC1)S[C@@H]1CCC1(C)C\")[[1,3,2,1]])", //
@@ -230,7 +230,7 @@ public class DepictionFunctionsTest extends AbstractTestCase {
   @Test
   public void testHighlightsAcceptSmartsAndPlainLists() {
     // a SMARTS string is matched with the same machinery the substructure queries use
-    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> MoleculePattern(\"CO\")|>)[[2,2]]", //
+    check("MoleculePlot3D(\"CCO\", <|\"alcohol\" -> MoleculePattern(\"CO\")|>)[[2,1,2]]", //
         "{alcohol}");
     // an unnamed list still highlights, but earns no legend
     check("FreeQ(MoleculePlot3D(\"CCO\", {Atom(\"O\")}), PlotLegends)", //

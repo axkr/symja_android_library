@@ -686,6 +686,20 @@ public class D extends AbstractFunctionOptionEvaluator {
     if (dim != null) {
       return dPiecewise(dim, (IAST) functionOfX, x, ast, engine);
     }
+    if ((functionOfX.isAST(S.Max) || functionOfX.isAST(S.Min)) && functionOfX.argSize() > 1
+        && functionOfX.isFree(IExpr::isInexactNumber, true)
+        && ((IAST) functionOfX).forAll(arg -> {
+          IExpr variables = engine.evaluate(F.Variables(arg));
+          return variables.isEmpty() || variables.equals(F.list(x));
+        })) {
+      // the pieces of Max(x, 1-x) and their kinks, where the derivative doesn't exist
+      IExpr expanded = engine.evaluate(F.PiecewiseExpand(functionOfX));
+      if (expanded.isPiecewise() != null) {
+        IASTMutable piecewiseD = ast.copy();
+        piecewiseD.set(1, expanded);
+        return piecewiseD;
+      }
+    }
 
     if (functionOfX instanceof ASTSeriesData) {
       ASTSeriesData series = ((ASTSeriesData) functionOfX);
@@ -1241,6 +1255,52 @@ public class D extends AbstractFunctionOptionEvaluator {
     return condition;
   }
 
+  /**
+   * The derivative of a <code>Piecewise</code> function whose conditions are comparisons of the
+   * differentiation variable <code>x</code> only. A piece holds where its condition is true and the
+   * conditions before it are false; these regions are reduced to intervals of <code>x</code>, whose
+   * interiors carry the derivatives of the pieces and of the default value. The boundary points get
+   * the default <code>Indeterminate</code>.
+   *
+   * @return {@link F#NIL} if a condition depends on another variable or can't be reduced
+   */
+  private static IExpr dPiecewiseReduced(IAST list, IExpr defaultValue, IExpr x, IAST ast,
+      EvalEngine engine) {
+    IAST variableList = F.list(x);
+    for (int i = 1; i < list.size(); i++) {
+      if (!list.get(i).isList2() || list.get(i).second().has(S.Unequal)
+          || !engine.evaluate(F.Variables(list.get(i).second())).equals(variableList)) {
+        return F.NIL;
+      }
+    }
+    IASTAppendable pwResult = F.ListAlloc(list.size() + 1);
+    IASTAppendable previous = F.ast(S.Or, list.size());
+    for (int i = 0; i < list.size(); i++) {
+      IExpr value;
+      IExpr region;
+      if (i < list.size() - 1) {
+        IExpr condition = list.get(i + 1).second();
+        value = list.get(i + 1).first();
+        region = previous.argSize() == 0 ? condition : F.And(condition, F.Not(previous.copy()));
+        previous.append(condition);
+      } else {
+        value = defaultValue;
+        region = F.Not(previous);
+      }
+      IExpr interval = engine.evalQuiet(F.Reduce(region, x, S.Reals));
+      if (!interval.isFree(S.Reduce, true) || !interval.isFree(S.Not, true)) {
+        return F.NIL;
+      }
+      IExpr opened = engine.evaluate(openCondition(interval, x));
+      if (!opened.isFalse()) {
+        IASTMutable piecewiseD = ast.copy();
+        piecewiseD.set(1, value);
+        pwResult.append(F.list(piecewiseD, opened));
+      }
+    }
+    return F.Piecewise(pwResult, S.Indeterminate);
+  }
+
   private static IExpr dPiecewise(int[] dim, final IAST piecewiseFunction, final IExpr x,
       final IAST ast, EvalEngine engine) {
 
@@ -1260,6 +1320,10 @@ public class D extends AbstractFunctionOptionEvaluator {
       return F.Piecewise(pwResult, defaultD);
     }
     if (list.size() > 1) {
+      IExpr reduced = dPiecewiseReduced(list, defaultValue, x, ast, engine);
+      if (reduced.isPresent()) {
+        return reduced;
+      }
       IASTAppendable pwResult = F.ListAlloc(list.size() + 1);
       IASTAppendable conditions = F.ast(S.Or, list.size());
       for (int i = 1; i < list.size(); i++) {

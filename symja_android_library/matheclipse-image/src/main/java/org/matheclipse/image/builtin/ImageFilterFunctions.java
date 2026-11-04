@@ -66,6 +66,7 @@ public class ImageFilterFunctions {
       install(S.MinFilter, new RankFilter(RankFilter.MIN));
       install(S.MaxFilter, new RankFilter(RankFilter.MAX));
       install(S.CommonestFilter, new CommonestFilter());
+      install(S.TotalVariationFilter, new TotalVariationFilter());
       S.ImageConvolve.setEvaluator(new ImageConvolve(true));
       S.ImageCorrelate.setEvaluator(new ImageConvolve(false));
       S.DerivativeFilter.setEvaluator(new DerivativeFilter());
@@ -76,6 +77,9 @@ public class ImageFilterFunctions {
       S.Closing.setEvaluator(new Morphology(true, true));
       S.CrossingDetect.setEvaluator(new CrossingDetect());
       S.MorphologicalComponents.setEvaluator(new MorphologicalComponents());
+      S.MorphologicalEulerNumber.setEvaluator(new MorphologicalEulerNumber());
+      S.Threshold.setEvaluator(new Threshold());
+      S.ImagePeriodogram.setEvaluator(new ImagePeriodogram());
       S.WatershedComponents.setEvaluator(new WatershedComponents());
       S.MorphologicalGraph.setEvaluator(new MorphologicalGraph());
       S.ComponentMeasurements.setEvaluator(new ComponentMeasurements());
@@ -709,6 +713,26 @@ public class ImageFilterFunctions {
       if (kernel == null || kernel.length == 0 || kernel[0] == null || kernel[0].length == 0) {
         return null;
       }
+      // Padding -> "Fixed" (the default), "Periodic", "Reflected", "Reversed" or a constant
+      String continuation = "Fixed";
+      double constant = Double.NaN;
+      if (ast.argSize() == 3) {
+        if (!ast.arg3().isRuleAST() || ast.arg3().first() != S.Padding) {
+          return null;
+        }
+        IExpr padding = ast.arg3().second();
+        if (padding.isString()) {
+          continuation = padding.toString();
+          if (!ImageGeometryFunctions.CONTINUATIONS.contains(continuation)) {
+            return null;
+          }
+        } else if (padding != S.Automatic) {
+          constant = padding.evalfNaN();
+          if (Double.isNaN(constant)) {
+            return null;
+          }
+        }
+      }
       final int kernelRows = kernel.length;
       final int kernelColumns = kernel[0].length;
       final int centerRow = convolve ? (kernelRows - 1) / 2 : kernelRows / 2;
@@ -721,16 +745,29 @@ public class ImageFilterFunctions {
           double sum = 0.0;
           for (int a = 0; a < kernelRows; a++) {
             int row = convolve ? y + centerRow - a : y + a - centerRow;
-            double[] samples = channel[Math.min(height - 1, Math.max(0, row))];
+            boolean rowInside = row >= 0 && row < height;
+            row = ImageGeometryFunctions.continued(row, height, continuation);
             for (int b = 0; b < kernelColumns; b++) {
               int column = convolve ? x + centerColumn - b : x + b - centerColumn;
-              sum += kernel[a][b] * samples[Math.min(width - 1, Math.max(0, column))];
+              double sample;
+              if (!Double.isNaN(constant) && (!rowInside || column < 0 || column >= width)) {
+                sample = constant;
+              } else {
+                int inside = ImageGeometryFunctions.continued(column, width, continuation);
+                sample = channel[row][inside];
+              }
+              sum += kernel[a][b] * sample;
             }
           }
           result[y][x] = sum;
         }
       }
       return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
     }
   }
 
@@ -1360,6 +1397,326 @@ public class ImageFilterFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <code>TotalVariationFilter(image, lambda)</code>: the total variation denoising of every
+   * channel, see {@link FilterFunctions#totalVariation}. The image keeps its type.
+   */
+  private static class TotalVariationFilter extends ImageFilter {
+
+    @Override
+    double[][] filter(double[][] channel, IAST ast, EvalEngine engine) {
+      double[] parameters = FilterFunctions.totalVariationParameters(ast);
+      if (parameters == null) {
+        return null;
+      }
+      return FilterFunctions.totalVariation(channel, parameters[0], (int) parameters[1], engine);
+    }
+
+    @Override
+    boolean keepsType() {
+      return true;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
+    }
+  }
+
+  /**
+   * <code>MorphologicalEulerNumber(image)</code>, <code>MorphologicalEulerNumber(image, t)</code>:
+   * the number of connected components of the pixels whose intensity is greater than
+   * <code>t</code> (<code>0</code> if not given) minus the number of holes in them. Pixels which
+   * only touch at a corner are connected unless <code>CornerNeighbors -> False</code> is given; the
+   * background is connected the other way. <code>Padding -> v</code> continues the image beyond its
+   * border with the value <code>v</code>, <code>0</code> by default.
+   */
+  private static class MorphologicalEulerNumber extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      double threshold = 0.0;
+      double padding = 0.0;
+      boolean cornerNeighbors = true;
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isRuleAST() && arg.first() == S.CornerNeighbors) {
+          cornerNeighbors = !arg.second().isFalse();
+        } else if (arg.isRuleAST() && arg.first() == S.Padding) {
+          padding = arg.second().evalfNaN();
+        } else if (i == 2 && !arg.isRuleAST()) {
+          threshold = arg.evalfNaN();
+        } else {
+          return F.NIL;
+        }
+      }
+      if (Double.isNaN(threshold) || Double.isNaN(padding)
+          || !(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      double[][][] channels = channels((ImageExpr) ast.arg1(), engine);
+      if (channels == null) {
+        return F.NIL;
+      }
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      // the image with a ring of padding pixels around it
+      boolean ring = padding > threshold;
+      boolean[][] foreground = new boolean[height + 2][width + 2];
+      boolean[][] background = new boolean[height + 2][width + 2];
+      for (int y = 0; y < height + 2; y++) {
+        for (int x = 0; x < width + 2; x++) {
+          boolean inside = y > 0 && x > 0 && y <= height && x <= width;
+          boolean value = inside ? intensity(channels, y - 1, x - 1) > threshold : ring;
+          foreground[y][x] = value;
+          background[y][x] = !value;
+        }
+      }
+      int components = count(labels(new boolean[][][] {foreground}, cornerNeighbors));
+      int holes = count(labels(new boolean[][][] {background}, !cornerNeighbors));
+      if (!ring) {
+        // the background around the image is no hole
+        holes--;
+      }
+      return F.ZZ(components - holes);
+    }
+
+    /** The grey level of a pixel, the luminance for a colour pixel. */
+    private static double intensity(double[][][] channels, int y, int x) {
+      if (channels.length >= 3) {
+        return Colors.grayLevel(channels[0][y][x], channels[1][y][x], channels[2][y][x]);
+      }
+      return channels[0][y][x];
+    }
+
+    private static int count(int[][][] labels) {
+      int max = 0;
+      for (int[] row : labels[0]) {
+        for (int label : row) {
+          max = Math.max(max, label);
+        }
+      }
+      return max;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
+    }
+  }
+
+  /**
+   * <code>Threshold(image, d)</code> and <code>Threshold(data, d)</code>: every sample whose
+   * absolute value is below <code>d</code> becomes <code>0</code>, the others are kept;
+   * <code>Threshold(x, {"Hard", d})</code> is the same and <code>Threshold(x, {"Soft", d})</code>
+   * also moves the kept samples by <code>d</code> towards <code>0</code>. A list keeps its exact
+   * numbers.
+   */
+  private static class Threshold extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr spec = ast.arg2();
+      boolean soft = false;
+      if (spec.isList2() && spec.first().isString()) {
+        String type = spec.first().toString();
+        if (type.equals("Soft")) {
+          soft = true;
+        } else if (!type.equals("Hard")) {
+          return F.NIL;
+        }
+        spec = spec.second();
+      }
+      final double delta = spec.evalfNaN();
+      if (Double.isNaN(delta) || delta < 0.0) {
+        return F.NIL;
+      }
+      final boolean softThreshold = soft;
+      if (ast.arg1() instanceof ImageExpr) {
+        ImageExpr image = (ImageExpr) ast.arg1();
+        double[][][] channels = channels(image, engine);
+        if (channels == null) {
+          return F.NIL;
+        }
+        for (double[][] channel : channels) {
+          for (double[] row : channel) {
+            for (int x = 0; x < row.length; x++) {
+              row[x] = threshold(row[x], delta, softThreshold);
+            }
+          }
+        }
+        return toImage(channels, image.getOptions(), image.sampleType());
+      }
+      if (ast.arg1().isList()) {
+        return thresholdList(ast.arg1(), spec, delta, softThreshold, engine);
+      }
+      return F.NIL;
+    }
+
+    /** The thresholded nested list of real numbers, or <code>F.NIL</code>. */
+    private static IExpr thresholdList(IExpr data, IExpr d, double delta, boolean soft,
+        EvalEngine engine) {
+      if (data.isList()) {
+        IAST list = (IAST) data;
+        IASTAppendable result = F.ListAlloc(list.argSize());
+        for (IExpr element : list) {
+          IExpr value = thresholdList(element, d, delta, soft, engine);
+          if (value.isNIL()) {
+            return F.NIL;
+          }
+          result.append(value);
+        }
+        return result;
+      }
+      if (!data.isReal()) {
+        return F.NIL;
+      }
+      if (Math.abs(data.evalf()) < delta) {
+        return data.isExactNumber() ? F.C0 : F.CD0;
+      }
+      return soft ? engine.evaluate(F.Subtract(data, F.Times(F.Sign(data), d))) : data;
+    }
+
+    private static double threshold(double value, double delta, boolean soft) {
+      if (Math.abs(value) < delta) {
+        return 0.0;
+      }
+      return soft ? value - Math.signum(value) * delta : value;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>ImagePeriodogram(image)</code>: the squared magnitude of the discrete Fourier transform
+   * of every channel, on a logarithmic scale stretched to <code>0 ... 1</code>, as a
+   * <code>"Byte"</code> image. The zero frequency lies in the centre, at the pixel
+   * <code>Floor((n-1)/2)</code> counted from the top left, or with <code>Alignment -> Top</code>
+   * in the top left corner.
+   */
+  private static class ImagePeriodogram extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      boolean center = true;
+      if (ast.argSize() == 2) {
+        IExpr option = ast.arg2();
+        if (!option.isRuleAST() || option.first() != S.Alignment) {
+          return F.NIL;
+        }
+        if (option.second() == S.Top || option.second().equals(F.list(S.Left, S.Top))) {
+          center = false;
+        } else if (option.second() != S.Center) {
+          return F.NIL;
+        }
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      double[][][] channels = channels(image, engine);
+      if (channels == null) {
+        return F.NIL;
+      }
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      if ((long) height * width * (height + width) > 50_000_000L) {
+        return F.NIL;
+      }
+      final int shiftY = center ? (height - 1) / 2 : 0;
+      final int shiftX = center ? (width - 1) / 2 : 0;
+      int colorChannels = channels.length == 2 || channels.length == 4 ? channels.length - 1
+          : channels.length;
+      double[][][] result = new double[colorChannels][][];
+      for (int c = 0; c < colorChannels; c++) {
+        double[][] power = power(channels[c], engine);
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (double[] row : power) {
+          for (int x = 0; x < width; x++) {
+            row[x] = row[x] > 0.0 ? Math.log(row[x]) : Double.NEGATIVE_INFINITY;
+            if (row[x] > Double.NEGATIVE_INFINITY) {
+              min = Math.min(min, row[x]);
+              max = Math.max(max, row[x]);
+            }
+          }
+        }
+        double[][] shifted = new double[height][width];
+        for (int y = 0; y < height; y++) {
+          for (int x = 0; x < width; x++) {
+            double value = power[y][x];
+            shifted[(y + shiftY) % height][(x + shiftX) % width] =
+                max > min && value > Double.NEGATIVE_INFINITY ? (value - min) / (max - min) : 0.0;
+          }
+        }
+        result[c] = shifted;
+      }
+      return toImage(result, image.getOptions(), Pixels.BYTE);
+    }
+
+    /** The squared magnitudes of the two dimensional discrete Fourier transform. */
+    private static double[][] power(double[][] data, EvalEngine engine) {
+      final int height = data.length;
+      final int width = data[0].length;
+      // the rows first, then the columns
+      double[][] re = new double[height][width];
+      double[][] im = new double[height][width];
+      for (int y = 0; y < height; y++) {
+        for (int v = 0; v < width; v++) {
+          double sumRe = 0.0;
+          double sumIm = 0.0;
+          for (int x = 0; x < width; x++) {
+            double angle = -2.0 * Math.PI * ((long) v * x % width) / width;
+            sumRe += data[y][x] * Math.cos(angle);
+            sumIm += data[y][x] * Math.sin(angle);
+          }
+          re[y][v] = sumRe;
+          im[y][v] = sumIm;
+        }
+      }
+      double[][] power = new double[height][width];
+      for (int v = 0; v < width; v++) {
+        engine.checkTimeLimit();
+        for (int u = 0; u < height; u++) {
+          double sumRe = 0.0;
+          double sumIm = 0.0;
+          for (int y = 0; y < height; y++) {
+            double angle = -2.0 * Math.PI * ((long) u * y % height) / height;
+            double cos = Math.cos(angle);
+            double sin = Math.sin(angle);
+            sumRe += re[y][v] * cos - im[y][v] * sin;
+            sumIm += re[y][v] * sin + im[y][v] * cos;
+          }
+          power[u][v] = sumRe * sumRe + sumIm * sumIm;
+        }
+      }
+      return power;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 

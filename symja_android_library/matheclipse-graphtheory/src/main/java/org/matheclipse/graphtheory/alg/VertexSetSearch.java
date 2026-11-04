@@ -126,12 +126,41 @@ public final class VertexSetSearch {
   }
 
   /**
-   * The independent sets of the graph, which are the cliques of its complement, cut down to the
-   * requested size and reported largest first.
+   * The maximal independent sets of the graph, which are the maximal cliques of its complement,
+   * whose size lies in the requested range, reported largest first. A set is not cut down to fit
+   * the range: a maximal set which is too large is left out, so a cycle of six vertices with at
+   * most two vertices gives <code>{1, 4}</code> and not the non-maximal <code>{1, 3}</code>.
    */
   public static List<Set<IExpr>> independentSets(Graph<IExpr, ExprEdge> graph, SizeSpec spec,
       int limit) {
-    return kCliques(complement(graph), 1, spec, limit);
+    Graph<IExpr, ExprEdge> complement = complement(graph);
+    PivotBronKerboschCliqueFinder<IExpr, ExprEdge> finder =
+        new PivotBronKerboschCliqueFinder<IExpr, ExprEdge>(complement);
+    Set<Set<IExpr>> found = new LinkedHashSet<Set<IExpr>>();
+    int examined = 0;
+    for (Set<IExpr> candidate : finder) {
+      if (++examined > MAX_KCLAN_CANDIDATES) {
+        break;
+      }
+      if ((examined & 0xFF) == 0 && Thread.currentThread().isInterrupted()) {
+        throw TimeoutException.TIMED_OUT;
+      }
+      if (candidate.size() >= spec.min && candidate.size() <= spec.max) {
+        found.add(trim(graph, candidate, candidate.size()));
+      }
+    }
+    List<Set<IExpr>> ordered = order(graph, found, limit);
+    if (limit == Integer.MAX_VALUE) {
+      // all sets: among the sets of one size the one with the latest vertices comes first
+      int start = 0;
+      for (int i = 1; i <= ordered.size(); i++) {
+        if (i == ordered.size() || ordered.get(i).size() != ordered.get(start).size()) {
+          java.util.Collections.reverse(ordered.subList(start, i));
+          start = i;
+        }
+      }
+    }
+    return ordered;
   }
 
   private static Graph<IExpr, ExprEdge> complement(Graph<IExpr, ExprEdge> graph) {

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -220,6 +221,7 @@ public final class ListFunctions {
     private IExpr evaluateScoped(final ISymbol[] variables, final IExpr[] index) {
       if (fScopeLocals == null) {
         fScopeLocals = org.matheclipse.core.patternmatching.CaptureAvoidance.scopeLocals(fValue);
+        collectIteratorVariables(fValue, fScopeLocals);
       }
       if (fScopeLocals.isEmpty()) {
         return F.NIL;
@@ -240,6 +242,31 @@ public final class ListFunctions {
         }
       }
       return fEngine.evaluate(F.Block(blockVariables, fValue));
+    }
+
+    /**
+     * The iterator variables of the nested <code>Table</code>, <code>Sum</code>,
+     * <code>Product</code> and <code>Do</code> constructs in <code>expr</code>. Such a construct
+     * binds its variable again: <code>Table(Table(i, {i, 3}), {i, 2})</code> is
+     * <code>{{1,2,3},{1,2,3}}</code>.
+     */
+    private static void collectIteratorVariables(IExpr expr, Set<ISymbol> variables) {
+      if (!expr.isAST()) {
+        return;
+      }
+      IAST ast = (IAST) expr;
+      if (ast.size() > 2 && (ast.isAST(S.Table) || ast.isAST(S.Sum) || ast.isAST(S.Product)
+          || ast.isAST(S.Do) || ast.isAST(S.ParallelTable))) {
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr iterator = ast.get(i);
+          if (iterator.isList() && iterator.argSize() >= 2 && iterator.first().isSymbol()) {
+            variables.add((ISymbol) iterator.first());
+          }
+        }
+      }
+      for (int i = 0; i < ast.size(); i++) {
+        collectIteratorVariables(ast.get(i), variables);
+      }
     }
 
     @Override
@@ -308,6 +335,9 @@ public final class ListFunctions {
       S.FirstPosition.setEvaluator(new FirstPosition());
       S.Fold.setEvaluator(new Fold());
       S.FoldList.setEvaluator(new FoldList());
+      S.FoldPairList.setEvaluator(new FoldPairList());
+      S.TakeDrop.setEvaluator(new TakeDrop());
+      S.SubstitutionSystem.setEvaluator(new SubstitutionSystem());
       S.Gather.setEvaluator(new Gather());
       S.GatherBy.setEvaluator(new GatherBy());
       S.GroupBy.setEvaluator(new GroupBy());
@@ -1296,6 +1326,12 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 3 && ast.arg3().isString("Extrapolated")) {
+        return extrapolated(ast, engine);
+      }
+      if (ast.argSize() > 3) {
+        return F.NIL;
+      }
       if (ast.arg1().isAST()) {
         IAST arg1 = (IAST) ast.arg1();
         IExpr general = padLevels(ast, arg1, engine);
@@ -1328,7 +1364,82 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_4;
+    }
+
+    /**
+     * <code>ArrayPad(list, {m, n}, "Extrapolated", InterpolationOrder -> k)</code> - continue a
+     * vector on each side by the polynomial of degree <code>k</code> (default 1) through the
+     * <code>k + 1</code> elements at that end. <code>k = Infinity</code> uses all elements.
+     */
+    private static IExpr extrapolated(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isList() || arg1.argSize() == 0 || ((IAST) arg1).exists(x -> x.isList())) {
+        return F.NIL;
+      }
+      IAST list = (IAST) arg1;
+      int[] margin = padMargin(ast.arg2());
+      if (margin == null || margin[0] < 0 || margin[1] < 0) {
+        return F.NIL;
+      }
+      int length = list.argSize();
+      int order = 1;
+      if (ast.argSize() == 4) {
+        IExpr option = ast.arg4();
+        if (!option.isRuleAST() || option.first() != S.InterpolationOrder) {
+          return F.NIL;
+        }
+        IExpr value = option.second();
+        if (value.isInfinity()) {
+          order = length - 1;
+        } else {
+          order = value.toIntDefault();
+          if (order < 0) {
+            return F.NIL;
+          }
+        }
+      }
+      order = Math.min(order, length - 1);
+      long size = (long) length + margin[0] + margin[1];
+      if (size > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(size);
+      }
+      IASTAppendable result = F.ListAlloc((int) size);
+      IAST reversed = list.reverse(F.ListAlloc(length));
+      for (int j = margin[0]; j >= 1; j--) {
+        engine.checkTimeLimit();
+        result.append(engine.evaluate(lagrange(reversed, order, length - 1 + j)));
+      }
+      result.appendArgs(list);
+      for (int j = 1; j <= margin[1]; j++) {
+        engine.checkTimeLimit();
+        result.append(engine.evaluate(lagrange(list, order, length - 1 + j)));
+      }
+      return result;
+    }
+
+    /**
+     * The value at the position <code>t</code> of the polynomial through the last
+     * <code>order + 1</code> elements of <code>list</code>, which stand at the positions
+     * <code>0, 1, ..., order</code>, counted from the first of them.
+     */
+    private static IExpr lagrange(IAST list, int order, int t) {
+      int offset = list.argSize() - order;
+      // the position t counts from the first element of the list
+      t = t - (list.argSize() - 1 - order);
+      IASTAppendable sum = F.PlusAlloc(order + 1);
+      for (int i = 0; i <= order; i++) {
+        java.math.BigInteger numerator = java.math.BigInteger.ONE;
+        java.math.BigInteger denominator = java.math.BigInteger.ONE;
+        for (int k = 0; k <= order; k++) {
+          if (k != i) {
+            numerator = numerator.multiply(java.math.BigInteger.valueOf(t - k));
+            denominator = denominator.multiply(java.math.BigInteger.valueOf(i - k));
+          }
+        }
+        sum.append(F.Times(F.QQ(F.ZZ(numerator), F.ZZ(denominator)), list.get(offset + i)));
+      }
+      return sum;
     }
 
     /**
@@ -3437,6 +3548,10 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1 instanceof org.matheclipse.core.expression.data.DateObjectExpr) {
+        // the date list of DateObject(dateList, ...)
+        return ((org.matheclipse.core.expression.data.DateObjectExpr) arg1).dateList();
+      }
       IExpr first = arg1.size() > 1 ? arg1.first() : F.NIL;
       if (first.isPresent()) {
         return first;
@@ -3862,6 +3977,152 @@ public final class ListFunctions {
   }
 
   /**
+   * <code>SubstitutionSystem(rules, init, n)</code> - the states <code>0, 1, ..., n</code> of the
+   * substitution system which replaces every element of a list (or every substring of a string)
+   * by the rules in each step; a list element which is replaced by a list is spliced in.
+   * <code>{m, n}</code> and <code>{m, n, s}</code> select the steps from <code>m</code> to
+   * <code>n</code> in steps of <code>s</code>.
+   */
+  private static final class SubstitutionSystem extends AbstractFunctionEvaluator {
+
+    /** The longest state which is computed. */
+    private static final int MAX_STATE_LENGTH = 1_000_000;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rules = ast.arg1();
+      IExpr state = ast.arg2();
+      if (!(state.isString() || state.isList())
+          || !(rules.isRuleAST() || (rules.isList() && ((IAST) rules).forAll(r -> r.isRuleAST())))) {
+        return F.NIL;
+      }
+      IExpr spec = ast.arg3();
+      int first = 0;
+      int last;
+      int step = 1;
+      if (spec.isList() && spec.argSize() >= 2 && spec.argSize() <= 3) {
+        first = spec.first().toIntDefault();
+        last = spec.second().toIntDefault();
+        if (spec.argSize() == 3) {
+          step = spec.get(3).toIntDefault();
+        }
+      } else {
+        last = spec.toIntDefault();
+      }
+      if (first < 0 || last < first || step <= 0) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc((last - first) / step + 1);
+      for (int i = 0; i <= last; i++) {
+        engine.checkTimeLimit();
+        if (i >= first && (i - first) % step == 0) {
+          result.append(state);
+        }
+        if (i == last) {
+          break;
+        }
+        state = substitute(rules, state, engine);
+        if (state.isNIL()) {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
+
+    /** One step of the system, or {@link F#NIL} if the state grows too long. */
+    private static IExpr substitute(IExpr rules, IExpr state, EvalEngine engine) {
+      if (state.isString()) {
+        IExpr next = engine.evaluate(F.binaryAST2(S.StringReplace, state, rules));
+        if (!next.isString() || next.toString().length() > MAX_STATE_LENGTH) {
+          return F.NIL;
+        }
+        return next;
+      }
+      IAST list = (IAST) state;
+      IASTAppendable next = F.ListAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        IExpr element = engine.evaluate(F.Replace(list.get(i), rules));
+        if (element.isList()) {
+          next.appendArgs((IAST) element);
+        } else {
+          next.append(element);
+        }
+        if (next.argSize() > MAX_STATE_LENGTH) {
+          return F.NIL;
+        }
+      }
+      return next;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+  }
+
+  /**
+   * <code>TakeDrop(list, spec)</code> - the pair <code>{Take(list, spec), Drop(list, spec)}</code>.
+   */
+  private static final class TakeDrop extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr take = engine.evaluate(F.Take(ast.arg1(), ast.arg2()));
+      if (take.isAST(S.Take)) {
+        return F.NIL;
+      }
+      IExpr drop = engine.evaluate(F.Drop(ast.arg1(), ast.arg2()));
+      if (drop.isAST(S.Drop)) {
+        return F.NIL;
+      }
+      return F.list(take, drop);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>FoldPairList(f, y0, list)</code> applies <code>f</code> to the state and the next element
+   * of <code>list</code>; the result <code>{x, y}</code> contributes <code>x</code> to the output
+   * and <code>y</code> becomes the new state. <code>FoldPairList(f, y0, list, g)</code> outputs
+   * <code>g({x, y})</code> instead. The output keeps the head of <code>list</code>.
+   */
+  private static final class FoldPairList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg3 = ast.arg3();
+      if (!arg3.isAST()) {
+        // Nonatomic expression expected at position `1` in `2`.
+        return Errors.printMessage(S.FoldPairList, "normal", F.list(F.C3, ast), engine);
+      }
+      final IAST list = (IAST) arg3;
+      final IExpr function = ast.arg1();
+      final IExpr output = ast.isAST(S.FoldPairList, 5) ? ast.arg4() : S.First;
+      IExpr state = ast.arg2();
+      final IASTAppendable result = F.ast(list.head(), list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        engine.checkTimeLimit();
+        IExpr pair = engine.evaluate(F.binaryAST2(function, state, list.get(i)));
+        if (!pair.isList() || pair.argSize() < 2) {
+          return F.NIL;
+        }
+        result.append(engine.evaluate(F.unaryAST1(output, pair)));
+        state = pair.second();
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_4;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -4271,6 +4532,19 @@ public final class ListFunctions {
         IExpr arg2 = ast.arg2();
         IExpr arg3 = ast.arg3();
 
+        if (arg1.isAssociation() && arg3.isList() && arg3.argSize() >= 2
+            && !arg3.first().isInteger() && ((IAssociation) arg1).isKey(arg3.first())) {
+          // a position {key, i, ...} inserts into the value of the key
+          IAssociation assoc = (IAssociation) arg1;
+          IExpr key = arg3.first();
+          IExpr value = engine.evaluate(F.Insert(assoc.getValue(key), arg2, arg3.rest()));
+          if (value.isAST(S.Insert)) {
+            return F.NIL;
+          }
+          IAssociation result = assoc.copy();
+          result.appendRule(F.Rule(key, value));
+          return result;
+        }
         if (arg1.isASTOrAssociation()) {
           IAST ast1 = (IAST) arg1;
           return applyAtPositions(ast, ast1, arg3, true, true,
@@ -5192,6 +5466,11 @@ public final class ListFunctions {
               elements = keys;
               values = ruleValues;
             }
+            if (option[0] == S.Automatic && ast.arg2().isString()
+                && elements.forAll(x -> x.isString())) {
+              // the default distance of strings is their edit distance
+              return nearestStrings(elements, values, ast.arg2().toString(), n, radius, engine);
+            }
             IExpr distanceFunction;
             if (option[0] == S.Automatic) {
               // Norm() is the default distance function for numeric data
@@ -5219,6 +5498,44 @@ public final class ListFunctions {
     }
 
     /**
+     * {@link #nearest(IAST, IAST, IExpr, IExpr, int, IExpr, EvalEngine)} for strings, measured by
+     * their edit distance.
+     */
+    private static IAST nearestStrings(IAST inputList, IAST valueList, String x, int n,
+        IExpr radius, EvalEngine engine) {
+      double maxDistance = Double.POSITIVE_INFINITY;
+      if (radius.isPresent()) {
+        maxDistance = radius.evalfNaN();
+        if (Double.isNaN(maxDistance)) {
+          return F.NIL;
+        }
+      }
+      LevenshteinDistance levenshtein = LevenshteinDistance.getDefaultInstance();
+      final int size = inputList.argSize();
+      int[] distances = new int[size];
+      Integer[] positions = new Integer[size];
+      for (int i = 0; i < size; i++) {
+        engine.checkTimeLimit();
+        distances[i] = levenshtein.apply(x, inputList.get(i + 1).toString());
+        positions[i] = i;
+      }
+      // stable: elements with equal distance keep their order
+      Arrays.sort(positions, Comparator.comparingInt(i -> distances[i]));
+      int resultSize = n == ALL_NEAREST ? 1 : Math.min(n, size);
+      if (n == ALL_NEAREST) {
+        while (resultSize < size
+            && distances[positions[resultSize]] == distances[positions[0]]) {
+          resultSize++;
+        }
+      }
+      IASTAppendable result = F.ListAlloc(resultSize);
+      for (int i = 0; i < resultSize && distances[positions[i]] <= maxDistance; i++) {
+        result.append(valueList.get(positions[i] + 1));
+      }
+      return result;
+    }
+
+    /**
      * Gives the list of elements from <code>valueList</code> whose element in <code>inputList
      * </code> is nearest to x, ordered by increasing distance. Elements with equal distance keep
      * the order they have in <code>inputList</code>.
@@ -5235,6 +5552,14 @@ public final class ListFunctions {
      * @param engine
      * @return {@link F#NIL} if the distances of two elements can't be compared
      */
+    /** Equal distances; machine real distances must agree exactly. */
+    private static boolean sameDistance(IExpr d1, IExpr d2, EvalEngine engine) {
+      if (d1.isReal() && d1.isMachineNumber() && d2.isReal() && d2.isMachineNumber()) {
+        return d1.evalf() == d2.evalf();
+      }
+      return S.Equal.ofQ(engine, d1, d2);
+    }
+
     private static IAST nearest(IAST inputList, IAST valueList, IExpr x, IExpr distanceFunction,
         int n, IExpr radius, EvalEngine engine) {
       try {
@@ -5255,6 +5580,11 @@ public final class ListFunctions {
         }
         final boolean[] undefined = new boolean[] {false};
         Arrays.sort(positions, (i, j) -> {
+          if (distances[i].isReal() && distances[i].isMachineNumber() && distances[j].isReal()
+              && distances[j].isMachineNumber()) {
+            // machine distances are compared exactly, without the tolerance of Equal
+            return Double.compare(distances[i].evalf(), distances[j].evalf());
+          }
           IExpr comparisonResult = engine.evaluate(F.Greater(distances[i], distances[j]));
           if (comparisonResult.isTrue()) {
             return 1;
@@ -5274,7 +5604,7 @@ public final class ListFunctions {
           // all elements with minimal distance
           resultSize = 1;
           while (resultSize < size
-              && S.Equal.ofQ(engine, distances[positions[0]], distances[positions[resultSize]])) {
+              && sameDistance(distances[positions[0]], distances[positions[resultSize]], engine)) {
             resultSize++;
           }
         } else {
