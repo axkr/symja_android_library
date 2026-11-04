@@ -263,8 +263,8 @@ public class TraceFormTest extends ExprEvaluatorTestCase {
   public void testEngineIsRestored() {
     // tracing must not leak into the evaluations which follow: Trace() sees the same thing
     // before and after a TraceForm
-    check("before = Trace(D(Sin(x),x)); TraceForm(D(x^2,x)); "
-        + "before === Trace(D(Sin(x),x))", //
+    check("earlier = Trace(D(Sin(x),x)); TraceForm(D(x^2,x)); "
+        + "earlier === Trace(D(Sin(x),x))", //
         "True");
   }
 

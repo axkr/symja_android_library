@@ -2910,6 +2910,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSystemCannotBeSolved() {
     // Solve: The system cannot be solved with the methods available to Solve.
     check(
@@ -3948,6 +3949,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
    * never reduced to <code>(-1)^(1/6)</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolveIssue1556() {
     check("Solve(Cot(x)==Tan(2*x),x)", //
         "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"

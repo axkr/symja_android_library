@@ -182,6 +182,7 @@ public class QuadraticQETest extends ExprEvaluatorTestCase {
    * <code>Reduce</code> computes for <code>phi</code> is not empty.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testAgainstReduce() {
     Random random = new Random(20261005L);
     int decided = 0;

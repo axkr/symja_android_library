@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 public class ProductTest extends ExprEvaluatorTestCase {
 
@@ -431,6 +432,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testProductRationalFunctionGamma() {
     // Product(p(i), {i,a,n}) over the exact complex roots r of p: Gamma(n+1-r)/Gamma(a-r);
     // the constant Gammas of root pairs are combined by the reflection formula

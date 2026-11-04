@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
 
 /** CylindricalDecomposition and the real algebraic decomposition behind Reduce. */
 public class CylindricalDecompositionTest extends ExprEvaluatorTestCase {
@@ -138,6 +139,7 @@ public class CylindricalDecompositionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolutionsAgreeWithTheStatement() {
     assertSameSolutions("u^2/4 + v^2 < 1 && u^2 + v^2/4 < 1", "{u, v}", 2);
     assertSameSolutions("u^2 + v^2 < 1 || (u - 3)^2 + v^2 < 1", "{u, v}", 2);

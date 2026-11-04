@@ -676,6 +676,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
    * it is better, and if it is finite; FunctionRange takes exact extrema only.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIssue1565() {
     // a feasible point beats the point of the numeric search
     check("Maximize({-1.0+Tanh(x), x>0}, x)", //

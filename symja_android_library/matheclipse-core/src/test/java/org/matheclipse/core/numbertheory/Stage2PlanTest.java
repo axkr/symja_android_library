@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigInteger;
 import java.util.BitSet;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /** Tests for the pair table of {@link IntegerSplitter.Stage2Plan}. */
 public class Stage2PlanTest {
@@ -12,6 +14,7 @@ public class Stage2PlanTest {
   private static final int D = 2310;
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPairsCoverExactlyThePrimes() {
     for (int b1 : new int[] {2000, 11000}) {
       long b2 = 100L * b1;

@@ -13654,6 +13654,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLogNormalQuantileClosedForm() {
     check("Quantile(LogNormalDistribution(2, 1), 0.5) == Exp(2.0)", //
         "True");
@@ -14364,6 +14365,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRandomPoint() {
     // shapes of the result
     check("RandomPoint(Point({-3, 5}))", //
@@ -15692,6 +15694,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testEigenvectorsCyclic() {
     // eigenvalues of equal absolute value by increasing real and decreasing imaginary part
     check("Eigenvectors({{0,0,1},{1,0,0},{0,1,0}})", //
@@ -17732,6 +17735,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSystemInitialValueForms() {
     // the smallest exponential factored out
     check(
@@ -18208,6 +18212,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLaplaceTransformEquations() {
     check("LaplaceTransform(y''(t) + 3*y(t) == Cos(t), t, s)", //
         "3*LaplaceTransform(y(t),t,s)+s^2*LaplaceTransform(y(t),t,s)-s*y(0)-y'(0)==s/(1+s^\n"
@@ -18902,6 +18907,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNSolveRadicalSystemMultiStart() {
     // the five equilibrium points of the restricted three body problem
     check(
@@ -18964,6 +18970,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   /** Do counts towards an infinite upper limit until Return or Break leaves the loop. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDoInfiniteUpperLimit() {
     check("Do(If(2^k > 1000, Return(k)), {k, Infinity})", //
         "10");
@@ -19128,6 +19135,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testMatrixPowerVector() {
     check("MatrixPower({{1,2},{0,1}}, 5, {1,1})", //
         "{11,1}");
@@ -19456,6 +19464,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveMathieuEquation() {
     check("DSolve(y''(t)+(5-4*Cos(2*t))*y(t)==0,y(t),t)", //
         "{{y(t)->C(1)*MathieuC(5,2,t)+C(2)*MathieuS(5,2,t)}}");
@@ -21200,6 +21209,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolveInterpolatingFunction() {
     check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Round(t/.First(NSolve(h(t)==1,t)),10^(-6)))", //
         "2");
@@ -21520,6 +21530,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolveInterpolatingFunctionBesideDomain() {
     check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Round(t/.First(Solve(h(t)==20,t)),10^(-6)))", //
         "-1");
@@ -21753,6 +21764,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolveSymbolicCubic() {
     check("Solve(y^3+6*y^2+12*y+t==0,y)", //
         "{{y->-2+(8-t)^(1/3)},{y->-2+1/2*(-1+I*Sqrt(3))*(8-t)^(1/3)},{y->-2+1/2*(-1-I*Sqrt(\n"
@@ -22613,6 +22625,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQDeepCancellation() {
     // a difference of nearly equal terms inside: at large t the machine value of the first term
     // is noise, and more digits show the zero. A nonzero function of the same shape stays nonzero
@@ -22661,6 +22674,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQRealCutOfSeveralVariables() {
     // the cut is t/s<-1: t and s of opposite sign, never at equal values of t and s
     check("Table(PossibleZeroQ(Sqrt((1-t/s)/(1+t/s))*(1+t/s)-Sqrt(1-t^2/s^2)), {12})//Union", //
@@ -29882,6 +29896,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNest() {
     // the number of steps isn't limited, only the time
     check("TimeConstrained(Nest(-I,Null,2147483647), 1)", //
@@ -37214,6 +37229,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    * </pre>
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testResultant() {
     // TODO
     // check("Resultant(a*x^3+b*x^2+c*x+d,d*x^3+c*x^2+b*x+a,x,Modulus->2)",
