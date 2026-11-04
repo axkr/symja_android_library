@@ -469,6 +469,15 @@ public class S {
    */
   public final static IBuiltInSymbol AbsArg = S.initFinalSymbol("AbsArg", ID.AbsArg);
 
+  /**
+   * AbsArgPlot(x) - TODO describe `AbsArgPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AbsArgPlot.md">AbsArgPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AbsArgPlot = S.initFinalSymbol("AbsArgPlot", ID.AbsArgPlot);
+
   public final static IBuiltInSymbol AbsoluteCorrelation =
       S.initFinalSymbol("AbsoluteCorrelation", ID.AbsoluteCorrelation);
 
@@ -10329,6 +10338,15 @@ public class S {
       S.initFinalSymbol("FourierTrigSeries", ID.FourierTrigSeries);
 
   /**
+   * FractionalD(x) - TODO describe `FractionalD`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FractionalD.md">FractionalD
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FractionalD = S.initFinalSymbol("FractionalD", ID.FractionalD);
+
+  /**
    * FractionalPart(number) - get the fractional part of a `number`.
    * 
    * @see <a href=
@@ -14573,6 +14591,16 @@ public class S {
       S.initFinalSymbol("KnapsackSolve", ID.KnapsackSolve);
 
   /**
+   * KnightTourGraph(x) - TODO describe `KnightTourGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KnightTourGraph.md">KnightTourGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KnightTourGraph =
+      S.initFinalSymbol("KnightTourGraph", ID.KnightTourGraph);
+
+  /**
    * KnotData(x) - TODO describe `KnotData`.
    * 
    * @see <a href=
@@ -17919,6 +17947,16 @@ public class S {
       S.initFinalSymbol("MoyalDistribution", ID.MoyalDistribution);
 
   /**
+   * MultiaxisArrangement(x) - TODO describe `MultiaxisArrangement`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MultiaxisArrangement.md">MultiaxisArrangement
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MultiaxisArrangement =
+      S.initFinalSymbol("MultiaxisArrangement", ID.MultiaxisArrangement);
+
+  /**
    * Multicolumn(x) - TODO describe `Multicolumn`.
    * 
    * @see <a href=
@@ -17926,6 +17964,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Multicolumn = S.initFinalSymbol("Multicolumn", ID.Multicolumn);
+
+  /**
+   * MultilineFunction(x) - TODO describe `MultilineFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MultilineFunction.md">MultilineFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MultilineFunction =
+      S.initFinalSymbol("MultilineFunction", ID.MultilineFunction);
 
   /**
    * Multinomial(n1, n2, ...) - gives the multinomial coefficient `(n1+n2+...)!/(n1! n2! ...)`.
@@ -20641,6 +20689,15 @@ public class S {
   public final static IBuiltInSymbol Placed = S.initFinalSymbol("Placed", ID.Placed);
 
   /**
+   * Placeholder(x) - TODO describe `Placeholder`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Placeholder.md">Placeholder
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Placeholder = S.initFinalSymbol("Placeholder", ID.Placeholder);
+
+  /**
    * Plain(x) - TODO describe `Plain`.
    * 
    * @see <a href=
@@ -22705,6 +22762,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ReIm = S.initFinalSymbol("ReIm", ID.ReIm);
+
+  /**
+   * ReImPlot(x) - TODO describe `ReImPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReImPlot.md">ReImPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ReImPlot = S.initFinalSymbol("ReImPlot", ID.ReImPlot);
 
   /**
    * ReleaseHold(expr) - removes any `Hold`, `HoldForm`, `HoldPattern` or `HoldComplete` head from
@@ -26009,6 +26075,15 @@ public class S {
       S.initFinalSymbol("SupersetEqual", ID.SupersetEqual);
 
   /**
+   * SuperStar(x) - TODO describe `SuperStar`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SuperStar.md">SuperStar
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SuperStar = S.initFinalSymbol("SuperStar", ID.SuperStar);
+
+  /**
    * Surd(expr, n) - returns the `n`-th root of `expr`. If the result is defined, it's a real value.
    * 
    * @see <a href=
@@ -27461,6 +27536,15 @@ public class S {
   public final static IBuiltInSymbol TreeGraphQ = S.initFinalSymbol("TreeGraphQ", ID.TreeGraphQ);
 
   /**
+   * TreeLayout(x) - TODO describe `TreeLayout`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TreeLayout.md">TreeLayout
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TreeLayout = S.initFinalSymbol("TreeLayout", ID.TreeLayout);
+
+  /**
    * TreePlot(graph-expr) - create a tree plot from the given graph expression `graph-expr`.
    * 
    * @see <a href=
@@ -28421,6 +28505,16 @@ public class S {
   public final static IBuiltInSymbol VectorScale = S.initFinalSymbol("VectorScale", ID.VectorScale);
 
   /**
+   * VectorScaling(x) - TODO describe `VectorScaling`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorScaling.md">VectorScaling
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VectorScaling =
+      S.initFinalSymbol("VectorScaling", ID.VectorScaling);
+
+  /**
    * VectorSizes(x) - TODO describe `VectorSizes`.
    * 
    * @see <a href=
@@ -29028,6 +29122,16 @@ public class S {
    */
   public final static IBuiltInSymbol WeierstrassZeta =
       S.initFinalSymbol("WeierstrassZeta", ID.WeierstrassZeta);
+
+  /**
+   * WeightedAdjacencyGraph(x) - TODO describe `WeightedAdjacencyGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeightedAdjacencyGraph.md">WeightedAdjacencyGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WeightedAdjacencyGraph =
+      S.initFinalSymbol("WeightedAdjacencyGraph", ID.WeightedAdjacencyGraph);
 
   /**
    * WeightedAdjacencyMatrix(graph) - convert the `graph` into a weighted adjacency matrix in sparse
