@@ -128,6 +128,41 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals(result.toString(), "2.2250738585072014`*^-308");
   }
 
+  /**
+   * A machine number followed by the Times operator. InputForm writes 2.3*x as 2.3`*x when the
+   * number needs all 17 digits, so the InputForm of Fit({{1,3},{2,5},{3,7},{4,10}},{1,x},x) is
+   * 0.5` + 2.3000000000000003`*x; the parser read the '*' as the start of a *^ exponent and
+   * answered "Number format error". https://github.com/axkr/symja_android_library/issues/1598
+   */
+  @Test
+  public void testMachineNumberBeforeTimes() {
+    check("FullForm(2.3000000000000003`*x)", //
+        "Times(2.3000000000000003`, x)");
+    check("FullForm(0.5`*x)", //
+        "Times(0.5`, x)");
+    check("FullForm(0.5` + 2.3`*x)", //
+        "Plus(0.5`, Times(2.3`, x))");
+    check("FullForm(-2.5`*x)", //
+        "Times(-2.5`, x)");
+    check("FullForm(x*2.5`*y)", //
+        "Times(2.5`, x, y)");
+    check("FullForm(2`*x)", //
+        "Times(2.0`, x)");
+    // the forms that parsed before are unchanged
+    check("FullForm(1.5`*^3)", //
+        "1500.0`");
+    check("FullForm(1.5`20*^3)", //
+        "1.5`20*^3");
+    check("FullForm(1.5``20)", //
+        "1.5`20.1761");
+    check("FullForm(0.`20)", //
+        "0.0`");
+    // the Fit result survives the round trip through its InputForm
+    check("fitLine = Fit({{1,3},{2,5},{3,7},{4,10}},{1,x},x); "
+        + "ToExpression(ToString(fitLine, InputForm)) === fitLine", //
+        "True");
+  }
+
   @Test
   public void testParserApfloatValue() {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);

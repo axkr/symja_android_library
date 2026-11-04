@@ -1163,6 +1163,13 @@ public class ExprParser extends Scanner {
               Double d = Double.valueOf(numberStr + "E" + exponent);
               return F.num(d);
             }
+            // A '*' that does not start a *^ exponent is the Times operator after a machine
+            // number, as in 2.5`*x - the form InputForm prints for 2.5*x. Step back so that the
+            // '*' is read as the next token, and return the machine number as the plain x`
+            // branch below does.
+            fCurrentPosition--;
+            getNextToken();
+            return F.num(numberStr);
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
             // without the token, so that a *^ exponent following the accuracy can still be seen
@@ -1220,7 +1227,8 @@ public class ExprParser extends Scanner {
               return F.num(numberStr);
             }
           }
-          throwSyntaxError("Number format error: " + numberStr, numberStr.length());
+          // every branch above returns; the "Number format error" thrown here was only reached by
+          // x`* without a following ^, which is now read as x` times the next factor
         }
         temp = new NumStr(numberStr);
         if (Double.isInfinite(((NumStr) temp).doubleValue())) {
