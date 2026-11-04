@@ -1482,7 +1482,18 @@ public class TeXFormFactory {
             fFactory.convertNumber(buf, arg1, Precedence.PLUS, caller);
           }
         } else if (arg1.isComplex() && size > 2) {
-          fFactory.convertComplex(buf, (IComplex) arg1, oper.getPrecedence(), caller);
+          convertComplexFactor(buf, (IComplex) arg1, caller);
+        } else if (caller == PLUS_CALL && size > 2 && isImaginaryMachineNumber(arg1)) {
+          // inside a sum the sign of a machine b*I factor is the operator, as for an exact one:
+          // 1-N(2*I)*x is "1 - 2.0\,i x", not "1 + \left( -2.0\,i \right) x"
+          IComplexNum imaginary = (IComplexNum) arg1;
+          if (imaginary.getImaginaryPart() < 0.0) {
+            buf.append(" - ");
+            imaginary = (IComplexNum) imaginary.negate();
+          } else {
+            buf.append(" + ");
+          }
+          fFactory.convertDoubleComplex(buf, imaginary, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         } else {
           if (caller == PLUS_CALL) {
             buf.append(" + ");
@@ -1501,6 +1512,61 @@ public class TeXFormFactory {
       if (currPrecedence < precedence) {
         buf.append("\\right) ");
       }
+    }
+
+    /**
+     * Writes the exact complex number <code>c</code> that leads a product of two or more factors.
+     *
+     * <p>
+     * {@link TeXFormFactory#convertComplex} ignores <code>caller</code> for the sign, so handing
+     * <code>c</code> to it directly lost the operator in front of the term inside a sum:
+     * <code>(1+I*Sqrt(3))/2</code> came out as <code>\frac{1}{2} \left( 1i \sqrt{3}\right)</code>
+     * and <code>x-I*y</code> as <code>x\left( - i \right) y</code>. Here
+     * <ul>
+     * <li>a purely imaginary <code>b*I</code> inside a sum writes its sign as the operator of the
+     * sum: <code>x+I*y</code> is <code>x + i y</code>, <code>1-3*I*x</code> is
+     * <code>1 - 3\,i x</code>;</li>
+     * <li>at the start of a product it is written as before: <code>-I*x</code> is
+     * <code> - i x</code>;</li>
+     * <li><code>a+b*I</code> with <code>a != 0</code> is a sum itself, so it is always put in
+     * parentheses - <code>(1+2*I)*y</code> is no longer written as <code>1 + 2\,i y</code> - and
+     * inside a sum gets <code> + </code> in front.</li>
+     * </ul>
+     *
+     * @param buf the TeX output
+     * @param c the first factor of the product
+     * @param caller {@link #PLUS_CALL} if the product is a term of a sum after its first term
+     */
+    private void convertComplexFactor(final StringBuilder buf, IComplex c, boolean caller) {
+      if (!c.getRealPart().isZero()) {
+        if (caller == PLUS_CALL) {
+          buf.append(" + ");
+        }
+        buf.append("\\left( ");
+        fFactory.convertComplex(buf, c, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+        buf.append("\\right) ");
+        return;
+      }
+      if (caller == PLUS_CALL) {
+        if (c.getImaginaryPart().isNegative()) {
+          buf.append(" - ");
+          c = (IComplex) c.negate();
+        } else {
+          buf.append(" + ");
+        }
+      }
+      // b*I with the real part zero: "i ", " - i " or "b\,i "
+      fFactory.convertComplex(buf, c, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+    }
+
+    /**
+     * Is <code>expr</code> a machine-precision complex number <code>b*I</code> whose real part is
+     * written as zero? An arbitrary-precision one is left to its own converter, which keeps all of
+     * its digits.
+     */
+    private boolean isImaginaryMachineNumber(IExpr expr) {
+      return expr instanceof IComplexNum && !(expr instanceof ApcomplexNum)
+          && F.isZero(((IComplexNum) expr).getRealPart(), Config.ZERO_IN_OUTPUT_FORMAT);
     }
 
     /**
