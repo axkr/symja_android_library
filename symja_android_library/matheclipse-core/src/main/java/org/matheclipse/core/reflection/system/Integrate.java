@@ -561,6 +561,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         IExpr arg2 = engine.evaluate(holdallAST.arg2());
         if (arg2.isList3() && arg2.second().isNumericFunction(true)
             && arg2.getAt(3).isNumericFunction(true)) {
+          if (!arg2.isInexactNumber() && arg2.isFree(IExpr::isInexactNumber, true)) {
+            // the interpolation of exact data is a piecewise polynomial with exact coefficients,
+            // whose integral between exact limits is exact
+            IExpr integrand = engine.evalQuiet(arg1Holdall);
+            if (!hasInterpolatingFunction(integrand, engine)
+                && integrand.isFree(e -> e instanceof InterpolatingFunctionExpr
+                    || e instanceof GridInterpolatingFunctionExpr || e.isInexactNumber(), true)) {
+              IExpr exact = engine.evalQuiet(F.Integrate(integrand, arg2));
+              if (exact.isFreeAST(S.Integrate)) {
+                return exact;
+              }
+            }
+          }
           IExpr temp = engine.evaluate(F.NIntegrate(arg1Holdall, arg2));
           if (temp.isFreeAST(S.NIntegrate)) {
             return temp;
@@ -706,6 +719,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           IExpr temp = engine.evaluate(copy);
           boolean antiderivative = temp.isFreeAST(h -> h == S.Integrate || h == S.Boole) //
               && temp.isSpecialsFree();
+          if (antiderivative && hasPiecewiseCondition(temp, xList.arg1())) {
+            // the antiderivative of each piece jumps where the condition changes: its values at
+            // the limits don't give the integral
+            return F.NIL;
+          }
           if (antiderivative) {
             IExpr value = definiteIntegral(temp, arg1, xList, holdallAST, engine);
             if (value.isPresent()) {
@@ -1051,11 +1069,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // An exponential times a trigonometric function of the same frequency, written with
           // Cos and Sin: E^(-I*a*x)*Sec(a*x) is 1 - I*Tan(a*x), whose integral is elementary,
           // while the rules read it as the degenerate case of two different frequencies.
-          // An exponential times a trigonometric function of the same frequency, written with
-          // Cos and Sin: E^(-I*a*x)*Sec(a*x) is 1 - I*Tan(a*x), whose integral is elementary,
-          // while the rules read it as the degenerate case of two different frequencies.
           result = quietStage(engine, fx, x, "writing the exponential as Cos and Sin",
               () -> integrateExponentialTimesTrig(fx, x, engine));
+          if (result.isPresent()) {
+            return result;
+          }
+          // Cosh(3*x)*Sin(2*x): the rules have no product of a hyperbolic and a trigonometric
+          // function, but one of an exponential and a trigonometric function
+          result = quietStage(engine, fx, x, "writing the hyperbolic function as exponentials",
+              () -> integrateHyperbolicTimesTrig(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -1151,6 +1173,49 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return result;
     }
     return F.NIL;
+  }
+
+  /**
+   * The integral of a product of hyperbolic and trigonometric functions of <code>x</code>, or
+   * {@link F#NIL}. The hyperbolic functions are written as exponentials, the expanded sum is
+   * integrated term by term and every real exponential <code>E^u</code> of the result is written
+   * back as <code>Cosh(u)+Sinh(u)</code>.
+   */
+  private static IExpr integrateHyperbolicTimesTrig(IAST fx, IExpr x, EvalEngine engine) {
+    if (!fx.isTimes() || !fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)) {
+      return F.NIL;
+    }
+    if (fx.isFree(y -> y.isHyperbolicFunction() && !y.isFree(x), true)
+        || fx.isFree(y -> y.isTrigFunction() && !y.isFree(x), true)) {
+      return F.NIL;
+    }
+    IExpr exponentials = fx.replaceAll(y -> y.isHyperbolicFunction() && !y.isFree(x)
+        ? engine.evaluate(F.TrigToExp(y))
+        : F.NIL);
+    if (exponentials.isNIL()) {
+      return F.NIL;
+    }
+    IExpr expanded = engine.evaluate(F.Expand(exponentials));
+    if (!expanded.isFree(y -> y.isHyperbolicFunction() && !y.isFree(x), true)) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(F.Integrate(expanded, x));
+    if (!result.isFree(S.Integrate, true) || !isFiniteAntiderivative(result)) {
+      return F.NIL;
+    }
+    IExpr hyperbolic = result.replaceAll(y -> y.isExp() && !y.exponent().isFree(x)
+        && y.exponent().isFree(z -> z.isComplex() || z.isComplexNumeric(), true)
+            ? F.Plus(F.Cosh(y.exponent()), F.Sinh(y.exponent()))
+            : F.NIL);
+    if (hyperbolic.isNIL()) {
+      return result;
+    }
+    IExpr antiderivative = engine.evaluate(F.Expand(hyperbolic));
+    // over a common denominator only if one has parameters: (a*Sin(x)*Sinh(a*x)-...)/(1+a^2)
+    return antiderivative.isFree(
+        y -> y.isPower() && y.exponent().isNegative() && !y.base().isNumber(), true)
+            ? antiderivative
+            : engine.evaluate(F.Together(antiderivative));
   }
 
   /**
@@ -1510,6 +1575,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return POWER_TIMES_FUNCTION_MATCHER.apply(list);
     }
     return F.NIL;
+  }
+
+  /** Whether <code>expr</code> has a <code>Piecewise</code> with a condition depending on x. */
+  private static boolean hasPiecewiseCondition(IExpr expr, IExpr x) {
+    return expr.has(e -> e.isAST(S.Piecewise) && e.first().isList()
+        && !((IAST) e.first()).forAll(row -> row.isList2() && row.second().isFree(x, true)), true);
   }
 
   private static IExpr integratePiecewise(int[] dim, final IAST piecewiseFunction,

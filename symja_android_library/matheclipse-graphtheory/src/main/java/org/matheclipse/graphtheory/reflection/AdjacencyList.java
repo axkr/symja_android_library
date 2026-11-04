@@ -1,12 +1,12 @@
 package org.matheclipse.graphtheory.reflection;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
-import org.matheclipse.graphtheory.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -18,15 +18,15 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * Returns the adjacency list of a graph or the neighbors of a specific vertex. For a directed
- * graph, this returns the out-component (successors). Vertices are sorted by their index in the
- * graph's vertex list.
+ * graph a neighbor is joined to the vertex by an edge in either direction. Vertices are sorted by
+ * their index in the graph's vertex list. The graph may also be given as a list of edges or rules.
  */
 public class AdjacencyList extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() == 1 || ast.argSize() == 2) {
-      GraphExpr<?> gex = GraphFunctions.getGraphExpr(ast.arg1());
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
       if (gex == null) {
         return F.NIL;
       }
@@ -57,7 +57,7 @@ public class AdjacencyList extends AbstractFunctionEvaluator {
         IASTAppendable result = F.ListAlloc(vertices.argSize());
         for (int i = 1; i <= vertices.argSize(); i++) {
           IExpr v = vertices.get(i);
-          List<IExpr> successors = Graphs.successorListOf(g, v);
+          List<IExpr> successors = new ArrayList<IExpr>(Graphs.neighborSetOf(g, v));
           successors.sort(vertexComparator);
 
           IASTAppendable neighbors = F.ListAlloc(successors.size());
@@ -71,7 +71,7 @@ public class AdjacencyList extends AbstractFunctionEvaluator {
         // Return adjacency list for a specific vertex
         IExpr v = ast.arg2();
         if (g.containsVertex(v)) {
-          List<IExpr> successors = Graphs.successorListOf(g, v);
+          List<IExpr> successors = new ArrayList<IExpr>(Graphs.neighborSetOf(g, v));
           successors.sort(vertexComparator);
 
           IASTAppendable neighbors = F.ListAlloc(successors.size());

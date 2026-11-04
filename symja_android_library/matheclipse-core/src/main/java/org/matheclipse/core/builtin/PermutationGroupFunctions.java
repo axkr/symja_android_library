@@ -227,6 +227,25 @@ public class PermutationGroupFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.PermutationGroup, 2) && arg1.first().isList()
+          && (kind == SUPPORT || kind == MAX || kind == MIN)) {
+        // the points moved by some generator of the group
+        IASTAppendable union = F.ast(S.Union, arg1.first().argSize());
+        for (IExpr generator : (IAST) arg1.first()) {
+          union.append(F.unaryAST1(S.PermutationSupport, generator));
+        }
+        IExpr support = engine.evaluate(union);
+        if (!support.isList()) {
+          return F.NIL;
+        }
+        if (kind == SUPPORT) {
+          return support;
+        }
+        if (support.argSize() == 0) {
+          return kind == MAX ? F.C0 : F.CInfinity;
+        }
+        return kind == MAX ? support.last() : support.first();
+      }
       final boolean cycles = arg1.isAST(S.Cycles, 2);
       if (!cycles && !arg1.isList()) {
         return F.NIL;

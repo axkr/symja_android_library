@@ -23,6 +23,7 @@ public class FilterFunctions {
 
     private static void init() {
       S.GaussianFilter.setEvaluator(new GaussianFilter());
+      S.GaborMatrix.setEvaluator(new GaborMatrix());
       S.GaussianMatrix.setEvaluator(new GaussianMatrix());
       S.GeometricMeanFilter.setEvaluator(new GeometricMeanFilter());
       S.LaplacianFilter.setEvaluator(new LaplacianFilter());
@@ -30,7 +31,213 @@ public class FilterFunctions {
       S.MeanFilter.setEvaluator(new MeanFilter());
       S.MedianFilter.setEvaluator(new MedianFilter());
       S.MinFilter.setEvaluator(new MinFilter());
+      S.TotalVariationFilter.setEvaluator(new TotalVariationFilter());
     }
+  }
+
+  /**
+   * <code>GaborMatrix(r, k)</code> and <code>GaborMatrix({r, sigma}, k, phi)</code> - the Gabor
+   * kernel of the radius <code>r</code> and the wave vector <code>k</code>: a Gaussian of the
+   * standard deviation <code>sigma</code> (<code>r/2</code> by default), normalized to the sum
+   * <code>1</code>, times <code>Cos(k.x - phi)</code> over the offsets <code>x</code> of
+   * <code>{-n, ..., n}^d</code> from the centre, with <code>n == Floor(r + 1/2)</code> and
+   * <code>d == Length(k)</code>, which is 1 or 2. The first component of <code>k</code> goes with
+   * the first index.
+   */
+  private static class GaborMatrix extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr spec = ast.arg1();
+      double r;
+      double sigma;
+      if (spec.isList2()) {
+        r = spec.first().evalfNaN();
+        sigma = spec.second().evalfNaN();
+      } else {
+        r = spec.evalfNaN();
+        sigma = r / 2.0;
+      }
+      if (!(r >= 0.0 && sigma > 0.0 && r < 1000.0)) {
+        return F.NIL;
+      }
+      IExpr k = ast.arg2();
+      if (!k.isList() || k.argSize() < 1 || k.argSize() > 2) {
+        return F.NIL;
+      }
+      final double[] wave = new double[k.argSize()];
+      for (int i = 0; i < wave.length; i++) {
+        wave[i] = k.getAt(i + 1).evalfNaN();
+        if (Double.isNaN(wave[i])) {
+          return F.NIL;
+        }
+      }
+      final double phi = ast.argSize() == 3 ? ast.arg3().evalfNaN() : 0.0;
+      if (Double.isNaN(phi)) {
+        return F.NIL;
+      }
+      final int n = (int) Math.floor(r + 0.5);
+      final int side = 2 * n + 1;
+      double total = 0.0;
+      for (int i = -n; i <= n; i++) {
+        for (int j = wave.length == 1 ? 0 : -n; j <= (wave.length == 1 ? 0 : n); j++) {
+          total += Math.exp(-(i * i + j * j) / (2.0 * sigma * sigma));
+        }
+      }
+      final double sum = total;
+      if (wave.length == 1) {
+        return F.mapRange(0, side, i -> F.num(gabor(i - n, 0, sigma, wave, phi) / sum));
+      }
+      return F.matrix((i, j) -> F.num(gabor(i - n, j - n, sigma, wave, phi) / sum), side, side);
+    }
+
+    private static double gabor(int x, int y, double sigma, double[] wave, double phi) {
+      double phase = x * wave[0] + (wave.length > 1 ? y * wave[1] : 0.0) - phi;
+      return Math.exp(-(x * x + y * y) / (2.0 * sigma * sigma)) * Math.cos(phase);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+  }
+
+  /**
+   * <code>TotalVariationFilter(data)</code> and <code>TotalVariationFilter(data, lambda)</code> -
+   * the total variation denoising of a vector or a matrix of reals: the <code>u</code> which minimizes
+   * <code>Total((u - data)^2)/2 + lambda*TV(u)</code>, where <code>TV(u)</code> is the sum of the
+   * lengths of the discrete gradients. The data is first divided by its largest absolute value, so
+   * that the result scales with the data, and <code>lambda</code> is <code>0.5</code> by default;
+   * <code>lambda == 0</code> gives the data back. The problem is solved with the dual projection
+   * iteration of Chambolle, <code>MaxIterations</code> times (<code>100</code> by default).
+   */
+  private static class TotalVariationFilter extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      double[] parameters = totalVariationParameters(ast);
+      if (parameters == null || !ast.arg1().isList()) {
+        return F.NIL;
+      }
+      IExpr data = ast.arg1();
+      boolean vector = !data.first().isList();
+      double[][] matrix;
+      if (vector) {
+        double[] v = data.toDoubleVector();
+        matrix = v == null ? null : new double[][] {v};
+      } else {
+        matrix = data.toDoubleMatrix();
+      }
+      if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+        return F.NIL;
+      }
+      final double[][] result =
+          totalVariation(matrix, parameters[0], (int) parameters[1], engine);
+      if (vector) {
+        return F.mapRange(0, result[0].length, i -> F.num(result[0][i]));
+      }
+      return F.matrix((i, j) -> F.num(result[i][j]), result.length, result[0].length);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
+    }
+  }
+
+  /**
+   * The <code>{lambda, iterations}</code> of a <code>TotalVariationFilter</code> call: the second
+   * argument and the options <code>Method -&gt; "Gaussian"</code> and <code>MaxIterations</code>.
+   *
+   * @return <code>null</code> if an argument isn't valid
+   */
+  public static double[] totalVariationParameters(IAST ast) {
+    double lambda = 0.5;
+    double iterations = 100;
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isRuleAST()) {
+        if (arg.first() == S.MaxIterations) {
+          iterations = arg.second().toIntDefault();
+          if (iterations < 1 || iterations > 100_000) {
+            return null;
+          }
+        } else if (arg.first() != S.Method || !arg.second().isString("Gaussian")) {
+          return null;
+        }
+      } else if (i == 2) {
+        lambda = arg.evalfNaN();
+        if (!(lambda >= 0.0)) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+    return new double[] {lambda, iterations};
+  }
+
+  /**
+   * The total variation denoising of the matrix <code>f</code> (see
+   * <code>TotalVariationFilter</code>) by Chambolle's projection of the dual variable.
+   */
+  public static double[][] totalVariation(double[][] f, double lambda, int iterations,
+      EvalEngine engine) {
+    final int height = f.length;
+    final int width = f[0].length;
+    double scale = 0.0;
+    for (double[] row : f) {
+      for (double value : row) {
+        scale = Math.max(scale, Math.abs(value));
+      }
+    }
+    if (lambda == 0.0 || scale == 0.0 || !Double.isFinite(scale)) {
+      double[][] copy = new double[height][];
+      for (int y = 0; y < height; y++) {
+        copy[y] = f[y].clone();
+      }
+      return copy;
+    }
+    // the dual field p = (px, py), the step 1/4 is stable in one and two dimensions
+    final double tau = 0.25;
+    double[][] px = new double[height][width];
+    double[][] py = new double[height][width];
+    double[][] term = new double[height][width];
+    for (int k = 0; k < iterations; k++) {
+      if ((k & 0xF) == 0) {
+        engine.checkTimeLimit();
+      }
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          term[y][x] = divergence(px, py, y, x) - f[y][x] / scale / lambda;
+        }
+      }
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          double gx = x + 1 < width ? term[y][x + 1] - term[y][x] : 0.0;
+          double gy = y + 1 < height ? term[y + 1][x] - term[y][x] : 0.0;
+          double norm = 1.0 + tau * Math.sqrt(gx * gx + gy * gy);
+          px[y][x] = (px[y][x] + tau * gx) / norm;
+          py[y][x] = (py[y][x] + tau * gy) / norm;
+        }
+      }
+    }
+    double[][] u = new double[height][width];
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        u[y][x] = (f[y][x] / scale - lambda * divergence(px, py, y, x)) * scale;
+      }
+    }
+    return u;
+  }
+
+  /** The discrete divergence, the negative adjoint of the forward difference gradient. */
+  private static double divergence(double[][] px, double[][] py, int y, int x) {
+    final int height = px.length;
+    final int width = px[0].length;
+    double dx = (x + 1 < width ? px[y][x] : 0.0) - (x > 0 ? px[y][x - 1] : 0.0);
+    double dy = (y + 1 < height ? py[y][x] : 0.0) - (y > 0 ? py[y - 1][x] : 0.0);
+    return dx + dy;
   }
 
   private static class MinFilter extends AbstractEvaluator {

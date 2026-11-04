@@ -221,7 +221,7 @@ public class WebGLGraphics3D {
     if (target.isAST(S.Legended) && target.argSize() >= 1) {
       showLegend = true;
       if (target.argSize() >= 2 && !target.arg2().isAutomatic()) {
-        legendText = GraphicsOptions3D.text(target.arg2());
+        legendText = GraphicsOptions3D.text(GraphicsOptions.bareLegend(target.arg2()));
       }
       IExpr content = target.arg1();
       if (content.isAST()) {

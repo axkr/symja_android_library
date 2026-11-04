@@ -152,13 +152,25 @@ public class ListInterpolation extends AbstractFunctionOptionEvaluator {
 
   /**
    * The <code>n</code> evenly spaced points of axis <code>k</code>: <code>1 .. n</code>, or the
-   * domain's <code>{min, max}</code> for that axis; <code>null</code> where the domain is not a
-   * pair of numbers.
+   * domain's <code>{min, max}</code> for that axis, or the <code>n</code> increasing coordinates
+   * the domain lists for that axis; <code>null</code> for any other domain.
    */
   private static double[] axis(IExpr domain, int k, int n) {
     double min = 1.0;
     double max = n;
     if (domain.isPresent()) {
+      if (domain.isList() && domain.argSize() >= k && domain.getAt(k).isList()
+          && domain.getAt(k).argSize() == n && n > 2) {
+        // the increasing coordinates of the values
+        double[] axis = new double[n];
+        for (int i = 0; i < n; i++) {
+          axis[i] = domain.getAt(k).getAt(i + 1).evalfNaN();
+          if (!Double.isFinite(axis[i]) || (i > 0 && !(axis[i] > axis[i - 1]))) {
+            return null;
+          }
+        }
+        return axis;
+      }
       if (!domain.isList() || domain.argSize() < k || !domain.getAt(k).isList2()) {
         return null;
       }

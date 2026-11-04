@@ -454,6 +454,113 @@ public class IntervalSym {
     return F.NIL;
   }
 
+  /**
+   * Map an interval through a reciprocal function like <code>ArcSec(x) == ArcCos(1/x)</code>: the
+   * function <code>function</code> is applied to <code>1 / interval</code>.
+   *
+   * @param function the function of the reciprocal argument
+   * @param interval the interval
+   * @param engine the evaluation engine
+   * @return the image interval or {@link F#NIL} if the function doesn't map the reciprocal interval
+   */
+  public static IExpr ofReciprocal(ISymbol function, final IAST interval, EvalEngine engine) {
+    IAST reciprocal = inverse(interval);
+    if (reciprocal.isPresent()) {
+      IExpr result = engine.evaluate(F.unaryAST1(function, reciprocal));
+      if (result.isInterval()) {
+        return result;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The rectangle <code>{reMin, reMax, imMin, imMax}</code> covered by
+   * <code>CenteredInterval(c, r)</code>, a real or complex number or the bounding box of a real
+   * <code>Interval</code>.
+   *
+   * @param expr the expression
+   * @param engine the evaluation engine
+   * @return <code>null</code> if <code>expr</code> has no numeric rectangle
+   */
+  public static IExpr[] rectangle(IExpr expr, EvalEngine engine) {
+    if (expr.isAST(S.CenteredInterval, 3)) {
+      IExpr center = expr.first();
+      IExpr radius = expr.second();
+      if (!center.isNumericFunction(true) || !radius.isNumericFunction(true)) {
+        return null;
+      }
+      IExpr reCenter = engine.evaluate(F.Re(center));
+      IExpr imCenter = engine.evaluate(F.Im(center));
+      IExpr reRadius = engine.evaluate(F.Abs(F.Re(radius)));
+      IExpr imRadius = engine.evaluate(F.Abs(F.Im(radius)));
+      if (reCenter.isRealResult() && imCenter.isRealResult() && reRadius.isRealResult()
+          && imRadius.isRealResult()) {
+        return new IExpr[] {engine.evaluate(F.Subtract(reCenter, reRadius)),
+            engine.evaluate(F.Plus(reCenter, reRadius)),
+            engine.evaluate(F.Subtract(imCenter, imRadius)),
+            engine.evaluate(F.Plus(imCenter, imRadius))};
+      }
+      return null;
+    }
+    if (expr.isInterval()) {
+      IAST interval = normalize((IAST) expr);
+      if (interval.isPresent() && interval.argSize() > 0) {
+        IExpr min = interval.first().first();
+        IExpr max = interval.last().second();
+        if (min.isRealResult() && max.isRealResult()) {
+          return new IExpr[] {min, max, F.C0, F.C0};
+        }
+      }
+      return null;
+    }
+    if (expr.isNumericFunction(true)) {
+      IExpr re = engine.evaluate(F.Re(expr));
+      IExpr im = engine.evaluate(F.Im(expr));
+      if (re.isRealResult() && im.isRealResult()) {
+        return new IExpr[] {re, re, im, im};
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Test if the rectangle <code>inner</code> lies inside the rectangle <code>outer</code>.
+   *
+   * @param outer <code>{reMin, reMax, imMin, imMax}</code>
+   * @param inner <code>{reMin, reMax, imMin, imMax}</code>
+   * @param engine the evaluation engine
+   */
+  public static boolean rectangleContains(IExpr[] outer, IExpr[] inner, EvalEngine engine) {
+    return engine.evalLessEqual(outer[0], inner[0]) && engine.evalLessEqual(inner[1], outer[1])
+        && engine.evalLessEqual(outer[2], inner[2]) && engine.evalLessEqual(inner[3], outer[3]);
+  }
+
+  /**
+   * The part of <code>CenteredInterval(c, r)</code> on the real axis as an <code>Interval</code>.
+   *
+   * @param expr a <code>CenteredInterval(c, r)</code> expression
+   * @param realOnly if <code>true</code> only a centered interval without imaginary extent is
+   *        converted
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if <code>expr</code> isn't a numeric centered interval
+   */
+  public static IAST centeredToInterval(IExpr expr, boolean realOnly, EvalEngine engine) {
+    if (expr.isAST(S.CenteredInterval, 3)) {
+      IExpr[] rect = rectangle(expr, engine);
+      if (rect != null) {
+        if (realOnly && !(rect[2].isZero() && rect[3].isZero())) {
+          return F.NIL;
+        }
+        if (engine.evalLessEqual(rect[2], F.C0) && engine.evalLessEqual(F.C0, rect[3])) {
+          return F.Interval(F.list(rect[0], rect[1]));
+        }
+        return F.CEmptyInterval;
+      }
+    }
+    return F.NIL;
+  }
+
   private static boolean isNormalized(final IAST interval) {
     return interval.hasFlag(Flag.BUILT_IN_EVALED);
   }

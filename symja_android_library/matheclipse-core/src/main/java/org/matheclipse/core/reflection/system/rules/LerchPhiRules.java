@@ -38,9 +38,9 @@ public class LerchPhiRules {
     // LerchPhi(1/2-I*1/2,2,1)=(1+I)*PolyLog(2,1/2-I/2)
     ISet(LerchPhi(CC(1L,2L,-1L,2L),C2,C1),
       Times(CC(1L,1L,1L,1L),PolyLog(C2,CC(1L,2L,-1L,2L))), true),
-    // LerchPhi(z_,s_,i_Integer):=Module({n=-i},z^n*(PolyLog(s,z)+Sum(1/(z^k*k^s),{k,1,n})))/;i<0
+    // LerchPhi(z_,s_,i_Integer):=Module({n=-i},z^n*PolyLog(s,z)+Sum(z^(n-k)/k^s,{k,1,n}))/;i<0
     ISetDelayed(LerchPhi(z_,s_,$p(i, Integer)),
-      Condition(Module(list(Set(n,Negate(i))),Times(Power(z,n),Plus(PolyLog(s,z),Sum(Power(Times(Power(z,k),Power(k,s)),CN1),list(k,C1,n))))),Less(i,C0))),
+      Condition(Module(list(Set(n,Negate(i))),Plus(Times(Power(z,n),PolyLog(s,z)),Sum(Times(Power(z,Plus(n,Negate(k))),Power(Power(k,s),CN1)),list(k,C1,n)))),Less(i,C0))),
     // LerchPhi(z_,s_,n_Integer):=(PolyLog(s,z)-Sum(z^k/k^s,{k,1,-1+n}))/z^n/;n>0
     ISetDelayed(LerchPhi(z_,s_,$p(n, Integer)),
       Condition(Times(Power(Power(z,n),CN1),Subtract(PolyLog(s,z),Sum(Times(Power(Power(k,s),CN1),Power(z,k)),list(k,C1,Plus(CN1,n))))),Greater(n,C0)))

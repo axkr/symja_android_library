@@ -52,8 +52,17 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    */
   static IExpr solveWithOptions(IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine) {
+    ast = Solve.withRegionConditions(ast, engine);
+    final IAST withOptions = ast;
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
+    }
+    if (ast.arg1().isAnd() && ((IAST) ast.arg1()).exists(IExpr::isOr)) {
+      // every branch of the disjunctive normal form is solved on its own
+      IExpr disjunction = Solve.solveDisjunction(ast, withOptions, engine);
+      if (disjunction.isPresent()) {
+        return disjunction;
+      }
     }
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.NSOLVE_KEYS, options);
     long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);

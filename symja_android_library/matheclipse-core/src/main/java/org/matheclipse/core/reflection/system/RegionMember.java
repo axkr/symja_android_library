@@ -410,17 +410,27 @@ public class RegionMember extends AbstractFunctionEvaluator {
    * direction, and on the half line when in addition <code>t &gt;= 0</code>.
    */
   private static IExpr unboundedLineMember(IAST reg, IExpr point, EvalEngine engine) {
-    if (reg.argSize() < 1 || !reg.arg1().isListOfLists() || reg.arg1().argSize() != 2) {
+    IExpr p1;
+    IExpr direction;
+    if (reg.argSize() == 2 && reg.arg1().isList() && !reg.arg1().isListOfLists()
+        && reg.arg2().isList() && reg.arg2().argSize() == reg.arg1().argSize()) {
+      // InfiniteLine(p, v) and HalfLine(p, v): the line through p in the direction v
+      p1 = reg.arg1();
+      direction = reg.arg2();
+    } else if (reg.argSize() >= 1 && reg.arg1().isListOfLists() && reg.arg1().argSize() == 2) {
+      IAST pts = (IAST) reg.arg1();
+      p1 = pts.arg1();
+      if (pts.arg2().argSize() != p1.argSize()) {
+        return F.NIL;
+      }
+      direction = engine.evaluate(F.Subtract(pts.arg2(), p1));
+    } else {
       return F.NIL;
     }
-    IAST pts = (IAST) reg.arg1();
-    IExpr p1 = pts.arg1();
-    IExpr p2 = pts.arg2();
     int dimension = p1.argSize();
-    if (coordinates(point, dimension).isNIL() || p2.argSize() != dimension) {
+    if (coordinates(point, dimension).isNIL()) {
       return F.NIL;
     }
-    IExpr direction = engine.evaluate(F.Subtract(p2, p1));
     IExpr offset = engine.evaluate(F.Subtract(point, p1));
     if (!direction.isList() || !offset.isList() || offset.argSize() != dimension) {
       return F.NIL;

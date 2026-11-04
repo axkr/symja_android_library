@@ -2,6 +2,7 @@ package org.matheclipse.bio.builtin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.core.exceptions.TranslationException;
@@ -16,6 +17,7 @@ import org.biojava.nbio.core.sequence.transcription.TranscriptionEngine;
 import org.matheclipse.bio.convert.GeneticCodeTables;
 import org.matheclipse.bio.expression.data.BioSequenceExpr;
 import org.matheclipse.bio.expression.data.BioSequenceType;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -35,6 +37,9 @@ public class BioSequenceFunctions {
 
   /** Default cap on generated sequence lists. */
   private static final int DEFAULT_MAX_ITEMS = 10000;
+
+  /** Cap on the length of a sequence of wildcard letters, <code>BioSequence(type, n)</code>. */
+  private static final int MAX_WILDCARD_LENGTH = 10000000;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -80,7 +85,8 @@ public class BioSequenceFunctions {
           return arg1;
         }
         if (arg1.isString()) {
-          BioSequenceExpr result = BioSequenceExpr.inferSequence(arg1.toString());
+          BioSequenceExpr result =
+              BioSequenceExpr.inferSequence(arg1.toString().toUpperCase(Locale.ROOT));
           if (result != null) {
             return result;
           }
@@ -88,12 +94,16 @@ public class BioSequenceFunctions {
         }
         return F.NIL;
       }
-      if (ast.isAST2() && ast.arg1().isString() && ast.arg2().isString()) {
+      if (ast.isAST2() && ast.arg1().isString()
+          && (ast.arg2().isString() || ast.arg2().isInteger())) {
         String typeStr = ast.arg1().toString();
-        String sequenceStr = ast.arg2().toString();
         BioSequenceType type = BioSequenceType.of(typeStr);
         if (type == null) {
           return Errors.printMessage(ast.topHead(), "biotype", F.List(ast.arg1()), engine);
+        }
+        String sequenceStr = canonicalLetters(type, ast.arg2());
+        if (sequenceStr == null) {
+          return F.NIL;
         }
         try {
           return BioSequenceExpr.newSequence(type, sequenceStr);
@@ -102,6 +112,26 @@ public class BioSequenceFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The letters of a sequence of <code>type</code> in upper case, with the nucleotide wildcard
+     * <code>X</code> written <code>N</code> and the peptide stop <code>*</code> written
+     * <code>.</code>; a length <code>n</code> stands for <code>n</code> wildcard letters.
+     *
+     * @return <code>null</code> for a length which is negative or too large
+     */
+    private static String canonicalLetters(BioSequenceType type, IExpr letters) {
+      boolean peptide = type == BioSequenceType.PEPTIDE;
+      if (letters.isInteger()) {
+        int n = letters.toIntDefault();
+        if (n < 0 || n > Math.min(Config.MAX_AST_SIZE, MAX_WILDCARD_LENGTH)) {
+          return null;
+        }
+        return (peptide ? "X" : "N").repeat(n);
+      }
+      String str = letters.toString().toUpperCase(Locale.ROOT);
+      return peptide ? str.replace('*', '.') : str.replace('X', 'N');
     }
 
     @Override

@@ -207,6 +207,26 @@ public class ModuleReplaceAll extends VisitorExpr {
     java.util.Set<ISymbol> patternSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
     collectPatternSymbols(ast.arg1(), patternSymbols);
+    // a pattern variable of a rule or an assignment shadows a variable substituted by a value:
+    // in With({a = 3}, a_ :> a) and With({a = 3}, a_ -> a) the a on the right-hand side is the
+    // pattern variable
+    IdentityHashMap<ISymbol, IExpr> unshadowed = null;
+    for (ISymbol symbol : patternSymbols) {
+      IExpr value = fModuleVariables.get(symbol);
+      if (value != null && value.isPresent() && !value.isSymbol()) {
+        if (unshadowed == null) {
+          unshadowed = new IdentityHashMap<>(fModuleVariables);
+        }
+        unshadowed.remove(symbol);
+      }
+    }
+    if (unshadowed != null) {
+      if (unshadowed.isEmpty()) {
+        return F.NIL;
+      }
+      return new ModuleReplaceAll(unshadowed, fEngine, moduleCounter, 0,
+          renameFunctionParameters, true, reachedScopeNames, scopeIndex).visitRuleScope(ast);
+    }
     // a free symbol of a substituted value - With({a = x}, f(x_) := x + a) - is renamed, the
     // value would be captured by the pattern otherwise
     patternSymbols.removeIf(symbol -> {

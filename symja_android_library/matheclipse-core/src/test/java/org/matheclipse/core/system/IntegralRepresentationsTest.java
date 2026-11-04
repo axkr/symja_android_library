@@ -169,6 +169,7 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGaussianAndAiry() {
     check("Integrate(E^(-a^2*x^2)*Cos(b*x), {x,0,Infinity}, Assumptions->a>0)", //
         "Sqrt(Pi)/(2*a*E^(b^2/(4*a^2)))");

@@ -1,5 +1,6 @@
 package org.matheclipse.core.sympy.assumptions;
 
+import org.matheclipse.core.builtin.DegreeTrigFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -31,7 +32,8 @@ public class Refine {
    */
   public static IExpr refine(IExpr expr, EvalEngine engine) {
     if (expr.isFree(x -> x == S.ArcTan || x == S.Sign || x == S.Sin || x == S.Cos || x == S.Floor
-        || x == S.Ceiling || x == S.Re || x == S.Im || x.isPower(), true)) {
+        || x == S.Ceiling || x == S.Re || x == S.Im || x.isPower()
+        || DegreeTrigFunctions.isForwardDegree(x), true)) {
       return expr;
     }
     IExpr result = Traversal.bottomUp(expr, x -> refineHandler(x, engine).orElse(x));
@@ -59,6 +61,13 @@ public class Refine {
       }
       if (x.isSin() || x.isCos()) {
         return refineSinCos((IAST) x, engine);
+      }
+      if (DegreeTrigFunctions.isForwardDegree(x)) {
+        // refine the radian form, which the evaluation under the assumptions already reduced
+        IExpr radian = engine.evaluate(DegreeTrigFunctions.toRadian((IAST) x));
+        IExpr refined = refine(radian, engine);
+        IExpr result = DegreeTrigFunctions.fromRadian(refined, engine);
+        return result.equals(x) || !result.isFree(S.Pi) ? F.NIL : result;
       }
       if (x.isAST(S.Floor, 2) || x.isAST(S.Ceiling, 2)) {
         return refineFloorCeiling((IAST) x, engine);

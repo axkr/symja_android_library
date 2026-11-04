@@ -5,12 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigInteger;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /** Tests for {@link PrimeCount} and {@link PartitionNumbers}. */
 public class PrimeCountTest {
 
   /** The method with several tuning factors against a plain sieve, near segment edges too. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testLmoAgainstSieve() {
     long[] edges = {4_000_001L, 4_194_304L, 4_194_305L, 9_999_991L, 16_777_216L, 27_000_000L,
         27_000_001L};

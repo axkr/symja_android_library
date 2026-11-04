@@ -1229,72 +1229,26 @@ public class DateTimeFunctions {
   }
 
   /**
-   * <code>Clock(spec, t, n)</code> - the current value of a variable which runs <code>n</code> times
-   * through the range <code>spec</code>, each run taking <code>t</code> seconds of the session.
-   * <code>spec</code> is <code>vmax</code>, <code>{vmin, vmax}</code> or
-   * <code>{vmin, vmax, dv}</code>; with a step <code>dv</code> the value jumps from one step to the
-   * next and keeps the exactness of <code>vmin</code> and <code>dv</code>.
+   * <code>Clock(spec, t, n)</code> - a variable which runs <code>n</code> times through the range
+   * <code>spec</code>, each run taking <code>t</code> seconds. <code>spec</code> is
+   * <code>vmax</code>, <code>{vmin, vmax}</code> or <code>{vmin, vmax, dv}</code>. Outside a
+   * dynamic display the clock doesn't tick: it evaluates to its starting value <code>vmin</code>
+   * (<code>0</code> for the forms without <code>vmin</code>), exactly as written.
    */
   private static final class Clock extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr min = F.C0;
-      IExpr max = F.C1;
-      IExpr step = F.NIL;
       if (ast.argSize() >= 1) {
         IExpr spec = ast.arg1();
         if (spec.isList()) {
           if (spec.argSize() < 2 || spec.argSize() > 3) {
             return F.NIL;
           }
-          min = spec.first();
-          max = spec.second();
-          if (spec.argSize() == 3) {
-            step = spec.get(3);
-          }
-        } else {
-          max = spec;
+          return spec.first();
         }
       }
-      double period = 1.0;
-      if (ast.argSize() >= 2) {
-        period = real(ast.arg2(), engine);
-        if (!(period > 0.0) || Double.isInfinite(period)) {
-          return F.NIL;
-        }
-      }
-      long runs = Long.MAX_VALUE;
-      if (ast.argSize() == 3) {
-        runs = ast.arg3().toLongDefault();
-        if (runs <= 0) {
-          return F.NIL;
-        }
-      }
-      double vmin = real(min, engine);
-      double vmax = real(max, engine);
-      if (!Double.isFinite(vmin) || !Double.isFinite(vmax)) {
-        return F.NIL;
-      }
-      double elapsed = (System.nanoTime() - engine.getSessionStartNanos()) / 1.0e9 / period;
-      boolean finished = elapsed >= runs;
-      double phase = finished ? 1.0 : elapsed - Math.floor(elapsed);
-      if (step.isPresent()) {
-        double dv = real(step, engine);
-        if (!(dv > 0.0) || !Double.isFinite(dv)) {
-          return F.NIL;
-        }
-        long count = (long) Math.floor((vmax - vmin) / dv + 1.0e-12);
-        long index = finished ? count : Math.min(count, (long) Math.floor(phase * (count + 1)));
-        return engine.evaluate(F.Plus(min, F.Times(F.ZZ(index), step)));
-      }
-      return F.num(vmin + (vmax - vmin) * phase);
-    }
-
-    /** The value of a real numeric expression, or <code>NaN</code>. */
-    private static double real(IExpr x, EvalEngine engine) {
-      IExpr value = engine.evalN(x);
-      return value.isReal() ? value.evalf() : Double.NaN;
+      return F.C0;
     }
 
     @Override
@@ -1339,15 +1293,15 @@ public class DateTimeFunctions {
       }
       IExpr seconds = absoluteTime(spec.instant, real);
       if (timeZoneOption) {
-        // the date is read in the given zone, and the result counts in $TimeZone
+        // the date is read in $TimeZone, and the result counts on the clock of the given zone
         double hours = zoneHours(ast.arg2().second(), spec.instant, true);
         if (Double.isNaN(hours)) {
           return F.NIL;
         }
         double shift = (hours - timeZoneHours(engine)) * 3600.0;
         return seconds.isInteger() && shift == Math.rint(shift)
-            ? seconds.subtract(F.ZZ((long) shift))
-            : F.num(seconds.evalf() - shift);
+            ? seconds.add(F.ZZ((long) shift))
+            : F.num(seconds.evalf() + shift);
       }
       return seconds;
     }
@@ -2508,20 +2462,77 @@ public class DateTimeFunctions {
       }
       if (arg1 instanceof DateObjectExpr) {
         DateObjectExpr dateObject = (DateObjectExpr) arg1;
-        return dateObject.withDateTime(dateObject.getGranularity().truncate(result));
+        DateObjectExpr moved = dateObject.withDateTime(dateObject.getGranularity().truncate(result));
+        // an inexact number of seconds gives inexact seconds
+        return isInexactSecondsIncrement(ast.arg2()) ? moved.withRealSeconds(true) : moved;
       }
       if (arg1.isString()) {
         // a date string gives a date string
         return F.stringx(DateRange.dateRangeString(result));
       }
       if (spec.listSize > 0) {
-        // a date list carries a time of day only when there is one to carry: half of 2020 is 183
-        // whole days, and WMA answers {2020, 7, 2} rather than spelling out the midnight
-        return hasTimeIncrement(increments) || spec.listSize > 3
-            || !result.toLocalTime().equals(LocalTime.MIDNIGHT) ? dateListOf(result)
-                : dayListOf(result);
+        return datePlusList(result, (IAST) arg1,
+            hasInexactSeconds(arg1) || isInexactSecondsIncrement(ast.arg2()));
       }
       return instantObject(result, spec.dateObject.getTimeZone(), spec.real);
+    }
+
+    /**
+     * The date list of the sum of a date list and increments. It is as long as the given date list
+     * and longer only as far as the clock fields of the result are not zero: <code>{2026, 12, 31}
+     * </code> plus 24 hours is <code>{2027, 1, 1}</code>, plus 25 hours <code>{2027, 1, 1, 1}</code>.
+     * A fractional clock field in the given date gives the full date list.
+     *
+     * @param inexactSeconds the seconds are a machine number even if they are integral
+     */
+    private static IAST datePlusList(LocalDateTime result, IAST dateList,
+        boolean inexactSeconds) {
+      boolean fractionalClock = false;
+      for (int i = 4; i < dateList.size(); i++) {
+        IExpr component = dateList.get(i);
+        if (component.isInexactNumber() && !component.isInteger()
+            && component.evalf() != Math.rint(component.evalf())) {
+          fractionalClock = true;
+        }
+      }
+      int length = fractionalClock ? 6 : Math.max(dateList.argSize(), 3);
+      double second = result.getSecond() + result.getNano() / 1.0e9;
+      if (second != 0.0) {
+        length = 6;
+      } else if (result.getMinute() != 0) {
+        length = Math.max(length, 5);
+      } else if (result.getHour() != 0) {
+        length = Math.max(length, 4);
+      }
+      IAST full = dateListOf(result);
+      if (!inexactSeconds && result.getNano() == 0) {
+        full = full.setAtCopy(6, F.ZZ(result.getSecond()));
+      }
+      if (length >= 6) {
+        return full;
+      }
+      IASTAppendable list = F.ListAlloc(length);
+      for (int i = 1; i <= length; i++) {
+        list.append(full.get(i));
+      }
+      return list;
+    }
+
+    /** Test if <code>date</code> is a date list with inexact seconds. */
+    private static boolean hasInexactSeconds(IExpr date) {
+      return date.isList() && date.argSize() >= 6 && date.getAt(6).isInexactNumber();
+    }
+
+    /** Test if <code>increment</code> adds an inexact number of seconds. */
+    private static boolean isInexactSecondsIncrement(IExpr increment) {
+      if (increment.isQuantity() || (increment.isList2() && increment.second().isString())) {
+        return increment.first().isInexactNumber() && increment.second().isString()
+            && increment.second().toString().startsWith("Second");
+      }
+      if (increment.isList()) {
+        return ((IAST) increment).exists(DatePlus::isInexactSecondsIncrement);
+      }
+      return false;
     }
 
     @Override

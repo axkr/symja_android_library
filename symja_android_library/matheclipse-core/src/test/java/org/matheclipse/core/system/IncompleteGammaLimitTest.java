@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Limits of the incomplete Gamma function <code>Gamma(a,z)</code> at <code>0</code> and at
@@ -42,6 +43,7 @@ public class IncompleteGammaLimitTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDefiniteIntegrals() {
     // the antiderivative is a sum of incomplete Gamma functions of I*x^4 and -I*x^4. With the
     // wrong limit at Infinity these integrals had the wrong sign

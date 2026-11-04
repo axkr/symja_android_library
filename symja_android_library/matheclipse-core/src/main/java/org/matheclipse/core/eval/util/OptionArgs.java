@@ -49,6 +49,17 @@ public class OptionArgs {
           assumptionExpr = ast.get(position);
         }
       }
+      if (position > 0 && ast.size() > position && !ast.get(position).isRuleAST()) {
+        // positional assumptions and the assumptions of an option behind them hold together
+        IExpr positional = ast.get(position);
+        for (int i = position + 1; i < ast.size(); i++) {
+          IExpr option = ast.get(i);
+          if (option.isRuleAST() && option.first() == S.Assumptions && option.second().isAST()
+              && !option.second().equals(positional)) {
+            return F.And(positional, option.second());
+          }
+        }
+      }
     } else {
       assumptionExpr = S.$Assumptions.assignedValue();
       if (assumptionExpr == null) {

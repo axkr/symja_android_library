@@ -4012,7 +4012,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       for (IAST whenEvent : whenEvents) {
         // the condition is evaluated, which expands a form like Or @@ (x(t) > # &) /@ {1, 2};
         // the action stays held until an event
-        IExpr condition = engine.evaluate(whenEvent.arg1());
+        IExpr condition = evaluateCondition(whenEvent.arg1(), system, engine);
         java.util.List<WhenEventDetector> detectors = new java.util.ArrayList<WhenEventDetector>();
         WhenEventDetector.collect(condition, F.NIL, whenEvent.arg2(), system, engine, forward,
             this, detectors);
@@ -4029,6 +4029,43 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         result.add(detector);
       }
       return result;
+    }
+
+    /**
+     * Evaluate an event condition with its unknown function values <code>x(t)</code> held as
+     * symbols: <code>First(x(t))</code> of a vector valued <code>x</code> is the first component
+     * at the event, not the argument <code>t</code>.
+     */
+    private static IExpr evaluateCondition(IExpr condition, FirstOrderSystem system,
+        EvalEngine engine) {
+      java.util.Map<IExpr, IExpr> held = new java.util.HashMap<IExpr, IExpr>();
+      IExpr replaced = F.subst(condition, e -> {
+        if (e.isAST1() && e.first().equals(system.timeVar)) {
+          IExpr head = e.head();
+          IExpr function = head.isAST() && head.head().isAST(S.Derivative) ? head.first() : head;
+          for (ISymbol f : system.functions) {
+            if (f.equals(function)) {
+              return held.computeIfAbsent(e, k -> F.Dummy("event"));
+            }
+          }
+        }
+        return F.NIL;
+      });
+      if (held.isEmpty()) {
+        return engine.evaluate(condition);
+      }
+      IExpr evaluated = engine.evalQuiet(replaced);
+      if (system.layout == null) {
+        // every function is a number in the state: a one element vector y(0) == {1.0} has been
+        // reduced to its element, which First(y(t)) or y(t)[[1]] then means
+        evaluated = F.subst(evaluated, e -> (e.isAST(S.First, 2) || e.isAST(S.Last, 2)
+            || (e.isAST(S.Part, 3) && (e.second().isOne() || e.second().isMinusOne())))
+            && held.containsValue(e.first()) ? e.first() : F.NIL);
+        evaluated = engine.evalQuiet(evaluated);
+      }
+      java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+      held.forEach((call, symbol) -> back.put(symbol, call));
+      return F.subst(evaluated, back);
     }
 
     private BracketedUnivariateSolver<UnivariateFunction> createSolver() {

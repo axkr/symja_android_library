@@ -38,7 +38,7 @@ public class EventLoopTest extends ExprEvaluatorTestCase {
           "True");
       check("Head(TaskRemove(task))", //
           "TaskObject");
-      check("before = counter; Pause(0.1); counter == before", //
+      check("previous = counter; Pause(0.1); counter == previous", //
           "True");
     } finally {
       Config.OS_ACCESS_ENABLED = osAccess;

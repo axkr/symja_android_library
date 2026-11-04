@@ -95,7 +95,7 @@ public final class PiecewiseIntegration {
       points.put(up, upper);
       SymbolicPoint symbolic = new SymbolicPoint();
       if (!collectBreakPoints(f, x, lower, upper, low, up, points, symbolic, engine)) {
-        return F.NIL;
+        return Double.isInfinite(low) && Double.isInfinite(up) ? shifted(f, x, engine) : F.NIL;
       }
       List<IExpr> nodes = new ArrayList<IExpr>(points.values());
       if (symbolic.point.isNIL()) {
@@ -152,6 +152,90 @@ public final class PiecewiseIntegration {
     }
     IExpr result = integrate(transformed, t, F.C0, newUpper, engine);
     return result.isPresent() && result.isFree(t, true) ? result : F.NIL;
+  }
+
+  /**
+   * <code>Integrate(f, {x, -Infinity, Infinity})</code> doesn't change by a shift
+   * <code>x -&gt; x + s</code>. The shifts which make one side of a comparison
+   * <code>c*x + e</code> of the conditions free of the parameters are tried: the break points of
+   * <code>w-2 &lt;= x &lt;= w-1</code> become numeric for <code>x -&gt; x + w</code>.
+   *
+   * @return {@link F#NIL} if no shift leaves at most one symbolic break point
+   */
+  private static IExpr shifted(IExpr f, IExpr x, EvalEngine engine) {
+    java.util.Set<IExpr> shifts = new java.util.LinkedHashSet<IExpr>();
+    collectShifts(f, x, shifts, engine);
+    for (IExpr shift : shifts) {
+      IExpr transformed =
+          engine.evaluate(differencesToZero(F.subst(f, x, F.Plus(x, shift)), engine));
+      if (isPiecewiseIn(transformed, x)) {
+        TreeMap<Double, IExpr> points = new TreeMap<Double, IExpr>();
+        points.put(Double.NEGATIVE_INFINITY, F.CNInfinity);
+        points.put(Double.POSITIVE_INFINITY, F.CInfinity);
+        if (!collectBreakPoints(transformed, x, F.CNInfinity, F.CInfinity,
+            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, points, new SymbolicPoint(),
+            engine)) {
+          continue;
+        }
+        IExpr result = integrate(transformed, x, F.CNInfinity, F.CInfinity, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The comparisons <code>a &lt;= b &lt;= c</code> in <code>expr</code> as
+   * <code>a-b &lt;= 0 &amp;&amp; b-c &lt;= 0</code>, so that the parameter cancels from
+   * <code>-2+w &lt;= -2+x+w</code>.
+   */
+  private static IExpr differencesToZero(IExpr expr, EvalEngine engine) {
+    return F.subst(expr, e -> {
+      if (e.isAST() && e.size() > 2 && (e.isAST(S.Less) || e.isAST(S.LessEqual)
+          || e.isAST(S.Greater) || e.isAST(S.GreaterEqual))) {
+        IAST comparison = (IAST) e;
+        IASTAppendable and = F.ast(S.And, comparison.argSize());
+        for (int i = 1; i < comparison.argSize(); i++) {
+          IExpr difference =
+              engine.evaluate(F.Expand(F.Subtract(comparison.get(i), comparison.get(i + 1))));
+          and.append(F.binaryAST2(comparison.head(), difference, F.C0));
+        }
+        return and.oneIdentity1();
+      }
+      return F.NIL;
+    });
+  }
+
+  /**
+   * The shifts <code>-e/c</code> of the sides <code>c*x + e</code> of the comparisons in
+   * <code>expr</code> with a symbolic <code>e</code>.
+   */
+  private static void collectShifts(IExpr expr, IExpr x, java.util.Set<IExpr> shifts,
+      EvalEngine engine) {
+    if (!expr.isAST() || shifts.size() > MAX_BREAK_POINTS) {
+      return;
+    }
+    IAST ast = (IAST) expr;
+    boolean inequality = ast.isAST(S.Inequality);
+    if (inequality || ast.isAST(S.Less) || ast.isAST(S.LessEqual) || ast.isAST(S.Greater)
+        || ast.isAST(S.GreaterEqual)) {
+      // the differences of neighbouring sides; Inequality(a, Less, b, ...) has its operators
+      // between them
+      int step = inequality ? 2 : 1;
+      for (int i = 1; i + step < ast.size(); i += step) {
+        IExpr difference = engine.evaluate(F.Subtract(ast.get(i), ast.get(i + step)));
+        IExpr[] linear = difference.isFree(x) ? null : difference.linear(x);
+        if (linear != null && !linear[1].isZero() && hasVariables(linear[0])) {
+          shifts.add(engine.evaluate(F.Negate(F.Divide(linear[0], linear[1]))));
+        }
+      }
+      return;
+    }
+    for (IExpr arg : ast) {
+      collectShifts(arg, x, shifts, engine);
+    }
   }
 
   /**

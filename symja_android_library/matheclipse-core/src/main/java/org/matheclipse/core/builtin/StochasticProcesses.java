@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.RandomFunction;
@@ -139,6 +140,154 @@ public final class StochasticProcesses {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * <code>CovarianceFunction(proc, h)</code> - the autocovariance at the lag <code>h</code> of a
+   * weakly stationary <code>ARProcess</code>, <code>MAProcess</code> or <code>ARMAProcess</code>
+   * with numeric parameters; <code>CovarianceFunction(proc, s, t)</code> is the covariance of the
+   * values at the times <code>s</code> and <code>t</code>. Exact parameters give exact values.
+   */
+  public static final class CovarianceFunction extends AbstractFunctionEvaluator {
+    /** The largest lag whose autocovariance is computed by the recursion. */
+    private static final int MAX_LAG = 100_000;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isAST()) {
+        return F.NIL;
+      }
+      IExpr lag;
+      if (ast.isAST2()) {
+        lag = ast.arg2();
+      } else if (ast.isAST3()) {
+        lag = engine.evaluate(F.Abs(F.Subtract(ast.arg3(), ast.arg2())));
+      } else {
+        return F.NIL;
+      }
+      if (lag.isList()) {
+        return ast.isAST2() ? ((IAST) lag).mapThread(ast, 2) : F.NIL;
+      }
+      IAST process = (IAST) ast.arg1();
+      IExpr[] parameters = armaParameters(process);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      Arma arma = Arma.of(process);
+      if (arma == null || arma.d > 0 || !arma.isStationary()) {
+        return F.NIL;
+      }
+      int h = lag.isInteger() ? Math.abs(lag.toIntDefault()) : -1;
+      if (h < 0 || h > MAX_LAG) {
+        return F.NIL;
+      }
+      IAST a = (IAST) parameters[0];
+      IAST b = (IAST) parameters[1];
+      IExpr[] gamma = autocovariances(a, b, parameters[2], h, engine);
+      return gamma == null ? F.NIL : gamma[h];
+    }
+
+    /**
+     * The autoregressive and the moving average coefficients and the noise variance of an
+     * <code>ARProcess</code>, <code>MAProcess</code> or <code>ARMAProcess</code>, with or without
+     * a constant.
+     *
+     * @return <code>null</code> for another expression or non-numeric parameters
+     */
+    private static IExpr[] armaParameters(IAST process) {
+      int offset = process.argSize() > 0 && !process.arg1().isList() ? 1 : 0;
+      IExpr a;
+      IExpr b;
+      if (process.isAST(S.ARProcess) && process.argSize() == 2 + offset) {
+        a = process.get(1 + offset);
+        b = F.CEmptyList;
+      } else if (process.isAST(S.MAProcess) && process.argSize() == 2 + offset) {
+        a = F.CEmptyList;
+        b = process.get(1 + offset);
+      } else if (process.isAST(S.ARMAProcess) && process.argSize() == 3 + offset) {
+        a = process.get(1 + offset);
+        b = process.get(2 + offset);
+      } else {
+        return null;
+      }
+      IExpr v = process.last();
+      if (!a.isList() || !b.isList() || !((IAST) a).forAll(IExpr::isNumber)
+          || !((IAST) b).forAll(IExpr::isNumber) || !v.isNumber()) {
+        return null;
+      }
+      return new IExpr[] {a, b, v};
+    }
+
+    /**
+     * The autocovariances <code>gamma(0), ..., gamma(h)</code>. The first <code>m+1 =
+     * Max(p, q)+1</code> of them solve the linear equations
+     * <code>gamma(k) - Sum(a(i)*gamma(k-i), i=1..p) = v*Sum(b(j)*psi(j-k), j=k..q)</code> with the
+     * moving average weights <code>psi</code> and <code>b(0) = 1</code>; the others follow from the
+     * recursion <code>gamma(k) = Sum(a(i)*gamma(k-i), i=1..p)</code>.
+     */
+    private static IExpr[] autocovariances(IAST a, IAST b, IExpr v, int h, EvalEngine engine) {
+      int p = a.argSize();
+      int q = b.argSize();
+      int m = Math.max(p, q);
+      // the moving average weights psi(0), ..., psi(q)
+      IExpr[] psi = new IExpr[q + 1];
+      psi[0] = F.C1;
+      for (int j = 1; j <= q; j++) {
+        IASTAppendable sum = F.PlusAlloc(p + 1);
+        sum.append(b.get(j));
+        for (int i = 1; i <= Math.min(j, p); i++) {
+          sum.append(F.Times(a.get(i), psi[j - i]));
+        }
+        psi[j] = engine.evaluate(sum);
+      }
+      IASTAppendable matrix = F.ListAlloc(m + 1);
+      IASTAppendable rhs = F.ListAlloc(m + 1);
+      for (int k = 0; k <= m; k++) {
+        IExpr[] row = new IExpr[m + 1];
+        java.util.Arrays.fill(row, F.C0);
+        row[k] = F.C1;
+        for (int i = 1; i <= p; i++) {
+          int index = Math.abs(k - i);
+          row[index] = F.Subtract(row[index], a.get(i));
+        }
+        matrix.append(F.List(row));
+        IASTAppendable sum = F.PlusAlloc(q + 1);
+        for (int j = k; j <= q; j++) {
+          sum.append(F.Times(j == 0 ? F.C1 : b.get(j), psi[j - k]));
+        }
+        rhs.append(F.Times(v, sum.oneIdentity0()));
+      }
+      IExpr solution = engine.evaluate(F.LinearSolve(engine.evaluate(matrix), engine.evaluate(rhs)));
+      if (!solution.isList() || solution.argSize() != m + 1
+          || !((IAST) solution).forAll(IExpr::isNumber)) {
+        return null;
+      }
+      IExpr[] gamma = new IExpr[Math.max(h, m) + 1];
+      for (int k = 0; k <= m; k++) {
+        gamma[k] = solution.getAt(k + 1);
+      }
+      for (int k = m + 1; k <= h; k++) {
+        if ((k & 0xFF) == 0) {
+          engine.checkTimeLimit();
+        }
+        IASTAppendable sum = F.PlusAlloc(p);
+        for (int i = 1; i <= p; i++) {
+          sum.append(F.Times(a.get(i), gamma[k - i]));
+        }
+        gamma[k] = engine.evaluate(sum.oneIdentity0());
+      }
+      return gamma;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
   }
 
   /**
@@ -487,6 +636,10 @@ public final class StochasticProcesses {
       return isWhiteNoise(process) ? IExpr.COMPARE_TERNARY.TRUE
           : IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
+    if (process.isAST(S.DiscreteMarkovProcess)) {
+      return markovMatrix(process) != null ? IExpr.COMPARE_TERNARY.TRUE
+          : IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
     if (process.isAST(S.WienerProcess, 1) || process.isAST(S.WienerProcess, 3)
         || process.isAST(S.OrnsteinUhlenbeckProcess, 4)
         || process.isAST(S.OrnsteinUhlenbeckProcess, 5)) {
@@ -537,7 +690,84 @@ public final class StochasticProcesses {
 
   /** Whether the values of the process are integers: a counting process. */
   public static boolean isIntegerValued(IExpr process) {
-    return process.isAST(S.PoissonProcess, 2);
+    return process.isAST(S.PoissonProcess, 2) || markovMatrix(process) != null;
+  }
+
+  /**
+   * The transition matrix of <code>DiscreteMarkovProcess(i0, m)</code> with a numeric stochastic
+   * matrix <code>m</code> and a start state <code>i0</code> or a start distribution vector.
+   *
+   * @return <code>null</code> for another expression
+   */
+  private static double[][] markovMatrix(IExpr process) {
+    if (!process.isAST(S.DiscreteMarkovProcess, 3)) {
+      return null;
+    }
+    int[] dimensions = process.second().isMatrix();
+    if (dimensions == null || dimensions[0] != dimensions[1] || dimensions[0] == 0) {
+      return null;
+    }
+    double[][] m = process.second().toDoubleMatrix();
+    if (m == null) {
+      return null;
+    }
+    for (double[] row : m) {
+      double sum = 0.0;
+      for (double value : row) {
+        if (!(value >= 0.0)) {
+          return null;
+        }
+        sum += value;
+      }
+      if (Math.abs(sum - 1.0) > 1.0e-10) {
+        return null;
+      }
+    }
+    IExpr start = process.first();
+    if (start.isInteger()) {
+      int i0 = start.toIntDefault();
+      return i0 >= 1 && i0 <= m.length ? m : null;
+    }
+    double[] p = start.toDoubleVector();
+    return p != null && p.length == m.length ? m : null;
+  }
+
+  /** A state drawn from the probabilities <code>p</code>, counted from <code>1</code>. */
+  private static int drawState(double[] p, Random random) {
+    double u = random.nextDouble();
+    double sum = 0.0;
+    for (int i = 0; i < p.length; i++) {
+      sum += p[i];
+      if (u < sum) {
+        return i + 1;
+      }
+    }
+    return p.length;
+  }
+
+  /**
+   * One path of a <code>DiscreteMarkovProcess</code> at the integer <code>times</code>: the
+   * process starts at time <code>0</code> and moves at each integer time.
+   */
+  private static double[] simulateMarkov(IAST process, double[][] m, double[] times,
+      Random random) {
+    int state = process.first().isInteger() ? process.first().toIntDefault()
+        : drawState(process.first().toDoubleVector(), random);
+    long time = 0;
+    double[] x = new double[times.length];
+    EvalEngine engine = EvalEngine.get();
+    for (int i = 0; i < times.length; i++) {
+      long target = (long) Math.floor(Math.max(times[i], 0.0) + 1.0e-9);
+      while (time < target) {
+        if ((time & 0xFFFF) == 0) {
+          engine.checkTimeLimit();
+        }
+        state = drawState(m[state - 1], random);
+        time++;
+      }
+      x[i] = state;
+    }
+    return x;
   }
 
   /**
@@ -563,6 +793,10 @@ public final class StochasticProcesses {
         previous = t;
       }
       return x;
+    }
+    double[][] markov = markovMatrix(process);
+    if (markov != null) {
+      return simulateMarkov(process, markov, times, random);
     }
     if (process.isAST(S.WhiteNoiseProcess)) {
       double mu = process.argSize() == 2 ? process.first().evalf() : 0.0;

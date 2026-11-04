@@ -170,6 +170,6 @@ public class DifferenceRoot extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     super.setUp(newSymbol);
-    newSymbol.setAttributes(Attribute.NHOLDALL);
+    newSymbol.setAttributes(Attribute.NHOLDALL, Attribute.READPROTECTED);
   }
 }

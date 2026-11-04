@@ -51,6 +51,7 @@ public class ControlSystems {
       S.BodePlot.setEvaluator(new FrequencyResponsePlot(BODE));
       S.NyquistPlot.setEvaluator(new FrequencyResponsePlot(NYQUIST));
       S.NicholsPlot.setEvaluator(new FrequencyResponsePlot(NICHOLS));
+      S.RootLocusPlot.setEvaluator(new RootLocusPlot());
       S.ButterworthFilterModel.setEvaluator(new FilterDesign.ButterworthFilterModel());
       S.RecurrenceFilter.setEvaluator(new FilterDesign.RecurrenceFilter());
     }
@@ -760,6 +761,180 @@ public class ControlSystems {
    * (magnitude in decibels against phase in degrees). The model may be a list of models or an
    * expression followed by its variable; a frequency range <code>{wmin, wmax}</code> may follow.
    */
+  /**
+   * <code>RootLocusPlot(g, {k, kmin, kmax})</code> - the paths in the complex plane of the roots of
+   * the numerator of <code>1 + g</code>, the characteristic polynomial of the closed loop, as the
+   * parameter <code>k</code> runs from <code>kmin</code> to <code>kmax</code>. Every root is a line
+   * from its place at <code>kmin</code> to its place at <code>kmax</code>, and the roots at
+   * <code>kmin</code> are marked.
+   */
+  private static final class RootLocusPlot extends AbstractFunctionEvaluator {
+    /** The number of steps of the parameter. */
+    private static final int STEPS = 200;
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr range = ast.arg2();
+      if (!range.isList3() || !range.first().isVariable()) {
+        return F.NIL;
+      }
+      IExpr k = range.first();
+      double kMin = range.second().evalfNaN();
+      double kMax = range.getAt(3).evalfNaN();
+      if (!Double.isFinite(kMin) || !Double.isFinite(kMax) || kMax <= kMin) {
+        return F.NIL;
+      }
+      IExpr g = ast.arg1();
+      IExpr variables = engine.evaluate(F.Variables(g));
+      if (!variables.isList()) {
+        return F.NIL;
+      }
+      IExpr s = F.NIL;
+      for (IExpr v : (IAST) variables) {
+        if (!v.equals(k)) {
+          if (s.isPresent()) {
+            return F.NIL;
+          }
+          s = v;
+        }
+      }
+      if (s.isNIL()) {
+        return F.NIL;
+      }
+      IExpr characteristic = engine.evaluate(F.Numerator(F.Together(F.Plus(F.C1, g))));
+      IExpr coefficientList = engine.evaluate(F.CoefficientList(characteristic, s));
+      if (!coefficientList.isList() || coefficientList.argSize() < 2
+          || coefficientList.argSize() > 31) {
+        return F.NIL;
+      }
+      IAST coefficients = (IAST) coefficientList;
+      final int degree = coefficients.argSize() - 1;
+      Complex[] previous = null;
+      java.util.List<java.util.List<Complex>> paths = new java.util.ArrayList<>();
+      for (int step = 0; step <= STEPS; step++) {
+        engine.checkTimeLimit();
+        double kValue = kMin + (kMax - kMin) * step / STEPS;
+        Complex[] a = new Complex[degree + 1];
+        for (int i = 0; i <= degree; i++) {
+          IExpr c = engine.evalN(F.subst(coefficients.get(i + 1), k, F.num(kValue)));
+          if (!c.isNumber()) {
+            return F.NIL;
+          }
+          a[i] = c.evalfc();
+        }
+        Complex[] roots = polynomialRoots(a);
+        if (roots == null) {
+          // the leading coefficient vanishes for this parameter
+          continue;
+        }
+        if (previous == null || previous.length != roots.length) {
+          paths.clear();
+          for (Complex root : roots) {
+            java.util.List<Complex> path = new java.util.ArrayList<>();
+            path.add(root);
+            paths.add(path);
+          }
+        } else {
+          // every path goes on with the nearest root which no other path took
+          boolean[] taken = new boolean[roots.length];
+          for (java.util.List<Complex> path : paths) {
+            Complex last = path.get(path.size() - 1);
+            int best = -1;
+            for (int j = 0; j < roots.length; j++) {
+              if (!taken[j] && (best < 0
+                  || roots[j].subtract(last).norm() < roots[best].subtract(last).norm())) {
+                best = j;
+              }
+            }
+            taken[best] = true;
+            path.add(roots[best]);
+          }
+        }
+        previous = roots;
+      }
+      if (paths.isEmpty()) {
+        return F.NIL;
+      }
+      IASTAppendable lines = F.ListAlloc(paths.size());
+      IASTAppendable starts = F.ListAlloc(paths.size());
+      for (java.util.List<Complex> path : paths) {
+        IASTAppendable points = F.ListAlloc(path.size());
+        for (Complex z : path) {
+          points.append(F.list(F.num(z.getReal()), F.num(z.getImaginary())));
+        }
+        lines.append(F.Line(points));
+        starts.append(points.arg1());
+      }
+      IASTAppendable graphics = F.ast(S.Graphics);
+      graphics.append(F.list(F.list(F.RGBColor(0.24, 0.6, 0.8), lines),
+          F.list(F.PointSize(F.num(0.02)), F.GrayLevel(F.C0), F.Point(starts))));
+      graphics.append(F.Rule(S.Axes, S.True));
+      graphics.append(F.Rule(S.AspectRatio, F.C1));
+      graphics.append(F.Rule(S.PlotRange, S.All));
+      return graphics;
+    }
+
+    /**
+     * The roots of <code>a[0] + a[1]*z + ... + a[n]*z^n</code> by the simultaneous iteration of
+     * Durand and Kerner, or <code>null</code> if <code>a[n]</code> is zero.
+     */
+    private static Complex[] polynomialRoots(Complex[] a) {
+      final int n = a.length - 1;
+      Complex lead = a[n];
+      if (lead.norm() < 1e-14) {
+        return null;
+      }
+      Complex[] monic = new Complex[n + 1];
+      double bound = 0.0;
+      for (int i = 0; i <= n; i++) {
+        monic[i] = a[i].divide(lead);
+        if (i < n) {
+          bound = Math.max(bound, monic[i].norm());
+        }
+      }
+      Complex[] z = new Complex[n];
+      Complex seed = new Complex(0.4, 0.9);
+      for (int i = 0; i < n; i++) {
+        z[i] = seed.pow(i).multiply(1.0 + bound);
+      }
+      for (int iteration = 0; iteration < 500; iteration++) {
+        double change = 0.0;
+        for (int i = 0; i < n; i++) {
+          Complex value = Complex.ONE;
+          for (int j = n - 1; j >= 0; j--) {
+            value = value.multiply(z[i]).add(monic[j]);
+          }
+          Complex denominator = Complex.ONE;
+          for (int j = 0; j < n; j++) {
+            if (j != i) {
+              denominator = denominator.multiply(z[i].subtract(z[j]));
+            }
+          }
+          if (denominator.norm() == 0.0) {
+            denominator = new Complex(1e-12);
+          }
+          Complex delta = value.divide(denominator);
+          z[i] = z[i].subtract(delta);
+          change = Math.max(change, delta.norm());
+        }
+        if (change < 1e-14) {
+          break;
+        }
+      }
+      return z;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+  }
+
   private static final class FrequencyResponsePlot extends AbstractFunctionEvaluator {
     private final int kind;
 

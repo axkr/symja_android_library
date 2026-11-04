@@ -50,6 +50,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.numerics.optim.DifferentialEvolution;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -1340,6 +1341,9 @@ public class MinMaxFunctions {
       S.NArgMin.setEvaluator(new NArgMin());
       S.NMaxValue.setEvaluator(new NMaxValue());
       S.NMinValue.setEvaluator(new NMinValue());
+      S.FindMinValue.setEvaluator(new FindLocalExtremum(S.FindMinimum, true));
+      S.FindArgMin.setEvaluator(new FindLocalExtremum(S.FindMinimum, false));
+      S.FindArgMax.setEvaluator(new FindLocalExtremum(S.FindMaximum, false));
     }
   }
 
@@ -1719,6 +1723,16 @@ public class MinMaxFunctions {
           } else if (list1.argSize() > 2) {
             constraints = list1.rest().setAtCopy(0, S.And);
           }
+          // an equation of two lists {a, b} == {c, d} is the equations a == c && b == d
+          constraints = constraints.replaceAll(x -> {
+            if (x.isEqual() && x.first().isList() && x.second().isList()
+                && x.first().argSize() == x.second().argSize()) {
+              IAST left = (IAST) x.first();
+              IAST right = (IAST) x.second();
+              return F.mapRange(S.And, 1, left.size(), k -> F.Equal(left.get(k), right.get(k)));
+            }
+            return F.NIL;
+          }).orElse(constraints);
           Search search = new Search(listOfVariables, vars, engine);
           List<IExpr> integerVariables = new ArrayList<IExpr>();
           constraints = withoutDomains(constraints, integerVariables, engine);
@@ -2632,6 +2646,43 @@ public class MinMaxFunctions {
     }
   }
 
+
+  /**
+   * <code>FindMinValue</code>, <code>FindArgMin</code> and <code>FindArgMax</code>: the value or
+   * the position of the local extremum which <code>FindMinimum</code> or <code>FindMaximum</code>
+   * finds with the same arguments and options.
+   */
+  private static class FindLocalExtremum extends AbstractFunctionEvaluator {
+    private final IBuiltInSymbol search;
+    private final boolean value;
+
+    FindLocalExtremum(IBuiltInSymbol search, boolean value) {
+      this.search = search;
+      this.value = value;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr extremum = engine.evaluate(ast.setAtCopy(0, search));
+      if (extremum.isList2() && extremum.second().isListOfRules()) {
+        if (value) {
+          return extremum.first();
+        }
+        return ((IAST) extremum.second()).map(x -> x.second());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
 
   public static void initialize() {
     Initializer.init();

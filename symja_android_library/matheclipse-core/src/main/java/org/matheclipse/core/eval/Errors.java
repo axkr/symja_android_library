@@ -134,6 +134,7 @@ public class Errors {
       "biocirc", "A sequence of type `1` cannot be made circular.", //
       "biogap", "`1` is not a valid GapPenalty value.", //
       "biogtt", "`1` is not a known genetic code translation table.", //
+      "biojoin", "Matching types are needed for `1` but received `2`.", //
       "biomatrix", "`1` is not a known similarity matrix.", //
       "biomax", "The result has more than `1` elements; increase the option `2`.", //
       "biomethod", "`1` is not a known alignment Method.", //

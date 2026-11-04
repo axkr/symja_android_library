@@ -1015,6 +1015,13 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
+  public void append(int location, IExpr expr) {
+    super.append(location, expr);
+    // the rules after 'location' moved, the index is built again on the next key lookup
+    keyToIndexMap = null;
+  }
+
+  @Override
   public IExpr remove(int location) throws IndexOutOfBoundsException {
     hashValue = 0;
     // before the rule goes out, see keyMap()

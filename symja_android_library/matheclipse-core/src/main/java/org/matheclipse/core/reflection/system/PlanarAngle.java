@@ -25,7 +25,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * </p>
  * <p>
  * The <code>kind</code> <code>"Interior"</code> is the angle in the range <code>0</code> to
- * <code>Pi</code>, <code>"Exterior"</code> is <code>Pi</code> minus it, and
+ * <code>Pi</code>, <code>"Exterior"</code> is <code>Pi</code> minus it, <code>"FullExterior"</code>
+ * is <code>2*Pi</code> minus it, and
  * <code>"Counterclockwise"</code> and <code>"Clockwise"</code> turn from the half-line through
  * <code>q1</code> to the one through <code>q2</code> in that direction.
  * </p>
@@ -37,6 +38,7 @@ public class PlanarAngle extends AbstractFunctionEvaluator {
   private static final int EXTERIOR = 1;
   private static final int COUNTERCLOCKWISE = 2;
   private static final int CLOCKWISE = 3;
+  private static final int FULL_EXTERIOR = 4;
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -52,6 +54,9 @@ public class PlanarAngle extends AbstractFunctionEvaluator {
           break;
         case "Exterior":
           kind = EXTERIOR;
+          break;
+        case "FullExterior":
+          kind = FULL_EXTERIOR;
           break;
         case "Counterclockwise":
           kind = COUNTERCLOCKWISE;
@@ -115,6 +120,9 @@ public class PlanarAngle extends AbstractFunctionEvaluator {
     }
     if (kind == EXTERIOR) {
       return engine.evaluate(F.Subtract(S.Pi, result));
+    }
+    if (kind == FULL_EXTERIOR) {
+      return engine.evaluate(F.Subtract(F.C2Pi, result));
     }
 
     // the cross product decides on which side of q1 the ray through q2 lies

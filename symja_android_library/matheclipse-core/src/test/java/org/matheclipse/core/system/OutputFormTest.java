@@ -6,8 +6,10 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class OutputFormTest extends ExprEvaluatorTestCase {
 
@@ -288,5 +290,47 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
         "1.500000000000000*10^30+x");
     assertEquals(outputFormFactory.toString(evaluator.eval("N(1.5*10^30, 30)")),
         "1.500000000000000*10^30");
+  }
+
+  /**
+   * A summand whose machine-number coefficient prints as <code>0.0</code> keeps its
+   * <code>+</code>. Evaluation removes <code>0.0*y</code>, so this shows with held or unevaluated
+   * sums: without the fix <code>Hold(x+0.0*y)</code> printed as <code>Hold(x0.0*y)</code>, which
+   * reads back as the variable <code>x0</code> times <code>0.0*y</code>.
+   */
+  @Test
+  public void testZeroCoefficientKeepsPlusIssue1597() {
+    check("Hold(x+0.0*y)", //
+        "Hold(x+0.0*y)");
+    check("Hold(0.0*x+0.0*y+0.0*z)", //
+        "Hold(0.0*x+0.0*y+0.0*z)");
+    // a coefficient below Config.ZERO_IN_OUTPUT_FORMAT prints as 0.0 as well
+    check("Hold(x+1.0*^-200*y)", //
+        "Hold(x+0.0*y)");
+    check("InputForm(Hold(x+0.0*y))", //
+        "Hold(x + 0.0`*y)");
+    // the printed form reads back as the same expression
+    check("ToExpression(ToString(Hold(x+0.0*y)))", //
+        "Hold(x+0.0*y)");
+    // a non-zero coefficient was never affected
+    check("Hold(x+2.0*y)", //
+        "Hold(x+2.0*y)");
+
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, false);
+    ISymbol x = F.Dummy("x");
+    ISymbol y = F.Dummy("y");
+    // 0.0 has no sign, so a tiny negative coefficient needs the + too
+    assertEquals(outputFormFactory.toString(F.Plus(x, F.Times(F.num(-1.0E-200), y))), "x+0.0*y");
+    // a bare negative summand that prints as 0.0, in an unsorted Plus as the parser builds it
+    IASTAppendable plus = F.PlusAlloc();
+    plus.append(x);
+    plus.append(F.num(-1.0E-200));
+    assertEquals(outputFormFactory.toString(plus), "x+0.0");
+
+    // the input form keeps the - of a tiny negative coefficient, which separates the summand
+    OutputFormFactory inputFormFactory = OutputFormFactory.get(true, false);
+    inputFormFactory.setInputForm(true);
+    assertEquals(inputFormFactory.toString(F.Plus(x, F.Times(F.num(-1.0E-200), y))),
+        "x-1.0`*^-200*y");
   }
 }

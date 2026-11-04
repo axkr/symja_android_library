@@ -507,13 +507,22 @@ public class FileSystemFunctions {
     }
   }
 
+  /** The name of a file given as a string or as <code>File("name")</code>, else <code>null</code>. */
+  private static String fileNameString(IExpr arg) {
+    if (arg.isAST(S.File, 2)) {
+      arg = arg.first();
+    }
+    return arg instanceof IStringX ? arg.toString() : null;
+  }
+
   private static class FileBaseName extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
+      String file = fileNameString(ast.arg1());
+      if (file == null) {
         return F.NIL;
       }
-      String name = fileName(ast.arg1().toString());
+      String name = fileName(file);
       int dot = name.lastIndexOf('.');
       return F.stringx(dot <= 0 ? name : name.substring(0, dot));
     }
@@ -638,10 +647,11 @@ public class FileSystemFunctions {
   private static class FileExtension extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
+      String file = fileNameString(ast.arg1());
+      if (file == null) {
         return F.NIL;
       }
-      String name = fileName(ast.arg1().toString());
+      String name = fileName(file);
       int dot = name.lastIndexOf('.');
       return F.stringx(dot <= 0 ? "" : name.substring(dot + 1));
     }
@@ -801,9 +811,8 @@ public class FileSystemFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 1 && ast.arg1().isAST(S.File, 2)
           && ast.arg1().first() instanceof IStringX) {
-        // the parent of File(name) is a File as well
-        IExpr parent = evaluate(ast.setAtCopy(1, ast.arg1().first()), engine);
-        return parent.isString() ? F.unaryAST1(S.File, parent) : F.NIL;
+        // the parent of File(name) is the name of the parent directory
+        return evaluate(ast.setAtCopy(1, ast.arg1().first()), engine);
       }
       Path path;
       int levels = 1;
@@ -816,7 +825,7 @@ public class FileSystemFunctions {
         }
         if (ast.isAST2()) {
           levels = ast.arg2().toIntDefault();
-          if (levels < 0) {
+          if (levels < 1) {
             return F.NIL;
           }
         }
@@ -844,9 +853,14 @@ public class FileSystemFunctions {
       }
       path = path.normalize();
       for (int i = 0; i < levels; i++) {
-        path = path == null ? null : path.getParent();
+        // the root is its own parent
+        Path parent = path.getParent();
+        if (parent == null) {
+          break;
+        }
+        path = parent;
       }
-      return path == null ? F.CEmptyString : F.stringx(path.toString());
+      return F.stringx(path.toString());
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -328,11 +329,28 @@ public class Predicates {
 
   /**
    * <code>SameQ</code> for two expressions: two inexact real numbers are the same, if they differ
-   * in at most their last bit; everything else must be identical.
+   * in at most their last bit, also as arguments of the same expression; everything else must be
+   * identical.
    */
   public static boolean isSameQ(IExpr x, IExpr y) {
     if (x instanceof INum && y instanceof INum && !x.isNaN() && !y.isNaN()) {
       return RealNumberComparison.isSameWithTolerance((INum) x, (INum) y);
+    }
+    // a data object like a Dataset holds more than its arguments: it is compared as a whole
+    if (x.isAST() && y.isAST() && x.size() == y.size() && !x.isSparseArray()
+        && !y.isSparseArray() && !(x instanceof IASTDataset) && !(y instanceof IASTDataset)) {
+      if (x == y) {
+        return true;
+      }
+      // the inexact real numbers in the arguments, as {0.3} === {0.1+0.2}
+      IAST xAST = (IAST) x;
+      IAST yAST = (IAST) y;
+      for (int i = 0; i < xAST.size(); i++) {
+        if (!isSameQ(xAST.get(i), yAST.get(i))) {
+          return false;
+        }
+      }
+      return true;
     }
     return x.isSame(y);
   }
