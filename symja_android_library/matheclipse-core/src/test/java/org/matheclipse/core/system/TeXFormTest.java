@@ -752,4 +752,53 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm((f + g)^2)", //
         "{\\left( f + g\\right) }^{2}");
   }
+
+  /**
+   * A product led by a complex number inside a sum. The operator before the term used to be lost
+   * ("1i \sqrt{3}" for 1+I*Sqrt(3), "1\left( - i \right) \sqrt{3}" for 1-I*Sqrt(3)), which changed
+   * the meaning. https://github.com/axkr/symja_android_library/issues/1599
+   */
+  @Test
+  public void testComplexFactorInSum() {
+    check("TeXForm((1+I*Sqrt(3))/2)", //
+        "\\frac{1}{2} \\cdot \\left( 1 + i  \\cdot \\sqrt{3}\\right) ");
+    check("TeXForm((1-I*Sqrt(3))/2)", //
+        "\\frac{1}{2} \\cdot \\left( 1 - i  \\cdot \\sqrt{3}\\right) ");
+    check("TeXForm(Roots(3*x^3-5*x^2+5*x-2==0,x))", //
+        "x == \\frac{2}{3} \\lor x == \\frac{1}{2} \\cdot \\left( 1 - i  \\cdot \\sqrt{3}\\right)  \\lor x == \\frac{1}{2} \\cdot \\left( 1 + i  \\cdot \\sqrt{3}\\right) ");
+    // the sign of b*I is the operator of the sum
+    check("TeXForm(1+2*I*x)", //
+        "1 + 2\\,i  \\cdot x");
+    check("TeXForm(1-3*I*x)", //
+        "1 - 3\\,i  \\cdot x");
+    check("TeXForm(x-I*y)", //
+        "x - i  \\cdot y");
+    check("TeXForm(x+I*y)", //
+        "x + i  \\cdot y");
+    check("TeXForm(1-I/2*x)", //
+        "1 - \\frac{1}{2}\\,i  \\cdot x");
+    check("TeXForm(a+b*I*x-c*I*y)", //
+        "a + i  \\cdot b \\cdot x - i  \\cdot c \\cdot y");
+    // a+b*I is a sum itself: always in parentheses as a factor, with " + " before it in a sum
+    check("TeXForm(x+(1+2*I)*y)", //
+        "x + \\left( 1 + 2\\,i \\right)  \\cdot y");
+    check("TeXForm(x+(-1+2*I)*y)", //
+        "x + \\left( -1 + 2\\,i \\right)  \\cdot y");
+    check("TeXForm((1+2*I)*y)", //
+        "\\left( 1 + 2\\,i \\right)  \\cdot y");
+    // at the start of a product the sign is written as before
+    check("TeXForm(-I*x)", //
+        " - i  \\cdot x");
+    check("TeXForm(-3*I*x)", //
+        "-3\\,i  \\cdot x");
+    // machine complex numbers
+    check("TeXForm(1-N(I)*x)", //
+        "1 - i  \\cdot x");
+    check("TeXForm(1+N(2*I)*x)", //
+        "1 + 2.0\\,i  \\cdot x");
+    check("TeXForm(1-N(2*I)*x)", //
+        "1 - 2.0\\,i  \\cdot x");
+    check("TeXForm(x+N(1+2*I)*y)", //
+        "x + \\left( 1.0 + 2.0\\,i \\right)  \\cdot y");
+  }
 }
