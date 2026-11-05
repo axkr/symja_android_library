@@ -546,6 +546,14 @@ public class LimitTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLimitLogOfVanishingPowerOneSided() {
+    check("Limit(Log(x^4*Cos(x))-4*Log(x), x->0, Direction->-1)", //
+        "0");
+    check("Limit(ArcTan(1/(x+x^2))*Sqrt(x^2)/x, x->0, Direction->1)", //
+        "Pi/2");
+  }
+
+  @Test
   public void testLimitIssue536() {
     // avoid endless recursion:
     check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
@@ -1662,7 +1670,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(Erf((-1)^(1/4)*Sqrt(c)*x), x->-Infinity, Assumptions->c>0)", //
         "-1");
     check("Limit(ArcTan(c*x), x->-Infinity)", //
-        "ConditionalExpression(-Pi/2,c>0)");
+        "(-Sqrt(c^2)*Pi)/(2*c)");
     // ExpIntegralEi is real on the real axis, CosIntegral has a branch cut there
     check("Limit(ExpIntegralEi(-e)-ExpIntegralEi(e), e->0, Direction->\"FromAbove\")", //
         "0");

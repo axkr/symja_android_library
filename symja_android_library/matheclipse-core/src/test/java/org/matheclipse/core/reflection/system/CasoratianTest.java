@@ -26,7 +26,7 @@ public class CasoratianTest extends ExprEvaluatorTestCase {
 
     // Dependent only when a vanishes.
     check("Casoratian({n^2, n^2 + a}, n)", //
-        "a*(-1-2*n)");
+        "-a*(1+2*n)");
 
     // A single sequence is its own determinant, and the empty product is one.
     check("Casoratian({n!}, n)", //

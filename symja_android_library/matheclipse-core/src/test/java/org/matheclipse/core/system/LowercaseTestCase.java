@@ -13972,6 +13972,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReplacePartPositionList() {
+    check("ReplacePart({p,q,r,s}, w, {{2},{4}})", //
+        "{p,w,r,w}");
+    check("ReplacePart(g(p,h(q)), w, {{2,1}})", //
+        "g(p,h(w))");
+    check("ReplacePart({p,q}, w, {{}})", //
+        "w");
+    check("ReplacePart({p,q}, w, {{-1}})", //
+        "{p,w}");
+    check("ReplacePart({p,q}, w, {{1},{4}})", //
+        "ReplacePart({p,q},w,{{1},{4}})");
+    check("ReplacePart({p,q}, w, {{1},{y}})", //
+        "ReplacePart({p,q},w,{{1},{y}})");
+    check("ReplacePart({p,q}, w, {{2^70}})", //
+        "ReplacePart({p,q},w,{{1180591620717411303424}})");
+  }
+
+  @Test
+  public void testSimplifyFactoredContentTie() {
+    check("Simplify((6-6*v)*u)", //
+        "-6*u*(-1+v)");
+    check("Simplify((14-7*k)*j*k)", //
+        "-7*j*(-2+k)*k");
+    // only the signs change: the input stays
+    check("Simplify((2-3*z)^2*y*z)", //
+        "y*(2-3*z)^2*z");
+    // a quotient stays
+    check("Simplify((6-6*v)/y)", //
+        "(6-6*v)/y");
+  }
+
+  @Test
   public void testReplacePartFromParts() {
     check("ReplacePart(g(u, v, w), {p, q}, {{3}, {1}}, {{1}, {2}})", //
         "g(q,v,p)");
@@ -18571,7 +18603,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Cosh(SeriesData(x,0,{2,1},1,3,1)) // InputForm", //
         "SeriesData(x,0,{1,0,2,2},0,4,1)");
     check("Log(SeriesData(x,0,{3,1},2,4,1)) // InputForm", //
-        "SeriesData(x,0,{Log(3)+2*Log(x),1/3},0,2,1)");
+        "SeriesData(x,0,{Log(3*x^2),1/3},0,2,1)");
   }
 
   @Test

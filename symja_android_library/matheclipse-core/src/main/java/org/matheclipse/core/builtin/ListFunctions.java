@@ -7016,6 +7016,25 @@ public final class ListFunctions {
       if (argSize == 3) {
         IExpr lhs = ast.arg3();
         IExpr rhs = ast.arg2();
+        if (lhs.isList() && lhs.argSize() > 0 && ((IAST) lhs).forAll(x -> x.isList())) {
+          // ReplacePart(expr, new, {pos1, pos2, ...}): every position gets new, {} is the whole
+          // expression
+          for (IExpr position : (IAST) lhs) {
+            if (position.exists(x -> !x.isInteger() || F.isNotPresent(x.toIntDefault()))) {
+              // Position specification `1` in `2` is not a machine sized integer or a list of
+              // machine-sized integers.
+              return Errors.printMessage(S.ReplacePart, "psl", F.List(position, ast), engine);
+            }
+            if (!partExists(ast.arg1(), (IAST) position)) {
+              // Part `1` of `2` does not exist.
+              return Errors.printMessage(S.ReplacePart, "partw", F.List(position, ast.arg1()),
+                  engine);
+            }
+            result = position.argSize() == 0 ? rhs
+                : result.replacePart(position, rhs, heads).orElse(result);
+          }
+          return result;
+        }
         if (lhs.isList()) {
           if (lhs.exists(x -> !x.isInteger())) {
             // Position specification `1` in `2` is not a machine sized integer or a list of
@@ -7060,6 +7079,18 @@ public final class ListFunctions {
       // The expression `1` cannot be used as a part specification
       Errors.printMessage(S.ReplacePart, "pkspec1", F.List(arg2), engine);
       return result;
+    }
+
+    /** Test if the integer <code>position</code> (a negative index counts from the end) exists. */
+    private static boolean partExists(IExpr expr, IAST position) {
+      for (IExpr index : position) {
+        int i = index.toIntDefault();
+        if (!expr.isAST() || F.isNotPresent(i) || Math.abs(i) > expr.argSize()) {
+          return false;
+        }
+        expr = i < 0 ? ((IAST) expr).get(expr.argSize() + 1 + i) : ((IAST) expr).get(i);
+      }
+      return true;
     }
 
     @Override

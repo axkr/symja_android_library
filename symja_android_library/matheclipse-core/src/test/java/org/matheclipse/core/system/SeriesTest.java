@@ -2388,4 +2388,52 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series(HarmonicNumber(x), {x, Infinity, 2})", //
         "EulerGamma+Log(x)+1/(2*x)-1/(12*x^2)+O(1/x)^3");
   }
+
+  /**
+   * A fractional power or logarithm of a vanishing base keeps the phase of its leading term, and
+   * the inverse tangents keep the sign of their vanishing argument in the constant.
+   */
+  @Test
+  public void testSeriesBranchPhaseOfLeadingTerm() {
+    check("Series(Sqrt(x^5), {x,0,2})", //
+        "(Sqrt(x^5)*x^(5/2))/x^(5/2)+O(x)^3");
+    check("Series((x^4)^(1/3), {x,0,2})", //
+        "((x^4)^(1/3)*x^(4/3))/x^(4/3)+O(x)^(7/3)");
+    check("Series(Sqrt(x^2+3*x^3), {x,0,2})", //
+        "(Sqrt(x^2)*x)/x+3/2*(Sqrt(x^2)*x^2)/x+O(x)^3");
+    check("Series(Sqrt(x^5), {x,0,3}, Assumptions->x<0)", //
+        "x^(5/2)+O(x)^(7/2)");
+    check("Series(Log(1/x^3), {x,0,2})", //
+        "Log(1/x^3)+O(x)^3");
+    check("Series(Log(x^4+x^5), {x,0,2})", //
+        "Log(x^4)+x-x^2/2+O(x)^3");
+    check("Series(Log(x^4+x^5), {x,0,2}, Assumptions->x>0)", //
+        "4*Log(x)+x-x^2/2+O(x)^3");
+    check("Series(ArcCot(3*x), {x,0,2})", //
+        "1/2*Pi*Sqrt(1/x^2)*x-3*x+O(x)^3");
+    check("Series(ArcCot(3*x), {x,0,2}, Assumptions->x<0)", //
+        "-Pi/2-3*x+O(x)^3");
+    check("Series(ArcCoth(2*x), {x,0,2})", //
+        "-1/2*Pi*Sqrt(-1/x^2)*x+2*x+O(x)^3");
+    check("Series(ArcTanh(1/x^3), {x,0,2})", //
+        "-1/2*Pi*Sqrt(-1/x^6)*x^3+O(x)^3");
+    // an even power of x is negative on the imaginary axis
+    check("Series(ArcTan(1/x^4), {x,0,2})", //
+        "1/2*Pi*Sqrt(1/x^8)*x^4+O(x)^3");
+    check("Series(ArcCoth(3*x^2), {x,0,2})", //
+        "-1/2*Pi*Sqrt(-1/x^4)*x^2+3*x^2+O(x)^3");
+    check("Series(Log(x^5), {x,0,2}, Assumptions->x<0)", //
+        "I*Pi+5*Log(-x)+O(x)^3");
+    // at -Infinity an odd root is the real one
+    check("Series((t^3+3*t^2)^(1/3), {t,-Infinity,1})", //
+        "t+1-1/t+O(1/t)^2");
+    // Log(1/x) is not -Log(x) for a negative x
+    check("Series(Log(1/(x+x^3)), {x,0,2})", //
+        "Log(1/x)-x^2+O(x)^3");
+    check("Series(Log(5/(x+x^2)), {x,0,1}, Assumptions->x>0)", //
+        "Log(5)-Log(x)-x+O(x)^2");
+    // on the negative side the logarithms are written with Log(-x) and cancel
+    check("Series(Log(x^3)-3*Log(x)+x, {x,0,2}, Assumptions->x<0)", //
+        "-I*2*Pi+x+O(x)^3");
+  }
 }

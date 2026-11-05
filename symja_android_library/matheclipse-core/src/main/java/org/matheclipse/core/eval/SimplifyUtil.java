@@ -2214,6 +2214,40 @@ public class SimplifyUtil extends VisitorExpr {
     return expr.has(x -> x.isPlus(), true);
   }
 
+  /**
+   * Offer a factored form of <code>input</code>. On a complexity tie it wins over an exact
+   * polynomial product without radicals or denominators whose numeric content it changes,
+   * <code>u*(6-6*v)</code> becomes <code>-6*u*(-1+v)</code>; other products keep the head
+   * precedence tie-break.
+   */
+  private static void offerFactored(IExpr input, IExpr factored, SimplifiedResult result) {
+    if (input.isTimes() && factored.isTimes() && result.result.equals(input)
+        && isIntegerPowerPolynomial(input)) {
+      result.offerOnTie(factored,
+          () -> !numericContent((IAST) input).equals(numericContent((IAST) factored)));
+    } else {
+      result.checkLessPlusTimesPower(factored);
+    }
+  }
+
+  /** A polynomial structure whose powers all have positive integer exponents. */
+  private static boolean isIntegerPowerPolynomial(IExpr expr) {
+    return expr.isPolynomialStruct()
+        && expr.isFree(
+            x -> x.isPower() && !(x.exponent().isInteger() && x.exponent().isPositive()), false);
+  }
+
+  /** The absolute value of the product of the numeric factors of <code>product</code>. */
+  private static IExpr numericContent(IAST product) {
+    IExpr content = F.C1;
+    for (IExpr factor : product) {
+      if (factor.isNumber()) {
+        content = content.times(factor);
+      }
+    }
+    return content.abs();
+  }
+
   private static boolean isCircularHead(IExpr head) {
     return head == S.Sin || head == S.Cos || head == S.Tan || head == S.Cot || head == S.Sec
         || head == S.Csc;
@@ -2560,10 +2594,10 @@ public class SimplifyUtil extends VisitorExpr {
         // TODO: Factor is not fast enough for large expressions!
         // Maybe restricting factoring to smaller expressions is necessary here
         if (ctx.util.fFullSimplify && ctx.expandAllCounter < 50) {
-          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Factor(ctx.expr)));
+          offerFactored(ctx.expr, ctx.util.eval(F.Factor(ctx.expr)), ctx.result);
         }
         if (ctx.expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.FactorSquareFree(ctx.expr)));
+          offerFactored(ctx.expr, ctx.util.eval(F.FactorSquareFree(ctx.expr)), ctx.result);
         }
       }), //
       new Step("Apart", CatchPolicy.VALIDATE, ctx -> {
@@ -2581,14 +2615,18 @@ public class SimplifyUtil extends VisitorExpr {
         if (temp.isPresent()) {
           final IExpr source = ctx.expr;
           final IExpr factored = temp;
-          ctx.result.offerOnTie(temp, () -> prefersFactoredPlus(source, factored));
+          // a tie beats the sum, not a product which the factorization found:
+          // -4*(-1+eps)*y stays, 4*(1-eps)*y would evaluate back to (4-4*eps)*y
+          ctx.result.offerOnTie(temp,
+              () -> !ctx.result.result.isTimes() && prefersFactoredPlus(source, factored));
         }
 
         Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(ctx.ast(), true);
         if (commonFactors.isPresent()) {
           final IExpr combined =
               ctx.util.eval(F.Times(commonFactors.get()[0], commonFactors.get()[1]));
-          ctx.result.offerOnTie(combined, () -> prefersFactoredPlus(ctx.expr, combined));
+          ctx.result.offerOnTie(combined,
+              () -> !ctx.result.result.isTimes() && prefersFactoredPlus(ctx.expr, combined));
         }
 
         final IAST logSource = ctx.result.result.isPlus() //

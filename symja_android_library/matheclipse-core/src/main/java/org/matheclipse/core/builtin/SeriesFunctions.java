@@ -1702,11 +1702,20 @@ public class SeriesFunctions {
         EvalEngine engine) {
       final ISymbol logX = F.Dummy("logx");
       final boolean[] failed = new boolean[] {false};
+      // at 0 the logarithms which don't split stay as constants: Log(x^2) is not 2*Log(x) for a
+      // negative x
+      final boolean bothSides = iterator.arg2().isZero() && !x.isPositiveResult();
+      final boolean negative = bothSides && x.isNegativeResult();
+      final Map<IExpr, IExpr> keptLogs = new HashMap<IExpr, IExpr>();
       IExpr replaced = expr.replaceAll(y -> {
         if (y.isLog() && !y.first().isFree(x)) {
-          IExpr log = logOfPower(y.first(), x, logX);
+          IExpr log = logOfPower(y.first(), x, logX, bothSides, negative);
           if (log.isNIL()) {
             failed[0] = true;
+          } else if (!log.isFree(x)) {
+            ISymbol kept = F.Dummy("log" + keptLogs.size());
+            keptLogs.put(kept, log);
+            return kept;
           }
           return log;
         }
@@ -1717,10 +1726,22 @@ public class SeriesFunctions {
       }
       IExpr series = engine.evaluate(F.Series(engine.evaluate(replaced), iterator));
       if (!(series instanceof ASTSeriesData)) {
-        return F.NIL;
+        int n = iterator.arg3().toIntDefault();
+        if (keptLogs.isEmpty() || !series.isFree(x) || n < 0) {
+          return F.NIL;
+        }
+        series = new ASTSeriesData(x, iterator.arg2(), F.list(series), 0, n + 1, 1);
       }
       ASTSeriesData data = (ASTSeriesData) series;
-      IExpr coefficients = engine.evaluate(F.subst(data.arg3(), logX, F.Log(x)));
+      IExpr restored = F.subst(data.arg3(), logX, F.Log(x));
+      for (Map.Entry<IExpr, IExpr> entry : keptLogs.entrySet()) {
+        restored = F.subst(restored, entry.getKey(), entry.getValue());
+      }
+      if (!keptLogs.isEmpty()) {
+        // a multiple of a restored Log(c*(-1)^k) + k*Log(-x) cancels only when expanded
+        restored = F.Map(S.Expand, restored);
+      }
+      IExpr coefficients = engine.evaluate(restored);
       return new ASTSeriesData(data.expansionVariable(), data.expansionPoint(), (IAST) coefficients,
           data.minExponent(), data.truncateOrder(), data.puiseuxDenominator());
     }
@@ -1729,9 +1750,14 @@ public class SeriesFunctions {
      * The logarithm of <code>c*x^k</code> for a positive constant <code>c</code> and a real
      * <code>k</code> free of <code>x</code>, as <code>Log(c) + k*logX</code>.
      *
+     * @param bothSides if the logarithm must hold for negative <code>x</code> too, where it splits
+     *        only for <code>-1 &lt; k &lt;= 1</code>; else <code>Log(arg)</code> is returned
+     * @param negative if <code>x &lt; 0</code>, where the logarithm is
+     *        <code>Log(c*(-1)^k) + k*Log(-x)</code>
      * @return {@link F#NIL} for any other argument
      */
-    private static IExpr logOfPower(IExpr arg, IExpr x, IExpr logX) {
+    private static IExpr logOfPower(IExpr arg, IExpr x, IExpr logX, boolean bothSides,
+        boolean negative) {
       IExpr constant = F.C1;
       IExpr power = arg;
       if (arg.isTimes()) {
@@ -1759,6 +1785,15 @@ public class SeriesFunctions {
         k = power.exponent();
       } else {
         return F.NIL;
+      }
+      if (negative && k.isRational()) {
+        // on the negative side every logarithm is written with Log(-x), so that they cancel
+        return F.Plus(F.Log(F.Times(constant, F.Power(F.CN1, k))),
+            F.Times(k, F.Log(F.Negate(x))));
+      }
+      if (bothSides
+          && !(k.isRational() && ((IRational) k).isGT(F.CN1) && !((IRational) k).isGT(F.C1))) {
+        return F.Log(arg);
       }
       return F.Plus(F.Log(constant), F.Times(k, logX));
     }
