@@ -23510,6 +23510,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "");
   }
 
+  /**
+   * A Piecewise or an If may jump at the boundaries of its conditions; the conditions themselves
+   * are no functions whose discontinuities count.
+   */
+  @Test
+  public void testFunctionDiscontinuitiesConditions() {
+    check("FunctionDiscontinuities(Piecewise({{1,x<0}},2),x)", //
+        "x==0");
+    // both ends of a chain
+    check("FunctionDiscontinuities(Piecewise({{1,0<=x<=1}},0),x)", //
+        "x==0||x==1");
+    check("FunctionDiscontinuities(Piecewise({{1,x<-1||x>1}},0),x)", //
+        "x==-1||x==1");
+    check("FunctionDiscontinuities(If(x>2,1,0),x)", //
+        "x==2");
+    // and where a value jumps
+    check("FunctionDiscontinuities(If(x>2,1/x,Floor(x)),x)", //
+        "x==2||x==0||Sin(Pi*x)==0");
+    check("FunctionDiscontinuities(Piecewise({{1,x<0},{Tan(x),x<1}},0),x)", //
+        "x==0||x==1||Cos(x)==0");
+    // a condition without the variable has no boundary in it
+    check("FunctionDiscontinuities(Piecewise({{1,a<0}},0),x)", //
+        "False");
+    check("FunctionDiscontinuities(Piecewise({{y,x+y<1}},0),{x,y})", //
+        "x+y==1");
+    check("FunctionSingularities(Piecewise({{1/x,x<2}},0),x)", //
+        "x==0||x==2");
+  }
+
   @Test
   public void testFunctionDiscontinuities() {
     check("FunctionDiscontinuities(Mod[x,y], x)", //
@@ -23568,6 +23597,39 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2<x<3");
     check("FunctionDomain(Log(x^2-5*x+6), x)", //
         "x<2||x>3");
+  }
+
+  /**
+   * A power whose base and exponent both depend on the variable needs a positive base:
+   * <code>0^0</code> of <code>x^x</code> is <code>Indeterminate</code> (issue #1603).
+   */
+  @Test
+  public void testFunctionDomainVariableExponent() {
+    check("FunctionDomain(x^x, x)", //
+        "x>0");
+    check("FunctionDomain(x^(2*x), x)", //
+        "x>0");
+    check("FunctionDomain((x-1)^x, x)", //
+        "x>1");
+    check("FunctionDomain(x^Sin(x), x)", //
+        "x>0");
+    check("FunctionDomain(x^y, {x,y})", //
+        "x>0");
+    check("FunctionDomain(Sqrt(x)+x^x, x)", //
+        "x>0");
+    check("FunctionDomain(2^x, x)", //
+        "True");
+    // a negative exponent excludes the zero of the base
+    check("FunctionDomain(x^(-1/2), x)", //
+        "x>0");
+    check("FunctionDomain((x-3)^(-3/4), x)", //
+        "x>3");
+    check("FunctionDomain(x^(-Pi), x)", //
+        "x>0");
+    check("FunctionDomain(x^(1/2), x)", //
+        "x>=0");
+    check("FunctionDomain(x^Pi, x)", //
+        "x>=0");
   }
 
   @Test

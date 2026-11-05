@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import org.hipparchus.analysis.MultivariateFunction;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.LocalizedOptimFormats;
@@ -268,6 +269,59 @@ public class MinMaxFunctions {
     }
   }
 
+  /**
+   * Collect the boundaries of a condition of a <code>Piecewise</code>, <code>x==0</code> for
+   * <code>x&lt;0</code>, both ends of a chain like <code>0&lt;x&lt;1</code>.
+   *
+   * @param cond the condition
+   * @param variables the variables; a boundary which is free of them is no boundary
+   * @param conditions collects the boundaries as equations
+   */
+  private static void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
+    Predicate<IExpr> isVariable = x -> variables.contains(x);
+    if (!cond.isAST() || cond.isFree(isVariable, false)) {
+      return;
+    }
+    IAST ast = (IAST) cond;
+    switch (ast.headID()) {
+      case ID.Less:
+      case ID.LessEqual:
+      case ID.Greater:
+      case ID.GreaterEqual:
+      case ID.Equal:
+      case ID.Unequal:
+        for (int i = 2; i < ast.size(); i++) {
+          addBoundary(ast.get(i - 1), ast.get(i), isVariable, conditions);
+        }
+        break;
+      case ID.Inequality:
+        // Inequality(a, Less, x, LessEqual, b)
+        for (int i = 3; i < ast.size(); i += 2) {
+          addBoundary(ast.get(i - 2), ast.get(i), isVariable, conditions);
+        }
+        break;
+      case ID.And:
+      case ID.Or:
+      case ID.Not:
+        for (IExpr arg : ast) {
+          extractBoundaries(arg, variables, conditions);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  private static void addBoundary(IExpr lhs, IExpr rhs, Predicate<IExpr> isVariable,
+      Set<IExpr> conditions) {
+    if (!lhs.isFree(isVariable, false)) {
+      conditions.add(F.Equal(lhs, rhs));
+    } else if (!rhs.isFree(isVariable, false)) {
+      // 0<x: the boundary is x==0
+      conditions.add(F.Equal(rhs, lhs));
+    }
+  }
+
   private static class FunctionDiscontinuities extends AbstractFunctionEvaluator {
 
     @Override
@@ -302,6 +356,36 @@ public class MinMaxFunctions {
     }
 
     /**
+     * <code>If(cond, t, f)</code> or <code>Piecewise({{val, cond}, ...}, default)</code> may jump
+     * at the boundaries of the conditions, and wherever a value does. A condition is no function
+     * whose discontinuities count.
+     *
+     * @return <code>false</code> if the discontinuities of a value may be incomplete
+     */
+    private boolean conditionalDiscontinuities(IAST ast, IAST variables, Set<IExpr> conditions,
+        IExpr domain) {
+      boolean noWarning = true;
+      if (ast.isAST(S.If)) {
+        extractBoundaries(ast.arg1(), variables, conditions);
+        for (int i = 2; i < ast.size(); i++) {
+          noWarning &= collectDiscontinuities(ast.get(i), variables, conditions, domain);
+        }
+        return noWarning;
+      }
+      for (IExpr piece : (IAST) ast.arg1()) {
+        if (!piece.isList2()) {
+          return false;
+        }
+        extractBoundaries(piece.second(), variables, conditions);
+        noWarning &= collectDiscontinuities(piece.first(), variables, conditions, domain);
+      }
+      if (ast.isAST2()) {
+        noWarning &= collectDiscontinuities(ast.arg2(), variables, conditions, domain);
+      }
+      return noWarning;
+    }
+
+    /**
      * Recursively collects discontinuity conditions.
      *
      * @param expr The expression to analyze.
@@ -319,6 +403,9 @@ public class MinMaxFunctions {
       if (expr.isAST()) {
         IAST ast = (IAST) expr;
         IExpr head = ast.head();
+        if (ast.isAST(S.If, 3, 5) || (ast.isAST(S.Piecewise, 2, 3) && ast.arg1().isList())) {
+          return conditionalDiscontinuities(ast, variables, conditions, domain);
+        }
 
         // Recurse check arguments first
         boolean noWarning = true;
@@ -428,18 +515,7 @@ public class MinMaxFunctions {
                   .add(F.And(F.Equal(F.Sin(F.Times(S.Pi, arg1)), F.C0), F.LessEqual(arg1, F.C0)));
               return noWarning;
             case ID.Piecewise:
-              // Piecewise({{val, cond}, ...})
-              // Discontinuities include the boundaries of the conditions
-              if (arg1.isList()) {
-                IAST list = (IAST) arg1;
-                for (IExpr pArg : list) {
-                  if (pArg.isList2()) {
-                    IExpr cond = ((IAST) pArg).second();
-                    extractBoundaries(cond, variables, conditions);
-                  }
-                }
-                return noWarning;
-              }
+              // not a list of pieces
               return false;
             default:
               break;
@@ -447,49 +523,6 @@ public class MinMaxFunctions {
         }
       }
       return false;
-    }
-
-    /**
-     * Helper to extract equality boundaries from inequalities (e.g. x < 0 -> x == 0).
-     */
-    private void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
-      if (cond.isFree(variables)) {
-        return;
-      }
-
-      if (cond.isAST()) {
-        IAST ast = (IAST) cond;
-        IExpr head = ast.head();
-        if (head.isBuiltInSymbol()) {
-          if (ast.isNot()) {
-            extractBoundaries(ast.arg1(), variables, conditions);
-            return;
-          }
-          if (ast.argSize() >= 2) {
-            switch (((IBuiltInSymbol) head).ordinal()) {
-              case ID.Less:
-              case ID.LessEqual:
-              case ID.Greater:
-              case ID.GreaterEqual:
-              case ID.Equal:
-              case ID.Unequal:
-                // Simple heuristic: LHS == RHS
-                if (ast.argSize() == 2) {
-                  conditions.add(F.Equal(ast.arg1(), ast.arg2()));
-                }
-                break;
-              case ID.And:
-              case ID.Or:
-                for (IExpr arg : ast) {
-                  extractBoundaries(arg, variables, conditions);
-                }
-                break;
-              default:
-                break;
-            }
-          }
-        }
-      }
     }
   }
 
@@ -634,7 +667,7 @@ public class MinMaxFunctions {
        *         are found.
        */
       private IExpr realsDomain(IExpr expr) {
-        if (expr.isFree(x -> variables.contains(x), false)) {
+        if (isFreeOfVariables(expr)) {
           return F.NIL;
         }
 
@@ -655,9 +688,9 @@ public class MinMaxFunctions {
             IExpr x = ast.arg1();
             IExpr n = ast.arg2();
             boolean evaled = false;
-            if (!n.isFree(variables)) {
-              // Case f(x)^g(x) -> requires f(x) > 0
-              if (!x.isFree(variables)) {
+            if (!isFreeOfVariables(n)) {
+              // Case f(x)^g(x) -> requires f(x) > 0: 0^0 of x^x is Indeterminate
+              if (!isFreeOfVariables(x)) {
                 andConditions.append(F.Greater(x, F.C0));
                 evaled = true;
               }
@@ -681,14 +714,17 @@ public class MinMaxFunctions {
                 // Case f(x)^(p/q)
                 IFraction frac = (IFraction) n;
                 if (frac.denominator().isEven()) {
-                  // requires f(x) >= 0
-                  andConditions.append(F.GreaterEqual(x, F.C0));
+                  // requires f(x) >= 0, and f(x) > 0 for a negative exponent
+                  andConditions.append(frac.isNegative() ? F.Greater(x, F.C0)
+                      : F.GreaterEqual(x, F.C0));
                   evaled = true;
                 }
               } else {
 
-                // Case f(x)^y, y is non-integer constant -> requires f(x) >= 0
-                andConditions.append(F.GreaterEqual(x, F.C0));
+                // Case f(x)^y, y is non-integer constant -> requires f(x) >= 0, and f(x) > 0 for a
+                // negative y
+                andConditions.append(n.isNegativeResult() ? F.Greater(x, F.C0)
+                    : F.GreaterEqual(x, F.C0));
                 evaled = true;
               }
             }
@@ -720,6 +756,14 @@ public class MinMaxFunctions {
         }
 
         return F.NIL;
+      }
+
+      /**
+       * Is <code>expr</code> free of all {@link #variables}? <code>expr.isFree(variables)</code>
+       * would look for the list itself.
+       */
+      private boolean isFreeOfVariables(IExpr expr) {
+        return expr.isFree(x -> variables.contains(x), false);
       }
 
       private void arg1RealsDomain(IAST ast, IASTAppendable andConditions, int headID) {
@@ -1285,32 +1329,6 @@ public class MinMaxFunctions {
               IExpr cond = ((IAST) arg).second();
               extractBoundaries(cond, variables, conditions);
             }
-          }
-        }
-      }
-    }
-
-    /**
-     * Helper to extract equality boundaries from inequalities (e.g. x < 0 -> x == 0).
-     */
-    private void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
-      if (cond.isFree(variables)) {
-        return;
-      }
-
-      if (cond.isAST()) {
-        IAST ast = (IAST) cond;
-        ISymbol head = ast.topHead();
-        if (head == S.Less || head == S.LessEqual || head == S.Greater || head == S.GreaterEqual
-            || head == S.Equal || head == S.Unequal) {
-
-          // Simple heuristic: LHS == RHS
-          if (ast.size() == 3) {
-            conditions.add(F.Equal(ast.arg1(), ast.arg2()));
-          }
-        } else if (head == S.And || head == S.Or || head == S.Not) {
-          for (IExpr arg : ast) {
-            extractBoundaries(arg, variables, conditions);
           }
         }
       }
