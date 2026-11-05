@@ -1040,6 +1040,16 @@ public class S {
       S.initFinalSymbol("AnnotationRules", ID.AnnotationRules);
 
   /**
+   * AnnotationValue(x) - TODO describe `AnnotationValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AnnotationValue.md">AnnotationValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AnnotationValue =
+      S.initFinalSymbol("AnnotationValue", ID.AnnotationValue);
+
+  /**
    * Annuity(p, t) - returns an annuity object.
    * 
    * @see <a href=
