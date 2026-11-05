@@ -3203,6 +3203,16 @@ public class S {
   public final static IBuiltInSymbol BubbleChart = S.initFinalSymbol("BubbleChart", ID.BubbleChart);
 
   /**
+   * BubbleChart3D(x) - TODO describe `BubbleChart3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BubbleChart3D.md">BubbleChart3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BubbleChart3D =
+      S.initFinalSymbol("BubbleChart3D", ID.BubbleChart3D);
+
+  /**
    * BulletGauge(x) - TODO describe `BulletGauge`.
    * 
    * @see <a href=
@@ -4491,6 +4501,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol CommonUnits = S.initFinalSymbol("CommonUnits", ID.CommonUnits);
+
+  /**
+   * CommunityGraphPlot(x) - TODO describe `CommunityGraphPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CommunityGraphPlot.md">CommunityGraphPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CommunityGraphPlot =
+      S.initFinalSymbol("CommunityGraphPlot", ID.CommunityGraphPlot);
 
   /**
    * CompanionMatrix(x) - TODO describe `CompanionMatrix`.
@@ -15807,6 +15827,16 @@ public class S {
       S.initFinalSymbol("ListContourPlot", ID.ListContourPlot);
 
   /**
+   * ListContourPlot3D(x) - TODO describe `ListContourPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListContourPlot3D.md">ListContourPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ListContourPlot3D =
+      S.initFinalSymbol("ListContourPlot3D", ID.ListContourPlot3D);
+
+  /**
    * ListConvolve(kernel-list, tensor-list) - create the convolution of the `kernel-list` with
    * `tensor-list`.
    * 
@@ -21299,6 +21329,15 @@ public class S {
   public final static IBuiltInSymbol PowersRepresentations =
       S.initFinalSymbol("PowersRepresentations", ID.PowersRepresentations);
 
+  /**
+   * Precedence(x) - TODO describe `Precedence`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Precedence.md">Precedence
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Precedence = S.initFinalSymbol("Precedence", ID.Precedence);
+
   public final static IBuiltInSymbol PrecedenceForm =
       S.initFinalSymbol("PrecedenceForm", ID.PrecedenceForm);
 
@@ -25445,6 +25484,16 @@ public class S {
       S.initFinalSymbol("StreamDensityPlot", ID.StreamDensityPlot);
 
   public final static IBuiltInSymbol StreamPlot = S.initFinalSymbol("StreamPlot", ID.StreamPlot);
+
+  /**
+   * StreamPlot3D(x) - TODO describe `StreamPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StreamPlot3D.md">StreamPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StreamPlot3D =
+      S.initFinalSymbol("StreamPlot3D", ID.StreamPlot3D);
 
   /**
    * StreamPoints(x) - TODO describe `StreamPoints`.
