@@ -66,6 +66,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.expression.data.GridInterpolatingFunctionExpr;
@@ -644,6 +645,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (fermiDirac.isPresent()) {
             return fermiDirac;
           }
+          if (forcedMethod == null) {
+            // Integrate(x^a*Log(x)^k/(1-x^m), {x,0,1}) - a Hurwitz zeta value
+            IExpr logPower = integrateLogPowerGeometric(arg1, xList.arg1(), xList.arg2(),
+                xList.arg3(), engine);
+            if (logPower.isPresent()) {
+              return logPower;
+            }
+          }
           if ("MeijerConvolution".equals(forcedMethod)) {
             // the product of two Meijer G-functions over {x,0,Infinity} and nothing else
             return xList.arg2().isZero() && xList.arg3().isInfinity()
@@ -692,6 +701,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               return byResidues;
             }
             if (principalValue) {
+              IExpr mellin = mellinPrincipalValue(arg1, xList.arg1(), xList.arg2(), xList.arg3(),
+                  assumptionExpr.isAST() ? assumptionExpr : F.True, engine);
+              if (mellin.isPresent()) {
+                return mellin;
+              }
               IExpr byAntiderivative = principalValueByAntiderivative(arg1, xList, engine);
               if (byAntiderivative.isPresent()) {
                 return byAntiderivative;
@@ -2194,6 +2208,224 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * <code>Integrate(c*x^a*Log(x)^k/(1 - x^m), {x, 0, 1})</code> and the same over
+   * <code>1 + x^m</code>, for a positive integer <code>k</code>, <code>a &gt; -1</code> and
+   * <code>m &gt; 0</code>.
+   *
+   * <p>
+   * The geometric series of the denominator integrates term by term with
+   * <code>Integrate(x^b*Log(x)^k, {x, 0, 1}) == (-1)^k*k!/(b+1)^(k+1)</code>, which sums to
+   * <code>(-1)^k*k!*m^(-k-1)*Zeta(k+1, (a+1)/m)</code>, and over <code>1 + x^m</code> to the
+   * alternating sum <code>(-1)^k*k!*(2*m)^(-k-1)*(Zeta(k+1, (a+1)/(2*m)) - Zeta(k+1,
+   * (a+1+m)/(2*m)))</code>.
+   *
+   * @return {@link F#NIL} if the integrand is not of that shape or a condition cannot be decided
+   */
+  private static IExpr integrateLogPowerGeometric(IExpr integrand, IExpr x, IExpr lower,
+      IExpr upper, EvalEngine engine) {
+    if (!lower.isZero() || !upper.isOne() || !x.isSymbol()) {
+      return F.NIL;
+    }
+    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
+    IExpr c = F.C1;
+    IExpr a = F.C0;
+    int k = 0;
+    IExpr denominator = F.NIL;
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isFree(x)) {
+        c = F.Times(c, factor);
+      } else if (factor.equals(x)) {
+        a = F.Plus(a, F.C1);
+      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
+        a = F.Plus(a, factor.exponent());
+      } else if (factor.isLog() && factor.first().equals(x) && k == 0) {
+        k = 1;
+      } else if (factor.isPower() && factor.base().isLog() && factor.base().first().equals(x)
+          && factor.exponent().isInteger() && factor.exponent().isPositive() && k == 0) {
+        k = factor.exponent().toIntDefault();
+      } else if (factor.isPower() && factor.exponent().isMinusOne() && factor.base().isPlus()
+          && denominator.isNIL()) {
+        denominator = factor.base();
+      } else {
+        return F.NIL;
+      }
+    }
+    if (k <= 0 || denominator.isNIL() || k > 100) {
+      return F.NIL;
+    }
+    // the denominator is p + q*x^m
+    IExpr p = engine.evaluate(F.Coefficient(denominator, x, F.C0));
+    IExpr[] monomial = monomial(engine.evaluate(F.Subtract(denominator, p)), x);
+    if (monomial == null || p.isZero() || !p.isFree(x)) {
+      return F.NIL;
+    }
+    IExpr q = engine.evaluate(monomial[0]);
+    IExpr m = monomial[1];
+    IExpr ratio = engine.evaluate(F.Divide(q, p));
+    boolean alternating;
+    if (ratio.isMinusOne()) {
+      alternating = false;
+    } else if (ratio.isOne()) {
+      alternating = true;
+    } else {
+      return F.NIL;
+    }
+    a = engine.evaluate(a);
+    if (!engine.evaluate(F.Greater(a, F.CN1)).isTrue()
+        || !engine.evaluate(F.Greater(m, F.C0)).isTrue()) {
+      return F.NIL;
+    }
+    IInteger kInteger = F.ZZ(k);
+    IExpr s = F.ZZ(k + 1L);
+    IExpr sign = (k & 1) == 0 ? F.C1 : F.CN1;
+    IExpr factor = F.Times(c, F.Power(p, F.CN1), sign, F.Factorial(kInteger));
+    IExpr b = F.Plus(a, F.C1);
+    IExpr result;
+    if (!alternating) {
+      result = F.Times(factor, F.Power(m, F.Negate(s)),
+          hurwitzZeta(s, engine.evaluate(F.Divide(b, m)), engine));
+    } else {
+      IExpr twoM = F.Times(F.C2, m);
+      IExpr q1 = engine.evaluate(F.Divide(b, twoM));
+      IExpr q2 = engine.evaluate(F.Divide(F.Plus(b, m), twoM));
+      IExpr difference = q1.equals(F.C1D4) && q2.equals(F.QQ(3, 4))
+          // Zeta(s, 1/4) - Zeta(s, 3/4) == 4^s*DirichletBeta(s)
+          ? F.Times(F.Power(F.C4, s), F.unaryAST1(S.DirichletBeta, s))
+          : F.Subtract(hurwitzZeta(s, q1, engine), hurwitzZeta(s, q2, engine));
+      result = F.Times(factor, F.Power(twoM, F.Negate(s)), difference);
+    }
+    result = engine.evaluate(result);
+    // the zeta values at rational points in (0, 1] in Pi, Catalan, Zeta(3), ...
+    IExpr expanded = engine.evaluate(F.Expand(F.FunctionExpand(result)));
+    return expanded.isFree(S.PolyGamma) ? expanded : result;
+  }
+
+  /**
+   * The principal value of <code>Integrate(c*x^(s-1)/(p + q*x^m), {x, 0, Infinity})</code> with a
+   * pole at <code>x == r^(1/m)</code>, <code>r == -p/q &gt; 0</code>, for <code>0 &lt; s &lt;
+   * m</code>: <code>-c/q*Pi/m*r^(s/m-1)*Cot(Pi*s/m)</code>. It is the Mellin transform of
+   * <code>1/(1-x)</code>, <code>Pi*Cot(Pi*s)</code>, after <code>x -&gt; (r*x)^(1/m)</code>.
+   *
+   * @return {@link F#NIL} if the integrand is not of that shape or a condition cannot be decided
+   */
+  private static IExpr mellinPrincipalValue(IExpr integrand, IExpr x, IExpr lower, IExpr upper,
+      IExpr assumptions, EvalEngine engine) {
+    if (!lower.isZero() || !upper.isInfinity() || !x.isSymbol()) {
+      return F.NIL;
+    }
+    IExpr[] parts = powerOverSum(integrand, x);
+    if (parts == null || ((IAST) parts[2]).argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr c = parts[0];
+    IExpr exponent = parts[1];
+    IExpr denominator = parts[2];
+    IExpr p = ((IAST) denominator).arg1();
+    IExpr term = ((IAST) denominator).arg2();
+    if (!p.isFree(x)) {
+      IExpr swap = p;
+      p = term;
+      term = swap;
+    }
+    if (!p.isFree(x)) {
+      return F.NIL;
+    }
+    IExpr[] monomial = monomial(term, x);
+    if (monomial == null) {
+      return F.NIL;
+    }
+    IExpr q = engine.evaluate(monomial[0]);
+    IExpr m = monomial[1];
+    IExpr r = engine.evaluate(F.Negate(F.Divide(p, q)));
+    IExpr s = engine.evaluate(F.Plus(exponent, F.C1));
+    // the pole lies on the half line, and the integral converges at 0 and at Infinity
+    IExpr conditions =
+        engine.evaluate(F.Refine(F.And(F.Greater(r, F.C0), F.Greater(m, F.C0),
+            F.Greater(s, F.C0), F.Less(s, m)), assumptions));
+    if (!conditions.isTrue()) {
+      return F.NIL;
+    }
+    IExpr value = F.Times(F.CN1, c, F.Power(q, F.CN1), S.Pi, F.Power(m, F.CN1),
+        F.Power(r, F.Subtract(F.Divide(s, m), F.C1)), F.Cot(F.Times(S.Pi, F.Divide(s, m))));
+    return engine.evaluate(F.Simplify(value, assumptions));
+  }
+
+  /**
+   * Split <code>c*x^e/s</code> with <code>c</code> and <code>e</code> free of <code>x</code> and a
+   * sum <code>s</code>.
+   *
+   * @return <code>{c, e, s}</code>, or <code>null</code> if the integrand is not of that shape
+   */
+  private static IExpr[] powerOverSum(IExpr integrand, IExpr x) {
+    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
+    IExpr c = F.C1;
+    IExpr exponent = F.C0;
+    IExpr denominator = F.NIL;
+    for (IExpr factor : factors) {
+      if (factor.isFree(x)) {
+        c = F.Times(c, factor);
+      } else if (factor.equals(x)) {
+        exponent = F.Plus(exponent, F.C1);
+      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
+        exponent = F.Plus(exponent, factor.exponent());
+      } else if (factor.isPower() && factor.exponent().isMinusOne() && factor.base().isPlus()
+          && denominator.isNIL()) {
+        denominator = factor.base();
+      } else {
+        return null;
+      }
+    }
+    return denominator.isNIL() ? null : new IExpr[] {c, exponent, denominator};
+  }
+
+  /**
+   * Split a monomial <code>q*x^m</code> with <code>q</code> and <code>m</code> free of
+   * <code>x</code>.
+   *
+   * @return <code>{q, m}</code>, or <code>null</code> if <code>term</code> is not a monomial in
+   *         <code>x</code>
+   */
+  private static IExpr[] monomial(IExpr term, IExpr x) {
+    IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+    IExpr q = F.C1;
+    IExpr m = F.NIL;
+    for (IExpr part : factors) {
+      if (part.isFree(x)) {
+        q = F.Times(q, part);
+      } else if (m.isNIL() && part.equals(x)) {
+        m = F.C1;
+      } else if (m.isNIL() && part.isPower() && part.base().equals(x)
+          && part.exponent().isFree(x)) {
+        m = part.exponent();
+      } else {
+        return null;
+      }
+    }
+    return m.isNIL() ? null : new IExpr[] {q, m};
+  }
+
+  /**
+   * <code>Zeta(s, q)</code> with a rational <code>q &gt; 1</code> shifted into <code>(0, 1]</code>:
+   * <code>Zeta(s, q+n) == Zeta(s, q) - Sum((q+j)^(-s), {j, 0, n-1})</code>.
+   */
+  private static IExpr hurwitzZeta(IExpr s, IExpr q, EvalEngine engine) {
+    if (q.isRational() && ((IRational) q).isGT(F.C1)) {
+      IRational r = (IRational) q;
+      IInteger n = r.ceil().subtract(F.C1);
+      if (n.isPositive() && n.isLT(F.ZZ(1000))) {
+        IRational base = r.subtract(n);
+        IASTAppendable sum = F.PlusAlloc(n.toIntDefault());
+        for (int j = 0; j < n.toIntDefault(); j++) {
+          sum.append(F.Power(base.add(F.ZZ(j)), F.Negate(s)));
+        }
+        return F.Subtract(F.Zeta(s, base), sum);
+      }
+    }
+    return F.Zeta(s, q);
+  }
+
+  /**
    * <code>Integrate(k*x^(s-1)/(E^(c*x) + z), {x, 0, Infinity})</code>, the Fermi-Dirac and
    * Bose-Einstein integrals.
    *
@@ -2218,28 +2450,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (!lower.isZero() || !upper.isInfinity() || !x.isSymbol()) {
       return F.NIL;
     }
-    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
-    IExpr k = F.C1;
-    IExpr exponent = F.C0;
-    IExpr denominator = F.NIL;
-    for (int i = 1; i <= factors.argSize(); i++) {
-      IExpr factor = factors.get(i);
-      if (factor.isFree(x)) {
-        k = F.Times(k, factor);
-      } else if (factor.equals(x)) {
-        exponent = F.Plus(exponent, F.C1);
-      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
-        exponent = F.Plus(exponent, factor.exponent());
-      } else if (factor.isPower() && factor.exponent().isMinusOne() && factor.base().isPlus()
-          && denominator.isNIL()) {
-        denominator = factor.base();
-      } else {
-        return F.NIL;
-      }
-    }
-    if (denominator.isNIL()) {
+    IExpr[] split = powerOverSum(integrand, x);
+    if (split == null) {
       return F.NIL;
     }
+    IExpr k = split[0];
+    IExpr exponent = split[1];
+    IExpr denominator = split[2];
     // The denominator is a*E^(c*x) + b, with a, b and c free of x.
     IAST terms = (IAST) denominator;
     IExpr a = F.NIL;

@@ -391,7 +391,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
         series = series.plusPS(arg);
       }
-      return series;
+      // at an algebraic point the terms of a sum may cancel exactly without evaluating to 0:
+      // 1+x^2+x^4 at x == (-1)^(1/3)
+      return x0.isZero() ? series
+          : zeroAlgebraicLeadingCoefficients(series, new int[1], engine);
     }
     return null;
   }
@@ -461,6 +464,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
 
     int currentN = n;
+    // the lead degree the leading-term primitive sees; 0 if it isn't known
+    int predictedLead = 0;
     // A base with a leading term of degree d needs at least d+1 orders before the power's own
     // expansion has anything to work with. The leading-term primitive reports that degree
     // directly as its exponent; this used to be recovered by pattern-matching the rebuilt
@@ -471,18 +476,24 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         Lead lead = LeadTerm.structuralLeadTerm(normalized.expr(), normalized.t(), engine);
         if (lead != null) {
           int leadDegree = lead.exponent().toIntDefault();
-          if (F.isPresent(leadDegree) && currentN <= leadDegree) {
-            currentN = leadDegree + 1;
+          if (F.isPresent(leadDegree)) {
+            predictedLead = leadDegree;
+            if (currentN <= leadDegree) {
+              currentN = leadDegree + 1;
+            }
           }
         }
       }
     }
-    ASTSeriesData series = seriesDataRecursive(base, x, x0, currentN, direction, engine);
+    final int[] zeroed = {0};
+    ASTSeriesData series = zeroAlgebraicLeadingCoefficients(
+        seriesDataRecursive(base, x, x0, currentN, direction, engine), zeroed, engine);
 
     int probeLimit = Math.max(n, 0) + 12;
     while (series != null && series.isOrder() && currentN < probeLimit) {
       currentN += 3;
-      series = seriesDataRecursive(base, x, x0, currentN, direction, engine);
+      series = zeroAlgebraicLeadingCoefficients(
+          seriesDataRecursive(base, x, x0, currentN, direction, engine), zeroed, engine);
     }
 
     if (series != null) {
@@ -497,6 +508,24 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
 
       if (p != null) {
+        int d = actualMinExponent(series);
+        if (p.isNegative() && series.puiseuxDenominator() == 1 && F.isPresent(d)
+            && (zeroed[0] > 0 || d > predictedLead)) {
+          // the lead degree d grew, an exact sum at x0 cancelled to zero: (c*w^d+...)^p needs the
+          // base up to w^(n-p*d+d)
+          int k = p.numerator().negate().toIntDefault();
+          if (F.isPresent(k) && p.denominator().isOne()) {
+            int needed = n + (k + 1) * d + 1;
+            if (currentN < needed) {
+              currentN = needed;
+              ASTSeriesData longer = zeroAlgebraicLeadingCoefficients(
+                  seriesDataRecursive(base, x, x0, currentN, direction, engine), zeroed, engine);
+              if (longer != null) {
+                series = longer;
+              }
+            }
+          }
+        }
         IExpr pExpr = series.powerSeries(p, engine);
 
         if (pExpr.isPresent()) {
@@ -569,6 +598,69 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     }
     return null;
+  }
+
+  /**
+   * Set the leading coefficients of <code>series</code> which are zero as exact numbers to
+   * <code>0</code>, so that a power of the series starts at its true leading term. At a point
+   * like <code>(-1)^(1/3)</code> the constant coefficient of <code>1+x^2+x^4</code> is
+   * <code>1-(-1)^(1/3)+(-1)^(2/3)</code>, which doesn't evaluate to <code>0</code>.
+   */
+  private static ASTSeriesData zeroAlgebraicLeadingCoefficients(ASTSeriesData series,
+      int[] zeroed, EvalEngine engine) {
+    if (series == null) {
+      return null;
+    }
+    ASTSeriesData result = series;
+    for (int i = series.minExponent(); i < series.truncateOrder(); i++) {
+      IExpr c = series.coefficient(i);
+      if (c == null || c.isZero()) {
+        continue;
+      }
+      if (!isExactNumericZero(c, engine)) {
+        break;
+      }
+      if (result == series) {
+        // the series may be shared: zero the coefficients of a copy
+        result = series.copy();
+      }
+      result.setCoeff(i, F.C0);
+      zeroed[0]++;
+    }
+    return result;
+  }
+
+  /**
+   * An exact numeric expression which isn't a number literal and is zero: a product with a zero
+   * factor, a positive power of zero, or a sum whose 50-digit value cancels to less than
+   * <code>10^-40</code> of its largest summand. A small value like <code>E^-100</code> isn't zero.
+   */
+  public static boolean isExactNumericZero(IExpr c, EvalEngine engine) {
+    if (c.isNumber() || !c.isNumericFunction(true) || !c.isFree(IExpr::isInexactNumber, false)) {
+      return false;
+    }
+    if (c.isTimes()) {
+      return ((IAST) c).exists(factor -> factor.isZero() || isExactNumericZero(factor, engine));
+    }
+    if (c.isPower()) {
+      IExpr base = c.base();
+      return (base.isZero() || isExactNumericZero(base, engine))
+          && engine.evalQuiet(F.Greater(F.Re(c.exponent()), F.C0)).isTrue();
+    }
+    if (!c.isPlus()) {
+      return false;
+    }
+    IExpr scale = F.C0;
+    for (IExpr term : (IAST) c) {
+      IExpr magnitude = engine.evalQuiet(F.N(F.Abs(term), F.ZZ(50)));
+      if (!magnitude.isReal()) {
+        return false;
+      }
+      scale = engine.evalQuiet(F.Max(scale, magnitude));
+    }
+    IExpr value = engine.evalQuiet(F.N(F.Abs(c), F.ZZ(50)));
+    return value.isReal() && !scale.isZero() && engine
+        .evalQuiet(F.LessEqual(value, F.Times(scale, F.Power(F.C10, F.ZZ(-40))))).isTrue();
   }
 
   /**

@@ -6947,6 +6947,14 @@ public class F extends S {
     return new AST2(KelvinBer, a0, a1);
   }
 
+  public static IAST KelvinKei(final IExpr a0, final IExpr a1) {
+    return new AST2(KelvinKei, a0, a1);
+  }
+
+  public static IAST KelvinKer(final IExpr a0, final IExpr a1) {
+    return new AST2(KelvinKer, a0, a1);
+  }
+
   public static IAST Key(final IExpr a0) {
     return new AST1(Key, a0);
   }

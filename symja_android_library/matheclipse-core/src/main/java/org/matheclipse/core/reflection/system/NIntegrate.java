@@ -4,6 +4,8 @@ import java.util.ArrayDeque;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.integration.IterativeLegendreGaussIntegrator;
 import org.hipparchus.analysis.integration.RombergIntegrator;
@@ -36,7 +38,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.integral.ApfloatDoubleExponential;
 import org.matheclipse.core.numerics.integral.ClenshawCurtis;
 import org.matheclipse.core.numerics.integral.GaussKronrod;
 import org.matheclipse.core.numerics.integral.GaussLobatto;
@@ -45,6 +50,7 @@ import org.matheclipse.core.numerics.integral.OscillatoryTail;
 import org.matheclipse.core.numerics.integral.Quadrature;
 import org.matheclipse.core.numerics.integral.Quadrature.QuadratureResult;
 import org.matheclipse.core.numerics.integral.TanhSinh;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * <pre>
@@ -798,6 +804,22 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
     }
     final IExpr x = list.arg1();
+    int workingPrecision = -1;
+    if (option[5] != S.MachinePrecision && !option[5].isAutomatic()) {
+      double digits = option[5].evalfNaN();
+      if (!Double.isFinite(digits) || digits <= 0.0) {
+        // Requested precision `1` is not a machine-sized real number.
+        return Errors.printMessage(ast.topHead(), "precbd", F.List(option[5]), engine);
+      }
+      workingPrecision = (int) Math.ceil(digits);
+    }
+    if (workingPrecision > ParserConfig.MACHINE_PRECISION && x.isSymbol()) {
+      IExpr result = apfloatIntegral(function, (ISymbol) x, list.arg2(), list.arg3(),
+          Math.min(workingPrecision, Config.MAX_PRECISION_APFLOAT), engine);
+      if (result.isPresent()) {
+        return result;
+      }
+    }
     final String method = option[0].isAutomatic() ? null : option[0].toString();
     double minDouble = list.arg2().evalfNaN();
     double maxDouble = list.arg3().evalfNaN();
@@ -1048,12 +1070,81 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
 
   private static IBuiltInSymbol[] defaultOptionKeys() {
     return new IBuiltInSymbol[] {//
-        S.Method, S.MaxPoints, S.MaxIterations, S.PrecisionGoal, S.AccuracyGoal};
+        S.Method, S.MaxPoints, S.MaxIterations, S.PrecisionGoal, S.AccuracyGoal,
+        S.WorkingPrecision};
   }
 
   private static IExpr[] defaultOptionValues() {
     return new IExpr[] {//
-        S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic};
+        S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.MachinePrecision};
+  }
+
+  /**
+   * The integral in arbitrary precision by double exponential quadrature, for a
+   * <code>WorkingPrecision</code> above machine precision.
+   *
+   * @return {@link F#NIL} if the ends or the integrand have no numerical value, or the estimates
+   *         don't converge
+   */
+  private static IExpr apfloatIntegral(IExpr function, ISymbol x, IExpr min, IExpr max,
+      long precision, EvalEngine engine) {
+    final boolean oldNumericMode = engine.isNumericMode();
+    final long oldPrecision = engine.getNumericPrecision();
+    final int oldSignificantFigures = engine.getSignificantFigures();
+    final boolean quietMode = engine.isQuietMode();
+    try {
+      engine.setNumericMode(true, precision + 15, oldSignificantFigures);
+      int sign = 1;
+      Apfloat a = apfloatEnd(min, engine);
+      Apfloat b = apfloatEnd(max, engine);
+      boolean aInfinite = min.isNegativeInfinity() || min.isInfinity();
+      boolean bInfinite = max.isNegativeInfinity() || max.isInfinity();
+      if ((a == null && !aInfinite) || (b == null && !bInfinite)) {
+        return F.NIL;
+      }
+      if (min.isInfinity() || max.isNegativeInfinity()
+          || (a != null && b != null && a.compareTo(b) > 0)) {
+        // the integral from b to a
+        sign = -1;
+        Apfloat swap = a;
+        a = b;
+        b = swap;
+      }
+      if (a != null && b != null && a.compareTo(b) == 0) {
+        return F.C0;
+      }
+      engine.setQuietMode(true);
+      final long samplePrecision = precision + 15;
+      Apcomplex result = ApfloatDoubleExponential.integrate(z -> {
+        // a point next to an end carries more digits than the working precision; the integrand
+        // is evaluated with all of them, or 1-y cancels to 0 there
+        // an exact abscissa like 0 has infinite precision
+        engine.setNumericMode(true,
+            Math.max(samplePrecision, Math.min(z.precision(), 3 * samplePrecision)),
+            oldSignificantFigures);
+        IExpr value = engine.evalNumericFunction(F.subst(function, x, F.num(z)), false);
+        return value.isNumber() ? ((INumber) value).apcomplexValue() : null;
+      }, a, b, precision);
+      if (sign < 0) {
+        result = result.negate();
+      }
+      return result.imag().signum() == 0 ? F.num(result.real()) : F.complexNum(result);
+    } catch (ApfloatDoubleExponential.Failure | RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      return F.NIL;
+    } finally {
+      engine.setQuietMode(quietMode);
+      engine.setNumericMode(oldNumericMode, oldPrecision, oldSignificantFigures);
+    }
+  }
+
+  /** The value of a finite end, or <code>null</code>. */
+  private static Apfloat apfloatEnd(IExpr end, EvalEngine engine) {
+    if (end.isDirectedInfinity()) {
+      return null;
+    }
+    IExpr value = engine.evalNumericFunction(end, false);
+    return value.isReal() ? ((IReal) value).apfloatValue() : null;
   }
 
   @Override

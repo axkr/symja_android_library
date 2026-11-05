@@ -557,7 +557,7 @@ public class SeriesFunctions {
             // guess with the series fallback either
             return F.NIL;
           }
-          return coeff.isNumber() ? coeff : engine.evaluate(F.Together(coeff));
+          return coeff.isNumber() ? coeff : tidyResidue(engine.evaluate(F.Together(coeff)), engine);
         }
 
         // Essential singularity: if the function is analytic on the whole punctured plane, its
@@ -572,10 +572,82 @@ public class SeriesFunctions {
         IExpr series = engine.evaluate(F.Series(function, F.List(x, x0, F.C0)));
         if (series instanceof ASTSeriesData) {
           ASTSeriesData seriesData = (ASTSeriesData) series;
-          return engine.evaluate(F.Together(seriesData.coefficient(-1)));
+          return tidyResidue(engine.evaluate(F.Together(seriesData.coefficient(-1))), engine);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The shortest of <code>Together</code>, <code>Simplify</code> and the
+     * <code>ComplexExpand</code> of an exact algebraic residue; on a tie the one without a compound
+     * denominator, then the one with smaller integers: <code>(-9-2*I*Sqrt(3))/36</code> for
+     * <code>(-72-16*I*Sqrt(3))/288</code>.
+     */
+    private static IExpr tidyResidue(IExpr residue, EvalEngine engine) {
+      if (residue.isNumber() || !residue.isNumericFunction(true)
+          || !residue.isFree(IExpr::isInexactNumber, false)
+          // only an algebraic number has a form to tidy: a radical or a root of unity
+          || residue.isFree(e -> e.isPower() && e.base().isNumber() && e.exponent().isFraction(),
+              true)) {
+        return residue;
+      }
+      IExpr best = residue;
+      long bestCount = residue.leafCount();
+      boolean bestCompound = hasCompoundDenominator(best, engine);
+      IExpr expanded = engine.evalQuiet(F.Together(F.ComplexExpand(residue)));
+      IExpr[] candidates = {cancelIntegerContent(residue, engine),
+          cancelIntegerContent(expanded, engine), engine.evalQuiet(F.Simplify(residue))};
+      for (IExpr candidate : candidates) {
+        if (!candidate.isPresent() || !candidate.isFree(IExpr::isInexactNumber, false)) {
+          continue;
+        }
+        long count = candidate.leafCount();
+        boolean candidateCompound = hasCompoundDenominator(candidate, engine);
+        if (count < bestCount || (count == bestCount && bestCompound && !candidateCompound)
+            || (count == bestCount && bestCompound == candidateCompound
+                && candidate.toString().length() < best.toString().length())) {
+          best = candidate;
+          bestCount = count;
+          bestCompound = candidateCompound;
+        }
+      }
+      return best;
+    }
+
+    /**
+     * <code>p/d</code> with an integer <code>d</code> and the common integer factor of
+     * <code>d</code> and the coefficients of the sum <code>p</code> cancelled.
+     */
+    private static IExpr cancelIntegerContent(IExpr expr, EvalEngine engine) {
+      if (!expr.isPresent()) {
+        return expr;
+      }
+      IExpr denominator = engine.evalQuiet(F.Denominator(expr));
+      IExpr numerator = engine.evalQuiet(F.Numerator(expr));
+      if (!denominator.isInteger() || !numerator.isPlus()) {
+        return expr;
+      }
+      IInteger gcd = (IInteger) denominator;
+      for (IExpr term : (IAST) numerator) {
+        IExpr coefficient = term.isTimes() && term.first().isNumber() ? term.first()
+            : term.isNumber() ? term : F.C1;
+        IExpr re = coefficient.re();
+        IExpr im = coefficient.im();
+        if (!re.isInteger() || !im.isInteger()) {
+          return expr;
+        }
+        gcd = gcd.gcd((IInteger) re).gcd((IInteger) im);
+      }
+      if (gcd.isOne() || gcd.isZero()) {
+        return expr;
+      }
+      return engine.evalQuiet(F.Divide(F.Expand(F.Divide(numerator, gcd)),
+          ((IInteger) denominator).div(gcd)));
+    }
+
+    private static boolean hasCompoundDenominator(IExpr expr, EvalEngine engine) {
+      return !engine.evalQuiet(F.Denominator(expr)).isNumber();
     }
 
     /**
@@ -2644,7 +2716,7 @@ public class SeriesFunctions {
 
         if (num.isPolynomial(x) && den.isPolynomial(x)) {
           IExpr denAtZero = engine.evaluate(F.subst(den, x, F.C0));
-          if (!denAtZero.isZero()) {
+          if (!denAtZero.isZero() && !ASTSeriesData.isExactNumericZero(denAtZero, engine)) {
             // Normalize so that the constant term of the denominator is 1
             IExpr normFactor = engine.evaluate(F.Divide(F.C1, denAtZero));
             IExpr normNum = engine.evaluate(F.Expand(F.Times(num, normFactor)));
@@ -2834,7 +2906,7 @@ public class SeriesFunctions {
             IExpr aPrime = engine.evaluate(F.Plus(a, F.Times(b, x0)));
             IExpr bPrime = b;
 
-            if (aPrime.isZero()) {
+            if (aPrime.isZero() || ASTSeriesData.isExactNumericZero(aPrime, engine)) {
               IExpr coeff = engine.evaluate(F.Times(c, F.Power(bPrime, exp)));
               return F.Piecewise(F.list(F.list(coeff, F.Equal(n, exp))), F.C0);
             }

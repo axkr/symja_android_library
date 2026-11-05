@@ -7833,11 +7833,6 @@ public final class LinearAlgebra {
 
   private static class SchurDecomposition extends HessenbergDecomposition {
 
-    @Override
-    protected boolean rejectsExactMatrix() {
-      return false;
-    }
-
     /** The matrices <code>{p, t}</code> of the Schur decomposition of <code>matrix</code>. */
     @Override
     protected RealMatrix[] decompose(RealMatrix matrix) {

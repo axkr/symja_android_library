@@ -14,7 +14,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 198, 0 };
+  final public static int[] SIZES = { 204, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -579,6 +579,24 @@ public class DerivativeRules {
     // Derivative(0,1)[StruveL]=1/2*(StruveL(-1+#1,#2)+StruveL(#1+1,#2)+(#2/2)^#1/(Sqrt(Pi)*Gamma(#1+3/2)))&
     ISet($(Derivative(C0,C1),StruveL),
       Function(Times(C1D2,Plus(StruveL(Plus(CN1,Slot1),Slot2),StruveL(Plus(Slot1,C1),Slot2),Times(Power(Times(CSqrtPi,Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1))))), true),
+    // Derivative(0,1)[KelvinBer]=(-KelvinBei(-1+#1,#2)+KelvinBei(1+#1,#2)-KelvinBer(-1+#1,#2)+KelvinBer(1+#1,#2))/(2*Sqrt(2))&
+    ISet($(Derivative(C0,C1),KelvinBer),
+      Function(Times(Power(Times(C2,CSqrt2),CN1),Plus(Negate(KelvinBei(Plus(CN1,Slot1),Slot2)),KelvinBei(Plus(C1,Slot1),Slot2),Negate(KelvinBer(Plus(CN1,Slot1),Slot2)),KelvinBer(Plus(C1,Slot1),Slot2)))), true),
+    // Derivative(0,1)[KelvinBei]=(-KelvinBei(-1+#1,#2)+KelvinBei(1+#1,#2)+KelvinBer(-1+#1,#2)-KelvinBer(1+#1,#2))/(2*Sqrt(2))&
+    ISet($(Derivative(C0,C1),KelvinBei),
+      Function(Times(Power(Times(C2,CSqrt2),CN1),Plus(Negate(KelvinBei(Plus(CN1,Slot1),Slot2)),KelvinBei(Plus(C1,Slot1),Slot2),KelvinBer(Plus(CN1,Slot1),Slot2),Negate(KelvinBer(Plus(C1,Slot1),Slot2))))), true),
+    // Derivative(0,1)[KelvinKer]=(-KelvinKei(-1+#1,#2)+KelvinKei(1+#1,#2)-KelvinKer(-1+#1,#2)+KelvinKer(1+#1,#2))/(2*Sqrt(2))&
+    ISet($(Derivative(C0,C1),KelvinKer),
+      Function(Times(Power(Times(C2,CSqrt2),CN1),Plus(Negate(KelvinKei(Plus(CN1,Slot1),Slot2)),KelvinKei(Plus(C1,Slot1),Slot2),Negate(KelvinKer(Plus(CN1,Slot1),Slot2)),KelvinKer(Plus(C1,Slot1),Slot2)))), true),
+    // Derivative(0,1)[KelvinKei]=(-KelvinKei(-1+#1,#2)+KelvinKei(1+#1,#2)+KelvinKer(-1+#1,#2)-KelvinKer(1+#1,#2))/(2*Sqrt(2))&
+    ISet($(Derivative(C0,C1),KelvinKei),
+      Function(Times(Power(Times(C2,CSqrt2),CN1),Plus(Negate(KelvinKei(Plus(CN1,Slot1),Slot2)),KelvinKei(Plus(C1,Slot1),Slot2),KelvinKer(Plus(CN1,Slot1),Slot2),Negate(KelvinKer(Plus(C1,Slot1),Slot2))))), true),
+    // Derivative(0,1)[AngerJ]=AngerJ(-1+#1,#2)/2-AngerJ(1+#1,#2)/2&
+    ISet($(Derivative(C0,C1),AngerJ),
+      Function(Plus(Times(C1D2,AngerJ(Plus(CN1,Slot1),Slot2)),Times(CN1D2,AngerJ(Plus(C1,Slot1),Slot2)))), true),
+    // Derivative(0,1)[WeberE]=WeberE(-1+#1,#2)/2-WeberE(1+#1,#2)/2&
+    ISet($(Derivative(C0,C1),WeberE),
+      Function(Plus(Times(C1D2,WeberE(Plus(CN1,Slot1),Slot2)),Times(CN1D2,WeberE(Plus(C1,Slot1),Slot2)))), true),
     // Zeta'(0)=-Log(2*Pi)/2
     ISet($($(Derivative(C1),Zeta),C0),
       Times(CN1D2,Log(C2Pi)), true),

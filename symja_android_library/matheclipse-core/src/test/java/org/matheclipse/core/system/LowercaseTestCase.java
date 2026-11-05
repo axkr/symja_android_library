@@ -22193,6 +22193,126 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testResidueAtRootOfUnitySpelledTwoWays() {
+    // 1-(-1)^(1/3)+(-1)^(2/3) is zero: the point is a pole in both spellings
+    check("Chop(N(Residue(1/(1 + w^2 + w^4)^2, {w, (-1)^(1/3)}) "
+        + "- Residue(1/(1 + w^2 + w^4)^2, {w, 1/2 + I*Sqrt(3)/2})))", //
+        "0");
+    check("Residue(1/(1 + w^2 + w^4)^2, {w, 1/2 + I*Sqrt(3)/2})", //
+        "1/36*(-9-I*2*Sqrt(3))");
+    check("Residue(1/(1 - w + w^2)^3, {w, (-1)^(1/3)}) == 0", //
+        "False");
+    check("SeriesCoefficient(Series(1/(1 - w + w^2)^2, {w, (-1)^(1/3), -1}), -2) == 0", //
+        "False");
+    // a tiny exact coefficient isn't zero
+    check("Series(1/(w - E^-80), {w, 0, 1})", //
+        "-E^80-E^160*w+O(w)^2");
+  }
+
+  @Test
+  public void testGammaIncompleteRealAtNegativeMachineArgument() {
+    check("Head(Gamma(4, -1.5))", //
+        "Real");
+    check("Gamma(2, -3.0)", //
+        "-40.17107");
+  }
+
+  @Test
+  public void testArgOfSumWithPositiveFactor() {
+    check("Refine(Arg(-c - I*Sqrt(3)*c), c > 0)", //
+        "-2/3*Pi");
+    check("Refine(Arg(3*c + 3*I*c), c > 0)", //
+        "Pi/4");
+  }
+
+  @Test
+  public void testNIntegrateWorkingPrecision() {
+    check("Precision(NIntegrate(1/(1 + y)^4, {y, 0, Infinity}, WorkingPrecision -> 25))", //
+        "25");
+    check("Abs(NIntegrate(1/(1 + y)^4, {y, 0, Infinity}, WorkingPrecision -> 25) - 1/3) "
+        + "< 10^-24", //
+        "True");
+    check("Abs(NIntegrate(Exp(-y^2/2), {y, -Infinity, Infinity}, WorkingPrecision -> 30) "
+        + "- Sqrt(2*Pi)) < 10^-28", //
+        "True");
+    // an integrable singularity at a nonzero end
+    check("Abs(NIntegrate(1/Sqrt(2 - y), {y, 1, 2}, WorkingPrecision -> 25) - 2) < 10^-23", //
+        "True");
+    // the integrand's scale doesn't decide when a sweep stops
+    check("Abs(NIntegrate(10^-90*Exp(-2*y), {y, 0, Infinity}, WorkingPrecision -> 20) "
+        + "- 10^-90/2) < 10^-108", //
+        "True");
+    // NIntegrate: Requested precision v is not a machine-sized real number.
+    check("NIntegrate(Exp(-y^2), {y, 0, 1}, WorkingPrecision -> v)", //
+        "NIntegrate(E^(-y^2),{y,0,1},WorkingPrecision->v)");
+  }
+
+  @Test
+  public void testIntegrateLogPowerOverGeometricDenominator() {
+    check("Integrate(u^3*Log(u)/(1 - u), {u, 0, 1})", //
+        "49/36-Pi^2/6");
+    check("Integrate(Log(u)^2/(1 + u^2), {u, 0, 1})", //
+        "Pi^3/16");
+    check("Integrate(u*Log(u)^2/(1 - u^2), {u, 0, 1})", //
+        "Zeta(3)/4");
+    check("Integrate(Log(u)/(1 + u^2), {u, 0, 1})", //
+        "-Catalan");
+    // a forced method isn't overridden by the zeta stage
+    check("Integrate(u^2*Log(u)^2/(1 - u^3), {u, 0, 1}, Method -> \"DiffUnderInt\")", //
+        "Integrate(u^2*Log(u)^2/(1-u^3),{u,0,1},Method->DiffUnderInt)");
+  }
+
+  @Test
+  public void testKelvinAngerWeberDerivatives() {
+    check("D(KelvinKer(k, t), t)", //
+        "(-KelvinKei(-1+k,t)+KelvinKei(1+k,t)-KelvinKer(-1+k,t)+KelvinKer(1+k,t))/(2*Sqrt(\n"
+            + "2))");
+    check("D(KelvinBei(k, t), t)", //
+        "(-KelvinBei(-1+k,t)+KelvinBei(1+k,t)+KelvinBer(-1+k,t)-KelvinBer(1+k,t))/(2*Sqrt(\n"
+            + "2))");
+    check("D(WeberE(k, t^2), t)", //
+        "2*t*(WeberE(-1+k,t^2)/2-WeberE(1+k,t^2)/2)");
+    check("D(AngerJ(k, 3*t), t)", //
+        "3*(AngerJ(-1+k,3*t)/2-AngerJ(1+k,3*t)/2)");
+    // the derivative of a Kelvin function against its central difference quotient
+    check("Chop(N(D(KelvinBer(3, t), t) /. t -> 2.1) "
+        + "- (KelvinBer(3, 2.1 + 10^-7) - KelvinBer(3, 2.1 - 10^-7))/(2*10^-7), 10^-6)", //
+        "0");
+    check("{KelvinKer(3, 0), KelvinKer(2.0, 0.0), KelvinKer(-3, 0)}", //
+        "{ComplexInfinity,ComplexInfinity,ComplexInfinity}");
+  }
+
+  @Test
+  public void testSchurDecompositionOfExactMatrix() {
+    // SchurDecomposition: SchurDecomposition has received a matrix with infinite precision.
+    check("SchurDecomposition({{4, 1}, {2, 7}})", //
+        "SchurDecomposition(\n{{4,1},\n {2,7}})");
+    check("Length(SchurDecomposition(N({{4, 1}, {2, 7}})))", //
+        "2");
+  }
+
+  @Test
+  public void testDirichletBetaClosedForms() {
+    check("{DirichletBeta(2), DirichletBeta(3), DirichletBeta(5), DirichletBeta(7)}", //
+        "{Catalan,Pi^3/32,5/1536*Pi^5,61/184320*Pi^7}");
+    check("Chop(N(DirichletBeta(5)) - N(DirichletBeta(5.0)))", //
+        "0");
+  }
+
+  @Test
+  public void testIntegrateMellinPrincipalValue() {
+    check("Integrate(u^(r - 1)/(1 - u), {u, 0, Infinity}, PrincipalValue -> True, "
+        + "Assumptions -> 0 < r < 1)", //
+        "Pi*Cot(Pi*r)");
+    check("Integrate(1/(u^2 - 9), {u, 0, Infinity}, PrincipalValue -> True)", //
+        "0");
+    check("Integrate(u/(u^4 - 1), {u, 0, Infinity}, PrincipalValue -> True)", //
+        "0");
+    check("Integrate(1/(u^3 - 27), {u, 0, Infinity}, PrincipalValue -> True)", //
+        "-Pi/(27*Sqrt(3))");
+  }
+
+  @Test
   public void testSubsetPosition() {
     check("SubsetPosition({u, 7, v, 8}, {_Integer, _Symbol})", //
         "{{2,1},{4,1},{2,3},{4,3}}");
