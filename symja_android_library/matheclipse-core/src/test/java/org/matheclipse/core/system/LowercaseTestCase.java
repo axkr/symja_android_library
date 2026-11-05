@@ -15404,7 +15404,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "g = VectorDensityPlot({x, y^2}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 3, PlotPoints -> 5); "
             + "{Head(g), Length(Cases(g, _Raster, Infinity)), Length(Cases(g, _Arrow, Infinity))}", //
-        "{Graphics,1,8}");
+        "{Graphics,1,10}");
   }
 
   @Test

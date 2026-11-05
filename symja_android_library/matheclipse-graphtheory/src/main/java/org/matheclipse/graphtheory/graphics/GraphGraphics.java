@@ -73,8 +73,19 @@ final public class GraphGraphics {
     return new IBuiltInSymbol[] {S.DirectedEdges, S.GraphLayout, S.VertexSize, S.VertexLabels};
   }
 
+  /**
+   * The default values of {@link #defaultGraphOptionKeys()}: <code>GraphLayout -&gt; Automatic</code>
+   * leaves the layout to the graph, see {@link #createOptionsList(IExpr[])}.
+   */
   public static IExpr[] defaultGraphOptionValues() {
-    return new IExpr[] {S.False, F.stringx("LayeredEmbedding"), S.Automatic, S.None};
+    return new IExpr[] {S.False, S.Automatic, S.Automatic, S.None};
+  }
+
+  /** The default values of {@link #defaultGraphOptionKeys()} with the given graph layout. */
+  public static IExpr[] defaultGraphOptionValues(IExpr graphLayout) {
+    IExpr[] values = defaultGraphOptionValues();
+    values[X_GRAPH_LAYOUT] = graphLayout;
+    return values;
   }
 
   private final Graph<IExpr, ?> graph;
@@ -196,6 +207,19 @@ final public class GraphGraphics {
           }
         }
         hasCoords = true;
+      }
+    }
+
+    if (!hasCoords && graphLayout.matches(".*\\b(Bipartite|Multipartite|Radial|Spiral)\\w*.*")) {
+      // the layouts only GraphEmbedding knows
+      IAST points = GraphLayouts.coordinates(g, getOption(S.GraphLayout));
+      if (points.isPresent()) {
+        int i = 1;
+        for (IExpr v : g.vertexSet()) {
+          IAST p = (IAST) points.get(i++);
+          vertexCoords.put(v, new double[] {p.arg1().evalf(), p.arg2().evalf()});
+        }
+        return;
       }
     }
 
@@ -1272,7 +1296,10 @@ final public class GraphGraphics {
     if (options[X_DIRECTED_EDGES].isTrue()) {
       optionsList.append(F.Rule(S.DirectedEdges, S.True));
     }
-    optionsList.append(F.Rule(S.GraphLayout, options[X_GRAPH_LAYOUT]));
+    // a graph without a layout of its own carries no GraphLayout option
+    if (options[X_GRAPH_LAYOUT] != S.Automatic) {
+      optionsList.append(F.Rule(S.GraphLayout, options[X_GRAPH_LAYOUT]));
+    }
     if (options.length > X_VERTEX_SIZE && options[X_VERTEX_SIZE] != S.Automatic) {
       optionsList.append(F.Rule(S.VertexSize, options[X_VERTEX_SIZE]));
     }

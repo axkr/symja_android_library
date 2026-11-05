@@ -15,20 +15,24 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * <code>VectorPlot[{vx, vy}, {x, xmin, xmax}, {y, ymin, ymax}]</code> and
  * <code>VectorPlot3D[{vx, vy, vz}, {x, ...}, {y, ...}, {z, ...}]</code> - the vector field drawn as
- * arrows on a regular grid.
+ * arrows.
  *
  * <p>
- * Each arrow is centred on its grid point and the longest one spans <code>VectorScale</code> of the
- * grid spacing, so the arrows never overlap. They are coloured by their length unless
- * <code>VectorColorFunction -> None</code>. Points where the field has no numeric value, and points
- * where it is zero, get no arrow.
+ * In the plane the arrows sit on a staggered (hexagonal) lattice of <code>VectorPoints -> n</code>
+ * points along the longer side, 16 by default, and all have the same length on the screen unless
+ * <code>VectorScaling -> Automatic</code> makes them grow with the field's strength. In space they
+ * sit on a regular grid and the longest one spans <code>VectorScale</code> of the grid spacing, so
+ * the arrows never overlap. They are centred on their points and coloured by the field's strength
+ * unless <code>VectorColorFunction -> None</code>. Points where the field has no numeric value, and
+ * points where it is zero, get no arrow.
  *
  * <p>
- * Options: <code>VectorPoints -> n | {nx, ny[, nz]} | {p1, p2, ...}</code>, <code>VectorScale -> s</code>,
- * <code>VectorColorFunction -> None</code>, <code>VectorStyle -> style</code>; any other option is
- * handed on to the <code>Graphics</code>/<code>Graphics3D</code>. An explicit list of points puts
- * one arrow at each of them instead of on the grid, and a colour in <code>VectorStyle</code> draws
- * every arrow in it rather than colouring them by their length.
+ * Options: <code>VectorPoints -> n | {nx, ny[, nz]} | {p1, p2, ...}</code>, <code>VectorScale ->
+ * s</code>, <code>VectorScaling -> Automatic</code>, <code>VectorColorFunction -> None</code>,
+ * <code>VectorStyle -> style</code>; any other option is handed on to the
+ * <code>Graphics</code>/<code>Graphics3D</code>. An explicit list of points puts one arrow at each
+ * of them, and a colour in <code>VectorStyle</code> draws every arrow in it rather than colouring
+ * them by their strength.
  */
 public class VectorPlot extends AbstractFunctionEvaluator {
 
@@ -76,6 +80,8 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     double scale = DEFAULT_SCALE;
     boolean colored = true;
     boolean colorFunctionGiven = false;
+    // VectorScaling -> Automatic: the arrows' lengths grow with the field's strength
+    boolean scaledLengths = false;
     IExpr style = F.NIL;
     RegionFunctionFilter region = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
@@ -107,12 +113,21 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         style = engine.evaluate(option.second());
         continue;
       }
+      if (key == S.VectorScaling) {
+        scaledLengths = engine.evaluate(option.second()) == S.Automatic;
+        continue;
+      }
       graphicsOptions.append(option);
     }
     boolean styleColored = style.isPresent() && containsColor(style);
     if (styleColored && !colorFunctionGiven) {
       // the arrows are drawn in the colour asked for, not coloured by their length over it
       colored = false;
+    }
+    if (dimension == 2 && explicitPoints == null) {
+      return planeGraphics(point -> fieldAt(field, variables, point, engine), min, max,
+          planeVectorPoints(ast, 4, engine), scale, scaledLengths, !styleColored, style, colored,
+          region, graphicsOptions, engine);
     }
 
     // sample the field, on the grid or at the points asked for
@@ -170,7 +185,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       primitives.append(arrowheads(ARROWHEAD_3D));
     }
     if (!colored && !styleColored) {
-      primitives.append(color(0.0));
+      primitives.append(plainColor());
     }
     if (style.isPresent()) {
       // after the defaults, so that its colour and its Arrowheads are the ones in force; a list of
@@ -225,6 +240,203 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * The sample points of a plane field for <code>VectorPoints</code>: <code>Automatic</code> is 16
+   * points along the longer side of the plot, <code>Coarse</code> 10 and <code>Fine</code> 25;
+   * <code>{nx, ny}</code> puts the larger count along its axis and spreads the smaller count of
+   * rows across the other one.
+   *
+   * @return <code>{n, rows, alongX}</code>: <code>rows</code> is 0 for rows as far apart as in a
+   *         hexagonal lattice, <code>alongX</code> is 1 or 0 for the axis of the <code>n</code>
+   *         points and -1 for the longer side
+   */
+  static double[] planeVectorPoints(IAST ast, int start, EvalEngine engine) {
+    double[] result = {16, 0, -1};
+    for (int i = start; i < ast.size(); i++) {
+      IExpr option = ast.get(i);
+      if (!option.isRuleAST() || option.first() != S.VectorPoints) {
+        continue;
+      }
+      IExpr value = engine.evaluate(option.second());
+      String name = value.isString() || value.isSymbol() ? value.toString() : "";
+      if (name.equalsIgnoreCase("Coarse")) {
+        result[0] = 10;
+      } else if (name.equalsIgnoreCase("Fine")) {
+        result[0] = 25;
+      } else if (value.isList2()) {
+        int nx = value.first().toIntDefault();
+        int ny = value.second().toIntDefault();
+        if (nx >= 1 && ny >= 1) {
+          result[0] = Math.max(nx, ny);
+          result[1] = Math.min(nx, ny);
+          result[2] = nx >= ny ? 1 : 0;
+        }
+      } else {
+        int n = value.toIntDefault();
+        if (n >= 1) {
+          result[0] = n;
+        }
+      }
+    }
+    // some 50000 arrows are plenty
+    result[0] = Math.min(result[0], 200);
+    result[1] = Math.min(result[1], 250);
+    return result;
+  }
+
+  /**
+   * The <code>Graphics</code> of a plane field over the rectangle from <code>min</code> to
+   * <code>max</code>, with the arrows of {@link #planeArrows}.
+   *
+   * @param field the vector at a point, or <code>null</code> where there is none
+   * @param plain whether the arrows which aren't coloured get the plain colour
+   * @param style the <code>VectorStyle</code>, or {@link F#NIL}
+   */
+  static IAST planeGraphics(java.util.function.Function<double[], double[]> field, double[] min,
+      double[] max, double[] lattice, double scale, boolean scaledLengths, boolean plain,
+      IExpr style, boolean colored, RegionFunctionFilter region, IAST graphicsOptions,
+      EvalEngine engine) {
+    IASTAppendable primitives = F.ListAlloc();
+    if (!colored && plain) {
+      primitives.append(plainColor());
+    }
+    if (style.isPresent()) {
+      if (style.isList()) {
+        primitives.appendArgs((IAST) style);
+      } else {
+        primitives.append(style);
+      }
+    }
+    // Arrowheads in the VectorStyle are the ones in force, so the arrows get none of their own
+    boolean ownArrowheads =
+        !style.isPresent() || style.isFree(x -> x.isAST(S.Arrowheads), false);
+    planeArrows(field, min, max, lattice, scale, scaledLengths, colored, ownArrowheads, region,
+        graphicsOptions, primitives, engine);
+    IASTAppendable result = F.Graphics(primitives);
+    result.appendArgs(graphicsOptions);
+    if (!hasOption(graphicsOptions, S.PlotRange)) {
+      result.append(F.Rule(S.PlotRange,
+          F.list(F.list(F.num(min[0]), F.num(max[0])), F.list(F.num(min[1]), F.num(max[1])))));
+    }
+    if (!hasOption(graphicsOptions, S.Frame)) {
+      result.append(F.Rule(S.Frame, S.True));
+    }
+    if (!hasOption(graphicsOptions, S.AspectRatio)) {
+      result.append(F.Rule(S.AspectRatio, F.C1));
+    }
+    return result;
+  }
+
+  /**
+   * The arrows of a plane field, appended to <code>primitives</code>.
+   *
+   * <p>
+   * The points form a staggered (hexagonal) lattice along the longer side of the square plot: rows
+   * of <code>n</code> points at the cell centres alternate with rows of <code>n - 1</code> at the
+   * cell edges, beginning with a full row. Without a row count the rows are <code>Sqrt[3]/2</code>
+   * cells apart and centred across the plot. Every arrow is <code>scale / Max[n, 12]</code> of the
+   * plot's side long on the screen - with <code>VectorScaling -> Automatic</code> between a third
+   * of that and all of it, by the field's strength - centred on its point and pointing along the
+   * vector as the axes show it, and it carries its head of half its length and its colour.
+   */
+  private static void planeArrows(java.util.function.Function<double[], double[]> field,
+      double[] min, double[] max, double[] lattice, double scale, boolean scaledLengths,
+      boolean colored, boolean ownArrowheads, RegionFunctionFilter region, IAST graphicsOptions,
+      IASTAppendable primitives, EvalEngine engine) {
+    double width = max[0] - min[0];
+    double height = max[1] - min[1];
+    // the plot's sides on the screen: square unless an AspectRatio is given
+    double screenWidth = 1.0;
+    double screenHeight = 1.0;
+    for (IExpr option : graphicsOptions) {
+      if (option.isRuleAST() && option.first() == S.AspectRatio) {
+        double ratio = option.second().evalfNaN();
+        if (ratio > 0 && Double.isFinite(ratio)) {
+          screenHeight = ratio;
+        } else if (option.second() == S.Automatic) {
+          screenHeight = height / width;
+        }
+      }
+    }
+    int n = (int) lattice[0];
+    int rowCount = (int) lattice[1];
+    boolean alongX = lattice[2] < 0 ? screenWidth >= screenHeight : lattice[2] > 0;
+    double longSide = Math.max(screenWidth, screenHeight);
+    double shortSide = Math.min(screenWidth, screenHeight);
+    double[] rows;
+    if (rowCount == 0) {
+      double step = longSide / n * Math.sqrt(3.0) / 2.0 / shortSide;
+      int count = Math.max(1, (int) Math.ceil(1.0 / step - 1e-9));
+      double first = (1.0 - (count - 1) * step) / 2.0;
+      rows = new double[count];
+      for (int j = 0; j < count; j++) {
+        rows[j] = first + j * step;
+      }
+    } else {
+      double edge = 0.5 / n;
+      rows = new double[rowCount];
+      for (int j = 0; j < rowCount; j++) {
+        rows[j] = rowCount == 1 ? 0.5 : edge + j * (1.0 - 2.0 * edge) / (rowCount - 1);
+      }
+    }
+
+    // the field at the points, as {x, y, vx, vy, norm}
+    java.util.List<double[]> samples = new java.util.ArrayList<>();
+    double low = Double.MAX_VALUE;
+    double high = -Double.MAX_VALUE;
+    for (int j = 0; j < rows.length; j++) {
+      engine.checkTimeLimit();
+      int from = j % 2 == 0 ? 0 : 1;
+      for (int i = from; i < n; i++) {
+        double along = j % 2 == 0 ? (i + 0.5) / n : (double) i / n;
+        double u = alongX ? along : rows[j];
+        double v = alongX ? rows[j] : along;
+        double[] point = {min[0] + u * width, min[1] + v * height};
+        double[] vector = field.apply(point);
+        if (vector == null) {
+          continue;
+        }
+        double length = norm(vector);
+        if (!Double.isFinite(length)) {
+          continue;
+        }
+        double[] sample = {point[0], point[1], vector[0], vector[1], length};
+        if (region != null && !region.accepts(sample)) {
+          continue;
+        }
+        samples.add(sample);
+        low = Math.min(low, length);
+        high = Math.max(high, length);
+      }
+    }
+
+    double arrowLength = scale / Math.max(n, 12) * longSide;
+    // CPD-OFF the vector plots handle different option keys
+    for (double[] sample : samples) {
+      double strength = high > low ? (sample[4] - low) / (high - low) : 0.0;
+      double sx = sample[2] * screenWidth / width;
+      double sy = sample[3] * screenHeight / height;
+      double screen = Math.hypot(sx, sy);
+      if (sample[4] == 0.0 || !(screen > 0.0) || Double.isInfinite(screen)) {
+        // a zero vector has no direction and gets no arrow
+        continue;
+      }
+      double length = arrowLength;
+      if (scaledLengths) {
+        length *= 1.0 / 3.0 + 2.0 / 3.0 * (Math.sqrt(1.0 + 80.0 * strength) - 1.0) / 8.0;
+      }
+      double half = length / 2.0 / screen;
+      double dx = sample[2] * half;
+      double dy = sample[3] * half;
+      IAST arrow = F.Arrow(F.list(F.list(F.num(sample[0] - dx), F.num(sample[1] - dy)),
+          F.list(F.num(sample[0] + dx), F.num(sample[1] + dy))));
+      // CPD-ON
+      IAST drawn = colored ? F.list(color(strength), arrow) : arrow;
+      primitives.append(
+          ownArrowheads ? F.list(arrowheads(length / 2.0 / screenWidth), drawn) : drawn);
+    }
   }
 
   /**
@@ -368,7 +580,8 @@ public class VectorPlot extends AbstractFunctionEvaluator {
   }
 
   /** The field's value at <code>point</code>, or <code>null</code> where it is not numeric. */
-  private double[] fieldAt(IExpr field, ISymbol[] variables, double[] point, EvalEngine engine) {
+  static double[] fieldAt(IExpr field, ISymbol[] variables, double[] point, EvalEngine engine) {
+    final int dimension = variables.length;
     IASTAppendable assignments = F.ListAlloc(dimension);
     for (int d = 0; d < dimension; d++) {
       assignments.append(F.Set(variables[d], F.num(point[d])));
@@ -410,35 +623,41 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     return Math.sqrt(sum);
   }
 
-  /** Where the stops of {@link #GRADIENT} lie on 0..1. */
-  private static final double[] STOPS = {0.0, 0.25, 0.37, 0.47, 0.54, 0.61, 0.70, 0.78, 1.0};
-
   /**
-   * Default for vector and stream plots, as its own plots are coloured: blue-purple for the weakest
-   * field through magenta and red to orange-yellow for the strongest.
+   * The default gradient of vector and stream plots in L*a*b*, scaled as <code>LABColor</code>:
+   * the stops are the RGB colours <code>{0, 0, 0.7}</code>, <code>{0.6, 0.2, 0.6}</code>,
+   * <code>{1, 0.43, 0}</code> and <code>{1, 0.75, 0}</code>, from the weakest field to the
+   * strongest, spaced evenly and blended in L*a*b*.
    */
   private static final double[][] GRADIENT = { //
-      {0.195, 0.102, 0.670}, {0.569, 0.208, 0.602}, {0.728, 0.264, 0.477}, {0.848, 0.322, 0.350},
-      {0.922, 0.365, 0.252}, {1.000, 0.414, 0.096}, {1.000, 0.487, 0.000}, {1.000, 0.565, 0.004},
-      {1.000, 0.745, 0.044}};
+      {0.1886675222501131, 0.5225961012766809, -0.8572107619122568},
+      {0.4023290342656328, 0.5222145896456903, -0.34657139672158205},
+      {0.644456290545989, 0.537992026017925, 0.7321115671273679},
+      {0.8167969189733053, 0.14500114740169545, 0.8282532063436999}};
 
   /** The arrowheads of a two dimensional vector plot. */
   static IAST arrowheads(double size) {
     return F.unaryAST1(S.Arrowheads, F.list(F.list(F.num(size), F.num(1.0))));
   }
 
-  /** The colour for the field's strength <code>t</code>, 0 the weakest and 1 the strongest. */
+  /**
+   * The colour for the field's strength <code>t</code>, 0 the weakest and 1 the strongest: a
+   * <code>LABColor</code> blended between the stops of {@link #GRADIENT}.
+   */
   static IAST color(double t) {
     t = Double.isNaN(t) ? 0.0 : Math.max(0.0, Math.min(1.0, t));
-    int k = 1;
-    while (k < STOPS.length - 1 && t > STOPS[k]) {
-      k++;
-    }
-    double s = (t - STOPS[k - 1]) / (STOPS[k] - STOPS[k - 1]);
-    double[] a = GRADIENT[k - 1];
-    double[] b = GRADIENT[k];
-    return F.RGBColor(F.num(a[0] + s * (b[0] - a[0])), F.num(a[1] + s * (b[1] - a[1])),
-        F.num(a[2] + s * (b[2] - a[2])));
+    double position = t * (GRADIENT.length - 1);
+    int k = Math.min((int) Math.floor(position), GRADIENT.length - 2);
+    double s = position - k;
+    double[] a = GRADIENT[k];
+    double[] b = GRADIENT[k + 1];
+    return F.ternaryAST3(S.LABColor, F.num(a[0] + s * (b[0] - a[0])),
+        F.num(a[1] + s * (b[1] - a[1])), F.num(a[2] + s * (b[2] - a[2])));
+  }
+
+  /** The colour of arrows which aren't coloured by the field's strength: the weakest one's. */
+  static IAST plainColor() {
+    return F.RGBColor(F.num(0.0), F.num(0.0), F.num(0.7));
   }
 
   /** <code>true</code> if <code>options</code> contains a rule with the left-hand side key. */

@@ -78,6 +78,7 @@ import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.graphtheory.expression.data.GraphExpr;
 import org.matheclipse.graphtheory.expression.data.IExprEdge;
 import org.matheclipse.graphtheory.graphics.GraphGraphics;
+import org.matheclipse.graphtheory.graphics.GraphLayouts;
 import com.google.common.collect.Sets;
 
 /** Functions for graph theory algorithms. */
@@ -679,8 +680,9 @@ public class GraphFunctions {
    * <blockquote>
    *
    * <p>
-   * return the coordinates of the vertices of the <code>graph</code>. The second argument selects
-   * the embedding, the default is <code>&quot;CircularEmbedding&quot;</code>.
+   * return the coordinates of the vertices of the <code>graph</code>: the given
+   * <code>VertexCoordinates</code>, else those of its <code>GraphLayout</code>. The second argument
+   * selects the embedding.
    *
    * </blockquote>
    *
@@ -688,7 +690,7 @@ public class GraphFunctions {
    *
    * <pre>
    * <code>&gt;&gt; GraphEmbedding(Graph({1 -&gt; 2}))
-   * {{0.,-1.},{0.,1.}}
+   * {{1.0,0.0},{0.0,0.0}}
    * </code>
    * </pre>
    */
@@ -700,15 +702,23 @@ public class GraphFunctions {
       if (gex == null) {
         return F.NIL;
       }
-      String embedding = "CircularEmbedding";
+      IExpr embedding;
       if (ast.isAST2()) {
         if (!ast.arg2().isString()) {
           return F.NIL;
         }
-        embedding = ast.arg2().toString();
+        embedding = ast.arg2();
+      } else {
+        IAST graphLayout = gex.options().getRule(S.GraphLayout);
+        embedding = graphLayout.isPresent() ? graphLayout.second() : S.Automatic;
       }
       Graph<IExpr, ?> g = gex.toData();
-      IAST layout = GraphGraphics.vertexCoordinates(g, embedding);
+      IAST layout = GraphLayouts.coordinates(g, embedding);
+      if (layout.isNIL()) {
+        // a layout the drawing of the graph knows, SpringEmbedding, ...
+        IExpr name = embedding.isList() && embedding.argSize() > 0 ? embedding.first() : embedding;
+        layout = GraphGraphics.vertexCoordinates(g, name.isString() ? name.toString() : "");
+      }
       IAST coordinates = gex.options().getRule(S.VertexCoordinates);
       if (ast.isAST1() && coordinates.isPresent() && coordinates.second().isList()) {
         return withGivenCoordinates(g, layout, (IAST) coordinates.second());

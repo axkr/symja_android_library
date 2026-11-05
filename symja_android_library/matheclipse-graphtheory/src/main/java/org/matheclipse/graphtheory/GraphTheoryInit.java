@@ -30,6 +30,9 @@ public class GraphTheoryInit {
     S.HITSCentrality.setEvaluator(new org.matheclipse.graphtheory.reflection.HITSCentrality());
     S.HararyGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.HararyGraph());
     S.TuranGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.TuranGraph());
+    S.KnightTourGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.KnightTourGraph());
+    S.WeightedAdjacencyGraph
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.WeightedAdjacencyGraph());
     S.VertexIndex.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexIndex());
     S.VertexReplace.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexReplace());
     S.SimpleGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.SimpleGraphQ());

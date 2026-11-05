@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Colors;
@@ -262,6 +263,7 @@ public class ColorFunctions {
     private static final String CMYK = "CMYK";
     private static final String XYZ = "XYZ";
     private static final String LAB = "LAB";
+    private static final String LCH = "LCH";
 
     /**
      * The colour space a name stands for: a space may be named as the directive whose colours are
@@ -289,13 +291,17 @@ public class ColorFunctions {
       if ("LAB".equalsIgnoreCase(space) || "LABColor".equalsIgnoreCase(space)) {
         return LAB;
       }
+      if ("LCH".equalsIgnoreCase(space) || "LCHColor".equalsIgnoreCase(space)) {
+        return LCH;
+      }
       return space;
     }
 
     /** A colour directive, as opposed to a list of channel values which is a colour as well. */
     private static boolean isColorDirective(IExpr expr) {
       return expr.isAST(S.RGBColor) || expr.isAST(S.GrayLevel) || expr.isAST(S.Hue)
-          || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor);
+          || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)
+          || expr.isAST(S.LCHColor);
     }
 
     /**
@@ -523,13 +529,19 @@ public class ColorFunctions {
         IExpr b = F.num(rgbaDouble[2]);
         return alpha < 1.0 ? F.RGBColor(r, g, b, F.num(alpha)) : F.RGBColor(r, g, b);
       }
-      if (XYZ.equals(space) || LAB.equals(space)) {
+      if (XYZ.equals(space) || LAB.equals(space) || LCH.equals(space)) {
         // from the XYZ coordinates themselves, which an RGB colour would have clipped
         double[] xyz = Colors.toXyzaDouble(color);
+        IBuiltInSymbol head = S.XYZColor;
         if (LAB.equals(space)) {
           xyz = ColorUtil.xyzToLab(xyz[0], xyz[1], xyz[2]);
+          head = S.LABColor;
+        } else if (LCH.equals(space)) {
+          double[] lab = ColorUtil.xyzToLab(xyz[0], xyz[1], xyz[2]);
+          xyz = ColorUtil.labToLch(lab[0], lab[1], lab[2]);
+          head = S.LCHColor;
         }
-        IASTAppendable result = F.ast(LAB.equals(space) ? S.LABColor : S.XYZColor, 4);
+        IASTAppendable result = F.ast(head, 4);
         for (int i = 0; i < 3; i++) {
           result.append(F.num(xyz[i]));
         }

@@ -10202,6 +10202,15 @@ public class S {
   public final static IBuiltInSymbol FormulaData = S.initFinalSymbol("FormulaData", ID.FormulaData);
 
   /**
+   * FortranForm(x) - TODO describe `FortranForm`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FortranForm.md">FortranForm
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FortranForm = S.initFinalSymbol("FortranForm", ID.FortranForm);
+
+  /**
    * Fourier(vector-of-complex-numbers) - Discrete Fourier transform of a
    * `vector-of-complex-numbers`. Fourier transform is restricted to vectors with length of power of
    * 2.
@@ -20029,6 +20038,15 @@ public class S {
       S.initFinalSymbol("PageRankCentrality", ID.PageRankCentrality);
 
   /**
+   * PageWidth(x) - TODO describe `PageWidth`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PageWidth.md">PageWidth
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PageWidth = S.initFinalSymbol("PageWidth", ID.PageWidth);
+
+  /**
    * PairedBarChart(x) - TODO describe `PairedBarChart`.
    * 
    * @see <a href=
@@ -20678,6 +20696,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Pink = S.initFinalSymbol("Pink", ID.Pink);
+
+  /**
+   * Pivoting(x) - TODO describe `Pivoting`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pivoting.md">Pivoting
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Pivoting = S.initFinalSymbol("Pivoting", ID.Pivoting);
 
   /**
    * Placed(x) - TODO describe `Placed`.

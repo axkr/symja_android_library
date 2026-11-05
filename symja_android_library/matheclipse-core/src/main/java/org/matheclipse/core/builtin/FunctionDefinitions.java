@@ -478,6 +478,14 @@ public final class FunctionDefinitions {
 
       // Graphics
       S.ComplexPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexPlot());
+      S.AbsArgPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComplexFunctionPlots.AbsArgPlot());
+      S.ReImPlot
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexFunctionPlots.ReImPlot());
+      S.ComplexContourPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComplexFunctionPlots.ComplexContourPlot());
+      S.LineIntegralConvolutionPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.LineIntegralConvolutionPlot());
       S.ContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ContourPlot());
       S.DensityHistogram.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityHistogram());
       S.DensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityPlot());

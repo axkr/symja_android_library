@@ -1278,8 +1278,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>VectorPlot</code> and <code>VectorPlot3D</code> draw the field as arrows on a grid,
-   * centred on the grid points; a zero vector gets no arrow. Both used to come back unevaluated, so
+   * <code>VectorPlot</code> and <code>VectorPlot3D</code> draw the field as arrows on a grid (in
+   * the plane a staggered one), centred on the grid points; a zero vector gets no arrow. Both used to come back unevaluated, so
    * the notebook drew nothing.
    */
   @Test
@@ -1289,7 +1289,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check(
         "Count[VectorPlot[{x + y, y - x}, {x, -3, 3}, {y, -3, 3}, VectorPoints -> 5], "
             + "_Arrow, Infinity]", //
-        "24");
+        "27");
     check("Head[VectorPlot3D[{x, y, z}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}]]", //
         "Graphics3D");
     check(
@@ -1298,7 +1298,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "26");
     check(
         "Chop[Mean[First[Cases[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 2], "
-            + "Arrow[p_] :> p, Infinity]]]] == {0, 0}", //
+            + "Arrow[p_] :> p, Infinity]]] - {0.25, (1 - Sqrt[3]/2)/2}] == {0, 0}", //
         "True");
     check(
         "Count[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorColorFunction -> None], "
@@ -1308,7 +1308,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check(
         "fld[a_, b_] := {-b, a}; Count[VectorPlot[fld[x, y], {x, -1, 1}, {y, -1, 1}, "
             + "VectorPoints -> 3], _Arrow, Infinity]", //
-        "8");
+        "10");
   }
 
   /**
@@ -1333,7 +1333,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // an explicit VectorColorFunction still colours them
     check(
         "Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, VectorPoints -> 3, "
-            + "VectorStyle -> Red, VectorColorFunction -> Automatic], _RGBColor, Infinity] > 1", //
+            + "VectorStyle -> Red, VectorColorFunction -> Automatic], _LABColor, Infinity] > 1", //
         "True");
   }
 
@@ -1559,8 +1559,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   /**
    * <code>ListVectorPlot</code> draws a field given as data: an array of vectors, with
    * <code>array[[i, j]]</code> at <code>{j, i}</code>, or a list of <code>{point, vector}</code>
-   * pairs. It had no evaluator, and the notebook reported <code>Take::seqs</code> for the
-   * unevaluated call.
+   * pairs, interpolated between the points. It had no evaluator, and the notebook reported
+   * <code>Take::seqs</code> for the unevaluated call.
    */
   @Test
   public void testListVectorPlotDrawsDataAsArrows() {
@@ -1571,10 +1571,11 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check(
         "Cases[ListVectorPlot[{{{1, 0}, {1, 0}, {1, 0}}}], Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
         "{{1,1},{2,1},{3,1}}");
+    // pairs are interpolated and drawn on VectorPlot's lattice over the rectangle they span
     check(
-        "Cases[ListVectorPlot[{{{0, 0}, {1, 0}}, {{2, 2}, {0, 1}}, {{4, 0}, {1, 1}}}], "
-            + "Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
-        "{{0,0},{2,2},{4,0}}");
+        "p = ListVectorPlot[{{{0, 0}, {1, 0}}, {{2, 2}, {0, 1}}, {{4, 0}, {1, 1}}}]; "
+            + "{Count[p, _Arrow, Infinity], PlotRange /. Rest[List @@ p]}", //
+        "{295,{{0.0,4.0},{0.0,2.0}}}");
   }
 
   /**

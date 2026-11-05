@@ -1105,6 +1105,7 @@ public class ImageGeometryFunctions {
      * @return <code>null</code> for an invalid size
      */
     private static int[] rasterSize(IAST ast, int width, int height, boolean graphic) {
+      boolean automatic = false;
       for (int i = 2; i < ast.size(); i++) {
         IExpr option = ast.get(i);
         if (option.isRuleAST() && option.first() == S.RasterSize) {
@@ -1116,16 +1117,44 @@ public class ImageGeometryFunctions {
           }
           int w = value.toIntDefault();
           if (w <= 0) {
-            return value == S.Automatic ? new int[] {width, height} : null;
+            if (value != S.Automatic) {
+              return null;
+            }
+            // the drawing's own size, scaled by ImageResolution below
+            automatic = true;
+            break;
           }
           return new int[] {w, Math.max(1, (int) Math.round((double) w * height / width))};
         }
       }
-      if (graphic && !hasImageSize((IAST) ast.arg1())) {
-        return new int[] {GRAPHICS_WIDTH,
-            Math.max(1, (int) Math.round((double) GRAPHICS_WIDTH * height / width))};
+      double w = width;
+      double h = height;
+      if (graphic && !automatic && !hasImageSize((IAST) ast.arg1())) {
+        w = GRAPHICS_WIDTH;
+        h = Math.max(1, Math.round((double) GRAPHICS_WIDTH * height / width));
       }
-      return new int[] {width, height};
+      // ImageResolution -> dpi: a size is given in printer points, 72 to the inch, so a point
+      // covers dpi/72 pixels, the last partly covered pixel included
+      double scale = imageResolution(ast) / 72.0;
+      if (scale != 1.0) {
+        return new int[] {Math.max(1, (int) Math.ceil(w * scale - 1e-9)),
+            Math.max(1, (int) Math.ceil(h * scale - 1e-9))};
+      }
+      return new int[] {(int) w, (int) h};
+    }
+
+    /** The positive number of <code>ImageResolution -> dpi</code>, 72 if it is not given. */
+    private static double imageResolution(IAST ast) {
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (option.isRuleAST() && option.first() == S.ImageResolution) {
+          double dpi = option.second().evalfNaN();
+          if (Double.isFinite(dpi) && dpi > 0 && dpi <= 7200) {
+            return dpi;
+          }
+        }
+      }
+      return 72.0;
     }
 
     private static boolean hasImageSize(IAST graphics) {
