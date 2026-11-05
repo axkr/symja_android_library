@@ -22096,6 +22096,103 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSingularValueListUpTo() {
+    // UpTo(k) takes at most k of all the values, the zero ones included
+    check("SingularValueList({{3., 6.}, {1., 2.}}, UpTo(2))", //
+        "{7.07107,0.0}");
+    check("SingularValueList({{3, 6}, {1, 2}}, UpTo(2))", //
+        "{5*Sqrt(2),0}");
+    check("SingularValueList({{3, 6}, {1, 2}}, UpTo(1))", //
+        "{5*Sqrt(2)}");
+    check("SingularValueList({{5, 0}, {0, 12}}, UpTo(7))", //
+        "{12,5}");
+    // all the singular values of a zero matrix are kept
+    check("SingularValueList({{0, 0, 0}, {0, 0, 0}})", //
+        "{0,0}");
+    check("SingularValueList({{0., 0.}, {0., 0.}, {0., 0.}})", //
+        "{0.0,0.0}");
+  }
+
+  @Test
+  public void testSimplifyKeepsFactoredTies() {
+    // a product of sums keeps a tie against its expansion
+    check("Simplify((6 - m)*(9 - m))", //
+        "(-9+m)*(-6+m)");
+    // a quotient keeps its form on a tie against its partial fractions
+    check("Simplify((3 + t)/(3 - t))", //
+        "(3+t)/(3-t)");
+    // a strictly smaller expansion still wins
+    check("Simplify((m - 2)*(m + 2))", //
+        "-4+m^2");
+  }
+
+  @Test
+  public void testCholeskyDecompositionChecks() {
+    // CholeskyDecomposition: The matrix {{2,5},{5,3}} is not positive definite.
+    check("CholeskyDecomposition({{2, 5}, {5, 3}})", //
+        "CholeskyDecomposition({{2,5},{5,3}})");
+    check("CholeskyDecomposition({{2., 5.}, {5., 3.}})", //
+        "CholeskyDecomposition({{2.0,5.0},{5.0,3.0}})");
+    // a symbolic symmetric matrix
+    check("CholeskyDecomposition({{s, t}, {t, w}})", //
+        "{{Sqrt(s),t/Sqrt(s)},\n" //
+            + " {0,Sqrt(w+(-t*Conjugate(t/Sqrt(s)))/Sqrt(s))}}");
+    // CholeskyDecomposition: The matrix {{s,t},{Conjugate(t),w}} is not hermitian or real and
+    // symmetric.
+    check("CholeskyDecomposition({{s, t}, {Conjugate(t), w}})", //
+        "CholeskyDecomposition({{s,t},{Conjugate(t),w}})");
+    // CholeskyDecomposition: The matrix {{5,I},{I,5}} is not hermitian or real and symmetric.
+    check("CholeskyDecomposition({{5, I}, {I, 5}})", //
+        "CholeskyDecomposition({{5,I},{I,5}})");
+    check("CholeskyDecomposition({{5, I}, {-I, 5}})[[1, 1]]", //
+        "Sqrt(5)");
+    check("CholeskyDecomposition({{9, 3}, {3, 5}})", //
+        "{{3,1},\n" //
+            + " {0,2}}");
+  }
+
+  @Test
+  public void testProjectionOntoTheZeroVector() {
+    check("Projection({5, 2, 1}, {0, 0, 0})", //
+        "{0,0,0}");
+    check("Projection({5., 2.}, {0., 0.})", //
+        "{0.0,0.0}");
+  }
+
+  @Test
+  public void testTriangularMatrixQNonIntegerDiagonal() {
+    // LowerTriangularMatrixQ: 2/5 is not a machine-sized integer.
+    check("Head(LowerTriangularMatrixQ({{3, 0}, {1, 4}}, 2/5))", //
+        "LowerTriangularMatrixQ");
+    // UpperTriangularMatrixQ: 1.5 is not a machine-sized integer.
+    check("Head(UpperTriangularMatrixQ({{3, 0}, {1, 4}}, 1.5))", //
+        "UpperTriangularMatrixQ");
+    check("LowerTriangularMatrixQ({{3, 2}, {1, 4}}, 1)", //
+        "True");
+  }
+
+  @Test
+  public void testNOfSubnormalFraction() {
+    // gradual underflow to the nearest subnormal machine number, ties to even
+    check("N(2^-1072) == 4*2^-1074 // N", //
+        "True");
+    check("N(7/2^1077) == N(2^-1074)", //
+        "True");
+    check("N(-3/2^1075) == -2*N(2^-1074)", //
+        "True");
+    check("N(1/2^1075)", //
+        "0.0");
+  }
+
+  @Test
+  public void testMatrixExpOfMachineSparseArray() {
+    check("Head(MatrixExp(SparseArray({{1, 1} -> 2., {2, 2} -> -1.})))", //
+        "SparseArray");
+    check("Head(MatrixExp(SparseArray({{1, 1} -> 2, {2, 2} -> -1})))", //
+        "List");
+  }
+
+  @Test
   public void testSubsetPosition() {
     check("SubsetPosition({u, 7, v, 8}, {_Integer, _Symbol})", //
         "{{2,1},{4,1},{2,3},{4,3}}");
@@ -23523,7 +23620,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("h := Function({x}, Hold(1+x), HoldAll)", //
         "");
     check("h(1 + 1)", //
-        "Hold(1+1+1)");
+        "Hold(1+(1+1))");
     check("Function({u}, gg(u), Listable)[{a, b, c}]", //
         "{gg(a),gg(b),gg(c)}");
     check("Function({u}, gg(u))[{a, b, c}]", //
@@ -24579,6 +24676,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3*2");
     check("HoldForm(6/8)==6/8", //
         "6/8==3/4");
+  }
+
+  @Test
+  public void testHoldFormNestedSumsAndProducts() {
+    // a nested sum or product keeps its parentheses, so that it reads back as the same expression
+    check("HoldForm(u*v*(w*z))", //
+        "u*v*(w*z)");
+    check("HoldForm(u+(v+w)+z)", //
+        "u+(v+w)+z");
+    check("HoldForm(Times(-1, Times(u, v)))", //
+        "-(u*v)");
+    check("HoldForm(Times(Times(u, Power(v, -1)), Power(w, -1)))", //
+        "u/v/w");
+    check("ToString(HoldForm(Times(p, Times(q, r))), InputForm)", //
+        "HoldForm(p*(q*r))");
+    check("Hold(Plus(p, Plus(q, r)))", //
+        "Hold(p+(q+r))");
+    // an evaluated expression is flat
+    check("u*v*(w*z)", //
+        "u*v*w*z");
   }
 
   @Test
@@ -27749,6 +27866,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "h(a,b)");
     check("MapAt(f, h(a, b), {{}})", //
         "f(h(a,b))");
+  }
+
+  @Test
+  public void testReplaceWholeExpressionOnly() {
+    // Replace and ReplaceAt match whole expressions; only ReplaceAll rewrites a run of a Flat head
+    check("Replace(u + v + w, u + v -> t)", //
+        "u+v+w");
+    check("Replace(u*v*w, u*w -> t)", //
+        "u*v*w");
+    check("Replace(u + v + w, w + u + v -> t)", //
+        "t");
+    // a dispatch table matches whole expressions too
+    check("Replace(u + v + w, Dispatch({u + v -> t}))", //
+        "u+v+w");
+    check("Replace(u + v, Dispatch({u + v -> t, w -> s}))", //
+        "t");
+    check("Replace({u + v + w}, u + v -> t, {1})", //
+        "{u+v+w}");
+    check("Replace(g(u + v), u + v -> t, {1})", //
+        "g(t)");
+    check("Replace(u + v + w, z_ + v -> {z})", //
+        "{u+w}");
+    check("ReplaceAt(g(u + v + w), u + v -> t, 1)", //
+        "g(u+v+w)");
+    check("u + v + w /. u + v -> t", //
+        "t+w");
   }
 
   @Test
@@ -36127,6 +36270,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRationalizeArbitraryPrecisionWithin() {
+    // the simplest rational within dx of every digit, not of a machine number
+    check("Rationalize(N(E, 30), 10^-18)", //
+        "848456353/312129649");
+    check("Abs(Rationalize(N(Sqrt(2), 40), 10^-25) - Sqrt(2)) < 10^-25", //
+        "True");
+    check("Denominator(Rationalize(N(Sqrt(2), 40), 10^-25)) < 10^13", //
+        "True");
+    check("Rationalize(N(-Sqrt(3), 25), 1/1000)", //
+        "-71/41");
+    check("Rationalize({N(Sqrt(3), 25), y}, 1/1000)", //
+        "{71/41,y}");
+    // a machine number next to an arbitrary precision number is rationalized too
+    check("Rationalize({N(Sqrt(3), 25), 0.375}, 1/1000)", //
+        "{71/41,3/8}");
+    // a dx below the machine range rationalizes a machine number like a dx of 0
+    check("Rationalize(0.375, 10^-400)", //
+        "3/8");
+    check("Rationalize({N(Sqrt(3), 25), 0.375}, 10^-400)[[2]]", //
+        "3/8");
+    check("Head(Rationalize({N(Sqrt(3), 25), 0.375}, 10^-400)[[1]])", //
+        "Rational");
+  }
+
+  @Test
   public void testRationalize() {
     // check("Rationalize(0.1234567*^2)", //
     // "1234567/100000");
@@ -43440,7 +43608,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     EvalEngine.resetModuleCounter4JUnit();
     check("With({x = 2 + y}, Hold(With({y = 4}, x + y)))", //
-        "Hold(With({y$1=4},2+y+y$1))");
+        "Hold(With({y$1=4},(2+y)+y$1))");
     EvalEngine.resetModuleCounter4JUnit();
     check("xm=10;With({xm=xm}, Print(xm));xm", //
         "10");

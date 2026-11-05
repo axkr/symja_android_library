@@ -8580,9 +8580,32 @@ public class F extends S {
       // precision
       return ApfloatNum.promoted(value.toBigNumerator(), value.toBigDenominator());
     }
-    // The underflow of a fraction is 0.0 and reported
+    if (org.matheclipse.core.eval.MachineUnderflow.isBelowNormal(d)) {
+      // gradual underflow: the nearest subnormal number, or 0.0
+      d = subnormalDouble(value.toBigNumerator(), value.toBigDenominator());
+    }
+    // the underflow of a fraction is reported
     engine.machineUnderflow().check(d, value);
     return Num.valueOf(d);
+  }
+
+  /**
+   * The machine number nearest to <code>numerator/denominator</code> (ties to even) for a value
+   * below the smallest normalized machine number: a multiple of <code>2^-1074</code>.
+   */
+  private static double subnormalDouble(java.math.BigInteger numerator,
+      java.math.BigInteger denominator) {
+    final int sign = numerator.signum() * denominator.signum();
+    final java.math.BigInteger n = numerator.abs().shiftLeft(1074);
+    final java.math.BigInteger d = denominator.abs();
+    final java.math.BigInteger[] qr = n.divideAndRemainder(d);
+    java.math.BigInteger m = qr[0];
+    final int cmp = qr[1].shiftLeft(1).compareTo(d);
+    if (cmp > 0 || (cmp == 0 && m.testBit(0))) {
+      m = m.add(java.math.BigInteger.ONE);
+    }
+    // m < 2^53, so its double is exact, and so is the product with 2^-1074
+    return sign * m.doubleValue() * Double.MIN_VALUE;
   }
 
   public static INum num(final IInteger value) {

@@ -36,6 +36,7 @@ import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.output.CodeFormPrinter;
 import org.matheclipse.core.form.output.NumberFormPrinter;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
@@ -5267,11 +5268,22 @@ public final class StringFunctions {
         // options like PageWidth -> Infinity: the string is written on one line anyway
         int end = ast.size();
         IExpr encoding = F.NIL;
+        int pageWidth = Integer.MAX_VALUE;
         while (end > 2 && ast.get(end - 1).isRuleAST()) {
           end--;
           if (ast.get(end).first() == S.CharacterEncoding) {
             encoding = ast.get(end).second();
+          } else if (ast.get(end).first() == S.PageWidth) {
+            int width = ast.get(end).second().toIntDefault();
+            if (width > 0) {
+              pageWidth = width;
+            }
           }
+        }
+        if (end == 2 && ast.arg1().isAST(S.FortranForm, 2) && pageWidth < Integer.MAX_VALUE) {
+          // the Fortran text is broken into lines of the page width
+          return F.stringx(CodeFormPrinter.breakLines(
+              CodeFormPrinter.fortranForm(ast.arg1().first()), pageWidth));
         }
         IExpr result = evaluate(ast.subList(1, end), engine);
         return encoding.isPresent() && result.isString()
@@ -5300,6 +5312,12 @@ public final class StringFunctions {
         if (traditional.isPresent()) {
           return traditional;
         }
+      }
+      if (arg1.isAST(S.CForm, 2)) {
+        return F.stringx(CodeFormPrinter.cForm(arg1.first()));
+      }
+      if (arg1.isAST(S.FortranForm, 2)) {
+        return F.stringx(CodeFormPrinter.fortranForm(arg1.first()));
       }
       // ToString(expr) is ToString(expr, OutputForm) - the display wrappers Style, Row and
       // Graphics show what they format rather than themselves
@@ -5392,6 +5410,12 @@ public final class StringFunctions {
         if (BoxNotation.isBox(boxes) || boxes.isString()) {
           return F.stringx(BoxNotation.toBoxString(boxes));
         }
+      }
+      if (form == S.CForm) {
+        return F.stringx(CodeFormPrinter.cForm(expr));
+      }
+      if (form == S.FortranForm) {
+        return F.stringx(CodeFormPrinter.fortranForm(expr));
       }
       if (form == S.TraditionalForm && !expr.isString()) {
         IExpr traditional = traditionalForm(expr, engine);

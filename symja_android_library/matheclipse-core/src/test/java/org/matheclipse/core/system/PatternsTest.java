@@ -558,7 +558,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     check("Replace(Hold(7+7), x_ -> x+x, {-1})", //
         "Hold(2*7+2*7)");
     check("Replace(Hold(7+7), x_ :> x+x, {-1})", //
-        "Hold(7+7+7+7)");
+        "Hold((7+7)+(7+7))");
     check("Replace(x,x -> 1)", //
         "1");
     check("Replace({x,y},x -> 1)", //

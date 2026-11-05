@@ -1284,22 +1284,82 @@ public class GraphFunctions {
 
   /**
    * <code>AnnotationValue({graph, item}, name)</code> - the annotation <code>name</code> of the
-   * vertex or edge <code>item</code>; <code>AnnotationValue(graph, EdgeWeight)</code> - the weights
-   * of a weighted graph in the order of <code>EdgeList(graph)</code>. Other annotations of the whole
-   * graph are the graph option values.
+   * vertex or edge <code>item</code>, <code>$Failed</code> if there is none;
+   * <code>AnnotationValue(graph, EdgeWeight)</code> - the weights in the order of
+   * <code>EdgeList(graph)</code>, <code>Automatic</code> for an unweighted graph; likewise
+   * <code>VertexWeight</code>.
    */
-  private static class AnnotationValue extends PropertyValue {
+  private static class AnnotationValue extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.arg1() instanceof GraphExpr && ast.arg2() == S.EdgeWeight) {
-        GraphExpr<?> gex = (GraphExpr<?>) ast.arg1();
-        if (gex.isWeightedGraph()) {
+      IExpr arg1 = ast.arg1();
+      IExpr name = ast.arg2();
+      if (arg1 instanceof GraphExpr) {
+        GraphExpr<?> gex = (GraphExpr<?>) arg1;
+        if (name == S.EdgeWeight && gex.isWeightedGraph()) {
           return GraphExpr.edgesToIExpr(gex.toData())[1];
         }
+        if (name == S.EdgeWeight || name == S.VertexWeight) {
+          IAST rule = gex.options().getRule(name);
+          return rule.isPresent() ? rule.second() : S.Automatic;
+        }
+        return S.$Failed;
       }
-      return super.evaluate(ast, engine);
+      if (!arg1.isList2() || !(arg1.first() instanceof GraphExpr) || arg1.second().isList()) {
+        return F.NIL;
+      }
+      return itemProperty((GraphExpr<?>) arg1.first(), arg1.second(), name).orElse(S.$Failed);
     }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * The value of the property <code>name</code> of the vertex or edge <code>item</code> of the
+   * graph. An undirected edge matches either way round; a per-vertex list without rules gives the
+   * vertices their values in order.
+   *
+   * @return the value or {@link F#NIL} if <code>item</code> isn't in the graph or has no such value
+   */
+  private static IExpr itemProperty(GraphExpr<?> gex, IExpr item, IExpr name) {
+    Graph<IExpr, ?> graph = gex.toData();
+    IAST rule = gex.options().getRule(name);
+    IExpr option = rule.isPresent() ? rule.second() : F.NIL;
+    // a <-> b and a -> b as typed are TwoWayRule and Rule
+    boolean directed = item.isAST(S.DirectedEdge, 3) || item.isRuleAST();
+    if (directed || item.isAST(S.UndirectedEdge, 3) || item.isAST(S.TwoWayRule, 3)) {
+      IExpr source = item.first();
+      IExpr target = item.second();
+      if (directed != graph.getType().isDirected() || !graph.containsEdge(source, target)) {
+        return F.NIL;
+      }
+      if (name == S.EdgeWeight && gex.isWeightedGraph()) {
+        Object edge = graph.getEdge(source, target);
+        if (edge instanceof ExprWeightedEdge) {
+          return ((ExprWeightedEdge) edge).weightExpr();
+        }
+      }
+      return option.isPresent() ? GraphExpr.edgeProperty(option, source, target, directed)
+          : F.NIL;
+    }
+    if (!graph.containsVertex(item) || option.isNIL()) {
+      return F.NIL;
+    }
+    if (option.isList() && !GraphExpr.isPropertyRuleList(option)
+        && option.argSize() == graph.vertexSet().size()) {
+      int position = 1;
+      for (IExpr vertex : graph.vertexSet()) {
+        if (vertex.equals(item)) {
+          return option.getAt(position);
+        }
+        position++;
+      }
+    }
+    return GraphExpr.vertexProperty(option, item);
   }
 
   /**
@@ -1320,32 +1380,7 @@ public class GraphFunctions {
       if (!arg1.isList2() || !(arg1.first() instanceof GraphExpr)) {
         return F.NIL;
       }
-      GraphExpr<?> gex = (GraphExpr<?>) arg1.first();
-      IExpr item = arg1.second();
-      Graph<IExpr, ?> graph = gex.toData();
-      IAST rule = gex.options().getRule(name);
-      IExpr option = rule.isPresent() ? rule.second() : F.NIL;
-      // a <-> b and a -> b as typed are TwoWayRule and Rule
-      boolean directed = item.isAST(S.DirectedEdge, 3) || item.isRuleAST();
-      if (directed || item.isAST(S.UndirectedEdge, 3) || item.isAST(S.TwoWayRule, 3)) {
-        IExpr source = item.first();
-        IExpr target = item.second();
-        if (directed != graph.getType().isDirected() || !graph.containsEdge(source, target)) {
-          return F.NIL;
-        }
-        if (name == S.EdgeWeight && gex.isWeightedGraph()) {
-          Object edge = graph.getEdge(source, target);
-          if (edge instanceof ExprWeightedEdge) {
-            return ((ExprWeightedEdge) edge).weightExpr();
-          }
-        }
-        return option.isPresent() ? GraphExpr.edgeProperty(option, source, target, directed)
-            : F.NIL;
-      }
-      if (graph.containsVertex(item) && option.isPresent()) {
-        return GraphExpr.vertexProperty(option, item);
-      }
-      return F.NIL;
+      return itemProperty((GraphExpr<?>) arg1.first(), arg1.second(), name);
     }
 
     @Override
@@ -1436,6 +1471,13 @@ public class GraphFunctions {
             edgeWeight = option;
           }
           EdgeListType t = ast.arg1().isListOfEdges();
+          if (GraphExpr.isPropertyRuleList(edgeWeight)) {
+            // weights given per edge become weights in edge order; without one for every edge the
+            // graph stays unweighted and keeps the rules as its option
+            IExpr edges = t != null ? ast.arg1() : ast.arg2();
+            edgeWeight = edges.isList() ? GraphExpr.edgeWeightsInOrder((IAST) edges, edgeWeight)
+                : F.NIL;
+          }
           // the options stay with the graph, for drawing it; a list of rules is options too, as in
           // Graph({1, 2}, {1 <-> 2}, {GraphLayout -> ..., GraphStyle -> ...})
           IASTAppendable graphOptions = F.ListAlloc();

@@ -366,31 +366,28 @@ public final class LinearAlgebra {
 
     public static FieldMatrix<IExpr> adjugateMatrix(FieldMatrix<IExpr> matrix,
         Predicate<IExpr> zeroChecker) {
+      final EvalEngine engine = EvalEngine.get();
       if (isSymbolicMatrix(matrix)) {
         // division-free cofactor based adjugate; also works for singular matrices
-        final EvalEngine engine = EvalEngine.get();
-        final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
-        if (expansion != null) {
-          final IExpr[][] cofactors = expansion.adjugate();
-          if (cofactors != null) {
-            final FieldMatrix<IExpr> result = matrix.copy();
-            final int n = matrix.getRowDimension();
-            for (int i = 0; i < n; i++) {
-              for (int j = 0; j < n; j++) {
-                result.setEntry(i, j, engine.evaluate(F.Expand(cofactors[i][j])));
-              }
-            }
-            return result;
-          }
+        final FieldMatrix<IExpr> result = cofactorAdjugate(matrix, engine);
+        if (result != null) {
+          return result;
         }
         // the expansion grew past its budget: fall back to the fraction-free elimination
         return FractionFreeElimination.adjugate(matrix, zeroChecker, engine);
       }
+      boolean cofactorsTried = false;
       if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
         FieldMatrix<IExpr> inverse = FractionFreeElimination.inverse(matrix);
         if (inverse != null) {
           return inverse.scalarMultiply(FractionFreeElimination.determinant(matrix));
         }
+        // the adjugate of a singular matrix is the transposed matrix of its cofactors
+        final FieldMatrix<IExpr> result = cofactorAdjugate(matrix, engine);
+        if (result != null) {
+          return result;
+        }
+        cofactorsTried = true;
       }
       // @since version 1.9
       // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
@@ -399,14 +396,74 @@ public final class LinearAlgebra {
           new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
       FieldDecompositionSolver<IExpr> solver = lu.getSolver();
       if (!solver.isNonSingular()) {
+        // the expansion which grew past its budget isn't repeated
+        final FieldMatrix<IExpr> result =
+            cofactorsTried ? null : cofactorAdjugate(matrix, engine);
+        if (result != null) {
+          return result;
+        }
         // Matrix `1` is singular.
         Errors.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)),
-            EvalEngine.get());
+            engine);
         return null;
       }
       FieldMatrix<IExpr> inverse = solver.getInverse();
       IExpr det = lu.getDeterminant();
       return inverse.scalarMultiply(det);
+    }
+
+    /**
+     * The division-free adjugate from the cofactor expansion, which also exists for a singular
+     * matrix.
+     *
+     * @return <code>null</code> if the expansion grows past its budget
+     */
+    private static FieldMatrix<IExpr> cofactorAdjugate(FieldMatrix<IExpr> matrix,
+        EvalEngine engine) {
+      final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
+      if (expansion == null) {
+        return null;
+      }
+      final IExpr[][] cofactors = expansion.adjugate();
+      if (cofactors == null) {
+        return null;
+      }
+      final FieldMatrix<IExpr> result = matrix.copy();
+      final int n = matrix.getRowDimension();
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          result.setEntry(i, j, engine.evaluate(F.Expand(cofactors[i][j])));
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The adjugate of a singular real matrix <code>U.S.Transpose(V)</code> from its singular value
+     * decomposition: <code>Det(U)*Det(V)*V.Adjugate(S).Transpose(U)</code>, where the diagonal of
+     * <code>Adjugate(S)</code> holds the products of all but one singular value.
+     */
+    private static RealMatrix singularAdjugate(RealMatrix matrix) {
+      final org.hipparchus.linear.SingularValueDecomposition svd =
+          new org.hipparchus.linear.SingularValueDecomposition(matrix);
+      final double[] sigma = svd.getSingularValues();
+      final int n = sigma.length;
+      final RealMatrix u = svd.getU();
+      final RealMatrix v = svd.getV();
+      final double sign = new org.hipparchus.linear.LUDecomposition(u).getDeterminant()
+          * new org.hipparchus.linear.LUDecomposition(v).getDeterminant();
+      final double[] adjSigma = new double[n];
+      for (int i = 0; i < n; i++) {
+        double product = sign;
+        for (int j = 0; j < n; j++) {
+          if (j != i) {
+            product *= sigma[j];
+          }
+        }
+        adjSigma[i] = product;
+      }
+      return v.multiply(org.hipparchus.linear.MatrixUtils.createRealDiagonalMatrix(adjSigma))
+          .multiply(u.transpose());
     }
 
     @Override
@@ -425,10 +482,7 @@ public final class LinearAlgebra {
           new org.hipparchus.linear.LUDecomposition(matrix);
       DecompositionSolver solver = lu.getSolver();
       if (!solver.isNonSingular()) {
-        // Matrix `1` is singular.
-        Errors.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)),
-            EvalEngine.get());
-        return null;
+        return singularAdjugate(matrix);
       }
       RealMatrix inverse = solver.getInverse();
       double det = lu.getDeterminant();
@@ -777,6 +831,19 @@ public final class LinearAlgebra {
             if (dimension[0] == 2 || dimension[0] == 3) {
               arg1 = arg1.normal(false);
             }
+            if (arg1.isList() && arg1.isFree(IExpr::isInexactNumber, false)
+                && !isSymmetricOrHermitian((IAST) arg1.normal(false))) {
+              // The matrix `1` is not hermitian or real and symmetric.
+              return Errors.printMessage(ast.topHead(), "herm", F.List(arg1), engine);
+            }
+            // the closed forms of an exact matrix and a machine matrix are tested up front; a
+            // larger exact matrix fails in the numeric decomposition itself
+            if (arg1.isList() && arg1.isNumericFunction(true)
+                && (dimension[0] <= 3 || !arg1.isFree(IExpr::isInexactNumber, false))
+                && !S.PositiveDefiniteMatrixQ.ofQ(engine, arg1)) {
+              // The matrix `1` is not positive definite.
+              return Errors.printMessage(ast.topHead(), "npdef", F.List(arg1), engine);
+            }
             if (arg1.isList()) {
               IAST matrix = (IAST) arg1;
               if (dimension[0] == 2) {
@@ -784,7 +851,7 @@ public final class LinearAlgebra {
                 IExpr a12 = matrix.getPart(1, 2);
                 IExpr a21 = matrix.getPart(2, 1);
                 IExpr a22 = matrix.getPart(2, 2);
-                if (a12.equals(a21.conjugate())) {
+                if (a12.equals(a21.conjugate()) || a12.equals(a21)) {
                   // {{Sqrt(a11), a12/Sqrt(a11)}, {0, Sqrt(a22 -
                   // (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))}}
                   IAST choleskyDecomposition = F.List(//
@@ -807,9 +874,10 @@ public final class LinearAlgebra {
                 IExpr a31 = matrix.getPart(3, 1);
                 IExpr a32 = matrix.getPart(3, 2);
                 IExpr a33 = matrix.getPart(3, 3);
-                if (a12.equals(a21.conjugate())//
+                if ((a12.equals(a21.conjugate())//
                     && a13.equals(a31.conjugate())//
-                    && a23.equals(a32.conjugate())) {
+                    && a23.equals(a32.conjugate()))
+                    || (a12.equals(a21) && a13.equals(a31) && a23.equals(a32))) {
                   IAST choleskyDecomposition =
                       // [$ {{Sqrt(a11), a12/Sqrt(a11), a13/Sqrt(a11)},
                       // {0, Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11)),
@@ -892,6 +960,42 @@ public final class LinearAlgebra {
         return Errors.printMessage(ast.topHead(), e, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * A matrix whose entries are symmetric as expressions and have no non-real numeric entry, or
+     * Hermitian with a diagonal that equals its conjugate. <code>{{p,q},{Conjugate(q),r}}</code>
+     * is neither for a symbolic <code>p</code>, nor is <code>{{2,I},{I,2}}</code>.
+     */
+    private static boolean isSymmetricOrHermitian(IAST matrix) {
+      final int n = matrix.argSize();
+      boolean symmetric = true;
+      boolean hermitian = true;
+      for (int i = 1; i <= n; i++) {
+        IExpr diagonal = matrix.getPart(i, i);
+        if (!diagonal.equals(diagonal.conjugate())) {
+          hermitian = false;
+        }
+        if (isNonRealNumeric(diagonal)) {
+          symmetric = false;
+        }
+        for (int j = i + 1; j <= n; j++) {
+          IExpr upper = matrix.getPart(i, j);
+          IExpr lower = matrix.getPart(j, i);
+          if (!upper.equals(lower) || isNonRealNumeric(upper)) {
+            symmetric = false;
+          }
+          if (!upper.equals(lower.conjugate())) {
+            hermitian = false;
+          }
+        }
+      }
+      return symmetric || hermitian;
+    }
+
+    /** A numeric entry which isn't real; a symbolic entry may stand for a real number. */
+    private static boolean isNonRealNumeric(IExpr entry) {
+      return entry.isNumericFunction(true) && !entry.isRealResult();
     }
 
     @Override
@@ -6962,6 +7066,10 @@ public final class LinearAlgebra {
       IExpr arg2 = ast.arg2();
       int dim1 = arg1.isVector();
       int dim2 = arg2.isVector();
+      if (dim1 > 0 && dim1 == dim2 && ((IAST) arg2.normal(false)).forAll(IExpr::isZero)) {
+        // the projection onto the zero vector is the zero vector
+        return arg2.normal(false);
+      }
 
       if (ast.size() == 4) {
         IExpr head = ast.arg3();
@@ -8060,6 +8168,14 @@ public final class LinearAlgebra {
       int[] dim = ast.arg1().isMatrix();
       if (dim != null && dim[0] > 0 && dim[1] > 0) {
         IExpr m = ast.arg1();
+        IAST normal = (IAST) m.normal(false);
+        if (normal.forAll(row -> ((IAST) row).forAll(IExpr::isZero))) {
+          // all the singular values of a zero matrix are kept
+          IExpr zero = normal.exists(row -> ((IAST) row).exists(IExpr::isInexactNumber)) ? F.CD0
+              : F.C0;
+          IAST zeros = F.constantArray(zero, Math.min(dim[0], dim[1]));
+          return ast.isAST2() ? takeValues(ast, zeros, zeros.argSize(), zero, engine) : zeros;
+        }
         IAST machineValues =
             machineSingularValueList((IAST) m.normal(false), options[0] != S.Automatic);
         if (machineValues.isPresent()) {
@@ -8092,7 +8208,9 @@ public final class LinearAlgebra {
               ((IAST) singularValueList).filter(x -> keepSingularValue(x, engine))[0], tolerance,
               engine);
           int n = singularValueList.argSize();
-          IExpr sorted = S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
+          // all values of a zero matrix are dropped
+          IExpr sorted = n == 0 ? F.CEmptyList
+              : S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
           if (ast.isAST2()) {
             if (!sorted.isList()) {
               return F.NIL;
@@ -8130,6 +8248,14 @@ public final class LinearAlgebra {
           return F.list(all.get(k));
         }
         return F.NIL;
+      }
+      if (spec.isAST(S.UpTo, 2)) {
+        // at most k of all the values, the zero ones included
+        int k = spec.first().toIntDefault();
+        if (k < 0) {
+          return F.NIL;
+        }
+        return all.copyUntil(Math.min(k, size) + 1);
       }
       int n = spec.toIntDefault();
       if (n == 0 || F.isNotPresent(n)) {

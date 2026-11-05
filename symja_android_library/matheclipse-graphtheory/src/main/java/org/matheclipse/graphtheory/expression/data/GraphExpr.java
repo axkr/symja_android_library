@@ -710,6 +710,31 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
   }
 
   /**
+   * The weights of <code>edges</code> in their order, from a list of rules like
+   * <code>{b <-> c -> 3, a <-> b -> 1}</code>; an edge without a rule takes the value of the list
+   * that is not a rule.
+   *
+   * @return the list of weights or {@link F#NIL} if an edge has no weight
+   */
+  public static IAST edgeWeightsInOrder(IAST edges, IExpr weights) {
+    IASTAppendable result = F.ListAlloc(edges.argSize());
+    IExpr fallback = propertyDefault(weights);
+    for (IExpr item : edges) {
+      IExpr edge = unwrapEdge(item);
+      if (!edge.isAST() || edge.argSize() != 2) {
+        return F.NIL;
+      }
+      boolean directed = edge.isAST(S.DirectedEdge, 3) || edge.isRuleAST();
+      IExpr weight = edgeProperty(weights, edge.first(), edge.second(), directed).orElse(fallback);
+      if (weight.isNIL()) {
+        return F.NIL;
+      }
+      result.append(weight);
+    }
+    return result;
+  }
+
+  /**
    * The value of a per-item option list that is not a rule: the value for every item without one.
    *
    * @return the value or {@link F#NIL} if the list has none

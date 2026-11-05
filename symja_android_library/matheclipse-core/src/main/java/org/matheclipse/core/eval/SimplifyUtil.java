@@ -37,6 +37,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
@@ -234,6 +235,10 @@ public class SimplifyUtil extends VisitorExpr {
       if (candidateID == incumbentID) {
         return false;
       }
+      if (candidateID == ID.Plus && isFactoredPolynomial(incumbent)) {
+        // a product of sums keeps a tie against its expansion: (-7+k)*(-5+k), not 35-12*k+k^2
+        return false;
+      }
       switch (candidateID) {
         case ID.Plus: // precedence 310
           return incumbentID == ID.Times // precedence 400
@@ -243,6 +248,12 @@ public class SimplifyUtil extends VisitorExpr {
         default:
           return false;
       }
+    }
+
+    /** A product of at least two sums which is a polynomial in one variable. */
+    private static boolean isFactoredPolynomial(IExpr expr) {
+      return expr.isTimes() && ((IAST) expr).count(IExpr::isPlus) >= 2
+          && isUnivariatePolynomial(expr);
     }
 
     public boolean checkLess(IExpr expr) {
@@ -2079,6 +2090,9 @@ public class SimplifyUtil extends VisitorExpr {
     /** The expression the steps rewrite. Only a {@code rebase} step reassigns it. */
     IExpr expr;
 
+    /** The expression before any {@code rebase}. */
+    final IExpr input;
+
     /** Complexity of the {@code ExpandAll} result; gates the factorization step. */
     long expandAllCounter;
 
@@ -2088,6 +2102,7 @@ public class SimplifyUtil extends VisitorExpr {
     RewriteContext(SimplifyUtil util, IExpr expr) {
       this.util = util;
       this.expr = expr;
+      this.input = expr;
       this.result = new SimplifiedResult(expr, util.fComplexityFunction);
       this.together = expr;
     }
@@ -2225,9 +2240,28 @@ public class SimplifyUtil extends VisitorExpr {
         && isIntegerPowerPolynomial(input)) {
       result.offerOnTie(factored,
           () -> !numericContent((IAST) input).equals(numericContent((IAST) factored)));
+    } else if (input.isTimes() && factored.isTimes() && result.result.isPlus()
+        && isUnivariatePolynomial(input)) {
+      // a product stays a product on a tie with its expansion: (5-k)*(7-k) is (-7+k)*(-5+k)
+      result.offerOnTie(factored, () -> true);
     } else {
       result.checkLessPlusTimesPower(factored);
     }
+  }
+
+  /**
+   * A polynomial in one variable whose powers all have positive integer exponents. Only its
+   * factored form keeps a tie against the expansion: <code>(c-d)*(c+d)</code> doesn't displace
+   * <code>c^2-d^2</code>.
+   */
+  private static boolean isUnivariatePolynomial(IExpr expr) {
+    return isIntegerPowerPolynomial(expr) && VariablesSet.getVariables(expr).argSize() == 1;
+  }
+
+  /** A product with a factor in its denominator: <code>(2+u)/(2-u)</code>. */
+  private static boolean isQuotient(IExpr expr) {
+    return expr.isTimes() && ((IAST) expr).exists(
+        x -> x.isPower() && x.exponent().isReal() && ((IReal) x.exponent()).isNegative());
   }
 
   /** A polynomial structure whose powers all have positive integer exponents. */
@@ -2598,13 +2632,25 @@ public class SimplifyUtil extends VisitorExpr {
         }
         if (ctx.expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
           offerFactored(ctx.expr, ctx.util.eval(F.FactorSquareFree(ctx.expr)), ctx.result);
+          if (ctx.input != ctx.expr && ctx.input.isTimes() && ctx.result.result.isPlus()
+              && isUnivariatePolynomial(ctx.input)) {
+            // the input product was rebased to its expansion, whose square free factorization may
+            // be trivial: the factored input competes with the expansion
+            offerFactored(ctx.input, ctx.util.eval(F.FactorSquareFree(ctx.input)), ctx.result);
+          }
         }
       }), //
       new Step("Apart", CatchPolicy.VALIDATE, ctx -> {
         if (!ctx.util.fNoApart //
             && ctx.result.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT
             && isApartCandidate(ctx.expr)) {
-          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Apart(ctx.expr)));
+          IExpr apart = ctx.util.eval(F.Apart(ctx.expr));
+          if (isQuotient(ctx.result.result)) {
+            // a quotient keeps its form on a tie: (2+u)/(2-u) stays
+            ctx.result.checkLess(apart);
+          } else {
+            ctx.result.checkLessPlusTimesPower(apart);
+          }
         }
       }), //
       new Step("PlusFactorTermsAndLog", CatchPolicy.NONE, ctx -> {

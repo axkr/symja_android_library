@@ -107,11 +107,35 @@ public class GraphLayoutTest extends AbstractTestCase {
         "11");
     check("AnnotationValue({Graph({u -> v}, EdgeWeight -> {6}), u -> v}, EdgeWeight)", //
         "6");
-    // no such edge, or no weights
+    // weights given per edge come back in edge order
+    check("g = Graph({p -> q, q -> r, r -> p}, EdgeWeight -> {(r -> p) -> 4, (p -> q) -> 9, "
+        + "(q -> r) -> 2}); {AnnotationValue(g, EdgeWeight), AnnotationValue({g, r -> p}, "
+        + "EdgeWeight), GraphDistance(g, p, r)}", //
+        "{{9,2,4},4,11.0}");
+    // no such edge, no weights, or an annotation the whole graph doesn't have
     check("AnnotationValue({Graph({u <-> v}, EdgeWeight -> {2}), u <-> w}, EdgeWeight)", //
-        "AnnotationValue({Graph({u,v},{u<->v},{EdgeWeight->{2}}),u<->w},EdgeWeight)");
+        "$Failed");
+    check("AnnotationValue({Graph({u <-> v}), u <-> v}, EdgeWeight)", //
+        "$Failed");
     check("AnnotationValue(Graph({u <-> v}), EdgeWeight)", //
-        "AnnotationValue(Graph({u,v},{u<->v}),EdgeWeight)");
+        "Automatic");
+    check("AnnotationValue(Graph({u <-> v}, VertexLabels -> {u -> \"top\"}), VertexLabels)", //
+        "$Failed");
+    check("AnnotationValue({Graph({u <-> v}, VertexLabels -> {u -> \"top\"}), u}, VertexLabels)", //
+        "top");
+  }
+
+  @Test
+  public void testAnnotationValueVertexWeight() {
+    check("g = Graph({k -> m, m -> n}, VertexWeight -> {1/2, 6, 0}); "
+        + "{AnnotationValue(g, VertexWeight), AnnotationValue({g, n}, VertexWeight)}", //
+        "{{1/2,6,0},0}");
+    check("AnnotationValue({Graph({k -> m}, VertexWeight -> {m -> 3}), m}, VertexWeight)", //
+        "3");
+    check("AnnotationValue({Graph({k -> m}), m}, VertexWeight)", //
+        "$Failed");
+    check("AnnotationValue(Graph({k -> m}), VertexWeight)", //
+        "Automatic");
   }
 
   @Test

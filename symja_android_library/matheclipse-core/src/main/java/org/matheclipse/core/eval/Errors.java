@@ -457,6 +457,7 @@ public class Errors {
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
       "nmet", "Unable to find the domain with the available methods.", //
+      "nmint", "`1` is not a machine-sized integer.", //
       "nmod", "`1` is not valid modulo `2`.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
       "nnintprm",

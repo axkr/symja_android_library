@@ -876,7 +876,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("h := Function[{x}, Hold[1 + x], HoldAll]", //
         "");
     check("h[1 + 1]", //
-        "Hold[1+1+1]");
+        "Hold[1+(1+1)]");
   }
 
   /**

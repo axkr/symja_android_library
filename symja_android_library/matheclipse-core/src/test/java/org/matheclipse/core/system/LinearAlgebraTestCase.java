@@ -44,6 +44,26 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAdjugateOfSingularMatrix() {
+    // the transposed matrix of the cofactors, also for a singular matrix
+    check("Adjugate({{3, 9}, {1, 3}})", //
+        "{{3,-9},\n" //
+            + " {-1,3}}");
+    check("Adjugate({{2, 4, 6}, {1, 2, 3}, {0, 5, 1}})", //
+        "{{-13,26,0},\n" //
+            + " {-1,2,0},\n" //
+            + " {5,-10,0}}");
+    check("Adjugate({{0, 0}, {0, 0}})", //
+        "{{0,0},\n" //
+            + " {0,0}}");
+    // a singular machine matrix from its singular value decomposition
+    check("Chop(Adjugate({{3.0, 9.0}, {1.0, 3.0}}) - {{3, -9}, {-1, 3}})", //
+        "{{0,0},{0,0}}");
+    check("Chop(Adjugate({{2.0, 4, 6}, {1, 2, 3}, {0, 5, 1}}) - {{-13,26,0},{-1,2,0},{5,-10,0}})", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
+  }
+
+  @Test
   public void testModulusOption() {
     // Inverse
     check("Inverse({{1,2},{3,4}}, Modulus->5)", //
