@@ -133,6 +133,7 @@ public class GraphFunctions {
       S.PathGraphQ.setEvaluator(new PathGraphQ());
       S.PlanarGraphQ.setEvaluator(new PlanarGraphQ());
       S.PropertyValue.setEvaluator(new PropertyValue());
+    S.AnnotationValue.setEvaluator(new AnnotationValue());
       S.SetProperty.setEvaluator(new SetProperty());
       S.VertexEccentricity.setEvaluator(new VertexEccentricity());
       S.VertexCount.setEvaluator(new VertexCount());
@@ -1278,6 +1279,26 @@ public class GraphFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>AnnotationValue({graph, item}, name)</code> - the annotation <code>name</code> of the
+   * vertex or edge <code>item</code>; <code>AnnotationValue(graph, EdgeWeight)</code> - the weights
+   * of a weighted graph in the order of <code>EdgeList(graph)</code>. Other annotations of the whole
+   * graph are the graph option values.
+   */
+  private static class AnnotationValue extends PropertyValue {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.arg1() instanceof GraphExpr && ast.arg2() == S.EdgeWeight) {
+        GraphExpr<?> gex = (GraphExpr<?>) ast.arg1();
+        if (gex.isWeightedGraph()) {
+          return GraphExpr.edgesToIExpr(gex.toData())[1];
+        }
+      }
+      return super.evaluate(ast, engine);
     }
   }
 

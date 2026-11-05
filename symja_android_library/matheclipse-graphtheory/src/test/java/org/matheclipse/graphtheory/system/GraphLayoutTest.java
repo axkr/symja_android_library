@@ -93,6 +93,28 @@ public class GraphLayoutTest extends AbstractTestCase {
   }
 
   @Test
+  public void testAnnotationValueEdgeWeight() {
+    // the weights follow the order of EdgeList
+    check(
+        "g = WeightedAdjacencyGraph({{Infinity, 8, 0}, {8, Infinity, 5}, {0, 5, Infinity}}); "
+            + "{EdgeList(g), AnnotationValue(g, EdgeWeight)}", //
+        "{{1<->2,1<->3,2<->3},{8,0,5}}");
+    check("AnnotationValue(Graph({u <-> v, v <-> w}, EdgeWeight -> {3/4, 11}), EdgeWeight)", //
+        "{3/4,11}");
+    // an undirected edge matches either way round
+    check("AnnotationValue({Graph({u <-> v, v <-> w}, EdgeWeight -> {3/4, 11}), w <-> v}, "
+        + "EdgeWeight)", //
+        "11");
+    check("AnnotationValue({Graph({u -> v}, EdgeWeight -> {6}), u -> v}, EdgeWeight)", //
+        "6");
+    // no such edge, or no weights
+    check("AnnotationValue({Graph({u <-> v}, EdgeWeight -> {2}), u <-> w}, EdgeWeight)", //
+        "AnnotationValue({Graph({u,v},{u<->v},{EdgeWeight->{2}}),u<->w},EdgeWeight)");
+    check("AnnotationValue(Graph({u <-> v}), EdgeWeight)", //
+        "AnnotationValue(Graph({u,v},{u<->v}),EdgeWeight)");
+  }
+
+  @Test
   public void testGraphEmbeddingNamedLayouts() {
     check("GraphEmbedding(GridGraph({3, 2}))", //
         "{{1.0,1.0},{1.0,2.0},{1.0,3.0},{2.0,1.0},{2.0,2.0},{2.0,3.0}}");
