@@ -45,6 +45,7 @@ import org.matheclipse.core.integrate.ExponentialPolyLogIntegration;
 import org.matheclipse.core.integrate.HolonomicIntegration;
 import org.matheclipse.core.integrate.IntegralTable;
 import org.matheclipse.core.integrate.IntegrateTimeBudget;
+import org.matheclipse.core.integrate.MeijerAntiderivative;
 import org.matheclipse.core.integrate.NestedRootEuler;
 import org.matheclipse.core.integrate.PiecewiseIntegration;
 import org.matheclipse.core.integrate.PrimitiveTowerIntegration;
@@ -1116,6 +1117,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               return result;
             }
           }
+          // a symbolic power of x times a Bessel function, through the integral of a Meijer G
+          result = quietStage(engine, fx, x, "integrating a Meijer G-function",
+              () -> IntegrateTimeBudget.runWithin(
+                  () -> MeijerAntiderivative.integrate(fx, x, engine),
+                  MachineProfile.millis(MEIJER_ANTIDERIVATIVE_TIMELIMIT_MILLIS)));
+          if (result.isPresent()) {
+            return result;
+          }
           // Weierstrass t=Tan(x/2) substitution for rational trigonometric integrands.
           // result = WeierstrassIntegration.integrate(fx, x, engine);
           // if (result.isPresent()) {
@@ -1352,6 +1361,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         return HolonomicIntegration.integrate(fx, x, engine);
       case "PolyLogLadder":
         return ExponentialPolyLogIntegration.integrate(fx, x, engine);
+      case "Roach":
+      case "MeijerG":
+        return MeijerAntiderivative.integrate(fx, x, engine);
       default:
         // Unknown or not-yet-ported method name: leave the integral unevaluated.
         return F.NIL;
@@ -1663,6 +1675,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   /** The time for the holonomic ansatz of a product of Bessel or Airy functions. */
   private static final long HOLONOMIC_TIMELIMIT_MILLIS = 8000L;
+
+  /** The time of the Meijer G antiderivative stage. */
+  private static final long MEIJER_ANTIDERIVATIVE_TIMELIMIT_MILLIS = 5000L;
 
   /** The time for the partial fractions in an exponential and their polylogarithm ladder. */
   private static final long POLYLOG_LADDER_TIMELIMIT_MILLIS = 8000L;

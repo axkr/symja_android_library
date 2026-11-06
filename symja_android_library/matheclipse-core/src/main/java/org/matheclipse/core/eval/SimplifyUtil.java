@@ -2832,6 +2832,17 @@ public class SimplifyUtil extends VisitorExpr {
         Errors.rethrowsInterruptException(rex);
       }
     }
+    if (ast.isPower() || ast.isTimes()) {
+      temp = negativeBaseExponentSplit(ast);
+      // ties are taken: (-1)^(1+x)*a and -(-1)^x*a cost the same, the number goes out front
+      if (temp.isPresent() && sResult.checkLessEqual(temp)) {
+        if (temp.isPower() || temp.isTimes()) {
+          ast = (IASTMutable) temp;
+        } else {
+          return temp;
+        }
+      }
+    }
     if (ast.isPower()) {
       temp = visitPower(ast, sResult);
       if (temp.isPresent()) {
@@ -2859,6 +2870,58 @@ public class SimplifyUtil extends VisitorExpr {
     }
     functionExpand(ast, sResult);
     return sResult.result;
+  }
+
+  /**
+   * A number out of the exponent of a negative rational base, <code>c^(k+r) = c^k*c^r</code> for
+   * an exact number <code>k</code>: it holds for the principal values because
+   * <code>Log(c)</code> is a single fixed number. <code>(-1)^(2+n)*a</code> is
+   * <code>(-1)^n*a</code>, <code>-(-4)^(-1+x)*3^x</code> is <code>(-4)^x*3^x/4</code>.
+   *
+   * @param ast a power or a product
+   * @return the evaluated product or {@link F#NIL} if no factor has such a power
+   */
+  private IExpr negativeBaseExponentSplit(IAST ast) {
+    IAST factors = ast.isTimes() ? ast : F.list(ast);
+    IASTAppendable result = F.TimesAlloc(factors.argSize() + 1);
+    boolean changed = false;
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.base().isRational() && factor.base().isNegative()
+          && factor.exponent().isPlus() && factor.exponent().first().isRational()) {
+        IExpr base = factor.base();
+        IAST exponent = (IAST) factor.exponent();
+        result.append(F.Power(base, exponent.first()));
+        result.append(F.Power(base, exponent.rest().oneIdentity0()));
+        changed = true;
+      } else {
+        result.append(factor);
+      }
+    }
+    if (!changed) {
+      return F.NIL;
+    }
+    IExpr split = eval(result);
+    // the number has to go into the rest: -8*(-2)^n*b is not taken for (-2)^(3+n)*b, nor
+    // I*(-1)^m*b for (-1)^(1/2+m)*b; a sign is
+    IExpr before = constantFactor(ast);
+    IExpr after = constantFactor(split);
+    return eval(F.Subtract(after, before)).isZero() || eval(F.Plus(after, before)).isZero()
+        ? split
+        : F.NIL;
+  }
+
+  /** The product of the factors of <code>expr</code> which contain no variable. */
+  private static IExpr constantFactor(IExpr expr) {
+    if (expr.isTimes()) {
+      IASTAppendable constant = F.TimesAlloc(2);
+      for (IExpr factor : (IAST) expr) {
+        if (factor.isNumericFunction(true)) {
+          constant.append(factor);
+        }
+      }
+      return constant.oneIdentity1();
+    }
+    return expr.isNumericFunction(true) ? expr : F.C1;
   }
 
   private IExpr visitPlus(IASTMutable plusAST, SimplifiedResult sResult) {

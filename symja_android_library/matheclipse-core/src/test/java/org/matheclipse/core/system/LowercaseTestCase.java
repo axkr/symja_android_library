@@ -22293,6 +22293,79 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSimplifyNegativeBaseExponentSplit() {
+    check("Simplify((-1)^(3 + y)*c)", //
+        "-(-1)^y*c");
+    check("Simplify((-1)^(4 + k)*d)", //
+        "(-1)^k*d");
+    // the number would stay in front: kept
+    check("Simplify((-5)^(2 + k)*d)", //
+        "(-5)^(2+k)*d");
+    check("Simplify((-7)^(1/3 + k)*d)", //
+        "(-7)^(1/3+k)*d");
+    // a phase is not a sign: kept
+    check("Simplify((-1)^(1/2 + k)*d)", //
+        "(-1)^(1/2+k)*d");
+    check("Simplify(-(-9)^(-1 + y)*2^y)", //
+        "(-2)^y/3^(2-2*y)");
+  }
+
+  @Test
+  public void testFunctionExpandMeijerGLogCase() {
+    check("FunctionExpand(MeijerG({{1/2, 1/2}, {}}, {{0, 0}, {}}, 1))", //
+        "Pi^2");
+    check("FunctionExpand(MeijerG({{1/3, 2/3}, {}}, {{0, 0}, {}}, y))", //
+        "4/3*Pi^2*Hypergeometric2F1(1/3,2/3,1,1-y)");
+    check("Chop(N(MeijerG({{1/5, 1/2}, {}}, {{0, 2}, {}}, 3/7), 20) - "
+        + "N(FunctionExpand(MeijerG({{1/5, 1/2}, {}}, {{0, 2}, {}}, 3/7)), 20), 10^-15)", //
+        "0");
+    check("Integrate(BesselK(0, 3*y)^2, {y, 0, Infinity})", //
+        "Pi^2/12");
+  }
+
+  @Test
+  public void testFunctionExpandHypergeometricPFQCancelsTogether() {
+    check("FunctionExpand(HypergeometricPFQ({(3 + 3*k)/3, 1}, {1 + k, 2}, y))", //
+        "(-1+E^y)/y");
+    check("D(HypergeometricPFQRegularized({p}, {q, r}, t), t)", //
+        "p*HypergeometricPFQRegularized({1+p},{1+q,1+r},t)");
+  }
+
+  @Test
+  public void testIntegrateMeijerAntiderivative() {
+    check("Integrate(y^c*BesselJ(m, 2*y), y)", //
+        "1/2*y^(1+c+m)*Gamma(1/2*(1+c+m))*HypergeometricPFQRegularized({1/2*(1+c+m)},{1/2*(\n3+c+m),1+m},-y^2)");
+    check("Integrate(y^c*BesselY(m, y), y)", //
+        "1/2*y^(1+c)*((-2^m*Csc(m*Pi)*Gamma(1/2*(1+c-m))*HypergeometricPFQRegularized({1/\n2*(1+c-m)},{1-m,1/2*(3+c-m)},-y^2/4))/y^m+(y^m*Cot(m*Pi)*Gamma(1/2*(1+c+m))*HypergeometricPFQRegularized({\n1/2*(1+c+m)},{1+m,1/2*(3+c+m)},-y^2/4))/2^m)");
+    check("Integrate(BesselJ(m, y)/y^m, y, Method -> \"Roach\")", //
+        "(Sqrt(Pi)*y*HypergeometricPFQRegularized({1/2},{3/2,1+m},-y^2/4))/2^(1+m)");
+    // no reduction of the G-function: it is the answer
+    check("Integrate(y*BesselK(1, 2*y), y)", //
+        "MeijerG({{1},{}},{{1/2,3/2},{0}},y,1/2)/4");
+  }
+
+  @Test
+  public void testIntegrateMeijerUnitInterval() {
+    check("Integrate(y^(m + 1)*(1 - y^2)^(q - 1)*BesselJ(m, s*y), {y, 0, 1})", //
+        "ConditionalExpression((BesselJ(m+q,s)*Gamma(q))/(2^(1-q)*s^q),Re(s)>=0&&(Im(s)>0||Re(s)>\n0)&&Re(q)>0&&Re(m)>-1)");
+    check("Integrate(y^c*BesselJ(1, y), {y, 0, 1})", //
+        "ConditionalExpression(1/4*Gamma(1/2*(2+c))*HypergeometricPFQRegularized({1/2*(2+c)},{\n2,1/2*(4+c)},-1/4),Re(c)>-2)");
+    check("Integrate(y^3*Sqrt(1 - y^2)*BesselJ(1, 3*y), {y, 0, 1})", //
+        "9/32*Pi*HypergeometricPFQRegularized({5/2},{4,2},-9/4)");
+    // without a parameter and without the factor (1-y^2)^q the antiderivative gives the value
+    check("Integrate(y*BesselK(0, y), {y, 0, 2})", //
+        "1-2*BesselK(1,2)");
+    check("Integrate(y^3*BesselJ(0, y), {y, 0, 1})", //
+        "2*BesselJ(0,1)-3*BesselJ(1,1)");
+    check("Integrate(y*BesselY(0, y), {y, 0, 1})", //
+        "2/Pi+BesselY(1,1)");
+    check("Integrate(y^m*(1 - y^2)*BesselJ(1, y), {y, 0, 1})", //
+        "ConditionalExpression(1/4*Gamma(1/2*(2+m))*HypergeometricPFQRegularized({1/2*(2+m)},{\n2,1/2*(6+m)},-1/4),Re(m)>-2)");
+    check("Integrate(y^4*(1 - y^2)^(1/4)*BesselK(1, y), {y, 0, 1})", //
+        "1/4*Gamma(5/4)*MeijerG({{-3/2},{}},{{-1/2,1/2},{-11/4}},1/4)");
+  }
+
+  @Test
   public void testDirichletBetaClosedForms() {
     check("{DirichletBeta(2), DirichletBeta(3), DirichletBeta(5), DirichletBeta(7)}", //
         "{Catalan,Pi^3/32,5/1536*Pi^5,61/184320*Pi^7}");
