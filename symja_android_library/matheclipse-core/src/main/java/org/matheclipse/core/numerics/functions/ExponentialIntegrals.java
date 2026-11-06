@@ -1,5 +1,9 @@
 package org.matheclipse.core.numerics.functions;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
 
 /**
@@ -674,5 +678,42 @@ public final class ExponentialIntegrals {
       }
     }
     return values;
+  }
+
+  /** The largest <code>|z|</code> for which {@link #sinIntegralSeries} is used. */
+  public static final double SIN_INTEGRAL_SERIES_MAX_ABS = 40.0;
+
+  /**
+   * <code>SinIntegral(z)</code> with <code>precision</code> digits by its power series
+   * <code>Sum((-1)^k*z^(2*k+1)/((2*k+1)*(2*k+1)!), k=0..)</code>. The terms grow to about
+   * <code>E^|z|</code> before they fall, so <code>|z|/Log(10)</code> guard digits keep the sum
+   * exact; the general algorithm takes seconds at a few hundred digits even for a small argument.
+   *
+   * @param z an argument with <code>|z| &lt;= </code>{@link #SIN_INTEGRAL_SERIES_MAX_ABS}
+   * @param precision the number of digits of the result
+   */
+  public static Apcomplex sinIntegralSeries(Apcomplex z, long precision) {
+    if (z.real().signum() == 0 && z.imag().signum() == 0) {
+      return z;
+    }
+    double absZ = ApcomplexMath.abs(z).doubleValue();
+    long working = precision + (long) Math.ceil(absZ / Math.log(10.0)) + 10L;
+    Apcomplex w = z.precision(working);
+    Apcomplex minusSquare = w.multiply(w).negate();
+    // p is z^(2k+1)/(2k+1)!
+    Apcomplex p = w;
+    Apcomplex sum = w;
+    Apfloat epsilon = ApfloatMath.pow(new Apfloat(10, working), -working);
+    for (long k = 0;; k++) {
+      p = p.multiply(minusSquare)
+          .divide(new Apfloat((2 * k + 2) * (2 * k + 3), working));
+      Apcomplex term = p.divide(new Apfloat(2 * k + 3, working));
+      sum = sum.add(term);
+      if (k > absZ && ApcomplexMath.abs(term).compareTo(epsilon.multiply(
+          ApcomplexMath.abs(sum).add(Apfloat.ONE))) < 0) {
+        break;
+      }
+    }
+    return sum.precision(precision);
   }
 }

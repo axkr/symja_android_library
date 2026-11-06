@@ -1013,6 +1013,7 @@ public class CompareUtil {
       engine.checkTimeLimit();
       final int visit = i >> signBits;
       IASTAppendable rules = F.ListAlloc(n);
+      IASTAppendable machineRules = F.ListAlloc(n);
       for (int j = 0; j < n; j++) {
         // a variable of its own value and sign: a cut may lie in one sign combination only, Sqrt(x/a)
         // sees none of them while x and a are equal. Each sign combination runs through the sizes
@@ -1021,13 +1022,16 @@ public class CompareUtil {
         final int size = (visit * (2 * j + 1) + j) % sizes;
         final double magnitude = 0.125 * Math.pow(512.0, (size + tlr.nextDouble()) / sizes);
         final boolean negative = j < signBits ? (i >> j & 1) != 0 : tlr.nextBoolean();
-        rules.append(F.Rule(variables.get(j + 1), exactNumber(negative ? -magnitude : magnitude)));
+        IRational value = exactNumber(negative ? -magnitude : magnitude);
+        rules.append(F.Rule(variables.get(j + 1), value));
+        machineRules.append(F.Rule(variables.get(j + 1), F.num(value.doubleValue())));
       }
-      IExpr sample = function.replaceAll(rules);
+      // the machine value is taken from machine numbers: the exact value of a sample first, which
+      // N would compute, has powers like (1+a*x)^(n^2/2) of rationals with thousands of digits
       // only a machine value which isn't 0 asks for more digits, and a few of them have the answer
-      if (isPossibleZeroApproximate(sample, engine) == IExpr.COMPARE_TERNARY.FALSE
-          && ladders++ < MAX_REAL_LADDERS
-          && isZeroAtSample(sample, engine) == IExpr.COMPARE_TERNARY.FALSE) {
+      if (isPossibleZeroApproximate(function.replaceAll(machineRules),
+          engine) == IExpr.COMPARE_TERNARY.FALSE && ladders++ < MAX_REAL_LADDERS
+          && isZeroAtSample(function.replaceAll(rules), engine) == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
     }

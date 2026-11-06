@@ -31,6 +31,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.exception.SymjaMathException;
+import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
@@ -2828,7 +2829,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr sinIntegral() {
-    valueOf(h().sinIntegral(fApfloat));
+    if (Math.abs(fApfloat.doubleValue()) <= ExponentialIntegrals.SIN_INTEGRAL_SERIES_MAX_ABS) {
+      return valueOf(
+          ExponentialIntegrals.sinIntegralSeries(fApfloat, h().precision()).real());
+    }
     return valueOf(h().sinIntegral(fApfloat));
   }
 

@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -2192,6 +2193,10 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr sinIntegral() {
+    if (ApcomplexMath.abs(fApcomplex).doubleValue()
+        <= ExponentialIntegrals.SIN_INTEGRAL_SERIES_MAX_ABS) {
+      return valueOf(ExponentialIntegrals.sinIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().sinIntegral(fApcomplex));
   }
 

@@ -22366,6 +22366,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRationalPowerLargeExponentNumerator() {
+    // the base isn't raised to the numerator 70001 before its small primes are found
+    check("(5003/4096)^(70001/1048576)", //
+        "5003^(70001/1048576)/2^(210003/262144)");
+  }
+
+  @Test
+  public void testPossibleZeroQLargeParametricPowers() {
+    // machine values at the real sample points: exact powers (1+b*y)^(m^2/3) have huge rationals
+    check("PossibleZeroQ((1 + b*y)^(m^2/3)*(1 - b*y)^(-m^2/2)*(1/(1 - m) + y/(m - 1)) - "
+        + "((1 + b*y)^(m^2/3)*(1 - y))/((1 - m)*(1 - b*y)^(m^2/2)))", //
+        "True");
+    check("PossibleZeroQ((1 + b*y)^(m^2/3)*(1 - b*y)^(-m^2/2)*(1/(1 - m) + y/(m - 1)) - "
+        + "((1 + b*y)^(m^2/3)*(1 + y))/((1 - m)*(1 - b*y)^(m^2/2)))", //
+        "False");
+  }
+
+  @Test
+  public void testSinIntegralArbitraryPrecisionSeries() {
+    check("N(SinIntegral(17/16), 30)", //
+        "0.998077170112851484391841261504");
+    check("N(SinIntegral(3 - 2*I), 25)", //
+        "2.645432555362369624818525+I*0.1931890762719198291678095");
+    check("N(SinIntegral(17/16), 240) - N(Sum((-1)^k*(17/16)^(2*k + 1)/((2*k + 1)*(2*k + 1)!), "
+        + "{k, 0, 200}), 240)", //
+        "0.0*10^-239");
+    // the antiderivative is found once the derivative divides check has fast zero tests
+    check("Integrate(Sin(3*y)*SinIntegral(3*y)/y, y)", //
+        "SinIntegral(3*y)^2/2");
+  }
+
+  @Test
   public void testDirichletBetaClosedForms() {
     check("{DirichletBeta(2), DirichletBeta(3), DirichletBeta(5), DirichletBeta(7)}", //
         "{Catalan,Pi^3/32,5/1536*Pi^5,61/184320*Pi^7}");
