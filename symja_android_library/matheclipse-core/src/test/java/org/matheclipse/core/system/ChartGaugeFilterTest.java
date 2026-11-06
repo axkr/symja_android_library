@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Charts, gauges, filters and plots of the Woxi round 2026-11-14 (area D). */
-public class Woxi1114DTest extends ExprEvaluatorTestCase {
+/** Charts, gauges, filters and plots. */
+public class ChartGaugeFilterTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBulletGauge() {
@@ -130,6 +130,6 @@ public class Woxi1114DTest extends ExprEvaluatorTestCase {
   @Test
   public void testColorDataName() {
     check("ColorData(\"SunsetColors\", \"Name\")", //
-        "SunsetColors");
+        "sunset colors");
   }
 }

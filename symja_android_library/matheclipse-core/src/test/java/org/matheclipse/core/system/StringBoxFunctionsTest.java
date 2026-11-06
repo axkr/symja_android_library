@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Strings, boxes and notebook functions of the Woxi round 2026-11-14 (area C). */
-public class Woxi1114CTest extends ExprEvaluatorTestCase {
+/** Strings, boxes and notebook functions. */
+public class StringBoxFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringEndsQ() {

@@ -2,8 +2,8 @@ package org.matheclipse.graphtheory.system;
 
 import org.junit.jupiter.api.Test;
 
-/** The graph functions of the option sweep 5 which take a list of edges. */
-public class Woxi1114FGraphTest extends AbstractTestCase {
+/** The graph functions which take a list of edges. */
+public class GlobalClusteringCoefficientTest extends AbstractTestCase {
 
   @Test
   public void testGlobalClusteringCoefficientOfEdgeList() {

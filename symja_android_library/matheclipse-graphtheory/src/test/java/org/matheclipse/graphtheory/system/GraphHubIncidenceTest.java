@@ -2,8 +2,8 @@ package org.matheclipse.graphtheory.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Graph functions of the Woxi round 2026-11-14 (area D). */
-public class Woxi1114DGraphTest extends AbstractTestCase {
+/** Graph hubs, incidence and adjacency lists, independent vertex sets and random graphs. */
+public class GraphHubIncidenceTest extends AbstractTestCase {
 
   @Test
   public void testGraphHub() {

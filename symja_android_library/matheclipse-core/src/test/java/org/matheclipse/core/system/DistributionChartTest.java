@@ -22,6 +22,14 @@ public class DistributionChartTest extends ExprEvaluatorTestCase {
     check("g = DistributionChart({{1,2,3,4,5,6,7,8}, {2,2,3}}, "
         + "ChartElementFunction -> \"Density\"); {Length(Cases(g, _Rectangle, Infinity)), "
         + "MinMax(Cases(g, Rectangle({_, a_}, {_, b_}) :> {a, b}, Infinity))}", //
-        "{240,{1.0,8.0}}");
+        "{2,{1.0,8.0}}");
+    // one rectangle under a complex of bands whose sides fade towards white and dark gray where
+    // the density is lowest, and meet in the fill where it peaks
+    check("g = DistributionChart({{2,4,4,5,5,5,6,12}}, ChartElementFunction -> \"Density\", "
+        + "ChartStyle -> RGBColor(0.2, 0.4, 0.8)); vc = Cases(g, (VertexColors -> c_) :> c, "
+        + "Infinity)[[1]]; {Length(Cases(g, _GraphicsComplex, Infinity)), "
+        + "Length(Cases(g, Polygon(f_) :> f, Infinity)[[1]]), Length(vc), "
+        + "MinMax(vc[[All, 1]]), Union(Cases(g, _Rectangle, Infinity))}", //
+        "{1,120,242,{0.1,1.0},{Rectangle({0.803951,2.0},{1.19605,12.0})}}");
   }
 }

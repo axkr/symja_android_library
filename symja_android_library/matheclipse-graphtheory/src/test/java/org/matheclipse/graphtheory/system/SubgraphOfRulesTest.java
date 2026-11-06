@@ -2,8 +2,8 @@ package org.matheclipse.graphtheory.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Graph cases of the Woxi round 2026-11-14 (area G). */
-public class Woxi1114GTest extends AbstractTestCase {
+/** Subgraph of a graph given by rules. */
+public class SubgraphOfRulesTest extends AbstractTestCase {
 
   @Test
   public void testSubgraphOfRules() {

@@ -58,13 +58,42 @@ public class ProbabilityPlotTest extends ExprEvaluatorTestCase {
     check("s = ProbabilityScalePlot({2, 4, 5, 7, 11}); "
         + "Round(Cases(s, Point(p_) :> p, Infinity)[[1]], 0.001)", //
         "{{2.0,-0.128},{4.0,0.518},{5.0,1.0},{7.0,1.482},{11.0,2.128}}");
-    check("Round(Options(s, FrameTicks)[[1, 2, 1, 1, {1, 5, 9}]], 0.001)", //
-        "{{-1.326,1.0},{1.0,50.0},{3.326,99.0}}");
+    check("Options(s, FrameTicks)", //
+        "{FrameTicks->{{Charting`ScaledTicks({NormalY,NormalYInverse}),"
+            + "Charting`ScaledFrameTicks({NormalY,NormalYInverse})},{Automatic,Automatic}}}");
     check("Round(Cases(Options(s, Epilog), Line(p_) :> p, Infinity), 0.001)", //
         "{{{1.807,-0.128},{9.693,2.128}}}");
     check("Union(Cases(s, PointSize(r_) :> Round(360*r), Infinity))", //
         "{7}");
     check("ProbabilityScalePlot({2, 4}, \"Gumbel\")", //
         "ProbabilityScalePlot({2,4},Gumbel)");
+  }
+
+  @Test
+  public void testProbabilityScalePlotWeibull() {
+    // {Log(x), Log(-Log(1 - p))} with p = (i - 0.3)/(n + 0.4)
+    check("Round(Cases(ProbabilityScalePlot({7, 2, 3}, \"Weibull\"), Point(p_) :> p, "
+        + "Infinity)[[1]], 0.001)", //
+        "{{0.693,-1.467},{1.099,-0.367},{1.946,0.458}}");
+    // a value which is not positive rejects the whole plot with a message
+    check("Check(ProbabilityScalePlot({7, -1, 2, 3}, \"Weibull\"), failed)", //
+        "failed");
+    check("ProbabilityScalePlot({0, 1}, \"Weibull\")", //
+        "ProbabilityScalePlot({0,1},Weibull)");
+    check("Options(ProbabilityScalePlot({2, 3, 30}, \"Weibull\"), FrameTicks)", //
+        "{FrameTicks->{{Charting`ScaledTicks({WeibullY,WeibullYInverse}),"
+            + "Charting`ScaledFrameTicks({WeibullY,WeibullYInverse})},"
+            + "{Charting`ScaledTicks({Log,Exp}),Charting`ScaledFrameTicks({Log,Exp})}}}");
+  }
+
+  @Test
+  public void testProbabilityScaleTicksInSVG() {
+    // the symbolic ticks are drawn as percent on the vertical and on a log scale horizontally
+    check("StringCases(ExportString(ProbabilityScalePlot({2, 3, 30}, \"Weibull\"), \"SVG\"), "
+        + "RegularExpression(\">[0-9.]+</text>\"))", //
+        "{>2</text>,>5</text>,>10</text>,>20</text>,>25</text>,>50</text>,>75</text>}");
+    check("StringContainsQ(ExportString(ProbabilityScalePlot({2, 3, 30, 31, 40}), \"SVG\"), "
+        + "\">50</text>\")", //
+        "True");
   }
 }

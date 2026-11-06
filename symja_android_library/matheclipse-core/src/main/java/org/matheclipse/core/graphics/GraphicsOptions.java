@@ -160,18 +160,19 @@ public class GraphicsOptions {
       {0.98, 0.90, 0.60} // Pale Yellow
   };
 
-  // MatrixPlot color map (Light Yellow -> Orange -> Red)
+  /** The positions of the {@link #MATRIX_COLORS} on the MatrixPlot scale. */
+  private static final double[] MATRIX_POSITIONS =
+      {0.0, 0.166667, 0.333333, 0.499999, 0.5, 0.500001, 0.666667, 0.833333, 1.0};
+
   /**
-   * The MatrixPlot colours, as its own plots are coloured: blue for the most negative entries,
-   * white for zero, orange for the most positive. The stops are evenly spaced because they were
-   * read off at even steps of rank, which is how MatrixPlot scales.
+   * The MatrixPlot colours, blended linearly in RGB between their {@link #MATRIX_POSITIONS}: blue
+   * through light blue for the most negative entries, white for zero in the middle of the scale,
+   * pale yellow through orange for the most positive ones.
    */
-  public static final double[][] MATRIX_COLORS = {//
-      {0.245, 0.428, 0.870}, {0.346, 0.613, 0.812}, {0.493, 0.716, 0.831}, {0.629, 0.793, 0.877},
-      {0.742, 0.857, 0.915}, {0.854, 0.919, 0.952}, //
-      {1.000, 1.000, 1.000}, // zero
-      {0.947, 0.918, 0.793}, {0.937, 0.880, 0.695}, {0.925, 0.834, 0.575}, {0.915, 0.799, 0.484},
-      {0.903, 0.744, 0.371}, {1.000, 0.420, 0.000}};
+  private static final double[][] MATRIX_COLORS = {//
+      {0.260487, 0.356, 0.891569}, {0.230198, 0.499962, 0.848188}, {0.392401, 0.658762, 0.797589},
+      {0.964837, 0.982332, 0.98988}, {1.0, 1.0, 1.0}, {0.95735, 0.957281, 0.896269},
+      {0.913252, 0.790646, 0.462837}, {0.860243, 0.558831, 0.00695811}, {1.0, 0.42, 0.0}};
 
   /**
    * Interpolates colors using the "Sunset" gradient.
@@ -183,8 +184,26 @@ public class GraphicsOptions {
     return interpolateColor(t, SUNSET_COLORS);
   }
 
+  /** The default MatrixPlot colour of the position <code>t</code> on its scale. */
   public static IAST getMatrixColor(double t) {
-    return interpolateColor(t, MATRIX_COLORS);
+    if (!(t > 0.0)) {
+      // also NaN
+      return rgb(MATRIX_COLORS[0]);
+    }
+    for (int i = 1; i < MATRIX_POSITIONS.length; i++) {
+      if (t <= MATRIX_POSITIONS[i]) {
+        double f = (t - MATRIX_POSITIONS[i - 1]) / (MATRIX_POSITIONS[i] - MATRIX_POSITIONS[i - 1]);
+        double[] c1 = MATRIX_COLORS[i - 1];
+        double[] c2 = MATRIX_COLORS[i];
+        return F.RGBColor(c1[0] + (c2[0] - c1[0]) * f, c1[1] + (c2[1] - c1[1]) * f,
+            c1[2] + (c2[2] - c1[2]) * f);
+      }
+    }
+    return rgb(MATRIX_COLORS[MATRIX_COLORS.length - 1]);
+  }
+
+  private static IAST rgb(double[] c) {
+    return F.RGBColor(c[0], c[1], c[2]);
   }
 
   /**
@@ -240,18 +259,101 @@ public class GraphicsOptions {
   public static double LARGE_THICKNESS = 0.03;
 
   /**
+   * The colour cycle a plot walks through for successive curves or data sets, as the decimals the
+   * colours are written with. They are kept as doubles: widened from a float a component such as
+   * 0.24 would read 0.23999999463558197.
+   */
+  private static final double[][] PLOT_COLOR_VALUES = {{0.24, 0.6, 0.8}, {0.95, 0.627, 0.1425},
+      {0.455, 0.7, 0.21}, {0.922526, 0.385626, 0.209179}, {0.578, 0.51, 0.85},
+      {0.772079, 0.431554, 0.102387}, {0.0, 0.6, 0.6}, {0.9, 0.36, 0.684}, {0.56, 0.7, 0.0},
+      {0.9, 0.54, 0.0}, {0.585, 0.5976, 0.9}, {0.9, 0.45, 0.45},
+      {0.7632186717367254, 0.8174402144034898, 0.0},
+      {0.8554632469481959, 0.24885384718327969, 0.8334053873948551},
+      {0.032972823413648836, 0.7396719749139476, 0.534700104525218}};
+
+  /** The colour cycle of <code>PlotTheme -&gt; "Marketing"</code>. */
+  private static final double[][] MARKETING_COLOR_VALUES = {{1.0, 0.4, 0.0},
+      {0.655728, 0.8, 0.0}, {0.0, 0.742291, 0.873126}, {1.0, 0.656408, 0.0},
+      {0.893126, 0.4, 0.767184}, {0.295048, 0.8, 0.286932}, {0.238758, 0.610466, 1.0},
+      {1.0, 0.325204, 0.406504}, {0.0, 0.786874, 0.739379}, {1.0, 0.520437, 0.0},
+      {0.7529330319872088, 0.4176501130047967, 1.0}, {0.5572809000084149, 0.8, 0.0},
+      {1.0, 0.06811595600706821, 0.0851449450088353},
+      {0.0, 0.7226017980018511, 0.9321946059944466},
+      {1.0, 0.7154761789941944, 0.0}};
+
+  /** The colour cycle of <code>PlotTheme -&gt; "Business"</code>. */
+  private static final double[][] BUSINESS_COLOR_VALUES = {{0.34398, 0.49112, 0.89936},
+      {0.97, 0.606, 0.081}, {0.91, 0.318, 0.243}, {0.448, 0.69232, 0.1538},
+      {0.62168, 0.2798, 0.6914}, {0.09096, 0.6296, 0.85532}, {0.46056, 0.40064, 0.81392},
+      {0.94, 0.462, 0.162}, {0.0, 0.7, 0.7}, {0.827051, 0.418034, 0.0243459},
+      {0.5511749434976025, 0.32014794962639853, 0.8720626412559938},
+      {0.72694101250947, 0.7196601125010522, 0.0},
+      {0.8680706456216862, 0.2563858708756628, 0.30321559063052295},
+      {0.2418693812442152, 0.5065044950046278, 0.9902432574930582},
+      {0.9573908706237908, 0.5369543531189542, 0.11504464931576472}};
+
+  /** The colour cycle of <code>PlotTheme -&gt; "Web"</code>. */
+  private static final double[][] WEB_COLOR_VALUES = {{0.790588, 0.201176, 0.0},
+      {0.192157, 0.388235, 0.807843}, {1.0, 0.607843, 0.0}, {0.0, 0.596078, 0.109804},
+      {0.567426, 0.32317, 0.729831}, {0.0, 0.588235, 0.705882}, {0.8505, 0.4275, 0.13185},
+      {0.499929, 0.285875, 0.775177}, {0.12490296143062507, 0.63, 0.47103259454284074},
+      {0.823948950768196, 0.29474475384097976, 0.19291741323314934},
+      {0.42126358105951733, 0.33224185136428963, 0.9},
+      {0.7239916650994997, 0.6554435183443889, 0.0},
+      {0.6746366424582266, 0.252, 0.45055901160272827},
+      {0.12582006271512805, 0.5293439498278976, 0.7809840752581536},
+      {0.8604677779867332, 0.4773388899336664, 0.10673699943582014}};
+
+  /** The colour cycle of <code>PlotTheme -&gt; "Scientific"</code> and of "Dark". */
+  private static final double[][] SCIENTIFIC_COLOR_VALUES = {{0.9, 0.36, 0.054},
+      {0.365248, 0.427802, 0.758297}, {0.945109, 0.593901, 0.0}, {0.645957, 0.253192, 0.685109},
+      {0.285821, 0.56, 0.450773}, {0.7, 0.336, 0.0}, {0.491486, 0.345109, 0.8},
+      {0.71788, 0.568653, 0.0}, {0.70743, 0.224, 0.542415}, {0.287228, 0.490217, 0.664674},
+      {0.982289285128704, 0.5771321368979874, 0.011542503255145636},
+      {0.5876740325800278, 0.2877284499870081, 0.7500695697462922},
+      {0.4262088601796793, 0.5581552810007578, 0.2777996730417023},
+      {0.9431487543762861, 0.414555896337833, 0.07140829055870854},
+      {0.41497437140121635, 0.393632147507352, 0.7842993779115092}};
+
+  /**
    * The colour cycle a plot walks through for successive curves or data sets.
    */
-  public static final RGBColor[] PLOT_COLORS =
-      new RGBColor[] {new RGBColor(0.24f, 0.6f, 0.8f), new RGBColor(0.95f, 0.627f, 0.1425f),
-          new RGBColor(0.455f, 0.7f, 0.21f), new RGBColor(0.922526f, 0.385626f, 0.209179f),
-          new RGBColor(0.578f, 0.51f, 0.85f), new RGBColor(0.772079f, 0.431554f, 0.102387f),
-          new RGBColor(0.0f, 0.6f, 0.6f), new RGBColor(0.9f, 0.36f, 0.684f),
-          new RGBColor(0.56f, 0.7f, 0.0f), new RGBColor(0.9f, 0.54f, 0.0f),
-          new RGBColor(0.585f, 0.5976f, 0.9f), new RGBColor(0.9f, 0.45f, 0.45f),
-          new RGBColor(0.7632186717367253f, 0.8174402144034898f, 0.0f),
-          new RGBColor(0.8554632469481959f, 0.24885384718327969f, 0.833405387394855f),
-          new RGBColor(0.032972823413648836f, 0.7396719749139476f, 0.534700104525218f)};
+  public static final RGBColor[] PLOT_COLORS = awtColors(PLOT_COLOR_VALUES);
+
+  private static RGBColor[] awtColors(double[][] values) {
+    RGBColor[] colors = new RGBColor[values.length];
+    for (int i = 0; i < values.length; i++) {
+      colors[i] = new RGBColor((float) values[i][0], (float) values[i][1], (float) values[i][2]);
+    }
+    return colors;
+  }
+
+  /** The palette colour number <code>index</code>, counted round and round. */
+  private static IAST paletteColor(double[][] palette, int index) {
+    double[] rgb = palette[Math.floorMod(index, palette.length)];
+    return F.RGBColor(rgb[0], rgb[1], rgb[2]);
+  }
+
+  /**
+   * The colour cycle a <code>PlotTheme</code> name stands for.
+   *
+   * @return <code>null</code> for a theme that keeps the default colours
+   */
+  private static double[][] themePalette(String name) {
+    switch (name) {
+      case "Marketing":
+        return MARKETING_COLOR_VALUES;
+      case "Business":
+        return BUSINESS_COLOR_VALUES;
+      case "Web":
+        return WEB_COLOR_VALUES;
+      case "Scientific":
+      case "Dark":
+        return SCIENTIFIC_COLOR_VALUES;
+      default:
+        return null;
+    }
+  }
 
   /**
    * The colour cycle the chart functions use for successive bars, sectors or boxes. It is a
@@ -546,6 +648,51 @@ public class GraphicsOptions {
     }
     // FrameTicks -> {{left, right}, {bottom, top}}
     return F.List(F.List(rowTicks, rowTicks), F.List(colTicks, colTicks));
+  }
+
+  /**
+   * Explicit <code>FrameTicks -> {{left, right}, {bottom, top}}</code> of a matrix, whose positions
+   * are row and column indices, moved to the centres of their cells: row <code>i</code> to
+   * <code>rows - i + 1/2</code> (<code>i - 1/2</code> with the rows reversed), column
+   * <code>j</code> to <code>j - 1/2</code>. The labels stay as they were given, and a bare
+   * position is labelled with itself. An edge which is not a list of ticks is kept.
+   *
+   * @return {@link F#NIL} if the value does not name the four edges this way
+   */
+  private static IExpr matrixExplicitFrameTicks(IExpr spec, int rows, boolean reversed) {
+    if (!spec.isList2() || !spec.first().isList2() || !spec.second().isList2()) {
+      return F.NIL;
+    }
+    IAST vertical = (IAST) spec.first();
+    IAST horizontal = (IAST) spec.second();
+    return F.list(
+        F.list(matrixTickEdge(vertical.arg1(), rows, reversed),
+            matrixTickEdge(vertical.arg2(), rows, reversed)),
+        F.list(matrixTickEdge(horizontal.arg1(), 0, false),
+            matrixTickEdge(horizontal.arg2(), 0, false)));
+  }
+
+  /**
+   * One edge of {@link #matrixExplicitFrameTicks}.
+   *
+   * @param rows the number of rows for a vertical edge, 0 for a horizontal one
+   */
+  private static IExpr matrixTickEdge(IExpr edge, int rows, boolean reversed) {
+    if (!edge.isList()) {
+      return edge;
+    }
+    return ((IAST) edge).map(tick -> {
+      IExpr index = tick.isList() && tick.argSize() >= 1 ? tick.first() : tick;
+      double i = index.evalfNaN();
+      if (!Double.isFinite(i)) {
+        return tick;
+      }
+      IExpr position = F.num(rows == 0 || reversed ? i - 0.5 : rows - i + 0.5);
+      if (!tick.isList()) {
+        return F.list(position, tick);
+      }
+      return ((IAST) tick).setAtCopy(1, position);
+    });
   }
 
   /**
@@ -995,6 +1142,13 @@ public class GraphicsOptions {
    * so it is reused here instead of repeating the same mistake.
    */
   public static RGBColor plotStyleColor(int functionColorNumber, IExpr plotStyle) {
+    RGBColor color = userStyleColor(functionColorNumber, plotStyle);
+    return color != null ? color
+        : PLOT_COLORS[Math.floorMod(functionColorNumber, PLOT_COLORS.length)];
+  }
+
+  /** The colour {@code PlotStyle} gives curve number {@code functionColorNumber}, or null. */
+  private static RGBColor userStyleColor(int functionColorNumber, IExpr plotStyle) {
     if (plotStyle != null && plotStyle.isPresent()
         && (!plotStyle.isList() || plotStyle.argSize() > 0)) {
       IExpr temp = getPlotStyle(plotStyle, functionColorNumber);
@@ -1012,11 +1166,14 @@ public class GraphicsOptions {
           return color;
       }
     }
-    return PLOT_COLORS[Math.floorMod(functionColorNumber, PLOT_COLORS.length)];
+    return null;
   }
 
   public static IAST plotStyleColorExpr(int functionColorNumber, IAST plotStyle) {
-    RGBColor color = GraphicsOptions.plotStyleColor(functionColorNumber, plotStyle);
+    RGBColor color = userStyleColor(functionColorNumber, plotStyle);
+    if (color == null) {
+      return paletteColor(PLOT_COLOR_VALUES, functionColorNumber);
+    }
     float[] rgbComponents = color.getRGBColorComponents(null);
     return F.RGBColor(rgbComponents[0], rgbComponents[1], rgbComponents[2]);
   }
@@ -1034,6 +1191,102 @@ public class GraphicsOptions {
       double absoluteThickness) {
     return F.Directive(plotStyleColorExpr(functionColorNumber, plotStyle),
         F.AbsoluteThickness(F.num(absoluteThickness)));
+  }
+
+  /**
+   * The default style of the next curve: the next colour of this plot's colour cycle, which a
+   * {@code PlotTheme} may have changed, with the stroke width.
+   */
+  public IAST nextCurveStyle() {
+    return curveStyle(incColorIndex());
+  }
+
+  /**
+   * The default style of curve number <code>index</code>: its colour of this plot's colour cycle,
+   * which a {@code PlotTheme} may have changed, with the stroke width.
+   */
+  public IAST curveStyle(int index) {
+    return F.Directive(paletteColor(plotPalette, index),
+        F.AbsoluteThickness(F.num(curveThickness)));
+  }
+
+  /**
+   * A legend given as a bare list of labels coloured with the colour cycle of a {@code PlotTheme}:
+   * <code>LineLegend(colors, labels)</code> or <code>PointLegend(colors, labels)</code>. The
+   * renderer colours a bare list with the default cycle.
+   *
+   * @return {@link F#NIL} for the default cycle or any other legend
+   */
+  private IExpr themeLegend(IExpr legend, boolean joined) {
+    if (plotPalette == PLOT_COLOR_VALUES) {
+      return F.NIL;
+    }
+    if (legend.isAST(S.Placed) && legend.argSize() >= 1) {
+      IExpr inner = themeLegend(legend.first(), joined);
+      return inner.isPresent() ? ((IAST) legend).setAtCopy(1, inner) : F.NIL;
+    }
+    if (!legend.isList() || legend.argSize() == 0) {
+      return F.NIL;
+    }
+    IASTAppendable colors = F.ListAlloc(legend.argSize());
+    for (int i = 0; i < legend.argSize(); i++) {
+      colors.append(paletteColor(plotPalette, i));
+    }
+    return F.binaryAST2(joined ? S.LineLegend : S.PointLegend, colors, legend);
+  }
+
+  /**
+   * A curve's default style together with the {@code PlotStyle} entry given for it.
+   *
+   * <p>
+   * An entry that names a colour replaces the colour of the cycle instead of being stacked on top
+   * of it, so the curve's style shows the colour as it was given. A colour with an alpha value is
+   * split into an <code>Opacity</code> and the plain colour. The parts of a
+   * <code>Directive</code> keep their order; the default stroke width is added after them unless
+   * they set a thickness of their own.
+   *
+   * @param defaultStyle <code>Directive[color, AbsoluteThickness[t]]</code>
+   * @param userStyle the entry of {@code PlotStyle} for this curve
+   */
+  public static IAST withUserStyle(IAST defaultStyle, IExpr userStyle) {
+    IAST parts;
+    if (isBasicColor(userStyle)) {
+      parts = F.list(userStyle);
+    } else if (userStyle.isAST(S.Directive)
+        && ((IAST) userStyle).exists(GraphicsOptions::isBasicColor)) {
+      parts = (IAST) userStyle;
+    } else {
+      return F.Directive(defaultStyle, userStyle);
+    }
+    IASTAppendable result = F.ast(S.Directive, parts.argSize() + 2);
+    parts.forEach(part -> appendColorParts(result, part));
+    if (!parts.exists(GraphicsOptions::isThickness)) {
+      for (int i = 1; i < defaultStyle.size(); i++) {
+        if (!isBasicColor(defaultStyle.get(i))) {
+          result.append(defaultStyle.get(i));
+        }
+      }
+    }
+    return result;
+  }
+
+  /** A thickness directive, or one of the symbols <code>Thick</code> and <code>Thin</code>. */
+  private static boolean isThickness(IExpr part) {
+    return part.isAST(S.Thickness) || part.isAST(S.AbsoluteThickness) || part == S.Thick
+        || part == S.Thin;
+  }
+
+  /** The colour, with an alpha component split off as <code>Opacity</code>. */
+  private static void appendColorParts(IASTAppendable result, IExpr color) {
+    if (color.isAST(S.RGBColor, 5) || color.isAST(S.GrayLevel, 3) || color.isAST(S.Hue, 5)
+        || color.isAST(S.CMYKColor, 6)) {
+      // the alpha value is the last argument
+      IAST withAlpha = (IAST) color;
+      result.append(F.Opacity(withAlpha.last()));
+      result.append(withAlpha.removeAtCopy(withAlpha.argSize()));
+    } else {
+      result.append(color);
+    }
   }
 
   /**
@@ -1809,6 +2062,10 @@ public class GraphicsOptions {
       return false;
     }
     String name = theme.toString();
+    double[][] palette = themePalette(name);
+    if (palette != null) {
+      plotPalette = palette;
+    }
     boolean frame;
     boolean grid;
     double thickness;
@@ -1829,7 +2086,7 @@ public class GraphicsOptions {
       grid = false;
       thickness = PLOT_THICKNESS;
     } else {
-      return false;
+      return palette != null;
     }
 
     IExpr callerFrame = optionValue(originalAST, S.Frame, F.NIL);
@@ -2227,6 +2484,12 @@ public class GraphicsOptions {
     } else if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
       // with a DataRange the ticks are the coordinates it gives
       graphicsOptions.addOption(F.Rule(S.FrameTicks, S.Automatic));
+    } else if (!dataRange.isList()) {
+      IExpr explicit = matrixExplicitFrameTicks(frameTicksOpt, rows,
+          optionValue(originalAST, S.DataReversed, S.False).isTrue());
+      if (explicit.isPresent()) {
+        graphicsOptions.addOption(F.Rule(S.FrameTicks, explicit));
+      }
     }
     return frameTicksOpt;
   }
@@ -2372,6 +2635,7 @@ public class GraphicsOptions {
     // still paints the very same points
     graphicsOptions.pointParameters = this.pointParameters;
     graphicsOptions.curveThickness = this.curveThickness;
+    graphicsOptions.plotPalette = this.plotPalette;
     graphicsOptions.interpolationOrder = this.interpolationOrder;
     // read once from the call and never changed afterwards, so the copy may share them; Plot
     // hands its Graphics a copy, which without this lost them
@@ -2496,10 +2760,20 @@ public class GraphicsOptions {
   public IAST getGraphicsRules() {
     IAST rules = getListOfRules();
     boolean hasLegend = false;
+    boolean hasPlotStyle = false;
+    boolean joined = false;
     for (IExpr rule : rules) {
-      if (rule.isRuleAST() && ((IAST) rule).arg1() == S.PlotLegends
-          && !((IAST) rule).arg2().isNone()) {
-        hasLegend = true;
+      if (rule.isRuleAST()) {
+        IExpr key = ((IAST) rule).arg1();
+        IExpr value = ((IAST) rule).arg2();
+        if (key == S.PlotLegends && !value.isNone()) {
+          hasLegend = true;
+        } else if (key == S.PlotStyle && value.isPresent() && !value.isNone()
+            && !value.isAutomatic()) {
+          hasPlotStyle = true;
+        } else if (key == S.Joined) {
+          joined = value.isTrue();
+        }
       }
     }
     IASTAppendable result = F.ListAlloc(rules.size());
@@ -2530,7 +2804,8 @@ public class GraphicsOptions {
       if (key == S.PlotLegends) {
         // kept as it stands for legended(), which turns it into Legended[..., legend]
         if (!value.isNone()) {
-          result.append(rule);
+          IExpr themed = hasPlotStyle ? F.NIL : themeLegend(value, joined);
+          result.append(themed.isPresent() ? F.Rule(S.PlotLegends, themed) : rule);
         }
         continue;
       }
@@ -3214,6 +3489,9 @@ public class GraphicsOptions {
 
   /** Stroke width of a plotted curve, which {@code PlotTheme} may change. */
   private double curveThickness = PLOT_THICKNESS;
+
+  /** The colour cycle of the curves, which {@code PlotTheme} may change. */
+  private double[][] plotPalette = PLOT_COLOR_VALUES;
 
   /** Stroke width of a plotted curve, in printer's points. */
   public double curveThickness() {

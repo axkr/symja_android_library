@@ -26,7 +26,7 @@ public class DistributionChart extends AbstractChart {
   /** The half width of the widest violin. */
   private static final double HALF_WIDTH = 0.4;
 
-  /** The number of strips of a density column. */
+  /** The number of bands of a density column. */
   private static final int STRIPS = 120;
 
   public DistributionChart() {}
@@ -148,9 +148,9 @@ public class DistributionChart extends AbstractChart {
   /**
    * The chart of <code>ChartElementFunction -> "Quantile"</code> or <code>"Density"</code>: one
    * column per dataset from its smallest to its largest value. A quantile column is crossed at the
-   * quartiles and the median by lines in its fill darkened by 30%; a density column is a stack of
-   * strips whose colour fades from the fill, where the kernel density estimate peaks, to white,
-   * where it is lowest.
+   * quartiles and the median by lines in its fill darkened by 30%; a density column is shaded
+   * from the fill, where the kernel density estimate peaks, towards white and dark gray, where it is
+   * lowest.
    */
   private IExpr columnChart(double[][] values, boolean quantile, IExpr chartStyle,
       IExpr chartLabels, GraphicsOptions graphicsOptions, IAST originalAST, IAST ast,
@@ -201,7 +201,12 @@ public class DistributionChart extends AbstractChart {
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
-  /** The strips of a density column, appended to <code>column</code>. */
+  /**
+   * The shading of a density column, appended to <code>column</code>: the column's rectangle,
+   * overlaid by a <code>GraphicsComplex</code> of the bands between the samples of the density,
+   * whose two sides are shaded towards white and towards dark gray where the density is lowest and
+   * meet in the fill where it peaks.
+   */
   private static void densityStrips(double[] sorted, double c, double half,
       BoxWhiskerChart.Orientation orientation, double[] rgb, IASTAppendable column,
       EvalEngine engine) {
@@ -212,16 +217,12 @@ public class DistributionChart extends AbstractChart {
       lo -= h;
       hi += h;
     }
-    double[] ys = new double[STRIPS + 1];
-    for (int k = 0; k <= STRIPS; k++) {
-      ys[k] = lo + (hi - lo) * k / STRIPS;
-    }
-    double[] density = new double[STRIPS];
+    double[] density = new double[STRIPS + 1];
     double dMin = Double.POSITIVE_INFINITY;
     double dMax = Double.NEGATIVE_INFINITY;
-    for (int k = 0; k < STRIPS; k++) {
+    for (int k = 0; k <= STRIPS; k++) {
       engine.checkTimeLimit();
-      double y = 0.5 * (ys[k] + ys[k + 1]);
+      double y = lo + (hi - lo) * k / STRIPS;
       double sum = 0.0;
       for (double v : sorted) {
         double u = (y - v) / h;
@@ -231,15 +232,26 @@ public class DistributionChart extends AbstractChart {
       dMin = Math.min(dMin, sum);
       dMax = Math.max(dMax, sum);
     }
-    column.append(F.headAST0(S.EdgeForm));
-    for (int k = 0; k < STRIPS; k++) {
+    IASTAppendable vertices = F.ListAlloc(2 * STRIPS + 2);
+    IASTAppendable colors = F.ListAlloc(2 * STRIPS + 2);
+    for (int k = 0; k <= STRIPS; k++) {
+      double y = lo + (hi - lo) * k / STRIPS;
       double t = dMax > dMin ? (density[k] - dMin) / (dMax - dMin) : 1.0;
-      column.append(F.RGBColor(1.0 - t * (1.0 - rgb[0]), 1.0 - t * (1.0 - rgb[1]),
+      vertices.append(orientation.point(c - half, y));
+      vertices.append(orientation.point(c + half, y));
+      colors.append(F.RGBColor(1.0 - t * (1.0 - rgb[0]), 1.0 - t * (1.0 - rgb[1]),
           1.0 - t * (1.0 - rgb[2])));
-      // each strip reaches halfway under the next one, so that no seams show between them
-      double top = k + 2 < ys.length ? 0.5 * (ys[k + 1] + ys[k + 2]) : ys[k + 1];
-      column.append(orientation.rectangle(c - half, ys[k], c + half, top));
+      colors.append(
+          F.RGBColor(0.1 + t * (rgb[0] - 0.1), 0.1 + t * (rgb[1] - 0.1), 0.1 + t * (rgb[2] - 0.1)));
     }
+    IASTAppendable bands = F.ListAlloc(STRIPS);
+    for (int k = 0; k < STRIPS; k++) {
+      bands.append(F.List(F.ZZ(2 * k + 1), F.ZZ(2 * k + 2), F.ZZ(2 * k + 4), F.ZZ(2 * k + 3)));
+    }
+    column.append(F.headAST0(S.EdgeForm));
+    column.append(orientation.rectangle(c - half, lo, c + half, hi));
+    column.append(F.ternaryAST3(S.GraphicsComplex, vertices, F.Polygon(bands),
+        F.Rule(S.VertexColors, colors)));
   }
 
   /** The red, green and blue of a plain <code>RGBColor</code>, or <code>null</code>. */

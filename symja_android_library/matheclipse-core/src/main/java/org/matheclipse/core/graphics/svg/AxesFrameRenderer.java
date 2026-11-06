@@ -302,6 +302,12 @@ public final class AxesFrameRenderer {
     if (spec.isNone() || spec.isFalse()) {
       return new ArrayList<>();
     }
+    // Charting`ScaledTicks(...) of a known scale
+    List<TickGenerator.Tick> scaled = ScaledTicks.ticks(spec, isX ? viewport.minX : viewport.minY,
+        isX ? viewport.maxX : viewport.maxY);
+    if (scaled != null) {
+      return scaled;
+    }
     List<TickGenerator.Tick> explicit = TickGenerator.explicit(spec);
     return explicit == null ? autoTicks(isX) : explicit;
   }

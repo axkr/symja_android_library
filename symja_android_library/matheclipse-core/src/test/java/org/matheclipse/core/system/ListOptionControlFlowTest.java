@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Lists, options and control flow cases of the Woxi round 2026-11-14 (area G). */
-public class Woxi1114GTest extends ExprEvaluatorTestCase {
+/** Lists, options and control flow. */
+public class ListOptionControlFlowTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFoldPairListTakeDrop() {

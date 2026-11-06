@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Tests for the functions of the option sweeps 5 (misc, misc2, misc3, performance). */
-public class Woxi1114FTest extends ExprEvaluatorTestCase {
+/** Inverse functions, operator forms, number theory, distances and numeric transforms. */
+public class OperatorNumberTheoryTransformTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseFunctionsInsertLU() {

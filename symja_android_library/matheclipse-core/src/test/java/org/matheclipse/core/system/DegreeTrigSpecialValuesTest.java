@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
  * Trigonometric functions in degrees, window functions, special values, Solve/NSolve/Reduce fixes
  * and SameQ of nested machine numbers.
  */
-public class Woxi1114BTest extends ExprEvaluatorTestCase {
+public class DegreeTrigSpecialValuesTest extends ExprEvaluatorTestCase {
 
   @Override
   @BeforeEach

@@ -51,6 +51,11 @@ import org.matheclipse.parser.trie.Trie;
  */
 public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     implements Externalizable, IGraphExpr {
+  /** The annotations whose single value is listed as a one-element list by {@link #options(boolean)}. */
+  private static final Set<IExpr> WRAPPED_ANNOTATIONS = Set.of(S.VertexLabels,
+      S.VertexSize, S.VertexStyle, S.VertexShape, S.VertexShapeFunction, S.VertexLabelStyle,
+      S.EdgeStyle, S.EdgeLabels, S.EdgeLabelStyle, S.EdgeShapeFunction, S.GraphHighlightStyle);
+
 
   private static final long serialVersionUID = 6160043985328230156L;
 
@@ -951,7 +956,29 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
 
   protected GraphExpr(final Graph<IExpr, T> graph, IAST options) {
     super(S.Graph, graph);
-    this.options = options;
+    this.options = unwrapAnnotations(options);
+  }
+
+  /**
+   * Replace a one-element list <code>{value}</code> of a vertex or edge annotation, the form
+   * {@link #options(boolean)} lists it in, by its value for all vertices or edges.
+   *
+   * @param options the graph options
+   * @return <code>options</code> itself if no annotation is wrapped, otherwise a changed copy
+   */
+  private static IAST unwrapAnnotations(IAST options) {
+    IASTAppendable result = F.NIL;
+    for (int i = 1; i < options.size(); i++) {
+      IExpr option = options.get(i);
+      if (option.isRuleAST() && WRAPPED_ANNOTATIONS.contains(option.first())
+          && option.second().isList1() && !option.second().first().isRuleAST()) {
+        if (result.isNIL()) {
+          result = options.copyAppendable();
+        }
+        result.set(i, ((IAST) option).setAtCopy(2, option.second().first()));
+      }
+    }
+    return result.isNIL() ? options : result;
   }
 
   @Override
@@ -1009,11 +1036,34 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     return options;
   }
 
-  /** The options given to this graph, sorted by their names. */
+  /**
+   * The options given to this graph, sorted by their names and followed by the edge and vertex
+   * weights. A vertex or edge annotation given one value for all vertices or edges is listed as a
+   * one-element list of that value.
+   */
   @Override
   public IAST options(boolean all) {
-    return EvalAttributes.copySort(options.select(x -> x.isRuleAST()));
+    IASTAppendable result = F.ListAlloc(options.argSize());
+    IASTAppendable weights = F.ListAlloc();
+    for (int i = 1; i < options.size(); i++) {
+      IExpr option = options.get(i);
+      if (option.isRuleAST()) {
+        if (option.first() == S.EdgeWeight || option.first() == S.VertexWeight) {
+          weights.append(option);
+          continue;
+        }
+        if (!option.second().isList() && WRAPPED_ANNOTATIONS.contains(option.first())) {
+          option = ((IAST) option).setAtCopy(2, F.list(option.second()));
+        }
+        result.append(option);
+      }
+    }
+    EvalAttributes.sort(result);
+    EvalAttributes.sort(weights);
+    result.appendArgs(weights);
+    return result;
   }
+
 
   @Override
   public int hashCode() {
@@ -1051,7 +1101,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
   }
 
   public void setOptions(IAST options) {
-    this.options = options;
+    this.options = unwrapAnnotations(options);
   }
 
   @Override

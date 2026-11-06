@@ -5,12 +5,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.hipparchus.distribution.continuous.NormalDistribution;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.svg.ScaledTicks;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -43,13 +45,8 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
     PROBABILITY_SCALE
   }
 
-  /** The percentages labelled on the vertical scale of a probability scale plot. */
-  private static final int[] SCALE_PERCENTS = {1, 5, 10, 25, 50, 75, 90, 95, 99};
-
   /** How far the diagonal of a probability plot stays inside the unit square. */
   private static final double DIAGONAL_INSET = 1.0 / 49_000_000.0;
-
-  private static final NormalDistribution STANDARD_NORMAL = new NormalDistribution(0.0, 1.0);
 
   private final Kind kind;
 
@@ -78,9 +75,11 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
         return F.NIL;
       }
     }
+    boolean weibull = false;
     if (kind == Kind.PROBABILITY_SCALE && reference.isPresent()) {
-      // only the normal scale
-      if (!reference.isString("Normal")) {
+      // the normal and the Weibull scale
+      weibull = reference.isString("Weibull");
+      if (!weibull && !reference.isString("Normal")) {
         return F.NIL;
       }
       reference = F.NIL;
@@ -94,8 +93,12 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       Arrays.sort(data);
-      series[k - 1] = points(data, reference, engine);
+      series[k - 1] = weibull ? weibullPoints(data) : points(data, reference, engine);
       if (series[k - 1] == null) {
+        if (weibull) {
+          // Unable to estimate a reference distribution from the data.
+          Errors.printMessage(ast.topHead(), "estmd", F.CEmptyList, engine);
+        }
         return F.NIL;
       }
     }
@@ -141,7 +144,7 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
     referenceLines(series, plotStyle, lines, hidden);
     listPlot.append(F.Rule(S.Epilog, epilog.isPresent() ? F.list(lines, epilog) : lines));
     if (kind == Kind.PROBABILITY_SCALE) {
-      appendScaleOptions(listPlot, series, plotStyle);
+      appendScaleOptions(listPlot, series, plotStyle, weibull);
     }
     IExpr plot = engine.evaluate(listPlot);
     if (hidden.argSize() == 1 || !plot.isAST(S.Graphics)) {
@@ -235,7 +238,7 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
           points[i - 1] = new double[] {x, i / (double) n};
           break;
         case PROBABILITY_SCALE:
-          points[i - 1] = new double[] {y, 1.0 + STANDARD_NORMAL.inverseCumulativeProbability(p)};
+          points[i - 1] = new double[] {y, ScaledTicks.normalY(p)};
           break;
         default:
           if (referenceData != null) {
@@ -256,6 +259,26 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
       }
     }
     return kind == Kind.PROBABILITY ? lastOfEqualValues(points, sorted) : points;
+  }
+
+  /**
+   * The points of the sorted data on a Weibull probability scale: the <code>i</code>-th of
+   * <code>n</code> values <code>x</code> at <code>{Log(x), Log(-Log(1 - p))}</code> with the
+   * plotting position <code>p = (i - 0.3)/(n + 0.4)</code>.
+   *
+   * @return {@code null} if a value is not positive, which no Weibull distribution can produce
+   */
+  private static double[][] weibullPoints(double[] sorted) {
+    final int n = sorted.length;
+    if (sorted[0] <= 0.0) {
+      return null;
+    }
+    double[][] points = new double[n][];
+    for (int i = 1; i <= n; i++) {
+      double p = (i - 0.3) / (n + 0.4);
+      points[i - 1] = new double[] {Math.log(sorted[i - 1]), ScaledTicks.weibullY(p)};
+    }
+    return points;
   }
 
   /**
@@ -376,10 +399,11 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
   }
 
   /**
-   * The larger points and the percentage ticks on the vertical frame of a probability scale plot.
+   * The larger points and the percentage ticks on the vertical frame of a probability scale plot;
+   * on a Weibull scale also the ticks of the logarithmic horizontal frame.
    */
   private static void appendScaleOptions(IASTAppendable listPlot, double[][][] series,
-      IExpr plotStyle) {
+      IExpr plotStyle, boolean weibull) {
     double size = pointSizeSteps(series) / 360.0;
     IASTAppendable styles = F.ListAlloc(series.length);
     for (int k = 0; k < series.length; k++) {
@@ -388,16 +412,13 @@ public class QuantilePlot extends AbstractFunctionEvaluator {
       styles.append(F.Directive(color, F.PointSize(size)));
     }
     listPlot.append(F.Rule(S.PlotStyle, styles));
-    IASTAppendable left = F.ListAlloc(SCALE_PERCENTS.length);
-    IASTAppendable right = F.ListAlloc(SCALE_PERCENTS.length);
-    for (int percent : SCALE_PERCENTS) {
-      IExpr position =
-          F.num(1.0 + STANDARD_NORMAL.inverseCumulativeProbability(percent / 100.0));
-      left.append(F.list(position, F.ZZ(percent)));
-      right.append(F.list(position, F.stringx("")));
-    }
-    listPlot.append(F.Rule(S.FrameTicks,
-        F.list(F.list(left, right), F.list(S.Automatic, S.Automatic))));
+    // the ticks are symbolic: the renderer places them on the scale of the axis
+    EvalEngine engine = EvalEngine.get();
+    IAST vertical = ScaledTicks.edges(
+        weibull ? ScaledTicks.weibullPair() : ScaledTicks.normalPair(), engine);
+    IAST horizontal = weibull ? ScaledTicks.edges(ScaledTicks.logPair(), engine)
+        : F.list(S.Automatic, S.Automatic);
+    listPlot.append(F.Rule(S.FrameTicks, F.list(vertical, horizontal)));
   }
 
   /**

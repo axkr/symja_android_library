@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Cases of the Woxi round 2026-11-14 which were settled by a probe of the expected values. */
-public class Woxi1114ProbeTest extends ExprEvaluatorTestCase {
+/** Mixed cases whose expected values were checked against a reference system. */
+public class GroundTruthCasesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInsertAssociationExistingKey() {

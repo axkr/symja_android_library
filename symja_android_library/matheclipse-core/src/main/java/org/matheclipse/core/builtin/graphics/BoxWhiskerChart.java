@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 
 /**
  * Functions for generating Box-and-Whisker Charts.
@@ -23,7 +24,8 @@ import org.matheclipse.core.interfaces.INumber;
  * The second argument chooses the marks: <code>"Basic"</code> (no fences), <code>"Mean"</code> (a
  * black mean line), <code>"Notched"</code> (a notch around the median) and <code>"Outliers"</code>
  * (whiskers stop at the last value within 1.5 interquartile ranges of the box, the values beyond
- * are dots, gray beyond 3 ranges). <code>BarOrigin -> Left | Right | Top</code> turns the chart.
+ * are inset markers, gray beyond 3 ranges). <code>BarOrigin -> Left | Right | Top</code> turns the
+ * chart. Exact data gives exact quartiles, whiskers, outliers and mean in the coordinates.
  * <p>
  * Example: <code>BoxWhiskerChart[RandomReal[NormalDistribution[0, 1], {5, 20}], "Notched"]</code>
  */
@@ -85,6 +87,12 @@ public class BoxWhiskerChart extends AbstractChart {
     IAST point(double c, double v) {
       double[] xy = coords(c, v);
       return F.List(F.num(xy[0]), F.num(xy[1]));
+    }
+
+    /** The point at category coordinate c and the value v, kept exact if it is exact. */
+    IAST point(double c, IExpr v) {
+      IExpr w = mirrored ? v.negate() : v;
+      return horizontal ? F.List(w, F.num(c)) : F.List(F.num(c), w);
     }
 
     /** The axis aligned rectangle with the opposite corners (c0, v0) and (c1, v1). */
@@ -181,7 +189,7 @@ public class BoxWhiskerChart extends AbstractChart {
         boolean sized = element.argSize() >= 2 && element.arg2().isReal();
         fenceWidth = sized ? element.arg2().evalfNaN() : 1.0;
         IAST directive = directive(element, sized ? 3 : 2);
-        fenceStyle = directive.argSize() > 0 ? directive : F.GrayLevel(0.0);
+        fenceStyle = directive.argSize() > 0 ? directive : F.GrayLevel(F.C0);
       }
     }
 
@@ -194,6 +202,9 @@ public class BoxWhiskerChart extends AbstractChart {
       return directive;
     }
   }
+
+  /** The marker of an outlier, drawn as a character centred on its value. */
+  private static final String OUTLIER_MARKER = "\u25CF";
 
   public BoxWhiskerChart() {}
 
@@ -285,7 +296,9 @@ public class BoxWhiskerChart extends AbstractChart {
       if (!datasetExpr.isList()) {
         continue;
       }
-      double[] sorted = values((IAST) datasetExpr);
+      // exact data keeps exact quartiles, whiskers and mean; machine data stays machine data
+      IRational[] exact = exactValues((IAST) datasetExpr);
+      double[] sorted = exact != null ? doubles(exact) : values((IAST) datasetExpr);
       int n = sorted.length;
       if (n == 0) {
         continue;
@@ -293,21 +306,35 @@ public class BoxWhiskerChart extends AbstractChart {
       Arrays.sort(sorted);
       minVal = Math.min(minVal, sorted[0]);
       maxVal = Math.max(maxVal, sorted[n - 1]);
-      double q1 = quartilePosition(sorted, (n + 2.0) / 4.0);
-      double median = quartilePosition(sorted, (n + 1.0) / 2.0);
-      double q3 = quartilePosition(sorted, (3.0 * n + 2.0) / 4.0);
+      IExpr q1Value = quartile(sorted, exact, F.QQ(n + 2, 4));
+      IExpr medianValue = quartile(sorted, exact, F.QQ(n + 1, 2));
+      IExpr q3Value = quartile(sorted, exact, F.QQ(3 * n + 2, 4));
+      double q1 = q1Value.evalf();
+      double median = medianValue.evalf();
+      double q3 = q3Value.evalf();
       double iqr = q3 - q1;
 
       // with outliers marked, the whiskers stop at the last value inside the 1.5 IQR fences
-      double whiskerLow = sorted[0];
-      double whiskerHigh = sorted[n - 1];
+      IExpr whiskerLow = valueAt(sorted, exact, 0);
+      IExpr whiskerHigh = valueAt(sorted, exact, n - 1);
+      double low = sorted[0];
+      double high = sorted[n - 1];
       if (marks.outliers) {
-        whiskerLow = q1;
-        whiskerHigh = q3;
-        for (double v : sorted) {
+        whiskerLow = q1Value;
+        whiskerHigh = q3Value;
+        low = q1;
+        high = q3;
+        for (int k = 0; k < n; k++) {
+          double v = sorted[k];
           if (v >= q1 - 1.5 * iqr && v <= q3 + 1.5 * iqr) {
-            whiskerLow = Math.min(whiskerLow, v);
-            whiskerHigh = Math.max(whiskerHigh, v);
+            if (v < low) {
+              low = v;
+              whiskerLow = valueAt(sorted, exact, k);
+            }
+            if (v > high) {
+              high = v;
+              whiskerHigh = valueAt(sorted, exact, k);
+            }
           }
         }
       }
@@ -327,11 +354,12 @@ public class BoxWhiskerChart extends AbstractChart {
         double depth = 1.7 * 1.25 * iqr / (1.35 * Math.sqrt(n));
         double notchLow = Math.max(median - depth, q1);
         double notchHigh = Math.min(median + depth, q3);
-        group.append(F.Polygon(F.List(orientation.point(left, q3), orientation.point(right, q3),
-            orientation.point(right, notchHigh), orientation.point(c + cap, median),
-            orientation.point(right, notchLow), orientation.point(right, q1),
-            orientation.point(left, q1), orientation.point(left, notchLow),
-            orientation.point(c - cap, median), orientation.point(left, notchHigh))));
+        group.append(F.Polygon(F.List(orientation.point(left, q3Value),
+            orientation.point(right, q3Value), orientation.point(right, notchHigh),
+            orientation.point(c + cap, medianValue), orientation.point(right, notchLow),
+            orientation.point(right, q1Value), orientation.point(left, q1Value),
+            orientation.point(left, notchLow), orientation.point(c - cap, medianValue),
+            orientation.point(left, notchHigh))));
       } else if (chartElements.isPresent()) {
         // ChartElements replaces the box with the caller's own drawing, stretched to fill it
         double[] a = orientation.coords(left, q1);
@@ -339,47 +367,50 @@ public class BoxWhiskerChart extends AbstractChart {
         group.append(fittedElement(chartElements, Math.min(a[0], b[0]), Math.min(a[1], b[1]),
             Math.max(a[0], b[0]), Math.max(a[1], b[1])));
       } else {
-        group.append(F.Polygon(F.List(orientation.point(left, q3), orientation.point(right, q3),
-            orientation.point(right, q1), orientation.point(left, q1))));
+        group.append(F.Polygon(F.List(orientation.point(left, q3Value),
+            orientation.point(right, q3Value), orientation.point(right, q1Value),
+            orientation.point(left, q1Value))));
       }
 
       if (marks.outliers) {
-        // the far outliers, beyond 3 IQR, are gray
+        // every outlier is a marker of its own; the far ones, beyond 3 IQR, are gray
         for (int far = 0; far <= 1; far++) {
-          IASTAppendable dots = F.ListAlloc();
-          for (double v : sorted) {
+          IASTAppendable markers = F.ListAlloc();
+          IExpr level = far == 1 ? F.num(0.5) : F.C0;
+          for (int k = 0; k < n; k++) {
+            double v = sorted[k];
             boolean isFar = v < q1 - 3.0 * iqr || v > q3 + 3.0 * iqr;
-            if ((v < whiskerLow || v > whiskerHigh) && isFar == (far == 1)) {
-              dots.append(orientation.point(c, v));
+            if ((v < low || v > high) && isFar == (far == 1)) {
+              markers.append(F.binaryAST2(S.Inset,
+                  F.ternaryAST3(S.Style, F.stringx(OUTLIER_MARKER), F.ZZ(10), F.GrayLevel(level)),
+                  orientation.point(c, valueAt(sorted, exact, k))));
             }
           }
-          if (dots.argSize() > 0) {
-            group.append(F.List(F.GrayLevel(far == 1 ? 0.5 : 0.0),
-                F.unaryAST1(S.AbsolutePointSize, F.ZZ(4)), F.Point(dots)));
+          if (markers.argSize() > 0) {
+            group.append(markers);
           }
         }
       }
 
+      // each line group starts from black, which its own style then refines
       double medianHalf = marks.notched ? cap : half;
-      group.append(F.List(F.GrayLevel(1.0), F.Line(F.List(orientation.point(c + medianHalf, median),
-          orientation.point(c - medianHalf, median)))));
+      group.append(F.List(F.GrayLevel(F.C0), F.GrayLevel(F.C1),
+          F.Line(F.List(orientation.point(c + medianHalf, medianValue),
+              orientation.point(c - medianHalf, medianValue)))));
       if (marks.mean) {
-        double mean = 0.0;
-        for (double v : sorted) {
-          mean += v;
-        }
-        mean /= n;
-        group.append(F.List(F.GrayLevel(0.0), F.Line(
+        IExpr mean = mean(sorted, exact);
+        group.append(F.List(F.GrayLevel(F.C0), F.GrayLevel(F.C0), F.Line(
             F.List(orientation.point(c + cap, mean), orientation.point(c - cap, mean)))));
       }
-      group.append(F.List(F.unaryAST1(S.CapForm, F.stringx("Butt")),
-          marks.whiskerStyle.isPresent() ? F.Directive(F.GrayLevel(0.0), marks.whiskerStyle)
-              : F.GrayLevel(0.5),
-          F.Line(F.List(F.List(orientation.point(c, q1), orientation.point(c, whiskerLow)),
-              F.List(orientation.point(c, q3), orientation.point(c, whiskerHigh))))));
+      group.append(F.List(F.GrayLevel(F.C0), F.unaryAST1(S.CapForm, F.stringx("Butt")),
+          marks.whiskerStyle.isPresent() ? F.Directive(F.GrayLevel(F.C0), marks.whiskerStyle)
+              : F.GrayLevel(F.num(0.5)),
+          F.Line(F.List(F.List(orientation.point(c, q1Value), orientation.point(c, whiskerLow)),
+              F.List(orientation.point(c, q3Value), orientation.point(c, whiskerHigh))))));
       if (!marks.basic || marks.fenceStyle.isPresent()) {
         double fenceHalf = marks.fenceStyle.isPresent() ? half * marks.fenceWidth : cap;
-        group.append(F.List(marks.fenceStyle.isPresent() ? marks.fenceStyle : F.GrayLevel(0.5),
+        group.append(F.List(F.GrayLevel(F.C0),
+            marks.fenceStyle.isPresent() ? marks.fenceStyle : F.GrayLevel(F.num(0.5)),
             F.Line(F.List(
                 F.List(orientation.point(c + fenceHalf, whiskerLow),
                     orientation.point(c - fenceHalf, whiskerLow)),
@@ -431,6 +462,72 @@ public class BoxWhiskerChart extends AbstractChart {
       }
     }
     return Arrays.copyOf(values, n);
+  }
+
+  /**
+   * The values of a dataset sorted, if they are all exact rational numbers, or <code>null</code>.
+   */
+  private static IRational[] exactValues(IAST dataset) {
+    IRational[] values = new IRational[dataset.argSize()];
+    for (int k = 1; k <= dataset.argSize(); k++) {
+      IExpr e = PlotWrapper.strip(dataset.get(k));
+      if (!e.isRational()) {
+        return null;
+      }
+      values[k - 1] = (IRational) e;
+    }
+    Arrays.sort(values);
+    return values;
+  }
+
+  private static double[] doubles(IRational[] values) {
+    double[] result = new double[values.length];
+    for (int k = 0; k < values.length; k++) {
+      result[k] = values[k].doubleValue();
+    }
+    return result;
+  }
+
+  /** The sorted value at the 0-based index <code>k</code>, exact if the data is exact. */
+  private static IExpr valueAt(double[] sorted, IRational[] exact, int k) {
+    return exact != null ? exact[k] : F.num(sorted[k]);
+  }
+
+  /**
+   * The value at the 1-based position <code>pos</code> of sorted data, interpolated linearly
+   * between neighbours, exact if the data is exact.
+   */
+  private static IExpr quartile(double[] sorted, IRational[] exact, IRational pos) {
+    if (exact == null) {
+      return F.num(quartilePosition(sorted, pos.doubleValue()));
+    }
+    int n = exact.length;
+    IRational index = pos.subtract(F.C1);
+    if (index.isNegative()) {
+      index = F.C0;
+    } else if (index.isGT(F.ZZ(n - 1))) {
+      index = F.ZZ(n - 1);
+    }
+    int lo = index.floor().toIntDefault();
+    int hi = Math.min(lo + 1, n - 1);
+    IRational fraction = index.subtract(F.ZZ(lo));
+    return exact[lo].add(fraction.multiply(exact[hi].subtract(exact[lo])));
+  }
+
+  /** The mean of sorted data, exact if the data is exact. */
+  private static IExpr mean(double[] sorted, IRational[] exact) {
+    if (exact != null) {
+      IRational sum = F.C0;
+      for (IRational v : exact) {
+        sum = sum.add(v);
+      }
+      return sum.divideBy(F.ZZ(exact.length));
+    }
+    double sum = 0.0;
+    for (double v : sorted) {
+      sum += v;
+    }
+    return F.num(sum / sorted.length);
   }
 
   /**

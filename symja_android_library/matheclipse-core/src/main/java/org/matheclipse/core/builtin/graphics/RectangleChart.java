@@ -11,6 +11,9 @@ import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.reflection.system.ColorData;
+import org.matheclipse.core.reflection.system.ColorDataFunction;
+import org.matheclipse.core.tensor.img.ColorDataGradients;
 
 /**
  * <code>RectangleChart({{w1, h1}, {w2, h2}, ...})</code> - a bar chart whose bars have the width
@@ -78,12 +81,19 @@ public class RectangleChart extends AbstractChart {
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     boolean byPosition = datasets.argSize() > 1 || !chartStyle.isAutomatic();
+    // the style of the chart as a whole, which the style of each bar then refines; under a named
+    // colour scheme it is the default chart colour
+    IExpr chartColor =
+        chartStyle.isString() ? GraphicsOptions.chartStyleColorExpr(0) : color(chartStyle, 0);
+    IExpr schemeColors = schemeColors(chartStyle, boxes);
+    if (schemeColors.isPresent()) {
+      chartStyle = schemeColors;
+    }
     // a legend entry names the rectangles at one position, in the fill they were drawn with
     GraphicsOptions.LegendColors legendColors =
         new GraphicsOptions.LegendColors(color(chartStyle, 0));
     IASTAppendable primitives = F.ListAlloc(boxes.size() + 1);
-    // the style of the chart as a whole, which the style of each bar then refines
-    primitives.append(color(chartStyle, 0));
+    primitives.append(chartColor);
     double xMin = 0.0;
     double xMax = 0.0;
     double yMin = 0.0;
@@ -151,6 +161,36 @@ public class RectangleChart extends AbstractChart {
     IAST ticks = F.List(F.List(S.Automatic, S.Automatic), F.List(S.None, S.None));
     return chart.replaceAll(F.Rule(F.Rule(S.FrameTicks, S.Automatic), F.Rule(S.FrameTicks, ticks)))
         .orElse(chart);
+  }
+
+  /**
+   * The colours of a named colour scheme sampled evenly over the positions of the bars in a
+   * dataset: the bar at position <code>i</code> of <code>n</code> takes the scheme at
+   * <code>i/(n-1)</code>, a lone bar its start. <code>F.NIL</code> for any other style.
+   */
+  private static IExpr schemeColors(IExpr chartStyle, List<Box> boxes) {
+    if (!chartStyle.isString()) {
+      return F.NIL;
+    }
+    ColorDataGradients gradient =
+        ColorData.gradientNamed(chartStyle.toString());
+    if (gradient == null) {
+      return F.NIL;
+    }
+    int n = 0;
+    for (Box box : boxes) {
+      n = Math.max(n, box.position + 1);
+    }
+    IASTAppendable colors = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      IExpr color = ColorDataFunction.applyGradient(gradient,
+          F.num(n > 1 ? (double) i / (n - 1) : 0.0));
+      if (color == null) {
+        return F.NIL;
+      }
+      colors.append(color);
+    }
+    return colors;
   }
 
   /** The colour of the bar at <code>index</code>; a list of styles is one directive. */

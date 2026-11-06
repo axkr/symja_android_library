@@ -2,8 +2,8 @@ package org.matheclipse.bio.system;
 
 import org.junit.jupiter.api.Test;
 
-/** The string functions on biomolecular sequences, Woxi round 2026-11-14 (area C). */
-public class Woxi1114CBioTest extends AbstractTestCase {
+/** String functions on biomolecular sequences. */
+public class BioSequenceStringFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testBioSequenceCanonicalLetters() {

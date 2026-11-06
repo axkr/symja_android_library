@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Linear algebra, intervals, geometry and argument forms (Woxi round 2026-11-14, part E). */
-public class Woxi1114ETest extends ExprEvaluatorTestCase {
+/** Linear algebra, intervals, geometry and argument forms. */
+public class LinearAlgebraIntervalGeometryTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixPowerSymbolicExponent() {

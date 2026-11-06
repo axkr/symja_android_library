@@ -18,9 +18,9 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <p>
  * It is not the scale the rest of the plots use. Where they run from the smallest value to the
- * largest, this one runs from white at <em>zero</em> to black at the value furthest from zero, and
- * clips whatever falls off the far end. So {@code ArrayPlot[{{1, 2, 3}}]} is three greys with no
- * white among them, and {@code ArrayPlot[{{-1, 0, 1}}]} paints -1 and 0 in the same white.
+ * largest, this one runs from white at <em>zero</em> to black at the largest magnitude, the sign
+ * ignored. So {@code ArrayPlot[{{1, 2, 3}}]} is three greys with no white among them, and
+ * {@code ArrayPlot[{{-1, 0, 1}}]} paints -1 and 1 in the same black.
  *
  * <p>
  * Every expectation below was measured in Mathematica with
@@ -70,8 +70,7 @@ public class ArrayPlotColorScaleTest {
   }
 
   /**
-   * Negative values fall off the white end and are clipped, which is why two different values can
-   * come out in the same colour.
+   * The sign is ignored, which is why two different values can come out in the same colour.
    */
   @Test
   public void testNegativeValuesClipToWhite() {
@@ -137,8 +136,8 @@ public class ArrayPlotColorScaleTest {
   @Test
   public void testColorRulesMatchAPattern() {
     IExpr plot = evaluator.eval("ArrayPlot({{1, -1, 2}}, ColorRules->{_?Positive->Red})");
-    assertEquals("[[[1,0,0], [1,1,1], [1,0,0]]]", cells(plot),
-        "both positives are red, -1 is clipped to white by the grey scale");
+    assertEquals("[[[1,0,0], [0.5,0.5,0.5], [1,0,0]]]", cells(plot),
+        "both positives are red, -1 is half way to the largest magnitude 2");
   }
 
   /** The first rule written wins, as it does under {@code Replace}. */
@@ -206,12 +205,25 @@ public class ArrayPlotColorScaleTest {
     assertEquals(want.toString(), greys(evaluator.eval(input)).toString(), input);
   }
 
-  /** The distinct grey levels of the raster the plot drew. */
+  /**
+   * The distinct grey levels of the raster the plot drew: a cell is either {g, g, g} or a single
+   * value which the range {lo, hi} in the third argument of the raster scales to a grey level.
+   */
   private static TreeSet<Double> greys(IExpr plot) {
     IAST raster = raster(plot);
+    double lo = 0.0;
+    double hi = 1.0;
+    if (raster.argSize() >= 3 && raster.arg3().isList2()) {
+      lo = raster.arg3().first().evalDouble();
+      hi = raster.arg3().second().evalDouble();
+    }
     TreeSet<Double> levels = new TreeSet<>();
     for (IExpr row : (IAST) raster.arg1()) {
       for (IExpr cell : (IAST) row) {
+        if (cell.isNumber()) {
+          levels.add(round((cell.evalDouble() - lo) / (hi - lo)));
+          continue;
+        }
         // a grey cell is {g, g, g}: raster data is numbers, which is what a front end draws
         assertTrue(cell.isList() && cell.argSize() == 3 && cell.first().equals(cell.second())
             && cell.second().equals(((IAST) cell).arg3()), "expected a grey, got " + cell);

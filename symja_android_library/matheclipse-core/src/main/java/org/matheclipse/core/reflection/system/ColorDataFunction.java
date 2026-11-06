@@ -109,7 +109,7 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
       }
 
       if (prop.equals("Name")) {
-        return arg1;
+        return type.equals("Gradients") ? F.stringx(ColorData.gradientTitle(name)) : arg1;
       }
       if (prop.equals("Range")) {
         if (functionAst.size() >= 4) {

@@ -2,8 +2,8 @@ package org.matheclipse.image.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Image functions of the Woxi round 2026-11-14 (area D). */
-public class Woxi1114DImageTest extends AbstractTestCase {
+/** Image morphology, thresholds, periodograms, channels and filters. */
+public class ImageMorphologyFilterTest extends AbstractTestCase {
 
   @Test
   public void testMorphologicalEulerNumber() {

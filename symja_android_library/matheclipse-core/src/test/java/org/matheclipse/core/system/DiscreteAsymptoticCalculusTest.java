@@ -3,7 +3,7 @@ package org.matheclipse.core.system;
 import org.junit.jupiter.api.Test;
 
 /** Calculus: DiscreteAsymptotic, nested iterators, piecewise derivatives and integrals. */
-public class Woxi1114ATest extends ExprEvaluatorTestCase {
+public class DiscreteAsymptoticCalculusTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testDiscreteAsymptoticRational() {

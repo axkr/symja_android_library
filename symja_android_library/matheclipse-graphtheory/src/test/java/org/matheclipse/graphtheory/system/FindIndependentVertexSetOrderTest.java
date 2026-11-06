@@ -2,8 +2,8 @@ package org.matheclipse.graphtheory.system;
 
 import org.junit.jupiter.api.Test;
 
-/** Graph cases of the Woxi round 2026-11-14 which were settled by a probe of the expected values. */
-public class Woxi1114ProbeGraphTest extends AbstractTestCase {
+/** The order of all independent vertex sets. */
+public class FindIndependentVertexSetOrderTest extends AbstractTestCase {
 
   @Test
   public void testFindIndependentVertexSetAllOrder() {

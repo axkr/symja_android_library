@@ -44,6 +44,9 @@ public final class PrimitiveCollector {
   /** Vertex table of the enclosing {@code GraphicsComplex}, or {@code null}. */
   private List<double[]> vertices;
 
+  /** The {@code VertexColors} of the enclosing {@code GraphicsComplex}, or {@code null}. */
+  private List<Color> vertexColors;
+
   /** {@code IntervalMarkers}: how uncertain coordinates of points and lines are marked. */
   private IntervalMarkerType intervalMarkers = IntervalMarkerType.BARS;
   /** {@code IntervalMarkersStyle}, or {@code null} for the style of the marked primitive. */
@@ -793,6 +796,7 @@ public final class PrimitiveCollector {
       return;
     }
     List<double[]> saved = vertices;
+    List<Color> savedColors = vertexColors;
     try {
       IAST pts = (IAST) ast.arg1();
       List<double[]> table = new ArrayList<>(pts.argSize());
@@ -800,11 +804,23 @@ public final class PrimitiveCollector {
         table.add(pointOf(pts.get(i)));
       }
       vertices = table;
+      vertexColors = null;
+      for (int i = 3; i <= ast.argSize(); i++) {
+        if (ast.get(i).isRuleAST() && ast.get(i).first() == S.VertexColors
+            && ast.get(i).second().isList()) {
+          IAST colors = (IAST) ast.get(i).second();
+          vertexColors = new ArrayList<>(colors.argSize());
+          for (IExpr color : colors) {
+            vertexColors.add(ColorUtil.parse(color));
+          }
+        }
+      }
       if (ast.argSize() >= 2) {
         collect(ast.arg2(), style.clone());
       }
     } finally {
       vertices = saved;
+      vertexColors = savedColors;
     }
   }
 
@@ -1262,6 +1278,11 @@ public final class PrimitiveCollector {
       }
       return;
     }
+    if (vertices != null && vertexColors != null && spec.isList() && spec.argSize() > 0) {
+      // faces with colours at their vertices are each filled with the mean of those colours
+      collectColoredFaces(spec.first().isList() ? (IAST) spec : F.list(spec), style);
+      return;
+    }
     if (vertices != null && spec.isList() && spec.argSize() > 0 && spec.first().isList()) {
       // the faces of a GraphicsComplex, {{i, j, k}, ...}: they share their edges, so they are
       // drawn as the sub-paths of one path, which leaves no seam between two of them
@@ -1284,6 +1305,59 @@ public final class PrimitiveCollector {
     if (!pts.isEmpty()) {
       primitives.add(new Prim2D.PolygonPrim(pts, style.clone()));
     }
+  }
+
+  /**
+   * The faces <code>{{i, j, k}, ...}</code> of a {@code GraphicsComplex} with {@code VertexColors},
+   * each filled with the mean colour of its vertices.
+   */
+  private void collectColoredFaces(IAST faces, Style2D style) {
+    for (IExpr face : faces) {
+      List<double[]> pts = pointsOf(face);
+      Color mean = meanVertexColor(face);
+      if (!pts.isEmpty()) {
+        Style2D faceStyle = style.clone();
+        if (mean != null) {
+          faceStyle.faceColor = mean;
+          if (faceStyle.edgeColor == null) {
+            // a hairline in the face's own colour closes the seams between abutting faces
+            faceStyle.edgeFormSet = true;
+            faceStyle.edgeColor = mean;
+            faceStyle.edgeOpacity = 1.0;
+            faceStyle.strokeWidth = 0.5;
+          }
+        }
+        primitives.add(new Prim2D.PolygonPrim(pts, faceStyle));
+      }
+    }
+  }
+
+  /**
+   * The mean of the {@code VertexColors} at the indices of a face, or {@code null} if one of them
+   * has no colour.
+   */
+  private Color meanVertexColor(IExpr face) {
+    if (!face.isList() || face.argSize() == 0) {
+      return null;
+    }
+    double r = 0;
+    double g = 0;
+    double b = 0;
+    double a = 0;
+    for (IExpr index : (IAST) face) {
+      int k = index.toIntDefault(0);
+      Color c = k > 0 && k <= vertexColors.size() ? vertexColors.get(k - 1) : null;
+      if (c == null) {
+        return null;
+      }
+      r += c.getRed();
+      g += c.getGreen();
+      b += c.getBlue();
+      a += c.getAlpha();
+    }
+    int n = face.argSize();
+    return new Color((int) Math.round(r / n), (int) Math.round(g / n), (int) Math.round(b / n),
+        (int) Math.round(a / n));
   }
 
   private void collectRegularPolygon(IAST ast, Style2D style) {

@@ -613,8 +613,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         IAST curveData = (IAST) listOfLists.get(j);
         PlotWrapper curveWrapper =
             curveWrappers != null && j < curveWrappers.length ? curveWrappers[j] : null;
-        IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-            F.NIL, graphicsOptions.curveThickness());
+        IAST defaultColor = graphicsOptions.nextCurveStyle();
         IExpr style = defaultColor;
         // a curve styled None isn't drawn, but a filling toward it still is
         boolean hidden = false;
@@ -622,7 +621,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, j - 1);
           hidden = userStyle.isNone();
           if (!hidden) {
-            style = F.Directive(defaultColor, userStyle);
+            style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
           }
         }
         // when this curve carries a tooltip or is hidden its primitives are gathered so the label
@@ -705,12 +704,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         // DataRange -> All reads every list as values, even a list of pairs
         final boolean allValues = graphicsOptions.dataRange() == S.All;
         if (!allValues && isListOfPlainPoints(pointList)) {
-          IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-              F.NIL, graphicsOptions.curveThickness());
+          IAST defaultColor = graphicsOptions.nextCurveStyle();
           IExpr style = defaultColor;
           if (plotStyle.isPresent() && plotStyle != S.None) {
             IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
-            style = F.Directive(defaultColor, userStyle);
+            style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
           }
 
           Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
@@ -745,12 +743,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           for (int i = 1; i < listOfLists.size(); i++) {
             pointList = (IAST) listOfLists.get(i);
 
-            IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-                F.NIL, graphicsOptions.curveThickness());
+            IAST defaultColor = graphicsOptions.nextCurveStyle();
             IExpr style = defaultColor;
             if (plotStyle.isPresent() && plotStyle != S.None) {
               IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, i - 1);
-              style = F.Directive(defaultColor, userStyle);
+              style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
             }
 
             if (joinedSpec.isList() && joinedSpec.argSize() > 0) {
@@ -780,12 +777,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         }
 
       }
-      IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-          F.NIL, graphicsOptions.curveThickness());
+      IAST defaultColor = graphicsOptions.nextCurveStyle();
       IExpr style = defaultColor;
       if (plotStyle.isPresent() && plotStyle != S.None) {
         IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
-        style = F.Directive(defaultColor, userStyle);
+        style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
       }
 
       sequenceYValuesListPlot(graphicsPrimitives, pointList, graphicsOptions, style, engine);

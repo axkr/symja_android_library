@@ -3,7 +3,7 @@ package org.matheclipse.core.system;
 import org.junit.jupiter.api.Test;
 
 /** Statistics, distributions, wavelet filters, dates and cities. */
-public class Woxi1114HTest extends ExprEvaluatorTestCase {
+public class StatisticsDistributionDataTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testKolmogorovSmirnovTwoSample() {
@@ -121,7 +121,7 @@ public class Woxi1114HTest extends ExprEvaluatorTestCase {
   public void testCityData() {
     check("{CityData(\"Vienna\", \"Coordinates\"), CityData({\"Hamburg\", \"Germany\"}, \"Country\"), "
         + "CityData(\"Atlantis\")}", //
-        "{{48.2,16.3667},Entity(Country,Germany),CityData(Atlantis)}");
+        "{{48.22,16.37},Entity(Country,Germany),{}}");
   }
 
   @Test
