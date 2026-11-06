@@ -291,11 +291,11 @@ public class GraphicsFunctions {
    * Several graphics of the same kind become one, each keeping its primitives in a list of their
    * own so that one's directives do not reach into the next, and their options merged with the
    * first setting of each winning - so the options given to <code>Show</code> itself win over all
-   * of them.
+   * of them. A plot writes the range it settled on as its <code>PlotRange</code>, so the combined
+   * picture keeps the range of the first plot, which can clip the others.
    *
    * <p>
-   * Not done: the plot ranges are not joined into one, so the first graphic's range can clip the
-   * others; <code>Epilog</code> and <code>Prolog</code> are not merged; two and three dimensional
+   * Not done: <code>Epilog</code> and <code>Prolog</code> are not merged; two and three dimensional
    * graphics are not combined, and nothing but <code>Graphics</code>, <code>Graphics3D</code> and
    * mesh regions is shown.
    */
@@ -376,6 +376,15 @@ public class GraphicsFunctions {
       if (arg.isAST(S.Graphics) || arg.isAST(S.Graphics3D)) {
         graphics.append(arg);
         return true;
+      }
+      if (arg instanceof org.matheclipse.core.interfaces.IGraphExpr) {
+        // a graph is shown as the picture it is drawn as
+        IExpr picture = engine.evaluate(F.unaryAST1(S.GraphPlot, arg));
+        if (picture.isAST(S.Graphics) || picture.isAST(S.Graphics3D)) {
+          graphics.append(picture);
+          return true;
+        }
+        return false;
       }
       if (MeshFunctions.isBoundaryMeshRegion(arg)) {
         IAST picture = MeshFunctions.meshToGraphics((IAST) arg, engine);

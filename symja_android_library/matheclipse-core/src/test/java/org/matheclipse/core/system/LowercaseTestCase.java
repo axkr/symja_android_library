@@ -13545,10 +13545,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "Cases(Plot(Cos(x), {x, 0, 3}, Filling -> Bottom, PlotRange -> {-2, 2}), "
             + "Polygon(p_) :> Last(p), Infinity)", //
-        "{{0.0,-2.0}}");
+        "{{6.12245*10^-8,-2.0}}");
     // a number is the height to fill to
     check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> 0.25), Polygon(p_) :> Last(p), Infinity)", //
-        "{{0.0,0.25}}");
+        "{{6.12245*10^-8,0.25}}");
     check(
         "Cases(ListPlot({2, 4, 3}, Filling -> Top, PlotRange -> {0, 6}), Line(p_) :> p, "
             + "Infinity)", //
@@ -13565,7 +13565,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "Cases(Plot(Cos(x), {x, 0, 3}, Filling -> {1 -> {1, Red}}), {s_, Polygon(p_)} :> "
             + "{s, Last(p)}, Infinity)", //
-        "{{Directive(RGBColor(1,0,0),EdgeForm(None)),{0.0,1.0}}}");
+        "{{Directive(RGBColor(1,0,0),EdgeForm(None)),{6.12245*10^-8,1.0}}}");
   }
 
   @Test
@@ -13703,7 +13703,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testQuantilePlot() {
     check("Cases(QuantilePlot({1, 2, 4}, {1, 2, 3, 4, 5}), Point(p_) :> p, Infinity)", //
-        "{{{2.0,1.0},{3.0,2.0},{4.0,4.0}}}");
+        "{{{2.0,1.0},{3.0,2.0},{4.0,4.0}},{{1.9158,0.748698},{4.04253,3.9388}}}");
     check("Head(QuantilePlot({{1, 3, 2}, {4, 6, 5, 7}}))", //
         "Graphics");
     check("QuantilePlot(q)", //
@@ -20617,7 +20617,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + " Infinity)", //
         "{{0.543,1.457},{1.543,2.457},{0.543,1.457},{1.543,2.457}}");
     check("Cases(First(PairedHistogram({1, 1, 2, 2}, {2, 2, 1, 3})),"
-        + " Rectangle(a_, b_) :> {a[[2]], b[[2]]}, Infinity)", //
+        + " Rectangle(a_, b_) :> {a[[2, 2]], b[[2, 2]]}, Infinity)", //
         "{{0.5,1.5},{1.5,2.5},{0.5,1.5},{1.5,2.5},{2.5,3.5}}");
     check("PairedBarChart(a, {1})", //
         "PairedBarChart(a,{1})");

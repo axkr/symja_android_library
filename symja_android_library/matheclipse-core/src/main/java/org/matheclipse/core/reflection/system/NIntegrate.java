@@ -118,7 +118,9 @@ import org.matheclipse.parser.client.ParserConfig;
  * </code>
  * </pre>
  * <p>
- * Other options include <code>MaxIterations</code> and <code>MaxPoints</code>
+ * Other options include <code>MaxIterations</code> and <code>MaxPoints</code>.
+ * <code>EvaluationMonitor :&gt; expr</code> evaluates <code>expr</code> with the variable at each
+ * abscissa the integrand is sampled at.
  * </p>
  *
  * <pre>
@@ -848,6 +850,13 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
       final ISymbol xSymbol = (ISymbol) x;
       UnaryNumerical sampler = createSampler(function, xSymbol, engine);
+      final IExpr monitor = option[6];
+      // a multidimensional integral nests NIntegrate calls, which carry the option inwards: the
+      // innermost one runs the monitor, when every variable has its value
+      if (argSize <= 2 && !monitor.isNone() && !monitor.isAutomatic()) {
+        // EvaluationMonitor :> expr is evaluated with the variable at each sampled abscissa
+        sampler.setMonitor(xValue -> engine.evaluate(F.subst(monitor, xSymbol, F.num(xValue))));
+      }
       double[] breakPoints;
       if (minDouble == Double.NEGATIVE_INFINITY && maxDouble == Double.POSITIVE_INFINITY) {
         // QAGI folds (-Infinity, Infinity) into f(x)+f(-x), which cancels the divergent halves
@@ -1071,12 +1080,13 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   private static IBuiltInSymbol[] defaultOptionKeys() {
     return new IBuiltInSymbol[] {//
         S.Method, S.MaxPoints, S.MaxIterations, S.PrecisionGoal, S.AccuracyGoal,
-        S.WorkingPrecision};
+        S.WorkingPrecision, S.EvaluationMonitor};
   }
 
   private static IExpr[] defaultOptionValues() {
     return new IExpr[] {//
-        S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.MachinePrecision};
+        S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.MachinePrecision,
+        S.None};
   }
 
   /**

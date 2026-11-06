@@ -77,11 +77,10 @@ public class RectangleChart extends AbstractChart {
     IExpr chartStyle = GraphicsOptions.optionValue(originalAST, S.ChartStyle, S.Automatic);
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
-    }
-
     boolean byPosition = datasets.argSize() > 1 || !chartStyle.isAutomatic();
+    // a legend entry names the rectangles at one position, in the fill they were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(color(chartStyle, 0));
     IASTAppendable primitives = F.ListAlloc(boxes.size() + 1);
     // the style of the chart as a whole, which the style of each bar then refines
     primitives.append(color(chartStyle, 0));
@@ -94,6 +93,7 @@ public class RectangleChart extends AbstractChart {
       PlotWrapper wrapper = PlotWrapper.of(box.item);
       IExpr color =
           wrapper.style.isPresent() ? wrapper.style : color(chartStyle, byPosition ? box.position : 0);
+      legendColors.record(box.position, color);
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color,
           wrapper.style.isPresent() || !chartStyle.isAutomatic());
       IASTAppendable group = F.ListAlloc(2);
@@ -139,6 +139,7 @@ public class RectangleChart extends AbstractChart {
     double pad = (yMax - yMin) * 0.05;
     graphicsOptions.setBoundingBox(new double[] {xMin, xMax, yMin < 0 ? yMin - pad : yMin,
         yMax > 0 ? yMax + pad : yMax});
+    graphicsOptions.setChartLegend(chartLegends, legendColors);
     IExpr chart = createGraphicsFunction(primitives, graphicsOptions, ast);
     return framed && !GraphicsOptions.optionValue(originalAST, S.FrameTicks, F.NIL).isPresent()
         ? withoutBottomTicks(chart)

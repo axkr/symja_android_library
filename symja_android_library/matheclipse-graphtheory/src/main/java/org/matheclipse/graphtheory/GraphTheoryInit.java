@@ -73,6 +73,8 @@ public class GraphTheoryInit {
         .setEvaluator(new org.matheclipse.graphtheory.reflection.IndependentEdgeSetQ());
     S.FindClique.setEvaluator(new org.matheclipse.graphtheory.reflection.FindClique());
     S.FindKClique.setEvaluator(new org.matheclipse.graphtheory.reflection.FindKClique());
+    S.FindGraphCommunities
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.FindGraphCommunities());
     S.FindKClan.setEvaluator(new org.matheclipse.graphtheory.reflection.FindKClan());
     S.FindKClub.setEvaluator(new org.matheclipse.graphtheory.reflection.FindKClub());
     S.LuccioSamiComponents
@@ -129,6 +131,8 @@ public class GraphTheoryInit {
     S.TreeGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraph());
     S.TreeGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraphQ());
     S.TreePlot.setEvaluator(new org.matheclipse.graphtheory.reflection.TreePlot());
+    S.CommunityGraphPlot
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.CommunityGraphPlot());
     S.VertexAdd.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexAdd());
     S.VertexChromaticNumber
         .setEvaluator(new org.matheclipse.graphtheory.reflection.VertexChromaticNumber());

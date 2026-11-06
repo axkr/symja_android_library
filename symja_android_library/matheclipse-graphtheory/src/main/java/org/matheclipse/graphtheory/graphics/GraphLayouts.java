@@ -137,7 +137,8 @@ public final class GraphLayouts {
         if (rows <= 0) {
           rows = Math.max(1, (int) Math.floor(Math.sqrt(n)));
         }
-        return grid(rows);
+        // "PackingLayout" -> None keeps the components on one grid
+        return grid(rows, subOption(layoutSpec, "PackingLayout") != S.None);
       }
       case "MultipartiteLayout":
       case "MultipartiteEmbedding": {
@@ -642,12 +643,43 @@ public final class GraphLayouts {
 
   /**
    * The order of the vertices around the circle: a depth first walk from the first vertex of every
-   * component, the most recently listed edge first; a directed graph runs the other way round.
+   * component which tries the neighbour latest in the vertex list first, following directed edges
+   * only forwards. In an undirected tree whose walk ends in exactly two dead ends, and in a strongly
+   * connected directed cycle with one chord, the first run of the walk - from the root down to the
+   * first dead end - is turned round, so that the tree or the cycle is laid out end to end.
    */
   private int[] circularOrder() {
+    int[][] successors = new int[n][];
+    int[] outDegree = new int[n];
+    for (int[] e : edges) {
+      outDegree[e[0]]++;
+      if (!directed) {
+        outDegree[e[1]]++;
+      }
+    }
+    for (int v = 0; v < n; v++) {
+      successors[v] = new int[outDegree[v]];
+    }
+    int[] fill = new int[n];
+    // the edges starting at each vertex, which a tree has one fewer of than vertices
+    int[] edgesFrom = new int[n];
+    for (int[] e : edges) {
+      successors[e[0]][fill[e[0]]++] = e[1];
+      if (!directed) {
+        successors[e[1]][fill[e[1]]++] = e[0];
+      }
+      edgesFrom[e[0]]++;
+    }
+    for (int v = 0; v < n; v++) {
+      // latest in the vertex list first, each neighbour once
+      successors[v] = Arrays.stream(successors[v]).distinct().boxed()
+          .sorted(Comparator.reverseOrder()).mapToInt(Integer::intValue).toArray();
+    }
     int[] order = new int[n];
     int count = 0;
     boolean[] seen = new boolean[n];
+    int[] parent = new int[n];
+    Arrays.fill(parent, -1);
     int[] position = new int[n];
     ArrayDeque<Integer> stack = new ArrayDeque<Integer>();
     for (int root = 0; root < n; root++) {
@@ -660,11 +692,11 @@ public final class GraphLayouts {
       stack.push(root);
       while (!stack.isEmpty()) {
         int v = stack.peek();
-        int[] neighbours = adjacency[v];
-        if (position[v] < neighbours.length) {
-          int w = neighbours[neighbours.length - 1 - position[v]++];
+        if (position[v] < successors[v].length) {
+          int w = successors[v][position[v]++];
           if (!seen[w]) {
             seen[w] = true;
+            parent[w] = v;
             order[count++] = w;
             stack.push(w);
           }
@@ -672,15 +704,119 @@ public final class GraphLayouts {
           stack.pop();
         }
       }
-      if (directed) {
-        for (int i = start + 1, j = count - 1; i < j; i++, j--) {
-          int t = order[i];
-          order[i] = order[j];
-          order[j] = t;
-        }
+      if (directed ? isChordedCycle(order, start, count, successors)
+          : isTree(order, start, count, edgesFrom)) {
+        reverseFirstRun(order, start, count, parent);
       }
     }
     return order;
+  }
+
+  /** Whether the component <code>order[start..end-1]</code> has one edge fewer than vertices. */
+  private static boolean isTree(int[] order, int start, int end, int[] edgesFrom) {
+    int edgeCount = 0;
+    for (int i = start; i < end; i++) {
+      edgeCount += edgesFrom[order[i]];
+    }
+    return edgeCount + 1 == end - start;
+  }
+
+  /**
+   * Whether the vertices <code>order[start..end-1]</code> a directed walk reached are a strongly
+   * connected cycle with one chord: a single vertex with two successors, one of which is the single
+   * vertex with two predecessors, every other vertex having one of each.
+   */
+  private boolean isChordedCycle(int[] order, int start, int end, int[][] successors) {
+    int[] inDegree = new int[n];
+    boolean[] inComponent = new boolean[n];
+    for (int i = start; i < end; i++) {
+      inComponent[order[i]] = true;
+      for (int w : successors[order[i]]) {
+        inDegree[w]++;
+      }
+    }
+    int branch = -1;
+    int join = -1;
+    for (int i = start; i < end; i++) {
+      int v = order[i];
+      int out = successors[v].length;
+      if (out < 1 || out > 2 || inDegree[v] < 1 || inDegree[v] > 2) {
+        return false;
+      }
+      if (out == 2) {
+        if (branch >= 0) {
+          return false;
+        }
+        branch = v;
+      }
+      if (inDegree[v] == 2) {
+        if (join >= 0) {
+          return false;
+        }
+        join = v;
+      }
+    }
+    if (branch < 0 || join < 0) {
+      return false;
+    }
+    final int joinVertex = join;
+    if (Arrays.stream(successors[branch]).noneMatch(w -> w == joinVertex)) {
+      return false;
+    }
+    // strongly connected: every vertex the walk reached leads back to its root
+    int[][] predecessors = new int[n][];
+    int[] fill = new int[n];
+    for (int i = start; i < end; i++) {
+      predecessors[order[i]] = new int[inDegree[order[i]]];
+    }
+    for (int i = start; i < end; i++) {
+      for (int w : successors[order[i]]) {
+        predecessors[w][fill[w]++] = order[i];
+      }
+    }
+    boolean[] reached = new boolean[n];
+    ArrayDeque<Integer> queue = new ArrayDeque<Integer>();
+    reached[order[start]] = true;
+    queue.add(order[start]);
+    int reachedCount = 1;
+    while (!queue.isEmpty()) {
+      for (int u : predecessors[queue.poll()]) {
+        if (inComponent[u] && !reached[u]) {
+          reached[u] = true;
+          reachedCount++;
+          queue.add(u);
+        }
+      }
+    }
+    return reachedCount == end - start;
+  }
+
+  /**
+   * Turn round the first run of a walk - the root and its descendants down to the first dead end -
+   * when the walk <code>order[start..end-1]</code> ends in exactly two dead ends.
+   */
+  private static void reverseFirstRun(int[] order, int start, int end, int[] parent) {
+    boolean[] hasChild = new boolean[parent.length];
+    for (int i = start + 1; i < end; i++) {
+      hasChild[parent[order[i]]] = true;
+    }
+    int deadEnds = 0;
+    for (int i = start + 1; i < end; i++) {
+      if (!hasChild[order[i]]) {
+        deadEnds++;
+      }
+    }
+    int run = 1;
+    while (start + run < end && parent[order[start + run]] == order[start + run - 1]) {
+      run++;
+    }
+    if (deadEnds == 2 && run < end - start) {
+      for (int i = start, j = start + run - 1; i < j; i++, j--) {
+        int t = order[i];
+        order[i] = order[j];
+        order[j] = t;
+      }
+    }
   }
 
   /**
@@ -720,14 +856,133 @@ public final class GraphLayouts {
     return points;
   }
 
-  /** The vertices column by column, <code>rows</code> in a column, one unit apart from 1. */
-  private double[][] grid(int rows) {
+  /**
+   * The vertices column by column, <code>rows</code> in a column, one unit apart from 1. With
+   * <code>pack</code> every connected component gets a grid of its own, and the grids are packed
+   * side by side.
+   */
+  private double[][] grid(int rows, boolean pack) {
+    List<int[]> components = pack ? components()
+        : java.util.Collections.singletonList(java.util.stream.IntStream.range(0, n).toArray());
     double[][] points = new double[n][2];
-    for (int k = 0; k < n; k++) {
-      points[k][0] = k / rows + 1.0;
-      points[k][1] = k % rows + 1.0;
+    for (int[] component : components) {
+      for (int k = 0; k < component.length; k++) {
+        points[component[k]][0] = k / rows + 1.0;
+        points[component[k]][1] = k % rows + 1.0;
+      }
     }
-    return points;
+    return components.size() > 1 ? packGrids(components, points) : points;
+  }
+
+  /**
+   * The connected components, ignoring the directions of the edges, each a list of vertex indices
+   * in the order of the vertex list; the largest first, and components of the same size in the
+   * order of their first vertices.
+   */
+  private List<int[]> components() {
+    int[] label = new int[n];
+    Arrays.fill(label, -1);
+    List<List<Integer>> members = new ArrayList<List<Integer>>();
+    ArrayDeque<Integer> queue = new ArrayDeque<Integer>();
+    for (int root = 0; root < n; root++) {
+      if (label[root] >= 0) {
+        continue;
+      }
+      int c = members.size();
+      members.add(new ArrayList<Integer>());
+      label[root] = c;
+      queue.add(root);
+      while (!queue.isEmpty()) {
+        int v = queue.poll();
+        for (int w : adjacency[v]) {
+          if (label[w] < 0) {
+            label[w] = c;
+            queue.add(w);
+          }
+        }
+      }
+    }
+    for (int v = 0; v < n; v++) {
+      members.get(label[v]).add(v);
+    }
+    List<int[]> components = new ArrayList<int[]>(members.size());
+    for (List<Integer> m : members) {
+      components.add(m.stream().mapToInt(Integer::intValue).toArray());
+    }
+    components.sort((a, b) -> a.length != b.length ? Integer.compare(b.length, a.length)
+        : Integer.compare(a[0], b[0]));
+    return components;
+  }
+
+  /**
+   * Pack the grids of several components side by side without scaling them. Every component is
+   * padded by an eighth of the mean of the sums of the width and height of the components; the
+   * padded boxes go into columns as high as the highest box, each box into the first column with
+   * room for it, and the room left in a column is shared out below its boxes, so that every column
+   * starts at the top.
+   */
+  private static double[][] packGrids(List<int[]> components, double[][] points) {
+    int count = components.size();
+    double[][] bounds = new double[count][];
+    double padding = 0.0;
+    for (int i = 0; i < count; i++) {
+      double xMin = Double.POSITIVE_INFINITY;
+      double xMax = Double.NEGATIVE_INFINITY;
+      double yMin = Double.POSITIVE_INFINITY;
+      double yMax = Double.NEGATIVE_INFINITY;
+      for (int v : components.get(i)) {
+        xMin = Math.min(xMin, points[v][0]);
+        xMax = Math.max(xMax, points[v][0]);
+        yMin = Math.min(yMin, points[v][1]);
+        yMax = Math.max(yMax, points[v][1]);
+      }
+      bounds[i] = new double[] {xMin, xMax, yMin, yMax};
+      padding += xMax - xMin + yMax - yMin;
+    }
+    padding /= 8.0 * count;
+    double[] heights = new double[count];
+    double columnHeight = 0.0;
+    for (int i = 0; i < count; i++) {
+      heights[i] = bounds[i][3] - bounds[i][2] + 2.0 * padding;
+      columnHeight = Math.max(columnHeight, heights[i]);
+    }
+    List<List<Integer>> columns = new ArrayList<List<Integer>>();
+    List<Double> used = new ArrayList<Double>();
+    for (int i = 0; i < count; i++) {
+      int column = -1;
+      for (int c = 0; c < used.size(); c++) {
+        if (used.get(c) + heights[i] <= columnHeight + 1.0e-9) {
+          column = c;
+          break;
+        }
+      }
+      if (column < 0) {
+        columns.add(new ArrayList<Integer>());
+        used.add(0.0);
+        column = columns.size() - 1;
+      }
+      columns.get(column).add(i);
+      used.set(column, used.get(column) + heights[i]);
+    }
+    double[][] packed = new double[points.length][2];
+    double x = 0.0;
+    for (int c = 0; c < columns.size(); c++) {
+      List<Integer> column = columns.get(c);
+      double slack = (columnHeight - used.get(c)) / column.size();
+      double y = 0.0;
+      double width = 0.0;
+      for (int i : column) {
+        double[] b = bounds[i];
+        for (int v : components.get(i)) {
+          packed[v][0] = x + padding + points[v][0] - b[0];
+          packed[v][1] = -y - padding + points[v][1] - b[3];
+        }
+        width = Math.max(width, b[1] - b[0] + 2.0 * padding);
+        y += heights[i] + slack;
+      }
+      x += width;
+    }
+    return packed;
   }
 
   /**

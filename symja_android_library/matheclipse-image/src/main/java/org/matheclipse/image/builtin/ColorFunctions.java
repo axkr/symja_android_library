@@ -226,6 +226,19 @@ public class ColorFunctions {
       }
       String space = canonicalSpace(ast.arg2().toString());
       if (ast.arg1() instanceof ImageExpr) {
+        ImageExpr source = (ImageExpr) ast.arg1();
+        IExpr rgb = spectralToRgb(source);
+        if (rgb.isPresent()) {
+          // spectral bands become red, green and blue first, and those the space asked for
+          return RGB.equals(space) ? rgb
+              : engine.evaluate(F.binaryAST2(S.ColorConvert, rgb, ast.arg2()));
+        }
+        if (RGB.equals(space) && source.channels() == 4 && hasAlpha(source)) {
+          // red, green and blue with an alpha channel, which stays
+          return source;
+        }
+      }
+      if (ast.arg1() instanceof ImageExpr) {
         IExpr converted = convertColorSpace((ImageExpr) ast.arg1(), space);
         if (converted.isPresent()) {
           return converted;
@@ -302,6 +315,40 @@ public class ColorFunctions {
       return expr.isAST(S.RGBColor) || expr.isAST(S.GrayLevel) || expr.isAST(S.Hue)
           || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)
           || expr.isAST(S.LCHColor);
+    }
+
+    /**
+     * The RGB image of an image of spectral bands, see {@link Pixels#spectralRgb(double[])}. The
+     * result keeps the sample type of the image, except that a bilevel image gives reals.
+     *
+     * @return {@link F#NIL} for an image which isn't one of spectral bands
+     */
+    private static IExpr spectralToRgb(ImageExpr source) {
+      int channels = source.channels();
+      if (!Pixels.isSpectral(source.getOptions().colorSpaceName(), channels)) {
+        return F.NIL;
+      }
+      Raster raster = source.raster();
+      if (raster == null) {
+        return F.NIL;
+      }
+      Raster result = new Raster(raster.width, raster.height, 3);
+      double[] bands = new double[channels];
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          for (int c = 0; c < channels; c++) {
+            bands[c] = raster.get(x, y, c);
+          }
+          double[] rgb = Pixels.spectralRgb(bands);
+          for (int c = 0; c < 3; c++) {
+            result.set(x, y, c, rgb[c]);
+          }
+        }
+      }
+      String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
+      ImageExpr image = ImageExpr.fromRaster(result,
+          source.getOptions().withColorSpace(S.Automatic), type);
+      return image == null ? F.NIL : image;
     }
 
     /**

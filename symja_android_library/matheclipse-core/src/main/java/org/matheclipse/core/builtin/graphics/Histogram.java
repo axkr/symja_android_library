@@ -63,9 +63,6 @@ public class Histogram extends AbstractChart {
     // CPD-ON
         GraphicsOptions.optionValue(originalAST, S.ChartElementFunction, S.Automatic);
 
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
-    }
 
     IAST dataList = (IAST) dataArg;
     IAST datasets = GraphicsOptions.chartDatasets(dataList);
@@ -153,8 +150,12 @@ public class Histogram extends AbstractChart {
         GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True), S.Histogram,
         engine).range(1, 0, tallest).build();
 
+    // a legend entry names one dataset, in the fill its bars were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(getChartStyle(chartStyle, 0));
     for (int d = 0; d < datasetCount; d++) {
       IExpr color = getChartStyle(chartStyle, d);
+      legendColors.record(d, color);
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color, !chartStyle.isAutomatic());
 
       IASTAppendable group = F.ListAlloc(numBins + 2);
@@ -205,6 +206,7 @@ public class Histogram extends AbstractChart {
     // This reinforces the "left of histogram" look even if user toggles Axes->True
     graphicsOptions.addOption(F.Rule(S.AxesOrigin, F.List(F.num(origin), F.C0)));
 
+    graphicsOptions.setChartLegend(chartLegends, legendColors);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 

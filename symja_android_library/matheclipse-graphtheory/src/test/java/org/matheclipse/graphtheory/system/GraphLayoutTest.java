@@ -173,11 +173,12 @@ public class GraphLayoutTest extends AbstractTestCase {
 
   @Test
   public void testGraphEmbeddingCircular() {
-    // the first vertex at 90 degrees + 360/n, the order follows the edges
+    // the first vertex at 90 degrees + 360/n, the order follows the edges: the path 3 - 1 - 2
+    // goes round the circle end to end
     check(
         "Round(Mod(ArcTan @@@ GraphEmbedding(Graph({1 <-> 3, 1 <-> 2}, "
             + "GraphLayout -> \"CircularEmbedding\"))/Degree, 360))", //
-        "{210,90,330}");
+        "{330,90,210}");
     check(
         "Round(Mod(ArcTan @@@ GraphEmbedding(Graph({1 <-> 3, 1 <-> 2}, "
             + "GraphLayout -> {\"CircularEmbedding\", \"OptimalOrder\" -> False}))/Degree, 360))", //
@@ -221,5 +222,40 @@ public class GraphLayoutTest extends AbstractTestCase {
         + "GraphLayout -> \"LayeredDigraphEmbedding\")); "
         + "Round({Max(e[[All, 1]]) - Min(e[[All, 1]]), Max(e[[All, 2]]) - Min(e[[All, 2]])}, 0.001)", //
         "{2.0,1.236}");
+  }
+
+  /** Every component of a grid embedding gets a grid of its own, packed side by side. */
+  @Test
+  public void testGridEmbeddingPacksComponents() {
+    check("Round(GraphEmbedding(Graph(Range(7),{1<->2,2<->3,4<->5,6<->7}, "
+        + "GraphLayout->{\"GridEmbedding\",\"Dimension\"->{2,2}})),0.001)", //
+        "{{0.167,-1.167},{0.167,-0.167},{1.167,-1.167},{1.5,-1.167},{1.5,-0.167},"
+            + "{1.833,-1.167},{1.833,-0.167}}");
+    check("Round(GraphEmbedding(Graph(Range(4),{1<->3}, "
+        + "GraphLayout->{\"GridEmbedding\",\"Dimension\"->{2,2}})),0.001)", //
+        "{{0.042,-1.042},{0.125,-0.042},{0.042,-0.042},{0.125,-0.583}}");
+    // without packing the vertices stay on one grid
+    check("GraphEmbedding(Graph(Range(4),{1<->3}, GraphLayout->{\"VertexLayout\"->"
+        + "{\"GridEmbedding\",\"Dimension\"->{2,2}},\"PackingLayout\"->None}))", //
+        "{{1.0,1.0},{1.0,2.0},{2.0,1.0},{2.0,2.0}}");
+  }
+
+  /**
+   * The walk round the circle tries the neighbour latest in the vertex list first, follows directed
+   * edges forwards and lays a path out end to end.
+   */
+  @Test
+  public void testCircularEmbeddingWalk() {
+    String order = "c = GraphEmbedding(g); n = VertexCount(g); "
+        + "VertexList(g)[[Ordering(Mod(Round((ArcTan @@@ c - Pi/2)/(2*Pi/n)), n) /. 0 -> n)]]";
+    check("g = Graph(Range(6), {1<->4,4<->2,2<->6,6<->1,1<->2}, "
+        + "GraphLayout->\"CircularEmbedding\"); " + order, //
+        "{1,6,2,4,3,5}");
+    check("g = Graph(Range(5), {2<->4,4<->1,1<->3,3<->5}, GraphLayout->\"CircularEmbedding\"); "
+        + order, //
+        "{2,4,1,3,5}");
+    check("g = Graph(Range(4), {1->3,3->2,2->4,4->1,1->2}, GraphLayout->\"CircularEmbedding\"); "
+        + order, //
+        "{1,3,2,4}");
   }
 }

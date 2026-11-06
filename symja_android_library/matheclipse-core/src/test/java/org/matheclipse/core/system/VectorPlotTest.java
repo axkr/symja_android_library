@@ -148,4 +148,19 @@ public class VectorPlotTest extends ExprEvaluatorTestCase {
             + "_Arrow, Infinity))}", //
         "{18,18}");
   }
+
+  @Test
+  public void testVectorPlot3DColors() {
+    // a ColorFunction colours every arrow
+    check(
+        "Union(Cases(VectorPlot3D({y, 1, 0}, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}, VectorPoints -> 2, "
+            + "ColorFunction -> Function(Red)), _RGBColor, Infinity))", //
+        "{RGBColor(1.0,0.0,0.0)}");
+    // several fields are drawn together, each in a colour of its own
+    check(
+        "g = VectorPlot3D({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}, "
+            + "VectorPoints -> 2); "
+            + "{Length(Cases(g, Arrow(_Tube), Infinity)), Length(Union(Cases(g, _RGBColor, Infinity)))}", //
+        "{24,3}");
+  }
 }

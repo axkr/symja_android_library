@@ -1548,12 +1548,21 @@ public final class PrimitiveCollector {
           applyTextStyle(wrapper.get(i), textStyle);
         }
         content = wrapper.arg1();
+      } else if (head == S.Pane) {
+        content = wrapper.arg1();
       } else {
         break;
       }
     }
 
     double[] pos = ast.argSize() >= 2 ? pointOf(ast.arg2()) : new double[] {0, 0};
+    // Text(expr, Offset({dx, dy}, pos)) moves the label by {dx, dy} printer's points
+    double shiftX = 0;
+    double shiftY = 0;
+    if (ast.argSize() >= 2 && ast.arg2().isAST(S.Offset, 3) && ast.arg2().first().isList2()) {
+      shiftX = ColorUtil.dbl(ast.arg2().first().first(), 0.0);
+      shiftY = ColorUtil.dbl(ast.arg2().first().second(), 0.0);
+    }
     double offsetX = 0;
     double offsetY = 0;
     if (ast.argSize() >= 3 && ast.arg3().isList()) {
@@ -1571,7 +1580,7 @@ public final class PrimitiveCollector {
       }
     }
     primitives.add(new Prim2D.TextPrim(textOf(content), pos[0], pos[1], offsetX, offsetY, dirX,
-        dirY, frame, background, textStyle));
+        dirY, frame, background, textStyle, shiftX, shiftY));
   }
 
   /** The displayed form of a label. Strings lose their quotes; anything else prints as is. */
@@ -2088,6 +2097,11 @@ public final class PrimitiveCollector {
       IAST scaled = (IAST) expr.first();
       return new double[] {ColorUtil.dbl(scaled.arg1(), Double.NaN),
           ColorUtil.dbl(scaled.arg2(), Double.NaN)};
+    }
+    if (expr.isAST(S.Offset, 3)) {
+      // the position of Offset(shift, pos); a Text applies the shift itself, other primitives
+      // are drawn at the position
+      return pointOf(((IAST) expr).arg2());
     }
     if (vertices != null && expr.isInteger()) {
       int idx = expr.toIntDefault(0);

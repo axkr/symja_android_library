@@ -3,6 +3,7 @@ package org.matheclipse.core.graphics;
 import java.util.Locale;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
@@ -1055,6 +1056,98 @@ public class GraphicsOptions {
       return color.isPresent() ? color : chartStyleColorExpr(index);
     }
     return chartStyle;
+  }
+
+  /**
+   * Whether a <code>ChartLegends</code> setting is a list of labels, one for each element colour of
+   * the chart.
+   */
+  private static boolean chartLegendLabels(IExpr chartLegends) {
+    if (chartLegends.isAST(S.Placed) && chartLegends.argSize() >= 1) {
+      return chartLegendLabels(chartLegends.first());
+    }
+    return chartLegends.isList() && chartLegends.argSize() > 0;
+  }
+
+  /**
+   * The legend a chart hands on for its <code>ChartLegends</code> setting: a list of labels is a
+   * <code>SwatchLegend</code> whose entry <code>i</code> (counted from 0) has the colour
+   * <code>colorOf</code> gives it, the colour the chart filled its elements of that entry with;
+   * <code>Placed(labels, pos)</code> keeps its placement; any other legend is handed on as it is.
+   */
+  public static IExpr chartLegend(IExpr chartLegends, IntFunction<IExpr> colorOf) {
+    if (chartLegends.isAST(S.Placed) && chartLegends.argSize() >= 1) {
+      return ((IAST) chartLegends).setAtCopy(1, chartLegend(chartLegends.first(), colorOf));
+    }
+    if (!chartLegendLabels(chartLegends)) {
+      return chartLegends;
+    }
+    IAST labels = (IAST) chartLegends;
+    IASTAppendable colors = F.ListAlloc(labels.argSize());
+    for (int i = 0; i < labels.argSize(); i++) {
+      colors.append(colorOf.apply(i));
+    }
+    return F.binaryAST2(S.SwatchLegend, colors, labels);
+  }
+
+  /**
+   * Hands a chart's <code>ChartLegends</code> setting on as the legend of the picture, unless it is
+   * <code>None</code> or <code>Automatic</code>.
+   *
+   * @see #chartLegend(IExpr, IntFunction)
+   */
+  public void setChartLegend(IExpr chartLegends, IntFunction<IExpr> colorOf) {
+    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
+      setPlotLegends(chartLegend(chartLegends, colorOf));
+    }
+  }
+
+  /**
+   * The fills a chart drew, by legend entry: the chart records the fill of each element under the
+   * entry that names it while it draws, and the legend's swatches read them back, so they show what
+   * was drawn whatever decided the colour (<code>ChartStyle</code>, a <code>Style</code> wrapper, a
+   * <code>ColorFunction</code>). By default an entry nothing was recorded under takes the fill of
+   * the first entry that has one: one dataset drawn in a single colour names each of its elements
+   * in that colour.
+   */
+  public static final class LegendColors implements IntFunction<IExpr> {
+    private final java.util.TreeMap<Integer, IExpr> drawn = new java.util.TreeMap<>();
+    private final IExpr fallback;
+    private final IntFunction<IExpr> unrecorded;
+
+    /** @param fallback the fill of every entry when the chart recorded none */
+    public LegendColors(IExpr fallback) {
+      this.fallback = fallback;
+      this.unrecorded = null;
+    }
+
+    /**
+     * @param unrecorded the fill of an entry nothing was recorded under, such as a dataset the chart
+     *        skipped
+     */
+    public LegendColors(IntFunction<IExpr> unrecorded) {
+      this.fallback = F.NIL;
+      this.unrecorded = unrecorded;
+    }
+
+    /** Records the fill of an element named by legend entry <code>entry</code>; the first wins. */
+    public void record(int entry, IExpr fill) {
+      if (fill != null && fill.isPresent()) {
+        drawn.putIfAbsent(entry, fill);
+      }
+    }
+
+    @Override
+    public IExpr apply(int entry) {
+      IExpr fill = drawn.get(entry);
+      if (fill != null) {
+        return fill;
+      }
+      if (unrecorded != null) {
+        return unrecorded.apply(entry);
+      }
+      return drawn.isEmpty() ? fallback : drawn.firstEntry().getValue();
+    }
   }
 
   /** How many elements a named colour scheme is spread over before it repeats. */
@@ -2598,6 +2691,32 @@ public class GraphicsOptions {
 
   /** The key under <code>Method</code> which carries a plot's axis scaling. */
   private static final String METHOD_SCALING = "Scaling";
+
+  /**
+   * How close to <code>0</code>, as a fraction of its span, the automatic range of a function plot
+   * may stop and still be extended to <code>0</code>.
+   */
+  private static final double PLOT_ZERO_REACH = 0.1228;
+
+  /**
+   * Extend the automatic range <code>{min, max}</code> of a function plot to <code>0</code> when its
+   * nearer end lies within {@link #PLOT_ZERO_REACH} of its span from it: <code>Plot(a + x, {x, 0,
+   * 1})</code> ranges from <code>0</code> for <code>a = 0.12</code> and from <code>a</code> for
+   * <code>a = 0.13</code>, on either side of the axis.
+   *
+   * @param range the range, changed in place
+   */
+  public static void reachToZero(double[] range) {
+    double span = range[1] - range[0];
+    if (!Double.isFinite(span) || span <= 0.0) {
+      return;
+    }
+    if (range[0] > 0.0 && range[0] < PLOT_ZERO_REACH * span) {
+      range[0] = 0.0;
+    } else if (range[1] < 0.0 && -range[1] < PLOT_ZERO_REACH * span) {
+      range[1] = 0.0;
+    }
+  }
 
   /**
    * Hand on under <code>Method -> {...}</code> what a plot's <code>Graphics</code> has to carry for

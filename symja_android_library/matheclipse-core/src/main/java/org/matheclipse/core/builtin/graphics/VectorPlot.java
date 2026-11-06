@@ -6,6 +6,8 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -83,6 +85,8 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     // VectorScaling -> Automatic: the arrows' lengths grow with the field's strength
     boolean scaledLengths = false;
     IExpr style = F.NIL;
+    IExpr colorFunctionOption = S.Automatic;
+    IExpr colorFunctionScaling = S.True;
     RegionFunctionFilter region = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
     // CPD-OFF the vector plots handle different option keys
@@ -113,6 +117,14 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         style = engine.evaluate(option.second());
         continue;
       }
+      if (dimension == 3 && (key == S.ColorFunction || key == S.ColorFunctionScaling)) {
+        if (key == S.ColorFunction) {
+          colorFunctionOption = engine.evaluate(option.second());
+        } else {
+          colorFunctionScaling = engine.evaluate(option.second());
+        }
+        continue;
+      }
       if (key == S.VectorScaling) {
         scaledLengths = engine.evaluate(option.second()) == S.Automatic;
         continue;
@@ -130,15 +142,19 @@ public class VectorPlot extends AbstractFunctionEvaluator {
           region, graphicsOptions, engine);
     }
 
-    // sample the field, on the grid or at the points asked for
+    // in space a list of fields draws each of them, every one in a colour of its own
+    IAST fields = dimension == 3 && isFieldList(field) ? (IAST) field : F.List(field);
+    // sample the fields, on the grid or at the points asked for
     double[][] samples = explicitPoints != null ? explicitPoints : gridPoints(points, min, max);
-    int total = samples.length;
+    int perField = samples.length;
+    int total = perField * fields.argSize();
     double[][] tails = new double[total][];
     double[][] vectors = new double[total][];
     double longest = 0.0;
     for (int k = 0; k < total; k++) {
-      double[] point = samples[k];
-      double[] vector = fieldAt(field, variables, point, engine);
+      engine.checkTimeLimit();
+      double[] point = samples[k % perField];
+      double[] vector = fieldAt(fields.get(k / perField + 1), variables, point, engine);
       if (vector == null) {
         continue;
       }
@@ -176,6 +192,9 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       spacing = max[0] - min[0];
     }
     double factor = longest > 0.0 ? scale * spacing / longest : 0.0;
+    PlotColorFunction colorFunction = colored && fields.argSize() == 1
+        ? vectorColors(colorFunctionOption, colorFunctionScaling, min, max, vectors, engine)
+        : null;
 
     IASTAppendable primitives = F.ListAlloc();
     if (dimension == 2) {
@@ -211,7 +230,17 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         // CPD-ON
       }
       IAST arrow = arrow(from, to, dimension);
-      primitives.append(colored ? F.list(color(norm(v) / longest), arrow) : arrow);
+      if (!colored) {
+        primitives.append(arrow);
+      } else if (fields.argSize() > 1) {
+        primitives.append(F.list(fieldColor(k / perField), arrow));
+      } else if (colorFunction != null) {
+        primitives.append(F.list(
+            engine.evaluate(F.N(colorFunction.color(p[0], p[1], p[2], v[0], v[1], v[2], norm(v)))),
+            arrow));
+      } else {
+        primitives.append(F.list(color(norm(v) / longest), arrow));
+      }
     }
 
     IASTAppendable range = F.ListAlloc(dimension);
@@ -549,6 +578,54 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     return null;
   }
 
+  /** Whether a field is a list of fields, each a list of components. */
+  private boolean isFieldList(IExpr field) {
+    return field.isList() && field.argSize() > 0
+        && ((IAST) field).forAll(f -> f.isList() && f.argSize() == dimension);
+  }
+
+  /** The colour of field number <code>index</code> of several, from the default plot colours. */
+  private static IAST fieldColor(int index) {
+    float[] rgb = GraphicsOptions.plotStyleColor(index, F.NIL).getRGBColorComponents(null);
+    // the shortest decimal of each float component
+    return F.RGBColor(Double.parseDouble(Float.toString(rgb[0])),
+        Double.parseDouble(Float.toString(rgb[1])), Double.parseDouble(Float.toString(rgb[2])));
+  }
+
+  /**
+   * The <code>ColorFunction</code> of a field in space, handed the point, the vector and its
+   * length, each scaled over the range the samples span; <code>null</code> for the default
+   * colouring by the field's strength.
+   */
+  private static PlotColorFunction vectorColors(IExpr option, IExpr scaling, double[] min,
+      double[] max, double[][] vectors, EvalEngine engine) {
+    if (option.isAutomatic() || option.isNone()) {
+      return null;
+    }
+    double[] low = new double[4];
+    double[] high = new double[4];
+    java.util.Arrays.fill(low, Double.MAX_VALUE);
+    java.util.Arrays.fill(high, -Double.MAX_VALUE);
+    for (double[] v : vectors) {
+      if (v == null) {
+        continue;
+      }
+      double[] parts = {v[0], v[1], v[2], norm(v)};
+      for (int i = 0; i < 4; i++) {
+        low[i] = Math.min(low[i], parts[i]);
+        high[i] = Math.max(high[i], parts[i]);
+      }
+    }
+    if (low[3] > high[3]) {
+      return null;
+    }
+    return PlotColorFunction
+        .of(PlotColorFunction.Family.VECTOR_3D, option, scaling, S.VectorPlot3D, engine)
+        .ranges(min[0], max[0], min[1], max[1], min[2], max[2], low[0], high[0], low[1], high[1],
+            low[2], high[2], low[3], high[3])
+        .sink(PlotColorFunction.Sink.FLAT).build();
+  }
+
   /** The smallest distance between two different points, or {@link Double#MAX_VALUE}. */
   private static double smallestDistance(double[][] points) {
     double smallest = Double.MAX_VALUE;
@@ -615,7 +692,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     return first.isReal() ? first.evalf() : fallback;
   }
 
-  static double norm(double[] vector) {
+  public static double norm(double[] vector) {
     double sum = 0.0;
     for (double c : vector) {
       sum += c * c;
@@ -644,7 +721,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
    * The colour for the field's strength <code>t</code>, 0 the weakest and 1 the strongest: a
    * <code>LABColor</code> blended between the stops of {@link #GRADIENT}.
    */
-  static IAST color(double t) {
+  public static IAST color(double t) {
     t = Double.isNaN(t) ? 0.0 : Math.max(0.0, Math.min(1.0, t));
     double position = t * (GRADIENT.length - 1);
     int k = Math.min((int) Math.floor(position), GRADIENT.length - 2);

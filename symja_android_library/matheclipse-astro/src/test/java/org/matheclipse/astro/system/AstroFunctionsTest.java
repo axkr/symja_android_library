@@ -1220,8 +1220,8 @@ public class AstroFunctionsTest extends AbstractTestCase {
   @Test
   public void testPlanetDataObserved() {
     check("PlanetData(\"Properties\")", //
-        "{AngularDiameter,ApparentMagnitude,DistanceFromEarth,DistanceFromSun,HelioCoordinates,"
-            + "IlluminationFraction,PhaseAngle}");
+        "{AngularDiameter,ApparentMagnitude,DistanceFromEarth,DistanceFromSun,Eccentricity,"
+            + "HelioCoordinates,IlluminationFraction,OrbitPeriod,PhaseAngle,SemimajorAxis}");
     check("PlanetData(\"Venus\", {\"ApparentMagnitude\", DateObject({1992,12,20})})", //
         "-4.21679");
     check("PlanetData(\"Venus\", {\"PhaseAngle\", DateObject({1992,12,20})})", //

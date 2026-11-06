@@ -416,8 +416,8 @@ public final class SvgRenderer2D {
   // ------------------------------------------------------------------ text
 
   void drawText(Prim2D.TextPrim prim, ContainerTag<?> parent) {
-    double x = viewport.mapX(prim.x);
-    double y = viewport.mapY(prim.y);
+    double x = viewport.mapX(prim.x) + prim.shiftX;
+    double y = viewport.mapY(prim.y) - prim.shiftY;
     if (!Double.isFinite(x) || !Double.isFinite(y)) {
       return;
     }

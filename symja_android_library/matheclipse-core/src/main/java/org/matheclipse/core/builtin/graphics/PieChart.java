@@ -114,16 +114,9 @@ public class PieChart extends ListPlot {
       }
     }
 
-    // Handle Legends
-    if (!chartLegends.isNone()) {
-      if (chartLegends.isAutomatic()) {
-        if (chartLabels.isList()) {
-          graphicsOptions.setPlotLegends(chartLabels);
-        }
-      } else {
-        graphicsOptions.setPlotLegends(chartLegends);
-      }
-    }
+    // a legend entry names the sectors at one position, in the fill they were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(GraphicsOptions.chartStyleColor(chartStyle, 0));
 
     // several datasets are drawn as rings around one another
     IAST rings = GraphicsOptions.chartDatasets((IAST) dataArg);
@@ -210,6 +203,7 @@ public class PieChart extends ListPlot {
           } else {
             color = GraphicsOptions.chartStyleColor(chartStyle, index);
           }
+          legendColors.record(index, color);
           boolean colorIsExplicit =
               functionColor.isPresent() || style != null || !chartStyle.isAutomatic();
           IExpr elementStyle = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
@@ -275,6 +269,10 @@ public class PieChart extends ListPlot {
       graphicsOptions.setAspectRatio(F.C1);
     }
 
+    // Automatic names the sectors by their labels
+    graphicsOptions.setChartLegend(
+        chartLegends.isAutomatic() && chartLabels.isList() ? chartLabels : chartLegends,
+        legendColors);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 

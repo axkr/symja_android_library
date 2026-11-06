@@ -58,6 +58,7 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.operator.OperatorTable;
 import com.google.common.base.CharMatcher;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
@@ -1869,6 +1870,7 @@ public final class StringFunctions {
       S.SmithWatermanSimilarity.setEvaluator(new AlignmentSimilarity(false));
       S.StringToByteArray.setEvaluator(new StringToByteArray());
       S.StringTrim.setEvaluator(new StringTrim());
+      S.Precedence.setEvaluator(new Precedence());
       S.SyntaxLength.setEvaluator(new SyntaxLength());
       S.TemplateApply.setEvaluator(new TemplateApply());
       S.TemplateIf.setEvaluator(new TemplateIf());
@@ -4588,6 +4590,76 @@ public final class StringFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  /**
+   * <code>Precedence(symbol)</code> - the precedence of the operator <code>symbol</code> is read as,
+   * taken from the parser's operator table.
+   *
+   * <p>
+   * A symbol which isn't an operator gets the precedence of a function call, <code>670.0</code>;
+   * anything but a symbol gets <code>1000.0</code>. A head spelled by several operators - such as
+   * <code>Apply</code> for <code>@@</code> and <code>@</code> - gets the lowest of their
+   * precedences. A few heads report a precedence that differs from the one the parser uses, or
+   * have one without being a parser operator; these are listed in {@link #REPORTED}.
+   */
+  private static class Precedence extends AbstractFunctionEvaluator {
+    /** The precedence of a symbol without an operator form: that of a function call. */
+    private static final double FUNCTION_CALL = 670.0;
+
+    /** The precedence of an expression which isn't a symbol. */
+    private static final double NOT_A_SYMBOL = 1000.0;
+
+    /** The precedence of each operator head, by the head's name. */
+    private static volatile Map<String, Integer> headPrecedences;
+
+    /** The same, by the lowercased name: a built-in symbol is lowercased in the relaxed syntax. */
+    private static volatile Map<String, Integer> lowerCaseHeadPrecedences;
+
+    /**
+     * Built-in heads whose reported precedence isn't the parser's: the logical operators share one
+     * level, <code>Sum</code> and <code>Limit</code> sit with the big operators, and some heads
+     * have a precedence without an operator row of their own.
+     */
+    private static final String[][] REPORTED = {{"And", "215"}, {"Nand", "215"},
+        {"Xor", "215"}, {"Optional", "140"}, {"Postfix", "70"}, {"Prefix", "640"},
+        {"Blank", "730"}, {"Sum", "320"}, {"Limit", "320"}, {"D", "550"},
+        {"TensorProduct", "495"}, {"RightComposition", "648"}, {"Composition", "650"}};
+
+    private static void initPrecedences() {
+      Map<String, Integer> precedences = new HashMap<String, Integer>();
+      Map<String, Integer> lowerCase = new HashMap<String, Integer>();
+      for (OperatorTable.Row row : OperatorTable.ROWS) {
+        precedences.merge(row.head, row.precedence, Math::min);
+        lowerCase.merge(row.head.toLowerCase(Locale.US), row.precedence, Math::min);
+      }
+      for (String[] reported : REPORTED) {
+        lowerCase.put(reported[0].toLowerCase(Locale.US), Integer.valueOf(reported[1]));
+      }
+      lowerCaseHeadPrecedences = lowerCase;
+      headPrecedences = precedences;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isSymbol()) {
+        return F.num(NOT_A_SYMBOL);
+      }
+      if (headPrecedences == null) {
+        initPrecedences();
+      }
+      String name = ((ISymbol) arg1).getSymbolName();
+      Integer precedence = arg1.isBuiltInSymbol()
+          ? lowerCaseHeadPrecedences.get(name.toLowerCase(Locale.US))
+          : headPrecedences.get(name);
+      return F.num(precedence == null ? FUNCTION_CALL : precedence.doubleValue());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 

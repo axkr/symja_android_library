@@ -1,5 +1,6 @@
 package org.matheclipse.astro.builtin;
 
+import java.util.Arrays;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.matheclipse.astro.convert.AstroBodies;
 import org.matheclipse.astro.convert.AstroConvert;
@@ -88,8 +89,26 @@ public class SolarSystemDataFunctions {
 
   /** What <code>PlanetData("Properties")</code> lists. */
   private static final String[] PLANET_PROPERTIES = {"AngularDiameter", "ApparentMagnitude",
-      "DistanceFromEarth", "DistanceFromSun", "HelioCoordinates", "IlluminationFraction",
-      "PhaseAngle"};
+      "DistanceFromEarth", "DistanceFromSun", "Eccentricity", "HelioCoordinates",
+      "IlluminationFraction", "OrbitPeriod", "PhaseAngle", "SemimajorAxis"};
+
+  /**
+   * The orbital elements of the planets in the order of {@link #PLANETS}: the semi major axis in
+   * astronomical units, the eccentricity and the orbital period, in days for the inner planets
+   * and in Julian years from Mars on.
+   */
+  private static final double[][] ORBITAL_ELEMENTS = {
+      {0.3870989299767116, 0.20563069, 87.969257175}, //
+      {0.7233319899564834, 0.00677323, 224.700799215}, //
+      {1.0000001099398387, 0.01671022, 365.25635535}, //
+      {1.5236623099083345, 0.09341233, 1.8808476}, //
+      {5.203363009686959, 0.04839266, 11.862615}, //
+      {9.537070319426238, 0.0541506, 29.447498}, //
+      {19.19126392884543, 0.04716771, 84.016846}, //
+      {30.068963478191013, 0.00858587, 164.79132}};
+
+  /** The planets up to this index give their orbital period in days. */
+  private static final int LAST_PERIOD_IN_DAYS = 2;
 
   /** The visual magnitude of the Sun at one astronomical unit. */
   private static final double SUN_MAGNITUDE = -26.74;
@@ -220,6 +239,10 @@ public class SolarSystemDataFunctions {
         }
       }
       property = Entities.propertyOf(property, PLANET);
+      IExpr element = orbitalElement(bodyName, property);
+      if (element.isPresent()) {
+        return element;
+      }
       boolean observed = isObservedProperty(property);
       if (!property.isString("HelioCoordinates") && !observed) {
         return Errors.printMessage(S.PlanetData, "astroprop", F.List(property, ast), engine);
@@ -252,6 +275,31 @@ public class SolarSystemDataFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2;
+    }
+  }
+
+  /**
+   * The orbital element <code>"SemimajorAxis"</code>, <code>"Eccentricity"</code> or
+   * <code>"OrbitPeriod"</code> of a planet, which need no ephemerides.
+   *
+   * @return {@link F#NIL} for another property
+   */
+  private static IExpr orbitalElement(String planet, IExpr property) {
+    if (!property.isString()) {
+      return F.NIL;
+    }
+    int index = Arrays.asList(PLANETS).indexOf(planet);
+    double[] elements = ORBITAL_ELEMENTS[index];
+    switch (property.toString()) {
+      case "SemimajorAxis":
+        return F.Quantity(F.num(elements[0]), F.stringx("AstronomicalUnit"));
+      case "Eccentricity":
+        return F.num(elements[1]);
+      case "OrbitPeriod":
+        return F.Quantity(F.num(elements[2]),
+            F.stringx(index <= LAST_PERIOD_IN_DAYS ? "Days" : "JulianYears"));
+      default:
+        return F.NIL;
     }
   }
 
