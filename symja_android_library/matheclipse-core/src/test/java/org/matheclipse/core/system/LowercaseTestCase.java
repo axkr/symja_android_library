@@ -22366,6 +22366,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPossibleZeroQEqualArgumentsInOtherForm() {
+    // equal arguments of a function written differently: 1+q/p and (p+q)/p
+    check("PossibleZeroQ(EllipticPi(1 + q/p, ArcSin(Sqrt(p + q*Sech(t))/Sqrt(p + q)), "
+        + "(p + q)/(p - q)) - EllipticPi((p + q)/p, ArcSin(Sqrt(p + q*Sech(t))/Sqrt(p + q)), "
+        + "(p + q)/(p - q)))", //
+        "True");
+    check("PossibleZeroQ(Gamma(1 + q/p)*Hypergeometric2F1(p, (p + q)/p, r, t) - "
+        + "Gamma((p + q)/p)*Hypergeometric2F1(p, 1 + q/p, r, t))", //
+        "True");
+    // the arguments differ
+    check("PossibleZeroQ(EllipticPi(1 + q/p, ArcSin(t), r) - EllipticPi((p + 2*q)/p, ArcSin(t), r))", //
+        "False");
+  }
+
+  @Test
   public void testRationalPowerLargeExponentNumerator() {
     // the base isn't raised to the numerator 70001 before its small primes are found
     check("(5003/4096)^(70001/1048576)", //

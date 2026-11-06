@@ -883,11 +883,52 @@ public class CompareUtil {
           return true;
         }
       }
+      // EllipticPi(1+b/a, p, q) - EllipticPi((a+b)/a, p, q): equal arguments in different forms
+      temp = togetherInArguments(function, engine);
+      if (temp.isPresent() && engine.evaluate(temp).isZero()) {
+        return true;
+      }
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
       Errors.printMessage(S.PossibleZeroQ, ve, engine);
     }
     return false;
+  }
+
+  /**
+   * <code>expr</code> with the sums, products and powers among the arguments of its functions put
+   * over one denominator by <code>Together</code>, from the inside out, so that arguments which are
+   * equal but written differently, <code>1+b/a</code> and <code>(a+b)/a</code>, become one
+   * expression.
+   *
+   * @return {@link F#NIL} if no argument changed
+   */
+  private static IExpr togetherInArguments(IExpr expr, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable result = F.NIL;
+    boolean function = ast.head().isBuiltInSymbol() && !ast.isPlus() && !ast.isTimes()
+        && !ast.isPower() && !ast.isList();
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      IExpr inner = togetherInArguments(arg, engine);
+      IExpr newArg = inner.orElse(arg);
+      if (function && (newArg.isPlus() || newArg.isTimes() || newArg.isPower())) {
+        IExpr together = engine.evaluate(F.Together(newArg));
+        if (!together.equals(newArg)) {
+          newArg = together;
+        }
+      }
+      if (newArg != arg) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, newArg);
+      }
+    }
+    return result;
   }
 
   /**
@@ -1009,6 +1050,14 @@ public class CompareUtil {
     final int realSamples = Math.min(REAL_SAMPLES << signBits, MAX_REAL_SAMPLES);
     final int sizes = Math.max(realSamples >> signBits, 1);
     int ladders = 0;
+    // The machine value of a sample is taken from machine numbers if a power has variables in its
+    // base and its exponent: the exact value, which N computes first, has powers like
+    // (1+a*x)^(n^2/2) of rationals with thousands of digits; E^x stays symbolic. Otherwise from the exact sample, whose evaluation cancels
+    // equal terms exactly: 1+b/a and (a+b)/a are one number, while their machine values may lie on
+    // either side of the branch cut of EllipticPi(n, ...) and its evaluation can take seconds.
+    final boolean machineScreen =
+        function.has(x -> x.isPower() && !x.exponent().isNumericFunction(true)
+            && !x.base().isNumericFunction(true), true);
     for (int i = 0; i < realSamples; i++) {
       engine.checkTimeLimit();
       final int visit = i >> signBits;
@@ -1026,10 +1075,9 @@ public class CompareUtil {
         rules.append(F.Rule(variables.get(j + 1), value));
         machineRules.append(F.Rule(variables.get(j + 1), F.num(value.doubleValue())));
       }
-      // the machine value is taken from machine numbers: the exact value of a sample first, which
-      // N would compute, has powers like (1+a*x)^(n^2/2) of rationals with thousands of digits
       // only a machine value which isn't 0 asks for more digits, and a few of them have the answer
-      if (isPossibleZeroApproximate(function.replaceAll(machineRules),
+      if (isPossibleZeroApproximate(
+          function.replaceAll(machineScreen ? machineRules : rules),
           engine) == IExpr.COMPARE_TERNARY.FALSE && ladders++ < MAX_REAL_LADDERS
           && isZeroAtSample(function.replaceAll(rules), engine) == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
