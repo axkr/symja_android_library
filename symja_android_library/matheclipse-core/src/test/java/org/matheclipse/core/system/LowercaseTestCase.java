@@ -18517,8 +18517,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6.2643383`8*^-20");
     check("N(Log(Pi - 31415926535897932384/10^19), 6)", //
         "-44.2168");
+    // the zero has the error of 60 digits on terms near 3
     check("N(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)), 10)", //
-        "0.0*10^-60");
+        "0.0*10^-59");
     // a sum which keeps enough digits stays a machine number
     check("N(Sin(1) - 1/2, 10)", //
         "0.3414709848");
@@ -29175,16 +29176,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Module({a,b}, Block({c}, c+a))", //
         "a$1+c");
 
-    if (Config.SERVER_MODE == false) {
-      check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n"
-          + "  );f(2.0)", "-0.366513");
+    check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n"
+        + "  );f(2.0)", "-0.366513");
 
-      check("fib(n_) :=\n" + " Module({f},\n" + "  f(1) = f(2) = 1;\n"
-          + "  f(i_) := f(i) = f(i - 1) + f(i - 2);\n" + "  f(n)\n" + "  );fib(5)", "5");
+    check("fib(n_) :=\n" + " Module({f},\n" + "  f(1) = f(2) = 1;\n"
+        + "  f(i_) := f(i) = f(i - 1) + f(i - 2);\n" + "  f(n)\n" + "  );fib(5)", "5");
 
-      check("myGCD(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n"
-          + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n" + "  m\n" + "  );myGCD(18, 21)", "3");
-    }
+    check("myGCD(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n"
+        + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n" + "  m\n" + "  );myGCD(18, 21)", "3");
 
     check("xm=10;Module({xm=xm}, xm=xm+1;Print(xm));xm", //
         "10");

@@ -29,12 +29,11 @@ public class PatternMatchingTestCase {
 
   protected EvalUtilities util;
 
-  public void check(EvalEngine engine, boolean configMode, IAST ast, String strResult) {
+  public void check(EvalEngine engine, boolean evaluate, IAST ast, String strResult) {
     try {
 
       StringWriter buf = new StringWriter();
-      Config.SERVER_MODE = configMode;
-      if (Config.SERVER_MODE) {
+      if (evaluate) {
         IAST inExpr = ast;
         TimeConstrainedEvaluator utility =
             new TimeConstrainedEvaluator(engine, false, Config.FOREVER);
@@ -55,11 +54,11 @@ public class PatternMatchingTestCase {
   }
 
   //
-  public void check(EvalEngine engine, boolean configMode, String strEval, String strResult) {
-    check(engine, configMode, strEval, strResult, "", false);
+  public void check(EvalEngine engine, boolean evaluate, String strEval, String strResult) {
+    check(engine, evaluate, strEval, strResult, "", false);
   }
 
-  private void check(EvalEngine engine, boolean configMode, String strEval, String strResult,
+  private void check(EvalEngine engine, boolean evaluate, String strEval, String strResult,
       String strException, boolean relaxedSyntax) {
     try {
       if (strEval.length() == 0 && strResult.length() == 0) {
@@ -68,8 +67,7 @@ public class PatternMatchingTestCase {
       IExpr result;
       StringWriter buf = new StringWriter();
 
-      Config.SERVER_MODE = configMode; // configMode;
-      if (Config.SERVER_MODE) {
+      if (evaluate) {
         Parser parser = new Parser(relaxedSyntax);
         ASTNode node = parser.parse(strEval);
         IExpr inExpr = new AST2Expr(false, engine).convert(node);

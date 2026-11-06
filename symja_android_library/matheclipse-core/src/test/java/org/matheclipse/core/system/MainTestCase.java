@@ -16,18 +16,13 @@ import org.matheclipse.parser.client.ParserConfig;
 /** Tests system.reflection classes */
 public class MainTestCase extends ExprEvaluatorTestCase {
 
-  public MainTestCase() {
-    Config.SERVER_MODE = true;
-  }
 
   @Override
-  public void check(EvalEngine engine, boolean configMode, IAST ast, String strResult) {
-    boolean mode = Config.SERVER_MODE;
+  public void check(EvalEngine engine, boolean evaluate, IAST ast, String strResult) {
     try {
       StringWriter buf = new StringWriter();
 
-      Config.SERVER_MODE = configMode;
-      if (Config.SERVER_MODE) {
+      if (evaluate) {
         IAST inExpr = ast;
         TimeConstrainedEvaluator utility =
             new TimeConstrainedEvaluator(engine, false, Config.FOREVER, true);
@@ -44,8 +39,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     } catch (Exception e) {
       e.printStackTrace();
       assertEquals(e.getMessage(), "");
-    } finally {
-      Config.SERVER_MODE = mode;
     }
   }
 

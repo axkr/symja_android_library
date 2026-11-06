@@ -94,12 +94,26 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
    */
   @Override
   public boolean hasProtectedAttribute() {
+    // these two take definitions in a kernel. The value of a $ symbol is kept per engine, but its
+    // rules and attributes are not, and Derivative holds the derivatives of the built-ins. This
+    // is no attribute, because the symbol exists before a server sets Config.SHARED_JVM
+    return isProtectedByAttribute()
+        || (Config.SHARED_JVM && (isDollarSymbol() || this == S.Derivative));
+  }
+
+  /**
+   * The value of a <code>$</code> symbol is kept per engine, see {@link #assignValue(IExpr,
+   * boolean)}, so every engine of a {@link Config#SHARED_JVM} may change its own value.
+   */
+  @Override
+  public boolean hasProtectedValue() {
+    return isDollarSymbol() ? isProtectedByAttribute() : hasProtectedAttribute();
+  }
+
+  private boolean isProtectedByAttribute() {
     final int attributes = getAttributes();
     if ((attributes & PROTECTED) != PROTECTED) {
-      // these two take definitions in a kernel. The value of a $ symbol is kept per engine, but its
-      // rules and attributes are not, and Derivative holds the derivatives of the built-ins. This
-      // is no attribute, because the symbol exists before a server sets Config.SHARED_JVM
-      return Config.SHARED_JVM && (isDollarSymbol() || this == S.Derivative);
+      return false;
     }
     return (attributes & CONSTANT) != CONSTANT || !EvalEngine.isBlockUnprotected(this);
   }
@@ -282,6 +296,31 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
+  public boolean hasAssignedSymbolValue() {
+    if (isDollarSymbol()) {
+      // the value is kept in the engine, see #assignValue(IExpr, boolean)
+      return EvalEngine.get().getDollarValue(this).isPresent();
+    }
+    return super.hasAssignedSymbolValue();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void clearValue(IExpr resetValue) {
+    if (isDollarSymbol()) {
+      EvalEngine.incEpoch();
+      if (resetValue == null) {
+        EvalEngine.get().removeDollarValue(this);
+      } else {
+        EvalEngine.get().setDollarValue(this, resetValue);
+      }
+      return;
+    }
+    super.clearValue(resetValue);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final void assignValue(final IExpr value, boolean setDelayed) {
     if (isDollarSymbol()) {
       EvalEngine.incEpoch();
@@ -294,6 +333,15 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final void clearAll(EvalEngine engine) {
+    if (isDollarSymbol()) {
+      if (Config.SHARED_JVM) {
+        // the value of this engine; the attributes and rules belong to all engines
+        clearValue(null);
+      } else {
+        clear(engine);
+      }
+      return;
+    }
     if (Config.FUZZ_TESTING) {
       // Cannot assign to raw object `1`.
       throw new NullPointerException();

@@ -35,7 +35,6 @@ public class SvgPrimitiveTest {
   @BeforeAll
   public static void setUpEngine() {
     Locale.setDefault(Locale.US);
-    Config.SERVER_MODE = false;
     // Other test classes lower these shared limits; a density style plot legitimately builds a
     // large expression (one rectangle per cell), so the ceiling has to be restored here rather
     // than inherited from whichever test ran last.

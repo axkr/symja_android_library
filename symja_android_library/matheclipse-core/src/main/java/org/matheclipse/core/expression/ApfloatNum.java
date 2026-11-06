@@ -498,7 +498,7 @@ public class ApfloatNum implements INum {
   /**
    * The output form of a zero of a given accuracy: the exponent is the one of the first digit
    * which isn't known, <code>-Floor(accuracy)</code>, so <code>0``20.5</code> is
-   * <code>0.0*10^-20</code>. A zero with a negative accuracy is <code>0.0</code>.
+   * <code>0.0*10^-20</code>, and <code>0``-5</code> is <code>0.0*10^5</code>.
    *
    * @return <code>null</code> if this number is not a zero of a given accuracy
    */
@@ -506,11 +506,11 @@ public class ApfloatNum implements INum {
     if (fSignificance != ZERO_ACCURACY) {
       return null;
     }
-    final double exponent = Math.floor(fDigits);
-    if (!(exponent > 0.0)) {
+    final long exponent = (long) -Math.floor(fDigits);
+    if (exponent == 0L) {
       return "0.0";
     }
-    return "0.0*10^-" + (long) exponent;
+    return "0.0*10^" + exponent;
   }
 
   /**

@@ -254,16 +254,6 @@ public class F extends S {
   private static final Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP =
       Config.TRIE_STRING2PATTERNSEQUENCE_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
-    @Override
-    public final boolean createPredefinedSymbol(String symbol) {
-      return false;
-    }
-
-    @Override
-    public void createUserSymbol(ISymbol symbol) {}
-  };
-
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
    * evaluation was possible (i.e. no further definition was found to create a new expression from
@@ -1357,39 +1347,8 @@ public class F extends S {
     if (symbol != null) {
       return symbol;
     }
-    if (Config.SERVER_MODE) {
-      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
-          || java.lang.Character.isUpperCase(name.charAt(0))) {
-        if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
-          // second try, because the symbol may now be added to
-          // fSymbolMap
-          ISymbol secondTry =
-              org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.get(name);
-          if (secondTry != null) {
-            return secondTry;
-          }
-        }
-      }
-      // symbol = new BuiltInSymbol(name);
-      symbol = symbol(name, EvalEngine.get());
-      // engine.putUserVariable(name, symbol);
-      HIDDEN_SYMBOLS_MAP.put(name, symbol);
-      if (name.charAt(0) == '$') {
-        SYMBOL_OBSERVER.createUserSymbol(symbol);
-      }
-    } else {
-      symbol = new BuiltInDummy(name);
-      // symbol = symbol(name);
-      HIDDEN_SYMBOLS_MAP.put(name, symbol);
-      // if (symbol.isBuiltInSymbol()) {
-      // if (!setEval) {
-      // ((IBuiltInSymbol) symbol).setEvaluator(BuiltInSymbol.DUMMY_EVALUATOR);
-      // } else {
-      // ((IBuiltInSymbol) symbol).getEvaluator();
-      // }
-      // }
-    }
-
+    symbol = new BuiltInDummy(name);
+    HIDDEN_SYMBOLS_MAP.put(name, symbol);
     return symbol;
   }
 

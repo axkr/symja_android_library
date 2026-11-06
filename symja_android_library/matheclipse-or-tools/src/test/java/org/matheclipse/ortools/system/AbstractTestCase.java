@@ -22,7 +22,6 @@ public abstract class AbstractTestCase {
 
   public AbstractTestCase() {
     Locale.setDefault(Locale.US);
-    Config.SERVER_MODE = false;
     setUp();
   }
 

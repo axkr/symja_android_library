@@ -8,6 +8,8 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -2366,5 +2368,60 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Hold[Rule[CompoundExpression[p, q, Null], r]]");
     check("FullForm[Hold[(p; q; r)]]", //
         "Hold[CompoundExpression[p, q, r]]");
+  }
+
+  /** A <code>$</code> variable without a function of its own keeps the value it was given. */
+  @Test
+  public void testDollarValueInTheKernel() {
+    try {
+      check("{$Pre = sjtv; $Pre, $Pre[2], ValueQ[$Pre], $Pre = {1, 2}; $Pre[[1]] = 5; $Pre, "
+          + "TimeConstrained[$Pre = 3, 10]; $Pre, $Pre =.; $Pre, $Pre = 4; Clear[$Pre]; $Pre, "
+          + "$Pre = 4; ClearAll[$Pre]; $Pre}", //
+          "{sjtv,sjtv[2],True,{5,2},3,$Pre,$Pre,$Pre}");
+      check("$Pre[x_] := x + 1; $Pre[1]", //
+          "2");
+    } finally {
+      check("ClearAll[$Pre]; $Pre[1]", //
+          "$Pre[1]");
+    }
+  }
+
+  /** The result of the last of <code>inputs</code> in a new engine on a thread of its own. */
+  private static String inNewEngine(String... inputs) throws Exception {
+    ExecutorService thread = Executors.newSingleThreadExecutor();
+    try {
+      return thread.submit(() -> {
+        ExprEvaluator evaluator = new ExprEvaluator(false, (short) 100);
+        evaluator.getEvalEngine().setRelaxedSyntax(false);
+        evaluator.getEvalEngine().setErrorPrintStream(new PrintStream(new ByteArrayOutputStream()));
+        IExpr result = S.Null;
+        for (String input : inputs) {
+          result = evaluator.eval(input);
+        }
+        return printWolframLanguage(result);
+      }).get();
+    } finally {
+      thread.shutdownNow();
+    }
+  }
+
+  /** Every engine of a shared JVM has the <code>$</code> values of its own. */
+  @Test
+  public void testDollarValuePerEngineInASharedJvm() throws Exception {
+    Config.SHARED_JVM = true;
+    try {
+      // the list is evaluated again, so it ends without a value
+      assertEquals("{3,sjtv,{5,2},$Pre,$Pre,2,$Pre}",
+          inNewEngine("{TimeConstrained[$Pre = 3, 10]; $Pre, $Pre = sjtv; $Pre, "
+              + "$Pre = {1, 2}; $Pre[[1]] = 5; $Pre, $Pre =.; $Pre, $Pre = 4; Clear[$Pre]; $Pre, "
+              + "$Pre := 1 + 1; $Pre, $Pre = 5; ClearAll[$Pre]; $Pre}"));
+      assertEquals("$Pre", inNewEngine("$Pre"));
+      // the rules and attributes of the symbol belong to every engine
+      assertEquals("{{},{}}",
+          inNewEngine("$Pre[x_] := x", "SetAttributes[$Post, Listable]",
+              "{DownValues[$Pre], Attributes[$Post]}"));
+    } finally {
+      Config.SHARED_JVM = false;
+    }
   }
 }

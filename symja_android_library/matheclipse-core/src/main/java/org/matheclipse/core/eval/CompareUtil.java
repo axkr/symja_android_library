@@ -174,7 +174,7 @@ public class CompareUtil {
   public static IExpr printSignUncertain(final IExpr x, EvalEngine engine) {
     // Internal precision limit `1` reached while evaluating `2`.
     return Errors.printMessage(S.N, "meprec",
-        F.list(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."), x),
+        F.list(EvalEngine.maxExtraPrecisionText(), x),
         engine);
   }
 

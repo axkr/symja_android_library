@@ -383,6 +383,8 @@ public class Errors {
       "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
       "libload", "The function `1` was not loaded from the file `2`.", //
       "lim", "Limit specification `1` is not of the form x->x0.", //
+      "precset",
+      "Cannot set $MaxExtraPrecision to `1`; value must be a non-negative number or Infinity.", //
       "limset",
       "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
       "linobj",
@@ -741,6 +743,7 @@ public class Errors {
       "The weights given on the left-hand side of `1` should have the same length as the data given on the right-hand side.", //
       "write", "Tag `1` in `2` is Protected.", //
       "wrsym", "Symbol `1` is Protected.", //
+      "spsym", "Special symbol `1` cannot be cleared.", //
       "wtspec",
       "The weight specification at position `1` of rule specification `2` should be `3` or an array of non-negative machine integers with dimensions `4`.", //
       "ucdec", "An invalid unicode sequence was encountered and ignored.", //

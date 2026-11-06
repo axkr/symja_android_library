@@ -219,7 +219,7 @@ public final class PatternMatching {
         List<ISymbol> matchedSymbols = getMatchedSymbols(arg.toString(), engine);
         for (int j = 0; j < matchedSymbols.size(); j++) {
           ISymbol sym = matchedSymbols.get(j);
-          if (sym.hasProtectedAttribute()) {
+          if (sym.hasProtectedValue()) {
             // Symbol `1` is Protected. Interrupt and return.
             Errors.printMessage(ast.topHead(), "wrsym", F.list(sym), engine);
             return S.Null;
@@ -231,7 +231,7 @@ public final class PatternMatching {
         if (x.isNIL()) {
           return F.NIL;
         }
-        if (((ISymbol) x).hasProtectedAttribute()) {
+        if (((ISymbol) x).hasProtectedValue()) {
           // Symbol `1` is Protected. Interrupt and return.
           Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
           return S.Null;
@@ -242,7 +242,7 @@ public final class PatternMatching {
 
     // Pass 2: Execute the action
     for (ISymbol x : toClear) {
-      if (!x.hasProtectedAttribute()) {
+      if (!x.hasProtectedValue()) {
         action.accept(x);
       }
     }
@@ -286,6 +286,16 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return clearSymbols(ast, engine, x -> {
+        if (x == S.$MaxExtraPrecision) {
+          // Special symbol `1` cannot be cleared.
+          Errors.printMessage(S.Clear, "spsym", F.list(x), engine);
+          return;
+        }
+        if (Config.SHARED_JVM && x.isDollarSymbol() && x.isBuiltInSymbol()) {
+          // the value of this engine; the rules belong to all engines
+          x.clearValue(null);
+          return;
+        }
         x.clear(engine);
         if (x == S.Derivative) {
           org.matheclipse.core.reflection.system.Derivative.restoreBuiltinRules();
@@ -3056,6 +3066,19 @@ public final class PatternMatching {
   }
 
   /**
+   * Test if <code>Set</code> or <code>SetDelayed</code> may not give <code>lhsSymbol</code> the
+   * definition for <code>evaledLHS</code>: a value if <code>evaledLHS</code> is the symbol itself,
+   * else a rule.
+   */
+  private static boolean isProtectedDefinition(ISymbol lhsSymbol, IExpr evaledLHS,
+      boolean packageMode) {
+    if (evaledLHS.isSymbol()) {
+      return lhsSymbol.hasProtectedValue() || isLockedValue(lhsSymbol, packageMode);
+    }
+    return lhsSymbol.hasProtectedAttribute();
+  }
+
+  /**
    * The first head of <code>expr</code> which may carry a definition: a symbol of the user (or a
    * package) before a built-in one, so <code>pref_. * f[...]</code> is kept with <code>f</code>,
    * not with <code>Times</code>. Pattern names are no heads.
@@ -3141,8 +3164,7 @@ public final class PatternMatching {
       Errors.printMessage(S.Set, "nosym", F.list(originalLHS), EvalEngine.get());
       return rightHandSide;
     }
-    if (lhsSymbol.hasProtectedAttribute()
-        || (evaledLHS.isSymbol() && isLockedValue(lhsSymbol, packageMode))) {
+    if (isProtectedDefinition(lhsSymbol, evaledLHS, packageMode)) {
       // Symbol `1` is Protected.
       Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
       return rightHandSide;
@@ -3175,7 +3197,7 @@ public final class PatternMatching {
 
     if (evaledLHS.isSymbol()) {
       lhsSymbol = (ISymbol) evaledLHS;
-      if (lhsSymbol.hasProtectedAttribute()) {
+      if (lhsSymbol.hasProtectedValue()) {
         // Symbol `1` is Protected.
         Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         return rightHandSide;
@@ -3229,8 +3251,7 @@ public final class PatternMatching {
       Errors.printMessage(S.SetDelayed, "nosym", F.list(originalLHS), EvalEngine.get());
       throw new FailedException();
     }
-    if (lhsSymbol.hasProtectedAttribute()
-        || (evaledLHS.isSymbol() && isLockedValue(lhsSymbol, packageMode))) {
+    if (isProtectedDefinition(lhsSymbol, evaledLHS, packageMode)) {
       // Symbol `1` is Protected.
       Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
       throw new FailedException();
@@ -3910,7 +3931,7 @@ public final class PatternMatching {
           }
           if (leftHandSide.isSymbol()) {
             final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-            if (lhsSymbol.hasProtectedAttribute()) {
+            if (lhsSymbol.hasProtectedValue()) {
               // Symbol `1` is Protected.
               Errors.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
               throw new FailedException();
