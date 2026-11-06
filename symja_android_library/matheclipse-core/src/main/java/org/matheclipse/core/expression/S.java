@@ -17917,6 +17917,16 @@ public class S {
   public final static IBuiltInSymbol Minor = S.initFinalSymbol("Minor", ID.Minor);
 
   /**
+   * MinorPlanetData(x) - TODO describe `MinorPlanetData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MinorPlanetData.md">MinorPlanetData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MinorPlanetData =
+      S.initFinalSymbol("MinorPlanetData", ID.MinorPlanetData);
+
+  /**
    * Minors(matrix) - returns the minors of the matrix.
    * 
    * @see <a href=
