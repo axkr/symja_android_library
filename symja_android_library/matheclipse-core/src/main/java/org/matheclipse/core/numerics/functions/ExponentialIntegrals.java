@@ -680,40 +680,135 @@ public final class ExponentialIntegrals {
     return values;
   }
 
-  /** The largest <code>|z|</code> for which {@link #sinIntegralSeries} is used. */
+  /**
+   * The largest <code>|z|</code> for which the power series of <code>SinIntegral</code>,
+   * <code>CosIntegral</code>, <code>SinhIntegral</code>, <code>CoshIntegral</code> and
+   * <code>ExpIntegralEi</code> are used in arbitrary precision.
+   */
   public static final double SIN_INTEGRAL_SERIES_MAX_ABS = 40.0;
 
   /**
-   * <code>SinIntegral(z)</code> with <code>precision</code> digits by its power series
-   * <code>Sum((-1)^k*z^(2*k+1)/((2*k+1)*(2*k+1)!), k=0..)</code>. The terms grow to about
-   * <code>E^|z|</code> before they fall, so <code>|z|/Log(10)</code> guard digits keep the sum
-   * exact; the general algorithm takes seconds at a few hundred digits even for a small argument.
+   * Whether the power series of this class are used for <code>z</code>: not at <code>0</code>,
+   * where the logarithmic ones have their pole, and not for a large <code>|z|</code>, where the
+   * terms grow to <code>E^|z|</code> before they fall.
+   */
+  public static boolean isSeriesArgument(Apcomplex z) {
+    if (z.real().signum() == 0 && z.imag().signum() == 0) {
+      return false;
+    }
+    return ApcomplexMath.abs(z).doubleValue() <= SIN_INTEGRAL_SERIES_MAX_ABS;
+  }
+
+  /**
+   * <code>SinIntegral(z) = Sum((-1)^k*z^(2*k+1)/((2*k+1)*(2*k+1)!), k=0..)</code> with
+   * <code>precision</code> digits. The general algorithm takes seconds at a few hundred digits
+   * even for a small argument.
    *
-   * @param z an argument with <code>|z| &lt;= </code>{@link #SIN_INTEGRAL_SERIES_MAX_ABS}
-   * @param precision the number of digits of the result
+   * @param z an argument with {@link #isSeriesArgument(Apcomplex)}, or <code>0</code>
    */
   public static Apcomplex sinIntegralSeries(Apcomplex z, long precision) {
+    return withLogarithm(z, precision, 1, 2, true, false, 0);
+  }
+
+  /** <code>SinhIntegral(z) = Sum(z^(2*k+1)/((2*k+1)*(2*k+1)!), k=0..)</code>. */
+  public static Apcomplex sinhIntegralSeries(Apcomplex z, long precision) {
+    return withLogarithm(z, precision, 1, 2, false, false, 0);
+  }
+
+  /** <code>CosIntegral(z) = EulerGamma+Log(z)+Sum((-1)^k*z^(2*k)/(2*k*(2*k)!), k=1..)</code>. */
+  public static Apcomplex cosIntegralSeries(Apcomplex z, long precision) {
+    // the first term, k=1, is negative
+    return withLogarithm(z, precision, 2, 2, true, true, 1);
+  }
+
+  /** <code>CoshIntegral(z) = EulerGamma+Log(z)+Sum(z^(2*k)/(2*k*(2*k)!), k=1..)</code>. */
+  public static Apcomplex coshIntegralSeries(Apcomplex z, long precision) {
+    return withLogarithm(z, precision, 2, 2, false, false, 1);
+  }
+
+  /**
+   * <code>ExpIntegralEi(z) = EulerGamma+(Log(z)-Log(1/z))/2+Sum(z^k/(k*k!), k=1..)</code>: the
+   * mean of the logarithms is <code>Log(z)</code> off the negative real axis and
+   * <code>Log(-z)</code> on it, where the value is real.
+   */
+  public static Apcomplex expIntegralEiSeries(Apcomplex z, long precision) {
+    return withLogarithm(z, precision, 1, 1, false, false, 2);
+  }
+
+  /**
+   * <code>EulerGamma + logarithm + Sum(+-z^n/(n*n!))</code> over <code>n = first, first+step,
+   * ...</code>. The sum loses up to <code>|z|/Log(10)</code> digits to cancellation and the whole to
+   * a value near a zero, so it is computed again with the digits which were lost.
+   *
+   * @param negative whether the first term of the sum is negative
+   * @param logarithm 0 for none, 1 for <code>Log(z)</code>, 2 for
+   *        <code>(Log(z)-Log(1/z))/2</code>
+   */
+  private static Apcomplex withLogarithm(Apcomplex z, long precision, int first, int step,
+      boolean alternating, boolean negative, int logarithm) {
     if (z.real().signum() == 0 && z.imag().signum() == 0) {
       return z;
     }
     double absZ = ApcomplexMath.abs(z).doubleValue();
-    long working = precision + (long) Math.ceil(absZ / Math.log(10.0)) + 10L;
-    Apcomplex w = z.precision(working);
-    Apcomplex minusSquare = w.multiply(w).negate();
-    // p is z^(2k+1)/(2k+1)!
-    Apcomplex p = w;
-    Apcomplex sum = w;
-    Apfloat epsilon = ApfloatMath.pow(new Apfloat(10, working), -working);
-    for (long k = 0;; k++) {
-      p = p.multiply(minusSquare)
-          .divide(new Apfloat((2 * k + 2) * (2 * k + 3), working));
-      Apcomplex term = p.divide(new Apfloat(2 * k + 3, working));
-      sum = sum.add(term);
-      if (k > absZ && ApcomplexMath.abs(term).compareTo(epsilon.multiply(
-          ApcomplexMath.abs(sum).add(Apfloat.ONE))) < 0) {
+    long guard = (long) Math.ceil(absZ / Math.log(10.0)) + 10L;
+    Apcomplex value = null;
+    for (int attempt = 0; attempt < 2; attempt++) {
+      long working = precision + guard;
+      Apcomplex w = z.precision(working);
+      Apcomplex sum = powerSeries(w, working, first, step, alternating);
+      if (negative) {
+        sum = sum.negate();
+      }
+      double scale = ApcomplexMath.abs(sum).doubleValue();
+      if (logarithm != 0) {
+        Apcomplex log = ApcomplexMath.log(w);
+        if (logarithm == 2) {
+          log = log.subtract(ApcomplexMath.log(Apcomplex.ONE.precision(working).divide(w)))
+              .divide(new Apfloat(2, working));
+        }
+        Apfloat euler = ApfloatMath.euler(working);
+        scale = Math.max(scale,
+            Math.max(ApcomplexMath.abs(log).doubleValue(), euler.doubleValue()));
+        sum = sum.add(log).add(euler);
+      }
+      value = sum;
+      double magnitude = ApcomplexMath.abs(sum).doubleValue();
+      // the digits lost where the value is small against its parts, near a zero of the function
+      long lost = magnitude > 0.0 ? (long) Math.ceil(Math.log10(scale / magnitude)) : precision;
+      if (lost <= 5L) {
         break;
       }
+      guard += Math.min(lost, precision);
     }
-    return sum.precision(precision);
+    return value.precision(precision);
+  }
+
+  /** <code>Sum(+-z^n/(n*n!))</code> over <code>n = first, first+step, ...</code>. */
+  private static Apcomplex powerSeries(Apcomplex w, long working, int first, int step,
+      boolean alternating) {
+    // p is z^n/n!
+    Apcomplex p = w;
+    for (int n = 2; n <= first; n++) {
+      p = p.multiply(w).divide(new Apfloat(n, working));
+    }
+    Apcomplex factor = step == 1 ? w : w.multiply(w);
+    if (alternating) {
+      factor = factor.negate();
+    }
+    Apcomplex sum = p.divide(new Apfloat(first, working));
+    double absZ = ApcomplexMath.abs(w).doubleValue();
+    Apfloat epsilon = ApfloatMath.pow(new Apfloat(10, working), -working);
+    for (long n = first;; n += step) {
+      long next = n + step;
+      Apfloat denominator =
+          step == 1 ? new Apfloat(next, working) : new Apfloat((n + 1) * next, working);
+      p = p.multiply(factor).divide(denominator);
+      Apcomplex term = p.divide(new Apfloat(next, working));
+      sum = sum.add(term);
+      if (next > absZ && ApcomplexMath.abs(term)
+          .compareTo(epsilon.multiply(ApcomplexMath.abs(sum).add(Apfloat.ONE))) < 0) {
+        return sum;
+      }
+    }
   }
 }

@@ -22392,6 +22392,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(SinIntegral(17/16), 240) - N(Sum((-1)^k*(17/16)^(2*k + 1)/((2*k + 1)*(2*k + 1)!), "
         + "{k, 0, 200}), 240)", //
         "0.0*10^-239");
+    check("N({CosIntegral(17/16), SinhIntegral(17/16), CoshIntegral(17/16), "
+        + "ExpIntegralEi(17/16)}, 30)", //
+        "{0.368560979722464723845571736639,1.13143749056848672351689279851,0.933680275792985786324205950221,2.06511776636147250984109874873}");
+    check("N({CosIntegral(-5/3), CoshIntegral(-5/3), ExpIntegralEi(-5/3)}, 25)", //
+        "{0.4691910063392783002072333+I*3.141592653589793238462643,1.868011915285728161431195+I*3.141592653589793238462643,-0.07833342960047432009208513}");
+    check("N({CosIntegral(2 + 3*I), ExpIntegralEi(-1 - 2*I)}, 25)", //
+        "{1.408292501520849518759125+I*(-2.983617742029605093121118),0.1267842855915596730737033+I*(-3.106511070661606222212658)}");
+    check("N(CosIntegral(17/16), 240) - N(EulerGamma + Log(17/16) + "
+        + "Sum((-1)^k*(17/16)^(2*k)/(2*k*(2*k)!), {k, 1, 200}), 240)", //
+        "0.0*10^-240");
     // the antiderivative is found once the derivative divides check has fast zero tests
     check("Integrate(Sin(3*y)*SinIntegral(3*y)/y, y)", //
         "SinIntegral(3*y)^2/2");
@@ -33660,10 +33670,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // message BigInteger bit length 254105 exceeded
     check("(-8/27*(-2/3)^(2/5))^2147483647", //
         "(-8/27*(-2/3)^(2/5))^2147483647");
-    // SLOW in factorSmallPrimes()
-    // message BigInteger bit length 258048 exceeded
+    // the small primes of the base 2^63*9223372036854775797/11^2 are taken out without the power
+    // of the base to the numerator 13479, which ran into the bit length limit
     check("(85070591730234615764386559452539518976/121)^(13479/14641)", //
-        "(85070591730234615764386559452539518976/121)^(13479/14641)");
+        "144115188075855872/11*(2^(14640/14641)*9223372036854775797^(13479/14641))/11^(\n12317/14641)");
 
     check("(I*1/2)^x^2", //
         "(I*1/2)^x^2");

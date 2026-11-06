@@ -1361,6 +1361,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr coshIntegral() {
+    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
+      Apcomplex value = ExponentialIntegrals.coshIntegralSeries(fApfloat, h().precision());
+      return isNonNegativeResult() ? valueOf(value.real()) : F.complexNum(value);
+    }
     try {
       if (isNonNegativeResult()) {
         return valueOf(h().coshIntegral(fApfloat));
@@ -1374,6 +1378,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr cosIntegral() {
+    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
+      Apcomplex value = ExponentialIntegrals.cosIntegralSeries(fApfloat, h().precision());
+      return isNonNegativeResult() ? valueOf(value.real()) : F.complexNum(value);
+    }
     try {
       if (isNonNegativeResult()) {
         return valueOf(h().cosIntegral(fApfloat));
@@ -1617,6 +1625,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr expIntegralEi() {
+    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
+      // real on the whole real line
+      return valueOf(ExponentialIntegrals.expIntegralEiSeries(fApfloat, h().precision()).real());
+    }
     try {
       return valueOf(h().expIntegralEi(fApfloat));
     } catch (ArithmeticException | NumericComputationException e) {
@@ -2824,6 +2836,9 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr sinhIntegral() {
+    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
+      return valueOf(ExponentialIntegrals.sinhIntegralSeries(fApfloat, h().precision()).real());
+    }
     return valueOf(h().sinhIntegral(fApfloat));
   }
 

@@ -1042,11 +1042,17 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr coshIntegral() {
+    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
+      return valueOf(ExponentialIntegrals.coshIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().coshIntegral(fApcomplex));
   }
 
   @Override
   public IExpr cosIntegral() {
+    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
+      return valueOf(ExponentialIntegrals.cosIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().cosIntegral(fApcomplex));
   }
 
@@ -1253,6 +1259,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr expIntegralEi() {
+    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
+      return valueOf(ExponentialIntegrals.expIntegralEiSeries(fApcomplex, h().precision()));
+    }
     try {
       return valueOf(h().expIntegralEi(fApcomplex));
     } catch (ArithmeticException | NumericComputationException e) {
@@ -2188,6 +2197,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr sinhIntegral() {
+    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
+      return valueOf(ExponentialIntegrals.sinhIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().sinhIntegral(fApcomplex));
   }
 
