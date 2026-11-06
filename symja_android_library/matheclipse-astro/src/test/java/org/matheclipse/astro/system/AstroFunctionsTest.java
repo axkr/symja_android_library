@@ -1325,6 +1325,41 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "Missing(UnknownProperty,{Planet,Nonsense})");
   }
 
+  /** Minor planets are their own entity type, read by MinorPlanetData. */
+  @Test
+  public void testMinorPlanetData() {
+    check("MinorPlanetData()", //
+        "{Entity(MinorPlanet,Ceres)}");
+    check("MinorPlanetData(\"ceres\")", //
+        "Entity(MinorPlanet,Ceres)");
+    check("MinorPlanetData(\"Ceres\", \"SemimajorAxis\")", //
+        "Quantity(2.76662,\"AstronomicalUnit\")");
+    check("MinorPlanetData(\"Properties\")", //
+        "{Eccentricity,OrbitPeriod,SemimajorAxis}");
+    check("MinorPlanetData(\"Ceres\", \"Eccentricity\")", //
+        "0.0791839");
+    check("MinorPlanetData(Entity(\"MinorPlanet\", \"Ceres\"), \"OrbitPeriod\")", //
+        "Quantity(4.60185,\"JulianYears\")");
+    // the elements do not depend on a date, so a {property, date} spec reads the property
+    check("MinorPlanetData(\"Ceres\", {\"SemimajorAxis\", DateObject({2026,1,1})}) === "
+        + "MinorPlanetData(\"Ceres\", \"SemimajorAxis\")", //
+        "True");
+    check("MinorPlanetData(\"Ceres\", EntityProperty(\"MinorPlanet\", \"Eccentricity\"))", //
+        "0.0791839");
+    check("Entity(\"MinorPlanet\", \"Ceres\")[\"SemimajorAxis\"] > "
+        + "Entity(\"Planet\", \"Mars\")[\"SemimajorAxis\"]", //
+        "True");
+    check("EntityList(\"MinorPlanet\")", //
+        "{Entity(MinorPlanet,Ceres)}");
+    // the minor planets do not turn up among the planets
+    check("Length(EntityList(\"Planet\"))", //
+        "8");
+    check("EntityValue(Entity(\"MinorPlanet\", \"Ceres\"), \"Nonsense\")", //
+        "Missing(UnknownProperty,{MinorPlanet,Nonsense})");
+    check("MinorPlanetData(\"Mars\", \"SemimajorAxis\")", //
+        "MinorPlanetData(Mars,SemimajorAxis)");
+  }
+
   @Test
   public void testUnknownBody() {
     check("AstroDistance(\"Vulcan\", DateObject({2026,6,21}))", //

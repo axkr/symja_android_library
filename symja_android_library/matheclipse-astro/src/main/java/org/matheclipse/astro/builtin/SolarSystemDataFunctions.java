@@ -107,6 +107,24 @@ public class SolarSystemDataFunctions {
       {19.19126392884543, 0.04716771, 84.016846}, //
       {30.068963478191013, 0.00858587, 164.79132}};
 
+  /** The entity type the minor planets belong to. */
+  private static final String MINOR_PLANET = "MinorPlanet";
+
+  /**
+   * A minor planet and its orbital elements, laid out as a row of {@link #ORBITAL_ELEMENTS}: the
+   * semi major axis in astronomical units, the eccentricity and the orbital period in Julian years.
+   */
+  private record MinorPlanet(String name, double[] elements) {}
+
+  /** The minor planets <code>MinorPlanetData()</code> knows. */
+  private static final MinorPlanet[] MINOR_PLANETS =
+      {new MinorPlanet("Ceres",
+          new double[] {2.7666197369118376, 0.07918392349982492, 4.60184947119036})};
+
+  /** What <code>MinorPlanetData("Properties")</code> lists. */
+  private static final String[] MINOR_PLANET_PROPERTIES =
+      {"Eccentricity", "OrbitPeriod", "SemimajorAxis"};
+
   /** The planets up to this index give their orbital period in days. */
   private static final int LAST_PERIOD_IN_DAYS = 2;
 
@@ -119,6 +137,8 @@ public class SolarSystemDataFunctions {
       S.AstronomicalData.setEvaluator(new AstronomicalData());
       S.PlanetData.setEvaluator(new PlanetData());
       Entities.register(PLANET, S.PlanetData);
+      S.MinorPlanetData.setEvaluator(new MinorPlanetData());
+      Entities.register(MINOR_PLANET, S.MinorPlanetData);
     }
   }
 
@@ -208,18 +228,10 @@ public class SolarSystemDataFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         // the planets themselves, as the entities standing for them
-        IASTAppendable planets = F.ListAlloc(PLANETS.length);
-        for (String planet : PLANETS) {
-          planets.append(Entities.entity(PLANET, F.stringx(planet)));
-        }
-        return planets;
+        return entities(PLANET, PLANETS);
       }
       if (ast.isAST1() && ast.arg1().isString("Properties")) {
-        IASTAppendable properties = F.ListAlloc(PLANET_PROPERTIES.length);
-        for (String property : PLANET_PROPERTIES) {
-          properties.append(F.stringx(property));
-        }
-        return properties;
+        return strings(PLANET_PROPERTIES);
       }
       String bodyName = planetNamed(ast.arg1());
       if (bodyName == null) {
@@ -229,17 +241,13 @@ public class SolarSystemDataFunctions {
         // a lone planet is the entity that stands for it, as ElementData answers for an element
         return Entities.entity(PLANET, F.stringx(bodyName));
       }
-      IExpr property = ast.arg2();
-      IExpr dateExpr = F.NIL;
-      if (property.isList() && ((IAST) property).argSize() >= 1) {
-        IAST spec = (IAST) property;
-        property = spec.arg1();
-        if (spec.argSize() >= 2) {
-          dateExpr = spec.arg2();
-        }
-      }
-      property = Entities.propertyOf(property, PLANET);
-      IExpr element = orbitalElement(bodyName, property);
+      IExpr dateExpr = ast.arg2().isList() && ((IAST) ast.arg2()).argSize() >= 2
+          ? ((IAST) ast.arg2()).arg2()
+          : F.NIL;
+      IExpr property = Entities.propertyOf(propertyOfSpec(ast.arg2()), PLANET);
+      int index = Arrays.asList(PLANETS).indexOf(bodyName);
+      IExpr element = orbitalElement(ORBITAL_ELEMENTS[index],
+          index <= LAST_PERIOD_IN_DAYS ? "Days" : "JulianYears", property);
       if (element.isPresent()) {
         return element;
       }
@@ -279,25 +287,109 @@ public class SolarSystemDataFunctions {
   }
 
   /**
-   * The orbital element <code>"SemimajorAxis"</code>, <code>"Eccentricity"</code> or
-   * <code>"OrbitPeriod"</code> of a planet, which need no ephemerides.
+   * <code>MinorPlanetData()</code>, <code>MinorPlanetData("Properties")</code>,
+   * <code>MinorPlanetData(body)</code> or <code>MinorPlanetData(body, property)</code> for the
+   * orbital elements <code>"SemimajorAxis"</code>, <code>"Eccentricity"</code> and
+   * <code>"OrbitPeriod"</code>.
    *
+   * <p>
+   * A separate type from the planets, so that <code>EntityList("Planet")</code> stays the eight
+   * planets.
+   */
+  private static final class MinorPlanetData extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return entities(MINOR_PLANET,
+            Arrays.stream(MINOR_PLANETS).map(MinorPlanet::name).toArray(String[]::new));
+      }
+      if (ast.isAST1() && ast.arg1().isString("Properties")) {
+        return strings(MINOR_PLANET_PROPERTIES);
+      }
+      MinorPlanet body = minorPlanetNamed(ast.arg1());
+      if (body == null) {
+        return Errors.printMessage(S.MinorPlanetData, "astrobody", F.List(ast.arg1(), ast),
+            engine);
+      }
+      if (ast.isAST1()) {
+        return Entities.entity(MINOR_PLANET, F.stringx(body.name()));
+      }
+      // the elements do not change with a date, so a {property, date} spec reads the property
+      IExpr property = Entities.propertyOf(propertyOfSpec(ast.arg2()), MINOR_PLANET);
+      IExpr element = orbitalElement(body.elements(), "JulianYears", property);
+      if (element.isPresent()) {
+        return element;
+      }
+      return Errors.printMessage(S.MinorPlanetData, "astroprop", F.List(property, ast), engine);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+  }
+
+  /** The minor planet {@code expr} names, or {@code null}. */
+  private static MinorPlanet minorPlanetNamed(IExpr expr) {
+    IExpr name = Entities.nameOf(expr, MINOR_PLANET);
+    if (name.isString()) {
+      for (MinorPlanet body : MINOR_PLANETS) {
+        if (body.name().equalsIgnoreCase(name.toString())) {
+          return body;
+        }
+      }
+    }
+    return null;
+  }
+
+  /** The entities of {@code type} with the given names. */
+  private static IAST entities(String type, String[] names) {
+    IASTAppendable list = F.ListAlloc(names.length);
+    for (String name : names) {
+      list.append(Entities.entity(type, F.stringx(name)));
+    }
+    return list;
+  }
+
+  /** The names as a list of strings. */
+  private static IAST strings(String[] names) {
+    IASTAppendable list = F.ListAlloc(names.length);
+    for (String name : names) {
+      list.append(F.stringx(name));
+    }
+    return list;
+  }
+
+  /** The property of a <code>{property, date}</code> specification, or the specification itself. */
+  private static IExpr propertyOfSpec(IExpr spec) {
+    return spec.isList() && ((IAST) spec).argSize() >= 1 ? ((IAST) spec).arg1() : spec;
+  }
+
+  /**
+   * The orbital element <code>"SemimajorAxis"</code>, <code>"Eccentricity"</code> or
+   * <code>"OrbitPeriod"</code>, which need no ephemerides.
+   *
+   * @param elements the semi major axis in astronomical units, the eccentricity and the period
+   * @param periodUnit the unit the period is given in
    * @return {@link F#NIL} for another property
    */
-  private static IExpr orbitalElement(String planet, IExpr property) {
+  private static IExpr orbitalElement(double[] elements, String periodUnit, IExpr property) {
     if (!property.isString()) {
       return F.NIL;
     }
-    int index = Arrays.asList(PLANETS).indexOf(planet);
-    double[] elements = ORBITAL_ELEMENTS[index];
     switch (property.toString()) {
       case "SemimajorAxis":
         return F.Quantity(F.num(elements[0]), F.stringx("AstronomicalUnit"));
       case "Eccentricity":
         return F.num(elements[1]);
       case "OrbitPeriod":
-        return F.Quantity(F.num(elements[2]),
-            F.stringx(index <= LAST_PERIOD_IN_DAYS ? "Days" : "JulianYears"));
+        return F.Quantity(F.num(elements[2]), F.stringx(periodUnit));
       default:
         return F.NIL;
     }
