@@ -1376,7 +1376,7 @@ public class StructureFunctions {
           try {
             final IAST ast1 = (IAST) arg1;
             final IExpr arg2 = ast.arg2();
-            java.util.function.Function<IExpr, IExpr> rules = Functors.rules(arg2, engine);
+            java.util.function.Function<IExpr, IExpr> rules = Functors.wholeRules(arg2, engine);
             // a part which no rule matches stays unchanged
             java.util.function.Function<IExpr, IExpr> function = x -> rules.apply(x).orElse(x);
             // CPD-OFF MapAt and ReplaceAt name their own builtin in messages

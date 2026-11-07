@@ -58,7 +58,7 @@ public final class Colors {
         }
         return withAlpha(cmykToRgb(cmyk), ast, 5);
       }
-      if (head == S.XYZColor || head == S.LABColor) {
+      if (head == S.XYZColor || head == S.LABColor || head == S.LCHColor) {
         double[] rgba = toRgbaDouble(ast);
         return rgba == null ? null
             : new float[] {(float) rgba[0], (float) rgba[1], (float) rgba[2], (float) rgba[3]};
@@ -120,7 +120,7 @@ public final class Colors {
       }
       return result;
     }
-    if (expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)) {
+    if (expr.isAST(S.XYZColor) || expr.isAST(S.LABColor) || expr.isAST(S.LCHColor)) {
       double[] xyza = toXyzaDouble(expr);
       if (xyza == null) {
         return null;
@@ -159,14 +159,18 @@ public final class Colors {
    *         colour
    */
   public static double[] toXyzaDouble(IExpr expr) {
-    if (expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)) {
+    if (expr.isAST(S.XYZColor) || expr.isAST(S.LABColor) || expr.isAST(S.LCHColor)) {
       double[] channels = channelsWithAlpha((IAST) expr);
       if (channels == null) {
         return null;
       }
-      double[] xyz = expr.isAST(S.LABColor) //
-          ? ColorUtil.labToXyz(channels[0], channels[1], channels[2])
-          : channels;
+      double[] xyz = channels;
+      if (expr.isAST(S.LCHColor)) {
+        double[] lab = ColorUtil.lchToLab(channels[0], channels[1], channels[2]);
+        xyz = ColorUtil.labToXyz(lab[0], lab[1], lab[2]);
+      } else if (expr.isAST(S.LABColor)) {
+        xyz = ColorUtil.labToXyz(channels[0], channels[1], channels[2]);
+      }
       return new double[] {xyz[0], xyz[1], xyz[2], channels[3]};
     }
     double[] rgba = toRgbaDouble(expr);

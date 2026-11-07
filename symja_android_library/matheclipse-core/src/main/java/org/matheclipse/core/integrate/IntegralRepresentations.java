@@ -241,8 +241,10 @@ final class IntegralRepresentations {
       return null;
     }
     if (upper.isOne()) {
-      // without a parameter the antiderivative may be found, and its value is elementary
-      return ctx.parameters.isEmpty() ? null : euler(ctx, f);
+      // without a parameter the antiderivative of the Euler integrand or of a power times a
+      // Bessel function may be found, and its value is the simpler one
+      Answer answer = ctx.parameters.isEmpty() ? null : euler(ctx, f);
+      return answer != null ? answer : meijerUnitInterval(ctx, !ctx.parameters.isEmpty());
     }
     final boolean quarter = upper.equals(F.CPiHalf);
     if (quarter || upper.equals(S.Pi) || upper.equals(F.C2Pi)) {
@@ -360,6 +362,24 @@ final class IntegralRepresentations {
     answer.gates.addAll(result.gates);
     // the formula is an identity, which needs no numerical confirmation; the quadrature of a
     // product of Bessel functions over the half line is slow or, oscillating, unreliable
+    answer.tabulated = true;
+    return answer;
+  }
+
+  /**
+   * A power and a Bessel kernel over <code>(0,1)</code>, see {@link MeijerConvolution}.
+   *
+   * @param parametric whether the integrand has parameters; without them only an integrand with a
+   *        factor <code>(1-x^2)^(c-1)</code> is taken, whose antiderivative is rarely found
+   */
+  private static Answer meijerUnitInterval(Context ctx, boolean parametric) {
+    MeijerConvolution.Result result = MeijerConvolution.integrateUnitInterval(ctx, parametric);
+    if (result == null) {
+      return null;
+    }
+    Answer answer = new Answer(result.value);
+    answer.gates.addAll(result.gates);
+    // an identity of the G-functions; the oscillating Bessel kernel makes quadrature slow
     answer.tabulated = true;
     return answer;
   }

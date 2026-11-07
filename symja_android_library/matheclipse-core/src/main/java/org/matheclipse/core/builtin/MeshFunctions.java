@@ -303,6 +303,15 @@ public class MeshFunctions {
   }
 
   /**
+   * The Delaunay triangulation of plane points.
+   *
+   * @return the corner indices of the triangles, or <code>null</code> if all points are collinear
+   */
+  public static List<int[]> delaunayTriangles(double[] x, double[] y) {
+    return DelaunayMesh.triangulate(x, y);
+  }
+
+  /**
    * The geometric dimension of a mesh cell: <code>Point</code> is 0, <code>Line</code> is 1 and
    * <code>Polygon</code> is 2.
    *

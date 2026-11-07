@@ -855,7 +855,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
 
-    // F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
     if (Config.SERIALIZE_SYMBOLS && newSymbol.containsRules()) {
       try (
           FileOutputStream out =

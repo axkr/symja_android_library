@@ -306,8 +306,9 @@ public class GraphDataFunctions {
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
-      IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
       IExpr arg1 = ast.arg1();
+      // GraphLayout -> Automatic: the layout of the kind of complete graph
+      final boolean automaticLayout = options[GraphGraphics.X_GRAPH_LAYOUT] == S.Automatic;
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         if (list.argSize() >= 2) {
@@ -324,7 +325,12 @@ public class GraphDataFunctions {
           if (vertexCount > Config.MAX_GRAPH_VERTICES_SIZE) {
             ASTElementLimitExceeded.throwIt(vertexCount);
           }
-          return multipartiteCompleteGraph(partitions, vertexCount, optionsList);
+          if (automaticLayout) {
+            options[GraphGraphics.X_GRAPH_LAYOUT] = F.list(F.stringx("MultipartiteLayout"),
+                F.Rule(F.stringx("VertexPartition"), list));
+          }
+          return multipartiteCompleteGraph(partitions, vertexCount,
+              GraphGraphics.createOptionsList(options));
         }
         if (!arg1.isList1()) {
           // Function `1` only implemented for `2` list arguments.
@@ -342,8 +348,13 @@ public class GraphDataFunctions {
       if (partition > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(partition);
       }
-
-      return completeGraph(partition, optionsList);
+      if (automaticLayout) {
+        // K4 is drawn as a triangle around its centre, every other complete graph as a regular
+        // polygon in the order of its vertices
+        options[GraphGraphics.X_GRAPH_LAYOUT] = partition == 4 ? F.stringx("StarEmbedding")
+            : F.list(F.stringx("CircularEmbedding"), F.Rule(F.stringx("OptimalOrder"), S.False));
+      }
+      return completeGraph(partition, GraphGraphics.createOptionsList(options));
     }
 
     /**
@@ -548,10 +559,14 @@ public class GraphDataFunctions {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
         }
-        if (m * n > Config.MAX_GRAPH_VERTICES_SIZE) {
-          ASTElementLimitExceeded.throwIt(m * n);
+        if ((long) m * n > Config.MAX_GRAPH_VERTICES_SIZE) {
+          ASTElementLimitExceeded.throwIt((long) m * n);
         }
-        return gridGraph(engine, m, n);
+        GraphExpr<ExprEdge> grid = gridGraph(engine, m, n);
+        IASTAppendable options = F.ListAlloc(1);
+        options.append(F.Rule(S.GraphLayout, F.list(F.stringx("GridEmbedding"),
+            F.Rule(F.stringx("Dimension"), F.list(F.ZZ(m), F.ZZ(n))))));
+        return GraphExpr.newInstance(grid.toData(), options);
       }
       if (list.isList() && list.argSize() > 0) {
         int[] dimensions = new int[list.argSize()];
@@ -608,7 +623,7 @@ public class GraphDataFunctions {
       return GraphExpr.newInstance(grid);
     }
 
-    private static IExpr gridGraph(EvalEngine engine, int m, int n) {
+    private static GraphExpr<ExprEdge> gridGraph(EvalEngine engine, int m, int n) {
       if (m == 1 || n == 1) {
         // the JGraphT generator needs at least two rows and columns, a degenerated grid is a
         // path graph
@@ -738,10 +753,8 @@ public class GraphDataFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      IBuiltInSymbol[] defaultGraphOptionKeys = GraphGraphics.defaultGraphOptionKeys();
-      IExpr[] defaultGraphOptionValues = GraphGraphics.defaultGraphOptionValues();
-      defaultGraphOptionValues[GraphGraphics.X_GRAPH_LAYOUT] = F.stringx("DiscreteSpiralEmbedding");
-      setOptions(newSymbol, defaultGraphOptionKeys, defaultGraphOptionValues);
+      setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
+          GraphGraphics.defaultGraphOptionValues());
     }
   }
 
@@ -805,7 +818,24 @@ public class GraphDataFunctions {
       for (int[] pair : pairs) {
         target.addEdge(F.ZZ(pair[0]), F.ZZ(pair[1]));
       }
-      return GraphExpr.newInstance(target);
+      // the star on the unit circle and the cycle on the circle of radius 2, vertex i of each at
+      // the angle 2*Pi*i/order clockwise from the top
+      IASTAppendable coordinates = F.ListAlloc(2 * order);
+      for (int radius = 1; radius <= 2; radius++) {
+        for (int i = 1; i <= order; i++) {
+          double angle = 2.0 * Math.PI * i / order;
+          coordinates.append(F.list(F.num(chopZero(radius * Math.sin(angle))),
+              F.num(chopZero(radius * Math.cos(angle)))));
+        }
+      }
+      IASTAppendable options = F.ListAlloc(1);
+      options.append(F.Rule(S.VertexCoordinates, coordinates));
+      return GraphExpr.newInstance(target, options);
+    }
+
+    /** Map a coordinate which is zero except for a rounding error to an exact <code>0.0</code>. */
+    private static double chopZero(double value) {
+      return Math.abs(value) < 1.0e-12 ? 0.0 : value;
     }
 
     private IExpr petersenGraphNoArg() {

@@ -69,7 +69,9 @@ public final class PlotColorFunction {
     /** {@code RevolutionPlot3D}: {@code x, y, z, t, theta, r}. */
     REVOLUTION_3D(6, 3),
     /** {@code ContourPlot3D}: {@code x, y, z, f}. */
-    CONTOUR_3D(4, 4);
+    CONTOUR_3D(4, 4),
+    /** {@code VectorPlot3D}: {@code x, y, z, vx, vy, vz} and the vector's length. */
+    VECTOR_3D(7, 7);
 
     /** How many arguments the function is given. */
     public final int arity;

@@ -202,23 +202,39 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return F.C0;
   }
 
-  protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int rootNumerator,
-      int rootDenominator, Int2IntMap map) {
-    if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
+  /**
+   * The factors of <code>number^multiplicity</code> with small primes, for its root of order
+   * <code>rootDenominator</code>. The power isn't computed: the multiplicities of the factors of
+   * <code>number</code> are multiplied, so that <code>636367^260919</code>, five million bits,
+   * isn't divided by every small prime.
+   *
+   * @param multiplicity the power of <code>number</code>, at least 1
+   * @param map the multiplicities of the small primes of <code>number^multiplicity</code> on
+   *        return
+   */
+  protected static IAST factorBigInteger(BigInteger number, int multiplicity, boolean isNegative,
+      int rootNumerator, int rootDenominator, Int2IntMap map) {
+    if (number.compareTo(BigInteger.ONE) <= 0 || (number.bitLength() * (long) multiplicity <= 3
+        && number.pow(multiplicity).compareTo(BigInteger.valueOf(7)) <= 0)) {
       return F.NIL;
     }
     if (number.bitLength() > Config.MAX_BIT_LENGTH / 100) {
       BigIntegerLimitExceeded.throwIt(number.bitLength());
     }
     BigInteger rest = Primality.countPrimes32749(number, map);
+    if (multiplicity != 1) {
+      for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+        entry.setValue(Math.multiplyExact(entry.getIntValue(), multiplicity));
+      }
+    }
     final IASTAppendable result = F.TimesAlloc(map.size() + 4);
     boolean evaled = false;
     if (rest.compareTo(BigInteger.ONE) > 0) {
       // the rest has no prime factors less than 1031 (bit length 11), but may be a perfect power
       BigInteger[] perfectPower = Primality.perfectPower(rest, 11);
-      int exponent = perfectPower[1].intValueExact();
+      int exponent = Math.multiplyExact(perfectPower[1].intValueExact(), multiplicity);
       if (exponent > 1) {
-        BigInteger root = perfectPower[0];
+        BigInteger root = perfectPower[1].intValueExact() > 1 ? perfectPower[0] : rest;
         int mod = exponent % rootDenominator;
         int div = exponent / rootDenominator;
         if (div != 0) {
@@ -250,13 +266,16 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
           result.append(F.Power(valueOf(key), F.QQ(mod, rootDenominator)));
         }
         evaled = true;
-      } else {
+      } else if (value * (long) (32 - Integer.numberOfLeadingZeros(key)) <= 4096L) {
         result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, rootDenominator)));
+      } else {
+        // the same power of a prime without an integer of value*Log2(key) bits
+        result.append(F.Power(valueOf(key), F.QQ(value, rootDenominator)));
       }
     }
     if (evaled) {
       if (!rest.equals(BigInteger.ONE)) {
-        result.append(F.Power(valueOf(rest), F.QQ(1, rootDenominator)));
+        result.append(F.Power(valueOf(rest), F.QQ(multiplicity, rootDenominator)));
       }
       if (isNegative) {
         result.append(F.Power(-1, F.QQ(rootNumerator, rootDenominator)));
@@ -1000,16 +1019,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       b = b.negate();
       isNegative = true;
     }
-    if (rootNumerator != 1) {
-      b = b.powerRational(rootNumerator);
-    }
-    if (b.isLT(F.C8)) {
-      return F.NIL;
-    }
-
     BigInteger number = b.toBigNumerator();
     Int2IntMap map = new Int2IntRBTreeMap();
-    return factorBigInteger(number, isNegative, rootNumerator, rootDenominator, map);
+    return factorBigInteger(number, rootNumerator, isNegative, rootNumerator, rootDenominator,
+        map);
   }
 
   @Override

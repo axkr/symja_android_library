@@ -990,7 +990,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean hasAssignedSymbolValue() {
+  public boolean hasAssignedSymbolValue() {
     // some generated rule classes assign own values, e.g. RGBColorRules defines `Black`, `Red`, ...
     ensureRulesLoaded();
     markReadInCondition();
@@ -1597,7 +1597,8 @@ public class Symbol implements ISymbol, Serializable {
       boolean packageMode) {
     ensureRulesLoaded();
     if (!packageMode) {
-      if (isLocked(packageMode)) {
+      // the value of a built-in $ symbol is kept in the engine, so it is never locked
+      if (isLocked(packageMode) && !(leftHandSide.isSymbol() && isDollarSymbol())) {
         throw new RuleCreationError(leftHandSide);
       }
 

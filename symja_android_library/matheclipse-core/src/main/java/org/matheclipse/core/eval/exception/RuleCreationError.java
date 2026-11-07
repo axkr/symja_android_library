@@ -17,7 +17,7 @@ public final class RuleCreationError extends ValidateException {
   @Override
   public String getMessage() {
     if (fLHS == null) {
-      return "Operation not allowed in server mode.";
+      return "Operation not allowed on a locked symbol.";
     }
     // if (fCondition != null) {
     // return "Error in rule creation: Condition not allowed in rules containing no pattern (" +
@@ -35,7 +35,7 @@ public final class RuleCreationError extends ValidateException {
   @Override
   public String getMessage(ISymbol symbol) {
     if (fLHS == null) {
-      return symbol + ": " + "Operation not allowed in server mode.";
+      return symbol + ": " + "Operation not allowed on a locked symbol.";
     }
     Context context = fLHS.topHead().getContext();
     return symbol + ": " + "Not allowed left-hand-side expression: \"" + fLHS + "\" from context \""

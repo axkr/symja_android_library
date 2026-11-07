@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -630,13 +629,7 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   private static ISymbol getSymbolFromContext(Context context, String name) {
-    return context.computeIfAbsent(name, n -> {
-      ISymbol symbol = new Symbol(n, context);
-      if (Config.SERVER_MODE && (n.charAt(0) == '$')) {
-        F.SYMBOL_OBSERVER.createUserSymbol(symbol);
-      }
-      return symbol;
-    });
+    return context.computeIfAbsent(name, n -> new Symbol(n, context));
   }
 
 

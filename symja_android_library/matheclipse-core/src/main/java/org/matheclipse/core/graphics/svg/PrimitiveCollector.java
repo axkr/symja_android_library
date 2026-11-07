@@ -43,6 +43,22 @@ public final class PrimitiveCollector {
 
   /** Vertex table of the enclosing {@code GraphicsComplex}, or {@code null}. */
   private List<double[]> vertices;
+  /**
+   * Whether the points being read belong to a {@code Line}, whose {@code Offset(shift, pos)} points
+   * keep their shift in printer's points as the entries {@link #OFFSET_DX} and {@link #OFFSET_DY}.
+   * Only the SVG renderer applies the shift; a renderer without a printer's point scale draws the
+   * point at its position.
+   */
+  private boolean lineShifts;
+
+  /** Index of the horizontal printer's point shift of an {@code Offset} point of a line. */
+  public static final int OFFSET_DX = 2;
+
+  /** Index of the vertical printer's point shift of an {@code Offset} point of a line. */
+  public static final int OFFSET_DY = 3;
+
+  /** The {@code VertexColors} of the enclosing {@code GraphicsComplex}, or {@code null}. */
+  private List<Color> vertexColors;
 
   /** {@code IntervalMarkers}: how uncertain coordinates of points and lines are marked. */
   private IntervalMarkerType intervalMarkers = IntervalMarkerType.BARS;
@@ -793,6 +809,7 @@ public final class PrimitiveCollector {
       return;
     }
     List<double[]> saved = vertices;
+    List<Color> savedColors = vertexColors;
     try {
       IAST pts = (IAST) ast.arg1();
       List<double[]> table = new ArrayList<>(pts.argSize());
@@ -800,11 +817,23 @@ public final class PrimitiveCollector {
         table.add(pointOf(pts.get(i)));
       }
       vertices = table;
+      vertexColors = null;
+      for (int i = 3; i <= ast.argSize(); i++) {
+        if (ast.get(i).isRuleAST() && ast.get(i).first() == S.VertexColors
+            && ast.get(i).second().isList()) {
+          IAST colors = (IAST) ast.get(i).second();
+          vertexColors = new ArrayList<>(colors.argSize());
+          for (IExpr color : colors) {
+            vertexColors.add(ColorUtil.parse(color));
+          }
+        }
+      }
       if (ast.argSize() >= 2) {
         collect(ast.arg2(), style.clone());
       }
     } finally {
       vertices = saved;
+      vertexColors = savedColors;
     }
   }
 
@@ -1034,9 +1063,11 @@ public final class PrimitiveCollector {
     }
     beginMarkers(ast.arg1());
     List<List<double[]>> segments;
+    lineShifts = true;
     try {
       segments = segmentsOf(ast.arg1());
     } finally {
+      lineShifts = false;
       endMarkers(style, false);
     }
     if (segments.isEmpty()) {
@@ -1262,6 +1293,11 @@ public final class PrimitiveCollector {
       }
       return;
     }
+    if (vertices != null && vertexColors != null && spec.isList() && spec.argSize() > 0) {
+      // faces with colours at their vertices are each filled with the mean of those colours
+      collectColoredFaces(spec.first().isList() ? (IAST) spec : F.list(spec), style);
+      return;
+    }
     if (vertices != null && spec.isList() && spec.argSize() > 0 && spec.first().isList()) {
       // the faces of a GraphicsComplex, {{i, j, k}, ...}: they share their edges, so they are
       // drawn as the sub-paths of one path, which leaves no seam between two of them
@@ -1284,6 +1320,59 @@ public final class PrimitiveCollector {
     if (!pts.isEmpty()) {
       primitives.add(new Prim2D.PolygonPrim(pts, style.clone()));
     }
+  }
+
+  /**
+   * The faces <code>{{i, j, k}, ...}</code> of a {@code GraphicsComplex} with {@code VertexColors},
+   * each filled with the mean colour of its vertices.
+   */
+  private void collectColoredFaces(IAST faces, Style2D style) {
+    for (IExpr face : faces) {
+      List<double[]> pts = pointsOf(face);
+      Color mean = meanVertexColor(face);
+      if (!pts.isEmpty()) {
+        Style2D faceStyle = style.clone();
+        if (mean != null) {
+          faceStyle.faceColor = mean;
+          if (faceStyle.edgeColor == null) {
+            // a hairline in the face's own colour closes the seams between abutting faces
+            faceStyle.edgeFormSet = true;
+            faceStyle.edgeColor = mean;
+            faceStyle.edgeOpacity = 1.0;
+            faceStyle.strokeWidth = 0.5;
+          }
+        }
+        primitives.add(new Prim2D.PolygonPrim(pts, faceStyle));
+      }
+    }
+  }
+
+  /**
+   * The mean of the {@code VertexColors} at the indices of a face, or {@code null} if one of them
+   * has no colour.
+   */
+  private Color meanVertexColor(IExpr face) {
+    if (!face.isList() || face.argSize() == 0) {
+      return null;
+    }
+    double r = 0;
+    double g = 0;
+    double b = 0;
+    double a = 0;
+    for (IExpr index : (IAST) face) {
+      int k = index.toIntDefault(0);
+      Color c = k > 0 && k <= vertexColors.size() ? vertexColors.get(k - 1) : null;
+      if (c == null) {
+        return null;
+      }
+      r += c.getRed();
+      g += c.getGreen();
+      b += c.getBlue();
+      a += c.getAlpha();
+    }
+    int n = face.argSize();
+    return new Color((int) Math.round(r / n), (int) Math.round(g / n), (int) Math.round(b / n),
+        (int) Math.round(a / n));
   }
 
   private void collectRegularPolygon(IAST ast, Style2D style) {
@@ -1548,12 +1637,21 @@ public final class PrimitiveCollector {
           applyTextStyle(wrapper.get(i), textStyle);
         }
         content = wrapper.arg1();
+      } else if (head == S.Pane) {
+        content = wrapper.arg1();
       } else {
         break;
       }
     }
 
     double[] pos = ast.argSize() >= 2 ? pointOf(ast.arg2()) : new double[] {0, 0};
+    // Text(expr, Offset({dx, dy}, pos)) moves the label by {dx, dy} printer's points
+    double shiftX = 0;
+    double shiftY = 0;
+    if (ast.argSize() >= 2 && ast.arg2().isAST(S.Offset, 3) && ast.arg2().first().isList2()) {
+      shiftX = ColorUtil.dbl(ast.arg2().first().first(), 0.0);
+      shiftY = ColorUtil.dbl(ast.arg2().first().second(), 0.0);
+    }
     double offsetX = 0;
     double offsetY = 0;
     if (ast.argSize() >= 3 && ast.arg3().isList()) {
@@ -1571,7 +1669,7 @@ public final class PrimitiveCollector {
       }
     }
     primitives.add(new Prim2D.TextPrim(textOf(content), pos[0], pos[1], offsetX, offsetY, dirX,
-        dirY, frame, background, textStyle));
+        dirY, frame, background, textStyle, shiftX, shiftY));
   }
 
   /** The displayed form of a label. Strings lose their quotes; anything else prints as is. */
@@ -2088,6 +2186,16 @@ public final class PrimitiveCollector {
       IAST scaled = (IAST) expr.first();
       return new double[] {ColorUtil.dbl(scaled.arg1(), Double.NaN),
           ColorUtil.dbl(scaled.arg2(), Double.NaN)};
+    }
+    if (expr.isAST(S.Offset, 3)) {
+      // the position of Offset(shift, pos); a Text applies the shift itself, a Line carries it
+      // along as two more entries, other primitives are drawn at the position
+      double[] p = pointOf(((IAST) expr).arg2());
+      if (lineShifts && expr.first().isList2() && p.length == 2) {
+        return new double[] {p[0], p[1], ColorUtil.dbl(expr.first().first(), 0.0),
+            ColorUtil.dbl(expr.first().second(), 0.0)};
+      }
+      return p;
     }
     if (vertices != null && expr.isInteger()) {
       int idx = expr.toIntDefault(0);

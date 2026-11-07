@@ -3078,7 +3078,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{{4<->6,6<->5},{2<->2,2<->5}}");
     // a list of options after the pairs
     check("h=Graph({{7,3},{3,9}}, {VertexLabels->\"Name\"}); {EdgeList(h),Options(h)}", //
-        "{{7<->3,3<->9},{VertexLabels->Name}}");
+        "{{7<->3,3<->9},{VertexLabels->{Name}}}");
     // other pairs make no graph; in the vertex position pairs are vertices
     check("{Graph({{1,x}}), Graph({{-1,2}}), Graph({{1,2},3->4}), VertexList(Graph({{2,1},{5,6}},{}))}", //
         "{Graph({{1,x}}),Graph({{-1,2}}),Graph({{1,2},3->4}),{{2,1},{5,6}}}");
@@ -3088,12 +3088,12 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testGraphOfGraphOptions() {
     check("g=StarGraph(3); h=Graph(g, EdgeStyle->Green, ImageSize->30); " //
         + "{VertexCount(h),EdgeCount(h),Options(h,{EdgeStyle,ImageSize}),Graph(g)===g, h===g}", //
-        "{3,2,{EdgeStyle->RGBColor(0,1,0),ImageSize->30},True,False}");
+        "{3,2,{EdgeStyle->{RGBColor(0,1,0)},ImageSize->30},True,False}");
     // a later option replaces an earlier one
     check("Options(Graph(Graph({1<->3}, ImageSize->10, VertexLabels->\"Name\"), ImageSize->20))", //
-        "{ImageSize->20,VertexLabels->Name}");
+        "{ImageSize->20,VertexLabels->{Name}}");
     check("Options(Graph(Graph({1<->3}, ImageSize->10), {VertexLabels->\"Name\", ImageSize->20}))", //
-        "{ImageSize->20,VertexLabels->Name}");
+        "{ImageSize->20,VertexLabels->{Name}}");
     check("Graph(CycleGraph(3), 7)", //
         "Graph(Graph({1,2,3},{1<->2,1<->3,2<->3}),7)");
   }

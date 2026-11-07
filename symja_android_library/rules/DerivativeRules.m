@@ -217,6 +217,12 @@ Derivative(0,0,0,1)[SphericalHarmonicY] = (I*#2*SphericalHarmonicY[#, #2, #3, #4
  
 Derivative(0,1)[StruveH] = (1/2)*(StruveH(#-1, #2) - StruveH(#+1, #2) + (#2/2)^#/(Sqrt(Pi)*Gamma(#+3/2))) &,
 Derivative(0,1)[StruveL] = (1/2)*(StruveL(#-1, #2) + StruveL(#+1, #2) + (#2/2)^#/(Sqrt(Pi)*Gamma(#+3/2))) &,
+Derivative(0,1)[KelvinBer] = (-KelvinBei(-1+#,#2)+KelvinBei(1+#,#2)-KelvinBer(-1+#,#2)+KelvinBer(1+#,#2))/(2*Sqrt(2)) &,
+Derivative(0,1)[KelvinBei] = (-KelvinBei(-1+#,#2)+KelvinBei(1+#,#2)+KelvinBer(-1+#,#2)-KelvinBer(1+#,#2))/(2*Sqrt(2)) &,
+Derivative(0,1)[KelvinKer] = (-KelvinKei(-1+#,#2)+KelvinKei(1+#,#2)-KelvinKer(-1+#,#2)+KelvinKer(1+#,#2))/(2*Sqrt(2)) &,
+Derivative(0,1)[KelvinKei] = (-KelvinKei(-1+#,#2)+KelvinKei(1+#,#2)+KelvinKer(-1+#,#2)-KelvinKer(1+#,#2))/(2*Sqrt(2)) &,
+Derivative(0,1)[AngerJ] = AngerJ(-1+#,#2)/2-AngerJ(1+#,#2)/2 &,
+Derivative(0,1)[WeberE] = WeberE(-1+#,#2)/2-WeberE(1+#,#2)/2 &,
 
 Derivative(1)[Zeta][0] = (-1/2)*Log(2*Pi),
 Derivative(1)[Zeta][-1] = 1/12-Log(Glaisher),

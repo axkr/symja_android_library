@@ -371,19 +371,29 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   }
 
   public IExpr replace(final IExpr leftHandSide, EvalEngine engine) {
-    return replaceInternal(leftHandSide, engine, false);
+    return replaceInternal(leftHandSide, engine, false, false);
+  }
+
+  /**
+   * Like {@link #replace(IExpr, EvalEngine)}, but the rule must match <code>leftHandSide</code> as
+   * a whole: a run of the arguments of a <code>Flat</code> or <code>Orderless</code> expression
+   * isn't replaced, as in <code>Replace(a+b+c, a+b-&gt;x)</code>.
+   */
+  public IExpr replaceWhole(final IExpr leftHandSide, EvalEngine engine) {
+    return replaceInternal(leftHandSide, engine, false, true);
   }
 
   public IExpr replaceEvaled(final IExpr leftHandSide, EvalEngine engine) {
-    return replaceInternal(leftHandSide, engine, true);
+    return replaceInternal(leftHandSide, engine, true, false);
   }
 
-  private IExpr replaceInternal(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
+  private IExpr replaceInternal(final IExpr leftHandSide, EvalEngine engine, boolean evaluate,
+      boolean wholeOnly) {
     // the conditions which failed are remembered for the whole replacement, the matches of its
     // sub-expressions on copies of this rule included
     final boolean outermost = engine.beginFailedConditions();
     try {
-      return replaceInternalMatch(leftHandSide, engine, evaluate);
+      return replaceInternalMatch(leftHandSide, engine, evaluate, wholeOnly);
     } finally {
       if (outermost) {
         engine.endFailedConditions();
@@ -392,7 +402,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   }
 
   private IExpr replaceInternalMatch(final IExpr leftHandSide, EvalEngine engine,
-      boolean evaluate) {
+      boolean evaluate, boolean wholeOnly) {
     IPatternMap patternMap = null;
 
     // reset per-match state; this matcher instance may be reused for several expressions (for
@@ -403,6 +413,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     if (isRuleWithoutPatterns()) {
       if (fLhsPatternExpr.equals(leftHandSide)) {
         return replaceEqualMatch(leftHandSide, engine, evaluate);
+      }
+      if (wholeOnly) {
+        return F.NIL;
       }
       if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())
           && !(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
@@ -420,7 +433,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       }
     }
 
-    if (fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
+    if (!wholeOnly && fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
       IExpr lhs = fLhsPatternExpr;
       if (lhs.isAST(S.HoldPattern, 2)) {
         lhs = lhs.first();
