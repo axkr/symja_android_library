@@ -2006,12 +2006,69 @@ public class HypergeometricFunctions {
   }
 
 
-  private static class HypergeometricPFQ extends AbstractFunctionEvaluator {
+  private static class HypergeometricPFQ extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
     /**
      * Largest <code>Abs(z)</code> for which
      * <code>HypergeometricPFQ({1,...,1},{2,...,2},z)</code> is summed term by term.
      */
     private static final double MAX_ONES_TWOS_ABS_Z = 10000.0;
+
+    /**
+     * Cancel the upper and lower parameters which are equal over one common denominator, such as
+     * <code>(2+2*v)/2</code> and <code>1+v</code>, and expand what remains.
+     */
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.argSize() != 3 || !ast.arg1().isList() || !ast.arg2().isList()) {
+        return F.NIL;
+      }
+      IAST a = (IAST) ast.arg1();
+      IAST b = (IAST) ast.arg2();
+      if (a.isEmpty() || b.isEmpty()) {
+        return F.NIL;
+      }
+      IExpr[] lower = new IExpr[b.argSize()];
+      for (int j = 0; j < lower.length; j++) {
+        lower[j] = overOneDenominator(b.get(j + 1), engine);
+      }
+      boolean[] cancelled = new boolean[lower.length];
+      IASTAppendable upper = F.ListAlloc(a.argSize());
+      boolean changed = false;
+      for (IExpr ai : a) {
+        IExpr together = overOneDenominator(ai, engine);
+        int index = -1;
+        // an upper parameter -n ends the series before a lower parameter -n makes it undefined
+        for (int j = 0; j < lower.length
+            && !(together.isZero() || together.isMathematicalIntegerNegative()); j++) {
+          if (!cancelled[j] && lower[j].equals(together)) {
+            index = j;
+            break;
+          }
+        }
+        if (index >= 0) {
+          cancelled[index] = true;
+          changed = true;
+        } else {
+          upper.append(ai);
+        }
+      }
+      if (!changed) {
+        return F.NIL;
+      }
+      IASTAppendable remaining = F.ListAlloc(lower.length);
+      for (int j = 0; j < lower.length; j++) {
+        if (!cancelled[j]) {
+          remaining.append(b.get(j + 1));
+        }
+      }
+      return F.FunctionExpand(F.HypergeometricPFQ(upper, remaining, ast.arg3()));
+    }
+
+    /** <code>Together(p)</code>, which leaves a number or a symbol as it is. */
+    private static IExpr overOneDenominator(IExpr p, EvalEngine engine) {
+      return p.isAtom() ? p : engine.evaluate(F.Together(p));
+    }
 
 
     @Override

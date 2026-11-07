@@ -193,6 +193,27 @@ public class PolynomialFunctions {
     return ((INumber) z).apcomplexValue();
   }
 
+  /**
+   * The recurrence of {@link #inexactRecurrence(int, IExpr, int, boolean)} with guard digits, for a
+   * machine number whose value is beyond the double range.
+   */
+  private static IExpr guardedRecurrence(int n, INumber z, int first, boolean hermite) {
+    org.apfloat.FixedPrecisionApcomplexHelper h = LaguerreL.guardedArithmetic();
+    org.apfloat.Apcomplex twoZ = h.multiply(LaguerreL.guarded(z), new org.apfloat.Apfloat(2));
+    org.apfloat.Apcomplex previous = org.apfloat.Apcomplex.ONE;
+    org.apfloat.Apcomplex current = first == 1 ? LaguerreL.guarded(z) : twoZ;
+    for (int k = 1; k < n; k++) {
+      org.apfloat.Apcomplex next = h.subtract(h.multiply(twoZ, current),
+          hermite ? h.multiply(previous, new org.apfloat.Apfloat(2L * k)) : previous);
+      previous = current;
+      current = next;
+      if ((k & 255) == 0) {
+        EvalEngine.get().checkTimeLimit();
+      }
+    }
+    return LaguerreL.toMachinePrecision(current);
+  }
+
   private static IExpr inexactRecurrence(int n, IExpr z, int first, boolean hermite) {
     final IExpr twoZ = z.times(F.C2);
     IExpr previous = F.C1;
@@ -200,6 +221,10 @@ public class PolynomialFunctions {
     for (int k = 1; k < n; k++) {
       IExpr next = twoZ.times(current)
           .subtract(hermite ? previous.times(F.ZZ(2L * k)) : previous);
+      if (LaguerreL.leftMachineRange(next) && z.isMachineNumber()) {
+        // beyond the double range: the same recurrence with guard digits
+        return guardedRecurrence(n, (INumber) z, first, hermite);
+      }
       previous = current;
       current = next;
     }
@@ -2670,6 +2695,107 @@ public class PolynomialFunctions {
     }
 
     /**
+     * Test if <code>value</code>, a step of a recurrence with machine numbers, is no finite machine
+     * number: an overflow, or a number promoted beyond the double range.
+     */
+    static boolean leftMachineRange(IExpr value) {
+      return !(value instanceof org.matheclipse.core.expression.Num
+          || value instanceof org.matheclipse.core.expression.ComplexNum)
+          || isMachineOverflow(value);
+    }
+
+    /** Test if <code>value</code> is a machine number which isn't finite. */
+    static boolean isMachineOverflow(IExpr value) {
+      if (value instanceof org.matheclipse.core.expression.Num) {
+        return !Double.isFinite(((org.matheclipse.core.expression.Num) value).doubleValue());
+      }
+      if (value instanceof org.matheclipse.core.expression.ComplexNum) {
+        org.hipparchus.complex.Complex c =
+            ((org.matheclipse.core.expression.ComplexNum) value).complexValue();
+        return !Double.isFinite(c.getReal()) || !Double.isFinite(c.getImaginary());
+      }
+      return false;
+    }
+
+    /** The digits beyond machine precision a recurrence beyond the double range runs with. */
+    private static final long GUARD_DIGITS = 20;
+
+    /** Arithmetic with guard digits beyond machine precision, and rounding only. */
+    static org.apfloat.FixedPrecisionApcomplexHelper guardedArithmetic() {
+      return new org.apfloat.FixedPrecisionApcomplexHelper(
+          org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + GUARD_DIGITS);
+    }
+
+    /**
+     * The exact value of a machine number (the binary number it is), or of an exact number, for
+     * {@link #guardedArithmetic()}.
+     */
+    static org.apfloat.Apcomplex guarded(INumber number) {
+      if (number instanceof org.matheclipse.core.expression.Num) {
+        return new org.apfloat.Apfloat(new java.math.BigDecimal(
+            ((org.matheclipse.core.expression.Num) number).doubleValue()));
+      }
+      if (number instanceof org.matheclipse.core.expression.ComplexNum) {
+        org.hipparchus.complex.Complex c =
+            ((org.matheclipse.core.expression.ComplexNum) number).complexValue();
+        return new org.apfloat.Apcomplex(new org.apfloat.Apfloat(new java.math.BigDecimal(c.getReal())),
+            new org.apfloat.Apfloat(new java.math.BigDecimal(c.getImaginary())));
+      }
+      if (number instanceof org.matheclipse.core.interfaces.IRational) {
+        return guardedRational((org.matheclipse.core.interfaces.IRational) number);
+      }
+      if (number instanceof org.matheclipse.core.interfaces.IComplex) {
+        org.matheclipse.core.interfaces.IComplex c =
+            (org.matheclipse.core.interfaces.IComplex) number;
+        return new org.apfloat.Apcomplex(guardedRational(c.re()), guardedRational(c.im()));
+      }
+      return number.apcomplexValue();
+    }
+
+    /** An exact rational number with the digits of {@link #guardedArithmetic()}. */
+    private static org.apfloat.Apfloat guardedRational(
+        org.matheclipse.core.interfaces.IRational number) {
+      final long precision =
+          org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + GUARD_DIGITS;
+      org.apfloat.Apfloat numerator = new org.apfloat.Apfloat(number.toBigNumerator(), precision);
+      return numerator.divide(new org.apfloat.Apfloat(number.toBigDenominator(), precision));
+    }
+
+    /** A value calculated with guard digits as a number of machine precision. */
+    static IExpr toMachinePrecision(org.apfloat.Apcomplex value) {
+      final long precision = org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION;
+      if (value.imag().signum() == 0) {
+        return org.matheclipse.core.expression.ApfloatNum.machineOrPromoted(value.real());
+      }
+      return F.complexNum(value.real().precision(precision), value.imag().precision(precision));
+    }
+
+    /**
+     * <code>LaguerreL(degree, l, z)</code> with guard digits, for machine numbers whose value is
+     * beyond the double range.
+     */
+    private static IExpr guardedLaguerreL(int degree, INumber l, INumber z) {
+      org.apfloat.FixedPrecisionApcomplexHelper h = guardedArithmetic();
+      org.apfloat.Apcomplex a = guarded(l);
+      org.apfloat.Apcomplex x = guarded(z);
+      org.apfloat.Apcomplex aMinusX = h.subtract(a, x);
+      org.apfloat.Apcomplex previous = org.apfloat.Apcomplex.ONE;
+      org.apfloat.Apcomplex current = h.add(org.apfloat.Apcomplex.ONE, aMinusX);
+      for (int k = 2; k <= degree; k++) {
+        org.apfloat.Apcomplex next = h.divide(
+            h.subtract(h.multiply(h.add(aMinusX, new org.apfloat.Apfloat(2L * k - 1)), current),
+                h.multiply(h.add(a, new org.apfloat.Apfloat(k - 1L)), previous)),
+            new org.apfloat.Apfloat(k));
+        previous = current;
+        current = next;
+        if ((k & 255) == 0) {
+          EvalEngine.get().checkTimeLimit();
+        }
+      }
+      return toMachinePrecision(current);
+    }
+
+    /**
      * <code>LaguerreL(degree, l, z)</code> for numbers, with the recurrence relation in the degree:
      * <code>k*L(k) == (2*k-1+l-z)*L(k-1) - (k-1+l)*L(k-2)</code>
      */
@@ -2683,6 +2809,10 @@ public class PolynomialFunctions {
       for (int k = 2; k <= degree; k++) {
         IExpr next = lMinusZ.plus(F.ZZ(2 * k - 1)).times(current)
             .subtract(l.plus(F.ZZ(k - 1)).times(previous)).divide(F.ZZ(k));
+        if (leftMachineRange(next) && (l.isMachineNumber() || z.isMachineNumber())) {
+          // beyond the double range: the same recurrence with guard digits
+          return guardedLaguerreL(degree, l, z);
+        }
         previous = current;
         current = next;
       }

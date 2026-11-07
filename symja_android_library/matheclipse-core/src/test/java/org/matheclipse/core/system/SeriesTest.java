@@ -1983,6 +1983,43 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testResidueExponentialEssentialSingularity() {
+    // w^j*Exp(a*w + b/w): a BesselI value
+    check("Residue(Exp(3*z + 1/z), {z, 0})", //
+        "BesselI(1,2*Sqrt(3))/Sqrt(3)");
+    check("Residue(z^3*Exp(z + 2/z), {z, 0})", //
+        "4*BesselI(4,2*Sqrt(2))");
+    check("Residue(Exp(p*z + q/z)/z^2, {z, 0})", //
+        "(p*BesselI(1,2*Sqrt(p*q)))/Sqrt(p*q)");
+    check("Residue(Exp(2/(z - 3) + z), {z, 3})", //
+        "Sqrt(2)*E^3*BesselI(1,2*Sqrt(2))");
+    // a*b < 0 or a perfect square: BesselJ, and a root without radicals
+    check("Residue(Cos(2*z + 1/(2*z))/z, {z, 0})", //
+        "BesselJ(0,2)");
+    check("Residue(Exp(2*z - 1/z), {z, 0})", //
+        "-BesselJ(1,2*Sqrt(2))/Sqrt(2)");
+    // even in z: no residue
+    check("Residue(Cosh(2*z + 2/z), {z, 0})", //
+        "0");
+    check("Residue(z^(-3)*Exp(1 + 1/z), {z, 0})", //
+        "0");
+  }
+
+  @Test
+  public void testResidueEssentialSingularityWithPoles() {
+    // the residues of a function which is analytic at Infinity sum to 0
+    check("Residue(Exp(1/z)/(z - 3), {z, 0})", //
+        "1-E^(1/3)");
+    check("Residue(Sin(1/z)/(z + 3), {z, 0})", //
+        "Sin(1/3)");
+    check("Residue(Exp(2/(z + 1))/(z - 1), {z, -1})", //
+        "1-E");
+    // residues at complex poles of a real function, in trigonometric form
+    check("Residue(Exp(1/z)/(9 + z^2), {z, 0})", //
+        "Sin(1/3)/3");
+  }
+
+  @Test
   public void testInverseSeries002() {
     // reversion of Sin gives the ArcSin series
     check("InverseSeries(Series(Sin(x), {x, 0, 5}))", //

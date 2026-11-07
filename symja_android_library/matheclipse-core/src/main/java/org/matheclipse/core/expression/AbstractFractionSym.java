@@ -1569,21 +1569,15 @@ public abstract class AbstractFractionSym implements IFraction {
       b = b.negate();
       isNegative = true;
     }
-    if (rootNumerator != 1) {
-      b = b.powerRational(rootNumerator);
-    }
     IInteger d = denominator();
-    if (rootNumerator != 1) {
-      d = d.powerRational(rootNumerator);
-    }
     Int2IntMap bMap = new Int2IntRBTreeMap();
     BigInteger number = b.toBigNumerator();
-    IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, rootNumerator,
-        rootDenominator, bMap);
+    IAST bAST = AbstractIntegerSym.factorBigInteger(number, rootNumerator, isNegative,
+        rootNumerator, rootDenominator, bMap);
     Int2IntMap dMap = new Int2IntRBTreeMap();
     number = d.toBigNumerator();
-    IAST dAST =
-        AbstractIntegerSym.factorBigInteger(number, false, rootNumerator, rootDenominator, dMap);
+    IAST dAST = AbstractIntegerSym.factorBigInteger(number, rootNumerator, false, rootNumerator,
+        rootDenominator, dMap);
     if (bAST.isPresent()) {
       if (dAST.isPresent()) {
         return F.Times(bAST, F.Power(dAST, F.CN1));

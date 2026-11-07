@@ -867,6 +867,10 @@ public class PredicateQ {
       if (ast.size() > 2 && !ast.arg2().isRuleAST() && !ast.arg2().isListOfRules()) {
         int k = ast.arg2().toMachineInt();
         if (F.isNotPresent(k)) {
+          if (ast.arg2().isNumber()) {
+            // `1` is not a machine-sized integer.
+            return Errors.printMessage(ast.topHead(), "nmint", F.list(ast.arg2()), engine);
+          }
           return F.NIL;
         }
         diagonal = k;

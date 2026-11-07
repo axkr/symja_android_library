@@ -11,6 +11,7 @@ import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -118,9 +119,8 @@ public class ArrayPlot extends ListPlot {
 
     IASTAppendable primitives = F.ListAlloc();
     // one raster rather than one rectangle per cell
-    // the value the grey scale reaches black at: the extreme furthest from zero on whichever side
-    // the data lies, which is the maximum unless every value is negative
-    final double greyLimit = max > 0.0 ? max : min;
+    // the value the grey scale reaches black at: the largest magnitude, whatever its sign
+    final double greyLimit = Math.max(Math.abs(min), Math.abs(max));
     final boolean scaling = matrixOptions.colorFunctionScaling;
     // A ColorFunction is a scale over the range of the data. The default grey scale is a
     // different one - see greyColor - so the two are separate objects rather than one function
@@ -133,7 +133,10 @@ public class ArrayPlot extends ListPlot {
     // compiled once for the whole array: the rules are matched like Replace, once per cell
     GraphicsOptions.ColorRuleTable colorRules =
         GraphicsOptions.colorRules(matrixOptions.colorRules, engine);
-    IExpr[][] cells = new IExpr[rows][cols];
+    // an array of plain numbers on the default grey scale keeps its values in the raster
+    final IExpr[][] levels =
+        colorMap == null && colorRules == null && scaling ? greyLevels(grid, rows, cols) : null;
+    IExpr[][] cells = levels != null ? levels : new IExpr[rows][cols];
 
     // Draw cells
     // Coordinate System:
@@ -142,7 +145,7 @@ public class ArrayPlot extends ListPlot {
     // x range: c to c+1
     // y range: rows-1-r to rows-r
 
-    for (int r = 0; r < rows; r++) {
+    for (int r = 0; levels == null && r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         IExpr val = grid[r][c];
         if (val == null || val == S.None || val.isAST(S.Missing))
@@ -177,6 +180,12 @@ public class ArrayPlot extends ListPlot {
     }
     IExpr frameTicksOpt = GraphicsOptions.finishMatrixRaster(primitives, cells, rows, cols,
         matrixOptions.mesh, graphicsOptions, originalAST, S.None);
+    if (levels != null) {
+      // the scale of the values as the third argument: 0 is white, the largest magnitude black
+      IAST raster = (IAST) primitives.arg1();
+      primitives.set(1, F.ternaryAST3(S.Raster, raster.arg1(), raster.arg2(),
+          F.list(F.C0, greyLimitExpr(grid, greyLimit))));
+    }
     if (!(frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue())
         && graphicsOptions.frameTicks().isNone()
         && options[GraphicsOptions.X_FRAMETICKS].isNone()) {
@@ -193,14 +202,72 @@ public class ArrayPlot extends ListPlot {
   }
 
   /**
+   * The cells of an array of numbers as positions on the default grey scale: the largest
+   * magnitude less the magnitude of the cell, so that a raster with the range
+   * <code>{0, largest magnitude}</code> draws 0 white and the largest magnitude black. Exact
+   * numbers stay exact.
+   *
+   * @return {@code null} if a cell is missing, a colour or not a real number
+   */
+  private static IExpr[][] greyLevels(IExpr[][] grid, int rows, int cols) {
+    double greyLimit = 0.0;
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        IExpr val = grid[r][c];
+        if (val == null || GraphicsOptions.isBasicColor(val)) {
+          return null;
+        }
+        double d = val.evalfNaN();
+        if (!Double.isFinite(d)) {
+          return null;
+        }
+        greyLimit = Math.max(greyLimit, Math.abs(d));
+      }
+    }
+    IExpr limit = greyLimitExpr(grid, greyLimit);
+    IExpr[][] levels = new IExpr[rows][cols];
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        IExpr val = grid[r][c];
+        if (greyLimit == 0.0) {
+          levels[r][c] = F.C1;
+        } else if (limit.isRational() && val.isRational()) {
+          levels[r][c] = ((IRational) limit).subtract(((IRational) val).abs());
+        } else {
+          levels[r][c] = F.num(greyLimit - Math.abs(val.evalf()));
+        }
+      }
+    }
+    return levels;
+  }
+
+  /**
+   * The largest magnitude of the array as the cell it comes from has it: exact for a rational
+   * cell, otherwise a machine number. 1 when every cell is 0.
+   */
+  private static IExpr greyLimitExpr(IExpr[][] grid, double greyLimit) {
+    if (greyLimit == 0.0) {
+      return F.C1;
+    }
+    for (IExpr[] row : grid) {
+      for (IExpr val : row) {
+        if (val != null && val.isRational() && Math.abs(val.evalfNaN()) == greyLimit) {
+          return ((IRational) val).abs();
+        }
+      }
+    }
+    return F.num(greyLimit);
+  }
+
+  /**
    * The scale {@code ArrayPlot} paints with when no {@code ColorFunction} was given.
    *
    * <p>
-   * It runs from white at zero to black at the largest value, rather than from white at the
-   * smallest: {@code ArrayPlot({{1, 2, 3}})} is three greys with no white among them, and
-   * {@code ArrayPlot({{-1, 0, 1}})} paints -1 and 0 alike because everything below zero is off the
-   * white end of the scale. That is the reference behaviour, and it belongs to this scale alone - a
-   * {@code ColorFunction} is given the usual scale over the whole range of the data.
+   * It runs from white at zero to black at the largest magnitude, rather than from white at the
+   * smallest value: {@code ArrayPlot({{1, 2, 3}})} is three greys with no white among them, and
+   * {@code ArrayPlot({{-1, 0, 1}})} paints -1 and 1 alike because the sign is ignored. That is the
+   * reference behaviour, and it belongs to this scale alone - a {@code ColorFunction} is given the
+   * usual scale over the whole range of the data.
    *
    * <p>
    * The clamp lives here too. An unscaled value is a position on this scale and positions outside
@@ -212,7 +279,7 @@ public class ArrayPlot extends ListPlot {
   private static IExpr greyColor(double value, double greyLimit, boolean scaling) {
     double t = value;
     if (scaling) {
-      t = greyLimit == 0.0 ? 0.0 : value / greyLimit;
+      t = greyLimit == 0.0 ? 0.0 : Math.abs(value) / greyLimit;
     }
     t = t < 0.0 ? 0.0 : t > 1.0 ? 1.0 : t;
     return F.GrayLevel(1.0 - t);

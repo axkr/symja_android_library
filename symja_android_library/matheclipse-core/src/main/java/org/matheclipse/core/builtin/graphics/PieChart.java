@@ -67,24 +67,36 @@ public class PieChart extends ListPlot {
     double startAngle = Math.PI;
     int direction = -1; // -1 for Clockwise
 
-    // SectorOrigin accepts a bare angle as well as {angle} and {angle, "Clockwise"}
+    // SectorOrigin accepts a bare angle as well as {angle} and {angle, "Clockwise"}; an angle
+    // without a direction runs the sectors counterclockwise from it
     if (sectorOrigin != S.Automatic) {
       IExpr angleExpr = sectorOrigin;
+      direction = 1;
+      boolean named = false;
       if (sectorOrigin.isList() && sectorOrigin.argSize() > 0) {
         IAST spec = (IAST) sectorOrigin;
         angleExpr = spec.arg1();
+        if (angleExpr.isList() && angleExpr.argSize() > 0) {
+          // the nested form {{angle, direction}, radius}
+          spec = (IAST) angleExpr;
+        }
         for (int i = 1; i < spec.size(); i++) {
           IExpr entry = spec.get(i);
           if (entry.isString("Counterclockwise") || entry.isString("CounterClockwise")) {
             direction = 1;
+            named = true;
           } else if (entry.isString("Clockwise")) {
             direction = -1;
+            named = true;
           }
         }
       }
       if (angleExpr.isList() && angleExpr.argSize() > 0) {
         // the nested form {{angle, direction}, radius}
         angleExpr = ((IAST) angleExpr).arg1();
+      } else if (angleExpr == S.Automatic && !named) {
+        // {Automatic, radius} keeps the default start and direction
+        direction = -1;
       }
       double angle = angleExpr.evalfNaN();
       if (Double.isFinite(angle)) {
@@ -102,16 +114,9 @@ public class PieChart extends ListPlot {
       }
     }
 
-    // Handle Legends
-    if (!chartLegends.isNone()) {
-      if (chartLegends.isAutomatic()) {
-        if (chartLabels.isList()) {
-          graphicsOptions.setPlotLegends(chartLabels);
-        }
-      } else {
-        graphicsOptions.setPlotLegends(chartLegends);
-      }
-    }
+    // a legend entry names the sectors at one position, in the fill they were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(GraphicsOptions.chartStyleColor(chartStyle, 0));
 
     // several datasets are drawn as rings around one another
     IAST rings = GraphicsOptions.chartDatasets((IAST) dataArg);
@@ -198,6 +203,7 @@ public class PieChart extends ListPlot {
           } else {
             color = GraphicsOptions.chartStyleColor(chartStyle, index);
           }
+          legendColors.record(index, color);
           boolean colorIsExplicit =
               functionColor.isPresent() || style != null || !chartStyle.isAutomatic();
           IExpr elementStyle = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
@@ -263,6 +269,10 @@ public class PieChart extends ListPlot {
       graphicsOptions.setAspectRatio(F.C1);
     }
 
+    // Automatic names the sectors by their labels
+    graphicsOptions.setChartLegend(
+        chartLegends.isAutomatic() && chartLabels.isList() ? chartLabels : chartLegends,
+        legendColors);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 

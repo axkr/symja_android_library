@@ -9,7 +9,6 @@ import java.awt.Color;
 import java.util.Locale;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -34,7 +33,6 @@ public class ColorDirectiveTest {
   @BeforeAll
   public static void setUpEngine() {
     Locale.setDefault(Locale.US);
-    Config.SERVER_MODE = false;
     try {
       F.await();
     } catch (InterruptedException ie) {

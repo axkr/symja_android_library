@@ -2434,7 +2434,8 @@ public final class BooleanFunctions {
             return temp2;
           }
         }
-        if (arg1.isNumber() && arg2.isNumber()) {
+        if ((arg1.isNumber() || arg1.isComplexInfinity())
+            && (arg2.isNumber() || arg2.isComplexInfinity())) {
           IExpr nonreal = !arg1.isReal() ? arg1 : !arg2.isReal() ? arg2 : F.NIL;
           if (nonreal.isPresent()) {
             // Invalid comparison with `1` attempted.

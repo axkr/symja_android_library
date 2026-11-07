@@ -666,6 +666,18 @@ public class SpecialFunctions {
       if (z.isOne()) {
         return F.CPiQuarter;
       }
+      if (z.isInteger() && z.isPositive()) {
+        if (z.equals(F.C2)) {
+          return S.Catalan;
+        }
+        int n = z.toIntDefault();
+        if ((n & 1) == 1 && n < 200) {
+          // Beta(2*k+1) == (-1)^k*EulerE(2*k)*Pi^(2*k+1)/(4^(k+1)*(2*k)!)
+          int k = n / 2;
+          return F.Times(F.Power(F.CN1, F.ZZ(k)), F.EulerE(F.ZZ(2L * k)), F.Power(S.Pi, z),
+              F.Power(F.Times(F.Power(F.C4, F.ZZ(k + 1L)), F.Factorial(F.ZZ(2L * k))), F.CN1));
+        }
+      }
       if (engine.isNumericMode()) {
         return functionExpand(ast, engine);
       }

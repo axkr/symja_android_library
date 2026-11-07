@@ -166,6 +166,9 @@ public class SharedJvmTest extends ExprEvaluatorTestCase {
     assertIsolated("Rubi`sjtw = 7", "Rubi`sjtw");
     // a value of the engine, not of the symbol
     assertIsolated("$IterationLimit = 2000", "$IterationLimit");
+    assertIsolated("$MaxExtraPrecision = 20", "$MaxExtraPrecision");
+    assertIsolated("$Assumptions = sjtx > 0", "$Assumptions");
+    assertIsolated("$Path = {\"sjtp\"}; Clear($Path)", "$Path");
   }
 
   @Test

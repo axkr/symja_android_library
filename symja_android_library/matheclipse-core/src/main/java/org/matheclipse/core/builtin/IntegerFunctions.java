@@ -2977,7 +2977,7 @@ public class IntegerFunctions {
     if (sign == CompareUtil.UNCERTAIN) {
       // Internal precision limit `1` reached while evaluating `2`.
       Errors.printMessage(messageHead, "meprec",
-          F.List(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."),
+          F.List(EvalEngine.maxExtraPrecisionText(),
               F.unaryAST1(messageHead, expr)),
           engine);
       return F.NIL;

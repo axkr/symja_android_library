@@ -313,6 +313,10 @@ public class ImageFilterFunctions {
    * horizontal (counterclockwise); the samples are interpolated bilinearly and positions outside of
    * the image take the nearest border pixel. The defaults are <code>r = 5</code> and <code>a =
    * 0</code>.
+   * <li><code>{"PoissonNoise", s}</code>: shot noise, each channel value <code>v</code> becomes
+   * <code>k/c</code> for a Poisson deviate <code>k</code> of mean <code>c*Max(v, 0)</code> with
+   * <code>c = 100*(1 - s)/s</code>; <code>s</code> is <code>0.1</code> if none is given and a
+   * scale outside of <code>0 &lt; s &lt; 1</code> is an invalid parameter.
    * </ul>
    */
   private static class ImageEffect extends AbstractEvaluator {
@@ -331,12 +335,17 @@ public class ImageFilterFunctions {
       if (!name.isString()) {
         return F.NIL;
       }
+      double parameter = spec.isList() && spec.argSize() >= 2 ? spec.second().evalfNaN() : Double.NaN;
+      double amount = spec.isList() && spec.argSize() >= 2 ? parameter : 0.1;
+      if (name.toString().equals("PoissonNoise") && !(amount > 0.0 && amount < 1.0)) {
+        // Invalid image effect parameters given in `1`.
+        return Errors.printMessage(S.ImageEffect, "parinv", F.list(spec), engine);
+      }
       ImageExpr image = (ImageExpr) ast.arg1();
       double[][][] channels = channels(image, engine);
       if (channels == null) {
         return F.NIL;
       }
-      double parameter = spec.isList() && spec.argSize() >= 2 ? spec.second().evalfNaN() : Double.NaN;
       switch (name.toString()) {
         case "Solarization":
           solarize(channels, Double.isNaN(parameter) ? 0.5 : parameter);
@@ -351,6 +360,9 @@ public class ImageFilterFunctions {
           channels = oilPainting(channels, radius);
           break;
         }
+        case "PoissonNoise":
+          poissonNoise(channels, amount, engine);
+          break;
         case "MotionBlur": {
           double angle = spec.isList() && spec.argSize() >= 3 ? spec.getAt(3).evalfNaN() : 0.0;
           double radius = Double.isNaN(parameter) ? 5.0 : Math.rint(parameter);
@@ -384,6 +396,36 @@ public class ImageFilterFunctions {
           if (mean / channels.length > threshold) {
             for (double[][] channel : channels) {
               channel[y][x] = 1.0 - channel[y][x];
+            }
+          }
+        }
+      }
+    }
+
+    /** Poisson means beyond this are left as they are: their noise is below a part in 30000. */
+    private static final double POISSON_MEAN_LIMIT = 1.0e9;
+
+    /**
+     * Shot noise: each channel value <code>v</code> becomes <code>k/c</code> for a Poisson deviate
+     * <code>k</code> of mean <code>c*Max(v, 0)</code>, where <code>c = 100*(1 - s)/s</code> counts
+     * the photons of a unit intensity for the amount <code>0 &lt; s &lt; 1</code>. This keeps the
+     * mean of the value and gives it the variance <code>v*s/(100*(1 - s))</code>.
+     */
+    private static void poissonNoise(double[][][] channels, double amount, EvalEngine engine) {
+      final double count = 100.0 * (1.0 - amount) / amount;
+      if (!Double.isFinite(count)) {
+        return;
+      }
+      org.hipparchus.random.RandomDataGenerator rdg =
+          org.matheclipse.core.builtin.RandomFunctions.randomDataGenerator(engine.getRandom());
+      for (double[][] channel : channels) {
+        for (double[] row : channel) {
+          for (int x = 0; x < row.length; x++) {
+            double mean = Math.max(row[x], 0.0) * count;
+            if (mean == 0.0) {
+              row[x] = 0.0;
+            } else if (mean <= POISSON_MEAN_LIMIT) {
+              row[x] = rdg.nextPoisson(mean) / count;
             }
           }
         }

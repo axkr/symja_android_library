@@ -1471,4 +1471,17 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("Xor(True, False, True)", //
         "False");
   }
+
+  @Test
+  public void testComparisonWithComplexInfinity() {
+    // an order comparison with ComplexInfinity is invalid: ::nord, unevaluated
+    check("Check(Greater(-3, ComplexInfinity), failed)", //
+        "failed");
+    check("Check(LessEqual(ComplexInfinity, 2/7), failed)", //
+        "failed");
+    check("Xor(Greater(-3, ComplexInfinity), True)", //
+        "-3<=ComplexInfinity");
+    check("Check(Less(-3, z), failed)", //
+        "-3<z");
+  }
 }

@@ -132,10 +132,175 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         graphicsPrimitives = withHighlights;
       }
       graphicsOptions.addPadding();
-      return createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
+      IExpr graphics = createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
+      if (ast.topHead() == S.ListPlot) {
+        graphics = withListPlotRange(graphics, originalAST,
+            isValueData(ast.arg1(), graphicsOptions.dataRange()), graphicsOptions);
+      }
+      return graphics;
     }
 
     return F.NIL;
+  }
+
+  /** The padding of an axis whose range the plot settled on itself. */
+  private static final IExpr RESOLVED_AXIS_PADDING =
+      F.Scaled(org.matheclipse.core.graphics.PlotRangePaddingSpec.AUTOMATIC_FRACTION);
+
+  /** The <code>Graphics</code> of a plot, also inside <code>Legended</code>, or {@link F#NIL}. */
+  protected static IAST innerGraphics(IExpr graphics) {
+    IExpr inner = graphics.isAST(S.Legended, 3) ? graphics.first() : graphics;
+    return inner.isAST(S.Graphics) ? (IAST) inner : F.NIL;
+  }
+
+  /** The graphic with the option <code>name</code> set to <code>value</code>. */
+  protected static IAST withOption(IAST graphics, ISymbol name, IExpr value) {
+    for (int i = 2; i < graphics.size(); i++) {
+      IExpr option = graphics.get(i);
+      if (option.isRuleAST() && option.first() == name) {
+        return graphics.setAtCopy(i, F.Rule(name, value));
+      }
+    }
+    return graphics.appendClone(F.Rule(name, value));
+  }
+
+  /**
+   * The plot with <code>PlotRange -&gt; {xRange, yRange}</code>. Unless the call gave a
+   * <code>PlotRangePadding</code>, an axis whose range the plot settled on itself keeps the padding
+   * the automatic range it stands for would have had.
+   *
+   * @param graphics the <code>Graphics</code> of the plot, possibly <code>Legended</code>
+   * @param originalAST the plot call with its options
+   */
+  protected static IExpr withPlotRange(IExpr graphics, IAST originalAST, IExpr xRange,
+      boolean xResolved, IExpr yRange, boolean yResolved) {
+    IAST plot = innerGraphics(graphics);
+    if (plot.isNIL()) {
+      return graphics;
+    }
+    IAST resolved = withOption(plot, S.PlotRange, F.list(xRange, yRange));
+    IExpr padding = GraphicsOptions.optionValue(originalAST, S.PlotRangePadding, S.Automatic);
+    if (padding.isAutomatic() && (xResolved || yResolved)) {
+      resolved = withOption(resolved, S.PlotRangePadding,
+          F.list(xResolved ? RESOLVED_AXIS_PADDING : S.Automatic,
+              yResolved ? RESOLVED_AXIS_PADDING : S.Automatic));
+    }
+    return graphics.isAST(S.Legended, 3) ? ((IAST) graphics).setAtCopy(1, resolved) : resolved;
+  }
+
+  /**
+   * Whether the data of a list plot are values at the positions <code>1, 2, ...</code>: a list of
+   * values, datasets of values, or anything with <code>DataRange -&gt; All</code>.
+   */
+  protected static boolean isValueData(IExpr data, IExpr dataRange) {
+    if (dataRange == S.All) {
+      return true;
+    }
+    if (!data.isList() || dataRange.isList()) {
+      return false;
+    }
+    IAST list = (IAST) data;
+    if (isListOfPlainPoints(list)) {
+      return false;
+    }
+    if (list.isListOfLists()) {
+      return list.forAll(dataset -> !((IAST) dataset).isListOfPoints(2)
+          && ((IAST) dataset).forAll(x -> !x.isList()));
+    }
+    return list.forAll(x -> !x.isList());
+  }
+
+  /**
+   * The automatic range of one axis of a list plot whose drawn values span <code>{min, max}</code>.
+   * A range that includes <code>0</code> is kept; otherwise its near end goes to <code>0</code>
+   * when it is at most <code>ratio</code> of the far end. Positive values farther away get their
+   * lower end lowered by <code>outward</code> of the span. A single value <code>v</code> gets
+   * <code>{0, 2 v}</code>, <code>{-1, 1}</code> for <code>0</code>.
+   *
+   * @return the range, where a <code>0</code> it was extended to is exact
+   */
+  protected static IAST listAxisRange(double min, double max, double ratio, double outward) {
+    if (min == max) {
+      if (min == 0.0) {
+        return F.list(F.CN1, F.C1);
+      }
+      return min > 0 ? F.list(F.C0, F.num(2.0 * min)) : F.list(F.num(2.0 * min), F.C0);
+    }
+    if (min > 0.0) {
+      if (min <= ratio * max) {
+        return F.list(F.C0, F.num(max));
+      }
+      return F.list(F.num(min - (max - min) * outward), F.num(max));
+    }
+    if (max < 0.0 && -max <= ratio * -min) {
+      return F.list(F.num(min), F.C0);
+    }
+    return F.list(F.num(min), F.num(max));
+  }
+
+  /**
+   * The list plot with the range it settled on written as its <code>PlotRange</code>, on each axis
+   * the call leaves automatic. The x axis of values starts at <code>0</code>; x of points goes to
+   * <code>0</code> when its near end is at most a sixth of the far end, else out by a 48th of the
+   * span; y goes to <code>0</code> when its near end is at most half the far end, else out by an
+   * 18th of the span. <code>PlotRange -&gt; All</code> moves x out by a 48th of the span without
+   * ever reaching <code>0</code>, and keeps the outliers of y. Only linear axes are resolved.
+   *
+   * @param graphics the <code>Graphics</code> of the plot, possibly <code>Legended</code>
+   * @param originalAST the plot call with its options
+   * @param valueData whether the data are values at the positions <code>1, 2, ...</code>
+   */
+  protected static IExpr withListPlotRange(IExpr graphics, IAST originalAST, boolean valueData,
+      GraphicsOptions graphicsOptions) {
+    IAST plot = innerGraphics(graphics);
+    if (plot.isNIL() || !isLinearScale(graphicsOptions.xScale())
+        || !isLinearScale(graphicsOptions.yScale())) {
+      return graphics;
+    }
+    IExpr plotRange = GraphicsOptions.optionValue(originalAST, S.PlotRange, S.Automatic);
+    IExpr xSpec;
+    IExpr ySpec;
+    if (plotRange == S.Automatic || plotRange == S.All) {
+      xSpec = plotRange;
+      ySpec = plotRange;
+    } else if (plotRange.isList2() && Double.isFinite(plotRange.first().evalfNaN())
+        && Double.isFinite(plotRange.second().evalfNaN())) {
+      // {ymin, ymax} constrains the y axis only
+      xSpec = S.Automatic;
+      ySpec = F.list(F.num(plotRange.first().evalf()), F.num(plotRange.second().evalf()));
+    } else if (plotRange.isList2()) {
+      xSpec = plotRange.first() == S.Full ? S.Automatic : plotRange.first();
+      ySpec = plotRange.second() == S.Full ? S.Automatic : plotRange.second();
+    } else {
+      return graphics;
+    }
+    boolean xAuto = xSpec == S.Automatic || xSpec == S.All;
+    boolean yAuto = ySpec == S.Automatic || ySpec == S.All;
+    if (!xAuto && !yAuto) {
+      return graphics;
+    }
+    // outliers of y are dropped from an automatic range only
+    double[][] drawn = org.matheclipse.core.graphics.svg.SvgGraphics2D.plotRange(
+        withOption(plot, S.PlotRange, ySpec == S.All ? S.All : S.Automatic));
+    if (drawn == null) {
+      return graphics;
+    }
+    IExpr xRange = xSpec;
+    if (xSpec == S.All) {
+      xRange = listAxisRange(drawn[0][0], drawn[0][1], 0.0, 1.0 / 48.0);
+    } else if (xSpec == S.Automatic) {
+      xRange = valueData ? F.list(F.num(Math.min(0.0, drawn[0][0])), F.num(drawn[0][1]))
+          : listAxisRange(drawn[0][0], drawn[0][1], 1.0 / 6.0, 1.0 / 48.0);
+    }
+    IExpr yRange =
+        yAuto ? listAxisRange(drawn[1][0], drawn[1][1], 0.5, 1.0 / 18.0) : ySpec;
+    return withPlotRange(graphics, originalAST, xRange, xAuto, yRange, yAuto);
+  }
+
+  /** Whether an axis scaling leaves the coordinates as they are. */
+  private static boolean isLinearScale(String scale) {
+    return scale == null || scale.isEmpty() || scale.equals("Linear") || scale.equals("None")
+        || scale.equals("Automatic") || scale.equals("Identity");
   }
 
   /**
@@ -448,8 +613,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         IAST curveData = (IAST) listOfLists.get(j);
         PlotWrapper curveWrapper =
             curveWrappers != null && j < curveWrappers.length ? curveWrappers[j] : null;
-        IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-            F.NIL, graphicsOptions.curveThickness());
+        IAST defaultColor = graphicsOptions.nextCurveStyle();
         IExpr style = defaultColor;
         // a curve styled None isn't drawn, but a filling toward it still is
         boolean hidden = false;
@@ -457,7 +621,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, j - 1);
           hidden = userStyle.isNone();
           if (!hidden) {
-            style = F.Directive(defaultColor, userStyle);
+            style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
           }
         }
         // when this curve carries a tooltip or is hidden its primitives are gathered so the label
@@ -537,13 +701,14 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       final IASTAppendable graphicsPrimitives = F.ListAlloc();
       IAST pointList = (IAST) arg1;
       if (pointList.isList()) {
-        if (isListOfPlainPoints(pointList)) {
-          IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-              F.NIL, graphicsOptions.curveThickness());
+        // DataRange -> All reads every list as values, even a list of pairs
+        final boolean allValues = graphicsOptions.dataRange() == S.All;
+        if (!allValues && isListOfPlainPoints(pointList)) {
+          IAST defaultColor = graphicsOptions.nextCurveStyle();
           IExpr style = defaultColor;
           if (plotStyle.isPresent() && plotStyle != S.None) {
             IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
-            style = F.Directive(defaultColor, userStyle);
+            style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
           }
 
           Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
@@ -578,12 +743,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           for (int i = 1; i < listOfLists.size(); i++) {
             pointList = (IAST) listOfLists.get(i);
 
-            IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-                F.NIL, graphicsOptions.curveThickness());
+            IAST defaultColor = graphicsOptions.nextCurveStyle();
             IExpr style = defaultColor;
             if (plotStyle.isPresent() && plotStyle != S.None) {
               IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, i - 1);
-              style = F.Directive(defaultColor, userStyle);
+              style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
             }
 
             if (joinedSpec.isList() && joinedSpec.argSize() > 0) {
@@ -595,7 +759,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
                 datasetWrappers != null && i < datasetWrappers.length ? datasetWrappers[i] : null;
             final IASTAppendable into =
                 each != null && each.hasTooltip() ? F.ListAlloc() : graphicsPrimitives;
-            if (pointList.isListOfPoints(2)) {
+            if (!allValues && pointList.isListOfPoints(2)) {
               Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
               Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
               sequencePointListPlot(into, pointList, graphicsOptions, style, xFunction, yFunction,
@@ -613,12 +777,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         }
 
       }
-      IExpr defaultColor = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(),
-          F.NIL, graphicsOptions.curveThickness());
+      IAST defaultColor = graphicsOptions.nextCurveStyle();
       IExpr style = defaultColor;
       if (plotStyle.isPresent() && plotStyle != S.None) {
         IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
-        style = F.Directive(defaultColor, userStyle);
+        style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
       }
 
       sequenceYValuesListPlot(graphicsPrimitives, pointList, graphicsOptions, style, engine);

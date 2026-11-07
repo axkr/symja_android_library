@@ -6,6 +6,9 @@ import java.util.function.DoubleUnaryOperator;
 public class Plot {
   final static int MAXIMUM_DEPTH = 12;
 
+  /** The number of points of the initial grid of an adaptively sampled plot. */
+  final static int DEFAULT_PLOT_POINTS = 50;
+
   /**
    * Simple immutable point with double coordinates used for plotting.
    */
@@ -37,7 +40,7 @@ public class Plot {
    */
   public static double[][] computePlot(final DoubleUnaryOperator hun, double[][] data,
       final double xMin, final double xMax, String xScale) {
-    return computePlot(hun, data, xMin, xMax, xScale, -1, -1);
+    return computePlot(hun, data, xMin, xMax, xScale, -1, -1, false);
   }
 
   /**
@@ -47,15 +50,21 @@ public class Plot {
    *        adaptively
    * @param maxRecursion how deep the adaptive sampler may subdivide, or a value below 1 for the
    *        default depth
+   * @param insetEnds whether the first and the last sample sit a millionth of a grid step of
+   *        <code>PlotPoints</code> (by default <code>50</code>) points inside the range
    */
   public static double[][] computePlot(final DoubleUnaryOperator hun, double[][] data,
-      final double xMin, final double xMax, String xScale, int plotPoints, int maxRecursion) {
+      final double xMin, final double xMax, String xScale, int plotPoints, int maxRecursion,
+      boolean insetEnds) {
     // An explicit PlotPoints asks for that many samples, which is a uniform sweep rather than the
     // adaptive refinement; MaxRecursion only bounds the adaptive one.
     int depth = maxRecursion >= 1 ? Math.min(maxRecursion, 20) : MAXIMUM_DEPTH;
     Series.LineOver1DRangeSeries series = plotPoints >= 2
         ? new Series.LineOver1DRangeSeries(hun, false, xMin, xMax, plotPoints, xScale)
         : new Series.LineOver1DRangeSeries(hun, xMin, xMax, depth, true, xScale);
+    if (insetEnds) {
+      series.setEndInset(plotPoints >= 2 ? plotPoints - 1 : DEFAULT_PLOT_POINTS - 1);
+    }
     SortedSet<Point> plot = series.getPoints();
     if (plot.size() > 0) {
       data = new double[2][plot.size()];

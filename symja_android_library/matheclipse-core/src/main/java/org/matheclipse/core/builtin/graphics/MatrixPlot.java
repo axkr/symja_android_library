@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.Arrays;
+import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -108,15 +110,14 @@ public class MatrixPlot extends ListPlot {
     // One raster rather than one rectangle per cell: row 0 of the matrix is drawn at the top,
     // which is the order rasterTopFirst expects.
     final boolean scaling = matrixOptions.colorFunctionScaling;
-    final double[] sortedValues = scaling ? sortedFiniteValues(data) : null;
-    // The default scale places a value by its rank among the others, which is what keeps a matrix
-    // of wildly different magnitudes readable. A ColorFunction is given the plain range instead:
-    // a caller who wrote GrayLevel(#) asked for the value, not for its position in a sort.
+    // The default colours and a ColorFunction see a value by its place among the others, half by
+    // rank and half by size, which is what keeps a matrix of wildly different magnitudes readable.
+    final DoubleUnaryOperator scale = scaling ? hybridScale(sortedFiniteValues(data)) : null;
     PlotColorFunction colorMap = PlotColorFunction
         .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.bool(scaling),
             S.MatrixPlot, engine)
-        .range(1, minValue(data), maxValue(data)).sink(PlotColorFunction.Sink.FLAT)
-        .fallback(GraphicsOptions::getMatrixColor).build();
+        .range(1, minValue(data), maxValue(data)).scaler(1, scale)
+        .sink(PlotColorFunction.Sink.FLAT).fallback(GraphicsOptions::getMatrixColor).build();
     // compiled once for the whole matrix: the rules are matched like Replace, once per cell
     GraphicsOptions.ColorRuleTable colorRules =
         GraphicsOptions.colorRules(matrixOptions.colorRules, engine);
@@ -136,14 +137,18 @@ public class MatrixPlot extends ListPlot {
           cells[r][c] = colorMap.color(val);
         } else {
           cells[r][c] =
-              GraphicsOptions.getMatrixColor(scaling ? rankFraction(sortedValues, val) : val);
+              GraphicsOptions.getMatrixColor(scaling ? scale.applyAsDouble(val) : val);
         }
       }
     }
     GraphicsOptions.finishMatrixRaster(primitives, cells, rows, cols, matrixOptions.mesh,
         graphicsOptions, originalAST, S.Automatic);
 
-    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
+    // the raster alone is the content itself, so that First(MatrixPlot(...)) is the Raster
+    return createGraphicsFunction(
+        primitives.argSize() == 1 && primitives.arg1().isAST() ? (IAST) primitives.arg1()
+            : primitives,
+        graphicsOptions, wrappedAST);
   }
 
   /** The smallest finite entry, or 0 when there is none. */
@@ -191,68 +196,65 @@ public class MatrixPlot extends ListPlot {
         }
       }
     }
-    java.util.Arrays.sort(values);
+    Arrays.sort(values);
     return values;
   }
 
   /**
-   * Where a value sits in the distribution of the matrix, from 0 for the smallest to 1 for the
-   * largest.
+   * Where a value sits on the colour scale of the matrix, from 0 to 1.
    *
    * <p>
    * Scaling linearly between the smallest and largest entry collapses the picture whenever the
-   * values span orders of magnitude: for {@code Table[Binomial[n, k], ...]} that leaves about
-   * ninety-eight percent of the cells within one percent of the pale end, so the plot reads as a
-   * flat field with a single bright spot. Ranking the values instead spends the colour range on
-   * where the data actually is. This is not the exact rescaling the reference rendering uses — that
-   * one could not be recovered from the captured colours alone — but it is far closer than a linear
-   * ramp, and it is monotonic, so the ordering of the cells is still faithful.
+   * values span orders of magnitude, as for {@code Table[Binomial[n, k], ...]}. So each distinct
+   * value, together with an implicit 0, is placed halfway between its rank among the distinct
+   * values and its linear position between the smallest and the largest one. The result is then
+   * stretched so that 0 lands on 1/2, positive values above and negative ones below, the longer
+   * side of 0 reaching the end of the scale. For {@code {{1, 10}, {-5, 0}}} that is 0.65, 1, 0.25
+   * and 0.5.
+   *
+   * @param sortedValues the finite entries in ascending order
    */
-  private static double rankFraction(double[] sortedValues, double value) {
-    // Each sign is ranked on its own and zero is the middle of the scale, which is white: the
-    // negative entries fill 0..0.5 (the most negative at 0), the positive ones 0.5..1 (the largest
-    // at 1)
-    if (value == 0.0 || sortedValues.length == 0) {
-      return 0.5;
-    }
-    int negatives = countBelow(sortedValues, 0.0);
-    int firstPositive = sortedValues.length - countAbove(sortedValues, 0.0);
-    int positives = sortedValues.length - firstPositive;
-    int below = countBelow(sortedValues, value);
-    if (value < 0.0) {
-      return negatives <= 1 ? 0.0 : 0.5 * below / negatives;
-    }
-    return positives <= 1 ? 1.0 : 0.5 + 0.5 * (below - firstPositive + 1) / positives;
-  }
-
-  /** The number of entries strictly smaller than <code>value</code>. */
-  private static int countBelow(double[] sortedValues, double value) {
-    int low = 0;
-    int high = sortedValues.length;
-    while (low < high) {
-      int mid = (low + high) >>> 1;
-      if (sortedValues[mid] < value) {
-        low = mid + 1;
-      } else {
-        high = mid;
+  private static DoubleUnaryOperator hybridScale(double[] sortedValues) {
+    // the distinct values together with 0; -0.0 is 0 here, which Arrays.binarySearch would not
+    // consider equal
+    double[] distinct = new double[sortedValues.length + 1];
+    int count = 0;
+    boolean zeroAdded = false;
+    for (double v : sortedValues) {
+      double value = v == 0.0 ? 0.0 : v;
+      if (!zeroAdded && value >= 0.0) {
+        zeroAdded = true;
+        if (value > 0.0) {
+          distinct[count++] = 0.0;
+        }
+      }
+      if (count == 0 || distinct[count - 1] != value) {
+        distinct[count++] = value;
       }
     }
-    return low;
-  }
-
-  /** The number of entries strictly greater than <code>value</code>. */
-  private static int countAbove(double[] sortedValues, double value) {
-    int low = 0;
-    int high = sortedValues.length;
-    while (low < high) {
-      int mid = (low + high) >>> 1;
-      if (sortedValues[mid] <= value) {
-        low = mid + 1;
-      } else {
-        high = mid;
-      }
+    if (!zeroAdded) {
+      distinct[count++] = 0.0;
     }
-    return sortedValues.length - low;
+    if (count == 1) {
+      // nothing but zeros, which are the middle of the scale
+      return v -> 0.5;
+    }
+    final double[] values = Arrays.copyOf(distinct, count);
+    final double low = values[0];
+    final double width = values[count - 1] - low;
+    final double[] mixed = new double[count];
+    for (int k = 0; k < count; k++) {
+      mixed[k] = 0.5 * k / (count - 1) + 0.5 * (values[k] - low) / width;
+    }
+    final double zero = mixed[Arrays.binarySearch(values, 0.0)];
+    return v -> {
+      int k = Arrays.binarySearch(values, v == 0.0 ? 0.0 : v);
+      if (k < 0) {
+        // not an entry of the matrix: the nearest one below it
+        k = Math.max(0, Math.min(values.length - 1, -k - 2));
+      }
+      return zero <= 0.5 ? 0.5 + 0.5 * (mixed[k] - zero) / (1.0 - zero) : 0.5 * mixed[k] / zero;
+    };
   }
 
   @Override

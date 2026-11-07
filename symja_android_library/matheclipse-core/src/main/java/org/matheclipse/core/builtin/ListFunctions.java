@@ -6615,7 +6615,7 @@ public final class ListFunctions {
         if (rules.isRuleAST()) {
           return replaceRule(input, (IAST) rules, engine);
         } else if (rules.isListOfRules()) {
-          Function<IExpr, IExpr> function = Functors.rules(rules, engine);
+          Function<IExpr, IExpr> function = Functors.wholeRules(rules, engine);
           IExpr temp = function.apply(input);
           if (temp.isPresent()) {
             return temp;
@@ -6623,7 +6623,7 @@ public final class ListFunctions {
           return input;
         } else if (rules instanceof DispatchExpr) {
           DispatchExpr dispatch = (DispatchExpr) rules;
-          IExpr temp = dispatch.apply(input);
+          IExpr temp = dispatch.applyWhole(input);
           if (temp.isPresent()) {
             return temp;
           }
@@ -6647,7 +6647,7 @@ public final class ListFunctions {
         final EvalEngine engine) {
       final IExpr originalRules = rules;
       if (rules instanceof DispatchExpr) {
-        IExpr temp = ((DispatchExpr) rules).apply(arg1);
+        IExpr temp = ((DispatchExpr) rules).applyWhole(arg1);
         return temp.isPresent() ? temp : arg1;
       }
       if (rules.isAssociation()) {
@@ -6658,7 +6658,7 @@ public final class ListFunctions {
         for (IExpr element : (IAST) rules) {
           if (element.isRuleAST()) {
             IAST rule = (IAST) element;
-            Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+            Function<IExpr, IExpr> function = Functors.wholeRules(rule, engine);
             IExpr temp = function.apply(arg1);
             if (temp.isPresent()) {
               return temp;
@@ -6698,7 +6698,7 @@ public final class ListFunctions {
      * @return
      */
     private static IExpr replaceRule(IExpr arg1, IAST rule, EvalEngine engine) {
-      Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+      Function<IExpr, IExpr> function = Functors.wholeRules(rule, engine);
       IExpr temp = function.apply(arg1);
       if (temp.isPresent()) {
         return temp;

@@ -947,6 +947,14 @@ public interface ISymbol extends IExpr {
     return ((getAttributes() & PROTECTED) == PROTECTED);
   }
 
+  /**
+   * Test if the value of this symbol may not be assigned, changed or cleared. Its rules and
+   * attributes are guarded by {@link #hasProtectedAttribute()}.
+   */
+  default boolean hasProtectedValue() {
+    return hasProtectedAttribute();
+  }
+
   /** {@inheritDoc} */
   @Override
   default boolean isBooleanFormula() {
@@ -981,14 +989,16 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Returns <code>true</code> if the system is in server mode and cannot be modified
-   *
+   * Returns <code>true</code> if this symbol belongs to the <code>System`</code> or
+   * <code>Rubi`</code> context and the current engine is not in package mode, so its definitions
+   * may not be changed.
    */
   public boolean isLocked();
 
   /**
-   * Returns <code>true</code> if the system is in server mode and cannot be modified
-   *
+   * Returns <code>true</code> if this symbol belongs to the <code>System`</code> or
+   * <code>Rubi`</code> context and <code>packageMode</code> is <code>false</code>, so its
+   * definitions may not be changed.
    */
   public boolean isLocked(boolean packageMode);
 

@@ -34,6 +34,7 @@ import java.util.function.DoubleUnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -3475,7 +3476,12 @@ public class ExpTrigsFunctions {
         if (z.equals(F.CPiHalf)) {
           return F.CComplexInfinity;
         }
-        return z.cos().reciprocal();
+        try {
+          return z.cos().reciprocal();
+        } catch (ArithmeticException ae) {
+          // the cosine vanishes at the precision of the argument: a pole
+          return F.CComplexInfinity;
+        }
       }
       return F.NIL;
     }
@@ -4189,8 +4195,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      PrecisionLoss.periodic(arg1.real());
-      return F.complexNum(ApcomplexMath.tan(arg1));
+      // next to a pole the usual quotient cancels to 0
+      return ApcomplexNum.valueOf(arg1).tan();
     }
 
     @Override
@@ -4322,7 +4328,12 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
-        return ((IInexactNumber) ast.arg1()).tan();
+        try {
+          return ((IInexactNumber) ast.arg1()).tan();
+        } catch (ApfloatArithmeticException ae) {
+          // the cosine vanishes at the precision of the argument: a pole
+          return F.CComplexInfinity;
+        }
       }
       return F.NIL;
     }
@@ -4361,8 +4372,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      PrecisionLoss.periodic(arg1.imag());
-      return F.complexNum(ApcomplexMath.tanh(arg1));
+      // next to a pole the usual quotient cancels to 0
+      return ApcomplexNum.valueOf(arg1).tanh();
     }
 
     @Override
