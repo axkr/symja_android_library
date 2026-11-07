@@ -16746,6 +16746,16 @@ public class S {
 
 
   /**
+   * LongestCommonSubsequencePositions(x) - TODO describe `LongestCommonSubsequencePositions`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LongestCommonSubsequencePositions.md">LongestCommonSubsequencePositions
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LongestCommonSubsequencePositions =
+      S.initFinalSymbol("LongestCommonSubsequencePositions", ID.LongestCommonSubsequencePositions);
+
+  /**
    * LongestOrderedSequence(x) - TODO describe `LongestOrderedSequence`.
    * 
    * @see <a href=
