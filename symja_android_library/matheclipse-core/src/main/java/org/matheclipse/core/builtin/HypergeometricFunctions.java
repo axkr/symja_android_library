@@ -47,6 +47,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.AppellF1EulerIntegral;
 import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
 import org.matheclipse.external.apfloat.ApcomplexAppellMath;
@@ -169,27 +170,32 @@ public class HypergeometricFunctions {
           arbitraryMode ? engine.getNumericPrecision() : ParserConfig.MACHINE_PRECISION;
       // additional digits for the evaluation, which are rounded away in the result
       final int digits = (int) precision + CarlsonArbitraryPrecision.GUARD_DIGITS;
+      Apcomplex a = CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits);
+      Apcomplex b1 = CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits);
+      Apcomplex b2 = CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits);
+      Apcomplex c = CarlsonArbitraryPrecision.apcomplex(ast.arg4(), digits);
+      Apcomplex x = CarlsonArbitraryPrecision.apcomplex(ast.arg5(), digits);
+      Apcomplex y = CarlsonArbitraryPrecision.apcomplex(ast.get(6), digits);
+      Apcomplex value;
       try {
         // the series, its transformations and the arguments which are covered:
         // org.matheclipse.external.apfloat.ApcomplexAppellMath
-        Apcomplex value = ApcomplexAppellMath.appellF1(
-            CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg4(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg5(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.get(6), digits));
-        if (arbitraryMode) {
-          return CarlsonArbitraryPrecision.round(value, precision);
-        }
-        double re = value.real().doubleValue();
-        double im = value.imag().doubleValue();
-        return im == 0.0 ? F.num(re) : F.complexNum(re, im);
+        value = ApcomplexAppellMath.appellF1(a, b1, b2, c, x, y);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         // a branch cut, a pole, arguments for which there is no series, or a failure of apfloat
         Errors.rethrowsInterruptException(ex);
-        return F.NIL;
+        // the Euler integral covers the branch cuts and large arguments if Re(c) > Re(a) > 0
+        value = AppellF1EulerIntegral.value(a, b1, b2, c, x, y, precision, !arbitraryMode);
+        if (value == null) {
+          return F.NIL;
+        }
       }
+      if (arbitraryMode) {
+        return CarlsonArbitraryPrecision.round(value, precision);
+      }
+      double re = value.real().doubleValue();
+      double im = value.imag().doubleValue();
+      return im == 0.0 ? F.num(re) : F.complexNum(re, im);
     }
 
     @Override

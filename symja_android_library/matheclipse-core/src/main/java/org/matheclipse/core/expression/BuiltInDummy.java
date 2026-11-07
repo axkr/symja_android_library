@@ -196,8 +196,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr assignedValue() {
-    Context globalContext = EvalEngine.get().getContextPath().getGlobalContext();
-    ISymbol globalSubstitute = globalContext.get(fSymbolName);
+    ISymbol globalSubstitute = globalSubstitute(EvalEngine.get());
     if (globalSubstitute != null) {
       return globalSubstitute.assignedValue();
     }
@@ -208,8 +207,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void assignValue(final IExpr value, boolean setDelayed) {
-    Context globalContext = EvalEngine.get().getContextPath().getGlobalContext();
-    ISymbol globalSubstitute = globalContext.get(fSymbolName);
+    ISymbol globalSubstitute = globalSubstitute(EvalEngine.get());
     if (globalSubstitute != null) {
       globalSubstitute.assignValue(value, false);
       return;
@@ -426,8 +424,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    Context globalContext = engine.getContextPath().getGlobalContext();
-    ISymbol globalSubstitute = globalContext.get(fSymbolName);
+    ISymbol globalSubstitute = globalSubstitute(engine);
     if (globalSubstitute != null) {
       return globalSubstitute.evaluate(engine);
     }
@@ -486,6 +483,17 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       }
     }
     return fSymbolName;
+  }
+
+  /**
+   * The symbol of the same name in <code>Global`</code> which holds the value of this dummy, or
+   * <code>null</code> if there is none. A subclass whose symbol lives in a context of its own
+   * returns <code>null</code>, so that a user symbol of the same name doesn't take its place.
+   *
+   * @param engine the engine whose <code>Global`</code> context is looked up
+   */
+  protected ISymbol globalSubstitute(EvalEngine engine) {
+    return engine.getContextPath().getGlobalContext().get(fSymbolName);
   }
 
   /** {@inheritDoc} */

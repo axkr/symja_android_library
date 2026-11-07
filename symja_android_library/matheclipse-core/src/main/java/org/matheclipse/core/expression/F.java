@@ -7498,6 +7498,32 @@ public class F extends S {
     });
   }
 
+  /**
+   * A built-in function <code>context + symbolName</code> outside of <code>System`</code>, which
+   * is found by the parser once it is registered with
+   * {@link ContextPath#registerSystemAlias(String, IBuiltInSymbol)}.
+   *
+   * @param context the context of the function, for example <code>Internal`</code>
+   * @param symbolName the name of the function without its context
+   * @param evaluator a core function evaluator: a built-in without a symbol ID is only dispatched
+   *        to one
+   */
+  public static IBuiltInSymbol contextFunction(Context context, String symbolName,
+      IFunctionEvaluator evaluator) {
+    return new ContextBuiltInSymbol(context, symbolName, evaluator);
+  }
+
+  /**
+   * Like {@link #contextFunction(Context, String, IFunctionEvaluator)}, with the attributes of the
+   * function.
+   *
+   * @param attributes the attributes, for example {@link ISymbol#HOLDALL}
+   */
+  public static IBuiltInSymbol contextFunction(Context context, String symbolName, int attributes,
+      IFunctionEvaluator evaluator) {
+    return new ContextBuiltInSymbol(context, symbolName, attributes, evaluator);
+  }
+
   public static IBuiltInSymbol localFunction(String symbolName, IFunctionEvaluator evaluator) {
     IBuiltInSymbol localBuiltIn = new BuiltInDummy(symbolName);
     localBuiltIn.setEvaluator(evaluator);

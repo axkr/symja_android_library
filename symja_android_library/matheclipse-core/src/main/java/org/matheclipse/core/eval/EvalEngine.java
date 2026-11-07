@@ -519,7 +519,8 @@ public class EvalEngine implements Serializable {
 
   private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
       final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules, final int[] outerMarks,
-      final boolean[] unprotected, final EvalEngine engine) {
+      final boolean[] unprotected, final int[] oldAttributes, final boolean inherited,
+      final EvalEngine engine) {
     ISymbol variableSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
@@ -552,6 +553,7 @@ public class EvalEngine implements Serializable {
 
     for (int i = 1; i < variablesList.size(); i++) {
       if (symbolList[i] != null) {
+        oldAttributes[i] = symbolList[i].getAttributes();
         outerMarks[i] = symbolList[i].beginLocalScope();
         if (symbolList[i].isBuiltInSymbol() && symbolList[i].isConstantAttribute()) {
           // a built-in constant is an ordinary variable inside the block
@@ -566,8 +568,15 @@ public class EvalEngine implements Serializable {
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
         variableSymbol = symbolList[i];
-        restoreBlockVariable(variableSymbol, null, engine);
-        variableSymbol.setRulesData(null);
+        if (inherited) {
+          // the block starts with the definitions the symbol has outside; what it changes is
+          // made to a copy and dropped at the end
+          RulesData outerRules = oldAssignedRules[i];
+          variableSymbol.setRulesData(outerRules == null ? null : outerRules.copy());
+        } else {
+          restoreBlockVariable(variableSymbol, null, engine);
+          variableSymbol.setRulesData(null);
+        }
       } else {
         if (variablesList.get(i).isAST(S.Set, 3)) {
           final IAST setFun = (IAST) variablesList.get(i);
@@ -582,7 +591,9 @@ public class EvalEngine implements Serializable {
             } else {
               variableSymbol.assignValue(temp);
             }
-            variableSymbol.setRulesData(null);
+            RulesData outerRules = oldAssignedRules[i];
+            variableSymbol
+                .setRulesData(inherited && outerRules != null ? outerRules.copy() : null);
           }
         }
       }
@@ -2682,7 +2693,28 @@ public class EvalEngine implements Serializable {
    * @return the result from the {@link Supplier#get()} method
    */
   public IExpr evalBlock(final Supplier<IExpr> supplier, final IAST localVariablesList) {
+    return evalBlock(supplier, localVariablesList, false);
+  }
+
+  /**
+   * Evaluate an expression in a block. The local variables are saved before and restored after the
+   * evaluation, together with their down values and attributes.
+   *
+   * <p>
+   * With <code>inherited == false</code> this is {@link S#Block}: a variable starts without a
+   * value and without definitions. With <code>inherited == true</code> a variable starts with the
+   * value and (a copy of) the definitions it has outside the block, as in
+   * <code>Internal`InheritedBlock</code>; what the block changes is dropped all the same.
+   *
+   * @param supplier the expression which should be evaluated for the variables
+   * @param localVariablesList the list of local variables
+   * @param inherited <code>true</code> if the variables keep their outer values and definitions
+   * @return the result from the {@link Supplier#get()} method
+   */
+  public IExpr evalBlock(final Supplier<IExpr> supplier, final IAST localVariablesList,
+      final boolean inherited) {
     ISymbol[] symbolList = new ISymbol[localVariablesList.size()];
+    int[] oldAttributes = new int[localVariablesList.size()];
     IExpr[] oldAssignedValues = new IExpr[localVariablesList.size()];
     RulesData[] oldAssignedRulesData = new RulesData[localVariablesList.size()];
     int[] outerMarks = new int[localVariablesList.size()];
@@ -2697,7 +2729,7 @@ public class EvalEngine implements Serializable {
       RuntimeException failure;
       try {
         rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
-            oldAssignedRulesData, outerMarks, unprotected, this);
+            oldAssignedRulesData, outerMarks, unprotected, oldAttributes, inherited, this);
       } finally {
         failure = callDeferredValueFunctions();
       }
@@ -2725,6 +2757,9 @@ public class EvalEngine implements Serializable {
             if (variableSymbol != null && isRestoredBlockVariable(localVariablesList.get(i))) {
               restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
               variableSymbol.setRulesData(oldAssignedRulesData[i]);
+              if (inherited && variableSymbol.getAttributes() != oldAttributes[i]) {
+                variableSymbol.setAttributes(oldAttributes[i]);
+              }
               variableSymbol.endLocalScope(outerMarks[i]);
               if (unprotected[i]) {
                 fBlockUnprotected.remove(variableSymbol);

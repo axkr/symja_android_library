@@ -588,11 +588,33 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-4.8776");
     check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 1, 1/5))", //
         "2.06022");
-    // no value on the branch cut
+    // no value on the branch cut where the Euler integral diverges, (1-x*t)^(-13/10) at t=1/x
     check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 3/2, 3))", //
         "AppellF1(0.7,1.3,0.4,2.9,1.5,3.0)");
     check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 3/2, 1/5))", //
         "AppellF1(0.7,1.3,0.4,2.9,1.5,0.2)");
+  }
+
+  @Test
+  public void testAppelF1NumericEulerIntegral() {
+    // on the branch cut the value is the limit from below, as for Hypergeometric2F1
+    check("Chop(N(AppellF1(4/3, 9/10, 0, 7/3, 5/2, -3/10)-Hypergeometric2F1(4/3, 9/10, 7/3, 5/2)))", //
+        "0");
+    check("N(AppellF1(4/3, 9/10, 0, 7/3, 5/2, -3/10))", //
+        "-0.2698+I*(-1.312)");
+    check("N(AppellF1(4/3, -1/2, 1, 7/3, 5/2, -3/10))", //
+        "0.170833+I*0.482292");
+    // both arguments far outside of the unit circle
+    check("N(AppellF1(4/3, -1/2, 1, 7/3, 33/2, -32))", //
+        "0.00818731+I*0.149701");
+    check("N(AppellF1(1/2, 7/10, -1/3, 2, 7/2, -12))", //
+        "1.01202+I*(-1.34545)");
+    // the same value for an exact argument 1 and its machine number
+    check("Chop(N(AppellF1(1/2, 7/10, 1/3, 2, 1, 3))-AppellF1(1/2, 7/10, 1/3, 2, 1.0, 3.0))", //
+        "0");
+    // the integral needs Re(c) > Re(a) > 0
+    check("N(AppellF1(5/2, -1/2, 1, 7/3, 5/2, -3/10))", //
+        "AppellF1(2.5,-0.5,1.0,2.33333,2.5,-0.3)");
   }
 
   @Tag(TestTags.SLOW)
@@ -602,6 +624,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // functions is summed, which is slow
     check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 3/2+I/2, 1/5))", //
         "1.19653+I*0.918893");
+    // the Euler integral in arbitrary precision
+    check("N(AppellF1(4/3, -1/2, 1, 7/3, 5/2, -3/10), 30)", //
+        "0.170833282150742359857280974226+I*0.482292271990929201700662301447");
   }
 
   @Test

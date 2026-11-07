@@ -3,6 +3,7 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -2449,6 +2450,17 @@ public class OutputFormFactory {
    */
   public static Operator getOperator(ISymbol head, int argSize) {
     String headerStr = head.getSymbolName();
+    if (!head.getContext().equals(Context.SYSTEM)) {
+      // the operator of a name belongs to the System` built-in of that name: Internal`Square
+      // doesn't print as the prefix operator of System`Square
+      String key = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && headerStr.length() > 1
+          ? headerStr.toLowerCase(Locale.ENGLISH)
+          : headerStr;
+      ISymbol systemSymbol = Context.SYSTEM.get(key);
+      if (systemSymbol != null && systemSymbol != head) {
+        return null;
+      }
+    }
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
       if (str != null) {
