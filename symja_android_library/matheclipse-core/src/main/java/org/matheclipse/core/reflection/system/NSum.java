@@ -88,6 +88,12 @@ public class NSum extends Sum {
             preevaluateSymbolic = false;
           }
         }
+        if (upperLimit.isInfinity() && arg1.has(x -> x.isAST() && (x.head() == S.DivisorSigma || x.head() == S.EulerPhi
+            || x.head() == S.MoebiusMu || x.head() == S.LiouvilleLambda), true)) {
+          // an arithmetic function isn't smooth in the index: no extrapolation of the partial
+          // sums is reliable, but its Dirichlet series may have a closed form
+          preevaluateSymbolic = true;
+        }
         if (preevaluateSymbolic) {
           ast = ast.apply(S.Sum);
           IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);

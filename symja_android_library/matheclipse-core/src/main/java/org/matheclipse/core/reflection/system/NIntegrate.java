@@ -849,6 +849,32 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
       final ISymbol xSymbol = (ISymbol) x;
+      // one pass of samples for the test of complex values and the scale of the integrand
+      final IExpr[] samples = argSize <= 2 || option[4].isAutomatic()
+          ? sampleValues(function, xSymbol, minDouble, maxDouble, engine)
+          : new IExpr[0];
+      if (argSize <= 2 && isComplexValued(samples)) {
+        // the quadrature rules sample real values: integrate the real and imaginary parts.
+        // Newton-Leibniz on a complex antiderivative may jump across a branch cut
+        // a part which vanishes at every sample point isn't integrated: a relative error goal
+        // can't be met for a zero integral
+        IExpr re = isZeroAtSamples(F.Re(function), xSymbol, minDouble, maxDouble, engine) ? F.CD0
+            : engine.evaluate(ast.setAtCopy(1, F.Re(function)));
+        IExpr im = isZeroAtSamples(F.Im(function), xSymbol, minDouble, maxDouble, engine) ? F.CD0
+            : engine.evaluate(ast.setAtCopy(1, F.Im(function)));
+        if (re.isReal() && im.isReal()) {
+          return engine.evaluate(F.Plus(re, F.Times(F.CI, im)));
+        }
+        // a part which isn't integrated numerically: the integral of the whole integrand below
+      }
+      if (option[4].isAutomatic() && Double.isFinite(minDouble) && Double.isFinite(maxDouble)) {
+        // the default absolute goal is relative to the integrand's size below 1: a tiny integrand
+        // meets it with any estimate
+        double scale = integrandScale(samples, maxDouble - minDouble);
+        if (scale > 0.0 && scale < 1.0) {
+          epsabs *= scale;
+        }
+      }
       UnaryNumerical sampler = createSampler(function, xSymbol, engine);
       final IExpr monitor = option[6];
       // a multidimensional integral nests NIntegrate calls, which carry the option inwards: the
@@ -876,7 +902,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           double result = integratePieces(sampler, xSymbol, minDouble, maxDouble, breakPoints,
               method, maxPoints, maxIterations, list.rest(), epsabs, epsrel);
           if (Double.isFinite(result)) {
-            return Num.valueOf(sign * Precision.round(result, precisionGoal));
+            return Num.valueOf(sign * roundToGoal(result, precisionGoal));
           }
         } catch (NonConvergence nc) {
           failed = nc.result;
@@ -893,7 +919,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
               maxIterations);
         }
         if (result.status == QuadratureResult.STATUS_OK && Double.isFinite(result.estimate)) {
-          return Num.valueOf(sign * Precision.round(result.estimate, precisionGoal));
+          return Num.valueOf(sign * roundToGoal(result.estimate, precisionGoal));
         }
         failed = result;
       }
@@ -911,7 +937,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           if (numeric.isReal()) {
             double val = numeric.evalfNaN();
             if (Double.isFinite(val)) {
-              return Num.valueOf(Precision.round(val, precisionGoal));
+              return Num.valueOf(roundToGoal(val, precisionGoal));
             }
           } else {
             // the integral has a complex value
@@ -973,6 +999,103 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
 
   private static IExpr numOrIndeterminate(double value) {
     return Double.isFinite(value) ? F.num(value) : S.Indeterminate;
+  }
+
+  /**
+   * The values of <code>function</code> at the five inner sample points of the interval
+   * <code>[min, max]</code>.
+   */
+  private static IExpr[] sampleValues(IExpr function, ISymbol x, double min, double max,
+      EvalEngine engine) {
+    double[] points = samplePoints(min, max);
+    IExpr[] values = new IExpr[points.length];
+    for (int i = 0; i < points.length; i++) {
+      values[i] = engine.evalQuiet(F.N(F.subst(function, x, F.num(points[i]))));
+    }
+    return values;
+  }
+
+  /** Test if one of the sample values is a number which isn't real. */
+  private static boolean isComplexValued(IExpr[] values) {
+    for (IExpr value : values) {
+      if (value.isNumber() && !value.isReal()) {
+        double im = ((INumber) value).imDoubleValue();
+        if (im != 0.0 && Double.isFinite(im)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Test if <code>function</code> is <code>0</code> at the five inner sample points of the interval
+   * <code>[min, max]</code>.
+   */
+  private static boolean isZeroAtSamples(IExpr function, ISymbol x, double min, double max,
+      EvalEngine engine) {
+    for (double point : samplePoints(min, max)) {
+      IExpr value = engine.evalQuiet(F.N(F.subst(function, x, F.num(point))));
+      if (!value.isNumber() || !value.isZero()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * <code>length</code> times the largest absolute sample value, or <code>NaN</code> if a value
+   * isn't a finite number.
+   */
+  private static double integrandScale(IExpr[] values, double length) {
+    double largest = 0.0;
+    for (IExpr value : values) {
+      if (!value.isNumber()) {
+        return Double.NaN;
+      }
+      double abs = Math.hypot(((INumber) value).reDoubleValue(), ((INumber) value).imDoubleValue());
+      if (!Double.isFinite(abs)) {
+        return Double.NaN;
+      }
+      largest = Math.max(largest, abs);
+    }
+    return largest * length;
+  }
+
+  /**
+   * <code>value</code> rounded to <code>digits</code> places behind the decimal point, and a value
+   * below <code>1</code> to <code>digits</code> significant digits, so that a small value isn't
+   * rounded to <code>0</code>.
+   */
+  private static double roundToGoal(double value, int digits) {
+    if (value == 0.0 || !Double.isFinite(value)) {
+      return value;
+    }
+    int places = digits - 1 - (int) Math.floor(Math.log10(Math.abs(value)));
+    places = Math.max(places, digits);
+    if (places > 300) {
+      return value;
+    }
+    return Precision.round(value, places);
+  }
+
+  /** Five inner points of <code>[min, max]</code>, an infinite end mapped from the unit interval. */
+  private static double[] samplePoints(double min, double max) {
+    double[] unit = {0.1307, 0.3119, 0.5, 0.6731, 0.8913};
+    double[] points = new double[unit.length];
+    for (int i = 0; i < unit.length; i++) {
+      double t = unit[i];
+      if (min == Double.NEGATIVE_INFINITY && max == Double.POSITIVE_INFINITY) {
+        points[i] = Math.tan(Math.PI * (t - 0.5));
+      } else if (max == Double.POSITIVE_INFINITY) {
+        points[i] = min + t / (1.0 - t);
+      } else if (min == Double.NEGATIVE_INFINITY) {
+        points[i] = max - t / (1.0 - t);
+      } else {
+        points[i] = min + (max - min) * t;
+      }
+    }
+    return points;
   }
 
   /**

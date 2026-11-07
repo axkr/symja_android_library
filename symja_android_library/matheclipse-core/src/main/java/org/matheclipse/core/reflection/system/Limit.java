@@ -794,9 +794,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
      * heuristic Times path collapses them to Indeterminate via <code>oo*oo*0</code>. Same
      * Gamma-family exclusion.</li>
      * </ul>
+     * A variable power next to a Gamma-family function is excluded as well: the mrv set of a
+     * Gamma comes from its Stirling form, but the rewritten expression keeps the Gamma, so
+     * <code>x*(Gamma(x)*E^x*x^(1/2-x)/Sqrt(2*Pi)-1)</code> came out as <code>Infinity</code>.
      */
     boolean gruntzFirstShape() {
-      return varPower || ((logNest || expLog) && !gammaFamily);
+      return (varPower || logNest || expLog) && !gammaFamily;
     }
 
     private void scan(IExpr expr, ISymbol variable) {
@@ -2033,9 +2036,15 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // on which timesLimit and lHospitalesRule recurse into each other with an exponential
       // fan-out and never terminate. The general path stays as the fallback.
       if (ERFC_ASYMPTOTIC_DEPTH.get() < 3 && special.erfcVarArg) {
-        IExpr expanded =
-            hit(Strategy.ERFC_ASYMPTOTIC, expandErfcAtInfinity(function, rule, direction, engine));
-        if (expanded.isPresent() && !expanded.equals(function)) {
+        // the expansion carries its remainder c*R with a symbol c: a limit which depends on c
+        // probes the dropped orders, and is tried again with more terms
+        ISymbol remainder = F.Dummy("erfcR");
+        for (int order : new int[] {1, 3, 6}) {
+          IExpr expanded = hit(Strategy.ERFC_ASYMPTOTIC,
+              expandErfcAtInfinity(function, rule, direction, order, remainder, engine));
+          if (expanded.isNIL() || expanded.equals(function)) {
+            break;
+          }
           int erfcDepth = ERFC_ASYMPTOTIC_DEPTH.get();
           ERFC_ASYMPTOTIC_DEPTH.set(erfcDepth + 1);
           try {
@@ -2047,7 +2056,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               erfcResult = evaluateLimit(expanded, rule, direction, engine);
             }
             if (erfcResult.isPresent() && erfcResult.isFree(S.Limit)
-                && erfcResult.isIndeterminateFree()) {
+                && erfcResult.isIndeterminateFree() && erfcResult.isFree(remainder)) {
               return erfcResult;
             }
           } catch (RuntimeException rex) {
@@ -2240,102 +2249,19 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             }
           }
 
-          // The Exp(Limit(Log(...))) Stirling trick only helps when at least one Gamma-family
-          // argument actually diverges - otherwise replaceLogStirling substitutes nothing and
-          // the inner evalLimit recurses back to this very expression (infinite descent, e.g.
-          // Limit(Gamma(1/x), x->Infinity)).
-          final ISymbol stirlingSymbol = symbol;
-          boolean stirlingApplies = function.has(sub -> {
-            if (sub.isAST(S.Gamma, 2) || sub.isAST(S.LogGamma, 2) || sub.isAST(S.Factorial, 2)) {
-              return divergesAtInfinity(sub.first(), stirlingSymbol);
+          // the Stirling series carries its remainder: a limit which depends on it probes the
+          // dropped orders and is tried again with more terms
+          ISymbol stirlingRemainder = F.Dummy("stirlingR");
+          final IExpr stirlingInput = function;
+          for (int terms : new int[] {1, 2, 4}) {
+            IExpr stirlingResult = LimitGruntz.withStirlingOrder(terms, stirlingRemainder,
+                () -> stirlingLimit(stirlingInput, symbol, limit, rule, direction, engine));
+            if (stirlingResult.isNIL()) {
+              break;
             }
-            if (sub.isAST(S.Pochhammer, 3)) {
-              return divergesAtInfinity(sub.first(), stirlingSymbol)
-                  || divergesAtInfinity(sub.second(), stirlingSymbol);
-            }
-            return false;
-          }, true);
-
-          // If the expression is primarily multiplicative, evaluate Exp(Limit(Log(expr)))
-          // to completely bypass massive Gruntz exponential towers.
-          if (stirlingApplies
-              && (function.isTimes() || function.isPower() || function.isAST(S.Gamma, 2)
-                  || function.isAST(S.Factorial, 2) || function.isAST(S.Pochhammer, 3))) {
-
-
-            // Exp(Limit(Log(f))) reconstructs f only when f is eventually POSITIVE. For a
-            // negative f the sign lives in the imaginary part of Log(f) (Log(-a) = Log(a) + I*Pi)
-            // and a divergent limit swallows that I*Pi, so Limit(-Gamma(x), x->Infinity) came back
-            // as +Infinity. Pull an explicit negative numeric factor out first and reapply it to
-            // the result. Only a syntactically negative coefficient is handled, deliberately: an
-            // asymptotic sign test here would have to call the very machinery this shortcut exists
-            // to avoid, and when it cannot decide, the shortcut would be skipped entirely.
-            boolean negatedForStirling = false;
-            IExpr positiveFunction = function;
-            if (function.isTimes() && function.first().isNumber()
-                && function.first().isNegative()) {
-              negatedForStirling = true;
-              positiveFunction = engine.evaluate(F.Negate(function));
-            }
-
-            // Force logarithms to expand (e.g. Log(a/b) -> Log(a) - Log(b))
-            IExpr logExpr = engine.evaluate(F.PowerExpand(F.Log(positiveFunction)));
-            if (DEBUG) {
-              System.out.println("Before replaceLogStirling: " + logExpr);
-            }
-            // Inject additive Stirling series
-            logExpr = LimitGruntz.replaceLogStirling(logExpr, symbol, engine);
-
-            // Expand to distribute terms like (x + 1/2)*Log(x + 1/2)
-            logExpr = engine.evaluate(F.ExpandAll(logExpr));
-
-            // Re-combine logs to stabilize the rational fractions before evaluation
-            logExpr = LimitGruntz.logCombine(logExpr, true);
-            if (DEBUG) {
-              System.out.println("After logCombine: " + logExpr);
-            }
-            LimitData data = new LimitData(symbol, limit, rule, direction);
-            IExpr logLimit = evalLimit(logExpr, data, engine);
-
-            // If the logarithmic limit resolved cleanly, immediately return Exp(Result)
-            if (logLimit.isPresent() && logLimit.isFree(S.Limit)) {
-              IExpr magnitude = engine.evaluate(F.Exp(logLimit));
-              return negatedForStirling ? engine.evaluate(F.Negate(magnitude)) : magnitude;
-            }
-          }
-
-          // --- FALLBACK: STANDARD EXPONENTIAL STIRLING ---
-          // Only runs if the heuristic above was additive or failed to resolve.
-          IExpr stirlingFunction = hit(Strategy.STIRLING, replaceStirling(function, symbol, engine));
-          if (!stirlingFunction.equals(function)) {
-            // Cancel trivial Sqrt(1/x)*Sqrt(x) terms generated by Stirling
-            stirlingFunction = engine.evaluate(F.Simplify(stirlingFunction));
-            // Re-combine logarithms into stable rational fractions
-            stirlingFunction = LimitGruntz.logCombine(stirlingFunction, true);
-            LimitData stirlingData = new LimitData(symbol, limit, rule, direction);
-            IExpr stirlingResult = evalLimit(stirlingFunction, stirlingData, engine);
-            // Adopt only clean resolutions: a truncated asymptotic series can strand the
-            // evaluation somewhere WORSE than the original, so an unresolved or Indeterminate
-            // result must fall through to the ORIGINAL function rather than be adopted.
-            // (This guard once also caught PolyGamma's reflection formula firing on the
-            // re-evaluated digamma tail and producing Cot(divergent) -> a false Indeterminate
-            // on psi(psi(psi(x))). That rewrite is now gated on a wholly negated argument in
-            // SpecialFunctions.PolyGamma.functionExpand, so it can no longer reach here.)
-            if (stirlingResult.isPresent() && stirlingResult.isFree(S.Limit)
-                && stirlingResult.isIndeterminateFree()) {
-              // A constant (limit-variable-free) Stirling result can be an uncollapsed additive
-              // log-sum that is actually a simpler closed form - e.g.
-              // LogGamma(x+1)-LogGamma(x)-Log(x) resolves to Log(1/(2*Pi))/2+Log(2*Pi)/2, which
-              // is 0. Collapse a constant result to its closed form (cheap: it is x-free).
-              if (stirlingResult.isFree(symbol)) {
-                IExpr simplified = engine.evaluate(F.Simplify(stirlingResult));
-                if (simplified.isPresent() && simplified.isIndeterminateFree()) {
-                  return simplified;
-                }
-              }
+            if (stirlingResult.isFree(stirlingRemainder)) {
               return stirlingResult;
             }
-            // otherwise continue below with the ORIGINAL function
           }
         }
       }
@@ -3864,42 +3790,137 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The limit of <code>function</code> at <code>Infinity</code> with the divergent Gamma-family
+   * functions replaced by Stirling's series.
+   *
+   * @return {@link F#NIL} if the substitution doesn't resolve the limit
+   */
+  private static IExpr stirlingLimit(IExpr function, ISymbol symbol, IExpr limit, IAST rule,
+      Direction direction, EvalEngine engine) {
+    // The Exp(Limit(Log(...))) Stirling trick only helps when at least one Gamma-family
+    // argument actually diverges - otherwise replaceLogStirling substitutes nothing and
+    // the inner evalLimit recurses back to this very expression (infinite descent, e.g.
+    // Limit(Gamma(1/x), x->Infinity)).
+    boolean stirlingApplies = LimitGruntz.hasDivergentGammaFamily(function, symbol);
+
+    // If the expression is primarily multiplicative, evaluate Exp(Limit(Log(expr)))
+    // to completely bypass massive Gruntz exponential towers.
+    if (stirlingApplies
+        && (function.isTimes() || function.isPower() || function.isAST(S.Gamma, 2)
+            || function.isAST(S.Factorial, 2) || function.isAST(S.Pochhammer, 3))) {
+
+
+      // Exp(Limit(Log(f))) reconstructs f only when f is eventually POSITIVE. For a
+      // negative f the sign lives in the imaginary part of Log(f) (Log(-a) = Log(a) + I*Pi)
+      // and a divergent limit swallows that I*Pi, so Limit(-Gamma(x), x->Infinity) came back
+      // as +Infinity. Pull an explicit negative numeric factor out first and reapply it to
+      // the result. Only a syntactically negative coefficient is handled, deliberately: an
+      // asymptotic sign test here would have to call the very machinery this shortcut exists
+      // to avoid, and when it cannot decide, the shortcut would be skipped entirely.
+      boolean negatedForStirling = false;
+      IExpr positiveFunction = function;
+      if (function.isTimes() && function.first().isNumber()
+          && function.first().isNegative()) {
+        negatedForStirling = true;
+        positiveFunction = engine.evaluate(F.Negate(function));
+      }
+
+      // Force logarithms to expand (e.g. Log(a/b) -> Log(a) - Log(b))
+      IExpr logExpr = engine.evaluate(F.PowerExpand(F.Log(positiveFunction)));
+      if (DEBUG) {
+        System.out.println("Before replaceLogStirling: " + logExpr);
+      }
+      // Inject additive Stirling series
+      logExpr = LimitGruntz.replaceLogStirling(logExpr, symbol, engine);
+
+      // Expand to distribute terms like (x + 1/2)*Log(x + 1/2)
+      logExpr = engine.evaluate(F.ExpandAll(logExpr));
+
+      // Re-combine logs to stabilize the rational fractions before evaluation
+      logExpr = LimitGruntz.logCombine(logExpr, true);
+      if (DEBUG) {
+        System.out.println("After logCombine: " + logExpr);
+      }
+      LimitData data = new LimitData(symbol, limit, rule, direction);
+      IExpr logLimit = evalLimit(logExpr, data, engine);
+
+      // If the logarithmic limit resolved cleanly, immediately return Exp(Result)
+      if (logLimit.isPresent() && logLimit.isFree(S.Limit)) {
+        IExpr magnitude = engine.evaluate(F.Exp(logLimit));
+        return negatedForStirling ? engine.evaluate(F.Negate(magnitude)) : magnitude;
+      }
+    }
+
+    // --- FALLBACK: STANDARD EXPONENTIAL STIRLING ---
+    // Only runs if the heuristic above was additive or failed to resolve.
+    IExpr stirlingFunction = hit(Strategy.STIRLING, replaceStirling(function, symbol, engine));
+    if (!stirlingFunction.equals(function)) {
+      // Cancel trivial Sqrt(1/x)*Sqrt(x) terms generated by Stirling
+      stirlingFunction = engine.evaluate(F.Simplify(stirlingFunction));
+      // Re-combine logarithms into stable rational fractions
+      stirlingFunction = LimitGruntz.logCombine(stirlingFunction, true);
+      LimitData stirlingData = new LimitData(symbol, limit, rule, direction);
+      IExpr stirlingResult = evalLimit(stirlingFunction, stirlingData, engine);
+      // Adopt only clean resolutions: a truncated asymptotic series can strand the
+      // evaluation somewhere WORSE than the original, so an unresolved or Indeterminate
+      // result must fall through to the ORIGINAL function rather than be adopted.
+      // (This guard once also caught PolyGamma's reflection formula firing on the
+      // re-evaluated digamma tail and producing Cot(divergent) -> a false Indeterminate
+      // on psi(psi(psi(x))). That rewrite is now gated on a wholly negated argument in
+      // SpecialFunctions.PolyGamma.functionExpand, so it can no longer reach here.)
+      if (stirlingResult.isPresent() && stirlingResult.isFree(S.Limit)
+          && stirlingResult.isIndeterminateFree()) {
+        // A constant (limit-variable-free) Stirling result can be an uncollapsed additive
+        // log-sum that is actually a simpler closed form - e.g.
+        // LogGamma(x+1)-LogGamma(x)-Log(x) resolves to Log(1/(2*Pi))/2+Log(2*Pi)/2, which
+        // is 0. Collapse a constant result to its closed form (cheap: it is x-free).
+        if (stirlingResult.isFree(symbol)) {
+          IExpr simplified = engine.evaluate(F.Simplify(stirlingResult));
+          if (simplified.isPresent() && simplified.isIndeterminateFree()) {
+            return simplified;
+          }
+        }
+        return stirlingResult;
+      }
+      // otherwise continue below with the ORIGINAL function
+    }
+    return F.NIL;
+  }
+
+  /**
    * Substitute the asymptotic expansion
-   * <code>Erfc(z) ~ E^(-z^2)/(z*Sqrt(Pi)) * (1 - 1/(2*z^2))</code> for every <code>Erfc(z)</code>
-   * whose argument diverges to <code>+Infinity</code> at the limit point. Only a
-   * <code>+Infinity</code> argument qualifies - on the other branch <code>Erfc</code> tends to
-   * <code>2</code> and the expansion does not hold.
+   * <code>Erfc(z) ~ E^(-z^2)/(z*Sqrt(Pi)) * (Sum((-1)^k*(2*k-1)!!/(2*z^2)^k, {k, 0, order}) +
+   * remainder/z^(2*order+2))</code> for every <code>Erfc(z)</code> whose argument diverges to
+   * <code>+Infinity</code> at the limit point, and the corresponding expansion of
+   * <code>ExpIntegralE(n, z)</code>. Only a <code>+Infinity</code> argument qualifies - on the other
+   * branch <code>Erfc</code> tends to <code>2</code> and the expansion does not hold.
    *
    * <p>
-   * The relation is an exact asymptotic equality there, so the limit is preserved. One correction
-   * term is carried rather than the leading one alone, so that a limit probing the
-   * <code>1/z^2</code> order (<code>x^2*(Sqrt(Pi)*x*E^(x^2)*Erfc(x) - 1) -> -1/2</code>) still
-   * resolves correctly. Like the truncations in {@link #expandEiNearZero} and
-   * {@link #replaceStirling}, the series stops there: a limit probing the <code>1/z^4</code> order
-   * collapses to <code>0</code>. The next term costs about 20x - the degree-4 rational factor it
-   * introduces turns the Gruntz series expansion into repeated Expand of large polynomials
-   * (measured: 24s vs 1s for <code>Erfc(x+1/x)/Erfc(x)</code>) - so raising the order is only worth
-   * it if a case actually needs it.
+   * The symbol <code>remainder</code> stands for the dropped orders: a limit which depends on it
+   * probes them (<code>x^4*(Sqrt(Pi)*x*E^(x^2)*Erfc(x) - 1 + 1/(2*x^2)) -> 3/4</code>), and the
+   * caller tries again with a higher <code>order</code>.
    *
    * @return {@link F#NIL} if no <code>Erfc</code> was expanded
    */
   private static IExpr expandErfcAtInfinity(IExpr function, IAST rule, Direction direction,
-      EvalEngine engine) {
+      int order, ISymbol remainder, EvalEngine engine) {
     final LimitData data = new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
     return F.subst(function, sub -> {
       if (sub.isAST(S.ExpIntegralE, 3) && sub.first().isFree(data.variable(), true)
           && !sub.second().isFree(data.variable(), true)) {
-        // ExpIntegralE(n, z) == E^(-z)/z*(1 - n/z + n*(n+1)/z^2 - n*(n+1)*(n+2)/z^3 + O(1/z^4))
-        // for z -> Infinity. As for Erfc below the series stops: a limit which probes the order
-        // 1/z^4 is not resolved by it.
+        // ExpIntegralE(n, z) == E^(-z)/z*(1 - n/z + n*(n+1)/z^2 - ...) for z -> Infinity
         IExpr z = sub.second();
         IExpr n = sub.first();
         try {
           if (evalLimitQuiet(z, data).isInfinity()) {
-            IExpr n1 = F.Times(n, F.Plus(n, F.C1));
-            return F.Times(F.Exp(F.Negate(z)), F.Power(z, F.CN1),
-                F.Plus(F.C1, F.Negate(F.Divide(n, z)), F.Divide(n1, F.Sqr(z)),
-                    F.Negate(F.Divide(F.Times(n1, F.Plus(n, F.C2)), F.Power(z, F.C3)))));
+            // Sum((-1)^k*Pochhammer(n, k)/z^k, {k, 0, order}) + remainder/z^(order+1)
+            IASTAppendable sum = F.PlusAlloc(order + 2);
+            for (int k = 0; k <= order; k++) {
+              sum.append(F.Times(F.ZZ(k % 2 == 0 ? 1 : -1), F.Pochhammer(n, F.ZZ(k)),
+                  F.Power(z, F.ZZ(-k))));
+            }
+            sum.append(F.Times(remainder, F.Power(z, F.ZZ(-order - 1))));
+            return F.Times(F.Exp(F.Negate(z)), F.Power(z, F.CN1), sum);
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
@@ -3915,8 +3936,19 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             // the E^(x^2) of a neighbouring factor, and the surviving exponential tower grinds
             // in the mrv machinery for minutes. Expanded, -(x^2+2+1/x^2) cancels term by term.
             IExpr zSqr = engine.evaluate(F.ExpandAll(F.Sqr(z)));
-            return F.Times(F.Power(F.Times(z, F.Sqrt(S.Pi)), F.CN1), F.Exp(F.Negate(zSqr)), //
-                F.Plus(F.C1, F.Negate(F.Divide(F.C1, F.Times(F.C2, zSqr)))));
+            // Sum((-1)^k*(2*k-1)!!/(2*z^2)^k, {k, 0, order}) + remainder/z^(2*order+2)
+            IASTAppendable sum = F.PlusAlloc(order + 2);
+            java.math.BigInteger doubleFactorial = java.math.BigInteger.ONE;
+            for (int k = 0; k <= order; k++) {
+              if (k > 0) {
+                doubleFactorial = doubleFactorial.multiply(java.math.BigInteger.valueOf(2 * k - 1));
+              }
+              IExpr coefficient = F.QQ(F.ZZ(k % 2 == 0 ? doubleFactorial : doubleFactorial.negate()),
+                  F.ZZ(java.math.BigInteger.ONE.shiftLeft(k)));
+              sum.append(F.Times(coefficient, F.Power(zSqr, F.ZZ(-k))));
+            }
+            sum.append(F.Times(remainder, F.Power(zSqr, F.ZZ(-order - 1))));
+            return F.Times(F.Power(F.Times(z, F.Sqrt(S.Pi)), F.CN1), F.Exp(F.Negate(zSqr)), sum);
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
@@ -4339,7 +4371,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
-  private static IExpr replaceStirling(IExpr expr, ISymbol x, EvalEngine engine) {
+  static IExpr replaceStirling(IExpr expr, ISymbol x, EvalEngine engine) {
     if (expr.isFree(x)) {
       return expr;
     }

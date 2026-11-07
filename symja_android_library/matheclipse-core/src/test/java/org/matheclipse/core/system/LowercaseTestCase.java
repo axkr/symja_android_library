@@ -22381,6 +22381,98 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSumDirichletSeries() {
+    check("Sum(DivisorSigma(2,n)/n^5, {n, 1, Infinity})", //
+        "Zeta(3)*Zeta(5)");
+    check("Sum(LiouvilleLambda(n)/n^3, {n, 1, Infinity})", //
+        "Pi^6/(945*Zeta(3))");
+    check("Sum(Abs(MoebiusMu(n))/n^4, {n, 1, Infinity})", //
+        "105/Pi^4");
+    // EulerPhi(n)/n^2 diverges
+    check("Sum(EulerPhi(n)/n^2, {n, 1, Infinity})", //
+        "Sum(EulerPhi(n)/n^2,{n,1,Infinity})");
+    // a symbolic exponent gives the generating function
+    check("Sum(DivisorSigma(2,n)/n^s, {n, 1, Infinity})", //
+        "Zeta(-2+s)*Zeta(s)");
+    check("Sum(MoebiusMu(n)/n^(2*s), {n, 1, Infinity})", //
+        "1/Zeta(2*s)");
+    // the partial sums of an arithmetic function have no smooth tail to extrapolate
+    checkNumeric("NSum(MoebiusMu(n)/n^3, {n, 1, Infinity})", //
+        "0.8319073725807075");
+  }
+
+  @Test
+  public void testSeriesZetaPoleComposed() {
+    check("Series(Zeta(1+x-x^2), {x, 0, 1})", //
+        "1/x+1+EulerGamma+(1-StieltjesGamma(1))*x+O(x)^2");
+    check("Series(Zeta(1+3*x), {x, 0, 2})", //
+        "1/(3*x)+EulerGamma-3*StieltjesGamma(1)*x+9/2*StieltjesGamma(2)*x^2+O(x)^3");
+  }
+
+  @Test
+  public void testSeriesEssentialSingularityFactor() {
+    // E^SeriesData(...) can't be expanded further: it stays a factor or a summand of its own
+    check("Series(Exp(2/z)*(1+z), {z, 0, 1})", //
+        "(1+z+O(z)^2)*E^(2/z+O(z)^2)");
+    check("Series(Exp(1/z)+z^2, {z, 0, 2})", //
+        "z^2+O(z)^3+E^(1/z+O(z)^3)");
+  }
+
+  @Test
+  public void testOrthogonalPolynomialsBeyondDoubleRange() {
+    // calculated with guard digits, so no digits are lost to the cancellations of the recurrence
+    check("Abs(LaguerreL(100, 50000.0)/N(LaguerreL(100, 50000), 30) - 1) < 10^-14", //
+        "True");
+    check("Abs(HermiteH(100, 700.0)/N(HermiteH(100, 700), 30) - 1) < 10^-14", //
+        "True");
+    check("Abs(ChebyshevT(100, 800.0)/N(ChebyshevT(100, 800), 30) - 1) < 10^-14", //
+        "True");
+    check("Abs(LaguerreL(100, 3, 55000.0)/N(LaguerreL(100, 3, 55000), 30) - 1) < 10^-14", //
+        "True");
+    check("Precision(LaguerreL(100, 60000.0))", //
+        "16");
+  }
+
+  @Test
+  public void testArbitraryPrecisionIllConditionedMatrix() {
+    // decided at the precision of the numbers, not of doubles
+    check("MatrixRank(N(HilbertMatrix(16), 50))", //
+        "16");
+    check("Det(N(HilbertMatrix(10), 40))/Det(HilbertMatrix(10))", //
+        "1");
+    check("Precision(Det(N(HilbertMatrix(10), 40))) > 16", //
+        "True");
+  }
+
+  @Test
+  public void testTanCotNextToPole() {
+    check("Tan(N(-Pi/2 + 10^-8, 40) + 10^-9*I) - N(Tan(-Pi/2 + 10^-8 + 10^-9*I), 40)", //
+        "0");
+    check("Cot(N(10^-9, 40) + 10^-8*I) - N(Cot(10^-9 + 10^-8*I), 40)", //
+        "0");
+    check("Tan(N(Pi/2, 50))", //
+        "ComplexInfinity");
+    // not one digit is known of a value next to a zero: a zero of an accuracy, not a pole
+    check("{PossibleZeroQ(Cot(N(Pi/2, 25))), 24.80 < Accuracy(Cot(N(Pi/2, 25))) < 24.81}", //
+        "{True,True}");
+    check("{PossibleZeroQ(Tan(N(3*Pi, 40))), 39.02 < Accuracy(Tan(N(3*Pi, 40))) < 39.03}", //
+        "{True,True}");
+    check("Cot(N(Pi, 30))", //
+        "ComplexInfinity");
+    check("Sec(N(Pi/2, 35))", //
+        "ComplexInfinity");
+  }
+
+  @Test
+  public void testPossibleZeroQLargeExactFactor() {
+    // an exact factor doesn't scale the rounding error of a zero beyond the tolerance
+    check("PossibleZeroQ(10^12*(Sqrt(7+4*Sqrt(3))-2-Sqrt(3)))", //
+        "True");
+    check("PossibleZeroQ(3^40*(Sqrt(7+4*Sqrt(3))-2-Sqrt(3)+1/10^30))", //
+        "False");
+  }
+
+  @Test
   public void testPossibleZeroQEqualArgumentsInOtherForm() {
     // equal arguments of a function written differently: 1+q/p and (p+q)/p
     check("PossibleZeroQ(EllipticPi(1 + q/p, ArcSin(Sqrt(p + q*Sech(t))/Sqrt(p + q)), "

@@ -143,11 +143,13 @@ public final class SignificanceArithmetic {
     if (Double.isNaN(precision) || Double.isInfinite(precision)) {
       return result;
     }
-    if (precision <= 0.0 && ApfloatSignificance.hasPoles(function)) {
-      // not one digit is known: the value may be next to a pole
+    Apfloat apfloat = value.apfloatValue();
+    if (precision <= 0.0 && ApfloatSignificance.hasPoles(function)
+        && ApfloatSignificance.log10Abs(apfloat) >= 0.0) {
+      // not one digit of a large value is known: the value may be next to a pole. A small value
+      // is next to a zero, like Cot next to Pi/2.
       return F.CComplexInfinity;
     }
-    Apfloat apfloat = value.apfloatValue();
     if (precision <= 0.0) {
       // not one digit of the value is known; the error of a bounded function is bounded too
       double accuracy = precision - ApfloatSignificance.log10Abs(apfloat);
@@ -428,7 +430,7 @@ public final class SignificanceArithmetic {
     }
     final double precision = ApfloatSignificance.log10Abs(value) + accuracy;
     if (precision <= 0.0) {
-      if (ApfloatSignificance.hasPoles(function)) {
+      if (ApfloatSignificance.hasPoles(function) && ApfloatSignificance.log10Abs(value) >= 0.0) {
         return F.CComplexInfinity;
       }
       return ApfloatNum.zero(accuracy);

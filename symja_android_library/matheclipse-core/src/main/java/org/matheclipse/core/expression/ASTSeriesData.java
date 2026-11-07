@@ -186,6 +186,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                   seriesDataRecursive(outerFunc, y, u0, outerN, direction, engine);
 
               if (outerSeries != null) {
+                int pole = -outerSeries.minExponent();
+                if (pole > 0 && outerSeries.puiseuxDenominator() == 1) {
+                  // u^(-pole) loses pole*k orders of the inner series u: expand it further
+                  ASTSeriesData longer = seriesDataRecursive(arg, x, x0,
+                      currentN + pole * ((k + den - 1) / den) + 1, direction, engine);
+                  if (longer != null && !longer.isOrder()) {
+                    innerSeries = longer;
+                  }
+                }
                 return outerSeries.compose(innerSeries);
               }
             }
@@ -2804,7 +2813,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       return series;
     }
-    if (!isAnalyticTerm(b) || hasExponentialOfPolynomialAtInfinity(b)) {
+    if (b.has(e -> e instanceof ASTSeriesData, true) || !isAnalyticTerm(b)
+        || hasExponentialOfPolynomialAtInfinity(b)) {
+      // E^SeriesData(...) at an essential singularity stays a summand of its own
       return null;
     }
     ASTSeriesData bSeries = expansionPoint.isDirectedInfinity() //
@@ -3657,6 +3668,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
     if (isScalarTimesFactor(b)) {
       return times(b);
+    }
+    if (b.has(e -> e instanceof ASTSeriesData, true)) {
+      // E^SeriesData(...) at an essential singularity: expanding it gives the factor itself
+      return null;
     }
     if (!isAnalyticTerm(b) || hasExponentialOfPolynomialAtInfinity(b)) {
       return null;

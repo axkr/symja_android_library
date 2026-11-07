@@ -2306,6 +2306,10 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr cot() {
     PrecisionLoss.periodic(fApcomplex.real());
+    Apcomplex nearZero = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), true, true);
+    if (nearZero != null) {
+      return valueOf(nearZero);
+    }
     return reciprocalTrig(ApcomplexTrigMath::cot, fApcomplex);
   }
 
@@ -2324,6 +2328,10 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr coth() {
     PrecisionLoss.periodic(fApcomplex.imag());
+    Apcomplex nearZero = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), false, true);
+    if (nearZero != null) {
+      return valueOf(nearZero);
+    }
     return reciprocalTrig(ApcomplexTrigMath::coth, fApcomplex);
   }
 
@@ -2382,13 +2390,60 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum tan() {
     PrecisionLoss.periodic(fApcomplex.real());
+    Apcomplex nearPole = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), true, false);
+    if (nearPole != null) {
+      return valueOf(nearPole);
+    }
     return valueOf(h().tan(fApcomplex));
   }
 
   @Override
   public ApcomplexNum tanh() {
     PrecisionLoss.periodic(fApcomplex.imag());
+    Apcomplex nearPole = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), false, false);
+    if (nearPole != null) {
+      return valueOf(nearPole);
+    }
     return valueOf(h().tanh(fApcomplex));
+  }
+
+  /**
+   * <code>Tan(a+I*b) == (Sin(2*a) + I*Sinh(2*b))/(2*(Cos(a)^2 + Sinh(b)^2))</code>,
+   * <code>Cot(a+I*b) == (Sin(2*a) - I*Sinh(2*b))/(2*(Sin(a)^2 + Sinh(b)^2))</code> and the
+   * hyperbolic counterparts with <code>a</code> and <code>b</code> exchanged in the roles of the
+   * circular and hyperbolic functions. Next to a pole or a zero the usual denominator
+   * <code>Cos(2*a) + Cosh(2*b)</code> cancels to <code>0</code>, the sum of squares doesn't.
+   *
+   * @param circular <code>Tan</code> or <code>Cot</code>, else <code>Tanh</code> or
+   *        <code>Coth</code>
+   * @param cotangent <code>Cot</code> or <code>Coth</code>
+   * @return <code>null</code> if the argument isn't next to a pole or a zero
+   */
+  private Apcomplex nearPoleQuotient(Apfloat a, Apfloat b, boolean circular, boolean cotangent) {
+    FixedPrecisionApfloatHelper h = h();
+    // the arguments of the circular and of the hyperbolic functions
+    Apfloat c = circular ? a : b;
+    Apfloat y = circular ? b : a;
+    Apfloat circularPart = cotangent ? h.sin(c) : h.cos(c);
+    Apfloat hyperbolicPart = h.sinh(y);
+    Apfloat d = h.add(h.multiply(circularPart, circularPart), h.multiply(hyperbolicPart, hyperbolicPart));
+    if (d.signum() == 0 || d.compareTo(new Apfloat("1e-6")) >= 0) {
+      return null;
+    }
+    Apfloat two = new Apfloat(2);
+    Apfloat denominator = h.multiply(two, d);
+    Apfloat circularNumerator = h.divide(h.sin(h.multiply(two, c)), denominator);
+    Apfloat hyperbolicNumerator = h.divide(h.sinh(h.multiply(two, y)), denominator);
+    if (cotangent) {
+      // the part with the function which isn't periodic in the real direction changes its sign
+      if (circular) {
+        hyperbolicNumerator = hyperbolicNumerator.negate();
+      } else {
+        circularNumerator = circularNumerator.negate();
+      }
+    }
+    return circular ? new Apcomplex(circularNumerator, hyperbolicNumerator)
+        : new Apcomplex(hyperbolicNumerator, circularNumerator);
   }
 
   /**

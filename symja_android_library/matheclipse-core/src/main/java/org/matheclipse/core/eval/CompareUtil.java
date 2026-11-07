@@ -714,6 +714,20 @@ public class CompareUtil {
       }
       return false;
     }
+    if (function.isTimes() && function.exists(a -> a.isNumber() && !a.isInexactNumber())) {
+      // a nonzero exact factor doesn't change whether the product is 0, but it scales a machine
+      // rounding error of the other factors beyond the tolerance
+      if (function.exists(IExpr::isZero)) {
+        return true;
+      }
+      IASTAppendable factors = F.TimesAlloc(function.argSize());
+      function.filter(factors, a -> !(a.isNumber() && !a.isInexactNumber()));
+      IExpr rest = factors.oneIdentity1();
+      if (rest.isAST()) {
+        return isPossibleZeroQ((IAST) rest, fastTest, tolerance, engine);
+      }
+      return rest.isPossibleZero(fastTest, tolerance);
+    }
     try {
       VariablesSet varSet = new VariablesSet(function);
       if (varSet.isEmpty() || isNumericWithSlotsOnly(function, varSet)) {

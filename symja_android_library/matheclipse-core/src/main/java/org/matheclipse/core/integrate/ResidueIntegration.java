@@ -78,6 +78,8 @@ public final class ResidueIntegration {
     final List<IExpr> parameters = new ArrayList<IExpr>();
     /** substitution rules for the parameters which satisfy the assumptions */
     final List<IAST> samples = new ArrayList<IAST>();
+    /** Whether {@link #samples} were chosen without assumptions. */
+    boolean unconditional = false;
     /** the family has no reliable numerical reference: an oscillating integrand */
     boolean oscillating = false;
     /** a family declined because the sample points disagree: the sign of a parameter decides */
@@ -214,6 +216,10 @@ public final class ResidueIntegration {
     try {
       Context ctx = new Context(f, (ISymbol) x, assumptions, principalValue, engine);
       IExpr result = integrate(ctx, lower, upper);
+      if (result.isNIL() && ctx.unconditional) {
+        // the sample points without assumptions are only for a period
+        ctx.samples.clear();
+      }
       if (result.isNIL() && ctx.signDependent) {
         result = bySignOfParameter(ctx, lower, upper);
       }
@@ -272,12 +278,19 @@ public final class ResidueIntegration {
     }
     final boolean wholeLine = lower.isNegativeInfinity() && upper.isInfinity();
     final boolean halfLine = lower.isZero() && upper.isInfinity();
-    final boolean period = !wholeLine && !halfLine && !ctx.parameters.isEmpty()
-        && lower.isFree(x) && upper.isFree(x)
+    final boolean fullPeriod = !wholeLine && !halfLine && lower.isFree(x) && upper.isFree(x)
         && ctx.eval(F.Subtract(F.Subtract(upper, lower), F.C2Pi)).isZero();
-    if (!(wholeLine || halfLine || period) || !samplePoints(ctx)) {
+    final boolean period = fullPeriod && !ctx.parameters.isEmpty();
+    if (!(wholeLine || halfLine || fullPeriod)) {
       return F.NIL;
     }
+    // without assumptions only a function analytic off the origin, for every value of the
+    // parameters, is integrated over a period
+    final boolean unconditional = !samplePoints(ctx);
+    if (unconditional && (!fullPeriod || !unconditionalSamples(ctx))) {
+      return F.NIL;
+    }
+    ctx.unconditional = unconditional;
     IExpr result = F.NIL;
     if (wholeLine) {
       result = wholeLine(ctx, f);
@@ -293,7 +306,10 @@ public final class ResidueIntegration {
         }
       }
     } else {
-      result = unitCircle(ctx);
+      result = period && !unconditional ? unitCircle(ctx) : F.NIL;
+      if (result.isNIL()) {
+        result = exponentialUnitCircle(ctx);
+      }
     }
     if (result.isNIL()) {
       return F.NIL;
@@ -523,6 +539,27 @@ public final class ResidueIntegration {
       }
     }
     return !ctx.samples.isEmpty();
+  }
+
+  /**
+   * Sample points of the parameters without assumptions on them: at most {@link #MAX_PARAMETERS}
+   * parameters, at positive and negative values.
+   */
+  private static boolean unconditionalSamples(Context ctx) {
+    final int size = ctx.parameters.size();
+    if (size == 0 || size > MAX_PARAMETERS) {
+      return false;
+    }
+    ctx.samples.clear();
+    for (int attempt = 0; attempt < SAMPLES_PER_SIGNS; attempt++) {
+      IASTAppendable rules = F.ListAlloc(size);
+      for (int i = 0; i < size; i++) {
+        IExpr value = SAMPLE_VALUES[(attempt * (i + 1) + 3 * i) % SAMPLE_VALUES.length];
+        rules.append(F.Rule(ctx.parameters.get(i), (attempt + i) % 2 == 0 ? value : value.negate()));
+      }
+      ctx.samples.add(rules);
+    }
+    return true;
   }
 
   private static boolean hasNonRealNumber(IExpr expr) {
@@ -1315,6 +1352,104 @@ public final class ResidueIntegration {
       }
     }
     return F.Times(F.C2, S.Pi, F.CI, sum);
+  }
+
+  /**
+   * A function of <code>E^(I*k*t)</code>, <code>k</code> an integer, over a period: with
+   * <code>z == E^(I*t)</code> the integral is <code>2*Pi*I</code> times the residue of
+   * <code>g(z)/(I*z)</code> at <code>0</code>, where <code>g</code> is analytic in the punctured
+   * plane, like <code>E^(3*z)</code> or <code>z^2*E^(1/z)</code>.
+   */
+  private static IExpr exponentialUnitCircle(Context ctx) {
+    final ISymbol t = ctx.x;
+    ISymbol z = F.Dummy("z");
+    IExpr substituted = unitCircleVariable(ctx, ctx.eval(F.TrigToExp(ctx.f)), t, z);
+    if (substituted.isNIL() || !substituted.isFree(t) || substituted.isFree(z)) {
+      return F.NIL;
+    }
+    IExpr g = ctx.eval(F.Expand(F.Times(substituted, F.Power(F.Times(F.CI, z), F.CN1))));
+    if (!isAnalyticOffOrigin(g, z)) {
+      return F.NIL;
+    }
+    IASTAppendable sum = F.PlusAlloc(g.isPlus() ? g.argSize() : 1);
+    for (IExpr term : g.isPlus() ? (IAST) g : F.List(g)) {
+      IExpr residue = ctx.eval(F.Residue(term, F.List(z, F.C0)));
+      if (!residue.isFree(S.Residue) || !residue.isFree(z) || !residue.isSpecialsFree()) {
+        return F.NIL;
+      }
+      sum.append(residue);
+    }
+    return F.Times(F.C2, S.Pi, F.CI, sum.oneIdentity0());
+  }
+
+  /**
+   * <code>f</code> with every <code>E^(c + I*k*t)</code> replaced by <code>E^c*z^k</code>, or
+   * {@link F#NIL} if <code>t</code> occurs in another way.
+   */
+  private static IExpr unitCircleVariable(Context ctx, IExpr f, ISymbol t, ISymbol z) {
+    if (f.isFree(t)) {
+      return f;
+    }
+    if (f.isPower() && f.base().isE()) {
+      IExpr exponent = f.exponent();
+      IASTAppendable rest = F.PlusAlloc(exponent.isPlus() ? exponent.argSize() : 1);
+      IExpr k = F.C0;
+      for (IExpr term : exponent.isPlus() ? (IAST) exponent : F.List(exponent)) {
+        IExpr coefficient = term.isFree(t) ? F.NIL : ctx.eval(F.Divide(term, F.Times(F.CI, t)));
+        if (coefficient.isPresent() && coefficient.isInteger()) {
+          k = k.plus(coefficient);
+        } else {
+          IExpr part = unitCircleVariable(ctx, term, t, z);
+          if (part.isNIL()) {
+            return F.NIL;
+          }
+          rest.append(part);
+        }
+      }
+      return F.Times(F.Exp(rest.oneIdentity0()), F.Power(z, k));
+    }
+    if (f.isAST() && !f.isSymbol()) {
+      IAST ast = (IAST) f;
+      IASTAppendable result = ast.copyHead(ast.size());
+      for (IExpr arg : ast) {
+        IExpr part = unitCircleVariable(ctx, arg, t, z);
+        if (part.isNIL()) {
+          return F.NIL;
+        }
+        result.append(part);
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Whether <code>g</code> is built from <code>z</code> by sums, products, integer powers of
+   * <code>z</code> itself, nonnegative integer powers and exponentials, so that it has no
+   * singularity other than <code>z == 0</code>.
+   */
+  private static boolean isAnalyticOffOrigin(IExpr g, ISymbol z) {
+    if (g.isFree(z) || g.equals(z)) {
+      return true;
+    }
+    if (g.isPlus() || g.isTimes()) {
+      return ((IAST) g).forAll(a -> isAnalyticOffOrigin(a, z));
+    }
+    if (g.isPower()) {
+      IExpr base = g.base();
+      IExpr exponent = g.exponent();
+      if (base.isE()) {
+        return isAnalyticOffOrigin(exponent, z);
+      }
+      if (!exponent.isInteger()) {
+        return false;
+      }
+      return base.equals(z) || (exponent.isPositive() && isAnalyticOffOrigin(base, z));
+    }
+    if (g.isSin() || g.isCos() || g.isSinh() || g.isCosh()) {
+      return isAnalyticOffOrigin(g.first(), z);
+    }
+    return false;
   }
 
   // --------------------------------------------------------------------------------------------

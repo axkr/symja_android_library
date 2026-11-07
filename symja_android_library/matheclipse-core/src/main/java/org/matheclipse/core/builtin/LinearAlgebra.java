@@ -6058,7 +6058,8 @@ public final class LinearAlgebra {
             }
             return F.ZZ(pivotColumns.length);
           }
-          Predicate<IExpr> zeroChecker = buildZeroChecker(ast, options, engine);
+          // the zero test depends on the numbers of the evaluated matrix
+          Predicate<IExpr> zeroChecker = buildZeroChecker(ast.setAtCopy(1, normal), options, engine);
           IInteger rank = matrixRank(normal, zeroChecker);
           if (rank != null) {
             return rank;
