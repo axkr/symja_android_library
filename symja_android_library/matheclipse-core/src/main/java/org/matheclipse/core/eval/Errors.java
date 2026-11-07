@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -1233,7 +1233,7 @@ public class Errors {
       return message;
     }
     for (int i = 1; i < listOfArgs.size(); i++) {
-      message = StringUtils.replace(message, "`" + (i) + "`",
+      message = Strings.CS.replace(message, "`" + (i) + "`",
           shorten(listOfArgs.get(i), engine.getOutputSizeLimit()));
     }
     engine.setMessageShortcut(messageShortcut);
@@ -1243,7 +1243,7 @@ public class Errors {
   private static String rawMessage(final IAST list, String message, int maximumLength) {
     for (int i = 2; i < list.size(); i++) {
       message =
-          StringUtils.replace(message, "`" + (i - 1) + "`", shorten(list.get(i), maximumLength));
+          Strings.CS.replace(message, "`" + (i - 1) + "`", shorten(list.get(i), maximumLength));
     }
     return message;
   }

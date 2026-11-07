@@ -86,7 +86,7 @@ public class BSplineInterpolation extends AbstractInterpolation implements Seria
     // TODO TENSOR IMPL can be improved by truncating data to a neighborhood
     return index.argSize() == 1 //
         ? interp
-        : of(degree, interp).get(index.copyFrom(2));// F.ListAlloc(index.stream().skip(1)));
+        : of(degree, interp).get(index.subList(2));// F.ListAlloc(index.stream().skip(1)));
   }
 
   @Override // from Interpolation

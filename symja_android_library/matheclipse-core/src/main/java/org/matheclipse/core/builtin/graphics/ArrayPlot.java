@@ -103,7 +103,7 @@ public class ArrayPlot extends ListPlot {
 
           // Check for numeric
           try {
-            double d = val.evalDouble();
+            double d = val.evalf();
             if (Double.isFinite(d)) {
               if (d < min)
                 min = d;
@@ -126,7 +126,7 @@ public class ArrayPlot extends ListPlot {
     // different one - see greyColor - so the two are separate objects rather than one function
     // reached through two sets of arithmetic.
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.bool(scaling),
+        .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.booleSymbol(scaling),
             S.ArrayPlot, engine)
         .range(1, min, max).sink(PlotColorFunction.Sink.FLAT)
         .fallback(t -> greyColor(t, greyLimit, scaling)).build();
@@ -159,7 +159,7 @@ public class ArrayPlot extends ListPlot {
         } else {
           // 2. Numeric Mapping
           try {
-            double d = val.evalDouble();
+            double d = val.evalf();
             if (Double.isFinite(d)) {
               color = colorMap == null ? greyColor(d, greyLimit, scaling) : colorMap.color(d);
             }

@@ -54,7 +54,7 @@ public class StructureFunctions {
       IASTAppendable result = F.ListAlloc(sizes.length);
       int start = 1;
       for (int size : sizes) {
-        result.append(list.copyFrom(start, start + size));
+        result.append(list.subList(start, start + size));
         start += size;
       }
       return result;
@@ -184,7 +184,7 @@ public class StructureFunctions {
       while (end > 1 && list.get(end - 1).isZero()) {
         end--;
       }
-      return list.copyFrom(1, end);
+      return list.subList(1, end);
     }
   }
 

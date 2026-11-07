@@ -75,7 +75,7 @@ public class SymjaBot {
       Config.MAX_MATRIX_DIMENSION_SIZE = 100;
       Config.PRIME_FACTORS = new Primality();
       EvalEngine.get().setPackageMode(true);
-      F.initSymbols();
+      F.initSymja();
       // last: creating the built-in symbols needs an engine which isn't locked
       Config.SHARED_JVM = true;
       System.out.println("Symja Version: " + Config.VERSION + " initialized");
@@ -94,8 +94,8 @@ public class SymjaBot {
         client.getEventDispatcher().on(ReadyEvent.class).subscribe(event -> {
           LocalDateTime now = LocalDateTime.now();
           final User self = event.getSelf();
-          System.out.println(String.format(TIME_FORMATTER.format(now) + ": Logged in as %s#%s",
-              self.getUsername(), self.getDiscriminator()));
+          System.out.println(String.format(TIME_FORMATTER.format(now) + ": Logged in as %s",
+              self.getUsername()));
         });
         client.on(MessageCreateEvent.class).subscribe(event -> {
           final Message message = event.getMessage();

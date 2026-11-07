@@ -51,10 +51,10 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
     GenPolynomial<edu.jas.arith.BigInteger> poly =
         (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
     if (j == 1) {
-      temp = F.eval(F.Times(F.integer(gcd), jas.integerPoly2Expr(poly),
+      temp = F.eval(F.Times(F.ZZ(gcd), jas.integerPoly2Expr(poly),
           F.Power(jas.rationalPoly2Expr(Di_1.multiply(BigRational.valueOf(lcm)), true), F.CN1)));
     } else {
-      temp = F.eval(F.Times(F.integer(gcd), jas.integerPoly2Expr(poly), F.Power(F.ZZ(lcm), F.CN1),
+      temp = F.eval(F.Times(F.ZZ(gcd), jas.integerPoly2Expr(poly), F.Power(F.ZZ(lcm), F.CN1),
           F.Power(jas.rationalPoly2Expr(Di_1, true), F.ZZ(j * (-1L)))));
     }
     if (!temp.isZERO()) {

@@ -122,7 +122,7 @@ public interface IBinaryArgumentHooks {
         return f.e2FraArg((IFraction) o0, (IFraction) o1);
       }
       if (o1 instanceof IComplex) {
-        return f.e2ComArg(F.complex((IFraction) o0), (IComplex) o1);
+        return f.e2ComArg(F.CC((IFraction) o0), (IComplex) o1);
       }
       return F.NIL;
     }

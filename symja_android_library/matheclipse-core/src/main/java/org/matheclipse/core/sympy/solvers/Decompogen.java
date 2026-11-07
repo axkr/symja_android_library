@@ -65,8 +65,8 @@ public class Decompogen {
               d = F.list(symbol, d.toArray(1));
             }
             if (d0.isNIL()) {
-              d0 = d.copyFrom(2);
-            } else if (!d.copyFrom(2).equals(d0)) {
+              d0 = d.subList(2);
+            } else if (!d.subList(2).equals(d0)) {
               // # decomposition is not the same for each arg:
               // # mark as having no decomposition
               d = F.List(symbol);

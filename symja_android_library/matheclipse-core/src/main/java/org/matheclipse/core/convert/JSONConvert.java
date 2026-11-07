@@ -53,7 +53,7 @@ public class JSONConvert {
         // identify JSON objects as associations of rules
         IAssociation assoc = F.assoc();
         ObjectNode objectNode = (ObjectNode) node;
-        Iterator<Entry<String, JsonNode>> iter = objectNode.fields();
+        Iterator<Entry<String, JsonNode>> iter = objectNode.properties().iterator();
         while (iter.hasNext()) {
           Entry<String, JsonNode> next = iter.next();
           IExpr temp = importJSONRecursive(next.getValue(), rawJSON);
@@ -66,7 +66,7 @@ public class JSONConvert {
       // identify JSON objects as list of rules
       IASTAppendable list = F.ListAlloc();
       ObjectNode objectNode = (ObjectNode) node;
-      Iterator<Entry<String, JsonNode>> iter = objectNode.fields();
+      Iterator<Entry<String, JsonNode>> iter = objectNode.properties().iterator();
       while (iter.hasNext()) {
         Entry<String, JsonNode> next = iter.next();
         IExpr temp = importJSONRecursive(next.getValue(), rawJSON);

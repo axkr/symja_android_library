@@ -1879,6 +1879,7 @@ public class ApfloatNum implements INum {
     return valueOf(h().pi());
   }
 
+  @Deprecated
   @Override
   public double getReal() {
     return fApfloat.doubleValue();

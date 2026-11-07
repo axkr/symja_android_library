@@ -450,7 +450,7 @@ public final class SignificanceArithmetic {
    *         the function is not such a function or no argument has a precision of its own
    */
   public static double opaquePrecision(final ISymbol head, final IAST ast) {
-    if (!(head instanceof IBuiltInSymbol) || !head.isNumericFunctionAttribute()) {
+    if (!(head instanceof IBuiltInSymbol) || !head.hasNumericFunctionAttribute()) {
       return Double.NaN;
     }
     final int id = ((IBuiltInSymbol) head).ordinal();

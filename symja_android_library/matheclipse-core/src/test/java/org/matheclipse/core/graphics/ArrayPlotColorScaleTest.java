@@ -182,7 +182,7 @@ public class ArrayPlotColorScaleTest {
         IAST cell = (IAST) row.get(c);
         buf.append(c == 1 ? "[" : ", [");
         for (int i = 1; i < cell.size(); i++) {
-          buf.append(i == 1 ? "" : ",").append(component(cell.get(i).evalDouble()));
+          buf.append(i == 1 ? "" : ",").append(component(cell.get(i).evalf()));
         }
         buf.append("]");
       }
@@ -214,20 +214,20 @@ public class ArrayPlotColorScaleTest {
     double lo = 0.0;
     double hi = 1.0;
     if (raster.argSize() >= 3 && raster.arg3().isList2()) {
-      lo = raster.arg3().first().evalDouble();
-      hi = raster.arg3().second().evalDouble();
+      lo = raster.arg3().first().evalf();
+      hi = raster.arg3().second().evalf();
     }
     TreeSet<Double> levels = new TreeSet<>();
     for (IExpr row : (IAST) raster.arg1()) {
       for (IExpr cell : (IAST) row) {
         if (cell.isNumber()) {
-          levels.add(round((cell.evalDouble() - lo) / (hi - lo)));
+          levels.add(round((cell.evalf() - lo) / (hi - lo)));
           continue;
         }
         // a grey cell is {g, g, g}: raster data is numbers, which is what a front end draws
         assertTrue(cell.isList() && cell.argSize() == 3 && cell.first().equals(cell.second())
             && cell.second().equals(((IAST) cell).arg3()), "expected a grey, got " + cell);
-        levels.add(round(cell.first().evalDouble()));
+        levels.add(round(cell.first().evalf()));
       }
     }
     return levels;

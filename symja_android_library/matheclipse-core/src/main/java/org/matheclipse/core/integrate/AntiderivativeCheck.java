@@ -169,7 +169,7 @@ public final class AntiderivativeCheck {
       IExpr machine = F.complexNum(point[0] / 100.0, point[1] / 100.0);
       IExpr.COMPARE_TERNARY agrees = compareAt(derivative, integrand, x, machine, 0, 1e-8, engine);
       if (agrees != IExpr.COMPARE_TERNARY.TRUE) {
-        IExpr exact = F.complex(F.QQ(point[0], 100), F.QQ(point[1], 100));
+        IExpr exact = F.CC(F.QQ(point[0], 100), F.QQ(point[1], 100));
         agrees = compareAt(derivative, integrand, x, exact, OFF_LINE_DIGITS, 1e-15, engine);
       }
       if (agrees == IExpr.COMPARE_TERNARY.FALSE) {

@@ -24,7 +24,7 @@ public class IntervalMarkersRenderMathematicaSyntaxTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   private static String render(String input) throws Exception {

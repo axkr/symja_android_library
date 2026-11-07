@@ -728,7 +728,7 @@ public final class BooleanFunctions {
         return S.True;
       }
 
-      IASTAppendable result = flattenedAST.copyFrom(start);
+      IASTAppendable result = flattenedAST.subList(start);
       // the first argument which is not True was evaluated above
       result.set(index++, temp);
 

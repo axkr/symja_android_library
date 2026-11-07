@@ -114,7 +114,7 @@ public class MatrixPlot extends ListPlot {
     // rank and half by size, which is what keeps a matrix of wildly different magnitudes readable.
     final DoubleUnaryOperator scale = scaling ? hybridScale(sortedFiniteValues(data)) : null;
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.bool(scaling),
+        .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.booleSymbol(scaling),
             S.MatrixPlot, engine)
         .range(1, minValue(data), maxValue(data)).scaler(1, scale)
         .sink(PlotColorFunction.Sink.FLAT).fallback(GraphicsOptions::getMatrixColor).build();

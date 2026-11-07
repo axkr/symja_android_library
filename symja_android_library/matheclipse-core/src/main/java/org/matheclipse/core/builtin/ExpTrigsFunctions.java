@@ -1425,7 +1425,7 @@ public class ExpTrigsFunctions {
         IExpr argX = x.complexArg();
         // -Pi/2 < Arg(x) <= Pi/2
         if (argX.isPresent()
-            && F.evalTrue(F.And(F.Less(F.CNPiHalf, argX), F.LessEqual(argX, F.CPiHalf)))) {
+            && EvalEngine.get().evalTrue(F.And(F.Less(F.CNPiHalf, argX), F.LessEqual(argX, F.CPiHalf)))) {
           return F.ArcTan(F.Divide(y, x));
         }
       }

@@ -198,7 +198,7 @@ public class SequenceFunctions {
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
-            IASTAppendable subSequence = ast.copyFrom(i, k);
+            IASTAppendable subSequence = ast.subList(i, k);
             // CPD-ON
             if (matcher.test(subSequence)) {
               allResults.append(subSequence);
@@ -216,7 +216,7 @@ public class SequenceFunctions {
               // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
-              IASTAppendable subSequence = ast.copyFrom(i, k);
+              IASTAppendable subSequence = ast.subList(i, k);
               if (matcher.test(subSequence)) {
                 subResult = subSequence;
               } else {
@@ -252,7 +252,7 @@ public class SequenceFunctions {
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
-            IASTAppendable subSequence = ast.copyFrom(i, k);
+            IASTAppendable subSequence = ast.subList(i, k);
             // CPD-ON
             IExpr temp = function.apply(subSequence);
             if (temp.isPresent()) {
@@ -272,7 +272,7 @@ public class SequenceFunctions {
               // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
-              IASTAppendable subSequence = ast.copyFrom(i, k);
+              IASTAppendable subSequence = ast.subList(i, k);
               IExpr temp = function.apply(subSequence);
               if (temp.isPresent()) {
                 subResult = subSequence;
@@ -371,7 +371,7 @@ public class SequenceFunctions {
       int i = 1;
       while (i < ast.size()) {
         for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
-          IASTAppendable subSequence = ast.copyFrom(i, k);
+          IASTAppendable subSequence = ast.subList(i, k);
           if (matcher.test(subSequence)) {
             resultAST.append(F.List(F.ZZ(i), F.ZZ(k - 1)));
             if (resultAST.argSize() >= maxMatches) {
@@ -435,7 +435,7 @@ public class SequenceFunctions {
             break;
           }
           // greedy search
-          IASTAppendable subSequence = list.copyFrom(i, k);
+          IASTAppendable subSequence = list.subList(i, k);
           for (int l = 0; l < functions.length; l++) {
             if (matchers != null && matchers[l] != null) {
               if (matchers[l].test(subSequence)) {
@@ -598,7 +598,7 @@ public class SequenceFunctions {
         }
       }
       return scanSubsequences(list, functions, matchers, maxSequenceLengthOfAll(listOfPattern),
-          maxSplits, resultAST, (result, from, to) -> result.append(list.copyFrom(from, to)));
+          maxSplits, resultAST, (result, from, to) -> result.append(list.subList(from, to)));
     }
 
     @Override
@@ -679,11 +679,11 @@ public class SequenceFunctions {
           for (int len = min; len <= max && result.argSize() < limit; len += step) {
             if (len == 0) {
               // exactly one empty subsequence (retaining the input's head)
-              result.append(list.copyFrom(1, 1));
+              result.append(list.subList(1, 1));
             } else {
               // all contiguous windows of this length, left to right
               for (int i = 1; i <= size - len + 1 && result.argSize() < limit; i++) {
-                result.append(list.copyFrom(i, i + len));
+                result.append(list.subList(i, i + len));
               }
             }
           }
@@ -827,7 +827,7 @@ public class SequenceFunctions {
         }
         return assoc;
       }
-      return ((IAST) sequence).copyFrom(from + 1, to + 1);
+      return ((IAST) sequence).subList(from + 1, to + 1);
     }
   }
 

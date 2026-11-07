@@ -253,7 +253,7 @@ public class Histogram extends AbstractChart {
             // a wrapper says how a value is shown, not what it is; one left on used to fail here
             // and the value then quietly took no part in any bin
             elementValue instanceof INumber ? ((INumber) elementValue).reDoubleValue()
-                : elementValue.evalDouble();
+                : elementValue.evalf();
         if (Double.isFinite(v)) {
           values[count++] = v;
         }

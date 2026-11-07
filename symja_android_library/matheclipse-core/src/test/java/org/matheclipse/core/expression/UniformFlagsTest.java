@@ -64,7 +64,7 @@ class UniformFlagsTest {
   @Test
   void testInitNullAndSet() {
     // the arguments are assigned with set() only, the flags start out as UNKNOWN
-    IASTAppendable list = F.ast(S.List, 3, true);
+    IASTAppendable list = AST.newInstance(3, S.List, true);
     list.set(1, F.ZZ(7));
     list.set(2, F.ZZ(8));
     list.set(3, F.ZZ(9));
@@ -74,7 +74,7 @@ class UniformFlagsTest {
 
   @Test
   void testInitNullAndSetNotUniform() {
-    IASTAppendable list = F.ast(S.List, 3, true);
+    IASTAppendable list = AST.newInstance(3, S.List, true);
     list.set(1, F.ZZ(7));
     list.set(2, F.List(F.ZZ(8)));
     list.set(3, F.ZZ(9));

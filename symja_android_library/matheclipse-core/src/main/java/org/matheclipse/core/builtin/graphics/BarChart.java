@@ -438,7 +438,7 @@ public class BarChart extends AbstractChart {
       if (expr instanceof INumber) {
         return ((INumber) expr).reDoubleValue();
       }
-      return expr.evalDouble();
+      return expr.evalf();
     } catch (RuntimeException e) {
       return Double.NaN;
     }

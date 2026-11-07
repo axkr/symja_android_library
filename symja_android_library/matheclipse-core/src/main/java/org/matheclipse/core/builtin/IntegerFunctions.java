@@ -3055,7 +3055,7 @@ public class IntegerFunctions {
     while (first < digits.argSize() && digits.get(first).isZero()) {
       first++;
     }
-    return first == 1 ? digits : digits.copyFrom(first);
+    return first == 1 ? digits : digits.subList(first);
   }
 
   public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {

@@ -1984,7 +1984,6 @@ public interface IExpr
    *
    * @return <code>Optional.empty()</code> if this is not a Gaussian integer
    */
-  @Deprecated
   default Optional<IInteger[]> gaussianIntegers() {
     return Optional.empty();
   }
@@ -7099,10 +7098,8 @@ public interface IExpr
 
   /**
    * Signum functionality is used in JAS toString() method, don't use it as math signum function.
-   *
-   * @deprecated
+   * Use {@link #sign()} for the mathematical sign.
    */
-  @Deprecated
   @Override
   default int signum() {
     if (isZero()) {

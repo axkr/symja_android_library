@@ -1300,7 +1300,7 @@ public class DateTimeFunctions {
         }
         double shift = (hours - timeZoneHours(engine)) * 3600.0;
         return seconds.isInteger() && shift == Math.rint(shift)
-            ? seconds.add(F.ZZ((long) shift))
+            ? seconds.plus(F.ZZ((long) shift))
             : F.num(seconds.evalf() + shift);
       }
       return seconds;

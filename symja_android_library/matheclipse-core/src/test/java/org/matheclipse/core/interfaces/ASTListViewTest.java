@@ -23,7 +23,7 @@ class ASTListViewTest {
 
   @BeforeAll
   static void initSymja() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   @Test

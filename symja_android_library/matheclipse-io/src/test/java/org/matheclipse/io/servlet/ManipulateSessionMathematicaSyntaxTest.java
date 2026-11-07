@@ -21,7 +21,7 @@ public class ManipulateSessionMathematicaSyntaxTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
     org.matheclipse.astro.AstroInit.init();
   }
 

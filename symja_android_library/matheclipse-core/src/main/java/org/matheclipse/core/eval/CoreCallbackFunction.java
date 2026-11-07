@@ -30,7 +30,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
       // for (int i = 0; i < args.length; i++) {
       // fun.append(args[i]);
       // }
-      final IExpr result = F.evaln(fun);
+      final IExpr result = EvalEngine.get().evalN(fun);
       if (result.isReal()) {
         return ((IReal) result).doubleValue();
       }
@@ -41,7 +41,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
       for (int i = 0; i < args.length; i++) {
         fun.append(args[i]);
       }
-      final IExpr result = F.evaln(fun);
+      final IExpr result = EvalEngine.get().evalN(fun);
       if (result.isReal()) {
         return ((IReal) result).doubleValue();
       }

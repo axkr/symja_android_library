@@ -5000,7 +5000,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
     double x0d;
     try {
-      x0d = x0.evalDouble();
+      x0d = x0.evalf();
     } catch (RuntimeException rex) {
       return F.NIL; // a real finite point is required for the numeric confirmation
     }
@@ -5043,7 +5043,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
       double candD;
       try {
-        candD = cand.evalDouble();
+        candD = cand.evalf();
       } catch (RuntimeException rex) {
         continue; // a real finite candidate is required for the numeric confirmation
       }
@@ -5095,7 +5095,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return false; // unresolved opposite side - no contradiction
     }
     try {
-      double otherD = other.evalDouble();
+      double otherD = other.evalf();
       return Double.isFinite(otherD)
           && Math.abs(otherD - candidate) > 1.0e-6 * (1.0 + Math.abs(candidate));
     } catch (RuntimeException rex) {
@@ -5111,8 +5111,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     if (!coarse.isReal() || !fine.isReal()) {
       return false;
     }
-    double coarseErr = Math.abs(coarse.evalDouble() - candidate);
-    double fineErr = Math.abs(fine.evalDouble() - candidate);
+    double coarseErr = Math.abs(coarse.evalf() - candidate);
+    double fineErr = Math.abs(fine.evalf() - candidate);
     double tol = 0.05 * (1.0 + Math.abs(candidate));
     return fineErr <= tol && fineErr <= coarseErr + 1.0e-9;
   }

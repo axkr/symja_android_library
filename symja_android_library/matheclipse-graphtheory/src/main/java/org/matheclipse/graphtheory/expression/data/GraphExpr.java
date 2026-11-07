@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.graph.AbstractBaseGraph;
@@ -1113,7 +1113,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         || !GraphicsUtil.renderGraphics2DSVG(svg, graphics, EvalEngine.get())) {
       return null;
     }
-    return StringUtils.replace(Config.HTML_PAGE, "`1`", svg.toString());
+    return Strings.CS.replace(Config.HTML_PAGE, "`1`", svg.toString());
   }
 
   @Override

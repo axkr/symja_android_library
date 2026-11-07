@@ -1856,7 +1856,7 @@ public class GraphicsOptions {
     double[] yRange = colorRange[1] == null ? new double[] {minY, maxY} : colorRange[1];
 
     PlotColorFunction.Builder builder = PlotColorFunction.of(colorFamily, colorFunction,
-        F.bool(colorFunctionScaling), S.ColorFunction, EvalEngine.get())
+        F.booleSymbol(colorFunctionScaling), S.ColorFunction, EvalEngine.get())
         .range(1, xRange[0], xRange[1]).range(2, yRange[0], yRange[1]);
     for (int slot = 3; slot <= colorFamily.arity; slot++) {
       double[] extra = colorRange[slot - 1];

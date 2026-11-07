@@ -1272,10 +1272,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       if (pOffset > 1) {
         // materialize the remaining slices once
-        IASTAppendable patternTail = lhsPatternAST.copyFrom(pOffset);
+        IASTAppendable patternTail = lhsPatternAST.subList(pOffset);
         patternTail.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
         lhsPatternAST = patternTail;
-        lhsEvalAST = lhsEvalAST.copyFrom(eOffset);
+        lhsEvalAST = lhsEvalAST.subList(eOffset);
       }
 
       if (lhsPatternAST.isEmpty() && lhsEvalAST.isEmpty()) {
@@ -2415,14 +2415,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         seq.appendAll(lhsEvalAST, startPosition, lhsEvalIndex);
 
         if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
-          matched = matchAST(reducedLHSPatternAST, lhsEvalAST.copyFrom(lhsEvalIndex), engine,
+          matched = matchAST(reducedLHSPatternAST, lhsEvalAST.subList(lhsEvalIndex), engine,
               stackMatcher);
           if (matched) {
             return true;
           }
           final int index = lhsEvalIndex;
           matched = matchOtherSplits(patternSequence, seq, patternValues, () -> matchAST(
-              reducedLHSPatternAST, lhsEvalAST.copyFrom(index), engine, stackMatcher));
+              reducedLHSPatternAST, lhsEvalAST.subList(index), engine, stackMatcher));
           if (matched) {
             return true;
           }
@@ -2455,7 +2455,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       return F.NIL;
     }
     if (defaultValueMatched[0]) {
-      if (cloned.isOneIdentityAST1()) {
+      if (cloned.isOneIdentityAST()) {
         return cloned.arg1();
       }
       IPatternMap.setPatternFlags(cloned);
@@ -2869,7 +2869,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       cloned.append(patternArg);
     }
     if (defaultValueMatched) {
-      if (cloned.isOneIdentityAST1()) {
+      if (cloned.isOneIdentityAST()) {
         return cloned.arg1();
       }
       IPatternMap.setPatternFlags(cloned);

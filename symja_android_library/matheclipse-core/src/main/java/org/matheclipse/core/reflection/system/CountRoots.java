@@ -278,7 +278,7 @@ public class CountRoots extends AbstractFunctionEvaluator {
       BigRational im0, BigRational re1, BigRational im1, EvalEngine engine) {
     final boolean point = re0.compareTo(re1) == 0 && im0.compareTo(im1) == 0;
     if (point) {
-      return isRootAt(f, x, F.complex(toExpr(re0), toExpr(im0)), engine) ? 1 : 0;
+      return isRootAt(f, x, F.CC(toExpr(re0), toExpr(im0)), engine) ? 1 : 0;
     }
     final ISymbol t = F.Dummy("t");
     long boundary = 0;
@@ -308,7 +308,7 @@ public class CountRoots extends AbstractFunctionEvaluator {
     }
     if (segment) {
       // a vertical segment - the bottom "edge" was its lower end point
-      long end = isRootAt(f, x, F.complex(toExpr(re0), toExpr(im0)), engine) ? 1 : 0;
+      long end = isRootAt(f, x, F.CC(toExpr(re0), toExpr(im0)), engine) ? 1 : 0;
       return edge[0] + boundary - end;
     }
     boundary += edge[0];
@@ -318,8 +318,8 @@ public class CountRoots extends AbstractFunctionEvaluator {
     }
     boundary += edge[0];
     // a root in a corner lies on two edges
-    IExpr[] corners = {F.complex(toExpr(re0), toExpr(im0)), F.complex(toExpr(re1), toExpr(im0)),
-        F.complex(toExpr(re0), toExpr(im1)), F.complex(toExpr(re1), toExpr(im1))};
+    IExpr[] corners = {F.CC(toExpr(re0), toExpr(im0)), F.CC(toExpr(re1), toExpr(im0)),
+        F.CC(toExpr(re0), toExpr(im1)), F.CC(toExpr(re1), toExpr(im1))};
     for (IExpr corner : corners) {
       if (isRootAt(f, x, corner, engine)) {
         boundary--;

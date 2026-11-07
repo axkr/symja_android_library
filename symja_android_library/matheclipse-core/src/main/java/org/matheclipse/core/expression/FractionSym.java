@@ -1,7 +1,7 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
@@ -668,7 +668,7 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public IInteger roundExpr() {
     BigFraction temp = new BigFraction(fNumerator, fDenominator);
-    return AbstractIntegerSym.valueOf(NumberUtil.round(temp, BigDecimal.ROUND_HALF_EVEN));
+    return AbstractIntegerSym.valueOf(NumberUtil.round(temp, RoundingMode.HALF_EVEN));
   }
 
   @Override

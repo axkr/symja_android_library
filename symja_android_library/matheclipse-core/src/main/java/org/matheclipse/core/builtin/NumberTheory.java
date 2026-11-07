@@ -1260,7 +1260,7 @@ public final class NumberTheory {
       }
       IASTAppendable result = F.ListAlloc(periodStart + 1);
       result.appendAll(terms, 1, periodStart + 1);
-      result.append(terms.copyFrom(periodStart + 1));
+      result.append(terms.subList(periodStart + 1));
       return result;
     }
 
@@ -4487,7 +4487,7 @@ public final class NumberTheory {
               }
               IAST result = linearRecurrence(list1, list2, nmax, ast, engine);
               if (result.isPresent()) {
-                return result.copyFrom(nmin, nmax + 1);
+                return result.subList(nmin, nmax + 1);
               }
             }
           }

@@ -23,7 +23,7 @@ class ASTRRBTreeCopyTest {
 
   @BeforeAll
   static void initSymja() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   /** A {@link ASTRRBTree} with head {@link S#List} and the arguments {@code 1 .. size}. */

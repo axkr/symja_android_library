@@ -424,7 +424,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
     try {
       return engine.evaluate(expr);
     } catch (IterationLimitExceeded | BigIntegerLimitExceeded | ASTElementLimitExceeded le) {
-      if (expr.isAST() && expr.topHead().isNumericFunctionAttribute()) {
+      if (expr.isAST() && expr.topHead().hasNumericFunctionAttribute()) {
         // the arguments are still evaluated exactly, where that is possible
         return ((IAST) expr).map(x -> evaluateExact(x, engine), 1);
       }

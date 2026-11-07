@@ -858,12 +858,12 @@ public class Symbol implements ISymbol, Serializable {
    */
   private IExpr evalnIfNumeric() {
     if (isNumericFunction(true)) {
-      return F.evaln(this);
+      return EvalEngine.get().evalN(this);
     }
     if (hasAssignedSymbolValue()) {
       IExpr temp = assignedValue();
       if (temp != null && temp.isNumericFunction(true)) {
-        return F.evaln(this);
+        return EvalEngine.get().evalN(this);
       }
     }
     return null;
@@ -1199,7 +1199,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public boolean isNegative() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isNegative()) {
         return true;
       }
@@ -1220,7 +1220,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public boolean isNonNegative() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isNonNegative()) {
         return true;
       }
@@ -1302,7 +1302,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public boolean isPositive() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isPositive()) {
         return true;
       }

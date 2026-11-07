@@ -448,7 +448,7 @@ public class BoxesFunctions {
      */
     private static boolean isBracketedBuiltin(IExpr head) {
       return head.isBuiltInSymbol() && head != S.E && !TRADITIONAL_NAMES.containsKey(head)
-          && !LOWER_CASE_NAMES.containsKey(head) && !((ISymbol) head).isNumericFunctionAttribute();
+          && !LOWER_CASE_NAMES.containsKey(head) && !((ISymbol) head).hasNumericFunctionAttribute();
     }
 
     /**

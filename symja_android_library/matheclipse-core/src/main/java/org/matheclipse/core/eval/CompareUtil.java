@@ -1119,7 +1119,7 @@ public class CompareUtil {
       for (double range = 100.0; range >= 1.0; range /= 10.0) {
         final double r = range;
         sample = function.replaceAll(F.mapList(variables,
-            t -> F.Rule(t, F.complex(exactNumber(tlr.nextDouble(-r, r)),
+            t -> F.Rule(t, F.CC(exactNumber(tlr.nextDouble(-r, r)),
                 exactNumber(tlr.nextDouble(-r, r))))));
         zero = isPossibleZeroApproximate(sample, engine);
         if (zero != IExpr.COMPARE_TERNARY.UNDECIDABLE) {

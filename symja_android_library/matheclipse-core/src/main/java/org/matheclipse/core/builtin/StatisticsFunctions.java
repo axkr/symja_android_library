@@ -3266,7 +3266,7 @@ public class StatisticsFunctions {
       IExpr assumptions = distribution.parameterAssumptions(dist);
       if (assumptions.isNIL()) {
         // no assumptions known for this distribution: only the argument count can be checked
-        return F.bool(distribution.checkParameters(dist).isPresent());
+        return F.booleSymbol(distribution.checkParameters(dist).isPresent());
       }
       IExpr condition = engine.evaluate(assumptions);
       if (condition.isFalse()) {

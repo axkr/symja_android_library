@@ -25,7 +25,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8820,7 +8820,7 @@ public class F extends S {
   public static String openJSONOnDesktop(String html) throws IOException {
     java.lang.String escapedStr = html.replaceAll("(\\r|\\n|\\r\\n)+", " ");
     escapedStr = StringEscapeUtils.escapeEcmaScript(escapedStr);
-    String jsonScriptStr = StringUtils.replace(HtmlTemplates.JSON_HTML_VIEWER, "`1`", escapedStr);
+    String jsonScriptStr = Strings.CS.replace(HtmlTemplates.JSON_HTML_VIEWER, "`1`", escapedStr);
     File temp = java.io.File.createTempFile("tempfile", ".html");
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
       bw.write(jsonScriptStr);
@@ -10594,7 +10594,7 @@ public class F extends S {
       if (expr.isSameHeadSizeGE(Graphics, 2)) {
         StringBuilder buf = new StringBuilder();
         if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) expr, EvalEngine.get())) {
-          String htmlPage = StringUtils.replace(Config.HTML_PAGE, "`1`", buf.toString());
+          String htmlPage = Strings.CS.replace(Config.HTML_PAGE, "`1`", buf.toString());
           return openHTMLOnDesktop(htmlPage);
         }
       } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
@@ -10614,7 +10614,7 @@ public class F extends S {
         if (str.getMimeType() == IStringX.TEXT_HTML) {
           String htmlSnippet = str.toString();
           String htmlPage = Config.HTML_PAGE;
-          htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+          htmlPage = Strings.CS.replace(htmlPage, "`1`", htmlSnippet);
           EvalEngine.get().getOutPrintStream().println(htmlPage);
           return openHTMLOnDesktop(htmlPage);
         }
@@ -12678,7 +12678,7 @@ public class F extends S {
   // String html = Config.SVG_PAGE;
   // StringBuilder stw = new StringBuilder();
   // GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
-  // html = StringUtils.replace(html, "`1`", stw.toString());
+  // html = Strings.CS.replace(html, "`1`", stw.toString());
   // File temp = java.io.File.createTempFile("tempfile", ".svg");
   // try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
   // bw.write(html);

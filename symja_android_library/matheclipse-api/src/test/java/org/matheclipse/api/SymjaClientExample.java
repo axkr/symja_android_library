@@ -3,6 +3,7 @@ package org.matheclipse.api;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import org.matheclipse.api.client.JSONPod;
 import org.matheclipse.api.client.JSONQueryResult;
@@ -17,8 +18,8 @@ public class SymjaClientExample {
     ObjectMapper mapper = new ObjectMapper();
     // JSON URL to Java object
     try {
-      JsonNode node = mapper.readTree(new URL(
-          "http://localhost:8080/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO"));
+      JsonNode node = mapper.readTree(URI.create(
+          "http://localhost:8080/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO").toURL().openStream());
       // simply print out the complete JSON string
       System.out.println(node.toPrettyString());
 

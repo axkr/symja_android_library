@@ -193,8 +193,8 @@ public class ListStepPlot extends ListPlot {
         IExpr e = wrapper.datum;
         if (e.isList2()) {
           try {
-            double x = ((IAST) e).arg1().evalDouble();
-            double y = ((IAST) e).arg2().evalDouble();
+            double x = ((IAST) e).arg1().evalf();
+            double y = ((IAST) e).arg2().evalf();
             points.add(new double[] {x, y});
             pointTooltips.add(wrapper.tooltip);
           } catch (RuntimeException rex) {

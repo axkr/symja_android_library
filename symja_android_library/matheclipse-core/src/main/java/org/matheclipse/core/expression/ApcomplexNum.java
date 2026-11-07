@@ -1501,6 +1501,7 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(h().pi());
   }
 
+  @Deprecated
   @Override
   public double getReal() {
     return fApcomplex.real().doubleValue();

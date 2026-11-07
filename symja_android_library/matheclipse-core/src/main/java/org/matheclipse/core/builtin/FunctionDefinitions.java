@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.reflection.system.rules.AutomaticRules;
 import org.matheclipse.core.reflection.system.steps.QuarticSolve;
@@ -202,7 +203,10 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.HermiteDecomposition());
       S.SmithDecomposition
           .setEvaluator(new org.matheclipse.core.reflection.system.SmithDecomposition());
-      S.Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
+      // the deprecated Horner function stays available next to HornerForm
+      @SuppressWarnings("deprecation")
+      IFunctionEvaluator horner = new org.matheclipse.core.reflection.system.Horner();
+      S.Horner.setEvaluator(horner);
       S.HurwitzZeta.setEvaluator(new org.matheclipse.core.reflection.system.HurwitzZeta());
 
       S.ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());

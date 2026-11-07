@@ -1789,7 +1789,7 @@ public final class PatternMatching {
         while (start > 1 && expr.get(start - 1).isRuleAST()) {
           start--;
         }
-        options = expr.copyFrom(start).setAtCopy(0, S.List);
+        options = expr.subList(start).setAtCopy(0, S.List);
       } else {
         return F.NIL;
       }

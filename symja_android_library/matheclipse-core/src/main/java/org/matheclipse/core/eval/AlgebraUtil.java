@@ -69,6 +69,7 @@ import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class AlgebraUtil {
   private static class DistributeAlgorithm {
@@ -4129,7 +4130,7 @@ public class AlgebraUtil {
    */
   private static boolean isCommonDivisor(IExpr rationalGcd, IAST coefficients, EvalEngine engine) {
     long precision = coefficients.determinePrecision(false);
-    if (precision <= Config.MACHINE_PRECISION || !rationalGcd.isNumber() || rationalGcd.isZero()) {
+    if (precision <= ParserConfig.MACHINE_PRECISION || !rationalGcd.isNumber() || rationalGcd.isZero()) {
       return true;
     }
     double tolerance = Math.pow(10.0, -Math.min(precision - 4, 300));

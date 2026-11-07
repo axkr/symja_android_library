@@ -664,7 +664,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @deprecated use {@link #subList(int)} instead
    */
   @Deprecated
-  public IASTAppendable copyFrom(int position);
+  default IASTAppendable copyFrom(int position) {
+    return subList(position);
+  }
 
   /**
    * <p>
@@ -2418,9 +2420,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return stream(0, size());
   }
 
-  default IASTAppendable subList(int startPosition) {
-    return copyFrom(startPosition);
-  }
+  /**
+   * Create a copy of this <code>AST</code>, which contains the same head and all elements from the
+   * given <code>startPosition</code> (inclusive).
+   *
+   * @param startPosition the position to start copying the elements (inclusive)
+   * @return a copy of this <code>AST</code> instance from the given <code>startPosition</code>
+   */
+  public IASTAppendable subList(int startPosition);
 
   @Override
   public IASTAppendable subList(int startPosition, int endPosition);

@@ -87,7 +87,7 @@ public class ImportString extends AbstractEvaluator {
           AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
           final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 
-          CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(',');
+          CSVFormat csvFormat = CSVFormat.RFC4180.builder().setDelimiter(',').get();
           return Convert.csvRecords2List(csvFormat.parse(new StringReader(str1)), parser,
               ast2Expr);
         case RAWJSON:

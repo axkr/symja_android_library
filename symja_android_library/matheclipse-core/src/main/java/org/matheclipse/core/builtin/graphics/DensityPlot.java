@@ -164,7 +164,7 @@ public class DensityPlot extends ListPlot {
     // 4. Generate the cell grid as a single raster rather than one rectangle per cell
     IASTAppendable primitives = F.ListAlloc();
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.booleSymbol(colorFunctionScaling),
             S.DensityPlot, engine)
         .range(1, minZ, maxZ).sink(PlotColorFunction.Sink.FLAT).fallback(this::getDensityColor)
         .build();
