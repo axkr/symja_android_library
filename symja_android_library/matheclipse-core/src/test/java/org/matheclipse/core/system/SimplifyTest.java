@@ -81,16 +81,16 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
         "-2+Sqrt(5)");
 
+    // the factored form keeps the tie against its expansion
     check("FullSimplify(Gamma(z) / Gamma(z-2))", //
-        "2-3*z+z^2");
+        "(-2+z)*(-1+z)");
     check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
         "I*(-2+Sqrt(5))");
 
 
-    // MMA factorizes this to (-2 + x)*(-1 + x) ? Although the ComplexityFunction returns 9 for both
-    // expressions
+    // the complexity is 9 for both forms: a factorization wins the tie
     check("2-3*x+x^2 // FullSimplify", //
-        "2-3*x+x^2");
+        "(-2+x)*(-1+x)");
     // MMA doesn't factorize this
     check("f(2-3*Sin(x)+Sin(x)^2) // FullSimplify", //
         "f(2-3*Sin(x)+Sin(x)^2)");
@@ -441,8 +441,9 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     // the former expectation (1+1/x)*Sqrt(-1+2/(1+x)) crossed the Sqrt branch cut: it is
     // sign-flipped wherever (x+1)/(1-x) is a negative real, e.g. at x->2.5 the input is
     // -0.916515*I but that form gives +0.916515*I
+    // the quotient (1+x)/(1-x) keeps its form on a tie against its partial fractions
     check("Simplify( 2/(Sqrt((x+1)/(1-x))-1/Sqrt((x+1)/(1-x))))", //
-        "2/(-1/Sqrt(-1-2/(-1+x))+Sqrt(-1-2/(-1+x)))");
+        "2/(-1/Sqrt((1+x)/(1-x))+Sqrt((1+x)/(1-x)))");
     check("FullSimplify((x/Sqrt(x^2+1) + 1)/((Sqrt(x^2+1)+x)^2 + 1))", //
         "1/(2*(1+x^2))");
     check("Simplify((x*(1/Sqrt(x^2+6) - (Sqrt(x^2+6) - Sqrt(6))/x^2))/(Sqrt(x^2+6) - Sqrt(6)))", //

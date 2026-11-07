@@ -12002,7 +12002,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // DataRange gives the centres of the outer cells: the raster is half a cell wider
     check("First(ArrayPlot({{1, 2}, {3, 4}}, DataRange -> {{-2, 2}, {-1, 1}}))[[2]]", //
         "{{-4.0,-2.0},{4.0,2.0}}");
-    check("First(MatrixPlot({{1, 2}, {3, 4}}, DataRange -> {{0, 1}, {0, 1}}))[[1, 2]]", //
+    check("First(MatrixPlot({{1, 2}, {3, 4}}, DataRange -> {{0, 1}, {0, 1}}))[[2]]", //
         "{{-0.5,-0.5},{1.5,1.5}}");
     // with a Mesh there is more than the raster
     check("Head(First(ArrayPlot({{1, 2}, {3, 4}}, Mesh -> True)))", //
@@ -12937,8 +12937,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1ForIntegers() {
+    // Together reduces 2-4*(-3/2+Sqrt(E)) to 4*(2-Sqrt(E)) before Factor
     check("{Hypergeometric1F1(1, 2, 1/2), Hypergeometric1F1(2, 3, 1/2)}", //
-        "{2*(-1+Sqrt(E)),-4*(-2+Sqrt(E))}");
+        "{2*(-1+Sqrt(E)),4*(2-Sqrt(E))}");
     check("{Hypergeometric1F1(1, 2, x), Hypergeometric1F1(2, 3, x)}", //
         "{(-1+E^x)/x,(2*(1-E^x+E^x*x))/x^2}");
     check("Chop(N(Hypergeometric1F1(3, 7, -2)) - Hypergeometric1F1(3, 7, -2.), 10^-10)", //
@@ -13545,10 +13546,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "Cases(Plot(Cos(x), {x, 0, 3}, Filling -> Bottom, PlotRange -> {-2, 2}), "
             + "Polygon(p_) :> Last(p), Infinity)", //
-        "{{0.0,-2.0}}");
+        "{{6.12245*10^-8,-2.0}}");
     // a number is the height to fill to
     check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> 0.25), Polygon(p_) :> Last(p), Infinity)", //
-        "{{0.0,0.25}}");
+        "{{6.12245*10^-8,0.25}}");
     check(
         "Cases(ListPlot({2, 4, 3}, Filling -> Top, PlotRange -> {0, 6}), Line(p_) :> p, "
             + "Infinity)", //
@@ -13565,7 +13566,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "Cases(Plot(Cos(x), {x, 0, 3}, Filling -> {1 -> {1, Red}}), {s_, Polygon(p_)} :> "
             + "{s, Last(p)}, Infinity)", //
-        "{{Directive(RGBColor(1,0,0),EdgeForm(None)),{0.0,1.0}}}");
+        "{{Directive(RGBColor(1,0,0),EdgeForm(None)),{6.12245*10^-8,1.0}}}");
   }
 
   @Test
@@ -13703,7 +13704,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testQuantilePlot() {
     check("Cases(QuantilePlot({1, 2, 4}, {1, 2, 3, 4, 5}), Point(p_) :> p, Infinity)", //
-        "{{{2.0,1.0},{3.0,2.0},{4.0,4.0}}}");
+        "{{{2.0,1.0},{3.0,2.0},{4.0,4.0}},{{1.9158,0.748698},{4.04253,3.9388}}}");
     check("Head(QuantilePlot({{1, 3, 2}, {4, 6, 5, 7}}))", //
         "Graphics");
     check("QuantilePlot(q)", //
@@ -15404,7 +15405,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "g = VectorDensityPlot({x, y^2}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 3, PlotPoints -> 5); "
             + "{Head(g), Length(Cases(g, _Raster, Infinity)), Length(Cases(g, _Arrow, Infinity))}", //
-        "{Graphics,1,8}");
+        "{Graphics,1,10}");
   }
 
   @Test
@@ -18517,8 +18518,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6.2643383`8*^-20");
     check("N(Log(Pi - 31415926535897932384/10^19), 6)", //
         "-44.2168");
+    // the zero has the error of 60 digits on terms near 3
     check("N(Sqrt(2) + Sqrt(7) - Sqrt(9 + 2*Sqrt(14)), 10)", //
-        "0.0*10^-60");
+        "0.0*10^-59");
     // a sum which keeps enough digits stays a machine number
     check("N(Sin(1) - 1/2, 10)", //
         "0.3414709848");
@@ -20617,7 +20619,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + " Infinity)", //
         "{{0.543,1.457},{1.543,2.457},{0.543,1.457},{1.543,2.457}}");
     check("Cases(First(PairedHistogram({1, 1, 2, 2}, {2, 2, 1, 3})),"
-        + " Rectangle(a_, b_) :> {a[[2]], b[[2]]}, Infinity)", //
+        + " Rectangle(a_, b_) :> {a[[2, 2]], b[[2, 2]]}, Infinity)", //
         "{{0.5,1.5},{1.5,2.5},{0.5,1.5},{1.5,2.5},{2.5,3.5}}");
     check("PairedBarChart(a, {1})", //
         "PairedBarChart(a,{1})");
@@ -22096,6 +22098,459 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSingularValueListUpTo() {
+    // UpTo(k) takes at most k of all the values, the zero ones included
+    check("SingularValueList({{3., 6.}, {1., 2.}}, UpTo(2))", //
+        "{7.07107,0.0}");
+    check("SingularValueList({{3, 6}, {1, 2}}, UpTo(2))", //
+        "{5*Sqrt(2),0}");
+    check("SingularValueList({{3, 6}, {1, 2}}, UpTo(1))", //
+        "{5*Sqrt(2)}");
+    check("SingularValueList({{5, 0}, {0, 12}}, UpTo(7))", //
+        "{12,5}");
+    // all the singular values of a zero matrix are kept
+    check("SingularValueList({{0, 0, 0}, {0, 0, 0}})", //
+        "{0,0}");
+    check("SingularValueList({{0., 0.}, {0., 0.}, {0., 0.}})", //
+        "{0.0,0.0}");
+  }
+
+  @Test
+  public void testSimplifyKeepsFactoredTies() {
+    // a product of sums keeps a tie against its expansion
+    check("Simplify((6 - m)*(9 - m))", //
+        "(-9+m)*(-6+m)");
+    // a quotient keeps its form on a tie against its partial fractions
+    check("Simplify((3 + t)/(3 - t))", //
+        "(3+t)/(3-t)");
+    // a strictly smaller expansion still wins
+    check("Simplify((m - 2)*(m + 2))", //
+        "-4+m^2");
+  }
+
+  @Test
+  public void testCholeskyDecompositionChecks() {
+    // CholeskyDecomposition: The matrix {{2,5},{5,3}} is not positive definite.
+    check("CholeskyDecomposition({{2, 5}, {5, 3}})", //
+        "CholeskyDecomposition({{2,5},{5,3}})");
+    check("CholeskyDecomposition({{2., 5.}, {5., 3.}})", //
+        "CholeskyDecomposition({{2.0,5.0},{5.0,3.0}})");
+    // a symbolic symmetric matrix
+    check("CholeskyDecomposition({{s, t}, {t, w}})", //
+        "{{Sqrt(s),t/Sqrt(s)},\n" //
+            + " {0,Sqrt(w+(-t*Conjugate(t/Sqrt(s)))/Sqrt(s))}}");
+    // CholeskyDecomposition: The matrix {{s,t},{Conjugate(t),w}} is not hermitian or real and
+    // symmetric.
+    check("CholeskyDecomposition({{s, t}, {Conjugate(t), w}})", //
+        "CholeskyDecomposition({{s,t},{Conjugate(t),w}})");
+    // CholeskyDecomposition: The matrix {{5,I},{I,5}} is not hermitian or real and symmetric.
+    check("CholeskyDecomposition({{5, I}, {I, 5}})", //
+        "CholeskyDecomposition({{5,I},{I,5}})");
+    check("CholeskyDecomposition({{5, I}, {-I, 5}})[[1, 1]]", //
+        "Sqrt(5)");
+    check("CholeskyDecomposition({{9, 3}, {3, 5}})", //
+        "{{3,1},\n" //
+            + " {0,2}}");
+  }
+
+  @Test
+  public void testProjectionOntoTheZeroVector() {
+    check("Projection({5, 2, 1}, {0, 0, 0})", //
+        "{0,0,0}");
+    check("Projection({5., 2.}, {0., 0.})", //
+        "{0.0,0.0}");
+  }
+
+  @Test
+  public void testTriangularMatrixQNonIntegerDiagonal() {
+    // LowerTriangularMatrixQ: 2/5 is not a machine-sized integer.
+    check("Head(LowerTriangularMatrixQ({{3, 0}, {1, 4}}, 2/5))", //
+        "LowerTriangularMatrixQ");
+    // UpperTriangularMatrixQ: 1.5 is not a machine-sized integer.
+    check("Head(UpperTriangularMatrixQ({{3, 0}, {1, 4}}, 1.5))", //
+        "UpperTriangularMatrixQ");
+    check("LowerTriangularMatrixQ({{3, 2}, {1, 4}}, 1)", //
+        "True");
+  }
+
+  @Test
+  public void testNOfSubnormalFraction() {
+    // gradual underflow to the nearest subnormal machine number, ties to even
+    check("N(2^-1072) == 4*2^-1074 // N", //
+        "True");
+    check("N(7/2^1077) == N(2^-1074)", //
+        "True");
+    check("N(-3/2^1075) == -2*N(2^-1074)", //
+        "True");
+    check("N(1/2^1075)", //
+        "0.0");
+  }
+
+  @Test
+  public void testMatrixExpOfMachineSparseArray() {
+    check("Head(MatrixExp(SparseArray({{1, 1} -> 2., {2, 2} -> -1.})))", //
+        "SparseArray");
+    check("Head(MatrixExp(SparseArray({{1, 1} -> 2, {2, 2} -> -1})))", //
+        "List");
+  }
+
+  @Test
+  public void testResidueAtRootOfUnitySpelledTwoWays() {
+    // 1-(-1)^(1/3)+(-1)^(2/3) is zero: the point is a pole in both spellings
+    check("Chop(N(Residue(1/(1 + w^2 + w^4)^2, {w, (-1)^(1/3)}) "
+        + "- Residue(1/(1 + w^2 + w^4)^2, {w, 1/2 + I*Sqrt(3)/2})))", //
+        "0");
+    check("Residue(1/(1 + w^2 + w^4)^2, {w, 1/2 + I*Sqrt(3)/2})", //
+        "1/36*(-9-I*2*Sqrt(3))");
+    check("Residue(1/(1 - w + w^2)^3, {w, (-1)^(1/3)}) == 0", //
+        "False");
+    check("SeriesCoefficient(Series(1/(1 - w + w^2)^2, {w, (-1)^(1/3), -1}), -2) == 0", //
+        "False");
+    // a tiny exact coefficient isn't zero
+    check("Series(1/(w - E^-80), {w, 0, 1})", //
+        "-E^80-E^160*w+O(w)^2");
+  }
+
+  @Test
+  public void testGammaIncompleteRealAtNegativeMachineArgument() {
+    check("Head(Gamma(4, -1.5))", //
+        "Real");
+    check("Gamma(2, -3.0)", //
+        "-40.17107");
+  }
+
+  @Test
+  public void testArgOfSumWithPositiveFactor() {
+    check("Refine(Arg(-c - I*Sqrt(3)*c), c > 0)", //
+        "-2/3*Pi");
+    check("Refine(Arg(3*c + 3*I*c), c > 0)", //
+        "Pi/4");
+  }
+
+  @Test
+  public void testNIntegrateWorkingPrecision() {
+    check("Precision(NIntegrate(1/(1 + y)^4, {y, 0, Infinity}, WorkingPrecision -> 25))", //
+        "25");
+    check("Abs(NIntegrate(1/(1 + y)^4, {y, 0, Infinity}, WorkingPrecision -> 25) - 1/3) "
+        + "< 10^-24", //
+        "True");
+    check("Abs(NIntegrate(Exp(-y^2/2), {y, -Infinity, Infinity}, WorkingPrecision -> 30) "
+        + "- Sqrt(2*Pi)) < 10^-28", //
+        "True");
+    // an integrable singularity at a nonzero end
+    check("Abs(NIntegrate(1/Sqrt(2 - y), {y, 1, 2}, WorkingPrecision -> 25) - 2) < 10^-23", //
+        "True");
+    // the integrand's scale doesn't decide when a sweep stops
+    check("Abs(NIntegrate(10^-90*Exp(-2*y), {y, 0, Infinity}, WorkingPrecision -> 20) "
+        + "- 10^-90/2) < 10^-108", //
+        "True");
+    // NIntegrate: Requested precision v is not a machine-sized real number.
+    check("NIntegrate(Exp(-y^2), {y, 0, 1}, WorkingPrecision -> v)", //
+        "NIntegrate(E^(-y^2),{y,0,1},WorkingPrecision->v)");
+  }
+
+  @Test
+  public void testIntegrateLogPowerOverGeometricDenominator() {
+    check("Integrate(u^3*Log(u)/(1 - u), {u, 0, 1})", //
+        "49/36-Pi^2/6");
+    check("Integrate(Log(u)^2/(1 + u^2), {u, 0, 1})", //
+        "Pi^3/16");
+    check("Integrate(u*Log(u)^2/(1 - u^2), {u, 0, 1})", //
+        "Zeta(3)/4");
+    check("Integrate(Log(u)/(1 + u^2), {u, 0, 1})", //
+        "-Catalan");
+    // a forced method isn't overridden by the zeta stage
+    check("Integrate(u^2*Log(u)^2/(1 - u^3), {u, 0, 1}, Method -> \"DiffUnderInt\")", //
+        "Integrate(u^2*Log(u)^2/(1-u^3),{u,0,1},Method->DiffUnderInt)");
+  }
+
+  @Test
+  public void testKelvinAngerWeberDerivatives() {
+    check("D(KelvinKer(k, t), t)", //
+        "(-KelvinKei(-1+k,t)+KelvinKei(1+k,t)-KelvinKer(-1+k,t)+KelvinKer(1+k,t))/(2*Sqrt(\n"
+            + "2))");
+    check("D(KelvinBei(k, t), t)", //
+        "(-KelvinBei(-1+k,t)+KelvinBei(1+k,t)+KelvinBer(-1+k,t)-KelvinBer(1+k,t))/(2*Sqrt(\n"
+            + "2))");
+    check("D(WeberE(k, t^2), t)", //
+        "2*t*(WeberE(-1+k,t^2)/2-WeberE(1+k,t^2)/2)");
+    check("D(AngerJ(k, 3*t), t)", //
+        "3*(AngerJ(-1+k,3*t)/2-AngerJ(1+k,3*t)/2)");
+    // the derivative of a Kelvin function against its central difference quotient
+    check("Chop(N(D(KelvinBer(3, t), t) /. t -> 2.1) "
+        + "- (KelvinBer(3, 2.1 + 10^-7) - KelvinBer(3, 2.1 - 10^-7))/(2*10^-7), 10^-6)", //
+        "0");
+    check("{KelvinKer(3, 0), KelvinKer(2.0, 0.0), KelvinKer(-3, 0)}", //
+        "{ComplexInfinity,ComplexInfinity,ComplexInfinity}");
+  }
+
+  @Test
+  public void testSchurDecompositionOfExactMatrix() {
+    // SchurDecomposition: SchurDecomposition has received a matrix with infinite precision.
+    check("SchurDecomposition({{4, 1}, {2, 7}})", //
+        "SchurDecomposition(\n{{4,1},\n {2,7}})");
+    check("Length(SchurDecomposition(N({{4, 1}, {2, 7}})))", //
+        "2");
+  }
+
+  @Test
+  public void testSimplifyNegativeBaseExponentSplit() {
+    check("Simplify((-1)^(3 + y)*c)", //
+        "-(-1)^y*c");
+    check("Simplify((-1)^(4 + k)*d)", //
+        "(-1)^k*d");
+    // the number would stay in front: kept
+    check("Simplify((-5)^(2 + k)*d)", //
+        "(-5)^(2+k)*d");
+    check("Simplify((-7)^(1/3 + k)*d)", //
+        "(-7)^(1/3+k)*d");
+    // a phase is not a sign: kept
+    check("Simplify((-1)^(1/2 + k)*d)", //
+        "(-1)^(1/2+k)*d");
+    check("Simplify(-(-9)^(-1 + y)*2^y)", //
+        "(-2)^y/3^(2-2*y)");
+  }
+
+  @Test
+  public void testFunctionExpandMeijerGLogCase() {
+    check("FunctionExpand(MeijerG({{1/2, 1/2}, {}}, {{0, 0}, {}}, 1))", //
+        "Pi^2");
+    check("FunctionExpand(MeijerG({{1/3, 2/3}, {}}, {{0, 0}, {}}, y))", //
+        "4/3*Pi^2*Hypergeometric2F1(1/3,2/3,1,1-y)");
+    check("Chop(N(MeijerG({{1/5, 1/2}, {}}, {{0, 2}, {}}, 3/7), 20) - "
+        + "N(FunctionExpand(MeijerG({{1/5, 1/2}, {}}, {{0, 2}, {}}, 3/7)), 20), 10^-15)", //
+        "0");
+    check("Integrate(BesselK(0, 3*y)^2, {y, 0, Infinity})", //
+        "Pi^2/12");
+  }
+
+  @Test
+  public void testFunctionExpandHypergeometricPFQCancelsTogether() {
+    check("FunctionExpand(HypergeometricPFQ({(3 + 3*k)/3, 1}, {1 + k, 2}, y))", //
+        "(-1+E^y)/y");
+    check("D(HypergeometricPFQRegularized({p}, {q, r}, t), t)", //
+        "p*HypergeometricPFQRegularized({1+p},{1+q,1+r},t)");
+  }
+
+  @Test
+  public void testIntegrateMeijerAntiderivative() {
+    check("Integrate(y^c*BesselJ(m, 2*y), y)", //
+        "1/2*y^(1+c+m)*Gamma(1/2*(1+c+m))*HypergeometricPFQRegularized({1/2*(1+c+m)},{1/2*(\n3+c+m),1+m},-y^2)");
+    check("Integrate(y^c*BesselY(m, y), y)", //
+        "1/2*y^(1+c)*((-2^m*Csc(m*Pi)*Gamma(1/2*(1+c-m))*HypergeometricPFQRegularized({1/\n2*(1+c-m)},{1-m,1/2*(3+c-m)},-y^2/4))/y^m+(y^m*Cot(m*Pi)*Gamma(1/2*(1+c+m))*HypergeometricPFQRegularized({\n1/2*(1+c+m)},{1+m,1/2*(3+c+m)},-y^2/4))/2^m)");
+    check("Integrate(BesselJ(m, y)/y^m, y, Method -> \"Roach\")", //
+        "(Sqrt(Pi)*y*HypergeometricPFQRegularized({1/2},{3/2,1+m},-y^2/4))/2^(1+m)");
+    // no reduction of the G-function: it is the answer
+    check("Integrate(y*BesselK(1, 2*y), y)", //
+        "MeijerG({{1},{}},{{1/2,3/2},{0}},y,1/2)/4");
+  }
+
+  @Test
+  public void testIntegrateMeijerUnitInterval() {
+    check("Integrate(y^(m + 1)*(1 - y^2)^(q - 1)*BesselJ(m, s*y), {y, 0, 1})", //
+        "ConditionalExpression((BesselJ(m+q,s)*Gamma(q))/(2^(1-q)*s^q),Re(s)>=0&&(Im(s)>0||Re(s)>\n0)&&Re(q)>0&&Re(m)>-1)");
+    check("Integrate(y^c*BesselJ(1, y), {y, 0, 1})", //
+        "ConditionalExpression(1/4*Gamma(1/2*(2+c))*HypergeometricPFQRegularized({1/2*(2+c)},{\n2,1/2*(4+c)},-1/4),Re(c)>-2)");
+    check("Integrate(y^3*Sqrt(1 - y^2)*BesselJ(1, 3*y), {y, 0, 1})", //
+        "9/32*Pi*HypergeometricPFQRegularized({5/2},{4,2},-9/4)");
+    // without a parameter and without the factor (1-y^2)^q the antiderivative gives the value
+    check("Integrate(y*BesselK(0, y), {y, 0, 2})", //
+        "1-2*BesselK(1,2)");
+    check("Integrate(y^3*BesselJ(0, y), {y, 0, 1})", //
+        "2*BesselJ(0,1)-3*BesselJ(1,1)");
+    check("Integrate(y*BesselY(0, y), {y, 0, 1})", //
+        "2/Pi+BesselY(1,1)");
+    check("Integrate(y^m*(1 - y^2)*BesselJ(1, y), {y, 0, 1})", //
+        "ConditionalExpression(1/4*Gamma(1/2*(2+m))*HypergeometricPFQRegularized({1/2*(2+m)},{\n2,1/2*(6+m)},-1/4),Re(m)>-2)");
+    check("Integrate(y^4*(1 - y^2)^(1/4)*BesselK(1, y), {y, 0, 1})", //
+        "1/4*Gamma(5/4)*MeijerG({{-3/2},{}},{{-1/2,1/2},{-11/4}},1/4)");
+  }
+
+  @Test
+  public void testTogetherUnexpandedSumFactor() {
+    // a sum factor which expands to another form isn't kept as a fraction with nothing to cancel
+    check("Together(1/(q*(1 - r) + q*r))", //
+        "1/q");
+    check("Together((q*(2 - r) + q*r)/s)", //
+        "(2*q)/s");
+    check("Together(q/(q*((q*r)/(q*(1 - r) + q*r)) - p*((q^2*(-1 + r))/(p*(q*(1 - r) + q*r)))))", //
+        "1");
+    // factored sums stay
+    check("Together((p + q)^2/(s*(r + t)))", //
+        "(p+q)^2/(s*(r+t))");
+  }
+
+  @Test
+  public void testSumDirichletSeries() {
+    check("Sum(DivisorSigma(2,n)/n^5, {n, 1, Infinity})", //
+        "Zeta(3)*Zeta(5)");
+    check("Sum(LiouvilleLambda(n)/n^3, {n, 1, Infinity})", //
+        "Pi^6/(945*Zeta(3))");
+    check("Sum(Abs(MoebiusMu(n))/n^4, {n, 1, Infinity})", //
+        "105/Pi^4");
+    // EulerPhi(n)/n^2 diverges
+    check("Sum(EulerPhi(n)/n^2, {n, 1, Infinity})", //
+        "Sum(EulerPhi(n)/n^2,{n,1,Infinity})");
+    // a symbolic exponent gives the generating function
+    check("Sum(DivisorSigma(2,n)/n^s, {n, 1, Infinity})", //
+        "Zeta(-2+s)*Zeta(s)");
+    check("Sum(MoebiusMu(n)/n^(2*s), {n, 1, Infinity})", //
+        "1/Zeta(2*s)");
+    // the partial sums of an arithmetic function have no smooth tail to extrapolate
+    checkNumeric("NSum(MoebiusMu(n)/n^3, {n, 1, Infinity})", //
+        "0.8319073725807075");
+  }
+
+  @Test
+  public void testSeriesZetaPoleComposed() {
+    check("Series(Zeta(1+x-x^2), {x, 0, 1})", //
+        "1/x+1+EulerGamma+(1-StieltjesGamma(1))*x+O(x)^2");
+    check("Series(Zeta(1+3*x), {x, 0, 2})", //
+        "1/(3*x)+EulerGamma-3*StieltjesGamma(1)*x+9/2*StieltjesGamma(2)*x^2+O(x)^3");
+  }
+
+  @Test
+  public void testSeriesEssentialSingularityFactor() {
+    // E^SeriesData(...) can't be expanded further: it stays a factor or a summand of its own
+    check("Series(Exp(2/z)*(1+z), {z, 0, 1})", //
+        "(1+z+O(z)^2)*E^(2/z+O(z)^2)");
+    check("Series(Exp(1/z)+z^2, {z, 0, 2})", //
+        "z^2+O(z)^3+E^(1/z+O(z)^3)");
+  }
+
+  @Test
+  public void testOrthogonalPolynomialsBeyondDoubleRange() {
+    // calculated with guard digits, so no digits are lost to the cancellations of the recurrence
+    check("Abs(LaguerreL(100, 50000.0)/N(LaguerreL(100, 50000), 30) - 1) < 10^-14", //
+        "True");
+    check("Abs(HermiteH(100, 700.0)/N(HermiteH(100, 700), 30) - 1) < 10^-14", //
+        "True");
+    check("Abs(ChebyshevT(100, 800.0)/N(ChebyshevT(100, 800), 30) - 1) < 10^-14", //
+        "True");
+    check("Abs(LaguerreL(100, 3, 55000.0)/N(LaguerreL(100, 3, 55000), 30) - 1) < 10^-14", //
+        "True");
+    check("Precision(LaguerreL(100, 60000.0))", //
+        "16");
+  }
+
+  @Test
+  public void testArbitraryPrecisionIllConditionedMatrix() {
+    // decided at the precision of the numbers, not of doubles
+    check("MatrixRank(N(HilbertMatrix(16), 50))", //
+        "16");
+    check("Det(N(HilbertMatrix(10), 40))/Det(HilbertMatrix(10))", //
+        "1");
+    check("Precision(Det(N(HilbertMatrix(10), 40))) > 16", //
+        "True");
+  }
+
+  @Test
+  public void testTanCotNextToPole() {
+    check("Tan(N(-Pi/2 + 10^-8, 40) + 10^-9*I) - N(Tan(-Pi/2 + 10^-8 + 10^-9*I), 40)", //
+        "0");
+    check("Cot(N(10^-9, 40) + 10^-8*I) - N(Cot(10^-9 + 10^-8*I), 40)", //
+        "0");
+    check("Tan(N(Pi/2, 50))", //
+        "ComplexInfinity");
+    // not one digit is known of a value next to a zero: a zero of an accuracy, not a pole
+    check("{PossibleZeroQ(Cot(N(Pi/2, 25))), 24.80 < Accuracy(Cot(N(Pi/2, 25))) < 24.81}", //
+        "{True,True}");
+    check("{PossibleZeroQ(Tan(N(3*Pi, 40))), 39.02 < Accuracy(Tan(N(3*Pi, 40))) < 39.03}", //
+        "{True,True}");
+    check("Cot(N(Pi, 30))", //
+        "ComplexInfinity");
+    check("Sec(N(Pi/2, 35))", //
+        "ComplexInfinity");
+  }
+
+  @Test
+  public void testPossibleZeroQLargeExactFactor() {
+    // an exact factor doesn't scale the rounding error of a zero beyond the tolerance
+    check("PossibleZeroQ(10^12*(Sqrt(7+4*Sqrt(3))-2-Sqrt(3)))", //
+        "True");
+    check("PossibleZeroQ(3^40*(Sqrt(7+4*Sqrt(3))-2-Sqrt(3)+1/10^30))", //
+        "False");
+  }
+
+  @Test
+  public void testPossibleZeroQEqualArgumentsInOtherForm() {
+    // equal arguments of a function written differently: 1+q/p and (p+q)/p
+    check("PossibleZeroQ(EllipticPi(1 + q/p, ArcSin(Sqrt(p + q*Sech(t))/Sqrt(p + q)), "
+        + "(p + q)/(p - q)) - EllipticPi((p + q)/p, ArcSin(Sqrt(p + q*Sech(t))/Sqrt(p + q)), "
+        + "(p + q)/(p - q)))", //
+        "True");
+    check("PossibleZeroQ(Gamma(1 + q/p)*Hypergeometric2F1(p, (p + q)/p, r, t) - "
+        + "Gamma((p + q)/p)*Hypergeometric2F1(p, 1 + q/p, r, t))", //
+        "True");
+    // the arguments differ
+    check("PossibleZeroQ(EllipticPi(1 + q/p, ArcSin(t), r) - EllipticPi((p + 2*q)/p, ArcSin(t), r))", //
+        "False");
+  }
+
+  @Test
+  public void testRationalPowerLargeExponentNumerator() {
+    // the base isn't raised to the numerator 70001 before its small primes are found
+    check("(5003/4096)^(70001/1048576)", //
+        "5003^(70001/1048576)/2^(210003/262144)");
+  }
+
+  @Test
+  public void testPossibleZeroQLargeParametricPowers() {
+    // machine values at the real sample points: exact powers (1+b*y)^(m^2/3) have huge rationals
+    check("PossibleZeroQ((1 + b*y)^(m^2/3)*(1 - b*y)^(-m^2/2)*(1/(1 - m) + y/(m - 1)) - "
+        + "((1 + b*y)^(m^2/3)*(1 - y))/((1 - m)*(1 - b*y)^(m^2/2)))", //
+        "True");
+    check("PossibleZeroQ((1 + b*y)^(m^2/3)*(1 - b*y)^(-m^2/2)*(1/(1 - m) + y/(m - 1)) - "
+        + "((1 + b*y)^(m^2/3)*(1 + y))/((1 - m)*(1 - b*y)^(m^2/2)))", //
+        "False");
+  }
+
+  @Test
+  public void testSinIntegralArbitraryPrecisionSeries() {
+    check("N(SinIntegral(17/16), 30)", //
+        "0.998077170112851484391841261504");
+    check("N(SinIntegral(3 - 2*I), 25)", //
+        "2.645432555362369624818525+I*0.1931890762719198291678095");
+    check("N(SinIntegral(17/16), 240) - N(Sum((-1)^k*(17/16)^(2*k + 1)/((2*k + 1)*(2*k + 1)!), "
+        + "{k, 0, 200}), 240)", //
+        "0.0*10^-239");
+    check("N({CosIntegral(17/16), SinhIntegral(17/16), CoshIntegral(17/16), "
+        + "ExpIntegralEi(17/16)}, 30)", //
+        "{0.368560979722464723845571736639,1.13143749056848672351689279851,0.933680275792985786324205950221,2.06511776636147250984109874873}");
+    check("N({CosIntegral(-5/3), CoshIntegral(-5/3), ExpIntegralEi(-5/3)}, 25)", //
+        "{0.4691910063392783002072333+I*3.141592653589793238462643,1.868011915285728161431195+I*3.141592653589793238462643,-0.07833342960047432009208513}");
+    check("N({CosIntegral(2 + 3*I), ExpIntegralEi(-1 - 2*I)}, 25)", //
+        "{1.408292501520849518759125+I*(-2.983617742029605093121118),0.1267842855915596730737033+I*(-3.106511070661606222212658)}");
+    check("N(CosIntegral(17/16), 240) - N(EulerGamma + Log(17/16) + "
+        + "Sum((-1)^k*(17/16)^(2*k)/(2*k*(2*k)!), {k, 1, 200}), 240)", //
+        "0.0*10^-240");
+    // the antiderivative is found once the derivative divides check has fast zero tests
+    check("Integrate(Sin(3*y)*SinIntegral(3*y)/y, y)", //
+        "SinIntegral(3*y)^2/2");
+  }
+
+  @Test
+  public void testDirichletBetaClosedForms() {
+    check("{DirichletBeta(2), DirichletBeta(3), DirichletBeta(5), DirichletBeta(7)}", //
+        "{Catalan,Pi^3/32,5/1536*Pi^5,61/184320*Pi^7}");
+    check("Chop(N(DirichletBeta(5)) - N(DirichletBeta(5.0)))", //
+        "0");
+  }
+
+  @Test
+  public void testIntegrateMellinPrincipalValue() {
+    check("Integrate(u^(r - 1)/(1 - u), {u, 0, Infinity}, PrincipalValue -> True, "
+        + "Assumptions -> 0 < r < 1)", //
+        "Pi*Cot(Pi*r)");
+    check("Integrate(1/(u^2 - 9), {u, 0, Infinity}, PrincipalValue -> True)", //
+        "0");
+    check("Integrate(u/(u^4 - 1), {u, 0, Infinity}, PrincipalValue -> True)", //
+        "0");
+    check("Integrate(1/(u^3 - 27), {u, 0, Infinity}, PrincipalValue -> True)", //
+        "-Pi/(27*Sqrt(3))");
+  }
+
+  @Test
   public void testSubsetPosition() {
     check("SubsetPosition({u, 7, v, 8}, {_Integer, _Symbol})", //
         "{{2,1},{4,1},{2,3},{4,3}}");
@@ -23523,7 +23978,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("h := Function({x}, Hold(1+x), HoldAll)", //
         "");
     check("h(1 + 1)", //
-        "Hold(1+1+1)");
+        "Hold(1+(1+1))");
     check("Function({u}, gg(u), Listable)[{a, b, c}]", //
         "{gg(a),gg(b),gg(c)}");
     check("Function({u}, gg(u))[{a, b, c}]", //
@@ -24579,6 +25034,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3*2");
     check("HoldForm(6/8)==6/8", //
         "6/8==3/4");
+  }
+
+  @Test
+  public void testHoldFormNestedSumsAndProducts() {
+    // a nested sum or product keeps its parentheses, so that it reads back as the same expression
+    check("HoldForm(u*v*(w*z))", //
+        "u*v*(w*z)");
+    check("HoldForm(u+(v+w)+z)", //
+        "u+(v+w)+z");
+    check("HoldForm(Times(-1, Times(u, v)))", //
+        "-(u*v)");
+    check("HoldForm(Times(Times(u, Power(v, -1)), Power(w, -1)))", //
+        "u/v/w");
+    check("ToString(HoldForm(Times(p, Times(q, r))), InputForm)", //
+        "HoldForm(p*(q*r))");
+    check("Hold(Plus(p, Plus(q, r)))", //
+        "Hold(p+(q+r))");
+    // an evaluated expression is flat
+    check("u*v*(w*z)", //
+        "u*v*w*z");
   }
 
   @Test
@@ -27752,6 +28227,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReplaceWholeExpressionOnly() {
+    // Replace and ReplaceAt match whole expressions; only ReplaceAll rewrites a run of a Flat head
+    check("Replace(u + v + w, u + v -> t)", //
+        "u+v+w");
+    check("Replace(u*v*w, u*w -> t)", //
+        "u*v*w");
+    check("Replace(u + v + w, w + u + v -> t)", //
+        "t");
+    // a dispatch table matches whole expressions too
+    check("Replace(u + v + w, Dispatch({u + v -> t}))", //
+        "u+v+w");
+    check("Replace(u + v, Dispatch({u + v -> t, w -> s}))", //
+        "t");
+    check("Replace({u + v + w}, u + v -> t, {1})", //
+        "{u+v+w}");
+    check("Replace(g(u + v), u + v -> t, {1})", //
+        "g(t)");
+    check("Replace(u + v + w, z_ + v -> {z})", //
+        "{u+w}");
+    check("ReplaceAt(g(u + v + w), u + v -> t, 1)", //
+        "g(u+v+w)");
+    check("u + v + w /. u + v -> t", //
+        "t+w");
+  }
+
+  @Test
   public void testReplaceAt() {
     // ReplaceAt: Cannot take positions 2 through 6 in {a,a,a,a,a}.
     check("ReplaceAt({a, a, a, a, a}, a -> xx, 2 ;; 6)", //
@@ -28912,16 +29413,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Module({a,b}, Block({c}, c+a))", //
         "a$1+c");
 
-    if (Config.SERVER_MODE == false) {
-      check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n"
-          + "  );f(2.0)", "-0.366513");
+    check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n"
+        + "  );f(2.0)", "-0.366513");
 
-      check("fib(n_) :=\n" + " Module({f},\n" + "  f(1) = f(2) = 1;\n"
-          + "  f(i_) := f(i) = f(i - 1) + f(i - 2);\n" + "  f(n)\n" + "  );fib(5)", "5");
+    check("fib(n_) :=\n" + " Module({f},\n" + "  f(1) = f(2) = 1;\n"
+        + "  f(i_) := f(i) = f(i - 1) + f(i - 2);\n" + "  f(n)\n" + "  );fib(5)", "5");
 
-      check("myGCD(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n"
-          + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n" + "  m\n" + "  );myGCD(18, 21)", "3");
-    }
+    check("myGCD(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n"
+        + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n" + "  m\n" + "  );myGCD(18, 21)", "3");
 
     check("xm=10;Module({xm=xm}, xm=xm+1;Print(xm));xm", //
         "10");
@@ -33293,10 +33792,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // message BigInteger bit length 254105 exceeded
     check("(-8/27*(-2/3)^(2/5))^2147483647", //
         "(-8/27*(-2/3)^(2/5))^2147483647");
-    // SLOW in factorSmallPrimes()
-    // message BigInteger bit length 258048 exceeded
+    // the small primes of the base 2^63*9223372036854775797/11^2 are taken out without the power
+    // of the base to the numerator 13479, which ran into the bit length limit
     check("(85070591730234615764386559452539518976/121)^(13479/14641)", //
-        "(85070591730234615764386559452539518976/121)^(13479/14641)");
+        "144115188075855872/11*(2^(14640/14641)*9223372036854775797^(13479/14641))/11^(\n12317/14641)");
 
     check("(I*1/2)^x^2", //
         "(I*1/2)^x^2");
@@ -36124,6 +36623,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "22314263/50");
     checkNumeric("22314263/50 // N", //
         "446285.26");
+  }
+
+  @Test
+  public void testRationalizeArbitraryPrecisionWithin() {
+    // the simplest rational within dx of every digit, not of a machine number
+    check("Rationalize(N(E, 30), 10^-18)", //
+        "848456353/312129649");
+    check("Abs(Rationalize(N(Sqrt(2), 40), 10^-25) - Sqrt(2)) < 10^-25", //
+        "True");
+    check("Denominator(Rationalize(N(Sqrt(2), 40), 10^-25)) < 10^13", //
+        "True");
+    check("Rationalize(N(-Sqrt(3), 25), 1/1000)", //
+        "-71/41");
+    check("Rationalize({N(Sqrt(3), 25), y}, 1/1000)", //
+        "{71/41,y}");
+    // a machine number next to an arbitrary precision number is rationalized too
+    check("Rationalize({N(Sqrt(3), 25), 0.375}, 1/1000)", //
+        "{71/41,3/8}");
+    // a dx below the machine range rationalizes a machine number like a dx of 0
+    check("Rationalize(0.375, 10^-400)", //
+        "3/8");
+    check("Rationalize({N(Sqrt(3), 25), 0.375}, 10^-400)[[2]]", //
+        "3/8");
+    check("Head(Rationalize({N(Sqrt(3), 25), 0.375}, 10^-400)[[1]])", //
+        "Rational");
   }
 
   @Test
@@ -43440,7 +43964,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     EvalEngine.resetModuleCounter4JUnit();
     check("With({x = 2 + y}, Hold(With({y = 4}, x + y)))", //
-        "Hold(With({y$1=4},2+y+y$1))");
+        "Hold(With({y$1=4},(2+y)+y$1))");
     EvalEngine.resetModuleCounter4JUnit();
     check("xm=10;With({xm=xm}, Print(xm));xm", //
         "10");

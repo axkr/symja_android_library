@@ -1977,6 +1977,10 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.isAST1() ? F.C0 : ast.arg1();
       IExpr z = ast.isAST1() ? ast.arg1() : ast.arg2();
+      if (kind == KER && z.isZero() && n.isNumber() && n.isNumIntValue() && !n.isZero()) {
+        // ker(n, z) has a pole of order |n| at 0; ker(-n, z) == (-1)^n*ker(n, z)
+        return S.ComplexInfinity;
+      }
       if (z.isZero() && n.isInteger()) {
         if (kind == KER || kind == KEI) {
           if (kind == KEI && n.isZero()) {

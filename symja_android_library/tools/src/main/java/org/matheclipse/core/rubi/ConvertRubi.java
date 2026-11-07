@@ -1135,7 +1135,6 @@ public class ConvertRubi {
   }
 
   private static void generate(String[] args) throws IOException {
-    Config.SERVER_MODE = false;
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     Config.RUBI_CONVERT_SYMBOLS = true;
     EvalEngine engine = new EvalEngine(false);

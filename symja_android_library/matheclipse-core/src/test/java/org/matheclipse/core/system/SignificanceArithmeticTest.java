@@ -275,7 +275,7 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
     check("1.5`15 - 1.5`15", //
         "0.0*10^-14");
     check("0``-1.5", //
-        "0.0");
+        "0.0*10^2");
     check("InputForm(0``12.7)", //
         "0``12.7");
   }
@@ -432,5 +432,59 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
     // a zero of a given accuracy
     check("InputForm(ArcCosh(0``15))", //
         "I*1.5707963267949`15.1961");
+  }
+
+  @Test
+  public void testMaxExtraPrecision() {
+    check("$MaxExtraPrecision", //
+        "50.0");
+    // 10^40+1 needs about 40 extra digits to tell the difference from 10^20; with 20 the zero which
+    // is left has the accuracy of 28 digits on terms near 10^20
+    check("Block({$MaxExtraPrecision = 20}, N(Sqrt(10^40 + 1) - 10^20, 8))", //
+        "0.0*10^-8");
+    check("Block({$MaxExtraPrecision = 60}, N(Sqrt(10^40 + 1) - 10^20, 8))", //
+        "5.0000000*10^-21");
+    check("Block({$MaxExtraPrecision = Infinity}, N(Sqrt(10^40 + 1) - 10^20, 8))", //
+        "5.0000000*10^-21");
+    // no extra digits: the zero of 10 digits on terms near 10^12, without a message
+    check("Check(Block({$MaxExtraPrecision = 0}, N(Sqrt(10^24 + 1) - 10^12, 10)), message)", //
+        "0.0*10^2");
+    // a hidden zero ends the search also without a limit
+    check("Block({$MaxExtraPrecision = Infinity}, Head(N((Sqrt(2)+Sqrt(7))^2 - 2*Sqrt(14) - 9, 8)))", //
+        "Real");
+    check("$MaxExtraPrecision", //
+        "50.0");
+    // a value which isn't one is kept, the assignment gives what was assigned
+    check("$MaxExtraPrecision = -3", //
+        "-3");
+    check("Check($MaxExtraPrecision = k, bad)", //
+        "bad");
+    check("$MaxExtraPrecision", //
+        "50.0");
+    check("$MaxExtraPrecision = 70; {$MaxExtraPrecision, N(Sqrt(10^40 + 1) - 10^20, 8)}", //
+        "{70,5.0000000*10^-21}");
+    check("Check(Clear($MaxExtraPrecision), special)", //
+        "special");
+    check("$MaxExtraPrecision", //
+        "70");
+    check("$MaxExtraPrecision = 50.0", //
+        "50.0");
+    // a delayed value is checked with what it evaluates to
+    check("$MaxExtraPrecision := 15+15", //
+        "");
+    check("$MaxExtraPrecision", //
+        "30");
+    check("$MaxExtraPrecision = 50.0", //
+        "50.0");
+  }
+
+  @Test
+  public void testZeroAtThePrecisionLimit() {
+    // the error of the terms: 28 digits on terms near 10^20, also inside a product
+    check("Block({$MaxExtraPrecision = 20}, InputForm(N(3*(Sqrt(10^40 + 1) - 10^20), 8)))", //
+        "0``7.52288");
+    // terms beyond the range of a machine number: the zero is known to far less than 1
+    check("Block({$MaxExtraPrecision = 20}, Accuracy(N(Sqrt(10^700 + 1) - 10^350, 8)) < -300)", //
+        "True");
   }
 }

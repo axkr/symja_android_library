@@ -246,6 +246,7 @@ public class Errors {
       "Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.", //
       "eqn", "`1` is not an equation.", //
       "error", "`1`", // without terminating '.'
+      "estmd", "Unable to estimate a reference distribution from the data.", //
       "exact", "Argument `1` is not an exact number.", //
       "exdims", "The dimensions cannot be determined from the position `1`.", //
       "experimental", "Experimental implementation (search in Github issues for identifier `1`).",
@@ -383,6 +384,8 @@ public class Errors {
       "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
       "libload", "The function `1` was not loaded from the file `2`.", //
       "lim", "Limit specification `1` is not of the form x->x0.", //
+      "precset",
+      "Cannot set $MaxExtraPrecision to `1`; value must be a non-negative number or Infinity.", //
       "limset",
       "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
       "linobj",
@@ -457,6 +460,7 @@ public class Errors {
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
       "nmet", "Unable to find the domain with the available methods.", //
+      "nmint", "`1` is not a machine-sized integer.", //
       "nmod", "`1` is not valid modulo `2`.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
       "nnintprm",
@@ -553,6 +557,7 @@ public class Errors {
       "pair", "Argument `1` is expected to be a pair, a list of pairs or an Interval object.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "par", "Inappropriate parameter: `1`.", //
+      "parinv", "Invalid image effect parameters given in `1`.", //
       "parmthd",
       "Value of option `1` -> `2` is not Automatic, \"CoarsestGrained\", \"FinestGrained\", \"EvaluationsPerKernel\" -> e or \"ItemsPerEvaluation\" -> m.", //
       "partd", "Part specification `1` is longer than depth of object.", //
@@ -740,6 +745,7 @@ public class Errors {
       "The weights given on the left-hand side of `1` should have the same length as the data given on the right-hand side.", //
       "write", "Tag `1` in `2` is Protected.", //
       "wrsym", "Symbol `1` is Protected.", //
+      "spsym", "Special symbol `1` cannot be cleared.", //
       "wtspec",
       "The weight specification at position `1` of rule specification `2` should be `3` or an array of non-negative machine integers with dimensions `4`.", //
       "ucdec", "An invalid unicode sequence was encountered and ignored.", //

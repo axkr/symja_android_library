@@ -95,6 +95,7 @@ public class ImageTest extends AbstractTestCase {
     IExpr image = S.Image.of(engine, tensor);
     IExpr croppedImage = S.ImageCrop.of(image, tensor.getPart(1, 1));
     // F.show(croppedImage);
-    assertEquals("Image(Dimensions: 3,3 Transparency: 3)", croppedImage.toString());
+    // four channels without a colour space are four bands and no alpha, so the image is opaque
+    assertEquals("Image(Dimensions: 3,3 Transparency: 1)", croppedImage.toString());
   }
 }

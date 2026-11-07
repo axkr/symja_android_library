@@ -3,12 +3,15 @@ package org.matheclipse.core.integrate;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.integrate.ResidueIntegration.Context;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <code>Integrate(C*x^alpha*K1(x)*K2(x), {x,0,Infinity})</code> for two kernels, each of which is
@@ -203,6 +206,260 @@ final class MeijerConvolution {
       return null;
     }
     return new Result(value, open, !exponential);
+  }
+
+  /**
+   * An antiderivative of <code>C*x^s*K(b*x)</code> for one Bessel kernel <code>K</code>: with
+   * <code>u = x^2</code> and <code>a = (s+1)/2</code>,
+   *
+   * <pre>
+   * Integrate(u^(a-1)*G[{an,ap},{bm,bq}](w*u), {u,0,U})
+   *   = U^a*G[{{1-a,an},ap},{bm,{-a,bq}}](w*U)
+   * </pre>
+   *
+   * which holds by analytic continuation in <code>a</code> wherever the right side is finite, so
+   * convergence at the origin is not needed. The G-function is written with the argument
+   * <code>b*x/2</code> and <code>r = 1/2</code>, so that it reduces to powers of <code>x</code>.
+   *
+   * @return the reduced antiderivative, the G-function itself if it does not reduce, or
+   *         {@link F#NIL} if the integrand is not of this form or a Gamma function of the result
+   *         has a pole
+   */
+  static IExpr antiderivative(IExpr f, ISymbol x, EvalEngine engine) {
+    Context ctx = new Context(f, x, F.NIL, false, engine);
+    PowerTimesKernel term = PowerTimesKernel.of(ctx, false);
+    if (term == null) {
+      return F.NIL;
+    }
+    for (IExpr b : term.kernel.bm) {
+      IExpr pole = ctx.eval(F.Plus(term.a, b));
+      if (pole.isZero() || pole.isMathematicalIntegerNegative()) {
+        return F.NIL;
+      }
+    }
+    IExpr last = ctx.eval(F.Negate(term.a));
+    IExpr z = F.Times(F.C1D2, term.kernel.frequency, x);
+    IExpr value = term.reduce(ctx,
+        F.Times(F.Power(x, ctx.eval(F.Expand(F.Times(F.C2, term.a)))),
+            term.meijerG(ctx, last, F.C0, z, F.C1D2)));
+    if (value.isPresent()) {
+      return value;
+    }
+    // x^(2*a) = (2/b)^(2*a)*w^a goes into the parameters of the G-function of w = (b*x/2)^2
+    return ctx.eval(F.Times(F.C1D2, term.constant, term.kernel.coefficient,
+        F.Power(F.Times(F.C2, F.Power(term.kernel.frequency, F.CN1)), F.Times(F.C2, term.a)),
+        term.meijerG(ctx, last, term.a, z, F.C1D2)));
+  }
+
+  /**
+   * <code>Integrate(C*x^s*(1-x^2)^(c-1)*K(b*x), {x,0,1})</code> for one Bessel kernel
+   * <code>K</code>: with <code>u = x^2</code> and <code>a = (s+1)/2</code>,
+   *
+   * <pre>
+   * Integrate(u^(a-1)*(1-u)^(c-1)*G[{an,ap},{bm,bq}](w*u), {u,0,1})
+   *   = Gamma(c)*G[{{1-a,an},ap},{bm,{1-a-c,bq}}](w)
+   * </pre>
+   *
+   * for <code>Re(a+b_j) &gt; 0</code> (<code>j &lt;= m</code>) and <code>Re(c) &gt; 0</code>. A
+   * G-function which does not reduce is the value only for a factor <code>(1-x^2)^(c-1)</code>:
+   * without it the antiderivative is searched for, which gives a closed form more often.
+   *
+   * @param parametric whether the integrand has parameters; without them only an integrand with a
+   *        factor <code>(1-x^2)^(c-1)</code> is taken
+   * @return the value and the conditions, or <code>null</code>
+   */
+  static Result integrateUnitInterval(Context ctx, boolean parametric) {
+    PowerTimesKernel term = PowerTimesKernel.of(ctx, true);
+    if (term == null || (!parametric && term.c.isOne())) {
+      return null;
+    }
+    IExpr c = term.c;
+    IExpr b = term.kernel.frequency;
+    List<IExpr> gates = new ArrayList<IExpr>();
+    // the powers of w = (b*x/2)^2 are those of b*x/2 for b in the right half plane, including the
+    // positive imaginary axis
+    gates.add(F.GreaterEqual(F.Re(b), F.C0));
+    gates.add(F.Or(F.Greater(F.Im(b), F.C0), F.Greater(F.Re(b), F.C0)));
+    gates.add(F.Greater(F.Re(c), F.C0));
+    for (IExpr bj : term.kernel.bm) {
+      gates.add(realPartPositive(ctx, ctx.eval(F.Expand(F.Times(F.C2, F.Plus(term.a, bj))))));
+    }
+    for (IExpr gate : gates) {
+      if (ctx.eval(gate).isFalse()) {
+        return null;
+      }
+    }
+    IExpr last = ctx.eval(F.Subtract(F.Subtract(F.C1, term.a), c));
+    IExpr value = term.reduce(ctx,
+        F.Times(F.Gamma(c), term.meijerG(ctx, last, F.C0, F.Times(F.C1D2, b), F.C1D2)));
+    if (value.isNIL()) {
+      if (c.isOne()) {
+        return null;
+      }
+      value = ctx.eval(F.Times(F.C1D2, term.constant, term.kernel.coefficient, F.Gamma(c),
+          term.meijerG(ctx, last, F.C0, term.kernel.w, F.NIL)));
+    }
+    return new Result(value, gates, false);
+  }
+
+  /**
+   * <code>Re(e) &gt; 0</code> written as <code>Re(p+v) &gt; 0</code> or <code>Re(v) &gt; -1</code>:
+   * the positive rational content and the constant term of <code>e</code> are taken out.
+   */
+  private static IExpr realPartPositive(Context ctx, IExpr e) {
+    IExpr constant = F.C0;
+    IExpr rest = e;
+    if (e.isPlus() && e.first().isRational()) {
+      constant = e.first();
+      rest = ((IAST) e).rest().oneIdentity0();
+    }
+    // the positive rational content of the terms
+    IRational content = null;
+    for (IExpr term : rest.isPlus() ? (IAST) rest : F.list(rest)) {
+      IRational q = term.isTimes() && term.first().isRational() ? (IRational) term.first() : F.C1;
+      content = content == null ? q.abs() : (IRational) ctx.eval(F.GCD(content, q));
+    }
+    if (content == null || !content.isPositive()) {
+      content = F.C1;
+    }
+    return F.Greater(F.Re(ctx.eval(F.Expand(F.Divide(rest, content)))),
+        ctx.eval(F.Divide(F.Negate(constant), content)));
+  }
+
+  /**
+   * The parameters of the <code>Gamma</code> and hypergeometric functions over one denominator,
+   * <code>Gamma((1+a+v)/2)</code> rather than <code>Gamma(1/2+a/2+v/2)</code>, and
+   * <code>1/(Gamma(p)*Gamma(1-p))</code> as <code>Sin(Pi*p)/Pi</code>.
+   */
+  private static IExpr tidy(Context ctx, IExpr value) {
+    IExpr together = value.replaceAll(e -> {
+      if (e.isAST(S.Gamma, 2) && e.first().isPlus()) {
+        return F.Gamma(F.Together(e.first()));
+      }
+      if ((e.isAST(S.HypergeometricPFQRegularized, 4) || e.isAST(S.HypergeometricPFQ, 4))
+          && e.first().isList() && e.second().isList()) {
+        IAST pfq = (IAST) e;
+        return pfq.setAtCopy(1, ((IAST) pfq.first()).map(p -> F.Together(p)))
+            .setAtCopy(2, ((IAST) pfq.second()).map(p -> F.Together(p)));
+      }
+      return F.NIL;
+    }).orElse(value);
+    together = ctx.eval(together);
+    IExpr reflected = together.replaceAll(e -> {
+      if (!e.isTimes()) {
+        return F.NIL;
+      }
+      IAST times = (IAST) e;
+      for (int i = 1; i < times.size(); i++) {
+        for (int j = i + 1; j < times.size(); j++) {
+          IExpr gi = times.get(i);
+          IExpr gj = times.get(j);
+          if (gi.isPower() && gj.isPower() && gi.exponent().isMinusOne()
+              && gj.exponent().isMinusOne() && gi.base().isAST(S.Gamma, 2)
+              && gj.base().isAST(S.Gamma, 2)
+              && ctx.eval(F.Expand(F.Plus(gi.base().first(), gj.base().first()))).isOne()) {
+            IExpr p = gi.base().first();
+            return times.removeAtCopy(j).setAtCopy(i,
+                F.Times(F.Power(S.Pi, F.CN1), F.Sin(F.Expand(F.Times(S.Pi, p)))));
+          }
+        }
+      }
+      return F.NIL;
+    });
+    return reflected.isPresent() ? ctx.eval(reflected) : together;
+  }
+
+  /**
+   * <code>C*x^s*K(b*x)</code>, optionally with a factor <code>(1-x^2)^(c-1)</code>, for one Bessel
+   * kernel <code>K</code>.
+   */
+  private static final class PowerTimesKernel {
+    final IExpr constant;
+    /** <code>(s+1)/2</code>, expanded, so that orders come out as sums of the parameters */
+    final IExpr a;
+    final IExpr c;
+    final Kernel kernel;
+
+    private PowerTimesKernel(IExpr constant, IExpr a, IExpr c, Kernel kernel) {
+      this.constant = constant;
+      this.a = a;
+      this.c = c;
+      this.kernel = kernel;
+    }
+
+    /**
+     * @param unitFactor whether a factor <code>(1-x^2)^(c-1)</code> is allowed
+     * @return <code>null</code> if <code>ctx.f</code> is not of this form
+     */
+    static PowerTimesKernel of(Context ctx, boolean unitFactor) {
+      final ISymbol x = ctx.x;
+      IAST factors = ctx.f.isTimes() ? (IAST) ctx.f : F.Times(ctx.f);
+      IASTAppendable constant = F.TimesAlloc(4);
+      IExpr s = F.C0;
+      IExpr c = F.C1;
+      Kernel kernel = null;
+      for (int i = 1; i <= factors.argSize(); i++) {
+        IExpr factor = factors.get(i);
+        IExpr power = IntegralRepresentations.powerOfX(factor, x);
+        if (factor.isFree(x)) {
+          constant.append(factor);
+        } else if (power.isPresent()) {
+          s = F.Plus(s, power);
+        } else if (unitFactor && c.isOne() && factor.isPower() && factor.exponent().isFree(x)
+            && ctx.eval(F.Plus(factor.base(), F.Sqr(x))).isOne()) {
+          c = F.Plus(F.C1, factor.exponent());
+        } else if (unitFactor && c.isOne() && factor.isPlus()
+            && ctx.eval(F.Plus(factor, F.Sqr(x))).isOne()) {
+          c = F.C2;
+        } else if (kernel == null && (factor.isAST(S.BesselJ, 3) || factor.isAST(S.BesselY, 3)
+            || factor.isAST(S.BesselK, 3))) {
+          kernel = kernel(ctx, factor);
+          if (kernel == null) {
+            return null;
+          }
+        } else {
+          return null;
+        }
+      }
+      if (kernel == null) {
+        return null;
+      }
+      return new PowerTimesKernel(constant.oneIdentity1(),
+          ctx.eval(F.Expand(F.Times(F.C1D2, F.Plus(s, F.C1)))), ctx.eval(F.Expand(c)), kernel);
+    }
+
+    /**
+     * <code>G[{{1-a,an},ap},{bm,{last,bq}}](z, r)</code> with every parameter shifted by
+     * <code>shift</code>, the three-argument form for <code>r = NIL</code>.
+     */
+    IExpr meijerG(Context ctx, IExpr last, IExpr shift, IExpr z, IExpr r) {
+      IASTAppendable an = F.ListAlloc(kernel.an.length + 1);
+      an.append(F.Subtract(F.C1, a));
+      an.appendAll(kernel.an, 0, kernel.an.length);
+      IASTAppendable bq = F.ListAlloc(kernel.bq.length + 1);
+      bq.append(last);
+      bq.appendAll(kernel.bq, 0, kernel.bq.length);
+      IAST first = F.list(shifted(ctx, an, shift), shifted(ctx, F.List(kernel.ap), shift));
+      IAST second = F.list(shifted(ctx, F.List(kernel.bm), shift), shifted(ctx, bq, shift));
+      return r.isNIL() ? F.MeijerG(first, second, z) : F.MeijerG(first, second, z, r);
+    }
+
+    private static IAST shifted(Context ctx, IAST parameters, IExpr shift) {
+      return parameters.map(p -> ctx.eval(F.Expand(F.Plus(p, shift))));
+    }
+
+    /**
+     * <code>C/2*g</code>, reduced and tidied.
+     *
+     * @return {@link F#NIL} if the G-function does not reduce
+     */
+    IExpr reduce(Context ctx, IExpr g) {
+      IExpr value = ctx.eval(F.Times(F.C1D2, constant, kernel.coefficient, g));
+      if (!value.isFreeAST(S.MeijerG)) {
+        value = ctx.eval(F.FunctionExpand(value));
+      }
+      return value.isFreeAST(S.MeijerG) && value.isSpecialsFree() ? tidy(ctx, value) : F.NIL;
+    }
   }
 
   /** the reduced value with fewer MeijerG, then the smaller one */

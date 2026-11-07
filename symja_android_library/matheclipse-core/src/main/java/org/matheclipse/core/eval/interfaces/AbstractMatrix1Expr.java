@@ -15,6 +15,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.parser.client.ParserConfig;
 
 public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 
@@ -55,6 +58,50 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     }
   }
 
+  /**
+   * Test if <code>expr</code> contains a number with more than machine precision and no machine
+   * number: a matrix of such numbers is computed in their precision, not converted to doubles.
+   */
+  public static boolean hasArbitraryPrecisionNumber(IExpr expr) {
+    return expr.has(e -> e.isInexactNumber() && !e.isMachineNumber(), false)
+        && !expr.has(IExpr::isMachineNumber, false);
+  }
+
+  /**
+   * The zero tolerance for a matrix with arbitrary-precision numbers: the largest absolute entry
+   * times <code>10^(5-p)</code> for the least precision <code>p</code> of the numbers.
+   *
+   * @return <code>0.0</code> if the matrix has no arbitrary-precision number, or a machine number
+   */
+  private static double arbitraryPrecisionTolerance(IExpr matrix) {
+    long[] precision = {Long.MAX_VALUE};
+    double[] scale = {0.0};
+    matrix.has(e -> {
+      if (e.isNumber()) {
+        INumber number = (INumber) e;
+        if (e.isMachineNumber()) {
+          // a machine number has machine precision: no tolerance of the arbitrary precision
+          precision[0] = Math.min(precision[0], ParserConfig.MACHINE_PRECISION);
+        } else if (e.isInexactNumber() && e instanceof INum) {
+          precision[0] = Math.min(precision[0], ((INum) e).precision());
+        } else if (e.isInexactNumber() && !e.isMachineNumber()
+            && e instanceof org.matheclipse.core.interfaces.IComplexNum) {
+          precision[0] =
+              Math.min(precision[0], ((org.matheclipse.core.interfaces.IComplexNum) e).precision());
+        }
+        double abs = Math.hypot(number.reDoubleValue(), number.imDoubleValue());
+        if (Double.isFinite(abs)) {
+          scale[0] = Math.max(scale[0], abs);
+        }
+      }
+      return false;
+    }, false);
+    if (precision[0] == Long.MAX_VALUE || precision[0] <= 16 || scale[0] == 0.0) {
+      return 0.0;
+    }
+    return Math.max(scale[0] * Math.pow(10.0, 5 - precision[0]), Double.MIN_NORMAL);
+  }
+
   public AbstractMatrix1Expr() {}
 
   /**
@@ -72,7 +119,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     try {
       int[] dim = checkMatrixDimensions(ast.arg1());
       if (dim != null) {
-        if (ast.arg1().isNumericArgument(true)) {
+        if (ast.arg1().isNumericArgument(true) && !hasArbitraryPrecisionNumber(ast.arg1())) {
           RealMatrix m = ast.arg1().toRealMatrix();
           if (m != null) {
             return realMatrixEval(m, engine, ast);
@@ -187,6 +234,12 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     }
     // For floating-point matrices use tolerance-based zero check
     if (ast.arg1().isNumericArgument(true)) {
+      if (!given) {
+        double precisionTolerance = arbitraryPrecisionTolerance(ast.arg1());
+        if (precisionTolerance > 0.0) {
+          return new ToleranceTest(precisionTolerance, false);
+        }
+      }
       return new ToleranceTest(tolerance, given);
     }
     return POSSIBLE_ZEROQ_TEST;

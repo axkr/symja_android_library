@@ -421,36 +421,43 @@ public class Config {
   // public static boolean LOAD_SERIALIZED_RULES = false;
 
   /**
-   * <code>true</code> if the engine is started by a servlet<br>
-   * In <i>server mode</i> the user can only assign values to variables with prefix '$' <br>
-   * <br>
-   * SERVER_MODE should be set to <code>true</code> in the initialization of a servlet
-   */
-  public static boolean SERVER_MODE = false;
-
-  /**
    * <code>true</code> if it's allowed to delete the <code>Protected</code> attribute from a symbol.
-   * In <i>server mode</i> this flag should be set to <code>false</code>. <br>
+   * In a {@link #SHARED_JVM} <code>Unprotect</code> is refused whatever this flag says.
    */
   public static boolean UNPROTECT_ALLOWED = true;
 
   /**
-   * <code>true</code> if one JVM serves several users, each with an
-   * {@link org.matheclipse.core.eval.EvalEngine} of their own, as a servlet does. The built-in
-   * symbols are one instance for all of them, so nothing evaluated in one engine may change what
-   * another one computes: engines start locked (see {@link #PACKAGE_MODE}) and stay locked while a
-   * file is read, <code>Unprotect</code> is refused, <code>Derivative</code> and the <code>$</code>
-   * symbols count as protected, <code>SetOptions</code> of a built-in holds for its engine only,
-   * and no value can be assigned to a <code>System`</code> or <code>Rubi`</code> symbol.
+   * Which of the two ways Symja runs this JVM is in.
    *
    * <p>
-   * <code>false</code> if one JVM is one kernel, as in <code>symjascript</code>: a package may
-   * unprotect and change a built-in, <code>Sin' = Tan</code> is a definition, and all of this holds
-   * for the whole kernel with its worker threads, because one user owns it.
+   * <code>true</code>: one JVM serves several users, each with an
+   * {@link org.matheclipse.core.eval.EvalEngine} of their own, as the servlets, the API server and
+   * the Discord bot do. The built-in symbols are one instance for all of them, so nothing evaluated
+   * in one engine may change what another one computes: engines start locked (see
+   * {@link #PACKAGE_MODE}) and stay locked while <code>Get</code> reads a file,
+   * <code>Unprotect</code> is refused whatever {@link #UNPROTECT_ALLOWED} says, no rule or attribute
+   * can be given to <code>Derivative</code> or to a <code>$</code> symbol, <code>SetOptions</code> of a
+   * built-in holds for its engine only, and a <code>System`</code> or <code>Rubi`</code> symbol takes
+   * no value. The value of a <code>$</code> symbol lives in the engine, so every user may set
+   * <code>$MaxExtraPrecision</code>, <code>$Pre</code> or <code>$Assumptions</code> for themselves.
    *
    * <p>
-   * Set this at the end of the initialization of a server, because creating the built-in symbols
-   * needs an engine which isn't locked.
+   * <code>false</code>, the default: one JVM is one kernel, owned by one user. This is
+   * <code>symjascript</code>, the console, a plain {@link org.matheclipse.core.eval.ExprEvaluator},
+   * the JSR-223 script engine, JUnit, and the kernel the WLJS Notebook launches. The notebook runs
+   * two Symja processes, a master for its server and one for evaluation, and its packages treat
+   * the kernel as their own: they <code>Unprotect</code> and redefine built-ins
+   * (<code>Unprotect[Derivative]</code>, <code>Sin' = Tan</code>), give <code>System`</code> symbols
+   * values and rules, call <code>SetOptions</code> on built-ins, and expect each of this to hold for
+   * the whole kernel. So a definition reaches every engine of the JVM, the copies that
+   * <code>TimeConstrained</code> and the worker threads use included, and a <code>$</code> value,
+   * <code>$ContextAliases</code> and <code>$Packages</code> are shared between an engine and its
+   * copies. Nothing is isolated, because there is nobody to isolate from.
+   *
+   * <p>
+   * Set this at the end of the initialization of a server, after
+   * {@link org.matheclipse.core.expression.F#initSymbols()}: creating the built-in symbols needs
+   * an engine which isn't locked.
    */
   public static boolean SHARED_JVM = false;
 

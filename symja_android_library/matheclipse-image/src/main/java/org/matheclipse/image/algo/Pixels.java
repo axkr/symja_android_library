@@ -167,6 +167,9 @@ public final class Pixels {
     if (samples.channels() == 1 || forceGray) {
       return grayImage(samples, scale);
     }
+    if (isSpectral(colorSpace, samples.channels())) {
+      return spectralImage(samples, scale);
+    }
     return colorImage(samples, scale, "HSB".equalsIgnoreCase(colorSpace),
         "CMYK".equalsIgnoreCase(colorSpace));
   }
@@ -582,6 +585,64 @@ public final class Pixels {
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         raster.setSample(x, y, 0, clamp((float) (intensityOf(samples, x, y) * scale)));
+      }
+    }
+    return image;
+  }
+
+  /**
+   * Whether an image of <code>channels</code> samples a pixel in the colour space
+   * <code>colorSpace</code> holds spectral bands rather than colours: four or more channels without
+   * a colour space. A fourth channel is an alpha channel only in a stated <code>"RGB"</code> space.
+   *
+   * @param colorSpace the <code>ColorSpace</code> name, or <code>null</code> for
+   *        <code>Automatic</code>
+   */
+  public static boolean isSpectral(String colorSpace, int channels) {
+    return colorSpace == null && channels >= 4;
+  }
+
+  /**
+   * The red, green and blue a pixel of spectral bands is shown as: the means of the first
+   * <code>Floor(n/3)</code> bands, of the middle ones and of the last <code>Round(n/3)</code>
+   * bands, each rounded to single precision.
+   *
+   * @param bands the <code>n &gt;= 4</code> samples of one pixel
+   */
+  public static double[] spectralRgb(double[] bands) {
+    int n = bands.length;
+    int red = n / 3;
+    int blue = (int) Math.round(n / 3.0);
+    int[] sizes = {red, n - red - blue, blue};
+    double[] rgb = new double[3];
+    int start = 0;
+    for (int c = 0; c < 3; c++) {
+      double sum = 0.0;
+      for (int i = start; i < start + sizes[c]; i++) {
+        sum += bands[i];
+      }
+      rgb[c] = (float) (sum / sizes[c]);
+      start += sizes[c];
+    }
+    return rgb;
+  }
+
+  /** The opaque picture of spectral bands, see {@link #spectralRgb(double[])}. */
+  private static BufferedImage spectralImage(Samples samples, double scale) {
+    int width = samples.width();
+    int height = samples.height();
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    double[] bands = new double[samples.channels()];
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        for (int c = 0; c < bands.length; c++) {
+          bands[c] = samples.at(c, x, y).evalfNaN();
+        }
+        double[] rgb = spectralRgb(bands);
+        image.setRGB(x, y, 0xFF000000 //
+            | (clamp((float) (rgb[0] * scale)) << 16) //
+            | (clamp((float) (rgb[1] * scale)) << 8) //
+            | clamp((float) (rgb[2] * scale)));
       }
     }
     return image;

@@ -719,6 +719,15 @@ public class EvalEngine implements Serializable {
 
   transient int fRecursionCounter;
 
+  /**
+   * The last Java stack overflow which went through an evaluation, and the
+   * <code>$RecursionLimit</code> in force where it happened. The stack can run out before the limit
+   * is reached, always under <code>$RecursionLimit = Infinity</code>.
+   */
+  private transient StackOverflowError fStackOverflow = null;
+
+  private transient int fStackOverflowRecursionLimit;
+
   /** Told about every message this engine reports, when somebody is listening. */
   public interface MessageListener {
     /**
@@ -1693,6 +1702,10 @@ public class EvalEngine implements Serializable {
     engine.fOutListDisabled = fOutListDisabled;
     engine.fOutPrintStream = fOutPrintStream;
     engine.fOnOffMap = fOnOffMap;
+    if (fDollarSymbolMap == null) {
+      // an engine and its copies are one kernel: a $ value assigned in either is seen by both
+      fDollarSymbolMap = new IdentityHashMap<IBuiltInSymbol, IExpr>();
+    }
     engine.fDollarSymbolMap = fDollarSymbolMap;
     engine.fOnOffMode = fOnOffMode;
     engine.fOnOffUnique = fOnOffUnique;
@@ -3669,6 +3682,9 @@ public class EvalEngine implements Serializable {
         // `1`.
         Errors.printMessage(result.topHead(), "error", F.List(uoe.getMessage()), this);
         throw AbortException.ABORTED;
+      } catch (StackOverflowError soe) {
+        recordStackOverflow(soe);
+        throw soe;
       } finally {
         stackPop();
         fRecursionCounter--;
@@ -3723,13 +3739,23 @@ public class EvalEngine implements Serializable {
    * pattern names are included, which can only make the answer <code>false</code> more often. An
    * atom which is not a number, a string, a symbol or a pattern may hold expressions of its own and
    * answers <code>false</code>.
+   * <p>
+   * The arguments of a list of numbers and strings have no values, so only its head is looked at
+   * once the list is known to be one: reading a large list held in a variable doesn't walk it.
    *
    * @see #incValueEpoch()
    */
   private static boolean valuesUnchangedSince(final IAST ast, final long epoch) {
-    final int size = ast.size();
+    final int size = ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? 1 : ast.size();
+    // only the list classes which drop their flags on every change may remember the answer
+    boolean numbersOrStrings =
+        size > 1 && (ast instanceof org.matheclipse.core.expression.HMArrayList
+            || ast instanceof org.matheclipse.core.expression.ASTRRBTree);
     for (int i = 0; i < size; i++) {
       final IExpr x = i == 0 ? ast.head() : ast.getRule(i);
+      if (i > 0 && numbersOrStrings && !(x.isNumber() || x instanceof IStringX)) {
+        numbersOrStrings = false;
+      }
       if (x instanceof IAST) {
         if (!valuesUnchangedSince((IAST) x, epoch)) {
           return false;
@@ -3741,6 +3767,9 @@ public class EvalEngine implements Serializable {
       } else if (!(x.isNumber() || x instanceof IStringX || x instanceof IPatternObject)) {
         return false;
       }
+    }
+    if (numbersOrStrings) {
+      ast.addFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS);
     }
     return true;
   }
@@ -3880,6 +3909,9 @@ public class EvalEngine implements Serializable {
       // `1`.
       Errors.printMessage(S.General, uoe, this);
       throw AbortException.ABORTED;
+    } catch (StackOverflowError soe) {
+      recordStackOverflow(soe);
+      throw soe;
     } finally {
       stackPop();
       fRecursionCounter--;
@@ -5527,6 +5559,86 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Remember the <code>$RecursionLimit</code> where <code>soe</code> happened: the innermost
+   * evaluation it goes through is the first to see it, and sees the limit of the
+   * <code>Block</code> it runs in.
+   */
+  private void recordStackOverflow(StackOverflowError soe) {
+    if (fStackOverflow != soe) {
+      fStackOverflow = soe;
+      fStackOverflowRecursionLimit = fRecursionLimit;
+    }
+  }
+
+  /** The number of open evaluations, for {@link #afterStackOverflow}. */
+  public int getEvaluationStackSize() {
+    return fStack.size();
+  }
+
+  /**
+   * Report a Java stack overflow in the evaluation of <code>expr</code> like an exceeded
+   * <code>$RecursionLimit</code>, and take the engine back to the depth it had before the
+   * evaluation: the cleanup of the innermost evaluations can itself have run out of stack.
+   *
+   * @param recursionCounter the value of {@link #getRecursionCounter()} before the evaluation
+   * @param stackSize the value of {@link #getEvaluationStackSize()} before the evaluation
+   * @return <code>Hold(expr)</code>
+   */
+  public IExpr afterStackOverflow(StackOverflowError soe, IExpr expr, int recursionCounter,
+      int stackSize) {
+    fRecursionCounter = recursionCounter;
+    while (fStack.size() > stackSize) {
+      fStack.pop();
+    }
+    final int limit = soe == fStackOverflow ? fStackOverflowRecursionLimit : fRecursionLimit;
+    fStackOverflow = null;
+    // Recursion depth of `1` exceeded during evaluation of `2`.
+    Errors.printMessage(S.$RecursionLimit, "reclim2",
+        F.list(limit <= 0 ? F.CInfinity : F.ZZ(limit), expr), this);
+    return F.Hold(expr);
+  }
+
+  /**
+   * The digits beyond the requested precision which <code>N</code> may add when an evaluation loses
+   * digits: the value of <code>$MaxExtraPrecision</code>, {@link Config#MAX_EXTRA_PRECISION} if it
+   * has none. <code>Infinity</code> is bounded by {@link Config#MAX_PRECISION_APFLOAT}, so that a
+   * value which is zero ends the search.
+   */
+  public static long maxExtraPrecision() {
+    final IExpr value = maxExtraPrecisionValue();
+    if (value.isPresent()) {
+      if (value.isInfinity()) {
+        return Config.MAX_PRECISION_APFLOAT;
+      }
+      if (value.isReal() && !value.isNegative()) {
+        return Math.min((long) ((IReal) value).floorFraction().toLongDefault(Long.MAX_VALUE / 4),
+            Config.MAX_PRECISION_APFLOAT);
+      }
+    }
+    return Config.MAX_EXTRA_PRECISION;
+  }
+
+  /** The first argument of the <code>meprec</code> message: <code>$MaxExtraPrecision = 50.</code> */
+  public static IExpr maxExtraPrecisionText() {
+    final IExpr value = maxExtraPrecisionValue();
+    final String text =
+        value.isPresent() ? value.toString() : Long.toString(Config.MAX_EXTRA_PRECISION);
+    return F.stringx("$MaxExtraPrecision = " + text + ".");
+  }
+
+  /**
+   * The value of <code>$MaxExtraPrecision</code>, evaluated if it was assigned with
+   * <code>:=</code>, or {@link F#NIL} if it has none.
+   */
+  private static IExpr maxExtraPrecisionValue() {
+    final IExpr value = S.$MaxExtraPrecision.assignedValue();
+    if (value == null || value.isNIL()) {
+      return F.NIL;
+    }
+    return value.isReal() || value.isInfinity() ? value : get().evaluate(value);
+  }
+
+  /**
    * Get the maximum recursion depth for this evaluation engine.
    * 
    * @return the maximum recursion depth
@@ -5664,7 +5776,6 @@ public class EvalEngine implements Serializable {
     initInstance();
     fAnswer = null;
     fAssumptions = null;
-    S.$Assumptions.clearValue(null);
     fOutputSizeLimit = Config.SHORTEN_STRING_LENGTH;
     fEvalLHSMode = false;
     fEvalRHSMode = false;

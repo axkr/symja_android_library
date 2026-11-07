@@ -68,9 +68,6 @@ public class BubbleChart extends AbstractChart {
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     IExpr elementFunction =
         GraphicsOptions.optionValue(originalAST, S.ChartElementFunction, S.Automatic);
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
-    }
 
     IAST datasets = bubbleDatasets((IAST) dataArg);
     List<double[]> points = new ArrayList<>();
@@ -141,8 +138,12 @@ public class BubbleChart extends AbstractChart {
     IASTAppendable primitives = F.ListAlloc(bubbles.size() + 1);
     double maxRx = 0;
     double maxRy = 0;
+    // a legend entry names one dataset, in the fill its bubbles were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(GraphicsOptions.chartStyleColor(chartStyle, 0));
     for (Bubble bubble : bubbles) {
       IExpr color = GraphicsOptions.chartStyleColor(chartStyle, bubble.colorIndex);
+      legendColors.record(bubble.colorIndex, color);
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color, !chartStyle.isAutomatic());
       IASTAppendable group = F.ListAlloc(3);
       // Mathematica outlines every bubble with a thin translucent black edge
@@ -161,6 +162,7 @@ public class BubbleChart extends AbstractChart {
     if (graphicsOptions.aspectRatio() == S.Automatic) {
       graphicsOptions.setAspectRatio(F.C1);
     }
+    graphicsOptions.setChartLegend(chartLegends, legendColors);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 

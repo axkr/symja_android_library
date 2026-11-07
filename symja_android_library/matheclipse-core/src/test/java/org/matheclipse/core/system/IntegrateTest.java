@@ -780,6 +780,51 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegrateProductOfLogsOfProportionalLinears() {
+    // the substitution d+e*x -> x applies when g+h*x is a multiple of d+e*x, not when only the
+    // constant terms are proportional
+    check("Simplify(D(Integrate(Log(2-3*x)*Log(1+2*x),x),x)-Log(2-3*x)*Log(1+2*x))", //
+        "0");
+    check("Simplify(D(Integrate(Log(4+6*x)*Log(2+3*x)^2,x),x)-Log(4+6*x)*Log(2+3*x)^2)", //
+        "0");
+  }
+
+  @Test
+  public void testNIntegrateTinyIntegrand() {
+    // the default absolute goal is relative to the integrand's size, and the value is rounded to
+    // significant digits
+    checkNumeric("NIntegrate(10^-35/(10^-6+x^2), {x, -1, 1})", //
+        "3.13959265425646E-32");
+  }
+
+  @Test
+  public void testIntegrateExponentialOverPeriod() {
+    // z == E^(I*t) on the unit circle: 2*Pi*I times the residue at 0 of an integrand which is
+    // analytic off the origin, where the antiderivative of ExpIntegralEi jumps across its cut
+    check("Integrate(Exp(2*Exp(I*t)), {t, 0, 2*Pi})", //
+        "2*Pi");
+    check("Integrate(Exp(Exp(-I*t))*Exp(3*I*t), {t, 0, 2*Pi})", //
+        "Pi/3");
+    check("Integrate(Exp(b*Cos(t)), {t, 0, 2*Pi})", //
+        "2*Pi*BesselI(0,b)");
+    // a pole of the rational factor at 3: declined
+    check("Integrate(Exp(Exp(I*t))/(3-Exp(I*t)), {t, 0, 2*Pi})", //
+        "Integrate(E^E^(I*t)/(3-E^(I*t)),{t,0,2*Pi})");
+  }
+
+  @Test
+  public void testNIntegrateComplexValuedIntegrand() {
+    // real limits, an integrand with complex values: the real and imaginary parts are integrated
+    // numerically, not through an antiderivative which jumps across a branch cut
+    checkNumeric("Chop(NIntegrate(Exp(3*Exp(I*t)), {t, 0, 2*Pi}))", //
+        "6.2831853071795685");
+    checkNumeric("Chop(NIntegrate(Exp(Exp(-I*t))*Exp(2*I*t), {t, 0, 2*Pi}))", //
+        "3.141592653589793");
+    checkNumeric("NIntegrate(Sqrt(x-2), {x, 0, 3})", //
+        "0.6666666666666665+I*1.8856180831641272");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testNIntegrate() {
     checkNumeric(
@@ -860,7 +905,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
         "2.0");
     checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
-        "0.0");
+        "3.502452750453491E-17");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1195255867");
   }

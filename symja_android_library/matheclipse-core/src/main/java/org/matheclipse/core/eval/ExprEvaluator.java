@@ -76,8 +76,6 @@ import edu.jas.kern.PreemptingException;
  *   System.out.println(result.toString());
  *
  *   // set the value of a variable "a" to 10
- *   // Note: in server mode the variable name must have a preceding '$'
- *   // character
  *   result = util.eval("a=10");
  *   // print: 10
  *   System.out.println(result.toString());
@@ -378,6 +376,8 @@ public class ExprEvaluator {
     // engine.reset() must be done before parsing step
     IExpr preRead = S.$PreRead.assignedValue();
     IExpr temp;
+    final int recursionCounter = engine.getRecursionCounter();
+    final int stackSize = engine.getEvaluationStackSize();
     try {
       if (preRead != null && preRead.isPresent()) {
         temp = engine.evaluate(F.unaryAST1(preRead, expr));
@@ -417,6 +417,9 @@ public class ExprEvaluator {
       Errors.printMessage(S.$RecursionLimit, "reclim2",
           F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr), engine);
       temp = F.Hold(expr);
+    } catch (StackOverflowError soe) {
+      // the Java stack ran out before $RecursionLimit was reached
+      temp = engine.afterStackOverflow(soe, expr, recursionCounter, stackSize);
     }
     if (!engine.isOutListDisabled()) {
       engine.addInOut(expr, temp);

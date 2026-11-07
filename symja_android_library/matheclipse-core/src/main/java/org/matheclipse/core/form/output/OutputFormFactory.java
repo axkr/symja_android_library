@@ -97,6 +97,9 @@ public class OutputFormFactory {
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
   protected boolean fInputForm = false;
 
+  /** The number of enclosing held expressions, whose nested sums and products keep parentheses. */
+  private int fHeldDepth = 0;
+
   /**
    * In input form, print a {@link FormalSymbol} as its plain letter <code>k</code> instead of
    * <code>\[FormalK]</code>. Set by the definition listings, where a formal symbol is only the
@@ -1354,7 +1357,7 @@ public class OutputFormFactory {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
         }
-        convert(buf, plusArg, Precedence.PLUS, false);
+        convertNested(buf, plusArg, S.Plus, Precedence.PLUS);
       }
     }
   }
@@ -1460,7 +1463,11 @@ public class OutputFormFactory {
             append(buf, fInputForm ? " + " : "+");
           }
           // insert numerator in buffer:
-          if (numerator.isTimes()) {
+          if (fHeldDepth > 0 && numerator.isTimes()
+              && ((IAST) numerator).exists(OutputFormFactory::isQuotient)) {
+            // a held quotient as numerator: a/b/c reads back as (a/b)/c
+            convertTimesFraction(buf, (IAST) numerator, oper, Precedence.TIMES, NO_PLUS_CALL);
+          } else if (numerator.isTimes()) {
             convertTimesOperator(buf, (IAST) numerator, oper, Precedence.DIVIDE, NO_PLUS_CALL);
           } else {
             convert(buf, numerator, Precedence.DIVIDE, false);
@@ -1538,7 +1545,7 @@ public class OutputFormFactory {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
         }
-        convert(buf, arg1, oper.getPrecedence(), false);
+        convertNested(buf, arg1, S.Times, oper.getPrecedence());
       }
     }
     for (int i = 2; i < size; i++) {
@@ -1547,11 +1554,27 @@ public class OutputFormFactory {
       } else {
         showOperator = true;
       }
-      convert(buf, timesAST.get(i), oper.getPrecedence(), false);
+      convertNested(buf, timesAST.get(i), S.Times, oper.getPrecedence());
     }
     if (currPrecedence < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * Convert an argument of a sum or product. Inside a held expression an argument with the same
+   * <code>head</code> keeps its parentheses, <code>HoldForm(a*b*(c*d))</code>, so that it reads
+   * back as the nested expression.
+   */
+  private void convertNested(final Appendable buf, final IExpr arg, final ISymbol head,
+      final int precedence) throws IOException {
+    if (fHeldDepth > 0 && arg.isAST(head) && arg.size() > 2) {
+      append(buf, "(");
+      convert(buf, arg, Precedence.NO_PRECEDENCE, false);
+      append(buf, ")");
+      return;
+    }
+    convert(buf, arg, precedence, false);
   }
 
   // public void convertApplyOperator(final Appendable buf, final IAST list, final InfixOperator
@@ -2133,14 +2156,33 @@ public class OutputFormFactory {
                 return;
               }
               break;
-            case ID.Defer:
-            case ID.HoldForm:
-              // InputForm shows HoldForm(...), so it reads back held
-              if (list.isAST1() && !(fInputForm && list.isAST(S.HoldForm))) {
-                convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+            case ID.CForm:
+            case ID.FortranForm:
+              // the display wrapper shows the C or Fortran text; InputForm keeps the wrapper
+              if (list.isAST1() && !fInputForm) {
+                append(buf, list.isAST(S.CForm) ? CodeFormPrinter.cForm(list.arg1())
+                    : CodeFormPrinter.fortranForm(list.arg1()));
                 return;
               }
               break;
+            case ID.Defer:
+            case ID.HoldForm:
+            case ID.Hold:
+            case ID.HoldComplete:
+              // the arguments of a held expression keep the nesting of their sums and products
+              fHeldDepth++;
+              try {
+                // InputForm shows HoldForm(...), so it reads back held
+                if (list.isAST1() && (list.isAST(S.Defer) || list.isAST(S.HoldForm))
+                    && !(fInputForm && list.isAST(S.HoldForm))) {
+                  convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+                } else {
+                  convertAST(buf, list);
+                }
+              } finally {
+                fHeldDepth--;
+              }
+              return;
             case ID.DirectedInfinity:
               if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
                 if (list.isAST0()) {

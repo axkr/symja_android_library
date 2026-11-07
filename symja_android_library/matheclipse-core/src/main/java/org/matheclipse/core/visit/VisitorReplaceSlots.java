@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -146,6 +147,11 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
   @Override
   protected IExpr visitAST(IAST ast) {
+    if (ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) && ast.head().isSymbol()) {
+      // an evaluated list of numbers or strings has no slot: a large literal in the body of a pure
+      // function isn't walked at every application
+      return F.NIL;
+    }
     // One pass, one source index and one destination index. The previous two-loop form advanced the
     // source index only when a SlotSequence was in range, so an out-of-range one was read twice and
     // removed twice, which threw IndexOutOfBoundsException.
