@@ -3,6 +3,7 @@ package org.matheclipse.external.apfloat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.Aprational;
 import org.junit.jupiter.api.Tag;
@@ -134,5 +135,40 @@ public class ApcomplexAppellMathTest
         // both arguments outside of the unit circle in every transformation
         assertThrows(ArithmeticException.class, () -> f1(q(7, 10), q(13, 10), q(2, 5), q(29, 10),
                                                          new Apcomplex(q(3, 2), q(2, 1)), new Apcomplex(q(3, 2), q(-2, 1))));
+    }
+
+    private static Apcomplex euler(Apcomplex a, Apcomplex b1, Apcomplex b2, Apcomplex c, Apcomplex x, Apcomplex y, boolean machine)
+    {
+        return ApcomplexAppellMath.appellF1EulerIntegral(a, b1, b2, c, x, y, 30, machine);
+    }
+
+    @Test
+    @Tag("slow")
+    public void testEulerIntegralAgainstTheSeries()
+    {
+        // inside of the unit circle, where the series is summed
+        Apcomplex series = f1(q(1, 1), q(2, 1), q(3, 1), q(4, 1), q(1, 10), q(1, 5));
+        assertClose("Euler integral F1(1; 2, 3; 4; 1/10, 1/5)", series, euler(q(1, 1), q(2, 1), q(3, 1), q(4, 1), q(1, 10), q(1, 5), false), 28);
+        // the double sum reaches machine precision
+        assertClose("machine Euler integral F1(1; 2, 3; 4; 1/10, 1/5)", series, euler(q(1, 1), q(2, 1), q(3, 1), q(4, 1), q(1, 10), q(1, 5), true), 12);
+        // a transformed argument, with complex parameters
+        Apcomplex a = new Apcomplex(q(1, 3), q(1, 4));
+        series = f1(a, q(1, 2), q(1, 2), q(4, 3), q(-2, 1), q(1, 7));
+        assertClose("Euler integral F1(1/3+I/4; 1/2, 1/2; 4/3; -2, 1/7)", series, euler(a, q(1, 2), q(1, 2), q(4, 3), q(-2, 1), q(1, 7), false), 28);
+    }
+
+    @Test
+    @Tag("slow")
+    public void testEulerIntegralOnTheCut()
+    {
+        // F1(a; b1, b2; c; x, x) = 2F1(a, b1 + b2; c; x): for x > 1 both take the limit from below the cut
+        Apcomplex x = q(2, 1);
+        Apcomplex hypergeometric = ApcomplexMath.hypergeometric2F1(q(1, 2), q(5, 6), q(3, 2), x);
+        assertClose("Euler integral F1(1/2; 1/2, 1/3; 3/2; 2, 2)", hypergeometric, euler(q(1, 2), q(1, 2), q(1, 3), q(3, 2), x, x, false), 27);
+        assertClose("machine Euler integral F1(1/2; 1/2, 1/3; 3/2; 2, 2)", hypergeometric, euler(q(1, 2), q(1, 2), q(1, 3), q(3, 2), x, x, true), 12);
+        // Re(c) > Re(a) > 0 doesn't hold
+        assertThrows(ArithmeticException.class, () -> euler(q(3, 2), q(1, 2), q(1, 3), q(1, 2), x, x, false));
+        // the integral diverges at t = 1/x: the exponent of 1 - x t is -b1 - b2 <= -1
+        assertThrows(ArithmeticException.class, () -> euler(q(1, 2), q(1, 2), q(1, 2), q(3, 2), x, x, false));
     }
 }

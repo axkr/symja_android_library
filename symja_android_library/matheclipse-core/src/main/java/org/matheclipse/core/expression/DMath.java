@@ -16,10 +16,10 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.eval.EvalEngine;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.BesselIK;
-import org.matheclipse.core.numerics.functions.ComplexGamma;
 import org.matheclipse.core.numerics.functions.BesselJY;
+import org.matheclipse.core.numerics.functions.ComplexGamma;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DMath {
@@ -428,8 +428,8 @@ public class DMath {
   public static Apcomplex besselComplex(BinaryOperator<Apcomplex> function,
       BinaryOperator<Apcomplex> library, INumber nu, INumber z) {
     final int digits = (int) ParserConfig.MACHINE_PRECISION + 1;
-    final Apcomplex order = CarlsonArbitraryPrecision.apcomplex(nu, digits);
-    final Apcomplex argument = CarlsonArbitraryPrecision.apcomplex(z, digits);
+    final Apcomplex order = WorkingPrecision.apcomplex(nu, digits);
+    final Apcomplex argument = WorkingPrecision.apcomplex(z, digits);
     if (argument.real().signum() == 0 && argument.imag().signum() == 0) {
       return library.apply(nu.apcomplexValue(), z.apcomplexValue());
     }

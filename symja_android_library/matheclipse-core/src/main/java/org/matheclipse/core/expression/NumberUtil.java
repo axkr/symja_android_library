@@ -3,9 +3,7 @@ package org.matheclipse.core.expression;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -184,14 +182,6 @@ public class NumberUtil {
       313, 1173, 671, 221, 695, 1509, 271, 1619, 89, 565, 127, 1405, 1431, 1659, 239, 1101, 1159,
       1067, 607, 1565, 905, 1755, 1231, 1299, 665, 373, 1985, 701, 1879, 1221, 849, 627, 1465, 789,
       543, 1187, 1591, 923, 1905, 979, 1241, 181};
-
-  public static Apcomplex apcomplexValue(Complex c) {
-    return new Apcomplex(new Apfloat(c.getReal()), new Apfloat(c.getImaginary()));
-  }
-
-  public static Apcomplex apfloatValue(double d) {
-    return new Apfloat(d);
-  }
 
   /**
    * 

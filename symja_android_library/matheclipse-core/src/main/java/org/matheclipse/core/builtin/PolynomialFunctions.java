@@ -4,7 +4,6 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apfloat;
 import org.apfloat.Apcomplex;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
@@ -2535,9 +2534,9 @@ public class PolynomialFunctions {
       }
       Apcomplex z = ((INumber) value).apcomplexValue();
       if (precision < 0) {
-        return CarlsonArbitraryPrecision.toNumber(z, z.imag().signum() == 0, false);
+        return WorkingPrecision.toNumber(z, z.imag().signum() == 0, false);
       }
-      return CarlsonArbitraryPrecision.round(z, digits);
+      return WorkingPrecision.round(z, digits);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
       return F.NIL;

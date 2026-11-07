@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.external.apfloat.ApfloatRounding;
 import org.matheclipse.external.apfloat.ApfloatSignificance;
 import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
@@ -31,7 +32,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.exception.SymjaMathException;
-import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
@@ -1361,8 +1361,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr coshIntegral() {
-    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
-      Apcomplex value = ExponentialIntegrals.coshIntegralSeries(fApfloat, h().precision());
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      Apcomplex value = ApcomplexExpIntegralMath.coshIntegralSeries(fApfloat, h().precision());
       return isNonNegativeResult() ? valueOf(value.real()) : F.complexNum(value);
     }
     try {
@@ -1378,8 +1378,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr cosIntegral() {
-    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
-      Apcomplex value = ExponentialIntegrals.cosIntegralSeries(fApfloat, h().precision());
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      Apcomplex value = ApcomplexExpIntegralMath.cosIntegralSeries(fApfloat, h().precision());
       return isNonNegativeResult() ? valueOf(value.real()) : F.complexNum(value);
     }
     try {
@@ -1625,9 +1625,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr expIntegralEi() {
-    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
       // real on the whole real line
-      return valueOf(ExponentialIntegrals.expIntegralEiSeries(fApfloat, h().precision()).real());
+      return valueOf(
+          ApcomplexExpIntegralMath.expIntegralEiSeries(fApfloat, h().precision()).real());
     }
     try {
       return valueOf(h().expIntegralEi(fApfloat));
@@ -2837,17 +2838,18 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr sinhIntegral() {
-    if (ExponentialIntegrals.isSeriesArgument(fApfloat)) {
-      return valueOf(ExponentialIntegrals.sinhIntegralSeries(fApfloat, h().precision()).real());
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      return valueOf(
+          ApcomplexExpIntegralMath.sinhIntegralSeries(fApfloat, h().precision()).real());
     }
     return valueOf(h().sinhIntegral(fApfloat));
   }
 
   @Override
   public IExpr sinIntegral() {
-    if (Math.abs(fApfloat.doubleValue()) <= ExponentialIntegrals.SIN_INTEGRAL_SERIES_MAX_ABS) {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
       return valueOf(
-          ExponentialIntegrals.sinIntegralSeries(fApfloat, h().precision()).real());
+          ApcomplexExpIntegralMath.sinIntegralSeries(fApfloat, h().precision()).real());
     }
     return valueOf(h().sinIntegral(fApfloat));
   }

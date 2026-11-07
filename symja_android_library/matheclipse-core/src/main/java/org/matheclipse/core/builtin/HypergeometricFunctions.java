@@ -47,9 +47,8 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numerics.functions.AppellF1EulerIntegral;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.external.apfloat.ApcomplexAppellMath;
 import org.matheclipse.parser.client.ParserConfig;
 
@@ -169,13 +168,13 @@ public class HypergeometricFunctions {
       final long precision =
           arbitraryMode ? engine.getNumericPrecision() : ParserConfig.MACHINE_PRECISION;
       // additional digits for the evaluation, which are rounded away in the result
-      final int digits = (int) precision + CarlsonArbitraryPrecision.GUARD_DIGITS;
-      Apcomplex a = CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits);
-      Apcomplex b1 = CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits);
-      Apcomplex b2 = CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits);
-      Apcomplex c = CarlsonArbitraryPrecision.apcomplex(ast.arg4(), digits);
-      Apcomplex x = CarlsonArbitraryPrecision.apcomplex(ast.arg5(), digits);
-      Apcomplex y = CarlsonArbitraryPrecision.apcomplex(ast.get(6), digits);
+      final int digits = (int) precision + WorkingPrecision.GUARD_DIGITS;
+      Apcomplex a = WorkingPrecision.apcomplex(ast.arg1(), digits);
+      Apcomplex b1 = WorkingPrecision.apcomplex(ast.arg2(), digits);
+      Apcomplex b2 = WorkingPrecision.apcomplex(ast.arg3(), digits);
+      Apcomplex c = WorkingPrecision.apcomplex(ast.arg4(), digits);
+      Apcomplex x = WorkingPrecision.apcomplex(ast.arg5(), digits);
+      Apcomplex y = WorkingPrecision.apcomplex(ast.get(6), digits);
       Apcomplex value;
       try {
         // the series, its transformations and the arguments which are covered:
@@ -184,14 +183,18 @@ public class HypergeometricFunctions {
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         // a branch cut, a pole, arguments for which there is no series, or a failure of apfloat
         Errors.rethrowsInterruptException(ex);
-        // the Euler integral covers the branch cuts and large arguments if Re(c) > Re(a) > 0
-        value = AppellF1EulerIntegral.value(a, b1, b2, c, x, y, precision, !arbitraryMode);
-        if (value == null) {
+        try {
+          // the Euler integral covers the branch cuts and large arguments if Re(c) > Re(a) > 0
+          value = ApcomplexAppellMath.appellF1EulerIntegral(a, b1, b2, c, x, y, precision,
+              !arbitraryMode);
+        } catch (ArithmeticException | ApfloatRuntimeException integralException) {
+          // the integral doesn't exist for these parameters or doesn't converge
+          Errors.rethrowsInterruptException(integralException);
           return F.NIL;
         }
       }
       if (arbitraryMode) {
-        return CarlsonArbitraryPrecision.round(value, precision);
+        return WorkingPrecision.round(value, precision);
       }
       double re = value.real().doubleValue();
       double im = value.imag().doubleValue();
@@ -2295,7 +2298,7 @@ public class HypergeometricFunctions {
         return F.NIL;
       }
       final boolean arbitrary = engine.isArbitraryMode();
-      final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
+      final int digits = WorkingPrecision.digits(arbitrary, engine);
       try {
         IAST aList = (IAST) a;
         IAST bList = (IAST) b;
@@ -2303,19 +2306,19 @@ public class HypergeometricFunctions {
         Apcomplex[] lower = new Apcomplex[bList.argSize()];
         boolean real = c.isReal();
         for (int i = 0; i < upper.length; i++) {
-          upper[i] = CarlsonArbitraryPrecision.apcomplex(aList.get(i + 1), digits);
+          upper[i] = WorkingPrecision.apcomplex(aList.get(i + 1), digits);
           real &= aList.get(i + 1).isReal();
         }
         for (int i = 0; i < lower.length; i++) {
-          lower[i] = CarlsonArbitraryPrecision.apcomplex(bList.get(i + 1), digits);
+          lower[i] = WorkingPrecision.apcomplex(bList.get(i + 1), digits);
           real &= bList.get(i + 1).isReal();
         }
-        Apcomplex z = CarlsonArbitraryPrecision.apcomplex(c, digits);
+        Apcomplex z = WorkingPrecision.apcomplex(c, digits);
         Apcomplex value = ApcomplexHypergeometricMath.hypergeometricPFQ(upper, lower, z);
         // real off the cut from 1 along the real axis
         real &= upper.length <= lower.length || z.real().compareTo(Apfloat.ONE) < 0
             || value.imag().signum() == 0;
-        return CarlsonArbitraryPrecision.toNumber(value, real, arbitrary);
+        return WorkingPrecision.toNumber(value, real, arbitrary);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         return F.NIL;

@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -27,7 +28,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -1042,16 +1042,16 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr coshIntegral() {
-    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
-      return valueOf(ExponentialIntegrals.coshIntegralSeries(fApcomplex, h().precision()));
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.coshIntegralSeries(fApcomplex, h().precision()));
     }
     return valueOf(h().coshIntegral(fApcomplex));
   }
 
   @Override
   public IExpr cosIntegral() {
-    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
-      return valueOf(ExponentialIntegrals.cosIntegralSeries(fApcomplex, h().precision()));
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.cosIntegralSeries(fApcomplex, h().precision()));
     }
     return valueOf(h().cosIntegral(fApcomplex));
   }
@@ -1259,8 +1259,8 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr expIntegralEi() {
-    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
-      return valueOf(ExponentialIntegrals.expIntegralEiSeries(fApcomplex, h().precision()));
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.expIntegralEiSeries(fApcomplex, h().precision()));
     }
     try {
       return valueOf(h().expIntegralEi(fApcomplex));
@@ -2198,17 +2198,16 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr sinhIntegral() {
-    if (ExponentialIntegrals.isSeriesArgument(fApcomplex)) {
-      return valueOf(ExponentialIntegrals.sinhIntegralSeries(fApcomplex, h().precision()));
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.sinhIntegralSeries(fApcomplex, h().precision()));
     }
     return valueOf(h().sinhIntegral(fApcomplex));
   }
 
   @Override
   public IExpr sinIntegral() {
-    if (ApcomplexMath.abs(fApcomplex).doubleValue()
-        <= ExponentialIntegrals.SIN_INTEGRAL_SERIES_MAX_ABS) {
-      return valueOf(ExponentialIntegrals.sinIntegralSeries(fApcomplex, h().precision()));
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.sinIntegralSeries(fApcomplex, h().precision()));
     }
     return valueOf(h().sinIntegral(fApcomplex));
   }

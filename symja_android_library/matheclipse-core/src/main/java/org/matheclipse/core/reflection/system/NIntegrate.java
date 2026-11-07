@@ -41,7 +41,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numerics.integral.ApfloatDoubleExponential;
+import org.matheclipse.external.apfloat.ApfloatDoubleExponential;
 import org.matheclipse.core.numerics.integral.ClenshawCurtis;
 import org.matheclipse.core.numerics.integral.GaussKronrod;
 import org.matheclipse.core.numerics.integral.GaussLobatto;
