@@ -1475,12 +1475,17 @@ public abstract class AbstractFractionSym implements IFraction {
   // CPD-OFF literal constant table
   public int compareTo(IExpr expr) {
     if (expr.isNumber() && !expr.isReal()) {
+      if (expr.isInexactNumber()) {
+        // the same order from both sides: an inexact complex number compares its real part
+        // numerically
+        return -expr.compareTo(this);
+      }
       int c = this.compareTo(expr.re());
       if (c != 0) {
         return c;
       }
-      IExpr im = expr.im();
-      return im.isPositive() ? -1 : im.isNegative() ? 1 : IExpr.compareHierarchy(this, expr);
+      // a real number comes before the exact complex numbers with the same real part
+      return -1;
     }
     return IExpr.compareHierarchy(this, expr);
   }

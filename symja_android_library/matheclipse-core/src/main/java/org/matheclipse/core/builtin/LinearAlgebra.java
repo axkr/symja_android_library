@@ -6606,6 +6606,15 @@ public final class LinearAlgebra {
    */
   private static class NullSpace extends AbstractFunctionOptionEvaluator {
 
+    /** A fraction, or a complex number with a fraction as real or imaginary part. */
+    private static boolean isFractionalNumber(IExpr x) {
+      if (x.isFraction()) {
+        return true;
+      }
+      return x.isComplex()
+          && (((IComplex) x).re().isFraction() || ((IComplex) x).im().isFraction());
+    }
+
     /**
      * Multiply the row vectors by the denominators {@link S#LCM} if all values are of type
      * {@link IRational} or of type {@link IComplex} (a complex number with rational real and
@@ -6675,7 +6684,10 @@ public final class LinearAlgebra {
               return F.CEmptyList;
             }
             IASTMutable nullspaceVectors = Convert.matrix2List(nullspace);
-            pullOutDenominators(nullspaceVectors, engine);
+            if (ast.arg1().isFree(NullSpace::isFractionalNumber, false)) {
+              // a matrix with fractions keeps the free variable 1: {{1/2,1/3}} gives {{-2/3,1}}
+              pullOutDenominators(nullspaceVectors, engine);
+            }
 
             // the vectors come from the raw field operations of the row reduction, which leave
             // unrationalized denominators, so normalize the entries

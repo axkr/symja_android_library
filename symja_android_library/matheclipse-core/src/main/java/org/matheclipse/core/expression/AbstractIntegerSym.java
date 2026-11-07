@@ -768,12 +768,17 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   // CPD-OFF Integer and Fraction specialisation of hot number arithmetic
   public int compareTo(final IExpr expr) {
     if (expr.isNumber() && !expr.isReal()) {
+      if (expr.isInexactNumber()) {
+        // the same order from both sides: an inexact complex number compares its real part
+        // numerically
+        return -expr.compareTo(this);
+      }
       int c = this.compareTo(expr.re());
       if (c != 0) {
         return c;
       }
-      IExpr im = expr.im();
-      return im.isPositive() ? -1 : im.isNegative() ? 1 : IExpr.compareHierarchy(this, expr);
+      // a real number comes before the exact complex numbers with the same real part
+      return -1;
     }
     return IExpr.compareHierarchy(this, expr);
   }

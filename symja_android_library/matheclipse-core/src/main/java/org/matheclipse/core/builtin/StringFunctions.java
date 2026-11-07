@@ -1116,18 +1116,37 @@ public final class StringFunctions {
    * <code>LongestCommonSequence[a, b]</code>: the longest sequence, not necessarily contiguous, of
    * the characters of two strings or the elements of two lists which occurs in both.
    * <code>LongestCommonSubsequence[a, b]</code>: the longest contiguous one.
+   * <code>LongestCommonSubsequencePositions[a, b]</code>: the spans
+   * <code>{{start1, end1}, {start2, end2}}</code> of that contiguous run in <code>a</code> and
+   * <code>b</code>, or <code>{}</code> if there is none.
    */
   private static class LongestCommonSequence extends AbstractFunctionEvaluator {
     private final boolean contiguous;
+    private final boolean positions;
 
-    LongestCommonSequence(boolean contiguous) {
+    LongestCommonSequence(boolean contiguous, boolean positions) {
       this.contiguous = contiguous;
+      this.positions = positions;
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
+      if (positions) {
+        final boolean strings = a.isString() && b.isString();
+        if (!strings && !(a.isList() && b.isList())) {
+          return F.NIL;
+        }
+        List<IExpr> x = strings ? characters(a.toString()) : SequenceAlignment.elements((IAST) a);
+        List<IExpr> y = strings ? characters(b.toString()) : SequenceAlignment.elements((IAST) b);
+        int[] run = longestRun(x, y, engine);
+        if (run[2] == 0) {
+          return F.CEmptyList;
+        }
+        return F.list(F.list(F.ZZ(run[0] + 1), F.ZZ(run[0] + run[2])),
+            F.list(F.ZZ(run[1] + 1), F.ZZ(run[1] + run[2])));
+      }
       if (a.isString() && b.isString()) {
         List<IExpr> x = characters(a.toString());
         List<IExpr> y = characters(b.toString());
@@ -1159,32 +1178,63 @@ public final class StringFunctions {
       return list;
     }
 
+    /**
+     * The longest contiguous run occurring in both lists, as <code>{startX, startY, length}</code>
+     * with 0-based starts. Among runs of equal length the one starting first in the longer list
+     * wins (in <code>x</code> if both have the same length), then the one starting first in the
+     * other list.
+     */
+    private static int[] longestRun(List<IExpr> x, List<IExpr> y, EvalEngine engine) {
+      final int n = x.size();
+      final int m = y.size();
+      final boolean xFirst = n >= m;
+      // len[j] is the length of the common run ending at x[i-1] and y[j-1]
+      int[] previous = new int[m + 1];
+      int[] len = new int[m + 1];
+      int[] best = {0, 0, 0};
+      for (int i = 1; i <= n; i++) {
+        engine.checkTimeLimit();
+        for (int j = 1; j <= m; j++) {
+          len[j] = x.get(i - 1).equals(y.get(j - 1)) ? previous[j - 1] + 1 : 0;
+          int length = len[j];
+          if (length == 0 || length < best[2]) {
+            continue;
+          }
+          int startX = i - length;
+          int startY = j - length;
+          if (length > best[2] || (xFirst //
+              ? startX < best[0] || (startX == best[0] && startY < best[1])
+              : startY < best[1] || (startY == best[1] && startX < best[0]))) {
+            best[0] = startX;
+            best[1] = startY;
+            best[2] = length;
+          }
+        }
+        int[] swap = previous;
+        previous = len;
+        len = swap;
+      }
+      return best;
+    }
+
     private List<IExpr> common(List<IExpr> x, List<IExpr> y) {
+      if (contiguous) {
+        int[] run = longestRun(x, y, EvalEngine.get());
+        return new java.util.ArrayList<>(x.subList(run[0], run[0] + run[2]));
+      }
       int n = x.size();
       int m = y.size();
       int[][] len = new int[n + 1][m + 1];
-      int bestLength = 0;
-      int bestEnd = 0;
       for (int i = n - 1; i >= 0; i--) {
         for (int j = m - 1; j >= 0; j--) {
           if (x.get(i).equals(y.get(j))) {
             len[i][j] = len[i + 1][j + 1] + 1;
-          } else if (!contiguous) {
+          } else {
             len[i][j] = Math.max(len[i + 1][j], len[i][j + 1]);
-          }
-          if (contiguous && len[i][j] > bestLength) {
-            bestLength = len[i][j];
-            bestEnd = i;
           }
         }
       }
       List<IExpr> result = new java.util.ArrayList<>();
-      if (contiguous) {
-        for (int i = bestEnd; i < bestEnd + bestLength; i++) {
-          result.add(x.get(i));
-        }
-        return result;
-      }
       int i = 0;
       int j = 0;
       while (i < n && j < m) {
@@ -1821,8 +1871,9 @@ public final class StringFunctions {
       S.FileNameDrop.setEvaluator(new FileNameDrop());
       S.FileNameJoin.setEvaluator(new FileNameJoin());
       S.ToFileName.setEvaluator(new ToFileName());
-      S.LongestCommonSequence.setEvaluator(new LongestCommonSequence(false));
-      S.LongestCommonSubsequence.setEvaluator(new LongestCommonSequence(true));
+      S.LongestCommonSequence.setEvaluator(new LongestCommonSequence(false, false));
+      S.LongestCommonSubsequence.setEvaluator(new LongestCommonSequence(true, false));
+      S.LongestCommonSubsequencePositions.setEvaluator(new LongestCommonSequence(true, true));
       S.SequenceAlignment.setEvaluator(new SequenceAlignment());
       S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());

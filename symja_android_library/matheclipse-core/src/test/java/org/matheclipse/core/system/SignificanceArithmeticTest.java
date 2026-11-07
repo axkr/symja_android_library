@@ -406,11 +406,13 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
     // the error 10^-5 of 1.0000001`5 covers 1
     check("ArcTanh(1.0000001`5)", //
         "Indeterminate");
-    // exact and machine arguments keep their values
+    // an exact argument keeps its value; a machine number may be the rounding of either side
     check("ArcTanh(1)", //
         "Infinity");
     check("ArcTanh(1.0)", //
-        "Infinity");
+        "Indeterminate");
+    check("ArcTanh(-1.0)", //
+        "Indeterminate");
     // the condition number 0.999/((1-0.999^2)*ArcTanh(0.999)) is 131.5
     check("Precision(ArcTanh(0.999`15))", //
         "12.88105");

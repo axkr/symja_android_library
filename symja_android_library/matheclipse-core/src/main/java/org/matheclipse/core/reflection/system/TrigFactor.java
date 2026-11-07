@@ -78,7 +78,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       return resultA;
     }
 
-    IExpr expanded = engine.evaluate(F.TrigExpand(arg));
+    IExpr expanded = engine.evaluate(TrigExpand.expandAngles(arg, engine));
     if (expanded.leafCount() > TRIG_FACTOR_EXPANSION_LEAF_LIMIT) {
       return resultA;
     }

@@ -1575,7 +1575,28 @@ public class ExpTrigsFunctions {
     @Override
     public double applyAsDouble(double operand) {
     // CPD-ON
-      return FastMath.atanh(operand);
+      return atanh(operand);
+    }
+
+    /**
+     * The inverse hyperbolic tangent of a <code>double</code> as
+     * <code>1/2*Log1p(2*x/(1-x))</code>, with the identity <code>2*x/(1-x) == 2*x + 2*x^2/(1-x)</code>
+     * below <code>1/2</code> where the quotient would lose bits. Rounded correctly far more often
+     * than <code>FastMath.atanh()</code>, which is off in the last digit for <code>0.4</code>.
+     */
+    private static double atanh(double x) {
+      final double ax = Math.abs(x);
+      if (ax == 1.0) {
+        // Indeterminate: the machine number may be the rounding of either side of the pole
+        return Double.NaN;
+      }
+      if (!(ax < 1.0)) {
+        return FastMath.atanh(x);
+      }
+      final double t = ax + ax;
+      final double r =
+          ax < 0.5 ? 0.5 * Math.log1p(t + t * ax / (1.0 - ax)) : 0.5 * Math.log1p(t / (1.0 - ax));
+      return Math.copySign(r, x);
     }
 
     @Override
@@ -1602,7 +1623,11 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      double val = FastMath.atanh(arg1);
+      if (Math.abs(arg1) == 1.0) {
+        // the machine number may be the rounding of a value on either side of the pole
+        return S.Indeterminate;
+      }
+      double val = atanh(arg1);
       if (Double.isNaN(val)) {
         return e1ComplexArg(new Complex(arg1));
       }
@@ -1614,7 +1639,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
-      return FastMath.atanh(stack[top]);
+      return atanh(stack[top]);
     }
 
     @Override
@@ -3942,7 +3967,8 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isZero()) {
-        return F.C1;
+        // a machine zero gives a machine one
+        return arg1.isMachineNumber() ? F.CD1 : F.C1;
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
@@ -3964,7 +3990,7 @@ public class ExpTrigsFunctions {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         if (z.isZero()) {
-          return F.C1;
+          return z.isMachineNumber() ? F.CD1 : F.C1;
         }
         return z.sinc();
       }

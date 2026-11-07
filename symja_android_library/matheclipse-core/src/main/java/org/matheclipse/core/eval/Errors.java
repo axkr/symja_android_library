@@ -396,6 +396,9 @@ public class Errors {
       "listofints", "List of Java int numbers expected in `1`.", //
       "listoflongs", "List of Java long numbers expected in `1`.", //
       "listrp", "List or SparseArray or structured array expected at position `1` in `2`.", //
+      "loc", "The location function `1` evaluated to a list.", //
+      "loc2",
+      "The location function `1` evaluated to a list for one or more of the columns.", //
       "locked", "Symbol `1` is locked.", //
       "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
       "lrank", "Rank `1` is incompatible with group of order `2`.", //
@@ -650,6 +653,9 @@ public class Errors {
       "Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.", //
       "sandbox", "The operation `1` is not allowed in sandbox mode.", //
       "schurf", "`1` has received a matrix with infinite precision.", //
+      "scl", "The scale function `1` evaluated to a list or zero.", //
+      "scl2",
+      "The scale function `1` evaluated to a list or zero for one or more of the columns.", //
       "sclr", "The scalar expression `1` does not have a `2`.", //
       "sdatc", "Coefficient specification `1` in `2` is not a list.", //
       "sdatd",

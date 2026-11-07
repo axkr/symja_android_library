@@ -2162,8 +2162,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // 4. Roots for Tanh(x)^2 are 3/4 and -3
     // 5. Tanh(x) evaluates to +/- Sqrt(3)/2 (along with the complex roots)
     check("Solve(4*Sech(x)^4 - 17*Sech(x)^2 + 4 == 0, x)", //
-        "{{x->ConditionalExpression(-I*2/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n" //
-            + "I*1/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*1/3*Pi+I*2*Pi*C(\n" //
+        "{{x->ConditionalExpression(-I*1/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n" //
+            + "I*1/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-I*2/3*Pi+I*2*Pi*C(\n" //
             + "1),C(1)∈Integers)},{x->ConditionalExpression(I*2/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-ArcCosh(-\n" //
             + "2)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcCosh(-2)+I*2*Pi*C(1),C(\n" //
             + "1)∈Integers)},{x->ConditionalExpression(-ArcCosh(2)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcCosh(\n" //
@@ -3448,7 +3448,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Checks if the solver correctly switches domains without throwing exceptions in the linear
     // branch.
     check("Solve(x^4 + x^2 == 0, x)", //
-        "{{x->-I},{x->0},{x->0},{x->I}}");
+        "{{x->0},{x->0},{x->-I},{x->I}}");
   }
 
   @Test

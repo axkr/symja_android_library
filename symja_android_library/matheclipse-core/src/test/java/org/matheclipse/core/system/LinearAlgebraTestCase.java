@@ -2521,14 +2521,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // TODO improve Zero tests
     // see https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html#zero-testing
     check("NullSpace({{-2*Cosh(q/3),Exp(-q),1},{Exp(q),-2*Cosh(q/3),1},{1,1,-2*Cosh(q/3)}})", //
-        "{{(-1+3*E^q+E^(2*q)-2*E^q*Cosh(q/3)+10*E^(2*q)*Cosh(q/3)-4*E^(3*q)*Cosh(q/3)-2*Cosh(\n"//
-            + "2/3*q)+4*E^q*Cosh(2/3*q)+2*E^(2*q)*Cosh(2/3*q)+6*E^(2*q)*Cosh(q)-2*E^(3*q)*Cosh(q)+\n"//
-            + "2*E^q*Cosh(4/3*q)+4*E^(2*q)*Cosh(4/3*q)+2*E^q*Cosh(5/3*q)+2*E^(2*q)*Cosh(5/3*q)+\n"//
-            + "2*E^(2*q)*Cosh(2*q))/(E^(2*q)*(7+12*Cosh(2/3*q)+6*Cosh(4/3*q)+2*Cosh(2*q))),(E^q+\n"//
-            + "3*E^(2*q)-E^(3*q)-4*Cosh(q/3)+10*E^q*Cosh(q/3)-2*E^(2*q)*Cosh(q/3)+2*E^q*Cosh(2/\n"//
-            + "3*q)+4*E^(2*q)*Cosh(2/3*q)-2*E^(3*q)*Cosh(2/3*q)-2*Cosh(q)+6*E^q*Cosh(q)+4*E^q*Cosh(\n"//
-            + "4/3*q)+2*E^(2*q)*Cosh(4/3*q)+2*E^q*Cosh(5/3*q)+2*E^(2*q)*Cosh(5/3*q)+2*E^q*Cosh(\n"//
-            + "2*q))/(E^q*(7+12*Cosh(2/3*q)+6*Cosh(4/3*q)+2*Cosh(2*q))),1}}");
+        "{{(1+3*E^(2/3*q)+6*E^(4/3*q)+7*E^(2*q)+6*E^(8/3*q)+3*E^(10/3*q)+E^(4*q))/(E^(7/3*q)*(\n"//
+            + "7+12*Cosh(2/3*q)+6*Cosh(4/3*q)+2*Cosh(2*q))),(3+E^(-2/3*q)+6*E^(2/3*q)+7*E^(4/3*q)+\n"//
+            + "6*E^(2*q)+3*E^(8/3*q)+E^(10/3*q))/(E^q*(7+12*Cosh(2/3*q)+6*Cosh(4/3*q)+2*Cosh(2*q))),\n"//
+            + "1}}");
 
     check("NullSpace({{10, 4, -6, -4}, {4, 10, -15, -4}, {0, 0, 0, 0}, {4, 4, -6, 2}} )", //
         "{{0,3,2,0}}");

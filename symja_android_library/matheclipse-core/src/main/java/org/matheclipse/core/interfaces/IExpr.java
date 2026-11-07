@@ -357,6 +357,10 @@ public interface IExpr
    * 
    */
   /* private */ static int compareHierarchy(IExpr a, IExpr b) {
+    if (b.isAssociation() && !a.isAssociation()) {
+      // an association orders itself against everything else
+      return -b.compareTo(a);
+    }
     return Integer.compare(a.hierarchy(), b.hierarchy());
   }
 

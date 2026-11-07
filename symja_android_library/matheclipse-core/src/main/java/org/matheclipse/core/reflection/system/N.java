@@ -220,6 +220,11 @@ public final class N extends AbstractCoreFunctionEvaluator {
       // an exact expression: lost working digits are calculated again, they are no errors of the
       // input
       final boolean exactInput = arg1.isFree(IExpr::isInexactNumber, false);
+      if (exactInput && requestedPrecision > 0.0 && requestedPrecision < 1.0) {
+        // a precision below one digit: an arbitrary precision number which says so, computed with
+        // the digits of a machine number and guard digits
+        nDigitPrecision = FRACTIONAL_PRECISION_DIGITS;
+      }
       IExpr result;
       if (exactInput) {
         engine.suspendSignificance();
@@ -557,6 +562,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
     }
     return result;
   }
+
+  /** The working digits of <code>N(x, p)</code> for a precision <code>0 &lt; p &lt; 1</code>. */
+  private static final long FRACTIONAL_PRECISION_DIGITS = 20;
 
   /** Working digits beyond the ones a reported loss asks for. */
   private static final long GUARD_DIGITS = 3;

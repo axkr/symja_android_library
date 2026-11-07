@@ -44,6 +44,7 @@ import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
+import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.sympy.simplify.GammaSimp;
 import org.matheclipse.core.sympy.simplify.SqrtDenest;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
@@ -535,6 +536,18 @@ public class SimplifyUtil extends VisitorExpr {
   public static IExpr simplifyStep(IExpr arg1, IExpr defaultResult,
       Function<IExpr, Long> complexityFunction, long minCounter, boolean fullSimplify,
       boolean noApart, EvalEngine engine) {
+    return simplifyStep(arg1, defaultResult, complexityFunction, minCounter, fullSimplify,
+        fullSimplify, noApart, engine);
+  }
+
+  /**
+   * @param fullSimplify the rewrites of FullSimplify are tried
+   * @param fullSimplifyFunction the function FullSimplify is running, not Simplify with the
+   *        rewrites of FullSimplify for a variable free number
+   */
+  public static IExpr simplifyStep(IExpr arg1, IExpr defaultResult,
+      Function<IExpr, Long> complexityFunction, long minCounter, boolean fullSimplify,
+      boolean fullSimplifyFunction, boolean noApart, EvalEngine engine) {
     long count;
     IExpr temp;
     // One cache for the whole fixpoint loop below. Every pass walks the expression again, and most
@@ -549,7 +562,8 @@ public class SimplifyUtil extends VisitorExpr {
     engine.incSimplifyDepth();
     try {
       temp = runPass(arg1,
-          new SimplifyUtil(complexityFunction, fullSimplify, engine, noApart, transformationCache));
+          new SimplifyUtil(complexityFunction, fullSimplify, fullSimplifyFunction, engine, noApart,
+              transformationCache));
       while (temp.isPresent()) {
         // No early exit on an atom: leafCountSimplify() charges an integer by its number of digits,
         // so an atom is not automatically the cheapest result. Returning one unconditionally made
@@ -562,8 +576,8 @@ public class SimplifyUtil extends VisitorExpr {
         if (count < minCounter) {
           minCounter = count;
           defaultResult = temp;
-          temp = runPass(defaultResult, new SimplifyUtil(complexityFunction, fullSimplify, engine,
-              noApart, transformationCache));
+          temp = runPass(defaultResult, new SimplifyUtil(complexityFunction, fullSimplify,
+              fullSimplifyFunction, engine, noApart, transformationCache));
         } else {
           return defaultResult;
         }
@@ -769,6 +783,75 @@ public class SimplifyUtil extends VisitorExpr {
       result.append(group.isAST1() ? group.arg1() : eval(AlgebraUtil.togetherExpr(group, fEngine)));
     }
     return eval(result);
+  }
+
+  /** The most tangent terms of a sum whose pairs are tried. */
+  private static final int MAX_TANGENT_TERMS = 8;
+
+  /**
+   * Rewrite a difference <code>c*Tan(a)-c*Tan(b)</code> inside a sum as
+   * <code>c*Sec(a)*Sec(b)*Sin(a-b)</code>, and <code>c*Tanh(a)-c*Tanh(b)</code> as
+   * <code>c*Sech(a)*Sech(b)*Sinh(a-b)</code>, if the product weighs less than the difference:
+   * <code>Tan(x+y)-Tan(x)</code> is <code>Sec(x)*Sec(x+y)*Sin(y)</code>, but
+   * <code>Tan(a)-Tan(b)</code> stays.
+   *
+   * @param plusAST the sum
+   * @return the sum with the first such pair rewritten, or {@link F#NIL}
+   */
+  private IExpr tryTangentDifference(IAST plusAST) {
+    int tangents = 0;
+    for (int i = 1; i < plusAST.size(); i++) {
+      if (tangentTerm(plusAST.get(i)) != null) {
+        tangents++;
+      }
+    }
+    if (tangents < 2 || tangents > MAX_TANGENT_TERMS) {
+      return F.NIL;
+    }
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr[] first = tangentTerm(plusAST.get(i));
+      if (first == null) {
+        continue;
+      }
+      for (int j = i + 1; j < plusAST.size(); j++) {
+        IExpr[] second = tangentTerm(plusAST.get(j));
+        if (second == null || first[1] != second[1]
+            || !eval(F.Plus(first[0], second[0])).isZero()) {
+          continue;
+        }
+        // c*Tan(a)-c*Tan(b) == c*Sin(a-b)/(Cos(a)*Cos(b))
+        final boolean circular = first[1] == S.Tan;
+        IExpr a = first[2];
+        IExpr b = second[2];
+        IExpr pair = eval(F.Times(first[0], circular ? F.Sec(a) : F.Sech(a),
+            circular ? F.Sec(b) : F.Sech(b),
+            circular ? F.Sin(F.Subtract(a, b)) : F.Sinh(F.Subtract(a, b))));
+        IExpr difference = F.Plus(plusAST.get(i), plusAST.get(j));
+        if (fComplexityFunction.apply(pair) < fComplexityFunction.apply(difference)) {
+          IASTAppendable result = plusAST.removePositionsAtCopy(new int[] {i, j}, 2);
+          result.append(pair);
+          return eval(result);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Split <code>c*Tan(a)</code> or <code>c*Tanh(a)</code> with a number <code>c</code>.
+   *
+   * @return <code>{c, head, a}</code> or <code>null</code>
+   */
+  private static IExpr[] tangentTerm(IExpr term) {
+    IExpr coefficient = F.C1;
+    if (term.isTimes2() && term.first().isNumber()) {
+      coefficient = term.first();
+      term = term.second();
+    }
+    if (term.isAST1() && (term.head() == S.Tan || term.head() == S.Tanh)) {
+      return new IExpr[] {coefficient, term.head(), term.first()};
+    }
+    return null;
   }
 
   /**
@@ -1304,6 +1387,12 @@ public class SimplifyUtil extends VisitorExpr {
   /** If <code>true</code> we are in full simplify mode (i.e. function FullSimplify) */
   final boolean fFullSimplify;
 
+  /**
+   * If <code>true</code> the function FullSimplify is running; {@link #fFullSimplify} is also set
+   * for the plain Simplify of a variable free number.
+   */
+  final boolean fFullSimplifyFunction;
+
   final boolean fNoApart;
 
   /** The current evlaution engine */
@@ -1322,10 +1411,17 @@ public class SimplifyUtil extends VisitorExpr {
 
   public SimplifyUtil(Function<IExpr, Long> complexityFunction, boolean fullSimplify,
       EvalEngine engine, boolean noApart, Map<IExpr, IExpr> transformationCache) {
+    this(complexityFunction, fullSimplify, fullSimplify, engine, noApart, transformationCache);
+  }
+
+  public SimplifyUtil(Function<IExpr, Long> complexityFunction, boolean fullSimplify,
+      boolean fullSimplifyFunction, EvalEngine engine, boolean noApart,
+      Map<IExpr, IExpr> transformationCache) {
     super();
     fEngine = engine;
     fComplexityFunction = complexityFunction;
     fFullSimplify = fullSimplify;
+    fFullSimplifyFunction = fullSimplifyFunction;
     fNoApart = noApart;
     fTransformationCache = transformationCache;
   }
@@ -2015,6 +2111,211 @@ public class SimplifyUtil extends VisitorExpr {
         x -> x.isPower() && x.exponent().isNegative() && !x.base().isNumericFunction(), true);
   }
 
+  /** The largest sum of square roots whose common factor is searched. */
+  private static final int MAX_RADICAL_SUM_TERMS = 16;
+
+  /**
+   * Pull the common square root factor and the rational content out of a sum of rational multiples
+   * of square roots of rationals: <code>-12*Sqrt(2)-4*Sqrt(6)</code> is
+   * <code>-4*Sqrt(2)*(3+Sqrt(3))</code> and <code>Sqrt(2/5)+3/5*Sqrt(2)</code> is
+   * <code>1/5*Sqrt(2)*(3+Sqrt(5))</code>. The sign of the content is chosen so that the last term of
+   * the remaining sum is positive. For <code>3*Sqrt(2)-8*Sqrt(6)</code> that is
+   * <code>-Sqrt(2)*(-3+8*Sqrt(3))</code>, which evaluates back to <code>Sqrt(2)*(3-8*Sqrt(3))</code>,
+   * so the sum stays.
+   *
+   * @param plusAST the sum
+   * @param util the simplifier
+   * @return the factored form, or {@link F#NIL} if the radicands have no common factor
+   */
+  private static IExpr commonSquareRootFactor(IAST plusAST, SimplifyUtil util) {
+    if (plusAST.argSize() > MAX_RADICAL_SUM_TERMS) {
+      return F.NIL;
+    }
+    final int n = plusAST.argSize();
+    IRational[] coefficients = new IRational[n];
+    IInteger[] radicands = new IInteger[n];
+    IInteger radicandGCD = F.C0;
+    IRational content = F.C0;
+    for (int i = 0; i < n; i++) {
+      IExpr term = plusAST.get(i + 1);
+      IRational coefficient = F.C1;
+      IExpr radical = term;
+      if (term.isTimes2() && term.first().isRational()) {
+        coefficient = (IRational) term.first();
+        radical = term.second();
+      }
+      IRational radicand;
+      if (radical.isRational()) {
+        coefficient = coefficient.multiply((IRational) radical);
+        radicand = F.C1;
+      } else if (radical.isPower() && radical.exponent().equals(F.C1D2)
+          && radical.base().isRational() && ((IRational) radical.base()).isPositive()) {
+        radicand = (IRational) radical.base();
+      } else {
+        return F.NIL;
+      }
+      // c*Sqrt(p/q) == c/q*Sqrt(p*q)
+      IInteger denominator = radicand.denominator();
+      coefficients[i] = coefficient.divideBy(denominator);
+      radicands[i] = radicand.numerator().multiply(denominator);
+      radicandGCD = radicandGCD.gcd(radicands[i]);
+      content = content.gcd(coefficients[i].abs());
+    }
+    if (radicandGCD.isOne() || content.isZero()) {
+      return F.NIL;
+    }
+    IASTAppendable rest = F.PlusAlloc(n);
+    for (int i = 0; i < n; i++) {
+      rest.append(F.Times(coefficients[i].divideBy(content),
+          F.Sqrt(radicands[i].div(radicandGCD))));
+    }
+    IExpr sum = util.eval(rest);
+    if (!sum.isPlus()) {
+      return F.NIL;
+    }
+    if (((IAST) sum).last().isNegativeSigned()) {
+      content = content.negate();
+      sum = util.eval(F.Times(F.CN1, sum));
+    }
+    IExpr factored = util.eval(F.Times(content, F.Sqrt(radicandGCD), sum));
+    // the evaluation multiplies a factor -1 back into the sum: -Sqrt(2)*(-3+8*Sqrt(3)) is
+    // Sqrt(2)*(3-8*Sqrt(3)), which is no longer the normalized form
+    if (factored.isTimes()
+        && ((IAST) factored).exists(x -> x.isPlus() && ((IAST) x).last().isNegativeSigned())) {
+      return F.NIL;
+    }
+    return factored;
+  }
+
+  /**
+   * Write the two square roots of a sum with rational terms and two rational multiples of square
+   * roots of the same sign as one nested root of their square: <code>-7-3*Sqrt(2)-3*Sqrt(14)</code>
+   * is <code>-7-6*Sqrt(4+Sqrt(7))</code> because <code>(3*Sqrt(2)+3*Sqrt(14))^2</code> is
+   * <code>36*(4+Sqrt(7))</code>.
+   *
+   * @param plusAST the sum
+   * @param util the simplifier
+   * @return the sum with the nested root, or {@link F#NIL}
+   */
+  private static IExpr nestedRadicalSum(IAST plusAST, SimplifyUtil util) {
+    if (plusAST.argSize() > MAX_RADICAL_SUM_TERMS) {
+      return F.NIL;
+    }
+    IASTAppendable rest = F.PlusAlloc(plusAST.argSize());
+    IRational[] coefficients = new IRational[2];
+    IInteger[] radicands = new IInteger[2];
+    int count = 0;
+    for (IExpr term : plusAST) {
+      if (term.isRational()) {
+        rest.append(term);
+        continue;
+      }
+      IRational coefficient = F.C1;
+      IExpr radical = term;
+      if (term.isTimes2() && term.first().isRational()) {
+        coefficient = (IRational) term.first();
+        radical = term.second();
+      }
+      if (count == 2 || !radical.isPower() || !radical.exponent().equals(F.C1D2)
+          || !radical.base().isInteger() || !((IInteger) radical.base()).isPositive()) {
+        return F.NIL;
+      }
+      coefficients[count] = coefficient;
+      radicands[count++] = (IInteger) radical.base();
+    }
+    if (count != 2 || coefficients[0].isNegative() != coefficients[1].isNegative()) {
+      return F.NIL;
+    }
+    // (a*Sqrt(p)+b*Sqrt(q))^2 == a^2*p+b^2*q+2*a*b*Sqrt(p*q)
+    IRational a = coefficients[0].abs();
+    IRational b = coefficients[1].abs();
+    IRational constant =
+        a.multiply(a).multiply(radicands[0]).add(b.multiply(b).multiply(radicands[1]));
+    IExpr root = util.eval(F.Sqrt(radicands[0].multiply(radicands[1])));
+    IExpr rootFactor = F.C1;
+    if (root.isTimes2() && root.first().isRational()) {
+      rootFactor = root.first();
+      root = root.second();
+    }
+    if (!root.isPower() || !rootFactor.isRational()) {
+      return F.NIL;
+    }
+    IRational linear = a.multiply(b).multiply(F.C2).multiply((IRational) rootFactor);
+    IRational content = constant.gcd(linear);
+    IInteger outerNumerator = squareFactor(content.numerator());
+    IInteger outerDenominator = squareFactor(content.denominator());
+    IRational outer = F.QQ(outerNumerator, outerDenominator).normalize();
+    if (outer.isOne()) {
+      // without a square content the nested root only rarely weighs less
+      return F.NIL;
+    }
+    IRational square = outer.multiply(outer);
+    IExpr inner = F.Plus(constant.divideBy(square), F.Times(linear.divideBy(square), root));
+    IExpr nested = F.Times(coefficients[0].isNegative() ? outer.negate() : outer, F.Sqrt(inner));
+    rest.append(nested);
+    return util.eval(rest);
+  }
+
+  /**
+   * Write <code>c+c*Cos(2*a)</code> as <code>2*c*Cos(a)^2</code> and <code>c-c*Cos(2*a)</code> as
+   * <code>2*c*Sin(a)^2</code>, and the same for {@link S#Cosh} with <code>Cosh(a)^2</code> and
+   * <code>-Sinh(a)^2</code>.
+   *
+   * @param plusAST the sum
+   * @param util the simplifier
+   * @return the square, or {@link F#NIL}
+   */
+  private static IExpr halfAngleSquare(IAST plusAST, SimplifyUtil util) {
+    if (plusAST.argSize() != 2 || !plusAST.arg1().isRational() || plusAST.arg1().isZero()) {
+      return F.NIL;
+    }
+    IRational c = (IRational) plusAST.arg1();
+    IExpr term = plusAST.arg2();
+    IRational d = F.C1;
+    IExpr function = term;
+    if (term.isTimes2() && term.first().isRational()) {
+      d = (IRational) term.first();
+      function = term.second();
+    }
+    if (!(function.isCos() || function.isCosh())) {
+      return F.NIL;
+    }
+    boolean sameSign = c.equals(d);
+    if (!sameSign && !c.equals(d.negate())) {
+      return F.NIL;
+    }
+    IExpr half = util.eval(F.Times(F.C1D2, function.first()));
+    IExpr square;
+    if (function.isCos()) {
+      square = F.Sqr(sameSign ? F.Cos(half) : F.Sin(half));
+    } else {
+      // c-c*Cosh(2*a) == -2*c*Sinh(a)^2
+      square = sameSign ? F.Sqr(F.Cosh(half)) : F.Negate(F.Sqr(F.Sinh(half)));
+    }
+    return util.eval(F.Times(c.multiply(F.C2), square));
+  }
+
+  /**
+   * The largest <code>s</code> found with <code>s^2</code> dividing the positive integer
+   * <code>n</code>: the square part of its small prime factors, and the whole root if the remaining
+   * cofactor is a perfect square.
+   */
+  public static IInteger squareFactor(IInteger n) {
+    if (n.isOne()) {
+      return F.C1;
+    }
+    IInteger[] split = n.nthRootSplit(2);
+    IInteger root = split[0];
+    IInteger rest = split[1];
+    if (!rest.isOne()) {
+      IInteger[] sqrtAndRemainder = rest.sqrtAndRemainder();
+      if (sqrtAndRemainder[1].isZero()) {
+        root = root.multiply(sqrtAndRemainder[0]);
+      }
+    }
+    return root;
+  }
+
   /**
    * Contract a pair of factors <code>u</code> and <code>head(u)</code> inside a {@link S#Times}
    * into a single factor, e.g. <code>x*Gamma(x)</code> to <code>Gamma(1+x)</code> and
@@ -2211,6 +2512,30 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   /**
+   * A sum of a polynomial part and a single fraction with a sum in its denominator and a variable
+   * in its numerator, the result of dividing a quotient by its denominator rather than a split into
+   * partial fractions: <code>-4+(19-15*x)/(5-3*x+x^2)</code>. A constant numerator, as in
+   * <code>2-4/(1+y^2)</code>, doesn't count.
+   */
+  private static boolean isPolynomialDivision(IExpr apart) {
+    if (!apart.isPlus()) {
+      return false;
+    }
+    int fractions = 0;
+    boolean variableNumerator = false;
+    for (IExpr term : (IAST) apart) {
+      if (term.has(x -> x.isPower() && x.base().isPlus() && isNegativeExponent(x.exponent()),
+          true)) {
+        fractions++;
+        // a factor of the numerator with a variable
+        variableNumerator = term.isTimes() && ((IAST) term).exists(
+            x -> !(x.isPower() && isNegativeExponent(x.exponent())) && !x.isNumericFunction());
+      }
+    }
+    return fractions == 1 && variableNumerator;
+  }
+
+  /**
    * {@link S#ExpandAll} can only change a product with a sum among its factors or an integer power
    * of a sum.
    */
@@ -2280,6 +2605,18 @@ public class SimplifyUtil extends VisitorExpr {
       }
     }
     return content.abs();
+  }
+
+  /**
+   * A power of a single circular or hyperbolic function, optionally times a number:
+   * <code>2*Cos(x)^2</code>, <code>-2*Sinh(x)^2</code>.
+   */
+  private static boolean isNumberTimesTrigPower(IExpr expr) {
+    if (expr.isTimes2() && expr.first().isNumber()) {
+      expr = expr.second();
+    }
+    return expr.isPower() && expr.exponent().isInteger() && expr.base().isAST1()
+        && (expr.base().isTrigFunction() || expr.base().isHyperbolicFunction());
   }
 
   private static boolean isCircularHead(IExpr head) {
@@ -2360,7 +2697,7 @@ public class SimplifyUtil extends VisitorExpr {
     if (inCommonAngle.isNIL()) {
       return F.NIL;
     }
-    IExpr expanded = util.eval(F.TrigExpand(inCommonAngle));
+    IExpr expanded = util.eval(TrigExpand.expandAngles(inCommonAngle, EvalEngine.get()));
     return util.eval(F.subst(expanded, v, F.Times(g, w)));
   }
 
@@ -2475,7 +2812,8 @@ public class SimplifyUtil extends VisitorExpr {
       new Step("Rebase", CatchPolicy.NONE, RewriteContext::rebase), //
       new Step("TrigExpand", CatchPolicy.VALIDATE, ctx -> {
         if (ctx.ast().hasTrigonometricFunction() && isTrigExpandable(ctx.expr)) {
-          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.TrigExpand(ctx.expr)));
+          ctx.result.checkLessPlusTimesPower(
+              ctx.util.eval(TrigExpand.expandAngles(ctx.expr, EvalEngine.get())));
         }
       }), //
       new Step("TrigCommonAngle", CatchPolicy.VALIDATE, ctx -> {
@@ -2502,7 +2840,13 @@ public class SimplifyUtil extends VisitorExpr {
       }), //
       new Step("TrigReduce", CatchPolicy.VALIDATE, ctx -> {
         if (ctx.ast().hasTrigonometricFunction()) {
-          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.TrigReduce(ctx.expr)));
+          IExpr reduced = ctx.util.eval(F.TrigReduce(ctx.expr));
+          if (isNumberTimesTrigPower(ctx.result.result)) {
+            // a product keeps a tie with its reduced form: 2*Cos(x)^2, not 1+Cos(2*x)
+            ctx.result.checkLess(reduced);
+          } else {
+            ctx.result.checkLessPlusTimesPower(reduced);
+          }
         }
       }), //
       new Step("TrigFactor", CatchPolicy.VALIDATE, ctx -> {
@@ -2645,6 +2989,11 @@ public class SimplifyUtil extends VisitorExpr {
             && ctx.result.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT
             && isApartCandidate(ctx.expr)) {
           IExpr apart = ctx.util.eval(F.Apart(ctx.expr));
+          if (!ctx.util.fFullSimplify && isPolynomialDivision(apart)) {
+            // only FullSimplify divides a quotient by its denominator: (1+3*x+4*x^2)/(-5+3*x-x^2)
+            // stays a quotient and doesn't become -4+(19-15*x)/(5-3*x+x^2)
+            return;
+          }
           if (ctx.util.fFullSimplify) {
             IExpr absorbed = absorbReciprocalFactors(apart, ctx.util);
             if (absorbed.isPresent()) {
@@ -2660,6 +3009,28 @@ public class SimplifyUtil extends VisitorExpr {
         }
       }), //
       new Step("PlusFactorTermsAndLog", CatchPolicy.NONE, ctx -> {
+        if (ctx.input.isPlus()) {
+          // the input sum, which a numeric content may have been factored out of already
+          IExpr radicalFactor = commonSquareRootFactor((IAST) ctx.input, ctx.util);
+          if (radicalFactor.isPresent()) {
+            // a tie goes to the product: 3*Sqrt(2)+8*Sqrt(6) is Sqrt(2)*(3+8*Sqrt(3))
+            ctx.result.checkLessEqual(radicalFactor);
+          }
+        }
+        if (ctx.input.isPlus()) {
+          IExpr square = halfAngleSquare((IAST) ctx.input, ctx.util);
+          if (square.isPresent()) {
+            // a tie goes to the square: 1+Cos(2*x) is 2*Cos(x)^2
+            ctx.result.checkLessEqual(square);
+          }
+        }
+        if (ctx.util.fFullSimplifyFunction && ctx.input.isPlus()) {
+          IExpr nested = nestedRadicalSum((IAST) ctx.input, ctx.util);
+          if (nested.isPresent()) {
+            // a tie goes to the nested root: 2*Sqrt(6)+2*Sqrt(22) is 4*Sqrt(7+Sqrt(33))
+            ctx.result.checkLessEqual(nested);
+          }
+        }
         if (!ctx.expr.isPlus()) {
           return;
         }
@@ -2714,6 +3085,11 @@ public class SimplifyUtil extends VisitorExpr {
           ctx.result.checkLess(temp);
         }
         ctx.util.tryCollectVariables(ctx.ast(), ctx.result);
+        temp = ctx.util.tryTangentDifference(ctx.ast());
+        if (temp.isPresent()) {
+          // the pair itself got cheaper, so the sum wins a tie
+          ctx.result.checkLessEqual(temp);
+        }
       }), //
       // The forms of a univariate integer polynomial are searched as a whole: the search decides
       // between the expanded form, factorizations and nested forms with its own tie rules, so its
@@ -2736,8 +3112,183 @@ public class SimplifyUtil extends VisitorExpr {
             ctx.result.checkLess(form);
           }
         }
+      }), //
+      new Step("DenominatorMonomial", CatchPolicy.RUNTIME, ctx -> {
+        IExpr quotient = ctx.result.result;
+        if (quotient.isTimes() || quotient.isPower()) {
+          // a denominator leading with a negative term takes the sign of the numerator:
+          // -(1+x+3*x^2)/(-3+5*x) is (1+x+3*x^2)/(3-5*x) and -2/((-1+x)*x) is 2/(x-x^2)
+          IExpr expanded = ctx.util.eval(F.ExpandDenominator(quotient));
+          ctx.result.checkLess(expanded);
+          IExpr signNormalized = flipDenominatorSign(expanded, ctx.util);
+          if (signNormalized.isPresent()) {
+            // a tie goes to the flipped sign if the numerator is a negative number:
+            // -1/(-3+9*x+x^2) is 1/(3-9*x-x^2)
+            final IExpr flipped = signNormalized;
+            ctx.result.offerOnTie(signNormalized,
+                () -> flipped.isPower() || (flipped.isTimes() && flipped.first().isRational()
+                    && flipped.first().isPositive() && flipped.argSize() == 2));
+          }
+        }
+        if (ctx.util.fFullSimplify) {
+          return;
+        }
+        final IExpr current = ctx.result.result;
+        IExpr split = splitDenominatorMonomial(current, ctx.util);
+        if (split.isPresent()) {
+          ctx.result.offerOnTie(split, () -> prefersSplitDenominator(current));
+        }
       }) //
   };
+
+  /**
+   * Divide numerator and denominator of a quotient of sums of square roots by the square root which
+   * is common to all terms of the denominator: <code>(3*Sqrt(2)-2*Sqrt(5))/(Sqrt(2)+Sqrt(26))</code>
+   * is <code>(3-Sqrt(10))/(1+Sqrt(13))</code>.
+   *
+   * @param quotient a product with one reciprocal sum
+   * @param util the simplifier
+   * @return the scaled quotient, or {@link F#NIL}
+   */
+  private static IExpr cancelDenominatorRadical(IExpr quotient, SimplifyUtil util) {
+    if (!quotient.isTimes() || !quotient.isNumericFunction()) {
+      return F.NIL;
+    }
+    IAST factors = (IAST) quotient;
+    int index = factors.indexOf(
+        x -> x.isPower() && x.exponent().isMinusOne() && x.base().isPlus());
+    if (index <= 0) {
+      return F.NIL;
+    }
+    IAST denominator = (IAST) factors.get(index).base();
+    if (denominator.argSize() > MAX_RADICAL_SUM_TERMS) {
+      return F.NIL;
+    }
+    IInteger radicandGCD = F.C0;
+    for (IExpr term : denominator) {
+      IExpr radical = term.isTimes2() && term.first().isRational() ? term.second() : term;
+      if (!radical.isPower() || !radical.exponent().equals(F.C1D2)
+          || !radical.base().isInteger() || !((IInteger) radical.base()).isPositive()) {
+        return F.NIL;
+      }
+      radicandGCD = radicandGCD.gcd((IInteger) radical.base());
+    }
+    if (radicandGCD.isOne()) {
+      return F.NIL;
+    }
+    // multiply both by Sqrt(g)/g
+    IExpr scale = F.Times(F.QQ(F.C1, radicandGCD), F.Sqrt(radicandGCD));
+    IExpr numerator = util.eval(F.Expand(F.Times(scale, factors.removeAtCopy(index).oneIdentity1())));
+    IExpr scaledDenominator = util.eval(F.Expand(F.Times(scale, denominator)));
+    return util.eval(F.Times(numerator, F.Power(scaledDenominator, F.CN1)));
+  }
+
+  /**
+   * Negate the numerator and the single reciprocal sum of a quotient if that sum leads with a
+   * negative term: <code>-1/(-3+9*x)</code> is <code>1/(3-9*x)</code>.
+   *
+   * @param quotient a product or a power
+   * @param util the simplifier
+   * @return the quotient with negated numerator and denominator, or {@link F#NIL}
+   */
+  private static IExpr flipDenominatorSign(IExpr quotient, SimplifyUtil util) {
+    IAST factors = quotient.isTimes() ? (IAST) quotient : F.Times(quotient);
+    int index = -1;
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isPower() && factor.exponent().isMinusOne() && factor.base().isPlus()) {
+        if (index > 0) {
+          return F.NIL;
+        }
+        index = i;
+      }
+    }
+    if (index < 0 || !factors.get(index).base().first().isNegativeSigned()) {
+      return F.NIL;
+    }
+    IExpr numerator = factors.removeAtCopy(index).oneIdentity1();
+    IExpr denominator = factors.get(index).base().negate();
+    return util.eval(F.Times(numerator.negate(), F.Power(denominator, F.CN1)));
+  }
+
+  /**
+   * Pull the power of the variable out of the expanded denominator of a quotient:
+   * <code>(-2+4*x)/(5*x+2*x^2)</code> is <code>(-2+4*x)/(x*(5+2*x))</code>.
+   *
+   * @param quotient a product with one reciprocal sum, a polynomial in one variable without a
+   *        constant term
+   * @param util the simplifier
+   * @return the quotient with the factored denominator, or {@link F#NIL}
+   */
+  private static IExpr splitDenominatorMonomial(IExpr quotient, SimplifyUtil util) {
+    if (!quotient.isTimes() && !quotient.isPower()) {
+      return F.NIL;
+    }
+    IAST factors = quotient.isTimes() ? (IAST) quotient : F.Times(quotient);
+    int index = -1;
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isPower() && factor.base().isPlus() && factor.exponent().isMinusOne()) {
+        if (index > 0) {
+          return F.NIL;
+        }
+        index = i;
+      } else if (factor.isPower() && isNegativeExponent(factor.exponent())) {
+        return F.NIL;
+      }
+    }
+    if (index < 0) {
+      return F.NIL;
+    }
+    IAST denominator = (IAST) factors.get(index).base();
+    IAST variables = VariablesSet.getVariables(quotient);
+    if (variables.argSize() != 1 || !quotient.isFree(x -> x.isFraction() || x.isComplex(), true)) {
+      return F.NIL;
+    }
+    IExpr x = variables.arg1();
+    if (!denominator.isPolynomial(variables)) {
+      return F.NIL;
+    }
+    IExpr lowest = util.eval(F.Exponent(denominator, x, S.Min));
+    if (!lowest.isInteger() || !((IInteger) lowest).isPositive()) {
+      return F.NIL;
+    }
+    IExpr monomial = F.Power(x, lowest);
+    IExpr cofactor = util.eval(F.Expand(F.Divide(denominator, monomial)));
+    if (!cofactor.isPlus()) {
+      return F.NIL;
+    }
+    IASTMutable result = factors.setAtCopy(index, F.Power(cofactor, F.CN1));
+    return util.eval(F.Times(result.oneIdentity1(), F.Power(monomial, F.CN1)));
+  }
+
+  /**
+   * The factored denominator wins a tie with the expanded one if the numerator or the expanded
+   * denominator leads with a negative term, or if the numerator is a power of a sum:
+   * <code>(2+3*x)/(x*(-4+3*x))</code> and <code>(1+x)^2/(x*(2+3*x))</code>, but
+   * <code>(2+4*x)/(5*x+2*x^2)</code>.
+   */
+  private static boolean prefersSplitDenominator(IExpr quotient) {
+    IAST factors = quotient.isTimes() ? (IAST) quotient : F.Times(quotient);
+    if (factors.count(x -> x.isPlus()) > 1) {
+      // a factored numerator: ((1+x)*(2+x))/(x*(3+5*x))
+      return true;
+    }
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.base().isPlus()) {
+        if (factor.exponent().isMinusOne()) {
+          if (factor.base().first().isNegativeSigned()) {
+            return true;
+          }
+        } else if (factor.exponent().isInteger() && ((IInteger) factor.exponent()).isPositive()) {
+          return true;
+        }
+      } else if (factor.isPlus() && factor.first().isNegativeSigned()) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /**
    * Upper bound on {@link #fTransformationCache}. The cache only has to hold the subexpressions of
@@ -2762,11 +3313,21 @@ public class SimplifyUtil extends VisitorExpr {
     for (int i = 1; i < result.size(); i++) {
       IExpr summand = result.get(i);
       if (summand.isTimes2() && summand.first().isRational() && summand.second().isPower()
-          && summand.second().exponent().isMinusOne() && summand.second().base().isPlus()
-          && ((IRational) summand.first()).numerator().abs().isOne()) {
-        IExpr factor = ((IRational) summand.first()).inverse();
-        IExpr base = util.eval(F.Expand(F.Times(factor, summand.second().base())));
-        IExpr absorbed = F.Power(base, F.CN1);
+          && summand.second().exponent().isMinusOne() && summand.second().base().isPlus()) {
+        IRational coefficient = (IRational) summand.first();
+        IExpr absorbed;
+        if (coefficient.numerator().abs().isOne()) {
+          IExpr factor = coefficient.inverse();
+          IExpr base = util.eval(F.Expand(F.Times(factor, summand.second().base())));
+          absorbed = F.Power(base, F.CN1);
+        } else if (!coefficient.denominator().isOne()) {
+          // 8/(3*(-1+3*x)) is 8/(-3+9*x)
+          IExpr base =
+              util.eval(F.Expand(F.Times(coefficient.denominator(), summand.second().base())));
+          absorbed = F.Times(coefficient.numerator(), F.Power(base, F.CN1));
+        } else {
+          continue;
+        }
         // only where it pays: -1/(1+x^2) is cheaper than 1/(-1-x^2)
         if (util.fComplexityFunction.apply(absorbed) < util.fComplexityFunction.apply(summand)) {
           result.set(i, absorbed);
@@ -3273,6 +3834,13 @@ public class SimplifyUtil extends VisitorExpr {
     if (temp.isPresent()) {
       sResult.result = temp;
       sResult.minCounter = fComplexityFunction.apply(temp);
+    }
+
+    // before the denominator is rationalized: (3-Sqrt(10))/(1+Sqrt(13)) weighs less than its
+    // rationalized form
+    temp = cancelDenominatorRadical(timesAST, this);
+    if (temp.isPresent() && sResult.checkLess(temp)) {
+      return temp;
     }
 
     temp = reduceConjugateFactors(timesAST, sResult);

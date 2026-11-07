@@ -24,7 +24,7 @@
 1.5	1.5`
 1.0e3	Times(1.0`, e3)
 1.0E3	Times(1.0`, E3)
-1E-2	Plus(-2, Times(1, E))
+1E-2	Plus(Times(1, E), -2)
 2.2250738585072014*^-308	2.2250738585072014`*^-308
 1.5*^10	1.5`*^10
 1.5*^+10	1.5`*^10
@@ -47,8 +47,8 @@ a-(b-c)	Plus(a, Times(-1, Plus(b, Times(-1, c))))
 a+-b	Plus(a, Times(-1, b))
 a--b	Times(Decrement(a), b)
 a- -b	Plus(a, Times(1, b))
-1-1	Plus(-1, 1)
-2-3-4	Plus(-4, -3, 2)
+1-1	Plus(1, -1)
+2-3-4	Plus(2, -3, -4)
 a/b*c	Times(Times(a, Power(b, -1)), c)
 a*b/c	Times(a, Times(b, Power(c, -1)))
 2x	Times(2, x)

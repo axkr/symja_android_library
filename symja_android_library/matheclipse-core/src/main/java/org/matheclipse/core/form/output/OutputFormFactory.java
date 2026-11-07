@@ -78,6 +78,12 @@ public class OutputFormFactory {
   public static final boolean PLUS_CALL = true;
 
   /**
+   * The precedence of a number as the head of a function call <code>head[args]</code>, which binds
+   * tighter than every operator.
+   */
+  private static final int HEAD_PRECEDENCE = 1000;
+
+  /**
    * If <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis for function arguments;
    * otherwise use &quot;[&quot; and &quot;]&quot;
    */
@@ -1694,7 +1700,9 @@ public class OutputFormFactory {
       }
       final boolean groupArg1 = (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
           && isSameLevelOperator(list, arg1, oper) && !isDelimitedPower(arg1))
-          || isNestedSameOperator(list, arg1, oper);
+          || isNestedSameOperator(list, arg1, oper)
+          // a sum on the left of a held subtraction: (a + b) - c
+          || (list.isAST(S.Subtract) && arg1.isPlus() && arg1.argSize() >= 2);
       if (groupArg1) {
         append(buf, "(");
       } else {
@@ -1725,9 +1733,12 @@ public class OutputFormFactory {
 
       appendUnicodeMapped(buf, operatorString);
 
-      final boolean groupArg2 =
-          (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head()))
-              || isNestedSameOperator(list, arg2, oper);
+      final boolean groupArg2 = (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
+          && (arg2.head().equals(list.head()) || isInfixOfPrecedence(arg2, oper.getPrecedence())))
+          || isNestedSameOperator(list, arg2, oper)
+          // a - (-b) and a - (1 + I): neither a second minus nor a sum directly after the minus
+          || (list.isAST(S.Subtract)
+              && (arg2.isNegativeSigned() || isComplexWithRealPart(arg2)));
       if (groupArg2) {
         append(buf, "(");
       }
@@ -1768,6 +1779,18 @@ public class OutputFormFactory {
     if (oper.getPrecedence() < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * Whether <code>arg</code> prints as an infix operator of precedence <code>precedence</code>. On
+   * the right of a left associative operator it needs parentheses: <code>a - (b + c)</code>.
+   */
+  private static boolean isInfixOfPrecedence(IExpr arg, int precedence) {
+    if (arg.isAST() && arg.argSize() >= 2 && arg.head().isSymbol()) {
+      final Operator operator = getOperator((ISymbol) arg.head(), arg.argSize());
+      return operator instanceof InfixOperator && operator.getPrecedence() == precedence;
+    }
+    return false;
   }
 
   /**
@@ -1938,7 +1961,8 @@ public class OutputFormFactory {
           }
         }
 
-        convert(buf, header, Integer.MIN_VALUE, true);
+        // a negative, fractional or complex number as head is parenthesized: (-2)[a], (1/2)[a]
+        convert(buf, header, header.isNumber() ? HEAD_PRECEDENCE : Integer.MIN_VALUE, true);
         // An interpolating function already prints as a call - InterpolatingFunction({{0.,1.}},<>)
         // - so applying it reads better in the same syntax as the rest of the output. Other
         // non-symbol heads keep the brackets, which is also what tells a reader that

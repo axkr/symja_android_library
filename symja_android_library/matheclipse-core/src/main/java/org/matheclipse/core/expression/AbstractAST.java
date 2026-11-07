@@ -1887,6 +1887,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       // O-7
       return 1;
     }
+    if (rhsExpr.isAssociation()) {
+      // an association orders itself against everything else
+      return -rhsExpr.compareTo(this);
+    }
     if (rhsExpr instanceof AbstractArraySymbolExpr) {
       // a symbolic array object is ordered as its normal form, see
       // AbstractArraySymbolExpr#compareTo()

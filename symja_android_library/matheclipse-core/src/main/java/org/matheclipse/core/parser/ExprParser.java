@@ -2024,6 +2024,8 @@ public class ExprParser extends Scanner {
     // the product this loop is building: a b c and a*b c are one Times(a,b,c), a factor in
     // parentheses, (a b) c, keeps its own node
     IASTAppendable openProduct = null;
+    // the sum this loop is building from + and -, in the same way
+    IASTAppendable openSum = null;
     while (true) {
       if (fToken == TT_NEWLINE) {
         return lhs;
@@ -2121,6 +2123,25 @@ public class ExprParser extends Scanner {
         }
         while (fToken == TT_NEWLINE) {
           getNextToken();
+        }
+        final ISymbol head = infixOperator.headSymbol();
+        if (head == S.Plus || (head == S.Subtract && !Config.USER_STEPS_PARSER)) {
+          // a + b - c is one sum Plus(a, b, -c) in the order written, z - a is Plus(z, -a); a sum
+          // in parentheses, (a - b) + c, keeps its own node
+          IExpr term = parseLookaheadOperator(infixOperator.getPrecedence());
+          if (head == S.Subtract) {
+            term = ExprParserFactory.SubtractExprOperator.negateTerm(term);
+          }
+          if (openSum != null && lhs == openSum) {
+            openSum.append(term);
+          } else {
+            openSum = F.ast(S.Plus, 4);
+            openSum.append(lhs);
+            openSum.append(term);
+            lhs = openSum;
+          }
+          openProduct = null;
+          continue;
         }
         final boolean star = infixOperator.getOperatorString().equals("*");
         final IASTAppendable product = star && lhs == openProduct ? openProduct : null;

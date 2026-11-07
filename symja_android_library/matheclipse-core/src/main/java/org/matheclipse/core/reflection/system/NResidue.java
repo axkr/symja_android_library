@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -219,8 +220,13 @@ public class NResidue extends AbstractFunctionOptionEvaluator {
     }
     report(result, ApcomplexMath.abs(result.value).doubleValue(), accuracyGoal, function, center,
         engine);
-    return (result.value.imag().signum() == 0) ? F.num(result.value.real())
-        : F.complexNum(result.value);
+    if (result.value.imag().signum() == 0) {
+      Apfloat real = result.value.real();
+      // the value carries the working precision, so exact numbers combined with it later become
+      // numbers of that precision
+      return real.signum() == 0 ? F.num(real) : ApfloatNum.valueOf(real, precision);
+    }
+    return F.complexNum(result.value);
   }
 
   /**

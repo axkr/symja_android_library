@@ -28,6 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
@@ -1261,7 +1262,13 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       if (sign < 0) {
         result = result.negate();
       }
-      return result.imag().signum() == 0 ? F.num(result.real()) : F.complexNum(result);
+      if (result.imag().signum() == 0) {
+        Apfloat real = result.real();
+        // the value carries the working precision, so exact numbers combined with it later become
+        // numbers of that precision and don't cut its digits to machine precision
+        return real.signum() == 0 ? F.num(real) : ApfloatNum.valueOf(real, precision);
+      }
+      return F.complexNum(result);
     } catch (ApfloatDoubleExponential.Failure | RuntimeException e) {
       Errors.rethrowsInterruptException(e);
       return F.NIL;

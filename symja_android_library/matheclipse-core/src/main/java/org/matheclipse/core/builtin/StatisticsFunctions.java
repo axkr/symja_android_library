@@ -5650,25 +5650,67 @@ public class StatisticsFunctions {
       IExpr arg1 = ast.arg1();
       final IExpr f1 = ast.getArg(2, S.Mean);
       final IExpr f2 = ast.getArg(3, S.StandardDeviation);
-
+      if (arg1.isSparseArray()) {
+        arg1 = arg1.normal(false);
+      }
       int[] dim = arg1.isMatrix();
-      if (dim == null && arg1.isListOfLists()) {
+      if (dim == null && (!arg1.isList() || ((IAST) arg1).exists(x -> x.isList()))) {
         return F.NIL;
       }
-      if (dim != null) {
-        IExpr temp = arg1.mapMatrixColumns(dim, v -> F.Standardize(v, f1, f2)).normal(false);
-        return temp.ifPresent(x -> F.Transpose(x));
+      // the columns of a matrix are standardized one by one
+      final IExpr columnList = dim != null ? F.Transpose(arg1).eval(engine) : F.list(arg1);
+      if (!columnList.isList()) {
+        return F.NIL;
       }
-
-
-      IExpr standardDeviation = engine.evaluateNIL(F.unaryAST1(f2, arg1));
-      if (standardDeviation.isPresent() && !standardDeviation.isZero()) {
-        IExpr mean = engine.evaluate(F.unaryAST1(f1, arg1));
-        if (mean.isPresent()) {
-          return F.Divide(F.Subtract(arg1, mean), standardDeviation).eval(engine);
+      final IAST columns = (IAST) columnList;
+      final boolean constantZeroScale = isConstantZero(f2, engine);
+      final IExpr[] locations = new IExpr[columns.argSize()];
+      final IExpr[] scales = new IExpr[columns.argSize()];
+      boolean invalidLocation = false;
+      boolean invalidScale = false;
+      for (int i = 1; i < columns.size(); i++) {
+        scales[i - 1] = engine.evaluateNIL(F.unaryAST1(f2, columns.get(i)));
+        if (scales[i - 1].isNIL()) {
+          // the scale function stays unevaluated
+          return F.NIL;
         }
+        locations[i - 1] = engine.evaluate(F.unaryAST1(f1, columns.get(i)));
+        invalidLocation |= locations[i - 1].isList();
+        invalidScale |= scales[i - 1].isList() //
+            || (!constantZeroScale && scales[i - 1].isZero());
       }
-      return F.NIL;
+      if (invalidLocation) {
+        // The location function `1` evaluated to a list.
+        return Errors.printMessage(S.Standardize, dim != null ? "loc2" : "loc", F.list(f1),
+            engine);
+      }
+      if (invalidScale) {
+        // The scale function `1` evaluated to a list or zero.
+        return Errors.printMessage(S.Standardize, dim != null ? "scl2" : "scl", F.list(f2),
+            engine);
+      }
+      final IASTAppendable result = F.ListAlloc(columns.argSize());
+      for (int i = 1; i < columns.size(); i++) {
+        // a zero scale gives its reciprocal ComplexInfinity once, which multiplies every element
+        final IExpr reciprocal = engine.evaluate(F.Power(scales[i - 1], F.CN1));
+        result.append(engine.evaluate(F.Times(F.Subtract(columns.get(i), locations[i - 1]), //
+            reciprocal)));
+      }
+      return dim != null ? F.Transpose(result) : result.arg1();
+    }
+
+    /**
+     * Whether <code>scaleFunction</code> is a pure function whose body is zero, like
+     * <code>(0&amp;)</code>. Dividing by its value gives <code>ComplexInfinity</code>; a scale which
+     * is zero for the data only is rejected.
+     */
+    private static boolean isConstantZero(IExpr scaleFunction, EvalEngine engine) {
+      if (scaleFunction.isFunction() && scaleFunction.argSize() <= 2) {
+        final IExpr body = scaleFunction.argSize() == 1 ? scaleFunction.first()
+            : scaleFunction.second();
+        return engine.evalQuiet(F.Expand(body)).isZero();
+      }
+      return false;
     }
 
     @Override

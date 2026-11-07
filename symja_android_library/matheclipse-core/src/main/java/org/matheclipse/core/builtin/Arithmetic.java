@@ -56,6 +56,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PrecisionLoss;
@@ -4216,8 +4217,35 @@ public final class Arithmetic {
         // Sqrt(-r*I) -> -(-1)^(3/4)*Sqrt(r)
         return F.Times(F.CN1, F.Power(F.CN1, F.C3D4), F.Sqrt(im.negate()));
       }
-      return F.NIL;
+      return sqrtSquareContent(re, im, denominator);
     }
+
+    /**
+     * Pull the square part of the positive rational content <code>gcd(re, im)</code> out of the
+     * root of <code>re + im*I</code>: <code>Sqrt(8+8*I)</code> is <code>2*Sqrt(2+2*I)</code> and
+     * <code>Sqrt(1/4-I/4)</code> is <code>1/2*Sqrt(1-I)</code>. A positive real factor doesn't
+     * change the principal branch.
+     *
+     * @param re the non-zero real part
+     * @param im the non-zero imaginary part
+     * @param denominator the least common denominator of both parts
+     * @return {@link F#NIL} if the content has no square factor
+     */
+    private static IExpr sqrtSquareContent(IRational re, IRational im, IInteger denominator) {
+      IInteger content =
+          re.multiply(denominator).numerator().gcd(im.multiply(denominator).numerator()).abs();
+      IRational ratio = F.QQ(content, denominator);
+      IInteger outerNumerator = SimplifyUtil.squareFactor(ratio.numerator());
+      IInteger outerDenominator = SimplifyUtil.squareFactor(ratio.denominator());
+      if (outerNumerator.isOne() && outerDenominator.isOne()) {
+        return F.NIL;
+      }
+      IRational outer = F.QQ(outerNumerator, outerDenominator).normalize();
+      IRational square = outer.multiply(outer);
+      IComplex primitive = F.CC(re.divideBy(square), im.divideBy(square));
+      return F.Times(outer, F.Sqrt(primitive));
+    }
+
 
     private static IExpr complexInteger(final IComplex base, final IInteger exponent) {
       if (base.isZero()) {

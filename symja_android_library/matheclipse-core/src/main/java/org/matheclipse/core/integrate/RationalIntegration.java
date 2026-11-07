@@ -1,5 +1,6 @@
 package org.matheclipse.core.integrate;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -112,11 +113,16 @@ public class RationalIntegration {
     long budgetMillis = mode == RootSumMode.EMIT
         ? MachineProfile.millis(Config.INTEGRATE_RATIONAL_TIMELIMIT_MILLIS)
         : 0;
-    IExpr result = IntegrateTimeBudget
-        .runWithin(() -> integrateRationalFunction(integrand, x, engine, mode), budgetMillis);
+    // set when a RootSum over a factor of degree >= 5 is part of the answer
+    boolean[] highDegreeRootSum = new boolean[1];
+    IExpr result = IntegrateTimeBudget.runWithin(
+        () -> integrateRationalFunction(integrand, x, engine, mode, highDegreeRootSum),
+        budgetMillis);
     if (mode == RootSumMode.DEFER && result.isPresent() && !result.isPlus()
-        && !result.isFree(F.RootSum)) {
-      // Antiderivative is essentially a bare RootSum: defer to the Rubi rules.
+        && highDegreeRootSum[0]) {
+      // Antiderivative is essentially a bare RootSum of degree >= 5: defer to the Rubi rules. A
+      // RootSum over a cubic or quartic is only built when the rules have nothing better than
+      // nested Cardano radicals, see isRadicalFriendly().
       return F.NIL;
     }
     return result;
@@ -185,12 +191,13 @@ public class RationalIntegration {
 
   /**
    * Compute the antiderivative of a rational function. Irreducible denominator factors of degree
-   * &gt;= 5 always yield a {@link F#RootSum}; factors of degree 3 or 4 do so only in
+   * &gt;= 5 always yield a {@link F#RootSum}; so do cubic and quartic factors which need nested
+   * radicals. A cubic or quartic solved by a single root extraction yields one only in
    * {@link RootSumMode#EMIT} (in {@link RootSumMode#DEFER} the whole integral is left to the Rubi
-   * rules, which have prettier radical forms for cubics and quartics).
+   * rules, which have prettier radical forms for those).
    */
   private static IExpr integrateRationalFunction(IExpr integrand, IExpr x, EvalEngine engine,
-      RootSumMode mode) {
+      RootSumMode mode, boolean[] highDegreeRootSum) {
     if (!Config.INTEGRATE_ALGORITHM_RATIONAL) {
       return F.NIL;
     }
@@ -311,7 +318,7 @@ public class RationalIntegration {
 
       // logarithmic part with square-free denominator d2
       if (!a2.isZERO() && d2.degree() > 0) {
-        IExpr logPart = logarithmicPart(a2, d2, x, ring, ufd, mode, engine);
+        IExpr logPart = logarithmicPart(a2, d2, x, ring, ufd, mode, highDegreeRootSum, engine);
         if (logPart.isNIL()) {
           return F.NIL;
         }
@@ -497,7 +504,7 @@ public class RationalIntegration {
    */
   private static IExpr logarithmicPart(GenPolynomial<BigRational> a2, GenPolynomial<BigRational> d2,
       IExpr x, GenPolynomialRing<BigRational> ring, GreatestCommonDivisor<BigRational> ufd,
-      RootSumMode mode, EvalEngine engine) {
+      RootSumMode mode, boolean[] highDegreeRootSum, EvalEngine engine) {
     // make monic
     BigRational lc = d2.leadingBaseCoefficient();
     if (!lc.isONE()) {
@@ -579,18 +586,16 @@ public class RationalIntegration {
           if (!rem.isZERO()) {
             // d = q - p^2/4
             BigRational d = q.subtract(p.multiply(p).divide(new BigRational(4)));
-            IExpr v = F.Plus(toFraction(p.divide(new BigRational(2))), x);
+            IExpr argument = arcTanArgument(fi, x);
             final IExpr term;
             if (d.signum() > 0) {
-              // rem * 1/Sqrt(d) * ArcTan(v / Sqrt(d))
+              // rem * 1/Sqrt(d) * ArcTan((x+p/2) / Sqrt(d))
               IExpr sqrt = F.Sqrt(toFraction(d));
-              term = F.Times(toFraction(rem), F.Power(sqrt, F.CN1),
-                  F.ArcTan(F.Times(v, F.Power(sqrt, F.CN1))));
+              term = F.Times(toFraction(rem), F.Power(sqrt, F.CN1), F.ArcTan(argument));
             } else {
-              // d < 0 -> rem * (-1)/Sqrt(-d) * ArcTanh(v / Sqrt(-d))
+              // d < 0 -> rem * (-1)/Sqrt(-d) * ArcTanh((x+p/2) / Sqrt(-d))
               IExpr sqrt = F.Sqrt(toFraction(d.negate()));
-              term = F.Times(toFraction(rem), F.CN1, F.Power(sqrt, F.CN1),
-                  F.ArcTanh(F.Times(v, F.Power(sqrt, F.CN1))));
+              term = F.Times(toFraction(rem), F.CN1, F.Power(sqrt, F.CN1), F.ArcTanh(argument));
             }
             plus.append(term);
             final GenPolynomial<BigRational> f = fi;
@@ -601,37 +606,54 @@ public class RationalIntegration {
                 () -> term, () -> new IExpr[] {polyToExpr(f, var)});
           }
         }
-      } else if (degF >= 5 || mode == RootSumMode.EMIT) {
+      } else if (degF >= 5 || mode == RootSumMode.EMIT || !isRadicalFriendly(fi)) {
         // RootSum for irreducible factors of degree >= 3.
-        // Degree 3 and 4 factors are irreducible over the rationals but solvable in real radicals
-        // (e.g. x^4+1), and the Rubi rules render those far more nicely - so in DEFER mode (the
-        // pre-Rubi call) they fall through to the `else` below. In EMIT mode (the post-Rubi
-        // fallback, reached only once the rules have failed or been cut off by their time budget)
-        // the RootSum is the correct-by-construction answer we can still give.
-        // Evaluate w(alpha) = ai(alpha) / (Gi(alpha) * fi'(alpha)) without expanding modInverse
-        GenPolynomial<BigRational> fiDeriv = PolyUtil.<BigRational>baseDerivative(fi);
-
-        IExpr aiInSlot = polyToExpr(ai, F.Slot1);
-        IExpr fiDerivInSlot = polyToExpr(fiDeriv, F.Slot1);
-        IExpr wInSlot;
-
-        if (gi.isONE()) {
-          wInSlot = F.Divide(aiInSlot, fiDerivInSlot);
-        } else {
-          IExpr giInSlot = polyToExpr(gi, F.Slot1);
-          wInSlot = F.Divide(aiInSlot, F.Times(giInSlot, fiDerivInSlot));
+        // Degree 3 and 4 factors are irreducible over the rationals but solvable in radicals. When
+        // a single root extraction solves them (x^3+2, x^4+1, x^4+x^2+3) the Rubi rules render
+        // them far more nicely - so in DEFER mode (the pre-Rubi call) those fall through to the
+        // `else` below. Any other cubic or quartic needs nested Cardano/Ferrari radicals, where
+        // the RootSum is the far smaller answer. In EMIT mode (the post-Rubi fallback, reached only
+        // once the rules have failed or been cut off by their time budget) the RootSum is the
+        // correct-by-construction answer we can still give.
+        GenPolynomial<BigRational> residue = residue(ai, gi, fi);
+        if (residue != null) {
+          if (residue.isZERO()) {
+            continue;
+          }
+          if (residue.isConstant()) {
+            // every root has the same residue c: the sum is c*Log(fi)
+            logTerms.merge(coefficient(residue, 0), fi, GenPolynomial::multiply);
+            continue;
+          }
         }
-
-        IExpr polyInSlot = polyToExpr(fi, F.Slot1);
-        IExpr body = F.Times(wInSlot, F.Log(F.Subtract(x, F.Slot1)));
-        plus.append(F.RootSum(F.Function(polyInSlot), F.Function(body)));
+        if (degF >= 5) {
+          highDegreeRootSum[0] = true;
+        }
+        if (residue != null) {
+          // ai(r)/gi(r) as a polynomial in the root r of degree < deg(fi): the summand becomes
+          // (residue*fi' mod fi)(r)/fi'(r)
+          GenPolynomial<BigRational> numerator =
+              residue.multiply(PolyUtil.<BigRational>baseDerivative(fi)).remainder(fi);
+          plus.append(rootSumTerm(numerator, fi.ring.getONE(), fi, x));
+        } else {
+          plus.append(rootSumTerm(ai, gi, fi, x));
+        }
       } else {
         // degF == 3 || degF == 4 in DEFER mode: defer to the Rubi rules' radical closed forms.
         return F.NIL;
       }
     }
+    // a lone logarithm of a linear polynomial with a positive coefficient keeps the positive
+    // leading coefficient: Log(-1+2*x)/2 for 1/(2*x-1). Higher degrees keep the positive constant
+    // term, which Exp(Integrate(..)) in DSolve turns into the real Sqrt(1-x^2) on (-1,1).
+    boolean singlePositiveLog = logTerms.size() == 1 && plus.isEmpty()
+        && logTerms.keySet().iterator().next().signum() > 0
+        && logTerms.values().iterator().next().degree() == 1;
     for (Map.Entry<BigRational, GenPolynomial<BigRational>> entry : logTerms.entrySet()) {
-      GenPolynomial<BigRational> p = normalizeLogArgument(entry.getValue());
+      GenPolynomial<BigRational> p = primitiveIntegerPart(entry.getValue());
+      if (!singlePositiveLog) {
+        p = normalizeLogArgument(p);
+      }
       final IExpr term = F.Times(toFraction(entry.getKey()), F.Log(polyToExpr(p, x)));
       plus.append(term);
       final GenPolynomial<BigRational> arg = p;
@@ -640,6 +662,120 @@ public class RationalIntegration {
           () -> new IExpr[] {polyToExpr(arg, var)});
     }
     return plus.oneIdentity0();
+  }
+
+  /**
+   * The argument <code>(x+p/2)/Sqrt(|d|)</code> of the <code>ArcTan</code> or <code>ArcTanh</code>
+   * term for the irreducible monic quadratic <code>x^2+p*x+q</code>, with <code>d=q-p^2/4</code>.
+   * It is written with the primitive integer linear factor of <code>2*a*x+b</code>, where
+   * <code>a*x^2+b*x+c</code> is the quadratic with coprime integer coefficients:
+   * <code>(1+3*x)/Sqrt(11)</code> for <code>3*x^2+2*x+4</code>, not
+   * <code>3*(1/3+x)/Sqrt(11)</code>.
+   */
+  private static IExpr arcTanArgument(GenPolynomial<BigRational> quadratic, IExpr x) {
+    GenPolynomial<BigRational> abc = primitiveIntegerPart(quadratic);
+    BigInteger a = coefficient(abc, 2).numerator();
+    BigInteger b = coefficient(abc, 1).numerator();
+    BigInteger c = coefficient(abc, 0).numerator();
+    // 2*a*x+b = g*(u1*x+u0) with coprime u1, u0
+    BigInteger twoA = a.shiftLeft(1);
+    BigInteger g = twoA.gcd(b);
+    IExpr linear = F.Plus(F.ZZ(b.divide(g)), F.Times(F.ZZ(twoA.divide(g)), x));
+    // |4*a*c-b^2| == 4*a^2*|d|
+    BigInteger discriminant = a.multiply(c).shiftLeft(2).subtract(b.multiply(b)).abs();
+    return F.Times(linear, F.ZZ(g), F.Power(F.Sqrt(F.ZZ(discriminant)), F.CN1));
+  }
+
+  /**
+   * Test whether the monic irreducible cubic or quartic is solved by a single root extraction in
+   * its own variable: the binomial <code>x^3+r</code> or the biquadratic <code>x^4+u*x^2+r</code>.
+   * The rules write those integrals with plain radicals, while any other cubic or quartic, also a
+   * shifted one like <code>(x+s)^3+r</code>, gets a <code>RootSum</code>.
+   */
+  private static boolean isRadicalFriendly(GenPolynomial<BigRational> monic) {
+    int degree = (int) monic.degree();
+    BigRational a = coefficient(monic, degree - 1);
+    BigRational b = coefficient(monic, degree - 2);
+    BigRational c = coefficient(monic, degree - 3);
+    if (degree == 3) {
+      return a.isZERO() && b.isZERO();
+    }
+    if (degree == 4) {
+      return a.isZERO() && c.isZERO();
+    }
+    return false;
+  }
+
+  /**
+   * The <code>RootSum</code> term <code>Sum(ai(r)/(gi(r)*fi'(r))*Log(x-r))</code> over the roots
+   * <code>r</code> of the irreducible factor <code>fi</code>. The polynomials are written with
+   * coprime integer coefficients, in their evaluated order, the numerator is expanded over the
+   * logarithm and a constant factor of the summand is taken in front of the <code>RootSum</code>:
+   * <code>-1/2*RootSum(2+#1^2+#1^3&amp;, Log(x-#1)/(2*#1+3*#1^2)&amp;)</code>.
+   */
+  private static IExpr rootSumTerm(GenPolynomial<BigRational> ai, GenPolynomial<BigRational> gi,
+      GenPolynomial<BigRational> fi, IExpr x) {
+    GenPolynomial<BigRational> f = primitiveIntegerPart(fi);
+    GenPolynomial<BigRational> fiDeriv = PolyUtil.<BigRational>baseDerivative(fi);
+    GenPolynomial<BigRational> fDeriv = primitiveIntegerPart(fiDeriv);
+    GenPolynomial<BigRational> g = primitiveIntegerPart(gi);
+    GenPolynomial<BigRational> numerator = primitiveIntegerPart(ai);
+    if (numerator.leadingBaseCoefficient().signum() < 0) {
+      numerator = numerator.negate();
+    }
+    // ai/(gi*fi') == factor*numerator/(g*fDeriv), each polynomial a rational multiple of the other
+    BigRational factor = ratio(ai, numerator).divide(ratio(gi, g)).divide(ratio(fiDeriv, fDeriv));
+    IExpr denominator = g.isONE() ? polyToExpr(fDeriv, F.Slot1)
+        : F.Times(polyToExpr(g, F.Slot1), polyToExpr(fDeriv, F.Slot1));
+    EvalEngine engine = EvalEngine.get();
+    // the numerator is expanded over the logarithm: (4*Log(x-#1)+Log(x-#1)*#1)/(3*#1^2-8*#1)
+    IExpr logNumerator = engine.evaluate(
+        F.Expand(F.Times(polyToExpr(numerator, F.Slot1), F.Log(F.Subtract(x, F.Slot1)))));
+    IExpr body = F.Times(logNumerator, F.Power(denominator, F.CN1));
+    IExpr rootSum = F.RootSum(F.Function(engine.evaluate(polyToExpr(f, F.Slot1))),
+        F.Function(engine.evaluate(body)));
+    return factor.isONE() ? rootSum : F.Times(toFraction(factor), rootSum);
+  }
+
+  /**
+   * The residue <code>ai(r)/(gi(r)*fi'(r))</code> of the summand at the roots <code>r</code> of
+   * <code>fi</code> as a polynomial in <code>r</code> of degree &lt; deg(fi). A constant is the
+   * same residue for all roots: <code>(1+3*x^2)/(1+x+x^3)</code> has the residue <code>1</code>.
+   *
+   * @return <code>null</code> if <code>gi*fi'</code> has no inverse modulo <code>fi</code>
+   */
+  private static GenPolynomial<BigRational> residue(GenPolynomial<BigRational> ai,
+      GenPolynomial<BigRational> gi, GenPolynomial<BigRational> fi) {
+    GenPolynomial<BigRational> denominator =
+        gi.multiply(PolyUtil.<BigRational>baseDerivative(fi)).remainder(fi);
+    GenPolynomial<BigRational> inverse = modInverse(denominator, fi);
+    if (inverse == null) {
+      return null;
+    }
+    return ai.multiply(inverse).remainder(fi);
+  }
+
+  /** The number <code>c</code> with <code>p == c*q</code>, for proportional polynomials. */
+  private static BigRational ratio(GenPolynomial<BigRational> p, GenPolynomial<BigRational> q) {
+    return p.leadingBaseCoefficient().divide(q.leadingBaseCoefficient());
+  }
+
+  /**
+   * The polynomial multiplied by a positive rational number so that its coefficients are coprime
+   * integers.
+   */
+  private static GenPolynomial<BigRational> primitiveIntegerPart(GenPolynomial<BigRational> p) {
+    BigInteger lcm = BigInteger.ONE;
+    BigInteger gcd = BigInteger.ZERO;
+    for (BigRational coefficient : p.getMap().values()) {
+      BigInteger denominator = coefficient.denominator();
+      lcm = lcm.divide(lcm.gcd(denominator)).multiply(denominator);
+      gcd = gcd.gcd(coefficient.numerator());
+    }
+    if (gcd.signum() == 0) {
+      return p;
+    }
+    return p.multiply(new BigRational(lcm).divide(new BigRational(gcd)));
   }
 
   /**

@@ -552,7 +552,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hypergeometric2F1(a,b1,b1+b2,(z1-z2)/(1-z2))/(1-z2)^a");
     // every term of the series is positive, so the value is greater than 1
     check("AppellF1(1, 2, 3, 5, 1/3, 1/4)", //
-        "4/3*Hypergeometric2F1(1,2,5,1/9)");
+        "24*(-407+3456*Log(9/8))");
     check("N(AppellF1(1, 2, 3, 5, 1/3, 1/4))", //
         "1.39611");
   }
@@ -2462,7 +2462,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Block({$IterationLimit = 20}, $IterationLimit)", //
         "20");
     check("brf(n_) := If(n == 0, 0, 1 + brf(n - 1)); Block({$RecursionLimit = 30}, brf(100))", //
-        "Hold(brf(n_):=If(n==0,0,1+brf(-1+n));Block({$RecursionLimit=30},brf(100)))");
+        "Hold(brf(n_):=If(n==0,0,1+brf(n-1));Block({$RecursionLimit=30},brf(100)))");
     check("brf(100)", //
         "100");
     check("vars={a,b}; Block(Evaluate(vars), a=1; b=2; a+b)", //
@@ -3996,7 +3996,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "q(i_,j_)/;i<0||j<0=0\n" //
             + "\n" //
-            + "q(i_,j_):=q(i,j)=q(-1 + i,j) + q(i,-1 + j)");
+            + "q(i_,j_):=q(i,j)=q(i-1,j) + q(i,j-1)");
     check("q(5,5)", //
         "252");
 
@@ -8767,7 +8767,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Exponent(1 + x^(-2) + a*x^(-42), x, List)", //
         "{-42,-2,0}");
     check("Exponent(c*x^(-2)+a+b*x,x,-2)", //
-        "-2[-2,0,1]");
+        "(-2)[-2,0,1]");
     check("Exponent(7*y^w, y, List)", //
         "{w}");
 
@@ -9086,7 +9086,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FactorSquareFree((9*p^4+10*p^2*q^2*r^2*s^2+q^4*r^4*s^4)^2*(q*r*s-p))", //
         "(-p+q*r*s)*(9*p^4+10*p^2*q^2*r^2*s^2+q^4*r^4*s^4)^2");
     check("Factor(9*p^4+10*p^2*q^2*r^2*s^2+q^4*r^4*s^4, GaussianIntegers->True)", //
-        "(-I*3*p+q*r*s)*(-I*p+q*r*s)*(I*p+q*r*s)*(I*3*p+q*r*s)");
+        "(-I*p+q*r*s)*(I*p+q*r*s)*(-I*3*p+q*r*s)*(I*3*p+q*r*s)");
     // nothing to merge
     check("Factor(q^3*r^2-p^2*q*r*s+2*s)", //
         "q^3*r^2+2*s-p^2*q*r*s");
@@ -9376,8 +9376,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(-2*(-1-4*Tan(x)+3*Tan(x)^2))/(1-3*Tan(x)^2)");
     System.out.print('.');
     check("TrigToExp(3*Tan(3*x)-Tan(x)+2)", //
-        "2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-\n"
-            + "I*3*x)+E^(I*3*x))");
+        "2-I/(E^(I*x)*(E^(-I*x)+E^(I*x)))+(I*E^(I*x))/(E^(-I*x)+E^(I*x))+(I*3)/(E^(I*3*x)*(E^(-\n"
+            + "I*3*x)+E^(I*3*x)))+(-I*3*E^(I*3*x))/(E^(-I*3*x)+E^(I*3*x))");
     System.out.print('.');
     check(
         "Factor(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x)))", //
@@ -9417,7 +9417,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // 1/(E^x*2) + E^x/2 + 3/(E^y*2) - (3*E^y)/2
     System.out.print('.');
     check("TrigToExp(Cosh(x)-3*Sinh(y))", //
-        "1/(2*E^x)+E^x/2-3*(-1/(2*E^y)+E^y/2)");
+        "1/(2*E^x)+E^x/2+3/(2*E^y)-3/2*E^y");
     System.out.print('.');
     check("TrigToExp(Cosh(x))", //
         "1/(2*E^x)+E^x/2");
@@ -9431,12 +9431,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-5+6*Cosh(y)+2*Sinh(x)");
     System.out.print('.');
     check("TrigToExp(2*Sinh(x)+6*Cosh(y)-5)", //
-        "-5+2*(-1/(2*E^x)+E^x/2)+6*(1/(2*E^y)+E^y/2)");
+        "-5-1/E^x+E^x+3/E^y+3*E^y");
 
     // example from paper
     System.out.print('.');
     check("TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x))", //
-        "1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2");
+        "1/(2*E^(I*x))+E^(I*x)/2+1/(2*E^(I*3*x))+E^(I*3*x)/2+1/(2*E^(I*5*x))+E^(I*5*x)/2");
     //
     // // TODO determine more factors
     System.out.print('.');
@@ -10256,15 +10256,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // message: 5 is not a valid variable.
     check("FindMinimum((x-1)^2, {5, 1})", //
-        "FindMinimum((-1+x)^2,{5,1})");
+        "FindMinimum((x-1)^2,{5,1})");
     // message: Search specification {x,I} should be a list with 1 to 3 elements.
     check("FindMinimum(Sin(x), {x, I})", //
         "FindMinimum(Sin(x),{x,I})");
     check("FindMinimum((x-1)^2, {})", //
-        "FindMinimum((-1+x)^2,{})");
+        "FindMinimum((x-1)^2,{})");
     // message: Method Foo is not one of Powell, ConjugateGradient, ...
     check("FindMinimum((x-1)^2, {x, 0}, Method->\"Foo\")", //
-        "FindMinimum((-1+x)^2,{x,0},Method->Foo)");
+        "FindMinimum((x-1)^2,{x,0},Method->Foo)");
   }
 
   @Test
@@ -10275,7 +10275,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.0,{x->1.0}}");
     // message: The value of the option MaxIterations -> -1 should be a positive integer, ...
     check("FindMinimum((x-1)^2, {x, 0}, MaxIterations->-1)", //
-        "FindMinimum((-1+x)^2,{x,0},MaxIterations->-1)");
+        "FindMinimum((x-1)^2,{x,0},MaxIterations->-1)");
     // message: Failed to converge to the requested accuracy or precision within 5 iterations.
     // WMA answers with the point reached, and the message
     check("Head(FindMinimum((1-x)^2+100*(y-x^2)^2, {{x,-1.2},{y,1}}, MaxIterations->5))", //
@@ -10310,11 +10310,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,{2,2}}");
     // message: Method BOBYQA only takes bounds of a single variable
     check("FindMinimum({(x-1)^2+(y-1)^2, x+y>=4}, {{x,3},{y,3}}, Method->\"BOBYQA\")", //
-        "FindMinimum({(-1+x)^2+(-1+y)^2,x+y>=4},{{x,3},{y,3}},Method->BOBYQA)");
+        "FindMinimum({(x-1)^2+(y-1)^2,x+y>=4},{{x,3},{y,3}},Method->BOBYQA)");
 
     // z is no variable of the search
     check("FindMinimum({(x-1)^2+(y-1)^2, x+y>=4, z>=1}, {{x,3},{y,3}})", //
-        "FindMinimum({(-1+x)^2+(-1+y)^2,x+y>=4,z>=1},{{x,3},{y,3}})");
+        "FindMinimum({(x-1)^2+(y-1)^2,x+y>=4,z>=1},{{x,3},{y,3}})");
   }
 
   @Test
@@ -10373,7 +10373,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindMinimum(x^3-12*x^2+45*x+8, {x,4} )", //
         "{58.0,{x->5.0}}");
     check("FindMinimum(x^3-12*x^2+45*x+8, {x,1} )", //
-        "FindMinimum(-12*x^2+x^3+45*x+8,{x,1})");
+        "FindMinimum(x^3-12*x^2+45*x+8,{x,1})");
 
     // the minimum 7/3 at x == 7/3, y == 0: the digits of y around 0 are those of the search
     check(
@@ -10429,7 +10429,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // print message: FindRoot: Search specification x should be a list with 1 to 3 elements.
     check("FindRoot(x^2.5 + x^0.5-100,x)", //
-        "FindRoot(-100+Sqrt(x)+x^2.5,x)");
+        "FindRoot(x^2.5+Sqrt(x)-100,x)");
     check("FindRoot(x^2.5 + x^0.5-100,{x,1.0})", //
         "{x->6.24602}");
 
@@ -10458,11 +10458,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.9439351756744827E-4");
     // Message FindRoot: interval does not bracket a root: f(NaN) = NaN, f(NaN) = NaN.
     checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->8)", //
-        "10-x/.FindRoot(-x+Sin(-10+x)+10,{x,0},AccuracyGoal->8)");
+        "10-x/.FindRoot(Sin(x-10)-x+10,{x,0},AccuracyGoal->8)");
     // Message FindRoot: Value of option AccuracyGoal->test is not Automatic or a machine-sized
     // integer.
     checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->test)", //
-        "10-x/.FindRoot(-x+Sin(-10+x)+10,{x,0},AccuracyGoal->test)");
+        "10-x/.FindRoot(Sin(x-10)-x+10,{x,0},AccuracyGoal->test)");
 
     // univariate cases
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
@@ -10592,7 +10592,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x->0.75,y->0.25}");
     // Message FindRoot: Search specification {x,1,2,3} should be a list with 1 to 3 elements.
     check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x,1,2,3}, {y,1})", //
-        "FindRoot({-1+x+y==0,-0.5+x-y==0},{x,1,2,3},{y,1})");
+        "FindRoot({x+y-1==0,x-y-0.5==0},{x,1,2,3},{y,1})");
 
     // A function which is only defined for numeric arguments has no derivative to differentiate
     // either, so Newton's method cannot run at all on it - it would spend its whole budget on a
@@ -13194,7 +13194,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Hold(a - (h = b)*c) // FullForm", //
         "Hold(Plus(a, Times(-1, Set(h, b), c)))");
     check("Hold(z - y*x) // FullForm", //
-        "Hold(Plus(Times(-1, y, x), z))");
+        "Hold(Plus(z, Times(-1, y, x)))");
     check("c - a - 2*x*y", //
         "-a+c-2*x*y");
   }
@@ -14933,7 +14933,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     // the root 2.302585 is outside of the bounds
     check("Quiet(FindRoot(Exp(x) - 10, {x, 1, 1.5, 0, 2}))", //
-        "FindRoot(-10+E^x,{x,1,1.5,0,2})");
+        "FindRoot(E^x-10,{x,1,1.5,0,2})");
     check(
         "Chop(({x, y} /. FindRoot({x + y == 3, x - y == 1}, {{x, 0, 1, -5, 5}, {y, 0, 1, -5, "
             + "5}})) - {2, 1}, 10^-10)", //
@@ -15768,7 +15768,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testNIntegratePiecewiseUserFunction() {
     // the first true condition of a Piecewise becomes its default value, the rows before stay
     check("Piecewise({{x^2, x<1}, {x-1, True}})", //
-        "Piecewise({{x^2,x<1}},-1+x)");
+        "Piecewise({{x^2,x<1}},x-1)");
     check("Integrate(Piecewise({{x, x<0}, {x^2, True}}), {x,-1,1})", //
         "-1/6");
     check("g(x_):=Piecewise({{x^2, x<1/2}, {2-x, True}}); NIntegrate(g(x), {x,-1,2})", //
@@ -18619,7 +18619,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " {0, 1, 2, 0, 0}, {{1}}, Function({s, k}, s*k - 1), Evaluate);"
             + " {cf(1/4, 8), cf(b, 2), cf(2., 3/2), cf(3)}", //
         "{1.0,-1+2*b,2.0,CompiledFunction({11,15.0,5470},{_Real,_Integer},{{3,0,0},{2,0,0}},{{}},{\n"
-            + "0,1,2,0,0},{{1}},Function({s,k},-1+s*k),Evaluate)[3]}");
+            + "0,1,2,0,0},{{1}},Function({s,k},s*k-1),Evaluate)[3]}");
     // a form with 6 arguments is invalid
     check(
         "CompiledFunction({_Integer}, {{2, 0, 0}}, {0, 1, 0, 0, 0}, {{1}}, Function({k}, k + 1),"
@@ -20249,7 +20249,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testListFourierSequenceTransform() {
     check("ListFourierSequenceTransform({2, 3}, z, 1)", //
-        "3/E^(I*2*z)+2/E^(I*z)");
+        "2/E^(I*z)+3/E^(I*2*z)");
     check("ListFourierSequenceTransform({2, 3}, z)", //
         "2+3/E^(I*z)");
     check("ListFourierSequenceTransform(q, z)", //
@@ -25460,7 +25460,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "In(5):=Do(In(3),{3})\n" //
             + "\n" //
-            + "In(6):=-Sqrt(3) + a");
+            + "In(6):=a - Sqrt(3)");
   }
 
   @Test
@@ -39638,7 +39638,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("(# &)[a, b, c]", //
         "a");
     check("f = If(#1 == 1, 1, #1*#0(#1 - 1)) &", //
-        "If(#1==1,1,#1*#0[-1+#1])&");
+        "If(#1==1,1,#1*#0[#1-1])&");
     check("f(10)", //
         "3628800");
     check("# &[1, 2, 3]", //
@@ -39781,7 +39781,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sort({2.1,1.1-I,2.1-I,I*E^(I*x)})", //
         "{1.1+I*(-1.0),2.1,2.1+I*(-1.0),I*E^(I*x)}");
     check("Sort({2,1-I,2-I,I*E^(I*x)})", //
-        "{1-I,2-I,2,I*E^(I*x)}");
+        "{1-I,2,2-I,I*E^(I*x)}");
     check("Sort(StringJoin /@ Tuples({\"a\",\"A\",\"b\",\"B\"},2))", //
         "{aa,aA,Aa,AA,ab,aB,Ab,AB,ba,bA,Ba,BA,bb,bB,Bb,BB}");
     check("Sort({a,A,a,b,B})", //
@@ -42835,6 +42835,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2-Cos(x)^2*Sin(y)^3+Sin(x)^2*Sin(y)^3");
     check("trigexpand(Sin(2*x))", //
         "2*Cos(x)*Sin(x)");
+    // no angle to expand
     check("trigexpand(Sin(x)*Tan(x))", //
         "Sin(x)*Tan(x)");
     check("trigexpand(Sin(x + y))", //
@@ -43023,8 +43024,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTrigToExp() {
     check("TrigToExp(Cos(Sin(x)))", //
-        "1/(2*E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x))))+E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x)))/\n" //
-            + "2");
+        "E^(1/(2*E^(I*x))-E^(I*x)/2)/2+1/(2*E^(1/(2*E^(I*x))-E^(I*x)/2))");
     String expected = String.join("\n", //
         "                ArcSinh(x)==Log(x+Sqrt(1+x^2)) ", //
         "       ArcCosh(x)==Log(x+Sqrt(-1+x)*Sqrt(1+x)) ", //
@@ -43095,7 +43095,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("TrigToExp(Csch(x)+a)", //
         "a+2/(-1/E^x+E^x)");
     check("TrigToExp(Coth(x)+a)", //
-        "a+(E^(-x)+E^x)/(-1/E^x+E^x)");
+        "a+1/(E^x*(-1/E^x+E^x))+E^x/(-1/E^x+E^x)");
     check("TrigToExp(Sech(x)+a)", //
         "a+2/(E^(-x)+E^x)");
     check("TrigToExp(Sinh(x)+a)", //

@@ -863,7 +863,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check("Together(-1/(-1+x))", //
         "-1/(-1+x)");
     check("Integrate(1/(x-1), x)", //
-        "Log(1-x)");
+        "Log(-1+x)");
     check("Integrate(1/(1-x), x)", //
         "-Log(1-x)");
     check("Integrate(1/(42-x), x)", //
@@ -920,9 +920,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
     // "Sin(x)^3*Cos(x)");
 
     check("Expand(TrigToExp(Sin(x)^3*Cos(x)))", //
-        "(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)-I*1/8*E^(I*2*x)+I*1/16*E^(I*4*x)");
+        "(I*1/8)/E^(I*2*x)-I*1/8*E^(I*2*x)+(-I*1/16)/E^(I*4*x)+I*1/16*E^(I*4*x)");
     check("Expand(TrigToExp(Sin(2*x)/4-Sin(4*x)/8))", //
-        "(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)-I*1/8*E^(I*2*x)+I*1/16*E^(I*4*x)");
+        "(I*1/8)/E^(I*2*x)-I*1/8*E^(I*2*x)+(-I*1/16)/E^(I*4*x)+I*1/16*E^(I*4*x)");
   }
 
   // {(a+b*x)^m/(c+d*x), x, 1, ((a+b*x)^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((d*(a+b*x))/(b*c -

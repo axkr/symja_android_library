@@ -113,7 +113,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(1/(x^3+1), {x,0,1})", //
         "Pi/(3*Sqrt(3))+Log(2)/3");
     check("Integrate(1/(x^3+1), x)", //
-        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
     check("Integrate(x^4+x^2+1, {x,1,3})", //
         "886/15");
     check("Integrate(a*x^2 + b*x + c, {x,-2,2})", //
@@ -726,7 +726,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // see github #116
     // should give (2*ArcTan((1 + 2*x)/Sqrt(3)))/Sqrt(3)
     check(" Integrate(1/(x^2+x+1),x) ", //
-        "(2*ArcTan((2*(1/2+x))/Sqrt(3)))/Sqrt(3)");
+        "(2*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
 
     // see github #109
     check("Int(1/Sqrt(9*x^4+1),{x,0,999})//N", //
@@ -944,7 +944,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Test
   public void testSystem171a() {
     check("Integrate(1/(x^5+x-7),x)", //
-        "RootSum(#1^5+#1-7&,Log(x-#1)/(5*#1^4+1)&)");
+        "RootSum(-7+#1+#1^5&,Log(x-#1)/(1+5*#1^4)&)");
 
     check("Rubi`PolyQ(x/(2*Sqrt(2)),x,1)", //
         "True");
@@ -970,7 +970,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "x/(1+x^3)");
 
     check("Integrate(x/(x^3+1),x)", //
-        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
     // check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
     // "x*(x^3+1)^(-1)");
     check("Integrate(x*Log(x),x)", //
@@ -1004,9 +1004,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Apart(1/(x^3+1))", //
         "1/(3*(1+x))+(2-x)/(3*(1-x+x^2))");
     check("Integrate(1/(x^5+x-7),x)", //
-        "RootSum(#1^5+#1-7&,Log(x-#1)/(5*#1^4+1)&)");
+        "RootSum(-7+#1+#1^5&,Log(x-#1)/(1+5*#1^4)&)");
     check("Integrate(1/(x-2),x)", //
-        "Log(2-x)");
+        "Log(-2+x)");
     check("Integrate((x-2)^(-2),x)", //
         "1/(2-x)");
 
@@ -1026,7 +1026,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // check("Simplify(Integrate(1/3*(2-x)*(x^2-x+1)^(-1),x))",
     // "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)-1/6*Log(x^2-x+1)");
     check("Integrate(1/3*(2-x)*(x^2-x+1)^(-1)+1/3*(x+1)^(-1),x)", //
-        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
     check("Integrate(E^x*(2-x^2),x)", //
         "2*E^x*x-E^x*x^2");
     check("D(2*E^x-Gamma(3,-x),x)", //
@@ -1332,7 +1332,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("NIntegrate(1/Abs(x),{x,-1,2})", //
         "NIntegrate(1/Abs(x),{x,-1,2})");
     check("NIntegrate(Abs(1/(x-1/3)),{x,0,1})", //
-        "NIntegrate(Abs(1/(-1/3+x)),{x,0,1})");
+        "NIntegrate(Abs(1/(x-1/3)),{x,0,1})");
     check("N(Integrate(Abs(1/x),{x,-1,1}))", //
         "Integrate(Abs(1/x),{x,-1,1})");
     check("NIntegrate(1/x^2,{x,-1,1})", //
@@ -1826,7 +1826,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // the antiderivative has a derivative which is right, but jumps between the limits: the
     // difference of its limits is off by a constant and is not returned
     check("Integrate(ArcTan(z)^2/(z^4-2*z^2+10),{z,0,3})", //
-        "Integrate(ArcTan(z)^2/(-2*z^2+z^4+10),{z,0,3})");
+        "Integrate(ArcTan(z)^2/(10-2*z^2+z^4),{z,0,3})");
     check("N(Integrate(ArcTan(z)^2/(z^4-2*z^2+10),{z,0,3}))", //
         "0.150509");
     // the antiderivative of an integrand without such a jump is kept
