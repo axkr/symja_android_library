@@ -118,6 +118,43 @@ public class SequenceFunctions {
    * <code>f(list, pattern)</code> with the option <code>Overlaps</code>: checks the option and the
    * arguments, then calls {@link #apply} with the evaluated list and pattern.
    */
+  /** Receives a matching sequence <code>ast[start..end-1]</code>. */
+  private interface SequenceMatch {
+    /** @return <code>false</code> to stop the scan */
+    boolean accept(int start, int end);
+  }
+
+  /**
+   * Scan <code>ast</code> from left to right for sequences matching <code>pattern</code>, taking
+   * the longest match at each start position. With <code>Overlaps-&gt;All</code> every match at a
+   * position is reported, with <code>Overlaps-&gt;True</code> only the longest, and with
+   * <code>Overlaps-&gt;False</code> the scan continues after the end of the match.
+   */
+  private static void scanLongestMatches(final IAST ast, final IExpr pattern,
+      IExpr overlapsOption, EvalEngine engine, SequenceMatch match) {
+    final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+    final int maxLength = maxSequenceLength(pattern);
+    int i = 1;
+    while (i < ast.size()) {
+      // Greedy match: iterate k downwards to match the longest possible sequences first
+      for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
+        if (matcher.test(ast.subList(i, k))) {
+          if (!match.accept(i, k)) {
+            return;
+          }
+          if (overlapsOption != S.All) {
+            if (overlapsOption.isFalse()) {
+              // If no overlaps allowed, jump index to the end of the matching sequence
+              i = k - 1;
+            }
+            break;
+          }
+        }
+      }
+      i++;
+    }
+  }
+
   private abstract static class AbstractSequenceOverlaps extends AbstractFunctionOptionEvaluator {
 
     /**
@@ -312,30 +349,12 @@ public class SequenceFunctions {
 
     public static IExpr sequenceCount(final IAST ast, final IExpr pattern, IExpr overlapsOption,
         EvalEngine engine) {
-      int count = 0;
-      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      final int maxLength = maxSequenceLength(pattern);
-      int i = 1;
-
-      while (i < ast.size()) {
-        // Greedy match: iterate k downwards to match the longest possible sequences first
-        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
-          IASTAppendable subSequence = ast.subList(i, k);
-          if (matcher.test(subSequence)) {
-            count++;
-
-            if (overlapsOption != S.All) {
-              if (overlapsOption.isFalse()) {
-                // If no overlaps allowed, jump index to the end of the matching sequence
-                i = k - 1;
-              }
-              break;
-            }
-          }
-        }
-        i++;
-      }
-      return F.ZZ(count);
+      final int[] count = new int[1];
+      scanLongestMatches(ast, pattern, overlapsOption, engine, (start, end) -> {
+        count[0]++;
+        return true;
+      });
+      return F.ZZ(count[0]);
     }
   }
 
@@ -365,28 +384,10 @@ public class SequenceFunctions {
       if (maxMatches <= 0) {
         return resultAST;
       }
-
-      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      final int maxLength = maxSequenceLength(pattern);
-      int i = 1;
-      while (i < ast.size()) {
-        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
-          IASTAppendable subSequence = ast.subList(i, k);
-          if (matcher.test(subSequence)) {
-            resultAST.append(F.List(F.ZZ(i), F.ZZ(k - 1)));
-            if (resultAST.argSize() >= maxMatches) {
-              return resultAST;
-            }
-            if (overlapsOption != S.All) {
-              if (overlapsOption.isFalse()) {
-                i = k - 1;
-              }
-              break;
-            }
-          }
-        }
-        i++;
-      }
+      scanLongestMatches(ast, pattern, overlapsOption, engine, (start, end) -> {
+        resultAST.append(F.List(F.ZZ(start), F.ZZ(end - 1)));
+        return resultAST.argSize() < maxMatches;
+      });
       return resultAST;
     }
 
