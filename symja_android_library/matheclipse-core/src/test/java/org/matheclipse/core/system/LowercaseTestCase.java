@@ -12937,8 +12937,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1ForIntegers() {
+    // Together reduces 2-4*(-3/2+Sqrt(E)) to 4*(2-Sqrt(E)) before Factor
     check("{Hypergeometric1F1(1, 2, 1/2), Hypergeometric1F1(2, 3, 1/2)}", //
-        "{2*(-1+Sqrt(E)),-4*(-2+Sqrt(E))}");
+        "{2*(-1+Sqrt(E)),4*(2-Sqrt(E))}");
     check("{Hypergeometric1F1(1, 2, x), Hypergeometric1F1(2, 3, x)}", //
         "{(-1+E^x)/x,(2*(1-E^x+E^x*x))/x^2}");
     check("Chop(N(Hypergeometric1F1(3, 7, -2)) - Hypergeometric1F1(3, 7, -2.), 10^-10)", //
@@ -22363,6 +22364,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ConditionalExpression(1/4*Gamma(1/2*(2+m))*HypergeometricPFQRegularized({1/2*(2+m)},{\n2,1/2*(6+m)},-1/4),Re(m)>-2)");
     check("Integrate(y^4*(1 - y^2)^(1/4)*BesselK(1, y), {y, 0, 1})", //
         "1/4*Gamma(5/4)*MeijerG({{-3/2},{}},{{-1/2,1/2},{-11/4}},1/4)");
+  }
+
+  @Test
+  public void testTogetherUnexpandedSumFactor() {
+    // a sum factor which expands to another form isn't kept as a fraction with nothing to cancel
+    check("Together(1/(q*(1 - r) + q*r))", //
+        "1/q");
+    check("Together((q*(2 - r) + q*r)/s)", //
+        "(2*q)/s");
+    check("Together(q/(q*((q*r)/(q*(1 - r) + q*r)) - p*((q^2*(-1 + r))/(p*(q*(1 - r) + q*r)))))", //
+        "1");
+    // factored sums stay
+    check("Together((p + q)^2/(s*(r + t)))", //
+        "(p+q)^2/(s*(r+t))");
   }
 
   @Test

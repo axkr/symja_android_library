@@ -228,6 +228,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       // map unallocated. It is not a rule count and does not have to grow with a new Rubi release.
       INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0});
       UtilityFunctionCtors.getRuleASTRubi45();
+      // the rules were appended in the order of the rule files: a rule with plain patterns is
+      // tried before an earlier one which only makes some of them optional
+      INTEGRATE_RULES_DATA.orderBeforeOptionalVariants();
     }
   }
 

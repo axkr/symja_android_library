@@ -427,6 +427,79 @@ public class PatternMatchingTestCase {
         "{1,2}");
   }
 
+  /**
+   * A rule goes before an older rule which differs from it only by blanks which are optional or
+   * have no head test, whatever the attributes of the heads, unless the older rule has a condition
+   * the new one hasn't; the older rule stays first when the new one is the more general one.
+   */
+  @Test
+  public void testOptionalVariantRuleOrder() {
+    check("ov1[u_^k_.] := optv; ov1[u_^k_] := plainv; {ov1[c^5], ov1[c], DownValues[ov1]}", //
+        "{plainv,optv,{HoldPattern[ov1[u_^k_]]:>plainv,HoldPattern[ov1[u_^k_.]]:>optv}}");
+    check("ov2[u_^k_] := plainv; ov2[u_^k_.] := optv; {ov2[c^5], ov2[c]}", //
+        "{plainv,optv}");
+    check("ov3[u_*w_.] := optv; ov3[u_*w_] := plainv; {ov3[c*d], ov3[c]}", //
+        "{plainv,optv}");
+    check("ov4[u_, k_:7] := optv; ov4[u_, k_] := plainv; {ov4[c, d], ov4[c]}", //
+        "{plainv,optv}");
+    // a head test only narrows the blank
+    check("ov5[u_^k_.] := optv; ov5[u_^k_Integer] := plainv; {ov5[c^5], ov5[c^t], ov5[c]}", //
+        "{plainv,optv,optv}");
+    check("ov7[u_*k_] := anyv; ov7[u_*k_Integer] := intv; {ov7[3*c], ov7[t*c]}", //
+        "{intv,anyv}");
+    // a head test and a test are unrelated: definition order
+    check("ov17[k_?NonNegative] := nonnegv; ov17[k_Integer] := intv; "
+        + "{ov17[4], ov17[-4], DownValues[ov17]}", //
+        "{nonnegv,intv,{HoldPattern[ov17[k_?NonNegative]]:>nonnegv,"
+            + "HoldPattern[ov17[k_Integer]]:>intv}}");
+    check("ov18[u_^k_?OddQ] := oddv; ov18[u_^k_Integer] := intv; {ov18[c^3], ov18[c^4]}", //
+        "{oddv,intv}");
+    // a rule which goes before an optional blank stops behind an unrelated rule in front of it
+    check("ov10[u_^k_.] := optv; ov10[u_^k_?OddQ] := oddv; ov10[u_^k_Integer] := intv; "
+        + "{ov10[c^5], ov10[c^4], ov10[c^(1/2)], DownValues[ov10]}", //
+        "{oddv,intv,optv,{HoldPattern[ov10[u_^k_?OddQ]]:>oddv,HoldPattern[ov10[u_^k_Integer]]:>intv,"
+            + "HoldPattern[ov10[u_^k_.]]:>optv}}");
+    // but passes an equally general one
+    // the names may differ if they can be renamed one by one
+    check("ov9[u_*k_.] := optv; ov9[u_*j_Integer] := plainv; {ov9[3*c], ov9[c]}", //
+        "{plainv,optv}");
+    check("ov11[s_^l_.] := optv; ov11[t_^m_?IntegerQ] := testv; ov11[u_^n_Integer] := intv; "
+        + "DownValues[ov11]", //
+        "{HoldPattern[ov11[u_^n_Integer]]:>intv,HoldPattern[ov11[t_^m_?IntegerQ]]:>testv,"
+            + "HoldPattern[ov11[s_^l_.]]:>optv}");
+    // only in an exponent and only from _Integer to ?IntegerQ
+    check("ov19[k_.] := optv; ov19[k_?IntegerQ] := testv; ov19[k_Integer] := intv; "
+        + "DownValues[ov19][[All, 2]]", //
+        "{testv,intv,optv}");
+    check("ov20[s_^l_.] := optv; ov20[t_^m_Integer] := intv; ov20[u_^n_?IntegerQ] := testv; "
+        + "DownValues[ov20][[All, 2]]", //
+        "{intv,testv,optv}");
+    // the same condition text which tests other patterns after renaming: definition order
+    check("ov21[u_^k_.] := optv /; k > 2; ov21[k_^u_] := plainv /; k > 2; "
+        + "{ov21[Pi^3], DownValues[ov21][[All, 2]]}", //
+        "{optv,{optv/;k>2,plainv/;k>2}}");
+    // renamed patterns with the same condition
+    check("ov22[u_^k_.] := optv /; k > 2; ov22[v_^j_] := plainv /; j > 2; "
+        + "{ov22[Pi^3], DownValues[ov22][[All, 2]]}", //
+        "{plainv,{plainv/;j>2,optv/;k>2}}");
+    // a name used twice can't be renamed into two names: the older rule stays first
+    check("ov12[u_, u_^k_.] := optv; ov12[u_, v_^k_] := plainv; DownValues[ov12]", //
+        "{HoldPattern[ov12[u_,u_^k_.]]:>optv,HoldPattern[ov12[u_,v_^k_]]:>plainv}");
+    // the same condition on both rules
+    check("ov6[u_+v_.*z_] := optv /; FreeQ[v, z]; ov6[u_+v_*z_] := plainv /; FreeQ[v, z]; "
+        + "{ov6[1+2*t], ov6[1+t]}", //
+        "{plainv,optv}");
+    // a condition only on the more specific rule
+    check("ov14[u_^k_.] := optv; ov14[u_^k_] := plainv /; k > 2; {ov14[c^5], ov14[c^2]}", //
+        "{plainv,optv}");
+    // a condition on the more general rule which the other one hasn't: definition order
+    check("ov15[u_^k_.] := optv /; k > 2; ov15[u_^k_] := plainv; {ov15[c^5], ov15[c^2]}", //
+        "{optv,plainv}");
+    check("ov16[u_^k_.] := optv /; k < 5; ov16[u_^k_] := plainv /; k > 2; "
+        + "{ov16[c^4], DownValues[ov16]}", //
+        "{optv,{HoldPattern[ov16[u_^k_.]]:>optv/;k<5,HoldPattern[ov16[u_^k_]]:>plainv/;k>2}}");
+  }
+
   /** <code>/:</code> is right-associative like <code>:=</code>: a definition may make an upvalue. */
   @Test
   public void testTagSetOnTheRightOfSetDelayed() {

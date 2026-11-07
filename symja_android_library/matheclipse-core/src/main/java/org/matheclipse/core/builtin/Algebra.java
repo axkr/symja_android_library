@@ -6297,8 +6297,14 @@ public class Algebra {
       }
       if (arg1.isAST()) {
         IExpr together = engine.evaluate(AlgebraUtil.togetherExpr(arg1, engine));
+        if ((together.isTimes() || together.isPower())
+            && hasUnexpandedSumFactor(together, engine)) {
+          // b/(b*(b*e)/(b*(1-e)+b*e)-...) is b/(b*(1-e)+b*e) after one pass, and 1 after two
+          together = engine.evaluate(AlgebraUtil.togetherExpr(together, engine));
+        }
         if ((arg1.isTimes() || arg1.isPower())
-            && AlgebraUtil.isSameDenominator(arg1, together, engine)) {
+            && AlgebraUtil.isSameDenominator(arg1, together, engine)
+            && !hasUnexpandedSumFactor(arg1, engine)) {
           // one fraction with nothing to cancel keeps the factors of its numerator and
           // denominator, with their numeric contents merged
           IExpr reduced = AlgebraUtil.reducedFraction(arg1, engine);
@@ -6321,6 +6327,37 @@ public class Algebra {
         return together;
       }
       return arg1;
+    }
+
+    /**
+     * Whether a factor of the numerator or the denominator of <code>fraction</code> is a sum which
+     * expands to another form: <code>b*(1-e)+b*e</code> is <code>b</code>, so
+     * <code>1/(b*(1-e)+b*e)</code> is not kept as a fraction with nothing to cancel.
+     */
+    /** Has a term of <code>sum</code> a sum as a factor or as the base of a power? */
+    private static boolean hasProductOfSum(IAST sum) {
+      return sum.exists(term -> {
+        if (term.isPower()) {
+          return term.base().isPlus();
+        }
+        return term.isTimes() && ((IAST) term)
+            .exists(factor -> factor.isPlus() || (factor.isPower() && factor.base().isPlus()));
+      });
+    }
+
+    private static boolean hasUnexpandedSumFactor(IExpr fraction, EvalEngine engine) {
+      for (IExpr part : new IExpr[] {engine.evaluate(F.Numerator(fraction)),
+          engine.evaluate(F.Denominator(fraction))}) {
+        IAST factors = part.isTimes() ? (IAST) part : F.Times(part);
+        for (IExpr factor : factors) {
+          IExpr base = factor.isPower() ? factor.base() : factor;
+          if (base.isPlus() && hasProductOfSum((IAST) base)
+              && !engine.evaluate(F.Expand(base)).equals(base)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     /**
