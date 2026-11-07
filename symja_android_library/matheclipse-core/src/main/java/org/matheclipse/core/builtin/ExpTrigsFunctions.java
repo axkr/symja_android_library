@@ -404,11 +404,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
-      if (arg1.getImaginary() == 0.0) {
-        // the side of the cut of ArcCos(2.0); the signed zero of 1-z^2 takes the other one
-        return e1DblArg(arg1.getReal());
-      }
-      return F.complexNum(arg1.acos());
+      // a zero imaginary part takes the side of the cut of the real number there
+      return F.complexNum(arg1).acos();
     }
 
     @Override
@@ -564,6 +561,11 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
+      if (arg1.getImaginary() == 0.0) {
+        // the value of the real number: on the segment (-1,1) the complex formula leaves rounding
+        // noise in the real part
+        return e1DblArg(arg1.getReal());
+      }
       return F.complexNum(arcCosh(arg1));
     }
 
@@ -1162,12 +1164,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
-      if (arg1.getImaginary() == 0.0) {
-        // Complex(2.0, 0.0) has the value of ArcSin(2.0), which the derivative 1/Sqrt(1-z^2)
-        // continues: the signed zero of 1-z^2 = -3-0.0*I takes the other side of the cut
-        return e1DblArg(arg1.getReal());
-      }
-      return F.complexNum(arg1.asin());
+      // Complex(2.0, 0.0) has the value of ArcSin(2.0), which the derivative 1/Sqrt(1-z^2)
+      // continues, see ComplexNum.asin()
+      return F.complexNum(arg1).asin();
     }
 
     @Override

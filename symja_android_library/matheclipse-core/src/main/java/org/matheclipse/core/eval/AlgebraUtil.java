@@ -55,7 +55,9 @@ import edu.jas.arith.Modular;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
+import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
@@ -2125,10 +2127,10 @@ public class AlgebraUtil {
 
         FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
             FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-        if (squareFree) {
-          map = factorAbstract.squarefreeFactors(poly); // factors(poly);
-        } else {
-          map = factorAbstract.factors(poly);
+        map = factorsWithMergedVariables(poly,
+            squareFree ? factorAbstract::squarefreeFactors : factorAbstract::factors);
+        if (map == null) {
+          map = squareFree ? factorAbstract.squarefreeFactors(poly) : factorAbstract.factors(poly);
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
@@ -2204,7 +2206,11 @@ public class AlgebraUtil {
       return F.C0;
     }
     FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
-    SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);
+    SortedMap<GenPolynomial<Complex<BigRational>>, Long> map =
+        factorsWithMergedVariables(polynomial, factorAbstract::factors);
+    if (map == null) {
+      map = factorAbstract.factors(polynomial);
+    }
 
     IASTAppendable result = F.ast(head, map.size());
     for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
@@ -2360,6 +2366,122 @@ public class AlgebraUtil {
   }
 
 
+  /**
+   * The factors of <code>poly</code> if some of its variables occur in every term with the same
+   * exponent, as <code>b</code>, <code>c</code> and <code>L</code> in
+   * <code>9*e^4+10*e^2*(b*c*L)^2+(b*c*L)^4</code>: the polynomial is one in their product, which is
+   * factored with each such group of variables as one variable. The multivariate factorization
+   * gives up on the four variables (its Kronecker substitution has too high a degree), and on the
+   * two it is immediate.
+   *
+   * <p>
+   * A factor in the merged variable is a factor of the polynomial, and it is irreducible: the
+   * factors of a polynomial which depends on <code>b</code> and <code>c</code> through
+   * <code>b*c</code> only are of the same kind, up to monomials, which the merged factorization
+   * has as well and which are split into the single variables here.
+   *
+   * @return <code>null</code> if no two variables can be merged
+   */
+  private static <C extends GcdRingElem<C>> SortedMap<GenPolynomial<C>, Long> factorsWithMergedVariables(
+      GenPolynomial<C> poly,
+      java.util.function.Function<GenPolynomial<C>, SortedMap<GenPolynomial<C>, Long>> factorizer) {
+    final GenPolynomialRing<C> ring = poly.ring;
+    final int n = ring.nvar;
+    if (n < 3 || poly.length() < 2) {
+      return null;
+    }
+    final List<ExpVector> exponents = new ArrayList<ExpVector>(poly.getMap().keySet());
+    // representative[i]: the first variable with the exponents of variable i in every term
+    final int[] representative = new int[n];
+    final int[] slot = new int[n];
+    int merged = 0;
+    for (int i = 0; i < n; i++) {
+      representative[i] = i;
+      if (occursIn(exponents, i)) {
+        for (int j = 0; j < i; j++) {
+          if (representative[j] == j && occursIn(exponents, j)
+              && sameExponents(exponents, i, j)) {
+            representative[i] = j;
+            break;
+          }
+        }
+      }
+      if (representative[i] == i) {
+        slot[i] = merged++;
+      }
+    }
+    if (merged == n) {
+      return null;
+    }
+    final GenPolynomialRing<C> smallRing = new GenPolynomialRing<C>(ring.coFac, merged, ring.tord);
+    final GenPolynomial<C> small = new GenPolynomial<C>(smallRing);
+    for (Map.Entry<ExpVector, C> term : poly.getMap().entrySet()) {
+      long[] v = new long[merged];
+      for (int i = 0; i < n; i++) {
+        if (representative[i] == i) {
+          v[slot[i]] = term.getKey().getVal(i);
+        }
+      }
+      small.doPutToMap(ExpVector.create(v), term.getValue());
+    }
+    final SortedMap<GenPolynomial<C>, Long> result = new java.util.TreeMap<GenPolynomial<C>, Long>();
+    // the coefficients of the monomial factors, multiplied out
+    C constant = ring.coFac.getONE();
+    for (Map.Entry<GenPolynomial<C>, Long> factor : factorizer.apply(small).entrySet()) {
+      final GenPolynomial<C> f = factor.getKey();
+      final long multiplicity = factor.getValue();
+      if (f.length() == 1 && !f.isConstant()) {
+        // a power of a merged variable is the product of the powers of its variables
+        final ExpVector e = f.leadingExpVector();
+        for (long k = 0; k < multiplicity; k++) {
+          constant = constant.multiply(f.leadingBaseCoefficient());
+        }
+        for (int i = 0; i < n; i++) {
+          long k = e.getVal(slot[representative[i]]);
+          if (k > 0) {
+            long[] v = new long[n];
+            v[i] = 1;
+            GenPolynomial<C> variable = new GenPolynomial<C>(ring);
+            variable.doPutToMap(ExpVector.create(v), ring.coFac.getONE());
+            result.merge(variable, k * multiplicity, Long::sum);
+          }
+        }
+        continue;
+      }
+      final GenPolynomial<C> lifted = new GenPolynomial<C>(ring);
+      for (Map.Entry<ExpVector, C> term : f.getMap().entrySet()) {
+        long[] v = new long[n];
+        for (int i = 0; i < n; i++) {
+          v[i] = term.getKey().getVal(slot[representative[i]]);
+        }
+        lifted.doPutToMap(ExpVector.create(v), term.getValue());
+      }
+      result.merge(lifted, multiplicity, Long::sum);
+    }
+    if (!constant.isONE()) {
+      result.merge(ring.getONE().multiply(constant), 1L, Long::sum);
+    }
+    return result;
+  }
+
+  private static boolean occursIn(List<ExpVector> exponents, int i) {
+    for (ExpVector e : exponents) {
+      if (e.getVal(i) != 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean sameExponents(List<ExpVector> exponents, int i, int j) {
+    for (ExpVector e : exponents) {
+      if (e.getVal(i) != e.getVal(j)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static IAST factorRational(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
       ISymbol head) {
     if (polyRat.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
@@ -2371,8 +2493,11 @@ public class AlgebraUtil {
         (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
     FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
         FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-    map = factorAbstract.factors(poly);
+    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map =
+        factorsWithMergedVariables(poly, factorAbstract::factors);
+    if (map == null) {
+      map = factorAbstract.factors(poly);
+    }
     // if (map.size() == 1 && original != null) {
     // return F.unaryAST1(head, original);
     // }

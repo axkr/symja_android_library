@@ -970,6 +970,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.0");
     check("ArcSin(Complex(0.25, 0.0))", //
         "0.25268");
+    check("{ArcCosh(0.5), ArcCosh(Complex(0.5, 0.0)), ArcCosh(-2.5), ArcCosh(Complex(-2.5, 0.0))}", //
+        "{I*1.0472,I*1.0472,1.5668+I*3.14159,1.5668+I*3.14159}");
   }
 
   @Test
@@ -9064,6 +9066,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b,c}");
     check("Extract({{a, b}, {c, d}}, {{1}, {2, 2}})", //
         "{{a,b},d}");
+  }
+
+  @Test
+  public void testFactorVariablesOnlyInAProduct() {
+    // q, r and s occur in every term with the same exponent: a polynomial in p and q*r*s
+    check("Factor(4*p^4+13*p^2*q^2*r^2*s^2+9*q^4*r^4*s^4)", //
+        "(p^2+q^2*r^2*s^2)*(4*p^2+9*q^2*r^2*s^2)");
+    check("Factor(4*w^4+13*w^2*u^2*v^2*Log(z)^2+9*u^4*v^4*Log(z)^4)", //
+        "(w^2+u^2*v^2*Log(z)^2)*(4*w^2+9*u^2*v^2*Log(z)^2)");
+    // a power of the product is split into the powers of its variables
+    check("FactorList(q^3*r^3*s^3*(4*p^4+13*p^2*q^2*r^2*s^2+9*q^4*r^4*s^4))", //
+        "{{1,1},{q,3},{r,3},{s,3},{p^2+q^2*r^2*s^2,1},{4*p^2+9*q^2*r^2*s^2,1}}");
+    check("Factor(Expand((p*q*r+3)*(p*q*r-5)*(s-p*q*r)))", //
+        "(-5+p*q*r)*(3+p*q*r)*(-p*q*r+s)");
+    // the coefficient of a monomial factor stays one constant factor
+    check("FactorList(12*q^2*r^2*s^2*(p^2+q*r*s))", //
+        "{{12,1},{q,2},{r,2},{s,2},{p^2+q*r*s,1}}");
+    check("FactorSquareFree((9*p^4+10*p^2*q^2*r^2*s^2+q^4*r^4*s^4)^2*(q*r*s-p))", //
+        "(-p+q*r*s)*(9*p^4+10*p^2*q^2*r^2*s^2+q^4*r^4*s^4)^2");
+    check("Factor(9*p^4+10*p^2*q^2*r^2*s^2+q^4*r^4*s^4, GaussianIntegers->True)", //
+        "(-I*3*p+q*r*s)*(-I*p+q*r*s)*(I*p+q*r*s)*(I*3*p+q*r*s)");
+    // nothing to merge
+    check("Factor(q^3*r^2-p^2*q*r*s+2*s)", //
+        "q^3*r^2+2*s-p^2*q*r*s");
   }
 
   @Test

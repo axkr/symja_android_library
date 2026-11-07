@@ -427,11 +427,7 @@ public class CompareUtil {
    */
   public static IExpr.COMPARE_TERNARY isPossibeZero(IAST function, IAST variables,
       EvalEngine engine) {
-    final ThreadLocalRandom tlr = ThreadLocalRandom.current();
-    IASTAppendable listOfRules =
-        F.mapList(variables, t -> CompareUtil.randomRuleComplex100(t, tlr));
-    IExpr temp = function.replaceAll(listOfRules);
-    return CompareUtil.isPossibleZeroApproximate(temp, engine);
+    return isPossibleZeroAtRandomPoint(function, variables, false, new IExpr[1], engine);
   }
 
   /**
@@ -536,6 +532,56 @@ public class CompareUtil {
   }
 
   public static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine) {
+    return isPossibleZeroApproximate(temp, engine, null);
+  }
+
+  private static void setTooLarge(boolean[] tooLarge) {
+    if (tooLarge != null) {
+      tooLarge[0] = true;
+    }
+  }
+
+  /** The bounds of the real and imaginary parts of the random complex sample points. */
+  private static final double[] COMPLEX_SAMPLE_RANGES = {100.0, 10.0, 1.0};
+
+  /**
+   * The zero test of the machine value of <code>function</code> at a random complex point. A point
+   * where the value or a term is too large for machine numbers is drawn again closer to the
+   * origin: <code>Sin(c+d*x)</code> or <code>E^(d*x)</code> is <code>10^2000</code> where
+   * <code>c+d*x</code> reaches <code>10^4</code>, and more digits would have to be thousands. A
+   * point without a numeric value is not drawn again.
+   *
+   * @param exact <code>true</code> for a point with rational parts, <code>false</code> for
+   *        machine numbers
+   * @param sample <code>sample[0]</code> is set to the function at the point
+   */
+  private static COMPARE_TERNARY isPossibleZeroAtRandomPoint(IAST function, IAST variables,
+      boolean exact, IExpr[] sample, EvalEngine engine) {
+    final ThreadLocalRandom tlr = ThreadLocalRandom.current();
+    COMPARE_TERNARY zero = IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    for (double range : COMPLEX_SAMPLE_RANGES) {
+      sample[0] = function.replaceAll(F.mapList(variables, t -> {
+        double re = tlr.nextDouble(-range, range);
+        double im = tlr.nextDouble(-range, range);
+        return F.Rule(t,
+            exact ? F.CC(exactNumber(re), exactNumber(im)) : F.complexNum(re, im));
+      }));
+      boolean[] tooLarge = {false};
+      zero = isPossibleZeroApproximate(sample[0], engine, tooLarge);
+      if (zero != IExpr.COMPARE_TERNARY.UNDECIDABLE || !tooLarge[0]) {
+        break;
+      }
+    }
+    return zero;
+  }
+
+  /**
+   * @param tooLarge if not <code>null</code>, <code>tooLarge[0]</code> is set if the answer is
+   *        <code>UNDECIDABLE</code> because the value or its terms are too large for machine
+   *        numbers, and not because it has no numeric value
+   */
+  private static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine,
+      boolean[] tooLarge) {
     try {
       if (temp.isPresent()) {
         IExpr result = engine.evalQuiet(F.N(temp));
@@ -549,6 +595,7 @@ public class CompareUtil {
               && F.isZero(imaginaryPart, Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
             if (Double.isNaN(realPart) || Double.isNaN(imaginaryPart) || Double.isInfinite(realPart)
                 || Double.isInfinite(imaginaryPart)) {
+              setTooLarge(tooLarge);
               return IExpr.COMPARE_TERNARY.UNDECIDABLE;
             }
             if (temp.isPlus()) {
@@ -558,6 +605,7 @@ public class CompareUtil {
               for (IExpr term : (IAST) temp) {
                 double magnitude = engine.evalQuiet(F.N(F.Abs(term))).evalfNaN();
                 if (Double.isNaN(magnitude) || Double.isInfinite(magnitude)) {
+                  setTooLarge(tooLarge);
                   return IExpr.COMPARE_TERNARY.UNDECIDABLE;
                 }
                 scale = Math.max(scale, magnitude);
@@ -568,6 +616,7 @@ public class CompareUtil {
               }
               if (scale > 1.0e12 && residual <= scale * 1.0e-3) {
                 // too large for the machine precision to say
+                setTooLarge(tooLarge);
                 return IExpr.COMPARE_TERNARY.UNDECIDABLE;
               }
             }
@@ -1111,22 +1160,10 @@ public class CompareUtil {
       }
     }
     final ThreadLocalRandom tlr = ThreadLocalRandom.current();
+    final IExpr[] sample = new IExpr[1];
     for (int i = 0; i < 36; i++) {
-      // a point whose machine value decides nothing, because Sin(c+d*x) or E^(d*x) is 10^2000
-      // there, is drawn again closer to the origin: more digits would have to be thousands
-      COMPARE_TERNARY zero = IExpr.COMPARE_TERNARY.UNDECIDABLE;
-      IExpr sample = F.NIL;
-      for (double range = 100.0; range >= 1.0; range /= 10.0) {
-        final double r = range;
-        sample = function.replaceAll(F.mapList(variables,
-            t -> F.Rule(t, F.CC(exactNumber(tlr.nextDouble(-r, r)),
-                exactNumber(tlr.nextDouble(-r, r))))));
-        zero = isPossibleZeroApproximate(sample, engine);
-        if (zero != IExpr.COMPARE_TERNARY.UNDECIDABLE) {
-          break;
-        }
-      }
-      zero = isZeroAtSample(sample, zero, engine);
+      COMPARE_TERNARY zero = isPossibleZeroAtRandomPoint(function, variables, true, sample, engine);
+      zero = isZeroAtSample(sample[0], zero, engine);
       if (zero == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
@@ -1287,20 +1324,6 @@ public class CompareUtil {
       }
     }
     return false;
-  }
-
-  /**
-   * Create a rule <code>variable -> complex-number</code> with real and imaginary part randomly
-   * between -100.0 and 100.0
-   * 
-   * @param variable
-   * @param tlr
-   * @return
-   */
-  public static IExpr randomRuleComplex100(IExpr variable, ThreadLocalRandom tlr) {
-    double re = tlr.nextDouble(-100, 100);
-    double im = tlr.nextDouble(-100, 100);
-    return F.Rule(variable, F.complexNum(re, im));
   }
 
   /**

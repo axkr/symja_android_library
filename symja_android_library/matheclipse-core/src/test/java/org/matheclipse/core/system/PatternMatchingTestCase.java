@@ -428,6 +428,27 @@ public class PatternMatchingTestCase {
   }
 
   /**
+   * In a Flat head only a pattern object takes a group of arguments. A power with an optional
+   * factor and exponent matches a product on its own, but not the rest of a longer product beside
+   * another pattern.
+   */
+  @Test
+  public void testFlatGroupOnlyForPatternObjects() {
+    check("ClearAll[fg1]; fg1[(k_.*p[w_])^i_.*(h_.*q[w_])^j_.] := {k, i, h, j}; "
+        + "{fg1[p[v]*q[v]*u[v]], fg1[p[v]^3*q[v]*u[v]], fg1[5*p[v]*q[v]], fg1[p[v]*q[v]^2]}", //
+        "{fg1[p[v]*q[v]*u[v]],fg1[p[v]^3*q[v]*u[v]],fg1[5*p[v]*q[v]],{1,1,1,2}}");
+    check("ClearAll[fg2]; fg2[(h_.*q[w_])^j_.] := {h, j}; fg2[q[v]*u[v]]", //
+        "{u[v],1}");
+    check("ClearAll[fg3]; fg3[r_*(h_.*q[w_])^j_.] := {r, h, j}; fg3[p[v]*q[v]*u[v]]", //
+        "{p[v]*u[v],1,1}");
+    check("ReplaceList[p[v]*q[v]*u[v], (k_.*p[w_])^i_.*(h_.*q[w_])^j_. :> {k, i, h, j}]", //
+        "{}");
+    // the substitution Sec[x] -> u is for the whole integrand, not for Sec[x]*Tan[x] alone
+    check("Integrate[Sec[x]*Tan[x]/(4+Sec[x]^2), x]", //
+        "-ArcTan[2*Cos[x]]/2");
+  }
+
+  /**
    * A rule goes before an older rule which differs from it only by blanks which are optional or
    * have no head test, whatever the attributes of the heads, unless the older rule has a condition
    * the new one hasn't; the older rule stays first when the new one is the more general one.

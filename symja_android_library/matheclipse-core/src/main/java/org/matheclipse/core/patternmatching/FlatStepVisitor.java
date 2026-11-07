@@ -85,7 +85,11 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
         final boolean sequence = PatternMatcher.standsForSequence(lhsPatternExpr);
         if (n > 1 && ((fOnlySequencesTakeSeveral && !sequence)
             // g_[y__] or _[x_] takes exactly one operand, never a group wrapped in the Flat head
-            || (lhsPatternExpr.isAST() && lhsPatternExpr.head() instanceof IPatternObject))) {
+            || (lhsPatternExpr.isAST() && lhsPatternExpr.head() instanceof IPatternObject)
+            // only a pattern object takes a group: (b_.*t(y_))^n_. matches t(z)*r(z) on its own
+            // with b->r(z), but in s(y_)*(b_.*t(y_))^n_. it doesn't take t(z)*r(z) of
+            // s(z)*t(z)*r(z), which doesn't match
+            || !takesSeveral(lhsPatternExpr, fSymbol))) {
           matched = false;
           return false;
         }
@@ -131,6 +135,28 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
         fPatternMap.resetPattern(patternValues);
       }
     }
+  }
+
+  /**
+   * Whether the pattern may take several arguments of the Flat head <code>flat</code>, wrapped in
+   * it: a pattern object <code>x_</code>, <code>x__</code>, <code>x_h</code> or <code>x_.</code>,
+   * also with a condition, a test, a default, <code>Longest</code>, <code>Shortest</code> or
+   * <code>HoldPattern</code>, a pattern with the head <code>flat</code> itself, or alternatives of
+   * which one does.
+   */
+  private static boolean takesSeveral(IExpr pattern, ISymbol flat) {
+    if (pattern instanceof IPatternObject) {
+      return true;
+    }
+    if (pattern.isCondition() || pattern.isAST(S.PatternTest, 3) || pattern.isOptional()
+        || pattern.isAST(S.Longest) || pattern.isAST(S.Shortest)
+        || pattern.isAST(S.HoldPattern, 2)) {
+      return takesSeveral(pattern.first(), flat);
+    }
+    if (pattern.isAlternatives()) {
+      return ((IAST) pattern).exists(p -> takesSeveral(p, flat));
+    }
+    return pattern.isAST() && pattern.head().equals(flat);
   }
 
   /** Debug output of one partition, used by the step iterators. */
