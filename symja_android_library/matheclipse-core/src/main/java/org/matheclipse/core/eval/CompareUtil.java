@@ -1112,10 +1112,21 @@ public class CompareUtil {
     }
     final ThreadLocalRandom tlr = ThreadLocalRandom.current();
     for (int i = 0; i < 36; i++) {
-      IExpr sample = function.replaceAll(F.mapList(variables,
-          t -> F.Rule(t, F.complex(exactNumber(tlr.nextDouble(-100, 100)),
-              exactNumber(tlr.nextDouble(-100, 100))))));
-      COMPARE_TERNARY zero = isZeroAtSample(sample, engine);
+      // a point whose machine value decides nothing, because Sin(c+d*x) or E^(d*x) is 10^2000
+      // there, is drawn again closer to the origin: more digits would have to be thousands
+      COMPARE_TERNARY zero = IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      IExpr sample = F.NIL;
+      for (double range = 100.0; range >= 1.0; range /= 10.0) {
+        final double r = range;
+        sample = function.replaceAll(F.mapList(variables,
+            t -> F.Rule(t, F.complex(exactNumber(tlr.nextDouble(-r, r)),
+                exactNumber(tlr.nextDouble(-r, r))))));
+        zero = isPossibleZeroApproximate(sample, engine);
+        if (zero != IExpr.COMPARE_TERNARY.UNDECIDABLE) {
+          break;
+        }
+      }
+      zero = isZeroAtSample(sample, zero, engine);
       if (zero == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
@@ -1198,7 +1209,15 @@ public class CompareUtil {
    * denominator which cancels to 0.0 looks like a pole. More digits decide.
    */
   private static COMPARE_TERNARY isZeroAtSample(IExpr sample, EvalEngine engine) {
-    COMPARE_TERNARY zero = isPossibleZeroApproximate(sample, engine);
+    return isZeroAtSample(sample, isPossibleZeroApproximate(sample, engine), engine);
+  }
+
+  /**
+   * The zero test of a function at an exact sample point whose machine value gave
+   * <code>zero</code>.
+   */
+  private static COMPARE_TERNARY isZeroAtSample(IExpr sample, COMPARE_TERNARY zero,
+      EvalEngine engine) {
     if (zero != IExpr.COMPARE_TERNARY.TRUE && sample.isAST()
         && sample.leafCount() >= DEEP_CANCELLATION_LEAFCOUNT
         && isZeroWithRisingPrecision((IAST) sample, false, engine)) {

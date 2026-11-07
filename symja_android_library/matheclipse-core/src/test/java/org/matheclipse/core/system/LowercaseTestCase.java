@@ -956,6 +956,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testInverseCircularComplexWithZeroImaginaryPart() {
+    // a complex machine number on the real axis has the value of the real number, on the cuts as
+    // well: the side which the derivative 1/Sqrt(1-z^2) continues
+    check("{ArcSin(3.5), ArcSin(Complex(3.5, 0.0)), ArcSin(-3.5), ArcSin(Complex(-3.5, 0.0))}", //
+        "{1.5708+I*(-1.92485),1.5708+I*(-1.92485),-1.5708+I*1.92485,-1.5708+I*1.92485}");
+    check("{ArcCos(3.5), ArcCos(Complex(3.5, 0.0)), ArcCos(-3.5), ArcCos(Complex(-3.5, 0.0))}", //
+        "{I*1.92485,I*1.92485,3.14159+I*(-1.92485),3.14159+I*(-1.92485)}");
+    check("{ArcCsc(0.4), ArcCsc(Complex(0.4, 0.0)), ArcSec(0.4), ArcSec(Complex(0.4, 0.0))}", //
+        "{1.5708+I*(-1.5668),1.5708+I*(-1.5668),I*1.5668,I*1.5668}");
+    // the quotient of two imaginary numbers is a complex number with a zero imaginary part
+    check("ArcSin(Sqrt(-7.0)/Sqrt(-0.5))-ArcSin(Sqrt(14.0))", //
+        "0.0");
+    check("ArcSin(Complex(0.25, 0.0))", //
+        "0.25268");
+  }
+
+  @Test
   public void testArcSin() {
     check("ArcSin(-1+I)", //
         "I*ArcSinh(1+I)");
@@ -33664,6 +33681,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PossibleZeroQ(Sqrt(y^2)-y)", //
         "False");
     check("PossibleZeroQ(Sqrt(u)*Sqrt(v)-Sqrt(u*v))", //
+        "False");
+  }
+
+  @Test
+  public void testPossibleZeroQTrigOfLinearArgument() {
+    // at random complex points up to 100 the argument u+v*w reaches 10^4 and every term 10^4000;
+    // such a point is drawn again closer to the origin
+    check("PossibleZeroQ(k*Tan(u+v*w)/(v*Sec(u+v*w)^(5/2)*Sqrt(k-k*Sec(u+v*w)))"
+        + "-k*Sin(u+v*w)/(v*Sec(u+v*w)^(3/2)*Sqrt(k-k*Sec(u+v*w))))", //
+        "True");
+    check("PossibleZeroQ(k*Tan(u+v*w)/(v*Sec(u+v*w)^(5/2)*Sqrt(k-k*Sec(u+v*w)))"
+        + "-k*Cos(u+v*w)/(v*Sec(u+v*w)^(3/2)*Sqrt(k-k*Sec(u+v*w))))", //
         "False");
   }
 
