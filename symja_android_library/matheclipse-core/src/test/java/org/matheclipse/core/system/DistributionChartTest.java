@@ -23,13 +23,28 @@ public class DistributionChartTest extends ExprEvaluatorTestCase {
         + "ChartElementFunction -> \"Density\"); {Length(Cases(g, _Rectangle, Infinity)), "
         + "MinMax(Cases(g, Rectangle({_, a_}, {_, b_}) :> {a, b}, Infinity))}", //
         "{2,{1.0,8.0}}");
-    // one rectangle under a complex of bands whose sides fade towards white and dark gray where
-    // the density is lowest, and meet in the fill where it peaks
+    // one rectangle under a complex of bands which fade from the fill where the density peaks
+    // towards white where it is lowest
     check("g = DistributionChart({{2,4,4,5,5,5,6,12}}, ChartElementFunction -> \"Density\", "
         + "ChartStyle -> RGBColor(0.2, 0.4, 0.8)); vc = Cases(g, (VertexColors -> c_) :> c, "
         + "Infinity)[[1]]; {Length(Cases(g, _GraphicsComplex, Infinity)), "
         + "Length(Cases(g, Polygon(f_) :> f, Infinity)[[1]]), Length(vc), "
         + "MinMax(vc[[All, 1]]), Union(Cases(g, _Rectangle, Infinity))}", //
-        "{1,120,242,{0.1,1.0},{Rectangle({0.803951,2.0},{1.19605,12.0})}}");
+        "{1,120,242,{0.2,1.0},{Rectangle({0.803951,2.0},{1.19605,12.0})}}");
+  }
+
+  @Test
+  public void testDensityColumnSidesShareTheirColour() {
+    // both corners of a sample have one colour; the default fill is the darkest, white the lightest
+    check("g = DistributionChart({{3,7,7,8,8,8,8,10,11,15}}, ChartElementFunction -> \"Density\"); "
+        + "vc = Cases(g, (VertexColors -> c_) :> c, Infinity)[[1]]; "
+        + "{Union(Map(Apply(SameQ, #) &, Partition(vc, 2))), "
+        + "MinMax(vc[[All, 3]]), MinMax(vc[[All, 2]])}", //
+        "{{True},{0.25,1.0},{0.835,1.0}}");
+    // the fill of a chart style
+    check("g = DistributionChart({{-4,-1,0,0,1,6}}, ChartElementFunction -> \"Density\", "
+        + "ChartStyle -> RGBColor(0.6, 0.3, 0.1)); "
+        + "MinMax(Cases(g, (VertexColors -> c_) :> c, Infinity)[[1, All, 3]])", //
+        "{0.1,1.0}");
   }
 }

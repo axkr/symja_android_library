@@ -26,6 +26,20 @@ public class MatrixPlotRasterTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMatrixPlotContentIsTheRaster() {
+    // without a mesh the raster is the content itself, not a list around it
+    check("Head(First(MatrixPlot({{7, -2}, {3, 3}, {0, 5}})))", //
+        "Raster");
+    check("Dimensions(MatrixPlot({{7, -2, 1}, {3, 3, 3}})[[1, 1]])", //
+        "{2,3,3}");
+    check("MatrixPlot({{0, 0, 0}})[[1, 1]]", //
+        "{{{1.0,1.0,1.0},{1.0,1.0,1.0},{1.0,1.0,1.0}}}");
+    // a mesh adds its lines next to the raster
+    check("Map(Head, First(MatrixPlot({{7, -2}, {3, 3}}, Mesh -> True)))", //
+        "{Raster,List}");
+  }
+
+  @Test
   public void testMatrixPlotDefaultColours() {
     // the same scale: blue at 1/4, white for 0, light orange at 0.6875 and {1, 0.42, 0} at the top
     check("Round(Cases(MatrixPlot({{2, -4}, {0, 8}}), Raster(r_, ___) :> r, Infinity), 0.001)", //

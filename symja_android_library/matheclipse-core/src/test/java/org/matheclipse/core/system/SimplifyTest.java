@@ -88,10 +88,9 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "I*(-2+Sqrt(5))");
 
 
-    // MMA factorizes this to (-2 + x)*(-1 + x) ? Although the ComplexityFunction returns 9 for both
-    // expressions
+    // the complexity is 9 for both forms: a factorization wins the tie
     check("2-3*x+x^2 // FullSimplify", //
-        "2-3*x+x^2");
+        "(-2+x)*(-1+x)");
     // MMA doesn't factorize this
     check("f(2-3*Sin(x)+Sin(x)^2) // FullSimplify", //
         "f(2-3*Sin(x)+Sin(x)^2)");

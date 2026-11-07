@@ -22,7 +22,8 @@ import org.matheclipse.core.tensor.img.ColorDataGradients;
  * <p>
  * Several datasets, <code>{{{w, h}, ...}, ...}</code>, are drawn one after the other with a wider
  * gap between them, and their bars are coloured by their position within the dataset. An entry
- * which is not a pair of numbers is left out.
+ * which is not a pair of numbers is left out. Unless a frame or <code>Axes -> False</code> replaces
+ * it, a gray baseline at height 0 carries a short tick at either end of every dataset.
  */
 public class RectangleChart extends AbstractChart {
 
@@ -141,6 +142,10 @@ public class RectangleChart extends AbstractChart {
       graphicsOptions.setAxes(S.False);
       framed = true;
     }
+    if (!framed && !axesOff(GraphicsOptions.optionValue(originalAST, S.Axes, F.NIL))) {
+      // drawn before the bars, right after the colour of the chart
+      primitives.append(2, baseline(boxes));
+    }
     if (datasets.argSize() > 1) {
       // the half gap in front of the first dataset is matched by one after the last
       xMax += gaps(barSpacing, boxes.size())[1] / 2.0;
@@ -154,6 +159,59 @@ public class RectangleChart extends AbstractChart {
     return framed && !GraphicsOptions.optionValue(originalAST, S.FrameTicks, F.NIL).isPresent()
         ? withoutBottomTicks(chart)
         : chart;
+  }
+
+  /**
+   * How far the baseline reaches past the first bar, as a fraction of the width of all bars.
+   * Measured from reference charts, like {@link #BASELINE_RIGHT}.
+   */
+  private static final double BASELINE_LEFT = 0.02;
+
+  /**
+   * How far the baseline reaches past the last bar, as a fraction of the width of all bars. The
+   * measured overhang is slightly longer on this side; it is not a rounded {@link #BASELINE_LEFT}.
+   */
+  private static final double BASELINE_RIGHT = 0.0204;
+
+  /** Whether an <code>Axes</code> option turns off both axes. */
+  private static boolean axesOff(IExpr axes) {
+    if (axes.isList()) {
+      return ((IAST) axes).forAll(x -> x.isFalse() || x.isNone());
+    }
+    return axes.isFalse() || axes.isNone();
+  }
+
+  /**
+   * The category baseline of a chart, a thin gray line at height 0 a little past the first and
+   * the last bar, and a tick 6 printer's points long going down from the start and the end of
+   * every dataset.
+   */
+  private static IAST baseline(List<Box> boxes) {
+    double start = boxes.get(0).from;
+    double end = boxes.get(boxes.size() - 1).to();
+    double width = end - start;
+    IASTAppendable lines = F.ListAlloc(3 + 2 * boxes.size());
+    lines.append(F.GrayLevel(0.5));
+    lines.append(F.unaryAST1(S.AbsoluteThickness, F.num(0.5)));
+    lines.append(F.Line(F.List(F.List(F.num(start - BASELINE_LEFT * width), F.C0),
+        F.List(F.num(end + BASELINE_RIGHT * width), F.C0))));
+    for (int i = 0; i < boxes.size(); i++) {
+      Box box = boxes.get(i);
+      // the position within a dataset grows, so a smaller or equal one starts the next dataset
+      if (i == 0 || box.position <= boxes.get(i - 1).position) {
+        lines.append(endTick(box.from));
+      }
+      if (i == boxes.size() - 1 || boxes.get(i + 1).position <= box.position) {
+        lines.append(endTick(box.to()));
+      }
+    }
+    return lines;
+  }
+
+  /** A tick 6 printer's points long going down from <code>{x, 0}</code>. */
+  private static IAST endTick(double x) {
+    IAST point = F.List(F.num(x), F.C0);
+    return F.Line(F.List(point, F.binaryAST2(S.Offset, F.List(F.C0, F.CN6), point)));
   }
 
   /** The chart with ticks only on the left and right of its frame. */

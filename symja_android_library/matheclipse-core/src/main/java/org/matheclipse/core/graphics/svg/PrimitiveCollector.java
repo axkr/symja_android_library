@@ -43,6 +43,19 @@ public final class PrimitiveCollector {
 
   /** Vertex table of the enclosing {@code GraphicsComplex}, or {@code null}. */
   private List<double[]> vertices;
+  /**
+   * Whether the points being read belong to a {@code Line}, whose {@code Offset(shift, pos)} points
+   * keep their shift in printer's points as the entries {@link #OFFSET_DX} and {@link #OFFSET_DY}.
+   * Only the SVG renderer applies the shift; a renderer without a printer's point scale draws the
+   * point at its position.
+   */
+  private boolean lineShifts;
+
+  /** Index of the horizontal printer's point shift of an {@code Offset} point of a line. */
+  public static final int OFFSET_DX = 2;
+
+  /** Index of the vertical printer's point shift of an {@code Offset} point of a line. */
+  public static final int OFFSET_DY = 3;
 
   /** The {@code VertexColors} of the enclosing {@code GraphicsComplex}, or {@code null}. */
   private List<Color> vertexColors;
@@ -1050,9 +1063,11 @@ public final class PrimitiveCollector {
     }
     beginMarkers(ast.arg1());
     List<List<double[]>> segments;
+    lineShifts = true;
     try {
       segments = segmentsOf(ast.arg1());
     } finally {
+      lineShifts = false;
       endMarkers(style, false);
     }
     if (segments.isEmpty()) {
@@ -2173,9 +2188,14 @@ public final class PrimitiveCollector {
           ColorUtil.dbl(scaled.arg2(), Double.NaN)};
     }
     if (expr.isAST(S.Offset, 3)) {
-      // the position of Offset(shift, pos); a Text applies the shift itself, other primitives
-      // are drawn at the position
-      return pointOf(((IAST) expr).arg2());
+      // the position of Offset(shift, pos); a Text applies the shift itself, a Line carries it
+      // along as two more entries, other primitives are drawn at the position
+      double[] p = pointOf(((IAST) expr).arg2());
+      if (lineShifts && expr.first().isList2() && p.length == 2) {
+        return new double[] {p[0], p[1], ColorUtil.dbl(expr.first().first(), 0.0),
+            ColorUtil.dbl(expr.first().second(), 0.0)};
+      }
+      return p;
     }
     if (vertices != null && expr.isInteger()) {
       int idx = expr.toIntDefault(0);

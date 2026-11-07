@@ -144,7 +144,11 @@ public class MatrixPlot extends ListPlot {
     GraphicsOptions.finishMatrixRaster(primitives, cells, rows, cols, matrixOptions.mesh,
         graphicsOptions, originalAST, S.Automatic);
 
-    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
+    // the raster alone is the content itself, so that First(MatrixPlot(...)) is the Raster
+    return createGraphicsFunction(
+        primitives.argSize() == 1 && primitives.arg1().isAST() ? (IAST) primitives.arg1()
+            : primitives,
+        graphicsOptions, wrappedAST);
   }
 
   /** The smallest finite entry, or 0 when there is none. */

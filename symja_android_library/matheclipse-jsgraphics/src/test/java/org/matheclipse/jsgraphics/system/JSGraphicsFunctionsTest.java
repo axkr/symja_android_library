@@ -190,4 +190,12 @@ public class JSGraphicsFunctionsTest extends AbstractTestCase {
     }
     return n;
   }
+
+  @Test
+  public void testJSXGraphLineWithOffsetPoint() {
+    // without a printer's point scale the Offset point is drawn at its position
+    String js = script("JSXGraph(Graphics({Line({{0, 0}, {2, 1}}), "
+        + "Line({{1, 0}, Offset({0, -6}, {1, 0})})}))", "jsxgraph");
+    assertEquals(2, count(js, "board.create('curve'"), js);
+  }
 }

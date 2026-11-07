@@ -149,8 +149,7 @@ public class DistributionChart extends AbstractChart {
    * The chart of <code>ChartElementFunction -> "Quantile"</code> or <code>"Density"</code>: one
    * column per dataset from its smallest to its largest value. A quantile column is crossed at the
    * quartiles and the median by lines in its fill darkened by 30%; a density column is shaded
-   * from the fill, where the kernel density estimate peaks, towards white and dark gray, where it is
-   * lowest.
+   * from the fill, where the kernel density estimate peaks, towards white, where it is lowest.
    */
   private IExpr columnChart(double[][] values, boolean quantile, IExpr chartStyle,
       IExpr chartLabels, GraphicsOptions graphicsOptions, IAST originalAST, IAST ast,
@@ -204,8 +203,7 @@ public class DistributionChart extends AbstractChart {
   /**
    * The shading of a density column, appended to <code>column</code>: the column's rectangle,
    * overlaid by a <code>GraphicsComplex</code> of the bands between the samples of the density,
-   * whose two sides are shaded towards white and towards dark gray where the density is lowest and
-   * meet in the fill where it peaks.
+   * shaded from the fill where the density peaks towards white where it is lowest.
    */
   private static void densityStrips(double[] sorted, double c, double half,
       BoxWhiskerChart.Orientation orientation, double[] rgb, IASTAppendable column,
@@ -239,10 +237,11 @@ public class DistributionChart extends AbstractChart {
       double t = dMax > dMin ? (density[k] - dMin) / (dMax - dMin) : 1.0;
       vertices.append(orientation.point(c - half, y));
       vertices.append(orientation.point(c + half, y));
-      colors.append(F.RGBColor(1.0 - t * (1.0 - rgb[0]), 1.0 - t * (1.0 - rgb[1]),
-          1.0 - t * (1.0 - rgb[2])));
-      colors.append(
-          F.RGBColor(0.1 + t * (rgb[0] - 0.1), 0.1 + t * (rgb[1] - 0.1), 0.1 + t * (rgb[2] - 0.1)));
+      IAST color = F.RGBColor(1.0 - t * (1.0 - rgb[0]), 1.0 - t * (1.0 - rgb[1]),
+          1.0 - t * (1.0 - rgb[2]));
+      // both sides of a sample share its colour; the bands interpolate between the samples
+      colors.append(color);
+      colors.append(color);
     }
     IASTAppendable bands = F.ListAlloc(STRIPS);
     for (int k = 0; k < STRIPS; k++) {

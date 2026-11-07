@@ -12002,7 +12002,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // DataRange gives the centres of the outer cells: the raster is half a cell wider
     check("First(ArrayPlot({{1, 2}, {3, 4}}, DataRange -> {{-2, 2}, {-1, 1}}))[[2]]", //
         "{{-4.0,-2.0},{4.0,2.0}}");
-    check("First(MatrixPlot({{1, 2}, {3, 4}}, DataRange -> {{0, 1}, {0, 1}}))[[1, 2]]", //
+    check("First(MatrixPlot({{1, 2}, {3, 4}}, DataRange -> {{0, 1}, {0, 1}}))[[2]]", //
         "{{-0.5,-0.5},{1.5,1.5}}");
     // with a Mesh there is more than the raster
     check("Head(First(ArrayPlot({{1, 2}, {3, 4}}, Mesh -> True)))", //

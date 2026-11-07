@@ -2645,6 +2645,12 @@ public class SimplifyUtil extends VisitorExpr {
             && ctx.result.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT
             && isApartCandidate(ctx.expr)) {
           IExpr apart = ctx.util.eval(F.Apart(ctx.expr));
+          if (ctx.util.fFullSimplify) {
+            IExpr absorbed = absorbReciprocalFactors(apart, ctx.util);
+            if (absorbed.isPresent()) {
+              apart = absorbed;
+            }
+          }
           if (isQuotient(ctx.result.result)) {
             // a quotient keeps its form on a tie: (2+u)/(2-u) stays
             ctx.result.checkLess(apart);
@@ -2708,6 +2714,28 @@ public class SimplifyUtil extends VisitorExpr {
           ctx.result.checkLess(temp);
         }
         ctx.util.tryCollectVariables(ctx.ast(), ctx.result);
+      }), //
+      // The forms of a univariate integer polynomial are searched as a whole: the search decides
+      // between the expanded form, factorizations and nested forms with its own tie rules, so its
+      // result wins a tie with the candidates of the steps above.
+      new Step("UnivariatePolynomial", CatchPolicy.RUNTIME, ctx -> {
+        if (!ctx.util.fFullSimplify) {
+          return;
+        }
+        if (ctx.input.isPlus()) {
+          IExpr form = UnivariatePolynomialForms.bestForm(ctx.input,
+              ctx.util.fComplexityFunction, EvalEngine.get());
+          if (form.isPresent()) {
+            // a tie goes to the search, which has its own tie rules
+            ctx.result.checkLessEqual(form);
+          }
+        } else {
+          IExpr form = UnivariatePolynomialForms.bestQuotientForm(ctx.result.result,
+              ctx.util.fComplexityFunction, EvalEngine.get());
+          if (form.isPresent()) {
+            ctx.result.checkLess(form);
+          }
+        }
       }) //
   };
 
@@ -2716,6 +2744,38 @@ public class SimplifyUtil extends VisitorExpr {
    * one expression, so this is a runaway guard, not a tuning knob.
    */
   private static final int MAX_TRANSFORMATION_CACHE_SIZE = 4096;
+
+  /**
+   * Multiply the numeric factor <code>1/n</code> of a partial fraction into its denominator where
+   * that is cheaper: <code>-1/(2*(-1+y))</code> becomes <code>1/(2-2*y)</code>.
+   *
+   * @param sum the partial fractions
+   * @param util the simplifier
+   * @return the sum with every such factor absorbed, or {@link F#NIL} if there was none
+   */
+  private static IExpr absorbReciprocalFactors(IExpr sum, SimplifyUtil util) {
+    if (!sum.isPlus()) {
+      return F.NIL;
+    }
+    IASTMutable result = ((IAST) sum).copy();
+    boolean changed = false;
+    for (int i = 1; i < result.size(); i++) {
+      IExpr summand = result.get(i);
+      if (summand.isTimes2() && summand.first().isRational() && summand.second().isPower()
+          && summand.second().exponent().isMinusOne() && summand.second().base().isPlus()
+          && ((IRational) summand.first()).numerator().abs().isOne()) {
+        IExpr factor = ((IRational) summand.first()).inverse();
+        IExpr base = util.eval(F.Expand(F.Times(factor, summand.second().base())));
+        IExpr absorbed = F.Power(base, F.CN1);
+        // only where it pays: -1/(1+x^2) is cheaper than 1/(-1-x^2)
+        if (util.fComplexityFunction.apply(absorbed) < util.fComplexityFunction.apply(summand)) {
+          result.set(i, absorbed);
+          changed = true;
+        }
+      }
+    }
+    return changed ? util.eval(result) : F.NIL;
+  }
 
   private IExpr tryTransformations(IExpr expr) {
     if (!expr.isAST()) {

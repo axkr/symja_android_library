@@ -1068,4 +1068,27 @@ public class SvgPrimitiveTest {
     assertEquals(new Color(170, 0, 85), mean);
     assertEquals(mean, listed.get(0).style.faceColor);
   }
+
+  @Test
+  public void testOffsetPointOfALineIsShiftedInPrinterPoints() {
+    String input = "Graphics({Line({{0, 0}, {2, 1}}), Line({{1, 0}, Offset({0, -6}, {1, 0})})})";
+    Prim2D.LinePrim tick = (Prim2D.LinePrim) collect(input).get(1);
+    double[] end = tick.segments.get(0).get(1);
+    assertEquals(4, end.length);
+    assertEquals(-6.0, end[PrimitiveCollector.OFFSET_DY], 1e-12);
+    // the tick goes 6 units down from its base; the plain line is not shifted
+    java.util.regex.Matcher m = java.util.regex.Pattern
+        .compile("d=\\\"M ([-0-9.]+) ([-0-9.]+) L ([-0-9.]+) ([-0-9.]+)\\\"")
+        .matcher(export(input));
+    int ticks = 0;
+    while (m.find()) {
+      double dx = Double.parseDouble(m.group(3)) - Double.parseDouble(m.group(1));
+      double dy = Double.parseDouble(m.group(4)) - Double.parseDouble(m.group(2));
+      if (dx == 0.0) {
+        assertEquals(6.0, dy, 1e-9);
+        ticks++;
+      }
+    }
+    assertEquals(1, ticks);
+  }
 }
