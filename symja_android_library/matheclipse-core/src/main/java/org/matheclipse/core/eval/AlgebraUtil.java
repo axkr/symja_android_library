@@ -320,6 +320,15 @@ public class AlgebraUtil {
      * @return F.NIL if no evaluation is possible
      */
     public IExpr expandAST(final IAST ast) {
+      return expandAST(ast, false);
+    }
+
+    /**
+     * @param termOfSum <code>ast</code> is a term of a sum, see
+     *        {@link #expandPowerNIL(IAST, boolean)}
+     * @return F.NIL if no evaluation is possible
+     */
+    private IExpr expandAST(final IAST ast, boolean termOfSum) {
       if (isPatternFree(ast)) {
         return F.NIL;
       }
@@ -332,7 +341,7 @@ public class AlgebraUtil {
       }
 
       if (ast.isPower()) {
-        return expandPowerNIL(ast);
+        return expandPowerNIL(ast, termOfSum);
       } else if (ast.isTimes()) {
         // (a+b)*(c+d)...
         EvalEngine engine = EvalEngine.get();
@@ -345,6 +354,10 @@ public class AlgebraUtil {
         }
         IExpr[] parts = temp.get();
         if (parts[0].isOne()) {
+          if (keepPolynomialDenominators && isProductOfPolynomialPowers(parts[1])) {
+            addExpanded(ast);
+            return F.NIL;
+          }
           if (parts[1].isTimes()) {
             tempExpr = expandTimes((IAST) parts[1], engine);
             if (tempExpr.isPresent()) {
@@ -446,7 +459,7 @@ public class AlgebraUtil {
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
         if (arg.isAST()) {
-          IExpr temp = expandAST((IAST) arg);
+          IExpr temp = expandAST((IAST) arg, true);
           if (temp.isPresent()) {
             if (result.isNIL()) {
               result = ast.copyUntil(ast.size(), i);
@@ -560,6 +573,19 @@ public class AlgebraUtil {
      * @return
      */
     private IExpr expandPowerNIL(final IAST powerAST) {
+      return expandPowerNIL(powerAST, false);
+    }
+
+    /**
+     * @param termOfSum <code>powerAST</code> is a term of a sum. For <code>Together</code>
+     *        (<code>keepPolynomialDenominators</code>) only such a positive fractional power of a
+     *        sum is split into <code>Sqrt(1+x/r)*(1+x/r)^2</code>, which lets it combine with the
+     *        other powers of <code>1+x/r</code> in the sum. A factor or a whole expression
+     *        <code>(1+x/r)^(5/2)</code> stays a power: multiplied out with the other factors the
+     *        split form grows into a big sum, and <code>Together</code> puts the base over one
+     *        denominator on its own.
+     */
+    private IExpr expandPowerNIL(final IAST powerAST, boolean termOfSum) {
       IExpr base = powerAST.arg1();
       IExpr exponent = powerAST.arg2();
       IExpr temp = F.NIL;
@@ -570,7 +596,7 @@ public class AlgebraUtil {
         }
       }
       if ((base.isPlus())) {
-        if (exponent.isFraction()) {
+        if (exponent.isFraction() && (termOfSum || !keepPolynomialDenominators)) {
           IFraction fraction = (IFraction) exponent;
           if (fraction.isPositive()) {
             INumber floorPart = fraction.floorFraction().normalize();
@@ -1932,10 +1958,23 @@ public class AlgebraUtil {
       temp.ifPresent(x -> result[0] = F.ast(x, localASTSize));
     }
     final IAST localASTFinal = localAST;
+    // Together splits a fractional power of a sum only as a term of a sum, see
+    // Expander#expandPowerNIL(IAST, boolean): expanded on its own it would stay a power, so only
+    // its base is expanded here and the sum splits it
+    final boolean termsOfSum = keepPolynomialDenominators && localAST.isPlus();
     localAST.forEach((x, i) -> {
       if (x.isAST()) {
-        IExpr t = expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms,
-            keepPolynomialDenominators, engine);
+        IExpr t;
+        if (termsOfSum && isFractionalPowerOfSum(x)) {
+          t = expandAll((IAST) x.base(), patt, expandNegativePowers, distributePlus, factorTerms,
+              keepPolynomialDenominators, engine);
+          if (t.isPresent()) {
+            t = F.Power(t, x.exponent());
+          }
+        } else {
+          t = expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms,
+              keepPolynomialDenominators, engine);
+        }
         if (t.isPresent()) {
           if (result[0].isNIL()) {
             int size = localASTFinal.size() + 4; // 4 -> empirically determined value in JUnit tests
@@ -5077,10 +5116,19 @@ public class AlgebraUtil {
     return variables.argSize() > 0 && expr.isPolynomial(variables);
   }
 
+  /** Is <code>expr</code> a sum raised to a positive fraction, like <code>(1+x/r)^(5/2)</code>? */
+  private static boolean isFractionalPowerOfSum(IExpr expr) {
+    return expr.isPower() && expr.exponent().isFraction() && expr.exponent().isPositive()
+        && expr.base().isPlus();
+  }
+
   /**
    * Test if a denominator is a product of positive integer powers of polynomials in their
    * variables (and numbers): the common denominator of such fractions is built from these factors,
-   * so the denominator is not multiplied out.
+   * so the denominator is not multiplied out. A positive fractional power of a sum is such a factor
+   * too: <code>(1+x/r)^(5/2)</code> stays a power whose base <code>Together</code> handles on its
+   * own, where its expansion <code>Sqrt(1+x/r)*(1+x/r)^2</code> multiplied by the other factors
+   * grows into a large sum.
    */
   private static boolean isProductOfPolynomialPowers(IExpr denominator) {
     IAST factors = denominator.isTimes() ? (IAST) denominator : F.Times(denominator);
@@ -5090,6 +5138,9 @@ public class AlgebraUtil {
         continue;
       }
       IExpr base = factor;
+      if (isFractionalPowerOfSum(factor)) {
+        continue;
+      }
       if (factor.isPower()) {
         if (!factor.exponent().isInteger() || !factor.exponent().isPositive()) {
           return false;

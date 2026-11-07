@@ -1040,6 +1040,14 @@ public class PolynomialFunctions {
         expr = F.evalExpandAll(expr, engine);
         // expr = engine.evaluate(expr.normal(false));
       }
+      if (list.argSize() == 1) {
+        // a+b*x^2+c*x^4 is a+b*y+c*y^2 in y == x^2, as for Coefficient()
+        IExpr powers =
+            Algebra.substitutePowersOfVariable(expr, list.arg1(), list, "§CoefficientList");
+        if (powers.isPresent()) {
+          return ASTSeriesData.coefficientList(powers.first(), F.list(powers.second()));
+        }
+      }
 
       return ASTSeriesData.coefficientList(expr, list);
     }

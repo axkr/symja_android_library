@@ -752,6 +752,7 @@ public class CompareUtil {
             || isZeroWithRisingPrecision(function, true, engine);
       }
 
+      boolean expandedAll = false;
       if (function.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
         IExpr expr;
         if (function.hasTrigonometricFunction()) {
@@ -772,6 +773,7 @@ public class CompareUtil {
           if (expr.isZero()) {
             return true;
           }
+          expandedAll = true;
         }
 
         if (!expr.isAST()) {
@@ -902,6 +904,14 @@ public class CompareUtil {
       if (temp.isPresent() && engine.evaluate(temp).isZero()) {
         return true;
       }
+      if (!expandedAll) {
+        // AppellF1(.., 2*c/(2*c*d-(b+s)*e)) - AppellF1(.., 2*c/(2*c*d-b*e-s*e)): an expression too
+        // large for the ExpandAll above, whose function arguments are equal once expanded
+        temp = expandInArguments(function, engine);
+        if (temp.isPresent() && engine.evaluate(temp).isZero()) {
+          return true;
+        }
+      }
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
       Errors.printMessage(S.PossibleZeroQ, ve, engine);
@@ -943,6 +953,64 @@ public class CompareUtil {
       }
     }
     return result;
+  }
+
+  /**
+   * <code>expr</code> with the arguments of its functions and the bases of its powers with a
+   * non-integer exponent expanded by <code>ExpandAll</code>, so that arguments which are equal but
+   * written differently, <code>2*c*d-(b+s)*e</code> and <code>2*c*d-b*e-s*e</code>, become one
+   * expression. Sums and products themselves are not multiplied out: their factors are what the
+   * expansion of a whole expression would let grow.
+   *
+   * @return {@link F#NIL} if no argument changed
+   */
+  private static IExpr expandInArguments(IExpr expr, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isPower() && !ast.exponent().isInteger()) {
+      // Sqrt(AppellF1(..)): a base which isn't expanded can have functions in it
+      IExpr base = expandArgument(ast.base(), engine);
+      if (base.isNIL()) {
+        base = expandInArguments(ast.base(), engine);
+      }
+      IExpr exponent = expandArgument(ast.exponent(), engine);
+      if (base.isPresent() || exponent.isPresent()) {
+        return F.Power(base.orElse(ast.base()), exponent.orElse(ast.exponent()));
+      }
+      return F.NIL;
+    }
+    boolean function = ast.head().isBuiltInSymbol() && !ast.isPlus() && !ast.isTimes()
+        && !ast.isPower() && !ast.isList();
+    IASTMutable result = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      IExpr newArg = function ? expandArgument(arg, engine) : expandInArguments(arg, engine);
+      if (newArg.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, newArg);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * <code>ExpandAll(arg)</code> for a sum, product or power of moderate size.
+   *
+   * @return {@link F#NIL} if <code>arg</code> is not expanded or doesn't change
+   */
+  private static IExpr expandArgument(IExpr arg, EvalEngine engine) {
+    if ((arg.isPlus() || arg.isTimes() || arg.isPower())
+        && arg.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
+      IExpr expanded = F.evalExpandAll(arg, engine);
+      if (!expanded.equals(arg)) {
+        return expanded;
+      }
+    }
+    return F.NIL;
   }
 
   /**

@@ -7164,7 +7164,14 @@ public class Algebra {
           polyExpr = F.subst(polyExpr, variable, dummy);
           substitutedVariableList.append(dummy);
         } else {
-          substitutedVariableList.append(variable);
+          IExpr powersOfVariable =
+              substitutePowersOfVariable(polyExpr, variable, variablesList, dummyStr + i);
+          if (powersOfVariable.isPresent()) {
+            polyExpr = powersOfVariable.first();
+            substitutedVariableList.append(powersOfVariable.second());
+          } else {
+            substitutedVariableList.append(variable);
+          }
         }
       } else {
         // `1` is not a valid variable.
@@ -7174,6 +7181,72 @@ public class Algebra {
 
     }
     return F.list(polyExpr, substitutedVariableList);
+  }
+
+  /**
+   * For a variable <code>x^k</code> with a symbol <code>x</code> and an integer <code>k &gt; 1</code>
+   * replace every power <code>x^(j*k)</code> in <code>polyExpr</code> by <code>dummy^j</code>, so
+   * that <code>a+b*x^2+c*x^4</code> is the polynomial <code>a+b*dummy+c*dummy^2</code> in
+   * <code>x^2</code>.
+   *
+   * <p>
+   * Only the sums, products and integer powers around the powers of <code>x</code> are searched: in
+   * <code>Sin(x^4)</code> the <code>x^4</code> is part of a coefficient, and a dummy there would
+   * leak into the result.
+   *
+   * @return <code>{substitutedExpr, dummy}</code>, or {@link F#NIL} if <code>variable</code> is no
+   *         such power, another variable contains <code>x</code>, or <code>x</code> also occurs
+   *         other than in such powers (<code>x^3</code> is no power of <code>x^2</code>,
+   *         <code>Sin(x^4)</code> is no polynomial in it)
+   */
+  static IExpr substitutePowersOfVariable(IExpr polyExpr, IExpr variable, IAST variablesList,
+      String dummyStr) {
+    if (!variable.isPower() || !variable.base().isSymbol() || !variable.exponent().isInteger()) {
+      return F.NIL;
+    }
+    final IExpr base = variable.base();
+    final int k = variable.exponent().toIntDefault();
+    if (k <= 1 || polyExpr.isFree(base, true)
+        || variablesList.exists(v -> v != variable && !v.isFree(base, true))) {
+      return F.NIL;
+    }
+    final ISymbol dummy = F.Dummy(dummyStr);
+    IExpr substituted = substitutePowers(polyExpr, base, k, dummy).orElse(polyExpr);
+    if (!substituted.isFree(base, true)) {
+      return F.NIL;
+    }
+    return F.list(substituted, dummy);
+  }
+
+  /**
+   * Replace <code>base^(j*k)</code> by <code>dummy^j</code> in the sums, products and integer
+   * powers of <code>expr</code>.
+   *
+   * @return {@link F#NIL} if nothing was replaced
+   */
+  private static IExpr substitutePowers(IExpr expr, IExpr base, int k, ISymbol dummy) {
+    if (expr.isPower() && expr.base().equals(base)) {
+      int j = expr.exponent().toIntDefault();
+      if (j > 0 && j % k == 0) {
+        return j == k ? dummy : F.Power(dummy, F.ZZ(j / k));
+      }
+      return F.NIL;
+    }
+    if (!expr.isPlus() && !expr.isTimes() && !(expr.isPower() && expr.exponent().isInteger())) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable result = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = substitutePowers(ast.get(i), base, k, dummy);
+      if (arg.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, arg);
+      }
+    }
+    return result;
   }
 
   private Algebra() {}
