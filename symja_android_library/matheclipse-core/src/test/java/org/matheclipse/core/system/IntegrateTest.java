@@ -1479,6 +1479,23 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   @Test
   @Tag(TestTags.SLOW)
+  public void testExponentOfExpandedPowerOfLinear() {
+    // Symja extension, a rule of Rubi 4.16 which 4.17.3 dropped: an exponent which is an expanded
+    // power of a linear polynomial is factored back, F^(8+12*x+6*x^2+x^3) -> F^(2+x)^3
+    check("Integrate(E^(8+12*x+6*x^2+x^3), x)", //
+        "((-2-x)*Gamma(1/3,-(2+x)^3))/(3*(-(2+x)^3)^(1/3))");
+    check("Integrate(2^(1-3*x+3*x^2-x^3), x)", //
+        "((1-x)*Gamma(1/3,-(1-x)^3*Log(2)))/(3*((-1+x)^3)^(1/3)*Log(2)^(1/3))");
+    // with a polynomial factor
+    check("Integrate(x*E^(8+12*x+6*x^2+x^3), x)", //
+        "2/3*((2+x)*Gamma(1/3,-(2+x)^3))/(-(2+x)^3)^(1/3)+(-(2+x)^2*Gamma(2/3,-(2+x)^3))/(\n"
+            + "3*(-(2+x)^3)^(2/3))");
+    // not a power of a linear polynomial
+    check("Integrate(E^(x+x^3), x)", //
+        "Integrate(E^(x+x^3),x)");
+  }
+
+  @Test
   public void testDilogarithmIntegrationByParts() {
     // Symja extension, proposed upstream in RuleBasedIntegration/Rubi#63 by benruijl: an
     // integration-by-parts rule for Int(PolyLog(2,u),x) where u is a rational function whose
@@ -1513,7 +1530,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testLogOverQuadratic() {
     // Rubi 3044 integrates Log(u)/Qx by parts with v=IntHide(1/Qx,x), which leaves
-    // Int(ArcTan(x)*2/(x*(1+x^2))). That one is finished by rule 2897, whose
+    // Int(ArcTan(x)*2/(x*(1+x^2))). That one is finished by rule 2898, whose
     // C=FullSimplify(Pq^m*(1-u)/D(u,x)) contributes the PolyLog term. FullSimplify used to
     // return 0 for C because Apart() - one of the rewrite candidates it ranks by complexity -
     // returned 0 for a Gaussian-integer fraction (see AlgebraTest#testApartGaussianDenominator),

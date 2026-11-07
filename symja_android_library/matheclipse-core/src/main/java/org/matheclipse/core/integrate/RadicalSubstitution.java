@@ -82,7 +82,7 @@ public class RadicalSubstitution {
       // DEFER: a bare RootSum is declined here, so the general Integrate below asks the Rubi rules
       // first, which answer 2*t^2/(1+t^4) in ArcTan and Log, and falls back to the RootSum itself.
       // A bare RootSum is also refused by every Rubi rule that asked for this integral, which left
-      // Integrate(Sqrt(Tan(x)),x) - rule 3969 substitutes to Sqrt(x)/(1+x^2) - unevaluated.
+      // Integrate(Sqrt(Tan(x)),x) - rule 3970 substitutes to Sqrt(x)/(1+x^2) - unevaluated.
       IExpr innerResult =
           RationalIntegration.integrate(inner, t, engine, RationalIntegration.RootSumMode.DEFER);
       if (innerResult.isNIL()) {

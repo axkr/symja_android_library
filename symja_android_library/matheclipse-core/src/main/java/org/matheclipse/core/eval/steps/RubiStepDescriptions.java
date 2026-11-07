@@ -23,10 +23,10 @@ import org.matheclipse.core.parser.ExprParser;
  * <code>ShowStep</code> saying under which condition it applies and what it turns the integral
  * into. <code>ConvertRubiShowSteps</code> in the <code>tools</code> module reads those out and
  * writes them as <code>rubi/rubi_steps.tsv.gz</code>, keyed by the rule number Symja knows a rule
- * by, so a step of an integration can say more than "rule 3125 was applied":
+ * by, so a step of an integration can say more than "rule 3126 was applied":
  *
  * <pre>
- * Rubi integration rule 3125. If IGtQ[(n-1)/(2),0], rewrite the integral of sin(c+d x)^n
+ * Rubi integration rule 3126. If IGtQ[(n-1)/(2),0], rewrite the integral of sin(c+d x)^n
  * as -1/d times the integral of Expand[(1-x^2)^((n-1)/2)] substituted at x = cos(c+d x).
  * </pre>
  *

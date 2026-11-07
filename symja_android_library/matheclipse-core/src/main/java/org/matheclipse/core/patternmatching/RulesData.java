@@ -950,7 +950,7 @@ public final class RulesData implements Serializable {
     if (result.isPresent()) {
       if (patternEvaluator.getLHS().isAST(S.Integrate) && expr.equals(result)) {
         // The rule rewrote the integral to itself, which is what a Rubi rule delegating to
-        // ExpandIntegrand does when the integrand cannot be expanded: rule 2698 is
+        // ExpandIntegrand does when the integrand cannot be expanded: rule 2699 is
         // Int[F^(g*(d+e*x)^n)/(a+b*x+c*x^2)] -> Int[ExpandIntegrand[...]], and where that
         // expansion is not a sum ExpandIntegrand hands the integrand straight back. Around 300
         // rules have that shape.

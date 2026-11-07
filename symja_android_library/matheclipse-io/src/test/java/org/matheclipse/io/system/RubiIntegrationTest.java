@@ -1,6 +1,5 @@
 package org.matheclipse.io.system;
 
-import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.AtomQ;
@@ -61,6 +60,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 import javax.script.ScriptException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -629,11 +629,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "-Cos(a+b*x)/b+2/3*Cos(a+b*x)^3/b-Cos(a+b*x)^5/(5*b)");
 
     check("Integrate(Sin(a + b*x)^(1/2),x)", //
-        "(2*EllipticE(a/2-Pi/4+1/2*b*x,2))/b");
+        "(2*EllipticE(1/2*(a-Pi/2+b*x),2))/b");
     check("Integrate(Sin(a + b*x)^(3/2),x)",
-        "2/3*EllipticF(a/2-Pi/4+1/2*b*x,2)/b-2/3*(Cos(a+b*x)*Sqrt(Sin(a+b*x)))/b");
+        "2/3*EllipticF(1/2*(a-Pi/2+b*x),2)/b-2/3*(Cos(a+b*x)*Sqrt(Sin(a+b*x)))/b");
     check("Integrate(Sin(a + b*x)^(5/2),x)",
-        "6/5*EllipticE(a/2-Pi/4+1/2*b*x,2)/b-2/5*(Cos(a+b*x)*Sin(a+b*x)^(3/2))/b");
+        "6/5*EllipticE(1/2*(a-Pi/2+b*x),2)/b-2/5*(Cos(a+b*x)*Sin(a+b*x)^(3/2))/b");
 
     check("Integrate(x*Sin(a + b*x),x)", //
         "(-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2");
@@ -678,8 +678,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
     check("Integrate((a + b*Sin(c + g*x))^4,x)", //
         "1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(a*b*(-19*a^2-16*b^2)*Cos(c+g*x))/(6*g)+(b^2*(-26*a^\n"
-        + "2-9*b^2)*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
-        + "3)/(4*g)");
+            + "2-9*b^2)*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
+            + "3)/(4*g)");
 
     check("$f(a_.+b_.*c_):={a,b,c};$f(x)", //
         "{0,1,x}");

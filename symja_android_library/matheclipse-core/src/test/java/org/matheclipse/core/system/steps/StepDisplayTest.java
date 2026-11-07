@@ -129,9 +129,9 @@ public class StepDisplayTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAStepWhichChangesNothingIsNotShown() {
-    // rule 3054 only rewrites the integrand into the rule set's inert spelling
+    // rule 3055 only rewrites the integrand into the rule set's inert spelling
     String steps = derivation("Sin(x)/x^3");
-    assertFalse(steps.contains("rule 3054"), steps);
+    assertFalse(steps.contains("rule 3055"), steps);
   }
 
   @Test
