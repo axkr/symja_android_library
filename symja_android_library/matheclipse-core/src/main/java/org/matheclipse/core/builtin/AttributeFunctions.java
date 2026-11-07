@@ -370,8 +370,9 @@ public class AttributeFunctions {
         final IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
           if (((ISymbol) arg).hasProtectedAttribute()) {
+            // Tag `1` in `2` is Protected. - the evaluation around it goes on
             Errors.printMessage(S.SetAttributes, "write", F.list(arg), EvalEngine.get());
-            throw new FailedException();
+            return S.$Failed;
           }
           if (addAttributes(arg, attributes, ast, engine).isNIL()) {
             return F.NIL;

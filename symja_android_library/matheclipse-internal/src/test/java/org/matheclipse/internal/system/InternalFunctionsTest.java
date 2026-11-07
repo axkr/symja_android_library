@@ -282,6 +282,34 @@ public class InternalFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  public void testDirectoryByteCount() throws java.io.IOException {
+    java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("dbc");
+    java.nio.file.Path locked = dir.resolve("locked");
+    boolean filesystem = org.matheclipse.core.basic.Config.FILESYSTEM_ENABLED;
+    try {
+      java.nio.file.Files.writeString(dir.resolve("a.txt"), "12345");
+      java.nio.file.Files.createDirectories(dir.resolve("sub"));
+      java.nio.file.Files.writeString(dir.resolve("sub").resolve("b.txt"), "123");
+      // a subdirectory which may not be read is skipped, not an error
+      java.nio.file.Files.createDirectories(locked);
+      java.nio.file.Files.writeString(locked.resolve("c.txt"), "1234567");
+      locked.toFile().setReadable(false);
+      org.matheclipse.core.basic.Config.FILESYSTEM_ENABLED = true;
+      String path = dir.toString().replace("\\", "\\\\");
+      String expected = locked.toFile().canRead() ? "15" : "8";
+      check("Internal`DirectoryByteCount(\"" + path + "\")", //
+          expected);
+    } finally {
+      org.matheclipse.core.basic.Config.FILESYSTEM_ENABLED = filesystem;
+      locked.toFile().setReadable(true);
+      try (java.util.stream.Stream<java.nio.file.Path> paths = java.nio.file.Files.walk(dir)) {
+        paths.sorted(java.util.Comparator.reverseOrder()).map(java.nio.file.Path::toFile)
+            .forEach(java.io.File::delete);
+      }
+    }
+  }
+
+  @Test
   public void testSystemAliases() {
     check("Internal`RiccatiSolve === RiccatiSolve", //
         "True");

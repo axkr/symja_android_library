@@ -3788,6 +3788,14 @@ public final class PatternMatching {
         final String varAppend = EvalEngine.uniqueName(expr.toString());
         return F.symbol(varAppend, engine);
       }
+      if (expr.isAST()) {
+        // Unique holds a symbol, but a name computed as Context(s) <> SymbolName(s) <> "$" is
+        // evaluated first
+        IExpr evaluated = engine.evaluate(expr);
+        if (!evaluated.equals(expr)) {
+          return uniqueSymbols(evaluated, engine);
+        }
+      }
       // `1` is not a symbol or a valid symbol name.
       return Errors.printMessage(S.Unique, "usym", F.list(expr), engine);
     }

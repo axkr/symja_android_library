@@ -1,11 +1,13 @@
 package org.matheclipse.internal.builtin;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -309,15 +311,24 @@ public class StructureFunctions {
         // Directory `1` not found.
         return Errors.printMessage(S.General, "nodir", F.list(ast.arg1()), engine);
       }
-      try (Stream<Path> files = Files.walk(directory)) {
-        long bytes = files.filter(Files::isRegularFile).mapToLong(path -> {
-          try {
-            return Files.size(path);
-          } catch (IOException e) {
-            return 0L;
+      long[] bytes = new long[1];
+      try {
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+          @Override
+          public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
+            if (attributes.isRegularFile()) {
+              bytes[0] += attributes.size();
+            }
+            return FileVisitResult.CONTINUE;
           }
-        }).sum();
-        return F.ZZ(bytes);
+
+          @Override
+          public FileVisitResult visitFileFailed(Path file, IOException e) {
+            // a file or directory which may not be read doesn't count
+            return FileVisitResult.CONTINUE;
+          }
+        });
+        return F.ZZ(bytes[0]);
       } catch (IOException | RuntimeException e) {
         return Errors.printMessage(S.General, e, engine);
       }

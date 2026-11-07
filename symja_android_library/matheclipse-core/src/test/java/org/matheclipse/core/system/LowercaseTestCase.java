@@ -21648,6 +21648,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSetAttributesOfProtectedSymbol() {
+    // the message and $Failed, and the evaluation around it goes on
+    check("{SetAttributes(Times, Locked), 1 + 1}", //
+        "{$Failed,2}");
+    check("MemberQ(Attributes(Times), Locked)", //
+        "False");
+  }
+
+  @Test
+  public void testUniqueComputedName() {
+    // the WLJS notebook names its objects Unique(Context(s) <> SymbolName(s) <> "`$")
+    check("Head(Unique(\"uq\" <> \"name\"))", //
+        "Symbol");
+    check("StringStartsQ(SymbolName(Unique(StringJoin(\"uq\", \"pre\"))), \"uqpre\")", //
+        "True");
+    check("Head(Unique(Context(Sin) <> SymbolName(Sin) <> \"`$\"))", //
+        "Symbol");
+    // a computed value which isn't a name is still refused
+    check("Unique(3 + 4)", //
+        "Unique(3+4)");
+  }
+
+  @Test
   public void testNonPositiveReals() {
     check("{Element(-2, NonPositiveReals), Element(0, NonPositiveReals), "
         + "Element(3, NonPositiveReals), Element(I, NonPositiveReals), "
