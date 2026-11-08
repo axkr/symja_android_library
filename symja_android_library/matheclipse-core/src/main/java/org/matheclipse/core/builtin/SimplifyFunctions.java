@@ -361,7 +361,8 @@ public class SimplifyFunctions {
 
         // run the standard algebraic simplify steps first
         temp = SimplifyUtil.simplifyStep(arg1, defaultResult, complexityFunction, minCounter,
-            isFullSimplifyMode() || isVariableFreeNumber(arg1), false, engine);
+            isFullSimplifyMode() || isVariableFreeNumber(arg1), isFullSimplifyMode(), false,
+            engine);
 
         IExpr currentResult = temp.isPresent() ? temp : defaultResult;
         if (currentResult.isAST() && assumptionExpr.isPresent() && assumptionExpr.isAST()

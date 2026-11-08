@@ -9,8 +9,25 @@ import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
 
 public class CMath {
+  /** The complex double as an arbitrary precision number with the digits of a double. */
   public static Apcomplex apcomplex(Complex c) {
     return new Apcomplex(new Apfloat(c.getReal()), new Apfloat(c.getImaginary()));
+  }
+
+  /**
+   * The complex double as an arbitrary precision number with <code>precision</code> digits; a part
+   * which is zero stays an exact zero.
+   *
+   * @throws ArithmeticException if a part is not finite
+   */
+  public static Apcomplex apcomplex(Complex c, long precision) {
+    if (!c.isFinite()) {
+      throw new ArithmeticException("not a finite number");
+    }
+    Apfloat re = c.getReal() == 0.0 ? Apfloat.ZERO : new Apfloat(c.getReal(), precision);
+    Apfloat im =
+        c.getImaginary() == 0.0 ? Apfloat.ZERO : new Apfloat(c.getImaginary(), precision);
+    return new Apcomplex(re, im);
   }
 
   public static Complex toComplex(Apcomplex c) {

@@ -2545,7 +2545,7 @@ public class TensorFunctions {
       IASTAppendable translation = F.ListAlloc(dim);
       for (int i = 1; i <= dim; i++) {
         IAST row = (IAST) matrix.get(i);
-        linear.append(row.copyFrom(1, dim + 1));
+        linear.append(row.subList(1, dim + 1));
         translation.append(row.get(dim + 1));
       }
       return F.list(linear, translation);

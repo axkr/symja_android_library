@@ -10,6 +10,27 @@ import org.matheclipse.core.eval.EvalEngine;
 public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   /**
+   * The longest common contiguous run and its spans; among equal runs the one starting first in the
+   * longer argument wins.
+   */
+  @Test
+  public void testLongestCommonSubsequencePositions() {
+    check("LongestCommonSubsequencePositions(\"klmnop\", \"zmnoz\")", //
+        "{{3,5},{2,4}}");
+    check("LongestCommonSubsequencePositions({u, v, 7, w}, {w, 7})", //
+        "{{3,3},{2,2}}");
+    // the second argument is longer: its first run decides
+    check("{LongestCommonSubsequence(\"rs\", \"stttr\"), LongestCommonSubsequencePositions(\"rs\", \"stttr\")}", //
+        "{s,{{2,2},{1,1}}}");
+    check("{LongestCommonSubsequence(\"pqttrs\", \"rsuupq\"), LongestCommonSubsequencePositions(\"pqttrs\", \"rsuupq\")}", //
+        "{pq,{{1,2},{5,6}}}");
+    check("LongestCommonSubsequencePositions(\"abc\", \"def\")", //
+        "{}");
+    check("LongestCommonSubsequencePositions(x, \"def\")", //
+        "LongestCommonSubsequencePositions(x,def)");
+  }
+
+  /**
    * Strings are ordered by their letters and digits first, then by accents, punctuation and case.
    */
   @Test

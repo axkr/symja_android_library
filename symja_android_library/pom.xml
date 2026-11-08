@@ -61,6 +61,7 @@
 		<module>matheclipse-or-tools</module>
 		<module>matheclipse-compile</module>
 		<module>matheclipse-jsgraphics</module>
+		<module>matheclipse-internal</module>
 		<module>matheclipse-dataset</module>
 		<!-- 		<module>matheclipse-llm</module> -->
 		<module>matheclipse-api</module>

@@ -52,7 +52,7 @@ public class RubiStepDescriptionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTemplatesAreReadAsExpressions() {
-    RubiStepDescriptions.Description description = RubiStepDescriptions.get(3125);
+    RubiStepDescriptions.Description description = RubiStepDescriptions.get(3126);
     // held, so that rendering the rule's general shape never sets the integrator going on it
     assertEquals(S.HoldForm, description.before().head());
     assertEquals(S.HoldForm, description.after().head());
@@ -63,9 +63,9 @@ public class RubiStepDescriptionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAPlumbingRuleHasNoDescription() {
-    // rule 3054 only deactivates the trigonometric functions so the trig rules can match; Rubi
+    // rule 3055 only deactivates the trigonometric functions so the trig rules can match; Rubi
     // does not show it as a step of its own
-    assertNull(RubiStepDescriptions.get(3054));
+    assertNull(RubiStepDescriptions.get(3055));
   }
 
   @Test
@@ -79,16 +79,16 @@ public class RubiStepDescriptionsTest extends ExprEvaluatorTestCase {
   @Test
   public void testADescribedRuleNamesItsConditionAndRewrite() {
     String steps = evalString("TraceForm(Integrate(Sin(x)^3,x), 2)");
-    assertTrue(steps.contains("Rubi integration rule 3125."), steps);
+    assertTrue(steps.contains("Rubi integration rule 3126."), steps);
     assertTrue(steps.contains("If IGtQ[(n-1)/(2),0], rewrite Integrate(Sin(c+d*x)^n,x) as"), steps);
   }
 
   @Test
   public void testThePlumbingRulesAreNotShown() {
-    // Rule 3054 only rewrites the integrand into the rule set's own inert spelling. Written the
+    // Rule 3055 only rewrites the integrand into the rule set's own inert spelling. Written the
     // ordinary way it changes nothing, so it is not a step and the reader never sees it.
     String steps = evalString("TraceForm(Integrate(Sin(x)^3,x), Infinity)");
-    assertFalse(steps.contains("rule 3054"), steps);
+    assertFalse(steps.contains("rule 3055"), steps);
     assertFalse(steps.contains("deactivatetrig"), steps);
   }
 

@@ -213,7 +213,7 @@ public class PolarPlot extends Plot {
         };
       }
       data = org.matheclipse.core.sympy.plotting.Plot.computePlot(sampled, data, tMinD, tMaxD,
-          "Linear", plotPoints, maxRecursion);
+          "Linear", plotPoints, maxRecursion, false);
 
       if (data != null) {
         // one curve is a list of the polylines it is made of, which is how a curve broken by a

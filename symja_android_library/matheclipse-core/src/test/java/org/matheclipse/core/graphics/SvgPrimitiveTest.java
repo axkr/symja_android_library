@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.Color;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
@@ -35,7 +37,6 @@ public class SvgPrimitiveTest {
   @BeforeAll
   public static void setUpEngine() {
     Locale.setDefault(Locale.US);
-    Config.SERVER_MODE = false;
     // Other test classes lower these shared limits; a density style plot legitimately builds a
     // large expression (one rectangle per cell), so the ceiling has to be restored here rather
     // than inherited from whichever test ran last.
@@ -353,38 +354,30 @@ public class SvgPrimitiveTest {
    * <p>
    * Scaling linearly between the smallest and largest entry put almost every cell of
    * {@code Binomial} within a hair of the pale end, so the plot read as a flat field with one
-   * bright spot. Ranking the values spends the colour range on where the data actually is.
+   * bright spot. Half by rank and half by size, the 1s on the edges of the triangle are a pale
+   * yellow {0.957, 0.956, 0.892} and the largest entry the full orange {1, 0.42, 0}, with the
+   * shades of orange between them in use.
    */
   @Test
   public void testMatrixPlotSpreadsWideDynamicRange() {
     Prim2D.RasterPrim raster =
         singleRaster("MatrixPlot[Table[Binomial[n, k], {n, 0, 25}, {k, 0, n}]]");
-    double darkest = Double.MAX_VALUE;
-    double lightest = -Double.MAX_VALUE;
+    Set<Integer> colours = new HashSet<>();
     int opaque = 0;
-    int paleCells = 0;
     for (Color[] row : raster.cells) {
       for (Color c : row) {
         if (c == null || c.getAlpha() == 0) {
           continue;
         }
         opaque++;
-        double l = luminance(c);
-        darkest = Math.min(darkest, l);
-        lightest = Math.max(lightest, l);
-        if (l > 0.9 * 255) {
-          paleCells++;
-        }
+        colours.add(c.getRGB() & 0xFFFFFF);
       }
     }
-    final double spread = lightest - darkest;
     final int painted = opaque;
-    final int pale = paleCells;
     assertTrue(painted > 100, "expected the whole triangle to be painted, got " + painted);
-    assertTrue(spread > 120,
-        () -> "expected the colour range to be used, spread was only " + spread);
-    assertTrue(pale < painted / 2,
-        () -> "most cells collapsed to the pale end: " + pale + " of " + painted);
+    assertTrue(colours.contains(0xFF6B00), "the largest entry is {1, 0.42, 0}");
+    assertTrue(colours.contains(0xF4F4E3), "a 1 on the edge is {0.957, 0.956, 0.892}");
+    assertTrue(colours.size() > 50, () -> "expected many shades, got " + colours.size());
   }
 
   /** {@code DensityPlot}'s y axis points up, so the largest value sits at the top. */
@@ -1056,5 +1049,46 @@ public class SvgPrimitiveTest {
   public void testOpacityStillFadesALine() {
     assertTrue(svg("Graphics[{Opacity[0.4], Line[{{0, 0}, {1, 1}}]}]")
         .contains("stroke-opacity=\"0.400\""));
+  }
+
+  /**
+   * A single face <code>{i, j, k}</code> of a {@code GraphicsComplex} with {@code VertexColors} is
+   * filled with the mean of its vertex colours, like each face of a list of faces.
+   */
+  @Test
+  public void testVertexColorsSingleFace() {
+    List<Prim2D> single = collect("Graphics[GraphicsComplex[{{0, 0}, {2, 0}, {0, 2}}, "
+        + "Polygon[{1, 2, 3}], VertexColors -> {Red, Red, Blue}]]");
+    List<Prim2D> listed = collect("Graphics[GraphicsComplex[{{0, 0}, {2, 0}, {0, 2}}, "
+        + "Polygon[{{1, 2, 3}}], VertexColors -> {Red, Red, Blue}]]");
+    assertEquals(1, single.size());
+    assertEquals(1, listed.size());
+    Color mean = single.get(0).style.faceColor;
+    assertNotNull(mean);
+    assertEquals(new Color(170, 0, 85), mean);
+    assertEquals(mean, listed.get(0).style.faceColor);
+  }
+
+  @Test
+  public void testOffsetPointOfALineIsShiftedInPrinterPoints() {
+    String input = "Graphics({Line({{0, 0}, {2, 1}}), Line({{1, 0}, Offset({0, -6}, {1, 0})})})";
+    Prim2D.LinePrim tick = (Prim2D.LinePrim) collect(input).get(1);
+    double[] end = tick.segments.get(0).get(1);
+    assertEquals(4, end.length);
+    assertEquals(-6.0, end[PrimitiveCollector.OFFSET_DY], 1e-12);
+    // the tick goes 6 units down from its base; the plain line is not shifted
+    java.util.regex.Matcher m = java.util.regex.Pattern
+        .compile("d=\\\"M ([-0-9.]+) ([-0-9.]+) L ([-0-9.]+) ([-0-9.]+)\\\"")
+        .matcher(export(input));
+    int ticks = 0;
+    while (m.find()) {
+      double dx = Double.parseDouble(m.group(3)) - Double.parseDouble(m.group(1));
+      double dy = Double.parseDouble(m.group(4)) - Double.parseDouble(m.group(2));
+      if (dx == 0.0) {
+        assertEquals(6.0, dy, 1e-9);
+        ticks++;
+      }
+    }
+    assertEquals(1, ticks);
   }
 }

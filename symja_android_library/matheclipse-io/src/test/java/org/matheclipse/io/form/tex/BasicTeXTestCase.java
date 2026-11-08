@@ -542,7 +542,7 @@ public class BasicTeXTestCase {
   public void testTeX051() {
     StringBuilder sb = new StringBuilder();
     TeXFormFactory fTeXFactory = new TeXFormFactory();
-    fTeXFactory.convert(sb, F.symjify("x").add(F.symjify(-2).divide(F.symjify(4))),
+    fTeXFactory.convert(sb, F.symjify("x").plus(F.symjify(-2).divide(F.symjify(4))),
         Precedence.NO_PRECEDENCE);
     Assertions.assertEquals("-\\frac{1}{2} + x", sb.toString());
   }

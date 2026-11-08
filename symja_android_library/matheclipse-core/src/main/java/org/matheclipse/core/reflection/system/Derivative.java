@@ -19,7 +19,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -396,13 +396,13 @@ public class Derivative extends AbstractFunctionEvaluator {
     final int digits =
         arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
     try {
-      Apcomplex value = ApcomplexZetaMath.zetaDerivative(CarlsonArbitraryPrecision.apcomplex(s,
-          digits + CarlsonArbitraryPrecision.GUARD_DIGITS));
+      Apcomplex value = ApcomplexZetaMath.zetaDerivative(WorkingPrecision.apcomplex(s,
+          digits + WorkingPrecision.GUARD_DIGITS));
       if (!arbitrary) {
         return s.isReal() ? F.num(value.real().doubleValue())
             : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
       }
-      return CarlsonArbitraryPrecision.round(value, digits);
+      return WorkingPrecision.round(value, digits);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
       return F.NIL;

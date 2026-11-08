@@ -569,19 +569,24 @@ public class SumTest extends ExprEvaluatorTestCase {
 
     check("NSum(k, {k, 1, 10})", //
         "55.0");
+    // PolyGamma(1, 100) = 0.01005016666333357139...
     check("approxSum = NSum(1/i^2, {i,100,Infinity})", //
-        "0.0100502");
+        "0.01005016666333357");
+    // PolyGamma(1, 10^6) = 1.0000005000001666...*10^-6
     check("restSum = NSum(1/i^2, {i, 10^6,Infinity})", //
-        "5.0097*10^-7");
+        "0.0000010000005000001667");
+    // PolyGamma(1, 100) - PolyGamma(1, 10^6) = 0.01004916666283357...
     check("approxSum - restSum", //
-        "0.0100497");
+        "0.0100492");
     check("NSum(1/i^2, {i, 100, 10^6})", //
         "0.0100492");
+    // E^(-5) = 0.006737946999085467...
     check("NSum((-5)^i/i!, {i, 0, Infinity})", //
-        "0.00673795");
+        "0.006737946999085468");
     //
+    // -Zeta'(2+2*I) = -0.18217540270542394-I*0.13661831691171033
     check("NSum(Log(x)/x^(2+2*I), {x, 1,Infinity})", //
-        "-0.182175+I*(-0.136618)");
+        "-0.18217540270542393+I*(-0.1366183169117103)");
   }
 
   @Test
@@ -589,8 +594,9 @@ public class SumTest extends ExprEvaluatorTestCase {
     checkNumeric("NSum((-1)^(k-1)/k^(1.0+1.0/k), {k,1,Infinity})", //
         "0.7795115373932017");
 
+    // the Euler-Maclaurin sum: 0.60552178888260044769...
     check("NSum(1/(n^2*Log(n)), {n,2,Infinity})", //
-        "0.605523");
+        "0.6055217888826004");
 
     // reciprocal power
     checkNumeric("NSum((-1)^(k-1)/k^1.5, {k,1,Infinity})", //

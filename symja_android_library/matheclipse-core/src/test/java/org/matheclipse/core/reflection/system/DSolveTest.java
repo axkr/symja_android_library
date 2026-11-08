@@ -634,13 +634,13 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y'(t)==(t+y(t)+1)/(t-y(t)+3), y(t), t)", //
         "Solve(-ArcTan((-1+y(t))/(2+t))+Log(2+t)+Log(1+(1-y(t))^2/(2+t)^2)/2==C(1),y(t))");
     check("DSolve(1+t-2*y(t)+(-6+4*t-3*y(t))*y'(t)==0, y(t), t)", //
-        "Solve(Log(-3+t)-Log(1+(2-y(t))/(-3+t))/4+5/4*Log(1/3+(-2+y(t))/(-3+t))==C(1),y(t))");
+        "Solve(Log(-3+t)-Log(1+(2-y(t))/(-3+t))/4+5/4*Log(1+(3*(-2+y(t)))/(-3+t))==C(1),y(t))");
     check("DSolve(y'(x)==(2*x+y(x)-4)/(x-3*y(x)+5), y(x), x)", //
-        "Solve(-ArcTan((Sqrt(3/2)*(-2+y(x)))/(-1+x))/Sqrt(6)+Log(-1+x)+Log(2/3+(2-y(x))^2/(\n"
-            + "1-x)^2)/2==C(1),y(x))");
+        "Solve(-ArcTan((Sqrt(3/2)*(-2+y(x)))/(-1+x))/Sqrt(6)+Log(-1+x)+Log(2+(3*(2-y(x))^\n"
+            + "2)/(1-x)^2)/2==C(1),y(x))");
     // parallel lines have no common point, and were already answered by a substitution
     check("DSolve(y'(x)==(x+y(x)+1)/(2*x+2*y(x)+3), y(x), x)", //
-        "{{y(x)->-4/3-x+ProductLog(6*E^(8+9*x-9*C(1)))/6}}");
+        "{{y(x)->-4/3-x+ProductLog(2*E^(8+9*x-9*C(1)))/6}}");
   }
 
   @Test
@@ -648,12 +648,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // (a*x + b*y + c1) + (k*(a*x + b*y) + c2)*y' == 0 has no point where its two lines meet, but
     // u == a*x + b*y separates it. These declined, while the crossing lines were already answered.
     check("DSolve(x-3*y(x)==(-x+3*y(x)+2)*y'(x), y(x), x)", //
-        "Solve(3/4*x+3/8*Log(1/2-x+3*y(x))+3/4*y(x)==C(1),y(x))");
+        "Solve(3/4*x+3/8*Log(1-2*(x-3*y(x)))+3/4*y(x)==C(1),y(x))");
     check("DSolve(x-y(x)+1+(-1+x-y(x))*y'(x)==0, y(x), x)", //
         "Solve(x+1/2*(-x+Log(x-y(x))+y(x))==C(1),y(x))");
     // no branch of the explicit solution passes through the point, and the relation does
     check("DSolve({2*x+y(x)+(4*x+2*y(x)+1)*y'(x)==0, y(-1/6)==0}, y(x), x)", //
-        "Solve(-x/3+Log(2/3+2*x+y(x))/9-2/3*y(x)==1/18-Log(3)/9,y(x))");
+        "Solve(-x/3+Log(2+3*(2*x+y(x)))/9-2/3*y(x)==1/18,y(x))");
     // not in the corpus: the same shape with a condition it can meet explicitly
     check("DSolve(x+2*y(x)+1+(2*x+4*y(x)+3)*y'(x)==0, y(x), x)", //
         "{{y(x)->-3/4-x/2-Sqrt(36+16*x+16*C(1))/8},{y(x)->-3/4-x/2+Sqrt(36+16*x+16*C(1))/\n"
@@ -893,7 +893,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // separates into whenever the denominator shares a factor with the numerator. Nothing
     // algebraic inverts it and ProductLog does, by its definition.
     check("DSolve(y'(x) == (2*y(x) + 3)/(5*y(x) + 7), y(x), x)", //
-        "{{y(x)->-3/2-ProductLog(-10/E^(15+4*x-4*C(1)))/10}}");
+        "{{y(x)->-3/2-ProductLog(-5/E^(15+4*x-4*C(1)))/10}}");
     // The reciprocal form is the same relation in 1/u, and it is what a homogeneous equation
     // reduces to along y == v*x.
     check("DSolve(y'(x) == (x + 3*y(x))/(x - y(x)), y(x), x)", //

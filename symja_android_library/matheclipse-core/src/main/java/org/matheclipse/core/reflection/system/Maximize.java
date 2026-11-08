@@ -3805,8 +3805,8 @@ public class Maximize extends AbstractFunctionEvaluator {
         return true;
       }
       try {
-        double p = pole.evalDouble();
-        double d = point.evalDouble();
+        double p = pole.evalf();
+        double d = point.evalf();
         if (Math.abs(p - d) <= Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, Math.abs(p))) {
           return true;
         }
@@ -3924,9 +3924,9 @@ public class Maximize extends AbstractFunctionEvaluator {
     final IExpr g = engine.evaluate(F.Times(s, function));
     final IExpr worst = isMax ? F.CInfinity : F.CNInfinity;
     final double lowerValue = lower.isNegativeInfinity() ? Double.NEGATIVE_INFINITY //
-        : lower.evalDouble();
+        : lower.evalf();
     final double upperValue = upper.isInfinity() ? Double.POSITIVE_INFINITY //
-        : upper.evalDouble();
+        : upper.evalf();
 
     // an interior pole where the function tends to -Infinity
     List<IExpr> poles = quotientPoles(function, x, engine);
@@ -3934,7 +3934,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       return null;
     }
     for (IExpr pole : poles) {
-      double d = pole.evalDouble();
+      double d = pole.evalf();
       if (d <= lowerValue || d >= upperValue) {
         continue;
       }
@@ -4231,9 +4231,9 @@ public class Maximize extends AbstractFunctionEvaluator {
         double max;
         try {
           min = part.first().isNegativeInfinity() ? Double.NEGATIVE_INFINITY
-              : part.first().evalDouble();
+              : part.first().evalf();
           max = part.second().isInfinity() ? Double.POSITIVE_INFINITY
-              : part.second().evalDouble();
+              : part.second().evalf();
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           return 0;
@@ -4276,7 +4276,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       IExpr value = rules.first().second();
       double d;
       try {
-        d = value.evalDouble();
+        d = value.evalf();
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return null;
@@ -4319,7 +4319,7 @@ public class Maximize extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       for (IExpr root : roots) {
-        double d = root.evalDouble();
+        double d = root.evalf();
         int pos = 0;
         while (pos < positions.size() && positions.get(pos) < d - 1.0e-12) {
           pos++;
@@ -4363,7 +4363,7 @@ public class Maximize extends AbstractFunctionEvaluator {
           return F.NIL;
         }
         for (IExpr point : stationary) {
-          double d = point.evalDouble();
+          double d = point.evalf();
           if (d > from && d < to) {
             candidates.add(point);
           }
@@ -4395,7 +4395,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       if (order == Integer.MIN_VALUE) {
         return F.NIL;
       }
-      double position = point.evalDouble();
+      double position = point.evalf();
       if ((isMax ? order > 0 : order < 0) || (order == 0 && position < bestPosition)) {
         bestValue = value;
         bestPoint = point;

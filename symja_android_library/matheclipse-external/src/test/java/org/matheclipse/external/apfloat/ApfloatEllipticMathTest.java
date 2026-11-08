@@ -3,6 +3,7 @@ package org.matheclipse.external.apfloat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.concurrent.TimeUnit;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -11,6 +12,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.InfiniteExpansionException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Tests of {@link ApfloatEllipticMath} and {@link ApcomplexEllipticMath}. The expected values are
@@ -289,6 +291,21 @@ public class ApfloatEllipticMathTest
                     ApcomplexEllipticMath.ellipticPi(number("3"), number("1"), number("1").divide(number("3"))), 28);
         assertClose("Pi(3|0.25 + 0.3i)", new Apcomplex(number("-0.0537379661118897838017591073549902458"), number("-0.10495270365530835361816826543934956")),
                     ApcomplexEllipticMath.ellipticPi(number("3"), new Apcomplex(number("0.25"), number("0.3"))), 28);
+    }
+
+    @Test
+    @Timeout(value = 20, unit = TimeUnit.SECONDS)
+    public void testEllipticPiNextToThePole()
+    {
+        // a complex characteristic next to the real axis beyond 1: the pole of RJ is next to the path of integration,
+        // and the line of the integral passes it on the side with more room
+        assertClose("Pi(2.5 + 0.002i|0.5)", new Apcomplex(number("-0.237782340227178796889053411347176"), number("1.43416046248598302630151466678682379")),
+                    ApcomplexEllipticMath.ellipticPi(new Apcomplex(number("2.5"), number("0.002")), number("0.5")), 28);
+        assertClose("Pi(2.5 - 0.002i|0.5)", new Apcomplex(number("-0.237782340227178796889053411347176"), number("-1.43416046248598302630151466678682379")),
+                    ApcomplexEllipticMath.ellipticPi(new Apcomplex(number("2.5"), number("-0.002")), number("0.5")), 28);
+        // a parameter whose branch cut is on the other side
+        assertClose("Pi(2.5 + 0.002i|1.75 - 0.25i)", new Apcomplex(number("0.286603968800028880713445504786547102"), number("3.86595191368057420470276361793661260")),
+                    ApcomplexEllipticMath.ellipticPi(new Apcomplex(number("2.5"), number("0.002")), new Apcomplex(number("1.75"), number("-0.25"))), 28);
     }
 
     @Test

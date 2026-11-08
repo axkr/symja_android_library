@@ -108,32 +108,14 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
         levelColors == null && (styleSource == null || styleSource.isAutomatic());
     IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
     IASTAppendable surfaces = F.ListAlloc(surfaceCount);
+    double[][] axis = axis(min, max, new int[] {points, points, points});
     int surfaceIndex = 0;
     for (int f = 0; f < grids.length; f++) {
       for (double value : levelSets[f]) {
-        IExpr style;
-        if (levelColors != null) {
-          style = levelColors.color((min[0] + max[0]) / 2.0, (min[1] + max[1]) / 2.0,
-              (min[2] + max[2]) / 2.0, value);
-        } else if (ownLights) {
-          style = litSurfaceStyle(surfaceIndex);
-        } else {
-          style = Plot3DTools.surfaceStyle(surfaceIndex, styleSource);
-        }
-        surfaceIndex++;
-        GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
-        Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
-        MarchingCubes.marchingCubes(builder, grids[f], value, min, max, points);
-        // the rim where the surface leaves the box, outlined unless told not to: the edges only
-        // one triangle has
-        if (Plot3DTools.drawsBoundary(boundaryStyle, true)) {
-          IASTAppendable rim = builder.openEdges();
-          if (rim.argSize() > 0) {
-            builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyle),
-                F.binaryAST2(S.Line, rim, F.Rule(S.VertexColors, S.None))));
-          }
-        }
-        IExpr complex = builder.build();
+        IExpr style =
+            levelStyle(surfaceIndex++, value, levelColors, ownLights, styleSource, min, max);
+        IExpr complex = surface(grids[f], axis, value, style, options[Plot3DTools.X_MESH],
+            boundaryStyle);
         if (complex.isPresent()) {
           surfaces.append(complex);
         }
@@ -145,6 +127,57 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
 
     IExpr[] defaults = Plot3DTools.cubeDefaults(min, max, !ownLights);
     return Plot3DTools.graphics3D(surfaces, originalAST, argSize, defaults);
+  }
+
+  /**
+   * The style of contour surface number <code>surfaceIndex</code> at level <code>value</code>: from
+   * the colour function, else lit in its own colour, else from the style option.
+   */
+  static IExpr levelStyle(int surfaceIndex, double value, PlotColorFunction levelColors,
+      boolean ownLights, IExpr styleSource, double[] min, double[] max) {
+    if (levelColors != null) {
+      return levelColors.color((min[0] + max[0]) / 2.0, (min[1] + max[1]) / 2.0,
+          (min[2] + max[2]) / 2.0, value);
+    }
+    if (ownLights) {
+      return litSurfaceStyle(surfaceIndex);
+    }
+    return Plot3DTools.surfaceStyle(surfaceIndex, styleSource);
+  }
+
+  /**
+   * The <code>GraphicsComplex</code> of the surface where the samples of <code>grid</code>, taken
+   * at the coordinates <code>axis</code>, take the value <code>value</code>; {@link F#NIL} if there
+   * is none.
+   */
+  static IExpr surface(double[][][] grid, double[][] axis, double value, IExpr style,
+      IExpr meshOption, IExpr boundaryStyle) {
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
+    Plot3DTools.applyStyle(builder, style, meshOption);
+    MarchingCubes.marchingCubes(builder, grid, value, axis);
+    // the rim where the surface leaves the box, outlined unless told not to: the edges only
+    // one triangle has
+    if (Plot3DTools.drawsBoundary(boundaryStyle, true)) {
+      IASTAppendable rim = builder.openEdges();
+      if (rim.argSize() > 0) {
+        builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyle),
+            F.binaryAST2(S.Line, rim, F.Rule(S.VertexColors, S.None))));
+      }
+    }
+    return builder.build();
+  }
+
+  /** The coordinates of <code>counts[c]</code> evenly spaced samples from min to max per axis. */
+  static double[][] axis(double[] min, double[] max, int[] counts) {
+    double[][] axis = new double[3][];
+    for (int c = 0; c < 3; c++) {
+      axis[c] = new double[counts[c]];
+      double step = (max[c] - min[c]) / (counts[c] - 1);
+      for (int i = 0; i < counts[c]; i++) {
+        axis[c][i] = min[c] + i * step;
+      }
+    }
+    return axis;
   }
 
   /**
@@ -174,7 +207,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
   private static final int[] SPECULAR_EXPONENT = {3, 3, 3, 6, 6, 6};
 
   /** Contour surface number <code>level</code> in Mathematica's default style. */
-  private static IExpr litSurfaceStyle(int level) {
+  static IExpr litSurfaceStyle(int level) {
     if (level >= AMBIENT.length) {
       return Plot3DTools.surfaceStyle(level, S.Automatic);
     }
@@ -213,7 +246,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
    * An equation fixes the level at zero. For a bare function {@code Contours} chooses, defaulting
    * to a few levels spread through the range the function actually takes.
    */
-  private static double[] contourLevels(IExpr option, double[][][] grid, boolean isEquation) {
+  static double[] contourLevels(IExpr option, double[][][] grid, boolean isEquation) {
     if (option != null && option.isList()) {
       IAST list = (IAST) option;
       double[] levels = new double[list.argSize()];

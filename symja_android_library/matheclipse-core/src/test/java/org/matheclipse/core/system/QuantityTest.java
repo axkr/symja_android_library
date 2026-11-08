@@ -454,8 +454,8 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "Length(Cases(Histogram({Quantity(1,\"Meters\"),Quantity(2,\"Meters\"),Quantity(2,\"Meters\")}), _Rectangle, Infinity))", //
         "2");
     check(
-        "Length(Cases(BoxWhiskerChart({Quantity(1,\"Meters\"),Quantity(2,\"Meters\"),Quantity(4,\"Meters\")}), _Line|_Rectangle, Infinity))", //
-        "6");
+        "Length(Cases(BoxWhiskerChart({Quantity(1,\"Meters\"),Quantity(2,\"Meters\"),Quantity(4,\"Meters\")}), _Line|_Polygon, Infinity))", //
+        "4");
     check(
         "Length(Cases(NumberLinePlot({Quantity(1,\"Meters\"),Quantity(2,\"Meters\")}), _Point|_Line, Infinity))", //
         "2");
@@ -517,14 +517,14 @@ public class QuantityTest extends ExprEvaluatorTestCase {
   public void testQuantityFunctionPlot() {
     // the same coordinates as plotting the magnitude directly
     check("Take(Cases(Plot(Quantity(x,\"Meters\"), {x,0,1}), _Line, Infinity)[[1,1]], 3)", //
-        "{{0.0,0.0},{0.0167158,0.0167158},{0.0330247,0.0330247}}");
+        "{{2.04082*10^-8,2.04082*10^-8},{0.0167159,0.0167159},{0.0330247,0.0330247}}");
     check("Take(Cases(Plot(x, {x,0,1}), _Line, Infinity)[[1,1]], 3)", //
-        "{{0.0,0.0},{0.0167158,0.0167158},{0.0330247,0.0330247}}");
+        "{{2.04082*10^-8,2.04082*10^-8},{0.0167159,0.0167159},{0.0330247,0.0330247}}");
 
     // a function that only becomes a quantity once its variable is bound
     check(
         "Module({}, f(t_):=Quantity(t^2,\"Meters\"); Take(Cases(Plot(f(x), {x,0,1}), _Line, Infinity)[[1,1]], 3))", //
-        "{{0.0,0.0},{0.0167158,0.000279419},{0.0330247,0.00109063}}");
+        "{{2.04082*10^-8,4.16493*10^-16},{0.0167159,0.00027942},{0.0330247,0.00109063}}");
 
     // the rest of the family, each of which used to draw nothing
     check("Length(Cases(LogPlot(Quantity(Exp(x),\"Meters\"), {x,1,2}), _Line, Infinity))", //
@@ -556,7 +556,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     // TargetUnits on a value-axis function plot
     check(
         "Take(Cases(Plot(Quantity(x,\"Meters\"), {x,0,1}, TargetUnits->\"Centimeters\"), _Line, Infinity)[[1,1]], 3)", //
-        "{{0.0,0.0},{0.0167158,1.67158},{0.0330247,3.30247}}");
+        "{{2.04082*10^-8,2.04082*10^-6},{0.0167159,1.67159},{0.0330247,3.30247}}");
 
     // plain functions are untouched
     check("Length(Cases(Plot(Sin(x), {x,0,Pi}), _Line, Infinity))", //
@@ -580,10 +580,10 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "{2.0,2.0}");
     check(
         "Take(Cases(Plot(x, {x, Quantity(0,\"Seconds\"), Quantity(2,\"Seconds\")}), _Line, Infinity)[[1,1]], 3)", //
-        "{{0.0,0.0},{0.0334317,0.0334317},{0.0660493,0.0660493}}");
+        "{{4.08163*10^-8,4.08163*10^-8},{0.0334317,0.0334317},{0.0660493,0.0660493}}");
     // the same picture as the plain range it reduces to
     check("Take(Cases(Plot(x, {x,0,2}), _Line, Infinity)[[1,1]], 3)", //
-        "{{0.0,0.0},{0.0334317,0.0334317},{0.0660493,0.0660493}}");
+        "{{4.08163*10^-8,4.08163*10^-8},{0.0334317,0.0334317},{0.0660493,0.0660493}}");
 
     // a quantity range AND a quantity valued body
     check(

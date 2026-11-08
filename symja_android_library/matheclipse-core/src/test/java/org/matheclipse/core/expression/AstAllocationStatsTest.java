@@ -15,7 +15,7 @@ class AstAllocationStatsTest {
 
   @BeforeAll
   static void initSymja() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   /** Run {@code work} with the counters enabled and reset, restoring the flag afterwards. */

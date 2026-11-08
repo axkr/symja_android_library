@@ -8,6 +8,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.expression.CMath;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.INum;
 
@@ -91,7 +92,7 @@ public class ZetaJS extends JS {
   public static Complex zeta(Complex x) {
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloatDouble();
 
-    Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex apcomplex = CMath.apcomplex(x);
     Apcomplex zeta = h.zeta(apcomplex);
     return new Complex(zeta.real().doubleValue(), zeta.imag().doubleValue());
   }
@@ -202,8 +203,8 @@ public class ZetaJS extends JS {
     }
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
 
-    Apcomplex xApfloat = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
-    Apcomplex aApfloat = new Apcomplex(new Apfloat(a.getReal()), new Apfloat(a.getImaginary()));
+    Apcomplex xApfloat = CMath.apcomplex(x);
+    Apcomplex aApfloat = CMath.apcomplex(a);
     Apcomplex zeta = h.zeta(xApfloat, aApfloat);
     return new Complex(zeta.real().doubleValue(), zeta.imag().doubleValue());
 
@@ -364,8 +365,8 @@ public class ZetaJS extends JS {
 
   public static Complex polyLog(final Complex n, final Complex x) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
-    Apcomplex nApfloat = new Apcomplex(new Apfloat(n.getReal()), new Apfloat(n.getImaginary()));
-    Apcomplex xApfloat = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex nApfloat = CMath.apcomplex(n);
+    Apcomplex xApfloat = CMath.apcomplex(x);
     Apcomplex polylog = h.polylog(nApfloat, xApfloat);
     return new Complex(polylog.real().doubleValue(), polylog.imag().doubleValue());
     //

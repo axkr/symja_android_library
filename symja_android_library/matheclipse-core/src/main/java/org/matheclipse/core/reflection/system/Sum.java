@@ -1078,6 +1078,13 @@ public class Sum extends ListFunctions.Table implements SumRules {
         }
       }
     }
+    if (from.isOne()) {
+      // an arithmetic function over n^s: its Dirichlet generating function
+      IExpr dirichlet = dirichletSeries(expr, var, engine);
+      if (dirichlet.isPresent()) {
+        return dirichlet;
+      }
+    }
     // rational summand over [from, Infinity) -> PolyGamma closed form
     IExpr rational = rationalSum(expr, var, from, to, engine);
     if (rational.isPresent()) {
@@ -1092,6 +1099,83 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>Sum(c*f(n)/n^s, {n, 1, Infinity})</code> for an arithmetic function <code>f</code> as its
+   * Dirichlet generating function: <code>DivisorSigma(k, n)</code> gives
+   * <code>Zeta(s)*Zeta(s-k)</code>, <code>EulerPhi(n)</code> <code>Zeta(s-1)/Zeta(s)</code>,
+   * <code>MoebiusMu(n)</code> <code>1/Zeta(s)</code>, <code>LiouvilleLambda(n)</code>
+   * <code>Zeta(2*s)/Zeta(s)</code>, <code>MoebiusMu(n)^2</code> and <code>Abs(MoebiusMu(n))</code>
+   * <code>Zeta(s)/Zeta(2*s)</code> and <code>DivisorSigma(0, n)^2</code>
+   * <code>Zeta(s)^4/Zeta(2*s)</code>. For a number <code>s</code> whose real part is beyond the
+   * abscissa of absolute convergence, a symbolic <code>s</code>, and the conditionally convergent
+   * <code>s == 1</code> of
+   * <code>MoebiusMu</code> and <code>LiouvilleLambda</code> (the sums are <code>0</code>).
+   *
+   * @return {@link F#NIL} if the summand doesn't have this form or the series doesn't converge
+   */
+  private static IExpr dirichletSeries(IExpr expr, ISymbol n, EvalEngine engine) {
+    IAST factors = expr.isTimes() ? (IAST) expr : F.List(expr);
+    IASTAppendable constant = F.TimesAlloc(factors.argSize());
+    IExpr s = F.C0;
+    IExpr arithmetic = F.NIL;
+    for (IExpr factor : factors) {
+      if (factor.isFree(n, true)) {
+        constant.append(factor);
+      } else if (factor.equals(n)) {
+        s = engine.evaluate(F.Subtract(s, F.C1));
+      } else if (factor.isPower() && factor.base().equals(n) && factor.exponent().isFree(n, true)) {
+        s = engine.evaluate(F.Subtract(s, factor.exponent()));
+      } else if (arithmetic.isNIL()) {
+        arithmetic = factor;
+      } else {
+        return F.NIL;
+      }
+    }
+    if (arithmetic.isNIL() || s.isZero() || s.isDirectedInfinity()) {
+      return F.NIL;
+    }
+    IExpr generating;
+    IExpr abscissa = F.C1;
+    boolean conditionalAtOne = false;
+    if (arithmetic.isAST(S.DivisorSigma, 3) && arithmetic.second().equals(n)
+        && arithmetic.first().isNumber()) {
+      IExpr k = arithmetic.first();
+      generating = F.Times(F.Zeta(s), F.Zeta(F.Subtract(s, k)));
+      abscissa = F.Plus(F.C1, F.Max(F.C0, F.Re(k)));
+    } else if (arithmetic.isAST(S.EulerPhi, 2) && arithmetic.first().equals(n)) {
+      generating = F.Divide(F.Zeta(F.Subtract(s, F.C1)), F.Zeta(s));
+      abscissa = F.C2;
+    } else if (arithmetic.isAST(S.MoebiusMu, 2) && arithmetic.first().equals(n)) {
+      generating = F.Power(F.Zeta(s), F.CN1);
+      conditionalAtOne = true;
+    } else if (arithmetic.isAST(S.LiouvilleLambda, 2) && arithmetic.first().equals(n)) {
+      generating = F.Divide(F.Zeta(F.Times(F.C2, s)), F.Zeta(s));
+      conditionalAtOne = true;
+    } else if ((arithmetic.isAST(S.Abs, 2) && arithmetic.first().isAST(S.MoebiusMu, 2)
+        && arithmetic.first().first().equals(n))
+        || (arithmetic.isPower() && arithmetic.exponent().isInteger()
+            && ((IInteger) arithmetic.exponent()).isEven() && arithmetic.exponent().isPositive()
+            && arithmetic.base().isAST(S.MoebiusMu, 2) && arithmetic.base().first().equals(n))) {
+      generating = F.Divide(F.Zeta(s), F.Zeta(F.Times(F.C2, s)));
+    } else if (arithmetic.isPower() && arithmetic.exponent().isNumEqualInteger(F.C2)
+        && arithmetic.base().isAST(S.DivisorSigma, 3) && arithmetic.base().first().isZero()
+        && arithmetic.base().second().equals(n)) {
+      generating = F.Divide(F.Power(F.Zeta(s), F.C4), F.Zeta(F.Times(F.C2, s)));
+    } else {
+      return F.NIL;
+    }
+    if (conditionalAtOne && s.isOne()) {
+      // the prime number theorem
+      return F.C0;
+    }
+    if (s.isNumber() ? !engine.evalTrue(F.Greater(F.Re(s), abscissa))
+        : engine.evalQuiet(F.Greater(F.Re(s), abscissa)).isFalse()) {
+      // a symbolic exponent gives the generating function where the series converges
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(constant.oneIdentity1(), generating));
   }
 
   /**

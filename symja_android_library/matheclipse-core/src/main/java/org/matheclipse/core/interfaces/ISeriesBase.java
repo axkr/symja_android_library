@@ -62,7 +62,7 @@ public interface ISeriesBase extends Iterable<IExpr> {
    */
   default Set<IExpr> freeSymbols() {
     VariablesSet varSet = new VariablesSet(function());
-    Set<IExpr> resid = Sets.difference(varSet.getVariablesSet(), variables().asSortedSet());
+    Set<IExpr> resid = Sets.difference(varSet.toSet(), variables().asSortedSet());
     return resid;
   }
 

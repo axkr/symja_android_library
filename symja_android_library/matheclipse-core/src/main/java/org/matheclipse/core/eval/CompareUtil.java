@@ -174,7 +174,7 @@ public class CompareUtil {
   public static IExpr printSignUncertain(final IExpr x, EvalEngine engine) {
     // Internal precision limit `1` reached while evaluating `2`.
     return Errors.printMessage(S.N, "meprec",
-        F.list(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."), x),
+        F.list(EvalEngine.maxExtraPrecisionText(), x),
         engine);
   }
 
@@ -427,11 +427,7 @@ public class CompareUtil {
    */
   public static IExpr.COMPARE_TERNARY isPossibeZero(IAST function, IAST variables,
       EvalEngine engine) {
-    final ThreadLocalRandom tlr = ThreadLocalRandom.current();
-    IASTAppendable listOfRules =
-        F.mapList(variables, t -> CompareUtil.randomRuleComplex100(t, tlr));
-    IExpr temp = function.replaceAll(listOfRules);
-    return CompareUtil.isPossibleZeroApproximate(temp, engine);
+    return isPossibleZeroAtRandomPoint(function, variables, false, new IExpr[1], engine);
   }
 
   /**
@@ -536,6 +532,56 @@ public class CompareUtil {
   }
 
   public static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine) {
+    return isPossibleZeroApproximate(temp, engine, null);
+  }
+
+  private static void setTooLarge(boolean[] tooLarge) {
+    if (tooLarge != null) {
+      tooLarge[0] = true;
+    }
+  }
+
+  /** The bounds of the real and imaginary parts of the random complex sample points. */
+  private static final double[] COMPLEX_SAMPLE_RANGES = {100.0, 10.0, 1.0};
+
+  /**
+   * The zero test of the machine value of <code>function</code> at a random complex point. A point
+   * where the value or a term is too large for machine numbers is drawn again closer to the
+   * origin: <code>Sin(c+d*x)</code> or <code>E^(d*x)</code> is <code>10^2000</code> where
+   * <code>c+d*x</code> reaches <code>10^4</code>, and more digits would have to be thousands. A
+   * point without a numeric value is not drawn again.
+   *
+   * @param exact <code>true</code> for a point with rational parts, <code>false</code> for
+   *        machine numbers
+   * @param sample <code>sample[0]</code> is set to the function at the point
+   */
+  private static COMPARE_TERNARY isPossibleZeroAtRandomPoint(IAST function, IAST variables,
+      boolean exact, IExpr[] sample, EvalEngine engine) {
+    final ThreadLocalRandom tlr = ThreadLocalRandom.current();
+    COMPARE_TERNARY zero = IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    for (double range : COMPLEX_SAMPLE_RANGES) {
+      sample[0] = function.replaceAll(F.mapList(variables, t -> {
+        double re = tlr.nextDouble(-range, range);
+        double im = tlr.nextDouble(-range, range);
+        return F.Rule(t,
+            exact ? F.CC(exactNumber(re), exactNumber(im)) : F.complexNum(re, im));
+      }));
+      boolean[] tooLarge = {false};
+      zero = isPossibleZeroApproximate(sample[0], engine, tooLarge);
+      if (zero != IExpr.COMPARE_TERNARY.UNDECIDABLE || !tooLarge[0]) {
+        break;
+      }
+    }
+    return zero;
+  }
+
+  /**
+   * @param tooLarge if not <code>null</code>, <code>tooLarge[0]</code> is set if the answer is
+   *        <code>UNDECIDABLE</code> because the value or its terms are too large for machine
+   *        numbers, and not because it has no numeric value
+   */
+  private static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine,
+      boolean[] tooLarge) {
     try {
       if (temp.isPresent()) {
         IExpr result = engine.evalQuiet(F.N(temp));
@@ -549,6 +595,7 @@ public class CompareUtil {
               && F.isZero(imaginaryPart, Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
             if (Double.isNaN(realPart) || Double.isNaN(imaginaryPart) || Double.isInfinite(realPart)
                 || Double.isInfinite(imaginaryPart)) {
+              setTooLarge(tooLarge);
               return IExpr.COMPARE_TERNARY.UNDECIDABLE;
             }
             if (temp.isPlus()) {
@@ -558,6 +605,7 @@ public class CompareUtil {
               for (IExpr term : (IAST) temp) {
                 double magnitude = engine.evalQuiet(F.N(F.Abs(term))).evalfNaN();
                 if (Double.isNaN(magnitude) || Double.isInfinite(magnitude)) {
+                  setTooLarge(tooLarge);
                   return IExpr.COMPARE_TERNARY.UNDECIDABLE;
                 }
                 scale = Math.max(scale, magnitude);
@@ -568,6 +616,7 @@ public class CompareUtil {
               }
               if (scale > 1.0e12 && residual <= scale * 1.0e-3) {
                 // too large for the machine precision to say
+                setTooLarge(tooLarge);
                 return IExpr.COMPARE_TERNARY.UNDECIDABLE;
               }
             }
@@ -714,6 +763,20 @@ public class CompareUtil {
       }
       return false;
     }
+    if (function.isTimes() && function.exists(a -> a.isNumber() && !a.isInexactNumber())) {
+      // a nonzero exact factor doesn't change whether the product is 0, but it scales a machine
+      // rounding error of the other factors beyond the tolerance
+      if (function.exists(IExpr::isZero)) {
+        return true;
+      }
+      IASTAppendable factors = F.TimesAlloc(function.argSize());
+      function.filter(factors, a -> !(a.isNumber() && !a.isInexactNumber()));
+      IExpr rest = factors.oneIdentity1();
+      if (rest.isAST()) {
+        return isPossibleZeroQ((IAST) rest, fastTest, tolerance, engine);
+      }
+      return rest.isPossibleZero(fastTest, tolerance);
+    }
     try {
       VariablesSet varSet = new VariablesSet(function);
       if (varSet.isEmpty() || isNumericWithSlotsOnly(function, varSet)) {
@@ -738,6 +801,7 @@ public class CompareUtil {
             || isZeroWithRisingPrecision(function, true, engine);
       }
 
+      boolean expandedAll = false;
       if (function.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
         IExpr expr;
         if (function.hasTrigonometricFunction()) {
@@ -758,6 +822,7 @@ public class CompareUtil {
           if (expr.isZero()) {
             return true;
           }
+          expandedAll = true;
         }
 
         if (!expr.isAST()) {
@@ -883,11 +948,118 @@ public class CompareUtil {
           return true;
         }
       }
+      // EllipticPi(1+b/a, p, q) - EllipticPi((a+b)/a, p, q): equal arguments in different forms
+      temp = togetherInArguments(function, engine);
+      if (temp.isPresent() && engine.evaluate(temp).isZero()) {
+        return true;
+      }
+      if (!expandedAll) {
+        // AppellF1(.., 2*c/(2*c*d-(b+s)*e)) - AppellF1(.., 2*c/(2*c*d-b*e-s*e)): an expression too
+        // large for the ExpandAll above, whose function arguments are equal once expanded
+        temp = expandInArguments(function, engine);
+        if (temp.isPresent() && engine.evaluate(temp).isZero()) {
+          return true;
+        }
+      }
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
       Errors.printMessage(S.PossibleZeroQ, ve, engine);
     }
     return false;
+  }
+
+  /**
+   * <code>expr</code> with the sums, products and powers among the arguments of its functions put
+   * over one denominator by <code>Together</code>, from the inside out, so that arguments which are
+   * equal but written differently, <code>1+b/a</code> and <code>(a+b)/a</code>, become one
+   * expression.
+   *
+   * @return {@link F#NIL} if no argument changed
+   */
+  private static IExpr togetherInArguments(IExpr expr, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable result = F.NIL;
+    boolean function = ast.head().isBuiltInSymbol() && !ast.isPlus() && !ast.isTimes()
+        && !ast.isPower() && !ast.isList();
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      IExpr inner = togetherInArguments(arg, engine);
+      IExpr newArg = inner.orElse(arg);
+      if (function && (newArg.isPlus() || newArg.isTimes() || newArg.isPower())) {
+        IExpr together = engine.evaluate(F.Together(newArg));
+        if (!together.equals(newArg)) {
+          newArg = together;
+        }
+      }
+      if (newArg != arg) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, newArg);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * <code>expr</code> with the arguments of its functions and the bases of its powers with a
+   * non-integer exponent expanded by <code>ExpandAll</code>, so that arguments which are equal but
+   * written differently, <code>2*c*d-(b+s)*e</code> and <code>2*c*d-b*e-s*e</code>, become one
+   * expression. Sums and products themselves are not multiplied out: their factors are what the
+   * expansion of a whole expression would let grow.
+   *
+   * @return {@link F#NIL} if no argument changed
+   */
+  private static IExpr expandInArguments(IExpr expr, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isPower() && !ast.exponent().isInteger()) {
+      // Sqrt(AppellF1(..)): a base which isn't expanded can have functions in it
+      IExpr base = expandArgument(ast.base(), engine);
+      if (base.isNIL()) {
+        base = expandInArguments(ast.base(), engine);
+      }
+      IExpr exponent = expandArgument(ast.exponent(), engine);
+      if (base.isPresent() || exponent.isPresent()) {
+        return F.Power(base.orElse(ast.base()), exponent.orElse(ast.exponent()));
+      }
+      return F.NIL;
+    }
+    boolean function = ast.head().isBuiltInSymbol() && !ast.isPlus() && !ast.isTimes()
+        && !ast.isPower() && !ast.isList();
+    IASTMutable result = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      IExpr newArg = function ? expandArgument(arg, engine) : expandInArguments(arg, engine);
+      if (newArg.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, newArg);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * <code>ExpandAll(arg)</code> for a sum, product or power of moderate size.
+   *
+   * @return {@link F#NIL} if <code>arg</code> is not expanded or doesn't change
+   */
+  private static IExpr expandArgument(IExpr arg, EvalEngine engine) {
+    if ((arg.isPlus() || arg.isTimes() || arg.isPower())
+        && arg.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
+      IExpr expanded = F.evalExpandAll(arg, engine);
+      if (!expanded.equals(arg)) {
+        return expanded;
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -988,11 +1160,10 @@ public class CompareUtil {
       }
     }
     final ThreadLocalRandom tlr = ThreadLocalRandom.current();
+    final IExpr[] sample = new IExpr[1];
     for (int i = 0; i < 36; i++) {
-      IExpr sample = function.replaceAll(F.mapList(variables,
-          t -> F.Rule(t, F.complex(exactNumber(tlr.nextDouble(-100, 100)),
-              exactNumber(tlr.nextDouble(-100, 100))))));
-      COMPARE_TERNARY zero = isZeroAtSample(sample, engine);
+      COMPARE_TERNARY zero = isPossibleZeroAtRandomPoint(function, variables, true, sample, engine);
+      zero = isZeroAtSample(sample[0], zero, engine);
       if (zero == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
@@ -1009,10 +1180,19 @@ public class CompareUtil {
     final int realSamples = Math.min(REAL_SAMPLES << signBits, MAX_REAL_SAMPLES);
     final int sizes = Math.max(realSamples >> signBits, 1);
     int ladders = 0;
+    // The machine value of a sample is taken from machine numbers if a power has variables in its
+    // base and its exponent: the exact value, which N computes first, has powers like
+    // (1+a*x)^(n^2/2) of rationals with thousands of digits; E^x stays symbolic. Otherwise from the exact sample, whose evaluation cancels
+    // equal terms exactly: 1+b/a and (a+b)/a are one number, while their machine values may lie on
+    // either side of the branch cut of EllipticPi(n, ...) and its evaluation can take seconds.
+    final boolean machineScreen =
+        function.has(x -> x.isPower() && !x.exponent().isNumericFunction(true)
+            && !x.base().isNumericFunction(true), true);
     for (int i = 0; i < realSamples; i++) {
       engine.checkTimeLimit();
       final int visit = i >> signBits;
       IASTAppendable rules = F.ListAlloc(n);
+      IASTAppendable machineRules = F.ListAlloc(n);
       for (int j = 0; j < n; j++) {
         // a variable of its own value and sign: a cut may lie in one sign combination only, Sqrt(x/a)
         // sees none of them while x and a are equal. Each sign combination runs through the sizes
@@ -1021,13 +1201,15 @@ public class CompareUtil {
         final int size = (visit * (2 * j + 1) + j) % sizes;
         final double magnitude = 0.125 * Math.pow(512.0, (size + tlr.nextDouble()) / sizes);
         final boolean negative = j < signBits ? (i >> j & 1) != 0 : tlr.nextBoolean();
-        rules.append(F.Rule(variables.get(j + 1), exactNumber(negative ? -magnitude : magnitude)));
+        IRational value = exactNumber(negative ? -magnitude : magnitude);
+        rules.append(F.Rule(variables.get(j + 1), value));
+        machineRules.append(F.Rule(variables.get(j + 1), F.num(value.doubleValue())));
       }
-      IExpr sample = function.replaceAll(rules);
       // only a machine value which isn't 0 asks for more digits, and a few of them have the answer
-      if (isPossibleZeroApproximate(sample, engine) == IExpr.COMPARE_TERNARY.FALSE
-          && ladders++ < MAX_REAL_LADDERS
-          && isZeroAtSample(sample, engine) == IExpr.COMPARE_TERNARY.FALSE) {
+      if (isPossibleZeroApproximate(
+          function.replaceAll(machineScreen ? machineRules : rules),
+          engine) == IExpr.COMPARE_TERNARY.FALSE && ladders++ < MAX_REAL_LADDERS
+          && isZeroAtSample(function.replaceAll(rules), engine) == IExpr.COMPARE_TERNARY.FALSE) {
         return false;
       }
     }
@@ -1064,7 +1246,15 @@ public class CompareUtil {
    * denominator which cancels to 0.0 looks like a pole. More digits decide.
    */
   private static COMPARE_TERNARY isZeroAtSample(IExpr sample, EvalEngine engine) {
-    COMPARE_TERNARY zero = isPossibleZeroApproximate(sample, engine);
+    return isZeroAtSample(sample, isPossibleZeroApproximate(sample, engine), engine);
+  }
+
+  /**
+   * The zero test of a function at an exact sample point whose machine value gave
+   * <code>zero</code>.
+   */
+  private static COMPARE_TERNARY isZeroAtSample(IExpr sample, COMPARE_TERNARY zero,
+      EvalEngine engine) {
     if (zero != IExpr.COMPARE_TERNARY.TRUE && sample.isAST()
         && sample.leafCount() >= DEEP_CANCELLATION_LEAFCOUNT
         && isZeroWithRisingPrecision((IAST) sample, false, engine)) {
@@ -1134,20 +1324,6 @@ public class CompareUtil {
       }
     }
     return false;
-  }
-
-  /**
-   * Create a rule <code>variable -> complex-number</code> with real and imaginary part randomly
-   * between -100.0 and 100.0
-   * 
-   * @param variable
-   * @param tlr
-   * @return
-   */
-  public static IExpr randomRuleComplex100(IExpr variable, ThreadLocalRandom tlr) {
-    double re = tlr.nextDouble(-100, 100);
-    double im = tlr.nextDouble(-100, 100);
-    return F.Rule(variable, F.complexNum(re, im));
   }
 
   /**

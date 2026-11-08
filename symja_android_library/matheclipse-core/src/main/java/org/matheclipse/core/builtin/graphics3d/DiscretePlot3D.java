@@ -227,9 +227,9 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
               result = engine.evalN(result); // safely evaluate symbolic constants
 
               if (result.isNumber()) {
-                double z = result.evalDouble();
-                double px = iv.evalDouble();
-                double py = jv.evalDouble();
+                double z = result.evalf();
+                double px = iv.evalf();
+                double py = jv.evalf();
                 if (region == null || region.accepts(px, py, z)) {
                   data.add(new PlotData(px, py, z, color));
                 }
@@ -243,9 +243,9 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
             result = engine.evalN(result);
 
             if (result.isList() && ((IAST) result).size() >= 4) {
-              double px = ((IAST) result).arg1().evalDouble();
-              double py = ((IAST) result).arg2().evalDouble();
-              double pz = ((IAST) result).arg3().evalDouble();
+              double px = ((IAST) result).arg1().evalf();
+              double py = ((IAST) result).arg2().evalf();
+              double pz = ((IAST) result).arg3().evalf();
               if (region == null || region.accepts(px, py, pz)) {
                 data.add(new PlotData(px, py, pz, color));
               }
@@ -382,7 +382,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     }
     double smallest = Double.MAX_VALUE;
     for (int i = 1; i < values.size(); i++) {
-      double gap = Math.abs(values.get(i).evalDouble() - values.get(i - 1).evalDouble());
+      double gap = Math.abs(values.get(i).evalf() - values.get(i - 1).evalf());
       if (gap > 0.0 && gap < smallest) {
         smallest = gap;
       }

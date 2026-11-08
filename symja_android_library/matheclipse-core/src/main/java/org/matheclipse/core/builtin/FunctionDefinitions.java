@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.reflection.system.rules.AutomaticRules;
 import org.matheclipse.core.reflection.system.steps.QuarticSolve;
@@ -202,7 +203,10 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.HermiteDecomposition());
       S.SmithDecomposition
           .setEvaluator(new org.matheclipse.core.reflection.system.SmithDecomposition());
-      S.Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
+      // the deprecated Horner function stays available next to HornerForm
+      @SuppressWarnings("deprecation")
+      IFunctionEvaluator horner = new org.matheclipse.core.reflection.system.Horner();
+      S.Horner.setEvaluator(horner);
       S.HurwitzZeta.setEvaluator(new org.matheclipse.core.reflection.system.HurwitzZeta());
 
       S.ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());
@@ -478,6 +482,14 @@ public final class FunctionDefinitions {
 
       // Graphics
       S.ComplexPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexPlot());
+      S.AbsArgPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComplexFunctionPlots.AbsArgPlot());
+      S.ReImPlot
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexFunctionPlots.ReImPlot());
+      S.ComplexContourPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComplexFunctionPlots.ComplexContourPlot());
+      S.LineIntegralConvolutionPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.LineIntegralConvolutionPlot());
       S.ContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ContourPlot());
       S.DensityHistogram.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityHistogram());
       S.DensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityPlot());
@@ -493,6 +505,9 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.builtin.graphics.ListCurvePathPlot());
       S.ListPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListPlot());
       S.QuantilePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.QuantilePlot());
+      S.ProbabilityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ProbabilityPlot());
+      S.ProbabilityScalePlot
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.ProbabilityScalePlot());
       S.ListLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogPlot());
       S.ListLogLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogLogPlot());
       S.ListLogLinearPlot
@@ -518,6 +533,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.PairedChart(false));
       S.PairedHistogram
           .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.PairedChart(true));
+      S.PairedSmoothHistogram.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.DataCharts.PairedSmoothHistogram());
       S.Histogram3D.setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.Histogram3D());
       S.SmoothHistogram
           .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.SmoothHistogram());
@@ -525,11 +542,16 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.SmoothHistogram3D());
       S.ClockGauge.setEvaluator(new org.matheclipse.core.builtin.graphics.DataCharts.ClockGauge());
       S.RectangleChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.RectangleChart3D());
+      S.BarChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.BarChart3D());
+      S.BubbleChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.BubbleChart3D());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
       S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());
 
       // Graphics3D
       S.ContourPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ContourPlot3D());
+      S.ListContourPlot3D
+          .setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListContourPlot3D());
+      S.StreamPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.StreamPlot3D());
       S.RegionPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.RegionPlot3D());
       S.ComplexPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ComplexPlot3D());
       S.DiscretePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.DiscretePlot3D());

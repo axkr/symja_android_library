@@ -13,6 +13,24 @@ public class EntityFunctions {
 
     private static void init() {
       S.RGBColor.setEvaluator(new RGBColor());
+      S.Entity.setEvaluator(new Entity());
+    }
+  }
+
+  /**
+   * <code>Entity(type, name)[property]</code> - the value <code>EntityValue(Entity(type, name),
+   * property)</code> gives. The entity itself stays as it is, and so does the call when no data
+   * function answers for the type.
+   */
+  private static class Entity extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1() && ast.head().isAST(S.Entity, 3)) {
+        IExpr value = engine.evaluate(F.binaryAST2(S.EntityValue, ast.head(), ast.arg1()));
+        return value.isAST(S.EntityValue) ? F.NIL : value;
+      }
+      return F.NIL;
     }
   }
 

@@ -51,6 +51,14 @@ public class Series {
     private java.util.Random jitter = new java.util.Random(SAMPLING_SEED);
 
     /**
+     * The number of grid steps the range is measured in for the end inset, or <code>0</code> to
+     * sample the ends exactly. The first and the last sample sit a millionth of such a step inside
+     * the range, so a step function like <code>Floor(x)</code> on <code>[0, 5]</code> ends flat at
+     * <code>4</code> rather than jumping to its value at the very end.
+     */
+    private int endInsetSteps = 0;
+
+    /**
      * Create an adaptive sampling series over [start, end].
      *
      * @param f function to sample
@@ -103,6 +111,29 @@ public class Series {
       this.xScale = xScale;
       this.onlyIntegers = onlyIntegers;
       this.numberOfPoints = numberOfPoints;
+    }
+
+    /**
+     * Move the first and the last sample a millionth of a grid step inside the range.
+     *
+     * @param steps the number of grid steps the range is divided into
+     */
+    public void setEndInset(int steps) {
+      this.endInsetSteps = steps;
+    }
+
+    /**
+     * The end <code>from</code> of the range moved towards <code>to</code> by the end inset, in the
+     * coordinate the range is sampled in.
+     */
+    private double insetEnd(double from, double to) {
+      if (endInsetSteps <= 0) {
+        return from;
+      }
+      if (!xScale.isEmpty() && xScale.startsWith("Log") && from > 0.0 && to > 0.0) {
+        return from * Math.exp((Math.log(to / from) / endInsetSteps) * 1.0e-6);
+      }
+      return from + ((to - from) / endInsetSteps) * 1.0e-6;
     }
 
     /**
@@ -213,6 +244,12 @@ public class Series {
           listX = Numpy.linspace(fStart, fEnd, numberOfPoints, true);
         }
       }
+      if (listX.length >= 2) {
+        int last = listX.length - 1;
+        double first = insetEnd(listX[0], listX[last]);
+        listX[last] = insetEnd(listX[last], listX[0]);
+        listX[0] = first;
+      }
       for (int i = 0; i < listX.length; i++) {
         plot.add(new Plot.Point(listX[i], evalf(listX[i])));
       }
@@ -230,12 +267,16 @@ public class Series {
       if (onlyIntegers || !adaptive) {
         return uniformSampling();
       }
-      double start = evalf(this.fStart);
-      double end = evalf(this.fEnd);
+      double first = insetEnd(fStart, fEnd);
+      double last = insetEnd(fEnd, fStart);
+      double start = evalf(first);
+      double end = evalf(last);
       // restart the jitter sequence so that sampling the same series twice gives the same points
       jitter = new java.util.Random(SAMPLING_SEED);
-      plot.add(new Plot.Point(this.fStart, start));
-      sample(new double[] {fStart, start}, new double[] {fEnd, end}, 0);
+      plot.add(new Plot.Point(first, start));
+      // the interior is subdivided between the inset ends, each with its own value, and the last
+      // leaf adds the inset end itself
+      sample(new double[] {first, start}, new double[] {last, end}, 0);
       return plot;
     }
 

@@ -47,8 +47,8 @@ a-(b-c)	Plus(a, Times(-1, Plus(b, Times(-1, c))))
 a+-b	Plus(a, Times(-1, b))
 a--b	!syntax@4: End-of-file not reached.
 a- -b	Plus(a, Times(1, b))
-1-1	Plus(-1, 1)
-2-3-4	Plus(-4, -3, 2)
+1-1	Plus(1, -1)
+2-3-4	Plus(2, -3, -4)
 a/b*c	Times(Times(a, Power(b, -1)), c)
 a*b/c	Times(a, Times(b, Power(c, -1)))
 2x	!syntax@2: End-of-file not reached.

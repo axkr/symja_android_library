@@ -1,8 +1,11 @@
 package org.matheclipse.core.patternmatching;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.matheclipse.core.expression.Blank;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.PatternSequence;
@@ -44,6 +47,254 @@ final class RuleGenerality {
       return false;
     }
     return coversExpr(general, specific, false);
+  }
+
+  private static final int UNRELATED = 0;
+  private static final int EQUAL = 1;
+  private static final int RELAXED = 2;
+
+  /**
+   * Is the left-hand side of <code>general</code> the one of <code>specific</code> with some of
+   * its blanks made optional or freed of their head test or pattern test, as
+   * <code>f[x_^n_.]</code> is <code>f[x_^n_]</code>, <code>f[x_^n_Integer]</code> or
+   * <code>f[x_^n_?IntegerQ]</code>? The names of the patterns may differ where their indices in
+   * the pattern maps of the two rules are equal, as in {@link PatternMatcher#equivalent(IExpr,
+   * IExpr, IPatternMap, IPatternMap)}: <code>f[x_^k_.]</code> and <code>f[x_^n_]</code>. Such a
+   * blank matches everything it matched before, so <code>general</code> matches every expression
+   * <code>specific</code> matches, whatever the attributes of the heads are. A head test and a
+   * pattern test are unrelated: <code>f[x_?IntegerQ]</code> doesn't relax
+   * <code>f[x_Integer]</code>.
+   *
+   * <p>
+   * A condition of the left-hand side or of the right-hand side narrows a rule by an unknown
+   * amount: <code>general</code> may have one only if <code>specific</code> has the same.
+   *
+   * @param general a rule
+   * @param specific another rule
+   * @return <code>true</code> if the two differ and only by such blanks of <code>general</code>
+   */
+  static boolean relaxes(IPatternMatcher general, IPatternMatcher specific) {
+    if (!(general instanceof PatternMatcher) || !(specific instanceof PatternMatcher)) {
+      return false;
+    }
+    IPatternMap generalMap = ((PatternMatcher) general).createPatternMap();
+    IPatternMap specificMap = ((PatternMatcher) specific).createPatternMap();
+    List<IExpr> generalConditions = new ArrayList<IExpr>();
+    IExpr generalLHS = stripConditions(general.getOrderingLHS(), generalConditions);
+    List<IExpr> specificConditions = new ArrayList<IExpr>();
+    IExpr specificLHS = stripConditions(specific.getOrderingLHS(), specificConditions);
+    if (!generalConditions.isEmpty() && !slotted(generalConditions, generalMap)
+        .equals(slotted(specificConditions, specificMap))) {
+      return false;
+    }
+    return new Relaxation(generalMap, specificMap, false).compare(generalLHS,
+        specificLHS) == RELAXED;
+  }
+
+  /**
+   * May <code>rule</code>, which goes in front of a rule it is more specific than, also pass the
+   * rule <code>previous</code> directly in front of that one? Only if the two have the same
+   * conditions and left-hand sides, except that an exponent <code>n_?IntegerQ</code> of
+   * <code>previous</code> is <code>n_Integer</code> in <code>rule</code>: <code>f[x_^n_Integer]</code>
+   * passes <code>f[x_^n_?IntegerQ]</code> on its way in front of <code>f[x_^n_.]</code>, but not the
+   * other way round, and not outside of an exponent.
+   *
+   * @param previous a rule in front of the one <code>rule</code> is inserted before
+   * @param rule the new rule
+   * @return <code>true</code> if <code>rule</code> goes in front of <code>previous</code>
+   */
+  static boolean passesIntegerQ(IPatternMatcher previous, IPatternMatcher rule) {
+    if (!(previous instanceof PatternMatcher) || !(rule instanceof PatternMatcher)) {
+      return false;
+    }
+    IPatternMap previousMap = ((PatternMatcher) previous).createPatternMap();
+    IPatternMap ruleMap = ((PatternMatcher) rule).createPatternMap();
+    List<IExpr> previousConditions = new ArrayList<IExpr>();
+    IExpr previousLHS = stripConditions(previous.getOrderingLHS(), previousConditions);
+    List<IExpr> ruleConditions = new ArrayList<IExpr>();
+    IExpr ruleLHS = stripConditions(rule.getOrderingLHS(), ruleConditions);
+    if (!slotted(previousConditions, previousMap).equals(slotted(ruleConditions, ruleMap))) {
+      return false;
+    }
+    Relaxation integerExponents = new Relaxation(previousMap, ruleMap, true);
+    return integerExponents.compare(previousLHS, ruleLHS) == EQUAL
+        && integerExponents.tieUsed;
+  }
+
+  /**
+   * The conditions with every pattern name replaced by the slot of its index in
+   * <code>patternMap</code>, so that conditions of rules with renamed patterns compare equal.
+   */
+  private static List<IExpr> slotted(List<IExpr> conditions, IPatternMap patternMap) {
+    if (conditions.isEmpty()) {
+      return conditions;
+    }
+    IPatternMap slots = patternMap.copy();
+    slots.initSlotValues();
+    List<IExpr> result = new ArrayList<IExpr>(conditions.size());
+    for (IExpr condition : conditions) {
+      result.add(slots.substituteSymbols(condition, F.NIL));
+    }
+    return result;
+  }
+
+  /** The left-hand side without its conditions, which are appended to <code>conditions</code>. */
+  private static IExpr stripConditions(IExpr lhs, List<IExpr> conditions) {
+    while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2)) {
+      if (lhs.isCondition()) {
+        conditions.add(((IAST) lhs).arg2());
+      }
+      lhs = ((IAST) lhs).arg1();
+    }
+    return lhs;
+  }
+
+  /**
+   * A key for {@link #relaxes(IPatternMatcher, IPatternMatcher)}: two left-hand sides of which one
+   * relaxes the other have the same key.
+   */
+  static int relaxationHash(IExpr lhs) {
+    lhs = stripCondition(lhs);
+    if (lhs instanceof Blank) {
+      return lhs.getClass().hashCode();
+    }
+    if (lhs.isAST(S.Optional, 2) || lhs.isAST(S.Optional, 3) || lhs.isAST(S.PatternTest, 3)) {
+      return relaxationHash(((IAST) lhs).arg1());
+    }
+    if (lhs instanceof IPatternObject) {
+      return lhs.getClass().hashCode();
+    }
+    if (lhs.isAST()) {
+      IAST ast = (IAST) lhs;
+      int hash = ast.argSize();
+      for (int i = 0; i < ast.size(); i++) {
+        hash = 31 * hash + relaxationHash(ast.get(i));
+      }
+      return hash;
+    }
+    return lhs.hashCode();
+  }
+
+  /**
+   * Compares two left-hand sides for {@link RuleGenerality#relaxes(IPatternMatcher,
+   * IPatternMatcher)}.
+   */
+  private static final class Relaxation {
+    private final IPatternMap generalMap;
+    private final IPatternMap specificMap;
+    /** An exponent <code>n_?IntegerQ</code> of the general side equals <code>n_Integer</code>. */
+    private final boolean integerTie;
+    /** Was such an exponent found? */
+    boolean tieUsed;
+
+    Relaxation(IPatternMap generalMap, IPatternMap specificMap, boolean integerTie) {
+      this.generalMap = generalMap;
+      this.specificMap = specificMap;
+      this.integerTie = integerTie;
+    }
+
+    int compare(IExpr general, IExpr specific) {
+      if (general == specific || (general.isFreeOfPatterns() && general.equals(specific))) {
+        return EQUAL;
+      }
+      if (general instanceof Blank) {
+        if (specific.isAST(S.PatternTest, 3)) {
+          // x_ and x_?IntegerQ: the test only narrows the blank
+          return compare(general, ((IAST) specific).arg1()) == UNRELATED ? UNRELATED : RELAXED;
+        }
+        return blank((Blank) general, specific);
+      }
+      if ((general.isAST(S.Optional, 2) || general.isAST(S.Optional, 3))
+          && !specific.isAST(S.Optional)) {
+        // x_:d and x_, x_Integer or x_?IntegerQ
+        return compare(((IAST) general).arg1(), specific) == UNRELATED ? UNRELATED : RELAXED;
+      }
+      if (general instanceof IPatternObject || specific instanceof IPatternObject) {
+        return general.equals(specific)
+            && sameIndex((IPatternObject) general, (IPatternObject) specific) ? EQUAL : UNRELATED;
+      }
+      if (!general.isAST() || !specific.isAST() || general.size() != specific.size()) {
+        return UNRELATED;
+      }
+      IAST g = (IAST) general;
+      IAST s = (IAST) specific;
+      int result = EQUAL;
+      for (int i = 0; i < g.size(); i++) {
+        int r = integerTie && i == 2 && g.isPower() && s.isPower() ? exponent(g.arg2(), s.arg2())
+            : compare(g.get(i), s.get(i));
+        if (r == UNRELATED) {
+          return UNRELATED;
+        }
+        if (r == RELAXED) {
+          result = RELAXED;
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The blank <code>general</code> and <code>specific</code>: <code>EQUAL</code> if they differ
+     * only by their names, <code>RELAXED</code> if <code>general</code> is optional and
+     * <code>specific</code> is not, or <code>general</code> has no head test and
+     * <code>specific</code> has one.
+     */
+    private int blank(Blank general, IExpr specific) {
+      if (!(specific instanceof Blank) || general.getClass() != specific.getClass()) {
+        return UNRELATED;
+      }
+      Blank s = (Blank) specific;
+      if (!sameIndex(general, s)) {
+        return UNRELATED;
+      }
+      IExpr headTest = general.getHeadTest();
+      if (general.isPatternDefault() == s.isPatternDefault()
+          && java.util.Objects.equals(headTest, s.getHeadTest())) {
+        return EQUAL;
+      }
+      if (s.isPatternDefault()) {
+        return UNRELATED;
+      }
+      return headTest == null || (general.isPatternDefault() && headTest.equals(s.getHeadTest()))
+          ? RELAXED
+          : UNRELATED;
+    }
+
+    /** Compares exponents, where <code>n_?IntegerQ</code> and <code>n_Integer</code> are equal. */
+    private int exponent(IExpr general, IExpr specific) {
+      Blank tested = integerQBlank(general);
+      if (tested != null && integerBlank(specific) && tested.getClass() == specific.getClass()
+          && sameIndex(tested, (Blank) specific)) {
+        tieUsed = true;
+        return EQUAL;
+      }
+      return compare(general, specific);
+    }
+
+    /** The blank <code>x_</code> of <code>x_?IntegerQ</code>, otherwise <code>null</code>. */
+    private static Blank integerQBlank(IExpr expr) {
+      if (expr.isAST(S.PatternTest, 3) && ((IAST) expr).arg2() == S.IntegerQ) {
+        IExpr blank = ((IAST) expr).arg1();
+        if (blank instanceof Blank && !blank.isPatternDefault()
+            && ((Blank) blank).getHeadTest() == null) {
+          return (Blank) blank;
+        }
+      }
+      return null;
+    }
+
+    /** Is <code>expr</code> a blank <code>x_Integer</code> without a default? */
+    private static boolean integerBlank(IExpr expr) {
+      return expr instanceof Blank && !expr.isPatternDefault()
+          && ((Blank) expr).getHeadTest() == S.Integer;
+    }
+
+    /** Do the two patterns have the same index in the pattern maps of their rules? */
+    private boolean sameIndex(IPatternObject general, IPatternObject specific) {
+      if (general.getSymbol() == null || specific.getSymbol() == null) {
+        return general.getSymbol() == specific.getSymbol();
+      }
+      return general.getIndex(generalMap) == specific.getIndex(specificMap);
+    }
   }
 
   /**

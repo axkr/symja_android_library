@@ -35,6 +35,13 @@ public final class PolyLog {
   private static final double EPS = 1.0e-16;
 
   /**
+   * The relative size of the last term of the real series. Terms below half an ulp still move the
+   * rounding of the compensated sum: stopping at <code>EPS</code> left <code>Li_4(-0.3)</code> one
+   * ulp off, and about a third of the arguments in <code>(-0.9, 0.9)</code> as well.
+   */
+  private static final double TAIL_EPS = 1.0e-19;
+
+  /**
    * Largest <code>|z|</code> handled by the series.
    *
    * <p>
@@ -164,7 +171,7 @@ public final class PolyLog {
       compensation = (t - sum) - y;
       sum = t;
       absoluteSum += Math.abs(term);
-      if (Math.abs(term) <= EPS * Math.abs(sum)) {
+      if (Math.abs(term) <= TAIL_EPS * Math.abs(sum)) {
         return cancellationChecked(sum, absoluteSum);
       }
       if (power == 0.0) {

@@ -26,7 +26,7 @@ public class IntegrateDiffUnderIntTest {
 
   @BeforeEach
   public void setUp() {
-    F.initSymbols();
+    F.initSymja();
     evaluator = new ExprEvaluator(false, (short) 100);
     engine = evaluator.getEvalEngine();
   }

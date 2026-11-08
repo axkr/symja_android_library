@@ -421,4 +421,40 @@ public class ApcomplexAppellMath
     {
         return z.real().signum() == 0 && z.imag().signum() == 0;
     }
+
+    /**
+     * Appell hypergeometric function <i>F<sub>1</sub></i> from its Euler integral<p>
+     *
+     * <i>F<sub>1</sub>(a; b<sub>1</sub>, b<sub>2</sub>; c; x, y)</i> = &Gamma;(<i>c</i>) / (&Gamma;(<i>a</i>) &Gamma;(<i>c</i> - <i>a</i>))
+     * &int;<sub>0</sub><sup>1</sup> <i>t<sup>a-1</sup></i> (1 - <i>t</i>)<sup><i>c-a-1</i></sup> (1 - <i>x t</i>)<sup>-<i>b<sub>1</sub></i></sup> (1 - <i>y t</i>)<sup>-<i>b<sub>2</sub></i></sup> d<i>t</i>,<p>
+     *
+     * which holds for Re(<i>c</i>) &gt; Re(<i>a</i>) &gt; 0 and covers the arguments which
+     * {@link #appellF1(Apcomplex, Apcomplex, Apcomplex, Apcomplex, Apcomplex, Apcomplex)}
+     * doesn't reach, among them the branch cuts: for a real argument greater than one the
+     * integral is the limit from below the cut, the same value as
+     * <code>ApcomplexMath.hypergeometric2F1()</code> takes on its cut.<p>
+     *
+     * The integral is computed by double exponential quadrature over the pieces between the
+     * singular points of the integrand, see {@link ApfloatDoubleExponential}.
+     *
+     * @param a The first parameter.
+     * @param b1 The parameter of the first argument.
+     * @param b2 The parameter of the second argument.
+     * @param c The last parameter.
+     * @param x The first argument.
+     * @param y The second argument.
+     * @param precision The precision of the result.
+     * @param machine If <code>true</code> the integral is first summed in <code>double</code>, and in apfloat only if that doesn't converge to machine precision.
+     *
+     * @return <i>F<sub>1</sub>(a; b<sub>1</sub>, b<sub>2</sub>; c; x, y)</i> with <code>precision</code> digits.
+     *
+     * @throws ArithmeticException If Re(<i>c</i>) &gt; Re(<i>a</i>) &gt; 0 doesn't hold, the integral doesn't exist for these parameters or the quadrature doesn't converge.
+     * @throws ApfloatRuntimeException If apfloat can't evaluate the parameters, for instance to infinite precision, or the computation is interrupted.
+     */
+
+    public static Apcomplex appellF1EulerIntegral(Apcomplex a, Apcomplex b1, Apcomplex b2, Apcomplex c, Apcomplex x, Apcomplex y, long precision, boolean machine)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        return AppellF1EulerIntegralHelper.appellF1(a, b1, b2, c, x, y, precision, machine);
+    }
 }

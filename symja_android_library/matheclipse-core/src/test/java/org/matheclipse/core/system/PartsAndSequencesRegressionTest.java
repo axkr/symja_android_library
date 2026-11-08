@@ -95,7 +95,10 @@ public class PartsAndSequencesRegressionTest extends ExprEvaluatorTestCase {
         "{m,m,k}");
     check("ReplacePart({5,6,7},{-1->k,j_?EvenQ->m})", //
         "{5,m,k}");
+    // Heads->False blocks the position 0 but not a negative position of the head
     check("ReplacePart({5,6,7},-4->k,Heads->False)", //
+        "k(5,6,7)");
+    check("ReplacePart({5,6,7},0->k,Heads->False)", //
         "{5,6,7}");
     check("ReplacePart(<|c->5|>,-2->k)", //
         "k(5)");

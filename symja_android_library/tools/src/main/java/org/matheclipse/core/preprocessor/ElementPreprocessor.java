@@ -79,7 +79,7 @@ public class ElementPreprocessor {
     final Parser parser = new Parser(relaxedSyntax, true);
 
     List<String> rows = new ArrayList<String>();
-    CSVFormat csvFormat = CSVFormat.RFC4180.builder().setDelimiter('\t').build();
+    CSVFormat csvFormat = CSVFormat.RFC4180.builder().setDelimiter('\t').get();
     try (Reader reader = Files.newBufferedReader(csv, StandardCharsets.UTF_8)) {
       boolean first = true;
       for (CSVRecord record : csvFormat.parse(reader)) {

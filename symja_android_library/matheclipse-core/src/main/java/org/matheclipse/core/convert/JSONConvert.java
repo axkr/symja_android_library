@@ -2,6 +2,7 @@ package org.matheclipse.core.convert;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -35,6 +36,17 @@ public class JSONConvert {
 
   public JSONConvert() {}
 
+  /** Convert each field of a JSON object to a rule <code>"key" -> value</code>. */
+  private static void importJSONFields(ObjectNode objectNode, boolean rawJSON,
+      Consumer<IExpr> rules) {
+    for (Entry<String, JsonNode> next : objectNode.properties()) {
+      IExpr temp = importJSONRecursive(next.getValue(), rawJSON);
+      if (temp.isPresent()) {
+        rules.accept(F.Rule(F.$str(next.getKey()), temp));
+      }
+    }
+  }
+
   public static IExpr importJSONRecursive(JsonNode node, boolean rawJSON) {
     if (node instanceof ArrayNode) {
       ArrayNode arrayNode = (ArrayNode) node;
@@ -52,28 +64,12 @@ public class JSONConvert {
       if (rawJSON) {
         // identify JSON objects as associations of rules
         IAssociation assoc = F.assoc();
-        ObjectNode objectNode = (ObjectNode) node;
-        Iterator<Entry<String, JsonNode>> iter = objectNode.fields();
-        while (iter.hasNext()) {
-          Entry<String, JsonNode> next = iter.next();
-          IExpr temp = importJSONRecursive(next.getValue(), rawJSON);
-          if (temp.isPresent()) {
-            assoc.appendRule(F.Rule(F.$str(next.getKey()), temp));
-          }
-        }
+        importJSONFields((ObjectNode) node, rawJSON, assoc::appendRule);
         return assoc;
       }
       // identify JSON objects as list of rules
       IASTAppendable list = F.ListAlloc();
-      ObjectNode objectNode = (ObjectNode) node;
-      Iterator<Entry<String, JsonNode>> iter = objectNode.fields();
-      while (iter.hasNext()) {
-        Entry<String, JsonNode> next = iter.next();
-        IExpr temp = importJSONRecursive(next.getValue(), rawJSON);
-        if (temp.isPresent()) {
-          list.append(F.Rule(F.$str(next.getKey()), temp));
-        }
-      }
+      importJSONFields((ObjectNode) node, rawJSON, list::append);
       return list;
     } else if (node instanceof ValueNode) {
       ValueNode valueNode = (ValueNode) node;

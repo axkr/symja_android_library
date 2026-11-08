@@ -112,12 +112,12 @@ public class ListStepPlot extends ListPlot {
         PlotWrapper datasetWrapper = PlotWrapper.of(dataList.get(i));
         IExpr subData = datasetWrapper.datum;
         if (subData.isList()) {
-          IExpr style = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(), F.NIL,
-              graphicsOptions.curveThickness());
+          IAST defaultStyle = graphicsOptions.nextCurveStyle();
+          IExpr style = defaultStyle;
           IExpr userStyle =
               GraphicsOptions.getPlotStyle(options[GraphicsOptions.X_PLOTSTYLE], i - 1);
           if (userStyle.isPresent())
-            style = F.Directive(style, userStyle);
+            style = GraphicsOptions.withUserStyle(defaultStyle, userStyle);
 
           int before = primitives.size();
           generated = generateStepPrimitivesSub(primitives, (IAST) subData, stepType, joined, style,
@@ -131,11 +131,11 @@ public class ListStepPlot extends ListPlot {
         }
       }
     } else {
-      IExpr style = GraphicsOptions.plotStyleDirective(graphicsOptions.incColorIndex(), F.NIL,
-          graphicsOptions.curveThickness());
+      IAST defaultStyle = graphicsOptions.nextCurveStyle();
+      IExpr style = defaultStyle;
       IExpr userStyle = GraphicsOptions.getPlotStyle(options[GraphicsOptions.X_PLOTSTYLE], 0);
       if (userStyle.isPresent())
-        style = F.Directive(style, userStyle);
+        style = GraphicsOptions.withUserStyle(defaultStyle, userStyle);
 
       generated = generateStepPrimitives(primitives, dataList, stepType, joined && extent >= 1.0,
           style, graphicsOptions, engine, extent, stepMarkers);
@@ -193,8 +193,8 @@ public class ListStepPlot extends ListPlot {
         IExpr e = wrapper.datum;
         if (e.isList2()) {
           try {
-            double x = ((IAST) e).arg1().evalDouble();
-            double y = ((IAST) e).arg2().evalDouble();
+            double x = ((IAST) e).arg1().evalf();
+            double y = ((IAST) e).arg2().evalf();
             points.add(new double[] {x, y});
             pointTooltips.add(wrapper.tooltip);
           } catch (RuntimeException rex) {

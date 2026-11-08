@@ -50,6 +50,8 @@ import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.numerics.optim.DifferentialEvolution;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.reflection.system.FindRoot;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -1783,12 +1785,155 @@ public class MinMaxFunctions {
                 i -> F.Rule(listOfVariables.get(i), S.Indeterminate));
             return F.list(getGoalType() == GoalType.MINIMIZE ? F.CInfinity : F.CNInfinity, rules);
           }
-          return best;
+          return withWorkingPrecision(best, function, constraints, ast, engine);
         }
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (org.hipparchus.exception.MathRuntimeException e) {
         return Errors.printMessage(ast.topHead(), e, engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The machine optimum refined by a local search at the working precision of a
+     * <code>WorkingPrecision -> digits</code> option. The refined point is taken only if it
+     * satisfies the constraints, stays next to the machine point and is not worse.
+     *
+     * @param best the machine result <code>{value, {x -> x0, ...}}</code>
+     * @return <code>best</code> if there is no such option or the refinement fails
+     */
+    private IExpr withWorkingPrecision(IExpr best, IExpr function, IExpr constraints, IAST ast,
+        EvalEngine engine) {
+      if (!best.isList2() || !best.second().isListOfRules()) {
+        return best;
+      }
+      long digits = 0L;
+      for (int i = 3; i < ast.size(); i++) {
+        if (ast.get(i).isRuleAST() && ast.get(i).first() == S.WorkingPrecision) {
+          digits = FindRoot.workingPrecision(ast.get(i).second());
+        }
+      }
+      if (digits <= 0L) {
+        return best;
+      }
+      IAST rules = (IAST) best.second();
+      // a local search in all variables first: an optimum next to a bound may lie inside
+      IExpr all = refineAt(best, function, constraints, F.CEmptyList, digits, engine);
+      if (all.isPresent()) {
+        return all;
+      }
+      // a variable at a bound of a constraint a <= x or x <= b keeps the exact bound, the others
+      // are refined by a local search
+      List<IExpr> conjuncts = new ArrayList<IExpr>();
+      flattenConjuncts(constraints, conjuncts);
+      IASTAppendable fixed = F.ListAlloc();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr variable = rules.get(i).first();
+        IExpr bound = activeBound(variable, rules.get(i).second().evalf(), conjuncts);
+        if (bound.isPresent()) {
+          fixed.append(F.Rule(variable, bound));
+        }
+      }
+      if (fixed.argSize() == 0) {
+        return best;
+      }
+      return refineAt(best, function, constraints, fixed, digits, engine).orElse(best);
+    }
+
+    /**
+     * The machine optimum <code>best</code> refined at the working precision, with the variables
+     * of the rules <code>fixed</code> at their exact values and the others found by a local search.
+     *
+     * @return {@link F#NIL} if the refined point doesn't satisfy the constraints, leaves the
+     *         machine point or is worse
+     */
+    private IExpr refineAt(IExpr best, IExpr function, IExpr constraints, IAST fixed, long digits,
+        EvalEngine engine) {
+      IAST rules = (IAST) best.second();
+      IASTAppendable starts = F.ListAlloc();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr variable = rules.get(i).first();
+        if (!fixed.exists(r -> r.first().equals(variable))) {
+          starts.append(F.list(variable, rules.get(i).second()));
+        }
+      }
+      IExpr reduced = F.subst(function, fixed);
+      IAST refinedFree = F.CEmptyList;
+      IExpr value;
+      if (starts.argSize() > 0) {
+        ISymbol head = getGoalType() == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum;
+        IExpr local = engine.evalQuiet(
+            F.ternaryAST3(head, reduced, starts, F.Rule(S.WorkingPrecision, F.ZZ(digits))));
+        if (!local.isList2() || !local.second().isListOfRules()
+            || local.second().argSize() != starts.argSize() || !local.first().isReal()) {
+          return F.NIL;
+        }
+        refinedFree = (IAST) local.second();
+        value = local.first();
+      } else {
+        value = engine.evalN(reduced, digits);
+        if (!value.isReal()) {
+          return F.NIL;
+        }
+      }
+      IASTAppendable refined = F.ListAlloc(rules.argSize());
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr variable = rules.get(i).first();
+        IExpr after = F.NIL;
+        for (IExpr r : fixed) {
+          if (r.first().equals(variable)) {
+            after = r.second().isZero() ? ApfloatNum.zero(digits) : engine.evalN(r.second(), digits);
+          }
+        }
+        for (IExpr r : refinedFree) {
+          if (r.first().equals(variable)) {
+            after = r.second();
+          }
+        }
+        double before = rules.get(i).second().evalf();
+        if (after.isNIL() || !after.isReal()
+            || Math.abs(after.evalf() - before) > 1e-6 * (1.0 + Math.abs(before))) {
+          return F.NIL;
+        }
+        refined.append(F.Rule(variable, after));
+      }
+      if (!constraints.isTrue()
+          && !engine.evalQuiet(F.subst(F.subst(constraints, fixed), refinedFree)).isTrue()) {
+        return F.NIL;
+      }
+      double machine = best.first().evalf();
+      double slack = 1e-10 * (1.0 + Math.abs(machine));
+      double refinedValue = value.evalf();
+      if (getGoalType() == GoalType.MINIMIZE ? refinedValue > machine + slack
+          : refinedValue < machine - slack) {
+        return F.NIL;
+      }
+      return F.list(value, refined);
+    }
+
+    /**
+     * The exact bound <code>a</code> of a constraint <code>a <= x</code>, <code>x <= a</code> (or
+     * with <code>&lt;</code>, <code>&gt;=</code>, <code>&gt;</code>) which the machine optimum
+     * <code>value</code> of <code>x</code> lies on.
+     *
+     * @return {@link F#NIL} if the variable isn't at such a bound
+     */
+    private static IExpr activeBound(IExpr variable, double value, List<IExpr> conjuncts) {
+      for (IExpr c : conjuncts) {
+        if (c.argSize() != 2 || !(c.isAST(S.LessEqual) || c.isAST(S.Less)
+            || c.isAST(S.GreaterEqual) || c.isAST(S.Greater))) {
+          continue;
+        }
+        IExpr bound = c.first().equals(variable) ? c.second()
+            : c.second().equals(variable) ? c.first() : F.NIL;
+        if (bound.isPresent() && bound.isRealResult() && bound.isNumericFunction()
+            && !bound.isInexactNumber()) {
+          double b = bound.evalf();
+          if (Math.abs(value - b) <= 1e-7 * (1.0 + Math.abs(b))) {
+            return bound;
+          }
+        }
       }
       return F.NIL;
     }

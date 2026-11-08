@@ -858,12 +858,12 @@ public class Symbol implements ISymbol, Serializable {
    */
   private IExpr evalnIfNumeric() {
     if (isNumericFunction(true)) {
-      return F.evaln(this);
+      return EvalEngine.get().evalN(this);
     }
     if (hasAssignedSymbolValue()) {
       IExpr temp = assignedValue();
       if (temp != null && temp.isNumericFunction(true)) {
-        return F.evaln(this);
+        return EvalEngine.get().evalN(this);
       }
     }
     return null;
@@ -990,7 +990,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean hasAssignedSymbolValue() {
+  public boolean hasAssignedSymbolValue() {
     // some generated rule classes assign own values, e.g. RGBColorRules defines `Black`, `Red`, ...
     ensureRulesLoaded();
     markReadInCondition();
@@ -1199,7 +1199,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public boolean isNegative() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isNegative()) {
         return true;
       }
@@ -1220,7 +1220,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public boolean isNonNegative() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isNonNegative()) {
         return true;
       }
@@ -1302,7 +1302,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public boolean isPositive() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isPositive()) {
         return true;
       }
@@ -1597,7 +1597,8 @@ public class Symbol implements ISymbol, Serializable {
       boolean packageMode) {
     ensureRulesLoaded();
     if (!packageMode) {
-      if (isLocked(packageMode)) {
+      // the value of a built-in $ symbol is kept in the engine, so it is never locked
+      if (isLocked(packageMode) && !(leftHandSide.isSymbol() && isDollarSymbol())) {
         throw new RuleCreationError(leftHandSide);
       }
 

@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.eval.Errors;
@@ -50,11 +50,11 @@ public class PrimeZetaP extends AbstractFunctionEvaluator {
       final boolean arbitrary = arg instanceof ApfloatNum || arg instanceof ApcomplexNum;
       Complex c = arg.evalfc();
       if (c.getReal() > 1.0 && (arbitrary || (c.getReal() >= 3.0 && Math.abs(c.getImaginary()) <= 5.0))) {
-        final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
+        final int digits = WorkingPrecision.digits(arbitrary, engine);
         try {
           Apcomplex value = ApcomplexZetaMath
-              .primeZeta(CarlsonArbitraryPrecision.apcomplex(arg, digits));
-          return CarlsonArbitraryPrecision.toNumber(value, arg.isReal(), arbitrary);
+              .primeZeta(WorkingPrecision.apcomplex(arg, digits));
+          return WorkingPrecision.toNumber(value, arg.isReal(), arbitrary);
         } catch (ArithmeticException | ApfloatRuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
         }

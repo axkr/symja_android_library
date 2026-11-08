@@ -259,7 +259,7 @@ public class FindInstance extends Solve {
       return true;
     }
     final IExpr x = vars.get(k);
-    final IAST laterVars = vars.copyFrom(k + 1);
+    final IAST laterVars = vars.subList(k + 1);
     IAST branches = reduced.isOr() ? (IAST) reduced : F.list(reduced);
     for (IExpr branch : branches) {
       if (branch.isFalse()) {

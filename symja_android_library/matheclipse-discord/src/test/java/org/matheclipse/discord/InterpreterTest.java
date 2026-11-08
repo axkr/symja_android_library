@@ -36,7 +36,7 @@ public class InterpreterTest {
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     Config.PRIME_FACTORS = new Primality();
     EvalEngine.get().setPackageMode(true);
-    F.initSymbols();
+    F.initSymja();
   }
 
   @Test

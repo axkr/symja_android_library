@@ -55,7 +55,9 @@ import edu.jas.arith.Modular;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
+import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
@@ -69,6 +71,7 @@ import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class AlgebraUtil {
   private static class DistributeAlgorithm {
@@ -320,6 +323,15 @@ public class AlgebraUtil {
      * @return F.NIL if no evaluation is possible
      */
     public IExpr expandAST(final IAST ast) {
+      return expandAST(ast, false);
+    }
+
+    /**
+     * @param termOfSum <code>ast</code> is a term of a sum, see
+     *        {@link #expandPowerNIL(IAST, boolean)}
+     * @return F.NIL if no evaluation is possible
+     */
+    private IExpr expandAST(final IAST ast, boolean termOfSum) {
       if (isPatternFree(ast)) {
         return F.NIL;
       }
@@ -332,7 +344,7 @@ public class AlgebraUtil {
       }
 
       if (ast.isPower()) {
-        return expandPowerNIL(ast);
+        return expandPowerNIL(ast, termOfSum);
       } else if (ast.isTimes()) {
         // (a+b)*(c+d)...
         EvalEngine engine = EvalEngine.get();
@@ -345,6 +357,10 @@ public class AlgebraUtil {
         }
         IExpr[] parts = temp.get();
         if (parts[0].isOne()) {
+          if (keepPolynomialDenominators && isProductOfPolynomialPowers(parts[1])) {
+            addExpanded(ast);
+            return F.NIL;
+          }
           if (parts[1].isTimes()) {
             tempExpr = expandTimes((IAST) parts[1], engine);
             if (tempExpr.isPresent()) {
@@ -446,7 +462,7 @@ public class AlgebraUtil {
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
         if (arg.isAST()) {
-          IExpr temp = expandAST((IAST) arg);
+          IExpr temp = expandAST((IAST) arg, true);
           if (temp.isPresent()) {
             if (result.isNIL()) {
               result = ast.copyUntil(ast.size(), i);
@@ -560,6 +576,19 @@ public class AlgebraUtil {
      * @return
      */
     private IExpr expandPowerNIL(final IAST powerAST) {
+      return expandPowerNIL(powerAST, false);
+    }
+
+    /**
+     * @param termOfSum <code>powerAST</code> is a term of a sum. For <code>Together</code>
+     *        (<code>keepPolynomialDenominators</code>) only such a positive fractional power of a
+     *        sum is split into <code>Sqrt(1+x/r)*(1+x/r)^2</code>, which lets it combine with the
+     *        other powers of <code>1+x/r</code> in the sum. A factor or a whole expression
+     *        <code>(1+x/r)^(5/2)</code> stays a power: multiplied out with the other factors the
+     *        split form grows into a big sum, and <code>Together</code> puts the base over one
+     *        denominator on its own.
+     */
+    private IExpr expandPowerNIL(final IAST powerAST, boolean termOfSum) {
       IExpr base = powerAST.arg1();
       IExpr exponent = powerAST.arg2();
       IExpr temp = F.NIL;
@@ -570,7 +599,7 @@ public class AlgebraUtil {
         }
       }
       if ((base.isPlus())) {
-        if (exponent.isFraction()) {
+        if (exponent.isFraction() && (termOfSum || !keepPolynomialDenominators)) {
           IFraction fraction = (IFraction) exponent;
           if (fraction.isPositive()) {
             INumber floorPart = fraction.floorFraction().normalize();
@@ -1932,10 +1961,23 @@ public class AlgebraUtil {
       temp.ifPresent(x -> result[0] = F.ast(x, localASTSize));
     }
     final IAST localASTFinal = localAST;
+    // Together splits a fractional power of a sum only as a term of a sum, see
+    // Expander#expandPowerNIL(IAST, boolean): expanded on its own it would stay a power, so only
+    // its base is expanded here and the sum splits it
+    final boolean termsOfSum = keepPolynomialDenominators && localAST.isPlus();
     localAST.forEach((x, i) -> {
       if (x.isAST()) {
-        IExpr t = expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms,
-            keepPolynomialDenominators, engine);
+        IExpr t;
+        if (termsOfSum && isFractionalPowerOfSum(x)) {
+          t = expandAll((IAST) x.base(), patt, expandNegativePowers, distributePlus, factorTerms,
+              keepPolynomialDenominators, engine);
+          if (t.isPresent()) {
+            t = F.Power(t, x.exponent());
+          }
+        } else {
+          t = expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms,
+              keepPolynomialDenominators, engine);
+        }
         if (t.isPresent()) {
           if (result[0].isNIL()) {
             int size = localASTFinal.size() + 4; // 4 -> empirically determined value in JUnit tests
@@ -2085,10 +2127,10 @@ public class AlgebraUtil {
 
         FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
             FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-        if (squareFree) {
-          map = factorAbstract.squarefreeFactors(poly); // factors(poly);
-        } else {
-          map = factorAbstract.factors(poly);
+        map = factorsWithMergedVariables(poly,
+            squareFree ? factorAbstract::squarefreeFactors : factorAbstract::factors);
+        if (map == null) {
+          map = squareFree ? factorAbstract.squarefreeFactors(poly) : factorAbstract.factors(poly);
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
@@ -2164,7 +2206,11 @@ public class AlgebraUtil {
       return F.C0;
     }
     FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
-    SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);
+    SortedMap<GenPolynomial<Complex<BigRational>>, Long> map =
+        factorsWithMergedVariables(polynomial, factorAbstract::factors);
+    if (map == null) {
+      map = factorAbstract.factors(polynomial);
+    }
 
     IASTAppendable result = F.ast(head, map.size());
     for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
@@ -2320,6 +2366,122 @@ public class AlgebraUtil {
   }
 
 
+  /**
+   * The factors of <code>poly</code> if some of its variables occur in every term with the same
+   * exponent, as <code>b</code>, <code>c</code> and <code>L</code> in
+   * <code>9*e^4+10*e^2*(b*c*L)^2+(b*c*L)^4</code>: the polynomial is one in their product, which is
+   * factored with each such group of variables as one variable. The multivariate factorization
+   * gives up on the four variables (its Kronecker substitution has too high a degree), and on the
+   * two it is immediate.
+   *
+   * <p>
+   * A factor in the merged variable is a factor of the polynomial, and it is irreducible: the
+   * factors of a polynomial which depends on <code>b</code> and <code>c</code> through
+   * <code>b*c</code> only are of the same kind, up to monomials, which the merged factorization
+   * has as well and which are split into the single variables here.
+   *
+   * @return <code>null</code> if no two variables can be merged
+   */
+  private static <C extends GcdRingElem<C>> SortedMap<GenPolynomial<C>, Long> factorsWithMergedVariables(
+      GenPolynomial<C> poly,
+      java.util.function.Function<GenPolynomial<C>, SortedMap<GenPolynomial<C>, Long>> factorizer) {
+    final GenPolynomialRing<C> ring = poly.ring;
+    final int n = ring.nvar;
+    if (n < 3 || poly.length() < 2) {
+      return null;
+    }
+    final List<ExpVector> exponents = new ArrayList<ExpVector>(poly.getMap().keySet());
+    // representative[i]: the first variable with the exponents of variable i in every term
+    final int[] representative = new int[n];
+    final int[] slot = new int[n];
+    int merged = 0;
+    for (int i = 0; i < n; i++) {
+      representative[i] = i;
+      if (occursIn(exponents, i)) {
+        for (int j = 0; j < i; j++) {
+          if (representative[j] == j && occursIn(exponents, j)
+              && sameExponents(exponents, i, j)) {
+            representative[i] = j;
+            break;
+          }
+        }
+      }
+      if (representative[i] == i) {
+        slot[i] = merged++;
+      }
+    }
+    if (merged == n) {
+      return null;
+    }
+    final GenPolynomialRing<C> smallRing = new GenPolynomialRing<C>(ring.coFac, merged, ring.tord);
+    final GenPolynomial<C> small = new GenPolynomial<C>(smallRing);
+    for (Map.Entry<ExpVector, C> term : poly.getMap().entrySet()) {
+      long[] v = new long[merged];
+      for (int i = 0; i < n; i++) {
+        if (representative[i] == i) {
+          v[slot[i]] = term.getKey().getVal(i);
+        }
+      }
+      small.doPutToMap(ExpVector.create(v), term.getValue());
+    }
+    final SortedMap<GenPolynomial<C>, Long> result = new java.util.TreeMap<GenPolynomial<C>, Long>();
+    // the coefficients of the monomial factors, multiplied out
+    C constant = ring.coFac.getONE();
+    for (Map.Entry<GenPolynomial<C>, Long> factor : factorizer.apply(small).entrySet()) {
+      final GenPolynomial<C> f = factor.getKey();
+      final long multiplicity = factor.getValue();
+      if (f.length() == 1 && !f.isConstant()) {
+        // a power of a merged variable is the product of the powers of its variables
+        final ExpVector e = f.leadingExpVector();
+        for (long k = 0; k < multiplicity; k++) {
+          constant = constant.multiply(f.leadingBaseCoefficient());
+        }
+        for (int i = 0; i < n; i++) {
+          long k = e.getVal(slot[representative[i]]);
+          if (k > 0) {
+            long[] v = new long[n];
+            v[i] = 1;
+            GenPolynomial<C> variable = new GenPolynomial<C>(ring);
+            variable.doPutToMap(ExpVector.create(v), ring.coFac.getONE());
+            result.merge(variable, k * multiplicity, Long::sum);
+          }
+        }
+        continue;
+      }
+      final GenPolynomial<C> lifted = new GenPolynomial<C>(ring);
+      for (Map.Entry<ExpVector, C> term : f.getMap().entrySet()) {
+        long[] v = new long[n];
+        for (int i = 0; i < n; i++) {
+          v[i] = term.getKey().getVal(slot[representative[i]]);
+        }
+        lifted.doPutToMap(ExpVector.create(v), term.getValue());
+      }
+      result.merge(lifted, multiplicity, Long::sum);
+    }
+    if (!constant.isONE()) {
+      result.merge(ring.getONE().multiply(constant), 1L, Long::sum);
+    }
+    return result;
+  }
+
+  private static boolean occursIn(List<ExpVector> exponents, int i) {
+    for (ExpVector e : exponents) {
+      if (e.getVal(i) != 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean sameExponents(List<ExpVector> exponents, int i, int j) {
+    for (ExpVector e : exponents) {
+      if (e.getVal(i) != e.getVal(j)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static IAST factorRational(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
       ISymbol head) {
     if (polyRat.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
@@ -2331,8 +2493,11 @@ public class AlgebraUtil {
         (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
     FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
         FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-    map = factorAbstract.factors(poly);
+    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map =
+        factorsWithMergedVariables(poly, factorAbstract::factors);
+    if (map == null) {
+      map = factorAbstract.factors(poly);
+    }
     // if (map.size() == 1 && original != null) {
     // return F.unaryAST1(head, original);
     // }
@@ -4090,7 +4255,7 @@ public class AlgebraUtil {
    */
   private static boolean isCommonDivisor(IExpr rationalGcd, IAST coefficients, EvalEngine engine) {
     long precision = coefficients.determinePrecision(false);
-    if (precision <= Config.MACHINE_PRECISION || !rationalGcd.isNumber() || rationalGcd.isZero()) {
+    if (precision <= ParserConfig.MACHINE_PRECISION || !rationalGcd.isNumber() || rationalGcd.isZero()) {
       return true;
     }
     double tolerance = Math.pow(10.0, -Math.min(precision - 4, 300));
@@ -5077,10 +5242,19 @@ public class AlgebraUtil {
     return variables.argSize() > 0 && expr.isPolynomial(variables);
   }
 
+  /** Is <code>expr</code> a sum raised to a positive fraction, like <code>(1+x/r)^(5/2)</code>? */
+  private static boolean isFractionalPowerOfSum(IExpr expr) {
+    return expr.isPower() && expr.exponent().isFraction() && expr.exponent().isPositive()
+        && expr.base().isPlus();
+  }
+
   /**
    * Test if a denominator is a product of positive integer powers of polynomials in their
    * variables (and numbers): the common denominator of such fractions is built from these factors,
-   * so the denominator is not multiplied out.
+   * so the denominator is not multiplied out. A positive fractional power of a sum is such a factor
+   * too: <code>(1+x/r)^(5/2)</code> stays a power whose base <code>Together</code> handles on its
+   * own, where its expansion <code>Sqrt(1+x/r)*(1+x/r)^2</code> multiplied by the other factors
+   * grows into a large sum.
    */
   private static boolean isProductOfPolynomialPowers(IExpr denominator) {
     IAST factors = denominator.isTimes() ? (IAST) denominator : F.Times(denominator);
@@ -5090,6 +5264,9 @@ public class AlgebraUtil {
         continue;
       }
       IExpr base = factor;
+      if (isFractionalPowerOfSum(factor)) {
+        continue;
+      }
       if (factor.isPower()) {
         if (!factor.exponent().isInteger() || !factor.exponent().isPositive()) {
           return false;

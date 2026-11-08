@@ -348,7 +348,7 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
+        if (fValue1.isOneIdentityAST() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
@@ -607,14 +607,14 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
+        if (fValue1.isOneIdentityAST() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
+        if (fValue2.isOneIdentityAST() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
@@ -935,21 +935,21 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
+        if (fValue1.isOneIdentityAST() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
+        if (fValue2.isOneIdentityAST() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
+        if (fValue3.isOneIdentityAST() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
@@ -1321,28 +1321,28 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
+        if (fValue1.isOneIdentityAST() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
+        if (fValue2.isOneIdentityAST() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
+        if (fValue3.isOneIdentityAST() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
       }
       if (temp == fSymbol4) {
         fValue4 = expr;
-        if (fValue4.isOneIdentityAST1() && fValue4.head().isBuiltInSymbol()) {
+        if (fValue4.isOneIdentityAST() && fValue4.head().isBuiltInSymbol()) {
           fValue4 = fValue4.first();
         }
         return true;
@@ -1762,35 +1762,35 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
+        if (fValue1.isOneIdentityAST() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
+        if (fValue2.isOneIdentityAST() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
+        if (fValue3.isOneIdentityAST() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
       }
       if (temp == fSymbol4) {
         fValue4 = expr;
-        if (fValue4.isOneIdentityAST1() && fValue4.head().isBuiltInSymbol()) {
+        if (fValue4.isOneIdentityAST() && fValue4.head().isBuiltInSymbol()) {
           fValue4 = fValue4.first();
         }
         return true;
       }
       if (temp == fSymbol5) {
         fValue5 = expr;
-        if (fValue5.isOneIdentityAST1() && fValue5.head().isBuiltInSymbol()) {
+        if (fValue5.isOneIdentityAST() && fValue5.head().isBuiltInSymbol()) {
           fValue5 = fValue5.first();
         }
         return true;
@@ -2266,42 +2266,42 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
+        if (fValue1.isOneIdentityAST() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
+        if (fValue2.isOneIdentityAST() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
+        if (fValue3.isOneIdentityAST() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
       }
       if (temp == fSymbol4) {
         fValue4 = expr;
-        if (fValue4.isOneIdentityAST1() && fValue4.head().isBuiltInSymbol()) {
+        if (fValue4.isOneIdentityAST() && fValue4.head().isBuiltInSymbol()) {
           fValue4 = fValue4.first();
         }
         return true;
       }
       if (temp == fSymbol5) {
         fValue5 = expr;
-        if (fValue5.isOneIdentityAST1() && fValue5.head().isBuiltInSymbol()) {
+        if (fValue5.isOneIdentityAST() && fValue5.head().isBuiltInSymbol()) {
           fValue5 = fValue5.first();
         }
         return true;
       }
       if (temp == fSymbol6) {
         fValue6 = expr;
-        if (fValue6.isOneIdentityAST1() && fValue6.head().isBuiltInSymbol()) {
+        if (fValue6.isOneIdentityAST() && fValue6.head().isBuiltInSymbol()) {
           fValue6 = fValue6.first();
         }
         return true;
@@ -2745,7 +2745,7 @@ public interface IPatternMap {
       int indx = indexOf(temp);
       if (indx >= 0) {
         fSymbolsOrPatternValues[indx] =
-            expr.isOneIdentityAST1() && expr.head().isBuiltInSymbol() ? expr.first() : expr;
+            expr.isOneIdentityAST() && expr.head().isBuiltInSymbol() ? expr.first() : expr;
         return true;
       }
       return false;

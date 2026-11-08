@@ -143,6 +143,10 @@ public final class LabelText {
         return base + script;
       }
     }
+    if (expr.isAST(S.SuperStar, 2) || expr.isAST(S.SuperDagger, 2)) {
+      // x* and x\u2020: the mark follows the base
+      return of(expr.first()) + (expr.isAST(S.SuperStar) ? "*" : "\u2020");
+    }
     if (expr == S.Pi) {
       return "\u03C0";
     }

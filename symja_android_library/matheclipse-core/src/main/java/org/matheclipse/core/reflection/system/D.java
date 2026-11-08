@@ -505,6 +505,12 @@ public class D extends AbstractFunctionOptionEvaluator {
         return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
       }
 
+      if (fx.isAST(S.Indexed, 3) && !fx.first().isList() && isDerivativeVariable(x)
+          && !(fx.first() instanceof IArraySymbol) && !fx.first().isFree(x, true)
+          && fx.second().isFree(x, true)) {
+        // the component of a list valued function: the component of its derivative
+        return F.binaryAST2(S.Indexed, F.D(fx.first(), x), fx.second());
+      }
       if (x instanceof IArraySymbol) {
         // differentiating by a whole vector, matrix or array; an unsupported case has to stay
         // unevaluated rather than fall through to the scalar rules below
@@ -782,6 +788,13 @@ public class D extends AbstractFunctionOptionEvaluator {
             if (function.argSize() == 3 && function.first().isList()
                 && function.second().isList()) {
               return hypergeometricPFQ(function, x);
+            }
+            break;
+
+          case ID.HypergeometricPFQRegularized:
+            if (function.argSize() == 3 && function.first().isList()
+                && function.second().isList()) {
+              return hypergeometricPFQRegularized(function, x);
             }
             break;
 
@@ -1198,6 +1211,27 @@ public class D extends AbstractFunctionOptionEvaluator {
           F.D(arg3, x));
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>D(HypergeometricPFQRegularized(a, b, z), z)</code> is
+   * <code>Times(a)*HypergeometricPFQRegularized(a+1, b+1, z)</code>: the factor
+   * <code>1/Times(b)</code> of the unregularized derivative goes into the Gamma functions.
+   */
+  private static IExpr hypergeometricPFQRegularized(final IAST function, IExpr x) {
+    IAST list1 = (IAST) function.first();
+    IAST list2 = (IAST) function.second();
+    if (!list1.isFree(x) || !list2.isFree(x)) {
+      return F.NIL;
+    }
+    IASTAppendable newList1 = F.ListAlloc(list1.argSize());
+    list1.forEach(a -> newList1.append(F.Plus(F.C1, a)));
+    IASTAppendable newList2 = F.ListAlloc(list2.argSize());
+    list2.forEach(b -> newList2.append(F.Plus(F.C1, b)));
+    IExpr timesNumerator = list1.argSize() == 0 ? F.C1 : list1.apply(S.Times, 1);
+    return F.Times(timesNumerator,
+        F.HypergeometricPFQRegularized(newList1, newList2, function.arg3()),
+        F.D(function.arg3(), x));
   }
 
   /**

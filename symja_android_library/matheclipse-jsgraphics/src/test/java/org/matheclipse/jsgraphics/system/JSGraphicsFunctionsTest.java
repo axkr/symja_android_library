@@ -29,7 +29,8 @@ public class JSGraphicsFunctionsTest extends AbstractTestCase {
   public void testJSXGraphPlot() {
     String js = script("JSXGraph(Plot(Sin(x), {x, 0, 5}))", "jsxgraph");
     assertTrue(js.contains("JXG.JSXGraph.initBoard('jxgbox', {boundingbox: ["), js);
-    assertTrue(js.contains("board.create('curve', [[0,"), js);
+    // the first sample lies a millionth of a grid step inside the range
+    assertTrue(js.contains("board.create('curve', [[1.0204"), js);
     // the default curve colour, RGBColor(0.24, 0.6, 0.8)
     assertTrue(js.contains("strokeColor: '#3d99cc'"), js);
     assertTrue(js.contains("board.create('axis'"), js);
@@ -188,5 +189,13 @@ public class JSGraphicsFunctionsTest extends AbstractTestCase {
       n++;
     }
     return n;
+  }
+
+  @Test
+  public void testJSXGraphLineWithOffsetPoint() {
+    // without a printer's point scale the Offset point is drawn at its position
+    String js = script("JSXGraph(Graphics({Line({{0, 0}, {2, 1}}), "
+        + "Line({{1, 0}, Offset({0, -6}, {1, 0})})}))", "jsxgraph");
+    assertEquals(2, count(js, "board.create('curve'"), js);
   }
 }

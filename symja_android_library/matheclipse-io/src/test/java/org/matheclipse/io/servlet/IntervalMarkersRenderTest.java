@@ -24,7 +24,7 @@ public class IntervalMarkersRenderTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   /** What the servlet sends the browser for one result. */

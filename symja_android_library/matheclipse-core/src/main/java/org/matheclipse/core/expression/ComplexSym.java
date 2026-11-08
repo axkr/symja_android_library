@@ -32,6 +32,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.visit.IVisitor;
@@ -268,9 +269,16 @@ public class ComplexSym implements IComplex {
         return c;
       }
       if (expr.isReal()) {
-        return !fImaginary.isPositive() ? -1 : 1;
+        // the real number has the smaller imaginary part
+        return 1;
       }
-      return fImaginary.compareTo(((INumber) expr).im());
+      // the size of the imaginary part, then its sign: -I, I, -3*I, 3*I
+      final IReal im = ((INumber) expr).im();
+      c = fImaginary.abs().compareTo(im.abs());
+      if (c != 0) {
+        return c;
+      }
+      return fImaginary.compareTo(im);
     }
     return IComplex.super.compareTo(expr);
   }

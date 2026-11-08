@@ -56,6 +56,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PrecisionLoss;
@@ -681,6 +682,14 @@ public final class Arithmetic {
             return F.Arg(rest.oneIdentity1());
           }
         }
+        if (arg1.isPlus()) {
+          // a factor of every summand which is positive under the assumptions:
+          // Arg(-a-I*Sqrt(3)*a) is Arg(-1-I*Sqrt(3)) for a>0
+          IExpr positive = commonPositiveFactor((IAST) arg1);
+          if (positive.isPresent()) {
+            return F.Arg(engine.evaluate(F.Expand(F.Divide(arg1, positive))));
+          }
+        }
         if (arg1.isTimes() && arg1.first().isNumber() && arg1.first().re().isZero()) {
           // Arg(I*c*y) for a real c: +-Pi/2 by the sign of c*y
           IExpr imaginary = engine.evaluate(F.Times(F.CNI, arg1));
@@ -690,6 +699,25 @@ public final class Arithmetic {
           if (imaginary.isNegativeResult()) {
             return F.CNPiHalf;
           }
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * A symbolic factor of every summand of <code>plus</code> which is positive under the
+     * assumptions.
+     *
+     * @return {@link F#NIL} if there is none
+     */
+    private static IExpr commonPositiveFactor(IAST plus) {
+      IExpr first = plus.arg1();
+      IAST candidates = first.isTimes() ? (IAST) first : F.List(first);
+      for (IExpr factor : candidates) {
+        if (!factor.isNumber() && factor.isPositiveResult()
+            && plus.forAll(term -> term.equals(factor)
+                || (term.isTimes() && ((IAST) term).contains(factor)))) {
+          return factor;
         }
       }
       return F.NIL;
@@ -2058,7 +2086,13 @@ public final class Arithmetic {
           if (temp.isPresent()) {
             return temp;
           }
-          return z1.gamma(z2);
+          IExpr result = z1.gamma(z2);
+          if (result.isComplexNumeric() && z1.isReal() && z2.isReal() && z1.isPositive()
+              && z1.isNumIntValue()) {
+            // Gamma(n, z) == (n-1)!*E^(-z)*Sum(z^k/k!, {k, 0, n-1}) is real for a real z
+            return ((INumber) result).re();
+          }
+          return result;
         }
         case 3: {
           IInexactNumber z1 = (IInexactNumber) ast.arg1();
@@ -4183,8 +4217,35 @@ public final class Arithmetic {
         // Sqrt(-r*I) -> -(-1)^(3/4)*Sqrt(r)
         return F.Times(F.CN1, F.Power(F.CN1, F.C3D4), F.Sqrt(im.negate()));
       }
-      return F.NIL;
+      return sqrtSquareContent(re, im, denominator);
     }
+
+    /**
+     * Pull the square part of the positive rational content <code>gcd(re, im)</code> out of the
+     * root of <code>re + im*I</code>: <code>Sqrt(8+8*I)</code> is <code>2*Sqrt(2+2*I)</code> and
+     * <code>Sqrt(1/4-I/4)</code> is <code>1/2*Sqrt(1-I)</code>. A positive real factor doesn't
+     * change the principal branch.
+     *
+     * @param re the non-zero real part
+     * @param im the non-zero imaginary part
+     * @param denominator the least common denominator of both parts
+     * @return {@link F#NIL} if the content has no square factor
+     */
+    private static IExpr sqrtSquareContent(IRational re, IRational im, IInteger denominator) {
+      IInteger content =
+          re.multiply(denominator).numerator().gcd(im.multiply(denominator).numerator()).abs();
+      IRational ratio = F.QQ(content, denominator);
+      IInteger outerNumerator = SimplifyUtil.squareFactor(ratio.numerator());
+      IInteger outerDenominator = SimplifyUtil.squareFactor(ratio.denominator());
+      if (outerNumerator.isOne() && outerDenominator.isOne()) {
+        return F.NIL;
+      }
+      IRational outer = F.QQ(outerNumerator, outerDenominator).normalize();
+      IRational square = outer.multiply(outer);
+      IComplex primitive = F.CC(re.divideBy(square), im.divideBy(square));
+      return F.Times(outer, F.Sqrt(primitive));
+    }
+
 
     private static IExpr complexInteger(final IComplex base, final IInteger exponent) {
       if (base.isZero()) {

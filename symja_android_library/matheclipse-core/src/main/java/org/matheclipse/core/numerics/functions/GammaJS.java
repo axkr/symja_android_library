@@ -2,7 +2,6 @@ package org.matheclipse.core.numerics.functions;
 
 import static org.matheclipse.core.numerics.functions.HypergeometricJS.hypergeometric1F1;
 import org.apfloat.Apcomplex;
-import org.apfloat.Apfloat;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -11,6 +10,7 @@ import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.expression.CMath;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
@@ -216,14 +216,14 @@ public class GammaJS extends JS {
   }
 
   public static Complex fresnelS(Complex x) {
-    Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex apcomplex = CMath.apcomplex(x);
     Apcomplex fresnelS = EvalEngine.getApfloat().fresnelS(apcomplex);
     // Apcomplex fresnelS = ApcomplexNum.fresnelS(apcomplex, EvalEngine.getApfloatDouble());
     return new Complex(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
   }
 
   public static Complex fresnelC(Complex x) {
-    Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex apcomplex = CMath.apcomplex(x);
     Apcomplex fresnelC = EvalEngine.getApfloat().fresnelC(apcomplex);
     // Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplex, EvalEngine.getApfloatDouble());
     return new Complex(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());

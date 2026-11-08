@@ -1546,7 +1546,9 @@ public final class Programming {
       }
       int[] positions = arg2.toIntVector();
       if (positions != null) {
-        if (arg1.isAST()) {
+        // the component of a list or an association; the arguments of another expression aren't
+        // its components: Indexed(f(x, y), {1}) stays until f(x, y) evaluates to a list
+        if (arg1.isList() || arg1.isAssociation()) {
           try {
             return ((IAST) arg1).getPart(positions);
           } catch (IndexOutOfBoundsException ex) {

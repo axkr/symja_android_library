@@ -25,7 +25,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -253,16 +253,6 @@ public class F extends S {
 
   private static final Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP =
       Config.TRIE_STRING2PATTERNSEQUENCE_BUILDER.withMatch(TrieMatch.EXACT).build();
-
-  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
-    @Override
-    public final boolean createPredefinedSymbol(String symbol) {
-      return false;
-    }
-
-    @Override
-    public void createUserSymbol(ISymbol symbol) {}
-  };
 
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
@@ -1357,39 +1347,8 @@ public class F extends S {
     if (symbol != null) {
       return symbol;
     }
-    if (Config.SERVER_MODE) {
-      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
-          || java.lang.Character.isUpperCase(name.charAt(0))) {
-        if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
-          // second try, because the symbol may now be added to
-          // fSymbolMap
-          ISymbol secondTry =
-              org.matheclipse.core.expression.Context.PREDEFINED_SYMBOLS_MAP.get(name);
-          if (secondTry != null) {
-            return secondTry;
-          }
-        }
-      }
-      // symbol = new BuiltInSymbol(name);
-      symbol = symbol(name, EvalEngine.get());
-      // engine.putUserVariable(name, symbol);
-      HIDDEN_SYMBOLS_MAP.put(name, symbol);
-      if (name.charAt(0) == '$') {
-        SYMBOL_OBSERVER.createUserSymbol(symbol);
-      }
-    } else {
-      symbol = new BuiltInDummy(name);
-      // symbol = symbol(name);
-      HIDDEN_SYMBOLS_MAP.put(name, symbol);
-      // if (symbol.isBuiltInSymbol()) {
-      // if (!setEval) {
-      // ((IBuiltInSymbol) symbol).setEvaluator(BuiltInSymbol.DUMMY_EVALUATOR);
-      // } else {
-      // ((IBuiltInSymbol) symbol).getEvaluator();
-      // }
-      // }
-    }
-
+    symbol = new BuiltInDummy(name);
+    HIDDEN_SYMBOLS_MAP.put(name, symbol);
     return symbol;
   }
 
@@ -6947,6 +6906,14 @@ public class F extends S {
     return new AST2(KelvinBer, a0, a1);
   }
 
+  public static IAST KelvinKei(final IExpr a0, final IExpr a1) {
+    return new AST2(KelvinKei, a0, a1);
+  }
+
+  public static IAST KelvinKer(final IExpr a0, final IExpr a1) {
+    return new AST2(KelvinKer, a0, a1);
+  }
+
   public static IAST Key(final IExpr a0) {
     return new AST1(Key, a0);
   }
@@ -7529,6 +7496,32 @@ public class F extends S {
         return booleSymbol(function.test(ast.arg1(), ast.arg2()));
       }
     });
+  }
+
+  /**
+   * A built-in function <code>context + symbolName</code> outside of <code>System`</code>, which
+   * is found by the parser once it is registered with
+   * {@link ContextPath#registerSystemAlias(String, IBuiltInSymbol)}.
+   *
+   * @param context the context of the function, for example <code>Internal`</code>
+   * @param symbolName the name of the function without its context
+   * @param evaluator a core function evaluator: a built-in without a symbol ID is only dispatched
+   *        to one
+   */
+  public static IBuiltInSymbol contextFunction(Context context, String symbolName,
+      IFunctionEvaluator evaluator) {
+    return new ContextBuiltInSymbol(context, symbolName, evaluator);
+  }
+
+  /**
+   * Like {@link #contextFunction(Context, String, IFunctionEvaluator)}, with the attributes of the
+   * function.
+   *
+   * @param attributes the attributes, for example {@link ISymbol#HOLDALL}
+   */
+  public static IBuiltInSymbol contextFunction(Context context, String symbolName, int attributes,
+      IFunctionEvaluator evaluator) {
+    return new ContextBuiltInSymbol(context, symbolName, attributes, evaluator);
   }
 
   public static IBuiltInSymbol localFunction(String symbolName, IFunctionEvaluator evaluator) {
@@ -8580,9 +8573,32 @@ public class F extends S {
       // precision
       return ApfloatNum.promoted(value.toBigNumerator(), value.toBigDenominator());
     }
-    // The underflow of a fraction is 0.0 and reported
+    if (org.matheclipse.core.eval.MachineUnderflow.isBelowNormal(d)) {
+      // gradual underflow: the nearest subnormal number, or 0.0
+      d = subnormalDouble(value.toBigNumerator(), value.toBigDenominator());
+    }
+    // the underflow of a fraction is reported
     engine.machineUnderflow().check(d, value);
     return Num.valueOf(d);
+  }
+
+  /**
+   * The machine number nearest to <code>numerator/denominator</code> (ties to even) for a value
+   * below the smallest normalized machine number: a multiple of <code>2^-1074</code>.
+   */
+  private static double subnormalDouble(java.math.BigInteger numerator,
+      java.math.BigInteger denominator) {
+    final int sign = numerator.signum() * denominator.signum();
+    final java.math.BigInteger n = numerator.abs().shiftLeft(1074);
+    final java.math.BigInteger d = denominator.abs();
+    final java.math.BigInteger[] qr = n.divideAndRemainder(d);
+    java.math.BigInteger m = qr[0];
+    final int cmp = qr[1].shiftLeft(1).compareTo(d);
+    if (cmp > 0 || (cmp == 0 && m.testBit(0))) {
+      m = m.add(java.math.BigInteger.ONE);
+    }
+    // m < 2^53, so its double is exact, and so is the product with 2^-1074
+    return sign * m.doubleValue() * Double.MIN_VALUE;
   }
 
   public static INum num(final IInteger value) {
@@ -8804,7 +8820,7 @@ public class F extends S {
   public static String openJSONOnDesktop(String html) throws IOException {
     java.lang.String escapedStr = html.replaceAll("(\\r|\\n|\\r\\n)+", " ");
     escapedStr = StringEscapeUtils.escapeEcmaScript(escapedStr);
-    String jsonScriptStr = StringUtils.replace(HtmlTemplates.JSON_HTML_VIEWER, "`1`", escapedStr);
+    String jsonScriptStr = Strings.CS.replace(HtmlTemplates.JSON_HTML_VIEWER, "`1`", escapedStr);
     File temp = java.io.File.createTempFile("tempfile", ".html");
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
       bw.write(jsonScriptStr);
@@ -10578,7 +10594,7 @@ public class F extends S {
       if (expr.isSameHeadSizeGE(Graphics, 2)) {
         StringBuilder buf = new StringBuilder();
         if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) expr, EvalEngine.get())) {
-          String htmlPage = StringUtils.replace(Config.HTML_PAGE, "`1`", buf.toString());
+          String htmlPage = Strings.CS.replace(Config.HTML_PAGE, "`1`", buf.toString());
           return openHTMLOnDesktop(htmlPage);
         }
       } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
@@ -10598,7 +10614,7 @@ public class F extends S {
         if (str.getMimeType() == IStringX.TEXT_HTML) {
           String htmlSnippet = str.toString();
           String htmlPage = Config.HTML_PAGE;
-          htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+          htmlPage = Strings.CS.replace(htmlPage, "`1`", htmlSnippet);
           EvalEngine.get().getOutPrintStream().println(htmlPage);
           return openHTMLOnDesktop(htmlPage);
         }
@@ -12662,7 +12678,7 @@ public class F extends S {
   // String html = Config.SVG_PAGE;
   // StringBuilder stw = new StringBuilder();
   // GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
-  // html = StringUtils.replace(html, "`1`", stw.toString());
+  // html = Strings.CS.replace(html, "`1`", stw.toString());
   // File temp = java.io.File.createTempFile("tempfile", ".svg");
   // try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
   // bw.write(html);

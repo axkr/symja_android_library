@@ -86,7 +86,21 @@ final public class ImageExpr extends DataExpr<byte[]> {
     }
     this.buffer = new SoftReference(buffer);
     this.matrix = matrix;
-    this.options = options;
+    this.options = withAlphaColorSpace(buffer, matrix, options);
+  }
+
+  /**
+   * A picture with an alpha channel and no sample matrix of its own - a decoded file, a drawing -
+   * holds red, green and blue with an alpha channel, so it states the <code>"RGB"</code> space;
+   * without it its four channels would read as spectral bands, see {@link Pixels#isSpectral}.
+   */
+  private static ImageOptions withAlphaColorSpace(BufferedImage buffer, IAST matrix,
+      ImageOptions options) {
+    if (matrix == null && options.colorSpaceName() == null && buffer.getColorModel().hasAlpha()
+        && buffer.getColorModel().getNumColorComponents() == 3) {
+      return options.withColorSpace(F.stringx("RGB"));
+    }
+    return options;
   }
 
   /**
@@ -260,7 +274,9 @@ final public class ImageExpr extends DataExpr<byte[]> {
       resultOptions = resultOptions.withColorSpace(S.Automatic);
     }
     boolean rgbSamples = colorSpaceOf(resultOptions, raster.channels) == null;
-    boolean inPicture = raster.channels == 1 || raster.channels == 3 || raster.channels == 4;
+    // four channels without a colour space are spectral bands, not colours with an alpha channel
+    boolean inPicture = raster.channels == 1 || raster.channels == 3
+        || (raster.channels == 4 && !Pixels.isSpectral(resultOptions.colorSpaceName(), 4));
     if ((Pixels.BYTE.equals(type) || Pixels.BIT.equals(type)) && inPicture && rgbSamples) {
       // 8 bits hold these samples exactly, so the picture is written directly, without a matrix
       final double max = Raster.maxOf(type);

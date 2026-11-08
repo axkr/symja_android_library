@@ -112,7 +112,14 @@ public class DifferenceRoot extends AbstractFunctionEvaluator {
         IExpr iN = engine.evaluate(F.Negate(inhomo));
         IExpr iNPlus1 = engine.evaluate(F.subst(iN, dN, F.Plus(dN, F.C1)));
 
-        IExpr ratio = engine.evaluate(F.Simplify(F.Divide(iNPlus1, iN)));
+        // the lighter of the quotient and its partial fractions: (1+n)^2/n^2 is a quotient of
+        // polynomials and gives a homogeneous recurrence, 1+(5+2*n)/(2+4*n+n^2) weighs less than
+        // (7+6*n+n^2)/(2+4*n+n^2) and keeps the inhomogeneous one
+        IExpr ratio = engine.evaluate(F.Together(F.Divide(iNPlus1, iN)));
+        IExpr partialFractions = engine.evaluate(F.Apart(ratio, dN));
+        if (partialFractions.leafCountSimplify() < ratio.leafCountSimplify()) {
+          ratio = partialFractions;
+        }
         IExpr num = ratio.asNumerDenom().first();
         IExpr den = ratio.asNumerDenom().second();
 
