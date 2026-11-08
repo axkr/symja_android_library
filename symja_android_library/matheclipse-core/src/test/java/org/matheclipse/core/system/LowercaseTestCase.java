@@ -10542,16 +10542,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", //
         "{x->3.4341896575482003}");
 
+    // the bracketing methods narrow the interval to a few ulps of the root 3*Log(Pi)
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Bisection)", //
-        "{x->3.434189647436142}");
+        "{x->3.4341896575482047}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
-        "{x->3.4341896295968874}");
+        "{x->3.4341896575482003}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", //
-        "{x->3.4341896575483015}");
+        "{x->3.4341896575482003}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", //
         "{x->3.4341896575482003}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", //
-        "{x->3.4341896575036097}");
+        "{x->3.4341896575482003}");
     // FindRoot: maximal count (100) exceeded
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)", //
         "FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->100)");
@@ -10559,12 +10560,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", //
         "FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->32000)");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", //
-        "{x->3.434189691505525}");
+        "{x->3.4341896575482003}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", //
-        "{x->3.434189657548197}");
+        "{x->3.4341896575482003}");
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Brent)", //
-        "{x->3.4341896295968874}");
+        "{x->3.4341896575482003}");
     check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", //
         "{x->0.0}");
 

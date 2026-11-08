@@ -1890,10 +1890,13 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   public IAST arrayRules(IExpr defaultValue) {
     IASTAppendable result = F.ListAlloc(fData.size() + 1);
 
+    // a stored entry is listed also when it has the default value of the array: the sum of two
+    // sparse arrays keeps the positions of both, where the values may have cancelled
+    final boolean ownDefault = defaultValue.equals(fDefaultValue);
     for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
       int[] key = entry.getKey();
       IExpr value = entry.getValue();
-      if (!value.equals(defaultValue)) {
+      if (ownDefault || !value.equals(defaultValue)) {
         IAST lhs = F.ast(S.List, key);
         result.append(F.Rule(lhs, value));
       }
@@ -1915,21 +1918,21 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     if (obj instanceof SparseArrayExpr) {
       SparseArrayExpr s = (SparseArrayExpr) obj;
       if (Arrays.equals(fDimension, s.fDimension) && fDefaultValue.equals(s.fDefaultValue)) {
+        // equal values at every position: a position stored with the default value in one array
+        // (a sum where the values cancelled) and not stored in the other is the same
         Trie<int[], IExpr> trie = s.fData;
-        if (fData.size() == trie.size()) {
-          for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-            int[] sequence = entry.getKey();
-            IExpr sValue = trie.get(sequence);
-            if (sValue == null) {
-              return false;
-            }
-            IExpr value = entry.getValue();
-            if (!value.equals(sValue)) {
-              return false;
-            }
+        for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+          IExpr sValue = trie.get(entry.getKey());
+          if (!entry.getValue().equals(sValue != null ? sValue : fDefaultValue)) {
+            return false;
           }
-          return true;
         }
+        for (TrieNode<int[], IExpr> entry : trie.nodeSet()) {
+          if (fData.get(entry.getKey()) == null && !entry.getValue().equals(fDefaultValue)) {
+            return false;
+          }
+        }
+        return true;
       }
     }
     return false;
@@ -2382,6 +2385,120 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   }
 
   /**
+   * The Kronecker product of two sparse matrices with the default value <code>0</code>, as a sparse
+   * matrix: the product of every stored entry of <code>a</code> with every stored entry of
+   * <code>b</code>.
+   *
+   * @return <code>null</code> if the arrays aren't matrices of this kind
+   */
+  public static SparseArrayExpr kroneckerProduct(SparseArrayExpr a, SparseArrayExpr b,
+      EvalEngine engine) {
+    if (a.fDimension.length != 2 || b.fDimension.length != 2 || !a.fDefaultValue.isZero()
+        || !b.fDefaultValue.isZero()) {
+      return null;
+    }
+    final int m = b.fDimension[0];
+    final int n = b.fDimension[1];
+    final int[] dimension;
+    try {
+      dimension = new int[] {Math.multiplyExact(a.fDimension[0], m),
+          Math.multiplyExact(a.fDimension[1], n)};
+    } catch (ArithmeticException ae) {
+      // more rows or columns than an int counts
+      return null;
+    }
+    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    for (TrieNode<int[], IExpr> x : a.fData.nodeSet()) {
+      engine.checkTimeLimit();
+      int[] ka = x.getKey();
+      for (TrieNode<int[], IExpr> y : b.fData.nodeSet()) {
+        int[] kb = y.getKey();
+        IExpr value = engine.evaluate(F.Times(x.getValue(), y.getValue()));
+        if (!value.isZero()) {
+          trie.put(new int[] {(ka[0] - 1) * m + kb[0], (ka[1] - 1) * n + kb[1]}, value);
+        }
+      }
+    }
+    return new SparseArrayExpr(trie, dimension, F.C0, false);
+  }
+
+  /**
+   * A listable function of sparse arrays of the same dimensions and of scalars, element by
+   * element: the function of the default values at the positions where no array stores a value,
+   * and of the stored values or the defaults at the union of the stored positions, which all stay
+   * stored.
+   *
+   * @return {@link F#NIL} if an argument is a list or the sparse arrays differ in their
+   *         dimensions
+   */
+  public static IExpr threadSparse(IAST ast, EvalEngine engine) {
+    int[] dimension = null;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg instanceof SparseArrayExpr) {
+        int[] d = ((SparseArrayExpr) arg).fDimension;
+        if (dimension == null) {
+          dimension = d;
+        } else if (!Arrays.equals(dimension, d)) {
+          return F.NIL;
+        }
+      } else if (arg.isList() || arg.isAssociation() || arg.isSparseArray()) {
+        return F.NIL;
+      }
+    }
+    if (dimension == null) {
+      return F.NIL;
+    }
+    // the function of the default values
+    IASTMutable defaults = ast.copy();
+    for (int i = 1; i < ast.size(); i++) {
+      if (ast.get(i) instanceof SparseArrayExpr) {
+        defaults.set(i, ((SparseArrayExpr) ast.get(i)).fDefaultValue);
+      }
+    }
+    final IExpr defaultValue = engine.evaluate(defaults);
+    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    // Plus and Times of numbers without the evaluation of a call
+    final boolean arithmetic = ast.isPlus() || ast.isTimes();
+    int count = 0;
+    for (int i = 1; i < ast.size(); i++) {
+      if (!(ast.get(i) instanceof SparseArrayExpr)) {
+        continue;
+      }
+      for (TrieNode<int[], IExpr> entry : ((SparseArrayExpr) ast.get(i)).fData.nodeSet()) {
+        int[] key = entry.getKey();
+        if (trie.get(key) != null) {
+          // the position of an earlier array: every stored position of the result is stored
+          continue;
+        }
+        if ((++count & 1023) == 0) {
+          engine.checkTimeLimit();
+        }
+        IASTMutable call = ast.copy();
+        IExpr numeric = arithmetic ? (ast.isPlus() ? F.C0 : F.C1) : F.NIL;
+        for (int j = 1; j < ast.size(); j++) {
+          IExpr value = ast.get(j);
+          if (value instanceof SparseArrayExpr) {
+            SparseArrayExpr array = (SparseArrayExpr) value;
+            IExpr stored = array.fData.get(key);
+            value = stored != null ? stored : array.fDefaultValue;
+            call.set(j, value);
+          }
+          if (numeric.isPresent()) {
+            numeric = value.isNumber()
+                ? (ast.isPlus() ? ((INumber) numeric).plus((INumber) value)
+                    : ((INumber) numeric).times((INumber) value))
+                : F.NIL;
+          }
+        }
+        // a position stored in one of the arrays stays stored, also with the default value
+        trie.put(key, numeric.isPresent() ? numeric : engine.evaluate(call));
+      }
+    }
+    return new SparseArrayExpr(trie, dimension.clone(), defaultValue, false);
+  }
+
+  /**
    * For a built-in function which has no sparse implementation: evaluate <code>ast</code> with its
    * sparse array arguments replaced by their nested lists.
    *
@@ -2511,7 +2628,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
 
   @Override
   public int hashCode() {
-    return (fData == null) ? 541 : 541 + fData.size() + fDefaultValue.hashCode();
+    // not the number of stored entries: equal arrays may store the default value or not
+    return (fData == null) ? 541
+        : 541 + 31 * Arrays.hashCode(fDimension) + fDefaultValue.hashCode();
   }
 
   @Override

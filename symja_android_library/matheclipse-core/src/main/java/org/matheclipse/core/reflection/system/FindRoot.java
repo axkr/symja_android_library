@@ -455,24 +455,34 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         }
         UnaryNumerical f = new UnaryNumerical(function, xVar, true, true, Double.NaN, engine);
         BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
-        if (method.equalsIgnoreCase("Brent")) {
-          solver = new BracketingNthOrderBrentSolver(accuracy, 5);
-        } else if (method.equalsIgnoreCase("Bisection")) {
-          solver = new BisectionSolver(accuracy);
-          // } else if (method.isSymbolName("Laguerre")) {
-          // solver = new LaguerreSolver();
-        } else if (method.equalsIgnoreCase("Muller")) {
-          solver = new MullerSolver(accuracy);
-        } else if (method.equalsIgnoreCase("Ridders")) {
-          solver = new RiddersSolver(accuracy);
-        } else if (method.equalsIgnoreCase("Secant")) {
-          solver = new SecantSolver(accuracy);
-        } else if (method.equalsIgnoreCase("RegulaFalsi")) {
-          solver = new RegulaFalsiSolver(accuracy);
-        } else if (method.equalsIgnoreCase("Illinois")) {
-          solver = new IllinoisSolver(accuracy);
-        } else if (method.equalsIgnoreCase("Pegasus")) {
-          solver = new PegasusSolver(accuracy);
+        // the bracketing methods narrow the interval down to the precision of x, not just to the
+        // accuracy goal: the accuracy goal as the width of the last interval left a root with 7
+        // correct digits; a small function value doesn't end the search either, its scale is the
+        // function's
+        // the absolute width a few ulps of the ends of the bracket: below the spacing of the
+        // doubles there a bisection doesn't end
+        double scale = Math.max(1.0, Math.abs(min.doubleValue()));
+        if (maxMaybeNull != null) {
+          scale = Math.max(scale, Math.abs(maxMaybeNull.doubleValue()));
+        }
+        final StepMonitor evaluationMonitor = EVALUATION_MONITOR.get();
+        final UnivariateFunction sampled = evaluationMonitor == null ? f : x -> {
+          evaluationMonitor.step(F.list(xVar), new double[] {x});
+          return f.value(x);
+        };
+        solver = bracketingSolver(method, BRACKET_RELATIVE_ACCURACY,
+            Math.min(accuracy, BRACKET_RELATIVE_ACCURACY * scale), 0.0);
+        if (solver != null) {
+          try {
+            return maxMaybeNull == null //
+                ? F.num(solver.solve(maxIterations, sampled, min.doubleValue()))
+                : F.num(solver.solve(maxIterations, sampled, min.doubleValue(),
+                    maxMaybeNull.doubleValue()));
+          } catch (MathIllegalStateException mise) {
+            // a multiple root at 0 isn't narrowed down to a few ulps within the evaluations: the
+            // accuracy goal as the width of the last interval
+            solver = bracketingSolver(method, 1.0e-14, accuracy, 1.0e-15);
+          }
         } else {
           // Newton's method is the only one here which needs a derivative, and a function which is
           // only defined for numeric arguments does not have one which can be evaluated -
@@ -509,7 +519,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
                   x -> monitor.step(F.list(xVar), new double[] {x}));
           if (maxMaybeNull == null) {
             try {
-              return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
+              return F.num(
+                  polish(f, nrs.solve(maxIterations, monitored(f, xVar), min.doubleValue())));
             } catch (MathIllegalStateException mise) {
               // a start value where the function has no real value: the iteration goes on with
               // complex numbers
@@ -522,7 +533,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           }
           try {
             return F.num(polish(f,
-                nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue())));
+                nrs.solve(maxIterations, monitored(f, xVar), min.doubleValue(),
+                    maxMaybeNull.doubleValue())));
           } catch (MathIllegalStateException mise) {
             // the two start values of a secant step, which goes on with complex numbers where the
             // function has no real value
@@ -563,9 +575,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         }
 
         if (maxMaybeNull == null) {
-          return F.num(solver.solve(maxIterations, f, min.doubleValue()));
+          return F.num(solver.solve(maxIterations, sampled, min.doubleValue()));
         }
-        return F.num(solver.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
+        return F.num(
+            solver.solve(maxIterations, sampled, min.doubleValue(), maxMaybeNull.doubleValue()));
       } finally {
         engine.setAssumptions(oldAssumptions);
       }
@@ -667,6 +680,65 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    */
   private static final int MAX_BACKTRACK_STEPS = 60;
 
+  /**
+   * The solver of one of the bracketing methods by name.
+   *
+   * @return <code>null</code> for another method
+   */
+  private static BaseAbstractUnivariateSolver<UnivariateFunction> bracketingSolver(String method,
+      double relative, double absolute, double functionValue) {
+    if (method.equalsIgnoreCase("Brent")) {
+      return new BracketingNthOrderBrentSolver(relative, absolute, functionValue, 5);
+    } else if (method.equalsIgnoreCase("Bisection")) {
+      return new BisectionSolver(relative, absolute);
+    } else if (method.equalsIgnoreCase("Muller")) {
+      return new MullerSolver(relative, absolute);
+    } else if (method.equalsIgnoreCase("Ridders")) {
+      return new RiddersSolver(relative, absolute);
+    } else if (method.equalsIgnoreCase("Secant")) {
+      return new SecantSolver(relative, absolute);
+    } else if (method.equalsIgnoreCase("RegulaFalsi")) {
+      return new RegulaFalsiSolver(relative, absolute);
+    } else if (method.equalsIgnoreCase("Illinois")) {
+      return new IllinoisSolver(relative, absolute);
+    } else if (method.equalsIgnoreCase("Pegasus")) {
+      return new PegasusSolver(relative, absolute);
+    }
+    return null;
+  }
+
+  /**
+   * <code>f</code> which runs the monitor of the option <code>EvaluationMonitor</code> at every
+   * evaluation, also of its derivative, or <code>f</code> itself without a monitor.
+   */
+  private static org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction monitored(
+      UnaryNumerical f, ISymbol x) {
+    final StepMonitor evaluationMonitor = EVALUATION_MONITOR.get();
+    if (evaluationMonitor == null) {
+      return f;
+    }
+    return new org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction() {
+      @Override
+      public double value(double t) {
+        evaluationMonitor.step(F.list(x), new double[] {t});
+        return f.value(t);
+      }
+
+      @Override
+      public <T extends org.hipparchus.analysis.differentiation.Derivative<T>> T value(T t) {
+        evaluationMonitor.step(F.list(x), new double[] {t.getReal()});
+        return f.value(t);
+      }
+    };
+  }
+
+  /** The monitor of the option <code>EvaluationMonitor</code> of the running search, or null. */
+  private static final ThreadLocal<StepMonitor> EVALUATION_MONITOR =
+      new ThreadLocal<StepMonitor>();
+
+  /** The relative width of the last interval of a bracketing method: a few ulps of the root. */
+  private static final double BRACKET_RELATIVE_ACCURACY = 1.0e-15;
+
   /** relative size of a Broyden step below which a step without progress ends the search */
   private static final double NOISE_FLOOR_STEP = 1.0e-10;
 
@@ -709,7 +781,17 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     StepMonitor monitor = options.length > 4 && options[4] != S.None //
         ? new StepMonitor(options[4], engine) //
         : null;
-    IExpr result = machineRoot(ast, options, monitor, engine);
+    // EvaluationMonitor :> expr runs at every evaluation of the functions of the search
+    final StepMonitor previousEvaluationMonitor = EVALUATION_MONITOR.get();
+    EVALUATION_MONITOR.set(options.length > 5 && options[5] != S.None //
+        ? new StepMonitor(options[5], engine) //
+        : null);
+    IExpr result;
+    try {
+      result = machineRoot(ast, options, monitor, engine);
+    } finally {
+      EVALUATION_MONITOR.set(previousEvaluationMonitor);
+    }
     if (monitor != null) {
       result = monitor.finish(result);
     }
@@ -1872,6 +1954,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
      *         number there
      */
     private double[] evalVector(double[] point) {
+      StepMonitor evaluationMonitor = EVALUATION_MONITOR.get();
+      if (evaluationMonitor != null) {
+        evaluationMonitor.step(vectorOfVariables, point);
+      }
       IAST values = F.mapRange(0, argSize, i -> F.num(point[i]));
       Map<IExpr, IExpr> map = createSubsMap(vectorOfVariables, values);
       IExpr values0;
@@ -2114,8 +2200,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
-            S.MaxIterations, S.Method, S.AccuracyGoal, S.WorkingPrecision, S.StepMonitor}, //
+            S.MaxIterations, S.Method, S.AccuracyGoal, S.WorkingPrecision, S.StepMonitor,
+            S.EvaluationMonitor}, //
         new IExpr[] {//
-            F.C100, S.Automatic, S.Automatic, S.MachinePrecision, S.None});
+            F.C100, S.Automatic, S.Automatic, S.MachinePrecision, S.None, S.None});
   }
 }

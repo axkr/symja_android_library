@@ -7318,6 +7318,13 @@ public class EvalEngine implements Serializable {
       // for a unary Listable function.
       return ((ISparseArray) ast.get(sparsePosition)).mapThreadSparse(ast, sparsePosition);
     }
+    if (listableHead == S.SparseArray && sparsePosition < 0) {
+      // several sparse arrays: element by element at the stored positions only
+      IExpr sparse = org.matheclipse.core.expression.data.SparseArrayExpr.threadSparse(ast, this);
+      if (sparse.isPresent()) {
+        return sparse;
+      }
+    }
     // don't set IAST.IS_LISTABLE_THREADED on the result. Its head is S.List, S.SparseArray or
     // S.Association and never carries the ISymbol#LISTABLE attribute, so the flag would never be
     // read; and threadList() may return F.NIL, whose eval flags are shared globally.

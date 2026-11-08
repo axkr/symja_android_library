@@ -730,6 +730,35 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 2 && ast.forAll(
+          x -> x instanceof org.matheclipse.core.expression.data.SparseArrayExpr)) {
+        // sparse matrices: the products of the stored entries only
+        long rows = 1L;
+        long columns = 1L;
+        for (int i = 1; i < ast.size(); i++) {
+          int[] d = ((org.matheclipse.core.expression.data.SparseArrayExpr) ast.get(i))
+              .getDimension();
+          if (d.length == 2) {
+            rows *= d[0];
+            columns *= d[1];
+            if (rows > Integer.MAX_VALUE || columns > Integer.MAX_VALUE) {
+              // neither a sparse nor a dense array has that many rows or columns
+              return Errors.printMessage(S.KroneckerProduct, "error",
+                  F.list(F.$str("The product has more rows or columns than an array can hold.")),
+                  engine);
+            }
+          }
+        }
+        org.matheclipse.core.expression.data.SparseArrayExpr product =
+            (org.matheclipse.core.expression.data.SparseArrayExpr) ast.arg1();
+        for (int i = 2; i < ast.size() && product != null; i++) {
+          product = org.matheclipse.core.expression.data.SparseArrayExpr.kroneckerProduct(product,
+              (org.matheclipse.core.expression.data.SparseArrayExpr) ast.get(i), engine);
+        }
+        if (product != null) {
+          return product;
+        }
+      }
       if (ast.exists(x -> x.isSparseArray())) {
         // sparse when a factor is sparse
         IExpr dense =

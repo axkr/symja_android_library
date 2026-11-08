@@ -70,6 +70,9 @@ import org.matheclipse.core.eval.util.SymbolicDeterminant;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
+import org.matheclipse.core.numerics.linalg.SparseLinearSolver;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -5113,6 +5116,48 @@ public final class LinearAlgebra {
       return F.List(solution);
     }
 
+    /**
+     * The solution of a system with a sparse matrix and a vector of inexact numbers, see
+     * {@link SparseLinearSolver}: at machine precision, or at the lowest precision of the numbers
+     * of arbitrary precision.
+     *
+     * @param declined set to <code>true</code> if the system is of this kind but the solver
+     *        declined it
+     * @return {@link F#NIL} if the system isn't of this kind or the solver declined
+     */
+    private static IExpr sparseNumericSolve(SparseArrayExpr matrix, IExpr vector,
+        boolean[] declined, EvalEngine engine) {
+      IExpr b = vector.isSparseArray() ? vector.normal(false) : vector;
+      if (!b.isList() || !((IAST) b).forAll(IExpr::isReal)) {
+        return F.NIL;
+      }
+      long[] precision = {Long.MAX_VALUE};
+      boolean[] inexact = {false};
+      java.util.function.Consumer<IExpr> track = x -> {
+        if (x instanceof ApfloatNum) {
+          inexact[0] = true;
+          precision[0] = Math.min(precision[0], x.determinePrecision(false));
+        } else if (x.isInexactNumber()) {
+          inexact[0] = true;
+          precision[0] = ParserConfig.MACHINE_PRECISION;
+        }
+      };
+      ((IAST) b).forEach(track);
+      for (org.matheclipse.parser.trie.TrieNode<int[], IExpr> entry : matrix.toData().nodeSet()) {
+        track.accept(entry.getValue());
+      }
+      if (!inexact[0] || precision[0] <= 0L || precision[0] == Long.MAX_VALUE) {
+        return F.NIL;
+      }
+      SparseLinearSolver solver = SparseLinearSolver.of(matrix, precision[0], engine);
+      IExpr solution = solver == null ? F.NIL : solver.solve((IAST) b, precision[0]);
+      declined[0] = solution.isNIL();
+      return solution;
+    }
+
+    /** The order of a sparse numerical system above which the dense path isn't taken. */
+    private static final int MAX_DENSE_FALLBACK = 2000;
+
     /** The values of the option <code>Method</code> for LinearSolve. */
     private static final java.util.Set<String> METHODS = java.util.Set.of("Cholesky",
         "Multifrontal", "Krylov", "CofactorExpansion", "OneStepRowReduction",
@@ -5322,6 +5367,22 @@ public final class LinearAlgebra {
         IAST originalAST) {
       if (!options[3].isAutomatic() && !validMethod(ast.arg1(), options[3], engine)) {
         return F.NIL;
+      }
+      if (argSize == 2 && ast.arg1() instanceof SparseArrayExpr
+          && modulusOption(options[2]) == null) {
+        // a numerical sparse system is solved without the dense matrix
+        boolean[] declined = {false};
+        IExpr sparse =
+            sparseNumericSolve((SparseArrayExpr) ast.arg1(), ast.arg2(), declined, engine);
+        if (sparse.isPresent()) {
+          return sparse;
+        }
+        if (declined[0]
+            && ((SparseArrayExpr) ast.arg1()).getDimension()[0] > MAX_DENSE_FALLBACK) {
+          // the dense path would build the whole matrix: no value rather than no answer at all
+          return Errors.printMessage(ast.topHead(), "error",
+              F.list(F.$str("The sparse system was not solved by the sparse solvers.")), engine);
+        }
       }
       final int[] matrixDims = ast.arg1().isMatrix();
       if (matrixDims != null) {
