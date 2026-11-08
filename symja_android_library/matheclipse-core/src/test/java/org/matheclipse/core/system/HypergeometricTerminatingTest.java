@@ -107,4 +107,34 @@ public class HypergeometricTerminatingTest extends ExprEvaluatorTestCase {
     check("Chop(N(Hypergeometric2F1(1,2,7,1/4))-Hypergeometric2F1(1,2,7,0.25))", //
         "0");
   }
+
+  @Test
+  public void testMachineTerminatingRoundsOnce() {
+    // the polynomial is summed exactly at the binary values of the doubles and rounded once;
+    // summing in machine arithmetic is a few units in the last place off
+    check("Hypergeometric2F1(1.5,-3,2.5,0.6)-0.3108571428571428", //
+        "1.11022*10^-16");
+    check("Hypergeometric2F1(-3,1.5,2.5,0.6)-0.3108571428571428", //
+        "1.11022*10^-16");
+    check("RealDigits(Hypergeometric2F1(5,-2,3,0.9))", //
+        "{{2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,3},-1}");
+    check("Hypergeometric2F1(5,-2,3,9/10)", //
+        "1/40");
+    // a pole of the terms before the series ends
+    check("Hypergeometric2F1(-3,2,-2,0.3)", //
+        "Hypergeometric2F1(-3.0,2.0,-2.0,0.3)");
+  }
+
+  @Test
+  public void testIntegerParameters1F1ExactNumber() {
+    // integers 0 < a < b and an exact numeric argument
+    check("Hypergeometric1F1(1,2,E)", //
+        "(-1+E^E)/E");
+    check("Hypergeometric1F1(1,3,Sqrt(3))", //
+        "2/3*(-1-Sqrt(3)+E^Sqrt(3))");
+    check("Hypergeometric1F1(2,4,Pi/2)", //
+        "(24*(4-4*E^(Pi/2)+Pi+E^(Pi/2)*Pi))/Pi^3");
+    check("HypergeometricPFQ({1},{3},Pi)", //
+        "(2*(-1+E^Pi-Pi))/Pi^2");
+  }
 }

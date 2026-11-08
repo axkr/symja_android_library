@@ -59,7 +59,7 @@ public class RationalFunctionSizeTest extends ExprEvaluatorTestCase {
     check("Apart(1/(x^3+1), x, Modulus->0)", //
         "1/(3*(1+x))+(2-x)/(3*(1-x+x^2))");
     check("Cancel((2 - 4*x)/(2 - 2*x))", //
-        "(1-2*x)/(1-x)");
+        "(-1+2*x)/(-1+x)");
   }
 
   @Test

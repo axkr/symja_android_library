@@ -1857,15 +1857,21 @@ public class IntegerFunctions {
         return i0.mod(i1);
       }
 
-      if (m instanceof Num && n instanceof Num) {
+      if ((m instanceof Num && (n instanceof Num || n.isRational()))
+          || (n instanceof Num && m.isRational())) {
         // the exact remainder of the two doubles, with the sign of n: Mod(1., 0.1) is
         // 0.09999999999999995, because 0.1 is a little more than 1/10
-        final double divisor = ((Num) n).doubleValue();
-        double remainder = ((Num) m).doubleValue() % divisor;
-        if (remainder != 0.0 && (remainder < 0.0) != (divisor < 0.0)) {
-          remainder += divisor;
+        final double dividend = m.evalf();
+        final double divisor = n.evalf();
+        if (Double.isFinite(dividend) && Double.isFinite(divisor)) {
+          double remainder = dividend % divisor;
+          if (remainder != 0.0 && (remainder < 0.0) != (divisor < 0.0)) {
+            // a sign correction which rounds to the modulus gives 0: Mod(-1.0*10^-20, 9) == 0.0
+            remainder = (remainder + divisor) % divisor;
+          }
+          // no negative zero
+          return F.num(remainder == 0.0 ? 0.0 : remainder);
         }
-        return F.num(remainder);
       }
       if (m.isReal() && n.isReal()) {
         return F.Subtract(m, F.Times(n, F.Floor(((IReal) m).divideBy((IReal) n))));

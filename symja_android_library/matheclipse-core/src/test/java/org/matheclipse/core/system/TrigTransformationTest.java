@@ -110,6 +110,61 @@ public class TrigTransformationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTrigToExpProductOfRationalMultiples() {
+    // angles which are rational multiples of one angle, total degree at most 3
+    check("TrigToExp(Sin(u)*Sin(3*u))", //
+        "1/(4*E^(I*2*u))+E^(I*2*u)/4-1/(4*E^(I*4*u))-E^(I*4*u)/4");
+    check("TrigToExp(Cosh(u/3)*Sinh(u))", //
+        "-1/(4*E^(4/3*u))-1/(4*E^(2/3*u))+E^(2/3*u)/4+E^(4/3*u)/4");
+    check("TrigToExp(Sin(2*u*v)*Cos(u*v))", //
+        "(I*1/4)/E^(I*u*v)-I*1/4*E^(I*u*v)+(I*1/4)/E^(I*3*u*v)-I*1/4*E^(I*3*u*v)");
+    // degree 3 with coinciding harmonic combinations
+    check("TrigToExp(Cos(2*u)^2*Sin(4*u))", //
+        "(I*1/4)/E^(I*4*u)-I*1/4*E^(I*4*u)+(I*1/8)/E^(I*8*u)-I*1/8*E^(I*8*u)");
+    // degree 3 with distinct harmonic combinations, degree 4, mixed families and unrelated
+    // angles stay grouped
+    check("TrigToExp(Cosh(2*u)^2*Sinh(u))", //
+        "1/8*(-1/E^u+E^u)*(E^(-2*u)+E^(2*u))^2");
+    check("TrigToExp(Sin(u)^2*Sin(2*u)^2)", //
+        "1/16*(E^(-I*u)-E^(I*u))^2*(E^(-I*2*u)-E^(I*2*u))^2");
+    check("TrigToExp(Cos(u)*Sinh(u))", //
+        "1/4*(E^(-I*u)+E^(I*u))*(-1/E^u+E^u)");
+    check("TrigToExp(Sin(u)*Cos(Pi*u))", //
+        "I*1/4*(E^(-I*u)-E^(I*u))*(E^(-I*Pi*u)+E^(I*Pi*u))");
+  }
+
+  @Test
+  public void testTrigToExpDistributedHarmonics() {
+    // the distributed product contains a square whose harmonics combine
+    check("TrigToExp((Sin(u)-Cos(u))*Sin(u))", //
+        "1/2+(-1/4-I*1/4)/E^(I*2*u)+(-1/4+I*1/4)*E^(I*2*u)");
+    check("TrigToExp((Cosh(u)^2-Sinh(2*u)^2)*Cosh(u))", //
+        "-1/(8*E^(5*u))+5/(8*E^u)+5/8*E^u-E^(5*u)/8");
+    // no harmonics combine
+    check("TrigToExp((Cos(2*u)+Sin(5*u))*Sin(u))", //
+        "I*1/2*(E^(-I*u)-E^(I*u))*(1/2*(E^(-I*2*u)+E^(I*2*u))+I*1/2*(E^(-I*5*u)-E^(I*5*u)))");
+    // a sum free of trigonometric functions keeps the product grouped
+    check("TrigToExp((u^2+3)*Sin(u))", //
+        "I*1/2*(E^(-I*u)-E^(I*u))*(3+u^2)");
+    check("TrigToExp((u^2+3)*Sinh(u)^2)", //
+        "1/4*(E^(-u)-E^u)^2*(3+u^2)");
+    // unless it multiplies an expanded product of rational multiples of one angle
+    check("TrigToExp((u^2+3)*Sinh(u)*Cosh(2*u))", //
+        "-3/(4*E^(3*u))+3/(4*E^u)-3/4*E^u+3/4*E^(3*u)-u^2/(4*E^(3*u))+u^2/(4*E^u)-1/4*E^u*u^\n"
+            + "2+1/4*E^(3*u)*u^2");
+  }
+
+  @Test
+  public void testTrigToExpHarmonicsBesideTangent() {
+    // a single tangent like summand doesn't prevent the combination of the cubes
+    check("TrigToExp(Cos(u)^3-Sin(u)^3+Cot(v))", //
+        "(3/8-I*3/8)/E^(I*u)+(3/8+I*3/8)*E^(I*u)+(1/8+I*1/8)/E^(I*3*u)+(1/8-I*1/8)*E^(I*"
+            + "3*u)-I/(E^(I*v)*(E^(-I*v)-E^(I*v)))+(-I*E^(I*v))/(E^(-I*v)-E^(I*v))");
+    check("TrigToExp(Cos(u)^4+Tanh(v))", //
+        "(E^(-I*u)+E^(I*u))^4/16-1/(E^v*(E^(-v)+E^v))+E^v/(E^(-v)+E^v)");
+  }
+
+  @Test
   public void testTrigExpandSimpleAngles() {
     // no angle to expand: a product with a quotient function is kept
     check("TrigExpand(Cos(y)*Cot(y))", //

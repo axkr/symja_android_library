@@ -177,7 +177,20 @@ public class SimplifyUtil extends VisitorExpr {
      * @return <code>true</code> if <code>candidate</code> became the new result
      */
     public boolean offer(IExpr candidate, TiePolicy tiePolicy) {
-      final long counter = complexityFunction.apply(candidate);
+      return offer(candidate, complexityFunction.apply(candidate), tiePolicy);
+    }
+
+    /**
+     * Offer <code>candidate</code> with the complexity <code>counter</code> of the form it stands
+     * for, which the evaluation may have rewritten: <code>-(Sqrt(2)*(-3+Sqrt(5)))</code> evaluates
+     * to <code>Sqrt(2)*(3-Sqrt(5))</code>.
+     *
+     * @param candidate the rewritten expression to compare against the incumbent
+     * @param counter the complexity to compare
+     * @param tiePolicy how to break a complexity tie
+     * @return <code>true</code> if <code>candidate</code> became the new result
+     */
+    public boolean offer(IExpr candidate, long counter, TiePolicy tiePolicy) {
       if (counter > this.minCounter) {
         return false;
       }
@@ -1404,6 +1417,18 @@ public class SimplifyUtil extends VisitorExpr {
    */
   final Map<IExpr, IExpr> fTransformationCache;
 
+  /**
+   * The number of enclosing expressions whose arguments are rewritten: <code>0</code> while the
+   * expression of the pass itself is rewritten.
+   */
+  private int fDepth = 0;
+
+  /**
+   * Memoizes {@link #tryTransformations(IExpr)} for the subexpressions in FullSimplify, whose
+   * nested square roots don't win a tie. See {@link #offerNestedRadicalSum}.
+   */
+  private final Map<IExpr, IExpr> fInnerTransformationCache = new HashMap<>();
+
   public SimplifyUtil(Function<IExpr, Long> complexityFunction, boolean fullSimplify,
       EvalEngine engine, boolean noApart) {
     this(complexityFunction, fullSimplify, engine, noApart, new HashMap<>());
@@ -1549,7 +1574,10 @@ public class SimplifyUtil extends VisitorExpr {
     if (fFullSimplify) {
       try {
         IExpr temp = eval(F.FunctionExpand(expr));
-        if (sResult.checkLessPlusTimesPower(temp)) {
+        if (denestsInSimplify(expr, temp)) {
+          // keep the nested root
+        } else if (denestedLoses(temp) ? sResult.checkLess(temp)
+            : sResult.checkLessPlusTimesPower(temp)) {
           expr = temp;
         } else if (!temp.equals(expr)) {
           // FunctionExpand can return a larger intermediate expression which only collapses after
@@ -1560,7 +1588,8 @@ public class SimplifyUtil extends VisitorExpr {
           // variable-free Times re-enters simplifyStep() in fullSimplify mode and comes back here,
           // recursing on an ever larger expression.
           IExpr expanded = F.evalExpandAll(temp, fEngine);
-          if (sResult.checkLessPlusTimesPower(expanded)) {
+          if (denestedLoses(expanded) ? sResult.checkLess(expanded)
+              : sResult.checkLessPlusTimesPower(expanded)) {
             expr = expanded;
           }
         }
@@ -1573,7 +1602,9 @@ public class SimplifyUtil extends VisitorExpr {
         try {
           // nested square roots, which aren't denested by FunctionExpand
           IExpr temp = SqrtDenest.sqrtdenest(expr);
-          if (!temp.equals(expr) && sResult.checkLessPlusTimesPower(temp)) {
+          if (!temp.equals(expr) && !denestsInSimplify(expr, temp)
+              && (denestedLoses(temp) ? sResult.checkLess(temp)
+              : sResult.checkLessPlusTimesPower(temp))) {
             expr = temp;
           }
         } catch (RuntimeException rex) {
@@ -1659,6 +1690,37 @@ public class SimplifyUtil extends VisitorExpr {
         }
       }
     }
+  }
+
+  /**
+   * A denested sum of two square roots doesn't win a tie with the nested root in Simplify, and in
+   * FullSimplify not if {@link #offerNestedRadicalSum} prefers a nested root for that sum:
+   * <code>Sqrt(62+24*Sqrt(3))</code> stays and isn't rewritten to <code>2*Sqrt(2)+3*Sqrt(6)</code>.
+   */
+  private boolean denestedLoses(IExpr denested) {
+    return fFullSimplifyFunction && nestedRadicalWinsTie(denested, this);
+  }
+
+  /**
+   * Plain Simplify doesn't denest square roots, even where that is cheaper:
+   * <code>Sqrt(28-10*Sqrt(3))</code> stays and doesn't become <code>5-Sqrt(3)</code>.
+   *
+   * @param expr the expression
+   * @param rewritten its rewritten form
+   * @return <code>true</code> if <code>rewritten</code> has to be dropped
+   */
+  private boolean denestsInSimplify(IExpr expr, IExpr rewritten) {
+    return !fFullSimplifyFunction && hasNestedSquareRoot(expr) && !hasNestedSquareRoot(rewritten);
+  }
+
+  /** A square root whose radicand has a square root. */
+  private static boolean hasNestedSquareRoot(IExpr expr) {
+    return expr.has(x -> isSquareRoot(x) && x.base().has(SimplifyUtil::isSquareRoot, true), true);
+  }
+
+  private static boolean isSquareRoot(IExpr x) {
+    return x.isPower() && x.exponent().isRational()
+        && ((IRational) x.exponent()).denominator().equals(F.C2);
   }
 
   /**
@@ -1794,7 +1856,11 @@ public class SimplifyUtil extends VisitorExpr {
         if (exprFactors.isOne()) {
           temp = eval(newTimes);
           IExpr temp2 = numberFactors.times(temp);
-          if (sResult.checkLessEqual(temp2)) {
+          // a quotient of radicals of rationals keeps its form on a tie: Sqrt(5)/(2+Sqrt(3)),
+          // not Sqrt(5)*(2-Sqrt(3))
+          if (timesAST.isFree(x -> x.isAtom() && !x.isRational(), false)
+              ? sResult.checkLess(temp2)
+              : sResult.checkLessEqual(temp2)) {
             if (temp2.isAtom()) {
               return temp2;
             }
@@ -2115,27 +2181,40 @@ public class SimplifyUtil extends VisitorExpr {
   private static final int MAX_RADICAL_SUM_TERMS = 16;
 
   /**
-   * Pull the common square root factor and the rational content out of a sum of rational multiples
-   * of square roots of rationals: <code>-12*Sqrt(2)-4*Sqrt(6)</code> is
+   * Offer the sum of rational multiples of square roots of rationals with its common square root
+   * factor and its rational content pulled out: <code>-12*Sqrt(2)-4*Sqrt(6)</code> is
    * <code>-4*Sqrt(2)*(3+Sqrt(3))</code> and <code>Sqrt(2/5)+3/5*Sqrt(2)</code> is
-   * <code>1/5*Sqrt(2)*(3+Sqrt(5))</code>. The sign of the content is chosen so that the last term of
-   * the remaining sum is positive. For <code>3*Sqrt(2)-8*Sqrt(6)</code> that is
-   * <code>-Sqrt(2)*(-3+8*Sqrt(3))</code>, which evaluates back to <code>Sqrt(2)*(3-8*Sqrt(3))</code>,
-   * so the sum stays.
+   * <code>1/5*Sqrt(2)*(3+Sqrt(5))</code>. A sum with rational terms only gives its content:
+   * <code>16-2*Sqrt(2)</code> is <code>-2*(-8+Sqrt(2))</code>.
+   *
+   * <p>
+   * The sign of the content is chosen so that the last term of the remaining sum is positive, and
+   * this form wins a tie. Its complexity is the one of the product as written:
+   * <code>-Sqrt(2)*(-3+8*Sqrt(3))</code> evaluates to <code>Sqrt(2)*(3-8*Sqrt(3))</code>, which
+   * weighs as much as <code>3*Sqrt(2)-8*Sqrt(6)</code>, but the product as written weighs more, so
+   * the sum stays. <code>-Sqrt(3)*(-2+Sqrt(14))</code> weighs as much as
+   * <code>2*Sqrt(3)-Sqrt(42)</code> and wins; it evaluates to <code>Sqrt(3)*(2-Sqrt(14))</code>.
+   *
+   * <p>
+   * The content keeps its sign when that is strictly cheaper: <code>5*Sqrt(3)-7*Sqrt(15)</code> is
+   * <code>Sqrt(3)*(5-7*Sqrt(5))</code> and <code>2*Sqrt(2)-3*Sqrt(23/2)</code> is
+   * <code>(4-3*Sqrt(23))/Sqrt(2)</code>.
    *
    * @param plusAST the sum
    * @param util the simplifier
-   * @return the factored form, or {@link F#NIL} if the radicands have no common factor
+   * @param result the candidates
    */
-  private static IExpr commonSquareRootFactor(IAST plusAST, SimplifyUtil util) {
+  private static void offerCommonSquareRootFactor(IAST plusAST, SimplifyUtil util,
+      SimplifiedResult result) {
     if (plusAST.argSize() > MAX_RADICAL_SUM_TERMS) {
-      return F.NIL;
+      return;
     }
     final int n = plusAST.argSize();
     IRational[] coefficients = new IRational[n];
     IInteger[] radicands = new IInteger[n];
     IInteger radicandGCD = F.C0;
     IRational content = F.C0;
+    boolean hasRationalTerm = false;
     for (int i = 0; i < n; i++) {
       IExpr term = plusAST.get(i + 1);
       IRational coefficient = F.C1;
@@ -2148,11 +2227,12 @@ public class SimplifyUtil extends VisitorExpr {
       if (radical.isRational()) {
         coefficient = coefficient.multiply((IRational) radical);
         radicand = F.C1;
+        hasRationalTerm = true;
       } else if (radical.isPower() && radical.exponent().equals(F.C1D2)
           && radical.base().isRational() && ((IRational) radical.base()).isPositive()) {
         radicand = (IRational) radical.base();
       } else {
-        return F.NIL;
+        return;
       }
       // c*Sqrt(p/q) == c/q*Sqrt(p*q)
       IInteger denominator = radicand.denominator();
@@ -2161,8 +2241,12 @@ public class SimplifyUtil extends VisitorExpr {
       radicandGCD = radicandGCD.gcd(radicands[i]);
       content = content.gcd(coefficients[i].abs());
     }
-    if (radicandGCD.isOne() || content.isZero()) {
-      return F.NIL;
+    if (content.isZero()) {
+      return;
+    }
+    if (radicandGCD.isOne() && (!hasRationalTerm || content.isOne())) {
+      // without a common square root only the content of a sum with a rational term is pulled out
+      return;
     }
     IASTAppendable rest = F.PlusAlloc(n);
     for (int i = 0; i < n; i++) {
@@ -2171,35 +2255,98 @@ public class SimplifyUtil extends VisitorExpr {
     }
     IExpr sum = util.eval(rest);
     if (!sum.isPlus()) {
-      return F.NIL;
+      return;
     }
+    IExpr factor = util.eval(F.Times(content, F.Sqrt(radicandGCD)));
     if (((IAST) sum).last().isNegativeSigned()) {
-      content = content.negate();
-      sum = util.eval(F.Times(F.CN1, sum));
+      result.offer(util.eval(F.Times(factor, sum)), TiePolicy.STRICT);
+      factor = util.eval(F.Negate(factor));
+      sum = util.eval(F.Negate(sum));
     }
-    IExpr factored = util.eval(F.Times(content, F.Sqrt(radicandGCD), sum));
-    // the evaluation multiplies a factor -1 back into the sum: -Sqrt(2)*(-3+8*Sqrt(3)) is
-    // Sqrt(2)*(3-8*Sqrt(3)), which is no longer the normalized form
-    if (factored.isTimes()
-        && ((IAST) factored).exists(x -> x.isPlus() && ((IAST) x).last().isNegativeSigned())) {
-      return F.NIL;
+    // weighed as written: the evaluation may multiply a factor -1 back into the sum
+    IASTAppendable written = F.TimesAlloc(4);
+    if (factor.isTimes()) {
+      written.appendArgs((IAST) factor);
+    } else {
+      written.append(factor);
     }
-    return factored;
+    written.append(sum);
+    result.offer(util.eval(F.Times(factor, sum)), util.fComplexityFunction.apply(written),
+        TiePolicy.ACCEPT);
   }
 
   /**
-   * Write the two square roots of a sum with rational terms and two rational multiples of square
-   * roots of the same sign as one nested root of their square: <code>-7-3*Sqrt(2)-3*Sqrt(14)</code>
-   * is <code>-7-6*Sqrt(4+Sqrt(7))</code> because <code>(3*Sqrt(2)+3*Sqrt(14))^2</code> is
+   * Offer the two square roots of a sum with rational terms and two rational multiples of square
+   * roots as one nested root of their square: <code>-7-3*Sqrt(2)-3*Sqrt(14)</code> is
+   * <code>-7-6*Sqrt(4+Sqrt(7))</code> because <code>(3*Sqrt(2)+3*Sqrt(14))^2</code> is
    * <code>36*(4+Sqrt(7))</code>.
    *
+   * <p>
+   * The square root of the square content goes in front of the nested root. The rest of the
+   * content stays a factor of the radicand, as a second candidate which wins a tie with the
+   * expanded radicand: <code>2*Sqrt(3)-Sqrt(6)</code> is <code>Sqrt(6*(3-2*Sqrt(2)))</code>.
+   *
+   * <p>
+   * The nested root wins a tie if both square roots have the same sign:
+   * <code>2*Sqrt(2)+3*Sqrt(6)</code> is <code>Sqrt(62+24*Sqrt(3))</code>. If their sum is positive
+   * and the square has a content, the radicand with the content as a factor wins a tie, and the
+   * expanded radicand wins one with a factored form of the sum but not with the sum itself:
+   * <code>3*Sqrt(2)-2*Sqrt(3)</code> is <code>Sqrt(6*(5-2*Sqrt(6)))</code>,
+   * <code>2*Sqrt(5)-Sqrt(10)</code> is <code>Sqrt(30-20*Sqrt(2))</code> rather than
+   * <code>Sqrt(5)*(2-Sqrt(2))</code>, but <code>3*Sqrt(5)-Sqrt(3)</code> and
+   * <code>3*Sqrt(2)-Sqrt(7)</code> stay. Only the sum to
+   * simplify itself takes a tie, not a sum inside it or the expansion of a product, so that the
+   * expression around it can still cancel: <code>(2*Sqrt(6)-Sqrt(3))/(Sqrt(2)-4)</code> is
+   * <code>-Sqrt(3/2)</code> and <code>Sqrt(3)/(1+Sqrt(2))</code> is
+   * <code>Sqrt(3)*(-1+Sqrt(2))</code>, not <code>Sqrt(9-6*Sqrt(2))</code>.
+   *
    * @param plusAST the sum
+   * @param topLevel <code>plusAST</code> is the sum to simplify, not a part of it
    * @param util the simplifier
-   * @return the sum with the nested root, or {@link F#NIL}
+   * @param result the candidates
    */
-  private static IExpr nestedRadicalSum(IAST plusAST, SimplifyUtil util) {
+  private static void offerNestedRadicalSum(IAST plusAST, boolean topLevel, SimplifyUtil util,
+      SimplifiedResult result) {
+    IExpr[] nested = nestedRadicalSum(plusAST, util);
+    if (nested != null) {
+      for (int i = 0; i < nested.length; i += 2) {
+        final IExpr tie = nested[i];
+        // S.Null: a tie with the factored sum, but not with the sum itself
+        result.offerOnTie(nested[i + 1], () -> topLevel
+            && (tie.isTrue() || (tie == S.Null && !result.getResult().equals(plusAST))));
+      }
+    }
+  }
+
+  /**
+   * Test if the nested root of {@link #offerNestedRadicalSum} wins a tie with the sum
+   * <code>plusAST</code>.
+   */
+  private static boolean nestedRadicalWinsTie(IExpr plusAST, SimplifyUtil util) {
+    if (!plusAST.isPlus()) {
+      return false;
+    }
+    IExpr[] nested = nestedRadicalSum((IAST) plusAST, util);
+    if (nested != null) {
+      for (int i = 0; i < nested.length; i += 2) {
+        if (nested[i].isTrue()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The nested root candidates of {@link #offerNestedRadicalSum}.
+   *
+   * @return pairs of a tie rule and a candidate, or <code>null</code>. The tie rule is
+   *         {@link S#True} if the candidate wins a tie, {@link S#Null} if it wins a tie except
+   *         with the sum itself, and {@link S#False} if it needs to be cheaper.
+   */
+  private static IExpr[] nestedRadicalSum(IAST plusAST, SimplifyUtil util) {
     if (plusAST.argSize() > MAX_RADICAL_SUM_TERMS) {
-      return F.NIL;
+      return null;
     }
     IASTAppendable rest = F.PlusAlloc(plusAST.argSize());
     IRational[] coefficients = new IRational[2];
@@ -2218,19 +2365,32 @@ public class SimplifyUtil extends VisitorExpr {
       }
       if (count == 2 || !radical.isPower() || !radical.exponent().equals(F.C1D2)
           || !radical.base().isInteger() || !((IInteger) radical.base()).isPositive()) {
-        return F.NIL;
+        return null;
       }
       coefficients[count] = coefficient;
       radicands[count++] = (IInteger) radical.base();
     }
-    if (count != 2 || coefficients[0].isNegative() != coefficients[1].isNegative()) {
-      return F.NIL;
+    if (count != 2) {
+      return null;
+    }
+    IRational a = coefficients[0];
+    IRational b = coefficients[1];
+    final boolean sameSign = a.isNegative() == b.isNegative();
+    IRational aSquare = a.multiply(a).multiply(radicands[0]);
+    IRational bSquare = b.multiply(b).multiply(radicands[1]);
+    final boolean negative;
+    if (sameSign) {
+      negative = a.isNegative();
+    } else {
+      // the sign of the term with the larger square
+      int comparison = aSquare.compareTo(bSquare);
+      if (comparison == 0) {
+        return null;
+      }
+      negative = comparison > 0 ? a.isNegative() : b.isNegative();
     }
     // (a*Sqrt(p)+b*Sqrt(q))^2 == a^2*p+b^2*q+2*a*b*Sqrt(p*q)
-    IRational a = coefficients[0].abs();
-    IRational b = coefficients[1].abs();
-    IRational constant =
-        a.multiply(a).multiply(radicands[0]).add(b.multiply(b).multiply(radicands[1]));
+    IRational constant = aSquare.add(bSquare);
     IExpr root = util.eval(F.Sqrt(radicands[0].multiply(radicands[1])));
     IExpr rootFactor = F.C1;
     if (root.isTimes2() && root.first().isRational()) {
@@ -2238,22 +2398,30 @@ public class SimplifyUtil extends VisitorExpr {
       root = root.second();
     }
     if (!root.isPower() || !rootFactor.isRational()) {
-      return F.NIL;
+      return null;
     }
     IRational linear = a.multiply(b).multiply(F.C2).multiply((IRational) rootFactor);
-    IRational content = constant.gcd(linear);
+    IRational content = constant.gcd(linear.abs());
     IInteger outerNumerator = squareFactor(content.numerator());
     IInteger outerDenominator = squareFactor(content.denominator());
     IRational outer = F.QQ(outerNumerator, outerDenominator).normalize();
-    if (outer.isOne()) {
-      // without a square content the nested root only rarely weighs less
-      return F.NIL;
-    }
     IRational square = outer.multiply(outer);
+    IRational sign = negative ? outer.negate() : outer;
     IExpr inner = F.Plus(constant.divideBy(square), F.Times(linear.divideBy(square), root));
-    IExpr nested = F.Times(coefficients[0].isNegative() ? outer.negate() : outer, F.Sqrt(inner));
-    rest.append(nested);
-    return util.eval(rest);
+    IASTAppendable expanded = rest.copyAppendable();
+    expanded.append(F.Times(sign, F.Sqrt(inner)));
+    // the content which is not a square, stays inside the root
+    IRational nonSquare = content.divideBy(square);
+    final boolean squareContent = nonSquare.numerator().equals(nonSquare.denominator());
+    final IExpr expandedTie = sameSign ? S.True
+        : !negative && content.compareTo(F.C1) > 0 ? S.Null : S.False;
+    if (squareContent || !nonSquare.denominator().isOne()) {
+      return new IExpr[] {expandedTie, util.eval(expanded)};
+    }
+    IExpr reduced = F.Plus(constant.divideBy(content), F.Times(linear.divideBy(content), root));
+    rest.append(F.Times(sign, F.Sqrt(F.Times(nonSquare.numerator(), reduced))));
+    return new IExpr[] {expandedTie, util.eval(expanded), F.booleSymbol(sameSign || !negative),
+        util.eval(rest)};
   }
 
   /**
@@ -3009,13 +3177,12 @@ public class SimplifyUtil extends VisitorExpr {
         }
       }), //
       new Step("PlusFactorTermsAndLog", CatchPolicy.NONE, ctx -> {
-        if (ctx.input.isPlus()) {
-          // the input sum, which a numeric content may have been factored out of already
-          IExpr radicalFactor = commonSquareRootFactor((IAST) ctx.input, ctx.util);
-          if (radicalFactor.isPresent()) {
-            // a tie goes to the product: 3*Sqrt(2)+8*Sqrt(6) is Sqrt(2)*(3+8*Sqrt(3))
-            ctx.result.checkLessEqual(radicalFactor);
-          }
+        // the input sum, which a numeric content may have been factored out of already, or the
+        // expanded input product
+        final IExpr radicalSum = ctx.input.isPlus() ? ctx.input : ctx.expr;
+        if (radicalSum.isPlus()) {
+          // a tie goes to the product: 3*Sqrt(2)+8*Sqrt(6) is Sqrt(2)*(3+8*Sqrt(3))
+          offerCommonSquareRootFactor((IAST) radicalSum, ctx.util, ctx.result);
         }
         if (ctx.input.isPlus()) {
           IExpr square = halfAngleSquare((IAST) ctx.input, ctx.util);
@@ -3024,38 +3191,39 @@ public class SimplifyUtil extends VisitorExpr {
             ctx.result.checkLessEqual(square);
           }
         }
-        if (ctx.util.fFullSimplifyFunction && ctx.input.isPlus()) {
-          IExpr nested = nestedRadicalSum((IAST) ctx.input, ctx.util);
-          if (nested.isPresent()) {
-            // a tie goes to the nested root: 2*Sqrt(6)+2*Sqrt(22) is 4*Sqrt(7+Sqrt(33))
-            ctx.result.checkLessEqual(nested);
+        if (ctx.expr.isPlus()) {
+          IExpr temp = AlgebraUtil.factorTermsPlus(ctx.ast(), EvalEngine.get());
+          if (temp.isPresent()) {
+            final IExpr source = ctx.expr;
+            final IExpr factored = temp;
+            // a tie beats the sum, not a product which the factorization found:
+            // -4*(-1+eps)*y stays, 4*(1-eps)*y would evaluate back to (4-4*eps)*y
+            ctx.result.offerOnTie(temp,
+                () -> !ctx.result.result.isTimes() && prefersFactoredPlus(source, factored));
           }
+
+          Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(ctx.ast(), true);
+          if (commonFactors.isPresent()) {
+            final IExpr combined =
+                ctx.util.eval(F.Times(commonFactors.get()[0], commonFactors.get()[1]));
+            ctx.result.offerOnTie(combined,
+                () -> !ctx.result.result.isTimes() && prefersFactoredPlus(ctx.expr, combined));
+          }
+        }
+        if (ctx.util.fFullSimplifyFunction && radicalSum.isPlus()) {
+          // after the factored forms, which would take a tie from a nested root:
+          // 2*Sqrt(6)+2*Sqrt(22) is 4*Sqrt(7+Sqrt(33)), 2*Sqrt(3)-Sqrt(6) is Sqrt(6*(3-2*Sqrt(2)))
+          offerNestedRadicalSum((IAST) radicalSum, ctx.util.fDepth == 0 && radicalSum == ctx.input,
+              ctx.util, ctx.result);
         }
         if (!ctx.expr.isPlus()) {
           return;
-        }
-        IExpr temp = AlgebraUtil.factorTermsPlus(ctx.ast(), EvalEngine.get());
-        if (temp.isPresent()) {
-          final IExpr source = ctx.expr;
-          final IExpr factored = temp;
-          // a tie beats the sum, not a product which the factorization found:
-          // -4*(-1+eps)*y stays, 4*(1-eps)*y would evaluate back to (4-4*eps)*y
-          ctx.result.offerOnTie(temp,
-              () -> !ctx.result.result.isTimes() && prefersFactoredPlus(source, factored));
-        }
-
-        Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(ctx.ast(), true);
-        if (commonFactors.isPresent()) {
-          final IExpr combined =
-              ctx.util.eval(F.Times(commonFactors.get()[0], commonFactors.get()[1]));
-          ctx.result.offerOnTie(combined,
-              () -> !ctx.result.result.isTimes() && prefersFactoredPlus(ctx.expr, combined));
         }
 
         final IAST logSource = ctx.result.result.isPlus() //
             ? (IAST) ctx.result.result
             : ctx.ast();
-        temp = ctx.util.tryPlusLog(logSource);
+        IExpr temp = ctx.util.tryPlusLog(logSource);
         if (temp.isPresent()) {
           ctx.result.checkLessEqual(temp);
         }
@@ -3181,6 +3349,26 @@ public class SimplifyUtil extends VisitorExpr {
     IExpr numerator = util.eval(F.Expand(F.Times(scale, factors.removeAtCopy(index).oneIdentity1())));
     IExpr scaledDenominator = util.eval(F.Expand(F.Times(scale, denominator)));
     return util.eval(F.Times(numerator, F.Power(scaledDenominator, F.CN1)));
+  }
+
+  /**
+   * Pull the factor <code>-1</code> out of a sum whose terms are all negative in a numeric product:
+   * <code>(-1-Sqrt(5))/Sqrt(30)</code> is <code>-(1+Sqrt(5))/Sqrt(30)</code>.
+   *
+   * @param timesAST the product
+   * @param util the simplifier
+   * @return the product with the negated sum, or {@link F#NIL}
+   */
+  private static IExpr negateNegativeSum(IAST timesAST, SimplifyUtil util) {
+    if (!timesAST.isNumericFunction()) {
+      return F.NIL;
+    }
+    int index = timesAST.indexOf(x -> x.isPlus() && ((IAST) x).forAll(IExpr::isNegativeSigned));
+    if (index <= 0) {
+      return F.NIL;
+    }
+    IExpr sum = util.eval(F.Negate(timesAST.get(index)));
+    return util.eval(F.Times(F.CN1, timesAST.setAtCopy(index, sum)));
   }
 
   /**
@@ -3342,7 +3530,9 @@ public class SimplifyUtil extends VisitorExpr {
     if (!expr.isAST()) {
       return F.NIL;
     }
-    IExpr cached = fTransformationCache.get(expr);
+    final Map<IExpr, IExpr> cache =
+        fFullSimplifyFunction && fDepth > 0 ? fInnerTransformationCache : fTransformationCache;
+    IExpr cached = cache.get(expr);
     if (cached != null) {
       return cached;
     }
@@ -3358,8 +3548,8 @@ public class SimplifyUtil extends VisitorExpr {
       // got here, so this says nothing about the expression itself.
       return F.NIL;
     }
-    if (fTransformationCache.size() < MAX_TRANSFORMATION_CACHE_SIZE) {
-      fTransformationCache.put(expr, result);
+    if (cache.size() < MAX_TRANSFORMATION_CACHE_SIZE) {
+      cache.put(expr, result);
     }
     return result;
   }
@@ -3424,7 +3614,13 @@ public class SimplifyUtil extends VisitorExpr {
       }
     }
 
-    IExpr temp = visitAST(ast);
+    IExpr temp;
+    fDepth++;
+    try {
+      temp = visitAST(ast);
+    } finally {
+      fDepth--;
+    }
     if (temp.isPresent()) {
       temp = eval(temp);
       if (sResult.checkLessEqual(temp)) {
@@ -3684,8 +3880,15 @@ public class SimplifyUtil extends VisitorExpr {
         // example (5+Sqrt(17)) * (5-Sqrt(17))
         IExpr expr = eval(F.Expand(F.Times(plus1, plus2)));
         if (expr.isNumber() && !expr.isZero()) {
+          // only where it pays: 1/(2+Sqrt(3)) and 2-Sqrt(3) weigh the same, and a product with it
+          // like Sqrt(5)/(2+Sqrt(3)) keeps its quotient form
           IExpr powerSimplified = S.Times.of(expr.inverse(), plus2);
-          if (sResult.checkLessPlusTimesPower(powerSimplified)) {
+          if (sResult.checkLess(powerSimplified)) {
+            return powerSimplified;
+          }
+          // 1/(2+2*Sqrt(2)) is -1/2+1/Sqrt(2), not -1/4*(2-2*Sqrt(2))
+          powerSimplified = eval(F.Expand(powerSimplified));
+          if (sResult.checkLess(powerSimplified)) {
             return powerSimplified;
           }
         }
@@ -3701,6 +3904,14 @@ public class SimplifyUtil extends VisitorExpr {
               return F.Power(powerSimplified, -1);
             }
             return powerSimplified;
+          }
+          if (n > 0 && powerAST.isFree(x -> x.isAtom() && !x.isRational(), false)) {
+            // a power of a sum of radicals of rationals is expanded on a tie: (1+Sqrt(2))^2 is
+            // 3+2*Sqrt(2)
+            powerSimplified = eval(F.Expand(powerAST));
+            if (sResult.checkLessPlusTimesPower(powerSimplified)) {
+              return powerSimplified;
+            }
           }
         }
       }
@@ -3839,6 +4050,10 @@ public class SimplifyUtil extends VisitorExpr {
     // before the denominator is rationalized: (3-Sqrt(10))/(1+Sqrt(13)) weighs less than its
     // rationalized form
     temp = cancelDenominatorRadical(timesAST, this);
+    if (temp.isPresent() && sResult.checkLess(temp)) {
+      return temp;
+    }
+    temp = negateNegativeSum(timesAST, this);
     if (temp.isPresent() && sResult.checkLess(temp)) {
       return temp;
     }

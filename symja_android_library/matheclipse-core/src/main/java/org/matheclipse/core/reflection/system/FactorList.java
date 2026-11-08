@@ -201,7 +201,32 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       appendFactor(result, factored);
     }
 
-    return leadingTermsPositive(result);
+    return canonicalOrder(leadingTermsPositive(result), field);
+  }
+
+  /**
+   * The factors after the numeric content are sorted in canonical order of their bases, which
+   * needn't be the order of the factors in the product they came from:
+   * <code>x^2*(-5+2*x)^2</code> gives <code>{{1,1},{x,2},{-5+2*x,2}}</code>.
+   */
+  private static IAST canonicalOrder(IAST factors, boolean field) {
+    int start = 1;
+    while (start <= factors.argSize() && isContent(factors.get(start).first(), field)) {
+      start++;
+    }
+    if (factors.argSize() - start < 1) {
+      return factors;
+    }
+    IASTAppendable sorted = factors.copyAppendable();
+    java.util.List<IExpr> pairs = new java.util.ArrayList<IExpr>(factors.argSize() - start + 1);
+    for (int i = start; i <= factors.argSize(); i++) {
+      pairs.add(factors.get(i));
+    }
+    pairs.sort((x, y) -> x.first().compareTo(y.first()));
+    for (int i = start; i <= factors.argSize(); i++) {
+      sorted.set(i, pairs.get(i - start));
+    }
+    return sorted;
   }
 
   /** A number, or over a number field any numeric factor such as <code>Sqrt(2)</code>. */

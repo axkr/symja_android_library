@@ -373,13 +373,13 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     // which the Rubi rules ask for on the way through Integrate(Sin(Cos(Tan(x))),x), its remainder
     // sequence did not end.
     check("Cancel(Expand(I*(a-b-c+d)*(1+x)^2)/Expand(u^2*(1+x)^3))", //
-        "(I*a-I*b-I*c+I*d)/(u^2+u^2*x)");
+        "(I*(a-b-c+d))/(u^2*(1+x))");
     check("Cancel(Expand((2+3*I)*(a-b)*(x+I)^3)/Expand((4-I)*u*(x+I)^2*(x-I)))", //
         "((-5/17-I*14/17)*(a-b)*(I+x))/(u*(I-x))");
     check("Together((x^2+1)/(x+I)+1/(x-I))", //
         "(-I*2*x+x^2)/(-I+x)");
     check("Cancel(Expand(32768*I*(a-b-c+d)*(1+x)^10)/Expand(65536*u^2*(1+x)^12))", //
-        "(I*a-I*b-I*c+I*d)/(2*u^2+4*u^2*x+2*u^2*x^2)");
+        "(I*1/2*(a-b-c+d))/(u^2*(1+2*x+x^2))");
     // a unit of Q(I) which is left over goes to the numerator: not -I*(1+I*x), not -I*(I*x+y)
     check("Cancel((x^2+1)/(x+I))", //
         "-I+x");
@@ -435,17 +435,17 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "Cancel(Expand((1+Sqrt(2)+E^Sqrt(3))^4*(2+E^Sqrt(3)))/Expand((1+Sqrt(2)+E^Sqrt(3))^2*(2+E^Sqrt(3))^2))", //
         "(3+2*Sqrt(2)+(2+2*Sqrt(2))*E^Sqrt(3)+E^(2*Sqrt(3)))/(2+E^Sqrt(3))");
     check("Cancel((4*x^2 - 2*x)/(2 + 3*x))", //
-        "(-2*x+4*x^2)/(2+3*x)");
+        "(2*(-x+2*x^2))/(2+3*x)");
     check("Cancel((-5 - 2*x - 4*x^2)/(3 + 2*x^2 + 5*x^3))", //
         "(-5-2*x-4*x^2)/(3+2*x^2+5*x^3)");
     check("Cancel(x/(2 - 2*x))", //
-        "x/(2-2*x)");
+        "-x/(2*(-1+x))");
     check("Cancel((x*y)/(2 - 2*x))", //
-        "(x*y)/(2-2*x)");
+        "(-x*y)/(2*(-1+x))");
     check("Cancel((3 - 5*x)/(2 - 2*x))", //
-        "(3-5*x)/(2-2*x)");
+        "(-3+5*x)/(2*(-1+x))");
     check("Cancel((3 - 5*x)/(4 - 6*x))", //
-        "(3-5*x)/(4-6*x)");
+        "(-3+5*x)/(2*(-2+3*x))");
     check("Cancel((x^2 - 1)/(x - 1))", //
         "1+x");
     check("Cancel((x^3 - x)/(x^2 - 1))", //
@@ -461,15 +461,15 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     check("Cancel((x^2 + 2*x + 1)/(x + 1))", //
         "1+x");
     check("Cancel((x/2)/(1 - x))", //
-        "x/(2*(1-x))");
+        "-x/(2*(-1+x))");
     check("Cancel((5*x)/(2 - 2*x))", //
-        "(5*x)/(2-2*x)");
+        "-5/2*x/(-1+x)");
     check("Cancel((5*x)/(1 - 5*x))", //
-        "(5*x)/(1-5*x)");
+        "(-5*x)/(-1+5*x)");
     check("Cancel(x/(2 - 2*x)^2)", //
-        "x/(2-2*x)^2");
+        "x/(4*(1-x)^2)");
     check("Cancel(x/(2 - 2*x)^3)", //
-        "x/(2-2*x)^3");
+        "-x/(8*(-1+x)^3)");
     check("Cancel((2 - 4*x)/(2 + 2*x))", //
         "(1-2*x)/(1+x)");
     check("Cancel((2 - 4*x)/(-2 + 2*x))", //
@@ -477,31 +477,31 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     check("Cancel((2 - 4*x)/2)", //
         "1-2*x");
     check("Cancel((-4 - 3*x^2)/(4 + x - 4*x^2))", //
-        "(-4-3*x^2)/(4+x-4*x^2)");
+        "(4+3*x^2)/(-4-x+4*x^2)");
     check("Cancel((2 - 4*x)/(2 - 2*x))", //
-        "(1-2*x)/(1-x)");
+        "(-1+2*x)/(-1+x)");
     check("Cancel((1 + x)/(1 - x))", //
-        "(1+x)/(1-x)");
+        "(-1-x)/(-1+x)");
     check("Cancel(x/(1 - x))", //
-        "x/(1-x)");
+        "-x/(-1+x)");
     check("Cancel(2/(2 - 2*x))", //
         "1/(1-x)");
     check("Cancel(1/(1 - x))", //
         "1/(1-x)");
     check("Cancel(-1/(2 - 4*x))", //
-        "-1/(2-4*x)");
+        "1/(2*(-1+2*x))");
     check("Cancel(-1/(3 - 6*x))", //
-        "-1/(3-6*x)");
+        "1/(3*(-1+2*x))");
     check("Cancel(-1/(1 + x))", //
-        "-1/(1+x)");
+        "1/(-1-x)");
     check("Cancel(-1/(2 + x))", //
-        "-1/(2+x)");
+        "1/(-2-x)");
     check("Cancel(-1/(x + y))", //
-        "-1/(x+y)");
+        "1/(-x-y)");
     check("Cancel(-1/(-1 + x))", //
-        "-1/(-1+x)");
+        "1/(1-x)");
     check("Cancel(-1/(2 + 2*x))", //
-        "-1/(2+2*x)");
+        "-1/(2*(1+x))");
     check("Cancel(-2/(1 + x))", //
         "-2/(1+x)");
     check("Cancel(1/(2 + 2*x))", //
@@ -517,13 +517,13 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     check("Cancel(1/(x + 1/x))", //
         "1/(1/x+x)");
     check("Cancel((x + 1)/(4*x + 5*x^2))", //
-        "(1+x)/(4*x+5*x^2)");
+        "(1+x)/(x*(4+5*x))");
     check("Cancel(2/(4*x + 5*x^2))", //
-        "2/(4*x+5*x^2)");
+        "2/(x*(4+5*x))");
     check("Cancel((x + 2)/(x^2 - x))", //
-        "(2+x)/(-x+x^2)");
+        "(2+x)/((-1+x)*x)");
     check("Cancel((x + 1)/(x^2 + x^4))", //
-        "(1+x)/(x^2+x^4)");
+        "(1+x)/(x^2*(1+x^2))");
     check("Cancel((x + 1)/((x - 1)*(x + 2)))", //
         "(1+x)/((-1+x)*(2+x))");
     check("Cancel(x/(4*x^2 + 4*x^3))", //

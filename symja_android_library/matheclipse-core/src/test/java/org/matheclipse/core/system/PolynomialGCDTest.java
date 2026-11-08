@@ -30,4 +30,33 @@ public class PolynomialGCDTest extends ExprEvaluatorTestCase {
     check("PolynomialGCD(f(1.5*x), x)", //
         "PolynomialGCD(f(1.5*x),x)");
   }
+
+  @Test
+  public void testExposedFactors() {
+    // the factors of products and powers in the arguments are kept
+    check("PolynomialGCD((x+3)^3*(2*x-1),Expand((x+3)^2*(x-5)))", //
+        "(3+x)^2");
+    check("PolynomialGCD((x+1)*(x-2),(x+1)*(x-2)*(x+7))", //
+        "(-2+x)*(1+x)");
+    check("PolynomialGCD((x^2+1)*(x-3),(x-3)^2*(x^2+1)^2)", //
+        "(-3+x)*(1+x^2)");
+    // with the rational content
+    check("PolynomialGCD(5*(x+4)^2,10*(x+4)^3)", //
+        "5*(4+x)^2");
+    check("PolynomialGCD((x+4)^2/3,(x+4)^3/5)", //
+        "(4+x)^2/15");
+    // a repeated factor counts only as often as it divides the other argument
+    check("PolynomialGCD((x-2)^4,(x-2)^2*(x+5),(x-2)^3)", //
+        "(2-x)^2");
+    // expanded arguments and monomials keep the expanded GCD
+    check("PolynomialGCD(3+3*x,6+6*x)", //
+        "3+3*x");
+    check("PolynomialGCD(1+2*x+x^2,1+3*x+3*x^2+x^3)", //
+        "1+2*x+x^2");
+    check("PolynomialGCD((2+2*x)^2,8*x)", //
+        "4");
+    // more factors than are taken one at a time: the expanded GCD
+    check("PolynomialGCD((1+x)^70*(2+x),(1+x)^2*x)", //
+        "1+2*x+x^2");
+  }
 }

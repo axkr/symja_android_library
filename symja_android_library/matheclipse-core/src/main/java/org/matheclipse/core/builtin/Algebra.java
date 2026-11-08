@@ -563,6 +563,279 @@ public class Algebra {
     }
 
     /**
+     * The form of a fraction of polynomials. The common monomial of the terms of an expanded
+     * denominator with rational coefficients is taken out, together with its rational content with
+     * the sign of the lexicographically leading term, which goes into the numerator:
+     * <code>(1+x)/(2*x+4*x^2)</code> is <code>(1+x)/(2*x*(1+2*x))</code>,
+     * <code>(x+y)/(x+x^2*y+x*y^2)</code> is <code>(x+y)/(x*(1+x*y+y^2))</code>,
+     * <code>(x-3)/(-x-2*x^2)</code> is <code>(3-x)/(x*(1+2*x))</code> and
+     * <code>(1+x)/(1-x)</code> is <code>(-1-x)/(-1+x)</code>. The content of a numerator with
+     * rational coefficients, or with rational multiples of <code>I</code>, other than
+     * <code>1</code> and <code>-1</code> is taken out with the sign of the leading term:
+     * <code>(6-3*x)/(1+2*x)</code> is <code>(-3*(-2+x))/(1+2*x)</code>. A numerator
+     * <code>-1</code> over a sum without content goes into the sum: <code>-1/(x^2-x)</code> is
+     * <code>1/((1-x)*x)</code> and <code>-1/(1+x)</code> is <code>1/(-1-x)</code>, but
+     * <code>-1/(2+2*x)</code> is <code>-1/(2*(1+x))</code>. A reciprocal keeps its denominator:
+     * <code>1/(-x+x^2)</code>.
+     *
+     * @return {@link F#NIL} if the fraction keeps its form
+     */
+    private static IExpr contentForm(IExpr fraction, EvalEngine engine) {
+      if (!fraction.isTimes() || ((IAST) fraction)
+          .forAll(f -> f.isPower() && f.exponent().isInteger() && f.exponent().isNegative())) {
+        // a reciprocal keeps its denominator
+        return F.NIL;
+      }
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(fraction, false);
+      if (!parts.isPresent()) {
+        return F.NIL;
+      }
+      // the sign of -1/p is the sign of the denominator -p
+      IExpr numerator = parts.get()[0];
+      IExpr denominator = parts.get()[1];
+      if (denominator.isNumber()) {
+        return F.NIL;
+      }
+      IAST variables = new VariablesSet(fraction).getVarList();
+      if (variables.argSize() == 0) {
+        return F.NIL;
+      }
+      boolean changed = false;
+      if (numerator.isPlus()) {
+        IExpr content = numeratorContent(numerator, variables, engine);
+        if (content.isPresent()) {
+          numerator = F.Times(content,
+              engine.evaluate(F.Expand(F.Times(F.Power(content, F.CN1), numerator))));
+          changed = true;
+        }
+      }
+      IRational numericFactor = F.C1;
+      IExpr polynomial = denominator;
+      if (denominator.isTimes() && denominator.argSize() == 2 && denominator.first().isRational()) {
+        numericFactor = (IRational) denominator.first();
+        polynomial = denominator.second();
+      } else if (denominator.isTimes()) {
+        IExpr product = productForm((IAST) denominator, numerator, variables, engine);
+        if (product.isPresent()) {
+          return product;
+        }
+        return changed ? engine.evaluate(F.Times(numerator, F.Power(denominator, F.CN1)))
+            : F.NIL;
+      }
+      if (polynomial.isPower() && polynomial.base().isPlus() && polynomial.exponent().isInteger()
+          && polynomial.exponent().isPositive()) {
+        // the content of a power of a sum with the sign of the leading coefficient:
+        // x/(2-2*x)^3 is -x/(8*(-1+x)^3), x/(2-2*x)^2 is x/(4*(-1+x)^2)
+        IAST rules = coefficientRules(polynomial.base(), variables, engine);
+        int n = polynomial.exponent().toIntDefault();
+        IRational content = signedContent(rules, polynomial);
+        if (content != null && n > 1) {
+          if (!content.isOne()) {
+            IExpr primitive =
+                engine.evaluate(F.Expand(F.Times(content.inverse(), polynomial.base())));
+            IRational power = content.powerRational(n);
+            if (power.isNegative()) {
+              power = power.negate();
+              numerator = engine.evaluate(F.Times(F.CN1, numerator));
+            }
+            denominator = F.Times(numericFactor.multiply(power), F.Power(primitive, n));
+            changed = true;
+          }
+        }
+      }
+      IAST rules = polynomial.isPlus() ? coefficientRules(polynomial, variables, engine) : F.NIL;
+      IRational content = signedContent(rules, polynomial);
+      if (content != null) {
+        IExpr monomial = commonMonomial(rules, variables);
+        if (monomial.isPresent()) {
+          IExpr primitive = polynomial;
+          if (!monomial.isOne() || !content.isOne()) {
+            primitive = engine.evaluate(
+                F.Expand(F.Times(content.inverse(), F.Power(monomial, F.CN1), polynomial)));
+            changed = true;
+          }
+          if (content.isNegative()) {
+            content = content.negate();
+            numerator = engine.evaluate(F.Times(F.CN1, numerator));
+          }
+          IRational factor = numericFactor.multiply(content);
+          if (numerator.isMinusOne() && factor.isOne() && primitive.isPlus()) {
+            // -1/p is 1/(-p)
+            numerator = F.C1;
+            primitive = engine.evaluate(F.Negate(primitive));
+            changed = true;
+          } else if (numerator.isOne() && factor.isOne() && primitive.isPlus()) {
+            // the numerator -1 of the product went into the sum already: -1/(x+y) is 1/(-x-y)
+            changed = true;
+          }
+          denominator = F.Times(factor, monomial, primitive);
+        }
+      }
+      if (!changed) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Times(numerator, F.Power(denominator, F.CN1)));
+    }
+
+    /**
+     * The rational content of the polynomial <code>p</code> given by its coefficient
+     * <code>rules</code>, with the sign of the lexicographically leading term.
+     *
+     * @return <code>null</code> if there are no rules or a coefficient isn't rational
+     */
+    private static IRational signedContent(IAST rules, IExpr p) {
+      if (rules.isNIL() || !rules.forAll(rule -> rule.second().isRational())) {
+        return null;
+      }
+      IASTAppendable values = F.ListAlloc(rules.argSize());
+      rules.forEach(rule -> values.append(rule.second()));
+      IRational content = rationalContent(values);
+      return rules.arg1().second().isNegative() ? content.negate() : content;
+    }
+
+    /**
+     * The denominator <code>c*p1^n1*p2^n2*...</code> with each sum <code>pi</code> written as its
+     * rational content times a sum whose leading term has a positive coefficient; the signs taken
+     * out of the factors with odd exponents go into the numerator:
+     * <code>(x+2)/(x*(1-x))</code> is <code>(-2-x)/((-1+x)*x)</code>.
+     *
+     * @return {@link F#NIL} if no factor changes
+     */
+    private static IExpr productForm(IAST denominator, IExpr numerator, IAST variables,
+        EvalEngine engine) {
+      IRational numericFactor = F.C1;
+      boolean negative = false;
+      boolean changed = false;
+      IASTAppendable factors = F.TimesAlloc(denominator.argSize());
+      for (IExpr factor : denominator) {
+        if (factor.isRational()) {
+          numericFactor = numericFactor.multiply((IRational) factor);
+          continue;
+        }
+        IExpr base = factor;
+        int n = 1;
+        if (factor.isPower() && factor.exponent().isInteger() && factor.exponent().isPositive()) {
+          base = factor.base();
+          n = factor.exponent().toIntDefault();
+        }
+        IRational content = base.isPlus() && n > 0
+            ? signedContent(coefficientRules(base, variables, engine), base)
+            : null;
+        if (content == null || content.isOne()) {
+          factors.append(factor);
+          continue;
+        }
+        IExpr primitive = engine.evaluate(F.Expand(F.Times(content.inverse(), base)));
+        IRational power = content.powerRational(n);
+        if (power.isNegative()) {
+          power = power.negate();
+          negative = !negative;
+        }
+        numericFactor = numericFactor.multiply(power);
+        factors.append(F.Power(primitive, F.ZZ(n)));
+        changed = true;
+      }
+      if (!changed) {
+        return F.NIL;
+      }
+      IExpr signedNumerator = negative ? engine.evaluate(F.Times(F.CN1, numerator)) : numerator;
+      return engine.evaluate(F.Times(signedNumerator,
+          F.Power(F.Times(numericFactor, factors.oneIdentity1()), F.CN1)));
+    }
+
+    /**
+     * The content of the polynomial <code>p</code> with the sign of its leading term: a
+     * rational number, or a rational number times <code>I</code> if all coefficients are such
+     * multiples of <code>I</code>.
+     *
+     * @return {@link F#NIL} if the content is <code>1</code> or <code>-1</code>, or
+     *         <code>p</code> has other coefficients
+     */
+    private static IExpr numeratorContent(IExpr p, IAST variables, EvalEngine engine) {
+      IAST rules = coefficientRules(p, variables, engine);
+      if (rules.isNIL()) {
+        return F.NIL;
+      }
+      boolean imaginary = rules.forAll(rule -> rule.second().isComplex()
+          && ((IComplex) rule.second()).getRealPart().isZero());
+      if (!imaginary && !rules.forAll(rule -> rule.second().isRational())) {
+        return F.NIL;
+      }
+      IASTAppendable values = F.ListAlloc(rules.argSize());
+      rules.forEach(
+          rule -> values.append(imaginary ? ((IComplex) rule.second()).getImaginaryPart()
+              : rule.second()));
+      IRational content = rationalContent(values);
+      if (((IRational) values.arg1()).isNegative()) {
+        content = content.negate();
+      }
+      if (imaginary) {
+        return F.CC(F.C0, content);
+      }
+      return content.isOne() || content.isMinusOne() ? F.NIL : content;
+    }
+
+    /**
+     * The rules <code>{exponents} -&gt; coefficient</code> of the polynomial <code>p</code> in
+     * the <code>variables</code>, the leading term first.
+     *
+     * @return {@link F#NIL} if <code>p</code> is no polynomial in the <code>variables</code>
+     */
+    private static IAST coefficientRules(IExpr p, IAST variables, EvalEngine engine) {
+      if (!p.isPolynomial(variables)) {
+        return F.NIL;
+      }
+      IExpr rules = engine.evaluate(F.CoefficientRules(p, variables));
+      if (!rules.isList() || rules.argSize() < 2 || !((IAST) rules).forAll(
+          rule -> rule.isRuleAST() && rule.first().isList()
+              && rule.first().argSize() == variables.argSize())) {
+        return F.NIL;
+      }
+      return (IAST) rules;
+    }
+
+    /**
+     * The monomial which divides every term of the polynomial given by its coefficient
+     * <code>rules</code>.
+     *
+     * @return {@link F#NIL} if an exponent is no non-negative integer
+     */
+    private static IExpr commonMonomial(IAST rules, IAST variables) {
+      int[] lowest = new int[variables.argSize()];
+      java.util.Arrays.fill(lowest, Integer.MAX_VALUE);
+      for (IExpr rule : rules) {
+        for (int i = 0; i < lowest.length; i++) {
+          int exponent = rule.first().getAt(i + 1).toIntDefault();
+          if (exponent < 0) {
+            return F.NIL;
+          }
+          lowest[i] = Math.min(lowest[i], exponent);
+        }
+      }
+      IASTAppendable monomial = F.TimesAlloc(lowest.length);
+      for (int i = 0; i < lowest.length; i++) {
+        if (lowest[i] > 0) {
+          monomial.append(F.Power(variables.get(i + 1), F.ZZ(lowest[i])));
+        }
+      }
+      return monomial.oneIdentity1();
+    }
+
+    /** The positive rational number by which the nonzero rational numbers become coprime integers. */
+    private static IRational rationalContent(IAST numbers) {
+      IInteger gcd = F.C0;
+      IInteger lcm = F.C1;
+      for (IExpr c : numbers) {
+        IRational r = (IRational) c;
+        if (!r.isZero()) {
+          gcd = gcd.gcd(r.numerator());
+          lcm = lcm.lcm(r.denominator());
+        }
+      }
+      return gcd.isZero() ? F.C1 : F.QQ(gcd, lcm);
+    }
+
+    /**
      * @param arg1
      * @param engine
      * @return {@link F#NIL} if no evaluations was possible
@@ -656,7 +929,8 @@ public class Algebra {
       if (temp.isPresent()) {
         return temp;
       }
-      return cancelNIL(arg1, engine).orElse(arg1);
+      IExpr result = cancelNIL(arg1, engine).orElse(arg1);
+      return contentForm(result, engine).orElse(result);
       // if (temp.isPresent()) {
       // return temp;
       // }
@@ -4096,6 +4370,173 @@ public class Algebra {
       return F.NIL;
     }
 
+    /** The largest total multiplicity of the exposed factors of an argument which is used. */
+    private static final int MAX_EXPOSED_MULTIPLICITY = 64;
+
+    /**
+     * The GCD of univariate polynomials with rational coefficients, some of which are products or
+     * powers, keeps the factors exposed in the arguments: <code>PolynomialGCD((x+2)^3*(x-3),
+     * (x+2)^2*x)</code> is <code>(2+x)^2</code> and not <code>4+4*x+x^2</code>. The GCD of a
+     * product <code>f*r</code> with <code>q</code> is <code>g*PolynomialGCD(r, q/g)</code> with
+     * <code>g == PolynomialGCD(f, q)</code>, and dividing <code>q</code> by <code>g</code> counts
+     * a repeated factor only as often as it divides <code>q</code>. Expanded arguments keep the
+     * expanded GCD.
+     *
+     * @return {@link F#NIL} if no argument has an exposed factor or the arguments are no such
+     *         polynomials
+     */
+    private static IExpr exposedFactorsGCD(IAST ast, int argSize, EvalEngine engine) {
+      boolean exposed = false;
+      for (int i = 1; i <= argSize; i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isList() || !arg.isFree(x -> x.isInexactNumber(), false)) {
+          return F.NIL;
+        }
+        long multiplicity = exposedMultiplicity(arg);
+        if (multiplicity > MAX_EXPOSED_MULTIPLICITY) {
+          // (1+x)^2000 isn't expanded here
+          return F.NIL;
+        }
+        exposed |= multiplicity > 0;
+      }
+      if (!exposed) {
+        return F.NIL;
+      }
+      VariablesSet variableSet = new VariablesSet();
+      variableSet.addVarList(ast, 1);
+      IAST variables = variableSet.getVarList();
+      if (variables.argSize() != 1) {
+        return F.NIL;
+      }
+      IExpr x = variables.arg1();
+      IASTAppendable expanded = F.ast(S.PolynomialGCD, argSize);
+      for (int i = 1; i <= argSize; i++) {
+        IExpr arg = ast.get(i);
+        if (!arg.isPolynomial(variables)) {
+          return F.NIL;
+        }
+        IExpr expandedArg = F.evalExpandAll(arg, engine);
+        IExpr coefficients = engine.evaluate(F.CoefficientList(expandedArg, x));
+        if (!coefficients.isList() || !((IAST) coefficients).forAll(c -> c.isRational())) {
+          return F.NIL;
+        }
+        expanded.append(expandedArg);
+      }
+      IExpr expandedGCD = engine.evaluate(expanded);
+      if (expandedGCD.isAST(S.PolynomialGCD)) {
+        return F.NIL;
+      }
+      IExpr gcd = ast.arg1();
+      for (int i = 2; i <= argSize; i++) {
+        gcd = exposedGCD(gcd, ast.get(i), x, engine);
+        if (gcd.isNIL()) {
+          return F.NIL;
+        }
+      }
+      // the factored form has to be the GCD the expanded arguments give, sign and content included
+      return F.evalExpandAll(gcd, engine).equals(expandedGCD) ? gcd : F.NIL;
+    }
+
+    /**
+     * The GCD of the polynomials <code>p</code> and <code>q</code> in <code>x</code>, with the
+     * exposed factors of <code>p</code> - or of <code>q</code> if <code>p</code> has none -
+     * taken one at a time.
+     *
+     * @return {@link F#NIL} if a division by a common factor isn't exact
+     */
+    private static IExpr exposedGCD(IExpr p, IExpr q, IExpr x, EvalEngine engine) {
+      engine.checkTimeLimit();
+      IAST factors = exposedFactors(p);
+      IExpr remaining = q;
+      if (factors.isNIL()) {
+        factors = exposedFactors(q);
+        remaining = p;
+      }
+      if (factors.isNIL()) {
+        return engine.evaluate(F.PolynomialGCD(p, q));
+      }
+      IASTAppendable common = F.TimesAlloc(factors.argSize());
+      for (IExpr pair : factors) {
+        int multiplicity = pair.second().toIntDefault();
+        for (int j = 0; j < multiplicity; j++) {
+          IExpr part = exposedGCD(pair.first(), remaining, x, engine);
+          if (part.isNIL()) {
+            return F.NIL;
+          }
+          if (part.isOne()) {
+            break;
+          }
+          IExpr quotientRemainder =
+              engine.evaluate(F.PolynomialQuotientRemainder(remaining, part, x));
+          if (!quotientRemainder.isList2() || !quotientRemainder.second().isZero()) {
+            return F.NIL;
+          }
+          remaining = quotientRemainder.first();
+          common.append(part);
+        }
+      }
+      return engine.evaluate(common.oneIdentity1());
+    }
+
+    /**
+     * The total multiplicity of the factors of a product or of a power with a positive integer
+     * exponent, if one of the factors is a sum.
+     *
+     * @return <code>0</code> if <code>p</code> is no such product or power; a monomial like
+     *         <code>8*x^2</code> is its own expanded form
+     */
+    private static long exposedMultiplicity(IExpr p) {
+      if (!p.isTimes() && !isPositiveIntegerPower(p)) {
+        return 0;
+      }
+      IAST product = p.isTimes() ? (IAST) p : F.list(p);
+      long total = 0;
+      boolean sum = false;
+      for (IExpr factor : product) {
+        if (isPositiveIntegerPower(factor)) {
+          int n = factor.exponent().toIntDefault();
+          if (n <= 0) {
+            return Long.MAX_VALUE;
+          }
+          total += n;
+          sum |= factor.base().isPlus();
+        } else {
+          total++;
+          sum |= factor.isPlus();
+        }
+      }
+      return sum ? total : 0;
+    }
+
+    /**
+     * The factors of a product or a power with a positive integer exponent as pairs
+     * <code>{factor, multiplicity}</code>.
+     *
+     * @return {@link F#NIL} if <code>p</code> is no such product or power with a sum among its
+     *         factors, or the multiplicities add up to more than {@link #MAX_EXPOSED_MULTIPLICITY}
+     */
+    private static IAST exposedFactors(IExpr p) {
+      long multiplicity = exposedMultiplicity(p);
+      if (multiplicity <= 0 || multiplicity > MAX_EXPOSED_MULTIPLICITY) {
+        return F.NIL;
+      }
+      IAST product = p.isTimes() ? (IAST) p : F.list(p);
+      IASTAppendable factors = F.ListAlloc(product.argSize());
+      for (IExpr factor : product) {
+        if (isPositiveIntegerPower(factor)) {
+          factors.append(F.list(factor.base(), factor.exponent()));
+        } else {
+          factors.append(F.list(factor, F.C1));
+        }
+      }
+      return factors;
+    }
+
+    private static boolean isPositiveIntegerPower(IExpr p) {
+      return p.isPower() && p.exponent().isInteger() && p.exponent().isPositive()
+          && !p.base().isNumber();
+    }
+
     /** A list argument is threaded over by the other paths. */
     private static boolean hasListArgument(IAST ast, int argSize) {
       for (int i = 1; i <= argSize; i++) {
@@ -4179,6 +4620,12 @@ public class Algebra {
 
       if (argSize == 0) {
         return F.NIL;
+      }
+      if (argSize >= 2 && options[MODULUS_OPTION].isZero() && options[1] == S.None) {
+        IExpr result = exposedFactorsGCD(ast, argSize, engine);
+        if (result.isPresent()) {
+          return result;
+        }
       }
       if (argSize >= 2 && options[1] == S.Automatic) {
         // Extension -> Automatic: the GCD over the number field of the algebraic numbers in the

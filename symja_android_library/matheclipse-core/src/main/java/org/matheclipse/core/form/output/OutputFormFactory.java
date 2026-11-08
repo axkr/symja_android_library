@@ -1354,6 +1354,12 @@ public class OutputFormFactory {
       append(buf, "(");
       convert(buf, plusArg, Precedence.PLUS, false);
       append(buf, ")");
+    } else if (caller == PLUS_CALL && plusArg.isAST(S.Subtract, 3)) {
+      // a held subtraction after the first summand keeps its parentheses: a + (b - c)
+      append(buf, fInputForm ? " + " : "+");
+      append(buf, "(");
+      convert(buf, plusArg, Precedence.NO_PRECEDENCE, false);
+      append(buf, ")");
     } else {
       // a negative number separates itself with its own "-"; one that prints as an unsigned 0.0
       // has none, so it takes the "+" of a non-negative summand
@@ -1483,7 +1489,13 @@ public class OutputFormFactory {
       }
       append(buf, "/");
       // insert denominator in buffer:
-      if (denominator.isTimes()) {
+      if (fHeldDepth > 0 && denominator.isTimes()
+          && ((IAST) denominator).exists(OutputFormFactory::isQuotient)) {
+        // a held quotient as denominator: a/(b/c), not a/(b*1/c)
+        append(buf, "(");
+        convertTimesFraction(buf, (IAST) denominator, oper, Precedence.TIMES, NO_PLUS_CALL);
+        append(buf, ")");
+      } else if (denominator.isTimes()) {
         convertTimesOperator(buf, (IAST) denominator, oper, Precedence.DIVIDE, NO_PLUS_CALL);
       } else if (isQuotient(denominator)) {
         // a/(1/x), not a/1/x
@@ -1642,8 +1654,9 @@ public class OutputFormFactory {
         append(buf, "1/");
         if (exp.isMinusOne()) {
         // CPD-ON
-          // the reciprocal of a reciprocal is 1/(1/x), not 1/1/x
-          final boolean quotient = isQuotient(list.arg1());
+          // the reciprocal of a reciprocal is 1/(1/x), not 1/1/x; of -I it is 1/(-I)
+          final boolean quotient =
+              isQuotient(list.arg1()) || isNegativeImaginaryUnitBase(list.arg1());
           if (quotient) {
             append(buf, "(");
           }
@@ -1667,6 +1680,25 @@ public class OutputFormFactory {
       }
     }
     convertInfixOperator(buf, list, oper, precedence);
+  }
+
+  /**
+   * Whether the base of a power gets parentheses of its own: a postfix operator,
+   * <code>(x!)^2</code>, or the unit <code>-I</code>, which without them reads as
+   * <code>-(I^v)</code>.
+   */
+  private boolean isParenthesizedPowerBase(IExpr base) {
+    return isNegativeImaginaryUnitBase(base)
+        || getOperator(base.topHead(), base.argSize()) instanceof PostfixOperator;
+  }
+
+  /**
+   * Whether <code>base</code> is the exact unit <code>-I</code>, which the output form writes
+   * without parentheses of its own: <code>(-I)^v</code>. The input form and a machine number write
+   * them themselves.
+   */
+  private boolean isNegativeImaginaryUnitBase(IExpr base) {
+    return !fInputForm && base.isComplex() && base.isNegativeImaginaryUnit();
   }
 
   /** Whether <code>expr</code> prints as a quotient <code>1/...</code>. */
@@ -1706,46 +1738,80 @@ public class OutputFormFactory {
       if (groupArg1) {
         append(buf, "(");
       } else {
-        if (operatorString.equals("^")) {
-          final Operator operator = getOperator(arg1.topHead(), arg1.argSize());
-          if (operator instanceof PostfixOperator) {
-            append(buf, "(");
-          }
+        if (operatorString.equals("^") && isParenthesizedPowerBase(arg1)) {
+          append(buf, "(");
         }
       }
       if (isOr && arg1.isAnd()) {
         append(buf, "(");
       }
-      convert(buf, arg1, oper.getPrecedence(), false);
+      final IExpr numeratorObject =
+          list.isAST(S.Divide) ? numberObjectLongForm(arg1) : F.NIL;
+      if (numeratorObject.isPresent()) {
+        // a fraction or complex number over a denominator is written in its long form:
+        // Rational(-5,2)/b, (Complex(0,2))/b
+        final boolean complex = !arg1.isFraction();
+        if (complex) {
+          append(buf, "(");
+        }
+        convertAST(buf, (IAST) numeratorObject);
+        if (complex) {
+          append(buf, ")");
+        }
+      } else {
+        // a negative number over a denominator needs no parentheses: -5/b, a*-5/b, -I/b
+        final boolean signedNumerator = list.isAST(S.Divide) && (isNegativeIntegerOrReal(arg1)
+            || (arg1.isComplex() && arg1.isNegativeImaginaryUnit()));
+        convert(buf, arg1, signedNumerator ? Precedence.PLUS : oper.getPrecedence(), false);
+      }
       if (isOr && arg1.isAnd()) {
         append(buf, ")");
       }
       if (groupArg1) {
         append(buf, ")");
       } else {
-        if (operatorString.equals("^")) {
-          final Operator operator = getOperator(arg1.topHead(), arg1.argSize());
-          if (operator instanceof PostfixOperator) {
-            append(buf, ")");
-          }
+        if (operatorString.equals("^") && isParenthesizedPowerBase(arg1)) {
+          append(buf, ")");
         }
       }
 
-      appendUnicodeMapped(buf, operatorString);
+      final boolean isSubtract = list.isAST(S.Subtract);
+      final IExpr numberObject = isSubtract ? numberObjectLongForm(arg2) : F.NIL;
+      appendUnicodeMapped(buf, fInputForm && isSubtract ? " - " : operatorString);
 
       final boolean groupArg2 = (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
           && (arg2.head().equals(list.head()) || isInfixOfPrecedence(arg2, oper.getPrecedence())))
           || isNestedSameOperator(list, arg2, oper)
-          // a - (-b) and a - (1 + I): neither a second minus nor a sum directly after the minus
-          || (list.isAST(S.Subtract)
-              && (arg2.isNegativeSigned() || isComplexWithRealPart(arg2)));
+          // a - (Complex(1,2)), a - (Complex(0.0,2.0)): no complex number with a real part, which
+          // is not an exact zero, directly after the minus
+          || (isSubtract && numberObject.isPresent()
+              && (arg2.isComplexNumeric() || isComplexWithRealPart(arg2)));
       if (groupArg2) {
         append(buf, "(");
       }
       if (isOr && arg2.isAnd()) {
         append(buf, "(");
       }
-      convert(buf, arg2, oper.getPrecedence(), false);
+      if (numberObject.isPresent()) {
+        // a - Rational(5,2), a - Complex(0,2): the number object is written in its long form
+        convertAST(buf, (IAST) numberObject);
+      } else if (isSubtract && arg2.isTimes() && arg2.first().isComplex()
+          && arg2.first().isNegativeImaginaryUnit()) {
+        // a - (-I)*b: the factor -I keeps its parentheses
+        append(buf, "(-I)*");
+        convert(buf, ((IAST) arg2).rest().oneIdentity1(), Precedence.TIMES, false);
+      } else if (isSubtract && !groupArg2 && !fInputForm) {
+        // a second minus is separated from the first one: a- -b, not the decrement a--b
+        StringBuilder subtrahend = new StringBuilder();
+        convert(subtrahend, arg2, oper.getPrecedence(), false);
+        if (subtrahend.length() > 0 && subtrahend.charAt(0) == '-') {
+          buf.append(' ');
+          fColumnCounter++;
+        }
+        buf.append(subtrahend);
+      } else {
+        convert(buf, arg2, oper.getPrecedence(), false);
+      }
       if (isOr && arg2.isAnd()) {
         append(buf, ")");
       }
@@ -1779,6 +1845,33 @@ public class OutputFormFactory {
     if (oper.getPrecedence() < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * The long form <code>Rational(n, d)</code> or <code>Complex(re, im)</code> of a fraction or a
+   * complex number, which is written so on the right of a binary minus and as the numerator of a
+   * quotient. The exact imaginary units <code>I</code> and <code>-I</code> keep their short form.
+   *
+   * @return {@link F#NIL} for any other expression
+   */
+  private static IExpr numberObjectLongForm(IExpr expr) {
+    if (expr.isFraction()) {
+      final IRational fraction = (IRational) expr;
+      return F.binaryAST2(S.Rational, fraction.numerator(), fraction.denominator());
+    }
+    if (expr.isComplex() && (expr.isImaginaryUnit() || expr.isNegativeImaginaryUnit())) {
+      return F.NIL;
+    }
+    if (expr.isComplex() || expr.isComplexNumeric()) {
+      final INumber number = (INumber) expr;
+      return F.binaryAST2(S.Complex, number.re(), number.im());
+    }
+    return F.NIL;
+  }
+
+  /** Whether <code>expr</code> is a negative integer or a negative real number, no fraction. */
+  private static boolean isNegativeIntegerOrReal(IExpr expr) {
+    return expr.isReal() && !expr.isFraction() && expr.isNegative();
   }
 
   /**

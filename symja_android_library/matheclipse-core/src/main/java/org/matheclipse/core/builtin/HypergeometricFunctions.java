@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
+import java.math.BigInteger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -17,6 +18,7 @@ import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.external.apfloat.ApcomplexHypergeometricMath;
 import org.matheclipse.external.apfloat.ApcomplexOrthogonalPolynomialMath;
 import org.matheclipse.core.basic.Config;
@@ -28,6 +30,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.DMath;
@@ -57,6 +60,51 @@ public class HypergeometricFunctions {
 
   /** The largest degree of a terminating hypergeometric series which is written out. */
   private static final int MAX_TERMINATING_DEGREE = 500;
+
+  /**
+   * The largest degree of a terminating hypergeometric series with machine number arguments which
+   * is summed exactly.
+   */
+  private static final int MAX_MACHINE_TERMINATING_DEGREE = 200;
+
+  /**
+   * The double nearest to the rational number <code>r</code>, ties to even, rounded once also in
+   * the subnormal range: the quotient is taken in units of the last place of the result, which is
+   * <code>2^-1074</code> for a subnormal result, and the remainder decides the rounding.
+   *
+   * @param r a rational number
+   * @return the nearest double, or an infinity if <code>|r|</code> is too large
+   */
+  static double roundToDouble(IRational r) {
+    if (r.isZero()) {
+      return 0.0;
+    }
+    BigInteger numerator = r.toBigNumerator().abs();
+    BigInteger denominator = r.toBigDenominator();
+    // 2^e <= |r| < 2^(e+1)
+    int e = numerator.bitLength() - denominator.bitLength();
+    if ((e >= 0 ? numerator.compareTo(denominator.shiftLeft(e))
+        : numerator.shiftLeft(-e).compareTo(denominator)) < 0) {
+      e--;
+    }
+    if (e > Double.MAX_EXPONENT) {
+      return r.isNegative() ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+    }
+    // the exponent of the last place: 52 bits below the leading one, at least the smallest
+    // subnormal
+    int ulp = Math.max(e - 52, -1074);
+    BigInteger scaledNumerator = ulp >= 0 ? numerator : numerator.shiftLeft(-ulp);
+    BigInteger scaledDenominator = ulp >= 0 ? denominator.shiftLeft(ulp) : denominator;
+    BigInteger[] qr = scaledNumerator.divideAndRemainder(scaledDenominator);
+    BigInteger quotient = qr[0];
+    int half = qr[1].shiftLeft(1).compareTo(scaledDenominator);
+    if (half > 0 || (half == 0 && quotient.testBit(0))) {
+      quotient = quotient.add(BigInteger.ONE);
+    }
+    // the quotient is at most 2^53 and exact as a double, so the scaling is exact
+    double d = Math.scalb(quotient.doubleValue(), ulp);
+    return r.isNegative() ? -d : d;
+  }
 
   /** The largest <code>c</code> of the logarithmic closed form of <code>2F1(1, b, c, z)</code>. */
   private static final int MAX_LOGARITHMIC_C = 100;
@@ -1348,7 +1396,8 @@ public class HypergeometricFunctions {
         boolean functionExpand) {
       int ai = a.toIntDefault();
       int bi = b.toIntDefault();
-      if (ai > 0 && bi > ai && bi <= 40 && !z.isZero() && (z.isRational() || z.isVariable())) {
+      if (ai > 0 && bi > ai && bi <= 40 && !z.isZero()
+          && (z.isRational() || z.isVariable() || isExactNumericNonNumber(z))) {
         // integers 1 <= a < b: a polynomial in z and E^z over a power of z
         IExpr closedForm = engine.evaluate(F.Together(elementary1F1(ai, bi, z)));
         IExpr factored = engine.evaluate(F.Factor(closedForm));
@@ -1422,6 +1471,14 @@ public class HypergeometricFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Test for an exact numeric expression which is not a number, like <code>Pi</code> or
+     * <code>Sqrt(2)</code>.
+     */
+    private static boolean isExactNumericNonNumber(IExpr z) {
+      return !z.isNumber() && z.isNumericFunction(true) && z.isFree(x -> x.isInexactNumber(), false);
     }
 
     /**
@@ -1715,6 +1772,10 @@ public class HypergeometricFunctions {
 
     private static IExpr hypergeometric2F1Symbolic(IExpr a, IExpr b, IExpr c, IExpr z,
         EvalEngine engine) {
+      IExpr machine = machineTerminating(a, b, c, z);
+      if (machine.isPresent()) {
+        return machine;
+      }
       IExpr temp = Hypergeometric2F1.basicRewrite(a, b, c, z, engine);
       if (temp.isPresent()) {
         return temp;
@@ -2030,6 +2091,70 @@ public class HypergeometricFunctions {
     }
 
     /**
+     * A terminating series <code>Hypergeometric2F1(a, b, c, z)</code> with machine real numbers
+     * among its real arguments: the doubles are taken at their exact binary values, the polynomial
+     * is summed exactly and only the sum is rounded to a double. Summing in machine arithmetic
+     * rounds every term, <code>Hypergeometric2F1(-2, 3, 4, 0.7)</code> gave <code>0.244</code>
+     * for the double nearest to <code>0.24400000000000002</code>.
+     *
+     * @return {@link F#NIL} if the arguments are not machine and exact real numbers or the series
+     *         doesn't end before a pole of its terms
+     */
+    private static IExpr machineTerminating(IExpr a, IExpr b, IExpr c, IExpr z) {
+      IExpr[] args = {a, b, c, z};
+      IRational[] exact = new IRational[4];
+      boolean machine = false;
+      for (int i = 0; i < 4; i++) {
+        if (args[i] instanceof Num) {
+          double d = ((Num) args[i]).doubleValue();
+          if (!Double.isFinite(d)) {
+            return F.NIL;
+          }
+          exact[i] = exactRational(d);
+          machine = true;
+        } else if (args[i].isRational()) {
+          exact[i] = (IRational) args[i];
+        } else {
+          return F.NIL;
+        }
+      }
+      if (!machine || exact[3].isZero()) {
+        return F.NIL;
+      }
+      int t = Integer.MIN_VALUE;
+      for (int i = 0; i < 2; i++) {
+        if (exact[i].isInteger() && !exact[i].isPositive()) {
+          t = Math.max(t, exact[i].toIntDefault());
+        }
+      }
+      if (t == Integer.MIN_VALUE || t == 0 || -t > MAX_MACHINE_TERMINATING_DEGREE) {
+        return F.NIL;
+      }
+      final int m = -t;
+      IRational term = F.C1;
+      IRational sum = F.C1;
+      for (int k = 0; k < m; k++) {
+        IInteger kk = F.ZZ(k);
+        IRational denominator = exact[2].add(kk).multiply(F.ZZ(k + 1));
+        if (denominator.isZero()) {
+          return F.NIL;
+        }
+        term = term.multiply(exact[0].add(kk)).multiply(exact[1].add(kk)).multiply(exact[3])
+            .divideBy(denominator);
+        sum = sum.add(term);
+      }
+      return F.num(HypergeometricFunctions.roundToDouble(sum));
+    }
+
+    /** The exact binary value of the finite double <code>d</code>. */
+    private static IRational exactRational(double d) {
+      if (d == Math.rint(d) && Math.abs(d) < 0x1p62) {
+        return F.ZZ((long) d);
+      }
+      return AbstractFractionSym.valueOf(new BigFraction(d));
+    }
+
+    /**
      * <code>Hypergeometric2F1(1, b, c, z)</code> for integers <code>1 &lt; b &lt; c</code>, from
      * the integral
      * <code>Gamma(c)/(Gamma(b)*Gamma(c-b))*Integrate(t^(b-1)*(1-t)^(c-b-1)/(1-z*t), {t,0,1})</code>.
@@ -2142,7 +2267,11 @@ public class HypergeometricFunctions {
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber c = (IInexactNumber) ast.arg3();
         IInexactNumber z = (IInexactNumber) ast.arg4();
-        IExpr result = basicRewrite(a, b, c, z, engine).eval(engine);
+        IExpr result = machineTerminating(a, b, c, z);
+        if (result.isPresent()) {
+          return result;
+        }
+        result = basicRewrite(a, b, c, z, engine).eval(engine);
         if (result.isPresent()) {
           return result;
         }

@@ -12,7 +12,9 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -35,6 +37,9 @@ public class TrigToExp extends AbstractEvaluator {
 
   /** The largest power whose harmonics are compared with the other summands. */
   private static final int MAX_HARMONIC_POWER = 4;
+
+  /** The largest number of summands of a distributed product whose harmonics are compared. */
+  private static final int MAX_DISTRIBUTED_TERMS = 16;
 
   public TrigToExp() {}
 
@@ -61,11 +66,15 @@ public class TrigToExp extends AbstractEvaluator {
    *
    * <p>
    * A single sine or cosine (or its square, possibly times factors free of trigonometric
-   * functions), a sum, and a monomial times one transformed sum are expanded. Products of several
-   * transformed functions, higher powers of sine and cosine and powers of the quotient functions
-   * are kept grouped: <code>Sin(x)^3</code> becomes <code>-I/8*(E^(-I*x)-E^(I*x))^3</code>. A sum
-   * whose higher powers share a harmonic with another summand is expanded, so that the harmonics
-   * combine.
+   * functions), a sum, and a monomial times one transformed sum are expanded. A product of sines
+   * and cosines of low degree, whose angles are rational multiples of one angle, is expanded too,
+   * even times a sum free of trigonometric functions: <code>Cos(x)*Cos(2*x)</code> (see
+   * {@link #isSharedAngleProduct(IAST)}). Other products of several transformed functions, higher
+   * powers of sine and cosine, powers of the quotient functions and other products with a sum free
+   * of trigonometric functions are kept grouped: <code>Sin(x)^3</code> becomes
+   * <code>-I/8*(E^(-I*x)-E^(I*x))^3</code>. A sum whose higher powers share a harmonic with another
+   * summand is expanded, so that the harmonics combine; so is a product with a sum, whose
+   * distribution gives such a sum.
    *
    * @param expr
    * @param engine
@@ -77,10 +86,10 @@ public class TrigToExp extends AbstractEvaluator {
     }
     boolean[] flag = new boolean[1];
     int count = grouping(expr, flag);
-    boolean grouped = flag[0] && !hasCombiningHarmonics(expr);
 
     int expandableCount = 0;
     boolean otherTransformedFactor = false;
+    boolean algebraicSumFactor = false;
     int sumFactors = 0;
     IAST factors = expr.isTimes() ? (IAST) expr : F.Times(expr);
     for (int i = 1; i < factors.size(); i++) {
@@ -94,14 +103,25 @@ public class TrigToExp extends AbstractEvaluator {
         otherTransformedFactor = true;
       }
       if (factor.isPlus()) {
-        sumFactors++;
+        if (grouping(factor, new boolean[1]) > 0) {
+          sumFactors++;
+        } else {
+          algebraicSumFactor = true;
+        }
       }
     }
     boolean monomialTimesTransformedSum = count == 1 && factors.argSize() > 1 && sumFactors == 1;
+    boolean sharedAngleProduct = isSharedAngleProduct(factors);
+    boolean groupedCandidate = flag[0] || (algebraicSumFactor && !sharedAngleProduct);
+    boolean expandable = (expandableCount == 1 && !otherTransformedFactor) || sharedAngleProduct
+        || monomialTimesTransformedSum || expr.isPlus();
+    // combining harmonics only matter if they cancel the grouping or enable the expansion
+    boolean combiningHarmonics =
+        (groupedCandidate || !expandable) && hasCombiningHarmonics(expr, engine);
+    boolean grouped = groupedCandidate && !combiningHarmonics;
 
     IExpr transformed = engine.evaluate(convert(expr, grouped));
-    if (!grouped && ((expandableCount == 1 && !otherTransformedFactor)
-        || sinCosDegree(factors) == 2 || monomialTimesTransformedSum || expr.isPlus())) {
+    if (!grouped && (combiningHarmonics || expandable)) {
       return expandExponents(engine.evaluate(F.Expand(transformed)), engine);
     }
     return transformed;
@@ -131,8 +151,8 @@ public class TrigToExp extends AbstractEvaluator {
   /**
    * Count the trigonometric and hyperbolic functions reachable through {@link ID#Plus},
    * {@link ID#Times} and {@link ID#Power}. <code>grouped[0]</code> is set if the expression contains
-   * a product of several such functions, a power greater than 2 of a sine or cosine, or a power of
-   * a quotient function like {@link ID#Tan}.
+   * a product of several such functions, which isn't a {@link #isSharedAngleProduct(IAST)}, a power
+   * greater than 2 of a sine or cosine, or a power of a quotient function like {@link ID#Tan}.
    *
    * @param expr
    * @param grouped
@@ -156,7 +176,7 @@ public class TrigToExp extends AbstractEvaluator {
             grouped[0] = true;
           }
         }
-      } else if (expr.isTimes() && count > 1 && sinCosDegree((IAST) expr) != 2) {
+      } else if (expr.isTimes() && count > 1 && !isSharedAngleProduct((IAST) expr)) {
         grouped[0] = true;
       }
       return count;
@@ -165,66 +185,170 @@ public class TrigToExp extends AbstractEvaluator {
   }
 
   /**
-   * The total degree of the sine and cosine like factors of the product <code>times</code>, which
-   * have the same angle: <code>2</code> for <code>Sin(x)*Cos(x)</code>. <code>-1</code> if the
-   * angles differ or another factor contains a trigonometric function.
+   * Test if <code>times</code> contains at least two sine and cosine like factors (or their
+   * squares) of one family, whose angles are rational multiples of one angle:
+   * <code>Cos(x/2)*Cos(3*x/2)</code>. The other factors must be free of trigonometric functions. A
+   * product of degree 2 always qualifies, a product of degree 3 only if two of its harmonic
+   * combinations coincide: <code>Cos(x)^2*Cos(2*x)</code> but not <code>Cos(x)^2*Cos(3*x)</code>.
    *
    * @param times
    * @return
    */
-  private static int sinCosDegree(IAST times) {
-    int degree = 0;
+  private static boolean isSharedAngleProduct(IAST times) {
     IExpr angle = null;
+    boolean hyperbolic = false;
+    int count = 0;
+    int degree = 0;
+    List<IRational> harmonics = new ArrayList<>();
+    harmonics.add(F.C0);
     for (int i = 1; i < times.size(); i++) {
       IExpr factor = times.get(i);
-      IExpr function = factor.isPower() ? factor.base() : factor;
-      if (isSinCosLike(function)) {
-        if (angle != null && !angle.equals(function.first())) {
-          return -1;
+      IExpr base = factor.isPower() ? factor.base() : factor;
+      if (!isSinCosLike(base)) {
+        if (grouping(factor, new boolean[1]) > 0) {
+          return false;
         }
-        angle = function.first();
+        continue;
       }
-      if (isSinCosLike(factor)) {
-        degree++;
-      } else if (factor.isPower() && isSinCosLike(factor.base())
-          && factor.exponent().isPositiveResult() && factor.exponent().isInteger()) {
-        int n = factor.exponent().toIntDefault();
-        if (n == Integer.MIN_VALUE) {
-          return -1;
+      int n = factor.isPower() ? factor.exponent().toIntDefault() : 1;
+      if (n < 1 || n > 2) {
+        return false;
+      }
+      degree += n;
+      if (degree > 3) {
+        return false;
+      }
+      IExpr unscaled = unscaledAngle(base.first());
+      if (unscaled.isNIL()) {
+        return false;
+      }
+      boolean isHyperbolic = base.isSinh() || base.isCosh();
+      if (angle == null) {
+        angle = unscaled;
+        hyperbolic = isHyperbolic;
+      } else if (hyperbolic != isHyperbolic || !angle.equals(unscaled)) {
+        return false;
+      }
+      IRational scale = angleScale(base.first());
+      List<IRational> next = new ArrayList<>();
+      for (IRational previous : harmonics) {
+        for (int k = -n; k <= n; k += 2) {
+          next.add(previous.add(scale.multiply(k)));
         }
-        degree += n;
-      } else if (grouping(factor, new boolean[1]) > 0) {
-        return -1;
+      }
+      harmonics = next;
+      count++;
+    }
+    if (count < 2) {
+      return false;
+    }
+    if (degree == 3) {
+      for (int i = 0; i < harmonics.size(); i++) {
+        for (int j = i + 1; j < harmonics.size(); j++) {
+          if (harmonics.get(i).equals(harmonics.get(j))) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * The product of the rational factors of <code>angle</code>: <code>3/2</code> for
+   * <code>3/2*x*y</code>.
+   *
+   * @param angle
+   * @return
+   */
+  private static IRational angleScale(IExpr angle) {
+    IRational scale = F.C1;
+    IAST factors = angle.isTimes() ? (IAST) angle : F.Times(angle);
+    for (int i = 1; i < factors.size(); i++) {
+      if (factors.get(i).isRational()) {
+        scale = scale.multiply((IRational) factors.get(i));
       }
     }
-    return degree;
+    return scale;
+  }
+
+  /**
+   * The angle without its rational factors: <code>x*y</code> for <code>3/2*x*y</code>.
+   * {@link F#NIL} for a numeric angle or an angle containing a sum.
+   *
+   * @param angle
+   * @return
+   */
+  private static IExpr unscaledAngle(IExpr angle) {
+    IAST factors = angle.isTimes() ? (IAST) angle : F.Times(angle);
+    IASTAppendable rest = F.TimesAlloc(factors.argSize());
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isPlus()) {
+        return F.NIL;
+      }
+      if (!factor.isRational()) {
+        rest.append(factor);
+      }
+    }
+    return rest.isAST0() ? F.NIL : rest.oneIdentity1();
   }
 
   /**
    * Test if a sum contains powers greater than 2 of sines or cosines whose harmonics all occur in
-   * another summand. Then the expanded exponentials combine.
+   * another summand. Then the expanded exponentials combine. A summand with a single
+   * {@link ID#Tan}, {@link ID#Cot}, {@link ID#Tanh} or {@link ID#Coth} is ignored.
+   *
+   * <p>
+   * A product with a sum containing trigonometric functions is distributed first. Then the
+   * summands may be products of sines and cosines of total degree at most
+   * {@link #MAX_HARMONIC_POWER}; at least one summand must be a single power of degree 2 or more,
+   * and the harmonics of all summands of degree 2 or more must occur in another summand:
+   * <code>(Sin(x)+Cos(x))*Cos(x)</code>.
    *
    * @param expr
+   * @param engine
    * @return
    */
-  private static boolean hasCombiningHarmonics(IExpr expr) {
-    if (!expr.isPlus()) {
+  private static boolean hasCombiningHarmonics(IExpr expr, EvalEngine engine) {
+    IAST terms;
+    boolean productInput = false;
+    if (expr.isPlus()) {
+      terms = (IAST) expr;
+    } else if (expr.isTimes()) {
+      IExpr distributed = distributeTransformedSum((IAST) expr, engine);
+      if (!distributed.isPlus()) {
+        return false;
+      }
+      terms = (IAST) distributed;
+      productInput = true;
+    } else {
       return false;
     }
-    IAST plus = (IAST) expr;
-    List<Integer> powers = new ArrayList<>();
+    List<Integer> degrees = new ArrayList<>();
     List<List<IExpr>> spectra = new ArrayList<>();
-    for (int i = 1; i < plus.size(); i++) {
-      IExpr term = plus.get(i);
+    boolean singlePower = false;
+    terms: for (int i = 1; i < terms.size(); i++) {
+      IExpr term = terms.get(i);
       IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
-      List<IExpr> spectrum = null;
+      int trigCount = 0;
+      for (int j = 1; j < factors.size(); j++) {
+        if (grouping(factors.get(j), new boolean[1]) > 0) {
+          trigCount++;
+        }
+      }
+      if (!productInput && trigCount > 1) {
+        return false;
+      }
+      int degree = 0;
+      int family = 0;
+      List<IExpr> harmonics = new ArrayList<>();
+      harmonics.add(F.C0);
       for (int j = 1; j < factors.size(); j++) {
         IExpr factor = factors.get(j);
         if (grouping(factor, new boolean[1]) == 0) {
           continue;
-        }
-        if (spectrum != null) {
-          return false;
         }
         IExpr base = factor;
         int n = 1;
@@ -232,24 +356,48 @@ public class TrigToExp extends AbstractEvaluator {
           n = factor.exponent().toIntDefault();
           base = factor.base();
         }
-        if (n < 1 || n > MAX_HARMONIC_POWER || !isSinCosLike(base)) {
+        if (n == 1 && trigCount == 1 && isTangentLike(base)) {
+          continue terms;
+        }
+        if (n < 1 || !isSinCosLike(base)) {
           return false;
         }
-        boolean hyperbolic = base.isSinh() || base.isCosh();
-        spectrum = new ArrayList<>();
-        for (int k = -n; k <= n; k += 2) {
-          if (k != 0) {
-            IExpr angle = F.evalExpand(F.Times(F.ZZ(k), base.first()));
-            spectrum.add(hyperbolic ? F.Sinh(angle) : angle);
+        degree += n;
+        if (degree > MAX_HARMONIC_POWER) {
+          return false;
+        }
+        int baseFamily = base.isSinh() || base.isCosh() ? 2 : 1;
+        if (family != 0 && family != baseFamily) {
+          return false;
+        }
+        family = baseFamily;
+        List<IExpr> next = new ArrayList<>();
+        for (IExpr previous : harmonics) {
+          for (int k = -n; k <= n; k += 2) {
+            next.add(F.evalExpand(F.Plus(previous, F.Times(F.ZZ(k), base.first()))));
           }
         }
-        powers.add(n);
+        harmonics = next;
+      }
+      if (family != 0) {
+        singlePower |= trigCount == 1 && degree >= 2;
+        List<IExpr> spectrum = new ArrayList<>();
+        for (IExpr angle : harmonics) {
+          if (!angle.isZero()) {
+            spectrum.add(family == 2 ? F.Sinh(angle) : angle);
+          }
+        }
+        degrees.add(degree);
         spectra.add(spectrum);
       }
     }
+    if (productInput && !singlePower) {
+      return false;
+    }
+    int threshold = productInput ? 2 : 3;
     boolean hasPower = false;
     for (int i = 0; i < spectra.size(); i++) {
-      if (powers.get(i) <= 2) {
+      if (degrees.get(i) < threshold) {
         continue;
       }
       hasPower = true;
@@ -269,6 +417,32 @@ public class TrigToExp extends AbstractEvaluator {
       }
     }
     return hasPower;
+  }
+
+  /**
+   * Expand the product <code>times</code>, if it contains a sum with trigonometric functions and
+   * the expansion has at most {@link #MAX_DISTRIBUTED_TERMS} summands.
+   *
+   * @param times
+   * @param engine
+   * @return {@link F#NIL} if the product isn't distributed
+   */
+  private static IExpr distributeTransformedSum(IAST times, EvalEngine engine) {
+    boolean transformedSum = false;
+    long terms = 1;
+    for (int i = 1; i < times.size(); i++) {
+      IExpr factor = times.get(i);
+      if (factor.isPlus()) {
+        transformedSum |= grouping(factor, new boolean[1]) > 0;
+        terms *= factor.argSize();
+      } else if (factor.isPower() && factor.base().isPlus()) {
+        return F.NIL;
+      }
+      if (terms > MAX_DISTRIBUTED_TERMS) {
+        return F.NIL;
+      }
+    }
+    return transformedSum ? engine.evaluate(F.Expand(times)) : F.NIL;
   }
 
   /**
@@ -387,6 +561,22 @@ public class TrigToExp extends AbstractEvaluator {
   /** Test for the twelve circular and hyperbolic functions with one argument. */
   private static boolean isTrigFunction(IExpr expr) {
     return isSinCosLike(expr) || isQuotientLike(expr);
+  }
+
+  /** Test for {@link ID#Tan}, {@link ID#Cot}, {@link ID#Tanh} or {@link ID#Coth}. */
+  private static boolean isTangentLike(IExpr expr) {
+    if (expr.isAST1()) {
+      switch (expr.headID()) {
+        case ID.Tan:
+        case ID.Cot:
+        case ID.Tanh:
+        case ID.Coth:
+          return true;
+        default:
+          return false;
+      }
+    }
+    return false;
   }
 
   /** Test for {@link ID#Sin}, {@link ID#Cos}, {@link ID#Sinh} or {@link ID#Cosh}. */

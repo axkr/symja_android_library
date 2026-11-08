@@ -3702,7 +3702,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("PolynomialExtendedGCD(x+1,x^2-1,x)", //
         "{1+x,{1,0}}");
     check("PolynomialGCD(-1+x^16,(x^2-1)*((1+x^4)))", //
-        "-1+x^2-x^4+x^6");
+        "(-1+x^2)*(1+x^4)");
     check("PolynomialGCD(8*x^5+28*x^4+34*x^3+41*x^2+35*x-14,12*x^5+4*x^4-27*x^3-9*x^2-84*x-28)", //
         "14+7*x+8*x^2+4*x^3");
 

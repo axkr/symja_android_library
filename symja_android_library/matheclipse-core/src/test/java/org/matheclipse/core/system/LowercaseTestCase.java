@@ -9589,7 +9589,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // Handling expressions that are already partially factored
     check("FactorList((1-x)^2*(4-3*x))", //
-        "{{-1,1},{-4+3*x,1},{-1+x,2}}");
+        "{{-1,1},{-1+x,2},{-4+3*x,1}}");
 
     // Testing complex extensions
     check("FactorList(1+x^2, Extension->I)", //
@@ -9629,7 +9629,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // Negative polynomials
     check("FactorList((-3)*x^3 +10*x^2-11*x+4)", //
-        "{{-1,1},{-4+3*x,1},{-1+x,2}}");
+        "{{-1,1},{-1+x,2},{-4+3*x,1}}");
 
     // Rational expressions with negative exponents
     check("FactorList(x^(-6)+1)", //
@@ -32985,15 +32985,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // Coprime polynomials whose coefficients carry free parameters: the two cofactors are
     // polynomials in r over the resultant of the two arguments. Both come back over the same
-    // denominator 32*b-16*a*b+...+c^5.
+    // denominator -32*b+16*a*b-...-c^5.
     check("PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r)", //
-        "{1,{(-16*a+8*a^2-a^3+2*b^2-8*b*c-2*a*b*c+8*a*c^2+c^4-8*b*r+2*a*b*r+4*a*c*r-a^2*c*r-b*c^\n" //
-            + "2*r+2*c^3*r+b^2*r^2-6*b*c*r^2+4*c^2*r^2+a*c^2*r^2-4*b*r^3+a*b*r^3+8*c*r^3-2*a*c*r^\n" //
-            + "3-c^3*r^3+16*r^4-8*a*r^4+a^2*r^4+b*c*r^4-4*c^2*r^4)/(32*b-16*a*b+2*a^2*b-b^3-16*a*c+\n" //
-            + "8*a^2*c-a^3*c+10*b^2*c-20*b*c^2-3*a*b*c^2+8*a*c^3+c^5),(32-16*a+2*a^2-b^2+8*b*c-\n" //
-            + "12*c^2-a*c^2+4*b*r-a*b*r-8*c*r+2*a*c*r+c^3*r-16*r^2+8*a*r^2-a^2*r^2-b*c*r^2+4*c^\n" //
-            + "2*r^2)/(32*b-16*a*b+2*a^2*b-b^3-16*a*c+8*a^2*c-a^3*c+10*b^2*c-20*b*c^2-3*a*b*c^2+\n" //
-            + "8*a*c^3+c^5)}}");
+        "{1,{(16*a-8*a^2+a^3-2*b^2+8*b*c+2*a*b*c-8*a*c^2-c^4+8*b*r-2*a*b*r-4*a*c*r+a^2*c*r+b*c^\n" //
+            + "2*r-2*c^3*r-b^2*r^2+6*b*c*r^2-4*c^2*r^2-a*c^2*r^2+4*b*r^3-a*b*r^3-8*c*r^3+2*a*c*r^\n" //
+            + "3+c^3*r^3-16*r^4+8*a*r^4-a^2*r^4-b*c*r^4+4*c^2*r^4)/(-32*b+16*a*b-2*a^2*b+b^3+16*a*c-\n" //
+            + "8*a^2*c+a^3*c-10*b^2*c+20*b*c^2+3*a*b*c^2-8*a*c^3-c^5),(-32+16*a-2*a^2+b^2-8*b*c+\n" //
+            + "12*c^2+a*c^2-4*b*r+a*b*r+8*c*r-2*a*c*r-c^3*r+16*r^2-8*a*r^2+a^2*r^2+b*c*r^2-4*c^\n" //
+            + "2*r^2)/(-32*b+16*a*b-2*a^2*b+b^3+16*a*c-8*a^2*c+a^3*c-10*b^2*c+20*b*c^2+3*a*b*c^\n" //
+            + "2-8*a*c^3-c^5)}}");
     // s*(r^3-2*r+c) + t*(r^5-a*r+b) == 1
     check(
         "g=PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r);"
@@ -33053,7 +33053,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialGCD((x - a)*(b*x - c)^2, (x - a)*(x^2 - b*c))", //
         "-a+x");
     check("PolynomialGCD((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", //
-        "2+3*x+x^2");
+        "(1+x)*(2+x)");
     check("PolynomialGCD(x^4 - 4, x^4 + 4*x^2 + 4)", //
         "2+x^2");
 
