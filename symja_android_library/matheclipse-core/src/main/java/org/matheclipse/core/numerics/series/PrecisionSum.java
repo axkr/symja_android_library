@@ -73,6 +73,60 @@ public final class PrecisionSum {
     return new PrecisionSum(function, variable, digits, engine).sum(lower);
   }
 
+  /**
+   * The value of <code>Sum(function, {variable, lower, Infinity})</code> for terms which don't
+   * follow a smooth law of their own (an arithmetic function of the index), but are bounded in
+   * size by the terms of <code>majorant</code>, which decrease geometrically: the terms are added
+   * until those of the majorant don't change the sum.
+   *
+   * @return <code>null</code> if the majorant doesn't decrease geometrically
+   */
+  public static Apcomplex sumDominated(IExpr function, IExpr majorant, ISymbol variable,
+      long lower, long digits, EvalEngine engine) {
+    PrecisionSum bound = new PrecisionSum(majorant, variable, digits, engine);
+    Apcomplex[] probe = new Apcomplex[PROBE];
+    for (int i = 0; i < PROBE; i++) {
+      probe[i] = bound.term(lower + i);
+      if (probe[i] == null) {
+        return null;
+      }
+    }
+    if (!bound.decreasesGeometrically(probe) || !bound.decreasesGeometricallyFar(lower)) {
+      return null;
+    }
+    return new PrecisionSum(function, variable, digits, engine).directDominated(lower, bound);
+  }
+
+  /** The terms added until three terms in a row of <code>bound</code> don't change the sum. */
+  private Apcomplex directDominated(long lower, PrecisionSum bound) {
+    Apcomplex sum = Apcomplex.ZERO;
+    // the sum of the majorant: where the terms cancel to 0, the tail is small against it
+    Apcomplex boundSum = Apcomplex.ZERO;
+    int small = 0;
+    for (long n = lower; n < lower + MAX_TERMS; n++) {
+      if ((n & 63L) == 0L) {
+        engine.checkTimeLimit();
+      }
+      Apcomplex t = term(n);
+      Apcomplex b = bound.term(n);
+      if (t == null || b == null) {
+        return null;
+      }
+      sum = helper.add(sum, t);
+      boundSum = helper.add(boundSum, b);
+      if ((b.real().signum() == 0 && b.imag().signum() == 0) || negligible(b, sum)
+          || (sum.real().signum() == 0 && sum.imag().signum() == 0
+              && negligible(b, boundSum))) {
+        if (++small >= 3) {
+          return sum;
+        }
+      } else {
+        small = 0;
+      }
+    }
+    return null;
+  }
+
   /** The numeric value of the term with index <code>n</code>, <code>null</code> if it has none. */
   private Apcomplex term(long n) {
     IExpr value = engine.evalN(F.subst(function, x -> x.equals(variable) ? F.ZZ(n) : F.NIL), work);

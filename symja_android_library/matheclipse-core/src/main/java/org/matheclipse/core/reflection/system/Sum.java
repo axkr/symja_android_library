@@ -1108,7 +1108,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * <code>MoebiusMu(n)</code> <code>1/Zeta(s)</code>, <code>LiouvilleLambda(n)</code>
    * <code>Zeta(2*s)/Zeta(s)</code>, <code>MoebiusMu(n)^2</code> and <code>Abs(MoebiusMu(n))</code>
    * <code>Zeta(s)/Zeta(2*s)</code> and <code>DivisorSigma(0, n)^2</code>
-   * <code>Zeta(s)^4/Zeta(2*s)</code>. For a number <code>s</code> whose real part is beyond the
+   * <code>Zeta(s)^4/Zeta(2*s)</code>, <code>MangoldtLambda(n)</code> <code>-Zeta'(s)/Zeta(s)</code>
+   * and <code>PrimeNu(n)</code> <code>Zeta(s)*PrimeZetaP(s)</code>. For a number <code>s</code> whose real part is beyond the
    * abscissa of absolute convergence, a symbolic <code>s</code>, and the conditionally convergent
    * <code>s == 1</code> of
    * <code>MoebiusMu</code> and <code>LiouvilleLambda</code> (the sums are <code>0</code>).
@@ -1153,6 +1154,13 @@ public class Sum extends ListFunctions.Table implements SumRules {
     } else if (arithmetic.isAST(S.LiouvilleLambda, 2) && arithmetic.first().equals(n)) {
       generating = F.Divide(F.Zeta(F.Times(F.C2, s)), F.Zeta(s));
       conditionalAtOne = true;
+    } else if (arithmetic.isAST(S.MangoldtLambda, 2) && arithmetic.first().equals(n)) {
+      // -Zeta'(s)/Zeta(s), the logarithmic derivative of the Euler product
+      generating = F.Negate(F.Divide(
+          F.unaryAST1(F.unaryAST1(F.unaryAST1(S.Derivative, F.C1), S.Zeta), s), F.Zeta(s)));
+    } else if (arithmetic.isAST(S.PrimeNu, 2) && arithmetic.first().equals(n)) {
+      // the number of distinct prime factors: Zeta(s) times the prime zeta function
+      generating = F.Times(F.Zeta(s), F.unaryAST1(S.PrimeZetaP, s));
     } else if ((arithmetic.isAST(S.Abs, 2) && arithmetic.first().isAST(S.MoebiusMu, 2)
         && arithmetic.first().first().equals(n))
         || (arithmetic.isPower() && arithmetic.exponent().isInteger()

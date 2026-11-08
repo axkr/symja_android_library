@@ -240,6 +240,17 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       int precision =
           FindRoot.workingPrecision(options.length > 3 ? options[3] : S.MachinePrecision);
       if (precision > 0 && result.isList2() && result.second().isListOfRules()
+          && ast.arg1().isList() && ast.arg1().argSize() >= 2) {
+        // with constraints: Newton's method on the conditions of a constrained extremum
+        IAST problem = (IAST) ast.arg1();
+        IExpr refined = refineConstrained(engine.evaluate(problem.arg1()),
+            problem.rest().setAtCopy(0, S.List), (IAST) result.second(), precision,
+            goalType() == GoalType.MAXIMIZE, engine);
+        if (refined.isPresent()) {
+          return refined;
+        }
+      }
+      if (precision > 0 && result.isList2() && result.second().isListOfRules()
           && !ast.arg1().isList()) {
         // WorkingPrecision -> p for a search without constraints: the machine optimum is the start
         // of a Newton iteration with p digits for the stationary point
@@ -274,6 +285,150 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       // `1`.
       return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
     }
+  }
+
+  /**
+   * A machine extremum <code>rules</code> of <code>function</code> under <code>constraints</code>
+   * refined to <code>precision</code> digits: Newton's method on the Lagrange conditions
+   * <code>grad(f) + Sum(lambda_i*grad(g_i)) == 0</code>, <code>g_i == 0</code> of the equations
+   * and of the inequalities which are active at the machine point, started there with the least
+   * squares multipliers.
+   *
+   * @param constraints a list of relations, possibly joined by <code>And</code>
+   * @param maximize the sign of the multipliers of the active inequalities
+   * @return <code>{value, {x -> x1, ...}}</code>, or {@link F#NIL} if a constraint isn't a
+   *         relation, the functions have no symbolic derivatives, the iteration doesn't settle, the
+   *         refined point violates a constraint or a multiplier has the wrong sign
+   */
+  public static IExpr refineConstrained(IExpr function, IAST constraints, IAST rules, int precision,
+      boolean maximize, EvalEngine engine) {
+    final int n = rules.argSize();
+    IAST variables = F.mapRange(1, n + 1, i -> rules.get(i).first());
+    java.util.List<IExpr> relations = new java.util.ArrayList<IExpr>();
+    for (IExpr constraint : constraints) {
+      if (!collectRelations(engine.evaluate(constraint), relations)) {
+        return F.NIL;
+      }
+    }
+    // g == 0 for an equation, g <= 0 for an inequality
+    IASTAppendable active = F.ListAlloc();
+    java.util.List<Boolean> inequality = new java.util.ArrayList<Boolean>();
+    for (IExpr relation : relations) {
+      IExpr g = relation.isAST(S.GreaterEqual) || relation.isAST(S.Greater)
+          ? F.Subtract(relation.second(), relation.first())
+          : F.Subtract(relation.first(), relation.second());
+      g = engine.evaluate(g);
+      if (g.isFree(x -> variables.contains(x), true)) {
+        continue;
+      }
+      double value = engine.evalN(F.subst(g, rules)).evalfNaN();
+      // the size of the two sides: an active constraint is zero relative to it
+      double scale = Math.abs(engine.evalN(F.subst(relation.first(), rules)).evalfNaN())
+          + Math.abs(engine.evalN(F.subst(relation.second(), rules)).evalfNaN());
+      if (!Double.isFinite(value) || !Double.isFinite(scale)) {
+        return F.NIL;
+      }
+      boolean isEquation = relation.isEqual();
+      if (isEquation || Math.abs(value) <= 1.0e-7 * (1.0 + scale)) {
+        if (relation.isAST(S.Less) || relation.isAST(S.Greater)) {
+          // a strict inequality: the extremum is no point of its boundary
+          return F.NIL;
+        }
+        active.append(g);
+        inequality.add(!isEquation);
+      }
+    }
+    final int m = active.argSize();
+    IExpr gradient = engine.evaluate(F.mapRange(1, n + 1, i -> F.D(function, variables.get(i))));
+    IExpr jacobian = engine.evaluate(F.mapRange(1, m + 1,
+        k -> F.mapRange(1, n + 1, i -> F.D(active.get(k), variables.get(i)))));
+    if (!gradient.isFree(S.Derivative) || !jacobian.isFree(S.Derivative)) {
+      return F.NIL;
+    }
+    IASTAppendable unknowns = F.ListAlloc(n + m);
+    unknowns.appendArgs(rules);
+    IASTAppendable equations = F.ListAlloc(n + m);
+    if (m == 0) {
+      equations.appendArgs((IAST) gradient);
+    } else {
+      // the multipliers at the machine point: grad(f) + J^T.lambda == 0 in the least squares sense
+      IExpr start = engine.evalQuiet(F.binaryAST2(S.LeastSquares, engine.evalN(F.subst(F.Transpose(jacobian),
+          rules)), engine.evalN(F.subst(F.Negate(gradient), rules))));
+      if (!start.isList() || start.argSize() != m || !((IAST) start).forAll(IExpr::isReal)) {
+        return F.NIL;
+      }
+      IAST multipliers = F.mapRange(1, m + 1, k -> F.Dummy("$lambda" + k));
+      for (int k = 1; k <= m; k++) {
+        unknowns.append(F.Rule(multipliers.get(k), ((IAST) start).get(k)));
+      }
+      for (int i = 1; i <= n; i++) {
+        final int column = i;
+        equations.append(engine.evaluate(F.Plus(((IAST) gradient).get(i), F.mapRange(S.Plus, 1,
+            m + 1, k -> F.Times(multipliers.get(k), ((IAST) jacobian).get(k).get(column))))));
+      }
+      equations.appendArgs(active);
+    }
+    IExpr exact = FindRoot.refineExact(equations, unknowns, precision, engine);
+    if (!exact.isList()) {
+      return F.NIL;
+    }
+    IAST solution = (IAST) exact;
+    IAST point = F.mapRange(1, n + 1, i -> solution.get(i));
+    // the multipliers of active inequalities g <= 0: non-negative at a minimum
+    for (int k = 1; k <= m; k++) {
+      if (inequality.get(k - 1)) {
+        double lambda = solution.get(n + k).second().evalfNaN();
+        if (maximize ? lambda > 1.0e-10 : lambda < -1.0e-10) {
+          return F.NIL;
+        }
+      }
+    }
+    for (IExpr relation : relations) {
+      if (!relation.isEqual()) {
+        IExpr slack = relation.isAST(S.GreaterEqual) || relation.isAST(S.Greater)
+            ? F.Subtract(relation.first(), relation.second())
+            : F.Subtract(relation.second(), relation.first());
+        if (engine.evalN(F.subst(slack, point), precision).evalfNaN() < -1.0e-10) {
+          return F.NIL;
+        }
+      }
+    }
+    return F.list(engine.evalN(F.subst(function, point), precision),
+        F.mapRange(1, n + 1, i -> F.Rule(point.get(i).first(), point.get(i).second().isZero()
+            ? org.matheclipse.core.expression.ApfloatNum.zero(precision)
+            : engine.evalN(point.get(i).second(), precision))));
+  }
+
+  /**
+   * Add the relations of <code>constraint</code>: the parts of a conjunction, a chain
+   * <code>a <= x <= b</code> as two relations.
+   *
+   * @return <code>false</code> if a part isn't a relation of two sides
+   */
+  private static boolean collectRelations(IExpr constraint, java.util.List<IExpr> relations) {
+    if (constraint.isTrue()) {
+      return true;
+    }
+    if (constraint.isAnd() || constraint.isList()) {
+      for (IExpr part : (IAST) constraint) {
+        if (!collectRelations(part, relations)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (constraint.isAST(S.Equal) || constraint.isAST(S.LessEqual) || constraint.isAST(S.Less)
+        || constraint.isAST(S.GreaterEqual) || constraint.isAST(S.Greater)) {
+      IAST chain = (IAST) constraint;
+      if (chain.argSize() < 2) {
+        return false;
+      }
+      for (int i = 1; i < chain.argSize(); i++) {
+        relations.add(F.binaryAST2(chain.head(), chain.get(i), chain.get(i + 1)));
+      }
+      return true;
+    }
+    return false;
   }
 
   /**

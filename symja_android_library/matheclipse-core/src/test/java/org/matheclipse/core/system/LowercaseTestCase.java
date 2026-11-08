@@ -10465,8 +10465,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "10-x/.FindRoot(Sin(x-10)-x+10,{x,0},AccuracyGoal->test)");
 
     // univariate cases
+    // two start values: the secant method
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
-        "{x->0.0}");
+        "{x->0.876726}");
     check("v1:= E^x - 3*x ;v2:={x, 2};", //
         "");
     check("FindRoot(v1,v2)", //

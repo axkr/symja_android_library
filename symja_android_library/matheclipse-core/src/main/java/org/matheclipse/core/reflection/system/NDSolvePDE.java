@@ -258,8 +258,34 @@ final class NDSolvePDE {
       if (!c.isFree(u0) || !d.isFree(u0)) {
         return F.NIL;
       }
-      function = parabolic(grid, t0, t1, fa, fb, new Coefficient(c, t, x, engine),
-          new Coefficient(d, t, x, engine), ff, fg0, fg1);
+      Coefficient fc = new Coefficient(c, t, x, engine);
+      Coefficient fd = new Coefficient(d, t, x, engine);
+      double[][] values = parabolic(grid, TIME_STEPS, t0, t1, fa, fb, fc, fd, ff, fg0, fg1);
+      if (values == null) {
+        return F.NIL;
+      }
+      if (isSmooth(F.List(a, b, c, d, initial, lower.orElse(F.C0), upper.orElse(F.C0)))
+          && compatible(grid, t0, ff, fg0, fg1)) {
+        // Crank-Nicolson is of the second order in the space step and in the time step: with both
+        // halved the error is a quarter, and the Richardson extrapolation of the two solutions
+        // takes the leading term away
+        Grid fine = new Grid(x0, x1, periodic, 2 * SPACE_POINTS - 1);
+        double[][] fineValues =
+            parabolic(fine, 2 * TIME_STEPS, t0, t1, fa, fb, fc, fd, ff, fg0, fg1);
+        if (fineValues != null) {
+          for (int k = 0; k <= TIME_STEPS; k++) {
+            for (int i = 0; i < grid.n; i++) {
+              values[k][i] = (4.0 * fineValues[2 * k][2 * i] - values[k][i]) / 3.0;
+            }
+          }
+        }
+      }
+      double[] ts = new double[TIME_STEPS + 1];
+      for (int k = 0; k <= TIME_STEPS; k++) {
+        ts[k] = k == TIME_STEPS ? t1 : t0 + k * (t1 - t0) / TIME_STEPS;
+      }
+      // the grid of values, interpolated the way ListInterpolation interpolates a matrix
+      function = ListInterpolation.grid(ts, grid.xs, values, 3);
     } else {
       Source source = new Source(rest, u0, t, x, engine);
       function = hyperbolic(grid, t0, t1, fa, fb, source, ff,
@@ -294,7 +320,7 @@ final class NDSolvePDE {
    * <code>SPACE_POINTS - 1</code> are unknowns and the neighbours wrap round.
    */
   private static final class Grid {
-    final int n = SPACE_POINTS;
+    final int n;
     final double h;
     final double[] xs;
     final boolean periodic;
@@ -302,6 +328,11 @@ final class NDSolvePDE {
     final int unknowns;
 
     Grid(double x0, double x1, boolean periodic) {
+      this(x0, x1, periodic, SPACE_POINTS);
+    }
+
+    Grid(double x0, double x1, boolean periodic, int n) {
+      this.n = n;
       this.periodic = periodic;
       this.h = (x1 - x0) / (n - 1);
       this.xs = new double[n];
@@ -323,18 +354,16 @@ final class NDSolvePDE {
   }
 
   /** The parabolic problem, by Crank-Nicolson. */
-  private static IExpr parabolic(Grid grid, double t0, double t1, Coefficient fa, Coefficient fb,
-      Coefficient fc, Coefficient fd, Coefficient ff, Coefficient fg0, Coefficient fg1) {
+  private static double[][] parabolic(Grid grid, int steps, double t0, double t1, Coefficient fa,
+      Coefficient fb, Coefficient fc, Coefficient fd, Coefficient ff, Coefficient fg0,
+      Coefficient fg1) {
     int n = grid.n;
-    int steps = TIME_STEPS;
     double h = grid.h;
     double dt = (t1 - t0) / steps;
     double[] xs = grid.xs;
-    double[] ts = new double[steps + 1];
     double[][] values = new double[steps + 1][n];
 
     // the initial values, with the boundary values at t0 at the two ends
-    ts[0] = t0;
     for (int i = 0; i < n; i++) {
       values[0][i] = ff.value(t0, xs[i]);
     }
@@ -346,7 +375,7 @@ final class NDSolvePDE {
     }
     for (double v : values[0]) {
       if (!Double.isFinite(v)) {
-        return F.NIL;
+        return null;
       }
     }
 
@@ -360,7 +389,6 @@ final class NDSolvePDE {
     for (int k = 0; k < steps; k++) {
       double tn = t0 + k * dt;
       double tn1 = (k + 1 == steps) ? t1 : t0 + (k + 1) * dt;
-      ts[k + 1] = tn1;
       double[] now = values[k];
       double[] next = values[k + 1];
       if (!grid.periodic) {
@@ -389,7 +417,7 @@ final class NDSolvePDE {
         // row 0 reaches round to the last unknown, the last row round to the first
         if (!solveCyclicTridiagonal(lowerDiagonal, diagonal, upperDiagonal, right, next, to + 1,
             upperDiagonal[to], lowerDiagonal[0])) {
-          return F.NIL;
+          return null;
         }
         next[n - 1] = next[0];
       } else {
@@ -397,13 +425,48 @@ final class NDSolvePDE {
         right[1] -= lowerDiagonal[1] * next[0];
         right[n - 2] -= upperDiagonal[n - 2] * next[n - 1];
         if (!solveTridiagonal(lowerDiagonal, diagonal, upperDiagonal, right, next, 1, n - 2)) {
-          return F.NIL;
+          return null;
         }
       }
     }
 
-    // the grid of values, interpolated the way ListInterpolation interpolates a matrix
-    return ListInterpolation.grid(ts, xs, values, 3);
+    return values;
+  }
+
+  /**
+   * Test if the functions of a problem have no jump or kink in their form: none of the functions
+   * which have one, no function which stays unevaluated for symbolic arguments (whose form isn't
+   * known) and no fractional power, whose derivatives may be singular.
+   */
+  private static boolean isSmooth(IAST functions) {
+    return functions.isFree(e -> e.isAST() && !e.isList() && !e.head().isBuiltInSymbol(), true)
+        && functions.isFree(e -> e.isPower() && e.exponent().isNumber()
+            && !e.exponent().isInteger() && !e.base().isNumber(), true)
+        && functions.isFree(e -> e.isBuiltInSymbol() && (e == S.Piecewise || e == S.If
+        || e == S.Abs || e == S.RealAbs || e == S.UnitStep || e == S.HeavisideTheta || e == S.Sign
+        || e == S.Floor || e == S.Ceiling || e == S.Round || e == S.Min || e == S.Max
+        || e == S.Boole || e == S.Clip || e == S.FractionalPart || e == S.IntegerPart
+        || e == S.Mod || e == S.Which || e == S.Switch), true);
+  }
+
+  /**
+   * Test if the initial values agree with the boundary values at the corners
+   * <code>(t0, x0)</code> and <code>(t0, x1)</code>: a mismatch is a jump which the solution
+   * smooths only after the start.
+   */
+  private static boolean compatible(Grid grid, double t0, Coefficient ff, Coefficient fg0,
+      Coefficient fg1) {
+    if (grid.periodic) {
+      double a = ff.value(t0, grid.xs[0]);
+      double b = ff.value(t0, grid.xs[grid.n - 1]);
+      return Math.abs(a - b) <= 1e-10 * (1.0 + Math.abs(a));
+    }
+    double a = ff.value(t0, grid.xs[0]);
+    double b = ff.value(t0, grid.xs[grid.n - 1]);
+    double g0 = fg0.value(t0, grid.xs[0]);
+    double g1 = fg1.value(t0, grid.xs[grid.n - 1]);
+    return Math.abs(a - g0) <= 1e-10 * (1.0 + Math.abs(a))
+        && Math.abs(b - g1) <= 1e-10 * (1.0 + Math.abs(b));
   }
 
   /**

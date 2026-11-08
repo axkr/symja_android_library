@@ -171,8 +171,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         "Zeta'(2)");
     check("Zeta'(x)", //
         "Zeta'(x)");
+    // every derivative has the pole of Zeta at 1
     check("Zeta'(1.0)", //
-        "Zeta'(1.0)");
+        "ComplexInfinity");
     check("Zeta'(0)", //
         "-Log(2*Pi)/2");
   }

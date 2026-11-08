@@ -321,6 +321,15 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
 
     /**
+     * Test if the derivative of <code>function</code> keeps an unevaluated
+     * <code>Derivative(..)(g)</code>, which only numerical differentiation can give a value.
+     */
+    private static boolean hasOpaqueDerivative(IExpr function, ISymbol xVar, EvalEngine engine) {
+      IExpr derivative = engine.evalQuiet(F.D(function, xVar));
+      return !derivative.isFree(e -> e.isAST(S.Derivative), true);
+    }
+
+    /**
      * The secant method from the start values <code>x0</code> and <code>x1</code> in complex
      * arithmetic: <code>FindRoot(Log(x) == -2, {x, 0.3, -0.4})</code> reaches the root through
      * values where the logarithm is complex.
@@ -473,8 +482,14 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           // which is what the multivariate path does for the same reason - Broyden's method for one
           // variable is the secant method, and a second start value sets the width of its first
           // step exactly as it does there.
+          // Two start values ask for the secant method. A derivative which stays a
+          // Derivative(..)(g) of an opaque function (g(x_?NumericQ) := ...) is evaluated by
+          // numerical differentiation, a dozen or more calls of g for every Newton step - the
+          // secant method needs none of them.
           double startValue = min.doubleValue();
-          if (!Double.isFinite(f.derivative().value(startValue))) {
+          final boolean noDerivative = hasOpaqueDerivative(function, xVar, engine)
+              || !Double.isFinite(f.derivative().value(startValue));
+          if (maxMaybeNull != null || noDerivative) {
             double stepWidth = (maxMaybeNull == null) //
                 ? 0.0 //
                 : Math.abs(maxMaybeNull.doubleValue() - startValue);
@@ -482,7 +497,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
                 new double[] {startValue}, //
                 new double[] {stepWidth > 1e-14 ? stepWidth : 0.0}, //
                 accuracy, maxIterations, monitor, engine).solve();
-            if (root != null) {
+            // a point which isn't a root (Cos(x)+2 has none) goes on to Newton's method, which
+            // reports the failure
+            if (root != null && (noDerivative || Math.abs(f.value(root[0])) <= accuracy)) {
               return F.num(root[0]);
             }
           }
@@ -649,6 +666,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * How often one step of the quasi Newton iteration may be halved before the step is given up on.
    */
   private static final int MAX_BACKTRACK_STEPS = 60;
+
+  /** relative size of a Broyden step below which a step without progress ends the search */
+  private static final double NOISE_FLOOR_STEP = 1.0e-10;
 
   public FindRoot() {}
 
@@ -1803,6 +1823,12 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
               xNext = xTrial;
               fNext = fTrial;
               step = scale(step, shrink);
+              break;
+            }
+            if (stepScale < NOISE_FLOOR_STEP) {
+              // a full step this small which does not lower the residual is at the noise floor of
+              // the equations (an inner numerical solver rounds to its goal): halving it cannot get
+              // closer, only a fresh jacobian matrix below can
               break;
             }
             shrink *= 0.5;

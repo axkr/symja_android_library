@@ -143,6 +143,94 @@ public class ZetaWorkaround
         return new Apcomplex[] { ApfloatHelperShim.limitPrecision(zeta, precision), ApfloatHelperShim.limitPrecision(derivative, precision) };
     }
 
+    /**
+     * The derivatives of zeta of the orders 0 to <code>order</code> from the alternating series of
+     * the eta function: the terms of the derivative of order j carry (-log k)^j, and with
+     * zeta = eta / g, g = 1 - 2^(1 - s), the derivatives follow from Leibniz' rule for eta = zeta g,
+     * one order after the other.
+     */
+    static Apcomplex[] alternatingDerivatives(Apcomplex s, int order)
+    {
+        if (s.imag().signum() < 0)
+        {
+            Apcomplex[] result = alternatingDerivatives(s.conj(), order);
+            for (int j = 0; j <= order; j++)
+            {
+                result[j] = result[j].conj();
+            }
+            return result;
+        }
+        int radix = s.radix();
+        long doublePrecision = getDoublePrecision(radix),
+             extraPrecision = ApfloatHelperShim.getSmallExtraPrecision(radix),
+             precision = s.precision();
+        Apint one = ApfloatHelperShim.ONES[radix],
+              two = new Apint(2, radix),
+              four = new Apint(4, radix);
+        double logS12 = ApfloatMath.log(ApcomplexMath.abs(s.subtract(one)).precision(doublePrecision)).doubleValue() + Math.log(Math.log(2));
+        // a division by g for every order, and the logarithms of the terms to the power of the order
+        double estimate = (precision * Math.log(radix)) / Math.log(3 + Math.sqrt(8)) + 4;
+        double logTerms = order * Math.log(1 + Math.log(Math.max(2.0, estimate)));
+        long workingPrecision = ApfloatHelperShim.extendPrecision(precision, extraPrecision + (long) Math.ceil((Math.max(0.0, -(order + 1) * logS12) + logTerms) / Math.log(radix)));
+        s = ApfloatHelperShim.ensurePrecision(s, workingPrecision);
+        double t = Math.abs(s.imag().doubleValue());
+        long n = (long) ((workingPrecision * Math.log(radix) + t * Math.PI / 2 + Math.log(1 + 2 * t) - (order + 1) * logS12) / Math.log(3 + Math.sqrt(8))) + 4,
+             n2 = Util.multiplyExact(n, 2);
+        Apfloat denominator = ApfloatMath.gamma(new Apint(n2 + 1, radix).precision(workingPrecision)),
+                numerator = new Apint(n, radix).multiply(denominator).multiply(ApfloatMath.pow(four.precision(workingPrecision), n)),
+                d = Apfloat.ZERO;
+        Apcomplex[] sums = new Apcomplex[order + 1];
+        java.util.Arrays.fill(sums, Apcomplex.ZERO);
+        for (long k = n; k > 0; k--)
+        {
+            numerator = numerator.divide(new Apint(n + k, radix));
+            d = d.add(numerator.divide(denominator));
+            numerator = numerator.divide(four);
+            denominator = denominator.multiply(new Apint(n - k + 1, radix)).divide(new Apint(2 * k, radix)).divide(new Apint(2 * k - 1, radix));
+            Apcomplex term = ((k & 1) == 0 ? d.negate() : d).multiply(ApcomplexMath.pow(new Apint(k, radix), s.negate()));
+            sums[0] = sums[0].add(term);
+            if (k > 1)
+            {
+                Apfloat minusLog = ApfloatMath.log(new Apfloat(k, workingPrecision, radix)).negate();
+                for (int j = 1; j <= order; j++)
+                {
+                    term = term.multiply(minusLog);
+                    sums[j] = sums[j].add(term);
+                }
+            }
+        }
+        d = d.add(numerator.divide(denominator));
+        // g = 1 - 2^(1 - s), g^(i) = -(-log 2)^i 2^(1 - s) for i >= 1
+        Apcomplex power = ApcomplexMath.pow(two.precision(workingPrecision), one.subtract(s));
+        Apfloat minusLog2 = ApfloatMath.log(two.precision(workingPrecision)).negate();
+        Apcomplex[] g = new Apcomplex[order + 1];
+        g[0] = one.subtract(power);
+        Apcomplex derivativeOfPower = power;
+        for (int i = 1; i <= order; i++)
+        {
+            derivativeOfPower = derivativeOfPower.multiply(minusLog2);
+            g[i] = derivativeOfPower.negate();
+        }
+        Apcomplex[] zeta = new Apcomplex[order + 1];
+        for (int m = 0; m <= order; m++)
+        {
+            Apcomplex eta = sums[m].divide(d);
+            // C(m, j) as an exact integer: the integer division is exact
+            Apint binomial = one;
+            for (int j = 0; j < m; j++)
+            {
+                eta = eta.subtract(binomial.multiply(zeta[j]).multiply(g[m - j]));
+                binomial = binomial.multiply(new Apint(m - j, radix)).divide(new Apint(j + 1, radix));
+            }
+            zeta[m] = eta.divide(g[0]);
+        }
+        for (int m = 0; m <= order; m++)
+        {
+            zeta[m] = ApfloatHelperShim.limitPrecision(zeta[m], precision);
+        }
+        return zeta;
+    }
+
     // The package-private ApfloatHelper.getDoublePrecision()
     private static long getDoublePrecision(int radix)
     {

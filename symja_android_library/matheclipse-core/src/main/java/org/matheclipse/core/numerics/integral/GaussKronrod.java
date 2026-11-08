@@ -1,5 +1,6 @@
 package org.matheclipse.core.numerics.integral;
 
+import java.util.PriorityQueue;
 import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.numerics.utils.Constants;
 import org.matheclipse.core.numerics.utils.SimpleMath;
@@ -163,6 +164,71 @@ public final class GaussKronrod extends Quadrature {
   @Override
   public final String getName() {
     return "Gauss-Kronrod";
+  }
+
+  /**
+   * Plain globally adaptive 21-point Gauss-Kronrod integration: always bisect the interval with the
+   * largest error estimate, without the extrapolation and without the roundoff tests of QAGS.
+   * QAGS reads bisections which leave the estimate unchanged as roundoff and stops - which is also
+   * what an interior peak narrower than the spacing of its nodes looks like, until a bisection
+   * lands a node on it.
+   *
+   * @param f the integrand
+   * @param a the lower bound
+   * @param b the upper bound
+   * @param epsabs the absolute error goal
+   * @param epsrel the relative error goal
+   * @param maxEvaluations the sample budget
+   * @return the result, {@link QuadratureResult#STATUS_OK} if the goal was met
+   */
+  public static QuadratureResult adaptive(final DoubleUnaryOperator f, final double a,
+      final double b, final double epsabs, final double epsrel, final int maxEvaluations) {
+    final DoubleUnaryOperator g = finiteSamples(f);
+    final PriorityQueue<double[]> heap =
+        new PriorityQueue<double[]>((x, y) -> Double.compare(y[3], x[3]));
+    final double[] result = new double[1];
+    final double[] abserr = new double[1];
+    final double[] resabs = new double[1];
+    final double[] resasc = new double[1];
+    int evaluations = 0;
+    try {
+      dqk21(g, a, b, result, abserr, resabs, resasc);
+      evaluations += 21;
+      heap.add(new double[] {a, b, result[0], abserr[0]});
+      double sum = result[0];
+      double error = abserr[0];
+      while (error > Math.max(epsabs, epsrel * Math.abs(sum))) {
+        if (evaluations + 42 > maxEvaluations) {
+          return new QuadratureResult(sum, error, evaluations, QuadratureResult.STATUS_LIMIT,
+              0.5 * (heap.peek()[0] + heap.peek()[1]));
+        }
+        final double[] worst = heap.poll();
+        final double middle = 0.5 * (worst[0] + worst[1]);
+        if (!(worst[0] < middle && middle < worst[1])) {
+          // the interval can't be bisected any further in double precision
+          return new QuadratureResult(sum, error, evaluations, QuadratureResult.STATUS_ROUNDOFF,
+              middle);
+        }
+        dqk21(g, worst[0], middle, result, abserr, resabs, resasc);
+        final double[] left = {worst[0], middle, result[0], abserr[0]};
+        dqk21(g, middle, worst[1], result, abserr, resabs, resasc);
+        final double[] right = {middle, worst[1], result[0], abserr[0]};
+        evaluations += 42;
+        heap.add(left);
+        heap.add(right);
+        // re-summing avoids the drift of updating the totals by differences
+        sum = 0.0;
+        error = 0.0;
+        for (double[] interval : heap) {
+          sum += interval[2];
+          error += interval[3];
+        }
+      }
+      return new QuadratureResult(sum, error, evaluations, QuadratureResult.STATUS_OK, Double.NaN);
+    } catch (NonFiniteSample nfs) {
+      return new QuadratureResult(Double.NaN, Double.NaN, evaluations,
+          QuadratureResult.STATUS_BAD_INTEGRAND, nfs.x);
+    }
   }
 
   // CPD-OFF port of the original Fortran routine, kept close to it

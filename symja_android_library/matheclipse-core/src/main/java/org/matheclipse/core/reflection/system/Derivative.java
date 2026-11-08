@@ -189,8 +189,12 @@ public class Derivative extends AbstractFunctionEvaluator {
       return F.Function(F.C0);
     }
     if (derivativeAST[2] != null && functions.arg1() == S.Zeta && derivativeHead.isAST1()
-        && derivativeHead.arg1().isOne() && derivativeAST[2].isAST1()) {
-      IExpr value = zetaDerivative(derivativeAST[2].arg1(), engine);
+        && derivativeHead.arg1().isInteger() && derivativeHead.arg1().isPositive()
+        && derivativeAST[2].isAST1()) {
+      int order = derivativeHead.arg1().toIntDefault();
+      IExpr value = order > 0 && order <= MAX_ZETA_DERIVATIVE_ORDER
+          ? zetaDerivative(order, derivativeAST[2].arg1(), engine)
+          : F.NIL;
       if (value.isPresent()) {
         return value;
       }
@@ -381,26 +385,46 @@ public class Derivative extends AbstractFunctionEvaluator {
     return function.derivative(n);
   }
 
+  /** The highest order of a numeric derivative of <code>Zeta</code>. */
+  private static final int MAX_ZETA_DERIVATIVE_ORDER = 64;
+
   /**
-   * <code>Zeta'(s)</code> for a number: there is no other function which it could be written in.
+   * The derivative of order <code>n</code> of <code>Zeta(s)</code> for a number: there is no other
+   * function which it could be written in.
    */
-  private static IExpr zetaDerivative(IExpr s, EvalEngine engine) {
+  private static IExpr zetaDerivative(int n, IExpr s, EvalEngine engine) {
     if (!s.isNumber() && engine.isNumericMode() && s.isNumericFunction()) {
       s = engine.evalN(s);
+    }
+    if (s.isOne() && s.isInexactNumber()) {
+      // every derivative has the pole of Zeta at 1
+      return F.CComplexInfinity;
     }
     if (!s.isNumber() || s.isOne() || (!s.isInexactNumber() && !engine.isNumericMode())) {
       return F.NIL;
     }
     final boolean arbitrary = s instanceof ApfloatNum || s instanceof ApcomplexNum
         || (!s.isInexactNumber() && engine.isArbitraryMode());
-    final int digits =
-        arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+    // an arbitrary precision argument outside of numeric mode brings its own precision
+    final long ownDigits = s instanceof ApfloatNum || s instanceof ApcomplexNum
+        ? s.determinePrecision(false)
+        : 0L;
+    final int digits = !arbitrary ? (int) ParserConfig.MACHINE_PRECISION + 1
+        : engine.isArbitraryMode() || ownDigits <= 0L || ownDigits > Integer.MAX_VALUE
+            ? (int) engine.getNumericPrecision()
+            : (int) ownDigits;
     try {
-      Apcomplex value = ApcomplexZetaMath.zetaDerivative(WorkingPrecision.apcomplex(s,
+      Apcomplex value = ApcomplexZetaMath.zetaDerivative(n, WorkingPrecision.apcomplex(s,
           digits + WorkingPrecision.GUARD_DIGITS));
       if (!arbitrary) {
-        return s.isReal() ? F.num(value.real().doubleValue())
-            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+        double re = value.real().doubleValue();
+        double im = value.imag().doubleValue();
+        if (!Double.isFinite(re) || !Double.isFinite(im)) {
+          // beyond the range of a double: a number of machine precision, as N gives it there
+          return s.isReal() ? ApfloatNum.machineOrPromoted(value.real())
+              : WorkingPrecision.round(value, ParserConfig.MACHINE_PRECISION);
+        }
+        return s.isReal() ? F.num(re) : F.complexNum(re, im);
       }
       return WorkingPrecision.round(value, digits);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {

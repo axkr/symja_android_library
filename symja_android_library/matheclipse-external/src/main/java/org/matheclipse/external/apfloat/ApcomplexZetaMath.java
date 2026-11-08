@@ -892,6 +892,111 @@ public class ApcomplexZetaMath
         }
     }
 
+    /**
+     * The derivative &zeta;<sup>(<i>n</i>)</sup>(<i>s</i>) of order <i>n</i> &ge; 1, by Cauchy's
+     * integral formula with the trapezoidal rule on a circle around <i>s</i> which keeps a
+     * distance from the pole.
+     *
+     * @param n The order.
+     * @param s The argument.
+     *
+     * @return &zeta;<sup>(<i>n</i>)</sup>(<i>s</i>)
+     *
+     * @throws ArithmeticException If <i>s</i> is 1 or <i>n</i> is not positive.
+     */
+
+    public static Apcomplex zetaDerivative(long n, Apcomplex s)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        if (n == 1)
+        {
+            return zetaDerivative(s);
+        }
+        if (n < 1)
+        {
+            throw new ArithmeticException("Zeta derivative of order " + n);
+        }
+        long precision = s.precision();
+        if (precision == Apfloat.INFINITE)
+        {
+            throw new InfiniteExpansionException("Cannot calculate zeta derivative to infinite precision", "zeta.infinitePrecision");
+        }
+        double distance = Math.hypot(s.real().doubleValue() - 1.0, s.imag().doubleValue());
+        if (distance == 0.0)
+        {
+            throw new ArithmeticException("Zeta derivative of one");
+        }
+        // the alternating series of eta where it converges and 1 - 2^(1 - s) is not too close to a zero
+        double period = 2.0 * Math.PI / Math.log(2.0),
+               imag = s.imag().doubleValue(),
+               offset = Math.hypot(s.real().doubleValue() - 1.0, imag - period * Math.rint(imag / period));
+        if (n <= Integer.MAX_VALUE && s.real().doubleValue() >= 0.5 && (offset > 0.01 || Math.abs(imag) < 1.0))
+        {
+            return ZetaWorkaround.alternatingDerivatives(s, (int) n)[(int) n];
+        }
+        // next to the pole the rule takes the entire function zeta(z) - 1/(z - 1) on a circle which keeps its size
+        boolean nearPole = (distance < 0.25);
+        double radius = (nearPole ? 0.5 : Math.min(0.5, distance / 4.0));
+        try
+        {
+            return zetaDerivative(n, s, radius, precision, nearPole);
+        }
+        catch (LossOfPrecisionException lope)
+        {
+            // a node of the rule at a trivial zero, where the reflection formula has no digits
+            return zetaDerivative(n, s, 0.83 * radius, precision, nearPole);
+        }
+    }
+
+    private static Apcomplex zetaDerivative(long n, Apcomplex s, double radius, long precision, boolean nearPole)
+    {
+        int radix = s.radix();
+        // the values on the circle are larger than the derivative times radius^n / n! by about (distance / radius)^n
+        long extra = ApfloatHelperShim.EXTRA_PRECISION + (long) Math.ceil(Math.max(0.0, -(n + 1) * Math.log10(radius))) + n;
+        long workingPrecision = ApfloatHelperShim.extendPrecision(precision, extra);
+        int nodes = (int) Math.ceil((workingPrecision * Math.log10(radix) + 2.0) / Math.log10(4.0)) + (int) n;
+        nodes += nodes % 2;
+        FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(workingPrecision);
+        Apfloat r = new Apfloat(radius, workingPrecision, radix),
+                angle = h.divide(h.pi(), new Apfloat(nodes, workingPrecision, radix));
+        Apcomplex center = ApfloatHelperShim.ensurePrecision(s, workingPrecision),
+                  direction = h.exp(new Apcomplex(Apfloat.ZERO, angle)),
+                  step = h.multiply(direction, direction),
+                  sum = Apcomplex.ZERO;
+        boolean real = (s.imag().signum() == 0);
+        // for a real argument the nodes of the lower half are the conjugates of the upper ones
+        int count = (real ? nodes / 2 : nodes);
+        for (int k = 0; k < count; k++)
+        {
+            Apcomplex z = h.add(center, h.multiply(r, direction)),
+                      zeta = ZetaWorkaround.zeta(z);
+            if (nearPole)
+            {
+                zeta = h.subtract(zeta, h.divide(Apcomplex.ONE, h.subtract(z, Apcomplex.ONE)));
+            }
+            Apcomplex value = h.divide(zeta, h.pow(direction, n));
+            if (real)
+            {
+                value = new Apcomplex(h.multiply(new Apfloat(2, workingPrecision, radix), value.real()));
+            }
+            sum = h.add(sum, value);
+            direction = h.multiply(direction, step);
+        }
+        Apfloat factorial = new Apfloat(1, workingPrecision, radix);
+        for (long m = 2; m <= n; m++)
+        {
+            factorial = h.multiply(factorial, new Apint(m, radix));
+        }
+        Apcomplex result = h.divide(h.multiply(factorial, sum), h.multiply(h.pow(r, n), new Apfloat(nodes, workingPrecision, radix)));
+        if (nearPole)
+        {
+            // the derivative of 1/(s - 1): (-1)^n n! / (s - 1)^(n + 1)
+            Apcomplex pole = h.divide(factorial, h.pow(h.subtract(center, Apcomplex.ONE), n + 1));
+            result = h.add(result, (n % 2 == 0 ? pole : pole.negate()));
+        }
+        return ApfloatHelperShim.limitPrecision(result, precision);
+    }
+
     private static Apcomplex zetaDerivative(Apcomplex s, double radius, long precision)
     {
         int radix = s.radix();

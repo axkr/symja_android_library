@@ -133,22 +133,38 @@ public class NSum extends Sum {
         long range = end - start;
         preevaluateSymbolic = range <= 10000 && range >= -10000;
       }
-      if (upperLimit.isInfinity() && arg1.has(x -> x.isAST() && (x.head() == S.DivisorSigma
-          || x.head() == S.EulerPhi || x.head() == S.MoebiusMu || x.head() == S.LiouvilleLambda),
-          true)) {
-        // an arithmetic function isn't smooth in the index: no extrapolation of the partial
-        // sums is reliable, but its Dirichlet series may have a closed form
+      // an arithmetic function isn't smooth in the index: no extrapolation of the partial sums is
+      // reliable, but its Dirichlet series may have a closed form. The summand is held: a function
+      // g(k_) := MoebiusMu(k) shows the arithmetic function only when it is evaluated
+      boolean arithmeticSummand = false;
+      IExpr summand = arg1;
+      if (upperLimit.isInfinity()) {
+        if (hasArithmeticFunction(arg1)) {
+          arithmeticSummand = true;
+        } else {
+          IExpr evaluated = engine.evalQuiet(arg1);
+          if (hasArithmeticFunction(evaluated)) {
+            arithmeticSummand = true;
+            summand = evaluated;
+          }
+        }
+      }
+      if (arithmeticSummand) {
         preevaluateSymbolic = true;
       }
       if (preevaluateSymbolic) {
-        IAST sum = F.Sum(arg1, limits);
+        IAST sum = F.Sum(summand, limits);
         IAST preevaledSum = engine.preevalForwardBackwardAST(sum, 1);
 
         IExpr temp = evaluateSum(preevaledSum, engine);
         if (temp.isPresent()) {
-          if (temp.isNumericFunction(true)) {
-            return digits > ParserConfig.MACHINE_PRECISION ? engine.evalN(temp, digits)
+          if (temp.isNumericFunction(true) || (arithmeticSummand && temp.isFree(S.Sum, true))) {
+            // Zeta'(s) of -Zeta'(s)/Zeta(s) isn't a numeric function, but has a value
+            IExpr value = digits > ParserConfig.MACHINE_PRECISION ? engine.evalN(temp, digits)
                 : engine.evalN(temp);
+            if (value.isNumber() || temp.isNumericFunction(true)) {
+              return value;
+            }
           }
           if (!temp.isFree(S.Sum, true)) {
             temp = F.subst(temp, x -> x == S.Sum ? S.NSum : F.NIL);
@@ -157,6 +173,11 @@ public class NSum extends Sum {
         }
       }
 
+      if (arithmeticSummand) {
+        // no closed form: any extrapolation would only give a wrong number. Terms bounded by a
+        // geometrically decreasing majorant are added one by one
+        return dominatedSum(engine.evalQuiet(summand), variable, lowerLimit, digits, engine);
+      }
       if (variable.isSymbol()) {
         IExpr precise = precisionSum(arg1, (ISymbol) variable, lowerLimit, upperLimit, digits,
             engine);
@@ -184,6 +205,133 @@ public class NSum extends Sum {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The sum of terms with arithmetic functions of the index, added one by one while a majorant
+   * which decreases geometrically isn't negligible, see {@link PrecisionSum#sumDominated}.
+   *
+   * @return {@link F#NIL} if there is no such majorant
+   */
+  private static IExpr dominatedSum(IExpr function, IExpr variable, IExpr lowerLimit, long digits,
+      EvalEngine engine) {
+    long start = lowerLimit.toLongDefault();
+    if (!variable.isSymbol() || F.isNotPresent(start)) {
+      return F.NIL;
+    }
+    IExpr majorant = majorant(function, (ISymbol) variable);
+    if (majorant.isNIL()) {
+      return F.NIL;
+    }
+    Apcomplex value = PrecisionSum.sumDominated(function, F.Abs(majorant), (ISymbol) variable,
+        start, digits, engine);
+    if (value == null) {
+      return F.NIL;
+    }
+    return toNumber(value, digits);
+  }
+
+  /**
+   * <code>function</code> with each arithmetic function of the index <code>k</code> replaced by an
+   * upper bound of its size: <code>k^(Max(0,Re(a))+1)</code> for <code>DivisorSigma(a, k)</code>,
+   * <code>k</code> for <code>EulerPhi(k)</code>, <code>1</code> for <code>MoebiusMu</code> and
+   * <code>LiouvilleLambda</code>, <code>2*Log(k)+1</code> for <code>MangoldtLambda</code>,
+   * <code>PrimeNu</code> and <code>PrimeOmega</code>.
+   *
+   * @return {@link F#NIL} if an arithmetic function is not a factor or a positive integer power of
+   *         one, where a bound of it is no bound of the term
+   */
+  private static IExpr majorant(IExpr function, ISymbol k) {
+    IAST factors = function.isTimes() ? (IAST) function : F.Times(function);
+    IASTAppendable result = F.TimesAlloc(factors.argSize());
+    for (IExpr factor : factors) {
+      IExpr base = factor;
+      IExpr exponent = F.C1;
+      if (factor.isPower() && factor.exponent().isInteger() && factor.exponent().isPositive()) {
+        base = factor.base();
+        exponent = factor.exponent();
+      }
+      // the size of Abs(f) is the size of f
+      IExpr bound = arithmeticBound(base.isAST(S.Abs, 2) ? base.first() : base, k);
+      if (bound.isPresent()) {
+        result.append(F.Power(bound, exponent));
+      } else if (hasArithmeticFunction(factor)) {
+        return F.NIL;
+      } else {
+        result.append(factor);
+      }
+    }
+    return result.oneIdentity1();
+  }
+
+  /** An upper bound of the size of an arithmetic function of <code>k</code>, else NIL. */
+  private static IExpr arithmeticBound(IExpr f, ISymbol k) {
+    if (!f.isAST()) {
+      return F.NIL;
+    }
+    if (f.isAST(S.Boole, 2) || f.isAST(S.FractionalPart, 2)) {
+      return F.C1;
+    }
+    if (f.isAST(S.Mod, 3) && f.second().isNumber()) {
+      return F.Abs(f.second());
+    }
+    if ((f.isAST(S.Floor, 2) || f.isAST(S.Ceiling, 2) || f.isAST(S.Round, 2)
+        || f.isAST(S.IntegerPart, 2)) && f.first().isPolynomial(k)) {
+      return F.Plus(F.Abs(f.first()), F.C1);
+    }
+    if (!f.last().equals(k)) {
+      return F.NIL;
+    }
+    if (f.isAST(S.PrimePi, 2)) {
+      return k;
+    }
+    if (f.isAST(S.Prime, 2)) {
+      // p(k) < k^2 + 2
+      return F.Plus(F.Sqr(k), F.C2);
+    }
+    if (f.isAST(S.DivisorSigma, 3) && f.first().isNumber()) {
+      return F.Power(k, F.Plus(F.Max(F.C0, F.Re(f.first())), F.C1));
+    }
+    if (f.isAST(S.EulerPhi, 2)) {
+      return k;
+    }
+    if (f.isAST(S.MoebiusMu, 2) || f.isAST(S.LiouvilleLambda, 2)) {
+      return F.C1;
+    }
+    if (f.isAST(S.MangoldtLambda, 2) || f.isAST(S.PrimeNu, 2) || f.isAST(S.PrimeOmega, 2)) {
+      return F.Plus(F.Times(F.C2, F.Log(k)), F.C1);
+    }
+    return F.NIL;
+  }
+
+  /** The value of a sum as a machine number, or as a number of <code>digits</code> digits. */
+  private static IExpr toNumber(Apcomplex value, long digits) {
+    if (digits <= ParserConfig.MACHINE_PRECISION) {
+      if (value.imag().signum() == 0) {
+        return F.num(value.real().doubleValue());
+      }
+      return F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+    }
+    if (value.imag().signum() == 0) {
+      return F.num(value.real().precision(digits));
+    }
+    return F.complexNum(value.precision(digits));
+  }
+
+  /**
+   * The functions of an integer index which follow no smooth law: the arithmetic functions of
+   * number theory and the integer and digit functions. {@link #arithmeticBound} knows the size of
+   * most of them.
+   */
+  private static final java.util.Set<IExpr> ARITHMETIC_HEADS =
+      java.util.Set.of(S.DivisorSigma, S.EulerPhi, S.MoebiusMu, S.LiouvilleLambda,
+          S.MangoldtLambda, S.PrimeNu, S.PrimeOmega, S.PrimePi, S.Prime, S.PrimeQ, S.Mod,
+          S.Floor, S.Ceiling, S.Round, S.IntegerPart, S.FractionalPart, S.DigitCount,
+          S.IntegerExponent, S.BitLength);
+
+  /** Test if <code>expr</code> contains a function of the index which isn't smooth. */
+  private static boolean hasArithmeticFunction(IExpr expr) {
+    return expr.has(x -> x.isAST() && ARITHMETIC_HEADS.contains(x.head()), true);
   }
 
   /** Test if the term with index <code>n</code> has a numeric value. */
@@ -224,16 +372,7 @@ public class NSum extends Sum {
         return F.NIL;
       }
     }
-    if (digits <= ParserConfig.MACHINE_PRECISION) {
-      if (value.imag().signum() == 0) {
-        return F.num(value.real().doubleValue());
-      }
-      return F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
-    }
-    if (value.imag().signum() == 0) {
-      return F.num(value.real().precision(digits));
-    }
-    return F.complexNum(value.precision(digits));
+    return toNumber(value, digits);
   }
 
   /**

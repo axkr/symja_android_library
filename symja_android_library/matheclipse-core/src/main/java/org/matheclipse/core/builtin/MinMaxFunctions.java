@@ -51,6 +51,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.numerics.optim.DifferentialEvolution;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.reflection.system.FindMinimum;
 import org.matheclipse.core.reflection.system.FindRoot;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.Attribute;
@@ -1835,10 +1836,18 @@ public class MinMaxFunctions {
           fixed.append(F.Rule(variable, bound));
         }
       }
-      if (fixed.argSize() == 0) {
+      IExpr atBounds = fixed.argSize() == 0 ? F.NIL
+          : refineAt(best, function, constraints, fixed, digits, engine);
+      if (atBounds.isPresent()) {
+        return atBounds;
+      }
+      if (ast.has(S.Integers, true)) {
+        // integer variables have no Lagrange conditions
         return best;
       }
-      return refineAt(best, function, constraints, fixed, digits, engine).orElse(best);
+      // a general constraint which is active at the optimum: the Lagrange conditions
+      return FindMinimum.refineConstrained(function, F.List(constraints), rules, (int) digits,
+          getGoalType() == GoalType.MAXIMIZE, engine).orElse(best);
     }
 
     /**

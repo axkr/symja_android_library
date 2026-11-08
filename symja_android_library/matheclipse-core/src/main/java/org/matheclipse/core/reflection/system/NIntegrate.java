@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
@@ -37,6 +39,7 @@ import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -162,6 +165,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   /** QUADPACK rejects a relative tolerance below <code>50</code> machine epsilons. */
   private static final double MIN_RELATIVE_TOLERANCE = 50.0 * Math.ulp(1.0);
 
+  /** The number of enclosing outer integrals of a multidimensional integral on this thread. */
+  private static final ThreadLocal<int[]> NEST_DEPTH = ThreadLocal.withInitial(() -> new int[1]);
+
   /** A {@link QuadratureResult} which did not converge, reported by the caller as a message. */
   private static final class NonConvergence extends RuntimeException {
     private static final long serialVersionUID = 1L;
@@ -212,8 +218,74 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
    * point, after the outer variable has been substituted with a numeric value.
    */
   private static UnaryNumerical createSampler(IExpr function, ISymbol xVar, EvalEngine engine) {
-    IExpr tempFunction = function.isAST(S.NIntegrate) ? function : F.eval(function);
+    IExpr tempFunction =
+        function.isAST(S.NIntegrate) ? function : withoutCosineCancellation(F.eval(function));
     return new UnaryNumerical(tempFunction, xVar, Double.NaN, engine);
+  }
+
+  /**
+   * Rewrite every sum <code>p + w1*Cos(t1) + ... + wn*Cos(tn) + r</code> with numbers
+   * <code>p = -(w1 + ... + wn) != 0</code> as <code>-2*w1*Sin(t1/2)^2 - ... + r</code>. Where all
+   * the <code>t</code> are small, the cosines are all close to <code>1</code> and the sum keeps
+   * none of their digits; the half angle form is exact to the last bit there.
+   */
+  private static IExpr withoutCosineCancellation(IExpr function) {
+    return function.replaceAll(e -> e.isPlus() ? halfAngleForm((IAST) e) : F.NIL)
+        .orElse(function);
+  }
+
+  private static IExpr halfAngleForm(IAST plus) {
+    List<IExpr[]> terms = new ArrayList<IExpr[]>();
+    if (!linearTerms(plus, F.C1, terms, 0)) {
+      return F.NIL;
+    }
+    IExpr constant = F.C0;
+    IExpr weights = F.C0;
+    IASTAppendable result = F.PlusAlloc(terms.size());
+    int cosines = 0;
+    for (IExpr[] term : terms) {
+      IExpr weight = term[0];
+      IExpr factor = term[1];
+      if (factor.isNumber()) {
+        constant = constant.plus(weight.times(factor));
+      } else if (factor.isCos()) {
+        cosines++;
+        weights = weights.plus(weight);
+        result.append(F.Times(weight.times(F.CN2), F.Sqr(F.Sin(F.Times(F.C1D2, factor.first())))));
+      } else {
+        result.append(F.Times(weight, factor));
+      }
+    }
+    if (cosines == 0 || constant.isZero() || !constant.plus(weights).isZero()) {
+      return F.NIL;
+    }
+    return result.oneIdentity0();
+  }
+
+  /**
+   * Collect the terms of a sum with their numeric weights, distributing numeric factors over
+   * nested sums.
+   *
+   * @return <code>false</code> if a weight isn't a number
+   */
+  private static boolean linearTerms(IExpr expr, IExpr weight, List<IExpr[]> terms, int depth) {
+    if (depth < 8 && expr.isPlus()) {
+      for (IExpr arg : (IAST) expr) {
+        if (!linearTerms(arg, weight, terms, depth + 1)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (depth < 8 && expr.isTimes() && expr.first().isNumber()) {
+      return linearTerms(((IAST) expr).rest().oneIdentity1(), weight.times(expr.first()), terms,
+          depth + 1);
+    }
+    if (!weight.isNumber()) {
+      return false;
+    }
+    terms.add(new IExpr[] {weight, expr});
+    return true;
   }
 
   /**
@@ -608,6 +680,16 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         pieces.addFirst(new double[] {range[0], piece.worstPoint});
         continue;
       }
+      if (piece.status != QuadratureResult.STATUS_OK && Double.isFinite(piece.estimate)) {
+        // a narrow interior peak looks like roundoff, a bad integrand or even divergence to QAGS:
+        // bisect without its stopping tests (a divergent integral only exhausts the budget)
+        QuadratureResult plain =
+            GaussKronrod.adaptive(f, range[0], range[1], epsabs, epsrel, maxEvaluations);
+        evaluations += plain.evaluations;
+        if (plain.status == QuadratureResult.STATUS_OK && Double.isFinite(plain.estimate)) {
+          piece = plain;
+        }
+      }
       if (piece.status != QuadratureResult.STATUS_OK
           && piece.status != QuadratureResult.STATUS_DIVERGENT) {
         QuadratureResult tanhSinh =
@@ -699,6 +781,113 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         first.evaluations + second.evaluations, worse.status, worse.worstPoint);
   }
 
+  /** Grid of the search for real zeros of a denominator along the inner range. */
+  private static final int SINGULARITY_GRID = 256;
+
+  /**
+   * A point where the integrand of a two-dimensional integral is singular on an end of the outer
+   * range, inside the inner range: a zero of its denominator with the outer variable at that end.
+   * Near the end the inner integrand has a peak there, which gets narrower towards the end while
+   * its area stays - once no node of a rule lands on it, the inner integral jumps. Split at the
+   * point, the peak lies next to an end of a piece, where the bisections go.
+   *
+   * @return the inner iterator <code>{y, c, y1, ..., d}</code> through the points, or
+   *         {@link F#NIL}
+   */
+  private static IExpr boundarySingularities(IExpr integrand, IAST outer, IAST inner,
+      EvalEngine engine) {
+    if (!inner.isList3() || !outer.isList3() || !inner.arg1().isSymbol()
+        || !outer.arg1().isSymbol()) {
+      return F.NIL;
+    }
+    final ISymbol x = (ISymbol) outer.arg1();
+    final ISymbol y = (ISymbol) inner.arg1();
+    final double c = inner.arg2().evalfNaN();
+    final double d = inner.arg3().evalfNaN();
+    if (!Double.isFinite(c) || !Double.isFinite(d) || !(c < d)) {
+      return F.NIL;
+    }
+    try {
+      IExpr denominator = engine.evalQuiet(F.Denominator(F.Together(integrand)));
+      if (denominator.isFree(y) || denominator.isFree(x)) {
+        return F.NIL;
+      }
+      TreeSet<Double> points = new TreeSet<Double>();
+      for (IExpr end : new IExpr[] {outer.arg2(), outer.arg3()}) {
+        if (!Double.isFinite(end.evalfNaN())) {
+          continue;
+        }
+        IExpr g = engine.evalQuiet(F.subst(denominator, x, end));
+        if (g.isFree(y)) {
+          continue;
+        }
+        realZeros(new UnaryNumerical(g, y, Double.NaN, engine), c, d, points);
+      }
+      if (points.isEmpty()) {
+        return F.NIL;
+      }
+      IASTAppendable iterator = F.ListAlloc(points.size() + 3);
+      iterator.append(y);
+      iterator.append(inner.arg2());
+      for (Double point : points) {
+        iterator.append(F.num(point));
+      }
+      iterator.append(inner.arg3());
+      return iterator;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * Add the real zeros of <code>g</code> strictly inside <code>(c, d)</code>, found as the minima
+   * of <code>|g|</code> on a grid, refined by a golden section search and snapped to
+   * <code>0</code> or the midpoint where these are at least as good.
+   */
+  private static void realZeros(UnaryNumerical g, double c, double d, TreeSet<Double> points) {
+    final double h = (d - c) / SINGULARITY_GRID;
+    double[] values = new double[SINGULARITY_GRID + 1];
+    double scale = 0.0;
+    for (int i = 0; i <= SINGULARITY_GRID; i++) {
+      values[i] = Math.abs(g.value(c + i * h));
+      if (Double.isFinite(values[i])) {
+        scale = Math.max(scale, values[i]);
+      }
+    }
+    if (!(scale > 0.0)) {
+      return;
+    }
+    for (int i = 1; i < SINGULARITY_GRID; i++) {
+      if (!(values[i] <= values[i - 1] && values[i] <= values[i + 1])) {
+        continue;
+      }
+      double lo = c + (i - 1) * h;
+      double hi = c + (i + 1) * h;
+      final double ratio = 0.5 * (Math.sqrt(5.0) - 1.0);
+      for (int k = 0; k < 100 && hi - lo > 4.0 * Math.ulp(Math.max(Math.abs(lo), Math.abs(hi))); k++) {
+        double m1 = hi - ratio * (hi - lo);
+        double m2 = lo + ratio * (hi - lo);
+        if (Math.abs(g.value(m1)) <= Math.abs(g.value(m2))) {
+          hi = m2;
+        } else {
+          lo = m1;
+        }
+      }
+      double zero = 0.5 * (lo + hi);
+      double best = Math.abs(g.value(zero));
+      for (double nice : new double[] {0.0, 0.5 * (c + d)}) {
+        if (Math.abs(nice - zero) < 1.0e-6 * (d - c) && Math.abs(g.value(nice)) <= best) {
+          zero = nice;
+          best = Math.abs(g.value(nice));
+        }
+      }
+      if (best <= 1.0e-10 * scale && zero - c > 1.0e-8 * (d - c) && d - zero > 1.0e-8 * (d - c)) {
+        points.add(zero);
+      }
+    }
+  }
+
   private static boolean limitIsZero(IExpr g, ISymbol x, IExpr point, EvalEngine engine) {
     try {
       return engine.evalQuiet(F.Limit(g, F.Rule(x, point))).isZero();
@@ -776,7 +965,28 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           return Errors.printMessage(ast.topHead(), "ilim", F.List(iterator), engine);
         }
       }
-      function = ast.removeAtCopy(2);
+      // the integrand is evaluated once with symbolic variables: substituting the outer value
+      // into it unevaluated would also replace a bound variable of the same name, as in
+      // Function({k1, k2}, ...)(k1, k2), and leave an integrand without numeric values
+      IASTMutable inner = ast.removeAtCopy(2);
+      // not if a variable has a value, which the evaluation would put in its place
+      if (!ast.arg1().isAST(S.NIntegrate) && !ast.exists(iterator -> iterator.isList()
+          && iterator.first().isSymbol() && ((ISymbol) iterator.first()).hasAssignedSymbolValue(),
+          2)) {
+        IExpr integrand = engine.evaluate(ast.arg1());
+        if (integrand.isFree(S.Function, true)) {
+          // the half angle form before the outer value is substituted: Cos(0.001) is a number
+          inner.set(1, withoutCosineCancellation(integrand));
+          if (argSize == 3) {
+            IExpr innerIterator =
+                boundarySingularities(integrand, (IAST) ast.arg2(), (IAST) ast.arg3(), engine);
+            if (innerIterator.isPresent()) {
+              inner.set(2, innerIterator);
+            }
+          }
+        }
+      }
+      function = inner;
     } else if (list.isList() && list.argSize() > 3 && list.arg1().isSymbol()) {
       // NIntegrate(f, {x, x0, x1, ..., xn}) - along the path through the points, straight
       // segments between complex ones (a contour integral), split points on the real line
@@ -837,6 +1047,14 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       minDouble = maxDouble;
       maxDouble = swap;
       sign = -1.0;
+    }
+    // an inner integral of a nest is not rounded to the goal: the steps of the rounding would be
+    // noise in the outer integrand
+    final int roundingDigits = NEST_DEPTH.get()[0] > 0 ? 0 : precisionGoal;
+    // the outer integral of a nest: its inner integrals are sampled at every outer abscissa
+    final boolean outerOfNest = function.isAST(S.NIntegrate);
+    if (outerOfNest) {
+      NEST_DEPTH.get()[0]++;
     }
     try {
       if (!function.isFreeAST(h -> h == S.Boole)) {
@@ -903,7 +1121,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           double result = integratePieces(sampler, xSymbol, minDouble, maxDouble, breakPoints,
               method, maxPoints, maxIterations, list.rest(), epsabs, epsrel);
           if (Double.isFinite(result)) {
-            return Num.valueOf(sign * roundToGoal(result, precisionGoal));
+            return Num.valueOf(sign * roundToGoal(result, roundingDigits));
           }
         } catch (NonConvergence nc) {
           failed = nc.result;
@@ -920,7 +1138,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
               maxIterations);
         }
         if (result.status == QuadratureResult.STATUS_OK && Double.isFinite(result.estimate)) {
-          return Num.valueOf(sign * roundToGoal(result.estimate, precisionGoal));
+          return Num.valueOf(sign * roundToGoal(result.estimate, roundingDigits));
         }
         failed = result;
       }
@@ -930,15 +1148,18 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       // N(Integrate(...)) Integrate would delegate straight back to NIntegrate. Quiet: the
       // NIntegrate message below says what went wrong, an Integrate::idiv beside it only
       // repeats it
+      // Not inside a nest of integrals either: a symbolic attempt for every outer abscissa costs
+      // far more than the numerical rules
       final IAST symbolicIntegral = F.Integrate(function, list);
-      IExpr symbolic = engine.withQuietMode(() -> engine.evaluateNonNumeric(symbolicIntegral));
-      if (symbolic.isFree(S.Integrate)) {
+      IExpr symbolic = NEST_DEPTH.get()[0] > 0 ? F.NIL
+          : engine.withQuietMode(() -> engine.evaluateNonNumeric(symbolicIntegral));
+      if (symbolic.isPresent() && symbolic.isFree(S.Integrate)) {
         IExpr numeric = engine.evalQuiet(F.N(symbolic));
         if (numeric.isNumber()) {
           if (numeric.isReal()) {
             double val = numeric.evalfNaN();
             if (Double.isFinite(val)) {
-              return Num.valueOf(roundToGoal(val, precisionGoal));
+              return Num.valueOf(roundToGoal(val, roundingDigits));
             }
           } else {
             // the integral has a complex value
@@ -971,6 +1192,10 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     } catch (RuntimeException e) {
       Errors.rethrowsInterruptException(e);
       return Errors.printMessage(ast.topHead(), e, engine);
+    } finally {
+      if (outerOfNest) {
+        NEST_DEPTH.get()[0]--;
+      }
     }
   }
 
@@ -1069,7 +1294,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
    * rounded to <code>0</code>.
    */
   private static double roundToGoal(double value, int digits) {
-    if (value == 0.0 || !Double.isFinite(value)) {
+    if (digits <= 0 || value == 0.0 || !Double.isFinite(value)) {
       return value;
     }
     int places = digits - 1 - (int) Math.floor(Math.log10(Math.abs(value)));
