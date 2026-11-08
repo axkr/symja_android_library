@@ -98,8 +98,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         "1.86887");
     check("N(WeierstrassHalfPeriods({12,4}),30)[[1]]", //
         "0.943487520500501860596609400102");
+    // three real roots: the shorter half-period, the imaginary one, comes first, as Mathematica's -1.22569*I for {4,-1}
     check("N(WeierstrassHalfPeriods({7,-3}))[[1]]", //
-        "1.42758");
+        "I*(-1.04964)");
     // a lattice with complex roots, and half-periods with a quotient in the lower half plane
     check("Chop(N(WeierstrassInvariants(WeierstrassHalfPeriods({2,3}))))", //
         "{2.0,3.0}");

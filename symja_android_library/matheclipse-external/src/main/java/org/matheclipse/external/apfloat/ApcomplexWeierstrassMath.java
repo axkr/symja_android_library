@@ -1,9 +1,13 @@
 package org.matheclipse.external.apfloat;
 
+import java.math.RoundingMode;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.Apint;
 import org.apfloat.InfiniteExpansionException;
 
 /**
@@ -131,6 +135,92 @@ public class ApcomplexWeierstrassMath
                   m = h.divide(numerator, difference),
                   w1 = h.divide(h.ellipticK(m), scale),
                   w3 = h.divide(h.multiply(new Apcomplex(Apfloat.ZERO, one), h.ellipticK(h.subtract(one, m))), scale);
+        return new Apcomplex[] { ApfloatHelperShim.limitPrecision(w1, precision), ApfloatHelperShim.limitPrecision(w3, precision) };
+    }
+
+    /**
+     * The pair of half-periods of the lattice of <code>&omega;<sub>1</sub></code> and <code>&omega;<sub>3</sub></code>
+     * which Mathematica's <code>WeierstrassHalfPeriods</code> gives: &tau; = &omega;<sub>3</sub> / &omega;<sub>1</sub>
+     * in the fundamental domain |Re &tau;| &le; 1/2, |&tau;| &ge; 1, Im &tau; &gt; 0; the sign with
+     * Re &omega;<sub>1</sub> &gt; 0, or Im &omega;<sub>1</sub> &lt; 0 if Re &omega;<sub>1</sub> = 0; and on the edge
+     * |Re &tau;| = 1/2, where &omega;<sub>3</sub> and &omega;<sub>3</sub> &plusmn; &omega;<sub>1</sub> both qualify, the one with
+     * the smaller imaginary part, and of two with the same imaginary part the one with the larger real part.<p>
+     *
+     * The rule reproduces the pairs Mathematica gives for the invariants {1, 2}, {2, 1}, {4, -1}, {1+i, 2-i}, {-3, 5i} and {-3, -5i}.
+     *
+     * @param w1 A half-period.
+     * @param w3 Another half-period, not a real multiple of <code>w1</code>.
+     *
+     * @return The half-periods <code>&omega;<sub>1</sub></code> and <code>&omega;<sub>3</sub></code> of the same lattice.
+     *
+     * @exception ArithmeticException If the quotient of the half-periods is real.
+     */
+
+    public static Apcomplex[] normalizedHalfPeriods(Apcomplex w1, Apcomplex w3)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        long precision = precision(w1, w3);
+        long workingPrecision = ApfloatHelperShim.extendPrecision(precision);
+        FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(workingPrecision);
+        w1 = ApfloatHelperShim.ensurePrecision(w1, workingPrecision);
+        w3 = ApfloatHelperShim.ensurePrecision(w3, workingPrecision);
+        // An edge of the fundamental domain is recognized within the precision of the half-periods, which may come from double values
+        double tolerance = Math.pow(w1.radix(), -Math.max(1L, precision - 5));
+        Apcomplex τ = h.divide(w3, w1);
+        if (τ.imag().signum() == 0)
+        {
+            throw new ArithmeticException("The half-periods are real multiples of each other");
+        }
+        if (τ.imag().signum() < 0)
+        {
+            w3 = w3.negate();
+        }
+        // The reduction of τ by τ -> τ - n and τ -> -1/τ
+        for (int i = 0; i < 1000; i++)
+        {
+            ApfloatHelperShim.checkInterrupted();
+            τ = h.divide(w3, w1);
+            Apint n = ApfloatMath.roundToInteger(τ.real(), RoundingMode.HALF_EVEN);
+            if (n.signum() != 0)
+            {
+                w3 = h.subtract(w3, h.multiply(n, w1));
+                τ = h.divide(w3, w1);
+            }
+            double re = τ.real().doubleValue(),
+                   im = τ.imag().doubleValue();
+            if (re * re + im * im < 1.0 - tolerance)
+            {
+                Apcomplex t = w1;
+                w1 = w3;
+                w3 = t.negate();
+                continue;
+            }
+            break;
+        }
+        // The sign of the pair
+        double re1 = w1.real().doubleValue(),
+               im1 = w1.imag().doubleValue(),
+               size1 = Math.hypot(re1, im1);
+        if (re1 < -tolerance * size1 || (Math.abs(re1) <= tolerance * size1 && im1 > 0.0))
+        {
+            w1 = w1.negate();
+            w3 = w3.negate();
+        }
+        // On the edge |Re τ| = 1/2 the other choice is ω3 -+ ω1
+        τ = h.divide(w3, w1);
+        double reTau = τ.real().doubleValue();
+        if (Math.abs(Math.abs(reTau) - 0.5) <= tolerance)
+        {
+            Apcomplex other = (reTau > 0.0 ? h.subtract(w3, w1) : h.add(w3, w1));
+            double im3 = w3.imag().doubleValue(),
+                   imOther = other.imag().doubleValue(),
+                   size3 = Math.hypot(w3.real().doubleValue(), im3);
+            if (imOther < im3 - tolerance * size3 ||
+                (Math.abs(imOther - im3) <= tolerance * size3 && other.real().doubleValue() > w3.real().doubleValue()))
+            {
+                w3 = other;
+            }
+        }
         return new Apcomplex[] { ApfloatHelperShim.limitPrecision(w1, precision), ApfloatHelperShim.limitPrecision(w3, precision) };
     }
 

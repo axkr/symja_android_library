@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.expression.CMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
@@ -3194,13 +3195,21 @@ public class EllipticIntegrals {
             if (e == null) {
               return F.NIL;
             }
+            // the pair of the lattice which Mathematica chooses: the quotient in the fundamental domain
             Apcomplex[] w = ApcomplexWeierstrassMath.weierstrassHalfPeriods(e[0], e[1], e[2]);
+            w = ApcomplexWeierstrassMath.normalizedHalfPeriods(w[0], w[1]);
             return F.list(WorkingPrecision.round(w[0], digits),
                 WorkingPrecision.round(w[1], digits));
           }
-          org.hipparchus.complex.Complex[] invariants =
+          org.hipparchus.complex.Complex[] w =
               EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
-          return Object2Expr.convertComplex(false, invariants);
+          // the same choice of the pair, from the double values with their 17 digits
+          Apcomplex[] normalized = ApcomplexWeierstrassMath.normalizedHalfPeriods(
+              CMath.apcomplex(w[0], ParserConfig.MACHINE_PRECISION + 1),
+              CMath.apcomplex(w[1], ParserConfig.MACHINE_PRECISION + 1));
+          return Object2Expr.convertComplex(false,
+              new org.hipparchus.complex.Complex[] {CMath.toComplex(normalized[0]),
+                  CMath.toComplex(normalized[1])});
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.WeierstrassHalfPeriods, rex);

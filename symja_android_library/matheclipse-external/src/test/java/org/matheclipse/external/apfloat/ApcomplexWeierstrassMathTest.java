@@ -116,4 +116,41 @@ public class ApcomplexWeierstrassMathTest
         assertThrows(ArithmeticException.class, () -> ApcomplexWeierstrassMath.weierstrassZeta(Apcomplex.ZERO, E1, E2, E3));
         assertThrows(ArithmeticException.class, () -> ApcomplexWeierstrassMath.weierstrassZeta(q(1, 3), E1, E2, E1));
     }
+
+    // Mathematica's WeierstrassHalfPeriods for the invariants {1, 2}, {2, 1}, {4, -1}, {1+i, 2-i}, {-3, 5i} and {-3, -5i}
+    private static final String[][] MATHEMATICA_HALF_PERIODS =
+    {
+        { "1.30836476263709686532", "0", "0.65418238131854843266", "1.22936875163291509912" },
+        { "1.35131239065494780003", "0", "0.6756561953274739000", "1.5479199968939840078" },
+        { "0", "-1.2256946909933950304", "1.4967293231159798149", "0" },
+        { "0.50642052214905425399", "1.19616372011697313375", "-1.30430331242892507526", "-0.03741975814667358740" },
+        { "0.77432103668214980693", "0.77432103668214980693", "-1.15378998288100563884", "0.37946894619885583191" },
+        { "0.77432103668214980693", "-0.77432103668214980693", "1.15378998288100563884", "0.37946894619885583191" },
+    };
+
+    private static Apcomplex part(String re, String im)
+    {
+        return new Apcomplex(re.equals("0") ? Apfloat.ZERO : new Apfloat(re, 20), im.equals("0") ? Apfloat.ZERO : new Apfloat(im, 20));
+    }
+
+    @Test
+    public void testNormalizedHalfPeriods()
+    {
+        for (String[] m : MATHEMATICA_HALF_PERIODS)
+        {
+            Apcomplex w1 = part(m[0], m[1]),
+                      w3 = part(m[2], m[3]),
+                      two = new Apfloat(2, 20),
+                      three = new Apfloat(3, 20);
+            // other bases of the same lattice
+            Apcomplex[][] bases = { { w1, w3 }, { w1.negate(), w3.negate() }, { w3.add(w1.multiply(three)), w1 }, { w1, w3.subtract(w1.multiply(two)) } };
+            for (Apcomplex[] basis : bases)
+            {
+                Apcomplex[] w = ApcomplexWeierstrassMath.normalizedHalfPeriods(basis[0], basis[1]);
+                String message = "half-periods of the lattice of " + basis[0] + " and " + basis[1];
+                assertClose(message + ", w1", w1, w[0], 17);
+                assertClose(message + ", w3", w3, w[1], 17);
+            }
+        }
+    }
 }
