@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
-import org.matheclipse.graphtheory.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -25,7 +24,8 @@ public class GlobalClusteringCoefficient extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() == 1) {
-      GraphExpr<?> gex = GraphFunctions.getGraphExpr(ast.arg1());
+      // a list of edges is the graph of the edges
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
       if (gex == null) {
         return F.NIL;
       }
@@ -79,7 +79,7 @@ public class GlobalClusteringCoefficient extends AbstractFunctionEvaluator {
       if (totalDen == 0) {
         return F.C0;
       }
-      return F.fraction(totalNum, totalDen);
+      return F.QQ(totalNum, totalDen);
     }
     return F.NIL;
   }

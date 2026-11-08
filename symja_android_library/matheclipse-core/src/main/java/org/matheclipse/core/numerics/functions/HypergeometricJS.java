@@ -11,10 +11,10 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.ResultException;
+import org.matheclipse.core.expression.CMath;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 
 /**
@@ -403,8 +403,8 @@ public class HypergeometricJS extends JS {
   public static Complex hypergeometric2F1(final Complex a, final Complex b, final Complex c,
       final Complex x) {
     Apcomplex hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(
-        NumberUtil.apcomplexValue(a), NumberUtil.apcomplexValue(b), NumberUtil.apcomplexValue(c),
-        NumberUtil.apcomplexValue(x));
+        CMath.apcomplex(a), CMath.apcomplex(b), CMath.apcomplex(c),
+        CMath.apcomplex(x));
     return new Complex(hypergeometric2f1.real().doubleValue(),
         hypergeometric2f1.imag().doubleValue());
 
@@ -718,29 +718,19 @@ public class HypergeometricJS extends JS {
       Apcomplex[] upper = new Apcomplex[a.length];
       Apcomplex[] lower = new Apcomplex[b.length];
       for (int i = 0; i < a.length; i++) {
-        upper[i] = apcomplex(a[i], digits);
+        upper[i] = CMath.apcomplex(a[i], digits);
       }
       for (int i = 0; i < b.length; i++) {
-        lower[i] = apcomplex(b[i], digits);
+        lower[i] = CMath.apcomplex(b[i], digits);
       }
       Apcomplex value = org.matheclipse.external.apfloat.ApcomplexHypergeometricMath
-          .hypergeometricPFQ(upper, lower, apcomplex(z, digits));
+          .hypergeometricPFQ(upper, lower, CMath.apcomplex(z, digits));
       Complex result = new Complex(value.real().doubleValue(), value.imag().doubleValue());
       return result.isFinite() ? result : null;
     } catch (ArithmeticException | org.apfloat.ApfloatRuntimeException ex) {
       org.matheclipse.core.eval.Errors.rethrowsInterruptException(ex);
       return null;
     }
-  }
-
-  private static Apcomplex apcomplex(Complex c, int digits) {
-    if (!c.isFinite()) {
-      throw new ArithmeticException("not a finite number");
-    }
-    Apfloat re = c.getReal() == 0.0 ? Apfloat.ZERO : new Apfloat(c.getReal()).precision(digits);
-    Apfloat im =
-        c.getImaginary() == 0.0 ? Apfloat.ZERO : new Apfloat(c.getImaginary()).precision(digits);
-    return new Apcomplex(re, im);
   }
 
   public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x) {

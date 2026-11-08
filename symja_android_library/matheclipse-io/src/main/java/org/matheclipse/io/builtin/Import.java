@@ -255,7 +255,11 @@ public class Import extends AbstractEvaluator {
     if (dataFile == null && FileSandbox.isHostVisible(engine)) {
       String lower = fileName.toLowerCase(java.util.Locale.ROOT);
       if (lower.startsWith("http://") || lower.startsWith("https://")) {
-        return new URL(fileName);
+        try {
+          return new java.net.URI(fileName).toURL();
+        } catch (java.net.URISyntaxException | IllegalArgumentException e) {
+          throw new MalformedURLException(e.getMessage());
+        }
       }
     }
     return file.toURI().toURL();
@@ -263,13 +267,19 @@ public class Import extends AbstractEvaluator {
 
   private static IExpr expressionJSONImport(URL source) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    JsonNode node = mapper.readTree(source);
+    JsonNode node;
+    try (InputStream in = source.openStream()) {
+      node = mapper.readTree(in);
+    }
     return ExpressionJSONConvert.importExpressionJSONRecursive(node);
   }
 
   private static IExpr jsonImport(URL source, boolean rawJSON) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    JsonNode node = mapper.readTree(source);
+    JsonNode node;
+    try (InputStream in = source.openStream()) {
+      node = mapper.readTree(in);
+    }
     return JSONConvert.importJSONRecursive(node, rawJSON);
   }
 

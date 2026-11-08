@@ -334,7 +334,7 @@ public class Sequences {
         int l2 = 2 * l;
         IASTAppendable mlist = F.ListAlloc();
         for (int k = 0; k < l; k++) {
-          mlist.append(x.copyFrom(k + 1, k + l + 1));
+          mlist.append(x.subList(k + 1, k + l + 1));
         }
         FieldMatrix<IExpr> m = Convert.list2Matrix(mlist);
         if (m == null) {
@@ -349,7 +349,7 @@ public class Sequences {
                   .getSolver();
           if (solver.isNonSingular()) {
 
-            FieldMatrix<IExpr> m2 = Convert.list2Matrix(F.List(x.copyFrom(l + 1, l2 + 1)));
+            FieldMatrix<IExpr> m2 = Convert.list2Matrix(F.List(x.subList(l + 1, l2 + 1)));
             if (m2 == null) {
               // not a valid matrix
               return F.NIL;
@@ -363,7 +363,7 @@ public class Sequences {
             }
             mlist = F.ListAlloc();
             for (int k = l; k < lx - l; k++) {
-              mlist.append(x.copyFrom(k + 1, k + l + 1));
+              mlist.append(x.subList(k + 1, k + l + 1));
             }
             m = Convert.list2Matrix(mlist);
             if (m == null) {
@@ -371,7 +371,7 @@ public class Sequences {
               return F.NIL;
             }
             FieldMatrix<IExpr> mDoty = m.multiply(y);
-            FieldMatrix<IExpr> m3 = Convert.list2Matrix(F.List(x.copyFrom(l2 + 1)));
+            FieldMatrix<IExpr> m3 = Convert.list2Matrix(F.List(x.subList(l2 + 1)));
             if (m3 == null) {
               // not a valid matrix
               return F.NIL;

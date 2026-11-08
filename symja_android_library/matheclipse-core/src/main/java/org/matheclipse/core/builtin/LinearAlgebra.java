@@ -83,6 +83,7 @@ import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.numerics.linalg.ApfloatMatrices;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -96,6 +97,7 @@ import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.external.fastutil.ints.IntList;
@@ -112,35 +114,281 @@ public final class LinearAlgebra {
   public static final IExpr[] ROW_REDUCE_DEFAULTS =
       new IExpr[] {S.Automatic, F.C0, S.Automatic, S.Automatic};
 
+  /**
+   * A function which generates a matrix and takes the option <code>TargetStructure</code>:
+   * <code>"Dense"</code> gives a list of lists, <code>"Sparse"</code> a sparse array and
+   * <code>Automatic</code> the form of {@link #generate(IAST, EvalEngine)}.
+   */
+  public abstract static class AbstractMatrixGenerator extends AbstractFunctionOptionEvaluator {
+
+    /**
+     * Generate the matrix.
+     *
+     * @param ast the call without its options
+     * @param engine the evaluation engine
+     * @return {@link F#NIL} if the arguments don't describe a matrix
+     */
+    protected abstract IExpr generate(IAST ast, EvalEngine engine);
+
+    @Override
+    public final IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      final IExpr structure = options[0];
+      final boolean sparse = structure.isString("Sparse");
+      if (!sparse && !structure.isString("Dense") && structure != S.Automatic) {
+        // `1` currently not supported in `2`.
+        return Errors.printMessage(ast.topHead(), "unsupported",
+            F.list(F.Rule(S.TargetStructure, structure), ast.topHead()), engine);
+      }
+      IExpr matrix = generate(argSize == ast.argSize() ? ast : ast.copyUntil(argSize + 1), engine);
+      if (matrix.isNIL() || structure == S.Automatic || (!sparse && !matrix.isSparseArray())) {
+        return matrix;
+      }
+      if (!sparse) {
+        return matrix.normal(false);
+      }
+      matrix = engine.evaluate(matrix);
+      int[] dim = matrix.isMatrix(false);
+      if (dim == null) {
+        return matrix;
+      }
+      final IAST rows = (IAST) matrix.normal(false);
+      return F.sparseMatrix((i, j) -> rows.getPart(i + 1, j + 1), dim[0], dim[1]);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.TargetStructure, S.Automatic);
+    }
+  }
+
+  /**
+   * <pre>
+   * CompanionMatrix({c0, c1, ..., c(n-1)})
+   * CompanionMatrix(poly, x)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the companion matrix of the monic polynomial with the coefficients
+   * <code>c0, c1, ..., c(n-1), 1</code> or of the polynomial <code>poly</code> in <code>x</code>,
+   * which is divided by its leading coefficient. A further argument <code>Right</code> (the
+   * default), <code>Bottom</code>, <code>Left</code> or <code>Top</code> gives the place of the
+   * negated coefficients.
+   *
+   * </blockquote>
+   */
+  private static class CompanionMatrix extends AbstractMatrixGenerator {
+
+    /** The coefficients of a polynomial divided by the leading coefficient, which is left out. */
+    private static IAST monicCoefficients(IExpr coefficientList, EvalEngine engine) {
+      IAST list = (IAST) coefficientList;
+      final IExpr leadingCoefficient = list.last();
+      return F.mapRange(1, list.argSize(),
+          i -> engine.evaluate(F.Divide(list.get(i), leadingCoefficient)));
+    }
+
+    @Override
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr placement = S.Right;
+      IAST coefficients;
+      if (arg1.isList()) {
+        if (ast.argSize() > 2) {
+          return F.NIL;
+        }
+        if (ast.isAST2()) {
+          placement = ast.arg2();
+        }
+        coefficients = (IAST) arg1;
+      } else {
+        if (ast.isAST1()) {
+          return F.NIL;
+        }
+        if (ast.argSize() == 3) {
+          placement = ast.arg3();
+        }
+        IExpr list = engine.evaluate(F.binaryAST2(S.CoefficientList, arg1, ast.arg2()));
+        if (!list.isList() || list.argSize() < 2) {
+          // Argument `1` is neither a non-empty list of coefficients nor an explicit polynomial in
+          // a given variable.
+          return Errors.printMessage(S.CompanionMatrix, "clorpoly", F.list(arg1), engine);
+        }
+        coefficients = monicCoefficients(list, engine);
+      }
+      final boolean turned = placement == S.Left || placement == S.Top;
+      final boolean transposed = placement == S.Bottom || placement == S.Top;
+      if (!turned && !transposed && placement != S.Right) {
+        // Specification `1` for placement of coefficients must be Top, Bottom, Left or Right.
+        return Errors.printMessage(S.CompanionMatrix, "plspecc", F.list(placement), engine);
+      }
+      final int n = coefficients.argSize();
+      if (n == 0) {
+        return F.list(F.CEmptyList);
+      }
+      return F.matrix((i, j) -> {
+        // the position in the matrix with the coefficients in the last column
+        int row = turned ? n - 1 - (transposed ? j : i) : (transposed ? j : i);
+        int column = turned ? n - 1 - (transposed ? i : j) : (transposed ? i : j);
+        if (column == n - 1) {
+          return F.Negate(coefficients.get(row + 1));
+        }
+        return column == row - 1 ? F.C1 : F.C0;
+      }, n, n);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <pre>
+   * SavitzkyGolayMatrix(r, k)
+   * SavitzkyGolayMatrix({r1, r2, ...}, {k1, k2, ...})
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the array of the Savitzky-Golay smoothing coefficients of the polynomial degree
+   * <code>k</code> and the radius <code>r</code>, which is a matrix for a number <code>r</code> and
+   * the outer product of the coefficients of each dimension otherwise.
+   *
+   * </blockquote>
+   */
+  private static class SavitzkyGolayMatrix extends AbstractFunctionOptionEvaluator {
+
+    /** The largest radius; the coefficients are computed exactly. */
+    private static final int MAX_RADIUS = 1024;
+
+    /**
+     * The first row of <code>Inverse(Transpose(a).a).Transpose(a)</code> for the matrix
+     * <code>a(i, p) = (i-r)^p</code>: the value of the fitted polynomial at the center.
+     */
+    private static IExpr kernel(int radius, int degree, EvalEngine engine) {
+      final int size = 2 * radius + 1;
+      final int columns = Math.min(degree, 2 * radius) + 1;
+      final IInteger[] sums = new IInteger[2 * columns - 1];
+      for (int p = 0; p < sums.length; p++) {
+        // the sum of k^p for -r <= k <= r
+        IInteger sum = F.C0;
+        for (int k = -radius; k <= radius; k++) {
+          sum = sum.add(power(k, p));
+        }
+        sums[p] = sum;
+      }
+      IAST normalMatrix = F.matrix((i, j) -> sums[i + j], columns, columns);
+      IExpr solution = engine.evaluate(F.LinearSolve(normalMatrix,
+          F.mapRange(0, columns, i -> i == 0 ? F.C1 : F.C0)));
+      if (!solution.isList()) {
+        return F.NIL;
+      }
+      final IAST x = (IAST) solution;
+      return engine.evaluate(F.mapRange(0, size, i -> F.mapRange(S.Plus, 0, columns,
+          p -> F.Times(x.get(p + 1), power(i - radius, p)))));
+    }
+
+    /** The power <code>base^exponent</code> with the value <code>1</code> for <code>0^0</code>. */
+    private static IInteger power(int base, int exponent) {
+      return exponent == 0 ? F.C1 : F.ZZ(base).powerRational(exponent);
+    }
+
+    /**
+     * The values of a list <code>spec</code> or the value of <code>spec</code> for each of the
+     * <code>rank</code> dimensions.
+     *
+     * @return <code>null</code> if the values aren't non-negative machine integers.
+     */
+    private static int[] dimensions(IExpr spec, int rank) {
+      int[] result = new int[rank];
+      for (int i = 0; i < rank; i++) {
+        IExpr value = spec;
+        if (spec.isList()) {
+          if (spec.argSize() != rank) {
+            return null;
+          }
+          value = ((IAST) spec).get(i + 1);
+        }
+        result[i] = value.toIntDefault();
+        if (result[i] < 0) {
+          return null;
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr radiusSpec = ast.arg1();
+      // a number describes the square matrix
+      final int rank = radiusSpec.isList() ? radiusSpec.argSize() : 2;
+      int[] radius = dimensions(radiusSpec, rank);
+      int[] degree = dimensions(ast.arg2(), rank);
+      if (rank == 0 || radius == null || degree == null) {
+        return F.NIL;
+      }
+      IASTAppendable outer = F.ast(S.Outer, rank + 1);
+      outer.append(S.Times);
+      for (int i = 0; i < rank; i++) {
+        if (radius[i] > MAX_RADIUS) {
+          ASTElementLimitExceeded.throwIt(2L * radius[i] + 1);
+        }
+        IExpr kernel = kernel(radius[i], degree[i], engine);
+        if (kernel.isNIL()) {
+          return F.NIL;
+        }
+        outer.append(kernel);
+      }
+      IExpr result = rank == 1 ? outer.arg2() : engine.evaluate(outer);
+      IExpr precision = options[0];
+      if (precision.isInfinity()) {
+        return result;
+      }
+      return precision == S.MachinePrecision ? engine.evaluate(F.N(result))
+          : engine.evaluate(F.N(result, precision));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.WorkingPrecision, S.MachinePrecision);
+    }
+  }
+
   public static class Adjugate extends AbstractMatrix1Matrix {
 
     public static FieldMatrix<IExpr> adjugateMatrix(FieldMatrix<IExpr> matrix,
         Predicate<IExpr> zeroChecker) {
+      final EvalEngine engine = EvalEngine.get();
       if (isSymbolicMatrix(matrix)) {
         // division-free cofactor based adjugate; also works for singular matrices
-        final EvalEngine engine = EvalEngine.get();
-        final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
-        if (expansion != null) {
-          final IExpr[][] cofactors = expansion.adjugate();
-          if (cofactors != null) {
-            final FieldMatrix<IExpr> result = matrix.copy();
-            final int n = matrix.getRowDimension();
-            for (int i = 0; i < n; i++) {
-              for (int j = 0; j < n; j++) {
-                result.setEntry(i, j, engine.evaluate(F.Expand(cofactors[i][j])));
-              }
-            }
-            return result;
-          }
+        final FieldMatrix<IExpr> result = cofactorAdjugate(matrix, engine);
+        if (result != null) {
+          return result;
         }
         // the expansion grew past its budget: fall back to the fraction-free elimination
         return FractionFreeElimination.adjugate(matrix, zeroChecker, engine);
       }
+      boolean cofactorsTried = false;
       if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
         FieldMatrix<IExpr> inverse = FractionFreeElimination.inverse(matrix);
         if (inverse != null) {
           return inverse.scalarMultiply(FractionFreeElimination.determinant(matrix));
         }
+        // the adjugate of a singular matrix is the transposed matrix of its cofactors
+        final FieldMatrix<IExpr> result = cofactorAdjugate(matrix, engine);
+        if (result != null) {
+          return result;
+        }
+        cofactorsTried = true;
       }
       // @since version 1.9
       // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
@@ -149,14 +397,74 @@ public final class LinearAlgebra {
           new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
       FieldDecompositionSolver<IExpr> solver = lu.getSolver();
       if (!solver.isNonSingular()) {
+        // the expansion which grew past its budget isn't repeated
+        final FieldMatrix<IExpr> result =
+            cofactorsTried ? null : cofactorAdjugate(matrix, engine);
+        if (result != null) {
+          return result;
+        }
         // Matrix `1` is singular.
         Errors.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)),
-            EvalEngine.get());
+            engine);
         return null;
       }
       FieldMatrix<IExpr> inverse = solver.getInverse();
       IExpr det = lu.getDeterminant();
       return inverse.scalarMultiply(det);
+    }
+
+    /**
+     * The division-free adjugate from the cofactor expansion, which also exists for a singular
+     * matrix.
+     *
+     * @return <code>null</code> if the expansion grows past its budget
+     */
+    private static FieldMatrix<IExpr> cofactorAdjugate(FieldMatrix<IExpr> matrix,
+        EvalEngine engine) {
+      final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
+      if (expansion == null) {
+        return null;
+      }
+      final IExpr[][] cofactors = expansion.adjugate();
+      if (cofactors == null) {
+        return null;
+      }
+      final FieldMatrix<IExpr> result = matrix.copy();
+      final int n = matrix.getRowDimension();
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          result.setEntry(i, j, engine.evaluate(F.Expand(cofactors[i][j])));
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The adjugate of a singular real matrix <code>U.S.Transpose(V)</code> from its singular value
+     * decomposition: <code>Det(U)*Det(V)*V.Adjugate(S).Transpose(U)</code>, where the diagonal of
+     * <code>Adjugate(S)</code> holds the products of all but one singular value.
+     */
+    private static RealMatrix singularAdjugate(RealMatrix matrix) {
+      final org.hipparchus.linear.SingularValueDecomposition svd =
+          new org.hipparchus.linear.SingularValueDecomposition(matrix);
+      final double[] sigma = svd.getSingularValues();
+      final int n = sigma.length;
+      final RealMatrix u = svd.getU();
+      final RealMatrix v = svd.getV();
+      final double sign = new org.hipparchus.linear.LUDecomposition(u).getDeterminant()
+          * new org.hipparchus.linear.LUDecomposition(v).getDeterminant();
+      final double[] adjSigma = new double[n];
+      for (int i = 0; i < n; i++) {
+        double product = sign;
+        for (int j = 0; j < n; j++) {
+          if (j != i) {
+            product *= sigma[j];
+          }
+        }
+        adjSigma[i] = product;
+      }
+      return v.multiply(org.hipparchus.linear.MatrixUtils.createRealDiagonalMatrix(adjSigma))
+          .multiply(u.transpose());
     }
 
     @Override
@@ -175,10 +483,7 @@ public final class LinearAlgebra {
           new org.hipparchus.linear.LUDecomposition(matrix);
       DecompositionSolver solver = lu.getSolver();
       if (!solver.isNonSingular()) {
-        // Matrix `1` is singular.
-        Errors.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)),
-            EvalEngine.get());
-        return null;
+        return singularAdjugate(matrix);
       }
       RealMatrix inverse = solver.getInverse();
       double det = lu.getDeterminant();
@@ -527,6 +832,19 @@ public final class LinearAlgebra {
             if (dimension[0] == 2 || dimension[0] == 3) {
               arg1 = arg1.normal(false);
             }
+            if (arg1.isList() && arg1.isFree(IExpr::isInexactNumber, false)
+                && !isSymmetricOrHermitian((IAST) arg1.normal(false))) {
+              // The matrix `1` is not hermitian or real and symmetric.
+              return Errors.printMessage(ast.topHead(), "herm", F.List(arg1), engine);
+            }
+            // the closed forms of an exact matrix and a machine matrix are tested up front; a
+            // larger exact matrix fails in the numeric decomposition itself
+            if (arg1.isList() && arg1.isNumericFunction(true)
+                && (dimension[0] <= 3 || !arg1.isFree(IExpr::isInexactNumber, false))
+                && !S.PositiveDefiniteMatrixQ.ofQ(engine, arg1)) {
+              // The matrix `1` is not positive definite.
+              return Errors.printMessage(ast.topHead(), "npdef", F.List(arg1), engine);
+            }
             if (arg1.isList()) {
               IAST matrix = (IAST) arg1;
               if (dimension[0] == 2) {
@@ -534,7 +852,7 @@ public final class LinearAlgebra {
                 IExpr a12 = matrix.getPart(1, 2);
                 IExpr a21 = matrix.getPart(2, 1);
                 IExpr a22 = matrix.getPart(2, 2);
-                if (a12.equals(a21.conjugate())) {
+                if (a12.equals(a21.conjugate()) || a12.equals(a21)) {
                   // {{Sqrt(a11), a12/Sqrt(a11)}, {0, Sqrt(a22 -
                   // (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))}}
                   IAST choleskyDecomposition = F.List(//
@@ -557,9 +875,10 @@ public final class LinearAlgebra {
                 IExpr a31 = matrix.getPart(3, 1);
                 IExpr a32 = matrix.getPart(3, 2);
                 IExpr a33 = matrix.getPart(3, 3);
-                if (a12.equals(a21.conjugate())//
+                if ((a12.equals(a21.conjugate())//
                     && a13.equals(a31.conjugate())//
-                    && a23.equals(a32.conjugate())) {
+                    && a23.equals(a32.conjugate()))
+                    || (a12.equals(a21) && a13.equals(a31) && a23.equals(a32))) {
                   IAST choleskyDecomposition =
                       // [$ {{Sqrt(a11), a12/Sqrt(a11), a13/Sqrt(a11)},
                       // {0, Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11)),
@@ -642,6 +961,42 @@ public final class LinearAlgebra {
         return Errors.printMessage(ast.topHead(), e, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * A matrix whose entries are symmetric as expressions and have no non-real numeric entry, or
+     * Hermitian with a diagonal that equals its conjugate. <code>{{p,q},{Conjugate(q),r}}</code>
+     * is neither for a symbolic <code>p</code>, nor is <code>{{2,I},{I,2}}</code>.
+     */
+    private static boolean isSymmetricOrHermitian(IAST matrix) {
+      final int n = matrix.argSize();
+      boolean symmetric = true;
+      boolean hermitian = true;
+      for (int i = 1; i <= n; i++) {
+        IExpr diagonal = matrix.getPart(i, i);
+        if (!diagonal.equals(diagonal.conjugate())) {
+          hermitian = false;
+        }
+        if (isNonRealNumeric(diagonal)) {
+          symmetric = false;
+        }
+        for (int j = i + 1; j <= n; j++) {
+          IExpr upper = matrix.getPart(i, j);
+          IExpr lower = matrix.getPart(j, i);
+          if (!upper.equals(lower) || isNonRealNumeric(upper)) {
+            symmetric = false;
+          }
+          if (!upper.equals(lower.conjugate())) {
+            hermitian = false;
+          }
+        }
+      }
+      return symmetric || hermitian;
+    }
+
+    /** A numeric entry which isn't real; a symbolic entry may stand for a real number. */
+    private static boolean isNonRealNumeric(IExpr entry) {
+      return entry.isNumericFunction(true) && !entry.isRealResult();
     }
 
     @Override
@@ -830,6 +1185,16 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
+      if (m.isVector() > 0 && ast.arg3().isSymbol()) {
+        // the values y1, y2, ... are the points {1, y1}, {2, y2}, ...
+        IAST vector = (IAST) m.normal(false);
+        IExpr points = F.mapRange(1, vector.size(), i -> F.list(F.ZZ(i), vector.get(i)));
+        IExpr designMatrix = engine.evaluate(ast.setAtCopy(1, points));
+        if (designMatrix.isList() && vector.exists(x -> x.isInexactNumber())) {
+          return engine.evalN(designMatrix);
+        }
+        return designMatrix;
+      }
       int[] dim = m.isMatrix(false);
       if (dim != null && dim[1] >= 2) {
         // double[][] matrix = m.toDoubleMatrix(false);
@@ -1065,7 +1430,7 @@ public final class LinearAlgebra {
    * DiagonalMatrix(a + b)
    * </pre>
    */
-  private static class DiagonalMatrix extends AbstractFunctionEvaluator {
+  private static class DiagonalMatrix extends AbstractMatrixGenerator {
 
     /**
      * Determine the dimension of the square result matrix.
@@ -1105,26 +1470,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // null: a sparse array for a sparse array input, a list otherwise
-      Boolean sparse = null;
-      IExpr last = ast.last();
-      if (ast.argSize() > 1 && last.isRuleAST() && last.first() == S.TargetStructure) {
-        IExpr structure = last.second();
-        if (structure.isString("Sparse")) {
-          sparse = Boolean.TRUE;
-        } else if (structure.isString("Dense")) {
-          sparse = Boolean.FALSE;
-        } else if (structure != S.Automatic) {
-          // `1` currently not supported in `2`.
-          return Errors.printMessage(S.DiagonalMatrix, "unsupported",
-              F.list(last, S.DiagonalMatrix), engine);
-        }
-        ast = ast.removeAtCopy(ast.argSize());
-      }
-      if (ast.argSize() > 3) {
-        return F.NIL;
-      }
+    protected IExpr generate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final int offset = ast.size() > 2 ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
       int dimension = arg1.isVector();
@@ -1135,12 +1481,10 @@ public final class LinearAlgebra {
           ISparseArray sparseArray = (ISparseArray) arg1;
           final int length = sparseArray.getDimension()[0];
           int size = matrixSize(ast, length, offset);
-          BiIntFunction<IExpr> entry = (i, j) -> {
+          return F.sparseMatrix((i, j) -> {
             int index = diagonalIndex(i, j, offset, length);
             return index < 0 ? F.C0 : sparseArray.get(index);
-          };
-          return sparse == Boolean.FALSE ? F.matrix(entry, size, size)
-              : F.sparseMatrix(entry, size, size);
+          }, size, size);
         }
         IExpr normal = arg1.normal(false);
         if (normal.isAST()) {
@@ -1158,23 +1502,18 @@ public final class LinearAlgebra {
         int size = matrixSize(ast, length, offset);
         // a diagonal with an inexact number is padded with inexact zeroes
         final IExpr zero = vector.exists(x -> x.isInexactNumber()) ? F.CD0 : F.C0;
-        BiIntFunction<IExpr> entry = (i, j) -> {
+        return F.matrix((i, j) -> {
           int index = diagonalIndex(i, j, offset, length);
           return index < 0 ? zero : vector.get(index);
-        };
-        return sparse == Boolean.TRUE ? F.sparseMatrix(entry, size, size)
-            : F.matrix(entry, size, size);
+        }, size, size);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4;
+      return ARGS_1_3;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
   }
 
   /**
@@ -1562,6 +1901,278 @@ public final class LinearAlgebra {
   }
 
   /**
+   * The evaluator of a function with the forms of <code>Eigenvalues</code>,
+   * <code>Eigenvectors</code> and <code>Eigensystem</code>:
+   * <ul>
+   * <li>the option <code>Method</code>, which doesn't change the result, is dropped,
+   * <li><code>{m}</code> is the matrix <code>m</code>,
+   * <li><code>{a, b}</code> is the generalized problem <code>a.v == x*b.v</code>,
+   * <li>the second argument is a sequence specification as for <code>Take</code>.
+   * </ul>
+   */
+  private abstract static class AbstractEigenFunction extends AbstractMatrix1Expr {
+    /** The word for the taken items in the message <code>take</code>. */
+    private final String items;
+
+    AbstractEigenFunction(String items) {
+      this.items = items;
+    }
+
+    /** Evaluate the call with a matrix, which has at most a machine integer as second argument. */
+    protected abstract IExpr evaluateMatrix(IAST ast, EvalEngine engine);
+
+    /** The result for the given eigenvalues and eigenvectors. */
+    protected abstract IExpr select(IAST values, IAST vectors);
+
+    /** The eigenvalues and the eigenvectors of a result of the function. */
+    protected abstract IAST[] split(IExpr result);
+
+    /** Take the positions of the sequence specification out of the complete result. */
+    private IExpr take(IExpr result, IAST ast, int[] spec, EvalEngine engine) {
+      if (!result.isList()) {
+        return F.NIL;
+      }
+      IAST[] parts = split(result);
+      int total = parts[0] == null ? parts[1].argSize() : parts[0].argSize();
+      int from = spec[0] < 0 ? total + 1 + spec[0] : spec[0];
+      int to = spec[1] < 0 ? total + 1 + spec[1] : spec[1];
+      int step = spec[2];
+      if (spec[0] < -total || spec[1] < -total
+          || (step > 0 ? (from < 1 || from > total + 1 || to < 0 || to > total)
+              : (from < 0 || from > total || to < 1 || to > total + 1))) {
+        // Cannot take `1` `2` through `3` out of the total of `4` `1`.
+        return Errors.printMessage(ast.topHead(), "take",
+            F.List(F.stringx(items), F.ZZ(spec[0]), F.ZZ(spec[1]), F.ZZ(total)), engine);
+      }
+      IASTAppendable values = F.ListAlloc();
+      IASTAppendable vectors = F.ListAlloc();
+      for (int i = from; step > 0 ? i <= to : i >= to; i += step) {
+        if (parts[0] != null) {
+          values.append(parts[0].get(i));
+        }
+        if (parts[1] != null) {
+          vectors.append(parts[1].get(i));
+        }
+      }
+      return select(values, vectors);
+    }
+
+    /**
+     * The numbers <code>{first, last, step}</code> of a sequence specification <code>n</code>,
+     * <code>-n</code>, <code>{n}</code>, <code>{m, n}</code> or <code>{m, n, s}</code>.
+     *
+     * @return <code>null</code> if <code>spec</code> is no such specification
+     */
+    private static int[] sequenceSpec(IExpr spec) {
+      if (!spec.isList()) {
+        int n = spec.toIntDefault();
+        if (F.isNotPresent(n)) {
+          return null;
+        }
+        return n >= 0 ? new int[] {1, n, 1} : new int[] {n, -1, 1};
+      }
+      int size = spec.argSize();
+      if (size < 1 || size > 3) {
+        return null;
+      }
+      int first = spec.first().toIntDefault();
+      int last = size == 1 ? first : spec.second().toIntDefault();
+      int step = size == 3 ? ((IAST) spec).arg3().toIntDefault() : 1;
+      if (F.isNotPresent(first) || F.isNotPresent(last) || F.isNotPresent(step) || step == 0) {
+        return null;
+      }
+      return new int[] {first, last, step};
+    }
+
+    /** The pair of square matrices of the same dimension, or <code>null</code>. */
+    private static IAST pencil(IExpr arg1) {
+      if (!arg1.isList2()) {
+        return null;
+      }
+      int[] dimA = arg1.first().isMatrix(false);
+      int[] dimB = arg1.second().isMatrix(false);
+      if (dimA == null || dimB == null || dimA[0] != dimA[1] || dimB[0] != dimB[1]
+          || dimA[0] != dimB[0]) {
+        return null;
+      }
+      return (IAST) arg1;
+    }
+
+    private static boolean isSquareMatrix(IExpr expr) {
+      int[] dim = expr.isMatrix(false);
+      return dim != null && dim[0] == dim[1] && dim[0] > 0
+          && ((IAST) expr.normal(false)).forAll(row -> ((IAST) row).forAll(x -> !x.isList()));
+    }
+
+    private static boolean isInvertibleNumber(IExpr det) {
+      return det.isNumber() && !det.isZero() && !(det.isInexactNumber()
+          && F.isZero(EvalEngine.get().evalDouble(F.Abs(det)), Config.DEFAULT_ROOTS_CHOP_DELTA));
+    }
+
+    /**
+     * The eigenvalues <code>x</code> of <code>a.v == x*b.v</code> for a machine pencil with a
+     * singular <code>b</code>: the reciprocals of the eigenvalues of <code>Inverse(a).b</code>,
+     * and <code>Infinity</code> for its zero eigenvalues, by decreasing size.
+     */
+    private IExpr singularPencil(IAST pencil, EvalEngine engine) {
+      if (pencil.isFree(x -> x.isInexactNumber(), false)
+          || !isInvertibleNumber(engine.evaluate(F.Det(pencil.arg1())))) {
+        return F.NIL;
+      }
+      IExpr system = engine.evaluate(F.Eigensystem(F.Dot(F.Inverse(pencil.arg1()), pencil.arg2())));
+      if (!system.isList2() || !system.first().isList() || !system.second().isList()) {
+        return F.NIL;
+      }
+      IAST mus = (IAST) system.first();
+      IAST vectors = (IAST) system.second();
+      int n = mus.argSize();
+      double[] sizes = new double[n];
+      double largest = 0.0;
+      for (int i = 0; i < n; i++) {
+        sizes[i] = engine.evalDouble(F.Abs(mus.get(i + 1)));
+        largest = Math.max(largest, sizes[i]);
+      }
+      Integer[] order = new Integer[n];
+      for (int i = 0; i < n; i++) {
+        order[i] = i;
+      }
+      final double[] magnitude = sizes;
+      Arrays.sort(order, (i, j) -> Double.compare(magnitude[i], magnitude[j]));
+      double limit = 1.0e-12 * largest;
+      IASTAppendable values = F.ListAlloc(n);
+      IASTAppendable sortedVectors = F.ListAlloc(n);
+      for (int i : order) {
+        values.append(sizes[i] <= limit ? F.CInfinity : mus.get(i + 1).inverse());
+        sortedVectors.append(vectors.get(i + 1));
+      }
+      return select(values, sortedVectors);
+    }
+
+    /** The result of one of the forms in the description of the class, or {@link F#NIL}. */
+    private IExpr evaluateForms(final IAST ast, EvalEngine engine) {
+      if (hasMethodOption(ast)) {
+        return engine.evaluate(ast.most());
+      }
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList1() && isSquareMatrix(arg1.first())) {
+        return engine.evaluate(ast.setAtCopy(1, arg1.first()));
+      }
+      IAST pencil = pencil(arg1);
+      if (ast.isAST2() && (pencil != null || !ast.arg2().isInteger()
+          || (ast.arg2().isNegative() && ast.topHead() != S.Eigenvalues))) {
+        if (pencil == null && !isSquareMatrix(arg1)) {
+          // prints the message for the first argument
+          checkMatrixDimensions(arg1);
+          return F.NIL;
+        }
+        int[] spec = sequenceSpec(ast.arg2());
+        if (spec == null) {
+          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+          // `1`.
+          return Errors.printMessage(ast.topHead(), "seqs", F.List(ast, F.C2), engine);
+        }
+        return take(engine.evaluate(F.unaryAST1(ast.topHead(), arg1)), ast, spec, engine);
+      }
+      if (pencil == null) {
+        return F.NIL;
+      }
+      IExpr det = engine.evaluate(F.Det(pencil.arg2()));
+      if (isInvertibleNumber(det)) {
+        IExpr product = engine.evaluate(F.Dot(F.Inverse(pencil.arg2()), pencil.arg1()));
+        return product.isMatrix(false) == null ? F.NIL
+            : engine.evaluate(ast.setAtCopy(1, product));
+      }
+      return singularPencil(pencil, engine);
+    }
+
+    /** The last argument is an option <code>Method -&gt; ...</code> behind the first argument. */
+    private static boolean hasMethodOption(IAST ast) {
+      return ast.argSize() >= 2 && ast.last().isRuleAST() && ast.last().first() == S.Method;
+    }
+
+    @Override
+    public final IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr result = evaluateForms(ast, engine);
+      return result.isPresent() ? result : evaluateMatrix(ast, engine);
+    }
+
+    @Override
+    public final IExpr numericEval(final IAST ast, EvalEngine engine) {
+      IExpr result = evaluateForms(ast, engine);
+      if (result.isPresent()) {
+        return result;
+      }
+      if (engine.isArbitraryMode() && isMachineMatrix(ast.arg1())) {
+        // a machine matrix in an arbitrary precision evaluation keeps its machine results
+        RealMatrix matrix = ast.arg1().toRealMatrix();
+        if (matrix != null && checkMatrixDimensions(ast.arg1()) != null) {
+          try {
+            return realMatrixEval(matrix, engine, ast);
+          } catch (MathRuntimeException mre) {
+            return F.NIL;
+          }
+        }
+      }
+      return super.numericEval(ast, engine);
+    }
+
+    /** A list of rows with machine numbers and rational numbers, and at least one machine number. */
+    private static boolean isMachineMatrix(IExpr arg1) {
+      if (!arg1.isListOfLists()) {
+        return false;
+      }
+      IAST rows = (IAST) arg1;
+      return rows.forAll(row -> ((IAST) row).forAll(x -> x.isMachineNumber() || x.isRational()))
+          && rows.exists(row -> ((IAST) row).exists(x -> x.isMachineNumber()));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return hasMethodOption(ast) ? ARGS_1_3 : ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.putMessage(IPatternMatcher.SET, "take",
+          F.stringx("Cannot take `1` `2` through `3` out of the total of `4` `1`."));
+    }
+  }
+
+  /**
+   * The eigenvectors of a real machine matrix for its eigenvalues, if one of those isn't real: the
+   * inverse iteration of a complex matrix, which is more accurate than the decomposition, with the
+   * rounding noise of the components removed.
+   *
+   * @param count the number of eigenvectors
+   * @return {@link F#NIL} if all the eigenvalues are real
+   */
+  private static IAST nonRealEigenvectors(RealMatrix matrix, Complex[] values, int count) {
+    boolean real = true;
+    for (Complex value : values) {
+      // the eigenvalues of a defective matrix scatter with small imaginary parts
+      real &= Math.abs(value.getImaginary()) <= DEFECTIVE_SCATTER * value.norm();
+    }
+    if (real) {
+      return F.NIL;
+    }
+    final int n = matrix.getRowDimension();
+    FieldMatrix<Complex> complexMatrix =
+        MatrixUtils.createFieldMatrix(ComplexField.getInstance(), n, n);
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        complexMatrix.setEntry(i, j, new Complex(matrix.getEntry(i, j)));
+      }
+    }
+    final Complex[][] vectors = complexEigenvectors(complexMatrix, values);
+    return F.mapRange(0, count, i -> F.mapRange(0, n, j -> {
+      Complex c = vectors[i][j];
+      double re = F.isZero(c.getReal(), EIGENVECTOR_CHOP) ? 0.0 : c.getReal();
+      double im = F.isZero(c.getImaginary(), EIGENVECTOR_CHOP) ? 0.0 : c.getImaginary();
+      return im == 0.0 ? F.num(re) : F.complexNum(re, im);
+    }));
+  }
+
+  /**
    * The complex eigen decomposition of <code>matrix</code> with the default tolerances, the
    * eigenvalues ordered by descending norm.
    */
@@ -1592,7 +2203,182 @@ public final class LinearAlgebra {
     });
   }
 
-  private static class Eigensystem extends AbstractMatrix1Expr {
+  /**
+   * The eigenvalues of a complex machine matrix by descending norm; eigenvalues of the same norm by
+   * ascending imaginary part.
+   */
+  private static Complex[] sortedComplexEigenvalues(FieldMatrix<Complex> matrix) {
+    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
+    Complex[] values = ComplexSchurTransformer.getEigenvalues(matrix);
+    Arrays.sort(values, (a, b) -> Double.compare(b.norm(), a.norm()));
+    int start = 0;
+    for (int i = 1; i <= values.length; i++) {
+      if (i == values.length
+          || values[i - 1].norm() - values[i].norm() > EIGENVALUE_CLUSTER * values[start].norm()) {
+        Arrays.sort(values, start, i, Comparator.comparingDouble(Complex::getImaginary));
+        start = i;
+      }
+    }
+    if (Eigenvalues.isHermitian(matrix)) {
+      // the eigenvalues of a Hermitian matrix are real: drop the rounding noise of the imaginary
+      // parts
+      for (int i = 0; i < values.length; i++) {
+        values[i] = new Complex(values[i].getReal());
+      }
+    }
+    return values;
+  }
+
+  /** The solution of <code>solver</code> is iterated in {@link #inverseIteration}. */
+  private static final int INVERSE_ITERATIONS = 4;
+
+  /** The distance of an eigenvalue and the shift of the inverse iteration, relative to the scale. */
+  private static final double INVERSE_ITERATION_SHIFT = 1.0e-10;
+
+  /** Eigenvalues within this distance relative to the scale are treated as the same eigenvalue. */
+  private static final double EIGENVALUE_CLUSTER = 1.0e-8;
+
+  /** The imaginary part of a real eigenvalue relative to its norm, for a defective matrix. */
+  private static final double DEFECTIVE_SCATTER = 1.0e-6;
+
+  /** A part of a component of a unit eigenvector below this size is rounding noise. */
+  private static final double EIGENVECTOR_CHOP = 1.0e-14;
+
+  /** Normalize <code>vector</code> to the Euclidean norm 1 in place. */
+  private static Complex[] normalizeComplexVector(Complex[] vector) {
+    double norm = 0.0;
+    for (Complex c : vector) {
+      norm = Math.hypot(norm, c.norm());
+    }
+    for (int i = 0; i < vector.length; i++) {
+      vector[i] = vector[i].divide(norm);
+    }
+    return vector;
+  }
+
+  /**
+   * Remove the components in the directions of the orthonormal vectors <code>basis</code> from
+   * <code>vector</code>.
+   */
+  private static void projectOut(Complex[] vector, List<Complex[]> basis) {
+    for (Complex[] u : basis) {
+      Complex product = Complex.ZERO;
+      for (int i = 0; i < vector.length; i++) {
+        product = product.add(u[i].conjugate().multiply(vector[i]));
+      }
+      for (int i = 0; i < vector.length; i++) {
+        vector[i] = vector[i].subtract(u[i].multiply(product));
+      }
+    }
+  }
+
+  /**
+   * Inverse iteration, which keeps the iterated vector orthogonal to the vectors
+   * <code>cluster</code> of the same eigenvalue.
+   *
+   * @param solver the solver of the matrix minus a shift near the eigenvalue
+   * @param k determines the start vector, so that each eigenvalue gets its own one
+   */
+  private static Complex[] inverseIteration(FieldDecompositionSolver<Complex> solver, int n, int k,
+      List<Complex[]> cluster) {
+    Complex[] vector = new Complex[n];
+    for (int i = 0; i < n; i++) {
+      double t = (double) i * (k + 1);
+      vector[i] = new Complex(1.0 + 0.5 * Math.sin(1.3 * t + 0.7), 0.5 * Math.cos(0.9 * t + 0.3));
+    }
+    projectOut(vector, cluster);
+    normalizeComplexVector(vector);
+    for (int iteration = 0; iteration < INVERSE_ITERATIONS; iteration++) {
+      vector = solver.solve(MatrixUtils.createFieldVector(vector)).toArray();
+      projectOut(vector, cluster);
+      normalizeComplexVector(vector);
+    }
+    return vector;
+  }
+
+  /** The norm of <code>matrix.vector - value*vector</code>. */
+  private static double eigenResidual(FieldMatrix<Complex> matrix, Complex value,
+      Complex[] vector) {
+    Complex[] image = matrix.operate(vector);
+    double norm = 0.0;
+    for (int i = 0; i < vector.length; i++) {
+      norm = Math.hypot(norm, image[i].subtract(value.multiply(vector[i])).norm());
+    }
+    return norm;
+  }
+
+  /**
+   * The eigenvectors of a complex machine matrix for the given eigenvalues. The vectors of a
+   * repeated eigenvalue are orthogonal to each other, if the eigenvalue isn't defective. Each
+   * vector has the norm 1 and its first component of the largest absolute value is real and
+   * positive.
+   */
+  private static Complex[][] complexEigenvectors(FieldMatrix<Complex> matrix, Complex[] values) {
+    final int n = values.length;
+    double scale = 1.0;
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        scale = Math.max(scale, matrix.getEntry(i, j).norm());
+      }
+    }
+    Complex[][] vectors = new Complex[n][];
+    for (int k = 0; k < n; k++) {
+      List<Complex[]> cluster = new ArrayList<Complex[]>();
+      for (int i = 0; i < k; i++) {
+        if (values[i].subtract(values[k]).norm() <= EIGENVALUE_CLUSTER * scale) {
+          cluster.add(vectors[i]);
+        }
+      }
+      FieldMatrix<Complex> shifted = matrix.copy();
+      Complex shift = values[k].add(scale * INVERSE_ITERATION_SHIFT).negate();
+      for (int i = 0; i < n; i++) {
+        shifted.addToEntry(i, i, shift);
+      }
+      FieldDecompositionSolver<Complex> solver =
+          new FieldLUDecomposition<Complex>(shifted, c -> F.isZero(c), true).getSolver();
+      Complex[] vector = inverseIteration(solver, n, k, cluster);
+      if (!cluster.isEmpty()
+          && eigenResidual(matrix, values[k], vector) > EIGENVALUE_CLUSTER * scale) {
+        // a defective eigenvalue has too few independent eigenvectors
+        vector = inverseIteration(solver, n, k, new ArrayList<Complex[]>());
+      }
+      vectors[k] = rotateLargestComponent(vector);
+    }
+    return vectors;
+  }
+
+  /** Multiply <code>vector</code> by a phase, which makes the largest component real positive. */
+  private static Complex[] rotateLargestComponent(Complex[] vector) {
+    double largest = 0.0;
+    for (Complex c : vector) {
+      largest = Math.max(largest, c.norm());
+    }
+    for (int k = 0; k < vector.length; k++) {
+      final double norm = vector[k].norm();
+      if (norm >= largest * (1.0 - EIGENVALUE_CLUSTER)) {
+        final Complex phase = vector[k].conjugate().divide(norm);
+        for (int i = 0; i < vector.length; i++) {
+          vector[i] = i == k ? new Complex(norm) : vector[i].multiply(phase);
+        }
+        break;
+      }
+    }
+    return vector;
+  }
+
+  /** The first <code>maxValues</code> (or all) of the eigenvectors as a list. */
+  private static IAST complexEigenvectorList(FieldMatrix<Complex> matrix, Complex[] values,
+      int maxValues) {
+    final Complex[][] vectors = complexEigenvectors(matrix, values);
+    return F.mapRange(0, maxValues >= 0 && maxValues < vectors.length ? maxValues : vectors.length,
+        i -> Convert.complexValues2List(vectors[i]));
+  }
+
+  private static class Eigensystem extends AbstractEigenFunction {
+
+    Eigensystem() {
+      super("eigenvectors and eigenvalues");
+    }
 
     @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
@@ -1600,7 +2386,17 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr select(IAST values, IAST vectors) {
+      return F.List(values, vectors);
+    }
+
+    @Override
+    protected IAST[] split(IExpr result) {
+      return new IAST[] {(IAST) result.first(), (IAST) result.second()};
+    }
+
+    @Override
+    protected IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         IAST zero = zeroMatrixEigensystem(arg1);
@@ -1631,6 +2427,17 @@ public final class LinearAlgebra {
     }
 
     @Override
+    public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
+      int maxValues = eigenvalueCount(ast, EvalEngine.get());
+      if (F.isNotPresent(maxValues)) {
+        return F.NIL;
+      }
+      Complex[] values = sortedComplexEigenvalues(matrix);
+      return F.List(complexToList(values, maxValues),
+          complexEigenvectorList(matrix, values, maxValues));
+    }
+
+    @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
       int maxValues = eigenvalueCount(ast, engine);
       if (F.isNotPresent(maxValues)) {
@@ -1640,8 +2447,11 @@ public final class LinearAlgebra {
         ComplexEigenDecomposition ced = orderedEigenDecomposition(matrix);
         // CPD-ON
         IAST values = complexToList(ced.getEigenvalues(), maxValues);
-        IAST vectors = F.mapRange(0, values.argSize(),
-            j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
+        IAST vectors = nonRealEigenvectors(matrix, ced.getEigenvalues(), values.argSize());
+        if (vectors.isNIL()) {
+          vectors = F.mapRange(0, values.argSize(),
+              j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
+        }
         return F.List(values, vectors);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
@@ -1689,7 +2499,21 @@ public final class LinearAlgebra {
    * {1.0,1.0,1.0}
    * </pre>
    */
-  private static class Eigenvalues extends AbstractMatrix1Expr {
+  private static class Eigenvalues extends AbstractEigenFunction {
+
+    Eigenvalues() {
+      super("eigenvalues");
+    }
+
+    @Override
+    protected IExpr select(IAST values, IAST vectors) {
+      return values;
+    }
+
+    @Override
+    protected IAST[] split(IExpr result) {
+      return new IAST[] {(IAST) result, null};
+    }
 
     private static IAST pickValues(IAST eigenValuesList, final IExpr numberOfEigenvalues) {
       if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
@@ -1787,50 +2611,12 @@ public final class LinearAlgebra {
       return Convert.checkNonEmptySquareMatrix(S.Eigenvalues, arg1);
     }
 
-    /**
-     * The generalized eigenvalues of the matrix pencil <code>Eigenvalues({a, b})</code>: the roots
-     * <code>λ</code> of <code>Det(a - λ*b) == 0</code>. For an invertible <code>b</code> they are
-     * the eigenvalues of <code>Inverse(b) . a</code>, sorted the same way and selected by the same
-     * second argument.
-     *
-     * @return {@link F#NIL} if the first argument is no pair of square matrices of the same
-     *         dimension or if <code>b</code> is singular
-     */
-    private static IExpr generalizedEigenvalues(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (!arg1.isList2()) {
-        return F.NIL;
-      }
-      IExpr a = arg1.first();
-      IExpr b = arg1.second();
-      int[] dimA = a.isMatrix(false);
-      int[] dimB = b.isMatrix(false);
-      if (dimA == null || dimB == null || dimA[0] != dimA[1] || dimB[0] != dimB[1]
-          || dimA[0] != dimB[0]) {
-        return F.NIL;
-      }
-      IExpr det = engine.evaluate(F.Det(b));
-      if (!det.isNumber() || det.isZero() || (det.isInexactNumber()
-          && F.isZero(engine.evalDouble(F.Abs(det)), Config.DEFAULT_ROOTS_CHOP_DELTA))) {
-        return F.NIL;
-      }
-      IExpr product = engine.evaluate(F.Dot(F.Inverse(b), a));
-      if (product.isMatrix(false) == null) {
-        return F.NIL;
-      }
-      return engine.evaluate(ast.setAtCopy(1, product));
-    }
-
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
       IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
       int maxValues = eigenvalueCount(ast, engine);
       if (F.isNotPresent(maxValues)) {
         return F.NIL;
-      }
-      IExpr pencil = generalizedEigenvalues(ast, engine);
-      if (pencil.isPresent()) {
-        return pencil;
       }
       if (ast.isAST1()) {
         IAST zero = zeroMatrixEigensystem(ast.arg1());
@@ -1871,6 +2657,12 @@ public final class LinearAlgebra {
           return Errors.printMessage(ast.topHead(), e, engine);
         }
       }
+      IAST symmetric = ApfloatMatrices.symmetricEigenvalues(ast.arg1());
+      if (symmetric.isPresent()) {
+        // a real symmetric matrix of arbitrary-precision numbers keeps their precision
+        return numberOfEigenvalues.isPresent() ? takeEigenvalues(symmetric, maxValues)
+            : symmetric;
+      }
       // switch to numeric calculation
       IExpr eigenValues = numericEval(ast, engine);
       if (eigenValues.isList()) {
@@ -1884,18 +2676,9 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
-      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
-      Complex[] complexEigenvalues = ComplexSchurTransformer.getEigenvalues(matrix);
-      // sort descending
-      Arrays.sort(complexEigenvalues, (a, b) -> Double.compare(b.norm(), a.norm()));
+      Complex[] complexEigenvalues = sortedComplexEigenvalues(matrix);
       if (isHermitian(matrix)) {
-        // the eigenvalues of a Hermitian matrix are real: drop the rounding noise of the
-        // imaginary parts
-        IASTAppendable result = F.ListAlloc(complexEigenvalues.length);
-        for (Complex c : complexEigenvalues) {
-          result.append(F.num(c.getReal()));
-        }
-        return result;
+        return complexToList(complexEigenvalues, -1);
       }
       return Convert.complexValues2List(complexEigenvalues);
     }
@@ -1977,7 +2760,21 @@ public final class LinearAlgebra {
    * {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}
    * </pre>
    */
-  private static class Eigenvectors extends AbstractMatrix1Expr {
+  private static class Eigenvectors extends AbstractEigenFunction {
+
+    Eigenvectors() {
+      super("eigenvectors");
+    }
+
+    @Override
+    protected IExpr select(IAST values, IAST vectors) {
+      return vectors;
+    }
+
+    @Override
+    protected IAST[] split(IExpr result) {
+      return new IAST[] {null, (IAST) result};
+    }
 
     // private static class OrderedComplexAbsEigenDecomposition extends ComplexEigenDecomposition {
     //
@@ -2129,7 +2926,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IAST zero = zeroMatrixEigensystem(ast.arg1());
         if (zero.isPresent()) {
@@ -2177,6 +2974,15 @@ public final class LinearAlgebra {
     }
 
     @Override
+    public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
+      int maxValues = eigenvalueCount(ast, EvalEngine.get());
+      if (F.isNotPresent(maxValues)) {
+        return F.NIL;
+      }
+      return complexEigenvectorList(matrix, sortedComplexEigenvalues(matrix), maxValues);
+    }
+
+    @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
       try {
         int maxValues = eigenvalueCount(ast, engine);
@@ -2188,6 +2994,10 @@ public final class LinearAlgebra {
         int vectorSize = matrix.getColumnDimension();
         if (maxValues >= 0 && maxValues < vectorSize) {
           vectorSize = maxValues;
+        }
+        IAST nonReal = nonRealEigenvectors(matrix, ced.getEigenvalues(), vectorSize);
+        if (nonReal.isPresent()) {
+          return nonReal;
         }
         return F.mapRange(0, vectorSize,
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
@@ -3386,10 +4196,10 @@ public final class LinearAlgebra {
   }
 
 
-  private static class HankelMatrix extends AbstractFunctionEvaluator {
+  private static class HankelMatrix extends AbstractMatrixGenerator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final int length1 = arg1.isVector();
       if (length1 >= 0) {
@@ -3452,9 +4262,6 @@ public final class LinearAlgebra {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
   }
 
 
@@ -3595,10 +4402,22 @@ public final class LinearAlgebra {
         return Errors.printMessage(S.IdentityMatrix, "intpm", F.list(ast, F.C1), engine);
       }
       if (ast.isAST2()) {
-        if (ast.arg2() == S.SparseArray) {
+        IExpr structure = ast.arg2();
+        if (structure.isRuleAST() && structure.first() == S.TargetStructure) {
+          // TargetStructure -> "Dense" or "Sparse"
+          IExpr value = structure.second();
+          if (value.isString("Dense")) {
+            structure = S.List;
+          } else if (value.isString("Sparse")) {
+            structure = S.SparseArray;
+          } else {
+            return F.NIL;
+          }
+        }
+        if (structure == S.SparseArray) {
           return F.sparseMatrix((i, j) -> i == j ? F.C1 : F.C0, dimension[0], dimension[1]);
         }
-        if (ast.arg2() != S.List) {
+        if (structure != S.List) {
           // Argument `1` at position `2` is not List or SparseArray.
           return Errors.printMessage(S.IdentityMatrix, "targ", F.list(ast, F.C1), engine);
         }
@@ -3625,6 +4444,7 @@ public final class LinearAlgebra {
       S.ArrayFlatten.setEvaluator(new ArrayFlatten());
       S.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
       S.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
+      S.CompanionMatrix.setEvaluator(new CompanionMatrix());
       S.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
       S.Cofactor.setEvaluator(new Cofactor());
       S.Cross.setEvaluator(new Cross());
@@ -3632,6 +4452,7 @@ public final class LinearAlgebra {
       S.Det.setEvaluator(new Det());
       S.Diagonal.setEvaluator(new Diagonal());
       S.DiagonalMatrix.setEvaluator(new DiagonalMatrix());
+      S.SavitzkyGolayMatrix.setEvaluator(new SavitzkyGolayMatrix());
       S.Dimensions.setEvaluator(new Dimensions());
       S.Dot.setEvaluator(new Dot());
       S.Eigensystem.setEvaluator(new Eigensystem());
@@ -4121,6 +4942,12 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        // the exact and the pseudo-inverse solutions have no tolerance to set
+        return ast.arg3().isRuleAST() && ast.arg3().first() == S.Tolerance
+            ? F.binaryAST2(S.LeastSquares, ast.arg1(), ast.arg2())
+            : F.NIL;
+      }
       if (ast.arg1().isMatrix() != null && ast.arg2().isVector() >= 0) {
         final IAST matrix = (IAST) ast.arg1().normal(false);
         final IAST vector = (IAST) ast.arg2().normal(false);
@@ -4166,7 +4993,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
   }
 
@@ -4630,6 +5457,10 @@ public final class LinearAlgebra {
           return Errors.printMessage(S.LinearSolve, "nosol", F.CEmptyList, engine);
         }
         if (isInexactNumberMatrix(augmentedMatrix)) {
+          IExpr leastSquares = leastSquaresSolution(matrix, vector);
+          if (leastSquares.isPresent()) {
+            return leastSquares;
+          }
           IExpr minimalNorm = engine.evalQuiet(F.Dot(
               F.unaryAST1(S.PseudoInverse, Convert.matrix2List(matrix)),
               Convert.vector2List(vector)));
@@ -4638,6 +5469,29 @@ public final class LinearAlgebra {
           }
         }
         return solution;
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The solution of a consistent real machine system with more equations than unknowns and
+     * independent columns by the QR decomposition.
+     *
+     * @return {@link F#NIL} if the method can't be used
+     */
+    private static IExpr leastSquaresSolution(FieldMatrix<IExpr> matrix,
+        FieldVector<IExpr> vector) {
+      if (matrix.getRowDimension() > matrix.getColumnDimension()) {
+        RealMatrix realMatrix = Convert.matrix2List(matrix).toRealMatrix();
+        double[] values = Convert.vector2List(vector).toDoubleVector();
+        if (realMatrix != null && values != null) {
+          DecompositionSolver solver =
+              new org.hipparchus.linear.QRDecomposition(realMatrix, Config.DOUBLE_TOLERANCE)
+                  .getSolver();
+          if (solver.isNonSingular()) {
+            return Convert.realVectors2List(solver.solve(MatrixUtils.createRealVector(values)));
+          }
+        }
       }
       return F.NIL;
     }
@@ -4718,10 +5572,10 @@ public final class LinearAlgebra {
     return F.matrix((i, j) -> i <= (long) j - k ? matrix.getEntry(i, j) : F.C0, m, n);
   }
 
-  private static class LowerTriangularize extends AbstractFunctionEvaluator {
+  private static class LowerTriangularize extends AbstractMatrixGenerator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
       return triangularize(ast, engine, true);
     }
 
@@ -4779,6 +5633,9 @@ public final class LinearAlgebra {
         int[] dim = ast.arg1().isMatrix();
         if (dim != null && dim[0] > 0 && dim[1] > 0) {
           if (dim[0] != dim[1]) {
+            if (ast.isAST1() && ast.arg1().isFree(x -> x.isInexactNumber(), false)) {
+              return rectangularLU((IAST) ast.arg1(), dim[0], dim[1], engine);
+            }
             // Argument `1` at position `2` is not a non-empty square matrix.
             return Errors.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
           }
@@ -4808,6 +5665,77 @@ public final class LinearAlgebra {
         engine.setTogetherMode(togetherMode);
       }
       return F.NIL;
+    }
+
+    /**
+     * The decomposition <code>{l, u, p, 0}</code> of an exact <code>rows x cols</code> matrix
+     * <code>m</code> which isn't square: the unit lower triangular <code>rows x rows</code> matrix
+     * <code>l</code>, the row echelon matrix <code>u</code> with the shape of <code>m</code> and
+     * the permutation matrix <code>p</code> with <code>l.u == p.m</code>. The pivot of a column is
+     * its first non-zero entry.
+     */
+    private static IExpr rectangularLU(IAST m, int rows, int cols, EvalEngine engine) {
+      IExpr[][] u = new IExpr[rows][cols];
+      IExpr[][] l = new IExpr[rows][rows];
+      int[] perm = new int[rows];
+      for (int i = 0; i < rows; i++) {
+        perm[i] = i;
+        IAST row = (IAST) m.get(i + 1);
+        for (int j = 0; j < cols; j++) {
+          u[i][j] = row.get(j + 1);
+        }
+        for (int j = 0; j < rows; j++) {
+          l[i][j] = i == j ? F.C1 : F.C0;
+        }
+      }
+      int r = 0;
+      for (int c = 0; c < cols && r < rows; c++) {
+        engine.checkTimeLimit();
+        int pivot = -1;
+        for (int i = r; i < rows; i++) {
+          if (!u[i][c].isPossibleZero(true)) {
+            pivot = i;
+            break;
+          }
+        }
+        if (pivot < 0) {
+          continue;
+        }
+        if (pivot != r) {
+          IExpr[] tempRow = u[pivot];
+          u[pivot] = u[r];
+          u[r] = tempRow;
+          int tempIndex = perm[pivot];
+          perm[pivot] = perm[r];
+          perm[r] = tempIndex;
+          for (int j = 0; j < r; j++) {
+            IExpr temp = l[pivot][j];
+            l[pivot][j] = l[r][j];
+            l[r][j] = temp;
+          }
+        }
+        for (int i = r + 1; i < rows; i++) {
+          if (u[i][c].isPossibleZero(true)) {
+            u[i][c] = F.C0;
+            continue;
+          }
+          IExpr factor = engine.evaluate(F.Together(F.Divide(u[i][c], u[r][c])));
+          l[i][r] = factor;
+          u[i][c] = F.C0;
+          for (int j = c + 1; j < cols; j++) {
+            u[i][j] = engine.evaluate(F.Together(F.Subtract(u[i][j], F.Times(factor, u[r][j]))));
+          }
+        }
+        r++;
+      }
+      IASTAppendable p = F.ListAlloc(rows);
+      for (int i = 0; i < rows; i++) {
+        final int column = perm[i];
+        p.append(F.mapRange(0, rows, j -> j == column ? F.C1 : F.C0));
+      }
+      IAST lMatrix = F.mapRange(0, rows, i -> F.List(l[i]));
+      IAST uMatrix = F.mapRange(0, rows, i -> F.List(u[i]));
+      return F.List(lMatrix, uMatrix, p, F.C0);
     }
 
     @Override
@@ -4950,7 +5878,7 @@ public final class LinearAlgebra {
 
           int p = arg2.toMachineInt();
           if (F.isNotPresent(p)) {
-            return F.NIL;
+            return matrixPowerFunction(ast, dimensions, engine);
           }
           if (ast.isAST3()) {
             return matrixPowerApply(matrix, p, ast, engine);
@@ -5000,6 +5928,29 @@ public final class LinearAlgebra {
       } finally {
         engine.setTogetherMode(togetherMode);
       }
+    }
+
+    /**
+     * <code>MatrixPower(m, p)</code> or <code>MatrixPower(m, p, v)</code> for a symbolic or
+     * non-integer exponent <code>p</code>: the power function <code>#^p&amp;</code> applied to the
+     * square matrix <code>m</code> through its eigen or Jordan decomposition.
+     */
+    private static IExpr matrixPowerFunction(final IAST ast, int[] dimensions,
+        EvalEngine engine) {
+      final IExpr exponent = ast.arg2();
+      if (dimensions[0] != dimensions[1] || exponent.isInteger() || exponent.isList()
+          || exponent.isInterval() || exponent.isString()) {
+        return F.NIL;
+      }
+      IExpr power = engine.evaluate(F.MatrixFunction(F.Function(F.Power(F.Slot1, exponent)), //
+          ast.arg1()));
+      if (!power.isList()) {
+        return F.NIL;
+      }
+      if (ast.isAST3()) {
+        return engine.evaluate(F.Dot(power, ast.arg3()));
+      }
+      return power;
     }
 
     /**
@@ -5114,7 +6065,8 @@ public final class LinearAlgebra {
             }
             return F.ZZ(pivotColumns.length);
           }
-          Predicate<IExpr> zeroChecker = buildZeroChecker(ast, options, engine);
+          // the zero test depends on the numbers of the evaluated matrix
+          Predicate<IExpr> zeroChecker = buildZeroChecker(ast.setAtCopy(1, normal), options, engine);
           IInteger rank = matrixRank(normal, zeroChecker);
           if (rank != null) {
             return rank;
@@ -5425,8 +6377,21 @@ public final class LinearAlgebra {
             return Errors.printMessage(S.Norm, "ptype", F.List(arg2));
           }
         }
-        if ((matrixNorm == F.C1 || matrixNorm == F.CInfinity) && !engine.isNumericMode()
-            && arg1.isFree(x -> x.isInexactNumber(), false)) {
+        final boolean arbitraryPrecision = ApfloatMatrices.precision(arg1) > 0;
+        if (arbitraryPrecision) {
+          // the precision of the entries, not machine precision
+          if (matrixNorm.isString("Frobenius")) {
+            return F.Norm(F.Flatten(arg1));
+          }
+          if (matrixNorm == F.C2) {
+            IExpr largest = ApfloatMatrices.largestSingularValue(arg1);
+            if (largest.isPresent()) {
+              return largest;
+            }
+          }
+        }
+        if ((matrixNorm == F.C1 || matrixNorm == F.CInfinity) && (arbitraryPrecision
+            || (!engine.isNumericMode() && arg1.isFree(x -> x.isInexactNumber(), false)))) {
           // exact or symbolic entries: the largest column sum (1-norm) or row sum (infinity-norm)
           // of the absolute values
           IAST m = (IAST) arg1.normal(false);
@@ -5661,6 +6626,15 @@ public final class LinearAlgebra {
    */
   private static class NullSpace extends AbstractFunctionOptionEvaluator {
 
+    /** A fraction, or a complex number with a fraction as real or imaginary part. */
+    private static boolean isFractionalNumber(IExpr x) {
+      if (x.isFraction()) {
+        return true;
+      }
+      return x.isComplex()
+          && (((IComplex) x).re().isFraction() || ((IComplex) x).im().isFraction());
+    }
+
     /**
      * Multiply the row vectors by the denominators {@link S#LCM} if all values are of type
      * {@link IRational} or of type {@link IComplex} (a complex number with rational real and
@@ -5730,7 +6704,10 @@ public final class LinearAlgebra {
               return F.CEmptyList;
             }
             IASTMutable nullspaceVectors = Convert.matrix2List(nullspace);
-            pullOutDenominators(nullspaceVectors, engine);
+            if (ast.arg1().isFree(NullSpace::isFractionalNumber, false)) {
+              // a matrix with fractions keeps the free variable 1: {{1/2,1/3}} gives {{-2/3,1}}
+              pullOutDenominators(nullspaceVectors, engine);
+            }
 
             // the vectors come from the raw field operations of the row reduction, which leave
             // unrationalized denominators, so normalize the entries
@@ -5837,15 +6814,132 @@ public final class LinearAlgebra {
       return engine.evaluate(plus);
     });
 
+    /** The values of the option <code>Method</code>. */
+    private static final java.util.Set<String> METHODS = java.util.Set.of("GramSchmidt",
+        "ModifiedGramSchmidt", "Reorthogonalization", "Householder");
+
+    /**
+     * The name of the method which is given by the option <code>Method</code>.
+     *
+     * @return <code>""</code> for the default method and <code>null</code> (after a message) for an
+     *         unknown method
+     */
+    private static String method(IAST ast, EvalEngine engine) {
+      if (!ast.isAST2() || !ast.arg2().isRuleAST() || ast.arg2().first() != S.Method
+          || ast.arg2().second() == S.Automatic) {
+        return "";
+      }
+      IExpr method = ast.arg2().second();
+      if (!method.isString() || !METHODS.contains(method.toString())) {
+        // `1` is not a valid value for the Method option.
+        Errors.printMessage(S.Orthogonalize, "orbop", F.list(method), engine);
+        return null;
+      }
+      return method.toString();
+    }
+
+    /**
+     * The rows of the matrix <code>q</code> of the Householder QR decomposition of the matrix with
+     * the given vectors as columns. A reflection maps a column to the negative of the sign of its
+     * first element, the last element of a square matrix isn't reflected.
+     */
+    private static IAST householder(RealMatrix vectors) {
+      final int size = vectors.getColumnDimension();
+      final int count = vectors.getRowDimension();
+      double[][] columns = vectors.getData();
+      double[][] reflectors = new double[Math.min(count, size)][];
+      for (int k = 0; k < reflectors.length; k++) {
+        double[] v = java.util.Arrays.copyOfRange(columns[k], k, size);
+        double norm = new org.hipparchus.linear.ArrayRealVector(v, false).getNorm();
+        if (norm == 0.0 || v.length == 1) {
+          continue;
+        }
+        v[0] += v[0] >= 0.0 ? norm : -norm;
+        reflectors[k] = v;
+        for (int j = k; j < count; j++) {
+          reflect(v, columns[j], k);
+        }
+      }
+      return F.mapRange(0, count, j -> {
+        double[] row = new double[size];
+        if (j < size) {
+          row[j] = 1.0;
+        }
+        for (int k = reflectors.length - 1; k >= 0; k--) {
+          if (reflectors[k] != null) {
+            reflect(reflectors[k], row, k);
+          }
+        }
+        return new ASTRealVector(row, false);
+      });
+    }
+
+    /** Reflect the elements starting at <code>offset</code> at the plane normal to <code>v</code>. */
+    private static void reflect(double[] v, double[] vector, int offset) {
+      double product = 0.0;
+      double square = 0.0;
+      for (int i = 0; i < v.length; i++) {
+        product += v[i] * vector[i + offset];
+        square += v[i] * v[i];
+      }
+      final double factor = 2.0 * product / square;
+      for (int i = 0; i < v.length; i++) {
+        vector[i + offset] -= factor * v[i];
+      }
+    }
+
+    /**
+     * Gram-Schmidt orthonormalization of the elements of <code>list</code> with the inner product
+     * <code>f(u, v)</code>: <code>w_k = e_k - Sum(f(e_k, w_j) / f(w_j, w_j) * w_j)</code> is
+     * normalized to <code>w_k / Sqrt(f(w_k, w_k))</code>; a dependent element gives
+     * <code>0</code>.
+     */
+    private static IExpr gramSchmidt(IAST list, IExpr f, EvalEngine engine) {
+      java.util.List<IExpr> orthogonal = new ArrayList<IExpr>();
+      java.util.List<IExpr> squares = new ArrayList<IExpr>();
+      IASTAppendable result = F.ListAlloc(list.argSize());
+      for (int k = 1; k < list.size(); k++) {
+        engine.checkTimeLimit();
+        IExpr e = list.get(k);
+        IASTAppendable w = F.PlusAlloc(orthogonal.size() + 1);
+        w.append(e);
+        for (int j = 0; j < orthogonal.size(); j++) {
+          IExpr wj = orthogonal.get(j);
+          w.append(F.Times(F.CN1, F.binaryAST2(f, e, wj), F.Power(squares.get(j), F.CN1), wj));
+        }
+        IExpr wk = engine.evaluate(w);
+        IExpr square = engine.evaluate(F.binaryAST2(f, wk, wk));
+        if (engine.evaluate(F.PossibleZeroQ(square)).isTrue()) {
+          result.append(engine.evaluate(F.Times(F.C0, wk)));
+          continue;
+        }
+        orthogonal.add(wk);
+        squares.add(square);
+        result.append(engine.evaluate(F.Times(F.Power(square, F.CN1D2), wk)));
+      }
+      return result;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST2() && !ast.arg2().isRuleAST() && arg1.isList()) {
+        // an inner product function
+        return gramSchmidt((IAST) arg1, ast.arg2(), engine);
+      }
       int[] dim = arg1.isMatrix();
       if (dim != null) {
+        final String method = method(ast, engine);
+        if (method == null) {
+          return F.NIL;
+        }
         boolean isNumeric = arg1.isNumericMode();
         if (isNumeric) {
           RealMatrix realMatrix = arg1.toRealMatrix();
           if (realMatrix != null) {
+            if (method.equals("Householder")) {
+              return householder(realMatrix);
+            }
             final int length = realMatrix.getRowDimension();
             ArrayList<RealVector> arrayList = new ArrayList<RealVector>(length);
             for (int i = 0; i < length; i++) {
@@ -5886,6 +6980,11 @@ public final class LinearAlgebra {
           }
         }
 
+        if (!method.isEmpty() && !method.equals("GramSchmidt")) {
+          // The option Method -> `1` cannot be used with exact precision vectors. It is replaced
+          // with Method -> GramSchmidt.
+          Errors.printMessage(S.Orthogonalize, "ornex", F.list(F.$str(method)), engine);
+        }
         // Gram-Schmidt orthogonalization
         return F.Map(F.Function(F.Normalize(F.Slot1)), //
             F.Fold(F.Function(F.Append(F.Slot1, F.binaryAST2(oneStep, F.Slot2, F.Slot1))),
@@ -6000,6 +7099,10 @@ public final class LinearAlgebra {
       IExpr arg2 = ast.arg2();
       int dim1 = arg1.isVector();
       int dim2 = arg2.isVector();
+      if (dim1 > 0 && dim1 == dim2 && ((IAST) arg2.normal(false)).forAll(IExpr::isZero)) {
+        // the projection onto the zero vector is the zero vector
+        return arg2.normal(false);
+      }
 
       if (ast.size() == 4) {
         IExpr head = ast.arg3();
@@ -6023,6 +7126,12 @@ public final class LinearAlgebra {
         IExpr v = arg2;
         return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
       }
+      if (dim1 > 0 && dim2 < 0) {
+        int[] dims = arg2.isMatrix(false);
+        if (dims != null && dims[1] == dim1) {
+          return projectionOnSpan((IAST) arg1, (IAST) arg2, engine);
+        }
+      }
       if (dim1 >= 0) {
         if (dim1 != dim2) {
           // The vectors `1` and `2` have different lengths.
@@ -6043,6 +7152,35 @@ public final class LinearAlgebra {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * The orthogonal projection of the vector <code>u</code> onto the space spanned by the rows of
+     * <code>matrix</code>: the rows are orthogonalized with the inner product
+     * <code>a . Conjugate(b)</code>, rows which depend on the earlier ones are dropped, and the
+     * projections onto the orthogonal rows are added.
+     */
+    private static IExpr projectionOnSpan(IAST u, IAST matrix, EvalEngine engine) {
+      java.util.List<IExpr> basis = new java.util.ArrayList<IExpr>();
+      java.util.List<IExpr> norms = new java.util.ArrayList<IExpr>();
+      IExpr result = F.constantArray(F.C0, u.argSize());
+      for (int i = 1; i < matrix.size(); i++) {
+        engine.checkTimeLimit();
+        IExpr w = matrix.get(i);
+        for (int k = 0; k < basis.size(); k++) {
+          IExpr b = basis.get(k);
+          w = engine.evaluate(F.Subtract(w,
+              F.Times(F.Divide(F.Dot(w, F.Conjugate(b)), norms.get(k)), b)));
+        }
+        IExpr norm = engine.evaluate(F.Together(F.Dot(w, F.Conjugate(w))));
+        if (norm.isZero()) {
+          continue;
+        }
+        basis.add(w);
+        norms.add(norm);
+        result = F.Plus(result, F.Times(F.Divide(F.Dot(u, F.Conjugate(w)), norm), w));
+      }
+      return engine.evaluate(F.Together(result));
     }
 
     @Override
@@ -6249,12 +7387,30 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        return ast.arg2() == S.Full ? fullDecomposition(ast.arg1(), engine) : F.NIL;
+      }
       boolean togetherMode = engine.isTogetherMode();
 
       try {
         final IExpr arg1 = ast.arg1();
         int[] dim = arg1.isMatrix();
         if (dim != null) {
+          if (dim[0] > 0 && dim[1] > 0 && engine.isSymbolicMode(S.QRDecomposition.getAttributes())
+              && ((IAST) arg1).forAll(row -> ((IAST) row)
+                  .forAll(x -> x.isNumericFunction(true) && !x.isInexactNumber()))) {
+            IExpr gramSchmidt = exactQR((IAST) arg1, dim, engine);
+            if (gramSchmidt.isPresent()) {
+              return gramSchmidt;
+            }
+          }
+          if (!engine.isArbitraryMode() && ((IAST) arg1)
+              .exists(row -> ((IAST) row).exists(x -> x.isInexactNumber()))) {
+            final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
+            if (complexMatrix != null) {
+              return householderQR(complexMatrix);
+            }
+          }
           if (engine.isSymbolicMode(S.QRDecomposition.getAttributes())) {
             // TODO improve for symbolic calculations
             // TODO https://github.com/Hipparchus-Math/hipparchus/issues/137
@@ -6295,15 +7451,7 @@ public final class LinearAlgebra {
           }
           final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
           if (complexMatrix != null) {
-            FieldQRDecomposition<Complex> ed = new FieldQRDecomposition<Complex>(complexMatrix);
-            FieldMatrix<Complex> q = ed.getQ();
-            if (Convert.complexMatrix2List(q) != null) {
-              FieldMatrix<Complex> r = ed.getR();
-              if (Convert.complexMatrix2List(r) != null) {
-                return F.list(Convert.complexMatrix2List(q), Convert.complexMatrix2List(r));
-              }
-            }
-            return F.NIL;
+            return householderQR(complexMatrix);
           }
         }
 
@@ -6316,9 +7464,203 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
+    /**
+     * <code>QRDecomposition(m, Full)</code> - the square matrix <code>q</code>, whose additional
+     * rows are an orthonormal basis of the orthogonal complement of the rows of the reduced
+     * <code>q</code>, and <code>r</code> padded with rows of zeros.
+     */
+    private static IExpr fullDecomposition(IExpr m, EvalEngine engine) {
+      int[] dim = m.isMatrix();
+      if (dim == null || dim[0] < dim[1]) {
+        return F.NIL;
+      }
+      if (!m.isFree(x -> x.isInexactNumber(), false)) {
+        IExpr qr = engine.evaluate(F.QRDecomposition(m));
+        return qr.isList2() && qr.first().argSize() == dim[0] ? qr : F.NIL;
+      }
+      // Gram-Schmidt on the columns: the rows of q are orthonormal and r == q.m
+      IExpr transposed = engine.evaluate(F.Transpose(m));
+      IExpr q = engine.evaluate(F.Orthogonalize(transposed));
+      if (!q.isList() || q.argSize() != dim[1]
+          || ((IAST) q).exists(row -> row.isList() && ((IAST) row).forAll(IExpr::isZero))) {
+        // the columns are linearly dependent
+        return F.NIL;
+      }
+      IExpr r = engine.evaluate(F.Map(F.Function(F.Map(S.Simplify, F.Slot1)), F.Dot(q, m)));
+      IExpr complement = engine.evaluate(F.Orthogonalize(F.NullSpace(transposed)));
+      if (!r.isList() || !complement.isList() || dim[1] + complement.argSize() != dim[0]) {
+        return F.NIL;
+      }
+      IASTAppendable fullQ = ((IAST) q).copyAppendable();
+      fullQ.appendArgs((IAST) complement);
+      IASTAppendable fullR = ((IAST) r).copyAppendable();
+      while (fullR.argSize() < dim[0]) {
+        fullR.append(F.constantArray(F.C0, dim[1]));
+      }
+      return F.list(fullQ, fullR);
+    }
+
+    /**
+     * The reduced decomposition of a machine number matrix by Householder reflections, in the
+     * conventions of the LAPACK routines <code>zgeqr2</code> and <code>zung2r</code>: a column
+     * which has only zeros below the diagonal (and a real diagonal entry) is not reflected. The
+     * rows of <code>q</code> are the conjugated first <code>Min(m, n)</code> columns of the
+     * unitary factor, <code>r</code> has <code>Min(m, n)</code> rows.
+     */
+    private static IAST householderQR(FieldMatrix<Complex> matrix) {
+      final int m = matrix.getRowDimension();
+      final int n = matrix.getColumnDimension();
+      final int k = Math.min(m, n);
+      Complex[][] a = matrix.getData();
+      Complex[] tau = new Complex[k];
+      for (int j = 0; j < k; j++) {
+        Complex alpha = a[j][j];
+        double xnorm = 0.0;
+        for (int i = j + 1; i < m; i++) {
+          xnorm = Math.hypot(xnorm, Math.hypot(a[i][j].getReal(), a[i][j].getImaginary()));
+        }
+        if (xnorm == 0.0 && alpha.getImaginary() == 0.0) {
+          tau[j] = Complex.ZERO;
+          continue;
+        }
+        double beta = -Math.copySign(
+            Math.hypot(Math.hypot(alpha.getReal(), alpha.getImaginary()), xnorm),
+            alpha.getReal());
+        tau[j] = new Complex((beta - alpha.getReal()) / beta, -alpha.getImaginary() / beta);
+        Complex scale = Complex.ONE.divide(alpha.subtract(beta));
+        for (int i = j + 1; i < m; i++) {
+          a[i][j] = a[i][j].multiply(scale);
+        }
+        a[j][j] = Complex.ONE;
+        // apply the conjugated reflection to the remaining columns
+        Complex conjTau = tau[j].conjugate();
+        for (int c = j + 1; c < n; c++) {
+          Complex w = Complex.ZERO;
+          for (int i = j; i < m; i++) {
+            w = w.add(a[i][j].conjugate().multiply(a[i][c]));
+          }
+          w = w.multiply(conjTau);
+          for (int i = j; i < m; i++) {
+            a[i][c] = a[i][c].subtract(a[i][j].multiply(w));
+          }
+        }
+        a[j][j] = new Complex(beta);
+      }
+      // the first k columns of the product of the reflections
+      Complex[][] q = new Complex[m][k];
+      for (int i = 0; i < m; i++) {
+        for (int c = 0; c < k; c++) {
+          q[i][c] = i == c ? Complex.ONE : Complex.ZERO;
+        }
+      }
+      for (int j = k - 1; j >= 0; j--) {
+        if (tau[j].isZero()) {
+          continue;
+        }
+        for (int c = 0; c < k; c++) {
+          // v = {1, a[j+1][j], ..., a[m-1][j]}
+          Complex w = q[j][c];
+          for (int i = j + 1; i < m; i++) {
+            w = w.add(a[i][j].conjugate().multiply(q[i][c]));
+          }
+          w = w.multiply(tau[j]);
+          q[j][c] = q[j][c].subtract(w);
+          for (int i = j + 1; i < m; i++) {
+            q[i][c] = q[i][c].subtract(a[i][j].multiply(w));
+          }
+        }
+      }
+      return F.list(F.matrix((i, c) -> complexOrReal(q[c][i].conjugate()), k, m),
+          F.matrix((i, c) -> c < i ? F.CD0 : complexOrReal(a[i][c]), k, n));
+    }
+
+    private static IExpr complexOrReal(Complex c) {
+      return c.getImaginary() == 0.0 ? F.num(c.getReal()) : F.complexNum(c);
+    }
+
+    /**
+     * The reduced decomposition of an exact matrix by Gram-Schmidt orthogonalization of its
+     * columns: the rows of <code>q</code> are the orthonormal vectors of the linearly independent
+     * columns and <code>r = Conjugate(q) . m</code> is upper triangular. A zero matrix gives the
+     * first unit vector as <code>q</code>.
+     *
+     * @return {@link F#NIL} if a coefficient can't be decided to be zero
+     */
+    private static IExpr exactQR(IAST matrix, int[] dim, EvalEngine engine) {
+      final int m = dim[0];
+      final int n = dim[1];
+      // the orthogonal (not normalized) vectors, their squared norms and their pivot columns
+      List<IExpr[]> basis = new ArrayList<IExpr[]>();
+      List<IExpr> norms = new ArrayList<IExpr>();
+      List<Integer> pivots = new ArrayList<Integer>();
+      for (int j = 1; j <= n; j++) {
+        engine.checkTimeLimit();
+        final int column = j;
+        IExpr[] v = new IExpr[m];
+        for (int i = 0; i < m; i++) {
+          v[i] = matrix.getPart(i + 1, column);
+        }
+        for (int b = 0; b < basis.size(); b++) {
+          IExpr coefficient =
+              engine.evaluate(F.Together(F.Times(conjugateDot(basis.get(b), v, engine),
+                  F.Power(norms.get(b), F.CN1))));
+          for (int i = 0; i < m; i++) {
+            v[i] = engine.evaluate(
+                F.Together(F.Subtract(v[i], F.Times(coefficient, basis.get(b)[i]))));
+          }
+        }
+        IExpr norm = engine.evaluate(F.Together(conjugateDot(v, v, engine)));
+        if (norm.isZero()) {
+          continue;
+        }
+        if (!norm.isNumber() && engine.evalTrue(F.PossibleZeroQ(norm))) {
+          continue;
+        }
+        if (!norm.isNumber() && !norm.isNumericFunction(true)) {
+          return F.NIL;
+        }
+        basis.add(v);
+        norms.add(norm);
+        pivots.add(column);
+      }
+      if (basis.isEmpty()) {
+        return F.list(F.matrix((i, j) -> j == 0 ? F.C1 : F.C0, 1, m),
+            F.matrix((i, j) -> F.C0, 1, n));
+      }
+      final int k = basis.size();
+      IASTAppendable q = F.ListAlloc(k);
+      IASTAppendable r = F.ListAlloc(k);
+      for (int b = 0; b < k; b++) {
+        final IExpr[] v = basis.get(b);
+        final IExpr scale = F.Power(norms.get(b), F.CN1D2);
+        q.append(F.mapRange(0, m, i -> engine.evaluate(F.Times(scale, v[i]))));
+        final int pivot = pivots.get(b);
+        r.append(F.mapRange(1, n + 1, j -> {
+          if (j < pivot) {
+            return F.C0;
+          }
+          IExpr[] c = new IExpr[m];
+          for (int i = 0; i < m; i++) {
+            c[i] = matrix.getPart(i + 1, j);
+          }
+          return engine.evaluate(F.Times(scale, F.Together(conjugateDot(v, c, engine))));
+        }));
+      }
+      return F.list(q, r);
+    }
+
+    /** <code>Conjugate(u) . v</code> */
+    private static IExpr conjugateDot(IExpr[] u, IExpr[] v, EvalEngine engine) {
+      IASTAppendable sum = F.PlusAlloc(u.length);
+      for (int i = 0; i < u.length; i++) {
+        sum.append(F.Times(F.Conjugate(u[i]), v[i]));
+      }
+      return engine.evaluate(sum);
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
     // @Override
     // public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
@@ -6523,11 +7865,6 @@ public final class LinearAlgebra {
 
 
   private static class SchurDecomposition extends HessenbergDecomposition {
-
-    @Override
-    protected boolean rejectsExactMatrix() {
-      return false;
-    }
 
     /** The matrices <code>{p, t}</code> of the Schur decomposition of <code>matrix</code>. */
     @Override
@@ -6829,49 +8166,157 @@ public final class LinearAlgebra {
   }
 
 
-  private static final class SingularValueList extends AbstractFunctionEvaluator {
+  private static final class SingularValueList extends AbstractFunctionOptionEvaluator {
+
+    /** The singular values which are not smaller than <code>tolerance</code> times the largest. */
+    private static IAST dropSmallValues(IAST values, double tolerance, EvalEngine engine) {
+      if (tolerance <= 0.0) {
+        return values;
+      }
+      double largest = 0.0;
+      for (int i = 1; i < values.size(); i++) {
+        largest = Math.max(largest, engine.evalDouble(F.Abs(values.get(i))));
+      }
+      final double limit = tolerance * largest;
+      return values.filter(x -> engine.evalDouble(F.Abs(x)) >= limit)[0];
+    }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST call, final int argSize, final IExpr[] options,
+        EvalEngine engine, IAST originalAST) {
+      final IAST ast = argSize == call.argSize() ? call : call.copyUntil(argSize + 1);
+      double tolerance = 0.0;
+      if (options[0] != S.Automatic) {
+        IExpr value = engine.evaluate(F.N(options[0]));
+        if (!value.isReal()) {
+          return F.NIL;
+        }
+        tolerance = value.evalf();
+      }
       int[] dim = ast.arg1().isMatrix();
       if (dim != null && dim[0] > 0 && dim[1] > 0) {
         IExpr m = ast.arg1();
-        IAST machineValues = machineSingularValueList((IAST) m.normal(false));
+        IAST normal = (IAST) m.normal(false);
+        if (normal.forAll(row -> ((IAST) row).forAll(IExpr::isZero))) {
+          // all the singular values of a zero matrix are kept
+          IExpr zero = normal.exists(row -> ((IAST) row).exists(IExpr::isInexactNumber)) ? F.CD0
+              : F.C0;
+          IAST zeros = F.constantArray(zero, Math.min(dim[0], dim[1]));
+          return ast.isAST2() ? takeValues(ast, zeros, zeros.argSize(), zero, engine) : zeros;
+        }
+        IAST precise = ApfloatMatrices.singularValues(m, false);
+        if (precise.isPresent()) {
+          // a real matrix of arbitrary-precision numbers keeps their precision; the values of the
+          // size of the rounding error of the largest are zeros
+          final IExpr largest = precise.arg1();
+          final long digits = ApfloatMatrices.precision(m);
+          final IExpr limit =
+              engine.evaluate(F.Times(largest, F.Power(F.C10, F.ZZ(-Math.max(1L, digits - 5L)))));
+          IAST values = precise.filter(x -> engine.evaluate(F.Greater(x, limit)).isTrue())[0];
+          values = dropSmallValues(values, tolerance, engine);
+          return ast.isAST2() ? takeValues(ast, values, Math.min(dim[0], dim[1]), F.CD0, engine)
+              : values;
+        }
+        IAST machineValues =
+            machineSingularValueList((IAST) m.normal(false), options[0] != S.Automatic);
         if (machineValues.isPresent()) {
+          machineValues = dropSmallValues(machineValues, tolerance, engine);
           if (ast.isAST2()) {
-            int n = ast.arg2().toMachineInt();
-            if (n <= 0) {
-              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
-            }
-            return S.Take.of(engine, machineValues, F.ZZ(Math.min(n, machineValues.argSize())));
+            return takeValues(ast, machineValues, Math.min(dim[0], dim[1]), F.CD0, engine);
           }
           return machineValues;
         }
-        IExpr singularValueList =
-            engine.evaluate(F.Sqrt(F.Eigenvalues(F.Dot(F.ConjugateTranspose(m), m))));
+        // the eigenvalues of a large exact product take too long or lose the small singular values
+        // to rounding
+        IExpr singularValueList = Math.min(dim[0], dim[1]) > MAX_EXACT_EIGENVALUES ? F.NIL
+            : engine.evaluate(F.Sqrt(F.Eigenvalues(F.Dot(F.ConjugateTranspose(m), m))));
+        if (singularValueList.isNIL() || !singularValueList.isFree(x -> x.isInexactNumber(), false)) {
+          IAST exact = rationalSingularValues((IAST) m.normal(false), engine);
+          if (exact.isPresent()) {
+            exact = dropSmallValues(exact, tolerance, engine);
+            return ast.isAST2()
+                ? takeValues(ast, exact, Math.min(dim[0], dim[1]), F.CD0, engine)
+                : exact;
+          }
+          if (singularValueList.isNIL()) {
+            singularValueList =
+                engine.evaluate(F.Sqrt(F.Eigenvalues(F.Dot(F.ConjugateTranspose(m), m))));
+          }
+        }
         int vectorLength = singularValueList.isVector();
         if (vectorLength > 0) {
-          singularValueList =
-              ((IAST) singularValueList).filter(x -> keepSingularValue(x, engine))[0];
+          singularValueList = dropSmallValues(
+              ((IAST) singularValueList).filter(x -> keepSingularValue(x, engine))[0], tolerance,
+              engine);
           int n = singularValueList.argSize();
+          // all values of a zero matrix are dropped
+          IExpr sorted = n == 0 ? F.CEmptyList
+              : S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
           if (ast.isAST2()) {
-            n = ast.arg2().toMachineInt();
-            if (n <= 0) {
-              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+            if (!sorted.isList()) {
+              return F.NIL;
             }
+            IExpr zero = singularValueList.isFree(x -> x.isInexactNumber(), false) ? F.C0 : F.CD0;
+            return takeValues(ast, (IAST) sorted, Math.min(dim[0], dim[1]), zero, engine);
           }
-
-          return S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
+          return sorted;
         }
       }
       return F.NIL;
     }
 
+    /**
+     * The singular values selected by the second argument <code>n</code>, <code>-n</code> or
+     * <code>{n}</code> from all <code>Min(rows, columns)</code> singular values, the dropped ones
+     * counted as zero.
+     *
+     * @param ast <code>SingularValueList(m, spec)</code>
+     * @param values the non-zero singular values in decreasing order
+     * @param size the number of all singular values
+     * @param zero the value of a zero singular value
+     * @param engine the evaluation engine
+     */
+    private static IExpr takeValues(IAST ast, IAST values, int size, IExpr zero,
+        EvalEngine engine) {
+      IASTAppendable all = values.copyAppendable();
+      while (all.argSize() < size) {
+        all.append(zero);
+      }
+      IExpr spec = ast.arg2();
+      if (spec.isList1()) {
+        int k = spec.first().toIntDefault();
+        if (k >= 1 && k <= size) {
+          return F.list(all.get(k));
+        }
+        return F.NIL;
+      }
+      if (spec.isAST(S.UpTo, 2)) {
+        // at most k of all the values, the zero ones included
+        int k = spec.first().toIntDefault();
+        if (k < 0) {
+          return F.NIL;
+        }
+        return all.copyUntil(Math.min(k, size) + 1);
+      }
+      int n = spec.toIntDefault();
+      if (n == 0 || F.isNotPresent(n)) {
+        // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+        return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+      }
+      if (n > 0) {
+        return all.copyUntil(Math.min(n, size) + 1);
+      }
+      return S.Take.of(engine, all, F.ZZ(-Math.min(-n, size)));
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Tolerance, S.Automatic);
     }
 
     /**
@@ -6895,26 +8340,141 @@ public final class LinearAlgebra {
      * the matrix itself: the eigenvalues of <code>Transpose(m).m</code> are their squares, and lose
      * the small ones to rounding.
      *
+     * @param allValues keep the values below the rank tolerance, for the option
+     *        <code>Tolerance</code>
      * @return {@link F#NIL} if the matrix isn't a real machine matrix
      */
-    private static IAST machineSingularValueList(IAST matrix) {
+    private static IAST machineSingularValueList(IAST matrix, boolean allValues) {
       if (matrix.exists(row -> ((IAST) row).exists(IExpr::isMachineNumber))) {
         double[][] doubleMatrix = matrix.toDoubleMatrix(false);
         if (doubleMatrix != null) {
-          double[] values = machineSingularValues(new org.hipparchus.linear.SingularValueDecomposition(
-              MatrixUtils.createRealMatrix(doubleMatrix)));
+          org.hipparchus.linear.SingularValueDecomposition svd =
+              new org.hipparchus.linear.SingularValueDecomposition(
+                  MatrixUtils.createRealMatrix(doubleMatrix));
+          double[] values = allValues ? svd.getSingularValues() : machineSingularValues(svd);
           return F.mapRange(0, values.length, i -> F.num(values[i]));
         }
       }
       return F.NIL;
     }
+
+    /** The largest number of columns of {@link #rationalSingularValues(IAST, EvalEngine)}. */
+    private static final int MAX_JACOBI_COLUMNS = 48;
+
+    /** The largest size for which the eigenvalues of the exact product are computed first. */
+    private static final int MAX_EXACT_EIGENVALUES = 12;
+
+    /**
+     * The non-zero singular values of a matrix of rational numbers as machine numbers, by a
+     * one-sided Jacobi iteration in a precision which is high enough for an ill-conditioned matrix:
+     * the columns are rotated until they are orthogonal, and their norms are the singular values.
+     *
+     * @return {@link F#NIL} if the matrix has other entries or too many columns
+     */
+    private static IAST rationalSingularValues(IAST matrix, EvalEngine engine) {
+      int rows = matrix.argSize();
+      int columns = matrix.first().argSize();
+      if (Math.min(rows, columns) > MAX_JACOBI_COLUMNS
+          || !matrix.forAll(row -> ((IAST) row).forAll(IExpr::isRational))) {
+        return F.NIL;
+      }
+      // the columns of the matrix or of its transpose, so that they are not more than the rows
+      boolean transpose = rows < columns;
+      int n = Math.min(rows, columns);
+      int m = Math.max(rows, columns);
+      // a Hilbert matrix, the classic bad case, loses about 1.5 digits per column
+      java.math.MathContext context = new java.math.MathContext(40 + 4 * n);
+      java.math.BigDecimal[][] a = new java.math.BigDecimal[n][m];
+      for (int i = 0; i < rows; i++) {
+        IAST row = (IAST) matrix.get(i + 1);
+        for (int j = 0; j < columns; j++) {
+          IRational x = (IRational) row.get(j + 1);
+          java.math.BigDecimal value = new java.math.BigDecimal(x.toBigNumerator())
+              .divide(new java.math.BigDecimal(x.toBigDenominator()), context);
+          if (transpose) {
+            a[i][j] = value;
+          } else {
+            a[j][i] = value;
+          }
+        }
+      }
+      java.math.BigDecimal epsilon = java.math.BigDecimal.ONE.movePointLeft(context.getPrecision() / 2);
+      boolean rotated = true;
+      for (int sweep = 0; rotated && sweep < 100; sweep++) {
+        rotated = false;
+        for (int p = 0; p < n - 1; p++) {
+          for (int q = p + 1; q < n; q++) {
+            engine.checkTimeLimit();
+            rotated |= jacobiRotation(a[p], a[q], epsilon, context);
+          }
+        }
+      }
+      java.math.BigDecimal[] norms = new java.math.BigDecimal[n];
+      java.math.BigDecimal largest = java.math.BigDecimal.ZERO;
+      for (int j = 0; j < n; j++) {
+        norms[j] = dot(a[j], a[j], context).sqrt(context);
+        largest = largest.max(norms[j]);
+      }
+      java.math.BigDecimal limit = largest.multiply(epsilon, context);
+      Arrays.sort(norms, java.util.Comparator.reverseOrder());
+      IASTAppendable result = F.ListAlloc(n);
+      for (java.math.BigDecimal norm : norms) {
+        if (norm.compareTo(limit) > 0) {
+          result.append(F.num(norm.doubleValue()));
+        }
+      }
+      return result;
+    }
+
+    private static java.math.BigDecimal dot(java.math.BigDecimal[] u, java.math.BigDecimal[] v,
+        java.math.MathContext context) {
+      java.math.BigDecimal sum = java.math.BigDecimal.ZERO;
+      for (int i = 0; i < u.length; i++) {
+        sum = sum.add(u[i].multiply(v[i], context), context);
+      }
+      return sum;
+    }
+
+    /**
+     * Rotate the columns <code>u</code> and <code>v</code> so that they are orthogonal.
+     *
+     * @return <code>false</code> if they were orthogonal up to <code>epsilon</code>
+     */
+    private static boolean jacobiRotation(java.math.BigDecimal[] u, java.math.BigDecimal[] v,
+        java.math.BigDecimal epsilon, java.math.MathContext context) {
+      java.math.BigDecimal alpha = dot(u, u, context);
+      java.math.BigDecimal beta = dot(v, v, context);
+      java.math.BigDecimal gamma = dot(u, v, context);
+      if (gamma.signum() == 0 || gamma.abs(context)
+          .compareTo(alpha.multiply(beta, context).sqrt(context).multiply(epsilon, context)) <= 0) {
+        return false;
+      }
+      java.math.BigDecimal zeta = beta.subtract(alpha, context)
+          .divide(gamma.multiply(java.math.BigDecimal.valueOf(2L), context), context);
+      java.math.BigDecimal root =
+          java.math.BigDecimal.ONE.add(zeta.multiply(zeta, context), context).sqrt(context);
+      java.math.BigDecimal t =
+          java.math.BigDecimal.ONE.divide(zeta.abs(context).add(root, context), context);
+      if (zeta.signum() < 0) {
+        t = t.negate();
+      }
+      java.math.BigDecimal c = java.math.BigDecimal.ONE
+          .divide(java.math.BigDecimal.ONE.add(t.multiply(t, context), context).sqrt(context), context);
+      java.math.BigDecimal s = c.multiply(t, context);
+      for (int i = 0; i < u.length; i++) {
+        java.math.BigDecimal x = u[i];
+        u[i] = c.multiply(x, context).subtract(s.multiply(v[i], context), context);
+        v[i] = s.multiply(x, context).add(c.multiply(v[i], context), context);
+      }
+      return true;
+    }
   }
 
 
-  private static class ToeplitzMatrix extends AbstractFunctionEvaluator {
+  private static class ToeplitzMatrix extends AbstractMatrixGenerator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         if (ast.arg1().isList() && ast.arg2().isList()) {
           IAST vector1 = (IAST) ast.arg1();
@@ -7466,10 +9026,10 @@ public final class LinearAlgebra {
     }
   }
 
-  private static class UpperTriangularize extends AbstractFunctionEvaluator {
+  private static class UpperTriangularize extends AbstractMatrixGenerator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
       return triangularize(ast, engine, false);
     }
 
@@ -7489,13 +9049,24 @@ public final class LinearAlgebra {
    *
    *
    * <pre>
-   * VandermondeMatrix(n)
+   * VandermondeMatrix(list)
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * gives the Vandermonde matrix with <code>n</code> rows and columns.
+   * gives the square Vandermonde matrix of the elements in <code>list</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * VandermondeMatrix(list, n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the Vandermonde matrix of the elements in <code>list</code> with <code>n</code> columns.
    *
    * </blockquote>
    *
@@ -7516,41 +9087,50 @@ public final class LinearAlgebra {
    *  {1,c,c^2}}
    * </pre>
    */
-  private static class VandermondeMatrix extends AbstractFunctionEvaluator {
-    public VandermondeMatrix() {}
+  private static class VandermondeMatrix extends AbstractMatrixGenerator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
-        final IAST lst = (IAST) ast.arg1();
-        final int len0 = lst.argSize();
-
-        final int[] indexArray = new int[2];
-        indexArray[0] = len0;
-        indexArray[1] = len0;
-
-        // final IIndexFunction<IExpr> function = new IIndexFunction<IExpr>() {
-        // @Override
-        // public IExpr evaluate(int[] index) {
-        // return Power(lst.get(index[0] + 1), F.integer(index[1]));
-        // }
-        // };
-        final IndexTableGenerator generator = new IndexTableGenerator(indexArray, S.List, //
-            indx -> F.Power(lst.get(indx[0] + 1), F.ZZ(indx[1])));
-        final IAST matrix = (IAST) generator.table();
-        // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-        // isMatrix()
-        // must be used!
-        matrix.isMatrix(true);
-        return matrix;
+        final IAST list = (IAST) ast.arg1();
+        final int columns = ast.isAST2() ? ast.arg2().toIntDefault() : list.argSize();
+        if (columns <= 0) {
+          return F.NIL;
+        }
+        // the k-th repetition of a node gives the k-th derivative of its row (confluent
+        // Vandermonde matrix)
+        final int[] order = new int[list.argSize()];
+        for (int i = 1; i < list.argSize(); i++) {
+          for (int k = 0; k < i; k++) {
+            if (list.get(k + 1).equals(list.get(i + 1))) {
+              order[i]++;
+            }
+          }
+        }
+        // the first column is 1 for each element, also for the element 0
+        return F.matrix((i, j) -> {
+          final int d = order[i];
+          if (j < d) {
+            return F.C0;
+          }
+          // D(x^j, {x, d}) == j!/(j-d)! * x^(j-d)
+          IExpr power = j == d ? F.C1 : F.Power(list.get(i + 1), F.ZZ(j - d));
+          if (d == 0) {
+            return power;
+          }
+          java.math.BigInteger falling = java.math.BigInteger.ONE;
+          for (int t = j - d + 1; t <= j; t++) {
+            falling = falling.multiply(java.math.BigInteger.valueOf(t));
+          }
+          return F.Times(F.ZZ(falling), power);
+        }, list.argSize(), columns);
       }
-
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -7965,6 +9545,7 @@ public final class LinearAlgebra {
 
           IASTAppendable sortedEigenvalues = F.ListAlloc(n);
           IASTAppendable eigenvectors = F.ListAlloc(n);
+          IAST genericEigenvector = null;
 
           // 3. Evaluate NullSpace for each unique Eigenvalue in mathematically sorted order
           for (int i = 1; i <= sortedUniqueRoots.argSize(); i++) {
@@ -7980,6 +9561,17 @@ public final class LinearAlgebra {
               continue;
             }
 
+            if (algMult == 1 && lambda.leafCount() > LARGE_EIGENVALUE_LEAFCOUNT) {
+              // the null space of A - lambda * I with a large radical eigenvalue doesn't finish:
+              // the eigenvector of A - x * I for a symbolic x is evaluated at x = lambda instead
+              if (genericEigenvector == null) {
+                genericEigenvector = genericEigenvector(matrix, n, x, engine);
+              }
+              if (genericEigenvector.isPresent()) {
+                eigenvectors.append(engine.evaluate(F.subst(genericEigenvector, x, lambda)));
+                continue;
+              }
+            }
             // Compute NullSpace(A - lambda * I)
             IExpr identity = engine.evaluate(F.IdentityMatrix(n));
             IExpr aMinusLambdaI = engine.evaluate(F.Subtract(matrix, F.Times(lambda, identity)));
@@ -8033,6 +9625,50 @@ public final class LinearAlgebra {
       }
     }
     return F.NIL;
+  }
+
+  /** An eigenvalue with more leaves than this gets its eigenvector from the generic one. */
+  private static final int LARGE_EIGENVALUE_LEAFCOUNT = 60;
+
+  /** The largest dimension for the generic eigenvector of a symbolic matrix. */
+  private static final int MAX_GENERIC_EIGENVECTOR_DIMENSION = 4;
+
+  /**
+   * The eigenvector of <code>A - x * I</code> for a symbolic <code>x</code> which belongs to a
+   * simple eigenvalue: the signed minors of the first <code>n-1</code> rows span their null space,
+   * and the vector is scaled to a last non-zero entry <code>1</code>.
+   *
+   * @return {@link F#NIL} if the first <code>n-1</code> rows are dependent for every
+   *         <code>x</code> or the matrix is too large
+   */
+  private static IAST genericEigenvector(IAST matrix, int n, ISymbol x, EvalEngine engine) {
+    if (n < 2 || n > MAX_GENERIC_EIGENVECTOR_DIMENSION) {
+      return F.NIL;
+    }
+    IASTAppendable vector = F.ListAlloc(n);
+    for (int j = 1; j <= n; j++) {
+      final int column = j;
+      // the rows 1..n-1 of A - x*I without the column j
+      IAST minor = F.matrix((r, c) -> {
+        int col = c + 1 < column ? c + 1 : c + 2;
+        IExpr entry = matrix.getPart(r + 1, col);
+        return r + 1 == col ? F.Subtract(entry, x) : entry;
+      }, n - 1, n - 1);
+      IExpr det = engine.evaluate(F.Expand(F.Det(minor)));
+      vector.append((j + n) % 2 == 0 ? det : engine.evaluate(F.Negate(det)));
+    }
+    int last = n;
+    while (last >= 1 && engine.evalTrue(F.PossibleZeroQ(vector.get(last)))) {
+      last--;
+    }
+    if (last < 1) {
+      return F.NIL;
+    }
+    final int pivotIndex = last;
+    final IExpr pivot = vector.get(last);
+    return F.mapRange(1, n + 1, j -> j == pivotIndex ? F.C1
+        : j > pivotIndex ? F.C0
+            : engine.evaluate(F.Together(F.Divide(vector.get(j), pivot))));
   }
 
   /**

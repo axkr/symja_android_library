@@ -39,6 +39,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.reduce.BivariateReduce;
 import org.matheclipse.core.reduce.CylindricalAlgebraicDecomposition;
+import org.matheclipse.core.reduce.FactoredEquationBox;
 import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.Lowering;
@@ -2138,7 +2139,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         IExpr candidate = engine.evaluate(collector.get(k));
         double d;
         try {
-          d = candidate.evalDouble();
+          d = candidate.evalf();
         } catch (RuntimeException rex) {
           return null;
         }
@@ -2194,8 +2195,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         : parameterConditions.setAtCopy(0, S.And);
     double lo, hi;
     try {
-      lo = lower.evalDouble();
-      hi = upper.evalDouble();
+      lo = lower.evalf();
+      hi = upper.evalf();
     } catch (RuntimeException rex) {
       return F.NIL;
     }
@@ -2213,7 +2214,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         }
         offset = linear[0];
         try {
-          period = Math.abs(linear[1].evalDouble());
+          period = Math.abs(linear[1].evalf());
         } catch (RuntimeException rex) {
           return F.NIL;
         }
@@ -2302,8 +2303,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     double c, s;
     try {
-      c = linear[0].evalDouble();
-      s = linear[1].evalDouble();
+      c = linear[0].evalf();
+      s = linear[1].evalf();
     } catch (RuntimeException rex) {
       return null;
     }
@@ -2334,7 +2335,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return false;
     }
     try {
-      double d = bound.evalDouble();
+      double d = bound.evalf();
       return !Double.isNaN(d) && !Double.isInfinite(d);
     } catch (RuntimeException rex) {
       return false;
@@ -2544,7 +2545,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       for (IExpr member : members) {
         double d;
         try {
-          d = member.evalDouble();
+          d = member.evalf();
         } catch (RuntimeException rex) {
           return F.NIL;
         }
@@ -2555,8 +2556,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     double minValue;
     double maxValue;
     try {
-      minValue = windowInterval.arg1().evalDouble();
-      maxValue = windowInterval.arg4().evalDouble();
+      minValue = windowInterval.arg1().evalf();
+      maxValue = windowInterval.arg4().evalf();
     } catch (RuntimeException rex) {
       return F.NIL;
     }
@@ -2809,7 +2810,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     double amplitude;
     try {
-      amplitude = term.amplitude.evalDouble();
+      amplitude = term.amplitude.evalf();
     } catch (RuntimeException rex) {
       return F.NIL;
     }
@@ -3459,6 +3460,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return withRenamedVariables.equals(originalAST) ? F.NIL : withRenamedVariables;
     }
     ast = SolveUtils.expandChainedEqual(ast);
+    IExpr componentwise = ast.arg1().replaceAll(Reduce::componentEquations);
+    if (componentwise.isPresent()) {
+      // {a, b} == 0 and {a, b} == {c, d} are the equations of the components
+      ast = ast.setAtCopy(1, componentwise);
+    }
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.REDUCE_KEYS, options);
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
@@ -3526,12 +3532,81 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     result = distinctConjuncts(result);
+    result = withParameterDenominators(ast, result, engine);
     result = renameGeneratedParameters(result, solveOptions.generatedParameters(), engine);
     if (precision != SolveUtils.MACHINE_PRECISION_REQUESTED) {
       // the reduction itself is exact; the requested precision is applied to its result
       result = engine.evaluate(F.N(result, F.ZZ(precision)));
     }
     return result;
+  }
+
+  /**
+   * The equations of the components of an equation between a list and a scalar:
+   * <code>{a, b} == 0</code> is <code>a == 0 &amp;&amp; b == 0</code>.
+   *
+   * @return {@link F#NIL} if <code>expr</code> isn't such an equation
+   */
+  private static IExpr componentEquations(IExpr expr) {
+    if (!expr.isEqual() || expr.argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr lhs = expr.first();
+    IExpr rhs = expr.second();
+    if (lhs.isList() == rhs.isList()) {
+      // an equation between two lists is reduced as it is
+      return F.NIL;
+    }
+    IAST list = (IAST) (lhs.isList() ? lhs : rhs);
+    IExpr scalar = lhs.isList() ? rhs : lhs;
+    IASTAppendable and = F.ast(S.And, list.argSize());
+    for (IExpr component : list) {
+      IExpr equation =
+          lhs.isList() ? F.Equal(component, scalar) : F.Equal(scalar, component);
+      IExpr components = componentEquations(equation);
+      if (components.isAnd()) {
+        and.appendArgs((IAST) components);
+      } else {
+        and.append(components.orElse(equation));
+      }
+    }
+    return and;
+  }
+
+  /**
+   * A single equation <code>lhs == rhs</code> solved as <code>x == value</code> holds only where its
+   * denominators in the parameters don't vanish: <code>2*y == a/b + 1</code> gives
+   * <code>b != 0 &amp;&amp; y == (a+b)/(2*b)</code>.
+   *
+   * @return <code>result</code> if the equation has no such denominator
+   */
+  private static IExpr withParameterDenominators(IAST ast, IExpr result, EvalEngine engine) {
+    IExpr solved = result;
+    while (solved.isAST(S.Or, 2) || solved.isAST(S.And, 2)) {
+      solved = solved.first();
+    }
+    if (!solved.isEqual() || ast.argSize() < 2 || !ast.arg1().isEqual()) {
+      return result;
+    }
+    result = solved;
+    IExpr variable = ast.arg2().isList1() ? ast.arg2().first() : ast.arg2();
+    if (!variable.isSymbol() || !result.first().equals(variable)) {
+      return result;
+    }
+    IExpr equation = ast.arg1();
+    IExpr denominator = engine.evalQuiet(
+        F.Denominator(F.Together(F.Subtract(equation.first(), equation.second()))));
+    if (denominator.isTimes() && denominator.first().isNumber()) {
+      denominator = ((IAST) denominator).rest().oneIdentity1();
+    }
+    if (denominator.isNumber() || !denominator.isFree(variable, true)) {
+      return result;
+    }
+    IExpr condition = engine.evaluate(F.Unequal(denominator, F.C0));
+    if (condition.isTrue()) {
+      return result;
+    }
+    return F.And(condition, result);
   }
 
   /** The first complex number of the system, or {@link F#NIL}. */
@@ -3601,7 +3676,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   private static IExpr rootsOf(IExpr equation, IExpr variable, SolveOptions options,
       EvalEngine engine) {
     IExpr[] rootsOptions = options.rootsOptions();
-    return S.Roots.ofNIL(engine, equation, variable, rootsOptions[0], rootsOptions[1]);
+    return S.Roots.ofNIL(engine, equation, variable, rootsOptions[0], rootsOptions[1],
+        F.Rule(S.Multiplicity, F.C0));
   }
 
   /**
@@ -4916,6 +4992,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return branchesToOr(points, vars, engine);
       }
     }
+    if (domain == S.Integers) {
+      // a box too large to list: every factor of an equation is a branch with a parameter range
+      IExpr factored = FactoredEquationBox.reduce(expr, vars, engine);
+      if (factored.isPresent()) {
+        return factored;
+      }
+    }
     return reduceIntegerSystem(expr, vars, domain, engine);
   }
 
@@ -5027,7 +5110,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       IExpr difference = engine.evaluate(F.Subtract(expr.first(), expr.second()));
       IExpr roots;
       if (difference.isPolynomial(variable)) {
-        roots = S.Roots.ofNIL(engine, expr, variable);
+        if (domain != S.Rationals) {
+          IExpr integerRoots = integerRoots(difference, variable, domain, engine);
+          if (integerRoots.isPresent()) {
+            return integerRoots;
+          }
+        }
+        roots = S.Roots.ofNIL(engine, expr, variable, F.Rule(S.Multiplicity, F.C0));
       } else {
         // `Roots` answers `False` for every equation it cannot solve, e.g. `Sqrt(x)==2`; the
         // reduction over the complexes declines instead
@@ -5051,6 +5140,30 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return enumerateIntegerInterval(realReduced, variable, domain, engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * The integer (or prime) roots of a polynomial with rational coefficients as an {@link S#Or} of
+   * <code>variable == root</code> in ascending order, without computing its complex roots.
+   *
+   * @return {@link F#NIL} if {@link Solve#integerRoots(IExpr, IExpr, EvalEngine)} declines
+   */
+  private static IExpr integerRoots(IExpr polynomial, IExpr variable, ISymbol domain,
+      EvalEngine engine) {
+    List<IInteger> roots = Solve.integerRoots(polynomial, variable, engine);
+    if (roots == null) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.OrAlloc(roots.size());
+    for (IInteger root : new LinkedHashSet<IInteger>(roots)) {
+      if (isDomainMember(root, domain)) {
+        result.append(F.Equal(variable, root));
+      }
+    }
+    if (result.isAST0()) {
+      return S.False;
+    }
+    return result.isAST1() ? result.arg1() : result;
   }
 
   /**
@@ -6744,7 +6857,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       double d;
       try {
-        d = rootValue.evalDouble();
+        d = rootValue.evalf();
       } catch (ArgumentTypeException aex) {
         return false;
       }
@@ -6912,7 +7025,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     IExpr value = engine.evaluate(F.subst(f, variable, F.num(sample)));
     double d;
     try {
-      d = value.evalDouble();
+      d = value.evalf();
     } catch (ArgumentTypeException aex) {
       return 0;
     }

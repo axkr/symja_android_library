@@ -13,6 +13,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ConditionException;
+import org.matheclipse.core.expression.ConditionalOwnValues;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -179,6 +180,9 @@ public interface ISymbol extends IExpr {
   /** ISymbol attribute for a numeric function */
   public static final int NUMERICFUNCTION = 0x0400;
 
+  /** ISymbol attribute for a symbol which is removed as soon as it is no longer referenced */
+  public static final int TEMPORARY = 0x00100000;
+
   /** ISymbol attribute for a function transformation: f(x) ==> x */
   public static final int ONEIDENTITY = 0x0001;
 
@@ -210,18 +214,18 @@ public interface ISymbol extends IExpr {
    * what happened to its hand-written predecessor when {@link #NONTHREADABLE} was added. Every
    * operand is a constant variable, so this still folds to a literal at compile time.
    * <p>
-   * The four exclusions are deliberate: {@link #PROTECTED}, {@link #READPROTECTED} and
-   * {@link #LOCKED} are never read while evaluating, and {@link #NONTHREADABLE} is consulted on an
-   * <i>argument's</i> head rather than on the head being dispatched. {@link #SEQUENCEHOLD} is
+   * The exclusions are deliberate: {@link #PROTECTED}, {@link #READPROTECTED}, {@link #TEMPORARY}
+   * and {@link #LOCKED} are never read while evaluating, and {@link #NONTHREADABLE} is consulted on
+   * an <i>argument's</i> head rather than on the head being dispatched. {@link #SEQUENCEHOLD} is
    * excluded so that a {@code SequenceHold}-only symbol such as {@link S#Rule} keeps the
    * {@code evalNoAttributes} fast path; that method applies the {@code SequenceHold} guard itself.
    */
   public static final int EVAL_ENGINE_ATTRIBUTES =
-      ~(PROTECTED | READPROTECTED | LOCKED | NONTHREADABLE | SEQUENCEHOLD);
+      ~(PROTECTED | READPROTECTED | LOCKED | NONTHREADABLE | SEQUENCEHOLD | TEMPORARY);
 
   public static final int ALL_ATTRIBUTES = FLATORDERLESS | NHOLDALL | HOLDALLCOMPLETE | LISTABLE
       | NUMERICFUNCTION | CONSTANT | ONEIDENTITY | PROTECTED | READPROTECTED | LOCKED
-      | NONTHREADABLE;
+      | NONTHREADABLE | TEMPORARY;
 
   //
   // Flags definition starts here
@@ -318,6 +322,9 @@ public interface ISymbol extends IExpr {
    */
   public static IExpr evalAssignedValue(IExpr rightHandSide, boolean setDelayed,
       EvalEngine engine) {
+    if (ConditionalOwnValues.isConditionalOwnValues(rightHandSide)) {
+      return ConditionalOwnValues.evaluate((IAST) rightHandSide, engine);
+    }
     if ((setDelayed && rightHandSide.isCondition()) || rightHandSide.isBlockModuleOrWithCondition()) {
       boolean evalRHSMode = engine.isEvalRHSMode();
       try {
@@ -489,8 +496,11 @@ public interface ISymbol extends IExpr {
 
     if (symbol.hasAssignedSymbolValue()) {
       IExpr assignedValue = symbol.assignedValue();
-      if (symbol.isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
-        result.append(F.SetDelayed(symbol, assignedValue));
+      if (symbol.isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)
+          || ConditionalOwnValues.isConditionalOwnValues(assignedValue)) {
+        for (IExpr definition : ConditionalOwnValues.definitions(assignedValue)) {
+          result.append(F.SetDelayed(symbol, definition));
+        }
       } else {
         result.append(F.Set(symbol, assignedValue));
       }
@@ -937,6 +947,14 @@ public interface ISymbol extends IExpr {
     return ((getAttributes() & PROTECTED) == PROTECTED);
   }
 
+  /**
+   * Test if the value of this symbol may not be assigned, changed or cleared. Its rules and
+   * attributes are guarded by {@link #hasProtectedAttribute()}.
+   */
+  default boolean hasProtectedValue() {
+    return hasProtectedAttribute();
+  }
+
   /** {@inheritDoc} */
   @Override
   default boolean isBooleanFormula() {
@@ -971,14 +989,16 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Returns <code>true</code> if the system is in server mode and cannot be modified
-   *
+   * Returns <code>true</code> if this symbol belongs to the <code>System`</code> or
+   * <code>Rubi`</code> context and the current engine is not in package mode, so its definitions
+   * may not be changed.
    */
   public boolean isLocked();
 
   /**
-   * Returns <code>true</code> if the system is in server mode and cannot be modified
-   *
+   * Returns <code>true</code> if this symbol belongs to the <code>System`</code> or
+   * <code>Rubi`</code> context and <code>packageMode</code> is <code>false</code>, so its
+   * definitions may not be changed.
    */
   public boolean isLocked(boolean packageMode);
 

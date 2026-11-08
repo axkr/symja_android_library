@@ -84,12 +84,17 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     double extentY = Double.NaN;
     double extentFractionX = 1.0;
     double extentFractionY = 1.0;
+    // the bar lies right (1), left (-1) of its sample, or around it (0)
+    double extentShift = 0.0;
 
     IExpr extentOption = options[0]; // ExtentSize
     if (extentOption.isNone()) {
       pointsOnly = true;
     } else if (extentOption == S.Automatic) {
       useThinLineStyle = true;
+    } else if (extentOption == S.Right || extentOption == S.Left) {
+      // a bar of the full spacing on one side of its sample
+      extentShift = extentOption == S.Right ? 1.0 : -1.0;
     } else if (extentOption == S.Full || extentOption == S.All) {
       // the bars meet their neighbours, which is what the defaults above already say
     } else if (extentOption.isAST(S.Scaled, 2)) {
@@ -118,6 +123,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         extentY = eyValue / 2.0;
     }
     IExpr joined = options[X_JOINED];
+    IExpr filling = options[X_FILLING];
     IExpr plotMarkers = options[X_PLOT_MARKERS];
 
     // Scaling Logic
@@ -221,9 +227,9 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
               result = engine.evalN(result); // safely evaluate symbolic constants
 
               if (result.isNumber()) {
-                double z = result.evalDouble();
-                double px = iv.evalDouble();
-                double py = jv.evalDouble();
+                double z = result.evalf();
+                double px = iv.evalf();
+                double py = jv.evalf();
                 if (region == null || region.accepts(px, py, z)) {
                   data.add(new PlotData(px, py, z, color));
                 }
@@ -237,9 +243,9 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
             result = engine.evalN(result);
 
             if (result.isList() && ((IAST) result).size() >= 4) {
-              double px = ((IAST) result).arg1().evalDouble();
-              double py = ((IAST) result).arg2().evalDouble();
-              double pz = ((IAST) result).arg3().evalDouble();
+              double px = ((IAST) result).arg1().evalf();
+              double py = ((IAST) result).arg2().evalf();
+              double pz = ((IAST) result).arg3().evalf();
               if (region == null || region.accepts(px, py, pz)) {
                 data.add(new PlotData(px, py, pz, color));
               }
@@ -287,6 +293,11 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
         // Construct graphics layout
         List<PlotData> drawn = new ArrayList<>();
+        // the plain markers of the samples of one function go into a single point primitive,
+        // unless every element takes its own colour
+        IASTAppendable markerPoints =
+            elementColors == null && plotMarkers.isAutomatic() ? F.ListAlloc(data.size()) : null;
+        IASTAppendable markerTarget = markerPoints == null ? primitives : F.ListAlloc();
         for (PlotData pd : data) {
           double z = pd.z;
           if (autoPlotRange) {
@@ -306,21 +317,30 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
             // stands until the next one, which is the next element
             primitives.append(elementColors.color(x, y, z));
           }
-          if (pointsOnly) {
-            appendMarker(primitives, plotMarkers, colorIdx, x, y, z);
-          } else if (useThinLineStyle) {
-            // A stem with a marker on top. A stem is a line: drawing it as
-            // a very thin cuboid instead gave a row of slivers that read as a barcode, and the
-            // slivers had to be given a width in data units that means nothing to the reader.
-            primitives.append(F.Line(F.List(F.List(F.num(x), F.num(y), F.num(zBase)),
-                F.List(F.num(x), F.num(y), F.num(z)))));
-            appendMarker(primitives, plotMarkers, colorIdx, x, y, z);
+          if (pointsOnly || useThinLineStyle) {
+            if (useThinLineStyle && !filling.isNone()) {
+              // A stem with a marker on top. A stem is a line: drawing it as
+              // a very thin cuboid instead gave a row of slivers that read as a barcode, and the
+              // slivers had to be given a width in data units that means nothing to the reader.
+              primitives.append(F.Line(F.List(F.List(F.num(x), F.num(y), F.num(zBase)),
+                  F.List(F.num(x), F.num(y), F.num(z)))));
+            }
+            if (markerPoints != null) {
+              markerPoints.append(F.List(F.num(x), F.num(y), F.num(z)));
+            } else {
+              appendMarker(markerTarget, plotMarkers, colorIdx, x, y, z);
+            }
           } else {
             // Full Bar
-            IExpr pMin = F.List(F.num(x - extentX), F.num(y - extentY), F.num(zBase));
-            IExpr pMax = F.List(F.num(x + extentX), F.num(y + extentY), F.num(z));
+            double cx = x + extentShift * extentX;
+            double cy = y + extentShift * extentY;
+            IExpr pMin = F.List(F.num(cx - extentX), F.num(cy - extentY), F.num(zBase));
+            IExpr pMax = F.List(F.num(cx + extentX), F.num(cy + extentY), F.num(z));
             primitives.append(F.Cuboid(pMin, pMax));
           }
+        }
+        if (markerPoints != null && markerPoints.argSize() > 0) {
+          primitives.append(F.Point(markerPoints));
         }
         if (joined.isTrue()) {
           appendJoined(primitives, drawn, jValues != null);
@@ -362,7 +382,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     }
     double smallest = Double.MAX_VALUE;
     for (int i = 1; i < values.size(); i++) {
-      double gap = Math.abs(values.get(i).evalDouble() - values.get(i - 1).evalDouble());
+      double gap = Math.abs(values.get(i).evalf() - values.get(i - 1).evalf());
       if (gap > 0.0 && gap < smallest) {
         smallest = gap;
       }
@@ -529,6 +549,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
   private static final int X_EVALUATION_MONITOR =
       Plot3DTools.indexOf(optionSet(), S.EvaluationMonitor);
   private static final int X_JOINED = Plot3DTools.indexOf(optionSet(), S.Joined);
+  private static final int X_FILLING = Plot3DTools.indexOf(optionSet(), S.Filling);
   private static final int X_PLOT_MARKERS = Plot3DTools.indexOf(optionSet(), S.PlotMarkers);
   // this plot has its own option table, so the surface block's positions do not apply to it
   private static final int X_COLOR_FUNCTION = Plot3DTools.indexOf(optionSet(), S.ColorFunction);

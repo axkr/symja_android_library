@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -365,11 +366,60 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
             current = next;
             fCurrent = fNext;
           }
-          return current.getImaginary() == 0.0 ? F.num(current.getReal())
-              : F.complexNum(current.getReal(), current.getImaginary());
+          return complexRoot(current);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Newton's method from the start value <code>x0</code> in complex arithmetic. A step which
+     * doesn't make the residual smaller, or leaves the domain of the function, is halved. Near the
+     * root the residual is rounding noise, so the size of the step ends the iteration, and the
+     * imaginary part of a real root is rounding noise too.
+     *
+     * @return {@link F#NIL} if the function has a real value at <code>x0</code>, the iteration
+     *         doesn't converge or the root is not real
+     */
+    private IExpr complexNewton(IExpr function, ISymbol xVar, double x0) {
+      final IExpr derivative = engine.evalQuiet(F.D(function, xVar));
+      Complex current = new Complex(x0);
+      Complex fCurrent = complexValue(function, xVar, current);
+      if (fCurrent == null || fCurrent.getImaginary() == 0.0) {
+        return F.NIL;
+      }
+      for (int i = 0; i < maxIterations && fCurrent != null; i++) {
+        engine.checkTimeLimit();
+        Complex slope = complexValue(derivative, xVar, current);
+        if (slope == null || slope.isZero()) {
+          return F.NIL;
+        }
+        Complex step = fCurrent.divide(slope);
+        if (step.norm() <= accuracy * Math.max(1.0, current.norm())) {
+          Complex root = current.subtract(step);
+          return Math.abs(root.getImaginary()) <= CHOP * Math.max(1.0, root.norm())
+              ? F.num(root.getReal())
+              : F.NIL;
+        }
+        Complex next = null;
+        Complex fNext = null;
+        for (int j = 0; j < MAX_BACKTRACK_STEPS && fNext == null; j++) {
+          next = current.subtract(step);
+          fNext = complexValue(function, xVar, next);
+          if (fNext != null && !(fNext.norm() < fCurrent.norm())) {
+            fNext = null;
+          }
+          step = step.multiply(0.5);
+        }
+        current = next;
+        fCurrent = fNext;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr complexRoot(Complex root) {
+      return root.getImaginary() == 0.0 ? F.num(root.getReal())
+          : F.complexNum(root.getReal(), root.getImaginary());
     }
 
     /** @return <code>null</code> if the function has no finite value at <code>z</code> */
@@ -441,7 +491,17 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
               : new MonitoredNewtonSolver(accuracy,
                   x -> monitor.step(F.list(xVar), new double[] {x}));
           if (maxMaybeNull == null) {
-            return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
+            try {
+              return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
+            } catch (MathIllegalStateException mise) {
+              // a start value where the function has no real value: the iteration goes on with
+              // complex numbers
+              IExpr root = complexNewton(function, xVar, min.doubleValue());
+              if (root.isPresent()) {
+                return root;
+              }
+              throw mise;
+            }
           }
           try {
             return F.num(polish(f,
@@ -579,6 +639,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
   }
 
+  /** An imaginary part of the root of a complex iteration below this, relative to it, is zero. */
+  private static final double CHOP = 1.0e-12;
+
   /** The number of iterations a search takes when <code>MaxIterations</code> is not given. */
   private static final int DEFAULT_MAX_ITERATIONS = 100;
 
@@ -619,6 +682,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           evaluate(withSymbols, withSymbols.argSize(), withSymbolsOptions, engine, originalAST);
       return result.isPresent() ? F.subst(result, back) : F.NIL;
     }
+    IAST components = vectorEquation(ast);
+    if (components.isPresent()) {
+      ast = components;
+    }
     StepMonitor monitor = options.length > 4 && options[4] != S.None //
         ? new StepMonitor(options[4], engine) //
         : null;
@@ -637,11 +704,241 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
             equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation);
       }
       IExpr refined = refine(functions, (IAST) result, precision, engine);
+      if (refined.isNIL() && functions.argSize() == 1 && result.argSize() == 1) {
+        // a function without a symbolic derivative, like f(x_?NumericQ) := ...
+        refined = secantRefine(functions.arg1(), (IAST) result, precision, engine);
+      } else if (refined.isNIL() && functions.argSize() == result.argSize()) {
+        refined = differenceNewtonRefine(functions, (IAST) result, precision, engine);
+      }
       if (refined.isPresent()) {
         return monitor == null ? refined : monitor.finish(refined);
       }
     }
     return result;
+  }
+
+  /**
+   * <code>FindRoot(v(x, y) == {a, b}, {{x, x0}, {y, y0}})</code>: an equation of a function with a
+   * list value and a list of one entry per variable is the system of the equations of the
+   * components, <code>{Indexed(v(x, y), {1}) == a, Indexed(v(x, y), {2}) == b}</code>.
+   *
+   * @return {@link F#NIL} if the call isn't of this form
+   */
+  private static IAST vectorEquation(IAST ast) {
+    if (!ast.arg1().isEqual() || ast.argSize() < 2 || !ast.arg2().isListOfLists()) {
+      return F.NIL;
+    }
+    IExpr lhs = ast.arg1().first();
+    IExpr rhs = ast.arg1().second();
+    if (lhs.isList() == rhs.isList()) {
+      return F.NIL;
+    }
+    IExpr values = lhs.isList() ? lhs : rhs;
+    IExpr function = lhs.isList() ? rhs : lhs;
+    int n = values.argSize();
+    if (n < 2 || n != ast.arg2().argSize() || !function.isAST()) {
+      return F.NIL;
+    }
+    IAST equations = F.mapRange(1, n + 1,
+        i -> F.Equal(F.binaryAST2(S.Indexed, function, F.list(F.ZZ(i))), values.getAt(i)));
+    return ast.setAtCopy(1, equations);
+  }
+
+  /**
+   * The secant iteration with <code>precision</code> digits for a root of <code>function</code>,
+   * started at the machine precision root <code>rules = {x -> x0}</code>. It needs no derivative.
+   *
+   * @return the rule with the refined value, or {@link F#NIL} if the function has no numeric
+   *         value, the iteration doesn't settle or it leaves the root it started from
+   */
+  private static IExpr secantRefine(IExpr function, IAST rules, int precision,
+      EvalEngine engine) {
+    final IExpr variable = rules.arg1().first();
+    final double start = rules.arg1().second().evalfNaN();
+    if (Double.isNaN(start)) {
+      return F.NIL;
+    }
+    final long digits = precision + 5L;
+    final org.apfloat.FixedPrecisionApfloatHelper h =
+        new org.apfloat.FixedPrecisionApfloatHelper(digits);
+    org.apfloat.Apfloat x0 = new org.apfloat.Apfloat(start).precision(digits);
+    org.apfloat.Apfloat x1 = h.add(x0, new org.apfloat.Apfloat(1.0e-8 * (1.0 + Math.abs(start))));
+    org.apfloat.Apfloat f0 = secantValue(function, variable, x0, digits, engine);
+    org.apfloat.Apfloat f1 = secantValue(function, variable, x1, digits, engine);
+    if (f0 == null || f1 == null) {
+      return F.NIL;
+    }
+    for (int iteration = 0; iteration < 40; iteration++) {
+      engine.checkTimeLimit();
+      if (f1.signum() == 0) {
+        break;
+      }
+      org.apfloat.Apfloat denominator = h.subtract(f1, f0);
+      if (denominator.signum() == 0) {
+        return F.NIL;
+      }
+      org.apfloat.Apfloat step = h.divide(h.multiply(f1, h.subtract(x1, x0)), denominator);
+      x0 = x1;
+      f0 = f1;
+      x1 = h.subtract(x1, step);
+      if (step.signum() == 0 || step.scale() < Math.max(x1.scale(), 1L) - precision - 2) {
+        break;
+      }
+      f1 = secantValue(function, variable, x1, digits, engine);
+      if (f1 == null) {
+        return F.NIL;
+      }
+      if (iteration == 39) {
+        return F.NIL;
+      }
+    }
+    if (!(Math.abs(x1.doubleValue() - start) <= 1e-6 * (1.0 + Math.abs(start)))) {
+      return F.NIL;
+    }
+    return F.list(rootRule(variable, x1, precision));
+  }
+
+  /**
+   * Newton's iteration with <code>precision</code> digits and a Jacobian of forward differences
+   * for the system <code>functions == 0</code>, started at the machine precision root
+   * <code>rules</code>. A difference step of half the digits gains about half of them per step.
+   *
+   * @return the rules with the refined values, or {@link F#NIL} if a function has no numeric value,
+   *         the iteration doesn't settle or it leaves the root it started from
+   */
+  private static IExpr differenceNewtonRefine(IAST functions, IAST rules, int precision,
+      EvalEngine engine) {
+    final int n = rules.argSize();
+    final long digits = precision + 5L;
+    final org.apfloat.FixedPrecisionApfloatHelper h =
+        new org.apfloat.FixedPrecisionApfloatHelper(digits);
+    final double[] start = new double[n];
+    org.apfloat.Apfloat[] x = new org.apfloat.Apfloat[n];
+    for (int i = 0; i < n; i++) {
+      start[i] = rules.get(i + 1).second().evalfNaN();
+      if (Double.isNaN(start[i])) {
+        return F.NIL;
+      }
+      x[i] = new org.apfloat.Apfloat(start[i]).precision(digits);
+    }
+    final org.apfloat.Apfloat stepSize =
+        new org.apfloat.Apfloat("1e-" + Math.max(8L, digits / 2L), digits);
+    for (int iteration = 0; iteration < 12; iteration++) {
+      engine.checkTimeLimit();
+      org.apfloat.Apfloat[] f = systemValues(functions, rules, x, digits, engine);
+      if (f == null) {
+        return F.NIL;
+      }
+      org.apfloat.Apfloat[][] jacobian = new org.apfloat.Apfloat[n][n + 1];
+      for (int j = 0; j < n; j++) {
+        org.apfloat.Apfloat[] shifted = x.clone();
+        org.apfloat.Apfloat dx = h.multiply(stepSize,
+            h.add(org.apfloat.Apfloat.ONE, org.apfloat.ApfloatMath.abs(x[j])));
+        shifted[j] = h.add(x[j], dx);
+        org.apfloat.Apfloat[] g = systemValues(functions, rules, shifted, digits, engine);
+        if (g == null) {
+          return F.NIL;
+        }
+        for (int i = 0; i < n; i++) {
+          jacobian[i][j] = h.divide(h.subtract(g[i], f[i]), dx);
+        }
+      }
+      for (int i = 0; i < n; i++) {
+        jacobian[i][n] = h.negate(f[i]);
+      }
+      org.apfloat.Apfloat[] step = solveLinear(jacobian, digits, engine);
+      if (step == null) {
+        return F.NIL;
+      }
+      boolean settled = true;
+      for (int i = 0; i < n; i++) {
+        x[i] = h.add(x[i], step[i]);
+        if (step[i].signum() != 0
+            && step[i].scale() >= Math.max(x[i].scale(), 1L) - precision - 2) {
+          settled = false;
+        }
+      }
+      if (settled) {
+        for (int i = 0; i < n; i++) {
+          if (!(Math.abs(x[i].doubleValue() - start[i]) <= 1e-6 * (1.0 + Math.abs(start[i])))) {
+            return F.NIL;
+          }
+        }
+        final org.apfloat.Apfloat[] root = x;
+        return F.mapRange(1, n + 1, i -> rootRule(rules.get(i).first(), root[i - 1], precision));
+      }
+    }
+    return F.NIL;
+  }
+
+  /** The values of the functions at the point <code>x</code>, <code>null</code> if one has none. */
+  private static org.apfloat.Apfloat[] systemValues(IAST functions, IAST rules,
+      org.apfloat.Apfloat[] x, long digits, EvalEngine engine) {
+    final int n = x.length;
+    IASTAppendable substitution = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      substitution.append(F.Rule(rules.get(i + 1).first(), F.num(x[i])));
+    }
+    org.apfloat.Apfloat[] values = new org.apfloat.Apfloat[functions.argSize()];
+    for (int i = 1; i < functions.size(); i++) {
+      IExpr value =
+          engine.evalQuiet(F.N(F.subst(functions.get(i), substitution), F.ZZ(digits)));
+      if (!value.isReal() || value.isMachineNumber()) {
+        return null;
+      }
+      values[i - 1] = ((org.matheclipse.core.interfaces.IReal) value).apfloatValue()
+          .precision(digits);
+    }
+    return values;
+  }
+
+  /**
+   * The solution of the linear system of the augmented matrix <code>a</code> by
+   * <code>LinearSolve</code> with <code>digits</code> digits, the same solver as the Newton step of
+   * {@link #refineExact}; <code>null</code> if it has no unique real solution.
+   */
+  private static org.apfloat.Apfloat[] solveLinear(org.apfloat.Apfloat[][] a, long digits,
+      EvalEngine engine) {
+    final int n = a.length;
+    IAST matrix = F.mapRange(0, n, i -> F.mapRange(0, n, j -> F.num(a[i][j])));
+    IAST vector = F.mapRange(0, n, i -> F.num(a[i][n]));
+    IExpr solution = engine.evalQuiet(F.LinearSolve(matrix, vector));
+    if (!solution.isList() || solution.argSize() != n) {
+      return null;
+    }
+    org.apfloat.Apfloat[] result = new org.apfloat.Apfloat[n];
+    for (int i = 0; i < n; i++) {
+      IExpr value = solution.getAt(i + 1);
+      if (!value.isReal() || value.isMachineNumber()) {
+        return null;
+      }
+      result[i] = ((org.matheclipse.core.interfaces.IReal) value).apfloatValue().precision(digits);
+    }
+    return result;
+  }
+
+  /**
+   * The rule <code>variable -> x</code> of a root found to the absolute accuracy
+   * <code>10^-(precision+1)</code> where it is below 1: a root next to 0 has fewer correct
+   * significant digits than that, and a root 0 is a zero of that accuracy.
+   */
+  private static IExpr rootRule(IExpr variable, org.apfloat.Apfloat x, int precision) {
+    if (x.signum() == 0) {
+      return F.Rule(variable, ApfloatNum.zero(precision));
+    }
+    long significant = x.scale() >= 0L ? precision : Math.max(1L, precision + x.scale());
+    return F.Rule(variable, F.num(x.precision(significant)));
+  }
+
+  /** The real value of <code>function</code> at <code>x</code>, <code>null</code> if it has none. */
+  private static org.apfloat.Apfloat secantValue(IExpr function, IExpr variable,
+      org.apfloat.Apfloat x, long digits, EvalEngine engine) {
+    IExpr value = engine.evalQuiet(
+        F.N(F.subst(function, v -> v.equals(variable) ? F.num(x) : F.NIL), F.ZZ(digits)));
+    if (value.isReal() && !value.isMachineNumber()) {
+      return ((org.matheclipse.core.interfaces.IReal) value).apfloatValue().precision(digits);
+    }
+    return null;
   }
 
   /**
@@ -821,7 +1118,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * The digits of the option <code>WorkingPrecision -> p</code>, or <code>0</code> for
    * <code>MachinePrecision</code> and for a precision which is no more than that.
    */
-  static int workingPrecision(IExpr option) {
+  public static int workingPrecision(IExpr option) {
     int precision = option.toIntDefault();
     return precision > 16 ? precision : 0;
   }
@@ -844,7 +1141,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
     final IAST refined = (IAST) engine.evalN(
         F.subst(F.mapRange(1, rules.size(), i -> rules.get(i).first()), (IAST) exact), precision);
-    return F.mapRange(1, rules.size(), i -> F.Rule(rules.get(i).first(), refined.get(i)));
+    return F.mapRange(1, rules.size(), i -> F.Rule(rules.get(i).first(),
+        ((IAST) exact).get(i).second().isZero() ? ApfloatNum.zero(precision) : refined.get(i)));
   }
 
   /**

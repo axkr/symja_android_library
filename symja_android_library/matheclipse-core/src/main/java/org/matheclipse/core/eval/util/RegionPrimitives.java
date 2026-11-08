@@ -1320,6 +1320,39 @@ public class RegionPrimitives {
    * @param result the measure which was computed without looking at the options
    */
   public static IExpr applyMeasureOptions(IExpr result, IExpr[] options, EvalEngine engine) {
+    return applyMeasureOptionsTo(result, options, engine);
+  }
+
+  /**
+   * The measure <code>f(region, ..., options)</code> of a function which reads no options itself:
+   * the measure without the trailing options of {@link #MEASURE_OPTION_KEYS}, to which the
+   * options are applied as by {@link #applyMeasureOptions(IExpr, IExpr[], EvalEngine)}.
+   *
+   * @return {@link F#NIL} if <code>ast</code> has no such options or the measure isn't known
+   */
+  public static IExpr measureWithOptions(IAST ast, EvalEngine engine) {
+    int argSize = ast.argSize();
+    IExpr[] options = MEASURE_OPTION_DEFAULTS.clone();
+    while (argSize > 1 && ast.get(argSize).isRuleAST()) {
+      IExpr option = ast.get(argSize);
+      int index = java.util.Arrays.asList(MEASURE_OPTION_KEYS).indexOf(option.first());
+      if (index < 0) {
+        return F.NIL;
+      }
+      options[index] = option.second();
+      argSize--;
+    }
+    if (argSize == ast.argSize()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(ast.copyUntil(argSize + 1));
+    if (result.isAST(ast.head())) {
+      return F.NIL;
+    }
+    return applyMeasureOptionsTo(result, options, engine);
+  }
+
+  private static IExpr applyMeasureOptionsTo(IExpr result, IExpr[] options, EvalEngine engine) {
     if (result.isNIL() || options == null) {
       return result;
     }
@@ -1423,7 +1456,7 @@ public class RegionPrimitives {
       IAST lower = (IAST) reg.arg1();
       IASTAppendable upper = F.ListAlloc(lower.argSize());
       for (int i = 1; i <= lower.argSize(); i++) {
-        upper.append(F.Plus(lower.get(i), F.C1));
+        upper.append(lower.get(i).plus(F.C1));
       }
       return F.list(lower, upper);
     }
@@ -1518,8 +1551,8 @@ public class RegionPrimitives {
    */
   public static AnnulusSpec parseAnnulus(IAST reg, EvalEngine engine) {
     IExpr center = F.CListC0C0;
-    IExpr innerRadius = F.C1;
-    IExpr outerRadius = F.C2;
+    IExpr innerRadius = F.C1D2;
+    IExpr outerRadius = F.C1;
     IExpr angle = F.C2Pi;
     if (reg.argSize() >= 1) {
       if (!reg.arg1().isList() || reg.arg1().argSize() < 2) {

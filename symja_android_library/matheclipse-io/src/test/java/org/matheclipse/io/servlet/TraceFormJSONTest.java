@@ -28,7 +28,7 @@ public class TraceFormJSONTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   /** The one result object of a rendered evaluation. */

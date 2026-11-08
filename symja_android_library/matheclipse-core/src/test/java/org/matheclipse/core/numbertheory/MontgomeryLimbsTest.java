@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /** Tests for {@link MontgomeryLimbs} and the elliptic curve method of {@link IntegerSplitter}. */
 public class MontgomeryLimbsTest {
@@ -63,6 +65,7 @@ public class MontgomeryLimbsTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testArithmeticAgainstBigInteger() {
     Random random = new Random(20261017L);
     for (BigInteger n : moduli(random)) {
@@ -238,6 +241,7 @@ public class MontgomeryLimbsTest {
    * multiplications by every such <code>r</code> are done one by one modulo <code>p</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testStage2AgainstEveryPrime() {
     final int b1 = 2000;
     final long b2 = 100L * b1;

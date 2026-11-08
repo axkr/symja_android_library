@@ -357,6 +357,10 @@ public interface IExpr
    * 
    */
   /* private */ static int compareHierarchy(IExpr a, IExpr b) {
+    if (b.isAssociation() && !a.isAssociation()) {
+      // an association orders itself against everything else
+      return -b.compareTo(a);
+    }
     return Integer.compare(a.hierarchy(), b.hierarchy());
   }
 
@@ -1984,7 +1988,6 @@ public interface IExpr
    *
    * @return <code>Optional.empty()</code> if this is not a Gaussian integer
    */
-  @Deprecated
   default Optional<IInteger[]> gaussianIntegers() {
     return Optional.empty();
   }
@@ -7099,10 +7102,8 @@ public interface IExpr
 
   /**
    * Signum functionality is used in JAS toString() method, don't use it as math signum function.
-   *
-   * @deprecated
+   * Use {@link #sign()} for the mathematical sign.
    */
-  @Deprecated
   @Override
   default int signum() {
     if (isZero()) {
@@ -7521,7 +7522,8 @@ public interface IExpr
     if (that.isZero()) {
       return F.C0;
     }
-    if (that.isOne()) {
+    if (that.isOne() && !that.isInexactNumber()) {
+      // an inexact one makes a numeric constant like Sqrt(2) inexact
       return this;
     }
     IExpr basicTimes = TimesOp.numberLikeTimes(this, that, returnNilIfUnevaluated);

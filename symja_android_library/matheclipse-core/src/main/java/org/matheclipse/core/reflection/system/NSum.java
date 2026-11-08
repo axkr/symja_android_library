@@ -17,6 +17,10 @@ import org.matheclipse.core.numerics.series.dp.complex.EnsembleComplex;
 import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex;
 import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex.SeriesSolutionComplex;
 import org.matheclipse.core.numerics.utils.Sequences;
+import org.matheclipse.core.numerics.series.PrecisionSum;
+import org.matheclipse.parser.client.ParserConfig;
+import org.apfloat.Apcomplex;
+import org.matheclipse.core.interfaces.IASTAppendable;
 
 public class NSum extends Sum {
 
@@ -59,63 +63,177 @@ public class NSum extends Sum {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+
+    // NSum(f, {i, ...}, {j, ...}, ..., options)
+    int iterators = 1;
+    while (iterators + 1 < ast.size() && !ast.get(iterators + 1).isRuleAST()) {
+      iterators++;
+    }
+    iterators--;
+    if (iterators < 1) {
+      return F.NIL;
+    }
+    IAST options = ast.subList(iterators + 2);
+    for (IExpr option : options) {
+      if (!option.isRuleAST()) {
+        return F.NIL;
+      }
+    }
+    long digits = ParserConfig.MACHINE_PRECISION;
+    for (IExpr option : options) {
+      if (option.first() == S.WorkingPrecision) {
+        int p = FindRoot.workingPrecision(option.second());
+        digits = p > 0 ? p : ParserConfig.MACHINE_PRECISION;
+      }
+    }
+    if (iterators > 1) {
+      // the sum over the first iterator of the sums over the others
+      IASTAppendable inner = F.ast(S.NSum);
+      inner.append(ast.arg1());
+      for (int i = 3; i < iterators + 2; i++) {
+        inner.append(ast.get(i));
+      }
+      inner.appendArgs(options);
+      IASTAppendable outer = F.ast(S.NSum);
+      outer.append(inner);
+      outer.append(ast.arg2());
+      outer.appendArgs(options);
+      IExpr result = engine.evaluate(outer);
+      // without a value the call stays as it was written, not as the nested sums
+      return result.isAST(S.NSum) && result.first().isAST(S.NSum) ? F.NIL : result;
+    }
     IExpr arg1 = ast.arg1();
-    if (arg1.isAST()) {
+    if (arg1.isAST() && arg1.isFree(S.NSum, true)) {
       arg1 = F.expand(arg1, false, false, false);
     }
 
     if (arg1.isPlus()) {
-      return arg1.mapThread(ast, 1);
+      IASTMutable sums = ((IAST) arg1).apply(S.Plus);
+      for (int i = 1; i < sums.size(); i++) {
+        sums.set(i, ast.setAtCopy(1, sums.get(i)));
+      }
+      return sums;
     }
 
-    if (ast.isAST2()) {
-      IExpr limitList = engine.evaluate(ast.arg2());
-      if (limitList.isList3()) {
-        IAST limits = (IAST) limitList;
-        IExpr variable = limits.arg1();
-        if (!variable.isVariable()) {
-          // Raw object `1` cannot be used as an iterator.
-          return Errors.printMessage(S.NSum, "itraw", F.List(variable));
-        }
-        IExpr lowerLimit = limits.arg2();
-        IExpr upperLimit = limits.arg3();
-        long start = lowerLimit.toLongDefault();
-        long end = upperLimit.toLongDefault() + 1;
-        boolean preevaluateSymbolic = true;
-        if (F.isPresent(start) && F.isPresent(end)) {
-          long range = end - start;
-          if (range > 10000 || range < -10000) {
-            preevaluateSymbolic = false;
-          }
-        }
-        if (preevaluateSymbolic) {
-          ast = ast.apply(S.Sum);
-          IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
+    IExpr limitList = engine.evaluate(ast.arg2());
+    if (limitList.isList3()) {
+      IAST limits = (IAST) limitList;
+      IExpr variable = limits.arg1();
+      if (!variable.isVariable()) {
+        // Raw object `1` cannot be used as an iterator.
+        return Errors.printMessage(S.NSum, "itraw", F.List(variable));
+      }
+      IExpr lowerLimit = limits.arg2();
+      IExpr upperLimit = limits.arg3();
+      long start = lowerLimit.toLongDefault();
+      long end = upperLimit.toLongDefault();
+      // a numerical sum of an infinite series: no search for a closed form, which may take long
+      boolean preevaluateSymbolic = false;
+      if (F.isPresent(start) && F.isPresent(end) && arg1.isFree(S.NSum, true)) {
+        long range = end - start;
+        preevaluateSymbolic = range <= 10000 && range >= -10000;
+      }
+      if (upperLimit.isInfinity() && arg1.has(x -> x.isAST() && (x.head() == S.DivisorSigma
+          || x.head() == S.EulerPhi || x.head() == S.MoebiusMu || x.head() == S.LiouvilleLambda),
+          true)) {
+        // an arithmetic function isn't smooth in the index: no extrapolation of the partial
+        // sums is reliable, but its Dirichlet series may have a closed form
+        preevaluateSymbolic = true;
+      }
+      if (preevaluateSymbolic) {
+        IAST sum = F.Sum(arg1, limits);
+        IAST preevaledSum = engine.preevalForwardBackwardAST(sum, 1);
 
-          IExpr temp = evaluateSum(preevaledSum, engine);
-          if (temp.isPresent()) {
-            if (temp.isNumericFunction(true)) {
-              return engine.evalN(temp);
-            }
-            if (!temp.isFree(S.Sum, true)) {
-              temp = F.subst(temp, x -> x == S.Sum ? S.NSum : F.NIL);
-            }
-            return temp;
-          }
-        }
-
-        IExpr function = arg1;
-
-        IASTMutable copy = ast.copy();
-        copy.set(1, function);
-        copy.set(2, limits);
-        IExpr temp = nsum(function, variable, lowerLimit, upperLimit);
+        IExpr temp = evaluateSum(preevaledSum, engine);
         if (temp.isPresent()) {
+          if (temp.isNumericFunction(true)) {
+            return digits > ParserConfig.MACHINE_PRECISION ? engine.evalN(temp, digits)
+                : engine.evalN(temp);
+          }
+          if (!temp.isFree(S.Sum, true)) {
+            temp = F.subst(temp, x -> x == S.Sum ? S.NSum : F.NIL);
+          }
           return temp;
         }
       }
+
+      if (variable.isSymbol()) {
+        IExpr precise = precisionSum(arg1, (ISymbol) variable, lowerLimit, upperLimit, digits,
+            engine);
+        if (precise.isPresent()) {
+          return precise;
+        }
+      }
+      if (digits > ParserConfig.MACHINE_PRECISION || !arg1.isFree(S.NSum, true)) {
+        // an extrapolation of the partial sums of inner numerical sums isn't reliable
+        return F.NIL;
+      }
+      if (F.isPresent(start) && !(numericTerm(arg1, variable, start, engine)
+          && numericTerm(arg1, variable, start + 1, engine))) {
+        // the summand has no numeric value
+        return F.NIL;
+      }
+      try {
+        IExpr temp = nsum(arg1, variable, lowerLimit, upperLimit);
+        if (temp.isPresent() && temp.isNumber()) {
+          return temp;
+        }
+      } catch (RuntimeException rex) {
+        // the extrapolation of the partial sums failed: no value
+        Errors.rethrowsInterruptException(rex);
+      }
     }
     return F.NIL;
+  }
+
+  /** Test if the term with index <code>n</code> has a numeric value. */
+  private static boolean numericTerm(IExpr function, IExpr variable, long n, EvalEngine engine) {
+    return engine.evalN(F.subst(function, x -> x.equals(variable) ? F.ZZ(n) : F.NIL)).isNumber();
+  }
+
+  /**
+   * The sum of an infinite series with <code>digits</code> digits, see {@link PrecisionSum}: from
+   * <code>-Infinity</code> it is the sum of the two halves.
+   *
+   * @return {@link F#NIL} if the series isn't summed there
+   */
+  private static IExpr precisionSum(IExpr function, ISymbol variable, IExpr lowerLimit,
+      IExpr upperLimit, long digits, EvalEngine engine) {
+    if (!upperLimit.isInfinity()) {
+      return F.NIL;
+    }
+    Apcomplex value;
+    if (lowerLimit.isNegativeInfinity()) {
+      Apcomplex right = PrecisionSum.sum(function, variable, 0L, digits, engine);
+      if (right == null) {
+        return F.NIL;
+      }
+      IExpr mirrored = F.subst(function, x -> x.equals(variable) ? F.Negate(variable) : F.NIL);
+      Apcomplex left = PrecisionSum.sum(mirrored, variable, 1L, digits, engine);
+      if (left == null) {
+        return F.NIL;
+      }
+      value = right.add(left);
+    } else {
+      long start = lowerLimit.toLongDefault();
+      if (F.isNotPresent(start)) {
+        return F.NIL;
+      }
+      value = PrecisionSum.sum(function, variable, start, digits, engine);
+      if (value == null) {
+        return F.NIL;
+      }
+    }
+    if (digits <= ParserConfig.MACHINE_PRECISION) {
+      if (value.imag().signum() == 0) {
+        return F.num(value.real().doubleValue());
+      }
+      return F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+    }
+    if (value.imag().signum() == 0) {
+      return F.num(value.real().precision(digits));
+    }
+    return F.complexNum(value.precision(digits));
   }
 
   /**

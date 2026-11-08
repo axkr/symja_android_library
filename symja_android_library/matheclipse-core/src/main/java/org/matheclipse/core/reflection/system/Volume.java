@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.ParametricMeasure;
 import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -15,6 +16,20 @@ public class Volume extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.argSize() > 1 && ast.last().isRuleAST()) {
+      // the options AccuracyGoal, Assumptions, PrecisionGoal, WorkingPrecision, ...
+      IExpr measure = RegionPrimitives.measureWithOptions(ast, engine);
+      if (measure.isPresent()) {
+        return measure;
+      }
+    }
+    if (ast.argSize() > 1) {
+      // Volume(f, {u,umin,umax}, {v,vmin,vmax}, ...) and a chart as last argument
+      final boolean chart = ast.last().isString();
+      return ParametricMeasure.measure(ast.arg1(),
+          ast.subList(2, chart ? ast.argSize() : ast.size()).apply(S.List),
+          chart ? ast.last() : F.NIL, engine);
+    }
     IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (MeshFunctions.isMeshRegion(arg1) && MeshFunctions.embeddingDimension((IAST) arg1) == 3) {
       return MeshFunctions.volume3D((IAST) arg1, engine);
@@ -208,6 +223,6 @@ public class Volume extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_1;
+    return ARGS_1_5;
   }
 }

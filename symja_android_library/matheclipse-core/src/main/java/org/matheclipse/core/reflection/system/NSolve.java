@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -32,6 +33,10 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    final IAST withVariables = Solve.withCallVariables(ast, argSize);
+    if (withVariables.isPresent()) {
+      return withVariables;
+    }
     return solveWithOptions(ast, argSize, options, engine);
   }
 
@@ -47,8 +52,17 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    */
   static IExpr solveWithOptions(IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine) {
+    ast = Solve.withRegionConditions(ast, engine);
+    final IAST withOptions = ast;
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
+    }
+    if (ast.arg1().isAnd() && ((IAST) ast.arg1()).exists(IExpr::isOr)) {
+      // every branch of the disjunctive normal form is solved on its own
+      IExpr disjunction = Solve.solveDisjunction(ast, withOptions, engine);
+      if (disjunction.isPresent()) {
+        return disjunction;
+      }
     }
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.NSOLVE_KEYS, options);
     long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
@@ -82,6 +96,14 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    * @return the list of solution lists
    */
   static IExpr solveNumeric(SolveOptions options, IAST ast, long precision, EvalEngine engine) {
+    IExpr inverted = firstRootOfInterpolatingFunction(ast, engine);
+    if (inverted.isPresent()) {
+      return inverted;
+    }
+    IExpr repeatedRoots = solveSquareFreeFactors(options, ast, precision, engine);
+    if (repeatedRoots.isPresent()) {
+      return repeatedRoots;
+    }
     if (precision == SolveUtils.MACHINE_PRECISION_REQUESTED) {
       IExpr bounded = rootsInBoundedInterval(ast, engine);
       if (bounded.isPresent()) {
@@ -118,6 +140,13 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
       return distinctSolutions(result,
           ast.argSize() >= 2 ? ast.arg2().makeList() : F.CEmptyList);
     }
+    if (org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr
+        .hasArbitraryPrecisionNumber(ast.arg1())) {
+      // arbitrary-precision coefficients would send the exact solver to machine arithmetic: solve
+      // with their exact values and evaluate the solutions to the working precision. A machine
+      // number would become a fraction with a denominator of 2^52, which only slows the solver
+      ast = ast.setAtCopy(1, S.SetPrecision.of(engine, ast.arg1(), F.CInfinity));
+    }
     IExpr result = new SolveData(options).of(ast, false, true, engine);
     if (result.isNIL()) {
       result = new SolveData(options).of(ast, true, true, engine);
@@ -127,6 +156,155 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
     }
     return Solve.sortNumericSolutions(Solve.withNumericValues(result,
         value -> engine.evaluate(F.N(value, precision))));
+  }
+
+  /**
+   * The list <code>{equation, variable}</code> of a call for one equation and one symbol.
+   *
+   * @return {@link F#NIL} for any other call
+   */
+  private static IAST equationAndVariable(IAST ast) {
+    if (ast.argSize() != 2) {
+      return F.NIL;
+    }
+    final IExpr variable = ast.arg2().isList1() ? ast.arg2().first() : ast.arg2();
+    final IExpr equation = ast.arg1().isList1() ? ast.arg1().first() : ast.arg1();
+    return variable.isSymbol() ? F.list(equation, variable) : F.NIL;
+  }
+
+  /**
+   * An equation with an interpolating function of the variable is inverted numerically on the
+   * domain of the function, the result is the first root there. Without a root there the outer
+   * polynomial pieces are extrapolated, and the nearest root to the left or else to the right of
+   * the domain is the result. It is reported as the use of an inverse function.
+   *
+   * @param ast the <code>Solve(...)</code> or <code>NSolve(...)</code> call
+   * @return {@link F#NIL} if the call isn't of this kind or the function has no real domain
+   */
+  static IExpr firstRootOfInterpolatingFunction(IAST ast, EvalEngine engine) {
+    final IAST equationAndVariable = equationAndVariable(ast);
+    if (equationAndVariable.isNIL() || !equationAndVariable.first().isEqual()
+        || equationAndVariable.first().argSize() != 2) {
+      return F.NIL;
+    }
+    final IExpr equation = equationAndVariable.first();
+    final IExpr variable = equationAndVariable.second();
+    final IExpr[] interpolation = {F.NIL};
+    IExpr f = engine.evaluate(F.Subtract(equation.first(), equation.second()));
+    f.has(x -> {
+      if (x.isAST1() && x.head() instanceof InterpolatingFunctionExpr
+          && x.first().equals(variable)) {
+        interpolation[0] = x.head();
+      }
+      return interpolation[0].isPresent();
+    }, false);
+    if (interpolation[0].isNIL()) {
+      return F.NIL;
+    }
+    IExpr domain = engine.evaluate(F.unaryAST1(interpolation[0], F.$str("Domain")));
+    if (!domain.isList1() || !domain.first().isList2()) {
+      return F.NIL;
+    }
+    final double lower = domain.first().first().evalfNaN();
+    final double upper = domain.first().second().evalfNaN();
+    if (!(lower < upper)) {
+      return F.NIL;
+    }
+    UnaryNumerical function = new UnaryNumerical(f, (ISymbol) variable, Double.NaN, engine);
+    TreeSet<Double> roots = new TreeSet<Double>();
+    rootsInInterval(function, lower, upper, true, true, INTERVAL_SAMPLES, roots);
+    Errors.printIfunMessage(ast.topHead());
+    double root = roots.isEmpty() ? rootBesideDomain(function, lower, upper, engine)
+        : roots.first().doubleValue();
+    return Double.isNaN(root) ? F.CEmptyList : F.list(F.list(F.Rule(variable, F.num(root))));
+  }
+
+  /** How many widths of the domain {@link #rootBesideDomain} looks beside the domain. */
+  private static final int MAX_EXTRAPOLATED_WIDTHS = 64;
+
+  /**
+   * The nearest root of the extrapolated <code>function</code> beside the domain: the search range
+   * is doubled until the left or the right of the domain has a root, the left one first.
+   *
+   * @return <code>NaN</code> if there is no root in the largest range
+   */
+  private static double rootBesideDomain(UnaryNumerical function, double lower, double upper,
+      EvalEngine engine) {
+    final double width = upper - lower;
+    final boolean quiet = engine.isQuietMode();
+    engine.setQuietMode(true);
+    try {
+      for (int widths = 1; widths <= MAX_EXTRAPOLATED_WIDTHS; widths *= 2) {
+        TreeSet<Double> roots = new TreeSet<Double>();
+        rootsInInterval(function, lower - widths * width, lower, false, false, INTERVAL_SAMPLES,
+            roots);
+        if (!roots.isEmpty()) {
+          return roots.last().doubleValue();
+        }
+        rootsInInterval(function, upper, upper + widths * width, false, false, INTERVAL_SAMPLES,
+            roots);
+        if (!roots.isEmpty()) {
+          return roots.first().doubleValue();
+        }
+      }
+    } finally {
+      engine.setQuietMode(quiet);
+    }
+    return Double.NaN;
+  }
+
+  /**
+   * A polynomial in one variable with rational coefficients and a repeated factor: the factors of
+   * its square free decomposition are solved on their own, because a numerical root finder gets a
+   * root of a higher multiplicity only up to some digits, and every root is repeated by the
+   * exponent of its factor.
+   *
+   * @return the sorted solutions, or {@link F#NIL} if the equations aren't of this kind
+   */
+  private static IExpr solveSquareFreeFactors(SolveOptions options, IAST ast, long precision,
+      EvalEngine engine) {
+    final IAST equationAndVariable = equationAndVariable(ast);
+    if (equationAndVariable.isNIL()
+        || !options.maxRoots().equals(SolveOptions.DEFAULT_MAX_ROOTS)) {
+      return F.NIL;
+    }
+    final IExpr equation = equationAndVariable.first();
+    final IExpr variable = equationAndVariable.second();
+    final IExpr polynomial = equation.isEqual() && equation.argSize() == 2
+        ? engine.evaluate(F.Subtract(equation.first(), equation.second()))
+        : equation;
+    if (polynomial.isFree(variable) || !polynomial.isPolynomial(F.list(variable))
+        || !polynomial.isPolynomialOfMaxDegree(variable, Short.MAX_VALUE)
+        || !new VariablesSet(polynomial).getVarList().equals(F.list(variable))
+        || polynomial.has(x -> x.isInexactNumber() || x.isComplex(), false)) {
+      return F.NIL;
+    }
+    IExpr factors = engine.evalQuiet(F.FactorSquareFreeList(polynomial));
+    if (!factors.isListOfLists()
+        || ((IAST) factors).forAll(factor -> factor.isList2() && factor.second().isOne())) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc();
+    for (IExpr factor : (IAST) factors) {
+      final int multiplicity = factor.second().toIntDefault();
+      if (!factor.isList2() || multiplicity <= 0) {
+        return F.NIL;
+      }
+      if (factor.first().isFree(variable)) {
+        continue;
+      }
+      IExpr roots = solveNumeric(options, F.binaryAST2(S.NSolve, F.Equal(factor.first(), F.C0),
+          ast.arg2()), precision, engine);
+      if (!roots.isListOfLists()) {
+        return F.NIL;
+      }
+      for (IExpr root : (IAST) roots) {
+        for (int i = 0; i < multiplicity; i++) {
+          result.append(root);
+        }
+      }
+    }
+    return Solve.sortNumericSolutions(result);
   }
 
   /** The number of start points per variable of {@link #multiStartRealRoots}. */

@@ -29,7 +29,10 @@ public class WolframFormFactory extends OutputFormFactory {
       return;
     }
 
-    String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
+    // only a System` symbol is spelled like the built-in of its name: Internal`Square is not Square
+    String str = context == Context.SYSTEM
+        ? AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName())
+        : null;
     if (str != null) {
       // assuming WMA language built-in function
       append(buf, str);

@@ -15,7 +15,7 @@ public class RootTest extends ExprEvaluatorTestCase {
 
     // Inexact c with no closed-form Solve result → numeric refinement via FindRoot.
     check("Root({Exp(#) - 2 &, 0.6931471805599453})", //
-        "Root({-2+E^#1&,0.693147})");
+        "Root({E^#1-2&,0.693147})");
 
     check("Root({#^2 - 2 &, 1.4142135623730951})", //
         "Sqrt(2)");
@@ -466,9 +466,9 @@ public class RootTest extends ExprEvaluatorTestCase {
         "Root(EvenQ(#1)&,1009)");
     // k out of range: the quintic has 5 roots
     check("N(Root(#1^5-2&,7))", //
-        "Root(-2+#1^5&,7)");
+        "Root(#1^5-2&,7)");
     check("N(Root(#1^5-2&,0))", //
-        "Root(-2+#1^5&,0)");
+        "Root(#1^5-2&,0)");
   }
 
   /**

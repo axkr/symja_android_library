@@ -97,7 +97,7 @@ public final class OutputStreamMethods {
       IExpr state = S.Null;
       if (constructor.isPresent()) {
         IExpr answer = engine.evaluate(
-            F.ast(new IExpr[] {streamName, F.bool(append), caller, options}, constructor));
+            F.ast(new IExpr[] {streamName, F.booleSymbol(append), caller, options}, constructor));
         // {True, state}: a constructor which says anything else has refused
         if (!answer.isList2() || !answer.first().isTrue()) {
           return null;

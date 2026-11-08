@@ -345,6 +345,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testEdgeCount() {
+    // two opposite directed edges are two edges
+    check("{EdgeCount(Graph({3->4,4->3})), EdgeCount(Graph({3->4,4->3,4->5})), EdgeCount(Graph({3<->4,4->5}))}", //
+        "{2,3,2}");
     check("EdgeCount(CompleteGraph(4))", //
         "6");
   }
@@ -479,6 +482,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
         + "Sort(Union(Flatten(List@@@c)))===Sort(VertexList(g)))", "True");
 
     check("FindHamiltonianCycle(CycleGraph(4), 1)===FindHamiltonianCycle(CycleGraph(4))", "True");
+    // an undirected cycle runs towards the smaller neighbour of its first vertex
+    check("Sort(FindHamiltonianCycle(Graph({1<->2, 3<->4, 2<->4, 1<->4, 2<->3, 1<->3}), All))", //
+        "{{1<->2,2<->3,3<->4,4<->1},{1<->2,2<->4,4<->3,3<->1},{1<->3,3<->2,2<->4,4<->1}}");
     check("Head(FindHamiltonianCycle(CycleGraph(4), 0))", "FindHamiltonianCycle");
   }
 
@@ -1432,8 +1438,8 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("VertexInDegree(" + g + ", 1)", "1");
     check("VertexOutDegree(" + g + ", 1)", "1");
     check("VertexDegree(" + g + ")", "{2,2,2,2}");
-    check("AdjacencyList(" + g + ", 1)", "{2}");
-    check("AdjacencyList(" + g + ")", "{{2},{3},{4},{1}}");
+    check("AdjacencyList(" + g + ", 1)", "{2,4}");
+    check("AdjacencyList(" + g + ")", "{{2,4},{1,3},{2,4},{1,3}}");
     check("DirectedGraphQ(" + g + ")", "True");
   }
 
@@ -1508,14 +1514,19 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testGraphComplementAdvanced() {
-    // check("EdgeCount(GraphComplement(Graph({1,2,3},{1->2})))", //
-    // "5");
+    check("EdgeCount(GraphComplement(Graph({1,2,3},{1->2})))", //
+        "5");
 
     check("GraphComplement(Graph({1,2,3},{})) // InputForm", //
-        "Graph({1,2,3},{1->2,1->3,2->1,2->3,3->1,3->2})");
+        "Graph({1,2,3},{1<->2,1<->3,2<->3})");
 
     check("EdgeCount(GraphComplement(Graph({1,2,3},{})))", //
         "3");
+    // a graph without edges is directed and undirected, its complement undirected
+    check("{DirectedGraphQ(#),UndirectedGraphQ(#)}&(Graph({3,4},{}))", //
+        "{True,True}");
+    check("GraphComplement(Graph({3,4},{},DirectedEdges->True)) // InputForm", //
+        "Graph({3,4},{3<->4})");
     check("EdgeCount(GraphComplement(CompleteGraph(4)))", //
         "0");
     check("GraphComplement(CycleGraph(4)) // InputForm", //
@@ -2215,25 +2226,26 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testFindIndependentVertexSetSeveralSets() {
-    // the third argument asks for more than one set, largest first
-    check("FindIndependentVertexSet(PathGraph({1,2,3,4}), Infinity, All)", "{{1,3},{1,4},{2,4}}");
-    check("FindIndependentVertexSet(CycleGraph(4), Infinity, All)", "{{1,3},{2,4}}");
+    // the third argument asks for more than one set, largest first; all sets of one size come
+    // with the latest vertices first
+    check("FindIndependentVertexSet(PathGraph({1,2,3,4}), Infinity, All)", "{{2,4},{1,4},{1,3}}");
+    check("FindIndependentVertexSet(CycleGraph(4), Infinity, All)", "{{2,4},{1,3}}");
     check("FindIndependentVertexSet(CycleGraph(5), Infinity, All)",
-        "{{1,3},{1,4},{2,4},{2,5},{3,5}}");
+        "{{3,5},{2,5},{2,4},{1,4},{1,3}}");
     check("FindIndependentVertexSet(CycleGraph(5), Infinity, 2)", "{{1,3},{1,4}}");
     // a complete graph has nothing but singletons; a star has its leaves and its centre
-    check("FindIndependentVertexSet(CompleteGraph(4), Infinity, All)", "{{1},{2},{3},{4}}");
+    check("FindIndependentVertexSet(CompleteGraph(4), Infinity, All)", "{{4},{3},{2},{1}}");
     check("FindIndependentVertexSet(StarGraph(5), Infinity, All)", "{{2,3,4,5},{1}}");
     check("FindIndependentVertexSet(Graph({1,2,3},{}), Infinity, All)", "{{1,2,3}}");
     // and one of them is what the shorter forms report
-    check("FindIndependentVertexSet(CycleGraph(4), Infinity, All)[[1]]"
-        + "===FindIndependentVertexSet(CycleGraph(4))[[1]]", "True");
+    check("MemberQ(FindIndependentVertexSet(CycleGraph(4), Infinity, All),"
+        + "FindIndependentVertexSet(CycleGraph(4))[[1]])", "True");
 
     // an independent set of a graph is a clique of its complement - set for set, not just in size
-    check("FindIndependentVertexSet(CycleGraph(5), Infinity, All)"
-        + "===FindClique(GraphComplement(CycleGraph(5)), Infinity, All)", "True");
-    check("FindIndependentVertexSet(PetersenGraph(), Infinity, All)"
-        + "===FindClique(GraphComplement(PetersenGraph()), Infinity, All)", "True");
+    check("Sort(FindIndependentVertexSet(CycleGraph(5), Infinity, All))"
+        + "===Sort(FindClique(GraphComplement(CycleGraph(5)), Infinity, All))", "True");
+    check("Sort(FindIndependentVertexSet(PetersenGraph(), Infinity, All))"
+        + "===Sort(FindClique(GraphComplement(PetersenGraph()), Infinity, All))", "True");
     // and the predicate agrees with every one of them
     check("AllTrue(FindIndependentVertexSet(PetersenGraph(), Infinity, All),"
         + "IndependentVertexSetQ(PetersenGraph(), #)&)", "True");
@@ -3066,7 +3078,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{{4<->6,6<->5},{2<->2,2<->5}}");
     // a list of options after the pairs
     check("h=Graph({{7,3},{3,9}}, {VertexLabels->\"Name\"}); {EdgeList(h),Options(h)}", //
-        "{{7<->3,3<->9},{VertexLabels->Name}}");
+        "{{7<->3,3<->9},{VertexLabels->{Name}}}");
     // other pairs make no graph; in the vertex position pairs are vertices
     check("{Graph({{1,x}}), Graph({{-1,2}}), Graph({{1,2},3->4}), VertexList(Graph({{2,1},{5,6}},{}))}", //
         "{Graph({{1,x}}),Graph({{-1,2}}),Graph({{1,2},3->4}),{{2,1},{5,6}}}");
@@ -3076,12 +3088,12 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testGraphOfGraphOptions() {
     check("g=StarGraph(3); h=Graph(g, EdgeStyle->Green, ImageSize->30); " //
         + "{VertexCount(h),EdgeCount(h),Options(h,{EdgeStyle,ImageSize}),Graph(g)===g, h===g}", //
-        "{3,2,{EdgeStyle->RGBColor(0,1,0),ImageSize->30},True,False}");
+        "{3,2,{EdgeStyle->{RGBColor(0,1,0)},ImageSize->30},True,False}");
     // a later option replaces an earlier one
     check("Options(Graph(Graph({1<->3}, ImageSize->10, VertexLabels->\"Name\"), ImageSize->20))", //
-        "{ImageSize->20,VertexLabels->Name}");
+        "{ImageSize->20,VertexLabels->{Name}}");
     check("Options(Graph(Graph({1<->3}, ImageSize->10), {VertexLabels->\"Name\", ImageSize->20}))", //
-        "{ImageSize->20,VertexLabels->Name}");
+        "{ImageSize->20,VertexLabels->{Name}}");
     check("Graph(CycleGraph(3), 7)", //
         "Graph(Graph({1,2,3},{1<->2,1<->3,2<->3}),7)");
   }
@@ -3116,6 +3128,18 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("{Head /@ ImportString(\"Cs\\nB_\",\"Graph6\"), " //
         + "EdgeList /@ ImportString(\"B_\",{\"Graph6\",\"GraphList\"})}", //
         "{{Graph,Graph},{{1<->2}}}");
+  }
+
+  @Test
+  public void testCayleyGraph() {
+    check("EdgeList(CayleyGraph(CyclicGroup(3)))", //
+        "{1->2,2->3,3->1}");
+    check("VertexCount(CayleyGraph(AbelianGroup({2, 5})))", //
+        "10");
+    check("Length(EdgeList(CayleyGraph(DihedralGroup(3))))", //
+        "12");
+    check("CayleyGraph(x)", //
+        "CayleyGraph(x)");
   }
 
   @AfterEach

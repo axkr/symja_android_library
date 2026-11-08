@@ -40,7 +40,6 @@ public class RasterImageTest {
   @BeforeAll
   public static void setUpEngine() {
     Locale.setDefault(Locale.US);
-    Config.SERVER_MODE = false;
     // a raster of one cell per data point is a large expression by construction
     Config.MAX_AST_SIZE = Integer.MAX_VALUE;
     Config.MAX_MATRIX_DIMENSION_SIZE = Integer.MAX_VALUE;

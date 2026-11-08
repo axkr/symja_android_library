@@ -6,7 +6,6 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.Function;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
@@ -70,11 +69,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.HurwitzZetaKernel;
 import org.matheclipse.core.numerics.functions.InverseGammaBetaJS;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.external.apfloat.ApcomplexMathieuMath;
 import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
 import org.matheclipse.external.apfloat.ApcomplexStruveMath;
 import org.matheclipse.external.apfloat.ApfloatOwenMath;
-import org.matheclipse.core.numerics.functions.WorkingPrecision;
 
 public class SpecialFunctions {
 
@@ -665,6 +664,18 @@ public class SpecialFunctions {
       }
       if (z.isOne()) {
         return F.CPiQuarter;
+      }
+      if (z.isInteger() && z.isPositive()) {
+        if (z.equals(F.C2)) {
+          return S.Catalan;
+        }
+        int n = z.toIntDefault();
+        if ((n & 1) == 1 && n < 200) {
+          // Beta(2*k+1) == (-1)^k*EulerE(2*k)*Pi^(2*k+1)/(4^(k+1)*(2*k)!)
+          int k = n / 2;
+          return F.Times(F.Power(F.CN1, F.ZZ(k)), F.EulerE(F.ZZ(2L * k)), F.Power(S.Pi, z),
+              F.Power(F.Times(F.Power(F.C4, F.ZZ(k + 1L)), F.Factorial(F.ZZ(2L * k))), F.CN1));
+        }
       }
       if (engine.isNumericMode()) {
         return functionExpand(ast, engine);
@@ -1417,6 +1428,11 @@ public class SpecialFunctions {
         // special for numeric values
         return F.C1;
       }
+      if (a.isReal() && !a.isPositive() && ((IReal) a).isNumIntValue() && s.isReal()
+          && s.isPositive() && !z.isZero()) {
+        // the term of the sum with k+a==0
+        return F.CComplexInfinity;
+      }
       return numericFunction(ast, engine);
     }
 
@@ -1919,6 +1935,18 @@ public class SpecialFunctions {
       IExpr z = ast.arg1();
       IExpr s = ast.arg2();
       IExpr a = ast.arg3();
+      if (ast.argSize() == 4) {
+        IExpr option = ast.arg4();
+        if (!option.isRuleAST() || option.first() != S.IncludeSingularTerm) {
+          return F.NIL;
+        }
+        if (option.second().isTrue() && a.isInteger() && !a.isPositive()) {
+          // the term z^k/(k+a)^s of k = -a, where the denominator is 0
+          return F.Plus(F.LerchPhi(z, s, a), F.Times(F.Power(z, a.negate()), //
+              F.Power(F.C0, s.negate())));
+        }
+        return F.LerchPhi(z, s, a);
+      }
       return evaluateSymbolic(z, s, a, engine);
     }
 
@@ -2037,10 +2065,11 @@ public class SpecialFunctions {
         if (n <= 0) {
           n = -n;
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0002/
-          // z^n*(PolyLog(s, z)+Sum(1/(z^k*k^s), {k, 1, n}))
-          return F.Times(F.Power(z, n), //
-              F.Plus(polyLog, //
-                  F.sum(k -> F.Power(F.Times(F.Power(z, k), F.Power(k, s)), F.CN1), 1, n)));
+          // z^n*PolyLog(s, z)+Sum(z^(n-k)/k^s, {k, 1, n})
+          final int shift = n;
+          return F.Plus(F.Times(F.Power(z, n), polyLog), //
+              F.sum(k -> F.Times(F.Power(z, F.ZZ(shift).subtract(k)), F.Power(k, s.negate())), 1,
+                  n));
         } else {
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0009/
           // (PolyLog(s, z)-Sum(z^k/k^s, {k, 1, -1+n}))/z^n
@@ -2085,14 +2114,14 @@ public class SpecialFunctions {
           // on the branch cut from 1 to infinity
           real = false;
         }
-        final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
+        final int digits = WorkingPrecision.digits(arbitrary, engine);
         try {
           // the sum of z^k/((k+a)^2)^(s/2): the terms with a negative k+a have the base -(k+a)
           Apcomplex value = ApcomplexZetaMath.lerchPhiOfSquares(
-              CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
-              CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits),
-              CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits));
-          return CarlsonArbitraryPrecision.toNumber(value, real || value.imag().signum() == 0,
+              WorkingPrecision.apcomplex(ast.arg1(), digits),
+              WorkingPrecision.apcomplex(ast.arg2(), digits),
+              WorkingPrecision.apcomplex(ast.arg3(), digits));
+          return WorkingPrecision.toNumber(value, real || value.imag().signum() == 0,
               arbitrary);
         } catch (ArithmeticException | ApfloatRuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
@@ -2162,7 +2191,7 @@ public class SpecialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_3_4;
     }
 
     @Override
@@ -2353,6 +2382,51 @@ public class SpecialFunctions {
      * worse than the input. A <code>Plus</code> therefore only counts when EVERY summand is
      * negative (<code>-1-x</code>), not just the first.
      */
+    /**
+     * The terms <code>c*Log(a)</code> of a sum with rational <code>c</code> and numeric
+     * <code>a</code> merged into one logarithm, if the product of the <code>a^c</code> is rational
+     * or a power of a prime: <code>-Log(6)-Log(Sqrt(3)/2)</code> is <code>-3/2*Log(3)</code>.
+     */
+    private static IExpr mergeLogs(IExpr sum, EvalEngine engine) {
+      if (!sum.isPlus()) {
+        return sum;
+      }
+      IASTAppendable rest = F.PlusAlloc(sum.size());
+      IASTAppendable product = F.TimesAlloc(sum.size());
+      for (IExpr term : (IAST) sum) {
+        IExpr coefficient = F.C1;
+        IExpr log = term;
+        if (term.isTimes() && term.argSize() == 2 && term.first().isRational()) {
+          coefficient = term.first();
+          log = term.second();
+        }
+        if (log.isLog() && log.first().isNumericFunction(true)) {
+          product.append(F.Power(log.first(), coefficient));
+        } else {
+          rest.append(term);
+        }
+      }
+      if (product.argSize() < 2) {
+        return sum;
+      }
+      IExpr argument = engine.evaluate(product);
+      IExpr merged;
+      if (argument.isRational() && argument.isPositive()) {
+        merged = F.Log(argument);
+      } else {
+        // 1/(3*Sqrt(3)) is 3^(-3/2)
+        merged = engine.evaluate(F.PowerExpand(F.Log(argument)));
+        boolean oneLog = merged.isLog()
+            || (merged.isTimes() && merged.argSize() == 2 && merged.first().isRational()
+                && merged.second().isLog());
+        if (!oneLog) {
+          return sum;
+        }
+      }
+      rest.append(merged);
+      return engine.evaluate(rest);
+    }
+
     private static boolean isWhollyNegated(IExpr z) {
       if (z.isPlus()) {
         return ((IAST) z).forAll(
@@ -2369,6 +2443,16 @@ public class SpecialFunctions {
         if (arg1.isMathematicalIntegerNonNegative()) {
           int n = arg1.toIntDefault();
           if (F.isPresent(n)) {
+            int zInt = z.isPositive() && z.isInteger() ? z.toIntDefault() : -1;
+            if (n >= 1 && zInt >= 1 && zInt <= 1000) {
+              // (-1)^(n+1)*n!*(Zeta(n+1) - 1/1^(n+1) - ... - 1/(z-1)^(n+1))
+              IRational head =
+                  F.sumRational(j -> F.QQ(1, j + 1).powerRational(n + 1), 0, zInt - 2);
+              // an even order as n!*(head - Zeta(n+1))
+              return (n & 1) == 0 //
+                  ? F.Times(F.Factorial(F.ZZ(n)), F.Subtract(head, F.Zeta(F.ZZ(n + 1))))
+                  : F.Times(F.Factorial(F.ZZ(n)), F.Subtract(F.Zeta(F.ZZ(n + 1)), head));
+            }
             // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/functions/special/gamma_functions.py#L790
 
             // if (z.isPlus()) {
@@ -2404,9 +2488,10 @@ public class SpecialFunctions {
                             F.Cos(F.Times(zr.multiply(2 * k), S.Pi)),
                             F.Log(F.Sin(F.Times(F.QQ(k, q), S.Pi))))//
                         , 1, (q - 1) / 2);
-                    return engine
+                    return mergeLogs(engine
                         .evaluate(F.Plus(kSum, F.Times(F.CN1D2, S.Pi, F.Cot(F.Times(zr, S.Pi))),
-                            F.Negate(F.Log(2 * q)), F.Negate(S.EulerGamma)));
+                            F.Negate(F.Log(2 * q)), F.Negate(S.EulerGamma))),
+                        engine);
                   }
                 }
               }
@@ -2445,6 +2530,15 @@ public class SpecialFunctions {
           int n = arg1.toIntDefault();
           if (n > 0 && (n & 0x0001) == 0x0001) {
             return F.Times(Factorial(F.ZZ(n)), F.Zeta(F.ZZ(n + 1)));
+          }
+        }
+        if (arg2.isInteger() && arg2.isPositive()) {
+          // an odd order, where Zeta(n+1) is a power of Pi: n!*(Zeta(n+1) - 1 - ... - 1/(z-1)^(n+1))
+          int n = arg1.toIntDefault();
+          int z = arg2.toIntDefault();
+          if (n > 0 && (n & 0x0001) == 0x0001 && z >= 2 && z <= 1000) {
+            IRational head = F.sumRational(j -> F.QQ(1, j + 1).powerRational(n + 1), 0, z - 2);
+            return F.Times(Factorial(F.ZZ(n)), F.Subtract(F.Zeta(F.ZZ(n + 1)), head));
           }
         }
         if (arg2.isMathematicalIntegerNegative()) {
@@ -2835,9 +2929,26 @@ public class SpecialFunctions {
           return F.Times(F.Power(F.Gamma(F.Plus(p, F.C1)), F.CN1),
               F.Power(F.Negate(F.Log(F.Subtract(F.C1, z))), p));
         }
+        int order = n.toIntDefault();
+        int pInt = p.toIntDefault();
+        if (order < 0 && order >= -MAX_NIELSEN_NEGATIVE_ORDER && pInt > 1) {
+          // PolyLog(n-1, p, z) == z * D(PolyLog(n, p, z), z), starting at
+          // PolyLog(0, p, z) == (-Log(1-z))^p/p!
+          EvalEngine engine = EvalEngine.get();
+          ISymbol x = F.Dummy("x");
+          IExpr result = F.Times(F.Power(F.Factorial(p), F.CN1),
+              F.Power(F.Negate(F.Log(F.Subtract(F.C1, x))), p));
+          for (int i = order; i < 0; i++) {
+            result = engine.evaluate(F.Expand(F.Times(x, F.D(result, x))));
+          }
+          return F.subst(result, x, z);
+        }
       }
       return F.NIL;
     }
+
+    /** The largest <code>-n</code> of <code>PolyLog(n, p, z)</code> written out for a negative n. */
+    private static final int MAX_NIELSEN_NEGATIVE_ORDER = 8;
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -2892,7 +3003,7 @@ public class SpecialFunctions {
      * is zero.
      */
     private static IExpr realOrComplexNum(Apcomplex productLog) {
-      return CarlsonArbitraryPrecision.toNumber(productLog, productLog.imag().signum() == 0,
+      return WorkingPrecision.toNumber(productLog, productLog.imag().signum() == 0,
           false);
     }
 
@@ -3098,10 +3209,10 @@ public class SpecialFunctions {
         // the integral representation, at machine precision or the precision of the engine
         final boolean arbitrary =
             a instanceof ApfloatNum || (engine.isArbitraryMode() && !a.isInexactNumber());
-        final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
+        final int digits = WorkingPrecision.digits(arbitrary, engine);
         try {
           Apfloat value = ApcomplexZetaMath.stieltjesGamma(index,
-              CarlsonArbitraryPrecision.apcomplex(a, digits).real());
+              WorkingPrecision.apcomplex(a, digits).real());
           return arbitrary ? F.num(value) : F.num(value.doubleValue());
         } catch (ArithmeticException | ApfloatRuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
@@ -3183,7 +3294,7 @@ public class SpecialFunctions {
     if (value == null) {
       return F.NIL;
     }
-    return CarlsonArbitraryPrecision.toNumber(value, value.imag().signum() == 0,
+    return WorkingPrecision.toNumber(value, value.imag().signum() == 0,
         !machinePrecision);
   }
 

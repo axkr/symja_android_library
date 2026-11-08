@@ -362,34 +362,46 @@ class CarlsonHelper
         int radix = x.radix();
         Apcomplex[] arguments = { x, y, z, p };
         Apfloat smallest = x.real();
-        boolean upper = true,
-                lower = true;
         for (Apcomplex t : arguments)
         {
             smallest = (t.real().compareTo(smallest) < 0 ? t.real() : smallest);
-            upper &= t.imag().signum() >= 0 || t.real().signum() > 0;
-            lower &= t.imag().signum() < 0 || t.real().signum() > 0;
         }
         Apfloat one = new Apfloat(1, workingPrecision, radix),
+                half = new Apfloat("0.5", workingPrecision, radix),
                 n = ApfloatMath.ceil(smallest.negate()).add(one).precision(workingPrecision),
-                margin = one;
-        if (!upper && lower)
+                upper = one,
+                lower = one;
+        boolean below = true;
+        // The line from zero to n + i c moves an argument t to t + s (1 + i c / n), 0 <= s <= n. An argument with a
+        // real part >= 0 never reaches the negative real axis. One with a negative real part and an imaginary part of
+        // the other sign than c reaches the real axis at s = |Im t| n / |c|, which is left of zero unless
+        // |c| <= |Im t| n / |Re t|: there the root of t would cross its branch cut, and for t = p the line would pass
+        // the pole on the other side. Half of that bound keeps the line away from both. A negative real argument
+        // is on its branch cut or a pole on the path, and the line passes above it
+        for (Apcomplex t : arguments)
         {
-            margin = one.negate();
-        }
-        else if (!upper)
-        {
-            // Through the upper half plane, but so low that no argument of the lower half plane crosses a branch cut
-            Apfloat half = new Apfloat("0.5", workingPrecision, radix);
-            for (Apcomplex t : arguments)
+            if (t.real().signum() < 0)
             {
-                if (t.imag().signum() < 0 && t.real().signum() <= 0)
+                if (t.imag().signum() == 0)
                 {
-                    Apfloat distance = ApfloatMath.abs(t.imag()).multiply(half);
-                    margin = (distance.compareTo(margin) < 0 ? distance : margin);
+                    below = false;
+                }
+                else
+                {
+                    Apfloat bound = ApfloatMath.abs(t.imag()).multiply(n).divide(t.real().negate()).multiply(half);
+                    if (t.imag().signum() < 0)
+                    {
+                        upper = (bound.compareTo(upper) < 0 ? bound : upper);
+                    }
+                    else
+                    {
+                        lower = (bound.compareTo(lower) < 0 ? bound : lower);
+                    }
                 }
             }
         }
+        // The side with more room: a line close to a pole needs many nodes of the quadrature
+        Apfloat margin = (below && lower.compareTo(upper) > 0 ? lower.negate() : upper);
         return new Apcomplex(n, margin.precision(workingPrecision));
     }
 

@@ -55,6 +55,145 @@ public class PredicateQ {
     return expr.isList() && ((IAST) expr).forAll(PredicateQ::isOptionQ);
   }
 
+  /**
+   * The options <code>SameTest</code> and <code>Tolerance</code> of the matrix predicates. Two
+   * elements <code>a, b</code> are the same if <code>f(a, b)</code> gives <code>True</code> for
+   * <code>SameTest-&gt;f</code>, or if <code>Abs(a-b)</code> doesn't exceed
+   * <code>Tolerance-&gt;t</code>. Without one of these options, which is the state of
+   * {@link #isDefault()}, each predicate uses its own comparison.
+   */
+  private static final class MatrixQOptions {
+    /** The positions behind the matrix: <code>SameTest</code> and <code>Tolerance</code>. */
+    static final int MAX_OPTIONS = 2;
+
+    /** The test function or {@link F#NIL}. */
+    private final IExpr sameTest;
+
+    /** The non-negative tolerance or <code>-1.0</code>. */
+    private final double tolerance;
+
+    /** <code>Normalized -&gt; False</code>: only mutually orthogonal columns are asked for. */
+    private final boolean normalized;
+
+    private MatrixQOptions(IExpr sameTest, double tolerance, boolean normalized) {
+      this.sameTest = sameTest;
+      this.tolerance = tolerance;
+      this.normalized = normalized;
+    }
+
+    /**
+     * Read the options from the arguments of <code>ast</code>, starting at <code>position</code>.
+     *
+     * @return <code>null</code> if an argument isn't one of the options or if the value of
+     *         <code>Tolerance</code> isn't a non-negative number
+     */
+    static MatrixQOptions read(IAST ast, int position, EvalEngine engine) {
+      IExpr sameTest = F.NIL;
+      double tolerance = -1.0;
+      boolean normalized = true;
+      if (position < ast.size()) {
+        OptionArgs options = new OptionArgs((ISymbol) ast.topHead(), ast, position, engine, true);
+        if (options.isInvalidPosition()) {
+          return null;
+        }
+        sameTest = options.getOptionAutomatic(S.SameTest);
+        IExpr toleranceValue = options.getOptionAutomatic(S.Tolerance);
+        if (toleranceValue.isPresent()) {
+          IExpr value = engine.evaluate(F.N(toleranceValue));
+          if (!value.isReal() || value.isNegative()) {
+            return null;
+          }
+          tolerance = value.evalf();
+        }
+        normalized = !options.getOption(S.Normalized).isFalse();
+      }
+      return new MatrixQOptions(sameTest, tolerance, normalized);
+    }
+
+    boolean isNormalized() {
+      return normalized;
+    }
+
+    /** No option changes the comparison of the elements. */
+    boolean isDefault() {
+      return sameTest.isNIL() && tolerance < 0.0;
+    }
+
+    /** Test if the elements are the same; use it only if not {@link #isDefault()}. */
+    boolean isSame(IExpr element1, IExpr element2, EvalEngine engine) {
+      if (sameTest.isPresent()) {
+        return engine.evalTrue(F.binaryAST2(sameTest, element1, element2));
+      }
+      IExpr difference = engine.evaluate(F.Abs(F.Subtract(element1, element2)));
+      if (difference.isNumericFunction()) {
+        return engine.evalDouble(difference) <= tolerance;
+      }
+      return difference.isZero();
+    }
+
+    /** Test if the element is zero, which only depends on the element for the default options. */
+    boolean isZero(IExpr element, EvalEngine engine) {
+      return isDefault() ? element.isZero() : isSame(element, F.C0, engine);
+    }
+
+    /**
+     * Test if <code>matrix</code> is the identity matrix of size <code>n</code>; use it only if not
+     * {@link #isDefault()}.
+     */
+    boolean isIdentity(IExpr matrix, int n, EvalEngine engine) {
+      return forAllElements(matrix, n,
+          (i, j, element) -> isSame(element, i == j ? F.C1 : F.C0, engine));
+    }
+
+    /** Test if the elements off the diagonal of the <code>n x n</code> matrix are zero. */
+    boolean isDiagonal(IExpr matrix, int n, EvalEngine engine) {
+      return forAllElements(matrix, n, (i, j, element) -> i == j
+          || (isDefault() ? S.PossibleZeroQ.ofQ(engine, element) : isSame(element, F.C0, engine)));
+    }
+
+    /** A test of the element in row <code>i</code> and column <code>j</code>. */
+    private interface ElementTest {
+      boolean test(int i, int j, IExpr element);
+    }
+
+    /** Test if <code>matrix</code> has the size <code>n x n</code> and all elements pass. */
+    private static boolean forAllElements(IExpr matrix, int n, ElementTest test) {
+      int[] dims = matrix.isMatrix();
+      if (dims == null || dims[0] != n || dims[1] != n) {
+        return false;
+      }
+      IAST rows = (IAST) matrix.normal(false);
+      for (int i = 1; i <= n; i++) {
+        IAST row = rows.getAST(i);
+        for (int j = 1; j <= n; j++) {
+          if (!test.test(i, j, row.get(j))) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    /** The options of a matrix predicate. */
+    static IAST defaults() {
+      return F.list(F.Rule(S.SameTest, S.Automatic), F.Rule(S.Tolerance, S.Automatic));
+    }
+
+    /** The options of a predicate which tests for orthonormal columns. */
+    static IAST orthogonalDefaults() {
+      return F.list(F.Rule(S.Normalized, S.True), F.Rule(S.SameTest, S.Automatic),
+          F.Rule(S.Tolerance, S.Automatic));
+    }
+  }
+
+  /**
+   * The expected argument numbers of a matrix predicate with at most <code>positional</code>
+   * arguments in front of the options of {@link MatrixQOptions}.
+   */
+  private static int[] matrixQArgSize(int positional) {
+    return new int[] {1, positional + MatrixQOptions.MAX_OPTIONS};
+  }
+
   private static class Initializer {
 
     private static void init() {
@@ -75,6 +214,7 @@ public class PredicateQ {
           x -> x == S.$Failed || x == S.$Aborted || x.isAST(S.Failure));
       S.FreeQ.setEvaluator(new FreeQ());
       S.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
+      S.IndefiniteMatrixQ.setEvaluator(new IndefiniteMatrixQ());
       S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
       S.IntegerQ.setPredicateQ(x -> x.isInteger());
       S.ListQ.setPredicateQ(x -> x.isList());
@@ -87,8 +227,8 @@ public class PredicateQ {
       // any expression whose head is Missing, whatever it carries: Missing[],
       // Missing["reason"] and Missing["KeyAbsent", key] are all missing
       S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing));
-      S.NegativeDefiniteMatrixQ.setEvaluator(new NegativeDefiniteMatrixQ());
-      S.NegativeSemidefiniteMatrixQ.setEvaluator(new NegativeSemidefiniteMatrixQ());
+      S.NegativeDefiniteMatrixQ.setEvaluator(new DefiniteMatrixQ(-1, false));
+      S.NegativeSemidefiniteMatrixQ.setEvaluator(new DefiniteMatrixQ(-1, true));
       S.NotListQ.setPredicateQ(x -> !x.isList());
       S.NormalMatrixQ.setEvaluator(new NormalMatrixQ());
       S.NameQ.setEvaluator(new NameQ());
@@ -97,8 +237,8 @@ public class PredicateQ {
       S.OddQ.setEvaluator(new OddQ());
       S.OrthogonalMatrixQ.setEvaluator(new OrthogonalMatrixQ());
       S.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
-      S.PositiveDefiniteMatrixQ.setEvaluator(new PositiveDefiniteMatrixQ());
-      S.PositiveSemidefiniteMatrixQ.setEvaluator(new PositiveSemidefiniteMatrixQ());
+      S.PositiveDefiniteMatrixQ.setEvaluator(new DefiniteMatrixQ(1, false));
+      S.PositiveSemidefiniteMatrixQ.setEvaluator(new DefiniteMatrixQ(1, true));
       S.PrimeQ.setEvaluator(new PrimeQ());
       S.QuantityQ.setEvaluator(new QuantityQ());
       S.RealValuedNumberQ.setEvaluator(new RealValuedNumberQ());
@@ -142,6 +282,11 @@ public class PredicateQ {
   private static final class AntihermitianMatrixQ extends SymmetricMatrixQ {
 
     @Override
+    protected IExpr mirrored(IExpr expr) {
+      return F.Times(F.CN1, F.Conjugate(expr));
+    }
+
+    @Override
     protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
       if (expr1.isNumber() && expr2.isNumber()) {
         if (expr1.conjugate().negate().equals(expr2)) {
@@ -176,6 +321,11 @@ public class PredicateQ {
    * </ul>
    */
   private static final class AntisymmetricMatrixQ extends SymmetricMatrixQ {
+
+    @Override
+    protected IExpr mirrored(IExpr expr) {
+      return F.Times(F.CN1, expr);
+    }
 
     @Override
     protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
@@ -347,9 +497,30 @@ public class PredicateQ {
 
   private static final class CompositeQ extends AbstractFunctionEvaluator {
 
+    /** A Gaussian integer which is neither a unit nor zero nor a Gaussian prime. */
+    private static IExpr gaussianCompositeQ(IExpr n, EvalEngine engine) {
+      if (!n.isInteger() && !(n.isComplex() && n.re().isInteger() && n.im().isInteger())) {
+        return S.False;
+      }
+      if (engine.evaluate(F.LessEqual(F.Abs(n), F.C1)).isTrue()) {
+        return S.False;
+      }
+      return F.booleSymbol(!engine
+          .evaluate(F.binaryAST2(S.PrimeQ, n, F.Rule(S.GaussianIntegers, S.True))).isTrue());
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
+      if (ast.isAST2()) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        if (options.isInvalidPosition(1)) {
+          return options.printNonopt(ast, 1, engine);
+        }
+        if (options.isTrue(S.GaussianIntegers)) {
+          return gaussianCompositeQ(arg1, engine);
+        }
+      }
       if (!arg1.isInteger()) {
         return S.False;
       }
@@ -365,12 +536,13 @@ public class PredicateQ {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
+      setOptions(newSymbol, F.list(F.Rule(S.GaussianIntegers, S.False)));
     }
 
   }
@@ -379,8 +551,8 @@ public class PredicateQ {
   private static class DiagonalMatrixQ extends LowerTriangularMatrixQ {
 
     @Override
-    protected boolean test(IExpr element, int row, int column, int diagonal) {
-      return row + diagonal == column || element.isZero();
+    protected boolean isZeroPosition(int row, int column, int diagonal) {
+      return row + diagonal != column;
     }
   }
 
@@ -655,6 +827,12 @@ public class PredicateQ {
    * </ul>
    */
   private static final class HermitianMatrixQ extends SymmetricMatrixQ {
+
+    @Override
+    protected IExpr mirrored(IExpr expr) {
+      return F.Conjugate(expr);
+    }
+
     @Override
     protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
       if (expr1.isReal() && expr2.isReal()) {
@@ -685,19 +863,28 @@ public class PredicateQ {
       }
 
       int diagonal = 0;
-      if (ast.isAST2()) {
+      int optionPosition = 2;
+      if (ast.size() > 2 && !ast.arg2().isRuleAST() && !ast.arg2().isListOfRules()) {
         int k = ast.arg2().toMachineInt();
         if (F.isNotPresent(k)) {
+          if (ast.arg2().isNumber()) {
+            // `1` is not a machine-sized integer.
+            return Errors.printMessage(ast.topHead(), "nmint", F.list(ast.arg2()), engine);
+          }
           return F.NIL;
         }
         diagonal = k;
+        optionPosition = 3;
+      }
+      MatrixQOptions options = MatrixQOptions.read(ast, optionPosition, engine);
+      if (options == null) {
+        return F.NIL;
       }
       IAST matrix = (IAST) arg1.normal(false);
       for (int i = 1; i <= dims[0]; i++) {
         IAST row = matrix.getAST(i);
         for (int j = 1; j <= dims[1]; j++) {
-          IExpr element = row.get(j);
-          if (!test(element, i, j, diagonal)) {
+          if (isZeroPosition(i, j, diagonal) && !options.isZero(row.get(j), engine)) {
             return S.False;
           }
         }
@@ -705,20 +892,20 @@ public class PredicateQ {
       return S.True;
     }
 
-    protected boolean test(IExpr element, int row, int column, int diagonal) {
-      if (row + diagonal < column && !element.isZero()) {
-        return false;
-      }
-      return true;
+    /** Test if the element at the given position has to be zero. */
+    protected boolean isZeroPosition(int row, int column, int diagonal) {
+      return row + diagonal < column;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return matrixQArgSize(2);
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, MatrixQOptions.defaults());
+    }
   }
 
   /**
@@ -933,6 +1120,10 @@ public class PredicateQ {
         arg1 = engine.evaluate(ast.arg1());
       }
 
+      if (ast.isAST2()
+          && !(ast.arg2().isRuleAST() && ast.arg2().first() == S.ResolveContextAliases)) {
+        return F.NIL;
+      }
       if (arg1.isString()) {
         return F.booleSymbol(F.hasSymbol(arg1.toString(), engine));
       }
@@ -941,75 +1132,138 @@ public class PredicateQ {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
   /**
-   * Test if <code>matrix</code> is a Hermitian matrix whose eigenvalues all have the sign
+   * The eigenvalues of a Hermitian matrix.
+   *
+   * @return {@link F#NIL} if they cannot be determined
+   */
+  private static IAST hermitianEigenvalues(IExpr matrix, EvalEngine engine) {
+    IExpr eigenvalues = engine.evaluate(F.Eigenvalues(matrix));
+    return eigenvalues.isList() && eigenvalues.argSize() > 0 ? (IAST) eigenvalues : F.NIL;
+  }
+
+  /** The eigenvalue is zero, for an inexact number within the tolerance. */
+  private static boolean isZeroEigenvalue(IExpr eigenvalue, MatrixQOptions options,
+      EvalEngine engine) {
+    return options.isDefault() ? eigenvalue.isPossibleZero(true)
+        : options.isZero(eigenvalue, engine);
+  }
+
+  /**
+   * The Hermitian matrix predicates on the signs of the eigenvalues. All of them have the sign
    * <code>sign</code>, or are also zero for a semidefinite matrix. An eigenvalue whose sign cannot
    * be decided does not reject the matrix.
    *
    * <p>
    * A definite matrix requires the strict sign, so a tiny inexact eigenvalue of the right sign
-   * passes. A semidefinite matrix takes an inexact eigenvalue of the wrong sign, which is zero
-   * within the tolerance of {@link IExpr#isPossibleZero(boolean)}, as zero.
-   *
-   * @param sign <code>1</code> for a positive and <code>-1</code> for a negative (semi)definite
-   *        matrix
-   * @param semidefinite whether eigenvalues may be zero
+   * passes without the option <code>Tolerance</code>. A semidefinite matrix takes an inexact
+   * eigenvalue of the wrong sign, which is zero within the tolerance, as zero.
    */
-  private static IExpr definiteMatrixQ(IExpr matrix, int sign, boolean semidefinite,
-      EvalEngine engine) {
-    // a (semi)definite matrix must be Hermitian (and thus square)
-    if (!S.HermitianMatrixQ.ofQ(engine, matrix)) {
-      return S.False;
+  private static final class DefiniteMatrixQ extends AbstractFunctionEvaluator
+      implements IPredicate {
+    /** <code>1</code> for a positive and <code>-1</code> for a negative (semi)definite matrix. */
+    private final int sign;
+
+    /** Whether eigenvalues may be zero. */
+    private final boolean semidefinite;
+
+    DefiniteMatrixQ(int sign, boolean semidefinite) {
+      this.sign = sign;
+      this.semidefinite = semidefinite;
     }
-    // the eigenvalues of a Hermitian matrix are real
-    IExpr eigenvalues = engine.evaluate(F.Eigenvalues(matrix));
-    if (!eigenvalues.isList() || eigenvalues.argSize() == 0) {
-      return S.False;
-    }
-    for (IExpr eigenvalue : (IAST) eigenvalues) {
-      if (semidefinite) {
-        boolean wrongSign =
-            sign > 0 ? eigenvalue.isNegativeResult() : eigenvalue.isPositiveResult();
-        if (wrongSign && !eigenvalue.isPossibleZero(true)) {
-          return S.False;
-        }
-      } else if (sign > 0 ? eigenvalue.isNonPositiveResult()
-          : eigenvalue.isNonNegativeResult()) {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
+      if (options == null) {
+        return F.NIL;
+      }
+      // a (semi)definite matrix must be Hermitian (and thus square)
+      IASTAppendable hermitianTest = F.ast(S.HermitianMatrixQ, ast.argSize());
+      hermitianTest.appendArgs(ast);
+      if (!engine.evalTrue(hermitianTest)) {
         return S.False;
       }
-    }
-    return S.True;
-  }
-
-  private static final class NegativeDefiniteMatrixQ extends AbstractFunctionEvaluator
-      implements IPredicate {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return definiteMatrixQ(ast.arg1(), -1, false, engine);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-  }
-
-  private static final class NegativeSemidefiniteMatrixQ extends AbstractFunctionEvaluator
-      implements IPredicate {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return definiteMatrixQ(ast.arg1(), -1, true, engine);
+      // the eigenvalues of a Hermitian matrix are real
+      IAST eigenvalues = hermitianEigenvalues(ast.arg1(), engine);
+      if (eigenvalues.isNIL()) {
+        return S.False;
+      }
+      for (IExpr eigenvalue : eigenvalues) {
+        if (semidefinite) {
+          boolean wrongSign =
+              sign > 0 ? eigenvalue.isNegativeResult() : eigenvalue.isPositiveResult();
+          if (wrongSign && !isZeroEigenvalue(eigenvalue, options, engine)) {
+            return S.False;
+          }
+        } else if (sign > 0 ? eigenvalue.isNonPositiveResult()
+            : eigenvalue.isNonNegativeResult()) {
+          return S.False;
+        } else if (!options.isDefault() && options.isZero(eigenvalue, engine)) {
+          return S.False;
+        }
+      }
+      return S.True;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return matrixQArgSize(1);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, MatrixQOptions.defaults());
+    }
+  }
+
+  /**
+   * A square matrix is indefinite, if the quadratic form of its Hermitian part
+   * <code>(m+ConjugateTranspose(m))/2</code> takes positive and negative values, which means that
+   * the Hermitian part has a positive and a negative eigenvalue.
+   */
+  private static final class IndefiniteMatrixQ extends AbstractFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
+      if (options == null) {
+        return F.NIL;
+      }
+      IExpr matrix = ast.arg1();
+      int[] dims = matrix.isMatrix();
+      if (dims == null || dims[0] != dims[1]) {
+        return S.False;
+      }
+      IAST eigenvalues = hermitianEigenvalues(
+          engine.evaluate(F.Times(F.C1D2, F.Plus(matrix, F.ConjugateTranspose(matrix)))), engine);
+      if (eigenvalues.isNIL()) {
+        return S.False;
+      }
+      boolean positive = false;
+      boolean negative = false;
+      for (IExpr eigenvalue : eigenvalues) {
+        if (!isZeroEigenvalue(eigenvalue, options, engine)) {
+          positive |= eigenvalue.isPositiveResult();
+          negative |= eigenvalue.isNegativeResult();
+        }
+      }
+      return F.booleSymbol(positive && negative);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return matrixQArgSize(1);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, MatrixQOptions.defaults());
     }
   }
 
@@ -1017,6 +1271,10 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
+      if (options == null) {
+        return F.NIL;
+      }
       IExpr expr = ast.arg1();
       if (isSquareMatrix(expr)) {
         IExpr conjugateTransposeD = engine.evaluate(F.ConjugateTranspose(expr));
@@ -1026,14 +1284,38 @@ public class PredicateQ {
           if (lhs.equals(rhs)) {
             return S.True;
           }
+          return F.booleSymbol(!options.isDefault() && isSameMatrix(lhs, rhs, options, engine));
         }
       }
       return F.False;
     }
 
+    private static boolean isSameMatrix(IExpr matrix1, IExpr matrix2, MatrixQOptions options,
+        EvalEngine engine) {
+      int[] dims = matrix1.isMatrix();
+      if (dims == null) {
+        return false;
+      }
+      IAST rows1 = (IAST) matrix1.normal(false);
+      IAST rows2 = (IAST) matrix2.normal(false);
+      for (int i = 1; i <= dims[0]; i++) {
+        for (int j = 1; j <= dims[1]; j++) {
+          if (!options.isSame(rows1.getPart(i, j), rows2.getPart(i, j), engine)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return matrixQArgSize(1);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, MatrixQOptions.defaults());
     }
   }
 
@@ -1126,6 +1408,10 @@ public class PredicateQ {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       final IExpr arg1 = engine.evaluate(ast.arg1());
+      MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
+      if (options == null) {
+        return F.NIL;
+      }
       int[] dims = arg1.isMatrix();
       if (dims == null) {
         // no square matrix
@@ -1148,6 +1434,12 @@ public class PredicateQ {
             || identityMatrixDims[1] != dims[0]) {
           return S.False;
         }
+      }
+      if (!options.isNormalized()) {
+        return F.booleSymbol(options.isDiagonal(identityMatrix, identityMatrixDims[0], engine));
+      }
+      if (!options.isDefault()) {
+        return F.booleSymbol(options.isIdentity(identityMatrix, identityMatrixDims[0], engine));
       }
       if (identityMatrix.isAST()) {
         IAST matrix = (IAST) identityMatrix;
@@ -1191,7 +1483,12 @@ public class PredicateQ {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return matrixQArgSize(2);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, MatrixQOptions.orthogonalDefaults());
     }
   }
 
@@ -1260,34 +1557,6 @@ public class PredicateQ {
       newSymbol.setAttributes(Attribute.LISTABLE);
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions)));
-    }
-  }
-
-  private static final class PositiveDefiniteMatrixQ extends AbstractFunctionEvaluator
-      implements IPredicate {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return definiteMatrixQ(ast.arg1(), 1, false, engine);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-  }
-
-  private static final class PositiveSemidefiniteMatrixQ extends AbstractFunctionEvaluator
-      implements IPredicate {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return definiteMatrixQ(ast.arg1(), 1, true, engine);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
     }
   }
 
@@ -1598,6 +1867,12 @@ public class PredicateQ {
   private static class SymmetricMatrixQ extends AbstractCoreFunctionEvaluator
       implements IPredicate {
 
+    /** The element which is expected at the mirrored position of <code>expr</code>. */
+    protected IExpr mirrored(IExpr expr) {
+      return expr;
+    }
+
+    /** The comparison of the elements without an option. */
     protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
       if (expr1.isNumber() && expr2.isNumber()) {
         if (expr1.equals(expr2)) {
@@ -1611,6 +1886,10 @@ public class PredicateQ {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
+      MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
+      if (options == null) {
+        return F.NIL;
+      }
       int[] dims = arg1.isMatrix();
       if (dims == null || dims[0] != dims[1]) {
         // no square matrix
@@ -1624,7 +1903,7 @@ public class PredicateQ {
           for (int j = i + 1; j <= dims[1]; j++) {
             IExpr expr = row.get(j);
             IExpr symmetricExpr = matrix.getPart(j, i);
-            if (!compareElements(expr, symmetricExpr, engine)) {
+            if (!isMirrored(expr, symmetricExpr, options, engine)) {
               return S.False;
             }
           }
@@ -1637,7 +1916,7 @@ public class PredicateQ {
             for (int j = i + 1; j < dims[1]; j++) {
               IExpr expr = matrix.getEntry(i, j);
               IExpr symmetricExpr = matrix.getEntry(j, i);
-              if (!compareElements(expr, symmetricExpr, engine)) {
+              if (!isMirrored(expr, symmetricExpr, options, engine)) {
                 return S.False;
               }
             }
@@ -1648,9 +1927,20 @@ public class PredicateQ {
       return S.False;
     }
 
+    private boolean isMirrored(IExpr expr, IExpr symmetricExpr, MatrixQOptions options,
+        EvalEngine engine) {
+      return options.isDefault() ? compareElements(expr, symmetricExpr, engine)
+          : options.isSame(engine.evaluate(mirrored(expr)), symmetricExpr, engine);
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return matrixQArgSize(1);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, MatrixQOptions.defaults());
     }
   }
 
@@ -1694,9 +1984,19 @@ public class PredicateQ {
         return S.False;
       }
 
+      MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
+      if (options == null) {
+        return F.NIL;
+      }
       int p = dims[0];
       int q = dims[1];
       final IAST matrix = (IAST) arg1.normal(false);
+      if (!options.isDefault() || !options.isNormalized()) {
+        IExpr id = engine.evaluate(p >= q ? F.Dot(F.ConjugateTranspose(matrix), matrix)
+            : F.Dot(matrix, F.ConjugateTranspose(matrix)));
+        return F.booleSymbol(options.isNormalized() ? options.isIdentity(id, Math.min(p, q), engine)
+            : options.isDiagonal(id, Math.min(p, q), engine));
+      }
       if (dims[0] >= dims[1]) {
         IExpr id = engine.evaluate(F.Simplify(F.Dot(F.ConjugateTranspose(matrix), matrix)));
         dims = id.isMatrix();
@@ -1739,20 +2039,21 @@ public class PredicateQ {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return matrixQArgSize(2);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, MatrixQOptions.orthogonalDefaults());
     }
   }
 
   private static class UpperTriangularMatrixQ extends LowerTriangularMatrixQ {
 
     @Override
-    protected boolean test(IExpr element, int row, int column, int diagonal) {
-      if (row + diagonal > column && !element.isZero()) {
-        return false;
-      }
-      return true;
+    protected boolean isZeroPosition(int row, int column, int diagonal) {
+      return row + diagonal > column;
     }
-
   }
 
   /**
@@ -1807,7 +2108,12 @@ public class PredicateQ {
           }
           return S.False;
         } else if (options[0].isString("TrialEvaluation")) {
-          return F.booleSymbol(ast.arg1().isValue(ISymbol.TRIAL_EVALUATION));
+          IExpr arg1 = ast.arg1();
+          if (arg1.isAST()) {
+            // a value is whatever changes the expression
+            return F.booleSymbol(!engine.evaluate(arg1).isSame(arg1));
+          }
+          return F.booleSymbol(arg1.isValue(ISymbol.TRIAL_EVALUATION));
         } else if (options[0].isString("OwnValuesPresent")) {
           if (ast.arg1().isSymbol()) {
             return F.booleSymbol(ast.arg1().isValue(ISymbol.OWN_VALUES_PRESENT));

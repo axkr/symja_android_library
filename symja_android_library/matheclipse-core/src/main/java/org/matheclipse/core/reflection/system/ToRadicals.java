@@ -4,10 +4,10 @@ import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.C0;
 import java.util.ArrayList;
 import java.util.List;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -28,10 +28,23 @@ public class ToRadicals extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
+    boolean cubics = true;
+    boolean quartics = true;
+    if (ast.isAST2()) {
+      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+      if (options.isInvalidPosition(1)) {
+        return options.printNonopt(ast, 1, engine);
+      }
+      cubics = !options.isFalse(S.Cubics);
+      quartics = !options.isFalse(S.Quartics);
+    }
+    final boolean useCubics = cubics;
+    final boolean useQuartics = quartics;
     // If the argument itself is Root[f, k] or Root[f, k, n], expand it directly
     // (any degree 1..4)
     if (arg1.isAST(S.Root, 3) || arg1.isAST(S.Root, 4)) {
-      IExpr result = ToRadicals.rootToRadicals((IAST) arg1, engine, 4);
+      IExpr result = ToRadicals.rootToRadicals((IAST) arg1, engine,
+          maxDegree((IAST) arg1, useCubics, useQuartics, engine));
       return result.orElse(arg1);
     }
     // Walk the expression tree and replace any Root[f, k]/Root[f, k, n] subexpressions.
@@ -39,7 +52,8 @@ public class ToRadicals extends AbstractFunctionEvaluator {
     // ToRadicals acts as identity for non-Root inputs.
     IExpr result = arg1.replaceAll(x -> {
       if (x.isAST(S.Root, 3) || x.isAST(S.Root, 4)) {
-        IExpr radical = ToRadicals.rootToRadicals((IAST) x, engine, 4);
+        IExpr radical = ToRadicals.rootToRadicals((IAST) x, engine,
+            maxDegree((IAST) x, useCubics, useQuartics, engine));
         if (radical.isPresent()) {
           return radical;
         }
@@ -49,15 +63,50 @@ public class ToRadicals extends AbstractFunctionEvaluator {
     return result.orElse(arg1);
   }
 
+  /**
+   * The largest degree for which the closed forms of a <code>Root</code> object may be used, if the
+   * general formulas for cubics or quartics are switched off. A binomial <code>a*x^n+b</code> needs
+   * none of them, and the degrees which count are those of the irreducible factors.
+   */
+  private static int maxDegree(IAST root, boolean cubics, boolean quartics, EvalEngine engine) {
+    if ((cubics && quartics) || !root.arg1().isFunction()) {
+      return 4;
+    }
+    IExpr body = root.arg1().first();
+    if (body.isPlus() && body.argSize() == 2 && body.exists(x -> x.isFree(F.Slot1))) {
+      return 4;
+    }
+    ISymbol x = F.Dummy("x");
+    IExpr factors = engine.evaluate(F.FactorList(F.subst(body, F.Slot1, x)));
+    if (!factors.isList()) {
+      return 4;
+    }
+    int result = 4;
+    for (IExpr factor : (IAST) factors) {
+      IExpr exponent = engine.evaluate(F.Exponent(factor.first(), x));
+      if (!quartics && exponent.equals(F.C4)) {
+        result = Math.min(result, 3);
+      } else if (!cubics && exponent.equals(F.C3)) {
+        result = 2;
+      }
+    }
+    return result;
+  }
+
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_1;
+    return ARGS_1_2;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(Attribute.LISTABLE);
+    setOptions(newSymbol,
+        F.list(F.Rule(S.Cubics, S.Automatic), F.Rule(S.Quartics, S.Automatic)));
   }
+
+  /** The largest distance of a closed form root from the start value <code>c</code>. */
+  private static final double NEAR_ROOT_DISTANCE = 1.0e-6;
 
   private static IExpr rootNearFloatNumber(EvalEngine engine, IExpr f, IExpr c) {
     double targetC = c.evalfNaN();
@@ -72,9 +121,11 @@ public class ToRadicals extends AbstractFunctionEvaluator {
 
     try {
       // Attempt to find exact symbolic solutions using Solve(eq, x)
-      double cmin = targetC - Config.DEFAULT_CHOP_DELTA;
-      double cmax = targetC + Config.DEFAULT_CHOP_DELTA;
-      IAST solve = F.Solve(F.List(eq,
+      // the interval of the roots which are accepted as near c below; Solve keeps only the
+      // solutions in it
+      double cmin = targetC - NEAR_ROOT_DISTANCE;
+      double cmax = targetC + NEAR_ROOT_DISTANCE;
+      IAST solve = F.SolveDistinct(F.List(eq,
           F.LessEqual(x, org.matheclipse.core.builtin.NumberTheory.Rationalize.exact(F.num(cmax))),
           F.GreaterEqual(x,
               org.matheclipse.core.builtin.NumberTheory.Rationalize.exact(F.num(cmin)))), x);
@@ -98,7 +149,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
             double diff = Math.abs(val - targetC);
 
             // Define a reasonable threshold for "near" x = c, e.g., 1e-6
-            if (diff < minDiff && diff < 1e-6) {
+            if (diff < minDiff && diff < NEAR_ROOT_DISTANCE) {
               minDiff = diff;
               bestExactRoot = exactVal;
             }
@@ -688,7 +739,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
   private static IExpr[] solveToRadicals(IExpr body, int degree, EvalEngine engine) {
     ISymbol x = F.Dummy("x");
     IExpr eqBody = body.replaceAll(F.Rule(F.Slot1, x)).orElse(body);
-    IExpr solveResult = engine.evaluate(F.Solve(F.Equal(eqBody, C0), x));
+    IExpr solveResult = engine.evaluate(F.SolveDistinct(F.Equal(eqBody, C0), x));
     if (!solveResult.isListOfRules(false) && !solveResult.isList()) {
       return null;
     }

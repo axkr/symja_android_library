@@ -107,6 +107,9 @@ public class Plot extends ListPlot {
         try {
           if (rangeList.isList3()) {
 
+            // the smallest and largest x the curves were drawn through, then the iterator range
+            final double[] sampledX =
+                {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NaN, Double.NaN};
             final IAST listOfLines =
                 plotToListPoints(function, rangeList, ast, graphicsOptions, engine,
                     GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic)
@@ -117,7 +120,9 @@ public class Plot extends ListPlot {
                     // CPD-OFF sibling plot pipelines with different option sets
                     GraphicsOptions.optionValue(originalAST, S.WorkingPrecision, S.MachinePrecision)
                         .toIntDefault(-1),
-                    GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
+                    GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic),
+                    GraphicsOptions.optionValue(originalAST, S.EvaluationMonitor, S.None),
+                    sampledX);
             if (listOfLines.isNIL()) {
               return F.NIL;
             }
@@ -131,7 +136,9 @@ public class Plot extends ListPlot {
               // CPD-ON
               // PlotRange of the call
               listPlotOptions.setCallAST(originalAST);
-              return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
+              IExpr graphics = createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
+              return withResolvedPlotRange(graphics, originalAST, rangeList, sampledX,
+                  graphicsOptions.xScale());
             }
 
           }
@@ -144,6 +151,95 @@ public class Plot extends ListPlot {
     return F.NIL;
   }
 
+  /**
+   * The plot with the range it settled on written as its <code>PlotRange</code>, axis by axis:
+   * <ul>
+   * <li>x, by default and for <code>Full</code>: the iterator range as it was written; with a bare
+   * <code>{ymin, ymax}</code>: the iterator range as machine numbers;</li>
+   * <li>x for <code>Automatic</code>: the range of the sampled points, extended to <code>0</code>
+   * when close to it;</li>
+   * <li>y, by default and for <code>Automatic</code>: the automatic range of the drawn values (see
+   * {@link org.matheclipse.core.graphics.svg.SvgGraphics2D#functionPlotYRange(IAST)});</li>
+   * <li><code>All</code> is <code>{All, All}</code>; <code>All</code> and explicit ranges of an axis
+   * stay as they were given.</li>
+   * </ul>
+   *
+   * @param graphics the <code>Graphics</code> of the plot, possibly <code>Legended</code>
+   * @param originalAST the plot call with its options
+   * @param rangeList the iterator <code>{x, xmin, xmax}</code>
+   * @param sampledX the smallest and largest sampled x with a value, then the iterator range
+   * @param xScale the scaling of the x axis
+   */
+  private static IExpr withResolvedPlotRange(IExpr graphics, IAST originalAST, IAST rangeList,
+      double[] sampledX, String xScale) {
+    IAST plot = innerGraphics(graphics);
+    if (plot.isNIL() || !Double.isFinite(sampledX[2]) || !Double.isFinite(sampledX[3])) {
+      return graphics;
+    }
+    IExpr plotRange = GraphicsOptions.optionValue(originalAST, S.PlotRange, F.NIL);
+    IExpr xSpec;
+    IExpr ySpec;
+    IExpr xRange;
+    if (plotRange.isNIL() || plotRange == S.Automatic || plotRange == S.Full) {
+      // the x axis of a plot is Full by default
+      xSpec = plotRange.isNIL() ? S.Full : plotRange;
+      ySpec = S.Automatic;
+      xRange = xSpec;
+    } else if (plotRange == S.All) {
+      xSpec = S.All;
+      ySpec = S.All;
+      xRange = xSpec;
+    } else if (plotRange.isList2() && Double.isFinite(plotRange.first().evalfNaN())
+        && Double.isFinite(plotRange.second().evalfNaN())) {
+      // {ymin, ymax} constrains the y axis only, x keeps the iterator range
+      xSpec = S.Full;
+      ySpec = F.list(F.num(plotRange.first().evalf()), F.num(plotRange.second().evalf()));
+      xRange = F.list(F.num(sampledX[2]), F.num(sampledX[3]));
+    } else if (plotRange.isList2()) {
+      xSpec = plotRange.first();
+      ySpec = plotRange.second();
+      xRange = xSpec;
+    } else {
+      // a range for both axes
+      return graphics;
+    }
+    if (xRange == S.Full) {
+      xRange = F.list(iteratorBound(rangeList, sampledX, true),
+          iteratorBound(rangeList, sampledX, false));
+    } else if (xRange == S.Automatic) {
+      double[] points = sampledX[0] < sampledX[1] ? new double[] {sampledX[0], sampledX[1]}
+          : new double[] {sampledX[2], sampledX[3]};
+      if (xScale == null || xScale.isEmpty() || xScale.equals("Linear")) {
+        GraphicsOptions.reachToZero(points);
+      }
+      xRange = F.list(F.num(points[0]), F.num(points[1]));
+    }
+    IExpr yRange = ySpec;
+    if (ySpec == S.Automatic || ySpec == S.Full) {
+      double[] y = org.matheclipse.core.graphics.svg.SvgGraphics2D
+          .functionPlotYRange(withOption(plot, S.PlotRange, S.Automatic));
+      yRange = y == null ? S.Automatic : F.list(F.num(y[0]), F.num(y[1]));
+    }
+    return withPlotRange(graphics, originalAST, xRange, xRange.isList() && xRange != xSpec,
+        yRange, yRange.isList() && yRange != ySpec);
+  }
+
+  /**
+   * The lower or upper end of the iterator range: as it was written when it is a real number, else
+   * as a machine number.
+   */
+  private static IExpr iteratorBound(IAST rangeList, double[] sampledX, boolean lower) {
+    IExpr a = rangeList.arg2();
+    IExpr b = rangeList.arg3();
+    double aValue = a.evalfNaN();
+    double bValue = b.evalfNaN();
+    if (a.isNumericFunction(true) && b.isNumericFunction(true) && Double.isFinite(aValue)
+        && Double.isFinite(bValue)) {
+      return (aValue <= bValue) == lower ? a : b;
+    }
+    return F.num(lower ? sampledX[2] : sampledX[3]);
+  }
+
   @Override
   protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions,
       IAST plotAST) {
@@ -154,7 +250,8 @@ public class Plot extends ListPlot {
 
   private static IAST plotToListPoints(IExpr functionOrListOfFunctions, final IAST rangeList,
       final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine, int plotPoints,
-      int maxRecursion, IExpr exclusions, int workingPrecision, IExpr regionFunction) {
+      int maxRecursion, IExpr exclusions, int workingPrecision, IExpr regionFunction,
+      IExpr monitor, double[] sampledX) {
     if (!rangeList.arg1().isSymbol()) {
       // `1` is not a valid variable.
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
@@ -184,6 +281,8 @@ public class Plot extends ListPlot {
       xMinD = xMaxD;
       xMaxD = temp;
     }
+    sampledX[2] = xMinD;
+    sampledX[3] = xMaxD;
 
     // which curve carries which label; the rule lives in PlotWrapper so that every plot family
     // reads a wrapped argument the same way
@@ -227,10 +326,24 @@ public class Plot extends ListPlot {
           return region.accepts(xValue, yValue) ? yValue : Double.NaN;
         };
       }
+      if (!monitor.isNone() && !monitor.isAutomatic()) {
+        // EvaluationMonitor :> expr is evaluated with the variable at each sampled value
+        final DoubleUnaryOperator unmonitored = sampled;
+        sampled = xValue -> {
+          engine.evaluate(F.subst(monitor, x, F.num(xValue)));
+          return unmonitored.applyAsDouble(xValue);
+        };
+      }
       data = org.matheclipse.core.sympy.plotting.Plot.computePlot(sampled, data, xMinD, xMaxD,
-          scale, plotPoints, maxRecursion);
+          scale, plotPoints, maxRecursion, true);
       if (data != null) {
         dataList.add(data);
+        for (int j = 0; j < data[0].length; j++) {
+          if (Double.isFinite(data[1][j])) {
+            sampledX[0] = Math.min(sampledX[0], data[0][j]);
+            sampledX[1] = Math.max(sampledX[1], data[0][j]);
+          }
+        }
         GraphicsUtil.automaticPlotRange2D(//
             graphicsOptions.plotRange().isAutomatic() ? function : null, //
             data[1], yMinMax);
@@ -301,7 +414,7 @@ public class Plot extends ListPlot {
     }
     // an equation names the positions by their solutions
     try {
-      IExpr solutions = S.Solve.of(engine, spec, xVar);
+      IExpr solutions = engine.evaluate(F.SolveDistinct(spec, xVar));
       if (solutions.isList()) {
         IAST list = (IAST) solutions;
         for (int i = 1; i < list.size(); i++) {

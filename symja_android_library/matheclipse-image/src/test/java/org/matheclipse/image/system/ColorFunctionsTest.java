@@ -116,7 +116,7 @@ public class ColorFunctionsTest extends AbstractTestCase {
     // the hue plane loses a little to the 8 bit storage on the way round
     check("ImageData(ColorCombine(ColorSeparate(Image({{{1.0,0.5,0.25}}}),\"HSB\"),\"HSB\"),"
         + "\"Byte\")", //
-        "{{{255,127,64}}}");
+        "{{{255,128,64}}}");
   }
 
   @Test
@@ -155,7 +155,10 @@ public class ColorFunctionsTest extends AbstractTestCase {
 
   @Test
   public void alphaChannelIsAGreyscalePlane() {
-    check("ImageData(AlphaChannel(Image({{{1.0,0.0,0.0,0.5}}})),\"Byte\")", "{{128}}");
+    check("ImageData(AlphaChannel(Image({{{1.0,0.0,0.0,0.5}}}, ColorSpace -> \"RGB\")),\"Byte\")", //
+        "{{128}}");
+    // four channels without a colour space have no alpha channel
+    check("ImageData(AlphaChannel(Image({{{1.0,0.0,0.0,0.5}}})),\"Byte\")", "{{255}}");
   }
 
   /** An image without transparency is fully opaque, not an error. */
@@ -166,18 +169,20 @@ public class ColorFunctionsTest extends AbstractTestCase {
 
   @Test
   public void setAlphaChannelTakesANumberOrAPlane() {
-    check("ImageChannels(SetAlphaChannel(Image({{0.5}}),0.25))", "4");
-    check("ImageData(SetAlphaChannel(Image({{0.5}}),0.25),\"Byte\")", "{{{128,128,128,64}}}");
+    check("ImageChannels(SetAlphaChannel(Image({{0.5}}),0.25))", "2");
+    check("ImageData(SetAlphaChannel(Image({{0.5}}),0.25),\"Byte\")", "{{{128,64}}}");
     check("ImageData(SetAlphaChannel(Image({{0.0,1.0}}),Image({{1.0,0.0}})),\"Byte\")", //
-        "{{{0,0,0,255},{255,255,255,0}}}");
+        "{{{0,255},{255,0}}}");
   }
 
-  /** Removing transparency composes onto white unless another background is given. */
+  /** Removing transparency drops the channel, or composes onto a background which is given. */
   @Test
   public void removeAlphaChannelComposesOntoABackground() {
-    check("ImageData(RemoveAlphaChannel(Image({{{0.0,0.0,0.0,0.5}}})),\"Byte\")", //
-        "{{{127,127,127}}}");
-    check("ImageData(RemoveAlphaChannel(Image({{{0.0,0.0,0.0,0.5}}}),Black),\"Byte\")", //
+    check("ImageData(RemoveAlphaChannel(Image({{{0.0,0.0,0.0,0.5}}}, ColorSpace -> \"RGB\")),\"Byte\")", //
+        "{{{0,0,0}}}");
+    check("ImageData(RemoveAlphaChannel(Image({{{0.0,0.0,0.0,0.5}}}, ColorSpace -> \"RGB\"),White),\"Byte\")", //
+        "{{{128,128,128}}}");
+    check("ImageData(RemoveAlphaChannel(Image({{{0.0,0.0,0.0,0.5}}}, ColorSpace -> \"RGB\"),Black),\"Byte\")", //
         "{{{0,0,0}}}");
   }
 
@@ -202,7 +207,7 @@ public class ColorFunctionsTest extends AbstractTestCase {
         + "\"Grayscale\"))==ImageData(ColorConvert(Image({{{0.25,0.5,0.75}}}),\"Grayscale\"))", //
         "True");
     // an alpha channel has no place in HSB or CMYK samples
-    check("ColorConvert(Image({{{0.25,0.5,0.75,0.5}}}),\"HSB\")", //
+    check("ColorConvert(Image({{{0.25,0.5,0.75,0.5}}}, ColorSpace -> \"RGB\"),\"HSB\")", //
         "ColorConvert(Image(Dimensions: 1,1 Transparency: 3),HSB)");
   }
 
@@ -230,17 +235,105 @@ public class ColorFunctionsTest extends AbstractTestCase {
         "True");
   }
 
-  /** The colour function colours the intensities of a greyscale image, stored in bytes. */
+  /** The colour function colours the intensities of a greyscale image through a table of bytes. */
   @Test
   public void colorizeOfAGreyscaleImage() {
     check("c = Colorize(Image({{0.0, 0.25, 1.0}}), ColorFunction -> (RGBColor(#, 1 - #, 0) &)); "
         + "{ImageData(c), ImageChannels(c), ImageType(c), ImageDimensions(c)}", //
-        "{{{{0.0,1.0,0.0},{0.247059,0.74902,0.0},{1.0,0.0,0.0}}},3,Byte,{3,1}}");
+        "{{{{0.0,1.0,0.0},{0.25098,0.74902,0.0},{1.0,0.0,0.0}}},3,Byte,{3,1}}");
   }
 
   @Test
   public void colorReplaceOfANonImage() {
     check("ColorReplace({1, 2, 3}, Red -> Blue)", //
         "ColorReplace({1,2,3},RGBColor(1,0,0)->RGBColor(0,0,1))");
+  }
+
+  /** The table runs up to the largest sample in use, and without scaling up to 1023. */
+  @Test
+  public void colorizeScalesByTheLargestSample() {
+    check("ImageData(Colorize(Image({{0.125, 0.75}}), ColorFunction -> (RGBColor(#, 0, 1 - #) &)), "
+        + "\"Byte\")", //
+        "{{{42,0,213},{255,0,0}}}");
+    check("ImageData(Colorize(Image({{0.125, 0.75}}), ColorFunction -> (RGBColor(#, #, #) &), "
+        + "ColorFunctionScaling -> False), \"Byte\")", //
+        "{{{32,32,32},{192,192,192}}}");
+  }
+
+  /** An integer image indexes the table by its integers, a colour image goes to grey first. */
+  @Test
+  public void colorizeOfIntegerAndColourImages() {
+    check("ImageData(Colorize(Image({{0, 100, 200}}, \"Byte\"), ColorFunction -> (GrayLevel(#) &)), "
+        + "\"Byte\")", //
+        "{{{0,0,0},{127,127,127},{255,255,255}}}");
+    check("ImageData(Colorize(Image({{{1., 0., 0.}, {0., 1., 0.}}}), "
+        + "ColorFunction -> (GrayLevel(#) &)), \"Byte\")", //
+        "{{{130,130,130},{255,255,255}}}");
+  }
+
+  /** A gradient by its name; the function is tried on 0, 1/2 and 1 twice before the table. */
+  @Test
+  public void colorizeThroughAGradient() {
+    check("ImageData(Colorize(Image({{0.25, 0.75}}), ColorFunction -> \"ThermometerColors\"), "
+        + "\"Byte\")", //
+        "{{{171,208,239},{136,21,42}}}");
+    check("calls = {}; Colorize(Image({{0.5, 1.}}), "
+        + "ColorFunction -> ((AppendTo(calls, #); GrayLevel(#)) &)); {Length(calls), Take(calls, 7)}", //
+        "{1030,{0.0,0.5,1.0,0.0,0.5,1.0,0.0}}");
+  }
+
+  @Test
+  public void colorSeparateConvertsToTheSpace() {
+    check("{ImageData /@ ColorSeparate(Image({{{0.25, 0.5, 1.}}}), \"HSB\"), "
+        + "ImageData /@ ColorSeparate(Image({{{0.25, 0.5, 1.}}}), \"CMYK\"), "
+        + "ImageData /@ ColorSeparate(Image({{{0.25, 0.5, 1.}}}), \"Grayscale\"), "
+        + "ImageType(First(ColorSeparate(Image({{{0, 128, 255}}}, \"Byte\"))))}", //
+        "{{\n{{0.611111}},\n{{0.75}},\n{{1.0}}},{\n{{0.75}},\n{{0.5}},\n{{0.0}},\n{{0.0}}},{\n"
+            + "{{0.48225}}},Byte}");
+  }
+
+  /** One channel more than the colour space needs is the alpha channel. */
+  @Test
+  public void colorCombineTakesAnAlphaChannel() {
+    check("c = ColorCombine({Image({{0.25}}), Image({{0.75}})}, \"Grayscale\"); "
+        + "{ImageChannels(c), ImageColorSpace(c), ImageData(c), ImageData(AlphaChannel(c))}", //
+        "{2,Grayscale,{{{0.25,0.75}}},\n{{0.75}}}");
+    check("i = Image({{0.25}}); c = ColorCombine({i, i, i, i}, \"RGB\"); "
+        + "{ImageChannels(c), ImageColorSpace(c), ImageData(AlphaChannel(c))}", //
+        "{4,RGB,\n{{0.25}}}");
+    check("ImageChannels(ColorCombine({Image({{{1., 0.5, 0.25}}}), Image({{0.5}})}, \"RGB\"))", //
+        "4");
+    check("Head(ColorCombine({Image({{0.5}}), Image({{0.5}})}, \"RGB\"))", //
+        "ColorCombine");
+    check("ImageType(ColorCombine({Image({{1}}, \"Byte\"), Image({{0.5}})}))", //
+        "Real32");
+  }
+
+  /** The samples stay as they are; two channels without a colour space have no alpha channel. */
+  @Test
+  public void alphaFunctionsOnTheSamples() {
+    check("s = SetAlphaChannel(Image({{{0.25, 0.5, 0.75}}}), 0.25); "
+        + "{ImageChannels(s), ImageColorSpace(s), ImageData(s), ImageData(RemoveAlphaChannel(s)), "
+        + "ImageData(RemoveAlphaChannel(s, Black)), ImageData(AlphaChannel(s))}", //
+        "{4,RGB,{{{0.25,0.5,0.75,0.25}}},{{{0.25,0.5,0.75}}},{{{0.0625,0.125,0.1875}}},\n{{0.25}}}");
+    check("i = Image({{{0.5, 0.25}}}, ColorSpace -> \"Grayscale\"); "
+        + "{ImageColorSpace(i), ImageData(AlphaChannel(i)), ImageData(RemoveAlphaChannel(i, White))}", //
+        "{Grayscale,\n{{0.25}},\n{{0.875}}}");
+    check("i = Image({{{0.5, 0.25}}}); "
+        + "{ImageData(AlphaChannel(i)), ImageData(RemoveAlphaChannel(i))}", //
+        "{\n{{1.0}},{{{0.5,0.25}}}}");
+  }
+
+  /** An alpha image of another size sits in the centre, cut off or with zeros around it. */
+  @Test
+  public void setAlphaChannelCentresTheAlphaImage() {
+    check("ImageData(AlphaChannel(SetAlphaChannel(Image(ConstantArray(0.5, {2, 5})), "
+        + "Image({{1., 0.5, 0.25}}))))", //
+        "{{0.0,0.0,0.0,0.0,0.0},\n {0.0,1.0,0.5,0.25,0.0}}");
+    check("ImageData(AlphaChannel(SetAlphaChannel(Image({{0.5, 0.5}}), "
+        + "Image({{0.25, 0.5, 0.75, 1.}}))))", //
+        "{{0.5,0.75}}");
+    check("ImageDimensions(SetAlphaChannel(Graphics(Circle()), Image(ConstantArray(1., {3, 4}))))", //
+        "{4,3}");
   }
 }

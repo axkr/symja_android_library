@@ -46,7 +46,11 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
 
     // Apply TrigExpand if Trig->True
     if (options[3].isTrue()) {
-      arg1 = TrigExpand.trigExpand(arg1, engine);
+      IExpr expanded = TrigExpand.trigExpand(arg1, engine);
+      // a sum which is no polynomial in the trigonometric functions: the sum-to-product identities
+      arg1 = engine.evaluate(F.Factor(expanded)).isPlus()
+          ? engine.evaluate(F.binaryAST2(S.Factor, arg1, F.Rule(S.Trig, S.True)))
+          : expanded;
     }
 
     if (options[0].isInteger() && JASModular.isModpMessage(S.FactorList, options[0])) {
@@ -207,12 +211,17 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
 
   /**
    * Every factor which is a sum is written with a positive leading term; the signs which are
-   * taken out of the factors go into the numeric factor in front: <code>-x+y</code> is
-   * <code>{{-1, 1}, {x-y, 1}}</code>.
+   * taken out of the factors go into the numeric factor in front:
+   * <code>(1-x)*(1+x)</code> is <code>{{-1, 1}, {-1+x, 1}, {1+x, 1}}</code>. A single factor
+   * keeps its form.
    */
   private static IAST leadingTermsPositive(IASTAppendable factors) {
     if (factors.argSize() < 2 || !factors.arg1().first().isRational()
         || !factors.arg1().second().isOne()) {
+      return factors;
+    }
+    if (factors.argSize() == 2 && factors.arg2().second().isOne()) {
+      // a single factor keeps its form: -3*a*c+3*b is {{3,1},{b-a*c,1}}
       return factors;
     }
     EvalEngine engine = EvalEngine.get();

@@ -71,7 +71,7 @@ final class DSolveODE {
 
       // Attempt to extract explicit y(x) from the implicit equation
       return singleOrList(
-          DSolveUtil.extractSolveResults(engine.evaluate(F.Solve(equation, F.List(y)))));
+          DSolveUtil.extractSolveResults(engine.evaluate(F.SolveDistinct(equation, F.List(y)))));
     }
     return F.NIL;
   }
@@ -637,7 +637,7 @@ final class DSolveODE {
     }
     IExpr solutions;
     try {
-      solutions = engine.evaluate(F.TimeConstrained(F.Solve(F.Equal(lhs, rhs), y),
+      solutions = engine.evaluate(F.TimeConstrained(F.SolveDistinct(F.Equal(lhs, rhs), y),
           F.ZZ(MachineProfile.seconds(SOLVE_SEPARATED_SECONDS)), S.$Aborted));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -779,7 +779,7 @@ final class DSolveODE {
     if (p.isNIL() || p.isZero() || !p.isFree(y, true) || !constant.isFree(y, true)) {
       return null;
     }
-    return new IExpr[] {p, logCoefficient, linear, F.bool(reciprocal), constant};
+    return new IExpr[] {p, logCoefficient, linear, F.booleSymbol(reciprocal), constant};
   }
 
   /** Whether <code>expr</code> is <code>gamma*y + delta</code> with a non-zero slope. */
@@ -953,7 +953,7 @@ final class DSolveODE {
     }
     IExpr solutions;
     try {
-      solutions = engine.evaluate(F.TimeConstrained(F.Solve(F.Equal(yEquation, F.C0), y),
+      solutions = engine.evaluate(F.TimeConstrained(F.SolveDistinct(F.Equal(yEquation, F.C0), y),
           F.ZZ(MachineProfile.seconds(SOLVE_SEPARATED_SECONDS)), S.$Aborted));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -1704,7 +1704,7 @@ final class DSolveODE {
         cSols = solveInTurn(evaluatedBCsEqualZero, cVars, engine);
       }
       if (cSols.isNIL()) {
-        cSols = engine.evaluate(F.Solve(evaluatedBCsEqualZero, cVars));
+        cSols = engine.evaluate(F.SolveDistinct(evaluatedBCsEqualZero, cVars));
       }
       if (!cSols.isList() || ((IAST) cSols).argSize() == 0) {
         // More conditions than constants is not by itself a contradiction: a condition may already
@@ -1792,7 +1792,7 @@ final class DSolveODE {
       return cSol;
     }
     IExpr rest = engine.evaluate(F.subst(conditions, cSol));
-    IExpr more = engine.evaluate(F.Solve(rest, missing));
+    IExpr more = engine.evaluate(F.SolveDistinct(rest, missing));
     if (!more.isList() || ((IAST) more).argSize() == 0 || !more.first().isList()) {
       return cSol;
     }
@@ -1899,7 +1899,7 @@ final class DSolveODE {
         if (condition.isFree(cVar, true)) {
           continue;
         }
-        IExpr solved = engine.evaluate(F.Solve(condition, cVar));
+        IExpr solved = engine.evaluate(F.SolveDistinct(condition, cVar));
         if (!solved.isListOfLists() || ((IAST) solved).argSize() == 0) {
           continue;
         }
@@ -1941,7 +1941,7 @@ final class DSolveODE {
       for (int i = 0; i < wanted; i++) {
         subset.append(conditions.get(start + i));
       }
-      IExpr solutions = engine.evaluate(F.Solve(subset, cVars));
+      IExpr solutions = engine.evaluate(F.SolveDistinct(subset, cVars));
       if (!solutions.isList() || ((IAST) solutions).argSize() == 0) {
         continue;
       }
@@ -2226,7 +2226,7 @@ final class DSolveODE {
     IExpr algebraicEq = engine.evaluate(sEq);
 
     // 5. Solve for Y
-    IExpr ySolList = engine.evaluate(F.Solve(F.Equal(algebraicEq, F.C0), Y));
+    IExpr ySolList = engine.evaluate(F.SolveDistinct(F.Equal(algebraicEq, F.C0), Y));
     if (ySolList.isList() && ((IAST) ySolList).argSize() > 0) {
       IAST firstSol = (IAST) ((IAST) ySolList).arg1();
       IExpr y_s = firstSol.isList() ? firstSol.arg1().second() : firstSol.second();
@@ -3001,7 +3001,7 @@ final class DSolveODE {
     IAST branches = general.makeList();
     for (IExpr branch : branches) {
       IExpr atPoint = emptyIntegralsToZero(engine.evaluate(F.subst(branch, xVar, point[0])), engine);
-      IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(atPoint, point[1]), F.list(c_n)));
+      IExpr solutions = engine.evalQuiet(F.SolveDistinct(F.Equal(atPoint, point[1]), F.list(c_n)));
       if (!solutions.isList()) {
         continue;
       }
@@ -3176,7 +3176,7 @@ final class DSolveODE {
         atPoint = engine.evaluate(F.Factor(atPoint));
       }
       IAST roots = DSolveUtil
-          .extractSolveResults(engine.evaluate(F.Solve(F.Equal(atPoint, F.C0), F.List(k))));
+          .extractSolveResults(engine.evaluate(F.SolveDistinct(F.Equal(atPoint, F.C0), F.List(k))));
       for (int j = 1; j <= roots.argSize(); j++) {
         IExpr value = roots.get(j);
         if (value.isZero() || !value.isFree(xVar) || !value.isFree(k)) {
@@ -3293,7 +3293,7 @@ final class DSolveODE {
         equations.append(F.Equal(cf, F.C0));
       }
       // a polynomial which does not solve the equation is no reason for a message
-      IExpr solutions = engine.evalQuiet(F.Solve(equations, unknowns));
+      IExpr solutions = engine.evalQuiet(F.SolveDistinct(equations, unknowns));
       if (!solutions.isList()) {
         continue;
       }
@@ -3338,7 +3338,7 @@ final class DSolveODE {
       }
 
       IExpr eq = F.Equal(integral, F.Plus(xVar, C_1));
-      IExpr ySols = engine.evaluate(F.Solve(eq, F.List(ySym)));
+      IExpr ySols = engine.evaluate(F.SolveDistinct(eq, F.List(ySym)));
       IAST extracted = DSolveUtil.extractSolveResults(ySols);
       if (extracted.argSize() > 0) {
         // Solving for Y distributes the numerator over the denominator: y' == -k*(y-1)^2 came
@@ -3487,7 +3487,7 @@ final class DSolveODE {
       // a factor free of u, like p-1 in (p-1)*u == 0, is a family no root u(p) describes
       return F.NIL;
     }
-    IExpr roots = engine.evaluate(F.Solve(F.Equal(relation, F.C0), u));
+    IExpr roots = engine.evaluate(F.SolveDistinct(F.Equal(relation, F.C0), u));
     if (!roots.isListOfLists() || roots.argSize() == 0) {
       return F.NIL;
     }
@@ -3546,7 +3546,7 @@ final class DSolveODE {
 
     // No derivative present — solve as a pure algebraic equation for yFunction
     if (n == 0) {
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(lhs, F.C0), F.List(yFunction)));
+      IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(lhs, F.C0), F.List(yFunction)));
       return singleOrList(DSolveUtil.extractSolveResults(solutions));
     }
 
@@ -4242,7 +4242,9 @@ final class DSolveODE {
       // integrand of x''(t) + 3*x'(t) + 3*x(t) == 8*Cos(10*t) + 6*Sin(10*t) takes a minute and a
       // half of them -- and they come back in a form which needs collecting afterwards.
       IExpr particular = undeterminedCoefficients(lf, xVar, ctx);
-      if (particular.isNIL()) {
+      // a piecewise forcing function belongs to the Laplace transform: the integrals here close,
+      // but the derivatives of their piecewise result have no value at a jump for initial values
+      if (particular.isNIL() && lf.g.isFree(S.Piecewise)) {
         particular = variationOfParameters(basis, lf, xVar, ctx);
       }
       if (particular.isNIL()) {
@@ -4271,7 +4273,7 @@ final class DSolveODE {
     java.util.List<IExpr> roots = new java.util.ArrayList<>();
     IAST factors = symbolicFactors(characteristic, r, engine);
     for (int f = 1; f <= factors.argSize(); f++) {
-      IExpr solved = engine.evaluate(F.Roots(F.Equal(factors.get(f), F.C0), r));
+      IExpr solved = engine.evaluate(F.RootsDistinct(F.Equal(factors.get(f), F.C0), r));
       IAST equations = solved.isOr() ? (IAST) solved : F.Or(solved);
       equations = principalRootFirst(factors.get(f), equations, r, engine);
       for (int i = 1; i <= equations.argSize(); i++) {
@@ -4754,7 +4756,7 @@ final class DSolveODE {
     for (IExpr unknown : unknowns) {
       variables.append(unknown);
     }
-    IExpr rules = engine.evaluate(F.Solve(equations, variables));
+    IExpr rules = engine.evaluate(F.SolveDistinct(equations, variables));
     if (!rules.isList() || rules.isEmpty() || !rules.first().isList()) {
       return F.NIL;
     }
@@ -4995,7 +4997,7 @@ final class DSolveODE {
     for (int i = 1; i <= equations.argSize(); i++) {
       system.append(F.Equal(((IAST) equations).get(i), F.C0));
     }
-    IExpr solutions = engine.evaluate(F.Solve(system, unknowns));
+    IExpr solutions = engine.evaluate(F.SolveDistinct(system, unknowns));
     if (!solutions.isListOfLists() || solutions.argSize() == 0) {
       return F.NIL;
     }
@@ -5216,7 +5218,7 @@ final class DSolveODE {
       // Linear in the highest derivative, so the ordinary solvers already had their chance.
       return F.CEmptyList;
     }
-    IExpr solutions = engine.evaluate(F.Solve(F.Equal(substituted, F.C0), F.List(dummy)));
+    IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(substituted, F.C0), F.List(dummy)));
     return DSolveUtil.extractSolveResults(solutions);
   }
 
@@ -5261,7 +5263,7 @@ final class DSolveODE {
       if (relation.isNIL()) {
         return F.NIL;
       }
-      IExpr solved = engine.evaluate(F.Solve(relation, uFunction1Arg));
+      IExpr solved = engine.evaluate(F.SolveDistinct(relation, uFunction1Arg));
       if (solved.isAST(S.Solve)) {
         relations.append(solved);
         continue;
@@ -5359,7 +5361,7 @@ final class DSolveODE {
       return vSol;
     }
     IExpr atPoint = engine.evaluate(F.subst(vSol, yDummy, value));
-    IExpr solved = engine.evaluate(F.Solve(F.Equal(atPoint, slope), F.List(c_n)));
+    IExpr solved = engine.evaluate(F.SolveDistinct(F.Equal(atPoint, slope), F.List(c_n)));
     IAST extracted = DSolveUtil.extractSolveResults(solved);
     if (extracted.argSize() == 0) {
       // This branch of the first integral cannot meet the condition; another one may.
@@ -5426,7 +5428,7 @@ final class DSolveODE {
       if (condition.isFree(term, true)) {
         continue;
       }
-      IExpr solved = engine.evaluate(F.Solve(F.Equal(condition, F.C0), F.List(term)));
+      IExpr solved = engine.evaluate(F.SolveDistinct(F.Equal(condition, F.C0), F.List(term)));
       IAST extracted = DSolveUtil.extractSolveResults(solved);
       if (extracted.argSize() == 1 && extracted.arg1().isFree(term, true)) {
         return extracted.arg1();

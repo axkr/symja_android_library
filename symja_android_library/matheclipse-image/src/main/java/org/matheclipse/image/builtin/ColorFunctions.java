@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Colors;
@@ -32,7 +33,8 @@ import org.matheclipse.image.expression.data.ImageOptions;
  * spaces, and back to RGB decodes the samples again. A colour <em>directive</em> converts to
  * <code>"XYZ"</code> as well, and a list of directives converts directive by directive.
  * <code>ColorSeparate(image, space)</code> gives the channels of other spaces as greyscale planes
- * and <code>ColorCombine({h, s, b}, "HSB")</code> puts them back together.
+ * and <code>ColorCombine({h, s, b}, "HSB")</code> puts them back together. Their samples are read
+ * from {@link ImageExpr#raster()}, so nothing is rounded to 8 bits.
  */
 public class ColorFunctions {
 
@@ -58,23 +60,34 @@ public class ColorFunctions {
    * matrix <code>m</code> of non-negative integer labels with one colour for each label. The label
    * <code>0</code> is black; of the labels <code>1, ..., n</code> label <code>k</code> gets the
    * colour of <code>f((2*k-1)/(2*n))</code>, or a colour of the plot palette if no function is
-   * given.
+   * given. A name <code>f</code> stands for the gradient <code>ColorData(f)</code>.
+   *
+   * <p>
+   * <code>Colorize(image, ColorFunction -&gt; f)</code> - the RGB byte image in which a pixel takes
+   * its colour from a lookup table of up to 1024 entries, see {@link #colorizeImage}.
    */
   private static class Colorize extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr colorFunction = S.Automatic;
+      boolean scaling = true;
       for (int i = 2; i < ast.size(); i++) {
         IExpr option = ast.get(i);
         if (option.isRuleAST() && option.first() == S.ColorFunction) {
           colorFunction = option.second();
+          if (colorFunction.isString()) {
+            colorFunction = engine.evaluate(F.unaryAST1(S.ColorData, colorFunction));
+          }
+        } else if (option.isRuleAST() && option.first() == S.ColorFunctionScaling
+            && ast.arg1() instanceof ImageExpr) {
+          scaling = !option.second().isFalse();
         } else {
           return F.NIL;
         }
       }
       if (ast.arg1() instanceof ImageExpr) {
-        return colorizeImage((ImageExpr) ast.arg1(), colorFunction, engine);
+        return colorizeImage((ImageExpr) ast.arg1(), colorFunction, scaling, engine);
       }
       int[] dimensions = ast.arg1().isMatrix(false);
       if (dimensions == null || dimensions[0] == 0 || dimensions[1] == 0) {
@@ -126,36 +139,63 @@ public class ColorFunctions {
     }
 
     /**
-     * The RGB byte image of the colours <code>f(v)</code> of the intensities <code>v</code> of a
-     * greyscale image.
+     * The RGB byte image of an image coloured through a lookup table. A colour image goes to grey
+     * levels first and samples are clipped to <code>0 ... 1</code>. A pixel <code>v</code> takes
+     * entry <code>Min(Floor(1024*v), 1023)</code>, in an image of an integer type its integer. The
+     * table runs up to the largest entry in use, <code>m</code>, and is filled in full, after the
+     * function has been tried on <code>0, 1/2, 1</code> twice: entry <code>i</code> is
+     * <code>f(i/m)</code>, with <code>ColorFunctionScaling -&gt; False</code> <code>f(i/1023)</code>.
      */
-    private static IExpr colorizeImage(ImageExpr imageExpr, IExpr colorFunction,
+    private static IExpr colorizeImage(ImageExpr imageExpr, IExpr colorFunction, boolean scaling,
         EvalEngine engine) {
-      Raster raster = imageExpr.raster();
-      if (colorFunction.isAutomatic() || raster == null || raster.colorChannels() != 1) {
+      if (colorFunction.isAutomatic()) {
         return F.NIL;
       }
-      java.util.Map<Double, int[]> colors = new java.util.HashMap<Double, int[]>();
-      final int[][][] rgb = new int[raster.height][raster.width][];
+      Raster raster = ColorConvert.samplesIn(imageExpr, ColorConvert.GRAYSCALE);
+      if (raster == null) {
+        return F.NIL;
+      }
+      final String type = imageExpr.sampleType();
+      final int[][] index = new int[raster.height][raster.width];
+      int last = 0;
       for (int y = 0; y < raster.height; y++) {
         for (int x = 0; x < raster.width; x++) {
-          double value = raster.get(x, y, 0);
-          int[] color = colors.get(value);
-          if (color == null) {
-            float[] rgba =
-                Colors.toRgba(engine.evaluate(F.unaryAST1(colorFunction, F.num(value))));
-            if (rgba == null) {
-              return F.NIL;
-            }
-            color = new int[] {toByte(rgba[0]), toByte(rgba[1]), toByte(rgba[2])};
-            colors.put(value, color);
-          }
-          rgb[y][x] = color;
+          index[y][x] = tableIndex(raster.get(x, y, 0), type);
+          last = Math.max(last, index[y][x]);
         }
       }
-      BufferedImage image = Pixels.fromPixels(raster.width, raster.height, 3,
-          (x, y) -> new float[] {rgb[y][x][0], rgb[y][x][1], rgb[y][x][2]});
+      for (int i = 0; i < 6; i++) {
+        engine.evaluate(F.unaryAST1(colorFunction, F.num((i % 3) / 2.0)));
+      }
+      final double step = scaling ? (last == 0 ? 0.0 : 1.0 / last) : 1.0 / 1023.0;
+      final int[][] table = new int[last + 1][];
+      for (int i = 0; i <= last; i++) {
+        engine.checkTimeLimit();
+        double[] rgba =
+            Colors.toRgbaDouble(engine.evaluate(F.unaryAST1(colorFunction, F.num(i * step))));
+        if (rgba == null) {
+          return F.NIL;
+        }
+        table[i] = new int[] {tableByte(rgba[0]), tableByte(rgba[1]), tableByte(rgba[2])};
+      }
+      BufferedImage image = Pixels.fromPixels(raster.width, raster.height, 3, (x, y) -> {
+        int[] rgb = table[index[y][x]];
+        return new float[] {rgb[0], rgb[1], rgb[2]};
+      });
       return new ImageExpr(image, null, ImageOptions.DEFAULT);
+    }
+
+    /** The table entry of a sample of an image of <code>type</code>. */
+    private static int tableIndex(double value, String type) {
+      if (Raster.isIntegerType(type)) {
+        return Raster.level(value, Raster.maxOf(type));
+      }
+      return (int) Math.min(1023.0, Math.floor(Math.max(0.0, Math.min(1.0, value)) * 1024.0));
+    }
+
+    /** A channel of a table entry as a byte: <code>Ceiling(256*c) - 1</code>. */
+    private static int tableByte(double value) {
+      return value <= 0.0 ? 0 : (int) Math.max(0.0, Math.min(255.0, Math.ceil(value * 256.0) - 1.0));
     }
 
     /** A channel value of <code>0.0 ... 1.0</code> as a byte: 1/2 is 127 and 5/6 is 213. */
@@ -165,7 +205,7 @@ public class ColorFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
   }
 
@@ -185,6 +225,19 @@ public class ColorFunctions {
         return F.NIL;
       }
       String space = canonicalSpace(ast.arg2().toString());
+      if (ast.arg1() instanceof ImageExpr) {
+        ImageExpr source = (ImageExpr) ast.arg1();
+        IExpr rgb = spectralToRgb(source);
+        if (rgb.isPresent()) {
+          // spectral bands become red, green and blue first, and those the space asked for
+          return RGB.equals(space) ? rgb
+              : engine.evaluate(F.binaryAST2(S.ColorConvert, rgb, ast.arg2()));
+        }
+        if (RGB.equals(space) && source.channels() == 4 && hasAlpha(source)) {
+          // red, green and blue with an alpha channel, which stays
+          return source;
+        }
+      }
       if (ast.arg1() instanceof ImageExpr) {
         IExpr converted = convertColorSpace((ImageExpr) ast.arg1(), space);
         if (converted.isPresent()) {
@@ -217,19 +270,20 @@ public class ColorFunctions {
       return convertColor(ast.arg1(), space);
     }
 
-    private static final String GRAYSCALE = "Grayscale";
+    static final String GRAYSCALE = "Grayscale";
     private static final String RGB = "RGB";
     private static final String HSB = "HSB";
     private static final String CMYK = "CMYK";
     private static final String XYZ = "XYZ";
     private static final String LAB = "LAB";
+    private static final String LCH = "LCH";
 
     /**
      * The colour space a name stands for: a space may be named as the directive whose colours are
      * in it, <code>"GrayLevel"</code> for <code>"Grayscale"</code> or <code>"RGBColor"</code> for
      * <code>"RGB"</code>. A name which is no space handled here comes back as it is.
      */
-    private static String canonicalSpace(String space) {
+    static String canonicalSpace(String space) {
       if ("Grayscale".equalsIgnoreCase(space) || "Gray".equalsIgnoreCase(space)
           || "GrayLevel".equalsIgnoreCase(space)) {
         return GRAYSCALE;
@@ -250,13 +304,51 @@ public class ColorFunctions {
       if ("LAB".equalsIgnoreCase(space) || "LABColor".equalsIgnoreCase(space)) {
         return LAB;
       }
+      if ("LCH".equalsIgnoreCase(space) || "LCHColor".equalsIgnoreCase(space)) {
+        return LCH;
+      }
       return space;
     }
 
     /** A colour directive, as opposed to a list of channel values which is a colour as well. */
     private static boolean isColorDirective(IExpr expr) {
       return expr.isAST(S.RGBColor) || expr.isAST(S.GrayLevel) || expr.isAST(S.Hue)
-          || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor);
+          || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)
+          || expr.isAST(S.LCHColor);
+    }
+
+    /**
+     * The RGB image of an image of spectral bands, see {@link Pixels#spectralRgb(double[])}. The
+     * result keeps the sample type of the image, except that a bilevel image gives reals.
+     *
+     * @return {@link F#NIL} for an image which isn't one of spectral bands
+     */
+    private static IExpr spectralToRgb(ImageExpr source) {
+      int channels = source.channels();
+      if (!Pixels.isSpectral(source.getOptions().colorSpaceName(), channels)) {
+        return F.NIL;
+      }
+      Raster raster = source.raster();
+      if (raster == null) {
+        return F.NIL;
+      }
+      Raster result = new Raster(raster.width, raster.height, 3);
+      double[] bands = new double[channels];
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          for (int c = 0; c < channels; c++) {
+            bands[c] = raster.get(x, y, c);
+          }
+          double[] rgb = Pixels.spectralRgb(bands);
+          for (int c = 0; c < 3; c++) {
+            result.set(x, y, c, rgb[c]);
+          }
+        }
+      }
+      String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
+      ImageExpr image = ImageExpr.fromRaster(result,
+          source.getOptions().withColorSpace(S.Automatic), type);
+      return image == null ? F.NIL : image;
     }
 
     /**
@@ -312,6 +404,33 @@ public class ColorFunctions {
       if (raster == null || (from == null && raster.channels != 1 && raster.channels != 3)) {
         return F.NIL;
       }
+      Raster result = converted(raster, from, space);
+      ImageOptions options =
+          source.getOptions().withColorSpace(toStored ? F.stringx(space) : S.Automatic);
+      String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
+      ImageExpr image = ImageExpr.fromRaster(result, options, type);
+      return image == null ? F.NIL : image;
+    }
+
+    /**
+     * The samples of an image in <code>space</code>, which is one of the four image colour spaces.
+     *
+     * @return <code>null</code> for an image without samples or another space
+     */
+    static Raster samplesIn(ImageExpr image, String space) {
+      Raster raster = image.raster();
+      boolean known = GRAYSCALE.equals(space) || RGB.equals(space) || HSB.equals(space)
+          || CMYK.equals(space);
+      if (raster == null || !known) {
+        return null;
+      }
+      String from = image.storedColorSpace();
+      return space.equals(from) || (GRAYSCALE.equals(space) && raster.channels == 1) ? raster
+          : converted(raster, from, space);
+    }
+
+    /** The samples of a raster in the space <code>from</code> in the space <code>space</code>. */
+    private static Raster converted(Raster raster, String from, String space) {
       int outChannels = GRAYSCALE.equals(space) ? 1 : CMYK.equals(space) ? 4 : 3;
       Raster result = new Raster(raster.width, raster.height, outChannels);
       double[] values = new double[raster.channels];
@@ -320,21 +439,17 @@ public class ColorFunctions {
           for (int c = 0; c < raster.channels; c++) {
             values[c] = raster.get(x, y, c);
           }
-          double[] converted = fromRgb(toRgb(values, from), space);
+          double[] pixel = fromRgb(toRgb(values, from), space);
           for (int c = 0; c < outChannels; c++) {
-            result.set(x, y, c, converted[c]);
+            result.set(x, y, c, pixel[c]);
           }
         }
       }
-      ImageOptions options =
-          source.getOptions().withColorSpace(toStored ? F.stringx(space) : S.Automatic);
-      String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
-      ImageExpr image = ImageExpr.fromRaster(result, options, type);
-      return image == null ? F.NIL : image;
+      return result;
     }
 
     /** The red, green and blue of the samples of one pixel in the space <code>from</code>. */
-    private static double[] toRgb(double[] values, String from) {
+    static double[] toRgb(double[] values, String from) {
       if (HSB.equals(from)) {
         return hsbToRgb(values[0], values[1], values[2]);
       }
@@ -343,7 +458,7 @@ public class ColorFunctions {
         return new double[] {(1.0 - values[0]) * scale, (1.0 - values[1]) * scale,
             (1.0 - values[2]) * scale};
       }
-      if (values.length == 1) {
+      if (values.length < 3) {
         return new double[] {values[0], values[0], values[0]};
       }
       return new double[] {values[0], values[1], values[2]};
@@ -461,13 +576,19 @@ public class ColorFunctions {
         IExpr b = F.num(rgbaDouble[2]);
         return alpha < 1.0 ? F.RGBColor(r, g, b, F.num(alpha)) : F.RGBColor(r, g, b);
       }
-      if (XYZ.equals(space) || LAB.equals(space)) {
+      if (XYZ.equals(space) || LAB.equals(space) || LCH.equals(space)) {
         // from the XYZ coordinates themselves, which an RGB colour would have clipped
         double[] xyz = Colors.toXyzaDouble(color);
+        IBuiltInSymbol head = S.XYZColor;
         if (LAB.equals(space)) {
           xyz = ColorUtil.xyzToLab(xyz[0], xyz[1], xyz[2]);
+          head = S.LABColor;
+        } else if (LCH.equals(space)) {
+          double[] lab = ColorUtil.xyzToLab(xyz[0], xyz[1], xyz[2]);
+          xyz = ColorUtil.labToLch(lab[0], lab[1], lab[2]);
+          head = S.LCHColor;
         }
-        IASTAppendable result = F.ast(LAB.equals(space) ? S.LABColor : S.XYZColor, 4);
+        IASTAppendable result = F.ast(head, 4);
         for (int i = 0; i < 3; i++) {
           result.append(F.num(xyz[i]));
         }
@@ -552,7 +673,10 @@ public class ColorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr source = ast.arg1();
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      ImageExpr source = (ImageExpr) ast.arg1();
       if (ast.argSize() >= 2) {
         if (!ast.arg2().isString()) {
           return F.NIL;
@@ -561,19 +685,18 @@ public class ColorFunctions {
         int channel = channelIndex(name);
         if (channel < 0) {
           // a colour space name: one greyscale plane per channel of that space
-          return separateSpace(ImagePropertyFunctions.bufferedImage(source), name);
+          Raster samples = ColorConvert.samplesIn(source, ColorConvert.canonicalSpace(name));
+          String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
+          return samples == null ? F.NIL : separate(samples, type);
         }
-        BufferedImage image = ImagePropertyFunctions.bufferedImage(source);
-        if (image == null) {
+        Raster samples = source.raster();
+        if (samples == null || samples.channels <= channel) {
           return F.NIL;
         }
-        IExpr channels = separate(source);
-        if (!channels.isList() || ((IAST) channels).argSize() <= channel) {
-          return F.NIL;
-        }
-        return ((IAST) channels).get(channel + 1);
+        return plane(samples, channel, source.sampleType());
       }
-      return separate(source);
+      Raster samples = source.raster();
+      return samples == null ? F.NIL : separate(samples, source.sampleType());
     }
 
     /** R, G, B and A as channel positions; anything else is a colour space name. */
@@ -596,59 +719,23 @@ public class ColorFunctions {
       }
     }
 
-    /**
-     * One greyscale plane per channel of the named colour space. A plane carries no colour space of
-     * its own, so this is well defined where converting the whole image would not be.
-     */
-    private static IExpr separateSpace(BufferedImage image, String space) {
-      if (image == null) {
-        return F.NIL;
-      }
-      int channels = Boof.channels(image);
-      int planes;
-      if ("HSB".equalsIgnoreCase(space) || "HSV".equalsIgnoreCase(space)) {
-        planes = 3;
-      } else if ("CMYK".equalsIgnoreCase(space)) {
-        planes = 4;
-      } else if ("RGB".equalsIgnoreCase(space)) {
-        planes = 3;
-      } else if ("Grayscale".equalsIgnoreCase(space) || "Gray".equalsIgnoreCase(space)) {
-        planes = 1;
-      } else {
-        return F.NIL;
-      }
-      final boolean hsb = planes == 3 && !"RGB".equalsIgnoreCase(space);
-      final boolean cmyk = planes == 4;
-      final boolean gray = planes == 1;
-      IASTAppendable result = F.ListAlloc(planes);
-      for (int p = 0; p < planes; p++) {
-        final int plane = p;
-        result.append(
-            new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1, (x, y) -> {
-              float[] rgb = unit(Pixels.pixel(image, x, y, channels), channels);
-              if (gray) {
-                return new float[] {(0.299f * rgb[0] + 0.587f * rgb[1] + 0.114f * rgb[2]) * 255.0f};
-              }
-              float[] converted = hsb ? Colors.rgbToHsb(rgb) : (cmyk ? Colors.rgbToCmyk(rgb) : rgb);
-              return new float[] {converted[plane] * 255.0f};
-            }), null));
+    private static IExpr separate(Raster samples, String type) {
+      IASTAppendable result = F.ListAlloc(samples.channels);
+      for (int c = 0; c < samples.channels; c++) {
+        IExpr plane = plane(samples, c, type);
+        if (plane.isNIL()) {
+          return F.NIL;
+        }
+        result.append(plane);
       }
       return result;
     }
 
-    private static IExpr separate(IExpr source) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(source);
-      if (image == null) {
-        return F.NIL;
-      }
-      int channels = Boof.channels(image);
-      IASTAppendable result = F.ListAlloc(channels);
-      for (int c = 0; c < channels; c++) {
-        final int channel = c;
-        result.append(new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1,
-            (x, y) -> new float[] {Pixels.pixel(image, x, y, channels)[channel]}), null));
-      }
-      return result;
+    /** A channel as a greyscale image of <code>type</code>. */
+    private static IExpr plane(Raster samples, int channel, String type) {
+      ImageExpr image =
+          ImageExpr.fromRaster(samples.channel(channel).storedAs(type), ImageOptions.DEFAULT, type);
+      return image == null ? F.NIL : image;
     }
 
     @Override
@@ -663,75 +750,109 @@ public class ColorFunctions {
   }
 
   /**
-   * <code>ColorCombine({image1, image2, image3})</code> - one colour image out of the channel
-   * images. A fourth image becomes the alpha channel, and a colour space name says how to read the
-   * channels.
+   * <code>ColorCombine({image1, image2, ...})</code> - one image out of the channels of the images,
+   * which have the same size; it has the largest of their types. With a colour space name there are
+   * as many channels as that space needs, or one more which is the alpha channel. HSB and CMYK
+   * samples are decoded to RGB.
    */
   private static class ColorCombine extends AbstractEvaluator {
 
+    /** The image types by rank: the result has the last one which occurs. */
+    private static final List<String> TYPES =
+        List.of(Pixels.BIT, Pixels.BYTE, Pixels.BIT16, Pixels.REAL32, Pixels.REAL64);
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.arg1().isList()) {
+      if (!ast.arg1().isList() || ast.arg1().argSize() == 0) {
         return F.NIL;
       }
       IAST list = (IAST) ast.arg1();
-      int count = list.argSize();
-      if (count < 1 || count > 4) {
-        return F.NIL;
-      }
-      String space = "RGB";
+      String space = null;
       if (ast.argSize() >= 2) {
         if (!ast.arg2().isString()) {
           return F.NIL;
         }
-        space = ast.arg2().toString();
+        space = ColorConvert.canonicalSpace(ast.arg2().toString());
       }
-      boolean hsb = "HSB".equalsIgnoreCase(space) || "HSV".equalsIgnoreCase(space);
-      boolean cmyk = "CMYK".equalsIgnoreCase(space);
-      if (!hsb && !cmyk && !"RGB".equalsIgnoreCase(space) && !"Grayscale".equalsIgnoreCase(space)) {
-        return F.NIL;
-      }
-      if (cmyk && count != 4) {
-        return F.NIL;
-      }
-
-      BufferedImage[] planes = new BufferedImage[count];
-      for (int i = 0; i < count; i++) {
-        planes[i] = ImagePropertyFunctions.bufferedImage(list.get(i + 1));
-        if (planes[i] == null) {
+      List<double[]> channels = new ArrayList<>();
+      int width = -1;
+      int height = -1;
+      int rank = 0;
+      for (int i = 1; i < list.size(); i++) {
+        if (!(list.get(i) instanceof ImageExpr)) {
           return F.NIL;
         }
-        if (planes[i].getWidth() != planes[0].getWidth()
-            || planes[i].getHeight() != planes[0].getHeight()) {
+        ImageExpr image = (ImageExpr) list.get(i);
+        Raster raster = image.raster();
+        if (raster == null || (i > 1 && (raster.width != width || raster.height != height))) {
           return F.NIL;
         }
+        width = raster.width;
+        height = raster.height;
+        rank = Math.max(rank, TYPES.indexOf(image.sampleType()));
+        boolean single = Pixels.REAL32.equals(image.sampleType());
+        for (int c = 0; c < raster.channels; c++) {
+          double[] samples = new double[width * height];
+          for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+              double sample = raster.get(x, y, c);
+              samples[y * width + x] = single ? (float) sample : sample;
+            }
+          }
+          channels.add(samples);
+        }
       }
+      int total = channels.size();
+      int needed = neededChannels(space, total);
+      if (needed < 0 || (total != needed && total != needed + 1)) {
+        return F.NIL;
+      }
+      boolean hsb = "HSB".equals(space);
+      boolean cmyk = "CMYK".equals(space);
+      int colors = hsb || cmyk ? 3 : needed;
+      int outChannels = colors + total - needed;
+      Raster result = new Raster(width, height, outChannels);
+      double[] pixel = new double[total];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          for (int c = 0; c < total; c++) {
+            pixel[c] = channels.get(c)[y * width + x];
+          }
+          double[] decoded = hsb || cmyk ? ColorConvert.toRgb(pixel, space) : pixel;
+          for (int c = 0; c < colors; c++) {
+            result.set(x, y, c, decoded[c]);
+          }
+          if (outChannels > colors) {
+            result.set(x, y, colors, pixel[total - 1]);
+          }
+        }
+      }
+      ImageOptions options = space == null || hsb || cmyk ? ImageOptions.DEFAULT
+          : ImageOptions.DEFAULT.withColorSpace(F.stringx(space));
+      ImageExpr image = ImageExpr.fromRaster(result, options, TYPES.get(rank));
+      return image == null ? F.NIL : image;
+    }
 
-      int outputChannels = count == 1 ? 1 : (cmyk ? 3 : Math.min(count, 4));
-      final boolean toHsb = hsb;
-      final boolean toCmyk = cmyk;
-      return new ImageExpr(
-          Pixels.fromPixels(planes[0].getWidth(), planes[0].getHeight(), outputChannels, (x, y) -> {
-            float[] samples = new float[count];
-            for (int i = 0; i < count; i++) {
-              samples[i] = Pixels.pixel(planes[i], x, y, Boof.channels(planes[i]))[0] / 255.0f;
-            }
-            if (count == 1) {
-              return new float[] {samples[0] * 255.0f};
-            }
-            float[] rgb;
-            if (toHsb) {
-              rgb = Colors.hsbToRgb(samples);
-            } else if (toCmyk) {
-              rgb = Colors.cmykToRgb(samples);
-            } else {
-              rgb = new float[] {samples[0], samples[1], samples[2]};
-            }
-            if (outputChannels == 4) {
-              return scale(new float[] {rgb[0], rgb[1], rgb[2], samples[3]});
-            }
-            return scale(rgb);
-          }), null);
+    /**
+     * The colour channels of a space; <code>total</code> without a space.
+     *
+     * @return <code>-1</code> if there is no such image colour space
+     */
+    private static int neededChannels(String space, int total) {
+      if (space == null) {
+        return total;
+      }
+      switch (space) {
+        case ColorConvert.GRAYSCALE:
+          return 1;
+        case "RGB":
+        case "HSB":
+          return 3;
+        case "CMYK":
+          return 4;
+        default:
+          return -1;
+      }
     }
 
     @Override
@@ -997,14 +1118,21 @@ public class ColorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
         return F.NIL;
       }
-      int channels = Boof.channels(image);
-      return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1,
-          (x, y) -> new float[] {channels == 4 ? Pixels.pixel(image, x, y, channels)[3] : 255.0f}),
-          null);
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster raster = image.raster();
+      if (raster == null) {
+        return F.NIL;
+      }
+      Raster alpha;
+      if (hasAlpha(image)) {
+        alpha = raster.channel(raster.channels - 1);
+      } else {
+        alpha = new Raster(raster.width, raster.height, 1).mapColor(v -> 1.0);
+      }
+      return realImage(alpha, ImageOptions.DEFAULT);
     }
 
     @Override
@@ -1020,84 +1148,76 @@ public class ColorFunctions {
 
   /**
    * <code>SetAlphaChannel(image, alpha)</code> - the image with the given transparency, taken from
-   * a number or from a greyscale image. Without a second argument the image becomes fully opaque.
+   * a number or from an image, which sits in the centre of <code>image</code> if the sizes differ
+   * and is <code>0</code> around it. Without a second argument the image becomes fully opaque, and
+   * an alpha channel it has is replaced. A graphic is drawn at the size of the alpha image.
    */
   private static class SetAlphaChannel extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
-        return F.NIL;
-      }
-      int channels = Boof.channels(image);
-      BufferedImage alphaImage = null;
-      float alpha = 255.0f;
-      if (ast.argSize() >= 2) {
-        alphaImage = ImagePropertyFunctions.bufferedImage(ast.arg2());
-        if (alphaImage == null) {
-          double value = ast.arg2().evalfNaN();
-          if (Double.isNaN(value)) {
-            return F.NIL;
-          }
-          alpha = (float) (255.0 * value);
-        } else if (alphaImage.getWidth() != image.getWidth()
-            || alphaImage.getHeight() != image.getHeight()) {
+      if (ast.arg1().isAST(S.Graphics) && ast.argSize() >= 2 && ast.arg2() instanceof ImageExpr) {
+        Raster size = ((ImageExpr) ast.arg2()).raster();
+        if (size == null) {
           return F.NIL;
         }
+        IExpr image = engine.evaluate(F.binaryAST2(S.Rasterize, ast.arg1(),
+            F.Rule(S.RasterSize, F.List(F.ZZ(size.width), F.ZZ(size.height)))));
+        return image instanceof ImageExpr ? engine.evaluate(ast.setAtCopy(1, image)) : F.NIL;
       }
-      final BufferedImage alphaPlane = alphaImage;
-      final float constantAlpha = alpha;
-      if (alphaPlane == null) {
-        IExpr exact = withAlpha(ast.arg1(), constantAlpha / 255.0);
-        if (exact != null) {
-          return exact;
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 1, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      ImageExpr source = (ImageExpr) ast.arg1();
+      Raster raster = rgbOrGray(source);
+      if (raster == null) {
+        return F.NIL;
+      }
+      int colors = hasAlpha(source) ? raster.channels - 1 : raster.channels;
+      Raster alphaPlane = null;
+      double constant = 1.0;
+      if (ast.argSize() >= 2) {
+        if (ast.arg2() instanceof ImageExpr) {
+          alphaPlane = ((ImageExpr) ast.arg2()).raster();
+          if (alphaPlane == null) {
+            return F.NIL;
+          }
+        } else {
+          constant = ast.arg2().evalfNaN();
+          if (Double.isNaN(constant)) {
+            return F.NIL;
+          }
         }
       }
-      return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 4, (x, y) -> {
-        float[] values = Pixels.pixel(image, x, y, channels);
-        float[] result = new float[4];
-        for (int c = 0; c < 3; c++) {
-          result[c] = channels == 1 ? values[0] : values[c];
+      Raster result = new Raster(raster.width, raster.height, colors + 1);
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          for (int c = 0; c < colors; c++) {
+            result.set(x, y, c, raster.get(x, y, c));
+          }
+          result.set(x, y, colors, alphaPlane == null ? constant : alphaAt(alphaPlane, raster, x, y));
         }
-        result[3] = alphaPlane == null //
-            ? constantAlpha
-            : Pixels.pixel(alphaPlane, x, y, Boof.channels(alphaPlane))[0];
-        return result;
-      }), null);
+      }
+      return realImage(result, ImageOptions.DEFAULT.withColorSpace(alphaSpace(colors)));
     }
 
     /**
-     * The matrix an image of real samples was built from, with the alpha value as the fourth
-     * channel of every pixel, so that the samples aren't rounded to <code>1/255</code>. A grey
-     * level becomes the three equal colour channels an image with an alpha channel has here.
-     *
-     * @return <code>null</code> if the image kept no matrix of real samples
+     * The sample of the alpha image over a pixel of <code>image</code>: an image of another size
+     * sits in the centre, its offset from the bottom left corner rounded half to even.
      */
-    private static IExpr withAlpha(IExpr arg, double alpha) {
-      IAST matrix = PixelMatrix.of(arg);
-      if (matrix == null) {
-        return null;
-      }
-      ImageExpr source = (ImageExpr) arg;
-      String type = source.sampleType();
-      if ((!Pixels.REAL32.equals(type) && !Pixels.REAL64.equals(type))
-          || source.getOptions().colorSpaceName() != null) {
-        return null;
-      }
-      final IExpr alphaSample = F.num(alpha);
-      return PixelMatrix.image(source, PixelMatrix.width(matrix), PixelMatrix.height(matrix),
-          (x, y) -> {
-            IExpr pixel = PixelMatrix.pixel(matrix, x, y);
-            if (!pixel.isList()) {
-              return F.List(pixel, pixel, pixel, alphaSample);
-            }
-            if (pixel.argSize() != 3 && pixel.argSize() != 4) {
-              return null;
-            }
-            IAST channels = (IAST) pixel;
-            return F.List(channels.arg1(), channels.arg2(), channels.arg3(), alphaSample);
-          });
+    private static double alphaAt(Raster alpha, Raster image, int x, int y) {
+      int bottom = (int) Math.rint((image.height - alpha.height) / 2.0);
+      int top = image.height - alpha.height - bottom;
+      int left = (int) Math.rint((image.width - alpha.width) / 2.0);
+      int row = y - top;
+      int column = x - left;
+      return row >= 0 && row < alpha.height && column >= 0 && column < alpha.width
+          ? alpha.get(column, row, 0)
+          : 0.0;
     }
 
     @Override
@@ -1112,39 +1232,47 @@ public class ColorFunctions {
   }
 
   /**
-   * <code>RemoveAlphaChannel(image)</code> - the image composed onto white, or onto the colour
-   * given as a second argument.
+   * <code>RemoveAlphaChannel(image)</code> - the image without its alpha channel, the colour samples
+   * as they are. <code>RemoveAlphaChannel(image, color)</code> composes it onto the colour first.
    */
   private static class RemoveAlphaChannel extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
         return F.NIL;
       }
-      float[] background = new float[] {1.0f, 1.0f, 1.0f, 1.0f};
+      double[] background = null;
       if (ast.argSize() >= 2) {
         // a number is no colour here - RemoveAlphaChannel(image, 0.) is ::invcolor
-        background = ast.arg2().isNumber() ? null : Colors.toRgba(ast.arg2());
+        background = ast.arg2().isNumber() ? null : Colors.toRgbaDouble(ast.arg2());
         if (background == null) {
           return Errors.printMessage(S.RemoveAlphaChannel, "invcolor", F.List(ast.arg2()), engine);
         }
       }
-      int channels = Boof.channels(image);
-      if (channels != 4) {
-        return ast.arg1();
+      ImageExpr source = (ImageExpr) ast.arg1();
+      Raster raster = source.raster();
+      if (raster == null || !hasAlpha(source)) {
+        return raster == null ? F.NIL : ast.arg1();
       }
-      final float[] onto = background;
-      return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 3, (x, y) -> {
-        float[] values = Pixels.pixel(image, x, y, 4);
-        float alpha = values[3] / 255.0f;
-        float[] result = new float[3];
-        for (int c = 0; c < 3; c++) {
-          result[c] = values[c] * alpha + onto[c] * 255.0f * (1.0f - alpha);
+      int colors = raster.channels - 1;
+      Raster result = new Raster(raster.width, raster.height, colors);
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          double alpha = raster.get(x, y, colors);
+          for (int c = 0; c < colors; c++) {
+            double value = raster.get(x, y, c);
+            if (background != null) {
+              double under = colors == 1
+                  ? Colors.grayLevel(background[0], background[1], background[2])
+                  : background[c];
+              value = value * alpha + under * (1.0 - alpha);
+            }
+            result.set(x, y, c, value);
+          }
         }
-        return result;
-      }), null);
+      }
+      return realImage(result, source.getOptions());
     }
 
     @Override
@@ -1160,6 +1288,38 @@ public class ColorFunctions {
 
   // -------------------------------------------------------------------- internals
 
+  /**
+   * Whether the last channel of an image is an alpha channel: two channels are one only in a stated
+   * colour space, and the four of a CMYK image are no alpha channel.
+   */
+  static boolean hasAlpha(ImageExpr image) {
+    int channels = image.channels();
+    if (channels == 2) {
+      return image.getOptions().colorSpaceName() != null;
+    }
+    return channels == 4 && image.storedColorSpace() == null
+        && image.getOptions().colorSpaceName() != null;
+  }
+
+  /** The samples of an image in RGB or as grey levels: those of the picture of HSB or CMYK. */
+  static Raster rgbOrGray(ImageExpr image) {
+    return image.storedColorSpace() == null ? image.raster()
+        : Raster.fromBitmap(image.getBufferedImage());
+  }
+
+  /** The <code>ColorSpace</code> of an image of <code>colors</code> and an alpha channel. */
+  static IExpr alphaSpace(int colors) {
+    return colors == 1 ? F.stringx(ColorConvert.GRAYSCALE)
+        : colors == 3 ? F.stringx("RGB") : S.Automatic;
+  }
+
+  /** The <code>"Real32"</code> image of the samples. */
+  static IExpr realImage(Raster raster, ImageOptions options) {
+    ImageExpr image =
+        ImageExpr.fromRaster(raster.toSinglePrecision(), options, Pixels.REAL32);
+    return image == null ? F.NIL : image;
+  }
+
   /** Channel values on the 0 ... 255 scale as an RGB triple on the 0.0 ... 1.0 scale. */
   static float[] unit(float[] values, int channels) {
     if (channels == 1) {
@@ -1167,15 +1327,6 @@ public class ColorFunctions {
       return new float[] {gray, gray, gray};
     }
     return new float[] {values[0] / 255.0f, values[1] / 255.0f, values[2] / 255.0f};
-  }
-
-  /** Channel values on the 0.0 ... 1.0 scale back on the 0 ... 255 scale. */
-  static float[] scale(float[] values) {
-    float[] result = new float[values.length];
-    for (int i = 0; i < values.length; i++) {
-      result[i] = values[i] * 255.0f;
-    }
-    return result;
   }
 
   public static void initialize() {

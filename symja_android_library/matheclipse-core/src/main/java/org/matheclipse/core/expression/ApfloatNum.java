@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.external.apfloat.ApfloatRounding;
 import org.matheclipse.external.apfloat.ApfloatSignificance;
 import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
@@ -498,7 +499,7 @@ public class ApfloatNum implements INum {
   /**
    * The output form of a zero of a given accuracy: the exponent is the one of the first digit
    * which isn't known, <code>-Floor(accuracy)</code>, so <code>0``20.5</code> is
-   * <code>0.0*10^-20</code>. A zero with a negative accuracy is <code>0.0</code>.
+   * <code>0.0*10^-20</code>, and <code>0``-5</code> is <code>0.0*10^5</code>.
    *
    * @return <code>null</code> if this number is not a zero of a given accuracy
    */
@@ -506,11 +507,11 @@ public class ApfloatNum implements INum {
     if (fSignificance != ZERO_ACCURACY) {
       return null;
     }
-    final double exponent = Math.floor(fDigits);
-    if (!(exponent > 0.0)) {
+    final long exponent = (long) -Math.floor(fDigits);
+    if (exponent == 0L) {
       return "0.0";
     }
-    return "0.0*10^-" + (long) exponent;
+    return "0.0*10^" + exponent;
   }
 
   /**
@@ -1360,6 +1361,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr coshIntegral() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      Apcomplex value = ApcomplexExpIntegralMath.coshIntegralSeries(fApfloat, h().precision());
+      return isNonNegativeResult() ? valueOf(value.real()) : F.complexNum(value);
+    }
     try {
       if (isNonNegativeResult()) {
         return valueOf(h().coshIntegral(fApfloat));
@@ -1373,6 +1378,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr cosIntegral() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      Apcomplex value = ApcomplexExpIntegralMath.cosIntegralSeries(fApfloat, h().precision());
+      return isNonNegativeResult() ? valueOf(value.real()) : F.complexNum(value);
+    }
     try {
       if (isNonNegativeResult()) {
         return valueOf(h().cosIntegral(fApfloat));
@@ -1616,6 +1625,11 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr expIntegralEi() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      // real on the whole real line
+      return valueOf(
+          ApcomplexExpIntegralMath.expIntegralEiSeries(fApfloat, h().precision()).real());
+    }
     try {
       return valueOf(h().expIntegralEi(fApfloat));
     } catch (ArithmeticException | NumericComputationException e) {
@@ -1866,6 +1880,7 @@ public class ApfloatNum implements INum {
     return valueOf(h().pi());
   }
 
+  @Deprecated
   @Override
   public double getReal() {
     return fApfloat.doubleValue();
@@ -2823,12 +2838,19 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr sinhIntegral() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      return valueOf(
+          ApcomplexExpIntegralMath.sinhIntegralSeries(fApfloat, h().precision()).real());
+    }
     return valueOf(h().sinhIntegral(fApfloat));
   }
 
   @Override
   public IExpr sinIntegral() {
-    valueOf(h().sinIntegral(fApfloat));
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApfloat)) {
+      return valueOf(
+          ApcomplexExpIntegralMath.sinIntegralSeries(fApfloat, h().precision()).real());
+    }
     return valueOf(h().sinIntegral(fApfloat));
   }
 

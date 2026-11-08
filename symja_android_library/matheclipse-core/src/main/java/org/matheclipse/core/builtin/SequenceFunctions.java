@@ -1,17 +1,28 @@
 package org.matheclipse.core.builtin;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -24,12 +35,20 @@ public class SequenceFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.AllSameBy.setEvaluator(new AllSameBy());
+      S.ComapApply.setEvaluator(new ComapApply());
+      S.FindRepeat.setEvaluator(new FindRepeat());
+      S.FindTransientRepeat.setEvaluator(new FindTransientRepeat());
+      S.PositionLargest.setEvaluator(new PositionExtreme(true));
+      S.PositionSmallest.setEvaluator(new PositionExtreme(false));
       S.SequenceCases.setEvaluator(new SequenceCases());
       S.SequenceCount.setEvaluator(new SequenceCount());
       S.SequencePosition.setEvaluator(new SequencePosition());
       S.SequenceReplace.setEvaluator(new SequenceReplace());
       S.SequenceSplit.setEvaluator(new SequenceSplit());
       S.Subsequences.setEvaluator(new Subsequences());
+      S.SymmetricDifference.setEvaluator(new SymmetricDifference());
+      S.Upsample.setEvaluator(new Upsample());
     }
   }
 
@@ -99,6 +118,43 @@ public class SequenceFunctions {
    * <code>f(list, pattern)</code> with the option <code>Overlaps</code>: checks the option and the
    * arguments, then calls {@link #apply} with the evaluated list and pattern.
    */
+  /** Receives a matching sequence <code>ast[start..end-1]</code>. */
+  private interface SequenceMatch {
+    /** @return <code>false</code> to stop the scan */
+    boolean accept(int start, int end);
+  }
+
+  /**
+   * Scan <code>ast</code> from left to right for sequences matching <code>pattern</code>, taking
+   * the longest match at each start position. With <code>Overlaps-&gt;All</code> every match at a
+   * position is reported, with <code>Overlaps-&gt;True</code> only the longest, and with
+   * <code>Overlaps-&gt;False</code> the scan continues after the end of the match.
+   */
+  private static void scanLongestMatches(final IAST ast, final IExpr pattern,
+      IExpr overlapsOption, EvalEngine engine, SequenceMatch match) {
+    final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+    final int maxLength = maxSequenceLength(pattern);
+    int i = 1;
+    while (i < ast.size()) {
+      // Greedy match: iterate k downwards to match the longest possible sequences first
+      for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
+        if (matcher.test(ast.subList(i, k))) {
+          if (!match.accept(i, k)) {
+            return;
+          }
+          if (overlapsOption != S.All) {
+            if (overlapsOption.isFalse()) {
+              // If no overlaps allowed, jump index to the end of the matching sequence
+              i = k - 1;
+            }
+            break;
+          }
+        }
+      }
+      i++;
+    }
+  }
+
   private abstract static class AbstractSequenceOverlaps extends AbstractFunctionOptionEvaluator {
 
     /**
@@ -179,7 +235,7 @@ public class SequenceFunctions {
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
-            IASTAppendable subSequence = ast.copyFrom(i, k);
+            IASTAppendable subSequence = ast.subList(i, k);
             // CPD-ON
             if (matcher.test(subSequence)) {
               allResults.append(subSequence);
@@ -197,7 +253,7 @@ public class SequenceFunctions {
               // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
-              IASTAppendable subSequence = ast.copyFrom(i, k);
+              IASTAppendable subSequence = ast.subList(i, k);
               if (matcher.test(subSequence)) {
                 subResult = subSequence;
               } else {
@@ -233,7 +289,7 @@ public class SequenceFunctions {
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
-            IASTAppendable subSequence = ast.copyFrom(i, k);
+            IASTAppendable subSequence = ast.subList(i, k);
             // CPD-ON
             IExpr temp = function.apply(subSequence);
             if (temp.isPresent()) {
@@ -253,7 +309,7 @@ public class SequenceFunctions {
               // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
-              IASTAppendable subSequence = ast.copyFrom(i, k);
+              IASTAppendable subSequence = ast.subList(i, k);
               IExpr temp = function.apply(subSequence);
               if (temp.isPresent()) {
                 subResult = subSequence;
@@ -293,30 +349,12 @@ public class SequenceFunctions {
 
     public static IExpr sequenceCount(final IAST ast, final IExpr pattern, IExpr overlapsOption,
         EvalEngine engine) {
-      int count = 0;
-      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      final int maxLength = maxSequenceLength(pattern);
-      int i = 1;
-
-      while (i < ast.size()) {
-        // Greedy match: iterate k downwards to match the longest possible sequences first
-        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
-          IASTAppendable subSequence = ast.subList(i, k);
-          if (matcher.test(subSequence)) {
-            count++;
-
-            if (overlapsOption != S.All) {
-              if (overlapsOption.isFalse()) {
-                // If no overlaps allowed, jump index to the end of the matching sequence
-                i = k - 1;
-              }
-              break;
-            }
-          }
-        }
-        i++;
-      }
-      return F.ZZ(count);
+      final int[] count = new int[1];
+      scanLongestMatches(ast, pattern, overlapsOption, engine, (start, end) -> {
+        count[0]++;
+        return true;
+      });
+      return F.ZZ(count[0]);
     }
   }
 
@@ -346,28 +384,10 @@ public class SequenceFunctions {
       if (maxMatches <= 0) {
         return resultAST;
       }
-
-      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      final int maxLength = maxSequenceLength(pattern);
-      int i = 1;
-      while (i < ast.size()) {
-        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
-          IASTAppendable subSequence = ast.copyFrom(i, k);
-          if (matcher.test(subSequence)) {
-            resultAST.append(F.List(F.ZZ(i), F.ZZ(k - 1)));
-            if (resultAST.argSize() >= maxMatches) {
-              return resultAST;
-            }
-            if (overlapsOption != S.All) {
-              if (overlapsOption.isFalse()) {
-                i = k - 1;
-              }
-              break;
-            }
-          }
-        }
-        i++;
-      }
+      scanLongestMatches(ast, pattern, overlapsOption, engine, (start, end) -> {
+        resultAST.append(F.List(F.ZZ(start), F.ZZ(end - 1)));
+        return resultAST.argSize() < maxMatches;
+      });
       return resultAST;
     }
 
@@ -416,7 +436,7 @@ public class SequenceFunctions {
             break;
           }
           // greedy search
-          IASTAppendable subSequence = list.copyFrom(i, k);
+          IASTAppendable subSequence = list.subList(i, k);
           for (int l = 0; l < functions.length; l++) {
             if (matchers != null && matchers[l] != null) {
               if (matchers[l].test(subSequence)) {
@@ -579,7 +599,7 @@ public class SequenceFunctions {
         }
       }
       return scanSubsequences(list, functions, matchers, maxSequenceLengthOfAll(listOfPattern),
-          maxSplits, resultAST, (result, from, to) -> result.append(list.copyFrom(from, to)));
+          maxSplits, resultAST, (result, from, to) -> result.append(list.subList(from, to)));
     }
 
     @Override
@@ -591,7 +611,7 @@ public class SequenceFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1() || ast.isAST2()) {
+      if (ast.argSize() <= 3) {
         IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
           IAST list = (IAST) arg1;
@@ -600,7 +620,16 @@ public class SequenceFunctions {
           int max = size;
           int step = 1;
 
-          if (ast.isAST2()) {
+          int limit = Integer.MAX_VALUE;
+          if (ast.isAST3() && ast.arg3() != S.All) {
+            limit = ast.arg3().toIntDefault();
+            if (limit < 0) {
+              // Non-negative machine-sized integer expected at position `2` in `1`.
+              return Errors.printMessage(ast.topHead(), "intnm", F.list(ast, F.C3), engine);
+            }
+          }
+
+          if (ast.argSize() >= 2) {
             IExpr arg2 = ast.arg2();
             if (arg2.isList()) {
               IAST list2 = (IAST) arg2;
@@ -648,14 +677,14 @@ public class SequenceFunctions {
           }
 
           IASTAppendable result = F.ListAlloc();
-          for (int len = min; len <= max; len += step) {
+          for (int len = min; len <= max && result.argSize() < limit; len += step) {
             if (len == 0) {
               // exactly one empty subsequence (retaining the input's head)
-              result.append(list.copyFrom(1, 1));
+              result.append(list.subList(1, 1));
             } else {
               // all contiguous windows of this length, left to right
-              for (int i = 1; i <= size - len + 1; i++) {
-                result.append(list.copyFrom(i, i + len));
+              for (int i = 1; i <= size - len + 1 && result.argSize() < limit; i++) {
+                result.append(list.subList(i, i + len));
               }
             }
           }
@@ -667,7 +696,519 @@ public class SequenceFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+  }
+
+  /**
+   * <code>AllSameBy(list, f)</code> - test if <code>f</code> gives the same value for all elements
+   * of <code>list</code>. <code>AllSameBy(f)</code> is the operator form.
+   */
+  private static final class AllSameBy extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isListOrAssociation()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) ast.arg1();
+      IExpr function = ast.arg2();
+      IExpr first = F.NIL;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr value = engine.evaluate(F.unaryAST1(function, list.get(i)));
+        if (first.isNIL()) {
+          first = value;
+        } else if (!Predicates.isSameQ(first, value)) {
+          return S.False;
+        }
+      }
+      return S.True;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2_1;
+    }
+  }
+
+  /**
+   * <code>ComapApply(f(g, h), {x, y})</code> - apply each element of the first argument to the
+   * sequence of the elements of the second argument. With <code>Heads -&gt; True</code> the head of
+   * the first argument is applied too.
+   */
+  private static final class ComapApply extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      if (argSize != 2) {
+        return F.NIL;
+      }
+      IExpr functions = ast.arg1();
+      if (!functions.isASTOrAssociation()) {
+        return functions;
+      }
+      IExpr arguments = ast.arg2();
+      IAST result = ((IAST) functions).map(x -> F.Apply(x, arguments));
+      if (option[0].isTrue() && !functions.isAssociation()) {
+        return result.setAtCopy(0, F.Apply(functions.head(), arguments));
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
+    }
+  }
+
+  /**
+   * The elements of the first argument of <code>FindRepeat, FindTransientRepeat</code>: a list, an
+   * association or a string.
+   */
+  private static final class RepeatElements {
+    private final IExpr sequence;
+    private final IExpr[] items;
+    private final BiPredicate<IExpr, IExpr> sameTest;
+
+    private RepeatElements(IExpr sequence, IExpr[] items, BiPredicate<IExpr, IExpr> sameTest) {
+      this.sequence = sequence;
+      this.items = items;
+      this.sameTest = sameTest;
+    }
+
+    /**
+     * @return <code>null</code> if <code>sequence</code> is no list, association or string
+     */
+    static RepeatElements of(IExpr sequence, IExpr sameTest, EvalEngine engine) {
+      IExpr[] items;
+      if (sequence.isString()) {
+        int[] codePoints = sequence.toString().codePoints().toArray();
+        items = new IExpr[codePoints.length];
+        for (int i = 0; i < codePoints.length; i++) {
+          items[i] = F.stringx(new String(Character.toChars(codePoints[i])));
+        }
+      } else if (sequence.isListOrAssociation()) {
+        items = new IExpr[sequence.argSize()];
+        for (int i = 0; i < items.length; i++) {
+          items[i] = ((IAST) sequence).get(i + 1);
+        }
+      } else {
+        return null;
+      }
+      return new RepeatElements(sequence, items, Predicates.identicalTest(sameTest, engine));
+    }
+
+    int length() {
+      return items.length;
+    }
+
+    boolean same(int i, int j) {
+      return sameTest.test(items[i], items[j]);
+    }
+
+    /** The elements <code>from &lt;= i &lt; to</code> (counted from 0) with the input's type. */
+    IExpr slice(int from, int to) {
+      if (sequence.isString()) {
+        StringBuilder buf = new StringBuilder();
+        for (int i = from; i < to; i++) {
+          buf.append(items[i].toString());
+        }
+        return F.stringx(buf.toString());
+      }
+      if (sequence.isAssociation()) {
+        IAssociation assoc = F.assoc();
+        for (int i = from; i < to; i++) {
+          assoc.appendRule(((IAssociation) sequence).getRule(i + 1));
+        }
+        return assoc;
+      }
+      return ((IAST) sequence).subList(from + 1, to + 1);
+    }
+  }
+
+  /**
+   * <code>FindRepeat(seq)</code> - the shortest sequence which, repeated, reproduces
+   * <code>seq</code>; the last repetition may be incomplete. <code>FindRepeat(seq, n)</code> needs
+   * at least <code>n</code> whole repetitions and gives the empty sequence if there is no such
+   * period; <code>{n}</code> is the same for the only level of the sequence. The option
+   * <code>SameTest</code> decides which elements are the same.
+   */
+  private static final class FindRepeat extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      int minRepeats = 1;
+      if (argSize == 2) {
+        minRepeats = (ast.arg2().isList1() ? ast.arg2().first() : ast.arg2()).toIntDefault();
+        if (minRepeats < 1) {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+        }
+      }
+      RepeatElements elements = RepeatElements.of(ast.arg1(), option[0], engine);
+      if (elements == null) {
+        // The first argument `1` to `2` is expected to be a list, an association or a string.
+        return Errors.printMessage(ast.topHead(), "arg1", F.list(ast.arg1(), ast.topHead()),
+            engine);
+      }
+      int length = elements.length();
+      for (int period = 1; period <= length / minRepeats; period++) {
+        engine.checkTimeLimit();
+        boolean repeats = true;
+        for (int i = period; repeats && i < length; i++) {
+          repeats = elements.same(i, i % period);
+        }
+        if (repeats) {
+          return elements.slice(0, period);
+        }
+      }
+      return elements.slice(0, 0);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.putMessage(IPatternMatcher.SET, "arg1",
+          F.stringx("The first argument `1` to `2` is expected to be a list, an association "
+              + "or a string."));
+      setOptions(newSymbol, S.SameTest, S.Automatic);
+    }
+  }
+
+  /**
+   * <code>FindTransientRepeat(seq, n)</code> - split <code>seq</code> into
+   * <code>{transient, repeat}</code>, where <code>repeat</code> occurs at least <code>n</code>
+   * times at the end of <code>seq</code>. Among all such splits the shortest transient is chosen,
+   * and among those the shortest repeat. The option <code>SameTest</code> decides which elements
+   * are the same.
+   */
+  private static final class FindTransientRepeat extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      int minRepeats = ast.arg2().toIntDefault();
+      if (minRepeats < 1) {
+        // Positive machine-sized integer expected at position `2` in `1`.
+        return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+      }
+      RepeatElements elements = RepeatElements.of(ast.arg1(), option[0], engine);
+      if (elements == null) {
+        return F.NIL;
+      }
+      int length = elements.length();
+      int bestTransient = length;
+      int bestPeriod = 0;
+      for (int period = 1; period <= length; period++) {
+        engine.checkTimeLimit();
+        int repeats = 1;
+        while ((repeats + 1) * period <= length
+            && sameBlock(elements, length - (repeats + 1) * period, length - period, period)) {
+          repeats++;
+        }
+        int transientLength = length - repeats * period;
+        if (repeats >= minRepeats && transientLength < bestTransient) {
+          bestTransient = transientLength;
+          bestPeriod = period;
+        }
+      }
+      return F.list(elements.slice(0, bestTransient),
+          elements.slice(bestTransient, bestTransient + bestPeriod));
+    }
+
+    private static boolean sameBlock(RepeatElements elements, int start1, int start2, int length) {
+      for (int i = 0; i < length; i++) {
+        if (!elements.same(start1 + i, start2 + i)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.SameTest, S.Automatic);
+    }
+  }
+
+  /**
+   * <code>PositionLargest(list)</code>, <code>PositionSmallest(list)</code> - the positions of the
+   * extreme value of <code>list</code>; with a number <code>n</code> as second argument one list of
+   * positions for each of the <code>n</code> extreme values; a third argument is an ordering
+   * function, which gives <code>1</code> if its arguments are in order, <code>-1</code> if they are
+   * not and <code>0</code> if they tie. Without it the elements must be numeric.
+   */
+  private static final class PositionExtreme extends AbstractFunctionEvaluator {
+    /** The result of a comparison which gave no order. */
+    private static final int NO_ORDER = Integer.MIN_VALUE;
+
+    private final boolean largest;
+
+    PositionExtreme(boolean largest) {
+      this.largest = largest;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.arg1().isAssociation() && ast.arg1().argSize() > 0) {
+        // the positions of the values of an association
+        IAssociation association = (IAssociation) ast.arg1();
+        return ast.setAtCopy(1,
+            F.mapRange(1, association.size(), i -> association.getValue(i)));
+      }
+      if (!ast.arg1().isList() || ast.arg1().isEmptyList()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) ast.arg1();
+      int count = -1;
+      if (ast.argSize() >= 2 && ast.arg2() != S.Automatic) {
+        IExpr countSpec = ast.arg2().isAST(S.UpTo, 2) ? ast.arg2().first() : ast.arg2();
+        count = countSpec.toIntDefault();
+        if (count < 0) {
+          // Positive machine-sized integer or Automatic expected at position `2` in `1`.
+          return Errors.printMessage(ast.topHead(), "intpma", F.list(ast, F.C2), engine);
+        }
+      }
+      IExpr orderFunction = ast.isAST3() ? ast.arg3() : F.NIL;
+      if (orderFunction.isNIL() && !list.forAll(x -> !Double.isNaN(x.evalfNaN()))) {
+        // Input `1` is not a real-valued vector.
+        return Errors.printMessage(ast.topHead(), "rvec2", F.list(list), engine);
+      }
+
+      // the distinct values in ascending order, with the ascending positions of each one
+      List<IExpr> values = new ArrayList<>();
+      List<IASTAppendable> groups = new ArrayList<>();
+      for (int i = 1; i < list.size(); i++) {
+        engine.checkTimeLimit();
+        IExpr element = list.get(i);
+        int low = 0;
+        int high = values.size();
+        int group = -1;
+        while (group < 0 && low < high) {
+          int middle = (low + high) >>> 1;
+          int order = compare(orderFunction, values.get(middle), element, engine);
+          if (order == NO_ORDER) {
+            // Input `1` is not a real-valued vector.
+            return Errors.printMessage(ast.topHead(), "rvec2", F.list(list), engine);
+          }
+          if (order == 0) {
+            group = middle;
+          } else if (order > 0) {
+            low = middle + 1;
+          } else {
+            high = middle;
+          }
+        }
+        if (group < 0) {
+          values.add(low, element);
+          groups.add(low, F.ListAlloc());
+          group = low;
+        }
+        groups.get(group).append(F.ZZ(i));
+      }
+      return extremeGroups(groups, count);
+    }
+
+    /** The result of the ordering function, or the numeric order if there is none. */
+    private static int compare(IExpr orderFunction, IExpr x, IExpr y, EvalEngine engine) {
+      if (orderFunction.isNIL()) {
+        if (x.isRational() && y.isRational()) {
+          return -Integer.signum(x.compareTo(y));
+        }
+        return -Double.compare(x.evalfNaN(), y.evalfNaN());
+      }
+      int order = engine.evaluate(F.binaryAST2(orderFunction, x, y)).toIntDefault();
+      return order >= -1 && order <= 1 ? order : NO_ORDER;
+    }
+
+    /**
+     * Take the <code>count</code> extreme groups from the groups of positions, which are given in
+     * ascending order of their values. The largest values are built as the reversal of the
+     * ascending structure, so the positions of a group run downwards if more than one value was
+     * asked for.
+     *
+     * @param count the number of values, or <code>-1</code> for the positions of the extreme value
+     */
+    private IExpr extremeGroups(List<IASTAppendable> groups, int count) {
+      int size = groups.size();
+      if (count < 0) {
+        return groups.get(largest ? size - 1 : 0);
+      }
+      int kept = Math.min(count, size);
+      IASTAppendable result = F.ListAlloc(kept);
+      for (int i = 0; i < kept; i++) {
+        if (!largest) {
+          result.append(groups.get(i));
+        } else {
+          IASTAppendable group = groups.get(size - 1 - i);
+          result.append(count == 1 ? group : group.reverse(F.ListAlloc(group.size())));
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.putMessage(IPatternMatcher.SET, "intpma", F.stringx(
+          "Positive machine-sized integer or Automatic expected at position `2` in `1`."));
+      newSymbol.putMessage(IPatternMatcher.SET, "rvec2",
+          F.stringx("Input `1` is not a real-valued vector."));
+    }
+  }
+
+  /**
+   * <code>SymmetricDifference(list1, list2, ...)</code> - the sorted elements which are in an odd
+   * number of the lists. The option <code>SameTest</code> decides which elements are the same.
+   */
+  private static final class SymmetricDifference extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      for (int i = 1; i <= argSize; i++) {
+        if (!ast.get(i).isAST()) {
+          return F.NIL;
+        }
+        if (!ast.get(i).head().equals(ast.arg1().head())) {
+          // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
+          return Errors.printMessage(ast.topHead(), "heads2",
+              F.List(ast.get(i).head(), ast.arg1().head(), F.ZZ(i), F.C1), engine);
+        }
+      }
+      IASTAppendable result = option[0] == S.Automatic ? identicalElements(ast, argSize)
+          : elementsBySameTest(ast, argSize, option[0], engine);
+      EvalAttributes.sort(result);
+      if (option[0] == S.Automatic) {
+        return result;
+      }
+      // one representative of the elements which the test takes to be the same
+      BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
+      IASTAppendable representatives = ((IAST) ast.arg1()).copyHead();
+      for (int i = 1; i < result.size(); i++) {
+        IExpr element = result.get(i);
+        if (!representatives.exists(x -> test.test(element, x))) {
+          representatives.append(element);
+        }
+      }
+      return representatives;
+    }
+
+    private static IASTAppendable identicalElements(IAST ast, int argSize) {
+      Map<IExpr, int[]> counts = new HashMap<>();
+      for (int i = 1; i <= argSize; i++) {
+        IAST list = (IAST) ast.get(i);
+        LinkedHashSet<IExpr> distinct = new LinkedHashSet<>();
+        for (int j = 1; j < list.size(); j++) {
+          distinct.add(list.get(j));
+        }
+        for (IExpr element : distinct) {
+          counts.computeIfAbsent(element, x -> new int[1])[0]++;
+        }
+      }
+      IASTAppendable result = ((IAST) ast.arg1()).copyHead();
+      counts.forEach((element, count) -> {
+        if ((count[0] & 1) == 1) {
+          result.append(element);
+        }
+      });
+      return result;
+    }
+
+    private static IASTAppendable elementsBySameTest(IAST ast, int argSize, IExpr sameTest,
+        EvalEngine engine) {
+      BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(sameTest, engine);
+      IASTAppendable result = ((IAST) ast.arg1()).copyHead();
+      for (int k = 1; k <= argSize; k++) {
+        IAST list = (IAST) ast.get(k);
+        for (int i = 1; i < list.size(); i++) {
+          engine.checkTimeLimit();
+          IExpr element = list.get(i);
+          int count = 1;
+          for (int m = 1; m <= argSize; m++) {
+            if (m != k && ((IAST) ast.get(m)).exists(x -> test.test(element, x))) {
+              count++;
+            }
+          }
+          if ((count & 1) == 1) {
+            result.append(element);
+          }
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.SameTest, S.Automatic);
+    }
+  }
+
+  /**
+   * <code>Upsample(list, n)</code> - insert <code>n-1</code> zeros behind each element of
+   * <code>list</code>. <code>Upsample(list, n, offset)</code> puts each element at position
+   * <code>offset</code> of its block of <code>n</code> elements.
+   */
+  private static final class Upsample extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList() || ((IAST) ast.arg1()).exists(x -> x.isList())) {
+        return F.NIL;
+      }
+      IAST list = (IAST) ast.arg1();
+      int n = ast.arg2().toIntDefault();
+      if (n <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`.
+        return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+      }
+      int offset = ast.argSize() >= 3 ? ast.arg3().toIntDefault() : 1;
+      // the value of the inserted elements
+      final IExpr padding = ast.argSize() == 4 ? ast.arg4() : F.C0;
+      if (offset <= 0 || offset > n) {
+        return F.NIL;
+      }
+      long size = (long) n * list.argSize();
+      if (size > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(size);
+      }
+      IASTAppendable result = F.ListAlloc((int) size);
+      for (int i = 1; i < list.size(); i++) {
+        for (int j = 1; j <= n; j++) {
+          result.append(j == offset ? list.get(i) : padding);
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
     }
   }
 

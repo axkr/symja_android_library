@@ -1260,7 +1260,7 @@ public final class NumberTheory {
       }
       IASTAppendable result = F.ListAlloc(periodStart + 1);
       result.appendAll(terms, 1, periodStart + 1);
-      result.append(terms.copyFrom(periodStart + 1));
+      result.append(terms.subList(periodStart + 1));
       return result;
     }
 
@@ -1807,7 +1807,30 @@ public final class NumberTheory {
             }
           }
           // 3. DiracDelta(a * x + b) -> 1/Abs(a) * DiracDelta(x + b/a)
-          else if (arg.isPlus()) {
+          else if (arg.isPlus() && ((IAST) arg).forAll(t -> rationalCoefficient(t) != null)) {
+            // rational coefficients: the content c is taken out, DiracDelta(6*x+9*y) is
+            // DiracDelta(2*x+3*y)/3, and a sum with more negative than positive terms is negated
+            IAST plus = (IAST) arg;
+            IRational content = F.C0;
+            int negatives = 0;
+            for (IExpr term : plus) {
+              IRational coefficient = rationalCoefficient(term);
+              content = content.gcd(coefficient.abs());
+              if (coefficient.isNegative()) {
+                negatives++;
+              }
+            }
+            IRational divisor = F.C1;
+            if (!content.isOne() && !content.isZero()) {
+              divisor = rationalCoefficient(plus.last()).isNegative() ? content.negate() : content;
+              currentMultiplier = content.inverse();
+            } else if (2 * negatives > plus.argSize()) {
+              divisor = F.CN1;
+            }
+            if (!divisor.isOne()) {
+              newArg = engine.evaluate(F.Expand(F.Divide(plus, divisor)));
+            }
+          } else if (arg.isPlus()) {
             IAST plus = (IAST) arg;
             IExpr lastTerm = plus.last();
 
@@ -1841,6 +1864,28 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The rational coefficient of a term of a sum, <code>-2</code> of <code>-2*x</code>, or
+     * <code>null</code> if it has another one.
+     */
+    private static IRational rationalCoefficient(IExpr term) {
+      if (term.isRational()) {
+        return (IRational) term;
+      }
+      if (term.isNumericFunction(true)) {
+        // Pi or Sqrt(2): a constant term which isn't rational
+        return null;
+      }
+      if (term.isTimes()) {
+        IExpr first = term.first();
+        if (first.isRational()) {
+          return ((IAST) term).rest().exists(x -> x.isNumber()) ? null : (IRational) first;
+        }
+        return term.exists(x -> x.isNumber()) ? null : F.C1;
+      }
+      return term.isNumber() ? null : F.C1;
     }
 
     @Override
@@ -2138,6 +2183,10 @@ public final class NumberTheory {
       if (arg2.isInteger() && arg2.isPositive()) {
         IInteger n = (IInteger) arg2;
         return divisorSigma(arg1, n);
+      }
+      if (arg2.isInteger() && arg2.isNegative()) {
+        // -n has the same positive divisors as n
+        return divisorSigma(arg1, ((IInteger) arg2).negate());
       }
       return F.NIL;
     }
@@ -2529,7 +2578,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        return F.NIL;
+        return ast.arg1().isInteger() ? signedExtendedGCD(ast, engine) : F.NIL;
       }
       if (ast.exists(GaussianInteger::isGaussianInteger)
           && ast.forAll(x -> x.isInteger() || GaussianInteger.isGaussianInteger(x))) {
@@ -4412,9 +4461,8 @@ public final class NumberTheory {
         if (arg3.isList1() && arg3.first().isReal()) {
           int n = arg3.first().toMachineInt();
           if (F.isPresent(n)) {
-            if (n < 0) {
-              // Positive integer expected at position `2` in `1`.
-              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
+            if (n < 1) {
+              return termsFromBefore(list1, list2, n, n, ast, engine);
             }
             IAST result = linearRecurrence(list1, list2, n, ast, engine);
             if (result.isPresent()) {
@@ -4427,19 +4475,19 @@ public final class NumberTheory {
         if (arg3.isList2() && arg3.first().isReal() && arg3.second().isReal()) {
           int nmin = arg3.first().toMachineInt();
           if (F.isPresent(nmin)) {
-            if (nmin < 0) {
-              // Positive integer expected at position `2` in `1`.
-              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
-            }
             int nmax = arg3.second().toMachineInt();
             if (F.isPresent(nmax)) {
+              if (nmin < 1) {
+                return nmin <= nmax ? termsFromBefore(list1, list2, nmin, nmax, ast, engine)
+                    : F.NIL;
+              }
               if (nmax < 0) {
                 // Positive integer expected at position `2` in `1`.
                 return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C2), engine);
               }
               IAST result = linearRecurrence(list1, list2, nmax, ast, engine);
               if (result.isPresent()) {
-                return result.copyFrom(nmin, nmax + 1);
+                return result.subList(nmin, nmax + 1);
               }
             }
           }
@@ -4452,6 +4500,56 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
+    }
+
+    /**
+     * The terms <code>nmin..nmax</code> with <code>nmin &lt; 1</code>: those before the initial
+     * values solve the recurrence for its oldest term,
+     * <code>a(n-k) = (a(n) - c1*a(n-1) - ... - c(k-1)*a(n-k+1)) / ck</code>, which needs a last
+     * kernel coefficient which isn't zero.
+     *
+     * @return {@link F#NIL} if the terms can't be computed
+     */
+    private IExpr termsFromBefore(IAST list1, IAST list2, int nmin, int nmax, IAST ast,
+        EvalEngine engine) {
+      final int k = list1.argSize();
+      long size = (long) nmax - nmin + 1L;
+      if (k == 0 || list2.argSize() < k || list1.last().isZero()) {
+        return F.NIL;
+      }
+      if (Config.MAX_AST_SIZE < size || Config.MAX_AST_SIZE < 1L - (long) nmin) {
+        ASTElementLimitExceeded.throwIt(Math.max(size, 1L - (long) nmin));
+      }
+      // window[i] is a(1 - steps + i) of the terms in front of a(1)
+      IExpr[] before = new IExpr[1 - nmin];
+      IExpr[] window = new IExpr[k];
+      for (int i = 0; i < k; i++) {
+        window[i] = list2.get(list2.argSize() - k + 1 + i);
+      }
+      for (int i = before.length - 1; i >= 0; i--) {
+        engine.checkTimeLimit();
+        IASTAppendable rest = F.PlusAlloc(k);
+        rest.append(window[k - 1]);
+        for (int j = 1; j < k; j++) {
+          rest.append(F.Times(F.CN1, list1.get(j), window[k - 1 - j]));
+        }
+        IExpr older = engine.evaluate(F.Expand(F.Divide(rest, list1.last())));
+        System.arraycopy(window, 0, window, 1, k - 1);
+        window[0] = older;
+        before[i] = older;
+      }
+      IASTAppendable result = F.ListAlloc((int) size);
+      for (int i = 0; i < before.length && nmin + i <= nmax; i++) {
+        result.append(before[i]);
+      }
+      if (nmax >= 1) {
+        IAST positive = linearRecurrence(list1, list2, nmax, ast, engine);
+        if (positive.isNIL()) {
+          return F.NIL;
+        }
+        result.appendArgs(positive);
+      }
+      return result;
     }
 
     private IAST linearRecurrence(IAST list1, IAST list2, int n, IAST ast, EvalEngine engine) {
@@ -4541,6 +4639,26 @@ public final class NumberTheory {
 
   private static class LiouvilleLambda extends AbstractFunctionEvaluator
       implements IntUnaryOperator {
+
+    /** The parity of the number of the Gaussian prime factors, the units don't count. */
+    private static IExpr gaussianLambda(IExpr n, EvalEngine engine) {
+      if (n.isZero() || !n.isNumber() || !n.isExactNumber()) {
+        return F.NIL;
+      }
+      IExpr factors =
+          engine.evaluate(F.binaryAST2(S.FactorInteger, n, F.Rule(S.GaussianIntegers, S.True)));
+      if (!factors.isList()) {
+        return F.NIL;
+      }
+      long count = 0L;
+      for (IExpr factor : (IAST) factors) {
+        if (!engine.evaluate(F.Abs(factor.first())).isOne()) {
+          count += factor.second().toLongDefault();
+        }
+      }
+      return count % 2L == 0L ? F.C1 : F.CN1;
+    }
+
     @Override
     public int applyAsInt(int arg) {
       if (arg <= 0) {
@@ -4562,6 +4680,18 @@ public final class NumberTheory {
       }
       if (arg1.isOne()) {
         return F.C1;
+      }
+      if (arg1.isComplex() && arg1.gaussianInteger().isPresent()) {
+        // a Gaussian integer factors over the Gaussian integers without the option
+        return gaussianLambda(arg1, engine);
+      }
+      if (ast.isAST2()) {
+        if (!ast.arg2().isRuleAST() || ast.arg2().first() != S.GaussianIntegers) {
+          return F.NIL;
+        }
+        if (ast.arg2().second().isTrue()) {
+          return gaussianLambda(arg1, engine);
+        }
       }
       if (arg1.isInteger() && arg1.isPositive()) {
         IExpr expr = S.FactorInteger.of(engine, arg1);
@@ -4596,7 +4726,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -5011,11 +5141,39 @@ public final class NumberTheory {
           return Errors.printMessage(S.ModularInverse, "ninv", F.List(arg1, arg2), engine);
         }
       }
-      // TODO add gaussian integers
+      if ((arg1.isComplex() || arg2.isComplex())
+          && (arg1.isInteger() || arg1.gaussianInteger().isPresent())
+          && (arg2.isInteger() || arg2.gaussianInteger().isPresent())) {
+        // an integer is a Gaussian integer too
+        return gaussianInverse(arg1, arg2, engine);
+      }
       // The `1` arguments to `2` must be ordinary integers.
       return Errors.printMessage(S.ModularInverse, "minv", F.List(F.C2, S.ModularInverse), engine);
     }
 
+
+    /**
+     * The inverse of the Gaussian integer <code>k</code> modulo the Gaussian integer <code>n</code>
+     * from their extended GCD, reduced with {@link S#Mod}.
+     */
+    private static IExpr gaussianInverse(IExpr k, IExpr n, EvalEngine engine) {
+      if (n.isZero()) {
+        // Nonzero integer expected at position `1` in `2`.
+        return Errors.printMessage(S.ModularInverse, "intnz", F.List(F.C2, F.binaryAST2(S.ModularInverse, k, n)),
+            engine);
+      }
+      IExpr extendedGCD = S.ExtendedGCD.of(engine, k, n);
+      if (extendedGCD.isList() && extendedGCD.argSize() == 2 && extendedGCD.second().isList()) {
+        IExpr gcd = extendedGCD.first();
+        if (!engine.evaluate(F.Abs(gcd)).isOne()) {
+          // `1` is not invertible modulo `2`.
+          return Errors.printMessage(S.ModularInverse, "ninv", F.List(k, n), engine);
+        }
+        IExpr s = extendedGCD.second().first();
+        return S.Mod.of(engine, F.Divide(s, gcd), n);
+      }
+      return F.NIL;
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -6535,11 +6693,7 @@ public final class NumberTheory {
       }
       if (x instanceof ApfloatNum) {
         Apfloat value = ((ApfloatNum) x).apfloatValue();
-        java.math.BigDecimal decimal = new java.math.BigDecimal(value.toString(true));
-        org.hipparchus.fraction.BigFraction exact = decimal.scale() <= 0
-            ? new org.hipparchus.fraction.BigFraction(decimal.toBigIntegerExact())
-            : new org.hipparchus.fraction.BigFraction(decimal.unscaledValue(),
-                java.math.BigInteger.TEN.pow(decimal.scale()));
+        org.hipparchus.fraction.BigFraction exact = exactFraction(value);
         // five quarters of a unit of the last digit
         org.hipparchus.fraction.BigFraction tolerance = new org.hipparchus.fraction.BigFraction(
             java.math.BigInteger.valueOf(5),
@@ -6552,6 +6706,95 @@ public final class NumberTheory {
         return re.isPresent() && im.isPresent() ? F.Complex(re, im) : F.NIL;
       }
       return F.NIL;
+    }
+
+    /** The exact value of the decimal digits of an arbitrary precision number. */
+    private static org.hipparchus.fraction.BigFraction exactFraction(Apfloat value) {
+      java.math.BigDecimal decimal = new java.math.BigDecimal(value.toString(true));
+      return decimal.scale() <= 0
+          ? new org.hipparchus.fraction.BigFraction(decimal.toBigIntegerExact())
+          : new org.hipparchus.fraction.BigFraction(decimal.unscaledValue(),
+              java.math.BigInteger.TEN.pow(decimal.scale()));
+    }
+
+    /**
+     * The exact value of a real number, or <code>null</code> if it isn't a rational, machine or
+     * arbitrary precision real number.
+     */
+    private static org.hipparchus.fraction.BigFraction exactFraction(IReal x) {
+      if (x instanceof ApfloatNum) {
+        return exactFraction(((ApfloatNum) x).apfloatValue());
+      }
+      if (x instanceof INum) {
+        double value = ((INum) x).doubleValue();
+        return Double.isFinite(value) ? new org.hipparchus.fraction.BigFraction(value) : null;
+      }
+      if (x instanceof IRational) {
+        IRational q = (IRational) x;
+        return new org.hipparchus.fraction.BigFraction(q.toBigNumerator(), q.toBigDenominator());
+      }
+      return null;
+    }
+
+    /**
+     * Every arbitrary precision real number in <code>expr</code> replaced by the rational number
+     * with the smallest denominator within <code>dx</code> of its exact value, so that no digit is
+     * lost to a machine number.
+     *
+     * @return {@link F#NIL} if <code>expr</code> contains no arbitrary precision real number
+     */
+    private static IExpr simplestWithin(IExpr expr, org.hipparchus.fraction.BigFraction dx) {
+      java.util.function.Function<IExpr, IExpr> function = x -> {
+        if (x instanceof ApfloatNum) {
+          org.hipparchus.fraction.BigFraction value = exactFraction(((ApfloatNum) x).apfloatValue());
+          org.hipparchus.fraction.BigFraction simplest =
+              simplestInInterval(value.subtract(dx), value.add(dx));
+          return F.QQ(simplest.getNumerator(), simplest.getDenominator());
+        }
+        return F.NIL;
+      };
+      return expr.isAST() ? expr.replaceAll(function) : function.apply(expr);
+    }
+
+    /**
+     * The rational number with the smallest denominator in the closed interval
+     * <code>[lo, hi]</code>, from the common start of the continued fractions of its ends.
+     */
+    private static org.hipparchus.fraction.BigFraction simplestInInterval(
+        org.hipparchus.fraction.BigFraction lo, org.hipparchus.fraction.BigFraction hi) {
+      if (lo.getNumerator().signum() <= 0 && hi.getNumerator().signum() >= 0) {
+        return org.hipparchus.fraction.BigFraction.ZERO;
+      }
+      if (hi.getNumerator().signum() < 0) {
+        return simplestInInterval(hi.negate(), lo.negate()).negate();
+      }
+      // 0 < lo <= hi
+      java.util.List<java.math.BigInteger> terms = new java.util.ArrayList<>();
+      while (true) {
+        java.math.BigInteger floor = lo.getNumerator().divide(lo.getDenominator());
+        org.hipparchus.fraction.BigFraction floorFraction =
+            new org.hipparchus.fraction.BigFraction(floor);
+        if (floorFraction.compareTo(lo) == 0) {
+          terms.add(floor);
+          break;
+        }
+        java.math.BigInteger next = floor.add(java.math.BigInteger.ONE);
+        if (new org.hipparchus.fraction.BigFraction(next).compareTo(hi) <= 0) {
+          terms.add(next);
+          break;
+        }
+        // both ends lie in (floor, floor + 1)
+        terms.add(floor);
+        org.hipparchus.fraction.BigFraction newLo = hi.subtract(floorFraction).reciprocal();
+        hi = lo.subtract(floorFraction).reciprocal();
+        lo = newLo;
+      }
+      org.hipparchus.fraction.BigFraction result =
+          new org.hipparchus.fraction.BigFraction(terms.get(terms.size() - 1));
+      for (int i = terms.size() - 2; i >= 0; i--) {
+        result = new org.hipparchus.fraction.BigFraction(terms.get(i)).add(result.reciprocal());
+      }
+      return result;
     }
 
     /**
@@ -6611,11 +6854,35 @@ public final class NumberTheory {
             // expression only the inexact numbers are rationalized
             arg1 = engine.evalN(arg1);
           }
-          if (epsilon == 0.0) {
-            // every inexact number becomes the simplest rational number it stands for
-            IExpr converted = arg1.isAST() ? arg1.replaceAll(Rationalize::convergent)
-                : convergent(arg1);
-            if (converted.isPresent()) {
+          if (epsilonExpr.isZero() || epsilonExpr.isPositive()) {
+            IExpr converted = arg1;
+            boolean changed = false;
+            if (epsilonExpr.isPositive()) {
+              // an arbitrary precision number is compared in exact arithmetic with an exact dx
+              org.hipparchus.fraction.BigFraction dx = exactFraction(epsilonExpr);
+              if (dx != null && dx.getNumerator().signum() > 0) {
+                IExpr temp = simplestWithin(arg1, dx);
+                if (temp.isPresent()) {
+                  converted = temp;
+                  changed = true;
+                }
+              }
+            }
+            if (epsilon == 0.0) {
+              // a dx of zero or below the machine range: every remaining inexact number becomes
+              // the simplest rational number it stands for
+              IExpr temp = converted.isAST() ? converted.replaceAll(Rationalize::convergent)
+                  : convergent(converted);
+              if (temp.isPresent()) {
+                converted = temp;
+                changed = true;
+              }
+            } else if (changed) {
+              // the machine numbers next to the arbitrary precision ones
+              converted = AbstractFractionSym.rationalize(converted, epsilon, false, true)
+                  .orElse(converted);
+            }
+            if (changed) {
               return engine.evaluate(converted);
             }
           }
@@ -6747,6 +7014,20 @@ public final class NumberTheory {
         // return S.False;
         // }
         return F.False;
+      }
+      if (!eVar.isSize(1) && !hasOption) {
+        // a multivariate polynomial is square-free if no non-constant factor of its square-free
+        // factorization has a multiplicity above 1
+        IExpr factors = S.FactorSquareFreeList.of(engine, ast.arg1());
+        if (factors.isListOfLists()) {
+          for (IExpr factor : (IAST) factors) {
+            if (factor.argSize() == 2 && !factor.first().isNumber()
+                && !factor.second().isOne()) {
+              return S.False;
+            }
+          }
+          return S.True;
+        }
       }
       if (!eVar.isSize(1)) {
         // `1` currently not supported in `2`.
@@ -7519,6 +7800,98 @@ public final class NumberTheory {
 
 
   /**
+   * <code>RamanujanTau(n)</code> - the coefficient of <code>q^n</code> in
+   * <code>q * Product((1 - q^k)^24, {k, 1, Infinity})</code>.
+   *
+   * <p>
+   * The function is multiplicative and <code>tau(p^(k+1)) = tau(p)*tau(p^k) -
+   * p^11*tau(p^(k-1))</code>; the values at primes come from Niebur's formula
+   * <code>tau(n) = n^4*sigma(n) - 24*Sum(i^2*(35*i^2 - 52*i*n + 18*n^2)*sigma(i)*sigma(n-i), {i,
+   * 1, n-1})</code>.
+   */
+  private static final class RamanujanTau extends AbstractFunctionEvaluator {
+    /** The largest prime factor of an argument; the formula needs a table of this size. */
+    private static final int MAX_PRIME = 20_000_000;
+
+    private static final BigInteger TWENTY_FOUR = BigInteger.valueOf(24L);
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isInteger()) {
+        return F.NIL;
+      }
+      IInteger n = (IInteger) ast.arg1();
+      if (n.isZero() || n.isNegative()) {
+        return F.C0;
+      }
+      if (n.isOne()) {
+        return F.C1;
+      }
+      IAST factors = n.factorInteger();
+      BigInteger tau = BigInteger.ONE;
+      for (int i = 1; i < factors.size(); i++) {
+        IAST factor = (IAST) factors.get(i);
+        int p = factor.arg1().toIntDefault();
+        if (F.isNotPresent(p) || p > MAX_PRIME) {
+          return F.NIL;
+        }
+        tau = tau.multiply(primePowerTau(p, factor.arg2().toIntDefault(), engine));
+      }
+      return F.ZZ(tau);
+    }
+
+    private static BigInteger primePowerTau(int p, int k, EvalEngine engine) {
+      BigInteger tauP = primeTau(p, engine);
+      BigInteger p11 = BigInteger.valueOf(p).pow(11);
+      BigInteger previous = BigInteger.ONE;
+      BigInteger current = tauP;
+      for (int i = 2; i <= k; i++) {
+        BigInteger next = tauP.multiply(current).subtract(p11.multiply(previous));
+        previous = current;
+        current = next;
+      }
+      return current;
+    }
+
+    private static BigInteger primeTau(int n, EvalEngine engine) {
+      int[] sigma = new int[n];
+      for (int d = 1; d < n; d++) {
+        if ((d & 0xFFFF) == 0) {
+          engine.checkTimeLimit();
+        }
+        for (int m = d; m < n; m += d) {
+          sigma[m] += d;
+        }
+      }
+      BigInteger bigN = BigInteger.valueOf(n);
+      BigInteger sum = BigInteger.ZERO;
+      for (int i = 1; i < n; i++) {
+        if ((i & 0xFFFF) == 0) {
+          engine.checkTimeLimit();
+        }
+        BigInteger bigI = BigInteger.valueOf(i);
+        BigInteger weight = bigI.multiply(bigI)
+            .multiply(BigInteger.valueOf(35L).multiply(bigI).multiply(bigI)
+                .subtract(BigInteger.valueOf(52L).multiply(bigI).multiply(bigN))
+                .add(BigInteger.valueOf(18L).multiply(bigN).multiply(bigN)));
+        sum = sum.add(weight.multiply(BigInteger.valueOf((long) sigma[i] * sigma[n - i])));
+      }
+      // the sum of the divisors of the prime n is n + 1
+      return bigN.pow(4).multiply(bigN.add(BigInteger.ONE)).subtract(TWENTY_FOUR.multiply(sum));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+    }
+  }
+
+  /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
@@ -7571,6 +7944,7 @@ public final class NumberTheory {
       S.PerfectNumberQ.setEvaluator(new PerfectNumberQ());
       S.PowersRepresentations.setEvaluator(new PowersRepresentations());
       S.Prime.setEvaluator(new Prime());
+      S.RamanujanTau.setEvaluator(new RamanujanTau());
       S.PrimeOmega.setEvaluator(new PrimeOmega());
       S.PrimePowerQ.setEvaluator(new PrimePowerQ());
       S.PrimitiveRoot.setEvaluator(new PrimitiveRoot());

@@ -42,7 +42,9 @@ public class PermutationGroupFunctions {
       S.PermutationLength.setEvaluator(new PermutationFunction(PermutationFunction.LENGTH));
       S.PermutationMax.setEvaluator(new PermutationFunction(PermutationFunction.MAX));
       S.PermutationMin.setEvaluator(new PermutationFunction(PermutationFunction.MIN));
+      S.PermutationMatrix.setEvaluator(new PermutationMatrix());
 
+      S.CayleyGraph.setEvaluator(new CayleyGraph());
       S.GroupOrder.setEvaluator(new GroupFunction(GroupFunction.ORDER));
       S.GroupElements.setEvaluator(new GroupFunction(GroupFunction.ELEMENTS));
       S.GroupGenerators.setEvaluator(new GroupFunction(GroupFunction.GENERATORS));
@@ -51,6 +53,42 @@ public class PermutationGroupFunctions {
       S.GroupSupport.setEvaluator(new GroupFunction(GroupFunction.SUPPORT));
       S.GroupElementQ.setEvaluator(new GroupFunction(GroupFunction.ELEMENTQ));
       S.GroupMultiplicationTable.setEvaluator(new GroupFunction(GroupFunction.TABLE));
+    }
+  }
+
+  /**
+   * <pre>
+   * PermutationMatrix(perm)
+   * PermutationMatrix(perm, n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the identity matrix of size <code>n</code> with the rows permuted by the permutation
+   * list or the cycles <code>perm</code>.
+   *
+   * </blockquote>
+   */
+  private static final class PermutationMatrix extends LinearAlgebra.AbstractMatrixGenerator {
+
+    @Override
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
+      final int[] permutation = toPermutation(ast.arg1(), engine);
+      if (permutation == null) {
+        return F.NIL;
+      }
+      final int size = ast.isAST2() ? ast.arg2().toIntDefault() : permutation.length;
+      if (size < permutation.length) {
+        return F.NIL;
+      }
+      return F.matrix(
+          (i, j) -> (i < permutation.length ? permutation[i] : i) == j ? F.C1 : F.C0, size, size);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -189,6 +227,25 @@ public class PermutationGroupFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.PermutationGroup, 2) && arg1.first().isList()
+          && (kind == SUPPORT || kind == MAX || kind == MIN)) {
+        // the points moved by some generator of the group
+        IASTAppendable union = F.ast(S.Union, arg1.first().argSize());
+        for (IExpr generator : (IAST) arg1.first()) {
+          union.append(F.unaryAST1(S.PermutationSupport, generator));
+        }
+        IExpr support = engine.evaluate(union);
+        if (!support.isList()) {
+          return F.NIL;
+        }
+        if (kind == SUPPORT) {
+          return support;
+        }
+        if (support.argSize() == 0) {
+          return kind == MAX ? F.C0 : F.CInfinity;
+        }
+        return kind == MAX ? support.last() : support.first();
+      }
       final boolean cycles = arg1.isAST(S.Cycles, 2);
       if (!cycles && !arg1.isList()) {
         return F.NIL;
@@ -466,6 +523,54 @@ public class PermutationGroupFunctions {
         default:
           return ARGS_1_1;
       }
+    }
+  }
+
+  /**
+   * <code>CayleyGraph(group)</code> - the directed graph on the elements of the group, numbered as
+   * <code>GroupElements</code> lists them, with an edge from an element to its product with each
+   * of the generators.
+   */
+  private static final class CayleyGraph extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr elements = engine.evaluate(F.unaryAST1(S.GroupElements, ast.arg1()));
+      IExpr generators = engine.evaluate(F.unaryAST1(S.GroupGenerators, ast.arg1()));
+      if (!elements.isList() || !generators.isList()) {
+        return F.NIL;
+      }
+      java.util.Map<IExpr, Integer> numbers = new java.util.HashMap<>();
+      for (int i = 1; i <= elements.argSize(); i++) {
+        numbers.put(elements.getAt(i), i);
+      }
+      final int n = elements.argSize();
+      IASTAppendable edges = F.ListAlloc(n * generators.argSize());
+      for (int i = 1; i <= n; i++) {
+        engine.checkTimeLimit();
+        for (IExpr generator : (IAST) generators) {
+          Integer product = numbers
+              .get(engine.evaluate(F.binaryAST2(S.PermutationProduct, elements.getAt(i), generator)));
+          if (product == null) {
+            return F.NIL;
+          }
+          edges.append(F.DirectedEdge(F.ZZ(i), F.ZZ(product)));
+        }
+      }
+      IASTAppendable graph = F.ast(S.Graph);
+      graph.append(F.mapRange(1, n + 1, i -> F.ZZ(i)));
+      graph.append(edges);
+      graph.appendArgs(ast.rest());
+      return graph;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 

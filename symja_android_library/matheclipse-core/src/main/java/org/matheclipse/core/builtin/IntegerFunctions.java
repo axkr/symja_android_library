@@ -830,17 +830,19 @@ public class IntegerFunctions {
           return F.NIL;
         }
       }
-      if (ast.isAST3() && ast.arg3().isList()) {
+      if (ast.argSize() >= 3 && ast.arg3().isList()) {
         return ast.arg3().mapThread(ast, 3);
       }
       IAST digits;
       if (arg1.isInteger()) {
-        IExpr result = S.IntegerDigits.of(engine, arg1, base);
+        // DigitCount(n, b, d, len) counts in the last len digits, padded with zeros on the left
+        IExpr result = ast.argSize() == 4 ? S.IntegerDigits.of(engine, arg1, base, ast.arg4())
+            : S.IntegerDigits.of(engine, arg1, base);
         if (!result.isList()) {
           return F.NIL;
         }
         digits = (IAST) result;
-      } else if (arg1.isReal() && !arg1.isRational()) {
+      } else if (arg1.isReal() && !arg1.isRational() && ast.argSize() < 4) {
         IExpr result = S.RealDigits.of(engine, arg1, base);
         if (!result.isList() || !result.first().isList()) {
           return F.NIL;
@@ -854,7 +856,7 @@ public class IntegerFunctions {
         return F.NIL;
       }
 
-      if (ast.isAST3()) {
+      if (ast.argSize() >= 3) {
         int d = ast.arg3().toIntDefault();
         if (d < 0 || d >= radix) {
           return F.NIL;
@@ -889,7 +891,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
   }
 
@@ -1483,9 +1485,7 @@ public class IntegerFunctions {
       }
       IASTAppendable leading = F.ListAlloc(k);
       for (int i = 1; i <= k; i++) {
-        if (digits.get(i).isList()) {
-          return F.NIL;
-        }
+        // only the last sublist recurs, any other one is a digit
         leading.append(digits.get(i));
       }
       IExpr value = F.Times(fromDigits(leading, base, engine), F.Power(base, F.ZZ(-k)));
@@ -2631,6 +2631,11 @@ public class IntegerFunctions {
         int base = 10;
         long length = Long.MIN_VALUE;
         long startDigit = Long.MIN_VALUE;
+        if (ast.isAST3() && !ast.arg2().isInteger() && ast.arg2().isNumericFunction()
+            && arg1.isNumericFunction() && !arg1.isInexactNumber()
+            && engine.evaluate(F.Greater(ast.arg2(), F.C1)).isTrue()) {
+          return realDigitsOfRealBase(arg1, ast.arg2(), ast.arg3().toLongDefault(), engine);
+        }
         if (ast.argSize() >= 2) {
           base = ast.arg2().toMachineInt();
           if (base < 2) {
@@ -2673,6 +2678,57 @@ public class IntegerFunctions {
 
 
 
+    /**
+     * The first <code>length</code> digits of the greedy expansion of <code>x</code> in the real
+     * base <code>base &gt; 1</code>: each digit is the largest one which leaves the rest
+     * non-negative.
+     */
+    private static IExpr realDigitsOfRealBase(IExpr x, IExpr base, long length,
+        EvalEngine engine) {
+      if (length < 1L || length > MAX_REAL_BASE_DIGITS) {
+        return F.NIL;
+      }
+      double logBase = Math.max(1.0, Math.log10(engine.evalDouble(base)));
+      double size = Math.abs(engine.evalDouble(F.Log(F.C10, F.Plus(F.C1, F.Abs(x)))));
+      long precision = (long) (length * logBase + size) + 60L;
+      IExpr numericBase = engine.evaluate(F.N(base, F.ZZ(precision)));
+      IExpr numericValue = engine.evaluate(F.N(F.Abs(x), F.ZZ(precision)));
+      if (!(numericBase instanceof ApfloatNum) || !(numericValue instanceof ApfloatNum)) {
+        return F.NIL;
+      }
+      org.apfloat.FixedPrecisionApfloatHelper h =
+          new org.apfloat.FixedPrecisionApfloatHelper(precision);
+      Apfloat b = ((ApfloatNum) numericBase).apfloatValue();
+      Apfloat rest = ((ApfloatNum) numericValue).apfloatValue();
+      if (rest.signum() == 0) {
+        return F.list(F.constantArray(F.C0, (int) length), F.C0);
+      }
+      // numbers below this size are rounding noise of a whole place
+      Apfloat tiny = h.pow(new Apfloat(10L, precision), -(length + 40L));
+      long exponent = h.floor(h.divide(h.log(rest), h.log(b))).longValue() + 1L;
+      // the logarithm can be one off at an exact power
+      Apfloat place = h.pow(b, exponent - 1L);
+      if (h.divide(rest, h.multiply(place, b)).add(tiny).compareTo(Apfloat.ONE) >= 0) {
+        exponent++;
+        place = h.multiply(place, b);
+      } else if (h.divide(rest, place).add(tiny).compareTo(Apfloat.ONE) < 0) {
+        exponent--;
+        place = h.divide(place, b);
+      }
+      IASTAppendable digits = F.ListAlloc((int) length);
+      for (long k = 0L; k < length; k++) {
+        engine.checkTimeLimit();
+        Apfloat digit = h.floor(h.add(h.divide(rest, place), tiny));
+        rest = h.subtract(rest, h.multiply(digit, place));
+        if (rest.signum() < 0) {
+          rest = Apfloat.ZERO;
+        }
+        digits.append(F.ZZ(digit.longValue()));
+        place = h.divide(place, b);
+      }
+      return F.list(digits, F.ZZ(exponent));
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4;
@@ -2683,6 +2739,9 @@ public class IntegerFunctions {
       newSymbol.setAttributes(Attribute.LISTABLE);
     }
   }
+
+  /** The largest number of digits in a base which is no integer. */
+  private static final long MAX_REAL_BASE_DIGITS = 100000L;
 
   /**
    *
@@ -2918,7 +2977,7 @@ public class IntegerFunctions {
     if (sign == CompareUtil.UNCERTAIN) {
       // Internal precision limit `1` reached while evaluating `2`.
       Errors.printMessage(messageHead, "meprec",
-          F.List(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."),
+          F.List(EvalEngine.maxExtraPrecisionText(),
               F.unaryAST1(messageHead, expr)),
           engine);
       return F.NIL;
@@ -2988,6 +3047,15 @@ public class IntegerFunctions {
       }
     }
     return RealDigitsResult.create(num, den, radix, length, startDigit, available);
+  }
+
+  /** The zeros in front of a terminating fraction are given by the exponent alone. */
+  private static IAST withoutLeadingZeros(IAST digits) {
+    int first = 1;
+    while (first < digits.argSize() && digits.get(first).isZero()) {
+      first++;
+    }
+    return first == 1 ? digits : digits.subList(first);
   }
 
   public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {
@@ -3068,7 +3136,7 @@ public class IntegerFunctions {
       Apint denom = new Apint(((IFraction) realNumber).toBigDenominator());
       Aprational aprational = new Aprational(numer, denom);
       RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
-      return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
+      return F.list(withoutLeadingZeros(rd.getDigitsList()), F.ZZ(rd.getNumberOfLeftDigits()));
     } else if (radix > 36) {
       RealDigitsResult rd = realDigitsLargeRadix(realNumber, radix, length, startDigit);
       if (rd == null) {

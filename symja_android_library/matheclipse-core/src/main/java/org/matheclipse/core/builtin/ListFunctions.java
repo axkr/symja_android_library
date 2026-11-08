@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -220,6 +221,7 @@ public final class ListFunctions {
     private IExpr evaluateScoped(final ISymbol[] variables, final IExpr[] index) {
       if (fScopeLocals == null) {
         fScopeLocals = org.matheclipse.core.patternmatching.CaptureAvoidance.scopeLocals(fValue);
+        collectIteratorVariables(fValue, fScopeLocals);
       }
       if (fScopeLocals.isEmpty()) {
         return F.NIL;
@@ -240,6 +242,31 @@ public final class ListFunctions {
         }
       }
       return fEngine.evaluate(F.Block(blockVariables, fValue));
+    }
+
+    /**
+     * The iterator variables of the nested <code>Table</code>, <code>Sum</code>,
+     * <code>Product</code> and <code>Do</code> constructs in <code>expr</code>. Such a construct
+     * binds its variable again: <code>Table(Table(i, {i, 3}), {i, 2})</code> is
+     * <code>{{1,2,3},{1,2,3}}</code>.
+     */
+    private static void collectIteratorVariables(IExpr expr, Set<ISymbol> variables) {
+      if (!expr.isAST()) {
+        return;
+      }
+      IAST ast = (IAST) expr;
+      if (ast.size() > 2 && (ast.isAST(S.Table) || ast.isAST(S.Sum) || ast.isAST(S.Product)
+          || ast.isAST(S.Do) || ast.isAST(S.ParallelTable))) {
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr iterator = ast.get(i);
+          if (iterator.isList() && iterator.argSize() >= 2 && iterator.first().isSymbol()) {
+            variables.add((ISymbol) iterator.first());
+          }
+        }
+      }
+      for (int i = 0; i < ast.size(); i++) {
+        collectIteratorVariables(ast.get(i), variables);
+      }
     }
 
     @Override
@@ -308,6 +335,9 @@ public final class ListFunctions {
       S.FirstPosition.setEvaluator(new FirstPosition());
       S.Fold.setEvaluator(new Fold());
       S.FoldList.setEvaluator(new FoldList());
+      S.FoldPairList.setEvaluator(new FoldPairList());
+      S.TakeDrop.setEvaluator(new TakeDrop());
+      S.SubstitutionSystem.setEvaluator(new SubstitutionSystem());
       S.Gather.setEvaluator(new Gather());
       S.GatherBy.setEvaluator(new GatherBy());
       S.GroupBy.setEvaluator(new GroupBy());
@@ -654,7 +684,10 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
         int size = list.size();
         IASTAppendable resultList = list.copyHead(list.argSize());
-        return foldLeft(null, list, 1, size, (x, y) -> F.binaryAST2(S.Plus, x, y), resultList);
+        // each running sum is evaluated before the next one is added: a nested unevaluated sum
+        // of a long list exceeds the recursion limit
+        return foldLeft(null, list, 1, size,
+            (x, y) -> engine.evaluate(F.binaryAST2(S.Plus, x, y)), resultList);
       }
       return F.NIL;
     }
@@ -1296,8 +1329,18 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 3 && ast.arg3().isString("Extrapolated")) {
+        return extrapolated(ast, engine);
+      }
+      if (ast.argSize() > 3) {
+        return F.NIL;
+      }
       if (ast.arg1().isAST()) {
         IAST arg1 = (IAST) ast.arg1();
+        IExpr general = padLevels(ast, arg1, engine);
+        if (general.isPresent()) {
+          return general;
+        }
         int m = Config.INVALID_INT;
         int n = Config.INVALID_INT;
         if (ast.arg2().isList2()) {
@@ -1324,7 +1367,231 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_4;
+    }
+
+    /**
+     * <code>ArrayPad(list, {m, n}, "Extrapolated", InterpolationOrder -> k)</code> - continue a
+     * vector on each side by the polynomial of degree <code>k</code> (default 1) through the
+     * <code>k + 1</code> elements at that end. <code>k = Infinity</code> uses all elements.
+     */
+    private static IExpr extrapolated(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isList() || arg1.argSize() == 0 || ((IAST) arg1).exists(x -> x.isList())) {
+        return F.NIL;
+      }
+      IAST list = (IAST) arg1;
+      int[] margin = padMargin(ast.arg2());
+      if (margin == null || margin[0] < 0 || margin[1] < 0) {
+        return F.NIL;
+      }
+      int length = list.argSize();
+      int order = 1;
+      if (ast.argSize() == 4) {
+        IExpr option = ast.arg4();
+        if (!option.isRuleAST() || option.first() != S.InterpolationOrder) {
+          return F.NIL;
+        }
+        IExpr value = option.second();
+        if (value.isInfinity()) {
+          order = length - 1;
+        } else {
+          order = value.toIntDefault();
+          if (order < 0) {
+            return F.NIL;
+          }
+        }
+      }
+      order = Math.min(order, length - 1);
+      long size = (long) length + margin[0] + margin[1];
+      if (size > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(size);
+      }
+      IASTAppendable result = F.ListAlloc((int) size);
+      IAST reversed = list.reverse(F.ListAlloc(length));
+      for (int j = margin[0]; j >= 1; j--) {
+        engine.checkTimeLimit();
+        result.append(engine.evaluate(lagrange(reversed, order, length - 1 + j)));
+      }
+      result.appendArgs(list);
+      for (int j = 1; j <= margin[1]; j++) {
+        engine.checkTimeLimit();
+        result.append(engine.evaluate(lagrange(list, order, length - 1 + j)));
+      }
+      return result;
+    }
+
+    /**
+     * The value at the position <code>t</code> of the polynomial through the last
+     * <code>order + 1</code> elements of <code>list</code>, which stand at the positions
+     * <code>0, 1, ..., order</code>, counted from the first of them.
+     */
+    private static IExpr lagrange(IAST list, int order, int t) {
+      int offset = list.argSize() - order;
+      // the position t counts from the first element of the list
+      t = t - (list.argSize() - 1 - order);
+      IASTAppendable sum = F.PlusAlloc(order + 1);
+      for (int i = 0; i <= order; i++) {
+        java.math.BigInteger numerator = java.math.BigInteger.ONE;
+        java.math.BigInteger denominator = java.math.BigInteger.ONE;
+        for (int k = 0; k <= order; k++) {
+          if (k != i) {
+            numerator = numerator.multiply(java.math.BigInteger.valueOf(t - k));
+            denominator = denominator.multiply(java.math.BigInteger.valueOf(i - k));
+          }
+        }
+        sum.append(F.Times(F.QQ(F.ZZ(numerator), F.ZZ(denominator)), list.get(offset + i)));
+      }
+      return sum;
+    }
+
+    /**
+     * The forms of an array of any rank: the named schemes <code>"Fixed"</code>,
+     * <code>"Periodic"</code> (or <code>"Cyclic"</code>), <code>"Reflected"</code> and
+     * <code>"Reversed"</code>, the margins <code>{{m1, n1}, {m2, n2}, ...}</code> per level and an
+     * array of a rank greater than 2.
+     *
+     * @return {@link F#NIL} if the call is none of these or the margins are invalid
+     */
+    private static IExpr padLevels(IAST ast, IAST array, EvalEngine engine) {
+      IExpr padding = ast.argSize() > 2 ? ast.arg3() : F.C0;
+      boolean named = padding.isString("Fixed") || padding.isString("Periodic")
+          || padding.isString("Cyclic") || padding.isString("Reflected")
+          || padding.isString("Reversed");
+      boolean perLevel = ast.arg2().isList() && ast.arg2().argSize() > 0
+          && ((IAST) ast.arg2()).forAll(x -> x.isList());
+      int[] dimensions = array.isList() ? S.Dimensions.of(engine, array).toIntVector() : null;
+      if (dimensions == null || dimensions.length == 0
+          || !(named || perLevel || dimensions.length > 2)) {
+        return F.NIL;
+      }
+      int[][] margins = padMargins(ast.arg2(), perLevel, dimensions.length);
+      if (margins == null) {
+        return F.NIL;
+      }
+      long total = 1L;
+      int[] newDimensions = dimensions.clone();
+      for (int i = 0; i < margins.length; i++) {
+        long size = (long) dimensions[i] + margins[i][0] + margins[i][1];
+        if (size < 0L || (named && dimensions[i] == 0)) {
+          return F.NIL;
+        }
+        if (Config.MAX_AST_SIZE < size) {
+          ASTElementLimitExceeded.throwIt(size);
+        }
+        newDimensions[i] = (int) size;
+      }
+      for (int size : newDimensions) {
+        total *= size;
+        if (Config.MAX_AST_SIZE < total) {
+          ASTElementLimitExceeded.throwIt(total);
+        }
+      }
+      return padLevel(array, margins, newDimensions, 0, named ? padding.toString() : null, padding,
+          engine);
+    }
+
+    /**
+     * The margins <code>{before, after}</code> of the levels of the array, or <code>null</code>
+     * for an invalid specification.
+     */
+    private static int[][] padMargins(IExpr spec, boolean perLevel, int rank) {
+      if (perLevel) {
+        if (spec.argSize() > rank) {
+          return null;
+        }
+        int[][] margins = new int[spec.argSize()][];
+        for (int i = 0; i < margins.length; i++) {
+          margins[i] = padMargin(((IAST) spec).get(i + 1));
+          if (margins[i] == null) {
+            return null;
+          }
+        }
+        return margins;
+      }
+      int[] margin = padMargin(spec);
+      if (margin == null) {
+        return null;
+      }
+      int[][] margins = new int[rank][];
+      Arrays.fill(margins, margin);
+      return margins;
+    }
+
+    /** <code>n</code>, <code>{n}</code> or <code>{m, n}</code> as <code>{m, n}</code>. */
+    private static int[] padMargin(IExpr spec) {
+      IExpr before = spec.isList() && spec.argSize() >= 1 ? spec.first() : spec;
+      IExpr after = spec.isList2() ? spec.second() : before;
+      if (spec.isList() && spec.argSize() > 2) {
+        return null;
+      }
+      int m = before.toIntDefault();
+      int n = after.toIntDefault();
+      return F.isNotPresent(m) || F.isNotPresent(n) ? null : new int[] {m, n};
+    }
+
+    /**
+     * Pad the levels <code>level, level + 1, ...</code> of <code>array</code>: a new position is
+     * filled by the element which the scheme maps it to, or by the padding array.
+     *
+     * @param scheme the named scheme, or <code>null</code> to pad with <code>padding</code>
+     */
+    private static IExpr padLevel(IExpr array, int[][] margins, int[] newDimensions, int level,
+        String scheme, IExpr padding, EvalEngine engine) {
+      if (level == margins.length) {
+        return array;
+      }
+      engine.checkTimeLimit();
+      IAST elements = (IAST) array;
+      int size = elements.argSize();
+      IExpr[] padded = new IExpr[size];
+      IExpr fill = F.NIL;
+      IASTAppendable result = F.ListAlloc(newDimensions[level]);
+      for (int position = 0; position < newDimensions[level]; position++) {
+        int index = padIndex(position - margins[level][0], size, scheme);
+        if (index >= 0) {
+          if (padded[index] == null) {
+            padded[index] = padLevel(elements.get(index + 1), margins, newDimensions, level + 1,
+                scheme, padding, engine);
+          }
+          result.append(padded[index]);
+        } else {
+          if (fill.isNIL()) {
+            fill = padding;
+            for (int i = newDimensions.length - 1; i > level; i--) {
+              fill = F.constantArray(fill, newDimensions[i]);
+            }
+          }
+          result.append(fill);
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The position in <code>0..size-1</code> which a scheme gives the padded position
+     * <code>i</code>, or <code>-1</code> for a position outside of the array without a scheme.
+     */
+    private static int padIndex(int i, int size, String scheme) {
+      if (scheme == null) {
+        return i >= 0 && i < size ? i : -1;
+      }
+      switch (scheme) {
+        case "Fixed":
+          return Math.max(0, Math.min(size - 1, i));
+        case "Reversed":
+          int reversed = Math.floorMod(i, 2 * size);
+          return reversed < size ? reversed : 2 * size - 1 - reversed;
+        case "Reflected":
+          if (size == 1) {
+            return 0;
+          }
+          int period = 2 * (size - 1);
+          int reflected = Math.floorMod(i, period);
+          return reflected < size ? reflected : period - reflected;
+        default:
+          return Math.floorMod(i, size);
+      }
     }
 
     private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
@@ -2578,12 +2845,17 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isASTOrAssociation()) {
         final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-        if (ast.isAST3() || ast.size() == 5) {
-          final IExpr arg3 = engine.evaluate(ast.arg3());
+        boolean includeHeads = false;
+        if (ast.argSize() > 2 && ast.last().isRuleAST() && ast.last().first() == S.Heads) {
+          includeHeads = engine.evaluate(ast.last().second()).isTrue();
+          ast = ast.removeAtClone(ast.argSize());
+        }
+        if (ast.isAST3() || ast.size() == 5 || includeHeads) {
+          final IExpr arg3 = ast.isAST2() ? F.C1 : engine.evaluate(ast.arg3());
           int maximumRemoveOperations = -1;
           IASTAppendable arg1RemoveClone = ((IAST) arg1).copyAppendable();
           try {
@@ -2597,7 +2869,7 @@ public final class ListFunctions {
 
             DeleteCasesPatternMatcherFunctor cpmf = new DeleteCasesPatternMatcherFunctor(matcher);
             VisitorRemoveLevelSpecification level = new VisitorRemoveLevelSpecification(cpmf, arg3,
-                maximumRemoveOperations, false, engine);
+                maximumRemoveOperations, includeHeads, engine);
             arg1RemoveClone.accept(level);
             if (level.getRemovedCounter() == 0) {
               return arg1;
@@ -2617,7 +2889,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_4;
+      return ARGS_2_5;
     }
 
     public static IAST deleteCases(final IAST ast, final IPatternMatcher matcher) {
@@ -2764,14 +3036,68 @@ public final class ListFunctions {
           IAssociation assoc = (IAssociation) ast.arg1();
           return assoc.select(x -> !x.isAST(S.Missing));
         }
+      } else if (ast.arg1().isListOrAssociation()) {
+        int[] levels = levelRange(ast.arg2());
+        int depth = ast.isAST3() ? ast.arg3().toIntDefault(-1) : 0;
+        if (levels != null && depth >= 0) {
+          return deleteMissing((IAST) ast.arg1(), 1, levels[0], levels[1], depth);
+        }
       }
 
       return F.NIL;
     }
 
+    /**
+     * The levels of <code>DeleteMissing(expr, spec)</code>: <code>n</code> is level 1 through
+     * <code>n</code>, <code>{n}</code> only level <code>n</code>.
+     *
+     * @return the first and the last level, or <code>null</code> if <code>spec</code> is no such
+     *         level specification
+     */
+    private static int[] levelRange(IExpr spec) {
+      if (spec.isInfinity()) {
+        return new int[] {1, Integer.MAX_VALUE};
+      }
+      if (!spec.isList()) {
+        int n = spec.toIntDefault(-1);
+        return n < 0 ? null : new int[] {1, n};
+      }
+      if (spec.argSize() < 1 || spec.argSize() > 2) {
+        return null;
+      }
+      int from = spec.first().toIntDefault(-1);
+      int to = spec.argSize() == 1 ? from
+          : spec.second().isInfinity() ? Integer.MAX_VALUE : spec.second().toIntDefault(-1);
+      return from < 0 || to < 0 ? null : new int[] {from, to};
+    }
+
+    /**
+     * Drop the elements on the levels <code>from..to</code> which have the head
+     * <code>Missing</code> or a part with this head at most <code>depth</code> levels below them.
+     *
+     * @param level the level of the elements of <code>expr</code>
+     */
+    private static IAST deleteMissing(IAST expr, int level, int from, int to, int depth) {
+      IAST kept = level >= from ? expr.select(x -> !hasMissing(x, depth)) : expr;
+      if (level >= to) {
+        return kept;
+      }
+      return kept.map(x -> x.isListOrAssociation()
+          ? deleteMissing((IAST) x, level + 1, from, to, depth)
+          : x);
+    }
+
+    private static boolean hasMissing(IExpr expr, int depth) {
+      if (expr.isAST(S.Missing)) {
+        return true;
+      }
+      return depth > 0 && expr.isListOrAssociation()
+          && ((IAST) expr).exists(x -> hasMissing(x, depth - 1));
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_3;
     }
   }
 
@@ -3225,6 +3551,10 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1 instanceof org.matheclipse.core.expression.data.DateObjectExpr) {
+        // the date list of DateObject(dateList, ...)
+        return ((org.matheclipse.core.expression.data.DateObjectExpr) arg1).dateList();
+      }
       IExpr first = arg1.size() > 1 ? arg1.first() : F.NIL;
       if (first.isPresent()) {
         return first;
@@ -3552,7 +3882,9 @@ public final class ListFunctions {
         IExpr temp = engine.evaluate(ast.arg3());
         if (temp.isAST()) {
           final IAST list = (IAST) temp;
-          return list.foldLeft((x, y) -> F.binaryAST2(arg1, x, y), arg2, 1);
+          // each step is evaluated before the next one: a nested unevaluated f(f(f(x, a), b), ...)
+          // of a long list exceeds the recursion limit
+          return list.foldLeft((x, y) -> engine.evaluate(F.binaryAST2(arg1, x, y)), arg2, 1);
         }
       } catch (final ArithmeticException e) {
 
@@ -3619,7 +3951,8 @@ public final class ListFunctions {
         final IASTAppendable resultList = F.ast(list.head(), list.size());
         IExpr arg2 = list.arg1();
         list = list.rest();
-        return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
+        return foldLeft(arg2, list, 1, list.size(),
+            (x, y) -> engine.evaluate(F.binaryAST2(arg1, x, y)), resultList);
       }
       return F.NIL;
     }
@@ -3635,7 +3968,8 @@ public final class ListFunctions {
           return F.unaryAST1(list.head(), arg2);
         }
         final IASTAppendable resultList = F.ast(list.head(), list.size());
-        return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
+        return foldLeft(arg2, list, 1, list.size(),
+            (x, y) -> engine.evaluate(F.binaryAST2(arg1, x, y)), resultList);
       }
       return F.NIL;
     }
@@ -3647,6 +3981,152 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * <code>SubstitutionSystem(rules, init, n)</code> - the states <code>0, 1, ..., n</code> of the
+   * substitution system which replaces every element of a list (or every substring of a string)
+   * by the rules in each step; a list element which is replaced by a list is spliced in.
+   * <code>{m, n}</code> and <code>{m, n, s}</code> select the steps from <code>m</code> to
+   * <code>n</code> in steps of <code>s</code>.
+   */
+  private static final class SubstitutionSystem extends AbstractFunctionEvaluator {
+
+    /** The longest state which is computed. */
+    private static final int MAX_STATE_LENGTH = 1_000_000;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rules = ast.arg1();
+      IExpr state = ast.arg2();
+      if (!(state.isString() || state.isList())
+          || !(rules.isRuleAST() || (rules.isList() && ((IAST) rules).forAll(r -> r.isRuleAST())))) {
+        return F.NIL;
+      }
+      IExpr spec = ast.arg3();
+      int first = 0;
+      int last;
+      int step = 1;
+      if (spec.isList() && spec.argSize() >= 2 && spec.argSize() <= 3) {
+        first = spec.first().toIntDefault();
+        last = spec.second().toIntDefault();
+        if (spec.argSize() == 3) {
+          step = spec.get(3).toIntDefault();
+        }
+      } else {
+        last = spec.toIntDefault();
+      }
+      if (first < 0 || last < first || step <= 0) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc((last - first) / step + 1);
+      for (int i = 0; i <= last; i++) {
+        engine.checkTimeLimit();
+        if (i >= first && (i - first) % step == 0) {
+          result.append(state);
+        }
+        if (i == last) {
+          break;
+        }
+        state = substitute(rules, state, engine);
+        if (state.isNIL()) {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
+
+    /** One step of the system, or {@link F#NIL} if the state grows too long. */
+    private static IExpr substitute(IExpr rules, IExpr state, EvalEngine engine) {
+      if (state.isString()) {
+        IExpr next = engine.evaluate(F.binaryAST2(S.StringReplace, state, rules));
+        if (!next.isString() || next.toString().length() > MAX_STATE_LENGTH) {
+          return F.NIL;
+        }
+        return next;
+      }
+      IAST list = (IAST) state;
+      IASTAppendable next = F.ListAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        IExpr element = engine.evaluate(F.Replace(list.get(i), rules));
+        if (element.isList()) {
+          next.appendArgs((IAST) element);
+        } else {
+          next.append(element);
+        }
+        if (next.argSize() > MAX_STATE_LENGTH) {
+          return F.NIL;
+        }
+      }
+      return next;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+  }
+
+  /**
+   * <code>TakeDrop(list, spec)</code> - the pair <code>{Take(list, spec), Drop(list, spec)}</code>.
+   */
+  private static final class TakeDrop extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr take = engine.evaluate(F.Take(ast.arg1(), ast.arg2()));
+      if (take.isAST(S.Take)) {
+        return F.NIL;
+      }
+      IExpr drop = engine.evaluate(F.Drop(ast.arg1(), ast.arg2()));
+      if (drop.isAST(S.Drop)) {
+        return F.NIL;
+      }
+      return F.list(take, drop);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>FoldPairList(f, y0, list)</code> applies <code>f</code> to the state and the next element
+   * of <code>list</code>; the result <code>{x, y}</code> contributes <code>x</code> to the output
+   * and <code>y</code> becomes the new state. <code>FoldPairList(f, y0, list, g)</code> outputs
+   * <code>g({x, y})</code> instead. The output keeps the head of <code>list</code>.
+   */
+  private static final class FoldPairList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg3 = ast.arg3();
+      if (!arg3.isAST()) {
+        // Nonatomic expression expected at position `1` in `2`.
+        return Errors.printMessage(S.FoldPairList, "normal", F.list(F.C3, ast), engine);
+      }
+      final IAST list = (IAST) arg3;
+      final IExpr function = ast.arg1();
+      final IExpr output = ast.isAST(S.FoldPairList, 5) ? ast.arg4() : S.First;
+      IExpr state = ast.arg2();
+      final IASTAppendable result = F.ast(list.head(), list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        engine.checkTimeLimit();
+        IExpr pair = engine.evaluate(F.binaryAST2(function, state, list.get(i)));
+        if (!pair.isList() || pair.argSize() < 2) {
+          return F.NIL;
+        }
+        result.append(engine.evaluate(F.unaryAST1(output, pair)));
+        state = pair.second();
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_4;
+    }
   }
 
   /**
@@ -4059,6 +4539,19 @@ public final class ListFunctions {
         IExpr arg2 = ast.arg2();
         IExpr arg3 = ast.arg3();
 
+        if (arg1.isAssociation() && arg3.isList() && arg3.argSize() >= 2
+            && !arg3.first().isInteger() && ((IAssociation) arg1).isKey(arg3.first())) {
+          // a position {key, i, ...} inserts into the value of the key
+          IAssociation assoc = (IAssociation) arg1;
+          IExpr key = arg3.first();
+          IExpr value = engine.evaluate(F.Insert(assoc.getValue(key), arg2, arg3.rest()));
+          if (value.isAST(S.Insert)) {
+            return F.NIL;
+          }
+          IAssociation result = assoc.copy();
+          result.appendRule(F.Rule(key, value));
+          return result;
+        }
         if (arg1.isASTOrAssociation()) {
           IAST ast1 = (IAST) arg1;
           return applyAtPositions(ast, ast1, arg3, true, true,
@@ -4183,11 +4676,63 @@ public final class ListFunctions {
       return ByteArrayExpr.newInstance(joined.toByteArray());
     }
 
+    /**
+     * Join the lists <code>arrays</code> at the given level: the elements at the positions of the
+     * levels above have to be joined.
+     *
+     * @return {@link F#NIL} if the lists have different lengths above the level
+     */
+    private static IExpr joinAtLevel(IAST arrays, int level, EvalEngine engine) {
+      if (level == 1) {
+        return engine.evaluate(arrays.setAtCopy(0, S.Join));
+      }
+      IExpr first = arrays.arg1();
+      if (!first.isAST() || !arrays.forAll(
+          x -> x.isAST() && x.argSize() == first.argSize() && x.head().equals(first.head()))) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ast(first.head(), first.argSize());
+      for (int i = 1; i < first.size(); i++) {
+        final int position = i;
+        IExpr joined =
+            joinAtLevel(F.mapList(arrays, x -> ((IAST) x).get(position)), level - 1, engine);
+        if (joined.isNIL()) {
+          return F.NIL;
+        }
+        result.append(joined);
+      }
+      return result;
+    }
+
+    /**
+     * <code>Join(array1, array2, ..., level)</code>; the result is a sparse array if all the
+     * arrays are sparse arrays with the same default value.
+     */
+    private static IExpr joinArrays(IAST ast, int level, EvalEngine engine) {
+      IAST arrays = ast.most();
+      boolean sparse = arrays.forAll(x -> x.isSparseArray() && ((ISparseArray) x).getDefaultValue()
+          .equals(((ISparseArray) ast.arg1()).getDefaultValue()));
+      IExpr joined = joinAtLevel(F.mapList(arrays, x -> x.normal(false)), level, engine);
+      if (joined.isNIL()) {
+        // incompatible elements in `1` cannot be joined.
+        return Errors.printMessage(ast.topHead(), "incpt", F.list(ast), engine);
+      }
+      if (sparse && joined.isList()) {
+        return SparseArrayExpr.newDenseList((IAST) joined,
+            ((ISparseArray) ast.arg1()).getDefaultValue());
+      }
+      return joined;
+    }
+
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr bytes = joinByteArrays(ast);
       if (bytes.isPresent()) {
         return bytes;
+      }
+      if (ast.argSize() > 2 && ast.last().isInteger() && ast.last().toIntDefault() > 0
+          && ast.most().forAll(x -> x.isAST() || x.isSparseArray())) {
+        return joinArrays(ast, ast.last().toIntDefault(), engine);
       }
       // Join takes several, so every one of them is unwrapped, and a Dataset first argument makes
       // the result one - see IASTDataset#onDatasetRows
@@ -4797,10 +5342,12 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.head() == S.NearestFunction || !ast.head().isAST(S.NearestFunction, 2)) {
+      if (ast.head() == S.NearestFunction || !ast.head().isAST(S.NearestFunction)
+          || ast.head().argSize() < 1) {
         return F.NIL;
       }
-      IExpr held = ast.head().first();
+      // the search it stands for is the last argument of the function object
+      IExpr held = ast.head().last();
       if (!held.isAST(S.Hold, 2) || !held.first().isAST(S.Nearest)
           || held.first().argSize() < 1 || ast.argSize() < 1 || ast.argSize() > 2) {
         return F.NIL;
@@ -4831,7 +5378,7 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       // the applications of the function object take their own arguments
-      return ast.head() == S.NearestFunction ? ARGS_1_1 : null;
+      return ast.head() == S.NearestFunction ? ARGS_1_INFINITY : null;
     }
   }
 
@@ -4926,6 +5473,11 @@ public final class ListFunctions {
               elements = keys;
               values = ruleValues;
             }
+            if (option[0] == S.Automatic && ast.arg2().isString()
+                && elements.forAll(x -> x.isString())) {
+              // the default distance of strings is their edit distance
+              return nearestStrings(elements, values, ast.arg2().toString(), n, radius, engine);
+            }
             IExpr distanceFunction;
             if (option[0] == S.Automatic) {
               // Norm() is the default distance function for numeric data
@@ -4953,6 +5505,44 @@ public final class ListFunctions {
     }
 
     /**
+     * {@link #nearest(IAST, IAST, IExpr, IExpr, int, IExpr, EvalEngine)} for strings, measured by
+     * their edit distance.
+     */
+    private static IAST nearestStrings(IAST inputList, IAST valueList, String x, int n,
+        IExpr radius, EvalEngine engine) {
+      double maxDistance = Double.POSITIVE_INFINITY;
+      if (radius.isPresent()) {
+        maxDistance = radius.evalfNaN();
+        if (Double.isNaN(maxDistance)) {
+          return F.NIL;
+        }
+      }
+      LevenshteinDistance levenshtein = LevenshteinDistance.getDefaultInstance();
+      final int size = inputList.argSize();
+      int[] distances = new int[size];
+      Integer[] positions = new Integer[size];
+      for (int i = 0; i < size; i++) {
+        engine.checkTimeLimit();
+        distances[i] = levenshtein.apply(x, inputList.get(i + 1).toString());
+        positions[i] = i;
+      }
+      // stable: elements with equal distance keep their order
+      Arrays.sort(positions, Comparator.comparingInt(i -> distances[i]));
+      int resultSize = n == ALL_NEAREST ? 1 : Math.min(n, size);
+      if (n == ALL_NEAREST) {
+        while (resultSize < size
+            && distances[positions[resultSize]] == distances[positions[0]]) {
+          resultSize++;
+        }
+      }
+      IASTAppendable result = F.ListAlloc(resultSize);
+      for (int i = 0; i < resultSize && distances[positions[i]] <= maxDistance; i++) {
+        result.append(valueList.get(positions[i] + 1));
+      }
+      return result;
+    }
+
+    /**
      * Gives the list of elements from <code>valueList</code> whose element in <code>inputList
      * </code> is nearest to x, ordered by increasing distance. Elements with equal distance keep
      * the order they have in <code>inputList</code>.
@@ -4969,6 +5559,14 @@ public final class ListFunctions {
      * @param engine
      * @return {@link F#NIL} if the distances of two elements can't be compared
      */
+    /** Equal distances; machine real distances must agree exactly. */
+    private static boolean sameDistance(IExpr d1, IExpr d2, EvalEngine engine) {
+      if (d1.isReal() && d1.isMachineNumber() && d2.isReal() && d2.isMachineNumber()) {
+        return d1.evalf() == d2.evalf();
+      }
+      return S.Equal.ofQ(engine, d1, d2);
+    }
+
     private static IAST nearest(IAST inputList, IAST valueList, IExpr x, IExpr distanceFunction,
         int n, IExpr radius, EvalEngine engine) {
       try {
@@ -4989,6 +5587,11 @@ public final class ListFunctions {
         }
         final boolean[] undefined = new boolean[] {false};
         Arrays.sort(positions, (i, j) -> {
+          if (distances[i].isReal() && distances[i].isMachineNumber() && distances[j].isReal()
+              && distances[j].isMachineNumber()) {
+            // machine distances are compared exactly, without the tolerance of Equal
+            return Double.compare(distances[i].evalf(), distances[j].evalf());
+          }
           IExpr comparisonResult = engine.evaluate(F.Greater(distances[i], distances[j]));
           if (comparisonResult.isTrue()) {
             return 1;
@@ -5008,7 +5611,7 @@ public final class ListFunctions {
           // all elements with minimal distance
           resultSize = 1;
           while (resultSize < size
-              && S.Equal.ofQ(engine, distances[positions[0]], distances[positions[resultSize]])) {
+              && sameDistance(distances[positions[0]], distances[positions[resultSize]], engine)) {
             resultSize++;
           }
         } else {
@@ -6019,7 +6622,7 @@ public final class ListFunctions {
         if (rules.isRuleAST()) {
           return replaceRule(input, (IAST) rules, engine);
         } else if (rules.isListOfRules()) {
-          Function<IExpr, IExpr> function = Functors.rules(rules, engine);
+          Function<IExpr, IExpr> function = Functors.wholeRules(rules, engine);
           IExpr temp = function.apply(input);
           if (temp.isPresent()) {
             return temp;
@@ -6027,7 +6630,7 @@ public final class ListFunctions {
           return input;
         } else if (rules instanceof DispatchExpr) {
           DispatchExpr dispatch = (DispatchExpr) rules;
-          IExpr temp = dispatch.apply(input);
+          IExpr temp = dispatch.applyWhole(input);
           if (temp.isPresent()) {
             return temp;
           }
@@ -6051,7 +6654,7 @@ public final class ListFunctions {
         final EvalEngine engine) {
       final IExpr originalRules = rules;
       if (rules instanceof DispatchExpr) {
-        IExpr temp = ((DispatchExpr) rules).apply(arg1);
+        IExpr temp = ((DispatchExpr) rules).applyWhole(arg1);
         return temp.isPresent() ? temp : arg1;
       }
       if (rules.isAssociation()) {
@@ -6062,7 +6665,7 @@ public final class ListFunctions {
         for (IExpr element : (IAST) rules) {
           if (element.isRuleAST()) {
             IAST rule = (IAST) element;
-            Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+            Function<IExpr, IExpr> function = Functors.wholeRules(rule, engine);
             IExpr temp = function.apply(arg1);
             if (temp.isPresent()) {
               return temp;
@@ -6102,7 +6705,7 @@ public final class ListFunctions {
      * @return
      */
     private static IExpr replaceRule(IExpr arg1, IAST rule, EvalEngine engine) {
-      Function<IExpr, IExpr> function = Functors.rules(rule, engine);
+      Function<IExpr, IExpr> function = Functors.wholeRules(rule, engine);
       IExpr temp = function.apply(arg1);
       if (temp.isPresent()) {
         return temp;
@@ -6420,6 +7023,25 @@ public final class ListFunctions {
       if (argSize == 3) {
         IExpr lhs = ast.arg3();
         IExpr rhs = ast.arg2();
+        if (lhs.isList() && lhs.argSize() > 0 && ((IAST) lhs).forAll(x -> x.isList())) {
+          // ReplacePart(expr, new, {pos1, pos2, ...}): every position gets new, {} is the whole
+          // expression
+          for (IExpr position : (IAST) lhs) {
+            if (position.exists(x -> !x.isInteger() || F.isNotPresent(x.toIntDefault()))) {
+              // Position specification `1` in `2` is not a machine sized integer or a list of
+              // machine-sized integers.
+              return Errors.printMessage(S.ReplacePart, "psl", F.List(position, ast), engine);
+            }
+            if (!partExists(ast.arg1(), (IAST) position)) {
+              // Part `1` of `2` does not exist.
+              return Errors.printMessage(S.ReplacePart, "partw", F.List(position, ast.arg1()),
+                  engine);
+            }
+            result = position.argSize() == 0 ? rhs
+                : result.replacePart(position, rhs, heads).orElse(result);
+          }
+          return result;
+        }
         if (lhs.isList()) {
           if (lhs.exists(x -> !x.isInteger())) {
             // Position specification `1` in `2` is not a machine sized integer or a list of
@@ -6464,6 +7086,18 @@ public final class ListFunctions {
       // The expression `1` cannot be used as a part specification
       Errors.printMessage(S.ReplacePart, "pkspec1", F.List(arg2), engine);
       return result;
+    }
+
+    /** Test if the integer <code>position</code> (a negative index counts from the end) exists. */
+    private static boolean partExists(IExpr expr, IAST position) {
+      for (IExpr index : position) {
+        int i = index.toIntDefault();
+        if (!expr.isAST() || F.isNotPresent(i) || Math.abs(i) > expr.argSize()) {
+          return false;
+        }
+        expr = i < 0 ? ((IAST) expr).get(expr.argSize() + 1 + i) : ((IAST) expr).get(i);
+      }
+      return true;
     }
 
     @Override
@@ -7058,6 +7692,9 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       try {
+        if (ast.arg1().isSparseArray()) {
+          return engine.evaluate(ast.setAtCopy(1, ((ISparseArray) ast.arg1()).parts()));
+        }
         if (ast.arg1().isASTOrAssociation()) {
           int maxNumberOfResults = Integer.MAX_VALUE;
           IAST list = (IAST) ast.arg1();
@@ -9172,6 +9809,23 @@ public final class ListFunctions {
     boolean[] isLeftArr;
     boolean explicitDims = true;
 
+    if (nExpr.isList() && nExpr.has(S.Automatic)) {
+      // the largest length of a level replaces Automatic
+      java.util.List<Integer> maxDimsList = new java.util.ArrayList<>();
+      determineMaxDimensions(list, 0, maxDimsList);
+      IAST lengths = (IAST) nExpr;
+      IASTAppendable resolved = F.ListAlloc(lengths.argSize());
+      for (int i = 1; i < lengths.size(); i++) {
+        if (lengths.get(i) != S.Automatic) {
+          resolved.append(lengths.get(i));
+        } else if (i <= maxDimsList.size()) {
+          resolved.append(F.ZZ(maxDimsList.get(i - 1)));
+        } else {
+          return F.NIL;
+        }
+      }
+      nExpr = resolved;
+    }
     if (nExpr.isNIL() || nExpr == S.Automatic) {
       java.util.List<Integer> maxDimsList = new java.util.ArrayList<>();
       determineMaxDimensions(list, 0, maxDimsList);

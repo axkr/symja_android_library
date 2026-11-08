@@ -225,8 +225,9 @@ public class AssumptionFunctions {
             if (arg1AST.size() == 2) {
               return F.Element(arg1AST.first(), domain);
             }
-            IASTAppendable result = F.ast(arg1.head(), arg1AST.size());
-            boolean evaled = false;
+            // Element({a, b}, dom) is Element(a | b, dom)
+            IASTAppendable result = F.ast(S.Alternatives, arg1AST.size());
+            boolean evaled = arg1.isList();
             for (int i = 1; i < arg1AST.size(); i++) {
               final IExpr arg = arg1AST.get(i);
               IExpr assumeDomain = assumeDomain(arg, domain, engine);
@@ -307,6 +308,14 @@ public class AssumptionFunctions {
             }
             // structural test for a compound expression, e.g. x+Gamma(x) is real if x is real
             return expr.isRealResult() ? S.True : F.NIL;
+          case ID.NegativeReals:
+            return signDomain(expr, -1, false, engine);
+          case ID.NonNegativeReals:
+            return signDomain(expr, 1, true, engine);
+          case ID.NonPositiveReals:
+            return signDomain(expr, -1, true, engine);
+          case ID.PositiveReals:
+            return signDomain(expr, 1, false, engine);
           default:
             break;
         }
@@ -329,6 +338,29 @@ public class AssumptionFunctions {
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * Test if the numeric <code>expr</code> has the given sign or, if allowed, is zero.
+   *
+   * @param sign <code>1</code> or <code>-1</code>
+   * @param zero whether <code>0</code> belongs to the domain
+   * @return {@link S#True}, {@link S#False}, or {@link F#NIL} if the membership is undecided
+   */
+  private static IExpr signDomain(IExpr expr, int sign, boolean zero, EvalEngine engine) {
+    if (expr.isZero()) {
+      return F.booleSymbol(zero);
+    }
+    if (expr.isNumber() && !expr.isReal()) {
+      return S.False;
+    }
+    if (expr.isNumericFunction()) {
+      IExpr value = engine.evaluate(F.N(expr));
+      if (value.isReal() && !value.isZero()) {
+        return F.booleSymbol(value.isPositive() == sign > 0);
+      }
+    }
+    return F.NIL;
   }
 
   private static class NotElement extends AbstractFunctionEvaluator {
@@ -451,7 +483,7 @@ public class AssumptionFunctions {
       IAssumptions oldAssumptions = engine.getAssumptions();
       try {
         engine.setAssumptions(assumptions);
-        IExpr result = engine.evalWithoutNumericReset(expr);
+        IExpr result = engine.evalWithoutNumericReset(unevaluatedCopy(expr));
         IAST pointValues = assumptions.pointValues();
         if (pointValues.argSize() > 0) {
           // a variable which is assumed to be equal to a number, e.g. Refine(x, x==0) -> 0
@@ -471,6 +503,21 @@ public class AssumptionFunctions {
       }
     }
     return engine.evalWithoutNumericReset(expr);
+  }
+
+  /**
+   * A copy of the tree without the marks of an earlier evaluation: the evaluator would otherwise
+   * skip an expression which it evaluated before the assumptions were known.
+   */
+  private static IExpr unevaluatedCopy(IExpr expr) {
+    if (!expr.isAST() || expr.isAssociation()) {
+      return expr;
+    }
+    IASTMutable copy = ((IAST) expr).copy();
+    for (int i = 1; i < copy.size(); i++) {
+      copy.set(i, unevaluatedCopy(copy.get(i)));
+    }
+    return copy;
   }
 
   /**

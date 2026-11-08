@@ -70,15 +70,15 @@ public class GreenFunctionTest extends ExprEvaluatorTestCase {
     // has to be the reciprocal of the coefficient of the highest derivative there. Reading the two
     // branches off the HeavisideTheta terms keeps this independent of the form they come out in.
     check("g = GreenFunction({u''(x) - u(x), u(0) == 0, u(1) == 0}, u(x), {x, 0, 1}, s);"
-        + " below = Coefficient(g, HeavisideTheta(s - x));"
-        + " above = Coefficient(g, HeavisideTheta(x - s));"
-        + " Simplify((D(above, x) - D(below, x)) /. x -> s)", //
+        + " gBelow = Coefficient(g, HeavisideTheta(s - x));"
+        + " gAbove = Coefficient(g, HeavisideTheta(x - s));"
+        + " Simplify((D(gAbove, x) - D(gBelow, x)) /. x -> s)", //
         "1");
 
     check("g = GreenFunction({x^2*u''(x) + x*u'(x), u(1) == 0, u(E) == 0}, u(x), {x, 1, E}, s);"
-        + " below = Coefficient(g, HeavisideTheta(s - x));"
-        + " above = Coefficient(g, HeavisideTheta(x - s));"
-        + " Simplify((D(above, x) - D(below, x)) /. x -> s)", //
+        + " gBelow = Coefficient(g, HeavisideTheta(s - x));"
+        + " gAbove = Coefficient(g, HeavisideTheta(x - s));"
+        + " Simplify((D(gAbove, x) - D(gBelow, x)) /. x -> s)", //
         "1/s^2");
   }
 

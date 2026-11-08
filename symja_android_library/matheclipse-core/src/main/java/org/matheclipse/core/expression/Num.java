@@ -754,6 +754,10 @@ public class Num implements INum {
       if (expr.isReal()) {
         return RealNumberComparison.order(this, (IReal) expr);
       }
+      if (expr.isInexactNumber()) {
+        // the same order from both sides: by the real part, then by the size of the imaginary part
+        return -expr.compareTo(this);
+      }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
         return c;
@@ -798,11 +802,11 @@ public class Num implements INum {
 
   @Override
   public IExpr coshIntegral() {
-    // Chi is real only for a positive argument
-    if (value > 0.0 && ExponentialIntegrals.isSupported(value)) {
-      double chi = ExponentialIntegrals.coshIntegral(value);
+    // Chi is real only for a positive argument; Chi(-x) is Chi(x)+I*Pi
+    if (value != 0.0 && ExponentialIntegrals.isSupported(value)) {
+      double chi = ExponentialIntegrals.coshIntegral(Math.abs(value));
       if (!Double.isNaN(chi)) {
-        return valueOf(chi);
+        return value > 0.0 ? valueOf(chi) : F.complexNum(chi, Math.PI);
       }
     }
     return F.complexReduced(GammaJS.coshIntegral(new Complex(value)));
@@ -823,10 +827,11 @@ public class Num implements INum {
     // Ci is real only for a positive argument - Ci(-x) carries an imaginary Pi - so the Complex
     // route still serves the rest. Where the real one applies it is accurate to 4e-14 against
     // Apfloat at 40 digits, where the Complex route reaches only 2e-7.
-    if (value > 0.0 && ExponentialIntegrals.isSupported(value)) {
-      double ci = ExponentialIntegrals.cosIntegral(value);
+    if (value != 0.0 && ExponentialIntegrals.isSupported(value)) {
+      // Ci(-x) is Ci(x)+I*Pi
+      double ci = ExponentialIntegrals.cosIntegral(Math.abs(value));
       if (!Double.isNaN(ci)) {
-        return valueOf(ci);
+        return value > 0.0 ? valueOf(ci) : F.complexNum(ci, Math.PI);
       }
     }
     if (Double.isFinite(value) && !ExponentialIntegrals.isSupported(value)) {

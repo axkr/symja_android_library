@@ -1352,7 +1352,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         IExpr equation = F.subst(equations.get(i), F.Rule(call, dummy));
         if (!equation.isFree(dummy) && equation.isFree(function)
             && equation.isFree(x -> x.isAST(S.Derivative), true)) {
-          IExpr solution = engine.evaluate(F.Solve(equation, dummy));
+          IExpr solution = engine.evaluate(F.SolveDistinct(equation, dummy));
           if (solution.isListOfLists() && solution.argSize() == 1
               && solution.first().argSize() == 1 && solution.first().first().isRuleAST()
               && solution.first().first().first().equals(dummy)
@@ -1613,13 +1613,16 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     IAST rawEquations = SolveUtils.toEquationList(ast.arg1()).makeList();
     int[] widths = vectorWidths(rawEquations, functions, timeVar);
     if (widths != null) {
-      return reduceVectorSystem(rawEquations, functions, appliedForm, widths, timeVar, engine);
+      IAST scalarEquations = withoutUnitLists(rawEquations, widths, timeVar);
+      if (scalarEquations.isNIL()) {
+        return reduceVectorSystem(rawEquations, functions, appliedForm, widths, timeVar, engine);
+      }
+      rawEquations = scalarEquations;
     }
 
     // --- the equations, rewritten as expressions which should be zero ---
     // an `And(...)` of equations is equivalent to a `List(...)` of equations
-    IASTAppendable equations =
-        DSolve.checkDSolveEquations(SolveUtils.toEquationList(ast.arg1()).makeList());
+    IASTAppendable equations = DSolve.checkDSolveEquations(rawEquations);
     if (equations.isNIL()) {
       return null;
     }
@@ -1726,7 +1729,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
           for (int j = 0; j < numberOfFunctions; j++) {
             solveEquations.append(F.Equal(reduced[j], F.C0));
           }
-          IExpr solution = engine.evaluate(F.Solve(solveEquations, F.List(highest)));
+          IExpr solution = engine.evaluate(F.SolveDistinct(solveEquations, F.List(highest)));
           solutionRules = SolveUtils.firstSolutionRules(solution);
         }
         if (solutionRules.isPresent()) {
@@ -1975,6 +1978,37 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
     }
     return widths;
+  }
+
+  /**
+   * The equations with the one element lists of the initial conditions replaced by their element,
+   * if all these lists have one element and the differential equations are free of lists, so that
+   * nothing else makes a function a vector.
+   *
+   * @return {@link F#NIL} if there is a real vector among the functions
+   */
+  private static IAST withoutUnitLists(IAST equations, int[] widths, ISymbol timeVar) {
+    for (int width : widths) {
+      if (width > 1) {
+        return F.NIL;
+      }
+    }
+    IASTAppendable result = F.ListAlloc(equations.argSize());
+    for (IExpr equation : equations) {
+      if (equation.isFree(timeVar) && equation.isEqual() && equation.argSize() == 2) {
+        result.append(F.Equal(unitElement(equation.first()), unitElement(equation.second())));
+      } else if (equation.isFree(x -> x.isList() || x.isAST(S.Dot) || x.isSparseArray(), true)) {
+        result.append(equation);
+      } else {
+        return F.NIL;
+      }
+    }
+    return result;
+  }
+
+  private static IExpr unitElement(IExpr value) {
+    IExpr list = value.isSparseArray() ? value.normal(false) : value;
+    return list.isList() && list.argSize() == 1 ? list.first() : value;
   }
 
   /**
@@ -2549,7 +2583,8 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       MethodSettings method, EvalEngine engine) {
     java.util.List<IExpr> jumps = new java.util.ArrayList<>();
     double[] breaks = breakPoints(system, system.t0, target, jumps, engine);
-    if (breaks.length == 0) {
+    final boolean hasDelta = jumps.stream().anyMatch(jump -> jump.isAST(S.DiracDelta, 2));
+    if (breaks.length == 0 && !hasDelta) {
       return propagateSmooth(head, system, target, method, engine, null);
     }
     // The right hand side jumps at the break points - HeavisideTheta(t-1) at t == 1 - where a step
@@ -2604,15 +2639,74 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
       from = to;
       state = end[0];
+      if (hasDelta && k < breaks.length) {
+        state = afterImpulses(system, jumps, to, state, target >= system.t0, engine);
+      }
     }
     return whole;
   }
 
   /**
+   * The state after the terms <code>c(t, y)*DiracDelta(a*t+b)</code> of the right hand sides which
+   * act at the time <code>t</code>: every component changes by <code>c(t, y)/Abs(a)</code>, with
+   * the state <code>y</code> before all of these changes.
+   *
+   * @param state the state which the integration reached at <code>t</code>
+   * @param forward <code>false</code> if the integration runs towards smaller times
+   * @return the new state
+   */
+  private static double[] afterImpulses(FirstOrderSystem system, java.util.List<IExpr> jumps,
+      double t, double[] state, boolean forward, EvalEngine engine) {
+    double[] result = state.clone();
+    if (system.layout != null) {
+      return result;
+    }
+    IAST rules = system.substitutions(t, state);
+    double[] change = new double[state.length];
+    for (IExpr jump : jumps) {
+      if (!jump.isAST(S.DiracDelta, 2)
+          || Math.abs(jumpZero(jump.first(), system, engine) - t) > 1.0e-12 * Math.max(1.0,
+              Math.abs(t))) {
+        continue;
+      }
+      double weight =
+          1.0 / Math.abs(engine.evalN(F.D(jump.first(), system.timeVar)).evalfNaN());
+      ISymbol delta = F.Dummy("delta");
+      for (int i = 0; i < change.length; i++) {
+        IExpr term = F.subst(system.derivatives[i], jump, delta);
+        IExpr coefficient = engine.evaluate(F.D(term, delta));
+        if (coefficient.isFree(delta)) {
+          double value = engine.evalN(F.subst(coefficient, rules)).evalfNaN();
+          if (!Double.isNaN(value)) {
+            change[i] += weight * value;
+          }
+        }
+      }
+    }
+    if (system.massMatrix != null) {
+      // the right hand sides of the highest derivatives are those of M.h == f
+      final int[] highest = system.highestComponents;
+      double[] force = new double[highest.length];
+      for (int j = 0; j < highest.length; j++) {
+        force[j] = change[highest[j]];
+      }
+      double[] solved = system.massMatrix
+          .solve(new org.hipparchus.linear.ArrayRealVector(force, false)).toArray();
+      for (int j = 0; j < highest.length; j++) {
+        change[highest[j]] = solved[j];
+      }
+    }
+    for (int i = 0; i < change.length; i++) {
+      result[i] += forward ? change[i] : -change[i];
+    }
+    return result;
+  }
+
+  /**
    * The times strictly between <code>from</code> and <code>to</code> at which the right hand side
-   * jumps: the zeros of the arguments of <code>HeavisideTheta</code>, <code>UnitStep</code> and
-   * <code>Sign</code> which are linear in the independent variable and free of the unknown
-   * functions. They are sorted in the direction of the integration.
+   * jumps: the zeros of the arguments of <code>HeavisideTheta</code>, <code>UnitStep</code>,
+   * <code>Sign</code> and <code>DiracDelta</code> which are linear in the independent variable and
+   * free of the unknown functions. They are sorted in the direction of the integration.
    *
    * @param jumps receives the jumping terms
    */
@@ -2641,8 +2735,8 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       return;
     }
     IAST ast = (IAST) expr;
-    if ((ast.isAST(S.HeavisideTheta, 2) || ast.isAST(S.UnitStep, 2) || ast.isAST(S.Sign, 2))
-        && !ast.arg1().isFree(system.timeVar)) {
+    if ((ast.isAST(S.HeavisideTheta, 2) || ast.isAST(S.UnitStep, 2) || ast.isAST(S.Sign, 2)
+        || ast.isAST(S.DiracDelta, 2)) && !ast.arg1().isFree(system.timeVar)) {
       if (addJump(ast, F.List(ast.arg1()), system, from, to, jumps, times, engine)) {
         return;
       }
@@ -3918,7 +4012,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       for (IAST whenEvent : whenEvents) {
         // the condition is evaluated, which expands a form like Or @@ (x(t) > # &) /@ {1, 2};
         // the action stays held until an event
-        IExpr condition = engine.evaluate(whenEvent.arg1());
+        IExpr condition = evaluateCondition(whenEvent.arg1(), system, engine);
         java.util.List<WhenEventDetector> detectors = new java.util.ArrayList<WhenEventDetector>();
         WhenEventDetector.collect(condition, F.NIL, whenEvent.arg2(), system, engine, forward,
             this, detectors);
@@ -3935,6 +4029,43 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         result.add(detector);
       }
       return result;
+    }
+
+    /**
+     * Evaluate an event condition with its unknown function values <code>x(t)</code> held as
+     * symbols: <code>First(x(t))</code> of a vector valued <code>x</code> is the first component
+     * at the event, not the argument <code>t</code>.
+     */
+    private static IExpr evaluateCondition(IExpr condition, FirstOrderSystem system,
+        EvalEngine engine) {
+      java.util.Map<IExpr, IExpr> held = new java.util.HashMap<IExpr, IExpr>();
+      IExpr replaced = F.subst(condition, e -> {
+        if (e.isAST1() && e.first().equals(system.timeVar)) {
+          IExpr head = e.head();
+          IExpr function = head.isAST() && head.head().isAST(S.Derivative) ? head.first() : head;
+          for (ISymbol f : system.functions) {
+            if (f.equals(function)) {
+              return held.computeIfAbsent(e, k -> F.Dummy("event"));
+            }
+          }
+        }
+        return F.NIL;
+      });
+      if (held.isEmpty()) {
+        return engine.evaluate(condition);
+      }
+      IExpr evaluated = engine.evalQuiet(replaced);
+      if (system.layout == null) {
+        // every function is a number in the state: a one element vector y(0) == {1.0} has been
+        // reduced to its element, which First(y(t)) or y(t)[[1]] then means
+        evaluated = F.subst(evaluated, e -> (e.isAST(S.First, 2) || e.isAST(S.Last, 2)
+            || (e.isAST(S.Part, 3) && (e.second().isOne() || e.second().isMinusOne())))
+            && held.containsValue(e.first()) ? e.first() : F.NIL);
+        evaluated = engine.evalQuiet(evaluated);
+      }
+      java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+      held.forEach((call, symbol) -> back.put(symbol, call));
+      return F.subst(evaluated, back);
     }
 
     private BracketedUnivariateSolver<UnivariateFunction> createSolver() {
@@ -4118,8 +4249,8 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         java.util.List<WhenEventDetector> detectors) {
       if (condition.isEqual() && condition.argSize() == 2) {
         detectors.add(new WhenEventDetector(system, engine,
-            F.Subtract(condition.first(), condition.second()), false, guard, action, forward,
-            settings));
+            equationFunction(condition.first(), condition.second(), system.timeVar), false, guard,
+            action, forward, settings));
         return;
       }
       IExpr function = inequalityFunction(condition);
@@ -4128,7 +4259,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
             settings));
         return;
       }
-      if (condition.isOr()) {
+      if (condition.isOr() || condition.isList()) {
         for (IExpr alternative : (IAST) condition) {
           collect(alternative, guard, action, system, engine, forward, settings, detectors);
         }
@@ -4148,6 +4279,19 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       // any other condition: the event is where its truth value turns from false to true
       detectors.add(new WhenEventDetector(system, engine, F.If(condition, F.C1, F.CN1), true,
           guard, action, forward, settings));
+    }
+
+    /**
+     * The function with a zero of changing sign where <code>lhs == rhs</code>. The sawtooth
+     * <code>Mod(t, p)</code> jumps over its zero, so <code>Mod(t, p) == c</code> is the sine of the
+     * same period.
+     */
+    private static IExpr equationFunction(IExpr lhs, IExpr rhs, ISymbol timeVar) {
+      if (lhs.isAST(S.Mod, 3) && lhs.first().equals(timeVar) && lhs.second().isPositive()
+          && rhs.isReal()) {
+        return F.Sin(F.Times(S.Pi, F.Subtract(timeVar, rhs), F.Power(lhs.second(), F.CN1)));
+      }
+      return F.Subtract(lhs, rhs);
     }
 
     /**
@@ -4751,7 +4895,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     for (IExpr condition : conditions) {
       system.append(F.Equal(F.subst(condition, toUnknowns), F.C0));
     }
-    IAST rules = SolveUtils.firstSolutionRules(engine.evalQuiet(F.Solve(system, unknowns)));
+    IAST rules = SolveUtils.firstSolutionRules(engine.evalQuiet(F.SolveDistinct(system, unknowns)));
     if (rules.isNIL()) {
       return conditions;
     }
@@ -4844,7 +4988,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
   private static IExpr conditionNumber(IExpr condition, IExpr application, EvalEngine engine) {
     ISymbol unknown = F.Dummy("NDSolve$value");
     IExpr solution = engine.evaluate(
-        F.Solve(F.List(F.Equal(F.subst(condition, F.List(F.Rule(application, unknown))), F.C0)),
+        F.SolveDistinct(F.List(F.Equal(F.subst(condition, F.List(F.Rule(application, unknown))), F.C0)),
             F.List(unknown)));
     IAST rules = SolveUtils.firstSolutionRules(solution);
     if (rules.isNIL()) {

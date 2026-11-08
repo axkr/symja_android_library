@@ -191,6 +191,7 @@ public class PrimalityTest {
 
   /** Balanced semiprimes of 30 to 48 digits, where the quadratic sieve is used. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSiqsBalancedSemiprimes() {
     Random random = new Random(20261019L);
     for (int digits = 30; digits <= 48; digits += 6) {
@@ -316,6 +317,7 @@ public class PrimalityTest {
    * non-residue modulo a prime <code>p = 2, 3 (mod 5)</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testPPlus1SmoothFactor() {
     Random random = new Random(5151L);
     BigInteger p;
@@ -388,6 +390,7 @@ public class PrimalityTest {
 
   /** The quadratic sieve stops when the thread is interrupted, also with worker threads. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSiqsInterrupted() throws InterruptedException {
     BigInteger n = BigInteger.TEN.pow(39).nextProbablePrime()
         .multiply(BigInteger.TEN.pow(41).add(BigInteger.valueOf(17)).nextProbablePrime());

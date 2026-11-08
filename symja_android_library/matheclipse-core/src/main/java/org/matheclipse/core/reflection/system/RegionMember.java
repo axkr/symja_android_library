@@ -27,6 +27,9 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class RegionMember extends AbstractFunctionEvaluator {
 
+  /** The largest number of vertices of a regular polygon which is written out. */
+  private static final int MAX_POLYGON_VERTICES = 1000;
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.isAST1()) {
@@ -92,6 +95,12 @@ public class RegionMember extends AbstractFunctionEvaluator {
         return ellipsoidMember(reg, point, engine);
       case ID.Annulus:
         return annulusMember(reg, point, engine);
+      case ID.DiskSegment:
+        return diskSegmentMember(reg, point, engine);
+      case ID.RegularPolygon: {
+        IExpr vertices = regularPolygonVertices(reg, engine);
+        return vertices.isPresent() ? polygonMember(F.Polygon(vertices), point, engine) : F.NIL;
+      }
       case ID.Rectangle:
       case ID.Cuboid:
         return boxMember(reg, point);
@@ -132,6 +141,55 @@ public class RegionMember extends AbstractFunctionEvaluator {
         return booleanRegionMember(reg, point, engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * A point of a <code>DiskSegment</code> lies in the disk and on the side of the chord between the
+   * two boundary points where the arc from <code>theta1</code> to <code>theta2</code> runs.
+   *
+   * @return {@link F#NIL} if the arguments have another form
+   */
+  private static IExpr diskSegmentMember(IAST reg, IExpr point, EvalEngine engine) {
+    RegionPrimitives.DiskSegmentSpec spec = RegionPrimitives.parseDiskSegment(reg, engine);
+    IAST p = coordinates(point, 2);
+    if (spec == null || p.isNIL()) {
+      return F.NIL;
+    }
+    IExpr x = F.Subtract(p.arg1(), spec.center.first());
+    IExpr y = F.Subtract(p.arg2(), spec.center.second());
+    IExpr x1 = F.Times(spec.rx, F.Cos(spec.theta1));
+    IExpr y1 = F.Times(spec.ry, F.Sin(spec.theta1));
+    IExpr x2 = F.Times(spec.rx, F.Cos(spec.theta2));
+    IExpr y2 = F.Times(spec.ry, F.Sin(spec.theta2));
+    IExpr inDisk = F.LessEqual(F.Plus(F.Sqr(F.Divide(x, spec.rx)), F.Sqr(F.Divide(y, spec.ry))), F.C1);
+    IExpr rightOfChord = F.LessEqual(F.Subtract(F.Times(F.Subtract(x2, x1), F.Subtract(y, y1)),
+        F.Times(F.Subtract(y2, y1), F.Subtract(x, x1))), F.C0);
+    return F.And(inDisk, rightOfChord);
+  }
+
+  /**
+   * The vertices of a <code>RegularPolygon</code>. Without a rotation angle a polygon with an odd
+   * number of vertices has one on top and one with an even number has a level bottom edge.
+   *
+   * @return {@link F#NIL} if the arguments have another form
+   */
+  static IExpr regularPolygonVertices(IAST reg, EvalEngine engine) {
+    RegionPrimitives.RegularPolygonSpec spec = RegionPrimitives.parseRegularPolygon(reg);
+    if (spec == null || !spec.center.isList2()) {
+      return F.NIL;
+    }
+    int n = spec.n.toIntDefault();
+    if (n < 3 || n > MAX_POLYGON_VERTICES) {
+      return F.NIL;
+    }
+    IExpr radiusSpec = reg.argSize() == 1 ? F.C1 : reg.get(reg.argSize() - 1);
+    IExpr theta = radiusSpec.isList2() ? radiusSpec.second()
+        : F.Times(S.Pi, F.Plus(F.C1D2, n % 2 == 0 ? F.QQ(1, n) : F.C0));
+    return F.mapRange(0, n, k -> {
+      IExpr angle = F.Plus(theta, F.Times(F.ZZ(2 * k), S.Pi, F.QQ(1, n)));
+      return engine.evaluate(F.List(F.Plus(spec.center.first(), F.Times(spec.radius, F.Cos(angle))),
+          F.Plus(spec.center.second(), F.Times(spec.radius, F.Sin(angle)))));
+    });
   }
 
   /**
@@ -352,17 +410,27 @@ public class RegionMember extends AbstractFunctionEvaluator {
    * direction, and on the half line when in addition <code>t &gt;= 0</code>.
    */
   private static IExpr unboundedLineMember(IAST reg, IExpr point, EvalEngine engine) {
-    if (reg.argSize() < 1 || !reg.arg1().isListOfLists() || reg.arg1().argSize() != 2) {
+    IExpr p1;
+    IExpr direction;
+    if (reg.argSize() == 2 && reg.arg1().isList() && !reg.arg1().isListOfLists()
+        && reg.arg2().isList() && reg.arg2().argSize() == reg.arg1().argSize()) {
+      // InfiniteLine(p, v) and HalfLine(p, v): the line through p in the direction v
+      p1 = reg.arg1();
+      direction = reg.arg2();
+    } else if (reg.argSize() >= 1 && reg.arg1().isListOfLists() && reg.arg1().argSize() == 2) {
+      IAST pts = (IAST) reg.arg1();
+      p1 = pts.arg1();
+      if (pts.arg2().argSize() != p1.argSize()) {
+        return F.NIL;
+      }
+      direction = engine.evaluate(F.Subtract(pts.arg2(), p1));
+    } else {
       return F.NIL;
     }
-    IAST pts = (IAST) reg.arg1();
-    IExpr p1 = pts.arg1();
-    IExpr p2 = pts.arg2();
     int dimension = p1.argSize();
-    if (coordinates(point, dimension).isNIL() || p2.argSize() != dimension) {
+    if (coordinates(point, dimension).isNIL()) {
       return F.NIL;
     }
-    IExpr direction = engine.evaluate(F.Subtract(p2, p1));
     IExpr offset = engine.evaluate(F.Subtract(point, p1));
     if (!direction.isList() || !offset.isList() || offset.argSize() != dimension) {
       return F.NIL;

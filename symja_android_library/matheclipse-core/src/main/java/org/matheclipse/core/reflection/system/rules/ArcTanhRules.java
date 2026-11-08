@@ -41,8 +41,8 @@ public class ArcTanhRules {
     // ArcTanh(I*Infinity)=1/2*Pi*I
     ISet(ArcTanh(DirectedInfinity(CI)),
       Times(CC(0L,1L,1L,2L),Pi), true),
-    // ArcTanh(ComplexInfinity)=Pi/2
+    // ArcTanh(ComplexInfinity)=Indeterminate
     ISet(ArcTanh(CComplexInfinity),
-      CPiHalf, true)
+      Indeterminate, true)
   );
 }

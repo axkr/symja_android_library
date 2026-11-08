@@ -2,6 +2,7 @@ package org.matheclipse.core.manipulate;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -444,7 +445,7 @@ public class ManipulateControl {
 
   private double numericInitial() {
     if (initial.isPresent() && initial.isNumericFunction(true)) {
-      IExpr n = F.evaln(initial);
+      IExpr n = EvalEngine.get().evalN(initial);
       if (n.isReal()) {
         return n.evalf();
       }
@@ -506,7 +507,7 @@ public class ManipulateControl {
 
   public static double toDouble(IExpr expr, double fallback) {
     if (expr.isPresent()) {
-      IExpr n = F.evaln(expr);
+      IExpr n = EvalEngine.get().evalN(expr);
       if (n.isReal()) {
         return n.evalf();
       }

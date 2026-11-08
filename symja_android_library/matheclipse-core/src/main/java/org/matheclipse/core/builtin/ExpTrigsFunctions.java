@@ -34,6 +34,7 @@ import java.util.function.DoubleUnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -89,7 +90,6 @@ public class ExpTrigsFunctions {
    */
   private static final double HYPERBOLIC_OVERFLOW = 4.0e9;
 
-
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -134,6 +134,7 @@ public class ExpTrigsFunctions {
       S.Sinh.setEvaluator(new Sinh());
       S.Tan.setEvaluator(new Tan());
       S.Tanh.setEvaluator(new Tanh());
+
     }
   }
 
@@ -403,7 +404,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
-      return F.complexNum(arg1.acos());
+      // a zero imaginary part takes the side of the cut of the real number there
+      return F.complexNum(arg1).acos();
     }
 
     @Override
@@ -559,6 +561,11 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
+      if (arg1.getImaginary() == 0.0) {
+        // the value of the real number: on the segment (-1,1) the complex formula leaves rounding
+        // noise in the real part
+        return e1DblArg(arg1.getReal());
+      }
       return F.complexNum(arcCosh(arg1));
     }
 
@@ -769,6 +776,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcTanh, (IAST) arg1, engine);
+      }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(ArcCoth(negExpr));
@@ -820,8 +830,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
-      if (arg1.equals(Complex.ZERO)) {
-        return F.CComplexInfinity;
+      if (arg1.getImaginary() == 0.0) {
+        // the side of the cut of ArcCsc(0.5); see ArcSin
+        return e1DblArg(arg1.getReal());
       }
       return F.complexNum(Complex.ONE.divide(arg1).asin());
       // CPD-ON
@@ -851,6 +862,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcSin, (IAST) arg1, engine);
+      }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.ArcCsch(imPart));
@@ -937,6 +951,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcSinh, (IAST) arg1, engine);
+      }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.ArcCsc(imPart));
@@ -1050,8 +1067,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
-      if (arg1.equals(Complex.ZERO)) {
-        return F.CComplexInfinity;
+      if (arg1.getImaginary() == 0.0) {
+        // the side of the cut of ArcSec(0.5); see ArcCos
+        return e1DblArg(arg1.getReal());
       }
       return F.complexNum(Complex.ONE.divide(arg1).acos());
       // CPD-ON
@@ -1081,6 +1099,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInterval()) {
+        return IntervalSym.ofReciprocal(S.ArcCos, (IAST) arg1, engine);
+      }
       // CPD-OFF closed-form tables per function
       return F.NIL;
     }
@@ -1143,7 +1164,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
-      return F.complexNum(arg1.asin());
+      // Complex(2.0, 0.0) has the value of ArcSin(2.0), which the derivative 1/Sqrt(1-z^2)
+      // continues, see ComplexNum.asin()
+      return F.complexNum(arg1).asin();
     }
 
     @Override
@@ -1401,7 +1424,7 @@ public class ExpTrigsFunctions {
         IExpr argX = x.complexArg();
         // -Pi/2 < Arg(x) <= Pi/2
         if (argX.isPresent()
-            && F.evalTrue(F.And(F.Less(F.CNPiHalf, argX), F.LessEqual(argX, F.CPiHalf)))) {
+            && EvalEngine.get().evalTrue(F.And(F.Less(F.CNPiHalf, argX), F.LessEqual(argX, F.CPiHalf)))) {
           return F.ArcTan(F.Divide(y, x));
         }
       }
@@ -1552,7 +1575,28 @@ public class ExpTrigsFunctions {
     @Override
     public double applyAsDouble(double operand) {
     // CPD-ON
-      return FastMath.atanh(operand);
+      return atanh(operand);
+    }
+
+    /**
+     * The inverse hyperbolic tangent of a <code>double</code> as
+     * <code>1/2*Log1p(2*x/(1-x))</code>, with the identity <code>2*x/(1-x) == 2*x + 2*x^2/(1-x)</code>
+     * below <code>1/2</code> where the quotient would lose bits. Rounded correctly far more often
+     * than <code>FastMath.atanh()</code>, which is off in the last digit for <code>0.4</code>.
+     */
+    private static double atanh(double x) {
+      final double ax = Math.abs(x);
+      if (ax == 1.0) {
+        // Indeterminate: the machine number may be the rounding of either side of the pole
+        return Double.NaN;
+      }
+      if (!(ax < 1.0)) {
+        return FastMath.atanh(x);
+      }
+      final double t = ax + ax;
+      final double r =
+          ax < 0.5 ? 0.5 * Math.log1p(t + t * ax / (1.0 - ax)) : 0.5 * Math.log1p(t / (1.0 - ax));
+      return Math.copySign(r, x);
     }
 
     @Override
@@ -1579,7 +1623,11 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      double val = FastMath.atanh(arg1);
+      if (Math.abs(arg1) == 1.0) {
+        // the machine number may be the rounding of a value on either side of the pole
+        return S.Indeterminate;
+      }
+      double val = atanh(arg1);
       if (Double.isNaN(val)) {
         return e1ComplexArg(new Complex(arg1));
       }
@@ -1591,7 +1639,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
-      return FastMath.atanh(stack[top]);
+      return atanh(stack[top]);
     }
 
     @Override
@@ -1620,7 +1668,6 @@ public class ExpTrigsFunctions {
       }
       return F.NIL;
     }
-
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -2174,7 +2221,6 @@ public class ExpTrigsFunctions {
       }
       return F.NIL;
     }
-
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
@@ -2760,9 +2806,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      return F.NIL;
+      // Gudermannian(Around(x, delta))
+      return AroundFunctions.mapUnaryAround(ast, engine);
     }
-
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
@@ -2871,10 +2917,10 @@ public class ExpTrigsFunctions {
       if (ast.argSize() == 1) {
         try {
           IInexactNumber z = (IInexactNumber) ast.arg1();
-          // see https://github.com/paulmasson/math/issues/24
-
-          // 2*ArcTanh( Tan( z/2 )
-          return z.times(F.C1D2).tan().atanh().times(F.C2);
+          // Log(Tan(Pi/4 + z/2)); this branch is continuous through the real poles of Sec(z),
+          // e.g. a real z in (Pi/2, 3*Pi/2) gets the imaginary part +Pi
+          return engine.evaluate(
+              F.Log(F.Tan(F.Plus(F.Times(F.C1D4, F.Pi), F.Times(F.C1D2, z)))));
 
         // CPD-OFF closed-form tables per function
         } catch (ValidateException ve) {
@@ -3465,7 +3511,12 @@ public class ExpTrigsFunctions {
         if (z.equals(F.CPiHalf)) {
           return F.CComplexInfinity;
         }
-        return z.cos().reciprocal();
+        try {
+          return z.cos().reciprocal();
+        } catch (ArithmeticException ae) {
+          // the cosine vanishes at the precision of the argument: a pole
+          return F.CComplexInfinity;
+        }
       }
       return F.NIL;
     }
@@ -3916,7 +3967,8 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isZero()) {
-        return F.C1;
+        // a machine zero gives a machine one
+        return arg1.isMachineNumber() ? F.CD1 : F.C1;
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
@@ -3938,7 +3990,7 @@ public class ExpTrigsFunctions {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         if (z.isZero()) {
-          return F.C1;
+          return z.isMachineNumber() ? F.CD1 : F.C1;
         }
         return z.sinc();
       }
@@ -4179,8 +4231,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      PrecisionLoss.periodic(arg1.real());
-      return F.complexNum(ApcomplexMath.tan(arg1));
+      // next to a pole the usual quotient cancels to 0
+      return ApcomplexNum.valueOf(arg1).tan();
     }
 
     @Override
@@ -4309,11 +4361,15 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
-        return ((IInexactNumber) ast.arg1()).tan();
+        try {
+          return ((IInexactNumber) ast.arg1()).tan();
+        } catch (ApfloatArithmeticException ae) {
+          // the cosine vanishes at the precision of the argument: a pole
+          return F.CComplexInfinity;
+        }
       }
       return F.NIL;
     }
@@ -4352,8 +4408,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      PrecisionLoss.periodic(arg1.imag());
-      return F.complexNum(ApcomplexMath.tanh(arg1));
+      // next to a pole the usual quotient cancels to 0
+      return ApcomplexNum.valueOf(arg1).tanh();
     }
 
     @Override

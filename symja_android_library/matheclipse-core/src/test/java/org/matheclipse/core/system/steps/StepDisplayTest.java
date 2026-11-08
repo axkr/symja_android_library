@@ -129,9 +129,9 @@ public class StepDisplayTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAStepWhichChangesNothingIsNotShown() {
-    // rule 3054 only rewrites the integrand into the rule set's inert spelling
+    // rule 3055 only rewrites the integrand into the rule set's inert spelling
     String steps = derivation("Sin(x)/x^3");
-    assertFalse(steps.contains("rule 3054"), steps);
+    assertFalse(steps.contains("rule 3055"), steps);
   }
 
   @Test
@@ -151,7 +151,7 @@ public class StepDisplayTest extends ExprEvaluatorTestCase {
     check("TraceForm(Integrate(Sin(x)/x^3,x))[[1]]", //
         "-Cos(x)/(2*x)-Sin(x)/(2*x^2)-SinIntegral(x)/2");
     check("Integrate((x^2+x+1)/(x^4+x^3+x+1),x)", //
-        "-1/(3*(1+x))+4/3*ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)");
+        "-1/(3*(1+x))+4/3*ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)");
   }
 
   @Test

@@ -1,7 +1,10 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
+import org.hipparchus.stat.descriptive.rank.Percentile;
+import org.hipparchus.stat.descriptive.rank.Percentile.EstimationType;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -12,7 +15,9 @@ import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
@@ -58,9 +63,6 @@ public class Histogram extends AbstractChart {
     // CPD-ON
         GraphicsOptions.optionValue(originalAST, S.ChartElementFunction, S.Automatic);
 
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
-    }
 
     IAST dataList = (IAST) dataArg;
     IAST datasets = GraphicsOptions.chartDatasets(dataList);
@@ -96,9 +98,9 @@ public class Histogram extends AbstractChart {
       max = Math.max(max, v);
     }
     double h = binWidth(all, min, max);
-    // the bins start at a multiple of their width, as Mathematica lays them out: standard normal
-    // data binned at 0.5 then has its edges at -3, -2.5, ... rather than at the smallest datum
-    double origin = Math.floor(min / h) * h;
+    // the bins start at a multiple of their width: standard normal data binned at 0.5 then has
+    // its edges at -3, -2.5, ... rather than at the smallest datum
+    double origin = binOrigin(min, h, isIntegerData(datasets));
     int numBins = (int) Math.ceil((max + h * 0.001 - origin) / h);
     numBins = Math.max(1, Math.min(numBins, 1000));
 
@@ -148,8 +150,12 @@ public class Histogram extends AbstractChart {
         GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True), S.Histogram,
         engine).range(1, 0, tallest).build();
 
+    // a legend entry names one dataset, in the fill its bars were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(getChartStyle(chartStyle, 0));
     for (int d = 0; d < datasetCount; d++) {
       IExpr color = getChartStyle(chartStyle, d);
+      legendColors.record(d, color);
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color, !chartStyle.isAutomatic());
 
       IASTAppendable group = F.ListAlloc(numBins + 2);
@@ -200,6 +206,7 @@ public class Histogram extends AbstractChart {
     // This reinforces the "left of histogram" look even if user toggles Axes->True
     graphicsOptions.addOption(F.Rule(S.AxesOrigin, F.List(F.num(origin), F.C0)));
 
+    graphicsOptions.setChartLegend(chartLegends, legendColors);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
@@ -225,6 +232,12 @@ public class Histogram extends AbstractChart {
     return rectangle;
   }
 
+  /** Whether all the elements of the datasets are exact integers. */
+  private static boolean isIntegerData(IAST datasets) {
+    return datasets.forAll(dataset -> dataset.isList()
+        && ((IAST) dataset).forAll(element -> PlotWrapper.strip(element).isInteger()));
+  }
+
   /** The finite numbers of a dataset, in order. */
   private static double[] finiteValues(IExpr datasetExpr) {
     if (!datasetExpr.isList()) {
@@ -240,7 +253,7 @@ public class Histogram extends AbstractChart {
             // a wrapper says how a value is shown, not what it is; one left on used to fail here
             // and the value then quietly took no part in any bin
             elementValue instanceof INumber ? ((INumber) elementValue).reDoubleValue()
-                : elementValue.evalDouble();
+                : elementValue.evalf();
         if (Double.isFinite(v)) {
           values[count++] = v;
         }
@@ -263,9 +276,9 @@ public class Histogram extends AbstractChart {
   public static double binWidth(double[] values, double min, double max) {
     double h = 0;
     if (values.length > 1) {
-      double[] sorted = values.clone();
-      Arrays.sort(sorted);
-      double spread = quantile(sorted, 0.75) - quantile(sorted, 0.25);
+      // the quartiles of InterquartileRange
+      Percentile quartiles = new Percentile().withEstimationType(EstimationType.R_5);
+      double spread = quartiles.evaluate(values, 75.0) - quartiles.evaluate(values, 25.0);
       if (spread > 0) {
         h = 2.0 * spread / Math.cbrt(values.length);
       } else {
@@ -279,13 +292,40 @@ public class Histogram extends AbstractChart {
       h = (max - min) / 10.0;
       return h > 0 ? h : 1.0;
     }
+    return commensurateRoundNumber(h, values);
+  }
+
+  /**
+   * The round number for a width of about <code>h</code>. Of the two round numbers around
+   * <code>h</code> the one the data is made of multiples of wins, whichever is nearer: integer data
+   * then gets bins one apart rather than two.
+   */
+  private static double commensurateRoundNumber(double h, double[] values) {
+    double magnitude = Math.pow(10, Math.floor(Math.log10(h)));
+    double low = magnitude;
+    double high = 10.0 * magnitude;
+    for (double candidate : new double[] {2.0 * magnitude, 5.0 * magnitude}) {
+      if (candidate < h) {
+        low = candidate;
+      } else if (candidate < high) {
+        high = candidate;
+      }
+    }
+    boolean lowFits = allMultiples(values, low);
+    if (lowFits != allMultiples(values, high)) {
+      return lowFits ? low : high;
+    }
     return roundNumber(h);
   }
 
-  /** The quantile of already sorted values, as <code>Quantile</code> reads it. */
-  private static double quantile(double[] sorted, double fraction) {
-    int index = (int) Math.ceil(fraction * sorted.length) - 1;
-    return sorted[Math.max(0, Math.min(sorted.length - 1, index))];
+  private static boolean allMultiples(double[] values, double width) {
+    for (double value : values) {
+      double ratio = value / width;
+      if (Math.abs(ratio - Math.rint(ratio)) >= 1.0e-9 * (1.0 + Math.abs(ratio))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -300,6 +340,37 @@ public class Histogram extends AbstractChart {
     double scaled = value / magnitude;
     double rounded = scaled <= 1.5 ? 1.0 : scaled <= 3.0 ? 2.0 : scaled <= 7.0 ? 5.0 : 10.0;
     return rounded * magnitude;
+  }
+
+  /** The smallest round number - 1, 2 or 5 times a power of ten - which isn't below the value. */
+  public static double roundNumberAbove(double value) {
+    double magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+    for (double factor : new double[] {1.0, 2.0, 5.0}) {
+      if (factor * magnitude >= value) {
+        return factor * magnitude;
+      }
+    }
+    return 10.0 * magnitude;
+  }
+
+  /**
+   * The lower edge of the first bin of width <code>width</code> below or at <code>min</code>. The
+   * edges are multiples of the width; integer data in bins one wide has them halfway between the
+   * integers, so that each integer has a bin of its own.
+   */
+  public static double binOrigin(double min, double width, boolean integerData) {
+    double offset = integerData && width == 1.0 ? 0.5 : 0.0;
+    double origin = Math.floor((min - offset) / width) * width + offset;
+    // the quotient is rounded, so that min may lie on the next edge
+    return origin + width <= min ? origin + width : origin;
+  }
+
+  /** The exact number a width from {@link #roundNumber(double)} stands for. */
+  public static IRational exactWidth(double width) {
+    int exponent = (int) Math.floor(Math.log10(width));
+    IInteger mantissa = F.ZZ(Math.round(width / Math.pow(10, exponent)));
+    IInteger power = F.ZZ(BigInteger.TEN.pow(Math.abs(exponent)));
+    return exponent >= 0 ? mantissa.multiply(power) : F.QQ(mantissa, power);
   }
 
   private IExpr getChartStyle(IExpr styleOption, int index) {

@@ -70,6 +70,8 @@ public class EvalControlledCallable implements Callable<IExpr> {
       fEngine.setNumericPrecision(fNumericPrecision);
     }
     final StringBuilder buf = new StringBuilder();
+    final int recursionCounter = fEngine.getRecursionCounter();
+    final int stackSize = fEngine.getEvaluationStackSize();
     try {
       // fEngine.reset();<>
       IExpr temp;
@@ -91,6 +93,9 @@ public class EvalControlledCallable implements Callable<IExpr> {
         Errors.printMessage(S.$RecursionLimit, "reclim2",
             F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), fExpr), fEngine);
         temp = F.Hold(fExpr);
+      } catch (final StackOverflowError soe) {
+        // the Java stack ran out before $RecursionLimit was reached
+        temp = fEngine.afterStackOverflow(soe, fExpr, recursionCounter, stackSize);
       }
       // IExpr temp = fEngine.evaluate(fExpr);
       if (!fEngine.isOutListDisabled()) {

@@ -200,7 +200,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // M = 2x + y^2, N = 2xy. dM/dy = 2y = dN/dx.
     // Implicit solution is x^2 + x*y^2 = C. Solving for y extracts the first root.
     check("DSolve(2*x + y(x)^2 + 2*x*y(x)*y'(x) == 0, y(x), x)", //
-        "{{y(x)->Sqrt(-x^2+C(1))/Sqrt(x)},{y(x)->-Sqrt(-x^2+C(1))/Sqrt(x)}}");
+        "{{y(x)->-Sqrt(-x^2+C(1))/Sqrt(x)},{y(x)->Sqrt(-x^2+C(1))/Sqrt(x)}}");
 
     // Exact ODE (Non-separable, non-linear): (y^2 + 2xy) + (2xy + x^2)y' = 0
     // M = y^2 + 2xy, N = 2xy + x^2. dM/dy = 2y + 2x = dN/dx.
@@ -246,7 +246,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // Exact equation becomes: (x^3 + x*y^2 + x^2) + (x^2*y)*y' = 0
     // Result implicit: 1/2*x^2*y^2 + 1/4*x^4 + 1/3*x^3 = C_1
     check("DSolve(x^2 + y(x)^2 + x + x * y(x) * y'(x) == 0, y(x), x)", //
-        "{{y(x)->Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(6)*x)},{y(x)->-Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(\n" //
+        "{{y(x)->-Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(6)*x)},{y(x)->Sqrt(-4*x^3-3*x^4+12*C(1))/(Sqrt(\n" //
             + "6)*x)}}");
 
     // Integrating factor depending only on y: mu(y) = 1/y^2
@@ -634,13 +634,13 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y'(t)==(t+y(t)+1)/(t-y(t)+3), y(t), t)", //
         "Solve(-ArcTan((-1+y(t))/(2+t))+Log(2+t)+Log(1+(1-y(t))^2/(2+t)^2)/2==C(1),y(t))");
     check("DSolve(1+t-2*y(t)+(-6+4*t-3*y(t))*y'(t)==0, y(t), t)", //
-        "Solve(Log(-3+t)-Log(1+(2-y(t))/(-3+t))/4+5/4*Log(1/3+(-2+y(t))/(-3+t))==C(1),y(t))");
+        "Solve(Log(-3+t)-Log(1+(2-y(t))/(-3+t))/4+5/4*Log(1+(3*(-2+y(t)))/(-3+t))==C(1),y(t))");
     check("DSolve(y'(x)==(2*x+y(x)-4)/(x-3*y(x)+5), y(x), x)", //
-        "Solve(-ArcTan((Sqrt(3/2)*(-2+y(x)))/(-1+x))/Sqrt(6)+Log(-1+x)+Log(2/3+(2-y(x))^2/(\n"
-            + "1-x)^2)/2==C(1),y(x))");
+        "Solve(-ArcTan((Sqrt(3/2)*(-2+y(x)))/(-1+x))/Sqrt(6)+Log(-1+x)+Log(2+(3*(2-y(x))^\n"
+            + "2)/(1-x)^2)/2==C(1),y(x))");
     // parallel lines have no common point, and were already answered by a substitution
     check("DSolve(y'(x)==(x+y(x)+1)/(2*x+2*y(x)+3), y(x), x)", //
-        "{{y(x)->-4/3-x+ProductLog(6*E^(8+9*x-9*C(1)))/6}}");
+        "{{y(x)->-4/3-x+ProductLog(2*E^(8+9*x-9*C(1)))/6}}");
   }
 
   @Test
@@ -648,12 +648,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // (a*x + b*y + c1) + (k*(a*x + b*y) + c2)*y' == 0 has no point where its two lines meet, but
     // u == a*x + b*y separates it. These declined, while the crossing lines were already answered.
     check("DSolve(x-3*y(x)==(-x+3*y(x)+2)*y'(x), y(x), x)", //
-        "Solve(3/4*x+3/8*Log(1/2-x+3*y(x))+3/4*y(x)==C(1),y(x))");
+        "Solve(3/4*x+3/8*Log(1-2*(x-3*y(x)))+3/4*y(x)==C(1),y(x))");
     check("DSolve(x-y(x)+1+(-1+x-y(x))*y'(x)==0, y(x), x)", //
         "Solve(x+1/2*(-x+Log(x-y(x))+y(x))==C(1),y(x))");
     // no branch of the explicit solution passes through the point, and the relation does
     check("DSolve({2*x+y(x)+(4*x+2*y(x)+1)*y'(x)==0, y(-1/6)==0}, y(x), x)", //
-        "Solve(-x/3+Log(2/3+2*x+y(x))/9-2/3*y(x)==1/18-Log(3)/9,y(x))");
+        "Solve(-x/3+Log(2+3*(2*x+y(x)))/9-2/3*y(x)==1/18,y(x))");
     // not in the corpus: the same shape with a condition it can meet explicitly
     check("DSolve(x+2*y(x)+1+(2*x+4*y(x)+3)*y'(x)==0, y(x), x)", //
         "{{y(x)->-3/4-x/2-Sqrt(36+16*x+16*C(1))/8},{y(x)->-3/4-x/2+Sqrt(36+16*x+16*C(1))/\n"
@@ -841,6 +841,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveConditionAtASingularPoint() {
     // The general solution of these is written with ExpIntegralEi(t), which does not reach t == 0:
     // putting the point in gives Indeterminate from 0*(-Infinity). That is not the condition
@@ -892,7 +893,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // separates into whenever the denominator shares a factor with the numerator. Nothing
     // algebraic inverts it and ProductLog does, by its definition.
     check("DSolve(y'(x) == (2*y(x) + 3)/(5*y(x) + 7), y(x), x)", //
-        "{{y(x)->-3/2-ProductLog(-10/E^(15+4*x-4*C(1)))/10}}");
+        "{{y(x)->-3/2-ProductLog(-5/E^(15+4*x-4*C(1)))/10}}");
     // The reciprocal form is the same relation in 1/u, and it is what a homogeneous equation
     // reduces to along y == v*x.
     check("DSolve(y'(x) == (x + 3*y(x))/(x - y(x)), y(x), x)", //
@@ -1576,10 +1577,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
           "{C(1)->7/5, C(2)->3/4, x->13/10}");
     }
 
-    // Nothing of this kind makes these coefficients rational, so it declines rather than spending
-    // the time on every equation with a sine in it.
+    // Nothing of this kind makes these coefficients rational, but z == Pi/4-x/2 turns the equation
+    // into a Mathieu equation with a == 0 and q == -2.
     check("DSolve(y''(x) + Sin(x)*y(x) == 0, y(x), x)", //
-        "DSolve(Sin(x)*y(x)+y''(x)==0,y(x),x)");
+        "{{y(x)->C(1)*MathieuC(0,-2,Pi/4-x/2)-C(2)*MathieuS(0,-2,Pi/4-x/2)}}");
 
     // Under t == E^x the coefficients are rational in t and the equation is then Liouvillian, so
     // Kovacic's method finds it; one solution is E^(-E^x) and the other carries ExpIntegralEi.
@@ -2809,6 +2810,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRiccatiParticularSolutions() {
     // a polynomial particular solution: x^2-2 (and x^2+2)
     check("DSolve(y'(x)==4+2*x-x^4+2*x^2*y(x)-y(x)^2, y(x), x)", //
@@ -2827,6 +2829,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testVariationOfParametersWithASquaredDenominator() {
     // the integrand x*E^x/(2+E^x)^2 integrates factored, not expanded
     check("DSolve(y''(x)-2*y'(x)+y(x)==E^(2*x)/(2+E^x)^2, y(x), x)", //
@@ -2834,6 +2837,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveInertIntegrals() {
     // the integrating factor and the forcing are free functions: both integrals stay inert
     check("DSolve(y'(x)==u(x)*y(x)+v(x), y(x), x)", //
@@ -2868,6 +2872,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * ExpIntegralEi, also with the argument scaled.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveDegenerateKummer() {
     check("DSolve(x*y''(x) + (2 - x)*y'(x) + 3*y(x) == 0, y(x), x)", //
         "{{y(x)->C(1)-3/2*x*C(1)+1/2*x^2*C(1)-1/24*x^3*C(1)+13/12*E^x*C(2)+(-E^x*C(2))/(4*x)-\n"

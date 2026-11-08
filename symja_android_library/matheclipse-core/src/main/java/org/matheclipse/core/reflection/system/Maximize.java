@@ -164,6 +164,10 @@ public class Maximize extends AbstractFunctionEvaluator {
       }
     }
     if (x.isSymbol() || (x.isAST() && !x.isList())) {
+      IExpr quadratic = parametricQuadraticExtremum(function, x, true, engine);
+      if (quadratic.isPresent()) {
+        return quadratic;
+      }
       if (function.isList2()) {
         // single variable with a constraint: optimize over the feasible real interval
         IExpr result = univariateConstrainedExtremum(head, function.first(), function.second(), x,
@@ -175,6 +179,88 @@ public class Maximize extends AbstractFunctionEvaluator {
       return maximize(head, function, x, engine);
     }
 
+    return F.NIL;
+  }
+
+  /**
+   * The extremum of a quadratic in <code>x</code> with parameters in its coefficients:
+   * <code>a*x^2+b*x+c</code> has its extremum <code>c-b^2/(4*a)</code> at <code>x==-b/(2*a)</code>,
+   * if <code>a</code> has the sign which bounds the quadratic. Without a constraint that sign must
+   * be known from the number <code>a</code>. A constraint on the parameters must imply it, and the
+   * result then holds under the constraint only: the value and the point are {@link S#Piecewise}
+   * expressions which give the unbounded value and {@link S#Indeterminate} everywhere else.
+   *
+   * @param function the objective or <code>{objective, constraint}</code>
+   * @param x the variable
+   * @param isMax <code>true</code> for a maximum, <code>false</code> for a minimum
+   * @return <code>{value, {x -> point}}</code> or {@link F#NIL} if the problem isn't of this kind
+   */
+  static IExpr parametricQuadraticExtremum(IExpr function, IExpr x, boolean isMax,
+      EvalEngine engine) {
+    if ((function.isList() && !function.isList2()) || engine.getOptimizeExpressionDepth() != 0) {
+      // an optimizer which runs inside of a decision procedure keeps to its case distinction
+      return F.NIL;
+    }
+    final IExpr objective = function.isList2() ? function.first() : function;
+    final IExpr constraint = function.isList2() ? function.second() : S.True;
+    if (!x.isSymbol() || !constraint.isFree(x) || objective.isFree(x)
+        || !objective.isPolynomial(F.list(x)) || objective.has(v -> v.isInexactNumber(), false)
+        || !objective.has(v -> v.isSymbol() && !v.equals(x) && !v.isConstantAttribute(), false)) {
+      return F.NIL;
+    }
+    IExpr coefficients = engine.evalQuiet(F.CoefficientList(objective, x));
+    if (!coefficients.isList() || coefficients.argSize() != 3) {
+      return F.NIL;
+    }
+    final IExpr c = coefficients.first();
+    final IExpr b = coefficients.second();
+    final IExpr a = ((IAST) coefficients).arg3();
+    IExpr bounding = isMax ? F.Less(a, F.C0) : F.Greater(a, F.C0);
+    if (!engine.evalTrue(constraint.isTrue() ? bounding : F.Simplify(bounding, constraint))) {
+      return F.NIL;
+    }
+    IExpr value =
+        engine.evaluate(F.Together(F.Subtract(c, F.Divide(F.Sqr(b), F.Times(F.C4, a)))));
+    IExpr point = engine.evaluate(F.Together(F.Divide(F.Negate(b), F.Times(F.C2, a))));
+    if (constraint.isTrue()) {
+      return F.list(value, F.list(F.Rule(x, point)));
+    }
+    return F.list(
+        F.Piecewise(F.list(F.list(value, constraint)), isMax ? F.CNInfinity : F.CInfinity),
+        F.list(F.Rule(x, F.Piecewise(F.list(F.list(point, constraint)), S.Indeterminate))));
+  }
+
+  /**
+   * An even power of the absolute value of a real expression of the variables is that power of the
+   * expression itself: <code>EuclideanDistance</code> gives <code>Abs(x-1)^2</code>.
+   */
+  private static IExpr withoutAbsOfEvenPowers(IExpr function, IAST varList, EvalEngine engine) {
+    return F.subst(function, t -> {
+      if (t.isPower() && t.base().isAbs() && t.exponent().isEven()
+          && t.base().first().isPolynomial(varList) && t.base().first().isFree(
+              v -> v.isComplex() || v.isSymbol() && !varList.contains(v) && !v.isConstantAttribute(),
+              false)) {
+        return engine.evaluate(F.Power(t.base().first(), t.exponent()));
+      }
+      return F.NIL;
+    });
+  }
+
+  /**
+   * The minimum of the square root of a quadratic with a definite Hessian is the root of the
+   * minimum of the quadratic, at the same point, if that minimum isn't negative.
+   *
+   * @return {@link F#NIL} if the objective isn't such a root
+   */
+  private static IExpr radicandExtremum(ISymbol head, IExpr function, IAST varList,
+      EvalEngine engine) {
+    if (!function.isSqrt()) {
+      return F.NIL;
+    }
+    IExpr minimum = quadraticExtremum(head, function.base(), varList, false, engine);
+    if (minimum.isList2() && minimum.first().isReal() && !minimum.first().isNegative()) {
+      return F.list(engine.evaluate(F.Sqrt(minimum.first())), minimum.second());
+    }
     return F.NIL;
   }
 
@@ -476,6 +562,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       }
     }
     final boolean report = head == S.Minimize || head == S.Maximize;
+    function = withoutAbsOfEvenPowers(function, varList, engine);
     if (function.isList2()) {
       if (report) {
         IExpr eliminated = eliminatedExtremum(head, function.first(), function.second(), varList,
@@ -514,6 +601,12 @@ public class Maximize extends AbstractFunctionEvaluator {
       IExpr result = quadraticExtremum(head, function, varList, isMax, engine);
       if (result.isPresent()) {
         return result;
+      }
+      if (!isMax) {
+        result = radicandExtremum(head, function, varList, engine);
+        if (result.isPresent()) {
+          return result;
+        }
       }
       return unconstrainedExtremum(head, function, varList, isMax, engine);
     }
@@ -689,7 +782,8 @@ public class Maximize extends AbstractFunctionEvaluator {
     boolean changed = function.argSize() > 2;
     for (IExpr c : conjuncts) {
       if (c.isAST(S.Element, 3) && (c.second() == S.Integers || c.second() == S.Reals)) {
-        IAST named = c.first().isList() ? (IAST) c.first() : F.List(c.first());
+        IAST named = c.first().isList() || c.first().isAlternatives() ? (IAST) c.first()
+            : F.List(c.first());
         for (IExpr v : named) {
           if (!variables.contains(v)) {
             return F.NIL;
@@ -740,6 +834,10 @@ public class Maximize extends AbstractFunctionEvaluator {
       IExpr c = conjuncts.get(k);
       if (!c.isAST(S.Equal, 3)) {
         continue;
+      }
+      if (innermostRoot(objective, varList).isPresent() && !c.first().isSymbol()
+          && !c.second().isSymbol()) {
+        c = solvedLinearEquation(c, varList, engine);
       }
       for (int side = 1; side <= 2; side++) {
         final IExpr v = ((IAST) c).get(side);
@@ -793,6 +891,23 @@ public class Maximize extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The linear equation solved for its last variable with a number as coefficient, as
+   * <code>z == 1-x-y</code> for <code>x+y+z == 1</code>; the equation itself for any other form.
+   */
+  private static IExpr solvedLinearEquation(IExpr equation, IAST varList, EvalEngine engine) {
+    IExpr difference = engine.evaluate(F.Expand(F.Subtract(equation.first(), equation.second())));
+    for (int i = varList.argSize(); i >= 1; i--) {
+      final IExpr v = varList.get(i);
+      IExpr coefficient = engine.evaluate(F.D(difference, v));
+      if (coefficient.isNumber() && !coefficient.isZero()) {
+        return F.Equal(v, engine.evaluate(F.Expand(
+            F.Divide(F.Subtract(F.Times(coefficient, v), difference), coefficient))));
+      }
+    }
+    return equation;
   }
 
   /**
@@ -999,7 +1114,7 @@ public class Maximize extends AbstractFunctionEvaluator {
         gradient.add(engine.evalQuiet(F.Numerator(F.Together(derivative))));
         equations.append(F.Equal(derivative, F.C0));
       }
-      IExpr solution = engine.evalQuiet(F.Solve(equations, varList, S.Reals));
+      IExpr solution = engine.evalQuiet(F.SolveDistinct(equations, varList, S.Reals));
       if (!solution.isListOfLists() || !solution.isFree(S.ConditionalExpression, true)) {
         return F.NIL;
       }
@@ -1359,7 +1474,7 @@ public class Maximize extends AbstractFunctionEvaluator {
   private static IExpr univariateIntervalExtremum(IExpr objective, IExpr x, IAST intervalData,
       boolean isMax, EvalEngine engine) {
     IExpr derivative = S.D.of(engine, objective, x);
-    IExpr solution = engine.evalQuiet(F.Solve(F.Equal(derivative, F.C0), x, S.Reals));
+    IExpr solution = engine.evalQuiet(F.SolveDistinct(F.Equal(derivative, F.C0), x, S.Reals));
     if (!solution.isList() || !solution.isFree(S.Solve)) {
       return F.NIL;
     }
@@ -1664,9 +1779,11 @@ public class Maximize extends AbstractFunctionEvaluator {
       return best.consider(limit, infinity, false, engine);
     }
     IExpr value = engine.evalQuiet(F.xreplace(objective, x, end));
-    if (closed) {
+    if (closed && !value.isIndeterminate()) {
       return best.consider(value, end, true, engine);
     }
+    // an open end, or a closed end where the objective is undefined - 0^0 of x^x at x==0, which
+    // FunctionDomain(x^x,x) gives as x>=0: the end is not attained, and its limit bounds the values
     if (value.isRealResult() && !value.isDirectedInfinity() && !value.isIndeterminate()) {
       return best.consider(value, end, false, engine);
     }
@@ -1787,7 +1904,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       // integer neighbors of the real stationary points (interior / unbounded-but-not-improving
       // ends)
       IExpr derivative = S.D.of(engine, objective, x);
-      IExpr solution = S.Solve.of(engine, F.Equal(derivative, F.C0), x, S.Reals);
+      IExpr solution = engine.evaluate(F.SolveDistinct(F.Equal(derivative, F.C0), x, S.Reals));
       if (solution.isListOfLists()) {
         IAST solutions = (IAST) solution;
         for (int s = 1; s < solutions.size(); s++) {
@@ -2077,7 +2194,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       if (!isPositiveDefinite(testMatrix, n, engine)) {
         return F.NIL;
       }
-      IExpr solution = S.Solve.of(engine, equations, varList, S.Reals);
+      IExpr solution = engine.evaluate(F.SolveDistinct(equations, varList, S.Reals));
       if (!solution.isListOfLists() || solution.size() < 2) {
         return F.NIL;
       }
@@ -2238,7 +2355,7 @@ public class Maximize extends AbstractFunctionEvaluator {
         if (equations.isEmpty()) {
           continue;
         }
-        IExpr solution = engine.evalQuiet(F.Solve(equations, varList, S.Reals));
+        IExpr solution = engine.evalQuiet(F.SolveDistinct(equations, varList, S.Reals));
         if (!collectCandidatesMulti(solution, vars, objective, equalities, inequalities,
             inequalitySigns, candidateValues, candidateRules, familyValues, mode, engine)) {
           // the stationary points of this active set are not known completely: a family of
@@ -3216,7 +3333,7 @@ public class Maximize extends AbstractFunctionEvaluator {
         for (int idx : combo) {
           equations.append(F.Equal(boundary.get(idx), F.C0));
         }
-        IExpr solution = S.Solve.of(engine, equations, varList, S.Reals);
+        IExpr solution = engine.evaluate(F.SolveDistinct(equations, varList, S.Reals));
         if (!solution.isListOfLists()) {
           continue;
         }
@@ -3688,8 +3805,8 @@ public class Maximize extends AbstractFunctionEvaluator {
         return true;
       }
       try {
-        double p = pole.evalDouble();
-        double d = point.evalDouble();
+        double p = pole.evalf();
+        double d = point.evalf();
         if (Math.abs(p - d) <= Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, Math.abs(p))) {
           return true;
         }
@@ -3807,9 +3924,9 @@ public class Maximize extends AbstractFunctionEvaluator {
     final IExpr g = engine.evaluate(F.Times(s, function));
     final IExpr worst = isMax ? F.CInfinity : F.CNInfinity;
     final double lowerValue = lower.isNegativeInfinity() ? Double.NEGATIVE_INFINITY //
-        : lower.evalDouble();
+        : lower.evalf();
     final double upperValue = upper.isInfinity() ? Double.POSITIVE_INFINITY //
-        : upper.evalDouble();
+        : upper.evalf();
 
     // an interior pole where the function tends to -Infinity
     List<IExpr> poles = quotientPoles(function, x, engine);
@@ -3817,7 +3934,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       return null;
     }
     for (IExpr pole : poles) {
-      double d = pole.evalDouble();
+      double d = pole.evalf();
       if (d <= lowerValue || d >= upperValue) {
         continue;
       }
@@ -4114,9 +4231,9 @@ public class Maximize extends AbstractFunctionEvaluator {
         double max;
         try {
           min = part.first().isNegativeInfinity() ? Double.NEGATIVE_INFINITY
-              : part.first().evalDouble();
+              : part.first().evalf();
           max = part.second().isInfinity() ? Double.POSITIVE_INFINITY
-              : part.second().evalDouble();
+              : part.second().evalf();
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           return 0;
@@ -4146,7 +4263,7 @@ public class Maximize extends AbstractFunctionEvaluator {
     if (expr.isFree(x)) {
       return expr.isZero() ? null : result;
     }
-    IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(expr, F.C0), x, S.Reals));
+    IExpr solutions = engine.evalQuiet(F.SolveDistinct(F.Equal(expr, F.C0), x, S.Reals));
     if (!solutions.isList() || !solutions.isFree(S.Solve, true)
         || !solutions.isFree(S.ConditionalExpression, true)) {
       return null;
@@ -4159,7 +4276,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       IExpr value = rules.first().second();
       double d;
       try {
-        d = value.evalDouble();
+        d = value.evalf();
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return null;
@@ -4202,7 +4319,7 @@ public class Maximize extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       for (IExpr root : roots) {
-        double d = root.evalDouble();
+        double d = root.evalf();
         int pos = 0;
         while (pos < positions.size() && positions.get(pos) < d - 1.0e-12) {
           pos++;
@@ -4246,7 +4363,7 @@ public class Maximize extends AbstractFunctionEvaluator {
           return F.NIL;
         }
         for (IExpr point : stationary) {
-          double d = point.evalDouble();
+          double d = point.evalf();
           if (d > from && d < to) {
             candidates.add(point);
           }
@@ -4278,7 +4395,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       if (order == Integer.MIN_VALUE) {
         return F.NIL;
       }
-      double position = point.evalDouble();
+      double position = point.evalf();
       if ((isMax ? order > 0 : order < 0) || (order == 0 && position < bestPosition)) {
         bestValue = value;
         bestPoint = point;
@@ -4420,7 +4537,7 @@ public class Maximize extends AbstractFunctionEvaluator {
       }
       IExpr first_derivative = S.D.of(engine, function, x);
       IExpr second_derivative = S.D.of(engine, first_derivative, x);
-      IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
+      IExpr candidates = engine.evaluate(F.SolveDistinct(F.Equal(first_derivative, F.C0), x, S.Reals));
       if (candidates.isFree(S.Solve)) {
         IExpr bestCandidate = F.NIL;
         IExpr bestValue = isMax ? F.CNInfinity : F.CInfinity;

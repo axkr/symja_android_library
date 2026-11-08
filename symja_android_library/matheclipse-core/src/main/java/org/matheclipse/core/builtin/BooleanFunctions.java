@@ -59,6 +59,7 @@ import org.matheclipse.core.expression.data.BDDParser;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -727,7 +728,7 @@ public final class BooleanFunctions {
         return S.True;
       }
 
-      IASTAppendable result = flattenedAST.copyFrom(start);
+      IASTAppendable result = flattenedAST.subList(start);
       // the first argument which is not True was evaluated above
       result.set(index++, temp);
 
@@ -828,6 +829,15 @@ public final class BooleanFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
+      if (arg1.isAST(S.CenteredInterval, 3) || arg2.isAST(S.CenteredInterval, 3)) {
+        // a real centered interval is the interval {c - r, c + r}
+        IAST interval1 = IntervalSym.centeredToInterval(arg1, true, engine);
+        IAST interval2 = IntervalSym.centeredToInterval(arg2, true, engine);
+        if (interval1.isPresent() || interval2.isPresent()) {
+          return F.binaryAST2(S.Between, interval1.orElse(arg1), interval2.orElse(arg2));
+        }
+        return F.NIL;
+      }
       if (arg2.isListOfLists()) {
         if (arg2.argSize() > 0) {
           IAST listOfPairs = (IAST) arg2;
@@ -845,6 +855,15 @@ public final class BooleanFunctions {
         }
         IAST intervalOfPairs = (IAST) arg2;
         if (intervalOfPairs.forAll(IExpr::isList2)) {
+          if (intervalOfPairs.argSize() == 1) {
+            IExpr min = intervalOfPairs.first().first();
+            IExpr max = intervalOfPairs.first().second();
+            if (!min.isRealResult() || !max.isRealResult()) {
+              // the bounds of a symbolic interval may come in either order
+              return F.Or(F.And(F.LessEqual(min, arg1), F.LessEqual(arg1, max)),
+                  F.And(F.LessEqual(max, arg1), F.LessEqual(arg1, min)));
+            }
+          }
           return betweenPairs(arg1, intervalOfPairs);
         }
       }
@@ -1360,12 +1379,23 @@ public final class BooleanFunctions {
   private static class BooleanMinterms extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return minMaxtermsEval(ast, engine, true);
+      return inForm(ast, minMaxtermsEval(ast, engine, true), "DNF");
+    }
+
+    /**
+     * The result of a call <code>BooleanMinterms(spec, vars, form)</code> in the given form. No
+     * conversion is needed for the <code>nativeForm</code> of the function.
+     */
+    protected static IExpr inForm(IAST ast, IExpr result, String nativeForm) {
+      if (!ast.isAST3() || result.isNIL() || ast.arg3().isString(nativeForm)) {
+        return result;
+      }
+      return F.BooleanConvert(result, ast.arg3());
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     /**
@@ -1533,12 +1563,12 @@ public final class BooleanFunctions {
   private static class BooleanMaxterms extends BooleanMinterms {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return minMaxtermsEval(ast, engine, false);
+      return inForm(ast, minMaxtermsEval(ast, engine, false), "CNF");
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override
@@ -2393,7 +2423,8 @@ public final class BooleanFunctions {
         if (ternaryCompare == IExpr.COMPARE_TERNARY.TRUE) {
           return S.True;
         }
-        IExpr result = simplifyCompare(arg1, arg2);
+        // the sides of DivideSides and MultiplySides stay as they were computed
+        IExpr result = ast.hasFlag(Flag.BUILT_IN_EVALED) ? F.NIL : simplifyCompare(arg1, arg2);
         if (result.isPresent()) {
           return result;
         }
@@ -2403,7 +2434,8 @@ public final class BooleanFunctions {
             return temp2;
           }
         }
-        if (arg1.isNumber() && arg2.isNumber()) {
+        if ((arg1.isNumber() || arg1.isComplexInfinity())
+            && (arg2.isNumber() || arg2.isComplexInfinity())) {
           IExpr nonreal = !arg1.isReal() ? arg1 : !arg2.isReal() ? arg2 : F.NIL;
           if (nonreal.isPresent()) {
             // Invalid comparison with `1` attempted.

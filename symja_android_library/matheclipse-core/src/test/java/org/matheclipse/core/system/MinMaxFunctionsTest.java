@@ -252,6 +252,31 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{{0,{x->1}},{0,{x->1}}}");
   }
 
+  /**
+   * A closed end where the objective is undefined, like <code>0^0</code> of <code>x^x</code>, is
+   * not attained: its limit bounds the values (issue #1603).
+   */
+  @Test
+  public void testExtremumUndefinedEndIssue1603() {
+    check("Minimize(x^x,x)", //
+        "{E^(-1/E),{x->1/E}}");
+    check("Maximize(x^x,x)", //
+        "{Infinity,{x->Infinity}}");
+    check("Minimize({x^x,x>=0},x)", //
+        "{E^(-1/E),{x->1/E}}");
+    check("Minimize({x^x,0<=x<=2},x)", //
+        "{E^(-1/E),{x->1/E}}");
+    check("Maximize({x^x,0<=x<=2},x)", //
+        "{4,{x->2}}");
+    check("Minimize({x^(2*x),0<=x<=1},x)", //
+        "{E^(-2/E),{x->1/E}}");
+    // the undefined end is the upper one
+    check("Minimize({(1-x)^(1-x),0<=x<=1},x)", //
+        "{E^(-1/E),{x->1-1/E}}");
+    check("Maximize({(1-x)^(1-x),0<=x<=1},x)", //
+        "{1,{x->0}}");
+  }
+
   @Test
   public void testMinimize() {
     check("Minimize({3*x + 4*y, x^2 + y^2 <= 1}, {x, y})", //
@@ -676,6 +701,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
    * it is better, and if it is finite; FunctionRange takes exact extrema only.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIssue1565() {
     // a feasible point beats the point of the numeric search
     check("Maximize({-1.0+Tanh(x), x>0}, x)", //

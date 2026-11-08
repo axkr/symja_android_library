@@ -19,6 +19,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.Limit.Direction;
 import org.matheclipse.core.series.Lead;
@@ -1045,6 +1046,34 @@ public class LimitGruntz {
   }
 
   /**
+   * The least common denominator of the rational exponents <code>p/q</code> of the powers
+   * <code>w^(p/q)</code> in <code>expr</code>, or <code>1</code> if there are none or another
+   * exponent of <code>w</code> occurs.
+   */
+  private static int fractionalExponentDenominator(IExpr expr, ISymbol w) {
+    int[] lcm = {1};
+    boolean[] other = {false};
+    expr.has(e -> {
+      if (e.isPower() && e.base().equals(w)) {
+        IExpr exponent = e.exponent();
+        if (exponent.isFraction()) {
+          int q = ((org.matheclipse.core.interfaces.IFraction) exponent).denominator()
+              .toIntDefault();
+          if (q <= 0 || q > 24) {
+            other[0] = true;
+          } else {
+            lcm[0] = lcm[0] / org.hipparchus.util.ArithmeticUtils.gcd(lcm[0], q) * q;
+          }
+        } else if (!exponent.isInteger()) {
+          other[0] = true;
+        }
+      }
+      return false;
+    }, true);
+    return other[0] || lcm[0] > 24 ? 1 : lcm[0];
+  }
+
+  /**
    * The leading term of the w-series of <code>rewritten</code> around <code>w = 0+</code>.
    *
    * <p>
@@ -1077,26 +1106,70 @@ public class LimitGruntz {
     boolean oldInSeries = run.inSeries;
     run.inSeries = true;
     try {
-      ISymbol logx = F.Dummy("logx");
-      Lead lead = LeadTerm.leadTerm(rewritten, w, logx, engine);
-      if (lead == null) {
-        lead = LeadTerm.nseriesLead(rewritten, w, logx, 1, engine);
+      // w^(p/q) with a common denominator q: expand in t == w^(1/q), whose powers are integers.
+      // The fractional powers of an mrv element which isn't the fastest one (E^(-u) next to
+      // E^(-4*u) is w^(1/4)) otherwise end in a wrong leading term
+      int q = fractionalExponentDenominator(rewritten, w);
+      ISymbol t = w;
+      IExpr expansion = rewritten;
+      if (q > 1) {
+        ISymbol tq = F.Dummy("t");
+        IInteger denominator = F.ZZ(q);
+        // structurally: an evaluated (t^q)^(p/q) stays as it is for a t of unknown sign
+        expansion = engine.evalQuiet(F.subst(rewritten, e -> {
+          if (e.isPower() && e.base().equals(w)) {
+            return F.Power(tq, e.exponent().times(denominator));
+          }
+          return e.equals(w) ? F.Power(tq, denominator) : F.NIL;
+        }));
+        t = tq;
       }
+      ISymbol logx = F.Dummy("logx");
+      Lead lead = LeadTerm.leadTerm(expansion, t, logx, engine);
       if (lead == null) {
+        lead = LeadTerm.nseriesLead(expansion, t, logx, 1, engine);
+      }
+      if (lead == null || (q > 1 && !lead.coefficient().isFree(S.Limit, true))) {
+        // a coefficient with an unresolved limit after the substitution of t^q for w
         return null;
       }
+      IExpr exponent = q > 1 ? engine.evaluate(F.Divide(lead.exponent(), F.ZZ(q))) : lead.exponent();
       if (lead.coefficientHasLogx()) {
-        // Log(w) is -g in the original variable (SymPy: lt[0].subs(log(w), logw))
-        IExpr coefficient = engine.evalQuiet(F.subst(lead.coefficient(), logx, logw));
+        // Log(w) is -g in the original variable (SymPy: lt[0].subs(log(w), logw)), and
+        // Log(t) == Log(w)/q
+        IExpr logt = q > 1 ? F.Divide(logw, F.ZZ(q)) : logw;
+        IExpr coefficient = engine.evalQuiet(F.subst(lead.coefficient(), logx, logt));
         if (!coefficient.isPresent() || coefficient.isZero()) {
           return null;
         }
-        return new Lead(coefficient, lead.exponent(), F.NIL);
+        return new Lead(coefficient, exponent, F.NIL);
       }
-      return lead;
+      return q > 1 ? new Lead(lead.coefficient(), exponent, F.NIL) : lead;
     } finally {
       run.inSeries = oldInSeries;
     }
+  }
+
+  /** Set while {@link #evaluateLimit} resolves a Stirling-substituted expression. */
+  private static final ThreadLocal<Boolean> IN_STIRLING_SUBSTITUTION =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * Test if <code>expr</code> contains <code>Gamma</code>, <code>LogGamma</code>,
+   * <code>Factorial</code> or <code>Pochhammer</code> of an argument which diverges to
+   * <code>Infinity</code>.
+   */
+  static boolean hasDivergentGammaFamily(IExpr expr, ISymbol x) {
+    return expr.has(sub -> {
+      if (sub.isAST(S.Gamma, 2) || sub.isAST(S.LogGamma, 2) || sub.isAST(S.Factorial, 2)) {
+        return !sub.first().isFree(x, true) && Limit.divergesAtInfinity(sub.first(), x);
+      }
+      if (sub.isAST(S.Pochhammer, 3)) {
+        return !sub.isFree(x, true) && (Limit.divergesAtInfinity(sub.first(), x)
+            || Limit.divergesAtInfinity(sub.second(), x));
+      }
+      return false;
+    }, true);
   }
 
   /**
@@ -1144,6 +1217,34 @@ public class LimitGruntz {
     int depth = RUN.get().gruntzDepth;
     if (depth > 3) {
       return F.NIL;
+    }
+
+    if (x0.isInfinity() && !IN_STIRLING_SUBSTITUTION.get() && hasDivergentGammaFamily(expr, x)) {
+      // the mrv set of a Gamma comes from its Stirling series, but the rewrite would keep the
+      // Gamma itself: expand it with a remainder symbol, and add terms while the limit depends
+      // on the remainder
+      ISymbol remainder = F.Dummy("stirlingR");
+      IN_STIRLING_SUBSTITUTION.set(Boolean.TRUE);
+      try {
+        for (int terms : new int[] {1, 2, 4}) {
+          IExpr result = withStirlingOrder(terms, remainder, () -> {
+            IExpr substituted = Limit.replaceStirling(expr, variable, engine);
+            if (substituted.equals(expr) || hasDivergentGammaFamily(substituted, variable)) {
+              return F.NIL;
+            }
+            return evaluateLimit(engine.evaluate(substituted), variable, x0, direction, engine);
+          });
+          if (result.isNIL()) {
+            break;
+          }
+          if (result.isFree(remainder)) {
+            return result;
+          }
+        }
+      } finally {
+        IN_STIRLING_SUBSTITUTION.remove();
+      }
+      // no answer from the expansion: the rewrite below handles the Gamma itself
     }
 
     int oldRecursionLimit = engine.getRecursionLimit();
@@ -1231,24 +1332,69 @@ public class LimitGruntz {
   }
 
   /**
+   * The number of terms <code>B(2*k)/(2*k*(2*k-1)*z^(2*k-1))</code> of the Stirling series, and the
+   * symbol which stands for the dropped ones, while a limit probes higher orders; <code>null</code>
+   * for the first term alone.
+   */
+  private static final ThreadLocal<Object[]> STIRLING_ORDER = new ThreadLocal<>();
+
+  /** {B(2*k)/(2*k*(2*k-1))} for k = 1..6 */
+  private static final IExpr[] STIRLING_COEFFICIENTS = {F.QQ(1, 12), F.QQ(-1, 360),
+      F.QQ(1, 1260), F.QQ(-1, 1680), F.QQ(1, 1188), F.QQ(-691, 360360)};
+
+  /**
+   * Evaluate <code>supplier</code> with the Stirling series cut after <code>terms</code> terms
+   * plus <code>remainder/z^(2*terms+1)</code>.
+   */
+  static IExpr withStirlingOrder(int terms, ISymbol remainder,
+      java.util.function.Supplier<IExpr> supplier) {
+    Object[] previous = STIRLING_ORDER.get();
+    STIRLING_ORDER.set(new Object[] {Math.min(terms, STIRLING_COEFFICIENTS.length), remainder});
+    try {
+      return supplier.get();
+    } finally {
+      if (previous == null) {
+        STIRLING_ORDER.remove();
+      } else {
+        STIRLING_ORDER.set(previous);
+      }
+    }
+  }
+
+  /** <code>LogGamma(z) - (z*Log(z) - z + (1/2)*Log(2*Pi/z))</code> cut as set by STIRLING_ORDER. */
+  private static IExpr stirlingCorrection(IExpr arg) {
+    Object[] order = STIRLING_ORDER.get();
+    int terms = order == null ? 1 : (Integer) order[0];
+    IASTAppendable sum = F.PlusAlloc(terms + 1);
+    for (int k = 1; k <= terms; k++) {
+      sum.append(F.Times(STIRLING_COEFFICIENTS[k - 1], F.Power(arg, F.ZZ(1 - 2 * k))));
+    }
+    if (order != null) {
+      sum.append(F.Times((ISymbol) order[1], F.Power(arg, F.ZZ(-1 - 2 * terms))));
+    }
+    return sum.oneIdentity0();
+  }
+
+  /**
    * Stirling's approximation <code>Gamma(z) ~ Sqrt(2*Pi/z) * E^(z*Log(z) - z + 1/(12*z))</code> -
    * only valid for a DIVERGENT argument; callers must check {@link Limit#divergesAtInfinity} first.
-   * One truncation, shared by the mrv extraction and {@link Limit#replaceStirling}.
+   * One truncation, shared by the mrv extraction and {@link Limit#replaceStirling}; inside
+   * {@link #withStirlingOrder} the series has more terms and a remainder.
    */
   static IExpr stirlingGamma(IExpr arg, EvalEngine engine) {
-    return engine.evaluate(F.Times(F.Power(F.Divide(F.Times(F.C2, S.Pi), arg), F.C1D2), F.Exp(
-        F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg), F.Divide(F.C1, F.Times(F.ZZ(12), arg))))));
+    return engine.evaluate(F.Times(F.Power(F.Divide(F.Times(F.C2, S.Pi), arg), F.C1D2),
+        F.Exp(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg), stirlingCorrection(arg)))));
   }
 
   /**
    * Stirling's approximation <code>LogGamma(z) ~ z*Log(z) - z + (1/2)*Log(2*Pi/z) + 1/(12*z)</code>
    * - only valid for a DIVERGENT argument. One truncation, shared by the mrv extraction,
-   * {@link #replaceLogStirling} and {@link Limit#replaceStirling}.
+   * {@link #replaceLogStirling} and {@link Limit#replaceStirling}; inside
+   * {@link #withStirlingOrder} the series has more terms and a remainder.
    */
   static IExpr stirlingLogGamma(IExpr arg, EvalEngine engine) {
     return engine.evaluate(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg),
-        F.Times(F.C1D2, F.Log(F.Divide(F.Times(F.C2, S.Pi), arg))),
-        F.Divide(F.C1, F.Times(F.ZZ(12), arg))));
+        F.Times(F.C1D2, F.Log(F.Divide(F.Times(F.C2, S.Pi), arg))), stirlingCorrection(arg)));
   }
 
   /**

@@ -63,13 +63,8 @@ public class ImagePropertyFunctions {
       if (ast.arg1() instanceof Image3DExpr) {
         return F.ZZ(((Image3DExpr) ast.arg1()).channels());
       }
-      if (ast.arg1() instanceof ImageExpr
-          && ((ImageExpr) ast.arg1()).storedColorSpace() != null) {
-        // the samples of an HSB or CMYK image, not the channels of its RGB picture
-        return F.ZZ(((ImageExpr) ast.arg1()).raster().channels);
-      }
-      BufferedImage image = bufferedImage(ast.arg1());
-      return image == null ? F.NIL : F.ZZ(Boof.channels(image));
+      // the samples of an HSB or CMYK image, not the channels of its RGB picture
+      return ast.arg1() instanceof ImageExpr ? F.ZZ(((ImageExpr) ast.arg1()).channels()) : F.NIL;
     }
 
     @Override
@@ -85,7 +80,8 @@ public class ImagePropertyFunctions {
 
   /**
    * <code>ImageColorSpace(image)</code> - <code>"Grayscale"</code>, <code>"RGB"</code>, or the
-   * <code>"HSB"</code> or <code>"CMYK"</code> space the samples of the image are in.
+   * <code>"HSB"</code> or <code>"CMYK"</code> space the samples of the image are in;
+   * <code>Automatic</code> for four or more channels without a colour space.
    */
   private static class ImageColorSpace extends AbstractEvaluator {
 
@@ -100,6 +96,15 @@ public class ImagePropertyFunctions {
         String stored = ((ImageExpr) ast.arg1()).storedColorSpace();
         if (stored != null) {
           return F.stringx(stored);
+        }
+        ImageExpr image = (ImageExpr) ast.arg1();
+        if (Pixels.isSpectral(image.getOptions().colorSpaceName(), image.channels())) {
+          // spectral bands are in no colour space
+          return S.Automatic;
+        }
+        if (image.channels() == 2) {
+          // a grey level with an alpha channel
+          return F.stringx("Grayscale");
         }
       }
       BufferedImage image = bufferedImage(ast.arg1());

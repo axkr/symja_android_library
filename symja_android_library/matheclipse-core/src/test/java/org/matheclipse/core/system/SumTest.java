@@ -248,7 +248,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(1 / k ^ 2, {k, 1, n})", //
         "HarmonicNumber(n,2)");
     check("Sum(x ^ 2, {x, 1, y})", //
-        "y/6+y^2/2+y^3/3");
+        "1/6*y*(1+y)*(1+2*y)");
     check("Simplify(Sum(x ^ 2, {x, 1, y}) - y * (y + 1) * (2 * y + 1) / 6)", //
         "0");
     check("Sum( 2 ^ (-i), {i, 1, Infinity})", //
@@ -319,7 +319,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(i^k,{i,1,n})", //
         "HarmonicNumber(n,-k)");
     check("Sum(i^5,{i,1,n})", //
-        "-n^2/12+5/12*n^4+n^5/2+n^6/6");
+        "1/12*n^2*(1+n)^2*(-1+2*n+2*n^2)");
     check("Sum(f(i,1),{i,{a,b}})", //
         "f(a,1)+f(b,1)");
 
@@ -359,7 +359,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "(-a^Floor(Log(n)/Log(a))+n)*Ceiling(Log(n)/Log(a))+(1+a^(1+Floor(Log(n)/Log(a)))*Floor(Log(n)/Log(a))-a^Floor(Log(n)/Log(a))*(\n"
             + "1+Floor(Log(n)/Log(a))))/(-1+a)");
     check("Sum(i*1/2*i,{i,1,n})", //
-        "1/2*(n/6+n^2/2+n^3/3)");
+        "1/12*n*(1+n)*(1+2*n)");
     check("Sum(k * k,{k,1,n+1})", //
         "1/3*(1/2*(2+n)-3/2*(2+n)^2+(2+n)^3)");
     check("Sum(k,{k,4,2})", //
@@ -379,7 +379,7 @@ public class SumTest extends ExprEvaluatorTestCase {
   @Test
   public void testSum009() {
     check("Sum(4*i^2, {i, 0, n})", //
-        "4*(n/6+n^2/2+n^3/3)");
+        "2/3*n*(1+n)*(1+2*n)");
 
     check("Sum(c, {i, 1, j}, {j, 1, 2})", //
         "2*c*j");
@@ -409,13 +409,13 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(i0, {i0, 0, n0})", //
         "1/2*n0*(1+n0)");
     check("Sum(i^2, {i, 1, n})", //
-        "n/6+n^2/2+n^3/3");
+        "1/6*n*(1+n)*(1+2*n)");
     check("Sum(4*i^2, {i, 0, n})", //
-        "4*(n/6+n^2/2+n^3/3)");
+        "2/3*n*(1+n)*(1+2*n)");
     check("Sum(i0^3, {i0, 0, n0})", //
-        "n0^2/4+n0^3/2+n0^4/4");
+        "1/4*n0^2*(1+n0)^2");
     check("Sum(i0^3+p^2, {i0, 0, n0})", //
-        "n0^2/4+n0^3/2+n0^4/4+(1+n0)*p^2");
+        "1/4*n0^2*(1+n0)^2+(1+n0)*p^2");
     check("Sum(Binomial(n0,i0), {i0, 0, n0})", //
         "2^n0");
     check("sum(i0*binomial(n0,i0), {i0, 0, n0})", //
@@ -447,9 +447,9 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(c, {j, 1, n}, {i, 1, j})", //
         "1/2*c*n*(1+n)");
     check("Sum((i^2 + i)/2, {i,1,n})", //
-        "1/4*n*(1+n)+1/2*(n/6+n^2/2+n^3/3)");
+        "1/4*n*(1+n)+1/12*n*(1+n)*(1+2*n)");
     check("Sum(i*(i + 1)/2, {i,1,n})", //
-        "1/4*n*(1+n)+1/2*(n/6+n^2/2+n^3/3)");
+        "1/4*n*(1+n)+1/12*n*(1+n)*(1+2*n)");
   }
 
   @Test
@@ -569,19 +569,24 @@ public class SumTest extends ExprEvaluatorTestCase {
 
     check("NSum(k, {k, 1, 10})", //
         "55.0");
+    // PolyGamma(1, 100) = 0.01005016666333357139...
     check("approxSum = NSum(1/i^2, {i,100,Infinity})", //
-        "0.0100502");
+        "0.01005016666333357");
+    // PolyGamma(1, 10^6) = 1.0000005000001666...*10^-6
     check("restSum = NSum(1/i^2, {i, 10^6,Infinity})", //
-        "5.0097*10^-7");
+        "0.0000010000005000001667");
+    // PolyGamma(1, 100) - PolyGamma(1, 10^6) = 0.01004916666283357...
     check("approxSum - restSum", //
-        "0.0100497");
+        "0.0100492");
     check("NSum(1/i^2, {i, 100, 10^6})", //
         "0.0100492");
+    // E^(-5) = 0.006737946999085467...
     check("NSum((-5)^i/i!, {i, 0, Infinity})", //
-        "0.00673795");
+        "0.006737946999085468");
     //
+    // -Zeta'(2+2*I) = -0.18217540270542394-I*0.13661831691171033
     check("NSum(Log(x)/x^(2+2*I), {x, 1,Infinity})", //
-        "-0.182175+I*(-0.136618)");
+        "-0.18217540270542393+I*(-0.1366183169117103)");
   }
 
   @Test
@@ -589,8 +594,9 @@ public class SumTest extends ExprEvaluatorTestCase {
     checkNumeric("NSum((-1)^(k-1)/k^(1.0+1.0/k), {k,1,Infinity})", //
         "0.7795115373932017");
 
+    // the Euler-Maclaurin sum: 0.60552178888260044769...
     check("NSum(1/(n^2*Log(n)), {n,2,Infinity})", //
-        "0.605523");
+        "0.6055217888826004");
 
     // reciprocal power
     checkNumeric("NSum((-1)^(k-1)/k^1.5, {k,1,Infinity})", //
@@ -885,7 +891,7 @@ public class SumTest extends ExprEvaluatorTestCase {
   @Test
   public void testSumListSummand() {
     check("Sum({i,i^2}, {i,1,n})", //
-        "{1/2*n*(1+n),n/6+n^2/2+n^3/3}");
+        "{1/2*n*(1+n),1/6*n*(1+n)*(1+2*n)}");
     check("Sum({i,1}, {i,1,3})", //
         "{6,3}");
   }

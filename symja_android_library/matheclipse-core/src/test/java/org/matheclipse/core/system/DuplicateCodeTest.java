@@ -111,6 +111,8 @@ public class DuplicateCodeTest {
     }
   }
 
+  // PMD 6 offers CPD only through its deprecated API
+  @SuppressWarnings("deprecation")
   private static List<Match> findDuplicates() throws IOException {
     assertTrue(Files.isDirectory(SOURCE_ROOT),
         "run from the matheclipse-core module directory: " + SOURCE_ROOT.toAbsolutePath());

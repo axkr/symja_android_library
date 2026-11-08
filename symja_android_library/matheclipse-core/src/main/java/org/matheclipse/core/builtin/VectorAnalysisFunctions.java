@@ -29,9 +29,12 @@ public class VectorAnalysisFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.CoordinateTransformData.setEvaluator(new CoordinateTransformData());
       S.Curl.setEvaluator(new Curl());
       S.DiffusionPDETerm.setEvaluator(new DiffusionPDETerm());
       S.Div.setEvaluator(new Div());
+      S.EulerAngles.setEvaluator(new EulerAngles());
+      S.EulerMatrix.setEvaluator(new EulerMatrix());
       S.Grad.setEvaluator(new Grad());
       S.HessianMatrix.setEvaluator(new HessianMatrix());
       S.Laplacian.setEvaluator(new Laplacian());
@@ -135,6 +138,17 @@ public class VectorAnalysisFunctions {
                 curlVector.append(F.Subtract(F.D(f.arg2(), v.arg1()), F.D(f.arg1(), v.arg2())));
                 return curlVector;
               }
+            } else if (dimensions.size() == 2 && dimensions.getInt(0) == 3
+                && dimensions.getInt(1) == 3 && variables.argSize() == 3) {
+              // the scalar 1/2*Sum(Signature({d,j,k})*D(f(j,k), v(d)), {d,j,k}) of a 3x3 array
+              IASTAppendable sum = F.PlusAlloc(6);
+              for (int d = 1; d <= 3; d++) {
+                int j = d % 3 + 1;
+                int k = j % 3 + 1;
+                sum.append(F.Subtract(F.D(list.getPart(j, k), variables.get(d)),
+                    F.D(list.getPart(k, j), variables.get(d))));
+              }
+              return F.Times(F.C1D2, sum);
             }
           }
         }
@@ -1255,10 +1269,10 @@ public class VectorAnalysisFunctions {
   }
 
 
-  private static final class RotationMatrix extends AbstractFunctionEvaluator {
+  private static final class RotationMatrix extends LinearAlgebra.AbstractMatrixGenerator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
       IExpr theta = ast.arg1();
       if (ast.isAST1()) {
         if (theta.isList()) {
@@ -1283,12 +1297,295 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
-    /** The option <code>TargetStructure</code> isn't supported. */
     @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <pre>
+   * EulerMatrix({alpha, beta, gamma})
+   * EulerMatrix({alpha, beta, gamma}, {a, b, c})
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the product of the rotation matrices around the coordinate axes <code>a, b, c</code>
+   * (default <code>{3, 2, 3}</code>) by the angles <code>alpha, beta, gamma</code>.
+   *
+   * </blockquote>
+   */
+  private static final class EulerMatrix extends LinearAlgebra.AbstractMatrixGenerator {
+
+    /** The rotation by <code>angle</code> around the coordinate axis <code>axis</code>. */
+    private static IAST axisRotation(int axis, IExpr angle) {
+      final IExpr cos = F.Cos(angle);
+      final IExpr sin = F.Sin(angle);
+      final int next = (axis + 1) % 3;
+      final int last = (axis + 2) % 3;
+      return F.matrix((i, j) -> {
+        if (i == axis || j == axis) {
+          return i == j ? F.C1 : F.C0;
+        }
+        if (i == j) {
+          return cos;
+        }
+        return i == next && j == last ? F.Negate(sin) : sin;
+      }, 3, 3);
     }
 
+    @Override
+    protected IExpr generate(final IAST ast, EvalEngine engine) {
+      IExpr angles = ast.arg1();
+      int[] axes = ast.isAST2() ? eulerAxes(ast.arg2()) : DEFAULT_EULER_AXES;
+      if (axes == null || angles.isVector() != 3) {
+        return F.NIL;
+      }
+      IAST list = (IAST) angles.normal(false);
+      return F.Dot(axisRotation(axes[0], list.arg1()), axisRotation(axes[1], list.arg2()),
+          axisRotation(axes[2], list.arg3()));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <pre>
+   * EulerAngles(m)
+   * EulerAngles(m, {a, b, c})
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the angles <code>{alpha, beta, gamma}</code> with
+   * <code>m == EulerMatrix({alpha, beta, gamma}, {a, b, c})</code> for a numeric rotation matrix
+   * <code>m</code>. The angle <code>beta</code> is in the interval <code>[0, Pi]</code> for
+   * <code>a == c</code> and in <code>[-Pi/2, Pi/2]</code> otherwise; if the rotations around the
+   * first and last axis cannot be separated <code>gamma</code> is <code>0</code>.
+   *
+   * </blockquote>
+   */
+  private static final class EulerAngles extends AbstractFunctionEvaluator {
+
+    /** An expression below this limit is treated as zero. */
+    private static final double ZERO_LIMIT = 1.0e-10;
+
+    /** The sign of the cross product of the unit vectors of the two axes. */
+    private static int crossSign(int axis1, int axis2) {
+      return (axis2 + 3 - axis1) % 3 == 1 ? 1 : -1;
+    }
+
+    private static boolean isVanishing(IExpr expr, EvalEngine engine) {
+      return Math.abs(engine.evalDouble(expr)) < ZERO_LIMIT;
+    }
+
+    /** The angle in the plane of the point <code>{x, y}</code>. */
+    private static IExpr angle(int xSign, IExpr x, int ySign, IExpr y) {
+      return F.ArcTan(F.Times(F.ZZ(xSign), x), F.Times(F.ZZ(ySign), y));
+    }
+
+    /** The angles for a sequence with the same first and last axis. */
+    private static IAST properAngles(IAST m, int a, int b, EvalEngine engine) {
+      final int k = 3 - a - b;
+      final int signK = crossSign(b, a);
+      final int signB = signK * crossSign(a, k);
+      IExpr cosBeta = m.getPart(a + 1, a + 1);
+      IExpr beta = engine.evaluate(F.ArcCos(F.Clip(cosBeta)));
+      if (isVanishing(F.Sin(beta), engine)) {
+        int flip = engine.evalDouble(cosBeta) < 0.0 ? -1 : 1;
+        return F.List(angle(flip, m.getPart(k + 1, k + 1), flip * signB * signK,
+            m.getPart(b + 1, k + 1)), beta, F.C0);
+      }
+      return F.List(
+          angle(signK, m.getPart(k + 1, a + 1), signB, m.getPart(b + 1, a + 1)), beta,
+          angle(-signK, m.getPart(a + 1, k + 1), signB, m.getPart(a + 1, b + 1)));
+    }
+
+    /** The angles for a sequence of three different axes. */
+    private static IAST taitBryanAngles(IAST m, int a, int b, int c, EvalEngine engine) {
+      final int sign = crossSign(b, c);
+      IExpr beta =
+          engine.evaluate(F.ArcSin(F.Clip(F.Times(F.ZZ(sign), m.getPart(a + 1, c + 1)))));
+      if (isVanishing(F.Cos(beta), engine)) {
+        return F.List(angle(1, m.getPart(b + 1, b + 1), sign, m.getPart(c + 1, b + 1)), beta,
+            F.C0);
+      }
+      return F.List(angle(1, m.getPart(c + 1, c + 1), -sign, m.getPart(b + 1, c + 1)), beta,
+          angle(1, m.getPart(a + 1, a + 1), -sign, m.getPart(a + 1, b + 1)));
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int[] dimensions = ast.arg1().isMatrix();
+      int[] axes = ast.isAST2() ? eulerAxes(ast.arg2()) : DEFAULT_EULER_AXES;
+      if (dimensions == null || dimensions[0] != 3 || dimensions[1] != 3 || axes == null
+          || axes[0] == axes[1] || axes[1] == axes[2]) {
+        return F.NIL;
+      }
+      IAST matrix = (IAST) ast.arg1().normal(false);
+      if (!matrix.forAll(row -> ((IAST) row).forAll(x -> x.isNumericFunction()))) {
+        return F.NIL;
+      }
+      IAST angles = axes[0] == axes[2] ? properAngles(matrix, axes[0], axes[1], engine)
+          : taitBryanAngles(matrix, axes[0], axes[1], axes[2], engine);
+      // angles of an inexact matrix which vanish are an exact 0
+      return engine.evaluate(F.Chop(angles));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /** The axes of the default rotation sequence <code>{3, 2, 3}</code>. */
+  private static final int[] DEFAULT_EULER_AXES = {2, 1, 2};
+
+  /**
+   * The 0-based coordinate axes of a rotation sequence <code>{a, b, c}</code>.
+   *
+   * @return <code>null</code> if the list doesn't contain three of the values 1, 2 and 3
+   */
+  private static int[] eulerAxes(IExpr sequence) {
+    if (!sequence.isList() || sequence.argSize() != 3) {
+      return null;
+    }
+    int[] axes = new int[3];
+    for (int i = 0; i < 3; i++) {
+      axes[i] = ((IAST) sequence).get(i + 1).toIntDefault() - 1;
+      if (axes[i] < 0 || axes[i] > 2) {
+        return null;
+      }
+    }
+    return axes;
+  }
+
+  /**
+   * <pre>
+   * CoordinateTransformData("Polar" -&gt; "Cartesian", property)
+   * CoordinateTransformData("Polar" -&gt; "Cartesian", property, point)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives the <code>property</code> <code>"Mapping"</code>, <code>"MappingJacobian"</code> or
+   * <code>"MappingJacobianDeterminant"</code> of the transformation between the Cartesian and one
+   * of the <code>"Polar", "Spherical", "Cylindrical"</code> coordinates, as a pure function of the
+   * coordinate list or for the given <code>point</code>.
+   *
+   * </blockquote>
+   */
+  private static final class CoordinateTransformData extends AbstractFunctionEvaluator {
+
+    /** The Euclidean norm of the first <code>n</code> elements of <code>point</code>. */
+    private static IExpr norm(IAST point, int n) {
+      return F.Sqrt(F.mapRange(S.Plus, 1, n + 1, i -> F.Sqr(point.get(i))));
+    }
+
+    /** The not evaluated product, which keeps the order of the factors. */
+    private static IExpr product(IExpr... factors) {
+      return F.function(S.Times, factors);
+    }
+
+    /**
+     * The transformation of the (not evaluated) coordinates of <code>p</code>. In a product the
+     * trigonometric functions are in front of the coordinate.
+     *
+     * @return {@link F#NIL} if the transformation isn't known
+     */
+    private static IAST mapping(String from, String to, IAST p) {
+      switch (from + "->" + to) {
+        case "Polar->Cartesian":
+          return F.List(product(F.Cos(p.arg2()), p.arg1()), product(F.Sin(p.arg2()), p.arg1()));
+        case "Cartesian->Polar":
+          return F.List(norm(p, 2), F.ArcTan(p.arg1(), p.arg2()));
+        case "Spherical->Cartesian":
+          return F.List(product(F.Cos(p.arg3()), F.Sin(p.arg2()), p.arg1()),
+              product(F.Sin(p.arg2()), F.Sin(p.arg3()), p.arg1()),
+              product(F.Cos(p.arg2()), p.arg1()));
+        case "Cartesian->Spherical":
+          return F.List(norm(p, 3), F.ArcTan(p.arg3(), norm(p, 2)), F.ArcTan(p.arg1(), p.arg2()));
+        case "Cylindrical->Cartesian":
+          return F.List(product(F.Cos(p.arg2()), p.arg1()), product(F.Sin(p.arg2()), p.arg1()),
+              p.arg3());
+        case "Cartesian->Cylindrical":
+          return F.List(norm(p, 2), F.ArcTan(p.arg1(), p.arg2()), p.arg3());
+        default:
+          return F.NIL;
+      }
+    }
+
+    /** The number of coordinates of the system or <code>-1</code> if it isn't known. */
+    private static int dimension(String system) {
+      switch (system) {
+        case "Polar":
+          return 2;
+        case "Spherical":
+        case "Cylindrical":
+          return 3;
+        default:
+          return -1;
+      }
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr systems = ast.arg1();
+      if (!systems.isRuleAST() || !systems.first().isString() || !systems.second().isString()
+          || !ast.arg2().isString()) {
+        return F.NIL;
+      }
+      final String from = systems.first().toString();
+      final String to = systems.second().toString();
+      final int n = Math.max(dimension(from), dimension(to));
+      if (n < 0 || (ast.isAST3() && ast.arg3().isVector() != n)) {
+        return F.NIL;
+      }
+      final String property = ast.arg2().toString();
+      final IAST target = ast.isAST3() ? (IAST) ast.arg3().normal(false)
+          : F.mapRange(1, n + 1, i -> F.Part(F.Slot1, F.ZZ(i)));
+      IExpr value;
+      if (property.equals("Mapping")) {
+        value = mapping(from, to, target);
+      } else if (property.equals("MappingJacobian")
+          || property.equals("MappingJacobianDeterminant")) {
+        value = derivative(from, to, target, property.endsWith("Determinant"), engine);
+      } else {
+        return F.NIL;
+      }
+      if (value.isNIL()) {
+        return F.NIL;
+      }
+      return ast.isAST3() ? value : F.Function(value);
+    }
+
+    /** The Jacobian of the mapping or its determinant at the coordinates <code>target</code>. */
+    private static IExpr derivative(String from, String to, IAST target, boolean determinant,
+        EvalEngine engine) {
+      IAST variables = F.mapRange(1, target.size(), i -> F.Dummy());
+      IAST mapping = mapping(from, to, variables);
+      if (mapping.isNIL()) {
+        return F.NIL;
+      }
+      IExpr jacobian = F.D(mapping, F.list(variables));
+      IExpr value = engine.evaluate(determinant ? F.Simplify(F.Det(jacobian)) : jacobian);
+      return F.subst(value, x -> {
+        int position = variables.indexOf(x);
+        return position > 0 ? target.get(position) : F.NIL;
+      });
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
   }
 
   /**

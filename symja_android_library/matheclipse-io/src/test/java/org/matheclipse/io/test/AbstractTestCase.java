@@ -41,7 +41,6 @@ public abstract class AbstractTestCase {
 
   public AbstractTestCase() {
     Locale.setDefault(Locale.US);
-    Config.SERVER_MODE = false;
   }
 
   public void ESameTest(String expectedString, String evalString) {
@@ -117,13 +116,11 @@ public abstract class AbstractTestCase {
     check(EvalEngine.get(), true, ast, strResult);
   }
 
-  public void check(EvalEngine engine, boolean configMode, IAST ast, String strResult) {
-    boolean mode = Config.SERVER_MODE;
+  public void check(EvalEngine engine, boolean evaluate, IAST ast, String strResult) {
     try {
       StringWriter buf = new StringWriter();
 
-      Config.SERVER_MODE = configMode;
-      if (Config.SERVER_MODE) {
+      if (evaluate) {
         IAST inExpr = ast;
         TimeConstrainedEvaluator utility =
             new TimeConstrainedEvaluator(engine, false, Config.FOREVER);
@@ -140,8 +137,6 @@ public abstract class AbstractTestCase {
     } catch (Exception e) {
       e.printStackTrace();
       assertEquals("", "1");
-    } finally {
-      Config.SERVER_MODE = mode;
     }
   }
 

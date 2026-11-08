@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Represents an interpolating function stored as data within the expression system.
@@ -108,6 +109,29 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       function.exactDomain = exactDomain;
       function.numericArgumentsOnly = numericArgumentsOnly;
       return function;
+    }
+
+    /**
+     * The derivative of the polynomial pieces of a function which doesn't write them out for a
+     * symbolic argument.
+     */
+    @Override
+    public IExpr derivative(int n) {
+      if (!numericArgumentsOnly) {
+        return F.NIL;
+      }
+      EvalEngine engine = EvalEngine.get();
+      ISymbol x = F.Dummy("x");
+      IExpr pieces = engine.evaluate(F.unaryAST1(toData(), x));
+      if (!pieces.isAST(S.Piecewise) || !pieces.first().isList()) {
+        return F.NIL;
+      }
+      // piece by piece: the derivative of the Piecewise itself is undefined at the knots
+      IAST order = F.list(x, F.ZZ(n));
+      IAST derivedPieces = F.mapList((IAST) pieces.first(),
+          piece -> F.list(engine.evaluate(F.D(piece.first(), order)), piece.second()));
+      IExpr rest = pieces.argSize() < 2 ? F.C0 : engine.evaluate(F.D(pieces.second(), order));
+      return F.Function(F.subst(F.Piecewise(derivedPieces, rest), x, F.Slot1));
     }
   }
 

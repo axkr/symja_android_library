@@ -102,7 +102,7 @@ public class AsymptoticSolve extends AbstractFunctionOptionEvaluator {
     // ==============================================================================
     // STRATEGY 1: EXACT SOLUTION -> SERIES EXPANSION
     // ==============================================================================
-    IAST solveCall = domain == S.Reals ? F.Solve(eqns, yVars, domain) : F.Solve(eqns, yVars);
+    IAST solveCall = domain == S.Reals ? F.SolveDistinct(eqns, yVars, domain) : F.SolveDistinct(eqns, yVars);
     IExpr solveRes = engine.evaluate(solveCall);
 
     if (solveRes.isList() && !solveRes.isAST(S.Solve)) {
@@ -278,7 +278,7 @@ public class AsymptoticSolve extends AbstractFunctionOptionEvaluator {
           eqAtX0 = engine.evaluate(F.subst(eq, xVar, x0));
         }
 
-        IExpr rootSols = engine.evaluate(F.Solve(eqAtX0, F.List(yVar)));
+        IExpr rootSols = engine.evaluate(F.SolveDistinct(eqAtX0, F.List(yVar)));
         if (rootSols.isList() && !rootSols.isAST(S.Solve)) {
           for (int i = 1; i <= ((IAST) rootSols).argSize(); i++) {
             IExpr branch = ((IAST) rootSols).get(i);
@@ -342,7 +342,7 @@ public class AsymptoticSolve extends AbstractFunctionOptionEvaluator {
           }
         }
 
-        IAST solveC = F.Solve(algebraicConstraints, cVars);
+        IAST solveC = F.SolveDistinct(algebraicConstraints, cVars);
         IExpr solC = engine.evaluate(solveC);
 
         if (solC.isList() && ((IAST) solC).argSize() > 0) {

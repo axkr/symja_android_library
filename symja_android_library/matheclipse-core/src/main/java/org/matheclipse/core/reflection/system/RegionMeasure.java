@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.ParametricMeasure;
 import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -17,6 +18,21 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.argSize() > 1 && ast.last().isRuleAST()) {
+      // the options AccuracyGoal, Assumptions, PrecisionGoal, WorkingPrecision, ...
+      IExpr measure = RegionPrimitives.measureWithOptions(ast, engine);
+      if (measure.isPresent()) {
+        return measure;
+      }
+    }
+    if (ast.argSize() >= 2 && ast.arg2().isListOfLists()) {
+      // RegionMeasure(f, {{u,umin,umax}, ...}) and a chart as third argument
+      return ParametricMeasure.measure(ast.arg1(), (IAST) ast.arg2(),
+          ast.isAST3() ? ast.arg3() : F.NIL, engine);
+    }
+    if (ast.isAST3()) {
+      return F.NIL;
+    }
     IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (MeshFunctions.isMeshRegion(arg1)) {
       int embeddingDimension = MeshFunctions.embeddingDimension((IAST) arg1);
@@ -129,6 +145,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
             return capsuleShapeMeasure(reg, engine);
           case ID.StadiumShape:
           case ID.DiskSegment:
+          case ID.Annulus:
             // the measure of a two dimensional region is its area
             return S.Area.of(engine, reg);
           case ID.EmptyRegion:
@@ -364,6 +381,6 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
+    return ARGS_1_3;
   }
 }

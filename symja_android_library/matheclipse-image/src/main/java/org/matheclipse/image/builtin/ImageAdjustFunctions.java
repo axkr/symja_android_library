@@ -40,7 +40,8 @@ public class ImageAdjustFunctions {
 
   /**
    * <code>FindThreshold(image)</code> - the intensity that best separates the image into two
-   * groups, as a number in <code>0.0 ... 1.0</code>.
+   * groups, as a number in <code>0.0 ... 1.0</code>; <code>FindThreshold(data)</code> takes the
+   * numbers of an array like the samples of an image.
    *
    * <p>
    * <code>Method -&gt; "Cluster"</code> (the default) is Otsu's method; <code>"Entropy"</code>,
@@ -50,16 +51,50 @@ public class ImageAdjustFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof ImageExpr)) {
-        return F.NIL;
+      Raster raster;
+      String type = Pixels.REAL32;
+      if (ast.arg1() instanceof ImageExpr) {
+        raster = ((ImageExpr) ast.arg1()).raster();
+        type = ((ImageExpr) ast.arg1()).sampleType();
+      } else {
+        raster = ofNumbers(ast.arg1());
       }
-      Raster raster = ((ImageExpr) ast.arg1()).raster();
       if (raster == null) {
         return F.NIL;
       }
       String method = methodOption(ast, 2, engine, "Cluster");
-      double threshold = threshold(raster, method, false);
-      return Double.isNaN(threshold) ? F.NIL : F.num(threshold / 255.0);
+      double threshold = threshold(raster, type, method, false);
+      if (Double.isNaN(threshold)) {
+        return F.NIL;
+      }
+      return Pixels.BIT.equals(type) && threshold == 0.5 ? F.C1D2 : F.num(threshold);
+    }
+
+    /**
+     * The numbers of an array as a row of samples.
+     *
+     * @return <code>null</code> if <code>data</code> is no list of real numbers
+     */
+    private static Raster ofNumbers(IExpr data) {
+      if (!data.isList()) {
+        return null;
+      }
+      java.util.ArrayList<IExpr> leaves = new java.util.ArrayList<>();
+      for (IExpr leaf : (IAST) F.Flatten(data).eval()) {
+        leaves.add(leaf);
+      }
+      if (leaves.isEmpty()) {
+        return null;
+      }
+      Raster raster = new Raster(leaves.size(), 1, 1);
+      for (int i = 0; i < leaves.size(); i++) {
+        double value = leaves.get(i).evalfNaN();
+        if (Double.isNaN(value)) {
+          return null;
+        }
+        raster.set(i, 0, 0, value);
+      }
+      return raster;
     }
 
     @Override
@@ -142,27 +177,27 @@ public class ImageAdjustFunctions {
           if (range.argSize() != 2) {
             return F.NIL;
           }
-          low = range.arg1().evalfNaN() * 255.0;
-          high = range.arg2().evalfNaN() * 255.0;
+          low = range.arg1().evalfNaN();
+          high = range.arg2().evalfNaN();
           if (Double.isNaN(low) || Double.isNaN(high)) {
             return F.NIL;
           }
         } else {
-          low = ast.arg2().evalfNaN() * 255.0;
+          low = ast.arg2().evalfNaN();
           if (Double.isNaN(low)) {
             return F.NIL;
           }
         }
       } else {
-        low = threshold(raster, methodOption(ast, 2, engine, "Cluster"), true);
+        low = threshold(raster, ((ImageExpr) ast.arg1()).sampleType(),
+            methodOption(ast, 2, engine, "Cluster"), true);
         if (Double.isNaN(low)) {
           return F.NIL;
         }
       }
 
-      // the thresholds are on the 0 ... 255 scale, the intensities of the samples as they are
-      final double lowBound = low / 255.0;
-      final double highBound = high / 255.0;
+      final double lowBound = low;
+      final double highBound = high;
       Raster binary = new Raster(raster.width, raster.height, 1);
       for (int y = 0; y < raster.height; y++) {
         for (int x = 0; x < raster.width; x++) {
@@ -253,14 +288,27 @@ public class ImageAdjustFunctions {
       }
 
       if (ast.argSize() == 1) {
-        // the range of the samples as they are, also beyond 0 ... 1, onto 0 ... 1
-        double[] range = raster.colorRange();
-        if (range[1] <= range[0]) {
-          return ast.arg1();
+        // the range of the samples of each colour channel as they are, also beyond 0 ... 1, onto
+        // 0 ... 1; a channel of a single value becomes 0
+        Raster result = raster.copy();
+        final int colorChannels = raster.colorChannels();
+        for (int c = 0; c < colorChannels; c++) {
+          double minimum = Double.POSITIVE_INFINITY;
+          double maximum = Double.NEGATIVE_INFINITY;
+          for (int y = 0; y < raster.height; y++) {
+            for (int x = 0; x < raster.width; x++) {
+              minimum = Math.min(minimum, raster.get(x, y, c));
+              maximum = Math.max(maximum, raster.get(x, y, c));
+            }
+          }
+          double width = maximum - minimum;
+          for (int y = 0; y < raster.height; y++) {
+            for (int x = 0; x < raster.width; x++) {
+              result.set(x, y, c, width > 0.0 ? (raster.get(x, y, c) - minimum) / width : 0.0);
+            }
+          }
         }
-        final double minimum = range[0];
-        final double width = range[1] - range[0];
-        return imageOf(raster.mapColor(value -> (value - minimum) / width), image);
+        return imageOf(result, image);
       }
 
       double contrast = 0.0;
@@ -437,36 +485,35 @@ public class ImageAdjustFunctions {
    * @param cut <code>true</code> for the value <code>Binarize</code> splits the samples at,
    *        <code>false</code> for the one <code>FindThreshold</code> reports
    */
-  private static double threshold(Raster raster, String method, boolean cut) {
-    // the intensities row by row from the top, on the 0 ... 255 scale
-    float[] values = new float[raster.width * raster.height];
-    float low = 0.0f;
-    float high = Boof.MAX_VALUE;
-    for (int y = 0; y < raster.height; y++) {
-      for (int x = 0; x < raster.width; x++) {
-        float value = (float) (255.0 * intensity(raster, x, y));
-        values[y * raster.width + x] = value;
-        low = Math.min(low, value);
-        high = Math.max(high, value);
-      }
-    }
+  private static double threshold(Raster raster, String type, String method, boolean cut) {
+    double[] levels = levels(raster, type);
     switch (method) {
       case "Cluster":
       case "Otsu":
       case "Automatic":
-        return otsu(values, cut);
+        return otsu(levels, type, false, cut);
       case "Entropy":
-      case "MinimumError":
-        return Enhance.entropy(values, raster.width, raster.height, low, high);
+      case "MinimumError": {
+        // on the 0 ... 255 scale
+        float[] values = new float[levels.length];
+        float low = 0.0f;
+        float high = Boof.MAX_VALUE;
+        for (int i = 0; i < levels.length; i++) {
+          values[i] = (float) (255.0 * levels[i]);
+          low = Math.min(low, values[i]);
+          high = Math.max(high, values[i]);
+        }
+        return Enhance.entropy(values, raster.width, raster.height, low, high) / 255.0;
+      }
       case "Mean": {
         double total = 0.0;
-        for (float value : values) {
-          total += value;
+        for (double level : levels) {
+          total += level;
         }
-        return total / values.length;
+        return total / levels.length;
       }
       case "Median": {
-        float[] sorted = values.clone();
+        double[] sorted = levels.clone();
         java.util.Arrays.sort(sorted);
         return sorted[(sorted.length - 1) / 2];
       }
@@ -476,60 +523,86 @@ public class ImageAdjustFunctions {
   }
 
   /**
-   * Otsu's threshold of the values: the split of a 256 bin histogram over their own range which
-   * separates the two groups best. Where several splits are equally good the first of them is
-   * taken, unless the darker group is the darkest bin alone - two values only, say - where the
-   * threshold goes to the middle of the gap above it.
+   * The intensities row by row from the top, those of a <code>"Real32"</code> image in single
+   * precision.
+   */
+  static double[] levels(Raster raster, String type) {
+    boolean single = Pixels.REAL32.equals(type);
+    double[] levels = new double[raster.width * raster.height];
+    for (int y = 0; y < raster.height; y++) {
+      for (int x = 0; x < raster.width; x++) {
+        double level = intensity(raster, x, y);
+        levels[y * raster.width + x] = single ? (float) level : level;
+      }
+    }
+    return levels;
+  }
+
+  /**
+   * Otsu's threshold of the levels: the split of a histogram which separates the two groups best,
+   * the first of several equally good ones. The histogram of an integer image has one bin per
+   * integer, that of reals 256 bins over their own range, or over <code>0 ... 1</code> for
+   * <code>unitRange</code>. The threshold is the start of the bin that ends the darker group, or
+   * the middle between two bins if only they are in use; a constant image has the threshold 1.
    *
    * @param cut <code>true</code> for the value to split the samples at, which is the end of the bin
-   *        the threshold names: that bin still belongs to the darker group
+   *        of real levels the threshold names, because that bin still belongs to the darker group;
+   *        all levels of a constant image are at it
    */
-  private static double otsu(float[] values, boolean cut) {
+  static double otsu(double[] levels, String type, boolean unitRange, boolean cut) {
     double low = Double.POSITIVE_INFINITY;
     double high = Double.NEGATIVE_INFINITY;
-    for (float value : values) {
-      low = Math.min(low, value);
-      high = Math.max(high, value);
+    for (double level : levels) {
+      low = Math.min(low, level);
+      high = Math.max(high, level);
     }
     if (!(high > low)) {
-      return low;
+      return cut ? low : 1.0;
     }
-    final int bins = 256;
-    double width = (high - low) / bins;
-    long[] histogram = new long[bins];
-    double total = 0.0;
-    for (float value : values) {
-      histogram[Math.min(bins - 1, (int) ((value - low) / width))]++;
-      total += value;
+    boolean integer = Raster.isIntegerType(type);
+    double max = Raster.maxOf(type);
+    double origin = integer || unitRange ? 0.0 : low;
+    int bins = integer ? (int) max + 1 : 256;
+    double width = integer ? 1.0 / max : ((unitRange ? 1.0 : high) - origin) / bins;
+    double[] histogram = new double[bins];
+    for (double level : levels) {
+      int bin = integer ? Raster.level(level, max)
+          : Math.min(bins - 1, (int) Math.max(0.0, (level - origin) / width));
+      histogram[bin]++;
     }
-    double count = values.length;
+    int used = 0;
+    int firstBin = 0;
+    int lastBin = 0;
+    double moment = 0.0;
+    for (int k = 0; k < bins; k++) {
+      if (histogram[k] > 0.0) {
+        firstBin = used++ == 0 ? k : firstBin;
+        lastBin = k;
+        moment += k * histogram[k];
+      }
+    }
+    if (used == 2) {
+      return origin + (firstBin + lastBin) / 2.0 * width;
+    }
     double weightBelow = 0.0;
-    double sumBelow = 0.0;
+    double momentBelow = 0.0;
     double best = -1.0;
-    int first = 0;
-    int last = 0;
-    for (int t = 0; t < bins - 1; t++) {
-      weightBelow += histogram[t];
-      sumBelow += histogram[t] * (low + (t + 0.5) * width);
-      double weightAbove = count - weightBelow;
+    int bestBin = 0;
+    for (int k = 0; k < bins; k++) {
+      weightBelow += histogram[k];
+      momentBelow += k * histogram[k];
+      double weightAbove = levels.length - weightBelow;
       if (weightBelow == 0.0 || weightAbove == 0.0) {
         continue;
       }
-      double meanBelow = sumBelow / weightBelow;
-      double meanAbove = (total - sumBelow) / weightAbove;
-      double between = weightBelow * weightAbove * (meanBelow - meanAbove) * (meanBelow - meanAbove);
-      if (between > best * (1.0 + 1.0e-12)) {
+      double difference = momentBelow / weightBelow - (moment - momentBelow) / weightAbove;
+      double between = weightBelow * weightAbove * difference * difference;
+      if (between > best) {
         best = between;
-        first = t;
-        last = t;
-      } else if (between >= best * (1.0 - 1.0e-12)) {
-        last = t;
+        bestBin = k;
       }
     }
-    if (first == 0) {
-      return low + width * (first + last + 1) / 2.0;
-    }
-    return low + width * (cut ? first + 1 : first);
+    return origin + (cut && !integer ? bestBin + 1 : bestBin) * width;
   }
 
   /** The <code>Method</code> option, looked for from <code>startIndex</code> on. */
@@ -546,7 +619,7 @@ public class ImageAdjustFunctions {
   /**
    * The intensity of a pixel: its sample, or the weighted sum of its colour samples, as they are.
    */
-  private static double intensity(Raster raster, int x, int y) {
+  static double intensity(Raster raster, int x, int y) {
     if (raster.colorChannels() < 3) {
       return raster.get(x, y, 0);
     }

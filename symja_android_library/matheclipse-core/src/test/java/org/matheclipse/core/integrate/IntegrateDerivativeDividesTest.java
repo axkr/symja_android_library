@@ -2,6 +2,8 @@ package org.matheclipse.core.integrate;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * M1 corpus test for the derivative-divides (Geddes) u-substitution stage
@@ -25,6 +27,7 @@ public class IntegrateDerivativeDividesTest extends AbstractIntegrateCorpusTest 
    * Rubi). All must differentiate back to the integrand.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void derivativeDividesAutomatic() {
     runCorpusResource("/integrate/derivative_divides_seed.txt", null);
   }
@@ -35,6 +38,7 @@ public class IntegrateDerivativeDividesTest extends AbstractIntegrateCorpusTest 
    * stage recovers all of them. A non-zero count is the concrete value of wiring the stage.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void derivativeDividesAddedCoverageOverRubi() {
     boolean old = Config.INTEGRATE_ALGORITHM_DERIVATIVE_DIVIDES;
     Config.INTEGRATE_ALGORITHM_DERIVATIVE_DIVIDES = false;

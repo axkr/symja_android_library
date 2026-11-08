@@ -266,6 +266,13 @@ public class D extends AbstractFunctionOptionEvaluator {
           || id == ID.InverseZTransform) {
         return F.NIL;
       }
+      if ((id == ID.WeierstrassP || id == ID.WeierstrassPPrime || id == ID.WeierstrassSigma
+          || id == ID.WeierstrassZeta) && ast.isAST2() && ast.arg2().isList()
+          && ast.arg2().isFree(x)) {
+        // the invariants are constants
+        return F.Times(F.D(ast.arg1(), x),
+            Derivative.withBuiltinRule(createDerivative(1, head, ast)));
+      }
       if (ast.exists(arg -> arg.isList())) {
         // an iterator or option list like in Table(f, {k, 1, n}) has no partial derivative
         return F.NIL;
@@ -498,6 +505,12 @@ public class D extends AbstractFunctionOptionEvaluator {
         return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
       }
 
+      if (fx.isAST(S.Indexed, 3) && !fx.first().isList() && isDerivativeVariable(x)
+          && !(fx.first() instanceof IArraySymbol) && !fx.first().isFree(x, true)
+          && fx.second().isFree(x, true)) {
+        // the component of a list valued function: the component of its derivative
+        return F.binaryAST2(S.Indexed, F.D(fx.first(), x), fx.second());
+      }
       if (x instanceof IArraySymbol) {
         // differentiating by a whole vector, matrix or array; an unsupported case has to stay
         // unevaluated rather than fall through to the scalar rules below
@@ -679,6 +692,20 @@ public class D extends AbstractFunctionOptionEvaluator {
     if (dim != null) {
       return dPiecewise(dim, (IAST) functionOfX, x, ast, engine);
     }
+    if ((functionOfX.isAST(S.Max) || functionOfX.isAST(S.Min)) && functionOfX.argSize() > 1
+        && functionOfX.isFree(IExpr::isInexactNumber, true)
+        && ((IAST) functionOfX).forAll(arg -> {
+          IExpr variables = engine.evaluate(F.Variables(arg));
+          return variables.isEmpty() || variables.equals(F.list(x));
+        })) {
+      // the pieces of Max(x, 1-x) and their kinks, where the derivative doesn't exist
+      IExpr expanded = engine.evaluate(F.PiecewiseExpand(functionOfX));
+      if (expanded.isPiecewise() != null) {
+        IASTMutable piecewiseD = ast.copy();
+        piecewiseD.set(1, expanded);
+        return piecewiseD;
+      }
+    }
 
     if (functionOfX instanceof ASTSeriesData) {
       ASTSeriesData series = ((ASTSeriesData) functionOfX);
@@ -761,6 +788,13 @@ public class D extends AbstractFunctionOptionEvaluator {
             if (function.argSize() == 3 && function.first().isList()
                 && function.second().isList()) {
               return hypergeometricPFQ(function, x);
+            }
+            break;
+
+          case ID.HypergeometricPFQRegularized:
+            if (function.argSize() == 3 && function.first().isList()
+                && function.second().isList()) {
+              return hypergeometricPFQRegularized(function, x);
             }
             break;
 
@@ -1180,6 +1214,27 @@ public class D extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * <code>D(HypergeometricPFQRegularized(a, b, z), z)</code> is
+   * <code>Times(a)*HypergeometricPFQRegularized(a+1, b+1, z)</code>: the factor
+   * <code>1/Times(b)</code> of the unregularized derivative goes into the Gamma functions.
+   */
+  private static IExpr hypergeometricPFQRegularized(final IAST function, IExpr x) {
+    IAST list1 = (IAST) function.first();
+    IAST list2 = (IAST) function.second();
+    if (!list1.isFree(x) || !list2.isFree(x)) {
+      return F.NIL;
+    }
+    IASTAppendable newList1 = F.ListAlloc(list1.argSize());
+    list1.forEach(a -> newList1.append(F.Plus(F.C1, a)));
+    IASTAppendable newList2 = F.ListAlloc(list2.argSize());
+    list2.forEach(b -> newList2.append(F.Plus(F.C1, b)));
+    IExpr timesNumerator = list1.argSize() == 0 ? F.C1 : list1.apply(S.Times, 1);
+    return F.Times(timesNumerator,
+        F.HypergeometricPFQRegularized(newList1, newList2, function.arg3()),
+        F.D(function.arg3(), x));
+  }
+
+  /**
    * Open the comparisons of a {@link S#Piecewise} condition which contain the differentiation
    * variable, i.e. rewrite <code>x&gt;=c</code> to <code>x&gt;c</code> and <code>x&lt;=c</code> to
    * <code>x&lt;c</code>.
@@ -1234,6 +1289,52 @@ public class D extends AbstractFunctionOptionEvaluator {
     return condition;
   }
 
+  /**
+   * The derivative of a <code>Piecewise</code> function whose conditions are comparisons of the
+   * differentiation variable <code>x</code> only. A piece holds where its condition is true and the
+   * conditions before it are false; these regions are reduced to intervals of <code>x</code>, whose
+   * interiors carry the derivatives of the pieces and of the default value. The boundary points get
+   * the default <code>Indeterminate</code>.
+   *
+   * @return {@link F#NIL} if a condition depends on another variable or can't be reduced
+   */
+  private static IExpr dPiecewiseReduced(IAST list, IExpr defaultValue, IExpr x, IAST ast,
+      EvalEngine engine) {
+    IAST variableList = F.list(x);
+    for (int i = 1; i < list.size(); i++) {
+      if (!list.get(i).isList2() || list.get(i).second().has(S.Unequal)
+          || !engine.evaluate(F.Variables(list.get(i).second())).equals(variableList)) {
+        return F.NIL;
+      }
+    }
+    IASTAppendable pwResult = F.ListAlloc(list.size() + 1);
+    IASTAppendable previous = F.ast(S.Or, list.size());
+    for (int i = 0; i < list.size(); i++) {
+      IExpr value;
+      IExpr region;
+      if (i < list.size() - 1) {
+        IExpr condition = list.get(i + 1).second();
+        value = list.get(i + 1).first();
+        region = previous.argSize() == 0 ? condition : F.And(condition, F.Not(previous.copy()));
+        previous.append(condition);
+      } else {
+        value = defaultValue;
+        region = F.Not(previous);
+      }
+      IExpr interval = engine.evalQuiet(F.Reduce(region, x, S.Reals));
+      if (!interval.isFree(S.Reduce, true) || !interval.isFree(S.Not, true)) {
+        return F.NIL;
+      }
+      IExpr opened = engine.evaluate(openCondition(interval, x));
+      if (!opened.isFalse()) {
+        IASTMutable piecewiseD = ast.copy();
+        piecewiseD.set(1, value);
+        pwResult.append(F.list(piecewiseD, opened));
+      }
+    }
+    return F.Piecewise(pwResult, S.Indeterminate);
+  }
+
   private static IExpr dPiecewise(int[] dim, final IAST piecewiseFunction, final IExpr x,
       final IAST ast, EvalEngine engine) {
 
@@ -1253,6 +1354,10 @@ public class D extends AbstractFunctionOptionEvaluator {
       return F.Piecewise(pwResult, defaultD);
     }
     if (list.size() > 1) {
+      IExpr reduced = dPiecewiseReduced(list, defaultValue, x, ast, engine);
+      if (reduced.isPresent()) {
+        return reduced;
+      }
       IASTAppendable pwResult = F.ListAlloc(list.size() + 1);
       IASTAppendable conditions = F.ast(S.Or, list.size());
       for (int i = 1; i < list.size(); i++) {

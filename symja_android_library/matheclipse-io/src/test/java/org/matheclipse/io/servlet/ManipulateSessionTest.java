@@ -39,7 +39,7 @@ public class ManipulateSessionTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
     // the solar system widget calls AstronomicalData, which the servlets register through IOInit
     org.matheclipse.astro.AstroInit.init();
   }

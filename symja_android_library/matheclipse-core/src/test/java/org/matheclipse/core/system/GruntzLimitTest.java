@@ -72,7 +72,7 @@ public class GruntzLimitTest extends ExprEvaluatorTestCase {
     IExpr combined = LimitGruntz.logCombine(input, true);
     // numeric value-preservation probe at x = 100 (robust against representation changes)
     IExpr difference = engine.evaluate(F.subst(F.Subtract(combined, input), x, F.ZZ(100)));
-    double error = Math.abs(engine.evaluate(F.N(difference)).evalDouble());
+    double error = Math.abs(engine.evaluate(F.N(difference)).evalf());
     assertTrue(error < 1.0e-10, "logCombine changed the value, difference: " + difference);
     // and the product term itself must survive
     assertTrue(combined.toString().contains("Log(x)*Log(Log(x))"),

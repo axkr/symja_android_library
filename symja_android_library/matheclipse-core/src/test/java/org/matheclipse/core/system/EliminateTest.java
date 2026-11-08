@@ -178,8 +178,8 @@ public class EliminateTest extends ExprEvaluatorTestCase {
         "Sin(2*x)==2");
     // the common root condition of two polynomials, which `Resultant` gives as well
     check("Eliminate(a*x^3+(a^2-1)*x^2+(2*a-3)*x+4==0 && (1-a^2)*x^4-2*a*x+7*a^2-1==0, x)", //
-        "a*(102+2270*a-4602*a^2-2549*a^3+9336*a^4-1749*a^5-7464*a^6+4122*a^7+3102*a^8-\n" //
-            + "2372*a^9-546*a^10+623*a^11-49*a^13)==0");
+        "a*(-102-2270*a+4602*a^2+2549*a^3-9336*a^4+1749*a^5+7464*a^6-4122*a^7-3102*a^8+\n" //
+            + "2372*a^9+546*a^10-623*a^11+49*a^13)==0");
     // the variable is eliminated with the equation of the lowest degree, so that no root is
     // needed: Mathematica gives the same 24-28*x+29*x^2+42*y-12*x*y+34*y^2==0
     check("Eliminate(x^2+y^2+z^2==1 && 2*x-3*y+5*z==7, z)", //

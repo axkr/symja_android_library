@@ -116,7 +116,9 @@ public final class LinearExtremum {
         if (domain != S.Integers && domain != S.Reals) {
           return F.NIL;
         }
-        IAST elements = c.first().makeList();
+        // Element({x,y}, Integers) evaluates to Element(x|y, Integers)
+        IAST elements = c.first().isAST(S.Alternatives) ? ((IAST) c.first()).setAtCopy(0, S.List)
+            : c.first().makeList();
         for (int j = 1; j < elements.size(); j++) {
           int k = indexOf(vars, elements.get(j));
           if (k < 0) {

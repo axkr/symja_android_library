@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.LongFunction;
+import java.util.function.UnaryOperator;
 import org.matheclipse.core.interfaces.INumber;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apfloat;
@@ -18,8 +19,11 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
@@ -93,6 +97,39 @@ public final class N extends AbstractCoreFunctionEvaluator {
   }
 
   /**
+   * Replace the exact numbers and the constants of <code>expr</code> by their numeric values
+   * without evaluating anything else. The arguments which the <code>NHold...</code> attributes of
+   * their head protect are skipped, as in <code>Slot(1)</code> or the indices of <code>Part</code>.
+   *
+   * @param expr a held expression
+   * @param numeric the numeric value of a number or constant
+   */
+  private static IExpr heldNumbers(IExpr expr, UnaryOperator<IExpr> numeric) {
+    if (expr.isNumber() ? !expr.isInexactNumber() : expr.isConstantAttribute()) {
+      return numeric.apply(expr);
+    }
+    if (!expr.isAST()) {
+      return expr;
+    }
+    final IAST ast = (IAST) expr;
+    final int attributes =
+        ast.head().isSymbol() ? ((ISymbol) ast.head()).getAttributes() : ISymbol.NOATTRIBUTE;
+    if (Attribute.NHOLDALL.isSetIn(attributes)) {
+      return expr;
+    }
+    final IASTMutable result = ast.copy();
+    // an integer exponent stays exact, as in the numeric value of an expression
+    final int size = ast.isPower() && ast.exponent().isInteger() ? 2 : ast.size();
+    for (int i = 1; i < size; i++) {
+      if (!Attribute.NHOLDFIRST.isAnySetIn(attributes) && i == 1
+          || !Attribute.NHOLDREST.isAnySetIn(attributes) && i > 1) {
+        result.set(i, heldNumbers(ast.get(i), numeric));
+      }
+    }
+    return result;
+  }
+
+  /**
    * The call an N-value of <code>N(x, precision)</code> is looked up with: <code>N(x)</code> for
    * machine precision, <code>N(x, p.)</code> for a precision <code>p</code>, <code>N(x, {p.,
    * a.})</code> for a precision and an accuracy.
@@ -139,6 +176,13 @@ public final class N extends AbstractCoreFunctionEvaluator {
     if (arg1.isListOrAssociation() || arg1.isRuleAST()) {
       return ((IAST) arg1).mapThread(ast, 1);
     }
+    if (arg1.isFunction() && arg1.argSize() >= 1) {
+      // the body of a pure function is held: only its numbers are reached
+      final IAST function = (IAST) arg1;
+      final int body = function.isAST1() ? 1 : 2;
+      final UnaryOperator<IExpr> numeric = x -> engine.evaluate(ast.setAtCopy(1, x));
+      return function.setAtCopy(body, heldNumbers(function.get(body), numeric));
+    }
     if (ast.isAST1()) {
       return org.matheclipse.core.reflection.system.N.evalN1(arg1, engine);
     }
@@ -176,6 +220,11 @@ public final class N extends AbstractCoreFunctionEvaluator {
       // an exact expression: lost working digits are calculated again, they are no errors of the
       // input
       final boolean exactInput = arg1.isFree(IExpr::isInexactNumber, false);
+      if (exactInput && requestedPrecision > 0.0 && requestedPrecision < 1.0) {
+        // a precision below one digit: an arbitrary precision number which says so, computed with
+        // the digits of a machine number and guard digits
+        nDigitPrecision = FRACTIONAL_PRECISION_DIGITS;
+      }
       IExpr result;
       if (exactInput) {
         engine.suspendSignificance();
@@ -380,7 +429,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
     try {
       return engine.evaluate(expr);
     } catch (IterationLimitExceeded | BigIntegerLimitExceeded | ASTElementLimitExceeded le) {
-      if (expr.isAST() && expr.topHead().isNumericFunctionAttribute()) {
+      if (expr.isAST() && expr.topHead().hasNumericFunctionAttribute()) {
         // the arguments are still evaluated exactly, where that is possible
         return ((IAST) expr).map(x -> evaluateExact(x, engine), 1);
       }
@@ -439,7 +488,8 @@ public final class N extends AbstractCoreFunctionEvaluator {
       nPrecision = ParserConfig.MACHINE_PRECISION;
     }
     engine.setNumericMode(true, nPrecision, significantFigures);
-    final boolean adaptive = Config.MAX_EXTRA_PRECISION > 0 && original.isAST()
+    // also without extra digits: what was lost is seen, and a zero gets the accuracy reached
+    final boolean adaptive = original.isAST()
         && !original.has(x -> x.isInexactNumber(), true);
     if (expr.isNumber() && !(adaptive && expr.isInexactNumber()
         && lostExactly >= PrecisionLoss.THRESHOLD)) {
@@ -513,15 +563,64 @@ public final class N extends AbstractCoreFunctionEvaluator {
     return result;
   }
 
+  /** The working digits of <code>N(x, p)</code> for a precision <code>0 &lt; p &lt; 1</code>. */
+  private static final long FRACTIONAL_PRECISION_DIGITS = 20;
+
   /** Working digits beyond the ones a reported loss asks for. */
   private static final long GUARD_DIGITS = 3;
+
+  /**
+   * The decimal exponent of the size of the terms of <code>expr</code>: of its largest term for a
+   * sum, the sum of the exponents of the factors for a product, so that the zero which a cancelling
+   * sum leaves gets the error of its terms also inside a product or a power. The size is taken
+   * from an evaluation with a few digits, which has no upper bound like a machine number.
+   *
+   * @return <code>0</code> if the size can't be told
+   */
+  private static double termScale(IExpr expr, EvalEngine engine) {
+    if (expr.isPlus()) {
+      double largest = Double.NEGATIVE_INFINITY;
+      for (IExpr term : (IAST) expr) {
+        largest = Math.max(largest, termScale(term, engine));
+      }
+      return largest == Double.NEGATIVE_INFINITY ? 0.0 : largest;
+    }
+    if (expr.isTimes()) {
+      double sum = 0.0;
+      for (IExpr factor : (IAST) expr) {
+        sum += termScale(factor, engine);
+      }
+      return sum;
+    }
+    if (expr.isPower() && expr.exponent().isReal() && expr.exponent().isPositive()) {
+      return expr.exponent().evalf() * termScale(expr.base(), engine);
+    }
+    if (expr.isNumber() && expr.isZero()) {
+      return 0.0;
+    }
+    final boolean quiet = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      final IExpr value = engine.evaluate(F.N(F.Abs(expr), F.ZZ(20)));
+      if (value.isReal() && value.isPositive()) {
+        final Apfloat size = ((IReal) value).apfloatValue();
+        // log10 of size = scale + log10 of the mantissa in [0.1, 1)
+        return size.scale() + Math.log10(ApfloatMath.scale(size, -size.scale()).doubleValue());
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    } finally {
+      engine.setQuietMode(quiet);
+    }
+    return 0.0;
+  }
 
   /**
    * The numeric value of an exact expression. Every operation is calculated with the digits of the
    * working precision and no more, so that a difference of nearly equal numbers, or a periodic
    * function of a large argument, has fewer right digits than was asked for. The operations
    * report that to {@link PrecisionLoss}; the expression is evaluated again then, with as many
-   * digits more as were lost, up to {@link Config#MAX_EXTRA_PRECISION} of them.
+   * digits more as were lost, up to {@link EvalEngine#maxExtraPrecision()} of them.
    *
    * <p>
    * A reported loss need not reach the result: a function may subtract equal numbers on its way
@@ -546,7 +645,8 @@ public final class N extends AbstractCoreFunctionEvaluator {
       final long machinePrecision, final long requested, int significantFigures,
       EvalEngine engine) {
     long precision = machinePrecision;
-    long maxPrecision = precision + Config.MAX_EXTRA_PRECISION;
+    final long extraPrecision = EvalEngine.maxExtraPrecision();
+    long maxPrecision = precision + extraPrecision;
     // A function calculated with the digits of the precision has no digits beyond them to round
     // its last digit with: the first evaluation has guard digits, which the result keeps beyond
     // its precision. At machine precision the evaluation stays one with doubles.
@@ -599,7 +699,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
             // fewer right digits than asked for
             belowMachine = true;
             precision = requested;
-            maxPrecision = precision + Config.MAX_EXTRA_PRECISION;
+            maxPrecision = precision + extraPrecision;
             lost = Math.max(lost, machineLost);
           }
         }
@@ -630,8 +730,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
             // noise of its operands, and the difference is zero as far as can be seen
             result = zero != null && lost >= working - GUARD_DIGITS ? zero : rounded;
             if (result.isNumber() && result.isZero()) {
-              // zero to the accuracy which was reached: 0.0*10^-90 for 40 digits
-              result = ApfloatNum.zero(maxPrecision);
+              // zero to the accuracy which was reached: the digits of the precision on terms near
+              // 10^20 leave an error near 10^(20-precision)
+              result = ApfloatNum.zero(maxPrecision - termScale(expr, engine));
             }
           }
         } else {
@@ -647,10 +748,10 @@ public final class N extends AbstractCoreFunctionEvaluator {
         if (belowMachine) {
           engine.setNumericMode(true, machinePrecision, significantFigures);
         }
-        if (limit && !PrecisionLoss.isLimitQuiet(engine)) {
+        if (limit && extraPrecision > 0 && !PrecisionLoss.isLimitQuiet(engine)) {
           // Internal precision limit `1` reached while evaluating `2`.
           Errors.printMessage(S.N, "meprec",
-              F.list(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."), expr),
+              F.list(EvalEngine.maxExtraPrecisionText(), expr),
               engine);
         }
         return result;

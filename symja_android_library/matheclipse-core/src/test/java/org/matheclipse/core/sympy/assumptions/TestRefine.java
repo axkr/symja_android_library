@@ -355,10 +355,10 @@ public class TestRefine extends ExprEvaluatorTestCase {
         "0");
     // sympy: Refine(Cos(n*Pi/2), Element(n/2,Integers)) == (-1)^(n/2)
     check("Refine(Cos(n*Pi/2), Element(n/2,Integers))", //
-        "(-1)^(n/2)");
+        "I^n");
     // sympy: Refine(Sin(n*Pi/2), Element((n-1)/2,Integers)) == (-1)^((n + 3)/2)
     check("Refine(Sin(n*Pi/2), Element((n-1)/2,Integers))", //
-        "(-1)^(1/2*(-1+n))");
+        "I^(-1+n)");
     // sympy: Refine(Sin(x + n*Pi), Element(n,Integers)) == (-1)^n*Sin(x)
     check("Refine(Sin(x + n*Pi), Element(n,Integers))", //
         "(-1)^n*Sin(x)");
@@ -385,22 +385,22 @@ public class TestRefine extends ExprEvaluatorTestCase {
         "Cos(x)");
     // sympy: Refine(Sin(x + n*Pi/2), Element(n/2,Integers)) == (-1)^(n/2)*Sin(x)
     check("Refine(Sin(x + n*Pi/2), Element(n/2,Integers))", //
-        "(-1)^(n/2)*Sin(x)");
+        "I^n*Sin(x)");
     // sympy: Refine(Cos(x + n*Pi/2), Element(n/2,Integers)) == (-1)^(n/2)*Cos(x)
     check("Refine(Cos(x + n*Pi/2), Element(n/2,Integers))", //
-        "(-1)^(n/2)*Cos(x)");
+        "I^n*Cos(x)");
     // sympy: Refine(Sin(x + n*Pi/2), Element((n-1)/2,Integers)) == (-1)^((n + 3)/2)*Cos(x)
     check("Refine(Sin(x + n*Pi/2), Element((n-1)/2,Integers))", //
-        "(-1)^(1/2*(-1+n))*Cos(x)");
+        "Cos(x)/I^(1-n)");
     // sympy: Refine(Cos(x + n*Pi/2), Element((n-1)/2,Integers)) == (-1)^((n + 1)/2)*Sin(x)
     check("Refine(Cos(x + n*Pi/2), Element((n-1)/2,Integers))", //
-        "(-1)^(1/2*(1+n))*Sin(x)");
+        "I^(1+n)*Sin(x)");
     // sympy: Refine(Sin(x - n*Pi/2), Element((n-1)/2,Integers)) == -(-1)^((n + 3)/2)*Cos(x)
     check("Refine(Sin(x - n*Pi/2), Element((n-1)/2,Integers))", //
-        "-(-1)^(1/2*(-1+n))*Cos(x)");
+        "-Cos(x)/I^(1-n)");
     // sympy: Refine(Cos(x - n*Pi/2), Element(n/2,Integers)) == (-1)^(n/2)*Cos(x)
     check("Refine(Cos(x - n*Pi/2), Element(n/2,Integers))", //
-        "(-1)^(n/2)*Cos(x)");
+        "I^n*Cos(x)");
     // sympy: Refine(Sin(x + y + 2*n*Pi), Element(n,Integers)) == Sin(x + y)
     check("Refine(Sin(x + y + 2*n*Pi), Element(n,Integers))", //
         "Sin(x+y)");

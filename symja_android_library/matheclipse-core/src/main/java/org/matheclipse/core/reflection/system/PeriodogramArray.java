@@ -3,8 +3,10 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 
 /**
  * <p>
@@ -36,6 +38,23 @@ public class PeriodogramArray extends AbstractFunctionEvaluator {
     // Arg 4: wfun (window function), default: DirichletWindow (effectively 1)
     // Arg 5: m (padding length), default: n
 
+    // FourierParameters -> {a, b} scales the spectrum by n^a; the default is {0, 1}
+    IExpr[] fourierParameters = {F.C0, F.C1};
+    int positional = ast.argSize();
+    while (positional > 1 && ast.get(positional).isRuleAST()) {
+      IExpr option = ast.get(positional--);
+      if (!option.first().equals(S.FourierParameters) || !option.second().isList2()) {
+        return F.NIL;
+      }
+      fourierParameters[0] = option.second().first();
+      fourierParameters[1] = option.second().second();
+    }
+    double a = fourierParameters[0].evalfNaN();
+    if (!Double.isFinite(a) || !Double.isFinite(fourierParameters[1].evalfNaN())) {
+      return F.NIL;
+    }
+    final IAST positionalArgs = ast.copyUntil(positional + 1);
+
     // Force input to numeric precision (N)
     IExpr listExpr = engine.evalN(ast.arg1());
     if (!listExpr.isList()) {
@@ -43,19 +62,32 @@ public class PeriodogramArray extends AbstractFunctionEvaluator {
     }
     IAST list = (IAST) listExpr;
 
+    int[] dimensions = list.isMatrix();
+    if (positional == 1 && dimensions != null) {
+      // the periodogram of the whole array
+      double total = (double) dimensions[0] * dimensions[1];
+      IExpr fourier = engine.evaluate(
+          SpectrogramArray.windowedFourier(list, F.NIL, 1, 1, fourierParameters[1]));
+      if (!fourier.isList()) {
+        return F.NIL;
+      }
+      double scale = Math.pow(total, a) / total;
+      return ((IAST) fourier).map(row -> spectrum(row, scale));
+    }
+
     int listLength = list.argSize();
-    int n = SpectrogramArray.intArg(ast, 2);
+    int n = SpectrogramArray.intArg(positionalArgs, 2);
     if (n <= 0) {
       // Default n: The entire list length
       n = listLength;
     }
-    int d = SpectrogramArray.intArg(ast, 3);
+    int d = SpectrogramArray.intArg(positionalArgs, 3);
     if (d <= 0) {
       // Default d: n (non-overlapping partitions) for PeriodogramArray
       d = n;
     }
-    IExpr wfun = ast.argSize() >= 4 ? ast.arg4() : F.DirichletWindow;
-    int m = SpectrogramArray.intArg(ast, 5);
+    IExpr wfun = positional >= 4 ? positionalArgs.arg4() : F.DirichletWindow;
+    int m = SpectrogramArray.intArg(positionalArgs, 5);
     if (m <= 0) {
       m = n;
     }
@@ -88,40 +120,40 @@ public class PeriodogramArray extends AbstractFunctionEvaluator {
       }
     }
 
-    // Process partitions
-    IExpr sumOfSpectra = F.NIL;
-
+    // Formula: (n^a / Count) * (1 / Sum(w_i^2)) * Sum(|DFT|^2)
+    double scale = Math.pow(n, a) / (partitionCount * squaredWindowSum);
+    double[] power = new double[m];
     for (IExpr part : partitionList) {
-      // Compute Fourier Transform (Numeric)
-      IExpr fourierResult =
-          engine.evaluate(SpectrogramArray.windowedFourier(part, windowWeights, n, m));
-
-      // Compute Squared Magnitude: Abs[fft]^2
-      IExpr powerSpectrum = F.Map(F.Function(F.Sqr(F.Abs(F.Slot1))), fourierResult);
-      powerSpectrum = engine.evaluate(powerSpectrum);
-
-      // Accumulate
-      if (sumOfSpectra.isPresent()) {
-        sumOfSpectra = F.Plus(sumOfSpectra, powerSpectrum);
-      } else {
-        sumOfSpectra = powerSpectrum;
+      IExpr fourierResult = engine.evaluate(
+          SpectrogramArray.windowedFourier(part, windowWeights, n, m, fourierParameters[1]));
+      if (!fourierResult.isList() || fourierResult.argSize() != m) {
+        return F.NIL;
+      }
+      for (int i = 0; i < m; i++) {
+        double squared = squaredMagnitude(fourierResult.getAt(i + 1));
+        if (Double.isNaN(squared)) {
+          return F.NIL;
+        }
+        power[i] += squared;
       }
     }
+    return F.mapRange(0, m, i -> F.num(power[i] * scale));
+  }
 
-    // Evaluate sum
-    if (sumOfSpectra.isPresent()) {
-      sumOfSpectra = engine.evaluate(sumOfSpectra);
-    } else {
-      return F.NIL;
+  /** The list of the squared magnitudes of <code>row</code> multiplied by <code>scale</code>. */
+  private static IExpr spectrum(IExpr row, double scale) {
+    return ((IAST) row).map(x -> F.num(squaredMagnitude(x) * scale));
+  }
+
+  /** The squared magnitude of a number, free of the rounding of the root in its absolute value. */
+  private static double squaredMagnitude(IExpr z) {
+    if (z.isNumber()) {
+      double re = ((INumber) z).reDoubleValue();
+      double im = ((INumber) z).imDoubleValue();
+      return re * re + im * im;
     }
-
-    // Normalize and Average
-    // Formula: (1 / Count) * (1 / Sum(w_i^2)) * Sum(|DFT|^2)
-    double scalingFactor = 1.0 / (partitionCount * squaredWindowSum);
-
-    IExpr result = F.Times(F.num(scalingFactor), sumOfSpectra);
-
-    return engine.evaluate(result);
+    double x = z.evalfNaN();
+    return x * x;
   }
 
   @Override

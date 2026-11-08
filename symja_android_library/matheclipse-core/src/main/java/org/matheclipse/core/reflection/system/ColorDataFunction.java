@@ -92,6 +92,13 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
 
     IExpr param = applicationAst.arg1();
 
+    if (type.equals("ThemeGradients")) {
+      IAST blendArgument = ColorData.themeGradient(name);
+      if (blendArgument != null && param.isReal()) {
+        return engine.evaluate(F.binaryAST2(S.Blend, blendArgument, param));
+      }
+      return F.NIL;
+    }
     if (type.equals("Named")) {
       return name.equals("WebSafe") ? ColorData.webSafe(param) : F.NIL;
     }
@@ -102,7 +109,7 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
       }
 
       if (prop.equals("Name")) {
-        return arg1;
+        return type.equals("Gradients") ? F.stringx(ColorData.gradientTitle(name)) : arg1;
       }
       if (prop.equals("Range")) {
         if (functionAst.size() >= 4) {

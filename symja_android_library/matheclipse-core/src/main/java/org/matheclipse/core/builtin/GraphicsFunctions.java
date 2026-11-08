@@ -18,10 +18,11 @@ import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMap;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class GraphicsFunctions {
   private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
@@ -109,14 +110,9 @@ public class GraphicsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the unit cube stays implied by its lower corner
       if (ast.isAST0()) {
-        return F.Cuboid(F.List(0, 0, 0), F.List(1, 1, 1));
-      } else if (ast.isAST1() && ast.arg1().isList3()) {
-        IASTMutable list2 = ((IAST) ast.arg1()).copy();
-        for (int i = 1; i < list2.size(); i++) {
-          list2.set(i, F.Plus(F.C1, list2.get(i)));
-        }
-        return F.Cuboid(ast.arg1(), list2);
+        return F.unaryAST1(S.Cuboid, F.List(0, 0, 0));
       }
       return F.NIL;
     }
@@ -166,6 +162,18 @@ public class GraphicsFunctions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.Dashing(F.List(S.Small, S.Small));
+    }
+  }
+
+  /** <code>Annulus()</code> is the annulus with the radii <code>1/2</code> and <code>1</code>. */
+  private static class Annulus extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 0) {
+        return F.binaryAST2(S.Annulus, F.CListC0C0, F.List(F.C1D2, F.C1));
+      }
+      return F.NIL;
     }
   }
 
@@ -283,11 +291,11 @@ public class GraphicsFunctions {
    * Several graphics of the same kind become one, each keeping its primitives in a list of their
    * own so that one's directives do not reach into the next, and their options merged with the
    * first setting of each winning - so the options given to <code>Show</code> itself win over all
-   * of them.
+   * of them. A plot writes the range it settled on as its <code>PlotRange</code>, so the combined
+   * picture keeps the range of the first plot, which can clip the others.
    *
    * <p>
-   * Not done: the plot ranges are not joined into one, so the first graphic's range can clip the
-   * others; <code>Epilog</code> and <code>Prolog</code> are not merged; two and three dimensional
+   * Not done: <code>Epilog</code> and <code>Prolog</code> are not merged; two and three dimensional
    * graphics are not combined, and nothing but <code>Graphics</code>, <code>Graphics3D</code> and
    * mesh regions is shown.
    */
@@ -368,6 +376,15 @@ public class GraphicsFunctions {
       if (arg.isAST(S.Graphics) || arg.isAST(S.Graphics3D)) {
         graphics.append(arg);
         return true;
+      }
+      if (arg instanceof org.matheclipse.core.interfaces.IGraphExpr) {
+        // a graph is shown as the picture it is drawn as
+        IExpr picture = engine.evaluate(F.unaryAST1(S.GraphPlot, arg));
+        if (picture.isAST(S.Graphics) || picture.isAST(S.Graphics3D)) {
+          graphics.append(picture);
+          return true;
+        }
+        return false;
       }
       if (MeshFunctions.isBoundaryMeshRegion(arg)) {
         IAST picture = MeshFunctions.meshToGraphics((IAST) arg, engine);
@@ -519,10 +536,12 @@ public class GraphicsFunctions {
       S.Thick.setEvaluator(new Thick());
       S.Thin.setEvaluator(new Thin());
       S.VerticalGauge.setEvaluator(new VerticalGauge());
+      setGraphics3DOptions();
 
       S.Arrow.setEvaluator(new Arrow());
       S.Circle.setEvaluator(new Circle());
       S.Disk.setEvaluator(new Disk());
+      S.Annulus.setEvaluator(new Annulus());
       S.Cone.setEvaluator(new Cone());
       S.Cube.setEvaluator(new Cube());
       S.Cuboid.setEvaluator(new Cuboid());
@@ -591,6 +610,46 @@ public class GraphicsFunctions {
       // {layers}, the layer selection, the selectable layer, and any number of option rules
       return ARGS_1_INFINITY;
     }
+  }
+
+  /**
+   * <code>Graphics3D</code> stays unevaluated and has no evaluator of its own; its default options
+   * are registered so that <code>Options(Graphics3D)</code> and
+   * <code>OptionsPattern({f, Graphics3D})</code> answer.
+   */
+  private static void setGraphics3DOptions() {
+    IAST options = F.List(F.Rule(S.AspectRatio, S.Automatic), //
+        F.Rule(S.Axes, S.False), //
+        F.Rule(S.AxesEdge, S.Automatic), //
+        F.Rule(S.AxesLabel, S.None), //
+        F.Rule(S.AxesOrigin, S.Automatic), //
+        F.Rule(S.AxesStyle, F.CEmptyList), //
+        F.Rule(S.Background, S.None), //
+        F.Rule(S.BaseStyle, F.CEmptyList), //
+        F.Rule(S.Boxed, S.True), //
+        F.Rule(S.BoxRatios, S.Automatic), //
+        F.Rule(S.BoxStyle, F.CEmptyList), //
+        F.Rule(S.ColorOutput, S.Automatic), //
+        F.Rule(S.Epilog, F.CEmptyList), //
+        F.Rule(S.FaceGrids, S.None), //
+        F.Rule(S.ImageSize, S.Automatic), //
+        F.Rule(S.LabelStyle, F.CEmptyList), //
+        F.Rule(S.Lighting, S.Automatic), //
+        F.Rule(S.Method, S.Automatic), //
+        F.Rule(S.PlotLabel, S.None), //
+        F.Rule(S.PlotRange, S.All), //
+        F.Rule(S.PlotRegion, S.Automatic), //
+        F.Rule(S.Prolog, F.CEmptyList), //
+        F.Rule(S.Ticks, S.Automatic), //
+        F.Rule(S.TicksStyle, F.CEmptyList), //
+        F.Rule(S.ViewAngle, S.Automatic), //
+        F.Rule(S.ViewCenter, S.Automatic), //
+        F.Rule(S.ViewMatrix, S.Automatic), //
+        F.Rule(S.ViewPoint, F.List(F.num(1.3), F.num(-2.4), F.num(2.0))), //
+        F.Rule(S.ViewRange, S.All), //
+        F.Rule(S.ViewVector, S.Automatic));
+    S.Graphics3D.putDownRule(IPatternMatcher.SET, true, F.Options(S.Graphics3D), options,
+        IPatternMap.DEFAULT_RULE_PRIORITY, true);
   }
 
   /**
@@ -988,6 +1047,11 @@ public class GraphicsFunctions {
             new IExpr[] {directive.arg1(), directive.arg2(), directive.arg3()},
             n == 4 ? directive.arg4() : null);
       }
+      if (directive.isAST(S.LABColor) && (n == 3 || n == 4)) {
+        return new ColorValue(S.LABColor,
+            new IExpr[] {directive.arg1(), directive.arg2(), directive.arg3()},
+            n == 4 ? directive.arg4() : null);
+      }
       if (directive.isAST(S.GrayLevel) && n <= 2) {
         return new ColorValue(S.GrayLevel, new IExpr[] {directive.arg1()},
             n == 2 ? directive.arg2() : null);
@@ -1022,6 +1086,12 @@ public class GraphicsFunctions {
         return this;
       } else if (space == S.GrayLevel) {
         rgb = new IExpr[] {components[0], components[0], components[0]};
+      } else if (space == S.LABColor) {
+        double[] xyz = org.matheclipse.core.graphics.svg.ColorUtil.labToXyz(
+            components[0].evalf(), components[1].evalf(), components[2].evalf());
+        double[] channels = org.matheclipse.core.graphics.svg.ColorUtil.xyzToRgb(xyz[0], xyz[1],
+            xyz[2]);
+        rgb = new IExpr[] {F.num(channels[0]), F.num(channels[1]), F.num(channels[2])};
       } else if (space == S.CMYKColor) {
         IExpr white = F.Subtract(F.C1, components[3]);
         rgb = new IExpr[3];

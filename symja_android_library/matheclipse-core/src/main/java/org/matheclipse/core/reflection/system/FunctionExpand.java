@@ -151,6 +151,10 @@ public class FunctionExpand extends AbstractEvaluator {
       // // [$ Gamma(1+x) $]
       // F.Gamma(F.Plus(F.C1, x))); // $$);
 
+      // Erfc
+      MATCHER.caseOf(F.Erfc(x_), //
+          F.Subtract(F.C1, F.Erf(x)));
+
       // Haversine
       MATCHER.caseOf(F.Haversine(x_), //
           // [$ (1/2) * (1 - Cos(x)) $]
@@ -224,7 +228,6 @@ public class FunctionExpand extends AbstractEvaluator {
       MATCHER.caseOf(S.BlackmanNuttallWindow.of(x_), WindowFunctions.blackmanNuttallWindow(x));
       MATCHER.caseOf(S.BlackmanWindow.of(x_), WindowFunctions.blackmanWindow(x));
       MATCHER.caseOf(S.DirichletWindow.of(x_), WindowFunctions.dirichletWindow(x));
-      MATCHER.caseOf(S.HannWindow.of(x_), WindowFunctions.hannWindow(x));
       MATCHER.caseOf(S.FlatTopWindow.of(x_), WindowFunctions.flatTopWindow(x));
       MATCHER.caseOf(S.GaussianWindow.of(x_), WindowFunctions.gaussianWindow(x));
       MATCHER.caseOf(S.HammingWindow.of(x_), WindowFunctions.hammingWindow(x));
@@ -242,7 +245,10 @@ public class FunctionExpand extends AbstractEvaluator {
   private static IExpr beforeRules(IAST ast) {
     if (ast.isAST1() && ast.first().isTimes2()) {
       IAST times = (IAST) ast.first();
-      return trigTrivial(times, ast);
+      IAST trivial = trigTrivial(times, ast);
+      if (trivial.isPresent()) {
+        return trivial;
+      }
     }
     return callFunctionExpand(ast, EvalEngine.get());
     // IExpr result = callFunctionExpand(ast, EvalEngine.get());

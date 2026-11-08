@@ -281,7 +281,7 @@ public final class ExponentialPolyLogIntegration {
       if (degree > 4) {
         return null;
       }
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(factor, F.C0), t));
+      IExpr solutions = engine.evaluate(F.SolveDistinct(F.Equal(factor, F.C0), t));
       if (!solutions.isListOfLists() || ((IAST) solutions).argSize() != degree) {
         return null;
       }

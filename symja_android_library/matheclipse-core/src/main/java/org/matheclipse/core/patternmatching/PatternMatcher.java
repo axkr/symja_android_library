@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FixedPatternSequence;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternNested;
@@ -312,7 +313,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       } else if (patternExpr instanceof IPatternObject) {
         return matchPattern((IPatternObject) patternExpr, evalExpr, this, fEngine);
       }
-      return patternExpr.equals(evalExpr);
+      return patternExpr.equals(evalExpr) || isSameReal(patternExpr, evalExpr);
     }
 
     /**
@@ -568,6 +569,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         // the unit of p.. gets its own matcher, see RepeatedPattern; rebuilding the object as
         // Repeated(...) would leave an AST which matches nothing
         return x;
+      }
+      if (x.isAST(S.HoldPattern, 2) && standsForSequence(x.first())) {
+        // HoldPattern(x__) stands for as many arguments as x__ does
+        return x.first();
       }
       IExpr fixed = fixedSequenceOf(x, null);
       if (fixed.isPresent()) {
@@ -968,6 +973,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
 
     IAST lhsEvalAST = (IAST) lhsEvalExpr;
+    if (lhsPatternAST.head().isAST() && lhsEvalAST.head().isAST()
+        && !lhsPatternAST.head().isFreeOfPatterns()) {
+      return matchPatternedHead(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
+    }
     final ISymbol sym = lhsPatternAST.topHead();
 
     // Try to remove/evaluate orderless/flat parts when pattern length <= eval length
@@ -1035,6 +1044,18 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       // sorted pattern arguments with the sorted arguments only
       return true;
     }
+    if (collectsAllMatches() && lhsPatternAST.isOrderlessAST() && hasSequenceArgument(lhsPatternAST)
+        && lhsPatternAST.argSize() > 1 && lhsPatternAST.argSize() <= lhsEvalAST.argSize()
+        && lhsPatternAST.forAll(x -> !x.isPatternSequence(true)
+            && !(x.isAST() && ((IAST) x).hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)))) {
+      // every grouping has been collected: the in-order match would only repeat one of them
+      return false;
+    }
+    if (collectsAllMatches() && lhsPatternAST.isOrderlessAST()
+        && hasSequenceArgument(lhsPatternAST)) {
+      // a grouping with an empty sequence may be new, the others have been collected already
+      startInOrderMatches();
+    }
     if ((lhsPatternAST.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE) || hasSequenceArgument(lhsPatternAST))
         && (!lhsPatternAST.isOrderlessAST() || hasSequenceArgument(lhsPatternAST))) {
       return matchPatternSequenceAST(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
@@ -1046,6 +1067,42 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
     return matchASTSameSize(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
   }
+
+  /**
+   * Match <code>h(p1, p2, ...)</code> whose head <code>h</code> has patterns of its own, as in
+   * <code>r(i___, m__)(a_)</code>. The arguments, written as a list, and with them the rest of the
+   * stack and the condition of the rule, are the continuation of the head's match: when they fail,
+   * the head tries its next match, another split of <code>i___, m__</code>.
+   */
+  private boolean matchPatternedHead(IAST lhsPatternAST, IAST lhsEvalAST, EvalEngine engine,
+      StackMatcher stackMatcher) {
+    final IExpr[] patternValues = fPatternMap.copyPattern();
+    final int lastStackSize = stackMatcher.size();
+    IASTMutable patternArguments = lhsPatternAST.setAtCopy(0, S.List);
+    // the pattern flags of the copy are computed on demand
+    patternArguments.isFreeOfPatterns();
+    stackMatcher.push(new Entry(patternArguments, lhsEvalAST.setAtCopy(0, S.List)));
+    if (matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), engine, stackMatcher)) {
+      return true;
+    }
+    stackMatcher.removeFrom(lastStackSize);
+    fPatternMap.resetPattern(patternValues);
+    return false;
+  }
+
+  /**
+   * Does this matcher go on after a match, to collect the matches of all groupings of the
+   * arguments? See {@link PatternMatcherList}.
+   */
+  protected boolean collectsAllMatches() {
+    return false;
+  }
+
+  /**
+   * The matches which follow only repeat or complete the groupings which
+   * {@link #collectsAllMatches()} collected so far.
+   */
+  protected void startInOrderMatches() {}
 
   /**
    * Test if an argument of <code>lhsPatternAST</code> may stand for several arguments: a pattern
@@ -1166,6 +1223,15 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         withoutCondition.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
         return matchPatternSequenceArgs(withoutCondition, lhsEvalAST, engine, stackMatcher);
       }
+      int elementsIndex = lhsPatternAST.indexOf(x -> x.isAST(S.PatternTest, 3)
+          && x.first() instanceof FixedPatternSequence && x.first().head() == S.PatternSequence
+          && ((IPatternSequence) x.first()).getSymbol() == null);
+      if (elementsIndex > 0 && elementsIndex < lhsPatternAST.argSize()) {
+        // f(PatternSequence(_, _)?test, y_): there is no name to test on the stack, but the test
+        // is a test of each element
+        return matchPatternSequenceArgs(testElements(lhsPatternAST, elementsIndex), lhsEvalAST,
+            engine, stackMatcher);
+      }
       int testIndex = lhsPatternAST.indexOf(x -> x.isAST(S.PatternTest, 3)
           && x.first().isPatternSequence(false) && ((IPatternSequence) x.first()).getSymbol() != null);
       if (testIndex > 0 && testIndex < lhsPatternAST.argSize()) {
@@ -1206,10 +1272,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       if (pOffset > 1) {
         // materialize the remaining slices once
-        IASTAppendable patternTail = lhsPatternAST.copyFrom(pOffset);
+        IASTAppendable patternTail = lhsPatternAST.subList(pOffset);
         patternTail.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
         lhsPatternAST = patternTail;
-        lhsEvalAST = lhsEvalAST.copyFrom(eOffset);
+        lhsEvalAST = lhsEvalAST.subList(eOffset);
       }
 
       if (lhsPatternAST.isEmpty() && lhsEvalAST.isEmpty()) {
@@ -1246,6 +1312,21 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       return false;
     }
+  }
+
+  /**
+   * Replace the argument <code>PatternSequence(p1, p2, ...)?test</code> at <code>index</code> by
+   * the arguments <code>p1?test, p2?test, ...</code>.
+   */
+  private static IAST testElements(IAST lhsPatternAST, int index) {
+    IExpr patternTest = lhsPatternAST.get(index);
+    IAST elements = ((FixedPatternSequence) patternTest.first()).getPatterns();
+    IASTAppendable result = F.ast(lhsPatternAST.head(), lhsPatternAST.size() + elements.size());
+    result.appendAll(lhsPatternAST, 1, index);
+    elements.forEach(x -> result.append(F.PatternTest(x, patternTest.second())));
+    result.appendAll(lhsPatternAST, index + 1, lhsPatternAST.size());
+    result.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
+    return result;
   }
 
   /**
@@ -2334,14 +2415,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         seq.appendAll(lhsEvalAST, startPosition, lhsEvalIndex);
 
         if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
-          matched = matchAST(reducedLHSPatternAST, lhsEvalAST.copyFrom(lhsEvalIndex), engine,
+          matched = matchAST(reducedLHSPatternAST, lhsEvalAST.subList(lhsEvalIndex), engine,
               stackMatcher);
           if (matched) {
             return true;
           }
           final int index = lhsEvalIndex;
           matched = matchOtherSplits(patternSequence, seq, patternValues, () -> matchAST(
-              reducedLHSPatternAST, lhsEvalAST.copyFrom(index), engine, stackMatcher));
+              reducedLHSPatternAST, lhsEvalAST.subList(index), engine, stackMatcher));
           if (matched) {
             return true;
           }
@@ -2374,7 +2455,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       return F.NIL;
     }
     if (defaultValueMatched[0]) {
-      if (cloned.isOneIdentityAST1()) {
+      if (cloned.isOneIdentityAST()) {
         return cloned.arg1();
       }
       IPatternMap.setPatternFlags(cloned);
@@ -2465,9 +2546,19 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     } else if (lhsPatternExpr instanceof IPatternObject) {
       matched = matchPattern((IPatternObject) lhsPatternExpr, lhsEvalExpr, stackMatcher, engine);
     } else {
-      matched = lhsPatternExpr.equals(lhsEvalExpr);
+      matched = lhsPatternExpr.equals(lhsEvalExpr) || isSameReal(lhsPatternExpr, lhsEvalExpr);
     }
     return matched ? stackMatcher.matchRest() : false;
+  }
+
+  /** Two machine reals one unit in the last place apart are the same number to a pattern. */
+  static boolean isSameReal(IExpr patternExpr, IExpr evalExpr) {
+    if (patternExpr instanceof Num && evalExpr instanceof Num) {
+      final double x = ((Num) patternExpr).doubleValue();
+      final double y = ((Num) evalExpr).doubleValue();
+      return Math.nextUp(x) == y || Math.nextDown(x) == y;
+    }
+    return false;
   }
 
   private boolean matchTrue(IExpr lhsPatternExpr, EvalEngine engine, StackMatcher stackMatcher) {
@@ -2778,7 +2869,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       cloned.append(patternArg);
     }
     if (defaultValueMatched) {
-      if (cloned.isOneIdentityAST1()) {
+      if (cloned.isOneIdentityAST()) {
         return cloned.arg1();
       }
       IPatternMap.setPatternFlags(cloned);
@@ -2870,6 +2961,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       fPatternMap.resetPattern(patternValues);
       return false;
+    }
+    if (lhsPatternExpr.isOptionsPattern()) {
+      // the options an Orderless head took: remember the head, OptionValue looks it up
+      IAST sequence = lhsEvalExpr.isSequence() ? (IAST) lhsEvalExpr : F.Sequence(lhsEvalExpr);
+      return ((IPatternSequence) lhsPatternExpr).matchPatternSequence(sequence, fPatternMap,
+          optionsHead());
     }
     return lhsPatternExpr.matchPattern(lhsEvalExpr, fPatternMap);
   }

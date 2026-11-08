@@ -76,7 +76,7 @@ public class IOInit {
 
     // initialize the optional modules matheclipse-image, matheclipse-nlp,
     // matheclipse-astro, matheclipse-bio, matheclipse-chem, matheclipse-graphtheory,
-    // matheclipse-compile and matheclipse-dataset:
+    // matheclipse-compile, matheclipse-internal and matheclipse-dataset:
     initOptional("matheclipse-image", () -> org.matheclipse.image.ImageInit.init());
     initOptional("matheclipse-nlp", () -> org.matheclipse.nlp.NLPInit.init());
     initOptional("matheclipse-astro", () -> org.matheclipse.astro.AstroInit.init());
@@ -90,6 +90,9 @@ public class IOInit {
     // registers Compile / CompiledFunction / CompilePrint for both servlets and both
     // consoles, and installs the IExprCompiler core's numerical functions use
     initOptional("matheclipse-compile", () -> org.matheclipse.compile.CompileInit.init());
+    // registers the functions of the Internal` context, such as Internal`Bag or
+    // Internal`InheritedBlock, which packages written for other systems call
+    initOptional("matheclipse-internal", () -> org.matheclipse.internal.InternalInit.init());
     // registers JSXGraph / ECharts / MathCell and installs the pages a JSFormData result is
     // shown in; without it those stay unevaluated and JSFormData is shown as text
     initOptional("matheclipse-jsgraphics",

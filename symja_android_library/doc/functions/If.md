@@ -27,6 +27,7 @@ a
 
 If the second branch is not specified, `Null` is taken:
 
+```
 >> If(1<2, a)
 a
  

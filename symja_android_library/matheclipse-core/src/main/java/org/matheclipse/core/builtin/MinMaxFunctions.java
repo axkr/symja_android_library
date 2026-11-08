@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import org.hipparchus.analysis.MultivariateFunction;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.LocalizedOptimFormats;
@@ -49,7 +50,10 @@ import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.numerics.optim.DifferentialEvolution;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.reflection.system.FindRoot;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -267,6 +271,59 @@ public class MinMaxFunctions {
     }
   }
 
+  /**
+   * Collect the boundaries of a condition of a <code>Piecewise</code>, <code>x==0</code> for
+   * <code>x&lt;0</code>, both ends of a chain like <code>0&lt;x&lt;1</code>.
+   *
+   * @param cond the condition
+   * @param variables the variables; a boundary which is free of them is no boundary
+   * @param conditions collects the boundaries as equations
+   */
+  private static void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
+    Predicate<IExpr> isVariable = x -> variables.contains(x);
+    if (!cond.isAST() || cond.isFree(isVariable, false)) {
+      return;
+    }
+    IAST ast = (IAST) cond;
+    switch (ast.headID()) {
+      case ID.Less:
+      case ID.LessEqual:
+      case ID.Greater:
+      case ID.GreaterEqual:
+      case ID.Equal:
+      case ID.Unequal:
+        for (int i = 2; i < ast.size(); i++) {
+          addBoundary(ast.get(i - 1), ast.get(i), isVariable, conditions);
+        }
+        break;
+      case ID.Inequality:
+        // Inequality(a, Less, x, LessEqual, b)
+        for (int i = 3; i < ast.size(); i += 2) {
+          addBoundary(ast.get(i - 2), ast.get(i), isVariable, conditions);
+        }
+        break;
+      case ID.And:
+      case ID.Or:
+      case ID.Not:
+        for (IExpr arg : ast) {
+          extractBoundaries(arg, variables, conditions);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  private static void addBoundary(IExpr lhs, IExpr rhs, Predicate<IExpr> isVariable,
+      Set<IExpr> conditions) {
+    if (!lhs.isFree(isVariable, false)) {
+      conditions.add(F.Equal(lhs, rhs));
+    } else if (!rhs.isFree(isVariable, false)) {
+      // 0<x: the boundary is x==0
+      conditions.add(F.Equal(rhs, lhs));
+    }
+  }
+
   private static class FunctionDiscontinuities extends AbstractFunctionEvaluator {
 
     @Override
@@ -301,6 +358,36 @@ public class MinMaxFunctions {
     }
 
     /**
+     * <code>If(cond, t, f)</code> or <code>Piecewise({{val, cond}, ...}, default)</code> may jump
+     * at the boundaries of the conditions, and wherever a value does. A condition is no function
+     * whose discontinuities count.
+     *
+     * @return <code>false</code> if the discontinuities of a value may be incomplete
+     */
+    private boolean conditionalDiscontinuities(IAST ast, IAST variables, Set<IExpr> conditions,
+        IExpr domain) {
+      boolean noWarning = true;
+      if (ast.isAST(S.If)) {
+        extractBoundaries(ast.arg1(), variables, conditions);
+        for (int i = 2; i < ast.size(); i++) {
+          noWarning &= collectDiscontinuities(ast.get(i), variables, conditions, domain);
+        }
+        return noWarning;
+      }
+      for (IExpr piece : (IAST) ast.arg1()) {
+        if (!piece.isList2()) {
+          return false;
+        }
+        extractBoundaries(piece.second(), variables, conditions);
+        noWarning &= collectDiscontinuities(piece.first(), variables, conditions, domain);
+      }
+      if (ast.isAST2()) {
+        noWarning &= collectDiscontinuities(ast.arg2(), variables, conditions, domain);
+      }
+      return noWarning;
+    }
+
+    /**
      * Recursively collects discontinuity conditions.
      *
      * @param expr The expression to analyze.
@@ -318,6 +405,9 @@ public class MinMaxFunctions {
       if (expr.isAST()) {
         IAST ast = (IAST) expr;
         IExpr head = ast.head();
+        if (ast.isAST(S.If, 3, 5) || (ast.isAST(S.Piecewise, 2, 3) && ast.arg1().isList())) {
+          return conditionalDiscontinuities(ast, variables, conditions, domain);
+        }
 
         // Recurse check arguments first
         boolean noWarning = true;
@@ -427,18 +517,7 @@ public class MinMaxFunctions {
                   .add(F.And(F.Equal(F.Sin(F.Times(S.Pi, arg1)), F.C0), F.LessEqual(arg1, F.C0)));
               return noWarning;
             case ID.Piecewise:
-              // Piecewise({{val, cond}, ...})
-              // Discontinuities include the boundaries of the conditions
-              if (arg1.isList()) {
-                IAST list = (IAST) arg1;
-                for (IExpr pArg : list) {
-                  if (pArg.isList2()) {
-                    IExpr cond = ((IAST) pArg).second();
-                    extractBoundaries(cond, variables, conditions);
-                  }
-                }
-                return noWarning;
-              }
+              // not a list of pieces
               return false;
             default:
               break;
@@ -446,49 +525,6 @@ public class MinMaxFunctions {
         }
       }
       return false;
-    }
-
-    /**
-     * Helper to extract equality boundaries from inequalities (e.g. x < 0 -> x == 0).
-     */
-    private void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
-      if (cond.isFree(variables)) {
-        return;
-      }
-
-      if (cond.isAST()) {
-        IAST ast = (IAST) cond;
-        IExpr head = ast.head();
-        if (head.isBuiltInSymbol()) {
-          if (ast.isNot()) {
-            extractBoundaries(ast.arg1(), variables, conditions);
-            return;
-          }
-          if (ast.argSize() >= 2) {
-            switch (((IBuiltInSymbol) head).ordinal()) {
-              case ID.Less:
-              case ID.LessEqual:
-              case ID.Greater:
-              case ID.GreaterEqual:
-              case ID.Equal:
-              case ID.Unequal:
-                // Simple heuristic: LHS == RHS
-                if (ast.argSize() == 2) {
-                  conditions.add(F.Equal(ast.arg1(), ast.arg2()));
-                }
-                break;
-              case ID.And:
-              case ID.Or:
-                for (IExpr arg : ast) {
-                  extractBoundaries(arg, variables, conditions);
-                }
-                break;
-              default:
-                break;
-            }
-          }
-        }
-      }
     }
   }
 
@@ -633,7 +669,7 @@ public class MinMaxFunctions {
        *         are found.
        */
       private IExpr realsDomain(IExpr expr) {
-        if (expr.isFree(x -> variables.contains(x), false)) {
+        if (isFreeOfVariables(expr)) {
           return F.NIL;
         }
 
@@ -654,9 +690,9 @@ public class MinMaxFunctions {
             IExpr x = ast.arg1();
             IExpr n = ast.arg2();
             boolean evaled = false;
-            if (!n.isFree(variables)) {
-              // Case f(x)^g(x) -> requires f(x) > 0
-              if (!x.isFree(variables)) {
+            if (!isFreeOfVariables(n)) {
+              // Case f(x)^g(x) -> requires f(x) > 0: 0^0 of x^x is Indeterminate
+              if (!isFreeOfVariables(x)) {
                 andConditions.append(F.Greater(x, F.C0));
                 evaled = true;
               }
@@ -680,14 +716,17 @@ public class MinMaxFunctions {
                 // Case f(x)^(p/q)
                 IFraction frac = (IFraction) n;
                 if (frac.denominator().isEven()) {
-                  // requires f(x) >= 0
-                  andConditions.append(F.GreaterEqual(x, F.C0));
+                  // requires f(x) >= 0, and f(x) > 0 for a negative exponent
+                  andConditions.append(frac.isNegative() ? F.Greater(x, F.C0)
+                      : F.GreaterEqual(x, F.C0));
                   evaled = true;
                 }
               } else {
 
-                // Case f(x)^y, y is non-integer constant -> requires f(x) >= 0
-                andConditions.append(F.GreaterEqual(x, F.C0));
+                // Case f(x)^y, y is non-integer constant -> requires f(x) >= 0, and f(x) > 0 for a
+                // negative y
+                andConditions.append(n.isNegativeResult() ? F.Greater(x, F.C0)
+                    : F.GreaterEqual(x, F.C0));
                 evaled = true;
               }
             }
@@ -719,6 +758,14 @@ public class MinMaxFunctions {
         }
 
         return F.NIL;
+      }
+
+      /**
+       * Is <code>expr</code> free of all {@link #variables}? <code>expr.isFree(variables)</code>
+       * would look for the list itself.
+       */
+      private boolean isFreeOfVariables(IExpr expr) {
+        return expr.isFree(x -> variables.contains(x), false);
       }
 
       private void arg1RealsDomain(IAST ast, IASTAppendable andConditions, int headID) {
@@ -1288,32 +1335,6 @@ public class MinMaxFunctions {
         }
       }
     }
-
-    /**
-     * Helper to extract equality boundaries from inequalities (e.g. x < 0 -> x == 0).
-     */
-    private void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
-      if (cond.isFree(variables)) {
-        return;
-      }
-
-      if (cond.isAST()) {
-        IAST ast = (IAST) cond;
-        ISymbol head = ast.topHead();
-        if (head == S.Less || head == S.LessEqual || head == S.Greater || head == S.GreaterEqual
-            || head == S.Equal || head == S.Unequal) {
-
-          // Simple heuristic: LHS == RHS
-          if (ast.size() == 3) {
-            conditions.add(F.Equal(ast.arg1(), ast.arg2()));
-          }
-        } else if (head == S.And || head == S.Or || head == S.Not) {
-          for (IExpr arg : ast) {
-            extractBoundaries(arg, variables, conditions);
-          }
-        }
-      }
-    }
   }
 
   /**
@@ -1340,6 +1361,9 @@ public class MinMaxFunctions {
       S.NArgMin.setEvaluator(new NArgMin());
       S.NMaxValue.setEvaluator(new NMaxValue());
       S.NMinValue.setEvaluator(new NMinValue());
+      S.FindMinValue.setEvaluator(new FindLocalExtremum(S.FindMinimum, true));
+      S.FindArgMin.setEvaluator(new FindLocalExtremum(S.FindMinimum, false));
+      S.FindArgMax.setEvaluator(new FindLocalExtremum(S.FindMaximum, false));
     }
   }
 
@@ -1656,6 +1680,27 @@ public class MinMaxFunctions {
       }
     }
 
+    /**
+     * The value of the objective at a sample point, if it is no number but an expression which
+     * keeps a symbol or an undefined function, which is reported.
+     *
+     * @return {@link F#NIL} if the objective has a numeric value there
+     */
+    private static IExpr sampleWithoutNumber(ISymbol head, IExpr function, IAST variables,
+        EvalEngine engine) {
+      final IAST point = variables.map(v -> F.num(0.7390851332151607), 1);
+      final IAST rules = F.mapRange(1, variables.size(),
+          i -> F.Rule(variables.get(i), point.get(i)));
+      IExpr value = engine.evalQuiet(F.N(F.subst(function, rules)));
+      if (value.isNumericFunction(true) || value.isIndeterminate() || value.isDirectedInfinity()
+          || !value.isAST()) {
+        return F.NIL;
+      }
+      // The function value `1` is not a number at `2` = `3`.
+      Errors.printMessage(head, "nnum", F.List(value, variables, point), engine);
+      return value;
+    }
+
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
       for (int i = 3; i < ast.size(); i++) {
@@ -1687,6 +1732,10 @@ public class MinMaxFunctions {
         VariablesSet vars = new VariablesSet(listOfVariables);
         if (list1.argSize() > 0 && vars.size() > 0) {
           IExpr function = list1.first();
+          IExpr noNumber = sampleWithoutNumber(ast.topHead(), function, listOfVariables, engine);
+          if (noNumber.isPresent()) {
+            return F.NIL;
+          }
           // {f, c1, c2, ...} and {f, c1 && c2 && ...} are the same problem
           IExpr constraints = S.True;
           if (list1.argSize() == 2) {
@@ -1694,6 +1743,16 @@ public class MinMaxFunctions {
           } else if (list1.argSize() > 2) {
             constraints = list1.rest().setAtCopy(0, S.And);
           }
+          // an equation of two lists {a, b} == {c, d} is the equations a == c && b == d
+          constraints = constraints.replaceAll(x -> {
+            if (x.isEqual() && x.first().isList() && x.second().isList()
+                && x.first().argSize() == x.second().argSize()) {
+              IAST left = (IAST) x.first();
+              IAST right = (IAST) x.second();
+              return F.mapRange(S.And, 1, left.size(), k -> F.Equal(left.get(k), right.get(k)));
+            }
+            return F.NIL;
+          }).orElse(constraints);
           Search search = new Search(listOfVariables, vars, engine);
           List<IExpr> integerVariables = new ArrayList<IExpr>();
           constraints = withoutDomains(constraints, integerVariables, engine);
@@ -1726,12 +1785,155 @@ public class MinMaxFunctions {
                 i -> F.Rule(listOfVariables.get(i), S.Indeterminate));
             return F.list(getGoalType() == GoalType.MINIMIZE ? F.CInfinity : F.CNInfinity, rules);
           }
-          return best;
+          return withWorkingPrecision(best, function, constraints, ast, engine);
         }
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (org.hipparchus.exception.MathRuntimeException e) {
         return Errors.printMessage(ast.topHead(), e, engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The machine optimum refined by a local search at the working precision of a
+     * <code>WorkingPrecision -> digits</code> option. The refined point is taken only if it
+     * satisfies the constraints, stays next to the machine point and is not worse.
+     *
+     * @param best the machine result <code>{value, {x -> x0, ...}}</code>
+     * @return <code>best</code> if there is no such option or the refinement fails
+     */
+    private IExpr withWorkingPrecision(IExpr best, IExpr function, IExpr constraints, IAST ast,
+        EvalEngine engine) {
+      if (!best.isList2() || !best.second().isListOfRules()) {
+        return best;
+      }
+      long digits = 0L;
+      for (int i = 3; i < ast.size(); i++) {
+        if (ast.get(i).isRuleAST() && ast.get(i).first() == S.WorkingPrecision) {
+          digits = FindRoot.workingPrecision(ast.get(i).second());
+        }
+      }
+      if (digits <= 0L) {
+        return best;
+      }
+      IAST rules = (IAST) best.second();
+      // a local search in all variables first: an optimum next to a bound may lie inside
+      IExpr all = refineAt(best, function, constraints, F.CEmptyList, digits, engine);
+      if (all.isPresent()) {
+        return all;
+      }
+      // a variable at a bound of a constraint a <= x or x <= b keeps the exact bound, the others
+      // are refined by a local search
+      List<IExpr> conjuncts = new ArrayList<IExpr>();
+      flattenConjuncts(constraints, conjuncts);
+      IASTAppendable fixed = F.ListAlloc();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr variable = rules.get(i).first();
+        IExpr bound = activeBound(variable, rules.get(i).second().evalf(), conjuncts);
+        if (bound.isPresent()) {
+          fixed.append(F.Rule(variable, bound));
+        }
+      }
+      if (fixed.argSize() == 0) {
+        return best;
+      }
+      return refineAt(best, function, constraints, fixed, digits, engine).orElse(best);
+    }
+
+    /**
+     * The machine optimum <code>best</code> refined at the working precision, with the variables
+     * of the rules <code>fixed</code> at their exact values and the others found by a local search.
+     *
+     * @return {@link F#NIL} if the refined point doesn't satisfy the constraints, leaves the
+     *         machine point or is worse
+     */
+    private IExpr refineAt(IExpr best, IExpr function, IExpr constraints, IAST fixed, long digits,
+        EvalEngine engine) {
+      IAST rules = (IAST) best.second();
+      IASTAppendable starts = F.ListAlloc();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr variable = rules.get(i).first();
+        if (!fixed.exists(r -> r.first().equals(variable))) {
+          starts.append(F.list(variable, rules.get(i).second()));
+        }
+      }
+      IExpr reduced = F.subst(function, fixed);
+      IAST refinedFree = F.CEmptyList;
+      IExpr value;
+      if (starts.argSize() > 0) {
+        ISymbol head = getGoalType() == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum;
+        IExpr local = engine.evalQuiet(
+            F.ternaryAST3(head, reduced, starts, F.Rule(S.WorkingPrecision, F.ZZ(digits))));
+        if (!local.isList2() || !local.second().isListOfRules()
+            || local.second().argSize() != starts.argSize() || !local.first().isReal()) {
+          return F.NIL;
+        }
+        refinedFree = (IAST) local.second();
+        value = local.first();
+      } else {
+        value = engine.evalN(reduced, digits);
+        if (!value.isReal()) {
+          return F.NIL;
+        }
+      }
+      IASTAppendable refined = F.ListAlloc(rules.argSize());
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr variable = rules.get(i).first();
+        IExpr after = F.NIL;
+        for (IExpr r : fixed) {
+          if (r.first().equals(variable)) {
+            after = r.second().isZero() ? ApfloatNum.zero(digits) : engine.evalN(r.second(), digits);
+          }
+        }
+        for (IExpr r : refinedFree) {
+          if (r.first().equals(variable)) {
+            after = r.second();
+          }
+        }
+        double before = rules.get(i).second().evalf();
+        if (after.isNIL() || !after.isReal()
+            || Math.abs(after.evalf() - before) > 1e-6 * (1.0 + Math.abs(before))) {
+          return F.NIL;
+        }
+        refined.append(F.Rule(variable, after));
+      }
+      if (!constraints.isTrue()
+          && !engine.evalQuiet(F.subst(F.subst(constraints, fixed), refinedFree)).isTrue()) {
+        return F.NIL;
+      }
+      double machine = best.first().evalf();
+      double slack = 1e-10 * (1.0 + Math.abs(machine));
+      double refinedValue = value.evalf();
+      if (getGoalType() == GoalType.MINIMIZE ? refinedValue > machine + slack
+          : refinedValue < machine - slack) {
+        return F.NIL;
+      }
+      return F.list(value, refined);
+    }
+
+    /**
+     * The exact bound <code>a</code> of a constraint <code>a <= x</code>, <code>x <= a</code> (or
+     * with <code>&lt;</code>, <code>&gt;=</code>, <code>&gt;</code>) which the machine optimum
+     * <code>value</code> of <code>x</code> lies on.
+     *
+     * @return {@link F#NIL} if the variable isn't at such a bound
+     */
+    private static IExpr activeBound(IExpr variable, double value, List<IExpr> conjuncts) {
+      for (IExpr c : conjuncts) {
+        if (c.argSize() != 2 || !(c.isAST(S.LessEqual) || c.isAST(S.Less)
+            || c.isAST(S.GreaterEqual) || c.isAST(S.Greater))) {
+          continue;
+        }
+        IExpr bound = c.first().equals(variable) ? c.second()
+            : c.second().equals(variable) ? c.first() : F.NIL;
+        if (bound.isPresent() && bound.isRealResult() && bound.isNumericFunction()
+            && !bound.isInexactNumber()) {
+          double b = bound.evalf();
+          if (Math.abs(value - b) <= 1e-7 * (1.0 + Math.abs(b))) {
+            return bound;
+          }
+        }
       }
       return F.NIL;
     }
@@ -2607,6 +2809,43 @@ public class MinMaxFunctions {
     }
   }
 
+
+  /**
+   * <code>FindMinValue</code>, <code>FindArgMin</code> and <code>FindArgMax</code>: the value or
+   * the position of the local extremum which <code>FindMinimum</code> or <code>FindMaximum</code>
+   * finds with the same arguments and options.
+   */
+  private static class FindLocalExtremum extends AbstractFunctionEvaluator {
+    private final IBuiltInSymbol search;
+    private final boolean value;
+
+    FindLocalExtremum(IBuiltInSymbol search, boolean value) {
+      this.search = search;
+      this.value = value;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr extremum = engine.evaluate(ast.setAtCopy(0, search));
+      if (extremum.isList2() && extremum.second().isListOfRules()) {
+        if (value) {
+          return extremum.first();
+        }
+        return ((IAST) extremum.second()).map(x -> x.second());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
 
   public static void initialize() {
     Initializer.init();

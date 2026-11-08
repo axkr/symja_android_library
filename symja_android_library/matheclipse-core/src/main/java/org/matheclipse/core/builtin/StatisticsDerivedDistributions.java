@@ -48,6 +48,7 @@ public class StatisticsDerivedDistributions {
       S.DataDistribution.setEvaluator(new DataDistribution());
       S.EmpiricalDistribution.setEvaluator(new EmpiricalDistribution());
       S.HistogramDistribution.setEvaluator(new HistogramDistribution());
+      S.KernelMixtureDistribution.setEvaluator(new KernelMixtureDistribution());
       S.SmoothKernelDistribution.setEvaluator(new SmoothKernelDistribution());
     }
   }
@@ -364,9 +365,35 @@ public class StatisticsDerivedDistributions {
   public static final class ProductDistribution extends AbstractEvaluator
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
+    /**
+     * The component distributions, where a component <code>{dist, n}</code> stands for
+     * <code>n</code> copies of <code>dist</code>.
+     *
+     * @return {@link F#NIL} if a repetition count is not a small positive integer
+     */
+    private static IAST components(IAST dist) {
+      IASTAppendable result = F.ListAlloc(dist.argSize());
+      for (int i = 1; i < dist.size(); i++) {
+        IExpr component = dist.get(i);
+        if (component.isList2() && component.second().isInteger()) {
+          int n = component.second().toIntDefault();
+          if (n <= 0 || n > 1000) {
+            return F.NIL;
+          }
+          for (int j = 0; j < n; j++) {
+            result.append(component.first());
+          }
+        } else {
+          result.append(component);
+        }
+      }
+      return result;
+    }
+
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
-      if (k.isPresent() && k.isList() && k.size() == dist.size()) {
+      dist = components(dist);
+      if (dist.isPresent() && k.isPresent() && k.isList() && k.size() == dist.size()) {
         IASTAppendable product = F.TimesAlloc(dist.argSize());
         for (int i = 1; i < dist.size(); i++) {
           product.append(F.CDF(dist.get(i), ((IAST) k).get(i)));
@@ -393,17 +420,20 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr mean(IAST dist) {
-      return dist.map(S.List, x -> F.Mean(x));
+      IAST components = components(dist);
+      return components.isPresent() ? components.map(x -> F.Mean(x)) : F.NIL;
     }
 
     @Override
     public IExpr median(IAST dist) {
-      return dist.map(S.List, x -> F.Median(x));
+      IAST components = components(dist);
+      return components.isPresent() ? components.map(x -> F.Median(x)) : F.NIL;
     }
 
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
-      if (k.isPresent() && k.isList() && k.size() == dist.size()) {
+      dist = components(dist);
+      if (dist.isPresent() && k.isPresent() && k.isList() && k.size() == dist.size()) {
         IAST arguments = (IAST) k;
         IASTAppendable conditions = F.ListAlloc(dist.argSize());
         IASTAppendable product = F.TimesAlloc(dist.argSize());
@@ -443,7 +473,8 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr variance(IAST dist) {
-      return dist.map(S.List, x -> F.Variance(x));
+      IAST components = components(dist);
+      return components.isPresent() ? components.map(x -> F.Variance(x)) : F.NIL;
     }
   }
 
@@ -688,7 +719,47 @@ public class StatisticsDerivedDistributions {
    * censored to lie between <code>xmin</code> and <code>xmax</code>.
    */
   public static final class CensoredDistribution extends AbstractEvaluator
-      implements IContinuousDistribution, IStatistics {
+      implements ICDF, IContinuousDistribution, IStatistics {
+
+    /**
+     * The distribution function: <code>0</code> below <code>xmin</code>, the distribution function
+     * of <code>dist</code> from <code>xmin</code> up to <code>xmax</code> and <code>1</code> from
+     * <code>xmax</code> on.
+     */
+    @Override
+    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+      if (x.isNIL() || !dist.isAST2() || !dist.arg1().isList2()) {
+        return F.NIL;
+      }
+      if (x.isList()) {
+        return ((IAST) x).mapThread(F.CDF(dist, F.Slot1), 2);
+      }
+      IExpr min = dist.arg1().first();
+      IExpr max = dist.arg1().second();
+      if (min.isList() || max.isList()) {
+        return F.NIL;
+      }
+      IExpr inner = engine.evaluate(F.CDF(dist.arg2(), x));
+      if (inner.isAST(S.CDF)) {
+        return F.NIL;
+      }
+      IASTAppendable rows = F.ListAlloc(2);
+      if (!min.equals(max)) {
+        IExpr condition = min.isNegativeInfinity() ? F.Less(x, max)
+            : max.isInfinity() ? F.LessEqual(min, x)
+                : F.And(F.LessEqual(min, x), F.Less(x, max));
+        rows.append(F.list(inner, condition));
+      }
+      if (!max.isInfinity()) {
+        rows.append(F.list(F.C1, F.GreaterEqual(x, max)));
+      }
+      return F.Piecewise(rows, F.C0);
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1454,6 +1525,9 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.cdf(dist, k, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         if (k.isNIL()) {
@@ -1511,6 +1585,9 @@ public class StatisticsDerivedDistributions {
     @Override
     public IExpr mean(IAST dist) {
       EvalEngine engine = EvalEngine.get();
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.mean(dist, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         return engine.evaluate(weightedSum(e[0], e[1], 1));
@@ -1552,6 +1629,9 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.pdf(dist, k, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         if (k.isNIL()) {
@@ -1588,6 +1668,9 @@ public class StatisticsDerivedDistributions {
     private static IExpr quantile(IAST dist, IExpr q, EvalEngine engine) {
       if (q.isNIL()) {
         return F.NIL;
+      }
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.quantile(dist, q, engine);
       }
       IAST[] h = histogram(dist);
       if (h != null) {
@@ -1651,6 +1734,9 @@ public class StatisticsDerivedDistributions {
 
     @Override
     public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.randomVariate(random, dist, size);
+      }
       IAST[] h = histogram(dist);
       if (h != null) {
         EvalEngine engine = EvalEngine.get();
@@ -1704,6 +1790,9 @@ public class StatisticsDerivedDistributions {
     @Override
     public IExpr variance(IAST dist) {
       EvalEngine engine = EvalEngine.get();
+      if (KernelMixtureDistribution.isKernelMixture(dist)) {
+        return KernelMixtureDistribution.variance(dist, engine);
+      }
       IAST[] e = empirical(dist);
       if (e != null) {
         IExpr mean = engine.evaluate(weightedSum(e[0], e[1], 1));
@@ -1736,16 +1825,20 @@ public class StatisticsDerivedDistributions {
   public static final class SmoothKernelDistribution extends AbstractEvaluator
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
-    /** A kernel with variance <code>1</code>. */
+    /**
+     * A kernel: the Gaussian, Epanechnikov and rectangular kernels have variance <code>1</code>,
+     * the biweight, triweight, triangular, cosine and semicircle kernels live on
+     * <code>[-1, 1]</code>.
+     */
     private enum Kernel {
       GAUSSIAN(Double.POSITIVE_INFINITY), //
       EPANECHNIKOV(Math.sqrt(5.0)), //
-      BIWEIGHT(Math.sqrt(7.0)), //
-      TRIWEIGHT(3.0), //
-      TRIANGULAR(Math.sqrt(6.0)), //
+      BIWEIGHT(1.0), //
+      TRIWEIGHT(1.0), //
+      TRIANGULAR(1.0), //
       RECTANGULAR(Math.sqrt(3.0)), //
-      COSINE(1.0 / Math.sqrt(1.0 - 8.0 / (Math.PI * Math.PI))), //
-      SEMICIRCLE(2.0);
+      COSINE(1.0), //
+      SEMICIRCLE(1.0);
 
       /** the half width <code>a</code> of the support <code>[-a, a]</code> */
       final double radius;
@@ -1857,45 +1950,122 @@ public class StatisticsDerivedDistributions {
       }
     }
 
-    /** The data, the bandwidth and the kernel of a smooth kernel distribution. */
+    /** The number of points of the grid that holds the density. */
+    private static final int GRID_POINTS = 512;
+
+    /**
+     * The data, the bandwidth and the kernel of a smooth kernel distribution. The density is held
+     * on an even grid of {@link #GRID_POINTS} points from <code>min - 5*bw</code> to
+     * <code>max + 5*bw</code>: the data are linearly binned onto the grid, the bins are convolved
+     * with the kernel (cut off beyond <code>5*bw</code>) and the result is scaled so that the
+     * trapezoidal rule integrates to <code>1</code>. Between the grid points the density is
+     * linear and outside the grid it is <code>0</code>.
+     */
     private static final class Estimate {
       final double[] data;
       final double bandwidth;
       final Kernel kernel;
+      /** the first grid point */
+      final double low;
+      /** the distance of the grid points */
+      final double delta;
+      /** the density at the grid points */
+      final double[] grid;
 
       Estimate(double[] data, double bandwidth, Kernel kernel) {
         this.data = data;
         this.bandwidth = bandwidth;
         this.kernel = kernel;
+        final int m = GRID_POINTS;
+        this.low = data[0] - 5.0 * bandwidth;
+        double high = data[data.length - 1] + 5.0 * bandwidth;
+        this.delta = (high - low) / (m - 1);
+        // linear binning: each data point splits its weight between the two grid points around it
+        double[] weights = new double[m];
+        for (double v : data) {
+          double position = (v - low) / delta;
+          int j = Math.min((int) Math.floor(position), m - 1);
+          double fraction = position - j;
+          weights[j] += 1.0 - fraction;
+          if (j + 1 < m) {
+            weights[j + 1] += fraction;
+          }
+        }
+        int reach = (int) Math.floor(5.0 * bandwidth / delta);
+        this.grid = new double[m];
+        for (int j = 0; j < m; j++) {
+          if (weights[j] != 0.0) {
+            for (int i = Math.max(0, j - reach); i <= Math.min(m - 1, j + reach); i++) {
+              grid[i] += weights[j] * kernel.pdf((i - j) * delta / bandwidth);
+            }
+          }
+        }
+        double total = 0.0;
+        for (double v : grid) {
+          total += v;
+        }
+        total = (total - 0.5 * (grid[0] + grid[m - 1])) * delta;
+        for (int i = 0; i < m; i++) {
+          grid[i] /= total;
+        }
+      }
+
+      double high() {
+        return low + (grid.length - 1) * delta;
+      }
+
+      /** The index of the grid cell that holds <code>x</code>. */
+      int cell(double x) {
+        int i = (int) Math.floor((x - low) / delta);
+        return Math.min(Math.max(i, 0), grid.length - 2);
       }
 
       double pdf(double x) {
-        double sum = 0.0;
-        for (double v : data) {
-          sum += kernel.pdf((x - v) / bandwidth);
+        if (!(x >= low && x <= high())) {
+          return 0.0;
         }
-        return sum / (data.length * bandwidth);
+        int i = cell(x);
+        double t = (x - low) / delta - i;
+        return grid[i] + t * (grid[i + 1] - grid[i]);
       }
 
       double cdf(double x) {
-        double sum = 0.0;
-        for (double v : data) {
-          sum += kernel.cdf((x - v) / bandwidth);
+        if (x <= low) {
+          return 0.0;
         }
-        return sum / data.length;
+        if (x >= high()) {
+          return 1.0;
+        }
+        int i = cell(x);
+        double t = (x - low) / delta - i;
+        double sum = 0.0;
+        for (int k = 0; k < i; k++) {
+          sum += 0.5 * (grid[k] + grid[k + 1]) * delta;
+        }
+        double atX = grid[i] + t * (grid[i + 1] - grid[i]);
+        return sum + 0.5 * (grid[i] + atX) * t * delta;
+      }
+
+      /** The trapezoidal weight of the grid point <code>i</code>. */
+      private double weight(int i) {
+        return i == 0 || i == grid.length - 1 ? 0.5 * delta : delta;
       }
 
       double mean() {
         double sum = 0.0;
-        for (double v : data) {
-          sum += v;
+        for (int i = 0; i < grid.length; i++) {
+          sum += weight(i) * (low + i * delta) * grid[i];
         }
-        return sum / data.length;
+        return sum;
       }
 
       /** The central moment of the data points of the given order. */
       double dataMoment(int order) {
-        double mean = mean();
+        double mean = 0.0;
+        for (double v : data) {
+          mean += v;
+        }
+        mean /= data.length;
         double sum = 0.0;
         for (double v : data) {
           sum += Math.pow(v - mean, order);
@@ -1903,16 +2073,21 @@ public class StatisticsDerivedDistributions {
         return sum / data.length;
       }
 
+      /** The variance of the grid density, with <code>delta^2/3</code> for the linear pieces. */
       double variance() {
-        // the kernel has the variance bandwidth^2 and is independent of the data point
-        return dataMoment(2) + bandwidth * bandwidth;
+        double mean = mean();
+        double sum = 0.0;
+        for (int i = 0; i < grid.length; i++) {
+          double d = low + i * delta - mean;
+          sum += weight(i) * d * d * grid[i];
+        }
+        return sum + delta * delta / 3.0;
       }
 
       /** The inverse of the distribution function, by bisection. */
       double quantile(double q) {
-        double width = kernel == Kernel.GAUSSIAN ? 40.0 : kernel.radius;
-        double low = data[0] - width * bandwidth;
-        double high = data[data.length - 1] + width * bandwidth;
+        double low = this.low;
+        double high = high();
         for (int i = 0; i < 200; i++) {
           double middle = 0.5 * (low + high);
           if (middle <= low || middle >= high) {

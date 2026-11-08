@@ -49,6 +49,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return localized;
       }
     }
+    IAST withValues = Sum.withIndexDependentValues(ast);
+    if (withValues.isPresent()) {
+      return withValues;
+    }
     if (hasInvalidIterator(ast)) {
       // a count isn't an iterator, Product(x, 3) stays unevaluated
       return F.NIL;
@@ -446,7 +450,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
       return F.NIL;
     }
     IExpr leadingCoefficient = engine.evaluate(F.Coefficient(p, k, degreeExpr));
-    IExpr solved = engine.evalQuiet(F.Solve(F.Equal(p, F.C0), k));
+    IExpr solved = engine.evalQuiet(F.SolveDistinct(F.Equal(p, F.C0), k));
     if (!solved.isList() || ((IAST) solved).argSize() != degree) {
       // no multiple roots: an irreducible polynomial is square free
       return F.NIL;
@@ -462,8 +466,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
           || !root.isFree(h -> h == S.Root || h == S.RootSum, true)) {
         return F.NIL;
       }
-      // Solve returns 1/2*(-1+I*Sqrt(3)); the real and imaginary parts are needed below
-      root = engine.evaluate(F.Expand(root));
+      // Solve returns (-1)^(2/3); the real and imaginary parts are needed below
+      root = engine.evaluate(F.Expand(F.ComplexExpand(root)));
       IExpr start = engine.evaluate(F.Subtract(lower, root));
       if (start.isInteger() && !start.isPositive()) {
         // Gamma(lower - root) is singular: the integer root is inside the range

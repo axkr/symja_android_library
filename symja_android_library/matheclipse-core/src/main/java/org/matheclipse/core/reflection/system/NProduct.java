@@ -49,7 +49,7 @@ public class NProduct extends AbstractFunctionEvaluator {
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     IExpr function = ast.arg1();
     IExpr limitList = engine.evaluate(ast.arg2());
-    if (!limitList.isList3()) {
+    if (!limitList.isList3() && !limitList.isList4()) {
       return F.NIL;
     }
     IAST limits = (IAST) limitList;
@@ -62,14 +62,18 @@ public class NProduct extends AbstractFunctionEvaluator {
     IExpr upperLimit = limits.arg3();
     long start = lowerLimit.toLongDefault();
     long end = upperLimit.toLongDefault();
+    final long step = limits.isList4() ? limits.arg4().toLongDefault() : 1L;
+    if (!F.isPresent(step) || step <= 0L) {
+      return F.NIL;
+    }
     final boolean finite = F.isPresent(start) && F.isPresent(end);
     if (finite) {
       if (end < start) {
         // empty product
         return F.CD1;
       }
-      if (end - start < MAX_DIRECT_RANGE) {
-        IExpr temp = directProduct(function, variable, start, end);
+      if ((end - start) / step < MAX_DIRECT_RANGE) {
+        IExpr temp = directProduct(function, variable, start, end, step);
         if (temp.isPresent()) {
           return temp;
         }
@@ -85,7 +89,7 @@ public class NProduct extends AbstractFunctionEvaluator {
       }
     }
 
-    if (!finite && F.isPresent(start) && upperLimit.isInfinity()) {
+    if (!finite && step == 1L && F.isPresent(start) && upperLimit.isInfinity()) {
       // Product(f(k)) == Exp(Sum(Log(f(k))))
       try {
         final IExpr logFunction = F.Log(function);
@@ -164,10 +168,11 @@ public class NProduct extends AbstractFunctionEvaluator {
     return null;
   }
 
-  private static IExpr directProduct(IExpr function, IExpr variable, long start, long end) {
+  private static IExpr directProduct(IExpr function, IExpr variable, long start, long end,
+      long step) {
     try {
       Complex result = Complex.ONE;
-      for (long i = start; i <= end; i++) {
+      for (long i = start; i <= end; i += step) {
         final IExpr value = F.ZZ(i);
         Complex factor = function.evalfc(x -> x.equals(variable) ? value : F.NIL);
         if (factor == null || factor.isNaN()) {

@@ -247,6 +247,21 @@ public class AstroFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  public void testMoonPhaseOptions() {
+    check("DateValue(FullMoon(DateObject({2025,3,1}), TimeDirection -> -1), {\"Year\", \"Month\", \"Day\"})", //
+        "{2025,2,12}");
+    check("DateValue(NewMoon(DateObject({2025,3,1})), {\"Year\", \"Month\", \"Day\"})", //
+        "{2025,3,29}");
+    // the date may come first
+    check("DateValue(MoonPhaseDate(DateObject({2025,3,1}), \"LastQuarter\", TimeDirection -> -1), {\"Year\", \"Month\", \"Day\"})", //
+        "{2025,2,20}");
+    check("FullMoon(DateObject({2025,3,1}), TimeZone -> 3, DateGranularity -> \"Day\")", //
+        "DateObject({2025,3,14},Day,Gregorian,3.0)");
+    check("FullMoon(DateObject({2024,1,1}), TimeZone -> 2, DateGranularity -> \"Day\")", //
+        "DateObject({2024,1,25},Day,Gregorian,2.0)");
+  }
+
+  @Test
   public void testLunationNumber() {
     check("LunationNumber(DateObject({2026,6,21}))", //
         "1280");
@@ -1205,8 +1220,8 @@ public class AstroFunctionsTest extends AbstractTestCase {
   @Test
   public void testPlanetDataObserved() {
     check("PlanetData(\"Properties\")", //
-        "{AngularDiameter,ApparentMagnitude,DistanceFromEarth,DistanceFromSun,HelioCoordinates,"
-            + "IlluminationFraction,PhaseAngle}");
+        "{AngularDiameter,ApparentMagnitude,DistanceFromEarth,DistanceFromSun,Eccentricity,"
+            + "HelioCoordinates,IlluminationFraction,OrbitPeriod,PhaseAngle,SemimajorAxis}");
     check("PlanetData(\"Venus\", {\"ApparentMagnitude\", DateObject({1992,12,20})})", //
         "-4.21679");
     check("PlanetData(\"Venus\", {\"PhaseAngle\", DateObject({1992,12,20})})", //
@@ -1308,6 +1323,41 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "Missing(UnknownEntity,{Planet,Vulcan})");
     check("EntityValue(Entity(\"Planet\", \"Mars\"), \"Nonsense\")", //
         "Missing(UnknownProperty,{Planet,Nonsense})");
+  }
+
+  /** Minor planets are their own entity type, read by MinorPlanetData. */
+  @Test
+  public void testMinorPlanetData() {
+    check("MinorPlanetData()", //
+        "{Entity(MinorPlanet,Ceres)}");
+    check("MinorPlanetData(\"ceres\")", //
+        "Entity(MinorPlanet,Ceres)");
+    check("MinorPlanetData(\"Ceres\", \"SemimajorAxis\")", //
+        "Quantity(2.76662,\"AstronomicalUnit\")");
+    check("MinorPlanetData(\"Properties\")", //
+        "{Eccentricity,OrbitPeriod,SemimajorAxis}");
+    check("MinorPlanetData(\"Ceres\", \"Eccentricity\")", //
+        "0.0791839");
+    check("MinorPlanetData(Entity(\"MinorPlanet\", \"Ceres\"), \"OrbitPeriod\")", //
+        "Quantity(4.60185,\"JulianYears\")");
+    // the elements do not depend on a date, so a {property, date} spec reads the property
+    check("MinorPlanetData(\"Ceres\", {\"SemimajorAxis\", DateObject({2026,1,1})}) === "
+        + "MinorPlanetData(\"Ceres\", \"SemimajorAxis\")", //
+        "True");
+    check("MinorPlanetData(\"Ceres\", EntityProperty(\"MinorPlanet\", \"Eccentricity\"))", //
+        "0.0791839");
+    check("Entity(\"MinorPlanet\", \"Ceres\")[\"SemimajorAxis\"] > "
+        + "Entity(\"Planet\", \"Mars\")[\"SemimajorAxis\"]", //
+        "True");
+    check("EntityList(\"MinorPlanet\")", //
+        "{Entity(MinorPlanet,Ceres)}");
+    // the minor planets do not turn up among the planets
+    check("Length(EntityList(\"Planet\"))", //
+        "8");
+    check("EntityValue(Entity(\"MinorPlanet\", \"Ceres\"), \"Nonsense\")", //
+        "Missing(UnknownProperty,{MinorPlanet,Nonsense})");
+    check("MinorPlanetData(\"Mars\", \"SemimajorAxis\")", //
+        "MinorPlanetData(Mars,SemimajorAxis)");
   }
 
   @Test

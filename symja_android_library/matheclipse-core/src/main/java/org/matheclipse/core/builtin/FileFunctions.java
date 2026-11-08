@@ -58,6 +58,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -121,7 +122,9 @@ public class FileFunctions {
         S.URLEncode.setEvaluator(new URLEncode());
         S.URLExecute.setEvaluator(new URLExecute());
         S.URLParse.setEvaluator(new URLParse());
+        S.URLQueryEncode.setEvaluator(new URLQueryEncode());
         S.URLBuild.setEvaluator(new URLBuild());
+        S.URLQueryDecode.setEvaluator(new URLQueryDecode());
         S.URLFetch.setEvaluator(new URLFetch());
         S.Write.setEvaluator(new Write());
         S.WriteString.setEvaluator(new WriteString());
@@ -1907,11 +1910,71 @@ public class FileFunctions {
     }
 
     /**
+     * <code>ReadList[stream, type, RecordLists -> True]</code>: the elements of each line of the
+     * stream in a list of their own; empty lines are left out.
+     */
+    private static IExpr readRecordLists(InputStreamExpr stream, IAST ast, EvalEngine engine) {
+      if (ast.argSize() > 2) {
+        return F.NIL;
+      }
+      final IExpr type = ast.argSize() >= 2 ? ast.arg2() : S.Expression;
+      final IASTAppendable result = F.ListAlloc();
+      try {
+        final Reader reader = stream.getReader();
+        StringBuilder line = new StringBuilder();
+        boolean end = false;
+        while (!end) {
+          int c = reader.read();
+          if (c >= 0 && c != '\n') {
+            line.append((char) c);
+            continue;
+          }
+          end = c < 0;
+          engine.checkTimeLimit();
+          if (line.toString().trim().isEmpty()) {
+            line.setLength(0);
+            continue;
+          }
+          final Reader lineReader = new java.io.StringReader(line.toString());
+          line.setLength(0);
+          final IASTAppendable record = F.ListAlloc();
+          while (true) {
+            IExpr element = Read.readTypeOrHold(type, lineReader, engine);
+            if (element == S.EndOfFile) {
+              break;
+            }
+            if (element == S.$Failed) {
+              return S.$Failed;
+            }
+            record.append(element);
+          }
+          result.append(record);
+        }
+      } catch (IOException ex) {
+        return Errors.printMessage(S.ReadList, ex, engine);
+      }
+      return result;
+    }
+
+    /**
      * <code>ReadList[stream, type, n]</code> on an open stream: <code>Read[stream, type]</code>
      * repeated until <code>EndOfFile</code>, at most <code>n</code> times. An expression may run
      * over several lines.
      */
     private static IExpr readListFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
+      boolean recordLists = false;
+      while (ast.argSize() >= 3 && ast.last().isRuleAST()) {
+        IExpr option = ast.last();
+        if (option.first() != S.RecordLists) {
+          // an unknown option
+          return F.NIL;
+        }
+        recordLists = option.second().isTrue();
+        ast = ast.removeAtClone(ast.argSize());
+      }
+      if (recordLists) {
+        return readRecordLists(stream, ast, engine);
+      }
       int n = Integer.MAX_VALUE;
       if (ast.isAST3()) {
         n = ast.arg3().toMachineInt();
@@ -2560,15 +2623,91 @@ public class FileFunctions {
    *
    * <p>
    * The inverse of {@link URLParse}: a list of path segments joins with <code>/</code>, an
-   * association is assembled from the parts it carries, and a query given as rules is appended.
+   * association is assembled from the parts it carries, and a query given as rules is appended
+   * with its keys and values percent-escaped in the <code>CharacterEncoding</code> of the options.
    */
   private static final class URLBuild extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.URL, 2) && arg1.first().isString()) {
+        arg1 = arg1.first();
+      }
+      if (!(arg1 instanceof IAssociation || arg1.isString() || arg1.isList())) {
+        return F.NIL;
+      }
+      Charset charset = urlCharset(ast);
+      if (charset == null) {
+        return F.NIL;
+      }
+      int argSize = isCharacterEncoding(ast.last()) ? ast.argSize() - 1 : ast.argSize();
+      // the options "SortQueries" and "RemoveEmptyQueries"
+      boolean sort = false;
+      boolean removeEmpty = false;
+      while (argSize > 1 && ast.get(argSize).isRuleAST()
+          && isQueryOption(ast.get(argSize).first())) {
+        IExpr option = ast.get(argSize);
+        if (isOption(option.first(), S.SortQueries, "SortQueries")) {
+          sort = option.second().isTrue();
+        } else {
+          removeEmpty = option.second().isTrue();
+        }
+        argSize--;
+      }
+      if (argSize > 2) {
+        return F.NIL;
+      }
       StringBuilder url = new StringBuilder();
-      IExpr query = ast.isAST2() ? ast.arg2() : F.NIL;
+      IExpr query = argSize == 2 ? ast.arg2() : F.NIL;
+      if (arg1.isString() && (sort || removeEmpty || query.isPresent())) {
+        // a query in the URL string is joined with the new one
+        String base = arg1.toString();
+        int questionMark = base.indexOf('?');
+        int hash = base.indexOf('#');
+        String fragment = hash >= 0 ? base.substring(hash) : "";
+        if (hash >= 0) {
+          base = base.substring(0, hash);
+        }
+        List<String> parts = new ArrayList<String>();
+        if (questionMark >= 0 && questionMark < base.length()) {
+          for (String part : base.substring(questionMark + 1).split("&")) {
+            if (!part.isEmpty()) {
+              parts.add(part);
+            }
+          }
+          base = base.substring(0, questionMark);
+        }
+        if (query.isString()) {
+          parts.add(query.toString());
+        } else if (query.isPresent()) {
+          IAST rules = queryRules(query);
+          if (rules.isNIL()) {
+            return F.NIL;
+          }
+          if (removeEmpty) {
+            rules = removeEmptyQueries(rules);
+          }
+          String encoded = encodeQuery(rules, charset);
+          if (!encoded.isEmpty()) {
+            parts.add(encoded);
+          }
+        }
+        if (sort) {
+          List<String> single = new ArrayList<String>();
+          for (String part : parts) {
+            single.addAll(java.util.Arrays.asList(part.split("&")));
+          }
+          single.sort((x, y) -> queryKey(x).compareTo(queryKey(y)));
+          parts = single;
+        }
+        url.append(base);
+        if (!parts.isEmpty()) {
+          url.append('?').append(String.join("&", parts));
+        }
+        url.append(fragment);
+        return F.stringx(url.toString());
+      }
       if (arg1 instanceof IAssociation) {
         IAssociation parts = (IAssociation) arg1;
         IExpr scheme = parts.getValue(F.stringx("Scheme"));
@@ -2584,13 +2723,19 @@ public class FileFunctions {
           }
           url.append(domain.toString());
           IExpr port = parts.getValue(F.stringx("Port"));
-          if (port != null && port.isInteger()) {
+          if (port != null && (port.isInteger() || port.isString())) {
             url.append(':').append(port.toString());
           }
         }
         IExpr path = parts.getValue(F.stringx("Path"));
         if (path != null) {
-          url.append(pathString(path));
+          String pathText = pathString(path);
+          if (domain != null && domain.isString() && !pathText.isEmpty()
+              && !pathText.startsWith("/")) {
+            // the path of an absolute URL starts with a slash
+            url.append('/');
+          }
+          url.append(pathText);
         }
         if (query.isNIL()) {
           IExpr parsedQuery = parts.getValue(F.stringx("Query"));
@@ -2598,7 +2743,7 @@ public class FileFunctions {
             query = parsedQuery;
           }
         }
-        String queryString = queryString(query);
+        String queryString = queryString(query, charset);
         if (!queryString.isEmpty()) {
           url.append('?').append(queryString);
         }
@@ -2609,7 +2754,7 @@ public class FileFunctions {
         return F.stringx(url.toString());
       }
       url.append(pathString(arg1));
-      String queryString = queryString(query);
+      String queryString = queryString(query, charset);
       if (!queryString.isEmpty()) {
         url.append('?').append(queryString);
       }
@@ -2635,38 +2780,20 @@ public class FileFunctions {
       return result.toString();
     }
 
-    private static String queryString(IExpr query) {
+    private static String queryString(IExpr query, Charset charset) {
       if (query.isNIL() || query.isEmptyList()) {
         return "";
       }
       if (query.isString()) {
         return query.toString();
       }
-      IAST rules = query instanceof IAssociation ? ((IAssociation) query).normal(false)
-          : query.isList() ? (IAST) query : F.NIL;
-      if (rules.isNIL()) {
-        return "";
-      }
-      StringBuilder result = new StringBuilder();
-      for (int i = 1; i < rules.size(); i++) {
-        IExpr rule = rules.get(i);
-        if (!rule.isRuleAST()) {
-          continue;
-        }
-        if (result.length() > 0) {
-          result.append('&');
-        }
-        result.append(rule.first().toString());
-        if (rule.second() != S.None) {
-          result.append('=').append(rule.second().toString());
-        }
-      }
-      return result.toString();
+      IAST rules = queryRules(query);
+      return rules.isPresent() ? encodeQuery(rules, charset) : "";
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_5;
     }
 
     @Override
@@ -2675,17 +2802,265 @@ public class FileFunctions {
     }
   }
 
+  /** <code>name</code> is the option symbol or its name as a string. */
+  private static boolean isOption(IExpr name, IExpr symbol, String text) {
+    return name == symbol || name.isString(text);
+  }
+
+  /** The option names <code>"SortQueries"</code> and <code>"RemoveEmptyQueries"</code>. */
+  private static boolean isQueryOption(IExpr name) {
+    return isOption(name, S.SortQueries, "SortQueries")
+        || isOption(name, S.RemoveEmptyQueries, "RemoveEmptyQueries");
+  }
+
+  /** The key of an encoded query part <code>key=value</code>. */
+  private static String queryKey(String part) {
+    int equal = part.indexOf('=');
+    return equal >= 0 ? part.substring(0, equal) : part;
+  }
+
+  /** A query value which is written without <code>=value</code>. */
+  private static boolean isEmptyQueryValue(IExpr value) {
+    return value == S.None || value == S.Missing || value.isAST(S.Missing);
+  }
+
+  /** The rules without the ones whose value is empty, <code>None</code> or missing. */
+  private static IAST removeEmptyQueries(IAST rules) {
+    return rules.select(x -> !(x.isRuleAST() && (isEmptyQueryValue(x.second())
+        || (x.second().isString() && x.second().toString().isEmpty()))));
+  }
+
+  /** The rule which sets the option <code>CharacterEncoding</code>, as a last argument. */
+  private static boolean isCharacterEncoding(IExpr arg) {
+    return arg.isRuleAST() && arg.first() == S.CharacterEncoding;
+  }
+
+  /**
+   * The character set of a URL function, given by a <code>CharacterEncoding</code> rule as last
+   * argument of <code>ast</code>; UTF-8 without one.
+   *
+   * @return <code>null</code> if no character set of this name is known
+   */
+  private static Charset urlCharset(IAST ast) {
+    if (ast.argSize() < 2 || !isCharacterEncoding(ast.last())) {
+      return StandardCharsets.UTF_8;
+    }
+    IExpr encoding = ast.last().second();
+    if (!encoding.isString()) {
+      return encoding.isAutomatic() ? StandardCharsets.UTF_8 : null;
+    }
+    switch (encoding.toString()) {
+      case "UTF8":
+      case "UTF-8":
+        return StandardCharsets.UTF_8;
+      case "ASCII":
+        return StandardCharsets.US_ASCII;
+      case "ISOLatin1":
+      case "ISO8859-1":
+        return StandardCharsets.ISO_8859_1;
+      case "MacintoshRoman":
+        return Charset.isSupported("x-MacRoman") ? Charset.forName("x-MacRoman") : null;
+      case "WindowsANSI":
+        return Charset.isSupported("windows-1252") ? Charset.forName("windows-1252") : null;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * The rules of a URL query, written as an association or a list.
+   *
+   * @return {@link F#NIL} if <code>query</code> is none of them
+   */
+  private static IAST queryRules(IExpr query) {
+    return query instanceof IAssociation ? ((IAssociation) query).normal(false)
+        : query.isList() ? (IAST) query : F.NIL;
+  }
+
+  /** The rules of a query as <code>key=value&amp;...</code>, percent-escaped. */
+  private static String encodeQuery(IAST rules, Charset charset) {
+    StringBuilder result = new StringBuilder();
+    for (int i = 1; i < rules.size(); i++) {
+      IExpr rule = rules.get(i);
+      if (!rule.isRuleAST()) {
+        continue;
+      }
+      if (result.length() > 0) {
+        result.append('&');
+      }
+      IExpr value = rule.second();
+      if (value.isList()) {
+        // a list of values repeats the key
+        IAST values = (IAST) value;
+        for (int j = 1; j < values.size(); j++) {
+          if (j > 1) {
+            result.append('&');
+          }
+          appendQueryPart(result, rule.first(), values.get(j), charset);
+        }
+        continue;
+      }
+      appendQueryPart(result, rule.first(), value, charset);
+    }
+    return result.toString();
+  }
+
+  private static void appendQueryPart(StringBuilder result, IExpr key, IExpr value,
+      Charset charset) {
+    result.append(encodeQueryPart(key, charset));
+    if (!isEmptyQueryValue(value)) {
+      result.append('=').append(encodeQueryPart(value, charset));
+    }
+  }
+
+  /** A key or value of a query: a space is a <code>+</code>, only <code>-_.~</code> stay. */
+  private static String encodeQueryPart(IExpr part, Charset charset) {
+    if (part.isAST(S.URL, 2) && part.first().isString()) {
+      part = part.first();
+    }
+    String text = part.isTrue() ? "true" : part.isFalse() ? "false" : part.toString();
+    return URLEncoder.encode(text, charset).replace("*", "%2A").replace("%7E", "~");
+  }
+
+  /**
+   * <code>URLQueryEncode(rules)</code> - a query string from an association or a list of rules. A
+   * space becomes <code>+</code> and the other reserved characters are percent-escaped. With
+   * <code>SortQueries -&gt; True</code> the keys are sorted and with
+   * <code>RemoveEmptyQueries -&gt; True</code> the rules with an empty value are dropped.
+   */
+  private static final class URLQueryEncode extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST rules = queryRules(ast.arg1());
+      if (rules.isNIL()) {
+        return F.NIL;
+      }
+      Charset charset = urlCharset(ast);
+      if (charset == null || !rules.forAll(x -> x.isRuleAST())) {
+        return F.NIL;
+      }
+      boolean sort = false;
+      boolean removeEmpty = false;
+      int size = isCharacterEncoding(ast.last()) ? ast.size() - 1 : ast.size();
+      for (int i = 2; i < size; i++) {
+        IExpr option = ast.get(i);
+        if (!option.isRuleAST()) {
+          return F.NIL;
+        }
+        // the options are named by strings; the symbols of these names work too
+        IExpr name = option.first();
+        if (name == S.SortQueries || name.equals(F.stringx("SortQueries"))) {
+          sort = option.second().isTrue();
+        } else if (name == S.RemoveEmptyQueries || name.equals(F.stringx("RemoveEmptyQueries"))) {
+          removeEmpty = option.second().isTrue();
+        } else {
+          return F.NIL;
+        }
+      }
+      if (removeEmpty) {
+        rules = removeEmptyQueries(rules);
+      }
+      if (sort) {
+        IASTMutable sorted = rules.copy();
+        sorted.sortInplace((x, y) -> x.first().toString().compareTo(y.first().toString()));
+        rules = sorted;
+      }
+      return F.stringx(encodeQuery(rules, charset));
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, F.list(F.Rule(S.CharacterEncoding, F.stringx("UTF-8")),
+          F.Rule(F.stringx("RemoveEmptyQueries"), S.False),
+          F.Rule(F.stringx("SortQueries"), S.False)));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   * <code>URLQueryDecode("k1=v1&amp;k2=v2...")</code> - the list of rules <code>{k1 -> v1, ...}</code>
+   * of a query string, with the keys and values decoded. A part without <code>=</code> has the value
+   * <code>None</code>. With <code>"SortQueries" -> True</code> the rules are sorted by their keys.
+   */
+  private static final class URLQueryDecode extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isString()) {
+        return F.NIL;
+      }
+      Charset charset = urlCharset(ast);
+      if (charset == null) {
+        return F.NIL;
+      }
+      boolean sort = false;
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (!option.isRuleAST()) {
+          return F.NIL;
+        }
+        if (isOption(option.first(), S.SortQueries, "SortQueries")) {
+          sort = option.second().isTrue();
+        }
+      }
+      String query = ast.arg1().toString();
+      if (query.startsWith("?")) {
+        query = query.substring(1);
+      }
+      List<String> parts = new ArrayList<String>();
+      for (String part : query.split("&")) {
+        if (!part.isEmpty()) {
+          parts.add(part);
+        }
+      }
+      if (sort) {
+        parts.sort((x, y) -> queryKey(x).compareTo(queryKey(y)));
+      }
+      IASTAppendable result = F.ListAlloc(parts.size());
+      try {
+        for (String part : parts) {
+          int equal = part.indexOf('=');
+          if (equal < 0) {
+            result.append(F.Rule(F.stringx(URLDecoder.decode(part, charset)), S.None));
+          } else {
+            result.append(F.Rule(F.stringx(URLDecoder.decode(part.substring(0, equal), charset)),
+                F.stringx(URLDecoder.decode(part.substring(equal + 1), charset))));
+          }
+        }
+      } catch (IllegalArgumentException iae) {
+        return F.NIL;
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+  }
+
   private static final class URLDecode extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (!(arg1 instanceof IStringX)) {
+      Charset charset = urlCharset(ast);
+      if (!(arg1 instanceof IStringX) || charset == null) {
         return F.NIL;
       }
       String inputString = ast.arg1().toString();
       try {
-        return F.stringx(URLDecoder.decode(inputString, StandardCharsets.UTF_8));
+        return F.stringx(URLDecoder.decode(inputString, charset));
       } catch (IllegalArgumentException iae) {
         // a percent that does not introduce two hex digits is not an escape at all, and
         // URLDecoder throws over it. There is nothing to decode, so the string stands as written;
@@ -2701,7 +3076,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -2723,9 +3098,13 @@ public class FileFunctions {
         }
         return F.NIL;
       }
+      Charset charset = urlCharset(ast);
+      if (charset == null) {
+        return F.NIL;
+      }
       String inputString = ast.arg1().toString();
 
-      String encoded = URLEncoder.encode(inputString, StandardCharsets.UTF_8);
+      String encoded = URLEncoder.encode(inputString, charset);
       // MMA style
       encoded = encoded.replace("+", "%20");
       return F.stringx(encoded);
@@ -2739,7 +3118,7 @@ public class FileFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -200,6 +199,30 @@ public final class ContextPath implements Iterable<Context> {
     static final Map<String, IBuiltInSymbol> LOWERCASE = buildLowercaseSystemAliases(EXACT);
   }
 
+  /**
+   * The names an optional module registered with {@link #registerSystemAlias(String,
+   * IBuiltInSymbol)}, under their exact and their lower-case spelling. Unlike
+   * {@link SystemAliases} this map refers to neither <code>F</code> nor <code>S</code>, so it can
+   * be created when <code>ContextPath</code> is initialized.
+   */
+  private static final Map<String, IBuiltInSymbol> REGISTERED_ALIASES =
+      new java.util.concurrent.ConcurrentHashMap<>();
+
+  /**
+   * Let <code>symbol</code> answer the context-qualified name <code>completeSymbolName</code>, for
+   * example <code>"Internal`Bag"</code>. A module which implements functions of another context
+   * than <code>System`</code> registers them here when it is initialized; afterwards the parser
+   * resolves the name to <code>symbol</code> in both syntaxes. A registered name takes precedence
+   * over a built-in alias of the same name.
+   *
+   * @param completeSymbolName the context name followed by the symbol name
+   * @param symbol the built-in which answers the name
+   */
+  public static void registerSystemAlias(String completeSymbolName, IBuiltInSymbol symbol) {
+    REGISTERED_ALIASES.put(completeSymbolName, symbol);
+    REGISTERED_ALIASES.put(completeSymbolName.toLowerCase(Locale.ENGLISH), symbol);
+  }
+
   private static Map<String, IBuiltInSymbol> buildLowercaseSystemAliases(
       Map<String, IBuiltInSymbol> exact) {
     Map<String, IBuiltInSymbol> aliases = new java.util.HashMap<>();
@@ -359,6 +382,16 @@ public final class ContextPath implements Iterable<Context> {
    * <code>null</code> when the system provides no such symbol.
    */
   public static IBuiltInSymbol systemAlias(String contextName, String symbolName) {
+    if (!REGISTERED_ALIASES.isEmpty()) {
+      IBuiltInSymbol registered = REGISTERED_ALIASES.get(contextName + symbolName);
+      if (registered == null) {
+        registered =
+            REGISTERED_ALIASES.get((contextName + symbolName).toLowerCase(Locale.ENGLISH));
+      }
+      if (registered != null) {
+        return registered;
+      }
+    }
     IBuiltInSymbol alias = SystemAliases.EXACT.get(contextName + symbolName);
     if (alias != null) {
       return alias;
@@ -391,7 +424,7 @@ public final class ContextPath implements Iterable<Context> {
    * <code>a`Sub`x</code> written under the alias <code>a`</code> for <code>Actual`</code> is
    * <code>Actual`Sub`x</code>. Only the first segment is an alias.
    */
-  private String expandAlias(String contextName) {
+  public String expandAlias(String contextName) {
     if (fContextAliases.isEmpty()) {
       return contextName;
     }
@@ -630,13 +663,7 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   private static ISymbol getSymbolFromContext(Context context, String name) {
-    return context.computeIfAbsent(name, n -> {
-      ISymbol symbol = new Symbol(n, context);
-      if (Config.SERVER_MODE && (n.charAt(0) == '$')) {
-        F.SYMBOL_OBSERVER.createUserSymbol(symbol);
-      }
-      return symbol;
-    });
+    return context.computeIfAbsent(name, n -> new Symbol(n, context));
   }
 
 

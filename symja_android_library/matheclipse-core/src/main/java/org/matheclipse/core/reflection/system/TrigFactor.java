@@ -78,7 +78,7 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       return resultA;
     }
 
-    IExpr expanded = engine.evaluate(F.TrigExpand(arg));
+    IExpr expanded = engine.evaluate(TrigExpand.expandAngles(arg, engine));
     if (expanded.leafCount() > TRIG_FACTOR_EXPANSION_LEAF_LIMIT) {
       return resultA;
     }
@@ -209,6 +209,10 @@ public class TrigFactor extends AbstractFunctionEvaluator {
       if (result.isPresent()) {
         return result;
       }
+      result = sumOfTwoQuotientTrigs(plus);
+      if (result.isPresent()) {
+        return result;
+      }
       return sumOfTwoTrigs(plus);
     }
     return doubleAngle(expr);
@@ -282,6 +286,87 @@ public class TrigFactor extends AbstractFunctionEvaluator {
         break;
     }
     return first.negative ? F.Negate(result) : result;
+  }
+
+  /**
+   * The sum identities <code>Tan(x)+Tan(y)</code> becomes <code>Sec(x)*Sec(y)*Sin(x+y)</code>,
+   * <code>Cot(x)+Cot(y)</code> becomes <code>Csc(x)*Csc(y)*Sin(x+y)</code> (the hyperbolic ones
+   * alike) and <code>Csc(x)+Csc(y)</code> becomes
+   * <code>Cos(x/2-y/2)*Csc(x/2)*Csc(y/2)*Sec(x/2)*Sec(y/2)*Sin(x/2+y/2)/2</code>.
+   *
+   * @param plus a sum of exactly two terms
+   * @return {@link F#NIL} if the terms aren't <code>+-f(x)</code> and <code>+-f(y)</code> with the
+   *         same function <code>f</code> and different symbols <code>x, y</code>
+   */
+  private static IExpr sumOfTwoQuotientTrigs(IAST plus) {
+    IExpr first = plus.arg1();
+    IExpr second = plus.arg2();
+    boolean firstNegative = first.isTimes() && first.size() == 3 && first.first().isMinusOne();
+    boolean secondNegative = second.isTimes() && second.size() == 3 && second.first().isMinusOne();
+    if (firstNegative) {
+      first = first.second();
+    }
+    if (secondNegative) {
+      second = second.second();
+    }
+    if (!first.isAST1() || !second.isAST1() || first.head() != second.head()) {
+      return F.NIL;
+    }
+    IExpr u = first.first();
+    IExpr v = second.first();
+    if (!u.isSymbol() || !v.isSymbol() || u.equals(v)) {
+      return F.NIL;
+    }
+    // the sign of the first term is pulled out of the product
+    boolean difference = firstNegative != secondNegative;
+    IExpr sum = difference ? F.Subtract(u, v) : F.Plus(u, v);
+    IExpr result;
+    switch (first.headID()) {
+      case ID.Tan:
+        result = F.Times(F.Sec(u), F.Sec(v), F.Sin(sum));
+        break;
+      case ID.Cot:
+        result = F.Times(F.Csc(u), F.Csc(v), F.Sin(difference ? F.Subtract(v, u) : sum));
+        break;
+      case ID.Tanh:
+        result = F.Times(F.Sech(u), F.Sech(v), F.Sinh(sum));
+        break;
+      case ID.Coth:
+        result = F.Times(F.Csch(u), F.Csch(v), F.Sinh(difference ? F.Subtract(v, u) : sum));
+        break;
+      case ID.Csc:
+      case ID.Csch: {
+        boolean circular = first.headID() == ID.Csc;
+        IExpr x2 = F.Times(F.C1D2, u);
+        IExpr y2 = F.Times(F.C1D2, v);
+        // Sin(x)+-Sin(y) as a product over Sin(x)*Sin(y) with the half angles
+        IExpr numerator = difference
+            ? F.Times(trig(circular, ID.Cos, F.Plus(x2, y2)),
+                trig(circular, ID.Sin, F.Subtract(y2, x2)))
+            : F.Times(trig(circular, ID.Sin, F.Plus(x2, y2)),
+                trig(circular, ID.Cos, F.Subtract(x2, y2)));
+        result = F.Times(F.C1D2, numerator, trig(circular, ID.Csc, x2),
+            trig(circular, ID.Sec, x2), trig(circular, ID.Csc, y2), trig(circular, ID.Sec, y2));
+        break;
+      }
+      default:
+        return F.NIL;
+    }
+    return firstNegative ? F.Negate(result) : result;
+  }
+
+  /** The circular function or its hyperbolic counterpart. */
+  private static IExpr trig(boolean circular, int headID, IExpr x) {
+    switch (headID) {
+      case ID.Sin:
+        return circular ? F.Sin(x) : F.Sinh(x);
+      case ID.Cos:
+        return circular ? F.Cos(x) : F.Cosh(x);
+      case ID.Csc:
+        return circular ? F.Csc(x) : F.Csch(x);
+      default:
+        return circular ? F.Sec(x) : F.Sech(x);
+    }
   }
 
   /**

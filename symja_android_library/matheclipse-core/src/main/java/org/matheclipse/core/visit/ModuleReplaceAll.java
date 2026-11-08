@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -207,6 +208,26 @@ public class ModuleReplaceAll extends VisitorExpr {
     java.util.Set<ISymbol> patternSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
     collectPatternSymbols(ast.arg1(), patternSymbols);
+    // a pattern variable of a rule or an assignment shadows a variable substituted by a value:
+    // in With({a = 3}, a_ :> a) and With({a = 3}, a_ -> a) the a on the right-hand side is the
+    // pattern variable
+    IdentityHashMap<ISymbol, IExpr> unshadowed = null;
+    for (ISymbol symbol : patternSymbols) {
+      IExpr value = fModuleVariables.get(symbol);
+      if (value != null && value.isPresent() && !value.isSymbol()) {
+        if (unshadowed == null) {
+          unshadowed = new IdentityHashMap<>(fModuleVariables);
+        }
+        unshadowed.remove(symbol);
+      }
+    }
+    if (unshadowed != null) {
+      if (unshadowed.isEmpty()) {
+        return F.NIL;
+      }
+      return new ModuleReplaceAll(unshadowed, fEngine, moduleCounter, 0,
+          renameFunctionParameters, true, reachedScopeNames, scopeIndex).visitRuleScope(ast);
+    }
     // a free symbol of a substituted value - With({a = x}, f(x_) := x + a) - is renamed, the
     // value would be captured by the pattern otherwise
     patternSymbols.removeIf(symbol -> {
@@ -390,7 +411,9 @@ public class ModuleReplaceAll extends VisitorExpr {
    * @return a modified copy of <code>ast</code>, or <code>F.NIL</code> if unchanged
    */
   private static IAST visitAST(IAST ast, ModuleReplaceAll visitor, int startIndex) {
-    final int size = ast.size();
+    // the numbers and strings of an evaluated list have nothing to rename, only its head can
+    final int size =
+        ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? Math.min(1, ast.size()) : ast.size();
     int i = startIndex;
     while (i < size) {
       IExpr temp = ast.get(i).accept(visitor);

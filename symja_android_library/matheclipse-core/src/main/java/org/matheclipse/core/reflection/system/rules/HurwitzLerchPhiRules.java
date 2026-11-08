@@ -35,6 +35,9 @@ public class HurwitzLerchPhiRules {
     // HurwitzLerchPhi(-1,s_,1):=(1-2^(1-s))*Zeta(s)/;s!=1
     ISetDelayed(HurwitzLerchPhi(CN1,s_,C1),
       Condition(Times(Subtract(C1,Power(C2,Subtract(C1,s))),Zeta(s)),Unequal(s,C1))),
+    // HurwitzLerchPhi(-1,s_,a_):=HurwitzZeta(s,a/2)/2^s-HurwitzZeta(s,(1+a)/2)/2^s/;s=!=1
+    ISetDelayed(HurwitzLerchPhi(CN1,s_,a_),
+      Condition(Subtract(Times(Power(C2,Negate(s)),HurwitzZeta(s,Times(C1D2,a))),Times(Power(C2,Negate(s)),HurwitzZeta(s,Times(C1D2,Plus(C1,a))))),UnsameQ(s,C1))),
     // HurwitzLerchPhi(0,1,a_):=1/a
     ISetDelayed(HurwitzLerchPhi(C0,C1,a_),
       Power(a,CN1))

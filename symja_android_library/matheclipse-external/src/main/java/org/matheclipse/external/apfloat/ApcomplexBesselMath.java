@@ -6,7 +6,6 @@ import org.apfloat.Apcomplex;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.InfiniteExpansionException;
@@ -179,9 +178,9 @@ public class ApcomplexBesselMath
                       current = startValue(μ, x, modified);
             for (long k = 0; k < steps; k++)
             {
-                if ((k & 63) == 0 && Thread.currentThread().isInterrupted())
+                if ((k & 63) == 0)
                 {
-                    throw new ApfloatInterruptedException("Interrupted");
+                    ApfloatHelperShim.checkInterrupted();
                 }
                 Apcomplex ratio = two.multiply(μ).divide(x),
                           next = modified ? previous.add(ratio.multiply(current)) : ratio.multiply(current).subtract(previous);

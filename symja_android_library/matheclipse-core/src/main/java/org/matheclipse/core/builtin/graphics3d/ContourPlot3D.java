@@ -44,10 +44,12 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    IExpr expr = ast.arg1();
-    boolean isEquation = expr.isAST(S.Equal, 3);
-    if (isEquation) {
-      expr = F.Subtract(((IAST) expr).arg1(), ((IAST) expr).arg2());
+    // a list of functions or equations has one surface or set of surfaces for each; a function
+    // in a list stands for its zero surface unless Contours says otherwise
+    boolean several = ast.arg1().isList();
+    IAST functions = several ? (IAST) ast.arg1() : F.List(ast.arg1());
+    if (functions.isEmpty()) {
+      return F.NIL;
     }
 
     ISymbol[] vars = new ISymbol[3];
@@ -58,16 +60,31 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     int points = plotPoints(options[Plot3DTools.X_PLOT_POINTS]);
-    double[][][] grid = MarchingCubes.sample(expr, vars, min, max,
-        options[Plot3DTools.X_EVALUATION_MONITOR], points, engine,
-        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
-    if (grid == null) {
-      return F.NIL;
-    }
-
-    double[] levels = contourLevels(options[Plot3DTools.X_CONTOURS], grid, isEquation);
-    if (levels.length == 0) {
-      return F.NIL;
+    double[][][][] grids = new double[functions.argSize()][][][];
+    double[][] levelSets = new double[functions.argSize()][];
+    double lowestLevel = Double.POSITIVE_INFINITY;
+    double highestLevel = Double.NEGATIVE_INFINITY;
+    int surfaceCount = 0;
+    for (int f = 0; f < grids.length; f++) {
+      IExpr expr = functions.get(f + 1);
+      boolean isEquation = expr.isAST(S.Equal, 3);
+      if (isEquation) {
+        expr = F.Subtract(((IAST) expr).arg1(), ((IAST) expr).arg2());
+      }
+      grids[f] = MarchingCubes.sample(expr, vars, min, max,
+          options[Plot3DTools.X_EVALUATION_MONITOR], points, engine,
+          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
+      if (grids[f] == null) {
+        return F.NIL;
+      }
+      levelSets[f] =
+          contourLevels(options[Plot3DTools.X_CONTOURS], grids[f], isEquation || several);
+      if (levelSets[f].length == 0) {
+        return F.NIL;
+      }
+      lowestLevel = Math.min(lowestLevel, levelSets[f][0]);
+      highestLevel = Math.max(highestLevel, levelSets[f][levelSets[f].length - 1]);
+      surfaceCount += levelSets[f].length;
     }
 
     // ContourStyle is what styles the contour surfaces; PlotStyle only gets a say when no
@@ -82,8 +99,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     // name asks for, since it reads the fourth argument.
     PlotColorFunction levelColors = Plot3DTools
         .plotColors(PlotColorFunction.Family.CONTOUR_3D, options, S.ContourPlot3D, engine)
-        .ranges(min[0], max[0], min[1], max[1], min[2], max[2], levels[0],
-            levels[levels.length - 1])
+        .ranges(min[0], max[0], min[1], max[1], min[2], max[2], lowestLevel, highestLevel)
         .build();
 
     // With nothing asked for, every surface is lit by lights of its own colour, as Mathematica
@@ -91,32 +107,18 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     boolean ownLights =
         levelColors == null && (styleSource == null || styleSource.isAutomatic());
     IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
-    IASTAppendable surfaces = F.ListAlloc(levels.length);
-    for (int level = 0; level < levels.length; level++) {
-      GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
-      IExpr style;
-      if (levelColors != null) {
-        style = levelColors.color((min[0] + max[0]) / 2.0, (min[1] + max[1]) / 2.0,
-            (min[2] + max[2]) / 2.0, levels[level]);
-      } else if (ownLights) {
-        style = litSurfaceStyle(level);
-      } else {
-        style = Plot3DTools.surfaceStyle(level, styleSource);
-      }
-      Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
-      MarchingCubes.marchingCubes(builder, grid, levels[level], min, max, points);
-      // the rim where the surface leaves the box, which Mathematica outlines unless told not to:
-      // the edges only one triangle has
-      if (Plot3DTools.drawsBoundary(boundaryStyle, true)) {
-        IASTAppendable rim = builder.openEdges();
-        if (rim.argSize() > 0) {
-          builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyle),
-              F.binaryAST2(S.Line, rim, F.Rule(S.VertexColors, S.None))));
+    IASTAppendable surfaces = F.ListAlloc(surfaceCount);
+    double[][] axis = axis(min, max, new int[] {points, points, points});
+    int surfaceIndex = 0;
+    for (int f = 0; f < grids.length; f++) {
+      for (double value : levelSets[f]) {
+        IExpr style =
+            levelStyle(surfaceIndex++, value, levelColors, ownLights, styleSource, min, max);
+        IExpr complex = surface(grids[f], axis, value, style, options[Plot3DTools.X_MESH],
+            boundaryStyle);
+        if (complex.isPresent()) {
+          surfaces.append(complex);
         }
-      }
-      IExpr complex = builder.build();
-      if (complex.isPresent()) {
-        surfaces.append(complex);
       }
     }
     if (surfaces.argSize() == 0) {
@@ -125,6 +127,57 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
 
     IExpr[] defaults = Plot3DTools.cubeDefaults(min, max, !ownLights);
     return Plot3DTools.graphics3D(surfaces, originalAST, argSize, defaults);
+  }
+
+  /**
+   * The style of contour surface number <code>surfaceIndex</code> at level <code>value</code>: from
+   * the colour function, else lit in its own colour, else from the style option.
+   */
+  static IExpr levelStyle(int surfaceIndex, double value, PlotColorFunction levelColors,
+      boolean ownLights, IExpr styleSource, double[] min, double[] max) {
+    if (levelColors != null) {
+      return levelColors.color((min[0] + max[0]) / 2.0, (min[1] + max[1]) / 2.0,
+          (min[2] + max[2]) / 2.0, value);
+    }
+    if (ownLights) {
+      return litSurfaceStyle(surfaceIndex);
+    }
+    return Plot3DTools.surfaceStyle(surfaceIndex, styleSource);
+  }
+
+  /**
+   * The <code>GraphicsComplex</code> of the surface where the samples of <code>grid</code>, taken
+   * at the coordinates <code>axis</code>, take the value <code>value</code>; {@link F#NIL} if there
+   * is none.
+   */
+  static IExpr surface(double[][][] grid, double[][] axis, double value, IExpr style,
+      IExpr meshOption, IExpr boundaryStyle) {
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
+    Plot3DTools.applyStyle(builder, style, meshOption);
+    MarchingCubes.marchingCubes(builder, grid, value, axis);
+    // the rim where the surface leaves the box, outlined unless told not to: the edges only
+    // one triangle has
+    if (Plot3DTools.drawsBoundary(boundaryStyle, true)) {
+      IASTAppendable rim = builder.openEdges();
+      if (rim.argSize() > 0) {
+        builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyle),
+            F.binaryAST2(S.Line, rim, F.Rule(S.VertexColors, S.None))));
+      }
+    }
+    return builder.build();
+  }
+
+  /** The coordinates of <code>counts[c]</code> evenly spaced samples from min to max per axis. */
+  static double[][] axis(double[] min, double[] max, int[] counts) {
+    double[][] axis = new double[3][];
+    for (int c = 0; c < 3; c++) {
+      axis[c] = new double[counts[c]];
+      double step = (max[c] - min[c]) / (counts[c] - 1);
+      for (int i = 0; i < counts[c]; i++) {
+        axis[c][i] = min[c] + i * step;
+      }
+    }
+    return axis;
   }
 
   /**
@@ -154,7 +207,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
   private static final int[] SPECULAR_EXPONENT = {3, 3, 3, 6, 6, 6};
 
   /** Contour surface number <code>level</code> in Mathematica's default style. */
-  private static IExpr litSurfaceStyle(int level) {
+  static IExpr litSurfaceStyle(int level) {
     if (level >= AMBIENT.length) {
       return Plot3DTools.surfaceStyle(level, S.Automatic);
     }
@@ -193,7 +246,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
    * An equation fixes the level at zero. For a bare function {@code Contours} chooses, defaulting
    * to a few levels spread through the range the function actually takes.
    */
-  private static double[] contourLevels(IExpr option, double[][][] grid, boolean isEquation) {
+  static double[] contourLevels(IExpr option, double[][][] grid, boolean isEquation) {
     if (option != null && option.isList()) {
       IAST list = (IAST) option;
       double[] levels = new double[list.argSize()];

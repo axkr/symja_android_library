@@ -306,8 +306,9 @@ public class GraphDataFunctions {
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
-      IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
       IExpr arg1 = ast.arg1();
+      // GraphLayout -> Automatic: the layout of the kind of complete graph
+      final boolean automaticLayout = options[GraphGraphics.X_GRAPH_LAYOUT] == S.Automatic;
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         if (list.argSize() >= 2) {
@@ -324,7 +325,12 @@ public class GraphDataFunctions {
           if (vertexCount > Config.MAX_GRAPH_VERTICES_SIZE) {
             ASTElementLimitExceeded.throwIt(vertexCount);
           }
-          return multipartiteCompleteGraph(partitions, vertexCount, optionsList);
+          if (automaticLayout) {
+            options[GraphGraphics.X_GRAPH_LAYOUT] = F.list(F.stringx("MultipartiteLayout"),
+                F.Rule(F.stringx("VertexPartition"), list));
+          }
+          return multipartiteCompleteGraph(partitions, vertexCount,
+              GraphGraphics.createOptionsList(options));
         }
         if (!arg1.isList1()) {
           // Function `1` only implemented for `2` list arguments.
@@ -342,8 +348,13 @@ public class GraphDataFunctions {
       if (partition > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(partition);
       }
-
-      return completeGraph(partition, optionsList);
+      if (automaticLayout) {
+        // K4 is drawn as a triangle around its centre, every other complete graph as a regular
+        // polygon in the order of its vertices
+        options[GraphGraphics.X_GRAPH_LAYOUT] = partition == 4 ? F.stringx("StarEmbedding")
+            : F.list(F.stringx("CircularEmbedding"), F.Rule(F.stringx("OptimalOrder"), S.False));
+      }
+      return completeGraph(partition, GraphGraphics.createOptionsList(options));
     }
 
     /**
@@ -548,10 +559,14 @@ public class GraphDataFunctions {
           // Positive machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
         }
-        if (m * n > Config.MAX_GRAPH_VERTICES_SIZE) {
-          ASTElementLimitExceeded.throwIt(m * n);
+        if ((long) m * n > Config.MAX_GRAPH_VERTICES_SIZE) {
+          ASTElementLimitExceeded.throwIt((long) m * n);
         }
-        return gridGraph(engine, m, n);
+        GraphExpr<ExprEdge> grid = gridGraph(engine, m, n);
+        IASTAppendable options = F.ListAlloc(1);
+        options.append(F.Rule(S.GraphLayout, F.list(F.stringx("GridEmbedding"),
+            F.Rule(F.stringx("Dimension"), F.list(F.ZZ(m), F.ZZ(n))))));
+        return GraphExpr.newInstance(grid.toData(), options);
       }
       if (list.isList() && list.argSize() > 0) {
         int[] dimensions = new int[list.argSize()];
@@ -608,7 +623,7 @@ public class GraphDataFunctions {
       return GraphExpr.newInstance(grid);
     }
 
-    private static IExpr gridGraph(EvalEngine engine, int m, int n) {
+    private static GraphExpr<ExprEdge> gridGraph(EvalEngine engine, int m, int n) {
       if (m == 1 || n == 1) {
         // the JGraphT generator needs at least two rows and columns, a degenerated grid is a
         // path graph
@@ -738,10 +753,8 @@ public class GraphDataFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      IBuiltInSymbol[] defaultGraphOptionKeys = GraphGraphics.defaultGraphOptionKeys();
-      IExpr[] defaultGraphOptionValues = GraphGraphics.defaultGraphOptionValues();
-      defaultGraphOptionValues[GraphGraphics.X_GRAPH_LAYOUT] = F.stringx("DiscreteSpiralEmbedding");
-      setOptions(newSymbol, defaultGraphOptionKeys, defaultGraphOptionValues);
+      setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
+          GraphGraphics.defaultGraphOptionValues());
     }
   }
 
@@ -805,7 +818,24 @@ public class GraphDataFunctions {
       for (int[] pair : pairs) {
         target.addEdge(F.ZZ(pair[0]), F.ZZ(pair[1]));
       }
-      return GraphExpr.newInstance(target);
+      // the star on the unit circle and the cycle on the circle of radius 2, vertex i of each at
+      // the angle 2*Pi*i/order clockwise from the top
+      IASTAppendable coordinates = F.ListAlloc(2 * order);
+      for (int radius = 1; radius <= 2; radius++) {
+        for (int i = 1; i <= order; i++) {
+          double angle = 2.0 * Math.PI * i / order;
+          coordinates.append(F.list(F.num(chopZero(radius * Math.sin(angle))),
+              F.num(chopZero(radius * Math.cos(angle)))));
+        }
+      }
+      IASTAppendable options = F.ListAlloc(1);
+      options.append(F.Rule(S.VertexCoordinates, coordinates));
+      return GraphExpr.newInstance(target, options);
+    }
+
+    /** Map a coordinate which is zero except for a rounding error to an exact <code>0.0</code>. */
+    private static double chopZero(double value) {
+      return Math.abs(value) < 1.0e-12 ? 0.0 : value;
     }
 
     private IExpr petersenGraphNoArg() {
@@ -847,21 +877,44 @@ public class GraphDataFunctions {
         IAST optionsList =
             argSize < ast.argSize() ? GraphGraphics.createOptionsList(options) : null;
         if (argSize == 2) {
-          int k = ast.arg2().toMachineInt();
-          if (k <= 0) {
-            // Positive machine-sized integer expected at position `2` in `1`
-            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+          // a count k or the dimensions {k1, k2, ...} of a nested list of graphs
+          IExpr arg2 = ast.arg2();
+          int[] dims;
+          if (arg2.isList() && arg2.argSize() > 0) {
+            dims = new int[arg2.argSize()];
+            for (int i = 0; i < dims.length; i++) {
+              dims[i] = arg2.getAt(i + 1).toIntDefault();
+            }
+          } else {
+            dims = new int[] {arg2.toIntDefault()};
           }
-          if (k > Config.MAX_AST_SIZE) {
-            ASTElementLimitExceeded.throwIt(k);
+          long total = 1;
+          for (int k : dims) {
+            if (k <= 0) {
+              // Positive machine-sized integer expected at position `2` in `1`
+              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+            }
+            total *= k;
+            if (total > Config.MAX_AST_SIZE) {
+              ASTElementLimitExceeded.throwIt(total);
+            }
           }
-          return F.mapRange(0, k, i -> newGraph(generator.get(), optionsList));
+          return graphArray(dims, 0, generator, optionsList);
         }
         return newGraph(generator.get(), optionsList);
       } catch (IllegalArgumentException iae) {
         // more edges than a simple graph with these vertices can have
         return Errors.printMessage(ast.topHead(), iae, engine);
       }
+    }
+
+    /** A nested list of graphs of the dimensions <code>dims[level], dims[level + 1], ...</code>. */
+    private static IExpr graphArray(int[] dims, int level,
+        Supplier<Graph<IExpr, ExprEdge>> generator, IAST optionsList) {
+      if (level == dims.length) {
+        return newGraph(generator.get(), optionsList);
+      }
+      return F.mapRange(0, dims[level], i -> graphArray(dims, level + 1, generator, optionsList));
     }
 
     private static IExpr newGraph(Graph<IExpr, ExprEdge> graph, IAST optionsList) {
@@ -907,6 +960,48 @@ public class GraphDataFunctions {
           return null;
         }
         return () -> barabasiAlbertGraph(vertices, k, random);
+      }
+      if (spec.isAST(S.BernoulliGraphDistribution, 3)) {
+        int vertices = vertexCount(spec, ast, engine);
+        double p = spec.second().evalfNaN();
+        if (vertices <= 0 || !(p >= 0.0 && p <= 1.0)) {
+          return null;
+        }
+        return () -> bernoulliGraph(vertices, p, random);
+      }
+      if (spec.isAST(S.SpatialGraphDistribution, 3)) {
+        int vertices = vertexCount(spec, ast, engine);
+        double r = spec.second().evalfNaN();
+        if (vertices <= 0 || !(r >= 0.0)) {
+          return null;
+        }
+        return () -> spatialGraph(vertices, r, random);
+      }
+      if (spec.isAST(S.DegreeGraphDistribution, 2) && spec.first().isList()) {
+        int[] degrees = degreeSequence((IAST) spec.first(), engine);
+        if (degrees == null) {
+          return null;
+        }
+        return () -> degreeGraph(degrees, random);
+      }
+      if (spec.isAST(S.PriceGraphDistribution) && spec.argSize() >= 3) {
+        int vertices = vertexCount(spec, ast, engine);
+        int k = spec.second().toIntDefault();
+        double a = spec.getAt(3).evalfNaN();
+        if (vertices <= 0 || k <= 0 || !(a > 0.0)) {
+          return null;
+        }
+        boolean directed = true;
+        for (int i = 4; i <= spec.argSize(); i++) {
+          IExpr option = spec.getAt(i);
+          if (option.isRuleAST() && option.first() == S.DirectedEdges) {
+            directed = option.second().isTrue();
+          } else {
+            return null;
+          }
+        }
+        final boolean directedEdges = directed;
+        return () -> priceGraph(vertices, k, a, directedEdges, random);
       }
       if (spec.isAST(S.WattsStrogatzGraphDistribution, 3, 4)) {
         int vertices = vertexCount(spec, ast, engine);
@@ -969,6 +1064,188 @@ public class GraphDataFunctions {
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
           .buildGraph();
       gen.generateGraph(target);
+      return target;
+    }
+
+    /** Every pair of the <code>n</code> vertices is joined with the probability <code>p</code>. */
+    private static Graph<IExpr, ExprEdge> bernoulliGraph(int n, double p, Random random) {
+      Graph<IExpr, ExprEdge> target = simpleGraph(n);
+      for (int i = 1; i <= n; i++) {
+        for (int j = i + 1; j <= n; j++) {
+          if (random.nextDouble() < p) {
+            target.addEdge(F.ZZ(i), F.ZZ(j));
+          }
+        }
+      }
+      return target;
+    }
+
+    /**
+     * <code>n</code> points drawn uniformly from the unit square; two of them are joined if they
+     * are at most the distance <code>r</code> apart.
+     */
+    private static Graph<IExpr, ExprEdge> spatialGraph(int n, double r, Random random) {
+      double[] x = new double[n];
+      double[] y = new double[n];
+      for (int i = 0; i < n; i++) {
+        x[i] = random.nextDouble();
+        y[i] = random.nextDouble();
+      }
+      Graph<IExpr, ExprEdge> target = simpleGraph(n);
+      for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+          if (Math.hypot(x[i] - x[j], y[i] - y[j]) <= r) {
+            target.addEdge(F.ZZ(i + 1), F.ZZ(j + 1));
+          }
+        }
+      }
+      return target;
+    }
+
+    /**
+     * The degree sequence of a <code>DegreeGraphDistribution</code>, or <code>null</code> if it
+     * isn't a list of non-negative integers which a simple graph can have.
+     */
+    private static int[] degreeSequence(IAST list, EvalEngine engine) {
+      int n = list.argSize();
+      if (n == 0 || n > Config.MAX_GRAPH_VERTICES_SIZE) {
+        return null;
+      }
+      int[] degrees = new int[n];
+      for (int i = 0; i < n; i++) {
+        degrees[i] = list.get(i + 1).toIntDefault();
+        if (degrees[i] < 0 || degrees[i] >= n) {
+          return null;
+        }
+      }
+      return havelHakimi(degrees, null) ? degrees : null;
+    }
+
+    /**
+     * The Havel-Hakimi construction: the vertex of the largest remaining degree is joined to the
+     * vertices of the next largest degrees.
+     *
+     * @param edges receives the edges as pairs of 0-based vertices, or <code>null</code> for the
+     *        test only
+     * @return <code>false</code> if no simple graph has these degrees
+     */
+    private static boolean havelHakimi(int[] degrees, List<int[]> edges) {
+      int n = degrees.length;
+      int[] rest = degrees.clone();
+      Integer[] order = new Integer[n];
+      for (int step = 0; step < n; step++) {
+        for (int i = 0; i < n; i++) {
+          order[i] = i;
+        }
+        java.util.Arrays.sort(order, (u, v) -> rest[v] - rest[u]);
+        int u = order[0];
+        int d = rest[u];
+        if (d == 0) {
+          return true;
+        }
+        rest[u] = 0;
+        for (int i = 1; i <= d; i++) {
+          if (i >= n || rest[order[i]] == 0) {
+            return false;
+          }
+          rest[order[i]]--;
+          if (edges != null) {
+            edges.add(new int[] {u, order[i]});
+          }
+        }
+      }
+      return true;
+    }
+
+    /**
+     * A simple graph with the given vertex degrees: the Havel-Hakimi graph, randomized by a number
+     * of double edge swaps <code>a-b, c-d -&gt; a-d, c-b</code>, which keep every degree.
+     */
+    private static Graph<IExpr, ExprEdge> degreeGraph(int[] degrees, Random random) {
+      int n = degrees.length;
+      List<int[]> edges = new ArrayList<int[]>();
+      havelHakimi(degrees, edges);
+      Set<Long> present = new HashSet<Long>();
+      for (int[] e : edges) {
+        present.add(edgeKey(e[0], e[1], n));
+      }
+      int m = edges.size();
+      for (int swap = 0; m > 1 && swap < 10 * m; swap++) {
+        int[] e1 = edges.get(random.nextInt(m));
+        int[] e2 = edges.get(random.nextInt(m));
+        int a = e1[0], b = e1[1], c = e2[0], d = e2[1];
+        if (random.nextBoolean()) {
+          c = e2[1];
+          d = e2[0];
+        }
+        if (a == d || c == b || a == c || b == d || present.contains(edgeKey(a, d, n))
+            || present.contains(edgeKey(c, b, n))) {
+          continue;
+        }
+        present.remove(edgeKey(a, b, n));
+        present.remove(edgeKey(e2[0], e2[1], n));
+        present.add(edgeKey(a, d, n));
+        present.add(edgeKey(c, b, n));
+        e1[1] = d;
+        e2[0] = c;
+        e2[1] = b;
+      }
+      Graph<IExpr, ExprEdge> target = simpleGraph(n);
+      for (int[] e : edges) {
+        target.addEdge(F.ZZ(e[0] + 1), F.ZZ(e[1] + 1));
+      }
+      return target;
+    }
+
+    private static long edgeKey(int u, int v, int n) {
+      return u < v ? (long) u * n + v : (long) v * n + u;
+    }
+
+    /**
+     * The citation model: vertex <code>v</code> joins <code>min(k, v - 1)</code> distinct earlier
+     * vertices with edges <code>v -&gt; w</code>, each <code>w</code> chosen with a probability
+     * proportional to its in-degree plus <code>a</code>.
+     */
+    private static Graph<IExpr, ExprEdge> priceGraph(int n, int k, double a, boolean directed,
+        Random random) {
+      Graph<IExpr, ExprEdge> target = directed //
+          ? GraphTypeBuilder.<IExpr, ExprEdge>directed().allowingMultipleEdges(false)
+              .allowingSelfLoops(false).edgeClass(ExprEdge.class).buildGraph()
+          : simpleGraph(0);
+      for (int i = 1; i <= n; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+      double[] inDegree = new double[n + 1];
+      for (int v = 2; v <= n; v++) {
+        int count = Math.min(k, v - 1);
+        Set<Integer> chosen = new LinkedHashSet<Integer>();
+        while (chosen.size() < count) {
+          double total = 0.0;
+          for (int w = 1; w < v; w++) {
+            if (!chosen.contains(w)) {
+              total += inDegree[w] + a;
+            }
+          }
+          double pick = random.nextDouble() * total;
+          int w = 1;
+          for (; w < v - 1; w++) {
+            if (!chosen.contains(w)) {
+              pick -= inDegree[w] + a;
+              if (pick < 0.0) {
+                break;
+              }
+            }
+          }
+          while (chosen.contains(w)) {
+            w--;
+          }
+          chosen.add(w);
+        }
+        for (int w : chosen) {
+          target.addEdge(F.ZZ(v), F.ZZ(w));
+          inDegree[w]++;
+        }
+      }
       return target;
     }
 

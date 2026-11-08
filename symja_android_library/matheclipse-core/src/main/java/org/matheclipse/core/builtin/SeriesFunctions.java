@@ -549,6 +549,13 @@ public class SeriesFunctions {
           return engine.evaluate(F.Residue(newFunc, F.List(x, F.C0)));
         }
 
+        // w^j*Exp(c + a*w + b/w) terms with w = x-x0: a closed form in BesselI; the series code
+        // can't expand such an essential singularity
+        IExpr exponential = exponentialLaurentResidue(function, x, x0, engine);
+        if (exponential.isPresent()) {
+          return exponential;
+        }
+
         // Fast-Path: Try direct evaluation via our optimized SeriesCoefficient
         IExpr coeff = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.CN1)));
         if (coeff.isPresent() && coeff.isFree(S.SeriesCoefficient, true)) {
@@ -557,7 +564,7 @@ public class SeriesFunctions {
             // guess with the series fallback either
             return F.NIL;
           }
-          return coeff.isNumber() ? coeff : engine.evaluate(F.Together(coeff));
+          return coeff.isNumber() ? coeff : tidyResidue(engine.evaluate(F.Together(coeff)), engine);
         }
 
         // Essential singularity: if the function is analytic on the whole punctured plane, its
@@ -570,12 +577,84 @@ public class SeriesFunctions {
         // Robust Fallback: Compute the Laurent series explicitly up to O((x-x0)^0)
         // and extract the precise -1 coefficient using ASTSeriesData properties.
         IExpr series = engine.evaluate(F.Series(function, F.List(x, x0, F.C0)));
-        if (series instanceof ASTSeriesData) {
+        if (series instanceof ASTSeriesData && isPlainLaurentSeries((ASTSeriesData) series)) {
           ASTSeriesData seriesData = (ASTSeriesData) series;
-          return engine.evaluate(F.Together(seriesData.coefficient(-1)));
+          return tidyResidue(engine.evaluate(F.Together(seriesData.coefficient(-1))), engine);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The shortest of <code>Together</code>, <code>Simplify</code> and the
+     * <code>ComplexExpand</code> of an exact algebraic residue; on a tie the one without a compound
+     * denominator, then the one with smaller integers: <code>(-9-2*I*Sqrt(3))/36</code> for
+     * <code>(-72-16*I*Sqrt(3))/288</code>.
+     */
+    private static IExpr tidyResidue(IExpr residue, EvalEngine engine) {
+      if (residue.isNumber() || !residue.isNumericFunction(true)
+          || !residue.isFree(IExpr::isInexactNumber, false)
+          // only an algebraic number has a form to tidy: a radical or a root of unity
+          || residue.isFree(e -> e.isPower() && e.base().isNumber() && e.exponent().isFraction(),
+              true)) {
+        return residue;
+      }
+      IExpr best = residue;
+      long bestCount = residue.leafCount();
+      boolean bestCompound = hasCompoundDenominator(best, engine);
+      IExpr expanded = engine.evalQuiet(F.Together(F.ComplexExpand(residue)));
+      IExpr[] candidates = {cancelIntegerContent(residue, engine),
+          cancelIntegerContent(expanded, engine), engine.evalQuiet(F.Simplify(residue))};
+      for (IExpr candidate : candidates) {
+        if (!candidate.isPresent() || !candidate.isFree(IExpr::isInexactNumber, false)) {
+          continue;
+        }
+        long count = candidate.leafCount();
+        boolean candidateCompound = hasCompoundDenominator(candidate, engine);
+        if (count < bestCount || (count == bestCount && bestCompound && !candidateCompound)
+            || (count == bestCount && bestCompound == candidateCompound
+                && candidate.toString().length() < best.toString().length())) {
+          best = candidate;
+          bestCount = count;
+          bestCompound = candidateCompound;
+        }
+      }
+      return best;
+    }
+
+    /**
+     * <code>p/d</code> with an integer <code>d</code> and the common integer factor of
+     * <code>d</code> and the coefficients of the sum <code>p</code> cancelled.
+     */
+    private static IExpr cancelIntegerContent(IExpr expr, EvalEngine engine) {
+      if (!expr.isPresent()) {
+        return expr;
+      }
+      IExpr denominator = engine.evalQuiet(F.Denominator(expr));
+      IExpr numerator = engine.evalQuiet(F.Numerator(expr));
+      if (!denominator.isInteger() || !numerator.isPlus()) {
+        return expr;
+      }
+      IInteger gcd = (IInteger) denominator;
+      for (IExpr term : (IAST) numerator) {
+        IExpr coefficient = term.isTimes() && term.first().isNumber() ? term.first()
+            : term.isNumber() ? term : F.C1;
+        IExpr re = coefficient.re();
+        IExpr im = coefficient.im();
+        if (!re.isInteger() || !im.isInteger()) {
+          return expr;
+        }
+        gcd = gcd.gcd((IInteger) re).gcd((IInteger) im);
+      }
+      if (gcd.isOne() || gcd.isZero()) {
+        return expr;
+      }
+      return engine.evalQuiet(F.Divide(F.Expand(F.Divide(numerator, gcd)),
+          ((IInteger) denominator).div(gcd)));
+    }
+
+    private static boolean hasCompoundDenominator(IExpr expr, EvalEngine engine) {
+      return !engine.evalQuiet(F.Denominator(expr)).isNumber();
     }
 
     /**
@@ -599,8 +678,18 @@ public class SeriesFunctions {
         }
         shifted = engine.evaluate(F.subst(function, x, F.Plus(x0, x)));
       }
+      IExpr otherResidues = F.C0;
       if (!isAnalyticOnPuncturedPlane(shifted, x)) {
-        return F.NIL;
+        if (!shifted.has(e -> isExponentialOfInverse(e, x), true)) {
+          // a pole at 0, not an essential singularity: the series code finds the residue
+          return F.NIL;
+        }
+        // the residues of a function which is analytic at Infinity sum to 0: subtract the
+        // residues at the poles of a rational factor
+        otherResidues = rationalFactorPoleResidues(shifted, x, engine);
+        if (otherResidues.isNIL()) {
+          return F.NIL;
+        }
       }
 
       boolean quietMode = engine.isQuietMode();
@@ -610,8 +699,11 @@ public class SeriesFunctions {
           IExpr series = engine.evaluate(F.Series(shifted, F.List(x, F.CInfinity, F.ZZ(order))));
           if (series instanceof ASTSeriesData) {
             ASTSeriesData seriesData = (ASTSeriesData) series;
-            if (seriesData.puiseuxDenominator() == 1 && seriesData.truncateOrder() >= 2) {
-              return engine.evaluate(F.Together(seriesData.coefficient(1)));
+            if (seriesData.puiseuxDenominator() == 1 && seriesData.truncateOrder() >= 2
+                && isPlainLaurentSeries(seriesData)) {
+              IExpr residue = engine.evaluate(
+                  F.Together(F.Subtract(seriesData.coefficient(1), otherResidues)));
+              return realForm(residue, function, engine);
             }
           } else {
             // the expansion at Infinity isn't a Laurent series at all - retrying won't help
@@ -622,6 +714,267 @@ public class SeriesFunctions {
         engine.setQuietMode(quietMode);
       }
       return F.NIL;
+    }
+
+    /**
+     * The sum of the residues of <code>p(x)/q(x)*g(x)</code> at the zeros of the polynomial
+     * <code>q(x)</code> other than <code>0</code>, where <code>g(x)</code> is analytic on the
+     * punctured plane.
+     *
+     * @return {@link F#NIL} if the function doesn't have this form or a residue isn't found
+     */
+    private static IExpr rationalFactorPoleResidues(IExpr function, IExpr x, EvalEngine engine) {
+      if (IN_POLE_SUM.get()) {
+        return F.NIL;
+      }
+      IN_POLE_SUM.set(Boolean.TRUE);
+      try {
+        return poleResidueSum(function, x, engine);
+      } finally {
+        IN_POLE_SUM.remove();
+      }
+    }
+
+    /**
+     * Set while {@link #rationalFactorPoleResidues} evaluates the residues at the poles, which must
+     * not sum the residues of other poles again.
+     */
+    private static final ThreadLocal<Boolean> IN_POLE_SUM =
+        ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    private static IExpr poleResidueSum(IExpr function, IExpr x, EvalEngine engine) {
+      IExpr together = engine.evalQuiet(F.Together(function));
+      IExpr numerator = engine.evalQuiet(F.Numerator(together));
+      IExpr denominator = engine.evalQuiet(F.Denominator(together));
+      if (denominator.isFree(x, true) || !denominator.isPolynomial(x)
+          || !isAnalyticOnPuncturedPlane(numerator, x)) {
+        return F.NIL;
+      }
+      IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(denominator, F.C0), x));
+      if (!solutions.isListOfLists() || solutions.argSize() == 0) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.PlusAlloc(solutions.argSize());
+      for (IExpr solution : (IAST) solutions) {
+        if (!solution.isList1() || !solution.first().isRuleAST()) {
+          return F.NIL;
+        }
+        IExpr pole = solution.first().second();
+        if (pole.isZero()) {
+          continue;
+        }
+        if (!pole.isFree(x, true) || !pole.isFree(S.Root, true)) {
+          return F.NIL;
+        }
+        IExpr residue = engine.evalQuiet(F.Residue(function, F.List(x, pole)));
+        if (!residue.isFree(h -> h == S.Residue || h == S.SeriesCoefficient
+            || h == S.Indeterminate || h.isDirectedInfinity(), true)) {
+          return F.NIL;
+        }
+        sum.append(residue);
+      }
+      return engine.evaluate(sum.oneIdentity0());
+    }
+
+    /**
+     * The residue at <code>x0</code> of a sum of terms <code>k*w^j*Exp(c + a*w + b/w)</code> with
+     * <code>w == x-x0</code>, after rewriting circular and hyperbolic functions to exponentials.
+     * The coefficient of <code>1/w</code> in <code>w^j*Exp(a*w + b/w)</code> is
+     * <code>Sum(a^m*b^(m+j+1)/(m!*(m+j+1)!), m)</code>, which is a <code>BesselI</code> value.
+     *
+     * @return {@link F#NIL} if no term has an essential singularity <code>Exp(b/w)</code> or a term
+     *         doesn't have this form
+     */
+    private static IExpr exponentialLaurentResidue(IExpr function, IExpr x, IExpr x0,
+        EvalEngine engine) {
+      if (x0.isDirectedInfinity() || !x0.isFree(x, true)
+          || !function.has(e -> isExponentialOfInverse(e, x), true)) {
+        return F.NIL;
+      }
+      IExpr shifted =
+          x0.isZero() ? function : engine.evaluate(F.subst(function, x, F.Plus(x0, x)));
+      IExpr expanded = engine.evalQuiet(F.Expand(F.TrigToExp(shifted)));
+      IAST terms = expanded.isPlus() ? (IAST) expanded : F.List(expanded);
+      IASTAppendable sum = F.PlusAlloc(terms.argSize());
+      boolean essential = false;
+      for (IExpr term : terms) {
+        // {k, j, a, b, c}
+        IExpr[] parts = exponentialTerm(term, x, engine);
+        if (parts == null) {
+          return F.NIL;
+        }
+        if (!parts[3].isZero()) {
+          essential = true;
+        }
+        sum.append(exponentialTermResidue(parts, engine));
+      }
+      if (!essential) {
+        return F.NIL;
+      }
+      return engine.evaluate(sum.oneIdentity0());
+    }
+
+    /**
+     * Test if <code>e</code> is <code>Exp(g)</code> or a circular or hyperbolic function of
+     * <code>g</code>, where <code>g</code> contains a negative power of an expression in
+     * <code>x</code>.
+     */
+    private static boolean isExponentialOfInverse(IExpr e, IExpr x) {
+      IExpr argument;
+      if (e.isPower() && e.base().isE()) {
+        argument = e.exponent();
+      } else if (e.isAST1() && (e.isSin() || e.isCos() || e.isSinh() || e.isCosh())) {
+        argument = e.first();
+      } else {
+        return false;
+      }
+      return argument.has(
+          p -> p.isPower() && p.exponent().isNegative() && !p.base().isFree(x, true), true);
+    }
+
+    /**
+     * Split <code>term</code> into <code>{k, j, a, b, c}</code> with
+     * <code>term == k*x^j*Exp(c + a*x + b/x)</code>.
+     *
+     * @return <code>null</code> if the term doesn't have this form
+     */
+    private static IExpr[] exponentialTerm(IExpr term, IExpr x, EvalEngine engine) {
+      IASTAppendable constant = F.TimesAlloc(4);
+      IASTAppendable exponent = F.PlusAlloc(4);
+      int j = 0;
+      IAST factors = term.isTimes() ? (IAST) term : F.List(term);
+      for (IExpr factor : factors) {
+        if (factor.isFree(x, true)) {
+          constant.append(factor);
+        } else if (factor.equals(x)) {
+          j++;
+        } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isInteger()) {
+          int k = factor.exponent().toIntDefault();
+          if (k == Integer.MIN_VALUE || Math.abs(k) > 1000) {
+            return null;
+          }
+          j += k;
+        } else if (factor.isPower() && factor.base().isE()) {
+          exponent.append(factor.exponent());
+        } else {
+          return null;
+        }
+      }
+      if (Math.abs(j) > 1000) {
+        return null;
+      }
+      IExpr g = engine.evalQuiet(F.Expand(exponent.oneIdentity0()));
+      IASTAppendable a = F.PlusAlloc(2);
+      IASTAppendable b = F.PlusAlloc(2);
+      IASTAppendable c = F.PlusAlloc(2);
+      IAST gTerms = g.isPlus() ? (IAST) g : F.List(g);
+      for (IExpr t : gTerms) {
+        if (t.isFree(x, true)) {
+          c.append(t);
+          continue;
+        }
+        IASTAppendable coefficient = F.TimesAlloc(2);
+        int power = 0;
+        IAST tFactors = t.isTimes() ? (IAST) t : F.List(t);
+        for (IExpr factor : tFactors) {
+          if (factor.isFree(x, true)) {
+            coefficient.append(factor);
+          } else if (power == 0 && factor.equals(x)) {
+            power = 1;
+          } else if (power == 0 && factor.isPower() && factor.base().equals(x)
+              && factor.exponent().isMinusOne()) {
+            power = -1;
+          } else {
+            return null;
+          }
+        }
+        if (power == 1) {
+          a.append(coefficient.oneIdentity1());
+        } else {
+          b.append(coefficient.oneIdentity1());
+        }
+      }
+      return new IExpr[] {constant.oneIdentity1(), F.ZZ(j), engine.evaluate(a.oneIdentity0()),
+          engine.evaluate(b.oneIdentity0()), engine.evaluate(c.oneIdentity0())};
+    }
+
+    /**
+     * The residue at <code>0</code> of <code>k*x^j*Exp(c + a*x + b/x)</code> for
+     * <code>parts == {k, j, a, b, c}</code>.
+     */
+    private static IExpr exponentialTermResidue(IExpr[] parts, EvalEngine engine) {
+      IExpr a = parts[2];
+      IExpr b = parts[3];
+      int nu = parts[1].toIntDefault() + 1;
+      IExpr value;
+      if (b.isZero()) {
+        // a^(-nu)/(-nu)! from Exp(a*x)
+        if (nu > 0) {
+          value = F.C0;
+        } else if (a.isZero()) {
+          value = nu == 0 ? F.C1 : F.C0;
+        } else {
+          value = F.Divide(F.Power(a, F.ZZ(-nu)), F.Factorial(F.ZZ(-nu)));
+        }
+      } else if (a.isZero()) {
+        // b^nu/nu! from Exp(b/x)
+        value = nu < 0 ? F.C0 : F.Divide(F.Power(b, F.ZZ(nu)), F.Factorial(F.ZZ(nu)));
+      } else {
+        // b^nu*c^(-nu)*BesselI(nu, 2*c) with c^2 == a*b is b^nu times an entire function of a*b,
+        // whatever square root c is: a root without radicals is taken where there is one, and
+        // BesselI(nu, 2*I*d)/(I*d)^nu == BesselJ(nu, 2*d)/d^nu where -a*b == d^2
+        int m = Math.abs(nu);
+        IExpr ab = engine.evaluate(F.Times(a, b));
+        IExpr negativeAB = engine.evaluate(F.Negate(ab));
+        IExpr d = rootWithoutRadicals(negativeAB, engine);
+        boolean besselJ = negativeAB.isPositive() || (d.isPresent() && rootWithoutRadicals(ab, engine).isNIL());
+        IExpr root;
+        if (besselJ) {
+          root = d.isPresent() ? d : F.Sqrt(negativeAB);
+        } else {
+          IExpr c = rootWithoutRadicals(ab, engine);
+          root = c.isPresent() ? c : F.Sqrt(ab);
+        }
+        value = F.Times(F.Power(nu >= 0 ? b : a, F.ZZ(m)), F.Power(root, F.ZZ(-m)),
+            besselJ ? F.BesselJ(F.ZZ(m), F.Times(F.C2, root))
+                : F.BesselI(F.ZZ(m), F.Times(F.C2, root)));
+      }
+      return engine.evaluate(F.Times(parts[0], F.Exp(parts[4]), value));
+    }
+
+    /**
+     * The residue of a function without complex numbers, from residues at complex poles, in the
+     * form of trigonometric functions if that is shorter: <code>Sin(1)</code> of
+     * <code>(I-I*E^(2*I))/(2*E^I)</code>.
+     */
+    private static IExpr realForm(IExpr residue, IExpr function, EvalEngine engine) {
+      if (!function.isFree(e -> e.isComplex() || e.isComplexNumeric(), true)
+          || residue.isFree(e -> e.isComplex(), true)) {
+        return residue;
+      }
+      IExpr trig = engine.evalQuiet(F.Simplify(F.ExpToTrig(residue)));
+      return trig.isPresent() && trig.leafCount() < residue.leafCount() ? trig : residue;
+    }
+
+    /**
+     * A square root of <code>expr</code> without fractional powers, like <code>a/2</code> of
+     * <code>a^2/4</code>, or {@link F#NIL}.
+     */
+    private static IExpr rootWithoutRadicals(IExpr expr, EvalEngine engine) {
+      IExpr root = engine.evalQuiet(F.PowerExpand(F.Sqrt(expr)));
+      boolean radical = root.has(e -> e.isPower() && e.exponent().isFraction(), true)
+          || root.has(e -> e.isComplex() || e.isComplexNumeric(), true);
+      return radical ? F.NIL : root;
+    }
+
+    /**
+     * Test if the coefficients of <code>series</code> are free of nested series, of
+     * <code>Indeterminate</code> and of infinities: the expansion of an essential singularity
+     * leaves such coefficients behind.
+     */
+    private static boolean isPlainLaurentSeries(ASTSeriesData series) {
+      return series.coefficientList().isFree(e -> e instanceof ASTSeriesData || e.isIndeterminate()
+          || e.isDirectedInfinity() || e == S.O || e == S.SeriesData, true);
     }
 
     /**
@@ -1702,11 +2055,20 @@ public class SeriesFunctions {
         EvalEngine engine) {
       final ISymbol logX = F.Dummy("logx");
       final boolean[] failed = new boolean[] {false};
+      // at 0 the logarithms which don't split stay as constants: Log(x^2) is not 2*Log(x) for a
+      // negative x
+      final boolean bothSides = iterator.arg2().isZero() && !x.isPositiveResult();
+      final boolean negative = bothSides && x.isNegativeResult();
+      final Map<IExpr, IExpr> keptLogs = new HashMap<IExpr, IExpr>();
       IExpr replaced = expr.replaceAll(y -> {
         if (y.isLog() && !y.first().isFree(x)) {
-          IExpr log = logOfPower(y.first(), x, logX);
+          IExpr log = logOfPower(y.first(), x, logX, bothSides, negative);
           if (log.isNIL()) {
             failed[0] = true;
+          } else if (!log.isFree(x)) {
+            ISymbol kept = F.Dummy("log" + keptLogs.size());
+            keptLogs.put(kept, log);
+            return kept;
           }
           return log;
         }
@@ -1717,10 +2079,22 @@ public class SeriesFunctions {
       }
       IExpr series = engine.evaluate(F.Series(engine.evaluate(replaced), iterator));
       if (!(series instanceof ASTSeriesData)) {
-        return F.NIL;
+        int n = iterator.arg3().toIntDefault();
+        if (keptLogs.isEmpty() || !series.isFree(x) || n < 0) {
+          return F.NIL;
+        }
+        series = new ASTSeriesData(x, iterator.arg2(), F.list(series), 0, n + 1, 1);
       }
       ASTSeriesData data = (ASTSeriesData) series;
-      IExpr coefficients = engine.evaluate(F.subst(data.arg3(), logX, F.Log(x)));
+      IExpr restored = F.subst(data.arg3(), logX, F.Log(x));
+      for (Map.Entry<IExpr, IExpr> entry : keptLogs.entrySet()) {
+        restored = F.subst(restored, entry.getKey(), entry.getValue());
+      }
+      if (!keptLogs.isEmpty()) {
+        // a multiple of a restored Log(c*(-1)^k) + k*Log(-x) cancels only when expanded
+        restored = F.Map(S.Expand, restored);
+      }
+      IExpr coefficients = engine.evaluate(restored);
       return new ASTSeriesData(data.expansionVariable(), data.expansionPoint(), (IAST) coefficients,
           data.minExponent(), data.truncateOrder(), data.puiseuxDenominator());
     }
@@ -1729,9 +2103,14 @@ public class SeriesFunctions {
      * The logarithm of <code>c*x^k</code> for a positive constant <code>c</code> and a real
      * <code>k</code> free of <code>x</code>, as <code>Log(c) + k*logX</code>.
      *
+     * @param bothSides if the logarithm must hold for negative <code>x</code> too, where it splits
+     *        only for <code>-1 &lt; k &lt;= 1</code>; else <code>Log(arg)</code> is returned
+     * @param negative if <code>x &lt; 0</code>, where the logarithm is
+     *        <code>Log(c*(-1)^k) + k*Log(-x)</code>
      * @return {@link F#NIL} for any other argument
      */
-    private static IExpr logOfPower(IExpr arg, IExpr x, IExpr logX) {
+    private static IExpr logOfPower(IExpr arg, IExpr x, IExpr logX, boolean bothSides,
+        boolean negative) {
       IExpr constant = F.C1;
       IExpr power = arg;
       if (arg.isTimes()) {
@@ -1759,6 +2138,15 @@ public class SeriesFunctions {
         k = power.exponent();
       } else {
         return F.NIL;
+      }
+      if (negative && k.isRational()) {
+        // on the negative side every logarithm is written with Log(-x), so that they cancel
+        return F.Plus(F.Log(F.Times(constant, F.Power(F.CN1, k))),
+            F.Times(k, F.Log(F.Negate(x))));
+      }
+      if (bothSides
+          && !(k.isRational() && ((IRational) k).isGT(F.CN1) && !((IRational) k).isGT(F.C1))) {
+        return F.Log(arg);
       }
       return F.Plus(F.Log(constant), F.Times(k, logX));
     }
@@ -2609,7 +2997,7 @@ public class SeriesFunctions {
 
         if (num.isPolynomial(x) && den.isPolynomial(x)) {
           IExpr denAtZero = engine.evaluate(F.subst(den, x, F.C0));
-          if (!denAtZero.isZero()) {
+          if (!denAtZero.isZero() && !ASTSeriesData.isExactNumericZero(denAtZero, engine)) {
             // Normalize so that the constant term of the denominator is 1
             IExpr normFactor = engine.evaluate(F.Divide(F.C1, denAtZero));
             IExpr normNum = engine.evaluate(F.Expand(F.Times(num, normFactor)));
@@ -2799,7 +3187,7 @@ public class SeriesFunctions {
             IExpr aPrime = engine.evaluate(F.Plus(a, F.Times(b, x0)));
             IExpr bPrime = b;
 
-            if (aPrime.isZero()) {
+            if (aPrime.isZero() || ASTSeriesData.isExactNumericZero(aPrime, engine)) {
               IExpr coeff = engine.evaluate(F.Times(c, F.Power(bPrime, exp)));
               return F.Piecewise(F.list(F.list(coeff, F.Equal(n, exp))), F.C0);
             }

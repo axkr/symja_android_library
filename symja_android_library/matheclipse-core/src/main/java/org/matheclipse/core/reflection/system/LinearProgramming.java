@@ -114,6 +114,10 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
     final boolean orTools = OptimizationMethod.useORTools(S.LinearProgramming, method,
         ILinearOptimizer.isAvailable(), engine);
     ast = denseArguments(ast);
+    if (ast.argSize() >= 4 && ast.arg4() == S.None) {
+      // every variable is free
+      ast = ast.setAtCopy(4, F.CNInfinity);
+    }
     if (!orTools) {
       IExpr exact = exactLinearProgramming(ast, engine);
       if (exact != null) {
@@ -224,8 +228,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
         mise.printStackTrace();
       }
       if (mise.getSpecifier() == LocalizedOptimFormats.UNBOUNDED_SOLUTION) {
-        // The problem is unbounded.
-        return Errors.printMessage(ast.topHead(), "ubnd", F.CEmptyList, engine);
+        return unboundedResult(ast, engine);
       }
       // No solution can be found that satisfies the constraints.
       return Errors.printMessage(ast.topHead(), "lpsnf", F.CEmptyList, engine);
@@ -238,6 +241,13 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 
     }
     return F.NIL;
+  }
+
+  /** The message of an unbounded problem, whose variables are all {@link S#Indeterminate}. */
+  private static IExpr unboundedResult(IAST ast, EvalEngine engine) {
+    // This problem is unbounded.
+    Errors.printMessage(ast.topHead(), "lpsub", F.CEmptyList, engine);
+    return F.constantArray(S.Indeterminate, ast.arg1().argSize());
   }
 
   /** The arguments with each <code>SparseArray</code> replaced by its list form. */
@@ -412,8 +422,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
         // No solution can be found that satisfies the constraints.
         return Errors.printMessage(ast.topHead(), "lpsnf", F.CEmptyList, engine);
       case UNBOUNDED:
-        // The problem is unbounded.
-        return Errors.printMessage(ast.topHead(), "ubnd", F.CEmptyList, engine);
+        return unboundedResult(ast, engine);
       default:
         // The search for an integer solution stopped after `1` subproblems.
         return Errors.printMessage(ast.topHead(), "lpbb", F.list(F.ZZ(MAX_NODES)), engine);

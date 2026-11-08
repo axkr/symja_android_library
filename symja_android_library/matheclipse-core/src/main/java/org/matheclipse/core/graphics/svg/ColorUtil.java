@@ -155,6 +155,8 @@ public final class ColorUtil {
         return parseXYZ(unpackChannels(ast));
       case ID.LABColor:
         return parseLAB(unpackChannels(ast));
+      case ID.LCHColor:
+        return parseLCH(unpackChannels(ast));
       case ID.Opacity:
         // Opacity[o, colour] denotes a colour; plain Opacity[o] is a directive, not a colour
         if (ast.argSize() >= 2) {
@@ -259,6 +261,38 @@ public final class ColorUtil {
     float alpha = ast.argSize() >= 4 ? fclamp(dbl(ast.get(4), 1)) : 1.0f;
     double[] xyz = labToXyz(dbl(ast.arg1(), 0), dbl(ast.arg2(), 0), dbl(ast.arg3(), 0));
     return rgbColor(xyzToRgb(xyz[0], xyz[1], xyz[2]), alpha);
+  }
+
+  /**
+   * {@code LCHColor[l, c, h]} and {@code LCHColor[l, c, h, alpha]}: the L*a*b* colour in polar
+   * coordinates, the chroma {@code c} scaled like a and b and the hue {@code h} in turns.
+   */
+  private static Color parseLCH(IAST ast) {
+    if (ast.argSize() < 3) {
+      return null;
+    }
+    float alpha = ast.argSize() >= 4 ? fclamp(dbl(ast.get(4), 1)) : 1.0f;
+    double[] lab = lchToLab(dbl(ast.arg1(), 0), dbl(ast.arg2(), 0), dbl(ast.arg3(), 0));
+    double[] xyz = labToXyz(lab[0], lab[1], lab[2]);
+    return rgbColor(xyzToRgb(xyz[0], xyz[1], xyz[2]), alpha);
+  }
+
+  /**
+   * Lightness, chroma and hue to L*a*b*: <code>a = c Cos(2 Pi h)</code> and
+   * <code>b = c Sin(2 Pi h)</code>, the hue <code>h</code> in turns.
+   */
+  public static double[] lchToLab(double l, double c, double h) {
+    double angle = 2.0 * Math.PI * h;
+    return new double[] {l, c * Math.cos(angle), c * Math.sin(angle)};
+  }
+
+  /** L*a*b* to lightness, chroma and hue, the hue in turns from 0 up to 1. */
+  public static double[] labToLch(double l, double a, double b) {
+    double h = Math.atan2(b, a) / (2.0 * Math.PI);
+    if (h < 0.0) {
+      h += 1.0;
+    }
+    return new double[] {l, Math.hypot(a, b), h};
   }
 
   private static Color rgbColor(double[] rgb, float alpha) {

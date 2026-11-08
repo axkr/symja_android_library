@@ -86,26 +86,41 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
    * therefore always <code>0</code>. Everything ordering by the canonical order then saw each
    * association as equal to every other: <code>Union</code> of three distinct rows gave one row,
    * and <code>Sort</code> left them where they lay.
+   *
+   * <p>
+   * The rules are compared in their order: a delayed rule comes first, then the keys decide, then
+   * the values; an association which is the beginning of another one comes first. Associations
+   * follow the numbers and precede the strings, and with them everything after the strings.
    */
   @Override
   public int compareTo(final IExpr rhsExpr) {
-    if (rhsExpr instanceof IAssociation) {
+    if (rhsExpr.isAssociation()) {
       IAssociation rhs = (IAssociation) rhsExpr;
       final int lhsSize = size();
       final int rhsSize = rhs.size();
-      if (lhsSize != rhsSize) {
-        return lhsSize > rhsSize ? 1 : -1;
-      }
-      for (int i = 1; i < lhsSize; i++) {
-        // the whole rule, so that the key orders before the value: <|a->2|> before <|b->1|>
-        int cp = getRule(i).compareTo(rhs.getRule(i));
+      final int minSize = Math.min(lhsSize, rhsSize);
+      for (int i = 1; i < minSize; i++) {
+        final IAST lhsRule = getRule(i);
+        final IAST rhsRule = rhs.getRule(i);
+        if (lhsRule.isRuleDelayed() != rhsRule.isRuleDelayed()) {
+          return lhsRule.isRuleDelayed() ? -1 : 1;
+        }
+        int cp = lhsRule.first().compareTo(rhsRule.first());
+        if (cp != 0) {
+          return cp;
+        }
+        cp = lhsRule.second().compareTo(rhsRule.second());
         if (cp != 0) {
           return cp;
         }
       }
-      return 0;
+      return Integer.compare(lhsSize, rhsSize);
     }
-    return super.compareTo(rhsExpr);
+    if (rhsExpr.isNumber()) {
+      return 1;
+    }
+    // the empty string is the first of all strings
+    return F.CEmptyString.compareTo(rhsExpr) > 0 ? 1 : -1;
   }
 
   @Override
@@ -1012,6 +1027,13 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     for (int i = 1; i < ast.size(); i++) {
       appendRule(ast.get(i));
     }
+  }
+
+  @Override
+  public void append(int location, IExpr expr) {
+    super.append(location, expr);
+    // the rules after 'location' moved, the index is built again on the next key lookup
+    keyToIndexMap = null;
   }
 
   @Override

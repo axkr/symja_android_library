@@ -200,7 +200,7 @@ public final class SvgRenderer2D {
   void drawLine(Prim2D.LinePrim prim, ContainerTag<?> parent) {
     StringBuilder d = new StringBuilder();
     for (List<double[]> segment : prim.segments) {
-      appendPolyline(d, segment, prim.closed);
+      appendPolyline(d, segment, prim.closed, true);
     }
     if (d.length() == 0) {
       return;
@@ -212,11 +212,28 @@ public final class SvgRenderer2D {
 
   /** Append a polyline, starting a new subpath wherever a point is not finite. */
   private void appendPolyline(StringBuilder d, List<double[]> points, boolean close) {
+    appendPolyline(d, points, close, false);
+  }
+
+  /**
+   * Append a polyline, starting a new subpath wherever a point is not finite.
+   *
+   * @param lineShifts whether the points are those of a {@code Line}, whose
+   *        {@code Offset(shift, pos)} points carry their shift in printer's points as a third and
+   *        fourth entry ({@link PrimitiveCollector#OFFSET_DX}, {@link PrimitiveCollector#OFFSET_DY})
+   */
+  private void appendPolyline(StringBuilder d, List<double[]> points, boolean close,
+      boolean lineShifts) {
     boolean pending = true;
     boolean any = false;
     for (double[] p : points) {
       double x = viewport.mapX(p[0]);
       double y = viewport.mapY(p[1]);
+      if (lineShifts && p.length > PrimitiveCollector.OFFSET_DY) {
+        // shifted by printer's points, up for a positive dy
+        x += p[PrimitiveCollector.OFFSET_DX];
+        y -= p[PrimitiveCollector.OFFSET_DY];
+      }
       if (!Double.isFinite(x) || !Double.isFinite(y)) {
         pending = true;
         continue;
@@ -416,8 +433,8 @@ public final class SvgRenderer2D {
   // ------------------------------------------------------------------ text
 
   void drawText(Prim2D.TextPrim prim, ContainerTag<?> parent) {
-    double x = viewport.mapX(prim.x);
-    double y = viewport.mapY(prim.y);
+    double x = viewport.mapX(prim.x) + prim.shiftX;
+    double y = viewport.mapY(prim.y) - prim.shiftY;
     if (!Double.isFinite(x) || !Double.isFinite(y)) {
       return;
     }

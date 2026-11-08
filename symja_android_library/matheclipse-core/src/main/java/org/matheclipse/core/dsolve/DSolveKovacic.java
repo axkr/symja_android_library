@@ -384,7 +384,7 @@ final class DSolveKovacic {
     try {
       IExpr derivative = engine.evaluate(F.D(exponent, xVar));
       for (int j = 0; j < 3; j++) {
-        IExpr point = F.complex(F.QQ(37 + 29 * j, 100), F.QQ(21 + 13 * j, 100));
+        IExpr point = F.CC(F.QQ(37 + 29 * j, 100), F.QQ(21 + 13 * j, 100));
         double rho = absoluteValueAt(remainder, xVar, point, engine);
         double theta = absoluteValueAt(exponent, xVar, point, engine);
         double scale = absoluteValueAt(derivative, xVar, point, engine) + theta * theta + rho;
@@ -893,7 +893,7 @@ final class DSolveKovacic {
     if (equations.argSize() == 0) {
       return F.NIL;
     }
-    IExpr solutions = ctx.evalTimeConstrained(F.Solve(equations, unknowns), STEP_SECONDS);
+    IExpr solutions = ctx.evalTimeConstrained(F.SolveDistinct(equations, unknowns), STEP_SECONDS);
     if (solutions.isNIL() || !solutions.isList() || ((IAST) solutions).argSize() == 0) {
       return F.NIL;
     }

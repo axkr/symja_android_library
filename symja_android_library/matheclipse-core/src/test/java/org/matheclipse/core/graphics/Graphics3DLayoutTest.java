@@ -29,7 +29,6 @@ public class Graphics3DLayoutTest {
   @BeforeAll
   public static void setUpEngine() {
     Locale.setDefault(Locale.US);
-    Config.SERVER_MODE = false;
     Config.MAX_AST_SIZE = Integer.MAX_VALUE;
     try {
       F.await();

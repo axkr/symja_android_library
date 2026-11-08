@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -906,6 +907,41 @@ public class SvgGraphics2D {
   // ------------------------------------------------------------ range work
 
   /**
+   * The automatic y range of a function plot drawn with an automatic {@code PlotRange}: the body of
+   * the drawn values. A constant <code>c</code> gets the range from <code>0</code> to
+   * <code>2 c</code> (<code>-1 ... 1</code> for <code>0</code>), and a range that comes close to
+   * <code>0</code> is extended to it; neither applies to a scaled y axis.
+   *
+   * @param graphics the plot, with <code>PlotRange -&gt; Automatic</code>
+   * @return <code>{ymin, ymax}</code>, or <code>null</code> if nothing was drawn
+   */
+  public static double[] functionPlotYRange(IAST graphics) {
+    SvgGraphics2D renderer = new SvgGraphics2D();
+    renderer.layout(graphics);
+    Bounds2D bounds = renderer.bounds;
+    if (bounds.isEmpty()) {
+      return null;
+    }
+    double[] y = {bounds.yMin, bounds.yMax};
+    if (isLinearScale(renderer.options.scalingY)) {
+      if (y[1] - y[0] <= Math.ulp(1.0) * Math.max(Math.abs(y[0]), 1.0)) {
+        double c = y[0];
+        y[0] = c == 0.0 ? -1.0 : Math.min(2.0 * c, 0.0);
+        y[1] = c == 0.0 ? 1.0 : Math.max(2.0 * c, 0.0);
+      } else {
+        org.matheclipse.core.graphics.GraphicsOptions.reachToZero(y);
+      }
+    }
+    return y;
+  }
+
+  /** Whether an axis scaling leaves the coordinates as they are. */
+  private static boolean isLinearScale(String scaling) {
+    return scaling == null || scaling.isEmpty() || scaling.equals("None")
+        || scaling.equals("Automatic") || scaling.equals("Linear") || scaling.equals("Identity");
+  }
+
+  /**
    * Narrow an automatic y range to the body of the data.
    *
    * <p>
@@ -1020,10 +1056,7 @@ public class SvgGraphics2D {
     if (graphicsExpr.isAST(S.Legended, 3) && graphicsExpr.arg1().isAST(S.Graphics)) {
       // a plot given PlotLegends comes back as Legended[Graphics[...], legend]; the
       // legend goes back to the renderer the way it reads one, as the PlotLegends of the picture
-      IExpr legend = graphicsExpr.arg2();
-      if (legend.isAST(S.Placed) && legend.argSize() >= 1) {
-        legend = legend.first();
-      }
+      IExpr legend = GraphicsOptions.bareLegend(graphicsExpr.arg2());
       IASTAppendable picture = ((IAST) graphicsExpr.arg1()).copyAppendable();
       picture.append(F.Rule(S.PlotLegends, legend));
       return picture;

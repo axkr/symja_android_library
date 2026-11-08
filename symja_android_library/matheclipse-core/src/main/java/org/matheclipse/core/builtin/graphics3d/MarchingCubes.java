@@ -79,22 +79,21 @@ public final class MarchingCubes {
   }
 
   /**
-   * Marching cubes over a cubic grid whose sample coordinates are given per axis,
-   * <code>axis[c].length</code> samples along every axis. The distance between the second and the
-   * third sample is the step of the gradients, so a first and a last layer of zero width - which
-   * <code>RegionPlot3D</code> lays on the faces of the box to close its surfaces - is allowed.
+   * Marching cubes over a grid whose sample coordinates are given per axis,
+   * <code>axis[c].length</code> samples along axis <code>c</code>. The distance between the second
+   * and the third sample is the step of the gradients, so a first and a last layer of zero width -
+   * which <code>RegionPlot3D</code> lays on the faces of the box to close its surfaces - is allowed.
    */
   public static void marchingCubes(GraphicsComplexBuilder builder, double[][][] grid,
       double contour, double[][] axis) {
-    int points = axis[0].length;
     double[] step = new double[3];
     for (int c = 0; c < 3; c++) {
-      step[c] = points > 2 ? axis[c][2] - axis[c][1] : axis[c][1] - axis[c][0];
+      step[c] = axis[c].length > 2 ? axis[c][2] - axis[c][1] : axis[c][1] - axis[c][0];
     }
 
-    for (int i = 0; i < points - 1; i++) {
-      for (int j = 0; j < points - 1; j++) {
-        for (int k = 0; k < points - 1; k++) {
+    for (int i = 0; i < axis[0].length - 1; i++) {
+      for (int j = 0; j < axis[1].length - 1; j++) {
+        for (int k = 0; k < axis[2].length - 1; k++) {
           double[] corner = {grid[i][j][k], grid[i + 1][j][k], grid[i + 1][j + 1][k],
               grid[i][j + 1][k], grid[i][j][k + 1], grid[i + 1][j][k + 1],
               grid[i + 1][j + 1][k + 1], grid[i][j + 1][k + 1]};
@@ -201,18 +200,18 @@ public final class MarchingCubes {
   /** A central difference gradient of the sampled field, one sided at the edges of the grid. */
   private static double[] gradient(double[][][] grid, int i, int j, int k, double dx, double dy,
       double dz) {
-    int n = grid.length;
-    double gx = difference(value(grid, i + 1, j, k, n), value(grid, i - 1, j, k, n),
-        value(grid, i, j, k, n), dx);
-    double gy = difference(value(grid, i, j + 1, k, n), value(grid, i, j - 1, k, n),
-        value(grid, i, j, k, n), dy);
-    double gz = difference(value(grid, i, j, k + 1, n), value(grid, i, j, k - 1, n),
-        value(grid, i, j, k, n), dz);
+    double gx = difference(value(grid, i + 1, j, k), value(grid, i - 1, j, k),
+        value(grid, i, j, k), dx);
+    double gy = difference(value(grid, i, j + 1, k), value(grid, i, j - 1, k),
+        value(grid, i, j, k), dy);
+    double gz = difference(value(grid, i, j, k + 1), value(grid, i, j, k - 1),
+        value(grid, i, j, k), dz);
     return new double[] {gx, gy, gz};
   }
 
-  private static double value(double[][][] grid, int i, int j, int k, int n) {
-    if (i < 0 || j < 0 || k < 0 || i >= n || j >= n || k >= n) {
+  private static double value(double[][][] grid, int i, int j, int k) {
+    if (i < 0 || j < 0 || k < 0 || i >= grid.length || j >= grid[i].length
+        || k >= grid[i][j].length) {
       return Double.NaN;
     }
     return grid[i][j][k];

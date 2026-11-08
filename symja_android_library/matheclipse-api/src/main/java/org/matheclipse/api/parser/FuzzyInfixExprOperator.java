@@ -39,7 +39,7 @@ class FuzzyInfixExprOperator extends Operator {
       function.append(lhs);
       return function;
     }
-    IASTAppendable function = F.ast(F.$s(getFunctionName()), 10, false);
+    IASTAppendable function = F.ast(F.$s(getFunctionName()), 10);
     function.append(lhs);
     function.append(rhs);
     return function;

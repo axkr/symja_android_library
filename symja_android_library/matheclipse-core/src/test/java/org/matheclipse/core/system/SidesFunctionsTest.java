@@ -37,7 +37,7 @@ public class SidesFunctionsTest extends ExprEvaluatorTestCase {
   @Test
   public void testDivideSides001() {
     check("DivideSides(a==b,x)", //
-        "a/x==b/x");
+        "Piecewise({{a/x==b/x,x!=0}},a==b)");
     // print message
     check("DivideSides(a==b,0)", //
         "DivideSides(a==b,0)");

@@ -215,4 +215,13 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
         + "Round(1000*(NIntegrate(s[[1]](x,1),{x,0,1})+3*s[[2]](1,1)))", //
         "1000");
   }
+
+  @Test
+  public void testNDSolveValueOfExpression() {
+    // a value of the solution, not the solution: y(x) = E^(-2*x)
+    checkApprox("NDSolveValue({y'(x)==-2*y(x),y(0)==1},y(1),{x,0,1})", //
+        Math.exp(-2.0), 1.0e-6);
+    checkApprox("NDSolveValue({y'(x)==-2*y(x),y(0)==1},y(1/2)+y(1),{x,0,1})", //
+        Math.exp(-1.0) + Math.exp(-2.0), 1.0e-6);
+  }
 }

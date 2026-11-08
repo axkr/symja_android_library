@@ -3,6 +3,7 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -77,6 +78,12 @@ public class OutputFormFactory {
   public static final boolean PLUS_CALL = true;
 
   /**
+   * The precedence of a number as the head of a function call <code>head[args]</code>, which binds
+   * tighter than every operator.
+   */
+  private static final int HEAD_PRECEDENCE = 1000;
+
+  /**
    * If <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis for function arguments;
    * otherwise use &quot;[&quot; and &quot;]&quot;
    */
@@ -96,6 +103,9 @@ public class OutputFormFactory {
 
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
   protected boolean fInputForm = false;
+
+  /** The number of enclosing held expressions, whose nested sums and products keep parentheses. */
+  private int fHeldDepth = 0;
 
   /**
    * In input form, print a {@link FormalSymbol} as its plain letter <code>k</code> instead of
@@ -302,11 +312,15 @@ public class OutputFormFactory {
       return;
     }
     if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
-      if (fInputForm) {
-        convertDoubleString(buf, d.fullFormString(), precedence, false);
-      } else {
-        convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
+      final String zero = fInputForm ? d.fullFormString() : convertDoubleToFormattedString(0.0);
+      // A summand needs the "+" that the code below writes for a non-negative number. The output
+      // form prints a zero as 0.0 whatever its sign, so the sign of the printed string decides,
+      // not d.isNegative(): -1.0E-200*y prints as +0.0*y. The input form keeps the sign in
+      // fullFormString(), and a leading "-" separates the summand by itself.
+      if (caller == PLUS_CALL && !zero.startsWith("-")) {
+        append(buf, fInputForm ? " + " : "+");
       }
+      convertDoubleString(buf, zero, precedence, false);
       return;
     }
 
@@ -703,6 +717,29 @@ public class OutputFormFactory {
     return fInputForm ? Num.fullFormString(value) : convertDoubleToFormattedString(value);
   }
 
+  /** Print a machine complex number in input form with both parts: <code>0. - 2.*I</code>. */
+  private void convertDoubleComplexInputForm(final Appendable buf, final IComplexNum dc,
+      final int precedence, boolean caller) throws IOException {
+    final double realPart = dc.getRealPart();
+    final double imaginaryPart = dc.getImaginaryPart();
+    final boolean group = Precedence.PLUS < precedence;
+    if (caller == PLUS_CALL) {
+      append(buf, group || realPart >= 0.0 ? " + " : " - ");
+    } else if (!group && realPart < 0.0) {
+      append(buf, "-");
+    }
+    if (group) {
+      append(buf, realPart < 0.0 ? "(-" : "(");
+    }
+    append(buf, formatDouble(Math.abs(realPart)));
+    append(buf, imaginaryPart < 0.0 ? " - " : " + ");
+    append(buf, formatDouble(Math.abs(imaginaryPart)));
+    append(buf, "*I");
+    if (group) {
+      append(buf, ")");
+    }
+  }
+
   /**
    * @param reImI print the imaginary part as <code>b*I</code> instead of <code>I*b</code>
    */
@@ -710,6 +747,10 @@ public class OutputFormFactory {
       final int precedence, boolean caller, boolean reImI) throws IOException {
     if (dc instanceof ApcomplexNum) {
       convertApcomplex(buf, (ApcomplexNum) dc, precedence, caller, reImI);
+      return;
+    }
+    if (fInputForm) {
+      convertDoubleComplexInputForm(buf, dc, precedence, caller);
       return;
     }
     if (Precedence.PLUS < precedence) {
@@ -999,11 +1040,63 @@ public class OutputFormFactory {
   }
 
   /**
+   * Print an exact complex number in input form: <code>1/2 - I/2</code>, <code>2 + 3*I</code>. A
+   * purely imaginary number is a group of its own as a factor: <code>(2*I)*x</code>,
+   * <code>(I/2)*x</code>, <code>(-I)*x</code>.
+   */
+  private void convertComplexInputForm(final Appendable buf, final IComplex c, final int precedence,
+      boolean caller) throws IOException {
+    final IRational re = c.getRealPart();
+    final IRational im = c.getImaginaryPart();
+    final String imaginary = imaginaryInputForm(im.abs());
+    if (re.isZero()) {
+      final boolean isUnit = im.abs().isOne();
+      final boolean isFactor = Precedence.TIMES <= precedence;
+      if (caller == PLUS_CALL) {
+        append(buf, im.isNegative() ? " - " : " + ");
+        append(buf, isFactor && !isUnit ? "(" + imaginary + ")" : imaginary);
+      } else {
+        final String signed = im.isNegative() ? "-" + imaginary : imaginary;
+        append(buf, isFactor && (im.isNegative() || !isUnit) ? "(" + signed + ")" : signed);
+      }
+      return;
+    }
+    final boolean group = Precedence.PLUS < precedence;
+    if (group) {
+      if (caller == PLUS_CALL) {
+        append(buf, " + ");
+        caller = NO_PLUS_CALL;
+      }
+      append(buf, "(");
+    }
+    convertFraction(buf, re, Precedence.PLUS, caller);
+    append(buf, im.isNegative() ? " - " : " + ");
+    append(buf, imaginary);
+    if (group) {
+      append(buf, ")");
+    }
+  }
+
+  /** The positive imaginary number <code>value*I</code>: <code>I/2</code>, <code>(3*I)/2</code>. */
+  private static String imaginaryInputForm(IRational value) {
+    final String numerator = value.numerator().isOne() ? "I" : value.numerator() + "*I";
+    if (value.denominator().isOne()) {
+      return numerator;
+    }
+    return (value.numerator().isOne() ? numerator : "(" + numerator + ")") + "/"
+        + value.denominator();
+  }
+
+  /**
    * @param imaginaryUnitLast print the imaginary part as <code>b*I</code> instead of
    *        <code>I*b</code>
    */
   private void convertComplex(final Appendable buf, final IComplex c, final int precedence,
       boolean caller, boolean imaginaryUnitLast) throws IOException {
+    if (fInputForm) {
+      convertComplexInputForm(buf, c, precedence, caller);
+      return;
+    }
     boolean isReZero = c.getRealPart().isZero();
     final boolean isImOne = c.getImaginaryPart().isOne();
     final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
@@ -1253,17 +1346,59 @@ public class OutputFormFactory {
       final InfixOperator TIMES_OPERATOR =
           (InfixOperator) ASTNodeFactory.MMA_STYLE_FACTORY.get("Times");
       convertTimesFraction(buf, timesAST, TIMES_OPERATOR, Precedence.TIMES, caller);
+    } else if (fInputForm && isComplexWithRealPart(plusArg)) {
+      // the complex number stays one summand: (1 + I) + x
+      if (caller == PLUS_CALL) {
+        append(buf, " + ");
+      }
+      append(buf, "(");
+      convert(buf, plusArg, Precedence.PLUS, false);
+      append(buf, ")");
     } else {
-      if (plusArg.isNegativeSigned()) {
+      // a negative number separates itself with its own "-"; one that prints as an unsigned 0.0
+      // has none, so it takes the "+" of a non-negative summand
+      if (plusArg.isNegativeSigned() && !printsAsUnsignedZero(plusArg)) {
         // special case negative number or -Infinity...
         convert(buf, plusArg, Integer.MIN_VALUE, false);
       } else {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
         }
-        convert(buf, plusArg, Precedence.PLUS, false);
+        convertNested(buf, plusArg, S.Plus, Precedence.PLUS);
       }
     }
+  }
+
+  /**
+   * Whether <code>expr</code> is a machine number which {@link #convertDouble} prints as
+   * <code>0.0</code> without a sign: in the output form, any double within
+   * {@link Config#ZERO_IN_OUTPUT_FORMAT} of zero, a negative one included. The input form prints
+   * {@code fullFormString()}, which keeps the sign.
+   */
+  private boolean printsAsUnsignedZero(IExpr expr) {
+    return !fInputForm && expr instanceof INum && !(expr instanceof ApfloatNum)
+        && F.isZero(((INum) expr).doubleValue(), Config.ZERO_IN_OUTPUT_FORMAT);
+  }
+
+  private static boolean isComplexWithRealPart(IExpr expr) {
+    if (expr instanceof IComplex) {
+      return !((IComplex) expr).getRealPart().isZero();
+    }
+    return expr instanceof IComplexNum && !(expr instanceof ApcomplexNum);
+  }
+
+  /**
+   * The negated coefficient of a summand in input form, if its real part is negative: the summand
+   * is subtracted, <code>x - (1 + 2*I)*y</code>.
+   *
+   * @return {@link F#NIL} if the summand keeps the coefficient
+   */
+  private IExpr subtractedCoefficient(IExpr coefficient, boolean caller) {
+    if (fInputForm && caller == PLUS_CALL && isComplexWithRealPart(coefficient)
+        && ((INumber) coefficient).re().isNegative()) {
+      return coefficient.negate();
+    }
+    return F.NIL;
   }
 
   // CPD-OFF form factories without a common base for this conversion
@@ -1271,13 +1406,14 @@ public class OutputFormFactory {
       final InfixOperator oper, final int precedence, boolean caller) throws IOException {
     Optional<IExpr[]> parts =
         AlgebraUtil.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
-    if (parts.isEmpty()) {
+    final boolean foldFraction = fInputForm && timesAST.arg1().isFraction() && timesAST.size() > 2;
+    if (parts.isEmpty() && !foldFraction) {
       convertTimesOperator(buf, timesAST, oper, precedence, caller);
       return;
     }
-    IExpr numerator = parts.get()[0];
-    IExpr denominator = parts.get()[1];
-    IExpr fraction = parts.get()[2];
+    IExpr numerator = parts.isEmpty() ? timesAST.rest().oneIdentity1() : parts.get()[0];
+    IExpr denominator = parts.isEmpty() ? F.C1 : parts.get()[1];
+    IExpr fraction = parts.isEmpty() ? timesAST.arg1() : parts.get()[2];
     if (fraction != null && numerator.isOne() && !denominator.isOne()) {
       // Fold a rational coefficient into the printed fraction rather than emitting it as its own
       // factor: 6/5 * x^(-1) prints as 6/(5*x), not as 6/5*1/x.
@@ -1286,6 +1422,23 @@ public class OutputFormFactory {
       final IRational rational = (IRational) fraction;
       numerator = rational.numerator();
       denominator = F.Times(rational.denominator(), denominator);
+      fraction = null;
+    }
+    if (fInputForm && caller != PLUS_CALL && isMinusOneOver(timesAST.arg1(), denominator, fraction)) {
+      // -1/2*x, also for a factor with parentheses: -1/2*(a->1)
+      convertTimesOperator(buf, timesAST, oper, precedence, caller);
+      return;
+    }
+    if (fInputForm && fraction != null && denominator.isOne() && !numerator.isOne()) {
+      // (3*x)/2, not 3/2*x
+      IRational rational = (IRational) fraction;
+      if (rational.isNegative() && caller == PLUS_CALL) {
+        append(buf, " - ");
+        caller = NO_PLUS_CALL;
+        rational = rational.negate();
+      }
+      denominator = rational.denominator();
+      numerator = prependFactor(rational.numerator(), numerator);
       fraction = null;
     }
     if (!denominator.isOne()) {
@@ -1301,17 +1454,27 @@ public class OutputFormFactory {
       if (numerator.isReal()) {
         convertNumber(buf, (IReal) numerator, Precedence.PLUS, caller);
       } else if (numerator.isComplex() || numerator.isComplexNumeric()) {
-        convertNumber(buf, (INumber) numerator, Precedence.DIVIDE, caller);
+        final IExpr subtracted = subtractedCoefficient(numerator, caller);
+        if (subtracted.isPresent()) {
+          append(buf, " - ");
+          convertNumber(buf, (INumber) subtracted, Precedence.DIVIDE, NO_PLUS_CALL);
+        } else {
+          convertNumber(buf, (INumber) numerator, Precedence.DIVIDE, caller);
+        }
       } else {
         if (numerator.isTimes() && numerator.isAST2() && numerator.first().isMinusOne()) {
-          append(buf, fInputForm ? " - " : "-");
+          append(buf, fInputForm && caller == PLUS_CALL ? " - " : "-");
           convert(buf, numerator.second(), Precedence.TIMES, false);
         } else {
           if (caller == PLUS_CALL) {
             append(buf, fInputForm ? " + " : "+");
           }
           // insert numerator in buffer:
-          if (numerator.isTimes()) {
+          if (fHeldDepth > 0 && numerator.isTimes()
+              && ((IAST) numerator).exists(OutputFormFactory::isQuotient)) {
+            // a held quotient as numerator: a/b/c reads back as (a/b)/c
+            convertTimesFraction(buf, (IAST) numerator, oper, Precedence.TIMES, NO_PLUS_CALL);
+          } else if (numerator.isTimes()) {
             convertTimesOperator(buf, (IAST) numerator, oper, Precedence.DIVIDE, NO_PLUS_CALL);
           } else {
             convert(buf, numerator, Precedence.DIVIDE, false);
@@ -1339,6 +1502,29 @@ public class OutputFormFactory {
   }
   // CPD-ON
 
+  /** Whether a product is <code>-1/d</code> times factors which have no denominator. */
+  private static boolean isMinusOneOver(IExpr coefficient, IExpr denominator, IExpr fraction) {
+    if (!coefficient.isFraction() || !((IRational) coefficient).numerator().isMinusOne()) {
+      return false;
+    }
+    return fraction != null ? denominator.isOne()
+        : denominator.equals(((IRational) coefficient).denominator());
+  }
+
+  /** <code>factor*expr</code> without a nested product. */
+  private static IExpr prependFactor(IExpr factor, IExpr expr) {
+    if (factor.isOne()) {
+      return expr;
+    }
+    if (expr.isTimes()) {
+      IASTAppendable times = F.TimesAlloc(expr.size() + 1);
+      times.append(factor);
+      times.appendArgs((IAST) expr);
+      return times;
+    }
+    return F.Times(factor, expr);
+  }
+
   private void convertTimesOperator(final Appendable buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) throws IOException {
     int size = timesAST.size();
@@ -1357,13 +1543,16 @@ public class OutputFormFactory {
         } else {
           convertNumber(buf, (IReal) arg1, Precedence.PLUS, caller);
         }
+      } else if (subtractedCoefficient(arg1, caller).isPresent()) {
+        append(buf, " - ");
+        convert(buf, subtractedCoefficient(arg1, caller), oper.getPrecedence(), false);
       } else if (arg1.isComplex() && size > 2) {
         convertComplex(buf, (IComplex) arg1, oper.getPrecedence(), caller);
       } else {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
         }
-        convert(buf, arg1, oper.getPrecedence(), false);
+        convertNested(buf, arg1, S.Times, oper.getPrecedence());
       }
     }
     for (int i = 2; i < size; i++) {
@@ -1372,11 +1561,27 @@ public class OutputFormFactory {
       } else {
         showOperator = true;
       }
-      convert(buf, timesAST.get(i), oper.getPrecedence(), false);
+      convertNested(buf, timesAST.get(i), S.Times, oper.getPrecedence());
     }
     if (currPrecedence < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * Convert an argument of a sum or product. Inside a held expression an argument with the same
+   * <code>head</code> keeps its parentheses, <code>HoldForm(a*b*(c*d))</code>, so that it reads
+   * back as the nested expression.
+   */
+  private void convertNested(final Appendable buf, final IExpr arg, final ISymbol head,
+      final int precedence) throws IOException {
+    if (fHeldDepth > 0 && arg.isAST(head) && arg.size() > 2) {
+      append(buf, "(");
+      convert(buf, arg, Precedence.NO_PRECEDENCE, false);
+      append(buf, ")");
+      return;
+    }
+    convert(buf, arg, precedence, false);
   }
 
   // public void convertApplyOperator(final Appendable buf, final IAST list, final InfixOperator
@@ -1494,8 +1699,10 @@ public class OutputFormFactory {
         append(buf, "(");
       }
       final boolean groupArg1 = (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
-          && arg1.head().equals(list.head()) && !isDelimitedPower(arg1))
-          || isNestedSameOperator(list, arg1, oper);
+          && isSameLevelOperator(list, arg1, oper) && !isDelimitedPower(arg1))
+          || isNestedSameOperator(list, arg1, oper)
+          // a sum on the left of a held subtraction: (a + b) - c
+          || (list.isAST(S.Subtract) && arg1.isPlus() && arg1.argSize() >= 2);
       if (groupArg1) {
         append(buf, "(");
       } else {
@@ -1526,9 +1733,12 @@ public class OutputFormFactory {
 
       appendUnicodeMapped(buf, operatorString);
 
-      final boolean groupArg2 =
-          (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head()))
-              || isNestedSameOperator(list, arg2, oper);
+      final boolean groupArg2 = (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
+          && (arg2.head().equals(list.head()) || isInfixOfPrecedence(arg2, oper.getPrecedence())))
+          || isNestedSameOperator(list, arg2, oper)
+          // a - (-b) and a - (1 + I): neither a second minus nor a sum directly after the minus
+          || (list.isAST(S.Subtract)
+              && (arg2.isNegativeSigned() || isComplexWithRealPart(arg2)));
       if (groupArg2) {
         append(buf, "(");
       }
@@ -1569,6 +1779,33 @@ public class OutputFormFactory {
     if (oper.getPrecedence() < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * Whether <code>arg</code> prints as an infix operator of precedence <code>precedence</code>. On
+   * the right of a left associative operator it needs parentheses: <code>a - (b + c)</code>.
+   */
+  private static boolean isInfixOfPrecedence(IExpr arg, int precedence) {
+    if (arg.isAST() && arg.argSize() >= 2 && arg.head().isSymbol()) {
+      final Operator operator = getOperator((ISymbol) arg.head(), arg.argSize());
+      return operator instanceof InfixOperator && operator.getPrecedence() == precedence;
+    }
+    return false;
+  }
+
+  /**
+   * Whether <code>arg</code> has the head of <code>list</code> or another binary operator of the
+   * same precedence: <code>(a := b) = c</code> reads back differently without parentheses.
+   */
+  private static boolean isSameLevelOperator(IAST list, IExpr arg, InfixOperator oper) {
+    if (arg.head().equals(list.head())) {
+      return true;
+    }
+    if (arg.isAST2() && arg.head().isSymbol()) {
+      final Operator operator = getOperator((ISymbol) arg.head(), 2);
+      return operator instanceof InfixOperator && operator.getPrecedence() == oper.getPrecedence();
+    }
+    return false;
   }
 
   /**
@@ -1724,7 +1961,8 @@ public class OutputFormFactory {
           }
         }
 
-        convert(buf, header, Integer.MIN_VALUE, true);
+        // a negative, fractional or complex number as head is parenthesized: (-2)[a], (1/2)[a]
+        convert(buf, header, header.isNumber() ? HEAD_PRECEDENCE : Integer.MIN_VALUE, true);
         // An interpolating function already prints as a call - InterpolatingFunction({{0.,1.}},<>)
         // - so applying it reads better in the same syntax as the rest of the output. Other
         // non-symbol heads keep the brackets, which is also what tells a reader that
@@ -1754,9 +1992,15 @@ public class OutputFormFactory {
             case ID.TwoWayRule:
             case ID.UndirectedEdge:
               if (list.isAST2()) {
+                if (Precedence.TWOWAYRULE < precedence) {
+                  append(buf, "(");
+                }
                 convert(buf, list.arg1(), Integer.MIN_VALUE, false);
                 buf.append("<->");
                 convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+                if (Precedence.TWOWAYRULE < precedence) {
+                  append(buf, ")");
+                }
                 return;
               }
               break;
@@ -1789,7 +2033,9 @@ public class OutputFormFactory {
         if (functionID > ID.UNKNOWN) {
           switch (functionID) {
             case ID.Inequality:
-              if (list.size() > 3 && convertInequality(buf, list, precedence)) {
+              // inside an operator the input form is the function, 2*Inequality(a,Less,b,Less,c)
+              if (list.size() > 3 && !(fInputForm && Precedence.EQUAL < precedence)
+                  && convertInequality(buf, list, precedence)) {
                 return;
               }
               break;
@@ -1862,13 +2108,23 @@ public class OutputFormFactory {
               }
               break;
             case ID.Row:
-              if (!fInputForm && list.isAST1() && list.arg1().isList()) {
-                // Row places its elements side by side without a separator
-                IAST row = (IAST) list.arg1();
-                for (int i = 1; i < row.size(); i++) {
-                  convert(buf, row.get(i), Integer.MIN_VALUE, false);
+              if (!fInputForm && list.argSize() >= 1 && list.arg1().isList()) {
+                // Row places its elements side by side, with an optional separator; style options
+                // at the end don't change the text
+                int args = list.argSize();
+                while (args > 1 && list.get(args).isRuleAST()) {
+                  args--;
                 }
-                return;
+                if (args <= 2) {
+                  IAST row = (IAST) list.arg1();
+                  for (int i = 1; i < row.size(); i++) {
+                    if (i > 1 && args == 2) {
+                      convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+                    }
+                    convert(buf, row.get(i), Integer.MIN_VALUE, false);
+                  }
+                  return;
+                }
               }
               break;
             case ID.TableForm:
@@ -1925,14 +2181,33 @@ public class OutputFormFactory {
                 return;
               }
               break;
-            case ID.Defer:
-            case ID.HoldForm:
-              // InputForm shows HoldForm(...), so it reads back held
-              if (list.isAST1() && !(fInputForm && list.isAST(S.HoldForm))) {
-                convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+            case ID.CForm:
+            case ID.FortranForm:
+              // the display wrapper shows the C or Fortran text; InputForm keeps the wrapper
+              if (list.isAST1() && !fInputForm) {
+                append(buf, list.isAST(S.CForm) ? CodeFormPrinter.cForm(list.arg1())
+                    : CodeFormPrinter.fortranForm(list.arg1()));
                 return;
               }
               break;
+            case ID.Defer:
+            case ID.HoldForm:
+            case ID.Hold:
+            case ID.HoldComplete:
+              // the arguments of a held expression keep the nesting of their sums and products
+              fHeldDepth++;
+              try {
+                // InputForm shows HoldForm(...), so it reads back held
+                if (list.isAST1() && (list.isAST(S.Defer) || list.isAST(S.HoldForm))
+                    && !(fInputForm && list.isAST(S.HoldForm))) {
+                  convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+                } else {
+                  convertAST(buf, list);
+                }
+              } finally {
+                fHeldDepth--;
+              }
+              return;
             case ID.DirectedInfinity:
               if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
                 if (list.isAST0()) {
@@ -2030,7 +2305,16 @@ public class OutputFormFactory {
     } else if (o instanceof ISymbol) {
       convertSymbol(buf, (ISymbol) o);
     } else if (o instanceof IPatternObject) {
+      // a named pattern binds weaker than a product: 2*(a_)
+      final boolean parenthesize = fInputForm && Precedence.TIMES <= precedence
+          && precedence <= Precedence.POWER && ((IPatternObject) o).getSymbol() != null;
+      if (parenthesize) {
+        append(buf, "(");
+      }
       convertPattern(buf, (IPatternObject) o);
+      if (parenthesize) {
+        append(buf, ")");
+      }
     } else if (o.isQuantity()) {
       convertQuantityData(buf, (IAST) o, precedence);
     } else if (o instanceof DateObjectExpr || o instanceof TimeObjectExpr) {
@@ -2190,6 +2474,17 @@ public class OutputFormFactory {
    */
   public static Operator getOperator(ISymbol head, int argSize) {
     String headerStr = head.getSymbolName();
+    if (!head.getContext().equals(Context.SYSTEM)) {
+      // the operator of a name belongs to the System` built-in of that name: Internal`Square
+      // doesn't print as the prefix operator of System`Square
+      String key = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && headerStr.length() > 1
+          ? headerStr.toLowerCase(Locale.ENGLISH)
+          : headerStr;
+      ISymbol systemSymbol = Context.SYSTEM.get(key);
+      if (systemSymbol != null && systemSymbol != head) {
+        return null;
+      }
+    }
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
       if (str != null) {

@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.sympy.core.Traversal;
+import org.matheclipse.core.sympy.core.traversal.Traversal;
 
 /**
  * Simplify expressions with gamma functions or functions with non-integer arguments which are

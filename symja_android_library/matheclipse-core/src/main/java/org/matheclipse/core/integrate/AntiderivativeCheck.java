@@ -29,6 +29,12 @@ public final class AntiderivativeCheck {
 
   private static final double[] POINTS = {0.37, 0.61, 1.37, 2.19, -0.43, 0.17, 0.93, 2.9, -1.3};
 
+  /** Real and imaginary part in hundredths, one point in each quadrant. */
+  private static final int[][] OFF_LINE_POINTS =
+      {{43, 45}, {-67, 140}, {-140, -183}, {250, -75}};
+
+  private static final int OFF_LINE_DIGITS = 30;
+
   private AntiderivativeCheck() {}
 
   /**
@@ -142,6 +148,57 @@ public final class AntiderivativeCheck {
       Errors.rethrowsInterruptException(rex);
       return false;
     }
+  }
+
+  /**
+   * Compare <code>D(antiderivative, x)</code> with <code>integrand</code> at points off the real
+   * line, where an antiderivative with a factor like <code>Sqrt(t^2)/t</code> may be wrong although
+   * it is right on the real line. A machine value which agrees decides; one which doesn't may have
+   * lost its digits in a large answer, so that {@link #OFF_LINE_DIGITS} digits at the exact point
+   * decide.
+   *
+   * @param points the number of points, at most 4
+   * @return <code>true</code> if at least two points give numbers, and these agree
+   */
+  public static boolean agreesOffTheRealLine(IExpr antiderivative, IExpr integrand, IExpr x,
+      int points, EvalEngine engine) {
+    IExpr derivative = engine.evaluate(F.D(antiderivative, x));
+    int compared = 0;
+    for (int i = 0; i < points && i < OFF_LINE_POINTS.length; i++) {
+      int[] point = OFF_LINE_POINTS[i];
+      IExpr machine = F.complexNum(point[0] / 100.0, point[1] / 100.0);
+      IExpr.COMPARE_TERNARY agrees = compareAt(derivative, integrand, x, machine, 0, 1e-8, engine);
+      if (agrees != IExpr.COMPARE_TERNARY.TRUE) {
+        IExpr exact = F.CC(F.QQ(point[0], 100), F.QQ(point[1], 100));
+        agrees = compareAt(derivative, integrand, x, exact, OFF_LINE_DIGITS, 1e-15, engine);
+      }
+      if (agrees == IExpr.COMPARE_TERNARY.FALSE) {
+        return false;
+      }
+      if (agrees == IExpr.COMPARE_TERNARY.TRUE) {
+        compared++;
+      }
+    }
+    return compared >= 2;
+  }
+
+  /** The values at <code>z</code>, with <code>digits</code> digits or machine values for 0. */
+  private static IExpr.COMPARE_TERNARY compareAt(IExpr derivative, IExpr integrand, IExpr x, IExpr z,
+      int digits, double tolerance, EvalEngine engine) {
+    IExpr f = engine.evaluate(numeric(F.subst(integrand, x, z), digits));
+    IExpr d = engine.evaluate(numeric(F.subst(derivative, x, z), digits));
+    if (!f.isNumber() || !d.isNumber() || !f.isSpecialsFree() || !d.isSpecialsFree()) {
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+    double deviation = engine.evaluate(F.Abs(F.Subtract(d, f))).evalfNaN();
+    double scale = engine.evaluate(F.Abs(f)).evalfNaN();
+    return Double.isNaN(deviation) || deviation > tolerance * (1.0 + scale)
+        ? IExpr.COMPARE_TERNARY.FALSE
+        : IExpr.COMPARE_TERNARY.TRUE;
+  }
+
+  private static IExpr numeric(IExpr expr, int digits) {
+    return digits > 0 ? F.N(expr, F.ZZ(digits)) : F.N(expr);
   }
 
   /**

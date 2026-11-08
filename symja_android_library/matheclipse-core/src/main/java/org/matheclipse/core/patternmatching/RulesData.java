@@ -3,6 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +15,7 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -177,6 +179,12 @@ public final class RulesData implements Serializable {
    */
   private volatile Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
+  /** At most this many machine real arguments of a rule are compared like <code>SameQ</code>. */
+  private static final int MAX_SAME_REAL_ARGUMENTS = 4;
+
+  /** Is there a rule in {@link #fEqualDownRules} with a machine real argument? */
+  private volatile boolean fRealEqualDownRules;
+
   /**
    * List of pattern matchers which are defined with {@link S#Set} or {@link S#SetDelayed} function.
    * The corresponding priority is stored in <code>fPriorityDownRules
@@ -187,7 +195,8 @@ public final class RulesData implements Serializable {
   /**
    * The priorities of the corresponding <code>fPatternDownRules</code> matchers. They ascend except
    * around rules with a run of arguments, which {@link #insertMatcher(PatternMatcher)} places by
-   * generality.
+   * generality, and around rules placed in front of a rule which relaxes them, see
+   * {@link RuleGenerality#relaxes(IPatternMatcher, IPatternMatcher)}.
    */
   private IntArrayList fPriorityDownRules;
 
@@ -267,6 +276,7 @@ public final class RulesData implements Serializable {
     RulesData copy = new RulesData();
     copy.fMessages = fMessages == null ? null : new java.util.HashMap<>(fMessages);
     copy.fEqualDownRules = fEqualDownRules == null ? null : new ConcurrentHashMap<>(fEqualDownRules);
+    copy.fRealEqualDownRules = fRealEqualDownRules;
     // a list of rules is replaced, not changed, when a rule is added or removed
     copy.fPatternDownRules = fPatternDownRules;
     copy.fPriorityDownRules =
@@ -753,6 +763,9 @@ public final class RulesData implements Serializable {
     final Map<IExpr, PatternMatcherEquals> equalRules = fEqualDownRules;
     if (equalRules != null) {
       PatternMatcherEquals res = equalRules.get(expr);
+      if (res == null && fRealEqualDownRules) {
+        res = sameRealRule(equalRules, expr);
+      }
       if (res != null) {
         if (res.getRHS().equals(expr)) {
           // f(1) = f(1): a rule without a pattern which gives back its own left-hand side is a
@@ -937,7 +950,7 @@ public final class RulesData implements Serializable {
     if (result.isPresent()) {
       if (patternEvaluator.getLHS().isAST(S.Integrate) && expr.equals(result)) {
         // The rule rewrote the integral to itself, which is what a Rubi rule delegating to
-        // ExpandIntegrand does when the integrand cannot be expanded: rule 2698 is
+        // ExpandIntegrand does when the integrand cannot be expanded: rule 2699 is
         // Int[F^(g*(d+e*x)^n)/(a+b*x+c*x^2)] -> Int[ExpandIntegrand[...]], and where that
         // expansion is not a sum ExpandIntegrand hands the integrand straight back. Around 300
         // rules have that shape.
@@ -1140,6 +1153,66 @@ public final class RulesData implements Serializable {
     return fEqualUpRules;
   }
 
+  /**
+   * Store a rule without patterns. A definition for a machine real replaces the one for a real
+   * which is the same up to the tolerance of <code>SameQ</code>.
+   */
+  private PatternMatcherEquals putEqualDownRule(final int setSymbol, final IExpr leftHandSide,
+      final IExpr rightHandSide) {
+    fEqualDownRules = getEqualDownRules();
+    if (hasMachineRealArgument(leftHandSide)) {
+      fRealEqualDownRules = true;
+      PatternMatcherEquals same = sameRealRule(fEqualDownRules, leftHandSide);
+      if (same != null) {
+        fEqualDownRules.remove(same.getLHS());
+      }
+    }
+    PatternMatcherEquals pmEquals =
+        new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
+    fEqualDownRules.put(leftHandSide, pmEquals);
+    return pmEquals;
+  }
+
+  private static boolean hasMachineRealArgument(IExpr leftHandSide) {
+    return leftHandSide.isAST() && ((IAST) leftHandSide).exists(x -> x instanceof Num);
+  }
+
+  /**
+   * The rule without patterns whose left-hand side differs from <code>expr</code> only in the last
+   * bit of machine real arguments, which are the same for <code>SameQ</code>.
+   *
+   * @return <code>null</code> if there is no such rule
+   */
+  private static PatternMatcherEquals sameRealRule(Map<IExpr, PatternMatcherEquals> equalRules,
+      IExpr expr) {
+    if (!hasMachineRealArgument(expr)
+        || ((IAST) expr).count(x -> x instanceof Num) > MAX_SAME_REAL_ARGUMENTS) {
+      return null;
+    }
+    return sameRealRule(equalRules, (IAST) expr, 1);
+  }
+
+  /** Vary the machine real arguments from the position <code>start</code> on by one bit. */
+  private static PatternMatcherEquals sameRealRule(Map<IExpr, PatternMatcherEquals> equalRules,
+      IAST expr, int start) {
+    for (int i = start; i < expr.size(); i++) {
+      if (expr.get(i) instanceof Num) {
+        final double value = expr.get(i).evalf();
+        for (double neighbour : new double[] {Math.nextDown(value), Math.nextUp(value)}) {
+          IAST changed = expr.setAtCopy(i, F.num(neighbour));
+          PatternMatcherEquals rule = equalRules.get(changed);
+          if (rule == null) {
+            rule = sameRealRule(equalRules, changed, i + 1);
+          }
+          if (rule != null) {
+            return rule;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
     return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY);
@@ -1149,21 +1222,13 @@ public final class RulesData implements Serializable {
       final boolean equalRule, final IExpr leftHandSide, final IExpr rightHandSide,
       final int priority) {
     if (equalRule || leftHandSide.isSymbol()) {
-      fEqualDownRules = getEqualDownRules();
-      PatternMatcherEquals pmEquals =
-          new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-      fEqualDownRules.put(leftHandSide, pmEquals);
-      return pmEquals;
+      return putEqualDownRule(setSymbol, leftHandSide, rightHandSide);
     }
 
     final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(setSymbol,
         leftHandSide, rightHandSide, true, recomputePatternHash(leftHandSide));
     if (pmEvaluator.isRuleWithoutPatterns()) {
-      fEqualDownRules = getEqualDownRules();
-      PatternMatcherEquals pmEquals =
-          new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-      fEqualDownRules.put(leftHandSide, pmEquals);
-      return pmEquals;
+      return putEqualDownRule(setSymbol, leftHandSide, rightHandSide);
     }
 
     if (IPatternMap.DEFAULT_RULE_PRIORITY != priority) {
@@ -1302,6 +1367,8 @@ public final class RulesData implements Serializable {
     final int patternHash = newPatternMatcher.getPatternHash();
     final IExpr newLHS = newPatternMatcher.getOrderingLHS();
     final boolean newConditional = newLHS != newPatternMatcher.getLHS();
+    // only rules with the same key may relax each other
+    final int newShape = RuleGenerality.relaxationHash(newPatternMatcher.getLHS());
     IPatternMap pmSlotValuesMap = null;
     IExpr pmRHS = null;
     int insertPosition = -1;
@@ -1324,26 +1391,135 @@ public final class RulesData implements Serializable {
           }
         }
       }
-      if (insertPosition < 0) {
-        final boolean byGenerality = newIsRun || (positional && matcher instanceof PatternMatcher
-            && (((PatternMatcher) matcher).isArgumentRunRule()
-                || ((PatternMatcher) matcher).isOptionalArgumentRule()));
-        if (byGenerality ? RuleGenerality.covers(matcher.getOrderingLHS(), newLHS)
-            : precedesByPriority(matcher, priority, newLHS, lhsPriority, positional)
-                // a conditional rule goes before an unconditional one which matches more
-                || (newConditional && positional && matcher.getOrderingLHS() == matcher.getLHS()
-                    && RuleGenerality.covers(matcher.getLHS(), newLHS))) {
-          insertPosition = i;
-        }
+      final boolean sameShape = RuleGenerality.relaxationHash(matcher.getLHS()) == newShape;
+      if (sameShape && RuleGenerality.relaxes(newPatternMatcher, matcher)) {
+        // the new rule stays behind every rule which only narrows its blanks: makes them
+        // non-optional or adds a head test or a pattern test
+        insertPosition = -1;
+      } else if (insertPosition < 0 && goesBefore(matcher, priority, newPatternMatcher, newLHS,
+          lhsPriority, positional, newIsRun, newConditional, sameShape)) {
+        insertPosition = i;
       }
     }
     if (insertPosition < 0) {
       insertPosition = rules.size();
+    } else {
+      insertPosition = beforeTiedRules(rules, insertPosition, newPatternMatcher);
     }
     rules.add(insertPosition, newPatternMatcher);
     fPriorityDownRules.add(insertPosition, lhsPriority);
     publishPatternDownRules(rules);
     return newPatternMatcher;
+  }
+
+  /**
+   * Is the new rule <code>newPatternMatcher</code> with the ordering left-hand side
+   * <code>newLHS</code> tried before the existing rule <code>matcher</code>?
+   */
+  private static boolean goesBefore(IPatternMatcher matcher, int priority,
+      IPatternMatcher newPatternMatcher, IExpr newLHS, int lhsPriority, boolean positional,
+      boolean newIsRun, boolean newConditional, boolean sameShape) {
+    final IExpr lhs = matcher.getOrderingLHS();
+    if (sameShape && RuleGenerality.relaxes(matcher, newPatternMatcher)) {
+      // f[x_^n_] goes before f[x_^n_.]
+      return true;
+    }
+    final boolean byGenerality = newIsRun || (positional && matcher instanceof PatternMatcher
+        && (((PatternMatcher) matcher).isArgumentRunRule()
+            || ((PatternMatcher) matcher).isOptionalArgumentRule()));
+    if (byGenerality) {
+      return RuleGenerality.covers(lhs, newLHS);
+    }
+    return precedesByPriority(matcher, priority, newLHS, lhsPriority, positional)
+        // a conditional rule goes before an unconditional one which matches more
+        || (newConditional && positional && lhs == matcher.getLHS()
+            && RuleGenerality.covers(matcher.getLHS(), newLHS));
+  }
+
+  /**
+   * Re-orders rules which were appended in the order of their definitions, as
+   * {@link #integrate(IAST, IExpr, int)} does, so that a rule is tried before every earlier rule
+   * which differs from it only by optional patterns: <code>f[x_^n_]</code> before
+   * <code>f[x_^n_.]</code>. Call it once after the rules are installed.
+   *
+   * @return the number of rules which were moved
+   */
+  public final synchronized int orderBeforeOptionalVariants() {
+    final List<IPatternMatcher> rules = fPatternDownRules;
+    if (rules == null || rules.size() < 2) {
+      return 0;
+    }
+    final Map<Integer, List<IPatternMatcher>> groups = new HashMap<Integer, List<IPatternMatcher>>();
+    final List<IPatternMatcher> ordered = new ArrayList<IPatternMatcher>(rules.size());
+    final IntArrayList priorities = new IntArrayList(rules.size());
+    final java.util.IdentityHashMap<IPatternMatcher, Integer> priorityOf =
+        new java.util.IdentityHashMap<IPatternMatcher, Integer>(rules.size() * 2);
+    int moved = 0;
+    for (int i = 0; i < rules.size(); i++) {
+      final IPatternMatcher rule = rules.get(i);
+      priorityOf.put(rule, fPriorityDownRules.getInt(i));
+      final IExpr lhs = rule.getLHS();
+      final List<IPatternMatcher> group =
+          groups.computeIfAbsent(RuleGenerality.relaxationHash(lhs), k -> new ArrayList<>(2));
+      java.util.Set<IPatternMatcher> relaxing = null;
+      for (IPatternMatcher earlier : group) {
+        if (RuleGenerality.relaxes(earlier, rule)) {
+          if (relaxing == null) {
+            relaxing = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+          }
+          relaxing.add(earlier);
+        }
+      }
+      // the first of the relaxing rules in the current order
+      final int position = relaxing == null ? -1 : indexOfFirst(ordered, relaxing);
+      group.add(rule);
+      if (position < 0) {
+        ordered.add(rule);
+      } else {
+        ordered.add(beforeTiedRules(ordered, position, rule), rule);
+        moved++;
+      }
+    }
+    if (moved > 0) {
+      for (IPatternMatcher rule : ordered) {
+        priorities.add(priorityOf.get(rule));
+      }
+      fPriorityDownRules = priorities;
+      publishPatternDownRules(ordered);
+    }
+    return moved;
+  }
+
+  /**
+   * A rule which goes before a rule at <code>position</code> it is more specific than may also pass
+   * rules directly in front of that one, see
+   * {@link RuleGenerality#passesIntegerQ(IPatternMatcher, IPatternMatcher)}:
+   * <code>f[x_^n_Integer]</code> goes before <code>f[x_^n_?IntegerQ]</code> and
+   * <code>f[x_^n_.]</code>, though alone it would stay after <code>f[x_^n_?IntegerQ]</code>.
+   *
+   * @param rules the rules in their order
+   * @param position the index of the rule <code>rule</code> is inserted in front of
+   * @param rule the new rule
+   * @return the index to insert <code>rule</code> at
+   */
+  private static int beforeTiedRules(List<IPatternMatcher> rules, int position,
+      IPatternMatcher rule) {
+    if (!RuleGenerality.relaxes(rules.get(position), rule)) {
+      return position;
+    }
+    while (position > 0 && RuleGenerality.passesIntegerQ(rules.get(position - 1), rule)) {
+      position--;
+    }
+    return position;
+  }
+
+  private static int indexOfFirst(List<IPatternMatcher> list, java.util.Set<IPatternMatcher> elements) {
+    for (int i = 0; i < list.size(); i++) {
+      if (elements.contains(list.get(i))) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   /**

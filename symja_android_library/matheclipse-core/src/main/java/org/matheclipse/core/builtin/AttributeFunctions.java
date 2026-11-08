@@ -4,7 +4,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.FailedException;
-import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -90,11 +89,6 @@ public class AttributeFunctions {
         }
         if (rightHandSide.isEmptyList() && leftHandSide.first().isSymbol()) {
           ISymbol sym = (ISymbol) leftHandSide.first();
-          if (!engine.isPackageMode()) {
-            if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
-              throw new RuleCreationError(sym);
-            }
-          }
           if (sym.hasProtectedAttribute()) {
             // Tag `1` in `2` is Protected.
             Errors.printMessage(S.ClearAttributes, "write", F.list(sym, leftHandSide),
@@ -376,8 +370,9 @@ public class AttributeFunctions {
         final IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
           if (((ISymbol) arg).hasProtectedAttribute()) {
+            // Tag `1` in `2` is Protected. - the evaluation around it goes on
             Errors.printMessage(S.SetAttributes, "write", F.list(arg), EvalEngine.get());
-            throw new FailedException();
+            return S.$Failed;
           }
           if (addAttributes(arg, attributes, ast, engine).isNIL()) {
             return F.NIL;
@@ -468,20 +463,13 @@ public class AttributeFunctions {
    * The symbol whose attributes should be changed.
    *
    * @return <code>null</code> (with a message) if <code>expr</code> is not an identifier
-   * @throws RuleCreationError in server mode for a symbol not starting with <code>$</code>
    */
   private static ISymbol writableSymbol(final IExpr expr, IAST ast, EvalEngine engine) {
     IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
     if (x.isNIL()) {
       return null;
     }
-    ISymbol sym = (ISymbol) x;
-    if (!engine.isPackageMode()) {
-      if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
-        throw new RuleCreationError(sym);
-      }
-    }
-    return sym;
+    return (ISymbol) x;
   }
 
   public static int getSymbolsAsAttributes(IAST listOfSymbols, EvalEngine engine) {

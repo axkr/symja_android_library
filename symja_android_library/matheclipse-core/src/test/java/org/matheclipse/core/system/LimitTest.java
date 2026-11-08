@@ -12,6 +12,25 @@ import org.junit.jupiter.api.Tag;
 public class LimitTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testLimitAsymptoticRemainder() {
+    // an exponent term beyond the probed order doesn't make the limit 0
+    check("Limit(x^2*(Exp(2/x+3/x^4)-1-2/x), x->Infinity)", //
+        "2");
+    check("Limit(x^3*(Exp(1/x)*Exp(5/x^6)-1-1/x-1/(2*x^2)), x->Infinity)", //
+        "1/6");
+    // Stirling's series beyond its first term
+    check("Limit(x*(Gamma(x+1)/(Sqrt(2*Pi*x)*(x/E)^x)-1), x->Infinity)", //
+        "1/12");
+    check("Limit(x^2*(x*Gamma(x)/(Sqrt(2*Pi*x)*(x/E)^x)-1-1/(12*x)), x->Infinity)", //
+        "1/288");
+    // the asymptotic series of Erfc and ExpIntegralE beyond their first terms
+    check("Limit(x^4*(Sqrt(Pi)*x*E^(x^2)*Erfc(x)-1+1/(2*x^2)), x->Infinity)", //
+        "3/4");
+    check("Limit(x^3*(x*E^x*ExpIntegralE(3,x)-1+3/x-12/x^2), x->Infinity)", //
+        "-60");
+  }
+
+  @Test
   public void testLimitHurwitzZetaAtInfinity() {
     // Zeta(s, x) ~ x^(1-s)/(s-1)
     check("{Limit(x^2*Zeta(3, x), x -> Infinity), Limit(x^(a - 1)*Zeta(a, x), x -> Infinity, Assumptions -> a > 1)}", //
@@ -543,6 +562,14 @@ public class LimitTest extends ExprEvaluatorTestCase {
     // github #175
     check("Limit(((a^(1/x)+b^(1/x))/2)^x, x->Infinity)", //
         "Sqrt(a)*Sqrt(b)");
+  }
+
+  @Test
+  public void testLimitLogOfVanishingPowerOneSided() {
+    check("Limit(Log(x^4*Cos(x))-4*Log(x), x->0, Direction->-1)", //
+        "0");
+    check("Limit(ArcTan(1/(x+x^2))*Sqrt(x^2)/x, x->0, Direction->1)", //
+        "Pi/2");
   }
 
   @Test
@@ -1079,6 +1106,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDiscreteLimit() {
     // an unresolvable sequence stays unevaluated. Clear(f) because testLimitPiecewise002 defines a
     // downvalue f(x_):=Piecewise(...) that outlives its test method - without it f(n) is already
@@ -1661,7 +1689,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(Erf((-1)^(1/4)*Sqrt(c)*x), x->-Infinity, Assumptions->c>0)", //
         "-1");
     check("Limit(ArcTan(c*x), x->-Infinity)", //
-        "ConditionalExpression(-Pi/2,c>0)");
+        "(-Sqrt(c^2)*Pi)/(2*c)");
     // ExpIntegralEi is real on the real axis, CosIntegral has a branch cut there
     check("Limit(ExpIntegralEi(-e)-ExpIntegralEi(e), e->0, Direction->\"FromAbove\")", //
         "0");

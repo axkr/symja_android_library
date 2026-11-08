@@ -227,7 +227,7 @@ public class Util {
           for (int index = num_of_gs; index >= 1; index--) {
             IExpr g = g_s.get(index);
             int start_index = num_of_gs - index + 1;
-            g = Decompogen.compogen(g_s.copyFrom(start_index), symbol);
+            g = Decompogen.compogen(g_s.subList(start_index), symbol);
             if (g.isPresent() && !g.equals(orig_f) && !g.equals(f)) {
               period = periodicity(g, symbol);
               if (period.isPresent()) {

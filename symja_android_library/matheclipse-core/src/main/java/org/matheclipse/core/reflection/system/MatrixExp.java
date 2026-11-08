@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITensorAccess;
 
 public class MatrixExp extends AbstractFunctionEvaluator {
@@ -280,8 +281,36 @@ public class MatrixExp extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /** Test if <code>expr</code> is the rule <code>Parameter-&gt;value</code>. */
+  private static boolean isParameterOption(IExpr expr) {
+    return expr.isRuleAST() && (expr.first() == S.Parameter || expr.first().isString("Parameter"));
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr parameter = F.C1;
+    IAST call = ast;
+    while (call.argSize() > 1 && call.last().isRuleAST()) {
+      IExpr option = call.last();
+      if (isParameterOption(option)) {
+        parameter = option.second();
+      } else if (option.first() != S.Method) {
+        return F.NIL;
+      }
+      call = call.most();
+    }
+    if (call.argSize() > 2) {
+      return F.NIL;
+    }
+    if (!parameter.isOne()) {
+      // the exponential of the matrix multiplied by the parameter
+      IExpr scaled = F.Times(call.arg1(), parameter);
+      return call.isAST1() ? F.MatrixExp(scaled) : F.binaryAST2(S.MatrixExp, scaled, call.arg2());
+    }
+    return matrixExp(call, engine);
+  }
+
+  private IExpr matrixExp(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     int[] dim = arg1.isMatrix();
     if (dim != null && dim[0] == dim[1]) {
@@ -296,6 +325,10 @@ public class MatrixExp extends AbstractFunctionEvaluator {
         expMat = Convert.simplifyMatrixEntries(expMat, engine);
         if (v != null) {
           return engine.evaluate(F.Dot(expMat, v));
+        }
+        if (arg1.isSparseArray() && !expMat.isFree(IExpr::isInexactNumber, false)) {
+          // the exponential of a machine number sparse array is a sparse array
+          return engine.evaluate(F.SparseArray(expMat));
         }
         return expMat;
       }
@@ -315,7 +348,12 @@ public class MatrixExp extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_2;
+    return IFunctionEvaluator.ARGS_1_4;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, F.list(F.Rule(S.Method, S.Automatic), F.Rule(S.Parameter, F.C1)));
   }
 
 }

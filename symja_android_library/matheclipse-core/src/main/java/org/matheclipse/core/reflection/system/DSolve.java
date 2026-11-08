@@ -138,7 +138,10 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
     // The unknown and the variable it depends on can be read off the equations when they are not
     // given: DSolve(y'(x) == y(x)) asks about y and x, and there is nothing else it could mean.
     IExpr arg2 = argSize >= 2 ? ast.arg2() : F.NIL;
-    IExpr arg3 = argSize >= 3 ? ast.arg3() : F.NIL;
+    IExpr arg3 = argSize >= 3 ? rangeVariables(ast, argSize) : F.NIL;
+    if (argSize == 4 && arg3.isNIL()) {
+      return F.NIL;
+    }
     if (arg2.isNIL() || arg3.isNIL()) {
       IExpr[] inferred = inferUnknowns(arg1, arg2, engine);
       if (inferred == null) {
@@ -165,6 +168,28 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       result = engine.evaluate(renameParameters(result, parameterHead));
     }
     return result;
+  }
+
+  private static boolean isVariableRange(IExpr expr) {
+    return expr.isList() && expr.argSize() == 3 && expr.first().isSymbol()
+        && (expr.second().isNumericFunction() || expr.getAt(3).isNumericFunction());
+  }
+
+  /**
+   * The variables of the variable arguments starting at the third, where a range
+   * <code>{x, xmin, xmax}</code> stands for <code>x</code>.
+   *
+   * @param argSize <code>3</code> or <code>4</code>
+   * @return the variable arguments or {@link F#NIL} if two of them aren't both ranges
+   */
+  static IExpr rangeVariables(IAST ast, int argSize) {
+    IExpr arg3 = ast.arg3();
+    if (argSize == 4) {
+      return isVariableRange(arg3) && isVariableRange(ast.arg4())
+          ? F.List(arg3.first(), ast.arg4().first())
+          : F.NIL;
+    }
+    return isVariableRange(arg3) ? arg3.first() : arg3;
   }
 
   private IExpr solve(final IAST ast, IAST arg1, IExpr arg2, IExpr arg3, EvalEngine engine) {
@@ -348,7 +373,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_3;
+    return IFunctionEvaluator.ARGS_1_4;
   }
 
   /**
@@ -387,7 +412,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       }
       unknown = list;
     }
-    return new IExpr[] {unknown, variable, F.bool(withoutArguments)};
+    return new IExpr[] {unknown, variable, F.booleSymbol(withoutArguments)};
   }
 
   /** Collects the symbols which are differentiated, and the arguments they are applied to. */
@@ -462,6 +487,9 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
   private static IExpr numericNumbers(IExpr expr) {
     if (expr.isNumber()) {
       return expr.isInexactNumber() ? expr : EvalEngine.get().evalN(expr);
+    }
+    if (expr.equals(S.Pi)) {
+      return EvalEngine.get().evalN(expr);
     }
     if (!expr.isAST() || expr.isAST(S.C, 2)) {
       return expr;

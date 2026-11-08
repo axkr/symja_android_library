@@ -49,9 +49,6 @@ public class SectorChart extends AbstractChart {
         GraphicsOptions.optionValue(originalAST, S.LabelingFunction, S.Automatic);
     IExpr polarAxes = GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False);
     IExpr polarGridLines = GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None);
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
-    }
 
     // the sectors begin at the left and go clockwise, which is where Mathematica starts them
     double startAngle = Math.PI;
@@ -85,8 +82,10 @@ public class SectorChart extends AbstractChart {
     IAST rings = GraphicsOptions.chartDatasets(sectorDatasets((IAST) dataArg));
     IASTAppendable primitives = F.ListAlloc();
     double reach = innerRadius;
-    int colorIndex = 0;
     double ringBase = innerRadius;
+    // a legend entry names the sectors at one position, in the fill they were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(GraphicsOptions.chartStyleColor(chartStyle, 0));
 
     for (int d = 1; d < rings.size(); d++) {
       IExpr ringExpr = rings.get(d);
@@ -94,6 +93,8 @@ public class SectorChart extends AbstractChart {
         continue;
       }
       IAST ring = (IAST) ringExpr;
+      // every ring colours its sectors by position, from the first chart colour
+      int colorIndex = 0;
       double total = 0.0;
       for (int i = 1; i < ring.size(); i++) {
         double width = angleValue(ring.get(i));
@@ -123,6 +124,7 @@ public class SectorChart extends AbstractChart {
         PlotWrapper wrapper = PlotWrapper.of(item);
         IExpr color = wrapper.style.isPresent() ? wrapper.style
             : GraphicsOptions.chartStyleColor(chartStyle, colorIndex);
+        legendColors.record(colorIndex, color);
         boolean colorIsExplicit = wrapper.style.isPresent() || !chartStyle.isAutomatic();
         IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
 
@@ -187,6 +189,7 @@ public class SectorChart extends AbstractChart {
     if (graphicsOptions.aspectRatio() == S.Automatic) {
       graphicsOptions.setAspectRatio(F.C1);
     }
+    graphicsOptions.setChartLegend(chartLegends, legendColors);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 

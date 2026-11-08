@@ -1163,6 +1163,13 @@ public class ExprParser extends Scanner {
               Double d = Double.valueOf(numberStr + "E" + exponent);
               return F.num(d);
             }
+            // A '*' that does not start a *^ exponent is the Times operator after a machine
+            // number, as in 2.5`*x - the form InputForm prints for 2.5*x. Step back so that the
+            // '*' is read as the next token, and return the machine number as the plain x`
+            // branch below does.
+            fCurrentPosition--;
+            getNextToken();
+            return F.num(numberStr);
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
             // without the token, so that a *^ exponent following the accuracy can still be seen
@@ -1220,7 +1227,8 @@ public class ExprParser extends Scanner {
               return F.num(numberStr);
             }
           }
-          throwSyntaxError("Number format error: " + numberStr, numberStr.length());
+          // every branch above returns; the "Number format error" thrown here was only reached by
+          // x`* without a following ^, which is now read as x` times the next factor
         }
         temp = new NumStr(numberStr);
         if (Double.isInfinite(((NumStr) temp).doubleValue())) {
@@ -2016,6 +2024,8 @@ public class ExprParser extends Scanner {
     // the product this loop is building: a b c and a*b c are one Times(a,b,c), a factor in
     // parentheses, (a b) c, keeps its own node
     IASTAppendable openProduct = null;
+    // the sum this loop is building from + and -, in the same way
+    IASTAppendable openSum = null;
     while (true) {
       if (fToken == TT_NEWLINE) {
         return lhs;
@@ -2114,6 +2124,25 @@ public class ExprParser extends Scanner {
         while (fToken == TT_NEWLINE) {
           getNextToken();
         }
+        final ISymbol head = infixOperator.headSymbol();
+        if (head == S.Plus || (head == S.Subtract && !Config.USER_STEPS_PARSER)) {
+          // a + b - c is one sum Plus(a, b, -c) in the order written, z - a is Plus(z, -a); a sum
+          // in parentheses, (a - b) + c, keeps its own node
+          IExpr term = parseLookaheadOperator(infixOperator.getPrecedence());
+          if (head == S.Subtract) {
+            term = ExprParserFactory.SubtractExprOperator.negateTerm(term);
+          }
+          if (openSum != null && lhs == openSum) {
+            openSum.append(term);
+          } else {
+            openSum = F.ast(S.Plus, 4);
+            openSum.append(lhs);
+            openSum.append(term);
+            lhs = openSum;
+          }
+          openProduct = null;
+          continue;
+        }
         final boolean star = infixOperator.getOperatorString().equals("*");
         final IASTAppendable product = star && lhs == openProduct ? openProduct : null;
         lhs = parseInfixOperator(lhs, infixOperator);
@@ -2153,6 +2182,13 @@ public class ExprParser extends Scanner {
       }
     } else {
       rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+      if (infixOperator.headSymbol() == S.Function && fToken == TT_OPERATOR) {
+        // x |-> y = 1 has the assignment in its body
+        final InfixExprOperator next = determineBinaryOperator();
+        if (next != null && next.getPrecedence() == Precedence.SET) {
+          rhs = climbOperators(rhs, Precedence.SET, false);
+        }
+      }
     }
     lhs = createInfixFunction(infixOperator, lhs, rhs);
     if (lhs instanceof IASTAppendable) {

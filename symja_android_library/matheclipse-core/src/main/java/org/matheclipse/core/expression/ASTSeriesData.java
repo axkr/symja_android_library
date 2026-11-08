@@ -186,6 +186,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                   seriesDataRecursive(outerFunc, y, u0, outerN, direction, engine);
 
               if (outerSeries != null) {
+                int pole = -outerSeries.minExponent();
+                if (pole > 0 && outerSeries.puiseuxDenominator() == 1) {
+                  // u^(-pole) loses pole*k orders of the inner series u: expand it further
+                  ASTSeriesData longer = seriesDataRecursive(arg, x, x0,
+                      currentN + pole * ((k + den - 1) / den) + 1, direction, engine);
+                  if (longer != null && !longer.isOrder()) {
+                    innerSeries = longer;
+                  }
+                }
                 return outerSeries.compose(innerSeries);
               }
             }
@@ -391,7 +400,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
         series = series.plusPS(arg);
       }
-      return series;
+      // at an algebraic point the terms of a sum may cancel exactly without evaluating to 0:
+      // 1+x^2+x^4 at x == (-1)^(1/3)
+      return x0.isZero() ? series
+          : zeroAlgebraicLeadingCoefficients(series, new int[1], engine);
     }
     return null;
   }
@@ -444,12 +456,25 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
         ASTSeriesData temp = polynomialSeries(powerAST, x, x0, n, coefficientMap);
         if (temp != null) {
+          if (exponent.isFraction()) {
+            ASTSeriesData baseSeries =
+                polynomialSeries(base, x, x0, n, new HashMap<IExpr, IExpr>());
+            if (baseSeries == null) {
+              baseSeries = seriesDataRecursive(base, x, x0, n, direction, engine);
+            }
+            if (baseSeries != null) {
+              return timesBranchPhase(temp,
+                  branchPhase(baseSeries, (IRational) exponent, x, x0, direction, engine), engine);
+            }
+          }
           return temp;
         }
       }
     }
 
     int currentN = n;
+    // the lead degree the leading-term primitive sees; 0 if it isn't known
+    int predictedLead = 0;
     // A base with a leading term of degree d needs at least d+1 orders before the power's own
     // expansion has anything to work with. The leading-term primitive reports that degree
     // directly as its exponent; this used to be recovered by pattern-matching the rebuilt
@@ -460,18 +485,24 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         Lead lead = LeadTerm.structuralLeadTerm(normalized.expr(), normalized.t(), engine);
         if (lead != null) {
           int leadDegree = lead.exponent().toIntDefault();
-          if (F.isPresent(leadDegree) && currentN <= leadDegree) {
-            currentN = leadDegree + 1;
+          if (F.isPresent(leadDegree)) {
+            predictedLead = leadDegree;
+            if (currentN <= leadDegree) {
+              currentN = leadDegree + 1;
+            }
           }
         }
       }
     }
-    ASTSeriesData series = seriesDataRecursive(base, x, x0, currentN, direction, engine);
+    final int[] zeroed = {0};
+    ASTSeriesData series = zeroAlgebraicLeadingCoefficients(
+        seriesDataRecursive(base, x, x0, currentN, direction, engine), zeroed, engine);
 
     int probeLimit = Math.max(n, 0) + 12;
     while (series != null && series.isOrder() && currentN < probeLimit) {
       currentN += 3;
-      series = seriesDataRecursive(base, x, x0, currentN, direction, engine);
+      series = zeroAlgebraicLeadingCoefficients(
+          seriesDataRecursive(base, x, x0, currentN, direction, engine), zeroed, engine);
     }
 
     if (series != null) {
@@ -486,9 +517,28 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
 
       if (p != null) {
+        int d = actualMinExponent(series);
+        if (p.isNegative() && series.puiseuxDenominator() == 1 && F.isPresent(d)
+            && (zeroed[0] > 0 || d > predictedLead)) {
+          // the lead degree d grew, an exact sum at x0 cancelled to zero: (c*w^d+...)^p needs the
+          // base up to w^(n-p*d+d)
+          int k = p.numerator().negate().toIntDefault();
+          if (F.isPresent(k) && p.denominator().isOne()) {
+            int needed = n + (k + 1) * d + 1;
+            if (currentN < needed) {
+              currentN = needed;
+              ASTSeriesData longer = zeroAlgebraicLeadingCoefficients(
+                  seriesDataRecursive(base, x, x0, currentN, direction, engine), zeroed, engine);
+              if (longer != null) {
+                series = longer;
+              }
+            }
+          }
+        }
         IExpr pExpr = series.powerSeries(p, engine);
 
         if (pExpr.isPresent()) {
+          final IExpr phase = branchPhase(series, p, x, x0, direction, engine);
           if (pExpr instanceof ASTSeriesData) {
             ASTSeriesData pSeries = (ASTSeriesData) pExpr;
 
@@ -542,20 +592,160 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               for (int i = newNMin; i < targetTruncate; i++) {
                 newList.append(pSeries.coefficient(i));
               }
-              return new ASTSeriesData(x, x0, newList, newNMin, targetTruncate, pDen);
+              return timesBranchPhase(
+                  new ASTSeriesData(x, x0, newList, newNMin, targetTruncate, pDen), phase, engine);
             }
 
-            return pSeries;
+            return timesBranchPhase(pSeries, phase, engine);
           } else {
             int targetTruncate = Math.max(n, 0) + 1;
             ASTSeriesData constSeries = new ASTSeriesData(x, x0, 0, targetTruncate, 1);
             constSeries.setCoeff(0, pExpr);
-            return constSeries;
+            return timesBranchPhase(constSeries, phase, engine);
           }
         }
       }
     }
     return null;
+  }
+
+  /**
+   * Set the leading coefficients of <code>series</code> which are zero as exact numbers to
+   * <code>0</code>, so that a power of the series starts at its true leading term. At a point
+   * like <code>(-1)^(1/3)</code> the constant coefficient of <code>1+x^2+x^4</code> is
+   * <code>1-(-1)^(1/3)+(-1)^(2/3)</code>, which doesn't evaluate to <code>0</code>.
+   */
+  private static ASTSeriesData zeroAlgebraicLeadingCoefficients(ASTSeriesData series,
+      int[] zeroed, EvalEngine engine) {
+    if (series == null) {
+      return null;
+    }
+    ASTSeriesData result = series;
+    for (int i = series.minExponent(); i < series.truncateOrder(); i++) {
+      IExpr c = series.coefficient(i);
+      if (c == null || c.isZero()) {
+        continue;
+      }
+      if (!isExactNumericZero(c, engine)) {
+        break;
+      }
+      if (result == series) {
+        // the series may be shared: zero the coefficients of a copy
+        result = series.copy();
+      }
+      result.setCoeff(i, F.C0);
+      zeroed[0]++;
+    }
+    return result;
+  }
+
+  /**
+   * An exact numeric expression which isn't a number literal and is zero: a product with a zero
+   * factor, a positive power of zero, or a sum whose 50-digit value cancels to less than
+   * <code>10^-40</code> of its largest summand. A small value like <code>E^-100</code> isn't zero.
+   */
+  public static boolean isExactNumericZero(IExpr c, EvalEngine engine) {
+    if (c.isNumber() || !c.isNumericFunction(true) || !c.isFree(IExpr::isInexactNumber, false)) {
+      return false;
+    }
+    if (c.isTimes()) {
+      return ((IAST) c).exists(factor -> factor.isZero() || isExactNumericZero(factor, engine));
+    }
+    if (c.isPower()) {
+      IExpr base = c.base();
+      return (base.isZero() || isExactNumericZero(base, engine))
+          && engine.evalQuiet(F.Greater(F.Re(c.exponent()), F.C0)).isTrue();
+    }
+    if (!c.isPlus()) {
+      return false;
+    }
+    IExpr scale = F.C0;
+    for (IExpr term : (IAST) c) {
+      IExpr magnitude = engine.evalQuiet(F.N(F.Abs(term), F.ZZ(50)));
+      if (!magnitude.isReal()) {
+        return false;
+      }
+      scale = engine.evalQuiet(F.Max(scale, magnitude));
+    }
+    IExpr value = engine.evalQuiet(F.N(F.Abs(c), F.ZZ(50)));
+    return value.isReal() && !scale.isZero() && engine
+        .evalQuiet(F.LessEqual(value, F.Times(scale, F.Power(F.C10, F.ZZ(-40))))).isTrue();
+  }
+
+  /**
+   * The factor <code>(c*w^r)^p/(c^p*w^(r*p))</code> by which <code>base^p</code> differs from the
+   * principal power of its leading term <code>c*w^r</code>, <code>w = x-x0</code>. It is
+   * <code>1</code> on the right side of the point, and for a positive <code>c</code> with
+   * <code>-1 &lt; r &lt;= 1</code>: <code>Sqrt(x^2)</code> is <code>x</code> only for
+   * <code>x &gt; 0</code>, its series is written with <code>Sqrt(x^2)/x</code>. A known side (the
+   * direction, or the sign of <code>w</code> from the assumptions) gives a constant.
+   *
+   * @param base the series of the base
+   * @param direction <code>-1</code> for <code>w &gt; 0</code>, <code>1</code> for
+   *        <code>w &lt; 0</code>, <code>0</code> if not known
+   */
+  private static IExpr branchPhase(ASTSeriesData base, IRational p, IExpr x, IExpr x0,
+      int direction, EvalEngine engine) {
+    if (p.isInteger()) {
+      return F.C1;
+    }
+    int lead = actualMinExponent(base);
+    if (!F.isPresent(lead)) {
+      return F.C1;
+    }
+    IExpr c = base.coefficient(lead);
+    if (!c.isFree(x)) {
+      return F.C1;
+    }
+    if (direction > 0 && !p.denominator().isEven()) {
+      // at -Infinity an odd root is the real one
+      return F.C1;
+    }
+    IExpr w = x0.isZero() ? x : engine.evaluate(F.Subtract(x, x0));
+    int side = sideOfPoint(w, direction);
+    if (side > 0) {
+      return F.C1;
+    }
+    IRational r = F.QQ(lead, base.puiseuxDenominator()).normalize();
+    if (side == 0 && c.isPositiveResult() && r.isGT(F.CN1) && !r.isGT(F.C1)) {
+      return F.C1;
+    }
+    if (side < 0) {
+      w = F.CN1;
+    }
+    return engine.evaluate(F.Divide(F.Power(F.Times(c, F.Power(w, r)), p),
+        F.Times(F.Power(c, p), F.Power(w, r.multiply(p)))));
+  }
+
+  /**
+   * The side of the expansion point: <code>1</code> for <code>w &gt; 0</code>, <code>-1</code> for
+   * <code>w &lt; 0</code>, <code>0</code> if unknown. It is given by the direction, else by the
+   * sign of <code>w</code> from the assumptions.
+   *
+   * @param w <code>x-x0</code>
+   * @param direction <code>-1</code> for <code>w &gt; 0</code>, <code>1</code> for
+   *        <code>w &lt; 0</code>, <code>0</code> if not known
+   */
+  private static int sideOfPoint(IExpr w, int direction) {
+    if (direction != 0) {
+      return -direction;
+    }
+    return w.isPositiveResult() ? 1 : w.isNegativeResult() ? -1 : 0;
+  }
+
+  private static ASTSeriesData timesBranchPhase(ASTSeriesData series, IExpr phase,
+      EvalEngine engine) {
+    if (phase.isOne()) {
+      return series;
+    }
+    ASTSeriesData result = series.copy();
+    for (int i = series.minExponent(); i < series.truncateOrder(); i++) {
+      IExpr coefficient = series.coefficient(i);
+      if (!coefficient.isZero()) {
+        result.setCoeff(i, engine.evaluate(F.Times(coefficient, phase)));
+      }
+    }
+    return result;
   }
 
   /**
@@ -712,6 +902,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     } else if (function.isAST2() && n >= 0 && function.first().isInteger()
         && (result = specialFunctionSeries((IAST) function, x, x0, n, direction, engine)) != null) {
       // from the power series of the function: its derivatives at 0 are no closed forms
+    } else if (function.isAST1() && n >= 0 && !function.first().isFree(x)
+        && (result = arcTangentConstantSeries((IAST) function, x, x0, n, direction,
+            engine)) != null) {
+      // an inverse tangent whose argument vanishes or diverges at the point
     } else if (function.isAST1() && n >= 0 && !function.first().isFree(x) && (result =
         logarithmicBranchSeries((IAST) function, x, x0, n, direction, engine)) != null) {
       // expanded at a logarithmic branch point of the argument
@@ -767,6 +961,59 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     }
     return result;
+  }
+
+  /**
+   * The series of <code>ArcCot(u)</code>, <code>ArcTan(1/u)</code>, <code>ArcCoth(u)</code> and
+   * <code>ArcTanh(1/u)</code> where <code>u</code> vanishes:
+   * <code>ArcCot(u) == Pi/2*u*Sqrt(u^-2) - ArcTan(u)</code> and
+   * <code>ArcCoth(u) == -Pi/2*u*Sqrt(-u^-2) + ArcTanh(u)</code>. The constant takes the sign of
+   * the leading term <code>c*w^r</code> of <code>u</code>, <code>w = x-x0</code>: a constant for a
+   * known side of the point or an even <code>r</code>, else <code>x*Sqrt(x^-2)</code> for
+   * <code>ArcTan(1/x)</code>.
+   *
+   * @return <code>null</code> for another function, or if <code>u</code> doesn't vanish
+   */
+  private static ASTSeriesData arcTangentConstantSeries(final IAST function, IExpr x, IExpr x0,
+      final int n, final int direction, EvalEngine engine) {
+    final IExpr head = function.head();
+    final boolean circular = head == S.ArcTan || head == S.ArcCot;
+    if (!circular && head != S.ArcTanh && head != S.ArcCoth) {
+      return null;
+    }
+    final IExpr u = head == S.ArcCot || head == S.ArcCoth ? function.arg1()
+        : engine.evaluate(F.Power(function.arg1(), F.CN1));
+    if (!engine.evalQuiet(F.subst(u, x, x0)).isZero()) {
+      return null;
+    }
+    ASTSeriesData inner = seriesDataRecursive(u, x, x0, n, direction, engine);
+    if (inner == null) {
+      return null;
+    }
+    int lead = actualMinExponent(inner);
+    if (!F.isPresent(lead) || lead <= 0) {
+      return null;
+    }
+    IExpr c = inner.coefficient(lead);
+    if (!c.isFree(x)) {
+      return null;
+    }
+    IRational r = F.QQ(lead, inner.puiseuxDenominator()).normalize();
+    IExpr w = x0.isZero() ? x : engine.evaluate(F.Subtract(x, x0));
+    int side = sideOfPoint(w, direction);
+    IExpr m = engine.evaluate(F.Times(c, F.Power(side != 0 ? F.ZZ(side) : w, r)));
+    // u*Sqrt(u^-2) is 1 or -1 by the sign of Re(u), also for a complex u
+    IExpr constant = circular ? F.Times(F.C1D2, S.Pi, m, F.Sqrt(F.Power(m, F.CN2)))
+        : F.Times(F.CN1D2, S.Pi, m, F.Sqrt(F.Negate(F.Power(m, F.CN2))));
+    IExpr regular = circular ? F.Negate(F.ArcTan(u)) : F.ArcTanh(u);
+    ASTSeriesData series =
+        seriesDataRecursive(engine.evaluate(regular), x, x0, n, direction, engine);
+    if (series == null) {
+      return null;
+    }
+    series = series.copy();
+    series.setCoeff(0, engine.evaluate(F.Plus(series.coefficient(0), constant)));
+    return series;
   }
 
   /**
@@ -853,14 +1100,21 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (result == null) {
       return null;
     }
-    IExpr w = x0.isZero() ? x : F.Subtract(x, x0);
+    IExpr w = x0.isZero() ? x : engine.evaluate(F.Subtract(x, x0));
     IRational r = den == 1 ? F.ZZ(lead) : F.QQ(lead, den).normalize();
+    int side = sideOfPoint(w, direction);
     // Log(c*w^r) is Log(c)+r*Log(w) on both sides of the point only for a positive c and
-    // Abs(r) <= 1: Log(x^2) is not 2*Log(x) for a negative x
-    final boolean splits = c.isPositiveResult() && !((IRational) r).abs().isGT(F.C1);
-    IExpr logOfLeadingTerm = splits //
-        ? engine.evaluate(F.Plus(F.Log(c), F.Times(r, F.Log(w)))) //
-        : engine.evaluate(F.Log(F.Times(c, F.Power(w, r))));
+    // -1 < r <= 1: Log(x^2) is not 2*Log(x) and Log(1/x) is not -Log(x) for a negative x. On a
+    // known side w^r is a positive number times 1 or (-1)^r.
+    IExpr logOfLeadingTerm;
+    if (side > 0 || (c.isPositiveResult() && r.isGT(F.CN1) && !r.isGT(F.C1))) {
+      logOfLeadingTerm = engine.evaluate(F.Plus(F.Log(c), F.Times(r, F.Log(w))));
+    } else if (side < 0) {
+      logOfLeadingTerm = engine.evaluate(
+          F.Plus(F.Log(F.Times(c, F.Power(F.CN1, r))), F.Times(r, F.Log(F.Negate(w)))));
+    } else {
+      logOfLeadingTerm = engine.evaluate(F.Log(F.Times(c, F.Power(w, r))));
+    }
     result.setCoeff(0, engine.evaluate(F.Plus(result.coefficient(0), logOfLeadingTerm)));
     return result;
   }
@@ -2559,7 +2813,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       return series;
     }
-    if (!isAnalyticTerm(b) || hasExponentialOfPolynomialAtInfinity(b)) {
+    if (b.has(e -> e instanceof ASTSeriesData, true) || !isAnalyticTerm(b)
+        || hasExponentialOfPolynomialAtInfinity(b)) {
+      // E^SeriesData(...) at an essential singularity stays a summand of its own
       return null;
     }
     ASTSeriesData bSeries = expansionPoint.isDirectedInfinity() //
@@ -3124,7 +3380,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * <code>f(s) == Sum(f^(k)(s0)/k!*t^k)</code>. The order of the result is the lowest order of the
    * terms <code>t^k</code> with a non-zero coefficient, so <code>Cos(x + 2*x^2 + O(x)^4)</code>
    * is known up to <code>O(x)^5</code>. <code>Log</code> of a series with a leading term
-   * <code>c*x^m</code> has <code>Log(c) + m*Log(x)</code> in its constant coefficient.
+   * <code>c*x^m</code> has <code>Log(c*x^m)</code> in its constant coefficient, written as
+   * <code>Log(c) + m*Log(x)</code> where that holds for a negative <code>x</code> too.
    *
    * @return {@link F#NIL} if <code>head</code> isn't one of the elementary functions, or the
    *         series has a pole at the expansion point
@@ -3148,22 +3405,27 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       IExpr c = series.coefficient(lead);
       IExpr x = series.expansionVariable;
       IExpr x0 = series.expansionPoint;
-      IRational m = F.QQ(lead, series.puiseuxDenominator);
-      IExpr logX;
-      if (x0.isZero()) {
-        logX = F.Log(x);
-      } else if (x0.isInfinity()) {
-        logX = F.Log(x);
-        m = m.negate();
+      IRational m = F.QQ(lead, series.puiseuxDenominator).normalize();
+      if (x0.isInfinity()) {
+        // Log(c*x^-m) with a positive x
+        logTerm = F.Plus(F.Log(c), F.Times(m.negate(), F.Log(x)));
       } else if (x0.isDirectedInfinity()) {
         return F.NIL;
       } else {
-        logX = F.Log(F.Subtract(x, x0));
+        IExpr w = x0.isZero() ? x : engine.evaluate(F.Subtract(x, x0));
+        int side = sideOfPoint(w, 0);
+        if (side > 0 || (c.isPositiveResult() && m.isGT(F.CN1) && !m.isGT(F.C1))) {
+          logTerm = F.Plus(F.Log(c), F.Times(m, F.Log(w)));
+        } else if (side < 0) {
+          logTerm = F.Plus(F.Log(F.Times(c, F.Power(F.CN1, m))),
+              F.Times(m, F.Log(F.Negate(w))));
+        } else {
+          // Log(x^2) is not 2*Log(x) and Log(1/x) is not -Log(x) for a negative x
+          logTerm = F.Log(F.Times(c, F.Power(w, m)));
+        }
       }
-      logTerm = F.Times(m, logX);
       s = series.shift(-lead).times(F.Power(c, F.CN1));
       s.setCoeff(0, F.C1);
-      logTerm = F.Plus(F.Log(c), logTerm);
       lead = 0;
     }
     if (lead < 0) {
@@ -3406,6 +3668,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
     if (isScalarTimesFactor(b)) {
       return times(b);
+    }
+    if (b.has(e -> e instanceof ASTSeriesData, true)) {
+      // E^SeriesData(...) at an essential singularity: expanding it gives the factor itself
+      return null;
     }
     if (!isAnalyticTerm(b) || hasExponentialOfPolynomialAtInfinity(b)) {
       return null;

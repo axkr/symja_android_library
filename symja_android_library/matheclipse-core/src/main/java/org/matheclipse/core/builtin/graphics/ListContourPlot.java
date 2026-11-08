@@ -288,7 +288,7 @@ public class ListContourPlot extends ContourPlot {
         IAST rowAst = (IAST) rowExpr;
         for (int j = 0; j < cols; j++) {
           if (j < rowAst.argSize()) {
-            double val = rowAst.get(j + 1).evalDouble();
+            double val = rowAst.get(j + 1).evalf();
             gd.zGrid[j][i] = val; // Transpose: row index i -> y, col index j -> x
 
             if (Double.isFinite(val)) {
@@ -317,9 +317,9 @@ public class ListContourPlot extends ContourPlot {
 
     for (int i = 0; i < n; i++) {
       IAST tuple = (IAST) list.get(i + 1);
-      x[i] = tuple.arg1().evalDouble();
-      y[i] = tuple.arg2().evalDouble();
-      z[i] = tuple.arg3().evalDouble();
+      x[i] = tuple.arg1().evalf();
+      y[i] = tuple.arg2().evalf();
+      z[i] = tuple.arg3().evalf();
 
       if (x[i] < minX)
         minX = x[i];
@@ -386,7 +386,7 @@ public class ListContourPlot extends ContourPlot {
       boolean contourLines, IExpr colorFunctionOpt, EvalEngine engine, boolean[][] inside,
       RegionFunctionFilter region) {
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.booleSymbol(colorFunctionScaling),
             S.ListContourPlot, engine)
         .range(1, gd.minZ, gd.maxZ).sink(PlotColorFunction.Sink.FLAT)
         .fallback(this::getShadingColor).build();

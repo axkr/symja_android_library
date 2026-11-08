@@ -8,5 +8,5 @@
  
  ArcTanh(Infinity)=(-1/2)*Pi*I,
  ArcTanh(I*Infinity)=(1/2)*Pi*I,
- ArcTanh(ComplexInfinity)=(1/2)*Pi
+ ArcTanh(ComplexInfinity)=Indeterminate
 }

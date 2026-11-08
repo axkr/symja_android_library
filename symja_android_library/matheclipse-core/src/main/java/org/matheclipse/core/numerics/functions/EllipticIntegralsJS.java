@@ -1,10 +1,10 @@
 package org.matheclipse.core.numerics.functions;
 
-import org.apfloat.Apfloat;
 import org.apfloat.Apcomplex;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.hipparchus.special.elliptic.legendre.LegendreEllipticIntegral;
+import org.matheclipse.core.expression.CMath;
 
 /**
  * Ported from JavaScript file <a href=
@@ -137,11 +137,6 @@ public class EllipticIntegralsJS extends JS {
     // return t1.add(t2).add(t3).multiply(0.5);
   }
 
-  private static Apcomplex apcomplex(Complex z, long precision) {
-    return new Apcomplex(new Apfloat(z.getReal(), precision),
-        new Apfloat(z.getImaginary(), precision));
-  }
-
   public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p) {
     boolean rightHalfPlane =
         x.getReal() >= 0 && y.getReal() >= 0 && z.getReal() >= 0 && p.getReal() > 0;
@@ -153,8 +148,8 @@ public class EllipticIntegralsJS extends JS {
       try {
         final long precision = 20;
         Apcomplex result = org.matheclipse.external.apfloat.ApcomplexEllipticMath
-            .carlsonRJ(apcomplex(x, precision), apcomplex(y, precision), apcomplex(z, precision),
-                apcomplex(p, precision));
+            .carlsonRJ(CMath.apcomplex(x, precision), CMath.apcomplex(y, precision),
+                CMath.apcomplex(z, precision), CMath.apcomplex(p, precision));
         return new Complex(result.real().doubleValue(), result.imag().doubleValue());
       } catch (ArithmeticException | org.apfloat.ApfloatRuntimeException e) {
         // the integral is infinite
@@ -352,7 +347,8 @@ public class EllipticIntegralsJS extends JS {
       try {
         final long precision = 20;
         Apcomplex result = org.matheclipse.external.apfloat.ApcomplexEllipticMath
-            .ellipticPi(apcomplex(n, precision), apcomplex(x, precision), apcomplex(m, precision));
+            .ellipticPi(CMath.apcomplex(n, precision), CMath.apcomplex(x, precision),
+                CMath.apcomplex(m, precision));
         return new Complex(result.real().doubleValue(), result.imag().doubleValue());
       } catch (ArithmeticException | org.apfloat.ApfloatRuntimeException e) {
         // the integral is infinite

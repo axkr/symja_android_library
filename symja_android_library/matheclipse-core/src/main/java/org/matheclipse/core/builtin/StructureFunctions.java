@@ -84,7 +84,9 @@ public class StructureFunctions {
       S.Order.setEvaluator(new Order());
       S.OrderedQ.setEvaluator(new OrderedQ());
       S.Operate.setEvaluator(new Operate());
+      S.Parallelize.setEvaluator(new Parallelize());
       S.ParallelMap.setEvaluator(new ParallelMap());
+      S.ParallelSelect.setEvaluator(new ParallelSelect());
       S.PatternOrder.setEvaluator(new PatternOrder());
       S.Quit.setEvaluator(new QuitExit());
       S.ReverseSort.setEvaluator(new ReverseSort());
@@ -581,9 +583,7 @@ public class StructureFunctions {
           return sparseArray.flatten();
         }
       }
-      if (arg1.isSparseArray()) {
-        arg1 = arg1.normal(false);
-      }
+      arg1 = denseArrays(arg1);
       if (arg1.isAST()) {
         final IAST arg1AST = (IAST) arg1;
 
@@ -634,6 +634,17 @@ public class StructureFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+
+    /** Replace the sparse arrays in the nested lists <code>expr</code> by lists. */
+    private static IExpr denseArrays(IExpr expr) {
+      if (expr.isSparseArray()) {
+        return expr.normal(false);
+      }
+      if (expr.isList() && !expr.isFree(x -> x.isSparseArray(), false)) {
+        return ((IAST) expr).map(StructureFunctions.Flatten::denseArrays);
+      }
+      return expr;
     }
 
     /**
@@ -960,6 +971,10 @@ public class StructureFunctions {
         }
         final int attributes = PureFunctions.attributes(function, engine);
         IAST astEvaled = engine.evalArgs(ast, attributes, false).orElse(ast);
+        if (!Attribute.SEQUENCEHOLD.isSetIn(attributes)) {
+          // Sequence @@ {2, 3} is a Sequence only now: it fills the parameters like written ones
+          astEvaled = F.flattenSequence(astEvaled).orElse(astEvaled);
+        }
         if (astEvaled.hasSpecialArg() && astEvaled.exists(x -> x.isAST(S.Unevaluated, 2))) {
           // an argument in Unevaluated is passed as it is, without the wrapper
           astEvaled = astEvaled.map(x -> x.isAST(S.Unevaluated, 2) ? x.first() : x);
@@ -1078,11 +1093,36 @@ public class StructureFunctions {
   }
 
   /** Count the number of leaves of an expression. */
-  public static class LeafCount extends AbstractCoreFunctionEvaluator {
+  public static class LeafCount extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.ZZ(leafCount(engine.evaluate(ast.arg1())));
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine) {
+      IExpr expr = engine.evaluate(ast.arg1());
+      if (options[0].isFalse()) {
+        return F.ZZ(leavesWithoutHeads(expr));
+      }
+      return options[0].isTrue() ? F.ZZ(leafCount(expr)) : F.NIL;
+    }
+
+    /**
+     * The leaves of <code>Heads -&gt; False</code>: the heads of the expression and of its parts
+     * and everything in those heads are left out.
+     */
+    private static long leavesWithoutHeads(IExpr expr) {
+      if (expr instanceof IPatternObject) {
+        return leavesWithoutHeads(((IPatternObject) expr).toFullFormAST());
+      }
+      if (expr.isAST()) {
+        IAST list = (IAST) expr;
+        long count = 0L;
+        for (int i = 1; i < list.size(); i++) {
+          count += leavesWithoutHeads(list.get(i));
+        }
+        return count;
+      }
+      // a fraction or a complex number counts its two parts and its head
+      return expr.isAtom() && expr.leafCount() > 1L ? expr.leafCount() - 1L : 1L;
     }
 
     /**
@@ -1106,7 +1146,12 @@ public class StructureFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.True);
     }
   }
 
@@ -1188,6 +1233,11 @@ public class StructureFunctions {
       } else {
         level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, includeHeads);
       }
+      if (arg2.isSparseArray()) {
+        // a level below the top is a level of the dense array
+        IExpr dense = arg2.normal(false);
+        return dense.accept(level).orElse(dense);
+      }
       return arg2.accept(level).orElse(arg2);
     }
 
@@ -1202,13 +1252,14 @@ public class StructureFunctions {
     }
   }
 
-  private static class MapAll extends AbstractFunctionEvaluator {
+  private static class MapAll extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
       final IExpr arg1 = ast.arg1();
-      final VisitorLevelSpecification level =
-          new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 0, Integer.MAX_VALUE, false);
+      final VisitorLevelSpecification level = new VisitorLevelSpecification(
+          x -> F.unaryAST1(arg1, x), 0, Integer.MAX_VALUE, option[0].isTrue());
 
       final IExpr result = ast.arg2().accept(level);
       return result.isPresent() ? result : ast.arg2();
@@ -1217,6 +1268,11 @@ public class StructureFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 
@@ -1320,7 +1376,7 @@ public class StructureFunctions {
           try {
             final IAST ast1 = (IAST) arg1;
             final IExpr arg2 = ast.arg2();
-            java.util.function.Function<IExpr, IExpr> rules = Functors.rules(arg2, engine);
+            java.util.function.Function<IExpr, IExpr> rules = Functors.wholeRules(arg2, engine);
             // a part which no rule matches stays unchanged
             java.util.function.Function<IExpr, IExpr> function = x -> rules.apply(x).orElse(x);
             // CPD-OFF MapAt and ReplaceAt name their own builtin in messages
@@ -1402,7 +1458,7 @@ public class StructureFunctions {
 
       IExpr arg2 = ast.arg2();
       if (arg2.isSparseArray()) {
-        arg2 = arg2.normal(false);
+        arg2 = argSize == 2 ? ((ISparseArray) arg2).parts() : arg2.normal(false);
       }
       // as for a sparse array: the level visitor walks the rows, not the dataset object, which it
       // used to read as a structure and map over into nonsense
@@ -2006,6 +2062,94 @@ public class StructureFunctions {
     }
   }
 
+
+  /**
+   * <code>Parallelize(expr)</code> evaluates a <code>Table</code>, a <code>Map</code> or a
+   * <code>Select</code> as <code>ParallelTable</code>, <code>ParallelMap</code> or
+   * <code>ParallelSelect</code> with the given options, and any other expression as it is.
+   */
+  private static final class Parallelize extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr expr = ast.arg1();
+      IAST options = ast.rest();
+      if (!options.forAll(x -> x.isRuleAST())) {
+        return F.NIL;
+      }
+      IExpr parallelHead = F.NIL;
+      if (expr.isAST(S.Table)) {
+        parallelHead = S.ParallelTable;
+      } else if (expr.isAST(S.Map, 3)) {
+        parallelHead = S.ParallelMap;
+      } else if (expr.isAST(S.Select, 3, 4)) {
+        parallelHead = S.ParallelSelect;
+      }
+      if (parallelHead.isNIL()) {
+        return expr;
+      }
+      IASTAppendable parallel = F.ast(parallelHead, expr.argSize() + options.argSize());
+      parallel.appendArgs((IAST) expr);
+      parallel.appendArgs(options);
+      return parallel;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDFIRST);
+    }
+  }
+
+  /**
+   * <code>ParallelSelect(list, crit)</code> and <code>ParallelSelect(list, crit, n)</code> test the
+   * elements on several threads, through <code>ParallelMap</code>, and give the same elements as
+   * <code>Select</code>.
+   */
+  private static final class ParallelSelect extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int last = ast.argSize();
+      IASTAppendable map = F.ast(S.ParallelMap, ast.argSize());
+      map.append(ast.arg2());
+      map.append(ast.arg1());
+      while (last > 2 && ast.get(last).isRuleAST()) {
+        map.append(ast.get(last--));
+      }
+      if (last > 3) {
+        return F.NIL;
+      }
+      IExpr select = ast.copyUntil(last + 1).setAtCopy(0, S.Select);
+      if (!ast.arg1().isList() || ast.arg1().argSize() < 2) {
+        return select;
+      }
+      IExpr tests = engine.evaluate(map);
+      if (!tests.isList() || tests.argSize() != ast.arg1().argSize()) {
+        return select;
+      }
+      IAST list = (IAST) ast.arg1();
+      IASTAppendable selected = F.ListAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        if (tests.getAt(i).isTrue()) {
+          selected.append(list.get(i));
+        }
+      }
+      if (last == 3) {
+        return F.ternaryAST3(S.Select, selected, F.Function(S.True), ast.arg3());
+      }
+      return selected;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+  }
 
   private static final class PatternOrder extends AbstractFunctionEvaluator {
 

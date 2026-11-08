@@ -55,7 +55,7 @@ import org.matheclipse.core.interfaces.IReal;
   private static UnaryOperator<IExpr> withAlpha(int alpha) {
     IInteger scalar = F.ZZ(alpha);
     return rgba -> {
-      IASTAppendable t = ((IAST) rgba).copyFrom(1, 4);
+      IASTAppendable t = ((IAST) rgba).subList(1, 4);
       t.append(scalar);
       return t;
     };

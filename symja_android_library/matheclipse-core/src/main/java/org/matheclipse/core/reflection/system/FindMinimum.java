@@ -223,6 +223,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   /** A search which reaches a function value of this size ran away on an unbounded function. */
   private static final double DIVERGED = 1e300;
 
+  /** The position of the inner point of a golden section search. */
+  private static final double GOLDEN_SECTION = 0.5 * (3.0 - Math.sqrt(5.0));
+
   /** The best value of a search stopped by MaxIterations which went off towards infinity. */
   private static final double RAN_AWAY = 1e100;
 
@@ -249,7 +252,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           IAST exactRules = (IAST) exact;
           return F.list(engine.evalN(F.subst(function, exactRules), precision),
               F.mapRange(1, exactRules.size(), i -> F.Rule(exactRules.get(i).first(),
-                  engine.evalN(exactRules.get(i).second(), precision))));
+                  exactRules.get(i).second().isZero()
+                      // a zero known to the working precision, not a zero of infinite precision
+                      ? org.matheclipse.core.expression.ApfloatNum.zero(precision)
+                      : engine.evalN(exactRules.get(i).second(), precision))));
         }
       }
       return result;
@@ -301,12 +307,15 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     final double start;
     final double lower;
     final double upper;
+    /** The second start value of <code>{x, x0, x1}</code>, otherwise {@link Double#NaN}. */
+    final double secondStart;
 
-    VariableSpec(IExpr variable, double start, double lower, double upper) {
+    VariableSpec(IExpr variable, double start, double lower, double upper, double secondStart) {
       this.variable = variable;
       this.start = start;
       this.lower = lower;
       this.upper = upper;
+      this.secondStart = secondStart;
     }
   }
 
@@ -497,6 +506,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     optimizeSupplier.evaluationMonitor = evaluationMonitor;
     optimizeSupplier.stepMonitor = stepMonitor;
     optimizeSupplier.newtonSteps = automaticMethod && (stepMonitor != S.None || explicitIterations);
+    if (n == 1 && automaticMethod && simpleBounds == null && !constrained
+        && !optimizeSupplier.newtonSteps && evaluationMonitor == S.None) {
+      optimizeSupplier.secondStart = specs.get(0).secondStart;
+    }
     IExpr result = optimizeSupplier.get();
     if ((constrained || (automaticMethod && simpleBounds == null)) && result.isList2()
         && result.second().isListOfRules()) {
@@ -994,11 +1007,14 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       double start = DEFAULT_START_VALUE;
       double lower = Double.NEGATIVE_INFINITY;
       double upper = Double.POSITIVE_INFINITY;
+      double secondStart = Double.NaN;
       if (entry.isList()) {
         IAST spec = (IAST) entry;
         if (spec.argSize() >= 2) {
-          // {x, x0, x1} - the second start value x1 is of no use for the optimizers
           start = engine.evaluate(spec.arg2()).evalfNaN();
+        }
+        if (spec.argSize() == 3) {
+          secondStart = engine.evaluate(spec.arg3()).evalfNaN();
         }
         if (spec.argSize() == 4) {
           lower = engine.evaluate(spec.arg3()).evalfNaN();
@@ -1010,7 +1026,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           return null;
         }
       }
-      specs.add(new VariableSpec(variable, start, lower, upper));
+      specs.add(new VariableSpec(variable, start, lower, upper, secondStart));
     }
     return specs;
   }
@@ -1483,6 +1499,11 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       }
       IReal realNumber = initialResult.evalReal();
       if (realNumber == null) {
+        // a complex value with a vanishing imaginary part, as Sqrt(-2.0)*Sqrt(-0.5), is real
+        double value = engine.evalDoubleNaN(initialResult);
+        if (!Double.isNaN(value)) {
+          return F.num(value);
+        }
         // The Function value `1` is not a real number at `2`=`3`.
         return Errors.printMessage(goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
             "nrnum", F.List(initialResult, variableList, initialStartValues), engine);
@@ -1519,6 +1540,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
      * <code>MaxIterations</code> and shown by <code>StepMonitor</code> one by one.
      */
     boolean newtonSteps = false;
+
+    /** The second start value of a search of one variable, otherwise {@link Double#NaN}. */
+    double secondStart = Double.NaN;
 
     public OptimizeSupplier(ISymbol head, GoalType goalType, IExpr function, IAST variableList,
         double[] initialValues, int maxIterations, String method, SimpleBounds simpleBounds,
@@ -1576,7 +1600,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     @Override
     public IExpr get() {
       try {
-        return optimize();
+        IExpr result = optimize();
+        return Double.isNaN(secondStart) ? result : betweenStartValues(result);
       } catch (MathIllegalStateException mise) {
         // a search which ran away on an unbounded function has no point worth giving
         if (bestPoint != null && isNumeric(bestPoint) && Math.abs(bestValue) < RAN_AWAY
@@ -1590,6 +1615,42 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         }
         throw mise;
       }
+    }
+
+    /**
+     * Two start values which enclose a point better than both of them bracket an extremum. A search
+     * from the first start value alone can stay at a flat point or leave the bracket: then Brent's
+     * method narrows the bracket down to a new start of the search.
+     *
+     * @param result the result of the search from the first start value
+     */
+    private IExpr betweenStartValues(IExpr result) {
+      final IExpr function = engine.evaluate(originalFunction);
+      final MultiVariateNumerical numerical = new MultiVariateNumerical(function, variableList);
+      final boolean maximize = goalType == GoalType.MAXIMIZE;
+      final double first = initialValues[0];
+      final double inner = first + GOLDEN_SECTION * (secondStart - first);
+      final double innerValue = numerical.value(new double[] {inner});
+      if (maximize ? !(innerValue > numerical.value(new double[] {first})
+          && innerValue > numerical.value(new double[] {secondStart}))
+          : !(innerValue < numerical.value(new double[] {first})
+              && innerValue < numerical.value(new double[] {secondStart}))) {
+        return result;
+      }
+      final double left = Math.min(first, secondStart);
+      final double right = Math.max(first, secondStart);
+      if (result.isList2() && result.second().isListOfRules()) {
+        final double found = result.second().first().second().evalfNaN();
+        final double foundValue = result.first().evalfNaN();
+        if (found > left && found < right
+            && (maximize ? foundValue >= innerValue : foundValue <= innerValue)) {
+          return result;
+        }
+      }
+      PointValuePair narrowed = brent(numerical::value, maximize, new double[] {left, right},
+          new MaxEval(MIN_EVALUATIONS), new MaxIter(maxIterations));
+      initialValues[0] = narrowed.getPointRef()[0];
+      return optimize();
     }
 
     private IExpr optimize() {

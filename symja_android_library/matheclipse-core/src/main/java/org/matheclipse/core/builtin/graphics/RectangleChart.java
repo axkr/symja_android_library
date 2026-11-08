@@ -11,6 +11,9 @@ import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.reflection.system.ColorData;
+import org.matheclipse.core.reflection.system.ColorDataFunction;
+import org.matheclipse.core.tensor.img.ColorDataGradients;
 
 /**
  * <code>RectangleChart({{w1, h1}, {w2, h2}, ...})</code> - a bar chart whose bars have the width
@@ -19,7 +22,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>
  * Several datasets, <code>{{{w, h}, ...}, ...}</code>, are drawn one after the other with a wider
  * gap between them, and their bars are coloured by their position within the dataset. An entry
- * which is not a pair of numbers is left out.
+ * which is not a pair of numbers is left out. Unless a frame or <code>Axes -> False</code> replaces
+ * it, a gray baseline at height 0 carries a short tick at either end of every dataset.
  */
 public class RectangleChart extends AbstractChart {
 
@@ -58,7 +62,7 @@ public class RectangleChart extends AbstractChart {
     if (argSize < 1) {
       return F.NIL;
     }
-    IExpr dataArg = engine.evaluate(ast.arg1());
+    IExpr dataArg = chartData(engine.evaluate(ast.arg1()), engine);
     IAST datasets = datasets(dataArg, 2);
     if (datasets == null) {
       if (dataArg.isList()) {
@@ -77,22 +81,30 @@ public class RectangleChart extends AbstractChart {
     IExpr chartStyle = GraphicsOptions.optionValue(originalAST, S.ChartStyle, S.Automatic);
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
-    }
-
     boolean byPosition = datasets.argSize() > 1 || !chartStyle.isAutomatic();
+    // the style of the chart as a whole, which the style of each bar then refines; under a named
+    // colour scheme it is the default chart colour
+    IExpr chartColor =
+        chartStyle.isString() ? GraphicsOptions.chartStyleColorExpr(0) : color(chartStyle, 0);
+    IExpr schemeColors = schemeColors(chartStyle, boxes);
+    if (schemeColors.isPresent()) {
+      chartStyle = schemeColors;
+    }
+    // a legend entry names the rectangles at one position, in the fill they were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(color(chartStyle, 0));
     IASTAppendable primitives = F.ListAlloc(boxes.size() + 1);
-    // the style of the chart as a whole, which the style of each bar then refines
-    primitives.append(color(chartStyle, 0));
+    primitives.append(chartColor);
     double xMin = 0.0;
     double xMax = 0.0;
     double yMin = 0.0;
     double yMax = 0.0;
+    boolean framed = false;
     for (Box box : boxes) {
       PlotWrapper wrapper = PlotWrapper.of(box.item);
       IExpr color =
           wrapper.style.isPresent() ? wrapper.style : color(chartStyle, byPosition ? box.position : 0);
+      legendColors.record(box.position, color);
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color,
           wrapper.style.isPresent() || !chartStyle.isAutomatic());
       IASTAppendable group = F.ListAlloc(2);
@@ -109,6 +121,31 @@ public class RectangleChart extends AbstractChart {
       yMin = Math.min(yMin, box.sizes[1]);
       yMax = Math.max(yMax, box.sizes[1]);
     }
+    IExpr chartLabels = GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None);
+    IExpr data = engine.evaluate(ast.arg1());
+    if (data.isAssociation() && chartLabels.isNone()
+        && GraphicsOptions.optionValue(originalAST, S.PlotLabels, S.None).isAutomatic()) {
+      // the keys of an association label the bars
+      chartLabels = engine.evaluate(F.unaryAST1(S.Keys, data));
+    }
+    if (chartLabels.isList() && datasets.argSize() == 1) {
+      // the labels of the bars sit below them, in place of the ticks of the horizontal axis
+      for (int i = 0; i < boxes.size() && i < chartLabels.argSize(); i++) {
+        Box box = boxes.get(i);
+        primitives.append(F.List(F.GrayLevel(F.C0), F.ternaryAST3(S.Text, chartLabels.getAt(i + 1),
+            F.List(F.num((box.from + box.to()) / 2.0), F.C0), F.List(F.C0, F.C1))));
+      }
+    }
+    IExpr frame = GraphicsOptions.optionValue(originalAST, S.Frame, S.False);
+    if (!frame.isFalse() && !frame.isNone()) {
+      // a frame replaces the axes
+      graphicsOptions.setAxes(S.False);
+      framed = true;
+    }
+    if (!framed && !axesOff(GraphicsOptions.optionValue(originalAST, S.Axes, F.NIL))) {
+      // drawn before the bars, right after the colour of the chart
+      primitives.append(2, baseline(boxes));
+    }
     if (datasets.argSize() > 1) {
       // the half gap in front of the first dataset is matched by one after the last
       xMax += gaps(barSpacing, boxes.size())[1] / 2.0;
@@ -117,7 +154,101 @@ public class RectangleChart extends AbstractChart {
     double pad = (yMax - yMin) * 0.05;
     graphicsOptions.setBoundingBox(new double[] {xMin, xMax, yMin < 0 ? yMin - pad : yMin,
         yMax > 0 ? yMax + pad : yMax});
-    return createGraphicsFunction(primitives, graphicsOptions, ast);
+    graphicsOptions.setChartLegend(chartLegends, legendColors);
+    IExpr chart = createGraphicsFunction(primitives, graphicsOptions, ast);
+    return framed && !GraphicsOptions.optionValue(originalAST, S.FrameTicks, F.NIL).isPresent()
+        ? withoutBottomTicks(chart)
+        : chart;
+  }
+
+  /**
+   * How far the baseline reaches past the first bar, as a fraction of the width of all bars.
+   * Measured from reference charts, like {@link #BASELINE_RIGHT}.
+   */
+  private static final double BASELINE_LEFT = 0.02;
+
+  /**
+   * How far the baseline reaches past the last bar, as a fraction of the width of all bars. The
+   * measured overhang is slightly longer on this side; it is not a rounded {@link #BASELINE_LEFT}.
+   */
+  private static final double BASELINE_RIGHT = 0.0204;
+
+  /** Whether an <code>Axes</code> option turns off both axes. */
+  private static boolean axesOff(IExpr axes) {
+    if (axes.isList()) {
+      return ((IAST) axes).forAll(x -> x.isFalse() || x.isNone());
+    }
+    return axes.isFalse() || axes.isNone();
+  }
+
+  /**
+   * The category baseline of a chart, a thin gray line at height 0 a little past the first and
+   * the last bar, and a tick 6 printer's points long going down from the start and the end of
+   * every dataset.
+   */
+  private static IAST baseline(List<Box> boxes) {
+    double start = boxes.get(0).from;
+    double end = boxes.get(boxes.size() - 1).to();
+    double width = end - start;
+    IASTAppendable lines = F.ListAlloc(3 + 2 * boxes.size());
+    lines.append(F.GrayLevel(0.5));
+    lines.append(F.unaryAST1(S.AbsoluteThickness, F.num(0.5)));
+    lines.append(F.Line(F.List(F.List(F.num(start - BASELINE_LEFT * width), F.C0),
+        F.List(F.num(end + BASELINE_RIGHT * width), F.C0))));
+    for (int i = 0; i < boxes.size(); i++) {
+      Box box = boxes.get(i);
+      // the position within a dataset grows, so a smaller or equal one starts the next dataset
+      if (i == 0 || box.position <= boxes.get(i - 1).position) {
+        lines.append(endTick(box.from));
+      }
+      if (i == boxes.size() - 1 || boxes.get(i + 1).position <= box.position) {
+        lines.append(endTick(box.to()));
+      }
+    }
+    return lines;
+  }
+
+  /** A tick 6 printer's points long going down from <code>{x, 0}</code>. */
+  private static IAST endTick(double x) {
+    IAST point = F.List(F.num(x), F.C0);
+    return F.Line(F.List(point, F.binaryAST2(S.Offset, F.List(F.C0, F.CN6), point)));
+  }
+
+  /** The chart with ticks only on the left and right of its frame. */
+  private static IExpr withoutBottomTicks(IExpr chart) {
+    IAST ticks = F.List(F.List(S.Automatic, S.Automatic), F.List(S.None, S.None));
+    return chart.replaceAll(F.Rule(F.Rule(S.FrameTicks, S.Automatic), F.Rule(S.FrameTicks, ticks)))
+        .orElse(chart);
+  }
+
+  /**
+   * The colours of a named colour scheme sampled evenly over the positions of the bars in a
+   * dataset: the bar at position <code>i</code> of <code>n</code> takes the scheme at
+   * <code>i/(n-1)</code>, a lone bar its start. <code>F.NIL</code> for any other style.
+   */
+  private static IExpr schemeColors(IExpr chartStyle, List<Box> boxes) {
+    if (!chartStyle.isString()) {
+      return F.NIL;
+    }
+    ColorDataGradients gradient =
+        ColorData.gradientNamed(chartStyle.toString());
+    if (gradient == null) {
+      return F.NIL;
+    }
+    int n = 0;
+    for (Box box : boxes) {
+      n = Math.max(n, box.position + 1);
+    }
+    IASTAppendable colors = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      IExpr color = ColorDataFunction.applyGradient(gradient,
+          F.num(n > 1 ? (double) i / (n - 1) : 0.0));
+      if (color == null) {
+        return F.NIL;
+      }
+      colors.append(color);
+    }
+    return colors;
   }
 
   /** The colour of the bar at <code>index</code>; a list of styles is one directive. */
@@ -129,6 +260,22 @@ public class RectangleChart extends AbstractChart {
       return directive;
     }
     return color;
+  }
+
+  /**
+   * The data of a chart: the values of an association or of a time series, with the magnitudes of
+   * its quantities in place of the quantities.
+   */
+  public static IExpr chartData(IExpr data, EvalEngine engine) {
+    if (data.isAssociation()) {
+      data = engine.evaluate(F.unaryAST1(S.Values, data));
+    } else if (data.isAST(S.TemporalData)) {
+      data = engine.evaluate(F.unaryAST1(data, F.stringx("Values")));
+    }
+    if (data.has(x -> x.isAST(S.Quantity, 3), false)) {
+      data = data.replaceAll(x -> x.isAST(S.Quantity, 3) ? x.first() : F.NIL).orElse(data);
+    }
+    return data;
   }
 
   /**

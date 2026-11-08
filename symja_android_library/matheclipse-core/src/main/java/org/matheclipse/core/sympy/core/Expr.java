@@ -183,7 +183,7 @@ public class Expr {
       IExpr n = nc.get(i);
       if (asIndependentHas(n, other, sym)) {
         // TODO depend.extend(nc[i:])
-        depend.appendArgs(nc.copyFrom(i));
+        depend.appendArgs(nc.subList(i));
         break;
       }
       indep.append(n);
@@ -200,7 +200,7 @@ public class Expr {
       return hasOther;
     }
     VariablesSet vs = new VariablesSet(e);
-    Set<IExpr> intersection = Sets.intersection(sym, vs.getVariablesSet());
+    Set<IExpr> intersection = Sets.intersection(sym, vs.toSet());
     return hasOther || e.has(intersection::contains, true);
   }
 

@@ -54,6 +54,6 @@ public class HeavisideTheta extends AbstractEvaluator {
 
   @Override
   public void setUp(ISymbol newSymbol) {
-    newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+    newSymbol.setAttributes(Attribute.ORDERLESS, Attribute.LISTABLE);
   }
 }

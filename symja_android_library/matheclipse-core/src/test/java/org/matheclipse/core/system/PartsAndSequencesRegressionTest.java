@@ -95,7 +95,10 @@ public class PartsAndSequencesRegressionTest extends ExprEvaluatorTestCase {
         "{m,m,k}");
     check("ReplacePart({5,6,7},{-1->k,j_?EvenQ->m})", //
         "{5,m,k}");
+    // Heads->False blocks the position 0 but not a negative position of the head
     check("ReplacePart({5,6,7},-4->k,Heads->False)", //
+        "k(5,6,7)");
+    check("ReplacePart({5,6,7},0->k,Heads->False)", //
         "{5,6,7}");
     check("ReplacePart(<|c->5|>,-2->k)", //
         "k(5)");
@@ -353,5 +356,58 @@ public class PartsAndSequencesRegressionTest extends ExprEvaluatorTestCase {
     // a Flat head can give several elements to a pattern
     check("SetAttributes(fl,Flat); fl(1,2,3)/.fl(u__,k_):>{{u},k}", //
         "{{1},fl(2,3)}");
+  }
+
+  @Test
+  public void testPermutationsOfRepeatedElements() {
+    // in the order of the first positional occurrence
+    check("Permutations({m,k,m})", //
+        "{{m,k,m},{m,m,k},{k,m,m}}");
+    check("Permutations({k,m,k,m})", //
+        "{{k,m,k,m},{k,m,m,k},{k,k,m,m},{m,k,k,m},{m,k,m,k},{m,m,k,k}}");
+    check("Permutations({4,5,4,6},{2})", //
+        "{{4,5},{4,4},{4,6},{5,4},{5,6},{6,4},{6,5}}");
+    check("Permutations({k,k},All)", //
+        "{{},{k},{k,k}}");
+    check("Permutations({k,m,k},{3,1,-2})", //
+        "{{k,m,k},{k,k,m},{m,k,k},{k},{m}}");
+    check("Permutations(g(k,m,k))", //
+        "{g(k,m,k),g(k,k,m),g(m,k,k)}");
+    check("Permutations({k,m,k},{0})", //
+        "{{}}");
+    check("Permutations({k})", //
+        "{{k}}");
+    check("Permutations({})", //
+        "{{}}");
+    check("Permutations({5,6,7})", //
+        "{{5,6,7},{5,7,6},{6,5,7},{6,7,5},{7,5,6},{7,6,5}}");
+    // equal numbers which aren't the same stay apart
+    check("Length(Permutations({3,3.0,4}))", //
+        "6");
+    // unsorted: 16! orderings of the positions, 12870 permutations
+    check("Length(Permutations(Flatten(Table({0,1},{8}))))", //
+        "12870");
+    check("Length(Permutations(Join(Table(1,{4}),Table(0,{26}))))", //
+        "27405");
+    check("Length(Union(Permutations({1,2,1,3,2,1})))", //
+        "60");
+  }
+
+  @Test
+  public void testExtendedGCDOfOneNumber() {
+    check("ExtendedGCD(8)", //
+        "{8,{1}}");
+    check("ExtendedGCD(-8)", //
+        "{8,{-1}}");
+    check("ExtendedGCD(0)", //
+        "{0,{0}}");
+    check("ExtendedGCD({8,-3})", //
+        "{{8,{1}},{3,{-1}}}");
+    check("ExtendedGCD(k)", //
+        "ExtendedGCD(k)");
+    check("ExtendedGCD(1/2)", //
+        "ExtendedGCD(1/2)");
+    check("ExtendedGCD(8,12)", //
+        "{4,{-1,1}}");
   }
 }

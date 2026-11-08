@@ -40,6 +40,24 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </p>
  * </blockquote>
  *
+ * <pre>
+ * <code>RecurrenceTable(eqns, a, {n, nmin, nmax}, {k, kmin, kmax})
+ * </code>
+ * </pre>
+ *
+ * <blockquote>
+ * <p>
+ * generates the array of the values <code>a(n, k)</code> of a recurrence in two indices, whose
+ * initial conditions may be whole rows <code>a(0, k)==f(k)</code> or columns
+ * <code>a(n, 0)==g(n)</code>.
+ * </p>
+ * </blockquote>
+ *
+ * <p>
+ * The option <code>DependentVariables-&gt;{a, b, ...}</code> names the heads of a system of which
+ * the table shows only some.
+ * </p>
+ *
  * <h3>Examples</h3>
  *
  * <pre>
@@ -235,7 +253,7 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     if (unknowns.isEmpty() || unknowns.argSize() != equations.argSize()) {
       return false;
     }
-    IExpr solution = engine.evaluate(F.Solve(equations, unknowns));
+    IExpr solution = engine.evaluate(F.SolveDistinct(equations, unknowns));
     if (!solution.isListOfLists() || solution.argSize() < 1) {
       return false;
     }
@@ -248,6 +266,20 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
       values.get(h).put(term.first().toIntDefault(), rule.second());
     }
     return true;
+  }
+
+  /**
+   * The values of the initial conditions of every head.
+   *
+   * @return <code>null</code> if the conditions don't determine their terms
+   */
+  private static List<Map<Integer, IExpr>> initialValues(List<IExpr> conditions, IAST heads,
+      EvalEngine engine) {
+    List<Map<Integer, IExpr>> values = new ArrayList<Map<Integer, IExpr>>(heads.argSize());
+    for (int h = 0; h < heads.argSize(); h++) {
+      values.add(new HashMap<Integer, IExpr>());
+    }
+    return initialValues(conditions, heads, values, engine) ? values : null;
   }
 
   /** Append the distinct terms <code>a(k)</code> of the heads in <code>expr</code>. */
@@ -316,7 +348,280 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
       return engine.evaluate(F.subst(recurrence.explicit, substitution));
     }
     IExpr equation = engine.evaluate(F.subst(recurrence.equation, substitution));
-    IExpr solution = engine.evaluate(F.Solve(equation, recurrence.unknown.dummy));
+    IExpr solution = engine.evaluate(F.SolveDistinct(equation, recurrence.unknown.dummy));
+    if (!solution.isListOfLists() || solution.argSize() < 1
+        || !solution.first().first().isRuleAST()) {
+      return F.NIL;
+    }
+    return solution.first().first().second();
+  }
+
+  /**
+   * A term <code>a(n+dn, k+dk)</code> of a recurrence in two indices, which is replaced by the
+   * symbol <code>dummy</code>.
+   */
+  private static final class Term2 {
+    final int dn;
+    final int dk;
+    final ISymbol dummy = F.Dummy();
+
+    Term2(int dn, int dk) {
+      this.dn = dn;
+      this.dk = dk;
+    }
+  }
+
+  /** The cell <code>(row, column)</code> as a key which sorts rows first, columns second. */
+  private static long cell(long row, long column) {
+    return (row << 32) + column;
+  }
+
+  private static int cellRow(long cell) {
+    return (int) ((cell + (1L << 31)) >> 32);
+  }
+
+  private static int cellColumn(long cell) {
+    return (int) (cell - ((long) cellRow(cell) << 32));
+  }
+
+  private static boolean isTableIterator(IExpr iterator) {
+    return iterator.isList() && iterator.argSize() >= 2 && iterator.argSize() <= 3
+        && iterator.first().isSymbol();
+  }
+
+  /**
+   * The table of a recurrence in two indices. Its largest term <code>a(n+dn, k+dk)</code>
+   * (<code>dn</code> first) is the one the recurrence determines. All other equations are
+   * conditions on a row, a column or a single cell. Only the cells the table depends on are
+   * computed, because a condition like <code>a(0, k)==1/k</code> need not be defined everywhere.
+   *
+   * @return {@link F#NIL} if the equations have another form or don't determine the table
+   */
+  private static IExpr twoIndexTable(IAST equations, IExpr function, IExpr iterator1,
+      IExpr iterator2, EvalEngine engine) {
+    if (!isTableIterator(iterator1) || !isTableIterator(iterator2)) {
+      return F.NIL;
+    }
+    final IExpr n = iterator1.first();
+    final IExpr k = iterator2.first();
+    final IExpr head;
+    if (function.isSymbol()) {
+      head = function;
+    } else if (function.isAST2() && function.first().equals(n) && function.second().equals(k)) {
+      head = function.head();
+    } else {
+      return F.NIL;
+    }
+    final int nMin = iterator1.isAST2() ? 1 : engine.evaluate(iterator1.second()).toIntDefault();
+    final int nMax = engine.evaluate(iterator1.last()).toIntDefault();
+    final int kMin = iterator2.isAST2() ? 1 : engine.evaluate(iterator2.second()).toIntDefault();
+    final int kMax = engine.evaluate(iterator2.last()).toIntDefault();
+    if (!F.isPresent(nMin) || !F.isPresent(nMax) || !F.isPresent(kMin) || !F.isPresent(kMax)) {
+      return F.NIL;
+    }
+    if (nMax < nMin) {
+      return F.CEmptyList;
+    }
+    if ((nMax - (long) nMin + 1) * (kMax - (long) kMin + 1) > MAX_VALUES) {
+      return F.NIL;
+    }
+
+    IExpr recurrence = F.NIL;
+    List<Term2> terms = new ArrayList<Term2>();
+    Map<Integer, IExpr> rows = new HashMap<Integer, IExpr>();
+    Map<Integer, IExpr> columns = new HashMap<Integer, IExpr>();
+    Map<Long, IExpr> cells = new HashMap<Long, IExpr>();
+    for (int i = 1; i < equations.size(); i++) {
+      IExpr equation = equations.get(i);
+      if (!equation.isEqual() || !equation.isAST2()) {
+        return F.NIL;
+      }
+      List<Term2> equationTerms = new ArrayList<Term2>();
+      IExpr replaced = replaceTerms2(equation, head, n, k, equationTerms, engine);
+      if (replaced.isPresent()) {
+        if (recurrence.isPresent()) {
+          return F.NIL;
+        }
+        recurrence = replaced;
+        terms = equationTerms;
+      } else if (!addCondition(equation, head, n, k, rows, columns, cells)) {
+        return F.NIL;
+      }
+    }
+    if (recurrence.isNIL()) {
+      return F.NIL;
+    }
+    Term2 top = terms.get(0);
+    for (Term2 term : terms) {
+      if (term.dn > top.dn || (term.dn == top.dn && term.dk > top.dk)) {
+        top = term;
+      }
+    }
+    int firstRow = Integer.MAX_VALUE;
+    for (int row : rows.keySet()) {
+      firstRow = Math.min(firstRow, row);
+    }
+    for (long key : cells.keySet()) {
+      firstRow = Math.min(firstRow, cellRow(key));
+    }
+
+    // the cells the table depends on
+    java.util.TreeSet<Long> needed = new java.util.TreeSet<Long>();
+    java.util.ArrayDeque<Long> open = new java.util.ArrayDeque<Long>();
+    for (int row = nMax; row >= nMin; row--) {
+      for (int column = kMax; column >= kMin; column--) {
+        open.push(cell(row, column));
+      }
+    }
+    while (!open.isEmpty()) {
+      engine.checkTimeLimit();
+      long key = open.pop();
+      if (!needed.add(key)) {
+        continue;
+      }
+      if (needed.size() > MAX_VALUES) {
+        return F.NIL;
+      }
+      int row = cellRow(key);
+      int column = cellColumn(key);
+      if (cells.containsKey(key) || rows.containsKey(row) || columns.containsKey(column)) {
+        continue;
+      }
+      if (row < firstRow) {
+        return F.NIL;
+      }
+      for (Term2 term : terms) {
+        if (term != top) {
+          open.push(cell((long) row + term.dn - top.dn, (long) column + term.dk - top.dk));
+        }
+      }
+    }
+
+    try {
+      Map<Long, IExpr> values = new HashMap<Long, IExpr>();
+      for (long key : needed) {
+        engine.checkTimeLimit();
+        int row = cellRow(key);
+        int column = cellColumn(key);
+        IExpr value = cells.get(key);
+        if (value == null && rows.containsKey(row)) {
+          value = F.subst(rows.get(row), k, F.ZZ(column));
+        }
+        if (value == null && columns.containsKey(column)) {
+          value = F.subst(columns.get(column), n, F.ZZ(row));
+        }
+        if (value == null) {
+          value = stepTwoIndex(recurrence, terms, top, row, column, n, k, values, engine);
+          if (value.isNIL()) {
+            return F.NIL;
+          }
+        }
+        values.put(key, engine.evaluate(value));
+      }
+      IASTAppendable result = F.ListAlloc(nMax - nMin + 1);
+      for (int row = nMin; row <= nMax; row++) {
+        IASTAppendable line = F.ListAlloc(Math.max(0, kMax - kMin + 1));
+        for (int column = kMin; column <= kMax; column++) {
+          line.append(values.get(cell(row, column)));
+        }
+        result.append(line);
+      }
+      if (!equations.isFree(x -> x.isInexactNumber(), false)) {
+        return engine.evalN(result);
+      }
+      return result;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Replace the terms <code>a(n+dn, k+dk)</code> of the equation by dummy symbols.
+   *
+   * @return {@link F#NIL} if the equation has another term of <code>head</code> or none
+   */
+  private static IExpr replaceTerms2(IExpr equation, IExpr head, IExpr n, IExpr k,
+      List<Term2> terms, EvalEngine engine) {
+    Map<IExpr, Term2> seen = new HashMap<IExpr, Term2>();
+    boolean[] valid = new boolean[] {true};
+    IExpr result = F.subst(equation, x -> {
+      if (!x.isAST(head, 3)) {
+        return F.NIL;
+      }
+      Term2 term = seen.get(x);
+      if (term == null) {
+        int dn = x.first().isFree(n) ? Integer.MIN_VALUE
+            : engine.evaluate(F.Subtract(x.first(), n)).toIntDefault();
+        int dk = x.second().isFree(k) ? Integer.MIN_VALUE
+            : engine.evaluate(F.Subtract(x.second(), k)).toIntDefault();
+        if (!F.isPresent(dn) || !F.isPresent(dk)) {
+          valid[0] = false;
+          return F.NIL;
+        }
+        term = new Term2(dn, dk);
+        seen.put(x, term);
+        terms.add(term);
+      }
+      return term.dummy;
+    });
+    return valid[0] && !terms.isEmpty() ? result : F.NIL;
+  }
+
+  /**
+   * Add the condition <code>a(r, k)==f(k)</code> on a row, <code>a(n, c)==g(n)</code> on a column
+   * or <code>a(r, c)==v</code> on a cell, with the term on either side.
+   *
+   * @return <code>false</code> if the equation has another form
+   */
+  private static boolean addCondition(IExpr equation, IExpr head, IExpr n, IExpr k,
+      Map<Integer, IExpr> rows, Map<Integer, IExpr> columns, Map<Long, IExpr> cells) {
+    for (int side = 1; side <= 2; side++) {
+      IExpr term = equation.getAt(side);
+      IExpr value = equation.getAt(3 - side);
+      if (!term.isAST(head, 3) || !value.isFree(head)) {
+        continue;
+      }
+      int row = term.first().toIntDefault();
+      int column = term.second().toIntDefault();
+      if (F.isPresent(row) && F.isPresent(column)) {
+        cells.put(cell(row, column), value);
+      } else if (F.isPresent(row) && term.second().equals(k) && value.isFree(n)) {
+        rows.put(row, value);
+      } else if (F.isPresent(column) && term.first().equals(n) && value.isFree(k)) {
+        columns.put(column, value);
+      } else {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * The value of the cell <code>(row, column)</code> from the recurrence.
+   *
+   * @return {@link F#NIL} if the equation has no solution for the cell
+   */
+  private static IExpr stepTwoIndex(IExpr recurrence, List<Term2> terms, Term2 top, int row,
+      int column, IExpr n, IExpr k, Map<Long, IExpr> values, EvalEngine engine) {
+    Map<IExpr, IExpr> substitution = new HashMap<IExpr, IExpr>();
+    substitution.put(n, F.ZZ(row - top.dn));
+    substitution.put(k, F.ZZ(column - top.dk));
+    for (Term2 term : terms) {
+      if (term != top) {
+        substitution.put(term.dummy,
+            values.get(cell((long) row + term.dn - top.dn, (long) column + term.dk - top.dk)));
+      }
+    }
+    IExpr equation = F.subst(recurrence, substitution);
+    if (equation.first().equals(top.dummy) && equation.second().isFree(top.dummy)) {
+      return equation.second();
+    }
+    if (equation.second().equals(top.dummy) && equation.first().isFree(top.dummy)) {
+      return equation.first();
+    }
+    IExpr solution = engine.evaluate(F.SolveDistinct(engine.evaluate(equation), top.dummy));
     if (!solution.isListOfLists() || solution.argSize() < 1
         || !solution.first().first().isRuleAST()) {
       return F.NIL;
@@ -335,6 +640,21 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     }
     IExpr function = ast.arg2();
     if (!ast.arg3().isList()) {
+      return F.NIL;
+    }
+    IExpr dependent = F.NIL;
+    int iteratorEnd = ast.size();
+    if (ast.last().isRuleAST()) {
+      if (!ast.last().first().equals(S.DependentVariables)) {
+        return F.NIL;
+      }
+      dependent = engine.evaluate(ast.last().second()).makeList();
+      iteratorEnd--;
+    }
+    if (iteratorEnd == 5) {
+      return twoIndexTable(equations, function, ast.arg3(), ast.arg4(), engine);
+    }
+    if (iteratorEnd != 4) {
       return F.NIL;
     }
     IAST iterator = (IAST) ast.arg3();
@@ -359,6 +679,18 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     }
     if (heads.isEmpty()) {
       return F.NIL;
+    }
+    // the table shows the first columnCount heads, the others only take part in the recurrence
+    final int columnCount = heads.argSize();
+    if (dependent.isPresent()) {
+      for (IExpr variable : (IAST) dependent) {
+        if (!variable.isSymbol()) {
+          return F.NIL;
+        }
+        if (!heads.contains(variable)) {
+          heads.append(variable);
+        }
+      }
     }
     final int headCount = heads.argSize();
     final int nMin = iterator.isAST2() ? 1 : engine.evaluate(iterator.arg2()).toIntDefault();
@@ -394,7 +726,8 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     boolean[] assigned = new boolean[headCount];
     for (Recurrence recurrence : recurrences) {
       if (!assignHead(recurrence, assigned)) {
-        return F.NIL;
+        return jointTable(recurrences, conditions, heads, n, columnCount, function.isList(), arg1,
+            nMin, nMax, engine);
       }
     }
     // the order of a head: its shift in its own recurrence minus its smallest shift anywhere
@@ -416,6 +749,13 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
       order[h] = byHead[h].top - min;
       totalOrder += order[h];
     }
+    if (conditions.size() != totalOrder && hasAlgebraicConstraint(recurrences)) {
+      IExpr joint = jointTable(recurrences, conditions, heads, n, columnCount, function.isList(),
+          arg1, nMin, nMax, engine);
+      if (joint.isPresent()) {
+        return joint;
+      }
+    }
     if (conditions.size() != totalOrder) {
       // The number of constraints or initial conditions given, `1`, should be the same as the
       // total order of the system, `2`.
@@ -424,11 +764,8 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
     }
 
     try {
-      List<Map<Integer, IExpr>> values = new ArrayList<Map<Integer, IExpr>>(headCount);
-      for (int h = 0; h < headCount; h++) {
-        values.add(new HashMap<Integer, IExpr>());
-      }
-      if (!initialValues(conditions, heads, values, engine)) {
+      List<Map<Integer, IExpr>> values = initialValues(conditions, heads, engine);
+      if (values == null) {
         return F.NIL;
       }
       int[] next = new int[headCount];
@@ -471,23 +808,154 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
           }
         }
       }
-      IASTAppendable result = F.ListAlloc(nMax - nMin + 1);
-      for (int index = nMin; index <= nMax; index++) {
-        IASTAppendable row = F.ListAlloc(headCount);
-        for (int h = 0; h < headCount; h++) {
-          IExpr value = values.get(h).get(index);
-          if (value == null) {
+      IExpr result = table(values, columnCount, function.isList(), arg1, nMin, nMax, engine);
+      if (result.isPresent()) {
+        return result;
+      }
+      // the recurrences determine the heads only together
+      return jointTable(recurrences, conditions, heads, n, columnCount, function.isList(), arg1,
+          nMin, nMax, engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Whether a recurrence relates the heads at one index only, as <code>y(n) + 2*z(n) == 1</code>:
+   * such a constraint doesn't add to the order, the initial conditions of all heads then exceed
+   * it.
+   */
+  private static boolean hasAlgebraicConstraint(List<Recurrence> recurrences) {
+    for (Recurrence recurrence : recurrences) {
+      int shift = Integer.MIN_VALUE;
+      boolean single = true;
+      for (Term term : recurrence.terms) {
+        if (term.relative) {
+          if (shift != Integer.MIN_VALUE && shift != term.k) {
+            single = false;
+          }
+          shift = term.k;
+        }
+      }
+      if (single && shift != Integer.MIN_VALUE) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The rows <code>nMin..nMax</code> of the first <code>columnCount</code> heads.
+   *
+   * @return {@link F#NIL} if a value is missing
+   */
+  private static IExpr table(List<Map<Integer, IExpr>> values, int columnCount, boolean rows,
+      IExpr equations, int nMin, int nMax, EvalEngine engine) {
+    IASTAppendable result = F.ListAlloc(nMax - nMin + 1);
+    for (int index = nMin; index <= nMax; index++) {
+      IASTAppendable row = F.ListAlloc(columnCount);
+      for (int h = 0; h < columnCount; h++) {
+        IExpr value = values.get(h).get(index);
+        if (value == null) {
+          return F.NIL;
+        }
+        row.append(value);
+      }
+      result.append(rows ? row : row.arg1());
+    }
+    if (!equations.isFree(x -> x.isInexactNumber(), false)) {
+      // inexact coefficients or initial values give inexact table entries
+      return engine.evalN(result);
+    }
+    return result;
+  }
+
+  /**
+   * A system whose recurrences don't each determine one head, as an algebraic constraint
+   * <code>y(n) + 2*z(n) == 1</code> beside <code>y(n+1) + z(n+1) == y(n) - 3*z(n) + 7</code>: the
+   * values of all heads at the next index are solved from all recurrences together. Every
+   * recurrence is taken at its largest shift; the initial conditions give the values of all heads
+   * up to the first index.
+   *
+   * @return {@link F#NIL} if the system can't be stepped this way
+   */
+  private static IExpr jointTable(List<Recurrence> recurrences, List<IExpr> conditions,
+      IAST heads, IExpr n, int columnCount, boolean rows, IExpr equations, int nMin, int nMax,
+      EvalEngine engine) {
+    final int headCount = heads.argSize();
+    try {
+      List<Map<Integer, IExpr>> values = initialValues(conditions, heads, engine);
+      if (values == null) {
+        return F.NIL;
+      }
+      // the first index where no head has a value; every head is known from nMin to there
+      int start = Integer.MIN_VALUE;
+      for (Integer index : values.get(0).keySet()) {
+        start = Math.max(start, index + 1);
+      }
+      if (start == Integer.MIN_VALUE || (long) nMax - nMin > MAX_VALUES) {
+        return F.NIL;
+      }
+      for (int h = 0; h < headCount; h++) {
+        for (int index = Math.min(nMin, start - 1); index < start; index++) {
+          if (!values.get(h).containsKey(index)) {
             return F.NIL;
           }
-          row.append(value);
         }
-        result.append(function.isList() ? row : row.arg1());
       }
-      if (!arg1.isFree(x -> x.isInexactNumber(), false)) {
-        // inexact coefficients or initial values give inexact table entries
-        return engine.evalN(result);
+      int[] tops = new int[recurrences.size()];
+      for (int r = 0; r < tops.length; r++) {
+        tops[r] = Integer.MIN_VALUE;
+        for (Term term : recurrences.get(r).terms) {
+          if (term.relative) {
+            tops[r] = Math.max(tops[r], term.k);
+          }
+        }
       }
-      return result;
+      ISymbol[] unknowns = new ISymbol[headCount];
+      IASTAppendable unknownList = F.ListAlloc(headCount);
+      for (int h = 0; h < headCount; h++) {
+        unknowns[h] = F.Dummy("u" + h);
+        unknownList.append(unknowns[h]);
+      }
+      for (int index = start; index <= nMax; index++) {
+        engine.checkTimeLimit();
+        IASTAppendable system = F.ListAlloc(recurrences.size());
+        for (int r = 0; r < tops.length; r++) {
+          Recurrence recurrence = recurrences.get(r);
+          int nValue = index - tops[r];
+          Map<IExpr, IExpr> substitution = new HashMap<IExpr, IExpr>();
+          substitution.put(n, F.ZZ(nValue));
+          for (Term term : recurrence.terms) {
+            int j = term.index(nValue);
+            if (j == index) {
+              substitution.put(term.dummy, unknowns[term.head]);
+            } else {
+              IExpr value = values.get(term.head).get(j);
+              if (value == null) {
+                return F.NIL;
+              }
+              substitution.put(term.dummy, value);
+            }
+          }
+          system.append(F.subst(recurrence.equation, substitution));
+        }
+        IExpr solution = engine.evaluate(F.SolveDistinct(system, unknownList));
+        if (!solution.isListOfLists() || solution.argSize() < 1
+            || solution.first().argSize() != headCount) {
+          return F.NIL;
+        }
+        IExpr rules = solution.first();
+        for (int h = 0; h < headCount; h++) {
+          IExpr value = engine.evaluate(F.subst(unknowns[h], (IAST) rules));
+          if (!value.isFree(x -> x.isSymbol() && unknownList.contains(x), true)) {
+            return F.NIL;
+          }
+          values.get(h).put(index, value);
+        }
+      }
+      return table(values, columnCount, rows, equations, nMin, nMax, engine);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }
@@ -501,7 +969,7 @@ public class RecurrenceTable extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_3_3;
+    return ARGS_3_5;
   }
 
   @Override

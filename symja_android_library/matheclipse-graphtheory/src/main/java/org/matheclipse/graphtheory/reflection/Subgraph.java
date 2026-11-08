@@ -27,7 +27,9 @@ public class Subgraph extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() == 2) {
-      GraphExpr<?> gex = GraphFunctions.getGraphExpr(ast.arg1());
+      // a graph or a list of edges or rules
+      GraphExpr<?> gex = ast.arg1().isList() ? GraphExpr.newInstance(ast.arg1())
+          : GraphFunctions.getGraphExpr(ast.arg1());
       if (gex == null) {
         return F.NIL;
       }

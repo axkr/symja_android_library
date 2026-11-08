@@ -1,9 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.EnumMap;
 import java.util.Locale;
+import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -40,12 +43,31 @@ public class ColorData extends AbstractFunctionEvaluator {
         return getAllGradients();
       } else if (name.equalsIgnoreCase("Indexed")) {
         return getAllIndexed();
+      } else if (name.equalsIgnoreCase("Named") && ast.isAST1()) {
+        return F.List(F.stringx("Atoms"), F.stringx("Crayola"), F.stringx("GeologicAges"),
+            F.stringx("HTML"), F.stringx("Legacy"), F.stringx("WebSafe"));
+      } else if (name.equalsIgnoreCase("Physical") && ast.isAST1()) {
+        return F.List(F.stringx("BlackBodySpectrum"), F.stringx("HypsometricTints"),
+            F.stringx("VisibleSpectrum"));
       } else if (name.equalsIgnoreCase("WebSafe")) {
         // the colors named by their hex codes
         if (ast.isAST2()) {
-          return webSafe(ast.arg2());
+          return ast.arg2().isString("ColorRules") ? NamedColorSchemes.webSafeRules()
+              : webSafe(ast.arg2());
         }
         return createColorDataFunction("WebSafe", "Named", F.CEmptyList);
+      }
+
+      IAST blendArgument = themeGradient(name);
+      if (blendArgument != null) {
+        return themeGradientProperty(ast, name, blendArgument, engine);
+      }
+
+      if (ast.isAST2()) {
+        IExpr named = NamedColorSchemes.of(name, ast.arg2());
+        if (named.isPresent()) {
+          return named;
+        }
       }
 
       // Try to find scheme
@@ -97,6 +119,14 @@ public class ColorData extends AbstractFunctionEvaluator {
       if (ast.isAST2()) {
         String prop = ast.arg2().toString();
         if (prop.equals("Name")) {
+          IAST function = (IAST) colorDataFunction;
+          if (function.arg2().toString().equals("Gradients")) {
+            return F.stringx(gradientTitle(function.arg1().toString()));
+          }
+          if (ast.arg1().isString()) {
+            // the name as the scheme is called
+            return ast.arg1();
+          }
           if (colorDataFunction.argSize() >= 1) {
             return ((IAST) colorDataFunction).arg1();
           }
@@ -127,6 +157,63 @@ public class ColorData extends AbstractFunctionEvaluator {
       // }
     }
 
+    return F.NIL;
+  }
+
+  /** The name of the default gradient of density plots in the 2014 plot theme. */
+  private static final String WL14_DENSITY = "WL14DefaultDensityGradient";
+
+  /** The colors <code>WL14DefaultDensityGradient</code> blends, from dark blue to light yellow. */
+  private static final IAST WL14_DENSITY_COLORS = F.List(//
+      F.ternaryAST3(S.LABColor, F.num(0.2374577454874495), F.num(0.4502326479674301),
+          F.num(-0.29344758919909575)), //
+      F.ternaryAST3(S.LABColor, F.num(0.48288891610929785), F.num(0.7019509501984089),
+          F.num(0.1585008503354124)), //
+      F.ternaryAST3(S.LABColor, F.num(0.7226680127694958), F.num(0.3783642915277907),
+          F.num(0.4813038070805067)), //
+      F.ternaryAST3(S.LABColor, F.num(0.9735241229755421), F.num(-0.05249018370661607),
+          F.num(0.31994142972937545)));
+
+  /**
+   * The colors a theme gradient blends evenly over <code>{0, 1}</code>.
+   *
+   * @return <code>null</code> if <code>name</code> is no theme gradient
+   */
+  public static IAST themeGradient(String name) {
+    return WL14_DENSITY.equals(name) ? WL14_DENSITY_COLORS : null;
+  }
+
+  /** The description <code>ColorData(name, "Name")</code> gives for a theme gradient. */
+  private static String themeGradientTitle(String name) {
+    return WL14_DENSITY.equals(name) ? "WL14 default density gradient" : name;
+  }
+
+  /**
+   * <code>ColorData(name, ...)</code> of a theme gradient: the gradient function, the color at a
+   * value, or one of the properties <code>"BlendArgument", "Name", "Range"</code>.
+   */
+  private static IExpr themeGradientProperty(IAST ast, String name, IAST blendArgument,
+      EvalEngine engine) {
+    if (ast.isAST1()) {
+      return F.quaternary(S.ColorDataFunction, F.stringx(name), F.stringx("ThemeGradients"),
+          F.list(F.C0, F.C1), F.Function(F.binaryAST2(S.Blend, F.stringx(name), F.Slot1)));
+    }
+    if (!ast.isAST2()) {
+      return F.NIL;
+    }
+    IExpr arg2 = ast.arg2();
+    if (arg2.isReal()) {
+      return engine.evaluate(F.binaryAST2(S.Blend, blendArgument, arg2));
+    }
+    if (arg2.isString("BlendArgument")) {
+      return blendArgument;
+    }
+    if (arg2.isString("Name")) {
+      return F.stringx(themeGradientTitle(name));
+    }
+    if (arg2.isString("Range")) {
+      return F.list(F.C0, F.C1);
+    }
     return F.NIL;
   }
 
@@ -227,7 +314,84 @@ public class ColorData extends AbstractFunctionEvaluator {
     if (found == null && search.endsWith("COLORS")) {
       found = gradientMatching(search.substring(0, search.length() - "COLORS".length()));
     }
+    if (found == null && search.endsWith("TONES")) {
+      // BrownCyanTones is BROWN_CYAN
+      found = gradientMatching(search.substring(0, search.length() - "TONES".length()));
+    }
     return found;
+  }
+
+  /**
+   * The gradients <code>ColorData("Gradients")</code> lists, by the names they are known by. The
+   * schemes that are not in this collection (<code>"Jet"</code>, <code>"Parula"</code>, ...) can
+   * still be asked for by name.
+   */
+  private static final String[] GRADIENT_NAMES = {"AlpineColors", "Aquamarine", "ArmyColors",
+      "AtlanticColors", "AuroraColors", "AvocadoColors", "BeachColors", "BlueGreenYellow",
+      "BrassTones", "BrightBands", "BrownCyanTones", "CandyColors", "CherryTones", "CMYKColors",
+      "CoffeeTones", "DarkBands", "DarkRainbow", "DarkTerrain", "DeepSeaColors", "FallColors",
+      "FruitPunchColors", "FuchsiaTones", "GrayTones", "GrayYellowTones", "GreenBrownTerrain",
+      "GreenPinkTones", "IslandColors", "LakeColors", "LightTemperatureMap", "LightTerrain",
+      "MintColors", "NeonColors", "Pastel", "PearlColors", "PigeonTones", "PlumColors", "Rainbow",
+      "RedBlueTones", "RedGreenSplit", "RoseColors", "RustTones", "SandyTerrain", "SiennaTones",
+      "SolarColors", "SouthwestColors", "StarryNightColors", "SunsetColors", "TemperatureMap",
+      "ThermometerColors", "ValentineTones", "WatermelonColors"};
+
+  /** The first name in {@link #GRADIENT_NAMES} of each gradient, built on first use. */
+  private static final class KnownNames {
+    static final Map<ColorDataGradients, String> NAMES = new EnumMap<>(ColorDataGradients.class);
+    static {
+      for (String candidate : GRADIENT_NAMES) {
+        ColorDataGradients g = gradientNamed(candidate);
+        if (g != null) {
+          NAMES.putIfAbsent(g, candidate);
+        }
+      }
+    }
+  }
+
+  /** Names whose title joins two colours with a hyphen, followed by their titles. */
+  private static final String[] HYPHENATED_TITLES = {"BlueGreenYellow", "blue-green-yellow",
+      "BrownCyanTones", "brown-cyan tones", "GrayYellowTones", "gray-yellow tones",
+      "GreenBrownTerrain", "green-brown terrain", "GreenPinkTones", "green-pink tones",
+      "RedBlueTones", "red-blue tones", "RedGreenSplit", "red-green split"};
+
+  /**
+   * The description <code>ColorData(name, "Name")</code> gives for a gradient: its name in lower
+   * case words, such as <code>"alpine colors"</code> for <code>"AlpineColors"</code> or
+   * <code>"Alpine"</code>.
+   *
+   * @param name a name of the gradient
+   */
+  public static String gradientTitle(String name) {
+    ColorDataGradients g = gradientNamed(name);
+    String known = g != null ? KnownNames.NAMES.get(g) : null;
+    if (known == null) {
+      // a scheme outside the collection is described by the name of its table
+      known = g != null ? toCamelCase(g.name()) : name;
+    }
+    for (int i = 0; i < HYPHENATED_TITLES.length; i += 2) {
+      if (HYPHENATED_TITLES[i].equals(known)) {
+        return HYPHENATED_TITLES[i + 1];
+      }
+    }
+    if (known.startsWith("CMYK")) {
+      return "CMYK" + camelCaseWords(known.substring(4));
+    }
+    return camelCaseWords(known).trim();
+  }
+
+  /** <code>"StarryNightColors"</code> as <code>" starry night colors"</code>. */
+  private static String camelCaseWords(String camelCase) {
+    StringBuilder buf = new StringBuilder();
+    for (char c : camelCase.toCharArray()) {
+      if (Character.isUpperCase(c)) {
+        buf.append(' ').append(Character.toLowerCase(c));
+      } else {
+        buf.append(c);
+      }
+    }
+    return buf.toString();
   }
 
   private static ColorDataGradients gradientMatching(String search) {
@@ -242,10 +406,10 @@ public class ColorData extends AbstractFunctionEvaluator {
     return null;
   }
 
-  private IExpr getAllGradients() {
-    IASTAppendable list = F.ListAlloc(ColorDataGradients.values().length);
-    for (ColorDataGradients g : ColorDataGradients.values()) {
-      list.append(F.stringx(toCamelCase(g.name())));
+  private static IExpr getAllGradients() {
+    IASTAppendable list = F.ListAlloc(GRADIENT_NAMES.length);
+    for (String name : GRADIENT_NAMES) {
+      list.append(F.stringx(name));
     }
     return list;
   }
@@ -262,7 +426,7 @@ public class ColorData extends AbstractFunctionEvaluator {
     return list;
   }
 
-  private String toCamelCase(String s) {
+  private static String toCamelCase(String s) {
     if (s == null || s.isEmpty())
       return s;
     StringBuilder sb = new StringBuilder();

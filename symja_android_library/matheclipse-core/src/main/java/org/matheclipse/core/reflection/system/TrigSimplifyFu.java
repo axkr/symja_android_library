@@ -32,7 +32,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.core.ExprTools;
 import org.matheclipse.core.sympy.core.ExprTools.Factors;
 import org.matheclipse.core.sympy.core.Operations;
-import org.matheclipse.core.sympy.core.Traversal;
+import org.matheclipse.core.sympy.core.traversal.Traversal;
 import org.matheclipse.core.sympy.exception.ValueError;
 import org.matheclipse.core.sympy.ntheory.Factor;
 
