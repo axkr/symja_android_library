@@ -2081,8 +2081,16 @@ public class EvalEngine implements Serializable {
     boolean exactArgument = false;
     for (int i = 1; i < ast.size(); i++) {
       final IExpr arg = ast.get(i);
-      if (arg instanceof ApfloatNum && ((ApfloatNum) arg).isSignificanceTracked()) {
+      if (arg instanceof ApfloatNum && (((ApfloatNum) arg).isSignificanceTracked()
+          || ((ApfloatNum) arg).apfloatValue().precision() > ParserConfig.MACHINE_PRECISION)) {
+        // a number of a precision of its own; a numerical algorithm returns its digits untracked
         precision = Math.max(precision, arg.determinePrecision(false));
+      } else if (arg.isList()) {
+        // a listable function threads over the list: its numbers keep their precision
+        precision = Math.max(precision, listPrecision((IAST) arg, 0));
+        if (!exactArgument && arg.isNumericFunction(true)) {
+          exactArgument = true;
+        }
       } else if (!exactArgument && !arg.isInexactNumber() && arg.isNumericFunction(true)) {
         exactArgument = true;
       }
@@ -2090,6 +2098,48 @@ public class EvalEngine implements Serializable {
     // without an exact argument to convert the precision of the engine stays: a change of it
     // starts a new evaluation epoch
     return exactArgument ? precision : 0L;
+  }
+
+  /**
+   * The largest precision of the arbitrary-precision numbers of a (nested) list, see
+   * {@link #significancePrecision(IAST)}.
+   *
+   * @return <code>0</code> if the list has a machine number or none of a precision of its own
+   */
+  private static long listPrecision(IAST list, int depth) {
+    if (depth > 4 || list.isEmpty()) {
+      return 0L;
+    }
+    // only a list which starts with a number of a precision of its own is scanned: a list of
+    // exact or machine numbers costs one test, not a pass over all its elements
+    IExpr first = list.arg1();
+    while (first.isList() && !((IAST) first).isEmpty()) {
+      first = ((IAST) first).arg1();
+    }
+    if (!(first instanceof ApfloatNum)) {
+      return 0L;
+    }
+    long precision = 0L;
+    for (int i = 1; i < list.size(); i++) {
+      final IExpr element = list.get(i);
+      if (element instanceof ApfloatNum) {
+        final ApfloatNum number = (ApfloatNum) element;
+        if (number.isSignificanceTracked()
+            || number.apfloatValue().precision() > ParserConfig.MACHINE_PRECISION) {
+          precision = Math.max(precision, number.determinePrecision(false));
+        }
+      } else if (element.isMachineNumber()) {
+        // the machine number decides the precision of the result
+        return 0L;
+      } else if (element.isList()) {
+        final long inner = listPrecision((IAST) element, depth + 1);
+        if (inner == 0L && element.has(IExpr::isMachineNumber, false)) {
+          return 0L;
+        }
+        precision = Math.max(precision, inner);
+      }
+    }
+    return precision;
   }
 
   public final IAST evalArgsOrderlessN(IAST ast1) {

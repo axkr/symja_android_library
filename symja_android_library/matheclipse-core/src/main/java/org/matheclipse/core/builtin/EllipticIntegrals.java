@@ -1127,6 +1127,24 @@ public class EllipticIntegrals {
     return value;
   }
 
+  /**
+   * The real part of a complex number whose imaginary part is 0, the number itself otherwise:
+   * <code>(I*a)^2</code> leaves <code>-a^2-0.0*I</code>, and that zero must not choose a side of a
+   * branch cut where a real argument gets the principal value.
+   */
+  private static IExpr realIfZeroImaginary(IExpr x) {
+    if (x instanceof ComplexNum) {
+      if (((ComplexNum) x).getImaginaryPart() == 0.0) {
+        return x.re();
+      }
+    } else if (x instanceof ApcomplexNum) {
+      if (((ApcomplexNum) x).apcomplexValue().imag().signum() == 0) {
+        return x.re();
+      }
+    }
+    return x;
+  }
+
   private static class EllipticK extends AbstractFunctionEvaluator {
 
     @Override
@@ -1399,14 +1417,14 @@ public class EllipticIntegrals {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
+      IExpr n = realIfZeroImaginary(ast.arg1());
 
       if (ast.isAST3()) {
-        IExpr z = ast.arg2();
-        IExpr m = ast.arg3();
+        IExpr z = realIfZeroImaginary(ast.arg2());
+        IExpr m = realIfZeroImaginary(ast.arg3());
         return ellipticPi3(n, z, m, engine).eval(engine);
       }
-      IExpr m = ast.arg2();
+      IExpr m = realIfZeroImaginary(ast.arg2());
       return ellipticPi2(n, m, engine).eval(engine);
     }
 

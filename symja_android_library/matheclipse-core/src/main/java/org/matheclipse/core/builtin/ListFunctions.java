@@ -684,7 +684,10 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
         int size = list.size();
         IASTAppendable resultList = list.copyHead(list.argSize());
-        return foldLeft(null, list, 1, size, (x, y) -> F.binaryAST2(S.Plus, x, y), resultList);
+        // each running sum is evaluated before the next one is added: a nested unevaluated sum
+        // of a long list exceeds the recursion limit
+        return foldLeft(null, list, 1, size,
+            (x, y) -> engine.evaluate(F.binaryAST2(S.Plus, x, y)), resultList);
       }
       return F.NIL;
     }
@@ -3879,7 +3882,9 @@ public final class ListFunctions {
         IExpr temp = engine.evaluate(ast.arg3());
         if (temp.isAST()) {
           final IAST list = (IAST) temp;
-          return list.foldLeft((x, y) -> F.binaryAST2(arg1, x, y), arg2, 1);
+          // each step is evaluated before the next one: a nested unevaluated f(f(f(x, a), b), ...)
+          // of a long list exceeds the recursion limit
+          return list.foldLeft((x, y) -> engine.evaluate(F.binaryAST2(arg1, x, y)), arg2, 1);
         }
       } catch (final ArithmeticException e) {
 
@@ -3946,7 +3951,8 @@ public final class ListFunctions {
         final IASTAppendable resultList = F.ast(list.head(), list.size());
         IExpr arg2 = list.arg1();
         list = list.rest();
-        return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
+        return foldLeft(arg2, list, 1, list.size(),
+            (x, y) -> engine.evaluate(F.binaryAST2(arg1, x, y)), resultList);
       }
       return F.NIL;
     }
@@ -3962,7 +3968,8 @@ public final class ListFunctions {
           return F.unaryAST1(list.head(), arg2);
         }
         final IASTAppendable resultList = F.ast(list.head(), list.size());
-        return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
+        return foldLeft(arg2, list, 1, list.size(),
+            (x, y) -> engine.evaluate(F.binaryAST2(arg1, x, y)), resultList);
       }
       return F.NIL;
     }

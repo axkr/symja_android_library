@@ -80,6 +80,26 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEllipticPiZeroImaginaryCharacteristic() {
+    // (1.5*I)^2*(-4/3) is 3.0-0.0*I: a complex number with a zero imaginary part gets the principal
+    // value of the real characteristic
+    check("{EllipticPi((1.5*I)^2*(-4/3), 1.2, 0.5), EllipticPi(3.0, 1.2, 0.5)}", //
+        "{0.0828968,0.0828968}");
+    check("{EllipticPi((1.5*I)^2*(-4/3), 0.5), EllipticPi(3.0, 0.5)}", //
+        "{-0.192988,-0.192988}");
+    // one characteristic in two forms, the second one the square of an imaginary sum
+    check("n1 = (2 + Sqrt(3))^2/(1 + Sqrt(2)); n2 = -(2*I + I*Sqrt(3))^2/(1 + Sqrt(2)); "
+        + "PossibleZeroQ(EllipticPi(n1, 6/5, 1/2) - EllipticPi(n2, 6/5, 1/2))", //
+        "True");
+    check("N(EllipticPi(n2, 6/5, 1/2))", //
+        "0.0203948");
+    check("Chop(N(EllipticPi(n1, 6/5, 1/2) - EllipticPi(n2, 6/5, 1/2), 30))", //
+        "0");
+    check("Chop(N(EllipticPi(n1, 1/2) - EllipticPi(n2, 1/2), 30))", //
+        "0");
+  }
+
+  @Test
   public void testCarlsonArbitraryPrecision() {
     check("N(CarlsonRF(1, 2, 3), 30)", //
         "0.72694593546890819853957062602");

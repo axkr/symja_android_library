@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -33,7 +34,50 @@ public class NDSolveValue extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST) {
+    IExpr target = ast.arg2();
+    IExpr range = ast.arg3();
+    if (range.isList() && range.argSize() >= 2 && range.first().isSymbol()
+        && !isFunctionTarget(target, range.first())) {
+      // an expression of the solutions, like y(1) or y(x)^2 + y'(x): solved for the unknown
+      // functions of the equations and evaluated with them
+      IAST unknowns = unknownFunctions(ast.arg1());
+      if (unknowns.argSize() > 0) {
+        IExpr solution = NDSolve.solve(ast.setAtCopy(2, unknowns), options, engine, true);
+        if (solution.isListOfLists() && solution.argSize() >= 1) {
+          return engine.evaluate(F.ReplaceAll(target, solution.first()));
+        }
+        return F.NIL;
+      }
+    }
     return NDSolve.solve(ast, options, engine, false);
+  }
+
+  /**
+   * Test if <code>target</code> is what {@link NDSolve} solves for: a function symbol, a function
+   * call of the independent variable <code>x</code>, or a list of these.
+   */
+  private static boolean isFunctionTarget(IExpr target, IExpr x) {
+    if (target.isList()) {
+      return ((IAST) target).forAll(t -> isFunctionTarget(t, x));
+    }
+    if (target.isSymbol()) {
+      return true;
+    }
+    return target.isAST() && target.head().isSymbol() && target.argSize() >= 1
+        && ((IAST) target).exists(a -> a.equals(x));
+  }
+
+  /** The function symbols <code>f</code> of the derivatives <code>f'</code> in the equations. */
+  private static IAST unknownFunctions(IExpr equations) {
+    java.util.Set<IExpr> heads = new java.util.LinkedHashSet<IExpr>();
+    equations.has(x -> {
+      if (x.isAST() && x.head().isAST(S.Derivative) && x.argSize() == 1
+          && x.first().isSymbol() && !x.first().isBuiltInSymbol()) {
+        heads.add(x.first());
+      }
+      return false;
+    }, true);
+    return F.List(heads.toArray(new IExpr[0]));
   }
 
   @Override

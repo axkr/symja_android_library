@@ -2077,12 +2077,30 @@ public class ApcomplexNum implements IComplexNum {
     }
   }
 
+  /**
+   * <code>fApcomplex^exponent</code>. An exponent with an integer value is applied by repeated
+   * multiplication: <code>Exp(exponent*Log(base))</code> leaves an imaginary part of rounding noise
+   * above the accuracy of the result, <code>(0+u*I)^2</code> is not real then.
+   *
+   * @param periodic report the size of the exponent to {@link PrecisionLoss}, see
+   *        {@link #periodicPower(Apcomplex, Apcomplex)}
+   */
+  private Apcomplex powValue(final Apcomplex exponent, boolean periodic) {
+    if (exponent.imag().signum() == 0 && exponent.real().isInteger()
+        && exponent.real().scale() <= 18) {
+      return h().pow(fApcomplex, exponent.real().longValue());
+    }
+    if (periodic) {
+      periodicPower(fApcomplex, exponent);
+    }
+    return h().pow(fApcomplex, exponent);
+  }
+
   @Override
   public IComplexNum pow(final IComplexNum val) {
-    periodicPower(fApcomplex, val.apcomplexValue());
-    final IExpr power = powerResult(h().pow(fApcomplex, val.apcomplexValue()), val);
-    return power instanceof IComplexNum ? (IComplexNum) power
-        : valueOf(h().pow(fApcomplex, val.apcomplexValue()));
+    final Apcomplex value = powValue(val.apcomplexValue(), true);
+    final IExpr power = powerResult(value, val);
+    return power instanceof IComplexNum ? (IComplexNum) power : valueOf(value);
   }
 
   @Override
@@ -2096,11 +2114,10 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr power(final IExpr that) {
     if (that instanceof IComplexNum) {
-      periodicPower(fApcomplex, ((IComplexNum) that).apcomplexValue());
-      return powerResult(h().pow(fApcomplex, ((IComplexNum) that).apcomplexValue()), that);
+      return powerResult(powValue(((IComplexNum) that).apcomplexValue(), true), that);
     }
     if (that instanceof INum) {
-      return powerResult(h().pow(fApcomplex, ((INum) that).apcomplexValue()), that);
+      return powerResult(powValue(((INum) that).apcomplexValue(), false), that);
     }
     return IComplexNum.super.power(that);
   }

@@ -252,7 +252,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           IAST exactRules = (IAST) exact;
           return F.list(engine.evalN(F.subst(function, exactRules), precision),
               F.mapRange(1, exactRules.size(), i -> F.Rule(exactRules.get(i).first(),
-                  engine.evalN(exactRules.get(i).second(), precision))));
+                  exactRules.get(i).second().isZero()
+                      // a zero known to the working precision, not a zero of infinite precision
+                      ? org.matheclipse.core.expression.ApfloatNum.zero(precision)
+                      : engine.evalN(exactRules.get(i).second(), precision))));
         }
       }
       return result;

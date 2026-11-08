@@ -505,6 +505,12 @@ public class D extends AbstractFunctionOptionEvaluator {
         return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
       }
 
+      if (fx.isAST(S.Indexed, 3) && !fx.first().isList() && isDerivativeVariable(x)
+          && !(fx.first() instanceof IArraySymbol) && !fx.first().isFree(x, true)
+          && fx.second().isFree(x, true)) {
+        // the component of a list valued function: the component of its derivative
+        return F.binaryAST2(S.Indexed, F.D(fx.first(), x), fx.second());
+      }
       if (x instanceof IArraySymbol) {
         // differentiating by a whole vector, matrix or array; an unsupported case has to stay
         // unevaluated rather than fall through to the scalar rules below

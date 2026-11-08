@@ -83,6 +83,7 @@ import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.numerics.linalg.ApfloatMatrices;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -2655,6 +2656,12 @@ public final class LinearAlgebra {
         } catch (final RuntimeException e) {
           return Errors.printMessage(ast.topHead(), e, engine);
         }
+      }
+      IAST symmetric = ApfloatMatrices.symmetricEigenvalues(ast.arg1());
+      if (symmetric.isPresent()) {
+        // a real symmetric matrix of arbitrary-precision numbers keeps their precision
+        return numberOfEigenvalues.isPresent() ? takeEigenvalues(symmetric, maxValues)
+            : symmetric;
       }
       // switch to numeric calculation
       IExpr eigenValues = numericEval(ast, engine);
@@ -6370,8 +6377,21 @@ public final class LinearAlgebra {
             return Errors.printMessage(S.Norm, "ptype", F.List(arg2));
           }
         }
-        if ((matrixNorm == F.C1 || matrixNorm == F.CInfinity) && !engine.isNumericMode()
-            && arg1.isFree(x -> x.isInexactNumber(), false)) {
+        final boolean arbitraryPrecision = ApfloatMatrices.precision(arg1) > 0;
+        if (arbitraryPrecision) {
+          // the precision of the entries, not machine precision
+          if (matrixNorm.isString("Frobenius")) {
+            return F.Norm(F.Flatten(arg1));
+          }
+          if (matrixNorm == F.C2) {
+            IExpr largest = ApfloatMatrices.largestSingularValue(arg1);
+            if (largest.isPresent()) {
+              return largest;
+            }
+          }
+        }
+        if ((matrixNorm == F.C1 || matrixNorm == F.CInfinity) && (arbitraryPrecision
+            || (!engine.isNumericMode() && arg1.isFree(x -> x.isInexactNumber(), false)))) {
           // exact or symbolic entries: the largest column sum (1-norm) or row sum (infinity-norm)
           // of the absolute values
           IAST m = (IAST) arg1.normal(false);
@@ -8183,6 +8203,19 @@ public final class LinearAlgebra {
               : F.C0;
           IAST zeros = F.constantArray(zero, Math.min(dim[0], dim[1]));
           return ast.isAST2() ? takeValues(ast, zeros, zeros.argSize(), zero, engine) : zeros;
+        }
+        IAST precise = ApfloatMatrices.singularValues(m, false);
+        if (precise.isPresent()) {
+          // a real matrix of arbitrary-precision numbers keeps their precision; the values of the
+          // size of the rounding error of the largest are zeros
+          final IExpr largest = precise.arg1();
+          final long digits = ApfloatMatrices.precision(m);
+          final IExpr limit =
+              engine.evaluate(F.Times(largest, F.Power(F.C10, F.ZZ(-Math.max(1L, digits - 5L)))));
+          IAST values = precise.filter(x -> engine.evaluate(F.Greater(x, limit)).isTrue())[0];
+          values = dropSmallValues(values, tolerance, engine);
+          return ast.isAST2() ? takeValues(ast, values, Math.min(dim[0], dim[1]), F.CD0, engine)
+              : values;
         }
         IAST machineValues =
             machineSingularValueList((IAST) m.normal(false), options[0] != S.Automatic);
