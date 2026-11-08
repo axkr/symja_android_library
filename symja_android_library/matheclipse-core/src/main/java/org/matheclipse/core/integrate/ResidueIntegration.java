@@ -65,7 +65,7 @@ public final class ResidueIntegration {
   private static final double EPS = 1e-9;
 
   /** The time the simplification of a result may take, all of its steps together, on the baseline machine. */
-  private static final long SIMPLIFY_MILLIS = 6000L;
+  private static final long SIMPLIFY_MILLIS = 12000L;
 
   /** The state of one call. */
   static final class Context {
