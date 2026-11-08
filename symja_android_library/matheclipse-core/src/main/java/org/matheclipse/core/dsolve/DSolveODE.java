@@ -779,7 +779,7 @@ final class DSolveODE {
     if (p.isNIL() || p.isZero() || !p.isFree(y, true) || !constant.isFree(y, true)) {
       return null;
     }
-    return new IExpr[] {p, logCoefficient, linear, F.bool(reciprocal), constant};
+    return new IExpr[] {p, logCoefficient, linear, F.booleSymbol(reciprocal), constant};
   }
 
   /** Whether <code>expr</code> is <code>gamma*y + delta</code> with a non-zero slope. */

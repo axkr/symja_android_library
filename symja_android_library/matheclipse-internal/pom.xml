@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>3.3.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>matheclipse-internal</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Symja Internal module: functions of the Internal` context
+		(Internal`Bag, Internal`InheritedBlock, Internal`WithLocalSettings, ...)
+		which packages written for other systems call</description>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License, Version 2.1</name>
+			<url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- logging dependencies -->
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- test dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-script</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- InternalWolframSyntaxTest is written in Wolfram Language syntax, and that
+						is decided before any Symja class is loaded: ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
+						chooses whether the built-in symbol table is keyed "Join" or "join", and it is
+						built once per JVM. So this one class gets a JVM of its own; the default
+						execution below leaves it out. -->
+						<id>wolfram-language-syntax</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<!-- -Dtest overrides <includes>: without this the classes a targeted run asks for
+							ran a second time here -->
+							<test>InternalWolframSyntaxTest</test>
+							<includes>
+								<include>**/InternalWolframSyntaxTest.java</include>
+							</includes>
+							<excludes combine.self="override" />
+							<groups combine.self="override" />
+							<excludedGroups combine.self="override" />
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-test</id>
+						<configuration>
+							<excludes>
+								<exclude>**/InternalWolframSyntaxTest.java</exclude>
+							</excludes>
+							<!-- -Dtest overrides <excludes> but not the excluded groups: the tag keeps
+							InternalWolframSyntaxTest out of this JVM in a targeted run too -->
+							<excludedGroups>wolfram-language-syntax,${symja.test.excludedGroups}</excludedGroups>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

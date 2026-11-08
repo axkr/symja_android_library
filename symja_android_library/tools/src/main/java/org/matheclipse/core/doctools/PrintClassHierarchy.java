@@ -77,7 +77,7 @@ public class PrintClassHierarchy {
       for (int i = 0; i < list.size(); i++) {
         // if there is another class that comes beneath the next class,
         // flag this level
-        moreClassesInHierarchy.push(new Boolean(i < list.size() - 1));
+        moreClassesInHierarchy.push(Boolean.valueOf(i < list.size() - 1));
 
         printHierarchy(list.get(i), moreClassesInHierarchy);
 

@@ -108,6 +108,7 @@ public class ConstantDefinitions {
 
       S.$UserName.setEvaluator(new $UserName());
       S.$RecursionLimit.setEvaluator(new $RecursionLimit());
+      S.$MaxExtraPrecision.setEvaluator(new $MaxExtraPrecision());
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
       S.$ScriptInputString.setEvaluator(new $ScriptInputString());
@@ -810,6 +811,35 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.stringx(File.separator);
+    }
+  }
+
+  /**
+   * The digits <code>N</code> may add beyond the requested precision when an evaluation loses
+   * digits, read by {@link EvalEngine#maxExtraPrecision()}. A <code>Block</code> sets it for one
+   * evaluation.
+   */
+  private static class $MaxExtraPrecision extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      final IExpr value = symbol.assignedValue();
+      return value != null && value.isPresent() ? value : F.num(Config.MAX_EXTRA_PRECISION);
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      // a delayed value is checked with what it evaluates to now
+      final IExpr value = setDelayed ? engine.evaluate(rightHandSide) : rightHandSide;
+      if (value.isInfinity() || (value.isReal() && !value.isNegative())) {
+        S.$MaxExtraPrecision.assignValue(rightHandSide, setDelayed);
+        return setDelayed ? S.Null : rightHandSide;
+      }
+      // Cannot set $MaxExtraPrecision to `1`; value must be a non-negative number or Infinity.
+      Errors.printMessage(S.$MaxExtraPrecision, "precset", F.list(rightHandSide), engine);
+      // the value is kept, the assignment gives what was assigned
+      return rightHandSide;
     }
   }
 

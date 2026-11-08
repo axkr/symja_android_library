@@ -110,7 +110,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isNumericFunction(true)) {
-        return numericInverseLaplaceTransform(arg1, F.Dummy("s"), arg2.evalDouble(), engine);
+        return numericInverseLaplaceTransform(arg1, F.Dummy("s"), arg2.evalf(), engine);
       }
     }
 

@@ -6297,8 +6297,14 @@ public class Algebra {
       }
       if (arg1.isAST()) {
         IExpr together = engine.evaluate(AlgebraUtil.togetherExpr(arg1, engine));
+        if ((together.isTimes() || together.isPower())
+            && hasUnexpandedSumFactor(together, engine)) {
+          // b/(b*(b*e)/(b*(1-e)+b*e)-...) is b/(b*(1-e)+b*e) after one pass, and 1 after two
+          together = engine.evaluate(AlgebraUtil.togetherExpr(together, engine));
+        }
         if ((arg1.isTimes() || arg1.isPower())
-            && AlgebraUtil.isSameDenominator(arg1, together, engine)) {
+            && AlgebraUtil.isSameDenominator(arg1, together, engine)
+            && !hasUnexpandedSumFactor(arg1, engine)) {
           // one fraction with nothing to cancel keeps the factors of its numerator and
           // denominator, with their numeric contents merged
           IExpr reduced = AlgebraUtil.reducedFraction(arg1, engine);
@@ -6321,6 +6327,37 @@ public class Algebra {
         return together;
       }
       return arg1;
+    }
+
+    /**
+     * Whether a factor of the numerator or the denominator of <code>fraction</code> is a sum which
+     * expands to another form: <code>b*(1-e)+b*e</code> is <code>b</code>, so
+     * <code>1/(b*(1-e)+b*e)</code> is not kept as a fraction with nothing to cancel.
+     */
+    /** Has a term of <code>sum</code> a sum as a factor or as the base of a power? */
+    private static boolean hasProductOfSum(IAST sum) {
+      return sum.exists(term -> {
+        if (term.isPower()) {
+          return term.base().isPlus();
+        }
+        return term.isTimes() && ((IAST) term)
+            .exists(factor -> factor.isPlus() || (factor.isPower() && factor.base().isPlus()));
+      });
+    }
+
+    private static boolean hasUnexpandedSumFactor(IExpr fraction, EvalEngine engine) {
+      for (IExpr part : new IExpr[] {engine.evaluate(F.Numerator(fraction)),
+          engine.evaluate(F.Denominator(fraction))}) {
+        IAST factors = part.isTimes() ? (IAST) part : F.Times(part);
+        for (IExpr factor : factors) {
+          IExpr base = factor.isPower() ? factor.base() : factor;
+          if (base.isPlus() && hasProductOfSum((IAST) base)
+              && !engine.evaluate(F.Expand(base)).equals(base)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     /**
@@ -7127,7 +7164,14 @@ public class Algebra {
           polyExpr = F.subst(polyExpr, variable, dummy);
           substitutedVariableList.append(dummy);
         } else {
-          substitutedVariableList.append(variable);
+          IExpr powersOfVariable =
+              substitutePowersOfVariable(polyExpr, variable, variablesList, dummyStr + i);
+          if (powersOfVariable.isPresent()) {
+            polyExpr = powersOfVariable.first();
+            substitutedVariableList.append(powersOfVariable.second());
+          } else {
+            substitutedVariableList.append(variable);
+          }
         }
       } else {
         // `1` is not a valid variable.
@@ -7137,6 +7181,72 @@ public class Algebra {
 
     }
     return F.list(polyExpr, substitutedVariableList);
+  }
+
+  /**
+   * For a variable <code>x^k</code> with a symbol <code>x</code> and an integer <code>k &gt; 1</code>
+   * replace every power <code>x^(j*k)</code> in <code>polyExpr</code> by <code>dummy^j</code>, so
+   * that <code>a+b*x^2+c*x^4</code> is the polynomial <code>a+b*dummy+c*dummy^2</code> in
+   * <code>x^2</code>.
+   *
+   * <p>
+   * Only the sums, products and integer powers around the powers of <code>x</code> are searched: in
+   * <code>Sin(x^4)</code> the <code>x^4</code> is part of a coefficient, and a dummy there would
+   * leak into the result.
+   *
+   * @return <code>{substitutedExpr, dummy}</code>, or {@link F#NIL} if <code>variable</code> is no
+   *         such power, another variable contains <code>x</code>, or <code>x</code> also occurs
+   *         other than in such powers (<code>x^3</code> is no power of <code>x^2</code>,
+   *         <code>Sin(x^4)</code> is no polynomial in it)
+   */
+  static IExpr substitutePowersOfVariable(IExpr polyExpr, IExpr variable, IAST variablesList,
+      String dummyStr) {
+    if (!variable.isPower() || !variable.base().isSymbol() || !variable.exponent().isInteger()) {
+      return F.NIL;
+    }
+    final IExpr base = variable.base();
+    final int k = variable.exponent().toIntDefault();
+    if (k <= 1 || polyExpr.isFree(base, true)
+        || variablesList.exists(v -> v != variable && !v.isFree(base, true))) {
+      return F.NIL;
+    }
+    final ISymbol dummy = F.Dummy(dummyStr);
+    IExpr substituted = substitutePowers(polyExpr, base, k, dummy).orElse(polyExpr);
+    if (!substituted.isFree(base, true)) {
+      return F.NIL;
+    }
+    return F.list(substituted, dummy);
+  }
+
+  /**
+   * Replace <code>base^(j*k)</code> by <code>dummy^j</code> in the sums, products and integer
+   * powers of <code>expr</code>.
+   *
+   * @return {@link F#NIL} if nothing was replaced
+   */
+  private static IExpr substitutePowers(IExpr expr, IExpr base, int k, ISymbol dummy) {
+    if (expr.isPower() && expr.base().equals(base)) {
+      int j = expr.exponent().toIntDefault();
+      if (j > 0 && j % k == 0) {
+        return j == k ? dummy : F.Power(dummy, F.ZZ(j / k));
+      }
+      return F.NIL;
+    }
+    if (!expr.isPlus() && !expr.isTimes() && !(expr.isPower() && expr.exponent().isInteger())) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable result = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = substitutePowers(ast.get(i), base, k, dummy);
+      if (arg.isPresent()) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, arg);
+      }
+    }
+    return result;
   }
 
   private Algebra() {}

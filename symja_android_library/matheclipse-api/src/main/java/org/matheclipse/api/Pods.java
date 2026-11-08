@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.logging.log4j.Level;
@@ -1340,7 +1340,7 @@ public class Pods {
       }
     });
     if (flattened[0]) {
-      IASTAppendable result = F.ast(ast.head(), newSize[0], false);
+      IASTAppendable result = F.ast(ast.head(), newSize[0]);
       ast.forEach(expr -> {
         if (expr.isTimes() && ((IAST) expr).hasFlag(Flag.TIMES_PARSED_IMPLICIT)) {
           result.appendArgs(flattenTimesRecursive((IAST) expr).orElse((IAST) expr));
@@ -1866,7 +1866,7 @@ public class Pods {
   private static String toHighligthedCode(String sourceCode) {
     try {
       String html = HIGHLIGHT_IFRAME;
-      html = StringUtils.replace(html, "`1`", sourceCode);
+      html = Strings.CS.replace(html, "`1`", sourceCode);
       html = StringEscapeUtils.escapeHtml4(html);
       html = "<iframe srcdoc=\"" + html
           + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";

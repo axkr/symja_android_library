@@ -119,8 +119,9 @@ public class DiscretePlot extends ListPlot {
   /**
    * Bars from the axis to each value, as {@code ExtentSize} asks for.
    *
-   * @param extentSize the option value; {@code Full} fills the whole step, a number gives that
-   *        fraction of it, and anything else means no bars
+   * @param extentSize the option value; {@code Full} fills the whole step around the value,
+   *        {@code Left} and {@code Right} the step before or after it, a number gives that fraction
+   *        of the step, and anything else means no bars
    * @return the bar primitives, or {@link F#NIL} when the option did not ask for any
    */
   private static IAST extentBars(IExpr points, IExpr extentSize) {
@@ -128,15 +129,25 @@ public class DiscretePlot extends ListPlot {
         || !points.isList()) {
       return F.NIL;
     }
-    double width = 1.0;
-    if (extentSize != S.Full) {
+    IAST list = (IAST) points;
+    double step = stepOf(list);
+    // the bar runs from x + left to x + right
+    double left = -step / 2.0;
+    double right = step / 2.0;
+    if (extentSize == S.Left) {
+      left = -step;
+      right = 0.0;
+    } else if (extentSize == S.Right) {
+      left = 0.0;
+      right = step;
+    } else if (extentSize != S.Full) {
       double w = extentSize.evalfNaN();
       if (!Double.isFinite(w) || w <= 0) {
         return F.NIL;
       }
-      width = w;
+      left = -w * step / 2.0;
+      right = w * step / 2.0;
     }
-    IAST list = (IAST) points;
     IASTAppendable bars = F.ListAlloc(list.size());
     for (int i = 1; i < list.size(); i++) {
       // a labelled stem is still a stem, so the bar is measured from the point inside the wrapper
@@ -150,13 +161,30 @@ public class DiscretePlot extends ListPlot {
       if (!Double.isFinite(x) || !Double.isFinite(y)) {
         continue;
       }
-      double half = width / 2.0;
       // the bar carries the label too, so the whole drawn extent answers a hover and not just
       // the point at its top
       bars.append(wrapper.wrapTooltip(
-          F.Rectangle(F.List(F.num(x - half), F.C0), F.List(F.num(x + half), F.num(y)))));
+          F.Rectangle(F.List(F.num(x + left), F.C0), F.List(F.num(x + right), F.num(y)))));
     }
     return bars.argSize() > 0 ? bars : F.NIL;
+  }
+
+  /** The smallest positive distance between successive abscissas of the stems, 1 if none. */
+  private static double stepOf(IAST points) {
+    double step = Double.MAX_VALUE;
+    double previous = Double.NaN;
+    for (IExpr item : points) {
+      IExpr point = PlotWrapper.of(item).datum;
+      double x = point.isList() && ((IAST) point).argSize() >= 2 ? point.first().evalfNaN()
+          : Double.NaN;
+      if (Double.isFinite(x) && Double.isFinite(previous) && Math.abs(x - previous) > 0.0) {
+        step = Math.min(step, Math.abs(x - previous));
+      }
+      if (Double.isFinite(x)) {
+        previous = x;
+      }
+    }
+    return step == Double.MAX_VALUE ? 1.0 : step;
   }
 
   /**

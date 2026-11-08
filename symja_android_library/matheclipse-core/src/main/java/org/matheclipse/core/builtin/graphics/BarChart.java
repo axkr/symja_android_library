@@ -39,6 +39,8 @@ public class BarChart extends AbstractChart {
     final double value;
     /** Which of the chart colours this bar takes. */
     final int colorIndex;
+    /** The legend entry that names the bar: its position within its dataset, from 0. */
+    final int entry;
     /** The style from a {@code Style} wrapper on the datum, or {@link F#NIL}. */
     final IExpr style;
     /** The label from a {@code Labeled} wrapper on the datum, or {@link F#NIL}. */
@@ -48,13 +50,14 @@ public class BarChart extends AbstractChart {
     /** The number the bar stands for, before any normalisation the layout applied. */
     final IExpr datum;
 
-    Bar(double from, double to, double base, double value, int colorIndex, IExpr style, IExpr label,
-        IExpr tooltip, IExpr datum) {
+    Bar(double from, double to, double base, double value, int colorIndex, int entry, IExpr style,
+        IExpr label, IExpr tooltip, IExpr datum) {
       this.from = from;
       this.to = to;
       this.base = base;
       this.value = value;
       this.colorIndex = colorIndex;
+      this.entry = entry;
       this.style = style;
       this.label = label;
       this.tooltip = tooltip;
@@ -98,10 +101,6 @@ public class BarChart extends AbstractChart {
         GraphicsOptions.optionValue(originalAST, S.ChartElementFunction, S.Automatic);
     int barOrigin =
         GraphicsOptions.barOrigin(GraphicsOptions.optionValue(originalAST, S.BarOrigin, S.Bottom));
-
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
-    }
 
     IAST datasets = GraphicsOptions.chartDatasets((IAST) dataArg);
     int datasetCount = datasets.argSize();
@@ -148,7 +147,7 @@ public class BarChart extends AbstractChart {
           }
           double scaled = percentile ? (total > 0 ? v / total : 0.0) : v;
           bars.add(new Bar(center - barWidth / 2.0, center + barWidth / 2.0, base, base + scaled,
-              j - 1, styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
+              j - 1, j - 1, styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
           base += scaled;
         }
       }
@@ -169,10 +168,11 @@ public class BarChart extends AbstractChart {
             continue;
           }
           cursor += 1.0;
-          // a single dataset is drawn in one colour; several datasets colour by position
+          // a single dataset is drawn in one colour, even when a legend names its bars; several
+          // datasets colour by position
           int colorIndex = datasetCount == 1 ? 0 : j - 1;
           bars.add(new Bar(cursor - barWidth / 2.0, cursor + barWidth / 2.0, 0.0, v, colorIndex,
-              styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
+              j - 1, styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
         }
         if (d < datasetCount) {
           cursor += GROUP_GAP;
@@ -203,10 +203,14 @@ public class BarChart extends AbstractChart {
             engine)
         .range(1, minValue, maxValue).build();
 
+    // a legend entry names the bars at one position, in the fill they were drawn with
+    GraphicsOptions.LegendColors legendColors =
+        new GraphicsOptions.LegendColors(chartColor(chartStyle, 0));
     for (Bar bar : bars) {
       IExpr functionColor = barColors == null ? F.NIL : barColors.color(bar.value);
       IExpr color = functionColor.isPresent() ? functionColor
           : bar.style.isPresent() ? bar.style : chartColor(chartStyle, bar.colorIndex);
+      legendColors.record(bar.entry, color);
       boolean colorIsExplicit =
           functionColor.isPresent() || bar.style.isPresent() || !chartStyle.isAutomatic();
       IExpr style = GraphicsOptions.chartElementStyle(baseStyle, color, colorIsExplicit);
@@ -238,6 +242,7 @@ public class BarChart extends AbstractChart {
     }
 
     applyOrientation(graphicsOptions, barOrigin, catMax, minValue, maxValue);
+    graphicsOptions.setChartLegend(chartLegends, legendColors);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
   }
 
@@ -433,7 +438,7 @@ public class BarChart extends AbstractChart {
       if (expr instanceof INumber) {
         return ((INumber) expr).reDoubleValue();
       }
-      return expr.evalDouble();
+      return expr.evalf();
     } catch (RuntimeException e) {
       return Double.NaN;
     }

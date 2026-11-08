@@ -61,6 +61,7 @@
 		<module>matheclipse-or-tools</module>
 		<module>matheclipse-compile</module>
 		<module>matheclipse-jsgraphics</module>
+		<module>matheclipse-internal</module>
 		<module>matheclipse-dataset</module>
 		<!-- 		<module>matheclipse-llm</module> -->
 		<module>matheclipse-api</module>
@@ -185,7 +186,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.7.2-jre</version>
+				<version>33.8.0-jre</version>
 			</dependency>
 			<dependency>
 				<groupId>com.ibm.icu</groupId>

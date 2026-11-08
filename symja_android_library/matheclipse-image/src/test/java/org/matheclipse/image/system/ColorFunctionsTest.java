@@ -207,7 +207,7 @@ public class ColorFunctionsTest extends AbstractTestCase {
         + "\"Grayscale\"))==ImageData(ColorConvert(Image({{{0.25,0.5,0.75}}}),\"Grayscale\"))", //
         "True");
     // an alpha channel has no place in HSB or CMYK samples
-    check("ColorConvert(Image({{{0.25,0.5,0.75,0.5}}}),\"HSB\")", //
+    check("ColorConvert(Image({{{0.25,0.5,0.75,0.5}}}, ColorSpace -> \"RGB\"),\"HSB\")", //
         "ColorConvert(Image(Dimensions: 1,1 Transparency: 3),HSB)");
   }
 

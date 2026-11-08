@@ -5,14 +5,17 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.graphtheory.eval.GraphUtil;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
 
 /**
  * <code>TuranGraph(n, k)</code> - the Turan graph <code>T(n,k)</code>, the complete
  * <code>k</code>-partite graph on <code>n</code> vertices whose parts differ in size by at most 1;
- * the larger parts come first.
+ * the larger parts come first. The graph is drawn with the parts in columns.
  */
 public class TuranGraph extends AbstractFunctionEvaluator {
 
@@ -25,9 +28,11 @@ public class TuranGraph extends AbstractFunctionEvaluator {
     }
     // part[v] the part of vertex v
     int[] part = new int[n];
+    IASTAppendable sizes = F.ListAlloc(Math.min(k, n));
     int v = 0;
     for (int p = 0; p < k && v < n; p++) {
       int size = n / k + (p < n % k ? 1 : 0);
+      sizes.append(F.ZZ(size));
       for (int i = 0; i < size; i++) {
         part[v++] = p;
       }
@@ -41,7 +46,10 @@ public class TuranGraph extends AbstractFunctionEvaluator {
         }
       }
     }
-    return GraphUtil.sortedPairGraph(n, pairs);
+    IASTAppendable options = F.ListAlloc(1);
+    options.append(F.Rule(S.GraphLayout, F.list(F.stringx("MultipartiteLayout"),
+        F.Rule(F.stringx("VertexPartition"), sizes))));
+    return GraphExpr.newInstance(GraphUtil.sortedPairGraph(n, pairs).toData(), options);
   }
 
   @Override

@@ -27,7 +27,7 @@ public class Volume extends AbstractFunctionEvaluator {
       // Volume(f, {u,umin,umax}, {v,vmin,vmax}, ...) and a chart as last argument
       final boolean chart = ast.last().isString();
       return ParametricMeasure.measure(ast.arg1(),
-          ast.copyFrom(2, chart ? ast.argSize() : ast.size()).apply(S.List),
+          ast.subList(2, chart ? ast.argSize() : ast.size()).apply(S.List),
           chart ? ast.last() : F.NIL, engine);
     }
     IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());

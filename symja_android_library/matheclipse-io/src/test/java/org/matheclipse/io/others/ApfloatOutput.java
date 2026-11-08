@@ -19,11 +19,11 @@ public class ApfloatOutput {
     // System.out.println(newValue2.toString());
 
     Apfloat valueD = new Apfloat(Math.pow(6.7, -4));
-    Apfloat newValueD = ApfloatMath.round(valueD, 6, RoundingMode.HALF_EVEN);
+    Apfloat newValueD = ApfloatMath.roundToPrecision(valueD, 6, RoundingMode.HALF_EVEN);
     System.out.println(newValueD.toString());
 
     Apfloat valueD2 = new Apfloat(Math.pow(6.7, -4));
-    Apfloat newValueD2 = ApfloatMath.round(valueD2, 7, RoundingMode.HALF_EVEN);
+    Apfloat newValueD2 = ApfloatMath.roundToPrecision(valueD2, 7, RoundingMode.HALF_EVEN);
     System.out.println(newValueD2.toString());
   }
 }

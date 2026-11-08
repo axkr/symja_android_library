@@ -345,10 +345,11 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IInexactNumber acos() {
   // CPD-ON
-    if (fComplex.getImaginary() == 0.0 && Math.abs(fComplex.getReal()) <= 1.0) {
-      // on the real segment the value is real; the complex formula leaves rounding noise in the
-      // imaginary part
-      return valueOf(new Complex(Math.acos(fComplex.getReal()), 0.0));
+    if (fComplex.getImaginary() == 0.0) {
+      // a real argument has the value of the real number: on the segment the complex formula
+      // leaves rounding noise in the imaginary part, and on the cut its signed zero 1-z^2 = -3-0.0*I
+      // takes the other side than ArcCos(2.0) and the derivative -1/Sqrt(1-z^2)
+      return Num.valueOf(fComplex.getReal()).acos();
     }
     return valueOf(fComplex.acos());
   }
@@ -508,9 +509,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IInexactNumber asin() {
-    if (fComplex.getImaginary() == 0.0 && Math.abs(fComplex.getReal()) <= 1.0) {
-      // on the real segment the value is real; see acos()
-      return valueOf(new Complex(Math.asin(fComplex.getReal()), 0.0));
+    if (fComplex.getImaginary() == 0.0) {
+      // a real argument has the value of the real number; see acos()
+      return Num.valueOf(fComplex.getReal()).asin();
     }
     return valueOf(fComplex.asin());
   }

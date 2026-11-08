@@ -151,7 +151,7 @@ public class StreamPlot extends AbstractFunctionEvaluator {
     IASTAppendable primitives = F.ListAlloc();
     primitives.append(VectorPlot.arrowheads(0.04));
     if (!colored) {
-      primitives.append(VectorPlot.color(0.0));
+      primitives.append(VectorPlot.plainColor());
     }
     int id = 0;
     for (int i = 0; i < seeds; i++) {

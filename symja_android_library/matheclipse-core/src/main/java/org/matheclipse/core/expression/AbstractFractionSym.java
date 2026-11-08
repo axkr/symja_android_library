@@ -1475,12 +1475,17 @@ public abstract class AbstractFractionSym implements IFraction {
   // CPD-OFF literal constant table
   public int compareTo(IExpr expr) {
     if (expr.isNumber() && !expr.isReal()) {
+      if (expr.isInexactNumber()) {
+        // the same order from both sides: an inexact complex number compares its real part
+        // numerically
+        return -expr.compareTo(this);
+      }
       int c = this.compareTo(expr.re());
       if (c != 0) {
         return c;
       }
-      IExpr im = expr.im();
-      return im.isPositive() ? -1 : im.isNegative() ? 1 : IExpr.compareHierarchy(this, expr);
+      // a real number comes before the exact complex numbers with the same real part
+      return -1;
     }
     return IExpr.compareHierarchy(this, expr);
   }
@@ -1569,21 +1574,15 @@ public abstract class AbstractFractionSym implements IFraction {
       b = b.negate();
       isNegative = true;
     }
-    if (rootNumerator != 1) {
-      b = b.powerRational(rootNumerator);
-    }
     IInteger d = denominator();
-    if (rootNumerator != 1) {
-      d = d.powerRational(rootNumerator);
-    }
     Int2IntMap bMap = new Int2IntRBTreeMap();
     BigInteger number = b.toBigNumerator();
-    IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, rootNumerator,
-        rootDenominator, bMap);
+    IAST bAST = AbstractIntegerSym.factorBigInteger(number, rootNumerator, isNegative,
+        rootNumerator, rootDenominator, bMap);
     Int2IntMap dMap = new Int2IntRBTreeMap();
     number = d.toBigNumerator();
-    IAST dAST =
-        AbstractIntegerSym.factorBigInteger(number, false, rootNumerator, rootDenominator, dMap);
+    IAST dAST = AbstractIntegerSym.factorBigInteger(number, rootNumerator, false, rootNumerator,
+        rootDenominator, dMap);
     if (bAST.isPresent()) {
       if (dAST.isPresent()) {
         return F.Times(bAST, F.Power(dAST, F.CN1));

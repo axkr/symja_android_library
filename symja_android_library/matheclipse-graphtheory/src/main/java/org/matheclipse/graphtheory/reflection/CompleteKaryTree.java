@@ -146,6 +146,6 @@ public class CompleteKaryTree extends AbstractFunctionOptionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
-        GraphGraphics.defaultGraphOptionValues());
+        GraphGraphics.defaultGraphOptionValues(F.stringx("LayeredEmbedding")));
   }
 }

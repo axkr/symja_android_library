@@ -42,7 +42,12 @@ public class ListLinePlot extends ListPlot {
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      return createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
+      IExpr graphics = createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
+      if (ast.topHead() == S.ListLinePlot) {
+        graphics = withListPlotRange(graphics, originalAST,
+            isValueData(ast.arg1(), graphicsOptions.dataRange()), graphicsOptions);
+      }
+      return graphics;
     }
 
     return F.NIL;

@@ -80,6 +80,41 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEllipticPiZeroImaginaryCharacteristic() {
+    // (1.5*I)^2*(-4/3) is 3.0-0.0*I: a complex number with a zero imaginary part gets the principal
+    // value of the real characteristic
+    check("{EllipticPi((1.5*I)^2*(-4/3), 1.2, 0.5), EllipticPi(3.0, 1.2, 0.5)}", //
+        "{0.0828968,0.0828968}");
+    check("{EllipticPi((1.5*I)^2*(-4/3), 0.5), EllipticPi(3.0, 0.5)}", //
+        "{-0.192988,-0.192988}");
+    // one characteristic in two forms, the second one the square of an imaginary sum
+    check("n1 = (2 + Sqrt(3))^2/(1 + Sqrt(2)); n2 = -(2*I + I*Sqrt(3))^2/(1 + Sqrt(2)); "
+        + "PossibleZeroQ(EllipticPi(n1, 6/5, 1/2) - EllipticPi(n2, 6/5, 1/2))", //
+        "True");
+    check("N(EllipticPi(n2, 6/5, 1/2))", //
+        "0.0203948");
+    check("Chop(N(EllipticPi(n1, 6/5, 1/2) - EllipticPi(n2, 6/5, 1/2), 30))", //
+        "0");
+    check("Chop(N(EllipticPi(n1, 1/2) - EllipticPi(n2, 1/2), 30))", //
+        "0");
+  }
+
+  @Test
+  public void testEllipticPiComplexCharacteristicNextToTheAxis() {
+    // a characteristic just above the real axis beyond 1: conjugate characteristics have conjugate
+    // values, and both are computed as fast
+    check("N(EllipticPi(3 + I/1000, 1/2), 20)", //
+        "-0.19264343884415621527+I*1.2168075848531545776");
+    check("N(EllipticPi(3 - I/1000, 1/2), 20)", //
+        "-0.19264343884415621527+I*(-1.2168075848531545776)");
+    // a parameter whose branch cut is on the other side of the path
+    check("EllipticPi(3.0 + 0.001*I, 2.0 - 0.25*I)", //
+        "0.155618+I*3.19355");
+    check("N(EllipticPi(3 + I/1000, 2 - I/3), 20)", //
+        "0.29939103205457682546+I*3.1213347863305381828");
+  }
+
+  @Test
   public void testCarlsonArbitraryPrecision() {
     check("N(CarlsonRF(1, 2, 3), 30)", //
         "0.72694593546890819853957062602");

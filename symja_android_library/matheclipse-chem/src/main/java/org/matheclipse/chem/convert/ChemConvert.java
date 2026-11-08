@@ -5,7 +5,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.openscience.cdk.aromaticity.Aromaticity;
-import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
@@ -51,7 +50,7 @@ public class ChemConvert {
    * six-membered cycles. Do not vary this per call.
    */
   public static final Aromaticity AROMATICITY =
-      new Aromaticity(ElectronDonation.daylight(), Cycles.or(Cycles.all(), Cycles.all(6)));
+      new Aromaticity(Aromaticity.Model.Daylight, Cycles.or(Cycles.all(), Cycles.all(6)));
 
   /**
    * Parse a SMILES string into a normalised structure.

@@ -15,6 +15,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * symmetrically around its position on the horizontal axis, scaled so that the widest violin has
  * the full width of its slot. The bandwidth is Silverman's rule of thumb. <code>ChartStyle</code>,
  * <code>ChartLabels</code> and <code>ChartLegends</code> are read as for the other charts.
+ * <code>ChartElementFunction -> "Quantile"</code> or <code>"Density"</code> draws a framed column
+ * per dataset instead, laid out like the boxes of a <code>BoxWhiskerChart</code>.
  */
 public class DistributionChart extends AbstractChart {
 
@@ -23,6 +25,9 @@ public class DistributionChart extends AbstractChart {
 
   /** The half width of the widest violin. */
   private static final double HALF_WIDTH = 0.4;
+
+  /** The number of bands of a density column. */
+  private static final int STRIPS = 120;
 
   public DistributionChart() {}
 
@@ -50,8 +55,17 @@ public class DistributionChart extends AbstractChart {
     IExpr chartStyle = GraphicsOptions.optionValue(originalAST, S.ChartStyle, S.Automatic);
     IExpr chartLabels = GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None);
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
-    if (!chartLegends.isNone() && !chartLegends.isAutomatic()) {
-      graphicsOptions.setPlotLegends(chartLegends);
+    IExpr elementFunction =
+        GraphicsOptions.optionValue(originalAST, S.ChartElementFunction, S.Automatic);
+    boolean columns = elementFunction.isString("Quantile") || elementFunction.isString("Density");
+    // every dataset is drawn; an entry past the last one names it in the first dataset's fill
+    graphicsOptions.setChartLegend(chartLegends, i -> {
+      int dataset = i < values.length ? i : 0;
+      return columns ? columnFill(chartStyle, dataset) : violinFill(chartStyle, dataset);
+    });
+    if (columns) {
+      return columnChart(values, elementFunction.isString("Quantile"), chartStyle, chartLabels,
+          graphicsOptions, originalAST, ast, engine);
     }
 
     // the densities on a grid over the values of each dataset, widened by the bandwidth
@@ -98,9 +112,7 @@ public class DistributionChart extends AbstractChart {
       for (int k = SAMPLES - 1; k >= 0; k--) {
         outline.append(F.list(F.num(x - HALF_WIDTH * density[i][k] / largest), F.num(grid[i][k])));
       }
-      IExpr color = chartStyle.isAutomatic() || chartStyle.isString()
-          ? GraphicsOptions.chartStyleColorExpr(i + 1)
-          : chartStyle.isList() ? GraphicsOptions.getPlotStyle(chartStyle, i + 1) : chartStyle;
+      IExpr color = violinFill(chartStyle, i);
       IASTAppendable group = F.ListAlloc(3);
       group.append(color);
       group.append(F.EdgeForm(F.GrayLevel(F.num(0.5))));
@@ -113,6 +125,147 @@ public class DistributionChart extends AbstractChart {
     }
     graphicsOptions.setBoundingBox(new double[] {0.5, values.length + 0.5, yMin, yMax});
     return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /** The fill of the violin of dataset <code>i</code> (counted from 0). */
+  private static IExpr violinFill(IExpr chartStyle, int i) {
+    return chartStyle.isAutomatic() || chartStyle.isString()
+        ? GraphicsOptions.chartStyleColorExpr(i + 1)
+        : chartStyle.isList() ? GraphicsOptions.getPlotStyle(chartStyle, i + 1) : chartStyle;
+  }
+
+  /**
+   * The fill of the quantile or density column of dataset <code>i</code> (counted from 0): the
+   * columns share the first colour, even when a legend names them.
+   */
+  private static IExpr columnFill(IExpr chartStyle, int i) {
+    return chartStyle.isAutomatic() ? GraphicsOptions.chartStyleColorExpr(0)
+        : chartStyle.isList() && chartStyle.argSize() > 0
+            ? chartStyle.getAt(1 + i % chartStyle.argSize())
+            : chartStyle;
+  }
+
+  /**
+   * The chart of <code>ChartElementFunction -> "Quantile"</code> or <code>"Density"</code>: one
+   * column per dataset from its smallest to its largest value. A quantile column is crossed at the
+   * quartiles and the median by lines in its fill darkened by 30%; a density column is shaded
+   * from the fill, where the kernel density estimate peaks, towards white, where it is lowest.
+   */
+  private IExpr columnChart(double[][] values, boolean quantile, IExpr chartStyle,
+      IExpr chartLabels, GraphicsOptions graphicsOptions, IAST originalAST, IAST ast,
+      EvalEngine engine) {
+    int n = values.length;
+    BoxWhiskerChart.BoxSlots slots = new BoxWhiskerChart.BoxSlots(n, BoxWhiskerChart
+        .barSpacing(GraphicsOptions.optionValue(originalAST, S.BarSpacing, S.Automatic)), false);
+    BoxWhiskerChart.Orientation orientation = new BoxWhiskerChart.Orientation(
+        GraphicsOptions.optionValue(originalAST, S.BarOrigin, S.Bottom));
+    IAST edge = F.EdgeForm(F.Directive(F.Opacity(F.num(0.5)),
+        F.unaryAST1(S.AbsoluteThickness, F.C1)));
+    double lo = Double.POSITIVE_INFINITY;
+    double hi = Double.NEGATIVE_INFINITY;
+    IASTAppendable columns = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      double[] sorted = values[i].clone();
+      java.util.Arrays.sort(sorted);
+      lo = Math.min(lo, sorted[0]);
+      hi = Math.max(hi, sorted[sorted.length - 1]);
+      IExpr fill = columnFill(chartStyle, i);
+      double[] rgb = rgbOf(fill);
+      double c = i + 1.0;
+      IASTAppendable column = F.ListAlloc();
+      if (quantile) {
+        column.append(orientation.rectangle(c - slots.half, sorted[0], c + slots.half,
+            sorted[sorted.length - 1]));
+        IExpr lineColor = rgb == null ? F.GrayLevel(0.35)
+            : F.RGBColor(0.7 * rgb[0], 0.7 * rgb[1], 0.7 * rgb[2]);
+        for (double p : new double[] {0.25, 0.5, 0.75}) {
+          // the ceil(n p)-th smallest value
+          int k = (int) Math.ceil(sorted.length * p);
+          double v = sorted[Math.max(1, Math.min(sorted.length, k)) - 1];
+          column.append(F.List(lineColor, F.Line(F.List(orientation.point(c - slots.half, v),
+              orientation.point(c + slots.half, v)))));
+        }
+      } else {
+        densityStrips(sorted, c, slots.half, orientation,
+            rgb == null ? new double[] {1.0, 0.835, 0.25} : rgb, column, engine);
+      }
+      columns.append(F.List(F.Directive(edge, fill), column));
+    }
+    IAST primitives = F.List(orientation.rangePoint(slots.low(), slots.high(n), lo, hi), columns);
+    if (GraphicsOptions.optionValue(originalAST, S.FrameTicks, null) == null) {
+      double span = hi - lo;
+      graphicsOptions.addOption(F.Rule(S.FrameTicks,
+          orientation.frameTicks(n, chartLabels, lo - 0.11 * span, hi + 0.11 * span)));
+    }
+    return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /**
+   * The shading of a density column, appended to <code>column</code>: the column's rectangle,
+   * overlaid by a <code>GraphicsComplex</code> of the bands between the samples of the density,
+   * shaded from the fill where the density peaks towards white where it is lowest.
+   */
+  private static void densityStrips(double[] sorted, double c, double half,
+      BoxWhiskerChart.Orientation orientation, double[] rgb, IASTAppendable column,
+      EvalEngine engine) {
+    double h = bandwidth(sorted);
+    double lo = sorted[0];
+    double hi = sorted[sorted.length - 1];
+    if (hi <= lo) {
+      lo -= h;
+      hi += h;
+    }
+    double[] density = new double[STRIPS + 1];
+    double dMin = Double.POSITIVE_INFINITY;
+    double dMax = Double.NEGATIVE_INFINITY;
+    for (int k = 0; k <= STRIPS; k++) {
+      engine.checkTimeLimit();
+      double y = lo + (hi - lo) * k / STRIPS;
+      double sum = 0.0;
+      for (double v : sorted) {
+        double u = (y - v) / h;
+        sum += Math.exp(-0.5 * u * u);
+      }
+      density[k] = sum;
+      dMin = Math.min(dMin, sum);
+      dMax = Math.max(dMax, sum);
+    }
+    IASTAppendable vertices = F.ListAlloc(2 * STRIPS + 2);
+    IASTAppendable colors = F.ListAlloc(2 * STRIPS + 2);
+    for (int k = 0; k <= STRIPS; k++) {
+      double y = lo + (hi - lo) * k / STRIPS;
+      double t = dMax > dMin ? (density[k] - dMin) / (dMax - dMin) : 1.0;
+      vertices.append(orientation.point(c - half, y));
+      vertices.append(orientation.point(c + half, y));
+      IAST color = F.RGBColor(1.0 - t * (1.0 - rgb[0]), 1.0 - t * (1.0 - rgb[1]),
+          1.0 - t * (1.0 - rgb[2]));
+      // both sides of a sample share its colour; the bands interpolate between the samples
+      colors.append(color);
+      colors.append(color);
+    }
+    IASTAppendable bands = F.ListAlloc(STRIPS);
+    for (int k = 0; k < STRIPS; k++) {
+      bands.append(F.List(F.ZZ(2 * k + 1), F.ZZ(2 * k + 2), F.ZZ(2 * k + 4), F.ZZ(2 * k + 3)));
+    }
+    column.append(F.headAST0(S.EdgeForm));
+    column.append(orientation.rectangle(c - half, lo, c + half, hi));
+    column.append(F.ternaryAST3(S.GraphicsComplex, vertices, F.Polygon(bands),
+        F.Rule(S.VertexColors, colors)));
+  }
+
+  /** The red, green and blue of a plain <code>RGBColor</code>, or <code>null</code>. */
+  private static double[] rgbOf(IExpr color) {
+    if (!color.isAST(S.RGBColor, 4)) {
+      return null;
+    }
+    double[] rgb = new double[3];
+    for (int i = 0; i < 3; i++) {
+      rgb[i] = color.getAt(i + 1).evalfNaN();
+      if (!Double.isFinite(rgb[i])) {
+        return null;
+      }
+    }
+    return rgb;
   }
 
   /** Silverman's rule of thumb, or 1 for data without spread. */

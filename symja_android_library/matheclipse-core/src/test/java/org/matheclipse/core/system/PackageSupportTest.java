@@ -384,6 +384,81 @@ public class PackageSupportTest extends ExprEvaluatorTestCase {
         "{a" + s + "b" + s + "c.m,a" + s + "c.m}");
   }
 
+  /**
+   * A function of another context than <code>System`</code>, as an optional module registers it:
+   * <code>TestContext`Square</code> squares, <code>TestContext`InheritedBlock</code> is
+   * <code>Block</code> keeping the outer definitions.
+   */
+  private static void registerTestContextFunctions() {
+    org.matheclipse.core.expression.Context context =
+        new org.matheclipse.core.expression.Context("TestContext`");
+    org.matheclipse.core.expression.ContextPath.registerSystemAlias("TestContext`Square",
+        org.matheclipse.core.expression.F.contextFunction(context, "Square",
+            new org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator() {
+              @Override
+              public org.matheclipse.core.interfaces.IExpr evaluate(
+                  org.matheclipse.core.interfaces.IAST ast,
+                  org.matheclipse.core.eval.EvalEngine engine) {
+                if (!ast.isAST1()) {
+                  return org.matheclipse.core.expression.F.NIL;
+                }
+                return engine.evaluate(
+                    org.matheclipse.core.expression.F.Sqr(engine.evaluate(ast.arg1())));
+              }
+            }));
+    org.matheclipse.core.expression.ContextPath.registerSystemAlias("TestContext`InheritedBlock",
+        org.matheclipse.core.expression.F.contextFunction(context, "InheritedBlock",
+            org.matheclipse.core.interfaces.ISymbol.HOLDALL,
+            new org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator() {
+              @Override
+              public org.matheclipse.core.interfaces.IExpr evaluate(
+                  org.matheclipse.core.interfaces.IAST ast,
+                  org.matheclipse.core.eval.EvalEngine engine) {
+                if (!ast.isAST2() || !ast.arg1().isList()) {
+                  return org.matheclipse.core.expression.F.NIL;
+                }
+                return engine.evalBlock(() -> engine.evaluate(ast.arg2()), (org.matheclipse.core.interfaces.IAST) ast.arg1(),
+                    true);
+              }
+            }));
+  }
+
+  @Test
+  public void testRegisteredContextFunction() {
+    registerTestContextFunctions();
+    check("TestContext`Square(7)", //
+        "49");
+    check("Context(TestContext`Square)", //
+        "TestContext`");
+    // printed with its context, and not as the operator of System`Square
+    check("Hold(TestContext`Square(x))", //
+        "Hold(TestContext`Square(x))");
+    check("FullForm(Hold(TestContext`Square(x)))", //
+        "Hold(TestContext`Square(x))");
+    // a Global` symbol of the same name doesn't take its place
+    check("Square = 3; TestContext`Square(5)", //
+        "25");
+  }
+
+  @Test
+  public void testInheritedBlockKeepsOuterDefinitions() {
+    registerTestContextFunctions();
+    check("ib(1) = a; TestContext`InheritedBlock({ib}, ib(2) = b; {ib(1), ib(2)})", //
+        "{a,b}");
+    check("{ib(1), ib(2)}", //
+        "{a,ib(2)}");
+    check("iv = 2; {TestContext`InheritedBlock({iv}, iv = iv^3; iv), iv}", //
+        "{8,2}");
+    check("SetAttributes(ia, Orderless); "
+        + "{TestContext`InheritedBlock({ia}, ClearAttributes(ia, Orderless); Attributes(ia)), "
+        + "Attributes(ia)}", //
+        "{{},{Orderless}}");
+    // inside, the definitions are a copy; Block itself still starts without them
+    check("{TestContext`InheritedBlock({ib}, Length(DownValues(ib))), "
+        + "Block({ib}, Length(DownValues(ib)))}", //
+        "{1,0}");
+  }
+
   @Test
   public void testInternalSyntacticNegativeQ() {
     check("{Internal`SyntacticNegativeQ(-a), Internal`SyntacticNegativeQ(a), "

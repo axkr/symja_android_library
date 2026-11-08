@@ -142,7 +142,7 @@ public class ParametricPlot extends Plot {
     IExpr plotStyle = options[GraphicsOptions.X_PLOTSTYLE];
     IExpr color;
     if (plotStyle.isNone()) {
-      color = GraphicsOptions.plotStyleDirective(index, F.NIL, graphicsOptions.curveThickness());
+      color = graphicsOptions.curveStyle(index);
     } else {
       color = GraphicsOptions.getPlotStyle(plotStyle, index);
     }
@@ -150,7 +150,7 @@ public class ParametricPlot extends Plot {
     // Opacity leaves the colour to the default
     IExpr opacity = regionOpacity(plotStyle);
     if (color.isAST(S.Opacity) || color.isNumber()) {
-      color = GraphicsOptions.plotStyleDirective(index, F.NIL, graphicsOptions.curveThickness());
+      color = graphicsOptions.curveStyle(index);
     }
 
     // 2. The region, translucent so that what lies under it - the axes, and the mesh drawn on

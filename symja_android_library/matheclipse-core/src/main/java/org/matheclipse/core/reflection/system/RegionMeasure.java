@@ -145,6 +145,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
             return capsuleShapeMeasure(reg, engine);
           case ID.StadiumShape:
           case ID.DiskSegment:
+          case ID.Annulus:
             // the measure of a two dimensional region is its area
             return S.Area.of(engine, reg);
           case ID.EmptyRegion:

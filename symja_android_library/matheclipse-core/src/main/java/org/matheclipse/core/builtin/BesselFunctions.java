@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.external.apfloat.ApcomplexBesselMath;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apcomplex;
 import static org.matheclipse.core.expression.F.BesselY;
@@ -1977,6 +1976,10 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.isAST1() ? F.C0 : ast.arg1();
       IExpr z = ast.isAST1() ? ast.arg1() : ast.arg2();
+      if (kind == KER && z.isZero() && n.isNumber() && n.isNumIntValue() && !n.isZero()) {
+        // ker(n, z) has a pole of order |n| at 0; ker(-n, z) == (-1)^n*ker(n, z)
+        return S.ComplexInfinity;
+      }
       if (z.isZero() && n.isInteger()) {
         if (kind == KER || kind == KEI) {
           if (kind == KEI && n.isZero()) {
@@ -2288,16 +2291,16 @@ public class BesselFunctions {
         return F.num(Math.sqrt(Math.PI / 2.0 / x) * hankel[secondKind ? 1 : 0]);
       }
     }
-    final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
+    final int digits = WorkingPrecision.digits(arbitrary, engine);
     try {
-      Apcomplex order = CarlsonArbitraryPrecision.apcomplex(n, digits);
-      Apcomplex argument = CarlsonArbitraryPrecision.apcomplex(z, digits);
+      Apcomplex order = WorkingPrecision.apcomplex(n, digits);
+      Apcomplex argument = WorkingPrecision.apcomplex(z, digits);
       Apcomplex value = secondKind ? ApcomplexBesselMath.sphericalBesselY(order, argument)
           : ApcomplexBesselMath.sphericalBesselJ(order, argument);
       boolean real = value.imag().signum() == 0 || (n.isReal() && z.isReal()
           && (z.isPositive() || ((IReal) n).isNumIntValue())
           && value.imag().scale() < value.real().scale() - digits + 4);
-      return CarlsonArbitraryPrecision.toNumber(value, real, arbitrary);
+      return WorkingPrecision.toNumber(value, real, arbitrary);
     } catch (ArithmeticException | ApfloatRuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
       return F.NIL;
@@ -2323,7 +2326,7 @@ public class BesselFunctions {
         return F.NIL;
       }
       final int digits = (int) engine.getNumericPrecision();
-      Apfloat nu = CarlsonArbitraryPrecision.apcomplex(n, digits + 20).real();
+      Apfloat nu = WorkingPrecision.apcomplex(n, digits + 20).real();
       return F.num(ApcomplexBesselMath.besselZero(nu, new Apfloat(seed), secondKind, digits));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);

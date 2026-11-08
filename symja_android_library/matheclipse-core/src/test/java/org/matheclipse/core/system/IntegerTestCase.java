@@ -226,7 +226,7 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
     // the arguments come back in canonical order now that BitOr is Orderless, as it is in
     // Mathematica; they were left in the order they were written when it was only Listable
     check("BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})", //
-        "BitOr(a,<|a->0,b:>1|>,{{{}}},{x,1,-1,-1})");
+        "BitOr(<|a->0,b:>1|>,a,{{{}}},{x,1,-1,-1})");
     check("Table(BitOr(n,3), {n,-10,10})", //
         "{-9,-9,-5,-5,-5,-5,-1,-1,-1,-1,3,3,3,3,7,7,7,7,11,11,11}");
     check("BitOr(61,15)", //

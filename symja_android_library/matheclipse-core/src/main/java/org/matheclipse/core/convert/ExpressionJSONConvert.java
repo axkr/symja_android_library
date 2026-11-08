@@ -199,7 +199,7 @@ public class ExpressionJSONConvert {
     } else if (node instanceof ObjectNode) {
       IASTAppendable list = F.ListAlloc();
       ObjectNode objectNode = (ObjectNode) node;
-      Iterator<Entry<String, JsonNode>> iter = objectNode.fields();
+      Iterator<Entry<String, JsonNode>> iter = objectNode.properties().iterator();
       while (iter.hasNext()) {
         Entry<String, JsonNode> next = iter.next();
         IExpr temp = importExpressionJSONRecursive(next.getValue());

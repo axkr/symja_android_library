@@ -1260,7 +1260,7 @@ public final class NumberTheory {
       }
       IASTAppendable result = F.ListAlloc(periodStart + 1);
       result.appendAll(terms, 1, periodStart + 1);
-      result.append(terms.copyFrom(periodStart + 1));
+      result.append(terms.subList(periodStart + 1));
       return result;
     }
 
@@ -4487,7 +4487,7 @@ public final class NumberTheory {
               }
               IAST result = linearRecurrence(list1, list2, nmax, ast, engine);
               if (result.isPresent()) {
-                return result.copyFrom(nmin, nmax + 1);
+                return result.subList(nmin, nmax + 1);
               }
             }
           }
@@ -6693,11 +6693,7 @@ public final class NumberTheory {
       }
       if (x instanceof ApfloatNum) {
         Apfloat value = ((ApfloatNum) x).apfloatValue();
-        java.math.BigDecimal decimal = new java.math.BigDecimal(value.toString(true));
-        org.hipparchus.fraction.BigFraction exact = decimal.scale() <= 0
-            ? new org.hipparchus.fraction.BigFraction(decimal.toBigIntegerExact())
-            : new org.hipparchus.fraction.BigFraction(decimal.unscaledValue(),
-                java.math.BigInteger.TEN.pow(decimal.scale()));
+        org.hipparchus.fraction.BigFraction exact = exactFraction(value);
         // five quarters of a unit of the last digit
         org.hipparchus.fraction.BigFraction tolerance = new org.hipparchus.fraction.BigFraction(
             java.math.BigInteger.valueOf(5),
@@ -6710,6 +6706,95 @@ public final class NumberTheory {
         return re.isPresent() && im.isPresent() ? F.Complex(re, im) : F.NIL;
       }
       return F.NIL;
+    }
+
+    /** The exact value of the decimal digits of an arbitrary precision number. */
+    private static org.hipparchus.fraction.BigFraction exactFraction(Apfloat value) {
+      java.math.BigDecimal decimal = new java.math.BigDecimal(value.toString(true));
+      return decimal.scale() <= 0
+          ? new org.hipparchus.fraction.BigFraction(decimal.toBigIntegerExact())
+          : new org.hipparchus.fraction.BigFraction(decimal.unscaledValue(),
+              java.math.BigInteger.TEN.pow(decimal.scale()));
+    }
+
+    /**
+     * The exact value of a real number, or <code>null</code> if it isn't a rational, machine or
+     * arbitrary precision real number.
+     */
+    private static org.hipparchus.fraction.BigFraction exactFraction(IReal x) {
+      if (x instanceof ApfloatNum) {
+        return exactFraction(((ApfloatNum) x).apfloatValue());
+      }
+      if (x instanceof INum) {
+        double value = ((INum) x).doubleValue();
+        return Double.isFinite(value) ? new org.hipparchus.fraction.BigFraction(value) : null;
+      }
+      if (x instanceof IRational) {
+        IRational q = (IRational) x;
+        return new org.hipparchus.fraction.BigFraction(q.toBigNumerator(), q.toBigDenominator());
+      }
+      return null;
+    }
+
+    /**
+     * Every arbitrary precision real number in <code>expr</code> replaced by the rational number
+     * with the smallest denominator within <code>dx</code> of its exact value, so that no digit is
+     * lost to a machine number.
+     *
+     * @return {@link F#NIL} if <code>expr</code> contains no arbitrary precision real number
+     */
+    private static IExpr simplestWithin(IExpr expr, org.hipparchus.fraction.BigFraction dx) {
+      java.util.function.Function<IExpr, IExpr> function = x -> {
+        if (x instanceof ApfloatNum) {
+          org.hipparchus.fraction.BigFraction value = exactFraction(((ApfloatNum) x).apfloatValue());
+          org.hipparchus.fraction.BigFraction simplest =
+              simplestInInterval(value.subtract(dx), value.add(dx));
+          return F.QQ(simplest.getNumerator(), simplest.getDenominator());
+        }
+        return F.NIL;
+      };
+      return expr.isAST() ? expr.replaceAll(function) : function.apply(expr);
+    }
+
+    /**
+     * The rational number with the smallest denominator in the closed interval
+     * <code>[lo, hi]</code>, from the common start of the continued fractions of its ends.
+     */
+    private static org.hipparchus.fraction.BigFraction simplestInInterval(
+        org.hipparchus.fraction.BigFraction lo, org.hipparchus.fraction.BigFraction hi) {
+      if (lo.getNumerator().signum() <= 0 && hi.getNumerator().signum() >= 0) {
+        return org.hipparchus.fraction.BigFraction.ZERO;
+      }
+      if (hi.getNumerator().signum() < 0) {
+        return simplestInInterval(hi.negate(), lo.negate()).negate();
+      }
+      // 0 < lo <= hi
+      java.util.List<java.math.BigInteger> terms = new java.util.ArrayList<>();
+      while (true) {
+        java.math.BigInteger floor = lo.getNumerator().divide(lo.getDenominator());
+        org.hipparchus.fraction.BigFraction floorFraction =
+            new org.hipparchus.fraction.BigFraction(floor);
+        if (floorFraction.compareTo(lo) == 0) {
+          terms.add(floor);
+          break;
+        }
+        java.math.BigInteger next = floor.add(java.math.BigInteger.ONE);
+        if (new org.hipparchus.fraction.BigFraction(next).compareTo(hi) <= 0) {
+          terms.add(next);
+          break;
+        }
+        // both ends lie in (floor, floor + 1)
+        terms.add(floor);
+        org.hipparchus.fraction.BigFraction newLo = hi.subtract(floorFraction).reciprocal();
+        hi = lo.subtract(floorFraction).reciprocal();
+        lo = newLo;
+      }
+      org.hipparchus.fraction.BigFraction result =
+          new org.hipparchus.fraction.BigFraction(terms.get(terms.size() - 1));
+      for (int i = terms.size() - 2; i >= 0; i--) {
+        result = new org.hipparchus.fraction.BigFraction(terms.get(i)).add(result.reciprocal());
+      }
+      return result;
     }
 
     /**
@@ -6769,11 +6854,35 @@ public final class NumberTheory {
             // expression only the inexact numbers are rationalized
             arg1 = engine.evalN(arg1);
           }
-          if (epsilon == 0.0) {
-            // every inexact number becomes the simplest rational number it stands for
-            IExpr converted = arg1.isAST() ? arg1.replaceAll(Rationalize::convergent)
-                : convergent(arg1);
-            if (converted.isPresent()) {
+          if (epsilonExpr.isZero() || epsilonExpr.isPositive()) {
+            IExpr converted = arg1;
+            boolean changed = false;
+            if (epsilonExpr.isPositive()) {
+              // an arbitrary precision number is compared in exact arithmetic with an exact dx
+              org.hipparchus.fraction.BigFraction dx = exactFraction(epsilonExpr);
+              if (dx != null && dx.getNumerator().signum() > 0) {
+                IExpr temp = simplestWithin(arg1, dx);
+                if (temp.isPresent()) {
+                  converted = temp;
+                  changed = true;
+                }
+              }
+            }
+            if (epsilon == 0.0) {
+              // a dx of zero or below the machine range: every remaining inexact number becomes
+              // the simplest rational number it stands for
+              IExpr temp = converted.isAST() ? converted.replaceAll(Rationalize::convergent)
+                  : convergent(converted);
+              if (temp.isPresent()) {
+                converted = temp;
+                changed = true;
+              }
+            } else if (changed) {
+              // the machine numbers next to the arbitrary precision ones
+              converted = AbstractFractionSym.rationalize(converted, epsilon, false, true)
+                  .orElse(converted);
+            }
+            if (changed) {
               return engine.evaluate(converted);
             }
           }

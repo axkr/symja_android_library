@@ -1,0 +1,209 @@
+package org.matheclipse.internal.builtin;
+
+import java.util.Set;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.internal.InternalFunction;
+
+/** The predicates of the <code>Internal`</code> context. */
+public class PredicateFunctions {
+
+  /** The heads which make an expression a pattern. */
+  private static final Set<IExpr> PATTERN_HEADS =
+      Set.of(S.Alternatives, S.Blank, S.BlankNullSequence, S.BlankSequence, S.Except, S.Longest,
+          S.Optional, S.OptionsPattern, S.OrderlessPatternSequence, S.Pattern, S.PatternSequence,
+          S.Repeated, S.RepeatedNull, S.Shortest);
+
+  /** A predicate of the evaluated arguments. */
+  @FunctionalInterface
+  private interface Test {
+    boolean test(IAST ast, EvalEngine engine);
+  }
+
+  private static final class Predicate extends InternalFunction {
+    private final Test fTest;
+
+    Predicate(int minArgs, int maxArgs, Test test) {
+      super(minArgs, maxArgs);
+      fTest = test;
+    }
+
+    @Override
+    protected IExpr evaluateArgs(IAST ast, EvalEngine engine) {
+      return F.booleSymbol(fTest.test(ast, engine));
+    }
+  }
+
+  /** The variables <code>v</code> or <code>{v1, v2, ...}</code> as a list. */
+  private static IAST variables(IExpr spec) {
+    return spec.isList() ? (IAST) spec : F.list(spec);
+  }
+
+  /**
+   * Is <code>expr</code> built from the variables by <code>Plus</code>, <code>Times</code> and
+   * integer powers, with subexpressions free of the variables as coefficients?
+   */
+  private static boolean isRationalFunction(IExpr expr, IAST variables) {
+    if (variables.exists(v -> v.equals(expr))) {
+      return true;
+    }
+    if (expr.isFree(x -> variables.exists(v -> v.equals(x)), true)) {
+      return !expr.isList() && !expr.isRelationalBinary();
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      return ((IAST) expr).forAll(x -> isRationalFunction(x, variables));
+    }
+    if (expr.isPower() && expr.exponent().isInteger()) {
+      return isRationalFunction(expr.base(), variables);
+    }
+    return false;
+  }
+
+  /** Is <code>expr</code> a polynomial in <code>variable</code> written as a sum of monomials? */
+  private static boolean isExpandedPolynomial(IExpr expr, IExpr variable) {
+    IExpr[] terms = expr.isPlus() ? ((IAST) expr).toArray() : new IExpr[] {expr};
+    for (IExpr term : terms) {
+      IExpr[] factors = term.isTimes() ? ((IAST) term).toArray() : new IExpr[] {term};
+      for (IExpr factor : factors) {
+        if (factor.equals(variable) || factor.isFree(variable, true)) {
+          continue;
+        }
+        if (factor.isPower() && factor.base().equals(variable)
+            && factor.exponent().isInteger() && factor.exponent().isPositive()) {
+          continue;
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean isPolynomial(IExpr expr, IExpr variables, EvalEngine engine) {
+    return engine.evaluate(F.binaryAST2(S.PolynomialQ, expr, variables)).isTrue();
+  }
+
+  /**
+   * Is <code>expr</code> free of the values which signal a failed computation:
+   * <code>Indeterminate</code> and the infinities?
+   */
+  private static boolean isExceptionFree(IExpr expr) {
+    return expr.isFree(x -> x == S.Indeterminate || x == S.Infinity || x == S.ComplexInfinity
+        || x.isAST(S.DirectedInfinity), true);
+  }
+
+  private static boolean isPatternFree(IExpr expr) {
+    return expr.isFree(x -> x instanceof IPatternObject
+        || (x.isAST() && PATTERN_HEADS.contains(x.head())), true);
+  }
+
+  /** Is <code>n</code> the discriminant of a quadratic number field? */
+  private static boolean isFundamentalDiscriminant(IExpr n, EvalEngine engine) {
+    if (!n.isInteger() || n.isOne() || n.isZero()) {
+      return false;
+    }
+    IInteger integer = (IInteger) n;
+    int mod4 = integer.mod(F.C4).toIntDefault();
+    if (mod4 == 1) {
+      return isSquareFree(integer, engine);
+    }
+    if (mod4 == 0) {
+      IInteger m = integer.div(F.C4);
+      int m4 = m.mod(F.C4).toIntDefault();
+      return (m4 == 2 || m4 == 3) && isSquareFree(m, engine);
+    }
+    return false;
+  }
+
+  private static boolean isSquareFree(IInteger n, EvalEngine engine) {
+    return engine.evaluate(F.unaryAST1(S.SquareFreeQ, n)).isTrue();
+  }
+
+  private static boolean isGregorianLeapYear(IExpr year) {
+    if (!year.isInteger()) {
+      return false;
+    }
+    IInteger y = (IInteger) year;
+    return (y.mod(F.C4).isZero() && !y.mod(F.C100).isZero()) || y.mod(F.ZZ(400)).isZero();
+  }
+
+  /**
+   * Does <code>rad</code> lie in the radical of the ideal generated by <code>polynomials</code>?
+   * By the Rabinowitsch trick that is the case if the ideal with <code>1 - t*rad</code> added is
+   * the whole ring.
+   */
+  private static boolean isRadicalMember(IExpr rad, IExpr polynomials, EvalEngine engine) {
+    if (rad.isZero()) {
+      return true;
+    }
+    IAST generators = variables(polynomials);
+    ISymbol t = F.Dummy("t" + EvalEngine.uniqueName("$"));
+    IASTAppendable ideal = F.ListAlloc(generators.argSize() + 1);
+    ideal.appendArgs(generators);
+    ideal.append(F.Subtract(F.C1, F.Times(t, rad)));
+    IExpr vars = engine.evaluate(F.unaryAST1(S.Variables, F.list(rad, generators)));
+    if (!vars.isList()) {
+      return false;
+    }
+    IASTAppendable allVariables = ((IAST) vars).copyAppendable();
+    allVariables.append(t);
+    IExpr basis = engine.evaluate(F.binaryAST2(S.GroebnerBasis, ideal, allVariables));
+    return basis.isList() && basis.argSize() == 1 && basis.first().isOne();
+  }
+
+  /** Would <code>expr</code> be numeric if each of the variables were numeric? */
+  private static boolean wouldBeNumeric(IExpr expr, IAST variables) {
+    java.util.Map<IExpr, IExpr> numeric = new java.util.HashMap<>();
+    variables.forEach(v -> numeric.put(v, S.Pi));
+    return F.subst(expr, numeric).isNumericFunction(true);
+  }
+
+  static void init() {
+    InternalFunctions.define("PolynomialFunctionQ", ISymbol.NOATTRIBUTE,
+        new Predicate(2, 2, (ast, engine) -> isPolynomial(ast.arg1(), ast.arg2(), engine)));
+    InternalFunctions.define("RationalFunctionQ", ISymbol.NOATTRIBUTE, new Predicate(2, 2,
+        (ast, engine) -> isRationalFunction(ast.arg1(), variables(ast.arg2()))));
+    InternalFunctions.define("LinearQ", ISymbol.NOATTRIBUTE, new Predicate(2, 2, (ast,
+        engine) -> isPolynomial(ast.arg1(), ast.arg2(), engine)
+            && engine.evaluate(F.Exponent(ast.arg1(), ast.arg2())).isOne()));
+    InternalFunctions.define("EPolyQ", ISymbol.NOATTRIBUTE,
+        new Predicate(2, 2, (ast, engine) -> !ast.arg2().isList()
+            && isPolynomial(ast.arg1(), ast.arg2(), engine)
+            && isExpandedPolynomial(ast.arg1(), ast.arg2())));
+    InternalFunctions.define("ExceptionFreeQ", ISymbol.NOATTRIBUTE,
+        new Predicate(1, 1, (ast, engine) -> isExceptionFree(ast.arg1())));
+    InternalFunctions.define("DependsOnQ", ISymbol.NOATTRIBUTE,
+        new Predicate(2, 3, (ast, engine) -> !ast.arg1().isFree(ast.arg2(), false)));
+    InternalFunctions.define("LiterallyOccurringQ", ISymbol.NOATTRIBUTE,
+        new Predicate(2, 2, (ast, engine) -> !ast.arg1().isFree(ast.arg2(), true)));
+    InternalFunctions.define("LiterallyAbsentQ", ISymbol.NOATTRIBUTE,
+        new Predicate(2, 2, (ast, engine) -> ast.arg1().isFree(ast.arg2(), true)));
+    InternalFunctions.define("PatternFreeQ", ISymbol.NOATTRIBUTE,
+        new Predicate(1, 1, (ast, engine) -> isPatternFree(ast.arg1())));
+    InternalFunctions.define("PatternPresentQ", ISymbol.NOATTRIBUTE,
+        new Predicate(1, 1, (ast, engine) -> !isPatternFree(ast.arg1())));
+    InternalFunctions.define("WouldBeNumericQ", ISymbol.NOATTRIBUTE, new Predicate(2, 2,
+        (ast, engine) -> wouldBeNumeric(ast.arg1(), variables(ast.arg2()))));
+    InternalFunctions.define("FundamentalDiscriminantQ", ISymbol.NOATTRIBUTE,
+        new Predicate(1, 1, (ast, engine) -> isFundamentalDiscriminant(ast.arg1(), engine)));
+    InternalFunctions.define("GregorianLeapYearQ", ISymbol.NOATTRIBUTE,
+        new Predicate(1, 1, (ast, engine) -> isGregorianLeapYear(ast.arg1())));
+    InternalFunctions.define("RadicalMemberQ", ISymbol.NOATTRIBUTE, new Predicate(2, 2,
+        (ast, engine) -> isRadicalMember(ast.arg1(), ast.arg2(), engine)));
+    // {number, True} if number is an integer, {number, False} otherwise
+    InternalFunctions.define("TestIntegerQ", ISymbol.NOATTRIBUTE, new InternalFunction(1, 2) {
+      @Override
+      protected IExpr evaluateArgs(IAST ast, EvalEngine engine) {
+        return F.list(ast.arg1(), F.booleSymbol(ast.arg1().isInteger()));
+      }
+    });
+  }
+
+  private PredicateFunctions() {}
+}

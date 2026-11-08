@@ -140,6 +140,13 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
       return distinctSolutions(result,
           ast.argSize() >= 2 ? ast.arg2().makeList() : F.CEmptyList);
     }
+    if (org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr
+        .hasArbitraryPrecisionNumber(ast.arg1())) {
+      // arbitrary-precision coefficients would send the exact solver to machine arithmetic: solve
+      // with their exact values and evaluate the solutions to the working precision. A machine
+      // number would become a fraction with a denominator of 2^52, which only slows the solver
+      ast = ast.setAtCopy(1, S.SetPrecision.of(engine, ast.arg1(), F.CInfinity));
+    }
     IExpr result = new SolveData(options).of(ast, false, true, engine);
     if (result.isNIL()) {
       result = new SolveData(options).of(ast, true, true, engine);

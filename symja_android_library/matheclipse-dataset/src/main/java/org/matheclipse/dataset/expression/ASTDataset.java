@@ -982,7 +982,10 @@ public class ASTDataset extends AbstractAST
               IExpr arg = table.column(j).isMissing(i) ? ExprColumnType.missingValueIndicator()
                   : dataToExpr(table.get(i, j), t);
 
-              IExpr value = S.Part.of1(engine, arg, part);
+              IASTAppendable partOfArg = F.ast(S.Part, part.length + 1);
+              partOfArg.append(arg);
+              partOfArg.appendAll(part, 0, part.length);
+              IExpr value = engine.evaluate(partOfArg);
               if (value.isAST(S.Part) || value.isNIL()) {
                 IASTAppendable missing = F.ast(S.Missing);
                 missing.append(F.$str("PartAbsent"));
@@ -1228,7 +1231,7 @@ public class ASTDataset extends AbstractAST
   private static Table rowsInOrder(Table table, int[] rows) {
     Table result = table.emptyCopy();
     for (int row : rows) {
-      result.addRow(table.row(row));
+      result.append(table.row(row));
     }
     return result;
   }

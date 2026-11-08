@@ -399,7 +399,7 @@ public class DatasetFunctions {
       } else if (spec == S.CountDistinct) {
         return AggregateFunctions.countUnique;
       } else if (spec == S.StandardDeviation) {
-        return AggregateFunctions.standardDeviation;
+        return AggregateFunctions.stdDev;
       } else if (spec == S.Variance) {
         return AggregateFunctions.variance;
       } else if (spec == S.First) {

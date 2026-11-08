@@ -66,12 +66,15 @@ public class Functors {
     private final Map<IExpr, IExpr> fEqualRules;
     private final List<PatternMatcherAndEvaluator> fMatchers;
     private final EvalEngine fEngine;
+    /** only match an expression as a whole, never a run of a Flat or Orderless expression */
+    private final boolean fWholeOnly;
 
     public RulesPatternFunctor(Map<IExpr, IExpr> equalRules,
-        List<PatternMatcherAndEvaluator> matchers, EvalEngine engine) {
+        List<PatternMatcherAndEvaluator> matchers, EvalEngine engine, boolean wholeOnly) {
       fEqualRules = equalRules;
       fMatchers = matchers;
       fEngine = engine;
+      fWholeOnly = wholeOnly;
     }
 
     @Override
@@ -81,7 +84,8 @@ public class Functors {
         return temp;
       }
       for (int i = 0; i < fMatchers.size(); i++) {
-        temp = fMatchers.get(i).replace(arg, fEngine);
+        PatternMatcherAndEvaluator matcher = fMatchers.get(i);
+        temp = fWholeOnly ? matcher.replaceWhole(arg, fEngine) : matcher.replace(arg, fEngine);
         if (temp.isPresent()) {
           return replacement(temp);
         }
@@ -846,6 +850,20 @@ public class Functors {
    * @param engine the evaluation engine
    */
   public static Function<IExpr, IExpr> rules(IExpr astRules, EvalEngine engine) {
+    return rules(astRules, engine, false);
+  }
+
+  /**
+   * Like {@link #rules(IExpr, EvalEngine)}, but a rule only matches an expression as a whole: a
+   * run of the arguments of a <code>Flat</code> or <code>Orderless</code> expression isn't
+   * replaced. Used by <code>Replace</code>, where only <code>ReplaceAll</code> rewrites a subset.
+   */
+  public static Function<IExpr, IExpr> wholeRules(IExpr astRules, EvalEngine engine) {
+    return rules(astRules, engine, true);
+  }
+
+  private static Function<IExpr, IExpr> rules(IExpr astRules, EvalEngine engine,
+      boolean wholeOnly) {
     final Map<IExpr, IExpr> equalRules;
     IAST rule;
     List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
@@ -857,7 +875,7 @@ public class Functors {
       return rules(associationRules((IAssociation) astRules));
     }
     if (astRules.isList()) {
-      return rulesFromNestedList((IAST) astRules, engine, matchers);
+      return rulesFromNestedList((IAST) astRules, engine, matchers, wholeOnly);
     } else {
       if (astRules.isRuleAST()) {
         rule = (IAST) astRules;
@@ -869,7 +887,7 @@ public class Functors {
         throw new ArgumentTypeException("reps", F.list(astRules));
       }
       if (matchers.size() > 0) {
-        return new RulesPatternFunctor(equalRules, matchers, engine);
+        return new RulesPatternFunctor(equalRules, matchers, engine, wholeOnly);
       }
       return equalRule(rule);
     }
@@ -905,7 +923,7 @@ public class Functors {
   }
 
   private static Function<IExpr, IExpr> rulesFromNestedList(IAST astRules, EvalEngine engine,
-      List<PatternMatcherAndEvaluator> matchers) {
+      List<PatternMatcherAndEvaluator> matchers, boolean wholeOnly) {
     final Map<IExpr, IExpr> equalRules;
     IAST rule;
     if (astRules.size() > 1) {
@@ -920,7 +938,7 @@ public class Functors {
           addRuleToCollection(equalRules, matchers, rule);
         } else {
           if (astRules.isList()) {
-            return rulesFromNestedList((IAST) expr, engine, matchers);
+            return rulesFromNestedList((IAST) expr, engine, matchers, wholeOnly);
           } else {
             throw new ArgumentTypeException(
                 "rule expression (x->y or x:>y) expected instead of " + expr.toString());
@@ -928,7 +946,7 @@ public class Functors {
         }
       }
       if (matchers.size() > 0) {
-        return new RulesPatternFunctor(equalRules, matchers, engine);
+        return new RulesPatternFunctor(equalRules, matchers, engine, wholeOnly);
       }
       if (argsSize == 1) {
         return equalRule((IAST) astRules.arg1());

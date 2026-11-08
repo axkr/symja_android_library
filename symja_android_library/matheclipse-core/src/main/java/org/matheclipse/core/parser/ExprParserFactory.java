@@ -319,7 +319,7 @@ public class ExprParserFactory implements IParserFactory {
     }
   }
 
-  private static class SubtractExprOperator extends InfixExprOperator {
+  static final class SubtractExprOperator extends InfixExprOperator {
     public SubtractExprOperator(final String oper, final String functionName, final int precedence,
         final int grouping) {
       super(oper, functionName, precedence, grouping);
@@ -330,21 +330,29 @@ public class ExprParserFactory implements IParserFactory {
         final IExpr lhs, final IExpr rhs) {
       if (Config.USER_STEPS_PARSER) {
         return new B2.Subtract(lhs, rhs);
-      } else {
-        if (rhs.isNumber()) {
-          return F.Plus(lhs, rhs.negate());
-        }
-        if (rhs.isTimes() && rhs.first().isNumber()) {
-          return F.Plus(lhs, ((IAST) rhs).setAtCopy(1, rhs.first().negate()));
-        }
-        if (rhs.isTimes()) {
-          // -1 in front of the factors as they were written; F.Times() would sort them
-          IASTAppendable negated = ((IAST) rhs).copyAppendable(1);
-          negated.append(1, F.CN1);
-          return F.Plus(lhs, negated);
-        }
-        return F.Plus(lhs, F.Times(F.CN1, rhs));
       }
+      // the terms in the order they were written
+      return F.binaryAST2(S.Plus, lhs, negateTerm(rhs));
+    }
+
+    /**
+     * The term <code>-rhs</code> of <code>lhs - rhs</code>: a number is negated, a product gets a
+     * negated or a <code>-1</code> leading factor, anything else is multiplied by <code>-1</code>.
+     */
+    static IExpr negateTerm(final IExpr rhs) {
+      if (rhs.isNumber()) {
+        return rhs.negate();
+      }
+      if (rhs.isTimes() && rhs.first().isNumber()) {
+        return ((IAST) rhs).setAtCopy(1, rhs.first().negate());
+      }
+      if (rhs.isTimes()) {
+        // -1 in front of the factors as they were written; F.Times() would sort them
+        IASTAppendable negated = ((IAST) rhs).copyAppendable(1);
+        negated.append(1, F.CN1);
+        return negated;
+      }
+      return F.Times(F.CN1, rhs);
     }
   }
 

@@ -118,6 +118,26 @@ public class DispatchExpr extends DataExpr<VisitorReplaceAll>
     return fData.getFunction().apply(expr);
   }
 
+  /** The rules matching an expression only as a whole, built on first use. */
+  private transient volatile Function<IExpr, IExpr> fWholeFunction;
+
+  /**
+   * Apply the dispatcher to <code>expr</code> as a whole, as <code>Replace</code> does: a run of
+   * the arguments of a <code>Flat</code> or <code>Orderless</code> expression isn't replaced.
+   *
+   * @param expr the expression to dispatch on
+   * @return the matched right-hand-side or {@link F#NIL} if no match is found
+   */
+  public IExpr applyWhole(IExpr expr) {
+    Function<IExpr, IExpr> function = fWholeFunction;
+    if (function == null) {
+      function = org.matheclipse.core.generic.Functors.wholeRules(listOfRules,
+          org.matheclipse.core.eval.EvalEngine.get());
+      fWholeFunction = function;
+    }
+    return function.apply(expr);
+  }
+
   /**
    * Create a shallow copy of this dispatch expression.
    *

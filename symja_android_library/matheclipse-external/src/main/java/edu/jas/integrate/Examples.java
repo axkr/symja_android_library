@@ -5,6 +5,7 @@
 package edu.jas.integrate;
 
 
+import edu.jas.ufd.PolyUfdUtil;
 import java.util.List;
 
 import edu.jas.arith.BigRational;
@@ -250,7 +251,7 @@ public class Examples {
 
         Quotient<BigRational> qi = qfac.random(7);
         //qi = qi.sum( qfac.random(5) );
-        q = eIntegrator.derivative(qi);
+        q = PolyUfdUtil.<BigRational> derivative(qi);
         System.out.println("qi =  " + qi);
         System.out.println("q  =  " + q);
         ret = eIntegrator.integrate(q);

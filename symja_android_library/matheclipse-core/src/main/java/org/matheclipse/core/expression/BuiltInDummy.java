@@ -196,8 +196,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr assignedValue() {
-    Context globalContext = EvalEngine.get().getContextPath().getGlobalContext();
-    ISymbol globalSubstitute = globalContext.get(fSymbolName);
+    ISymbol globalSubstitute = globalSubstitute(EvalEngine.get());
     if (globalSubstitute != null) {
       return globalSubstitute.assignedValue();
     }
@@ -208,8 +207,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void assignValue(final IExpr value, boolean setDelayed) {
-    Context globalContext = EvalEngine.get().getContextPath().getGlobalContext();
-    ISymbol globalSubstitute = globalContext.get(fSymbolName);
+    ISymbol globalSubstitute = globalSubstitute(EvalEngine.get());
     if (globalSubstitute != null) {
       globalSubstitute.assignValue(value, false);
       return;
@@ -392,11 +390,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
    */
   private IExpr evalnIfNumeric() {
     if (isNumericFunction(true)) {
-      return F.evaln(this);
+      return EvalEngine.get().evalN(this);
     }
     IExpr temp = assignedValue();
     if (temp != null && temp.isNumericFunction(true)) {
-      return F.evaln(this);
+      return EvalEngine.get().evalN(this);
     }
     return null;
   // CPD-OFF value and rule handling on separate private fields
@@ -426,8 +424,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    Context globalContext = engine.getContextPath().getGlobalContext();
-    ISymbol globalSubstitute = globalContext.get(fSymbolName);
+    ISymbol globalSubstitute = globalSubstitute(engine);
     if (globalSubstitute != null) {
       return globalSubstitute.evaluate(engine);
     }
@@ -486,6 +483,17 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       }
     }
     return fSymbolName;
+  }
+
+  /**
+   * The symbol of the same name in <code>Global`</code> which holds the value of this dummy, or
+   * <code>null</code> if there is none. A subclass whose symbol lives in a context of its own
+   * returns <code>null</code>, so that a user symbol of the same name doesn't take its place.
+   *
+   * @param engine the engine whose <code>Global`</code> context is looked up
+   */
+  protected ISymbol globalSubstitute(EvalEngine engine) {
+    return engine.getContextPath().getGlobalContext().get(fSymbolName);
   }
 
   /** {@inheritDoc} */
@@ -665,7 +673,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public boolean isNegative() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isNegative()) {
         return true;
       }
@@ -677,7 +685,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public boolean isNonNegative() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isNonNegative()) {
         return true;
       }
@@ -751,7 +759,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public boolean isPositive() {
     if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
+      IExpr temp = EvalEngine.get().evalN(this);
       if (temp.isReal() && temp.isPositive()) {
         return true;
       }

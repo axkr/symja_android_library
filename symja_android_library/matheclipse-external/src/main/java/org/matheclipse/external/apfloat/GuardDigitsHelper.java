@@ -3,7 +3,6 @@ package org.matheclipse.external.apfloat;
 import java.util.function.BinaryOperator;
 
 import org.apfloat.Apcomplex;
-import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.LossOfPrecisionException;
 
@@ -58,10 +57,7 @@ class GuardDigitsHelper
         for (; extraPrecision <= maxExtraPrecision; extraPrecision *= 2)
         {
             // every attempt doubles the work: an evaluation whose time is up stops here
-            if (Thread.currentThread().isInterrupted())
-            {
-                throw new ApfloatInterruptedException("Interrupted");
-            }
+            ApfloatHelperShim.checkInterrupted();
             long workingPrecision = ApfloatHelperShim.extendPrecision(precision, extraPrecision);
             Apcomplex result;
             try

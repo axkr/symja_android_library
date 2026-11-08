@@ -81,16 +81,16 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
         "-2+Sqrt(5)");
 
+    // the factored form keeps the tie against its expansion
     check("FullSimplify(Gamma(z) / Gamma(z-2))", //
-        "2-3*z+z^2");
+        "(-2+z)*(-1+z)");
     check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
         "I*(-2+Sqrt(5))");
 
 
-    // MMA factorizes this to (-2 + x)*(-1 + x) ? Although the ComplexityFunction returns 9 for both
-    // expressions
+    // the complexity is 9 for both forms: a factorization wins the tie
     check("2-3*x+x^2 // FullSimplify", //
-        "2-3*x+x^2");
+        "(-2+x)*(-1+x)");
     // MMA doesn't factorize this
     check("f(2-3*Sin(x)+Sin(x)^2) // FullSimplify", //
         "f(2-3*Sin(x)+Sin(x)^2)");
@@ -316,10 +316,9 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check(
         "Simplify((x*(-Sqrt(-4+x^2)+x^2*Sqrt(-4+x^2)-4*Sqrt(-1+x^2)+x^2*Sqrt(-1+x^2)))/((4-5*x^2+x^4)*(x/Sqrt(-4+x^2)+x/Sqrt(-1+x^2))))", //
         "1");
-    // TODO the reference picks -I*Cos(2*x)-Sin(2*x); both have LeafCount 15, and since Factor takes
-    // out a Gaussian content it finds the square of the numerator first
+    // TODO the reference picks -I*Cos(2*x)-Sin(2*x); the expanded exponential form is lighter
     check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
-        "I*(I*Cos(x)+Sin(x))^2");
+        "-I/E^(I*2*x)");
 
     check("Expand((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
         "a*Cosh(x)+I*b*Cosh(x)-I*a*Sinh(x)+b*Sinh(x)");
@@ -355,9 +354,9 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Simplify(-a/(-b+a*c))", //
         "a/(b-a*c)");
     check("Simplify(1/(Cos(x)+I*Sin(x))-(c+d*x)^n)", //
-        "-(c+d*x)^n+Cos(x)-I*Sin(x)");
+        "E^(-I*x)-(c+d*x)^n");
     check("Simplify(1/(Cos(x)+I*Sin(x)))", //
-        "Cos(x)-I*Sin(x)");
+        "E^(-I*x)");
     check("Expand((Sqrt(-d)*e+d*Sqrt(e)*Sqrt(-e/d))*(Sqrt(-d)*e-d*Sqrt(e)*Sqrt(-e/d)))", //
         "0");
     check("Simplify((e*x^2)/(Sqrt(-d)*e-d*Sqrt(e)*Sqrt(-e/d)))", //
@@ -441,8 +440,9 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     // the former expectation (1+1/x)*Sqrt(-1+2/(1+x)) crossed the Sqrt branch cut: it is
     // sign-flipped wherever (x+1)/(1-x) is a negative real, e.g. at x->2.5 the input is
     // -0.916515*I but that form gives +0.916515*I
+    // the quotient (1+x)/(1-x) keeps its form on a tie against its partial fractions
     check("Simplify( 2/(Sqrt((x+1)/(1-x))-1/Sqrt((x+1)/(1-x))))", //
-        "2/(-1/Sqrt(-1-2/(-1+x))+Sqrt(-1-2/(-1+x)))");
+        "2/(-1/Sqrt((1+x)/(1-x))+Sqrt((1+x)/(1-x)))");
     check("FullSimplify((x/Sqrt(x^2+1) + 1)/((Sqrt(x^2+1)+x)^2 + 1))", //
         "1/(2*(1+x^2))");
     check("Simplify((x*(1/Sqrt(x^2+6) - (Sqrt(x^2+6) - Sqrt(6))/x^2))/(Sqrt(x^2+6) - Sqrt(6)))", //

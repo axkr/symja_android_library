@@ -7,6 +7,7 @@ import java.util.Set;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -62,7 +63,9 @@ public final class CaptureAvoidance {
     } else if (ast.isAST(S.Set, 3) || ast.isAST(S.SetDelayed, 3)) {
       collectPatternNames(ast.arg1(), locals);
     }
-    for (int i = 0; i < ast.size(); i++) {
+    // the numbers and strings of an evaluated list have no locals, only its head can
+    final int size = ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? 1 : ast.size();
+    for (int i = 0; i < size; i++) {
       collectLocals(ast.get(i), locals);
     }
   }
@@ -85,12 +88,20 @@ public final class CaptureAvoidance {
   /** Whether one of the <code>values</code> contains one of the <code>locals</code>. */
   public static boolean collides(Iterable<? extends IExpr> values, Set<ISymbol> locals) {
     for (IExpr value : values) {
-      if (value != null && value.isPresent()
-          && !value.isFree(x -> x.isSymbol() && locals.contains(x), true)) {
+      if (value != null && value.isPresent() && contains(value, locals)) {
         return true;
       }
     }
     return false;
+  }
+
+  /** Whether <code>value</code> contains one of the <code>locals</code>. */
+  private static boolean contains(IExpr value, Set<ISymbol> locals) {
+    if (value instanceof IAST && ((IAST) value).hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS)) {
+      // the numbers and strings of an evaluated list hold no symbol, only its head can
+      return contains(value.head(), locals);
+    }
+    return !value.isFree(x -> x.isSymbol() && locals.contains(x), true);
   }
 
   /** All symbols of <code>expr</code>; the head of <code>a[1]</code> is a symbol of it too. */

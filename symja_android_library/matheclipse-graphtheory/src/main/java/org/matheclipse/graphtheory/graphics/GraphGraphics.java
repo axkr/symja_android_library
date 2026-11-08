@@ -73,8 +73,19 @@ final public class GraphGraphics {
     return new IBuiltInSymbol[] {S.DirectedEdges, S.GraphLayout, S.VertexSize, S.VertexLabels};
   }
 
+  /**
+   * The default values of {@link #defaultGraphOptionKeys()}: <code>GraphLayout -&gt; Automatic</code>
+   * leaves the layout to the graph, see {@link #createOptionsList(IExpr[])}.
+   */
   public static IExpr[] defaultGraphOptionValues() {
-    return new IExpr[] {S.False, F.stringx("LayeredEmbedding"), S.Automatic, S.None};
+    return new IExpr[] {S.False, S.Automatic, S.Automatic, S.None};
+  }
+
+  /** The default values of {@link #defaultGraphOptionKeys()} with the given graph layout. */
+  public static IExpr[] defaultGraphOptionValues(IExpr graphLayout) {
+    IExpr[] values = defaultGraphOptionValues();
+    values[X_GRAPH_LAYOUT] = graphLayout;
+    return values;
   }
 
   private final Graph<IExpr, ?> graph;
@@ -196,6 +207,19 @@ final public class GraphGraphics {
           }
         }
         hasCoords = true;
+      }
+    }
+
+    if (!hasCoords && graphLayout.matches(".*\\b(Bipartite|Multipartite|Radial|Spiral)\\w*.*")) {
+      // the layouts only GraphEmbedding knows
+      IAST points = GraphLayouts.coordinates(g, getOption(S.GraphLayout));
+      if (points.isPresent()) {
+        int i = 1;
+        for (IExpr v : g.vertexSet()) {
+          IAST p = (IAST) points.get(i++);
+          vertexCoords.put(v, new double[] {p.arg1().evalf(), p.arg2().evalf()});
+        }
+        return;
       }
     }
 
@@ -1140,6 +1164,32 @@ final public class GraphGraphics {
   }
 
   /**
+   * The size of the arrowheads when none is asked for: <code>Medium</code> in a small graph, and
+   * heads two and a half vertex radii long, as a fraction of the width of the layout, in a graph of
+   * more than 20 vertices or one whose vertices are small against its width; a layout not much
+   * wider than its vertices keeps <code>Medium</code>.
+   */
+  private IExpr defaultArrowheads(int vertexCount, double distance) {
+    double xMin = Double.POSITIVE_INFINITY;
+    double xMax = Double.NEGATIVE_INFINITY;
+    for (double[] p : vertexCoords.values()) {
+      xMin = Math.min(xMin, p[0]);
+      xMax = Math.max(xMax, p[0]);
+    }
+    double width = xMax - xMin;
+    double radius =
+        Double.isNaN(vertexSizeFraction) ? vertexSize : vertexSizeFraction * distance / 2.0;
+    double relative = 2.5 * radius / width;
+    // a layout hardly wider than its vertices - a single column, say - is drawn about as wide as
+    // the vertex disks, against which the ratio would be far too big
+    if (width > 4.0 * radius && Double.isFinite(relative)
+        && (vertexCount > 20 || relative < 0.0225)) {
+      return F.num(relative);
+    }
+    return S.Medium;
+  }
+
+  /**
    * Generates the Graphics[{primitives}, options] expression.
    */
   public IAST toGraphics() {
@@ -1147,25 +1197,15 @@ final public class GraphGraphics {
     calculateLayout(this.graph);
 
     int vertexCount = graph.vertexSet().size();
-    // Arrowheads: Medium, and a fixed smaller size for big graphs (about 0.015 for
-    // 100 vertices)
-    IExpr arrowHeads = getOption(S.Arrowheads);
-    if (arrowHeads.isNIL()) {
-      if (vertexCount > 500) {
-        arrowHeads = F.num(0.005);
-      } else if (vertexCount > 200) {
-        arrowHeads = F.num(0.01);
-      } else if (vertexCount > 60) {
-        arrowHeads = F.num(0.015);
-      } else {
-        arrowHeads = S.Medium;
-      }
-    }
     // very large graphs get smaller vertices, unless a size was asked for
     if (!getOption(S.VertexSize).isPresent() && vertexCount > 200) {
       this.vertexSize = 0.025;
     }
     double distance = smallestVertexDistance();
+    IExpr arrowHeads = getOption(S.Arrowheads);
+    if (arrowHeads.isNIL()) {
+      arrowHeads = defaultArrowheads(vertexCount, distance);
+    }
 
     // the edges and the vertices each in a list of their own, so the
     // opacity of the edges does not reach the vertices
@@ -1272,7 +1312,10 @@ final public class GraphGraphics {
     if (options[X_DIRECTED_EDGES].isTrue()) {
       optionsList.append(F.Rule(S.DirectedEdges, S.True));
     }
-    optionsList.append(F.Rule(S.GraphLayout, options[X_GRAPH_LAYOUT]));
+    // a graph without a layout of its own carries no GraphLayout option
+    if (options[X_GRAPH_LAYOUT] != S.Automatic) {
+      optionsList.append(F.Rule(S.GraphLayout, options[X_GRAPH_LAYOUT]));
+    }
     if (options.length > X_VERTEX_SIZE && options[X_VERTEX_SIZE] != S.Automatic) {
       optionsList.append(F.Rule(S.VertexSize, options[X_VERTEX_SIZE]));
     }

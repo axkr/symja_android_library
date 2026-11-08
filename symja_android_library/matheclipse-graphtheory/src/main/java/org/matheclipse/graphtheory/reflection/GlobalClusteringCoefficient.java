@@ -79,7 +79,7 @@ public class GlobalClusteringCoefficient extends AbstractFunctionEvaluator {
       if (totalDen == 0) {
         return F.C0;
       }
-      return F.fraction(totalNum, totalDen);
+      return F.QQ(totalNum, totalDen);
     }
     return F.NIL;
   }

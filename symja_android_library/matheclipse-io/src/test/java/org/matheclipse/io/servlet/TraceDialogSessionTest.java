@@ -30,7 +30,7 @@ public class TraceDialogSessionTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   private Dialog start(String input) {

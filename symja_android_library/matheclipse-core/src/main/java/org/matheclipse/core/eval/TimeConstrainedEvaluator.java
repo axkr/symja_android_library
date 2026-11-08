@@ -37,6 +37,8 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 
   @Override
   public void run() {
+    final int recursionCounter = fEvalEngine.getRecursionCounter();
+    final int stackSize = fEvalEngine.getEvaluationStackSize();
     try {
       if (fTraceEvaluation) {
         fEvaluationResult = evalTrace(fParsedExpression, null);
@@ -50,8 +52,8 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
       Errors.printMessage(S.TimeConstrained, e, fEvalEngine);
       fEvaluationResult = F.$str("OutOfMemoryError");
     } catch (final StackOverflowError e) {
-      Errors.printMessage(S.TimeConstrained, e, fEvalEngine);
-      fEvaluationResult = F.$str("StackOverflowError");
+      fEvaluationResult =
+          fEvalEngine.afterStackOverflow(e, fParsedExpression, recursionCounter, stackSize);
     }
   }
 

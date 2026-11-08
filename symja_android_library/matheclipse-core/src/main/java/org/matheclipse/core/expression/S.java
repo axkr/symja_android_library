@@ -70,10 +70,30 @@ public class S {
    */
   public final static IBuiltInSymbol $BoxForms = S.initFinalSymbol("$BoxForms", ID.$BoxForms);
 
+  /**
+   * $ByteOrdering(x) - TODO describe `$ByteOrdering`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ByteOrdering.md">$ByteOrdering
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $ByteOrdering =
+      S.initFinalSymbol("$ByteOrdering", ID.$ByteOrdering);
+
   public final static IBuiltInSymbol $Cancel = S.initFinalSymbol("$Cancel", ID.$Cancel);
 
   public final static IBuiltInSymbol $CharacterEncoding =
       S.initFinalSymbol("$CharacterEncoding", ID.$CharacterEncoding);
+
+  /**
+   * $CharacterEncodings(x) - TODO describe `$CharacterEncodings`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$CharacterEncodings.md">$CharacterEncodings
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $CharacterEncodings =
+      S.initFinalSymbol("$CharacterEncodings", ID.$CharacterEncodings);
 
   /**
    * $CommandLine(x) - TODO describe `$CommandLine`.
@@ -103,8 +123,37 @@ public class S {
   public final static IBuiltInSymbol $CreationDate =
       S.initFinalSymbol("$CreationDate", ID.$CreationDate);
 
+  /**
+   * $DateStringFormat(x) - TODO describe `$DateStringFormat`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$DateStringFormat.md">$DateStringFormat
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $DateStringFormat =
+      S.initFinalSymbol("$DateStringFormat", ID.$DateStringFormat);
+
   public final static IBuiltInSymbol $DisplayFunction =
       S.initFinalSymbol("$DisplayFunction", ID.$DisplayFunction);
+
+  /**
+   * $Echo(x) - TODO describe `$Echo`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Echo.md">$Echo
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $Echo = S.initFinalSymbol("$Echo", ID.$Echo);
+
+  /**
+   * $ExportFormats(x) - TODO describe `$ExportFormats`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ExportFormats.md">$ExportFormats
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $ExportFormats =
+      S.initFinalSymbol("$ExportFormats", ID.$ExportFormats);
 
   public final static IBuiltInSymbol $Failed = S.initFinalSymbol("$Failed", ID.$Failed);
 
@@ -141,6 +190,26 @@ public class S {
   public final static IBuiltInSymbol $HomeDirectory =
       S.initFinalSymbol("$HomeDirectory", ID.$HomeDirectory);
 
+  /**
+   * $ImportFormats(x) - TODO describe `$ImportFormats`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ImportFormats.md">$ImportFormats
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $ImportFormats =
+      S.initFinalSymbol("$ImportFormats", ID.$ImportFormats);
+
+  /**
+   * $InitialDirectory(x) - TODO describe `$InitialDirectory`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$InitialDirectory.md">$InitialDirectory
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $InitialDirectory =
+      S.initFinalSymbol("$InitialDirectory", ID.$InitialDirectory);
+
   public final static IBuiltInSymbol $Input = S.initFinalSymbol("$Input", ID.$Input);
 
   public final static IBuiltInSymbol $InputFileName =
@@ -168,6 +237,15 @@ public class S {
       S.initFinalSymbol("$IterationLimit", ID.$IterationLimit);
 
   /**
+   * $Language(x) - TODO describe `$Language`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Language.md">$Language
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $Language = S.initFinalSymbol("$Language", ID.$Language);
+
+  /**
    * $Line - holds the current input line number.
    * 
    * @see <a href=
@@ -193,6 +271,16 @@ public class S {
       S.initFinalSymbol("$MachinePrecision", ID.$MachinePrecision);
 
   /**
+   * $MaxExtraPrecision(x) - TODO describe `$MaxExtraPrecision`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$MaxExtraPrecision.md">$MaxExtraPrecision
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $MaxExtraPrecision =
+      S.initFinalSymbol("$MaxExtraPrecision", ID.$MaxExtraPrecision);
+
+  /**
    * $MaxMachineNumber - return the largest positive finite Java `double` value (`Double.MAX_VALUE`
    * approx. `1.7976931348623157*^308`)
    * 
@@ -202,6 +290,16 @@ public class S {
    */
   public final static IBuiltInSymbol $MaxMachineNumber =
       S.initFinalSymbol("$MaxMachineNumber", ID.$MaxMachineNumber);
+
+  /**
+   * $MaxPrecision(x) - TODO describe `$MaxPrecision`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$MaxPrecision.md">$MaxPrecision
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $MaxPrecision =
+      S.initFinalSymbol("$MaxPrecision", ID.$MaxPrecision);
 
   public final static IBuiltInSymbol $MessageList =
       S.initFinalSymbol("$MessageList", ID.$MessageList);
@@ -226,6 +324,26 @@ public class S {
   public final static IBuiltInSymbol $MinMachineNumber =
       S.initFinalSymbol("$MinMachineNumber", ID.$MinMachineNumber);
 
+  /**
+   * $MinPrecision(x) - TODO describe `$MinPrecision`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$MinPrecision.md">$MinPrecision
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $MinPrecision =
+      S.initFinalSymbol("$MinPrecision", ID.$MinPrecision);
+
+  /**
+   * $ModuleNumber(x) - TODO describe `$ModuleNumber`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ModuleNumber.md">$ModuleNumber
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $ModuleNumber =
+      S.initFinalSymbol("$ModuleNumber", ID.$ModuleNumber);
+
   public final static IBuiltInSymbol $Notebooks = S.initFinalSymbol("$Notebooks", ID.$Notebooks);
 
   /**
@@ -248,6 +366,16 @@ public class S {
    */
   public final static IBuiltInSymbol $Output = S.initFinalSymbol("$Output", ID.$Output);
 
+  /**
+   * $OutputForms(x) - TODO describe `$OutputForms`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$OutputForms.md">$OutputForms
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $OutputForms =
+      S.initFinalSymbol("$OutputForms", ID.$OutputForms);
+
   public final static IBuiltInSymbol $OutputSizeLimit =
       S.initFinalSymbol("$OutputSizeLimit", ID.$OutputSizeLimit);
 
@@ -262,6 +390,16 @@ public class S {
    */
   public final static IBuiltInSymbol $ParentLink = S.initFinalSymbol("$ParentLink", ID.$ParentLink);
 
+  /**
+   * $ParentProcessID(x) - TODO describe `$ParentProcessID`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ParentProcessID.md">$ParentProcessID
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $ParentProcessID =
+      S.initFinalSymbol("$ParentProcessID", ID.$ParentProcessID);
+
   public final static IBuiltInSymbol $Path = S.initFinalSymbol("$Path", ID.$Path);
 
   public final static IBuiltInSymbol $PathnameSeparator =
@@ -270,9 +408,36 @@ public class S {
   public final static IBuiltInSymbol $PerformanceGoal =
       S.initFinalSymbol("$PerformanceGoal", ID.$PerformanceGoal);
 
+  /**
+   * $Post(x) - TODO describe `$Post`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Post.md">$Post
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $Post = S.initFinalSymbol("$Post", ID.$Post);
+
+  /**
+   * $Pre(x) - TODO describe `$Pre`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Pre.md">$Pre
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $Pre = S.initFinalSymbol("$Pre", ID.$Pre);
+
   public final static IBuiltInSymbol $PrePrint = S.initFinalSymbol("$PrePrint", ID.$PrePrint);
 
   public final static IBuiltInSymbol $PreRead = S.initFinalSymbol("$PreRead", ID.$PreRead);
+
+  /**
+   * $PrintForms(x) - TODO describe `$PrintForms`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$PrintForms.md">$PrintForms
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $PrintForms = S.initFinalSymbol("$PrintForms", ID.$PrintForms);
 
   /**
    * $ProcessID(x) - TODO describe `$ProcessID`.
@@ -282,6 +447,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol $ProcessID = S.initFinalSymbol("$ProcessID", ID.$ProcessID);
+
+  /**
+   * $ProcessorType(x) - TODO describe `$ProcessorType`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ProcessorType.md">$ProcessorType
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $ProcessorType =
+      S.initFinalSymbol("$ProcessorType", ID.$ProcessorType);
 
   /**
    * $RecursionLimit - holds the current input line number
@@ -313,6 +488,15 @@ public class S {
       S.initFinalSymbol("$ScriptInputString", ID.$ScriptInputString);
 
   /**
+   * $SessionID(x) - TODO describe `$SessionID`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$SessionID.md">$SessionID
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $SessionID = S.initFinalSymbol("$SessionID", ID.$SessionID);
+
+  /**
    * $StandardOutputStream(x) - TODO describe `$StandardOutputStream`.
    * 
    * @see <a href=
@@ -321,6 +505,16 @@ public class S {
    */
   public final static IBuiltInSymbol $StandardOutputStream =
       S.initFinalSymbol("$StandardOutputStream", ID.$StandardOutputStream);
+
+  /**
+   * $SyntaxHandler(x) - TODO describe `$SyntaxHandler`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$SyntaxHandler.md">$SyntaxHandler
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $SyntaxHandler =
+      S.initFinalSymbol("$SyntaxHandler", ID.$SyntaxHandler);
 
   public final static IBuiltInSymbol $SystemCharacterEncoding =
       S.initFinalSymbol("$SystemCharacterEncoding", ID.$SystemCharacterEncoding);
@@ -336,6 +530,26 @@ public class S {
 
   public final static IBuiltInSymbol $SystemMemory =
       S.initFinalSymbol("$SystemMemory", ID.$SystemMemory);
+
+  /**
+   * $SystemTimeZone(x) - TODO describe `$SystemTimeZone`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$SystemTimeZone.md">$SystemTimeZone
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $SystemTimeZone =
+      S.initFinalSymbol("$SystemTimeZone", ID.$SystemTimeZone);
+
+  /**
+   * $SystemWordLength(x) - TODO describe `$SystemWordLength`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$SystemWordLength.md">$SystemWordLength
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $SystemWordLength =
+      S.initFinalSymbol("$SystemWordLength", ID.$SystemWordLength);
 
   public final static IBuiltInSymbol $TemporaryDirectory =
       S.initFinalSymbol("$TemporaryDirectory", ID.$TemporaryDirectory);
@@ -1040,6 +1254,16 @@ public class S {
       S.initFinalSymbol("AnnotationRules", ID.AnnotationRules);
 
   /**
+   * AnnotationValue(x) - TODO describe `AnnotationValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AnnotationValue.md">AnnotationValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AnnotationValue =
+      S.initFinalSymbol("AnnotationValue", ID.AnnotationValue);
+
+  /**
    * Annuity(p, t) - returns an annuity object.
    * 
    * @see <a href=
@@ -1605,6 +1829,24 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Arrow = S.initFinalSymbol("Arrow", ID.Arrow);
+
+  /**
+   * Arrow3DBox(x) - TODO describe `Arrow3DBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Arrow3DBox.md">Arrow3DBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Arrow3DBox = S.initFinalSymbol("Arrow3DBox", ID.Arrow3DBox);
+
+  /**
+   * ArrowBox(x) - TODO describe `ArrowBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrowBox.md">ArrowBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ArrowBox = S.initFinalSymbol("ArrowBox", ID.ArrowBox);
 
   public final static IBuiltInSymbol Arrowheads = S.initFinalSymbol("Arrowheads", ID.Arrowheads);
 
@@ -2451,6 +2693,16 @@ public class S {
   public final static IBuiltInSymbol BezierCurve = S.initFinalSymbol("BezierCurve", ID.BezierCurve);
 
   /**
+   * BezierCurveBox(x) - TODO describe `BezierCurveBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BezierCurveBox.md">BezierCurveBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BezierCurveBox =
+      S.initFinalSymbol("BezierCurveBox", ID.BezierCurveBox);
+
+  /**
    * BezierFunction(list-of-control-points) - Bezier curve constructed by `list-of-control-points`
    * 
    * @see <a href=
@@ -2510,6 +2762,16 @@ public class S {
    */
   public final static IBuiltInSymbol BinaryFormat =
       S.initFinalSymbol("BinaryFormat", ID.BinaryFormat);
+
+  /**
+   * BinaryImageQ(x) - TODO describe `BinaryImageQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BinaryImageQ.md">BinaryImageQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BinaryImageQ =
+      S.initFinalSymbol("BinaryImageQ", ID.BinaryImageQ);
 
   public final static IBuiltInSymbol BinaryRead = S.initFinalSymbol("BinaryRead", ID.BinaryRead);
 
@@ -3193,6 +3455,16 @@ public class S {
   public final static IBuiltInSymbol BubbleChart = S.initFinalSymbol("BubbleChart", ID.BubbleChart);
 
   /**
+   * BubbleChart3D(x) - TODO describe `BubbleChart3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BubbleChart3D.md">BubbleChart3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BubbleChart3D =
+      S.initFinalSymbol("BubbleChart3D", ID.BubbleChart3D);
+
+  /**
    * BulletGauge(x) - TODO describe `BulletGauge`.
    * 
    * @see <a href=
@@ -3232,6 +3504,15 @@ public class S {
    */
   public final static IBuiltInSymbol ButtonBar = S.initFinalSymbol("ButtonBar", ID.ButtonBar);
 
+  /**
+   * ButtonBox(x) - TODO describe `ButtonBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ButtonBox.md">ButtonBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ButtonBox = S.initFinalSymbol("ButtonBox", ID.ButtonBox);
+
   public final static IBuiltInSymbol Byte = S.initFinalSymbol("Byte", ID.Byte);
 
   /**
@@ -3264,6 +3545,16 @@ public class S {
       S.initFinalSymbol("ByteArrayToString", ID.ByteArrayToString);
 
   public final static IBuiltInSymbol ByteCount = S.initFinalSymbol("ByteCount", ID.ByteCount);
+
+  /**
+   * ByteOrdering(x) - TODO describe `ByteOrdering`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ByteOrdering.md">ByteOrdering
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ByteOrdering =
+      S.initFinalSymbol("ByteOrdering", ID.ByteOrdering);
 
   /**
    * C(n) - represents the `n`-th constant in a solution to a differential equation.
@@ -3816,6 +4107,16 @@ public class S {
   public final static IBuiltInSymbol CheckAbort = S.initFinalSymbol("CheckAbort", ID.CheckAbort);
 
   /**
+   * CheckArguments(x) - TODO describe `CheckArguments`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CheckArguments.md">CheckArguments
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CheckArguments =
+      S.initFinalSymbol("CheckArguments", ID.CheckArguments);
+
+  /**
    * Checkbox(x) - TODO describe `Checkbox`.
    * 
    * @see <a href=
@@ -3913,6 +4214,15 @@ public class S {
       S.initFinalSymbol("ChromaticPolynomial", ID.ChromaticPolynomial);
 
   public final static IBuiltInSymbol Circle = S.initFinalSymbol("Circle", ID.Circle);
+
+  /**
+   * CircleBox(x) - TODO describe `CircleBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CircleBox.md">CircleBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CircleBox = S.initFinalSymbol("CircleBox", ID.CircleBox);
 
   public final static IBuiltInSymbol CircleDot = S.initFinalSymbol("CircleDot", ID.CircleDot);
 
@@ -4138,6 +4448,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Closing = S.initFinalSymbol("Closing", ID.Closing);
+
+  /**
+   * ClusteringComponents(x) - TODO describe `ClusteringComponents`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClusteringComponents.md">ClusteringComponents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ClusteringComponents =
+      S.initFinalSymbol("ClusteringComponents", ID.ClusteringComponents);
 
   public final static IBuiltInSymbol CMYKColor = S.initFinalSymbol("CMYKColor", ID.CMYKColor);
 
@@ -4481,6 +4801,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol CommonUnits = S.initFinalSymbol("CommonUnits", ID.CommonUnits);
+
+  /**
+   * CommunityGraphPlot(x) - TODO describe `CommunityGraphPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CommunityGraphPlot.md">CommunityGraphPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CommunityGraphPlot =
+      S.initFinalSymbol("CommunityGraphPlot", ID.CommunityGraphPlot);
 
   /**
    * CompanionMatrix(x) - TODO describe `CompanionMatrix`.
@@ -5616,6 +5946,16 @@ public class S {
       S.initFinalSymbol("CreateIntermediateDirectories", ID.CreateIntermediateDirectories);
 
   /**
+   * CreateTemporary(x) - TODO describe `CreateTemporary`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CreateTemporary.md">CreateTemporary
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CreateTemporary =
+      S.initFinalSymbol("CreateTemporary", ID.CreateTemporary);
+
+  /**
    * CreateUUID( ) - retrieve a type 4 (pseudo randomly generated) UUID. The UUID is generated using
    * a cryptographically strong pseudo random number generator.
    * 
@@ -5861,6 +6201,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol D = S.initFinalSymbol("D", ID.D);
+
+  /**
+   * DamerauLevenshteinDistance(x) - TODO describe `DamerauLevenshteinDistance`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DamerauLevenshteinDistance.md">DamerauLevenshteinDistance
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DamerauLevenshteinDistance =
+      S.initFinalSymbol("DamerauLevenshteinDistance", ID.DamerauLevenshteinDistance);
 
   public final static IBuiltInSymbol Darker = S.initFinalSymbol("Darker", ID.Darker);
 
@@ -6724,6 +7074,15 @@ public class S {
       S.initFinalSymbol("DiagonalMatrixQ", ID.DiagonalMatrixQ);
 
   /**
+   * Dialog(x) - TODO describe `Dialog`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dialog.md">Dialog
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Dialog = S.initFinalSymbol("Dialog", ID.Dialog);
+
+  /**
    * DialogInput() - if the file system is enabled, the user can input a string in a dialog box.
    * 
    * @see <a href=
@@ -7003,6 +7362,16 @@ public class S {
   public final static IBuiltInSymbol DirectoryQ = S.initFinalSymbol("DirectoryQ", ID.DirectoryQ);
 
   /**
+   * DirectoryStack(x) - TODO describe `DirectoryStack`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectoryStack.md">DirectoryStack
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DirectoryStack =
+      S.initFinalSymbol("DirectoryStack", ID.DirectoryStack);
+
+  /**
    * DirichletBeta(x) - `DirichletBeta` function returns the Dirichlet beta function.
    * 
    * @see <a href=
@@ -7222,6 +7591,15 @@ public class S {
   public final static IBuiltInSymbol DisjointQ = S.initFinalSymbol("DisjointQ", ID.DisjointQ);
 
   public final static IBuiltInSymbol Disk = S.initFinalSymbol("Disk", ID.Disk);
+
+  /**
+   * DiskBox(x) - TODO describe `DiskBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiskBox.md">DiskBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DiskBox = S.initFinalSymbol("DiskBox", ID.DiskBox);
 
   public final static IBuiltInSymbol DiskMatrix = S.initFinalSymbol("DiskMatrix", ID.DiskMatrix);
 
@@ -7476,6 +7854,16 @@ public class S {
 
   public final static IBuiltInSymbol Dodecahedron =
       S.initFinalSymbol("Dodecahedron", ID.Dodecahedron);
+
+  /**
+   * DominantColors(x) - TODO describe `DominantColors`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DominantColors.md">DominantColors
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DominantColors =
+      S.initFinalSymbol("DominantColors", ID.DominantColors);
 
   /**
    * Dot(x, y) - computes products of vectors, matrices, and tensors.
@@ -9238,6 +9626,16 @@ public class S {
   public final static IBuiltInSymbol FileHash = S.initFinalSymbol("FileHash", ID.FileHash);
 
   /**
+   * FileInformation(x) - TODO describe `FileInformation`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FileInformation.md">FileInformation
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FileInformation =
+      S.initFinalSymbol("FileInformation", ID.FileInformation);
+
+  /**
    * FileNameDepth(x) - TODO describe `FileNameDepth`.
    * 
    * @see <a href=
@@ -9320,6 +9718,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol FilledCurve = S.initFinalSymbol("FilledCurve", ID.FilledCurve);
+
+  /**
+   * FilledCurveBox(x) - TODO describe `FilledCurveBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FilledCurveBox.md">FilledCurveBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FilledCurveBox =
+      S.initFinalSymbol("FilledCurveBox", ID.FilledCurveBox);
 
   /**
    * FilledTorus(x) - TODO describe `FilledTorus`.
@@ -9494,6 +9902,15 @@ public class S {
    */
   public final static IBuiltInSymbol FindEulerianCycle =
       S.initFinalSymbol("FindEulerianCycle", ID.FindEulerianCycle);
+
+  /**
+   * FindFile(x) - TODO describe `FindFile`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindFile.md">FindFile
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindFile = S.initFinalSymbol("FindFile", ID.FindFile);
 
   /**
    * FindFit(list-of-data-points, function, parameters, variable) - solve a least squares problem
@@ -10200,6 +10617,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol FormulaData = S.initFinalSymbol("FormulaData", ID.FormulaData);
+
+  /**
+   * FortranForm(x) - TODO describe `FortranForm`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FortranForm.md">FortranForm
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FortranForm = S.initFinalSymbol("FortranForm", ID.FortranForm);
 
   /**
    * Fourier(vector-of-complex-numbers) - Discrete Fourier transform of a
@@ -11095,6 +11521,16 @@ public class S {
   public final static IBuiltInSymbol Get = S.initFinalSymbol("Get", ID.Get);
 
   /**
+   * GetEnvironment(x) - TODO describe `GetEnvironment`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GetEnvironment.md">GetEnvironment
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GetEnvironment =
+      S.initFinalSymbol("GetEnvironment", ID.GetEnvironment);
+
+  /**
    * Glaisher - Glaisher constant.
    * 
    * @see <a href=
@@ -11331,8 +11767,27 @@ public class S {
    */
   public final static IBuiltInSymbol Graphics3D = S.initFinalSymbol("Graphics3D", ID.Graphics3D);
 
+  /**
+   * Graphics3DBox(x) - TODO describe `Graphics3DBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Graphics3DBox.md">Graphics3DBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Graphics3DBox =
+      S.initFinalSymbol("Graphics3DBox", ID.Graphics3DBox);
+
   public final static IBuiltInSymbol Graphics3DJSON =
       S.initFinalSymbol("Graphics3DJSON", ID.Graphics3DJSON);
+
+  /**
+   * GraphicsBox(x) - TODO describe `GraphicsBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphicsBox.md">GraphicsBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphicsBox = S.initFinalSymbol("GraphicsBox", ID.GraphicsBox);
 
   public final static IBuiltInSymbol GraphicsColumn =
       S.initFinalSymbol("GraphicsColumn", ID.GraphicsColumn);
@@ -12039,6 +12494,16 @@ public class S {
 
   public final static IBuiltInSymbol HessianMatrix =
       S.initFinalSymbol("HessianMatrix", ID.HessianMatrix);
+
+  /**
+   * HexadecimalCharacter(x) - TODO describe `HexadecimalCharacter`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HexadecimalCharacter.md">HexadecimalCharacter
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HexadecimalCharacter =
+      S.initFinalSymbol("HexadecimalCharacter", ID.HexadecimalCharacter);
 
   public final static IBuiltInSymbol Hexahedron = S.initFinalSymbol("Hexahedron", ID.Hexahedron);
 
@@ -13287,6 +13752,15 @@ public class S {
       S.initFinalSymbol("InsertionFunction", ID.InsertionFunction);
 
   public final static IBuiltInSymbol Inset = S.initFinalSymbol("Inset", ID.Inset);
+
+  /**
+   * InsetBox(x) - TODO describe `InsetBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InsetBox.md">InsetBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol InsetBox = S.initFinalSymbol("InsetBox", ID.InsetBox);
 
   /**
    * Insphere(x) - TODO describe `Insphere`.
@@ -15560,6 +16034,15 @@ public class S {
   public final static IBuiltInSymbol Line = S.initFinalSymbol("Line", ID.Line);
 
   /**
+   * Line3DBox(x) - TODO describe `Line3DBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Line3DBox.md">Line3DBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Line3DBox = S.initFinalSymbol("Line3DBox", ID.Line3DBox);
+
+  /**
    * LinearModelFit({{x11,x12,y1},{x21,x22,y2},...}, {Func1, func2,...}, {var1, var2,...}) - Create
    * a linear regression model from a matrix of observed value pairs `{x_ij,..., y_i}`.
    * 
@@ -15610,6 +16093,15 @@ public class S {
 
   public final static IBuiltInSymbol LinearSolveFunction =
       S.initFinalSymbol("LinearSolveFunction", ID.LinearSolveFunction);
+
+  /**
+   * LineBox(x) - TODO describe `LineBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LineBox.md">LineBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LineBox = S.initFinalSymbol("LineBox", ID.LineBox);
 
   /**
    * LineBreakChart(x) - TODO describe `LineBreakChart`.
@@ -15786,6 +16278,16 @@ public class S {
 
   public final static IBuiltInSymbol ListContourPlot =
       S.initFinalSymbol("ListContourPlot", ID.ListContourPlot);
+
+  /**
+   * ListContourPlot3D(x) - TODO describe `ListContourPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListContourPlot3D.md">ListContourPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ListContourPlot3D =
+      S.initFinalSymbol("ListContourPlot3D", ID.ListContourPlot3D);
 
   /**
    * ListConvolve(kernel-list, tensor-list) - create the convolution of the `kernel-list` with
@@ -16242,6 +16744,16 @@ public class S {
   public final static IBuiltInSymbol LongestCommonSequence =
       S.initFinalSymbol("LongestCommonSequence", ID.LongestCommonSequence);
 
+
+  /**
+   * LongestCommonSubsequencePositions(x) - TODO describe `LongestCommonSubsequencePositions`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LongestCommonSubsequencePositions.md">LongestCommonSubsequencePositions
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LongestCommonSubsequencePositions =
+      S.initFinalSymbol("LongestCommonSubsequencePositions", ID.LongestCommonSubsequencePositions);
 
   /**
    * LongestOrderedSequence(x) - TODO describe `LongestOrderedSequence`.
@@ -17415,6 +17927,16 @@ public class S {
   public final static IBuiltInSymbol Minor = S.initFinalSymbol("Minor", ID.Minor);
 
   /**
+   * MinorPlanetData(x) - TODO describe `MinorPlanetData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MinorPlanetData.md">MinorPlanetData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MinorPlanetData =
+      S.initFinalSymbol("MinorPlanetData", ID.MinorPlanetData);
+
+  /**
    * Minors(matrix) - returns the minors of the matrix.
    * 
    * @see <a href=
@@ -18441,6 +18963,16 @@ public class S {
   public final static IBuiltInSymbol NMinimize = S.initFinalSymbol("NMinimize", ID.NMinimize);
 
   public final static IBuiltInSymbol NMinValue = S.initFinalSymbol("NMinValue", ID.NMinValue);
+
+  /**
+   * NonAssociative(x) - TODO describe `NonAssociative`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NonAssociative.md">NonAssociative
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NonAssociative =
+      S.initFinalSymbol("NonAssociative", ID.NonAssociative);
 
   /**
    * NoncentralBetaDistribution(x) - TODO describe `NoncentralBetaDistribution`.
@@ -20029,6 +20561,15 @@ public class S {
       S.initFinalSymbol("PageRankCentrality", ID.PageRankCentrality);
 
   /**
+   * PageWidth(x) - TODO describe `PageWidth`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PageWidth.md">PageWidth
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PageWidth = S.initFinalSymbol("PageWidth", ID.PageWidth);
+
+  /**
    * PairedBarChart(x) - TODO describe `PairedBarChart`.
    * 
    * @see <a href=
@@ -20075,6 +20616,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Pane = S.initFinalSymbol("Pane", ID.Pane);
+
+  /**
+   * PaneBox(x) - TODO describe `PaneBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PaneBox.md">PaneBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PaneBox = S.initFinalSymbol("PaneBox", ID.PaneBox);
 
   /**
    * Panel(x) - TODO describe `Panel`.
@@ -20680,6 +21230,34 @@ public class S {
   public final static IBuiltInSymbol Pink = S.initFinalSymbol("Pink", ID.Pink);
 
   /**
+   * Pivoting(x) - TODO describe `Pivoting`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pivoting.md">Pivoting
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Pivoting = S.initFinalSymbol("Pivoting", ID.Pivoting);
+
+  /**
+   * PixelValue(x) - TODO describe `PixelValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PixelValue.md">PixelValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PixelValue = S.initFinalSymbol("PixelValue", ID.PixelValue);
+
+  /**
+   * PixelValuePositions(x) - TODO describe `PixelValuePositions`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PixelValuePositions.md">PixelValuePositions
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PixelValuePositions =
+      S.initFinalSymbol("PixelValuePositions", ID.PixelValuePositions);
+
+  /**
    * Placed(x) - TODO describe `Placed`.
    * 
    * @see <a href=
@@ -20891,6 +21469,24 @@ public class S {
   public final static IBuiltInSymbol Point = S.initFinalSymbol("Point", ID.Point);
 
   /**
+   * Point3DBox(x) - TODO describe `Point3DBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Point3DBox.md">Point3DBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Point3DBox = S.initFinalSymbol("Point3DBox", ID.Point3DBox);
+
+  /**
+   * PointBox(x) - TODO describe `PointBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PointBox.md">PointBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PointBox = S.initFinalSymbol("PointBox", ID.PointBox);
+
+  /**
    * PointFigureChart(x) - TODO describe `PointFigureChart`.
    * 
    * @see <a href=
@@ -21004,6 +21600,16 @@ public class S {
   public final static IBuiltInSymbol Polygon = S.initFinalSymbol("Polygon", ID.Polygon);
 
   /**
+   * Polygon3DBox(x) - TODO describe `Polygon3DBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Polygon3DBox.md">Polygon3DBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Polygon3DBox =
+      S.initFinalSymbol("Polygon3DBox", ID.Polygon3DBox);
+
+  /**
    * PolygonalNumber(nPoints) - returns the triangular number for `nPoints`.
    * 
    * @see <a href=
@@ -21022,6 +21628,15 @@ public class S {
    */
   public final static IBuiltInSymbol PolygonAngle =
       S.initFinalSymbol("PolygonAngle", ID.PolygonAngle);
+
+  /**
+   * PolygonBox(x) - TODO describe `PolygonBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolygonBox.md">PolygonBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PolygonBox = S.initFinalSymbol("PolygonBox", ID.PolygonBox);
 
   /**
    * PolygonCoordinates(poly) - returns the list of the coordinates of the polygon `poly`.
@@ -21261,6 +21876,15 @@ public class S {
    */
   public final static IBuiltInSymbol PowersRepresentations =
       S.initFinalSymbol("PowersRepresentations", ID.PowersRepresentations);
+
+  /**
+   * Precedence(x) - TODO describe `Precedence`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Precedence.md">Precedence
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Precedence = S.initFinalSymbol("Precedence", ID.Precedence);
 
   public final static IBuiltInSymbol PrecedenceForm =
       S.initFinalSymbol("PrecedenceForm", ID.PrecedenceForm);
@@ -22226,6 +22850,15 @@ public class S {
   public final static IBuiltInSymbol Raster3D = S.initFinalSymbol("Raster3D", ID.Raster3D);
 
   /**
+   * RasterBox(x) - TODO describe `RasterBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RasterBox.md">RasterBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RasterBox = S.initFinalSymbol("RasterBox", ID.RasterBox);
+
+  /**
    * Rasterize(x) - TODO describe `Rasterize`.
    * 
    * @see <a href=
@@ -22454,6 +23087,16 @@ public class S {
       S.initFinalSymbol("RecordSeparators", ID.RecordSeparators);
 
   public final static IBuiltInSymbol Rectangle = S.initFinalSymbol("Rectangle", ID.Rectangle);
+
+  /**
+   * RectangleBox(x) - TODO describe `RectangleBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RectangleBox.md">RectangleBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RectangleBox =
+      S.initFinalSymbol("RectangleBox", ID.RectangleBox);
 
   /**
    * RectangleChart(x) - TODO describe `RectangleChart`.
@@ -23963,6 +24606,16 @@ public class S {
       S.initFinalSymbol("SequenceCount", ID.SequenceCount);
 
   /**
+   * SequenceForm(x) - TODO describe `SequenceForm`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SequenceForm.md">SequenceForm
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SequenceForm =
+      S.initFinalSymbol("SequenceForm", ID.SequenceForm);
+
+  /**
    * SequenceHold - is an attribute specifying that in all arguments of a function the `Sequence`
    * expressions shouldn't be flattened out.
    * 
@@ -24092,6 +24745,25 @@ public class S {
       S.initFinalSymbol("SetDirectory", ID.SetDirectory);
 
   /**
+   * SetEnvironment(x) - TODO describe `SetEnvironment`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetEnvironment.md">SetEnvironment
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SetEnvironment =
+      S.initFinalSymbol("SetEnvironment", ID.SetEnvironment);
+
+  /**
+   * SetFileDate(x) - TODO describe `SetFileDate`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetFileDate.md">SetFileDate
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SetFileDate = S.initFinalSymbol("SetFileDate", ID.SetFileDate);
+
+  /**
    * SetOptions(x) - TODO describe `SetOptions`.
    * 
    * @see <a href=
@@ -24128,6 +24800,16 @@ public class S {
    */
   public final static IBuiltInSymbol SetSharedFunction =
       S.initFinalSymbol("SetSharedFunction", ID.SetSharedFunction);
+
+  /**
+   * SetStreamPosition(x) - TODO describe `SetStreamPosition`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetStreamPosition.md">SetStreamPosition
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SetStreamPosition =
+      S.initFinalSymbol("SetStreamPosition", ID.SetStreamPosition);
 
   public final static IBuiltInSymbol SetSystemOptions =
       S.initFinalSymbol("SetSystemOptions", ID.SetSystemOptions);
@@ -24222,6 +24904,26 @@ public class S {
       S.initFinalSymbol("ShortUpArrow", ID.ShortUpArrow);
 
   public final static IBuiltInSymbol Show = S.initFinalSymbol("Show", ID.Show);
+
+  /**
+   * ShowSpecialCharacters(x) - TODO describe `ShowSpecialCharacters`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ShowSpecialCharacters.md">ShowSpecialCharacters
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ShowSpecialCharacters =
+      S.initFinalSymbol("ShowSpecialCharacters", ID.ShowSpecialCharacters);
+
+  /**
+   * ShowStringCharacters(x) - TODO describe `ShowStringCharacters`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ShowStringCharacters.md">ShowStringCharacters
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ShowStringCharacters =
+      S.initFinalSymbol("ShowStringCharacters", ID.ShowStringCharacters);
 
   /**
    * ShrinkingDelay(x) - TODO describe `ShrinkingDelay`.
@@ -24446,6 +25148,15 @@ public class S {
    */
   public final static IBuiltInSymbol SkewNormalDistribution =
       S.initFinalSymbol("SkewNormalDistribution", ID.SkewNormalDistribution);
+
+  /**
+   * Skip(x) - TODO describe `Skip`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Skip.md">Skip
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Skip = S.initFinalSymbol("Skip", ID.Skip);
 
   /**
    * SliceContourPlot3D(x) - TODO describe `SliceContourPlot3D`.
@@ -24877,6 +25588,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Sphere = S.initFinalSymbol("Sphere", ID.Sphere);
+
+  /**
+   * SphereBox(x) - TODO describe `SphereBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SphereBox.md">SphereBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SphereBox = S.initFinalSymbol("SphereBox", ID.SphereBox);
 
   /**
    * SpherePoints(x) - TODO describe `SpherePoints`.
@@ -25410,6 +26130,16 @@ public class S {
   public final static IBuiltInSymbol StreamPlot = S.initFinalSymbol("StreamPlot", ID.StreamPlot);
 
   /**
+   * StreamPlot3D(x) - TODO describe `StreamPlot3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StreamPlot3D.md">StreamPlot3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StreamPlot3D =
+      S.initFinalSymbol("StreamPlot3D", ID.StreamPlot3D);
+
+  /**
    * StreamPoints(x) - TODO describe `StreamPoints`.
    * 
    * @see <a href=
@@ -25418,6 +26148,25 @@ public class S {
    */
   public final static IBuiltInSymbol StreamPoints =
       S.initFinalSymbol("StreamPoints", ID.StreamPoints);
+
+  /**
+   * StreamPosition(x) - TODO describe `StreamPosition`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StreamPosition.md">StreamPosition
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StreamPosition =
+      S.initFinalSymbol("StreamPosition", ID.StreamPosition);
+
+  /**
+   * Streams(x) - TODO describe `Streams`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Streams.md">Streams
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Streams = S.initFinalSymbol("Streams", ID.Streams);
 
   /**
    * StreamScale(x) - TODO describe `StreamScale`.
@@ -26280,6 +27029,15 @@ public class S {
       S.initFinalSymbol("SynchronousUpdating", ID.SynchronousUpdating);
 
   /**
+   * Syntax(x) - TODO describe `Syntax`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Syntax.md">Syntax
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Syntax = S.initFinalSymbol("Syntax", ID.Syntax);
+
+  /**
    * SyntaxForm(x) - TODO describe `SyntaxForm`.
    * 
    * @see <a href=
@@ -26754,6 +27512,16 @@ public class S {
    */
   public final static IBuiltInSymbol TextPacket = S.initFinalSymbol("TextPacket", ID.TextPacket);
 
+  /**
+   * TextRecognize(x) - TODO describe `TextRecognize`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TextRecognize.md">TextRecognize
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TextRecognize =
+      S.initFinalSymbol("TextRecognize", ID.TextRecognize);
+
   public final static IBuiltInSymbol TextString = S.initFinalSymbol("TextString", ID.TextString);
 
   public final static IBuiltInSymbol TextStructure =
@@ -27210,6 +27978,15 @@ public class S {
   public final static IBuiltInSymbol TooLarge = S.initFinalSymbol("TooLarge", ID.TooLarge);
 
   public final static IBuiltInSymbol Tooltip = S.initFinalSymbol("Tooltip", ID.Tooltip);
+
+  /**
+   * TooltipBox(x) - TODO describe `TooltipBox`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TooltipBox.md">TooltipBox
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TooltipBox = S.initFinalSymbol("TooltipBox", ID.TooltipBox);
 
   public final static IBuiltInSymbol Top = S.initFinalSymbol("Top", ID.Top);
 
@@ -27875,6 +28652,16 @@ public class S {
       S.initFinalSymbol("UniformGraphDistribution", ID.UniformGraphDistribution);
 
   /**
+   * UniformPolyhedron(x) - TODO describe `UniformPolyhedron`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UniformPolyhedron.md">UniformPolyhedron
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol UniformPolyhedron =
+      S.initFinalSymbol("UniformPolyhedron", ID.UniformPolyhedron);
+
+  /**
    * UniformSumDistribution(x) - TODO describe `UniformSumDistribution`.
    * 
    * @see <a href=
@@ -28245,6 +29032,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol URLRead = S.initFinalSymbol("URLRead", ID.URLRead);
+
+  /**
+   * URLSave(x) - TODO describe `URLSave`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/URLSave.md">URLSave
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol URLSave = S.initFinalSymbol("URLSave", ID.URLSave);
 
   public final static IBuiltInSymbol UseTypeChecking =
       S.initFinalSymbol("UseTypeChecking", ID.UseTypeChecking);
@@ -29405,6 +30201,24 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Wronskian = S.initFinalSymbol("Wronskian", ID.Wronskian);
+
+  /**
+   * XMLElement(x) - TODO describe `XMLElement`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/XMLElement.md">XMLElement
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol XMLElement = S.initFinalSymbol("XMLElement", ID.XMLElement);
+
+  /**
+   * XMLObject(x) - TODO describe `XMLObject`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/XMLObject.md">XMLObject
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol XMLObject = S.initFinalSymbol("XMLObject", ID.XMLObject);
 
   public final static IBuiltInSymbol Xnor = S.initFinalSymbol("Xnor", ID.Xnor);
 

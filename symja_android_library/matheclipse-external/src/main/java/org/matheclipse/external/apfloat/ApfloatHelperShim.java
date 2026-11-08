@@ -2,6 +2,7 @@ package org.matheclipse.external.apfloat;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.apfloat.spi.Util;
@@ -37,6 +38,16 @@ class ApfloatHelperShim
         {
             ZEROS[radix] = new Apint(0, radix);
             ONES[radix] = new Apint(1, radix);
+        }
+    }
+
+    // Throws if the current thread was interrupted: a long computation stops at its next check
+    static void checkInterrupted()
+        throws ApfloatInterruptedException
+    {
+        if (Thread.currentThread().isInterrupted())
+        {
+            throw new ApfloatInterruptedException("Interrupted");
         }
     }
 

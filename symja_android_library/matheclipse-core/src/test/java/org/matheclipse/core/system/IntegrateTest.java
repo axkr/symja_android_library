@@ -113,7 +113,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(1/(x^3+1), {x,0,1})", //
         "Pi/(3*Sqrt(3))+Log(2)/3");
     check("Integrate(1/(x^3+1), x)", //
-        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
     check("Integrate(x^4+x^2+1, {x,1,3})", //
         "886/15");
     check("Integrate(a*x^2 + b*x + c, {x,-2,2})", //
@@ -726,7 +726,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // see github #116
     // should give (2*ArcTan((1 + 2*x)/Sqrt(3)))/Sqrt(3)
     check(" Integrate(1/(x^2+x+1),x) ", //
-        "(2*ArcTan((2*(1/2+x))/Sqrt(3)))/Sqrt(3)");
+        "(2*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
 
     // see github #109
     check("Int(1/Sqrt(9*x^4+1),{x,0,999})//N", //
@@ -777,6 +777,51 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric(
         "NIntegrate(1.25+I*2.0+(-3.25+I*0.125)*x+(I*3.0)*x^2,{x, -1.75+I*4.0, 1.5+I*(-12.0)})", //
         "-1427.4921875+I*(-709.06640625)");
+  }
+
+  @Test
+  public void testIntegrateProductOfLogsOfProportionalLinears() {
+    // the substitution d+e*x -> x applies when g+h*x is a multiple of d+e*x, not when only the
+    // constant terms are proportional
+    check("Simplify(D(Integrate(Log(2-3*x)*Log(1+2*x),x),x)-Log(2-3*x)*Log(1+2*x))", //
+        "0");
+    check("Simplify(D(Integrate(Log(4+6*x)*Log(2+3*x)^2,x),x)-Log(4+6*x)*Log(2+3*x)^2)", //
+        "0");
+  }
+
+  @Test
+  public void testNIntegrateTinyIntegrand() {
+    // the default absolute goal is relative to the integrand's size, and the value is rounded to
+    // significant digits
+    checkNumeric("NIntegrate(10^-35/(10^-6+x^2), {x, -1, 1})", //
+        "3.13959265425646E-32");
+  }
+
+  @Test
+  public void testIntegrateExponentialOverPeriod() {
+    // z == E^(I*t) on the unit circle: 2*Pi*I times the residue at 0 of an integrand which is
+    // analytic off the origin, where the antiderivative of ExpIntegralEi jumps across its cut
+    check("Integrate(Exp(2*Exp(I*t)), {t, 0, 2*Pi})", //
+        "2*Pi");
+    check("Integrate(Exp(Exp(-I*t))*Exp(3*I*t), {t, 0, 2*Pi})", //
+        "Pi/3");
+    check("Integrate(Exp(b*Cos(t)), {t, 0, 2*Pi})", //
+        "2*Pi*BesselI(0,b)");
+    // a pole of the rational factor at 3: declined
+    check("Integrate(Exp(Exp(I*t))/(3-Exp(I*t)), {t, 0, 2*Pi})", //
+        "Integrate(E^E^(I*t)/(3-E^(I*t)),{t,0,2*Pi})");
+  }
+
+  @Test
+  public void testNIntegrateComplexValuedIntegrand() {
+    // real limits, an integrand with complex values: the real and imaginary parts are integrated
+    // numerically, not through an antiderivative which jumps across a branch cut
+    checkNumeric("Chop(NIntegrate(Exp(3*Exp(I*t)), {t, 0, 2*Pi}))", //
+        "6.2831853071795685");
+    checkNumeric("Chop(NIntegrate(Exp(Exp(-I*t))*Exp(2*I*t), {t, 0, 2*Pi}))", //
+        "3.141592653589793");
+    checkNumeric("NIntegrate(Sqrt(x-2), {x, 0, 3})", //
+        "0.6666666666666665+I*1.8856180831641272");
   }
 
   @Test
@@ -860,7 +905,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
         "2.0");
     checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
-        "0.0");
+        "3.502452750453491E-17");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1195255867");
   }
@@ -899,7 +944,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Test
   public void testSystem171a() {
     check("Integrate(1/(x^5+x-7),x)", //
-        "RootSum(#1^5+#1-7&,Log(x-#1)/(5*#1^4+1)&)");
+        "RootSum(-7+#1+#1^5&,Log(x-#1)/(1+5*#1^4)&)");
 
     check("Rubi`PolyQ(x/(2*Sqrt(2)),x,1)", //
         "True");
@@ -925,7 +970,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "x/(1+x^3)");
 
     check("Integrate(x/(x^3+1),x)", //
-        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
     // check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
     // "x*(x^3+1)^(-1)");
     check("Integrate(x*Log(x),x)", //
@@ -959,9 +1004,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Apart(1/(x^3+1))", //
         "1/(3*(1+x))+(2-x)/(3*(1-x+x^2))");
     check("Integrate(1/(x^5+x-7),x)", //
-        "RootSum(#1^5+#1-7&,Log(x-#1)/(5*#1^4+1)&)");
+        "RootSum(-7+#1+#1^5&,Log(x-#1)/(1+5*#1^4)&)");
     check("Integrate(1/(x-2),x)", //
-        "Log(2-x)");
+        "Log(-2+x)");
     check("Integrate((x-2)^(-2),x)", //
         "1/(2-x)");
 
@@ -981,7 +1026,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // check("Simplify(Integrate(1/3*(2-x)*(x^2-x+1)^(-1),x))",
     // "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)-1/6*Log(x^2-x+1)");
     check("Integrate(1/3*(2-x)*(x^2-x+1)^(-1)+1/3*(x+1)^(-1),x)", //
-        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
     check("Integrate(E^x*(2-x^2),x)", //
         "2*E^x*x-E^x*x^2");
     check("D(2*E^x-Gamma(3,-x),x)", //
@@ -1287,7 +1332,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("NIntegrate(1/Abs(x),{x,-1,2})", //
         "NIntegrate(1/Abs(x),{x,-1,2})");
     check("NIntegrate(Abs(1/(x-1/3)),{x,0,1})", //
-        "NIntegrate(Abs(1/(-1/3+x)),{x,0,1})");
+        "NIntegrate(Abs(1/(x-1/3)),{x,0,1})");
     check("N(Integrate(Abs(1/x),{x,-1,1}))", //
         "Integrate(Abs(1/x),{x,-1,1})");
     check("NIntegrate(1/x^2,{x,-1,1})", //
@@ -1434,6 +1479,23 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   @Test
   @Tag(TestTags.SLOW)
+  public void testExponentOfExpandedPowerOfLinear() {
+    // Symja extension, a rule of Rubi 4.16 which 4.17.3 dropped: an exponent which is an expanded
+    // power of a linear polynomial is factored back, F^(8+12*x+6*x^2+x^3) -> F^(2+x)^3
+    check("Integrate(E^(8+12*x+6*x^2+x^3), x)", //
+        "((-2-x)*Gamma(1/3,-(2+x)^3))/(3*(-(2+x)^3)^(1/3))");
+    check("Integrate(2^(1-3*x+3*x^2-x^3), x)", //
+        "((1-x)*Gamma(1/3,-(1-x)^3*Log(2)))/(3*((-1+x)^3)^(1/3)*Log(2)^(1/3))");
+    // with a polynomial factor
+    check("Integrate(x*E^(8+12*x+6*x^2+x^3), x)", //
+        "2/3*((2+x)*Gamma(1/3,-(2+x)^3))/(-(2+x)^3)^(1/3)+(-(2+x)^2*Gamma(2/3,-(2+x)^3))/(\n"
+            + "3*(-(2+x)^3)^(2/3))");
+    // not a power of a linear polynomial
+    check("Integrate(E^(x+x^3), x)", //
+        "Integrate(E^(x+x^3),x)");
+  }
+
+  @Test
   public void testDilogarithmIntegrationByParts() {
     // Symja extension, proposed upstream in RuleBasedIntegration/Rubi#63 by benruijl: an
     // integration-by-parts rule for Int(PolyLog(2,u),x) where u is a rational function whose
@@ -1468,7 +1530,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testLogOverQuadratic() {
     // Rubi 3044 integrates Log(u)/Qx by parts with v=IntHide(1/Qx,x), which leaves
-    // Int(ArcTan(x)*2/(x*(1+x^2))). That one is finished by rule 2897, whose
+    // Int(ArcTan(x)*2/(x*(1+x^2))). That one is finished by rule 2898, whose
     // C=FullSimplify(Pq^m*(1-u)/D(u,x)) contributes the PolyLog term. FullSimplify used to
     // return 0 for C because Apart() - one of the rewrite candidates it ranks by complexity -
     // returned 0 for a Gaussian-integer fraction (see AlgebraTest#testApartGaussianDenominator),
@@ -1764,7 +1826,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // the antiderivative has a derivative which is right, but jumps between the limits: the
     // difference of its limits is off by a constant and is not returned
     check("Integrate(ArcTan(z)^2/(z^4-2*z^2+10),{z,0,3})", //
-        "Integrate(ArcTan(z)^2/(-2*z^2+z^4+10),{z,0,3})");
+        "Integrate(ArcTan(z)^2/(10-2*z^2+z^4),{z,0,3})");
     check("N(Integrate(ArcTan(z)^2/(z^4-2*z^2+10),{z,0,3}))", //
         "0.150509");
     // the antiderivative of an integrand without such a jump is kept

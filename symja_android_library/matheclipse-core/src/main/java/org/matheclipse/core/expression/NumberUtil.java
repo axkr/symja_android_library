@@ -3,9 +3,7 @@ package org.matheclipse.core.expression;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -185,14 +183,6 @@ public class NumberUtil {
       1067, 607, 1565, 905, 1755, 1231, 1299, 665, 373, 1985, 701, 1879, 1221, 849, 627, 1465, 789,
       543, 1187, 1591, 923, 1905, 979, 1241, 181};
 
-  public static Apcomplex apcomplexValue(Complex c) {
-    return new Apcomplex(new Apfloat(c.getReal()), new Apfloat(c.getImaginary()));
-  }
-
-  public static Apcomplex apfloatValue(double d) {
-    return new Apfloat(d);
-  }
-
   /**
    * 
    * @deprecated use {@link IExpr#isZero()}
@@ -296,7 +286,7 @@ public class NumberUtil {
    */
   public static BigInteger floor(BigFraction f) {
     // [rounding step, possible loss of precision step]
-    return round(f, BigDecimal.ROUND_FLOOR);
+    return round(f, RoundingMode.FLOOR);
   }
 
   /**
@@ -307,7 +297,7 @@ public class NumberUtil {
    */
   public static BigInteger ceiling(BigFraction f) {
     // [rounding step, possible loss of precision step]
-    return round(f, BigDecimal.ROUND_CEILING);
+    return round(f, RoundingMode.CEILING);
   }
 
   /**
@@ -318,7 +308,7 @@ public class NumberUtil {
    */
   public static BigInteger trunc(BigFraction f) {
     // [rounding step, possible loss of precision step]
-    return round(f, BigDecimal.ROUND_DOWN);
+    return round(f, RoundingMode.DOWN);
   }
 
   /**
@@ -329,7 +319,7 @@ public class NumberUtil {
    */
   public static BigInteger integerPart(BigFraction f) {
     // [rounding step, possible loss of precision step]
-    return round(f, BigDecimal.ROUND_DOWN);
+    return round(f, RoundingMode.DOWN);
   }
 
   /**
@@ -346,10 +336,8 @@ public class NumberUtil {
    * Round.
    *
    * <p>
-   * Round mode is one of { <CODE>ROUND_UP, ROUND_DOWN, ROUND_CEILING, ROUND_FLOOR,
-   * ROUND_HALF_UP, ROUND_HALF_DOWN, ROUND_HALF_EVEN,
-   * ROUND_HALF_CEILING, ROUND_HALF_FLOOR, ROUND_HALF_ODD,
-   * ROUND_UNNECESSARY, DEFAULT_ROUND_MODE (==ROUND_HALF_UP)</CODE> .
+   * Round mode is one of { <CODE>UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN</CODE>
+   * } of {@link RoundingMode}.
    *
    * <p>
    * If rounding isn't necessary, i.e. this BigRational is an integer, [as an optimization] this
@@ -359,7 +347,7 @@ public class NumberUtil {
    * Possible loss of precision.
    */
   // @PrecisionLoss
-  public static BigInteger round(BigFraction f, int roundMode) {
+  public static BigInteger round(BigFraction f, RoundingMode roundMode) {
     // [rounding step, possible loss of precision step]
     return roundToBigInteger(f, roundMode);
   }
@@ -371,7 +359,7 @@ public class NumberUtil {
    * Possible loss of precision.
    */
   // @PrecisionLoss
-  private static BigInteger roundToBigInteger(BigFraction f, int roundMode) {
+  private static BigInteger roundToBigInteger(BigFraction f, RoundingMode roundMode) {
     // note: remainder and its duplicate are calculated for all cases.
 
     BigInteger n = f.getNumerator();
@@ -414,34 +402,34 @@ public class NumberUtil {
     switch (roundMode) {
 
       // Rounding mode to round away from zero.
-      case BigDecimal.ROUND_UP:
+      case UP:
         up = true;
         break;
 
       // Rounding mode to round towards zero.
-      case BigDecimal.ROUND_DOWN:
+      case DOWN:
         up = false;
         break;
 
       // Rounding mode to round towards positive infinity.
-      case BigDecimal.ROUND_CEILING:
+      case CEILING:
         up = pos;
         break;
 
       // Rounding mode to round towards negative infinity.
-      case BigDecimal.ROUND_FLOOR:
+      case FLOOR:
         up = !pos;
         break;
 
       // Rounding mode to round towards "nearest neighbor" unless both
       // neighbors are equidistant, in which case round up.
-      case BigDecimal.ROUND_HALF_UP:
+      case HALF_UP:
         up = (comp >= 0);
         break;
 
       // Rounding mode to round towards "nearest neighbor" unless both
       // neighbors are equidistant, in which case round down.
-      case BigDecimal.ROUND_HALF_DOWN:
+      case HALF_DOWN:
         up = (comp > 0);
         break;
 
@@ -456,7 +444,7 @@ public class NumberUtil {
       // Rounding mode to round towards the "nearest neighbor" unless both
       // neighbors are equidistant, in which case, round towards the even
       // neighbor.
-      case BigDecimal.ROUND_HALF_EVEN:
+      case HALF_EVEN:
         up = (comp != 0 ? comp > 0 : dv.remainder(BigInteger.valueOf(2L)).signum() != 0);
         break;
 

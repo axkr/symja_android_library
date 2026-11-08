@@ -14,9 +14,11 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -134,6 +136,18 @@ public class TrigReduce extends AbstractEvaluator {
     }
 
     private IExpr visitTimes(IASTMutable ast) {
+      if (ast.arg1().isFraction() && ast.argSize() > 2) {
+        // reduce the product without its fractional factor
+        IExpr temp = visitTimes(ast.removeAtCopy(1));
+        if (temp.isPresent()) {
+          return F.evalExpand(F.Times(ast.arg1(), temp));
+        }
+        return F.NIL;
+      }
+      IExpr quotient = reduceQuotientPair(ast);
+      if (quotient.isPresent()) {
+        return quotient;
+      }
       IBuiltInSymbol head = S.Times;
       IAST flattened = TrigExpand.rewriteCircularHyperbolicOrderless(ast, head);
       if (flattened.isTimes()) {
@@ -162,6 +176,56 @@ public class TrigReduce extends AbstractEvaluator {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Reduce a product of two quotient functions <code>Tan, Cot, Tanh, Coth</code> to a quotient of
+     * reduced numerators and denominators: <code>Tan(x)*Tan(y)</code> becomes
+     * <code>(Cos(x-y)-Cos(x+y))/(Cos(x-y)+Cos(x+y))</code>.
+     *
+     * @param ast a {@link S#Times} expression
+     * @return {@link F#NIL} if the product contains less than two quotient functions
+     */
+    private IExpr reduceQuotientPair(IAST ast) {
+      int first = -1;
+      for (int i = 1; i < ast.size(); i++) {
+        if (ast.get(i).isAST1()
+            && ast.get(i).isFunctionID(ID.Tan, ID.Cot, ID.Tanh, ID.Coth)) {
+          if (first < 0) {
+            first = i;
+          } else {
+            IAST a = (IAST) ast.get(first);
+            IAST b = (IAST) ast.get(i);
+            IExpr numerator = TIMES_MATCHER.evaluate(
+                F.Times(quotientPart(a, true), quotientPart(b, true)), fEngine);
+            IExpr denominator = TIMES_MATCHER.evaluate(
+                F.Times(quotientPart(a, false), quotientPart(b, false)), fEngine);
+            if (numerator.isPresent() && denominator.isPresent()) {
+              IASTMutable result = ast.copy();
+              result.set(first, numerator);
+              result.set(i, F.Power(denominator, F.CN1));
+              return result;
+            }
+            return F.NIL;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    /** The numerator or denominator function of <code>Tan, Cot, Tanh, Coth</code>. */
+    private static IExpr quotientPart(IAST quotient, boolean numerator) {
+      IExpr arg = quotient.arg1();
+      switch (quotient.headID()) {
+        case ID.Tan:
+          return numerator ? F.Sin(arg) : F.Cos(arg);
+        case ID.Cot:
+          return numerator ? F.Cos(arg) : F.Sin(arg);
+        case ID.Tanh:
+          return numerator ? F.Sinh(arg) : F.Cosh(arg);
+        default:
+          return numerator ? F.Cosh(arg) : F.Sinh(arg);
+      }
     }
 
     private IExpr timesMatcherEvalLoop(IAST ast) {
@@ -289,7 +353,7 @@ public class TrigReduce extends AbstractEvaluator {
       return temp;
     }
 
-    return trigReduce(ast.arg1(), engine);
+    return factorCommonReciprocal(trigReduceNormalized(ast.arg1(), engine), engine);
   }
 
   public static IExpr trigReduce(IExpr temp, EvalEngine engine) {
@@ -321,6 +385,127 @@ public class TrigReduce extends AbstractEvaluator {
       return engine.evaluate(lastResult);
     }
     return result;
+  }
+
+  /**
+   * {@link #trigReduce(IExpr, EvalEngine)} with distributed rational multiples of sums in the
+   * arguments of the resulting functions.
+   *
+   * @param expr
+   * @param engine
+   * @return
+   */
+  static IExpr trigReduceNormalized(IExpr expr, EvalEngine engine) {
+    return distributeArguments(trigReduce(expr, engine), engine);
+  }
+
+  /**
+   * Pull a reciprocal function like <code>Sec(y)</code> or a power of a sum with negative exponent,
+   * which is a factor of all terms of the sum <code>expr</code>, out of the sum:
+   * <code>Sec(y)*Sin(x-y)/2+Sec(y)*Sin(x+y)/2</code> becomes
+   * <code>1/2*Sec(y)*(Sin(x-y)+Sin(x+y))</code>.
+   *
+   * @param expr
+   * @param engine
+   * @return
+   */
+  private static IExpr factorCommonReciprocal(IExpr expr, EvalEngine engine) {
+    if (!expr.isPlus()) {
+      return expr;
+    }
+    IAST plus = (IAST) expr;
+    IExpr first = plus.arg1();
+    IAST firstFactors = first.isTimes() ? (IAST) first : F.Times(first);
+    for (IExpr factor : firstFactors) {
+      if (isReciprocalFactor(factor)) {
+        IASTAppendable rest = F.PlusAlloc(plus.argSize());
+        for (IExpr term : plus) {
+          if (term.equals(factor)) {
+            rest.append(F.C1);
+          } else if (term.isTimes() && ((IAST) term).indexOf(factor) > 0) {
+            rest.append(((IAST) term).splice(((IAST) term).indexOf(factor)).oneIdentity1());
+          } else {
+            rest = F.NIL;
+            break;
+          }
+        }
+        if (rest.isPresent()) {
+          return engine.evaluate(F.Times(factor, F.Together(rest)));
+        }
+      }
+    }
+    return expr;
+  }
+
+  private static boolean isReciprocalFactor(IExpr factor) {
+    IExpr base = factor;
+    if (factor.isPower()) {
+      if (factor.base().isPlus()) {
+        return factor.exponent().isNegative();
+      }
+      if (!factor.exponent().isPositive()) {
+        return false;
+      }
+      base = factor.base();
+    }
+    return base.isAST1() && base.isFunctionID(ID.Sec, ID.Csc, ID.Sech, ID.Csch);
+  }
+
+  /**
+   * Distribute rational multiples of sums in the arguments of trigonometric and hyperbolic
+   * functions: <code>Cos(2*(x+y))</code> becomes <code>Cos(2*x+2*y)</code>. Symbolic multiples like
+   * <code>Sin(a*(x+y))</code> are kept.
+   *
+   * @param expr
+   * @param engine
+   * @return
+   */
+  static IExpr distributeArguments(IExpr expr, EvalEngine engine) {
+    IExpr result = expr.replaceAll(x -> {
+      if (x.isAST1() && x.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc, ID.Sinh,
+          ID.Cosh, ID.Tanh, ID.Coth, ID.Sech, ID.Csch)) {
+        IExpr arg = x.first();
+        IExpr distributed = distributeArgument(arg);
+        if (distributed != arg) {
+          return F.unaryAST1(x.head(), distributed);
+        }
+      }
+      return F.NIL;
+    });
+    return result.isPresent() ? engine.evaluate(result) : expr;
+  }
+
+  private static IExpr distributeArgument(IExpr arg) {
+    if (arg.isPlus()) {
+      IAST plus = (IAST) arg;
+      IASTMutable result = F.NIL;
+      for (int i = 1; i < plus.size(); i++) {
+        IExpr term = distributeArgument(plus.get(i));
+        if (term != plus.get(i)) {
+          if (result.isNIL()) {
+            result = plus.copy();
+          }
+          result.set(i, term);
+        }
+      }
+      return result.isPresent() ? result : arg;
+    }
+    if (arg.isTimes()) {
+      IAST times = (IAST) arg;
+      int sums = 0;
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        if (factor.isPlus()) {
+          sums++;
+        } else if (!factor.isRational()) {
+          return arg;
+        }
+      }
+      if (sums == 1) {
+        return F.evalExpand(arg);
+      }
+    }
+    return arg;
   }
 
   @Override

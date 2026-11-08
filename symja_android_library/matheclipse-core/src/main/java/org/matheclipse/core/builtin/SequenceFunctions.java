@@ -118,6 +118,43 @@ public class SequenceFunctions {
    * <code>f(list, pattern)</code> with the option <code>Overlaps</code>: checks the option and the
    * arguments, then calls {@link #apply} with the evaluated list and pattern.
    */
+  /** Receives a matching sequence <code>ast[start..end-1]</code>. */
+  private interface SequenceMatch {
+    /** @return <code>false</code> to stop the scan */
+    boolean accept(int start, int end);
+  }
+
+  /**
+   * Scan <code>ast</code> from left to right for sequences matching <code>pattern</code>, taking
+   * the longest match at each start position. With <code>Overlaps-&gt;All</code> every match at a
+   * position is reported, with <code>Overlaps-&gt;True</code> only the longest, and with
+   * <code>Overlaps-&gt;False</code> the scan continues after the end of the match.
+   */
+  private static void scanLongestMatches(final IAST ast, final IExpr pattern,
+      IExpr overlapsOption, EvalEngine engine, SequenceMatch match) {
+    final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+    final int maxLength = maxSequenceLength(pattern);
+    int i = 1;
+    while (i < ast.size()) {
+      // Greedy match: iterate k downwards to match the longest possible sequences first
+      for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
+        if (matcher.test(ast.subList(i, k))) {
+          if (!match.accept(i, k)) {
+            return;
+          }
+          if (overlapsOption != S.All) {
+            if (overlapsOption.isFalse()) {
+              // If no overlaps allowed, jump index to the end of the matching sequence
+              i = k - 1;
+            }
+            break;
+          }
+        }
+      }
+      i++;
+    }
+  }
+
   private abstract static class AbstractSequenceOverlaps extends AbstractFunctionOptionEvaluator {
 
     /**
@@ -198,7 +235,7 @@ public class SequenceFunctions {
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
-            IASTAppendable subSequence = ast.copyFrom(i, k);
+            IASTAppendable subSequence = ast.subList(i, k);
             // CPD-ON
             if (matcher.test(subSequence)) {
               allResults.append(subSequence);
@@ -216,7 +253,7 @@ public class SequenceFunctions {
               // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
-              IASTAppendable subSequence = ast.copyFrom(i, k);
+              IASTAppendable subSequence = ast.subList(i, k);
               if (matcher.test(subSequence)) {
                 subResult = subSequence;
               } else {
@@ -252,7 +289,7 @@ public class SequenceFunctions {
           for (int k = i + 1; k <= scanLimit(ast.size(), i, maxLength); k++) {
             // every length is tried: a miss at one length says nothing about a longer one, so
             // {a, b} still has to be tried after {a} failed
-            IASTAppendable subSequence = ast.copyFrom(i, k);
+            IASTAppendable subSequence = ast.subList(i, k);
             // CPD-ON
             IExpr temp = function.apply(subSequence);
             if (temp.isPresent()) {
@@ -272,7 +309,7 @@ public class SequenceFunctions {
               // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
-              IASTAppendable subSequence = ast.copyFrom(i, k);
+              IASTAppendable subSequence = ast.subList(i, k);
               IExpr temp = function.apply(subSequence);
               if (temp.isPresent()) {
                 subResult = subSequence;
@@ -312,30 +349,12 @@ public class SequenceFunctions {
 
     public static IExpr sequenceCount(final IAST ast, final IExpr pattern, IExpr overlapsOption,
         EvalEngine engine) {
-      int count = 0;
-      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      final int maxLength = maxSequenceLength(pattern);
-      int i = 1;
-
-      while (i < ast.size()) {
-        // Greedy match: iterate k downwards to match the longest possible sequences first
-        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
-          IASTAppendable subSequence = ast.subList(i, k);
-          if (matcher.test(subSequence)) {
-            count++;
-
-            if (overlapsOption != S.All) {
-              if (overlapsOption.isFalse()) {
-                // If no overlaps allowed, jump index to the end of the matching sequence
-                i = k - 1;
-              }
-              break;
-            }
-          }
-        }
-        i++;
-      }
-      return F.ZZ(count);
+      final int[] count = new int[1];
+      scanLongestMatches(ast, pattern, overlapsOption, engine, (start, end) -> {
+        count[0]++;
+        return true;
+      });
+      return F.ZZ(count[0]);
     }
   }
 
@@ -365,28 +384,10 @@ public class SequenceFunctions {
       if (maxMatches <= 0) {
         return resultAST;
       }
-
-      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      final int maxLength = maxSequenceLength(pattern);
-      int i = 1;
-      while (i < ast.size()) {
-        for (int k = scanLimit(ast.size(), i, maxLength); k >= i + 1; k--) {
-          IASTAppendable subSequence = ast.copyFrom(i, k);
-          if (matcher.test(subSequence)) {
-            resultAST.append(F.List(F.ZZ(i), F.ZZ(k - 1)));
-            if (resultAST.argSize() >= maxMatches) {
-              return resultAST;
-            }
-            if (overlapsOption != S.All) {
-              if (overlapsOption.isFalse()) {
-                i = k - 1;
-              }
-              break;
-            }
-          }
-        }
-        i++;
-      }
+      scanLongestMatches(ast, pattern, overlapsOption, engine, (start, end) -> {
+        resultAST.append(F.List(F.ZZ(start), F.ZZ(end - 1)));
+        return resultAST.argSize() < maxMatches;
+      });
       return resultAST;
     }
 
@@ -435,7 +436,7 @@ public class SequenceFunctions {
             break;
           }
           // greedy search
-          IASTAppendable subSequence = list.copyFrom(i, k);
+          IASTAppendable subSequence = list.subList(i, k);
           for (int l = 0; l < functions.length; l++) {
             if (matchers != null && matchers[l] != null) {
               if (matchers[l].test(subSequence)) {
@@ -598,7 +599,7 @@ public class SequenceFunctions {
         }
       }
       return scanSubsequences(list, functions, matchers, maxSequenceLengthOfAll(listOfPattern),
-          maxSplits, resultAST, (result, from, to) -> result.append(list.copyFrom(from, to)));
+          maxSplits, resultAST, (result, from, to) -> result.append(list.subList(from, to)));
     }
 
     @Override
@@ -679,11 +680,11 @@ public class SequenceFunctions {
           for (int len = min; len <= max && result.argSize() < limit; len += step) {
             if (len == 0) {
               // exactly one empty subsequence (retaining the input's head)
-              result.append(list.copyFrom(1, 1));
+              result.append(list.subList(1, 1));
             } else {
               // all contiguous windows of this length, left to right
               for (int i = 1; i <= size - len + 1 && result.argSize() < limit; i++) {
-                result.append(list.copyFrom(i, i + len));
+                result.append(list.subList(i, i + len));
               }
             }
           }
@@ -827,7 +828,7 @@ public class SequenceFunctions {
         }
         return assoc;
       }
-      return ((IAST) sequence).copyFrom(from + 1, to + 1);
+      return ((IAST) sequence).subList(from + 1, to + 1);
     }
   }
 

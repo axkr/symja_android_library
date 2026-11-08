@@ -326,6 +326,10 @@ public class MatrixExp extends AbstractFunctionEvaluator {
         if (v != null) {
           return engine.evaluate(F.Dot(expMat, v));
         }
+        if (arg1.isSparseArray() && !expMat.isFree(IExpr::isInexactNumber, false)) {
+          // the exponential of a machine number sparse array is a sparse array
+          return engine.evaluate(F.SparseArray(expMat));
+        }
         return expMat;
       }
 
