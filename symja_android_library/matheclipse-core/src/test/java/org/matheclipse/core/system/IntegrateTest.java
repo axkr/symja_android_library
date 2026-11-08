@@ -904,8 +904,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "-0.0208333333333333");
     checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
         "2.0");
-    checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
-        "3.502452750453491E-17");
+    // the exact value is 0; the rounding noise of the quadrature differs between platforms
+    checkNumeric("Chop(NIntegrate(Cos(x), {x, 0, Pi}))", //
+        "0");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1195255867");
   }
