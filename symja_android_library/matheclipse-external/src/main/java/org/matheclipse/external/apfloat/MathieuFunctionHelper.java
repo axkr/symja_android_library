@@ -86,14 +86,20 @@ final class MathieuFunctionHelper
         final Apcomplex valueC;
         /** <code>MathieuSPrime(a,q,0)</code> */
         final Apcomplex slopeS;
+        /**
+         * 0 in general; 1 at a characteristic value of <code>MathieuC</code>, where the Floquet solution is the
+         * even periodic one and there is no odd one; -1 at one of <code>MathieuS</code>, the other way round.
+         */
+        final int parity;
 
-        Floquet(Apcomplex nu, Apcomplex[] c, int offset, Apcomplex valueC, Apcomplex slopeS)
+        Floquet(Apcomplex nu, Apcomplex[] c, int offset, Apcomplex valueC, Apcomplex slopeS, int parity)
         {
             this.nu = nu;
             this.c = c;
             this.offset = offset;
             this.valueC = valueC;
             this.slopeS = slopeS;
+            this.parity = parity;
         }
     }
 
@@ -128,7 +134,7 @@ final class MathieuFunctionHelper
         else if (isSmallStep(a, q, z))
         {
             FixedPrecisionApfloatHelper wh = new FixedPrecisionApfloatHelper(precision + GUARD_DIGITS);
-            result = fromBasicSolutions(kind, floquet(a, q, precision, 0), a, q, z, wh);
+            result = fromBasicSolutions(kind, checkParity(kind, floquet(a, q, precision, 0)), a, q, z, wh);
         }
         else
         {
@@ -144,7 +150,7 @@ final class MathieuFunctionHelper
             {
                 FixedPrecisionApfloatHelper wh = new FixedPrecisionApfloatHelper(precision + extra + GUARD_DIGITS);
                 long[] loss = new long[1];
-                result = fromFourierSeries(kind, floquet(a, q, precision + extra, level), z, wh, loss);
+                result = fromFourierSeries(kind, checkParity(kind, floquet(a, q, precision + extra, level)), z, wh, loss);
                 if (level == 0 || loss[0] <= extra + GUARD_DIGITS - 4)
                 {
                     break;
@@ -167,6 +173,24 @@ final class MathieuFunctionHelper
             result = chop(result, precision);
         }
         return new FixedPrecisionApcomplexHelper(precision).valueOf(result);
+    }
+
+    /**
+     * The Floquet solution, if it has the function: at a characteristic value of <code>MathieuC</code> there is no odd
+     * periodic solution, and at one of <code>MathieuS</code> no even one. (Mathematica gives a value there which is not
+     * consistent with its own derivative - <code>MathieuS[MathieuCharacteristicA[2, 3/2], 3/2, z]</code> and
+     * <code>MathieuSPrime</code> of it - so none is given here.)
+     *
+     * @throws ArithmeticException if it does not have the function
+     */
+    private static Floquet checkParity(Kind kind, Floquet floquet)
+    {
+        boolean even = (kind == Kind.C || kind == Kind.C_PRIME);
+        if ((floquet.parity > 0 && !even) || (floquet.parity < 0 && even))
+        {
+            throw new ArithmeticException((even ? "No even" : "No odd") + " Mathieu function at this characteristic value");
+        }
+        return floquet;
     }
 
     /** <code>q == 0</code>: the equation has constant coefficients. */
@@ -412,16 +436,38 @@ final class MathieuFunctionHelper
 
         // Sum(Abs(c(k))^2) == 1, and the phase that leaves MathieuC(a,q,0) positive
         Apfloat norm = Apfloat.ZERO;
-        Apcomplex sum = Apcomplex.ZERO;
-        for (Apcomplex ck : c)
+        Apcomplex sum = Apcomplex.ZERO,
+                  moment = Apcomplex.ZERO;
+        for (int j = 0; j < c.length; j++)
         {
-            norm = h.add(norm, h.norm(ck));
-            sum = h.add(sum, ck);
+            norm = h.add(norm, h.norm(c[j]));
+            sum = h.add(sum, c[j]);
+            moment = h.add(moment, h.multiply(h.add(nu, new Apcomplex(new Apfloat(2L * (j - n), h.precision()))), c[j]));
         }
-        Apcomplex scale = new Apcomplex(h.sqrt(norm));
-        if (!isZero(sum))
+        Apfloat size = h.sqrt(norm);
+        // At a characteristic value the Floquet solution is periodic and even (MathieuC) or odd (MathieuS): the other function
+        // vanishes identically, as its value or slope at 0 shows - an even solution with C(0) == 0 is zero. Mathematica then
+        // takes the periodic solution with the normalization of DLMF 28.2(vi), Sum(Abs(c(k))^2) == 1/2, which is 1/Sqrt(2) of the
+        // Floquet solution next to it, and decides the phase by the function which is there
+        // a characteristic value known to the precision leaves the other solution at about the square root of the precision
+        // (it grows like Sqrt(a - a(r))): a double value of a(r) leaves 1e-8
+        double noise = 10.0 * Math.pow(10.0, -0.5 * precision) * size.doubleValue(),
+               nuReal = nu.real().doubleValue();
+        boolean integerExponent = Math.abs(nuReal - Math.rint(nuReal)) < 1.0e-6 && Math.abs(nu.imag().doubleValue()) < 1.0e-6;
+        int parity = 0;
+        if (integerExponent && magnitude(moment) <= noise * Math.max(1.0, Math.abs(nuReal)))
         {
-            scale = h.multiply(scale, h.divide(sum, new Apcomplex(h.abs(sum))));
+            parity = 1;
+        }
+        else if (integerExponent && magnitude(sum) <= noise)
+        {
+            parity = -1;
+        }
+        Apcomplex scale = new Apcomplex(parity == 0 ? size : h.multiply(size, h.sqrt(new Apfloat(2, h.precision()))));
+        Apcomplex phase = (parity < 0 ? moment : sum);
+        if (!isZero(phase))
+        {
+            scale = h.multiply(scale, h.divide(phase, new Apcomplex(h.abs(phase))));
         }
         Apcomplex valueC = Apcomplex.ZERO;
         Apcomplex slopeS = Apcomplex.ZERO;
@@ -431,6 +477,11 @@ final class MathieuFunctionHelper
             valueC = h.add(valueC, c[j]);
             Apcomplex frequency = h.add(nu, new Apcomplex(new Apfloat(2L * (j - n), h.precision())));
             slopeS = h.add(slopeS, h.multiply(frequency, c[j]));
+        }
+        if (parity != 0)
+        {
+            // MathieuC(a,q,0) > 0 for the even, MathieuSPrime(a,q,0) > 0 for the odd periodic solution
+            return new Floquet(nu, c, n, valueC, slopeS, parity);
         }
 
         if (isOppositeExponent(a, nu, slopeS, h))
@@ -445,7 +496,7 @@ final class MathieuFunctionHelper
                 c[2 * n - j] = t;
             }
         }
-        return new Floquet(nu, c, n, valueC, slopeS);
+        return new Floquet(nu, c, n, valueC, slopeS, 0);
     }
 
     /**

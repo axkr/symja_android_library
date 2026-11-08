@@ -111,4 +111,32 @@ public class ApcomplexMathieuMathTest
             assertEquals(k + 1, MathieuCharacteristicHelper.eigenvaluesBelow(main, secondarySquared, expected + 1.0e-9));
         }
     }
+
+    @Test
+    public void testAtCharacteristicValues()
+    {
+        // Mathematica's values: at a characteristic value the periodic solution with Sum(Abs(c(k))^2) == 1/2 (DLMF 28.2(vi)),
+        // 1/Sqrt(2) of the Floquet solution next to it, with MathieuC(a,q,0) > 0 or MathieuSPrime(a,q,0) > 0
+        Apfloat q = new Apfloat("1.5", 45),
+                zero = new Apfloat(0, 45),
+                z = new Apfloat("0.7", 45);
+        String[] c0 = { "0.77248673338551964770", "1.0766777677131715205", "1.1002296841695896144" },
+                 s0 = { "0.57012375320282941332", "1.5266246361701714976", "2.6633355033240226082" };
+        for (int r = 1; r <= 3; r++)
+        {
+            Apcomplex a = ApcomplexMathieuMath.mathieuCharacteristicA(new Apfloat(r, 45), q, 42),
+                      b = ApcomplexMathieuMath.mathieuCharacteristicB(new Apfloat(r, 45), q, 42);
+            assertClose("MathieuC(a" + r + "(3/2), 3/2, 0)", new Apfloat(c0[r - 1]), ApcomplexMathieuMath.mathieuC(a, q, zero, 25), 19);
+            assertClose("MathieuSPrime(b" + r + "(3/2), 3/2, 0)", new Apfloat(s0[r - 1]), ApcomplexMathieuMath.mathieuSPrime(b, q, zero, 25), 19);
+            // there is no odd solution at a characteristic value of MathieuC, and no even one at one of MathieuS
+            assertThrows(ArithmeticException.class, () -> ApcomplexMathieuMath.mathieuS(a, q, z, 25));
+            assertThrows(ArithmeticException.class, () -> ApcomplexMathieuMath.mathieuC(b, q, z, 25));
+        }
+        // the real se1, and the Floquet solution next to the characteristic value
+        Apcomplex b1 = ApcomplexMathieuMath.mathieuCharacteristicB(new Apfloat(1, 45), q, 42),
+                  a2 = ApcomplexMathieuMath.mathieuCharacteristicA(new Apfloat(2, 45), q, 42);
+        assertClose("MathieuS(b1(3/2), 3/2, 7/10)", new Apfloat("0.5010213630223142525907753"), ApcomplexMathieuMath.mathieuS(b1, q, z, 25), 23);
+        assertClose("MathieuC(a2(3/2)+10^-12, 3/2, 0)", new Apfloat("1.522652301404774212968532"),
+                    ApcomplexMathieuMath.mathieuC(a2.real().precision(45).add(new Apfloat("1e-12", 45)), q, zero, 25), 23);
+    }
 }
