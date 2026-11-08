@@ -3,6 +3,7 @@ package org.matheclipse.external.apfloat;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.Apint;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 
@@ -208,6 +209,16 @@ public final class ApfloatSignificance {
     return conditionNumbers(function, args, x, f);
   }
 
+  /**
+   * <code>1 - x^2</code> as <code>(1 - x)*(1 + x)</code> from the digits of <code>x</code>: in
+   * <code>double</code> it is 0 within about 1e-16 of +-1, which made the condition number of the
+   * inverse functions there infinite.
+   */
+  private static double oneMinusSquare(Apfloat x) {
+    Apint one = new Apint(1, x.radix());
+    return one.subtract(x).multiply(one.add(x)).doubleValue();
+  }
+
   private static double[] conditionNumbers(Function function, Apfloat[] args, double x,
       double f) {
     double[] c;
@@ -251,7 +262,7 @@ public final class ApfloatSignificance {
         break;
       case ARCSIN:
       case ARCCOS:
-        c = new double[] {Math.abs(x / (Math.sqrt(Math.max(0.0, 1.0 - x * x)) * f))};
+        c = new double[] {Math.abs(x / (Math.sqrt(Math.max(0.0, oneMinusSquare(args[0]))) * f))};
         break;
       case ARCTAN:
       case ARCCOT:
@@ -259,7 +270,7 @@ public final class ApfloatSignificance {
         break;
       case ARCSEC:
       case ARCCSC:
-        c = new double[] {Math.abs(1.0 / (Math.sqrt(Math.max(0.0, x * x - 1.0)) * f))};
+        c = new double[] {Math.abs(1.0 / (Math.sqrt(Math.max(0.0, -oneMinusSquare(args[0]))) * f))};
         break;
       case SINH:
       case CSCH:
@@ -284,14 +295,14 @@ public final class ApfloatSignificance {
         c = new double[] {Math.abs(x / (Math.sqrt(1.0 + x * x) * f))};
         break;
       case ARCCOSH:
-        c = new double[] {Math.abs(x / (Math.sqrt(Math.max(0.0, x * x - 1.0)) * f))};
+        c = new double[] {Math.abs(x / (Math.sqrt(Math.max(0.0, -oneMinusSquare(args[0]))) * f))};
         break;
       case ARCTANH:
       case ARCCOTH:
-        c = new double[] {Math.abs(x / ((1.0 - x * x) * f))};
+        c = new double[] {Math.abs(x / (oneMinusSquare(args[0]) * f))};
         break;
       case ARCSECH:
-        c = new double[] {Math.abs(1.0 / (Math.sqrt(Math.max(0.0, 1.0 - x * x)) * f))};
+        c = new double[] {Math.abs(1.0 / (Math.sqrt(Math.max(0.0, oneMinusSquare(args[0]))) * f))};
         break;
       case ARCCSCH:
         c = new double[] {Math.abs(1.0 / (Math.sqrt(1.0 + x * x) * f))};

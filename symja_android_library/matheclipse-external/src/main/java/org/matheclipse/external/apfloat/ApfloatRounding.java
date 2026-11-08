@@ -62,7 +62,10 @@ public class ApfloatRounding
         {
             return x;
         }
-        return ApfloatMath.roundToPrecision(extended, precision, RoundingMode.HALF_EVEN);
+        // Nonzero digits stored beyond the guard digits put the value above a tie of the guard digits: rounding the
+        // guard digits alone half to even rounded 0.1234500001 to 0.1234
+        boolean sticky = (x.precision(Apfloat.INFINITE).size() > precision + GUARD_DIGITS);
+        return ApfloatMath.roundToPrecision(extended, precision, sticky ? RoundingMode.HALF_UP : RoundingMode.HALF_EVEN);
     }
 
     /**

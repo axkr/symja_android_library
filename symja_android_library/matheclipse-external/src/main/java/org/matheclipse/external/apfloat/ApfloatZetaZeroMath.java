@@ -104,22 +104,29 @@ public class ApfloatZetaZeroMath
         Apfloat tolerance = ApfloatMath.pow(new Apfloat(10, precision), -precision).multiply(new Apfloat(2.0 * Math.max(1.0, upper), precision)),
                 fa,
                 fb;
+        // An endpoint whose zeta(1/2 + i t) underflows to zero at the working precision sits on the zero: that endpoint is the result
         try
         {
             fa = z.apply(a);
-            if (fa.signum() == 0)
-            {
-                return a;
-            }
-            fb = z.apply(b);
-            if (fb.signum() == 0)
-            {
-                return b;
-            }
         }
         catch (LossOfPrecisionException lope)
         {
-            // An endpoint sits on the zero: zeta(1/2 + i t) underflowed to zero at the working precision
+            return a;
+        }
+        if (fa.signum() == 0)
+        {
+            return a;
+        }
+        try
+        {
+            fb = z.apply(b);
+        }
+        catch (LossOfPrecisionException lope)
+        {
+            return b;
+        }
+        if (fb.signum() == 0)
+        {
             return b;
         }
         if (fa.signum() == fb.signum())

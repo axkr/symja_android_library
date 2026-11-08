@@ -49,4 +49,13 @@ public class ApcomplexCoulombMathTest
         assertClose("G(1/2, -2, 1/2)", new Apfloat("0.234942048659657340825208834042188165609117717"), ApcomplexCoulombMath.coulombG(q(1, 2), q(-2, 1), q(1, 2)), PRECISION - 2);
         assertThrows(ArithmeticException.class, () -> ApcomplexCoulombMath.coulombG(q(1, 1), q(1, 1), q(-2, 1)));
     }
+
+    @Test
+    public void testComplexOrderSign()
+    {
+        // the square root of Gamma(L+1+i eta) Gamma(L+1-i eta) through the logarithms: the principal square root has the other sign here.
+        // The value is the one of Mathematica and mpmath
+        Apcomplex value = ApcomplexCoulombMath.coulombF(new Apcomplex(q(2, 1), q(3, 1)), new Apcomplex(q(-3, 2), q(1, 1)), q(13, 10));
+        assertClose("F(2+3i, -3/2+i, 13/10)", new Apcomplex(new Apfloat("4.52596321134571303031988677781"), new Apfloat("3.85424050475954176680062957668")), value, 28);
+    }
 }

@@ -317,4 +317,32 @@ public class ApfloatEllipticMathTest
         assertClose("RG(-i, 1/2, -5/2)", new Apcomplex(number("-0.0104552077172780222150434518594841162367611177"), number("0.336119806491841304807102601881517659483074134")),
                     ApcomplexEllipticMath.carlsonRG(new Apcomplex(Apfloat.ZERO, number("-1")), number("0.5"), number("-2.5")));
     }
+
+    @Test
+    public void testAmplitudeNextToAHalfPeriod()
+    {
+        // Re(phi) a little more than pi/2: the reduction by multiples of pi must not leave the strip |Re r| <= pi/2,
+        // or the integral is taken on the other side of a cut
+        Apcomplex phi = new Apcomplex(number("1.570796326794896619231321791639751442099"), number("0.25"));
+        assertClose("F(pi/2+3.5e-22+i/4 | 1/2)", new Apcomplex(number("1.854074677301371918433850493356995410429"), number("0.3573934866080830956471670326095536372001")),
+                    ApcomplexEllipticMath.ellipticF(phi, number("0.5")));
+        assertClose("E(pi/2+3.5e-22+i/4 | 1/2)", new Apcomplex(number("1.350643881047675502520174803756085385431"), number("0.1748939138609193353998798043394799013626")),
+                    ApcomplexEllipticMath.ellipticE(phi, number("0.5")));
+        Apfloat real = ApfloatMath.pi(PRECISION + 20).divide(new Apfloat(2, PRECISION + 20)).add(new Apfloat("1e-25", PRECISION + 20)).precision(PRECISION);
+        assertClose("F(pi/2+1e-25 | 1/2)", number("1.854074677301371918433850488616616283527"), ApcomplexEllipticMath.ellipticF(real, number("0.5")));
+    }
+
+    @Test
+    public void testCarlsonRJJustOffTheNegativeAxis()
+    {
+        // an imaginary part below 1e-12 of the real part decides the side of the pole too
+        Apcomplex below = new Apcomplex(number("-1"), number("-1e-13")),
+                  above = new Apcomplex(number("-1"), number("1e-13"));
+        assertClose("RJ(1, 2, 3, -1-1e-13i)", new Apcomplex(number("-0.093240452438624308427958715726"), number("0.961912372621365746370795400568")),
+                    ApcomplexEllipticMath.carlsonRJ(number("1"), number("2"), number("3"), below), 28);
+        assertClose("RJ(1, 2, 3, -1+1e-13i)", new Apcomplex(number("-0.093240452438624308427958715726"), number("-0.961912372621365746370795400568")),
+                    ApcomplexEllipticMath.carlsonRJ(number("1"), number("2"), number("3"), above), 28);
+        assertClose("Pi(3+1e-20i; 1 | 1/2)", new Apcomplex(number("0.271530518823830515778553325669"), number("1.21673360279208356908411914408")),
+                    ApcomplexEllipticMath.ellipticPi(new Apcomplex(number("3"), number("1e-20")), number("1"), number("0.5")), 28);
+    }
 }

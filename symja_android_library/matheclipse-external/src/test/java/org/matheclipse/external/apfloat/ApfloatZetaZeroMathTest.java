@@ -54,4 +54,12 @@ public class ApfloatZetaZeroMathTest
         Apfloat tolerance = new Apfloat("1e-15", 20);
         assertClose("zero 1", "14.1347251417346937904572519835624702707842571", ApfloatZetaZeroMath.bisect(new Apfloat(14, 20), new Apfloat("14.5", 20), tolerance, 20), 15);
     }
+
+    @Test
+    public void testEndpointOnTheZero()
+    {
+        // Z of an endpoint on the zero underflows: that endpoint is the zero, the lower one as well as the upper one
+        assertClose("zero(t1-, 14.5)", "14.134725141734693790457", ApfloatZetaZeroMath.zero(Math.nextDown(14.134725141734694), 14.5, 15), 14);
+        assertClose("zero(14, t1+)", "14.134725141734693790457", ApfloatZetaZeroMath.zero(14.0, Math.nextUp(14.134725141734694), 15), 14);
+    }
 }

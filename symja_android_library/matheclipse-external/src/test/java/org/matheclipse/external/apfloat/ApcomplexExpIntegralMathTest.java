@@ -1,5 +1,6 @@
 package org.matheclipse.external.apfloat;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -112,5 +113,18 @@ public class ApcomplexExpIntegralMathTest
         // Ci(x) has a zero at x = 0.6165054856207162337971104..., where the sum cancels against EulerGamma + Log(x)
         Apcomplex z = z("0.6165054856207162", "0");
         assertClose("Ci(0.6165...)", ApcomplexMath.cosIntegral(z), ApcomplexExpIntegralMath.cosIntegralSeries(z, PRECISION), PRECISION - 3);
+    }
+
+    @Test
+    public void testNextToZeros()
+    {
+        // Si has no logarithm: its cancellation is the one of the terms, which grow to e^|z|
+        assertClose("Si next to a complex zero", new Apcomplex(new Apfloat("-2.58299058928450720562494637407e-30"), new Apfloat("-5.84903551361240781151781134039e-30")),
+                    ApcomplexExpIntegralMath.sinIntegralSeries(z("5.96518138331108217590869240407", "3.00559565606503386578630854207"), PRECISION), PRECISION - 2);
+        // a value far below the precision against its parts
+        assertClose("Ei next to its zero", new Apfloat("-1.69579750817039476358445412368e-60"),
+                    ApcomplexExpIntegralMath.expIntegralEiSeries(new Apfloat("0.372507410781366634461991866580119133535689497771654051555657", 60), PRECISION), PRECISION - 2);
+        // the logarithmic singularity
+        assertThrows(ArithmeticException.class, () -> ApcomplexExpIntegralMath.cosIntegralSeries(Apcomplex.ZERO, PRECISION));
     }
 }

@@ -43,6 +43,12 @@ class AppellF1EulerIntegralHelper
     // Relative difference of two machine precision estimates which ends the halving
     private static final double MACHINE_TOLERANCE = 1.0e-13;
 
+    // The largest ratio of the integral of |integrand| to |integral| which the machine precision sum accepts: the samples are only correct relative to the former
+    private static final double MAX_MACHINE_CANCELLATION = 100.0;
+
+    // The integral is computed again with the digits it lost at most this many times
+    private static final int MAX_ATTEMPTS = 3;
+
     // A point where the integrand may be singular, with the arguments whose factor vanishes there
     private static final class Point
     {
@@ -155,6 +161,8 @@ class AppellF1EulerIntegralHelper
     private final Apcomplex y;
     private final Apfloat zero;
     private final Apfloat one;
+    // The digits which the machine precision sum found to cancel, or 0
+    private long machineCancellation;
 
     private AppellF1EulerIntegralHelper(Apcomplex a, Apcomplex b1, Apcomplex b2, Apcomplex c, Apcomplex x, Apcomplex y, long working)
     {
@@ -200,21 +208,41 @@ class AppellF1EulerIntegralHelper
         }
         try
         {
-            Apcomplex sum = (machine ? integral.machineSum(points) : null);
-            if (sum == null)
-            {
-                sum = Apcomplex.ZERO;
-                for (int i = 1; i < points.size(); i++)
-                {
-                    Point lower = points.get(i - 1),
-                          upper = points.get(i);
-                    Apfloat half = upper.t.subtract(lower.t).divide(new Apfloat(2, working));
-                    sum = sum.add(integral.part(lower, 1, half, precision));
-                    sum = sum.add(integral.part(upper, -1, half, precision));
-                }
-            }
             Apcomplex gammas = ApcomplexMath.gamma(c).divide(ApcomplexMath.gamma(a).multiply(ApcomplexMath.gamma(cMinusA)));
-            return gammas.multiply(sum);
+            Apcomplex sum = (machine ? integral.machineSum(points) : null);
+            if (sum != null)
+            {
+                return gammas.multiply(sum);
+            }
+            // The parts cancel when the integrand oscillates: apfloat keeps track of the digits which are lost, and the integral is computed again with that many more.
+            // The machine precision sum, if it ran, already measured the cancellation
+            long digits = precision + integral.machineCancellation;
+            Apcomplex value = null;
+            for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++)
+            {
+                long attemptWorking = digits + GUARD_DIGITS;
+                boolean same = (attemptWorking == working);
+                AppellF1EulerIntegralHelper attemptIntegral = (same ? integral : new AppellF1EulerIntegralHelper(ApfloatHelperShim.ensurePrecision(a, attemptWorking), ApfloatHelperShim.ensurePrecision(b1, attemptWorking),
+                                                                                                                        ApfloatHelperShim.ensurePrecision(b2, attemptWorking), ApfloatHelperShim.ensurePrecision(c, attemptWorking),
+                                                                                                                        ApfloatHelperShim.ensurePrecision(x, attemptWorking), ApfloatHelperShim.ensurePrecision(y, attemptWorking), attemptWorking));
+                List<Point> attemptPoints = (same ? points : attemptIntegral.singularPoints());
+                sum = Apcomplex.ZERO;
+                for (int i = 1; i < attemptPoints.size(); i++)
+                {
+                    Point lower = attemptPoints.get(i - 1),
+                          upper = attemptPoints.get(i);
+                    Apfloat half = upper.t.subtract(lower.t).divide(new Apfloat(2, attemptWorking));
+                    sum = sum.add(attemptIntegral.part(lower, 1, half, digits));
+                    sum = sum.add(attemptIntegral.part(upper, -1, half, digits));
+                }
+                value = ApfloatHelperShim.ensurePrecision(gammas, attemptWorking).multiply(sum);
+                if (value.precision() >= precision || (value.real().signum() == 0 && value.imag().signum() == 0))
+                {
+                    break;
+                }
+                digits += precision - value.precision() + GUARD_DIGITS;
+            }
+            return value;
         }
         catch (ApfloatDoubleExponential.Failure f)
         {
@@ -320,7 +348,7 @@ class AppellF1EulerIntegralHelper
         return ApfloatDoubleExponential.integrate(smooth, this.zero, ApfloatMath.pow(length, ePlus1), digits);
     }
 
-    // The sum of all parts in double, with the same cuts and substitutions as part(), or null if a part doesn't converge to machine precision
+    // The sum of all parts in double, with the same cuts and substitutions as part(), or null if a part doesn't converge to machine precision or the parts cancel
     private Apcomplex machineSum(List<Point> points)
     {
         MachineComplex dA1 = new MachineComplex(this.aMinus1),
@@ -330,6 +358,9 @@ class AppellF1EulerIntegralHelper
                        dx = new MachineComplex(this.x),
                        dy = new MachineComplex(this.y),
                        sum = MachineComplex.ZERO;
+        // The integral of the absolute value of the integrand: the rounding errors of the samples are relative to it, not to the sum
+        double[] absolute = new double[1];
+        double totalAbsolute = 0.0;
         for (int i = 1; i < points.size(); i++)
         {
             Point lower = points.get(i - 1),
@@ -358,22 +389,33 @@ class AppellF1EulerIntegralHelper
                                                         .multiply(MachineComplex.pow(near.y ? dy.multiply(-sign * u) : MachineComplex.oneMinus(dy, t), dB2));
                     return (k == 1.0 ? value : value.multiply(k * u / s));
                 };
-                MachineComplex part = tanhSinh(integrand, ePlus1 < 1.0 ? Math.pow(half, ePlus1) : half);
+                MachineComplex part = tanhSinh(integrand, ePlus1 < 1.0 ? Math.pow(half, ePlus1) : half, absolute);
                 if (part == null)
                 {
                     return null;
                 }
                 sum = sum.add(part);
+                totalAbsolute += absolute[0];
             }
+        }
+        if (!(totalAbsolute <= MAX_MACHINE_CANCELLATION * sum.abs()))
+        {
+            // An oscillating integrand, or parts which cancel: the rounding errors of the samples exceed the machine precision of the sum.
+            // The ratio tells how many digits the apfloat quadrature will lose as well
+            double ratio = totalAbsolute / sum.abs();
+            this.machineCancellation = (Double.isFinite(ratio) ? (long) Math.ceil(Math.log10(ratio)) : 0);
+            return null;
         }
         return new Apcomplex(new Apfloat(sum.re), new Apfloat(sum.im));
     }
 
-    // Tanh-sinh quadrature over [0, length] in double; an abscissa next to zero is computed from its distance to zero. Null if the estimates don't agree to machine precision or a sample isn't finite
-    private static MachineComplex tanhSinh(DoubleFunction<MachineComplex> f, double length)
+    // Tanh-sinh quadrature over [0, length] in double; an abscissa next to zero is computed from its distance to zero. Null if the estimates don't agree to machine precision or a sample isn't finite.
+    // absolute[0] receives the quadrature of the absolute value of the integrand
+    private static MachineComplex tanhSinh(DoubleFunction<MachineComplex> f, double length, double[] absolute)
     {
         double halfPi = Math.PI / 2.0,
-               h = 1.0;
+               h = 1.0,
+               absoluteSum = 0.0;
         MachineComplex sum = MachineComplex.ZERO,
                        previous = null;
         for (int level = 0; level <= MACHINE_LEVELS; level++)
@@ -413,6 +455,7 @@ class AppellF1EulerIntegralHelper
                     MachineComplex term = value.multiply(weight);
                     sum = sum.add(term);
                     double magnitude = term.abs();
+                    absoluteSum += magnitude;
                     largest = Math.max(largest, magnitude);
                     if (magnitude <= 1.0e-18 * largest)
                     {
@@ -430,6 +473,7 @@ class AppellF1EulerIntegralHelper
             MachineComplex estimate = sum.multiply(h);
             if (previous != null && estimate.subtract(previous).abs() <= MACHINE_TOLERANCE * estimate.abs())
             {
+                absolute[0] = absoluteSum * h;
                 return estimate;
             }
             previous = estimate;

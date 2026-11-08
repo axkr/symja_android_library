@@ -72,4 +72,15 @@ public class ApfloatRoundingTest
         Apfloat real = new Apfloat("0.5", 20);
         assertSame(real, ApfloatRounding.roundToPrecision((Apcomplex) real), "a real number");
     }
+
+    @Test
+    public void testTieOfTheGuardDigitsWithMoreDigits()
+    {
+        // the guard digits 500 are not a tie when nonzero digits follow them
+        assertEquals("1.235e-1", ApfloatRounding.roundToPrecision(new Apfloat("0.1234500001", 16).precision(4)).toString());
+        assertEquals("-1.235e-1", ApfloatRounding.roundToPrecision(new Apfloat("-0.1234500001", 16).precision(4)).toString());
+        // a true tie, also with zeros after it
+        assertEquals("1.234e-1", ApfloatRounding.roundToPrecision(new Apfloat("0.12345", 16).precision(4)).toString());
+        assertEquals("1.234e-1", ApfloatRounding.roundToPrecision(new Apfloat("0.123450000000000", 16).precision(4)).toString());
+    }
 }

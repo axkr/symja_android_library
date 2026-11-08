@@ -237,10 +237,10 @@ class CarlsonHelper
     // in the right half plane
     private static Apcomplex rjLine(Apcomplex x, Apcomplex y, Apcomplex z, Apcomplex p, long workingPrecision)
     {
-        x = x.precision(workingPrecision);
-        y = y.precision(workingPrecision);
-        z = z.precision(workingPrecision);
-        p = p.precision(workingPrecision);
+        x = partsPrecision(x, workingPrecision);
+        y = partsPrecision(y, workingPrecision);
+        z = partsPrecision(z, workingPrecision);
+        p = partsPrecision(p, workingPrecision);
         Apcomplex end = rjEnd(x, y, z, p, workingPrecision),
                   initial = (workingPrecision == REFERENCE_PRECISION ? rjIntegral(x, y, z, p, end) : null);
         if (initial == null)
@@ -248,6 +248,13 @@ class CarlsonHelper
             initial = rjIntegral(x, y, z, p, end, workingPrecision);
         }
         return initial.add(rjDuplication(ensure(x.add(end), workingPrecision), ensure(y.add(end), workingPrecision), ensure(z.add(end), workingPrecision), ensure(p.add(end), workingPrecision), workingPrecision));
+    }
+
+    // z with each part to the precision: Apcomplex.precision() counts the digits relative to the larger part, so it turns an
+    // imaginary part below 10^-precision of the real part into an exact zero, and an argument just off the negative real axis onto it
+    private static Apcomplex partsPrecision(Apcomplex z, long precision)
+    {
+        return new Apcomplex(z.real().precision(precision), z.imag().precision(precision));
     }
 
     private static Apcomplex rjDuplication(Apcomplex x, Apcomplex y, Apcomplex z, Apcomplex p, long workingPrecision)

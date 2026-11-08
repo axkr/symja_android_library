@@ -134,12 +134,14 @@ public class ApcomplexHypergeometricMath
         {
             return one;
         }
-        // Parameters which are both above and below cancel
+        // Parameters which are both above and below cancel, except a non-positive integer -n: then the series ends
+        // with the term of z^n, before the term 0/0 (the convention of Mathematica and mpmath: 1F1(-2; -2; z) = 1 + z + z^2/2)
         java.util.List<Apcomplex> upper = new java.util.ArrayList<Apcomplex>(java.util.Arrays.asList(a)),
                                   lower = new java.util.ArrayList<Apcomplex>(java.util.Arrays.asList(b));
         for (java.util.Iterator<Apcomplex> i = upper.iterator(); i.hasNext();)
         {
-            if (lower.remove(i.next()))
+            Apcomplex x = i.next();
+            if (!isNonPositiveInteger(x) && lower.remove(x))
             {
                 i.remove();
             }
@@ -335,6 +337,11 @@ public class ApcomplexHypergeometricMath
             for (Apcomplex x : a)
             {
                 numerator = h.multiply(numerator, h.add(x, index));
+            }
+            if (numerator.isZero())
+            {
+                // A non-positive integer above ends the series, also where the same one below would make the next term 0/0
+                break;
             }
             for (Apcomplex x : b)
             {

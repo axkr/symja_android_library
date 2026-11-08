@@ -5,6 +5,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.LossOfPrecisionException;
 
 /**
  * The power series of the sine, cosine and exponential integrals for {@link Apcomplex} arguments
@@ -26,6 +27,9 @@ public class ApcomplexExpIntegralMath
 
     // The largest |z| for which the series are used
     private static final double SERIES_MAX_ABS = 40.0;
+
+    // The largest number of digits, beyond those of the growth of the terms, which a value next to a zero may lose
+    private static final long MAX_LOST_DIGITS = 2000;
 
     /**
      * Whether the series of this class are used for <code>z</code>: not at zero, where the
@@ -132,27 +136,36 @@ public class ApcomplexExpIntegralMath
     }
 
     // EulerGamma + logarithm + Sum(+-z^n/(n*n!)) over n = first, first+step, ...
-    // The sum loses up to |z|/Log(10) digits to cancellation and the whole to a value near a zero, so it is computed again with the digits which were lost.
+    // The digits lost are those of the largest part (the largest term of the sum, or the logarithm) in front of the value: the terms grow
+    // to about e^|z| before they cancel, and a value next to a zero is small against all its parts. The value is accepted when the guard
+    // digits cover the loss, otherwise it is computed again with the digits which were lost.
     // negative: whether the first term of the sum is negative; logarithm: 0 for none, 1 for Log(z), 2 for (Log(z)-Log(1/z))/2
     private static Apcomplex withLogarithm(Apcomplex z, long precision, int first, int step, boolean alternating, boolean negative, int logarithm)
     {
         if (z.real().signum() == 0 && z.imag().signum() == 0)
         {
+            if (logarithm != 0)
+            {
+                // Ci, Chi and Ei have a logarithmic singularity at zero
+                throw new ArithmeticException("Logarithmic singularity at zero");
+            }
             return z;
         }
         double absZ = abs(z);
-        long guard = (long) Math.ceil(absZ / Math.log(10.0)) + 10L;
-        Apcomplex value = null;
-        for (int attempt = 0; attempt < 2; attempt++)
+        long guard = (long) Math.ceil(absZ / Math.log(10.0)) + 10L,
+             maxGuard = guard + MAX_LOST_DIGITS;
+        double[] largest = new double[1];
+        while (true)
         {
+            ApfloatHelperShim.checkInterrupted();
             long working = precision + guard;
             Apcomplex w = z.precision(working),
-                      sum = powerSeries(w, working, first, step, alternating);
+                      sum = powerSeries(w, working, first, step, alternating, largest);
             if (negative)
             {
                 sum = sum.negate();
             }
-            double scale = abs(sum);
+            double scale = largest[0];
             if (logarithm != 0)
             {
                 Apcomplex log = ApcomplexMath.log(w);
@@ -164,21 +177,30 @@ public class ApcomplexExpIntegralMath
                 scale = Math.max(scale, Math.max(abs(log), euler.doubleValue()));
                 sum = sum.add(log).add(euler);
             }
-            value = sum;
             double magnitude = abs(sum);
-            // The digits lost where the value is small against its parts, near a zero of the function
-            long lost = (magnitude > 0.0 ? (long) Math.ceil(Math.log10(scale / magnitude)) : precision);
-            if (lost <= 5L)
+            if (magnitude > 0.0)
             {
-                break;
+                long lost = (long) Math.ceil(Math.log10(scale / magnitude));
+                if (lost + 5L <= guard)
+                {
+                    return sum.precision(precision);
+                }
+                guard = Math.max(guard + 10L, lost + 10L);
             }
-            guard += Math.min(lost, precision);
+            else
+            {
+                // All digits cancelled: the value is below the working precision
+                guard = 2L * guard + precision;
+            }
+            if (guard > maxGuard)
+            {
+                throw new LossOfPrecisionException("Complete loss of accurate digits next to a zero", "lossOfPrecision");
+            }
         }
-        return value.precision(precision);
     }
 
-    // Sum(+-z^n/(n*n!)) over n = first, first+step, ...
-    private static Apcomplex powerSeries(Apcomplex w, long working, int first, int step, boolean alternating)
+    // Sum(+-z^n/(n*n!)) over n = first, first+step, ...; largest[0] receives the absolute value of the largest term
+    private static Apcomplex powerSeries(Apcomplex w, long working, int first, int step, boolean alternating, double[] largest)
     {
         // p is z^n/n!
         Apcomplex p = w;
@@ -192,6 +214,7 @@ public class ApcomplexExpIntegralMath
             factor = factor.negate();
         }
         Apcomplex sum = p.divide(new Apfloat(first, working));
+        largest[0] = abs(sum);
         double absZ = abs(w);
         for (long n = first; ; n += step)
         {
@@ -200,6 +223,7 @@ public class ApcomplexExpIntegralMath
             p = p.multiply(factor).divide(denominator);
             Apcomplex term = p.divide(new Apfloat(next, working));
             sum = sum.add(term);
+            largest[0] = Math.max(largest[0], abs(term));
             // The term is below 10^-working of the sum (or of 1, next to a zero): compared by the scales, which cost nothing
             if (next > absZ && term.scale() <= Math.max(sum.scale(), 1) - working - 1)
             {

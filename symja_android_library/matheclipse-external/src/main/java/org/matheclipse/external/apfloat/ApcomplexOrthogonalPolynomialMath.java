@@ -267,8 +267,9 @@ public class ApcomplexOrthogonalPolynomialMath
         }
         if (m < 0)
         {
+            // P^-m = (-1)^m (n-m)!/(n+m)! P^m for the types 1 and 2, and without the (-1)^m for type 3, whose factor already changes its sign with m
             result = result.multiply(factorialRatio(degree - order, degree + order));
-            if ((order & 1) == 1)
+            if ((order & 1) == 1 && type != 3)
             {
                 result = result.negate();
             }
@@ -282,8 +283,9 @@ public class ApcomplexOrthogonalPolynomialMath
      * <code>Q(1) == z*Q(0)-1</code>, where <code>L</code> is <code>Log(1+z)-Log(1-z)</code> for type 2
      * and <code>Log(1+z)-Log(z-1)</code> for type 3.<p>
      *
-     * The forward recurrence is stable for <i>z</i> on the cut <i>(-1, 1)</i> and next to it; far from
-     * it <i>Q<sub>n</sub></i> decreases with the degree and the recurrence loses digits.
+     * The forward recurrence is stable for <i>z</i> on the cut <i>(-1, 1)</i>; away from it <i>Q<sub>n</sub></i>
+     * is the minimal solution, smaller than <i>P<sub>n</sub></i> by about |<i>z</i> + &radic;(<i>z</i><sup>2</sup> - 1)|<sup>2<i>n</i></sup>,
+     * and the recurrence is run with that many more digits.
      *
      * @param n The degree.
      * @param type The type 2 or 3.
@@ -302,7 +304,7 @@ public class ApcomplexOrthogonalPolynomialMath
         {
             throw new ArithmeticException("Negative degree");
         }
-        long work = workingPrecision(n, precision);
+        long work = workingPrecision(n, precision) + minimalSolutionDigits(n, z);
         Apcomplex x = z.precision(work);
         Apcomplex logTerm = ApcomplexMath.log(one().add(x)).subtract(ApcomplexMath.log(type == 3 ? x.subtract(one()) : one().subtract(x)));
         Apcomplex previous = logTerm.divide(new Apint(2));
@@ -338,7 +340,23 @@ public class ApcomplexOrthogonalPolynomialMath
         long work = workingPrecision(degree, precision);
         Apcomplex t = θ.precision(work);
         Apcomplex p = φ.precision(work);
-        Apcomplex legendre = legendreP(degree, m, 1, ApcomplexMath.cos(t), work);
+        // P_l^m(cos θ) with the factor sin(θ)^m, the analytic function of θ; the type 1 factor (1 - cos^2 θ)^(m/2) is |sin θ|^m for a real θ
+        // and changes the sign for θ outside of [0, π]
+        long order = Math.abs(m);
+        Apcomplex legendre = gegenbauerC(degree - order, new Aprational(new Apint(2 * order + 1), new Apint(2)), ApcomplexMath.cos(t), work)
+                             .multiply(doubleFactorial(2 * order - 1)).multiply(ApcomplexMath.pow(ApcomplexMath.sin(t), order));
+        if ((order & 1) == 1)
+        {
+            legendre = legendre.negate();
+        }
+        if (m < 0)
+        {
+            legendre = legendre.multiply(factorialRatio(degree - order, degree + order));
+            if ((order & 1) == 1)
+            {
+                legendre = legendre.negate();
+            }
+        }
         Apfloat norm = factorialRatio(degree - m, degree + m).multiply(new Apint(2 * degree + 1)).precision(work).divide(ApfloatMath.pi(work).multiply(new Apint(4)));
         Apcomplex phase = ApcomplexMath.exp(Apcomplex.I.multiply(new Apint(m)).multiply(p));
         return ApfloatMath.sqrt(norm).multiply(legendre).multiply(phase).precision(precision);
@@ -395,6 +413,27 @@ public class ApcomplexOrthogonalPolynomialMath
     private static long workingPrecision(long degree, long precision)
     {
         return precision + GUARD_DIGITS + Long.toString(degree).length();
+    }
+
+    // The digits which the forward recurrence loses to the minimal solution Q_n: the dominant solution P_n grows like |ζ|^n
+    // and Q_n falls like |ζ|^-n, with ζ = z + sqrt(z^2 - 1) taken outside of the unit circle; 0 on the cut (-1, 1), where |ζ| = 1
+    private static long minimalSolutionDigits(long n, Apcomplex z)
+    {
+        double re = z.real().doubleValue(),
+               im = z.imag().doubleValue(),
+               // z^2 - 1
+               wr = re * re - im * im - 1.0,
+               wi = 2.0 * re * im,
+               // the principal square root of z^2 - 1
+               modulus = Math.hypot(wr, wi),
+               sr = Math.sqrt((modulus + wr) / 2.0),
+               si = Math.copySign(Math.sqrt((modulus - wr) / 2.0), wi),
+               size = Math.max(Math.hypot(re + sr, im + si), Math.hypot(re - sr, im - si));
+        if (!(size > 1.0) || !Double.isFinite(size))
+        {
+            return (Double.isFinite(size) ? 0 : (long) Math.ceil(2.0 * n * Math.log10(Math.max(Math.abs(re), Math.abs(im)) * 2.0)));
+        }
+        return (long) Math.ceil(2.0 * n * Math.log10(size));
     }
 
     private static Apint one()

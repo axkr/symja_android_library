@@ -131,14 +131,17 @@ public class ApcomplexCoulombMath
         return h.multiply(h.multiply(h.multiply(normalization(h, l, η, one, two), h.exp(h.multiply(l1, h.log(ρ)))), h.exp(h.multiply(i, ρ).negate())), series);
     }
 
-    // C_L(eta) = 2^L exp(-pi eta / 2) sqrt(gamma(L + 1 + i eta) gamma(L + 1 - i eta)) / gamma(2 L + 2)
+    // C_L(eta) = 2^L exp(-pi eta / 2) exp((log gamma(L + 1 + i eta) + log gamma(L + 1 - i eta)) / 2) / gamma(2 L + 2).
+    // The square root of the product of the gamma functions is taken through their logarithms: the principal square root changes its sign
+    // for a complex L or eta, and the phase sigma of coulombG is taken from the same logarithms, so F and G have the Wronskian 1
     private static Apcomplex normalization(FixedPrecisionApfloatHelper h, Apcomplex l, Apcomplex η, Apfloat one, Apfloat two)
     {
         Apcomplex i = new Apcomplex(Apfloat.ZERO, one),
                   l1 = h.add(l, one),
                   iη = h.multiply(i, η),
-                  product = (iη.isZero() ? h.multiply(h.gamma(l1), h.gamma(l1)) : h.multiply(h.gamma(h.add(l1, iη)), h.gamma(h.subtract(l1, iη))));
-        return h.divide(h.multiply(h.multiply(h.exp(h.multiply(l, h.log(two))), h.exp(h.divide(h.multiply(h.pi(), η), two).negate())), h.sqrt(product)), h.gamma(h.multiply(two, l1)));
+                  logSum = (iη.isZero() ? h.multiply(two, h.logGamma(l1)) : h.add(h.logGamma(h.add(l1, iη)), h.logGamma(h.subtract(l1, iη)))),
+                  root = h.exp(h.divide(logSum, two));
+        return h.divide(h.multiply(h.multiply(h.exp(h.multiply(l, h.log(two))), h.exp(h.divide(h.multiply(h.pi(), η), two).negate())), root), h.gamma(h.multiply(two, l1)));
     }
 
     // (H+ + H-) / 2 with H+- = exp(+-i theta) (-+2 i rho)^(L + 1 +- i eta) U(L + 1 +- i eta, 2 L + 2, -+2 i rho)

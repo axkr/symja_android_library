@@ -94,9 +94,19 @@ public class ApcomplexAppellMath
                                         ApfloatHelperShim.ensurePrecision(x, workingPrecision),
                                         ApfloatHelperShim.ensurePrecision(y, workingPrecision),
                                         workingPrecision, tracked);
+            // An exact zero from a sum whose terms cancel completely at this working precision says nothing about the value (it has infinite precision, and two of them agree):
+            // it is accepted only if it stays zero up to the largest number of extra digits
+            boolean zero = (result.real().signum() == 0 && result.imag().signum() == 0);
+            if (zero)
+            {
+                if (attempt == MAX_ATTEMPTS)
+                {
+                    return result;
+                }
+            }
             // The series of hypergeometric functions is slow, and apfloat keeps track of the digits it loses
-            if ((tracked[0] && result.precision() >= precision) ||
-                (previous != null && GuardDigitsHelper.agree(previous, result, precision)))
+            else if ((tracked[0] && result.precision() >= precision) ||
+                     (previous != null && GuardDigitsHelper.agree(previous, result, precision)))
             {
                 return ApfloatHelperShim.limitPrecision(result, precision);
             }

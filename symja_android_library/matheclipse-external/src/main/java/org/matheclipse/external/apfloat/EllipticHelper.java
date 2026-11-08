@@ -311,7 +311,19 @@ class EllipticHelper
             Apcomplex r = ApfloatHelperShim.ensurePrecision(φ, reductionPrecision);
             if (ApfloatMath.abs(real).compareTo(halfPi) > 0)
             {
-                this.k = ApfloatMath.roundToInteger(real.precision(ApfloatHelperShim.extendPrecision(Math.max(1, real.scale()))).divide(pi), RoundingMode.HALF_EVEN);
+                // The quotient with all digits of φ: next to (k + 1/2) π a shorter one rounds as a tie, and HALF_EVEN then leaves Re r outside of the strip
+                Apfloat quotient = ApfloatHelperShim.ensurePrecision(real, reductionPrecision).divide(pi);
+                Apint k = ApfloatMath.roundToInteger(quotient, RoundingMode.HALF_EVEN);
+                Apfloat reduced = ApfloatHelperShim.ensurePrecision(real, reductionPrecision).subtract(k.multiply(pi));
+                if (reduced.compareTo(halfPi) > 0)
+                {
+                    k = k.add(ApfloatHelperShim.ONES[radix]);
+                }
+                else if (reduced.compareTo(halfPi.negate()) < 0)
+                {
+                    k = k.subtract(ApfloatHelperShim.ONES[radix]);
+                }
+                this.k = k;
                 r = r.subtract(this.k.multiply(pi));
             }
             else

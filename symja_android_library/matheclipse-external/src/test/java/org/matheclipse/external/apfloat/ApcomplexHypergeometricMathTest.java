@@ -91,4 +91,14 @@ public class ApcomplexHypergeometricMathTest
         assertClose("3F2(i)", new Apcomplex(new Apfloat("0.955995213070746608862017780385942487242996995"), new Apfloat("0.12072951692597884938506050757882211578013749")),
                     ApcomplexHypergeometricMath.hypergeometricPFQ(a, b, new Apcomplex(Apfloat.ZERO, r(1, 1))), 28);
     }
+
+    @Test
+    public void testNonPositiveIntegerAboveAndBelow()
+    {
+        // the series ends before the term 0/0, as in Mathematica and mpmath: 1F1(-2; -2; 3) = 1 + 3 + 9/2
+        assertClose("1F1(-2; -2; 3)", new Apfloat("8.5"), ApcomplexHypergeometricMath.hypergeometricPFQ(new Apcomplex[] { r(-2, 1) }, new Apcomplex[] { r(-2, 1) }, r(3, 1)), 28);
+        assertClose("2F1(2, -1; -1; 3)", new Apfloat("7"), ApcomplexHypergeometricMath.hypergeometricPFQ(new Apcomplex[] { r(2, 1), r(-1, 1) }, new Apcomplex[] { r(-1, 1) }, r(3, 1)), 28);
+        // the pole below comes first
+        assertThrows(ArithmeticException.class, () -> ApcomplexHypergeometricMath.hypergeometricPFQ(new Apcomplex[] { r(-3, 1) }, new Apcomplex[] { r(-2, 1) }, r(3, 1)));
+    }
 }

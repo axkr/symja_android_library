@@ -171,4 +171,23 @@ public class ApcomplexAppellMathTest
         // the integral diverges at t = 1/x: the exponent of 1 - x t is -b1 - b2 <= -1
         assertThrows(ArithmeticException.class, () -> euler(q(1, 2), q(1, 2), q(1, 2), q(3, 2), x, x, false));
     }
+
+    @Test
+    @Tag("slow")
+    public void testMachineEulerIntegralOfAnOscillatingIntegrand()
+    {
+        // t^(4i) oscillates: the double sum loses more digits than it has, and the integral is computed in apfloat with the digits which cancel
+        Apcomplex value = ApcomplexAppellMath.appellF1EulerIntegral(new Apcomplex(q(1, 1), q(4, 1)), q(1, 2), q(1, 4), q(2, 1), new Apcomplex(q(7, 10), q(6, 10)), new Apcomplex(q(-2, 1), q(-11, 2)), 17, true);
+        assertClose("machine F1(1+4i; 1/2, 1/4; 2; 0.7+0.6i, -2-5.5i)", new Apcomplex(new Apfloat("0.4999039117913350249201972"), new Apfloat("0.09724314141531394438269001")), value, 15);
+    }
+
+    @Test
+    public void testCancellationToZero()
+    {
+        // the terminating sum cancels completely at the first working precisions: an exact zero is not taken for the value
+        assertClose("F1(17/10; -20, -5; 7/10; 999/1000, -3)", new Apfloat("-2.9221376e-53"), f1(q(17, 10), q(-20, 1), q(-5, 1), q(7, 10), q(999, 1000), q(-3, 1)), 25);
+        assertClose("F1(17/10; 3/10, -20; 7/10; -3, 999/1000)", new Apfloat("-1.88308152078462929839423976673e-56"), f1(q(17, 10), q(3, 10), q(-20, 1), q(7, 10), q(-3, 1), q(999, 1000)), 25);
+        // a sum which is zero: 1 - x - y
+        assertTrue(f1(q(-1, 1), q(1, 1), q(1, 1), q(1, 1), q(1, 2), q(1, 2)).isZero(), "F1(-1; 1, 1; 1; 1/2, 1/2)");
+    }
 }

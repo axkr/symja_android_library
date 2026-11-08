@@ -120,4 +120,28 @@ public class ApcomplexOrthogonalPolynomialMathTest
                     ApcomplexOrthogonalPolynomialMath.zernikeR(151, 2, q(3, 10), PRECISION), 37);
         assertThrows(ArithmeticException.class, () -> ApcomplexOrthogonalPolynomialMath.zernikeR(3, 4, q(3, 10), PRECISION));
     }
+
+    @Test
+    public void testLegendreQOffTheCut()
+    {
+        // Q_n is the minimal solution away from (-1, 1): the forward recurrence needs the digits P_n grows by
+        assertClose("Q(60, type 3, 10)", new Apfloat("1.15077844864114620512976470537e-80"), ApcomplexOrthogonalPolynomialMath.legendreQ(60, 3, q(10, 1), 30), 28);
+        assertClose("Q(200, type 3, 3/2)", new Apfloat("1.3133146368921335852656274385e-85"), ApcomplexOrthogonalPolynomialMath.legendreQ(200, 3, q(3, 2), 30), 28);
+    }
+
+    @Test
+    public void testLegendrePTypeThreeNegativeOrder()
+    {
+        // type 3: P^-m = (n-m)!/(n+m)! P^m without the factor (-1)^m of types 1 and 2
+        assertClose("P(2, -1, type 3, 5/2)", new Apfloat("2.864109809347400004117529496080005305615"), ApcomplexOrthogonalPolynomialMath.legendreP(2, -1, 3, q(5, 2), 30), 28);
+        assertClose("P(2, -1, type 2, 1/2)", new Apfloat("0.216506350946109661690930792688"), ApcomplexOrthogonalPolynomialMath.legendreP(2, -1, 2, q(1, 2), 30), 28);
+    }
+
+    @Test
+    public void testSphericalHarmonicYOutsideOfZeroToPi()
+    {
+        // the analytic function of theta, -1/2 Sqrt(15/(2 Pi)) E^(I phi) Cos(theta) Sin(theta), as Mathematica gives it
+        assertClose("Y(2, 1, 4, 1/2)", new Apcomplex(new Apfloat("-0.335380082390436014961113992565"), new Apfloat("-0.183218974053910796624288193967")),
+                    ApcomplexOrthogonalPolynomialMath.sphericalHarmonicY(2, 1, q(4, 1), q(1, 2), 30), 28);
+    }
 }
