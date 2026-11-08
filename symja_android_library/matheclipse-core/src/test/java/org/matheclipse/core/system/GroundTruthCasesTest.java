@@ -32,8 +32,11 @@ public class GroundTruthCasesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testParentDirectoryOfFile() {
-    check("ParentDirectory(File(\"/opt/data/raw\"))", //
-        "/opt/data");
+    // compare the path parts: on Windows the name gets the drive and backslashes, C:\opt\data
+    check("Take(FileNameSplit(ParentDirectory(File(\"/opt/data/raw\"))), -2)", //
+        "{opt,data}");
+    check("Last(FileNameSplit(ParentDirectory(File(\"/opt/data/raw\"), 2)))", //
+        "opt");
     check("StringQ(ParentDirectory(File(\"/opt/data/raw\"), 2))", //
         "True");
   }
