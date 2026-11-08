@@ -157,8 +157,8 @@ public class DualLinearProgramming extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     IAST values = (IAST) dual;
-    IAST result = F.List(primal, values.copyFrom(1, k + 1), values.copyFrom(k + 1, k + n + 1),
-        values.copyFrom(k + n + 1, k + 2 * n + 1));
+    IAST result = F.List(primal, values.subList(1, k + 1), values.subList(k + 1, k + n + 1),
+        values.subList(k + n + 1, k + 2 * n + 1));
     if (method.isString() && method.toString().equals(INTERIOR_POINT)) {
       if (!ast.isNumericMode() && c.isFree(x -> x.isInexactNumber(), false)
           && m.isFree(x -> x.isInexactNumber(), false)

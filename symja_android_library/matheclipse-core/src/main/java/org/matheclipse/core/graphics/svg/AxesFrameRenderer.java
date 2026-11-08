@@ -205,21 +205,22 @@ public final class AxesFrameRenderer {
       return;
     }
     // Only the bottom and left edges are numbered, unless the caller named ticks for the far
-    // edges too, as a plot that wants a scale on all four sides does.
+    // edges too, as a plot that wants a scale on all four sides does; a far edge whose own
+    // setting is Automatic is ticked but not numbered.
     boolean farSideLabels = !options.frameTicks.isAutomatic();
     if (options.frame[2]) {
       drawXTicks(ticksFor(frameTickSpec(2), true), y2, tickStyle, textStyle, true, true, parent);
     }
     if (options.frame[3]) {
-      drawXTicks(ticksFor(frameTickSpec(3), true), y1, tickStyle, textStyle, false, farSideLabels,
-          parent);
+      drawXTicks(ticksFor(frameTickSpec(3), true), y1, tickStyle, textStyle, false,
+          farSideLabels && !frameTickSpec(3).isAutomatic(), parent);
     }
     if (options.frame[0]) {
       drawYTicks(ticksFor(frameTickSpec(0), false), x1, tickStyle, textStyle, true, true, parent);
     }
     if (options.frame[1]) {
-      drawYTicks(ticksFor(frameTickSpec(1), false), x2, tickStyle, textStyle, false, farSideLabels,
-          parent);
+      drawYTicks(ticksFor(frameTickSpec(1), false), x2, tickStyle, textStyle, false,
+          farSideLabels && !frameTickSpec(1).isAutomatic(), parent);
     }
   }
 
@@ -300,6 +301,12 @@ public final class AxesFrameRenderer {
     }
     if (spec.isNone() || spec.isFalse()) {
       return new ArrayList<>();
+    }
+    // Charting`ScaledTicks(...) of a known scale
+    List<TickGenerator.Tick> scaled = ScaledTicks.ticks(spec, isX ? viewport.minX : viewport.minY,
+        isX ? viewport.maxX : viewport.maxY);
+    if (scaled != null) {
+      return scaled;
     }
     List<TickGenerator.Tick> explicit = TickGenerator.explicit(spec);
     return explicit == null ? autoTicks(isX) : explicit;

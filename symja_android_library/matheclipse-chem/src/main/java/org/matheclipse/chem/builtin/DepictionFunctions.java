@@ -349,10 +349,10 @@ public class DepictionFunctions {
       double startGap = isLabelled(bond.getBegin()) ? LABEL_GAP_FRACTION : 0.0;
       double endGap = isLabelled(bond.getEnd()) ? LABEL_GAP_FRACTION : 0.0;
 
-      if (isWedge(bond)) {
+      Wedge wedge = wedge(bond);
+      if (wedge != null) {
         // a stereo bond is one solid or hashed shape rather than two coloured halves
-        appendWedge(group(byColor, colors, WEDGE_COLOR), from, to, startGap, endGap,
-            bond.getStereo());
+        appendWedge(group(byColor, colors, WEDGE_COLOR), from, to, startGap, endGap, wedge);
         continue;
       }
       appendHalfBonds2D(byColor, colors, molecule, bond, from, to, startGap, endGap, beginColor,
@@ -452,11 +452,39 @@ public class DepictionFunctions {
     return primitives;
   }
 
-  /** Whether a bond carries the stereochemistry a wedge depicts. */
-  private static boolean isWedge(IBond bond) {
-    IBond.Stereo stereo = bond.getStereo();
-    return stereo == IBond.Stereo.UP || stereo == IBond.Stereo.DOWN
-        || stereo == IBond.Stereo.UP_INVERTED || stereo == IBond.Stereo.DOWN_INVERTED;
+  /**
+   * The wedge a bond is drawn as: solid (up) or hashed (down), with the narrow end at the bond's
+   * begin atom, or at its end atom for the inverted kinds.
+   */
+  private enum Wedge {
+    UP, UP_INVERTED, DOWN, DOWN_INVERTED
+  }
+
+  /**
+   * The wedge depicting the stereochemistry of a bond, or <code>null</code> if the bond carries
+   * none.
+   */
+  private static Wedge wedge(IBond bond) {
+    IBond.Display display = bond.getDisplay();
+    if (display == null) {
+      return null;
+    }
+    switch (display) {
+      case WedgeBegin:
+      case HollowWedgeBegin:
+      case Bold:
+        return Wedge.UP;
+      case WedgeEnd:
+      case HollowWedgeEnd:
+        return Wedge.UP_INVERTED;
+      case WedgedHashBegin:
+      case Hash:
+        return Wedge.DOWN;
+      case WedgedHashEnd:
+        return Wedge.DOWN_INVERTED;
+      default:
+        return null;
+    }
   }
 
   /**
@@ -464,8 +492,8 @@ public class DepictionFunctions {
    * the page, and a ladder of widening strokes for one going down behind it.
    */
   private static void appendWedge(IASTAppendable primitives, Point2d from, Point2d to,
-      double startGap, double endGap, IBond.Stereo stereo) {
-    boolean inverted = stereo == IBond.Stereo.UP_INVERTED || stereo == IBond.Stereo.DOWN_INVERTED;
+      double startGap, double endGap, Wedge wedge) {
+    boolean inverted = wedge == Wedge.UP_INVERTED || wedge == Wedge.DOWN_INVERTED;
     Point2d tip = inverted ? to : from;
     Point2d base = inverted ? from : to;
     double tipGap = inverted ? endGap : startGap;
@@ -485,7 +513,7 @@ public class DepictionFunctions {
       tStart = 0.0;
       tEnd = 1.0;
     }
-    boolean solid = stereo == IBond.Stereo.UP || stereo == IBond.Stereo.UP_INVERTED;
+    boolean solid = wedge == Wedge.UP || wedge == Wedge.UP_INVERTED;
     if (solid) {
       primitives.append(F.unaryAST1(S.Polygon, F.List( //
           F.List(F.num(tip.x + dx * tStart), F.num(tip.y + dy * tStart)), //

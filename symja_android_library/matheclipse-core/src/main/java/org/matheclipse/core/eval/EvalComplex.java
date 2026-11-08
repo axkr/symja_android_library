@@ -54,7 +54,7 @@ public class EvalComplex {
       }
     }
     // slow evaluation path
-    return toPair(F.evaln(ast));
+    return toPair(EvalEngine.get().evalN(ast));
   }
 
   /**
@@ -114,6 +114,6 @@ public class EvalComplex {
     }
 
     // slow evaluation path
-    return toPair(F.evaln(symbol));
+    return toPair(EvalEngine.get().evalN(symbol));
   }
 }

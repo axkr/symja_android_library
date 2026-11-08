@@ -126,7 +126,7 @@ public class ListDensityPlot extends DensityPlot {
     int cellsY = refine(nodesY);
 
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.booleSymbol(colorFunctionScaling),
             S.ListDensityPlot, engine)
         .range(1, gridData.minZ, gridData.maxZ).sink(PlotColorFunction.Sink.FLAT)
         .fallback(this::getDensityColor).build();

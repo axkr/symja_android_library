@@ -2139,7 +2139,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         IExpr candidate = engine.evaluate(collector.get(k));
         double d;
         try {
-          d = candidate.evalDouble();
+          d = candidate.evalf();
         } catch (RuntimeException rex) {
           return null;
         }
@@ -2195,8 +2195,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         : parameterConditions.setAtCopy(0, S.And);
     double lo, hi;
     try {
-      lo = lower.evalDouble();
-      hi = upper.evalDouble();
+      lo = lower.evalf();
+      hi = upper.evalf();
     } catch (RuntimeException rex) {
       return F.NIL;
     }
@@ -2214,7 +2214,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         }
         offset = linear[0];
         try {
-          period = Math.abs(linear[1].evalDouble());
+          period = Math.abs(linear[1].evalf());
         } catch (RuntimeException rex) {
           return F.NIL;
         }
@@ -2303,8 +2303,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     double c, s;
     try {
-      c = linear[0].evalDouble();
-      s = linear[1].evalDouble();
+      c = linear[0].evalf();
+      s = linear[1].evalf();
     } catch (RuntimeException rex) {
       return null;
     }
@@ -2335,7 +2335,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return false;
     }
     try {
-      double d = bound.evalDouble();
+      double d = bound.evalf();
       return !Double.isNaN(d) && !Double.isInfinite(d);
     } catch (RuntimeException rex) {
       return false;
@@ -2545,7 +2545,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       for (IExpr member : members) {
         double d;
         try {
-          d = member.evalDouble();
+          d = member.evalf();
         } catch (RuntimeException rex) {
           return F.NIL;
         }
@@ -2556,8 +2556,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     double minValue;
     double maxValue;
     try {
-      minValue = windowInterval.arg1().evalDouble();
-      maxValue = windowInterval.arg4().evalDouble();
+      minValue = windowInterval.arg1().evalf();
+      maxValue = windowInterval.arg4().evalf();
     } catch (RuntimeException rex) {
       return F.NIL;
     }
@@ -2810,7 +2810,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     double amplitude;
     try {
-      amplitude = term.amplitude.evalDouble();
+      amplitude = term.amplitude.evalf();
     } catch (RuntimeException rex) {
       return F.NIL;
     }
@@ -6857,7 +6857,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       double d;
       try {
-        d = rootValue.evalDouble();
+        d = rootValue.evalf();
       } catch (ArgumentTypeException aex) {
         return false;
       }
@@ -7025,7 +7025,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     IExpr value = engine.evaluate(F.subst(f, variable, F.num(sample)));
     double d;
     try {
-      d = value.evalDouble();
+      d = value.evalf();
     } catch (ArgumentTypeException aex) {
       return 0;
     }

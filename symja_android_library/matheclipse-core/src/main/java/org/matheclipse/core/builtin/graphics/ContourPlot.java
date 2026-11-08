@@ -320,7 +320,7 @@ public class ContourPlot extends ListPlot {
         double z = Double.NaN;
         try {
           IExpr result = engine.evaluate(valExpr);
-          z = result.evalDouble();
+          z = result.evalf();
         } catch (Exception e) {
           z = Double.NaN;
         }
@@ -349,7 +349,7 @@ public class ContourPlot extends ListPlot {
     // reference means by "the average of the scaled values of f for each pair of successive
     // contour levels" - the scaling is a straight line, so averaging before it is the same thing
     PlotColorFunction colorMap = PlotColorFunction
-        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.bool(colorFunctionScaling),
+        .of(PlotColorFunction.Family.FIELD_2D, colorFunctionOpt, F.booleSymbol(colorFunctionScaling),
             S.ContourPlot, engine)
         .range(1, minZ, maxZ).sink(PlotColorFunction.Sink.FLAT).fallback(this::getShadingColor)
         .build();

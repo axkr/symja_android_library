@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -1041,11 +1042,17 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr coshIntegral() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.coshIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().coshIntegral(fApcomplex));
   }
 
   @Override
   public IExpr cosIntegral() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.cosIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().cosIntegral(fApcomplex));
   }
 
@@ -1252,6 +1259,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr expIntegralEi() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.expIntegralEiSeries(fApcomplex, h().precision()));
+    }
     try {
       return valueOf(h().expIntegralEi(fApcomplex));
     } catch (ArithmeticException | NumericComputationException e) {
@@ -1491,6 +1501,7 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(h().pi());
   }
 
+  @Deprecated
   @Override
   public double getReal() {
     return fApcomplex.real().doubleValue();
@@ -2066,12 +2077,30 @@ public class ApcomplexNum implements IComplexNum {
     }
   }
 
+  /**
+   * <code>fApcomplex^exponent</code>. An exponent with an integer value is applied by repeated
+   * multiplication: <code>Exp(exponent*Log(base))</code> leaves an imaginary part of rounding noise
+   * above the accuracy of the result, <code>(0+u*I)^2</code> is not real then.
+   *
+   * @param periodic report the size of the exponent to {@link PrecisionLoss}, see
+   *        {@link #periodicPower(Apcomplex, Apcomplex)}
+   */
+  private Apcomplex powValue(final Apcomplex exponent, boolean periodic) {
+    if (exponent.imag().signum() == 0 && exponent.real().isInteger()
+        && exponent.real().scale() <= 18) {
+      return h().pow(fApcomplex, exponent.real().longValue());
+    }
+    if (periodic) {
+      periodicPower(fApcomplex, exponent);
+    }
+    return h().pow(fApcomplex, exponent);
+  }
+
   @Override
   public IComplexNum pow(final IComplexNum val) {
-    periodicPower(fApcomplex, val.apcomplexValue());
-    final IExpr power = powerResult(h().pow(fApcomplex, val.apcomplexValue()), val);
-    return power instanceof IComplexNum ? (IComplexNum) power
-        : valueOf(h().pow(fApcomplex, val.apcomplexValue()));
+    final Apcomplex value = powValue(val.apcomplexValue(), true);
+    final IExpr power = powerResult(value, val);
+    return power instanceof IComplexNum ? (IComplexNum) power : valueOf(value);
   }
 
   @Override
@@ -2085,11 +2114,10 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr power(final IExpr that) {
     if (that instanceof IComplexNum) {
-      periodicPower(fApcomplex, ((IComplexNum) that).apcomplexValue());
-      return powerResult(h().pow(fApcomplex, ((IComplexNum) that).apcomplexValue()), that);
+      return powerResult(powValue(((IComplexNum) that).apcomplexValue(), true), that);
     }
     if (that instanceof INum) {
-      return powerResult(h().pow(fApcomplex, ((INum) that).apcomplexValue()), that);
+      return powerResult(powValue(((INum) that).apcomplexValue(), false), that);
     }
     return IComplexNum.super.power(that);
   }
@@ -2187,11 +2215,17 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr sinhIntegral() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.sinhIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().sinhIntegral(fApcomplex));
   }
 
   @Override
   public IExpr sinIntegral() {
+    if (ApcomplexExpIntegralMath.isSeriesArgument(fApcomplex)) {
+      return valueOf(ApcomplexExpIntegralMath.sinIntegralSeries(fApcomplex, h().precision()));
+    }
     return valueOf(h().sinIntegral(fApcomplex));
   }
 
@@ -2289,6 +2323,10 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr cot() {
     PrecisionLoss.periodic(fApcomplex.real());
+    Apcomplex nearZero = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), true, true);
+    if (nearZero != null) {
+      return valueOf(nearZero);
+    }
     return reciprocalTrig(ApcomplexTrigMath::cot, fApcomplex);
   }
 
@@ -2307,6 +2345,10 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr coth() {
     PrecisionLoss.periodic(fApcomplex.imag());
+    Apcomplex nearZero = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), false, true);
+    if (nearZero != null) {
+      return valueOf(nearZero);
+    }
     return reciprocalTrig(ApcomplexTrigMath::coth, fApcomplex);
   }
 
@@ -2365,13 +2407,60 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum tan() {
     PrecisionLoss.periodic(fApcomplex.real());
+    Apcomplex nearPole = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), true, false);
+    if (nearPole != null) {
+      return valueOf(nearPole);
+    }
     return valueOf(h().tan(fApcomplex));
   }
 
   @Override
   public ApcomplexNum tanh() {
     PrecisionLoss.periodic(fApcomplex.imag());
+    Apcomplex nearPole = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), false, false);
+    if (nearPole != null) {
+      return valueOf(nearPole);
+    }
     return valueOf(h().tanh(fApcomplex));
+  }
+
+  /**
+   * <code>Tan(a+I*b) == (Sin(2*a) + I*Sinh(2*b))/(2*(Cos(a)^2 + Sinh(b)^2))</code>,
+   * <code>Cot(a+I*b) == (Sin(2*a) - I*Sinh(2*b))/(2*(Sin(a)^2 + Sinh(b)^2))</code> and the
+   * hyperbolic counterparts with <code>a</code> and <code>b</code> exchanged in the roles of the
+   * circular and hyperbolic functions. Next to a pole or a zero the usual denominator
+   * <code>Cos(2*a) + Cosh(2*b)</code> cancels to <code>0</code>, the sum of squares doesn't.
+   *
+   * @param circular <code>Tan</code> or <code>Cot</code>, else <code>Tanh</code> or
+   *        <code>Coth</code>
+   * @param cotangent <code>Cot</code> or <code>Coth</code>
+   * @return <code>null</code> if the argument isn't next to a pole or a zero
+   */
+  private Apcomplex nearPoleQuotient(Apfloat a, Apfloat b, boolean circular, boolean cotangent) {
+    FixedPrecisionApfloatHelper h = h();
+    // the arguments of the circular and of the hyperbolic functions
+    Apfloat c = circular ? a : b;
+    Apfloat y = circular ? b : a;
+    Apfloat circularPart = cotangent ? h.sin(c) : h.cos(c);
+    Apfloat hyperbolicPart = h.sinh(y);
+    Apfloat d = h.add(h.multiply(circularPart, circularPart), h.multiply(hyperbolicPart, hyperbolicPart));
+    if (d.signum() == 0 || d.compareTo(new Apfloat("1e-6")) >= 0) {
+      return null;
+    }
+    Apfloat two = new Apfloat(2);
+    Apfloat denominator = h.multiply(two, d);
+    Apfloat circularNumerator = h.divide(h.sin(h.multiply(two, c)), denominator);
+    Apfloat hyperbolicNumerator = h.divide(h.sinh(h.multiply(two, y)), denominator);
+    if (cotangent) {
+      // the part with the function which isn't periodic in the real direction changes its sign
+      if (circular) {
+        hyperbolicNumerator = hyperbolicNumerator.negate();
+      } else {
+        circularNumerator = circularNumerator.negate();
+      }
+    }
+    return circular ? new Apcomplex(circularNumerator, hyperbolicNumerator)
+        : new Apcomplex(hyperbolicNumerator, circularNumerator);
   }
 
   /**

@@ -632,12 +632,12 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         continue;
       }
       // the open pieces between the poles inside the domain interval
-      double loValue = lo.isNegativeInfinity() ? Double.NEGATIVE_INFINITY : lo.evalDouble();
-      double hiValue = hi.isInfinity() ? Double.POSITIVE_INFINITY : hi.evalDouble();
+      double loValue = lo.isNegativeInfinity() ? Double.NEGATIVE_INFINITY : lo.evalf();
+      double hiValue = hi.isInfinity() ? Double.POSITIVE_INFINITY : hi.evalf();
       List<IExpr> ends = new ArrayList<IExpr>();
       ends.add(lo);
       for (IExpr pole : poles) {
-        double d = pole.evalDouble();
+        double d = pole.evalf();
         if (d > loValue && d < hiValue) {
           ends.add(pole);
         }

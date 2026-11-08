@@ -2,13 +2,8 @@ package org.matheclipse.script.engine;
 
 import java.util.List;
 import javax.script.ScriptEngine;
-import org.matheclipse.core.basic.Config;
 
 public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory {
-
-  public MathScriptEngineFactory() {
-    Config.SERVER_MODE = false;
-  }
 
   @Override
   public String getEngineName() {

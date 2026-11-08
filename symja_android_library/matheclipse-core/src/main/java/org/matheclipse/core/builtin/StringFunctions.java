@@ -36,6 +36,7 @@ import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.output.CodeFormPrinter;
 import org.matheclipse.core.form.output.NumberFormPrinter;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
@@ -57,6 +58,7 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.operator.OperatorTable;
 import com.google.common.base.CharMatcher;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
@@ -1114,18 +1116,37 @@ public final class StringFunctions {
    * <code>LongestCommonSequence[a, b]</code>: the longest sequence, not necessarily contiguous, of
    * the characters of two strings or the elements of two lists which occurs in both.
    * <code>LongestCommonSubsequence[a, b]</code>: the longest contiguous one.
+   * <code>LongestCommonSubsequencePositions[a, b]</code>: the spans
+   * <code>{{start1, end1}, {start2, end2}}</code> of that contiguous run in <code>a</code> and
+   * <code>b</code>, or <code>{}</code> if there is none.
    */
   private static class LongestCommonSequence extends AbstractFunctionEvaluator {
     private final boolean contiguous;
+    private final boolean positions;
 
-    LongestCommonSequence(boolean contiguous) {
+    LongestCommonSequence(boolean contiguous, boolean positions) {
       this.contiguous = contiguous;
+      this.positions = positions;
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
+      if (positions) {
+        final boolean strings = a.isString() && b.isString();
+        if (!strings && !(a.isList() && b.isList())) {
+          return F.NIL;
+        }
+        List<IExpr> x = strings ? characters(a.toString()) : SequenceAlignment.elements((IAST) a);
+        List<IExpr> y = strings ? characters(b.toString()) : SequenceAlignment.elements((IAST) b);
+        int[] run = longestRun(x, y, engine);
+        if (run[2] == 0) {
+          return F.CEmptyList;
+        }
+        return F.list(F.list(F.ZZ(run[0] + 1), F.ZZ(run[0] + run[2])),
+            F.list(F.ZZ(run[1] + 1), F.ZZ(run[1] + run[2])));
+      }
       if (a.isString() && b.isString()) {
         List<IExpr> x = characters(a.toString());
         List<IExpr> y = characters(b.toString());
@@ -1157,32 +1178,63 @@ public final class StringFunctions {
       return list;
     }
 
+    /**
+     * The longest contiguous run occurring in both lists, as <code>{startX, startY, length}</code>
+     * with 0-based starts. Among runs of equal length the one starting first in the longer list
+     * wins (in <code>x</code> if both have the same length), then the one starting first in the
+     * other list.
+     */
+    private static int[] longestRun(List<IExpr> x, List<IExpr> y, EvalEngine engine) {
+      final int n = x.size();
+      final int m = y.size();
+      final boolean xFirst = n >= m;
+      // len[j] is the length of the common run ending at x[i-1] and y[j-1]
+      int[] previous = new int[m + 1];
+      int[] len = new int[m + 1];
+      int[] best = {0, 0, 0};
+      for (int i = 1; i <= n; i++) {
+        engine.checkTimeLimit();
+        for (int j = 1; j <= m; j++) {
+          len[j] = x.get(i - 1).equals(y.get(j - 1)) ? previous[j - 1] + 1 : 0;
+          int length = len[j];
+          if (length == 0 || length < best[2]) {
+            continue;
+          }
+          int startX = i - length;
+          int startY = j - length;
+          if (length > best[2] || (xFirst //
+              ? startX < best[0] || (startX == best[0] && startY < best[1])
+              : startY < best[1] || (startY == best[1] && startX < best[0]))) {
+            best[0] = startX;
+            best[1] = startY;
+            best[2] = length;
+          }
+        }
+        int[] swap = previous;
+        previous = len;
+        len = swap;
+      }
+      return best;
+    }
+
     private List<IExpr> common(List<IExpr> x, List<IExpr> y) {
+      if (contiguous) {
+        int[] run = longestRun(x, y, EvalEngine.get());
+        return new java.util.ArrayList<>(x.subList(run[0], run[0] + run[2]));
+      }
       int n = x.size();
       int m = y.size();
       int[][] len = new int[n + 1][m + 1];
-      int bestLength = 0;
-      int bestEnd = 0;
       for (int i = n - 1; i >= 0; i--) {
         for (int j = m - 1; j >= 0; j--) {
           if (x.get(i).equals(y.get(j))) {
             len[i][j] = len[i + 1][j + 1] + 1;
-          } else if (!contiguous) {
+          } else {
             len[i][j] = Math.max(len[i + 1][j], len[i][j + 1]);
-          }
-          if (contiguous && len[i][j] > bestLength) {
-            bestLength = len[i][j];
-            bestEnd = i;
           }
         }
       }
       List<IExpr> result = new java.util.ArrayList<>();
-      if (contiguous) {
-        for (int i = bestEnd; i < bestEnd + bestLength; i++) {
-          result.add(x.get(i));
-        }
-        return result;
-      }
       int i = 0;
       int j = 0;
       while (i < n && j < m) {
@@ -1819,8 +1871,9 @@ public final class StringFunctions {
       S.FileNameDrop.setEvaluator(new FileNameDrop());
       S.FileNameJoin.setEvaluator(new FileNameJoin());
       S.ToFileName.setEvaluator(new ToFileName());
-      S.LongestCommonSequence.setEvaluator(new LongestCommonSequence(false));
-      S.LongestCommonSubsequence.setEvaluator(new LongestCommonSequence(true));
+      S.LongestCommonSequence.setEvaluator(new LongestCommonSequence(false, false));
+      S.LongestCommonSubsequence.setEvaluator(new LongestCommonSequence(true, false));
+      S.LongestCommonSubsequencePositions.setEvaluator(new LongestCommonSequence(true, true));
       S.SequenceAlignment.setEvaluator(new SequenceAlignment());
       S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
@@ -1868,6 +1921,7 @@ public final class StringFunctions {
       S.SmithWatermanSimilarity.setEvaluator(new AlignmentSimilarity(false));
       S.StringToByteArray.setEvaluator(new StringToByteArray());
       S.StringTrim.setEvaluator(new StringTrim());
+      S.Precedence.setEvaluator(new Precedence());
       S.SyntaxLength.setEvaluator(new SyntaxLength());
       S.TemplateApply.setEvaluator(new TemplateApply());
       S.TemplateIf.setEvaluator(new TemplateIf());
@@ -4590,6 +4644,76 @@ public final class StringFunctions {
     }
   }
 
+  /**
+   * <code>Precedence(symbol)</code> - the precedence of the operator <code>symbol</code> is read as,
+   * taken from the parser's operator table.
+   *
+   * <p>
+   * A symbol which isn't an operator gets the precedence of a function call, <code>670.0</code>;
+   * anything but a symbol gets <code>1000.0</code>. A head spelled by several operators - such as
+   * <code>Apply</code> for <code>@@</code> and <code>@</code> - gets the lowest of their
+   * precedences. A few heads report a precedence that differs from the one the parser uses, or
+   * have one without being a parser operator; these are listed in {@link #REPORTED}.
+   */
+  private static class Precedence extends AbstractFunctionEvaluator {
+    /** The precedence of a symbol without an operator form: that of a function call. */
+    private static final double FUNCTION_CALL = 670.0;
+
+    /** The precedence of an expression which isn't a symbol. */
+    private static final double NOT_A_SYMBOL = 1000.0;
+
+    /** The precedence of each operator head, by the head's name. */
+    private static volatile Map<String, Integer> headPrecedences;
+
+    /** The same, by the lowercased name: a built-in symbol is lowercased in the relaxed syntax. */
+    private static volatile Map<String, Integer> lowerCaseHeadPrecedences;
+
+    /**
+     * Built-in heads whose reported precedence isn't the parser's: the logical operators share one
+     * level, <code>Sum</code> and <code>Limit</code> sit with the big operators, and some heads
+     * have a precedence without an operator row of their own.
+     */
+    private static final String[][] REPORTED = {{"And", "215"}, {"Nand", "215"},
+        {"Xor", "215"}, {"Optional", "140"}, {"Postfix", "70"}, {"Prefix", "640"},
+        {"Blank", "730"}, {"Sum", "320"}, {"Limit", "320"}, {"D", "550"},
+        {"TensorProduct", "495"}, {"RightComposition", "648"}, {"Composition", "650"}};
+
+    private static void initPrecedences() {
+      Map<String, Integer> precedences = new HashMap<String, Integer>();
+      Map<String, Integer> lowerCase = new HashMap<String, Integer>();
+      for (OperatorTable.Row row : OperatorTable.ROWS) {
+        precedences.merge(row.head, row.precedence, Math::min);
+        lowerCase.merge(row.head.toLowerCase(Locale.US), row.precedence, Math::min);
+      }
+      for (String[] reported : REPORTED) {
+        lowerCase.put(reported[0].toLowerCase(Locale.US), Integer.valueOf(reported[1]));
+      }
+      lowerCaseHeadPrecedences = lowerCase;
+      headPrecedences = precedences;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isSymbol()) {
+        return F.num(NOT_A_SYMBOL);
+      }
+      if (headPrecedences == null) {
+        initPrecedences();
+      }
+      String name = ((ISymbol) arg1).getSymbolName();
+      Integer precedence = arg1.isBuiltInSymbol()
+          ? lowerCaseHeadPrecedences.get(name.toLowerCase(Locale.US))
+          : headPrecedences.get(name);
+      return F.num(precedence == null ? FUNCTION_CALL : precedence.doubleValue());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   private static class SyntaxLength extends AbstractFunctionEvaluator {
 
     @Override
@@ -5267,11 +5391,22 @@ public final class StringFunctions {
         // options like PageWidth -> Infinity: the string is written on one line anyway
         int end = ast.size();
         IExpr encoding = F.NIL;
+        int pageWidth = Integer.MAX_VALUE;
         while (end > 2 && ast.get(end - 1).isRuleAST()) {
           end--;
           if (ast.get(end).first() == S.CharacterEncoding) {
             encoding = ast.get(end).second();
+          } else if (ast.get(end).first() == S.PageWidth) {
+            int width = ast.get(end).second().toIntDefault();
+            if (width > 0) {
+              pageWidth = width;
+            }
           }
+        }
+        if (end == 2 && ast.arg1().isAST(S.FortranForm, 2) && pageWidth < Integer.MAX_VALUE) {
+          // the Fortran text is broken into lines of the page width
+          return F.stringx(CodeFormPrinter.breakLines(
+              CodeFormPrinter.fortranForm(ast.arg1().first()), pageWidth));
         }
         IExpr result = evaluate(ast.subList(1, end), engine);
         return encoding.isPresent() && result.isString()
@@ -5300,6 +5435,12 @@ public final class StringFunctions {
         if (traditional.isPresent()) {
           return traditional;
         }
+      }
+      if (arg1.isAST(S.CForm, 2)) {
+        return F.stringx(CodeFormPrinter.cForm(arg1.first()));
+      }
+      if (arg1.isAST(S.FortranForm, 2)) {
+        return F.stringx(CodeFormPrinter.fortranForm(arg1.first()));
       }
       // ToString(expr) is ToString(expr, OutputForm) - the display wrappers Style, Row and
       // Graphics show what they format rather than themselves
@@ -5392,6 +5533,12 @@ public final class StringFunctions {
         if (BoxNotation.isBox(boxes) || boxes.isString()) {
           return F.stringx(BoxNotation.toBoxString(boxes));
         }
+      }
+      if (form == S.CForm) {
+        return F.stringx(CodeFormPrinter.cForm(expr));
+      }
+      if (form == S.FortranForm) {
+        return F.stringx(CodeFormPrinter.fortranForm(expr));
       }
       if (form == S.TraditionalForm && !expr.isString()) {
         IExpr traditional = traditionalForm(expr, engine);

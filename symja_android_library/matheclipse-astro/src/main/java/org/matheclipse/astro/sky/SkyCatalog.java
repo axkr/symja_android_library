@@ -563,11 +563,11 @@ public final class SkyCatalog {
     return degrees < 0.0 ? degrees + 360.0 : degrees;
   }
 
-  /** Iterate the fields of an object node, which Jackson only exposes through an iterator. */
+  /** The fields of an object node, copied into a list. */
   private static Iterable<Map.Entry<String, JsonNode>> iterable(JsonNode object) {
     List<Map.Entry<String, JsonNode>> entries =
         new ArrayList<Map.Entry<String, JsonNode>>();
-    object.fields().forEachRemaining(entries::add);
+    entries.addAll(object.properties());
     return entries;
   }
 }

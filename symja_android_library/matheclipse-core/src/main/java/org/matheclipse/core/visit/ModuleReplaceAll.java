@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -410,7 +411,9 @@ public class ModuleReplaceAll extends VisitorExpr {
    * @return a modified copy of <code>ast</code>, or <code>F.NIL</code> if unchanged
    */
   private static IAST visitAST(IAST ast, ModuleReplaceAll visitor, int startIndex) {
-    final int size = ast.size();
+    // the numbers and strings of an evaluated list have nothing to rename, only its head can
+    final int size =
+        ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? Math.min(1, ast.size()) : ast.size();
     int i = startIndex;
     while (i < size) {
       IExpr temp = ast.get(i).accept(visitor);

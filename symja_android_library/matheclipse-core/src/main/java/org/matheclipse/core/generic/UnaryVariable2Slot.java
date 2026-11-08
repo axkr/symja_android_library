@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.Slot;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
@@ -41,10 +40,6 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
         }
         // probably a built-in function
         return firstArg;
-      }
-      if (Config.SERVER_MODE && (firstArg.toString().charAt(0) == '$')) {
-        // a user-modifiable variable in server mode is not allowed
-        return F.NIL;
       }
     } else {
       // not a symbol

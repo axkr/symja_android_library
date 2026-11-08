@@ -328,7 +328,7 @@ public class AssociationFunctions {
           // `1` is not a variable with a value, so its value cannot be changed.
           return Errors.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
         } else {
-          if (symbol.hasProtectedAttribute()) {
+          if (symbol.hasProtectedValue()) {
             // Symbol `1` is Protected.
             return Errors.printMessage(builtinSymbol, "wrsym", F.list(symbol), EvalEngine.get());
           }

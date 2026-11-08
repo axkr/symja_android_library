@@ -972,10 +972,56 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
           return temp;
         }
       }
-      return HyperExpand.meijerGExpand((IAST) aList.arg1(), (IAST) aList.arg2(),
+      temp = HyperExpand.meijerGExpand((IAST) aList.arg1(), (IAST) aList.arg2(),
           (IAST) bList.arg1(), (IAST) bList.arg2(), z, r, false, engine);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      return meijerg2020(k1, k2, l1, l2, argument, engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>G[{{a1,a2},{}},{{b1,b2},{}}](z)</code> as a <code>Hypergeometric2F1</code> of
+   * <code>1-z</code>:
+   *
+   * <pre>
+   * Gamma(1-a1+b1)*Gamma(1-a1+b2)*Gamma(1-a2+b1)*Gamma(1-a2+b2)/Gamma(2-a1-a2+b1+b2)
+   *   * z^b1 * Hypergeometric2F1(1-a1+b1, 1-a2+b1, 2-a1-a2+b1+b2, 1-z)
+   * </pre>
+   *
+   * Both sides have the cut <code>z &lt;= 0</code> and the <code>2F1</code> is analytic at
+   * <code>z = 1</code>, so this holds when <code>b1-b2</code> is an integer (the logarithmic case)
+   * and at the unit argument. A pole of a <code>Gamma</code> factor declines.
+   */
+  private static IExpr meijerg2020(IAST k1, IAST k2, IAST l1, IAST l2, Argument argument,
+      EvalEngine engine) {
+    if (!k1.isList2() || !k2.isEmpty() || !l1.isList2() || !l2.isEmpty()
+        || !argument.allows(ONE_R)) {
+      return F.NIL;
+    }
+    IExpr a1 = k1.arg1();
+    IExpr a2 = k1.arg2();
+    IExpr b1 = l1.arg1();
+    IExpr b2 = l1.arg2();
+    IExpr c = engine.evaluate(F.Plus(F.C2, F.Negate(a1), F.Negate(a2), b1, b2));
+    IASTAppendable gammas = F.TimesAlloc(4);
+    for (IExpr a : new IExpr[] {a1, a2}) {
+      for (IExpr b : new IExpr[] {b1, b2}) {
+        IExpr g = engine.evaluate(F.Plus(F.C1, F.Negate(a), b));
+        if (g.isZero() || g.isMathematicalIntegerNegative()) {
+          return F.NIL;
+        }
+        gammas.append(F.Gamma(g));
+      }
+    }
+    if (c.isZero() || c.isMathematicalIntegerNegative()) {
+      return F.NIL;
+    }
+    return F.Times(gammas, F.Power(F.Gamma(c), F.CN1), argument.pow(b1),
+        F.Hypergeometric2F1(F.Plus(F.C1, F.Negate(a1), b1), F.Plus(F.C1, F.Negate(a2), b1), c,
+            F.Subtract(F.C1, argument.w())));
   }
 
   private static IExpr functionExpandSpecialCases(Argument argument, IAST aList, IAST bList,

@@ -1,9 +1,10 @@
 package org.matheclipse.core.numerics.functions;
 
-import org.matheclipse.parser.client.ParserConfig;
-import org.matheclipse.core.interfaces.IAST;
+import java.math.RoundingMode;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.matheclipse.core.eval.Errors;
@@ -11,15 +12,19 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
- * Runs one of the asymptotic routines of
- * {@link org.matheclipse.external.apfloat.ApcomplexAsymptoticMath} at the precision its arguments
- * arrived with,
- * and hands the answer back as the kind of number they arrived as.
+ * The bridge between the numbers of Symja and the arbitrary precision routines of
+ * <code>org.matheclipse.external.apfloat</code>: the working precision of an evaluation, the
+ * arguments as apfloat takes them, and the result as the kind of number the arguments arrived as.
  *
  * <p>
  * The routines work in apfloat at whatever precision they are given, so a machine number is
@@ -28,6 +33,14 @@ import org.matheclipse.core.interfaces.IInexactNumber;
  * otherwise do to a precision the user asked for.
  */
 public final class WorkingPrecision {
+
+  /**
+   * The digits which a computation carries more than the result shows. A caller adds them to the
+   * <code>digits</code> it gives {@link #apcomplex(IExpr, int)} and rounds them away with
+   * {@link #round(Apcomplex, long)}; the <code>evaluate</code> routines of this class work at the
+   * precision of the result instead.
+   */
+  public static final int GUARD_DIGITS = 10;
 
   /**
    * A routine that answers at the precision of its arguments, or declines with an
@@ -46,6 +59,67 @@ public final class WorkingPrecision {
   private WorkingPrecision() {}
 
   /**
+   * The digits of an apfloat computation: the precision of the engine, or machine precision plus
+   * one digit.
+   */
+  public static int digits(boolean arbitrary, EvalEngine engine) {
+    return arbitrary ? (int) engine.getNumericPrecision()
+        : (int) ParserConfig.MACHINE_PRECISION + 1;
+  }
+
+  /**
+   * The number as apfloat takes it: a nonzero part with <code>digits</code> digits. A machine number
+   * is the binary number it is, see {@link ApfloatNum#apfloatOf(double, long)}.
+   */
+  public static Apcomplex apcomplex(IExpr z, int digits) {
+    if (z instanceof Num) {
+      return ApfloatNum.apfloatOf(((Num) z).doubleValue(), digits);
+    }
+    if (z instanceof ComplexNum) {
+      ComplexNum c = (ComplexNum) z;
+      return new Apcomplex(ApfloatNum.apfloatOf(c.getRealPart(), digits),
+          ApfloatNum.apfloatOf(c.getImaginaryPart(), digits));
+    }
+    Apcomplex value = ((INumber) z).apcomplexValue();
+    return new Apcomplex(precision(value.real(), digits), precision(value.imag(), digits));
+  }
+
+  private static Apfloat precision(Apfloat x, int digits) {
+    return x.signum() == 0 ? x : x.precision(digits);
+  }
+
+  /**
+   * The value rounded to <code>precision</code> digits, real if its imaginary part is zero. The
+   * guard digits are rounded away here; cutting them off left the last digit one too small in
+   * half of the cases.
+   */
+  public static IExpr round(Apcomplex value, long precision) {
+    precision = Math.min(value.precision(), precision);
+    Apfloat re = round(value.real(), precision);
+    if (value.imag().signum() == 0) {
+      return F.num(re);
+    }
+    return F.complexNum(new Apcomplex(re, round(value.imag(), precision)));
+  }
+
+  private static Apfloat round(Apfloat x, long precision) {
+    return x.signum() == 0 || x.precision() <= precision ? x
+        : ApfloatMath.roundToPrecision(x, precision, RoundingMode.HALF_EVEN);
+  }
+
+  /**
+   * The number of <code>value</code> at arbitrary precision or as a machine number: its real part
+   * if <code>real</code> is set, otherwise the complex number.
+   */
+  public static IExpr toNumber(Apcomplex value, boolean real, boolean arbitrary) {
+    if (real) {
+      return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+    }
+    return arbitrary ? F.complexNum(value)
+        : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+  }
+
+  /**
    * <code>routine(a, b)</code>, or {@link F#NIL} when it declines - which leaves the question to the
    * library routine it stands in front of.
    *
@@ -61,8 +135,8 @@ public final class WorkingPrecision {
     final int precision = (int) h.precision();
     Apcomplex value;
     try {
-      value = routine.apply(CarlsonArbitraryPrecision.apcomplex(a, precision),
-          CarlsonArbitraryPrecision.apcomplex(b, precision), precision);
+      value = routine.apply(apcomplex(a, precision),
+          apcomplex(b, precision), precision);
     } catch (ArithmeticException | ArgumentTypeException | ApfloatRuntimeException ex) {
       // the routine declines: its expansion doesn't reach the precision here
       Errors.rethrowsInterruptException(ex);
@@ -140,7 +214,7 @@ public final class WorkingPrecision {
         arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
     Apcomplex[] arguments = new Apcomplex[numbers.length];
     for (int i = 0; i < arguments.length; i++) {
-      arguments[i] = CarlsonArbitraryPrecision.apcomplex(numbers[i], precision);
+      arguments[i] = apcomplex(numbers[i], precision);
     }
     Apcomplex value;
     try {

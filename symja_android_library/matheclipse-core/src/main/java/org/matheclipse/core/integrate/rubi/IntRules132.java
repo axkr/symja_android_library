@@ -49,11 +49,11 @@ IIntegrate(2656,Integrate(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,Power(Pl
     Condition(Integrate(ExpandLinearProduct(Power(FSymbol,Plus(a,Times(b,Power(Plus(c,Times(d,x)),n)))),$s("§px"),c,d,x),x),And(FreeQ(List(FSymbol,a,b,c,d,n),x),PolynomialQ($s("§px"),x)))),
 IIntegrate(2657,Integrate(Times($p("§px",true),Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,Power(v_,n_DEFAULT))))),x_Symbol),
     Condition(Integrate(Times($s("§px"),Power(FSymbol,Plus(a,Times(b,Power(ExpandToSum(v,x),n))))),x),And(FreeQ(List(FSymbol,a,b,n),x),PolynomialQ($s("§px"),x),LinearQ(v,x),Not(LinearMatchQ(v,x))))),
-IIntegrate(2658,Integrate(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1)))),Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),CN1),Power(Plus(g_DEFAULT,Times(h_DEFAULT,x_)),CN1)),x_Symbol),
+IIntegrate(2658,Integrate(Times(u_DEFAULT,Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,v_)))),x_Symbol),
+    Condition(Integrate(Times(u,Power(FSymbol,Plus(a,Times(b,NormalizePowerOfLinear(v,x))))),x),And(FreeQ(list(FSymbol,a,b),x),PolynomialQ(u,x),PowerOfLinearQ(v,x),Not(PowerOfLinearMatchQ(v,x))))),
+IIntegrate(2659,Integrate(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1)))),Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),CN1),Power(Plus(g_DEFAULT,Times(h_DEFAULT,x_)),CN1)),x_Symbol),
     Condition(Simp(Dist(Times(CN1,d,Power(Times(f,Subtract(Times(d,g),Times(c,h))),CN1)),Subst(Integrate(Times(Power(FSymbol,Plus(a,Times(CN1,b,h,Power(Subtract(Times(d,g),Times(c,h)),CN1)),Times(d,b,x,Power(Subtract(Times(d,g),Times(c,h)),CN1)))),Power(x,CN1)),x),x,Times(Plus(g,Times(h,x)),Power(Plus(c,Times(d,x)),CN1))),x),x),And(FreeQ(List(FSymbol,a,b,c,d,e,f),x),EqQ(Subtract(Times(d,e),Times(c,f)),C0)))),
-IIntegrate(2659,Integrate(Times(Power(F_,Plus(e_DEFAULT,Times(f_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)),Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1)))),Power(Plus(g_DEFAULT,Times(h_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
-    Condition(Simp(Dist(Power(FSymbol,Plus(e,Times(f,b,Power(d,CN1)))),Integrate(Power(Plus(g,Times(h,x)),m),x),x),x),And(FreeQ(List(FSymbol,a,b,c,d,e,f,g,h,m),x),EqQ(Subtract(Times(b,c),Times(a,d)),C0)))),
 IIntegrate(2660,Integrate(Times(Power(F_,Plus(e_DEFAULT,Times(f_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)),Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),CN1)))),Power(Plus(g_DEFAULT,Times(h_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
-    Condition(Integrate(Times(Power(Plus(g,Times(h,x)),m),Power(FSymbol,Subtract(Times(Plus(Times(d,e),Times(b,f)),Power(d,CN1)),Times(f,Subtract(Times(b,c),Times(a,d)),Power(Times(d,Plus(c,Times(d,x))),CN1))))),x),And(FreeQ(List(FSymbol,a,b,c,d,e,f,g,h,m),x),NeQ(Subtract(Times(b,c),Times(a,d)),C0),EqQ(Subtract(Times(d,g),Times(c,h)),C0))))
+    Condition(Simp(Dist(Power(FSymbol,Plus(e,Times(f,b,Power(d,CN1)))),Integrate(Power(Plus(g,Times(h,x)),m),x),x),x),And(FreeQ(List(FSymbol,a,b,c,d,e,f,g,h,m),x),EqQ(Subtract(Times(b,c),Times(a,d)),C0))))
   );
 }

@@ -52,7 +52,6 @@ public abstract class AbstractRubiTestCase {
 
   protected AbstractRubiTestCase(boolean isRelaxedSyntax) {
     this.isRelaxedSyntax = isRelaxedSyntax;
-    Config.SERVER_MODE = false;
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
   }
 

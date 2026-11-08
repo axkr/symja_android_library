@@ -650,6 +650,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testRosenIterator() {
     IAST lhsPatternAST = F.Plus(F.x_, F.y_, F.z_);
     IAST lhsEvalAST = F.Plus(F.a, F.b, F.c, F.d);

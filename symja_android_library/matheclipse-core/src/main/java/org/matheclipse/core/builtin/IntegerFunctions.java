@@ -2977,7 +2977,7 @@ public class IntegerFunctions {
     if (sign == CompareUtil.UNCERTAIN) {
       // Internal precision limit `1` reached while evaluating `2`.
       Errors.printMessage(messageHead, "meprec",
-          F.List(F.stringx("$MaxExtraPrecision = " + Config.MAX_EXTRA_PRECISION + "."),
+          F.List(EvalEngine.maxExtraPrecisionText(),
               F.unaryAST1(messageHead, expr)),
           engine);
       return F.NIL;
@@ -3055,7 +3055,7 @@ public class IntegerFunctions {
     while (first < digits.argSize() && digits.get(first).isZero()) {
       first++;
     }
-    return first == 1 ? digits : digits.copyFrom(first);
+    return first == 1 ? digits : digits.subList(first);
   }
 
   public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {

@@ -3,6 +3,7 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -77,6 +78,12 @@ public class OutputFormFactory {
   public static final boolean PLUS_CALL = true;
 
   /**
+   * The precedence of a number as the head of a function call <code>head[args]</code>, which binds
+   * tighter than every operator.
+   */
+  private static final int HEAD_PRECEDENCE = 1000;
+
+  /**
    * If <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis for function arguments;
    * otherwise use &quot;[&quot; and &quot;]&quot;
    */
@@ -96,6 +103,9 @@ public class OutputFormFactory {
 
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
   protected boolean fInputForm = false;
+
+  /** The number of enclosing held expressions, whose nested sums and products keep parentheses. */
+  private int fHeldDepth = 0;
 
   /**
    * In input form, print a {@link FormalSymbol} as its plain letter <code>k</code> instead of
@@ -1354,7 +1364,7 @@ public class OutputFormFactory {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
         }
-        convert(buf, plusArg, Precedence.PLUS, false);
+        convertNested(buf, plusArg, S.Plus, Precedence.PLUS);
       }
     }
   }
@@ -1460,7 +1470,11 @@ public class OutputFormFactory {
             append(buf, fInputForm ? " + " : "+");
           }
           // insert numerator in buffer:
-          if (numerator.isTimes()) {
+          if (fHeldDepth > 0 && numerator.isTimes()
+              && ((IAST) numerator).exists(OutputFormFactory::isQuotient)) {
+            // a held quotient as numerator: a/b/c reads back as (a/b)/c
+            convertTimesFraction(buf, (IAST) numerator, oper, Precedence.TIMES, NO_PLUS_CALL);
+          } else if (numerator.isTimes()) {
             convertTimesOperator(buf, (IAST) numerator, oper, Precedence.DIVIDE, NO_PLUS_CALL);
           } else {
             convert(buf, numerator, Precedence.DIVIDE, false);
@@ -1538,7 +1552,7 @@ public class OutputFormFactory {
         if (caller == PLUS_CALL) {
           append(buf, fInputForm ? " + " : "+");
         }
-        convert(buf, arg1, oper.getPrecedence(), false);
+        convertNested(buf, arg1, S.Times, oper.getPrecedence());
       }
     }
     for (int i = 2; i < size; i++) {
@@ -1547,11 +1561,27 @@ public class OutputFormFactory {
       } else {
         showOperator = true;
       }
-      convert(buf, timesAST.get(i), oper.getPrecedence(), false);
+      convertNested(buf, timesAST.get(i), S.Times, oper.getPrecedence());
     }
     if (currPrecedence < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * Convert an argument of a sum or product. Inside a held expression an argument with the same
+   * <code>head</code> keeps its parentheses, <code>HoldForm(a*b*(c*d))</code>, so that it reads
+   * back as the nested expression.
+   */
+  private void convertNested(final Appendable buf, final IExpr arg, final ISymbol head,
+      final int precedence) throws IOException {
+    if (fHeldDepth > 0 && arg.isAST(head) && arg.size() > 2) {
+      append(buf, "(");
+      convert(buf, arg, Precedence.NO_PRECEDENCE, false);
+      append(buf, ")");
+      return;
+    }
+    convert(buf, arg, precedence, false);
   }
 
   // public void convertApplyOperator(final Appendable buf, final IAST list, final InfixOperator
@@ -1670,7 +1700,9 @@ public class OutputFormFactory {
       }
       final boolean groupArg1 = (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
           && isSameLevelOperator(list, arg1, oper) && !isDelimitedPower(arg1))
-          || isNestedSameOperator(list, arg1, oper);
+          || isNestedSameOperator(list, arg1, oper)
+          // a sum on the left of a held subtraction: (a + b) - c
+          || (list.isAST(S.Subtract) && arg1.isPlus() && arg1.argSize() >= 2);
       if (groupArg1) {
         append(buf, "(");
       } else {
@@ -1701,9 +1733,12 @@ public class OutputFormFactory {
 
       appendUnicodeMapped(buf, operatorString);
 
-      final boolean groupArg2 =
-          (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head()))
-              || isNestedSameOperator(list, arg2, oper);
+      final boolean groupArg2 = (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
+          && (arg2.head().equals(list.head()) || isInfixOfPrecedence(arg2, oper.getPrecedence())))
+          || isNestedSameOperator(list, arg2, oper)
+          // a - (-b) and a - (1 + I): neither a second minus nor a sum directly after the minus
+          || (list.isAST(S.Subtract)
+              && (arg2.isNegativeSigned() || isComplexWithRealPart(arg2)));
       if (groupArg2) {
         append(buf, "(");
       }
@@ -1744,6 +1779,18 @@ public class OutputFormFactory {
     if (oper.getPrecedence() < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * Whether <code>arg</code> prints as an infix operator of precedence <code>precedence</code>. On
+   * the right of a left associative operator it needs parentheses: <code>a - (b + c)</code>.
+   */
+  private static boolean isInfixOfPrecedence(IExpr arg, int precedence) {
+    if (arg.isAST() && arg.argSize() >= 2 && arg.head().isSymbol()) {
+      final Operator operator = getOperator((ISymbol) arg.head(), arg.argSize());
+      return operator instanceof InfixOperator && operator.getPrecedence() == precedence;
+    }
+    return false;
   }
 
   /**
@@ -1914,7 +1961,8 @@ public class OutputFormFactory {
           }
         }
 
-        convert(buf, header, Integer.MIN_VALUE, true);
+        // a negative, fractional or complex number as head is parenthesized: (-2)[a], (1/2)[a]
+        convert(buf, header, header.isNumber() ? HEAD_PRECEDENCE : Integer.MIN_VALUE, true);
         // An interpolating function already prints as a call - InterpolatingFunction({{0.,1.}},<>)
         // - so applying it reads better in the same syntax as the rest of the output. Other
         // non-symbol heads keep the brackets, which is also what tells a reader that
@@ -2133,14 +2181,33 @@ public class OutputFormFactory {
                 return;
               }
               break;
-            case ID.Defer:
-            case ID.HoldForm:
-              // InputForm shows HoldForm(...), so it reads back held
-              if (list.isAST1() && !(fInputForm && list.isAST(S.HoldForm))) {
-                convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+            case ID.CForm:
+            case ID.FortranForm:
+              // the display wrapper shows the C or Fortran text; InputForm keeps the wrapper
+              if (list.isAST1() && !fInputForm) {
+                append(buf, list.isAST(S.CForm) ? CodeFormPrinter.cForm(list.arg1())
+                    : CodeFormPrinter.fortranForm(list.arg1()));
                 return;
               }
               break;
+            case ID.Defer:
+            case ID.HoldForm:
+            case ID.Hold:
+            case ID.HoldComplete:
+              // the arguments of a held expression keep the nesting of their sums and products
+              fHeldDepth++;
+              try {
+                // InputForm shows HoldForm(...), so it reads back held
+                if (list.isAST1() && (list.isAST(S.Defer) || list.isAST(S.HoldForm))
+                    && !(fInputForm && list.isAST(S.HoldForm))) {
+                  convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+                } else {
+                  convertAST(buf, list);
+                }
+              } finally {
+                fHeldDepth--;
+              }
+              return;
             case ID.DirectedInfinity:
               if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
                 if (list.isAST0()) {
@@ -2407,6 +2474,17 @@ public class OutputFormFactory {
    */
   public static Operator getOperator(ISymbol head, int argSize) {
     String headerStr = head.getSymbolName();
+    if (!head.getContext().equals(Context.SYSTEM)) {
+      // the operator of a name belongs to the System` built-in of that name: Internal`Square
+      // doesn't print as the prefix operator of System`Square
+      String key = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && headerStr.length() > 1
+          ? headerStr.toLowerCase(Locale.ENGLISH)
+          : headerStr;
+      ISymbol systemSymbol = Context.SYSTEM.get(key);
+      if (systemSymbol != null && systemSymbol != head) {
+        return null;
+      }
+    }
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
       if (str != null) {

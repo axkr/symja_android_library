@@ -18,7 +18,7 @@ class ASTSeriesDataLaurentTest {
 
   @BeforeAll
   static void initSymja() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   @BeforeEach

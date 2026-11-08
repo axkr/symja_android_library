@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -22,7 +23,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * <code>DataRange -> {{xmin, xmax}, {ymin, ymax}[, {zmin, zmax}]}</code>. A dense array is thinned
  * to at most 15 (in 3D 7) evenly spaced entries along each axis, so the arrows stay readable, and
  * its plot range is the extent of the data. A list of <code>{point, vector}</code> pairs places
- * each vector at its point.
+ * each vector at its point in space. In the plane the field is interpolated linearly between the
+ * points and drawn on <code>VectorPlot</code>'s lattice over the rectangle they span; points which
+ * all lie on one line give no arrows.
  *
  * <p>
  * Each arrow is centred on its point and the longest spans <code>VectorScale</code> of the spacing
@@ -52,6 +55,7 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
 
     double scale = VectorPlot.DEFAULT_SCALE;
     boolean colored = true;
+    boolean scaledLengths = false;
     double[][] dataRange = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
     // CPD-OFF the vector plots handle different option keys
@@ -77,6 +81,10 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
         dataRange = dataRange(engine.evalN(option.second()));
         continue;
       }
+      if (key == S.VectorScaling) {
+        scaledLengths = engine.evaluate(option.second()) == S.Automatic;
+        continue;
+      }
       graphicsOptions.append(option);
     }
 
@@ -91,6 +99,18 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
         vectors.add(vector(pair.second()));
       }
       spacing = pairSpacing(tails);
+      if (dimension == 2) {
+        // the field is interpolated between the points and drawn like VectorPlot's over the
+        // rectangle they span
+        IAST graphics = tails.size() >= 3 ? interpolatedPlot(tails, vectors, ast, scale,
+            scaledLengths, colored, graphicsOptions, engine) : F.NIL;
+        if (graphics.isPresent()) {
+          return graphics;
+        }
+        // points on one line have no triangles to interpolate over: no arrows
+        tails.clear();
+        vectors.clear();
+      }
     } else {
       // counts[level]: the longest list at that nesting level, level 0 the outermost
       int[] counts = new int[dimension];
@@ -154,7 +174,7 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     IASTAppendable primitives = F.ListAlloc(vectors.size() + 2);
     primitives.append(VectorPlot.arrowheads(dimension == 2 ? 0.028125 : VectorPlot.ARROWHEAD_3D));
     if (!colored) {
-      primitives.append(VectorPlot.color(0.0));
+      primitives.append(VectorPlot.plainColor());
     }
     double[] min = new double[dimension];
     double[] max = new double[dimension];
@@ -291,6 +311,139 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       range[d] = new double[] {axis.first().evalf(), axis.second().evalf()};
     }
     return range;
+  }
+
+  /**
+   * The plane field given by <code>{point, vector}</code> pairs, linear on the triangles of the
+   * points' Delaunay triangulation and, outside of them, continued linearly from the nearest
+   * triangle, as <code>VectorPlot</code> draws it over the bounding box of the points.
+   *
+   * @return {@link F#NIL} if the points have no triangulation
+   */
+  private static IAST interpolatedPlot(List<double[]> points, List<double[]> vectors, IAST ast,
+      double scale, boolean scaledLengths, boolean colored, IAST graphicsOptions,
+      EvalEngine engine) {
+    int n = points.size();
+    double[] x = new double[n];
+    double[] y = new double[n];
+    double[] min = {Double.MAX_VALUE, Double.MAX_VALUE};
+    double[] max = {-Double.MAX_VALUE, -Double.MAX_VALUE};
+    for (int i = 0; i < n; i++) {
+      x[i] = points.get(i)[0];
+      y[i] = points.get(i)[1];
+      min[0] = Math.min(min[0], x[i]);
+      min[1] = Math.min(min[1], y[i]);
+      max[0] = Math.max(max[0], x[i]);
+      max[1] = Math.max(max[1], y[i]);
+    }
+    List<int[]> triangles = MeshFunctions.delaunayTriangles(x, y);
+    if (triangles == null || triangles.isEmpty() || !(max[0] > min[0]) || !(max[1] > min[1])) {
+      return F.NIL;
+    }
+    TriangleBuckets buckets = new TriangleBuckets(triangles, x, y, min, max);
+    java.util.function.Function<double[], double[]> field = p -> {
+      // the triangle containing the point, found among those whose bounding boxes share its
+      // bucket; else the one with the largest smallest barycentric coordinate, the nearest one
+      for (int[] t : buckets.candidates(p)) {
+        double[] w = barycentric(p, x, y, t);
+        if (w != null && Math.min(w[0], Math.min(w[1], w[2])) >= -1e-12) {
+          return interpolated(w, t, vectors);
+        }
+      }
+      double best = -Double.MAX_VALUE;
+      double[] weights = null;
+      int[] corners = null;
+      for (int[] t : triangles) {
+        double[] w = barycentric(p, x, y, t);
+        if (w != null) {
+          double smallest = Math.min(w[0], Math.min(w[1], w[2]));
+          if (smallest > best) {
+            best = smallest;
+            weights = w;
+            corners = t;
+          }
+        }
+      }
+      return corners == null ? null : interpolated(weights, corners, vectors);
+    };
+    return VectorPlot.planeGraphics(field, min, max, VectorPlot.planeVectorPoints(ast, 2, engine),
+        scale, scaledLengths, true, F.NIL, colored, null, graphicsOptions, engine);
+  }
+
+  /** The vector with the barycentric <code>weights</code> of the corners of a triangle. */
+  private static double[] interpolated(double[] weights, int[] corners, List<double[]> vectors) {
+    double[] result = new double[2];
+    for (int k = 0; k < 3; k++) {
+      double[] v = vectors.get(corners[k]);
+      result[0] += weights[k] * v[0];
+      result[1] += weights[k] * v[1];
+    }
+    return result;
+  }
+
+  /**
+   * The triangles sorted into the cells of a grid over the bounding box of the points, each into
+   * the cells its own bounding box meets, so that the triangle containing a point is among the
+   * few of its cell.
+   */
+  private static final class TriangleBuckets {
+    private final List<List<int[]>> cells;
+    private final int side;
+    private final double[] min;
+    private final double cellWidth;
+    private final double cellHeight;
+
+    TriangleBuckets(List<int[]> triangles, double[] x, double[] y, double[] min, double[] max) {
+      this.side = Math.max(1, Math.min(256, (int) Math.ceil(Math.sqrt(triangles.size()))));
+      this.min = min;
+      this.cellWidth = (max[0] - min[0]) / side;
+      this.cellHeight = (max[1] - min[1]) / side;
+      this.cells = new ArrayList<>(side * side);
+      for (int i = 0; i < side * side; i++) {
+        cells.add(new ArrayList<>(4));
+      }
+      for (int[] t : triangles) {
+        double left = Math.min(x[t[0]], Math.min(x[t[1]], x[t[2]]));
+        double right = Math.max(x[t[0]], Math.max(x[t[1]], x[t[2]]));
+        double bottom = Math.min(y[t[0]], Math.min(y[t[1]], y[t[2]]));
+        double top = Math.max(y[t[0]], Math.max(y[t[1]], y[t[2]]));
+        for (int r = row(bottom); r <= row(top); r++) {
+          for (int c = column(left); c <= column(right); c++) {
+            cells.get(r * side + c).add(t);
+          }
+        }
+      }
+    }
+
+    private int column(double value) {
+      return Math.max(0, Math.min(side - 1, (int) Math.floor((value - min[0]) / cellWidth)));
+    }
+
+    private int row(double value) {
+      return Math.max(0, Math.min(side - 1, (int) Math.floor((value - min[1]) / cellHeight)));
+    }
+
+    /** The triangles which may contain the point. */
+    List<int[]> candidates(double[] p) {
+      return cells.get(row(p[1]) * side + column(p[0]));
+    }
+  }
+
+  /** The barycentric coordinates of a point in a triangle, <code>null</code> for a flat one. */
+  private static double[] barycentric(double[] p, double[] x, double[] y, int[] t) {
+    double x1 = x[t[0]];
+    double y1 = y[t[0]];
+    double x2 = x[t[1]];
+    double y2 = y[t[1]];
+    double x3 = x[t[2]];
+    double y3 = y[t[2]];
+    double det = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+    if (Math.abs(det) < 1e-300) {
+      return null;
+    }
+    double w1 = ((y2 - y3) * (p[0] - x3) + (x3 - x2) * (p[1] - y3)) / det;
+    double w2 = ((y3 - y1) * (p[0] - x3) + (x1 - x3) * (p[1] - y3)) / det;
+    return new double[] {w1, w2, 1.0 - w1 - w2};
   }
 
   /** The typical distance between scattered points: the side of the cell each one has. */

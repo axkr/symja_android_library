@@ -28,6 +28,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.DMath;
 import org.matheclipse.core.expression.Num;
@@ -47,12 +48,18 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.external.apfloat.ApcomplexAppellMath;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class HypergeometricFunctions {
+
+  /** The largest degree of a terminating hypergeometric series which is written out. */
+  private static final int MAX_TERMINATING_DEGREE = 500;
+
+  /** The largest <code>c</code> of the logarithmic closed form of <code>2F1(1, b, c, z)</code>. */
+  private static final int MAX_LOGARITHMIC_C = 100;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -168,28 +175,37 @@ public class HypergeometricFunctions {
       final long precision =
           arbitraryMode ? engine.getNumericPrecision() : ParserConfig.MACHINE_PRECISION;
       // additional digits for the evaluation, which are rounded away in the result
-      final int digits = (int) precision + CarlsonArbitraryPrecision.GUARD_DIGITS;
+      final int digits = (int) precision + WorkingPrecision.GUARD_DIGITS;
+      Apcomplex a = WorkingPrecision.apcomplex(ast.arg1(), digits);
+      Apcomplex b1 = WorkingPrecision.apcomplex(ast.arg2(), digits);
+      Apcomplex b2 = WorkingPrecision.apcomplex(ast.arg3(), digits);
+      Apcomplex c = WorkingPrecision.apcomplex(ast.arg4(), digits);
+      Apcomplex x = WorkingPrecision.apcomplex(ast.arg5(), digits);
+      Apcomplex y = WorkingPrecision.apcomplex(ast.get(6), digits);
+      Apcomplex value;
       try {
         // the series, its transformations and the arguments which are covered:
         // org.matheclipse.external.apfloat.ApcomplexAppellMath
-        Apcomplex value = ApcomplexAppellMath.appellF1(
-            CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg4(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.arg5(), digits),
-            CarlsonArbitraryPrecision.apcomplex(ast.get(6), digits));
-        if (arbitraryMode) {
-          return CarlsonArbitraryPrecision.round(value, precision);
-        }
-        double re = value.real().doubleValue();
-        double im = value.imag().doubleValue();
-        return im == 0.0 ? F.num(re) : F.complexNum(re, im);
+        value = ApcomplexAppellMath.appellF1(a, b1, b2, c, x, y);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         // a branch cut, a pole, arguments for which there is no series, or a failure of apfloat
         Errors.rethrowsInterruptException(ex);
-        return F.NIL;
+        try {
+          // the Euler integral covers the branch cuts and large arguments if Re(c) > Re(a) > 0
+          value = ApcomplexAppellMath.appellF1EulerIntegral(a, b1, b2, c, x, y, precision,
+              !arbitraryMode);
+        } catch (ArithmeticException | ApfloatRuntimeException integralException) {
+          // the integral doesn't exist for these parameters or doesn't converge
+          Errors.rethrowsInterruptException(integralException);
+          return F.NIL;
+        }
       }
+      if (arbitraryMode) {
+        return WorkingPrecision.round(value, precision);
+      }
+      double re = value.real().doubleValue();
+      double im = value.imag().doubleValue();
+      return im == 0.0 ? F.num(re) : F.complexNum(re, im);
     }
 
     @Override
@@ -1466,23 +1482,49 @@ public class HypergeometricFunctions {
       return false;
     }
 
+    /**
+     * <code>Hypergeometric1F1(a, b, z)</code> for a non-positive integer <code>b</code>, where the
+     * terms of the series have a pole from the index <code>-b+1</code> on. A non-positive integer
+     * <code>a &gt;= b</code> ends the series before the pole, any other number <code>a</code> gives
+     * <code>ComplexInfinity</code>, and a symbolic <code>a</code> leaves the function unevaluated.
+     */
+    private static IExpr atLowerParameterPole(IExpr a, IExpr b, IExpr z) {
+      if (z.isZero()) {
+        return b.isZero() ? S.Indeterminate : F.C1;
+      }
+      if (isNonPositiveIntegerValued(a) && a.greaterEqual(b).isTrue()) {
+        final int m = -(int) Math.round(a.evalf());
+        if (m <= MAX_TERMINATING_DEGREE) {
+          // the coefficients take the precision of the parameters: Hypergeometric1F1(-1.,-1.,z)
+          // is 1.+1.*z
+          IExpr coefficient = a.isInexactNumber() ? a.divide(a)
+              : b.isInexactNumber() ? b.divide(b) : F.C1;
+          IASTAppendable sum = F.PlusAlloc(m + 1);
+          sum.append(coefficient);
+          for (int k = 0; k < m; k++) {
+            coefficient = coefficient.times(a.plus(F.ZZ(k)))
+                .divide(b.plus(F.ZZ(k)).times(F.ZZ(k + 1)));
+            sum.append(F.Times(coefficient, F.Power(z, F.ZZ(k + 1))));
+          }
+          return sum.oneIdentity0();
+        }
+        return F.NIL;
+      }
+      if (a.isNumericFunction(true)) {
+        return F.CComplexInfinity;
+      }
+      return F.NIL;
+    }
+
     private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z, boolean functionExpand) {
       if (a.isZero()) {
         return F.C1;
       }
-      if (b.isZero()) {
-        if (z.isZero()) {
-          return S.Indeterminate;
-        }
-        return F.CComplexInfinity;
+      if (isNonPositiveIntegerValued(b)) {
+        return atLowerParameterPole(a, b, z);
       }
       if (z.isZero()) {
         return F.C1;
-      }
-
-      if (a.isInteger() && b.isInteger() && a.isNegative() && b.isNegative()
-          && ((IInteger) b).isGT((IInteger) a)) {
-        return F.CComplexInfinity;
       }
 
       if (a.equals(b.dec()) && !gammaAtZeroDiverges(a)
@@ -1698,8 +1740,29 @@ public class HypergeometricFunctions {
         // permutation symmetry
         return F.Hypergeometric2F1(b, a, c, z);
       }
-      if (c.isInteger() && c.isNegative()) {
-        if (a.isNumber() && b.isNumber()) {
+      if (z.isOne() && a.isRational() && b.isRational() && c.isRational() && a.isPositive()
+          && b.isPositive() && c.isPositive()
+          && ((IRational) c).subtract((IRational) a).subtract((IRational) b).isZero()) {
+        // positive terms of the order 1/n: the series diverges logarithmically
+        return F.CInfinity;
+      }
+      if (z.isOne() && isPositiveInteger(a) && isPositiveInteger(b) && isPositiveInteger(c)) {
+        // the series at 1 diverges for c <= a+b: logarithmically to Infinity for c == a+b, with a
+        // pole of the Euler transform for c < a+b
+        final IInteger excess = ((IInteger) c).subtract((IInteger) a).subtract((IInteger) b);
+        if (excess.isZero()) {
+          return F.CInfinity;
+        }
+        if (excess.isNegative()) {
+          return F.CComplexInfinity;
+        }
+      }
+      if (c.isInteger() && !c.isPositive()) {
+        IExpr terminating = terminatingBeforePole(a, b, (IInteger) c, z);
+        if (terminating.isPresent()) {
+          return terminating;
+        }
+        if (a.isNumber() && b.isNumber() && !z.isZero()) {
           return F.CComplexInfinity;
         }
       }
@@ -1869,7 +1932,199 @@ public class HypergeometricFunctions {
               F.Power(F.Pochhammer(c, n), F.CN1), F.Power(z, n)), 0, mi);
         }
       }
+      IExpr result = eulerTerminating(a, b, c, z);
+      if (result.isPresent()) {
+        return result;
+      }
+      if (a.isOne() && b.isInteger() && c.isInteger() && !z.isInexactNumber()) {
+        int bi = b.toIntDefault();
+        int ci = c.toIntDefault();
+        if (bi > 1 && ci > bi && ci <= MAX_LOGARITHMIC_C) {
+          return logarithmic1BC(bi, ci, z);
+        }
+      }
       return F.NIL;
+    }
+
+    private static boolean isPositiveInteger(IExpr x) {
+      return x.isInteger() && x.isPositive();
+    }
+
+    /**
+     * The polynomial <code>Hypergeometric2F1(a, b, c, z)</code> for a non-positive integer
+     * <code>c</code>, if <code>a</code> or <code>b</code> is an integer <code>t</code> with
+     * <code>c &lt;= t &lt;= 0</code>, so that the series ends before the pole of its terms.
+     *
+     * @return {@link F#NIL} if the series doesn't end before the pole
+     */
+    private static IExpr terminatingBeforePole(IExpr a, IExpr b, IInteger c, IExpr z) {
+      int t = Integer.MIN_VALUE;
+      for (IExpr x : new IExpr[] {a, b}) {
+        if (x.isInteger() && !x.isPositive() && !((IInteger) x).isLT(c)) {
+          t = Math.max(t, x.toIntDefault());
+        }
+      }
+      if (t == Integer.MIN_VALUE || -t > MAX_TERMINATING_DEGREE) {
+        return F.NIL;
+      }
+      return hypergeometricPolynomial(a, b, c, z, -t);
+    }
+
+    /**
+     * <code>Sum(Pochhammer(a,k)*Pochhammer(b,k)/(Pochhammer(c,k)*k!)*z^k, {k, 0, m})</code> for
+     * rational parameters, with the common denominator of its coefficients taken out:
+     * <code>1-z/3</code> is written <code>(3-z)/3</code>.
+     */
+    private static IExpr hypergeometricPolynomial(IExpr a, IExpr b, IExpr c, IExpr z, int m) {
+      IRational coefficient = F.C1;
+      IRational[] coefficients = new IRational[m + 1];
+      coefficients[0] = coefficient;
+      IInteger denominator = F.C1;
+      for (int k = 0; k < m; k++) {
+        IInteger kk = F.ZZ(k);
+        coefficient = coefficient.multiply(((IRational) a).add(kk))
+            .multiply(((IRational) b).add(kk))
+            .divideBy(((IRational) c).add(kk).multiply(F.ZZ(k + 1)));
+        coefficients[k + 1] = coefficient;
+        denominator = denominator.lcm(coefficient.denominator());
+      }
+      IASTAppendable sum = F.PlusAlloc(m + 1);
+      for (int k = 0; k <= m; k++) {
+        if (!coefficients[k].isZero()) {
+          sum.append(F.Times(coefficients[k].multiply(denominator), F.Power(z, F.ZZ(k))));
+        }
+      }
+      return F.Times(denominator.inverse(), sum.oneIdentity0());
+    }
+
+    /**
+     * Euler's transformation
+     * <code>2F1(a,b,c,z) == (1-z)^(c-a-b)*2F1(c-a,c-b,c,z)</code> for rational parameters, where
+     * <code>c-a</code> or <code>c-b</code> is a non-positive integer and the transformed series
+     * ends: <code>Hypergeometric2F1(3,3,1,z) == (1+4*z+z^2)/(1-z)^5</code>.
+     *
+     * @return {@link F#NIL} if the transformed series doesn't end
+     */
+    private static IExpr eulerTerminating(IExpr a, IExpr b, IExpr c, IExpr z) {
+      if (!a.isRational() || !b.isRational() || !c.isRational() || z.isInexactNumber()
+          || isNonPositiveInteger(a) || isNonPositiveInteger(b) || isNonPositiveInteger(c)) {
+        return F.NIL;
+      }
+      IRational ca = ((IRational) c).subtract((IRational) a);
+      IRational cb = ((IRational) c).subtract((IRational) b);
+      int m = Integer.MAX_VALUE;
+      for (IRational x : new IRational[] {ca, cb}) {
+        if (isNonPositiveInteger(x)) {
+          m = Math.min(m, -x.toIntDefault());
+        }
+      }
+      if (m > MAX_TERMINATING_DEGREE) {
+        return F.NIL;
+      }
+      return F.Times(hypergeometricPolynomial(ca, cb, c, z, m),
+          F.Power(F.Subtract(F.C1, z), ca.subtract((IRational) b)));
+    }
+
+    private static boolean isNonPositiveInteger(IExpr x) {
+      return x.isInteger() && !x.isPositive();
+    }
+
+    /**
+     * <code>Hypergeometric2F1(1, b, c, z)</code> for integers <code>1 &lt; b &lt; c</code>, from
+     * the integral
+     * <code>Gamma(c)/(Gamma(b)*Gamma(c-b))*Integrate(t^(b-1)*(1-t)^(c-b-1)/(1-z*t), {t,0,1})</code>.
+     * With <code>p(t) == t^(b-1)*(1-t)^(c-b-1)</code> and <code>w == 1/z</code> the integrand is
+     * <code>(p(t)-p(w))/(1-z*t) + p(w)/(1-z*t)</code>, a polynomial in <code>t</code> plus a term
+     * which integrates to <code>-p(w)*Log(1-z)/z</code>. The rational content is taken out with the
+     * sign which makes the coefficient of the logarithm positive.
+     */
+    private static IExpr logarithmic1BC(int b, int c, IExpr z) {
+      // the result times z^(c-1)/Gamma-quotient: sum(poly[e]*z^e) + Log(1-z)*sum(log[e]*z^e)
+      final IRational[] poly = new IRational[c];
+      final IRational[] log = new IRational[c];
+      java.util.Arrays.fill(poly, F.C0);
+      java.util.Arrays.fill(log, F.C0);
+      for (int j = b - 1; j <= c - 2; j++) {
+        // the coefficient of t^j in p(t)
+        IInteger pj = AbstractIntegerSym.binomial(c - b - 1, j - b + 1);
+        if (((j - b + 1) & 1) == 1) {
+          pj = pj.negate();
+        }
+        log[c - 2 - j] = log[c - 2 - j].subtract(pj);
+        for (int i = 0; i < j; i++) {
+          int e = c - 1 - j + i;
+          poly[e] = poly[e].subtract(pj.divideBy(F.ZZ(i + 1)));
+        }
+      }
+      final IInteger gammaQuotient = F.ZZ(c - 1).factorial()
+          .div(F.ZZ(b - 1).factorial().multiply(F.ZZ(c - b - 1).factorial()));
+      if (z.isRational()) {
+        IRational zr = (IRational) z;
+        IRational polyValue = F.C0;
+        IRational logValue = F.C0;
+        for (int e = c - 1; e >= 0; e--) {
+          polyValue = polyValue.multiply(zr).add(poly[e]);
+          logValue = logValue.multiply(zr).add(log[e]);
+        }
+        IRational scale = gammaQuotient.divideBy(zr.powerRational(c - 1));
+        polyValue = polyValue.multiply(scale);
+        logValue = logValue.multiply(scale);
+        IRational oneMinusZ = F.C1.subtract(zr);
+        IExpr logarithm = F.Log(oneMinusZ);
+        if (oneMinusZ.isPositive() && oneMinusZ.isLT(F.C1)) {
+          // Log(2/3) is written -Log(3/2); a negative 1-z keeps its principal logarithm
+          logarithm = F.Log(oneMinusZ.inverse());
+          logValue = logValue.negate();
+        }
+        IRational content = rationalContent(new IRational[] {polyValue, logValue}, logValue);
+        return F.Times(content, F.Plus(polyValue.divideBy(content),
+            F.Times(logValue.divideBy(content), logarithm)));
+      }
+      IRational[] all = new IRational[2 * c];
+      for (int e = 0; e < c; e++) {
+        poly[e] = poly[e].multiply(gammaQuotient);
+        log[e] = log[e].multiply(gammaQuotient);
+        all[e] = poly[e];
+        all[c + e] = log[e];
+      }
+      IRational leadingLog = F.C0;
+      for (int e = c - 1; e >= 0 && leadingLog.isZero(); e--) {
+        leadingLog = log[e];
+      }
+      IRational content = rationalContent(all, leadingLog);
+      IASTAppendable polySum = F.PlusAlloc(c);
+      IASTAppendable logSum = F.PlusAlloc(c);
+      for (int e = 0; e < c; e++) {
+        if (!poly[e].isZero()) {
+          polySum.append(F.Times(poly[e].divideBy(content), F.Power(z, F.ZZ(e))));
+        }
+        if (!log[e].isZero()) {
+          logSum.append(F.Times(log[e].divideBy(content), F.Power(z, F.ZZ(e))));
+        }
+      }
+      return F.Times(content, F.Plus(polySum.oneIdentity0(),
+          F.Times(logSum.oneIdentity0(), F.Log(F.Subtract(F.C1, z)))),
+          F.Power(z, F.ZZ(1 - c)));
+    }
+
+    /**
+     * The positive rational <code>g</code> for which the numbers divided by <code>g</code> are
+     * coprime integers, with the sign of <code>sign</code>.
+     */
+    private static IRational rationalContent(IRational[] numbers, IRational sign) {
+      IInteger numerator = F.C0;
+      IInteger denominator = F.C1;
+      for (IRational x : numbers) {
+        if (!x.isZero()) {
+          numerator = numerator.gcd(x.numerator());
+          denominator = denominator.lcm(x.denominator());
+        }
+      }
+      if (numerator.isZero()) {
+        return F.C1;
+      }
+      IRational content = F.QQ(numerator, denominator);
+      return sign.isNegative() ? content.negate() : content;
     }
 
     private static IExpr hypergeometric2F1ABHalfZ(IExpr a, IExpr z) {
@@ -2006,12 +2261,69 @@ public class HypergeometricFunctions {
   }
 
 
-  private static class HypergeometricPFQ extends AbstractFunctionEvaluator {
+  private static class HypergeometricPFQ extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
     /**
      * Largest <code>Abs(z)</code> for which
      * <code>HypergeometricPFQ({1,...,1},{2,...,2},z)</code> is summed term by term.
      */
     private static final double MAX_ONES_TWOS_ABS_Z = 10000.0;
+
+    /**
+     * Cancel the upper and lower parameters which are equal over one common denominator, such as
+     * <code>(2+2*v)/2</code> and <code>1+v</code>, and expand what remains.
+     */
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.argSize() != 3 || !ast.arg1().isList() || !ast.arg2().isList()) {
+        return F.NIL;
+      }
+      IAST a = (IAST) ast.arg1();
+      IAST b = (IAST) ast.arg2();
+      if (a.isEmpty() || b.isEmpty()) {
+        return F.NIL;
+      }
+      IExpr[] lower = new IExpr[b.argSize()];
+      for (int j = 0; j < lower.length; j++) {
+        lower[j] = overOneDenominator(b.get(j + 1), engine);
+      }
+      boolean[] cancelled = new boolean[lower.length];
+      IASTAppendable upper = F.ListAlloc(a.argSize());
+      boolean changed = false;
+      for (IExpr ai : a) {
+        IExpr together = overOneDenominator(ai, engine);
+        int index = -1;
+        // an upper parameter -n ends the series before a lower parameter -n makes it undefined
+        for (int j = 0; j < lower.length
+            && !(together.isZero() || together.isMathematicalIntegerNegative()); j++) {
+          if (!cancelled[j] && lower[j].equals(together)) {
+            index = j;
+            break;
+          }
+        }
+        if (index >= 0) {
+          cancelled[index] = true;
+          changed = true;
+        } else {
+          upper.append(ai);
+        }
+      }
+      if (!changed) {
+        return F.NIL;
+      }
+      IASTAppendable remaining = F.ListAlloc(lower.length);
+      for (int j = 0; j < lower.length; j++) {
+        if (!cancelled[j]) {
+          remaining.append(b.get(j + 1));
+        }
+      }
+      return F.FunctionExpand(F.HypergeometricPFQ(upper, remaining, ast.arg3()));
+    }
+
+    /** <code>Together(p)</code>, which leaves a number or a symbol as it is. */
+    private static IExpr overOneDenominator(IExpr p, EvalEngine engine) {
+      return p.isAtom() ? p : engine.evaluate(F.Together(p));
+    }
 
 
     @Override
@@ -2232,7 +2544,7 @@ public class HypergeometricFunctions {
         return F.NIL;
       }
       final boolean arbitrary = engine.isArbitraryMode();
-      final int digits = CarlsonArbitraryPrecision.digits(arbitrary, engine);
+      final int digits = WorkingPrecision.digits(arbitrary, engine);
       try {
         IAST aList = (IAST) a;
         IAST bList = (IAST) b;
@@ -2240,19 +2552,19 @@ public class HypergeometricFunctions {
         Apcomplex[] lower = new Apcomplex[bList.argSize()];
         boolean real = c.isReal();
         for (int i = 0; i < upper.length; i++) {
-          upper[i] = CarlsonArbitraryPrecision.apcomplex(aList.get(i + 1), digits);
+          upper[i] = WorkingPrecision.apcomplex(aList.get(i + 1), digits);
           real &= aList.get(i + 1).isReal();
         }
         for (int i = 0; i < lower.length; i++) {
-          lower[i] = CarlsonArbitraryPrecision.apcomplex(bList.get(i + 1), digits);
+          lower[i] = WorkingPrecision.apcomplex(bList.get(i + 1), digits);
           real &= bList.get(i + 1).isReal();
         }
-        Apcomplex z = CarlsonArbitraryPrecision.apcomplex(c, digits);
+        Apcomplex z = WorkingPrecision.apcomplex(c, digits);
         Apcomplex value = ApcomplexHypergeometricMath.hypergeometricPFQ(upper, lower, z);
         // real off the cut from 1 along the real axis
         real &= upper.length <= lower.length || z.real().compareTo(Apfloat.ONE) < 0
             || value.imag().signum() == 0;
-        return CarlsonArbitraryPrecision.toNumber(value, real, arbitrary);
+        return WorkingPrecision.toNumber(value, real, arbitrary);
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         return F.NIL;

@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Colors;
@@ -225,6 +226,19 @@ public class ColorFunctions {
       }
       String space = canonicalSpace(ast.arg2().toString());
       if (ast.arg1() instanceof ImageExpr) {
+        ImageExpr source = (ImageExpr) ast.arg1();
+        IExpr rgb = spectralToRgb(source);
+        if (rgb.isPresent()) {
+          // spectral bands become red, green and blue first, and those the space asked for
+          return RGB.equals(space) ? rgb
+              : engine.evaluate(F.binaryAST2(S.ColorConvert, rgb, ast.arg2()));
+        }
+        if (RGB.equals(space) && source.channels() == 4 && hasAlpha(source)) {
+          // red, green and blue with an alpha channel, which stays
+          return source;
+        }
+      }
+      if (ast.arg1() instanceof ImageExpr) {
         IExpr converted = convertColorSpace((ImageExpr) ast.arg1(), space);
         if (converted.isPresent()) {
           return converted;
@@ -262,6 +276,7 @@ public class ColorFunctions {
     private static final String CMYK = "CMYK";
     private static final String XYZ = "XYZ";
     private static final String LAB = "LAB";
+    private static final String LCH = "LCH";
 
     /**
      * The colour space a name stands for: a space may be named as the directive whose colours are
@@ -289,13 +304,51 @@ public class ColorFunctions {
       if ("LAB".equalsIgnoreCase(space) || "LABColor".equalsIgnoreCase(space)) {
         return LAB;
       }
+      if ("LCH".equalsIgnoreCase(space) || "LCHColor".equalsIgnoreCase(space)) {
+        return LCH;
+      }
       return space;
     }
 
     /** A colour directive, as opposed to a list of channel values which is a colour as well. */
     private static boolean isColorDirective(IExpr expr) {
       return expr.isAST(S.RGBColor) || expr.isAST(S.GrayLevel) || expr.isAST(S.Hue)
-          || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor);
+          || expr.isAST(S.CMYKColor) || expr.isAST(S.XYZColor) || expr.isAST(S.LABColor)
+          || expr.isAST(S.LCHColor);
+    }
+
+    /**
+     * The RGB image of an image of spectral bands, see {@link Pixels#spectralRgb(double[])}. The
+     * result keeps the sample type of the image, except that a bilevel image gives reals.
+     *
+     * @return {@link F#NIL} for an image which isn't one of spectral bands
+     */
+    private static IExpr spectralToRgb(ImageExpr source) {
+      int channels = source.channels();
+      if (!Pixels.isSpectral(source.getOptions().colorSpaceName(), channels)) {
+        return F.NIL;
+      }
+      Raster raster = source.raster();
+      if (raster == null) {
+        return F.NIL;
+      }
+      Raster result = new Raster(raster.width, raster.height, 3);
+      double[] bands = new double[channels];
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          for (int c = 0; c < channels; c++) {
+            bands[c] = raster.get(x, y, c);
+          }
+          double[] rgb = Pixels.spectralRgb(bands);
+          for (int c = 0; c < 3; c++) {
+            result.set(x, y, c, rgb[c]);
+          }
+        }
+      }
+      String type = Pixels.BIT.equals(source.sampleType()) ? Pixels.REAL32 : source.sampleType();
+      ImageExpr image = ImageExpr.fromRaster(result,
+          source.getOptions().withColorSpace(S.Automatic), type);
+      return image == null ? F.NIL : image;
     }
 
     /**
@@ -523,13 +576,19 @@ public class ColorFunctions {
         IExpr b = F.num(rgbaDouble[2]);
         return alpha < 1.0 ? F.RGBColor(r, g, b, F.num(alpha)) : F.RGBColor(r, g, b);
       }
-      if (XYZ.equals(space) || LAB.equals(space)) {
+      if (XYZ.equals(space) || LAB.equals(space) || LCH.equals(space)) {
         // from the XYZ coordinates themselves, which an RGB colour would have clipped
         double[] xyz = Colors.toXyzaDouble(color);
+        IBuiltInSymbol head = S.XYZColor;
         if (LAB.equals(space)) {
           xyz = ColorUtil.xyzToLab(xyz[0], xyz[1], xyz[2]);
+          head = S.LABColor;
+        } else if (LCH.equals(space)) {
+          double[] lab = ColorUtil.xyzToLab(xyz[0], xyz[1], xyz[2]);
+          xyz = ColorUtil.labToLch(lab[0], lab[1], lab[2]);
+          head = S.LCHColor;
         }
-        IASTAppendable result = F.ast(LAB.equals(space) ? S.LABColor : S.XYZColor, 4);
+        IASTAppendable result = F.ast(head, 4);
         for (int i = 0; i < 3; i++) {
           result.append(F.num(xyz[i]));
         }

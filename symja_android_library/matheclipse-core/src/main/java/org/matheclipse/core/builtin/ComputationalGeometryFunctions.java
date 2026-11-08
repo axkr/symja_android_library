@@ -2946,7 +2946,7 @@ public class ComputationalGeometryFunctions {
           return S.True;
         case ID.Simplex:
           // Simplex(n) is n-dimensional; only the 3-simplex is a polyhedron.
-          return region.isAST1() ? F.bool(region.arg1().equals(F.C3)) : F.NIL;
+          return region.isAST1() ? F.booleSymbol(region.arg1().equals(F.C3)) : F.NIL;
         case ID.Prism:
           return prismConvexQ(region, engine);
         case ID.Ball:

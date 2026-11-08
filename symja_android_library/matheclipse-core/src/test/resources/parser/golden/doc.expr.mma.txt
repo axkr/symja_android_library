@@ -48,7 +48,7 @@ $min = 0; $max = 10^4; Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ Prime
 (1.5 + 1.0*I) ^ (3.5 + 1.5*I)	Power(Plus(1.5`, Times(1.0`, Complex(0,1))), Plus(3.5`, Times(1.5`, Complex(0,1))))
 (1.5 + 1.0*I) ^ 3.5	Power(Plus(1.5`, Times(1.0`, Complex(0,1))), 3.5`)
 (2 + 3.5*I) / Infinity	Times(Plus(2, Times(3.5`, Complex(0,1))), Power(Infinity, -1))
-(3+I)*(3-I)	Times(Plus(3, Complex(0,1)), Plus(Complex(0,-1), 3))
+(3+I)*(3-I)	Times(Plus(3, Complex(0,1)), Plus(3, Complex(0,-1)))
 (3/2+1/2I)^2	Power(Plus(Rational(3,2), Times(Rational(1,2), Complex(0,1))), 2)
 (a + b + c)[[0]]	Part(Plus(a, b, c), 0)
 (a + b + c)[[2]]	Part(Plus(a, b, c), 2)
@@ -59,7 +59,7 @@ $min = 0; $max = 10^4; Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ Prime
 ++++a+++++2//Hold//FullForm	FullForm(Hold(Plus(PreIncrement(PreIncrement(Increment(Increment(a)))), 2)))
 ++a	PreIncrement(a)
 -(h/2) // FullForm	FullForm(Times(-1, Rational(1,2), h))
--(x - 2/3)	Times(-1, Plus(Rational(-2,3), x))
+-(x - 2/3)	Times(-1, Plus(x, Rational(-2,3)))
 --a	PreDecrement(a)
 -2 / 3 - I	Plus(Rational(-2,3), Complex(0,-1))
 -2*a - 2*b	Plus(Times(-2, a), Times(-2, b))
@@ -119,7 +119,7 @@ $min = 0; $max = 10^4; Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ Prime
 4!	Factorial(4)
 4.0 ^ (1/3)	Power(4.0`, Rational(1,3))
 42	42
-5 - 3	Plus(-3, 5)
+5 - 3	Plus(5, -3)
 ;; // FullForm	!syntax@5: Operator: // is no prefix operator.
 ;;3 // FullForm	FullForm(Span(1, 3))
 <|1 -> a, 3 -> b|>[[Key(3)]]	Part(Association(Rule(1, a), Rule(3, b)), Times(Key, 3))
@@ -234,7 +234,7 @@ AntisymmetricMatrixQ({{42, 7 + 11*I}, {-7 + 11*I, 21}})	Times(AntisymmetricMatri
 AnyTrue({1, 3, 5}, EvenQ)	!syntax@18: ')' expected.
 AnyTrue({1, 4, 5}, EvenQ)	!syntax@18: ')' expected.
 AnyTrue({}, EvenQ)	!syntax@11: ')' expected.
-Apart((x-1)/(x^2+x))	Times(Apart, Times(Plus(-1, x), Power(Plus(Power(x, 2), x), -1)))
+Apart((x-1)/(x^2+x))	Times(Apart, Times(Plus(x, -1), Power(Plus(Power(x, 2), x), -1)))
 Apart(1 / (x^2 + 5x + 6))	Times(Apart, Power(Plus(Power(x, 2), Times(5, x), 6), -1))
 Apart(1 / (x^2 - y^2), x)	!syntax@22: ')' expected.
 Apart(1 / (x^2 - y^2), y)	!syntax@22: ')' expected.
@@ -608,7 +608,7 @@ Cases(AstroGraphics(AstroBackground -> "WhiteSky"), Rule(Background, b_) :> b, I
 Cases(AstroGraphics(AstroReferenceFrame -> "Galactic"), Rule(MetaInformation, m_) :> m["ReferenceFrame"], Infinity)	!syntax@55: ')' expected.
 Cases(AstroGraphics(AstroReferenceFrame -> DateObject({2026,9,25,20,0,0})), Annotation(g_,"AstroSolarSystem",_) :> Cases(g, Text(t_,__) :> t, Infinity), Infinity)	!syntax@75: ')' expected.
 Cases(MoleculePlot(Molecule("c1ccccc1")), Line(p_) :> Round(Norm(p[[2]]-p[[1]]), 0.01), Infinity)	!syntax@41: ')' expected.
-Cases(_Complex)[{1, 2I, 3, 4-I, 5}]	Times(Cases, Blank(Complex)[List(1, Times(2, Complex(0,1)), 3, Plus(Complex(0,-1), 4), 5)])
+Cases(_Complex)[{1, 2I, 3, 4-I, 5}]	Times(Cases, Blank(Complex)[List(1, Times(2, Complex(0,1)), 3, Plus(4, Complex(0,-1)), 5)])
 Cases(f(1, 2), 2)	!syntax@10: ')' expected.
 Cases(f(f(1, 2), f(2)), 2)	!syntax@12: ')' expected.
 Cases(f(f(1, 2), f(2)), 2, 2)	!syntax@12: ')' expected.
@@ -1431,7 +1431,7 @@ ExpIntegralEi(0)	Times(ExpIntegralEi, 0)
 Expand(((a + b) (c + d)) ^ 2 + b (1 + a))	Times(Expand, Plus(Power(Times(Plus(a, b), Plus(c, d)), 2), Times(b, Plus(1, a))))
 Expand((a + b) (a + c + d) (e + f) + e a a)	Times(Expand, Plus(Times(Plus(a, b), Times(Plus(a, c, d), Plus(e, f))), Times(e, a, a)))
 Expand((a + b) (a + c + d))	Times(Expand, Times(Plus(a, b), Plus(a, c, d)))
-Expand((a + b) ** c - a*c)	Times(Expand, Plus(Times(-1, a, c), NonCommutativeMultiply(Plus(a, b), c)))
+Expand((a + b) ** c - a*c)	Times(Expand, Plus(NonCommutativeMultiply(Plus(a, b), c), Times(-1, a, c)))
 Expand((a + b) ^ 2 * (c + d))	Times(Expand, Times(Power(Plus(a, b), 2), Plus(c, d)))
 Expand((x + 3)^(5/2)+(x + 1)^(3/2))	Times(Expand, Plus(Power(Plus(x, 3), Rational(5,2)), Power(Plus(x, 1), Rational(3,2))))
 Expand((x + y) ^ 2 + x y)	Times(Expand, Plus(Power(Plus(x, y), 2), Times(x, y)))
@@ -2012,7 +2012,7 @@ HermiteDecomposition({{ 5, 2, -1, 4, 0}, {3,8,2,0,6}, {1,-4,5,2,1}, {0,3,7,9,2},
 HermiteH(3, 1 + I)	!syntax@11: ')' expected.
 HermiteH(8, x)	!syntax@11: ')' expected.
 Hermitian(x)	Times(Hermitian, x)
-HermitianMatrixQ({{2, 2 + I, 4}, {2-I, 3, I}, {4, -I, 1}})	Times(HermitianMatrixQ, List(List(2, Plus(2, Complex(0,1)), 4), List(Plus(Complex(0,-1), 2), 3, Complex(0,1)), List(4, Complex(0,-1), 1)))
+HermitianMatrixQ({{2, 2 + I, 4}, {2-I, 3, I}, {4, -I, 1}})	Times(HermitianMatrixQ, List(List(2, Plus(2, Complex(0,1)), 4), List(Plus(2, Complex(0,-1)), 3, Complex(0,1)), List(4, Complex(0,-1), 1)))
 HiddenItems(x)	Times(HiddenItems, x)
 HighlightGraph(PathGraph(Range(5)), {Style(2, Green), 3, 1<->2})	!syntax@35: ')' expected.
 HighlightGraph(g, Table(Style(VertexList(g)[[i]], ColorData("TemperatureMap")(ClosenessCentrality(g)[[i]] / Max(ClosenessCentrality(g)))), {i, VertexCount(g)}))	!syntax@17: ')' expected.
@@ -2912,7 +2912,7 @@ NResidue(Exp(1/x), {x, 0}, Radius -> Automatic) // Chop	!syntax@18: ')' expected
 NResidue(Gamma(x), {x, -3}, WorkingPrecision -> 30)	!syntax@18: ')' expected.
 NResidue(Sin(1/(10*x)), {x, 0}) // Chop	!syntax@23: ')' expected.
 NResidue({Exp(1/x), Sin(1/x), Cos(1/x)}, {x, 0}, Radius -> 1) // Chop	!syntax@40: ')' expected.
-NRoots(x^3-4*x^2+x+6==0)	Times(NRoots, Equal(Plus(Plus(Times(-4, Power(x, 2)), Power(x, 3)), x, 6), 0))
+NRoots(x^3-4*x^2+x+6==0)	Times(NRoots, Equal(Plus(Power(x, 3), Times(-4, Power(x, 2)), x, 6), 0))
 NSolve(x^3-4.*x^2==0, x)	!syntax@21: ')' expected.
 NSolve({Sin(x)-11==y, x+y==-9}, {y,x})	!syntax@31: ')' expected.
 NSolve({x+y-3, x-y-1}, {x,y})	!syntax@22: ')' expected.
@@ -3384,12 +3384,12 @@ Positive(1)	Times(Positive, 1)
 Positive(Pi)	Times(Positive, Pi)
 Positive(Sin({11, 14}))	Times(Positive, Times(Sin, List(11, 14)))
 Positive(x)	Times(Positive, x)
-PossibleZeroQ((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)	Times(PossibleZeroQ, Plus(Times(-1, Power(E, 2)), Times(-2, E, Pi), Times(-1, Power(Pi, 2)), Power(Plus(E, Pi), 2)))
-PossibleZeroQ((x + 1) (x - 1) - x^2 + 1)	Times(PossibleZeroQ, Plus(Plus(Times(Plus(x, 1), Plus(-1, x)), Times(-1, Power(x, 2))), 1))
+PossibleZeroQ((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)	Times(PossibleZeroQ, Plus(Power(Plus(E, Pi), 2), Times(-1, Power(E, 2)), Times(-1, Power(Pi, 2)), Times(-2, E, Pi)))
+PossibleZeroQ((x + 1) (x - 1) - x^2 + 1)	Times(PossibleZeroQ, Plus(Times(Plus(x, 1), Plus(x, -1)), Times(-1, Power(x, 2)), 1))
 PossibleZeroQ(1/x + 1/y - (x + y)/(x y))	Times(PossibleZeroQ, Plus(Power(x, -1), Power(y, -1), Times(-1, Power(Times(x, y), -1), Plus(x, y))))
-PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))	Times(PossibleZeroQ, Plus(Times(-2, Complex(0,1), Sin, Times(Log, 4)), Times(-1, Power(2, Times(-2, Complex(0,1)))), Power(2, Times(2, Complex(0,1)))))
-PossibleZeroQ(E^(I*Pi/4)-(-1)^(1/4))	Times(PossibleZeroQ, Plus(Times(-1, Power(-1, Rational(1,4))), Power(E, Times(Complex(0,1), Times(Rational(1,4), Pi)))))
-PossibleZeroQ(Sqrt(x^2) - x)	Times(PossibleZeroQ, Plus(Times(-1, x), Times(Sqrt, Power(x, 2))))
+PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))	Times(PossibleZeroQ, Plus(Power(2, Times(2, Complex(0,1))), Times(-1, Power(2, Times(-2, Complex(0,1)))), Times(-2, Complex(0,1), Sin, Times(Log, 4))))
+PossibleZeroQ(E^(I*Pi/4)-(-1)^(1/4))	Times(PossibleZeroQ, Plus(Power(E, Times(Complex(0,1), Times(Rational(1,4), Pi))), Times(-1, Power(-1, Rational(1,4)))))
+PossibleZeroQ(Sqrt(x^2) - x)	Times(PossibleZeroQ, Plus(Times(Sqrt, Power(x, 2)), Times(-1, x)))
 Power(x,y,z)	!syntax@8: ')' expected.
 PowerExpand((a * b) ^ c)	Times(PowerExpand, Power(Times(a, b), c))
 PowerExpand((a ^ b) ^ c)	Times(PowerExpand, Power(Power(a, b), c))
@@ -3441,8 +3441,8 @@ PrimePowerQ(9)	Times(PrimePowerQ, 9)
 PrimeQ(-3)	Times(PrimeQ, -3)
 PrimeQ(1)	Times(PrimeQ, 1)
 PrimeQ(137)	Times(PrimeQ, 137)
-PrimeQ(2 ^ 127 - 1)	Times(PrimeQ, Plus(-1, Power(2, 127)))
-PrimeQ(2 ^ 255 - 1)	Times(PrimeQ, Plus(-1, Power(2, 255)))
+PrimeQ(2 ^ 127 - 1)	Times(PrimeQ, Plus(Power(2, 127), -1))
+PrimeQ(2 ^ 255 - 1)	Times(PrimeQ, Plus(Power(2, 255), -1))
 PrimeQ(2)	Times(PrimeQ, 2)
 PrimeQ(2, GaussianIntegers->True)	!syntax@9: ')' expected.
 PrimeQ(5+2*I, GaussianIntegers->True)	!syntax@13: ')' expected.
@@ -3732,7 +3732,7 @@ RemoveDiacritics("éèáàâ")	Times(RemoveDiacritics, "\\[EAcute]\\[EGrave]\\[A
 RenameDirectory(x)	Times(RenameDirectory, x)
 RenameFile(x)	Times(RenameFile, x)
 RenkoChart(x)	Times(RenkoChart, x)
-RepeatedTiming(FactorInteger(2^32-1))	Times(RepeatedTiming, Times(FactorInteger, Plus(-1, Power(2, 32))))
+RepeatedTiming(FactorInteger(2^32-1))	Times(RepeatedTiming, Times(FactorInteger, Plus(Power(2, 32), -1)))
 Replace(x, {{e->q, x -> a}, {x -> b}})	!syntax@10: ')' expected.
 ReplaceAll(D(CumulantGeneratingFunction(NormalDistribution(m,s), t), {t,2}), t->0)	!syntax@61: ')' expected.
 ReplaceAll(D(MomentGeneratingFunction(PoissonDistribution(l), t), t), t->0)	!syntax@61: ')' expected.
@@ -4214,7 +4214,7 @@ SymbolQ(1)	Times(SymbolQ, 1)
 SymbolQ(a + b)	Times(SymbolQ, Plus(a, b))
 SymbolQ(a)	Times(SymbolQ, a)
 SymbolicIdentityArray({m}).MatrixSymbol(a, {m, n})	!syntax@42: ')' expected.
-SymbolicOnesArray({m, n}) - 1	Plus(-1, Times(SymbolicOnesArray, List(m, n)))
+SymbolicOnesArray({m, n}) - 1	Plus(Times(SymbolicOnesArray, List(m, n)), -1)
 SymbolicOnesArray({m, n})^7	Times(SymbolicOnesArray, Power(List(m, n), 7))
 SymbolicZerosArray({m, n}) + 1	Plus(Times(SymbolicZerosArray, List(m, n)), 1)
 SymmetricMatrixQ({{1,7,3}, {7,4,-5}, {3,-5,6}})	Times(SymmetricMatrixQ, List(List(1, 7, 3), List(7, 4, -5), List(3, -5, 6)))
@@ -4520,7 +4520,7 @@ UnitStep(-42)	Times(UnitStep, -42)
 UnitSystem(x)	Times(UnitSystem, x)
 UnitVector(4,3)	!syntax@13: ')' expected.
 UnitaryMatrixQ(u)	Times(UnitaryMatrixQ, u)
-Unitize((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)	Times(Unitize, Plus(Times(-1, Power(E, 2)), Times(-2, E, Pi), Times(-1, Power(Pi, 2)), Power(Plus(E, Pi), 2)))
+Unitize((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)	Times(Unitize, Plus(Power(Plus(E, Pi), 2), Times(-1, Power(E, 2)), Times(-1, Power(Pi, 2)), Times(-2, E, Pi)))
 UnixTime(FromUnixTime(1577836800, TimeZone -> -5))	!syntax@33: ')' expected.
 UnixTime({2020, 1, 1, 0, 0, 0})	Times(UnixTime, List(2020, 1, 1, 0, 0, 0))
 UnixTime({2020, 1, 1})	Times(UnixTime, List(2020, 1, 1))
@@ -4975,7 +4975,7 @@ p = {0.3, 0.7}; LocatorPane(Dynamic(p), Graphics({Circle({0.5, 0.5}, 0.4)}, Plot
 people	people
 people = <|236234 -> <|"name" -> "bob", "age" -> 18, "sex" -> "M"|>,253456 -> <|"name" -> "sue", "age" -> 25, "sex" -> "F"|>, 323442 -> <|"name" -> "ann", "age" -> 18, "sex" -> "F"|>|>	Set(people, Association(Rule(236234, Association(Rule("name", "bob"), Rule("age", 18), Rule("sex", "M"))), Rule(253456, Association(Rule("name", "sue"), Rule("age", 25), Rule("sex", "F"))), Rule(323442, Association(Rule("name", "ann"), Rule("age", 18), Rule("sex", "F")))))
 peopleData = {<|"Name" -> "Alice", "Age" -> 30, "City" -> "New York"|>,<|"Name" -> "Bob", "Age" -> 25, "City" -> "Los Angeles"|>,<|"Name" -> "Charlie", "Age" -> 35, "City" -> "Chicago"|>,<|"Name" -> "David", "Age" -> 25, "City" -> "New York"|>,<|"Name" -> "Eve", "Age" -> 40, "City" -> "Los Angeles"|>};	CompoundExpression(Set(peopleData, List(Association(Rule("Name", "Alice"), Rule("Age", 30), Rule("City", "New York")), Association(Rule("Name", "Bob"), Rule("Age", 25), Rule("City", "Los Angeles")), Association(Rule("Name", "Charlie"), Rule("Age", 35), Rule("City", "Chicago")), Association(Rule("Name", "David"), Rule("Age", 25), Rule("City", "New York")), Association(Rule("Name", "Eve"), Rule("Age", 40), Rule("City", "Los Angeles")))), Null)
-poly=(c*x-2*y+z)^7	Set(poly, Power(Plus(Plus(Times(c, x), Times(-2, y)), z), 7))
+poly=(c*x-2*y+z)^7	Set(poly, Power(Plus(Times(c, x), Times(-2, y), z), 7))
 primorial(0) = 1;	CompoundExpression(Set(Times(primorial, 0), 1), Null)
 primorial(12)	Times(primorial, 12)
 primorial(n_Integer) := Product(Prime(k), {k, 1, n});	!syntax@41: ')' expected.

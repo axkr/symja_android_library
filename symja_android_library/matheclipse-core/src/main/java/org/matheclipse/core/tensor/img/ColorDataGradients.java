@@ -115,7 +115,41 @@ public enum ColorDataGradients implements ColorDataGradient {
   /** blue, pale yellow, red - an approximation of Mathematica's TemperatureMap */
   TEMPERATURE_MAP,
   /** dark blue, green, yellow, orange, dark red - an approximation of the DarkRainbow gradient */
-  DARK_RAINBOW;
+  DARK_RAINBOW,
+  /*
+   * The remaining gradients of the standard collection, each a table of evenly spaced colours named
+   * after the scheme: ArmyColors is ARMY, BrassTones is BRASS_TONES and so on.
+   */
+  AQUAMARINE,
+  ARMY,
+  ATLANTIC,
+  BLUE_GREEN_YELLOW,
+  BRASS_TONES,
+  CANDY,
+  CHERRY_TONES,
+  CMYK,
+  COFFEE_TONES,
+  DARK_BANDS,
+  DARK_TERRAIN,
+  FRUIT_PUNCH,
+  FUCHSIA_TONES,
+  GRAY_TONES,
+  GRAY_YELLOW_TONES,
+  GREEN_PINK_TONES,
+  ISLAND,
+  LAKE,
+  LIGHT_TEMPERATURE_MAP,
+  LIGHT_TERRAIN,
+  PEARL,
+  PIGEON_TONES,
+  PLUM,
+  RED_BLUE_TONES,
+  RED_GREEN_SPLIT,
+  RUST_TONES,
+  SANDY_TERRAIN,
+  SIENNA_TONES,
+  VALENTINE_TONES,
+  WATERMELON;
 
   private final ColorDataGradient colorDataGradient;
 

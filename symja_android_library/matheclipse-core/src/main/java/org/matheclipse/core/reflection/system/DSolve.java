@@ -412,7 +412,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       }
       unknown = list;
     }
-    return new IExpr[] {unknown, variable, F.bool(withoutArguments)};
+    return new IExpr[] {unknown, variable, F.booleSymbol(withoutArguments)};
   }
 
   /** Collects the symbols which are differentiated, and the arguments they are applied to. */

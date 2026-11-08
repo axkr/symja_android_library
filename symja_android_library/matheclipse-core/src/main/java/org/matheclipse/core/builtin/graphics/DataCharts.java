@@ -14,8 +14,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Charts of data built directly from graphics primitives, or from the plot functions:
- * <code>PairedBarChart</code>, <code>PairedHistogram</code>, <code>Histogram3D</code>,
- * <code>SmoothHistogram</code>, <code>SmoothHistogram3D</code> and <code>ClockGauge</code>.
+ * <code>PairedBarChart</code>, <code>PairedHistogram</code>, <code>PairedSmoothHistogram</code>,
+ * <code>Histogram3D</code>, <code>SmoothHistogram</code>, <code>SmoothHistogram3D</code> and
+ * <code>ClockGauge</code>.
  */
 public final class DataCharts {
 
@@ -126,26 +127,48 @@ public final class DataCharts {
         return F.NIL;
       }
       double largest = 0.0;
+      double bottom = Double.POSITIVE_INFINITY;
+      double top = Double.NEGATIVE_INFINITY;
       for (double[] bar : bars) {
         largest = Math.max(largest, Math.max(Math.abs(bar[2]), Math.abs(bar[3])));
+        bottom = Math.min(bottom, bar[0]);
+        top = Math.max(top, bar[1]);
       }
-      double gap = PAIRED_GAP * Math.max(largest, Double.MIN_VALUE);
+      // a histogram labels its bins between the halves, so its gap is sized for those labels
+      PairedAxis axis =
+          histogram ? PairedAxis.of(bottom, top, 0.05) : PairedAxis.barEnds(bottom, top);
+      double gap = histogram ? axis.gap(largest)
+          : PAIRED_GAP * Math.max(largest, Double.MIN_VALUE);
       IASTAppendable left = F.ListAlloc(bars.size() + 1);
       IASTAppendable right = F.ListAlloc(bars.size() + 1);
       left.append(RectangleChart.color(S.Automatic, 0));
       right.append(RectangleChart.color(S.Automatic, 1));
       for (double[] bar : bars) {
         if (bar[2] != 0.0) {
-          left.append(F.Rectangle(F.List(F.num(-gap - bar[2]), F.num(bar[0])),
-              F.List(F.num(-gap), F.num(bar[1]))));
+          left.append(pairedBar(histogram, -gap - bar[2], bar[0], -gap, bar[1]));
         }
         if (bar[3] != 0.0) {
-          right.append(F.Rectangle(F.List(F.num(gap), F.num(bar[0])),
-              F.List(F.num(gap + bar[3]), F.num(bar[1]))));
+          right.append(histogram ? pairedBar(true, gap + bar[3], bar[0], gap, bar[1])
+              : pairedBar(false, gap, bar[0], gap + bar[3], bar[1]));
         }
       }
-      return withOptions(S.Graphics,
-          F.List(F.EdgeForm(F.GrayLevel(F.num(0.5))), left, right), ast);
+      double extent = 1.05 * (largest + gap);
+      return pairedGraphics(F.List(F.EdgeForm(F.GrayLevel(F.num(0.5))), left, right,
+          axis.primitives(gap, extent, histogram ? PairedAxis.HISTOGRAM : PairedAxis.BAR)), ast);
+    }
+
+    /**
+     * A bar between two corners; a histogram writes its corners as <code>Offset</code>s of no
+     * displacement.
+     */
+    private static IAST pairedBar(boolean histogram, double x0, double y0, double x1, double y1) {
+      IAST p0 = F.List(F.num(x0), F.num(y0));
+      IAST p1 = F.List(F.num(x1), F.num(y1));
+      if (histogram) {
+        IAST none = F.List(F.C0, F.C0);
+        return F.Rectangle(F.binaryAST2(S.Offset, none, p0), F.binaryAST2(S.Offset, none, p1));
+      }
+      return F.Rectangle(p0, p1);
     }
 
     /** The bars <code>{bottom, top, left length, right length}</code> of a bar chart. */
@@ -188,6 +211,359 @@ public final class DataCharts {
         bars.add(new double[] {edges[k], edges[k + 1], leftCounts[k], rightCounts[k]});
       }
       return bars;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * <code>Graphics(primitives, opts)</code> of a paired chart: the caller's options, then the golden
+   * aspect ratio, the whole plot range and a padding of 2% around everything drawn.
+   */
+  private static IAST pairedGraphics(IAST primitives, IAST ast) {
+    IASTAppendable graphics = withOptions(S.Graphics, primitives, ast);
+    IExpr[][] defaults = {{S.AspectRatio, F.Power(S.GoldenRatio, F.CN1)},
+        {S.PlotRange, S.All}, {S.PlotRangePadding, F.unaryAST1(S.Scaled, F.num(0.02))}};
+    for (IExpr[] option : defaults) {
+      boolean given = false;
+      for (IExpr rule : options(ast)) {
+        given |= rule.first() == option[0];
+      }
+      if (!given) {
+        graphics.append(F.Rule(option[0], option[1]));
+      }
+    }
+    return graphics;
+  }
+
+  /**
+   * The axes of a paired chart: a value axis running up each side of the central gap and a
+   * magnitude axis under each half, all in a thin dark gray.
+   */
+  private static final class PairedAxis {
+    /** Value ticks point into the gap, whose middle holds their labels. */
+    static final int HISTOGRAM = 0;
+    /** Value ticks point away from the gap and are labelled just right of its left edge. */
+    static final int SMOOTH = 1;
+    /** The value axes are unlabelled and marked only at the ends of the bars. */
+    static final int BAR = 2;
+
+    final double lo;
+    final double hi;
+    final double[] majors;
+    final String[] labels;
+    final double[] minors;
+
+    private PairedAxis(double lo, double hi, double[] majors, String[] labels, double[] minors) {
+      this.lo = lo;
+      this.hi = hi;
+      this.majors = majors;
+      this.labels = labels;
+      this.minors = minors;
+    }
+
+    /** The value axis over lo..hi widened by <code>pad</code> of the span at both ends. */
+    static PairedAxis of(double lo, double hi, double pad) {
+      if (!(Double.isFinite(lo) && Double.isFinite(hi) && hi > lo)) {
+        lo = 0.0;
+        hi = 1.0;
+      }
+      double margin = pad * (hi - lo);
+      lo -= margin;
+      hi += margin;
+      double step = valueStep(hi - lo);
+      List<double[]> ticks = ticks(lo, hi, step);
+      String[] labels = new String[ticks.get(0).length];
+      for (int i = 0; i < labels.length; i++) {
+        labels[i] = org.matheclipse.core.graphics.svg.TickGenerator.format(ticks.get(0)[i], step);
+      }
+      return new PairedAxis(lo, hi, ticks.get(0), labels, ticks.get(1));
+    }
+
+    /**
+     * The value axis of a bar chart: from 4% of the bars' span below the lowest bar, where the
+     * magnitude axes run, to the top of the highest, marked at the two ends of the bars.
+     */
+    static PairedAxis barEnds(double bottom, double top) {
+      if (!(Double.isFinite(bottom) && top > bottom)) {
+        bottom = 0.0;
+        top = 1.0;
+      }
+      return new PairedAxis(bottom - 0.04 * (top - bottom), top, new double[] {bottom, top},
+          new String[] {"", ""}, new double[0]);
+    }
+
+    /**
+     * Half the gap between the halves for a largest bar <code>largest</code>: the gap takes
+     * <code>(19 + 6 d + 3 s) / 360</code> of the half width, <code>d</code> and <code>s</code>
+     * being the digits and other characters of the widest value label.
+     */
+    double gap(double largest) {
+      double units = 25.0;
+      for (String label : labels) {
+        int digits = 0;
+        for (int i = 0; i < label.length(); i++) {
+          if (Character.isDigit(label.charAt(i))) {
+            digits++;
+          }
+        }
+        int marks = label.length() - digits;
+        units = Math.max(units, 19.0 + 6.0 * digits - 0.5 * Math.max(digits - 2, 0) + 3.0 * marks);
+      }
+      double r = units / 360.0;
+      return Math.max(largest, Double.MIN_VALUE) * r / (1.0 - r);
+    }
+
+    /**
+     * The axes of a chart whose halves start <code>gap</code> from the centre and whose magnitude
+     * axes end <code>extent</code> from it. Tick marks are given in printer's points at the default
+     * image size.
+     */
+    IAST primitives(double gap, double extent, int look) {
+      // data units per printer's point across the padded plot range
+      double dx = 2.0 * extent * 1.04 / 360.0;
+      double dy = (hi - lo) * 1.04 / (360.0 * 2.0 / (1.0 + Math.sqrt(5.0)));
+      IASTAppendable prims = F.ListAlloc();
+      prims.append(F.GrayLevel(0.4));
+      prims.append(F.AbsoluteThickness(F.num(0.2)));
+      double span = extent - gap;
+      double step = look == BAR ? barMagnitudeStep(extent) : magnitudeStep(span);
+      double inward = look == SMOOTH ? -1.0 : 1.0;
+      double majorLength = look == BAR ? 3.0 : 4.0;
+      double labelDrop = look == SMOOTH ? -3.0 : -7.0;
+      List<double[]> counts = ticks(0.0, span, step);
+      for (double side = -1.0; side <= 1.0; side += 2.0) {
+        prims.append(line(side * gap, lo, side * extent, lo));
+        prims.append(line(side * gap, lo, side * gap, hi));
+        for (double v : counts.get(0)) {
+          double x = side * (gap + v);
+          prims.append(line(x, lo, x, lo - 4.0 * dy));
+          prims.append(label(number(v), offset(0.0, labelDrop, x, lo), 0.0, 1.0));
+        }
+        for (double v : counts.get(1)) {
+          double x = side * (gap + v);
+          prims.append(line(x, lo, x, lo - 2.5 * dy));
+        }
+        for (double y : majors) {
+          prims.append(line(side * gap, y, side * (gap - inward * majorLength * dx), y));
+        }
+        for (double y : minors) {
+          prims.append(line(side * gap, y, side * (gap - inward * 2.5 * dx), y));
+        }
+      }
+      if (look != BAR) {
+        for (double y : majors) {
+          prims.append(look == HISTOGRAM
+              ? label(F.unaryAST1(S.Pane, number(y)), F.List(F.CD0, F.num(y)), 0.0, 0.0)
+              : label(number(y), offset(3.0, 0.0, -0.8 * gap, y), -1.0, 0.0));
+        }
+      }
+      return prims;
+    }
+
+    private static IAST line(double x0, double y0, double x1, double y1) {
+      return F.Line(F.List(F.List(F.num(x0), F.num(y0)), F.List(F.num(x1), F.num(y1))));
+    }
+
+    /** The point (x, y) moved by (dx, dy) printer's points. */
+    private static IAST offset(double dx, double dy, double x, double y) {
+      return F.binaryAST2(S.Offset, F.List(F.num(dx), F.num(dy)),
+          F.List(F.num(x), F.num(y)));
+    }
+
+    private static IAST label(IExpr content, IAST position, double ax, double ay) {
+      return F.Text(F.ternaryAST3(S.Style, content, F.ZZ(10), F.GrayLevel(0.25)), position,
+          F.List(F.num(ax), F.num(ay)));
+    }
+
+    /** An integer as an integer, anything else as a machine number. */
+    private static IExpr number(double v) {
+      return Math.abs(v - Math.rint(v)) < 1e-9 && Math.abs(v) < 1e15 ? F.ZZ((long) Math.rint(v))
+          : F.num(v);
+    }
+
+    /**
+     * The major ticks <code>step</code> apart in lo..hi, and the minor ticks between them: five
+     * to a major interval, or four when the step is a 2 times a power of ten.
+     */
+    private static List<double[]> ticks(double lo, double hi, double step) {
+      List<double[]> result = new ArrayList<>();
+      result.add(multiples(lo, hi, step, Double.NaN));
+      double mantissa = step / Math.pow(10.0, Math.floor(Math.log10(Math.abs(step))));
+      double minor = step / (Math.abs(mantissa - 2.0) < 1e-6 ? 4 : 5);
+      result.add(multiples(lo, hi, minor, step));
+      return result;
+    }
+
+    /** The multiples of <code>step</code> in lo..hi, without those of <code>skip</code>. */
+    private static double[] multiples(double lo, double hi, double step, double skip) {
+      long first = (long) Math.ceil(lo / step - 1e-9);
+      long last = (long) Math.floor(hi / step + 1e-9);
+      if (!(step > 0.0) || last - first > 1000) {
+        return new double[0];
+      }
+      List<Double> values = new ArrayList<>();
+      for (long k = first; k <= last; k++) {
+        double v = k == 0 ? 0.0 : k * step;
+        if (Double.isNaN(skip) || Math.abs(Math.rint(v / skip) * skip - v) >= skip * 1e-9) {
+          values.add(v);
+        }
+      }
+      double[] result = new double[values.size()];
+      for (int i = 0; i < result.length; i++) {
+        result[i] = values.get(i);
+      }
+      return result;
+    }
+
+    /** The smallest 1, 2 or 5 times a power of ten that cuts <code>span</code> into fewer than 6. */
+    private static double valueStep(double span) {
+      if (!(span > 0.0 && Double.isFinite(span))) {
+        return 1.0;
+      }
+      double mag = Math.pow(10.0, Math.floor(Math.log10(span / 6.0)));
+      for (int i = 0; i < 40; i++, mag *= 10.0) {
+        for (double m : new double[] {1.0, 2.0, 5.0}) {
+          if (span / (m * mag) < 6.0 * (1.0 - 1e-12)) {
+            return m * mag;
+          }
+        }
+      }
+      return span;
+    }
+
+    /** The largest 1, 2, 2.5 or 5 times a power of ten that fits into <code>span</code> twice. */
+    private static double magnitudeStep(double span) {
+      if (!(span > 0.0 && Double.isFinite(span))) {
+        return 1.0;
+      }
+      double mag = Math.pow(10.0, Math.floor(Math.log10(span)));
+      for (int i = 0; i < 40; i++, mag /= 10.0) {
+        for (double m : new double[] {5.0, 2.5, 2.0, 1.0}) {
+          if (span / (m * mag) >= 2.0 * (1.0 - 1e-12)) {
+            return m * mag;
+          }
+        }
+      }
+      return span;
+    }
+
+    /**
+     * The 1, 2, 2.5 or 5 times a power of ten that cuts the magnitude axes of a bar chart, reaching
+     * <code>extent</code> from the centre, into closest to three intervals.
+     */
+    private static double barMagnitudeStep(double extent) {
+      if (!(extent > 0.0 && Double.isFinite(extent))) {
+        return 1.0;
+      }
+      double base = Math.pow(10.0, Math.floor(Math.log10(extent)) - 1.0);
+      double best = 1.0;
+      double bestOff = Double.POSITIVE_INFINITY;
+      for (double scale : new double[] {1.0, 10.0, 100.0}) {
+        for (double m : new double[] {1.0, 2.0, 2.5, 5.0}) {
+          double s = m * scale * base;
+          double off = Math.abs(extent / s - 3.0);
+          if (off < bestOff) {
+            bestOff = off;
+            best = s;
+          }
+        }
+      }
+      return best;
+    }
+  }
+
+  /**
+   * <code>PairedSmoothHistogram(left, right)</code> and
+   * <code>PairedSmoothHistogram(left, right, bw)</code> - the Gaussian kernel density estimates of
+   * two data sets drawn back to back along a vertical value axis, the first to the left. Each curve
+   * spans the range a smooth histogram draws its data over, and the halves are a tenth of the
+   * largest density apart.
+   */
+  public static final class PairedSmoothHistogram extends AbstractFunctionEvaluator {
+    private static final int SAMPLES = 400;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int positional = positional(ast);
+      if (positional < 2 || positional > 3) {
+        return F.NIL;
+      }
+      double fixed = Double.NaN;
+      if (positional == 3 && !ast.arg3().isAutomatic()) {
+        fixed = ast.arg3().evalfNaN();
+        if (!(fixed > 0.0)) {
+          return F.NIL;
+        }
+      }
+      double[][] halves = new double[2][];
+      double[][] samples = new double[2][];
+      double lo = Double.POSITIVE_INFINITY;
+      double hi = Double.NEGATIVE_INFINITY;
+      double largest = Double.MIN_VALUE;
+      for (int side = 0; side < 2; side++) {
+        double[] values = numbers(ast.get(side + 1));
+        if (values == null) {
+          return F.NIL;
+        }
+        double h = Double.isNaN(fixed) ? silverman(values) : fixed;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (double v : values) {
+          min = Math.min(min, v);
+          max = Math.max(max, v);
+        }
+        double a = min - SMOOTH_MARGIN * h;
+        double b = max + SMOOTH_MARGIN * h;
+        lo = Math.min(lo, a);
+        hi = Math.max(hi, b);
+        // the ends of each curve are on the axis
+        halves[side] = new double[SAMPLES + 1];
+        samples[side] = new double[SAMPLES + 1];
+        double norm = 1.0 / (values.length * h * Math.sqrt(2.0 * Math.PI));
+        for (int k = 0; k <= SAMPLES; k++) {
+          engine.checkTimeLimit();
+          double t = a + (b - a) * k / SAMPLES;
+          double density = 0.0;
+          if (k > 0 && k < SAMPLES) {
+            for (double v : values) {
+              double u = (t - v) / h;
+              density += Math.exp(-0.5 * u * u);
+            }
+            density *= norm;
+          }
+          halves[side][k] = t;
+          samples[side][k] = density;
+          largest = Math.max(largest, density);
+        }
+      }
+      double gap = 0.05 * largest;
+      IASTAppendable curves = F.ListAlloc(4);
+      // the first colour of the plot cycle
+      curves.append(F.RGBColor(0.24, 0.6, 0.8));
+      curves.append(F.AbsoluteThickness(F.C2));
+      for (int side = 0; side < 2; side++) {
+        double sign = side == 0 ? -1.0 : 1.0;
+        IASTAppendable points = F.ListAlloc(SAMPLES + 1);
+        for (int k = 0; k <= SAMPLES; k++) {
+          points.append(
+              F.List(F.num(sign * (gap + samples[side][k])), F.num(halves[side][k])));
+        }
+        curves.append(F.Line(points));
+      }
+      return pairedGraphics(F.List(curves,
+          PairedAxis.of(lo, hi, 0.0).primitives(gap, gap + largest, PairedAxis.SMOOTH)), ast);
     }
 
     @Override

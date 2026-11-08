@@ -57,6 +57,16 @@ public class NumberTest extends ExprEvaluatorTestCase {
     assertEquals(f0.powerRational(2).toString(), "25/196");
   }
 
+  @Test
+  public void testApcomplexIntegerPower() {
+    // an integer exponent multiplies: the square of an imaginary number is real and its cube
+    // imaginary, without rounding noise in the other part
+    check("w = N(I*(1/3 + Sqrt(2)), 120); {Head(w^2), Im(w^2), Re(w^3), Head(w^(-2)), Im(w^(-2))}", //
+        "{Real,0.0,0,Real,0.0}");
+    check("N(w^2, 30)", //
+        "-3.05392015269317447697890359392");
+  }
+
   /**
    * Format a double value with a <code>java.text.DecimalFormat</code> object.
    *

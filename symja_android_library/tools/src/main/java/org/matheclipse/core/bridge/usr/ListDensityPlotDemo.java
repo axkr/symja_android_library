@@ -21,7 +21,7 @@ public class ListDensityPlotDemo {
     // data = Table[Sin[j^2 + i], {i, 0, Pi, Pi/5}, {j, 0, Pi, Pi/5}];
     IAST d = F.subdivide(Math.PI, 5);
     IAST matrix =
-        F.matrix((i, j) -> S.Sin.of(engine, d.get(j + 1).multiply(d.get(j + 1)).add(d.get(i + 1))), //
+        F.matrix((i, j) -> S.Sin.of(engine, d.get(j + 1).multiply(d.get(j + 1)).plus(d.get(i + 1))), //
             6, 6);
     System.out.println(LinearAlgebraUtil.dimensions(matrix));
     for (int degree = 0; degree < 5; ++degree) {

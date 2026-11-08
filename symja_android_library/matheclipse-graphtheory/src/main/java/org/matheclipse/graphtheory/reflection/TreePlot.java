@@ -119,6 +119,6 @@ public class TreePlot extends AbstractFunctionOptionEvaluator {
     newSymbol.putMessage(org.matheclipse.core.patternmatching.IPatternMatcher.SET, "rp",
         F.stringx("The second argument `1` of TreePlot must be one of Top, Bottom, Left, Right or Center."));
     setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
-        GraphGraphics.defaultGraphOptionValues());
+        GraphGraphics.defaultGraphOptionValues(F.stringx("LayeredEmbedding")));
   }
 }

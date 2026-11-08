@@ -14,7 +14,7 @@ import org.matheclipse.core.expression.F;
 public class TraceFormExample {
 
   public static void main(String[] args) {
-    F.initSymbols();
+    F.initSymja();
     ExprEvaluator util = new ExprEvaluator();
     for (String input : new String[] { //
         "TeXForm(TraceForm(D(Sin(x^2)*x, x)))", //

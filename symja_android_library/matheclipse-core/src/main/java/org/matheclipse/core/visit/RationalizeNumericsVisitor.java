@@ -123,7 +123,7 @@ public class RationalizeNumericsVisitor extends VisitorExpr {
       if (realPart == null || imaginaryPart == null) {
         return element;
       }
-      return F.complex(realPart, imaginaryPart);
+      return F.CC(realPart, imaginaryPart);
     }
     return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
   }

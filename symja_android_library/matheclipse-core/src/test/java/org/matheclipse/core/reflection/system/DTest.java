@@ -619,8 +619,8 @@ public class DTest extends ExprEvaluatorTestCase {
     // bounds by substituting x->1 and x->3 into the summand (Limit of a RootSum), matching
     // -RootSum(...,Log(1-#1)/...&) + RootSum(...,Log(3-#1)/...&).
     check("rs=Integrate(1/(x^5 + 11 x + 1), {x, 1, 3})", //
-        "-RootSum(#1^5+11*#1+1&,Log(1-#1)/(5*#1^4+11)&)+RootSum(#1^5+11*#1+1&,Log(3-#1)/(\n"
-            + "5*#1^4+11)&)");
+        "-RootSum(1+11*#1+#1^5&,Log(1-#1)/(11+5*#1^4)&)+RootSum(1+11*#1+#1^5&,Log(3-#1)/(\n"
+            + "11+5*#1^4)&)");
     // The result is a constant (free of x), so its derivative is 0.
     check("D(rs,x)", //
         "0");

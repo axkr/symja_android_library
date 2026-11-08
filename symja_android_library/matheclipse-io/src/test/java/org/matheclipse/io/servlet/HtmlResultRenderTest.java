@@ -18,7 +18,7 @@ public class HtmlResultRenderTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   @Test

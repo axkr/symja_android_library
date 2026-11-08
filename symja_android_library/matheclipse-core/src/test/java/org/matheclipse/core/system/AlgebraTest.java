@@ -84,6 +84,69 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCoefficientOfPowerForm() {
+    // a power x^k as the form: x^(j*k) is (x^k)^j
+    check("Coefficient(u+v*y^3+w*y^6, y^3, 2)", //
+        "w");
+    check("Coefficient(u+v*y^2+w*y^4, y^2, 0)", //
+        "u");
+    check("Coefficient(u+v*y^2+w*y^4, y^2, 1)", //
+        "v");
+    check("Coefficient((u+v*y^2)^2, y^2, 2)", //
+        "v^2");
+    check("Exponent(u+v*y^3+w*y^9, y^3)", //
+        "3");
+    check("PolynomialQ(1+y^2+y^4, y^2)", //
+        "True");
+    check("PolynomialQ(1+y^2+y^3, y^2)", //
+        "False");
+    check("PolynomialQ(1+y+y^2, y^2)", //
+        "False");
+    // a power inside a function is part of a coefficient
+    check("Coefficient(Sin(y^4) + b*y^2, y^2, 0)", //
+        "Sin(y^4)");
+    check("Coefficient(Sin(y^4) + b*y^2, y^2)", //
+        "b");
+    check("CoefficientList(u+v*y^2+w*y^4, y^2)", //
+        "{u,v,w}");
+    check("CoefficientList((u+v*y^3)^2, y^3)", //
+        "{u^2,2*u*v,v^2}");
+    check("CoefficientList(u+v*y^2+w*y^3, y^2)", //
+        "{u+w*y^3,v}");
+  }
+
+  @Test
+  public void testTogetherFractionalPowers() {
+    // the bases are put over one denominator, the fractional powers are not multiplied out
+    check("Together(z^k/((1+z/p)^(7/2)*(1+z/q)^(3/2)))", //
+        "z^k/(((p+z)/p)^(7/2)*((q+z)/q)^(3/2))");
+    check("Together((1+z/p)^(5/2)*(1+z/q)^(5/2))", //
+        "((p+z)/p)^(5/2)*((q+z)/q)^(5/2)");
+    check("Together(1/((1-2*z/(s+Sqrt(t)))^(5/2)*(1-2*z/(s-Sqrt(t)))^(5/2)))", //
+        "1/(((s-Sqrt(t)-2*z)/(s-Sqrt(t)))^(5/2)*((s+Sqrt(t)-2*z)/(s+Sqrt(t)))^(5/2))");
+    // also next to a sum factor
+    check("Together((u+v)*(1+z/p)^(5/2)*(1+z/q)^(5/2))", //
+        "u*((p+z)/p)^(5/2)*((q+z)/q)^(5/2)+v*((p+z)/p)^(5/2)*((q+z)/q)^(5/2)");
+    // a term of a sum is split, so that it combines with the other powers of its base
+    check("Together(1/Sqrt(1+1/z)+(1+1/z)^(5/2))", //
+        "(1+3*z+3*z^2+2*z^3)/(z^3*Sqrt((1+z)/z))");
+  }
+
+  @Test
+  public void testPossibleZeroQExpandedArguments() {
+    // function arguments which are equal once expanded, in an expression too large for a full
+    // ExpandAll
+    check("dd = Sum((y+j)^(1+k)*Hypergeometric2F1(1/2+j,k,3/2+k,(3*y)/(4*u-(v-Sqrt(v^2-w))*t))"
+        + "/Sqrt(1-(3*y)/(4*u-(v+Sqrt(v^2-w))*t))/(t*(1+k)), {j,1,3}) - "
+        + "Sum((y+j)^(1+k)*Hypergeometric2F1(1/2+j,k,3/2+k,(3*y)/(4*u-v*t+Sqrt(v^2-w)*t))"
+        + "/Sqrt(1+(-3*y)/(4*u-v*t-Sqrt(v^2-w)*t))/(t*(1+k)), {j,1,3});" //
+        + "{LeafCount(dd) > 200, PossibleZeroQ(dd)}", //
+        "{True,True}");
+    check("PossibleZeroQ(dd + (y+1)^(1+k)*Hypergeometric2F1(1/2,k,3/2+k,(3*y)/(4*u-v*t)))", //
+        "False");
+  }
+
+  @Test
   public void testCoefficient() {
     check("Coefficient(x^2 + 3*x + 2, x, 2)", //
         "1");

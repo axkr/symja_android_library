@@ -1935,10 +1935,13 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
     }
     // What is solved is the whole equation and not only its left side: plusAST is equal to
     // exprWithoutVariable, which is not always zero.
-    IExpr termsEqualZero = exprWithoutVariable.isZero() //
-        ? engine.evaluateNIL(F.TrigToExp(plusAST))
-        : engine.evaluateNIL(F.TrigToExp(F.Subtract(plusAST, exprWithoutVariable)));
-    if (termsEqualZero.isPresent()) {
+    IExpr terms = exprWithoutVariable.isZero() //
+        ? plusAST
+        : engine.evaluate(F.Subtract(plusAST, exprWithoutVariable));
+    IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(terms));
+    // TrigToExp() keeps the arguments of undefined functions; an unchanged equation would be
+    // solved again here
+    if (termsEqualZero.isPresent() && !termsEqualZero.equals(terms)) {
       IExpr result = solveTransformed(termsEqualZero, variable, multipleValues, engine);
       if (result.isPresent()) {
         // Inverse functions are being used. Values may be lost for multivalued inverses.

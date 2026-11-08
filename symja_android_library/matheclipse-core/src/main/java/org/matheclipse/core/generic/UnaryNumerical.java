@@ -1,5 +1,6 @@
 package org.matheclipse.core.generic;
 
+import java.util.function.DoubleConsumer;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.UnaryOperator;
@@ -41,6 +42,9 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
 
   /** Number of sample points requested, see {@link #sampleCount()}. */
   private int fSampleCount = 0;
+
+  /** Told the position of every sample, or <code>null</code>; see {@link #setMonitor}. */
+  private DoubleConsumer fMonitor = null;
 
   UnaryNumerical fFirstDerivative = null;
 
@@ -265,9 +269,23 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     this.fPrecision = digits;
   }
 
+  /**
+   * Tell <code>monitor</code> the position of every sample taken through {@link #value(double)} or
+   * {@link #applyAsDouble(double)}, before it is evaluated; an <code>EvaluationMonitor</code> is
+   * run this way.
+   *
+   * @param monitor the monitor, or <code>null</code> for none
+   */
+  public void setMonitor(DoubleConsumer monitor) {
+    this.fMonitor = monitor;
+  }
+
   @Override
   public double value(double value) {
     fSampleCount++;
+    if (fMonitor != null) {
+      fMonitor.accept(value);
+    }
     if (fCompiled != null && fPrecision <= 15) {
       Double compiled = valueCompiled(value);
       if (compiled != null) {
@@ -420,6 +438,9 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
   // CPD-ON
   public double applyAsDouble(double value) {
     fSampleCount++;
+    if (fMonitor != null) {
+      fMonitor.accept(value);
+    }
     if (fPrecision > 15) {
       return valueWithPrecision(value);
     }

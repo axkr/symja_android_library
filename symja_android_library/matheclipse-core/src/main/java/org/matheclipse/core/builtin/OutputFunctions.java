@@ -55,9 +55,10 @@ public final class OutputFunctions {
     private static void init() {
       S.AccountingForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.ACCOUNTING));
       S.BaseForm.setEvaluator(new BaseForm());
-      S.CForm.setEvaluator(new CForm());
+      S.CForm.setEvaluator(new CodeForm());
       S.DecimalForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.DECIMAL));
       S.EngineeringForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.ENGINEERING));
+      S.FortranForm.setEvaluator(new CodeForm());
       S.FromRomanNumeral.setEvaluator(new FromRomanNumeral());
       S.FullForm.setEvaluator(new FullForm());
       S.HoldForm.setEvaluator(new HoldForm());
@@ -237,15 +238,15 @@ public final class OutputFunctions {
     }
   }
 
-  private static class CForm extends AbstractCoreFunctionEvaluator {
+  /**
+   * <code>CForm(expr)</code> and <code>FortranForm(expr)</code> are display wrappers: the printer
+   * writes the C or Fortran text of <code>expr</code>, see
+   * {@link org.matheclipse.core.form.output.CodeFormPrinter}.
+   */
+  private static class CodeForm extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // CFormUtilities texUtil = new CFormUtilities(engine, engine.isRelaxedSyntax());
-      // IExpr arg1 = engine.evaluate(ast.arg1());
-      // StringBuilderWriter stw = new StringBuilderWriter();
-      // texUtil.toCForm(arg1, stw);
-      // return F.$str(stw.toString());
       return F.NIL;
     }
 
@@ -256,12 +257,7 @@ public final class OutputFunctions {
 
     @Override
     public int status() {
-      return ImplementationStatus.NO_SUPPORT;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 

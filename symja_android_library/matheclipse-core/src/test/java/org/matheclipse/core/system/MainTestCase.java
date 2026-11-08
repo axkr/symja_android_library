@@ -16,18 +16,13 @@ import org.matheclipse.parser.client.ParserConfig;
 /** Tests system.reflection classes */
 public class MainTestCase extends ExprEvaluatorTestCase {
 
-  public MainTestCase() {
-    Config.SERVER_MODE = true;
-  }
 
   @Override
-  public void check(EvalEngine engine, boolean configMode, IAST ast, String strResult) {
-    boolean mode = Config.SERVER_MODE;
+  public void check(EvalEngine engine, boolean evaluate, IAST ast, String strResult) {
     try {
       StringWriter buf = new StringWriter();
 
-      Config.SERVER_MODE = configMode;
-      if (Config.SERVER_MODE) {
+      if (evaluate) {
         IAST inExpr = ast;
         TimeConstrainedEvaluator utility =
             new TimeConstrainedEvaluator(engine, false, Config.FOREVER, true);
@@ -44,8 +39,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     } catch (Exception e) {
       e.printStackTrace();
       assertEquals(e.getMessage(), "");
-    } finally {
-      Config.SERVER_MODE = mode;
     }
   }
 
@@ -405,7 +398,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Sqrt(I*(7/3))", "(-1)^(1/4)*Sqrt(7/3)");
 
     check("(-I*1/16)/E^(I*4*x)+I*1/8/E^(I*2*x)", //
-        "(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)");
+        "(I*1/8)/E^(I*2*x)+(-I*1/16)/E^(I*4*x)");
   }
 
   @Test
@@ -962,7 +955,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "Sin(x)^Cos(x)*(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))");
     check("Trace(D(Sin(x)^Cos(x),x))", //
         "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{{{{Derivative(\n"
-            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x),-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{{{Derivative(\n"
+            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x),-Sin(x)},(-Sin(x))*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{{{Derivative(\n"
             + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)},{{Csc(x)^1,Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},Sin(x)^Cos(x)*(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))},Sin(x)^Cos(x)*(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))}");
   }
 
@@ -3566,7 +3559,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem419() {
-    check("TrigToExp(a+b+Sin(c+d))", "a+b+(I*1/2)/E^(I*(c+d))-I*1/2*E^(I*(c+d))");
+    check("TrigToExp(a+b+Sin(c+d))", "a+b+(I*1/2)/E^(I*c+I*d)-I*1/2*E^(I*c+I*d)");
     check("TrigToExp(Cos(x)+f(a))", "1/(2*E^(I*x))+E^(I*x)/2+f(a)");
     check("TrigToExp(Tan(x))", "(I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))");
     check("TrigToExp(ArcSin(x))", "-I*Log(I*x+Sqrt(1-x^2))");

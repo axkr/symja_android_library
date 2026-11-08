@@ -77,9 +77,8 @@ public class VisitorReplacePart extends AbstractVisitor {
       }
       if (heads == COMPARE_TERNARY.FALSE) {
         // if set explicitly to FALSE, then startOffset is always 1, otherwise startOffset may be
-        // changed in initPatternMatcher()
+        // changed in initPatternMatcher(); a literal negative position still reaches the head
         startOffset = 1;
-        negativeHead = false;
       }
     }
   }
@@ -97,8 +96,8 @@ public class VisitorReplacePart extends AbstractVisitor {
     startOffset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
     initPatternMatcher(lhs, rhs, heads);
     if (heads == COMPARE_TERNARY.FALSE) {
+      // a literal negative position still reaches the head
       startOffset = 1;
-      negativeHead = false;
     }
   }
 

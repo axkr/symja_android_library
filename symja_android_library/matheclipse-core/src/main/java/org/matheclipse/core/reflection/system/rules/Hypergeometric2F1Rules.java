@@ -13,10 +13,13 @@ public class Hypergeometric2F1Rules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 97 };
+  final public static int[] SIZES = { 2, 97 };
 
   final public static IAST RULES = List(
     IInit(Hypergeometric2F1, SIZES),
+    // Hypergeometric2F1(1/2,1/2,1,1)=Infinity
+    ISet(Hypergeometric2F1(C1D2,C1D2,C1,C1),
+      CInfinity, true),
     // Hypergeometric2F1(1/2,3/2,1,2)=((-1)*2*EllipticE(2))/Pi
     ISet(Hypergeometric2F1(C1D2,QQ(3L,2L),C1,C2),
       Times(CN2,Power(Pi,CN1),EllipticE(C2)), true),
@@ -299,8 +302,8 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(1,1,1/2,z_):=-(1+(Sqrt(z)*ArcSin(Sqrt(z)))/Sqrt(1-z))/(-1+z)
     ISetDelayed(Hypergeometric2F1(C1,C1,C1D2,z_),
       Times(CN1,Power(Plus(CN1,z),CN1),Plus(C1,Times(Power(Subtract(C1,z),CN1D2),Sqrt(z),ArcSin(Sqrt(z)))))),
-    // Hypergeometric2F1(1,b_?(#1=!=1&),2,z_):=-(-1+(1-z)^b+z)/((1-z)^b*(-1+b)*z)
-    ISetDelayed(Hypergeometric2F1(C1,PatternTest(b_,Function(UnsameQ(Slot1,C1))),C2,z_),
+    // Hypergeometric2F1(1,b_?(#1=!=1&&!(IntegerQ(#1)&&#1>2)&),2,z_):=-(-1+(1-z)^b+z)/((1-z)^b*(-1+b)*z)
+    ISetDelayed(Hypergeometric2F1(C1,PatternTest(b_,Function(And(UnsameQ(Slot1,C1),Not(And(IntegerQ(Slot1),Greater(Slot1,C2)))))),C2,z_),
       Times(CN1,Power(Times(Power(Subtract(C1,z),b),Plus(CN1,b),z),CN1),Plus(CN1,Power(Subtract(C1,z),b),z))),
     // Hypergeometric2F1(1,2,3/2,a_.*z_.^n_.):=1/(2*(1-a*z^n))+ArcSin(Sqrt(a)*z^(n/2))/(z^(n/2)*2*Sqrt(a)*(1-a*z^n)^(3/2))
     ISetDelayed(Hypergeometric2F1(C1,C2,QQ(3L,2L),Times(a_DEFAULT,Power(z_DEFAULT,n_DEFAULT))),
@@ -317,11 +320,11 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(a_,b_,c_,1):=(Gamma(c)*Gamma(-a-b+c))/(Gamma(-a+c)*Gamma(-b+c))/;Re(-a-b+c)>0
     ISetDelayed(Hypergeometric2F1(a_,b_,c_,C1),
       Condition(Times(Gamma(c),Power(Times(Gamma(Plus(Negate(a),c)),Gamma(Plus(Negate(b),c))),CN1),Gamma(Plus(Negate(a),Negate(b),c))),Greater(Re(Plus(Negate(a),Negate(b),c)),C0))),
-    // Hypergeometric2F1(a_,b_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z*a/(-1+b)-z*b/(-1+b)+z/(-1+b))/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(-1+b-c)&&!PossibleZeroQ(-1+z)
+    // Hypergeometric2F1(a_,b_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z*a/(-1+b)-z*b/(-1+b)+z/(-1+b))/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<=0)&&PossibleZeroQ(-1+b-c)&&!PossibleZeroQ(-1+z)
     ISetDelayed(Hypergeometric2F1(a_,b_,c_,z_),
-      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,z,Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z))),And(NumberQ(b),NumberQ(c),Not(And(IntegerQ(c),Less(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c))),Not(PossibleZeroQ(Plus(CN1,z)))))),
-    // Hypergeometric2F1(b_,a_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z*a/(-1+b)-z*b/(-1+b)+z/(-1+b))/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(-1+b-c)&&!PossibleZeroQ(-1+z)
+      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,z,Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z))),And(NumberQ(b),NumberQ(c),Not(And(IntegerQ(c),LessEqual(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c))),Not(PossibleZeroQ(Plus(CN1,z)))))),
+    // Hypergeometric2F1(b_,a_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z*a/(-1+b)-z*b/(-1+b)+z/(-1+b))/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<=0)&&PossibleZeroQ(-1+b-c)&&!PossibleZeroQ(-1+z)
     ISetDelayed(Hypergeometric2F1(b_,a_,c_,z_),
-      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,z,Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z))),And(NumberQ(b),NumberQ(c),Not(And(IntegerQ(c),Less(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c))),Not(PossibleZeroQ(Plus(CN1,z))))))
+      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,z,Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z))),And(NumberQ(b),NumberQ(c),Not(And(IntegerQ(c),LessEqual(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c))),Not(PossibleZeroQ(Plus(CN1,z))))))
   );
 }

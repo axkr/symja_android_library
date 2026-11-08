@@ -165,7 +165,8 @@ public final class LegendRenderer {
     if (markerSource != null && markerSource.isList()) {
       IAST list = (IAST) markerSource;
       if (index < list.argSize()) {
-        Color explicit = ColorUtil.parse(list.get(index + 1));
+        // a swatch may be a Directive or a list of directives, such as the ChartStyle it shows
+        Color explicit = ColorUtil.parseDirective(list.get(index + 1));
         if (explicit != null) {
           return explicit;
         }

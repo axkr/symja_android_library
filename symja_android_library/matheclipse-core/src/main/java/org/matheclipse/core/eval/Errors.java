@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -246,6 +246,7 @@ public class Errors {
       "Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.", //
       "eqn", "`1` is not an equation.", //
       "error", "`1`", // without terminating '.'
+      "estmd", "Unable to estimate a reference distribution from the data.", //
       "exact", "Argument `1` is not an exact number.", //
       "exdims", "The dimensions cannot be determined from the position `1`.", //
       "experimental", "Experimental implementation (search in Github issues for identifier `1`).",
@@ -383,6 +384,8 @@ public class Errors {
       "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
       "libload", "The function `1` was not loaded from the file `2`.", //
       "lim", "Limit specification `1` is not of the form x->x0.", //
+      "precset",
+      "Cannot set $MaxExtraPrecision to `1`; value must be a non-negative number or Infinity.", //
       "limset",
       "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
       "linobj",
@@ -393,6 +396,9 @@ public class Errors {
       "listofints", "List of Java int numbers expected in `1`.", //
       "listoflongs", "List of Java long numbers expected in `1`.", //
       "listrp", "List or SparseArray or structured array expected at position `1` in `2`.", //
+      "loc", "The location function `1` evaluated to a list.", //
+      "loc2",
+      "The location function `1` evaluated to a list for one or more of the columns.", //
       "locked", "Symbol `1` is locked.", //
       "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
       "lrank", "Rank `1` is incompatible with group of order `2`.", //
@@ -457,6 +463,7 @@ public class Errors {
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
       "nmet", "Unable to find the domain with the available methods.", //
+      "nmint", "`1` is not a machine-sized integer.", //
       "nmod", "`1` is not valid modulo `2`.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
       "nnintprm",
@@ -553,6 +560,7 @@ public class Errors {
       "pair", "Argument `1` is expected to be a pair, a list of pairs or an Interval object.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "par", "Inappropriate parameter: `1`.", //
+      "parinv", "Invalid image effect parameters given in `1`.", //
       "parmthd",
       "Value of option `1` -> `2` is not Automatic, \"CoarsestGrained\", \"FinestGrained\", \"EvaluationsPerKernel\" -> e or \"ItemsPerEvaluation\" -> m.", //
       "partd", "Part specification `1` is longer than depth of object.", //
@@ -645,6 +653,9 @@ public class Errors {
       "Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.", //
       "sandbox", "The operation `1` is not allowed in sandbox mode.", //
       "schurf", "`1` has received a matrix with infinite precision.", //
+      "scl", "The scale function `1` evaluated to a list or zero.", //
+      "scl2",
+      "The scale function `1` evaluated to a list or zero for one or more of the columns.", //
       "sclr", "The scalar expression `1` does not have a `2`.", //
       "sdatc", "Coefficient specification `1` in `2` is not a list.", //
       "sdatd",
@@ -740,6 +751,7 @@ public class Errors {
       "The weights given on the left-hand side of `1` should have the same length as the data given on the right-hand side.", //
       "write", "Tag `1` in `2` is Protected.", //
       "wrsym", "Symbol `1` is Protected.", //
+      "spsym", "Special symbol `1` cannot be cleared.", //
       "wtspec",
       "The weight specification at position `1` of rule specification `2` should be `3` or an array of non-negative machine integers with dimensions `4`.", //
       "ucdec", "An invalid unicode sequence was encountered and ignored.", //
@@ -1227,7 +1239,7 @@ public class Errors {
       return message;
     }
     for (int i = 1; i < listOfArgs.size(); i++) {
-      message = StringUtils.replace(message, "`" + (i) + "`",
+      message = Strings.CS.replace(message, "`" + (i) + "`",
           shorten(listOfArgs.get(i), engine.getOutputSizeLimit()));
     }
     engine.setMessageShortcut(messageShortcut);
@@ -1237,7 +1249,7 @@ public class Errors {
   private static String rawMessage(final IAST list, String message, int maximumLength) {
     for (int i = 2; i < list.size(); i++) {
       message =
-          StringUtils.replace(message, "`" + (i - 1) + "`", shorten(list.get(i), maximumLength));
+          Strings.CS.replace(message, "`" + (i - 1) + "`", shorten(list.get(i), maximumLength));
     }
     return message;
   }

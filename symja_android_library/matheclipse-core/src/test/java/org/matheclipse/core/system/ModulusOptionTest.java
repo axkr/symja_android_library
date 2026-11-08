@@ -32,7 +32,7 @@ public class ModulusOptionTest extends ExprEvaluatorTestCase {
     check("PolynomialLCM(x^2 - 1, x - 1, Modulus -> 6)", //
         "PolynomialLCM(-1+x^2,-1+x,Modulus->6)");
     check("PolynomialExtendedGCD(x^2 - 1, x - 1, x, Modulus -> 6)", //
-        "PolynomialExtendedGCD(-1+x^2,-1+x,x,Modulus->6)");
+        "PolynomialExtendedGCD(x^2-1,x-1,x,Modulus->6)");
     check("Resultant(x^2 - 1, x - 2, x, Modulus -> 6)", //
         "Resultant(-1+x^2,-2+x,x,Modulus->6)");
     check("Factor(x^2 + 1, Modulus -> 1)", //

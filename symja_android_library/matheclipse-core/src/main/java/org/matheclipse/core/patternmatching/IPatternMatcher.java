@@ -247,7 +247,7 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
       return F.HoldPattern(temp);
     }
     if (isFlagOn(LITERAL)) {
-      return F.Literal(temp);
+      return F.unaryAST1(S.Literal, temp);
     }
     return temp;
   }

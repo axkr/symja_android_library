@@ -386,10 +386,21 @@ public abstract class Prim2D {
     public final double dirY;
     public final Color frameColor;
     public final Color background;
+    /** A shift of the label in printer's points, x to the right and y up. */
+    public final double shiftX;
+    public final double shiftY;
 
     public TextPrim(String text, double x, double y, double offsetX, double offsetY, double dirX,
         double dirY, Color frameColor, Color background, Style2D style) {
+      this(text, x, y, offsetX, offsetY, dirX, dirY, frameColor, background, style, 0.0, 0.0);
+    }
+
+    public TextPrim(String text, double x, double y, double offsetX, double offsetY, double dirX,
+        double dirY, Color frameColor, Color background, Style2D style, double shiftX,
+        double shiftY) {
       super(style);
+      this.shiftX = shiftX;
+      this.shiftY = shiftY;
       this.text = text;
       this.x = x;
       this.y = y;

@@ -18,7 +18,7 @@ class SymbolOrderTest {
 
   @BeforeAll
   static void setUp() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   @Test

@@ -13,7 +13,7 @@ public class KeyFreeQ extends AbstractFunctionEvaluator {
     if (ast.isAST2()) {
       // the key is a pattern: KeyFreeQ(<|x->1,y->2|>, _) is False
       IExpr hasKey = KeyMemberQ.hasKey(ast, engine);
-      return hasKey.isPresent() ? F.bool(!hasKey.isTrue()) : F.NIL;
+      return hasKey.isPresent() ? F.booleSymbol(!hasKey.isTrue()) : F.NIL;
     }
     return F.NIL;
   }

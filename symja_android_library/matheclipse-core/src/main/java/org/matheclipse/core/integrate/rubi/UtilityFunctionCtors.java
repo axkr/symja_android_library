@@ -2888,6 +2888,7 @@ public class UtilityFunctionCtors {
    * @param kryo
    * @throws ClassNotFoundException
    */
+  @SuppressWarnings("deprecation")
   public static void registerKryo(Kryo kryo) throws ClassNotFoundException {
     kryo.register(EqQ.class, new KryoUtil.IASTSerializer());
     kryo.register(FalseQ.class, new KryoUtil.IASTSerializer());

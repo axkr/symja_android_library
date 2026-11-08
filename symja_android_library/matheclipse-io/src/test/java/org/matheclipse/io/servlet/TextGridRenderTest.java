@@ -19,7 +19,7 @@ public class TextGridRenderTest {
 
   @BeforeAll
   public static void beforeAll() {
-    F.initSymbols();
+    F.initSymja();
   }
 
   @Test

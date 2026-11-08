@@ -9,6 +9,7 @@ import tech.tablesaw.api.ColumnType;
  *
  * @deprecated Use {@link BooleanDoubleAggregateFunction} instead
  */
+@Deprecated
 abstract class BooleanNumericFunction extends AggregateFunction<BooleanColumn, Double> {
 
   /**

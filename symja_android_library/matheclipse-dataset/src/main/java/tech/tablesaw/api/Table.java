@@ -1036,6 +1036,7 @@ public class Table extends Relation implements Iterable<Row> {
    * @see #retainColumns(Column[])
    * @deprecated Use {@link #selectColumns(Column[])} instead
    */
+  @Deprecated
   public Table select(Column<?>... columns) {
     return selectColumns(columns);
   }
@@ -1061,6 +1062,7 @@ public class Table extends Relation implements Iterable<Row> {
    * @see #retainColumns(String[])
    * @deprecated Use {@link #selectColumns(String[])} instead
    */
+  @Deprecated
   public Table select(String... columnNames) {
     return selectColumns(columnNames);
   }

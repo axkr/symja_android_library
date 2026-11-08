@@ -877,6 +877,8 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("RegionMeasure(Ellipsoid({0, 0}, {2, 3}))", "6*Pi");
     check("RegionMeasure(Disk({0, 0}, 2))", "4*Pi");
     check("RegionMeasure(Disk())", "Pi");
+    // the area between the radii 1 and 3
+    check("RegionMeasure(Annulus({0, 0}, {1, 3}))", "8*Pi");
     check("RegionMeasure(Rectangle({0, 0}, {2, 3}))", "6");
     check("RegionMeasure(Triangle({{0, 0}, {1, 0}, {0, 1}}))", "1/2");
     check("RegionMeasure(Polygon({{0, 0}, {2, 0}, {2, 2}, {0, 2}}))", "4");

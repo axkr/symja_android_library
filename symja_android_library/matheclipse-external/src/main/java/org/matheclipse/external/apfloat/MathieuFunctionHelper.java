@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 
@@ -719,10 +718,7 @@ final class MathieuFunctionHelper
 
     static void checkInterrupt()
     {
-        if (Thread.currentThread().isInterrupted())
-        {
-            throw new ApfloatInterruptedException("Interrupted");
-        }
+        ApfloatHelperShim.checkInterrupted();
     }
 
     private static boolean isNegligible(Apcomplex term, Apcomplex total, long precision)
