@@ -1229,8 +1229,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     try {
       engine.setNumericMode(true, precision + 15, oldSignificantFigures);
       int sign = 1;
-      Apfloat a = apfloatEnd(min, engine);
-      Apfloat b = apfloatEnd(max, engine);
+      Apfloat a = apfloatEnd(min, precision + 15, engine);
+      Apfloat b = apfloatEnd(max, precision + 15, engine);
       boolean aInfinite = min.isNegativeInfinity() || min.isInfinity();
       boolean bInfinite = max.isNegativeInfinity() || max.isInfinity();
       if ((a == null && !aInfinite) || (b == null && !bInfinite)) {
@@ -1278,13 +1278,22 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     }
   }
 
-  /** The value of a finite end, or <code>null</code>. */
-  private static Apfloat apfloatEnd(IExpr end, EvalEngine engine) {
+  /**
+   * The value of a finite end, or <code>null</code>. An inexact end with fewer digits than
+   * <code>digits</code> (the result of a <code>FindRoot</code> at the same working precision) is
+   * taken as exact to those digits: the quadrature needs its ends with guard digits beyond the
+   * precision of the integral.
+   */
+  private static Apfloat apfloatEnd(IExpr end, long digits, EvalEngine engine) {
     if (end.isDirectedInfinity()) {
       return null;
     }
     IExpr value = engine.evalNumericFunction(end, false);
-    return value.isReal() ? ((IReal) value).apfloatValue() : null;
+    if (!value.isReal()) {
+      return null;
+    }
+    Apfloat apfloat = ((IReal) value).apfloatValue();
+    return apfloat.precision() < digits ? apfloat.precision(digits) : apfloat;
   }
 
   @Override

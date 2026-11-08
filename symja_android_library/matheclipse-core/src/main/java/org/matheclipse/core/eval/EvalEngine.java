@@ -2081,8 +2081,7 @@ public class EvalEngine implements Serializable {
     boolean exactArgument = false;
     for (int i = 1; i < ast.size(); i++) {
       final IExpr arg = ast.get(i);
-      if (arg instanceof ApfloatNum && (((ApfloatNum) arg).isSignificanceTracked()
-          || ((ApfloatNum) arg).apfloatValue().precision() > ParserConfig.MACHINE_PRECISION)) {
+      if (arg instanceof ApfloatNum && hasOwnPrecision((ApfloatNum) arg)) {
         // a number of a precision of its own; a numerical algorithm returns its digits untracked
         precision = Math.max(precision, arg.determinePrecision(false));
       } else if (arg.isList()) {
@@ -2098,6 +2097,20 @@ public class EvalEngine implements Serializable {
     // without an exact argument to convert the precision of the engine stays: a change of it
     // starts a new evaluation epoch
     return exactArgument ? precision : 0L;
+  }
+
+  /**
+   * Test if <code>number</code> brings a precision of its own: a tracked one, or more digits than
+   * machine precision. An exact value in an apfloat (a zero of infinite precision, which a solver
+   * may return) has none - taken as the precision of the evaluation it would ask for infinitely
+   * many digits of every fraction.
+   */
+  private static boolean hasOwnPrecision(ApfloatNum number) {
+    final long digits = number.apfloatValue().precision();
+    if (digits == Apfloat.INFINITE) {
+      return false;
+    }
+    return number.isSignificanceTracked() || digits > ParserConfig.MACHINE_PRECISION;
   }
 
   /**
@@ -2124,8 +2137,7 @@ public class EvalEngine implements Serializable {
       final IExpr element = list.get(i);
       if (element instanceof ApfloatNum) {
         final ApfloatNum number = (ApfloatNum) element;
-        if (number.isSignificanceTracked()
-            || number.apfloatValue().precision() > ParserConfig.MACHINE_PRECISION) {
+        if (hasOwnPrecision(number)) {
           precision = Math.max(precision, number.determinePrecision(false));
         }
       } else if (element.isMachineNumber()) {

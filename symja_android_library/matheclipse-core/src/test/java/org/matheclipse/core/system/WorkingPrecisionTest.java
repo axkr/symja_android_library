@@ -141,4 +141,24 @@ public class WorkingPrecisionTest extends ExprEvaluatorTestCase {
     check("Last(Accumulate(Range(5000)))", //
         "12502500");
   }
+
+  @Test
+  public void testNIntegrateInexactEnds() {
+    // an end of the working precision (a FindRoot result) is taken as exact to its digits: the
+    // integral keeps the working precision
+    check("Precision(NIntegrate(x^2, {x, 0, N(3/7, 40)}, WorkingPrecision -> 40))", //
+        "40");
+    check("Abs(NIntegrate(x^2, {x, 0, N(3/7, 40)}, WorkingPrecision -> 40) - (3/7)^3/3) "
+        + "< 10^-38", //
+        "True");
+  }
+
+  @Test
+  public void testExactValuedApfloatInArguments() {
+    // the zero of infinite precision in the solution doesn't ask for infinitely many digits of 1/10
+    check("c = LinearSolve(N({{1, 0, 0}, {0, 3, 0}, {1, 0, 4}}, 30), {1, 0, 1}); "
+        + "NumberQ(x /. FindRoot(c . x^Range(3) == Sqrt(N(4, 30)) c . (1/10)^Range(3), "
+        + "{x, 1/10}, WorkingPrecision -> 30))", //
+        "True");
+  }
 }
