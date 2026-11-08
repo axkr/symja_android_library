@@ -85,7 +85,40 @@ public class ChartGaugeFilterTest extends ExprEvaluatorTestCase {
         "0");
     check("Cases(DiscretePlot3D(j, {i, 1, 1}, {j, 1, 3}, ExtentSize -> Left), "
         + "_Cuboid, Infinity)[[1]]", //
-        "Cuboid({0.0,0.0,0.0},{1.0,1.0,1.0})");
+        "Cuboid({0.0,0.0,1.0},{1.0,1.0,0.0})");
+  }
+
+  @Test
+  public void testDiscretePlot3DBarsFillingLevel() {
+    // a zero value on the level zero has no bar: i*j is zero in five of nine samples
+    check("Count(DiscretePlot3D(i*j, {i, 0, 2}, {j, 0, 2}, ExtentSize -> Full), _Cuboid, Infinity)", //
+        "4");
+    // Bottom and Top are the lowest and highest value; a value on a nonzero level keeps its flat bar
+    check("Table(Count(DiscretePlot3D(i*j, {i, -1, 1}, {j, -1, 1}, ExtentSize -> Full, "
+        + "Filling -> f), _Cuboid, Infinity), {f, {Automatic, Axis, Bottom, Top, 2, 0, None, False}})", //
+        "{4,4,9,9,9,4,0,0}");
+    // the lowest value is zero, so Bottom is the level zero
+    check("Count(DiscretePlot3D(i*j, {i, 0, 2}, {j, 0, 2}, ExtentSize -> Full, Filling -> Bottom), "
+        + "_Cuboid, Infinity)", //
+        "4");
+    // the first corner is at the value, the second on the filling level
+    check("Cases(DiscretePlot3D(3, {i, 1, 1}, {j, 1, 1}, ExtentSize -> 1, Filling -> 1), "
+        + "_Cuboid, Infinity)", //
+        "{Cuboid({0.5,0.5,3.0},{1.5,1.5,1.0})}");
+    check("Cases(DiscretePlot3D(3, {i, 1, 1}, {j, 1, 1}, ExtentSize -> 1, Filling -> Top), "
+        + "_Cuboid, Infinity)", //
+        "{Cuboid({0.5,0.5,3.0},{1.5,1.5,3.0})}");
+    // the bars of several functions share the level of all their values
+    check("Cases(DiscretePlot3D({i, i + 4}, {i, 1, 1}, {j, 1, 1}, ExtentSize -> 1, "
+        + "Filling -> Top), _Cuboid, Infinity)", //
+        "{Cuboid({0.5,0.5,1.0},{1.5,1.5,5.0}),Cuboid({0.5,0.5,5.0},{1.5,1.5,5.0})}");
+    // a stem reaches from its value down to the filling level; the stems which reach up to the
+    // level and those above it are two lines
+    check("Cases(DiscretePlot3D(i + 1, {i, 2, 2}, {j, 0, 0}, Filling -> 1), _Line, Infinity)", //
+        "{Line({},VertexColors->None),Line({{{2.0,0.0,3.0},{2.0,0.0,1.0}}},VertexColors->None)}");
+    check("Cases(DiscretePlot3D(2*i, {i, -1, 1}, {j, 0, 0}, Filling -> Bottom), _Line, Infinity)", //
+        "{Line({{{-1.0,0.0,-2.0},{-1.0,0.0,-2.0}}},VertexColors->None),"
+            + "Line({{{0.0,0.0,0.0},{0.0,0.0,-2.0}},{{1.0,0.0,2.0},{1.0,0.0,-2.0}}},VertexColors->None)}");
   }
 
   @Test

@@ -390,10 +390,11 @@ public class RegionFunctionTest {
     assertEquals(25, linePoints(polylines + ")"));
     assertEquals(15, linePoints(polylines + ",RegionFunction->Function({x,y,z},y>2))"));
 
+    // the markers of one function are a single point primitive
     String discrete = "DiscretePlot3D(i+j,{i,1,4},{j,1,4}";
-    assertTrue(count("Length(Cases(" + discrete
-        + ",RegionFunction->Function({x,y,z},x>2)),_Polygon|_Line|_Point,Infinity))") //
-        < count("Length(Cases(" + discrete + "),_Polygon|_Line|_Point,Infinity))"));
+    assertEquals(16, count("Length(First(Cases(" + discrete + "),Point(p_):>p,Infinity)))"));
+    assertEquals(8, count("Length(First(Cases(" + discrete
+        + ",RegionFunction->Function({x,y,z},x>2)),Point(p_):>p,Infinity)))"));
   }
 
   // -----------------------------------------------------------------------------------------

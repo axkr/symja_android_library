@@ -87,7 +87,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     // the bar lies right (1), left (-1) of its sample, or around it (0)
     double extentShift = 0.0;
 
-    IExpr extentOption = options[0]; // ExtentSize
+    IExpr extentOption = engine.evaluate(options[0]); // ExtentSize
     if (extentOption.isNone()) {
       pointsOnly = true;
     } else if (extentOption == S.Automatic) {
@@ -180,14 +180,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
     try {
       List<INumber> iValues = parseIterator(iRange, engine);
-      ISymbol iVar = (ISymbol) ((IAST) iRange).arg1();
-
-      List<INumber> jValues = null;
-      ISymbol jVar = null;
-      if (jRange.isList()) {
-        jValues = parseIterator(jRange, engine);
-        jVar = (ISymbol) ((IAST) jRange).arg1();
-      }
+      List<INumber> jValues = jRange.isList() ? parseIterator(jRange, engine) : null;
 
       if (Double.isNaN(extentX)) {
         extentX = extentFractionX * sampleSpacing(iValues) / 2.0;
@@ -198,8 +191,26 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
       boolean autoPlotRange = options[1] == S.Automatic;
 
+      // every function is sampled before anything is drawn: the levels Bottom and Top of the
+      // filling are the lowest and highest value of all of them
+      List<List<PlotData>> datasets = new ArrayList<>(functions.argSize());
+      RegionFunctionFilter region = RegionFunctionFilter.of(options[X_REGION_FUNCTION], engine);
+      double lowest = Double.POSITIVE_INFINITY;
+      double highest = Double.NEGATIVE_INFINITY;
       for (int funcIdx = 1; funcIdx < functions.size(); funcIdx++) {
-        IExpr f = functions.get(funcIdx);
+        IExpr color = defaultColors[(funcIdx - 1) % defaultColors.length];
+        List<PlotData> data = sample(functions.get(funcIdx), iRange, iValues, jRange, jValues,
+            region, color, options[X_EVALUATION_MONITOR], engine);
+        for (PlotData pd : data) {
+          lowest = Math.min(lowest, pd.z);
+          highest = Math.max(highest, pd.z);
+        }
+        datasets.add(data);
+      }
+      // where the stems and bars start, or null for no stems and no bars
+      final Double base = fillingLevel(engine.evaluate(filling), zBase, lowest, highest);
+
+      for (int funcIdx = 1; funcIdx < functions.size(); funcIdx++) {
         IASTAppendable primitives = F.ListAlloc();
 
         // Bars are drawn in the lightened, half transparent face colour; stems and markers in
@@ -211,47 +222,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
           primitives.append(F.EdgeForm(S.None));
         }
 
-        List<PlotData> data = new ArrayList<>();
-        RegionFunctionFilter region = RegionFunctionFilter.of(options[X_REGION_FUNCTION], engine);
-
-        // Generate data dynamically assigning iterators using Block to support HoldAll semantics
-        for (INumber iv : iValues) {
-          IAST iSet = F.Set(iVar, iv);
-
-          if (jValues != null && jVar != null) {
-            for (INumber jv : jValues) {
-              IAST jSet = F.Set(jVar, jv);
-              IAST blockVars = F.List(iSet, jSet);
-              Plot3DTools.monitor(options[X_EVALUATION_MONITOR], engine);
-              IExpr result = engine.evaluate(F.Block(blockVars, f));
-              result = engine.evalN(result); // safely evaluate symbolic constants
-
-              if (result.isNumber()) {
-                double z = result.evalf();
-                double px = iv.evalf();
-                double py = jv.evalf();
-                if (region == null || region.accepts(px, py, z)) {
-                  data.add(new PlotData(px, py, z, color));
-                }
-              }
-            }
-          } else {
-            // 1D iterator creating 3D sequence
-            IAST blockVars = F.List(iSet);
-            Plot3DTools.monitor(options[X_EVALUATION_MONITOR], engine);
-            IExpr result = engine.evaluate(F.Block(blockVars, f));
-            result = engine.evalN(result);
-
-            if (result.isList() && ((IAST) result).size() >= 4) {
-              double px = ((IAST) result).arg1().evalf();
-              double py = ((IAST) result).arg2().evalf();
-              double pz = ((IAST) result).arg3().evalf();
-              if (region == null || region.accepts(px, py, pz)) {
-                data.add(new PlotData(px, py, pz, color));
-              }
-            }
-          }
-        }
+        List<PlotData> data = datasets.get(funcIdx - 1);
 
         // Apply Automatic PlotRange Clamping (Interquartile Range for extreme outliers)
         double minZ = Double.MAX_VALUE;
@@ -298,6 +269,14 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         IASTAppendable markerPoints =
             elementColors == null && plotMarkers.isAutomatic() ? F.ListAlloc(data.size()) : null;
         IASTAppendable markerTarget = markerPoints == null ? primitives : F.ListAlloc();
+        // the stems of one function are two lines: those which reach up to the filling level and
+        // those which stand above it, each from its value down to the level
+        IASTAppendable lowStems = null;
+        IASTAppendable highStems = null;
+        if (useThinLineStyle && base != null && elementColors == null) {
+          lowStems = F.ListAlloc();
+          highStems = F.ListAlloc();
+        }
         for (PlotData pd : data) {
           double z = pd.z;
           if (autoPlotRange) {
@@ -318,26 +297,37 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
             primitives.append(elementColors.color(x, y, z));
           }
           if (pointsOnly || useThinLineStyle) {
-            if (useThinLineStyle && !filling.isNone()) {
+            if (useThinLineStyle && base != null) {
               // A stem with a marker on top. A stem is a line: drawing it as
               // a very thin cuboid instead gave a row of slivers that read as a barcode, and the
               // slivers had to be given a width in data units that means nothing to the reader.
-              primitives.append(F.Line(F.List(F.List(F.num(x), F.num(y), F.num(zBase)),
-                  F.List(F.num(x), F.num(y), F.num(z)))));
+              IAST stem = F.List(F.List(F.num(x), F.num(y), F.num(z)),
+                  F.List(F.num(x), F.num(y), F.num(base)));
+              if (lowStems == null) {
+                // every element takes its own colour
+                primitives.append(F.Line(stem));
+              } else {
+                (z <= base ? lowStems : highStems).append(stem);
+              }
             }
             if (markerPoints != null) {
               markerPoints.append(F.List(F.num(x), F.num(y), F.num(z)));
             } else {
               appendMarker(markerTarget, plotMarkers, colorIdx, x, y, z);
             }
-          } else {
-            // Full Bar
+          } else if (base != null && (z != 0.0 || base != 0.0)) {
+            // a bar from the value down to the filling level; a zero value on the level zero has
+            // no bar, a value on any other level keeps its flat one
             double cx = x + extentShift * extentX;
             double cy = y + extentShift * extentY;
-            IExpr pMin = F.List(F.num(cx - extentX), F.num(cy - extentY), F.num(zBase));
-            IExpr pMax = F.List(F.num(cx + extentX), F.num(cy + extentY), F.num(z));
-            primitives.append(F.Cuboid(pMin, pMax));
+            IExpr top = F.List(F.num(cx - extentX), F.num(cy - extentY), F.num(z));
+            IExpr bottom = F.List(F.num(cx + extentX), F.num(cy + extentY), F.num(base));
+            primitives.append(F.Cuboid(top, bottom));
           }
+        }
+        if (lowStems != null) {
+          primitives.append(F.binaryAST2(S.Line, lowStems, F.Rule(S.VertexColors, S.None)));
+          primitives.append(F.binaryAST2(S.Line, highStems, F.Rule(S.VertexColors, S.None)));
         }
         if (markerPoints != null && markerPoints.argSize() > 0) {
           primitives.append(F.Point(markerPoints));
@@ -362,6 +352,76 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
             F.Rule(S.ScalingFunctions, engine.evaluate(options[4])),
             F.Rule(S.PlotRange, engine.evaluate(options[1])),
             F.Rule(S.Axes, engine.evaluate(options[5]))});
+  }
+
+  /**
+   * The values of <code>f</code> at the samples: a value for each pair of <code>i</code> and
+   * <code>j</code> values, or a point <code>{x, y, z}</code> for each <code>i</code> value without
+   * a <code>j</code> iterator.
+   */
+  private static List<PlotData> sample(IExpr f, IExpr iRange, List<INumber> iValues, IExpr jRange,
+      List<INumber> jValues, RegionFunctionFilter region, IExpr color, IExpr monitor,
+      EvalEngine engine) {
+    ISymbol iVar = (ISymbol) ((IAST) iRange).arg1();
+    List<PlotData> data = new ArrayList<>();
+    // the iterators are assigned in a Block, because the function arrives unevaluated
+    for (INumber iv : iValues) {
+      IAST iSet = F.Set(iVar, iv);
+      if (jValues != null) {
+        ISymbol jVar = (ISymbol) ((IAST) jRange).arg1();
+        for (INumber jv : jValues) {
+          Plot3DTools.monitor(monitor, engine);
+          IExpr result =
+              engine.evalN(engine.evaluate(F.Block(F.List(iSet, F.Set(jVar, jv)), f)));
+          if (result.isNumber()) {
+            double z = result.evalf();
+            double px = iv.evalf();
+            double py = jv.evalf();
+            if (region == null || region.accepts(px, py, z)) {
+              data.add(new PlotData(px, py, z, color));
+            }
+          }
+        }
+      } else {
+        Plot3DTools.monitor(monitor, engine);
+        IExpr result = engine.evalN(engine.evaluate(F.Block(F.List(iSet), f)));
+        if (result.isList() && result.argSize() >= 3) {
+          double px = result.first().evalf();
+          double py = result.second().evalf();
+          double pz = ((IAST) result).arg3().evalf();
+          if (region == null || region.accepts(px, py, pz)) {
+            data.add(new PlotData(px, py, pz, color));
+          }
+        }
+      }
+    }
+    return data;
+  }
+
+  /**
+   * The level the stems and bars start from: the axis level for <code>Automatic</code> and
+   * <code>Axis</code>, the lowest or highest value of all functions for <code>Bottom</code> and
+   * <code>Top</code>, or a given height.
+   *
+   * @param filling the evaluated <code>Filling</code> option
+   * @param axis the level of the axis
+   * @return <code>null</code> for <code>None</code> and <code>False</code>, which draw neither
+   *         stems nor bars
+   */
+  private static Double fillingLevel(IExpr filling, double axis, double lowest, double highest) {
+    if (filling.isNone() || filling.isFalse()) {
+      return null;
+    }
+    if (filling == S.Bottom && lowest <= highest) {
+      return lowest;
+    }
+    if (filling == S.Top && lowest <= highest) {
+      return highest;
+    }
+    if (filling.isReal()) {
+      return filling.evalf();
+    }
+    return axis;
   }
 
   private static double toDouble(IExpr expr, double fallback) {
