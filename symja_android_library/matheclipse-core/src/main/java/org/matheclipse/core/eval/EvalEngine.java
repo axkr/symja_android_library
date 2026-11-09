@@ -5238,7 +5238,7 @@ public class EvalEngine implements Serializable {
           return result;
         } else {
           if (head instanceof BuiltInSymbol) {
-            int requiredMask = UniformFlags.uniformMask((BuiltInSymbol) head);
+            int requiredMask = UniformFlags.uniformMask((IBuiltInSymbol) head);
             if (requiredMask != UniformFlags.NONE && ast.isUniform(requiredMask)) {
               return F.NIL;
             }
@@ -5426,6 +5426,17 @@ public class EvalEngine implements Serializable {
 
   public ContextPath getContextPath() {
     return fContextPath;
+  }
+
+  /**
+   * Replace the context with the same name as <code>context</code> in this engine's context path,
+   * for example by a deserialized context. A context whose name is not in the path is left out.
+   *
+   * @param context the new context
+   * @return <code>false</code> if the context path has no context with this name
+   */
+  public boolean replaceContext(Context context) {
+    return fContextPath.replaceContext(context);
   }
 
   /**

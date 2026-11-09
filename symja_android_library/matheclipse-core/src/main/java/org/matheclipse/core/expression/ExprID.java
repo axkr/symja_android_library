@@ -106,6 +106,21 @@ import org.matheclipse.core.visit.IVisitorLong;
    * @return the <code>F.GLOBAL_IDS[ExprID]</code> expression
    */
   public Object readResolve() {
-    return S.exprID(fExprID); // F.GLOBAL_IDS[fExprID];
+    return resolve(fExprID);
+  }
+
+  /**
+   * The expression stored at <code>id</code>: a built-in symbol or one of the common expressions
+   * {@link S#COMMON_IDS}. Reads the tables of {@link S} directly, so that this class does not call
+   * back into {@link S}, which creates its instances.
+   *
+   * @param id the index of the expression
+   * @return the expression
+   */
+  static IExpr resolve(short id) {
+    if (id >= S.EXPRID_MAX_BUILTIN_LENGTH) {
+      return S.COMMON_IDS[id - S.EXPRID_MAX_BUILTIN_LENGTH];
+    }
+    return S.BUILT_IN_SYMBOLS[id];
   }
 }

@@ -148,13 +148,13 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public IInteger ceilFraction() {
     if (isIntegral()) {
-      return F.ZZ(toBigNumerator());
+      return AbstractIntegerSym.valueOf(toBigNumerator());
     }
     BigInteger div = toBigNumerator().divide(toBigDenominator());
     if (toBigNumerator().signum() > 0) {
       div = div.add(BigInteger.ONE);
     }
-    return F.ZZ(div);
+    return AbstractIntegerSym.valueOf(div);
   }
 
   @Override
@@ -338,13 +338,13 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public IInteger floorFraction() {
     if (isIntegral()) {
-      return F.ZZ(toBigNumerator());
+      return AbstractIntegerSym.valueOf(toBigNumerator());
     }
     BigInteger div = toBigNumerator().divide(toBigDenominator());
     if (toBigNumerator().signum() < 0) {
       div = div.subtract(BigInteger.ONE);
     }
-    return F.ZZ(div);
+    return AbstractIntegerSym.valueOf(div);
   }
 
   /**
@@ -621,7 +621,7 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public IRational normalize() {
     if (toBigDenominator().equals(BigInteger.ONE)) {
-      return F.ZZ(toBigNumerator());
+      return AbstractIntegerSym.valueOf(toBigNumerator());
     }
     if (toBigNumerator().signum() == 0) {
       return F.C0;

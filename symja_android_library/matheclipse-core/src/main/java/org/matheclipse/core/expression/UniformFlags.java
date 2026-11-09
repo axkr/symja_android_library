@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -111,8 +112,20 @@ public final class UniformFlags {
    *
    * @param patternHead the &quot;head test&quot; of a pattern (especially pattern sequence)
    * @return the type mask which can be used in {@link IAST#isUniform(int)}
+   * @deprecated use {@link #uniformMask(IBuiltInSymbol)}
    */
+  @Deprecated
   public static int uniformMask(BuiltInSymbol patternHead) {
+    return uniformMask((IBuiltInSymbol) patternHead);
+  }
+
+  /**
+   * Get the type mask for a &quot;head test&quot; in a pattern.
+   *
+   * @param patternHead the &quot;head test&quot; of a pattern (especially pattern sequence)
+   * @return the type mask which can be used in {@link IAST#isUniform(int)}
+   */
+  public static int uniformMask(IBuiltInSymbol patternHead) {
     switch (patternHead.ordinal()) {
       case ID.Integer:
         // The pattern _Integer stands for a integer number

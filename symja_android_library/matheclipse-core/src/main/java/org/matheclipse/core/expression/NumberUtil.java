@@ -1,10 +1,12 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import org.apfloat.Apfloat;
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -729,5 +731,57 @@ public class NumberUtil {
 
   public static boolean isMachineDouble(double v) {
     return !Double.isNaN(v) && !Double.isInfinite(v) && Double.isFinite(v);
+  }
+
+  /**
+   * A machine double as the binary number it is, rounded to <code>digits</code> digits behind the
+   * decimal point, and to <code>digits</code> digits for a number below 1.
+   *
+   * <p>
+   * <code>new Apfloat(double)</code> has 16 digits and what it holds behind them isn't the number:
+   * <code>7.7*10^17</code> is <code>770000000000000016</code> with more digits. A routine which
+   * adds digits to its arguments - the guard digits of an oscillating function of a large argument
+   * - takes that for the argument, and with it another phase.
+   *
+   * @param value the machine double to convert
+   * @param digits the number of digits, at least 1
+   * @return the value with at least <code>digits</code> digits; zero has no precision
+   */
+  public static Apfloat apfloatOf(final double value, final long digits) {
+    checkFinite(value);
+    if (value == 0.0) {
+      return Apfloat.ZERO;
+    }
+    BigDecimal exact = new BigDecimal(value);
+    final long precision = digits + Math.max(0, exact.precision() - exact.scale());
+    if (exact.precision() > precision) {
+      exact = exact.round(new MathContext((int) precision, RoundingMode.HALF_EVEN));
+    }
+    return new Apfloat(exact).precision(precision);
+  }
+
+  /**
+   * A double as an {@link Apfloat}, declining the ones it has no representation for.
+   *
+   * <p>
+   * {@code new Apfloat(Double.POSITIVE_INFINITY)} answers a {@code NumberFormatException} saying
+   * "Infinity is not a valid number", which escaped from whichever special function or arithmetic
+   * operation was being evaluated - {@code HankelH2(2, Infinity)} and {@code BesselJ(2, Infinity)}
+   * among them. Raised as a Symja exception instead, {@code EvalEngine.evalASTBuiltinFunction}
+   * catches it and the expression comes back unevaluated with a message.
+   *
+   * @param value the argument to convert
+   * @return the value as an {@link Apfloat}
+   */
+  public static Apfloat apfloatOf(final double value) {
+    checkFinite(value);
+    return new Apfloat(value);
+  }
+
+  private static void checkFinite(final double value) {
+    if (!Double.isFinite(value)) {
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
   }
 }

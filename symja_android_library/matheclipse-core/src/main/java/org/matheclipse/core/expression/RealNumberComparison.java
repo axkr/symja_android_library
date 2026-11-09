@@ -6,6 +6,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.ApintMath;
 import org.apfloat.Aprational;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.parser.client.ParserConfig;
@@ -215,7 +216,7 @@ public final class RealNumberComparison {
     }
     if (c == 0 && left instanceof ApfloatNum && right instanceof ApfloatNum) {
       // the less precise one first
-      c = Long.compare(((ApfloatNum) left).precision(), ((ApfloatNum) right).precision());
+      c = Long.compare(((INum) left).precision(), ((INum) right).precision());
     }
     return c;
   }
@@ -239,7 +240,7 @@ public final class RealNumberComparison {
     }
     final boolean zero;
     if (x instanceof ApfloatNum) {
-      Apfloat value = ((ApfloatNum) x).apfloatValue();
+      Apfloat value = ((INum) x).apfloatValue();
       if (value.precision() < ParserConfig.MACHINE_PRECISION) {
         return Double.NaN;
       }
@@ -268,10 +269,10 @@ public final class RealNumberComparison {
         || isMachinePrecision(right);
     long precision = Apfloat.INFINITE;
     if (left instanceof ApfloatNum) {
-      precision = Math.min(precision, ((ApfloatNum) left).precision());
+      precision = Math.min(precision, ((INum) left).precision());
     }
     if (right instanceof ApfloatNum) {
-      precision = Math.min(precision, ((ApfloatNum) right).precision());
+      precision = Math.min(precision, ((INum) right).precision());
     }
     if (machine && precision >= ParserConfig.MACHINE_PRECISION) {
       return new Apfloat(new BigDecimal(Math.scalb(1.0, bits - 53))).precision(Apfloat.INFINITE);
@@ -285,16 +286,16 @@ public final class RealNumberComparison {
 
   private static boolean isMachinePrecision(IReal x) {
     return x instanceof ApfloatNum
-        && ((ApfloatNum) x).precision() == ParserConfig.MACHINE_PRECISION;
+        && ((INum) x).precision() == ParserConfig.MACHINE_PRECISION;
   }
 
   private static long workingDigits(IReal left, IReal right) {
     long digits = ParserConfig.MACHINE_PRECISION + 1;
-    if (left instanceof ApfloatNum && ((ApfloatNum) left).precision() != Apfloat.INFINITE) {
-      digits = Math.max(digits, ((ApfloatNum) left).precision());
+    if (left instanceof ApfloatNum && ((INum) left).precision() != Apfloat.INFINITE) {
+      digits = Math.max(digits, ((INum) left).precision());
     }
-    if (right instanceof ApfloatNum && ((ApfloatNum) right).precision() != Apfloat.INFINITE) {
-      digits = Math.max(digits, ((ApfloatNum) right).precision());
+    if (right instanceof ApfloatNum && ((INum) right).precision() != Apfloat.INFINITE) {
+      digits = Math.max(digits, ((INum) right).precision());
     }
     return digits + 20;
   }

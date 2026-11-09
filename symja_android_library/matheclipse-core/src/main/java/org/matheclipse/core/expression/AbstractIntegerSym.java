@@ -1717,4 +1717,19 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   public byte[] toByteArray() {
     return toBigNumerator().toByteArray();
   }
+
+  @Override
+  public final INumber numericNumber() {
+    return F.num(this);
+  }
+
+  /**
+   * The unevaluated square root <code>Power(this, 1/2)</code>, which the subclasses return when
+   * there is no integer square root. Built here, so that they don't call {@link F} themselves.
+   *
+   * @return <code>Sqrt(this)</code>
+   */
+  protected final IAST sqrtExpr() {
+    return F.Sqrt(this);
+  }
 }

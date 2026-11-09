@@ -278,55 +278,18 @@ public class ApfloatNum implements INum {
    * @return
    */
 
-  /**
-   * An {@link Apfloat} for a machine double, refusing one that cannot be represented.
-   *
-   * <p>
-   * Apfloat has no representation for an infinity or a NaN and answers a
-   * {@link NumberFormatException} for either, which none of the arithmetic below expects: it
-   * escapes the built-in that asked for the operation instead of being reported. A Symja exception
-   * is turned into a message and an unevaluated result by
-   * {@code EvalEngine#evalASTBuiltinFunction}. This mirrors {@code DMath#apfloatOf(double)}.
-   *
-   * @param value the machine double to convert
-   * @return the value as an arbitrary precision number
-   */
+  /** See {@link NumberUtil#apfloatOf(double)}. */
   private static Apfloat apfloatOf(final double value) {
-    if (!Double.isFinite(value)) {
-      throw new SymjaMathException(
-          "cannot convert " + value + " into an arbitrary precision number");
-    }
-    return new Apfloat(value);
+    return NumberUtil.apfloatOf(value);
   }
 
   /**
-   * A machine double as the binary number it is, rounded to <code>digits</code> digits behind the
-   * decimal point, and to <code>digits</code> digits for a number below 1.
+   * A machine double as the binary number it is, with <code>digits</code> digits.
    *
-   * <p>
-   * <code>new Apfloat(double)</code> has 16 digits and what it holds behind them isn't the number:
-   * <code>7.7*10^17</code> is <code>770000000000000016</code> with more digits. A routine which
-   * adds digits to its arguments - the guard digits of an oscillating function of a large argument
-   * - takes that for the argument, and with it another phase.
-   *
-   * @param value the machine double to convert
-   * @param digits the number of digits, at least 1
-   * @return the value with at least <code>digits</code> digits; zero has no precision
+   * @see NumberUtil#apfloatOf(double, long)
    */
   public static Apfloat apfloatOf(final double value, final long digits) {
-    if (!Double.isFinite(value)) {
-      throw new SymjaMathException(
-          "cannot convert " + value + " into an arbitrary precision number");
-    }
-    if (value == 0.0) {
-      return Apfloat.ZERO;
-    }
-    BigDecimal exact = new BigDecimal(value);
-    final long precision = digits + Math.max(0, exact.precision() - exact.scale());
-    if (exact.precision() > precision) {
-      exact = exact.round(new MathContext((int) precision, RoundingMode.HALF_EVEN));
-    }
-    return new Apfloat(exact).precision(precision);
+    return NumberUtil.apfloatOf(value, digits);
   }
 
   public static ApfloatNum valueOf(final double value) {

@@ -563,6 +563,17 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   /**
+   * Replace the context with the same name as <code>context</code> in this context-path, for
+   * example by a deserialized context.
+   *
+   * @param context the new context
+   * @return <code>false</code> if there is no context with this name in the path
+   */
+  public boolean replaceContext(Context context) {
+    return replaceLast(context.getContextName(), context);
+  }
+
+  /**
    * Replace the last context named <code>contextName</code> in this context-path, in the context
    * map and as the current context.
    *

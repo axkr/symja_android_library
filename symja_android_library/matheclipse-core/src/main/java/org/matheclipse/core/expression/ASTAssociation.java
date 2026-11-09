@@ -1201,19 +1201,9 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
     Comparator<Integer> comparator;
     if (comp == null) {
-      comparator = new Comparator<Integer>() {
-        @Override
-        public int compare(Integer i, Integer j) {
-          return getValue(i).compareTo(getValue(j));
-        }
-      };
+      comparator = (i, j) -> getValue(i).compareTo(getValue(j));
     } else {
-      comparator = new Comparator<Integer>() {
-        @Override
-        public int compare(Integer i, Integer j) {
-          return comp.compare(getValue(i), getValue(j));
-        }
-      };
+      comparator = (i, j) -> comp.compare(getValue(i), getValue(j));
     }
     Collections.sort(indices, comparator);
     ASTAssociation result = copy();

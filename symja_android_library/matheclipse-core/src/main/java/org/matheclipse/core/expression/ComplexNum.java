@@ -61,6 +61,19 @@ public class ComplexNum implements IComplexNum {
     return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
   }
 
+  /**
+   * <code>head(nu, z)</code> as a machine complex number, see
+   * {@link DMath#besselComplex(ISymbol, INumber, INumber)}; a failure is reported as message of
+   * <code>head</code>.
+   */
+  static IExpr besselComplexNum(ISymbol head, INumber nu, INumber z) {
+    try {
+      return machine(DMath.besselComplex(head, nu, z));
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
+      return Errors.printMessage(head, are);
+    }
+  }
+
   private final static int G = 7;
 
   private final static org.hipparchus.complex.Complex[] P_COMPLEX =
@@ -553,7 +566,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselIValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselI, this, (INumber) arg2);
+      return besselComplexNum(S.BesselI, this, (INumber) arg2);
     }
     return IComplexNum.super.besselI(arg2);
   }
@@ -568,7 +581,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselJValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselJ, this, (INumber) arg2);
+      return besselComplexNum(S.BesselJ, this, (INumber) arg2);
     }
     return IComplexNum.super.besselJ(arg2);
   }
@@ -583,7 +596,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselKValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselK, this, (INumber) arg2);
+      return besselComplexNum(S.BesselK, this, (INumber) arg2);
     }
     return IComplexNum.super.besselK(arg2);
   }
@@ -598,7 +611,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselYValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselY, this, (INumber) arg2);
+      return besselComplexNum(S.BesselY, this, (INumber) arg2);
     }
     return IComplexNum.super.besselY(arg2);
   }

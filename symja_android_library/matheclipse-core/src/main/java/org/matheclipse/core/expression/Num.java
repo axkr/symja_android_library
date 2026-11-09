@@ -448,7 +448,7 @@ public class Num implements INum {
           // result would be complex exception
         }
       }
-      return DMath.besselComplexNum(S.BesselI, this, (INumber) arg2);
+      return ComplexNum.besselComplexNum(S.BesselI, this, (INumber) arg2);
     }
     return INum.super.besselI(arg2);
   }
@@ -538,7 +538,7 @@ public class Num implements INum {
           // result would be complex exception
         }
       }
-      return DMath.besselComplexNum(S.BesselK, this, (INumber) arg2);
+      return ComplexNum.besselComplexNum(S.BesselK, this, (INumber) arg2);
     }
     return INum.super.besselK(arg2);
   }
@@ -562,7 +562,7 @@ public class Num implements INum {
           // result would be complex exception
         }
       }
-      return DMath.besselComplexNum(S.BesselY, this, (INumber) arg2);
+      return ComplexNum.besselComplexNum(S.BesselY, this, (INumber) arg2);
     }
     return INum.super.besselY(arg2);
   }

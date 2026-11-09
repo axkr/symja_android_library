@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import static org.matheclipse.core.expression.NumberUtil.apfloatOf;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -7,11 +8,7 @@ import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.matheclipse.external.apfloat.ApcomplexBetaMath;
 import java.util.function.BinaryOperator;
 import org.matheclipse.parser.client.ParserConfig;
-import org.matheclipse.core.eval.exception.SymjaMathException;
-import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.LossOfPrecisionException;
-import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.eval.EvalEngine;
 import org.hipparchus.complex.Complex;
@@ -23,29 +20,6 @@ import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DMath {
-
-  /**
-   * A double as an {@link Apfloat}, declining the ones it has no representation for.
-   *
-   * <p>
-   * {@code new Apfloat(Double.POSITIVE_INFINITY)} answers a {@code NumberFormatException} saying
-   * "Infinity is not a valid number", which escaped from whichever special function was being
-   * evaluated - {@code HankelH2(2, Infinity)} and {@code BesselJ(2, Infinity)} among them. Raised
-   * as a Symja exception instead, {@code EvalEngine.evalASTBuiltinFunction} catches it and the
-   * expression comes back unevaluated with a message, which is what every function here wants when
-   * its argument has no arbitrary precision value. Functions with a known limit at infinity handle
-   * it before reaching this point, as {@link #airyAi(double)} does.
-   *
-   * @param value the argument to convert
-   * @return the value as an {@link Apfloat}
-   */
-  private static Apfloat apfloatOf(double value) {
-    if (!Double.isFinite(value)) {
-      throw new SymjaMathException(
-          "cannot convert " + value + " into an arbitrary precision number");
-    }
-    return new Apfloat(value);
-  }
 
   // --- Missing Arc- and Hyperbolic Trig Functions ---
 
@@ -172,7 +146,7 @@ public class DMath {
    */
   private static double airyPhase(double x) {
     final long digits = 25 + (long) (0.5 * 0.30103 * Math.max(0, Math.getExponent(x)));
-    final Apfloat exact = ApfloatNum.apfloatOf(x, digits);
+    final Apfloat exact = apfloatOf(x, digits);
     final long precision = exact.precision();
     final Apfloat zeta = exact.multiply(ApfloatMath.sqrt(exact)).multiply(new Apfloat(2, precision))
         .divide(new Apfloat(3, precision));
@@ -195,7 +169,7 @@ public class DMath {
       return Double.NaN;
     }
     final double z = -x;
-    final Apfloat exact = ApfloatNum.apfloatOf(z, 25);
+    final Apfloat exact = apfloatOf(z, 25);
     final long precision = exact.precision();
     final Apfloat argument = ApfloatMath.sqrt(exact).multiply(new Apfloat(2, precision));
     final double phase = ApfloatMath
@@ -375,7 +349,7 @@ public class DMath {
   private static double besselGuarded(BinaryOperator<Apcomplex> function, double v, double x) {
     final int digits = (int) ParserConfig.MACHINE_PRECISION + 1;
     Apcomplex value =
-        function.apply(ApfloatNum.apfloatOf(v, digits), ApfloatNum.apfloatOf(x, digits));
+        function.apply(apfloatOf(v, digits), apfloatOf(x, digits));
     if (value.imag().signum() != 0) {
       throw new ArithmeticException("Bessel function with a complex value");
     }
@@ -401,19 +375,6 @@ public class DMath {
     }
     return besselComplex(ApcomplexBesselMath::besselY,
         (n, x) -> EvalEngine.getApfloatDouble().besselY(n, x), nu, z);
-  }
-
-  /**
-   * <code>head(nu, z)</code> as a machine complex number, see
-   * {@link #besselComplex(ISymbol, INumber, INumber)}; a failure is reported as message of
-   * <code>head</code>.
-   */
-  static IExpr besselComplexNum(ISymbol head, INumber nu, INumber z) {
-    try {
-      return ComplexNum.machine(besselComplex(head, nu, z));
-    } catch (ArithmeticException | ApfloatRuntimeException are) {
-      return Errors.printMessage(head, are);
-    }
   }
 
   /**

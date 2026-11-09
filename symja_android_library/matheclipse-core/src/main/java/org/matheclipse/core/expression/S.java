@@ -30528,10 +30528,7 @@ public class S {
    * @return
    */
   public static IExpr exprID(short id) {
-    if (id >= EXPRID_MAX_BUILTIN_LENGTH) {
-      return COMMON_IDS[id - EXPRID_MAX_BUILTIN_LENGTH];
-    }
-    return BUILT_IN_SYMBOLS[id];
+    return ExprID.resolve(id);
   }
 
   public static IExpr exprID(IExpr expr) {
