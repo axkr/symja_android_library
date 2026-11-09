@@ -1107,6 +1107,16 @@ public class S {
       S.initFinalSymbol("AlternatingGroup", ID.AlternatingGroup);
 
   /**
+   * AlternativeHypothesis(x) - TODO describe `AlternativeHypothesis`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlternativeHypothesis.md">AlternativeHypothesis
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlternativeHypothesis =
+      S.initFinalSymbol("AlternativeHypothesis", ID.AlternativeHypothesis);
+
+  /**
    * Alternatives(p1, p2, ..., p_i) - is a pattern that matches any of the patterns `p1, p2,....,
    * p_i`.
    * 
@@ -4152,6 +4162,16 @@ public class S {
    */
   public final static IBuiltInSymbol ChemicalConvert =
       S.initFinalSymbol("ChemicalConvert", ID.ChemicalConvert);
+
+  /**
+   * ChemicalData(x) - TODO describe `ChemicalData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ChemicalData.md">ChemicalData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ChemicalData =
+      S.initFinalSymbol("ChemicalData", ID.ChemicalData);
 
   /**
    * ChemicalFormula(x) - TODO describe `ChemicalFormula`.
@@ -17030,6 +17050,16 @@ public class S {
    */
   public final static IBuiltInSymbol Manipulator = S.initFinalSymbol("Manipulator", ID.Manipulator);
 
+  /**
+   * MannWhitneyTest(x) - TODO describe `MannWhitneyTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MannWhitneyTest.md">MannWhitneyTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MannWhitneyTest =
+      S.initFinalSymbol("MannWhitneyTest", ID.MannWhitneyTest);
+
   public final static IBuiltInSymbol MantissaExponent =
       S.initFinalSymbol("MantissaExponent", ID.MantissaExponent);
 
@@ -24420,6 +24450,16 @@ public class S {
   public final static IBuiltInSymbol ScorerHi = S.initFinalSymbol("ScorerHi", ID.ScorerHi);
 
   /**
+   * ScriptBaselineShifts(x) - TODO describe `ScriptBaselineShifts`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ScriptBaselineShifts.md">ScriptBaselineShifts
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ScriptBaselineShifts =
+      S.initFinalSymbol("ScriptBaselineShifts", ID.ScriptBaselineShifts);
+
+  /**
    * Sec(z) - returns the secant of `z`.
    * 
    * @see <a href=
@@ -24978,6 +25018,16 @@ public class S {
 
   public final static IBuiltInSymbol SignedRegionDistance =
       S.initFinalSymbol("SignedRegionDistance", ID.SignedRegionDistance);
+
+  /**
+   * SignificanceLevel(x) - TODO describe `SignificanceLevel`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SignificanceLevel.md">SignificanceLevel
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SignificanceLevel =
+      S.initFinalSymbol("SignificanceLevel", ID.SignificanceLevel);
 
   /**
    * SignPadding(x) - TODO describe `SignPadding`.
