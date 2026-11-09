@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -35,21 +36,22 @@ public class NestedNIntegrateTest extends ExprEvaluatorTestCase {
     // a peak of width 10^-6 in the inner range: the plain adaptive rule finds what QAGS gives up on
     check("Abs(NIntegrate(With({c = (Cos(1/1000) + Cos(b))/2}, "
         + "(1 - c)/((1 - c)^2 + (Sin(1/1000)/8 + Sin(b)/6)^2)), {b, -Pi, Pi}, "
-        + "PrecisionGoal -> 12) - 37.6986665333680778) < 10^-10", //
+        + "PrecisionGoal -> 12) - 37.69866653336808) < 10^-10", //
         "True");
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSingularVertexOnTheBoundary() {
     // singular at the corner {0, 0}: a peak along b = -ArcSin(3/4*Sin(a)) leaves it into the inner
     // range, which is split at the zero b = 0 of the denominator for a = 0
     check("Abs(NIntegrate(With({c = (Cos(a) + Cos(b))/2}, "
         + "(1 - c)/((1 - c)^2 + (Sin(a)/8 + Sin(b)/6)^2)), {a, 0, Pi}, {b, -Pi, Pi}, "
-        + "PrecisionGoal -> 12) - 33.226965074151129853) < 10^-9", //
+        + "PrecisionGoal -> 12) - 33.22696507415113) < 10^-9", //
         "True");
     check("Abs(NIntegrate(With({c = (2*Cos(a) + Cos(b))/3}, "
         + "(1 - c)/((1 - c)^2 + (Sin(a)/9 + Sin(b)/9)^2)), {a, 0, Pi}, {b, -Pi, Pi}, "
-        + "PrecisionGoal -> 12) - 37.380197132223716851) < 10^-9", //
+        + "PrecisionGoal -> 12) - 37.38019713222372) < 10^-9", //
         "True");
   }
 
