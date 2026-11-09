@@ -761,6 +761,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
                       iterator.getUpperLimit(), engine);
                 }
                 if (temp.isNIL()) {
+                  // a partial sum of the exponential series: incomplete Gamma functions
+                  temp = exponentialPartialSum(arg1, iterator.getVariable(),
+                      iterator.getLowerLimit(), iterator.getUpperLimit(), engine);
+                }
+                if (temp.isNIL()) {
                   // DIFFERENCE ROOT FALLBACK
                   // Holonomic sequence encoding using DifferenceRoot
                   temp = differenceRootFallback(arg1, iterator.getVariable(),
@@ -2002,6 +2007,47 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return null;
     }
     return new IExpr[] {num, den};
+  }
+
+  /**
+   * <code>Sum(c x^k/k!, {k, a, n})</code> for an integer <code>a &gt;= 0</code> and <code>c, x</code>
+   * free of <code>k</code>: the partial sums of the exponential series are regularized incomplete
+   * Gamma functions, <code>c E^x (Gamma(n+1, x)/n! - Gamma(a, x)/(a-1)!)</code>, without the second
+   * term for <code>a = 0</code>.
+   *
+   * @return {@link F#NIL} if the summand isn't of this form
+   */
+  private static IExpr exponentialPartialSum(IExpr term, ISymbol k, IExpr from, IExpr to,
+      EvalEngine engine) {
+    if (!from.isInteger() || from.isNegative() || !to.isFree(k) || to.isNumber()) {
+      return F.NIL;
+    }
+    IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+    IExpr base = null;
+    boolean factorial = false;
+    IASTAppendable coefficient = F.TimesAlloc(factors.argSize());
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.exponent().equals(k) && factor.base().isFree(k)
+          && base == null) {
+        base = factor.base();
+      } else if (factor.isPower() && factor.exponent().isMinusOne()
+          && factor.base().equals(F.Factorial(k)) && !factorial) {
+        factorial = true;
+      } else if (factor.isFree(k)) {
+        coefficient.append(factor);
+      } else {
+        return F.NIL;
+      }
+    }
+    if (base == null || !factorial) {
+      return F.NIL;
+    }
+    IExpr upper = F.Divide(F.Gamma(F.Plus(to, F.C1), base), F.Factorial(to));
+    if (!from.isZero()) {
+      IExpr a = from;
+      upper = F.Subtract(upper, F.Divide(F.Gamma(a, base), F.Factorial(F.Plus(a, F.CN1))));
+    }
+    return engine.evaluate(F.Times(coefficient.oneIdentity1(), F.Exp(base), upper));
   }
 
   /**

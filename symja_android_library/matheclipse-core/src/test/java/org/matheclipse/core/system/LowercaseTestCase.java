@@ -7716,7 +7716,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1∈Integers");
 
     check("Element(Sqrt(2), #) & /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
-        "{True,True,True,Sqrt(2)∈Rationals,False,False}");
+        "{True,True,True,False,False,False}");
     check("Element(ComplexInfinity, Complexes)", //
         "False");
     check("{x} \\[Element] Reals", //
@@ -31122,7 +31122,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a∉Reals");
     // TODO improve the Rationals domain
     check("NotElement(Sqrt(2), #)& /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
-        "{False,False,False,Sqrt(2)∉Rationals,True,True}");
+        "{False,False,False,True,True,True}");
   }
 
   @Test

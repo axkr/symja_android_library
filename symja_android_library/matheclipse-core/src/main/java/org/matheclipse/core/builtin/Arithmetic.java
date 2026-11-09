@@ -2257,8 +2257,9 @@ public final class Arithmetic {
             return F.QQ(HARMONIC_NUMERATOR[n - 1], HARMONIC_DENOMINATOR[n - 1]);
           }
           int iterationLimit = engine.getIterationLimit();
-          if (iterationLimit >= 0 && iterationLimit <= n) {
-            // too many terms for the exact sum; unevaluated, so that N() can still get the value
+          if ((iterationLimit >= 0 && iterationLimit <= n) || n > MAX_EXACT_HARMONIC_INDEX) {
+            // too many terms for the exact sum, whose denominator has about 0.43 n digits;
+            // unevaluated, so that N() can still get the value
             return F.NIL;
           }
           return QQ(harmonicNumber(n));
@@ -2394,13 +2395,32 @@ public final class Arithmetic {
         if (iterationLimit >= 0 && iterationLimit <= n) {
           IterationLimitExceeded.throwIt(n, F.HarmonicNumber(F.ZZ(n)));
         }
-        BigFraction result = BigFraction.ONE;
-        for (int i = 2; i <= n; i++) {
-          // add 1/i for i=2..n
-          result = result.add(new BigFraction(1, i));
-        }
-        return result;
+        // Sum(1/i, {i, 1, n}) by binary splitting: the numerators and denominators of the halves
+        // are combined without reduction, the fraction is reduced once
+        java.math.BigInteger[] pq = harmonicSplit(1, n + 1);
+        return new BigFraction(pq[0], pq[1]);
       }
+    }
+
+    /**
+     * <code>{p, q}</code> with <code>p/q = Sum(1/i, {i, a, b-1})</code>, not reduced.
+     */
+    private static java.math.BigInteger[] harmonicSplit(int a, int b) {
+      if (b - a == 1) {
+        return new java.math.BigInteger[] {java.math.BigInteger.ONE, java.math.BigInteger.valueOf(a)};
+      }
+      if (b - a == 2) {
+        long x = a;
+        long y = a + 1L;
+        return new java.math.BigInteger[] {java.math.BigInteger.valueOf(x + y),
+            java.math.BigInteger.valueOf(x * y)};
+      }
+      int middle = (a + b) >>> 1;
+      java.math.BigInteger[] left = harmonicSplit(a, middle);
+      java.math.BigInteger[] right = harmonicSplit(middle, b);
+      return new java.math.BigInteger[] {
+          left[0].multiply(right[1]).add(right[0].multiply(left[1])),
+          left[1].multiply(right[1])};
     }
 
     @Override
@@ -8421,6 +8441,9 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
+  /** The largest index of an exact harmonic number. */
+  static final int MAX_EXACT_HARMONIC_INDEX = 100_000;
 
   static final long[] HARMONIC_NUMERATOR = new long[] {1, 3, 11, 25, 137, 49, 363, 761, 7129, 7381,
       83711, 86021, 1145993, 1171733, 1195757, 2436559, 42142223, 14274301, 275295799, 55835135,

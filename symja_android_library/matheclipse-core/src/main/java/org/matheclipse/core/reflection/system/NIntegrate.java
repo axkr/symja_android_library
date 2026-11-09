@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApcomplexMath;
 import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.integration.IterativeLegendreGaussIntegrator;
 import org.hipparchus.analysis.integration.RombergIntegrator;
@@ -1474,15 +1475,40 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
       engine.setQuietMode(true);
       final long samplePrecision = precision + 15;
+      // the largest scale of an abscissa at which the integrand lost no digits
+      final long[] safeScale = {LARGE_ABSCISSA_SCALE};
       Apcomplex result = ApfloatDoubleExponential.integrate(z -> {
         // a point next to an end carries more digits than the working precision; the integrand
         // is evaluated with all of them, or 1-y cancels to 0 there
         // an exact abscissa like 0 has infinite precision
-        engine.setNumericMode(true,
-            Math.max(samplePrecision, Math.min(z.precision(), 3 * samplePrecision)),
-            oldSignificantFigures);
-        IExpr value = engine.evalNumericFunction(F.subst(function, x, F.num(z)), false);
-        return value.isNumber() ? ((INumber) value).apcomplexValue() : null;
+        long digits = Math.max(samplePrecision, Math.min(z.precision(), 3 * samplePrecision));
+        Apcomplex value = apfloatSample(function, x, z, digits, oldSignificantFigures, engine);
+        if (value == null || z.scale() <= safeScale[0]) {
+          return value;
+        }
+        // at a large abscissa an integrand like Log(1 + 1/x^2) cancels digits of the order of
+        // those of x: it is evaluated with more digits until two values agree. If the first two
+        // agree, the abscissas up to this one need no check
+        long extra = 2L * z.scale() + 10L;
+        for (int round = 0; round < 3; round++) {
+          Apcomplex finer = apfloatSample(function, x, z, digits + extra, oldSignificantFigures,
+              engine);
+          if (finer == null) {
+            return value;
+          }
+          Apfloat difference = ApcomplexMath.abs(finer.subtract(value));
+          Apfloat size = ApcomplexMath.abs(finer);
+          value = finer;
+          if (difference.signum() == 0
+              || size.signum() != 0 && difference.scale() < size.scale() - precision - 5L) {
+            if (round == 0 && size.signum() != 0) {
+              safeScale[0] = z.scale();
+            }
+            break;
+          }
+          extra *= 2L;
+        }
+        return value;
       }, a, b, precision);
       if (sign < 0) {
         result = result.negate();
@@ -1501,6 +1527,18 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       engine.setQuietMode(quietMode);
       engine.setNumericMode(oldNumericMode, oldPrecision, oldSignificantFigures);
     }
+  }
+
+  /** Abscissas of more digits before the decimal point are sampled with extra digits. */
+  private static final long LARGE_ABSCISSA_SCALE = 4L;
+
+  /** The integrand at <code>z</code> evaluated with <code>digits</code> digits, else null. */
+  private static Apcomplex apfloatSample(IExpr function, ISymbol x, Apfloat z, long digits,
+      int significantFigures, EvalEngine engine) {
+    engine.setNumericMode(true, digits, significantFigures);
+    IExpr value = engine.evalNumericFunction(
+        F.subst(function, x, F.num(z.precision() > digits ? z : z.precision(digits))), false);
+    return value.isNumber() ? ((INumber) value).apcomplexValue() : null;
   }
 
   /**

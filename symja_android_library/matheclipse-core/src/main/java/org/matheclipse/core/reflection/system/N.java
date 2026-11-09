@@ -21,6 +21,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
@@ -93,7 +94,97 @@ public final class N extends AbstractCoreFunctionEvaluator {
         }
       }
     }
-    return numericEval(ast, engine);
+    IExpr result = numericEval(ast, engine);
+    if (result.isPresent() && !arg1.isFree(N::isDefiniteSum, true)
+        && !result.isFree(N::isNumericalSumHead, true)) {
+      // the definite sums, products and integrals which stayed unevaluated are numerical ones
+      IExpr numerical = numericalSums(ast, engine);
+      if (numerical.isPresent()) {
+        return numerical;
+      }
+    }
+    return result;
+  }
+
+  /** Test if <code>x</code> is a head of a sum, product or integral. */
+  private static boolean isNumericalSumHead(IExpr x) {
+    return x == S.Sum || x == S.Product || x == S.Integrate;
+  }
+
+  /**
+   * Test if <code>x</code> is <code>Sum(f, {k, a, b}, ...)</code> or <code>Product(...)</code> with
+   * numeric limits, or <code>Integrate(...)</code> with numeric limits and an integrand which is a
+   * numeric function of the integration variables.
+   */
+  private static boolean isDefiniteSum(IExpr x) {
+    if (!(x.isAST(S.Sum) || x.isAST(S.Product) || x.isAST(S.Integrate)) || x.argSize() < 2) {
+      return false;
+    }
+    IAST sum = (IAST) x;
+    java.util.Set<IExpr> variables = new java.util.HashSet<>();
+    for (int i = 2; i < sum.size(); i++) {
+      IExpr iterator = sum.get(i);
+      if (!iterator.isList3() || !iterator.first().isSymbol()) {
+        return false;
+      }
+      IExpr lower = iterator.second();
+      IExpr upper = iterator.last();
+      if (!(lower.isNumericFunction(true) || lower.isNegativeInfinity())
+          || !(upper.isNumericFunction(true) || upper.isInfinity())) {
+        return false;
+      }
+      variables.add(iterator.first());
+    }
+    if (!sum.isAST(S.Integrate)) {
+      return true;
+    }
+    return sum.arg1().isFree(y -> y.isSymbol() && !variables.contains(y)
+        && !((org.matheclipse.core.interfaces.ISymbol) y).isConstantAttribute()
+        && !y.isBuiltInSymbol(), true);
+  }
+
+  /**
+   * <code>N(expr)</code> with the definite sums, products and integrals of <code>expr</code>
+   * replaced by <code>NSum, NProduct, NIntegrate</code>, with the working precision of
+   * <code>N(expr, p)</code>. A numerical sum or product without a value stays as it is.
+   *
+   * @return {@link F#NIL} if the result isn't numeric or a numerical sum or product
+   */
+  private IExpr numericalSums(final IAST ast, EvalEngine engine) {
+    IExpr spec = ast.isAST2() ? engine.evaluate(ast.arg2()) : F.ZZ(ParserConfig.MACHINE_PRECISION);
+    if (spec.isList() && spec.argSize() == 2) {
+      // N(expr, {precision, accuracy})
+      spec = spec.first();
+    }
+    final IExpr precision = spec;
+    final boolean machine = !ast.isAST2() || !precision.isReal()
+        || precision.evalf() <= ParserConfig.MACHINE_PRECISION;
+    IExpr replaced = ast.arg1().replaceAll(x -> {
+      if (!isDefiniteSum(x)) {
+        return F.NIL;
+      }
+      IAST sum = (IAST) x;
+      IASTAppendable numerical = F.ast(sum.isAST(S.Sum) ? S.NSum
+          : sum.isAST(S.Product) ? S.NProduct : S.NIntegrate, sum.size() + 1);
+      numerical.appendArgs(sum);
+      if (!machine) {
+        numerical.append(F.Rule(S.WorkingPrecision, precision));
+      }
+      return numerical;
+    });
+    if (replaced.isNIL()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(ast.setAtCopy(1, replaced));
+    if (result.isFree(x -> x == S.NSum || x == S.NProduct || x == S.NIntegrate, true)
+        && (result.isNumber() || result.isList() && ((IAST) result).forAll(IExpr::isNumber))) {
+      return result;
+    }
+    if (result.isFree(x -> x == S.NIntegrate || x == S.Integrate, true)) {
+      // NSum(f(k), {k, 1, Infinity}) of a symbolic summand
+      return result;
+    }
+    return F.NIL;
   }
 
   /**

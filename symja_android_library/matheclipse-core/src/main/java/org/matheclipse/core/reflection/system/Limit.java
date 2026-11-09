@@ -3158,8 +3158,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         bestB = b;
       }
     }
-    if (bestA < eps && bestB < eps) {
-      return F.NIL; // leading term does not diverge
+    if (!(bestA > eps || (Math.abs(bestA) <= eps && bestB > eps))) {
+      // the leading term x^a*Log(x)^b doesn't diverge: a < 0 (whatever b is), or a = 0 and b <= 0
+      return F.NIL;
     }
     IASTAppendable leaderSum = F.PlusAlloc(plus.argSize());
     for (int i = 0; i < exps.length; i++) {

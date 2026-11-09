@@ -1964,6 +1964,14 @@ public class PolynomialFunctions {
         if (!ast.arg1().isList()) {
           return F.NIL;
         }
+        // the reduced basis doesn't depend on the method which computes it
+        IExpr method = options[3];
+        if (method != S.Automatic && !(method.isString()
+            && java.util.Set.of("Buchberger", "GroebnerWalk").contains(method.toString()))) {
+          // The value of the option Method -> `1` should be Automatic, "Buchberger" or
+          // "GroebnerWalk".
+          return Errors.printMessage(S.GroebnerBasis, "gmeth2", F.list(method), engine);
+        }
         // a single variable needs no list of its own
         IAST vars = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
         if (vars.size() <= 1) {
@@ -2073,8 +2081,9 @@ public class PolynomialFunctions {
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
       IBuiltInSymbol[] optionKeys =
-          new IBuiltInSymbol[] {S.MonomialOrder, S.Modulus, S.CoefficientDomain};
-      IExpr[] optionValues = new IExpr[] {S.Lexicographic, F.C0, S.RationalFunctions};
+          new IBuiltInSymbol[] {S.MonomialOrder, S.Modulus, S.CoefficientDomain, S.Method};
+      IExpr[] optionValues =
+          new IExpr[] {S.Lexicographic, F.C0, S.RationalFunctions, S.Automatic};
       setOptions(newSymbol, optionKeys, optionValues);
     }
   }

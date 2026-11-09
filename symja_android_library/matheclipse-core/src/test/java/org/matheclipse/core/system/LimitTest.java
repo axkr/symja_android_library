@@ -1698,4 +1698,20 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(CosIntegral(x)-Log(x), x->0)", //
         "EulerGamma");
   }
+
+  /** A sum whose leading term x^a*Log(x)^b has a negative power a doesn't diverge. */
+  @Test
+  public void testLimitDecayingLogSum() {
+    check("Limit(3/x^2 + Log(x)/x^2, x->Infinity)", //
+        "0");
+    check("Limit(-1/(5*x^3) - Log(x)^2/(7*x^3), x->Infinity)", //
+        "0");
+    check("Limit(1/Sqrt(x) - Log(x)^3/x^(3/2), x->Infinity)", //
+        "0");
+    // the leading term grows: x^0*Log(x)^1, or x^(1/2)/Log(x)^4
+    check("Limit(1/x^2 - 2*Log(x), x->Infinity)", //
+        "-Infinity");
+    check("Limit(Sqrt(x)/Log(x)^4 + Log(x)/x, x->Infinity)", //
+        "Infinity");
+  }
 }

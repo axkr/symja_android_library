@@ -140,7 +140,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * @return <code>null</code> for every other expression
    */
   private static ISymbol constantOrInfinityValue(final IExpr expr) {
-    if (expr == S.E || expr == S.EulerGamma || expr == S.Khinchin || expr == S.Pi
+    // the irrationality of EulerGamma and Khinchin is an open problem
+    if (expr == S.E || expr == S.Pi
         || expr.isDirectedInfinity()) {
       return S.False;
     }
@@ -413,6 +414,21 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   /**
+   * Test if the machine value <code>c</code> is a real number within the rounding errors of a few
+   * operations of an integer: <code>1024</code> units in the last place of its size, at most
+   * <code>10^-6</code>.
+   */
+  private static boolean nearInteger(Complex c) {
+    double re = c.getReal();
+    double im = c.getImaginary();
+    if (!Double.isFinite(re) || !Double.isFinite(im)) {
+      return false;
+    }
+    double tolerance = Math.min(1.0e-6, 1024.0 * Math.ulp(Math.max(1.0, Math.abs(re))));
+    return Math.abs(im) <= tolerance && Math.abs(re - Math.rint(re)) <= tolerance;
+  }
+
+  /**
    * Test if <code>expr</code> is assumed to be an integer.
    *
    * @param expr
@@ -441,7 +457,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isNumericFunction()) {
       try {
         Complex c = expr.evalfc();
-        if (!c.isMathematicalInteger()) {
+        // a value next to an integer may be one which rounding hides: no decision
+        if (!c.isMathematicalInteger() && !nearInteger(c)) {
           return S.False;
         }
       } catch (ArgumentTypeException ate) {

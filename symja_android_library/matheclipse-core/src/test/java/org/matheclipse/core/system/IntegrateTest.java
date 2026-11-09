@@ -1946,4 +1946,18 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(x*Sin(x)^2,x,Method->\"Holonomic\")", //
         "Integrate(x*Sin(x)^2,x,Method->Holonomic)");
   }
+
+  /** Log(x) times a power decaying faster than 1/x converges on [a, Infinity). */
+  @Test
+  public void testIntegrateLogTimesDecayingPower() {
+    check("Integrate(Log(x)/x^2, {x, 1, Infinity})", //
+        "1");
+    check("Integrate(Log(x)/x^4, {x, 1, Infinity})", //
+        "1/9");
+    check("Integrate(Log(x)^2/x^3, {x, 1, Infinity})", //
+        "1/4");
+    // still divergent
+    check("Integrate(Log(x)/x, {x, 1, Infinity})", //
+        "Integrate(Log(x)/x,{x,1,Infinity})");
+  }
 }

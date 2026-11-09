@@ -277,6 +277,8 @@ public class Errors {
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
       "geoell", "`1` is not a known reference ellipsoid.", //
       "geoprop", "`1` is not a known property of the reference ellipsoid `2`.", //
+      "gmeth2",
+      "The value of the option Method -> `1` should be Automatic, \"Buchberger\" or \"GroebnerWalk\".", //
       "juliantype", "`1` is not a known Julian date type.", //
       "hdiv", "`1` does not exist. Arguments  are not consistent.", //
       "hdmpow2", "The order `1` in `2` is restricted to a power of 2.", //
