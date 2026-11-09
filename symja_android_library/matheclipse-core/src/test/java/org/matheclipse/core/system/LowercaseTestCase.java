@@ -13945,7 +13945,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{ColorData(\"WebSafe\", \"#3300CC\"), ColorData(\"WebSafe\", \"#123456\")}", //
         "{RGBColor(0.2,0.0,0.8),ColorData(WebSafe,#123456)}");
     check("{Length(ColorData(97, \"ColorList\")), ColorData(97, 5) === ColorData(97)[5]}", //
-        "{16,True}");
+        "{15,True}");
   }
 
   @Test
@@ -39184,6 +39184,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // no collision, no renaming
     check("f2(a_) := Function(x, x + a); f2(1)", //
         "Function(x,x+1)");
+  }
+
+  /**
+   * A scoping construct inside a renamed local's body which binds the same name again must not
+   * capture the colliding symbol of the substituted value either.
+   */
+  @Test
+  public void testCaptureAvoidingNestedScopes() {
+    check("q1(u_) := Module({p = 1}, Function(p, u + p)); With({fn = q1(p + 2)}, fn(10))", //
+        "12+p");
+    check("q2(u_) := With({p = 3}, Function({p}, u*p)); With({fn = q2(p)}, fn(5))", //
+        "5*p");
+    check("q3(u_) := Module({p = 1}, Module({p = 2}, u + p)); q3(p)", //
+        "2+p");
+    check("With({fn = (Module({p = 1}, Function(p, # + p)) &)[p + 2]}, fn(10))", //
+        "12+p");
+    check("With({fn = Function(u, Module({p = 1}, Function(p, u - p)))[p]}, fn(4))", //
+        "-4+p");
+    // the parameter of the inner function is a new symbol, the p of the argument stays free
+    check("q4(u_) := Module({p = 1}, Function(p, u + p)); FreeQ(q4(p)[[1]], p)", //
+        "True");
   }
 
   /** Results for Coefficient with a symbolic exponent. */

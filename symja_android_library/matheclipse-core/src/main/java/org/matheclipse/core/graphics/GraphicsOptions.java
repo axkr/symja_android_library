@@ -1411,7 +1411,7 @@ public class GraphicsOptions {
    * {@link F#NIL} when no scheme goes by that name.
    */
   public static IExpr namedChartStyleColor(String name, int index) {
-    org.matheclipse.core.tensor.img.ColorDataGradients gradient =
+    ColorDataGradients gradient =
         org.matheclipse.core.reflection.system.ColorData.gradientNamed(name);
     if (gradient == null) {
       return F.NIL;

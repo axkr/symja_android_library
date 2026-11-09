@@ -65,6 +65,28 @@ public class SerializableTest {
         evaluator.eval("NonlinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, a*x+b, {a,b}, x)"));
   }
 
+  /**
+   * A Bezier function still evaluates after a round trip: only its control point list is written,
+   * and the points it computes with are rebuilt from that list.
+   */
+  @Test
+  public void testBezierFunction() throws IOException, ClassNotFoundException {
+    org.matheclipse.core.eval.ExprEvaluator evaluator =
+        new org.matheclipse.core.eval.ExprEvaluator();
+    IExpr bezier = evaluator.eval("BezierFunction({{0,0},{1,1},{2,0}})");
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(bezier);
+    }
+    IExpr copy;
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+      copy = (IExpr) ois.readObject();
+    }
+    assertEquals(bezier, copy);
+    assertEquals("{1.0,0.5}", evaluator.eval(F.unaryAST1(copy, F.num(0.5))).toString());
+  }
+
   @Test
   public void testSparseArray() {
     ISparseArray sparse =

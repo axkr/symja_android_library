@@ -16,11 +16,10 @@ import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.ColorDataLists;
+import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.tensor.ext.HomeDirectory;
-import org.matheclipse.core.tensor.img.ColorDataIndexed;
-import org.matheclipse.core.tensor.img.ColorDataLists;
-import org.matheclipse.core.tensor.img.ImageFormat;
+import org.matheclipse.core.io.ImageFormat;
 
 public class WindowFunctionImage {
 
@@ -34,8 +33,7 @@ public class WindowFunctionImage {
     graphics.setColor(Color.RED);
     IAST domain = F.subdivide(-0.5, 0.5, 180);
     graphics.setStroke(new BasicStroke(1.5f));
-    ColorDataIndexed colorDataIndexedF = ColorDataLists._097.cyclic();
-    ColorDataIndexed colorDataIndexedP = colorDataIndexedF.deriveWithAlpha(128 + 64);
+    ColorDataLists colors = ColorDataLists._097;
     int piy = 10;
     int index = 0;
     WindowFunctions.WindowFunction[] smoothingKernels = new WindowFunctions.WindowFunction[] { //
@@ -46,12 +44,13 @@ public class WindowFunctionImage {
     };
     graphics.setFont(new Font(Font.DIALOG, Font.BOLD, 10));
     for (WindowFunctions.WindowFunction smoothingKernel : smoothingKernels) {
-      graphics.setColor(colorDataIndexedP.getColor(index));
+      // curve and label in the same opaque color
+      Color color = ColorUtil.parse(colors.color(F.ZZ(index + 1), engine));
+      graphics.setColor(color);
       IAST tensor = domain.map(smoothingKernel.get());
       IAST points = (IAST) S.Transpose.of(engine, F.List(domain, tensor));
       Path2D path2d = geometricLayer.toPath2D(points);
       graphics.draw(path2d);
-      graphics.setColor(colorDataIndexedF.getColor(index));
       graphics.drawString(smoothingKernel.name(), 0, piy);
       piy += 10;
       ++index;
@@ -62,9 +61,9 @@ public class WindowFunctionImage {
   public static void main(String[] args) throws IOException {
     IOFunctions.initialize();
     Config.FILESYSTEM_ENABLED = true;
-    File folder = HomeDirectory.Pictures();
+    File folder = new File(System.getProperty("user.home"), "Pictures");
     S.Export.of(
-        F.stringx(folder.getPath() + "\\" + WindowFunctionImage.class.getSimpleName() + ".png"),
+        F.stringx(new File(folder, WindowFunctionImage.class.getSimpleName() + ".png").getPath()),
         image());
   }
 }

@@ -7,11 +7,11 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.ColorDataGradients;
+import org.matheclipse.core.graphics.ColorDataLists;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.img.ColorDataGradients;
-import org.matheclipse.core.tensor.img.ColorDataLists;
 
 public class ColorData extends AbstractFunctionEvaluator {
 
@@ -108,8 +108,7 @@ public class ColorData extends AbstractFunctionEvaluator {
       }
       if (ast.isAST2() && ast.arg2().toString().equals("ColorList")
           && ((IAST) colorDataFunction).arg2().toString().equals("Indexed")) {
-        IExpr range = ((IAST) colorDataFunction).arg3();
-        int length = range.isList2() ? range.second().toIntDefault() : -1;
+        int length = colorListLength(((IAST) colorDataFunction).arg1().toString());
         if (length > 0) {
           final IExpr function = colorDataFunction;
           return F.mapRange(1, length + 1,
@@ -141,7 +140,7 @@ public class ColorData extends AbstractFunctionEvaluator {
           // if (type.equals("Indexed")) {
           // try {
           // ColorDataLists listDetails = ColorDataLists.valueOf(name);
-          // return F.List(F.C1, F.ZZ(listDetails.cyclic().length()));
+          // return F.List(F.C1, F.ZZ(listDetails.length()));
           // } catch (Exception e) {
           // }
           // }
@@ -264,11 +263,22 @@ public class ColorData extends AbstractFunctionEvaluator {
     return rgb;
   }
 
+  /**
+   * The number of colors <code>ColorData(scheme, "ColorList")</code> lists for an indexed scheme.
+   *
+   * @return <code>-1</code> if <code>name</code> names no indexed scheme
+   */
+  private static int colorListLength(String name) {
+    try {
+      return ColorDataLists.valueOf(name).colorListLength();
+    } catch (IllegalArgumentException unknownScheme) {
+      return -1;
+    }
+  }
+
   private IExpr findIndexedScheme(String name) {
     try {
-      ColorDataLists l = ColorDataLists.valueOf(name);
-      int len = l.cyclic().length();
-      return createColorDataFunction(name, "Indexed", F.List(F.C1, F.ZZ(len)));
+      return createColorDataFunction(name, "Indexed", ColorDataLists.valueOf(name).range());
     } catch (Exception e) {
       return F.NIL;
     }

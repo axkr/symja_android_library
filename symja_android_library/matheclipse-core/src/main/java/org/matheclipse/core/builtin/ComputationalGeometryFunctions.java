@@ -30,7 +30,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITensorAccess;
-import org.matheclipse.core.tensor.opt.qh3.ConvexHull3D;
+import org.matheclipse.core.numerics.quickhull.ConvexHull3D;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class ComputationalGeometryFunctions {

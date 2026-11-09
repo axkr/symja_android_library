@@ -17,17 +17,15 @@ import org.matheclipse.core.expression.J;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.ext.HomeDirectory;
-import org.matheclipse.core.tensor.img.ImageFormat;
-import org.matheclipse.core.tensor.sca.Clips;
+import org.matheclipse.core.io.ImageFormat;
 
 /* package */ class ConvexHullShow {
 
   private static IAST image(int seed) {
     IAST points = (IAST) F.eval(J.randomVariate(J.normalDistribution(0.5, .28), F.List(30, 2)));
 
-    points = points.mapLeaf(S.List, Clips.unit());
-    // .map(Clips.unit());
+    // clip the coordinates to the unit interval
+    points = points.mapLeaf(S.List, x -> F.num(Math.min(1.0, Math.max(0.0, x.evalf()))));
     // System.err.println(points.toString());
     // ConvexHullMesh returns a BoundaryMeshRegion whose vertices are listed in input order;
     // ConvexHullRegion gives the Polygon with its corners in boundary order
@@ -58,13 +56,15 @@ import org.matheclipse.core.tensor.sca.Clips;
     IOFunctions.initialize();
     Config.FILESYSTEM_ENABLED = true;
     EvalEngine engine = EvalEngine.get();
-    File folder = HomeDirectory.Pictures(ConvexHullShow.class.getSimpleName());
-    folder.mkdir();
+    File folder = new File(new File(System.getProperty("user.home"), "Pictures"),
+        ConvexHullShow.class.getSimpleName());
+    folder.mkdirs();
     for (int seed = 0; seed < 51; ++seed) {
       IAST image = image(seed);
-      S.Export.of(F.stringx(folder.getPath() + "\\" + String.format("%03d.png", seed)), image);
+      S.Export.of(F.stringx(new File(folder, String.format("%03d.png", seed)).getPath()), image);
     }
-    S.Export.of(F.stringx(folder.getPath() + "\\" + ConvexHullShow.class.getSimpleName() + ".png"),
+    S.Export.of(
+        F.stringx(new File(folder, ConvexHullShow.class.getSimpleName() + ".png").getPath()),
         image(3));
   }
 }

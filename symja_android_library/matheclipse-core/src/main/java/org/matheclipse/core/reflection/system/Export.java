@@ -35,7 +35,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.core.io.TableFormatIO;
-import org.matheclipse.core.tensor.img.ImageFormat;
+import org.matheclipse.core.io.ImageFormat;
 
 /** Export some data from file system. */
 public class Export extends AbstractEvaluator {

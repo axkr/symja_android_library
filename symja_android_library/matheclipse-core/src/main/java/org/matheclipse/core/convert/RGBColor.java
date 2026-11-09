@@ -16,7 +16,10 @@ package org.matheclipse.core.convert;
  */
 
 import java.io.Serializable;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 
 /**
  * The RGBColor class defines colors in the default sRGB color space or in the specified ColorSpace.
@@ -621,5 +624,40 @@ public final class RGBColor implements Serializable {
     int g = (int) (fg * 255. + 0.5);
     int b = (int) (fb * 255. + 0.5);
     return (r << 16) | (g << 8) | b | 0xFF000000;
+  }
+
+  /**
+   * The color as the list <code>{r, g, b, a}</code> of integers in the range <code>0 ... 255</code>.
+   *
+   * @return a new list
+   */
+  public IAST toRGBAList() {
+    IInteger[] lookup = ComponentLookup.INTEGERS;
+    return F.List(lookup[getRed()], lookup[getGreen()], lookup[getBlue()], lookup[getAlpha()]);
+  }
+
+  /**
+   * The color the list <code>{r, g, b, a}</code> of integers in the range <code>0 ... 255</code>
+   * stands for.
+   *
+   * @param rgba a list of 4 integers
+   * @throws IllegalArgumentException if <code>rgba</code> is no list of 4 integers in that range
+   */
+  public static RGBColor fromRGBAList(IExpr rgba) {
+    if (rgba.size() != 5) {
+      throw new IllegalArgumentException("RGBColor#fromRGBAList() expects 4 components");
+    }
+    return new RGBColor(rgba.getAt(1).toIntDefault(), rgba.getAt(2).toIntDefault(),
+        rgba.getAt(3).toIntDefault(), rgba.getAt(4).toIntDefault());
+  }
+
+  /** The integers <code>0 ... 255</code>, shared by all color component lists. */
+  private static final class ComponentLookup {
+    static final IInteger[] INTEGERS = new IInteger[256];
+    static {
+      for (int i = 0; i < INTEGERS.length; i++) {
+        INTEGERS[i] = F.ZZ(i);
+      }
+    }
   }
 }
