@@ -298,36 +298,21 @@ public class AssumptionFunctions {
             if (truthValue != null) {
               return truthValue;
             }
-            if (isTranscendentalConstant(expr, engine)) {
-              return S.False;
-            }
-            if (!expr.isNumber() && AlgebraicNumberUtils.isExplicitAlgebraicNumber(expr)) {
-              IExpr rational = algebraicRational(expr, engine);
-              if (rational.isPresent()) {
-                return F.booleSymbol(rational.isInteger());
-              }
+            IExpr integer = exactConstantInDomain(expr, true, engine);
+            if (integer.isPresent()) {
+              return integer;
             }
             // structural test for a compound expression, e.g. 2*k^3 is an integer if k is one
             return expr.isIntegerResult() ? S.True : F.NIL;
           case ID.Primes:
             return AbstractAssumptions.assumePrime(expr);
           case ID.Rationals:
-            // the numeric and structural tests first: a complex value or a transcendental
-            // constant needs no minimal polynomial
+            // the numeric test first: a complex value needs no minimal polynomial
             truthValue = AbstractAssumptions.assumeRational(expr);
             if (truthValue != null) {
               return truthValue;
             }
-            if (isTranscendentalConstant(expr, engine)) {
-              return S.False;
-            }
-            if (!expr.isNumber() && AlgebraicNumberUtils.isExplicitAlgebraicNumber(expr)) {
-              IExpr rational = algebraicRational(expr, engine);
-              if (rational.isPresent()) {
-                return F.booleSymbol(rational.isRational());
-              }
-            }
-            return F.NIL;
+            return exactConstantInDomain(expr, false, engine);
           case ID.Reals:
             truthValue = AbstractAssumptions.assumeReal(expr);
             if (truthValue != null) {
@@ -365,6 +350,26 @@ public class AssumptionFunctions {
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * The membership of an exact constant in the Integers (<code>integers</code>) or the Rationals:
+   * {@link S#False} for a transcendental constant, else from the minimal polynomial of an explicit
+   * algebraic number.
+   *
+   * @return {@link F#NIL} if the membership isn't decided
+   */
+  private static IExpr exactConstantInDomain(IExpr expr, boolean integers, EvalEngine engine) {
+    if (isTranscendentalConstant(expr, engine)) {
+      return S.False;
+    }
+    if (!expr.isNumber() && AlgebraicNumberUtils.isExplicitAlgebraicNumber(expr)) {
+      IExpr rational = algebraicRational(expr, engine);
+      if (rational.isPresent()) {
+        return F.booleSymbol(integers ? rational.isInteger() : rational.isRational());
+      }
+    }
+    return F.NIL;
   }
 
   /**
