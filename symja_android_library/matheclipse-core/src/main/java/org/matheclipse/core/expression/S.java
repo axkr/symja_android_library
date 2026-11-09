@@ -3465,6 +3465,15 @@ public class S {
       S.initFinalSymbol("BubbleChart3D", ID.BubbleChart3D);
 
   /**
+   * BubbleSizes(x) - TODO describe `BubbleSizes`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BubbleSizes.md">BubbleSizes
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BubbleSizes = S.initFinalSymbol("BubbleSizes", ID.BubbleSizes);
+
+  /**
    * BulletGauge(x) - TODO describe `BulletGauge`.
    * 
    * @see <a href=
