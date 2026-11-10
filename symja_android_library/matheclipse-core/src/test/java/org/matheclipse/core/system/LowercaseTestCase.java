@@ -26045,37 +26045,44 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // interpolating
     // function. Extrapolation will be used.
     check("ipf=Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(10) ", //
-        "6311.0");
+        "2351.0");
 
     check("ipf= Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(3/4) ", //
-        "0.26864");
+        "0.238944");
     check("ipf=Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(0.75) ", //
-        "0.26864");
+        "0.238944");
     check("ipf=Interpolation({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}}); ipf(19/4) ", //
         "-19/32");
     check("ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}); ipf(5/2) ", //
         "59/16");
     check("Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})", //
         "InterpolatingFunction[Piecewise({{InterpolatingPolynomial({{0,0},{1,1},{2,3},{3,4}},#1),#1<2},{InterpolatingPolynomial({{\n"
-            + "1,1},{2,3},{3,4},{4,3}},#1),2<=#1&&#1<3},{InterpolatingPolynomial({{2,3},{3,4},{\n"
-            + "4,3},{5,0}},#1),#1>=3}})&]");
+            + "1,1},{2,3},{3,4},{4,3}},#1),#1<3},{InterpolatingPolynomial({{2,3},{3,4},{4,3},{5,\n"
+            + "0}},#1),True}})&]");
     check(
         "ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}", //
         "{3.6875,4.0,3.75}");
+    // five points: the cubic through the 4 points around each interval, not one polynomial of
+    // degree 4; extrapolation continues the outer cubic
+    check("ipf=Interpolation({{0,1},{1,4},{2,2},{3,5},{4,3}});"
+        + "{ipf(1/2),ipf(5/2),ipf(7/2),ipf'(1/2),ipf(-1),ipf(5)}", //
+        "{15/4,7/2,21/4,31/12,-17,-14}");
+    check("ipf=Interpolation({{0,1.0},{1,4.0},{2,2.0},{3,5.0},{4,3.0}});{ipf(0.5),ipf'(0.5)}", //
+        "{3.75,2.58333}");
   }
 
   @Test
   public void testInterpolatingFunction() {
     check("ipf=Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(0.75) ", //
-        "0.26864");
+        "0.238944");
     check("ipf=Interpolation({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}}); ipf(19/4) ", //
         "-19/32");
     check("ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}); ipf(5/2) ", //
         "59/16");
     check("Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})", //
         "InterpolatingFunction[Piecewise({{InterpolatingPolynomial({{0,0},{1,1},{2,3},{3,4}},#1),#1<2},{InterpolatingPolynomial({{\n"
-            + "1,1},{2,3},{3,4},{4,3}},#1),2<=#1&&#1<3},{InterpolatingPolynomial({{2,3},{3,4},{\n"
-            + "4,3},{5,0}},#1),#1>=3}})&]");
+            + "1,1},{2,3},{3,4},{4,3}},#1),#1<3},{InterpolatingPolynomial({{2,3},{3,4},{4,3},{5,\n"
+            + "0}},#1),True}})&]");
     check(
         "ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}", //
         "{3.6875,4.0,3.75}");
@@ -29246,11 +29253,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MinimalPolynomial(Power(2+Sqrt(5), -1/3),x)", //
         "-1+x+x^2");
 
-    // differs from WMA; degree 6 is minimal for the real interpretation
+    // the principal value is a root of the quartic factor of -1+4*x^3+x^6
     check("MinimalPolynomial(Power(2-Sqrt(5), -1/3))", //
-        "-1+4*#1^3+#1^6&");
+        "1+#1+2*#1^2-#1^3+#1^4&");
     check("MinimalPolynomial(Power(2-Sqrt(5), -1/3),x)", //
-        "-1+4*x^3+x^6");
+        "1+x+2*x^2-x^3+x^4");
 
     check("MinimalPolynomial((2 - I)/Sqrt(5), x)", //
         "5-6*x^2+5*x^4");

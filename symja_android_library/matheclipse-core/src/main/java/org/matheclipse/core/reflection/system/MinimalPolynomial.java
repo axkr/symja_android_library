@@ -77,7 +77,59 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
       return monic == null ? F.NIL
           : engine.evaluate(NumberFieldUtils.primitiveIntegerPolynomial(monic, x));
     }
-    return computeMinimalPolynomial(s, x, engine, true);
+    IExpr poly = computeMinimalPolynomial(s, x, engine, true);
+    // a polynomial with a coefficient like Pi or Gamma(1/4) is no minimal polynomial: the number
+    // isn't algebraic, or not one which is decomposed here
+    return hasRationalCoefficients(poly, x, engine) ? poly : F.NIL;
+  }
+
+  /** Test if <code>poly</code> is a polynomial in <code>x</code> with rational coefficients. */
+  private static boolean hasRationalCoefficients(IExpr poly, ISymbol x, EvalEngine engine) {
+    if (poly.isNIL() || !poly.isPolynomial(x)) {
+      return false;
+    }
+    IExpr coefficients = engine.evaluate(F.CoefficientList(poly, x));
+    return coefficients.isList() && ((IAST) coefficients).argSize() >= 2
+        && ((IAST) coefficients).forAll(IExpr::isRational);
+  }
+
+  /** The largest denominator q of a trigonometric function of <code>p/q*Pi</code> which is used. */
+  private static final int MAX_TRIG_DENOMINATOR = 120;
+
+  /**
+   * The rational <code>r</code> of an argument <code>r*Pi</code>, else <code>null</code>.
+   */
+  private static IRational rationalMultipleOfPi(IExpr arg) {
+    if (arg == S.Pi) {
+      return F.C1;
+    }
+    if (arg.isTimes() && arg.argSize() == 2 && arg.first().isRational() && arg.second() == S.Pi) {
+      IRational r = (IRational) arg.first();
+      // toIntDefault() is negative for a denominator outside the int range
+      int q = r.denominator().toIntDefault();
+      return q > 0 && q <= MAX_TRIG_DENOMINATOR ? r : null;
+    }
+    return null;
+  }
+
+  /**
+   * A variable for <code>Cos(r*Pi)</code>, <code>r = p/q</code>, with the relation
+   * <code>ChebyshevT(q, t) - (-1)^p == 0</code>, which <code>Cos(r*Pi)</code> satisfies.
+   */
+  private static ISymbol cosineVariable(IRational r, IASTAppendable equations,
+      IASTAppendable variables, EvalEngine engine, Map<IExpr, ISymbol> cache, int[] counter) {
+    IExpr key = F.Cos(F.Times(r, S.Pi));
+    ISymbol var = cache.get(key);
+    if (var == null) {
+      var = F.$s("r" + counter[0]++);
+      cache.put(key, var);
+      variables.append(var);
+      IInteger q = r.denominator();
+      IInteger p = r.numerator();
+      IExpr sign = p.isEven() ? F.C1 : F.CN1;
+      equations.append(engine.evaluate(F.Expand(F.Subtract(F.ChebyshevT(q, var), sign))));
+    }
+    return var;
   }
 
   /**
@@ -132,16 +184,39 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
         }
         if (onlyX) {
           IExpr factored = engine.evaluate(F.Factor(poly));
+          if (factored.isPower() && factored.exponent().isInteger()) {
+            // a repeated factor, from a relation with repeated roots like ChebyshevT(q, t) - 1
+            factored = factored.base();
+          }
           if (factored.isTimes()) {
-            IExpr sNumeric = engine.evaluate(F.N(s));
+            // the irreducible factor with s as a root: the one which is smallest at s, relative to
+            // the size of its coefficients, with 30 digits of s
+            IExpr sNumeric = engine.evaluate(F.N(s, F.ZZ(30)));
+            IExpr best = F.NIL;
+            double bestSize = Double.POSITIVE_INFINITY;
+            int candidates = 0;
             for (IExpr factor : (IAST) factored) {
-              IExpr val = engine.evaluate(F.ReplaceAll(factor, F.Rule(x, sNumeric)));
-              if (val.isPossibleZero(true)) {
-                return normalizePolynomial(factor, x, engine);
+              IExpr irreducible =
+                  factor.isPower() && factor.exponent().isInteger() ? factor.base() : factor;
+              if (irreducible.isFree(x)) {
+                continue;
+              }
+              candidates++;
+              IExpr val = engine.evaluate(F.Abs(F.ReplaceAll(irreducible, F.Rule(x, sNumeric))));
+              IExpr scale = engine.evaluate(F.Total(F.Abs(F.CoefficientList(irreducible, x))));
+              double size = val.evalfNaN() / Math.max(1.0, scale.evalfNaN());
+              if (size < bestSize) {
+                bestSize = size;
+                best = irreducible;
               }
             }
+            if (best.isPresent() && (candidates == 1 || bestSize < 1.0e-15)) {
+              return normalizePolynomial(best, x, engine);
+            }
+            // no factor vanishes at s: a product of factors isn't the minimal polynomial
+            return F.NIL;
           }
-          return normalizePolynomial(poly, x, engine);
+          return normalizePolynomial(factored, x, engine);
         }
       }
     }
@@ -276,6 +351,37 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
                 .append(extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
           }
           return timesAlloc;
+        }
+        case ID.Cos:
+        case ID.Sin:
+        case ID.Tan:
+        case ID.Cot: {
+          // trigonometric functions of rational multiples of Pi are algebraic:
+          // Sin(r*Pi) = Cos((1/2-r)*Pi), Tan = Sin/Cos, Cot = Cos/Sin
+          IRational r = ast.isAST1() ? rationalMultipleOfPi(ast.arg1()) : null;
+          if (r != null) {
+            IRational shifted = (IRational) engine.evaluate(F.Subtract(F.C1D2, r));
+            if (ast.isAST(S.Cos)) {
+              return cosineVariable(r, equations, variables, engine, cache, counter);
+            }
+            if (ast.isAST(S.Sin)) {
+              return cosineVariable(shifted, equations, variables, engine, cache, counter);
+            }
+            ISymbol cos = cosineVariable(r, equations, variables, engine, cache, counter);
+            ISymbol sin = cosineVariable(shifted, equations, variables, engine, cache, counter);
+            ISymbol numerator = ast.isAST(S.Tan) ? sin : cos;
+            ISymbol denominator = ast.isAST(S.Tan) ? cos : sin;
+            IExpr invKey = F.Power(denominator, F.CN1);
+            ISymbol invVar = cache.get(invKey);
+            if (invVar == null) {
+              invVar = F.$s("r" + counter[0]++);
+              cache.put(invKey, invVar);
+              variables.append(invVar);
+              equations.append(engine.evaluate(F.Subtract(F.Times(invVar, denominator), F.C1)));
+            }
+            return F.Times(numerator, invVar);
+          }
+          break;
         }
         default:
           break;

@@ -899,7 +899,7 @@ public final class Arithmetic {
           IExpr imaginaryExpr = ast.arg2();
           if (realExpr.isRational() && imaginaryExpr.isRational()) {
             // already evaluated
-          } else if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
+          } else if (realExpr instanceof Num && imaginaryExpr instanceof Num) {
             // already evaluated
           } else {
             realExpr = engine.evaluate(realExpr);
@@ -924,7 +924,8 @@ public final class Arithmetic {
             }
             return F.CC(re, im);
           }
-          if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
+          if (realExpr instanceof Num && imaginaryExpr instanceof Num) {
+            // machine parts; arbitrary precision parts keep their digits in re + I*im below
             return F.complexNum(((INum) realExpr).doubleValue(),
                 ((INum) imaginaryExpr).doubleValue());
           }

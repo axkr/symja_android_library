@@ -1704,7 +1704,9 @@ public class EvalEngine implements Serializable {
     engine.fNotationContext = fNotationContext;
     engine.fNumericMode = fNumericMode;
     // engine.fNumericPrecision = fNumericPrecision;
-    engine.fApfloatHelper = new FixedPrecisionApfloatHelper(getNumericPrecision());
+    // the precision as it is: a helper of the machine precision in a copy which the original
+    // hasn't would compute arbitrary precision numbers outside N() to 14 digits
+    engine.fApfloatHelper = fApfloatHelper;
     // engine.fApfloatHelperDouble = new
     // FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
     engine.fSignificantFigures = fSignificantFigures;
@@ -2081,7 +2083,7 @@ public class EvalEngine implements Serializable {
     boolean exactArgument = false;
     for (int i = 1; i < ast.size(); i++) {
       final IExpr arg = ast.get(i);
-      if (arg instanceof ApfloatNum && hasOwnPrecision((ApfloatNum) arg)) {
+      if (hasOwnPrecision(arg)) {
         // a number of a precision of its own; a numerical algorithm returns its digits untracked
         precision = Math.max(precision, arg.determinePrecision(false));
       } else if (arg.isList()) {
@@ -2105,12 +2107,23 @@ public class EvalEngine implements Serializable {
    * may return) has none - taken as the precision of the evaluation it would ask for infinitely
    * many digits of every fraction.
    */
-  private static boolean hasOwnPrecision(ApfloatNum number) {
-    final long digits = number.apfloatValue().precision();
+  private static boolean hasOwnPrecision(IExpr number) {
+    final long digits;
+    final boolean tracked;
+    if (number instanceof ApfloatNum) {
+      digits = ((ApfloatNum) number).apfloatValue().precision();
+      tracked = ((ApfloatNum) number).isSignificanceTracked();
+    } else if (number instanceof ApcomplexNum) {
+      // a complex number of a precision of its own, as a real one
+      digits = ((ApcomplexNum) number).apcomplexValue().precision();
+      tracked = ((ApcomplexNum) number).isSignificanceTracked();
+    } else {
+      return false;
+    }
     if (digits == Apfloat.INFINITE) {
       return false;
     }
-    return number.isSignificanceTracked() || digits > ParserConfig.MACHINE_PRECISION;
+    return tracked || digits > ParserConfig.MACHINE_PRECISION;
   }
 
   /**
@@ -2129,16 +2142,15 @@ public class EvalEngine implements Serializable {
     while (first.isList() && !((IAST) first).isEmpty()) {
       first = ((IAST) first).arg1();
     }
-    if (!(first instanceof ApfloatNum)) {
+    if (!(first instanceof ApfloatNum || first instanceof ApcomplexNum)) {
       return 0L;
     }
     long precision = 0L;
     for (int i = 1; i < list.size(); i++) {
       final IExpr element = list.get(i);
-      if (element instanceof ApfloatNum) {
-        final ApfloatNum number = (ApfloatNum) element;
-        if (hasOwnPrecision(number)) {
-          precision = Math.max(precision, number.determinePrecision(false));
+      if (element instanceof ApfloatNum || element instanceof ApcomplexNum) {
+        if (hasOwnPrecision(element)) {
+          precision = Math.max(precision, element.determinePrecision(false));
         }
       } else if (element.isMachineNumber()) {
         // the machine number decides the precision of the result

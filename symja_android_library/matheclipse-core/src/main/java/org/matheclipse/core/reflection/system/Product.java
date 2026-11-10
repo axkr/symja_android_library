@@ -23,6 +23,12 @@ import com.google.common.base.Suppliers;
 
 public class Product extends ListFunctions.Table implements ProductRules {
 
+  /**
+   * The time limit of the limit of the partial products of an infinite product, and of the
+   * simplification of its closed form.
+   */
+  private static final long LIMIT_SECONDS = 5L;
+
   private static com.google.common.base.Supplier<Matcher> MATCHER1;
 
   private static Matcher matcher1() {
@@ -49,6 +55,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return localized;
       }
     }
+    if (Sum.hasAssumptionsOption(ast)) {
+      // unevaluated under the assumptions, the product keeps its option
+      return Sum.withAssumptionsOption(ast, engine);
+    }
     IAST withValues = Sum.withIndexDependentValues(ast);
     if (withValues.isPresent()) {
       return withValues;
@@ -70,7 +80,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
       // F.expand() falls back to its argument and never returns NIL
       arg1 = F.expand(arg1, false, false, false);
     }
-    if (arg1.isTimes() && !isLinearIn(arg1, ast.last(), engine)) {
+    // the products of the factors of an infinite product may diverge, while their product doesn't
+    final boolean infiniteRange = ast.last().isList() && ast.last().argSize() >= 3
+        && (ast.last().last().isInfinity() || ast.last().second().isNegativeInfinity());
+    if (arg1.isTimes() && !infiniteRange && !isLinearIn(arg1, ast.last(), engine)) {
       IExpr resultTimes = engine.evaluate(arg1.mapThread(ast, 1));
       if (resultTimes.isTimes()) {
         return factorialsToGamma(engine.evaluate(F.FullSimplify(resultTimes)), engine);
@@ -179,8 +192,31 @@ public class Product extends ListFunctions.Table implements ProductRules {
             final IExpr from = iterator.getLowerLimit();
             final IExpr to = iterator.getUpperLimit();
 
+            if (to.isInfinity() && preevaledProduct.isAST2()) {
+              IExpr gammaForm = infiniteRationalProduct(arg1, var, from, engine);
+              if (gammaForm.isPresent()) {
+                return gammaForm;
+              }
+              // the limit of the partial products: a closed form with Infinity substituted is
+              // Gamma(Infinity)^2/Gamma(Infinity)^2, Indeterminate
+              ISymbol upper = F.Dummy("m");
+              IExpr partial = tryClosedFormReduction(arg1, var, from, upper, engine);
+              if (partial.isPresent()) {
+                IExpr limit = engine.evalQuiet(F.TimeConstrained(
+                    F.Limit(partial, F.Rule(upper, F.CInfinity)), F.ZZ(LIMIT_SECONDS)));
+                if (limit.isFree(x -> x.isAST(S.Limit) || x == S.Indeterminate || x == S.$Aborted,
+                    true) && limit.isFree(upper)) {
+                  return engine.evaluate(F.Simplify(limit));
+                }
+              }
+            }
             // Divert to the Hypergeometric Symbolic Product Engine
             IExpr symProd = tryClosedFormReduction(arg1, var, from, to, engine);
+            if (symProd.isPresent() && to.isInfinity()
+                && !engine.evalQuiet(symProd).isFree(S.Indeterminate, true)) {
+              // no value of the partial products' limit: not Indeterminate
+              symProd = F.NIL;
+            }
             if (symProd.isPresent()) {
 
               // Simplify the result to ensure factorial ratios are reduced
@@ -423,6 +459,125 @@ public class Product extends ListFunctions.Table implements ProductRules {
   private static final int MAX_ROOT_PRODUCT_DEGREE = 4;
 
   /**
+   * <code>Product(R(k), {k, from, Infinity})</code> for a rational function
+   * <code>R(k) = (k-a1)*...*(k-ad) / ((k-b1)*...*(k-bd))</code> with numeric roots of the same sum
+   * (otherwise the partial products tend to <code>0</code> or diverge):
+   *
+   * <pre>
+   * Product(Gamma(from-bj), {j, 1, d}) / Product(Gamma(from-aj), {j, 1, d})
+   * </pre>
+   *
+   * @return {@link F#NIL} if <code>R</code> isn't of this form, a root can't be found exactly or a
+   *         factor of the denominator vanishes in the range
+   */
+  private static IExpr infiniteRationalProduct(IExpr term, ISymbol k, IExpr from,
+      EvalEngine engine) {
+    if (!from.isInteger()) {
+      return F.NIL;
+    }
+    try {
+      IExpr together = engine.evaluate(F.Together(term));
+      IExpr numerator = engine.evaluate(F.Numerator(together));
+      IExpr denominator = engine.evaluate(F.Denominator(together));
+      if (denominator.isFree(k) || !engine.evaluate(F.Variables(together)).equals(F.list(k))
+          || !numerator.isPolynomial(F.list(k)) || !denominator.isPolynomial(F.list(k))) {
+        return F.NIL;
+      }
+      IExpr degree = engine.evaluate(F.Exponent(numerator, k));
+      if (!degree.isInteger() || !degree.equals(engine.evaluate(F.Exponent(denominator, k)))) {
+        return F.NIL;
+      }
+      IExpr previous = engine.evaluate(F.Subtract(degree, F.C1));
+      // equal leading coefficients and equal sums of the roots
+      IExpr leadingNumerator = engine.evaluate(F.Coefficient(numerator, k, degree));
+      IExpr leadingDenominator = engine.evaluate(F.Coefficient(denominator, k, degree));
+      IExpr ratio = engine.evaluate(F.Subtract(
+          F.Divide(F.Coefficient(numerator, k, previous), leadingNumerator),
+          F.Divide(F.Coefficient(denominator, k, previous), leadingDenominator)));
+      if (!leadingNumerator.equals(leadingDenominator) || !ratio.isZero()) {
+        return F.NIL;
+      }
+      IASTAppendable numeratorStarts = F.ListAlloc();
+      IASTAppendable denominatorStarts = F.ListAlloc();
+      int zeroFactor = rootStarts(numerator, k, from, numeratorStarts, engine);
+      if (zeroFactor < 0) {
+        return F.NIL;
+      }
+      if (rootStarts(denominator, k, from, denominatorStarts, engine) != 0) {
+        // a vanishing factor of the denominator, or roots which aren't known
+        return F.NIL;
+      }
+      if (zeroFactor > 0) {
+        return F.C0;
+      }
+      IExpr result = engine.evaluate(F.Divide(gammaProduct(denominatorStarts, true, engine),
+          gammaProduct(numeratorStarts, true, engine)));
+      IExpr simplified = engine.evalQuiet(F.TimeConstrained(F.Simplify(result),
+          F.ZZ(LIMIT_SECONDS)));
+      return simplified.isPresent() && simplified != S.$Aborted ? simplified : result;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * Append <code>from - r</code> for each root <code>r</code> of the polynomial <code>p</code> in
+   * <code>k</code>, as often as its multiplicity.
+   *
+   * @return <code>-1</code> if a root can't be found exactly, <code>1</code> if a root is an
+   *         integer <code>&gt;= from</code> (a factor of the product vanishes), <code>0</code>
+   *         otherwise
+   */
+  private static int rootStarts(IExpr p, ISymbol k, IExpr from, IASTAppendable starts,
+      EvalEngine engine) {
+    IExpr factorList = engine.evaluate(F.FactorList(p));
+    if (!factorList.isList()) {
+      return -1;
+    }
+    int result = 0;
+    for (IExpr factorPower : (IAST) factorList) {
+      if (!factorPower.isList2()) {
+        return -1;
+      }
+      IExpr factor = factorPower.first();
+      int multiplicity = factorPower.second().toIntDefault();
+      if (factor.isFree(k)) {
+        continue;
+      }
+      int factorDegree = engine.evaluate(F.Exponent(factor, k)).toIntDefault();
+      if (multiplicity <= 0 || factorDegree <= 0 || factorDegree > MAX_ROOT_PRODUCT_DEGREE) {
+        return -1;
+      }
+      IExpr solved = engine.evalQuiet(F.SolveDistinct(F.Equal(factor, F.C0), k));
+      if (!solved.isList() || ((IAST) solved).argSize() != factorDegree) {
+        return -1;
+      }
+      for (IExpr solution : (IAST) solved) {
+        if (!solution.isList1() || !solution.first().isRule()
+            || !solution.first().first().equals(k)) {
+          return -1;
+        }
+        IExpr root = solution.first().second();
+        if (!root.isFree(k) || !root.isNumericFunction(true)
+            || !root.isFree(h -> h == S.Root || h == S.RootSum, true)) {
+          return -1;
+        }
+        // Solve returns (-1)^(2/3); the real and imaginary parts are needed for the reflection
+        root = engine.evaluate(F.Expand(F.ComplexExpand(root)));
+        IExpr start = engine.evaluate(F.Subtract(from, root));
+        if (start.isInteger() && !start.isPositive()) {
+          result = 1;
+        }
+        for (int i = 0; i < multiplicity; i++) {
+          starts.append(start);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
    * <code>Product(p(k), {k, lower, upper})</code> for a polynomial <code>p(k) = c*(k-r1)*...*(k-rd)
    * </code> with exact (possibly complex) roots <code>rj</code>:
    *
@@ -450,34 +605,19 @@ public class Product extends ListFunctions.Table implements ProductRules {
       return F.NIL;
     }
     IExpr leadingCoefficient = engine.evaluate(F.Coefficient(p, k, degreeExpr));
-    IExpr solved = engine.evalQuiet(F.SolveDistinct(F.Equal(p, F.C0), k));
-    if (!solved.isList() || ((IAST) solved).argSize() != degree) {
-      // no multiple roots: an irreducible polynomial is square free
+    IASTAppendable gammaArgs = F.ListAlloc(degree);
+    if (rootStarts(p, (ISymbol) k, lower, gammaArgs, engine) != 0) {
+      // a root which isn't known, or Gamma(lower - root) is singular: the integer root is inside
+      // the range
       return F.NIL;
     }
     IASTAppendable numerator = F.TimesAlloc(degree + 1);
-    IASTAppendable gammaArgs = F.ListAlloc(degree);
-    for (IExpr solution : (IAST) solved) {
-      IExpr root = F.NIL;
-      if (solution.isList1() && solution.first().isRule() && solution.first().first().equals(k)) {
-        root = solution.first().second();
-      }
-      if (root.isNIL() || !root.isFree(k) || !root.isNumericFunction(true)
-          || !root.isFree(h -> h == S.Root || h == S.RootSum, true)) {
-        return F.NIL;
-      }
-      // Solve returns (-1)^(2/3); the real and imaginary parts are needed below
-      root = engine.evaluate(F.Expand(F.ComplexExpand(root)));
-      IExpr start = engine.evaluate(F.Subtract(lower, root));
-      if (start.isInteger() && !start.isPositive()) {
-        // Gamma(lower - root) is singular: the integer root is inside the range
-        return F.NIL;
-      }
-      numerator.append(F.Gamma(F.Plus(upper, F.C1, F.Negate(root))));
-      gammaArgs.append(start);
+    // Gamma(upper + 1 - root) == Gamma(count + start), count = upper - lower + 1
+    IExpr shift = engine.evaluate(F.Plus(F.Subtract(upper, lower), F.C1));
+    for (IExpr start : gammaArgs) {
+      numerator.append(F.Gamma(F.Plus(shift, start)));
     }
-    IExpr count = engine.evaluate(F.Plus(F.Subtract(upper, lower), F.C1));
-    numerator.append(F.Power(leadingCoefficient, count));
+    numerator.append(F.Power(leadingCoefficient, shift));
     IExpr denominator = gammaProduct(gammaArgs, engine);
     return engine.evaluate(F.Divide(numerator, denominator));
   }
@@ -493,6 +633,15 @@ public class Product extends ListFunctions.Table implements ProductRules {
    * </pre>
    */
   private static IExpr gammaProduct(IAST args, EvalEngine engine) {
+    return gammaProduct(args, false, engine);
+  }
+
+  /**
+   * See {@link #gammaProduct(IAST, EvalEngine)}.
+   *
+   * @param rationalShifts combine also <code>c+z, c-z</code> with a rational <code>z</code>
+   */
+  private static IExpr gammaProduct(IAST args, boolean rationalShifts, EvalEngine engine) {
     IASTAppendable result = F.TimesAlloc(args.argSize());
     boolean[] used = new boolean[args.size()];
     for (int i = 1; i < args.size(); i++) {
@@ -503,7 +652,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
       IExpr paired = F.NIL;
       for (int j = i + 1; j < args.size() && paired.isNIL(); j++) {
         if (!used[j]) {
-          paired = reflectionPair(s1, args.get(j), engine);
+          paired = reflectionPair(s1, args.get(j), rationalShifts, engine);
           if (paired.isPresent()) {
             used[j] = true;
           }
@@ -520,16 +669,18 @@ public class Product extends ListFunctions.Table implements ProductRules {
    * Gammas are finite. Like WMA also for a real <code>z</code>:
    * <code>Gamma(2-Sqrt(2))*Gamma(2+Sqrt(2)) == -Sqrt(2)*Pi/Sin(Sqrt(2)*Pi)</code>.
    *
+   * @param rationalShifts allow a rational <code>z</code>
    * @return {@link F#NIL} if the arguments aren't of this form
    */
-  private static IExpr reflectionPair(IExpr s1, IExpr s2, EvalEngine engine) {
+  private static IExpr reflectionPair(IExpr s1, IExpr s2, boolean rationalShifts,
+      EvalEngine engine) {
     IExpr twoC = engine.evaluate(F.Plus(s1, s2));
     if (!twoC.isInteger() || !twoC.isPositive()) {
       return F.NIL;
     }
     IExpr c = engine.evaluate(F.Times(F.C1D2, twoC));
     IExpr z = engine.evaluate(F.Expand(F.Subtract(s1, c)));
-    if (z.isRational() || !z.isNumericFunction(true)) {
+    if ((z.isRational() && (!rationalShifts || z.isInteger())) || !z.isNumericFunction(true)) {
       // a rational z belongs to linear factors, which are multiplied elsewhere
       return F.NIL;
     }

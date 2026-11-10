@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -2153,6 +2154,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
       if (special.gammaOrHarmonic) {
         function = engine.evaluate(F.FunctionExpand(function));
+        if (limit.isInfinity() || limit.isNegativeInfinity()) {
+          // Gamma(x+a) whose shifts differ by integers cancel exactly as rational functions:
+          // Gamma(x-1)*Gamma(x+3)/Gamma(x+1)^2 is (x+1)*(x+2)/((x-1)*x)
+          IExpr aligned = alignIntegerShiftedGammas(function, symbol, engine);
+          if (aligned.isPresent()) {
+            function = aligned;
+            if (function.isFree(g -> g.isAST(S.Gamma), true)) {
+              return evalLimit(function, new LimitData(symbol, limit, rule, direction), engine);
+            }
+          }
+        }
 
         // Gamma(base + shift) with a diverging base and a shift -> 0 (Gamma(x + 1/Gamma(x)),
         // Gamma(x + E^(-x))): a difference Gamma(base+shift) - Gamma(base) is an unresolved
@@ -4172,6 +4184,70 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return false;
     }
+  }
+
+  /** The largest integer difference of two Gamma arguments which is written as a polynomial. */
+  private static final int MAX_GAMMA_SHIFT = 64;
+
+  /**
+   * <code>function</code> with each <code>Gamma(x+c)</code>, <code>c</code> rational, written as
+   * <code>Gamma(x+c0)*(x+c0)*(x+c0+1)*...*(x+c-1)</code>, <code>c0</code> the smallest shift which
+   * differs from <code>c</code> by an integer: the Gammas of one class cancel in
+   * <code>Together</code>.
+   *
+   * @return {@link F#NIL} if there are no two such Gammas
+   */
+  private static IExpr alignIntegerShiftedGammas(IExpr function, ISymbol x, EvalEngine engine) {
+    java.util.Map<IExpr, IRational> smallest = new java.util.HashMap<>();
+    java.util.Map<IExpr, java.util.Set<IRational>> shifts = new java.util.HashMap<>();
+    java.util.List<IExpr> gammas = new java.util.ArrayList<>();
+    function.has(e -> {
+      if (e.isAST(S.Gamma, 2)) {
+        gammas.add(e);
+      }
+      return false;
+    }, true);
+    for (IExpr g : gammas) {
+      IExpr c = engine.evaluate(F.Subtract(g.first(), x));
+      if (!c.isRational()) {
+        continue;
+      }
+      IRational shift = (IRational) c;
+      IExpr key = engine.evaluate(F.Subtract(shift, F.Floor(shift)));
+      IRational min = smallest.get(key);
+      if (min == null || shift.isLT(min)) {
+        smallest.put(key, shift);
+      }
+      shifts.computeIfAbsent(key, k -> new java.util.HashSet<>()).add(shift);
+    }
+    if (shifts.values().stream().noneMatch(s -> s.size() > 1)) {
+      return F.NIL;
+    }
+    IExpr replaced = F.subst(function, e -> {
+      if (!e.isAST(S.Gamma, 2)) {
+        return F.NIL;
+      }
+      IExpr c = engine.evaluate(F.Subtract(e.first(), x));
+      if (!c.isRational()) {
+        return F.NIL;
+      }
+      IExpr key = engine.evaluate(F.Subtract(c, F.Floor(c)));
+      IRational c0 = smallest.get(key);
+      if (c0 == null || shifts.get(key).size() < 2) {
+        return F.NIL;
+      }
+      int difference = engine.evaluate(F.Subtract(c, c0)).toIntDefault();
+      if (difference <= 0 || difference > MAX_GAMMA_SHIFT) {
+        return F.NIL;
+      }
+      IASTAppendable product = F.TimesAlloc(difference + 1);
+      product.append(F.Gamma(F.Plus(x, c0)));
+      for (int j = 0; j < difference; j++) {
+        product.append(F.Plus(x, c0, F.ZZ(j)));
+      }
+      return product;
+    });
+    return engine.evaluate(F.Together(replaced));
   }
 
   /**

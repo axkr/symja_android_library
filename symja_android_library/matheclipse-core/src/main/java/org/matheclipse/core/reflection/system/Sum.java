@@ -340,6 +340,27 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return false;
   }
 
+  /**
+   * <code>Sum(f, iterators..., Assumptions -> a)</code> and <code>Product(...)</code>: the sum
+   * without the option, evaluated under <code>Assuming(a, ...)</code>.
+   *
+   * @return {@link F#NIL} if the sum stays unevaluated
+   */
+  /** Test if the last argument of a <code>Sum</code> or <code>Product</code> is <code>Assumptions -> a</code>. */
+  static boolean hasAssumptionsOption(IAST ast) {
+    return ast.argSize() >= 3 && ast.last().isRuleAST() && ast.last().first() == S.Assumptions;
+  }
+
+  static IExpr withAssumptionsOption(IAST ast, EvalEngine engine) {
+    IAST withoutOption = ast.removeAtCopy(ast.argSize());
+    IExpr result =
+        engine.evaluate(F.binaryAST2(S.Assuming, ast.last().second(), withoutOption));
+    if (result.isAST(ast.head()) && result.size() == withoutOption.size()) {
+      return F.NIL;
+    }
+    return result;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     {
@@ -349,6 +370,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
       if (localized != null) {
         return localized;
       }
+    }
+    if (hasAssumptionsOption(ast)) {
+      // unevaluated under the assumptions, the sum keeps its option
+      return withAssumptionsOption(ast, engine);
     }
     IAST withValues = withIndexDependentValues(ast);
     if (withValues.isPresent()) {
@@ -1095,6 +1120,16 @@ public class Sum extends ListFunctions.Table implements SumRules {
     if (rational.isPresent()) {
       return rational;
     }
+    // (-1)^k times a rational summand -> PolyGamma and Hurwitz Zeta differences
+    boolean[] divergent = new boolean[1];
+    IExpr alternating = alternatingRationalSum(expr, var, from, divergent, engine);
+    if (alternating.isPresent()) {
+      return alternating;
+    }
+    if (divergent[0]) {
+      // Sum::div is printed already
+      return F.NIL;
+    }
     // hypergeometric summand over [from, Infinity) -> HypergeometricPFQ closed form. Used as a last
     // resort so that summands handled by the rules/reduction above keep their established form.
     if (from.isInteger() && !from.isNegative()) {
@@ -1565,6 +1600,92 @@ public class Sum extends ListFunctions.Table implements SumRules {
         return engine.evaluate(F.Together(result));
       }
       return engine.evaluate(result);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * <code>Sum((-1)^(k+c)*R(k), {k, from, Infinity})</code> for a rational function <code>R</code>
+   * which tends to <code>0</code>: with the partial fractions <code>a/(k+s)^m</code> and
+   * <code>L = from + s</code>,
+   * <code>Sum((-1)^j/(j+L), {j, 0, Infinity}) = (PolyGamma(0, (L+1)/2) - PolyGamma(0, L/2))/2</code>
+   * and
+   * <code>Sum((-1)^j/(j+L)^m, {j, 0, Infinity}) = 2^-m (Zeta(m, L/2) - Zeta(m, (L+1)/2))</code>.
+   *
+   * @param divergent set to <code>true</code> if the terms don't tend to <code>0</code>
+   * @return {@link F#NIL} if the summand isn't of this form
+   */
+  private static IExpr alternatingRationalSum(IExpr term, ISymbol var, IExpr from,
+      boolean[] divergent, EvalEngine engine) {
+    if (!from.isInteger()) {
+      return F.NIL;
+    }
+    IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+    IExpr sign = F.NIL;
+    IASTAppendable rest = F.TimesAlloc(factors.argSize());
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.base().isMinusOne() && sign.isNIL()) {
+        // (-1)^(k + c): the sign (-1)^c
+        IExpr c = engine.evaluate(F.Subtract(factor.exponent(), var));
+        if (!c.isInteger()) {
+          return F.NIL;
+        }
+        sign = c.isEven() ? F.C1 : F.CN1;
+      } else {
+        rest.append(factor);
+      }
+    }
+    if (sign.isNIL()) {
+      return F.NIL;
+    }
+    try {
+      IExpr rational = engine.evaluate(rest.oneIdentity1());
+      IExpr together = engine.evaluate(F.Together(rational));
+      IExpr numerator = engine.evaluate(F.Numerator(together));
+      IExpr denominator = engine.evaluate(F.Denominator(together));
+      if (denominator.isFree(var, true) || !engine.evalTrue(F.PolynomialQ(numerator, var))
+          || !engine.evalTrue(F.PolynomialQ(denominator, var))) {
+        return F.NIL;
+      }
+      int degreeNumerator = engine.evaluate(F.Exponent(numerator, var)).toIntDefault();
+      int degreeDenominator = engine.evaluate(F.Exponent(denominator, var)).toIntDefault();
+      if (degreeNumerator >= degreeDenominator || degreeDenominator < 1) {
+        // the terms don't tend to 0: no sum
+        if (degreeDenominator >= 0 && degreeNumerator >= degreeDenominator
+            && engine.evaluate(F.Variables(together)).equals(F.list(var))) {
+          Errors.printMessage(S.Sum, "div", F.List(), engine);
+          divergent[0] = true;
+        }
+        return F.NIL;
+      }
+      IExpr apart = engine.evaluate(F.Apart(together, var));
+      IAST parts = apart.isPlus() ? (IAST) apart : F.Plus(apart);
+      IASTAppendable result = F.PlusAlloc(parts.size());
+      for (IExpr part : parts) {
+        IExpr[] shiftedPower = linearDenominatorPower(part, var, engine);
+        if (shiftedPower == null) {
+          return F.NIL;
+        }
+        IExpr coefficient = shiftedPower[0];
+        int power = shiftedPower[2].toIntDefault();
+        IExpr lower = engine.evaluate(F.Plus(from, shiftedPower[1]));
+        if (power < 1 || isPolyGammaPole(lower)) {
+          return F.NIL;
+        }
+        IExpr half = F.Times(F.C1D2, lower);
+        IExpr halfNext = F.Times(F.C1D2, F.Plus(lower, F.C1));
+        IExpr value = power == 1
+            ? F.Times(F.C1D2, F.Subtract(F.PolyGamma(F.C0, halfNext), F.PolyGamma(F.C0, half)))
+            : F.Times(F.Power(F.C2, F.ZZ(-power)),
+                F.Subtract(F.Zeta(F.ZZ(power), half), F.Zeta(F.ZZ(power), halfNext)));
+        result.append(F.Times(coefficient, value));
+      }
+      // (-1)^k = (-1)^from (-1)^(k-from)
+      IExpr fromSign = ((IInteger) from).isEven() ? F.C1 : F.CN1;
+      return engine.evaluate(
+          F.FunctionExpand(F.Times(sign, fromSign, result.oneIdentity0())));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;

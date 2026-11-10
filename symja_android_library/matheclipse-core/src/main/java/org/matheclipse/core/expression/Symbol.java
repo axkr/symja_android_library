@@ -740,6 +740,12 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public long determinePrecision(boolean postParserProcessing) {
+    if (postParserProcessing) {
+      // the precision of an input is the one of its own numbers: the value a variable had before,
+      // like x in x = N(Pi, 20); ..., isn't the one it gets in the input. A number of a precision
+      // of its own sets the precision of the exact numbers next to it while they are evaluated
+      return -1;
+    }
     IExpr assignedValue = assignedValue();
     if (assignedValue != null) {
       EvalEngine engine = EvalEngine.get();

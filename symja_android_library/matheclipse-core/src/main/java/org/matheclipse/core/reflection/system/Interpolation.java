@@ -463,55 +463,9 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       }
       return Errors.printMessage(ast.topHead(), "optx", F.list(S.Method, ast), engine);
     }
-    if (ast.argSize() == 1 || ast.argSize() == 2) {
-      if (dims[1] >= 2) {
-        int rowsSize = dims[0];
-        if (rowsSize >= 4) {
-          return piecewisePolynomialInterpolate(ast, rowsSize, engine);
-        }
-      }
-    }
-    return F.NIL;
-  }
-
-  public IExpr piecewisePolynomialInterpolate(final IAST ast, int rowsSize, EvalEngine engine) {
-    final IAST function = ast;
-    if (function.argSize() == 1 || function.argSize() == 2) {
-
-      if (rowsSize >= 4) {
-        IAST matrix = (IAST) function.arg1();
-        // do a Piecewise polynomial interpolation with InterpolatingPolynomial
-        IASTAppendable list1 = F.ListAlloc(rowsSize);
-        IASTAppendable minMaxList = F.ListAlloc(rowsSize);
-        for (int j = 1; j < matrix.size(); j++) {
-          IExpr arg1 = matrix.get(j).first();
-          minMaxList.append(arg1);
-        }
-        double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalfNaN();
-        double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalfNaN();
-        if (Double.isNaN(min) || Double.isNaN(max)) {
-          return F.NIL;
-        }
-        if (rowsSize <= 5) {
-          IAST interpolator = F.Function(F.InterpolatingPolynomial(matrix, F.Slot1));
-          return InterpolatingFunctionExpr.newInstance(interpolator, min, max);
-        }
-
-        int i = 1;
-        for (int j = i + 3; j <= rowsSize; j++) {
-          IAST compare;
-          compare = createComparator(matrix, i, j, rowsSize);
-          IASTAppendable data = F.ListAlloc(4);
-          for (int k = i; k <= j; k++) {
-            data.append(matrix.get(k));
-          }
-          IAST list = F.list(F.InterpolatingPolynomial(data, F.Slot1), compare);
-          list1.append(list);
-          i++;
-        }
-        IAST interpolator = F.Function(F.Piecewise(list1));
-        return InterpolatingFunctionExpr.newInstance(interpolator, min, max);
-      }
+    if ((ast.argSize() == 1 || ast.argSize() == 2) && dims[1] >= 2 && dims[0] >= 4) {
+      // the cubic through the 4 points around each interval, not one polynomial through all
+      return polynomialPieces((IAST) ast.arg1(), dims[0], 3, engine);
     }
     return F.NIL;
   }
@@ -545,6 +499,11 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
     for (int j = 1; j < rows; j++) {
       // the interval from point j to point j+1, with the order+1 points around it
       int first = Math.max(1, Math.min(rows - order, j - (order - 1) / 2));
+      if (j < rows - 1
+          && first == Math.max(1, Math.min(rows - order, j + 1 - (order - 1) / 2))) {
+        // the next interval uses the same points: one piece for both
+        continue;
+      }
       IASTAppendable data = F.ListAlloc(order + 1);
       for (int k = first; k <= first + order; k++) {
         data.append(matrix.get(k));
@@ -564,22 +523,6 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
     IExpr weight = F.N(F.Divide(F.Subtract(point2.first(), F.Slot1),
         F.Subtract(point2.first(), point1.first())));
     return F.Plus(point2.second(), F.Times(weight, F.Subtract(point1.second(), point2.second())));
-  }
-
-  private IAST createComparator(IAST matrix, int i, int j, int size) {
-    if (i == 1) {
-      // # < matrix[i+2, 1]
-      return F.Less(F.Slot1, matrix.getPart(i + 2, 1));
-    } else {
-      if (j < size) {
-        // matrix[i+1, 1] <= # < matrix[i+2, 1]
-        return F.And(F.LessEqual(matrix.getPart(i + 1, 1), F.Slot1),
-            F.Less(F.Slot1, matrix.getPart(i + 2, 1)));
-      } else {
-        // # >= matrix[i+1, 1]
-        return F.GreaterEqual(F.Slot1, matrix.getPart(i + 1, 1));
-      }
-    }
   }
 
   private InterpolatingFunctionExpr hermiteInterpolate(IAST matrixAST, int[] dims,
