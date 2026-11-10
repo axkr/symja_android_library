@@ -13,7 +13,7 @@
 
 Try the full-blown Android or iOS apps:
 <ul>
-<li><a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
+<li><a href="https://play.google.com/store/apps/details?id=advanced.scientific.calculator.calc991.plus">
 	<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/google_playstore_badge.png" alt="Google Play" width="200"></a></li>
 <li><a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
     <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/appstore_badge.png" alt="App Store" width="200"></a></li>
