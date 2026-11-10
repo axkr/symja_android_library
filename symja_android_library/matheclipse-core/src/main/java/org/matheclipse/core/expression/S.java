@@ -20791,6 +20791,16 @@ public class S {
       S.initFinalSymbol("ParameterMixtureDistribution", ID.ParameterMixtureDistribution);
 
   /**
+   * ParametricNDSolveValue(x) - TODO describe `ParametricNDSolveValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParametricNDSolveValue.md">ParametricNDSolveValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ParametricNDSolveValue =
+      S.initFinalSymbol("ParametricNDSolveValue", ID.ParametricNDSolveValue);
+
+  /**
    * ParametricPlot({function1, function2}, {t, tMin, tMax}) - generate a JavaScript control for the
    * parametric expressions `function1`, `function2` in the `t` range `{t, tMin, tMax}`.
    * 
