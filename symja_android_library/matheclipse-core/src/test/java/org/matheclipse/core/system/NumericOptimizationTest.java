@@ -178,6 +178,41 @@ public class NumericOptimizationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNMaximizeOnAOneVariableConstraint() {
+    // the origin is a stationary point of the objective: the maxima are on the boundary
+    check("NMaximize({x^4, x^2 <= 9}, x)", //
+        "{81.0,{x->3.0}}");
+    check("NMinimize({-x^2 - 1, x^2 <= 1}, x)", //
+        "{-2.0,{x->1.0}}");
+    check("NMaximize({(x - 2)^2, x^2 <= 16}, x)", //
+        "{36.0,{x->-4.0}}");
+  }
+
+  @Test
+  public void testFindMinimumToMachinePrecision() {
+    // the stationary point is {3.0000730576798784, -1.0471255378468650}, a search which stops on
+    // the change of the function value ends at {3.0000473, -1.0471345}
+    check("g = (x - 3)^2 + (y + 1)^4 + Cos(x*y); "
+        + "Round(10^6*{x, y} /. FindMinimum(g, {{x, 0}, {y, 0}})[[2]])", //
+        "{3000073,-1047126}");
+  }
+
+  @Test
+  public void testFindMinimumPolishStaysInTheBasin() {
+    // stationary points every Pi/200: the polished point is the minimum the search ended next to
+    check("g = Cos(200*x) + x^2/1000; "
+        + "a = x /. FindMinimum(g, {x, 0.02})[[2]]; "
+        + "b = x /. FindMinimum(g, {x, 0.02}, Method -> \"Powell\")[[2]]; "
+        + "{Abs(a - b) < 10^-6, Abs(D(g, x) /. x -> a) < 10^-8}", //
+        "{True,True}");
+    check("h = Sin(300*x)*Sin(300*y) + (x^2 + y^2)/10^4; "
+        + "a = {x, y} /. FindMinimum(h, {{x, 0.01}, {y, 0.01}})[[2]]; "
+        + "b = {x, y} /. FindMinimum(h, {{x, 0.01}, {y, 0.01}}, Method -> \"Powell\")[[2]]; "
+        + "Max(Abs(a - b)) < 10^-6", //
+        "True");
+  }
+
+  @Test
   public void testNMinimizeNoPoints() {
     // NMinimize::nsol and {Infinity, {x -> Indeterminate, y -> Indeterminate}}
     check("NMinimize({x + y, x^2 + y^2 <= 1 && x + y >= 3}, {x, y})", //

@@ -1,8 +1,11 @@
 package org.matheclipse.core.expression;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Characters;
 
@@ -60,14 +63,27 @@ public final class FormalSymbol extends Symbol {
    */
   private final String fInputName;
 
+  /** <code>true</code> for a Greek formal symbol like <code>\[FormalAlpha]</code>. */
+  private final boolean fGreek;
+
   /**
    * @param symbolName the plain name, e.g. <code>"k"</code>
    * @param inputName the script's name, e.g. <code>"\\[FormalK]"</code>, or <code>null</code> for
    *        an internal symbol
    */
   FormalSymbol(String symbolName, String inputName) {
+    this(symbolName, inputName, false);
+  }
+
+  /**
+   * @param symbolName the plain name, e.g. <code>"k"</code> or <code>"α"</code>
+   * @param inputName the script's name or <code>null</code> for an internal symbol
+   * @param greek <code>true</code> for a Greek formal symbol
+   */
+  private FormalSymbol(String symbolName, String inputName, boolean greek) {
     super(symbolName, Context.SYSTEM);
     fInputName = inputName;
+    fGreek = greek;
     // assigned directly: setAttributes() refuses a locked symbol
     fAttributes = PROTECTED;
   }
@@ -194,6 +210,86 @@ public final class FormalSymbol extends Symbol {
    */
   @Override
   public Object readResolve() {
-    return F.HIDDEN_SYMBOLS_MAP.get(fSymbolName);
+    return fGreek ? GREEK_BY_PLAIN_NAME.get(fSymbolName) : F.HIDDEN_SYMBOLS_MAP.get(fSymbolName);
+  }
+
+  /**
+   * The formal symbol of a plain name, as it is written by a serializer.
+   *
+   * @param plainName the plain name, e.g. <code>"k"</code> or <code>"α"</code>
+   * @return <code>null</code> if there is no formal symbol of the name
+   */
+  public static ISymbol ofPlainName(String plainName) {
+    ISymbol symbol = F.HIDDEN_SYMBOLS_MAP.get(plainName);
+    if (symbol instanceof FormalSymbol) {
+      return symbol;
+    }
+    return GREEK_BY_PLAIN_NAME.get(plainName);
+  }
+
+  /** The Greek formal symbols by the name of their named character, e.g. "FormalAlpha". */
+  private static final Map<String, FormalSymbol> GREEK_FORMAL_SYMBOLS = new HashMap<>();
+
+  /**
+   * The Greek formal symbols by their plain name, e.g. "α". They are kept out of the map of the
+   * hidden symbols, which creates internal symbols by name.
+   */
+  private static final Map<String, FormalSymbol> GREEK_BY_PLAIN_NAME = new HashMap<>();
+
+  /**
+   * Create the Greek formal symbols <code>\[FormalAlpha]</code>, ...,
+   * <code>\[FormalCapitalOmega]</code>, <code>\[FormalCurlyPhi]</code>, ... and register them in
+   * the <code>System`</code> context under their named character, as the Latin formal symbols of
+   * {@link S} are registered. The plain name of a Greek formal symbol is its Greek letter, e.g.
+   * <code>"α"</code> for <code>\[FormalAlpha]</code>.
+   *
+   * <p>
+   * Called once from the static initializer of {@link F}, after {@link S} has created the Latin
+   * formal symbols.
+   */
+  static synchronized void initGreekFormalSymbols() {
+    if (!GREEK_FORMAL_SYMBOLS.isEmpty()) {
+      return;
+    }
+    // the Latin formal letters are \uF800 ... \uF833, the Greek ones follow
+    for (char ch = '\uF834'; ch <= '\uF88F'; ch++) {
+      String characterName = Characters.unicodeName(ch);
+      if (characterName == null || !characterName.startsWith("Formal")) {
+        continue;
+      }
+      String letter = Characters.NamedCharactersMap.get(characterName.substring(6));
+      String plainName = letter != null ? letter : String.valueOf(ch);
+      FormalSymbol symbol = new FormalSymbol(plainName, "\\[" + characterName + "]", true);
+      GREEK_FORMAL_SYMBOLS.put(characterName, symbol);
+      GREEK_BY_PLAIN_NAME.putIfAbsent(plainName, symbol);
+      Context.SYSTEM.put(String.valueOf(ch), symbol);
+    }
+  }
+
+  /**
+   * The block of a symbol in the canonical order, which is compared before the names: a Greek
+   * formal symbol comes before all other symbols, so that <code>\[FormalAlpha]+u</code> keeps this
+   * order.
+   *
+   * <p>
+   * The Latin formal symbols stay sorted by their plain letter, like the symbol of the same name,
+   * because the built-in rules and the Java code use them as stand-ins for the user's variables
+   * (<code>F.x</code>, <code>S.k</code>); sorting them first would change the canonical order of
+   * the results built from them.
+   *
+   * @return <code>0</code> for a Greek formal symbol and <code>1</code> for every other symbol
+   */
+  public static int collationRank(ISymbol symbol) {
+    return symbol instanceof FormalSymbol && ((FormalSymbol) symbol).fGreek ? 0 : 1;
+  }
+
+  /**
+   * The Greek formal symbol of a named character.
+   *
+   * @param characterName the name of the named character, e.g. <code>"FormalAlpha"</code>
+   * @return <code>null</code> if there is no such Greek formal symbol
+   */
+  public static ISymbol greek(String characterName) {
+    return GREEK_FORMAL_SYMBOLS.get(characterName);
   }
 }

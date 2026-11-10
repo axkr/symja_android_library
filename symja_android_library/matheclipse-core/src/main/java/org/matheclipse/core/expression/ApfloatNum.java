@@ -407,6 +407,17 @@ public class ApfloatNum implements INum {
     return result;
   }
 
+  /** The number of bits of a machine number. */
+  public static final int MACHINE_BITS = 53;
+
+  /** <code>Log2(10)</code>, the bits of one decimal digit. */
+  private static final double LOG2_10 = 3.321928094887362;
+
+  /** The decimal precision of the given number of bits: 53 bits are 15.954589770191005 digits. */
+  public static double bitsToDigits(double bits) {
+    return bits / LOG2_10;
+  }
+
   /** Test if <code>operand</code> is a machine number or the value of one. */
   private static boolean isMachine(final Object operand) {
     return operand instanceof Num || operand instanceof Double
@@ -1251,10 +1262,12 @@ public class ApfloatNum implements INum {
         && (d == 0.0 ? result.apfloatValue().signum() == 0 : Math.abs(d) >= Double.MIN_NORMAL)) {
       return Num.valueOf(d);
     }
-    Apfloat value = result.apfloatValue();
-    return value.precision() > ParserConfig.MACHINE_PRECISION
-        ? valueOf(value.precision(ParserConfig.MACHINE_PRECISION))
-        : result;
+    // beyond the double range: the arbitrary precision number of the 53 bits of a machine number,
+    // also if the other operand has a lower precision of its own, like the power 2.^2000
+    final Apfloat value = result.apfloatValue();
+    return value.signum() == 0 ? result
+        : valueOf(value.precision(Math.min(value.precision(), ParserConfig.MACHINE_PRECISION)),
+            bitsToDigits(MACHINE_BITS));
   }
 
   /**

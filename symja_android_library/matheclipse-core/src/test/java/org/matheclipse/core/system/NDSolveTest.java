@@ -255,4 +255,81 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
     checkApprox("NDSolveValue({y'(x)==-2*y(x),y(0)==1},y(1/2)+y(1),{x,0,1})", //
         Math.exp(-1.0) + Math.exp(-2.0), 1.0e-6);
   }
+
+  @Test
+  public void testParametricNDSolveValueFunctionOfParameter() {
+    // y(x) = 3*E^(c*x)
+    check("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{c});"
+        + "{Head(pf),MatchQ(pf,_ParametricFunction),Head(pf(0.5))}", //
+        "{ParametricFunction,True,InterpolatingFunction}");
+    checkApprox(
+        "pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{c});f=pf(0.5);f(2.0)", //
+        3.0 * Math.exp(1.0), 1.0e-5);
+    checkApprox(
+        "pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{c});f=pf(-3/4);f(2.0)", //
+        3.0 * Math.exp(-1.5), 1.0e-5);
+  }
+
+  @Test
+  public void testParametricNDSolveValueExpressionTargets() {
+    // u(s) = h*Cos(w*s); the parameter w is given with a range
+    checkApprox("pf=ParametricNDSolveValue({u''(s)==-w^2*u(s),u(0)==h,u'(0)==0},u(1),{s,0,1},"
+        + "{{w,1,3},h});pf(2.0,0.5)", //
+        0.5 * Math.cos(2.0), 1.0e-5);
+    checkApprox("pf=ParametricNDSolveValue({u''(s)==-w^2*u(s),u(0)==h,u'(0)==0},{u(1),u'(1)},"
+        + "{s,0,1},{w,h});v=pf(2.0,0.5);v[[2]]", //
+        -0.5 * 2.0 * Math.sin(2.0), 1.0e-5);
+  }
+
+  @Test
+  public void testParametricNDSolveValueSolutionsAreKept() {
+    // the same parameter value gives the same solution object, not a second solution
+    check("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{c});"
+        + "{pf(0.25)===pf(0.25),pf(0.25)===pf(0.75)}", //
+        "{True,False}");
+    // only a few recent values are kept: after a sweep over 20 others the first one is solved
+    // again, with the same values
+    check("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{c});f=pf(0.25);"
+        + "Do(pf(k/10.0),{k,20});g=pf(0.25);{f===g,f(2.0)==g(2.0),pf(2.0)===pf(2.0)}", //
+        "{False,True,True}");
+  }
+
+  @Test
+  public void testParametricNDSolveValueOutsideRangeAndComplex() {
+    // a range doesn't restrict the values; y(1) = 3*E^c
+    checkApprox("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y(1),{x,0,2},{{c,0,1}});"
+        + "pf(-2.0)", //
+        3.0 * Math.exp(-2.0), 1.0e-5);
+    check("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y(1),{x,0,2},{{c,0,1}});"
+        + "v=pf(I);Round(10^5*{Re(v),Im(v)})", //
+        "{162091,252441}");
+  }
+
+  @Test
+  public void testParametricNDSolveValueUnevaluated() {
+    // a symbolic value stays without a message, the wrong number of values gives one
+    check("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{c});"
+        + "{pf(z),Check(pf(1.0,2.0),err)}", //
+        "{ParametricFunction(<>)[z],err}");
+    // fewer values than parameters give the same message
+    check("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==d},y,{x,0,2},{c,d});"
+        + "{Check(pf(1.0),err),pf(1.0)}", //
+        "{err,ParametricFunction(<>)[1.0]}");
+    // no parameter symbol
+    check("Check(ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{Sin}),err)", //
+        "err");
+    check("ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{Sin})", //
+        "ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y,{x,0,2},{Sin})");
+  }
+
+  @Test
+  public void testParametricNDSolveValueRepeatedParameter() {
+    // a repeated parameter takes one value per position; the first one is used
+    check("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y(1),{x,0,2},{c,c});"
+        + "{Head(pf),Check(pf(0.5),err)}", //
+        "{ParametricFunction,err}");
+    checkApprox("pf=ParametricNDSolveValue({y'(x)==c*y(x),y(0)==3},y(1),{x,0,2},{c,c});"
+        + "pf(0.5,7.0)", //
+        3.0 * Math.exp(0.5), 1.0e-5);
+  }
 }

@@ -286,7 +286,7 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
         "{False,False,False,True}");
     // a number beyond the double range times a machine number is a machine number again
     check("{N(10^400)*1.*^-300, N(10^400)*0., Precision(N(10^400)+1.)} // InputForm", //
-        "{1.0`*^100,0.0`,16}");
+        "{1.0`*^100,0.0`,15.954589770191005`}");
   }
 
   @Test

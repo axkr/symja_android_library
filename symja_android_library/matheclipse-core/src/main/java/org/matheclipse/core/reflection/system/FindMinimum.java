@@ -668,7 +668,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     IExpr result = optimizeSupplier.get();
     if ((constrained || (automaticMethod && simpleBounds == null)) && result.isList2()
         && result.second().isListOfRules()) {
-      IExpr polished = polishInteriorExtremum(function, constraints, (IAST) result, engine);
+      IExpr polished =
+          polishInteriorExtremum(function, constraints, (IAST) result, goalType, engine);
       if (polished.isPresent()) {
         return polished;
       }
@@ -681,12 +682,21 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
    * strict inequalities; there the gradient vanishes, and a root search of the gradient from the
    * point found gives the extremum to machine precision.
    *
+   * <p>
+   * The searches stop when the value of the function changes by less than a relative
+   * <code>1e-10</code>; next to an extremum the value changes with the square of the distance, so
+   * the point is only known to about the square root of that. The root of the gradient is taken
+   * within a relative distance of <code>1e-3</code>, if it is the extremum of the basin the search
+   * ended in: its value isn't worse, and on the segment between the two points the function stays
+   * within the values at its ends, so that no other extremum of a periodic or flat function lies
+   * between them.
+   *
    * @param result <code>{value, {x -> x0, ...}}</code> of the constrained search
    * @return {@link F#NIL} if a constraint is an equation or is active at the point, or the root
-   *         search does not end close to the point
+   *         search does not end close to the point or ends at a worse value
    */
   private static IExpr polishInteriorExtremum(IExpr function, IAST constraints, IAST result,
-      EvalEngine engine) {
+      GoalType goalType, EvalEngine engine) {
     IAST rules = (IAST) result.second();
     for (IExpr constraint : constraints) {
       if (!(constraint.isAST(S.Greater, 3) || constraint.isAST(S.GreaterEqual, 3)
@@ -713,7 +723,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     for (int i = 1; i <= rules.argSize(); i++) {
       double before = rules.get(i).second().evalfNaN();
       double after = root.getAt(i).second().evalfNaN();
-      if (!(Math.abs(after - before) <= 1.0e-6 * Math.max(1.0, Math.abs(before)))) {
+      if (!(Math.abs(after - before) <= 1.0e-3 * Math.max(1.0, Math.abs(before)))) {
         return F.NIL;
       }
     }
@@ -725,6 +735,33 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     IExpr value = engine.evalN(F.subst(function, (IAST) root));
     if (!value.isReal()) {
       return F.NIL;
+    }
+    // a stationary point which is no better is a saddle point or the other kind of extremum
+    final double sign = goalType == GoalType.MAXIMIZE ? -1.0 : 1.0;
+    // the value at the point of the search, which may differ from the value the search reports
+    final double found =
+        sign * engine.evalQuiet(F.N(F.subst(function, rules))).evalfNaN();
+    final double polished = sign * value.evalfNaN();
+    // the rounding errors of the function values
+    final double slack = 1.0e-12 * (1.0 + Math.abs(found));
+    if (!(polished <= found + slack)) {
+      return F.NIL;
+    }
+    // no barrier between the two points: the polished point is in the basin of the search
+    final double ceiling = Math.max(found, polished) + slack;
+    final int samples = 8;
+    for (int k = 1; k < samples; k++) {
+      final double t = (double) k / samples;
+      IASTAppendable between = F.ListAlloc(rules.argSize());
+      for (int i = 1; i <= rules.argSize(); i++) {
+        double before = rules.get(i).second().evalfNaN();
+        double after = root.getAt(i).second().evalfNaN();
+        between.append(F.Rule(rules.get(i).first(), F.num(before + t * (after - before))));
+      }
+      final double inner = sign * engine.evalQuiet(F.N(F.subst(function, between))).evalfNaN();
+      if (!(inner <= ceiling)) {
+        return F.NIL;
+      }
     }
     return F.list(value, root);
   }

@@ -35,25 +35,28 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
   private static final String[] PROPERTIES = {"AdjustedRSquared", "ANOVATable",
       "ANOVATableDegreesOfFreedom", "ANOVATableEntries", "ANOVATableMeanSquares",
       "ANOVATableSumsOfSquares", "BestFit", "BestFitParameters", "CovarianceMatrix",
-      "EstimatedVariance", "FitResiduals", "MeanPredictionBands", "ParameterConfidenceIntervals",
-      "ParameterConfidenceRegion", "ParameterErrors", "ParameterPValues", "ParameterTStatistics",
-      "ParameterTable", "ParameterTableEntries", "PredictedResponse", "RSquared",
-      "SinglePredictionBands"};
+      "EstimatedVariance", "FitResiduals", "Function", "MeanPredictionBands",
+      "ParameterConfidenceIntervals", "ParameterConfidenceRegion", "ParameterErrors",
+      "ParameterPValues", "ParameterTStatistics", "ParameterTable", "ParameterTableEntries",
+      "PredictedResponse", "RSquared", "SinglePredictionBands"};
 
-  /** A finished fit: the model, its parameters and their values, and the data it was fitted to. */
+  /**
+   * A finished fit: the model, its parameters and their values, and the data it was fitted to -
+   * one row of values of the independent variables per data point.
+   */
   public static final class Fit {
     final IExpr function;
     final IAST parameters;
-    final IExpr variable;
+    final IAST variables;
     final double[] values;
-    final double[] x;
+    final double[][] x;
     final double[] y;
 
-    public Fit(IExpr function, IAST parameters, IExpr variable, double[] values, double[] x,
+    public Fit(IExpr function, IAST parameters, IAST variables, double[] values, double[][] x,
         double[] y) {
       this.function = function;
       this.parameters = parameters;
-      this.variable = variable;
+      this.variables = variables;
       this.values = values;
       this.x = x;
       this.y = y;
@@ -86,9 +89,16 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
     IExpr bestFit = normal(false);
     double[] predicted = new double[fit.x.length];
     for (int i = 0; i < fit.x.length; i++) {
-      predicted[i] = engine.evalDouble(F.subst(bestFit, F.Rule(fit.variable, F.num(fit.x[i]))));
+      predicted[i] = engine.evalDouble(F.subst(bestFit, pointRules(i)));
     }
     return predicted;
+  }
+
+  /** The rules <code>variable -> value</code> of the data point <code>i</code>. */
+  private IAST pointRules(int i) {
+    Fit fit = toData();
+    return F.mapRange(1, fit.variables.size(),
+        k -> F.Rule(fit.variables.get(k), F.num(fit.x[i][k - 1])));
   }
 
   /** R-squared against the mean of the data. */
@@ -297,10 +307,15 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
     try {
       IAST gradient = gradient(engine);
       double[][] jacobian = new double[n][p];
-      for (int j = 0; j < p; j++) {
-        for (int i = 0; i < n; i++) {
-          jacobian[i][j] =
-              engine.evalDouble(F.subst(gradient.get(j + 1), F.Rule(fit.variable, F.num(fit.x[i]))));
+      for (int i = 0; i < n; i++) {
+        IAST point = pointRules(i);
+        for (int j = 0; j < p; j++) {
+          jacobian[i][j] = F.subst(gradient.get(j + 1), point).evalfNaN();
+          if (!Double.isFinite(jacobian[i][j])) {
+            // a model which is only defined for numeric parameters has no derivative which can be
+            // evaluated: a central difference
+            jacobian[i][j] = centralDifference(j, point, engine);
+          }
         }
       }
       RealMatrix inverse =
@@ -310,6 +325,30 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
       // a derivative with no number at a data point
       return null;
     }
+  }
+
+  /**
+   * The derivative of the model by the parameter <code>j</code> at a data point and the best fit,
+   * as a central difference.
+   */
+  private double centralDifference(int j, IAST point, EvalEngine engine) {
+    Fit fit = toData();
+    double p = fit.values[j];
+    double h = 6.0e-6 * Math.max(1.0, Math.abs(p));
+    double[] shifted = fit.values.clone();
+    shifted[j] = p + h;
+    double upper = modelValue(shifted, point, engine);
+    shifted[j] = p - h;
+    double lower = modelValue(shifted, point, engine);
+    return (upper - lower) / (2.0 * h);
+  }
+
+  /** The value of the model for the parameter values <code>values</code> at a data point. */
+  private double modelValue(double[] values, IAST point, EvalEngine engine) {
+    Fit fit = toData();
+    IAST parameters =
+        F.mapList(fit.parameters, (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
+    return engine.evalDouble(F.subst(F.subst(fit.function, parameters), point));
   }
 
   /**
@@ -359,7 +398,7 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
 
   @Override
   protected IAST fitVariables() {
-    return F.list(toData().variable);
+    return toData().variables;
   }
 
   @Override
@@ -376,8 +415,8 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
       Fit a = toData();
       Fit b = ((NonlinearFittedModelExpr) obj).toData();
       return a.function.equals(b.function) && a.parameters.equals(b.parameters)
-          && a.variable.equals(b.variable) && Arrays.equals(a.values, b.values)
-          && Arrays.equals(a.x, b.x) && Arrays.equals(a.y, b.y);
+          && a.variables.equals(b.variables) && Arrays.equals(a.values, b.values)
+          && Arrays.deepEquals(a.x, b.x) && Arrays.equals(a.y, b.y);
     }
     return false;
   }
@@ -397,7 +436,7 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
     Fit fit = toData();
     output.writeObject(fit.function);
     output.writeObject(fit.parameters);
-    output.writeObject(fit.variable);
+    output.writeObject(fit.variables);
     output.writeObject(fit.values);
     output.writeObject(fit.x);
     output.writeObject(fit.y);
@@ -407,10 +446,10 @@ public class NonlinearFittedModelExpr extends AbstractFittedModelExpr<NonlinearF
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     IExpr function = (IExpr) in.readObject();
     IAST parameters = (IAST) in.readObject();
-    IExpr variable = (IExpr) in.readObject();
+    IAST variables = (IAST) in.readObject();
     double[] values = (double[]) in.readObject();
-    double[] x = (double[]) in.readObject();
+    double[][] x = (double[][]) in.readObject();
     double[] y = (double[]) in.readObject();
-    fData = new Fit(function, parameters, variable, values, x, y);
+    fData = new Fit(function, parameters, variables, values, x, y);
   }
 }

@@ -107,7 +107,7 @@ public class KryoUtil {
       if (type == FormalSymbol.class || Context.FORMAL_CONTEXT_NAME.equals(contextName)) {
         // System` knows a formal symbol only under its named character \[FormalK], not as "k".
         // The FORMAL` context name was written before the formal symbols moved to System`.
-        ISymbol formalSymbol = F.HIDDEN_SYMBOLS_MAP.get(symbolName);
+        ISymbol formalSymbol = FormalSymbol.ofPlainName(symbolName);
         if (formalSymbol instanceof Symbol) {
           symbol = (Symbol) formalSymbol;
         }

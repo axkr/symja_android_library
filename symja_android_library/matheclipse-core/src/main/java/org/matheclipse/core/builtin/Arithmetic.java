@@ -4091,7 +4091,14 @@ public final class Arithmetic {
         }
 
         if (base.isOne()) {
-          return F.C1;
+          if (!base.isInexactNumber()) {
+            return F.C1;
+          }
+          // an inexact one stays inexact: 1.0^x is 1.0; a sum in the exponent stays, as the
+          // powers of other numbers to a sum do
+          if (!exponent.isPlus()) {
+            return base.re();
+          }
         }
         if (base.isMinusOne()) {
           // if (exponent.isInteger()) {
@@ -4391,7 +4398,10 @@ public final class Arithmetic {
 
     /**
      * <code>base^exponent</code> computed with 17 digits and rounded to machine precision, for a
-     * result out of the double range.
+     * result out of the double range. It is an arbitrary precision number with the precision of the
+     * error of the inexact exponent times the condition number <code>Abs(exponent*Log(base))</code>.
+     * An exact integer exponent is taken by {@link #machineIntegerPower(Num, IInteger)} before it
+     * becomes a machine number.
      *
      * @return {@link F#NIL} if the result is out of the range of arbitrary precision numbers too
      */
@@ -4411,12 +4421,69 @@ public final class Arithmetic {
           // far beyond anything which can still be printed or rounded to an integer
           return F.NIL;
         }
+        final double precision10 = ApfloatNum.bitsToDigits(ApfloatNum.MACHINE_BITS
+            - Math.log(Math.abs(exponent * Math.log(Math.abs(base)))) / Math.log(2.0));
+        if (result.signum() != 0 && precision10 >= 1.0) {
+          return ApfloatNum.valueOf(result.precision(precision), precision10);
+        }
         return F.num(result.precision(precision));
       } catch (RuntimeException rex) {
         // an org.apfloat.OverflowException
         Errors.rethrowsInterruptException(rex);
         return F.NIL;
       }
+    }
+
+    /**
+     * A machine number to an exact integer power beyond the double range, as an arbitrary precision
+     * number of the bits {@link #integerPowerBits(double, long)}: <code>2.^2000</code> has 52 bits,
+     * <code>2.^20000</code> 48.
+     *
+     * @return {@link F#NIL} if the power is inside the double range, or out of the range of
+     *         arbitrary precision numbers too
+     */
+    public static IExpr machineIntegerPower(final Num base, final IInteger exponent) {
+      final double x = base.doubleValue();
+      final long n = exponent.toLongDefault();
+      if (n == Long.MIN_VALUE || Math.abs(n) >= Long.MAX_VALUE / 2 || x == 0.0
+          || !Double.isFinite(x)) {
+        return F.NIL;
+      }
+      // Abs(Log2(x)) is at most Abs(Math.getExponent(x)) + 1: a power whose binary exponent stays
+      // far inside the double range needs no Math.pow
+      if ((Math.abs(Math.getExponent(x)) + 1.0) * Math.abs((double) n) <= 1000.0
+          || Double.isFinite(Math.pow(x, n))) {
+        return F.NIL;
+      }
+      final long precision = ParserConfig.MACHINE_PRECISION;
+      try {
+        org.apfloat.FixedPrecisionApfloatHelper h =
+            new org.apfloat.FixedPrecisionApfloatHelper(precision + 1);
+        org.apfloat.Apfloat result = h.pow(new org.apfloat.Apfloat(x, precision + 1), n);
+        if (Math.abs(result.scale()) > Integer.MAX_VALUE || result.signum() == 0) {
+          return F.NIL;
+        }
+        return ApfloatNum.valueOf(result.precision(precision),
+            ApfloatNum.bitsToDigits(integerPowerBits(x, n)));
+      } catch (RuntimeException rex) {
+        // an org.apfloat.OverflowException
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
+    }
+
+    /**
+     * The bits of <code>x^n</code>, taken by binary powering: a power inside the double range is a
+     * machine number of 53 bits; an even power is the square of <code>x^(n/2)</code>, whose
+     * relative error doubles, one bit less; an odd power is <code>x*x^(n-1)</code>, whose machine
+     * factor makes it one of machine precision.
+     */
+    private static int integerPowerBits(final double x, final long n) {
+      final double power = Math.pow(x, n);
+      if ((Double.isFinite(power) && Math.abs(power) >= Double.MIN_NORMAL) || n % 2 != 0) {
+        return ApfloatNum.MACHINE_BITS;
+      }
+      return Math.max(1, integerPowerBits(x, n / 2) - 1);
     }
 
     private static IExpr e2DblComArg(final IComplexNum base, final IComplexNum exponent) {

@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.util;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -36,14 +36,15 @@ public final class MutableInt {
 
   /**
    * Create a new <code>histogramMap</code> from the elements of <code>ast</code> for method
-   * {@link #isPermutable(IAST, Map)}.
+   * {@link #isPermutable(IAST, Map)} or for <code>Counts</code>. The keys are in the order of
+   * their first occurrence in <code>ast</code>.
    *
    * @param ast
    * @return
    */
   public static Map<IExpr, MutableInt> createHistogram(IAST ast) {
     Map<IExpr, MutableInt> histogramMap =
-        new HashMap<IExpr, MutableInt>(ast.size() + ast.size() / 10 + 6);
+        new LinkedHashMap<IExpr, MutableInt>(ast.size() + ast.size() / 10 + 6);
     for (int i = 1; i < ast.size(); i++) {
       IExpr key = ast.get(i);
       histogramMap.compute(key, (k, v) -> (v == null) ? new MutableInt(1) : v.increment());

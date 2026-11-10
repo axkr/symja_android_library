@@ -2255,6 +2255,12 @@ public class MinMaxFunctions {
       boolean violated = false;
       final IExpr[] starts = {F.C0, F.C1, F.CN1};
       IASTAppendable lastSpecs = F.NIL;
+      // A local search may end where it starts: the origin is a stationary point of x^2, so the
+      // search for the maximum of x^2 under x^2<=4 stays at the minimum 0. The best of the local
+      // optima of all starts is the answer; of equal ones the first.
+      IExpr best = F.NIL;
+      double bestCost = Double.POSITIVE_INFINITY;
+      final boolean minimize = getGoalType() == GoalType.MINIMIZE;
       for (int i = 0; i < starts.length; i++) {
         IASTAppendable specs = F.ListAlloc(variables.size());
         for (IExpr variable : variables) {
@@ -2265,10 +2271,23 @@ public class MinMaxFunctions {
         IExpr result = localSearch(function, constraints, specs, true, engine);
         if (result.isPresent()) {
           if (isFeasible(constraints, (IAST) result.second(), engine)) {
-            return result;
+            double value = result.first().evalfNaN();
+            double cost = minimize ? value : -value;
+            if (Double.isNaN(cost)) {
+              // no real value: this start gives no candidate
+              continue;
+            }
+            if (best.isNIL() || isBetter(cost, bestCost)) {
+              best = result;
+              bestCost = cost;
+            }
+          } else {
+            violated = true;
           }
-          violated = true;
         }
+      }
+      if (best.isPresent()) {
+        return best;
       }
       if (!violated) {
         // no local search ended: the constraints may have no point at all

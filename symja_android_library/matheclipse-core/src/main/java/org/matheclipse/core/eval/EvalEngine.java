@@ -86,6 +86,7 @@ import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
@@ -1948,6 +1949,15 @@ public class EvalEngine implements Serializable {
         // while the exponent is still exact
         IExpr temp =
             Arithmetic.Power.machineHalfPower((Num) ast.base(), (IFraction) ast.exponent());
+        if (temp.isPresent()) {
+          return F.unaryAST1(S.Power, temp);
+        }
+      }
+      if (isNumericArgument && ast.isPower() && ast.base() instanceof Num
+          && ast.exponent().isInteger() && !isArbitraryMode()) {
+        // while the exponent is still exact: a power beyond the double range by squaring
+        IExpr temp =
+            Arithmetic.Power.machineIntegerPower((Num) ast.base(), (IInteger) ast.exponent());
         if (temp.isPresent()) {
           return F.unaryAST1(S.Power, temp);
         }
@@ -6341,6 +6351,45 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * The precision of the value of a function of machine numbers beyond the double range: the 53
+   * bits of the machine arguments, less the digits which the condition numbers of the function
+   * take - <code>Exp(1000.0)</code> has the precision <code>15.95 - Log10(1000)</code>.
+   *
+   * @param ast the function of real exact and machine numbers
+   * @param value the value of the function, which is not zero
+   * @return <code>NaN</code> if the function has no condition numbers, or the precision isn't
+   *         below the one of a machine number and above one digit
+   */
+  private static double conditionedMachinePrecision(IAST ast, Apfloat value) {
+    if (value.signum() == 0 || !(ast.topHead() instanceof IBuiltInSymbol)) {
+      return Double.NaN;
+    }
+    final double machineDigits = ApfloatNum.bitsToDigits(ApfloatNum.MACHINE_BITS);
+    IASTMutable tracked = ast.copy();
+    for (int i = 1; i < tracked.size(); i++) {
+      IExpr arg = tracked.get(i);
+      if (arg instanceof Num) {
+        final double d = ((Num) arg).doubleValue();
+        if (d != 0.0) {
+          tracked.set(i, ApfloatNum.valueOf(ApfloatNum.apfloatOf(d, ApfloatNum.MIN_STORED_DIGITS),
+              machineDigits));
+        }
+      } else if (!arg.isRational()) {
+        return Double.NaN;
+      }
+    }
+    IExpr conditioned =
+        SignificanceArithmetic.conditioned(ast.topHead(), tracked, ApfloatNum.valueOf(value));
+    if (conditioned instanceof ApfloatNum && ((ApfloatNum) conditioned).isSignificanceTracked()) {
+      final double digits = ((ApfloatNum) conditioned).precision10();
+      if (digits >= 1.0 && digits < machineDigits) {
+        return digits;
+      }
+    }
+    return Double.NaN;
+  }
+
+  /**
    * Evaluate <code>ast</code> again with its machine numbers as arbitrary precision numbers, and
    * round the result to machine precision.
    *
@@ -6371,7 +6420,9 @@ public class EvalEngine implements Serializable {
       if (result instanceof ApfloatNum) {
         Apfloat value = ((ApfloatNum) result).apfloatValue();
         if (Math.abs(value.scale()) <= Integer.MAX_VALUE) {
-          return ApfloatNum.valueOf(value.precision(precision));
+          final double digits = conditionedMachinePrecision(ast, value);
+          return Double.isNaN(digits) ? ApfloatNum.valueOf(value.precision(precision))
+              : ApfloatNum.valueOf(value.precision(precision), digits);
         }
       } else if (result instanceof ApcomplexNum) {
         org.apfloat.Apcomplex value = ((ApcomplexNum) result).apcomplexValue();

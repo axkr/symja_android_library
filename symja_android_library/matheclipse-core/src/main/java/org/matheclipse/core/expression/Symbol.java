@@ -252,6 +252,27 @@ public class Symbol implements ISymbol, Serializable {
    * way and <code>a*b - b*a</code> did not cancel. The context comes first, then the order in which
    * the symbols were made.
    */
+  /**
+   * The canonical order of two symbols, which every implementation of {@link ISymbol} uses, so that
+   * the order is the same whichever of the two is compared with the other: a Greek formal symbol
+   * comes first (see {@link FormalSymbol#collationRank(ISymbol)}), then the names are compared
+   * with {@link IStringX#US_COLLATOR}, then {@link #compareSameName(ISymbol, ISymbol)}.
+   */
+  static int compareSymbols(ISymbol a, ISymbol b) {
+    if (a == b) {
+      return 0;
+    }
+    int rank = FormalSymbol.collationRank(a) - FormalSymbol.collationRank(b);
+    if (rank != 0) {
+      return rank;
+    }
+    // sort lexicographically
+    int cp = a instanceof Symbol && b instanceof Symbol
+        ? ((Symbol) a).collationKey().compareTo(((Symbol) b).collationKey())
+        : IStringX.US_COLLATOR.compare(a.getSymbolName(), b.getSymbolName());
+    return cp != 0 ? cp : compareSameName(a, b);
+  }
+
   static int compareSameName(ISymbol a, ISymbol b) {
     int cp = a.getContext().completeContextName().compareTo(b.getContext().completeContextName());
     if (cp != 0) {
@@ -622,10 +643,7 @@ public class Symbol implements ISymbol, Serializable {
         // Makes no sense to compare the symbol names, if they are equal
         return 0;
       }
-      // sort lexicographically
-      int cp = expr instanceof Symbol ? collationKey().compareTo(((Symbol) expr).collationKey())
-          : IStringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
-      return cp != 0 ? cp : compareSameName(this, (ISymbol) expr);
+      return compareSymbols(this, (ISymbol) expr);
     }
     if (expr.isAST()) {
       int id = expr.headID();

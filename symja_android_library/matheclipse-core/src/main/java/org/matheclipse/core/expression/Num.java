@@ -2373,7 +2373,9 @@ public class Num implements INum {
       return ComplexNum.valueOf(value).add((ComplexNum) that);
     }
     if (that instanceof ApfloatNum) {
-      return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+      // the sum is commutative: this machine number is the binary number it is, also if it was
+      // written with other decimal digits, and the result is a machine number if it can be one
+      return ((ApfloatNum) that).plus(this);
     }
     if (that instanceof ApcomplexNum) {
       if (((ApcomplexNum) that).isSignificanceTracked()) {
@@ -2771,7 +2773,10 @@ public class Num implements INum {
       return ComplexNum.valueOf(value).multiply((ComplexNum) that);
     }
     if (that instanceof ApfloatNum) {
-      return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+      // the product is commutative: this machine number is the binary number it is, also if it was
+      // written with other decimal digits (4.9*^-320 is a subnormal number), and the result is a
+      // machine number if it can be one
+      return ((ApfloatNum) that).times(this);
     }
     if (that instanceof ApcomplexNum) {
       if (((ApcomplexNum) that).isSignificanceTracked()) {

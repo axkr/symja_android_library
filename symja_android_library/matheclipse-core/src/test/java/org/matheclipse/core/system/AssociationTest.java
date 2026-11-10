@@ -493,6 +493,11 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|1->2,2->5,3->8,4->3,5->4,6->2,7->3,8->1,9->1|>");
     check("Counts({a,b,c,a})", //
         "<|a->2,b->1,c->1|>");
+    // the keys are in the order of their first occurrence
+    check("Counts({7,3,7,11,3,1,7})", //
+        "<|7->3,3->2,11->1,1->1|>");
+    check("Counts({\"q\",x,\"q\",2})", //
+        "<|q->2,x->1,2->1|>");
     // check("Counts(RandomInteger({0, 1}, 100))", //
     // "<|0->55,1->45|>");
 

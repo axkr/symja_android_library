@@ -38,7 +38,7 @@ public class GeneralizedFittedModelExpr
 
   private static final String[] PROPERTIES = {"AIC", "AnscombeResiduals", "BasisFunctions",
       "BestFit", "BestFitParameters", "BIC", "CovarianceMatrix", "DesignMatrix",
-      "DevianceResiduals", "EstimatedDispersion", "ExponentialFamily", "FitResiduals",
+      "DevianceResiduals", "EstimatedDispersion", "ExponentialFamily", "FitResiduals", "Function",
       "IndependentVariables", "LogLikelihood", "NullDegreesOfFreedom", "NullDeviance",
       "ParameterConfidenceIntervals", "ParameterConfidenceRegion", "ParameterErrors",
       "ParameterPValues", "ParameterTable", "ParameterTableEntries", "ParameterZStatistics",

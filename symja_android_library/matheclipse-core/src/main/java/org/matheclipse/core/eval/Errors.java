@@ -210,6 +210,9 @@ public class Errors {
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
       "deqn", "Equation or list of equations expected instead of `1` in the first argument `2`.", //
+      "dimb", "Dimension specification `1` should be a positive integer.", //
+      "dimm",
+      "A map between `1` and `2` requires a dimension specification or an evaluation point.", //
       "dimss", "`1` is not a valid dimension specification for `2`.", //
       "regdims",
       "Boolean operations involving regions `1` and `2` with different embedding dimensions are not well defined.", //
@@ -228,6 +231,7 @@ public class Errors {
       "domss", "`1` is not a valid domain specification for `2`.", //
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
       "dsdelim", "The delimiter specification is not valid.", //
+      "dspar", "`1` cannot be used as a parameter.", //
       "dsdims", "The data has dimensions `1` which `2` does not allow.", //
       "dstype", "`1` is not a known type of data structure.", //
       "dstlms",
@@ -273,7 +277,7 @@ public class Errors {
       "flrl",
       "Level `1` specified in `2` exceeds the levels, `3`, which can be flattened together in `4`.", //
       "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
-      "fpct", "To many parameters in `1` to be filled from `2`.", //
+      "fpct", "Too many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
       "geoell", "`1` is not a known reference ellipsoid.", //
       "geoprop", "`1` is not a known property of the reference ellipsoid `2`.", //

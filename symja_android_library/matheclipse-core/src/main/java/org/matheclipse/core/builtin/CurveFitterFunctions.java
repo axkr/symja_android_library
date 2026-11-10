@@ -400,7 +400,7 @@ public class CurveFitterFunctions {
      *         <code>null</code> when the function has no gradient or the data are not numeric rows
      *         with one more element than there are variables
      */
-    private static double[] fitMultivariate(IAST data, IExpr function, IAST symbols,
+    static double[] fitMultivariate(IAST data, IExpr function, IAST symbols,
         IAST variables, double[] initialGuess, EvalEngine engine) {
       final int n = variables.argSize();
       int[] dim = data.isMatrix();
@@ -1375,20 +1375,21 @@ public class CurveFitterFunctions {
    *
    * <p>
    * The fit is the one <code>FindFit</code> makes, Levenberg-Marquardt from a start of
-   * <code>1.0</code> for each parameter or the value given as <code>{a, a0}</code>. As with
-   * <code>FindFit</code>, the model has one independent variable.
+   * <code>1.0</code> for each parameter or the value given as <code>{a, a0}</code>. The model has
+   * one independent variable <code>x</code> or several <code>{x1, x2, ...}</code>, whose values
+   * are the leading elements of the data rows <code>{x1, x2, ..., y}</code>.
    */
   private static final class NonlinearModelFit extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ruleData(ast.arg1());
-      if (!arg1.isList() || !ast.arg3().isList() || !ast.arg4().isVariable()) {
+      IAST variables = FindFit.fitVariables(ast.arg4());
+      if (!arg1.isList() || !ast.arg3().isList() || variables.isNIL()) {
         return F.NIL;
       }
       IAST data = (IAST) arg1;
       IExpr function = FindFit.modelForm(ast.arg2());
-      IExpr x = ast.arg4();
       IASTAppendable renamed = F.ListAlloc();
       IAST spec = FindFit.renameParameters((IAST) ast.arg3(), renamed);
       if (renamed.argSize() > 0) {
@@ -1400,17 +1401,38 @@ public class CurveFitterFunctions {
         return F.NIL;
       }
       try {
-        java.util.List<org.hipparchus.fitting.WeightedObservedPoint> points =
-            new java.util.ArrayList<>();
-        double[] values = FindFit.fit(data, function, symbols, x, initialGuess, points, engine);
+        double[] values;
+        double[][] xs;
+        double[] ys;
+        if (variables.argSize() == 1) {
+          java.util.List<org.hipparchus.fitting.WeightedObservedPoint> points =
+              new java.util.ArrayList<>();
+          values = FindFit.fit(data, function, symbols, variables.arg1(), initialGuess, points,
+              engine);
+          xs = new double[points.size()][];
+          ys = new double[points.size()];
+          for (int i = 0; i < xs.length; i++) {
+            xs[i] = new double[] {points.get(i).getX()};
+            ys[i] = points.get(i).getY();
+          }
+        } else {
+          // the rows {x1, ..., xn, y}
+          values = FindFit.fitMultivariate(data, function, symbols, variables, initialGuess,
+              engine);
+          final int n = variables.argSize();
+          double[][] rows = values == null ? null : data.toDoubleMatrix(true);
+          if (rows == null) {
+            return F.NIL;
+          }
+          xs = new double[rows.length][];
+          ys = new double[rows.length];
+          for (int i = 0; i < rows.length; i++) {
+            xs[i] = java.util.Arrays.copyOf(rows[i], n);
+            ys[i] = rows[i][n];
+          }
+        }
         if (values == null) {
           return F.NIL;
-        }
-        double[] xs = new double[points.size()];
-        double[] ys = new double[points.size()];
-        for (int i = 0; i < xs.length; i++) {
-          xs[i] = points.get(i).getX();
-          ys[i] = points.get(i).getY();
         }
         if (renamed.argSize() > 0) {
           // the model keeps the parameters as they were given
@@ -1419,7 +1441,7 @@ public class CurveFitterFunctions {
           symbols = (IAST) F.subst(symbols, inverse);
         }
         return new NonlinearFittedModelExpr(
-            new NonlinearFittedModelExpr.Fit(function, symbols, x, values, xs, ys));
+            new NonlinearFittedModelExpr.Fit(function, symbols, variables, values, xs, ys));
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {

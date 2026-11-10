@@ -338,6 +338,97 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
         "{{0,-Csc(t)*Sin(p),0},{Csc(t)*Sin(p),0,Cos(p)},{0,-Cos(p),0}}");
   }
 
+  @Test
+  public void testCoordinateTransformDataListing() {
+    check("t=CoordinateTransformData();{Length(t),Counts(t[[All,3]]),Counts(t[[All,2]])}", //
+        "{278,<|2->40,3->229,1->5,4->4|>,<|Euclidean->266,{Sphere,{R}}->12|>}");
+    // every chart of a metric and dimension is transformed into every chart of it
+    check("t=CoordinateTransformData();"
+        + "Union(Map(Length(Cases(t, {_, #[[1]], #[[2]]}))&, Union(t[[All,{2,3}]])))", //
+        "{1,4,36,225}");
+    // a clashing parameter of the target chart is renamed
+    check("InputForm(Select(CoordinateTransformData(), "
+        + "MatchQ(#[[1]], {\"Conical\", _} -> {\"Conical\", _})&))", //
+        "{{{\"Conical\",{\\[FormalB],\\[FormalC]}}->{\"Conical\",{\\[FormalB](1),\\[FormalC](1)}},\"Euclidean\",3}}");
+    check("InputForm(Select(CoordinateTransformData(), "
+        + "MatchQ(#, {{\"Confocal\", _} -> \"Hyperspherical\", _, 4})&))", //
+        "{{{\"Confocal\",{Subscript(\\[FormalAlpha],1),Subscript(\\[FormalAlpha],2),Subscript(\\[FormalAlpha],3),Subscript(\\[FormalAlpha],4)}}->\"Hyperspherical\",\"Euclidean\",4}}");
+    // ordered by the source chart, the dimension and the target chart
+    check("Take(Cases(CoordinateTransformData(), {\"Cartesian\" -> c_, _, n_} :> {c, n}), 8)", //
+        "{{Cartesian,1},{{Bipolar,{a}},2},{Cartesian,2},{{Confocal,{α,β}},2},{{Elliptic,{a}},\n"
+            + "2},{Polar,2},{PlanarParabolic,2},{{BipolarCylindrical,{a}},3}}");
+    check("Last(CoordinateTransformData())", //
+        "{Stereographic->Stereographic,{Sphere,{R}},3}");
+  }
+
+  @Test
+  public void testCoordinateTransformDataCharts() {
+    check("CoordinateTransformData({{\"BipolarCylindrical\", {k}} -> \"Cartesian\", "
+        + "\"Euclidean\", 3}, \"Mapping\", {s, t, 7})", //
+        "{(k*Sinh(t))/(-Cos(s)+Cosh(t)),(k*Sin(s))/(-Cos(s)+Cosh(t)),7}");
+    check("CoordinateTransformData(\"Bipolar\" -> \"Cartesian\", \"Mapping\")[{Pi/2, Log(3)}]", //
+        "{4/5*a,3/5*a}");
+    check("CoordinateTransformData({\"Bipolar\", {2}} -> \"Cartesian\", \"Mapping\")", //
+        "CoordinateTransformData({Bipolar,{2}}->Cartesian,Mapping)");
+    check("CoordinateTransformData({{\"Bipolar\", {2}} -> \"Cartesian\", \"Euclidean\", 2}, "
+        + "\"MappingJacobianDeterminant\", {s, t})", //
+        "4/(-Cos(s)+Cosh(t))^2");
+    check("CoordinateTransformData({\"Cylindrical\", 3} -> \"Cartesian\", \"Mapping\", {2, Pi, h})", //
+        "{-2,0,h}");
+    // the Cartesian chart exists in several dimensions
+    check("CoordinateTransformData(\"Cartesian\" -> \"Cartesian\", \"Mapping\")", //
+        "CoordinateTransformData(Cartesian->Cartesian,Mapping)");
+    check("CoordinateTransformData({\"Cartesian\" -> \"Cartesian\", \"Euclidean\", 2}, "
+        + "\"Mapping\", {p, q})", //
+        "{p,q}");
+    // the dimensions of the charts differ
+    check("CoordinateTransformData(\"Polar\" -> \"Spherical\", \"Mapping\")", //
+        "CoordinateTransformData(Polar->Spherical,Mapping)");
+    // the dimension of the Cartesian chart is taken from the point
+    check("CoordinateTransformData(\"Cartesian\" -> \"Cartesian\", \"Mapping\", {p, q, s, t})", //
+        "{p,q,s,t}");
+    // the short form doesn't take parameters, the dimension is needed for the Cartesian chart
+    check("Check(CoordinateTransformData({\"Elliptic\", {k}} -> \"Cartesian\", \"Mapping\"), "
+        + "failed)", //
+        "failed");
+    check("Check(CoordinateTransformData(\"Cartesian\" -> \"Cartesian\", \"Mapping\"), "
+        + "failed)", //
+        "failed");
+  }
+
+  @Test
+  public void testCoordinateTransformDataToCartesian() {
+    check("CoordinateTransformData({{\"Toroidal\", {2}} -> \"Cartesian\", \"Euclidean\", 3}, "
+        + "\"Mapping\", {Log(2), Pi/2, 0})", //
+        "{6/5,0,8/5}");
+    check("CoordinateTransformData({{\"OblateSpheroidal\", {3}} -> \"Cartesian\", \"Euclidean\", 3}, "
+        + "\"Mapping\", {0, Pi/2, Pi})", //
+        "{-3,0,0}");
+    check("CoordinateTransformData({{\"Conical\", {1, 2}} -> \"Cartesian\", \"Euclidean\", 3}, "
+        + "\"Mapping\", {2, 3/2, 1/2})", //
+        "{Sqrt(35)/4,Sqrt(5)/2,3/4}");
+    // the conical coordinates keep the distance from the origin
+    check("Simplify(Total(CoordinateTransformData({{\"Conical\", {1, 2}} -> \"Cartesian\", "
+        + "\"Euclidean\", 3}, \"Mapping\", {r, m, n})^2))", //
+        "r^2");
+    check("CoordinateTransformData({{\"Confocal\", {5, 1}} -> \"Cartesian\", \"Euclidean\", 2}, "
+        + "\"Mapping\", {-2, 3})", //
+        "{Sqrt(6),1}");
+    check("CoordinateTransformData({{\"ConfocalParaboloidal\", {4, 1}} -> \"Cartesian\", "
+        + "\"Euclidean\", 3}, \"Mapping\", {0, 2, 5})", //
+        "{2*Sqrt(2/3),2/Sqrt(3),-1}");
+    // the squares of the confocal coordinates add up to the sum of the parameters and coordinates
+    check("Together(Total(CoordinateTransformData({{\"Confocal\", {4, 3, 2, 1}} -> \"Cartesian\", "
+        + "\"Euclidean\", 4}, \"Mapping\", {p, q, s, t})^2))", //
+        "10+p+q+s+t");
+    check("CoordinateTransformData({\"Hyperspherical\" -> \"Cartesian\", \"Euclidean\", 4}, "
+        + "\"Mapping\", {6, Pi/2, Pi/3, Pi})", //
+        "{0,3,-3*Sqrt(3),0}");
+    check("CoordinateTransformData({{\"Toroidal\", {k}} -> \"Cartesian\", \"Euclidean\", 3}, "
+        + "\"MappingJacobianDeterminant\", {s, t, 0})", //
+        "(k^3*Sinh(s))/(-Cos(t)+Cosh(s))^3");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
