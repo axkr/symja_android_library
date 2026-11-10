@@ -21,7 +21,7 @@ import java.util.TreeMap;
  *
  * <p>Every unit is resolved to a flat base expansion {@code coefficient * PROD baseUnit^exp} over
  * the Symja/WMA base units (Meters, Kilograms, Seconds, Amperes, Kelvins, Moles, Candelas,
- * Radians, Steradians, Bits, USDollars) with exact coefficients (rationals, Pi powers, radicals).
+ * Radians, Steradians, Bits, USDollars, People) with exact coefficients (rationals, Pi powers, radicals).
  * Affine temperature units carry an additional exact {@code offset} with the semantics
  * {@code valueInBase = coefficient * x + offset}.
  *
@@ -31,7 +31,8 @@ import java.util.TreeMap;
 public final class UnitsJsonGenerator {
 
   private static final List<String> BASE_UNITS = List.of("Meters", "Kilograms", "Seconds",
-      "Amperes", "Kelvins", "Moles", "Candelas", "Radians", "Steradians", "Bits", "USDollars");
+      "Amperes", "Kelvins", "Moles", "Candelas", "Radians", "Steradians", "Bits", "USDollars",
+      "People");
 
   private static final String PINT_PATH =
       "symja_android_library/tools/src/main/resources/org/matheclipse/tools/units/default_en.txt";

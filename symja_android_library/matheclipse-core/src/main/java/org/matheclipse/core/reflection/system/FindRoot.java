@@ -514,9 +514,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
             }
           }
           // try {
-          NewtonRaphsonSolver nrs = monitor == null ? new NewtonRaphsonSolver(accuracy)
-              : new MonitoredNewtonSolver(accuracy,
-                  x -> monitor.step(F.list(xVar), new double[] {x}));
+          NewtonRaphsonSolver nrs = new MonitoredNewtonSolver(accuracy, monitor == null ? null
+              : x -> monitor.step(F.list(xVar), new double[] {x}));
           if (maxMaybeNull == null) {
             try {
               return F.num(
@@ -642,9 +641,12 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
 
   /**
    * Newton's iteration of {@link NewtonRaphsonSolver}, which tells <code>stepConsumer</code> every
-   * point it steps to.
+   * point it steps to. A step below the accuracy ends the iteration only if the function value
+   * there is below the accuracy too, or the step is at the rounding level of the point: near a pole
+   * of a steep function the steps are small while the root is still far away.
    */
   private static final class MonitoredNewtonSolver extends NewtonRaphsonSolver {
+    /** the consumer of the steps or <code>null</code> */
     private final java.util.function.DoubleConsumer stepConsumer;
 
     MonitoredNewtonSolver(double absoluteAccuracy, java.util.function.DoubleConsumer stepConsumer) {
@@ -660,14 +662,21 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         final org.hipparchus.analysis.differentiation.UnivariateDerivative1 y0 =
             computeObjectiveValueAndDerivative1(x0);
         final double x1 = x0 - (y0.getValue() / y0.getPartialDerivative(1));
-        stepConsumer.accept(x1);
-        if (Math.abs(x1 - x0) <= absoluteAccuracy) {
+        if (stepConsumer != null) {
+          stepConsumer.accept(x1);
+        }
+        final double change = Math.abs(x1 - x0);
+        if (change <= absoluteAccuracy && (change <= ROUNDING_STEP * Math.max(1.0, Math.abs(x1))
+            || Math.abs(computeObjectiveValue(x1)) <= absoluteAccuracy)) {
           return x1;
         }
         x0 = x1;
       }
     }
   }
+
+  /** A Newton step below this, relative to the point, is rounding noise. */
+  private static final double ROUNDING_STEP = 1.0e-13;
 
   /** An imaginary part of the root of a complex iteration below this, relative to it, is zero. */
   private static final double CHOP = 1.0e-12;
@@ -1410,6 +1419,16 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if (!variable.isSymbol() || Double.isNaN(xmin) || Double.isNaN(xmax) || xmin > xmax) {
       return F.NIL;
     }
+    if (spec.argSize() == 4 && method.equalsIgnoreCase("Newton")) {
+      double x0 = spec.arg2().evalfNaN();
+      if (x0 >= xmin && x0 <= xmax) {
+        IExpr root = boundedNewton(equations, (ISymbol) variable, x0, xmin, xmax, maxIterations,
+            accuracyGoal, monitor, engine);
+        if (root.isPresent()) {
+          return root;
+        }
+      }
+    }
     boolean quiet = engine.isQuietMode();
     try {
       engine.setQuietMode(true);
@@ -1435,6 +1454,157 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     Errors.printMessage(S.FindRoot, "reged",
         F.list(F.List(spec.arg2()), F.List(F.List(lower, upper)), F.C1), engine);
     return F.NIL;
+  }
+
+  /**
+   * Newton's method in the region <code>[xmin, xmax]</code> with a line search on the merit
+   * function <code>f(x)^2/2</code>. A Newton step which leaves the region is shortened to end on
+   * its edge; a step which doesn't decrease the merit function enough is shortened to the minimum
+   * of the quadratic, and from the second trial on the cubic, model of the merit function along the
+   * step, but by no more than a factor of 10 at a time. If the search stands on an edge of the
+   * region and the Newton step points outside, the search stops there with the
+   * <code>reged</code> message.
+   *
+   * @return {@link F#NIL} if the function or its derivative has no finite value or the search
+   *         doesn't converge to a root
+   */
+  @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY",
+      justification = "a zero slope or a step of length zero ends the search")
+  private static IExpr boundedNewton(IExpr equations, ISymbol xVar, double x0, double xmin,
+      double xmax, int maxIterations, int accuracyGoal, StepMonitor monitor, EvalEngine engine) {
+    final double accuracy = accuracy(accuracyGoal);
+    final double sufficientDecrease = 1.0e-4;
+    IAssumptions oldAssumptions = engine.getAssumptions();
+    boolean quiet = engine.isQuietMode();
+    double x = x0;
+    boolean onEdge = false;
+    try {
+      engine.setAssumptions(Assumptions.getInstance(F.Element(xVar, S.Reals)));
+      engine.setQuietMode(true);
+      IExpr function = engine.evaluate(equations);
+      if (function.isEqual()) {
+        function = F.Subtract(function.first(), function.second());
+      } else if (function.isList()) {
+        return F.NIL;
+      }
+      UnaryNumerical numerical = new UnaryNumerical(function, xVar, true, true, Double.NaN, engine);
+      org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction f =
+          monitored(numerical, xVar);
+      double fx = f.value(x);
+      for (int iteration = 0; iteration < maxIterations; iteration++) {
+        engine.checkTimeLimit();
+        if (!Double.isFinite(fx)) {
+          return F.NIL;
+        }
+        if (fx == 0.0) {
+          break;
+        }
+        double slopeOfF =
+            f.value(new org.hipparchus.analysis.differentiation.UnivariateDerivative1(x, 1.0))
+                .getFirstDerivative();
+        if (!Double.isFinite(slopeOfF) || slopeOfF == 0.0) {
+          return F.NIL;
+        }
+        double step = -fx / slopeOfF;
+        if (x + step < xmin) {
+          step = xmin - x;
+        } else if (x + step > xmax) {
+          step = xmax - x;
+        }
+        if (step == 0.0) {
+          onEdge = true;
+          break;
+        }
+        final double merit = 0.5 * fx * fx;
+        final double meritSlope = fx * slopeOfF * step;
+        double alpha = 1.0;
+        double previousAlpha = 0.0;
+        double previousMerit = 0.0;
+        double next;
+        double fNext;
+        while (true) {
+          next = x + alpha * step;
+          fNext = f.value(next);
+          double nextMerit = 0.5 * fNext * fNext;
+          if (Double.isFinite(fNext)
+              && nextMerit <= merit + sufficientDecrease * alpha * meritSlope) {
+            break;
+          }
+          if (alpha < 1.0e-12) {
+            return F.NIL;
+          }
+          double trial;
+          if (!Double.isFinite(fNext)) {
+            trial = 0.1 * alpha;
+          } else if (previousAlpha == 0.0) {
+            trial = -meritSlope / (2.0 * (nextMerit - merit - meritSlope));
+          } else {
+            trial = Math.min(cubicLineSearchStep(alpha, nextMerit, previousAlpha, previousMerit,
+                merit, meritSlope), 0.5 * alpha);
+          }
+          if (Double.isFinite(fNext)) {
+            previousAlpha = alpha;
+            previousMerit = nextMerit;
+          }
+          alpha = Math.max(trial, 0.1 * alpha);
+        }
+        if (monitor != null) {
+          monitor.step(F.list(xVar), new double[] {next});
+        }
+        double change = Math.abs(next - x);
+        x = next;
+        fx = fNext;
+        if (change <= accuracy) {
+          if (Math.abs(fx) <= accuracy) {
+            x = UnivariateSolverSupplier.polish(numerical, x);
+            return F.list(F.Rule(xVar, F.num(x)));
+          }
+          if (change <= ROUNDING_STEP * Math.max(1.0, Math.abs(x))) {
+            // a minimum of |f| which isn't a root
+            return F.NIL;
+          }
+        }
+      }
+      if (!onEdge && fx != 0.0) {
+        return F.NIL;
+      }
+    } finally {
+      engine.setQuietMode(quiet);
+      engine.setAssumptions(oldAssumptions);
+    }
+    if (onEdge) {
+      // The point `1` is at the edge of the search region `2` in coordinate `3` and the computed
+      // search direction points outside the region.
+      Errors.printMessage(S.FindRoot, "reged",
+          F.list(F.List(F.num(x)), F.List(F.List(F.num(xmin), F.num(xmax))), F.C1), engine);
+    }
+    return F.list(F.Rule(xVar, F.num(x)));
+  }
+
+  /**
+   * The minimum of the cubic through the merit values at the step fractions <code>0</code>,
+   * <code>alpha</code> and <code>previousAlpha</code> with the slope <code>meritSlope</code> at
+   * <code>0</code>.
+   */
+  private static double cubicLineSearchStep(double alpha, double merit, double previousAlpha,
+      double previousMerit, double merit0, double meritSlope) {
+    double rhs1 = merit - merit0 - alpha * meritSlope;
+    double rhs2 = previousMerit - merit0 - previousAlpha * meritSlope;
+    double a = (rhs1 / (alpha * alpha) - rhs2 / (previousAlpha * previousAlpha))
+        / (alpha - previousAlpha);
+    double b = (-previousAlpha * rhs1 / (alpha * alpha)
+        + alpha * rhs2 / (previousAlpha * previousAlpha)) / (alpha - previousAlpha);
+    if (a == 0.0) {
+      return -meritSlope / (2.0 * b);
+    }
+    double discriminant = b * b - 3.0 * a * meritSlope;
+    if (discriminant < 0.0) {
+      return 0.5 * alpha;
+    }
+    if (b <= 0.0) {
+      return (-b + Math.sqrt(discriminant)) / (3.0 * a);
+    }
+    return -meritSlope / (b + Math.sqrt(discriminant));
   }
 
   /**

@@ -234,13 +234,13 @@ public class ModuleReplaceAll extends VisitorExpr {
     java.util.Set<ISymbol> patternSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
     collectPatternSymbols(ast.arg1(), patternSymbols);
-    // a pattern variable of a rule or an assignment shadows a variable substituted by a value:
-    // in With({a = 3}, a_ :> a) and With({a = 3}, a_ -> a) the a on the right-hand side is the
-    // pattern variable
+    // a pattern variable of a rule or an assignment shadows a substituted variable: in
+    // With({a = 3}, a_ :> a) and Module({a = 3}, a_ -> a) the a on the right-hand side is the
+    // pattern variable, and the rule stays as it is written
     IdentityHashMap<ISymbol, IExpr> unshadowed = null;
     for (ISymbol symbol : patternSymbols) {
       IExpr value = fModuleVariables.get(symbol);
-      if (value != null && value.isPresent() && !value.isSymbol()) {
+      if (value != null && value.isPresent()) {
         if (unshadowed == null) {
           unshadowed = new IdentityHashMap<>(fModuleVariables);
         }
@@ -400,23 +400,36 @@ public class ModuleReplaceAll extends VisitorExpr {
   /**
    * The parameters of <code>Function(params, body)</code> are renamed to <code>name$</code> if a
    * substituted variable occurs in the body - <code>With({a = 1}, Hold(Function(x, a*x)))</code> is
-   * <code>Hold(Function(x$, 1*x$))</code> - or if they are substituted variables themselves.
+   * <code>Hold(Function(x$, 1*x$))</code> - or if they collide with a free symbol of a substituted
+   * value. A parameter which is a substituted variable itself shadows it:
+   * <code>Module({x = 1}, Function(x, x + 1))</code> keeps the function as it is written.
    *
-   * @return <code>null</code> if no parameter is renamed
+   * @return <code>null</code> if no parameter is renamed or shadows a substituted variable
    */
   private IdentityHashMap<ISymbol, IExpr> renamedFunctionParameters(IAST function,
       IAST parameters) {
     java.util.Set<ISymbol> parameterSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
+    IdentityHashMap<ISymbol, IExpr> variables = null;
     for (int i = 1; i < parameters.size(); i++) {
-      if (parameters.get(i).isSymbol() && !isRenamed((ISymbol) parameters.get(i))) {
-        parameterSymbols.add((ISymbol) parameters.get(i));
+      if (parameters.get(i).isSymbol()) {
+        ISymbol symbol = (ISymbol) parameters.get(i);
+        IExpr value = fModuleVariables.get(symbol);
+        if (value != null && value.isPresent()) {
+          if (variables == null) {
+            variables = new IdentityHashMap<>(fModuleVariables);
+          }
+          variables.remove(symbol);
+        }
+        if (!isRenamed(symbol)) {
+          parameterSymbols.add(symbol);
+        }
       }
     }
     boolean reached = isReachedBySubstitution(function.arg2(), parameterSymbols);
-    IdentityHashMap<ISymbol, IExpr> variables = null;
     for (ISymbol symbol : parameterSymbols) {
-      if (reached || fModuleVariables.containsKey(symbol)) {
+      IExpr value = fModuleVariables.get(symbol);
+      if (reached || (value != null && value.isNIL())) {
         if (variables == null) {
           variables = new IdentityHashMap<>(fModuleVariables);
         }

@@ -627,6 +627,8 @@ public class Errors {
       "symmcomp", "Symmetry specification `1` is incompatible with expression `2`.", //
       "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
+      "rctndmln",
+      "The argument `1` at position `2` should be a list containing two rectangular arrays of real numbers where each array has length greater than its dimension.", //
       "realprm", "Parameter `1` at position `2` in `3` is expected to be real.", //
       "realx", "The value `1` is not a real number.", //
       "reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //

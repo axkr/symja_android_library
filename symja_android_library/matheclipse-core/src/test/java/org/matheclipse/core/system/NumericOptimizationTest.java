@@ -7,6 +7,47 @@ import org.junit.jupiter.api.Test;
 public class NumericOptimizationTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testFindRootStopsAtTheEdgeOfTheRegion() {
+    // the root Sqrt(3) lies left of the region [2, 5]: the search ends on its left edge
+    check("FindRoot(x^2 - 3, {x, 4, 2, 5})", //
+        "{x->2.0}");
+    check("FindRoot(x^3 - 20, {x, 1, 0, 2})", //
+        "{x->2.0}");
+    // a root inside the region
+    check("FindRoot(x^2 - 3, {x, 4, 1, 5})", //
+        "{x->1.73205}");
+  }
+
+  @Test
+  public void testFindRootLineSearchInTheRegion() {
+    // the Newton step from 0.2 overshoots the region [0, 2]; the search stays inside and finds
+    // the root 1 of the function with a pole at 3/2
+    check("FindRoot((x - 1)/(3/2 - x) - 0, {x, 1/5, 0, 13/10})", //
+        "{x->1.0}");
+    check("Reap(FindRoot(ArcTan(x - 1), {x, 3, 0, 4}, StepMonitor :> Sow(x)))[[1]]", //
+        "{x->1.0}");
+  }
+
+  @Test
+  public void testFindRootSteepNearAPole() {
+    // near the pole at 1 the Newton steps are tiny while the root is still far away
+    check("FindRoot(1/(1 - x) - 3, {x, 999999/1000000})", //
+        "{x->0.666667}");
+    check("FindRoot(1/(1 - x)^2 - 4, {x, 9999999/10000000}, MaxIterations -> 200)", //
+        "{x->0.5}");
+  }
+
+  @Test
+  public void testFindRootOfInterpolationWithDescendingAbscissas() {
+    check("g = Interpolation({{4., 16.}, {3., 9.}, {2., 4.}, {1., 1.}, {0., 0.}, {-1., 1.}});"
+        + "{g(2.5), g(0.5), g(-0.5)}", //
+        "{6.25,0.25,0.25}");
+    check("g = Interpolation({{4., 16.}, {3., 9.}, {2., 4.}, {1., 1.}, {0., 0.}, {-1., 1.}});"
+        + "FindRoot(g(x) == 5, {x, 3.5, 1, 4})", //
+        "{x->2.23607}");
+  }
+
+  @Test
   public void testNMinimizeConstraints() {
     // the constraints were ignored: the unconstrained optimum {x->1,y->2} violates x+y<=2
     check(

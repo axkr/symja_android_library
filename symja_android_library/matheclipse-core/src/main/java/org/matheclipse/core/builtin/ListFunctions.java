@@ -5007,6 +5007,14 @@ public final class ListFunctions {
       }
       // a QuantityArray is as long as the array it stands for, not as its two arguments
       arg1 = QuantityFunctions.normalizeQuantityArray(arg1);
+      if (arg1.isAST(S.TemporalData, 5)) {
+        // a time series is as long as its list of time stamps
+        int pathLength =
+            org.matheclipse.core.reflection.system.TemporalData.pathLength(arg1, engine);
+        if (pathLength >= 0) {
+          return F.ZZ(pathLength);
+        }
+      }
       final int size = arg1.size();
       if (size > 0) {
         return F.ZZ(size - 1);

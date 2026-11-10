@@ -1059,12 +1059,12 @@ public class Algebra {
 
           final IPatternMatcher matcher = engine.evalPatternMatcher(newLHS);
 
-          collectTimesToMap(x, poly, matcher, defaultdict, rest, blankNullRest);
+          collectTimesToMap(x, poly, matcher, F.NIL, defaultdict, rest, blankNullRest, engine);
 
         } else {
           final IPatternMatcher matcher = engine.evalPatternMatcher(x);
 
-          collectToMap(x, poly, matcher, defaultdict, rest);
+          collectToMap(x, poly, matcher, powerTarget(x), defaultdict, rest, engine);
         }
 
         if (listOfVariables != null && listPosition < listOfVariables.size()) {
@@ -1111,15 +1111,15 @@ public class Algebra {
     }
 
     public void collectTimesToMap(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest,
-        IPatternSequence blankNullRest) {
-      if (expr.isFree(matcher, false)) {
+        IExpr target, DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest,
+        IPatternSequence blankNullRest, EvalEngine engine) {
+      if (isFreeOfTarget(expr, matcher, target, engine)) {
         rest.append(expr);
         return;
       } else if (matcher.test(expr)) {
         addPowerFactor(expr, getRest(matcher, blankNullRest, F.C1), defaultdict);
         return;
-      } else if (blankNullRest == null && isPowerMatched(expr, matcher)) {
+      } else if (blankNullRest == null && isPowerMatched(expr, matcher, target, engine)) {
         addPowerFactor(expr, F.C1, defaultdict);
         return;
       } else if (expr.isPlus()) {
@@ -1127,7 +1127,8 @@ public class Algebra {
         IASTAppendable clone = plusAST.copyAppendable();
         int i = 1;
         while (i < clone.size()) {
-          if (collectTimesToMapPlus(key, clone.get(i), matcher, defaultdict, blankNullRest)) {
+          if (collectTimesToMapPlus(key, clone.get(i), matcher, target, defaultdict,
+              blankNullRest, engine)) {
             clone.remove(i);
           } else {
             i++;
@@ -1138,7 +1139,7 @@ public class Algebra {
         }
         return;
       } else if (blankNullRest == null && expr.isTimes()) {
-        if (collectTimesFactor((IAST) expr, matcher, defaultdict)) {
+        if (collectTimesFactor((IAST) expr, matcher, target, defaultdict, engine)) {
           return;
         }
         rest.append(expr);
@@ -1154,10 +1155,10 @@ public class Algebra {
      *
      * @return <code>true</code> if a matching factor was found
      */
-    private boolean collectTimesFactor(IAST timesAST, IPatternMatcher matcher,
-        DefaultDict<IASTAppendable> defaultdict) {
+    private boolean collectTimesFactor(IAST timesAST, IPatternMatcher matcher, IExpr target,
+        DefaultDict<IASTAppendable> defaultdict, EvalEngine engine) {
       return timesAST.exists((x, i) -> {
-        if (matcher.test(x) || isPowerMatched(x, matcher)) {
+        if (matcher.test(x) || isPowerMatched(x, matcher, target, engine)) {
           IASTAppendable clone = timesAST.copyAppendable();
           clone.remove(i);
           addOneIdentityPowerFactor(x, clone, defaultdict);
@@ -1168,8 +1169,9 @@ public class Algebra {
     }
 
     public boolean collectTimesToMapPlus(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        DefaultDict<IASTAppendable> defaultdict, IPatternSequence blankNullRest) {
-      if (expr.isFree(matcher, false)) {
+        IExpr target, DefaultDict<IASTAppendable> defaultdict, IPatternSequence blankNullRest,
+        EvalEngine engine) {
+      if (isFreeOfTarget(expr, matcher, target, engine)) {
         return false;
       } else if (matcher.test(expr)) {
         addPowerFactor(key, getRest(matcher, blankNullRest, F.C0), defaultdict);
@@ -1178,15 +1180,15 @@ public class Algebra {
       return false;
     }
 
-    public void collectToMap(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest) {
-      if (expr.isFree(matcher, false)) {
+    public void collectToMap(final IExpr key, IExpr expr, IPatternMatcher matcher, IExpr target,
+        DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest, EvalEngine engine) {
+      if (isFreeOfTarget(expr, matcher, target, engine)) {
         rest.append(expr);
         return;
       } else if (matcher.test(expr)) {
         addPowerFactor(expr, F.C1, defaultdict);
         return;
-      } else if (isPowerMatched(expr, matcher)) {
+      } else if (isPowerMatched(expr, matcher, target, engine)) {
         addPowerFactor(expr, F.C1, defaultdict);
         return;
       } else if (expr.isPlus()) {
@@ -1194,7 +1196,7 @@ public class Algebra {
         IASTAppendable clone = plusAST.copyAppendable();
         int i = 1;
         while (i < clone.size()) {
-          if (collectToMapPlus(key, clone.get(i), matcher, defaultdict)) {
+          if (collectToMapPlus(key, clone.get(i), matcher, target, defaultdict, engine)) {
             clone.remove(i);
           } else {
             i++;
@@ -1205,7 +1207,7 @@ public class Algebra {
         }
         return;
       } else if (expr.isTimes()) {
-        if (collectTimesFactor((IAST) expr, matcher, defaultdict)) {
+        if (collectTimesFactor((IAST) expr, matcher, target, defaultdict, engine)) {
           return;
         }
         rest.append(expr);
@@ -1215,19 +1217,19 @@ public class Algebra {
     }
 
     public boolean collectToMapPlus(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        DefaultDict<IASTAppendable> defaultdict) {
-      if (expr.isFree(matcher, false)) {
+        IExpr target, DefaultDict<IASTAppendable> defaultdict, EvalEngine engine) {
+      if (isFreeOfTarget(expr, matcher, target, engine)) {
         return false;
       } else if (matcher.test(expr)) {
         addPowerFactor(expr, F.C1, defaultdict);
         return true;
-      } else if (isPowerMatched(expr, matcher)) {
+      } else if (isPowerMatched(expr, matcher, target, engine)) {
         addPowerFactor(expr, F.C1, defaultdict);
         return true;
       } else if (expr.isTimes()) {
         IAST timesAST = (IAST) expr;
         return timesAST.exists((x, i) -> {
-          if (matcher.test(x) || isPowerMatched(x, matcher)) {
+          if (matcher.test(x) || isPowerMatched(x, matcher, target, engine)) {
             IAST clone = timesAST.splice(i);
             addOneIdentityPowerFactor(x, clone, defaultdict);
             return true;
@@ -1277,8 +1279,58 @@ public class Algebra {
       return ARGS_2_3;
     }
 
-    public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {
-      return poly.isPower() && poly.exponent().isNumber() && matcher.test(poly.base());
+    /**
+     * Test if <code>poly</code> is a numeric power of an expression matching <code>matcher</code>
+     * or an integer power of the power expression <code>target</code>.
+     *
+     * @param poly the factor which should be tested
+     * @param matcher the matcher for the collected expression
+     * @param target the collected expression if it's a power without patterns; {@link F#NIL}
+     *        otherwise
+     * @param engine the evaluation engine
+     */
+    public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher, IExpr target,
+        EvalEngine engine) {
+      if (poly.isPower()) {
+        if (poly.exponent().isNumber() && matcher.test(poly.base())) {
+          return true;
+        }
+        return isIntegerPowerOfTarget(poly, target, engine);
+      }
+      return false;
+    }
+
+    /**
+     * Test if <code>poly</code> equals <code>target^k</code> for an integer <code>k</code>; for
+     * example <code>x^4</code> for the target <code>x^2</code> or <code>E^(-z)</code> for the target
+     * <code>E^z</code>.
+     */
+    private static boolean isIntegerPowerOfTarget(IExpr poly, IExpr target, EvalEngine engine) {
+      if (target.isPresent() && poly.isPower() && poly.base().equals(target.base())) {
+        IExpr ratio = engine.evaluate(F.Divide(poly.exponent(), target.exponent()));
+        return ratio.isInteger() && !ratio.isZero();
+      }
+      return false;
+    }
+
+    private static boolean isFreeOfTarget(IExpr expr, IPatternMatcher matcher, IExpr target,
+        EvalEngine engine) {
+      if (target.isPresent()) {
+        return expr.isFree(x -> matcher.test(x) || isIntegerPowerOfTarget(x, target, engine),
+            false);
+      }
+      return expr.isFree(matcher, false);
+    }
+
+    /**
+     * Return <code>x</code> if it's a power expression without patterns, whose integer powers
+     * should also be collected; {@link F#NIL} otherwise.
+     */
+    private static IExpr powerTarget(IExpr x) {
+      if (x.isPower() && x.isFreeOfPatterns()) {
+        return x;
+      }
+      return F.NIL;
     }
 
     @Override

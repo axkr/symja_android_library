@@ -3537,7 +3537,10 @@ public class ComputationalGeometryFunctions {
   }
 
   /**
-   * <code>PolyhedronData("name", "property")</code> - properties of a named polyhedron.
+   * <code>PolyhedronData("name", "property")</code> - properties of a named polyhedron;
+   * <code>PolyhedronData(class, "property")</code> the list of the property of the members of a
+   * class like <code>"Platonic"</code> or <code>"Antiprism"</code>, in the order
+   * <code>PolyhedronData(class)</code> gives them.
    *
    * <p>
    * The combinatorics are <b>derived</b>, not tabulated: vertices come from their coordinate
@@ -3639,6 +3642,14 @@ public class ComputationalGeometryFunctions {
           default:
             break;
         }
+      } else if (ast.isAST2() && isClass(name)) {
+        // a property of a class is the list of the property of its members
+        IExpr members = engine.evaluate(F.unaryAST1(S.PolyhedronData, arg1));
+        if (members.isList()) {
+          return ((IAST) members).map(member -> engine.evaluate(F.binaryAST2(S.PolyhedronData,
+              member, ast.arg2())), 1);
+        }
+        return F.NIL;
       }
       if (!isKnown(name)) {
         return F.NIL;
@@ -3680,6 +3691,19 @@ public class ComputationalGeometryFunctions {
         return F.Missing(S.NotAvailable);
       }
       return combinatorialProperty(property, exactVertices(name), vertices, faces);
+    }
+
+    /** Whether a name is one of the classes <code>PolyhedronData(class)</code> lists. */
+    private static boolean isClass(String name) {
+      switch (name) {
+        case "Platonic":
+        case "Convex":
+        case PRISM:
+        case ANTIPRISM:
+          return true;
+        default:
+          return false;
+      }
     }
 
     /**

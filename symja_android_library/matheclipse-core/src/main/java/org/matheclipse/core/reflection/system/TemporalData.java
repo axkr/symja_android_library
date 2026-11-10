@@ -135,6 +135,20 @@ public class TemporalData extends AbstractEvaluator {
         i -> path(pathsAndTimes[1][i - 1], pathsAndTimes[0][i - 1]));
   }
 
+  /**
+   * The number of time stamps of a <code>TemporalData</code> object of one path, as
+   * <code>Length</code> counts it.
+   *
+   * @return <code>-1</code> if <code>temporalData</code> isn't one of a single path
+   */
+  public static int pathLength(IExpr temporalData, EvalEngine engine) {
+    IAST[][] pathsAndTimes = pathsAndTimes(temporalData, engine);
+    if (pathsAndTimes == null || pathsAndTimes[0].length != 1) {
+      return -1;
+    }
+    return pathsAndTimes[1][0].argSize();
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.head() == S.TemporalData) {

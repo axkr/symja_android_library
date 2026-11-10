@@ -162,7 +162,7 @@
       "aliases": ["Z"]
     }
   },
-  "baseUnits": ["Meters", "Kilograms", "Seconds", "Amperes", "Kelvins", "Moles", "Candelas", "Radians", "Steradians", "Bits", "USDollars"],
+  "baseUnits": ["Meters", "Kilograms", "Seconds", "Amperes", "Kelvins", "Moles", "Candelas", "Radians", "Steradians", "Bits", "USDollars", "People"],
   "units": [
     {
       "name": "Abamperes",
@@ -3545,9 +3545,17 @@
       "aliases": ["pennyweight", "dwt"]
     },
     {
-      "name": "Percents",
+      "name": "People",
+      "coefficient": "1",
+      "factors": {
+        "People": 1
+      },
+      "prefixable": false,
+      "aliases": ["person", "Persons"]
+    },
+    {
+      "name": "Percent",
       "pintName": "percent",
-      "provisional": true,
       "coefficient": "1/100",
       "factors": {},
       "abbrev": "%",

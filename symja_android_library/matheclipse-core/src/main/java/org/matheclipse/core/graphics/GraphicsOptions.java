@@ -64,6 +64,33 @@ public class GraphicsOptions {
   }
 
   /**
+   * The values of a dataset of values in a <code>Style</code> or <code>Tooltip</code>, each dressed
+   * in that wrapper: <code>PieChart(Tooltip({8, 10, 4, 2}, "tip"))</code> shows the tooltip on
+   * every sector.
+   *
+   * @return <code>data</code> itself if it is no such wrapper
+   */
+  public static IExpr distributeDatasetWrapper(IExpr data) {
+    if (PlotWrapper.isWrapper(data)) {
+      PlotWrapper wrapper = PlotWrapper.of(data);
+      if (wrapper.datum.isList() && !wrapper.legend.isPresent() && !wrapper.hasLabel()
+          && !((IAST) wrapper.datum).exists(x -> x.isList())) {
+        final IExpr dressed = data;
+        return ((IAST) wrapper.datum).map(x -> rewrap(dressed, x), 1);
+      }
+    }
+    return data;
+  }
+
+  /** The wrappers of <code>wrapped</code> around <code>value</code> instead of their payload. */
+  private static IExpr rewrap(IExpr wrapped, IExpr value) {
+    if (PlotWrapper.isWrapper(wrapped) && wrapped.argSize() >= 1) {
+      return ((IAST) wrapped).setAtCopy(1, rewrap(wrapped.first(), value));
+    }
+    return value;
+  }
+
+  /**
    * The {@link #chartData(IExpr, IASTAppendable) chartData} of <code>arg</code> with its
    * quantities converted to plain magnitudes in the <code>TargetUnits</code> of
    * <code>originalAST</code>.

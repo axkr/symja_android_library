@@ -1062,4 +1062,39 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }
+
+  @Test
+  public void testMannWhitneyTest() {
+    // exact p-values counting the values beyond the observed U: 2/126, 1/126 and 124/126
+    check("x = {3.1, 4.7, 2.2, 6.0}; y = {5.5, 7.1, 6.6, 8.2, 9.0}; "
+        + "{MannWhitneyTest({x, y}), MannWhitneyTest({x, y}, 0, \"PValue\", AlternativeHypothesis -> \"Less\"), "
+        + "MannWhitneyTest({x, y}, 0, \"PValue\", AlternativeHypothesis -> \"Greater\"), "
+        + "MannWhitneyTest({x, y}, 0, \"TestStatistic\")}", //
+        "{0.015873,0.00793651,0.984127,1.0}");
+    // a tie counts one half
+    check("MannWhitneyTest({{1, 2, 2, 4}, {2, 3, 5}}, 0, {\"TestStatistic\", \"PValue\"})", //
+        "{3.0,0.228571}");
+    // more than 40 values: the normal approximation
+    check("MannWhitneyTest({Range(25), Range(30) + 4.5}, 0, \"TestData\")", //
+        "{210.0,0.00542656}");
+    check("MannWhitneyTest({Range(25), Range(30) + 4.5}, 2, \"TestConclusion\", "
+        + "AlternativeHypothesis -> \"Less\", SignificanceLevel -> 0.1)", //
+        "The null hypothesis that the median difference is greater than or equal to 2 is rejected at the 10. percent level based on the Mann\u2010Whitney test.");
+    check("MannWhitneyTest({Range(25), Range(30) + 4.5}, 2, \"ShortTestConclusion\", "
+        + "AlternativeHypothesis -> \"Less\", SignificanceLevel -> 0.1)", //
+        "Reject");
+    check("MannWhitneyTest({{1, 2}, {3, 4}}, 0, \"Foo\")", //
+        "MannWhitneyTest({{1,2},{3,4}},0,Foo)");
+    // the two-sided test reports the smaller U, a one-sided one the U of the first sample
+    check("{MannWhitneyTest({{5, 6}, {1, 2}}, 0, \"TestStatistic\"), "
+        + "MannWhitneyTest({{5, 6}, {1, 2}}, 0, \"TestStatistic\", AlternativeHypothesis -> \"Greater\")}", //
+        "{0.0,4.0}");
+    // one sample is no data for this test
+    check("MannWhitneyTest({2, 4, 6})", //
+        "MannWhitneyTest({2,4,6})");
+    // the test data object answers the properties of the test it was made by
+    check("h = MannWhitneyTest({{2, 3, 5}, {4.5, 6, 9}}, 0, \"HypothesisTestData\", "
+        + "AlternativeHypothesis -> \"Less\"); {Head(h), h(\"TestStatistic\"), h(\"PValue\")}", //
+        "{HypothesisTestData,1.0,0.05}");
+  }
 }

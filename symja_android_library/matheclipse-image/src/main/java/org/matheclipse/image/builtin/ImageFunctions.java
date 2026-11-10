@@ -672,6 +672,14 @@ public class ImageFunctions {
       // and what the pixels of an image pasted out of a notebook are. The type of the array is
       // the type of the image unless one is given.
       String arrayType = null;
+      if (ast.arg1().isSparseArray()) {
+        // the pixels of a sparse array are those of its dense array
+        IExpr list = ast.arg1().normal(false);
+        if (!list.isList()) {
+          return F.NIL;
+        }
+        ast = ast.setAtCopy(1, list);
+      }
       if (ast.arg1().isNumericArray()) {
         INumericArray array = (INumericArray) ast.arg1();
         arrayType = imageTypeOfArray(array.getStringType());

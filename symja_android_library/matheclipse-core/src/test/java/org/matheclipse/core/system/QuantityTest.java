@@ -1460,4 +1460,34 @@ public class QuantityTest extends ExprEvaluatorTestCase {
             + "Quantity(1, \"Kilojoules\"/\"Moles\"))", //
         "True");
   }
+
+  @Test
+  public void testDimensionlessAndCountingUnits() {
+    // a dimensionless quantity converted to base units or pure numbers is a number
+    check("{UnitConvert(Quantity(40, \"Percent\")), UnitConvert(Quantity(5, \"Centimeters\"/\"Meters\")), "
+        + "UnitConvert(Quantity(3/4, \"Percent\"), \"PureUnities\")}", //
+        "{2/5,1/20,3/400}");
+    check("Quantity(2, \"Percent\")", //
+        "Quantity(2,\"Percent\")");
+    check("UnitDimensions(\"People\"/\"Hectares\")", //
+        "{{LengthUnit,-2},{PersonUnit,1}}");
+    check("Quantity(4, \"People\") + Quantity(6, \"People\")", //
+        "Quantity(10,\"People\")");
+  }
+
+  @Test
+  public void testPrefixWordsOfUnits() {
+    // a prefix written as a word goes with an SI unit, spelled as the unit is; other units have
+    // only a few prefixed forms
+    check("KnownUnitQ /@ {\"Nanometers\", \"Megajoules\", \"Nanofeet\", \"NanoMeters\", "
+        + "\"Kilomiles\", \"Kilofeet\"}", //
+        "{True,True,False,False,False,True}");
+    check("KnownUnitQ /@ {\"Millirems\", \"Kiloergs\", \"Megadynes\", \"MegawattHours\", \"Milliinches\"}", //
+        "{True,True,False,False,False}");
+    check("UnitConvert(Quantity(3, \"Kilofeet\"), \"Meters\")", //
+        "Quantity(4572/5,\"Meters\")");
+    // the short symbols still combine
+    check("UnitConvert(Quantity(2, \"km\"), \"Meters\")", //
+        "Quantity(2000,\"Meters\")");
+  }
 }

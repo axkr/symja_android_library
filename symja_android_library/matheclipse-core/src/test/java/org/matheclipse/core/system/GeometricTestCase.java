@@ -1828,6 +1828,15 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPolyhedronDataClassProperty() {
+    // a property of a class maps over its members, in the order of PolyhedronData(class)
+    check("PolyhedronData(\"Prism\", \"EdgeCount\")", //
+        "{12,9,15,18,21,24,27,30}");
+    check("PolyhedronData(\"Platonic\", \"VertexCount\")", //
+        "{8,20,12,6,4}");
+  }
+
+  @Test
   public void testPolyhedronDataEntity() {
     // an entity and a bare name are the same question, and so are a property and its name
     check("PolyhedronData(Entity(\"Polyhedron\", \"Icosahedron\"), \"FaceCount\")", //

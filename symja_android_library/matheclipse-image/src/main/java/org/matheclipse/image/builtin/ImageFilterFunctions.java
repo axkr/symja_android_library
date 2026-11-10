@@ -82,6 +82,7 @@ public class ImageFilterFunctions {
       S.ImagePeriodogram.setEvaluator(new ImagePeriodogram());
       S.WatershedComponents.setEvaluator(new WatershedComponents());
       S.MorphologicalGraph.setEvaluator(new MorphologicalGraph());
+      S.Thinning.setEvaluator(new ThinningFilter());
       S.ComponentMeasurements.setEvaluator(new ComponentMeasurements());
       S.DeleteSmallComponents.setEvaluator(new DeleteSmallComponents());
       S.MorphologicalBinarize.setEvaluator(new MorphologicalBinarize());
@@ -1928,6 +1929,48 @@ public class ImageFilterFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+  }
+
+  /**
+   * <code>Thinning(image)</code>: the pixels of an image greater than <code>1/2</code> thinned to
+   * lines one pixel wide, see {@link org.matheclipse.image.algo.Thinning}, as an image of the same
+   * type with the value 1 on the lines and 0 elsewhere.
+   */
+  private static class ThinningFilter extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster raster = image.raster();
+      boolean[][] foreground = foreground(image, 0.5, engine);
+      if (raster == null || foreground == null) {
+        return F.NIL;
+      }
+      boolean[][] lines = org.matheclipse.image.algo.Thinning.thin(foreground, engine);
+      Raster result = raster.copy();
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          for (int c = 0; c < raster.channels; c++) {
+            result.set(x, y, c, lines[y][x] ? 1.0 : 0.0);
+          }
+        }
+      }
+      ImageExpr thinned = ImageExpr.fromRaster(result, image.getOptions(), image.sampleType());
+      return thinned == null ? F.NIL : thinned;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 

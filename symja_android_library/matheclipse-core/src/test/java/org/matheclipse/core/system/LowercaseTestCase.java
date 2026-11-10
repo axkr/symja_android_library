@@ -13816,6 +13816,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,7,g(text)}");
     check("z = 4; Setting(Slider(Dynamic(z), {1, 8}) + 1)", //
         "5");
+    // Dynamic(c) stands for c, which a held expression keeps
+    check("c = 3; g(n_Integer) := 2*n; {Setting(Dynamic(g(Dynamic(c)))), Setting(Hold(Dynamic(c)))}", //
+        "{6,Hold(c)}");
   }
 
   @Test
@@ -16957,6 +16960,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimeSeries() {
+    // a time series is as long as its list of time stamps
+    check("{Length(TimeSeries({{1, 5}, {3, 6}, {4, 2}, {7, 1}})), Length(TimeSeries({4, 5, 6}, {10}))}", //
+        "{4,3}");
     // a path needs one time for each of its values
     check(
         "TemporalData(TimeSeries, {{{7, 8, 9}}, {{{1, 2}}}, 1, {\"Continuous\", 1}, "

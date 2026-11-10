@@ -292,11 +292,14 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "False");
     check("BooleanConvert(f, \"DNF\")", //
         "(!#1&&#3)||(!#2&&#3)&");
+    // the inputs no rule gives a value are free, and here the constant is the simplest choice
     check("BooleanConvert(BooleanFunction({{True, True} -> True}, {x,y}))", //
-        "x&&y");
+        "True");
     check(
         "BooleanConvert(BooleanFunction({{False, True} -> True,{True, False} -> True,{True, True} ->True}, {x,y}))", // "
-        "x||y");
+        "True");
+    check("BooleanConvert(BooleanFunction({{True, True} -> True, {False, True} -> False}, {x,y}))", //
+        "x");
 
     // TODO
     // check("f=BooleanConvert(Xor(x,y,z), \"BFF\")", //
@@ -1483,5 +1486,26 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "-3<=ComplexInfinity");
     check("Check(Less(-3, z), failed)", //
         "-3<z");
+  }
+
+  @Test
+  public void testBooleanFunctionFromRules() {
+    // 0 and 1 stand for False and True, _ for either; the first rule which matches decides
+    check("BooleanTable(BooleanFunction({{0, _} -> 1, {1, 1} -> 0}))", //
+        "{False,False,True,True}");
+    check("bf = BooleanFunction({{_, _, 1} -> True, {_, _, 0} -> False}); bf(False, True, True)", //
+        "True");
+    check("ToString(BooleanFunction({{_, _, 1} -> 1, {_, _, 0} -> 0}), InputForm)", //
+        "BooleanFunction(\"BDD\"->{3,2,1,-1})");
+    // a constant function keeps its arguments
+    check("BooleanTable(BooleanFunction({{0, 0} -> 0, {0, 1} -> 0}))", //
+        "{False,False,False,False}");
+    check("ToString(BooleanFunction(0, 3), InputForm)", //
+        "BooleanFunction(\"BDD\"->{-3})");
+    check("BooleanTable(BooleanFunction(0, 2))", //
+        "{False,False,False,False}");
+    // 2 is no truth value
+    check("BooleanFunction({{1, 2} -> 1})", //
+        "BooleanFunction({{1,2}->1})");
   }
 }

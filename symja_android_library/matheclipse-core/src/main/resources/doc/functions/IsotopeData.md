@@ -22,12 +22,15 @@ An element can be named, given by atomic number, or given by symbol. A single is
 an `Entity("Isotope", name)`, or by the name with its mass number written onto it - `"Carbon12"` or
 `"C12"`. A property can be named or given as an `EntityProperty("Isotope", property)`.
 
-`IsotopeData` reads the isotope table bundled with the
-[Chemistry Development Kit](https://cdk.github.io/), which is the
-[Blue Obelisk Data Repository](https://github.com/BlueObelisk/bodr) table: every isotope of every
-element, 3171 of them, not only the ones that occur in nature. It lives in `matheclipse-chem`, so
-without that module on the classpath `IsotopeData` stays unevaluated as the rest of that module's
-functions do.
+`IsotopeData` reads the NUBASE2020 nuclide chart (F.G. Kondev et al., Chinese Physics C 45 (2021)
+030001, from the [IAEA Atomic Mass Data Center](https://www-nds.iaea.org/amdc/)): every known ground
+state of every element, 3558 of them, not only the ones that occur in nature, with half-lives and
+decay modes. The free neutron is in the chart too, but it is no isotope of an element and so is not
+an entity here. Masses and natural abundances come from the isotope table bundled with the
+[Chemistry Development Kit](https://cdk.github.io/), the
+[Blue Obelisk Data Repository](https://github.com/BlueObelisk/bodr) table, wherever it has the
+nuclide. It lives in `matheclipse-chem`, so without that module on the classpath `IsotopeData`
+stays unevaluated as the rest of that module's functions do.
 
 ### Examples
 
@@ -45,14 +48,14 @@ Entity(Isotope,Carbon12)
 Quantity(12.0,"AtomicMassUnit")
 
 >> Length(IsotopeData())
-3171
+3558
 ```
 
 The properties one isotope answers for:
 
 ```
 >> IsotopeData("Properties")
-{EntityProperty(Isotope,AtomicMass),EntityProperty(Isotope,AtomicNumber),EntityProperty(Isotope,BindingEnergy),EntityProperty(Isotope,IsotopeAbundance),EntityProperty(Isotope,MassNumber),EntityProperty(Isotope,NeutronNumber),EntityProperty(Isotope,StandardName)}
+{EntityProperty(Isotope,AtomicMass),EntityProperty(Isotope,AtomicNumber),EntityProperty(Isotope,BindingEnergy),EntityProperty(Isotope,BranchingRatios),EntityProperty(Isotope,DaughterNuclides),EntityProperty(Isotope,DecayModes),EntityProperty(Isotope,HalfLife),EntityProperty(Isotope,IsotopeAbundance),EntityProperty(Isotope,Lifetime),EntityProperty(Isotope,MassNumber),EntityProperty(Isotope,NeutronNumber),EntityProperty(Isotope,StandardName),EntityProperty(Isotope,Symbol)}
 ```
 
 `BindingEnergy` is the binding energy **per nucleon**, which is the quantity the curve of binding
@@ -71,6 +74,51 @@ scale, so the result matches the reference implementation to the figures it prin
 
 ```
 
+### Decay
+
+`"HalfLife"` is a quantity in the unit the chart states it in, known to the precision the chart's
+uncertainty leaves - carbon-14's 5.70 kiloyears are known to 0.03, which is a precision of
+`Log10(5.70/0.03)`. A half-life without an uncertainty is a machine number, a stable nuclide's is
+infinite, and a particle-unstable one's is `Missing("Unstable")`. Yoctoseconds become
+zeptoseconds, and a half-life of years is given in years below 10^5 years, in megayears below
+10^8, in gigayears below 10^13 and in years above that. `"Lifetime"` is the half-life divided by
+`Log(2)`.
+
+```
+>> IsotopeData("Carbon14", "HalfLife")
+Quantity(5.7*10^3,"Years")
+
+>> IsotopeData("Uranium238", "HalfLife")
+Quantity(4.46,"Gigayears")
+```
+
+`"DecayModes"`, `"DaughterNuclides"` and `"BranchingRatios"` list the ways a nuclide decays, most
+frequent first. A fission has no single daughter; a stable nuclide has no decay at all; an intensity
+the chart does not give is `Missing(Unknown)`:
+
+```
+>> IsotopeData("Uranium234", "DecayModes")
+{alpha emission,spontaneous fission,cluster emission,double cluster emission}
+
+>> IsotopeData("Uranium234", "DaughterNuclides")
+{Entity(Isotope,Thorium230),Missing(Variable),Entity(Isotope,Mercury206),Entity(Isotope,Hafnium184)}
+
+>> IsotopeData("Oxygen16", "DecayModes")
+Missing(NotApplicable)
+```
+
+The chart counts an emission that follows a beta decay inside that beta decay; here every branch is
+one way the nucleus ends up, so the plain beta decay keeps what the delayed emissions leave of it.
+Lithium-9 emits a delayed neutron in 50.5% of its decays, and so is left with 49.5% of plain
+electron emission:
+
+```
+>> IsotopeData("Lithium9", "DecayModes")
+{electron + delayed neutron,electron emission}
+```
+
+`"Symbol"` writes the mass number before the element symbol, `Row({Superscript("", 14), "C"})`.
+
 ### Abundances
 
 Natural abundance is a percentage. An isotope that does not occur in nature answers zero rather
@@ -78,10 +126,10 @@ than missing data:
 
 ```
 >> IsotopeData(Entity("Isotope", "Carbon12"), "IsotopeAbundance")
-Quantity(98.93,"Percents")
+Quantity(98.93,"Percent")
 
 >> IsotopeData(Entity("Isotope", "Carbon14"), "IsotopeAbundance")
-Quantity(0,"Percents")
+Quantity(0,"Percent")
 ```
 
 ### The whole element
@@ -93,10 +141,10 @@ about one isotope; every other property of an element speaks for its most abunda
 
 ```
 >> IsotopeData("C", "MassNumbers")
-{8,9,10,11,12,13,14,15,16,17,18,19,20,21,22}
+{8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23}
 
 >> IsotopeData("C", "Abundances")
-<|Entity(Isotope,Carbon12)->Quantity(98.93,"Percents"),Entity(Isotope,Carbon13)->Quantity(1.07,"Percents")|>
+<|Entity(Isotope,Carbon12)->Quantity(98.93,"Percent"),Entity(Isotope,Carbon13)->Quantity(1.07,"Percent")|>
 
 >> ElementData(6, "StableIsotopes")
 {Entity(Isotope,Carbon12),Entity(Isotope,Carbon13)}
@@ -125,7 +173,7 @@ The type is registered, so the generic entity functions reach it:
 {12,6}
 
 >> Length(EntityList("Isotope"))
-3171
+3558
 ```
 
 An isotope the table does not have is no answer at all rather than missing data, which is what lets
@@ -141,5 +189,5 @@ Missing(UnknownProperty,{Isotope,Nonsense})
 
 ### Related terms
 
-[ElementData](ElementData.md), [Entity](Entity.md), [EntityList](EntityList.md),
+[ChemicalData](ChemicalData.md), [ElementData](ElementData.md), [Entity](Entity.md), [EntityList](EntityList.md),
 [EntityValue](EntityValue.md), [Quantity](Quantity.md)

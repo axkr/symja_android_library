@@ -854,12 +854,45 @@ public class GraphFunctionsTest extends AbstractTestCase {
   @Test
   public void testGraphData() {
     check("GraphData()", //
-        "{{DodecahedralGraph},{IcosahedralGraph},{PappusGraph}}");
+        "{{CubicalGraph},{CuboctahedralGraph},{DodecahedralGraph},{IcosahedralGraph},{OctahedralGraph},"
+            + "{PappusGraph},{PetersenGraph},{SmallTriakisOctahedralGraph},{TetrahedralGraph},{WagnerGraph}}");
     check("GraphData(\"PappusGraph\")", //
         "Graph({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}," //
             + "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n" + //
             "10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n"
             + "14})");
+  }
+
+  @Test
+  public void testGraphDataFamilies() {
+    // the Moebius ladder of n rungs: the cycle of 2n vertices and its n diagonals
+    check("GraphData({\"MoebiusLadder\", 3}, \"EdgeRules\")", //
+        "{1->2,1->4,1->6,2->3,2->5,3->4,3->6,4->5,5->6}");
+    check("{GraphData({\"Prism\", 7}, \"EdgeCount\"), GraphData({\"Antiprism\", 7}, \"EdgeCount\"), "
+        + "GraphData({\"Antiprism\", 7}, \"VertexCount\"), GraphData({\"Prism\", 6}, \"StandardName\"), "
+        + "GraphData({\"Prism\", 6}, \"Name\")}", //
+        "{21,28,14,{Prism,6},6\u2010prism graph}");
+    // members which are named graphs answer as those
+    check("{GraphData({\"Antiprism\", 3}, \"StandardName\"), GraphData({\"Prism\", 4}, \"VertexCount\")}", //
+        "{OctahedralGraph,8}");
+    check("GraphData({\"Prism\", 2})", //
+        "GraphData({Prism,2})");
+  }
+
+  @Test
+  public void testGraphDataClasses() {
+    check("GraphData(\"Bipartite\")", //
+        "{CubicalGraph,PappusGraph}");
+    check("GraphData(\"Polyhedral\")", //
+        "{CubicalGraph,CuboctahedralGraph,DodecahedralGraph,IcosahedralGraph,OctahedralGraph,"
+            + "SmallTriakisOctahedralGraph,TetrahedralGraph}");
+    check("{GraphData(\"PetersenGraph\", \"Planar\"), GraphData(\"WagnerGraph\", \"Polyhedral\"), "
+        + "GraphData(\"TetrahedralGraph\", \"Polyhedral\")}", //
+        "{False,False,True}");
+    // an octahedron with a pyramid on each face
+    check("{Union(GraphData(\"SmallTriakisOctahedralGraph\", \"Degrees\")), "
+        + "GraphData(\"CuboctahedralGraph\", \"EdgeCount\")}", //
+        "{{3,8},24}");
   }
 
   @Test

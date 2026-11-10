@@ -37,7 +37,8 @@ public final class Units {
           Map.entry("Radians", "AngleUnit"), //
           Map.entry("Steradians", "SolidAngleUnit"), //
           Map.entry("Bits", "InformationUnit"), //
-          Map.entry("USDollars", "MoneyUnit"));
+          Map.entry("USDollars", "MoneyUnit"), //
+          Map.entry("People", "PersonUnit"));
 
   /** WMA dimension name to base unit name (reverse of {@link #BASE_DIMENSIONS}). */
   public static final Map<String, String> DIMENSION_BASE_UNITS = buildDimensionBaseUnits();
@@ -977,14 +978,15 @@ public final class Units {
 
   /**
    * Converts {@code Quantity(magnitude, unit)} to base units: {@code Quantity[newMag, monomial]},
-   * or a {@code "PureUnities"} quantity for dimensionless units. The magnitude is multiplied in the
+   * or the plain magnitude for dimensionless units. The magnitude is multiplied in the
    * same evaluation as the expansion so common symbolic factors merge.
    */
   public static IExpr toBaseQuantity(IExpr magnitude, IExpr canonicalUnit, EvalEngine engine) {
     IExpr evaluated = timesFlat(engine, magnitude, expand(canonicalUnit));
     IExpr[] split = splitUnitAtoms(evaluated);
     if (split[1].isOne()) {
-      return F.Quantity(split[0], F.stringx("PureUnities"));
+      // a dimensionless quantity in base units is its plain number: 50 percent is 1/2
+      return split[0];
     }
     return F.Quantity(split[0], split[1]);
   }

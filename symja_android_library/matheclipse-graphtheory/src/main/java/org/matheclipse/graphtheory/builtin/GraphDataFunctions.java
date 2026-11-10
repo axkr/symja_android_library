@@ -49,14 +49,58 @@ public class GraphDataFunctions {
       TRIE_STRING2GRAPH_BUILDER.withMatch(TrieMatch.EXACT).build();
 
   /** The readable names of the graphs in {@link #GRAPH_MAP}. */
-  private static final Map<String, String> GRAPH_NAMES = Map.of( //
-      "PappusGraph", "Pappus graph", //
-      "IcosahedralGraph", "icosahedral graph", //
-      "DodecahedralGraph", "dodecahedral graph");
+  private static final Map<String, String> GRAPH_NAMES = Map.ofEntries( //
+      Map.entry("CubicalGraph", "cubical graph"), //
+      Map.entry("CuboctahedralGraph", "cuboctahedral graph"), //
+      Map.entry("DodecahedralGraph", "dodecahedral graph"), //
+      Map.entry("IcosahedralGraph", "icosahedral graph"), //
+      Map.entry("OctahedralGraph", "octahedral graph"), //
+      Map.entry("PappusGraph", "Pappus graph"), //
+      Map.entry("PetersenGraph", "Petersen graph"), //
+      Map.entry("SmallTriakisOctahedralGraph", "small triakis octahedral graph"), //
+      Map.entry("TetrahedralGraph", "tetrahedral graph"), //
+      Map.entry("WagnerGraph", "Wagner graph"));
 
   /** The properties <code>GraphData(name, property)</code> knows, in alphabetical order. */
-  private static final String[] GRAPH_PROPERTIES = {"AdjacencyMatrix", "EdgeCount", "EdgeList",
-      "EdgeRules", "Graph", "Name", "StandardName", "VertexCount", "VertexList"};
+  private static final String[] GRAPH_PROPERTIES = {"AdjacencyMatrix", "Bipartite", "Degrees",
+      "EdgeCount", "EdgeList", "EdgeRules", "Graph", "Name", "Planar", "Polyhedral",
+      "StandardName", "VertexCount", "VertexList"};
+
+  /**
+   * The classes <code>GraphData(class)</code> knows: each is the list of the names of the graphs
+   * of {@link #GRAPH_MAP} which have the property of the same name.
+   */
+  private static final String[] GRAPH_CLASSES = {"Bipartite", "Planar", "Polyhedral"};
+
+  /** The parametric families <code>{family, n}</code> and their smallest <code>n</code>. */
+  private static final Map<String, Integer> FAMILIES = Map.of( //
+      "Antiprism", 3, //
+      "MoebiusLadder", 2, //
+      "Prism", 3);
+
+  /** The members of the families which are named graphs of {@link #GRAPH_MAP}. */
+  private static final Map<String, String> FAMILY_STANDARD_NAMES = Map.of( //
+      "Antiprism3", "OctahedralGraph", //
+      "MoebiusLadder4", "WagnerGraph", //
+      "Prism4", "CubicalGraph");
+
+  /**
+   * The skeleton of the cube: the vertices <code>1, ..., 8</code> are the corners
+   * <code>(x, y, z)</code> of the unit cube numbered <code>1 + x + 2 y + 4 z</code>, joined when
+   * they differ in one coordinate.
+   */
+  private static final int[][] CUBICAL_EDGES = {
+      {1, 2}, {1, 3}, {1, 5}, {2, 4}, {2, 6}, {3, 4}, {3, 7}, {4, 8}, {5, 6}, {5, 7}, {6, 8},
+      {7, 8}};
+
+  /**
+   * The skeleton of the cuboctahedron, whose vertices are the midpoints of the edges of a cube:
+   * every vertex is joined to four others, in the vertex numbering of the reference tables.
+   */
+  private static final int[][] CUBOCTAHEDRAL_EDGES = {
+      {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 4}, {2, 6}, {2, 8}, {3, 5}, {3, 6}, {3, 9}, {4, 7},
+      {4, 10}, {5, 7}, {5, 11}, {6, 8}, {6, 9}, {7, 10}, {7, 11}, {8, 10}, {8, 12}, {9, 11},
+      {9, 12}, {10, 12}, {11, 12}};
 
   /**
    * The skeleton of the icosahedron: every vertex is joined to five others; the edges are sorted
@@ -76,6 +120,22 @@ public class GraphDataFunctions {
       {6, 20}, {7, 11}, {7, 16}, {8, 12}, {8, 16}, {9, 10}, {9, 14}, {9, 17}, {10, 15}, {10, 18},
       {11, 12}, {13, 17}, {13, 18}, {17, 19}, {18, 20}};
 
+  /** The Petersen graph, in the vertex numbering of the reference tables. */
+  private static final int[][] PETERSEN_EDGES = {
+      {1, 3}, {1, 4}, {1, 6}, {2, 4}, {2, 5}, {2, 7}, {3, 5}, {3, 8}, {4, 9}, {5, 10}, {6, 7},
+      {6, 10}, {7, 8}, {8, 9}, {9, 10}};
+
+  /**
+   * The skeleton of the small triakis octahedron, an octahedron with a pyramid on each face: the
+   * six vertices of degree 8 are those of the octahedron, the eight of degree 3 the apexes; in the
+   * vertex numbering of the reference tables.
+   */
+  private static final int[][] SMALL_TRIAKIS_OCTAHEDRAL_EDGES = {
+      {1, 5}, {1, 7}, {1, 13}, {2, 6}, {2, 7}, {2, 13}, {3, 5}, {3, 8}, {3, 13}, {4, 6}, {4, 8},
+      {4, 13}, {5, 7}, {5, 8}, {5, 9}, {5, 11}, {5, 13}, {5, 14}, {6, 7}, {6, 8}, {6, 10}, {6, 12},
+      {6, 13}, {6, 14}, {7, 9}, {7, 10}, {7, 13}, {7, 14}, {8, 11}, {8, 12}, {8, 13}, {8, 14},
+      {9, 14}, {10, 14}, {11, 14}, {12, 14}};
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -87,6 +147,14 @@ public class GraphDataFunctions {
       GRAPH_MAP.put("PappusGraph", () -> pappusGraph());
       GRAPH_MAP.put("IcosahedralGraph", () -> namedGraph(12, ICOSAHEDRAL_EDGES));
       GRAPH_MAP.put("DodecahedralGraph", () -> namedGraph(20, DODECAHEDRAL_EDGES));
+      GRAPH_MAP.put("TetrahedralGraph", () -> namedGraph(4, completeEdges(4)));
+      GRAPH_MAP.put("OctahedralGraph", () -> familyGraph("Antiprism", 3));
+      GRAPH_MAP.put("CubicalGraph", () -> namedGraph(8, CUBICAL_EDGES));
+      GRAPH_MAP.put("CuboctahedralGraph", () -> namedGraph(12, CUBOCTAHEDRAL_EDGES));
+      GRAPH_MAP.put("PetersenGraph", () -> namedGraph(10, PETERSEN_EDGES));
+      GRAPH_MAP.put("WagnerGraph", () -> familyGraph("MoebiusLadder", 4));
+      GRAPH_MAP.put("SmallTriakisOctahedralGraph",
+          () -> namedGraph(14, SMALL_TRIAKIS_OCTAHEDRAL_EDGES));
       S.GraphData.setEvaluator(new GraphData());
 
       S.CompleteGraph.setEvaluator(new CompleteGraph());
@@ -227,6 +295,33 @@ public class GraphDataFunctions {
       if (ast.isAST1() && arg1.isString("Properties")) {
         return F.mapRange(0, GRAPH_PROPERTIES.length, i -> F.stringx(GRAPH_PROPERTIES[i]));
       }
+      if (ast.isAST1() && arg1.isString() && isGraphClass(arg1.toString())) {
+        return graphClass(arg1.toString(), engine);
+      }
+      if (arg1.isList2() && arg1.first().isString() && arg1.second().isInteger()) {
+        String family = arg1.first().toString();
+        int n = arg1.second().toIntDefault();
+        Integer smallest = FAMILIES.get(family);
+        if (smallest != null && n >= smallest && 2L * n <= Config.MAX_GRAPH_VERTICES_SIZE) {
+          String standardName = FAMILY_STANDARD_NAMES.get(family + n);
+          if (standardName != null) {
+            // the member is a named graph, which answers for it
+            return engine.evaluate(ast.setAtCopy(1, F.stringx(standardName)));
+          }
+          IExpr graph = GraphExpr.newInstance(familyGraph(family, n));
+          if (ast.isAST1()) {
+            return graph;
+          }
+          IExpr value = property(arg1, familyName(family, n), graph, ast.arg2(), engine);
+          if (value.isPresent()) {
+            return value;
+          }
+          // `1` is not a known property or size specification for `2`. Use `2`("Properties") for
+          // a list of properties.
+          return Errors.printMessage(S.GraphData, "notprop", F.List(ast.arg2(), S.GraphData),
+              engine);
+        }
+      }
       if (arg1.isString()) {
         String graphName = arg1.toString();
         Supplier<Graph<IExpr, ?>> supplier = GRAPH_MAP.get(graphName);
@@ -235,7 +330,8 @@ public class GraphDataFunctions {
           if (ast.isAST1()) {
             return graph;
           }
-          IExpr value = property(graphName, graph, ast.arg2(), engine);
+          IExpr value = property(arg1, GRAPH_NAMES.getOrDefault(graphName, graphName), graph,
+              ast.arg2(), engine);
           if (value.isPresent()) {
             return value;
           }
@@ -250,12 +346,35 @@ public class GraphDataFunctions {
       return Errors.printMessage(S.GraphData, "notent", F.List(arg1, S.GraphData), engine);
     }
 
+    private static boolean isGraphClass(String name) {
+      for (String graphClass : GRAPH_CLASSES) {
+        if (graphClass.equals(name)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /** The sorted names of the graphs of {@link #GRAPH_MAP} which have the property of a class. */
+    private static IExpr graphClass(String className, EvalEngine engine) {
+      IASTAppendable result = F.ListAlloc();
+      for (String name : new TreeSet<String>(GRAPH_MAP.keySet())) {
+        IExpr graph = GraphExpr.newInstance(GRAPH_MAP.get(name).get());
+        if (property(F.stringx(name), name, graph, F.stringx(className), engine).isTrue()) {
+          result.append(F.stringx(name));
+        }
+      }
+      return result;
+    }
+
     /**
-     * The value of a property of a named graph.
+     * The value of a property of a named graph or a member of a family.
      *
+     * @param standardName the standard name of the graph, a string or <code>{family, n}</code>
+     * @param name the readable name of the graph
      * @return {@link F#NIL} if the property isn't known
      */
-    private static IExpr property(String graphName, IExpr graph, IExpr property,
+    private static IExpr property(IExpr standardName, String name, IExpr graph, IExpr property,
         EvalEngine engine) {
       if (!property.isString()) {
         return F.NIL;
@@ -263,6 +382,10 @@ public class GraphDataFunctions {
       switch (property.toString()) {
         case "AdjacencyMatrix":
           return engine.evaluate(F.unaryAST1(S.AdjacencyMatrix, graph));
+        case "Bipartite":
+          return engine.evaluate(F.unaryAST1(S.BipartiteGraphQ, graph));
+        case "Degrees":
+          return engine.evaluate(F.unaryAST1(S.VertexDegree, graph));
         case "EdgeCount":
           return engine.evaluate(F.unaryAST1(S.EdgeCount, graph));
         case "EdgeList":
@@ -272,9 +395,15 @@ public class GraphDataFunctions {
         case "Graph":
           return graph;
         case "Name":
-          return F.stringx(GRAPH_NAMES.getOrDefault(graphName, graphName));
+          return F.stringx(name);
+        case "Planar":
+          return engine.evaluate(F.unaryAST1(S.PlanarGraphQ, graph));
+        case "Polyhedral":
+          // the skeletons of the convex polyhedra are the 3-connected planar graphs
+          return F.booleSymbol(engine.evaluate(F.unaryAST1(S.PlanarGraphQ, graph)).isTrue()
+              && engine.evaluate(F.unaryAST1(S.VertexConnectivity, graph)).toIntDefault() >= 3);
         case "StandardName":
-          return F.stringx(graphName);
+          return standardName;
         case "VertexCount":
           return engine.evaluate(F.unaryAST1(S.VertexCount, graph));
         case "VertexList":
@@ -1514,6 +1643,81 @@ public class GraphDataFunctions {
       g.addEdge(F.ZZ(edge[0]), F.ZZ(edge[1]));
     }
     return g;
+  }
+
+  /**
+   * A member <code>{family, n}</code> of the families of {@link #FAMILIES}, on the vertices
+   * <code>1, ..., 2 n</code> with its edges in sorted order:
+   * <ul>
+   * <li><code>"Prism"</code>: the cycles <code>1, ..., n</code> and <code>n + 1, ..., 2 n</code>
+   * joined by the rungs <code>i - (n + i)</code>;
+   * <li><code>"Antiprism"</code>: the same cycles, each <code>i</code> joined to <code>n + i</code>
+   * and to the next vertex of the second cycle;
+   * <li><code>"MoebiusLadder"</code>: the cycle <code>1, ..., 2 n</code> and the diagonals
+   * <code>i - (n + i)</code>.
+   * </ul>
+   */
+  private static Graph<IExpr, ExprEdge> familyGraph(String family, int n) {
+    TreeSet<Long> edges = new TreeSet<Long>();
+    for (int i = 1; i <= n; i++) {
+      int next = i % n + 1;
+      switch (family) {
+        case "MoebiusLadder":
+          edges.add(sortedEdge(i, n + i));
+          edges.add(sortedEdge(i, i + 1));
+          edges.add(sortedEdge(n + i, n + i == 2 * n ? 1 : n + i + 1));
+          break;
+        case "Antiprism":
+          edges.add(sortedEdge(i, next));
+          edges.add(sortedEdge(n + i, n + next));
+          edges.add(sortedEdge(i, n + i));
+          edges.add(sortedEdge(i, n + next));
+          break;
+        default:
+          edges.add(sortedEdge(i, next));
+          edges.add(sortedEdge(n + i, n + next));
+          edges.add(sortedEdge(i, n + i));
+          break;
+      }
+    }
+    int[][] edgeArray = new int[edges.size()][];
+    int k = 0;
+    for (long edge : edges) {
+      edgeArray[k++] = new int[] {(int) (edge >> 32), (int) edge};
+    }
+    return namedGraph(2 * n, edgeArray);
+  }
+
+  /** The edge between two vertices as a number which sorts the edges by their smaller vertex. */
+  private static long sortedEdge(int u, int v) {
+    return u < v ? ((long) u << 32) | v : ((long) v << 32) | u;
+  }
+
+  /**
+   * The readable name of a member of a family which has no name of its own, like
+   * <code>"6\u2010prism graph"</code> with the hyphen U+2010.
+   */
+  private static String familyName(String family, int n) {
+    switch (family) {
+      case "MoebiusLadder":
+        return n + "\u2010M\u00f6bius ladder graph";
+      case "Antiprism":
+        return n + "\u2010antiprism graph";
+      default:
+        return n + "\u2010prism graph";
+    }
+  }
+
+  /** The edges of the complete graph on <code>1, ..., n</code>, sorted. */
+  private static int[][] completeEdges(int n) {
+    int[][] edges = new int[n * (n - 1) / 2][];
+    int k = 0;
+    for (int i = 1; i <= n; i++) {
+      for (int j = i + 1; j <= n; j++) {
+        edges[k++] = new int[] {i, j};
+      }
+    }
+    return edges;
   }
 
   // --------------Helper methods-----------------/

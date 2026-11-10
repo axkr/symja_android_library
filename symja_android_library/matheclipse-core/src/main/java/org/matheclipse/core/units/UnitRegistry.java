@@ -142,12 +142,39 @@ public final class UnitRegistry {
     return canonical != null ? byName.get(canonical) : null;
   }
 
+  /**
+   * The units which take any prefix written out as a word - <code>"Picometers"</code>,
+   * <code>"Kiloelectronvolts"</code>: the SI units and some units used with them. Another unit has
+   * only the prefixed forms of {@link #WORD_PREFIXED_NAMES} (<code>"Kilofeet"</code> is a unit,
+   * <code>"Picofeet"</code>, <code>"Millimiles"</code>, <code>"Kilocalories"</code>,
+   * <code>"Kilodynes"</code> and <code>"KilowattHours"</code> are none);
+   * the short symbols of the legacy spellings still combine with it.
+   */
+  private static final java.util.Set<String> WORD_PREFIX_UNITS = java.util.Set.of("Meters",
+      "Grams", "Seconds", "Amperes", "Kelvins", "Moles", "Candelas", "Radians", "Steradians",
+      "Hertz", "Newtons", "Pascals", "Joules", "Watts", "Coulombs", "Volts", "Farads", "Ohms",
+      "Siemens", "Webers", "Teslas", "Henries", "Lumens", "Lux", "Becquerels", "Grays", "Sieverts",
+      "Katals", "Liters", "Electronvolts", "Daltons", "Bits", "Bytes", "Parsecs", "Bars", "Barns",
+      "Gauss", "Ergs", "Poise", "Stokes", "Curies", "Rems", "Roentgens");
+
+  /** The prefixed units of a unit which doesn't take every prefix. */
+  private static final java.util.Set<String> WORD_PREFIXED_NAMES =
+      java.util.Set.of("Kilofeet", "Microinches");
+
   private UnitEntry resolvePrefixed(String name) {
     for (Object[] pair : prefixSpellings) {
       String spelling = (String) pair[0];
       if (name.length() > spelling.length() && name.startsWith(spelling)) {
         Prefix prefix = (Prefix) pair[1];
-        UnitEntry base = lookupSimple(name.substring(spelling.length()));
+        String rest = name.substring(spelling.length());
+        UnitEntry base = lookupSimple(rest);
+        if (base != null && spelling.equals(prefix.wlName)
+            && !(WORD_PREFIX_UNITS.contains(base.name) && rest.equals(lowerFirst(base.name)))
+            && !WORD_PREFIXED_NAMES.contains(name)) {
+          // a prefix word goes with the unit name exactly as it is written after it:
+          // "Picometers", not "PicoMeters"
+          continue;
+        }
         if (base != null && base.prefixable && base.offset == null) {
           UnitEntry synth = synthesizePrefixed(prefix, base);
           synthetic.putIfAbsent(synth.name, synth);
@@ -157,6 +184,10 @@ public final class UnitRegistry {
       }
     }
     return null;
+  }
+
+  private static String lowerFirst(String name) {
+    return Character.toLowerCase(name.charAt(0)) + name.substring(1);
   }
 
   private static UnitEntry synthesizePrefixed(Prefix prefix, UnitEntry base) {

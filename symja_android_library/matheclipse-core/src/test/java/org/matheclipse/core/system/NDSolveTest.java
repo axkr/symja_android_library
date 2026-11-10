@@ -20,6 +20,37 @@ import org.junit.jupiter.api.Test;
  */
 public class NDSolveTest extends ExprEvaluatorTestCase {
 
+  @Test
+  public void testNDSolveAlgebraicEquationWithConsistentDerivativeValue() {
+    // w(t) == 3*v(t) fixes w; v'(0) == 3 only repeats what the equations give at t == 0
+    checkApprox("sol=NDSolve({v'(t)==w(t),w(t)==3*v(t),v(0)==1,v'(0)==3},{v,w},{t,0,1});"
+        + "v(0.5)/.First(sol)", //
+        Math.exp(1.5), 1.0e-6);
+    checkApprox("sol=NDSolve({v'(t)==w(t),w(t)==3*v(t),v(0)==1,v'(0)==3},{v,w},{t,0,1});"
+        + "w(0.5)/.First(sol)", //
+        3.0 * Math.exp(1.5), 1.0e-5);
+    // an inconsistent derivative value isn't dropped
+    check("NDSolve({v'(t)==w(t),w(t)==3*v(t),v(0)==1,v'(0)==2},{v,w},{t,0,1})", //
+        "NDSolve({v'(t)==w(t),w(t)==3*v(t),v(0)==1,v'(0)==2},{v,w},{t,0,1})");
+  }
+
+  @Test
+  public void testNDSolveIndexArgumentUnknowns() {
+    // the unknowns q(1, t), q(2, t) of a function q whose first argument is an index
+    checkApprox("s=NDSolve({Derivative(0,1)[q][1,t]==2*q(2,t),Derivative(0,1)[q][2,t]==-2*q(1,t),"
+        + "q(1,0)==0,q(2,0)==1},{q(1,t),q(2,t),Derivative(0,1)[q][2,t]},{t,0,1});"
+        + "q(1,t)/.First(s)/.t->0.25", //
+        Math.sin(0.5), 1.0e-6);
+    checkApprox("s=NDSolve({Derivative(0,1)[q][1,t]==2*q(2,t),Derivative(0,1)[q][2,t]==-2*q(1,t),"
+        + "q(1,0)==0,q(2,0)==1},{q(1,t),q(2,t),Derivative(0,1)[q][2,t]},{t,0,1});"
+        + "Derivative(0,1)[q][2,t]/.First(s)/.t->0.25", //
+        -2.0 * Math.sin(0.5), 1.0e-5);
+    check("s=NDSolve({Derivative(0,1)[q][1,t]==2*q(2,t),Derivative(0,1)[q][2,t]==-2*q(1,t),"
+        + "q(1,0)==0,q(2,0)==1},{q(1,t),q(2,t),Derivative(0,1)[q][2,t]},{t,0,1});"
+        + "Keys(First(s))", //
+        "{q(1,t),q(2,t),Derivative(0,1)[q][2,t]}");
+  }
+
   // exponential_growth
   @Test
   public void testNDSolveExponentialGrowth() {

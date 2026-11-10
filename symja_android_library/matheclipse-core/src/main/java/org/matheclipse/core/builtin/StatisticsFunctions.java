@@ -139,6 +139,8 @@ public class StatisticsFunctions {
       S.CovarianceFunction
           .setEvaluator(new org.matheclipse.core.builtin.StochasticProcesses.CovarianceFunction());
       S.LocationTest.setEvaluator(new org.matheclipse.core.reflection.system.LocationTest());
+      S.MannWhitneyTest
+          .setEvaluator(new org.matheclipse.core.reflection.system.MannWhitneyTest());
       S.Expectation.setEvaluator(new Expectation());
       S.HazardFunction.setEvaluator(new HazardFunction());
       S.InverseSurvivalFunction.setEvaluator(new InverseSurvivalFunction());

@@ -115,6 +115,11 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
     }
     int[] dims = ast.arg1().isMatrix();
     if (dims != null && dims[0] >= 2 && dims[1] >= 2) {
+      // the pieces are built from neighbouring points, which need ascending abscissas
+      IAST sortedPoints = sortByAbscissa((IAST) ast.arg1());
+      if (sortedPoints != ast.arg1()) {
+        ast = ast.setAtCopy(1, sortedPoints);
+      }
       String method = "";
       IExpr option = options[0];
       if (!option.isAutomatic()) {
@@ -145,6 +150,41 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       return temp;
     }
     return F.NIL;
+  }
+
+  /**
+   * The rows <code>{x, f, ...}</code> of <code>points</code> sorted by their real abscissa
+   * <code>x</code>.
+   *
+   * @return <code>points</code> itself if the abscissas are already ascending or aren't all real
+   *         numbers
+   */
+  private static IAST sortByAbscissa(IAST points) {
+    double[] abscissas = new double[points.argSize()];
+    boolean ascending = true;
+    for (int i = 1; i < points.size(); i++) {
+      IExpr x = points.get(i).first();
+      if (!x.isReal()) {
+        return points;
+      }
+      abscissas[i - 1] = x.evalf();
+      if (i > 1 && abscissas[i - 1] < abscissas[i - 2]) {
+        ascending = false;
+      }
+    }
+    if (ascending) {
+      return points;
+    }
+    Integer[] order = new Integer[abscissas.length];
+    for (int i = 0; i < order.length; i++) {
+      order[i] = i;
+    }
+    java.util.Arrays.sort(order, (i, j) -> Double.compare(abscissas[i], abscissas[j]));
+    IASTAppendable sorted = F.ListAlloc(order.length);
+    for (int i : order) {
+      sorted.append(points.get(i + 1));
+    }
+    return sorted;
   }
 
   /**

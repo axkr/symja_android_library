@@ -286,4 +286,19 @@ public class ImageMorphologyTest extends AbstractTestCase {
     check("ComponentMeasurements({{1, 1, 0, 2}}, \"EquivalentDiskRadius\")", //
         "{1->0.797885,2->0.56419}");
   }
+
+  @Test
+  public void testThinning() {
+    // a blob shrinks to one point, a T to its two strokes one pixel wide
+    check("Position(Round(ImageData(Thinning(Image({{0,0,0,0,0,0,0},{0,0,1,1,1,0,0},{0,1,1,1,1,1,0},"
+        + "{0,1,1,1,1,1,0},{0,1,1,1,1,1,0},{0,0,1,1,1,0,0},{0,0,0,0,0,0,0}})))), 1)", //
+        "{{4,4}}");
+    check("Round(ImageData(Thinning(Image({{0,0,0,0,0,0,0,0},{0,1,1,1,1,1,1,0},{0,1,1,1,1,1,1,0},"
+        + "{0,0,0,1,1,0,0,0},{0,0,0,1,1,0,0,0},{0,0,0,1,1,0,0,0},{0,0,0,0,0,0,0,0}}))))", //
+        "{{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,1,1,1,1,1,0,0},{0,0,0,1,0,0,0,0},{0,0,0,\n"
+            + "1,0,0,0,0},{0,0,0,1,0,0,0,0},{0,0,0,0,0,0,0,0}}");
+    // the image keeps its type
+    check("ImageType(Thinning(Image({{0, 1, 1, 0}}, \"Byte\")))", //
+        "Byte");
+  }
 }
