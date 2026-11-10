@@ -15888,7 +15888,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("d=EmpiricalDistribution({1,2,1} -> {5,7,5}); {Mean(d), Variance(d)}", //
         "{6,1}");
     check("EmpiricalDistribution({2.5, 1, 2.5, 4})", //
-        "DataDistribution(Empirical,{{0.25,0.5,0.25},{1,2.5,4},False},1,4)");
+        "DataDistribution(Empirical,{{1/4,1/2,1/4},{1,2.5,4},False},1,4)");
     check("Expectation(s^2+1, Distributed(s, EmpiricalDistribution({1,3} -> {0,2})))", //
         "4");
     check("Expectation(If(s>4, a, b), Distributed(s, EmpiricalDistribution({0.25,0.75} -> {3,6})))", //

@@ -720,6 +720,13 @@ public final class PiecewiseIntegration {
     if (u.isFree(x)) {
       return true;
     }
+    if ((Double.isInfinite(low) || Double.isInfinite(up))
+        && u.has(y -> y.isTrigFunction() && !y.isFree(x), true)
+        && F.subst(u, y -> y.isTrigFunction() && !y.isFree(x) ? F.C0 : F.NIL).isFree(x)) {
+      // a function of x only through periodic functions has infinitely many zeros on an
+      // infinite interval, which Solve doesn't list: Abs(Sin(x)) isn't Sin(x) on (0, Infinity)
+      return false;
+    }
     if (hasVariables(F.subst(u, x, F.C0))) {
       if (u.isPolynomial(F.list(x)) && engine.evaluate(F.Exponent(u, x)).isOne()) {
         // c1*x + c0 with symbolic coefficients can still have a numeric zero

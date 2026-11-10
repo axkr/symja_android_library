@@ -334,7 +334,7 @@ class AppellF1EulerIntegralHelper
         Apfloat ePlus1 = near.exponent.real().add(this.one);
         if (ePlus1.compareTo(this.one) >= 0)
         {
-            return ApfloatDoubleExponential.integrate(integrand, this.zero, length, digits);
+            return ApfloatDoubleExponential.integrate(integrand, this.zero, endWithDigits(length, digits), digits);
         }
         // u = s^k with k = 1/(e+1) turns u^e du into k s^0 ds: the quadrature can't sample close enough to the end to integrate a strong singularity u^e, -1 < e < 0
         Apfloat k = this.one.divide(ePlus1);
@@ -345,7 +345,14 @@ class AppellF1EulerIntegralHelper
             // du = k s^(k-1) ds = k u/s ds
             return (value == null ? null : value.multiply(k.multiply(u).divide(s)));
         };
-        return ApfloatDoubleExponential.integrate(smooth, this.zero, ApfloatMath.pow(length, ePlus1), digits);
+        return ApfloatDoubleExponential.integrate(smooth, this.zero, endWithDigits(ApfloatMath.pow(length, ePlus1), digits), digits);
+    }
+
+    // The end of a part with the digits the quadrature asks for: the distance 1 - 1/z of a singular point next to 1 has lost digits in the subtraction, although 1/z has its working precision
+    private static Apfloat endWithDigits(Apfloat end, long digits)
+    {
+        long needed = digits + 5;
+        return (end.precision() < needed ? end.precision(needed) : end);
     }
 
     // The sum of all parts in double, with the same cuts and substitutions as part(), or null if a part doesn't converge to machine precision or the parts cancel

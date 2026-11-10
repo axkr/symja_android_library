@@ -385,7 +385,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "17490.25");
 
     check("Hypergeometric2F1Regularized(a,b,b,x)", //
-        "1/((1-x)^a*Gamma(a))");
+        "1/((1-x)^a*Gamma(b))");
     check("Hypergeometric2F1Regularized(a,b,c,0)", //
         "1/Gamma(c)");
   }
@@ -761,16 +761,19 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/05/01/0002/
     checkNumeric("MeijerG({{}, {}}, {{b, b+1/3, b+2/3}, {}}, z)", //
         "(2*Pi*z^b)/(Sqrt(3)*E^(3*z^(1/3)))");
-    // https://functions.wolfram.com/07.34.03.0984.01
+    // positive: 2*Sqrt(Pi) times the Laplace transform of 1/(1+t^2) at 2*Sqrt(z)
     checkNumeric("MeijerG({{1/2}, {}}, {{0, 1/2, 1/2}, {}}, z)", //
-        "-2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+        "2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
             + "2*Sqrt(z))))");
     checkNumeric("MeijerG({{3}, {}}, {{5/2, 3, 3}, {}}, z)", //
-        "-2*Sqrt(Pi)*z^(5/2)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+        "2*Sqrt(Pi)*z^(5/2)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
             + "2*Sqrt(z))))");
     checkNumeric("MeijerG({{a}, {}}, {{a - 1/2, a, a}, {}}, z)", //
-        "(-2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+        "(2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
             + "2*Sqrt(z)))))/z^(1/2-a)");
+    check("Abs(N(MeijerG({{1/2}, {}}, {{0, 1/2, 1/2}, {}}, 1), 20) - "
+        + "N(MeijerG({{0, 0, 1/2}, {}}, {{0}, {}}, 1), 20)) < 10^-15", //
+        "True");
 
     checkNumeric("MeijerG({{},{}}, {{0},{}}, 0)", //
         "1");

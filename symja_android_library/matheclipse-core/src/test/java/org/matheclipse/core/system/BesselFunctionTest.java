@@ -289,8 +289,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "Indeterminate");
     check("BesselJ(n,0)", //
         "BesselJ(n,0)");
+    // t^(1/4)*(t/2)^(-1/4) == 2^(1/4) on both sides for the principal powers
     check("Limit(t^(1/4)*BesselJ(-1/4,t), t->0)", //
-        "Limit(t^(1/4)*BesselJ(-1/4,t),t->0)");
+        "2^(1/4)/Gamma(3/4)");
     checkNumeric("BesselJ(2.5,-5)", //
         "I*0.24037720111131736");
 

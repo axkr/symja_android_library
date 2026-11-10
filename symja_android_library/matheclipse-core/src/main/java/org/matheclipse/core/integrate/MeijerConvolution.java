@@ -3,6 +3,7 @@ package org.matheclipse.core.integrate;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -10,6 +11,7 @@ import org.matheclipse.core.integrate.ResidueIntegration.Context;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -503,7 +505,30 @@ final class MeijerConvolution {
     if (!value.isTrue() && !value.isFalse() && ctx.proves(condition)) {
       return S.True;
     }
+    if (!value.isTrue() && !value.isFalse() && new VariablesSet(value).isEmpty()
+        && comparesNonRealNumber(value)) {
+      // a condition without parameters like -I>0 for E^(I*x) on the half line (the kernel
+      // E^(-w*x) needs a positive w): an inequality of a non-real number doesn't hold
+      return S.False;
+    }
     return value;
+  }
+
+  /** Whether <code>condition</code> is an inequality with a side whose value isn't real. */
+  private static boolean comparesNonRealNumber(IExpr condition) {
+    if (!condition.isAST2() || !(condition.isAST(S.Greater) || condition.isAST(S.GreaterEqual)
+        || condition.isAST(S.Less) || condition.isAST(S.LessEqual))) {
+      return false;
+    }
+    EvalEngine engine = EvalEngine.get();
+    for (IExpr side : (IAST) condition) {
+      IExpr value = engine.evalQuiet(F.N(side));
+      if (value.isNumber() && !value.isReal()
+          && Math.abs(((INumber) value).evalfc().getImaginary()) > 1.0e-12) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static IExpr convolution(Context ctx, IExpr factor, IExpr s, Kernel k1, Kernel k2) {

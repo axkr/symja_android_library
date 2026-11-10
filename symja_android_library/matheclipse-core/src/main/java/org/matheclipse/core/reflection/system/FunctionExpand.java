@@ -34,7 +34,9 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.GaussPeriods;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.reflection.system.rules.FunctionExpandRules;
 import com.google.common.base.Suppliers;
@@ -242,12 +244,95 @@ public class FunctionExpand extends AbstractEvaluator {
 
   public FunctionExpand() {}
 
+  /** The largest Fermat prime p whose cosines Cos(k*Pi/p) are expanded in square roots. */
+  private static final int MAX_GAUSS_PERIOD_PRIME = 17;
+
+  /** The odd primes of the denominators whose cosines {@link #cosineOfSum} splits. */
+  private static final int[] CONSTRUCTIBLE_PRIMES = {3, 5, 17};
+
+  /**
+   * <code>Cos(r*Pi)</code> for a denominator <code>q = p*m</code> with an odd prime
+   * <code>p</code> of {3, 5, 17} and another one of them in <code>m</code>: with
+   * <code>r == u/p + v/m</code> it is <code>Cos(u*Pi/p)*Cos(v*Pi/m) - Sin(u*Pi/p)*Sin(v*Pi/m)</code>,
+   * each factor expanded on its own.
+   *
+   * @return {@link F#NIL} if the denominator isn't of this kind or a factor doesn't expand
+   */
+  private static IExpr cosineOfSum(IRational r, EvalEngine engine) {
+    int q = r.denominator().toIntDefault();
+    if (q <= 0) {
+      return F.NIL;
+    }
+    int odd = q;
+    while (odd % 2 == 0) {
+      odd /= 2;
+    }
+    int p = 0;
+    int primes = 0;
+    for (int prime : CONSTRUCTIBLE_PRIMES) {
+      if (odd % prime == 0) {
+        odd /= prime;
+        primes++;
+        if (p == 0) {
+          p = prime;
+        }
+      }
+    }
+    if (odd != 1 || primes < 2 || q / p > 1000) {
+      return F.NIL;
+    }
+    int m = q / p;
+    // n == u*m + v*p
+    int n = r.numerator().mod(F.ZZ(2L * q)).toIntDefault();
+    int u = Math.floorMod(n * modInverse(m % p, p), p);
+    int v = (n - u * m) / p;
+    IRational a = F.QQ(u, p);
+    IRational b = F.QQ(v, m);
+    IExpr cosA = expandedTrig(F.Cos(F.Times(a, S.Pi)), engine);
+    IExpr sinA = expandedTrig(F.Sin(F.Times(a, S.Pi)), engine);
+    IExpr cosB = expandedTrig(F.Cos(F.Times(b, S.Pi)), engine);
+    IExpr sinB = expandedTrig(F.Sin(F.Times(b, S.Pi)), engine);
+    if (cosA.isNIL() || sinA.isNIL() || cosB.isNIL() || sinB.isNIL()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Expand(F.Subtract(F.Times(cosA, cosB), F.Times(sinA, sinB))));
+  }
+
+  /** <code>FunctionExpand(trig)</code>, or {@link F#NIL} if a Sin or Cos is left. */
+  private static IExpr expandedTrig(IExpr trig, EvalEngine engine) {
+    IExpr expanded = engine.evaluate(F.FunctionExpand(trig));
+    return expanded.isFree(y -> y.isSin() || y.isCos(), true) ? expanded : F.NIL;
+  }
+
+  private static int modInverse(int a, int p) {
+    for (int i = 1; i < p; i++) {
+      if (Math.floorMod(a * i, p) == 1) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
   private static IExpr beforeRules(IAST ast) {
     if (ast.isAST1() && ast.first().isTimes2()) {
       IAST times = (IAST) ast.first();
       IAST trivial = trigTrivial(times, ast);
       if (trivial.isPresent()) {
         return trivial;
+      }
+      if ((ast.isCos() || ast.isSin()) && times.first().isFraction() && times.second().isPi()) {
+        // Sin(r*Pi) == Cos((1/2-r)*Pi)
+        IFraction r = (IFraction) times.first();
+        IRational cosineFactor = ast.isCos() ? r : F.C1D2.subtract(r);
+        EvalEngine engine = EvalEngine.get();
+        IExpr gauss = GaussPeriods.cosine(cosineFactor, MAX_GAUSS_PERIOD_PRIME, engine);
+        if (gauss.isPresent()) {
+          return gauss;
+        }
+        IExpr sum = cosineOfSum(cosineFactor, engine);
+        if (sum.isPresent()) {
+          return sum;
+        }
       }
     }
     return callFunctionExpand(ast, EvalEngine.get());

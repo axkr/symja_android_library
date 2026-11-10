@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.numbertheory.KummerDenest;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -3817,6 +3818,18 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   private IExpr visitPower(IAST powerAST, SimplifiedResult sResult) {
+    if (fFullSimplify && powerAST.exponent().equals(F.C1D2) && !powerAST.base().isRational()
+        && powerAST.base().isAST()) {
+      // a nested square root of a field of radicals: Sqrt(c)*A/B with A, B in that field. Cube
+      // and higher roots stay as they are: (8+6*3^(1/3)+6*3^(2/3))^(1/3) isn't written as
+      // 2^(1/3)+6^(1/3)
+      IExpr denested = KummerDenest.denest(powerAST.base(), 2, fEngine);
+      if (denested.isPresent() && !denestsInSimplify(powerAST, denested)
+          && (denestedLoses(denested) ? sResult.checkLess(denested)
+              : sResult.checkLessPlusTimesPower(denested))) {
+        return denested;
+      }
+    }
     if (fFullSimplify && powerAST.exponent().isComplex() && (powerAST.base().isExactNumber())) {
       IExpr powerSimplified = ArithmeticUtil.powerComplexComplex((IBigNumber) powerAST.base(),
           (IComplex) powerAST.exponent(), fEngine);

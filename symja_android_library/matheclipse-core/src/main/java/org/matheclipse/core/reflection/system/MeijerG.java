@@ -614,8 +614,9 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
     }
     if (equal == 2 && half > 0) {
       // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/05/10/
-      // -2*Sqrt(Pi)
-      final IExpr factor1 = F.Times(F.CN2, F.CSqrtPi);
+      // 2*Sqrt(Pi): the Laplace transform of 1/(1+t^2) at 2*Sqrt(z) times 2*Sqrt(Pi), which is
+      // positive
+      final IExpr factor1 = F.Times(F.C2, F.CSqrtPi);
       final IExpr factor2 = a1Half2.isPossibleZero(true) //
           ? F.C1 //
           : z.pow(F.Plus(F.CN1D2, a1));

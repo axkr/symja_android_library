@@ -4278,7 +4278,8 @@ FunctionOfExponentialFunctionAux[u_,x_] :=
     x^FullSimplify[Log[u[[1]]]*Coefficient[u[[2]],x,1]/(Log[$base$]*Coefficient[$expon$,x,1])]],
   If[HyperbolicQ[u] && LinearQ[u[[1]],x],
     Module[{tmp},
-    tmp=x^FullSimplify[Coefficient[u[[1]],x,1]/(Log[$base$]*Coefficient[$expon$,x,1])];
+    tmp=E^(Coefficient[u[[1]],x,0]-Coefficient[$expon$,x,0]*Coefficient[u[[1]],x,1]/Coefficient[$expon$,x,1])*
+      x^FullSimplify[Coefficient[u[[1]],x,1]/(Log[$base$]*Coefficient[$expon$,x,1])];
     Switch[Head[u], 
       Sinh, tmp/2-1/(2*tmp),
       Cosh, tmp/2+1/(2*tmp),

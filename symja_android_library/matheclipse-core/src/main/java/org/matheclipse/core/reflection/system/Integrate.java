@@ -18,6 +18,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -502,7 +503,66 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       // the inert markers are plain symbols, not Rubi context ones, so the prefix is the only test
       return symbol.getSymbolName().startsWith("§") || (symbol.getContext() == Context.RUBI
           && symbol.getSymbolName().equalsIgnoreCase("subst"));
-    }, true);
+    }, true) || hasHeldRubiFunctions(expr);
+  }
+
+  /**
+   * Whether a pure function in <code>expr</code>, as the second argument of a <code>RootSum</code>,
+   * still calls Rubi's functions: they run only when the function is applied to the roots, with
+   * the variable of integration as an argument, so the result is no function of the variable:
+   * <code>Rubi`SubstAux(#1,x,Cos(x),False)&amp;</code> at <code>x == 1/3</code> substitutes
+   * <code>Cos(1/3)</code> for <code>1/3</code>.
+   */
+  private static boolean hasHeldRubiFunctions(IExpr expr) {
+    return expr.has(part -> part.isFunction() && hasRubiSymbol(part), true);
+  }
+
+  private static boolean hasRubiSymbol(IExpr expr) {
+    return expr.has(y -> y.isSymbol() && ((ISymbol) y).getContext() == Context.RUBI, true);
+  }
+
+  /**
+   * The pure functions <code>body&amp;</code> with calls of Rubi's functions in their bodies, which
+   * a substitution mapped into the function of a <code>RootSum</code>, evaluated for a symbol in
+   * place of <code>#1</code>.
+   *
+   * @return {@link F#NIL} if there is no such function
+   */
+  private static IExpr evaluateHeldRubiFunctions(IExpr expr, EvalEngine engine) {
+    if (!hasHeldRubiFunctions(expr)) {
+      return F.NIL;
+    }
+    return F.subst(expr, part -> {
+      if (part.isFunction() && part.argSize() == 1 && hasRubiSymbol(part)) {
+        ISymbol root = F.Dummy("root");
+        IExpr value = engine.evalQuiet(ownSlotReplaced(part.first(), root));
+        if (!hasRubiSymbol(value) && value.isFree(S.Slot, true)) {
+          return F.Function(F.subst(value, root, F.Slot1));
+        }
+      }
+      return F.NIL;
+    });
+  }
+
+  /** <code>body</code> with <code>#1</code> replaced, but not in the pure functions inside. */
+  private static IExpr ownSlotReplaced(IExpr body, IExpr replacement) {
+    if (body.equals(F.Slot1)) {
+      return replacement;
+    }
+    if (!body.isAST() || body.isFunction()) {
+      return body;
+    }
+    IAST ast = (IAST) body;
+    IASTMutable result = ast.copy();
+    boolean changed = false;
+    for (int i = 0; i < ast.size(); i++) {
+      IExpr arg = ownSlotReplaced(ast.get(i), replacement);
+      if (arg != ast.get(i)) {
+        result.set(i, arg);
+        changed = true;
+      }
+    }
+    return changed ? result : body;
   }
 
   private IExpr evaluateIntegrate(IAST holdallAST, final int argSize, final IExpr[] option,
@@ -742,6 +802,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             // the limits don't give the integral
             return F.NIL;
           }
+          if (antiderivative && !differentiatesBackInside(temp, arg1, xList, engine)) {
+            // a wrong antiderivative gives a wrong value: the other methods are tried
+            antiderivative = false;
+          }
           if (antiderivative) {
             IExpr value = definiteIntegral(temp, arg1, xList, holdallAST, engine);
             if (value.isPresent()) {
@@ -971,14 +1035,30 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           }
         }
         if (result.isPresent()) {
+          final boolean[] substitutedMarker = new boolean[1];
           IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
               return F.Integrate(f.first(), f.second());
             } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
               return F.Integrate(f.first(), f.second());
+            } else if (f.isAST(F.$rubi("Integral"), 3)) {
+              // the marker of an integral without a rule; with another second argument than a
+              // variable a substitution went into it: Integral(x*Tanh(x),Sqrt(x)) isn't an
+              // antiderivative of Sqrt(x)*Tanh(x)
+              if (f.second().isVariable()) {
+                return F.Integrate(f.first(), f.second());
+              }
+              substitutedMarker[0] = true;
             }
             return F.NIL;
           });
+          if (substitutedMarker[0]) {
+            rubiResult = ast;
+          }
+          IExpr evaluatedRootSum = evaluateHeldRubiFunctions(rubiResult, engine);
+          if (evaluatedRootSum.isPresent()) {
+            rubiResult = engine.evaluate(evaluatedRootSum);
+          }
           // Rubi reports "no rule for this integrand" as Unintegrable[] or CannotIntegrate[], which
           // the substitution above maps back to the unevaluated Integrate(). That isn't an
           // antiderivative, so it must not end the cascade here: the native fallback stages below
@@ -999,11 +1079,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // dead end, because RadicalCoefficients.collect at depth 0 evaluates many of them away,
           // and bailing out on those cost testIntegrateRationalizeSurdDenominator its answer.
           boolean unfinishedSubstitution =
-              containsRubiInternals(rubiResult) && !rubiResult.isFree(S.Integrate, true);
-          // A finite integrand has no infinite antiderivative: the generic rule for
-          // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
-          // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
-          // Cos and Sin.
+              (containsRubiInternals(rubiResult) && !rubiResult.isFree(S.Integrate, true))
+                  || hasHeldRubiFunctions(rubiResult);
           // A finite integrand has no infinite antiderivative: the generic rule for
           // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
           // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
@@ -2803,7 +2880,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (!upperLimit.isFreeAST(S.Limit)) {
       return F.NIL;
     }
-
+    // a complex argument of Log or ExpIntegralEi crossing the negative real axis inside the
+    // interval: the antiderivative jumps there, the integral doesn't
+    IExpr jumps = branchCutJumps(function, x, lower, upper, engine);
+    if (jumps.isPresent()) {
+      upperLimit = engine.evaluate(F.Subtract(upperLimit, jumps));
+    }
 
     if (upperLimit.isAST() && lowerLimit.isAST()) {
       IExpr bDenominator = engine.evaluate(F.Denominator(upperLimit));
@@ -2834,6 +2916,183 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     return realForm(difference, integrand, engine);
+  }
+
+  /** The relative positions of the sample points of {@link #differentiatesBackInside}. */
+  private static final double[] INSIDE_POINTS = {0.23, 0.51, 0.79};
+
+  /** The largest antiderivative which {@link #differentiatesBackInside} checks. */
+  private static final int MAX_CHECKED_ANTIDERIVATIVE_LEAFCOUNT = 600;
+
+  /**
+   * Test that the antiderivative <code>function</code> differentiates back to the integrand at
+   * three points inside numeric bounds, for an integrand without parameters. A disagreement at
+   * machine precision is checked again with 30 digits.
+   *
+   * @return <code>false</code> only if a sample point disagrees
+   */
+  private static boolean differentiatesBackInside(IExpr function, IExpr integrand, IAST xList,
+      EvalEngine engine) {
+    final IExpr x = xList.arg1();
+    final IExpr lower = xList.arg2();
+    final IExpr upper = xList.arg3();
+    if (!x.isSymbol() || !isNumericBound(lower) || !isNumericBound(upper)
+        || function.leafCount() > MAX_CHECKED_ANTIDERIVATIVE_LEAFCOUNT) {
+      // a large antiderivative costs more to differentiate and evaluate than the check is worth
+      return true;
+    }
+    for (IExpr variable : new VariablesSet(F.List(integrand, function)).getArrayList()) {
+      if (!variable.equals(x)) {
+        // parameters: no sample values
+        return true;
+      }
+    }
+    // N(expr, 30) sets the significant figures of the output, which are the caller's
+    final int significantFigures = engine.getSignificantFigures();
+    try {
+      double a = lower.isNegativeInfinity() ? Double.NEGATIVE_INFINITY : lower.evalf();
+      double b = upper.isInfinity() ? Double.POSITIVE_INFINITY : upper.evalf();
+      if (Double.isNaN(a) || Double.isNaN(b) || !(a < b)) {
+        return true;
+      }
+      IExpr derivative = engine.evalQuiet(F.D(function, x));
+      for (double t : INSIDE_POINTS) {
+        double p;
+        if (Double.isInfinite(a) && Double.isInfinite(b)) {
+          p = (t - 0.5) * 6.0;
+        } else if (Double.isInfinite(b)) {
+          p = a + t / (1.0 - t);
+        } else if (Double.isInfinite(a)) {
+          p = b - t / (1.0 - t);
+        } else {
+          p = a + t * (b - a);
+        }
+        IExpr point = F.num(p);
+        if (!agreesAt(derivative, integrand, x, point, false, engine)
+            && !agreesAt(derivative, integrand, x, F.Rationalize(point, F.C0), true, engine)) {
+          return false;
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    } finally {
+      engine.setSignificantFigures(significantFigures);
+    }
+    return true;
+  }
+
+  /**
+   * Compare the derivative and the integrand at a point; a value which isn't a finite number
+   * agrees.
+   */
+  private static boolean agreesAt(IExpr derivative, IExpr integrand, IExpr x, IExpr point,
+      boolean digits30, EvalEngine engine) {
+    IExpr f = engine.evalQuiet(
+        digits30 ? F.N(F.subst(integrand, x, point), F.ZZ(30)) : F.N(F.subst(integrand, x, point)));
+    IExpr d = engine.evalQuiet(digits30 ? F.N(F.subst(derivative, x, point), F.ZZ(30))
+        : F.N(F.subst(derivative, x, point)));
+    if (!f.isNumber() || !d.isNumber()) {
+      return true;
+    }
+    double scale = engine.evalQuiet(F.Abs(f)).evalfNaN();
+    double deviation = engine.evalQuiet(F.Abs(F.Subtract(d, f))).evalfNaN();
+    if (Double.isNaN(scale) || Double.isInfinite(scale) || Double.isNaN(deviation)) {
+      return true;
+    }
+    return deviation <= 1.0e-6 * (1.0 + scale);
+  }
+
+  /**
+   * The sum of the jumps <code>F(p+0) - F(p-0)</code> of the antiderivative <code>F</code> at the
+   * points <code>lower &lt; p &lt; upper</code> where the complex argument <code>u</code> of a
+   * <code>Log(u)</code> or <code>ExpIntegralEi(u)</code> crosses the negative real axis: both jump
+   * by <code>2*Pi*I</code> from below to above the cut. A bound on the cut is no jump: the
+   * one-sided limit there gives the value on the side of the interval. <code>F</code> has to be
+   * linear in that
+   * function; <code>E^(I*x)/(1+x^2)</code> has <code>E*ExpIntegralEi(-1+I*x)*I/2</code>, which
+   * jumps at <code>x == 0</code>.
+   *
+   * @return {@link F#NIL} if no such argument crosses the cut inside
+   */
+  private static IExpr branchCutJumps(IExpr function, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (!x.isSymbol() || !hasComplexNumber(function)) {
+      return F.NIL;
+    }
+    java.util.Set<IExpr> cutFunctions = new java.util.LinkedHashSet<>();
+    function.has(e -> {
+      if ((e.isLog() || e.isAST(S.ExpIntegralEi, 2)) && !e.first().isFree(x)
+          && e.first().isPolynomial(F.list(x)) && hasComplexNumber(e.first())) {
+        cutFunctions.add(e);
+      }
+      return false;
+    }, true);
+    if (cutFunctions.isEmpty()) {
+      return F.NIL;
+    }
+    try {
+      IASTAppendable sum = F.PlusAlloc(4);
+      for (IExpr cutFunction : cutFunctions) {
+        IExpr u = cutFunction.first();
+        IExpr im = engine.evaluate(F.ComplexExpand(F.Im(u)));
+        IExpr re = engine.evaluate(F.ComplexExpand(F.Re(u)));
+        if (im.isZero() || !im.isPolynomial(F.list(x)) || !re.isPolynomial(F.list(x))) {
+          continue;
+        }
+        IExpr solved = engine.evalQuiet(F.Solve(F.Equal(im, F.C0), x, S.Reals));
+        if (!solved.isList()) {
+          return F.NIL;
+        }
+        for (IExpr solution : (IAST) solved) {
+          IExpr p = solution.isList1() && solution.first().isRule() ? solution.first().second()
+              : F.NIL;
+          if (p.isNIL() || !p.isRealResult()) {
+            return F.NIL;
+          }
+          boolean atUpper = engine.evalTrue(F.Equal(p, upper));
+          boolean atLower = engine.evalTrue(F.Equal(p, lower));
+          if (!atUpper && !atLower
+              && !engine.evalTrue(F.And(F.Less(lower, p), F.Less(p, upper)))) {
+            continue;
+          }
+          IExpr reAtP = engine.evaluate(F.subst(re, x, p));
+          if (!engine.evalTrue(F.Less(reAtP, F.C0))) {
+            if (reAtP.isZero() || !engine.evalTrue(F.Greater(reAtP, F.C0))) {
+              // the branch point itself or an unknown side
+              return F.NIL;
+            }
+            continue;
+          }
+          IExpr derivative = engine.evaluate(F.D(im, x));
+          IExpr slope = engine.evaluate(F.subst(derivative, x, p));
+          int direction = slope.isPositiveResult() ? 1 : slope.isNegativeResult() ? -1 : 0;
+          if (direction == 0) {
+            // touches the cut without crossing it, or unknown
+            return F.NIL;
+          }
+          ISymbol t = F.Dummy("t");
+          IExpr withT = F.subst(function, cutFunction, t);
+          IExpr coefficient = engine.evaluate(F.D(withT, t));
+          if (!coefficient.isFree(t)) {
+            return F.NIL;
+          }
+          IExpr coefficientAtP = engine.evaluate(F.subst(coefficient, x, p));
+          if (!coefficientAtP.isFree(x) || !coefficientAtP.isSpecialsFree()) {
+            return F.NIL;
+          }
+          if (atUpper || atLower) {
+            // no jump inside: the one-sided limit at the bound takes the value on its side of the
+            // cut
+            continue;
+          }
+          sum.append(F.Times(F.ZZ(direction), F.C2, S.Pi, F.CI, coefficientAtP));
+        }
+      }
+      return sum.argSize() == 0 ? F.NIL : engine.evaluate(sum);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
   }
 
   /**

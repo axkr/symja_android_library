@@ -191,7 +191,14 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
           if (factored.isTimes()) {
             // the irreducible factor with s as a root: the one which is smallest at s, relative to
             // the size of its coefficients, with 30 digits of s
-            IExpr sNumeric = engine.evaluate(F.N(s, F.ZZ(30)));
+            // N(s, 30) sets the significant figures of the output, which are the caller's
+            final int significantFigures = engine.getSignificantFigures();
+            IExpr sNumeric;
+            try {
+              sNumeric = engine.evaluate(F.N(s, F.ZZ(30)));
+            } finally {
+              engine.setSignificantFigures(significantFigures);
+            }
             IExpr best = F.NIL;
             double bestSize = Double.POSITIVE_INFINITY;
             int candidates = 0;

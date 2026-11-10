@@ -1321,7 +1321,6 @@ public class StatisticsDerivedDistributions {
         if (!data.get(i).isReal()) {
           return F.NIL;
         }
-        inexact |= data.get(i).isInexactNumber();
         if (weights.isPresent()) {
           inexact |= weights.get(i).isInexactNumber();
         }
@@ -1351,7 +1350,8 @@ public class StatisticsDerivedDistributions {
       if (totalWeight.isZero()) {
         return F.NIL;
       }
-      // the probabilities are machine numbers for inexact values or weights
+      // the probabilities are machine numbers for inexact weights; the counts of inexact values
+      // stay exact, so the CDF at a point above all values is 1
       final boolean numeric = inexact;
       IASTAppendable probabilities = F.mapRange(1, sums.size(), j -> {
         IExpr probability = engine.evaluate(F.Divide(sums.get(j), totalWeight));

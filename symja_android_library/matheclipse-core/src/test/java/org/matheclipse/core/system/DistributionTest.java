@@ -202,7 +202,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("edata=EmpiricalDistribution(data);", //
         "");
     check("{CDF(edata,0.25),CDF(edata,1),CDF(edata,3),CDF(edata,4),CDF(edata,5)}", //
-        "{0.7,0.9,1,1,1}");
+        "{7/10,9/10,1,1,1}");
     // https://github.com/Hipparchus-Math/hipparchus/pull/317
     check("{PDF(edata,0.25),PDF(edata,1),PDF(edata,3),PDF(edata,4),PDF(edata,5)}", //
         "{0,0,0,0,0}");

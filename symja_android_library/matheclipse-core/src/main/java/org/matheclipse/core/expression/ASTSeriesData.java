@@ -1567,9 +1567,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         IExpr limitPart =
             engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0), F.Rule(S.Direction, dirExpr)));
 
-        if (limitPart.isSpecialsFree()) {
+        if (limitPart.isSpecialsFree() && limitPart.isFree(S.Limit, true)) {
           functionPart = limitPart;
+        } else if (foundNonZero && !limitPart.isFree(S.Limit, true)) {
+          // an unevaluated Limit isn't a coefficient: the series ends before it
+          targetN = i - 1;
+          break;
         } else {
+          // the function may be singular at x0, as BesselY(2,3*x) at 0, and a series of
+          // unevaluated coefficients would hide that
           return null;
         }
       }

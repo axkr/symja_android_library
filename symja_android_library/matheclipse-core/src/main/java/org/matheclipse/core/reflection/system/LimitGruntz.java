@@ -357,10 +357,22 @@ public class LimitGruntz {
   }
 
   public static IExpr combinePlusLogs(IAST plusAST, boolean force) {
+    return combinePlusLogs(plusAST, force, null, false);
+  }
+
+  /**
+   * @param x if not <code>null</code>, the logarithms are merged for <code>x</code> tending to
+   *        <code>Infinity</code> (<code>-Infinity</code> if <code>negative</code>):
+   *        <code>Log(a)+Log(b) == Log(a*b)+2*Pi*I*k</code> with the <code>k</code> found at two
+   *        large values of <code>x</code>. A group whose <code>k</code> isn't the same at both
+   *        values stays unmerged.
+   */
+  private static IExpr combinePlusLogs(IAST plusAST, boolean force, ISymbol x, boolean negative) {
     Map<IExpr, IASTAppendable> groupMap = new HashMap<>();
     // the first term of each group: a group of one is kept as it is, because -Log(u) and
     // Log(1/u) differ by 2*Pi*I for a negative u
     Map<IExpr, IExpr> firstTerm = new HashMap<>();
+    Map<IExpr, IASTAppendable> groupTerms = new HashMap<>();
     IASTAppendable remainingTerms = F.PlusAlloc(plusAST.size());
 
     for (int i = 1; i < plusAST.size(); i++) {
@@ -375,6 +387,7 @@ public class LimitGruntz {
         args.append(parts[1]);
         groupMap.put(parts[0], args);
         firstTerm.putIfAbsent(parts[0], term);
+        groupTerms.computeIfAbsent(parts[0], k -> F.PlusAlloc(4)).append(term);
       } else {
         remainingTerms.append(term);
       }
@@ -393,10 +406,50 @@ public class LimitGruntz {
       }
 
       IExpr mergedLog = F.Log(F.evalExpandAll(combinedArgs));
-      remainingTerms.append(F.eval(F.Times(coeff, mergedLog)));
+      IExpr merged = F.eval(F.Times(coeff, mergedLog));
+      if (x != null) {
+        IAST terms = groupTerms.get(coeff);
+        IExpr shift = branchShiftAtInfinity(terms, merged, coeff, combinedArgs, x, negative);
+        if (shift == null) {
+          remainingTerms.appendArgs(terms);
+          continue;
+        }
+        merged = F.eval(F.Plus(merged, shift));
+      }
+      remainingTerms.append(merged);
     }
 
     return F.eval(remainingTerms);
+  }
+
+  /**
+   * The constant <code>coeff*2*Pi*I*k</code> with <code>terms == merged + coeff*2*Pi*I*k</code> at
+   * two large values of <code>x</code>, or <code>null</code> if it isn't the same multiple of
+   * <code>2*Pi*I</code> at both values. Without a numerical value (parameters, or an overflow of
+   * machine numbers) only the logarithms of positive arguments merge, with the shift
+   * <code>0</code>.
+   */
+  private static IExpr branchShiftAtInfinity(IAST terms, IExpr merged, IExpr coeff, IAST args,
+      ISymbol x, boolean negative) {
+    EvalEngine engine = EvalEngine.get();
+    IExpr difference = F.Divide(F.Subtract(terms, merged), coeff);
+    long k = Long.MIN_VALUE;
+    for (int exponent : new int[] {3, 6}) {
+      IExpr value = F.Power(F.C10, F.ZZ(exponent));
+      IExpr numeric = engine.evalQuiet(F.N(F.subst(difference, x, negative ? F.Negate(value) : value)));
+      if (!numeric.isNumber()) {
+        return args.forAll(IExpr::isPositiveResult) ? F.C0 : null;
+      }
+      Complex d = ((INumber) numeric).evalfc();
+      double turns = d.getImaginary() / (2.0 * Math.PI);
+      long kj = Math.round(turns);
+      if (Math.abs(d.getReal()) > 1.0e-8 || Math.abs(turns - kj) > 1.0e-8
+          || (k != Long.MIN_VALUE && k != kj)) {
+        return null;
+      }
+      k = kj;
+    }
+    return k == 0 ? F.C0 : F.Times(coeff, F.ZZ(2 * k), S.Pi, F.CI);
   }
 
   /**
@@ -915,7 +968,7 @@ public class LimitGruntz {
       expr = combineExponentials(expr, engine);
     }
     if (!expr.isFree(S.Log, true)) {
-      expr = logCombine(expr, true);
+      expr = logCombineAtInfinity(expr, x, false);
     }
     return expr;
   }
@@ -1842,23 +1895,36 @@ public class LimitGruntz {
 
   // Recursive AST traversal to find and combine Plus structures anywhere
   public static IExpr logCombine(IExpr expr, boolean force) {
+    return logCombine(expr, force, null, false);
+  }
+
+  /**
+   * All logarithms merged for <code>x</code> tending to <code>Infinity</code>
+   * (<code>-Infinity</code> if <code>negative</code>), with the multiple of <code>2*Pi*I</code>
+   * which a merge changes added back.
+   */
+  public static IExpr logCombineAtInfinity(IExpr expr, ISymbol x, boolean negative) {
+    return logCombine(expr, true, x, negative);
+  }
+
+  private static IExpr logCombine(IExpr expr, boolean force, ISymbol x, boolean negative) {
     if (expr.isPlus()) {
-      IExpr combined = combinePlusLogs((IAST) expr, force);
+      IExpr combined = combinePlusLogs((IAST) expr, force, x, negative);
       if (combined != expr && combined.isAST()) {
-        return mapLogCombine((IAST) combined, force);
+        return mapLogCombine((IAST) combined, force, x, negative);
       }
       return combined;
     } else if (expr.isAST()) {
-      return mapLogCombine((IAST) expr, force);
+      return mapLogCombine((IAST) expr, force, x, negative);
     }
     return expr;
   }
 
-  private static IExpr mapLogCombine(IAST ast, boolean force) {
+  private static IExpr mapLogCombine(IAST ast, boolean force, ISymbol x, boolean negative) {
     IASTAppendable result = F.ast(ast.head(), ast.argSize());
     boolean changed = false;
     for (int i = 1; i <= ast.argSize(); i++) {
-      IExpr arg = logCombine(ast.get(i), force);
+      IExpr arg = logCombine(ast.get(i), force, x, negative);
       if (arg != ast.get(i)) {
         changed = true;
       }
