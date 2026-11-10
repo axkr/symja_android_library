@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -141,6 +142,15 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
         "(-I*1/4*(Pi^2+2*Gamma(3/4)^4))/(Sqrt(Pi)*Gamma(3/4)^2)");
     check("Abs(N(Integrate(x^2/Sqrt((1 - x^2)*(-1/9 + x^2)), {x, 1/3, 1/2})) - "
         + "NIntegrate(x^2/Sqrt((1 - x^2)*(-1/9 + x^2)), {x, 1/3, 1/2})) < 10^-10", //
+        "True");
+  }
+
+  @Tag(TestTags.SLOW)
+  @Test
+  public void testAntiderivativeCheckWithCancellation() {
+    // the derivative of the antiderivative cancels from terms of 10^14 to 10^-5: the check at
+    // 30 digits accepts it
+    check("Integrate((x*Cos(9*x)*Sin(x)^7)/(49/9 + x^2), {x, 0, Infinity}) // FreeQ(#, Integrate) &", //
         "True");
   }
 

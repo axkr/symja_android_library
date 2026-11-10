@@ -2968,8 +2968,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           p = a + t * (b - a);
         }
         IExpr point = F.num(p);
-        if (!agreesAt(derivative, integrand, x, point, false, engine)
-            && !agreesAt(derivative, integrand, x, F.Rationalize(point, F.C0), true, engine)) {
+        // the exact point is evaluated before N(..., 30): evaluated inside of it, the rational
+        // becomes the machine number again, and a sum which cancels to 10^-5 from terms of 10^14
+        // disagrees at 30 digits too
+        if (!agreesAt(derivative, integrand, x, point, false, engine) && !agreesAt(derivative,
+            integrand, x, engine.evaluate(F.Rationalize(point, F.C0)), true, engine)) {
           return false;
         }
       }

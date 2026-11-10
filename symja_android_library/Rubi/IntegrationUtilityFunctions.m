@@ -7447,7 +7447,11 @@ DerivativeDivides[y_,u_,x_Symbol] :=
     v=Simplify[u/v];
     If[FreeQ[v,x],
       v,
-    False]]],
+    (* Simplify doesn't cancel the common factors of a large quotient with many parameters *)
+    v=Together[v];
+    If[FreeQ[v,x],
+      v,
+    False]]]],
   False]]
 
 
