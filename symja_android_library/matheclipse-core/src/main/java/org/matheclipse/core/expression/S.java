@@ -16350,6 +16350,16 @@ public class S {
   public final static IBuiltInSymbol ListCurvePathPlot =
       S.initFinalSymbol("ListCurvePathPlot", ID.ListCurvePathPlot);
 
+  /**
+   * ListDeconvolve(x) - TODO describe `ListDeconvolve`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListDeconvolve.md">ListDeconvolve
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ListDeconvolve =
+      S.initFinalSymbol("ListDeconvolve", ID.ListDeconvolve);
+
   public final static IBuiltInSymbol ListDensityPlot =
       S.initFinalSymbol("ListDensityPlot", ID.ListDensityPlot);
 
@@ -29497,6 +29507,16 @@ public class S {
   public final static IBuiltInSymbol VertexContract =
       S.initFinalSymbol("VertexContract", ID.VertexContract);
 
+  /**
+   * VertexCoordinateRules(x) - TODO describe `VertexCoordinateRules`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexCoordinateRules.md">VertexCoordinateRules
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexCoordinateRules =
+      S.initFinalSymbol("VertexCoordinateRules", ID.VertexCoordinateRules);
+
   public final static IBuiltInSymbol VertexCoordinates =
       S.initFinalSymbol("VertexCoordinates", ID.VertexCoordinates);
 
@@ -29558,6 +29578,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol VertexIndex = S.initFinalSymbol("VertexIndex", ID.VertexIndex);
+
+  /**
+   * VertexLabeling(x) - TODO describe `VertexLabeling`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexLabeling.md">VertexLabeling
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexLabeling =
+      S.initFinalSymbol("VertexLabeling", ID.VertexLabeling);
 
   public final static IBuiltInSymbol VertexLabels =
       S.initFinalSymbol("VertexLabels", ID.VertexLabels);
