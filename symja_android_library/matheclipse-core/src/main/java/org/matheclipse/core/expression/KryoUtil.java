@@ -380,13 +380,13 @@ public class KryoUtil {
         RealVector vector = ((ASTRealVector) ast).getRealVector();
         stream.writeInt(WL.WXF_CONSTANTS.PackedArray);
         stream.write(NumericArrayExpr.Real64);
-        stream.write(WXFVarint.packedReal64(vector));
+        WXFVarint.writePackedReal64(vector, stream::write);
         return;
       } else if (ast instanceof ASTRealMatrix) {
         RealMatrix matrix = ((ASTRealMatrix) ast).getRealMatrix();
         stream.writeInt(WL.WXF_CONSTANTS.PackedArray);
         stream.write(NumericArrayExpr.Real64);
-        stream.write(WXFVarint.packedReal64(matrix));
+        WXFVarint.writePackedReal64(matrix, stream::write);
         return;
       } else if (ast instanceof ASTAssociation) {
         // <|a->b, c:>d,...|>

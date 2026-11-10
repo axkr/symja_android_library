@@ -97,6 +97,9 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     if (type.equals("Named")) {
+      if (name.equals(AtomColors.NAME)) {
+        return AtomColors.color(param);
+      }
       return name.equals("WebSafe") ? ColorData.webSafe(param) : F.NIL;
     }
     if (param.isString()) {

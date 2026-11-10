@@ -112,6 +112,18 @@ public class DigitLengthSumTest extends ExprEvaluatorTestCase {
         "-y^m/m!+(E^y*Gamma(1+m,y))/m!");
     check("Sum(5*y^k/k!, {k, 3, m}) /. m -> 6 // FunctionExpand // Expand", //
         "5/6*y^3+5/24*y^4+y^5/24+y^6/144");
+    // a head whose derivative is 0 although it contains x: only the chain rule through the argument
+    check("D(h(Boole(x > 0))[x^2], x)", //
+        "2*x*h(Boole(x>0))'[x^2]");
+  }
+
+  @Test
+  public void testIntegerOnlyProbeKeepsDefinitions() {
+    // the probes between the integers don't leave memoized values at fractions behind
+    check("hm(n_) := hm(n) = If(IntegerQ(n), 1/n^2, Indeterminate); "
+        + "s = NSum(hm(k), {k, 1, Infinity}); "
+        + "{Abs(s - Pi^2/6) < 10^-10, FreeQ(DownValues(hm), 21/4 | 17/4 | 9/4 | 23/5)}", //
+        "{True,True}");
   }
 
   @Test

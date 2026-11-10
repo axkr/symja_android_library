@@ -56,6 +56,11 @@ public class ColorData extends AbstractFunctionEvaluator {
               : webSafe(ast.arg2());
         }
         return createColorDataFunction("WebSafe", "Named", F.CEmptyList);
+      } else if (name.equalsIgnoreCase(AtomColors.NAME)) {
+        if (ast.isAST1()) {
+          return AtomColors.colorDataFunction();
+        }
+        return ast.isAST2() ? AtomColors.property(ast.arg2()) : F.NIL;
       }
 
       IAST blendArgument = themeGradient(name);

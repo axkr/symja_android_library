@@ -311,6 +311,8 @@ public class Errors {
       "ilsnn", "Single or list of non-negative integers expected at position `1`.", //
       "imginv", "Expecting an image or graphics instead of `1`.", //
       "incmp", "The arguments `1` and `2` in `3` are incompatible.", //
+      "inex",
+      "Reduce was unable to solve the system with inexact coefficients or the system obtained by direct rationalization of inexact numbers present in the system. Since many of the methods used by Reduce require exact input, providing Reduce with an exact version of the system may help.", //
       "incom",
       "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
       "ilim", "Invalid integration variable or limit(s) in `1`.", //

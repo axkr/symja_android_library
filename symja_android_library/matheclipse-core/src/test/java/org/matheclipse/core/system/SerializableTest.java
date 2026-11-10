@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -335,6 +336,32 @@ public class SerializableTest {
     } catch (IOException ioe) {
       ioe.printStackTrace();
       assertEquals("", ioe.toString());
+    }
+  }
+
+  @Test
+  public void testContextOutsideThePath() {
+    try {
+      EvalEngine engine = EvalEngine.get();
+      engine.evaluate("SerialTestPkg`v = 7");
+      Context context = engine.getContextPath().getContext("SerialTestPkg`");
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(context);
+      oos.close();
+      // a receiving engine knows another context of this name
+      engine.getContextPath().getContextMap().put("SerialTestPkg`",
+          new Context("SerialTestPkg`"));
+      ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+      Context copy = (Context) ois.readObject();
+      ois.close();
+      // the context which isn't in the path is registered by its name, and its symbols are in it
+      assertSame(copy, engine.getContextPath().getContext("SerialTestPkg`"));
+      assertSame(copy, copy.get("v").getContext());
+      assertEquals("7", engine.evaluate("SerialTestPkg`v").toString());
+    } catch (ClassNotFoundException | IOException e) {
+      e.printStackTrace();
+      assertEquals("", e.toString());
     }
   }
 

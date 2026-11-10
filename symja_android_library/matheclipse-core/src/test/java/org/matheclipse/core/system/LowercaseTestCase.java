@@ -7895,10 +7895,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("ElementData(\"Chlorine\", \"BoilingPoint\")", //
         "Quantity(-34.04,\"DegreesCelsius\")");
+    // the standard atomic weight with the precision of its digits
     check("ElementData(\"C\", \"AtomicMass\")", //
-        "Quantity(12.01,\"AtomicMassUnit\")");
+        "Quantity(12.011,\"AtomicMassUnit\")");
     check("ElementData(117, \"AtomicMass\")", //
-        "Quantity(294.0,\"AtomicMassUnit\")");
+        "Quantity(294,\"AtomicMassUnit\")");
+    check("Precision /@ QuantityMagnitude /@ {ElementData(\"Fluorine\", \"AtomicMass\"), "
+        + "ElementData(\"Neon\", \"AtomicMass\"), ElementData(\"Radon\", \"AtomicMass\")}", //
+        "{11,6,3}");
 
     // check("ElementData(\"Pd\", \"AtomicRadius\")", "140");
     check("ElementData(\"Pd\", \"VanDerWaalsRadius\")", //
@@ -8012,7 +8016,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ElementData(\"Carbon\", \"ElectronCount\")", //
         "6");
     check("ElementData(\"Carbon\", \"MolarMass\")", //
-        "Quantity(12.01,\"Grams\"/\"Moles\")");
+        "Quantity(12.011,\"Grams\"/\"Moles\")");
     // the outermost shell, plus an unfilled d one shell in: carbon four, iron eight, tungsten six
     check("ElementData(\"Carbon\", \"ValenceElectronCount\")", //
         "4");
@@ -13293,8 +13297,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Frame->True}");
     check("d = DensityPlot(x*y, {x, -3, 3}, {y, -2, 2}); Options(d, {AspectRatio, Frame})", //
         "{AspectRatio->1,Frame->True}");
+    // several option arguments: none of them is taken
     check("Options(g(1, a -> 2, b :> 3))", //
-        "{a->2,b:>3}");
+        "{}");
     check("Options(Plot, PlotPoints)", //
         "{PlotPoints->Automatic}");
   }
@@ -20581,7 +20586,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ColorData(\"Atoms\", \"C\") == ColorData(\"Atoms\", 6)", //
         "True");
     check("Round(255 * List @@ ColorData(\"Atoms\", \"N\"))", //
-        "{48,80,248}");
+        "{74,112,227}");
     check("ColorData(\"Atoms\", \"Xx\")", //
         "ColorData(Atoms,Xx)");
     check("ColorData(\"HTML\", \"Blue\")", //
@@ -21325,8 +21330,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
     check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Round(t/.First(Solve(h(t)==1,t)),10^(-6)))", //
         "2");
-    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Solve(h(t)==20,t))", //
-        "{}");
+    // without a root the solution is left to the inverse function
+    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); "
+        + "s=t/.First(Quiet(Solve(h(t)==20,t))); {Head(s)===InverseFunction(h,1,1),First(s)}", //
+        "{True,20}");
     check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Round(h'(1.1),10^(-6))", //
         "-11/5");
     check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Round(D(h(z),z)/.z->1.5,10^(-6))", //
@@ -21646,8 +21653,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1");
     check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Round(t/.First(NSolve(h(t)==20,t)),10^(-6)))", //
         "-1");
-    check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Solve(h(t)==-20,t))", //
-        "{}");
+    check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); "
+        + "s=t/.First(Quiet(Solve(h(t)==-20,t))); {Head(s)===InverseFunction(h,1,1),First(s)}", //
+        "{True,-20}");
   }
 
   @Test

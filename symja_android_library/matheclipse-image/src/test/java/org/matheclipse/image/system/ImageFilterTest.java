@@ -276,4 +276,100 @@ public class ImageFilterTest extends AbstractTestCase {
     check("InputForm(ImageData(CommonestFilter(Image({{0.3, 0.3}}), 1)))", //
         "{{0.30000001192092896`,0.30000001192092896`}}");
   }
+  @Test
+  public void testImageDeconvolve() {
+    // an image of at least 3 x 3 pixels with a kernel of odd size is deconvolved like its data
+    check("img = Image({{0.3, 0.8, 0.1, 0.6, 0.2}, {0.9, 0.4, 0.7, 0.2, 0.5}, "
+        + "{0.1, 0.6, 0.3, 0.8, 0.4}, {0.5, 0.2, 0.9, 0.1, 0.7}}); "
+        + "ker = {{1, 2, 1}, {2, 6, 2}, {1, 2, 1}}/18.; "
+        + "Max(Abs(ImageData(ImageDeconvolve(img, ker)) - ListDeconvolve(ker, ImageData(img)))) "
+        + "< 10^-6", //
+        "True");
+    check("{ImageType(ImageDeconvolve(img, ker)), ImageDimensions(ImageDeconvolve(img, ker))}", //
+        "{Real32,{5,4}}");
+    // a narrow image is padded by one pixel
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.3, 0.6}}), {{1, 1}}/2)) - "
+        + "{{0.15, 0.45}})) < 10^-6", //
+        "True");
+    // the parameter search ends at the bound of its interval, which the reference reaches
+    // slightly differently
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.2, 0.4, 0.6, 0.8}}), {{1, 2, 1}}/4)) - "
+        + "{{0.22463607788085938, 0.3921552300453186, 0.7245229482650757, 1.042121171951294}})) "
+        + "< 10^-3", //
+        "True");
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.2, 0.4, 0.6, 0.8}}), {{1, 2, 1}}/4, "
+        + "Padding -> 0)) - {{0.10580554604530334, 0.29642319679260254, 0.4963168799877167, "
+        + "0.5940519571304321}})) < 10^-3", //
+        "True");
+    // a kernel with a dimension of one element is made even: a zero before that dimension, the
+    // other one loses its last element
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.2, 0.4, 0.6, 0.8}}), {{1, 2, 3}}/6, "
+        + "Method -> {\"Tikhonov\", 0.1})) - {{0.25067800283432007, 0.628144383430481, "
+        + "1.065895438194275, 1.315256118774414}})) < 10^-6", //
+        "True");
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.2, 0.4, 0.6, 0.8, 0.3}}), "
+        + "{{1, 2, 3, 2, 1}}/9, Method -> {\"Tikhonov\", 0.1})) - {{0.3623536229133606, "
+        + "-0.3080054521560669, 1.3966586589813232, 0.9617049694061279, 0.04895016551017761}})) "
+        + "< 10^-6", //
+        "True");
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.2}, {0.4}, {0.6}, {0.8}}), "
+        + "{{1}, {2}, {1}}/4, Method -> {\"Tikhonov\", 0.1})) - {{0.17783278226852417}, "
+        + "{0.42080453038215637}, {0.7364920973777771}, {0.8790464997291565}})) < 10^-6", //
+        "True");
+    // a single element on an image which is not padded
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.3, 0.8, 0.1, 0.6}, {0.9, 0.4, 0.7, 0.2}, "
+        + "{0.1, 0.6, 0.3, 0.8}, {0.5, 0.2, 0.9, 0.1}}), {{1}}, Method -> {\"Tikhonov\", 0.1})) - "
+        + "{{0.3, 0.8, 0.1, 0.6}, {0.9, 0.4, 0.7, 0.2}, {0.1, 0.6, 0.3, 0.8}, {0.5, 0.2, 0.9, 0.1}}"
+        + "/1.01)) < 10^-6", //
+        "True");
+    // with an explicit parameter an image of 3 x 3 pixels is deconvolved like its data
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.2, 0.4, 0.6}, {0.8, 0.1, 0.3}, "
+        + "{0.5, 0.7, 0.9}}), {{0, 1/4., 0}, {1/4., 0, 1/4.}, {0, 1/4., 0}}, "
+        + "Method -> {\"DampedLS\", 0.5})) - {{0.3288981020450592, 0.3507276177406311, "
+        + "0.4212057590484619}, {0.4430353045463562, 0.48918914794921875, 0.5353429913520813}, "
+        + "{0.6058211326599121, 0.6276506781578064, 0.6981288194656372}})) < 10^-6", //
+        "True");
+    // a single element on a padded image of two rows
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.2, 0.4, 0.6, 0.8}, {0.1, 0.3, 0.5, 0.7}}), "
+        + "{{1}}, Method -> {\"Tikhonov\", 0.1})) - "
+        + "{{0.2, 0.4, 0.6, 0.8}, {0.1, 0.3, 0.5, 0.7}}/1.01)) < 10^-6", //
+        "True");
+    // a kernel of two rows and columns: the image is padded, the rows are centred on the first
+    // middle row and the columns on the second
+    check("img4 = Image({{0.3, 0.8, 0.1, 0.6}, {0.9, 0.4, 0.7, 0.2}, {0.1, 0.6, 0.3, 0.8}, "
+        + "{0.5, 0.2, 0.9, 0.1}}); "
+        + "Max(Abs(ImageData(ImageDeconvolve(img4, {{1, 2}, {0, 0}}/3, "
+        + "Method -> {\"Tikhonov\", 0.1})) - {{-0.15353578329086304, 1.2238737344741821, "
+        + "-0.11122274398803711, 0.5591879487037659}, {1.2422360181808472, 0.17538154125213623, "
+        + "0.861417829990387, 0.33230987191200256}, {-0.2521369457244873, 0.8147175908088684, "
+        + "0.12868107855319977, 0.6577891707420349}, {0.8815309405326843, -0.2992388904094696, "
+        + "1.230031967163086, 0.16880714893341064}})) < 10^-6", //
+        "True");
+    check("Max(Abs(ImageData(ImageDeconvolve(img4, {{1, 0}, {2, 0}}/3, "
+        + "Method -> {\"Tikhonov\", 0.1})) - {{1.3519740104675293, 1.3519741296768188, "
+        + "0.24062669277191162, 0.9789725542068481}, {-0.07568679749965668, -0.07568676769733429, "
+        + "0.7245500683784485, 0.0908229798078537}, {0.4906488060951233, 0.4906487762928009, "
+        + "0.31539371609687805, 0.7398828268051147}, {0.4769853949546814, 0.4769855737686157, "
+        + "-0.027226924896240234, 1.1761749982833862}})) < 10^-6", //
+        "True");
+    check("Max(Abs(ImageData(ImageDeconvolve(Image({{0.3, 0.8, 0.1, 0.6}, {0.9, 0.4, 0.7, 0.2}, "
+        + "{0.1, 0.6, 0.3, 0.8}}), {{1, 2}, {3, 4}}/10, Method -> {\"Tikhonov\", 0.1})) - "
+        + "{{1.7467577457427979, 0.23413310945034027, 0.7015299201011658, 0.7426826357841492}, "
+        + "{0.058899667114019394, 0.5812889933586121, 0.4316929876804352, 0.331560343503952}, "
+        + "{-0.7907137274742126, 0.901678204536438, 0.041472792625427246, 0.715474545955658}})) "
+        + "< 10^-6", //
+        "True");
+    // an integer type keeps its type
+    check("b = Image({{2, 0, 3, 1}, {0, 4, 1, 2}, {1, 1, 0, 3}, {3, 0, 2, 1}}, \"Byte\"); "
+        + "k3 = {{0, 1, 0}, {1, 4, 1}, {0, 1, 0}}/8.; "
+        + "{ImageType(ImageDeconvolve(b, k3)), ImageData(ImageDeconvolve(b, k3), \"Byte\") == "
+        + "Clip(Round(ListDeconvolve(k3, ImageData(b, \"Byte\"))), {0, 255})}", //
+        "{Byte,True}");
+    // a vector is no kernel of an image
+    check("Check(ImageDeconvolve(Image({{0.2, 0.7}}), {1, 2, 1}), failed, "
+        + "ImageDeconvolve::klinv)", //
+        "failed");
+    check("ImageDeconvolve(7, {{1}})", //
+        "ImageDeconvolve(7,{{1}})");
+  }
 }

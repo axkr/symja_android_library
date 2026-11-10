@@ -382,9 +382,22 @@ public class AssumptionFunctions {
     if (expr.leafCount() > 200L) {
       return F.NIL;
     }
+    // Simplify and Refine ask for the same subexpressions again: the answer, also an undecided
+    // one after the time limit, is kept
+    final IExpr cacheKey = F.unaryAST1(S.MinimalPolynomial, expr);
+    Object cached = engine.getObjectCache(cacheKey);
+    if (cached instanceof IExpr) {
+      return (IExpr) cached;
+    }
+    IExpr result = algebraicRationalUncached(expr, engine);
+    engine.putObjectCache(cacheKey, result);
+    return result;
+  }
+
+  private static IExpr algebraicRationalUncached(IExpr expr, EvalEngine engine) {
     ISymbol x = F.Dummy("x");
     IExpr polynomial = engine.evalQuiet(
-        F.TimeConstrained(F.binaryAST2(S.MinimalPolynomial, expr, x), F.C2));
+        F.TimeConstrained(F.binaryAST2(S.MinimalPolynomial, expr, x), F.C1));
     if (!polynomial.isPolynomial(x)) {
       return F.NIL;
     }

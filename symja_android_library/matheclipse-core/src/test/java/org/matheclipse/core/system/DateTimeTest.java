@@ -286,6 +286,30 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDateStringTimeZone() {
+    // the date is read in $TimeZone and expressed in the zone of the option before formatting
+    check("Block({$TimeZone = 0}, DateString({2021, 7, 1, 12, 0, 0}, \"Time\", "
+        + "TimeZone -> \"America/Los_Angeles\"))", //
+        "05:00:00");
+    check("Block({$TimeZone = 0}, DateString({2021, 3, 1, 23, 30, 0}, "
+        + "{\"Day\", \"/\", \"Month\", \" \", \"Hour\", \":\", \"Minute\"}, TimeZone -> 2))", //
+        "02/03 01:30");
+    check("Block({$TimeZone = -3}, DateString({2022, 5, 9, 6, 0, 0}, TimeZone -> 1))", //
+        "Mon 9 May 2022 10:00:00");
+    // a date object is read in its own zone
+    check("Block({$TimeZone = 5}, DateString(DateObject({2021, 1, 1, 0, 0, 0}, TimeZone -> -4), "
+        + "\"Time\", TimeZone -> 1))", //
+        "05:00:00");
+    // the current date on the clock of the zone
+    check("StringLength(DateString({\"Hour\", \"Minute\"}, TimeZone -> -7))", //
+        "4");
+    check("StringLength(DateString({\"Year\", \"-\", \"Month\"}))", //
+        "7");
+    check("DateString({2021, 1, 1}, TimeZone -> \"No/Such_Zone\")", //
+        "DateString({2021,1,1},TimeZone->No/Such_Zone)");
+  }
+
+  @Test
   public void testDateString() {
     check("DateString({1991, 10, 31, 0, 0}, {\"Day\", \" \", \"MonthName\", \" \", \"Year\"})",
         "31 October 1991");

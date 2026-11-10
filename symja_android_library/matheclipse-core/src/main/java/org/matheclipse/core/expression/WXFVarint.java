@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.ByteArrayOutputStream;
 import java.util.function.IntConsumer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
@@ -72,47 +71,45 @@ final class WXFVarint {
   }
 
   /**
-   * The rank, the dimension and the little-endian Real64 entries of a packed vector: the bytes
-   * which follow the <code>PackedArray</code> and <code>Real64</code> tokens.
+   * Write the rank, the dimension and the little-endian Real64 entries of a packed vector: the
+   * bytes which follow the <code>PackedArray</code> and <code>Real64</code> tokens. The entries go
+   * straight to <code>out</code>, without a buffer of the whole array.
    *
    * @param vector the vector to encode
-   * @return the encoded bytes
+   * @param out receives one byte per call
    */
-  static byte[] packedReal64(RealVector vector) {
+  static void writePackedReal64(RealVector vector, IntConsumer out) {
     final int n = vector.getDimension();
-    ByteArrayOutputStream out = new ByteArrayOutputStream(10 + 8 * n);
-    out.write(0x01);
+    out.accept(0x01);
     writeVarint(out, n);
     for (int i = 0; i < n; i++) {
-      writeDoubleLE(vector.getEntry(i), out::write);
+      writeDoubleLE(vector.getEntry(i), out);
     }
-    return out.toByteArray();
   }
 
   /**
-   * The rank, the dimensions and the little-endian Real64 entries in row order of a packed matrix:
-   * the bytes which follow the <code>PackedArray</code> and <code>Real64</code> tokens.
+   * Write the rank, the dimensions and the little-endian Real64 entries in row order of a packed
+   * matrix: the bytes which follow the <code>PackedArray</code> and <code>Real64</code> tokens.
    *
    * @param matrix the matrix to encode
-   * @return the encoded bytes
+   * @param out receives one byte per call
    */
-  static byte[] packedReal64(RealMatrix matrix) {
+  static void writePackedReal64(RealMatrix matrix, IntConsumer out) {
     final int rows = matrix.getRowDimension();
     final int columns = matrix.getColumnDimension();
-    ByteArrayOutputStream out = new ByteArrayOutputStream(19 + 8 * rows * columns);
-    out.write(0x02);
+    out.accept(0x02);
     writeVarint(out, rows);
     writeVarint(out, columns);
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < columns; j++) {
-        writeDoubleLE(matrix.getEntry(i, j), out::write);
+        writeDoubleLE(matrix.getEntry(i, j), out);
       }
     }
-    return out.toByteArray();
   }
 
-  private static void writeVarint(ByteArrayOutputStream out, int value) {
-    byte[] bytes = varintBytes(value);
-    out.write(bytes, 0, bytes.length);
+  private static void writeVarint(IntConsumer out, int value) {
+    for (byte b : varintBytes(value)) {
+      out.accept(b);
+    }
   }
 }

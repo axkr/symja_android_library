@@ -204,8 +204,8 @@ public class ExprParser extends Scanner {
           }
           break;
         case ID.Exp:
-          if (ast.isAST1()) {
-            // rewrite from input: Exp(x) => E^x
+          if (ast.isAST1() && !fHoldExpression) {
+            // rewrite from input: Exp(x) => E^x; a held Exp(x) stays as it is written
             return F.Power(S.E, ast.getUnevaluated(1));
           }
           break;

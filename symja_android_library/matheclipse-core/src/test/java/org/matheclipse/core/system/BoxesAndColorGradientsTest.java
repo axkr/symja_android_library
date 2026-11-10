@@ -8,7 +8,7 @@ public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
   @Test
   public void testTraditionalFormFunctionCall() {
     check("ToBoxes(TraditionalForm(g(u, v) + Cosh(u))) // InputForm", //
-        "TagBox(FormBox(RowBox({RowBox({\"cosh\",\"(\",\"u\",\")\"}),\"+\",RowBox({\"g\",\"(\",RowBox({\"u\",\",\",\"v\"}),\")\"})}),TraditionalForm),TraditionalForm,Editable->True)");
+        "TagBox(FormBox(RowBox({RowBox({\"g\",\"(\",RowBox({\"u\",\",\",\"v\"}),\")\"}),\"+\",RowBox({\"cosh\",\"(\",\"u\",\")\"})}),TraditionalForm),TraditionalForm,Editable->True)");
     check("ToBoxes(TraditionalForm(Tan(y)^k)) // InputForm", //
         "TagBox(FormBox(RowBox({SuperscriptBox(\"tan\",\"k\"),\"(\",\"y\",\")\"}),TraditionalForm),TraditionalForm,Editable->True)");
     // a fractional power of a function stays a superscript of the call

@@ -194,7 +194,8 @@ public class Context implements Serializable {
     int size = stream.readInt();
     symbolTable = new ConcurrentHashMap<>(size + size / 10);
     // the symbols read below look their context up by name in the engine's context path; a
-    // context of another name must not take the place of Global`
+    // context of another name must not take the place of Global`, and one which isn't in the path
+    // is registered by its name
     EvalEngine.get().replaceContext(this);
     String[] table = new String[size];
     for (int i = 0; i < size; i++) {

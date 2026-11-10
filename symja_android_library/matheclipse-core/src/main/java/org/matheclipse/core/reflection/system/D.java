@@ -883,9 +883,9 @@ public class D extends AbstractFunctionOptionEvaluator {
   private static IExpr compoundHeadD(final IAST function, final IExpr x, EvalEngine engine) {
     final IExpr head = function.head();
     IExpr dHead = engine.evaluate(F.D(head, x));
-    if (dHead.isAST(S.D) || dHead.isZero()) {
-      // a head which depends on x through a held part, like the recurrence of a DifferenceRoot,
-      // has no derivative 0
+    if (dHead.isAST(S.D)) {
+      // no derivative of the head; a DifferenceRoot whose recurrence depends on x is declined
+      // before, in the test of the whole function
       return F.NIL;
     }
     IExpr throughArgs;

@@ -95,6 +95,41 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   /**
+   * A Method list with the suboption "Rotation" or MaxIterations makes GraphPlot draw the picture
+   * of its pre-version-6 implementation, annotated with the layout; a plain Method does not.
+   */
+  @Test
+  public void testGraphPlotMethodWithSuboptions() {
+    check("g = GraphPlot({p -> q, q -> r, r -> s, s -> q}, "
+        + "Method -> {\"SpringEmbedding\", \"Rotation\" -> True}, PlotLabel -> \"T\", "
+        + "PlotRange -> {{-1, 3}, {-1, 3}}); c = VertexCoordinateRules /. g[[1, 2]]; "
+        + "{Head(g[[1]]), Head(g[[1, 1]]), c === g[[1, 1, 1]], Dimensions(c), Min /@ Transpose(c), "
+        + "g[[1, 1, 3]]}", //
+        "{Annotation,GraphicsComplex,True,{4,2},{0.0,0.0},{}}");
+    check("g[[1, 1, 2, 1]]", //
+        "{RGBColor(0.5,0.0,0.0),Line({{1,2},{2,3},{3,4},{4,2}})}");
+    check("g[[1, 1, 2, 2, {1, 2, 5}]]", //
+        "{RGBColor(0,0,0.7),Tooltip(Point(1),p),Tooltip(Point(4),s)}");
+    check("Rest(g)", //
+        "Graphics(FrameTicks->None,PlotRange->{{-1,3},{-1,3}},PlotRangePadding->Scaled(0.1),"
+            + "AspectRatio->Automatic,PlotLabel->T)");
+    // VertexLabeling -> True frames the names
+    check("t = GraphPlot({u <-> w}, VertexLabeling -> True, "
+        + "Method -> {\"SpringElectricalEmbedding\", MaxIterations -> 5})[[1, 1, 2, 2]]; "
+        + "{Length(t), t[[2, 2]], t[[2, 1, 1]]}", //
+        "{2,2,w}");
+    check("t[[1, 1]]", //
+        "Framed(u,{Background->RGBColor(1,1,0.8),FrameStyle->RGBColor(0.94,0.85,0.36),"
+            + "FrameMargins->Automatic})");
+    // a plain Method, or a suboption the current layouts know, keeps the normal picture
+    check("{Head(GraphPlot({p -> q}, Method -> {\"SpringEmbedding\"})[[1]]), "
+        + "Head(GraphPlot({p -> q}, Method -> \"SpringEmbedding\")[[1]]), "
+        + "Head(GraphPlot({p -> q}, Method -> {\"SpringElectricalEmbedding\", "
+        + "\"RepulsiveForcePower\" -> -3})[[1]])}", //
+        "{List,List,List}");
+  }
+
+  /**
    * GraphPlot and TreePlot take the graph options - VertexLabels, and the legacy VertexLabeling -
    * as their own, and a Graph exports to SVG as its picture.
    */

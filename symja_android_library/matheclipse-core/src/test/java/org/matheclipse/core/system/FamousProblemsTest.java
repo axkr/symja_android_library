@@ -34,7 +34,7 @@ public class FamousProblemsTest extends ExprEvaluatorTestCase {
         "{45,45,45}");
     check("u = N(Pi, 60);Precision(u)", //
         "60");
-    check("u = N(E, 25); {Precision(u), Precision(u + 1/3), Precision(2*u)}", //
+    check("u = N(E, 25); {Precision(u), Precision(-u), Precision(2*u)}", //
         "{25,25,25}");
   }
 

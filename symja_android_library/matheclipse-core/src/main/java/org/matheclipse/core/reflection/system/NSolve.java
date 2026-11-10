@@ -173,10 +173,14 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * An equation with an interpolating function of the variable is inverted numerically on the
-   * domain of the function, the result is the first root there. Without a root there the outer
-   * polynomial pieces are extrapolated, and the nearest root to the left or else to the right of
-   * the domain is the result. It is reported as the use of an inverse function.
+   * An equation with an interpolating function of the variable is inverted numerically. Newton's
+   * method is started from the fixed {@link #INVERSE_START_VALUES} in turn, and the first root it
+   * converges to inside the domain of the function is the result - which isn't necessarily the
+   * first root there. If it converges to none of them, the result is the first root in the domain,
+   * else a root of the extrapolated outer polynomial pieces: the first one Newton's method
+   * converged to, or the nearest one to the left or else to the right of the domain. Without any
+   * root, an equation <code>f(x) == c</code> is solved by <code>InverseFunction(f, 1, 1)(c)</code>.
+   * It is reported as the use of an inverse function.
    *
    * @param ast the <code>Solve(...)</code> or <code>NSolve(...)</code> call
    * @return {@link F#NIL} if the call isn't of this kind or the function has no real domain
@@ -211,12 +215,86 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     UnaryNumerical function = new UnaryNumerical(f, (ISymbol) variable, Double.NaN, engine);
-    TreeSet<Double> roots = new TreeSet<Double>();
-    rootsInInterval(function, lower, upper, true, true, INTERVAL_SAMPLES, roots);
     Errors.printIfunMessage(ast.topHead());
-    double root = roots.isEmpty() ? rootBesideDomain(function, lower, upper, engine)
-        : roots.first().doubleValue();
-    return Double.isNaN(root) ? F.CEmptyList : F.list(F.list(F.Rule(variable, F.num(root))));
+    double root = Double.NaN;
+    double extrapolatedRoot = Double.NaN;
+    for (double start : INVERSE_START_VALUES) {
+      final double newtonRoot = newtonRoot(f, (ISymbol) variable, function, start, engine);
+      if (lower <= newtonRoot && newtonRoot <= upper) {
+        root = newtonRoot;
+        break;
+      }
+      if (Double.isNaN(extrapolatedRoot)) {
+        extrapolatedRoot = newtonRoot;
+      }
+    }
+    if (Double.isNaN(root)) {
+      TreeSet<Double> roots = new TreeSet<Double>();
+      rootsInInterval(function, lower, upper, true, true, INTERVAL_SAMPLES, roots);
+      if (!roots.isEmpty()) {
+        root = roots.first().doubleValue();
+      } else if (!Double.isNaN(extrapolatedRoot)) {
+        root = extrapolatedRoot;
+      } else {
+        root = rootBesideDomain(function, lower, upper, engine);
+      }
+    }
+    if (Double.isNaN(root)) {
+      // without a root the solution is left as the inverse function at the right-hand side
+      IExpr inverse = inverseAtRightHandSide(equation, variable, interpolation[0]);
+      return inverse.isPresent() ? F.list(F.list(F.Rule(variable, inverse))) : F.CEmptyList;
+    }
+    return F.list(F.list(F.Rule(variable, F.num(root))));
+  }
+
+  /**
+   * <code>InverseFunction(f, 1, 1)(c)</code> for an equation <code>f(x) == c</code> or
+   * <code>c == f(x)</code> whose other side <code>c</code> is free of <code>x</code>.
+   *
+   * @return {@link F#NIL} if the equation isn't of this form
+   */
+  private static IExpr inverseAtRightHandSide(IExpr equation, IExpr variable,
+      IExpr interpolation) {
+    IExpr call = F.unaryAST1(interpolation, variable);
+    IExpr value;
+    if (equation.first().equals(call) && equation.second().isFree(variable)) {
+      value = equation.second();
+    } else if (equation.second().equals(call) && equation.first().isFree(variable)) {
+      value = equation.first();
+    } else {
+      return F.NIL;
+    }
+    return F.unaryAST1(F.ternaryAST3(S.InverseFunction, interpolation, F.C1, F.C1), value);
+  }
+
+  /**
+   * The start values of Newton's method which inverts an interpolating function numerically, tried
+   * in this order. They are fixed numbers independent of the domain of the function.
+   */
+  private static final double[] INVERSE_START_VALUES = {0.365626, -0.523097};
+
+  /** The largest residual of a converged root, relative to the size of the function values. */
+  private static final double INVERSE_RESIDUAL_TOLERANCE = 1.0e-8;
+
+  /**
+   * The root which <code>FindRoot</code> converges to from <code>start</code>.
+   *
+   * @param f the function <code>lhs - rhs</code> of the equation
+   * @param function <code>f</code> as a numerical function of <code>variable</code>
+   * @return <code>NaN</code> if the iteration fails or stops at a point which isn't a root
+   */
+  private static double newtonRoot(IExpr f, ISymbol variable, UnaryNumerical function,
+      double start, EvalEngine engine) {
+    IExpr result = engine.evalQuiet(F.FindRoot(F.Equal(f, F.C0), F.list(variable, F.num(start))));
+    if (!result.isList1() || !result.first().isRuleAST() || !result.first().first().equals(variable)
+        || !result.first().second().isReal()) {
+      return Double.NaN;
+    }
+    final double root = result.first().second().evalf();
+    final double residual = function.value(root);
+    final double scale = 1.0 + Math.abs(function.value(start));
+    return Double.isFinite(root) && Math.abs(residual) <= INVERSE_RESIDUAL_TOLERANCE * scale ? root
+        : Double.NaN;
   }
 
   /** How many widths of the domain {@link #rootBesideDomain} looks beside the domain. */

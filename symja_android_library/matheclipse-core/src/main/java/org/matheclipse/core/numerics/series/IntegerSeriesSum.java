@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.RulesData;
 
 /**
  * The value of an infinite series <code>Sum(f(n), {n, a, Infinity})</code> whose terms are only
@@ -106,29 +107,51 @@ public final class IntegerSeriesSum {
    */
   public static boolean isIntegerOnly(IExpr function, ISymbol variable, long lower,
       EvalEngine engine) {
-    IExpr previous = null;
-    boolean constant = true;
-    for (long k : new long[] {lower + 5L, lower + 17L, lower + 40L}) {
-      IExpr value = numeric(function, variable, F.ZZ(k), engine);
-      if (!value.isReal()) {
-        return false;
-      }
-      if (previous != null && !previous.equals(value)) {
-        constant = false;
-      }
-      previous = value;
-      for (IExpr offset : new IExpr[] {F.C1D4, F.CN1D4, F.QQ(2, 5), F.QQ(-2, 5)}) {
-        IExpr near = numeric(function, variable, F.Plus(F.ZZ(k), offset), engine);
-        if (near.isNumber() && !near.equals(value)) {
-          return false;
+    // the probes between the integers run on copies of the user's definitions: a memoizing
+    // definition f(n_) := f(n) = ... mustn't keep the values it stores at those arguments
+    Map<ISymbol, RulesData> saved = new HashMap<>();
+    function.has(x -> {
+      if (x.isSymbol() && !x.isBuiltInSymbol() && !saved.containsKey(x)) {
+        RulesData rules = ((ISymbol) x).getRulesData();
+        if (rules != null) {
+          saved.put((ISymbol) x, rules);
+          ((ISymbol) x).setRulesData(rules.copy());
         }
       }
+      return false;
+    }, true);
+    try {
+      IExpr previous = null;
+      boolean constant = true;
+      for (long k : new long[] {lower + 5L, lower + 17L, lower + 40L}) {
+        IExpr value = numeric(function, variable, F.ZZ(k), engine);
+        if (!value.isReal()) {
+          return false;
+        }
+        if (previous != null && !previous.equals(value)) {
+          constant = false;
+        }
+        previous = value;
+        for (IExpr offset : new IExpr[] {F.C1D4, F.CN1D4, F.QQ(2, 5), F.QQ(-2, 5)}) {
+          IExpr near = numeric(function, variable, F.Plus(F.ZZ(k), offset), engine);
+          if (near.isNumber() && !near.equals(value)) {
+            return false;
+          }
+        }
+      }
+      return !constant;
+    } finally {
+      saved.forEach(ISymbol::setRulesData);
     }
-    return !constant;
   }
 
+  /**
+   * The numeric value of <code>function</code> at <code>x</code>; a definition which only ends at
+   * the integers, like a recursion down to <code>f(0)</code>, is given up after a second.
+   */
   private static IExpr numeric(IExpr function, ISymbol variable, IExpr x, EvalEngine engine) {
-    IExpr term = engine.evalQuiet(F.subst(function, v -> v.equals(variable) ? x : F.NIL));
+    IExpr term = engine.evalQuiet(F.TimeConstrained(
+        F.subst(function, v -> v.equals(variable) ? x : F.NIL), F.C1));
     return engine.evalQuiet(F.N(term));
   }
 

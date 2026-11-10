@@ -3460,6 +3460,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return withRenamedVariables.equals(originalAST) ? F.NIL : withRenamedVariables;
     }
     ast = SolveUtils.expandChainedEqual(ast);
+    if (ast.arg1().has(x -> x.isAST()
+        && x.head() instanceof org.matheclipse.core.expression.data.InterpolatingFunctionExpr
+        && !x.isFree(y -> y.isVariable(), false), false)) {
+      // an interpolating function is inexact data, which Reduce can't rationalize
+      return Errors.printMessage(S.Reduce, "inex", F.CEmptyList, engine);
+    }
     IExpr componentwise = ast.arg1().replaceAll(Reduce::componentEquations);
     if (componentwise.isPresent()) {
       // {a, b} == 0 and {a, b} == {c, d} are the equations of the components

@@ -16,6 +16,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.linalg.SpectralDeconvolution;
+import org.matheclipse.core.reflection.system.ListDeconvolve;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.image.algo.Colors;
 import org.matheclipse.image.algo.Pixels;
@@ -89,6 +93,7 @@ public class ImageFilterFunctions {
       S.DistanceTransform.setEvaluator(new DistanceTransform());
       S.Inpaint.setEvaluator(new Inpaint());
       S.ImageEffect.setEvaluator(new ImageEffect());
+      S.ImageDeconvolve.setEvaluator(new ImageDeconvolve());
     }
 
     private static void install(IBuiltInSymbol symbol, ImageFilter filter) {
@@ -294,6 +299,189 @@ public class ImageFilterFunctions {
         return null;
       }
       return FilterFunctions.laplacianFilter(channel, radius, false);
+    }
+  }
+
+  /**
+   * <code>ImageDeconvolve(image, kernel, options)</code> - the deconvolution of each channel by the
+   * spectral core of <code>ListDeconvolve</code> (see {@link SpectralDeconvolution}), with the
+   * options <code>Method</code> (as for <code>ListDeconvolve</code>) and <code>Padding</code>.
+   *
+   * <p>
+   * The input is prepared before:
+   * <ul>
+   * <li>an image narrower or lower than 3 pixels is padded by one pixel on every side with the
+   * <code>Padding</code> (<code>"Reversed"</code> by default, a constant gives that value) and the
+   * result is cropped back,
+   * <li>a kernel of one row or one column with at least two elements is made even in every
+   * dimension: the dimension of one element gets a zero element before it, a dimension of an odd
+   * number of elements loses its last one (the core then treats the even dimensions as for
+   * <code>ListDeconvolve</code>, so <code>{{a, b, c}}</code> acts as <code>{{0, 0, 0}, {a, b, 0},
+   * {0, 0, 0}}</code>),
+   * <li>an image of at least 3 x 3 pixels with a kernel of an even dimension is padded by one pixel
+   * on every side too; there an even number of kernel rows is centred on the first of the two middle
+   * rows (<code>{{a, b}, {c, d}}</code> acts as <code>{{0, 0, 0}, {a, b, 0}, {c, d, 0}}</code>),
+   * while the columns are centred as for <code>ListDeconvolve</code>.
+   * </ul>
+   * An image of an integer type keeps its type, its samples are rounded on the scale of the type.
+   */
+  private static class ImageDeconvolve extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+      if (options.isInvalidPosition(2)) {
+        return options.printNonopt(ast, 2, engine);
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      IExpr kernelExpr = ast.arg2();
+      double[][] kernel;
+      if (kernelExpr instanceof ImageExpr) {
+        double[][][] kernelChannels = channels((ImageExpr) kernelExpr, engine);
+        if (kernelChannels == null) {
+          return F.NIL;
+        }
+        kernel = kernelChannels[0];
+      } else {
+        int depth = 0;
+        for (IExpr part = kernelExpr; part.isList() && part.argSize() > 0; part = part.first()) {
+          depth++;
+        }
+        kernel = depth == 2 ? ListDeconvolve.realArray(kernelExpr) : null;
+        if (kernel == null) {
+          if (depth == 3) {
+            // a kernel for the channels of a 3D image is not supported
+            return F.NIL;
+          }
+          // Expecting an Image object or an array of real numbers of rank 2 or 3 instead of `1`.
+          return Errors.printMessage(S.ImageDeconvolve, "klinv", F.list(kernelExpr), engine);
+        }
+      }
+      String continuation = "Reversed";
+      double constant = Double.NaN;
+      IExpr padding = options.getOption(S.Padding);
+      if (padding.isString()) {
+        continuation = padding.toString();
+        if (!ImageGeometryFunctions.CONTINUATIONS.contains(continuation)) {
+          return F.NIL;
+        }
+      } else if (padding.isPresent() && padding != S.Automatic) {
+        constant = padding.evalfNaN();
+        if (Double.isNaN(constant)) {
+          return F.NIL;
+        }
+      }
+      ListDeconvolve.Spec spec =
+          ListDeconvolve.methodSpec(options.getOption(S.Method), S.ImageDeconvolve, engine);
+      if (spec == null) {
+        return F.NIL;
+      }
+      double[][][] channels = channels(image, engine);
+      if (channels == null) {
+        return F.NIL;
+      }
+      final String type = image.sampleType();
+      // an integer type keeps its type, every other image gives single precision samples
+      final boolean singlePrecision = !Raster.isIntegerType(type);
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      final boolean small = Math.min(height, width) < 3;
+      double[][] prepared = imageKernel(kernel);
+      final boolean evenRows = prepared.length % 2 == 0;
+      final boolean even = evenRows || prepared[0].length % 2 == 0;
+      final int margin = small || even ? 1 : 0;
+      if (!small && evenRows) {
+        // a zero row before the kernel centres it on its first middle row
+        double[][] shifted = new double[prepared.length + 1][];
+        shifted[0] = new double[prepared[0].length];
+        System.arraycopy(prepared, 0, shifted, 1, prepared.length);
+        prepared = shifted;
+      }
+      if (prepared.length > height + 2 * margin || prepared[0].length > width + 2 * margin) {
+        return F.NIL;
+      }
+      for (int c = 0; c < channels.length; c++) {
+        double[][] padded = new double[height + 2 * margin][width + 2 * margin];
+        for (int y = 0; y < padded.length; y++) {
+          int row = y - margin;
+          boolean rowInside = row >= 0 && row < height;
+          int sourceRow = ImageGeometryFunctions.continued(row, height, continuation);
+          for (int x = 0; x < padded[0].length; x++) {
+            int column = x - margin;
+            if (!Double.isNaN(constant) && (!rowInside || column < 0 || column >= width)) {
+              padded[y][x] = constant;
+            } else {
+              padded[y][x] = channels[c][sourceRow][ImageGeometryFunctions.continued(column,
+                  width, continuation)];
+            }
+          }
+        }
+        double[][] result =
+            SpectralDeconvolution.deconvolve(prepared, padded, spec.method, spec.lambda, false);
+        for (int y = 0; y < height; y++) {
+          System.arraycopy(result[y + margin], margin, channels[c][y], 0, width);
+        }
+      }
+      if (singlePrecision) {
+        roundToSingle(channels);
+        return toImage(channels, image.getOptions(), Pixels.REAL32);
+      }
+      return toImage(channels, image.getOptions(), type);
+    }
+
+    /** Round the samples to the single precision a <code>"Real32"</code> image holds. */
+    private static void roundToSingle(double[][][] channels) {
+      for (double[][] channel : channels) {
+        for (double[] row : channel) {
+          for (int x = 0; x < row.length; x++) {
+            row[x] = (float) row[x];
+          }
+        }
+      }
+    }
+
+    /** The kernel prepared for the spectral core, see the class comment. */
+    private static double[][] imageKernel(double[][] kernel) {
+      final int rows = kernel.length;
+      final int columns = kernel[0].length;
+      if ((rows == 1) == (columns == 1)) {
+        // a matrix, or a single element
+        return kernel;
+      }
+      // every dimension becomes even: a single element gets a zero before it, an odd number of
+      // elements loses its last one
+      final int evenRows = rows == 1 ? 2 : rows & ~1;
+      final int evenColumns = columns == 1 ? 2 : columns & ~1;
+      final int rowShift = rows == 1 ? 1 : 0;
+      final int columnShift = columns == 1 ? 1 : 0;
+      double[][] result = new double[evenRows][evenColumns];
+      for (int r = rowShift; r < evenRows; r++) {
+        for (int c = columnShift; c < evenColumns; c++) {
+          result[r][c] = kernel[r - rowShift][c - columnShift];
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, F.list(F.Rule(S.Method, S.Automatic), //
+          F.Rule(S.Padding, F.stringx("Reversed"))));
+      newSymbol.putMessage(IPatternMatcher.SET, "klinv", F.stringx(
+          "Expecting an Image object or an array of real numbers of rank 2 or 3 instead of `1`."));
     }
   }
 

@@ -13,6 +13,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -1795,24 +1796,43 @@ public class DateTimeFunctions {
   private static final class DateString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // DateString(..., TimeZone -> tz): the date is expressed in the zone tz before formatting
+      IExpr zone = F.NIL;
+      if (ast.argSize() > 0 && ast.last().isRuleAST() && ast.last().first() == S.TimeZone) {
+        zone = ast.last().second();
+        ast = ast.most();
+      }
+      if (ast.argSize() > 2) {
+        // only the TimeZone option may follow the date and the format
+        return Errors.printArgMessage(ast, ARGS_0_2, engine);
+      }
       if (ast.isAST0()) {
-        return F.stringx(formatDate(LocalDateTime.now(), null, DEFAULT_DATE_TIME_FORMAT));
+        LocalDateTime now = now(zone);
+        return now == null ? F.NIL
+            : F.stringx(formatDate(now, null, DEFAULT_DATE_TIME_FORMAT));
       }
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         if (arg1.isString()) {
           // a single string argument is a format specification for the current date
-          return F.stringx(formatDate(LocalDateTime.now(), null, new String[] {arg1.toString()}));
+          LocalDateTime now = now(zone);
+          return now == null ? F.NIL
+              : F.stringx(formatDate(now, null, new String[] {arg1.toString()}));
         }
         if (arg1.isList() && !isFormattedStringPair(arg1)) {
-          DateSpec spec = dateSpec(arg1);
+          if (arg1.argSize() > 0 && ((IAST) arg1).forAll(x -> x.isString())) {
+            // a list of format elements for the current date
+            LocalDateTime now = now(zone);
+            return now == null ? F.NIL : F.stringx(formatDate(now, null, (IAST) arg1));
+          }
+          DateSpec spec = inZone(dateSpec(arg1), arg1, zone, engine);
           if (spec == null) {
             return F.NIL;
           }
           return F.stringx(formatDate(spec.instant, spec.dateObject, DEFAULT_DATE_TIME_FORMAT));
         }
-        DateSpec spec = dateSpec(arg1);
+        DateSpec spec = inZone(dateSpec(arg1), arg1, zone, engine);
         if (spec == null) {
           return F.NIL;
         }
@@ -1821,7 +1841,7 @@ public class DateTimeFunctions {
         return F.stringx(formatDate(spec.instant, spec.dateObject, format));
       }
       // two arguments: date and format
-      DateSpec spec = dateSpec(arg1);
+      DateSpec spec = inZone(dateSpec(arg1), arg1, zone, engine);
       if (spec == null) {
         return F.NIL;
       }
@@ -1833,6 +1853,55 @@ public class DateTimeFunctions {
         return F.stringx(formatDate(spec.instant, spec.dateObject, (IAST) arg2));
       }
       return F.NIL;
+    }
+
+    /**
+     * The current date on the clock of <code>zone</code>, or of this computer if <code>zone</code>
+     * is {@link F#NIL}.
+     *
+     * @return <code>null</code> if <code>zone</code> names no time zone
+     */
+    private static LocalDateTime now(IExpr zone) {
+      if (zone.isNIL()) {
+        return LocalDateTime.now();
+      }
+      LocalDateTime utc = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+      double targetHours = zoneHours(zone, utc, false);
+      return Double.isNaN(targetHours) ? null : plusSecondsOrNull(utc, targetHours * 3600.0);
+    }
+
+    /**
+     * The date of <code>spec</code> on the clock of <code>zone</code>. The date is read in its own
+     * time zone if it is a date object which has one, otherwise in <code>$TimeZone</code>.
+     *
+     * @param zone the value of the <code>TimeZone</code> option, {@link F#NIL} keeps the date
+     * @return <code>null</code> if <code>spec</code> is <code>null</code> or <code>zone</code>
+     *         names no time zone
+     */
+    private static DateSpec inZone(DateSpec spec, IExpr date, IExpr zone, EvalEngine engine) {
+      if (spec == null || zone.isNIL()) {
+        return spec;
+      }
+      IExpr ownZone = date instanceof DateObjectExpr ? spec.dateObject.getTimeZone() : S.None;
+      double sourceHours =
+          ownZone.isReal() || ownZone.isString() ? zoneHours(ownZone, spec.instant, true)
+              : timeZoneHours(engine);
+      if (Double.isNaN(sourceHours)) {
+        return null;
+      }
+      LocalDateTime utc = plusSecondsOrNull(spec.instant, -sourceHours * 3600.0);
+      if (utc == null) {
+        return null;
+      }
+      double targetHours = zoneHours(zone, utc, false);
+      LocalDateTime local =
+          Double.isNaN(targetHours) ? null : plusSecondsOrNull(utc, targetHours * 3600.0);
+      if (local == null) {
+        return null;
+      }
+      DateObjectExpr dateObject = spec.dateObject
+          .withDateTime(spec.dateObject.getGranularity().truncate(local)).withTimeZone(zone);
+      return new DateSpec(dateObject, local, spec.listSize, spec.real);
     }
 
     private static boolean isFormattedStringPair(IExpr expr) {
@@ -1850,7 +1919,7 @@ public class DateTimeFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_2;
+      return ARGS_0_3;
     }
   }
 

@@ -1683,6 +1683,19 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyhedronData() {
+    // the cube and the tetrahedron have listed faces, counterclockwise seen from outside
+    check("PolyhedronData(\"Cube\", \"FaceIndices\")", //
+        "{{8,4,2,6},{8,6,5,7},{8,7,3,4},{4,3,1,2},{1,3,7,5},{2,1,5,6}}");
+    check("PolyhedronData(\"Cube\", \"VertexCoordinates\")[[{1,2,8}]]", //
+        "{{-1/2,-1/2,-1/2},{-1/2,-1/2,1/2},{1/2,1/2,1/2}}");
+    check("PolyhedronData(\"Tetrahedron\", \"FaceIndices\")", //
+        "{{2,3,4},{3,2,1},{4,1,2},{1,4,3}}");
+    check("v=N(PolyhedronData(\"Tetrahedron\", \"VertexCoordinates\"));"
+        + "Chop({Total(v), EuclideanDistance(v[[2]], v[[4]]), v[[1,3]] + 3*v[[3,3]]})", //
+        "{{0,0,0},1.0,0}");
+    // the faces of the cube's mesh are numbered by the corners they first use
+    check("MeshCells(DiscretizeGraphics(PolyhedronData(\"Cube\")), 2)[[{1, 5}]]", //
+        "{Polygon({1,2,3,4}),Polygon({8,7,6,5})}");
     check("PolyhedronData(\"TruncatedIcosahedron\", \"FaceCount\")", //
         "32");
     // 12 pentagons and 20 hexagons - the faces are derived from the icosahedron the solid is cut
@@ -1932,6 +1945,65 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Circle({0,0},2)");
     check("RegionBoundary(Ball({0,0,0},2))", //
         "Sphere({0,0,0},2)");
+  }
+
+  @Test
+  public void testRegionBoundaryOfPrimitives() {
+    // the default center and radius are written out
+    check("RegionBoundary(Ball())", //
+        "Sphere({0,0,0},1)");
+    check("RegionBoundary(Ball({1,-2,3}))", //
+        "Sphere({1,-2,3},1)");
+    // a sector isn't bounded by a circle alone
+    check("RegionBoundary(Disk({0,0},1,{0,Pi/2}))", //
+        "RegionBoundary(Disk({0,0},1,{0,Pi/2}))");
+    // counterclockwise from the lower corner, closed
+    check("RegionBoundary(Rectangle({-1,2},{3,5}))", //
+        "Line({{-1,2},{3,2},{3,5},{-1,5},{-1,2}})");
+    check("RegionBoundary(Rectangle({4,7}))", //
+        "Line({{4,7},{5,7},{5,8},{4,8},{4,7}})");
+    check("RegionBoundary(Point({{3,1},{-2,4}}))", //
+        "Point({{3,1},{-2,4}})");
+    // one closed line per part
+    check("RegionBoundary(Polygon({{{1,1},{4,1},{1,3}},{{5,5},{6,5},{6,7},{5,7}}}))", //
+        "Line({{{1,1},{4,1},{1,3},{1,1}},{{5,5},{6,5},{6,7},{5,7},{5,5}}})");
+    // six faces, the bottom one first
+    check("RegionBoundary(Cuboid({-1,0,2},{1,3,4}))", //
+        "Polygon({{{1,0,2},{1,3,2},{-1,3,2},{-1,0,2}},{{-1,0,2},{-1,3,2},{-1,3,4},{-1,0,4}},{{-\n"
+            + "1,3,2},{1,3,2},{1,3,4},{-1,3,4}},{{1,3,2},{1,0,2},{1,0,4},{1,3,4}},{{1,0,2},{-1,\n"
+            + "0,2},{-1,0,4},{1,0,4}},{{-1,0,4},{-1,3,4},{1,3,4},{1,0,4}}})");
+    // a closed curve or surface is its own boundary
+    check("RegionBoundary /@ {Circle({1,2}), Sphere({0,0,1},3), Disk({1,1})}", //
+        "{Circle({1,2},1),Sphere({0,0,1},3),Circle({1,1},1)}");
+    // a line is its own boundary, as a line of polylines
+    check("RegionBoundary /@ {Line({{0,1},{2,3},{4,1}}), Line({{{0,0},{1,0}},{{2,2},{3,3}}})}", //
+        "{Line({{{0,1},{2,3},{4,1}}}),Line({{{0,0},{1,0}},{{2,2},{3,3}}})}");
+    check("RegionBoundary(Parallelogram({1,1},{{2,0},{1,3}}))", //
+        "Line({{1,1},{3,1},{4,4},{2,4},{1,1}})");
+    check("Area(RegionBoundary(Cuboid({-1,0,2},{1,3,4})))", //
+        "32");
+  }
+
+  @Test
+  public void testDiscretizeGraphics() {
+    // corners shared by two polygons are one mesh point, numbered in the order of first use
+    check(
+        "DiscretizeGraphics(Graphics({Red,Polygon({{2,1},{4,1},{3,3}}),Polygon({{4,1},{6,2},{3,3}})}))", //
+        "MeshRegion({{2.0,1.0},{4.0,1.0},{3.0,3.0},{6.0,2.0}},{Polygon({{1,2,3},{2,4,3}})})");
+    check("m=DiscretizeGraphics(Graphics3D(GraphicsComplex({{0,0,0},{2,0,0},{0,2,0},{0,0,2}},"
+        + "Polygon({{4,2,1},{1,3,4},{2,3,1},{2,4,3}}))));"
+        + "{MeshCoordinates(m),MeshCells(m,2),First(MeshPrimitives(m,2))}", //
+        "{{{0.0,0.0,2.0},{2.0,0.0,0.0},{0.0,0.0,0.0},{0.0,2.0,0.0}},{Polygon({1,2,3}),Polygon({\n"
+            + "3,4,1}),Polygon({2,4,3}),Polygon({2,1,4})},Polygon({{0.0,0.0,2.0},{2.0,0.0,0.0},{0.0,0.0,0.0}})}");
+    // a single region primitive is discretized as that region
+    check("Head(DiscretizeGraphics(Graphics({Blue,Rectangle({0,0},{2,1})})))", //
+        "MeshRegion");
+    // a line beside polygons isn't part of their mesh
+    check("DiscretizeGraphics({Line({{0,0},{1,1}}),Polygon({{0,0},{1,0},{0,1}})})", //
+        "DiscretizeGraphics({Line({{0,0},{1,1}}),Polygon({{0,0},{1,0},{0,1}})})");
+    // a solid isn't dropped as if it were a directive
+    check("DiscretizeGraphics({Cuboid({0,0,0}),Polygon({{0,0,2},{1,0,2},{0,1,2}})})", //
+        "DiscretizeGraphics({Cuboid({0,0,0}),Polygon({{0,0,2},{1,0,2},{0,1,2}})})");
   }
 
   /**

@@ -97,8 +97,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
     IExpr result = numericEval(ast, engine);
     if (result.isPresent() && !arg1.isFree(N::isDefiniteSum, true)
         && !result.isFree(N::isNumericalSumHead, true)) {
-      // the definite sums, products and integrals which stayed unevaluated are numerical ones
-      IExpr numerical = numericalSums(ast, engine);
+      // the definite sums, products and integrals which stayed unevaluated are numerical ones;
+      // the rest of the result is numeric already and isn't evaluated again
+      IExpr numerical = numericalSums(ast, result, engine);
       if (numerical.isPresent()) {
         return numerical;
       }
@@ -144,13 +145,14 @@ public final class N extends AbstractCoreFunctionEvaluator {
   }
 
   /**
-   * <code>N(expr)</code> with the definite sums, products and integrals of <code>expr</code>
-   * replaced by <code>NSum, NProduct, NIntegrate</code>, with the working precision of
-   * <code>N(expr, p)</code>. A numerical sum or product without a value stays as it is.
+   * The numeric value <code>result</code> of <code>N(expr)</code> with its unevaluated definite
+   * sums, products and integrals replaced by <code>NSum, NProduct, NIntegrate</code>, with the
+   * working precision of <code>N(expr, p)</code>. A numerical sum or product without a value stays
+   * as it is.
    *
    * @return {@link F#NIL} if the result isn't numeric or a numerical sum or product
    */
-  private IExpr numericalSums(final IAST ast, EvalEngine engine) {
+  private IExpr numericalSums(final IAST ast, final IExpr numericResult, EvalEngine engine) {
     IExpr spec = ast.isAST2() ? engine.evaluate(ast.arg2()) : F.ZZ(ParserConfig.MACHINE_PRECISION);
     if (spec.isList() && spec.argSize() == 2) {
       // N(expr, {precision, accuracy})
@@ -159,7 +161,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
     final IExpr precision = spec;
     final boolean machine = !ast.isAST2() || !precision.isReal()
         || precision.evalf() <= ParserConfig.MACHINE_PRECISION;
-    IExpr replaced = ast.arg1().replaceAll(x -> {
+    IExpr replaced = numericResult.replaceAll(x -> {
       if (!isDefiniteSum(x)) {
         return F.NIL;
       }
