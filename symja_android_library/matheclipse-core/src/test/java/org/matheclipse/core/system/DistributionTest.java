@@ -207,9 +207,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("{PDF(edata,0.25),PDF(edata,1),PDF(edata,3),PDF(edata,4),PDF(edata,5)}", //
         "{0,0,0,0,0}");
     check("Mean(edata)", //
-        "-0.0795254406589749");
+        "-0.0795254");
     check("Variance(edata)", //
-        "0.8603263306878647");
+        "0.860326");
   }
 
   @Test

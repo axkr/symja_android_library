@@ -1545,6 +1545,10 @@ public class StatisticsDerivedDistributions {
             sum.append(probabilities.get(i));
           }
         }
+        if (sum.argSize() == values.argSize()) {
+          // at or above the largest value: the sum of inexact probabilities may miss 1 by an ulp
+          return F.C1;
+        }
         return sum;
       }
       IAST[] h = histogram(dist);
