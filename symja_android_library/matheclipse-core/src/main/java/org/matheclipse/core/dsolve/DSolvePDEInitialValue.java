@@ -248,7 +248,7 @@ final class DSolvePDEInitialValue {
   }
 
   /** A value the solution is required to take where one of the variables is held fixed. */
-  private static final class Prescribed {
+  static final class Prescribed {
     final int orderX;
     final int orderY;
     /** Whether the variable left free is the first one. */

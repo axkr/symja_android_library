@@ -1,7 +1,9 @@
 package org.matheclipse.core.dsolve;
 
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -19,6 +21,13 @@ final class DSolvePDE {
 
   /** The symbol standing for u, its first derivatives and its second derivatives. */
   private static final int U = 0, P = 1, Q = 2, PP = 3, PQ = 4, QQ = 5;
+
+  /**
+   * The time budget of the families of functions which contain the data. They are tried before
+   * the method which fits the conditions to a general solution, and a family which doesn't close
+   * must not use up the time of that method.
+   */
+  private static final long FAMILIES_MILLIS = 20000;
 
   /**
    * Solves a partial differential equation in two independent variables.
@@ -61,7 +70,14 @@ final class DSolvePDE {
     // by fitting the conditions to a general solution afterwards.
     boolean conditionsUsed = false;
     if (ctx.conditions.argSize() > 0) {
-      body = DSolvePDEInitialValue.solve(lhs, uApplied, x, y, ctx);
+      // a family of functions which contains the data, checked against equation and conditions
+      final IExpr residual = lhs;
+      body = TimeLimits.call(engine, () -> DSolvePDEFamilies.solve(residual, uApplied, x, y, ctx),
+          MachineProfile.millis(FAMILIES_MILLIS), () -> F.NIL);
+      if (body.isNIL()) {
+        engine.setConstantCounter(counter);
+        body = DSolvePDEInitialValue.solve(lhs, uApplied, x, y, ctx);
+      }
       conditionsUsed = body.isPresent();
       if (body.isNIL()) {
         engine.setConstantCounter(counter);
@@ -96,6 +112,10 @@ final class DSolvePDE {
           engine.setConstantCounter(counter);
           body = pdeSingleDerivative(lhs, uApplied, y, x, ctx);
         }
+      }
+      if (body.isNIL() && order == 2 && ctx.conditions.argSize() == 0) {
+        engine.setConstantCounter(counter);
+        body = DSolvePDEFamilies.liouville(lhs, uApplied, x, y, ctx);
       }
     }
     if (body.isNIL()) {

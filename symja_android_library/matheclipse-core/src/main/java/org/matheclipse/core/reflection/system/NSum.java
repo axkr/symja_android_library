@@ -65,6 +65,17 @@ public class NSum extends Sum {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    // the sums evaluate their terms with N(expr, digits), which sets the significant figures of
+    // the output: 1/3.0 was printed with 26 digits after NSum(n^(-n), {n, 1, Infinity})
+    final int significantFigures = engine.getSignificantFigures();
+    try {
+      return numericSum(ast, engine);
+    } finally {
+      engine.setSignificantFigures(significantFigures);
+    }
+  }
+
+  private IExpr numericSum(IAST ast, EvalEngine engine) {
 
     // NSum(f, {i, ...}, {j, ...}, ..., options)
     int iterators = 1;

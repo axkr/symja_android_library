@@ -792,6 +792,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               return ordinary.isPresent() && ordinary.isFree(S.Integrate) ? ordinary : F.NIL;
             }
           }
+          IExpr sophomore = sophomoresDream(arg1, xList, engine);
+          if (sophomore.isPresent()) {
+            return sophomore;
+          }
           // Integrate(f(x), {x,a,b})
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());
           IExpr temp = engine.evaluate(copy);
@@ -2792,6 +2796,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // Sin(x)==0) are about a search the caller never sees
         IExpr solved = engine
             .evalQuiet(F.SolveDistinct(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+        if (!solved.isList() || (solved.isEmptyList() && !isPolynomialEquation(eq, x))) {
+          // E^x == 2 isn't solved together with the bounds; the points inside are picked below.
+          // A polynomial equation is, and an empty list says that it has no root between them
+          solved = engine.evalQuiet(F.Solve(eq, x, S.Reals));
+        }
+        if (solved.isList() && !solved.isFree(S.C, true)) {
+          solved = membersOfFamilies((IAST) solved, x, lower, upper, engine);
+        }
         if (solved.isList()) {
           singularities.appendArgs((IAST) solved);
         }
@@ -2916,6 +2928,111 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     return realForm(difference, integrand, engine);
+  }
+
+  /** Whether <code>eq</code> is an equation of two polynomials in <code>x</code>. */
+  private static boolean isPolynomialEquation(IExpr eq, IExpr x) {
+    IAST variables = F.list(x);
+    return eq.isEqual() && eq.first().isPolynomial(variables)
+        && eq.second().isPolynomial(variables);
+  }
+
+  /** The largest index of a member of a family which {@link #membersOfFamilies} picks. */
+  private static final double MAX_FAMILY_INDEX = 1.0e6;
+
+  /**
+   * The solutions of an equation with each family <code>a + p*C(1)</code> replaced by members of
+   * it. For a real period <code>p</code> these are the two members next to a numeric bound on
+   * the side of the interval, as <code>5*Pi/4</code> of <code>Pi/4 + Pi*C(1)</code> for the lower
+   * bound 2: the integral is split at a point inside, and each part is searched again. Every
+   * family contributes its member at <code>C(1) == 0</code> as well, which is the only real one of
+   * a family with a complex period.
+   */
+  private static IAST membersOfFamilies(IAST solved, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    IExpr constant = F.unaryAST1(S.C, F.$b());
+    IASTAppendable result = F.ListAlloc(solved.argSize() + 2);
+    double from = realValue(lower, engine);
+    double to = realValue(upper, engine);
+    for (IExpr solution : solved) {
+      if (solution.isFree(S.C, true)) {
+        result.append(solution);
+        continue;
+      }
+      IExpr atZero = engine.evaluate(F.ReplaceAll(solution, F.Rule(constant, F.C0)));
+      result.append(atZero);
+      IExpr atOne = engine.evaluate(F.ReplaceAll(solution, F.Rule(constant, F.C1)));
+      double a = realValue(valueOf(atZero, x), engine);
+      double period = realValue(valueOf(atOne, x), engine) - a;
+      if (Double.isNaN(period) || period == 0.0 || (Double.isNaN(from) && Double.isNaN(to))) {
+        continue;
+      }
+      // the member above the lower bound, or below the upper one, and its neighbour inside: the
+      // first of them may be the bound itself
+      double index = Double.isNaN(from) ? Math.ceil((to - a) / Math.abs(period)) - 1.0
+          : Math.floor((from - a) / Math.abs(period)) + 1.0;
+      if (Math.abs(index) > MAX_FAMILY_INDEX) {
+        continue;
+      }
+      long step = Double.isNaN(from) ? -1L : 1L;
+      long sign = period > 0.0 ? 1L : -1L;
+      for (int i = 0; i < 2; i++) {
+        long k = sign * ((long) index + i * step);
+        if (k != 0L) {
+          result.append(engine.evaluate(F.ReplaceAll(solution, F.Rule(constant, F.ZZ(k)))));
+        }
+      }
+    }
+    return result;
+  }
+
+  /** The value which the rules of <code>solution</code> give <code>x</code>, or {@link F#NIL}. */
+  private static IExpr valueOf(IExpr solution, IExpr x) {
+    if (solution.isList()) {
+      for (IExpr rule : (IAST) solution) {
+        if (rule.isRule() && rule.first().equals(x)) {
+          return rule.second();
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /** The finite real value of <code>expr</code>, or NaN. */
+  private static double realValue(IExpr expr, EvalEngine engine) {
+    if (expr.isNIL()) {
+      return Double.NaN;
+    }
+    IExpr value = engine.evalQuiet(F.N(expr));
+    if (!value.isReal()) {
+      return Double.NaN;
+    }
+    double d = value.evalf();
+    return Double.isInfinite(d) ? Double.NaN : d;
+  }
+
+  /**
+   * <code>Integrate(x^(c*x), {x, 0, 1})</code> as the series
+   * <code>Sum((-c)^(n-1)/n^n, {n, 1, Infinity})</code>: <code>E^(c*x*Log(x))</code> expanded,
+   * with <code>Integrate(x^k*Log(x)^k, {x, 0, 1}) == (-1)^k*k!/(k+1)^(k+1)</code>.
+   *
+   * @return {@link F#NIL} if the integral isn't of this kind
+   */
+  private static IExpr sophomoresDream(IExpr integrand, IAST xList, EvalEngine engine) {
+    IExpr x = xList.arg1();
+    if (!x.isSymbol() || !xList.arg2().isZero() || !xList.arg3().isOne()
+        || !integrand.isPower() || !integrand.base().equals(x)) {
+      return F.NIL;
+    }
+    IExpr c = engine.evaluate(F.Divide(integrand.exponent(), x));
+    if (!c.isFree(x) || c.isZero() || !c.isNumericFunction(true)) {
+      return F.NIL;
+    }
+    // an index of its own: a value of the symbol n would be put into the summand
+    ISymbol n = F.Dummy("n");
+    IExpr term = engine.evaluate(F.Times(F.Power(F.Negate(c), F.Subtract(n, F.C1)),
+        F.Power(n, F.Negate(n))));
+    return F.Sum(term, F.List(n, F.C1, F.CInfinity));
   }
 
   /** The relative positions of the sample points of {@link #differentiatesBackInside}. */
@@ -3123,6 +3240,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     return d <= 1e-10 * (1.0 + scale) ? expanded : value;
   }
 
+  /** The time budget of the limit of one term in {@link #limitTermwise}. */
+  private static final long TERMWISE_LIMIT_MILLIS = 2000;
+
   /**
    * The limit of a sum with polylogarithms term by term: the terms with a finite limit apart,
    * the others together. <code>x^2*Log(1-E^(2*I*x))/2 - x^2*Log(Sin(x))/2</code> has a limit at
@@ -3139,7 +3259,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IASTAppendable finite = F.PlusAlloc(function.argSize());
     IASTAppendable rest = F.PlusAlloc(function.argSize());
     for (IExpr term : (IAST) function) {
-      IExpr value = engine.evalQuiet(F.Limit(term, F.Rule(x, point), direction));
+      // a term which diverges on its own can take Limit long to decide, and only a finite one is
+      // used here: the rest goes into the limit of the sum
+      IExpr value = IntegrateTimeBudget.runWithin(
+          () -> engine.evalQuiet(F.Limit(term, F.Rule(x, point), direction)),
+          MachineProfile.millis(TERMWISE_LIMIT_MILLIS));
       if (value.isSpecialsFree() && value.isFreeAST(S.Limit) && value.isFree(x)
           && !value.isInterval() && !value.isIntervalData()) {
         finite.append(value);

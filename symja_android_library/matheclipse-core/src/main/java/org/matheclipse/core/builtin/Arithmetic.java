@@ -8779,7 +8779,10 @@ public final class Arithmetic {
           return F.Power(base1, exponent1.plus(exponent2));
         }
         if (exponent1.equals(exponent2)) {
-          if (!exponent1.isIntegerResult()) {
+          // a positive constant like Pi is split off a power again, so Sqrt(Pi)*Sqrt(nu) with
+          // nu>0 merged to Sqrt(nu*Pi) and back forever
+          if (!exponent1.isIntegerResult()
+              && base1.isNumericFunction(true) == base2.isNumericFunction(true)) {
             IExpr temp = base1.plus(base2);
             if (temp.isNonNegativeResult()) {
               // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/

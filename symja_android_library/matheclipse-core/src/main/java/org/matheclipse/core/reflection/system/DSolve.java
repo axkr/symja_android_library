@@ -209,13 +209,17 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
       // Intercept Partial Differential Equations (PDEs)
       if (arg3.isList()) {
         int savedCounter = engine.getConstantCounter();
+        // one unknown in a list, {u(x,t)}, is the unknown u(x,t). Its equations are a system
+        // if they aren't one equation with conditions
+        final IExpr unknown = arg2.isList() && arg2.argSize() == 1 ? arg2.first() : arg2;
+        final boolean system = arg2.isList() && arg1.isList() && arg1.argSize() > 1;
         try {
           IExpr equation = arg1;
           IAST pdeConditions = F.CEmptyList;
           if (arg1.isList()) {
             if (arg1.argSize() == 1) {
               equation = arg1.arg1();
-            } else if (arg2.isList()) {
+            } else if (unknown.isList()) {
               // System of PDEs
               IExpr pdeResult = solver.solveSystemPDE(arg1, (IAST) arg2, (IAST) arg3);
               if (pdeResult.isPresent()) {
@@ -225,17 +229,23 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
             } else {
               // One equation together with the conditions it has to satisfy. The equation is the
               // one which differentiates the unknown; the others prescribe values.
-              IExpr head = arg2.isAST() ? arg2.head() : arg2;
+              IExpr head = unknown.isAST() ? unknown.head() : unknown;
               IAST pdeVars = (IAST) arg3;
+              if (pdeVars.argSize() > 2 && unknown.isAST()) {
+                IExpr many = DSolveEngine.solveMany((IAST) arg1, unknown, pdeVars, engine);
+                if (many.isPresent()) {
+                  return F.list(F.list(F.Rule(unknown, many)));
+                }
+              }
               if (pdeVars.argSize() != 2) {
-                return F.NIL;
+                return system ? solver.solveSystemPDE(arg1, (IAST) arg2, pdeVars) : F.NIL;
               }
               // A condition may prescribe a derivative as well as a value, so it is not the
               // derivatives which tell it from the equation but where it is asked for: a condition
               // holds one of the variables fixed, the equation holds neither.
-              IExpr pdeApplied = arg2.isAST() //
-                  ? arg2
-                  : F.binaryAST2(arg2, pdeVars.arg1(), pdeVars.arg2());
+              IExpr pdeApplied = unknown.isAST() //
+                  ? unknown
+                  : F.binaryAST2(unknown, pdeVars.arg1(), pdeVars.arg2());
               IASTAppendable conditions = F.ListAlloc(arg1.argSize());
               IExpr found = F.NIL;
               for (int i = 1; i <= arg1.argSize(); i++) {
@@ -244,7 +254,7 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
                     .prescribesValue(candidate, pdeApplied, pdeVars.arg1(), pdeVars.arg2(),
                         engine)) {
                   if (found.isPresent()) {
-                    return F.NIL;
+                    return system ? solver.solveSystemPDE(arg1, (IAST) arg2, pdeVars) : F.NIL;
                   }
                   found = candidate;
                 } else {
@@ -252,17 +262,17 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
                 }
               }
               if (found.isNIL()) {
-                return F.NIL;
+                return system ? solver.solveSystemPDE(arg1, (IAST) arg2, pdeVars) : F.NIL;
               }
               equation = found;
               pdeConditions = conditions;
             }
           }
-          IExpr pdeResult = solver.solvePDE(equation, arg2, (IAST) arg3, pdeConditions);
+          IExpr pdeResult = solver.solvePDE(equation, unknown, (IAST) arg3, pdeConditions);
           if (pdeResult.isPresent()) {
             return pdeResult;
           }
-          return F.NIL;
+          return system ? solver.solveSystemPDE(arg1, (IAST) arg2, (IAST) arg3) : F.NIL;
         } finally {
           engine.setConstantCounter(savedCounter);
         }

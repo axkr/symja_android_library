@@ -99,6 +99,15 @@ public final class DSolveEngine {
     return DSolveODE.MAX_DERIVATIVE_ORDER;
   }
 
+  /**
+   * Solves an evolution equation in more than two variables with its data at one time.
+   *
+   * @return the solution, or {@link F#NIL}
+   */
+  public static IExpr solveMany(IAST equations, IExpr uApplied, IAST vars, EvalEngine engine) {
+    return DSolvePDEFamilies.solveMany(equations, uApplied, vars, engine);
+  }
+
   /** Whether <code>expr</code> contains a derivative of <code>head</code>. */
   public static boolean differentiates(IExpr expr, IExpr head) {
     return DSolvePDE.differentiates(expr, head);

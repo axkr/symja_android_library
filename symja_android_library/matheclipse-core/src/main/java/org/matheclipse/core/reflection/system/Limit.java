@@ -1896,9 +1896,23 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * @return {@link F#NIL} if there is no such PolyLog
    */
   private static IExpr invertedPolyLog(IExpr expr, IExpr x, EvalEngine engine) {
+    final boolean[] exponentialArgument = new boolean[1];
     IExpr result = F.subst(expr, y -> {
       if (y.isAST(S.PolyLog, 3) && y.first().isNumEqualInteger(F.C2) && !y.second().isFree(x)) {
         IExpr u = y.second();
+        IExpr exponential = exponentialGrowth(u, x, engine);
+        if (exponential.isPresent()) {
+          // u == c*E^a with a real linear a which tends to Infinity: Log(-u) == Log(-c) + a
+          IExpr c = engine.evaluate(F.Divide(u, F.Exp(exponential)));
+          IExpr logMinusC =
+              engine.evaluate(F.Plus(F.Log(F.Abs(c)), F.Times(F.CI, F.Arg(F.Negate(c)))));
+          IExpr log = F.Plus(logMinusC, exponential);
+          exponentialArgument[0] = true;
+          // the square multiplied out: its x^2 meets the x^2 of another summand
+          IExpr square = engine.evaluate(F.Expand(F.Times(F.CN1D2, F.Sqr(log))));
+          return F.Plus(F.Times(F.CN1D6, F.Sqr(S.Pi)), square,
+              F.Negate(F.PolyLog(F.C2, F.Power(u, F.CN1))));
+        }
         IExpr k = engine.evaluate(F.Exponent(u, x));
         if (!k.isRational() || !k.isPositive()) {
           return F.NIL;
@@ -1917,7 +1931,61 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
       return F.NIL;
     });
-    return result.equals(expr) ? F.NIL : engine.evaluate(result);
+    if (result.equals(expr)) {
+      return F.NIL;
+    }
+    IExpr evaluated = engine.evaluate(result);
+    if (!exponentialArgument[0]) {
+      return evaluated;
+    }
+    // the summands with the PolyLog as sums, and the others as they are:
+    // -I/Sqrt(3)*(-Pi^2/6-(c+x)^2/2-PolyLog(2,1/u)) as a product went through Simplify, which
+    // evaluates the PolyLog of complex arguments numerically, in 12 seconds
+    if (!evaluated.isPlus()) {
+      return multipliedOutPolyLog(evaluated, engine);
+    }
+    IASTAppendable sum = F.PlusAlloc(evaluated.argSize());
+    for (IExpr summand : (IAST) evaluated) {
+      sum.append(multipliedOutPolyLog(summand, engine));
+    }
+    return engine.evaluate(sum);
+  }
+
+  /** <code>term</code> multiplied out if it contains a PolyLog and isn't large. */
+  private static IExpr multipliedOutPolyLog(IExpr term, EvalEngine engine) {
+    return term.isFree(S.PolyLog, true) || term.leafCount() >= 400 ? term
+        : engine.evaluate(F.Expand(term));
+  }
+
+  /**
+   * The exponent <code>a</code> of <code>u == c*E^a</code> with a constant <code>c != 0</code> and
+   * <code>a == m*x + b</code>, <code>m &gt; 0</code> and <code>b</code> real, or {@link F#NIL}.
+   */
+  private static IExpr exponentialGrowth(IExpr u, IExpr x, EvalEngine engine) {
+    IExpr a = F.NIL;
+    if (u.isExp()) {
+      a = u.exponent();
+    } else if (u.isTimes()) {
+      for (IExpr factor : (IAST) u) {
+        if (factor.isExp() && !factor.exponent().isFree(x)) {
+          if (a.isPresent()) {
+            return F.NIL;
+          }
+          a = factor.exponent();
+        } else if (!factor.isFree(x)) {
+          return F.NIL;
+        }
+      }
+    }
+    if (a.isNIL() || !a.isPolynomial(F.list(x))) {
+      return F.NIL;
+    }
+    IExpr m = engine.evaluate(F.D(a, x));
+    IExpr b = engine.evaluate(F.subst(a, x, F.C0));
+    if (!m.isFree(x) || !m.isPositiveResult() || !b.isRealResult()) {
+      return F.NIL;
+    }
+    return a;
   }
 
   /** A sum with more than one summand which is infinite at the limit point. */
@@ -3122,10 +3190,49 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
       }
+      IExpr dominant = polynomialPartLimit(plusAST, symbol, data);
+      if (dominant.isPresent()) {
+        return hit(Strategy.PLUS_POLYNOMIAL, dominant);
+      }
     }
     IExpr mapLimit = data.mapLimit(plusAST);
     if (mapLimit.isPresent() && !mapLimit.isIndeterminate()) {
       return hit(Strategy.PLUS_MAP, mapLimit);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The summands of a sum which are polynomials in <code>x</code> taken together, when the other
+   * summands have a finite limit: <code>-I*Pi*x - x*Log(3) - E^(-x)</code> goes in the direction
+   * of <code>-I*Pi - Log(3)</code>, while the summands one by one give
+   * <code>-I*Infinity - Infinity</code>.
+   *
+   * @return {@link F#NIL} if the polynomial part has no infinite limit or the rest isn't bounded
+   */
+  private static IExpr polynomialPartLimit(IAST plusAST, ISymbol x, LimitData data) {
+    IASTAppendable polynomial = F.PlusAlloc(plusAST.argSize());
+    IASTAppendable rest = F.PlusAlloc(plusAST.argSize());
+    IAST variables = F.list(x);
+    for (IExpr summand : plusAST) {
+      if (!summand.isFree(x) && summand.isPolynomial(variables)) {
+        polynomial.append(summand);
+      } else {
+        rest.append(summand);
+      }
+    }
+    if (polynomial.argSize() < 2 || rest.argSize() == 0) {
+      return F.NIL;
+    }
+    IExpr polynomialLimit = evalLimitQuiet(polynomial, data);
+    if (!polynomialLimit.isDirectedInfinity() || polynomialLimit.isComplexInfinity()) {
+      return F.NIL;
+    }
+    // a finite value or a bounded interval like Interval({-1,1}) of Sin(x)
+    IExpr restLimit = evalLimitQuiet(rest.oneIdentity0(), data);
+    if (restLimit.isPresent() && restLimit.isFree(x) && restLimit.isFree(S.Limit, true)
+        && restLimit.isFree(y -> y.isDirectedInfinity() || y.isIndeterminate(), true)) {
+      return polynomialLimit;
     }
     return F.NIL;
   }
