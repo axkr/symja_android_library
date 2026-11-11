@@ -2399,8 +2399,10 @@ public class HypergeometricFunctions {
     private static final double MAX_ONES_TWOS_ABS_Z = 10000.0;
 
     /**
-     * Cancel the upper and lower parameters which are equal over one common denominator, such as
-     * <code>(2+2*v)/2</code> and <code>1+v</code>, and expand what remains.
+     * Rewrite <code>HypergeometricPFQ({a1,a2},{},z)</code> with <code>HypergeometricU</code>, see
+     * {@link #hypergeometric2F0(IExpr, IExpr, IExpr)}. Otherwise cancel the upper and lower
+     * parameters which are equal over one common denominator, such as <code>(2+2*v)/2</code> and
+     * <code>1+v</code>, and expand what remains.
      */
     @Override
     public IExpr functionExpand(IAST ast, EvalEngine engine) {
@@ -2409,6 +2411,9 @@ public class HypergeometricFunctions {
       }
       IAST a = (IAST) ast.arg1();
       IAST b = (IAST) ast.arg2();
+      if (a.isList2() && b.isEmpty()) {
+        return hypergeometric2F0(a.arg1(), a.arg2(), ast.arg3());
+      }
       if (a.isEmpty() || b.isEmpty()) {
         return F.NIL;
       }
@@ -2546,6 +2551,17 @@ public class HypergeometricFunctions {
           // there are no rules for Hypergeometric0F1 - use direct call
           return hyperGeometric0F1Symbolic(b.first(), z, engine);
         }
+      } else if (aVector.argSize() == 2 && bVector.argSize() == 0) {
+        IExpr a1 = aVector.arg1();
+        IExpr a2 = aVector.arg2();
+        if (a1.isNumber() && a2.isNumber() && z.isNumber()
+            && (z.isInexactNumber() || a.isInexactVector() > 0 || engine.isNumericMode())) {
+          // the series of 2F0 diverges for every z!=0, unless it ends
+          IExpr value = engine.evaluate(hypergeometric2F0(a1, a2, z));
+          if (value.isNumber()) {
+            return value;
+          }
+        }
       }
       // numeric mode isn't set here
 
@@ -2563,6 +2579,24 @@ public class HypergeometricFunctions {
         return seriesHypergeometricPFQ(a, b, z, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>HypergeometricPFQ({a1,a2},{},z)</code> as
+     * <code>(-1/z)^a1*HypergeometricU(a1,1+a1-a2,-1/z)</code>.
+     *
+     * <p>
+     * Unless it ends, the series of <sub>2</sub>F<sub>0</sub> diverges for every <code>z!=0</code>;
+     * it is the asymptotic expansion of this function, which is how mpmath's <code>hyp2f0</code>
+     * defines <sub>2</sub>F<sub>0</sub>.
+     *
+     * @see <a href="https://mpmath.org/doc/current/functions/hypergeometric.html#hyp2f0">mpmath -
+     *      hyp2f0</a>
+     */
+    private static IExpr hypergeometric2F0(IExpr a1, IExpr a2, IExpr z) {
+      IExpr minusInverseZ = F.Negate(F.Power(z, F.CN1));
+      return F.Times(F.Power(minusInverseZ, a1),
+          F.HypergeometricU(a1, F.Plus(F.C1, a1, F.Negate(a2)), minusInverseZ));
     }
 
     /**
