@@ -1083,17 +1083,28 @@ public class Num implements INum {
       try {
         Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
             ((INumber) z).apcomplexValue());
-        return F.complexReduced(
+        return expIntegralEValue(z,
             new Complex(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         Errors.rethrowsInterruptException(e);
       }
-      return F.complexReduced(GammaJS.expIntegralE(complexValue(), ((INumber) z).complexValue()));
+      return expIntegralEValue(z,
+          GammaJS.expIntegralE(complexValue(), ((INumber) z).complexValue()));
       // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
       // ((INumber) z).apcomplexValue());
       // return ComplexNum.machine(expIntegralE);
     }
     return INum.super.expIntegralE(z);
+  }
+
+  /**
+   * The machine number for the value of <code>ExpIntegralE(n, z)</code>. Only for a real
+   * <code>z</code> is a negligible imaginary part dropped: at a complex <code>z</code> the
+   * imaginary part can be as small as the whole value, as in
+   * <code>ExpIntegralE(1, 33.5-7.5*I) = 1.1*10^-17+I*7.9*10^-17</code>.
+   */
+  private static IInexactNumber expIntegralEValue(IExpr z, Complex value) {
+    return z.isReal() ? F.complexReduced(value) : F.complexNum(value);
   }
 
   @Override

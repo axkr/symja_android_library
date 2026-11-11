@@ -537,6 +537,35 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "ComplexInfinity");
   }
 
+  /**
+   * <code>HypergeometricPFQ({a1,a2},{},z)</code>, whose series diverges unless it ends, from
+   * <code>HypergeometricU</code>; the values are the examples of mpmath's <code>hyp2f0</code>.
+   */
+  @Test
+  public void testHypergeometricPFQ2F0() {
+    checkNumeric("HypergeometricPFQ({1,1},{},-1.0)", //
+        "0.5963473623231942");
+    checkNumeric("HypergeometricPFQ({1,1},{},1.0)", //
+        "0.6971748832350662+I*1.1557273497909217");
+    checkNumeric("HypergeometricPFQ({-0.75,1-I},{},4*I)", //
+        "-0.3579987031082732+I*(-3.0529517839221425)");
+    checkNumeric("HypergeometricPFQ({1.5,0.5},{},0.05)", //
+        "1.0416663764790692+I*8.345849136839051E-8");
+    check("N(HypergeometricPFQ({2/3,5/4},{},-100), 25)", //
+        "0.07095851870980052763312791");
+    check("N(HypergeometricPFQ({2/3,5/4},{},100), 25)", //
+        "-0.03254379032170590665041131+I*0.07269254613282301012735797");
+    check("HypergeometricPFQ({1,1},{},{-1.0,-2.0})", //
+        "{0.596347,0.461455}");
+    // a polynomial
+    check("HypergeometricPFQ({-6,-6},{},2.0)", //
+        "291793.0");
+    check("HypergeometricPFQ({a,b},{},z)", //
+        "HypergeometricPFQ({a,b},{},z)");
+    check("FunctionExpand(HypergeometricPFQ({a,b},{},z))", //
+        "(-1/z)^a*HypergeometricU(a,1+a-b,-1/z)");
+  }
+
   /** Machine precision for larger arguments, where the double summation loses digits; mpmath. */
   @Test
   public void testHypergeometric1F1And0F1MachinePrecision() {
