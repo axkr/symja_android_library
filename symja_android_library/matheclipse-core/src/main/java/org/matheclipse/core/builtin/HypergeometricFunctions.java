@@ -2515,8 +2515,16 @@ public class HypergeometricFunctions {
         bVector = F.CEmptyList;
       }
 
-      if (aVector.argSize() > 0 && aVector.arg1().isMathematicalIntegerNegative()) {
-        int n = aVector.arg1().toIntDefault();
+      final boolean divergent = aVector.isPresent() && bVector.isPresent()
+          && aVector.argSize() > bVector.argSize() + 1;
+      if (divergent && aVector.exists(x -> x.isZero())) {
+        return F.C1;
+      }
+      if (aVector.argSize() > 0) {
+        // The sorted first parameter decides. A series with p>q+1 has no value unless it ends, so
+        // there every upper parameter is looked at: {-7/2,-2} ends with the term of z^2.
+        int n = divergent ? lastTermExponent(aVector) : (aVector.arg1().isMathematicalIntegerNegative()
+            ? aVector.arg1().toIntDefault() : 0);
         if (F.isPresent(n) && n < 0) {
           if (z.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
             // the terms of the polynomial alternate: summed with the digits which they cancel
@@ -2551,17 +2559,43 @@ public class HypergeometricFunctions {
           // there are no rules for Hypergeometric0F1 - use direct call
           return hyperGeometric0F1Symbolic(b.first(), z, engine);
         }
-      } else if (aVector.argSize() == 2 && bVector.argSize() == 0) {
-        IExpr a1 = aVector.arg1();
-        IExpr a2 = aVector.arg2();
-        if (a1.isNumber() && a2.isNumber() && z.isNumber()
-            && (z.isInexactNumber() || a.isInexactVector() > 0 || engine.isNumericMode())) {
-          // the series of 2F0 diverges for every z!=0, unless it ends
-          IExpr value = engine.evaluate(hypergeometric2F0(a1, a2, z));
-          if (value.isNumber()) {
-            return value;
-          }
+      }
+      if (divergent && z.isNumber() && aVector.forAll(x -> x.isNumber())
+          && bVector.forAll(x -> x.isNumber()) && (z.isInexactNumber() || a.isInexactVector() > 0
+              || b.isInexactVector() > 0 || engine.isNumericMode())) {
+        // the series diverges for every z!=0: the value is the function which it is the asymptotic
+        // expansion of
+        if (z.im().isZero() && z.re().isPositive()) {
+          // on the cut z>0 the function has no value
+          return F.CComplexInfinity;
         }
+        if (bVector.exists(x -> x.isZero() || x.isMathematicalIntegerNegative())) {
+          return F.CComplexInfinity;
+        }
+        if (aVector.argSize() == 2 && bVector.argSize() == 0) {
+          IExpr a1 = aVector.arg1();
+          IExpr a2 = aVector.arg2();
+          IExpr value;
+          if (z.re().isPositive() && z.im().isNegative()
+              && engine.evaluate(F.Power(z, F.CN1)).im().isZero()) {
+            // below the cut, with an imaginary part which 1/z rounds away: the conjugate of the
+            // value on the cut for the conjugated parameters
+            value = engine.evaluate(hypergeometric2F0(a1.conjugate(), a2.conjugate(), z.re()));
+            if (value.isNumber()) {
+              value = value.conjugate();
+            }
+          } else {
+            value = engine.evaluate(hypergeometric2F0(a1, a2, z));
+          }
+          // no number for a parameter out of the range of HypergeometricU: the series has none
+          // either
+          return value.isNumber() ? value : F.NIL;
+        }
+        IExpr value = divergentSeries(aVector, bVector, z, engine);
+        if (value.isNumber()) {
+          return value;
+        }
+        // otherwise the sum up to the smallest term, where it reaches the precision
       }
       // numeric mode isn't set here
 
@@ -2597,6 +2631,55 @@ public class HypergeometricFunctions {
       IExpr minusInverseZ = F.Negate(F.Power(z, F.CN1));
       return F.Times(F.Power(minusInverseZ, a1),
           F.HypergeometricU(a1, F.Plus(F.C1, a1, F.Negate(a2)), minusInverseZ));
+    }
+
+    /**
+     * <code>HypergeometricPFQ({a1,...,ap},{b1,...,bq},z)</code> for <code>p&gt;q+1</code> as
+     *
+     * <pre>
+     * Gamma(b1)*...*Gamma(bq)/(Gamma(a1)*...*Gamma(ap))*MeijerG({{1-a1,...,1-ap},{}},{{0},{1-b1,...,1-bq}},-z)
+     * </pre>
+     *
+     * <p>
+     * which the divergent series is the asymptotic expansion of. The cut <code>z&gt;0</code> is
+     * left to the caller.
+     *
+     * @return a number, or an expression which isn't one if there is no value
+     */
+    private static IExpr divergentSeries(IAST aVector, IAST bVector, IExpr z, EvalEngine engine) {
+      IASTAppendable upper = F.ListAlloc(aVector.argSize());
+      IASTAppendable lower = F.ListAlloc(bVector.argSize());
+      IASTAppendable factor = F.TimesAlloc(aVector.argSize() + bVector.argSize() + 1);
+      for (IExpr ai : aVector) {
+        upper.append(F.Subtract(F.C1, ai));
+        factor.append(F.Power(F.Gamma(ai), F.CN1));
+      }
+      for (IExpr bi : bVector) {
+        lower.append(F.Subtract(F.C1, bi));
+        factor.append(F.Gamma(bi));
+      }
+      factor.append(
+          F.MeijerG(F.list(upper, F.CEmptyList), F.list(F.list(F.C0), lower), z.negate()));
+      return engine.evaluate(factor);
+    }
+
+    /**
+     * The exponent <code>-n</code> of the last term of the series: the non-positive integer upper
+     * parameter which is next to <code>0</code>.
+     *
+     * @return <code>0</code> if the series doesn't end
+     */
+    private static int lastTermExponent(IAST aVector) {
+      int last = 0;
+      for (IExpr ai : aVector) {
+        if (ai.isMathematicalIntegerNegative()) {
+          int n = ai.toIntDefault();
+          if (F.isPresent(n) && n < 0 && (last == 0 || n > last)) {
+            last = n;
+          }
+        }
+      }
+      return last;
     }
 
     /**
@@ -2891,6 +2974,13 @@ public class HypergeometricFunctions {
         }
       }
       if (a.equals(b)) {
+        if (z.isInexactNumber() && a.isNumber() && !engine.isArbitraryMode()) {
+          // E^z overflows and Gamma(1-a,z) underflows for a large machine number z
+          IExpr res = a.hypergeometricU(b, z);
+          if (res.isNumber()) {
+            return res;
+          }
+        }
         // b==a ==> E^z*Gamma(1-a,z)
         return F.Times(F.Exp(z), F.Gamma(F.Subtract(F.C1, a), z));
       }
