@@ -107,6 +107,30 @@ public class BioSequenceFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  public void testBioSequenceBackTranslateListMaxItems() {
+    // Leu has six codons: LL has 36 back-translations
+    check("Length(BioSequenceBackTranslateList(BioSequence(\"Peptide\", \"LL\")))", //
+        "36");
+    // the option directly after the peptide, and after a translation table
+    check("BioSequenceBackTranslateList(\"LL\", MaxItems -> 10)", //
+        "BioSequenceBackTranslateList(LL,MaxItems->10)");
+    check("BioSequenceBackTranslateList(\"LL\", 1, MaxItems -> 10)", //
+        "BioSequenceBackTranslateList(LL,1,MaxItems->10)");
+    check("Length(BioSequenceBackTranslateList(\"LL\", MaxItems -> 36))", //
+        "36");
+  }
+
+  @Test
+  public void testMaxItemsUnlimited() {
+    check("BioSequenceInstances(BioSequence(\"DNA\", \"AR\"), MaxItems -> Infinity)", //
+        "{BioSequence[Type: DNA, Content: AA (2 letters)],BioSequence[Type: DNA, Content: AG (2 letters)]}");
+    check("BioSequenceInstances(BioSequence(\"DNA\", \"AR\"), MaxItems -> All)", //
+        "{BioSequence[Type: DNA, Content: AA (2 letters)],BioSequence[Type: DNA, Content: AG (2 letters)]}");
+    check("BioSequenceBackTranslateList(BioSequence(\"Peptide\", \"MW\"), MaxItems -> Infinity)", //
+        "{BioSequence[Type: RNA, Content: AUGUGG (6 letters)]}");
+  }
+
+  @Test
   public void testBioSequenceModifyCircular() {
     check("BioSequenceModify(\"MakeCircular\", BioSequence(\"DNA\", \"ACGT\"))", //
         "BioSequence[Type: CircularDNA, Content: ACGT (4 letters)]");

@@ -283,14 +283,16 @@ public class BioSequenceFunctions {
         return Errors.printMessage(ast.topHead(), "biopept", F.List(arg1), engine);
       }
       IUPACTable table = GeneticCodeTables.standard();
+      int lastPositionalArg = 1;
       if (ast.argSize() >= 2 && !ast.arg2().isRule()) {
         table = GeneticCodeTables.resolve(ast.arg2());
         if (table == null) {
           return Errors.printMessage(ast.topHead(), "biogtt", F.List(ast.arg2()), engine);
         }
+        lastPositionalArg = 2;
       }
 
-      int maxItems = maxItemsOption(ast, 2, engine);
+      int maxItems = maxItemsOption(ast, lastPositionalArg, engine);
       if (maxItems < 0) {
         return F.NIL;
       }
@@ -570,7 +572,7 @@ public class BioSequenceFunctions {
     if (!option.isPresent()) {
       return DEFAULT_MAX_ITEMS;
     }
-    if (option == S.Infinity || option == S.All) {
+    if (option.isInfinity() || option == S.All) {
       return Integer.MAX_VALUE;
     }
     int value = option.toIntDefault();
