@@ -305,9 +305,9 @@ public class SemanticImportTestCase extends AbstractTestCase {
     check("ds(Counts, \"Sales\")", //
         "        |     |\r\n" + //
             "---------------\r\n" + //
-            " 60000  |  1  |\r\n" + //
             " 12200  |  1  |\r\n" + //
-            "  5500  |  1  |");
+            "  5500  |  1  |\r\n" + //
+            " 60000  |  1  |");
 
     check("ds(Total, \"Sales\")", //
         "77700");
@@ -1769,7 +1769,7 @@ public class SemanticImportTestCase extends AbstractTestCase {
     check("Tally(col)", //
         "{{6378,1},{3396,1}}");
     check("Counts(col)", //
-        "<|3396->1,6378->1|>");
+        "<|6378->1,3396->1|>");
     check("Head(DeleteDuplicates(col))", //
         "Dataset");
     check("Normal(DeleteDuplicates(col)) // InputForm", //
