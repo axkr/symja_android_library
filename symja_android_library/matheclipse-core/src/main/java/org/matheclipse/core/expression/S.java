@@ -4335,6 +4335,35 @@ public class S {
   public final static IBuiltInSymbol CityData = S.initFinalSymbol("CityData", ID.CityData);
 
   /**
+   * ClassifierFunction(x) - TODO describe `ClassifierFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClassifierFunction.md">ClassifierFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ClassifierFunction =
+      S.initFinalSymbol("ClassifierFunction", ID.ClassifierFunction);
+
+  /**
+   * ClassifierMeasurements(x) - TODO describe `ClassifierMeasurements`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClassifierMeasurements.md">ClassifierMeasurements
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ClassifierMeasurements =
+      S.initFinalSymbol("ClassifierMeasurements", ID.ClassifierMeasurements);
+
+  /**
+   * Classify(x) - TODO describe `Classify`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Classify.md">Classify
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Classify = S.initFinalSymbol("Classify", ID.Classify);
+
+  /**
    * Clear(symbol1, symbol2,...) - clears all values of the given symbols.
    * 
    * @see <a href=
@@ -4489,6 +4518,15 @@ public class S {
       S.initFinalSymbol("ClusteringComponents", ID.ClusteringComponents);
 
   public final static IBuiltInSymbol CMYKColor = S.initFinalSymbol("CMYKColor", ID.CMYKColor);
+
+  /**
+   * Coarse(x) - TODO describe `Coarse`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Coarse.md">Coarse
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Coarse = S.initFinalSymbol("Coarse", ID.Coarse);
 
   /**
    * CodeConcreteParse(x) - TODO describe `CodeConcreteParse`.
