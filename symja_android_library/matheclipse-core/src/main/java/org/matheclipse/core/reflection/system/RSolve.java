@@ -375,6 +375,10 @@ public class RSolve extends AbstractFunctionEvaluator {
     final IExpr equations = SolveUtils.toEquationList(ast.arg1());
 
     if (equations.isList() && ast.arg2().isList()) {
+      if (ast.arg2().argSize() == 1) {
+        // RSolve(eqns, {y(n)}, n) is RSolve(eqns, y(n), n)
+        return evaluate(ast.setAtCopy(2, ast.arg2().first()), engine);
+      }
       return solveSystem((IAST) equations, (IAST) ast.arg2(), ast.arg3(), engine);
     }
 
@@ -737,7 +741,7 @@ public class RSolve extends AbstractFunctionEvaluator {
       if (ySol.isPresent()) {
         IExpr coeff = engine.evaluate(
             F.Times(F.Factorial(nVar), F.SeriesCoefficient(ySol, F.List(xDummy, F.C0, nVar))));
-        if (!coeff.isAST(S.SeriesCoefficient)) {
+        if (coeff.isFree(S.SeriesCoefficient, true)) {
           // Allow `evaluate` wrapper to apply boundary conditions globally instead of duplicating
           // here
           return coeff;
@@ -821,7 +825,7 @@ public class RSolve extends AbstractFunctionEvaluator {
         IExpr xSC = F.Dummy("xSC");
         IExpr gValX = engine.evaluate(F.subst(gVal, zDummy, F.Power(xSC, F.CN1)));
         IExpr sc = engine.evaluate(F.SeriesCoefficient(gValX, F.List(xSC, F.C0, nVar)));
-        if (sc.isPresent() && !sc.isAST(S.SeriesCoefficient)) {
+        if (sc.isPresent() && sc.isFree(S.SeriesCoefficient, true)) {
           a_n = sc;
         } else {
           return F.NIL;
@@ -1490,6 +1494,12 @@ public class RSolve extends AbstractFunctionEvaluator {
     }
 
     IExpr algebraicSystem = engine.evaluate(F.subst(evalZEqns, subRules));
+    // the Z transform makes an algebraic system of a system with constant coefficients only: a
+    // coefficient n*y(n) leaves a derivative of the transform
+    if (!algebraicSystem.isFree(
+        x -> x.isAST(S.ZTransform) || x.isAST(S.D) || x.isDerivative() != null, true)) {
+      return F.NIL;
+    }
     IExpr gSols = engine.evaluate(F.SolveDistinct(algebraicSystem, dummyVars));
 
     if (gSols.isList() && ((IAST) gSols).argSize() > 0) {

@@ -208,13 +208,18 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
   public void testFittedModelUnknownProperty() {
     check("lm=LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x)", //
         "FittedModel[0.15+1.94*x]");
+    check("lm(\"Function\")", //
+        "0.15+1.94*#1&");
+    // in a list of properties as well
+    check("lm({\"Function\",\"BestFit\"})", //
+        "{0.15+1.94*#1&,0.15+1.94*x}");
     check("lm(\"BadProperty\")", //
         "FittedModel[0.15+1.94*x][BadProperty]");
     check("lm(\"Properties\")", //
         "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,"
             + "ANOVATableFStatistics,ANOVATableMeanSquares,ANOVATablePValues,ANOVATableSumsOfSquares,"
             + "BasisFunctions,BestFit,BestFitParameters,CookDistances,CovarianceMatrix,DesignMatrix,"
-            + "EstimatedVariance,FitResiduals,HatDiagonal,IndependentVariables,MeanPredictionBands,"
+            + "EstimatedVariance,FitResiduals,Function,HatDiagonal,IndependentVariables,MeanPredictionBands,"
             + "ParameterConfidenceIntervals,ParameterConfidenceRegion,ParameterErrors,"
             + "ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,"
             + "PredictedResponse,Response,RSquared,SinglePredictionBands}");
@@ -244,7 +249,7 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("nlm(2.5)", //
         "5.0");
     check("nlm(\"Properties\")", //
-        "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,ANOVATableMeanSquares,ANOVATableSumsOfSquares,BestFit,BestFitParameters,CovarianceMatrix,EstimatedVariance,FitResiduals,MeanPredictionBands,ParameterConfidenceIntervals,ParameterConfidenceRegion,ParameterErrors,ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,PredictedResponse,RSquared,SinglePredictionBands}");
+        "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,ANOVATableMeanSquares,ANOVATableSumsOfSquares,BestFit,BestFitParameters,CovarianceMatrix,EstimatedVariance,FitResiduals,Function,MeanPredictionBands,ParameterConfidenceIntervals,ParameterConfidenceRegion,ParameterErrors,ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,PredictedResponse,RSquared,SinglePredictionBands}");
     // an exact fit
     check("nlm2=NonlinearModelFit({{1,2},{2,5},{3,10}}, a*x^2+b, {a,b}, x)", //
         "FittedModel[1.0+x^2]");
@@ -253,5 +258,58 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     // a model that is not a list of numbers, or has no variable, is left alone
     check("NonlinearModelFit(foo, a*x+b, {a,b}, x)", //
         "NonlinearModelFit(foo,b+a*x,{a,b},x)");
+  }
+
+  /**
+   * A best fit which holds a pure function of its own is a function of the variables as named
+   * parameters: slots in their place would be captured by the inner function.
+   */
+  @Test
+  public void testFittedModelFunctionWithInnerPureFunction() {
+    check("qq(f_,u_?NumericQ):=f(u);" //
+        + "lmq=LinearModelFit({{1,1.25},{2,4.0},{3,8.75}}, {qq(#^2&,x)}, x);" //
+        + "lmq(\"Function\")", //
+        "Function({x},0.285714+0.938776*qq(#1^2&,x))");
+    check("Apply(lmq(\"Function\"),{2})-lmq(2)", //
+        "0.0");
+  }
+
+  /** The rows {u, v, z} of a model with two independent variables. */
+  @Test
+  public void testNonlinearModelFitTwoVariables() {
+    check("nm2=NonlinearModelFit({{0,1,1.2},{1,0,2.9},{1,1,4.1},{2,1,7.2},{0,2,1.9}}, c*u+d*v, {c,d}, {u,v});" //
+        + "Round(10^6*({c,d}/.nm2(\"BestFitParameters\")))", //
+        "{3057576,1018182}");
+    // the model at the point u=3, v=2
+    check("Round(10^6*nm2(3,2))", //
+        "11209091");
+    check("Round(10^6*nm2(\"ParameterErrors\"))", //
+        "{75919,70287}");
+    check("Round(10^6*nm2(\"RSquared\"))", //
+        "996337");
+    check("Round(10^6*nm2(\"FitResiduals\"))", //
+        "{181818,-157576,24242,66667,-136364}");
+    // one argument where the model takes two
+    // the best fit as a pure function of the variables in their order
+    check("nm2(\"Function\")", //
+        "3.05758*#1+1.01818*#2&");
+    check("Apply(nm2(\"Function\"),{3,2})-nm2(3,2)", //
+        "0.0");
+    check("nm2(1)", //
+        "FittedModel[3.05758*u+1.01818*v][1]");
+  }
+
+  /**
+   * A model given as a one element list, which is only defined for a numeric parameter: its
+   * derivative by the parameter is a central difference.
+   */
+  @Test
+  public void testNonlinearModelFitNumericModel() {
+    check("hh(c_?NumericQ,u_,v_):=c*u*v+v;" //
+        + "nm3=NonlinearModelFit({{0,1,1.2},{1,0,0.1},{1,1,4.1},{2,1,7.2},{1,2,9.5}}, {hh(c,u,v)}, {{c,2}}, {u,v});" //
+        + "Round(10^6*({c/.nm3(\"BestFitParameters\"), nm3(1,3)}))", //
+        "{3388889,13166667}");
+    check("Round(10^6*nm3(\"ParameterErrors\"))", //
+        "{165738}");
   }
 }

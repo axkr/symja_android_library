@@ -6,13 +6,10 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.ColorDataGradients;
+import org.matheclipse.core.graphics.ColorDataLists;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.tensor.img.ColorDataGradients;
-import org.matheclipse.core.tensor.img.ColorDataIndexed;
-import org.matheclipse.core.tensor.img.ColorDataLists;
-import org.matheclipse.core.tensor.img.ColorFormat;
 
 public class ColorDataFunction extends AbstractFunctionEvaluator {
 
@@ -100,6 +97,9 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     if (type.equals("Named")) {
+      if (name.equals(AtomColors.NAME)) {
+        return AtomColors.color(param);
+      }
       return name.equals("WebSafe") ? ColorData.webSafe(param) : F.NIL;
     }
     if (param.isString()) {
@@ -120,8 +120,7 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
         }
         if (type.equals("Indexed")) {
           try {
-            ColorDataLists listDetails = ColorDataLists.valueOf(name);
-            return F.List(F.C1, F.ZZ(listDetails.cyclic().length()));
+            return ColorDataLists.valueOf(name).range();
           } catch (Exception e) {
           }
         }
@@ -180,22 +179,10 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
 
   private IExpr evaluateIndexed(String name, IExpr param) {
     try {
-      ColorDataLists listDetails = ColorDataLists.valueOf(name);
-      ColorDataIndexed colorData = listDetails.cyclic();
-
-      if (param instanceof INumber) {
-        int index = param.toIntDefault(-1);
-        RGBColor rgb = colorData.getRGBColor(index - 1);
-        IAST res = ColorFormat.toVector(rgb);
-
-        if (res.isAST() && res.size() == 5) {
-          return F.RGBColor(F.Divide(res.getAt(1), F.num(255)), F.Divide(res.getAt(2), F.num(255)),
-              F.Divide(res.getAt(3), F.num(255)), F.Divide(res.getAt(4), F.num(255)));
-        }
-      }
-    } catch (Exception e) {
+      return ColorDataLists.valueOf(name).color(param, EvalEngine.get());
+    } catch (IllegalArgumentException unknownScheme) {
+      return F.NIL;
     }
-    return F.NIL;
   }
 
 }

@@ -126,17 +126,30 @@ public class ManipulateFunction {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
-      IExpr result = settings(expr, engine);
-      return result == expr ? expr : engine.evaluate(result);
+      IExpr result = settings(expr);
+      if (result == expr) {
+        return expr;
+      }
+      // a Dynamic(x) is replaced by x itself, which is evaluated with the rest - unless it stands
+      // in a held expression: Setting(Hold(Dynamic(a))) is Hold(a). A value which is a control
+      // again gives its setting in the next round.
+      for (int i = 0; i < 16; i++) {
+        expr = engine.evaluate(result);
+        result = settings(expr);
+        if (result == expr) {
+          break;
+        }
+      }
+      return expr;
     }
 
-    private static IExpr settings(IExpr expr, EvalEngine engine) {
+    private static IExpr settings(IExpr expr) {
       return expr.replaceAll(e -> {
         if (e.isAST() && e.argSize() >= 1 && CONTROLS.contains(e.head())) {
-          return settings(e.first(), engine);
+          return settings(e.first());
         }
         if (e.isAST(S.Dynamic) && e.argSize() >= 1) {
-          return settings(engine.evaluate(e.first()), engine);
+          return settings(e.first());
         }
         return F.NIL;
       }).orElse(expr);

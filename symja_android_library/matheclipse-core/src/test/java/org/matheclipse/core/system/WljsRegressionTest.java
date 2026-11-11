@@ -2042,11 +2042,11 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testBubbleChart() {
     check("Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}, {3, 1, 9}}], _Disk, Infinity]]", //
         "3");
-    // the radii of 1, 4 and 9 grow as their roots do, between a hundredth and a tenth of the width
+    // the radii of 1, 4 and 9 grow as their roots do, up to a tenth of the width, largest first
     check(
         "Round[100*Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}, {3, 1, 9}}], "
             + "Disk[_, {rx_, _}] :> rx, Infinity]]", //
-        "{2,12,20}");
+        "{20,13,7}");
     // several datasets, each in a colour of its own
     check("Length[Cases[BubbleChart[Table[{i, j, i + j}, {i, 3}, {j, 4}]], _Disk, Infinity]]", //
         "12");

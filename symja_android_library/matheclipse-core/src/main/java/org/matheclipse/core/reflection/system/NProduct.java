@@ -16,6 +16,7 @@ import org.matheclipse.core.numerics.series.dp.complex.EnsembleComplex;
 import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex;
 import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex.SeriesSolutionComplex;
 import org.matheclipse.core.numerics.utils.Sequences;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * <pre>
@@ -47,6 +48,9 @@ public class NProduct extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (ast.isAST3()) {
+      return workingPrecisionProduct(ast, engine);
+    }
     IExpr function = ast.arg1();
     IExpr limitList = engine.evaluate(ast.arg2());
     if (!limitList.isList3() && !limitList.isList4()) {
@@ -118,6 +122,94 @@ public class NProduct extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>NProduct(f, {k, a, b}, WorkingPrecision -> p)</code>: for a machine precision the product
+   * without the option; else the product of the factors with <code>p</code> digits, or for
+   * <code>b = Infinity</code> <code>Exp(NSum(Log(f), {k, a, Infinity}, WorkingPrecision -> p))</code>.
+   *
+   * @return {@link F#NIL} if the product has no value with <code>p</code> digits
+   */
+  private IExpr workingPrecisionProduct(IAST ast, EvalEngine engine) {
+    IExpr option = ast.arg3();
+    if (!option.isRuleAST() || option.first() != S.WorkingPrecision) {
+      return F.NIL;
+    }
+    int precision = FindRoot.workingPrecision(option.second());
+    if (precision <= ParserConfig.MACHINE_PRECISION) {
+      return evaluate(F.binaryAST2(S.NProduct, ast.arg1(), ast.arg2()), engine);
+    }
+    IExpr limitList = engine.evaluate(ast.arg2());
+    if (!(limitList.isList3() || limitList.isList4()) || !limitList.first().isSymbol()) {
+      return F.NIL;
+    }
+    IAST limits = (IAST) limitList;
+    long start = limits.arg2().toLongDefault();
+    long end = limits.arg3().toLongDefault();
+    long step = limits.isList4() ? limits.arg4().toLongDefault() : 1L;
+    if (F.isNotPresent(step) || step <= 0L) {
+      return F.NIL;
+    }
+    if (F.isPresent(start) && F.isPresent(end)) {
+      if (step == 1L && end - start < MAX_DIRECT_RANGE) {
+        IExpr product = engine.evalN(F.Product(ast.arg1(), limits), precision);
+        if (product.isNumber()) {
+          return product;
+        }
+      }
+      return factorProduct(ast.arg1(), limits.arg1(), start, end, step, precision, engine);
+    }
+    if (step != 1L || !F.isPresent(start) || !limits.arg3().isInfinity()) {
+      return F.NIL;
+    }
+    IExpr sum = engine.evaluate(F.ternaryAST3(S.NSum, F.Log(ast.arg1()), limits,
+        F.Rule(S.WorkingPrecision, F.ZZ(precision))));
+    if (!sum.isNumber()) {
+      return F.NIL;
+    }
+    IExpr product = engine.evaluate(F.Exp(sum));
+    return product.isNumber() ? product : F.NIL;
+  }
+
+  /** The largest number of factors which are multiplied with a working precision. */
+  private static final long MAX_PRECISION_FACTORS = 10_000_000L;
+
+  /**
+   * The product of the factors for <code>k = start, start + step, ..., end</code>, each with
+   * <code>precision</code> digits and guard digits.
+   *
+   * @return {@link F#NIL} if a factor isn't a number or there are too many
+   */
+  private static IExpr factorProduct(IExpr function, IExpr variable, long start, long end,
+      long step, int precision, EvalEngine engine) {
+    if (end < start) {
+      return F.num(new org.apfloat.Apfloat(1, precision));
+    }
+    if ((end - start) / step >= MAX_PRECISION_FACTORS) {
+      return F.NIL;
+    }
+    // the rounding errors of n factors add up to about Log10(n) digits
+    long digits = precision + 10L + (long) Math.ceil(Math.log10((end - start) / step + 1.0));
+    org.apfloat.FixedPrecisionApcomplexHelper h =
+        new org.apfloat.FixedPrecisionApcomplexHelper(digits);
+    org.apfloat.Apcomplex product = new org.apfloat.Apfloat(1, digits);
+    long count = 0L;
+    for (long k = start; k <= end; k += step) {
+      if ((++count & 255L) == 0L) {
+        engine.checkTimeLimit();
+      }
+      final IExpr value = F.ZZ(k);
+      IExpr factor =
+          engine.evalN(F.subst(function, x -> x.equals(variable) ? value : F.NIL), digits);
+      if (!factor.isNumber()) {
+        return F.NIL;
+      }
+      product = h.multiply(product, ((org.matheclipse.core.interfaces.INumber) factor)
+          .apcomplexValue());
+    }
+    product = product.precision(precision);
+    return product.imag().signum() == 0 ? F.num(product.real()) : F.complexNum(product);
   }
 
   /**
@@ -194,7 +286,7 @@ public class NProduct extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_2;
+    return ARGS_2_3;
   }
 
   @Override

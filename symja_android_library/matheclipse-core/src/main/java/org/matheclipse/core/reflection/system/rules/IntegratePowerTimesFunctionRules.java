@@ -48,24 +48,36 @@ public class IntegratePowerTimesFunctionRules {
     // f2(CubeRoot,x_,n_,m_):=(x^(1+n)*Surd(m*x,3))/(4/3+n)/;n!=-4/3
     SetDelayed($(f2,CubeRoot,x_,n_,m_),
       Condition(Times(Power(Plus(QQ(4L,3L),n),CN1),Power(x,Plus(C1,n)),Surd(Times(m,x),C3)),Unequal(n,QQ(-4L,3L)))),
+    // f2(EllipticE,x_,-1,m_):=Pi/2*Log(x)-1/8*Pi*m*x*HypergeometricPFQ({1/2,1,1,3/2},{2,2,2},m*x)
+    SetDelayed($(f2,EllipticE,x_,CN1,m_),
+      Plus(Times(C1D2,Pi,Log(x)),Times(QQ(-1L,8L),Pi,m,x,HypergeometricPFQ(List(C1D2,C1,C1,C3D2),List(C2,C2,C2),Times(m,x))))),
+    // f3(EllipticE,x_,-1,m_,p_):=Pi/2*Log(x)-(Pi*m*x^p*HypergeometricPFQ({1/2,1,1,3/2},{2,2,2},m*x^p))/(8*p)
+    SetDelayed($(f3,EllipticE,x_,CN1,m_,p_),
+      Plus(Times(C1D2,Pi,Log(x)),Times(CN1,Power(Times(C8,p),CN1),Pi,m,Power(x,p),HypergeometricPFQ(List(C1D2,C1,C1,C3D2),List(C2,C2,C2),Times(m,Power(x,p)))))),
+    // f2(EllipticK,x_,-1,m_):=Pi/2*Log(x)+1/8*Pi*m*x*HypergeometricPFQ({1,1,3/2,3/2},{2,2,2},m*x)
+    SetDelayed($(f2,EllipticK,x_,CN1,m_),
+      Plus(Times(C1D2,Pi,Log(x)),Times(QQ(1L,8L),Pi,m,x,HypergeometricPFQ(List(C1,C1,C3D2,C3D2),List(C2,C2,C2),Times(m,x))))),
+    // f3(EllipticK,x_,-1,m_,p_):=Pi/2*Log(x)+(Pi*m*x^p*HypergeometricPFQ({1,1,3/2,3/2},{2,2,2},m*x^p))/(8*p)
+    SetDelayed($(f3,EllipticK,x_,CN1,m_,p_),
+      Plus(Times(C1D2,Pi,Log(x)),Times(Power(Times(C8,p),CN1),Pi,m,Power(x,p),HypergeometricPFQ(List(C1,C1,C3D2,C3D2),List(C2,C2,C2),Times(m,Power(x,p)))))),
     // f1(EllipticE,x_,m_):=(2*((1+m*x)*EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/(3*m)
     SetDelayed($(f1,EllipticE,x_,m_),
       Times(C2,Power(Times(C3,m),CN1),Plus(Times(Plus(C1,Times(m,x)),EllipticE(Times(m,x))),Times(Plus(CN1,Times(m,x)),EllipticK(Times(m,x)))))),
-    // f2(EllipticE,x_,n_,m_):=(Pi*x^(1+n)*HypergeometricPFQ({-1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)
+    // f2(EllipticE,x_,n_,m_):=(Pi*x^(1+n)*HypergeometricPFQ({-1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)/;!(IntegerQ(n)&&n<0)
     SetDelayed($(f2,EllipticE,x_,n_,m_),
-      Times(Power(Plus(C2,Times(C2,n)),CN1),Pi,Power(x,Plus(C1,n)),HypergeometricPFQ(list(CN1D2,C1D2,Plus(C1,n)),list(C1,Plus(C2,n)),Times(m,x)))),
-    // f3(EllipticE,x_,n_,m_,p_):=(Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({-1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p)
+      Condition(Times(Power(Plus(C2,Times(C2,n)),CN1),Pi,Power(x,Plus(C1,n)),HypergeometricPFQ(list(CN1D2,C1D2,Plus(C1,n)),list(C1,Plus(C2,n)),Times(m,x))),Not(And(IntegerQ(n),Less(n,C0))))),
+    // f3(EllipticE,x_,n_,m_,p_):=(Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({-1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p)/;!(IntegerQ((1+n)/p)&&(1+n)/p<=0)
     SetDelayed($(f3,EllipticE,x_,n_,m_,p_),
-      Times(Power(Times(C2,p),CN1),Pi,Power(x,Plus(C1,n)),Gamma(Times(Plus(C1,n),Power(p,CN1))),HypergeometricPFQRegularized(list(CN1D2,C1D2,Times(Plus(C1,n),Power(p,CN1))),list(C1,Times(Power(p,CN1),Plus(C1,n,p))),Times(m,Power(x,p))))),
+      Condition(Times(Power(Times(C2,p),CN1),Pi,Power(x,Plus(C1,n)),Gamma(Times(Plus(C1,n),Power(p,CN1))),HypergeometricPFQRegularized(list(CN1D2,C1D2,Times(Plus(C1,n),Power(p,CN1))),list(C1,Times(Power(p,CN1),Plus(C1,n,p))),Times(m,Power(x,p)))),Not(And(IntegerQ(Times(Plus(C1,n),Power(p,CN1))),LessEqual(Times(Plus(C1,n),Power(p,CN1)),C0))))),
     // f1(EllipticK,x_,m_):=(2*(EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/m
     SetDelayed($(f1,EllipticK,x_,m_),
       Times(C2,Power(m,CN1),Plus(EllipticE(Times(m,x)),Times(Plus(CN1,Times(m,x)),EllipticK(Times(m,x)))))),
-    // f2(EllipticK,x_,n_,m_):=(Pi*x^(1+n)*HypergeometricPFQ({1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)
+    // f2(EllipticK,x_,n_,m_):=(Pi*x^(1+n)*HypergeometricPFQ({1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)/;!(IntegerQ(n)&&n<0)
     SetDelayed($(f2,EllipticK,x_,n_,m_),
-      Times(Power(Plus(C2,Times(C2,n)),CN1),Pi,Power(x,Plus(C1,n)),HypergeometricPFQ(list(C1D2,C1D2,Plus(C1,n)),list(C1,Plus(C2,n)),Times(m,x)))),
-    // f3(EllipticK,x_,n_,m_,p_):=(Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p)
+      Condition(Times(Power(Plus(C2,Times(C2,n)),CN1),Pi,Power(x,Plus(C1,n)),HypergeometricPFQ(list(C1D2,C1D2,Plus(C1,n)),list(C1,Plus(C2,n)),Times(m,x))),Not(And(IntegerQ(n),Less(n,C0))))),
+    // f3(EllipticK,x_,n_,m_,p_):=(Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p)/;!(IntegerQ((1+n)/p)&&(1+n)/p<=0)
     SetDelayed($(f3,EllipticK,x_,n_,m_,p_),
-      Times(Power(Times(C2,p),CN1),Pi,Power(x,Plus(C1,n)),Gamma(Times(Plus(C1,n),Power(p,CN1))),HypergeometricPFQRegularized(list(C1D2,C1D2,Times(Plus(C1,n),Power(p,CN1))),list(C1,Times(Power(p,CN1),Plus(C1,n,p))),Times(m,Power(x,p))))),
+      Condition(Times(Power(Times(C2,p),CN1),Pi,Power(x,Plus(C1,n)),Gamma(Times(Plus(C1,n),Power(p,CN1))),HypergeometricPFQRegularized(list(C1D2,C1D2,Times(Plus(C1,n),Power(p,CN1))),list(C1,Times(Power(p,CN1),Plus(C1,n,p))),Times(m,Power(x,p)))),Not(And(IntegerQ(Times(Plus(C1,n),Power(p,CN1))),LessEqual(Times(Plus(C1,n),Power(p,CN1)),C0))))),
     // f1(Haversine,x_,m_):=x/2-Sin(m*x)/(2*m)
     SetDelayed($(f1,Haversine,x_,m_),
       Plus(Times(C1D2,x),Times(CN1,Power(Times(C2,m),CN1),Sin(Times(m,x))))),

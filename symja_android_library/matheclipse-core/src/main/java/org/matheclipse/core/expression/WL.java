@@ -293,7 +293,7 @@ public class WL {
     }
 
     protected int parseLength() {
-      int[] result = parseVarint(array, position);
+      int[] result = WXFVarint.parseVarint(array, position);
       position = result[1];
       return result[0];
     }
@@ -503,7 +503,7 @@ public class WL {
       Short exprID = S.GLOBAL_IDS_MAP.get(arg1);
       if (exprID != null) {
         stream.write(WXF_CONSTANTS.InternalExprID);
-        stream.write(varintBytes(exprID));
+        stream.write(WXFVarint.varintBytes(exprID));
         return;
       }
       super.write(arg1);
@@ -607,29 +607,18 @@ public class WL {
         RealVector vector = ((ASTRealVector) ast).getRealVector();
         stream.write(WXF_CONSTANTS.PackedArray);
         stream.write(NumericArrayExpr.Real64);
-        stream.write(0x01);
-        stream.write(varintBytes(vector.getDimension()));
-        for (int i = 0; i < vector.getDimension(); i++) {
-          writeDouble(vector.getEntry(i));
-        }
+        WXFVarint.writePackedReal64(vector, stream::write);
         return;
       } else if (ast instanceof ASTRealMatrix) {
         RealMatrix matrix = ((ASTRealMatrix) ast).getRealMatrix();
         stream.write(WXF_CONSTANTS.PackedArray);
         stream.write(NumericArrayExpr.Real64);
-        stream.write(0x02);
-        stream.write(varintBytes(matrix.getRowDimension()));
-        stream.write(varintBytes(matrix.getColumnDimension()));
-        for (int i = 0; i < matrix.getRowDimension(); i++) {
-          for (int j = 0; j < matrix.getColumnDimension(); j++) {
-            writeDouble(matrix.getEntry(i, j));
-          }
-        }
+        WXFVarint.writePackedReal64(matrix, stream::write);
         return;
       } else if (ast instanceof ASTAssociation) {
         // <|a->b, c:>d,...|>
         stream.write(WXF_CONSTANTS.Association);
-        stream.write(varintBytes(ast.argSize()));
+        stream.write(WXFVarint.varintBytes(ast.argSize()));
         for (int i = 1; i < ast.size(); i++) {
           IAST rule = (IAST) ast.getRule(i);
           if (rule.isRuleDelayed()) {
@@ -643,7 +632,7 @@ public class WL {
         return;
       }
       stream.write(WXF_CONSTANTS.Function);
-      stream.write(varintBytes(ast.argSize()));
+      stream.write(WXFVarint.varintBytes(ast.argSize()));
       for (int i = 0; i < ast.size(); i++) {
         write(ast.get(i));
       }
@@ -674,7 +663,7 @@ public class WL {
       byte[] bArray = arg1.toData();
       int size = bArray.length;
       stream.write(WXF_CONSTANTS.BinaryString);
-      stream.write(varintBytes(size));
+      stream.write(WXFVarint.varintBytes(size));
       stream.write(bArray, 0, size);
     }
 
@@ -697,7 +686,7 @@ public class WL {
     }
 
     private void writeDouble(double d) {
-      writeDoubleLE(d, stream::write);
+      WXFVarint.writeDoubleLE(d, stream::write);
     }
 
     private void writeFloat(float f) {
@@ -731,7 +720,7 @@ public class WL {
         } catch (ArithmeticException ae) {
           String big = ((BigIntegerSym) s).toBigNumerator().toString();
           stream.write(WXF_CONSTANTS.BigInteger);
-          stream.write(varintBytes(big.length()));
+          stream.write(WXFVarint.varintBytes(big.length()));
           for (int i = 0; i < big.length(); i++) {
             stream.write(big.charAt(i));
           }
@@ -779,7 +768,7 @@ public class WL {
         throws IOException {
       int[] dimensions = numericArray.getDimension();
       int rank = dimensions.length;
-      stream.write(varintBytes(rank));
+      stream.write(WXFVarint.varintBytes(rank));
       int size = 1;
       for (int i = 0; i < rank; i++) {
         stream.write(dimensions[i]);
@@ -923,7 +912,7 @@ public class WL {
     private void writeSeriesData(IExpr arg1) throws IOException {
       ASTSeriesData ast = (ASTSeriesData) arg1;
       stream.write(WXF_CONSTANTS.Function);
-      stream.write(varintBytes(ast.argSize()));
+      stream.write(WXFVarint.varintBytes(ast.argSize()));
       for (int i = 0; i < ast.size(); i++) {
         write(ast.get(i));
       }
@@ -934,7 +923,7 @@ public class WL {
 
       if (fullForm.size() == 5) {
         stream.write(WXF_CONSTANTS.Function);
-        stream.write(varintBytes(fullForm.argSize()));
+        stream.write(WXFVarint.varintBytes(fullForm.argSize()));
         write(fullForm.head());
         write(fullForm.arg1());
         writePackedArray((IAST) fullForm.arg2());
@@ -943,13 +932,13 @@ public class WL {
         // sparse array structure:
         IAST list = (IAST) fullForm.arg4();
         stream.write(WXF_CONSTANTS.Function);
-        stream.write(varintBytes(list.argSize()));
+        stream.write(WXFVarint.varintBytes(list.argSize()));
         write(S.List);
         write(list.arg1());
 
         IAST list2 = (IAST) list.arg2();
         stream.write(WXF_CONSTANTS.Function);
-        stream.write(varintBytes(list2.argSize()));
+        stream.write(WXFVarint.varintBytes(list2.argSize()));
         write(S.List);
         writePackedArray((IAST) list2.arg1());
         writePackedArray((IAST) list2.arg2());
@@ -966,7 +955,7 @@ public class WL {
       // to its low byte, and \[Theta] crossed a kernel link as U+FFB8
       byte[] str = s.toString().getBytes(StandardCharsets.UTF_8);
       stream.write(WXF_CONSTANTS.String);
-      stream.write(varintBytes(str.length));
+      stream.write(WXFVarint.varintBytes(str.length));
       stream.write(str);
     }
 
@@ -987,23 +976,8 @@ public class WL {
       }
       byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
       stream.write(WXF_CONSTANTS.Symbol);
-      stream.write(varintBytes(bytes.length));
+      stream.write(WXFVarint.varintBytes(bytes.length));
       stream.write(bytes);
-    }
-  }
-
-
-  /** The list of all the WXF tokens. */
-  /**
-   * Write the 8 bytes of a <code>double</code> in little-endian order, as the WXF format stores a
-   * Real64.
-   *
-   * @param out receives one byte per call
-   */
-  static void writeDoubleLE(double d, java.util.function.IntConsumer out) {
-    long bits = Double.doubleToRawLongBits(d);
-    for (int shift = 0; shift < 64; shift += 8) {
-      out.accept((byte) ((bits >> shift) & 0xff));
     }
   }
 
@@ -1097,32 +1071,7 @@ public class WL {
    * @return
    */
   public static int[] parseVarint(byte[] array, int position) {
-    int count = 0;
-    boolean continuation = true;
-    int shift = 0;
-    int length = 0;
-    // when we read from stream we get a sequence of bytes. Its length is 1
-    // except if we reached EOF in which case taking index 0 raises IndexError.
-    // try:
-    while (continuation && count < 8) {
-      count++;
-      byte next_byte = array[position++];
-      // next_byte = ord(next_byte);
-      length |= (next_byte & 0x7F) << shift;
-      shift = shift + 7;
-      continuation = (next_byte & 0x80) != 0;
-    }
-
-    if (continuation) {
-      byte next_byte = array[position++];
-      // next_byte = ord(next_byte);
-      next_byte &= 0x7F;
-      if (next_byte == 0) {
-        throw new UnsupportedOperationException("Invalid last varint byte.");
-      }
-      length |= next_byte << shift;
-    }
-    return new int[] {length, position};
+    return WXFVarint.parseVarint(array, position);
   }
 
   /**
@@ -1195,32 +1144,11 @@ public class WL {
    * @return
    */
   public static IASTMutable toList(byte[] bArray) {
-    return F.mapRange(0, bArray.length, i -> F.ZZ(0x000000FF & bArray[i]));
+    return ByteArrayExpr.toList(bArray);
   }
 
   /** Serialize <code>length</code> into varint bytes and return them as a byte array. */
   public static byte[] varintBytes(int length) {
-    byte[] buf = new byte[9];
-    if (length < 0) {
-      throw new UnsupportedOperationException("Negative values cannot be encoded as varint.");
-    }
-    int count = 0;
-    while (true) {
-      int next = (length & 0x7f);
-      length >>= 7;
-      if (length != 0) {
-        buf[count] = (byte) (next | 0x80);
-        count += 1;
-      } else {
-        buf[count] = (byte) next;
-        count += 1;
-        break;
-      }
-    }
-    byte[] result = new byte[count];
-    for (int i = 0; i < count; i++) {
-      result[i] = buf[i];
-    }
-    return result;
+    return WXFVarint.varintBytes(length);
   }
 }

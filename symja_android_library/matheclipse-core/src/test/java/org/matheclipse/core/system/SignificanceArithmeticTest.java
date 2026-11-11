@@ -242,8 +242,9 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMachineZeroProducts() {
+    // 10.0^400 is an arbitrary precision number of 52 bits: the exact zero times it is exact
     check("0 * 10.0^400", //
-        "0.0");
+        "0");
     check("0.0 * 2.5`20", //
         "0.0");
     check("0 * I * 2.5`15", //

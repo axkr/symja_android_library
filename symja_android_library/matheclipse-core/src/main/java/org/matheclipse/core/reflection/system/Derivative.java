@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.numerics.functions.BesselOrderDerivative;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
@@ -219,6 +220,15 @@ public class Derivative extends AbstractFunctionEvaluator {
           derivativeAST[2], engine);
       if (derived.isPresent()) {
         return derived;
+      }
+    }
+    if (derivativeAST[2] != null && derivativeHead.isAST2() && derivativeHead.arg1().isOne()
+        && derivativeHead.arg2().isZero() && derivativeAST[2].isAST2()) {
+      // the derivative of a Bessel function with respect to its order, at numbers
+      IExpr orderDerivative = BesselOrderDerivative.derivative(functions.arg1(),
+          derivativeAST[2].arg1(), derivativeAST[2].arg2(), engine);
+      if (orderDerivative.isPresent()) {
+        return orderDerivative;
       }
     }
     IExpr extremum = maxMinDerivative(derivativeHead, functions.arg1(), derivativeAST[2]);

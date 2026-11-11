@@ -55,6 +55,15 @@ public class ModuleReplaceAll extends VisitorExpr {
    */
   private final ScopeIndex scopeIndex;
 
+  /**
+   * The symbols which collide with a free symbol of a substituted value: the keys the outermost
+   * visitor maps to {@link F#NIL}. A nested scoping construct which binds one of them again renames
+   * its own variable too, although the outer renaming does not reach inside it:
+   * <code>g(v_) := Module({e = 1}, Function(e, v + e)); g(e + 1)</code> must not let the
+   * parameter <code>e</code> capture the <code>e</code> of the argument.
+   */
+  private final java.util.Set<ISymbol> colliders;
+
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter) {
     this(moduleVariables, engine, moduleCounter, 0);
@@ -82,7 +91,8 @@ public class ModuleReplaceAll extends VisitorExpr {
   static ModuleReplaceAll scopingConstruct(Map<ISymbol, ? extends IExpr> moduleVariables,
       EvalEngine engine, String moduleCounter, boolean useScopeIndex) {
     return new ModuleReplaceAll(moduleVariables, engine, moduleCounter, 0, true, true,
-        new java.util.HashMap<String, IExpr>(), useScopeIndex ? new ScopeIndex() : null);
+        new java.util.HashMap<String, IExpr>(), useScopeIndex ? new ScopeIndex() : null,
+        nilKeys(moduleVariables));
   }
 
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
@@ -97,12 +107,13 @@ public class ModuleReplaceAll extends VisitorExpr {
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter, int offset, boolean renameFunctionParameters) {
     this(moduleVariables, engine, moduleCounter, offset, renameFunctionParameters, false, null,
-        null);
+        null, nilKeys(moduleVariables));
   }
 
   private ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter, int offset, boolean renameFunctionParameters,
-      boolean renameReachedScopes, Map<String, IExpr> reachedScopeNames, ScopeIndex scopeIndex) {
+      boolean renameReachedScopes, Map<String, IExpr> reachedScopeNames, ScopeIndex scopeIndex,
+      java.util.Set<ISymbol> colliders) {
     this.fModuleVariables = moduleVariables;
     this.fOffset = offset;
     this.fEngine = engine;
@@ -111,6 +122,21 @@ public class ModuleReplaceAll extends VisitorExpr {
     this.renameReachedScopes = renameReachedScopes;
     this.reachedScopeNames = reachedScopeNames;
     this.scopeIndex = scopeIndex;
+    this.colliders = colliders;
+  }
+
+  /** The keys of <code>variables</code> which are mapped to {@link F#NIL}. */
+  private static java.util.Set<ISymbol> nilKeys(Map<ISymbol, ? extends IExpr> variables) {
+    java.util.Set<ISymbol> keys = null;
+    for (Map.Entry<ISymbol, ? extends IExpr> entry : variables.entrySet()) {
+      if (entry.getValue() != null && entry.getValue().isNIL()) {
+        if (keys == null) {
+          keys = java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
+        }
+        keys.add(entry.getKey());
+      }
+    }
+    return keys == null ? java.util.Collections.<ISymbol>emptySet() : keys;
   }
 
   private IExpr apply(final ISymbol arg) {
@@ -208,13 +234,13 @@ public class ModuleReplaceAll extends VisitorExpr {
     java.util.Set<ISymbol> patternSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
     collectPatternSymbols(ast.arg1(), patternSymbols);
-    // a pattern variable of a rule or an assignment shadows a variable substituted by a value:
-    // in With({a = 3}, a_ :> a) and With({a = 3}, a_ -> a) the a on the right-hand side is the
-    // pattern variable
+    // a pattern variable of a rule or an assignment shadows a substituted variable: in
+    // With({a = 3}, a_ :> a) and Module({a = 3}, a_ -> a) the a on the right-hand side is the
+    // pattern variable, and the rule stays as it is written
     IdentityHashMap<ISymbol, IExpr> unshadowed = null;
     for (ISymbol symbol : patternSymbols) {
       IExpr value = fModuleVariables.get(symbol);
-      if (value != null && value.isPresent() && !value.isSymbol()) {
+      if (value != null && value.isPresent()) {
         if (unshadowed == null) {
           unshadowed = new IdentityHashMap<>(fModuleVariables);
         }
@@ -226,7 +252,7 @@ public class ModuleReplaceAll extends VisitorExpr {
         return F.NIL;
       }
       return new ModuleReplaceAll(unshadowed, fEngine, moduleCounter, 0,
-          renameFunctionParameters, true, reachedScopeNames, scopeIndex).visitRuleScope(ast);
+          renameFunctionParameters, true, reachedScopeNames, scopeIndex, colliders).visitRuleScope(ast);
     }
     // a free symbol of a substituted value - With({a = x}, f(x_) := x + a) - is renamed, the
     // value would be captured by the pattern otherwise
@@ -243,7 +269,7 @@ public class ModuleReplaceAll extends VisitorExpr {
       variables.put(symbol, reachedScopeName(symbol));
     }
     return visitAST(ast, new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
-        renameFunctionParameters, true, reachedScopeNames, scopeIndex), fOffset);
+        renameFunctionParameters, true, reachedScopeNames, scopeIndex, colliders), fOffset);
   }
 
   /**
@@ -365,7 +391,7 @@ public class ModuleReplaceAll extends VisitorExpr {
       }
       if (variables != null) {
         visitor = new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
-            renameFunctionParameters, renameReachedScopes, reachedScopeNames, scopeIndex);
+            renameFunctionParameters, renameReachedScopes, reachedScopeNames, scopeIndex, colliders);
       }
     }
     return visitAST(ast, visitor, fOffset);
@@ -374,23 +400,36 @@ public class ModuleReplaceAll extends VisitorExpr {
   /**
    * The parameters of <code>Function(params, body)</code> are renamed to <code>name$</code> if a
    * substituted variable occurs in the body - <code>With({a = 1}, Hold(Function(x, a*x)))</code> is
-   * <code>Hold(Function(x$, 1*x$))</code> - or if they are substituted variables themselves.
+   * <code>Hold(Function(x$, 1*x$))</code> - or if they collide with a free symbol of a substituted
+   * value. A parameter which is a substituted variable itself shadows it:
+   * <code>Module({x = 1}, Function(x, x + 1))</code> keeps the function as it is written.
    *
-   * @return <code>null</code> if no parameter is renamed
+   * @return <code>null</code> if no parameter is renamed or shadows a substituted variable
    */
   private IdentityHashMap<ISymbol, IExpr> renamedFunctionParameters(IAST function,
       IAST parameters) {
     java.util.Set<ISymbol> parameterSymbols =
         java.util.Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>());
+    IdentityHashMap<ISymbol, IExpr> variables = null;
     for (int i = 1; i < parameters.size(); i++) {
-      if (parameters.get(i).isSymbol() && !isRenamed((ISymbol) parameters.get(i))) {
-        parameterSymbols.add((ISymbol) parameters.get(i));
+      if (parameters.get(i).isSymbol()) {
+        ISymbol symbol = (ISymbol) parameters.get(i);
+        IExpr value = fModuleVariables.get(symbol);
+        if (value != null && value.isPresent()) {
+          if (variables == null) {
+            variables = new IdentityHashMap<>(fModuleVariables);
+          }
+          variables.remove(symbol);
+        }
+        if (!isRenamed(symbol)) {
+          parameterSymbols.add(symbol);
+        }
       }
     }
     boolean reached = isReachedBySubstitution(function.arg2(), parameterSymbols);
-    IdentityHashMap<ISymbol, IExpr> variables = null;
     for (ISymbol symbol : parameterSymbols) {
-      if (reached || fModuleVariables.containsKey(symbol)) {
+      IExpr value = fModuleVariables.get(symbol);
+      if (reached || (value != null && value.isNIL())) {
         if (variables == null) {
           variables = new IdentityHashMap<>(fModuleVariables);
         }
@@ -471,7 +510,9 @@ public class ModuleReplaceAll extends VisitorExpr {
         variables = new IdentityHashMap<>(fModuleVariables);
       }
       variables.remove(symbol);
-      if (temp.isNIL()) {
+      // the outer renaming of a colliding symbol stops here, so the variable bound again is
+      // renamed as well
+      if (temp.isNIL() || colliders.contains(symbol)) {
         variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
       }
     }

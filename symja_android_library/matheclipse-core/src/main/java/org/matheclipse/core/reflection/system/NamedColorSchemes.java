@@ -9,22 +9,12 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * The named color schemes of {@link ColorData}: <code>"Atoms"</code>, the colors of the elements in
- * molecular models by symbol or atomic number, <code>"HTML"</code>, the named CSS colors,
+ * The named color schemes of {@link ColorData}: <code>"HTML"</code>, the named CSS colors,
  * <code>"Legacy"</code>, an older palette with its own names and values, <code>"Crayola"</code>,
  * the crayon colors, <code>"GeologicAges"</code>, the colors of the geologic time units, and the
  * <code>"ColorRules"</code> of <code>"WebSafe"</code>.
  */
 final class NamedColorSchemes {
-
-  /** The elements by atomic number with their colors as hexadecimal codes. */
-  private static final String[] ATOMS = {
-      "H,FFFFFF", "He,D9FFFF", "Li,CC80FF", "Be,C2FF00", "B,FFB5B5", "C,909090", "N,3050F8",
-      "O,FF0D0D", "F,90E050", "Ne,B3E3F5", "Na,AB5CF2", "Mg,8AFF00", "Al,BFA6A6", "Si,F0C8A0",
-      "P,FF8000", "S,FFFF30", "Cl,1FF01F", "Ar,80D1E3", "K,8F40D4", "Ca,3DFF00", "Sc,E6E6E6",
-      "Ti,BFC2C7", "V,A6A6AB", "Cr,8A99C7", "Mn,9C7AC7", "Fe,E06633", "Co,F090A0", "Ni,50D050",
-      "Cu,C88033", "Zn,7D80B0", "Ga,C28F8F", "Ge,668F8F", "As,BD80E3", "Se,FFA100", "Br,A62929",
-      "Kr,5CB8D1",};
 
   /** <code>name, r, g, b</code> of the CSS colors. */
   private static final String[] HTML = {
@@ -496,19 +486,6 @@ final class NamedColorSchemes {
     return rules;
   }
 
-  private static IExpr atom(IExpr element) {
-    int z = element.toIntDefault();
-    for (int i = 0; i < ATOMS.length; i++) {
-      String[] parts = ATOMS[i].split(",");
-      if (i + 1 == z || (element.isString() && element.toString().equals(parts[0]))) {
-        int rgb = Integer.parseInt(parts[1], 16);
-        return F.RGBColor(F.num(((rgb >> 16) & 0xFF) / 255.0), F.num(((rgb >> 8) & 0xFF) / 255.0),
-            F.num((rgb & 0xFF) / 255.0));
-      }
-    }
-    return F.NIL;
-  }
-
   /**
    * <code>ColorData(scheme, argument)</code> of the named schemes: a color by its name, or the rules
    * <code>name -> color</code> for the argument <code>"ColorRules"</code>.
@@ -517,9 +494,6 @@ final class NamedColorSchemes {
    */
   static IExpr of(String scheme, IExpr argument) {
     String name = scheme.toUpperCase(Locale.US);
-    if (name.equals("ATOMS")) {
-      return atom(argument);
-    }
     Map<String, IAST> colors = colorsOf(name);
     if (colors == null || !argument.isString()) {
       return F.NIL;

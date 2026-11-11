@@ -43,7 +43,8 @@ public class PieChart extends ListPlot {
 
     // a Dataset plots its rows and an Association its values, labelled by its keys
     IASTAppendable keyLabels = F.ListAlloc();
-    IExpr dataArg = GraphicsOptions.chartDataMagnitudes(engine.evaluate(ast.arg1()), originalAST,
+    IExpr dataArg = GraphicsOptions.chartDataMagnitudes(
+        GraphicsOptions.distributeDatasetWrapper(engine.evaluate(ast.arg1())), originalAST,
         keyLabels, engine);
     if (dataArg.isNIL()) {
       return F.NIL;

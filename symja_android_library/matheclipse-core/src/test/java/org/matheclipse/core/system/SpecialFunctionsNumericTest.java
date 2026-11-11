@@ -671,10 +671,11 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         "1.972045137141238*10^431");
     check("ArcSinh(1.0*^300)", //
         "691.4687");
+    // two values of the precision 15.95-Log10(1000) and 15.95-Log10(999)
     check("Exp(1000.0)/Exp(999.0)", //
-        "2.718281828459045");
+        "2.718281828459");
     check("1/Exp(999.0)", //
-        "1.379788683321370*10^-434");
+        "1.379788683321*10^-434");
     check("Floor(1.0*^19)", //
         "10000000000000000000");
     check("Quotient(1.0*^25,7)", //

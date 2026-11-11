@@ -18,6 +18,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -502,7 +503,66 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       // the inert markers are plain symbols, not Rubi context ones, so the prefix is the only test
       return symbol.getSymbolName().startsWith("§") || (symbol.getContext() == Context.RUBI
           && symbol.getSymbolName().equalsIgnoreCase("subst"));
-    }, true);
+    }, true) || hasHeldRubiFunctions(expr);
+  }
+
+  /**
+   * Whether a pure function in <code>expr</code>, as the second argument of a <code>RootSum</code>,
+   * still calls Rubi's functions: they run only when the function is applied to the roots, with
+   * the variable of integration as an argument, so the result is no function of the variable:
+   * <code>Rubi`SubstAux(#1,x,Cos(x),False)&amp;</code> at <code>x == 1/3</code> substitutes
+   * <code>Cos(1/3)</code> for <code>1/3</code>.
+   */
+  private static boolean hasHeldRubiFunctions(IExpr expr) {
+    return expr.has(part -> part.isFunction() && hasRubiSymbol(part), true);
+  }
+
+  private static boolean hasRubiSymbol(IExpr expr) {
+    return expr.has(y -> y.isSymbol() && ((ISymbol) y).getContext() == Context.RUBI, true);
+  }
+
+  /**
+   * The pure functions <code>body&amp;</code> with calls of Rubi's functions in their bodies, which
+   * a substitution mapped into the function of a <code>RootSum</code>, evaluated for a symbol in
+   * place of <code>#1</code>.
+   *
+   * @return {@link F#NIL} if there is no such function
+   */
+  private static IExpr evaluateHeldRubiFunctions(IExpr expr, EvalEngine engine) {
+    if (!hasHeldRubiFunctions(expr)) {
+      return F.NIL;
+    }
+    return F.subst(expr, part -> {
+      if (part.isFunction() && part.argSize() == 1 && hasRubiSymbol(part)) {
+        ISymbol root = F.Dummy("root");
+        IExpr value = engine.evalQuiet(ownSlotReplaced(part.first(), root));
+        if (!hasRubiSymbol(value) && value.isFree(S.Slot, true)) {
+          return F.Function(F.subst(value, root, F.Slot1));
+        }
+      }
+      return F.NIL;
+    });
+  }
+
+  /** <code>body</code> with <code>#1</code> replaced, but not in the pure functions inside. */
+  private static IExpr ownSlotReplaced(IExpr body, IExpr replacement) {
+    if (body.equals(F.Slot1)) {
+      return replacement;
+    }
+    if (!body.isAST() || body.isFunction()) {
+      return body;
+    }
+    IAST ast = (IAST) body;
+    IASTMutable result = ast.copy();
+    boolean changed = false;
+    for (int i = 0; i < ast.size(); i++) {
+      IExpr arg = ownSlotReplaced(ast.get(i), replacement);
+      if (arg != ast.get(i)) {
+        result.set(i, arg);
+        changed = true;
+      }
+    }
+    return changed ? result : body;
   }
 
   private IExpr evaluateIntegrate(IAST holdallAST, final int argSize, final IExpr[] option,
@@ -732,6 +792,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               return ordinary.isPresent() && ordinary.isFree(S.Integrate) ? ordinary : F.NIL;
             }
           }
+          IExpr sophomore = sophomoresDream(arg1, xList, engine);
+          if (sophomore.isPresent()) {
+            return sophomore;
+          }
           // Integrate(f(x), {x,a,b})
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());
           IExpr temp = engine.evaluate(copy);
@@ -741,6 +805,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             // the antiderivative of each piece jumps where the condition changes: its values at
             // the limits don't give the integral
             return F.NIL;
+          }
+          if (antiderivative && !differentiatesBackInside(temp, arg1, xList, engine)) {
+            // a wrong antiderivative gives a wrong value: the other methods are tried
+            antiderivative = false;
           }
           if (antiderivative) {
             IExpr value = definiteIntegral(temp, arg1, xList, holdallAST, engine);
@@ -971,14 +1039,30 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           }
         }
         if (result.isPresent()) {
+          final boolean[] substitutedMarker = new boolean[1];
           IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
               return F.Integrate(f.first(), f.second());
             } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
               return F.Integrate(f.first(), f.second());
+            } else if (f.isAST(F.$rubi("Integral"), 3)) {
+              // the marker of an integral without a rule; with another second argument than a
+              // variable a substitution went into it: Integral(x*Tanh(x),Sqrt(x)) isn't an
+              // antiderivative of Sqrt(x)*Tanh(x)
+              if (f.second().isVariable()) {
+                return F.Integrate(f.first(), f.second());
+              }
+              substitutedMarker[0] = true;
             }
             return F.NIL;
           });
+          if (substitutedMarker[0]) {
+            rubiResult = ast;
+          }
+          IExpr evaluatedRootSum = evaluateHeldRubiFunctions(rubiResult, engine);
+          if (evaluatedRootSum.isPresent()) {
+            rubiResult = engine.evaluate(evaluatedRootSum);
+          }
           // Rubi reports "no rule for this integrand" as Unintegrable[] or CannotIntegrate[], which
           // the substitution above maps back to the unevaluated Integrate(). That isn't an
           // antiderivative, so it must not end the cascade here: the native fallback stages below
@@ -999,11 +1083,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // dead end, because RadicalCoefficients.collect at depth 0 evaluates many of them away,
           // and bailing out on those cost testIntegrateRationalizeSurdDenominator its answer.
           boolean unfinishedSubstitution =
-              containsRubiInternals(rubiResult) && !rubiResult.isFree(S.Integrate, true);
-          // A finite integrand has no infinite antiderivative: the generic rule for
-          // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
-          // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
-          // Cos and Sin.
+              (containsRubiInternals(rubiResult) && !rubiResult.isFree(S.Integrate, true))
+                  || hasHeldRubiFunctions(rubiResult);
           // A finite integrand has no infinite antiderivative: the generic rule for
           // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
           // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
@@ -2715,6 +2796,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // Sin(x)==0) are about a search the caller never sees
         IExpr solved = engine
             .evalQuiet(F.SolveDistinct(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+        if (!solved.isList() || (solved.isEmptyList() && !isPolynomialEquation(eq, x))) {
+          // E^x == 2 isn't solved together with the bounds; the points inside are picked below.
+          // A polynomial equation is, and an empty list says that it has no root between them
+          solved = engine.evalQuiet(F.Solve(eq, x, S.Reals));
+        }
+        if (solved.isList() && !solved.isFree(S.C, true)) {
+          solved = membersOfFamilies((IAST) solved, x, lower, upper, engine);
+        }
         if (solved.isList()) {
           singularities.appendArgs((IAST) solved);
         }
@@ -2803,7 +2892,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (!upperLimit.isFreeAST(S.Limit)) {
       return F.NIL;
     }
-
+    // a complex argument of Log or ExpIntegralEi crossing the negative real axis inside the
+    // interval: the antiderivative jumps there, the integral doesn't
+    IExpr jumps = branchCutJumps(function, x, lower, upper, engine);
+    if (jumps.isPresent()) {
+      upperLimit = engine.evaluate(F.Subtract(upperLimit, jumps));
+    }
 
     if (upperLimit.isAST() && lowerLimit.isAST()) {
       IExpr bDenominator = engine.evaluate(F.Denominator(upperLimit));
@@ -2836,6 +2930,291 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     return realForm(difference, integrand, engine);
   }
 
+  /** Whether <code>eq</code> is an equation of two polynomials in <code>x</code>. */
+  private static boolean isPolynomialEquation(IExpr eq, IExpr x) {
+    IAST variables = F.list(x);
+    return eq.isEqual() && eq.first().isPolynomial(variables)
+        && eq.second().isPolynomial(variables);
+  }
+
+  /** The largest index of a member of a family which {@link #membersOfFamilies} picks. */
+  private static final double MAX_FAMILY_INDEX = 1.0e6;
+
+  /**
+   * The solutions of an equation with each family <code>a + p*C(1)</code> replaced by members of
+   * it. For a real period <code>p</code> these are the two members next to a numeric bound on
+   * the side of the interval, as <code>5*Pi/4</code> of <code>Pi/4 + Pi*C(1)</code> for the lower
+   * bound 2: the integral is split at a point inside, and each part is searched again. Every
+   * family contributes its member at <code>C(1) == 0</code> as well, which is the only real one of
+   * a family with a complex period.
+   */
+  private static IAST membersOfFamilies(IAST solved, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    IExpr constant = F.unaryAST1(S.C, F.$b());
+    IASTAppendable result = F.ListAlloc(solved.argSize() + 2);
+    double from = realValue(lower, engine);
+    double to = realValue(upper, engine);
+    for (IExpr solution : solved) {
+      if (solution.isFree(S.C, true)) {
+        result.append(solution);
+        continue;
+      }
+      IExpr atZero = engine.evaluate(F.ReplaceAll(solution, F.Rule(constant, F.C0)));
+      result.append(atZero);
+      IExpr atOne = engine.evaluate(F.ReplaceAll(solution, F.Rule(constant, F.C1)));
+      double a = realValue(valueOf(atZero, x), engine);
+      double period = realValue(valueOf(atOne, x), engine) - a;
+      if (Double.isNaN(period) || period == 0.0 || (Double.isNaN(from) && Double.isNaN(to))) {
+        continue;
+      }
+      // the member above the lower bound, or below the upper one, and its neighbour inside: the
+      // first of them may be the bound itself
+      double index = Double.isNaN(from) ? Math.ceil((to - a) / Math.abs(period)) - 1.0
+          : Math.floor((from - a) / Math.abs(period)) + 1.0;
+      if (Math.abs(index) > MAX_FAMILY_INDEX) {
+        continue;
+      }
+      long step = Double.isNaN(from) ? -1L : 1L;
+      long sign = period > 0.0 ? 1L : -1L;
+      for (int i = 0; i < 2; i++) {
+        long k = sign * ((long) index + i * step);
+        if (k != 0L) {
+          result.append(engine.evaluate(F.ReplaceAll(solution, F.Rule(constant, F.ZZ(k)))));
+        }
+      }
+    }
+    return result;
+  }
+
+  /** The value which the rules of <code>solution</code> give <code>x</code>, or {@link F#NIL}. */
+  private static IExpr valueOf(IExpr solution, IExpr x) {
+    if (solution.isList()) {
+      for (IExpr rule : (IAST) solution) {
+        if (rule.isRule() && rule.first().equals(x)) {
+          return rule.second();
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /** The finite real value of <code>expr</code>, or NaN. */
+  private static double realValue(IExpr expr, EvalEngine engine) {
+    if (expr.isNIL()) {
+      return Double.NaN;
+    }
+    IExpr value = engine.evalQuiet(F.N(expr));
+    if (!value.isReal()) {
+      return Double.NaN;
+    }
+    double d = value.evalf();
+    return Double.isInfinite(d) ? Double.NaN : d;
+  }
+
+  /**
+   * <code>Integrate(x^(c*x), {x, 0, 1})</code> as the series
+   * <code>Sum((-c)^(n-1)/n^n, {n, 1, Infinity})</code>: <code>E^(c*x*Log(x))</code> expanded,
+   * with <code>Integrate(x^k*Log(x)^k, {x, 0, 1}) == (-1)^k*k!/(k+1)^(k+1)</code>.
+   *
+   * @return {@link F#NIL} if the integral isn't of this kind
+   */
+  private static IExpr sophomoresDream(IExpr integrand, IAST xList, EvalEngine engine) {
+    IExpr x = xList.arg1();
+    if (!x.isSymbol() || !xList.arg2().isZero() || !xList.arg3().isOne()
+        || !integrand.isPower() || !integrand.base().equals(x)) {
+      return F.NIL;
+    }
+    IExpr c = engine.evaluate(F.Divide(integrand.exponent(), x));
+    if (!c.isFree(x) || c.isZero() || !c.isNumericFunction(true)) {
+      return F.NIL;
+    }
+    // an index of its own: a value of the symbol n would be put into the summand
+    ISymbol n = F.Dummy("n");
+    IExpr term = engine.evaluate(F.Times(F.Power(F.Negate(c), F.Subtract(n, F.C1)),
+        F.Power(n, F.Negate(n))));
+    return F.Sum(term, F.List(n, F.C1, F.CInfinity));
+  }
+
+  /** The relative positions of the sample points of {@link #differentiatesBackInside}. */
+  private static final double[] INSIDE_POINTS = {0.23, 0.51, 0.79};
+
+  /** The largest antiderivative which {@link #differentiatesBackInside} checks. */
+  private static final int MAX_CHECKED_ANTIDERIVATIVE_LEAFCOUNT = 600;
+
+  /**
+   * Test that the antiderivative <code>function</code> differentiates back to the integrand at
+   * three points inside numeric bounds, for an integrand without parameters. A disagreement at
+   * machine precision is checked again with 30 digits.
+   *
+   * @return <code>false</code> only if a sample point disagrees
+   */
+  private static boolean differentiatesBackInside(IExpr function, IExpr integrand, IAST xList,
+      EvalEngine engine) {
+    final IExpr x = xList.arg1();
+    final IExpr lower = xList.arg2();
+    final IExpr upper = xList.arg3();
+    if (!x.isSymbol() || !isNumericBound(lower) || !isNumericBound(upper)
+        || function.leafCount() > MAX_CHECKED_ANTIDERIVATIVE_LEAFCOUNT) {
+      // a large antiderivative costs more to differentiate and evaluate than the check is worth
+      return true;
+    }
+    for (IExpr variable : new VariablesSet(F.List(integrand, function)).getArrayList()) {
+      if (!variable.equals(x)) {
+        // parameters: no sample values
+        return true;
+      }
+    }
+    // N(expr, 30) sets the significant figures of the output, which are the caller's
+    final int significantFigures = engine.getSignificantFigures();
+    try {
+      double a = lower.isNegativeInfinity() ? Double.NEGATIVE_INFINITY : lower.evalf();
+      double b = upper.isInfinity() ? Double.POSITIVE_INFINITY : upper.evalf();
+      if (Double.isNaN(a) || Double.isNaN(b) || !(a < b)) {
+        return true;
+      }
+      IExpr derivative = engine.evalQuiet(F.D(function, x));
+      for (double t : INSIDE_POINTS) {
+        double p;
+        if (Double.isInfinite(a) && Double.isInfinite(b)) {
+          p = (t - 0.5) * 6.0;
+        } else if (Double.isInfinite(b)) {
+          p = a + t / (1.0 - t);
+        } else if (Double.isInfinite(a)) {
+          p = b - t / (1.0 - t);
+        } else {
+          p = a + t * (b - a);
+        }
+        IExpr point = F.num(p);
+        // the exact point is evaluated before N(..., 30): evaluated inside of it, the rational
+        // becomes the machine number again, and a sum which cancels to 10^-5 from terms of 10^14
+        // disagrees at 30 digits too
+        if (!agreesAt(derivative, integrand, x, point, false, engine) && !agreesAt(derivative,
+            integrand, x, engine.evaluate(F.Rationalize(point, F.C0)), true, engine)) {
+          return false;
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    } finally {
+      engine.setSignificantFigures(significantFigures);
+    }
+    return true;
+  }
+
+  /**
+   * Compare the derivative and the integrand at a point; a value which isn't a finite number
+   * agrees.
+   */
+  private static boolean agreesAt(IExpr derivative, IExpr integrand, IExpr x, IExpr point,
+      boolean digits30, EvalEngine engine) {
+    IExpr f = engine.evalQuiet(
+        digits30 ? F.N(F.subst(integrand, x, point), F.ZZ(30)) : F.N(F.subst(integrand, x, point)));
+    IExpr d = engine.evalQuiet(digits30 ? F.N(F.subst(derivative, x, point), F.ZZ(30))
+        : F.N(F.subst(derivative, x, point)));
+    if (!f.isNumber() || !d.isNumber()) {
+      return true;
+    }
+    double scale = engine.evalQuiet(F.Abs(f)).evalfNaN();
+    double deviation = engine.evalQuiet(F.Abs(F.Subtract(d, f))).evalfNaN();
+    if (Double.isNaN(scale) || Double.isInfinite(scale) || Double.isNaN(deviation)) {
+      return true;
+    }
+    return deviation <= 1.0e-6 * (1.0 + scale);
+  }
+
+  /**
+   * The sum of the jumps <code>F(p+0) - F(p-0)</code> of the antiderivative <code>F</code> at the
+   * points <code>lower &lt; p &lt; upper</code> where the complex argument <code>u</code> of a
+   * <code>Log(u)</code> or <code>ExpIntegralEi(u)</code> crosses the negative real axis: both jump
+   * by <code>2*Pi*I</code> from below to above the cut. A bound on the cut is no jump: the
+   * one-sided limit there gives the value on the side of the interval. <code>F</code> has to be
+   * linear in that
+   * function; <code>E^(I*x)/(1+x^2)</code> has <code>E*ExpIntegralEi(-1+I*x)*I/2</code>, which
+   * jumps at <code>x == 0</code>.
+   *
+   * @return {@link F#NIL} if no such argument crosses the cut inside
+   */
+  private static IExpr branchCutJumps(IExpr function, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (!x.isSymbol() || !hasComplexNumber(function)) {
+      return F.NIL;
+    }
+    java.util.Set<IExpr> cutFunctions = new java.util.LinkedHashSet<>();
+    function.has(e -> {
+      if ((e.isLog() || e.isAST(S.ExpIntegralEi, 2)) && !e.first().isFree(x)
+          && e.first().isPolynomial(F.list(x)) && hasComplexNumber(e.first())) {
+        cutFunctions.add(e);
+      }
+      return false;
+    }, true);
+    if (cutFunctions.isEmpty()) {
+      return F.NIL;
+    }
+    try {
+      IASTAppendable sum = F.PlusAlloc(4);
+      for (IExpr cutFunction : cutFunctions) {
+        IExpr u = cutFunction.first();
+        IExpr im = engine.evaluate(F.ComplexExpand(F.Im(u)));
+        IExpr re = engine.evaluate(F.ComplexExpand(F.Re(u)));
+        if (im.isZero() || !im.isPolynomial(F.list(x)) || !re.isPolynomial(F.list(x))) {
+          continue;
+        }
+        IExpr solved = engine.evalQuiet(F.Solve(F.Equal(im, F.C0), x, S.Reals));
+        if (!solved.isList()) {
+          return F.NIL;
+        }
+        for (IExpr solution : (IAST) solved) {
+          IExpr p = solution.isList1() && solution.first().isRule() ? solution.first().second()
+              : F.NIL;
+          if (p.isNIL() || !p.isRealResult()) {
+            return F.NIL;
+          }
+          boolean atUpper = engine.evalTrue(F.Equal(p, upper));
+          boolean atLower = engine.evalTrue(F.Equal(p, lower));
+          if (!atUpper && !atLower
+              && !engine.evalTrue(F.And(F.Less(lower, p), F.Less(p, upper)))) {
+            continue;
+          }
+          IExpr reAtP = engine.evaluate(F.subst(re, x, p));
+          if (!engine.evalTrue(F.Less(reAtP, F.C0))) {
+            if (reAtP.isZero() || !engine.evalTrue(F.Greater(reAtP, F.C0))) {
+              // the branch point itself or an unknown side
+              return F.NIL;
+            }
+            continue;
+          }
+          IExpr derivative = engine.evaluate(F.D(im, x));
+          IExpr slope = engine.evaluate(F.subst(derivative, x, p));
+          int direction = slope.isPositiveResult() ? 1 : slope.isNegativeResult() ? -1 : 0;
+          if (direction == 0) {
+            // touches the cut without crossing it, or unknown
+            return F.NIL;
+          }
+          ISymbol t = F.Dummy("t");
+          IExpr withT = F.subst(function, cutFunction, t);
+          IExpr coefficient = engine.evaluate(F.D(withT, t));
+          if (!coefficient.isFree(t)) {
+            return F.NIL;
+          }
+          IExpr coefficientAtP = engine.evaluate(F.subst(coefficient, x, p));
+          if (!coefficientAtP.isFree(x) || !coefficientAtP.isSpecialsFree()) {
+            return F.NIL;
+          }
+          if (atUpper || atLower) {
+            // no jump inside: the one-sided limit at the bound takes the value on its side of the
+            // cut
+            continue;
+          }
+          sum.append(F.Times(F.ZZ(direction), F.C2, S.Pi, F.CI, coefficientAtP));
+        }
+      }
+      return sum.argSize() == 0 ? F.NIL : engine.evaluate(sum);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
   /**
    * A constant value of the integral of a real integrand in real form, like
    * <code>-Pi^2*Log(2)/2</code> for <code>I*Pi^3/4-Pi^2*Log(2*I)/2</code>: the antiderivative
@@ -2861,6 +3240,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     return d <= 1e-10 * (1.0 + scale) ? expanded : value;
   }
 
+  /** The time budget of the limit of one term in {@link #limitTermwise}. */
+  private static final long TERMWISE_LIMIT_MILLIS = 2000;
+
   /**
    * The limit of a sum with polylogarithms term by term: the terms with a finite limit apart,
    * the others together. <code>x^2*Log(1-E^(2*I*x))/2 - x^2*Log(Sin(x))/2</code> has a limit at
@@ -2877,7 +3259,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IASTAppendable finite = F.PlusAlloc(function.argSize());
     IASTAppendable rest = F.PlusAlloc(function.argSize());
     for (IExpr term : (IAST) function) {
-      IExpr value = engine.evalQuiet(F.Limit(term, F.Rule(x, point), direction));
+      // a term which diverges on its own can take Limit long to decide, and only a finite one is
+      // used here: the rest goes into the limit of the sum
+      IExpr value = IntegrateTimeBudget.runWithin(
+          () -> engine.evalQuiet(F.Limit(term, F.Rule(x, point), direction)),
+          MachineProfile.millis(TERMWISE_LIMIT_MILLIS));
       if (value.isSpecialsFree() && value.isFreeAST(S.Limit) && value.isFree(x)
           && !value.isInterval() && !value.isIntervalData()) {
         finite.append(value);

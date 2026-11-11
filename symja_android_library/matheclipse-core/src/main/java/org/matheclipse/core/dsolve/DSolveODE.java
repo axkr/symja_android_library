@@ -4230,6 +4230,13 @@ final class DSolveODE {
     if (basis == null || basis.length != n) {
       return F.NIL;
     }
+    if (n == 2 && isDampedOscillation(basis[0], basis[1], xVar)
+        && !isSixthRootsOfUnity(lf, engine)) {
+      // the first constant of a damped oscillation E^(alpha*x)*(C(2)*Cos(beta*x) +
+      // C(1)*Sin(beta*x)) goes with the sine, except for the characteristic roots
+      // (1 +- I*Sqrt(3))/2, the primitive sixth roots of unity, which keep it at the cosine
+      basis = new IExpr[] {basis[1], basis[0]};
+    }
     IASTAppendable homogeneous = F.PlusAlloc(n);
     for (int i = 0; i < n; i++) {
       homogeneous.append(F.Times(i == 0 ? c_n : ctx.nextConstant(), basis[i]));
@@ -4253,6 +4260,28 @@ final class DSolveODE {
       solution = engine.evaluate(F.Expand(F.Plus(solution, particular)));
     }
     return solution;
+  }
+
+  /**
+   * Test if the characteristic polynomial of the second order equation <code>lf</code> is a
+   * multiple of <code>r^2 - r + 1</code>, whose roots are <code>(1 +- I*Sqrt(3))/2</code>.
+   */
+  private static boolean isSixthRootsOfUnity(LinearODEForm lf, EvalEngine engine) {
+    return engine.evaluate(F.Plus(lf.a[1], lf.a[2])).isZero()
+        && engine.evaluate(F.Subtract(lf.a[0], lf.a[2])).isZero();
+  }
+
+  /**
+   * Test if <code>cosine</code> and <code>sine</code> are
+   * <code>E^(alpha*x)*Cos(beta*x)</code> and <code>E^(alpha*x)*Sin(beta*x)</code> with
+   * <code>alpha != 0</code>.
+   */
+  private static boolean isDampedOscillation(IExpr cosine, IExpr sine, IExpr xVar) {
+    java.util.function.Predicate<IExpr> exponential =
+        x -> x.isPower() && x.base().isE() && !x.exponent().isFree(xVar);
+    return !cosine.isFree(x -> x.isCos() && !x.isFree(xVar), false)
+        && !sine.isFree(x -> x.isSin() && !x.isFree(xVar), false)
+        && !cosine.isFree(exponential, false) && !sine.isFree(exponential, false);
   }
 
   /**

@@ -241,7 +241,15 @@ public class ImagePropertyFunctions {
   /**
    * <code>ImageValuePositions(image, value)</code> - the positions whose sample equals
    * <code>value</code>, in the same image coordinates {@link ImageValue} uses, at the centre of
-   * each pixel.
+   * each pixel, row by row from the top.
+   *
+   * <p>
+   * The value is a number, a list with one value per channel, a colour directive which is
+   * converted to the channels of the image, or <code>"Max"</code> / <code>"Min"</code> for the
+   * brightest or darkest pixels, the pixels of an RGB image ordered by their grey level. Colours
+   * and brightness of an image stored in another colour space are those of its pixels in RGB. An image of integer samples clips the
+   * value to the intensity range <code>0 ... 1</code>. <code>ImageValuePositions(image, value,
+   * d)</code> accepts the samples within <code>d</code> of the value in every channel.
    */
   private static class ImageValuePositions extends AbstractEvaluator {
 
@@ -255,19 +263,40 @@ public class ImagePropertyFunctions {
       if (image == null) {
         return F.NIL;
       }
-      int channels = image.channels;
-      double[] wanted = wantedValue(ast.arg2(), channels);
-      if (wanted == null) {
-        return F.NIL;
-      }
       double tolerance = ast.argSize() >= 3 ? ast.arg3().evalfNaN() : 0.0;
       if (Double.isNaN(tolerance)) {
         return F.NIL;
       }
+      IExpr value = ast.arg2();
+      boolean extreme = value.isString("Max") || value.isString("Min");
+      boolean color = value.isAST() && !value.isList() && !value.isNumericFunction();
+      // the slack of samples converted to single precision colours
+      double rounding = 1.0e-12;
+      String colorSpace = imageExpr.storedColorSpace();
+      if (colorSpace != null && (extreme || color)) {
+        // colours and brightness are those of the RGB form of the pixels
+        image = rgbForm(image, colorSpace);
+        rounding = 1.0e-6;
+      }
+      if (extreme) {
+        return extremePositions(image, value.isString("Max"), tolerance + rounding);
+      }
+      double[] wanted = wantedValue(value, image);
+      if (wanted == null) {
+        return F.NIL;
+      }
+      String type = imageExpr.sampleType();
+      if (Pixels.BYTE.equals(type) || Pixels.BIT16.equals(type) || Pixels.BIT.equals(type)) {
+        // the value converted to the samples of an image of integers, which are limited to the
+        // intensity range
+        for (int c = 0; c < wanted.length; c++) {
+          wanted[c] = Math.max(0.0, Math.min(1.0, wanted[c]));
+        }
+      }
       // the samples of a picture without its own matrix are levels of 8 bits, which are compared
       // as such: a value matches the levels within half a level of it
       boolean levels = imageExpr.getMatrix() == null;
-      double slack = levels ? tolerance * 255.0 + 0.5 : tolerance + 1.0e-12;
+      double slack = levels ? tolerance * 255.0 + 0.5 : tolerance + rounding;
 
       int height = image.height;
       IASTAppendable result = F.ListAlloc(16);
@@ -281,8 +310,51 @@ public class ImagePropertyFunctions {
       return result;
     }
 
-    /** The sample value looked for in each channel, on the intensity scale. */
-    private static double[] wantedValue(IExpr value, int channels) {
+    /**
+     * The positions of the brightest or darkest pixels, and of those within <code>slack</code> of
+     * them: a pixel of an RGB image is as bright as its grey level.
+     *
+     * @return {@link F#NIL} if the image has no brightness to compare
+     */
+    private static IExpr extremePositions(org.matheclipse.image.algo.Raster image, boolean max,
+        double slack) {
+      int channels = image.channels;
+      boolean rgb = channels == 3 || channels == 4;
+      if (channels > 4) {
+        return F.NIL;
+      }
+      int width = image.width;
+      int height = image.height;
+      double[] brightness = new double[width * height];
+      double extreme = max ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+      for (int row = 0; row < height; row++) {
+        for (int column = 0; column < width; column++) {
+          double value = rgb //
+              ? org.matheclipse.image.algo.Colors.grayLevel(image.get(column, row, 0),
+                  image.get(column, row, 1), image.get(column, row, 2))
+              : image.get(column, row, 0);
+          brightness[row * width + column] = value;
+          extreme = max ? Math.max(extreme, value) : Math.min(extreme, value);
+        }
+      }
+      IASTAppendable result = F.ListAlloc(16);
+      for (int row = 0; row < height; row++) {
+        for (int column = 0; column < width; column++) {
+          if (Math.abs(brightness[row * width + column] - extreme) <= slack) {
+            result.append(F.List(F.num(column + 0.5), F.num(height - row - 0.5)));
+          }
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The sample value looked for in each channel, on the intensity scale.
+     *
+     * @return <code>null</code> if <code>value</code> is no value for the channels of the image
+     */
+    private static double[] wantedValue(IExpr value, org.matheclipse.image.algo.Raster image) {
+      int channels = image.channels;
       if (value.isList()) {
         IAST list = (IAST) value;
         if (list.argSize() != channels) {
@@ -297,6 +369,9 @@ public class ImagePropertyFunctions {
         }
         return wanted;
       }
+      if (value.isAST() && !value.isNumericFunction()) {
+        return colorValue(value, channels);
+      }
       double scalar = value.evalfNaN();
       if (Double.isNaN(scalar)) {
         return null;
@@ -304,6 +379,59 @@ public class ImagePropertyFunctions {
       double[] wanted = new double[channels];
       java.util.Arrays.fill(wanted, scalar);
       return wanted;
+    }
+
+    /**
+     * The RGB form of the samples of an image stored in the colour space <code>"HSB"</code> or
+     * <code>"CMYK"</code>.
+     */
+    private static org.matheclipse.image.algo.Raster rgbForm(
+        org.matheclipse.image.algo.Raster image, String colorSpace) {
+      boolean hsb = "HSB".equals(colorSpace);
+      org.matheclipse.image.algo.Raster rgb =
+          new org.matheclipse.image.algo.Raster(image.width, image.height, 3);
+      float[] samples = new float[image.channels];
+      for (int y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+          for (int c = 0; c < samples.length; c++) {
+            samples[c] = (float) image.get(x, y, c);
+          }
+          float[] pixel = hsb ? org.matheclipse.image.algo.Colors.hsbToRgb(samples)
+              : org.matheclipse.image.algo.Colors.cmykToRgb(samples);
+          for (int c = 0; c < 3; c++) {
+            rgb.set(x, y, c, pixel[c]);
+          }
+        }
+      }
+      return rgb;
+    }
+
+    /**
+     * A colour directive in the colour space of an image with <code>channels</code> channels: its
+     * grey level for one channel, its grey level and opacity for two, its red, green and blue for
+     * three and those and its opacity for four.
+     *
+     * @return <code>null</code> if <code>color</code> is no colour directive
+     */
+    private static double[] colorValue(IExpr color, int channels) {
+      double[] rgba = org.matheclipse.image.algo.Colors.toRgbaDouble(color);
+      if (rgba == null) {
+        return null;
+      }
+      switch (channels) {
+        case 1:
+          return new double[] {org.matheclipse.image.algo.Colors.grayLevel(rgba[0], rgba[1],
+              rgba[2])};
+        case 2:
+          return new double[] {
+              org.matheclipse.image.algo.Colors.grayLevel(rgba[0], rgba[1], rgba[2]), rgba[3]};
+        case 3:
+          return new double[] {rgba[0], rgba[1], rgba[2]};
+        case 4:
+          return rgba;
+        default:
+          return null;
+      }
     }
 
     private static boolean matches(org.matheclipse.image.algo.Raster image, int x, int y,

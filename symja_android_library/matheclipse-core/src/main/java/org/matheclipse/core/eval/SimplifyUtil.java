@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.numbertheory.KummerDenest;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -3040,7 +3041,12 @@ public class SimplifyUtil extends VisitorExpr {
             ctx.result.checkLess(factored);
           }
         }
-        if (ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
+        // the bound is on the size of the expression: the complexity counts the digits of the
+        // numbers too, and the 56 leaves of (2*(a+b*x)*(1+((-5*a+3*b)*(7+11*x))/(2*(a+b*x))))/
+        // ((-55*a^2+68*a*b-21*b^2)*(3+5*x)) weigh more than the bound, so the quotient was never
+        // reduced to 1/(5*a-3*b)
+        if ((ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
+            || ctx.expr.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT)
             && isTogetherCandidate(ctx.expr)) {
           // the form with the denominator multiplied out, which the steps after this one cancel
           // in: not the form of the function Together, which keeps a factored denominator
@@ -3817,6 +3823,18 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   private IExpr visitPower(IAST powerAST, SimplifiedResult sResult) {
+    if (fFullSimplify && powerAST.exponent().equals(F.C1D2) && !powerAST.base().isRational()
+        && powerAST.base().isAST()) {
+      // a nested square root of a field of radicals: Sqrt(c)*A/B with A, B in that field. Cube
+      // and higher roots stay as they are: (8+6*3^(1/3)+6*3^(2/3))^(1/3) isn't written as
+      // 2^(1/3)+6^(1/3)
+      IExpr denested = KummerDenest.denest(powerAST.base(), 2, fEngine);
+      if (denested.isPresent() && !denestsInSimplify(powerAST, denested)
+          && (denestedLoses(denested) ? sResult.checkLess(denested)
+              : sResult.checkLessPlusTimesPower(denested))) {
+        return denested;
+      }
+    }
     if (fFullSimplify && powerAST.exponent().isComplex() && (powerAST.base().isExactNumber())) {
       IExpr powerSimplified = ArithmeticUtil.powerComplexComplex((IBigNumber) powerAST.base(),
           (IComplex) powerAST.exponent(), fEngine);

@@ -8,6 +8,7 @@ import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
@@ -391,7 +392,7 @@ public class PatternSequence extends AbstractPatternSequence {
         return false;
       }
       if (fHeadTest instanceof BuiltInSymbol) {
-        int requiredMask = UniformFlags.uniformMask((BuiltInSymbol) fHeadTest);
+        int requiredMask = UniformFlags.uniformMask((IBuiltInSymbol) fHeadTest);
         if (requiredMask != UniformFlags.NONE && sequence.isUniform(requiredMask)) {
           return patternMap.setValue(this, sequence);
         }

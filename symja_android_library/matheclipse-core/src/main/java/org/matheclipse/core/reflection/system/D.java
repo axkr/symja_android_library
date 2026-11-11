@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.DifferenceRootExpr;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -729,6 +730,11 @@ public class D extends AbstractFunctionOptionEvaluator {
       }
       return F.NIL;
     }
+    if (functionOfX.has(e -> e instanceof DifferenceRootExpr
+        && !((DifferenceRootExpr) e).toData().isFree(x, true), true)) {
+      // the recurrence of a DifferenceRoot depends on x: no derivative, and not 0
+      return F.NIL;
+    }
     if (functionOfX.isFree(x, true)) {
       return freeOfX(functionOfX, engine);
     }
@@ -878,6 +884,8 @@ public class D extends AbstractFunctionOptionEvaluator {
     final IExpr head = function.head();
     IExpr dHead = engine.evaluate(F.D(head, x));
     if (dHead.isAST(S.D)) {
+      // no derivative of the head; a DifferenceRoot whose recurrence depends on x is declined
+      // before, in the test of the whole function
       return F.NIL;
     }
     IExpr throughArgs;

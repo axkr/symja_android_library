@@ -204,7 +204,7 @@ public class DepictionFunctions {
       MoleculeHighlights.Match match =
           highlights == null ? null : highlights.match(positioned, ast, engine);
       IASTAppendable graphics = F.Graphics3D( //
-          primitives3D(positioned, spaceFilling(ast, engine), highlights, match));
+          primitives3D(positioned, spaceFilling(ast, engine), highlights, match, false));
       appendUserOptions(graphics, ast);
       appendLegend(graphics, ast, highlights);
       appendModelOptions(graphics);
@@ -612,7 +612,7 @@ public class DepictionFunctions {
    * that size the spheres already touch, which is the point of the representation.
    */
   private static IAST primitives3D(IAtomContainer molecule, boolean spaceFilling,
-      MoleculeHighlights highlights, MoleculeHighlights.Match match) {
+      MoleculeHighlights highlights, MoleculeHighlights.Match match, boolean spherePerAtom) {
     // The vertex pool of the GraphicsComplex. Atoms occupy 1..atomCount, so an atom's index is its
     // position in the container plus one; the points bonds need are appended after them.
     IASTAppendable points = F.ListAlloc(molecule.getAtomCount() * 3);
@@ -623,7 +623,7 @@ public class DepictionFunctions {
           : F.List(F.num(point.x), F.num(point.y), F.num(point.z)));
     }
 
-    IAST spheres = spheres3D(molecule, spaceFilling, highlights, match);
+    IAST spheres = spheres3D(molecule, spaceFilling, highlights, match, spherePerAtom);
     if (spaceFilling) {
       // at van der Waals size the spheres already touch, so there are no bonds to draw
       return F.List(SPECULARITY, F.unaryAST1(S.EdgeForm, S.None), //
@@ -636,10 +636,11 @@ public class DepictionFunctions {
 
   /**
    * One <code>Sphere</code> per element, listing the indices of the atoms it covers - split further
-   * by highlight, so every group keeps a single colour.
+   * by highlight, so every group keeps a single colour. With <code>spherePerAtom</code> each group
+   * holds one <code>Sphere</code> for each of its atoms instead, under the group's one colour.
    */
   private static IAST spheres3D(IAtomContainer molecule, boolean spaceFilling,
-      MoleculeHighlights highlights, MoleculeHighlights.Match match) {
+      MoleculeHighlights highlights, MoleculeHighlights.Match match, boolean spherePerAtom) {
     // sorted by element, then by highlight, so the groups come out in a stable readable order
     Map<String, List<Integer>> groups = new TreeMap<String, List<Integer>>();
     for (int i = 0; i < molecule.getAtomCount(); i++) {
@@ -667,6 +668,15 @@ public class DepictionFunctions {
           ? ChemColors.vanDerWaalsRadius(element)
           : ChemColors.ballRadius(element);
       IAST color = highlight < 0 ? ChemColors.ballColorOf(element) : highlights.color(highlight);
+      if (spherePerAtom) {
+        IASTAppendable group = F.ListAlloc(indices.size() + 1);
+        group.append(color);
+        for (Integer index : indices) {
+          group.append(F.binaryAST2(S.Sphere, F.ZZ(index.intValue() + 1), F.num(radius)));
+        }
+        result.append(group);
+        continue;
+      }
       result.append(F.List(color, F.binaryAST2(S.Sphere, vertices, F.num(radius))));
     }
     return result;
@@ -851,6 +861,20 @@ public class DepictionFunctions {
     return any ? molecule : null;
   }
 
+  /**
+   * A molecular model of atoms that already carry 3D coordinates, in the shape
+   * <code>MoleculePlot3D</code> draws, except that every atom is a <code>Sphere</code> of its own.
+   *
+   * @param positioned every atom has a 3D point
+   * @param spaceFilling van der Waals spheres and no bonds, rather than balls and sticks
+   */
+  static IAST model3D(IAtomContainer positioned, boolean spaceFilling) {
+    IASTAppendable graphics =
+        F.Graphics3D(primitives3D(positioned, spaceFilling, null, null, true));
+    appendModelOptions(graphics);
+    return graphics;
+  }
+
   // ---------------------------------------------------------------- helpers
 
   /** A copy of the argument with 2D coordinates assigned, or <code>null</code>. */
@@ -880,7 +904,9 @@ public class DepictionFunctions {
       generator.setMolecule(molecule, false);
       generator.generateCoordinates();
       IAtomContainer laidOut = generator.getMolecule();
-      double median = GeometryUtil.getBondLengthMedian(laidOut);
+      // a single atom or a salt of single ions has no bond to measure, and CDK throws for that
+      double median = laidOut.getBondCount() == 0 ? Double.NaN
+          : GeometryUtil.getBondLengthMedian(laidOut);
       if (median > 0.0 && !Double.isNaN(median)) {
         GeometryUtil.scaleMolecule(laidOut, 1.0 / median);
       }

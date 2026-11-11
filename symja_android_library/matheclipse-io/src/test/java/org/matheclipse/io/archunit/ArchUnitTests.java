@@ -135,7 +135,6 @@ public class ArchUnitTests {
               "..core.generic..", //
               "..core.reflection.system..", //
               "..core.sympy..", //
-              "..core.tensor..", //
               "..io.servlet..", //
               "..graphtheory..", //
               "..compile..");

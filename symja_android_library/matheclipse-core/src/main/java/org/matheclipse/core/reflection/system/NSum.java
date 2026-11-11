@@ -20,6 +20,8 @@ import org.matheclipse.core.numerics.utils.Sequences;
 import org.matheclipse.core.numerics.series.PrecisionSum;
 import org.matheclipse.parser.client.ParserConfig;
 import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
+import org.matheclipse.core.numerics.series.IntegerSeriesSum;
 import org.matheclipse.core.interfaces.IASTAppendable;
 
 public class NSum extends Sum {
@@ -63,6 +65,17 @@ public class NSum extends Sum {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    // the sums evaluate their terms with N(expr, digits), which sets the significant figures of
+    // the output: 1/3.0 was printed with 26 digits after NSum(n^(-n), {n, 1, Infinity})
+    final int significantFigures = engine.getSignificantFigures();
+    try {
+      return numericSum(ast, engine);
+    } finally {
+      engine.setSignificantFigures(significantFigures);
+    }
+  }
+
+  private IExpr numericSum(IAST ast, EvalEngine engine) {
 
     // NSum(f, {i, ...}, {j, ...}, ..., options)
     int iterators = 1;
@@ -176,7 +189,22 @@ public class NSum extends Sum {
       if (arithmeticSummand) {
         // no closed form: any extrapolation would only give a wrong number. Terms bounded by a
         // geometrically decreasing majorant are added one by one
-        return dominatedSum(engine.evalQuiet(summand), variable, lowerLimit, digits, engine);
+        IExpr summandValue = engine.evalQuiet(summand);
+        IExpr dominated = dominatedSum(summandValue, variable, lowerLimit, digits, engine);
+        if (dominated.isPresent()) {
+          return dominated;
+        }
+        // terms which are smooth between the ends of digit-length blocks
+        return integerSeriesSum(summandValue, variable, lowerLimit, digits, engine);
+      }
+      if (variable.isSymbol() && upperLimit.isInfinity() && F.isPresent(start)
+          && arg1.has(x -> x.isAST() && x.topHead().isSymbol() && !x.topHead().isBuiltInSymbol(),
+              true)
+          && IntegerSeriesSum.isIntegerOnly(arg1, (ISymbol) variable, start, engine)) {
+        // a user function of the index which is only known at the integers (defined for integers,
+        // or of Round(n)): no extrapolation of a smooth function. Built-in functions of an integer
+        // index, like BesselJZero(0, k), aren't probed between the integers
+        return integerSeriesSum(arg1, variable, lowerLimit, digits, engine);
       }
       if (variable.isSymbol()) {
         IExpr precise = precisionSum(arg1, (ISymbol) variable, lowerLimit, upperLimit, digits,
@@ -229,6 +257,25 @@ public class NSum extends Sum {
       return F.NIL;
     }
     return toNumber(value, digits);
+  }
+
+  /**
+   * The sum of terms which are only known at the integers, see {@link IntegerSeriesSum}.
+   *
+   * @return {@link F#NIL} if the series is none of the kinds summed there
+   */
+  private static IExpr integerSeriesSum(IExpr function, IExpr variable, IExpr lowerLimit,
+      long digits, EvalEngine engine) {
+    long start = lowerLimit.toLongDefault();
+    if (!variable.isSymbol() || F.isNotPresent(start)) {
+      return F.NIL;
+    }
+    Apfloat value =
+        IntegerSeriesSum.sum(function, (ISymbol) variable, start, digits, engine);
+    if (value == null) {
+      return F.NIL;
+    }
+    return toNumber(new Apcomplex(value), digits);
   }
 
   /**
@@ -327,7 +374,7 @@ public class NSum extends Sum {
       java.util.Set.of(S.DivisorSigma, S.EulerPhi, S.MoebiusMu, S.LiouvilleLambda,
           S.MangoldtLambda, S.PrimeNu, S.PrimeOmega, S.PrimePi, S.Prime, S.PrimeQ, S.Mod,
           S.Floor, S.Ceiling, S.Round, S.IntegerPart, S.FractionalPart, S.DigitCount,
-          S.IntegerExponent, S.BitLength);
+          S.IntegerExponent, S.BitLength, S.IntegerLength);
 
   /** Test if <code>expr</code> contains a function of the index which isn't smooth. */
   private static boolean hasArithmeticFunction(IExpr expr) {

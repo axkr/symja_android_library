@@ -18,6 +18,27 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{p(s)->C(1)*Cos(s)-C(2)*Sin(s),q(s)->C(2)*Cos(s)+C(1)*Sin(s)}}");
   }
 
+  /**
+   * A damped oscillation has the first constant at the sine, whatever the leading coefficient;
+   * without damping, or for the characteristic roots (1 +- I*Sqrt(3))/2, at the cosine.
+   */
+  @Test
+  public void testDSolveDampedOscillationConstants() {
+    check("DSolve(w''(s) + 6*w'(s) + 25*w(s) == 0, w(s), s)", //
+        "{{w(s)->(C(2)*Cos(4*s))/E^(3*s)+(C(1)*Sin(4*s))/E^(3*s)}}");
+    check("DSolve(w''(s) - 2*w'(s) + 10*w(s) == 7, w(s), s)", //
+        "{{w(s)->7/10+E^s*C(2)*Cos(3*s)+E^s*C(1)*Sin(3*s)}}");
+    check("DSolve(4*w''(s) + 24*w'(s) + 100*w(s) == 0, w(s), s)", //
+        "{{w(s)->(C(2)*Cos(4*s))/E^(3*s)+(C(1)*Sin(4*s))/E^(3*s)}}");
+    check("DSolve(w''(s) + 16*w(s) == 0, w(s), s)", //
+        "{{w(s)->C(1)*Cos(4*s)+C(2)*Sin(4*s)}}");
+    check("DSolve(5*w''(s) - 5*w'(s) + 5*w(s) == 0, w(s), s)", //
+        "{{w(s)->E^(s/2)*C(1)*Cos(1/2*Sqrt(3)*s)+E^(s/2)*C(2)*Sin(1/2*Sqrt(3)*s)}}");
+    // a Cauchy-Euler equation, which becomes w''(t) + 4*w'(t) + 13*w(t) == 0 for s == E^t
+    check("DSolve(s^2*w''(s) + 5*s*w'(s) + 13*w(s) == 0, w(s), s)", //
+        "{{w(s)->(C(2)*Cos(3*Log(s)))/s^2+(C(1)*Sin(3*Log(s)))/s^2}}");
+  }
+
   /** Every DSolve which isn't nested in another one numbers its constants from C(1) on. */
   @Test
   public void testDSolveConstantsStartAtOne() {
@@ -599,9 +620,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y'''(x) - y(x) == 0, y(x), x)", //
         "{{y(x)->E^x*C(1)+(C(2)*Cos(1/2*Sqrt(3)*x))/E^(x/2)+(C(3)*Sin(1/2*Sqrt(3)*x))/E^(x/\n"
             + "2)}}");
-    // roots already written with their real and imaginary parts apart are unchanged
+    // roots already written with their real and imaginary parts apart are unchanged; the first
+    // constant of a damped oscillation goes with the sine
     check("DSolve(y''(x) + 2*y'(x) + 5*y(x) == 0, y(x), x)", //
-        "{{y(x)->(C(1)*Cos(2*x))/E^x+(C(2)*Sin(2*x))/E^x}}");
+        "{{y(x)->(C(2)*Cos(2*x))/E^x+(C(1)*Sin(2*x))/E^x}}");
   }
 
   @Test
@@ -2663,7 +2685,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y''(x) + q*y(x) == 0, y(x), x)", //
         "{{y(x)->C(1)*Cos(Sqrt(q)*x)+C(2)*Sin(Sqrt(q)*x)}}");
     check("DSolve(y''(x) + 2*p*y'(x) + (p^2 + 9)*y(x) == 0, y(x), x)", //
-        "{{y(x)->(C(1)*Cos(3*x))/E^(p*x)+(C(2)*Sin(3*x))/E^(p*x)}}");
+        "{{y(x)->(C(2)*Cos(3*x))/E^(p*x)+(C(1)*Sin(3*x))/E^(p*x)}}");
     // WMA: a symbolic frequency beside a damping term stays E^((-p-I*q)*x), E^((-p+I*q)*x)
     check("DSolve(y''(x) + 2*p*y'(x) + (p^2 + q^2)*y(x) == 0, y(x), x)", //
         "{{y(x)->C(1)/E^(p*x+I*q*x)+C(2)/E^(p*x-I*q*x)}}");

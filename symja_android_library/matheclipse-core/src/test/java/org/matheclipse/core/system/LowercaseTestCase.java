@@ -1882,12 +1882,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + " 8.182503991486406, 8.816367093074831, 7.7800933409549735}}}}};", //
         "");
     check("arr2 = ArrayReduce(Total, arr, {2, 4}) ", //
-        "{{{125.48842256038887,139.206403494468823,134.198657185214415,116.250988299877941}," //
-            + "{154.108672107489728,99.8972573437957241,116.385072281223127,123.869244854929672}}," //
-            + "{{136.564528319236235,118.929448347479109,133.372096757702811,112.135631374646408}," //
-            + "{141.195818459714585,133.8932582037204,135.092542184616683,106.474074953409119}}," //
-            + "{{127.680908583400326,119.537285035023473,128.500238042617631,157.187531242983935}," //
-            + "{135.815206303127997,109.390454835518263,124.066719070356472,118.15910408621708}}}");
+        "{{{125.4884,139.2064,134.1987,116.251},{154.1087,99.89726,116.3851,123.8692}}," //
+            + "{{136.5645,118.9294,133.3721,112.1356},{141.1958,133.8933,135.0925,106.4741}}," //
+            + "{{127.6809,119.5373,128.5002,157.1875},{135.8152,109.3905,124.0667,118.1591}}}");
     check("arr2 // Dimensions", //
         "{3,2,4}");
     check("ArrayReduce(f, tst, 1)", //
@@ -7716,7 +7713,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1∈Integers");
 
     check("Element(Sqrt(2), #) & /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
-        "{True,True,True,Sqrt(2)∈Rationals,False,False}");
+        "{True,True,True,False,False,False}");
     check("Element(ComplexInfinity, Complexes)", //
         "False");
     check("{x} \\[Element] Reals", //
@@ -7895,10 +7892,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("ElementData(\"Chlorine\", \"BoilingPoint\")", //
         "Quantity(-34.04,\"DegreesCelsius\")");
+    // the standard atomic weight with the precision of its digits
     check("ElementData(\"C\", \"AtomicMass\")", //
-        "Quantity(12.01,\"AtomicMassUnit\")");
+        "Quantity(12.011,\"AtomicMassUnit\")");
     check("ElementData(117, \"AtomicMass\")", //
-        "Quantity(294.0,\"AtomicMassUnit\")");
+        "Quantity(294,\"AtomicMassUnit\")");
+    check("Precision /@ QuantityMagnitude /@ {ElementData(\"Fluorine\", \"AtomicMass\"), "
+        + "ElementData(\"Neon\", \"AtomicMass\"), ElementData(\"Radon\", \"AtomicMass\")}", //
+        "{11,6,3}");
 
     // check("ElementData(\"Pd\", \"AtomicRadius\")", "140");
     check("ElementData(\"Pd\", \"VanDerWaalsRadius\")", //
@@ -8012,7 +8013,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ElementData(\"Carbon\", \"ElectronCount\")", //
         "6");
     check("ElementData(\"Carbon\", \"MolarMass\")", //
-        "Quantity(12.01,\"Grams\"/\"Moles\")");
+        "Quantity(12.011,\"Grams\"/\"Moles\")");
     // the outermost shell, plus an unfilled d one shell in: carbon four, iron eight, tungsten six
     check("ElementData(\"Carbon\", \"ValenceElectronCount\")", //
         "4");
@@ -13293,8 +13294,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Frame->True}");
     check("d = DensityPlot(x*y, {x, -3, 3}, {y, -2, 2}); Options(d, {AspectRatio, Frame})", //
         "{AspectRatio->1,Frame->True}");
+    // several option arguments: none of them is taken
     check("Options(g(1, a -> 2, b :> 3))", //
-        "{a->2,b:>3}");
+        "{}");
     check("Options(Plot, PlotPoints)", //
         "{PlotPoints->Automatic}");
   }
@@ -13816,6 +13818,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,7,g(text)}");
     check("z = 4; Setting(Slider(Dynamic(z), {1, 8}) + 1)", //
         "5");
+    // Dynamic(c) stands for c, which a held expression keeps
+    check("c = 3; g(n_Integer) := 2*n; {Setting(Dynamic(g(Dynamic(c)))), Setting(Hold(Dynamic(c)))}", //
+        "{6,Hold(c)}");
   }
 
   @Test
@@ -13945,7 +13950,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{ColorData(\"WebSafe\", \"#3300CC\"), ColorData(\"WebSafe\", \"#123456\")}", //
         "{RGBColor(0.2,0.0,0.8),ColorData(WebSafe,#123456)}");
     check("{Length(ColorData(97, \"ColorList\")), ColorData(97, 5) === ColorData(97)[5]}", //
-        "{16,True}");
+        "{15,True}");
   }
 
   @Test
@@ -15883,7 +15888,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("d=EmpiricalDistribution({1,2,1} -> {5,7,5}); {Mean(d), Variance(d)}", //
         "{6,1}");
     check("EmpiricalDistribution({2.5, 1, 2.5, 4})", //
-        "DataDistribution(Empirical,{{0.25,0.5,0.25},{1,2.5,4},False},1,4)");
+        "DataDistribution(Empirical,{{1/4,1/2,1/4},{1,2.5,4},False},1,4)");
     check("Expectation(s^2+1, Distributed(s, EmpiricalDistribution({1,3} -> {0,2})))", //
         "4");
     check("Expectation(If(s>4, a, b), Distributed(s, EmpiricalDistribution({0.25,0.75} -> {3,6})))", //
@@ -16957,6 +16962,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimeSeries() {
+    // a time series is as long as its list of time stamps
+    check("{Length(TimeSeries({{1, 5}, {3, 6}, {4, 2}, {7, 1}})), Length(TimeSeries({4, 5, 6}, {10}))}", //
+        "{4,3}");
     // a path needs one time for each of its values
     check(
         "TemporalData(TimeSeries, {{{7, 8, 9}}, {{{1, 2}}}, 1, {\"Continuous\", 1}, "
@@ -20575,7 +20583,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ColorData(\"Atoms\", \"C\") == ColorData(\"Atoms\", 6)", //
         "True");
     check("Round(255 * List @@ ColorData(\"Atoms\", \"N\"))", //
-        "{48,80,248}");
+        "{74,112,227}");
     check("ColorData(\"Atoms\", \"Xx\")", //
         "ColorData(Atoms,Xx)");
     check("ColorData(\"HTML\", \"Blue\")", //
@@ -21319,8 +21327,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
     check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Round(t/.First(Solve(h(t)==1,t)),10^(-6)))", //
         "2");
-    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Quiet(Solve(h(t)==20,t))", //
-        "{}");
+    // without a root the solution is left to the inverse function
+    check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); "
+        + "s=t/.First(Quiet(Solve(h(t)==20,t))); {Head(s)===InverseFunction(h,1,1),First(s)}", //
+        "{True,20}");
     check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Round(h'(1.1),10^(-6))", //
         "-11/5");
     check("h=Interpolation(Table({t,5-t^2},{t,0,3,0.25})); Round(D(h(z),z)/.z->1.5,10^(-6))", //
@@ -21640,8 +21650,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1");
     check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Round(t/.First(NSolve(h(t)==20,t)),10^(-6)))", //
         "-1");
-    check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); Quiet(Solve(h(t)==-20,t))", //
-        "{}");
+    check("h=Interpolation({{1.,4.},{2.,2.},{3.,4.}}); "
+        + "s=t/.First(Quiet(Solve(h(t)==-20,t))); {Head(s)===InverseFunction(h,1,1),First(s)}", //
+        "{True,-20}");
   }
 
   @Test
@@ -26039,37 +26050,44 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // interpolating
     // function. Extrapolation will be used.
     check("ipf=Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(10) ", //
-        "6311.0");
+        "2351.0");
 
     check("ipf= Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(3/4) ", //
-        "0.26864");
+        "0.238944");
     check("ipf=Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(0.75) ", //
-        "0.26864");
+        "0.238944");
     check("ipf=Interpolation({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}}); ipf(19/4) ", //
         "-19/32");
     check("ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}); ipf(5/2) ", //
         "59/16");
     check("Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})", //
         "InterpolatingFunction[Piecewise({{InterpolatingPolynomial({{0,0},{1,1},{2,3},{3,4}},#1),#1<2},{InterpolatingPolynomial({{\n"
-            + "1,1},{2,3},{3,4},{4,3}},#1),2<=#1&&#1<3},{InterpolatingPolynomial({{2,3},{3,4},{\n"
-            + "4,3},{5,0}},#1),#1>=3}})&]");
+            + "1,1},{2,3},{3,4},{4,3}},#1),#1<3},{InterpolatingPolynomial({{2,3},{3,4},{4,3},{5,\n"
+            + "0}},#1),True}})&]");
     check(
         "ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}", //
         "{3.6875,4.0,3.75}");
+    // five points: the cubic through the 4 points around each interval, not one polynomial of
+    // degree 4; extrapolation continues the outer cubic
+    check("ipf=Interpolation({{0,1},{1,4},{2,2},{3,5},{4,3}});"
+        + "{ipf(1/2),ipf(5/2),ipf(7/2),ipf'(1/2),ipf(-1),ipf(5)}", //
+        "{15/4,7/2,21/4,31/12,-17,-14}");
+    check("ipf=Interpolation({{0,1.0},{1,4.0},{2,2.0},{3,5.0},{4,3.0}});{ipf(0.5),ipf'(0.5)}", //
+        "{3.75,2.58333}");
   }
 
   @Test
   public void testInterpolatingFunction() {
     check("ipf=Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(0.75) ", //
-        "0.26864");
+        "0.238944");
     check("ipf=Interpolation({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}}); ipf(19/4) ", //
         "-19/32");
     check("ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}); ipf(5/2) ", //
         "59/16");
     check("Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})", //
         "InterpolatingFunction[Piecewise({{InterpolatingPolynomial({{0,0},{1,1},{2,3},{3,4}},#1),#1<2},{InterpolatingPolynomial({{\n"
-            + "1,1},{2,3},{3,4},{4,3}},#1),2<=#1&&#1<3},{InterpolatingPolynomial({{2,3},{3,4},{\n"
-            + "4,3},{5,0}},#1),#1>=3}})&]");
+            + "1,1},{2,3},{3,4},{4,3}},#1),#1<3},{InterpolatingPolynomial({{2,3},{3,4},{4,3},{5,\n"
+            + "0}},#1),True}})&]");
     check(
         "ipf=Interpolation({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}", //
         "{3.6875,4.0,3.75}");
@@ -29240,11 +29258,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MinimalPolynomial(Power(2+Sqrt(5), -1/3),x)", //
         "-1+x+x^2");
 
-    // differs from WMA; degree 6 is minimal for the real interpretation
+    // the principal value is a root of the quartic factor of -1+4*x^3+x^6
     check("MinimalPolynomial(Power(2-Sqrt(5), -1/3))", //
-        "-1+4*#1^3+#1^6&");
+        "1+#1+2*#1^2-#1^3+#1^4&");
     check("MinimalPolynomial(Power(2-Sqrt(5), -1/3),x)", //
-        "-1+4*x^3+x^6");
+        "1+x+2*x^2-x^3+x^4");
 
     check("MinimalPolynomial((2 - I)/Sqrt(5), x)", //
         "5-6*x^2+5*x^4");
@@ -31122,7 +31140,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a∉Reals");
     // TODO improve the Rationals domain
     check("NotElement(Sqrt(2), #)& /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
-        "{False,False,False,Sqrt(2)∉Rationals,True,True}");
+        "{False,False,False,True,True,True}");
   }
 
   @Test
@@ -39186,6 +39204,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Function(x,x+1)");
   }
 
+  /**
+   * A scoping construct inside a renamed local's body which binds the same name again must not
+   * capture the colliding symbol of the substituted value either.
+   */
+  @Test
+  public void testCaptureAvoidingNestedScopes() {
+    check("q1(u_) := Module({p = 1}, Function(p, u + p)); With({fn = q1(p + 2)}, fn(10))", //
+        "12+p");
+    check("q2(u_) := With({p = 3}, Function({p}, u*p)); With({fn = q2(p)}, fn(5))", //
+        "5*p");
+    check("q3(u_) := Module({p = 1}, Module({p = 2}, u + p)); q3(p)", //
+        "2+p");
+    check("With({fn = (Module({p = 1}, Function(p, # + p)) &)[p + 2]}, fn(10))", //
+        "12+p");
+    check("With({fn = Function(u, Module({p = 1}, Function(p, u - p)))[p]}, fn(4))", //
+        "-4+p");
+    // the parameter of the inner function is a new symbol, the p of the argument stays free
+    check("q4(u_) := Module({p = 1}, Function(p, u + p)); FreeQ(q4(p)[[1]], p)", //
+        "True");
+  }
+
   /** Results for Coefficient with a symbolic exponent. */
   @Test
   public void testCoefficientSymbolicExponentWMA() {
@@ -39204,10 +39243,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    */
   @Test
   public void testMachineOverflowWMA() {
+    // Exp and Sinh lose Log10(1000) digits by their condition number 1000
     check("{Exp(1000.), Gamma(300.), Factorial(200.), Sinh(1000.), Binomial(2000., 1000.)}", //
-        "{1.970071114017047*10^434,1.020191707388135*10^612,7.886578673647905*10^374,9.850355570085235*10^433,2.048151626989490*10^600}");
+        "{1.970071114017*10^434,1.020191707388135*10^612,7.886578673647905*10^374,9.850355570085*10^433,2.048151626989490*10^600}");
+    // binary powering: 52 bits for 10.^400, 50 for 2.^5000, 45 for 10.^1000000000
     check("{10.^400, 2.^5000, 10.^1000000000}", //
-        "{1.000000000000000*10^400,1.412467032139426*10^1505,1.000000000000000*10^1000000000}");
+        "{1.000000000000000*10^400,1.41246703213943*10^1505,1.000000000000*10^1000000000}");
     check("{N(Gamma(300)), N(10^400), 1.*10^400, N(Exp(1000))}", //
         "{1.020191707388135*10^612,1.000000000000000*10^400,1.000000000000000*10^400,1.970071114017047*10^434}");
     check("{Hypergeometric1F1(1, 2, 800.), Exp(800.) + 1., MachineNumberQ(Exp(800.))}", //
@@ -41381,7 +41422,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Map({#, Count({b, a, c, b, a, c, b, a}, #)} &,Union({b, a, c, b, a, c, b, a}))", //
         "{{a,3},{b,3},{c,2}}");
     check("Counts({b, a, c, b, a, c, b, a})", //
-        "<|a->3,b->3,c->2|>");
+        "<|b->3,a->3,c->2|>");
 
     check("tb(list_, f_) := Tally(list, f(#) === f(#2) &)", //
         "");

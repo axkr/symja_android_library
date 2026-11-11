@@ -385,7 +385,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "17490.25");
 
     check("Hypergeometric2F1Regularized(a,b,b,x)", //
-        "1/((1-x)^a*Gamma(a))");
+        "1/((1-x)^a*Gamma(b))");
     check("Hypergeometric2F1Regularized(a,b,c,0)", //
         "1/Gamma(c)");
   }
@@ -535,6 +535,135 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "0.06715765478731136");
     check("HypergeometricPFQ({-4,5/2,1},{-2,3/2},1/2)", //
         "ComplexInfinity");
+  }
+
+  /**
+   * <code>HypergeometricPFQ({a1,a2},{},z)</code>, whose series diverges unless it ends, from
+   * <code>HypergeometricU</code>; the values are the examples of mpmath's <code>hyp2f0</code>.
+   */
+  @Test
+  public void testHypergeometricPFQ2F0() {
+    checkNumeric("HypergeometricPFQ({1,1},{},-1.0)", //
+        "0.5963473623231942");
+    // the cut z>0
+    check("HypergeometricPFQ({1,1},{},1.0)", //
+        "ComplexInfinity");
+    checkNumeric("HypergeometricPFQ({-0.75,1-I},{},4*I)", //
+        "-0.3579987031082732+I*(-3.0529517839221425)");
+    check("HypergeometricPFQ({1.5,0.5},{},0.05)", //
+        "ComplexInfinity");
+    check("N(HypergeometricPFQ({2/3,5/4},{},-100), 25)", //
+        "0.07095851870980052763312791");
+    check("N(HypergeometricPFQ({2/3,5/4},{},100), 25)", //
+        "ComplexInfinity");
+    check("HypergeometricPFQ({1,1},{},{-1.0,-2.0})", //
+        "{0.596347,0.461455}");
+    // a polynomial
+    check("HypergeometricPFQ({-6,-6},{},2.0)", //
+        "291793.0");
+    check("HypergeometricPFQ({a,b},{},z)", //
+        "HypergeometricPFQ({a,b},{},z)");
+    check("FunctionExpand(HypergeometricPFQ({a,b},{},z))", //
+        "(-1/z)^a*HypergeometricU(a,1+a-b,-1/z)");
+    // the parameters differ by an integer
+    checkNumeric("HypergeometricPFQ({1,3},{},-0.5)", //
+        "0.44531446755289034");
+    check("N(HypergeometricPFQ({1,3},{},-1/2), 30)", //
+        "0.445314467552890338788646630715");
+    // a small Abs(z), where E^(-1/z) overflows
+    checkNumeric("HypergeometricPFQ({1,1},{},-0.001)", //
+        "0.9990019940238806");
+    checkNumeric("HypergeometricPFQ({1,1},{},-1.0*^-10)", //
+        "0.9999999999");
+    checkNumeric("HypergeometricPFQ({1,1},{},-1.0*^10)", //
+        "2.244863526738379E-9");
+    // no value: the second parameter of HypergeometricU is out of range
+    check("HypergeometricPFQ({1,300000},{},-0.5)", //
+        "HypergeometricPFQ({1,300000},{},-0.5)");
+  }
+
+  /** <code>HypergeometricPFQ({a1,a2},{},z)</code> on both sides of the cut <code>z&gt;0</code>. */
+  @Test
+  public void testHypergeometricPFQ2F0BranchCut() {
+    check("HypergeometricPFQ({1/3,1/4},{},1.0)", //
+        "ComplexInfinity");
+    checkNumeric("HypergeometricPFQ({1/3,1/4},{},1.0+1.0*^-30*I)", //
+        "1.0747505789502334+I*0.08978816055753117");
+    checkNumeric("HypergeometricPFQ({1/3,1/4},{},1.0-1.0*^-30*I)", //
+        "1.0747505789502334+I*(-0.08978816055753117)");
+    check("N(HypergeometricPFQ({1/3,1/4},{},1+I/10^40), 30)", //
+        "1.07475057895023330705091449601+I*0.0897881605575312062858367718907");
+    check("N(HypergeometricPFQ({1/3,1/4},{},1-I/10^40), 30)", //
+        "1.07475057895023330705091449601+I*(-0.0897881605575312062858367718907)");
+    // HypergeometricU next to its cut
+    check("N(HypergeometricU(1/3,13/12,-1+I/10^40), 30)", //
+        "0.615134117477014624297378854811+I*(-0.88586722382416940330012161867)");
+    check("N(HypergeometricU(1/3,13/12,-1-I/10^40), 30)", //
+        "0.615134117477014624297378854811+I*0.88586722382416940330012161867");
+  }
+
+  /** A series with <code>p&gt;q+1</code> which ends with a parameter that isn't the first one. */
+  @Test
+  public void testHypergeometricPFQTerminatingDivergent() {
+    check("HypergeometricPFQ({-3.5,-2},{},2.0)", //
+        "50.0");
+    check("HypergeometricPFQ({-3.5,-2.0},{},2.0)", //
+        "50.0");
+    check("HypergeometricPFQ({-7/2,-2},{},2)", //
+        "50");
+    check("HypergeometricPFQ({-7/2,-2},{},x)", //
+        "1+7*x+35/4*x^2");
+    check("HypergeometricPFQ({-3.5,-2,-5},{1/3},2.0)", //
+        "1366.0");
+    check("HypergeometricPFQ({-3.5,0},{},2.0)", //
+        "1.0");
+    check("HypergeometricPFQ({a,0},{},z)", //
+        "1");
+  }
+
+  /**
+   * A divergent series with <code>p&gt;q+1</code> from <code>MeijerG</code>. The value of
+   * <code>{1,2,3},{4}</code> is the integral of
+   * <code>E^(-t)*t^2/2*Hypergeometric2F1(1,2,4,-2*t)</code> over <code>t&gt;0</code>.
+   */
+  @Test
+  public void testHypergeometricPFQDivergent() {
+    checkNumeric("HypergeometricPFQ({1,1,1},{},-0.5)", //
+        "0.768630512765972");
+    check("N(HypergeometricPFQ({1,1,1},{},-1/2), 30)", //
+        "0.768630512765971984289898395736");
+    checkNumeric("HypergeometricPFQ({1,2,3},{4},-2.0)", //
+        "0.3329478506334871");
+    check("N(HypergeometricPFQ({1,2,3},{4},-2), 30)", //
+        "0.332947850633487127145254747856");
+    // the cut z>0, and both sides of it
+    check("HypergeometricPFQ({1,1,1},{},0.5)", //
+        "ComplexInfinity");
+    checkNumeric("HypergeometricPFQ({1,1,1},{},0.5+1.0*^-9*I)", //
+        "1.1082872129997834+I*0.5327107425170639");
+    checkNumeric("HypergeometricPFQ({1,1,1},{},0.5-1.0*^-9*I)", //
+        "1.1082872129997834+I*(-0.5327107425170639)");
+    // a non-positive integer lower parameter
+    check("HypergeometricPFQ({1,2,3},{-1},-2.0)", //
+        "ComplexInfinity");
+    // a small Abs(z): the sum up to the smallest term
+    checkNumeric("HypergeometricPFQ({1,1,1},{},-1.0*^-8)", //
+        "0.9999999900000004");
+    check("HypergeometricPFQ({1,1,a},{},-0.5)", //
+        "HypergeometricPFQ({1,1,a},{},-0.5)");
+    check("HypergeometricPFQ({1,1,1},{},-1/2)", //
+        "HypergeometricPFQ({1,1,1},{},-1/2)");
+  }
+
+  /** <code>HypergeometricU(a,a,z)</code> for a large machine number <code>z</code>. */
+  @Test
+  public void testHypergeometricUEqualParametersLargeArgument() {
+    checkNumeric("HypergeometricU(1,1,1000.0)", //
+        "9.990019940238806E-4");
+    checkNumeric("HypergeometricU(2,2,800.0)", //
+        "1.5586083256496728E-6");
+    checkNumeric("HypergeometricU(1,1,-1000.0)", //
+        "-0.0010010020060241208");
   }
 
   /** Machine precision for larger arguments, where the double summation loses digits; mpmath. */
@@ -761,16 +890,19 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/05/01/0002/
     checkNumeric("MeijerG({{}, {}}, {{b, b+1/3, b+2/3}, {}}, z)", //
         "(2*Pi*z^b)/(Sqrt(3)*E^(3*z^(1/3)))");
-    // https://functions.wolfram.com/07.34.03.0984.01
+    // positive: 2*Sqrt(Pi) times the Laplace transform of 1/(1+t^2) at 2*Sqrt(z)
     checkNumeric("MeijerG({{1/2}, {}}, {{0, 1/2, 1/2}, {}}, z)", //
-        "-2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+        "2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
             + "2*Sqrt(z))))");
     checkNumeric("MeijerG({{3}, {}}, {{5/2, 3, 3}, {}}, z)", //
-        "-2*Sqrt(Pi)*z^(5/2)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+        "2*Sqrt(Pi)*z^(5/2)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
             + "2*Sqrt(z))))");
     checkNumeric("MeijerG({{a}, {}}, {{a - 1/2, a, a}, {}}, z)", //
-        "(-2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+        "(2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
             + "2*Sqrt(z)))))/z^(1/2-a)");
+    check("Abs(N(MeijerG({{1/2}, {}}, {{0, 1/2, 1/2}, {}}, 1), 20) - "
+        + "N(MeijerG({{0, 0, 1/2}, {}}, {{0}, {}}, 1), 20)) < 10^-15", //
+        "True");
 
     checkNumeric("MeijerG({{},{}}, {{0},{}}, 0)", //
         "1");

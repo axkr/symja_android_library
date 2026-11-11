@@ -36,6 +36,15 @@ public final class PrecisionSum {
   /** A run of this many zero terms ends a sum of terms which decrease geometrically. */
   private static final int MAX_ZERO_RUN = 1000;
 
+  /**
+   * Terms which decrease more slowly than <code>k^-SLOW_DECAY</code> have a tail integral which is
+   * hard to evaluate numerically.
+   */
+  private static final double SLOW_DECAY = 1.6;
+
+  /** The time limit of the antiderivative of the tail and of its limit. */
+  private static final long SYMBOLIC_SECONDS = 3L;
+
   /** The largest number of derivative corrections of the Euler-Maclaurin formula. */
   private static final int MAX_CORRECTIONS = 14;
 
@@ -51,6 +60,8 @@ public final class PrecisionSum {
   private final EvalEngine engine;
   private final FixedPrecisionApcomplexHelper helper;
   private final FixedPrecisionApfloatHelper realHelper;
+  /** the exponent s of terms like k^-s, from {@link #decaysFasterThanHarmonic(long)} */
+  private double decay = Double.POSITIVE_INFINITY;
 
   private PrecisionSum(IExpr function, ISymbol variable, long digits, EvalEngine engine) {
     this.function = function;
@@ -382,8 +393,7 @@ public final class PrecisionSum {
       }
       sum = helper.add(sum, t);
     }
-    IExpr integral = engine.evalQuiet(F.NIntegrate(function, F.list(variable, F.ZZ(tail), F.CInfinity),
-        F.Rule(S.WorkingPrecision, F.ZZ(work))));
+    IExpr integral = tailIntegral(tail);
     if (!integral.isNumber()) {
       return null;
     }
@@ -411,6 +421,66 @@ public final class PrecisionSum {
       return null;
     }
     return sum;
+  }
+
+  /**
+   * <code>Integrate(f(x), {x, tail, Infinity})</code>. A tail which decreases slowly, like
+   * <code>1/(x Log(x)^2)</code>, is the limit of an antiderivative at infinity, if it has one which
+   * agrees with the numerical integral from <code>tail</code> to <code>2 tail</code>; else, and for
+   * a fast decrease, it is the numerical integral.
+   */
+  private IExpr tailIntegral(long tail) {
+    if (decay < SLOW_DECAY) {
+      IExpr symbolic = symbolicTailIntegral(tail);
+      if (symbolic.isPresent()) {
+        return symbolic;
+      }
+    }
+    IExpr numeric = engine.evalQuiet(F.NIntegrate(function,
+        F.list(variable, F.ZZ(tail), F.CInfinity), F.Rule(S.WorkingPrecision, F.ZZ(work))));
+    if (!numeric.isNumber()) {
+      return F.NIL;
+    }
+    // a numerical integral without the working precision is no tail of the digits of the sum
+    if (numeric.isInexactNumber()
+        && ((INumber) numeric).apcomplexValue().precision() >= digits + 2L) {
+      return numeric;
+    }
+    return decay < SLOW_DECAY ? F.NIL : symbolicTailIntegral(tail);
+  }
+
+  /**
+   * The tail integral as the limit of an antiderivative at infinity, if the antiderivative agrees
+   * with the numerical integral from <code>tail</code> to <code>2 tail</code>.
+   *
+   * @return {@link F#NIL} if there is no such antiderivative
+   */
+  private IExpr symbolicTailIntegral(long tail) {
+    IExpr antiderivative = engine.evalQuiet(
+        F.TimeConstrained(F.Integrate(function, variable), F.ZZ(SYMBOLIC_SECONDS)));
+    if (antiderivative.isFree(x -> x.isAST(S.Integrate) || x == S.$Aborted, true)) {
+      IExpr limit = engine.evalQuiet(F.TimeConstrained(
+          F.Limit(antiderivative, F.Rule(variable, F.CInfinity)), F.ZZ(SYMBOLIC_SECONDS)));
+      if (limit.isNumericFunction(true)) {
+        IExpr atTail = F.subst(antiderivative, x -> x.equals(variable) ? F.ZZ(tail) : F.NIL);
+        IExpr atDouble =
+            F.subst(antiderivative, x -> x.equals(variable) ? F.ZZ(2L * tail) : F.NIL);
+        IExpr check = engine.evalQuiet(F.NIntegrate(function,
+            F.list(variable, F.ZZ(tail), F.ZZ(2L * tail))));
+        IExpr difference = engine.evalN(F.Subtract(atDouble, atTail));
+        if (check.isNumber() && difference.isNumber()) {
+          double c = ((INumber) check).evalf();
+          double d = ((INumber) difference).evalf();
+          if (Math.abs(c - d) <= 1e-8 * Math.max(Math.abs(c), Double.MIN_NORMAL)) {
+            IExpr value = engine.evalN(F.Subtract(limit, atTail), work);
+            if (value.isNumber()) {
+              return value;
+            }
+          }
+        }
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -445,8 +515,8 @@ public final class PrecisionSum {
         return null;
       }
     }
-    Apcomplex first = levinU(terms, order, h, precision);
-    Apcomplex second = levinU(terms, order - 4, h, precision);
+    Apcomplex first = levinU(terms, order, 1.0, h, precision);
+    Apcomplex second = levinU(terms, order - 4, 1.0, h, precision);
     if (first == null || second == null) {
       return null;
     }
@@ -459,18 +529,25 @@ public final class PrecisionSum {
     return helper.valueOf(first);
   }
 
-  /** The Levin u-transform of order <code>k</code> of the partial sums of <code>terms</code>. */
-  private static Apcomplex levinU(Apcomplex[] terms, int k, FixedPrecisionApcomplexHelper h,
-      long precision) {
+  /**
+   * The Levin u-transform of order <code>k</code> of the partial sums of <code>terms</code>; the
+   * remainder estimate of the term with index <code>j</code> is <code>(start + j) a(j)</code>, with
+   * the index <code>start</code> of the first term.
+   *
+   * @return <code>null</code> if the transform has no value
+   */
+  static Apcomplex levinU(Apcomplex[] terms, int k, double start,
+      FixedPrecisionApcomplexHelper h, long precision) {
     Apcomplex partial = Apcomplex.ZERO;
     Apcomplex numerator = Apcomplex.ZERO;
     Apcomplex denominator = Apcomplex.ZERO;
     Apfloat binomial = new Apfloat(1, precision);
-    final Apfloat last = new Apfloat(k + 1, precision);
+    final Apfloat first = new Apfloat(start, precision);
+    final Apfloat last = h.add(first, new Apfloat(k, precision)).real();
     for (int j = 0; j <= k; j++) {
       partial = h.add(partial, terms[j]);
-      Apfloat beta = new Apfloat(j + 1, precision);
-      // (-1)^j C(k, j) ((1 + j)/(1 + k))^(k - 1) / ((1 + j) a_j)
+      Apfloat beta = h.add(first, new Apfloat(j, precision)).real();
+      // (-1)^j C(k, j) ((start + j)/(start + k))^(k - 1) / ((start + j) a_j)
       Apcomplex weight = h.divide(
           h.multiply(binomial, h.pow(h.divide(beta, last), (long) k - 1L)),
           h.multiply(beta, terms[j]));
@@ -511,6 +588,7 @@ public final class PrecisionSum {
     }
     // the exponent s of k^-s
     double s = Math.log(sizeA / sizeB) / Math.log(2.0);
+    decay = s;
     return s > 1.05;
   }
 

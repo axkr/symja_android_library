@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -1895,9 +1896,23 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * @return {@link F#NIL} if there is no such PolyLog
    */
   private static IExpr invertedPolyLog(IExpr expr, IExpr x, EvalEngine engine) {
+    final boolean[] exponentialArgument = new boolean[1];
     IExpr result = F.subst(expr, y -> {
       if (y.isAST(S.PolyLog, 3) && y.first().isNumEqualInteger(F.C2) && !y.second().isFree(x)) {
         IExpr u = y.second();
+        IExpr exponential = exponentialGrowth(u, x, engine);
+        if (exponential.isPresent()) {
+          // u == c*E^a with a real linear a which tends to Infinity: Log(-u) == Log(-c) + a
+          IExpr c = engine.evaluate(F.Divide(u, F.Exp(exponential)));
+          IExpr logMinusC =
+              engine.evaluate(F.Plus(F.Log(F.Abs(c)), F.Times(F.CI, F.Arg(F.Negate(c)))));
+          IExpr log = F.Plus(logMinusC, exponential);
+          exponentialArgument[0] = true;
+          // the square multiplied out: its x^2 meets the x^2 of another summand
+          IExpr square = engine.evaluate(F.Expand(F.Times(F.CN1D2, F.Sqr(log))));
+          return F.Plus(F.Times(F.CN1D6, F.Sqr(S.Pi)), square,
+              F.Negate(F.PolyLog(F.C2, F.Power(u, F.CN1))));
+        }
         IExpr k = engine.evaluate(F.Exponent(u, x));
         if (!k.isRational() || !k.isPositive()) {
           return F.NIL;
@@ -1916,7 +1931,61 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
       return F.NIL;
     });
-    return result.equals(expr) ? F.NIL : engine.evaluate(result);
+    if (result.equals(expr)) {
+      return F.NIL;
+    }
+    IExpr evaluated = engine.evaluate(result);
+    if (!exponentialArgument[0]) {
+      return evaluated;
+    }
+    // the summands with the PolyLog as sums, and the others as they are:
+    // -I/Sqrt(3)*(-Pi^2/6-(c+x)^2/2-PolyLog(2,1/u)) as a product went through Simplify, which
+    // evaluates the PolyLog of complex arguments numerically, in 12 seconds
+    if (!evaluated.isPlus()) {
+      return multipliedOutPolyLog(evaluated, engine);
+    }
+    IASTAppendable sum = F.PlusAlloc(evaluated.argSize());
+    for (IExpr summand : (IAST) evaluated) {
+      sum.append(multipliedOutPolyLog(summand, engine));
+    }
+    return engine.evaluate(sum);
+  }
+
+  /** <code>term</code> multiplied out if it contains a PolyLog and isn't large. */
+  private static IExpr multipliedOutPolyLog(IExpr term, EvalEngine engine) {
+    return term.isFree(S.PolyLog, true) || term.leafCount() >= 400 ? term
+        : engine.evaluate(F.Expand(term));
+  }
+
+  /**
+   * The exponent <code>a</code> of <code>u == c*E^a</code> with a constant <code>c != 0</code> and
+   * <code>a == m*x + b</code>, <code>m &gt; 0</code> and <code>b</code> real, or {@link F#NIL}.
+   */
+  private static IExpr exponentialGrowth(IExpr u, IExpr x, EvalEngine engine) {
+    IExpr a = F.NIL;
+    if (u.isExp()) {
+      a = u.exponent();
+    } else if (u.isTimes()) {
+      for (IExpr factor : (IAST) u) {
+        if (factor.isExp() && !factor.exponent().isFree(x)) {
+          if (a.isPresent()) {
+            return F.NIL;
+          }
+          a = factor.exponent();
+        } else if (!factor.isFree(x)) {
+          return F.NIL;
+        }
+      }
+    }
+    if (a.isNIL() || !a.isPolynomial(F.list(x))) {
+      return F.NIL;
+    }
+    IExpr m = engine.evaluate(F.D(a, x));
+    IExpr b = engine.evaluate(F.subst(a, x, F.C0));
+    if (!m.isFree(x) || !m.isPositiveResult() || !b.isRealResult()) {
+      return F.NIL;
+    }
+    return a;
   }
 
   /** A sum with more than one summand which is infinite at the limit point. */
@@ -1974,6 +2043,42 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if ((limit.isInfinity() || limit.isNegativeInfinity()) && GAMMA_POLE_SHIFT_DEPTH.get() < 3
           && special.eiShiftArg) {
         function = expandGammaShifts(function, rule, direction, engine);
+      }
+
+      // ExpIntegralEi(a*x+b) with a real a and a non-real b, whose real part tends to -Infinity:
+      // off its cut Ei(u) == -ExpIntegralE(1,-u) + I*Pi*Sign(Im(u)), which tends to +-I*Pi and not
+      // to the Ei(-Infinity) == 0 of the real axis; CosIntegral(u) == CosIntegral(-u) +
+      // I*Pi*Sign(Im(u)) tends to +-I*Pi
+      if ((limit.isInfinity() || limit.isNegativeInfinity()) && special.eiVarArg) {
+        IExpr offCut = offCutAtInfinity(function, symbol, limit.isInfinity(), engine);
+        if (offCut.isPresent()) {
+          function = offCut;
+        }
+      }
+
+      // Sqrt(1-x^2)/Sqrt(-1+x^2) is the constant I for x > 1, but L'Hopital's rule goes round in
+      // a circle on it: Sqrt(-p) == I*Sqrt(p) where p > 0 on the side of the approach
+      if (direction != Direction.TWO_SIDED && limit.isReal()) {
+        IExpr oneRadicand = oppositeRadicands(function, symbol, limit, direction, engine);
+        if (oneRadicand.isPresent()) {
+          function = engine.evaluate(oneRadicand);
+        }
+        // Log(-1+I*x) at x -> 0 from below tends to -I*Pi, the value on the other side of the cut
+        // than Log(-1) == I*Pi
+        IExpr sideOfCut = cutSideNextTo(function, symbol, limit, direction, engine);
+        if (sideOfCut.isPresent()) {
+          function = engine.evaluate(sideOfCut);
+        }
+      }
+
+      // Hypergeometric2F1(a,b,c,z) with z -> -Infinity: the connection formula to 1/z gives the
+      // powers (-z)^(-a) and (-z)^(-b) which decide the limit
+      if ((limit.isInfinity() || limit.isNegativeInfinity())
+          && function.has(y -> y.isAST(S.Hypergeometric2F1, 5) && !y.isFree(symbol), true)) {
+        IExpr connected = hypergeometric2F1AtInfinity(function, rule, engine);
+        if (connected.isPresent()) {
+          function = connected;
+        }
       }
 
       // The incomplete Gamma(a,g) where g -> 0 or g -> Infinity, also along the imaginary axis:
@@ -2153,6 +2258,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
       if (special.gammaOrHarmonic) {
         function = engine.evaluate(F.FunctionExpand(function));
+        if (limit.isInfinity() || limit.isNegativeInfinity()) {
+          // Gamma(x+a) whose shifts differ by integers cancel exactly as rational functions:
+          // Gamma(x-1)*Gamma(x+3)/Gamma(x+1)^2 is (x+1)*(x+2)/((x-1)*x)
+          IExpr aligned = alignIntegerShiftedGammas(function, symbol, engine);
+          if (aligned.isPresent()) {
+            function = aligned;
+            if (function.isFree(g -> g.isAST(S.Gamma), true)) {
+              return evalLimit(function, new LimitData(symbol, limit, rule, direction), engine);
+            }
+          }
+        }
 
         // Gamma(base + shift) with a diverging base and a shift -> 0 (Gamma(x + 1/Gamma(x)),
         // Gamma(x + E^(-x))): a difference Gamma(base+shift) - Gamma(base) is an unresolved
@@ -3074,10 +3190,49 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
       }
+      IExpr dominant = polynomialPartLimit(plusAST, symbol, data);
+      if (dominant.isPresent()) {
+        return hit(Strategy.PLUS_POLYNOMIAL, dominant);
+      }
     }
     IExpr mapLimit = data.mapLimit(plusAST);
     if (mapLimit.isPresent() && !mapLimit.isIndeterminate()) {
       return hit(Strategy.PLUS_MAP, mapLimit);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The summands of a sum which are polynomials in <code>x</code> taken together, when the other
+   * summands have a finite limit: <code>-I*Pi*x - x*Log(3) - E^(-x)</code> goes in the direction
+   * of <code>-I*Pi - Log(3)</code>, while the summands one by one give
+   * <code>-I*Infinity - Infinity</code>.
+   *
+   * @return {@link F#NIL} if the polynomial part has no infinite limit or the rest isn't bounded
+   */
+  private static IExpr polynomialPartLimit(IAST plusAST, ISymbol x, LimitData data) {
+    IASTAppendable polynomial = F.PlusAlloc(plusAST.argSize());
+    IASTAppendable rest = F.PlusAlloc(plusAST.argSize());
+    IAST variables = F.list(x);
+    for (IExpr summand : plusAST) {
+      if (!summand.isFree(x) && summand.isPolynomial(variables)) {
+        polynomial.append(summand);
+      } else {
+        rest.append(summand);
+      }
+    }
+    if (polynomial.argSize() < 2 || rest.argSize() == 0) {
+      return F.NIL;
+    }
+    IExpr polynomialLimit = evalLimitQuiet(polynomial, data);
+    if (!polynomialLimit.isDirectedInfinity() || polynomialLimit.isComplexInfinity()) {
+      return F.NIL;
+    }
+    // a finite value or a bounded interval like Interval({-1,1}) of Sin(x)
+    IExpr restLimit = evalLimitQuiet(rest.oneIdentity0(), data);
+    if (restLimit.isPresent() && restLimit.isFree(x) && restLimit.isFree(S.Limit, true)
+        && restLimit.isFree(y -> y.isDirectedInfinity() || y.isIndeterminate(), true)) {
+      return polynomialLimit;
     }
     return F.NIL;
   }
@@ -3158,8 +3313,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         bestB = b;
       }
     }
-    if (bestA < eps && bestB < eps) {
-      return F.NIL; // leading term does not diverge
+    if (!(bestA > eps || (Math.abs(bestA) <= eps && bestB > eps))) {
+      // the leading term x^a*Log(x)^b doesn't diverge: a < 0 (whatever b is), or a = 0 and b <= 0
+      return F.NIL;
     }
     IASTAppendable leaderSum = F.PlusAlloc(plus.argSize());
     for (int i = 0; i < exps.length; i++) {
@@ -3858,7 +4014,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // Cancel trivial Sqrt(1/x)*Sqrt(x) terms generated by Stirling
       stirlingFunction = engine.evaluate(F.Simplify(stirlingFunction));
       // Re-combine logarithms into stable rational fractions
-      stirlingFunction = LimitGruntz.logCombine(stirlingFunction, true);
+      stirlingFunction = limit.isInfinity() || limit.isNegativeInfinity()
+          ? LimitGruntz.logCombineAtInfinity(stirlingFunction, symbol, limit.isNegativeInfinity())
+          : LimitGruntz.logCombine(stirlingFunction, true);
       LimitData stirlingData = new LimitData(symbol, limit, rule, direction);
       IExpr stirlingResult = evalLimit(stirlingFunction, stirlingData, engine);
       // Adopt only clean resolutions: a truncated asymptotic series can strand the
@@ -4171,6 +4329,280 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return false;
     }
+  }
+
+  /**
+   * <code>function</code> with the powers <code>(-p)^(k/2)</code> of a radicand whose negative
+   * <code>p</code> is a radicand too, and which is positive next to <code>x0</code> on the side of
+   * the approach, written as <code>I^k*p^(k/2)</code>.
+   *
+   * @return {@link F#NIL} if there are no such radicands
+   */
+  private static IExpr oppositeRadicands(IExpr function, ISymbol x, IExpr x0, Direction direction,
+      EvalEngine engine) {
+    java.util.List<IExpr> radicands = new java.util.ArrayList<IExpr>();
+    // has() visits every subexpression when the predicate never holds
+    function.has(e -> {
+      if (e.isPower() && e.exponent().isFraction()
+          && ((IFraction) e.exponent()).denominator().equals(F.C2) && !e.base().isFree(x)
+          && !radicands.contains(e.base())) {
+        radicands.add(e.base());
+      }
+      return false;
+    }, false);
+    if (radicands.size() < 2) {
+      return F.NIL;
+    }
+    java.util.Map<IExpr, IExpr> negativeToPositive = new java.util.HashMap<IExpr, IExpr>();
+    for (int i = 0; i < radicands.size(); i++) {
+      for (int j = i + 1; j < radicands.size(); j++) {
+        IExpr p = radicands.get(i);
+        IExpr q = radicands.get(j);
+        if (!engine.evalQuiet(F.Expand(F.Plus(p, q))).isZero()) {
+          continue;
+        }
+        int sign = signNextTo(p, x, x0, direction, engine);
+        if (sign > 0) {
+          negativeToPositive.put(q, p);
+        } else if (sign < 0) {
+          negativeToPositive.put(p, q);
+        }
+      }
+    }
+    if (negativeToPositive.isEmpty()) {
+      return F.NIL;
+    }
+    return function.replaceAll(e -> {
+      if (e.isPower() && e.exponent().isFraction()
+          && ((IFraction) e.exponent()).denominator().equals(F.C2)) {
+        IExpr positive = negativeToPositive.get(e.base());
+        if (positive != null) {
+          IExpr k = ((IFraction) e.exponent()).numerator();
+          return F.Times(F.Power(F.CI, k), F.Power(positive, e.exponent()));
+        }
+      }
+      return F.NIL;
+    });
+  }
+
+  /**
+   * <code>function</code> with each <code>Log(u)</code>, <code>ExpIntegralEi(u)</code> and
+   * <code>CosIntegral(u)</code>, whose argument tends to a real <code>c &lt; 0</code> on the cut,
+   * with <code>Im(u) != 0</code> next to <code>x0</code> on the side of the approach, written with
+   * the reflection off the cut: <code>Log(-u) + I*Pi*s</code>,
+   * <code>-ExpIntegralE(1,-u) + I*Pi*s</code> and <code>CosIntegral(-u) + I*Pi*s</code> with
+   * <code>s == Sign(Im(u))</code>.
+   *
+   * @return {@link F#NIL} if there are no such functions
+   */
+  private static IExpr cutSideNextTo(IExpr function, ISymbol x, IExpr x0, Direction direction,
+      EvalEngine engine) {
+    if (!function.has(y -> (y.isLog() || y.isAST(S.ExpIntegralEi, 2) || y.isAST(S.CosIntegral, 2))
+        && !y.first().isFree(x) && !y.first().isFree(z -> z.isComplex() || z == S.I, true), true)) {
+      return F.NIL;
+    }
+    IExpr result = function.replaceAll(e -> {
+      if (!(e.isLog() || e.isAST(S.ExpIntegralEi, 2) || e.isAST(S.CosIntegral, 2))
+          || e.first().isFree(x) || e.first().isFree(z -> z.isComplex() || z == S.I, true)) {
+        return F.NIL;
+      }
+      IExpr u = e.first();
+      IExpr c = engine.evalQuiet(F.subst(u, x, x0));
+      if (!c.isReal() || !c.isNegative()) {
+        // off the cut, or the branch point
+        return F.NIL;
+      }
+      IExpr im = engine.evalQuiet(F.ComplexExpand(F.Im(u)));
+      if (!im.isFree(S.Im, true) || !im.isFree(S.Re, true)) {
+        return F.NIL;
+      }
+      int s = signNextTo(im, x, x0, direction, engine);
+      if (s == 0) {
+        return F.NIL;
+      }
+      IExpr minusU = F.Negate(u);
+      IExpr reflected = e.isLog() ? F.Log(minusU)
+          : e.isAST(S.CosIntegral, 2) ? F.CosIntegral(minusU)
+              : F.Negate(F.ExpIntegralE(F.C1, minusU));
+      return F.Plus(reflected, F.Times(F.ZZ(s), F.CI, S.Pi));
+    });
+    return result.isPresent() && !result.equals(function) ? result : F.NIL;
+  }
+
+  /**
+   * The sign of the real <code>p</code> at two points next to <code>x0</code> on the side of the
+   * approach, or <code>0</code> if it isn't real there or not the same at both points.
+   */
+  private static int signNextTo(IExpr p, ISymbol x, IExpr x0, Direction direction,
+      EvalEngine engine) {
+    int sign = 0;
+    for (IExpr h : new IExpr[] {F.Power(F.C10, F.CN6), F.Power(F.C10, F.ZZ(-9))}) {
+      IExpr point = direction == Direction.FROM_BELOW ? F.Subtract(x0, h) : F.Plus(x0, h);
+      IExpr value = engine.evalQuiet(F.N(F.subst(p, x, point)));
+      if (!value.isReal() || value.isZero()) {
+        return 0;
+      }
+      int s = value.isPositive() ? 1 : -1;
+      if (sign != 0 && s != sign) {
+        return 0;
+      }
+      sign = s;
+    }
+    return sign;
+  }
+
+  /**
+   * <code>function</code> with each <code>ExpIntegralEi(u)</code> and <code>CosIntegral(u)</code>,
+   * <code>u = a*x+b</code> with <code>a</code> real and <code>Im(b) != 0</code>, whose real part
+   * tends to <code>-Infinity</code>, written as <code>-ExpIntegralE(1,-u) + I*Pi*Sign(Im(b))</code>
+   * and <code>CosIntegral(-u) + I*Pi*Sign(Im(b))</code>.
+   *
+   * @param plusInfinity <code>x -> Infinity</code>, else <code>x -> -Infinity</code>
+   * @return {@link F#NIL} if there is no such function
+   */
+  private static IExpr offCutAtInfinity(IExpr function, ISymbol x, boolean plusInfinity,
+      EvalEngine engine) {
+    return function.replaceAll(e -> {
+      if (!(e.isAST(S.ExpIntegralEi, 2) || e.isAST(S.CosIntegral, 2)) || e.first().isFree(x)
+          || !e.first().isPolynomial(F.list(x))) {
+        return F.NIL;
+      }
+      IExpr u = engine.evaluate(F.Expand(e.first()));
+      IExpr a = engine.evaluate(F.Coefficient(u, x, F.C1));
+      IExpr b = engine.evaluate(F.Expand(F.Subtract(u, F.Times(a, x))));
+      if (!b.isFree(x) || !a.isRealResult() || a.isZero()) {
+        return F.NIL;
+      }
+      IExpr im = engine.evaluate(F.Im(b));
+      int imSign = im.isPositiveResult() ? 1 : im.isNegativeResult() ? -1 : 0;
+      int aSign = a.isPositiveResult() ? 1 : a.isNegativeResult() ? -1 : 0;
+      if (imSign == 0 || aSign == 0 || (aSign > 0) == plusInfinity) {
+        // real, an unknown side, or a real part which tends to +Infinity
+        return F.NIL;
+      }
+      IExpr reflected = e.isAST(S.CosIntegral, 2) ? F.CosIntegral(F.Negate(u))
+          : F.Negate(F.ExpIntegralE(F.C1, F.Negate(u)));
+      return F.Plus(reflected, F.Times(F.ZZ(imSign), F.CI, S.Pi));
+    });
+  }
+
+  /**
+   * <code>function</code> with each <code>Hypergeometric2F1(a,b,c,z)</code>, numeric
+   * <code>a, b, c</code> with a non integer <code>a-b</code>, whose argument <code>z</code> tends
+   * to <code>-Infinity</code>, written with the connection formula
+   *
+   * <pre>
+   * Gamma(c)*Gamma(b-a)/(Gamma(b)*Gamma(c-a))*(-z)^(-a)*Hypergeometric2F1(a,a-c+1,a-b+1,1/z)
+   *   + Gamma(c)*Gamma(a-b)/(Gamma(a)*Gamma(c-b))*(-z)^(-b)*Hypergeometric2F1(b,b-c+1,b-a+1,1/z)
+   * </pre>
+   *
+   * @return {@link F#NIL} if there is no such function
+   */
+  private static IExpr hypergeometric2F1AtInfinity(IExpr function, IAST rule, EvalEngine engine) {
+    final IExpr x = rule.arg1();
+    return function.replaceAll(e -> {
+      if (!e.isAST(S.Hypergeometric2F1, 5) || e.isFree(x)) {
+        return F.NIL;
+      }
+      IAST h = (IAST) e;
+      IExpr a = h.arg1();
+      IExpr b = h.arg2();
+      IExpr c = h.arg3();
+      IExpr z = h.arg4();
+      if (!a.isRational() || !b.isRational() || !c.isRational() || !a.isFree(x)
+          || z.isFree(x)) {
+        return F.NIL;
+      }
+      IExpr difference = engine.evaluate(F.Subtract(a, b));
+      if (difference.isInteger() || engine.evaluate(F.Subtract(c, a)).isInteger()
+          && !engine.evaluate(F.Subtract(c, a)).isPositive()
+          || engine.evaluate(F.Subtract(c, b)).isInteger()
+              && !engine.evaluate(F.Subtract(c, b)).isPositive()
+          || a.isZero() || b.isZero()) {
+        return F.NIL;
+      }
+      IExpr zLimit = engine.evalQuiet(F.Limit(z, rule));
+      if (!zLimit.isNegativeInfinity()) {
+        return F.NIL;
+      }
+      IExpr minusZ = F.Negate(z);
+      IExpr inverse = F.Power(z, F.CN1);
+      IExpr first = F.Times(F.Gamma(c), F.Gamma(F.Subtract(b, a)),
+          F.Power(F.Times(F.Gamma(b), F.Gamma(F.Subtract(c, a))), F.CN1),
+          F.Power(minusZ, F.Negate(a)),
+          F.Hypergeometric2F1(a, F.Plus(a, F.Negate(c), F.C1), F.Plus(a, F.Negate(b), F.C1),
+              inverse));
+      IExpr second = F.Times(F.Gamma(c), F.Gamma(F.Subtract(a, b)),
+          F.Power(F.Times(F.Gamma(a), F.Gamma(F.Subtract(c, b))), F.CN1),
+          F.Power(minusZ, F.Negate(b)),
+          F.Hypergeometric2F1(b, F.Plus(b, F.Negate(c), F.C1), F.Plus(b, F.Negate(a), F.C1),
+              inverse));
+      return F.Plus(first, second);
+    });
+  }
+
+  /** The largest integer difference of two Gamma arguments which is written as a polynomial. */
+  private static final int MAX_GAMMA_SHIFT = 64;
+
+  /**
+   * <code>function</code> with each <code>Gamma(x+c)</code>, <code>c</code> rational, written as
+   * <code>Gamma(x+c0)*(x+c0)*(x+c0+1)*...*(x+c-1)</code>, <code>c0</code> the smallest shift which
+   * differs from <code>c</code> by an integer: the Gammas of one class cancel in
+   * <code>Together</code>.
+   *
+   * @return {@link F#NIL} if there are no two such Gammas
+   */
+  private static IExpr alignIntegerShiftedGammas(IExpr function, ISymbol x, EvalEngine engine) {
+    java.util.Map<IExpr, IRational> smallest = new java.util.HashMap<>();
+    java.util.Map<IExpr, java.util.Set<IRational>> shifts = new java.util.HashMap<>();
+    java.util.List<IExpr> gammas = new java.util.ArrayList<>();
+    function.has(e -> {
+      if (e.isAST(S.Gamma, 2)) {
+        gammas.add(e);
+      }
+      return false;
+    }, true);
+    for (IExpr g : gammas) {
+      IExpr c = engine.evaluate(F.Subtract(g.first(), x));
+      if (!c.isRational()) {
+        continue;
+      }
+      IRational shift = (IRational) c;
+      IExpr key = engine.evaluate(F.Subtract(shift, F.Floor(shift)));
+      IRational min = smallest.get(key);
+      if (min == null || shift.isLT(min)) {
+        smallest.put(key, shift);
+      }
+      shifts.computeIfAbsent(key, k -> new java.util.HashSet<>()).add(shift);
+    }
+    if (shifts.values().stream().noneMatch(s -> s.size() > 1)) {
+      return F.NIL;
+    }
+    IExpr replaced = F.subst(function, e -> {
+      if (!e.isAST(S.Gamma, 2)) {
+        return F.NIL;
+      }
+      IExpr c = engine.evaluate(F.Subtract(e.first(), x));
+      if (!c.isRational()) {
+        return F.NIL;
+      }
+      IExpr key = engine.evaluate(F.Subtract(c, F.Floor(c)));
+      IRational c0 = smallest.get(key);
+      if (c0 == null || shifts.get(key).size() < 2) {
+        return F.NIL;
+      }
+      int difference = engine.evaluate(F.Subtract(c, c0)).toIntDefault();
+      if (difference <= 0 || difference > MAX_GAMMA_SHIFT) {
+        return F.NIL;
+      }
+      IASTAppendable product = F.TimesAlloc(difference + 1);
+      product.append(F.Gamma(F.Plus(x, c0)));
+      for (int j = 0; j < difference; j++) {
+        product.append(F.Plus(x, c0, F.ZZ(j)));
+      }
+      return product;
+    });
+    return engine.evaluate(F.Together(replaced));
   }
 
   /**
@@ -5166,7 +5598,6 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       Direction direction) {
     final boolean atInfinity = point.isInfinity();
     final boolean atZero = point.isZero();
-    final boolean fromAbove = direction == Direction.FROM_ABOVE;
     if (!atInfinity && !atZero) {
       return F.NIL;
     }
@@ -5176,28 +5607,20 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IExpr factor = factors.get(i);
       IExpr function = factor.isPower() && factor.exponent().isInteger() ? factor.base() : factor;
       IExpr leading = F.NIL;
-      if (function.isAST2() && function.second().equals(x) && function.first().isFree(x, true)) {
+      if (function.isAST2() && function.first().isFree(x, true)) {
         IExpr order = function.first();
         int id = function.headID();
         if (atInfinity) {
-          if (id == ID.BesselI) {
-            leading = F.Times(F.Exp(x), F.Power(F.Times(F.C2, S.Pi, x), F.CN1D2));
-          } else if (id == ID.BesselK) {
-            leading = F.Times(F.Sqrt(F.Times(F.C1D2, S.Pi, F.Power(x, F.CN1))), F.Exp(F.Negate(x)));
+          if (function.second().equals(x)) {
+            if (id == ID.BesselI) {
+              leading = F.Times(F.Exp(x), F.Power(F.Times(F.C2, S.Pi, x), F.CN1D2));
+            } else if (id == ID.BesselK) {
+              leading =
+                  F.Times(F.Sqrt(F.Times(F.C1D2, S.Pi, F.Power(x, F.CN1))), F.Exp(F.Negate(x)));
+            }
           }
-        } else if ((id == ID.BesselJ || id == ID.BesselI)
-            && (order.isPositiveResult() || !order.isNumber())) {
-          // the generic order; a negative integer order is a different function
-          leading = F.Times(F.Power(F.Times(F.C1D2, x), order),
-              F.Power(F.Gamma(F.Plus(order, F.C1)), F.CN1));
-        } else if (fromAbove && order.isPositiveResult()) {
-          if (id == ID.BesselY) {
-            leading = F.Times(F.CN1, F.Gamma(order), F.Power(S.Pi, F.CN1),
-                F.Power(F.Times(F.C2, F.Power(x, F.CN1)), order));
-          } else if (id == ID.BesselK) {
-            leading = F.Times(F.C1D2, F.Gamma(order),
-                F.Power(F.Times(F.C2, F.Power(x, F.CN1)), order));
-          }
+        } else {
+          leading = besselLeadingTermAtZero(id, order, function.second(), x, direction);
         }
       }
       if (leading.isPresent()) {
@@ -5208,6 +5631,77 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
     }
     return result.isPresent() ? result : F.NIL;
+  }
+
+  /**
+   * The leading term of <code>BesselJ/Y/I/K(order, u)</code> for <code>u = c*x</code> tending to
+   * <code>0</code>, with a real number <code>c</code>. <code>BesselY</code> and <code>BesselK</code>
+   * need <code>u</code> to tend to <code>0</code> from above. A negative order uses the reflection
+   * of the function: <code>J(-n,u) = (-1)^n*J(n,u)</code>, <code>K(-a,u) = K(a,u)</code> and
+   * <code>Y(a,u) = (J(a,u)*Cos(a*Pi)-J(-a,u))/Sin(a*Pi)</code>.
+   *
+   * @return {@link F#NIL} if the argument or the order isn't of this kind
+   */
+  private static IExpr besselLeadingTermAtZero(int id, IExpr order, IExpr u, IExpr x,
+      Direction direction) {
+    IExpr c;
+    if (u.equals(x)) {
+      c = F.C1;
+    } else if (u.isTimes() && u.size() == 3 && u.first().isReal() && !u.first().isZero()
+        && u.second().equals(x)) {
+      c = u.first();
+    } else {
+      return F.NIL;
+    }
+    final boolean uFromAbove = c.isPositive() ? direction == Direction.FROM_ABOVE
+        : direction == Direction.FROM_BELOW;
+    final IExpr halfU = F.Times(F.C1D2, u);
+    if (id == ID.BesselJ || id == ID.BesselI) {
+      if (!order.isNumber()) {
+        return F.Times(F.Power(halfU, order), F.Power(F.Gamma(F.Plus(order, F.C1)), F.CN1));
+      }
+      if (!order.isReal()) {
+        return F.NIL;
+      }
+      if (order.isInteger() && order.isNegative()) {
+        IExpr m = order.negate();
+        IExpr sign = id == ID.BesselJ ? F.Power(F.CN1, m) : F.C1;
+        return F.Times(sign, F.Power(halfU, m), F.Power(F.Factorial(m), F.CN1));
+      }
+      return F.Times(F.Power(halfU, order), F.Power(F.Gamma(F.Plus(order, F.C1)), F.CN1));
+    }
+    if ((id != ID.BesselY && id != ID.BesselK) || !uFromAbove) {
+      return F.NIL;
+    }
+    if (!order.isReal()) {
+      if (!order.isPositiveResult()) {
+        return F.NIL;
+      }
+      // a positive order under assumptions
+      IExpr singular = F.Power(F.Times(F.C2, F.Power(u, F.CN1)), order);
+      return id == ID.BesselK ? F.Times(F.C1D2, F.Gamma(order), singular)
+          : F.Times(F.CN1, F.Gamma(order), F.Power(S.Pi, F.CN1), singular);
+    }
+    if (order.isZero()) {
+      return id == ID.BesselY ? F.Times(F.C2, F.Power(S.Pi, F.CN1), F.Log(u)) : F.Negate(F.Log(u));
+    }
+    IExpr mu = order.isNegative() ? order.negate() : order;
+    IExpr singular = F.Power(F.Times(F.C2, F.Power(u, F.CN1)), mu);
+    if (id == ID.BesselK) {
+      return F.Times(F.C1D2, F.Gamma(mu), singular);
+    }
+    if (order.isPositive() || order.isInteger()) {
+      // Y(-n,u) = (-1)^n*Y(n,u)
+      IExpr sign = order.isPositive() ? F.CN1 : F.Negate(F.Power(F.CN1, mu));
+      return F.Times(sign, F.Gamma(mu), F.Power(S.Pi, F.CN1), singular);
+    }
+    if (order.isFraction() && ((IFraction) order).denominator().equals(F.C2)) {
+      // Cos(order*Pi) = 0: Y(order,u) = -J(-order,u)/Sin(order*Pi)
+      return F.Times(F.CN1, F.Power(halfU, mu), F.Power(F.Gamma(F.Plus(mu, F.C1)), F.CN1),
+          F.Power(F.Sin(F.Times(order, S.Pi)), F.CN1));
+    }
+    return F.Times(F.Cot(F.Times(order, S.Pi)), F.Power(halfU, order),
+        F.Power(F.Gamma(F.Plus(order, F.C1)), F.CN1));
   }
 
   /**

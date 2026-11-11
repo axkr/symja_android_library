@@ -98,10 +98,10 @@ public class ElementData extends AbstractFunctionEvaluator {
       return atomicNumber;
     }
     if ("MolarMass".equals(property)) {
-      IExpr mass = column("AtomicMass", row);
-      double d = mass.evalfNaN();
-      return Double.isNaN(d) ? F.Missing(S.NotAvailable)
-          : F.binaryAST2(S.Quantity, F.num(d), F.Divide(unit("Grams"), unit("Moles")));
+      // a mole of the element has its atomic weight in grams
+      IExpr mass = StandardAtomicWeights.of(atomicNumber.toIntDefault());
+      return mass.isNIL() ? F.Missing(S.NotAvailable)
+          : F.binaryAST2(S.Quantity, mass, F.Divide(unit("Grams"), unit("Moles")));
     }
     if ("ValenceElectronCount".equals(property)) {
       return valenceElectronCount(column("ElectronicConfiguration", row));
@@ -343,7 +343,6 @@ public class ElementData extends AbstractFunctionEvaluator {
     java.util.Map<String, String> map = new HashMap<String, String>();
     map.put("Abbreviation", "AtomicSymbol");
     map.put("StandardName", "Name");
-    map.put("AtomicWeight", "AtomicMass");
     map.put("Density", "MassDensity");
     map.put("DiscoveryYear", "DiscoveryDate");
     map.put("ElectroNegativity", "Electronegativity");
@@ -493,6 +492,13 @@ public class ElementData extends AbstractFunctionEvaluator {
    */
   private IExpr dataPoint(final IAST ast, IAST propertyList, EvalEngine engine) {
     String property = propertyOf(ast.arg2());
+    if ("AtomicMass".equals(property) || "AtomicWeight".equals(property)) {
+      // the standard atomic weight with the precision of its digits, not the rounded column
+      IExpr mass = StandardAtomicWeights.of(column("AtomicNumber", propertyList).toIntDefault());
+      if (mass.isPresent()) {
+        return F.binaryAST2(S.Quantity, mass, PROPERTY_UNIT.get("AtomicMass"));
+      }
+    }
     if (isComputed(property)) {
       return computed(property, propertyList, engine);
     }

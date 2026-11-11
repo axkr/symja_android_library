@@ -5,11 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.ColorDataGradients;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.api.TensorUnaryOperator;
-import org.matheclipse.core.tensor.img.ColorDataGradients;
-import org.matheclipse.core.tensor.img.ImageCrop;
 
 public class ImageTest extends AbstractTestCase {
 
@@ -76,15 +74,6 @@ public class ImageTest extends AbstractTestCase {
   public void testImageRGB002() {
     check("Image(RandomReal(1, {4, 5, 3}))", //
         "Image(Dimensions: 5,4 Transparency: 1)");
-  }
-
-  @Test
-  public void testColor() throws ClassNotFoundException {
-    IAST image = F.List(F.List(0, 0, 0), F.List(0, 1, 0), F.List(0, 0, 0));
-    image = image.mapLeaf(S.List, ColorDataGradients.CLASSIC);
-    TensorUnaryOperator tensorUnaryOperator = ImageCrop.eq(image.getPart(1, 1));
-    IAST result = tensorUnaryOperator.apply(image);
-    assertEquals(result, F.List(F.List(F.List(255, 237, 237, 255))));
   }
 
   @Test

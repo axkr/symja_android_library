@@ -94,7 +94,8 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
 
     // If the MinimalPolynomial cannot be determined
     if (poly.isAST(S.MinimalPolynomial) || poly.isNIL()) {
-      return F.NIL;
+      // a transcendental number has no minimal polynomial
+      return isKnownTranscendental(expr) ? S.False : F.NIL;
     }
 
     // Extract the coefficients of the resulting minimal polynomial

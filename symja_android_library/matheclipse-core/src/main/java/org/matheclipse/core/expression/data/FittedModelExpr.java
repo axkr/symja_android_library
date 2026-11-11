@@ -281,7 +281,7 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
       "ANOVATableDegreesOfFreedom", "ANOVATableEntries", "ANOVATableFStatistics",
       "ANOVATableMeanSquares", "ANOVATablePValues", "ANOVATableSumsOfSquares", "BasisFunctions",
       "BestFit", "BestFitParameters", "CookDistances", "CovarianceMatrix", "DesignMatrix",
-      "EstimatedVariance", "FitResiduals", "HatDiagonal", "IndependentVariables",
+      "EstimatedVariance", "FitResiduals", "Function", "HatDiagonal", "IndependentVariables",
       "MeanPredictionBands", "ParameterConfidenceIntervals", "ParameterConfidenceRegion",
       "ParameterErrors", "ParameterPValues", "ParameterTStatistics", "ParameterTable",
       "ParameterTableEntries", "PredictedResponse", "Response", "RSquared",
@@ -292,7 +292,7 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
    * square roots of the weights, which leaves the parameters as they are.
    */
   private static final String[] WEIGHTED_PROPERTIES =
-      {"BasisFunctions", "BestFit", "BestFitParameters", "IndependentVariables"};
+      {"BasisFunctions", "BestFit", "BestFitParameters", "Function", "IndependentVariables"};
 
   private FieldMatrix<IExpr> designMatrix;
   private FieldVector<IExpr> responseVector;

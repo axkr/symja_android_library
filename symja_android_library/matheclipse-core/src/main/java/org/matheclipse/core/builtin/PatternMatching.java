@@ -1785,11 +1785,7 @@ public final class PatternMatching {
       } else if (arg1.isAST() && !arg1.isList()) {
         // the rules at the end of an expression, as the options of Graphics(prims, opts)
         IAST expr = (IAST) arg1;
-        int start = expr.size();
-        while (start > 1 && expr.get(start - 1).isRuleAST()) {
-          start--;
-        }
-        options = expr.subList(start).setAtCopy(0, S.List);
+        options = takesOptions(expr.head()) ? trailingOptionRun(expr) : lastArgumentOptions(expr);
       } else {
         return F.NIL;
       }
@@ -1800,6 +1796,63 @@ public final class PatternMatching {
         return options.select(rule -> nameList.contains(rule.first()));
       }
       return options;
+    }
+
+    /**
+     * Whether a head is a function with options of its own: <code>Graphics</code>,
+     * <code>Graphics3D</code> or a built-in function with declared default options, such as
+     * <code>Grid</code>.
+     */
+    private static boolean takesOptions(IExpr head) {
+      if (head == S.Graphics || head == S.Graphics3D) {
+        return true;
+      }
+      return head.isBuiltInSymbol() && org.matheclipse.core.expression.OptionsPattern
+          .optionsList((ISymbol) head, false).argSize() > 0;
+    }
+
+    /**
+     * The options of an expression whose head takes options: the run of rules and lists of rules
+     * at its end, after the first argument, as in <code>Grid(data, opt1, {opt2, opt3})</code>.
+     */
+    private static IAST trailingOptionRun(IAST expr) {
+      int start = expr.size();
+      while (start > 2 && isOptionSpecification(expr.get(start - 1))) {
+        start--;
+      }
+      IASTAppendable options = F.ListAlloc(expr.size());
+      for (int i = start; i < expr.size(); i++) {
+        IExpr arg = expr.get(i);
+        if (arg.isList()) {
+          options.appendArgs((IAST) arg);
+        } else {
+          options.append(arg);
+        }
+      }
+      return options;
+    }
+
+    /**
+     * The options of an expression of another head: its last argument, a rule or a list of rules,
+     * provided no other argument is one. With several of them, such as in
+     * <code>f(1, a -&gt; 2, b :&gt; 3)</code>, the expression has no options.
+     */
+    private static IAST lastArgumentOptions(IAST expr) {
+      if (expr.argSize() == 0 || !isOptionSpecification(expr.last())) {
+        return F.CEmptyList;
+      }
+      for (int i = 1; i < expr.argSize(); i++) {
+        if (isOptionSpecification(expr.get(i))) {
+          return F.CEmptyList;
+        }
+      }
+      return expr.last().isList() ? (IAST) expr.last() : F.list(expr.last());
+    }
+
+    /** A rule, or a non-empty list of rules. */
+    private static boolean isOptionSpecification(IExpr expr) {
+      return expr.isRuleAST()
+          || (expr.isList() && expr.argSize() > 0 && ((IAST) expr).forAll(x -> x.isRuleAST()));
     }
 
     @Override

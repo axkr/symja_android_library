@@ -107,6 +107,26 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveInterpolatingFunctionFromFixedStartValues() {
+    // Newton's method from the fixed start values converges to the root at 0.5, not to the first
+    // root 0.2 of the domain
+    check("f=Interpolation(Table({t,(t-0.2)*(0.5-t)},{t,0,1,0.1}));"
+        + "Quiet({Solve(f(t)==0,t),NSolve(f(t)==0,t)})", //
+        "{{{t->0.5}},{{t->0.5}}}");
+    // a monotone function without a root in the domain is inverted on its extrapolation
+    check("g=Interpolation({{0,2.},{1,3.},{2,4.}});Quiet(Solve(g(t)==0,t))", //
+        "{{t->-2.0}}");
+    // Newton's method stops beside the vertex of the parabola, which isn't a root: the solution is
+    // left to the inverse function
+    check("g=Interpolation({{0,1.},{1,3.},{2,4.}});s=t/.First(Quiet(Solve(g(t)==10,t)));"
+        + "{Head(s)===InverseFunction(g,1,1),First(s)}", //
+        "{True,10}");
+    // Reduce can't rationalize the data of an interpolating function
+    check("g=Interpolation({{0,1.},{1,3.},{2,4.}});Head(Reduce(g(t)==2,t))", //
+        "Reduce");
+  }
+
+  @Test
   public void testSolveModulus() {
     // 3^2 == 4^2 == 2 modulo 7
     check("Solve({x^2 == 2, y == x}, {x, y}, Modulus -> 7)", //

@@ -58,6 +58,7 @@
     "pound": "Pounds",
     "ounce": "Ounces",
     "grain": "Grains",
+    "percent": "Percent",
     "gallon": "Gallons",
     "quart": "Quarts",
     "pint": "Pints",
@@ -134,6 +135,13 @@
     }
   },
   "add": [
+    {
+      "name": "People",
+      "coefficient": "1",
+      "factors": { "People": 1 },
+      "prefixable": false,
+      "aliases": ["person", "Persons"]
+    },
     {
       "name": "USDollars",
       "coefficient": "1",

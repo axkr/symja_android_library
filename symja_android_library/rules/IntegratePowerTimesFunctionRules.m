@@ -32,13 +32,22 @@
  f2(CubeRoot,x_,n_,m_) := (x^(1+n)*Surd(m*x,3))/(4/3+n)
    /; n!=(-4/3),
  
+ f2(EllipticE,x_,-1,m_) := Pi/2*Log(x)-1/8*Pi*m*x*HypergeometricPFQ({1/2,1,1,3/2},{2,2,2},m*x),
+ f3(EllipticE,x_,-1,m_,p_) := Pi/2*Log(x)-(Pi*m*x^p*HypergeometricPFQ({1/2,1,1,3/2},{2,2,2},m*x^p))/(8*p),
+ f2(EllipticK,x_,-1,m_) := Pi/2*Log(x)+1/8*Pi*m*x*HypergeometricPFQ({1,1,3/2,3/2},{2,2,2},m*x),
+ f3(EllipticK,x_,-1,m_,p_) := Pi/2*Log(x)+(Pi*m*x^p*HypergeometricPFQ({1,1,3/2,3/2},{2,2,2},m*x^p))/(8*p),
+
  f1(EllipticE,x_,m_) := (2*((1+m*x)*EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/(3*m),
- f2(EllipticE,x_,n_,m_) := (Pi*x^(1+n)*HypergeometricPFQ({-1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n),
- f3(EllipticE,x_,n_,m_,p_) := (Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({-1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p),
+ f2(EllipticE,x_,n_,m_) := (Pi*x^(1+n)*HypergeometricPFQ({-1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)
+   /; !(IntegerQ(n)&&n<0),
+ f3(EllipticE,x_,n_,m_,p_) := (Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({-1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p)
+   /; !(IntegerQ((1+n)/p)&&(1+n)/p<=0),
 
  f1(EllipticK,x_,m_) := (2*(EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/m,
- f2(EllipticK,x_,n_,m_) := (Pi*x^(1+n)*HypergeometricPFQ({1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n),
- f3(EllipticK,x_,n_,m_,p_) := (Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p),
+ f2(EllipticK,x_,n_,m_) := (Pi*x^(1+n)*HypergeometricPFQ({1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)
+   /; !(IntegerQ(n)&&n<0),
+ f3(EllipticK,x_,n_,m_,p_) := (Pi*x^(1+n)*Gamma((1+n)/p)*HypergeometricPFQRegularized({1/2,1/2,(1+n)/p},{1,(1+n+p)/p},m*x^p))/(2*p)
+   /; !(IntegerQ((1+n)/p)&&(1+n)/p<=0),
  
  f1(Haversine,x_,m_) := x/2-Sin(m*x)/(2*m),
  f2(Haversine,x_,n_,m_) := 1/4*x^n*((2*x)/(1+n)+(x*Gamma(1+n,-I*m*x))/(-I*m*x)^(1+n)+(x*Gamma(1+n,I*m*x))/(I*m*x)^(1+n)),

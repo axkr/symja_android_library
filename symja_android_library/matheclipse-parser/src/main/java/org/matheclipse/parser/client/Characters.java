@@ -154,7 +154,7 @@ public class Characters {
       "FormalCapitalP", "\uF829", "FormalCapitalPhi", "\uF849", "FormalCapitalPi", "\uF843",
       "FormalCapitalPsi", "\uF84B", "FormalCapitalQ", "\uF82A", "FormalCapitalR", "\uF82B",
       "FormalCapitalRho", "\uF844", "FormalCapitalS", "\uF82C", "FormalCapitalSampi", "\uF883",
-      "FormalCapitalSigma,", "\uF846", "FormalCapitalStigma", "\uF87D", "FormalCapitalT", "\uF82D",
+      "FormalCapitalSigma", "\uF846", "FormalCapitalStigma", "\uF87D", "FormalCapitalT", "\uF82D",
       "FormalCapitalTau", "\uF847", "FormalCapitalTheta", "\uF83B", "FormalCapitalU", "\uF82E",
       "FormalCapitalUpsilon", "\uF848", "FormalCapitalV", "\uF82F", "FormalCapitalW", "\uF830",
       "FormalCapitalX", "\uF831", "FormalCapitalXi", "\uF841", "FormalCapitalY", "\uF832",
@@ -545,7 +545,7 @@ public class Characters {
       return ASCII_IDENTIFIER_START[ch];
     }
     return (Character.isJavaIdentifierStart(ch) && (ch != '_'))
-        || isFormalLatinLetter(ch) || isLetterLike(ch) || isUnnamedPrivateUse(ch);
+        || isFormalLetter(ch) || isLetterLike(ch) || isUnnamedPrivateUse(ch);
   }
 
   /**
@@ -586,6 +586,25 @@ public class Characters {
   public static boolean isFormalLatinLetter(char ch) {
     // FormalA <= ch <= FormalCapitalZ
     return ch >= '\uF800' && ch <= '\uF833';
+  }
+
+  /**
+   * Test if <code>ch</code> is one of the named formal letters: a Latin one like
+   * <code>\[FormalA]</code> or a Greek one like <code>\[FormalAlpha]</code>,
+   * <code>\[FormalCapitalOmega]</code> or <code>\[FormalCurlyPhi]</code>.
+   *
+   * @param ch the character to be tested
+   * @return <code>true</code> if <code>ch</code> is a formal letter
+   */
+  public static boolean isFormalLetter(char ch) {
+    if (ch < '\uF800' || ch > '\uF88F') {
+      return false;
+    }
+    if (ch <= '\uF833') {
+      return true;
+    }
+    String name = unicodeName(ch);
+    return name != null && name.startsWith("Formal");
   }
 
   /**
@@ -702,7 +721,7 @@ public class Characters {
     }
     return (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`') // context name
                                                                               // separator character
-        || isLatinSuperscriptDigit(ch) || isFormalLatinLetter(ch) || isLetterLike(ch)
+        || isLatinSuperscriptDigit(ch) || isFormalLetter(ch) || isLetterLike(ch)
         || isUnnamedPrivateUse(ch);
   }
 

@@ -55,6 +55,8 @@ public class MeshFunctions {
       S.VoronoiMesh.setEvaluator(new VoronoiMesh());
       S.DiscretizeRegion
           .setEvaluator(new org.matheclipse.core.reflection.system.DiscretizeRegion());
+      S.DiscretizeGraphics
+          .setEvaluator(new org.matheclipse.core.reflection.system.DiscretizeGraphics());
     }
   }
 

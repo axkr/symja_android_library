@@ -1,10 +1,12 @@
 ## InterpolatingFunction
 
 ```
-InterpolatingFunction(data-list)
+InterpolatingFunction(...)
 ```
 
-> get the representation for the given `data-list` as piecewise `InterpolatingPolynomial`s.
+> represents a function whose values are found by interpolation; `Interpolation`, `ListInterpolation` and `NDSolve` return it.
+
+`InterpolatingFunction(...)(x)` gives its value at `x`.
  
 See:  
 * [Wikipedia - Newton Polynomial](https://en.wikipedia.org/wiki/Newton_polynomial) 
@@ -12,15 +14,14 @@ See:
 ### Examples
 
 ```
->> ipf=InterpolatingFunction({{0, 17}, {1, 3}, {2, 5}, {3, 4}, {4, 3}, {5, 0}, {6,23}})
-InterpolatingFunction({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}})
+>> ipf=Interpolation({{0, 17}, {1, 3}, {2, 5}, {3, 4}, {4, 3}, {5, 0}, {6,23}});
 
 >> ipf(19/4)
 -19/32
 ```
 
 ### Related terms 
-[InterpolatingPolynomial](InterpolatingPolynomial.md), [NDSolve](NDSolve.md) 
+[Interpolation](Interpolation.md), [InterpolatingPolynomial](InterpolatingPolynomial.md), [ListInterpolation](ListInterpolation.md), [NDSolve](NDSolve.md) 
 
 
 

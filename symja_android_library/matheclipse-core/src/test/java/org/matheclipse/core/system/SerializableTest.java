@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -63,6 +64,28 @@ public class SerializableTest {
     equalsCopy(evaluator.eval("LinearModelFit({{{1,1},{1,2},{1,3},{1,4}},{2.1,3.9,6.2,7.8}})"));
     equalsCopy(
         evaluator.eval("NonlinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, a*x+b, {a,b}, x)"));
+  }
+
+  /**
+   * A Bezier function still evaluates after a round trip: only its control point list is written,
+   * and the points it computes with are rebuilt from that list.
+   */
+  @Test
+  public void testBezierFunction() throws IOException, ClassNotFoundException {
+    org.matheclipse.core.eval.ExprEvaluator evaluator =
+        new org.matheclipse.core.eval.ExprEvaluator();
+    IExpr bezier = evaluator.eval("BezierFunction({{0,0},{1,1},{2,0}})");
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(bezier);
+    }
+    IExpr copy;
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+      copy = (IExpr) ois.readObject();
+    }
+    assertEquals(bezier, copy);
+    assertEquals("{1.0,0.5}", evaluator.eval(F.unaryAST1(copy, F.num(0.5))).toString());
   }
 
   @Test
@@ -313,6 +336,32 @@ public class SerializableTest {
     } catch (IOException ioe) {
       ioe.printStackTrace();
       assertEquals("", ioe.toString());
+    }
+  }
+
+  @Test
+  public void testContextOutsideThePath() {
+    try {
+      EvalEngine engine = EvalEngine.get();
+      engine.evaluate("SerialTestPkg`v = 7");
+      Context context = engine.getContextPath().getContext("SerialTestPkg`");
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(context);
+      oos.close();
+      // a receiving engine knows another context of this name
+      engine.getContextPath().getContextMap().put("SerialTestPkg`",
+          new Context("SerialTestPkg`"));
+      ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+      Context copy = (Context) ois.readObject();
+      ois.close();
+      // the context which isn't in the path is registered by its name, and its symbols are in it
+      assertSame(copy, engine.getContextPath().getContext("SerialTestPkg`"));
+      assertSame(copy, copy.get("v").getContext());
+      assertEquals("7", engine.evaluate("SerialTestPkg`v").toString());
+    } catch (ClassNotFoundException | IOException e) {
+      e.printStackTrace();
+      assertEquals("", e.toString());
     }
   }
 

@@ -669,7 +669,8 @@ public class Primality implements IPrimality {
         map.put(PRIMES_2_1021[i], count);
       }
     }
-    if (MachinePrime.isProbablePrime(result, 32)) {
+    // a primality test of a large rest costs more than its division by the remaining small primes
+    if (result.bitLength() <= 4096 && MachinePrime.isProbablePrime(result, 32)) {
       return result;
     }
     BigInteger b;

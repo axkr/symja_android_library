@@ -257,7 +257,7 @@ public class WrongArgumentCountTest extends ExprEvaluatorTestCase {
     check("ConvexRegionQ(Region(Disk()))", //
         "True");
     check("RegionBoundary(Region(Disk()))", //
-        "Circle({0,0})");
+        "Circle({0,0},1)");
     check("RegionBoundary(Region())", //
         "RegionBoundary(Region())");
   }

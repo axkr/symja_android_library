@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.ColorData;
 import org.matheclipse.core.reflection.system.ColorDataFunction;
-import org.matheclipse.core.tensor.img.ColorDataGradients;
+import org.matheclipse.core.graphics.ColorDataGradients;
 
 /**
  * <code>RectangleChart({{w1, h1}, {w2, h2}, ...})</code> - a bar chart whose bars have the width

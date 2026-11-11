@@ -11,7 +11,6 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.tensor.itp.LinearBinaryAverage;
 
 public class BezierFunction extends AbstractEvaluator {
   public BezierFunction() {}
@@ -34,7 +33,7 @@ public class BezierFunction extends AbstractEvaluator {
         IAST list = (IAST) arg1;
         double[][] matrix = list.toDoubleMatrix(false);
         if (matrix != null) {
-          return BezierFunctionExpr.newInstance(LinearBinaryAverage.INSTANCE, list, matrix);
+          return BezierFunctionExpr.newInstance(list, matrix);
         }
       }
       // `1` should be a rectangular array of machine-sized real numbers of any depth, whose

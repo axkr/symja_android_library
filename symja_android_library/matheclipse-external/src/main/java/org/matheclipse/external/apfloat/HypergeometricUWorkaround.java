@@ -72,6 +72,18 @@ public class HypergeometricUWorkaround
     public static Apcomplex hypergeometricU(FixedPrecisionApfloatHelper h, Apcomplex a, Apcomplex b, Apcomplex z)
         throws ArithmeticException, ApfloatRuntimeException
     {
+        if (z.real().signum() < 0 && z.imag().signum() != 0 && z.imag().scale() <= z.real().scale() - h.precision())
+        {
+            // Next to the cut, with an imaginary part which the precision of the helper rounds away: that would give
+            // the value on the cut, which is the one from above. Below the cut U(a, b, z) is the conjugate of U at the
+            // conjugates of a, b and z
+            Apcomplex x = z.real();
+            if (z.imag().signum() > 0)
+            {
+                return hypergeometricU(h, a, b, x);
+            }
+            return hypergeometricU(h, a.conj(), b.conj(), x).conj();
+        }
         try
         {
             return h.hypergeometricU(a, b, z);

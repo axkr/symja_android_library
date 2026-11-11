@@ -130,4 +130,12 @@ public class ChartLegendTest extends ExprEvaluatorTestCase {
         + "\"height=\\\"11\\\" fill=\\\"rgb(255,0,0)\\\"\")", //
         "True");
   }
+
+  @Test
+  public void testPieChartOfWrappedDataset() {
+    // a tooltip around the whole dataset is shown on every sector
+    check("{Head(PieChart(Tooltip({3, 5, 2}, \"share\"))), "
+        + "Count(PieChart(Tooltip({3, 5, 2}, \"share\")), _Tooltip, Infinity)}", //
+        "{Graphics,3}");
+  }
 }

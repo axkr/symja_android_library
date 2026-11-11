@@ -68,6 +68,8 @@ public class TensorFunctions {
       S.LeviCivitaTensor.setEvaluator(new LeviCivitaTensor());
       S.ListConvolve.setEvaluator(new ListConvolve());
       S.ListCorrelate.setEvaluator(new ListCorrelate());
+      S.ListDeconvolve
+          .setEvaluator(new org.matheclipse.core.reflection.system.ListDeconvolve());
       S.SymbolicDeltaProductArray.setEvaluator(new SymbolicDeltaProductArray());
       S.SymbolicOnesArray.setEvaluator(new SymbolicOnesArray());
       S.SymbolicIdentityArray.setEvaluator(new SymbolicIdentityArray());

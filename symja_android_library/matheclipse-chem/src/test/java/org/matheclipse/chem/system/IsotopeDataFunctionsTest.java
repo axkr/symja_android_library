@@ -26,7 +26,7 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
     // every naturally occurring isotope, as massNumber -> percent; the other properties speak for
     // the most abundant isotope alone and so cannot answer this
     check("IsotopeData(\"C\", \"Abundances\")", //
-        "<|Entity(Isotope,Carbon12)->Quantity(98.93,\"Percents\"),Entity(Isotope,Carbon13)->Quantity(1.07,\"Percents\")|>");
+        "<|Entity(Isotope,Carbon12)->Quantity(98.93,\"Percent\"),Entity(Isotope,Carbon13)->Quantity(1.07,\"Percent\")|>");
   }
 
   @Test
@@ -36,7 +36,7 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
     check("Take(ElementData(\"Carbon\", \"KnownIsotopes\"), 3)", //
         "{Entity(Isotope,Carbon8),Entity(Isotope,Carbon9),Entity(Isotope,Carbon10)}");
     check("ElementData(\"Carbon\", \"IsotopeAbundances\")", //
-        "<|Entity(Isotope,Carbon12)->Quantity(98.93,\"Percents\"),Entity(Isotope,Carbon13)->Quantity(1.07,\"Percents\")|>");
+        "<|Entity(Isotope,Carbon12)->Quantity(98.93,\"Percent\"),Entity(Isotope,Carbon13)->Quantity(1.07,\"Percent\")|>");
     // the nucleons of the most abundant isotope that are not protons
     check("ElementData(\"Carbon\", \"NeutronCount\")", //
         "6");
@@ -64,8 +64,11 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
         "{Entity(Isotope,Hydrogen1),Entity(Isotope,Hydrogen2),Entity(Isotope,Hydrogen3),"
             + "Entity(Isotope,Hydrogen4),Entity(Isotope,Hydrogen5),Entity(Isotope,Hydrogen6),"
             + "Entity(Isotope,Hydrogen7)}");
+    // every ground state of the nuclide chart, carbon-8 to carbon-23
     check("Length(IsotopeData(6))", //
-        "15");
+        "16");
+    check("Last(IsotopeData(\"Carbon\"))", //
+        "Entity(Isotope,Carbon23)");
     // the name Symja gives the element, not the one CDK gives it
     check("IsotopeData(\"Aluminum27\")", //
         "Entity(Isotope,Aluminum27)");
@@ -89,9 +92,12 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
   public void testIsotopeProperties() {
     check("IsotopeData(\"Properties\")", //
         "{EntityProperty(Isotope,AtomicMass),EntityProperty(Isotope,AtomicNumber),"
-            + "EntityProperty(Isotope,BindingEnergy),EntityProperty(Isotope,IsotopeAbundance),"
-            + "EntityProperty(Isotope,MassNumber),EntityProperty(Isotope,NeutronNumber),"
-            + "EntityProperty(Isotope,StandardName)}");
+            + "EntityProperty(Isotope,BindingEnergy),EntityProperty(Isotope,BranchingRatios),"
+            + "EntityProperty(Isotope,DaughterNuclides),EntityProperty(Isotope,DecayModes),"
+            + "EntityProperty(Isotope,HalfLife),EntityProperty(Isotope,IsotopeAbundance),"
+            + "EntityProperty(Isotope,Lifetime),EntityProperty(Isotope,MassNumber),"
+            + "EntityProperty(Isotope,NeutronNumber),EntityProperty(Isotope,StandardName),"
+            + "EntityProperty(Isotope,Symbol)}");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"AtomicMass\")", //
         "Quantity(12.0,\"AtomicMassUnit\")");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"AtomicNumber\")", //
@@ -104,9 +110,9 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
         "Carbon12");
     // a percentage, and zero rather than missing for a nuclide that does not occur in nature
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"IsotopeAbundance\")", //
-        "Quantity(98.93,\"Percents\")");
+        "Quantity(98.93,\"Percent\")");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon14\"), \"IsotopeAbundance\")", //
-        "Quantity(0,\"Percents\")");
+        "Quantity(0,\"Percent\")");
   }
 
   /**
@@ -130,7 +136,7 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
   @Test
   public void testAllIsotopes() {
     check("Length(IsotopeData())", //
-        "3171");
+        "3558");
     check("IsotopeData() === IsotopeData(All)", //
         "True");
     check("First(IsotopeData(All))", //
@@ -155,7 +161,82 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
     check("EntityValue(Entity(\"Isotope\", \"Carbon99\"), \"MassNumber\")", //
         "Missing(UnknownEntity,{Isotope,Carbon99})");
     check("Length(EntityList(\"Isotope\"))", //
-        "3171");
+        "3558");
+  }
+
+  /**
+   * Half-lives in the unit of the chart, known to the precision its uncertainty leaves; a stable
+   * nuclide's is infinite.
+   */
+  @Test
+  public void testHalfLife() {
+    check("QuantityUnit(IsotopeData(\"Fluorine18\", \"HalfLife\"))", //
+        "Minutes");
+    // 109.734 minutes known to 0.008 minutes
+    check("Round(Precision(QuantityMagnitude(IsotopeData(\"Fluorine18\", \"HalfLife\"))),"
+        + " 0.001)", //
+        "4.137");
+    check("IsotopeData(\"Oxygen16\", \"HalfLife\")", //
+        "Quantity(Infinity,\"Seconds\")");
+    // no uncertainty: a machine number
+    check("IsotopeData(\"Uranium241\", \"HalfLife\")", //
+        "Quantity(4.0,\"Minutes\")");
+    // kiloyears, gigayears and yottayears become years, megayears or gigayears by size
+    check("{QuantityUnit(#), QuantityMagnitude(#) == #2}& @@@ "
+        + "{{IsotopeData(\"Radium226\", \"HalfLife\"), 1600}, "
+        + "{IsotopeData(\"Uranium234\", \"HalfLife\"), 0.2455}, "
+        + "{IsotopeData(\"Uranium238\", \"HalfLife\"), 4.463}, "
+        + "{IsotopeData(\"Tellurium128\", \"HalfLife\"), 2.25*10^24}, "
+        + "{IsotopeData(\"Hydrogen5\", \"HalfLife\"), 0.086}}", //
+        "{{Years,True},{Megayears,True},{Gigayears,True},{Years,True},{Zeptoseconds,True}}");
+    // particle unstable
+    check("IsotopeData(\"Beryllium5\", \"HalfLife\")", //
+        "Missing(Unstable)");
+    // the unbound diproton is an isotope of helium without a known mass
+    check("First(IsotopeData(\"He\"))", //
+        "Entity(Isotope,Helium2)");
+    check("{IsotopeData(\"Helium2\", \"HalfLife\"), IsotopeData(\"Helium2\", \"AtomicMass\"),"
+        + " IsotopeData(\"Helium2\", \"NeutronNumber\")}", //
+        "{Missing(Unstable),Missing(NotAvailable),0}");
+    check("QuantityUnit(IsotopeData(\"Radium226\", \"Lifetime\"))", //
+        "Years");
+  }
+
+  /** Decay modes, their daughters and intensities, most frequent first. */
+  @Test
+  public void testDecay() {
+    check("IsotopeData(\"Oxygen16\", \"DecayModes\")", //
+        "Missing(NotApplicable)");
+    check("IsotopeData(\"Uranium234\", \"DecayModes\")", //
+        "{alpha emission,spontaneous fission,cluster emission,double cluster emission}");
+    // a fission has no single daughter; a pair of clusters takes both away
+    check("IsotopeData(\"Uranium234\", \"DaughterNuclides\")", //
+        "{Entity(Isotope,Thorium230),Missing(Variable),Entity(Isotope,Mercury206),"
+            + "Entity(Isotope,Hafnium184)}");
+    // the delayed neutron emission is counted apart from the plain electron emission it follows,
+    // and is the more frequent of the two
+    check("IsotopeData(\"Lithium9\", \"DecayModes\")", //
+        "{electron + delayed neutron,electron emission}");
+    check("QuantityMagnitude(IsotopeData(\"Lithium9\", \"BranchingRatios\")) =="
+        + " {50.5, 49.5}", //
+        "True");
+    // every positron emission of boron-8 is followed by an alpha particle
+    check("IsotopeData(\"Boron8\", \"DaughterNuclides\")", //
+        "{Entity(Isotope,Helium4)}");
+    check("Precision(QuantityMagnitude(IsotopeData(\"Californium252\","
+        + " \"BranchingRatios\")))", //
+        "5");
+    // a decay mode that is seen but whose intensity is not measured
+    check("IsotopeData(\"Thorium234\", \"BranchingRatios\")[[2]]", //
+        "Missing(Unknown)");
+    check("QuantityUnit(IsotopeData(\"Thorium234\", \"BranchingRatios\")[[1]])", //
+        "Percent");
+    // the mass number written before the element symbol
+    check("IsotopeData(\"Lead208\", \"Symbol\") === Row({Superscript(\"\", 208), \"Pb\"})", //
+        "True");
+    // the free neutron is no isotope of an element
+    check("IsotopeData(\"Neutron1\", \"HalfLife\")", //
+        "IsotopeData(Neutron1,HalfLife)");
   }
 
   /**

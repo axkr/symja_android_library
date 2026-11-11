@@ -289,6 +289,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.NDEigensystem(false));
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       S.NDSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.NDSolveValue());
+      S.ParametricNDSolveValue
+          .setEvaluator(new org.matheclipse.core.reflection.system.ParametricNDSolveValue());
       S.WhenEvent.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve.WhenEvent());
       S.NFourierTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());

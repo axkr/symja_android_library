@@ -278,6 +278,9 @@ public class AssumptionFunctions {
             if (truthValue != null) {
               return truthValue;
             }
+            if (isTranscendentalConstant(expr, engine)) {
+              return S.False;
+            }
             // structural test for a compound expression, e.g. Sqrt(2)+2^(1/3) is algebraic
             return AlgebraicNumberUtils.isExplicitAlgebraicNumber(expr) ? S.True : F.NIL;
           case ID.Arrays:
@@ -290,17 +293,26 @@ public class AssumptionFunctions {
             truthValue = AbstractAssumptions.assumeComplex(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Integers:
+            // the numeric test first: a value away from the integers needs no minimal polynomial
             truthValue = AbstractAssumptions.assumeInteger(expr);
             if (truthValue != null) {
               return truthValue;
+            }
+            IExpr integer = exactConstantInDomain(expr, true, engine);
+            if (integer.isPresent()) {
+              return integer;
             }
             // structural test for a compound expression, e.g. 2*k^3 is an integer if k is one
             return expr.isIntegerResult() ? S.True : F.NIL;
           case ID.Primes:
             return AbstractAssumptions.assumePrime(expr);
           case ID.Rationals:
+            // the numeric test first: a complex value needs no minimal polynomial
             truthValue = AbstractAssumptions.assumeRational(expr);
-            return (truthValue != null) ? truthValue : F.NIL;
+            if (truthValue != null) {
+              return truthValue;
+            }
+            return exactConstantInDomain(expr, false, engine);
           case ID.Reals:
             truthValue = AbstractAssumptions.assumeReal(expr);
             if (truthValue != null) {
@@ -338,6 +350,144 @@ public class AssumptionFunctions {
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * The membership of an exact constant in the Integers (<code>integers</code>) or the Rationals:
+   * {@link S#False} for a transcendental constant, else from the minimal polynomial of an explicit
+   * algebraic number.
+   *
+   * @return {@link F#NIL} if the membership isn't decided
+   */
+  private static IExpr exactConstantInDomain(IExpr expr, boolean integers, EvalEngine engine) {
+    if (isTranscendentalConstant(expr, engine)) {
+      return S.False;
+    }
+    if (!expr.isNumber() && AlgebraicNumberUtils.isExplicitAlgebraicNumber(expr)) {
+      IExpr rational = algebraicRational(expr, engine);
+      if (rational.isPresent()) {
+        return F.booleSymbol(integers ? rational.isInteger() : rational.isRational());
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The rational value of an explicit algebraic number from its minimal polynomial: the root of a
+   * polynomial of degree 1, else {@link S#Indeterminate} for an irrational number.
+   *
+   * @return {@link F#NIL} if the minimal polynomial isn't found
+   */
+  private static IExpr algebraicRational(IExpr expr, EvalEngine engine) {
+    if (expr.leafCount() > 200L) {
+      return F.NIL;
+    }
+    // Simplify and Refine ask for the same subexpressions again: the answer, also an undecided
+    // one after the time limit, is kept
+    final IExpr cacheKey = F.unaryAST1(S.MinimalPolynomial, expr);
+    Object cached = engine.getObjectCache(cacheKey);
+    if (cached instanceof IExpr) {
+      return (IExpr) cached;
+    }
+    IExpr result = algebraicRationalUncached(expr, engine);
+    engine.putObjectCache(cacheKey, result);
+    return result;
+  }
+
+  private static IExpr algebraicRationalUncached(IExpr expr, EvalEngine engine) {
+    ISymbol x = F.Dummy("x");
+    IExpr polynomial = engine.evalQuiet(
+        F.TimeConstrained(F.binaryAST2(S.MinimalPolynomial, expr, x), F.C1));
+    if (!polynomial.isPolynomial(x)) {
+      return F.NIL;
+    }
+    IExpr degree = engine.evaluate(F.Exponent(polynomial, x));
+    if (degree.isOne()) {
+      IExpr c0 = engine.evaluate(F.Coefficient(polynomial, x, F.C0));
+      IExpr c1 = engine.evaluate(F.Coefficient(polynomial, x, F.C1));
+      IExpr root = engine.evaluate(F.Negate(F.Divide(c0, c1)));
+      return root.isRational() ? root : F.NIL;
+    }
+    if (degree.isInteger() && ((IInteger) degree).isGT(F.C1)) {
+      return S.Indeterminate;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Test if <code>expr</code> is <code>c0 + c1 T^k</code> with explicit algebraic numbers
+   * <code>c0</code> and <code>c1 != 0</code>, a rational <code>k != 0</code> and one of the
+   * transcendental numbers <code>T = Pi, E, Log(r), E^r</code>, <code>r</code> rational (and
+   * positive and not <code>1</code> for <code>Log(r)</code>): a transcendental number by the
+   * theorems of Lindemann and Hermite, which is in none of the domains Integers, Rationals and
+   * Algebraics.
+   */
+  private static boolean isTranscendentalConstant(IExpr expr, EvalEngine engine) {
+    IExpr term = expr;
+    if (expr.isPlus()) {
+      term = null;
+      for (IExpr summand : (IAST) expr) {
+        if (!AlgebraicNumberUtils.isExplicitAlgebraicNumber(summand)) {
+          if (term != null) {
+            return false;
+          }
+          term = summand;
+        }
+      }
+      if (term == null) {
+        return false;
+      }
+    }
+    IExpr transcendental = term;
+    IASTAppendable coefficient = F.TimesAlloc(4);
+    if (term.isTimes()) {
+      transcendental = null;
+      for (IExpr factor : (IAST) term) {
+        if (AlgebraicNumberUtils.isExplicitAlgebraicNumber(factor)) {
+          coefficient.append(factor);
+        } else if (transcendental != null) {
+          return false;
+        } else {
+          transcendental = factor;
+        }
+      }
+      if (transcendental == null) {
+        return false;
+      }
+    }
+    if (transcendental.isPower() && transcendental.base() != S.E) {
+      IExpr exponent = transcendental.exponent();
+      if (!exponent.isRational() || exponent.isZero()) {
+        return false;
+      }
+      transcendental = transcendental.base();
+    }
+    if (!isTranscendentalBase(transcendental)) {
+      return false;
+    }
+    if (coefficient.argSize() > 0) {
+      // c1 != 0
+      IExpr value = engine.evalN(coefficient.oneIdentity1());
+      return value.isNumber() && ((org.matheclipse.core.interfaces.INumber) value).abs()
+          .evalf() > 1.0e-6;
+    }
+    return true;
+  }
+
+  /** Test if <code>t</code> is <code>Pi, Degree, E, Log(r)</code> or <code>E^r</code>. */
+  private static boolean isTranscendentalBase(IExpr t) {
+    if (t == S.Pi || t == S.Degree || t == S.E) {
+      return true;
+    }
+    if (t.isAST(S.Log, 2)) {
+      IExpr r = t.first();
+      return r.isRational() && r.isPositive() && !r.isOne();
+    }
+    if (t.isPower() && t.base() == S.E) {
+      IExpr r = t.exponent();
+      return r.isRational() && !r.isZero();
+    }
+    return false;
   }
 
   /**

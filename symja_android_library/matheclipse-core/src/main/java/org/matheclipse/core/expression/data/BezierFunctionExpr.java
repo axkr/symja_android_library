@@ -1,21 +1,22 @@
 package org.matheclipse.core.expression.data;
 
 import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.util.Arrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.itp.BinaryAverage;
-import org.matheclipse.core.tensor.itp.LinearBinaryAverage;
 
 /**
  * Represents a Bezier function expression {@link S#BezierFunction} stored as data inside the
  * MathEclipse expression tree.
  * <p>
- * The expression wraps an {@link IAST} sequence describing the control points or parameters and a
- * {@link BinaryAverage} strategy used to interpolate points. Instances are serializable via
+ * The expression wraps an {@link IAST} sequence describing the control points or parameters and
+ * evaluates the curve with de Casteljau's algorithm. Instances are serializable via
  * {@link Externalizable}.
  * </p>
  */
@@ -24,14 +25,12 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
   /**
    * Factory method to create a new {@link BezierFunctionExpr}.
    *
-   * @param binaryAverage the interpolation strategy to use (must implement {@link BinaryAverage})
    * @param sequence the IAST sequence describing control points or parameters
    * @param points the control points as a 2D array (rows x dimensions)
    * @return a new {@link BezierFunctionExpr} instance
    */
-  public static BezierFunctionExpr newInstance(BinaryAverage binaryAverage, IAST sequence,
-      double[][] points) {
-    return new BezierFunctionExpr(binaryAverage, sequence, points);
+  public static BezierFunctionExpr newInstance(IAST sequence, double[][] points) {
+    return new BezierFunctionExpr(sequence, points);
   }
 
   /**
@@ -50,18 +49,12 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
         double[][] matrix = list.toDoubleMatrix(false);
         if (matrix != null) {
           // Keep the extracted list as the internal fData representation
-          return new BezierFunctionExpr(LinearBinaryAverage.INSTANCE, list, matrix);
+          return new BezierFunctionExpr(list, matrix);
         }
       }
     }
     return null;
   }
-
-  /**
-   * The binary averaging strategy used when computing intermediate points for the Bezier curve.
-   * Defaults to {@link LinearBinaryAverage#INSTANCE} in the no-arg constructor.
-   */
-  private BinaryAverage binaryAverage;
 
   /**
    * The control points for the Bezier curve stored as a 2D array. Each row is a point in 2D or 3D
@@ -71,20 +64,17 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
 
   public BezierFunctionExpr() {
     super(S.BezierFunction, F.CEmptyList);
-    this.binaryAverage = LinearBinaryAverage.INSTANCE;
   }
 
   /**
    * Protected constructor used by the factory method to create an instance with the specified
-   * interpolation strategy, sequence data and control points.
+   * sequence data and control points.
    *
-   * @param binaryAverage the interpolation strategy
    * @param sequence the IAST sequence representing control point data or parameters
    * @param points the control points as a 2D array
    */
-  protected BezierFunctionExpr(BinaryAverage binaryAverage, IAST sequence, double[][] points) {
+  protected BezierFunctionExpr(IAST sequence, double[][] points) {
     super(S.BezierFunction, sequence);
-    this.binaryAverage = binaryAverage;
     this.points = points;
   }
 
@@ -96,7 +86,7 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
    */
   @Override
   public IExpr copy() {
-    return new BezierFunctionExpr(binaryAverage, fData, points);
+    return new BezierFunctionExpr(fData, points);
   }
 
   /**
@@ -121,9 +111,9 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
    * Evaluate the Bezier function expression when applied to arguments.
    * <p>
    * If the call is of the form BezierFunctionExpr(t) (single numeric argument), the method
-   * evaluates the scalar parameter {@code t} and computes the point on the Bezier curve using the
-   * configured {@link BinaryAverage} strategy. If the argument is not numeric, {@link F#NIL} is
-   * returned to indicate an invalid call.
+   * evaluates the scalar parameter {@code t} and computes the point on the Bezier curve by repeated
+   * linear interpolation between neighbouring control points. If the argument is not numeric,
+   * {@link F#NIL} is returned to indicate an invalid call.
    * </p>
    *
    * @param ast the AST representing the function application
@@ -131,6 +121,9 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
    * @return the computed point as {@link F#List} containing the coordinates or {@link F#NIL}
    */
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (points == null || points.length == 0) {
+      return F.NIL;
+    }
     if (ast.head() instanceof BezierFunctionExpr && ast.isAST1()) {
       double scalar = ast.arg1().evalfNaN();
       if (Double.isNaN(scalar)) {
@@ -142,12 +135,35 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
         int count = -1;
         double[] p = pts[0];
         for (int index = 1; index < i; ++index)
-          pts[++count] = binaryAverage.split(p, p = pts[index], scalar);
+          pts[++count] = lerp(p, p = pts[index], scalar);
       }
       return F.List(pts[0]);
     }
 
     return F.NIL;
+  }
+
+  /**
+   * Only the control point list is written; the points array is rebuilt from it.
+   */
+  @Override
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    super.readExternal(in);
+    points = fData.isListOfLists() ? fData.toDoubleMatrix(false) : null;
+  }
+
+  /**
+   * The point <code>p + t (q - p)</code>; for <code>t == 1</code> a copy of <code>q</code>.
+   */
+  private static double[] lerp(final double[] p, final double[] q, final double t) {
+    if (t == 1.0) {
+      return Arrays.copyOf(q, q.length);
+    }
+    double[] result = new double[p.length];
+    for (int i = 0; i < p.length; i++) {
+      result[i] = (q[i] - p[i]) * t + p[i];
+    }
+    return result;
   }
 
   /**
@@ -206,15 +222,6 @@ public class BezierFunctionExpr extends ASTFunctionDataExpr {
     result.append(F.stringx("Unevaluated"));
 
     return result;
-  }
-
-  /**
-   * Accessor for the binary averaging strategy used by this Bezier function.
-   *
-   * @return the {@link BinaryAverage} instance in use
-   */
-  public BinaryAverage getBinaryAverage() {
-    return binaryAverage;
   }
 
   @Override

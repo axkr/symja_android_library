@@ -75,6 +75,10 @@ public class RootReduce extends AbstractFunctionEvaluator {
 
       // Step 1: compute the minimal polynomial as a pure Function of Slot(1)
       IExpr minPoly = S.MinimalPolynomial.of(engine, arg1);
+      if (minPoly.isAST(S.MinimalPolynomial)) {
+        // no minimal polynomial, like for a transcendental number: nothing to reduce
+        return arg1;
+      }
       if (minPoly.isNIL() || minPoly.equals(arg1)) {
         return F.NIL;
       }

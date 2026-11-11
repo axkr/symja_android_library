@@ -18,7 +18,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -680,11 +679,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public final INumber numericNumber() {
-    return F.num(this);
-  }
-
-  @Override
   public Num numValue() {
     return Num.valueOf(doubleValue());
   }
@@ -764,7 +758,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
    * Returns the integer square root of this integer.
    *
    * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative
-   *         or it's impossible to find a square root return <code>F.Sqrt(this)</code>.
+   *         or it's impossible to find a square root return <code>Sqrt(this)</code>.
    */
   @Override
   public IExpr sqrt() {
@@ -774,7 +768,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       throw lime;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      return F.Sqrt(this);
+      return sqrtExpr();
     }
   }
 

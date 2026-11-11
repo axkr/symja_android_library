@@ -901,6 +901,7 @@ public class F extends S {
       JASConfig.USE_SPARSE_GCD = Config.JAS_GCD_SPARSE;
 
       initApfloat();
+      FormalSymbol.initGreekFormalSymbols();
       S.C.setAttributes(Attribute.NHOLDALL);
       Slot.setAttributes(Attribute.NHOLDALL);
       Slot.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);

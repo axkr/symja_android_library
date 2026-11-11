@@ -1107,6 +1107,16 @@ public class S {
       S.initFinalSymbol("AlternatingGroup", ID.AlternatingGroup);
 
   /**
+   * AlternativeHypothesis(x) - TODO describe `AlternativeHypothesis`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlternativeHypothesis.md">AlternativeHypothesis
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlternativeHypothesis =
+      S.initFinalSymbol("AlternativeHypothesis", ID.AlternativeHypothesis);
+
+  /**
    * Alternatives(p1, p2, ..., p_i) - is a pattern that matches any of the patterns `p1, p2,....,
    * p_i`.
    * 
@@ -3465,6 +3475,15 @@ public class S {
       S.initFinalSymbol("BubbleChart3D", ID.BubbleChart3D);
 
   /**
+   * BubbleSizes(x) - TODO describe `BubbleSizes`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BubbleSizes.md">BubbleSizes
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BubbleSizes = S.initFinalSymbol("BubbleSizes", ID.BubbleSizes);
+
+  /**
    * BulletGauge(x) - TODO describe `BulletGauge`.
    * 
    * @see <a href=
@@ -4145,6 +4164,16 @@ public class S {
       S.initFinalSymbol("ChemicalConvert", ID.ChemicalConvert);
 
   /**
+   * ChemicalData(x) - TODO describe `ChemicalData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ChemicalData.md">ChemicalData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ChemicalData =
+      S.initFinalSymbol("ChemicalData", ID.ChemicalData);
+
+  /**
    * ChemicalFormula(x) - TODO describe `ChemicalFormula`.
    * 
    * @see <a href=
@@ -4306,6 +4335,35 @@ public class S {
   public final static IBuiltInSymbol CityData = S.initFinalSymbol("CityData", ID.CityData);
 
   /**
+   * ClassifierFunction(x) - TODO describe `ClassifierFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClassifierFunction.md">ClassifierFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ClassifierFunction =
+      S.initFinalSymbol("ClassifierFunction", ID.ClassifierFunction);
+
+  /**
+   * ClassifierMeasurements(x) - TODO describe `ClassifierMeasurements`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClassifierMeasurements.md">ClassifierMeasurements
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ClassifierMeasurements =
+      S.initFinalSymbol("ClassifierMeasurements", ID.ClassifierMeasurements);
+
+  /**
+   * Classify(x) - TODO describe `Classify`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Classify.md">Classify
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Classify = S.initFinalSymbol("Classify", ID.Classify);
+
+  /**
    * Clear(symbol1, symbol2,...) - clears all values of the given symbols.
    * 
    * @see <a href=
@@ -4460,6 +4518,15 @@ public class S {
       S.initFinalSymbol("ClusteringComponents", ID.ClusteringComponents);
 
   public final static IBuiltInSymbol CMYKColor = S.initFinalSymbol("CMYKColor", ID.CMYKColor);
+
+  /**
+   * Coarse(x) - TODO describe `Coarse`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Coarse.md">Coarse
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Coarse = S.initFinalSymbol("Coarse", ID.Coarse);
 
   /**
    * CodeConcreteParse(x) - TODO describe `CodeConcreteParse`.
@@ -16321,6 +16388,16 @@ public class S {
   public final static IBuiltInSymbol ListCurvePathPlot =
       S.initFinalSymbol("ListCurvePathPlot", ID.ListCurvePathPlot);
 
+  /**
+   * ListDeconvolve(x) - TODO describe `ListDeconvolve`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListDeconvolve.md">ListDeconvolve
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ListDeconvolve =
+      S.initFinalSymbol("ListDeconvolve", ID.ListDeconvolve);
+
   public final static IBuiltInSymbol ListDensityPlot =
       S.initFinalSymbol("ListDensityPlot", ID.ListDensityPlot);
 
@@ -17020,6 +17097,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Manipulator = S.initFinalSymbol("Manipulator", ID.Manipulator);
+
+  /**
+   * MannWhitneyTest(x) - TODO describe `MannWhitneyTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MannWhitneyTest.md">MannWhitneyTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MannWhitneyTest =
+      S.initFinalSymbol("MannWhitneyTest", ID.MannWhitneyTest);
 
   public final static IBuiltInSymbol MantissaExponent =
       S.initFinalSymbol("MantissaExponent", ID.MantissaExponent);
@@ -20742,6 +20829,16 @@ public class S {
       S.initFinalSymbol("ParameterMixtureDistribution", ID.ParameterMixtureDistribution);
 
   /**
+   * ParametricNDSolveValue(x) - TODO describe `ParametricNDSolveValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParametricNDSolveValue.md">ParametricNDSolveValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ParametricNDSolveValue =
+      S.initFinalSymbol("ParametricNDSolveValue", ID.ParametricNDSolveValue);
+
+  /**
    * ParametricPlot({function1, function2}, {t, tMin, tMax}) - generate a JavaScript control for the
    * parametric expressions `function1`, `function2` in the `t` range `{t, tMin, tMax}`.
    * 
@@ -24411,6 +24508,16 @@ public class S {
   public final static IBuiltInSymbol ScorerHi = S.initFinalSymbol("ScorerHi", ID.ScorerHi);
 
   /**
+   * ScriptBaselineShifts(x) - TODO describe `ScriptBaselineShifts`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ScriptBaselineShifts.md">ScriptBaselineShifts
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ScriptBaselineShifts =
+      S.initFinalSymbol("ScriptBaselineShifts", ID.ScriptBaselineShifts);
+
+  /**
    * Sec(z) - returns the secant of `z`.
    * 
    * @see <a href=
@@ -24969,6 +25076,16 @@ public class S {
 
   public final static IBuiltInSymbol SignedRegionDistance =
       S.initFinalSymbol("SignedRegionDistance", ID.SignedRegionDistance);
+
+  /**
+   * SignificanceLevel(x) - TODO describe `SignificanceLevel`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SignificanceLevel.md">SignificanceLevel
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SignificanceLevel =
+      S.initFinalSymbol("SignificanceLevel", ID.SignificanceLevel);
 
   /**
    * SignPadding(x) - TODO describe `SignPadding`.
@@ -29438,6 +29555,16 @@ public class S {
   public final static IBuiltInSymbol VertexContract =
       S.initFinalSymbol("VertexContract", ID.VertexContract);
 
+  /**
+   * VertexCoordinateRules(x) - TODO describe `VertexCoordinateRules`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexCoordinateRules.md">VertexCoordinateRules
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexCoordinateRules =
+      S.initFinalSymbol("VertexCoordinateRules", ID.VertexCoordinateRules);
+
   public final static IBuiltInSymbol VertexCoordinates =
       S.initFinalSymbol("VertexCoordinates", ID.VertexCoordinates);
 
@@ -29499,6 +29626,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol VertexIndex = S.initFinalSymbol("VertexIndex", ID.VertexIndex);
+
+  /**
+   * VertexLabeling(x) - TODO describe `VertexLabeling`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexLabeling.md">VertexLabeling
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexLabeling =
+      S.initFinalSymbol("VertexLabeling", ID.VertexLabeling);
 
   public final static IBuiltInSymbol VertexLabels =
       S.initFinalSymbol("VertexLabels", ID.VertexLabels);
@@ -30519,10 +30656,7 @@ public class S {
    * @return
    */
   public static IExpr exprID(short id) {
-    if (id >= EXPRID_MAX_BUILTIN_LENGTH) {
-      return COMMON_IDS[id - EXPRID_MAX_BUILTIN_LENGTH];
-    }
-    return BUILT_IN_SYMBOLS[id];
+    return ExprID.resolve(id);
   }
 
   public static IExpr exprID(IExpr expr) {

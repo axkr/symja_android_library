@@ -2,9 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.Collator;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -100,7 +98,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   // format has no version marker, so an old stream must fail loudly rather than be mis-parsed
   private static final long serialVersionUID = -1921824292485125086L;
 
-  private static final Collator US_COLLATOR = Collator.getInstance(Locale.US);
 
   /** The attribute values of the symbol represented by single bits. */
   protected int fAttributes = NOATTRIBUTE;
@@ -283,9 +280,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
         // Makes no sense to compare the symbol names, if they are equal
         return 0;
       }
-      // sort lexicographically
-      int cp = US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
-      return cp != 0 ? cp : Symbol.compareSameName(this, (ISymbol) expr);
+      return Symbol.compareSymbols(this, (ISymbol) expr);
     }
     if (expr.isNot() && expr.first().isSymbol()) {
       int cp = compareTo(expr.first());

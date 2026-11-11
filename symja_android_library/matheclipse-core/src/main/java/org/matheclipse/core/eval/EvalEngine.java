@@ -86,6 +86,7 @@ import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
@@ -1704,7 +1705,9 @@ public class EvalEngine implements Serializable {
     engine.fNotationContext = fNotationContext;
     engine.fNumericMode = fNumericMode;
     // engine.fNumericPrecision = fNumericPrecision;
-    engine.fApfloatHelper = new FixedPrecisionApfloatHelper(getNumericPrecision());
+    // the precision as it is: a helper of the machine precision in a copy which the original
+    // hasn't would compute arbitrary precision numbers outside N() to 14 digits
+    engine.fApfloatHelper = fApfloatHelper;
     // engine.fApfloatHelperDouble = new
     // FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
     engine.fSignificantFigures = fSignificantFigures;
@@ -1950,6 +1953,15 @@ public class EvalEngine implements Serializable {
           return F.unaryAST1(S.Power, temp);
         }
       }
+      if (isNumericArgument && ast.isPower() && ast.base() instanceof Num
+          && ast.exponent().isInteger() && !isArbitraryMode()) {
+        // while the exponent is still exact: a power beyond the double range by squaring
+        IExpr temp =
+            Arithmetic.Power.machineIntegerPower((Num) ast.base(), (IInteger) ast.exponent());
+        if (temp.isPresent()) {
+          return F.unaryAST1(S.Power, temp);
+        }
+      }
       if (!fNumericMode) {
         if (isNumericFunction && isNumericArgument) {
           localNumericMode = true;
@@ -2081,7 +2093,7 @@ public class EvalEngine implements Serializable {
     boolean exactArgument = false;
     for (int i = 1; i < ast.size(); i++) {
       final IExpr arg = ast.get(i);
-      if (arg instanceof ApfloatNum && hasOwnPrecision((ApfloatNum) arg)) {
+      if (hasOwnPrecision(arg)) {
         // a number of a precision of its own; a numerical algorithm returns its digits untracked
         precision = Math.max(precision, arg.determinePrecision(false));
       } else if (arg.isList()) {
@@ -2105,12 +2117,23 @@ public class EvalEngine implements Serializable {
    * may return) has none - taken as the precision of the evaluation it would ask for infinitely
    * many digits of every fraction.
    */
-  private static boolean hasOwnPrecision(ApfloatNum number) {
-    final long digits = number.apfloatValue().precision();
+  private static boolean hasOwnPrecision(IExpr number) {
+    final long digits;
+    final boolean tracked;
+    if (number instanceof ApfloatNum) {
+      digits = ((ApfloatNum) number).apfloatValue().precision();
+      tracked = ((ApfloatNum) number).isSignificanceTracked();
+    } else if (number instanceof ApcomplexNum) {
+      // a complex number of a precision of its own, as a real one
+      digits = ((ApcomplexNum) number).apcomplexValue().precision();
+      tracked = ((ApcomplexNum) number).isSignificanceTracked();
+    } else {
+      return false;
+    }
     if (digits == Apfloat.INFINITE) {
       return false;
     }
-    return number.isSignificanceTracked() || digits > ParserConfig.MACHINE_PRECISION;
+    return tracked || digits > ParserConfig.MACHINE_PRECISION;
   }
 
   /**
@@ -2129,16 +2152,15 @@ public class EvalEngine implements Serializable {
     while (first.isList() && !((IAST) first).isEmpty()) {
       first = ((IAST) first).arg1();
     }
-    if (!(first instanceof ApfloatNum)) {
+    if (!(first instanceof ApfloatNum || first instanceof ApcomplexNum)) {
       return 0L;
     }
     long precision = 0L;
     for (int i = 1; i < list.size(); i++) {
       final IExpr element = list.get(i);
-      if (element instanceof ApfloatNum) {
-        final ApfloatNum number = (ApfloatNum) element;
-        if (hasOwnPrecision(number)) {
-          precision = Math.max(precision, number.determinePrecision(false));
+      if (element instanceof ApfloatNum || element instanceof ApcomplexNum) {
+        if (hasOwnPrecision(element)) {
+          precision = Math.max(precision, element.determinePrecision(false));
         }
       } else if (element.isMachineNumber()) {
         // the machine number decides the precision of the result
@@ -5238,7 +5260,7 @@ public class EvalEngine implements Serializable {
           return result;
         } else {
           if (head instanceof BuiltInSymbol) {
-            int requiredMask = UniformFlags.uniformMask((BuiltInSymbol) head);
+            int requiredMask = UniformFlags.uniformMask((IBuiltInSymbol) head);
             if (requiredMask != UniformFlags.NONE && ast.isUniform(requiredMask)) {
               return F.NIL;
             }
@@ -5426,6 +5448,17 @@ public class EvalEngine implements Serializable {
 
   public ContextPath getContextPath() {
     return fContextPath;
+  }
+
+  /**
+   * Replace the context with the same name as <code>context</code> in this engine's context path,
+   * for example by a deserialized context. A context whose name is not in the path is left out.
+   *
+   * @param context the new context
+   * @return <code>false</code> if the context path has no context with this name
+   */
+  public boolean replaceContext(Context context) {
+    return fContextPath.replaceContext(context);
   }
 
   /**
@@ -6318,6 +6351,45 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * The precision of the value of a function of machine numbers beyond the double range: the 53
+   * bits of the machine arguments, less the digits which the condition numbers of the function
+   * take - <code>Exp(1000.0)</code> has the precision <code>15.95 - Log10(1000)</code>.
+   *
+   * @param ast the function of real exact and machine numbers
+   * @param value the value of the function, which is not zero
+   * @return <code>NaN</code> if the function has no condition numbers, or the precision isn't
+   *         below the one of a machine number and above one digit
+   */
+  private static double conditionedMachinePrecision(IAST ast, Apfloat value) {
+    if (value.signum() == 0 || !(ast.topHead() instanceof IBuiltInSymbol)) {
+      return Double.NaN;
+    }
+    final double machineDigits = ApfloatNum.bitsToDigits(ApfloatNum.MACHINE_BITS);
+    IASTMutable tracked = ast.copy();
+    for (int i = 1; i < tracked.size(); i++) {
+      IExpr arg = tracked.get(i);
+      if (arg instanceof Num) {
+        final double d = ((Num) arg).doubleValue();
+        if (d != 0.0) {
+          tracked.set(i, ApfloatNum.valueOf(ApfloatNum.apfloatOf(d, ApfloatNum.MIN_STORED_DIGITS),
+              machineDigits));
+        }
+      } else if (!arg.isRational()) {
+        return Double.NaN;
+      }
+    }
+    IExpr conditioned =
+        SignificanceArithmetic.conditioned(ast.topHead(), tracked, ApfloatNum.valueOf(value));
+    if (conditioned instanceof ApfloatNum && ((ApfloatNum) conditioned).isSignificanceTracked()) {
+      final double digits = ((ApfloatNum) conditioned).precision10();
+      if (digits >= 1.0 && digits < machineDigits) {
+        return digits;
+      }
+    }
+    return Double.NaN;
+  }
+
+  /**
    * Evaluate <code>ast</code> again with its machine numbers as arbitrary precision numbers, and
    * round the result to machine precision.
    *
@@ -6348,7 +6420,9 @@ public class EvalEngine implements Serializable {
       if (result instanceof ApfloatNum) {
         Apfloat value = ((ApfloatNum) result).apfloatValue();
         if (Math.abs(value.scale()) <= Integer.MAX_VALUE) {
-          return ApfloatNum.valueOf(value.precision(precision));
+          final double digits = conditionedMachinePrecision(ast, value);
+          return Double.isNaN(digits) ? ApfloatNum.valueOf(value.precision(precision))
+              : ApfloatNum.valueOf(value.precision(precision), digits);
         }
       } else if (result instanceof ApcomplexNum) {
         org.apfloat.Apcomplex value = ((ApcomplexNum) result).apcomplexValue();

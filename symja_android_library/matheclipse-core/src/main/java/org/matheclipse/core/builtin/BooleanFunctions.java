@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.math.BigInteger;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
@@ -1009,57 +1010,28 @@ public final class BooleanFunctions {
         // ---------------------------------------------------------------------------
 
         if (arg1.isListOfRules(false) && arg1.argSize() > 0) {
-          IAST listOfRule = (IAST) arg1;
-          IAST rule = (IAST) listOfRule.arg1();
-          if (rule.arg1().isList()) {
-            boolean isPureBooleanFuntion = false;
-            IAST lhsRule = (IAST) rule.arg1();
-            final int argSize = lhsRule.argSize();
-
-            FormulaFactory factory = new FormulaFactory();
-            isPureBooleanFuntion = true;
-            Variable[] variables = new Variable[argSize];
-            for (int i = 1; i < argSize + 1; i++) {
-              variables[i - 1] = factory.variable("#" + i);
-            }
-            Formula[] orFormula = new Formula[listOfRule.argSize()];
-            for (int i = 1; i < listOfRule.size(); i++) {
-              rule = (IAST) listOfRule.get(i);
-              lhsRule = (IAST) rule.arg1();
-              IExpr rhsRule = rule.arg2();
-              if (rhsRule.isFalse()) {
-                orFormula[i - 1] = factory.falsum();
-                continue;
-              } else if (rhsRule.isTrue()) {
-                Formula[] andFormula = new Formula[argSize];
-                for (int j = 0; j < argSize; j++) {
-                  IExpr booleValue = lhsRule.get(j + 1);
-                  if (booleValue.isTrue()) {
-                    andFormula[j] = variables[j];
-                  } else if (booleValue.isFalse()) {
-                    andFormula[j] = factory.not(variables[j]);
-                  } else {
-                    return F.NIL;
-                  }
-                }
-                orFormula[i - 1] = factory.and(andFormula);
-              } else {
-                return F.NIL;
-              }
-            }
-            BDDExpr bddResult =
-                BDDExpr.newInstance(factory.or(orFormula).bdd(), isPureBooleanFuntion);
-            if (ast.isAST2()) {
-              if (ast.arg2().isList() && ast.arg2().argSize() == argSize) {
-                IAST variableList = (IAST) ast.arg2();
-                return booleanConvert(variableList.apply(bddResult), false,
-                    variableList.apply(bddResult), engine);
-              }
-              return F.NIL;
-            }
-            return isPureBooleanFuntion ? F.Function(bddResult) : bddResult;
+          IInteger index = ruleListIndex((IAST) arg1);
+          if (index == null) {
+            return F.NIL;
           }
-          return F.NIL;
+          final int argSize = ((IAST) arg1).arg1().first().argSize();
+          FormulaFactory factory = new FormulaFactory();
+          Variable[] variables = new Variable[argSize];
+          for (int i = 0; i < argSize; i++) {
+            variables[i] = factory.variable("#" + (i + 1));
+          }
+          BDDExpr bddResult =
+              BDDExpr.newInstance(bdd(booleanFormula(engine, index, variables, factory), variables,
+                  factory), true);
+          if (ast.isAST2()) {
+            if (ast.arg2().isList() && ast.arg2().argSize() == argSize) {
+              IAST variableList = (IAST) ast.arg2();
+              return booleanConvert(variableList.apply(bddResult), false,
+                  variableList.apply(bddResult), engine);
+            }
+            return F.NIL;
+          }
+          return bddResult;
         }
         if (arg1.isInteger() && ast.isAST2()) {
           IExpr arg2 = ast.arg2();
@@ -1096,13 +1068,131 @@ public final class BooleanFunctions {
                 if (booleanOrFormula == null) {
                   return F.NIL;
                 }
-                return BDDExpr.newInstance(booleanOrFormula.bdd(), true);
+                return BDDExpr.newInstance(bdd(booleanOrFormula, variables, factory), true);
               }
             }
           }
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The decision diagram of a function of the <code>variables</code>, in their order. A constant
+     * function keeps its number of arguments: <code>BooleanFunction(0, 2)</code> is a function of
+     * two arguments.
+     */
+    private static BDD bdd(Formula formula, Variable[] variables, FormulaFactory factory) {
+      org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel kernel =
+          new org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel(factory,
+              java.util.Arrays.asList(variables), 1000, 1000);
+      return org.logicng.knowledgecompilation.bdds.BDDFactory.build(formula, kernel);
+    }
+
+    /** The most variables of a function given by a list of rules. */
+    private static final int MAX_RULE_VARIABLES = 12;
+
+    /**
+     * The index <code>k</code> of <code>BooleanFunction(k, n)</code> of the function given by the
+     * rules <code>{{b1, b2, ...} -&gt; v, ...}</code>. A value <code>bi</code> is
+     * <code>True</code>, <code>False</code>, <code>1</code>, <code>0</code> or <code>_</code> for
+     * either; the first rule which matches an input gives its value. The inputs no rule matches
+     * are free: they get the values which make the decision diagram smallest, as the restrict
+     * operator chooses them - <code>{{1, _} -&gt; 1}</code> is the constant <code>True</code>,
+     * <code>{{1, 1} -&gt; 1, {0, 0} -&gt; 0}</code> the first variable.
+     *
+     * @return <code>null</code> if the rules don't specify a function
+     */
+    private static IInteger ruleListIndex(IAST rules) {
+      final int n = rules.arg1().first().isList() ? rules.arg1().first().argSize() : -1;
+      if (n < 1 || n > MAX_RULE_VARIABLES) {
+        return null;
+      }
+      final int size = 1 << n;
+      // bit j of an input is the (n - j)-th argument: the first argument is the most significant
+      int[] ones = new int[rules.argSize()];
+      int[] zeros = new int[rules.argSize()];
+      boolean[] values = new boolean[rules.argSize()];
+      for (int i = 0; i < rules.argSize(); i++) {
+        IAST rule = (IAST) rules.get(i + 1);
+        if (!rule.arg1().isList() || rule.arg1().argSize() != n) {
+          return null;
+        }
+        IExpr value = rule.arg2();
+        if (value.isTrue() || value.isOne()) {
+          values[i] = true;
+        } else if (!value.isFalse() && !value.isZero()) {
+          return null;
+        }
+        IAST lhs = (IAST) rule.arg1();
+        for (int j = 0; j < n; j++) {
+          IExpr b = lhs.get(j + 1);
+          int bit = 1 << (n - 1 - j);
+          if (b.isTrue() || b.isOne()) {
+            ones[i] |= bit;
+          } else if (b.isFalse() || b.isZero()) {
+            zeros[i] |= bit;
+          } else if (!b.isBlank()) {
+            return null;
+          }
+        }
+      }
+      boolean[] on = new boolean[size];
+      boolean[] care = new boolean[size];
+      for (int v = 0; v < size; v++) {
+        for (int i = 0; i < ones.length; i++) {
+          if ((v & ones[i]) == ones[i] && (v & zeros[i]) == 0) {
+            care[v] = true;
+            on[v] = values[i];
+            break;
+          }
+        }
+      }
+      boolean[] table = restrict(on, care, 0, size);
+      BigInteger index = BigInteger.ZERO;
+      for (int v = 0; v < size; v++) {
+        if (table[v]) {
+          index = index.setBit(v);
+        }
+      }
+      return F.ZZ(index);
+    }
+
+    /**
+     * The values of the truth table <code>f[from, from + length)</code> chosen freely outside the
+     * care set <code>c</code>, splitting on the variables in their order: a function which is
+     * constant on the care set is that constant, and a variable which has no care value on one
+     * side is dropped.
+     */
+    private static boolean[] restrict(boolean[] f, boolean[] c, int from, int length) {
+      boolean anyOn = false;
+      boolean anyOff = false;
+      for (int v = from; v < from + length; v++) {
+        if (c[v]) {
+          if (f[v]) {
+            anyOn = true;
+          } else {
+            anyOff = true;
+          }
+        }
+      }
+      boolean[] result = new boolean[length];
+      if (!anyOn || !anyOff) {
+        java.util.Arrays.fill(result, anyOn);
+        return result;
+      }
+      final int half = length / 2;
+      boolean careLow = false;
+      boolean careHigh = false;
+      for (int v = 0; v < half; v++) {
+        careLow |= c[from + v];
+        careHigh |= c[from + half + v];
+      }
+      boolean[] low = careLow ? restrict(f, c, from, half) : null;
+      boolean[] high = careHigh ? restrict(f, c, from + half, half) : null;
+      System.arraycopy(low != null ? low : high, 0, result, 0, half);
+      System.arraycopy(high != null ? high : low, 0, result, half, half);
+      return result;
     }
 
     private Formula booleanFormula(EvalEngine engine, IInteger k, Variable[] variables,

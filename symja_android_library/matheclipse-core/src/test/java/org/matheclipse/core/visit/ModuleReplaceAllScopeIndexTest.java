@@ -208,4 +208,25 @@ public class ModuleReplaceAllScopeIndexTest extends ExprEvaluatorTestCase {
   private static String paren(String expr) {
     return "(" + expr + ")";
   }
+
+  @Test
+  public void testInnerScopeShadowingALocal() {
+    // a rule or a function which binds the name of a local only shadows it: nothing is
+    // substituted into it, and it keeps the names it is written with
+    check("Module({y = 5}, g(y_) :> y^2)", //
+        "g(y_):>y^2");
+    check("Module({y = 5}, Function(y, 2*y))", //
+        "Function(y,2*y)");
+    check("With({y = 5}, Function({y, z}, y + z))", //
+        "Function({y,z},y+z)");
+    check("Module({u = 1}, Hold(h(u_, v_) :> u*v))", //
+        "Hold(h(u_,v_):>u*v)");
+    check("h(7) /. Module({u = 2}, h(u_) -> u^2)", //
+        "49");
+    // another local substituted into it still renames the bound name
+    check("With({u = 3, w = 4}, Hold(Function(u, u + w)))", //
+        "Hold(Function(u$,u$+4))");
+    check("With({u = 3, w = 4}, Hold(h(u_) :> u + w))", //
+        "Hold(h(u$_):>u$+4)");
+  }
 }

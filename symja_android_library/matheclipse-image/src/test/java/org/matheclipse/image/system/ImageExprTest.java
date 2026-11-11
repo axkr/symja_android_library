@@ -136,4 +136,14 @@ public class ImageExprTest extends AbstractTestCase {
         + "Image({{0.3, 0.7}}, \"Real64\") === Image({{0.30000001, 0.7}}, \"Real64\")}", //
         "{True,False,False}");
   }
+
+  @Test
+  public void testImageOfSparseArray() {
+    // the pixels of a sparse array are those of its dense array
+    check("ImageData(Image(SparseArray({{2, 2} -> 1}, {3, 3}))) == "
+        + "{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,0.0}}", //
+        "True");
+    check("ImageType(Image(SparseArray({{1, 2} -> 0.5}, {2, 2})))", //
+        "Real32");
+  }
 }

@@ -1127,6 +1127,10 @@ public class QuantityFunctions {
       Errors.printMessage(S.UnitConvert, "compat", F.list(sourceUnit, normalized), engine);
       return S.$Failed;
     }
+    if (normalized.isString("PureUnities") || normalized.isString("DimensionlessUnit")) {
+      // a quantity converted to pure numbers is a number: 25 percent is 1/4
+      return magnitude;
+    }
     return F.Quantity(magnitude, normalized);
   }
 

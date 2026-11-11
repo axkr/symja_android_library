@@ -566,6 +566,22 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCollectIntegerPowersOfAPowerTarget() {
+    // the negative power E^(-w) is a power of the target E^w
+    check("Collect(p*E^w + q*E^w + r*E^(-w) + s*E^(-w), E^w)", //
+        "E^w*(p+q)+(r+s)/E^w");
+    check("Collect(p*E^(2*w) + q*E^(2*w) + r*E^(-w) + s*E^(-w) + t, E^w)", //
+        "E^(2*w)*(p+q)+(r+s)/E^w+t");
+    // y^6 and y^(-2) are powers of y^2, y^3 isn't
+    check("Collect(a*y^6 + b*y^6 + c*y^2 + d*y^2 + e*y^3 + g*y^(-2) + h*y^(-2), y^2)", //
+        "(g+h)/y^2+(c+d)*y^2+e*y^3+(a+b)*y^6");
+    check("Collect(a/v^2 + b/v^2 + c*v, 1/v)", //
+        "(a+b)/v^2+c*v");
+    check("Collect(a*g(y)^4 + b*g(y)^4 + c*g(y)^3, g(y)^2)", //
+        "c*g(y)^3+(a+b)*g(y)^4");
+  }
+
+  @Test
   public void testCollect() {
     check("Collect(x*y + x*z, x)", //
         "x*(y+z)");

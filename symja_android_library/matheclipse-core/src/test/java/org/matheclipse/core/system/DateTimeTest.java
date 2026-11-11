@@ -163,7 +163,7 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("DayMatchQ(1.0*^30, Monday)", "DayMatchQ(1.*10^30,Monday)");
     // a number out of the long range reaches the same reader and used to be narrowed to a long on
     // the way in; Sinh(1000.0) is a machine precision number out of the double range (WMA)
-    check("DayMatchQ(Sinh(1000.0), Monday)", "DayMatchQ(9.850355570085235*10^433,Monday)");
+    check("DayMatchQ(Sinh(1000.0), Monday)", "DayMatchQ(9.850355570085*10^433,Monday)");
     check("DateObject(9223372036854775807)", "DateObject(9223372036854775807)");
     check("DayName(9223372036854775807)", "DayName(9223372036854775807)");
     check("DateDifference(9223372036854775807, 0)", "DateDifference(9223372036854775807,0)");
@@ -283,6 +283,30 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("DateDifference({2020, 1, 1}, {2020, 7, 1}, \"Year\")", "Quantity(0.497268,\"Years\")");
     check("DateDifference({2023, 6, 15}, {2025, 9, 20}, \"Year\")", "Quantity(2.26575,\"Years\")");
     check("DateDifference({2024, 1, 1}, x)", "DateDifference({2024,1,1},x)");
+  }
+
+  @Test
+  public void testDateStringTimeZone() {
+    // the date is read in $TimeZone and expressed in the zone of the option before formatting
+    check("Block({$TimeZone = 0}, DateString({2021, 7, 1, 12, 0, 0}, \"Time\", "
+        + "TimeZone -> \"America/Los_Angeles\"))", //
+        "05:00:00");
+    check("Block({$TimeZone = 0}, DateString({2021, 3, 1, 23, 30, 0}, "
+        + "{\"Day\", \"/\", \"Month\", \" \", \"Hour\", \":\", \"Minute\"}, TimeZone -> 2))", //
+        "02/03 01:30");
+    check("Block({$TimeZone = -3}, DateString({2022, 5, 9, 6, 0, 0}, TimeZone -> 1))", //
+        "Mon 9 May 2022 10:00:00");
+    // a date object is read in its own zone
+    check("Block({$TimeZone = 5}, DateString(DateObject({2021, 1, 1, 0, 0, 0}, TimeZone -> -4), "
+        + "\"Time\", TimeZone -> 1))", //
+        "05:00:00");
+    // the current date on the clock of the zone
+    check("StringLength(DateString({\"Hour\", \"Minute\"}, TimeZone -> -7))", //
+        "4");
+    check("StringLength(DateString({\"Year\", \"-\", \"Month\"}))", //
+        "7");
+    check("DateString({2021, 1, 1}, TimeZone -> \"No/Such_Zone\")", //
+        "DateString({2021,1,1},TimeZone->No/Such_Zone)");
   }
 
   @Test

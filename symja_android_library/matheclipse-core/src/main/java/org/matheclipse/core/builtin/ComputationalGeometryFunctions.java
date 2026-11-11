@@ -30,7 +30,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITensorAccess;
-import org.matheclipse.core.tensor.opt.qh3.ConvexHull3D;
+import org.matheclipse.core.numerics.quickhull.ConvexHull3D;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public class ComputationalGeometryFunctions {
@@ -1396,20 +1396,153 @@ public class ComputationalGeometryFunctions {
             case ID.Triangle:
               if (region.argSize() == 1 && region.arg1().isListOfLists()) {
                 IAST points = (IAST) region.arg1();
-                IASTAppendable closed = F.ListAlloc(points.argSize() + 1);
-                closed.appendArgs(points);
-                closed.append(points.arg1());
-                return F.Line(closed);
+                if (points.forAll(IExpr::isListOfLists)) {
+                  // a polygon of several parts is bounded by one closed line per part
+                  return F.Line(points.map(ring -> closedRing((IAST) ring)));
+                }
+                return F.Line(closedRing(points));
               }
               return F.NIL;
+            case ID.Rectangle:
+              return rectangleBoundary(region);
+            case ID.Cuboid:
+              return cuboidBoundary(region);
+            case ID.Point:
+              // a point is its own boundary
+              return region;
             case ID.Disk:
-              return region.setAtCopy(0, S.Circle);
+            case ID.Circle:
+              // a closed curve is its own boundary
+              return roundBoundary(region, S.Circle, 2);
             case ID.Ball:
-              return region.setAtCopy(0, S.Sphere);
+            case ID.Sphere:
+              return roundBoundary(region, S.Sphere, 3);
+            case ID.Line:
+              return lineBoundary(region);
+            case ID.Parallelogram:
+              return parallelogramBoundary(region);
           }
         }
       }
       return F.NIL;
+    }
+
+    /** The closed line through <code>points</code>, which ends where it starts. */
+    private static IAST closedRing(IAST points) {
+      IASTAppendable closed = F.ListAlloc(points.argSize() + 1);
+      closed.appendArgs(points);
+      closed.append(points.arg1());
+      return closed;
+    }
+
+    /**
+     * The circle or sphere around a disk, circle, ball or sphere, with the center and the radius
+     * written out: the origin and <code>1</code> where the region leaves them out.
+     *
+     * @param dimension the dimension of the default center
+     */
+    private static IExpr roundBoundary(IAST region, IBuiltInSymbol head, int dimension) {
+      if (region.argSize() > 2) {
+        // a sector or an arc isn't bounded by a full circle
+        return F.NIL;
+      }
+      IExpr center = region.argSize() >= 1 ? region.arg1() : F.constantArray(F.C0, dimension);
+      IExpr radius = region.argSize() == 2 ? region.arg2() : F.C1;
+      return F.binaryAST2(head, center, radius);
+    }
+
+    /** A line is its own boundary, written as a line of polylines. */
+    private static IExpr lineBoundary(IAST line) {
+      if (line.argSize() != 1 || !line.arg1().isListOfLists() || line.arg1().argSize() == 0) {
+        return F.NIL;
+      }
+      IAST points = (IAST) line.arg1();
+      return points.arg1().isListOfLists() ? line : F.Line(F.list(points));
+    }
+
+    /** The closed line around a parallelogram, from its corner along the first edge vector. */
+    private static IExpr parallelogramBoundary(IAST parallelogram) {
+      if (parallelogram.argSize() != 2 || !parallelogram.arg1().isList()
+          || !parallelogram.arg2().isListOfLists() || parallelogram.arg2().argSize() != 2) {
+        return F.NIL;
+      }
+      IExpr p = parallelogram.arg1();
+      IExpr u = parallelogram.arg2().first();
+      IExpr v = parallelogram.arg2().second();
+      IExpr pu = F.eval(F.Plus(p, u));
+      return F.Line(F.List(p, pu, F.eval(F.Plus(pu, v)), F.eval(F.Plus(p, v)), p));
+    }
+
+    /**
+     * The closed line around a rectangle, counterclockwise from its lower left corner.
+     */
+    private static IExpr rectangleBoundary(IAST rectangle) {
+      IAST[] corners = boxCorners(rectangle, 2);
+      if (corners == null) {
+        return F.NIL;
+      }
+      IExpr x1 = corners[0].arg1();
+      IExpr y1 = corners[0].arg2();
+      IExpr x2 = corners[1].arg1();
+      IExpr y2 = corners[1].arg2();
+      return F.Line(F.List(F.List(x1, y1), F.List(x2, y1), F.List(x2, y2), F.List(x1, y2),
+          F.List(x1, y1)));
+    }
+
+    /**
+     * The faces of a cuboid's boundary by the corners <code>{p1, p2, p3, p4}</code> of the bottom
+     * face and <code>{p5, p6, p7, p8}</code> of the top face, each counterclockwise seen from above
+     * from the lowest corner: the bottom, the four sides from the low x side on, and the top.
+     */
+    private static final int[][] CUBOID_FACES =
+        {{2, 3, 4, 1}, {1, 4, 8, 5}, {4, 3, 7, 8}, {3, 2, 6, 7}, {2, 1, 5, 6}, {5, 8, 7, 6}};
+
+    /** The six faces of a cuboid as one polygon. */
+    private static IExpr cuboidBoundary(IAST cuboid) {
+      IAST[] corners = boxCorners(cuboid, 3);
+      if (corners == null) {
+        return F.NIL;
+      }
+      IExpr[] x = {corners[0].arg1(), corners[1].arg1()};
+      IExpr[] y = {corners[0].arg2(), corners[1].arg2()};
+      IExpr[] z = {corners[0].arg3(), corners[1].arg3()};
+      IAST[] box = new IAST[8];
+      for (int level = 0; level < 2; level++) {
+        box[4 * level] = F.List(x[0], y[0], z[level]);
+        box[4 * level + 1] = F.List(x[1], y[0], z[level]);
+        box[4 * level + 2] = F.List(x[1], y[1], z[level]);
+        box[4 * level + 3] = F.List(x[0], y[1], z[level]);
+      }
+      IASTAppendable faces = F.ListAlloc(CUBOID_FACES.length);
+      for (int[] face : CUBOID_FACES) {
+        IASTAppendable polygon = F.ListAlloc(face.length);
+        for (int corner : face) {
+          polygon.append(box[corner - 1]);
+        }
+        faces.append(polygon);
+      }
+      return F.Polygon(faces);
+    }
+
+    /**
+     * The lower and the upper corner of a rectangle or cuboid: a single corner stands for the unit
+     * box there, and no corner at all for the unit box at the origin.
+     *
+     * @return <code>null</code> if the corners aren't points of <code>dimension</code> coordinates
+     */
+    private static IAST[] boxCorners(IAST box, int dimension) {
+      if (box.argSize() > 2) {
+        return null;
+      }
+      IExpr lower = box.argSize() >= 1 ? box.arg1() : F.constantArray(F.C0, dimension);
+      if (!lower.isList() || lower.argSize() != dimension) {
+        return null;
+      }
+      IExpr upper = box.argSize() == 2 ? box.arg2() : ((IAST) lower).map(c -> F.Plus(c, F.C1));
+      if (!upper.isList() || upper.argSize() != dimension) {
+        return null;
+      }
+      return new IAST[] {(IAST) lower, (IAST) F.eval(upper)};
     }
 
     @Override
@@ -3537,7 +3670,10 @@ public class ComputationalGeometryFunctions {
   }
 
   /**
-   * <code>PolyhedronData("name", "property")</code> - properties of a named polyhedron.
+   * <code>PolyhedronData("name", "property")</code> - properties of a named polyhedron;
+   * <code>PolyhedronData(class, "property")</code> the list of the property of the members of a
+   * class like <code>"Platonic"</code> or <code>"Antiprism"</code>, in the order
+   * <code>PolyhedronData(class)</code> gives them.
    *
    * <p>
    * The combinatorics are <b>derived</b>, not tabulated: vertices come from their coordinate
@@ -3639,6 +3775,14 @@ public class ComputationalGeometryFunctions {
           default:
             break;
         }
+      } else if (ast.isAST2() && isClass(name)) {
+        // a property of a class is the list of the property of its members
+        IExpr members = engine.evaluate(F.unaryAST1(S.PolyhedronData, arg1));
+        if (members.isList()) {
+          return ((IAST) members).map(member -> engine.evaluate(F.binaryAST2(S.PolyhedronData,
+              member, ast.arg2())), 1);
+        }
+        return F.NIL;
       }
       if (!isKnown(name)) {
         return F.NIL;
@@ -3680,6 +3824,19 @@ public class ComputationalGeometryFunctions {
         return F.Missing(S.NotAvailable);
       }
       return combinatorialProperty(property, exactVertices(name), vertices, faces);
+    }
+
+    /** Whether a name is one of the classes <code>PolyhedronData(class)</code> lists. */
+    private static boolean isClass(String name) {
+      switch (name) {
+        case "Platonic":
+        case "Convex":
+        case PRISM:
+        case ANTIPRISM:
+          return true;
+        default:
+          return false;
+      }
     }
 
     /**
@@ -4193,6 +4350,21 @@ public class ComputationalGeometryFunctions {
     }
 
     /**
+     * The faces of the solids whose faces are listed rather than derived, as 0-based vertex index
+     * cycles counterclockwise seen from outside, in the order and from the corner they are
+     * reported with.
+     */
+    private static final Map<String, int[][]> LISTED_FACES = listedFaces();
+
+    private static Map<String, int[][]> listedFaces() {
+      Map<String, int[][]> map = new java.util.HashMap<String, int[][]>();
+      map.put("Cube", new int[][] {{7, 3, 1, 5}, {7, 5, 4, 6}, {7, 6, 2, 3}, {3, 2, 0, 1},
+          {0, 2, 6, 4}, {1, 0, 4, 5}});
+      map.put("Tetrahedron", new int[][] {{1, 2, 3}, {2, 1, 0}, {3, 0, 1}, {0, 3, 2}});
+      return map;
+    }
+
+    /**
      * Faces as 0-based vertex index cycles, or {@code null} when they are not derived here.
      *
      * <p>
@@ -4201,6 +4373,10 @@ public class ComputationalGeometryFunctions {
      * are emitted first.
      */
     private static List<int[]> faces(String name, double[][] vertices) {
+      int[][] listed = LISTED_FACES.get(name);
+      if (listed != null) {
+        return Arrays.asList(listed);
+      }
       if ("Icosahedron".equals(name)) {
         return triangularFaces(vertices);
       }
@@ -4444,17 +4620,27 @@ public class ComputationalGeometryFunctions {
         case "TruncatedIcosahedron":
           return F.eval(exactTruncatedIcosahedron());
         case "Cube": {
-          // {+-1/2, +-1/2, +-1/2}
+          // {+-1/2, +-1/2, +-1/2}, the negative coordinate first and the last one fastest
           IASTAppendable result = F.ListAlloc(8);
-          signs(result, F.List(F.C1D2, F.C1D2, F.C1D2));
+          for (IExpr x : new IExpr[] {F.CN1D2, F.C1D2}) {
+            for (IExpr y : new IExpr[] {F.CN1D2, F.C1D2}) {
+              for (IExpr z : new IExpr[] {F.CN1D2, F.C1D2}) {
+                result.append(F.List(x, y, z));
+              }
+            }
+          }
           return result;
         }
         case "Tetrahedron": {
-          // the corners {x, y, z} of the cube {+-1, +-1, +-1} with x y z = 1, scaled by
-          // 1/(2 Sqrt(2))
-          IExpr a = F.eval(F.Divide(F.C1, F.Times(F.C2, F.Sqrt(F.C2))));
-          IExpr b = F.eval(F.Negate(a));
-          return F.List(F.List(a, a, a), F.List(a, b, b), F.List(b, a, b), F.List(b, b, a));
+          // standing on a face parallel to the xy plane, the apex above the origin, one edge of the
+          // base parallel to the y axis
+          IExpr apex = F.eval(F.Subtract(F.Sqrt(F.QQ(2, 3)),
+              F.Divide(F.C1, F.Times(F.C2, F.Sqrt(F.C6)))));
+          IExpr baseZ = F.eval(F.Negate(F.Divide(F.C1, F.Times(F.C2, F.Sqrt(F.C6)))));
+          IExpr nearX = F.eval(F.Negate(F.Divide(F.C1, F.Times(F.C2, F.Sqrt(F.C3)))));
+          IExpr farX = F.eval(F.Divide(F.C1, F.Sqrt(F.C3)));
+          return F.List(F.List(F.C0, F.C0, apex), F.List(nearX, F.CN1D2, baseZ),
+              F.List(nearX, F.C1D2, baseZ), F.List(farX, F.C0, baseZ));
         }
         case "Octahedron": {
           // the cyclic permutations of {+-1/Sqrt(2), 0, 0}

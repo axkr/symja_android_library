@@ -194,6 +194,28 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testOptionsOfAnExpressionByHead() {
+    // a function with options of its own: the rules and lists of rules at the end
+    check("Options(Graphics({Disk()}, {Axes -> True, ImageSize :> 100}))", //
+        "{Axes->True,ImageSize:>100}");
+    check("Options(Graphics3D({Sphere()}, {Boxed -> False}, Axes -> False), Boxed)", //
+        "{Boxed->False}");
+    check("Options(Grid({{x, y}}, Spacings -> 2, {Frame -> True}))", //
+        "{Spacings->2,Frame->True}");
+    check("AbsoluteOptions(Grid({{x}}, Background -> Red, Spacings -> 3), Spacings)", //
+        "{Spacings->3}");
+    // the run ends at the first argument which is no option
+    check("Options(Grid({{x}}, Frame -> True, y))", //
+        "{}");
+    // a head without options: the last argument, a rule or a list of rules, if no other argument
+    // is one
+    check("{Options(h(u, {p -> 1, q :> 2})), Options(h(p -> 1)), Options(h(u, v, w -> 3))}", //
+        "{{p->1,q:>2},{p->1},{w->3}}");
+    check("{Options(h(u, {p -> 1}, w -> 3)), Options(h(u, p -> 1, q -> 2)), Options(h(p -> 1, u))}", //
+        "{{},{},{}}");
+  }
+
+  @Test
   public void testOptional() {
     check("ReplaceList({a,b,c},{a_:5,b__}->{{a},{b}})", //
         "{{{a},{b,c}},{{5},{a,b,c}}}");

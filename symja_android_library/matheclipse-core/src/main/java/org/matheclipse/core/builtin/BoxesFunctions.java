@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.TraditionalSumOrder;
 import org.matheclipse.core.form.output.NumberFormPrinter;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
@@ -184,6 +185,24 @@ public class BoxesFunctions {
       return boxes;
     }
 
+    /**
+     * The number of held expressions the boxes are being made inside: a sum in a held expression
+     * keeps the order it was written in.
+     */
+    private static final ThreadLocal<int[]> HELD_DEPTH = ThreadLocal.withInitial(() -> new int[1]);
+
+    /** The boxes of the content of <code>HoldForm</code> or <code>Defer</code>. */
+    private static IExpr heldBoxes(final IExpr expr, final int precedence, final IExpr form,
+        final EvalEngine engine) {
+      int[] depth = HELD_DEPTH.get();
+      depth[0]++;
+      try {
+        return standardFormRecursive(expr, precedence, form, engine);
+      } finally {
+        depth[0]--;
+      }
+    }
+
     private static IExpr standardFormRecursive(final IExpr expr, final int precedence,
         final IExpr form, final EvalEngine engine) {
       IExpr boxes = upValueBoxes(expr, form, engine);
@@ -207,11 +226,11 @@ public class BoxesFunctions {
       }
       if (expr.isAST(S.HoldForm, 2)) {
         // an invisible wrapper: TagBox keeps it for the way back, the front end shows the content
-        return F.binaryAST2(S.TagBox, standardFormRecursive(expr.first(), precedence, form, engine),
+        return F.binaryAST2(S.TagBox, heldBoxes(expr.first(), precedence, form, engine),
             S.HoldForm);
       }
       if (expr.isAST(S.Defer, 2)) {
-        return standardFormRecursive(expr.first(), precedence, form, engine);
+        return heldBoxes(expr.first(), precedence, form, engine);
       }
       if (expr.isAST(S.TraditionalForm, 2)) {
         return F.ternaryAST3(S.TagBox,
@@ -422,7 +441,7 @@ public class BoxesFunctions {
     private static final Map<ISymbol, String> INVERSE_NAMES = new IdentityHashMap<>();
 
     static {
-      for (ISymbol symbol : new ISymbol[] {S.Max, S.Min, S.GCD, S.LCM, S.Erf, S.Erfc}) {
+      for (ISymbol symbol : new ISymbol[] {S.Max, S.Min, S.GCD, S.LCM, S.Erf, S.Erfc, S.Exp}) {
         LOWER_CASE_NAMES.put(symbol, symbol.toString().toLowerCase(java.util.Locale.ROOT));
       }
       ISymbol[] inverse = {S.ArcSin, S.ArcCos, S.ArcTan, S.ArcCot, S.ArcSec, S.ArcCsc, S.ArcSinh,
@@ -1154,6 +1173,9 @@ public class BoxesFunctions {
     }
 
     private static IExpr timesBox(IAST times, int precedence, IExpr form, EvalEngine engine) {
+      if (form == S.TraditionalForm && HELD_DEPTH.get()[0] == 0) {
+        times = TraditionalSumOrder.orderFactors(times);
+      }
       if (times.exists(x -> x.isTimes())) {
         IExpr merged = mergedFractionBox(times, form, engine);
         if (merged.isPresent()) {
@@ -1346,8 +1368,14 @@ public class BoxesFunctions {
     private static IAST boxes(IAST expressions, int precedence, IExpr form, EvalEngine engine) {
       IASTAppendable result = F.ListAlloc(expressions.size());
       for (int i = 1; i < expressions.size(); i++) {
-        result.append(standardFormRecursive(expressions.get(i),
-            factorPrecedence(expressions.get(i), precedence), form, engine));
+        IExpr expression = expressions.get(i);
+        int factorPrecedence = factorPrecedence(expression, precedence);
+        if (i == 1 && precedence == Precedence.TIMES && expression.isTimes()
+            && expression.first().isMinusOne()) {
+          // a held -a x is the product of -a and x, written without brackets
+          factorPrecedence = Precedence.TIMES;
+        }
+        result.append(standardFormRecursive(expression, factorPrecedence, form, engine));
       }
       return result;
     }
@@ -1359,6 +1387,9 @@ public class BoxesFunctions {
     }
 
     private static IExpr plusBox(IAST plus, int precedence, IExpr form, EvalEngine engine) {
+      if (form == S.TraditionalForm && HELD_DEPTH.get()[0] == 0) {
+        return parenthesize(traditionalSumBox(plus, form, engine), Precedence.PLUS, precedence);
+      }
       IASTAppendable row = F.ListAlloc(plus.size() * 2);
       for (int i = 1; i < plus.size(); i++) {
         IExpr term = plus.get(i);
@@ -1374,6 +1405,59 @@ public class BoxesFunctions {
             standardFormRecursive(negative ? positive : term, Precedence.PLUS, form, engine));
       }
       return parenthesize(F.RowBox(row), Precedence.PLUS, precedence);
+    }
+
+    /**
+     * A sum in <code>TraditionalForm</code>: the terms in the order of
+     * {@link TraditionalSumOrder}, except that a sum of two terms does not begin with its negative
+     * term (<code>1 - x</code>). A negative first term is the minus sign in front of the boxes of
+     * the term without their own sign, and every further negative term is written after a minus
+     * sign between the terms.
+     */
+    private static IExpr traditionalSumBox(IAST plus, IExpr form, EvalEngine engine) {
+      IAST terms = TraditionalSumOrder.order(plus);
+      if (terms.argSize() == 2 && withoutMinus(terms.arg1()).isPresent()
+          && withoutMinus(terms.arg2()).isNIL()) {
+        terms = F.list(terms.arg2(), terms.arg1());
+      }
+      IASTAppendable row = F.ListAlloc(terms.size() * 2);
+      for (int i = 1; i < terms.size(); i++) {
+        IExpr term = terms.get(i);
+        IExpr positive = withoutMinus(term);
+        if (i == 1) {
+          IExpr box = standardFormRecursive(term, Precedence.PLUS, form, engine);
+          IExpr unsigned = positive.isPresent() ? withoutLeadingMinusBox(box) : F.NIL;
+          row.append(unsigned.isPresent() ? F.RowBox(F.list(F.$str("-"), unsigned)) : box);
+          continue;
+        }
+        row.append(F.$str(positive.isPresent() ? "-" : "+"));
+        row.append(standardFormRecursive(positive.isPresent() ? positive : term, Precedence.PLUS,
+            form, engine));
+      }
+      return F.RowBox(row);
+    }
+
+    /**
+     * The boxes with the minus sign at their start taken away: the row of a negative term without
+     * the sign of its first factor, <code>RowBox({RowBox({"2"}), " ", "x"})</code> for the boxes of
+     * <code>-2 x</code>.
+     *
+     * @return {@link F#NIL} if the boxes don't begin with a minus sign
+     */
+    private static IExpr withoutLeadingMinusBox(IExpr box) {
+      if (!box.isAST(S.RowBox, 2) || !box.first().isList() || box.first().argSize() < 1) {
+        return F.NIL;
+      }
+      IAST row = (IAST) box.first();
+      IExpr first = row.arg1();
+      if (first.isString() && first.toString().equals("-") && row.argSize() > 1) {
+        return F.RowBox(row.rest());
+      }
+      IExpr unsigned = withoutLeadingMinusBox(first);
+      if (unsigned.isPresent()) {
+        return F.RowBox(row.setAtCopy(1, unsigned));
+      }
+      return F.NIL;
     }
 
     /**

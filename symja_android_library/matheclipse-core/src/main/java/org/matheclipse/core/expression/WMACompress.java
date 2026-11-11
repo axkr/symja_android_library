@@ -606,29 +606,29 @@ public class WMACompress {
       position += length;
       return text;
     }
-  }
 
-  /** Put back the characters written as <code>\:XXXX</code>. */
-  private static String unescape(String text) {
-    int start = text.indexOf("\\:");
-    if (start < 0) {
-      return text;
-    }
-    StringBuilder buf = new StringBuilder(text.length());
-    int i = 0;
-    while (i < text.length()) {
-      if (i + 5 < text.length() && text.charAt(i) == '\\' && text.charAt(i + 1) == ':') {
-        try {
-          buf.append((char) Integer.parseInt(text.substring(i + 2, i + 6), 16));
-          i += 6;
-          continue;
-        } catch (NumberFormatException nfe) {
-          // not an escape after all, take the backslash as it stands
-        }
+    /** Put back the characters written as <code>\:XXXX</code>. */
+    private static String unescape(String text) {
+      int start = text.indexOf("\\:");
+      if (start < 0) {
+        return text;
       }
-      buf.append(text.charAt(i++));
+      StringBuilder buf = new StringBuilder(text.length());
+      int i = 0;
+      while (i < text.length()) {
+        if (i + 5 < text.length() && text.charAt(i) == '\\' && text.charAt(i + 1) == ':') {
+          try {
+            buf.append((char) Integer.parseInt(text.substring(i + 2, i + 6), 16));
+            i += 6;
+            continue;
+          } catch (NumberFormatException nfe) {
+            // not an escape after all, take the backslash as it stands
+          }
+        }
+        buf.append(text.charAt(i++));
+      }
+      return buf.toString();
     }
-    return buf.toString();
   }
 
   private WMACompress() {}

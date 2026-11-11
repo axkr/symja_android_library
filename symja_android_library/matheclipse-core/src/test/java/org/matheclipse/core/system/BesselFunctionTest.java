@@ -289,8 +289,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "Indeterminate");
     check("BesselJ(n,0)", //
         "BesselJ(n,0)");
+    // t^(1/4)*(t/2)^(-1/4) == 2^(1/4) on both sides for the principal powers
     check("Limit(t^(1/4)*BesselJ(-1/4,t), t->0)", //
-        "Limit(t^(1/4)*BesselJ(-1/4,t),t->0)");
+        "2^(1/4)/Gamma(3/4)");
     checkNumeric("BesselJ(2.5,-5)", //
         "I*0.24037720111131736");
 
@@ -733,5 +734,24 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "0.0000066838633622092157001");
     check("N(BesselY(900, 3000), 20)", //
         "-0.00080388585088536156903");
+  }
+
+  /**
+   * An exact order next to a half-integer is no half-integer: the elementary closed form of a
+   * half-integer order doesn't apply to it.
+   */
+  @Test
+  public void testOrderNextToHalfInteger() {
+    check("BesselJ(700000000000000001/200000000000000000, 3)", //
+        "BesselJ(700000000000000001/200000000000000000,3)");
+    check("BesselK(-300000000000000001/200000000000000000, 2)", //
+        "BesselK(-300000000000000001/200000000000000000,2)");
+    check("{Abs(N(BesselJ(7/2 + 10^-30, 3), 40) - BesselJ(N(7/2 + 10^-30, 40), N(3, 40))) < 10^-38, "
+        + "Abs(N(BesselY(7/2 + 10^-30, 3), 40) - BesselY(N(7/2 + 10^-30, 40), N(3, 40))) < 10^-38, "
+        + "Abs(N(BesselI(-3/2 - 10^-30, 3), 40) - BesselI(N(-3/2 - 10^-30, 40), N(3, 40))) < 10^-38}", //
+        "{True,True,True}");
+    // the half-integer order itself keeps its closed form
+    check("BesselJ(7/2, z)", //
+        "(Sqrt(2/Pi)*(-15*z*Cos(z)+z^3*Cos(z)+15*Sin(z)-6*z^2*Sin(z)))/z^(7/2)");
   }
 }

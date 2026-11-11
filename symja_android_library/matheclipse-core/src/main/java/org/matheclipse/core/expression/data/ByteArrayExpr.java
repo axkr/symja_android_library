@@ -8,8 +8,8 @@ import java.util.Arrays;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -121,7 +121,18 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
     byte[] bArray = toData();
-    return WL.toList(bArray);
+    return toList(bArray);
+  }
+
+  /**
+   * Convert a Java byte array to <code>List(<byte values>)</code>, each byte as an integer from 0
+   * to 255.
+   *
+   * @param bArray the bytes
+   * @return the list of byte values
+   */
+  public static IASTMutable toList(byte[] bArray) {
+    return F.mapRange(0, bArray.length, i -> F.ZZ(0x000000FF & bArray[i]));
   }
 
   @Override

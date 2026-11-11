@@ -1201,6 +1201,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     if (!ast.arg3().isList()) {
       return F.NIL;
     }
+    IExpr withIndexArguments = solveIndexArguments(ast, options, engine, ruleForm);
+    if (withIndexArguments != null) {
+      return withIndexArguments;
+    }
     IAST indexed = indexedFunctions(ast);
     if (indexed.argSize() > 0) {
       // functions written a(1), u(i): solved for symbols in their place
@@ -1387,7 +1391,8 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       for (int j = 0; j < numberOfFunctions; j++) {
         onEliminated |= values[j] != null && !condition.isFree(functions[j]);
       }
-      if (!onEliminated) {
+      if (!onEliminated && !isImpliedDerivativeCondition(condition, equations, conditions,
+          functions, values, timeVar, engine)) {
         reducedEquations.append(condition);
       }
     }
@@ -1433,6 +1438,59 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       return F.list(result);
     }
     return numberOfFunctions == 1 ? result.arg1() : result;
+  }
+
+  /**
+   * Test if <code>condition</code> is a value <code>Derivative(k)[x](t0) == c</code> of a remaining
+   * function <code>x</code> whose order <code>k</code> is not below the highest derivative of
+   * <code>x</code> in the reduced equations: like <code>y'(0) == 1</code> beside
+   * <code>y'(t) == x(t), x(t) == y(t)</code>, which only states a value the equations already
+   * give. It is dropped if substituting it and the other initial values into the equations at
+   * <code>t0</code> doesn't give a contradiction.
+   */
+  private static boolean isImpliedDerivativeCondition(IExpr condition, IAST equations,
+      IAST conditions, ISymbol[] functions, IExpr[] values, ISymbol timeVar, EvalEngine engine) {
+    if (!condition.isEqual() || !condition.first().isAST1()
+        || !condition.first().head().isAST1()
+        || !condition.first().head().head().isAST(S.Derivative, 2)
+        || !condition.first().head().head().first().isInteger()) {
+      return false;
+    }
+    final IExpr function = condition.first().head().first();
+    final int order = condition.first().head().head().first().toIntDefault();
+    final IExpr point = condition.first().first();
+    boolean remaining = false;
+    for (int j = 0; j < functions.length; j++) {
+      remaining |= values[j] == null && functions[j].equals(function);
+    }
+    if (!remaining || order <= 0 || !point.isNumericFunction(true)) {
+      return false;
+    }
+    int[] highestOrder = new int[1];
+    equations.isFree(x -> {
+      if (x.isAST() && x.head().isAST1() && x.head().head().isAST(S.Derivative, 2)
+          && x.head().first().equals(function) && x.head().head().first().isInteger()) {
+        highestOrder[0] = Math.max(highestOrder[0], x.head().head().first().toIntDefault());
+      }
+      return false;
+    }, true);
+    if (order < highestOrder[0]) {
+      return false;
+    }
+    IASTAppendable initialValues = F.ListAlloc(conditions.argSize());
+    for (IExpr c : conditions) {
+      if (c.isEqual() && c.first().isAST1() && c.first().first().equals(point)) {
+        initialValues.append(F.Rule(c.first(), c.second()));
+      }
+    }
+    for (IExpr equation : equations) {
+      IExpr atPoint = engine.evaluate(
+          F.ReplaceAll(F.subst(equation, F.Rule(timeVar, point)), initialValues));
+      if (atPoint.isFalse()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** The number of intervals at which an eliminated function is sampled for its interpolation. */
@@ -1535,6 +1593,124 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
           i -> F.Rule(requested.get(i), values.get(i))));
     }
     return values.argSize() == 1 ? values.arg1() : values;
+  }
+
+  /**
+   * <code>NDSolve(eqns, {u(1, t), u(2, t), Derivative(0, 1)[u][1, t]}, {t, t0, t1})</code>: the
+   * unknowns are a function <code>u</code> whose leading arguments are numeric indices and whose
+   * last argument is the independent variable. Each index tuple is solved for as a function
+   * <code>f(t)</code> of its own, <code>Derivative(0, 1)[u][1, t]</code> standing for
+   * <code>f'(t)</code>.
+   *
+   * @return <code>null</code> if the unknowns are not of that form, otherwise the solution or
+   *         {@link F#NIL}
+   */
+  private static IExpr solveIndexArguments(IAST ast, final IExpr[] options, EvalEngine engine,
+      boolean ruleForm) {
+    if (ast.argSize() < 3 || !ast.arg3().isList() || ast.arg3().argSize() < 2
+        || !ast.arg3().first().isSymbol()) {
+      return null;
+    }
+    final IExpr timeVar = ast.arg3().first();
+    // the unknowns u(i1, ..., t) as u(i1, ...) with their dummy symbol
+    final java.util.Map<IAST, ISymbol> dummies = new java.util.LinkedHashMap<IAST, ISymbol>();
+    for (IExpr variable : ast.arg2().makeList()) {
+      IExpr call = variable;
+      if (variable.isAST() && variable.head().isAST1()
+          && variable.head().head().isAST(S.Derivative)) {
+        // Derivative(0, k)[u][i, t]
+        call = ((IAST) variable).setAtCopy(0, variable.head().first());
+      }
+      IAST key = indexArguments(call, timeVar);
+      if (key == null) {
+        return null;
+      }
+      if (!dummies.containsKey(key)) {
+        dummies.put(key, F.Dummy("NDSolve$f" + (dummies.size() + 1)));
+      }
+    }
+    // u(1, x) -> f1(x) and Derivative(0, k)[u][1, x] -> Derivative(k)[f1][x]
+    java.util.function.Function<IExpr, IExpr> toDummies = x -> {
+      if (!x.isAST() || x.argSize() < 2) {
+        return F.NIL;
+      }
+      IAST call = (IAST) x;
+      IExpr head = call.head();
+      int order = 0;
+      if (head.isAST1() && head.head().isAST(S.Derivative, call.size())) {
+        IAST orders = (IAST) head.head();
+        for (int i = 1; i < orders.argSize(); i++) {
+          if (!orders.get(i).isZero()) {
+            return F.NIL;
+          }
+        }
+        if (!orders.last().isInteger()) {
+          return F.NIL;
+        }
+        order = orders.last().toIntDefault();
+        head = head.first();
+      }
+      ISymbol dummy = dummies.get(call.setAtCopy(0, head).removeAtCopy(call.argSize()));
+      if (dummy == null) {
+        return F.NIL;
+      }
+      IExpr function = order == 0 ? dummy : F.unaryAST1(F.Derivative(F.ZZ(order)), dummy);
+      return F.unaryAST1(function, call.last());
+    };
+    IASTMutable dummyAST = ast.copy();
+    dummyAST.set(1, ast.arg1().replaceAll(toDummies).orElse(ast.arg1()));
+    dummyAST.set(2, ast.arg2().replaceAll(toDummies).orElse(ast.arg2()));
+    IExpr solution = solve(dummyAST, options, engine, ruleForm);
+    if (solution.isNIL()) {
+      return F.NIL;
+    }
+    // f1 back to u(1, #)&, whose derivative Derivative(k)[f1][t] is Derivative(0, k)[u][1, t]
+    java.util.function.Function<IExpr, IExpr> fromDummies = x -> {
+      if (!x.isAST1()) {
+        return F.NIL;
+      }
+      IExpr head = x.head();
+      int order = 0;
+      if (head.isAST1() && head.head().isAST(S.Derivative, 2) && head.head().first().isInteger()) {
+        order = head.head().first().toIntDefault();
+        head = head.first();
+      }
+      for (java.util.Map.Entry<IAST, ISymbol> entry : dummies.entrySet()) {
+        if (entry.getValue().equals(head)) {
+          IASTAppendable call = entry.getKey().copyAppendable();
+          call.append(x.first());
+          if (order == 0) {
+            return call;
+          }
+          IASTAppendable orders = F.ast(S.Derivative, call.argSize());
+          for (int i = 1; i < call.argSize(); i++) {
+            orders.append(F.C0);
+          }
+          orders.append(F.ZZ(order));
+          return call.apply(F.unaryAST1(orders, entry.getKey().head()));
+        }
+      }
+      return F.NIL;
+    };
+    return solution.replaceAll(fromDummies).orElse(solution);
+  }
+
+  /**
+   * <code>u(i1, ...)</code> of a call <code>u(i1, ..., t)</code> with numeric indices
+   * <code>i1, ...</code>, or <code>null</code> for another expression.
+   */
+  private static IAST indexArguments(IExpr call, IExpr timeVar) {
+    if (!call.isAST() || call.argSize() < 2 || !call.head().isSymbol()
+        || ((ISymbol) call.head()).isBuiltInSymbol() || !call.last().equals(timeVar)) {
+      return null;
+    }
+    IAST ast = (IAST) call;
+    for (int i = 1; i < ast.argSize(); i++) {
+      if (!ast.get(i).isNumericFunction(true)) {
+        return null;
+      }
+    }
+    return ast.removeAtCopy(ast.argSize());
   }
 
   /**

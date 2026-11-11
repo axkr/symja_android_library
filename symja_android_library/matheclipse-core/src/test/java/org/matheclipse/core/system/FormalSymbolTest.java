@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.util.WriterOutputStream;
+import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FormalSymbol;
@@ -118,6 +119,78 @@ public class FormalSymbolTest extends ExprEvaluatorTestCase {
     // the built-in rules use the formal symbols, which print as their plain letters
     check("Sum(f(\\[FormalK]),{\\[FormalK],1,n}) /. \\[FormalK]->m", //
         "Sum(f(m),{m,1,n})");
+  }
+
+  @Test
+  public void testGreekFormalSymbols() {
+    check("{Context(\\[FormalBeta]), Attributes(\\[FormalCapitalDelta])}", //
+        "{System`,{Protected}}");
+    check("\\[FormalLambda]===\\[Lambda]", //
+        "False");
+    check("ToString({\\[FormalEta], \\[FormalCurlyTheta](2), \\[FormalCapitalSigma]}, InputForm)", //
+        "{\\[FormalEta],\\[FormalCurlyTheta](2),\\[FormalCapitalSigma]}");
+    check("ToExpression(ToString(\\[FormalMu], InputForm))===\\[FormalMu]", //
+        "True");
+    // plain Greek letter in output form
+    check("\\[FormalNu]^2", //
+        "ν^2");
+    check("Table(\\[FormalOmega]^2, {\\[FormalOmega], 3})", //
+        "{1,4,9}");
+    assertEquals("Set: Symbol ψ is Protected.\n", //
+        messages("\\[FormalPsi]=4"));
+    assertSame(FormalSymbol.greek("FormalPsi"), Context.SYSTEM.get("\uF86B"));
+    // a Greek formal symbol comes before the other symbols in the canonical order
+    check("InputForm({\\[FormalDelta]+b, \\[Delta]+b, Sort({w, \\[Delta], \\[FormalDelta], a})})", //
+        "{\\[FormalDelta] + b,b + δ,{\\[FormalDelta],a,w,δ}}");
+  }
+
+  @Test
+  public void testGreekFormalSymbolOrderIsSymmetric() {
+    ISymbol alpha = FormalSymbol.greek("FormalAlpha");
+    IExpr userSymbol = evaluator.eval("Hold(a)").first();
+    ISymbol dummy = F.Dummy("a");
+    ISymbol hidden = F.$s("aHiddenTestSymbol");
+    assertTrue(hidden instanceof BuiltInDummy);
+    for (IExpr other : new IExpr[] {userSymbol, dummy, hidden, S.Sin, S.a, S.Pi}) {
+      assertEquals(-1, Integer.signum(alpha.compareTo(other)), other.toString());
+      assertEquals(1, Integer.signum(other.compareTo(alpha)), other.toString());
+    }
+    IAST list1 = F.List(new IExpr[] {hidden, S.Sin, alpha, dummy, S.a, userSymbol});
+    IAST list2 = F.List(new IExpr[] {userSymbol, S.a, dummy, alpha, S.Sin, hidden});
+    IExpr sorted1 = evaluator.eval(F.Sort(list1));
+    IExpr sorted2 = evaluator.eval(F.Sort(list2));
+    assertEquals(sorted1, sorted2);
+    assertSame(alpha, sorted1.first());
+  }
+
+  @Test
+  public void testGreekFormalSymbolSerialization() throws Exception {
+    ISymbol beta = FormalSymbol.greek("FormalBeta");
+    // the hidden symbols, which are created by name, don't contain the Greek formal symbols
+    assertTrue(!(F.HIDDEN_SYMBOLS_MAP.get("β") instanceof FormalSymbol));
+    IAST expr = F.Plus(F.Power(beta, F.C2), S.k);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(expr);
+    }
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+      IAST copy = (IAST) ois.readObject();
+      assertEquals(expr, copy);
+      assertSame(beta, copy.arg1().base());
+    }
+    Kryo kryo = KryoUtil.initKryo();
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    try (Output output = new Output(outputStream)) {
+      kryo.writeClassAndObject(output, expr);
+    }
+    try (Input input = new Input(new ByteArrayInputStream(outputStream.toByteArray()))) {
+      IAST copy = (IAST) kryo.readClassAndObject(input);
+      assertEquals(expr, copy);
+      assertSame(beta, copy.arg1().base());
+    }
+    // deserializing must not create a System` symbol of the plain name
+    assertNull(Context.SYSTEM.get("β"));
   }
 
   @Test

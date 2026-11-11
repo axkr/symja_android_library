@@ -29,6 +29,11 @@ public class DepictionFunctionsTest extends AbstractTestCase {
         "Graphics");
     check("Head(MoleculeDraw(Molecule(\"CCO\")))", //
         "Graphics");
+    // nothing to scale the layout by: a single atom, and a salt of single ions
+    check("Head(MoleculePlot(Molecule(\"N\")))", //
+        "Graphics");
+    check("Head(MoleculePlot(Molecule(\"[K+].[Br-]\")))", //
+        "Graphics");
   }
 
   @Test

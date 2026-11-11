@@ -14,6 +14,7 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
+import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -59,6 +60,19 @@ public class ComplexNum implements IComplexNum {
   /** The machine precision complex number nearest to <code>c</code>. */
   public static IComplexNum machine(Apcomplex c) {
     return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
+  }
+
+  /**
+   * <code>head(nu, z)</code> as a machine complex number, see
+   * {@link DMath#besselComplex(ISymbol, INumber, INumber)}; a failure is reported as message of
+   * <code>head</code>.
+   */
+  static IExpr besselComplexNum(ISymbol head, INumber nu, INumber z) {
+    try {
+      return machine(DMath.besselComplex(head, nu, z));
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
+      return Errors.printMessage(head, are);
+    }
   }
 
   private final static int G = 7;
@@ -553,7 +567,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselIValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselI, this, (INumber) arg2);
+      return besselComplexNum(S.BesselI, this, (INumber) arg2);
     }
     return IComplexNum.super.besselI(arg2);
   }
@@ -568,7 +582,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselJValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselJ, this, (INumber) arg2);
+      return besselComplexNum(S.BesselJ, this, (INumber) arg2);
     }
     return IComplexNum.super.besselJ(arg2);
   }
@@ -583,7 +597,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselKValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselK, this, (INumber) arg2);
+      return besselComplexNum(S.BesselK, this, (INumber) arg2);
     }
     return IComplexNum.super.besselK(arg2);
   }
@@ -598,7 +612,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(besselYValue);
         }
       }
-      return DMath.besselComplexNum(S.BesselY, this, (INumber) arg2);
+      return besselComplexNum(S.BesselY, this, (INumber) arg2);
     }
     return IComplexNum.super.besselY(arg2);
   }
@@ -1028,17 +1042,12 @@ public class ComplexNum implements IComplexNum {
     if (z instanceof INumber) {
       // the double routine has from no to ten correct digits for an argument beyond a few units
       try {
-        Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
-            ((INumber) z).apcomplexValue());
-        return machine(expIntegralE);
+        return machine(ApcomplexExpIntegralMath.expIntegralE(EvalEngine.getApfloatDouble(),
+            apcomplexValue(), ((INumber) z).apcomplexValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         Errors.rethrowsInterruptException(e);
       }
       return F.complexNum(GammaJS.expIntegralE(fComplex, ((INumber) z).complexValue()));
-      // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
-      // ((INumber) z).apcomplexValue());
-      // return valueOf(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue());
-
     }
     return IComplexNum.super.expIntegralE(z);
   }

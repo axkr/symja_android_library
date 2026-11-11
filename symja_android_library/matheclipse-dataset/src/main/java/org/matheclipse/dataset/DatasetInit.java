@@ -7,6 +7,9 @@ import org.matheclipse.dataset.expression.ASTDataset;
 import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.dataset.builtin.DatasetFunctions;
 import org.matheclipse.dataset.io.TablesawFormatIO;
+import org.matheclipse.core.data.Entities;
+import org.matheclipse.dataset.geo.CityData;
+import org.matheclipse.dataset.geo.CountryData;
 
 /**
  * Initialize the optional <code>matheclipse-dataset</code> module.
@@ -30,6 +33,11 @@ import org.matheclipse.dataset.io.TablesawFormatIO;
  * {@link Config#FILESYSTEM_ENABLED} gate <code>DatasetFunctions</code> already used. The format
  * reader/writer does not - <code>ImportString</code> and <code>ExportString</code> work on strings
  * - so it is installed unconditionally.
+ *
+ * <p>
+ * <code>CountryData</code> and <code>CityData</code> read their tables from classpath resources
+ * of this module and are installed unconditionally too; <code>CityData</code> replaces the small
+ * table of <code>matheclipse-core</code>.
  */
 public class DatasetInit {
 
@@ -42,6 +50,13 @@ public class DatasetInit {
     // lets the structural built-ins in matheclipse-core give a Dataset back rather than the plain
     // list of rows they compute - see IASTDataset#onDatasetRows
     IASTDataset.installRowFactory(DatasetInit::datasetOf);
+
+    // the country and city tables are classpath resources of this module, so they need no file
+    // system; this CityData replaces the small table of matheclipse-core
+    S.CountryData.setEvaluator(new CountryData());
+    Entities.register(CountryData.COUNTRY, S.CountryData);
+    S.CityData.setEvaluator(new CityData());
+    Entities.register(CityData.CITY, S.CityData);
 
     if (Config.FILESYSTEM_ENABLED) {
       S.SemanticImport

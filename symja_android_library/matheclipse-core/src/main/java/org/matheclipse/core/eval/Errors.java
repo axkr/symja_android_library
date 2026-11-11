@@ -210,6 +210,9 @@ public class Errors {
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
       "deqn", "Equation or list of equations expected instead of `1` in the first argument `2`.", //
+      "dimb", "Dimension specification `1` should be a positive integer.", //
+      "dimm",
+      "A map between `1` and `2` requires a dimension specification or an evaluation point.", //
       "dimss", "`1` is not a valid dimension specification for `2`.", //
       "regdims",
       "Boolean operations involving regions `1` and `2` with different embedding dimensions are not well defined.", //
@@ -228,6 +231,7 @@ public class Errors {
       "domss", "`1` is not a valid domain specification for `2`.", //
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
       "dsdelim", "The delimiter specification is not valid.", //
+      "dspar", "`1` cannot be used as a parameter.", //
       "dsdims", "The data has dimensions `1` which `2` does not allow.", //
       "dstype", "`1` is not a known type of data structure.", //
       "dstlms",
@@ -273,10 +277,12 @@ public class Errors {
       "flrl",
       "Level `1` specified in `2` exceeds the levels, `3`, which can be flattened together in `4`.", //
       "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
-      "fpct", "To many parameters in `1` to be filled from `2`.", //
+      "fpct", "Too many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
       "geoell", "`1` is not a known reference ellipsoid.", //
       "geoprop", "`1` is not a known property of the reference ellipsoid `2`.", //
+      "gmeth2",
+      "The value of the option Method -> `1` should be Automatic, \"Buchberger\" or \"GroebnerWalk\".", //
       "juliantype", "`1` is not a known Julian date type.", //
       "hdiv", "`1` does not exist. Arguments  are not consistent.", //
       "hdmpow2", "The order `1` in `2` is restricted to a power of 2.", //
@@ -309,6 +315,8 @@ public class Errors {
       "ilsnn", "Single or list of non-negative integers expected at position `1`.", //
       "imginv", "Expecting an image or graphics instead of `1`.", //
       "incmp", "The arguments `1` and `2` in `3` are incompatible.", //
+      "inex",
+      "Reduce was unable to solve the system with inexact coefficients or the system obtained by direct rationalization of inexact numbers present in the system. Since many of the methods used by Reduce require exact input, providing Reduce with an exact version of the system may help.", //
       "incom",
       "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
       "ilim", "Invalid integration variable or limit(s) in `1`.", //
@@ -625,6 +633,8 @@ public class Errors {
       "symmcomp", "Symmetry specification `1` is incompatible with expression `2`.", //
       "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
+      "rctndmln",
+      "The argument `1` at position `2` should be a list containing two rectangular arrays of real numbers where each array has length greater than its dimension.", //
       "realprm", "Parameter `1` at position `2` in `3` is expected to be real.", //
       "realx", "The value `1` is not a real number.", //
       "reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //

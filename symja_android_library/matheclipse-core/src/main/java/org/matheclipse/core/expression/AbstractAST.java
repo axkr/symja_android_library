@@ -214,7 +214,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
      *
      * @see F#NIL
      */
-    protected NILPointer() {}
+    private NILPointer() {}
+
+    /**
+     * Creates the only instance, so that {@link AbstractAST} does not call the constructor of its
+     * subclass. A holder of its own and not a field of {@link NILPointer}: whichever of
+     * {@link AbstractAST} and {@link NILPointer} is initialized first, the holder is initialized
+     * after both have started, so {@link AbstractAST#NIL} is never read as <code>null</code>.
+     */
+    static final class Holder {
+      static final NILPointer INSTANCE = new NILPointer();
+
+      private Holder() {}
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -1446,7 +1458,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       Suppliers.memoize(AbstractAST::initCache);
 
   /** package private */
-  static final NILPointer NIL = new NILPointer();
+  static final NILPointer NIL = NILPointer.Holder.INSTANCE;
 
   private static final long serialVersionUID = -8682706994448890660L;
 
@@ -4402,7 +4414,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isListOf(IBuiltInSymbol patternHead) {
     if (isList() && size() > 1) {
       if (patternHead instanceof BuiltInSymbol) {
-        int uniformMask = UniformFlags.uniformMask((BuiltInSymbol) patternHead);
+        int uniformMask = UniformFlags.uniformMask((IBuiltInSymbol) patternHead);
         if (uniformMask != UniformFlags.NONE) {
           if (isUniform(uniformMask)) {
             return true;

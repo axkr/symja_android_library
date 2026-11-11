@@ -5,6 +5,8 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.CoordinateCharts;
+import org.matheclipse.core.eval.util.CoordinateCharts.ChartSpec;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -1468,17 +1470,20 @@ public class VectorAnalysisFunctions {
 
   /**
    * <pre>
+   * CoordinateTransformData()
    * CoordinateTransformData("Polar" -&gt; "Cartesian", property)
-   * CoordinateTransformData("Polar" -&gt; "Cartesian", property, point)
+   * CoordinateTransformData({{"Toroidal", {a}} -&gt; "Cartesian", "Euclidean", 3}, property, point)
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * gives the <code>property</code> <code>"Mapping"</code>, <code>"MappingJacobian"</code> or
-   * <code>"MappingJacobianDeterminant"</code> of the transformation between the Cartesian and one
-   * of the <code>"Polar", "Spherical", "Cylindrical"</code> coordinates, as a pure function of the
-   * coordinate list or for the given <code>point</code>.
+   * gives the list of all transformations <code>{chart1 -&gt; chart2, metric, dimension}</code>
+   * between the named coordinate charts, or the <code>property</code> <code>"Mapping"</code>,
+   * <code>"MappingJacobian"</code> or <code>"MappingJacobianDeterminant"</code> of the
+   * transformation of a chart to Cartesian coordinates or of the Cartesian coordinates to the
+   * <code>"Polar", "Spherical", "Cylindrical"</code> coordinates, as a pure function of the
+   * coordinate list or for the given <code>point</code>. See {@link CoordinateCharts}.
    *
    * </blockquote>
    */
@@ -1489,63 +1494,127 @@ public class VectorAnalysisFunctions {
       return F.Sqrt(F.mapRange(S.Plus, 1, n + 1, i -> F.Sqr(point.get(i))));
     }
 
-    /** The not evaluated product, which keeps the order of the factors. */
-    private static IExpr product(IExpr... factors) {
-      return F.function(S.Times, factors);
-    }
-
     /**
      * The transformation of the (not evaluated) coordinates of <code>p</code>. In a product the
      * trigonometric functions are in front of the coordinate.
      *
      * @return {@link F#NIL} if the transformation isn't known
      */
-    private static IAST mapping(String from, String to, IAST p) {
-      switch (from + "->" + to) {
-        case "Polar->Cartesian":
-          return F.List(product(F.Cos(p.arg2()), p.arg1()), product(F.Sin(p.arg2()), p.arg1()));
-        case "Cartesian->Polar":
+    private static IAST mapping(ChartSpec from, ChartSpec to, IAST p) {
+      final String target = to.chart.name();
+      if (target.equals(CoordinateCharts.CARTESIAN)) {
+        return from.toCartesian(p);
+      }
+      if (!from.chart.name().equals(CoordinateCharts.CARTESIAN)) {
+        return F.NIL;
+      }
+      switch (target) {
+        case "Polar":
           return F.List(norm(p, 2), F.ArcTan(p.arg1(), p.arg2()));
-        case "Spherical->Cartesian":
-          return F.List(product(F.Cos(p.arg3()), F.Sin(p.arg2()), p.arg1()),
-              product(F.Sin(p.arg2()), F.Sin(p.arg3()), p.arg1()),
-              product(F.Cos(p.arg2()), p.arg1()));
-        case "Cartesian->Spherical":
+        case "Spherical":
           return F.List(norm(p, 3), F.ArcTan(p.arg3(), norm(p, 2)), F.ArcTan(p.arg1(), p.arg2()));
-        case "Cylindrical->Cartesian":
-          return F.List(product(F.Cos(p.arg2()), p.arg1()), product(F.Sin(p.arg2()), p.arg1()),
-              p.arg3());
-        case "Cartesian->Cylindrical":
+        case "Cylindrical":
           return F.List(norm(p, 2), F.ArcTan(p.arg1(), p.arg2()), p.arg3());
         default:
           return F.NIL;
       }
     }
 
-    /** The number of coordinates of the system or <code>-1</code> if it isn't known. */
-    private static int dimension(String system) {
-      switch (system) {
-        case "Polar":
-          return 2;
-        case "Spherical":
-        case "Cylindrical":
-          return 3;
-        default:
-          return -1;
+    /** A chart of a transformation: its name with the parameters or the dimension. */
+    private static final class ChartArgument {
+      String name;
+      IAST parameters;
+      int dimension = -1;
+
+      /**
+       * Parse <code>"Name"</code>, or <code>{"Name", {p1, ...}}</code> if <code>withParameters</code>
+       * is set, or <code>{"Name", dimension}</code> otherwise.
+       *
+       * @return <code>null</code> if the chart can't be parsed
+       */
+      static ChartArgument parse(IExpr chart, boolean withParameters) {
+        ChartArgument result = new ChartArgument();
+        if (chart.isString()) {
+          result.name = chart.toString();
+          return result;
+        }
+        if (chart.isList2() && chart.first().isString()) {
+          result.name = chart.first().toString();
+          if (withParameters && chart.second().isList()) {
+            result.parameters = (IAST) chart.second();
+            return result;
+          }
+          if (!withParameters) {
+            result.dimension = chart.second().toIntDefault();
+            if (result.dimension > 0) {
+              return result;
+            }
+          }
+        }
+        return null;
       }
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr systems = ast.arg1();
-      if (!systems.isRuleAST() || !systems.first().isString() || !systems.second().isString()
-          || !ast.arg2().isString()) {
+      if (ast.isAST0()) {
+        return CoordinateCharts.transformations();
+      }
+      if (ast.argSize() < 2 || !ast.arg2().isString()) {
         return F.NIL;
       }
-      final String from = systems.first().toString();
-      final String to = systems.second().toString();
-      final int n = Math.max(dimension(from), dimension(to));
-      if (n < 0 || (ast.isAST3() && ast.arg3().isVector() != n)) {
+      IExpr systems = ast.arg1();
+      IExpr metric = F.stringx(CoordinateCharts.EUCLIDEAN);
+      int n = -1;
+      final boolean fullForm =
+          systems.isList() && systems.argSize() == 3 && systems.first().isRuleAST();
+      if (fullForm) {
+        // {chart1 -> chart2, metric, dimension}
+        metric = systems.second();
+        n = systems.last().toIntDefault();
+        if (n <= 0) {
+          return F.NIL;
+        }
+        systems = systems.first();
+      }
+      if (!systems.isRuleAST()) {
+        return F.NIL;
+      }
+      ChartArgument source = ChartArgument.parse(systems.first(), fullForm);
+      ChartArgument destination = ChartArgument.parse(systems.second(), fullForm);
+      if (source == null || destination == null) {
+        if (!fullForm) {
+          for (IExpr chart : (IAST) systems) {
+            if (chart.isList2() && chart.first().isString()
+                && chart.second().toIntDefault() <= 0) {
+              // Dimension specification `1` should be a positive integer.
+              return Errors.printMessage(S.CoordinateTransformData, "dimb",
+                  F.list(chart.second()), engine);
+            }
+          }
+        }
+        return F.NIL;
+      }
+      if (!fullForm) {
+        n = dimension(n, source, metric);
+        n = dimension(n, destination, metric);
+        if (n < 0 && ast.isAST3() && ast.arg3().isVector() > 0) {
+          n = ast.arg3().isVector();
+        }
+        if (n < 0 && CoordinateCharts.exists(source.name, metric)
+            && CoordinateCharts.exists(destination.name, metric)) {
+          // A map between `1` and `2` requires a dimension specification or an evaluation point.
+          return Errors.printMessage(S.CoordinateTransformData, "dimm",
+              F.list(F.stringx(source.name), F.stringx(destination.name)), engine);
+        }
+        if (n <= 0) {
+          return F.NIL;
+        }
+      }
+      final ChartSpec from = CoordinateCharts.chartSpec(source.name, source.parameters, metric, n);
+      final ChartSpec to =
+          CoordinateCharts.chartSpec(destination.name, destination.parameters, metric, n);
+      if (from == null || to == null || (ast.isAST3() && ast.arg3().isVector() != n)) {
         return F.NIL;
       }
       final String property = ast.arg2().toString();
@@ -1566,9 +1635,26 @@ public class VectorAnalysisFunctions {
       return ast.isAST3() ? value : F.Function(value);
     }
 
+    /**
+     * The common dimension of the charts: the given one, or the only dimension in which a chart of
+     * this name exists.
+     *
+     * @param n the dimension found so far or <code>-1</code>
+     * @return <code>-1</code> if the dimension isn't determined; <code>0</code> if the dimensions
+     *         differ
+     */
+    private static int dimension(int n, ChartArgument chart, IExpr metric) {
+      int dimension = chart.dimension > 0 ? chart.dimension
+          : CoordinateCharts.uniqueDimension(chart.name, metric);
+      if (dimension <= 0 || n == 0) {
+        return n;
+      }
+      return n < 0 || n == dimension ? dimension : 0;
+    }
+
     /** The Jacobian of the mapping or its determinant at the coordinates <code>target</code>. */
-    private static IExpr derivative(String from, String to, IAST target, boolean determinant,
-        EvalEngine engine) {
+    private static IExpr derivative(ChartSpec from, ChartSpec to, IAST target,
+        boolean determinant, EvalEngine engine) {
       IAST variables = F.mapRange(1, target.size(), i -> F.Dummy());
       IAST mapping = mapping(from, to, variables);
       if (mapping.isNIL()) {
@@ -1584,7 +1670,7 @@ public class VectorAnalysisFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_0_3;
     }
   }
 

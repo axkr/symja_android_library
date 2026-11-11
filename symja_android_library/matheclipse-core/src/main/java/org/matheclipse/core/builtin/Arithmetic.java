@@ -899,7 +899,7 @@ public final class Arithmetic {
           IExpr imaginaryExpr = ast.arg2();
           if (realExpr.isRational() && imaginaryExpr.isRational()) {
             // already evaluated
-          } else if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
+          } else if (realExpr instanceof Num && imaginaryExpr instanceof Num) {
             // already evaluated
           } else {
             realExpr = engine.evaluate(realExpr);
@@ -924,7 +924,8 @@ public final class Arithmetic {
             }
             return F.CC(re, im);
           }
-          if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
+          if (realExpr instanceof Num && imaginaryExpr instanceof Num) {
+            // machine parts; arbitrary precision parts keep their digits in re + I*im below
             return F.complexNum(((INum) realExpr).doubleValue(),
                 ((INum) imaginaryExpr).doubleValue());
           }
@@ -2257,8 +2258,9 @@ public final class Arithmetic {
             return F.QQ(HARMONIC_NUMERATOR[n - 1], HARMONIC_DENOMINATOR[n - 1]);
           }
           int iterationLimit = engine.getIterationLimit();
-          if (iterationLimit >= 0 && iterationLimit <= n) {
-            // too many terms for the exact sum; unevaluated, so that N() can still get the value
+          if ((iterationLimit >= 0 && iterationLimit <= n) || n > MAX_EXACT_HARMONIC_INDEX) {
+            // too many terms for the exact sum, whose denominator has about 0.43 n digits;
+            // unevaluated, so that N() can still get the value
             return F.NIL;
           }
           return QQ(harmonicNumber(n));
@@ -2394,13 +2396,32 @@ public final class Arithmetic {
         if (iterationLimit >= 0 && iterationLimit <= n) {
           IterationLimitExceeded.throwIt(n, F.HarmonicNumber(F.ZZ(n)));
         }
-        BigFraction result = BigFraction.ONE;
-        for (int i = 2; i <= n; i++) {
-          // add 1/i for i=2..n
-          result = result.add(new BigFraction(1, i));
-        }
-        return result;
+        // Sum(1/i, {i, 1, n}) by binary splitting: the numerators and denominators of the halves
+        // are combined without reduction, the fraction is reduced once
+        java.math.BigInteger[] pq = harmonicSplit(1, n + 1);
+        return new BigFraction(pq[0], pq[1]);
       }
+    }
+
+    /**
+     * <code>{p, q}</code> with <code>p/q = Sum(1/i, {i, a, b-1})</code>, not reduced.
+     */
+    private static java.math.BigInteger[] harmonicSplit(int a, int b) {
+      if (b - a == 1) {
+        return new java.math.BigInteger[] {java.math.BigInteger.ONE, java.math.BigInteger.valueOf(a)};
+      }
+      if (b - a == 2) {
+        long x = a;
+        long y = a + 1L;
+        return new java.math.BigInteger[] {java.math.BigInteger.valueOf(x + y),
+            java.math.BigInteger.valueOf(x * y)};
+      }
+      int middle = (a + b) >>> 1;
+      java.math.BigInteger[] left = harmonicSplit(a, middle);
+      java.math.BigInteger[] right = harmonicSplit(middle, b);
+      return new java.math.BigInteger[] {
+          left[0].multiply(right[1]).add(right[0].multiply(left[1])),
+          left[1].multiply(right[1])};
     }
 
     @Override
@@ -4070,7 +4091,14 @@ public final class Arithmetic {
         }
 
         if (base.isOne()) {
-          return F.C1;
+          if (!base.isInexactNumber()) {
+            return F.C1;
+          }
+          // an inexact one stays inexact: 1.0^x is 1.0; a sum in the exponent stays, as the
+          // powers of other numbers to a sum do
+          if (!exponent.isPlus()) {
+            return base.re();
+          }
         }
         if (base.isMinusOne()) {
           // if (exponent.isInteger()) {
@@ -4370,7 +4398,10 @@ public final class Arithmetic {
 
     /**
      * <code>base^exponent</code> computed with 17 digits and rounded to machine precision, for a
-     * result out of the double range.
+     * result out of the double range. It is an arbitrary precision number with the precision of the
+     * error of the inexact exponent times the condition number <code>Abs(exponent*Log(base))</code>.
+     * An exact integer exponent is taken by {@link #machineIntegerPower(Num, IInteger)} before it
+     * becomes a machine number.
      *
      * @return {@link F#NIL} if the result is out of the range of arbitrary precision numbers too
      */
@@ -4390,12 +4421,69 @@ public final class Arithmetic {
           // far beyond anything which can still be printed or rounded to an integer
           return F.NIL;
         }
+        final double precision10 = ApfloatNum.bitsToDigits(ApfloatNum.MACHINE_BITS
+            - Math.log(Math.abs(exponent * Math.log(Math.abs(base)))) / Math.log(2.0));
+        if (result.signum() != 0 && precision10 >= 1.0) {
+          return ApfloatNum.valueOf(result.precision(precision), precision10);
+        }
         return F.num(result.precision(precision));
       } catch (RuntimeException rex) {
         // an org.apfloat.OverflowException
         Errors.rethrowsInterruptException(rex);
         return F.NIL;
       }
+    }
+
+    /**
+     * A machine number to an exact integer power beyond the double range, as an arbitrary precision
+     * number of the bits {@link #integerPowerBits(double, long)}: <code>2.^2000</code> has 52 bits,
+     * <code>2.^20000</code> 48.
+     *
+     * @return {@link F#NIL} if the power is inside the double range, or out of the range of
+     *         arbitrary precision numbers too
+     */
+    public static IExpr machineIntegerPower(final Num base, final IInteger exponent) {
+      final double x = base.doubleValue();
+      final long n = exponent.toLongDefault();
+      if (n == Long.MIN_VALUE || Math.abs(n) >= Long.MAX_VALUE / 2 || x == 0.0
+          || !Double.isFinite(x)) {
+        return F.NIL;
+      }
+      // Abs(Log2(x)) is at most Abs(Math.getExponent(x)) + 1: a power whose binary exponent stays
+      // far inside the double range needs no Math.pow
+      if ((Math.abs(Math.getExponent(x)) + 1.0) * Math.abs((double) n) <= 1000.0
+          || Double.isFinite(Math.pow(x, n))) {
+        return F.NIL;
+      }
+      final long precision = ParserConfig.MACHINE_PRECISION;
+      try {
+        org.apfloat.FixedPrecisionApfloatHelper h =
+            new org.apfloat.FixedPrecisionApfloatHelper(precision + 1);
+        org.apfloat.Apfloat result = h.pow(new org.apfloat.Apfloat(x, precision + 1), n);
+        if (Math.abs(result.scale()) > Integer.MAX_VALUE || result.signum() == 0) {
+          return F.NIL;
+        }
+        return ApfloatNum.valueOf(result.precision(precision),
+            ApfloatNum.bitsToDigits(integerPowerBits(x, n)));
+      } catch (RuntimeException rex) {
+        // an org.apfloat.OverflowException
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
+    }
+
+    /**
+     * The bits of <code>x^n</code>, taken by binary powering: a power inside the double range is a
+     * machine number of 53 bits; an even power is the square of <code>x^(n/2)</code>, whose
+     * relative error doubles, one bit less; an odd power is <code>x*x^(n-1)</code>, whose machine
+     * factor makes it one of machine precision.
+     */
+    private static int integerPowerBits(final double x, final long n) {
+      final double power = Math.pow(x, n);
+      if ((Double.isFinite(power) && Math.abs(power) >= Double.MIN_NORMAL) || n % 2 != 0) {
+        return ApfloatNum.MACHINE_BITS;
+      }
+      return Math.max(1, integerPowerBits(x, n / 2) - 1);
     }
 
     private static IExpr e2DblComArg(final IComplexNum base, final IComplexNum exponent) {
@@ -8422,6 +8510,9 @@ public final class Arithmetic {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  /** The largest index of an exact harmonic number. */
+  static final int MAX_EXACT_HARMONIC_INDEX = 100_000;
+
   static final long[] HARMONIC_NUMERATOR = new long[] {1, 3, 11, 25, 137, 49, 363, 761, 7129, 7381,
       83711, 86021, 1145993, 1171733, 1195757, 2436559, 42142223, 14274301, 275295799, 55835135,
       18858053, 19093197, 444316699, 1347822955};
@@ -8688,7 +8779,10 @@ public final class Arithmetic {
           return F.Power(base1, exponent1.plus(exponent2));
         }
         if (exponent1.equals(exponent2)) {
-          if (!exponent1.isIntegerResult()) {
+          // a positive constant like Pi is split off a power again, so Sqrt(Pi)*Sqrt(nu) with
+          // nu>0 merged to Sqrt(nu*Pi) and back forever
+          if (!exponent1.isIntegerResult()
+              && base1.isNumericFunction(true) == base2.isNumericFunction(true)) {
             IExpr temp = base1.plus(base2);
             if (temp.isNonNegativeResult()) {
               // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/

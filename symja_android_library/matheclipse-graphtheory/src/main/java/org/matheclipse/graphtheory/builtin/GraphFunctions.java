@@ -79,6 +79,7 @@ import org.matheclipse.graphtheory.expression.data.GraphExpr;
 import org.matheclipse.graphtheory.expression.data.IExprEdge;
 import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.graphtheory.graphics.GraphLayouts;
+import org.matheclipse.graphtheory.graphics.LegacyGraphPlot;
 import com.google.common.collect.Sets;
 
 /** Functions for graph theory algorithms. */
@@ -797,6 +798,10 @@ public class GraphFunctions {
           return F.NIL;
         }
         try {
+          if (LegacyGraphPlot.isRequested(ast, 2)) {
+            // a Method with suboptions: the picture of the pre-version-6 implementation
+            return LegacyGraphPlot.plot(graph, ast, 2);
+          }
           // VertexLabels, GraphLayout, ... given to GraphPlot describe the graph it draws
           graph = GraphGraphics.withPlotOptions(graph, ast, 2);
           GraphGraphics gg = new GraphGraphics(graph);

@@ -52,10 +52,7 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
     }
     if (ast.isAST1() && ast.arg1().isString()) {
       String name = ast.arg1().toString();
-      if ("Properties".equals(name)) {
-        return F.mapRange(0, propertyNames().length, i -> F.stringx(propertyNames()[i]));
-      }
-      IExpr value = property(name, engine);
+      IExpr value = propertyValue(name, engine);
       if (value.isPresent()) {
         return value;
       }
@@ -75,8 +72,7 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
       IASTAppendable values = F.ListAlloc(names.argSize());
       for (int i = 1; i <= names.argSize(); i++) {
         String name = names.get(i).toString();
-        IExpr value = "Properties".equals(name) ? evaluate(F.unaryAST1(ast.head(), names.get(i)), engine)
-            : property(name, engine);
+        IExpr value = propertyValue(name, engine);
         if (value.isNIL()) {
           // "`1`" is not an available property.
           return Errors.printMessage(S.FittedModel, "elmntav", F.list(names.get(i)), engine);
@@ -104,6 +100,42 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
       return engine.evaluate(F.subst(normal(false), rules));
     }
     return F.NIL;
+  }
+
+  /**
+   * The value of a property: the list of property names, the properties every fitted model has,
+   * and those of the model.
+   *
+   * @return {@link F#NIL} if the model has no such property
+   */
+  private IExpr propertyValue(String name, EvalEngine engine) {
+    if ("Properties".equals(name)) {
+      return F.mapRange(0, propertyNames().length, i -> F.stringx(propertyNames()[i]));
+    }
+    if ("Function".equals(name)) {
+      return bestFitFunction(engine);
+    }
+    return property(name, engine);
+  }
+
+  /**
+   * The best fit as a pure function of the independent variables in their order: with the slots
+   * <code>#1, #2, ...</code> in place of the variables, or with the variables as named parameters
+   * when the best fit holds pure functions of its own, whose slots would capture them.
+   *
+   * @return {@link F#NIL} if the model cannot be evaluated at a point
+   */
+  private IExpr bestFitFunction(EvalEngine engine) {
+    IAST variables = fitVariables();
+    if (variables.isNIL()) {
+      return F.NIL;
+    }
+    IExpr bestFit = normal(false);
+    if (!bestFit.isFree(x -> x == S.Function, true)) {
+      return F.Function(variables, bestFit);
+    }
+    IAST slots = F.mapRange(1, variables.size(), i -> F.Rule(variables.get(i), F.Slot(i)));
+    return F.Function(engine.evaluate(F.subst(bestFit, slots)));
   }
 
   /**

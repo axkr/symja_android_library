@@ -1012,7 +1012,7 @@ final public class GraphGraphics {
         && (isGraphOption(option.first()) || isVertexLabeling(option.first()));
   }
 
-  private static boolean isVertexLabeling(IExpr name) {
+  static boolean isVertexLabeling(IExpr name) {
     // the relaxed syntax lowercases the name of a symbol it does not know
     return name.isSymbol() && "VertexLabeling".equalsIgnoreCase(((ISymbol) name).getSymbolName());
   }

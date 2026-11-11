@@ -165,7 +165,7 @@ public class PeriodicTableFunctionsTest extends AbstractTestCase {
     check(
         "PeriodicTablePlot(EntityProperty(\"Element\",\"Group\"),"
             + " ColorFunction->ColorData(97))[[1,1,1,1,1,1]]", //
-        "RGBColor(0.368627,0.505882,0.709804,1.0)");
+        "RGBColor(0.368417,0.506779,0.709798)");
     // a scale the caller names is the one the legend beside it shows
     check("PeriodicTablePlot(\"AtomicRadius\", ColorFunction->\"AvocadoColors\")[[2,1]]", //
         "BarLegend({ColorDataFunction(AVOCADO,Gradients,{0,1}),{31.0,260.0}})");

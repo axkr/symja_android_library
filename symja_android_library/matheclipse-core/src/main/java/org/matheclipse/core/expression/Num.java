@@ -16,6 +16,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
+import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -448,7 +449,7 @@ public class Num implements INum {
           // result would be complex exception
         }
       }
-      return DMath.besselComplexNum(S.BesselI, this, (INumber) arg2);
+      return ComplexNum.besselComplexNum(S.BesselI, this, (INumber) arg2);
     }
     return INum.super.besselI(arg2);
   }
@@ -538,7 +539,7 @@ public class Num implements INum {
           // result would be complex exception
         }
       }
-      return DMath.besselComplexNum(S.BesselK, this, (INumber) arg2);
+      return ComplexNum.besselComplexNum(S.BesselK, this, (INumber) arg2);
     }
     return INum.super.besselK(arg2);
   }
@@ -562,7 +563,7 @@ public class Num implements INum {
           // result would be complex exception
         }
       }
-      return DMath.besselComplexNum(S.BesselY, this, (INumber) arg2);
+      return ComplexNum.besselComplexNum(S.BesselY, this, (INumber) arg2);
     }
     return INum.super.besselY(arg2);
   }
@@ -1059,14 +1060,6 @@ public class Num implements INum {
 
   @Override
   public IExpr expIntegralE(IExpr z) {
-    // if (z instanceof IReal) {
-    // try {
-    // return valueOf(EvalEngine.getApfloatDouble()
-    // .expIntegralE(apfloatValue(), ((IReal) z).apfloatValue()).doubleValue());
-    // } catch (ArithmeticException | NumericComputationException e) {
-    // // try as computation with complex numbers
-    // }
-    // }
     if (value >= 1.0 && value <= 1000.0 && value == Math.rint(value) && z instanceof Num) {
       double x = ((Num) z).value;
       if (x > 0.0 && x <= 700.0) {
@@ -1080,20 +1073,47 @@ public class Num implements INum {
     }
     if (z instanceof INumber) {
       // the double routine has from no to ten correct digits for an argument beyond a few units
+      INumber zn = (INumber) z;
       try {
-        Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
-            ((INumber) z).apcomplexValue());
-        return F.complexReduced(
-            new Complex(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue()));
+        return expIntegralEValue(zn, ApcomplexExpIntegralMath
+            .expIntegralE(EvalEngine.getApfloatDouble(), apfloatValue(), zn.apcomplexValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         Errors.rethrowsInterruptException(e);
       }
-      return F.complexReduced(GammaJS.expIntegralE(complexValue(), ((INumber) z).complexValue()));
-      // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
-      // ((INumber) z).apcomplexValue());
-      // return ComplexNum.machine(expIntegralE);
+      Complex c = GammaJS.expIntegralE(complexValue(), zn.complexValue());
+      return zn.imDoubleValue() == 0.0 && (zn.reDoubleValue() > 0.0 || c.getImaginary() == 0.0)
+          ? F.num(c.getReal())
+          : F.complexNum(c);
     }
     return INum.super.expIntegralE(z);
+  }
+
+  /**
+   * The machine number for the value of <code>ExpIntegralE(n, z)</code> with a real <code>n</code>.
+   *
+   * <p>
+   * It is a real number only on the real axis: for <code>z&gt;0</code>, and for <code>z&lt;0</code>
+   * if the imaginary part is zero, which is the case for a non-positive integer <code>n</code>. An
+   * imaginary part is never dropped for its size: it can be as small as the whole value, as in
+   * <code>ExpIntegralE(1, 33.5-7.5*I) = 1.1*10^-17+I*7.9*10^-17</code>, or small against the real
+   * part on the cut, as in <code>ExpIntegralE(30, -0.5)</code>.
+   *
+   * <p>
+   * A value below the smallest machine number is <code>0.0</code>, with the message
+   * <code>General::munfl</code> for <code>Exp</code> of its logarithm.
+   */
+  private static IInexactNumber expIntegralEValue(INumber z, Apcomplex value) {
+    final boolean real = z.imDoubleValue() == 0.0
+        && (z.reDoubleValue() > 0.0 || value.imag().signum() == 0);
+    final double re = value.real().doubleValue();
+    final double im = real ? 0.0 : value.imag().doubleValue();
+    if (re == 0.0 && im == 0.0 && !(real ? value.real() : value).isZero()) {
+      Apcomplex log = ApcomplexMath.log(real ? value.real() : value);
+      EvalEngine.get().machineUnderflow()
+          .report(F.function(S.Exp, real ? F.num(log.real().doubleValue())
+              : F.complexNum(log.real().doubleValue(), log.imag().doubleValue())), true);
+    }
+    return real ? F.num(re) : F.complexNum(re, im);
   }
 
   @Override
@@ -2373,7 +2393,9 @@ public class Num implements INum {
       return ComplexNum.valueOf(value).add((ComplexNum) that);
     }
     if (that instanceof ApfloatNum) {
-      return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+      // the sum is commutative: this machine number is the binary number it is, also if it was
+      // written with other decimal digits, and the result is a machine number if it can be one
+      return ((ApfloatNum) that).plus(this);
     }
     if (that instanceof ApcomplexNum) {
       if (((ApcomplexNum) that).isSignificanceTracked()) {
@@ -2771,7 +2793,10 @@ public class Num implements INum {
       return ComplexNum.valueOf(value).multiply((ComplexNum) that);
     }
     if (that instanceof ApfloatNum) {
-      return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+      // the product is commutative: this machine number is the binary number it is, also if it was
+      // written with other decimal digits (4.9*^-320 is a subnormal number), and the result is a
+      // machine number if it can be one
+      return ((ApfloatNum) that).times(this);
     }
     if (that instanceof ApcomplexNum) {
       if (((ApcomplexNum) that).isSignificanceTracked()) {

@@ -7,6 +7,47 @@ import org.junit.jupiter.api.Test;
 public class NumericOptimizationTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testFindRootStopsAtTheEdgeOfTheRegion() {
+    // the root Sqrt(3) lies left of the region [2, 5]: the search ends on its left edge
+    check("FindRoot(x^2 - 3, {x, 4, 2, 5})", //
+        "{x->2.0}");
+    check("FindRoot(x^3 - 20, {x, 1, 0, 2})", //
+        "{x->2.0}");
+    // a root inside the region
+    check("FindRoot(x^2 - 3, {x, 4, 1, 5})", //
+        "{x->1.73205}");
+  }
+
+  @Test
+  public void testFindRootLineSearchInTheRegion() {
+    // the Newton step from 0.2 overshoots the region [0, 2]; the search stays inside and finds
+    // the root 1 of the function with a pole at 3/2
+    check("FindRoot((x - 1)/(3/2 - x) - 0, {x, 1/5, 0, 13/10})", //
+        "{x->1.0}");
+    check("Reap(FindRoot(ArcTan(x - 1), {x, 3, 0, 4}, StepMonitor :> Sow(x)))[[1]]", //
+        "{x->1.0}");
+  }
+
+  @Test
+  public void testFindRootSteepNearAPole() {
+    // near the pole at 1 the Newton steps are tiny while the root is still far away
+    check("FindRoot(1/(1 - x) - 3, {x, 999999/1000000})", //
+        "{x->0.666667}");
+    check("FindRoot(1/(1 - x)^2 - 4, {x, 9999999/10000000}, MaxIterations -> 200)", //
+        "{x->0.5}");
+  }
+
+  @Test
+  public void testFindRootOfInterpolationWithDescendingAbscissas() {
+    check("g = Interpolation({{4., 16.}, {3., 9.}, {2., 4.}, {1., 1.}, {0., 0.}, {-1., 1.}});"
+        + "{g(2.5), g(0.5), g(-0.5)}", //
+        "{6.25,0.25,0.25}");
+    check("g = Interpolation({{4., 16.}, {3., 9.}, {2., 4.}, {1., 1.}, {0., 0.}, {-1., 1.}});"
+        + "FindRoot(g(x) == 5, {x, 3.5, 1, 4})", //
+        "{x->2.23607}");
+  }
+
+  @Test
   public void testNMinimizeConstraints() {
     // the constraints were ignored: the unconstrained optimum {x->1,y->2} violates x+y<=2
     check(
@@ -134,6 +175,41 @@ public class NumericOptimizationTest extends ExprEvaluatorTestCase {
             + "-3 <= x <= 5.12 && -4 <= y <= 5.12}, {x, y}); "
             + "{First(r) < 10^-6, Max(Abs({x, y} /. r[[2]])) < 10^-4}", //
         "{True,True}");
+  }
+
+  @Test
+  public void testNMaximizeOnAOneVariableConstraint() {
+    // the origin is a stationary point of the objective: the maxima are on the boundary
+    check("NMaximize({x^4, x^2 <= 9}, x)", //
+        "{81.0,{x->3.0}}");
+    check("NMinimize({-x^2 - 1, x^2 <= 1}, x)", //
+        "{-2.0,{x->1.0}}");
+    check("NMaximize({(x - 2)^2, x^2 <= 16}, x)", //
+        "{36.0,{x->-4.0}}");
+  }
+
+  @Test
+  public void testFindMinimumToMachinePrecision() {
+    // the stationary point is {3.0000730576798784, -1.0471255378468650}, a search which stops on
+    // the change of the function value ends at {3.0000473, -1.0471345}
+    check("g = (x - 3)^2 + (y + 1)^4 + Cos(x*y); "
+        + "Round(10^6*{x, y} /. FindMinimum(g, {{x, 0}, {y, 0}})[[2]])", //
+        "{3000073,-1047126}");
+  }
+
+  @Test
+  public void testFindMinimumPolishStaysInTheBasin() {
+    // stationary points every Pi/200: the polished point is the minimum the search ended next to
+    check("g = Cos(200*x) + x^2/1000; "
+        + "a = x /. FindMinimum(g, {x, 0.02})[[2]]; "
+        + "b = x /. FindMinimum(g, {x, 0.02}, Method -> \"Powell\")[[2]]; "
+        + "{Abs(a - b) < 10^-6, Abs(D(g, x) /. x -> a) < 10^-8}", //
+        "{True,True}");
+    check("h = Sin(300*x)*Sin(300*y) + (x^2 + y^2)/10^4; "
+        + "a = {x, y} /. FindMinimum(h, {{x, 0.01}, {y, 0.01}})[[2]]; "
+        + "b = {x, y} /. FindMinimum(h, {{x, 0.01}, {y, 0.01}}, Method -> \"Powell\")[[2]]; "
+        + "Max(Abs(a - b)) < 10^-6", //
+        "True");
   }
 
   @Test

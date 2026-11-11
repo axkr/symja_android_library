@@ -154,13 +154,13 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public IInteger ceilFraction() {
     if (fDenominator == 1) {
-      return F.ZZ(fNumerator);
+      return AbstractIntegerSym.valueOf(fNumerator);
     }
     int div = fNumerator / fDenominator;
     if (fNumerator > 0) {
       div++;
     }
-    return F.ZZ(div);
+    return AbstractIntegerSym.valueOf(div);
   }
 
   @Override
@@ -315,13 +315,13 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public IInteger floorFraction() {
     if (fDenominator == 1) {
-      return F.ZZ(fNumerator);
+      return AbstractIntegerSym.valueOf(fNumerator);
     }
     int div = fNumerator / fDenominator;
     if (fNumerator < 0) {
       div--;
     }
-    return F.ZZ(div);
+    return AbstractIntegerSym.valueOf(div);
   }
 
   /**
@@ -656,7 +656,7 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public IRational normalize() {
     if (fDenominator == 1) {
-      return F.ZZ(fNumerator);
+      return AbstractIntegerSym.valueOf(fNumerator);
     }
     if (isZero()) {
       return F.C0;

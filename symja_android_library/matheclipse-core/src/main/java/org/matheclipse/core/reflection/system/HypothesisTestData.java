@@ -28,6 +28,9 @@ public class HypothesisTestData extends AbstractEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     // h(property) or h(property, test), where h = HypothesisTestData(<|...|>)
     IExpr head = ast.head();
+    if (head.isAST(S.HypothesisTestData, 4) && head.first() == S.MannWhitneyTest && ast.isAST1()) {
+      return MannWhitneyTest.property((IAST) head, ast.arg1(), engine);
+    }
     if (!head.isAST(S.HypothesisTestData, 2) || !head.first().isAssociation() || ast.argSize() < 1
         || ast.argSize() > 2) {
       return F.NIL;
@@ -154,13 +157,19 @@ public class HypothesisTestData extends AbstractEvaluator {
     if (rows.argSize() == 1) {
       return F.Missing(S.NotAvailable, test);
     }
-    IAST grid = F.function(
-        S.Grid, rows, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)), F
-            .Rule(S.Dividers,
-                F.List(F.List(F.Rule(F.C2, F.GrayLevel(F.num(0.7)))),
-                    F.List(F.Rule(F.C2, F.GrayLevel(F.num(0.7)))))),
+    return F.binaryAST2(S.Style, grid(rows), F.stringx("DialogStyle"));
+  }
+
+  /**
+   * The grid of a table of test results: the header row and a row per test, set off by dividers
+   * after the first row and column.
+   */
+  static IAST grid(IAST rows) {
+    return F.function(S.Grid, rows, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
+        F.Rule(S.Dividers,
+            F.List(F.List(F.Rule(F.C2, F.GrayLevel(F.num(0.7)))),
+                F.List(F.Rule(F.C2, F.GrayLevel(F.num(0.7)))))),
         F.Rule(S.Spacings, S.Automatic));
-    return F.binaryAST2(S.Style, grid, F.stringx("DialogStyle"));
   }
 
   @Override
