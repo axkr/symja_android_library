@@ -14,6 +14,7 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
+import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1041,17 +1042,12 @@ public class ComplexNum implements IComplexNum {
     if (z instanceof INumber) {
       // the double routine has from no to ten correct digits for an argument beyond a few units
       try {
-        Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
-            ((INumber) z).apcomplexValue());
-        return machine(expIntegralE);
+        return machine(ApcomplexExpIntegralMath.expIntegralE(EvalEngine.getApfloatDouble(),
+            apcomplexValue(), ((INumber) z).apcomplexValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         Errors.rethrowsInterruptException(e);
       }
       return F.complexNum(GammaJS.expIntegralE(fComplex, ((INumber) z).complexValue()));
-      // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
-      // ((INumber) z).apcomplexValue());
-      // return valueOf(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue());
-
     }
     return IComplexNum.super.expIntegralE(z);
   }

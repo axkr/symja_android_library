@@ -1248,8 +1248,8 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr expIntegralE(IExpr z) {
     if (z instanceof INumber) {
       try {
-        return valueOf(
-            h().expIntegralE(fApcomplex, ((INumber) z).apcomplexValue()));
+        return valueOf(ApcomplexExpIntegralMath.expIntegralE(h(), fApcomplex,
+            ((INumber) z).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         return Errors.printMessage(S.ExpIntegralE, e);
       }

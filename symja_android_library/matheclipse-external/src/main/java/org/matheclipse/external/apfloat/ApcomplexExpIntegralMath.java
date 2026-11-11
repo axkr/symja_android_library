@@ -5,6 +5,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.LossOfPrecisionException;
 
 /**
@@ -54,6 +55,64 @@ public class ApcomplexExpIntegralMath
     private static double abs(Apcomplex z)
     {
         return Math.hypot(z.real().doubleValue(), z.imag().doubleValue());
+    }
+
+    // The largest |n| for which the imaginary part on the cut is calculated from the gamma function
+    private static final double CUT_MAX_ORDER = 10000.0;
+
+    /**
+     * Exponential integral E<sub><i>n</i></sub>(<i>z</i>) by the apfloat routine of the helper, with
+     * the side of the cut along the negative real axis kept.<p>
+     *
+     * The precision of the helper is the one of the whole complex number, so that it rounds away an
+     * imaginary part which is small against the real part. Two things are lost with that:<p>
+     *
+     * For an argument next to the cut the side of it: the value on the cut is the one from above.
+     * Below the cut E<sub><i>n</i></sub>(<i>z</i>) is the conjugate of the function at the conjugates
+     * of <i>n</i> and <i>z</i>.<p>
+     *
+     * On the cut, for a real <i>n</i>, an imaginary part of the value which is small against its real
+     * part. It is -&pi; (-<i>z</i>)<sup><i>n</i>-1</sup> / &Gamma;(<i>n</i>), and zero for a
+     * non-positive integer <i>n</i>, where the function has no cut.
+     *
+     * @param h The helper, which gives the precision.
+     * @param n The order.
+     * @param z The argument.
+     *
+     * @return E<sub><i>n</i></sub>(<i>z</i>).
+     *
+     * @throws ArithmeticException If the apfloat routine has no value.
+     */
+
+    public static Apcomplex expIntegralE(FixedPrecisionApfloatHelper h, Apcomplex n, Apcomplex z)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        if (z.real().signum() >= 0)
+        {
+            return h.expIntegralE(n, z);
+        }
+        if (z.imag().signum() == 0)
+        {
+            Apcomplex value = h.expIntegralE(n, z);
+            if (n.imag().signum() == 0 && Math.abs(n.real().doubleValue()) <= CUT_MAX_ORDER)
+            {
+                Apfloat one = new Apfloat(1, Apfloat.INFINITE, z.radix());
+                Apfloat reciprocalGamma = ApcomplexHypercombMath.reciprocalGamma(h, n.real()).real();
+                Apfloat power = h.pow(z.real().negate(), h.subtract(n.real(), one));
+                return new Apcomplex(value.real(), h.multiply(h.multiply(h.pi(), power), reciprocalGamma).negate());
+            }
+            return value;
+        }
+        if (z.imag().scale() <= z.real().scale() - h.precision())
+        {
+            Apcomplex x = z.real();
+            if (z.imag().signum() > 0)
+            {
+                return expIntegralE(h, n, x);
+            }
+            return expIntegralE(h, n.conj(), x).conj();
+        }
+        return h.expIntegralE(n, z);
     }
 
     /**

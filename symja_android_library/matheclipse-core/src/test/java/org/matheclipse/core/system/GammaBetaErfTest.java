@@ -554,6 +554,71 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "1.036773261451657E-19");
     checkNumeric("ExpIntegralE(1, -2.0)", //
         "-4.954234356001891+I*(-3.141592653589793)");
+    // a complex argument on the real axis
+    checkNumeric("ExpIntegralE(1, Complex(40.0, 0.0))", //
+        "1.036773261451656E-19");
+    checkNumeric("ExpIntegralE(1.5, (6.0+2.0*I)^2-24.0*I+8.0)", //
+        "1.0245532986489451E-19");
+    // an exact order
+    checkNumeric("ExpIntegralE(1/2, 34.5-10.5*I)", //
+        "-5.762973674656719E-18+I*(-2.7867370386395426E-17)");
+  }
+
+  /**
+   * On the cut <code>z&lt;0</code> the imaginary part is
+   * <code>-Pi*(-z)^(n-1)/Gamma(n)</code>, however small it is against the real part, and zero for
+   * a non-positive integer <code>n</code>.
+   */
+  @Test
+  public void testExpIntegralEOnTheCut() {
+    checkNumeric("ExpIntegralE(30, -0.5)", //
+        "0.05788684941493717+I*(-6.618219672969983E-40)");
+    checkNumeric("-Pi*0.5^29/Gamma(30)", //
+        "-6.618219672969983E-40");
+    checkNumeric("ExpIntegralE(10, -0.01)", //
+        "0.11236828182957388+I*(-8.657387162670286E-24)");
+    checkNumeric("ExpIntegralE(2.5, -1.0*^-8)", //
+        "0.6666666866666665+I*(-2.3632718012073546E-12)");
+    checkNumeric("ExpIntegralE(2, -2.0)", //
+        "-2.51941261307313+I*(-6.283185307179586)");
+    check("N(ExpIntegralE(30, -1/2), 30)", //
+        "0.0578868494149371773047600973856+I*(-6.61821967296998210595902491621*10^-40)");
+    // no cut
+    checkNumeric("ExpIntegralE(-1, -2.0)", //
+        "-1.8472640247326626");
+    checkNumeric("ExpIntegralE(0, -2.0)", //
+        "-3.6945280494653248");
+    check("N(ExpIntegralE(-1, -2), 30)", //
+        "-1.84726402473266255680760686514");
+  }
+
+  /** Next to the cut <code>z&lt;0</code>, with an imaginary part below the precision. */
+  @Test
+  public void testExpIntegralENextToTheCut() {
+    checkNumeric("ExpIntegralE(1, -2.0+1.0*^-30*I)", //
+        "-4.954234356001891+I*(-3.141592653589793)");
+    checkNumeric("ExpIntegralE(1, -2.0-1.0*^-30*I)", //
+        "-4.954234356001891+I*3.141592653589793");
+    checkNumeric("ExpIntegralE(0.5+1.0*I, -2.0-1.0*^-30*I)", //
+        "-11.063568015311095+I*(-2.492699652693385)");
+    check("N(ExpIntegralE(1, -2+I/10^40), 30)", //
+        "-4.95423435600189016337950513023+I*(-3.14159265358979323846264338328)");
+    check("N(ExpIntegralE(1, -2-I/10^40), 30)", //
+        "-4.95423435600189016337950513023+I*3.14159265358979323846264338328");
+  }
+
+  /**
+   * A value below the smallest machine number is a machine zero, with the message
+   * <code>General::munfl</code>.
+   */
+  @Test
+  public void testExpIntegralEUnderflow() {
+    check("ExpIntegralE(1, 750.0)", //
+        "0.0");
+    check("ExpIntegralE(1, 750.0-2.0*I)", //
+        "0.0");
+    check("N(ExpIntegralE(1, 750), 20)", //
+        "2.5322081575564658537*10^-329");
   }
 
   @Test

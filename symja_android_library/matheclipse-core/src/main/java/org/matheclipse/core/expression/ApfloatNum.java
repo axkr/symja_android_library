@@ -1582,7 +1582,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr expIntegralE(IExpr z) {
-    if (z instanceof IReal) {
+    if (z instanceof IReal && ((IReal) z).isPositive()) {
+      // real only for z>0; a z<0 is on the cut
       try {
         return valueOf(h().expIntegralE(fApfloat, ((IReal) z).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
@@ -1591,7 +1592,8 @@ public class ApfloatNum implements INum {
     }
     if (z instanceof INumber) {
       try {
-        return F.complexNum(h().expIntegralE(fApfloat, ((INumber) z).apcomplexValue()));
+        return F.complexNum(ApcomplexExpIntegralMath.expIntegralE(h(), fApfloat,
+            ((INumber) z).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         return Errors.printMessage(S.ExpIntegralE, e);
       }
