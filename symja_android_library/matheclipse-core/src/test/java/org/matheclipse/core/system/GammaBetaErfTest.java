@@ -537,6 +537,25 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0.195691");
   }
 
+  /**
+   * At a complex argument the imaginary part of a value below <code>Config.MACHINE_EPSILON</code>
+   * is kept; it was dropped, and the result was a real number. Calculated with mpmath.
+   */
+  @Test
+  public void testExpIntegralESmallComplexValue() {
+    checkNumeric("ExpIntegralE(1, 33.5-7.5*I)", //
+        "1.1145533484204171E-17+I*7.931310766902234E-17");
+    checkNumeric("ExpIntegralE(2, 34.5-10.5*I)", //
+        "-5.840020868900438E-18+I*(-2.6771864390173504E-17)");
+    checkNumeric("ExpIntegralE(1.5, 40.0-12.0*I)", //
+        "9.445052975596911E-20+I*(-2.761907889136091E-20)");
+    // a real argument still gives a real number
+    checkNumeric("ExpIntegralE(1, 40.0)", //
+        "1.036773261451657E-19");
+    checkNumeric("ExpIntegralE(1, -2.0)", //
+        "-4.954234356001891+I*(-3.141592653589793)");
+  }
+
   @Test
   @Tag(TestTags.SLOW)
   public void testExpIntegralE() {
