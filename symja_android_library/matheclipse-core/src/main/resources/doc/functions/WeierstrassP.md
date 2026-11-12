@@ -17,10 +17,8 @@ See
 1+3/2*Cot(Sqrt(3/2)*z)^2
 ```
 
-
-
-
-
+### Related terms
+[WeierstrassHalfPeriods](WeierstrassHalfPeriods.md), [WeierstrassInvariants](WeierstrassInvariants.md), [WeierstrassPPrime](WeierstrassPPrime.md), [WeierstrassSigma](WeierstrassSigma.md), [WeierstrassZeta](WeierstrassZeta.md)
 
 ### Implementation status
 
