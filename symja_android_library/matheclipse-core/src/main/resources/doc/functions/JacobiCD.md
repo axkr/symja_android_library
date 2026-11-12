@@ -18,10 +18,8 @@ See
 -0.945268
 ```
 
-
-
-
-
+### Related terms
+[InverseJacobiCD](InverseJacobiCD.md), [JacobiDC](JacobiDC.md)
 
 ### Implementation status
 

@@ -18,10 +18,8 @@ See
 0.974401
 ```
 
-
-
-
-
+### Related terms
+[InverseJacobiDN](InverseJacobiDN.md), [JacobiND](JacobiND.md)
 
 ### Implementation status
 

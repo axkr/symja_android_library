@@ -18,10 +18,8 @@ See
 0.399627
 ```
 
-
-
-
-
+### Related terms
+[InverseJacobiSD](InverseJacobiSD.md), [JacobiDS](JacobiDS.md)
 
 ### Implementation status
 
