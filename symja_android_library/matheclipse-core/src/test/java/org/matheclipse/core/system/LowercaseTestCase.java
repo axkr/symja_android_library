@@ -43869,15 +43869,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/z^2");
     check("WeierstrassP(z, {3, 1}) ", //
         "1+3/2*Cot(Sqrt(3/2)*z)^2");
+    // real on the real axis for real invariants, as the arbitrary precision value
     check("WeierstrassP(5., {1, 2}) ", //
-        "18.35051+I*1.14908*10^-13");
+        "18.35051");
     check("WeierstrassP(12., {3, 2}) ", //
-        "77.23116+I*4.34319*10^-13");
+        "77.23116");
     check("WeierstrassP(1/3, {1, 2}) // N // Chop", //
         "9.00644");
 
     check("WeierstrassP(2.0, {1,2} )", //
-        "2.65854+I*2.10942*10^-15");
+        "2.65854");
+    check("WeierstrassP(0.5, {2.0, 3.0})", //
+        "4.03176");
+    check("WeierstrassP(0.5, {2, 3.0+0.5*I})", //
+        "4.03176+I*0.00111826");
+    check("WeierstrassP(0.5+0.25*I, {2, 3})", //
+        "1.9357+I*(-2.52494)");
 
     // the equianharmonic invariants g2==0 were evaluated to Indeterminate before
     check("Chop(WeierstrassP(0.7,{0,4/27}))", //
@@ -43906,17 +43913,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
 
     check("Table(WeierstrassP(x,{1.0,3.0} ), {x,-2.0, 2.0, 1/4})", //
-        "{4.55263+I*2.88658*10^-15,1.98649+I*8.88178*10^-16,1.20805+I*2.22045*10^-16,1.00064+I*1.11022*10^-16,1.16036+I*(-3.33067*10^-16),1.84015+I*(-5.55112*10^-16),4.01922+I*4.44089*10^-16,16.00354+I*2.22045*10^-16,ComplexInfinity,16.00354+I*2.22045*10^-16,4.01922+I*4.44089*10^-16,1.84015+I*(-5.55112*10^-16),1.16036+I*(-3.33067*10^-16),1.00064+I*1.11022*10^-16,1.20805+I*2.22045*10^-16,1.98649+I*8.88178*10^-16,4.55263+I*2.88658*10^-15}");
+        "{4.55263,1.98649,1.20805,1.00064,1.16036,1.84015,4.01922,16.00354,ComplexInfinity,16.00354,4.01922,1.84015,1.16036,1.00064,1.20805,1.98649,4.55263}");
   }
 
   @Test
   public void testWeierstrassPPrime() {
+    // real on the real axis for real invariants, as the arbitrary precision value
     check("WeierstrassPPrime(2.0, {1,2} )", //
-        "8.39655+I*1.28374*10^-14");
+        "8.39655");
     check("WeierstrassPPrime(5., {1, 2}) ", //
-        "157.1532+I*1.4773*10^-12");
+        "157.1532");
     check("WeierstrassPPrime(12., {3, 2}) ", //
-        "1357.348+I*1.16055*10^-11");
+        "1357.348");
+    check("WeierstrassPPrime(0.5, {2, 3})", //
+        "-15.8456");
+    check("WeierstrassPPrime(0.5+0.25*I, {2, 3})", //
+        "-1.93577+I*11.38838");
     check("WeierstrassPPrime(1/3, {1, 2}) // N // Chop", //
         "-53.95606");
 
@@ -43943,7 +43955,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
 
     check("Table(WeierstrassPPrime(x,{1.0,3.0} ), {x,-2.0, 2.0, 1/4})", //
-        "{-19.23245+I*(-2.02665*10^-14),-5.13514+I*(-3.76819*10^-15),-1.68643+I*(-1.16607*10^-15),-0.0838866+I*(-5.45142*10^-16),1.44536+I*(-3.30329*10^-16),4.48151+I*2.98579*10^-16,15.89616+I*1.58114*10^-15,127.9683+I*1.1967*10^-15,ComplexInfinity,-127.9683+I*(-1.1967*10^-15),-15.89616+I*(-1.58114*10^-15),-4.48151+I*(-2.98579*10^-16),-1.44536+I*3.30329*10^-16,0.0838866+I*5.45142*10^-16,1.68643+I*1.16607*10^-15,5.13514+I*3.76819*10^-15,19.23245+I*2.02665*10^-14}"); //
+        "{-19.23245,-5.13514,-1.68643,-0.0838866,1.44536,4.48151,15.89616,127.9683,ComplexInfinity,-127.9683,-15.89616,-4.48151,-1.44536,0.0838866,1.68643,5.13514,19.23245}"); //
     check("WeierstrassPPrime(z, {0, 0}) ", //
         "-2/z^3");
     check("WeierstrassPPrime(z, {3, 1}) ", //

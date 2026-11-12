@@ -3470,14 +3470,26 @@ public class EllipticIntegrals {
       // numeric mode isn't set here
       if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
         try {
-          return F
-              .complexNum(EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(), g3.evalfc()));
+          return machineValue(
+              EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(), g3.evalfc()), u, g2, g3);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.WeierstrassP, rex);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The machine number for a value of the machine precision routine. It is real on the real axis
+     * for real invariants, as the arbitrary precision value is: the routine computes in complex
+     * numbers and leaves an imaginary part of rounding noise there.
+     */
+    private static IExpr machineValue(Complex value, IExpr u, IExpr g2, IExpr g3) {
+      if (u.isReal() && g2.isReal() && g3.isReal()) {
+        return F.num(value.getReal());
+      }
+      return F.complexNum(value);
     }
 
     private static IExpr weierstrassPPrime(IExpr u, IExpr g2, IExpr g3) {
@@ -3492,8 +3504,9 @@ public class EllipticIntegrals {
       // numeric mode isn't set here
       if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
         try {
-          return F.complexNum(
-              EllipticFunctionsJS.weierstrassPPrime(u.evalfc(), g2.evalfc(), g3.evalfc()));
+          return machineValue(
+              EllipticFunctionsJS.weierstrassPPrime(u.evalfc(), g2.evalfc(), g3.evalfc()), u, g2,
+              g3);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.WeierstrassPPrime, rex);
