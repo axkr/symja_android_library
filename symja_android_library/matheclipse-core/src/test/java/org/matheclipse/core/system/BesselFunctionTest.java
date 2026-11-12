@@ -754,4 +754,33 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("BesselJ(7/2, z)", //
         "(Sqrt(2/Pi)*(-15*z*Cos(z)+z^3*Cos(z)+15*Sin(z)-6*z^2*Sin(z)))/z^(7/2)");
   }
+
+  /**
+   * A complex number is no half-integer order: the rules of the elementary closed forms printed
+   * "Greater: Invalid comparison with 1+I attempted." when they asked whether it is positive.
+   */
+  @Test
+  public void testComplexOrderNoComparisonMessage() {
+    check("Check(BesselI(1+I, 2), failed)", //
+        "BesselI(1+I,2)");
+    check("Check(BesselJ(1+I, 2), failed)", //
+        "BesselJ(1+I,2)");
+    check("Check(BesselK(1+I, 2), failed)", //
+        "BesselK(1+I,2)");
+    check("Check(BesselY(1+I, 2), failed)", //
+        "BesselY(1+I,2)");
+    check("Check(BesselI(I, z), failed)", //
+        "BesselI(I,z)");
+    checkNumeric("Check(BesselI(1.0+I, 2.5), failed)", //
+        "2.681404729945969+I*(-1.5129807461326363)");
+    checkNumeric("Check(BesselK(1.0+I, 2.5), failed)", //
+        "0.05901151464507897+I*0.02099458433700675");
+    checkNumeric("Check(N(BesselJ(1+I, 2), 20), failed)", //
+        "0.87421109767332575585+I*(-0.22246979247864997435)");
+    // a real half-integer order keeps its closed form
+    check("Check(BesselK(-3/2, z), failed)", //
+        "Sqrt(Pi/2)*(1/(E^z*z^2)+1/(E^z*z))*Sqrt(z)");
+    checkNumeric("Check(BesselI(2.5, 3), failed)", //
+        "1.5153394466819652");
+  }
 }
